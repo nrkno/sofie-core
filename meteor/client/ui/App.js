@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
-import Task from './Task.js';
-import { withTracker } from 'meteor/react-meteor-data';
-import { Tasks } from '/lib/collections/tasks.js';
+import ReactDOM 			from 'react-dom';
+import { withTracker } 		from 'meteor/react-meteor-data';
+
+import { Tasks } 			from '/lib/collections/tasks.js';
+
+import Task 				from './Task.js';
+import NymansPlayground 	from './NymansPlayground.js';
 
 // App component - represents the whole app
 class App extends Component {
@@ -34,23 +37,28 @@ render() {
 
 	return (
 		<div className="container">
-		<header>
-			<h1>Todo List</h1>
+			<header>
+				<h1>Todo List</h1>
 
-			<form className="new-task" onSubmit={this.handleSubmit.bind(this)} >
-				<input
-				type="text"
-				ref="textInput"
-				placeholder="Type to add new tasks"
-			/>
-			</form>
+				<form className="new-task" onSubmit={this.handleSubmit.bind(this)} >
+					<input
+					type="text"
+					ref="textInput"
+					placeholder="Type to add new tasks"
+				/>
+				</form>
 
-		</header>
+			</header>
 
-		<ul>
-			{this.renderTasks()}
-		</ul>
+			<ul>
+				{this.renderTasks()}
+			</ul>
+
+			<div>
+				<NymansPlayground />
+			</div>
 		</div>
+
 	);
 }
 }
