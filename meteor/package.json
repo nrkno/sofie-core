@@ -9,6 +9,7 @@
     "core-js": "^2.5.3",
     "meteor-node-stubs": "^0.3.2",
     "react": "^16.2.0",
+    "react-bootstrap": "^0.32.1",
     "react-dom": "^16.2.0"
   }
 }

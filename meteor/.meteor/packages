@@ -20,9 +20,8 @@ shell-server            		# Server-side component of the `meteor shell` command
 
 react-meteor-data
 
-
 fourseven:scss
-
+twbs:bootstrap
 
 # TEMPORARY: (will be removed soon (by Johan))
 insecure                		# Allow all DB writes from clients (for prototyping)
