@@ -3,6 +3,9 @@ autopublish@1.0.7
 autoupdate@1.4.0
 babel-compiler@7.0.4
 babel-runtime@1.2.2
+barbatus:typescript@0.6.12
+barbatus:typescript-compiler@0.9.12
+barbatus:typescript-runtime@1.0.2
 base64@1.0.11
 binary-heap@1.0.10
 blaze-tools@1.0.10
