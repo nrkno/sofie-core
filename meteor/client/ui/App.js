@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
-import Task from './Task.js';
-import { withTracker } from 'meteor/react-meteor-data';
-import { Tasks } from '/lib/collections/tasks.js';
-import { Button, FormGroup, FormControl, Navbar,
-				 Nav, NavItem, NavDropdown, MenuItem } from 'react-bootstrap';
+import ReactDOM 			from 'react-dom';
+import { withTracker } 		from 'meteor/react-meteor-data';
 
+import { Tasks } 			from '/lib/collections/tasks.js';
+
+import Task 				from './Task.js';
+import NymansPlayground 	from './NymansPlayground.js';
 
 // App component - represents the whole app
 class App extends Component {
@@ -36,29 +36,29 @@ handleSubmit(event) {
 render() {
 
 	return (
-		<div class="container-fluid">
-			<Navbar>
-				<Navbar.Header>
-					<Navbar.Brand>
-						<a href="#home">NRK Automation</a>
-					</Navbar.Brand>
-				</Navbar.Header>
-				<Navbar.Collapse>
-					<Navbar.Form pullLeft>
-						<form onSubmit={this.handleSubmit.bind(this)}>
-							<FormGroup>
-								<FormControl type="text" ref="textInput" placeholder="Type to add new tasks" />
-							</FormGroup>{' '}
-							<Button type="submit">Add</Button>
-						</form>
-					</Navbar.Form>
-				</Navbar.Collapse>
-			</Navbar>
+		<div className="container">
+			<header>
+				<h1>Todo List</h1>
+
+				<form className="new-task" onSubmit={this.handleSubmit.bind(this)} >
+					<input
+					type="text"
+					ref="textInput"
+					placeholder="Type to add new tasks"
+				/>
+				</form>
+
+			</header>
 
 			<ul>
 				{this.renderTasks()}
 			</ul>
+
+			<div>
+				<NymansPlayground />
+			</div>
 		</div>
+
 	);
 }
 }
