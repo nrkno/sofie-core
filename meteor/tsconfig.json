@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+
+
+    "strictNullChecks": true,
+    "sourceMap": true
+
+    
+
+  }
+  
+}
