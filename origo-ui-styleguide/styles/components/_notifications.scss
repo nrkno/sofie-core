@@ -1,0 +1,69 @@
+.notifications,
+.notifications-s,
+.notifications-l,
+.notifications-xl {
+  position: relative;
+}
+
+.notification {
+  background: $primary-bg-color;
+  color: $primary-fg-color;
+  border-radius: 50%;
+  display: inline-block;
+  width: 1.6em;
+  height: 1.6em;
+  line-height: 1.6em;
+  overflow: hidden;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.notifications .notification {
+  position: absolute;
+  right: -1em;
+  top: -.7em;
+}
+
+.notifications-s .notification {
+  font-size: 0.5625rem;
+  font-weight: bold;
+  position: absolute;
+  right: -1em;
+  top: -0.4em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.notifications-l .notification {
+  position: absolute;
+  right: -.9em;
+  top: -.7em;
+}
+
+.notifications-xl .notification {
+  position: absolute;
+  right: -.9em;
+  top: -.3em;
+}
+
+.notifications-text .notification {
+  position: relative;
+  left: 0em;
+  top: -0.9em;
+  margin-right: 0em;
+}
+
+.notification-discrete {
+  background: $color-black;
+}
+
+.subtle .notification-discrete {
+  background-color: $color-medium-grey;
+  color: $color-white;
+}
+
+.vsubtle .notification-discrete {
+  background-color: $color-light-grey;
+  color: $color-white;
+  //color: $color-dark-grey;
+}

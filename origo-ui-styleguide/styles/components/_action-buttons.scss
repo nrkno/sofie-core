@@ -1,0 +1,77 @@
+.action-btn {
+  cursor: pointer;
+  background: transparent;
+  color: $color-dark-grey;
+  border: none;
+  display: inline-block;
+  padding: 0;
+  text-decoration: none;
+  vertical-align: baseline;
+  transition: color 0.2s;
+
+  .icon{
+    fill: $color-grey;
+  }
+}
+
+.action-btn:disabled {
+  color: $form-control-disabled-color;
+}
+
+.action-btn:disabled .icon{
+  fill: $color-lightest-grey;
+}
+
+.action-btn:enabled:hover,
+.action-btn:enabled:hover span {
+  color: $fg-color;
+  text-decoration: none;
+
+  .icon {
+    fill: $fg-color;
+  }
+}
+
+.action-item {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.action-item:not(:last-child) {
+  margin-right: 3px;
+}
+
+.action-vb .action-item {
+  vertical-align: baseline;
+}
+
+.dark {
+  .action-btn {
+    color: $color-light-grey;
+
+    .icon{
+      fill: $color-lighter-grey;
+    }
+  }
+
+  .invert .action-btn {
+    color: $color-dark-grey;
+  }
+
+  .action-btn:disabled {
+    color: $dark-form-control-disabled-color;
+
+    .icon{
+      fill: $color-grey;
+    }
+  }
+
+  .action-btn:enabled:hover,
+  .action-btn:enabled:hover span{
+    color: $dark-fg-color;
+    .icon{
+      fill: $dark-fg-color;
+    }
+  }
+}
+

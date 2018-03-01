@@ -1,0 +1,14 @@
+.banner {
+  overflow: visible;
+}
+
+.banner-graphic,
+.banner-text {
+  display: inline;
+  vertical-align: middle;
+}
+
+.banner-graphic + .banner-text,
+.banner-text + .banner-graphic {
+  margin-left: 20px;
+}

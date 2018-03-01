@@ -1,0 +1,39 @@
+<div class="row example section" id="tweecon">
+  <div class="col c4">
+    <h2>Tweening icons</h2>
+    <p>
+      Tweening icons can be used to transition from one icon to another.
+      Currently this component is relatively specific to the <code>X</code>
+      and <code>+</code> icons. Only one state is shown at a time. When
+      transitioning, icons are rotated 45 degrees. <code>ts1</code> ("tween
+      state 1") starts at 0 degrees rotation, and rotates to 15 degrees as
+      its opacity decreases to 0. <code>ts2</code> starts at -45 degrees and
+      rotates to 0 degrees as its opacity increases to 1.
+    </p>
+    <div class="insert-snippet" data-example-id="tweecon-example"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="tweecon-example">
+      <div class="tweecon">
+        <a href="#" class="action-btn tweecon-state ts1 tweecon-active">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-plus-c"/>
+          </svg>
+        </a>
+        <a href="#" class="action-btn tweecon-state ts2">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-x-cl"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+  <script>
+    setInterval(function () {
+      qsa(".tweecon-state").forEach(function (el) {
+        toggleClass(el, "tweecon-active");
+      });
+    }, 2000);
+  </script>
+</div>

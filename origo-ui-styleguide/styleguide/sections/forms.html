@@ -1,0 +1,285 @@
+<div class="row section example" id="forms">
+  <div class="col c4">
+    <h2>Forms</h2>
+    <p>
+      Simple form fields are used for search forms etc. For input elements
+      used in creating/modifying data, see the section below.
+    </p>
+  </div>
+  <div class="col c4 light"></div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Selects</h3>
+    <p>
+      We need to wrap selects to be able to style them
+      properly. This means that we also have to manage
+      focus outlines ourselves, so remember to add the
+      <code>.focusable</code> class to the wrapper element,
+      and the <code>focusable-main</code> to the the select
+      element. (see <a href="keyboard-focus">Keyboard focus</a>
+      for more info)
+    </p>
+    <div class="insert-snippet" data-example-id="select-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <form id="select-ex" class="mod">
+      <div class="select focusable">
+        <select name="program" class="focusable-main">
+          <option value="Program">Program</option>
+          <option value="Radioteater">Radioteater</option>
+        </select>
+        <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-down"/></svg>
+      </div>
+
+      <div class="select focusable disabled">
+        <select name="program" class="focusable-main" disabled>
+          <option value="Program">I am disabled</option>
+          <option value="Radioteater">Radioteater</option>
+        </select>
+        <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-down"/></svg>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Inline selects</h3>
+    <div class="insert-snippet" data-example-id="select-ex2"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <form id="select-ex2" class="mod">
+      <div class="inline-select">
+        <select name="program">
+          <option value="Program">Program</option>
+          <option value="Radioteater">Radioteater</option>
+        </select>
+        <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-down"/></svg>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Text inputs</h3>
+    <div class="insert-snippet" data-example-id="input-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <form id="input-ex" class="mod">
+      <input type="text" class="text-input" value="2013.09.25">
+    </form>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Edited text input</h3>
+    <div class="insert-snippet" data-example-id="inputhl-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <form id="inputhl-ex" class="mod">
+      <input type="text" class="text-input bghl" value="2013.09.25">
+      <div class="select bghl focusable">
+        <select name="program" class="focusable-main">
+          <option value="Program">Program</option>
+          <option value="Radioteater">Radioteater</option>
+        </select>
+        <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-down"/></svg>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Invalid text input</h3>
+    <div class="insert-snippet" data-example-id="inputerr-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <form id="inputerr-ex" class="mod">
+      <div class="error">
+        <label>
+          Klokkeslett
+          <input type="text" class="text-input" size="10" placeholder="tt:mm:ss" value="ti over sju">
+        </label>
+        <span class="error-msg text-s" >Må skrives som tt:mm:ss</span>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Text input with warning</h3>
+    <div class="insert-snippet" data-example-id="inputwarn-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <form id="inputwarn-ex">
+      <div class="warning tight-s">
+        <p>
+          <label>
+            Klokkeslett
+            <input type="text" class="text-input" size="10" placeholder="tt:mm:ss" value="14:03:10">
+          </label>
+        </p>
+        <p class="warning-msg text-s">
+          <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-fail"/></svg>
+          Feltet er ikke lagt til
+        </p>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Text input with conflict</h3>
+    <div class="insert-snippet" data-example-id="input-conflict-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <form id="input-conflict-ex">
+      <p>
+        <span class="container">
+          <input type="text" class="text-input input-full conflict-input" placeholder="Inneholder to ulike verdier, endringer vil overskrive begge">
+          <svg class="icon fg-warn" aria-hidden="true" role="presentation"><use xlink:href="#icon-fail"/></svg>
+        </span>
+      </p>
+    </form>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Checkboxes</h3>
+    <div class="insert-snippet" data-example-id="checkbox-ex1"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <p id="checkbox-ex1">
+      <label>
+        <span class="checkbox">
+          <input type="checkbox">
+          <svg class="icon checkbox-unchecked" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+          <svg class="icon checkbox-checked" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox-on"/></svg>
+        </span>
+        Check me
+      </label>
+    </p>
+    <p id="checkbox-ex2">
+      <label>
+        <span class="checkbox" >
+          <input type="checkbox" disabled>
+          <svg class="icon checkbox-unchecked" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+          <svg class="icon checkbox-checked" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox-on"/></svg>
+        </span>
+        Uncheckable (disabled)
+      </label>
+    </p>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Radio buttons</h3>
+    <div class="insert-snippet" data-example-id="radio-ex1"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <p id="radio-ex1">
+      <label>
+        <span class="radio">
+          <input type="radio" name="fruit">
+          <svg class="icon radio-unchecked" aria-hidden="true" role="presentation"><use xlink:href="#icon-radio-button"/></svg>
+          <svg class="icon radio-checked" aria-hidden="true" role="presentation"><use xlink:href="#icon-radio-button-on"/></svg>
+        </span>
+        Apple
+      </label>
+      <br>
+      <label>
+        <span class="radio">
+          <input type="radio" name="fruit">
+          <svg class="icon radio-unchecked" aria-hidden="true" role="presentation"><use xlink:href="#icon-radio-button"/></svg>
+          <svg class="icon radio-checked" aria-hidden="true" role="presentation"><use xlink:href="#icon-radio-button-on"/></svg>
+        </span>
+        Orange
+      </label>
+    </p>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Fields with labels</h3>
+    <p>
+      Wrap the field in a <code>label</code> with the
+      class <code>field</code> and add the <code>input</code> class to the
+      input control inside.
+    </p>
+    <div class="insert-snippet" data-example-id="input-label-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <form id="input-label-ex" class="mod">
+      <label class="field">
+        Type
+        <input type="text" class="input text-input" value="2013.09.25">
+      </label>
+      <label class="field">
+        Kanal
+        <div class="input select focusable">
+          <select name="program" class="focusable-main">
+            <option value="Program">Program</option>
+            <option value="Radioteater">Radioteater</option>
+          </select>
+          <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-down"/></svg>
+        </div>
+      </label>
+    </form>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Controlling input widths</h3>
+    <div class="insert-snippet" data-example-id="input-size-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <form id="input-size-ex">
+      <div class="mod">
+        <label class="field">
+          Small
+          <input type="text" class="input text-input input-s" value="2013.09.25">
+        </label>
+      </div>
+      <div class="mod">
+        <label class="field">
+          Medium
+          <input type="text" class="input text-input input-m" value="2013.09.25">
+        </label>
+      </div>
+      <div class="mod">
+        <label class="field">
+          Large
+          <input type="text" class="input text-input input-l" value="2013.09.25">
+        </label>
+      </div>
+      <div class="mod">
+        <label class="field">
+          Full width
+          <input type="text" class="input text-input input-full" value="2013.09.25">
+        </label>
+      </div>
+    </form>
+  </div>
+</div>

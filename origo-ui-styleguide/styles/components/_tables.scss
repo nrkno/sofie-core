@@ -1,0 +1,103 @@
+// TODO Use color variables
+// TODO Inline dark styles
+.table,
+.table-discrete {
+  width: 100%;
+}
+
+.table p,
+.table .mod,
+.table-discrete p,
+.table-discrete .mod {
+  margin: 6px 20px 6px 0;
+}
+
+th {
+  white-space: nowrap;
+}
+
+th, td {
+  vertical-align: top;
+  text-align: left;
+}
+
+.table th,
+.table td {
+  border-top: 1px solid #e6e6e6;
+}
+
+.table .mdi {
+  margin-top: 2px;
+  bottom: -1px;
+  position: relative;
+}
+
+.table .input .mdinput {
+  border-color: #e6e6e6;
+}
+
+.table th h1,
+.table th h2,
+.table th h3,
+.table th h4,
+.table th h5,
+.table th h6 {
+  margin: 10px 0;
+}
+
+.table thead th {
+  border-top: none;
+}
+
+.table .compact,
+.table-discrete .compact {
+  width: 1%;
+}
+
+/**
+ * Expandos can contain other tables, need to be very specific to avoid
+ * cascading styles (ba-dam-pish!)
+ */
+.expando {
+  border-bottom: 1px solid #ddd;
+}
+
+.expando > tbody > tr > th,
+.expando > tbody > tr > td {
+  background: #f0f0f0;
+  border-top: 1px solid #ddd;
+  padding: 9px 5px 8px 10px;
+}
+
+.expando-tight > tbody > tr > th,
+.expando-tight > tbody > tr > td {
+  padding-bottom: 5px;
+  padding-top: 7px;
+}
+
+.expando > tbody > tr:hover th,
+.expando > tbody > tr:hover td {
+  background: #fff;
+  color: #252627;
+}
+
+.expando tr.hl th,
+.expando tr.hl td {
+  background: #fff;
+}
+
+.expando .expando-details th,
+.expando .expando-details td {
+  border-top: none;
+  padding: 0 0 2px;
+}
+
+.expando-details p:first-child {
+  margin-top: 0;
+}
+
+.expando .expando-addon td,
+.expando .expando-addon th {
+  border-top: none;
+  padding: 0;
+}

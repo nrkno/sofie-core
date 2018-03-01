@@ -1,0 +1,74 @@
+<div class="row example section" id="responsive">
+  <div class="col c4">
+    <h2>Responsive design</h2>
+    <p>
+      The approach to responsive design is "mobile first", or said
+      differently: "small first". So default styles are intended for the
+      smallest screens, then media queries are used to override these styles
+      for bigger screens. There are currently five sizes: the default, small (> 640px wide screens) ,
+      medium (> 992px wide screens), large (> 1200px wide screens) and xlarge (> 1800px wide screens).
+    </p>
+    <p>
+      Some base styles vary between the various screen sizes - for
+      example, <code>h1</code> headings are smaller on the smallest screens.
+    </p>
+    <h3>Responsive layout</h3>
+    <p>
+      The layout can be individually specified for each of the three screen
+      sizes. The default column-width classes (e.g. <code>c3</code> and so
+      on) apply to the smallest screens, and can be overridden for medium
+      and large screens. To do so, use classes prefixed
+      with <code>rm-</code> for medium screens, and <code>rl-</code> for
+      large screens. The following example creates a column that is 12
+      columns wide on small screens, 6 on medium screens and 4 on large
+      screens:
+    </p>
+    <div class="insert-snippet" data-example-id="responsive-layout-example"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="responsive-layout-example">
+      <div class="row">
+        <div class="col c12 rm-c6 rl-c4 bghl">
+          <h2>A varying sized column</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      When the 12 column grid is not sufficient to lay out a component,
+      there are additional classes to set the width of
+      columns: <code>s1-5</code>, which gives you a column one fifth (e.g.
+      20%) of the available width, and <code>s1-7</code>. They are also
+      available with <code>rm-</code> and <code>rl-</code> prefixes, for
+      responsive applications.
+    </p>
+    <div class="insert-snippet" data-example-id="responsive-layout-example2"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="responsive-layout-example2">
+      <div class="row">
+        <div class="s1-5 rl-s1-7 bghl">
+          <p>A varying sized column</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row example">
+  <div class="col c4">
+    <h3>Size specific styling</h3>
+    <p>
+      By using the SASS version of the Origo-framework, styles can be overridden by using media queries with the breakpoint variables of the responsive layout.
+      <a href="responsive/index.html" >See demo here</a>
+    </p>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+  </div>
+</div>

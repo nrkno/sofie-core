@@ -1,0 +1,111 @@
+<div class="row example section" id="predictive-inputs">
+  <div class="col c4">
+    <h2>Predictive inputs</h2>
+    <p>
+      Predictive inputs/suggestions/auto-complete inputs can be made with a pair
+      of <code>input</code> elements. Suggestions/predictions are displayed in
+      an input field positioned behind the input that has user focus.
+    </p>
+    <p>
+      The additional span-element is not strictly required. The more
+      anti-aliasing surrounding your font, the greater the chance you will need
+      it to avoid double anti aliasing, which gives a bold-like effect.
+    </p>
+    <div class="insert-snippet" data-example-id="predictive-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="predictive-ex">
+      <div class="predictive-input">
+        <span class="pi-current-input">en sø</span>
+        <input type="text" class="pi-input" value="en sø">
+        <input type="text" class="pi-prediction" value="en søkestreng">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Predictive inputs can be made out of regular <code>text-input</code> elements:
+    </p>
+    <div class="insert-snippet" data-example-id="predictive-ex2"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="predictive-ex2">
+      <div class="predictive-input">
+        <span class="pi-current-input text-input">en sø</span>
+        <input type="text" class="input text-input pi-input" value="en sø">
+        <input type="text" class="input text-input pi-prediction" value="en søkestreng">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Predictive inputs can be used with big inputs as well:
+    </p>
+    <div class="insert-snippet" data-example-id="predictive-ex3"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="predictive-ex3">
+      <span class="bi focusable">
+        <div class="predictive-input bi-input">
+          <span class="input pi-current-input">en sø</span>
+          <input type="search" class="input focusable-main pi-input" value="en sø">
+          <input type="text" class="input pi-prediction" value="en søkestreng">
+        </div>
+        <svg class="icon" aria-hidden="true" role="presentation">
+          <use xlink:href="#icon-search"/>
+        </svg>
+        <a href="#" class="bi-action">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-x-cl"/>
+          </svg>
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Scripting</h3>
+    <p>
+      For predictive inputs to work without visual problems for all fonts, you
+      need some JavaScript that copies the currently typed text from
+      the <code>.pi-input</code> element to the
+      <code>pi-current-input</code> element. Doing so, it is likely that certain
+      letters will cover parts of the next letter in the prediction underneath.
+      Unfortunately, the only solution to this is to manually retract a few
+      pixels from the <code>span</code>'s width on every keystroke. Not very
+      elegant, but it works.
+    </p>
+    <p>
+      If you use the component with a font that does not have much
+      "fuzziness"/anti-aliasing, you might get away without the span and the
+      following script. Use at your discretion.
+    </p>
+    <p>
+      The script used on this page looks like:
+    </p>
+    <pre class="lang-javascript"><code>function mirror(el) {
+  el.querySelector('.pi-input').addEventListener('input', function () {
+    var content = el.querySelector('.pi-current-input');
+    content.innerHTML = this.value;
+    content.style.width = null; // Allow the browser to reassign automatic width
+    content.style.width = content.clientWidth - 2 + 'px';
+  });
+}
+
+var predictions = document.querySelectorAll('.predictive-input');
+
+for (var i = 0; i < predictions.length; i++) {
+  mirror(predictions[i]);
+}</code></pre>
+  </div>
+  <div class="col c4 light">
+  </div>
+</div>

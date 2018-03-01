@@ -1,0 +1,456 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Keyboard focus - Origo design</title>
+  <link rel="stylesheet" href="../../dist/origo.css">
+  <link rel="stylesheet" href="../styles/styleguide.css">
+</head>
+<body>
+
+<div class="row mbm">
+  <div class="col c12 dark">
+    <div class="media mod">
+      <img class="media-elem mrs" src="../../images/nrk.svg" width="58">
+      <div class="bd mls"><span class="logo-text">Origo Styleguide</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="readable-l">
+  <h1>Keyboard focus</h1>
+
+  <p>
+    This page demonstrates how the Origo components works
+    with keyboard navigation and focus visualisation.
+  </p>
+
+  <p>
+    <strong>NOTE:</strong> IE11 and SVG elements does not behave as the rest of the field
+    (of browsers). Read more below.
+  </p>
+
+  <ol>
+    The principles of drawing keyboard focus are as follows:
+    <li class="mll">All focusable components should draw an visible outline
+      when focused by the keyboard</li>
+    <li class="mll">A maximum of one focus outline is drawn at any time</li>
+    <li class="mll">Composite components, e.g. inputs with internal buttons,
+      use the <code>focusable</code> and <code>focusable-focus</code>
+      classes to draw the focus outline when the main component
+      (the input) is focused. (see details below)</li>
+    <li class="mll">Mouse interaction does not draw focus outlines (e.g. clicking on an
+      element)</li>
+  </ol>
+
+  <h2>(3) Composite components</h2>
+  <p>
+    Composite components that consists of a main component
+    and a set of additional components to support extra
+    functionality, such as a clear button to clear a text
+    field, or an expand/collapse button to show a date picker,
+    typically want to draw the focus outline on the top level
+    element of the component <em>when the main component is
+    focused</em>.
+  </p>
+  <ul>
+    For this to function, do the following:
+    <li>add the <code>focusable</code> class on the top level element</li>
+    <li>add the <code>focusable-main</code> on the main component, e.g. the text field</li>
+    <li>make sure to include the <code>/scripts/focus-handler.js</code> script</li>
+  </ul>
+  <p>
+    The script will add the <code>focusable-focus</code> class on the
+    <code>focusable</code> element when the <code>focusable-main</code>
+    component receives focus.
+  </p>
+
+  <h2>(4) Mouse/keyboard focus distinction</h2>
+  <p>
+    When an element gains focus by mouse interaction, the focus
+    outline should not be drawn. It is, however, impossible to
+    distinguish between mouse focus and keyboard focus in CSS,
+    so javascript is required.
+  </p>
+
+  <p>
+    <code>/scripts/focus-handler.js</code> applies the
+    <code>keyboard-focus</code> class to the body element whenever
+    the keyboard has been used to focus an element, and
+    removes it when the mouse is clicked. So all focus outline
+    styles should include rules for both mouse focus and keyboard
+    focus, e.g.:
+  </p>
+
+  <h2>IE11 and SVG elements</h2>
+  <p>
+    IE11 will by default give focus to SVG elements, and applying
+    <code>tabindex="-1"</code> makes no difference. As a work around,
+    set <code>focusable="false"</code> on SVG elements that should
+    not be focused by keyboard.
+  </p>
+  <p>
+    See the first comment in
+    <a href="http://stackoverflow.com/questions/29393144/how-to-prevent-svg-elements-from-gaining-focus-with-tabs-in-ie11">http://stackoverflow.com/questions/29393144/how-to-prevent-svg-elements-from-gaining-focus-with-tabs-in-ie11</a>.
+  </p>
+
+  <pre class="lang-markup"><code class="language-css">.link:focus { outline: none; }
+.keyboard-focus .link:focus { outline: 2px solid cyan; }</code></pre>
+</div>
+
+<div class="row example">
+  <h2>Component demo</h2>
+  <p>Here we list all components that have focus styling.</p>
+  <div class="col c6 light">
+    <h3>Links</h3>
+    <p>
+      <a href="#">First link</a>, <a href="#">second link</a>, <a href="#">third link</a>
+    </p>
+
+    <h3>Action buttons</h3>
+    <p>
+      <a href="#" class="action-btn subtle">
+        <svg class="icon action-item" focusable="false" aria-hidden="true" role="presentation"><use xlink:href="#icon-play-cl"/></svg>
+        <span class="action-item">Play (subtle)</span>
+      </a>
+      <br/>
+      <a href="#" class="action-btn">
+        <svg class="icon action-item" focusable="false" aria-hidden="true" role="presentation"><use xlink:href="#icon-play-cl"/></svg>
+        <span class="action-item">Play</span>
+      </a>
+    </p>
+
+    <h3>Big inputs</h3>
+    <p>
+      <span class="bi focusable">
+        <input type="search" class="bi-input focusable-main">
+        <svg class="icon" focusable="false" aria-hidden="true" role="presentation">
+          <use xlink:href="#icon-search"/>
+        </svg>
+        <a href="#" class="bi-action">
+          <svg class="icon" focusable="false" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-x-small"/>
+          </svg>
+        </a>
+      </span>
+    </p>
+
+    <h3>Buttons</h3>
+    <p>
+      <button class="btn btn-primary">Primary</button>
+      <button class="btn btn-secondary">Secondary</button>
+      <button class="btn btn-secondary btn-compact">
+        <svg class="icon" focusable="false" aria-hidden="true" role="presentation">
+          <use xlink:href="#icon-checkmark"/>
+        </svg>
+      </button>
+      <button class="btn btn-secondary btn-big">Big button</button>
+      <button class="btn-tight btn-primary">Tight button</button>
+      <button class="btn-tight btn-secondary">Tight button</button>
+    </p>
+
+    <h3>Links styled as buttons</h3>
+    <p>
+      <a href="#" class="btn btn-primary">Primary</a>
+      <a href="#" class="btn btn-secondary">Secondary</a>
+      <a href="#" class="btn btn-secondary btn-compact">
+        <svg class="icon" focusable="false" aria-hidden="true" role="presentation">
+          <use xlink:href="#icon-checkmark"/>
+        </svg>
+      </a>
+      <a href="#" class="btn btn-secondary btn-big">Big button</a>
+      <a href="#" class="btn-tight btn-primary">Tight button</a>
+      <a href="#" class="btn-tight btn-secondary">Tight button</a>
+    </p>
+
+    <h3>Colors / notification boxes</h3>
+    <div class="mod row warn text-s tight-s">
+      <p class="right">
+        <button class="action-btn">
+          <svg class="icon" focusable="false" aria-hidden="true" role="presentation"><use xlink:href="#icon-x"/></svg>
+        </button>
+      </p>
+      <p>
+        Notification (warn), <a href="#">with link</a>.
+      </p>
+    </div>
+
+    <div class="mod row bghl text-s tight-s">
+      <p class="right">
+        <button class="action-btn">
+          <svg class="icon" focusable="false" aria-hidden="true" role="presentation"><use xlink:href="#icon-x"/></svg>
+        </button>
+      </p>
+      <p>
+        Notification (bghl), <a href="#">with link</a>.
+      </p>
+    </div>
+
+    <div class="mod row info text-s tight-s">
+      <p class="right">
+        <button class="action-btn">
+          <svg class="icon" focusable="false" aria-hidden="true" role="presentation"><use xlink:href="#icon-x"/></svg>
+        </button>
+      </p>
+      <p>
+        Notification (info), <a href="#">with link</a>.
+      </p>
+    </div>
+
+    <h3>Context menus</h3>
+    <div class="mod c6">
+      <div class="border-box text-s">
+        <div class="ctx-menu">
+          <span class="ctx-menu-label">
+            Overskrift / label
+          </span>
+          <button class="ctx-menu-item">
+            Meny-element
+          </button>
+          <button class="ctx-menu-item">
+            <span class="notification right">3</span>
+            Med varsling
+          </button>
+          <button class="ctx-menu-item ctx-menu-item-selected">
+            Valgt element
+          </button>
+          <button class="ctx-menu-item">
+            Nok et element
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <h3>Date pickers</h3>
+    <div class="mod c8">
+      <div class="expco expco-expanded focusable">
+        <input type="text" class="expco-title focusable-main" placeholder="Dato (YYYYMMDD)">
+        <button class="action-btn right expco-expand" onclick="toggleExpco(this.parentNode)">
+          <svg class="icon" focusable="false" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-calendar"/>
+          </svg>
+        </button>
+
+        <div class="expco-body bd">
+          <div class="mod mbs pls">
+            <label for="year" class="sr-only">År</label>
+            <input id="year" type="number" size="4" class="cal-year text-input" value="2014">
+          </div>
+          <div class="row">
+            <div class="col left tight-s alright">
+              <p class="text-xs">
+                <button class="action-btn">Jan<span class="show-m">uar</span></button><br>
+                <button class="action-btn">Febr<span class="show-m">uar</span></button><br>
+                <button class="action-btn">Mars</button><br>
+                <button class="action-btn">April</button><br>
+                <button class="action-btn">Mai</button><br>
+                <button class="action-btn">Juni</button><br>
+                <button class="action-btn">Juli</button><br>
+                <button class="action-btn cal-selected-mon">Aug<span class="show-m">ust</span></button><br>
+                <button class="action-btn">Sep<span class="show-m">tember</span></button><br>
+                <button class="action-btn">Okt<span class="show-m">ober</span></button><br>
+                <button class="action-btn">Nov<span class="show-m">ember</span></button><br>
+                <button class="action-btn">Des<span class="show-m">ember</span></button><br>
+              </p>
+            </div>
+
+            <div class="col">
+              <div class="mod mts mln">
+                <table class="table cal-table">
+                  <thead>
+                  <tr class="text-xs">
+                    <th class="s1-7 subtle">M<span class="show-m">AN</span></th>
+                    <th class="s1-7 subtle">T<span class="show-m">IR</span></th>
+                    <th class="s1-7 subtle">O<span class="show-m">NS</span></th>
+                    <th class="s1-7 subtle">T<span class="show-m">OR</span></th>
+                    <th class="s1-7 subtle">F<span class="show-m">RE</span></th>
+                    <th class="s1-7 subtle">L<span class="show-m">ØR</span></th>
+                    <th class="s1-7 subtle">S<span class="show-m">ØN</span></th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td class="s1-7 dimmed"><p><button class="action-btn">29</button></p></td>
+                    <td class="s1-7 dimmed"><p><button class="action-btn">30</button></p></td>
+                    <td class="s1-7 dimmed"><p><button class="action-btn">31</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">1</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">2</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">3</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">4</button></p></td>
+                  </tr>
+                  <tr>
+                    <td class="s1-7"><p><button class="action-btn">5</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">6</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">7</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">8</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">9</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">10</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">11</button></p></td>
+                  </tr>
+                  <tr>
+                    <td class="s1-7"><p><button class="action-btn">12</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">13</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">14</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">15</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">16</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">17</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">18</button></p></td>
+                  </tr>
+                  <tr>
+                    <td class="s1-7"><p><button class="cal-selected action-btn">19</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">20</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">21</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">22</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">23</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">24</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">25</button></p></td>
+                  </tr>
+                  <tr>
+                    <td class="s1-7"><p><button class="action-btn">26</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">27</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">28</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">29</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">30</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">31</button></p></td>
+                    <td class="s1-7 dimmed"><p><button class="action-btn">1</button></p></td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Expanding text inputs</h3>
+    <div class="mod c8">
+      <div class="text-input elastic-input focusable">
+        <div class="elastic-input">
+          <span class="sizer"><br></span>
+          <textarea class="input focusable-main"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <h3>Expco</h3>
+    <div class="mod c8">
+      <div class="expco expco-expanded focusable subtle">
+        <input type="text" class="expco-title focusable-main" placeholder="Filtrer innholdstyper">
+        <a href="#" class="action-btn right expco-expand subtle" onclick="toggleExpco(this.parentNode)">
+          <svg class="icon" focusable="false" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-up"/></svg>
+        </a>
+        <div class="expco-body bd">
+          <p class="expco-item">
+            <a href="#" class="action-btn">
+              <svg class="icon mrm" focusable="false" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox-on"/></svg>
+              <svg class="icon icon-l" focusable="false" aria-hidden="true" role="presentation"><use xlink:href="#icon-program"/></svg>
+              Program
+            </a>
+          </p>
+          <p class="expco-item">
+            <a href="#" class="action-btn">
+              <svg class="icon mrm" focusable="false" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+              <svg class="icon icon-l" focusable="false" aria-hidden="true" role="presentation"><use xlink:href="#icon-radio-theatre"/></svg>
+              Radioteater
+            </a>
+          </p>
+          <p class="expco-item">
+            <a href="#" class="action-btn">
+              <svg class="icon mrm" focusable="false" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+              <svg class="icon icon-l" focusable="false" aria-hidden="true" role="presentation"><use xlink:href="#icon-recital"/></svg>
+              Opplesning
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Forms</h3>
+    <div class="c8">
+      <div class="mod">
+        Select:
+        <div class="select">
+          <select name="program">
+            <option value="Program">Program</option>
+            <option value="Radioteater">Radioteater</option>
+          </select>
+          <svg class="icon" focusable="false" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-down"/></svg>
+        </div>
+      </div>
+
+      <div class="mod">
+        Inline select:
+        <div class="inline-select">
+          <select name="program">
+            <option value="Program">Program</option>
+            <option value="Radioteater">Radioteater</option>
+          </select>
+          <svg class="icon" focusable="false" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-down"/></svg>
+        </div>
+      </div>
+
+      <div class="mod">
+        Text input:
+        <input type="text" class="text-input" value="25.09.2013">
+      </div>
+
+      <div class="mod">
+        Checkbox:
+        <span class="checkbox">
+          <input type="checkbox">
+          <svg class="icon checkbox-unchecked" focusable="false" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+          <svg class="icon checkbox-checked" focusable="false" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox-on"/></svg>
+        </span>
+      </div>
+    </div>
+
+    <h3>Pills</h3>
+    <div class="mod c8">
+      <div class="pills">
+        <a href="#" class="pill">Pill link</a>
+        <span class="pill">
+          With pill-action link
+          <a href="#" class="pill-action">
+            <svg class="icon" focusable="false" aria-hidden="true" role="presentation">
+              <use xlink:href="#icon-x-small"/>
+            </svg>
+          </a>
+        </span>
+        <span class="pill">
+          With pill-action button
+          <button href="#" class="pill-action">
+            <svg class="icon" focusable="false" aria-hidden="true" role="presentation">
+              <use xlink:href="#icon-x-small"/>
+            </svg>
+          </button>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="icon-container" class="hide"></div>
+<script src="../../scripts/icons.js"></script>
+<script src="../../scripts/focus-handler.js"></script>
+<script src="../scripts/prism.js"></script>
+<script src="../scripts/styleguide.js"></script>
+<script>
+
+  function toggleExpco(expco) {
+    expco.classList.toggle('expco-expanded');
+  }
+
+  // Prepare the examples
+  document.addEventListener('DOMContentLoaded', function () {
+    qsa('.example').forEach(duplicateExampleOutput);
+
+    qsa('a[href="#"]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+      });
+    });
+  });
+</script>
+</body>
+</html>

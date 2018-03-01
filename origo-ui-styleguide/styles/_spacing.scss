@@ -1,0 +1,82 @@
+/* Spacing
+ *
+ * Let's start with an admonition: Use these classes sparingly. If you find
+ * yourself adding these classes all the time, consider changing the default
+ * spacing instead.
+ *
+ * Here's the naming scheme:
+ *
+ * First letter: type
+ *  - m: margin
+ *  - p: padding
+ *
+ * Second letter: direction
+ *  - t: top
+ *  - r: right
+ *  - b: bottom
+ *  - l: left
+ *  - h: horizontal
+ *  - v: vertical
+ *  - a: all
+ *
+ * Third letter: size
+ *  - l: large
+ *  - m: medium
+ *  - s: small
+ *  - n: none
+ *
+ * Examples:
+ *  - mtn: margin top none
+ *  - pvs: padding vertical small
+ *
+ */
+
+.man, .mhn, .mln { margin-left: 0 !important; }
+.man, .mhn, .mrn { margin-right: 0 !important; }
+.man, .mvn, .mtn { margin-top: 0 !important; }
+.man, .mvn, .mbn { margin-bottom: 0 !important; }
+
+.mas, .mhs, .mls { margin-left: 10px !important; }
+.mas, .mhs, .mrs { margin-right: 10px !important; }
+.mas, .mvs, .mts { margin-top: 10px !important; }
+.mas, .mvs, .mbs { margin-bottom: 10px !important; }
+
+.maxs, .mhxs, .mlxs { margin-left: 5px !important; }
+.maxs, .mhxs, .mrxs { margin-right: 5px !important; }
+.maxs, .mvxs, .mtxs { margin-top: 5px !important; }
+.maxs, .mvxs, .mbxs { margin-bottom: 5px !important; }
+
+.mam, .mhm, .mlm { margin-left: 20px !important; }
+.mam, .mhm, .mrm { margin-right: 20px !important; }
+.mam, .mvm, .mtm { margin-top: 20px !important; }
+.mam, .mvm, .mbm { margin-bottom: 20px !important; }
+
+.mal, .mhl, .mll { margin-left: 40px !important; }
+.mal, .mhl, .mrl { margin-right: 40px !important; }
+.mal, .mvl, .mtl { margin-top: 40px !important; }
+.mal, .mvl, .mbl { margin-bottom: 40px !important; }
+
+.pan, .phn, .pln { padding-left: 0 !important; }
+.pan, .phn, .prn { padding-right: 0 !important; }
+.pan, .pvn, .ptn { padding-top: 0 !important; }
+.pan, .pvn, .pbn { padding-bottom: 0 !important; }
+
+.pas, .phs, .pls { padding-left: 10px !important; }
+.pas, .phs, .prs { padding-right: 10px !important; }
+.pas, .pvs, .pts { padding-top: 10px !important; }
+.pas, .pvs, .pbs { padding-bottom: 10px !important; }
+
+.paxs, .phxs, .plxs { padding-left: 5px !important; }
+.paxs, .phxs, .prxs { padding-right: 5px !important; }
+.paxs, .pvxs, .ptxs { padding-top: 5px !important; }
+.paxs, .pvxs, .pbxs { padding-bottom: 5px !important; }
+
+.pam, .phm, .plm { padding-left: 20px !important; }
+.pam, .phm, .prm { padding-right: 20px !important; }
+.pam, .pvm, .ptm { padding-top: 20px !important; }
+.pam, .pvm, .pbm { padding-bottom: 20px !important; }
+
+.pal, .phl, .pll { padding-left: 40px !important; }
+.pal, .phl, .prl { padding-right: 40px !important; }
+.pal, .pvl, .ptl { padding-top: 40px !important; }
+.pal, .pvl, .pbl { padding-bottom: 40px !important; }

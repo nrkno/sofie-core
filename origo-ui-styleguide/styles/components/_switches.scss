@@ -1,0 +1,52 @@
+.switch {
+  border: 1px solid $color-light-grey;
+  border-radius: 3px;
+  color: $color-grey;
+  display: inline-block;
+  padding: 7px 8px 5px;
+  text-decoration: none;
+  vertical-align: middle;
+}
+
+.switch:hover,
+.switch:focus {
+  border-color: $color-black;
+  color: $color-black;
+}
+
+.switch-active,
+.switch-active:hover,
+.switch-active:focus {
+  background: $color-black;
+  border-color: $color-black;
+  color: $color-white;
+}
+
+.switch-subtle,
+.switch-subtle:hover,
+.switch-subtle:focus {
+  background: $subtle-color;
+  border-color: $subtle-color;
+  color: $color-white;
+}
+
+.dark {
+  .switch {
+    border-color: $color-grey;
+    color: $color-light-grey;
+  }
+
+  .switch:hover,
+  .switch:focus {
+    border-color: $color-dirty-white;
+    color: $color-dirty-white;
+  }
+
+  .switch-active,
+  .switch-active:focus,
+  .switch-active:hover {
+    background: $color-dirty-white;
+    border-color: $color-dirty-white;
+    color: $color-grey;
+  }
+}

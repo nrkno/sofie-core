@@ -1,0 +1,33 @@
+.tweecon {
+  display: inline-block;
+  position: relative;
+}
+
+.tweecon-state {
+  display: inline-block;
+  top: 0;
+  left: 0;
+  margin: 0 3px 0 0;
+  opacity: 0;
+  transition: transform 0.25s, opacity 0.25s;
+  transform: rotate(45deg);
+}
+
+.ts1 {
+  position: absolute;
+}
+
+.ts2 {
+  transform: rotate(-45deg);
+}
+
+.tweecon-state .icon {
+  margin: 0;
+  position: static;
+}
+
+.tweecon-active {
+  opacity: 1;
+  transform: rotate(0deg);
+}
+

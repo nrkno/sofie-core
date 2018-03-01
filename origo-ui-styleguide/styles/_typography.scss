@@ -1,0 +1,213 @@
+html, body {
+  font-family: Roboto, arial, sans-serif;
+  font-weight: 100;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+
+p,
+center,
+.table {
+  font-family: Roboto, arial, sans-serif;
+  font-weight: 100;
+  line-height: 1.5;
+}
+
+h1,
+.h1 {
+  font-family: Ethica, arial, serif !important;
+  font-size: 1.5rem;
+  font-weight: normal;
+  font-family: inherit;
+  line-height: 1.2;
+}
+
+h2,
+.h2,
+.text-l,
+.text-l p {
+  font-family: Ethica, arial, serif !important;
+  font-size: 1.5rem;
+  font-weight: normal;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+h3,
+.h3 {
+  font-family: Roboto, arial, sans-serif;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  font-weight: bold;
+  line-height: 1.5rem;
+  letter-spacing: 0.6px;
+}
+
+h4,
+.h4 {
+  font-family: Roboto, arial, sans-serif;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  font-weight: normal;
+  line-height: 1.5rem;
+  letter-spacing: 0.5px;
+}
+
+.text-l,
+.text-l p {
+  line-height: 1.333;
+}
+
+.text-m,
+.bi,
+.mi{
+  font-family: Roboto, arial, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 100;
+  line-height: 1.5;
+}
+
+.action-btn{
+  font-size: 1rem;
+  font-family: Roboto, arial, sans-serif;
+  font-weight: 100;
+  line-height: 1.5;
+}
+
+h5,
+.h5,
+.text-s,
+.text-s p,
+.text-s .mod,
+.text-s .table,
+.text-s .action-btn,
+.switch,
+.pill,
+.pills .action-btn,
+.notification,
+.tooltip,
+.btn,
+.btn-tight {
+  font-size: 0.875rem;
+  font-family: Roboto, arial, sans-serif;
+  font-weight: 100;
+  line-height: 1.5;
+  letter-spacing: 0.5px;
+}
+
+.text-xs,
+.text-xs p,
+.text-xs .mod,
+.text-xs center,
+.text-xs .table,
+.text-xs .action-btn,
+  //.notification-s,
+.tooltip-tight {
+  font-family: Roboto, arial, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 100;
+  line-height: 1.5;
+  letter-spacing: 0.5px;
+}
+
+.text-xs .action-btn {
+  line-height: 1.5;
+}
+
+h1 strong,
+.h1 strong,
+h2 strong,
+.h2 strong,
+h3 strong,
+.h3 strong,
+h4 strong,
+.h4 strong,
+h5 strong,
+.h5 strong,
+h6 strong,
+.h6 strong {
+  font-weight: bold;
+}
+
+.strong, .fw-strong {
+  font-weight: bold;
+}
+
+.fw-normal{
+  font-weight: normal;
+}
+
+.fw-light{
+  font-weight: 100;
+}
+
+.alleft {
+  text-align: left;
+}
+
+.alright {
+  text-align: right;
+}
+
+.alc {
+  text-align: center;
+}
+
+/* webkit antialiasing */
+
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+.text-l,
+.text-l p,
+.text-m,
+.bi,
+.mi,
+.strong,
+.dark p
+{
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h5,
+.h5,
+.text-s,
+.text-s p,
+.text-s .mod,
+.text-s .table,
+.text-s .action-btn,
+.switch,
+.pill,
+.notification,
+.tooltip,
+.btn,
+.btn-tight,
+.text-xs,
+.text-xs p,
+.text-xs .mod,
+.text-xs center,
+.text-xs .table,
+.text-xs .action-btn,
+.tooltip-tight{
+  -webkit-font-smoothing: subpixel-antialiased !important;
+  -moz-osx-font-smoothing: auto !important;
+}
+
+.notifications-s .notification,
+.dark .text-s.strong,
+.dark .text-xs.strong
+{
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
+.force-etica{
+  font-family: Ethica, arial, serif !important;
+  font-weight: normal;
+}

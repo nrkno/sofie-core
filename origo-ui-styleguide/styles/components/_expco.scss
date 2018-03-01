@@ -1,0 +1,98 @@
+/* Expand/collapse boxes */
+.expco {
+  border: 1px solid transparent;
+  border-radius: 4px;
+  position: relative;
+  @include drop-shadow-close;
+}
+
+.expco-expand {
+  color: $vsubtle-color;
+  position: absolute;
+  right: 4px;
+  top: 9px;
+  line-height: 1;
+}
+
+.expco-title {
+  background: transparent;
+  color: inherit;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-block; // "block" clips the focus box shadow for some reason. "inline-block" does not
+  line-height: 38px;
+  height: 38px;
+  padding: 0 9px;
+  width: 100%;
+  text-align: left;
+  text-decoration: none;
+  transition: color 0.2s;
+  vertical-align: baseline;
+}
+
+.expco-title:hover,
+.expco-title:hover .expco-expand,
+.expco-expand:hover {
+  color: $fg-color;
+}
+
+.expco.focusable-focus:not(.expco-expanded) {
+  @include no-focus-outline;
+}
+
+.focusable-focus .expco-title {
+  @include focus-outline;
+  color: $fg-color;
+}
+
+.keyboard-focus .focusable-focus .expco-title {
+  @include keyboard-focus-outline;
+}
+
+input.expco-title {
+  cursor: text;
+}
+
+.expco-body {
+  display: none;
+  border-top: 1px solid $dimmed-color;
+  padding: 5px 0;
+}
+
+.expco-expanded .expco-body {
+  display: block;
+}
+
+.expco-item {
+  margin: 10px;
+}
+
+.dark {
+  .expco {
+    background: $dark-subtle-bg-color;
+  }
+
+  .expco-expand {
+    color: $dark-vsubtle-color;
+  }
+
+  .expco-body {
+    border-color: #000;
+  }
+
+  .expco-title:hover,
+  .expco-title:hover .expco-expand,
+  .expco-expand:hover {
+    color: $dark-fg-color;
+  }
+
+  .focusable-focus .expco-title {
+    @include dark-focus-outline;
+    color: $dark-fg-color;
+  }
+
+  .keyboard-focus .focusable-focus .expco-title {
+    @include dark-keyboard-focus-outline;
+  }
+}

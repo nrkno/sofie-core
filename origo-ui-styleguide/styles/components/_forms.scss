@@ -1,0 +1,370 @@
+input {
+  font: inherit;
+}
+
+.select select,
+.inline-select select,
+.text-input {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 6px 35px 6px 10px;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  z-index: 0;
+  line-height: normal;
+}
+
+.select option {
+  color: $fg-color;
+}
+
+.inline-select select {
+  padding: 6px 0 6px 25px;
+}
+
+.select,
+.inline-select,
+.text-input {
+  display: inline-block;
+  position: relative;
+  width: auto;
+  color: $form-control-color;
+}
+
+.select,
+.text-input {
+  border: 1px solid rgba($form-control-color, 0.5);
+}
+
+.select{
+  border-radius: 3px;
+}
+
+.text-input {
+  padding-right: 10px;
+  box-shadow: inset 0px 0px 2px 0px rgba(0,0,0,0.125);
+}
+
+.text-input:focus,
+.text-input.focusable-focus,
+.select.focusable-focus {
+  @include focus-outline;
+  color: $form-control-active-color;
+}
+
+.select :focus {
+  @include focus-outline;
+}
+
+.inline-select select:focus {
+  color: $form-control-active-color;
+}
+
+.keyboard-focus .text-input.focusable-focus,
+.keyboard-focus .select.focusable-focus {
+  @include keyboard-focus-outline;
+}
+
+.select .icon {
+  position: absolute;
+  top: 50%;
+  margin-top: -10px;
+  right: 4px;
+  z-index: 1;
+}
+
+.inline-select .icon {
+  position: absolute;
+  top: 50%;
+  margin-top: -10px;
+  left: 0;
+  z-index: 1;
+}
+
+.checkbox,
+.radio {
+  display: inline-block;
+  position: relative;
+  width: 20px;
+  color: $form-control-light-color;
+}
+
+.checkbox:hover,
+.radio:hover {
+  color: $form-control-hover-color;
+}
+
+.checkbox,
+.checkbox input,
+.radio,
+.radio input {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.checkbox input,
+.radio input {
+  opacity: 0;
+}
+
+.checkbox .checkbox-unchecked,
+.checkbox .checkbox-checked,
+.radio .radio-unchecked,
+.radio .radio-checked {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  visibility: visible;
+}
+
+.checkbox .checkbox-checked,
+.radio .radio-checked {
+  visibility: hidden;
+}
+
+.checkbox input:checked ~ .checkbox-unchecked,
+.radio input:checked ~ .radio-unchecked {
+  visibility: hidden;
+}
+
+.checkbox input:checked ~ .checkbox-checked,
+.radio input:checked ~ .radio-checked {
+  visibility: visible;
+}
+
+.disabled,
+.select select:disabled, select:disabled ~ .icon,
+input:disabled.text-input,
+.checkbox input:disabled ~ .checkbox-checked,
+.checkbox input:disabled ~ .checkbox-unchecked,
+.radio input:disabled ~ .radio-checked,
+.radio input:disabled ~ .radio-unchecked
+{
+  color: $form-control-disabled-color;
+}
+
+.select.disabled, .text-input.disabled, input:disabled.text-input
+{
+  border-color: rgba($form-control-disabled-color, 0.5);
+}
+
+.keyboard-focus .checkbox input:focus ~ .checkbox-unchecked,
+.keyboard-focus .checkbox input:focus ~ .checkbox-checked,
+.keyboard-focus .radio input:focus ~ .radio-unchecked,
+.keyboard-focus .radio input:focus ~ .radio-checked {
+  @include keyboard-focus-outline;
+}
+
+
+.field .input {
+  margin-left: 6px;
+  margin-right: 20px;
+}
+
+.input-s {
+  width: 6.5em;
+}
+
+.input-m {
+  width: 13em;
+}
+
+.input-l {
+  width: 20em;
+}
+
+.input-full,
+.input-full select {
+  width: 100%;
+}
+
+.field .input-full {
+  margin: 0;
+}
+
+/* Field Errors */
+
+.error .expco,
+.error .select,
+.error .text-input,
+.error.select,
+.error.text-input {
+  border-color: $color-red;
+}
+
+.warning .expco,
+.warning .select,
+.warning .text-input,
+.warning.select,
+.warning.text-input {
+  border-color: $color-darker-orange;
+}
+
+.warning-msg {
+  color: $color-darker-orange;
+  font-weight: normal;
+}
+
+.error-msg {
+  color: $color-red;
+  display: block;
+  padding: 6px 4px;
+  font-weight: normal;
+}
+
+.dark {
+  .error .expco,
+  .error .select,
+  .error .text-input,
+  .error.select,
+  .error.text-input {
+    border-color: $color-red;
+  }
+
+  .warning .expco,
+  .warning .select,
+  .warning .text-input,
+  .warning.select,
+  .warning.text-input {
+    border-color: $color-orange;
+  }
+
+  .warning-msg {
+    color: $color-orange;
+    font-weight: 100;
+  }
+
+  .error-msg {
+    font-weight: 100;
+  }
+}
+
+/* Error messages */
+
+
+
+
+// TODO .focusable should not be styled here
+/* focusable is used with non-input elements (typically wrapper spans/divs) */
+.text-input,
+.focusable {
+  transition: all 100ms ease-in-out;
+}
+
+.conflict-input {
+  background: $color-lighter-grey;
+  padding-left: 25px;
+}
+
+.conflict-input + .icon,
+.conflict-input .icon {
+  position: absolute;
+  left: 5px;
+  top: 50%;
+  transform: translateY(-40%);
+}
+
+.elastic-input.conflict-input .icon {
+  left: 5px;
+}
+
+.dark {
+  .select,
+  .inline-select,
+  .text-input {
+    color: $dark-form-control-color;
+  }
+
+  .select,
+  .text-input {
+    border: 1px solid rgba($dark-form-control-color, 0.5);
+  }
+
+  .text-input:focus,
+  .text-input.focusable-focus,
+  .select.focusable-focus {
+    @include dark-focus-outline;
+    color: $dark-form-control-active-color;
+  }
+
+  .conflict-input {
+    background: $color-darker-black;
+  }
+
+  .inline-select select:focus {
+    color: $dark-form-control-active-color;
+  }
+
+  .keyboard-focus & .text-input:focus,
+  .keyboard-focus & .text-input.focusable-focus,
+  .keyboard-focus & .select.focusable-focus {
+    @include dark-keyboard-focus-outline;
+  }
+
+  .checkbox, .radio {
+    color: $dark-form-control-light-color;
+  }
+
+  .checkbox:hover, .radio:hover {
+    color: $dark-form-control-hover-color;
+  }
+
+  .keyboard-focus & .checkbox input:focus ~ .checkbox-unchecked,
+  .keyboard-focus & .checkbox input:focus ~ .checkbox-checked {
+    @include dark-keyboard-focus-outline;
+  }
+
+  .disabled,
+  .select select:disabled, select:disabled ~ .icon,
+  input:disabled.text-input,
+  .checkbox input:disabled ~ .checkbox-checked,
+  .checkbox input:disabled ~ .checkbox-unchecked,
+  .radio input:disabled ~ .radio-checked,
+  .radio input:disabled ~ .radio-unchecked {
+    color: $dark-form-control-disabled-color;
+  }
+
+  .select.disabled, .text-input.disabled, input:disabled.text-input
+  {
+    border-color: rgba($dark-form-control-disabled-color, 0.5);
+  }
+}
+
+@media all and (-ms-high-contrast:none) {
+  /* IE-specific styles to hide the select arrow. Keeping it IE-specific as
+   * varying spacing between browsers may lead to this hack causing problems
+   * in browsers that don't need it. */
+  .select:before,
+  .inline-select:before {
+    display: block;
+    position: absolute;
+    content: '';
+    right: 30px;
+    top: 0;
+    height: 1.8em;
+    width: 1.4em;
+    margin: 2px;
+    background: $bg-color;
+    z-index: 5;
+  }
+
+  .inline-select {
+    padding-right: 1px;
+  }
+
+  .inline-select:before {
+    right: -1px;
+  }
+
+  .dark .select:before,
+  .dark .inline-select:before {
+    background: $dark-bg-color;
+  }
+
+  .select.bghl:before,
+  .inline-select.bghl:before {
+    background: $color-yellow;
+  }
+}

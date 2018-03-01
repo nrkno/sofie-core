@@ -1,0 +1,72 @@
+.timeline {
+  position: relative;
+  list-style: none;
+  width: 100%;
+  height: 100%;
+}
+.timeline:before {
+  position: absolute;
+  top: 4px;
+  left: 8.5px;
+  margin-left: -1px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  bottom: 0;
+  content: " ";
+  width: 1px;
+  background-color: $color-grey;
+}
+
+.timeline li {
+  display: list-item;
+  position: relative;
+  width: 100%;
+  margin: 0;
+}
+
+.timeline li:before, .timeline li:after{
+  content: " ";
+  display: table;
+  clear: both;
+}
+
+.timeline .timeline-dot-marker {
+  position: absolute;
+  top: 3px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  -moz-border-radius: 50%;
+  -webkit-border-radius: 50%;
+  border-width: 2px;
+  border-style: solid;
+  border-color: $color-true-black;
+  background-color: $color-dirty-white;
+  text-align: center;
+}
+
+.timeline .timeline-marker-content {
+  width: 95%;
+  float: right;
+}
+
+.timeline .timeline-start .timeline-dot-marker {
+  border-width: 2px;
+  background-color: $color-medium-blue;
+}
+
+.timeline .timeline-start h5 {
+  color: $color-medium-blue;
+}
+
+.timeline .end {
+  background-color: black;
+}
+.timeline .end .timeline-dot-marker {
+  border-width: 2px;
+  background-color: $color-red;
+}
+
+.timeline .end h5 {
+  color: $color-red;
+}

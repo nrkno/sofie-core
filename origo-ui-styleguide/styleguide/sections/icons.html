@@ -1,0 +1,37 @@
+<div class="row example section" id="icons">
+  <div class="col c4">
+    <h2>Icons</h2>
+    <p>
+      Icons are implemented as SVG. In order to use the icons, they must
+      first be loaded on the page, then you can refer to them
+      using <code>xlink</code>. To load the icons, place the following right
+      after the opening body tag:
+    </p>
+        <pre><code class="lang-markup">&lt;div id="icon-container" class="hide">&lt;/div>
+          &lt;script src="scripts/icons.js">&lt;/script></code></pre>
+    <p>
+      The <code>div</code> will have all the available SVG icons loaded
+      inside it, allowing you to refer to the icons later:
+    </p>
+        <pre><code class="lang-markup">&lt;svg class="icon" aria-hidden="true" role="presentation">
+          &lt;use xlink:href="#icon-delete"/>
+          &lt;/svg></code></pre>
+    <p>
+      Some icons are designed to be displayed bigger than the default. Add
+      the <code>icon-l</code> class to achieve this effect:
+    </p>
+        <pre><code class="lang-markup">&lt;svg class="icon icon-l" aria-hidden="true" role="presentation">
+          &lt;use xlink:href="#icon-delete"/>
+          &lt;/svg></code></pre>
+    <p>
+      Icons can be highlighted with a blue color by adding the
+      class <code>icon-hl</code>:
+    </p>
+        <pre><code class="lang-markup">&lt;svg class="icon icon-hl" aria-hidden="true" role="presentation">
+          &lt;use xlink:href="#icon-delete"/>
+          &lt;/svg></code></pre>
+  </div>
+  <div class="col c4 light">
+    <div id="icon-placeholder"></div>
+  </div>
+</div>

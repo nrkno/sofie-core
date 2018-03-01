@@ -1,0 +1,147 @@
+<div class="row example section" id="md-inputs">
+  <div class="col c4">
+    <h2>Material design input fields</h2>
+    <p>
+      Input fields can be implemented as simple inputs, without any effects
+    </p>
+    <div class="insert-snippet" data-example-id="input-example"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="input-example">
+      <input type="text" class="mdinput" value="Simple input">
+    </div>
+  </div>
+</div>
+
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Alternatively, a little bit more crufty markup will give you some
+      subtle material design-inspired visual effects.
+    </p>
+    <div class="insert-snippet" data-example-id="material-input-example"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="material-input-example">
+      <div class="mdi">
+        <input type="text" class="mdinput" value="Material design example">
+        <span class="mdfx"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      For input elements that can be individually saved or applied, you can
+      add an action button which will be visible while editing.
+    </p>
+    <div class="insert-snippet" data-example-id="material-input-commit-example"></div>
+    <p>
+      Fields can have two actions associated with them: one that is
+      available while editing the field (<code>edit-action</code>), and one
+      that is available when the field does not have focus
+      (<code>view-action</code>).
+    </p>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="material-input-commit-example">
+      <div class="mdi">
+        <input type="text" class="mdinput" value="Example with commit button">
+        <span class="mdfx"></span>
+        <a href="#" class="action-btn edit-action" tabindex="-1">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-checkmark"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Input fields can have action buttons on the left as well. These are
+      always visible.
+    </p>
+    <div class="insert-snippet" data-example-id="material-input-perma-example"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="material-input-perma-example">
+      <div class="mdi">
+        <a href="#" class="action-btn perma-action">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-x-cl"/>
+          </svg>
+        </a>
+        <input type="text" class="mdinput" value="Example with three buttons">
+        <span class="mdfx"></span>
+        <a href="#" class="action-btn edit-action" tabindex="-1">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-checkmark"/>
+          </svg>
+        </a>
+        <a href="#" class="action-btn view-action">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-undo"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Input fields that have been recently changed are highlighted. Add
+      the <code>input-hl</code> class to the <code>mdi</code> to achieve
+      this effect.
+    </p>
+    <div class="insert-snippet" data-example-id="material-input-hl-example"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="material-input-hl-example">
+      <div class="mdi input-hl">
+        <input type="text" class="mdinput" value="Example with highlight">
+        <span class="mdfx"></span>
+        <span class="mdfx-hl"></span>
+        <a href="#" class="action-btn edit-action" tabindex="-1">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-checkmark"/>
+          </svg>
+        </a>
+        <a href="#" class="action-btn view-action">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-undo"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Sometimes users enter undesired values into our inputs. Flag
+      the <code>mdi</code> container element of those inputs with the
+      <code>error</code> class. The error message element is optional.
+    </p>
+    <div class="insert-snippet" data-example-id="material-input-error-example"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="material-input-error-example">
+      <div class="mdi error">
+        <input type="text" class="mdinput" value="Example with highlight">
+        <span class="mdfx"></span>
+        <span class="mdfx-hl"></span>
+      </div>
+      <span class="error-msg text-s">Dette gikk ikke så bra</span>
+    </div>
+  </div>
+</div>

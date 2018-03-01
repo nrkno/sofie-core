@@ -1,0 +1,64 @@
+<html>
+<head>
+  <title>Origo design</title>
+  <link rel="stylesheet" href="../../dist/origo.css">
+  <link rel="stylesheet" href="../styles/styleguide.css">
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="IE=edge">
+</head>
+<body>
+
+<div id="icon-container" class="hide"></div>
+<script src="../scripts/icons.js"></script>
+<div>
+  <h2>SASS Media Queries</h2>
+  <div class="row">
+    <div class="col c12 rm-c6">
+      <h3>Markup</h3>
+      <pre class="language-markup">
+        &lt;div class=&quot;col c12 rm-c6&quot;&gt;
+          &lt;div class=&quot;mod origo-framework-background-colorchange&quot;&gt;
+            &lt;div class=&quot;text-s&quot;&gt;Background color is overridden for specific breakpoints&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      </pre>
+      <h3>SASS</h3>
+      <pre class="language-markup">
+    .origo-framework-background-colorchange
+    {
+      font-weight: bold;
+      padding: 20px;
+      background-color: $color-green;
+
+      @media #{$small-up} {
+        background-color: $color-yellow;
+      }
+
+      @media #{$medium-up} {
+        background-color: $color-red;
+      }
+
+      @media #{$large-up} {
+        background-color: $color-blue;
+      }
+
+      @media #{$xlarge-up} {
+        background-color: $color-pink;
+      }
+    }
+      </pre>
+    </div>
+    <div class="col c12 rm-c6">
+      <h3>Resize to observe breakpoint specific behavior</h3>
+      <div class="row">
+        <div class="col c12 rm-c6">
+          <div class="mod origo-framework-background-colorchange">
+            <div class="text-s">Background color is overridden for specific breakpoints</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

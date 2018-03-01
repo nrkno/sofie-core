@@ -1,0 +1,83 @@
+.play-btn-container {
+  position: absolute;
+  display: block;
+  cursor: pointer;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+}
+
+.play-btn {
+  position: absolute;
+  display: inline-block;
+  vertical-align: baseline;
+  z-index: 1;
+  text-decoration: none;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  margin-top: -20px;
+  margin-left: -20px;
+  padding: 0px;
+  border-width: 2px;
+  border-color: $color-white;
+  border-style: solid;
+  border-radius: 50%;
+  background-color: rgba(37, 38, 39, 0.2);
+  transition: all .2s ease-out;
+}
+
+.purple-play-btn {
+  background-color: rgba(135, 96, 166, 0.8);
+}
+
+@media #{$medium-up} {
+  .play-btn {
+    width: 48px;
+    height: 48px;
+    margin-top: -24px;
+    margin-left: -24px;
+  }
+}
+
+.play-btn .icon {
+  color: $color-white;
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  margin-top: -10px;
+  margin-left: -9px;
+  transition: all .2s ease-out;
+}
+
+.play-btn-container:hover .play-btn .icon {
+  transform: scale(1.5);
+}
+
+.play-btn-container:hover .play-btn {
+  transform: scale(0.8);
+  background-color: rgba(37, 38, 39, 0.7);
+}
+
+.play-btn-container:hover .purple-play-btn {
+  transform: scale(0.8);
+  background-color: rgba(135, 96, 166, 1);
+}
+
+.play-btn-container:hover .play-btn.playing {
+  transform: scale(0.8);
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.play-btn.playing {
+  border-color: $primary-color;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.play-btn.playing .icon {
+  color: $primary-color;
+  margin-left: -10px;
+}

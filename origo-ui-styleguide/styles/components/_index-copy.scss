@@ -1,0 +1,11 @@
+/* "Index copy" with a pulled first line for better indexing */
+.ic {
+  text-indent: -1em;
+  padding-left: 1em;
+}
+
+.ic-label {
+  display: inline-block;
+  margin-left: 1em;
+  margin-right: 3px;
+}

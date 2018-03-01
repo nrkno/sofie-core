@@ -1,0 +1,114 @@
+<div class="row example section" id="datepicker">
+  <div class="col c4">
+    <h2>Date picker</h2>
+    <p>
+      Styled from the previous design.
+    </p>
+    <div class="insert-snippet" data-example-id="calendar-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating, for alignment -->
+    <p>&nbsp;</p>
+    <div class="mod" id="calendar-ex">
+
+      <div class="expco">
+        <input type="text" class="expco-title" placeholder="Dato (YYYYMMDD)">
+        <button class="action-btn right expco-expand">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-calendar"/>
+          </svg>
+        </button>
+
+        <div class="expco-body bd">
+          <div class="mod mbs pls">
+            <label for="year" class="sr-only">År</label>
+            <input id="year" type="number" size="4" class="cal-year text-input" value="2014">
+          </div>
+          <div class="row">
+            <div class="col left tight-s alright">
+              <p class="text-xs">
+                <button class="action-btn">Jan<span class="show-m">uar</span></button><br>
+                <button class="action-btn">Febr<span class="show-m">uar</span></button><br>
+                <button class="action-btn">Mars</button><br>
+                <button class="action-btn">April</button><br>
+                <button class="action-btn">Mai</button><br>
+                <button class="action-btn">Juni</button><br>
+                <button class="action-btn">Juli</button><br>
+                <button class="action-btn cal-selected-mon">Aug<span class="show-m">ust</span></button><br>
+                <button class="action-btn">Sep<span class="show-m">tember</span></button><br>
+                <button class="action-btn">Okt<span class="show-m">ober</span></button><br>
+                <button class="action-btn">Nov<span class="show-m">ember</span></button><br>
+                <button class="action-btn">Des<span class="show-m">ember</span></button><br>
+              </p>
+            </div>
+
+            <div class="col">
+              <div class="mod mts mln">
+                <table class="table cal-table">
+                  <thead>
+                  <tr class="text-xs">
+                    <th class="s1-7 subtle">M<span class="show-m">AN</span></th>
+                    <th class="s1-7 subtle">T<span class="show-m">IR</span></th>
+                    <th class="s1-7 subtle">O<span class="show-m">NS</span></th>
+                    <th class="s1-7 subtle">T<span class="show-m">OR</span></th>
+                    <th class="s1-7 subtle">F<span class="show-m">RE</span></th>
+                    <th class="s1-7 subtle">L<span class="show-m">ØR</span></th>
+                    <th class="s1-7 subtle">S<span class="show-m">ØN</span></th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td class="s1-7 dimmed"><p><button class="action-btn">29</button></p></td>
+                    <td class="s1-7 dimmed"><p><button class="action-btn">30</button></p></td>
+                    <td class="s1-7 dimmed"><p><button class="action-btn">31</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">1</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">2</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">3</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">4</button></p></td>
+                  </tr>
+                  <tr>
+                    <td class="s1-7"><p><button class="action-btn">5</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">6</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">7</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">8</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">9</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">10</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">11</button></p></td>
+                  </tr>
+                  <tr>
+                    <td class="s1-7"><p><button class="action-btn">12</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">13</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">14</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">15</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">16</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">17</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">18</button></p></td>
+                  </tr>
+                  <tr>
+                    <td class="s1-7"><p><button class="cal-selected action-btn">19</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">20</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">21</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">22</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">23</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">24</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">25</button></p></td>
+                  </tr>
+                  <tr>
+                    <td class="s1-7"><p><button class="action-btn">26</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">27</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">28</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">29</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">30</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">31</button></p></td>
+                    <td class="s1-7 dimmed"><p><button class="action-btn">1</button></p></td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

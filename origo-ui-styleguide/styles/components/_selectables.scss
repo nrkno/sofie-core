@@ -1,0 +1,15 @@
+.selectable {
+  border-left: 4px solid transparent;
+  overflow: hidden;
+}
+
+.selectable-selected {
+  background: $color-lighter-grey;
+  border-left-color: $primary-color;
+}
+
+.dark {
+  .selectable-selected {
+    background: $color-darker-black;
+  }
+}

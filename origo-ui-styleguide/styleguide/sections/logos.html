@@ -1,0 +1,30 @@
+<div class="row example section" id="logos">
+  <div class="col c4">
+    <h2>Channel logos</h2>
+    <p>
+      Channel logos are inserted in much the same way as svg icons. However,
+      because of their irregularity, the viewbox must be explicitly
+      specified. Otherwise, the aspect ratio will not come out right.
+    </p>
+    <div class="insert-snippet" data-example-id="logo-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp</h2><!-- Cheating to get example aligned with text, not heading -->
+    <p id="logo-ex">
+      <svg class="logo" aria-hidden="true" viewBox="0 0 142.3 30">
+        <use xlink:href="#logo-nrk-klassisk"/>
+      </svg>
+    </p>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>All logos</h3>
+    <div id="logo-includes-placeholder"></div>
+  </div>
+  <div class="col c4 light">
+    <p>&nbsp;</p><!-- Cheating to align code example with text, not heading -->
+    <div id="logo-placeholder"></div>
+  </div>
+</div>

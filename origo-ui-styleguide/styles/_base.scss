@@ -1,0 +1,202 @@
+/* More reasonable default box model. As seen here:
+  http://css-tricks.com/inheriting-box-sizing-probably-slightly-better-best-practice/
+ */
+html {
+  box-sizing: border-box;
+}
+
+.invert {
+  background: $dark-bg-color;
+  color: $dark-fg-color;
+}
+
+body,
+.dark .invert,
+.light,
+.dark .light {
+  background: $bg-color;
+  color: $fg-color;
+}
+
+:link h1,
+:link h2,
+:link h3,
+:link h4,
+:link h5,
+:link h6,
+:visited h1,
+:visited h2,
+:visited h3,
+:visited h4,
+:visited h5,
+:visited h6 {
+  color: $fg-color;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid $color-light-grey;
+  clear: both;
+}
+
+hr.subtle {
+  border-color: $color-lighter-grey;
+}
+
+.link,
+:link,
+.link:visited {
+  text-decoration: none;
+  color: $link-color;
+  cursor: pointer;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+:visited {
+  color: $link-visited-color;
+}
+
+.link:hover,
+:link:hover,
+:link:hover span {
+  text-decoration: underline;
+}
+
+:focus {
+  outline: none;
+}
+
+.keyboard-focus :focus:not(.focusable-main) {
+  @include keyboard-focus-outline;
+}
+
+h1 :link,
+h2 :link,
+h3 :link,
+h4 :link,
+h5 :link,
+h6 :link,
+h1 :visited,
+h2 :visited,
+h3 :visited,
+h4 :visited,
+h5 :visited,
+h6 :visited {
+  color: inherit;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
+a[disabled]{
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.nw {
+  white-space: nowrap;
+}
+
+.wb {
+  word-break: break-all;
+}
+
+.block {
+  display: block !important;
+}
+
+.inline-block {
+  display: inline-block !important;
+}
+
+.disable-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.alb {
+  vertical-align: bottom !important;
+}
+
+.alm,
+.alm td,
+.alm th {
+  vertical-align: middle !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
+.bg-contrast {
+  background: #f0f0f0;
+}
+
+.darker {
+  background: $color-lightest-grey;
+}
+
+.darker-border {
+  border-color: $color-lightest-grey;
+}
+
+.dark {
+  background: $dark-bg-color;
+  color: $dark-fg-color;
+
+  .link,
+  :link,
+  .link .icon {
+    color: $dark-link-color;
+  }
+
+  :visited {
+    color: $dark-link-visited-color;
+  }
+
+  hr {
+    border-color: $color-medium-grey;
+  }
+
+  hr.subtle {
+    border-color: $color-darker-grey;
+  }
+
+  hr.vsubtle {
+    border-color: $color-true-black;
+  }
+}
+
+.dark .darker,
+.dark + .darker {
+  background: $color-darker-black;
+}
+
+.dark .darker-border,
+.dark + .darker-border {
+  border-color: $color-darker-black;
+}
+
+.xdark {
+  background: $color-true-black;
+}

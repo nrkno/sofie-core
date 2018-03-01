@@ -1,0 +1,140 @@
+<div class="row example section" id="overlays">
+  <div class="col c4">
+    <h2>Overlays / Border boxes</h2>
+    <p>
+      Overlays are floating boxes that are suitable for superimposing on top of
+      other elements. These elements are typically used for intermittent dialog
+      boxes etc. The boxes default to 500 pixels wide, and auto height.
+      Additional sizes may be added later. The overlays must be manually
+      positioned in order to actually overlay other elements (or use glass
+      panes, see below).
+    </p>
+    <div class="insert-snippet" data-example-id="overlays-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="overlays-ex">
+      <div class="border-box overlay-m">
+        <div class="bd tight-s text-xs">
+          <div class="col c2">
+            <p class="subtle">10</p>
+            <p><a class="action-btn" href="#">2014</a></p>
+            <p><a class="action-btn" href="#">2013</a></p>
+            <p><a class="action-btn" href="#">2012</a></p>
+            <p><a class="action-btn" href="#">2011</a></p>
+            <p><a class="action-btn" href="#">2010</a></p>
+          </div>
+          <div class="col c2">
+            <p class="subtle">00</p>
+            <p><a class="action-btn" href="#">2009</a></p>
+            <p><a class="action-btn" href="#">2008</a></p>
+            <p><a class="action-btn" href="#">2007</a></p>
+            <p><a class="action-btn" href="#">2006</a></p>
+            <p><a class="action-btn" href="#">2005</a></p>
+            <p><a class="action-btn" href="#">2004</a></p>
+            <p><a class="action-btn" href="#">2003</a></p>
+            <p><a class="action-btn" href="#">2002</a></p>
+            <p><a class="action-btn" href="#">2001</a></p>
+            <p><a class="action-btn" href="#">2000</a></p>
+          </div>
+          <div class="col c2">
+            <p class="subtle">90</p>
+            <p><a class="action-btn" href="#">1999</a></p>
+            <p><a class="action-btn" href="#">1998</a></p>
+            <p><a class="action-btn" href="#">1997</a></p>
+            <p><a class="action-btn" href="#">1996</a></p>
+            <p><a class="action-btn" href="#">1995</a></p>
+            <p><a class="action-btn" href="#">1994</a></p>
+            <p><a class="action-btn" href="#">1993</a></p>
+            <p><a class="action-btn" href="#">1992</a></p>
+            <p><a class="action-btn" href="#">1991</a></p>
+            <p><a class="action-btn" href="#">1990</a></p>
+          </div>
+          <div class="col c2">
+            <p class="subtle">80</p>
+            <p><a class="action-btn" href="#">1989</a></p>
+            <p><a class="action-btn" href="#">1988</a></p>
+            <p><a class="action-btn" href="#">1987</a></p>
+            <p><a class="action-btn selected-item" href="#">1986</a></p>
+            <p><a class="action-btn" href="#">1985</a></p>
+            <p><a class="action-btn" href="#">1984</a></p>
+            <p><a class="action-btn" href="#">1983</a></p>
+            <p><a class="action-btn" href="#">1982</a></p>
+            <p><a class="action-btn" href="#">1981</a></p>
+            <p><a class="action-btn" href="#">1980</a></p>
+          </div>
+          <div class="col c2">
+            <p class="subtle">70</p>
+            <p><a class="action-btn" href="#">1979</a></p>
+            <p><a class="action-btn" href="#">1978</a></p>
+            <p><a class="action-btn" href="#">1977</a></p>
+            <p><a class="action-btn" href="#">1976</a></p>
+            <p><a class="action-btn" href="#">1975</a></p>
+            <p><a class="action-btn" href="#">1974</a></p>
+            <p><a class="action-btn" href="#">1973</a></p>
+            <p><a class="action-btn" href="#">1972</a></p>
+            <p><a class="action-btn" href="#">1971</a></p>
+            <p><a class="action-btn" href="#">1970</a></p>
+          </div>
+          <div class="col c2">
+            <p class="subtle">60</p>
+            <p><a class="action-btn" href="#">1969</a></p>
+            <p><a class="action-btn" href="#">1968</a></p>
+            <p><a class="action-btn" href="#">1967</a></p>
+            <p><a class="action-btn" href="#">1966</a></p>
+            <p><a class="action-btn" href="#">1965</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Overlay actions</h3>
+    <div class="insert-snippet" data-example-id="border-box-action-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="border-box-action-ex">
+      <div class="border-box overlay-m">
+        <button ng-click="close()" class="action-btn border-box-action">
+          <svg class="icon"><use xlink:href="#icon-x"/></svg>
+        </button>
+        <p class="mas">
+          Some text in here
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Modal dialogs/glass panes</h3>
+    <p>
+      If you want to create the illusion of a modal dialog, you can place your
+      dialog boxes (typically border-box, but really anything) in a glass pane.
+      The glass pane overlays a semi-transparent dark layer on the whole page,
+      and centers whatever content you put in it. Thus, a glass pane with a
+      border box will give you a "dimmed down" body with a border box hovering
+      above it in the middle of the page.
+    </p>
+    <pre class="lang-markup"><code>&lt;div class="glass-pane">
+  &lt;div class="glass-pane-content">
+    &lt;div class="border-box overlay-m">
+      &lt;button ng-click="close()" class="action-btn border-box-action">
+        &lt;svg class="icon">&lt;use xlink:href="#icon-x"/>&lt;/svg>
+      &lt;/button>
+      &lt;p class="mas">
+        Some text in here
+      &lt;/p>
+    &lt;/div>
+  &lt;/div>
+&lt;/div></code></pre>
+  </div>
+  <div class="col c4 light">
+    <p><a class="pane-ex" href="#pane">Show example</a></p>
+  </div>
+</div>

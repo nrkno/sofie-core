@@ -1,0 +1,293 @@
+$bi-input-padding: 5px 0 4px;
+$bi-input-fat-padding: 16px 0 14px;
+
+.bi {
+  background: $bg-color;
+  align-items: center;
+  border: none;
+  border-radius: 4px;
+  display: flex;
+  position: relative;
+  background: $bg-color;
+  @include drop-shadow-close;
+}
+
+.bi.focusable-focus {
+  @include focus-outline;
+}
+
+.keyboard-focus .bi.focusable-focus {
+  @include keyboard-focus-outline;
+}
+
+.bi.focusable-focus .focusable-main {
+  outline: none;
+  color: $form-control-active-color;
+}
+
+.bi-input,
+input[type="search"].bi-input {
+  border: none;
+  border-radius: 4px;
+  box-sizing: border-box;
+  display: block;
+  height: 39px;
+  order: 2;
+  overflow: hidden;
+  resize: none;
+  width: 100%;
+}
+
+.bi-mega .bi-input,
+.bi-mega input[type="search"].bi-input {
+  height: 59px;
+}
+
+.bi-input,
+input[type="search"].bi-input,
+input[type="search"].input {
+  color: $form-control-color;
+  background: transparent;
+}
+
+.bi-padded .bi-input,
+.bi-padded input[type="search"].bi-input {
+  height: 60px;
+}
+
+.bi .icon {
+  order: 1;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.dark .bi .action-btn {
+  color: $color-dark-grey;
+}
+
+.dark .bi .action-btn .icon {
+  fill: $color-grey;
+}
+
+.dark .bi .action-btn:enabled:hover,
+.dark .bi .action-btn:enabled:hover span {
+  color: $fg-color;
+
+  .icon {
+    fill: $fg-color;
+  }
+}
+
+.bi-mega .icon {
+  margin-left: 20px;
+}
+
+.command-mode {
+  border: 1px solid;
+}
+
+.cm-label {
+  border-radius: 4px 0 0 4px;
+  display: flex;
+  height: 44px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.bi-mega .cm-label {
+  height: 59px;
+}
+
+.cm-label .icon {
+  position: relative;
+  top: 8px;
+  margin-right: 5px;
+  margin-left: 20px;
+}
+
+.cm-label .help-mode-icon {
+    order: 3;
+    margin: 0 10px 0 0;
+}
+
+.bi-mega .cm-label .icon {
+  top: 20px;
+}
+
+.cm-text {
+  order: 2;
+  padding-top: 3.5px;
+  white-space: nowrap;
+}
+
+.bi-mega .cm-text {
+  padding-top: 16px;
+}
+
+.bi .icon {
+  color: $fg-color;
+}
+
+.command-mode .dark .icon {
+  color: $dark-fg-color;
+}
+
+.bi-action {
+  order: 3;
+  z-index: 1; // make sure keyboard focus is drawn atop of the input box next to it
+}
+
+.bi-action .icon {
+  display: block;
+  position: static;
+}
+
+.bi-action .icon,
+.bi.focusable-focus .bi-action .icon {
+  color: $form-control-light-color;
+}
+
+.bi-action:hover .icon,
+.bi.focusable-focus .bi-action:hover .icon {
+  color: $form-control-active-color;
+}
+
+// Big elastic inputs
+.bi .elastic-input .sizer,
+.bi .elastic-input .input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  padding: $bi-input-padding;
+  top: 0;
+  left: 0;
+}
+
+div.bi-input {
+  position: relative;
+}
+
+.bi-input .input,
+.bi-input input[type=search].input {
+  border: none;
+  position: absolute;
+  width: 100%;
+  top: 2px;
+  left: 0;
+  padding: $bi-input-padding;
+}
+
+.bi-mega .bi-input .input,
+.bi-mega .bi-input input[type=search].input {
+  top: 12px;
+}
+
+.bi-padded .bi-input .input,
+.bi-padded .bi-input input[type=search].input {
+  padding: $bi-input-fat-padding;
+}
+
+.bi-input .input.pi-current-input {
+  width: auto;
+}
+
+.sb-help-mode-icon {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border: solid 1px $color-lighter-grey;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.bi-mega .sb-help-mode-icon {
+  width: 44px;
+  height: 44px;
+  padding: 2px;
+}
+
+.sb-help-mode-icon .icon {
+  margin: 0;
+}
+
+.sb-help-mode-icon:active, .sb-help-mode-icon.active {
+  background-color: $color-dirty-white;
+  box-shadow: inset 0 0 3px 0 rgba(0, 0, 0, 0.2);
+  border: solid 1px $color-light-grey;
+}
+
+.sb-help-mode-icon:hover {
+  box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.sb-help-mode-icon:hover .icon {
+  color: #3593ff;
+}
+
+.bi-mega .pi-input-pill {
+  top: 15px;
+}
+
+.bi-container {
+  background: $color-white;
+  align-items: center;
+  border: none;
+  border-radius: 4px;
+  position: relative;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,.5);
+}
+
+.bi-container.command-mode {
+  border: 1px solid;
+  box-shadow: none;
+}
+
+.bi-container .bi {
+  box-shadow: none;
+}
+
+.bi-container .bi.command-mode {
+  border: none;
+  border-bottom: 1px solid;
+}
+
+.dark-search-box {
+  .bi-container, .bi, .pi-prediction {
+    background: $color-dark-grey;
+  }
+
+  .bi-input, input[type=search].bi-input, input[type=search].input {
+    background: transparent;
+    color: $color-white;
+  }
+
+  .pi-current-input {
+    color: $color-dark-grey;
+  }
+
+  .bi-container .bi.command-mode {
+    border-color: $color-black;
+  }
+
+  .bi-container .action-btn .icon {
+    fill: $color-white;
+  }
+
+  .sb-help-mode-icon {
+    border-color: $color-grey;
+    &:active, &.active {
+      background-color: $color-darker-black;
+      border: solid 1px $color-grey;
+      box-shadow: inset 0 0 3px 0 rgba(0, 0, 0, 0.2);
+    }
+    .icon {
+      color: $color-white;
+    }
+
+    &:hover .icon {
+      color: #3593ff;
+    }
+  }
+}

@@ -1,0 +1,53 @@
+/* Context menus */
+.ctx-menu {
+  background: $bg-color;
+}
+
+.ctx-menu-item,
+.ctx-menu-label {
+  margin: 0;
+  padding: 10px;
+  display: block;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.keyboard-focus .ctx-menu-item:focus {
+  box-shadow: inset 0 0 0 2px $keyboard-focus-color;
+}
+
+.ctx-menu-item {
+  color: $subtle-color;
+  cursor: pointer;
+}
+
+.ctx-menu-label {
+  color: $vsubtle-color;
+  cursor: default;
+}
+
+.ctx-menu-item-selected {
+  background: $color-lighter-grey;
+  color: $fg-color;
+}
+
+.dark {
+  .ctx-menu {
+    background: $dark-subtle-bg-color;
+  }
+
+  .ctx-menu-item {
+    color: $dark-subtle-color;
+  }
+
+  .ctx-menu-label {
+    color: $dark-vsubtle-color;
+  }
+
+  .ctx-menu-item-selected {
+    background: lighten($dark-bg-color, 5%);
+    color: $dark-fg-color;
+  }
+}

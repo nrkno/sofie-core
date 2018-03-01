@@ -1,0 +1,32 @@
+@mixin focus-outline($color:$focus-color, $size:2px) {
+  outline: none;
+  box-shadow: 0 0 0 $size $color;
+}
+
+@mixin keyboard-focus-outline($color:$keyboard-focus-color, $size:2px) {
+  outline: none;
+  box-shadow: 0 0 0 $size $color;
+}
+
+@mixin dark-focus-outline($color:$dark-focus-color, $size:2px) {
+  outline: none;
+  box-shadow: 0 0 0 $size $color;
+}
+
+@mixin dark-keyboard-focus-outline($color:$dark-keyboard-focus-color, $size:2px) {
+  outline: none;
+  box-shadow: 0 0 0 $size $color;
+}
+
+@mixin no-focus-outline() {
+  outline: none;
+  box-shadow: none;
+}
+
+@mixin drop-shadow-close() {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.5);
+}
+
+@mixin drop-shadow-medium() {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.25);
+}

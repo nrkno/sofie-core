@@ -1,0 +1,4368 @@
+<!DOCTYPE html>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+
+<html>
+<head>
+  <title>Origo design</title>
+  <link rel="stylesheet" href="../dist/origo.css">
+  <link rel="stylesheet" href="styles/styleguide.css">
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="IE=edge">
+  <script src="scripts/prism.js"></script>
+  <script src="scripts/styleguide.js"></script>
+  <script src="scripts/glossary.js"></script>
+  <script src="../scripts/focus-handler.js"></script>
+</head>
+<body>
+
+<div id="icon-container" class="hide"></div>
+<script src="../scripts/icons.js"></script>
+
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row">
+  <div class="col c12 dark">
+    <div class="media mod">
+      <img class="media-elem mrs" src="../images/nrk.svg" width="58">
+      <div class="bd mls"><span class="logo-text">Origo Styleguide</span></div>
+    </div>
+  </div>
+</div>
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row section" id="intro">
+  <div class="col rl-c6 rxl-c4 c8">
+    <h1 class="mtn">Origo Styleguide</h1>
+    <h2>Getting started</h2>
+    <p>
+      When you have read about the core principles underpinning the
+      styleguide and the CSS implementation, you may want to check out the
+      tutorial-style <a href="getting-started/">Getting started</a>.
+    </p>
+    <h2>Core principles</h2>
+    <p>
+      The CSS is based on the principles behind OOCSS by Nicole Sullivan. It
+      does not, however, use the OOCSS framework or any of its components.
+      The following is an overview of the important principles that underly
+      the implementation.
+    </p>
+    <h3>Separate components and layout</h3>
+    <p>
+      All layout concerns are handled by the <a href="#layout">layout
+      system</a> - individual components should not reimplement it.
+      Components should focus strictly on adjusting positioning/spacing from
+      the defaults made by the layout system, as well as the component
+      "skinning" (backgrounds, borders, font adjustments and so on). This
+      ensures that there is one authorative source for layout specification,
+      enabling us to easily adjust if necessary, and keep centralized
+      control over responsive layouts.
+    </p>
+    <h3>Components should always look the same</h3>
+    <p>
+      Any component should always look the same, regardless of its context.
+      If you move a component from the left column to the right, it should
+      still look the same. The layout details may give it different outer
+      dimensions, but the internal skinning should not change. This ensures
+      easily composable UIs and easy reuse of visual components.
+    </p>
+    <h3>Style classes, not elements</h3>
+    <p>
+      Styling directly on elements prevents multiple presentations of the
+      same elements without resorting to overriding styles. Overriding
+      styles lead to CSS bloat and is highly discouraged. Overriding styles
+      will also interfere with the previous principle, and may cause
+      surprising results when moving components around. Styling directly on
+      classes avoids this problem. There are only a few cases where styles
+      are applied directly to elements, and those situations are highlighted
+      in this docment.
+    </p>
+    <h3>Avoid decendant selectors</h3>
+    <p>
+      Decendant selectors such as the child selector (<code>p a</code>) are
+      generally discouraged because they may interfere with the principle
+      that components should always look the same, regardless of their
+      context. However, the closer together the elements in the selector
+      are, the less likely it is that they will create a problem. (A
+      selector as wide-reaching as <code>.aside .media</code>
+      is <strong>strongly</strong> discouraged). Decendant selectors are
+      used, but very sparingly.
+    </p>
+
+    <h2>Keyboard focus</h2>
+    <p>
+      All components should display focus outlines in a consistent way.
+      Read more in the <a href="keyboard-focus/">focus guide</a>.
+    </p>
+  </div>
+  <div class="col c4 rl-c6 rxl-c8">
+    <ul id="toc">
+    </ul>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="action-buttons">
+  <div class="col c4">
+    <h2>Action buttons</h2>
+    <p>
+      Actions buttons are links or buttons that appear as text (without chrome).
+      Action buttons are created with the <code>action-btn</code> class name:
+    </p>
+    <div class="insert-snippet" data-example-id="action-ex1"></div>
+    <p>
+      If the action is composed of several items, apply (or wrap them with) the
+      <code>action-item</code> class for alignment and spacing between.
+    </p>
+    <div class="insert-snippet" data-example-id="action-ex2"></div>
+    <p>
+      Action items are vertically aligned to top,
+      but if you need a baseline alignment instead, apply the <code>action-vb</code>
+      class to the action.
+    </p>
+    <div class="insert-snippet" data-example-id="action-ex4"></div>
+    <p>
+      Action buttons can be disabled, which will disable hover effect, and dim color.
+    </p>
+    <div class="insert-snippet" data-example-id="action-ex5"></div>
+
+  </div>
+  <div class="col c4 light">
+    <div class="row">
+      <div class="col">
+        <p id="action-ex1">
+          <a href="#" class="action-btn">Play</a>
+        </p>
+        <p id="action-ex2">
+          <a href="#" class="action-btn">
+            <svg class="icon action-item" aria-hidden="true" role="presentation"><use xlink:href="#icon-play-cl"/></svg>
+            <span class="action-item">Play</span>
+          </a>
+        </p>
+        <div id="action-ex4">
+          <h1>
+            <button class="action-btn action-vb">
+              <svg class="icon icon-xl action-item" aria-hidden="true" role="presentation"><use xlink:href="#icon-play-48px"/></svg>
+            </button>
+            <span>Nitimen</span>
+          </h1>
+        </div>
+        <p id="action-ex5">
+          <button class="action-btn" disabled>Play</button>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="banner">
+  <div class="col c4">
+    <h2>Banner elements</h2>
+    <p>
+      Banner elements are like media elements, except more limited. It
+      consists of some kind of graphic and some text, which is aligned in
+      the middle vertically. The graphic can sit on either the left or right
+      side. This component can typically be used for logos, badges and
+      banners.
+    </p>
+    <div class="insert-snippet" data-example-id="banner-example"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="banner-example">
+      <p class="banner">
+        <img src="images/lazy-cat.jpg" width="200" class="banner-graphic">
+        <span class="banner-text">Your favorite kitten</span>
+      </p>
+      <div class="mod banner">
+        <h3 class="banner-text">Your favorite kitten</h3>
+        <img src="images/lazy-cat.jpg" width="200" class="banner-graphic">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="big-input">
+  <div class="col c4">
+    <h2>Big inputs</h2>
+    <p>
+      Big inputs wraps text fields, textareas or other compontents and
+      give them a distinctive look. They can also be combined with actions
+      and icons.
+    </p>
+    <p>
+      Remember to add the <code>focusable</code> class to the element,
+      and <code>focusable-main</code> to the input element for the focus
+      outlines to work properly.
+    </p>
+  </div>
+  <div class="col c4 light"></div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      As an input:
+    </p>
+    <div class="insert-snippet" data-example-id="big-input-ex"></div>
+  </div>
+  <div class="col c4 light" id="ex123">
+    <p>&nbsp;</p>
+    <div class="mod" id="big-input-ex">
+      <span class="bi focusable">
+        <input type="search" class="bi-input focusable-main" value="abc...">
+        <svg class="icon" aria-hidden="true" role="presentation">
+          <use xlink:href="#icon-search"/>
+        </svg>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      ...or a textarea:
+    </p>
+    <div class="insert-snippet" data-example-id="big-input-ex2"></div>
+  </div>
+  <div class="col c4 light">
+    <p>&nbsp;</p><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="big-input-ex2">
+      <span class="bi focusable">
+        <textarea class="bi-input focusable-main">abc...</textarea>
+        <svg class="icon" aria-hidden="true" role="presentation">
+          <use xlink:href="#icon-search"/>
+        </svg>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      You can include an action as well:
+    </p>
+    <div class="insert-snippet" data-example-id="big-input-ex3"></div>
+  </div>
+  <div class="col c4 light">
+    <p>&nbsp;</p><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="big-input-ex3">
+      <span class="bi focusable">
+        <input type="search" class="bi-input focusable-main" value="abc...">
+        <svg class="icon" aria-hidden="true" role="presentation">
+          <use xlink:href="#icon-search"/>
+        </svg>
+        <a href="#" class="bi-action">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-x-cl"/>
+          </svg>
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Expanding text areas can be used
+    </p>
+    <div class="insert-snippet" data-example-id="big-input-ex4"></div>
+  </div>
+  <div class="col c4 light">
+    <p>&nbsp;</p><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="big-input-ex4">
+      <span class="bi focusable">
+        <span class="elastic-input bi-input">
+          <span class="sizer">abc...<br></span>
+          <textarea class="input focusable-main">abc...</textarea>
+        </span>
+        <svg class="icon" aria-hidden="true" role="presentation">
+          <use xlink:href="#icon-search"/>
+        </svg>
+        <a href="#" class="bi-action">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-x-cl"/>
+          </svg>
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Big inputs can have predictions:
+    </p>
+    <div class="insert-snippet" data-example-id="big-prediction"></div>
+  </div>
+  <div class="col c4 light">
+    <p>&nbsp;</p><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="big-prediction">
+      <span class="bi">
+        <div class="predictive-input focusable bi-input">
+          <span class="pi-current-input input"></span>
+          <input type="search" class="focusable-main pi-input input" value="be">
+          <input type="text" class="pi-prediction input" value="begravelse">
+        </div>
+        <svg class="icon" role="presentation" aria-hidden="true">
+          <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-search"></use>
+        </svg>
+        <button class="bi-action action-btn" type="button">
+          <svg class="icon" role="presentation" aria-hidden="true">
+            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-x"></use>
+          </svg>
+        </button>
+        <input type="submit" class="hide" data-reactid=".0.1.1.0.0.3">
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Padded big inputs (aka even bigger inputs)</h3>
+    <p>
+      Use for e.g. mobile search boxes.
+    </p>
+    <div class="insert-snippet" data-example-id="bigger-input-ex"></div>
+  </div>
+  <div class="col c4 light" id="ex123">
+    <p>&nbsp;</p>
+    <div class="mod" id="bigger-input-ex">
+      <span class="bi bi-padded focusable">
+        <input type="search" class="bi-input focusable-main" value="abc...">
+        <svg class="icon icon-l" aria-hidden="true" role="presentation">
+          <use xlink:href="#icon-search"/>
+        </svg>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Force light color theme
+    </p>
+    <div class="insert-snippet" data-example-id="bigger-whiter-input-ex"></div>
+  </div>
+  <div class="col c4 light" id="ex123">
+    <p>&nbsp;</p>
+    <div class="mod" id="bigger-whiter-input-ex">
+      <span class="bi bi-padded bi-light focusable">
+        <input type="search" class="bi-input focusable-main" value="abc...">
+        <svg class="icon icon-l" aria-hidden="true" role="presentation">
+          <use xlink:href="#icon-search"/>
+        </svg>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Padded big predictions</h3>
+    <p>
+      Use for e.g. mobile search boxes.
+    </p>
+    <div class="insert-snippet" data-example-id="bigger-prediction-ex"></div>
+  </div>
+  <div class="col c4 light" id="ex123">
+    <p>&nbsp;</p>
+    <div class="mod" id="bigger-prediction-ex">
+      <span class="bi bi-padded">
+        <div class="predictive-input focusable bi-input">
+          <span class="pi-current-input input"></span>
+          <input type="search" class="focusable-main pi-input input" value="be">
+          <input type="text" class="pi-prediction input" value="begravelse">
+        </div>
+        <svg class="icon" role="presentation" aria-hidden="true">
+          <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-search"></use>
+        </svg>
+        <button class="bi-action action-btn" type="button">
+          <svg class="icon" role="presentation" aria-hidden="true">
+            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-x"></use>
+          </svg>
+        </button>
+        <input type="submit" class="hide" data-reactid=".0.1.1.0.0.3">
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Command mode inputs</h3>
+    <p>
+      Use for OQLT command mode.
+    </p>
+    <div class="insert-snippet" data-example-id="oqlt-mode-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <p>&nbsp;</p>
+    <div class="mod" id="oqlt-mode-ex">
+      <span class="bi command-mode">
+        <div class="predictive-input focusable bi-input">
+          <span class="pi-current-input input"></span>
+          <input type="search" class="focusable-main pi-input input" value="l">
+          <input type="text" class="pi-prediction input" value="lol">
+        </div>
+        <span class="cm-label dark">
+          <svg class="icon" role="presentation" aria-hidden="true">
+            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-right-hand-path"></use>
+          </svg>
+          <span class="cm-text">lol</span>
+        </span>
+        <button class="bi-action action-btn" type="button">
+          <svg class="icon" role="presentation" aria-hidden="true">
+            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-x"></use>
+          </svg>
+        </button>
+        <input type="submit" class="hide" data-reactid=".0.1.1.0.0.3">
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4" id="big-input-mega">
+    <h3>Mega size</h3>
+    <p>
+      Add the <code>bi-mega</code> class to the container for extra hugeness.
+    </p>
+    <div class="insert-snippet" data-example-id="oqlt-mode-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <p>&nbsp;</p>
+    <div class="mod" id="oqlt-mode-ex">
+      <span class="bi bi-mega command-mode">
+        <div class="predictive-input focusable bi-input">
+          <span class="pi-current-input input"></span>
+          <input type="search" class="focusable-main pi-input input" value="l">
+          <input type="text" class="pi-prediction input" value="lol">
+        </div>
+        <span class="cm-label dark">
+          <svg class="icon" role="presentation" aria-hidden="true">
+            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-right-hand-path"></use>
+          </svg>
+          <span class="cm-text">lol</span>
+        </span>
+        <button class="bi-action action-btn" type="button">
+          <svg class="icon" role="presentation" aria-hidden="true">
+            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-x"></use>
+          </svg>
+        </button>
+        <input type="submit" class="hide" data-reactid=".0.1.1.0.0.3">
+      </span>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="body-text">
+  <div class="col c4">
+    <h2>Body copy</h2>
+    <p>
+      Body copy examples. Regular text in <code>p</code> elements are styled
+      with 16 px Roboto Light as seen in the middle paragraph. Some classes
+      exist to modify the type, see examples below and on the right.
+    </p>
+        <pre class="lang-markup"><code>&lt;p class="text-l">
+          Large text
+          &lt;/p></code></pre>
+        <pre class="lang-markup"><code>&lt;p class="text-s">
+          Small text
+          &lt;/p></code></pre>
+        <pre class="lang-markup"><code>&lt;p class="text-xs">
+          Very small text
+          &lt;/p></code></pre>
+        <pre class="lang-markup"><code>&lt;p class="text-s subtle">
+          Small, subtle text
+          &lt;/p></code></pre>
+        <pre class="lang-markup"><code>&lt;p class="text-s vsubtle">
+          Small, very subtle text
+          &lt;/p></code></pre>
+        <pre class="lang-markup"><code>&lt;p class="text-s dimmed">
+          Small, dimmed text
+          &lt;/p></code></pre>
+        <pre class="lang-markup"><code>&lt;p class="text-s strong">
+          Small, strong text
+          &lt;/p></code></pre>
+    <p>
+      Large blocks of text become very hard to read in very wide columns.
+      Wrap text in an element with the class <code>readable</code> to ensure
+      that lines stay within reasonable widths.
+    </p>
+  </div>
+  <div class="col c4 light">
+    <p>
+      Default body copy, Roboto Light 16px — Onar ONARHEIM (mv): Akergruppens
+      stilling 1973 solid. Investeringsboomen i shipping etter stengning av
+      Suez. Psykoseartet kontrahering blant rederne. Fred Olsen unntatt.
+      Solgte sine skip til Østen. - 6 dagerskrigens ettervirkninger.
+      Oljekrisen. Kanselleringen av inngåtte byggekontrakter og
+      konsekvensene av dette for Aker og underlevendarører. Akers største
+      kunde Hilmar Reksten.
+    </p>
+    <p class="text-l">
+      Large text, Etica Light 24px — I Nitimen i dag: Vi får besøk av Trude
+      Teige. Så kommer Elin Furubotn, for å snakke om sitt nye album. Helene
+      Uri tar turen for å fortelle oss om nye ord, som har dukket opp.
+      Reporter Øyvind er en tur i skogen, for å snakke med Torbjørn
+      Ekelund...
+    </p>
+    <p class="text-s">
+      Small text<br>
+      Roboto Light 14px — Talking Heads + Brian Eno<br>
+      David Byrne<br>
+      NONRT066796CD0009<br>
+      22:56:17-23:00:01<br>
+      00:03:44
+    </p>
+    <p class="text-s subtle">
+      Small, subtle text
+    </p>
+    <p class="text-s vsubtle">
+      Small, very subtle text
+    </p>
+    <p class="text-s dimmed">
+      Small, dimmed text
+    </p>
+    <p class="text-s strong">
+      Small, strong text
+    </p>
+    <div class="readable">
+      <p>
+        This is text inside a <code>div</code> that has
+        the <code>readable</code> class. If you browse this page on a really
+        big screen, you will notice that this line is not allowed to become
+        obscenely long. It makes it more pleasurable to read.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="buttons">
+  <div class="col c4">
+    <h2>Buttons</h2>
+    <p>
+      Buttons come in two varieties: <code>btn-primary</code> and
+      <code>btn-secondary</code>. Use with the <code>btn</code> class.
+    </p>
+    <div class="insert-snippet" data-example-id="button-ex1"></div>
+    <div class="insert-snippet" data-example-id="button-ex2"></div>
+    <p>
+      Buttons can also be made more compact by applying the <code>btn-compact</code>
+      class. This can be useful for buttons that only display an icon.
+    </p>
+    <div class="insert-snippet" data-example-id="button-ex3"></div>
+    <p>
+      All buttons can be made full-width by applying
+      the <code>btn-big</code> class.
+    </p>
+    <div class="insert-snippet" data-example-id="button-ex4"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <p>&nbsp;</p><!-- Cheating to align code example with text, not heading -->
+    <div class="row">
+      <div class="col c12 rl-c3 rxl-c2">
+        <div class="mod" id="button-ex1">
+          <button class="btn btn-primary">Primær</button>
+        </div>
+      </div>
+      <div class="col c12 rl-c3 rxl-c2">
+        <div class="mod" id="button-ex2">
+          <button class="btn btn-secondary">Sekundær</button>
+        </div>
+      </div>
+      <div class="col c12 rl-c3 rxl-c2">
+        <div class="mod" id="button-ex3">
+          <button class="btn btn-secondary btn-compact">
+            <svg class="icon" aria-hidden="true" role="presentation">
+              <use xlink:href="#icon-checkmark"></use>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col c12 rl-c12 rxl-c12">
+        <div class="mod" id="button-ex4">
+          <button class="btn btn-secondary btn-big">Stor knapp</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h2>Tight/small buttons</h2>
+    <p>
+      Buttons also come in a tighter version. Use the
+      <code>btn-tight</code> class with either
+      <code>btn-primary</code> or <code>btn-secondary</code>.
+    </p>
+    <div class="insert-snippet" data-example-id="button-ex1-1"></div>
+    <div class="insert-snippet" data-example-id="button-ex1-2"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <p>&nbsp;</p><!-- Cheating to align code example with text, not heading -->
+    <div class="row">
+      <div class="col c12 rl-c3 rxl-c2">
+        <div class="mod" id="button-ex1-1">
+          <button class="btn-tight btn-primary">Primær</button>
+        </div>
+      </div>
+      <div class="col c12 rl-c3 rxl-c2">
+        <div class="mod" id="button-ex1-2">
+          <button class="btn-tight btn-secondary">Sekundær</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h2>Buttons with icons</h2>
+    <p>
+      Apply the <code>.btn-icon-left</code> class to properly align an
+      icon placed to the left of the text.
+    </p>
+
+    <p>
+      Similarly, use the <code>.btn-icon-right</code> class for buttons
+      with icons placed to the right.
+    </p>
+    <div class="insert-snippet" data-example-id="button-icon-ex1"></div>
+    <div class="insert-snippet" data-example-id="button-icon-ex2"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <p>&nbsp;</p><!-- Cheating to align code example with text, not heading -->
+    <div class="row">
+      <div class="col c12">
+        <div class="mod related" id="button-icon-ex1">
+          <button class="btn btn-primary btn-icon-left item">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-back"/></svg>
+            Left
+          </button>
+          <button class="btn btn-secondary btn-icon-right item">
+            Right
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-link"/></svg>
+          </button>
+        </div>
+        <div class="mod related" id="button-icon-ex2">
+          <button class="btn-tight btn-primary btn-icon-left item">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-back"/></svg>
+            Tight left
+          </button>
+          <button class="btn-tight btn-secondary btn-icon-right item">
+            Tight right
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-link"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Buttons can be created with links as well:
+    </p>
+    <div class="insert-snippet" data-example-id="button-ex5"></div>
+    <div class="insert-snippet" data-example-id="button-ex6"></div>
+    <div class="insert-snippet" data-example-id="button-ex7"></div>
+    <div class="insert-snippet" data-example-id="button-ex8"></div>
+  </div>
+  <div class="col c4 light">
+    <p>&nbsp;</p><!-- Cheating to align code example with text, not heading -->
+    <div class="row">
+      <div class="col c12 rl-c3 rxl-c2">
+        <div class="mod" id="button-ex5">
+          <a href="#" class="btn btn-primary">Primær</a>
+        </div>
+      </div>
+      <div class="col c12 rl-c3 rxl-c2">
+        <div class="mod" id="button-ex6">
+          <a href="#" class="btn btn-secondary">Sekundær</a>
+        </div>
+      </div>
+      <div class="col c12 rl-c3 rxl-c2">
+        <div class="mod" id="button-ex7">
+          <a href="#" class="btn btn-secondary btn-compact">
+            <svg class="icon" aria-hidden="true" role="presentation">
+              <use xlink:href="#icon-checkmark"></use>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col c12 rl-c12 rxl-c12">
+        <div class="mod" id="button-ex8">
+          <a href="#" class="btn btn-secondary btn-big">Stor knapp</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="colors">
+  <div class="col c4">
+    <h2>Colors</h2>
+    <p>
+      Various classes to tweak colors and backgrounds of elements.
+    </p>
+    <div class="insert-snippet" data-example-id="bghl-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to get example aligned with text, not heading -->
+    <p>&nbsp;</p>
+    <div id="bghl-ex">
+      <div class="mod bghl">
+        <div class="bd">
+          <p>
+            Text on yellow background, used to illustrate something in edit
+            modus/recently changed.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <div class="insert-snippet" data-example-id="warn-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <div id="warn-ex" class="mod">
+      <div class="row warn text-s tight-s">
+        <p class="right">
+          <button class="action-btn">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-x"/></svg>
+          </button>
+        </p>
+        <p>
+          Feil ved utføring av handlingen, <a href="#">prøv igjen</a>.
+        <p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <div class="insert-snippet" data-example-id="info-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <div id="info-ex" class="mod">
+      <div class="row info text-s tight-s">
+        <p class="right">
+          <button class="action-btn">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-x"/></svg>
+          </button>
+        </p>
+        <p>
+          Handlingen ble utført, <a href="#">angre</a>.
+        <p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="container-16x9">
+  <div class="col c4">
+    <h2>16:9 containers</h2>
+    <p>
+      Make any container a 16:9 container. To center some content inside it,
+      combine with the <code>pos-center</code> and <code>fill</code> (100% width/height).
+    </p>
+    <div class="insert-snippet" data-example-id="c16x9_1"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="row">
+      <div class="col">
+        <div id="c16x9_1">
+          <div class="mod">
+            <div class="container16x9 invert">
+              <div class="pos-center fill">
+                <div>
+                  <h2>Look, ma</h2>
+                  <p>I'm a 16:9 container</p>
+                  <p>
+                    Why the extra div? Direct children
+                    of <code>pos-center</code> are centered with flexbox.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="ctx-menu">
+  <div class="col c4">
+    <h2>Context menus</h2>
+    <div class="insert-snippet" data-example-id="ctx-menu-example"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <div id="ctx-menu-example" class="mod">
+      <div class="border-box text-s">
+        <div class="ctx-menu">
+          <div class="ctx-menu-label">
+            Overskrift / label
+          </div>
+          <div class="ctx-menu-item">
+            Meny-element
+          </div>
+          <div class="ctx-menu-item">
+            <span class="notification right">3</span>
+            Med varsling
+          </div>
+          <div class="ctx-menu-item ctx-menu-item-selected">
+            Valgt element
+          </div>
+          <div class="ctx-menu-item">
+            Nok et element
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="datepicker">
+  <div class="col c4">
+    <h2>Date picker</h2>
+    <p>
+      Styled from the previous design.
+    </p>
+    <div class="insert-snippet" data-example-id="calendar-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating, for alignment -->
+    <p>&nbsp;</p>
+    <div class="mod" id="calendar-ex">
+
+      <div class="expco">
+        <input type="text" class="expco-title" placeholder="Dato (YYYYMMDD)">
+        <button class="action-btn right expco-expand">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-calendar"/>
+          </svg>
+        </button>
+
+        <div class="expco-body bd">
+          <div class="mod mbs pls">
+            <label for="year" class="sr-only">År</label>
+            <input id="year" type="number" size="4" class="cal-year text-input" value="2014">
+          </div>
+          <div class="row">
+            <div class="col left tight-s alright">
+              <p class="text-xs">
+                <button class="action-btn">Jan<span class="show-m">uar</span></button><br>
+                <button class="action-btn">Febr<span class="show-m">uar</span></button><br>
+                <button class="action-btn">Mars</button><br>
+                <button class="action-btn">April</button><br>
+                <button class="action-btn">Mai</button><br>
+                <button class="action-btn">Juni</button><br>
+                <button class="action-btn">Juli</button><br>
+                <button class="action-btn cal-selected-mon">Aug<span class="show-m">ust</span></button><br>
+                <button class="action-btn">Sep<span class="show-m">tember</span></button><br>
+                <button class="action-btn">Okt<span class="show-m">ober</span></button><br>
+                <button class="action-btn">Nov<span class="show-m">ember</span></button><br>
+                <button class="action-btn">Des<span class="show-m">ember</span></button><br>
+              </p>
+            </div>
+
+            <div class="col">
+              <div class="mod mts mln">
+                <table class="table cal-table">
+                  <thead>
+                  <tr class="text-xs">
+                    <th class="s1-7 subtle">M<span class="show-m">AN</span></th>
+                    <th class="s1-7 subtle">T<span class="show-m">IR</span></th>
+                    <th class="s1-7 subtle">O<span class="show-m">NS</span></th>
+                    <th class="s1-7 subtle">T<span class="show-m">OR</span></th>
+                    <th class="s1-7 subtle">F<span class="show-m">RE</span></th>
+                    <th class="s1-7 subtle">L<span class="show-m">ØR</span></th>
+                    <th class="s1-7 subtle">S<span class="show-m">ØN</span></th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td class="s1-7 dimmed"><p><button class="action-btn">29</button></p></td>
+                    <td class="s1-7 dimmed"><p><button class="action-btn">30</button></p></td>
+                    <td class="s1-7 dimmed"><p><button class="action-btn">31</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">1</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">2</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">3</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">4</button></p></td>
+                  </tr>
+                  <tr>
+                    <td class="s1-7"><p><button class="action-btn">5</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">6</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">7</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">8</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">9</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">10</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">11</button></p></td>
+                  </tr>
+                  <tr>
+                    <td class="s1-7"><p><button class="action-btn">12</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">13</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">14</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">15</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">16</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">17</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">18</button></p></td>
+                  </tr>
+                  <tr>
+                    <td class="s1-7"><p><button class="cal-selected action-btn">19</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">20</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">21</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">22</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">23</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">24</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">25</button></p></td>
+                  </tr>
+                  <tr>
+                    <td class="s1-7"><p><button class="action-btn">26</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">27</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">28</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">29</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">30</button></p></td>
+                    <td class="s1-7"><p><button class="action-btn">31</button></p></td>
+                    <td class="s1-7 dimmed"><p><button class="action-btn">1</button></p></td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="elastic-inputs">
+  <div class="col c4">
+    <h2>Expanding text areas</h2>
+    <p>
+      The text areas are completely unstyled (no background, color, or font styles),
+      and should be used in conjunction with <code>.text-input</code>, <code>.bi</code> (big inputs),
+      or other components that will give style to the text area.
+    </p>
+    <p>
+      Auto-expanding text areas requires additional JavaScript.
+    </p>
+    <div class="insert-snippet" data-example-id="expanding-textareas-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <p>Empty input (using <code>.ba</code> to apply borders)</p>
+    <p id="expanding-textareas-ex">
+      <span class="elastic-input ba">
+        <span class="sizer"><br></span>
+        <textarea class="input"></textarea>
+      </span>
+    </p>
+    <p>With some text</p>
+    <p>
+      <span class="elastic-input ba rl-c3">
+        <span class="sizer">Here is some text that makes the whole thing occupy more than one line<br></span>
+        <textarea class="input">Here is some text that makes the whole thing occupy more than one line</textarea>
+      </span>
+    </p>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4" id="elastic-material">
+    <p>Expanding material design inputs</p>
+    <div class="insert-snippet" data-example-id="expanding-mdi-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <div id="expanding-mdi-ex" class="mod">
+      <div class="mdi">
+        <a href="#" class="action-btn perma-action">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-x-cl"/>
+          </svg>
+        </a>
+        <span class="mdinput elastic-input">
+          <span class="elastic-input">
+            <span class="sizer"><br></span>
+            <textarea class="input"></textarea>
+          </span>
+        </span>
+        <a href="#" class="action-btn edit-action" tabindex="-1">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-checkmark"/>
+          </svg>
+        </a>
+        <a href="#" class="action-btn view-action">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-undo"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4" id="elastic-text">
+    <p>
+      Expanding text inputs. Add the class <code>focusable-focus</code> to
+      the outer span on text area focus in order to get the focus effect.
+    </p>
+    <div class="insert-snippet" data-example-id="expanding-text-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <div id="expanding-text-ex" class="mod">
+      <span class="text-input elastic-input focusable">
+        <span class="elastic-input">
+          <span class="sizer"><br></span>
+          <textarea class="input focusable-main"></textarea>
+        </span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4" id="elastic-conflict">
+    <p>
+      Expanding text inputs. Add the class <code>focusable-focus</code> to
+      the outer span on text area focus in order to get the focus effect.
+    </p>
+    <div class="insert-snippet" data-example-id="expanding-conflict-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <div id="expanding-conflict-ex" class="mod">
+      <span class="text-input conflict-input elastic-input focusable">
+        <span class="elastic-input">
+          <span class="sizer"><br></span>
+          <textarea class="input focusable-main" placeholder="Inneholder to ulike verdier, endringer vil overskrive begge"></textarea>
+        </span>
+        <svg class="icon fg-warn" aria-hidden="true" role="presentation"><use xlink:href="#icon-fail"/></svg>
+      </span>
+    </div>
+  </div>
+</div>
+
+<script>
+  onReady(function () {
+    qsa('.elastic-input .input').forEach(function (input) {
+      var sizer = input.parentNode.querySelector('.sizer');
+      input.addEventListener('input', function () {
+        sizer.innerHTML = input.value.replace(/\n/g, '<br>') + '<br>';
+      });
+    })
+  });
+</script>
+
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="expco">
+  <div class="col c4">
+    <h2>Expco - Expand/collapse boxes</h2>
+    <p>
+      An alternative to select boxes, the "expco" allows the user to expand
+      the options by forcing content below to move down.
+    </p>
+    <h3>Collapsed, with placeholder</h3>
+    <div class="insert-snippet" data-example-id="expco-ex1"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="expco-ex1">
+      <div class="expco subtle">
+        <span class="expco-title">Innholdstyper</span>
+        <a href="#" class="action-btn right expco-expand subtle">
+          <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-down"/></svg>
+        </a>
+        <div class="expco-body bd">
+          <p class="expco-item">
+            <a href="#" class="action-btn">
+              <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox-on"/></svg>
+              <svg class="icon mhs" aria-hidden="true" role="presentation"><use xlink:href="#icon-program"/></svg>
+              Program
+            </a>
+          </p>
+          <p class="expco-item">
+            <a href="#" class="action-btn">
+              <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+              <svg class="icon mhs" aria-hidden="true" role="presentation"><use xlink:href="#icon-radio-theatre"/></svg>
+              Radioteater
+            </a>
+          </p>
+          <p class="expco-item">
+            <a href="#" class="action-btn">
+              <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+              <svg class="icon mhs" aria-hidden="true" role="presentation"><use xlink:href="#icon-recital"/></svg>
+              Opplesning
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Expanded</h3>
+    <p>
+      Add the class <code>expco-expanded</code> to the <code>expco</code> element,
+      and its <code>expco-body</code> will become visible.
+    </p>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <div class="mod">
+      <div class="expco expco-expanded subtle">
+        <span class="expco-title">Innholdstyper</span>
+        <a href="#" class="action-btn right expco-expand subtle">
+          <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-up"/></svg>
+        </a>
+        <div class="expco-body bd">
+          <p class="expco-item">
+            <a href="#" class="action-btn">
+              <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox-on"/></svg>
+              <svg class="icon mhs" aria-hidden="true" role="presentation"><use xlink:href="#icon-program"/></svg>
+              Program
+            </a>
+          </p>
+          <p class="expco-item">
+            <a href="#" class="action-btn">
+              <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+              <svg class="icon mhs" aria-hidden="true" role="presentation"><use xlink:href="#icon-radio-theatre"/></svg>
+              Radioteater
+            </a>
+          </p>
+          <p class="expco-item">
+            <a href="#" class="action-btn">
+              <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+              <svg class="icon mhs" aria-hidden="true" role="presentation"><use xlink:href="#icon-recital"/></svg>
+              Opplesning
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Title as input</h3>
+    <p>
+      Text inputs can be used as the title component as well. Remember to
+      add <code>focusable</code> to the <code>expco</code>-element and
+      <code>focusable-main</code> to the input element to ensure proper
+      focus outlines.
+    </p>
+    <div class="insert-snippet" data-example-id="expco-ex2"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="expco-ex2">
+      <div class="expco expco-expanded focusable subtle">
+        <input type="text" class="expco-title focusable-main" placeholder="Filtrer innholdstyper"/>
+        <a href="#" class="action-btn right expco-expand subtle">
+          <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-up"/></svg>
+        </a>
+        <div class="expco-body bd">
+          <p class="expco-item">
+            <a href="#" class="action-btn">
+              <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox-on"/></svg>
+              <svg class="icon mhs" aria-hidden="true" role="presentation"><use xlink:href="#icon-program"/></svg>
+              Program
+            </a>
+          </p>
+          <p class="expco-item">
+            <a href="#" class="action-btn">
+              <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+              <svg class="icon mhs" aria-hidden="true" role="presentation"><use xlink:href="#icon-radio-theatre"/></svg>
+              Radioteater
+            </a>
+          </p>
+          <p class="expco-item">
+            <a href="#" class="action-btn">
+              <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+              <svg class="icon mhs" aria-hidden="true" role="presentation"><use xlink:href="#icon-recital"/></svg>
+              Opplesning
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Expanded, two column options</h3>
+    <div class="insert-snippet" data-example-id="expco-ex3"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="expco-ex3">
+      <div class="expco expco-expanded subtle">
+        <span class="expco-title">Kanaler</span>
+        <a href="#" class="action-btn right expco-expand subtle">
+          <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-up"/></svg>
+        </a>
+        <div class="expco-body bd">
+          <a href="#" class="action-btn expco-item grid-unit">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox-on"/></svg>
+            NRK P1
+          </a>
+          <a href="#" class="action-btn expco-item grid-unit">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+            NRK P2
+          </a>
+          <a href="#" class="action-btn expco-item grid-unit">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+            NRK P3
+          </a>
+          <a href="#" class="action-btn expco-item grid-unit">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+            NRK Sàpmi
+          </a>
+          <a href="#" class="action-btn expco-item grid-unit">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+            NRK Klassisk
+          </a>
+          <a href="#" class="action-btn expco-item grid-unit">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+            NRK Alltid Nyheter
+          </a>
+          <a href="#" class="action-btn expco-item grid-unit">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+            NRK mP3
+          </a>
+          <a href="#" class="action-btn expco-item grid-unit">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+            NRK Folkemusikk
+          </a>
+          <a href="#" class="action-btn expco-item grid-unit">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+            NRK Super
+          </a>
+          <a href="#" class="action-btn expco-item grid-unit">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+            NRK Båtvær
+          </a>
+          <a href="#" class="action-btn expco-item grid-unit">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+            NRK Jazz
+          </a>
+          <a href="#" class="action-btn expco-item grid-unit">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+            NRK Sport
+          </a>
+          <a href="#" class="action-btn expco-item grid-unit">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+            NRK Stortinget
+          </a>
+          <a href="#" class="action-btn expco-item grid-unit">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+            NRK Urørt
+          </a>
+          <a href="#" class="action-btn expco-item grid-unit">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+            NRK P1+
+          </a>
+          <a href="#" class="action-btn expco-item grid-unit">
+            <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+            NRK P13
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row section example" id="forms">
+  <div class="col c4">
+    <h2>Forms</h2>
+    <p>
+      Simple form fields are used for search forms etc. For input elements
+      used in creating/modifying data, see the section below.
+    </p>
+  </div>
+  <div class="col c4 light"></div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Selects</h3>
+    <p>
+      We need to wrap selects to be able to style them
+      properly. This means that we also have to manage
+      focus outlines ourselves, so remember to add the
+      <code>.focusable</code> class to the wrapper element,
+      and the <code>focusable-main</code> to the the select
+      element. (see <a href="keyboard-focus">Keyboard focus</a>
+      for more info)
+    </p>
+    <div class="insert-snippet" data-example-id="select-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <form id="select-ex" class="mod">
+      <div class="select focusable">
+        <select name="program" class="focusable-main">
+          <option value="Program">Program</option>
+          <option value="Radioteater">Radioteater</option>
+        </select>
+        <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-down"/></svg>
+      </div>
+
+      <div class="select focusable disabled">
+        <select name="program" class="focusable-main" disabled>
+          <option value="Program">I am disabled</option>
+          <option value="Radioteater">Radioteater</option>
+        </select>
+        <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-down"/></svg>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Inline selects</h3>
+    <div class="insert-snippet" data-example-id="select-ex2"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <form id="select-ex2" class="mod">
+      <div class="inline-select">
+        <select name="program">
+          <option value="Program">Program</option>
+          <option value="Radioteater">Radioteater</option>
+        </select>
+        <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-down"/></svg>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Text inputs</h3>
+    <div class="insert-snippet" data-example-id="input-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <form id="input-ex" class="mod">
+      <input type="text" class="text-input" value="2013.09.25">
+    </form>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Edited text input</h3>
+    <div class="insert-snippet" data-example-id="inputhl-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <form id="inputhl-ex" class="mod">
+      <input type="text" class="text-input bghl" value="2013.09.25">
+      <div class="select bghl focusable">
+        <select name="program" class="focusable-main">
+          <option value="Program">Program</option>
+          <option value="Radioteater">Radioteater</option>
+        </select>
+        <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-down"/></svg>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Invalid text input</h3>
+    <div class="insert-snippet" data-example-id="inputerr-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <form id="inputerr-ex" class="mod">
+      <div class="error">
+        <label>
+          Klokkeslett
+          <input type="text" class="text-input" size="10" placeholder="tt:mm:ss" value="ti over sju">
+        </label>
+        <span class="error-msg text-s" >Må skrives som tt:mm:ss</span>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Text input with warning</h3>
+    <div class="insert-snippet" data-example-id="inputwarn-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <form id="inputwarn-ex">
+      <div class="warning tight-s">
+        <p>
+          <label>
+            Klokkeslett
+            <input type="text" class="text-input" size="10" placeholder="tt:mm:ss" value="14:03:10">
+          </label>
+        </p>
+        <p class="warning-msg text-s">
+          <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-fail"/></svg>
+          Feltet er ikke lagt til
+        </p>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Text input with conflict</h3>
+    <div class="insert-snippet" data-example-id="input-conflict-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <form id="input-conflict-ex">
+      <p>
+        <span class="container">
+          <input type="text" class="text-input input-full conflict-input" placeholder="Inneholder to ulike verdier, endringer vil overskrive begge">
+          <svg class="icon fg-warn" aria-hidden="true" role="presentation"><use xlink:href="#icon-fail"/></svg>
+        </span>
+      </p>
+    </form>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Checkboxes</h3>
+    <div class="insert-snippet" data-example-id="checkbox-ex1"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <p id="checkbox-ex1">
+      <label>
+        <span class="checkbox">
+          <input type="checkbox">
+          <svg class="icon checkbox-unchecked" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+          <svg class="icon checkbox-checked" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox-on"/></svg>
+        </span>
+        Check me
+      </label>
+    </p>
+    <p id="checkbox-ex2">
+      <label>
+        <span class="checkbox" >
+          <input type="checkbox" disabled>
+          <svg class="icon checkbox-unchecked" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+          <svg class="icon checkbox-checked" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox-on"/></svg>
+        </span>
+        Uncheckable (disabled)
+      </label>
+    </p>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Radio buttons</h3>
+    <div class="insert-snippet" data-example-id="radio-ex1"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <p id="radio-ex1">
+      <label>
+        <span class="radio">
+          <input type="radio" name="fruit">
+          <svg class="icon radio-unchecked" aria-hidden="true" role="presentation"><use xlink:href="#icon-radio-button"/></svg>
+          <svg class="icon radio-checked" aria-hidden="true" role="presentation"><use xlink:href="#icon-radio-button-on"/></svg>
+        </span>
+        Apple
+      </label>
+      <br>
+      <label>
+        <span class="radio">
+          <input type="radio" name="fruit">
+          <svg class="icon radio-unchecked" aria-hidden="true" role="presentation"><use xlink:href="#icon-radio-button"/></svg>
+          <svg class="icon radio-checked" aria-hidden="true" role="presentation"><use xlink:href="#icon-radio-button-on"/></svg>
+        </span>
+        Orange
+      </label>
+    </p>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Fields with labels</h3>
+    <p>
+      Wrap the field in a <code>label</code> with the
+      class <code>field</code> and add the <code>input</code> class to the
+      input control inside.
+    </p>
+    <div class="insert-snippet" data-example-id="input-label-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <form id="input-label-ex" class="mod">
+      <label class="field">
+        Type
+        <input type="text" class="input text-input" value="2013.09.25">
+      </label>
+      <label class="field">
+        Kanal
+        <div class="input select focusable">
+          <select name="program" class="focusable-main">
+            <option value="Program">Program</option>
+            <option value="Radioteater">Radioteater</option>
+          </select>
+          <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-down"/></svg>
+        </div>
+      </label>
+    </form>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Controlling input widths</h3>
+    <div class="insert-snippet" data-example-id="input-size-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <form id="input-size-ex">
+      <div class="mod">
+        <label class="field">
+          Small
+          <input type="text" class="input text-input input-s" value="2013.09.25">
+        </label>
+      </div>
+      <div class="mod">
+        <label class="field">
+          Medium
+          <input type="text" class="input text-input input-m" value="2013.09.25">
+        </label>
+      </div>
+      <div class="mod">
+        <label class="field">
+          Large
+          <input type="text" class="input text-input input-l" value="2013.09.25">
+        </label>
+      </div>
+      <div class="mod">
+        <label class="field">
+          Full width
+          <input type="text" class="input text-input input-full" value="2013.09.25">
+        </label>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="grid">
+  <div class="col c4">
+    <h2>Grid flex layout</h2>
+    <p>
+      Page flex layout is controlled by two main classes, <code>flex-row</code>
+      and <code>flex-col</code>.<br>
+      The <code>flex-row</code> has additional classes for vertical alignment:<br>
+      <code>.vertical-align-top .vertical-align-bottom .vertical-align-middle .vertical-align-stretch .vertical-align-baseline</code><br>
+      And horizontal alignment:<br>
+      <code>.horizontal-align-left .horizontal-align-right .horizontal-align-center .horizontal-align-space-between .horizontal-space-around</code>
+      The <code>flex-col</code> has additional classes for vertical alignment:<br>
+      <code>.vertical-align-top .vertical-align-bottom .vertical-align-middle .vertical-space-between .vertical-space-around</code><br>
+      And horizontal alignment:<br>
+      <code>.horizontal-align-left .horizontal-align-right .horizontal-align-center</code><br>
+      To control the column width, use:<br>
+      <code>.c1, c2, c3 ... .c12</code><br>
+    </p>
+    <div class="insert-snippet" data-example-id="flex-grid-example"></div>
+    <p>
+      There is also a class <code>.c-1of24</code> for making half-width
+      columns (useful for button-only columns etc).
+    </p>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="flex-grid-example">
+      <div class="flex-row vertical-align-stretch horizontal-align-right">
+        <div class="flex-col c3 vertical-align-bottom horizontal-align-right tight-s">
+          <span class="mod">Left column</span>
+          <span class="mod">Left column</span>
+          <span class="mod">Left column</span>
+        </div>
+        <div class="flex-col c5 vertical-align-middle horizontal-align-center">
+          <span class="mod">Middle column</span>
+          <span class="mod">Middle column</span>
+        </div>
+        <div class="flex-col">
+          <span class="mod">Right column</span>
+          <span class="mod">Right column</span>
+          <span class="mod">Right column</span>
+          <span class="mod">Right column</span>
+          <span class="mod">Right column</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="grid">
+  <div class="col c4">
+    <h2>Grid layout</h2>
+    <p>
+      Page layout is controlled by two main classes, <code>row</code>
+      and <code>col</code>. Additionally, there are classes to determine the
+      width of individual columns, as well as classes to provide responsive
+      overrides (discussed below). The layout is based on a grid of 12
+      columns, and you assign each column the desired amount of columns to
+      span, e.g. <code>class="col c3"</code> for a column that spans three
+      columns. Columns float from left to right, but can be made to float
+      right with the use of the <code>right</code> class.
+    </p>
+    <div class="insert-snippet" data-example-id="column-example"></div>
+    <p>
+      There is also a class <code>.c-1of24</code> for making half-width
+      columns (useful for button-only columns etc).
+    </p>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="column-example">
+      <div class="row">
+        <div class="col c3">
+          <h2>Left column</h2>
+        </div>
+        <div class="col c5">
+          <h2>Middle column</h2>
+        </div>
+        <div class="col c4">
+          <h2>Right column</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="headings">
+  <div class="col c4">
+    <h2>Headings</h2>
+    <p>
+      Headings are among the few tags that have styles applied directly to
+      them. Headings are commonly used, so it is assumed that default styles
+      (e.g. not having to class them all) will be useful. This is still
+      currently undecided.
+    </p>
+    <p>
+      There are also classes <code>.h1</code> etc to emulate the visual
+      styles of the various headings, which can be used with any element
+      (including headings - thus enabling semantic use of headers). These
+      enable reusable components that can be shared with other projects that
+      may not use the same baseline CSS. Reusable components should not make
+      any assumptions about element styles - they should strictly rely on
+      classes with defined behavior.
+    </p>
+  </div>
+  <div class="col c4 light">
+    <h1>h1: Ethica Light 64px</h1>
+    <h2>h2: Ethica Light 24px — Nitimen</h2>
+    <h3>h3: Roboto Bold 14px Caps — Rubrikk</h3>
+    <h4>h4: Roboto Regular 14px Caps — Produksjon</h4>
+    <h5>h5: Roboto Regular 14px — Kilde: DIGAS</h5>
+    <h6 class="h1">h6 styled as an h1</h6>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div id="icon-layout" class="row example section">
+  <div class="col c4">
+    <h2>Icon layout</h2>
+    <p>
+      Icons comes in a set of predefined sizes: standard (20x20px),
+      large (30x30px) and extra large (50x50px). The icons are adjusted
+      to be displayed vertically centered along with the text context
+      that they are in:
+    </p>
+    <div class="insert-snippet" data-example-id="icon-layout-ex1"></div>
+  </div>
+  <div class="col c4 light">
+    <div id="icon-layout-ex1">
+      <p class="text-xs">
+        x-small text
+        <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-x-c"/></svg>
+        normal icon
+        <svg class="icon icon-l" aria-hidden="true" role="presentation"><use xlink:href="#icon-x-c"/></svg>
+        large icon
+        <svg class="icon icon-xl" aria-hidden="true" role="presentation"><use xlink:href="#icon-x-c"/></svg>
+        x-large icon
+      </p>
+    </div>
+    <div>
+      <p class="text-s">
+        small text
+        <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-x-c"/></svg>
+        normal icon
+        <svg class="icon icon-l" aria-hidden="true" role="presentation"><use xlink:href="#icon-x-c"/></svg>
+        large icon
+        <svg class="icon icon-xl" aria-hidden="true" role="presentation"><use xlink:href="#icon-x-c"/></svg>
+        x-large icon
+      </p>
+      <p>
+        normal text
+        <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-x-c"/></svg>
+        normal icon
+        <svg class="icon icon-l" aria-hidden="true" role="presentation"><use xlink:href="#icon-x-c"/></svg>
+        large icon
+        <svg class="icon icon-xl" aria-hidden="true" role="presentation"><use xlink:href="#icon-x-c"/></svg>
+        x-large icon
+      </p>
+      <p class="text-l">
+        large text
+        <svg class="icon" aria-hidden="true" role="presentation"><use xlink:href="#icon-x-c"/></svg>
+        normal icon
+        <svg class="icon icon-l" aria-hidden="true" role="presentation"><use xlink:href="#icon-x-c"/></svg>
+        large icon
+        <svg class="icon icon-xl" aria-hidden="true" role="presentation"><use xlink:href="#icon-x-c"/></svg>
+        x-large icon
+      </p>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="icons">
+  <div class="col c4">
+    <h2>Icons</h2>
+    <p>
+      Icons are implemented as SVG. In order to use the icons, they must
+      first be loaded on the page, then you can refer to them
+      using <code>xlink</code>. To load the icons, place the following right
+      after the opening body tag:
+    </p>
+        <pre><code class="lang-markup">&lt;div id="icon-container" class="hide">&lt;/div>
+          &lt;script src="scripts/icons.js">&lt;/script></code></pre>
+    <p>
+      The <code>div</code> will have all the available SVG icons loaded
+      inside it, allowing you to refer to the icons later:
+    </p>
+        <pre><code class="lang-markup">&lt;svg class="icon" aria-hidden="true" role="presentation">
+          &lt;use xlink:href="#icon-delete"/>
+          &lt;/svg></code></pre>
+    <p>
+      Some icons are designed to be displayed bigger than the default. Add
+      the <code>icon-l</code> class to achieve this effect:
+    </p>
+        <pre><code class="lang-markup">&lt;svg class="icon icon-l" aria-hidden="true" role="presentation">
+          &lt;use xlink:href="#icon-delete"/>
+          &lt;/svg></code></pre>
+    <p>
+      Icons can be highlighted with a blue color by adding the
+      class <code>icon-hl</code>:
+    </p>
+        <pre><code class="lang-markup">&lt;svg class="icon icon-hl" aria-hidden="true" role="presentation">
+          &lt;use xlink:href="#icon-delete"/>
+          &lt;/svg></code></pre>
+  </div>
+  <div class="col c4 light">
+    <div id="icon-placeholder"></div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="index-copy">
+  <div class="col c4">
+    <h2>Index copy</h2>
+    <p>
+      Indexed copy will pull out and hightlight a label, and otherwise
+      indent the body. The label ensures that the
+      body text is correctly indented, but is otherwised unstyled
+    </p>
+        <pre class="lang-markup"><code>&lt;p class="ic">
+          &lt;span class="ic-label"&gt;Field 1&lt;/span&gt; Lorem ipsum dolor
+          sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
+          ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+          exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+          Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+          dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+          proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+          &lt;/p>
+          &lt;p class="ic">
+          &lt;strong class="ic-label"&gt;Field 2&lt;/strong&gt; Lorem ipsum dolor
+          sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
+          ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+          exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+          Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+          dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+          proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+          &lt;/p></code></pre>
+  </div>
+  <div class="col c4 light">
+    <p class="ic">
+      <span class="ic-label">Field 1</span> Lorem ipsum dolor
+      sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
+      ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+      exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+      Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+      dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+      proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    </p>
+    <p class="ic">
+      <strong class="ic-label">Field 2</strong> Lorem ipsum dolor
+      sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
+      ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+      exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+      Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+      dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+      proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    </p>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row section example" id="layout">
+  <div class="col c4">
+    <h2>Layout and spacing</h2>
+    <p>
+      Every block element (except un-classed <code>div</code>s) have default
+      margins in all directions. This ensures consistent spacing between
+      elements. Vertical margin collapse is leveraged to get spacing above a
+      set of components, between each one, and again below the last one.
+      Spacing may be overridden to achieve specific effects, usally by using
+      the spacing-specific class names. To give a <code>div</code> element
+      the same spacing as other block elements, give it the class
+      <code>mod</code>.
+    </p>
+    <h3>Spacing classes</h3>
+    <p>
+      If you find yourself grabbing these often, it is probably a sign that
+      the default spacing rules need to be refined. Spacing classes are made
+      up from three letters: <strong>m</strong> (for margin), or <strong>p</strong>
+      (for padding), followed by one letter for the direction
+      (<strong>a</strong>ll,
+      <strong>h</strong>orizontal,
+      <strong>v</strong>ertical,
+      <strong>t</strong>op,
+      <strong>r</strong>ight,
+      <strong>b</strong>ottom,
+      <strong>l</strong>eft), followed by one letter for the size
+      (<strong>n</strong>one,
+      <strong>s</strong>mall,
+      <strong>m</strong>edium,
+      <strong>l</strong>arge).
+    </p>
+    <h3>Examples:</h3>
+    <ul>
+      <li><code>mtn</code> (no top margin)</li>
+      <li><code>mvl</code> (large top and bottom margins)</li>
+    </ul>
+    <h3>Vertical spacing for whole sections</h3>
+    <p>
+      The class <code>tight-s</code> ("tight, small") can be added to a
+      block element, and will cause all block elements inside it to have
+      smaller vertical margins than usual.
+
+      You can also add <code>htight-s or htight-xs</code> for smaller horizontal margins.
+    </p>
+  </div>
+  <div class="col c4 light"></div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Horizontal spacing for whole sections</h3>
+    <p>
+      When the default spacing is not enough, there are two more ways to
+      group content: <code>related</code> and <code>unrelated</code>. You
+      add the class name to a container element, and then the
+      class <code>item</code> to every immediate child element you want to
+      space out (usually all of them), and its horizontal margin will be
+      adjusted accordingly. The following is an example of three related
+      items followed by another action that is not related.
+    </p>
+    <div class="insert-snippet" data-example-id="unrelated"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <div id="unrelated" class="mod">
+      <div class="unrelated">
+        <div class="related item">
+          <div class="grid-box item">
+            <a href="#" class="action-btn subtle">
+              <span class="action-item">Innslag</span>
+              <svg class="icon action-item" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox-on"/></svg>
+            </a>
+          </div>
+          <div class="grid-box item">
+            <a href="#" class="action-btn subtle">
+              <span class="action-item">Live</span>
+              <svg class="icon action-item" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox"/></svg>
+            </a>
+          </div>
+          <div class="grid-box item">
+            <a href="#" class="action-btn subtle">
+              <span class="action-item">Musikk</span>
+              <svg class="icon action-item" aria-hidden="true" role="presentation"><use xlink:href="#icon-checkbox-on"/></svg>
+            </a>
+          </div>
+        </div>
+        <div class="grid-box item">
+          <a href="#" class="action-btn subtle">
+            <span class="action-item">Vis detaljer</span>
+            <svg class="icon action-item" aria-hidden="true" role="presentation"><use xlink:href="#icon-arrow-down"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="logos">
+  <div class="col c4">
+    <h2>Channel logos</h2>
+    <p>
+      Channel logos are inserted in much the same way as svg icons. However,
+      because of their irregularity, the viewbox must be explicitly
+      specified. Otherwise, the aspect ratio will not come out right.
+    </p>
+    <div class="insert-snippet" data-example-id="logo-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp</h2><!-- Cheating to get example aligned with text, not heading -->
+    <p id="logo-ex">
+      <svg class="logo" aria-hidden="true" viewBox="0 0 142.3 30">
+        <use xlink:href="#logo-nrk-klassisk"/>
+      </svg>
+    </p>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>All logos</h3>
+    <div id="logo-includes-placeholder"></div>
+  </div>
+  <div class="col c4 light">
+    <p>&nbsp;</p><!-- Cheating to align code example with text, not heading -->
+    <div id="logo-placeholder"></div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="md-inputs">
+  <div class="col c4">
+    <h2>Material design input fields</h2>
+    <p>
+      Input fields can be implemented as simple inputs, without any effects
+    </p>
+    <div class="insert-snippet" data-example-id="input-example"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="input-example">
+      <input type="text" class="mdinput" value="Simple input">
+    </div>
+  </div>
+</div>
+
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Alternatively, a little bit more crufty markup will give you some
+      subtle material design-inspired visual effects.
+    </p>
+    <div class="insert-snippet" data-example-id="material-input-example"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="material-input-example">
+      <div class="mdi">
+        <input type="text" class="mdinput" value="Material design example">
+        <span class="mdfx"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      For input elements that can be individually saved or applied, you can
+      add an action button which will be visible while editing.
+    </p>
+    <div class="insert-snippet" data-example-id="material-input-commit-example"></div>
+    <p>
+      Fields can have two actions associated with them: one that is
+      available while editing the field (<code>edit-action</code>), and one
+      that is available when the field does not have focus
+      (<code>view-action</code>).
+    </p>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="material-input-commit-example">
+      <div class="mdi">
+        <input type="text" class="mdinput" value="Example with commit button">
+        <span class="mdfx"></span>
+        <a href="#" class="action-btn edit-action" tabindex="-1">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-checkmark"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Input fields can have action buttons on the left as well. These are
+      always visible.
+    </p>
+    <div class="insert-snippet" data-example-id="material-input-perma-example"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="material-input-perma-example">
+      <div class="mdi">
+        <a href="#" class="action-btn perma-action">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-x-cl"/>
+          </svg>
+        </a>
+        <input type="text" class="mdinput" value="Example with three buttons">
+        <span class="mdfx"></span>
+        <a href="#" class="action-btn edit-action" tabindex="-1">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-checkmark"/>
+          </svg>
+        </a>
+        <a href="#" class="action-btn view-action">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-undo"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Input fields that have been recently changed are highlighted. Add
+      the <code>input-hl</code> class to the <code>mdi</code> to achieve
+      this effect.
+    </p>
+    <div class="insert-snippet" data-example-id="material-input-hl-example"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="material-input-hl-example">
+      <div class="mdi input-hl">
+        <input type="text" class="mdinput" value="Example with highlight">
+        <span class="mdfx"></span>
+        <span class="mdfx-hl"></span>
+        <a href="#" class="action-btn edit-action" tabindex="-1">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-checkmark"/>
+          </svg>
+        </a>
+        <a href="#" class="action-btn view-action">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-undo"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Sometimes users enter undesired values into our inputs. Flag
+      the <code>mdi</code> container element of those inputs with the
+      <code>error</code> class. The error message element is optional.
+    </p>
+    <div class="insert-snippet" data-example-id="material-input-error-example"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="material-input-error-example">
+      <div class="mdi error">
+        <input type="text" class="mdinput" value="Example with highlight">
+        <span class="mdfx"></span>
+        <span class="mdfx-hl"></span>
+      </div>
+      <span class="error-msg text-s">Dette gikk ikke så bra</span>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="media">
+  <div class="col c4">
+    <h2>Media elements</h2>
+    <p>
+      The media element is a concept from OOCSS. It is a generic structure
+      that can be used to solve surprisingly many component-level layouts.
+      It has a fixed-width "thing" (typically a picture, but can be
+      anything) on the left and free-floating content on the right, which
+      does not flow below the left-side content even if it is longer.
+      <a href="http://www.stubbornella.org/content/2010/06/25/the-media-object-saves-hundreds-of-lines-of-code/">Read
+        more about the media block</a>.
+    </p>
+    <div class="insert-snippet" data-example-id="media-example"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+      <div class="mod" id="media-example">
+        <div class="media">
+          <img src="images/lazy-cat.jpg" width="200" class="media-elem">
+          <div class="bd">
+            <p>
+              Here you can see a cat resting. It is probably very tired, as it
+              has apparently fallen entirely asleep. It is probably having a
+              good time.
+            </p>
+            <p>
+              This text is somewhat long in order to illustrate how the text
+              flows next to the image on the left, and never below. If you
+              cannot see it, try resizing the window smaller.
+            </p>
+          </div>
+        </div>
+      </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h2>Right-aligned media elements</h2>
+    <div class="insert-snippet" data-example-id="media-example2"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="media-example2">
+      <div class="media">
+        <img src="images/lazy-cat.jpg" width="200" class="media-elem-ext">
+        <div class="bd">
+          <p>
+            Here you can see a cat resting. It is probably very tired, as it
+            has apparently fallen entirely asleep. It is probably having a
+            good time.
+          </p>
+          <p>
+            This text is somewhat long in order to illustrate how the text
+            flows next to the image on the left, and never below. If you
+            cannot see it, try resizing the window smaller.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="mega-input">
+  <div class="col c4">
+    <h2>Mega inputs</h2>
+    <p>
+      <em>Deprecated since v13.0.0</em>. See
+      <a href="#big-input-mega">big inputs</a> with the <code>bi-mega</code> modifier.
+    </p>
+  </div>
+  <div class="col c4 light"></div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="notifications">
+  <div class="col c4">
+    <h2>Notifications</h2>
+    <p>
+      Notification count indicator. Typically used as a badge on an icon, but can
+      also be standalone, for instance on <a href="#ctx-menu">menu items</a>.
+    </p>
+    <p>
+      When used as a badge on an icon, wrap the <code>.notification</code> element
+      in a <code>.notifications</code> element. When the icon is large (<code>icon-l</code>)
+      use <code>.notifications-l</code>, and <code>.notifications-xl</code> for
+      extra large icons.
+    </p>
+    <div class="insert-snippet" data-example-id="notification-count1"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <p id="notification-count1">
+      <span class="notification">27</span>
+    </p>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>Notification on text.</p>
+    <div class="insert-snippet" data-example-id="notification-count2"></div>
+  </div>
+  <div class="col c4 light">
+    <div id="notification-count2">
+    <p>
+      <a class="notifications-text">Regular sized notification<span class="notification">1</span></a>
+    </p>
+    <p>
+      <a class="action-btn notifications-s notifications-text">Small sized notification<span class="notification">1</span>
+      </a>
+    </p>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>Notification on a regular sized icon.</p>
+    <div class="insert-snippet" data-example-id="notification-count3"></div>
+  </div>
+  <div class="col c4 light">
+    <p id="notification-count3">
+      <button class="action-btn notifications">
+        <svg class="icon"><use xlink:href="#icon-copyright"/></svg>
+        <span class="notification">1</span>
+      </button>
+    </p>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>Small notifications (e.g. for smaller icons).</p>
+    <div class="insert-snippet" data-example-id="notification-count4"></div>
+  </div>
+  <div class="col c4 light">
+    <p id="notification-count4">
+      <span class="notifications-s">
+        <svg class="icon icon-s"><use xlink:href="#icon-program"/></svg>
+        <span class="notification">7</span>
+      </span>
+    </p>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>Notification on a large icon.</p>
+    <div class="insert-snippet" data-example-id="notification-count5"></div>
+  </div>
+  <div class="col c4 light">
+    <p id="notification-count5">
+      <button class="action-btn notifications-l">
+        <svg class="icon icon-l"><use xlink:href="#icon-program-30px"/></svg>
+        <span class="notification">2</span>
+      </button>
+    </p>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>Notification on an extra large icon.</p>
+    <div class="insert-snippet" data-example-id="notification-count6"></div>
+  </div>
+  <div class="col c4 light">
+    <p id="notification-count6">
+      <button class="action-btn notifications-xl">
+        <svg class="icon icon-xl">
+          <!--<use xlink:href="#icon-user"/>-->
+          <use xlink:href="#icon-program"/>
+        </svg>
+        <span class="notification">3</span>
+      </button>
+    </p>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>Notification used to indicate an error.</p>
+    <div class="insert-snippet" data-example-id="notification-warning"></div>
+  </div>
+  <div class="col c4 light">
+    <p id="notification-warning">
+      <button class="action-btn notifications-xl">
+        <svg class="icon icon-xl" aria-hidden="true" role="presentation">
+          <!--<use xlink:href="#icon-user"/>-->
+          <use xlink:href="#icon-program"/>
+        </svg>
+        <strong class="notification warn">!</strong>
+      </button>
+    </p>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Notifications without the attention grabbing color. Adapts to
+      <code>subtle</code> and <code>vsubtle</code> contexts.
+    </p>
+    <div class="insert-snippet" data-example-id="notification-discrete"></div>
+  </div>
+  <div class="col c4 light">
+    <div id="notification-discrete">
+      <p>
+        <span class="notifications">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-user"/>
+          </svg>
+          <strong class="notification notification-discrete">7</strong>
+        </span>
+      </p>
+      <p>
+        <span class="notifications subtle">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-user"/>
+          </svg>
+          <strong class="notification notification-discrete">7</strong>
+        </span>
+      </p>
+      <p>
+        <span class="notifications vsubtle">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-user"/>
+          </svg>
+          <strong class="notification notification-discrete">7</strong>
+        </span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row section example" id="oneliners">
+  <div class="col c4">
+    <h2>One-liners</h2>
+    <p>
+      A strip of text, displayed on one line, and cut with an ellipsis if it
+      overflows.
+    </p>
+    <div class="insert-snippet" data-example-id="one-liner-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating, for alignment -->
+    <p>&nbsp;</p><!-- Cheating, for alignment -->
+    <div class="mod" id="one-liner-ex">
+      <p class="one-liner">
+        This line is really long, showcasing what a one-liner looks like
+        when it gets cut off. The ellipsis is commonly used for this
+        purpose, and is a well-known visual clue that something is missing.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="overlays">
+  <div class="col c4">
+    <h2>Overlays / Border boxes</h2>
+    <p>
+      Overlays are floating boxes that are suitable for superimposing on top of
+      other elements. These elements are typically used for intermittent dialog
+      boxes etc. The boxes default to 500 pixels wide, and auto height.
+      Additional sizes may be added later. The overlays must be manually
+      positioned in order to actually overlay other elements (or use glass
+      panes, see below).
+    </p>
+    <div class="insert-snippet" data-example-id="overlays-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="overlays-ex">
+      <div class="border-box overlay-m">
+        <div class="bd tight-s text-xs">
+          <div class="col c2">
+            <p class="subtle">10</p>
+            <p><a class="action-btn" href="#">2014</a></p>
+            <p><a class="action-btn" href="#">2013</a></p>
+            <p><a class="action-btn" href="#">2012</a></p>
+            <p><a class="action-btn" href="#">2011</a></p>
+            <p><a class="action-btn" href="#">2010</a></p>
+          </div>
+          <div class="col c2">
+            <p class="subtle">00</p>
+            <p><a class="action-btn" href="#">2009</a></p>
+            <p><a class="action-btn" href="#">2008</a></p>
+            <p><a class="action-btn" href="#">2007</a></p>
+            <p><a class="action-btn" href="#">2006</a></p>
+            <p><a class="action-btn" href="#">2005</a></p>
+            <p><a class="action-btn" href="#">2004</a></p>
+            <p><a class="action-btn" href="#">2003</a></p>
+            <p><a class="action-btn" href="#">2002</a></p>
+            <p><a class="action-btn" href="#">2001</a></p>
+            <p><a class="action-btn" href="#">2000</a></p>
+          </div>
+          <div class="col c2">
+            <p class="subtle">90</p>
+            <p><a class="action-btn" href="#">1999</a></p>
+            <p><a class="action-btn" href="#">1998</a></p>
+            <p><a class="action-btn" href="#">1997</a></p>
+            <p><a class="action-btn" href="#">1996</a></p>
+            <p><a class="action-btn" href="#">1995</a></p>
+            <p><a class="action-btn" href="#">1994</a></p>
+            <p><a class="action-btn" href="#">1993</a></p>
+            <p><a class="action-btn" href="#">1992</a></p>
+            <p><a class="action-btn" href="#">1991</a></p>
+            <p><a class="action-btn" href="#">1990</a></p>
+          </div>
+          <div class="col c2">
+            <p class="subtle">80</p>
+            <p><a class="action-btn" href="#">1989</a></p>
+            <p><a class="action-btn" href="#">1988</a></p>
+            <p><a class="action-btn" href="#">1987</a></p>
+            <p><a class="action-btn selected-item" href="#">1986</a></p>
+            <p><a class="action-btn" href="#">1985</a></p>
+            <p><a class="action-btn" href="#">1984</a></p>
+            <p><a class="action-btn" href="#">1983</a></p>
+            <p><a class="action-btn" href="#">1982</a></p>
+            <p><a class="action-btn" href="#">1981</a></p>
+            <p><a class="action-btn" href="#">1980</a></p>
+          </div>
+          <div class="col c2">
+            <p class="subtle">70</p>
+            <p><a class="action-btn" href="#">1979</a></p>
+            <p><a class="action-btn" href="#">1978</a></p>
+            <p><a class="action-btn" href="#">1977</a></p>
+            <p><a class="action-btn" href="#">1976</a></p>
+            <p><a class="action-btn" href="#">1975</a></p>
+            <p><a class="action-btn" href="#">1974</a></p>
+            <p><a class="action-btn" href="#">1973</a></p>
+            <p><a class="action-btn" href="#">1972</a></p>
+            <p><a class="action-btn" href="#">1971</a></p>
+            <p><a class="action-btn" href="#">1970</a></p>
+          </div>
+          <div class="col c2">
+            <p class="subtle">60</p>
+            <p><a class="action-btn" href="#">1969</a></p>
+            <p><a class="action-btn" href="#">1968</a></p>
+            <p><a class="action-btn" href="#">1967</a></p>
+            <p><a class="action-btn" href="#">1966</a></p>
+            <p><a class="action-btn" href="#">1965</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Overlay actions</h3>
+    <div class="insert-snippet" data-example-id="border-box-action-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="border-box-action-ex">
+      <div class="border-box overlay-m">
+        <button ng-click="close()" class="action-btn border-box-action">
+          <svg class="icon"><use xlink:href="#icon-x"/></svg>
+        </button>
+        <p class="mas">
+          Some text in here
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Modal dialogs/glass panes</h3>
+    <p>
+      If you want to create the illusion of a modal dialog, you can place your
+      dialog boxes (typically border-box, but really anything) in a glass pane.
+      The glass pane overlays a semi-transparent dark layer on the whole page,
+      and centers whatever content you put in it. Thus, a glass pane with a
+      border box will give you a "dimmed down" body with a border box hovering
+      above it in the middle of the page.
+    </p>
+    <pre class="lang-markup"><code>&lt;div class="glass-pane">
+  &lt;div class="glass-pane-content">
+    &lt;div class="border-box overlay-m">
+      &lt;button ng-click="close()" class="action-btn border-box-action">
+        &lt;svg class="icon">&lt;use xlink:href="#icon-x"/>&lt;/svg>
+      &lt;/button>
+      &lt;p class="mas">
+        Some text in here
+      &lt;/p>
+    &lt;/div>
+  &lt;/div>
+&lt;/div></code></pre>
+  </div>
+  <div class="col c4 light">
+    <p><a class="pane-ex" href="#pane">Show example</a></p>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="pills">
+  <div class="col c4">
+    <h2>Pills</h2>
+    <p>
+      Pills are typically used for tags. They can be simple blobs of text:
+    </p>
+    <div class="insert-snippet" data-example-id="pill-example"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <p>&nbsp;</p>
+    <div class="mod" id="pill-example">
+      <span class="pill">sosiale medier</span>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      ...or they can include a <code>pill-action</code>.
+    </p>
+    <div class="insert-snippet" data-example-id="pill-example2"></div>
+  </div>
+  <div class="col c4 light">
+    <p>&nbsp;</p><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="pill-example2">
+          <span class="pill">
+            sosiale medier
+            <a href="#" class="pill-action">
+              <svg class="icon" aria-hidden="true" role="presentation">
+                <use xlink:href="#icon-x-small"/>
+              </svg>
+            </a>
+          </span>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      ...or they can ble clickable <code>pill-link</code>.
+    </p>
+    <div class="insert-snippet" data-example-id="pill-clickable"></div>
+  </div>
+  <div class="col c4 light">
+    <p>&nbsp;</p><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="pill-clickable">
+          <span class="pill">
+            <a href="#" class="pill-link">
+            sosiale medier
+            </a>
+          </span>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Pills can be focusable actions themselves. Just remember to add
+      <code>tabIndex="0"</code> if you're using a <code>span</code>
+      or a <code>div</code> for the pill.
+    </p>
+    <div class="insert-snippet" data-example-id="pill-links-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="pill-links-ex">
+      <span class="pill" tabindex="0">
+        sosiale medier
+        <a href="#" class="pill-action">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-x-small"/>
+          </svg>
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Pills can also be highlighted.
+    </p>
+    <div class="insert-snippet" data-example-id="pill-example3"></div>
+  </div>
+  <div class="col c4 light">
+    <p>&nbsp;</p><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="pill-example3">
+      <span class="pill pill-hl">sosiale medier</span>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      ...subtle or downplayed.
+    </p>
+    <div class="insert-snippet" data-example-id="pill-example4"></div>
+  </div>
+  <div class="col c4 light">
+    <p>&nbsp;</p><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="pill-example4">
+          <span class="pill pill-subtle">
+            <span>subtle</span>
+            <a href="#" class="pill-action">
+              <svg class="icon" aria-hidden="true" role="presentation">
+                <use xlink:href="#icon-x-small"/>
+              </svg>
+            </a>
+          </span>
+          <span class="pill pill-dp">
+            <span>downplayed</span>
+            <a href="#" class="pill-action">
+              <svg class="icon" aria-hidden="true" role="presentation">
+                <use xlink:href="#icon-undo"/>
+              </svg>
+            </a>
+          </span>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Pills align with regular text across layout columns.
+    </p>
+    <div class="insert-snippet" data-example-id="pill-example5"></div>
+  </div>
+  <div class="col c4 light">
+    <p>&nbsp;</p><!-- Cheating to align code example with text, not heading -->
+    <div id="pill-example5">
+      <div class="row">
+        <div class="col c6">
+          <p>Her er noen tagger:</p>
+        </div>
+        <div class="col c6">
+          <p>
+            <span class="pill">sosiale medier</span>
+            <span class="pill">apekatt</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Pills occupy more vertical space than regular paragraphs. For this
+      reason, pills will not stack neatly on multiple lines by default. If
+      you need a bunch of pills that may or may not flow on multiple lines,
+      add the <code>pills</code> class to the container element. This will
+      give the pills more vertical spacing, but now they may no longer
+      align neatly with text across columns.
+    </p>
+    <div class="insert-snippet" data-example-id="pill-example6"></div>
+  </div>
+  <div class="col c4 light">
+    <div id="pill-example6">
+      <p class="pills">
+        <span class="pill">sosiale medier</span>
+        <span class="pill">apekatt</span>
+        <span class="pill">tiger</span>
+        <span class="pill">eple</span>
+        <span class="pill">banan</span>
+        <span class="pill">rush</span>
+        <span class="pill">musikk</span>
+        <span class="pill">prog</span>
+        <span class="pill">radio</span>
+        <span class="pill">hørespill</span>
+        <span class="pill">snø</span>
+        <span class="pill">jul</span>
+        <span class="pill">ferie</span>
+        <span class="pill">kode</span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Pill variations can be combined, and the rules are: pill-hl > pill-dp > pill-subtle
+    </p>
+    <div class="insert-snippet" data-example-id="pill-example7"></div>
+  </div>
+  <div class="col c4 light">
+    <p>&nbsp;</p><!-- Cheating to align code example with text, not heading -->
+    <div class="mod pills" id="pill-example7">
+          <span class="pill pill-subtle pill-dp">
+            <span>subtle downplayed</span>
+            <a href="#" class="pill-action">
+              <svg class="icon" aria-hidden="true" role="presentation">
+                <use xlink:href="#icon-undo"/>
+              </svg>
+            </a>
+          </span>
+          <span class="pill pill-hl pill-subtle">
+            <span>highlight subtle</span>
+            <a href="#" class="pill-action">
+              <svg class="icon" aria-hidden="true" role="presentation">
+                <use xlink:href="#icon-x-small"/>
+              </svg>
+            </a>
+          </span>
+          <span class="pill pill-hl pill-subtle pill-dp">
+            <span>highlight subtle downplayed</span>
+            <a href="#" class="pill-action">
+              <svg class="icon" aria-hidden="true" role="presentation">
+                <use xlink:href="#icon-undo"/>
+              </svg>
+            </a>
+          </span>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="play-buttons">
+    <div class="col c4">
+        <h2>Play buttons</h2>
+        <p>
+            Play buttons are links or buttons shows a play or pause icon with matching hover states.
+            Current play buttons are intended to be used on top of thumbnails or images.
+            Play buttons are created with the <code>play-btn</code> class name, inside a <code>play-btn-container</code>:
+        </p>
+        <div class="insert-snippet" data-example-id="play-ex1"></div>
+        <div class="insert-snippet" data-example-id="play-ex2"></div>
+</div>
+<div class="col c4 light">
+    <div class="row">
+        <div class="col">
+            <div id="play-ex1">
+                <div class="mod container mts">
+                    <div class="img">
+                        <svg viewBox="0 0 16 9" x="0" y="0" width="100%" height="100%" role="presentation"
+                             aria-hidden="true">
+                            <image xmlns:xlink="http://www.w3.org/1999/xlink"
+                                   xlink:href="http://narkweb01:82/Keyframes/Omn/B/Y/56/32/poster.jpg"
+                                   x="0" y="0"
+                                   width="100%" height="100%"
+                                   preserveAspectRatio="none"></image>
+                        </svg>
+                    </div>
+                    <a href="#" class="play-btn-container">
+                  <span class="play-btn">
+                    <svg class="icon" aria-hidden="true" role="presentation">
+                      <use xlink:href="#icon-play"/>
+                    </svg>
+                  </span>
+                    </a>
+                </div>
+            </div>
+
+            <div id="play-ex2">
+                <div class="mod container mts">
+                    <div class="img">
+                        <svg viewBox="0 0 16 9" x="0" y="0" width="100%" height="100%" role="presentation" aria-hidden="true">
+                            <image xmlns:xlink="http://www.w3.org/1999/xlink"
+                                   xlink:href="http://narkweb01:82/Keyframes/Omn/B/Y/56/32/poster.jpg" x="0"
+                                   y="0" width="100%" height="100%" preserveAspectRatio="none"></image>
+                        </svg>
+                    </div>
+                    <a href="#" class="play-btn-container">
+                    <span class="play-btn playing">
+                      <svg class="icon" aria-hidden="true" role="presentation">
+                        <use xlink:href="#icon-pause"/>
+                      </svg>
+                    </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="predictive-inputs">
+  <div class="col c4">
+    <h2>Predictive inputs</h2>
+    <p>
+      Predictive inputs/suggestions/auto-complete inputs can be made with a pair
+      of <code>input</code> elements. Suggestions/predictions are displayed in
+      an input field positioned behind the input that has user focus.
+    </p>
+    <p>
+      The additional span-element is not strictly required. The more
+      anti-aliasing surrounding your font, the greater the chance you will need
+      it to avoid double anti aliasing, which gives a bold-like effect.
+    </p>
+    <div class="insert-snippet" data-example-id="predictive-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="predictive-ex">
+      <div class="predictive-input">
+        <span class="pi-current-input">en sø</span>
+        <input type="text" class="pi-input" value="en sø">
+        <input type="text" class="pi-prediction" value="en søkestreng">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Predictive inputs can be made out of regular <code>text-input</code> elements:
+    </p>
+    <div class="insert-snippet" data-example-id="predictive-ex2"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="predictive-ex2">
+      <div class="predictive-input">
+        <span class="pi-current-input text-input">en sø</span>
+        <input type="text" class="input text-input pi-input" value="en sø">
+        <input type="text" class="input text-input pi-prediction" value="en søkestreng">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      Predictive inputs can be used with big inputs as well:
+    </p>
+    <div class="insert-snippet" data-example-id="predictive-ex3"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="predictive-ex3">
+      <span class="bi focusable">
+        <div class="predictive-input bi-input">
+          <span class="input pi-current-input">en sø</span>
+          <input type="search" class="input focusable-main pi-input" value="en sø">
+          <input type="text" class="input pi-prediction" value="en søkestreng">
+        </div>
+        <svg class="icon" aria-hidden="true" role="presentation">
+          <use xlink:href="#icon-search"/>
+        </svg>
+        <a href="#" class="bi-action">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-x-cl"/>
+          </svg>
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Scripting</h3>
+    <p>
+      For predictive inputs to work without visual problems for all fonts, you
+      need some JavaScript that copies the currently typed text from
+      the <code>.pi-input</code> element to the
+      <code>pi-current-input</code> element. Doing so, it is likely that certain
+      letters will cover parts of the next letter in the prediction underneath.
+      Unfortunately, the only solution to this is to manually retract a few
+      pixels from the <code>span</code>'s width on every keystroke. Not very
+      elegant, but it works.
+    </p>
+    <p>
+      If you use the component with a font that does not have much
+      "fuzziness"/anti-aliasing, you might get away without the span and the
+      following script. Use at your discretion.
+    </p>
+    <p>
+      The script used on this page looks like:
+    </p>
+    <pre class="lang-javascript"><code>function mirror(el) {
+  el.querySelector('.pi-input').addEventListener('input', function () {
+    var content = el.querySelector('.pi-current-input');
+    content.innerHTML = this.value;
+    content.style.width = null; // Allow the browser to reassign automatic width
+    content.style.width = content.clientWidth - 2 + 'px';
+  });
+}
+
+var predictions = document.querySelectorAll('.predictive-input');
+
+for (var i = 0; i < predictions.length; i++) {
+  mirror(predictions[i]);
+}</code></pre>
+  </div>
+  <div class="col c4 light">
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="process-progress">
+  <div class="col c4">
+    <h2>Process progress bar</h2>
+    <p>
+      Indicate the steps and current progress in some multi-step process.
+    </p>
+    <div class="insert-snippet" data-example-id="process-progress-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="process-progress-ex">
+      <div class="process-progress text-xs">
+        <div class="pp-item pp-item-complete">
+          <div class="pp-step-indicator">
+            <svg class="icon" role="presentation" aria-hidden="true">
+              <use xlink:href="#icon-ok"></use>
+            </svg>
+          </div>
+          <div>Velg handlinger</div>
+        </div>
+        <div class="pp-item pp-item-current">
+          <div class="pp-line"></div>
+          <div class="pp-step-indicator">
+            <svg class="icon" role="presentation" aria-hidden="true">
+              <use xlink:href="#icon-segment"></use>
+            </svg>
+          </div>
+          <div>Utfør handlinger</div>
+        </div>
+        <div class="pp-item">
+          <div class="pp-line"></div>
+          <div class="pp-step-indicator">
+            <svg class="icon" role="presentation" aria-hidden="true">
+              <use xlink:href="#icon-segment"></use>
+            </svg>
+          </div>
+          <div>Status</div>
+        </div>
+        <div class="pp-item pp-item-optional">
+          <div class="pp-line-dashed"></div>
+          <div class="pp-step-indicator">
+            <svg class="icon" role="presentation" aria-hidden="true">
+              <use xlink:href="#icon-segment-other"></use>
+            </svg>
+          </div>
+          <div>Legg til metadata</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row section example" id="progress-bar">
+  <div class="col c4">
+    <h2>Progress bars</h2>
+    <div class="insert-snippet" data-example-id="progress-bar-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating, for alignment -->
+    <div class="mod" id="progress-bar-ex">
+      <div class="progress-bar clickable mod">
+        <div class="pb-track"></div>
+        <div class="pb-indicator" style="width: 70%"></div>
+      </div>
+      <div class="progress-bar error clickable mod">
+        <div class="pb-track"></div>
+        <div class="pb-indicator" style="width: 70%"></div>
+      </div>
+      <div class="progress-bar success clickable mod">
+        <div class="pb-track"></div>
+        <div class="pb-indicator" style="width: 70%"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="pulse">
+  <div class="col c4">
+    <h2>Pulse</h2>
+    <p>
+      Pulsing indicator typically used to indicate that a recording is ongoing.
+      Also has a small variant
+    </p>
+    <div class="insert-snippet" data-example-id="pulse-example"></div>
+    <div class="insert-snippet" data-example-id="pulse-example-2"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="pulse-example">
+      <div class="origo-pulse">
+        <div class="pulse-marker">
+          <div class="pulse-rays"></div>
+          <div class="pulse-rays delay"></div>
+        </div>
+      </div>
+      Dette er en standardpulse
+    </div>
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="pulse-example-2">
+      <div class="origo-pulse small">
+        <div class="pulse-marker">
+          <div class="pulse-rays"></div>
+          <div class="pulse-rays delay"></div>
+        </div>
+      </div>
+      Dette er en liten pulse
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="responsive-grids">
+  <div class="col c4">
+    <h2>Responsive grids</h2>
+    <p>
+      Responsive grids are made from a bunch of boxes that stack from left
+      to right in varying column counts on different screen sizes. These
+      boxes default to <code>12em</code> width. How many columns this
+      creates depends on the width of the parent element. Alternative sizes
+      will be added as needed. To create variable-sized inline-blocks, use
+      the class <code>grid-box</code>.
+    </p>
+    <div class="insert-snippet" data-example-id="responsive-grid-example"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="responsive-grid-example">
+      <div class="grid-unit">
+        <p>Item #1</p>
+      </div>
+      <div class="grid-unit">
+        <p>Item #2</p>
+      </div>
+      <div class="grid-unit">
+        <p>Item #3</p>
+      </div>
+      <div class="grid-unit">
+        <p>Item #4</p>
+      </div>
+      <div class="grid-unit">
+        <p>Item #5</p>
+      </div>
+      <div class="grid-unit">
+        <p>Item #6</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="responsive">
+  <div class="col c4">
+    <h2>Responsive design</h2>
+    <p>
+      The approach to responsive design is "mobile first", or said
+      differently: "small first". So default styles are intended for the
+      smallest screens, then media queries are used to override these styles
+      for bigger screens. There are currently five sizes: the default, small (> 640px wide screens) ,
+      medium (> 992px wide screens), large (> 1200px wide screens) and xlarge (> 1800px wide screens).
+    </p>
+    <p>
+      Some base styles vary between the various screen sizes - for
+      example, <code>h1</code> headings are smaller on the smallest screens.
+    </p>
+    <h3>Responsive layout</h3>
+    <p>
+      The layout can be individually specified for each of the three screen
+      sizes. The default column-width classes (e.g. <code>c3</code> and so
+      on) apply to the smallest screens, and can be overridden for medium
+      and large screens. To do so, use classes prefixed
+      with <code>rm-</code> for medium screens, and <code>rl-</code> for
+      large screens. The following example creates a column that is 12
+      columns wide on small screens, 6 on medium screens and 4 on large
+      screens:
+    </p>
+    <div class="insert-snippet" data-example-id="responsive-layout-example"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="responsive-layout-example">
+      <div class="row">
+        <div class="col c12 rm-c6 rl-c4 bghl">
+          <h2>A varying sized column</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <p>
+      When the 12 column grid is not sufficient to lay out a component,
+      there are additional classes to set the width of
+      columns: <code>s1-5</code>, which gives you a column one fifth (e.g.
+      20%) of the available width, and <code>s1-7</code>. They are also
+      available with <code>rm-</code> and <code>rl-</code> prefixes, for
+      responsive applications.
+    </p>
+    <div class="insert-snippet" data-example-id="responsive-layout-example2"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="responsive-layout-example2">
+      <div class="row">
+        <div class="s1-5 rl-s1-7 bghl">
+          <p>A varying sized column</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row example">
+  <div class="col c4">
+    <h3>Size specific styling</h3>
+    <p>
+      By using the SASS version of the Origo-framework, styles can be overridden by using media queries with the breakpoint variables of the responsive layout.
+      <a href="responsive/index.html" >See demo here</a>
+    </p>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="round-objects">
+  <div class="col c4">
+    <h2>Round objects</h2>
+    <div class="insert-snippet" data-example-id="round"></div>
+  </div>
+  <div class="col c4 light">
+    <p id="round">
+      <img src="images/snorre.png" class="round">
+    </p>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="selectables">
+  <div class="col c4">
+    <h2>Selectables</h2>
+    <p>
+      Selectable blocks.
+    </p>
+    <div class="insert-snippet" data-example-id="selectable-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <div id="selectable-ex" class="mod">
+      <div class="tight-xs htight-xs text-s">
+        <hr class="vsubtle man">
+        <div class="selectable clickable">
+          <h3>Option one</h3>
+          <p>With some text in it</p>
+        </div>
+        <hr class="vsubtle man">
+        <div class="selectable selectable-selected clickable">
+          <h3>Option Two</h3>
+          <p>With some other text in it</p>
+        </div>
+        <hr class="vsubtle man">
+        <div class="selectable selectable-selected clickable">
+          <h3>Option Three</h3>
+          <p>Surely, I'm selected too!</p>
+        </div>
+        <hr class="vsubtle man">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="spinner">
+  <div class="col c4">
+    <h2>Spinner</h2>
+    <p>
+      Spinner-animations to show while loading important stuff. <code>cx</code>, <code>cy</code> and <code>r</code> of the <code>circle</code>-element of the <code>svg</code> will sadly have to correspond with
+      the CSS-size set. Ex. for a large (30px) spinner, cx and cy will have to be radius+stroke-max (12), and r the radius (10).
+    </p>
+    <p>
+      Color schemes available are <code>sp-blue</code>, <code>sp-pink</code>, <code>sp-white</code>, <code>sp-mint</code> and <code>så-purple</code>.
+      Sizes are <code>sp-small</code>, <code>sp-medium</code> (standard) and <code>sp-large</code>.
+    </p>
+    <div class="insert-snippet" data-example-id="spinner-example-1"></div>
+    <div class="insert-snippet" data-example-id="spinner-example-2"></div>
+    <div class="insert-snippet" data-example-id="spinner-example-3"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="spinner-example-1">
+      <div class="origo-spinner">
+        <svg class="origo-spinner-svg" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <circle class="origo-spin-circle" cx="12" cy="12" r="10"  ></circle>
+        </svg>
+      </div>
+      Dette er en standarspinner (<i>medium, blue</i>)
+    </div>
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="spinner-example-2">
+      <div class="origo-spinner sp-mint sp-large">
+        <svg class="origo-spinner-svg" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <circle class="origo-spin-circle" cx="17" cy="17" r="15"  ></circle>
+        </svg>
+      </div>
+      Dette er en <i>large mint</i> spinner
+    </div>
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="spinner-example-3">
+      <div class="origo-spinner sp-pink sp-small">
+        <svg class="origo-spinner-svg" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <circle class="origo-spin-circle" cx="10" cy="10" r="16"  ></circle>
+        </svg>
+      </div>
+      Dette er en <i>small pink</i> spinner
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="supers">
+  <div class="col c4">
+    <h2>Supers</h2>
+    <p>
+      Semi-transparent overlays typically used to indicate the duration of
+      videos etc.
+    </p>
+    <div class="insert-snippet" data-example-id="super-example"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="banner-example">
+      <p class="left container">
+        <img src="images/lazy-cat.jpg" width="200">
+        <span class="mod super pos-br">00:00:27</span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="switch-buttons">
+  <div class="col c4">
+    <h2>Switch buttons</h2>
+    <p>
+      Binary toggles
+    </p>
+    <div class="insert-snippet" data-example-id="switch-buttons-ex"></div>
+    <div class="insert-snippet" data-example-id="switch-buttons-ex2"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="switch-buttons-ex">
+      <a class="switch-button sb-on">
+        <div class="sb-content">
+          <div class="sb-label">
+            <span class="mls">PÅ</span>
+            <span class="mrs right">AV</span>
+          </div>
+          <div class="sb-switch"></div>
+        </div>
+      </a>
+    </div>
+    <div class="mod" id="switch-buttons-ex2">
+      <a class="switch-button sb-off">
+        <div class="sb-content">
+          <div class="sb-label">
+            <span class="mls">PÅ</span>
+            <span class="mrs right">AV</span>
+          </div>
+          <div class="sb-switch"></div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+<div class="row example">
+  <div class="col c4">
+    <h3>Disabled buttons</h3>
+    <div class="insert-snippet" data-example-id="switch-buttons-ex3"></div>
+    <div class="insert-snippet" data-example-id="switch-buttons-ex4"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="switch-buttons-ex3">
+      <a class="switch-button sb-disabled sb-on">
+        <div class="sb-content">
+          <div class="sb-label">
+            <span class="mls">PÅ</span>
+            <span class="mrs right">AV</span>
+          </div>
+          <div class="sb-switch"></div>
+        </div>
+      </a>
+    </div>
+    <div class="mod" id="switch-buttons-ex4">
+      <a class="switch-button sb-disabled sb-off">
+        <div class="sb-content">
+          <div class="sb-label">
+            <span class="mls">PÅ</span>
+            <span class="mrs right">AV</span>
+          </div>
+          <div class="sb-switch"></div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="switches">
+  <div class="col c4">
+    <h2>Switches</h2>
+    <p>
+      Switches are small button-like elements that can be toggled on and
+      off. Switches are created with the <code>switch</code> class name:
+    </p>
+    <div class="insert-snippet" data-example-id="switch-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="row">
+      <div class="col">
+        <div class="mod" id="switch-ex">
+          <p><a href="#" class="switch">siste 24 timer</a></p>
+          <p><a href="#" class="switch switch-active">siste uke</a></p>
+          <p><a href="#" class="switch">siste måned</a></p>
+          <p><a href="#" class="switch switch-subtle">partially applied</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="tables">
+  <div class="col c4">
+    <h2>Tables</h2>
+    <p>
+      Tables have (almost) no default styles, in order to account for
+      varying table designs. Note that tables are not layout modules, and
+      must be wrapped in a <code>mod</code> in order to get the correct
+      spacing applied if used as stand-alone block modules.
+    </p>
+    <h3>Simple tables with vertical lines</h3>
+    <p>
+      The class <code>table</code> enables a full-width table with some
+      spacing and subtle vertical lines.
+    </p>
+    <p>
+      To control the width of individual rows, use the layout column
+      classes, <code>.c1</code> through <code>.c12</code>, plus the
+      half-width <code>.c1of24</code>. In order to force one column to get
+      all available space and give all other columns just the minimum
+      available size, add <code>.c12</code> to it.
+    </p>
+    <div class="insert-snippet" data-example-id="table2"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <div id="table2">
+      <div class="mod">
+        <table class="table">
+          <tbody>
+          <tr>
+            <th><p>Some text</p></th>
+            <td class="c12"><p>Some data</p></td>
+            <td><a href="#"><p>Action</p></a></td>
+          </tr>
+          <tr>
+            <th><p>Some more text</p></th>
+            <td class="c12"><p>Some more data</p></td>
+            <td><a href="#"><p>Action</p></a></td>
+          </tr>
+          <tr>
+            <th><p>Even more text</p></th>
+            <td class="c12"><p>Lorem ipsum</p></td>
+            <td><p><a href="#">Action</a></p></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Discrete tables</h3>
+    <p>
+      The <code>table-discrete</code> class yields a full-width table with no
+      other styling. It is useful to simply tabularize data in the flow of
+      text. Nest paragraphs inside for more spacing.
+    </p>
+    <div class="insert-snippet" data-example-id="table3"></div>
+  </div>
+  <div class="col c4 light" id="table3">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <div class="mod">
+      <table class="table-discrete">
+        <tbody>
+        <tr>
+          <th>Some text</th>
+          <td>Some data</td>
+          <td><a href="#">Action</a></td>
+        </tr>
+        <tr>
+          <th>Some more text</th>
+          <td>Some more data</td>
+          <td><a href="#">Action</a></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h3>Expando table</h3>
+    <p>
+      The <code>expando-table</code> class creates an inverted table (e.g.
+      dark on light background and the other way around) that can have
+      highlighted rows and expanded rows.
+    </p>
+    <p>
+      For places where space is a scarse resource (like the search results),
+      add the <code>expando-tight</code> class to make the table display
+      with less white-space.
+    </p>
+    <div class="insert-snippet" data-example-id="table4"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="table4">
+      <table class="expando">
+        <tbody>
+        <tr>
+          <th>Some text</th>
+          <td class="c12 clickable">Some data</td>
+          <td><a href="#" class="action-btn">Action</a></td>
+        </tr>
+        <tr class="hl">
+          <th>A highlighted row</th>
+          <td class="c12 clickable">Some more data</td>
+          <td><a href="#" class="action-btn">Action</a></td>
+        </tr>
+        <tr>
+          <th>Addon widget</th>
+          <td class="c12 clickable">More data</td>
+          <td><a href="#" class="action-btn">Action</a></td>
+        </tr>
+        <tr class="hl expando-addon">
+          <td colspan="3">
+            <div class="progress-bar">
+              <div class="pb-indicator" style="width: 40%;"></div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <th>More text</th>
+          <td class="c12 clickable">More data</td>
+          <td><a href="#" class="action-btn">Action</a></td>
+        </tr>
+        <tr class="hl">
+          <th>Expanded row</th>
+          <td class="c12 clickable">It's highlighted too</td>
+          <td><a href="#" class="action-btn">Action</a></td>
+        </tr>
+        <tr class="hl expando-details">
+          <th></th>
+          <td class="c12">
+            <p>This one "belongs" to the one above</p>
+          </td>
+          <td></td>
+        </tr>
+        <tr class="hl">
+          <th>Expanded with addon</th>
+          <td class="c12 clickable">Title</td>
+          <td><a href="#" class="action-btn">Action</a></td>
+        </tr>
+        <tr class="hl expando-details">
+          <th></th>
+          <td class="c12">
+            <p>Detail text</p>
+          </td>
+          <td></td>
+        </tr>
+        <tr class="hl expando-addon">
+          <td colspan="3">
+            <div class="progress-bar">
+              <div class="pb-indicator" style="width: 67%;"></div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <th>More text</th>
+          <td class="c12 clickable">More data</td>
+          <td><a href="#" class="action-btn">Action</a></td>
+        </tr>
+        <tr>
+          <th>More text</th>
+          <td class="c12 clickable">More data</td>
+          <td><a href="#" class="action-btn">Action</a></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>The same table with <code>expando-tight</code></p>
+    <div class="mod">
+      <table class="expando expando-tight">
+        <tbody>
+        <tr>
+          <th>Tight</th>
+          <td class="c12 clickable">Some data</td>
+          <td><a href="#" class="action-btn">Action</a></td>
+        </tr>
+        <tr class="hl">
+          <th>A highlighted row</th>
+          <td class="c12 clickable">Some more data</td>
+          <td><a href="#" class="action-btn">Action</a></td>
+        </tr>
+        <tr>
+          <th>Addon widget</th>
+          <td class="c12 clickable">More data</td>
+          <td><a href="#" class="action-btn">Action</a></td>
+        </tr>
+        <tr class="hl expando-addon">
+          <td colspan="3">
+            <div class="progress-bar">
+              <div class="pb-indicator" style="width: 40%;"></div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <th>More text</th>
+          <td class="c12 clickable">More data</td>
+          <td><a href="#" class="action-btn">Action</a></td>
+        </tr>
+        <tr class="hl">
+          <th>Expanded row</th>
+          <td class="c12 clickable">It's highlighted too</td>
+          <td><a href="#" class="action-btn">Action</a></td>
+        </tr>
+        <tr class="hl expando-details">
+          <th></th>
+          <td class="c12">
+            <p>This one "belongs" to the one above</p>
+          </td>
+          <td></td>
+        </tr>
+        <tr class="hl">
+          <th>Expanded with addon</th>
+          <td class="c12 clickable">Title</td>
+          <td><a href="#" class="action-btn">Action</a></td>
+        </tr>
+        <tr class="hl expando-details">
+          <th></th>
+          <td class="c12">
+            <p>Detail text</p>
+          </td>
+          <td></td>
+        </tr>
+        <tr class="hl expando-addon">
+          <td colspan="3">
+            <div class="progress-bar">
+              <div class="pb-indicator" style="width: 67%;"></div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <th>More text</th>
+          <td class="c12 clickable">More data</td>
+          <td><a href="#" class="action-btn">Action</a></td>
+        </tr>
+        <tr>
+          <th>More text</th>
+          <td class="c12 clickable">More data</td>
+          <td><a href="#" class="action-btn">Action</a></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="thumb-scrubber">
+  <div class="col c4">
+    <h2>Thumb scrubber</h2>
+    <p>
+      A "film strip" type view of a video timeline. In order to use this
+      component you probably want to communicate with an API that can deliver
+      actual frames from a movie. And for interaction: some JavaScript. There is
+      a React implementation of this component available in origo-react.
+    </p>
+  </div>
+  <div class="col c4 light"></div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h2>Simple film strip</h2>
+    <p>
+      Shows an overview of video content.
+    </p>
+    <div class="insert-snippet" data-example-id="thumb-scrubber1"></div>
+  </div>
+  <div class="col c4 light" id="thumb-scrubber1">
+    <h2>Film strip</h2>
+    <div class="thumb-scrubber mod container">
+      <div class="bd">
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber01.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber02.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber03.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber04.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber05.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber06.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber07.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber08.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber09.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber10.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber11.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber12.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber13.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber14.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber15.jpg"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h2>Scrollable filmstrip</h2>
+    <p>
+      Shows an overview of video content with a handle to scroll video.
+    </p>
+    <div class="insert-snippet" data-example-id="thumb-scrubber2"></div>
+  </div>
+  <div class="col c4 light" id="thumb-scrubber2">
+    <h2>Select a frame</h2>
+    <div class="thumb-scrubber container mod">
+      <div class="slider" style="left: 473px;">
+        <div class="ts-slider clickable">
+          <div class="ts-slide-left"></div>
+          <div class="ts-slide-right"></div>
+        </div>
+      </div>
+      <div class="bd clickable">
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber01.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber02.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber03.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber04.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber05.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber06.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber07.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber08.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber09.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber10.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber11.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber12.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber13.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber14.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber15.jpg"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h2>Scrollable filmstrip with preview</h2>
+    <p>
+      Shows an overview of video content with a handle to scroll video.
+    </p>
+    <div class="insert-snippet" data-example-id="thumb-scrubber3"></div>
+  </div>
+  <div class="col c4 light" id="thumb-scrubber3">
+    <h2>Preview a frame</h2>
+    <div class="thumb-scrubber mod container">
+      <div class="ts-slider" style="left: 273px;">
+        <div class="ts-preview">
+          <img crossorigin="anonymous" src="images/scrubber-hover.jpg">
+        </div>
+        <div class="ts-slider clickable">
+          <div class="ts-slide-left"></div>
+          <div class="ts-slide-right"></div>
+        </div>
+      </div>
+      <div class="bd clickable">
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber01.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber02.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber03.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber04.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber05.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber06.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber07.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber08.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber09.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber10.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber11.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber12.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber13.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber14.jpg"></div></div>
+        <div class="ts-frame"><div class="ts-img"><img class="img" src="images/scrubber15.jpg"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="title-box">
+  <div class="col c4">
+    <h2>Title box</h2>
+    <p>
+      Title boxes are useful for modal dialogs where you want a title bar, and
+      potentially also some buttons.
+    </p>
+    <div class="insert-snippet" data-example-id="title-box-example"></div>
+  </div>
+  <div class="col c4 light">
+    <h3>&nbsp;</h3><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="title-box-example">
+      <div class="border-box">
+        <div class="flex-row info vertical-align-stretch tight-s">
+          <div class="flex-col c12">
+            <h2>
+              <svg class="icon" role="presentation" aria-hidden="true" focusable="false">
+                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-garbage">
+                </use>
+              </svg>
+              Slett dettane?
+            </h2>
+          </div>
+          <div class="flex-col horizontal-align-right vertical-align-middle">
+            <p>
+              <button class="action-btn">
+                <svg class="icon icon-l" role="presentation" aria-hidden="true" focusable="false">
+                  <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-x">
+                  </use>
+                </svg>
+              </button>
+            </p>
+          </div>
+        </div>
+        <div class="title-box-content">
+          <p>
+            Er du sikker på at du vil slette nettpubliseringen
+            <strong>(Ingen tittel)</strong>?
+          </p>
+        </div>
+        <div class="mod">
+          <button class="btn btn-secondary">Avbryt</button>
+          <button class="btn btn-primary right">Slett publisering</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mod" id="title-box-example2">
+      <div class="border-box">
+        <div class="flex-row info vertical-align-stretch tight-s">
+          <div class="flex-col c12">
+            <h2>
+              <svg class="icon" role="presentation" aria-hidden="true" focusable="false">
+                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-garbage">
+                </use>
+              </svg>
+              Slett dettane?
+            </h2>
+          </div>
+          <div class="flex-col horizontal-align-right vertical-align-middle">
+            <p>
+              <button class="action-btn">
+                <svg class="icon icon-l" role="presentation" aria-hidden="true" focusable="false">
+                  <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-x">
+                  </use>
+                </svg>
+              </button>
+            </p>
+          </div>
+        </div>
+        <div class="title-box-content">
+          <p>
+            Er du sikker på at du vil slette nettpubliseringen
+            <strong>(Ingen tittel)</strong>?
+          </p>
+          <p>
+            Med veldig mye innhold så er det meningen at denne skal få scroll i
+            midten her. Sånn at den ikke renner utover viewporten, da blir det
+            vanskelig.
+          </p>
+          <p>
+            Med veldig mye innhold så er det meningen at denne skal få scroll i
+            midten her. Sånn at den ikke renner utover viewporten, da blir det
+            vanskelig.
+          </p>
+          <p>
+            Med veldig mye innhold så er det meningen at denne skal få scroll i
+            midten her. Sånn at den ikke renner utover viewporten, da blir det
+            vanskelig.
+          </p>
+          <p>
+            Med veldig mye innhold så er det meningen at denne skal få scroll i
+            midten her. Sånn at den ikke renner utover viewporten, da blir det
+            vanskelig.
+          </p>
+          <p>
+            Med veldig mye innhold så er det meningen at denne skal få scroll i
+            midten her. Sånn at den ikke renner utover viewporten, da blir det
+            vanskelig.
+          </p>
+          <p>
+            Med veldig mye innhold så er det meningen at denne skal få scroll i
+            midten her. Sånn at den ikke renner utover viewporten, da blir det
+            vanskelig.
+          </p>
+          <p>
+            Med veldig mye innhold så er det meningen at denne skal få scroll i
+            midten her. Sånn at den ikke renner utover viewporten, da blir det
+            vanskelig.
+          </p>
+          <p>
+            Med veldig mye innhold så er det meningen at denne skal få scroll i
+            midten her. Sånn at den ikke renner utover viewporten, da blir det
+            vanskelig.
+          </p>
+          <p>
+            Med veldig mye innhold så er det meningen at denne skal få scroll i
+            midten her. Sånn at den ikke renner utover viewporten, da blir det
+            vanskelig.
+          </p>
+        </div>
+        <div class="mod">
+          <button class="btn btn-secondary">Avbryt</button>
+          <button class="btn btn-primary right">Slett publisering</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row section example" id="tooltip">
+  <div class="col c4">
+    <h2>Tooltips</h2>
+    <p>
+      These small tooltips can be used as an alternative to the built-in
+      <code>title</code> attribute on links. This component only provides the
+      proper look, positioning must be done manually. Note that the pointer must
+      be included manually, as doing so offers some flexibility: you can omit
+      it, you can include one that points upwards, or you can move it off center
+      with JavaScript.
+    </p>
+    <div class="insert-snippet" data-example-id="tooltip-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="tooltip-ex">
+      <p class="tooltip">
+        This is some useful stuff
+        <span class="tooltip-pointer"></span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h2>Tooltip below</h2>
+    <div class="insert-snippet" data-example-id="tooltip-ex2"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="tooltip-ex2">
+      <p class="tooltip">
+        This is some useful stuff
+        <span class="tooltip-pointer tt-upwards"></span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="row example">
+  <div class="col c4">
+    <h2>Tooltip tight</h2>
+    <div class="insert-snippet" data-example-id="tooltip-ex3"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod" id="tooltip-ex3">
+      <p class="tooltip tooltip-tight">
+        This is some useful stuff
+        <span class="tooltip-pointer tt-upwards"></span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row example section" id="tweecon">
+  <div class="col c4">
+    <h2>Tweening icons</h2>
+    <p>
+      Tweening icons can be used to transition from one icon to another.
+      Currently this component is relatively specific to the <code>X</code>
+      and <code>+</code> icons. Only one state is shown at a time. When
+      transitioning, icons are rotated 45 degrees. <code>ts1</code> ("tween
+      state 1") starts at 0 degrees rotation, and rotates to 15 degrees as
+      its opacity decreases to 0. <code>ts2</code> starts at -45 degrees and
+      rotates to 0 degrees as its opacity increases to 1.
+    </p>
+    <div class="insert-snippet" data-example-id="tweecon-example"></div>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating to align code example with text, not heading -->
+    <div class="mod" id="tweecon-example">
+      <div class="tweecon">
+        <a href="#" class="action-btn tweecon-state ts1 tweecon-active">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-plus-c"/>
+          </svg>
+        </a>
+        <a href="#" class="action-btn tweecon-state ts2">
+          <svg class="icon" aria-hidden="true" role="presentation">
+            <use xlink:href="#icon-x-cl"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+  <script>
+    setInterval(function () {
+      qsa(".tweecon-state").forEach(function (el) {
+        toggleClass(el, "tweecon-active");
+      });
+    }, 2000);
+  </script>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row section example" id="vertical-sliders">
+  <div class="col c4">
+    <h2>Vertical sliders</h2>
+    <div class="insert-snippet" data-example-id="vertical-slider-ex"></div>
+  </div>
+  <div class="col c4 light">
+    <div class="mod ptl" id="vertical-slider-ex">
+      <div class="vertical-slider">
+        <input type="range">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+   - NOTE!
+   -
+   - DO NOT EDIT index.html DIRECTLY!
+   -
+   - index.html is generated from index.tpl.html
+   -->
+<div class="row section example" id="glossary">
+  <div class="col c12 tight-s">
+    <h2>Glossary</h2>
+    <p>
+      Every class name used in Origo design, a quick explanation of what it
+      is, and links to relevant parts of the styleguide. Enjoy!
+    </p>
+    <div id="glossary-content"></div>
+  </div>
+</div>
+
+<div class="row section example tight-s" id="typo-glossary">
+  <div class="col c4">
+    <h2>Typographic glossary</h2>
+    <p>
+      Every available set of typographic rules.
+    </p>
+    <p>Default font</p>
+  </div>
+  <div class="col c4 light">
+    <h2>&nbsp;</h2><!-- Cheating, for alignment -->
+    <p>&nbsp;</p><!-- Cheating, for alignment -->
+    <p>
+      16px Roboto Light, line-height 1.5.
+    </p>
+  </div>
+</div>
+<div class="row example">
+  <div class="col c4"><p><code>h1</code> and <code>.h1</code></p></div>
+  <div class="col c4 light"><h1>32px/48px/64px Ethica Light, line-height 1.2</h1></div>
+</div>
+<div class="row example">
+  <div class="col c4"><p><code>h2</code> and <code>.h2</code></p></div>
+  <div class="col c4 light"><h2>24px Ethica Light, line-height 1.2</h2></div>
+</div>
+<div class="row example">
+  <div class="col c4"><p><code>h3</code> and <code>.h3</code></p></div>
+  <div class="col c4 light"><h3>14px Roboto Bold, line-height 24px, letter-spacing 0.6px, all caps</h3></div>
+</div>
+<div class="row example">
+  <div class="col c4"><p><code>h4</code> and <code>.h4</code></p></div>
+  <div class="col c4 light"><h4>14px Roboto Regular, line-height 1.2, letter-spacing 0.5px, all caps</h4></div>
+</div>
+<div class="row example">
+  <div class="col c4"><p><code>.text-l</code></p></div>
+  <div class="col c4 light"><p class="text-l">24px Ethica Light, line-height 1.33</p></div>
+</div>
+<div class="row example">
+  <div class="col c4"><p><code>.text-m</code> and <code>.bi-input</code></p></div>
+  <div class="col c4 light"><p class="text-m">20px Roboto Light, line-height: 1.5</div>
+</div>
+<div class="row example">
+  <div class="col c4"><p><code>.text-s</code>, <code>h5</code>, <code>.h5</code>, <code>.btn</code> and <code>.action-btn</code></p></div>
+  <div class="col c4 light"><p class="text-s">14px Roboto, line-height 1.5</p></div>
+</div>
+<div class="row example">
+  <div class="col c4"><p><code>.text-xs</code></p></div>
+  <div class="col c4 light"><p class="text-xs">12px Roboto, line-height 1.5, letter-spacing 0.5px</p></div>
+</div>
+<div class="row example">
+  <div class="col c4"><p><code>.force-etica</code></p></div>
+  <div class="col c4 light"><p class="force-etica">Etica Light</p></div>
+</div>
+<div class="row example">
+  <div class="col c4"><p><code>.highlight</code> and <code>strong</code></p></div>
+  <div class="col c4 light"><p class="highlight">Changes Ethica to Ethica Semibold</p></div>
+</div>
+
+
+<script>run();</script>
+
+</body>
+</html>
