@@ -26,3 +26,5 @@ twbs:bootstrap
 # TEMPORARY: (will be removed soon (by Johan))
 insecure                		# Allow all DB writes from clients (for prototyping)
 autopublish             		# Publish all data to the clients (for prototyping)
+meteortesting:mocha
+barbatus:typescript
