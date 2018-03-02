@@ -5,8 +5,7 @@ import { Tasks } 				from '/lib/collections/tasks.js';
 
 class TasksSample extends Component {
 	renderTasks() {
-		console.log(this.props);
-		debugger;
+		// console.log(this.props);
 		return this.props.tasks.map((task) => (
 			<TaskItem key={task._id} task={task} />
 		));
@@ -55,8 +54,8 @@ class TasksSample extends Component {
 }
 
 export default withTracker(() => {
-	console.log('Tasks',Tasks);
-	console.log('Tasks.find({}).fetch()',Tasks.find({}, { sort: { createdAt: -1 } }).fetch());
+	// console.log('Tasks',Tasks);
+	// console.log('Tasks.find({}).fetch()',Tasks.find({}, { sort: { createdAt: -1 } }).fetch());
 
 	return {
 		tasks: Tasks.find({}, { sort: { createdAt: -1 } }).fetch(),

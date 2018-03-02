@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import ReactDOM             from 'react-dom';
 import { withTracker }      from 'meteor/react-meteor-data';
+import Header               from './Header.js';
 import TasksSample          from './TasksSample.js';
+import Dashboard            from './Dashboard.js';
 import NymansPlayground     from './NymansPlayground.js';
 import {
   BrowserRouter as Router,
@@ -14,8 +16,10 @@ class App extends Component {
   render() {
     return (
       <Router>
-        <div className="container">
-          <Route exact path="/" component={TasksSample} />
+        <div className="container-fluid">
+          <Header />
+          <Route exact path="/" component={Dashboard} />
+          <Route path="/tasks" component={TasksSample} />
           <Route path="/nymansPlayground" component={NymansPlayground} />
         </div>
       </Router>
