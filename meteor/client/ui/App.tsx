@@ -1,16 +1,18 @@
 import { Meteor }           from 'meteor/meteor';
 import * as React           from 'react';
 import * as ReactDOM        from 'react-dom';
-import * as withTracker     from 'meteor/react-meteor-data';
+//import * as withTracker     from 'meteor/react-meteor-data';
+import {withTracker}        from '../lib/ReactMeteorData/react-meteor-data';
 import Header               from './Header.js';
 import TasksSample          from './TasksSample.js';
 import Dashboard            from './Dashboard.js';
-import NymansPlayground     from './NymansPlayground.js';
+import {NymansPlayground}   from '../ui/NymansPlayground';
 import {
   BrowserRouter as Router,
   Route,
   Link
 } from 'react-router-dom';
+
 
 // App component - represents the whole app
 class App extends React.Component {
@@ -41,6 +43,7 @@ class App extends React.Component {
           <Route exact path="/" component={Dashboard} />
           <Route path="/tasks" component={TasksSample} />
           <Route path="/nymansPlayground" component={NymansPlayground} />
+         
         </div>
       </Router>
     );

@@ -1,7 +1,14 @@
-import React, { Component } 	from 'react';
+import { Meteor }           from 'meteor/meteor';
+import * as React           from 'react';
+import * as ReactDOM        from 'react-dom';
+import {withTracker}        from '../lib/ReactMeteorData/react-meteor-data';
+
 import { Link } from 'react-router-dom'
 
-export default class Header extends Component {
+interface IPropsHeader {
+	
+}
+export default class Header extends React.Component<IPropsHeader> {
 	render() {
 		return (
 			<div className="header row">

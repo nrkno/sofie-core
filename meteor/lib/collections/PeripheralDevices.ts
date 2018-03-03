@@ -17,8 +17,4 @@ export interface PeripheralDevice {
 }
 
 
-const PeripheralDevices = new Mongo.Collection<PeripheralDevice>('PeripheralDevices');
-
-
-export {PeripheralDevices};
-
+export const PeripheralDevices = new Mongo.Collection<PeripheralDevice>('PeripheralDevices');

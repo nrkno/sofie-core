@@ -1,15 +1,20 @@
 /*
 Please note that the contents of this file is quite unstructured and for test purposes only
 */
-import React, { Component } 	from 'react';
-import { withTracker } 			from 'meteor/react-meteor-data';
 
-import { Tasks } 				from '/lib/collections/tasks.js';
+import * as React 				from 'react';
+import {withTracker}       		from '../lib/ReactMeteorData/react-meteor-data';
 
-//import {EditAttribute} from 'meteor/superfly:mypackage'; // import from packages
+import { Task, Tasks } 			from '../../lib/collections/Tasks';
+import { Mongo } 				from 'meteor/mongo';
+
 
 // ----------------------------------------------------------------------------
-class EditAttribute extends Component {
+
+interface IEditAttribute extends IPropsEditAttributeBase {
+	type:string
+}
+class EditAttribute extends React.Component<IEditAttribute> {
 	render() {
 
 		if (this.props.type === "text") {
@@ -23,8 +28,18 @@ class EditAttribute extends Component {
 		}
 	}
 }
-
-class EditAttributeBase extends Component {
+interface IPropsEditAttributeBase {
+	updateOnKey?: 	boolean,
+	attribute: 	 	string,
+	collection:  	Mongo.Collection<any>,
+	myObject?: 	 	any,
+	obj?: 		 	any
+}
+interface IStateEditAttributeBase {
+	value: any,
+	editing: boolean
+}
+class EditAttributeBase extends React.Component<IPropsEditAttributeBase, IStateEditAttributeBase> {
 	constructor(props) {
 		super(props);
 
@@ -54,11 +69,11 @@ class EditAttributeBase extends Component {
 
 		this.updateValue(newValue);
 	}
-	deepAttribute(obj,attr) {
+	deepAttribute(obj,attr):any {
 		// Returns a value deep inside an object
 		// Example: deepAttribute(company,"ceo.address.street");
 
-		const f = (obj) => {
+		const f = (obj, attr) => {
 			if (obj) {
 				var attributes = attr.split(".");
 				
@@ -101,6 +116,7 @@ var wrapEditAttribute = (newClass) => {
 		};
 	})(newClass);
 };
+
 
 const EditAttributeText = wrapEditAttribute(class extends EditAttributeBase {
 	constructor(props) {
@@ -162,9 +178,12 @@ const EditAttributeCheckbox = wrapEditAttribute(class extends EditAttributeBase 
 });
 
 
-
 // ----------------------------------------------------------------------------
-const EditTasks = withTracker(() => {
+
+interface IEditTasks {
+	tasks: Array<Task>
+}
+export const EditTasks = withTracker(() => {
 	
 	
 	// These properties will be exposed under this.props
@@ -173,7 +192,7 @@ const EditTasks = withTracker(() => {
 		tasks: Tasks.find({}, { sort: { createdAt: -1 } }).fetch(),
 	};
 })(
-class extends Component {
+class extends React.Component<IEditTasks> {
 	renderTasks() {
 		
 		return this.props.tasks.map((task) => (
@@ -195,7 +214,7 @@ class extends Component {
 						obj={task} 
 						type="text" 
 						attribute="text"
-						updateOnKey="1"
+						updateOnKey={true}
 					/>
 				</div>
 				<div>
@@ -229,9 +248,13 @@ class extends Component {
 	}
 });
 
+ 
+
+
+
 // ----------------------------------------------------------------------------
 
- class NymansPlayground extends Component {
+ export class NymansPlayground extends React.Component {
 	render() {
 		return (
 			<div>
@@ -243,6 +266,3 @@ class extends Component {
 		);
 	}
 }
-
-
-export default NymansPlayground;
