@@ -3,16 +3,15 @@
   "private": true,
   "scripts": {
     "start": "meteor run",
-    "test": "npm run test-watch",
-    "test-watch": "TEST_WATCH=1 meteor test --driver-package meteortesting:mocha",
+    "test": "npm run unit-test",
+    "test-i": "npm run integration-test",
+    "unit-test": "TEST_WATCH=1 meteor test --driver-package meteortesting:mocha",
+    "integration-test": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
+
     "test-once": "meteor test --once --driver-package meteortesting:mocha"
   },
   "dependencies": {
     "@babel/runtime": "^7.0.0-beta.36",
-    "@types/meteor": "^1.4.13",
-    "@types/node": "^9.4.6",
-    "@types/react": "^16.0.40",
-    "@types/react-dom": "^16.0.4",
     "chai": "^4.1.2",
     "core-js": "^2.5.3",
     "meteor-node-stubs": "^0.3.2",
@@ -21,5 +20,13 @@
     "react-dom": "^16.2.0",
     "react-hotkeys": "^0.10.0",
     "react-router-dom": "^4.2.2"
+  },
+  "devDependencies": {
+    "@types/meteor": "^1.4.13",
+    "@types/node": "^9.4.6",
+    "@types/react": "^16.0.40",
+    "@types/react-dom": "^16.0.4",
+    "@types/chai": "^4.1.2",
+    "@types/mocha": "^2.2.48"
   }
 }
