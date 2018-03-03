@@ -7,12 +7,18 @@ import {Time} from '../../lib/lib';
 
 export interface PeripheralDevice {
 	_id: string,
-	status: PeripheralDeviceAPI.StatusObject,
+
+	name: string,
+	type: PeripheralDeviceAPI.DeviceType,
+	
 	created: Time,
+	status: PeripheralDeviceAPI.StatusObject,
 	lastSeen: Time,
+	
 	connected: boolean,
 	connectionSession: string|null,
-	token: string
+	
+	token: string,
 
 }
 

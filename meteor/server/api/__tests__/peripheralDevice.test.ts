@@ -10,6 +10,10 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice';
 import {getCurrentTime} from '../../../lib/lib';
 
 
+//var StubCollections = require('meteor/hwillson:stub-collections');
+
+
+
 const expect = chai.expect;
 const assert = chai.assert;
 
@@ -29,8 +33,12 @@ describe('peripheralDevice API methods', function () {
 		
 		var deviceId = Random.id();
 		var token = Random.id();
+		var options = {
+			type: 0,
+			name: 'test'
+		}
 
-		var returnedId = ServerPeripheralDeviceAPI.initialize(deviceId, token);
+		var returnedId = ServerPeripheralDeviceAPI.initialize(deviceId, token, options);
 
 		expect(deviceId).to.equal(returnedId);
 
@@ -49,8 +57,12 @@ describe('peripheralDevice API methods', function () {
 
 		var deviceId = Random.id();
 		var token = Random.id();
+		var options = {
+			type: 0,
+			name: 'test'
+		}
 
-		var returnedId = ServerPeripheralDeviceAPI.initialize(deviceId, token);
+		var returnedId = ServerPeripheralDeviceAPI.initialize(deviceId, token, options);
 
 		var returnedStatus = ServerPeripheralDeviceAPI.setStatus(deviceId, token, {
 			statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
@@ -71,19 +83,38 @@ describe('peripheralDevice API methods', function () {
 	it('peripheralDevice.initialize() with bad arguments', async function () {
 		var deviceId = Random.id();
 		var token = Random.id();
+
+		var options = {
+			type: 0,
+			name: 'test'
+		}
+
 		expect(() => {
-			return ServerPeripheralDeviceAPI.initialize('', token) // missing id
+			return ServerPeripheralDeviceAPI.initialize('', token, options) // missing id
 		}).to.throw()
 
 		expect(() => {
-			return ServerPeripheralDeviceAPI.initialize(deviceId, '') // missing token
+			return ServerPeripheralDeviceAPI.initialize(deviceId, '', options) // missing token
+		}).to.throw()
+
+		expect(() => {
+			
+			return ServerPeripheralDeviceAPI.initialize(deviceId, token, <any>null) // missing options
+		}).to.throw()
+
+		expect(() => {
+			
+			return ServerPeripheralDeviceAPI.initialize(deviceId, token, <any>{}) // bad options
 		}).to.throw()
 	});
 	
 	it('peripheralDevice.setStatus() with bad arguments', async function () {
 		var deviceId = Random.id();
 		var token = Random.id();
-
+		var options = {
+			type: 0,
+			name: 'test'
+		}
 
 		expect(() => {
 			return ServerPeripheralDeviceAPI.setStatus(deviceId, token, {
@@ -91,7 +122,7 @@ describe('peripheralDevice API methods', function () {
 			}) 
 		}).to.throw() // because device is not initialized yet
 
-		var returnedId = ServerPeripheralDeviceAPI.initialize(deviceId, token);
+		var returnedId = ServerPeripheralDeviceAPI.initialize(deviceId, token, options);
 
 		expect(() => {
 			return ServerPeripheralDeviceAPI.setStatus(deviceId, token, {
@@ -101,13 +132,11 @@ describe('peripheralDevice API methods', function () {
 
 		// try with bad arguments:
 		expect(() => {
-			// @ts-ignore:
-			return ServerPeripheralDeviceAPI.setStatus(deviceId, token, {} ) // missing statusCode
+			return ServerPeripheralDeviceAPI.setStatus(deviceId, token, <any>{} ) // missing statusCode
 		}).to.throw() 
 
 		expect(() => {
-			// @ts-ignore:
-			return ServerPeripheralDeviceAPI.setStatus(deviceId, token) // missing status
+			return ServerPeripheralDeviceAPI.setStatus(deviceId, token, <any>null) // missing status
 		}).to.throw() 
 
 		expect(() => {

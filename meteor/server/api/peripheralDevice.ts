@@ -13,9 +13,12 @@ import { PeripheralDeviceSecurity } from "../security/peripheralDevices";
 // ---------------------------------------------------------------
 export namespace ServerPeripheralDeviceAPI {
 
-	export function initialize(id:string, token:string):string {
+	export function initialize(id:string, token:string, options: PeripheralDeviceAPI.InitOptions):string {
 		check(id, String);
 		check(token, String);
+		check(options, Object);
+		check(options.name, String);
+		check(options.type, Number);
 
 		var peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this);
 
@@ -31,7 +34,9 @@ export namespace ServerPeripheralDeviceAPI {
 				connected: false, // this is set at another place
 				connectionSession: null,
 				lastSeen: getCurrentTime(),
-				token: token
+				token: token,
+				type: options.type,
+				name: options.name,
 
 			});
 
@@ -78,8 +83,11 @@ export namespace ServerPeripheralDeviceAPI {
 
 
 const methods = {};
-methods[PeripheralDeviceAPI.methods.initialize] = (id, token) => {
-	return ServerPeripheralDeviceAPI.initialize(id, token);
+methods[PeripheralDeviceAPI.methods.initialize] = (id, token, options) => {
+	return ServerPeripheralDeviceAPI.initialize(id, token, options);
+};
+methods[PeripheralDeviceAPI.methods.unInitialize] = (id, token) => {
+	return ServerPeripheralDeviceAPI.unInitialize(id, token);
 };
 methods[PeripheralDeviceAPI.methods.setStatus] = (id, token, status) => {
 	return ServerPeripheralDeviceAPI.setStatus(id, token, status);

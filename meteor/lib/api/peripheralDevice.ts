@@ -17,9 +17,19 @@ export enum StatusCode {
 	BAD = 4, 			// Operation affected, possible to recover
 	FATAL = 5			// Operation affected, not possible to recover without manual interference
 }
+
 export interface StatusObject {
 	statusCode:StatusCode,
 	messages?:Array<string>
+}
+
+export enum DeviceType {
+	MOSDEVICE = 0, 		
+	PLAYOUT = 1, 			
+}
+export interface InitOptions {
+	type: DeviceType,
+	name:string
 }
 
 
@@ -28,8 +38,8 @@ export enum methods {
 	initialize 		= "peripheralDevice.initialize",
 	unInitialize 	= "peripheralDevice.unInitialize",
 }
-export function initialize(id:string, token:string):Promise<string> {
-	return MeteorPromiseCall(methods.initialize, id, token);
+export function initialize(id:string, token:string, options:InitOptions):Promise<string> {
+	return MeteorPromiseCall(methods.initialize, id, token, options);
 }
 export function unInitialize(id:string, token:string, status:StatusObject):Promise<StatusObject> {
 	return MeteorPromiseCall(methods.unInitialize, id, token);
