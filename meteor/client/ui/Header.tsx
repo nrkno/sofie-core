@@ -6,7 +6,7 @@ import {withTracker}        from '../lib/ReactMeteorData/react-meteor-data';
 import { Link } from 'react-router-dom'
 
 interface IPropsHeader {
-	
+
 }
 export default class Header extends React.Component<IPropsHeader> {
 	render() {
@@ -23,6 +23,7 @@ export default class Header extends React.Component<IPropsHeader> {
 						<Link to="/">Home</Link>
 						<Link to="/tasks">Tasks</Link>
 						<Link to="/nymansPlayground">Nyman's Playground</Link>
+						<Link to="/status">Status</Link>
 					</div>
 				</div>
 			</div>

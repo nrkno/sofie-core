@@ -10,17 +10,17 @@ export interface PeripheralDevice {
 
 	name: string,
 	type: PeripheralDeviceAPI.DeviceType,
-	
+
 	created: Time,
 	status: PeripheralDeviceAPI.StatusObject,
 	lastSeen: Time,
-	
+
 	connected: boolean,
 	connectionSession: string|null,
-	
+
 	token: string,
 
 }
 
 
-export const PeripheralDevices = new Mongo.Collection<PeripheralDevice>('PeripheralDevices');
+export const PeripheralDevices = new Mongo.Collection<PeripheralDevice>('peripheralDevices');

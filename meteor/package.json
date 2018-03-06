@@ -7,12 +7,13 @@
     "test-i": "npm run integration-test",
     "unit-test": "TEST_WATCH=1 meteor test --driver-package meteortesting:mocha",
     "integration-test": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
-
     "test-once": "meteor test --once --driver-package meteortesting:mocha"
   },
   "dependencies": {
     "@babel/runtime": "^7.0.0-beta.36",
+    "@types/classnames": "^2.2.3",
     "chai": "^4.1.2",
+    "classnames": "^2.2.5",
     "core-js": "^2.5.3",
     "meteor-node-stubs": "^0.3.2",
     "react": "^16.2.0",
