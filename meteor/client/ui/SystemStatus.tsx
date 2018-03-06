@@ -51,23 +51,33 @@ export class DeviceItem extends React.Component<IDeviceItemPropsHeader> {
 	render() {
     var statusClassNames = ClassNames({
       "device-item__device-status": true,
-      "device-item__device-status--unknown": this.props.device.status.statusCode == PeripheralDeviceAPI.StatusCode.UNKNOWN,
-      "device-item__device-status--good": this.props.device.status.statusCode == PeripheralDeviceAPI.StatusCode.GOOD,
-      "device-item__device-status--minor-warning": this.props.device.status.statusCode == PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
-      "device-item__device-status--warning": this.props.device.status.statusCode == PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
-      "device-item__device-status--bad": this.props.device.status.statusCode == PeripheralDeviceAPI.StatusCode.BAD,
-      "device-item__device-status--fatal": this.props.device.status.statusCode == PeripheralDeviceAPI.StatusCode.FATAL
+      "device-item__device-status--unknown": this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN,
+      "device-item__device-status--good": this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD,
+      "device-item__device-status--minor-warning": this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
+      "device-item__device-status--warning": this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
+      "device-item__device-status--bad": this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD,
+      "device-item__device-status--fatal": this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL
     });
 
 		return (
 			<tr className="device-item">
-				<td className="device-item__name">{this.props.device.name}</td>
-				<td className="device-item__connected">{this.connectedString()}</td>
-				<td className="device-item__type">{this.deviceTypeString()}</td>
-				<td className={statusClassNames}>
-          <span className="device-item__device-status__label">{this.statusCodeString()}</span>
+				<td className="device-item__name">
+          <p>{this.props.device.name}</p>
         </td>
-				<td className="device-item__last-seen">{new Date(this.props.device.lastSeen).toString()}</td>
+				<td className="device-item__connected">
+          <p>{this.connectedString()}</p>
+        </td>
+				<td className="device-item__type">
+          <p>{this.deviceTypeString()}</p>
+        </td>
+				<td className={statusClassNames}>
+          <p>
+            <span className="pill device-item__device-status__label">{this.statusCodeString()}</span>
+          </p>
+        </td>
+				<td className="device-item__last-seen">
+          <p>{new Date(this.props.device.lastSeen).toString()}</p>
+        </td>
 			</tr>
 		)
 	}
@@ -91,7 +101,7 @@ export class SystemStatus extends React.Component<IPropsHeader> {
 					<h1>System Status</h1>
 				</header>
 				<div className="mod mvl">
-					<table className="table">
+					<table className="table system-status-table">
 						<thead>
 							<tr>
 								<th className="c3">
@@ -100,13 +110,13 @@ export class SystemStatus extends React.Component<IPropsHeader> {
                 <th className="c1">
                 Connected
                 </th>
-								<th className="c2">
+								<th className="c1">
 									Type
 								</th>
 								<th className="c2">
 									Status
 								</th>
-								<th className="c4">
+								<th className="c5">
 									Last seen
 								</th>
 							</tr>
