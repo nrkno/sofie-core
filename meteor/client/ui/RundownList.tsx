@@ -4,11 +4,11 @@ import * as ReactDOM         from 'react-dom';
 import {withTracker}         from '../lib/ReactMeteorData/react-meteor-data';
 
 import * as ClassNames       from 'classnames';
-import {ISegment}             from './Rundown';
+import {Rundown, Rundowns}   from '.,/../lib/collections/Rundowns';
 
 interface IRundownListItemPropsHeader {
 	key: string,
-	rundown: ISegment
+	rundown: Rundown
 }
 export class RundownListItem extends React.Component<IRundownListItemPropsHeader> {
 	render() {
