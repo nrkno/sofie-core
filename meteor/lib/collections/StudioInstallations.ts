@@ -16,7 +16,9 @@ export interface ISourceLayer {
 	name: String,
 	type: RundownAPI.SourceLayerType,
   /** If set to true, the layer can handle any number of simultaneus Line Items */
-  unlimited: Boolean
+  unlimited: Boolean,
+	/** Ifs set to true, the layer will be shown in PGM Clean */
+	onPGMClean: Boolean
 }
 
 /** A layer output group, f.g. PGM, Studio Monitor 1, etc. */
@@ -24,7 +26,9 @@ export interface ILayerOutput {
 	_id: String,
 	/** User-presentable name for the layer output group */
 	name: String,
-	/** A utility flag to make sure that the PGM channel is always on top */
+	/** A utility flag to make sure that the PGM channel is always on top,
+	    and notify that PGM treatment of this output should be in effect
+			(generate PGM Clean out based on SourceLayer properties) */
 	isPGM: Boolean,
 }
 
