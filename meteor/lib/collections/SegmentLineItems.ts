@@ -10,10 +10,12 @@ export interface ITimelineTrigger {
 /** A Single item in a "line": script, VT, cameras */
 export interface ISegmentLineItem {
   _id: String,
+	/** ID of the source object in MOS */
+	mosId: String,
   /** The segment line this item belongs to */
   segmentLineId: String,
-  /** The rundown this item belongs to */
-	rundownId: String
+  /** The running order this item belongs to */
+	runningOrderId: String
 	/** User-presentable name for the timeline item */
 	name: String,
 	/** Timeline item trigger. Possibly, most of these will be manually triggered as next, but maybe some will be automatic. */

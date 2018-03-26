@@ -1,10 +1,14 @@
 import { Mongo } from 'meteor/mongo';
 
-/** A "Title" in ENPS Lingo. */
+/** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
 export interface Segment {
 	_id: String,
-  /** The rundown this segment belongs to */
-  rundownId: String,
+	/** Position inside running order */
+	_rank: Number,
+	/** ID of the source object in MOS */
+	mosId: String,
+  /** The running order this segment belongs to */
+  runningOrderId: String,
   /** User-presentable name for the Title */
 	name: String,
   expanded: Boolean
