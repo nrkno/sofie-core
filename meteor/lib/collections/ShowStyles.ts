@@ -1,8 +1,8 @@
 import { Mongo } from 'meteor/mongo'
 
 export interface ShowStyle {
-	_id: String,
-	name: String,
+	_id: string,
+	name: string,
 	splitConfigurations: Array<object>,
 	graphicsTemplates: Array<object>,
 	wipesAndBumpers: Array<object>,

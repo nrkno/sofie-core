@@ -9,23 +9,23 @@ export interface ITimelineTrigger {
 
 /** A Single item in a "line": script, VT, cameras */
 export interface ISegmentLineItem {
-	_id: String,
+	_id: string,
 	/** ID of the source object in MOS */
-	mosId: String,
+	mosId: string,
   /** The segment line this item belongs to */
-	segmentLineId: String,
+	segmentLineId: string,
   /** The running order this item belongs to */
-	runningOrderId: String
+	runningOrderId: string
 	/** User-presentable name for the timeline item */
-	name: String,
+	name: string,
 	/** Timeline item trigger. Possibly, most of these will be manually triggered as next, but maybe some will be automatic. */
 	trigger: ITimelineTrigger,
 	/** Playback availability status */
 	status: RundownAPI.LineItemStatusCode,
 	/** Source layer the timeline item belongs to */
-	sourceLayerId: String
+	sourceLayerId: string
   /** Layer output this segment line item belongs to */
-	outputLayerId: String
+	outputLayerId: string
 	/** Expected duration of the item as planned or as estimated by the system (in case of Script layers), in seconds. */
 	expectedDuration: Number,
 	/** Actual duration of the item, in seconds. This value will be updated during playback for some types of items. */
