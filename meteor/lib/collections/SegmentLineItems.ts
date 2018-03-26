@@ -1,5 +1,5 @@
-import { Mongo } from 'meteor/mongo';
-import {RundownAPI} from '../../lib/api/rundown';
+import { Mongo } from 'meteor/mongo'
+import { RundownAPI } from '../../lib/api/rundown'
 
 /** A trigger interface compatible with that of supertimeline */
 export interface ITimelineTrigger {
@@ -9,11 +9,11 @@ export interface ITimelineTrigger {
 
 /** A Single item in a "line": script, VT, cameras */
 export interface ISegmentLineItem {
-  _id: String,
+	_id: String,
 	/** ID of the source object in MOS */
 	mosId: String,
   /** The segment line this item belongs to */
-  segmentLineId: String,
+	segmentLineId: String,
   /** The running order this item belongs to */
 	runningOrderId: String
 	/** User-presentable name for the timeline item */
@@ -25,15 +25,15 @@ export interface ISegmentLineItem {
 	/** Source layer the timeline item belongs to */
 	sourceLayerId: String
   /** Layer output this segment line item belongs to */
-  outputLayerId: String
+	outputLayerId: String
 	/** Expected duration of the item as planned or as estimated by the system (in case of Script layers), in seconds. */
 	expectedDuration: Number,
 	/** Actual duration of the item, in seconds. This value will be updated during playback for some types of items. */
 	duration: Number,
   /** A flag to signal a given SegmentLineItem has been deactivated manually */
-  disabled: Boolean,
+	disabled: Boolean,
   /** The object describing the item in detail */
-  content: object
+	content: object
 }
 
-export const SegmentLineItems = new Mongo.Collection<ISegmentLineItem>('segmentLineItems');
+export const SegmentLineItems = new Mongo.Collection<ISegmentLineItem>('segmentLineItems')

@@ -2,181 +2,174 @@
 Please note that the contents of this file is quite unstructured and for test purposes only
 */
 
-import * as React 				from 'react';
-import {withTracker}       		from '../lib/ReactMeteorData/react-meteor-data';
+import * as React 				from 'react'
+import { withTracker }       		from '../lib/ReactMeteorData/react-meteor-data'
 
-import { Task, Tasks } 			from '../../lib/collections/Tasks';
-import { Mongo } 				from 'meteor/mongo';
-
+import { Task, Tasks } 			from '../../lib/collections/Tasks'
+import { Mongo } 				from 'meteor/mongo'
 
 // ----------------------------------------------------------------------------
 
 interface IEditAttribute extends IPropsEditAttributeBase {
-	type:string
+	type: string
 }
 class EditAttribute extends React.Component<IEditAttribute> {
-	render() {
+	render () {
 
-		if (this.props.type === "text") {
+		if (this.props.type === 'text') {
 			return (
 				<EditAttributeText {...this.props} />
-			);
-		} else if (this.props.type === "checkbox") {
+			)
+		} else if (this.props.type === 'checkbox') {
 			return (
 				<EditAttributeCheckbox {...this.props} />
-			);
+			)
 		}
 	}
 }
 interface IPropsEditAttributeBase {
-	updateOnKey?: 	boolean,
-	attribute: 	 	string,
-	collection:  	Mongo.Collection<any>,
-	myObject?: 	 	any,
-	obj?: 		 	any
+	updateOnKey?: boolean,
+	attribute: string,
+	collection: Mongo.Collection<any>,
+	myObject?: any,
+	obj?: any
 }
 interface IStateEditAttributeBase {
 	value: any,
 	editing: boolean
 }
 class EditAttributeBase extends React.Component<IPropsEditAttributeBase, IStateEditAttributeBase> {
-	constructor(props) {
-		super(props);
+	constructor (props) {
+		super(props)
 
-		
 		this.state = {
 			value: this.getAttribute(),
 			editing: false
-		};
+		}
 
 		this.handleEdit 	= this.handleEdit.bind(this)
 		this.handleUpdate 	= this.handleUpdate.bind(this)
 	}
-	handleEdit(newValue) {
+	handleEdit (newValue) {
 		this.setState({
 			value: newValue,
 			editing: true
-		});
+		})
 		if (this.props.updateOnKey) {
-			this.updateValue(newValue);
+			this.updateValue(newValue)
 		}
 	}
-	handleUpdate(newValue) {
+	handleUpdate (newValue) {
 		this.setState({
 			value: newValue,
 			editing: false
-		});
+		})
 
-		this.updateValue(newValue);
+		this.updateValue(newValue)
 	}
-	deepAttribute(obj,attr):any {
+	deepAttribute (obj,attr): any {
 		// Returns a value deep inside an object
 		// Example: deepAttribute(company,"ceo.address.street");
 
 		const f = (obj, attr) => {
 			if (obj) {
-				var attributes = attr.split(".");
-				
+				let attributes = attr.split('.')
+
 				if (attributes.length > 1) {
-					var outerAttr = attributes.shift();
-					var innerAttrs = attributes.join(".");
-					
-					return f(obj[outerAttr],innerAttrs);
-					
+					let outerAttr = attributes.shift()
+					let innerAttrs = attributes.join('.')
+
+					return f(obj[outerAttr],innerAttrs)
+
 				} else {
-					return obj[attributes[0]];
+					return obj[attributes[0]]
 				}
 			} else {
-				return obj;
+				return obj
 			}
 		}
-		return f(obj,attr);
+		return f(obj,attr)
 	}
-	getAttribute() {
-		return this.deepAttribute(this.props.myObject, this.props.attribute);
+	getAttribute () {
+		return this.deepAttribute(this.props.myObject, this.props.attribute)
 	}
-	getAttributeText() {
-		return this.getAttribute();
+	getAttributeText () {
+		return this.getAttribute()
 	}
-	getEditAttribute() {
-		return ( this.state.editing ? this.state.value : this.getAttribute());
+	getEditAttribute () {
+		return ( this.state.editing ? this.state.value : this.getAttribute())
 	}
-	updateValue(newValue) {
-		var m = {};
-		m[this.props.attribute] = newValue;
-		this.props.collection.update(this.props.obj._id, {$set: m});
+	updateValue (newValue) {
+		let m = {}
+		m[this.props.attribute] = newValue
+		this.props.collection.update(this.props.obj._id, {$set: m})
 	}
 }
-var wrapEditAttribute = (newClass) => {
+let wrapEditAttribute = (newClass) => {
 	return withTracker((props) => {
 		// These properties will be exposed under this.props
 		// Note that these properties are reactively recalculated
 		return {
 			myObject: props.collection.findOne(props.obj._id)
-		};
-	})(newClass);
-};
-
+		}
+	})(newClass)
+}
 
 const EditAttributeText = wrapEditAttribute(class extends EditAttributeBase {
-	constructor(props) {
-		super(props);
+	constructor (props) {
+		super(props)
 
 		this.handleChange 	= this.handleChange.bind(this)
 		this.handleBlur 	= this.handleBlur.bind(this)
 	}
-	handleChange(event) {
-		this.handleEdit(event.target.value);
+	handleChange (event) {
+		this.handleEdit(event.target.value)
 	}
-	handleBlur(event) {
-		this.handleUpdate(event.target.value);
+	handleBlur (event) {
+		this.handleUpdate(event.target.value)
 	}
-	render() {
-		console.log('render', this.getEditAttribute());
+	render () {
+		console.log('render', this.getEditAttribute())
 		return (
 			<div>
-				<input type='text' 
-					className='form-control' 
-					
+				<input type='text'
+					className='form-control'
 
 					value={this.getEditAttribute()}
 					onChange={this.handleChange}
 					onBlur={this.handleBlur}
 				/>
-				
-				
+
 			</div>
-		);
+		)
 	}
-});
+})
 const EditAttributeCheckbox = wrapEditAttribute(class extends EditAttributeBase {
-	constructor(props) {
-		super(props);
+	constructor (props) {
+		super(props)
 
 		this.handleChange 	= this.handleChange.bind(this)
 	}
-	isChecked() {
-		return !!this.getEditAttribute();
+	isChecked () {
+		return !!this.getEditAttribute()
 	}
-	handleChange(event) {
+	handleChange (event) {
 
-		this.handleUpdate(!this.state.value);
+		this.handleUpdate(!this.state.value)
 	}
-	render() {
+	render () {
 		return (
 			<div>
-				<input type='checkbox' 
-					className='form-control' 
-					
+				<input type='checkbox'
+					className='form-control'
 
 					checked={this.isChecked()}
 					onChange={this.handleChange}
 				/>
 			</div>
-		);
+		)
 	}
-});
-
+})
 
 // ----------------------------------------------------------------------------
 
@@ -184,59 +177,58 @@ interface IEditTasks {
 	tasks: Array<Task>
 }
 export const EditTasks = withTracker(() => {
-	
-	
+
 	// These properties will be exposed under this.props
 	// Note that these properties are reactively recalculated
 	return {
-		tasks: Tasks.find({}, { sort: { createdAt: -1 } }).fetch(),
-	};
+		tasks: Tasks.find({}, { sort: { createdAt: -1 } }).fetch()
+	}
 })(
 class extends React.Component<IEditTasks> {
-	renderTasks() {
-		
+	renderTasks () {
+
 		return this.props.tasks.map((task) => (
 			<div key={task._id}>
 				Edit Task:
 				<div>
 					Text:
-					<EditAttribute 
+					<EditAttribute
 						collection={Tasks}
-						obj={task} 
-						type="text" 
-						attribute="text" 
+						obj={task}
+						type='text'
+						attribute='text'
 					/>
 				</div>
 				<div>
 					Text (updated on key):
-					<EditAttribute 
+					<EditAttribute
 						collection={Tasks}
-						obj={task} 
-						type="text" 
-						attribute="text"
+						obj={task}
+						type='text'
+						attribute='text'
 						updateOnKey={true}
 					/>
 				</div>
 				<div>
 					Checkbox:
-					<EditAttribute 
+					<EditAttribute
 						collection={Tasks}
-						obj={task} 
-						type="checkbox" 
-						attribute="checked"
+						obj={task}
+						type='checkbox'
+						attribute='checked'
 					/>
-					<EditAttribute 
+					<EditAttribute
 						collection={Tasks}
-						obj={task} 
-						type="checkbox" 
-						attribute="checked"
+						obj={task}
+						type='checkbox'
+						attribute='checked'
 					/>
 				</div>
-				
+
 			</div>
-		));
+		))
 	}
-	render() {
+	render () {
 		return (
 			<div>
 				EditTasks
@@ -244,18 +236,14 @@ class extends React.Component<IEditTasks> {
 					{this.renderTasks()}
 				</div>
 			</div>
-		);
+		)
 	}
-});
-
- 
-
-
+})
 
 // ----------------------------------------------------------------------------
 
- export class NymansPlayground extends React.Component {
-	render() {
+export class NymansPlayground extends React.Component {
+	render () {
 		return (
 			<div>
 				<h1>Nyman's playground</h1>
@@ -263,6 +251,6 @@ class extends React.Component<IEditTasks> {
 					<EditTasks />
 				</div>
 			</div>
-		);
+		)
 	}
 }

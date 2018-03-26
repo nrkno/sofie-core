@@ -1,16 +1,16 @@
-import { Meteor }            from 'meteor/meteor';
-import * as React            from 'react';
-import * as ReactDOM         from 'react-dom';
-import {withTracker}         from '../lib/ReactMeteorData/react-meteor-data';
+import { Meteor } from 'meteor/meteor'
+import * as React from 'react'
+import * as ReactDOM from 'react-dom'
+import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 
-import * as ClassNames       from 'classnames';
-import {Time}                from '../../lib/lib';
-import {StudioInstallation,
-        ISourceLayer,
-        ILayerOutput}        from '../../lib/collections/StudioInstallations';
-import {SegmentLine}         from '../../lib/collections/SegmentLines';
-import {ISegmentLineItem}    from '../../lib/collections/SegmentLineItems';
-import {Segment}             from '../../lib/collections/Segments';
+import * as ClassNames from 'classnames'
+import { Time } from '../../lib/lib'
+import { StudioInstallation,
+		 ISourceLayer,
+		 ILayerOutput } from '../../lib/collections/StudioInstallations'
+import { SegmentLine } from '../../lib/collections/SegmentLines'
+import { ISegmentLineItem } from '../../lib/collections/SegmentLineItems'
+import { Segment } from '../../lib/collections/Segments'
 
 export interface ISegmentLineItemPropsHeader {
 	key: string,
@@ -18,9 +18,9 @@ export interface ISegmentLineItemPropsHeader {
 	installation: StudioInstallation
 }
 export class SegmentLineItem extends React.Component<ISegmentLineItemPropsHeader> {
-	render() {
-    return (
-			<div className="segment-line-item">
+	render () {
+		return (
+			<div className='segment-line-item'>
 
 			</div>
 		)
@@ -35,9 +35,9 @@ interface ISegmentTimelinePropsHeader {
 	isNext: Boolean
 }
 export class SegmentBox extends React.Component<ISegmentTimelinePropsHeader> {
-	render() {
-    return (
-			<div className="segment">
+	render () {
+		return (
+			<div className='segment'>
 
 			</div>
 		)
@@ -52,15 +52,14 @@ interface ILayerOutputGroupPropsHeader {
 	collapsed?: Boolean,
 }
 export class LayerOutputGroup extends React.Component<ILayerOutputGroupPropsHeader> {
-	render() {
-    return (
-			<div className="layer-output-group">
+	render () {
+		return (
+			<div className='layer-output-group'>
 
 			</div>
 		)
 	}
 }
-
 
 interface IInputLayerTimelinePropsHeader {
 	key: string,
@@ -69,9 +68,9 @@ interface IInputLayerTimelinePropsHeader {
 	collapsed?: Boolean,
 }
 export class InputLayerTimeline extends React.Component<IInputLayerTimelinePropsHeader> {
-	render() {
-    return (
-			<div className="input-layer-timeline">
+	render () {
+		return (
+			<div className='input-layer-timeline'>
 
 			</div>
 		)

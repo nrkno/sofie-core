@@ -1,5 +1,4 @@
-import { Mongo } from 'meteor/mongo';
-
+import { Mongo } from 'meteor/mongo'
 
 export interface Task {
 	_id: string,
@@ -8,4 +7,4 @@ export interface Task {
 
 }
 
-export const Tasks = new Mongo.Collection<Task>('tasks');
+export const Tasks = new Mongo.Collection<Task>('tasks')
