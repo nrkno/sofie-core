@@ -19,6 +19,7 @@
     "react": "^16.2.0",
     "react-bootstrap": "^0.32.1",
     "react-dom": "^16.2.0",
+    "underscore": "^1.8.3",
     "react-hotkeys": "^0.10.0",
     "react-router-dom": "^4.2.2",
     "mos-connection": "git+https://github.com/nrkno/tv-automation-mos-connection"

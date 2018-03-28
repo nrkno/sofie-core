@@ -159,7 +159,7 @@ export namespace ServerPeripheralDeviceAPI {
 	export function mosRoReplace (ro: IMOSRunningOrder) {
 		return mosRoCreate(ro) // it's the same
 	}
-	export function mosRoDelete (runningOrderId: MosString128) {
+	export function mosRoDelete (runningOrderId: string) {
 
 		RunningOrders.remove('' + runningOrderId)
 		Segments.remove({runningOrderId: '' + runningOrderId})
