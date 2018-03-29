@@ -6,22 +6,13 @@ import { Mongo } from 'meteor/mongo'
  * @param  {string} Method name
  * @return {Promise<any>}
  */
-export function MeteorPromiseCall (callName: string, ...any ): Promise<any> {
-
+export function MeteorPromiseCall (callName: string, ...args: any[] ): Promise<any> {
 	return new Promise((resolve, reject) => {
-
-		let args: Array<any> = []
-		for (let i = 1; i < arguments.length; i++ ) {
-			args.push(arguments[i])
-		}
-
 		Meteor.call(callName, ...args, (err, res) => {
 			if (err) reject(err)
 			else resolve(res)
 		})
-
 	})
-
 }
 
 export type Time = number
@@ -42,6 +33,13 @@ export interface DBObj {
 interface SaveIntoDbOptions<T> {
 	beforeInsert?: (o: T) => T
 	beforeUpdate?: (o: T) => T
+	beforeRemove?: (o: T) => T
+	insert?: (o: T ) => void
+	update?: (id: string, o: T ) => void
+	remove?: (o: T ) => void
+	afterInsert?: (o: T) => void
+	afterUpdate?: (o: T) => void
+	afterRemove?: (o: T) => void
 }
 /**
  * Saves an array of data into a collection
@@ -54,14 +52,14 @@ export function saveIntoDb<T extends DBObj> (
 	collection: Mongo.Collection<T>,
 	filter: object,
 	newData: Array<T>,
-	options?: SaveIntoDbOptions<T>
+	optionsOrg?: SaveIntoDbOptions<T>
 ) {
 	let change = {
 		added: 0,
 		updated: 0,
 		removed: 0
 	}
-	options = options || {}
+	let options: SaveIntoDbOptions<T> = optionsOrg || {}
 
 	let identifier = 'id'
 
@@ -96,26 +94,30 @@ export function saveIntoDb<T extends DBObj> (
 
 			if (!diff) {
 				let oUpdate = ( options.beforeUpdate ? options.beforeUpdate(o) : o)
-				collection.update(oldObj._id,{$set: oUpdate})
+				if (options.update) options.update(oldObj._id, oUpdate)
+				else collection.update(oldObj._id,{$set: oUpdate})
+				if (options.afterUpdate) options.afterUpdate(oUpdate)
 				change.updated++
 			}
 		} else {
-
 			if (!_.isNull(oldObj)) {
-
 				let oInsert = ( options.beforeInsert ? options.beforeInsert(o) : o)
-				collection.insert(oInsert)
+				if (options.insert) options.insert(oInsert)
+				else collection.insert(oInsert)
+				if (options.afterInsert) options.afterInsert(oInsert)
 				change.added++
 			}
 		}
 		delete removeObjs['' + o[identifier]]
 	})
-	_.each(removeObjs,function (obj,key) {
+	_.each(removeObjs,function (obj: T, key) {
 		if (obj) {
 
 			if (!(obj.OP || {}).isActive) {
-
-				collection.remove(obj._id)
+				let oRemove = ( options.beforeRemove ? options.beforeRemove(obj) : obj)
+				if (options.remove) options.remove(oRemove)
+				else collection.remove(oRemove._id)
+				if (options.afterRemove) options.afterRemove(oRemove)
 				change.removed++
 
 			}
@@ -176,15 +178,15 @@ function compareObjs (a: any, b: any, onlyKeysFromA?: boolean, omit?: Array<stri
 	return !diff
 }
 export function literal<T> (o: T) { return o }
-type partial<T> = {
+export type Partial<T> = {
 	[P in (keyof T)]?: T[P];
 }
-export function partial<T> (o: partial<T>) {
+export function partial<T> (o: Partial<T>) {
 	return o
 }
 export interface IDObj {
 	_id: string
 }
-export function partialExceptId<T> (o: partial<T> & IDObj) {
+export function partialExceptId<T> (o: Partial<T> & IDObj) {
 	return o
 }

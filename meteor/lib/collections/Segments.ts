@@ -1,17 +1,25 @@
 import { Mongo } from 'meteor/mongo'
 
+import {
+	IMOSExternalMetaData,
+	IMOSObjectStatus
+} from 'mos-connection'
+
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
 export interface Segment {
-	_id: string,
+	_id: string
 	/** Position inside running order */
-	_rank: Number,
+	_rank: number
 	/** ID of the source object in MOS */
-	mosId: string,
+	mosId: string
   /** The running order this segment belongs to */
-	runningOrderId: string,
+	runningOrderId: string
   /** User-presentable name for the Title */
-	name: string,
-	expanded: Boolean
+	name: string
+
+	metaData?: Array<IMOSExternalMetaData>
+	status?: IMOSObjectStatus
+	expanded?: Boolean
 }
 
 export const Segments = new Mongo.Collection<Segment>('segments')

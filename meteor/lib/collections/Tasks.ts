@@ -1,8 +1,8 @@
 import { Mongo } from 'meteor/mongo'
 
 export interface Task {
-	_id: string,
-	text: string,
+	_id: string
+	text: string
 	createdAt: Date
 
 }

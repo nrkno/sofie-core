@@ -3,19 +3,19 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Time } from '../../lib/lib'
 
 export interface PeripheralDevice {
-	_id: string,
+	_id: string
 
-	name: string,
-	type: PeripheralDeviceAPI.DeviceType,
+	name: string
+	type: PeripheralDeviceAPI.DeviceType
 
-	created: Time,
-	status: PeripheralDeviceAPI.StatusObject,
-	lastSeen: Time,
+	created: Time
+	status: PeripheralDeviceAPI.StatusObject
+	lastSeen: Time
 
-	connected: boolean,
-	connectionSession: string|null,
+	connected: boolean
+	connectionSession: string|null
 
-	token: string,
+	token: string
 
 }
 

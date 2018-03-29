@@ -3,7 +3,13 @@ import StubCollections from 'meteor/hwillson:stub-collections'
 import { Random } from 'meteor/random'
 import {} from 'mocha'
 
+
 import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { RunningOrder, RunningOrders } from '../../../lib/collections/RunningOrders'
+import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
+import { ISegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
+import { Segment, Segments } from '../../../lib/collections/Segments'
+
 import { ServerPeripheralDeviceAPI } from '../peripheralDevice'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 
@@ -64,13 +70,13 @@ describe('peripheralDevice API methods', function () {
 		})
 
 		// check that there is an object
-		let md = PeripheralDevices.findOne(deviceId)
-		expect(md).to.be.an('object')
+		let pd = PeripheralDevices.findOne(deviceId)
+		expect(pd).to.be.an('object')
 
 		// Check object status:
-		expect(md.status).to.be.an('object')
-		expect(md.status.statusCode).to.be.equal(PeripheralDeviceAPI.StatusCode.GOOD)
-		expect(md.status.messages).to.have.length(1)
+		expect(pd.status).to.be.an('object')
+		expect(pd.status.statusCode).to.be.equal(PeripheralDeviceAPI.StatusCode.GOOD)
+		expect(pd.status.messages).to.have.length(1)
 	})
 
 	it('peripheralDevice.initialize() with bad arguments', async function () {
