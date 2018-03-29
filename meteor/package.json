@@ -22,6 +22,8 @@
     "underscore": "^1.8.3",
     "react-hotkeys": "^0.10.0",
     "react-router-dom": "^4.2.2",
+    "superfly-timeline": "git+https://github.com/SuperFlyTV/supertimeline.git#develop",
+    "velocity-react": "^1.3.3",
     "mos-connection": "git+https://github.com/nrkno/tv-automation-mos-connection"
   },
   "devDependencies": {
