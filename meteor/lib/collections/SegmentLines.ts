@@ -1,16 +1,16 @@
-import { Mongo } from 'meteor/mongo';
+import { Mongo } from 'meteor/mongo'
 
 /** A "Line" in NRK Lingo. */
 export interface SegmentLine {
-  _id: String
+	_id: string
   /** Position inside the segment */
-  _rank: Number,
+	_rank: Number,
   /** ID of the source object in MOS */
-	mosId: String,
+	mosId: string,
   /** The segment ("Title") this line belongs to */
-  segmentId: String
+	segmentId: string
   /** The running order this line belongs to */
-  runningOrderId: String
+	runningOrderId: string
 }
 
-export const SegmentLines = new Mongo.Collection<SegmentLine>('segmentLines');
+export const SegmentLines = new Mongo.Collection<SegmentLine>('segmentLines')

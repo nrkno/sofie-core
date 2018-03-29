@@ -1,20 +1,19 @@
-import { Mongo } from 'meteor/mongo';
-import {RundownAPI} from '../../lib/api/rundown';
-import {Time}                from '../../lib/lib';
-
+import { Mongo } from 'meteor/mongo'
+import { RundownAPI } from '../../lib/api/rundown'
+import { Time } from '../../lib/lib'
 
 /** This is a very uncomplete mock-up of the Rundown object */
 export interface RunningOrder {
-	_id: String,
+	_id: string,
 	/** ID of the object in MOS */
-	mosId: String,
-  studioInstallationId: String,
-  showStyleId: String,
-	name: String,
+	mosId: string,
+	studioInstallationId: string,
+	showStyleId: string,
+	name: string,
 	created: Time,
 	// There should be something like a Owner user here somewhere?
-  currentSegmentLineId: String,
-  nextSegmentLineId: String
+	currentSegmentLineId: string,
+	nextSegmentLineId: string
 }
 
-export const RunningOrders = new Mongo.Collection<RunningOrder>('rundowns');
+export const RunningOrders = new Mongo.Collection<RunningOrder>('rundowns')

@@ -1,22 +1,22 @@
-import { Meteor }            from 'meteor/meteor';
-import * as React            from 'react';
-import * as ReactDOM         from 'react-dom';
-import {withTracker}         from '../lib/ReactMeteorData/react-meteor-data';
+import { Meteor } from 'meteor/meteor'
+import * as React from 'react'
+import * as ReactDOM from 'react-dom'
+import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 
-import * as ClassNames       from 'classnames';
-import {Rundown, Rundowns}   from '.,/../lib/collections/Rundowns';
+import * as ClassNames from 'classnames'
+import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 
 interface IRundownListItemPropsHeader {
 	key: string,
-	rundown: Rundown
+	rundown: RunningOrder
 }
 export class RundownListItem extends React.Component<IRundownListItemPropsHeader> {
-	render() {
+	render () {
 		return (
-			<tr className="rundown-list-item">
-				<td className="device-item__name">
-          <p>{this.props.rundown.name}</p>
-        </td>
+			<tr className='rundown-list-item'>
+				<td className='device-item__name'>
+			<p>{this.props.rundown.name}</p>
+		</td>
 			</tr>
 		)
 	}

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es6",
 
-
+    "moduleResolution": "node",
     "strictNullChecks": true,
     "sourceMap": true,
     "allowJs": true,

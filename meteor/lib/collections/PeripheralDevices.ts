@@ -1,9 +1,6 @@
-import { Mongo } from 'meteor/mongo';
-import {PeripheralDeviceAPI} from '../../lib/api/peripheralDevice';
-import {Time} from '../../lib/lib';
-
-
-
+import { Mongo } from 'meteor/mongo'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { Time } from '../../lib/lib'
 
 export interface PeripheralDevice {
 	_id: string,
@@ -22,5 +19,4 @@ export interface PeripheralDevice {
 
 }
 
-
-export const PeripheralDevices = new Mongo.Collection<PeripheralDevice>('peripheralDevices');
+export const PeripheralDevices = new Mongo.Collection<PeripheralDevice>('peripheralDevices')

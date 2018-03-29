@@ -1,15 +1,15 @@
-import * as React 		from 'react';
+import * as React from 'react'
 
-import { Task } 	from '../../lib/collections/Tasks';
+import { Task } from '../../lib/collections/Tasks'
 
-//import {EditAttribute} from 'meteor/superfly:mypackage'; // import from packages
+// import {EditAttribute} from 'meteor/superfly:mypackage'; // import from packages
 
 // Task component - represents a single todo item
 interface IPropsTaskItem {
-	task: 	Task,
+	task: Task,
 }
 export default class TaskItem extends React.Component<IPropsTaskItem> {
-	render() {
+	render () {
 		return (
 			<li>
 				<div>
@@ -17,6 +17,6 @@ export default class TaskItem extends React.Component<IPropsTaskItem> {
 					<div></div>
 				</div>
 			</li>
-		);
+		)
 	}
 }
