@@ -20,7 +20,9 @@
     "react-bootstrap": "^0.32.1",
     "react-dom": "^16.2.0",
     "react-hotkeys": "^0.10.0",
-    "react-router-dom": "^4.2.2"
+    "react-router-dom": "^4.2.2",
+    "superfly-timeline": "git+https://github.com/SuperFlyTV/supertimeline.git#develop",
+    "velocity-react": "^1.3.3"
   },
   "devDependencies": {
     "@types/meteor": "^1.4.13",
