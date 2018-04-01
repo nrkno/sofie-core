@@ -24,9 +24,6 @@ react-meteor-data
 
 fourseven:scss
 
-# TEMPORARY: (will be removed soon (by Johan))
-#insecure                		# Allow all DB writes from clients (for prototyping)
-#autopublish             		# Publish all data to the clients (for prototyping)
 hwillson:stub-collections
 nerdmed:catiline
 runisland:static-assets
