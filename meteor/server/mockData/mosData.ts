@@ -51,7 +51,7 @@ Meteor.methods({
 		ServerPeripheralDeviceAPI.mosRoReplace(xmlApiData.roReplace)
 	},
 	'debug_roDelete' () {
-		ServerPeripheralDeviceAPI.mosRoDelete('' + xmlApiData.roDelete)
+		ServerPeripheralDeviceAPI.mosRoDelete(new MosString128('' + xmlApiData.roDelete))
 	}
 })
 
@@ -414,3 +414,5 @@ let xmlApiData = {
 	'roElementAction_swap_items_ItemId0': new MosString128('23'),
 	'roElementAction_swap_items_ItemId1': new MosString128('24')
 }
+
+export { xmlApiData }
