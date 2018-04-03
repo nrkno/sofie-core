@@ -6,6 +6,7 @@ import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import Header from './Header.js'
 import Dashboard from './Dashboard.js'
 import SystemStatus from './SystemStatus.js'
+import { RunningOrderList } from './RunningOrderList.js';
 import { NymansPlayground } from '../ui/NymansPlayground'
 import {
   BrowserRouter as Router,
@@ -44,6 +45,7 @@ class App extends React.Component {
 			<div className='container-fluid'>
 				<Header />
 				<Route exact path='/' component={Dashboard} />
+				<Route exact path='/runningOrders' component={RunningOrderList} />
 				<Route path='/nymansPlayground' component={NymansPlayground} />
 				<Route path='/status' component={SystemStatus} />
 			</div>

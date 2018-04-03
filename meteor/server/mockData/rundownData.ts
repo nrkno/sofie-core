@@ -4,8 +4,11 @@ import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { getCurrentTime, saveIntoDb, literal, DBObj, partialExceptId } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
 import { Segment, Segments } from '../../lib/collections/Segments'
+import { Random } from 'meteor/random'
+import * as _ from 'underscore'
 
 // These are temporary method to fill the rundown database with some sample data
 // for development
@@ -63,9 +66,36 @@ Meteor.methods({
 		RunningOrders.update({studioInstallationId: { $not: { $exists: true } }}, {$set: { studioInstallationId: "studio0" }});
 	},
 
+	'debug_mockRelationships' () {
+		let runningOrder = RunningOrders.findOne();
+		let segments = Segments.find({ runningOrderId: runningOrder._id }).fetch();
+		_.each(segments, function (segment) {
+			let segmentLines = SegmentLines.find({ segmentId: segment._id }).fetch();
+			_.each(segmentLines, function (segmentLine) {
+				let segmentLineItem = literal<SegmentLineItem>({
+					_id: segmentLine._id + ":" + getCurrentTime(),
+					mosId: segmentLine.mosId,
+					segmentLineId: segmentLine._id,
+					runningOrderId: runningOrder._id,
+					name: segment.name + ":VO",
+					trigger: {
+						type: 0,
+						value: 0
+					},
+					status: RundownAPI.LineItemStatusCode.OK,
+					sourceLayerId: "studio0-vt0",
+					outputLayerId: "studio0-pgm0",
+					expectedDuration: Math.floor(Random.fraction() * 645),
+					disabled: false
+				});
+				SegmentLineItems.insert(segmentLineItem);
+			});
+		});
+	},
+
 	'debug_emptyDatabase' () {
 		console.log("Clear the database");
-		
+
 		SegmentLineItems.remove({});
 		SegmentLines.remove({});
 		Segments.remove({});

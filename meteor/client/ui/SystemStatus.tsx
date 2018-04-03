@@ -107,9 +107,9 @@ export class SystemStatus extends React.Component<IPropsHeader> {
 								<th className='c3'>
 									Name
 								</th>
-				<th className='c1'>
-				Connected
-				</th>
+								<th className='c1'>
+									Connected
+								</th>
 								<th className='c1'>
 									Type
 								</th>

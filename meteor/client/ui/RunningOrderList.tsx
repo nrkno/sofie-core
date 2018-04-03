@@ -5,28 +5,90 @@ import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 
 import * as ClassNames from 'classnames'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
+import Moment from 'react-moment'
+
+interface IRunningOrdersListPropsHeader {
+	runningOrders: Array<RunningOrder>
+}
+
+export const RunningOrderList = withTracker(() => {
+	// console.log('PeripheralDevices',PeripheralDevices);
+	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
+
+	return {
+		runningOrders: RunningOrders.find({}, { sort: { created: -1 } }).fetch(),
+	};
+})(
+class extends React.Component<IRunningOrdersListPropsHeader> {
+	renderRunningOrders () {
+		return this.props.runningOrders.map((runningOrder) => (
+			<RunningOrderListItem key={runningOrder._id} runningOrder={runningOrder} />
+		))
+	}
+
+	render () {
+		return (
+			<div>
+				<header className='mvl'>
+					<h1>Running Orders</h1>
+				</header>
+				<div className='mod mvl'>
+					<table className='table system-status-table'>
+						<thead>
+							<tr>
+								<th className='c5'>
+									Slug
+								</th>
+								<th className='c2'>
+									ID
+								</th>
+								<th className='c2'>
+									Created
+								</th>
+								<th className='c1'>
+									Status
+								</th>
+								<th className='c1'>
+									Air Status
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							{this.renderRunningOrders()}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		)
+	}
+}
+);
 
 interface IRunningOrderListItemPropsHeader {
 	key: string,
 	runningOrder: RunningOrder
 }
-export class RunningOrderList extends React.Component<IRunningOrderListItemPropsHeader> {
+
+export class RunningOrderListItem extends React.Component<IRunningOrderListItemPropsHeader> {
 	render () {
 		return (
-			<tr className='rundown-list-item'>
-				<td className='device-item__name'>
-			<p>{this.props.runningOrder.name}</p>
-		</td>
+			<tr className='running-order-list-item'>
+				<td className='running-order-list-item__name'>
+					<p>{this.props.runningOrder.name}</p>
+				</td>
+				<td className='running-order-list-item__id'>
+					<p>{this.props.runningOrder._id}</p>
+				</td>
+				<td className='running-order-list-item__created'>
+					<Moment fromNow>{this.props.runningOrder.created}</Moment>
+				</td>
+				<td className='running-order-list-item__status'>
+					<p>{this.props.runningOrder.status}</p>
+				</td>
+				<td className='running-order-list-item__air-status'>
+					<p>{this.props.runningOrder.airStatus}</p>
+				</td>
 			</tr>
 		)
 	}
 }
-
-/* export default withTracker(() => {
-	// console.log('PeripheralDevices',PeripheralDevices);
-	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
-
-	return {
-		devices: PeripheralDevices.find({}, { sort: { created: -1 } }).fetch(),
-	};
-})(SystemStatus); */

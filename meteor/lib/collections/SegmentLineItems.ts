@@ -29,11 +29,11 @@ export interface SegmentLineItem {
 	/** Expected duration of the item as planned or as estimated by the system (in case of Script layers), in seconds. */
 	expectedDuration: number
 		/** Actual duration of the item, in seconds. This value will be updated during playback for some types of items. */
-	duration: number
+	duration?: number
 	  /** A flag to signal a given SegmentLineItem has been deactivated manually */
-	disabled: boolean
+	disabled?: boolean
 	  /** The object describing the item in detail */
-	content: object
+	content?: object
 }
 
 export const SegmentLineItems = new Mongo.Collection<SegmentLineItem>('segmentLineItems')

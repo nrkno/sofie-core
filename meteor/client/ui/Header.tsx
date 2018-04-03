@@ -21,6 +21,7 @@ export default class Header extends React.Component<IPropsHeader> {
 				<div className='col c6 dark'>
 					<div className='links mod'>
 						<Link to='/'>Home</Link>
+						<Link to='/runningOrders'>Running Orders</Link>
 						<Link to='/nymansPlayground'>Nyman's Playground</Link>
 						<Link to='/status'>Status</Link>
 					</div>
