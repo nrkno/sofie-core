@@ -4,6 +4,8 @@ import { RundownAPI } from '../../lib/api/rundown'
 /** A set of available layer groups in a given installation */
 export interface StudioInstallation {
 	_id: string
+	/** User-presentable name for the studio installation */
+	name: string
 	/** All available layer groups in a given installation */
 	layerGroups: Array<ILayerOutput>
 	sourceLayers: Array<ISourceLayer>

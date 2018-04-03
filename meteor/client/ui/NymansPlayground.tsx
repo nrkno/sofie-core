@@ -290,7 +290,7 @@ class extends React.Component<IRunningOrders> {
 				<div>nextSegmentLineId: {ro.nextSegmentLineId}</div>
 
 				<div>
-					<ComponentSegments runningOrder={ro._id} />
+					<ComponentSegments runningOrderId={ro._id} />
 				</div>
 			</div>
 		))
@@ -306,17 +306,18 @@ class extends React.Component<IRunningOrders> {
 		)
 	}
 })
+
 interface ISegments {
 	segments: Array<Segment>
 }
-export const ComponentSegments = withTracker(function () {
+export const ComponentSegments = withTracker((props) => {
 
 	// These properties will be exposed under this.props
 	// Note that these properties are reactively recalculated
-	console.log('this',this)
+	console.log('props', props);
 	return {
 		segments: Segments.find({
-			runningOrder: ''
+			runningOrderId: props.runningOrderId
 		}, { sort: { _rank: 1 } }).fetch()
 	}
 })(

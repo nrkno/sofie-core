@@ -10,32 +10,32 @@
     "test-once": "meteor test --once --driver-package meteortesting:mocha"
   },
   "dependencies": {
-    "@babel/runtime": "^7.0.0-beta.36",
+    "@babel/runtime": "^7.0.0-beta.44",
     "@types/classnames": "^2.2.3",
     "chai": "^4.1.2",
     "classnames": "^2.2.5",
-    "core-js": "^2.5.3",
-    "meteor-node-stubs": "^0.3.2",
-    "react": "^16.2.0",
+    "core-js": "^2.5.4",
+    "meteor-node-stubs": "^0.3.3",
+    "mos-connection": "git+https://github.com/nrkno/tv-automation-mos-connection.git#feature/fixGitNpm",
+    "react": "^16.3.0",
     "react-bootstrap": "^0.32.1",
-    "react-dom": "^16.2.0",
-    "underscore": "^1.8.3",
+    "react-dom": "^16.3.0",
     "react-hotkeys": "^0.10.0",
     "react-router-dom": "^4.2.2",
     "superfly-timeline": "git+https://github.com/jstarpl/supertimeline.git#feature/fixGitNpm",
-    "velocity-react": "^1.3.3",
-    "mos-connection": "git+https://github.com/nrkno/tv-automation-mos-connection#feature/fixGitNpm"
+    "underscore": "^1.8.3",
+    "velocity-react": "^1.3.3"
   },
   "devDependencies": {
-    "@types/meteor": "^1.4.13",
-    "@types/node": "^9.4.6",
-    "@types/react": "^16.0.40",
-    "@types/react-dom": "^16.0.4",
     "@types/chai": "^4.1.2",
+    "@types/meteor": "^1.4.13",
     "@types/mocha": "^2.2.48",
+    "@types/node": "^9.6.1",
+    "@types/react": "^16.3.2",
+    "@types/react-dom": "^16.0.4",
     "tslint": "^5.4.3",
     "tslint-config-standard": "^6.0.1",
     "typedoc": "^0.8.0",
-    "typescript": "^2.4.1"
+    "typescript": "^2.8.1"
   }
 }

@@ -45,7 +45,6 @@ class App extends React.Component {
 			<div className='container-fluid'>
 				<Header />
 				<Route exact path='/' component={Dashboard} />
-				<Route path='/tasks' component={TasksSample} />
 				<Route path='/nymansPlayground' component={NymansPlayground} />
 				<Route path='/status' component={SystemStatus} />
 			</div>
