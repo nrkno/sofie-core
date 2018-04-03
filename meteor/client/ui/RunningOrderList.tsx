@@ -16,8 +16,8 @@ export const RunningOrderList = withTracker(() => {
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
 	return {
-		runningOrders: RunningOrders.find({}, { sort: { created: -1 } }).fetch(),
-	};
+		runningOrders: RunningOrders.find({}, { sort: { created: -1 } }).fetch()
+	}
 })(
 class extends React.Component<IRunningOrdersListPropsHeader> {
 	renderRunningOrders () {
@@ -62,7 +62,7 @@ class extends React.Component<IRunningOrdersListPropsHeader> {
 		)
 	}
 }
-);
+)
 
 interface IRunningOrderListItemPropsHeader {
 	key: string,
@@ -80,7 +80,7 @@ export class RunningOrderListItem extends React.Component<IRunningOrderListItemP
 					<p>{this.props.runningOrder._id}</p>
 				</td>
 				<td className='running-order-list-item__created'>
-					<Moment fromNow>{this.props.runningOrder.created}</Moment>
+					<p><Moment fromNow>{this.props.runningOrder.created}</Moment></p>
 				</td>
 				<td className='running-order-list-item__status'>
 					<p>{this.props.runningOrder.status}</p>

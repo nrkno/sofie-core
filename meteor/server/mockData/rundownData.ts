@@ -16,98 +16,98 @@ import * as _ from 'underscore'
 Meteor.methods({
 	'debug_sampleSetup' () {
 		StudioInstallations.insert({
-			_id: "studio0",
-			name: "Dummy studio",
+			_id: 'studio0',
+			name: 'Dummy studio',
 			layerGroups: [
 				{
-					_id: "studio0-pgm0",
-					name: "PGM",
+					_id: 'studio0-pgm0',
+					name: 'PGM',
 					isPGM: true,
 				},
 				{
-					_id: "studio0-monitor0",
-					name: "Studio 1",
+					_id: 'studio0-monitor0',
+					name: 'Studio 1',
 					isPGM: false,
 				}
 			],
 			sourceLayers: [
 				{
-					_id: "studio0-camera0",
-					name: "Cams",
+					_id: 'studio0-camera0',
+					name: 'Cams',
 					type: RundownAPI.SourceLayerType.CAMERA,
 					unlimited: false,
 					onPGMClean: true,
 				},
 				{
-					_id: "studio0-vt0",
-					name: "VB",
+					_id: 'studio0-vt0',
+					name: 'VB',
 					type: RundownAPI.SourceLayerType.VT,
 					unlimited: true,
 					onPGMClean: true,
 				},
 				{
-					_id: "studio0-graphics0",
-					name: "GFX",
+					_id: 'studio0-graphics0',
+					name: 'GFX',
 					type: RundownAPI.SourceLayerType.GRAPHICS,
 					unlimited: true,
 					onPGMClean: false
 				},
 				{
-					_id: "studio0-remote0",
-					name: "RM1",
+					_id: 'studio0-remote0',
+					name: 'RM1',
 					type: RundownAPI.SourceLayerType.REMOTE,
 					unlimited: false,
 					onPGMClean: true
 				}
-			],
-		});
+			]
+		})
 
 		// Set all running orders without a studio installation to use the dummy one
-		RunningOrders.update({studioInstallationId: { $not: { $exists: true } }}, {$set: { studioInstallationId: "studio0" }});
+		RunningOrders.update({studioInstallationId: { $not: { $exists: true } }}, {$set: { studioInstallationId: 'studio0' }})
 	},
 
 	'debug_mockRelationships' () {
-		let runningOrder = RunningOrders.findOne();
-		let segments = Segments.find({ runningOrderId: runningOrder._id }).fetch();
+		let runningOrder = RunningOrders.findOne()
+		let segments = Segments.find({ runningOrderId: runningOrder._id }).fetch()
 		_.each(segments, function (segment) {
-			let segmentLines = SegmentLines.find({ segmentId: segment._id }).fetch();
+			let segmentLines = SegmentLines.find({ segmentId: segment._id }).fetch()
 			_.each(segmentLines, function (segmentLine) {
 				let segmentLineItem = literal<SegmentLineItem>({
-					_id: segmentLine._id + ":" + getCurrentTime(),
+					_id: segmentLine._id + ':' + getCurrentTime(),
 					mosId: segmentLine.mosId,
 					segmentLineId: segmentLine._id,
 					runningOrderId: runningOrder._id,
-					name: segment.name + ":VO",
+					name: segment.name + ':VO',
 					trigger: {
 						type: 0,
 						value: 0
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
-					sourceLayerId: "studio0-vt0",
-					outputLayerId: "studio0-pgm0",
+					sourceLayerId: 'studio0-vt0',
+					outputLayerId: 'studio0-pgm0',
 					expectedDuration: Math.floor(Random.fraction() * 645),
 					disabled: false
-				});
-				SegmentLineItems.insert(segmentLineItem);
-			});
-		});
+				})
+				SegmentLineItems.insert(segmentLineItem)
+			})
+		})
 	},
 
 	'debug_emptyDatabase' () {
-		console.log("Clear the database");
+		console.log('Clear the database')
 
-		SegmentLineItems.remove({});
-		SegmentLines.remove({});
-		Segments.remove({});
-		RunningOrders.remove({});
-		ShowStyles.remove({});
-		StudioInstallations.remove({});
+		SegmentLineItems.remove({})
+		SegmentLines.remove({})
+		Segments.remove({})
+		RunningOrders.remove({})
+		ShowStyles.remove({})
+		StudioInstallations.remove({})
 	},
 
 	'debug_sampleShowStyle' () {
 		ShowStyles.insert({
-			_id: "dummyShow0",
-			name: "Dummy show style",
+			_id: 'dummyShow0',
+			name: 'Dummy show style',
 			splitConfigurations: [
 				{
 					// a still undefined split configuration object
@@ -128,8 +128,8 @@ Meteor.methods({
 					// a still undefined logical objects definition object
 				}
 			]
-		});
+		})
 
-		RunningOrders.update({showStyleId: { $not: { $exists: true }}}, { $set: { showStyleId: "dummyShow0" }});
+		RunningOrders.update({showStyleId: { $not: { $exists: true }}}, { $set: { showStyleId: 'dummyShow0' }})
 	}
 })
