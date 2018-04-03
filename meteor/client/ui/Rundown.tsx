@@ -9,15 +9,15 @@ import { StudioInstallation,
 		 ISourceLayer,
 		 ILayerOutput } from '../../lib/collections/StudioInstallations'
 import { SegmentLine } from '../../lib/collections/SegmentLines'
-import { ISegmentLineItem } from '../../lib/collections/SegmentLineItems'
+import { SegmentLineItem } from '../../lib/collections/SegmentLineItems'
 import { Segment } from '../../lib/collections/Segments'
 
-export interface ISegmentLineItemPropsHeader {
+export interface SegmentLineItemPropsHeader {
 	key: string,
-	segmentLineItem: ISegmentLineItem,
+	segmentLineItem: SegmentLineItem,
 	installation: StudioInstallation
 }
-export class SegmentLineItem extends React.Component<ISegmentLineItemPropsHeader> {
+export class SegmentLineItemComponent extends React.Component<SegmentLineItemPropsHeader> {
 	render () {
 		return (
 			<div className='segment-line-item'>

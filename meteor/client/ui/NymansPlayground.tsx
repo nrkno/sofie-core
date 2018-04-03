@@ -7,6 +7,8 @@ import { withTracker }       		from '../lib/ReactMeteorData/react-meteor-data'
 
 import { Task, Tasks } 			from '../../lib/collections/Tasks'
 import { Mongo } 				from 'meteor/mongo'
+import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders'
+import { Segments, Segment } from '../../lib/collections/Segments';
 
 // ----------------------------------------------------------------------------
 
@@ -248,9 +250,93 @@ export class NymansPlayground extends React.Component {
 			<div>
 				<h1>Nyman's playground</h1>
 				<div>
-					<EditTasks />
+					<ComponentRunningOrders />
 				</div>
 			</div>
 		)
 	}
 }
+
+interface IRunningOrders {
+	runningOrders: Array<RunningOrder>
+}
+export const ComponentRunningOrders = withTracker(() => {
+
+	// These properties will be exposed under this.props
+	// Note that these properties are reactively recalculated
+	return {
+		runningOrders: RunningOrders.find({}, { sort: { createdAt: -1 } }).fetch()
+	}
+})(
+class extends React.Component<IRunningOrders> {
+	renderROs () {
+
+		return this.props.runningOrders.map((ro) => (
+			<div key={ro._id}>
+				<div>ID: <i>{ro._id}</i></div>
+				<div>Created: {ro.created}</div>
+
+				<div>mosId: {ro.mosId}</div>
+				<div>studioInstallationId: {ro.studioInstallationId}</div>
+				<div>showStyleId: {ro.showStyleId}</div>
+				<div>name: {ro.name}</div>
+				<div>created: {ro.created}</div>
+
+				<div>metaData: {ro.metaData}</div>
+				<div>status: {ro.status}</div>
+				<div>airStatus: {ro.airStatus}</div>
+
+				<div>currentSegmentLineId: {ro.currentSegmentLineId}</div>
+				<div>nextSegmentLineId: {ro.nextSegmentLineId}</div>
+
+				<div>
+					<ComponentSegments runningOrder={ro._id} />
+				</div>
+			</div>
+		))
+	}
+	render () {
+		return (
+			<div>
+				<h2>Running orders</h2>
+				<div>
+					{this.renderROs()}
+				</div>
+			</div>
+		)
+	}
+})
+interface ISegments {
+	segments: Array<Segment>
+}
+export const ComponentSegments = withTracker(function () {
+
+	// These properties will be exposed under this.props
+	// Note that these properties are reactively recalculated
+	console.log('this',this)
+	return {
+		segments: Segments.find({
+			runningOrder: ''
+		}, { sort: { _rank: 1 } }).fetch()
+	}
+})(
+class extends React.Component<ISegments> {
+	renderROs () {
+
+		return this.props.segments.map((segment) => (
+			<div key={segment._id}>
+				<div>ID: <i>{segment._id}</i></div>
+			</div>
+		))
+	}
+	render () {
+		return (
+			<div>
+				<h2>Segments</h2>
+				<div>
+					{this.renderROs()}
+				</div>
+			</div>
+		)
+	}
+})

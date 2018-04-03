@@ -34,7 +34,9 @@ export namespace PeripheralDeviceSecurity {
 			return true
 		}
 	}
-	export function allowWriteAccess () {}
+	export function allowWriteAccess () {
+		// TODO
+	}
 }
 // Setup rules:
 

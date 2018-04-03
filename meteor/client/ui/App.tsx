@@ -34,6 +34,11 @@ class App extends React.Component {
 		})
 		// Subscription status available at sub.ready()
 		// Stop subscription by calling sub.stop()
+		// TEMPORARY subscriptions:
+		let sub2 = Meteor.subscribe('runningOrders', {})
+		let sub3 = Meteor.subscribe('segments', {})
+		let sub4 = Meteor.subscribe('segmentLines', {})
+		let sub5 = Meteor.subscribe('segmentLineItems', {})
 
 		return (
 			<Router>

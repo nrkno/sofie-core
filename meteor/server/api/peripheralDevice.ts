@@ -29,7 +29,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
-import { ISegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
+import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Segment, Segments } from '../../lib/collections/Segments'
 
 import { saveIntoDb, partialExceptId, getCurrentTime } from '../../lib/lib'
@@ -350,10 +350,13 @@ export namespace ServerPeripheralDeviceAPI {
 		}})
 
 	}
-	/*
-		export function mosRoFullStory (story: IMOSROFullStory ) {
-			return this.core.mosManipulate(P.methods.mosRoReadyToAir, story)
-	}*/
+	export function mosRoFullStory (story: IMOSROFullStory ) {
+		// Update db with the full story:
+		let ro = getRO(story.RunningOrderId)
+		// TODO: Do something
+
+		// return this.core.mosManipulate(P.methods.mosRoReadyToAir, story)
+	}
 }
 export function roId (roId: MosString128): string {
 	return 'ro_' + roId.toString()

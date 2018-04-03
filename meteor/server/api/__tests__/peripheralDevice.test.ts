@@ -8,7 +8,7 @@ import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { RunningOrder, RunningOrders } from '../../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
-import { ISegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
+import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
 
 import {
 	ServerPeripheralDeviceAPI,

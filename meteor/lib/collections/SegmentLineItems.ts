@@ -8,7 +8,7 @@ export interface ITimelineTrigger {
 }
 
 /** A Single item in a "line": script, VT, cameras */
-export interface ISegmentLineItem {
+export interface SegmentLineItem {
 	_id: string
 		/** ID of the source object in MOS */
 	mosId: string
@@ -36,4 +36,4 @@ export interface ISegmentLineItem {
 	content: object
 }
 
-export const SegmentLineItems = new Mongo.Collection<ISegmentLineItem>('segmentLineItems')
+export const SegmentLineItems = new Mongo.Collection<SegmentLineItem>('segmentLineItems')

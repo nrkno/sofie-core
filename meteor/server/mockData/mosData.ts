@@ -37,7 +37,7 @@ import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
-import { ISegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
+import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { ServerPeripheralDeviceAPI } from '../api/peripheralDevice'
 
