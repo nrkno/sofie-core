@@ -6,6 +6,7 @@ import { PeripheralDevice,
 		PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import * as ClassNames from 'classnames'
+import Moment from 'react-moment';
 
 interface IDeviceItemPropsHeader {
 	key: string,
@@ -62,22 +63,22 @@ export class DeviceItem extends React.Component<IDeviceItemPropsHeader> {
 		return (
 			<tr className='device-item'>
 				<td className='device-item__name'>
-			<p>{this.props.device.name}</p>
-		</td>
+					<p>{this.props.device.name}</p>
+				</td>
 				<td className='device-item__connected'>
-			<p>{this.connectedString()}</p>
-		</td>
+					<p>{this.connectedString()}</p>
+				</td>
 				<td className='device-item__type'>
-			<p>{this.deviceTypeString()}</p>
-		</td>
+					<p>{this.deviceTypeString()}</p>
+				</td>
 				<td className={statusClassNames}>
-			<p>
-			<span className='pill device-item__device-status__label'>{this.statusCodeString()}</span>
-			</p>
-		</td>
+					<p>
+						<span className='pill device-item__device-status__label'>{this.statusCodeString()}</span>
+					</p>
+				</td>
 				<td className='device-item__last-seen'>
-			<p>{new Date(this.props.device.lastSeen).toString()}</p>
-		</td>
+					<p><Moment fromNow date={this.props.device.lastSeen} /></p>
+				</td>
 			</tr>
 		)
 	}
