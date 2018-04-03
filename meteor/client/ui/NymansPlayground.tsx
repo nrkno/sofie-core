@@ -327,6 +327,7 @@ class extends React.Component<ISegments> {
 		return this.props.segments.map((segment) => (
 			<div key={segment._id}>
 				<div>ID: <i>{segment._id}</i></div>
+				<div>Name: <i>{segment.name}</i></div>
 			</div>
 		))
 	}

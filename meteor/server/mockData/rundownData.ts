@@ -63,6 +63,17 @@ Meteor.methods({
 		RunningOrders.update({studioInstallationId: { $not: { $exists: true } }}, {$set: { studioInstallationId: "studio0" }});
 	},
 
+	'debug_emptyDatabase' () {
+		console.log("Clear the database");
+		
+		SegmentLineItems.remove({});
+		SegmentLines.remove({});
+		Segments.remove({});
+		RunningOrders.remove({});
+		ShowStyles.remove({});
+		StudioInstallations.remove({});
+	},
+
 	'debug_sampleShowStyle' () {
 		ShowStyles.insert({
 			_id: "dummyShow0",

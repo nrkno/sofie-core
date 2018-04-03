@@ -11,7 +11,7 @@ export default class Dashboard extends React.Component<IPropsHeader> {
 		return (
 			<div>
 				<div className='mvl'>
-					<h1>Welcome to YASS</h1>
+					<h1>Welcome to SEFF</h1>
 				</div>
 			</div>
 		)

@@ -4,7 +4,6 @@ import * as ReactDOM from 'react-dom'
 // import * as withTracker from 'meteor/react-meteor-data';
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import Header from './Header.js'
-import TasksSample from './TasksSample.js'
 import Dashboard from './Dashboard.js'
 import SystemStatus from './SystemStatus.js'
 import { NymansPlayground } from '../ui/NymansPlayground'

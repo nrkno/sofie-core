@@ -12,7 +12,7 @@ import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 window['Tasks'] = Tasks
 window['PeripheralDevices'] = PeripheralDevices
 window['RunningOrders'] = RunningOrders
-window['SegmentLineItmes'] = SegmentLineItems
+window['SegmentLineItems'] = SegmentLineItems
 window['SegmentLines'] = SegmentLines
 window['Segments'] = Segments
 window['ShowsStyles'] = ShowStyles

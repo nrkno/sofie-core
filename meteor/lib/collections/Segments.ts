@@ -14,7 +14,7 @@ export interface Segment {
 	mosId: string
   /** The running order this segment belongs to */
 	runningOrderId: string
-  /** User-presentable name for the Title */
+  /** User-presentable name (Slug) for the Title */
 	name: string
 
 	metaData?: Array<IMOSExternalMetaData>

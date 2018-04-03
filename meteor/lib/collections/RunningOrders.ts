@@ -15,6 +15,7 @@ export interface RunningOrder {
 	mosId: string
 	studioInstallationId: string
 	showStyleId: string
+	/** Rundown slug - user-presentable name */
 	name: string
 	created: Time
 
