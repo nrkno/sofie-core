@@ -10,7 +10,7 @@ Meteor.publish('segmentLineItems', function (selector, token) {
 			token: 0
 		}
 	}
-	console.log('pub segments')
+	console.log('pub segmentLineItems')
 	if (RunningOrderSecurity.allowReadAccess(selector, token, this)) {
 		return SegmentLineItems.find(selector, modifier)
 	}

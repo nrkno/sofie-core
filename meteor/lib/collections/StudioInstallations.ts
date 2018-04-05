@@ -7,7 +7,7 @@ export interface StudioInstallation {
 	/** User-presentable name for the studio installation */
 	name: string
 	/** All available layer groups in a given installation */
-	layerGroups: Array<ILayerOutput>
+	outputLayers: Array<IOutputLayer>
 	sourceLayers: Array<ISourceLayer>
 }
 
@@ -24,7 +24,7 @@ export interface ISourceLayer {
 }
 
 /** A layer output group, f.g. PGM, Studio Monitor 1, etc. */
-export interface ILayerOutput {
+export interface IOutputLayer {
 	_id: string
 		/** User-presentable name for the layer output group */
 	name: string

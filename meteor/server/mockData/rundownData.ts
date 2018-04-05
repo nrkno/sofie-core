@@ -18,7 +18,7 @@ Meteor.methods({
 		StudioInstallations.insert({
 			_id: 'studio0',
 			name: 'Dummy studio',
-			layerGroups: [
+			outputLayers: [
 				{
 					_id: 'studio0-pgm0',
 					name: 'PGM',
@@ -69,9 +69,9 @@ Meteor.methods({
 	'debug_mockRelationships' () {
 		let runningOrder = RunningOrders.findOne()
 		let segments = Segments.find({ runningOrderId: runningOrder._id }).fetch()
-		_.each(segments, function (segment) {
+		_.each(segments, (segment) => {
 			let segmentLines = SegmentLines.find({ segmentId: segment._id }).fetch()
-			_.each(segmentLines, function (segmentLine) {
+			_.each(segmentLines, (segmentLine) => {
 				let segmentLineItem = literal<SegmentLineItem>({
 					_id: segmentLine._id + ':' + getCurrentTime(),
 					mosId: segmentLine.mosId,
