@@ -4,7 +4,7 @@
 	display: grid;
 	grid-column-gap: 0;
 	grid-row-gap: 0;
-	grid-template-columns: [segment-name] 200px [segment-group-controls] 100px [timeline] auto [end];
+	grid-template-columns: [segment-name] 200px [segment-group-controls] 120px [timeline] auto [end];
 	grid-template-rows: [header] 3em [main-view] auto [zoom-area] 3em [end];
 
 	.segment-timeline__title {

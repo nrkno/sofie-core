@@ -45,14 +45,14 @@ class App extends React.Component {
 
 		return (
 			<Router>
-			<div className='container-fluid'>
-				<Header />
-				<Route exact path='/' component={Dashboard} />
-				<Route exact path='/runningOrders' component={RunningOrderList} />
-				<Route path='/ro/:runningOrderId' component={RunningOrderView} />
-				<Route path='/nymansPlayground' component={NymansPlayground} />
-				<Route path='/status' component={SystemStatus} />
-			</div>
+				<div className='container-fluid'>
+					<Header />
+					<Route exact path='/' component={Dashboard} />
+					<Route exact path='/runningOrders' component={RunningOrderList} />
+					<Route path='/ro/:runningOrderId' component={RunningOrderView} />
+					<Route path='/nymansPlayground' component={NymansPlayground} />
+					<Route path='/status' component={SystemStatus} />
+				</div>
 			</Router>
 		)
 	}

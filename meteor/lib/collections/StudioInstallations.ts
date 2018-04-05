@@ -14,24 +14,27 @@ export interface StudioInstallation {
 /** A single source layer, f.g Cameras, VT, Graphics, Remotes */
 export interface ISourceLayer {
 	_id: string
-		/** User-presentable name for the source layer */
+	/** Rank for ordering */
+	_rank: number
+	/** User-presentable name for the source layer */
 	name: string
 	type: RundownAPI.SourceLayerType
-	  /** If set to true, the layer can handle any number of simultaneus Line Items */
+	/** If set to true, the layer can handle any number of simultaneus Line Items */
 	unlimited: boolean
-		/** Ifs set to true, the layer will be shown in PGM Clean */
+	/** Ifs set to true, the layer will be shown in PGM Clean */
 	onPGMClean: boolean
 }
 
 /** A layer output group, f.g. PGM, Studio Monitor 1, etc. */
 export interface IOutputLayer {
 	_id: string
-		/** User-presentable name for the layer output group */
+	/** User-presentable name for the layer output group */
 	name: string
-		/** A utility flag to make sure that the PGM channel is always on top,
-		 * and notify that PGM treatment of this output should be in effect
-		 * (generate PGM Clean out based on SourceLayer properties)
-		 */
+	/** Rank for ordering */
+	_rank: number
+	/** PGM treatment of this output should be in effect
+	 * (generate PGM Clean out based on SourceLayer properties)
+	 */
 	isPGM: boolean,
 }
 

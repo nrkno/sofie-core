@@ -49,7 +49,7 @@ $timeline-layer-height: 1em;
         line-height: $timeline-layer-height;
         min-height: $timeline-layer-height;
         box-sizing: border-box;
-        border: 1px solid blue;
+        background: transparentize(indigo, 0.8);
         position: relative;
 
         flex-flow: column nowrap;
@@ -88,7 +88,7 @@ $timeline-layer-height: 1em;
         bottom: 0;
         left: 0;
         right: 0;
-        border: 1px solid red;
+        background: transparentize(red, 0.8);
         box-sizing: border-box;
         white-space: nowrap;
     }

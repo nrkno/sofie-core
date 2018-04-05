@@ -21,11 +21,13 @@ Meteor.methods({
 			outputLayers: [
 				{
 					_id: 'studio0-pgm0',
+					_rank: 0,
 					name: 'PGM',
 					isPGM: true,
 				},
 				{
 					_id: 'studio0-monitor0',
+					_rank: 1,
 					name: 'Studio 1',
 					isPGM: false,
 				}
@@ -33,6 +35,7 @@ Meteor.methods({
 			sourceLayers: [
 				{
 					_id: 'studio0-camera0',
+					_rank: 100,
 					name: 'Cams',
 					type: RundownAPI.SourceLayerType.CAMERA,
 					unlimited: false,
@@ -40,6 +43,7 @@ Meteor.methods({
 				},
 				{
 					_id: 'studio0-vt0',
+					_rank: 80,
 					name: 'VB',
 					type: RundownAPI.SourceLayerType.VT,
 					unlimited: true,
@@ -47,6 +51,7 @@ Meteor.methods({
 				},
 				{
 					_id: 'studio0-graphics0',
+					_rank: 10,
 					name: 'GFX',
 					type: RundownAPI.SourceLayerType.GRAPHICS,
 					unlimited: true,
@@ -54,6 +59,7 @@ Meteor.methods({
 				},
 				{
 					_id: 'studio0-remote0',
+					_rank: 50,
 					name: 'RM1',
 					type: RundownAPI.SourceLayerType.REMOTE,
 					unlimited: false,
@@ -80,7 +86,7 @@ Meteor.methods({
 			let segmentLines = SegmentLines.find({ segmentId: segment._id }).fetch()
 			_.each(segmentLines, (segmentLine) => {
 				let segmentLineItem = literal<SegmentLineItem>({
-					_id: segmentLine._id + ':' + getCurrentTime(),
+					_id: segmentLine._id + ':' + Random.id(5),
 					mosId: segmentLine.mosId,
 					segmentLineId: segmentLine._id,
 					runningOrderId: runningOrder._id,
@@ -95,7 +101,24 @@ Meteor.methods({
 					expectedDuration: Math.floor(Random.fraction() * 645),
 					disabled: false
 				})
+				let gfxSegmentLineItem = literal<SegmentLineItem>({
+					_id: segmentLine._id + ':' + Random.id(5),
+					mosId: segmentLine.mosId,
+					segmentLineId: segmentLine._id,
+					runningOrderId: runningOrder._id,
+					name: 'Thomas Jorgerson',
+					trigger: {
+						type: 0,
+						value: 10
+					},
+					status: RundownAPI.LineItemStatusCode.OK,
+					sourceLayerId: 'studio0-graphics0',
+					outputLayerId: 'studio0-pgm0',
+					expectedDuration: 10,
+					disabled: false
+				})
 				SegmentLineItems.insert(segmentLineItem)
+				SegmentLineItems.insert(gfxSegmentLineItem)
 			})
 		})
 	},

@@ -111,6 +111,8 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 		if (this.props.segment.outputLayers !== undefined) {
 			return _.map(_.filter(this.props.segment.outputLayers, (layer) => {
 				return (layer.used) ? true : false
+			}).sort((a, b) => {
+				return a._rank - b._rank
 			}), (layer, id) => {
 				// Only render output layers used by the segment
 				if (layer.used) {
@@ -138,13 +140,17 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 
 	renderOutputLayerControls () {
 		if (this.props.segment.outputLayers !== undefined) {
-			return _.map(this.props.segment.outputLayers!, (outputLayer) => {
+			return _.map(_.values(this.props.segment.outputLayers!).sort((a, b) => {
+				return a._rank - b._rank
+			}), (outputLayer) => {
 				return (
 					<div key={outputLayer._id} className='segment-timeline__output-layer-control'>
 						<div className='segment-timeline__output-layer-control__label'>{outputLayer.name}</div>
 						{(
 							outputLayer.sourceLayers !== undefined &&
-							outputLayer.sourceLayers.map((sourceLayer) => {
+							outputLayer.sourceLayers.sort((a, b) => {
+								return a._rank - b._rank
+							}).map((sourceLayer) => {
 								return (
 									<div key={sourceLayer._id} className='segment-timeline__output-layer-control__layer'>
 										{sourceLayer.name}
