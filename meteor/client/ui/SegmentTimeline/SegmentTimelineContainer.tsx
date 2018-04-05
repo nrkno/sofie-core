@@ -63,9 +63,10 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		segmentId: props.segment._id
 	}, { sort: { _rank: 1 } }).fetch()
 
-	// create local copies of the studioInstallation outputLayers and sourceLayers so that we can store
-	const outputLayers = normalizeArray<IOutputLayerUi>(_.clone(props.studioInstallation.outputLayers), '_id')
-	const sourceLayers = normalizeArray<ISourceLayerUi>(_.clone(props.studioInstallation.sourceLayers), '_id')
+	// create local deep copies of the studioInstallation outputLayers and sourceLayers so that we can store
+	// items present on those layers inside and also figure out which layers are used when inside the rundown
+	const outputLayers = normalizeArray<IOutputLayerUi>(props.studioInstallation.outputLayers.map((layer) => { return _.clone(layer) }), '_id')
+	const sourceLayers = normalizeArray<ISourceLayerUi>(props.studioInstallation.sourceLayers.map((layer) => { return _.clone(layer) }), '_id')
 
 	// ensure that the sourceLayers array in the segment outputLayers is created
 	_.forEach(outputLayers, (outputLayer) => {
@@ -122,10 +123,15 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 	constructor (props) {
 		super(props)
 
+		let that = this
 		this.state = {
 			/** The amount of pixels representing one second */
-			timeScale: props.timeScale || 1
+			timeScale: props.initialTimeScale || 1
 		}
+
+		/* that.setState({
+			timeScale: that.state.timeScale * 1.1
+		}) */
 	}
 	render () {
 		return (

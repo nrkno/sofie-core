@@ -47,6 +47,8 @@ interface ISourceLayerProps {
 }
 class SourceLayer extends React.Component<ISourceLayerProps> {
 	renderInside () {
+		console.log(this.props.layer)
+
 		if (this.props.layer.items !== undefined) {
 			return this.props.layer.items
 			.filter((segmentLineItem) => {
@@ -55,7 +57,13 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 			})
 			.map((segmentLineItem) => {
 				return (
-					<SourceLayerItem key={segmentLineItem._id} segmentLineItem={segmentLineItem} {...this.props} />
+					<SourceLayerItem key={segmentLineItem._id}
+									 segmentLineItem={segmentLineItem}
+									 layer={this.props.layer}
+									 outputLayer={this.props.outputLayer}
+									 segment={this.props.segment}
+									 segmentLine={this.props.segmentLine}
+									 timeScale={this.props.timeScale} />
 				)
 			})
 		}
