@@ -72,7 +72,7 @@ interface IRunningOrderListItemPropsHeader {
 
 export class RunningOrderListItem extends React.Component<IRunningOrderListItemPropsHeader> {
 	getRunningOrderLink (runningOrderId) {
-		return '/r/' + runningOrderId
+		return '/ro/' + runningOrderId
 	}
 
 	render () {

@@ -1,3 +1,6 @@
+$timeline-padding: 1em 0;
+$timeline-layer-height: 1em;
+
 .segment-timeline {
     display: block;
     width: 100%;
@@ -30,7 +33,7 @@
 }
 // padding has to be the same on both of these elements so that the layers and their controls line up
 .segment-timeline__output-layers, .segment-timeline__timeline {
-    padding: 1em 0;
+    padding: $timeline-padding;
 }
 .segment-timeline__output-layers {
     flex: 1 1;
@@ -43,17 +46,32 @@
     > .segment-timeline__output-layer-control {
         flex: 0 0;
         display: flex;
-        line-height: 1em;
-        min-height: 1em;
-        height: 1em;
-        flex-basis: 1em;
+        line-height: $timeline-layer-height;
+        min-height: $timeline-layer-height;
         box-sizing: border-box;
         border: 1px solid blue;
+        position: relative;
 
         flex-flow: column nowrap;
-        align-items: flex-start;
+        align-items: flex-end;
         align-content: flex-start;
         justify-content: flex-start;
+
+        > .segment-timeline__output-layer-control__label {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        > .segment-timeline__output-layer-control__layer {
+            line-height: $timeline-layer-height;
+            height: $timeline-layer-height;
+            flex-basis: $timeline-layer-height;
+            box-sizing: border-box;
+            background: transparentize(blue, 0.8);
+            white-space: nowrap;
+            overflow: hidden;
+        }
     }
 }
 

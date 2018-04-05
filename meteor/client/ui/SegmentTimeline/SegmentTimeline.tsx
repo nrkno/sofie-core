@@ -141,7 +141,17 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 			return _.map(this.props.segment.outputLayers!, (outputLayer) => {
 				return (
 					<div key={outputLayer._id} className='segment-timeline__output-layer-control'>
-						{outputLayer.name}
+						<div className='segment-timeline__output-layer-control__label'>{outputLayer.name}</div>
+						{(
+							outputLayer.sourceLayers !== undefined &&
+							outputLayer.sourceLayers.map((sourceLayer) => {
+								return (
+									<div key={sourceLayer._id} className='segment-timeline__output-layer-control__layer'>
+										{sourceLayer.name}
+									</div>
+								)
+							})
+						)}
 					</div>
 				)
 			})
