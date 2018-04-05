@@ -15,5 +15,5 @@ window['RunningOrders'] = RunningOrders
 window['SegmentLineItems'] = SegmentLineItems
 window['SegmentLines'] = SegmentLines
 window['Segments'] = Segments
-window['ShowsStyles'] = ShowStyles
+window['ShowStyles'] = ShowStyles
 window['StudioInstallations'] = StudioInstallations
