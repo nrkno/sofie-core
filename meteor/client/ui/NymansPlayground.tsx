@@ -8,7 +8,7 @@ import { withTracker }       		from '../lib/ReactMeteorData/react-meteor-data'
 import { Task, Tasks } 			from '../../lib/collections/Tasks'
 import { Mongo } 				from 'meteor/mongo'
 import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders'
-import { Segments, Segment } from '../../lib/collections/Segments';
+import { Segments, Segment } from '../../lib/collections/Segments'
 
 // ----------------------------------------------------------------------------
 
@@ -309,12 +309,13 @@ class extends React.Component<IRunningOrders> {
 
 interface ISegments {
 	segments: Array<Segment>
+	runningOrderId?: String
 }
 export const ComponentSegments = withTracker((props) => {
 
 	// These properties will be exposed under this.props
 	// Note that these properties are reactively recalculated
-	console.log('props', props);
+	console.log('props', props)
 	return {
 		segments: Segments.find({
 			runningOrderId: props.runningOrderId

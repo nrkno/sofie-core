@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { Link } from 'react-router-dom'
 
 import * as ClassNames from 'classnames'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
@@ -70,11 +71,15 @@ interface IRunningOrderListItemPropsHeader {
 }
 
 export class RunningOrderListItem extends React.Component<IRunningOrderListItemPropsHeader> {
+	getRunningOrderLink (runningOrderId) {
+		return '/r/' + runningOrderId
+	}
+
 	render () {
 		return (
 			<tr className='running-order-list-item'>
 				<td className='running-order-list-item__name'>
-					<p>{this.props.runningOrder.name}</p>
+					<p><Link to={this.getRunningOrderLink(this.props.runningOrder._id)}>{this.props.runningOrder.name}</Link></p>
 				</td>
 				<td className='running-order-list-item__id'>
 					<p>{this.props.runningOrder._id}</p>

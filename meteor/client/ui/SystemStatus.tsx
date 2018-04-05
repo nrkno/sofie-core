@@ -6,7 +6,7 @@ import { PeripheralDevice,
 		PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import * as ClassNames from 'classnames'
-import Moment from 'react-moment';
+import Moment from 'react-moment'
 
 interface IDeviceItemPropsHeader {
 	key: string,

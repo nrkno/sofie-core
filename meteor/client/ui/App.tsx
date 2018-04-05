@@ -3,10 +3,11 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 // import * as withTracker from 'meteor/react-meteor-data';
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import Header from './Header.js'
-import Dashboard from './Dashboard.js'
-import SystemStatus from './SystemStatus.js'
-import { RunningOrderList } from './RunningOrderList.js';
+import Header from './Header'
+import Dashboard from './Dashboard'
+import SystemStatus from './SystemStatus'
+import { RunningOrderList } from './RunningOrderList'
+import { RunningOrderView } from './RunningOrderView'
 import { NymansPlayground } from '../ui/NymansPlayground'
 import {
   BrowserRouter as Router,
@@ -39,6 +40,8 @@ class App extends React.Component {
 		let sub3 = Meteor.subscribe('segments', {})
 		let sub4 = Meteor.subscribe('segmentLines', {})
 		let sub5 = Meteor.subscribe('segmentLineItems', {})
+		let sub6 = Meteor.subscribe('studioInstallations', {})
+		let sub7 = Meteor.subscribe('showStyles', {})
 
 		return (
 			<Router>
@@ -46,6 +49,7 @@ class App extends React.Component {
 				<Header />
 				<Route exact path='/' component={Dashboard} />
 				<Route exact path='/runningOrders' component={RunningOrderList} />
+				<Route path='/r/:runningOrderId' component={RunningOrderView} />
 				<Route path='/nymansPlayground' component={NymansPlayground} />
 				<Route path='/status' component={SystemStatus} />
 			</div>

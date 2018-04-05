@@ -1,0 +1,54 @@
+.segment-timeline {
+    display: block;
+    overflow: auto;
+    width: 100%;
+}
+.segment-timeline__timeline {
+    position: relative;
+    display: flex;
+    width: 100%;
+    flex-flow: row nowrap;
+    align-items: flex-start;
+    align-content: flex-start;
+    justify-content: flex-start;
+    padding-top: 1em;
+}
+// this is a <canvas> to be filled later with the time markers, to avoid a large DOM
+.segment-timeline__time-markers {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+.segment-timeline__segment-line {
+    flex: 0 0;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: flex-start;
+    align-content: flex-start;
+    justify-content: flex-start;
+}
+.segment-timeline__output-group {
+    flex: 1 1;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: flex-start;
+    align-content: flex-start;
+    justify-content: flex-start;
+}
+.segment-timeline__layer {
+    flex: 1 1;
+    display: block;
+    position: relative;
+    min-height: 1em;
+}
+.segment-timeline__layer > .segment-timeline__layer-item {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border: 1px solid red;
+    box-sizing: border-box;
+}
