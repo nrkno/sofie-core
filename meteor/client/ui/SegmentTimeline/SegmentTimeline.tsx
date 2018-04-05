@@ -24,7 +24,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 			return this.props.layer.items.map((segmentLineItem) => {
 				if (segmentLineItem.segmentLineId === this.props.segmentLine._id) {
 					return (
-						<div className='segment-timeline__layer-item'>
+						<div key={segmentLineItem._id} className='segment-timeline__layer-item'>
 							{segmentLineItem.name}
 						</div>
 					)
@@ -51,7 +51,8 @@ class OutputGroup extends React.Component<IOutputGroupProps> {
 	renderInside () {
 		if (this.props.layer.sourceLayers !== undefined) {
 			return this.props.layer.sourceLayers.map((sourceLayer) => {
-				return <SourceLayer layer={sourceLayer}
+				return <SourceLayer key={sourceLayer._id}
+									layer={sourceLayer}
 									outputLayer={this.props.layer}
 									segment={this.props.segment}
 									segmentLine={this.props.segmentLine} />
@@ -79,7 +80,7 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 		if (this.props.segment.outputLayers !== undefined) {
 			return _.map(this.props.segment.outputLayers, (layer, id) => {
 				return (
-					<OutputGroup layer={layer} segment={this.props.segment} segmentLine={segmentLine} />
+					<OutputGroup key={layer._id} layer={layer} segment={this.props.segment} segmentLine={segmentLine} />
 				)
 			})
 		}
@@ -88,7 +89,7 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 	renderTimeline () {
 		return this.props.segmentLines.map((segmentLine) => {
 			return (
-				<div className='segment-timeline__segment-line'>
+				<div key={segmentLine._id} className='segment-timeline__segment-line'>
 					{this.renderTimelineOutputGroups(segmentLine)}
 				</div>
 			)
