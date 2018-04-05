@@ -18,9 +18,9 @@ export interface ISourceLayer {
 	name: string
 	type: RundownAPI.SourceLayerType
 	  /** If set to true, the layer can handle any number of simultaneus Line Items */
-	unlimited: Boolean
+	unlimited: boolean
 		/** Ifs set to true, the layer will be shown in PGM Clean */
-	onPGMClean: Boolean
+	onPGMClean: boolean
 }
 
 /** A layer output group, f.g. PGM, Studio Monitor 1, etc. */
@@ -32,7 +32,7 @@ export interface IOutputLayer {
 		 * and notify that PGM treatment of this output should be in effect
 		 * (generate PGM Clean out based on SourceLayer properties)
 		 */
-	isPGM: Boolean,
+	isPGM: boolean,
 }
 
 export const StudioInstallations = new Mongo.Collection<StudioInstallation>('studioInstallation')

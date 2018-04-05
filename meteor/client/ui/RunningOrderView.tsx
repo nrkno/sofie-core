@@ -16,7 +16,6 @@ interface IPropsHeader {
 	runningOrder: RunningOrder
 	segments: Array<Segment>
 	studioInstallation: StudioInstallation
-	isReady: () => Boolean
 	match: {
 		runningOrderId: String
 	}

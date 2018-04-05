@@ -19,7 +19,7 @@ export interface Segment {
 
 	metaData?: Array<IMOSExternalMetaData>
 	status?: IMOSObjectStatus
-	expanded?: Boolean
+	expanded?: boolean
 }
 
 export const Segments = new Mongo.Collection<Segment>('segments')
