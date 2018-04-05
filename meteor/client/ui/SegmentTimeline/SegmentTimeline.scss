@@ -11,7 +11,7 @@
     align-items: flex-start;
     align-content: flex-start;
     justify-content: flex-start;
-    padding-top: 1em;
+    padding: 1em 0;
 }
 // this is a <canvas> to be filled later with the time markers, to avoid a large DOM
 .segment-timeline__time-markers {
@@ -42,6 +42,7 @@
     display: block;
     position: relative;
     min-height: 1em;
+    line-height: 1em;
 }
 .segment-timeline__layer > .segment-timeline__layer-item {
     position: absolute;
@@ -51,4 +52,5 @@
     right: 0;
     border: 1px solid red;
     box-sizing: border-box;
+    white-space: nowrap;
 }

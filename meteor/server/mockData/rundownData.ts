@@ -66,6 +66,13 @@ Meteor.methods({
 		RunningOrders.update({studioInstallationId: { $not: { $exists: true } }}, {$set: { studioInstallationId: 'studio0' }})
 	},
 
+	'debug_scrambleDurations' () {
+		let segmentLineItems = SegmentLineItems.find().fetch()
+		_.each(segmentLineItems, (segmentLineItem) => {
+			SegmentLineItems.update({ _id: segmentLineItem._id }, { $inc: { expectedDuration: ((Random.fraction() * 500) - 250) } })
+		})
+	},
+
 	'debug_mockRelationships' () {
 		let runningOrder = RunningOrders.findOne()
 		let segments = Segments.find({ runningOrderId: runningOrder._id }).fetch()

@@ -13,32 +13,44 @@ import { normalizeArray } from '../../lib/utils'
 import { SegmentTimeline } from './SegmentTimeline'
 
 export interface SegmentUi extends Segment {
+	/** Output layers available in the installation used by this segment */
 	outputLayers?: {
 		[key: string]: IOutputLayerUi
 	}
+	/** Source layers used by this segment */
 	sourceLayers?: {
 		[key: string]: ISourceLayerUi
 	}
 }
 export interface SegmentLineUi extends SegmentLine {
+	/** Segment line items belonging to this segment line */
 	items?: Array<SegmentLineItem>
 }
 export interface IOutputLayerUi extends IOutputLayer {
-	used?: Boolean
+	/** Is this output layer used in this segment */
+	used?: boolean
+	/** Source layers that will be used by this output layer */
 	sourceLayers?: Array<ISourceLayer>
 }
 export interface ISourceLayerUi extends ISourceLayer {
+	/** Segment line items present on this source layer */
 	items?: Array<SegmentLineItem>
 }
 export interface SegmentLineItemUi extends SegmentLineItem {
-	sourceLayer?: ISourceLayer
-	outputLayer?: IOutputLayer
+	/** Source layer that this segment line item belongs to */
+	sourceLayer?: ISourceLayerUi
+	/** Output layer that this segment line uses */
+	outputLayer?: IOutputLayerUi
 }
 interface IPropsHeader {
 	key: string,
 	segment: SegmentUi,
 	studioInstallation: StudioInstallation,
-	segmentLines: Array<SegmentLine>
+	segmentLines: Array<SegmentLine>,
+	timeScale?: number
+}
+interface IStateHeader {
+	timeScale: number
 }
 export const SegmentTimelineContainer = withTracker((props) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
@@ -55,6 +67,26 @@ export const SegmentTimelineContainer = withTracker((props) => {
 	const outputLayers = normalizeArray<IOutputLayerUi>(_.clone(props.studioInstallation.outputLayers), '_id')
 	const sourceLayers = normalizeArray<ISourceLayerUi>(_.clone(props.studioInstallation.sourceLayers), '_id')
 
+	// ensure that the sourceLayers array in the segment outputLayers is created
+	_.forEach(outputLayers, (outputLayer) => {
+		if (_.isArray(outputLayer.sourceLayers)) {
+			outputLayer.sourceLayers.length = 0
+		} else {
+			outputLayer.sourceLayers = new Array<ISourceLayer>()
+		}
+		// reset the used property, in case the output layer lost all of its contents
+		outputLayer.used = false
+	})
+
+	// ensure that the items array is created
+	_.forEach(sourceLayers, (sourceLayer) => {
+		if (_.isArray(sourceLayer.items)) {
+			sourceLayer.items.length = 0
+		} else {
+			sourceLayer.items = new Array<SegmentLineItem>()
+		}
+	})
+
 	// fetch all the segment line items for the segment lines
 	_.forEach<SegmentLineUi>(segmentLines, (segmentLine) => {
 		let segmentLineItems = SegmentLineItems.find({
@@ -67,17 +99,9 @@ export const SegmentTimelineContainer = withTracker((props) => {
 			// mark the output layer as used within this segment
 			outputLayers[segmentLineItem.outputLayerId].used = true
 			segmentLineItem.sourceLayer = sourceLayers[segmentLineItem.sourceLayerId]
-			// ensure that the items array is created
-			if (_.isArray(sourceLayers[segmentLineItem.sourceLayerId].items) === false) {
-				sourceLayers[segmentLineItem.sourceLayerId].items = new Array<SegmentLineItem>()
-			}
+
 			// attach the segmentLineItem to the sourceLayer in this segment
 			sourceLayers[segmentLineItem.sourceLayerId].items!.push(segmentLineItem)
-
-			// ensure that the sourceLayers array in the segment outputLayers is created
-			if (_.isArray(outputLayers[segmentLineItem.outputLayerId].sourceLayers) === false) {
-				outputLayers[segmentLineItem.outputLayerId].sourceLayers = new Array<ISourceLayer>()
-			}
 			// attach the sourceLayer to the outputLayer, if it hasn't been already
 			let index = outputLayers[segmentLineItem.outputLayerId].sourceLayers!.indexOf(segmentLineItem.sourceLayer)
 			if (index < 0) {
@@ -94,12 +118,21 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		segmentLines
 	}
 })(
-class extends React.Component<IPropsHeader> {
+class extends React.Component<IPropsHeader, IStateHeader> {
+	constructor (props) {
+		super(props)
+
+		this.state = {
+			/** The amount of pixels representing one second */
+			timeScale: props.timeScale || 1
+		}
+	}
 	render () {
 		return (
 			<SegmentTimeline key={this.props.segment._id} segment={this.props.segment}
 							 studioInstallation={this.props.studioInstallation}
-							 segmentLines={this.props.segmentLines} />
+							 segmentLines={this.props.segmentLines}
+							 timeScale={this.state.timeScale} />
 		)
 	}
 }

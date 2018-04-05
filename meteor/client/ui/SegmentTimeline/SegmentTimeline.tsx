@@ -10,25 +10,56 @@ import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
 import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
-import { SegmentUi, SegmentLineUi, IOutputLayerUi, ISourceLayerUi } from './SegmentTimelineContainer'
+import { SegmentUi, SegmentLineUi, IOutputLayerUi, ISourceLayerUi, SegmentLineItemUi } from './SegmentTimelineContainer'
+
+interface ISourceLayerItemProps {
+	layer: ISourceLayerUi
+	outputLayer: IOutputLayerUi
+	segment: SegmentUi
+	segmentLine: SegmentLineUi
+	segmentLineItem: SegmentLineItemUi
+	timeScale: number
+}
+class SourceLayerItem extends React.Component<ISourceLayerItemProps> {
+	getItemStyle (): { [key: string]: string } {
+		let segmentLineItem = this.props.segmentLineItem
+
+		return {
+			'width': (segmentLineItem.expectedDuration * this.props.timeScale).toString() + 'px'
+		}
+	}
+
+	render () {
+		return (
+			<div className='segment-timeline__layer-item' style={this.getItemStyle()}>
+				{this.props.segmentLineItem.name}
+			</div>
+		)
+	}
+}
 
 interface ISourceLayerProps {
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
 	segment: SegmentUi
 	segmentLine: SegmentLineUi
+	timeScale: number
 }
 class SourceLayer extends React.Component<ISourceLayerProps> {
 	renderInside () {
 		if (this.props.layer.items !== undefined) {
-			return this.props.layer.items.map((segmentLineItem) => {
+			return this.props.layer.items
+			.filter((segmentLineItem) => {
+				// filter only segment line items belonging to this segment line
 				if (segmentLineItem.segmentLineId === this.props.segmentLine._id) {
-					return (
-						<div key={segmentLineItem._id} className='segment-timeline__layer-item'>
-							{segmentLineItem.name}
-						</div>
-					)
+					return true
 				}
+				return false
+			})
+			.map((segmentLineItem) => {
+				return (
+					<SourceLayerItem key={segmentLineItem._id} segmentLineItem={segmentLineItem} {...this.props} />
+				)
 			})
 		}
 	}
@@ -46,6 +77,7 @@ interface IOutputGroupProps {
 	layer: IOutputLayerUi
 	segment: SegmentUi
 	segmentLine: SegmentLineUi
+	timeScale: number
 }
 class OutputGroup extends React.Component<IOutputGroupProps> {
 	renderInside () {
@@ -55,7 +87,8 @@ class OutputGroup extends React.Component<IOutputGroupProps> {
 									layer={sourceLayer}
 									outputLayer={this.props.layer}
 									segment={this.props.segment}
-									segmentLine={this.props.segmentLine} />
+									segmentLine={this.props.segmentLine}
+									timeScale={this.props.timeScale} />
 			})
 		}
 	}
@@ -70,18 +103,31 @@ class OutputGroup extends React.Component<IOutputGroupProps> {
 }
 
 interface IPropsHeader {
-	key: string,
-	segment: SegmentUi,
-	studioInstallation: StudioInstallation,
+	key: string
+	segment: SegmentUi
+	studioInstallation: StudioInstallation
 	segmentLines: Array<SegmentLineUi>
+	timeScale: number
 }
 export class SegmentTimeline extends React.Component<IPropsHeader> {
 	renderTimelineOutputGroups (segmentLine: SegmentLineUi) {
 		if (this.props.segment.outputLayers !== undefined) {
-			return _.map(this.props.segment.outputLayers, (layer, id) => {
-				return (
-					<OutputGroup key={layer._id} layer={layer} segment={this.props.segment} segmentLine={segmentLine} />
-				)
+			return _.map(_.filter(this.props.segment.outputLayers, (layer) => {
+				if (layer.used)	{
+					return true
+				}
+				return false
+			}), (layer, id) => {
+				// Only render output layers used by the segment
+				if (layer.used) {
+					return (
+						<OutputGroup key={layer._id}
+									 layer={layer}
+									 segment={this.props.segment}
+									 segmentLine={segmentLine}
+									 timeScale={this.props.timeScale} />
+					)
+				}
 			})
 		}
 	}
