@@ -1,0 +1,32 @@
+@import "colorScheme";
+
+.segment-timeline {
+	display: grid;
+	grid-column-gap: 0;
+	grid-row-gap: 0;
+	grid-template-columns: [segment-name] 200px [segment-group-controls] 100px [timeline] auto [end];
+	grid-template-rows: [header] 3em [main-view] auto [zoom-area] 3em [end];
+
+	.segment-timeline__title {
+		display: block;
+		margin: 0;
+		padding: 0;
+
+		grid-column: segment-name / segment-group-controls;
+		grid-row: main-view / zoom-area;
+	}
+
+	.segment-timeline__mos-id {
+		display: none;
+	}
+
+	.segment-timeline__timeline {
+		grid-column: timeline / end;
+		grid-row: main-view / zoom-area;
+	}
+
+	.segment-timeline__output-layers {
+		grid-column: segment-group-controls / timeline;
+		grid-row: main-view / zoom-area;
+	}
+}

@@ -1,6 +1,5 @@
 .segment-timeline {
     display: block;
-    overflow: auto;
     width: 100%;
 }
 .segment-timeline__timeline {
@@ -11,7 +10,7 @@
     align-items: flex-start;
     align-content: flex-start;
     justify-content: flex-start;
-    padding: 1em 0;
+    overflow: auto;
 }
 // this is a <canvas> to be filled later with the time markers, to avoid a large DOM
 .segment-timeline__time-markers {
@@ -29,28 +28,50 @@
     align-content: flex-start;
     justify-content: flex-start;
 }
-.segment-timeline__output-group {
+// padding has to be the same on both of these elements so that the layers and their controls line up
+.segment-timeline__output-layers, .segment-timeline__timeline {
+    padding: 1em 0;
+}
+.segment-timeline__output-layers {
     flex: 1 1;
     display: flex;
     flex-flow: column nowrap;
-    align-items: flex-start;
+    align-items: stretch;
     align-content: flex-start;
     justify-content: flex-start;
+
+    > .segment-timeline__output-layer-control {
+        flex: 0 0;
+        display: flex;
+        line-height: 1em;
+        min-height: 1em;
+        height: 1em;
+        flex-basis: 1em;
+        box-sizing: border-box;
+        border: 1px solid blue;
+
+        flex-flow: column nowrap;
+        align-items: flex-start;
+        align-content: flex-start;
+        justify-content: flex-start;
+    }
 }
+
 .segment-timeline__layer {
     flex: 1 1;
     display: block;
     position: relative;
     min-height: 1em;
     line-height: 1em;
-}
-.segment-timeline__layer > .segment-timeline__layer-item {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    border: 1px solid red;
-    box-sizing: border-box;
-    white-space: nowrap;
+
+    > .segment-timeline__layer-item {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        border: 1px solid red;
+        box-sizing: border-box;
+        white-space: nowrap;
+    }
 }

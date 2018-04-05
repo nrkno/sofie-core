@@ -32,7 +32,7 @@ class SourceLayerItem extends React.Component<ISourceLayerItemProps> {
 	render () {
 		return (
 			<div className='segment-timeline__layer-item' style={this.getItemStyle()}>
-				{this.props.segmentLineItem.name}
+				<span className='segment-timeline__layer-item__label'>{this.props.segmentLineItem.name}</span>
 			</div>
 		)
 	}
@@ -51,10 +51,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 			return this.props.layer.items
 			.filter((segmentLineItem) => {
 				// filter only segment line items belonging to this segment line
-				if (segmentLineItem.segmentLineId === this.props.segmentLine._id) {
-					return true
-				}
-				return false
+				return (segmentLineItem.segmentLineId === this.props.segmentLine._id) ? true : false
 			})
 			.map((segmentLineItem) => {
 				return (
@@ -113,10 +110,7 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 	renderTimelineOutputGroups (segmentLine: SegmentLineUi) {
 		if (this.props.segment.outputLayers !== undefined) {
 			return _.map(_.filter(this.props.segment.outputLayers, (layer) => {
-				if (layer.used)	{
-					return true
-				}
-				return false
+				return (layer.used) ? true : false
 			}), (layer, id) => {
 				// Only render output layers used by the segment
 				if (layer.used) {
@@ -143,9 +137,15 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 	}
 
 	renderOutputLayerControls () {
-		return (
-			<div></div>
-		)
+		if (this.props.segment.outputLayers !== undefined) {
+			return _.map(this.props.segment.outputLayers!, (outputLayer) => {
+				return (
+					<div key={outputLayer._id} className='segment-timeline__output-layer-control'>
+						{outputLayer.name}
+					</div>
+				)
+			})
+		}
 	}
 
 	render () {
