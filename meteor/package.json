@@ -23,6 +23,7 @@
     "react-bootstrap": "^0.32.1",
     "react-dom": "^16.3.0",
     "react-hotkeys": "^0.10.0",
+    "react-lottie": "^1.1.0",
     "react-moment": "^0.7.0",
     "react-router-dom": "^4.2.2",
     "superfly-timeline": "git+https://github.com/jstarpl/supertimeline.git#feature/fixGitNpm",

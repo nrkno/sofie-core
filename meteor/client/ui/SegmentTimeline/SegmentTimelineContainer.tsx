@@ -4,11 +4,12 @@ import * as ReactDOM from 'react-dom'
 import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 
+import { normalizeArray } from '../../lib/utils'
+
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
 import { StudioInstallation, StudioInstallations, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
-import { normalizeArray } from '../../lib/utils'
 
 import { SegmentTimeline } from './SegmentTimeline'
 
@@ -30,7 +31,9 @@ export interface IOutputLayerUi extends IOutputLayer {
 	/** Is this output layer used in this segment */
 	used?: boolean
 	/** Source layers that will be used by this output layer */
-	sourceLayers?: Array<ISourceLayer>
+	sourceLayers?: Array<ISourceLayer>,
+	/** Is output layer group collapsed */
+	collapsed?: boolean
 }
 export interface ISourceLayerUi extends ISourceLayer {
 	/** Segment line items present on this source layer */
@@ -50,7 +53,10 @@ interface IPropsHeader {
 	timeScale?: number
 }
 interface IStateHeader {
-	timeScale: number
+	timeScale: number,
+	collapsedOutputs: {
+		[key: string]: boolean
+	}
 }
 export const SegmentTimelineContainer = withTracker((props) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
@@ -126,19 +132,27 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		let that = this
 		this.state = {
 			/** The amount of pixels representing one second */
-			timeScale: props.initialTimeScale || 1
+			timeScale: props.initialTimeScale || 1,
+			collapsedOutputs: {}
 		}
 
 		/* that.setState({
 			timeScale: that.state.timeScale * 1.1
 		}) */
 	}
+	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
+		let collapsedOutputs = {...this.state.collapsedOutputs}
+		collapsedOutputs[outputLayer._id] = collapsedOutputs[outputLayer._id] === true ? false : true
+		this.setState({ collapsedOutputs })
+	}
 	render () {
 		return (
 			<SegmentTimeline key={this.props.segment._id} segment={this.props.segment}
 							 studioInstallation={this.props.studioInstallation}
 							 segmentLines={this.props.segmentLines}
-							 timeScale={this.state.timeScale} />
+							 timeScale={this.state.timeScale}
+							 onCollapseOutputToggle={this.onCollapseOutputToggle}
+							 collapsedOutputs={this.state.collapsedOutputs} />
 		)
 	}
 }

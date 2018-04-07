@@ -25,23 +25,38 @@ $timeline-layer-height: 1em;
 }
 .segment-timeline__segment-line {
     flex: 0 0;
-    display: flex;
-    flex-flow: column nowrap;
-    align-items: flex-start;
-    align-content: flex-start;
-    justify-content: flex-start;
+
+    .segment-timeline__output-group {
+        display: flex;
+        flex-flow: column nowrap;
+        min-height: 1em;
+
+        .segment-timeline__layer {
+            flex: 1 1;
+            display: block;
+            position: relative;
+            min-height: 1em;
+            line-height: 1em;
+
+            > .segment-timeline__layer-item {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: transparentize(red, 0.8);
+                box-sizing: border-box;
+                white-space: nowrap;
+            }
+        }
+    }
 }
 // padding has to be the same on both of these elements so that the layers and their controls line up
 .segment-timeline__output-layers, .segment-timeline__timeline {
     padding: $timeline-padding;
 }
 .segment-timeline__output-layers {
-    flex: 1 1;
-    display: flex;
-    flex-flow: column nowrap;
-    align-items: stretch;
-    align-content: flex-start;
-    justify-content: flex-start;
+    display: block;
 
     > .segment-timeline__output-layer-control {
         flex: 0 0;
@@ -64,32 +79,14 @@ $timeline-layer-height: 1em;
         }
 
         > .segment-timeline__output-layer-control__layer {
+            flex: 1 1;
             line-height: $timeline-layer-height;
             height: $timeline-layer-height;
-            flex-basis: $timeline-layer-height;
+            min-height: $timeline-layer-height;
             box-sizing: border-box;
             background: transparentize(blue, 0.8);
             white-space: nowrap;
             overflow: hidden;
         }
-    }
-}
-
-.segment-timeline__layer {
-    flex: 1 1;
-    display: block;
-    position: relative;
-    min-height: 1em;
-    line-height: 1em;
-
-    > .segment-timeline__layer-item {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: transparentize(red, 0.8);
-        box-sizing: border-box;
-        white-space: nowrap;
     }
 }

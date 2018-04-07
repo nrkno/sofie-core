@@ -46,6 +46,15 @@ interface ISourceLayerProps {
 	timeScale: number
 }
 class SourceLayer extends React.Component<ISourceLayerProps> {
+	getLayerStyle () {
+		return {
+			// TODO: Use actual segment line duration, instead of the max(items.duration) one
+			width: ((this.props.segmentLine.items !== undefined && _.max(this.props.segmentLine.items!.map((item) => {
+				return item.duration || item.expectedDuration
+			}))) || 0 ).toString() + 'px'
+		}
+	}
+
 	renderInside () {
 		console.log(this.props.layer)
 
@@ -58,6 +67,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 			.map((segmentLineItem) => {
 				return (
 					<SourceLayerItem key={segmentLineItem._id}
+									 {...this.props}
 									 segmentLineItem={segmentLineItem}
 									 layer={this.props.layer}
 									 outputLayer={this.props.outputLayer}
@@ -71,7 +81,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 
 	render () {
 		return (
-			<div className='segment-timeline__layer'>
+			<div className='segment-timeline__layer' style={this.getLayerStyle()}>
 				{this.renderInside()}
 			</div>
 		)
@@ -83,12 +93,16 @@ interface IOutputGroupProps {
 	segment: SegmentUi
 	segmentLine: SegmentLineUi
 	timeScale: number
+	collapsedOutputs: {
+		[key: string]: boolean
+	}
 }
 class OutputGroup extends React.Component<IOutputGroupProps> {
 	renderInside () {
 		if (this.props.layer.sourceLayers !== undefined) {
 			return this.props.layer.sourceLayers.map((sourceLayer) => {
 				return <SourceLayer key={sourceLayer._id}
+									{...this.props}
 									layer={sourceLayer}
 									outputLayer={this.props.layer}
 									segment={this.props.segment}
@@ -100,7 +114,10 @@ class OutputGroup extends React.Component<IOutputGroupProps> {
 
 	render () {
 		return (
-			<div className='segment-timeline__output-group'>
+			<div className={ClassNames('segment-timeline__output-group', {
+				'collapsable': this.props.layer.sourceLayers && this.props.layer.sourceLayers.length > 1,
+				'collapsed': this.props.collapsedOutputs[this.props.layer._id] === true
+			})}>
 				{this.renderInside()}
 			</div>
 		)
@@ -113,6 +130,10 @@ interface IPropsHeader {
 	studioInstallation: StudioInstallation
 	segmentLines: Array<SegmentLineUi>
 	timeScale: number
+	onCollapseOutputToggle?: (layer: IOutputLayerUi, event: any) => void
+	collapsedOutputs: {
+		[key: string]: boolean
+	}
 }
 export class SegmentTimeline extends React.Component<IPropsHeader> {
 	renderTimelineOutputGroups (segmentLine: SegmentLineUi) {
@@ -126,6 +147,7 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 				if (layer.used) {
 					return (
 						<OutputGroup key={layer._id}
+									 {...this.props}
 									 layer={layer}
 									 segment={this.props.segment}
 									 segmentLine={segmentLine}
@@ -151,23 +173,30 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 			return _.map(_.values(this.props.segment.outputLayers!).sort((a, b) => {
 				return a._rank - b._rank
 			}), (outputLayer) => {
-				return (
-					<div key={outputLayer._id} className='segment-timeline__output-layer-control'>
-						<div className='segment-timeline__output-layer-control__label'>{outputLayer.name}</div>
-						{(
-							outputLayer.sourceLayers !== undefined &&
-							outputLayer.sourceLayers.sort((a, b) => {
-								return a._rank - b._rank
-							}).map((sourceLayer) => {
-								return (
-									<div key={sourceLayer._id} className='segment-timeline__output-layer-control__layer'>
-										{sourceLayer.name}
-									</div>
-								)
-							})
-						)}
-					</div>
-				)
+				if (outputLayer.used) {
+					return (
+						<div key={outputLayer._id} className={ClassNames('segment-timeline__output-layer-control', {
+							'collapsable': outputLayer.sourceLayers !== undefined && outputLayer.sourceLayers.length > 1,
+							'collapsed': this.props.collapsedOutputs[outputLayer._id] === true
+						})}>
+							<div className='segment-timeline__output-layer-control__label'
+								 onClick={(e) => this.props.onCollapseOutputToggle && this.props.onCollapseOutputToggle(outputLayer, e)}>{outputLayer.name}
+							</div>
+							{(
+								outputLayer.sourceLayers !== undefined &&
+								outputLayer.sourceLayers.sort((a, b) => {
+									return a._rank - b._rank
+								}).map((sourceLayer) => {
+									return (
+										<div key={sourceLayer._id} className='segment-timeline__output-layer-control__layer'>
+											{sourceLayer.name}
+										</div>
+									)
+								})
+							)}
+						</div>
+					)
+				}
 			})
 		}
 	}
