@@ -15,13 +15,16 @@ $timeline-layer-height: 1em;
     justify-content: flex-start;
     overflow: auto;
 }
-// this is a <canvas> to be filled later with the time markers, to avoid a large DOM
-.segment-timeline__time-markers {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+.segment-timeline__timeline-grid {
+    position: relative;
+    
+    .segment-timeline__timeline-grid__canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
 }
 .segment-timeline__segment-line {
     flex: 0 0;

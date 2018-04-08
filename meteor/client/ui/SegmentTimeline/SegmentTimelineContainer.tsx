@@ -54,9 +54,11 @@ interface IPropsHeader {
 }
 interface IStateHeader {
 	timeScale: number,
+	scrollLeft: number,
 	collapsedOutputs: {
 		[key: string]: boolean
-	}
+	},
+	collapsed: boolean,
 }
 export const SegmentTimelineContainer = withTracker((props) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
@@ -133,7 +135,9 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		this.state = {
 			/** The amount of pixels representing one second */
 			timeScale: props.initialTimeScale || 1,
-			collapsedOutputs: {}
+			collapsedOutputs: {},
+			collapsed: false,
+			scrollLeft: 0
 		}
 
 		/* that.setState({
@@ -145,6 +149,10 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		collapsedOutputs[outputLayer._id] = collapsedOutputs[outputLayer._id] === true ? false : true
 		this.setState({ collapsedOutputs })
 	}
+	onCollapseSegmentToggle = () => {
+		this.setState({ collapsed: !this.state.collapsed })
+	}
+
 	render () {
 		return (
 			<SegmentTimeline key={this.props.segment._id} segment={this.props.segment}
@@ -152,7 +160,10 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 							 segmentLines={this.props.segmentLines}
 							 timeScale={this.state.timeScale}
 							 onCollapseOutputToggle={this.onCollapseOutputToggle}
-							 collapsedOutputs={this.state.collapsedOutputs} />
+							 collapsedOutputs={this.state.collapsedOutputs}
+							 onCollapseSegmentToggle={this.onCollapseSegmentToggle}
+							 isCollapsed={this.state.collapsed}
+							 scrollLeft={this.state.scrollLeft} />
 		)
 	}
 }

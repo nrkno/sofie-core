@@ -11,6 +11,9 @@ import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
 import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
 import { SegmentUi, SegmentLineUi, IOutputLayerUi, ISourceLayerUi, SegmentLineItemUi } from './SegmentTimelineContainer'
+import { TimelineGrid } from './TimelineGrid'
+
+import { RundownUtils } from '../../lib/rundown'
 
 interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
@@ -25,7 +28,7 @@ class SourceLayerItem extends React.Component<ISourceLayerItemProps> {
 		let segmentLineItem = this.props.segmentLineItem
 
 		return {
-			'width': (segmentLineItem.expectedDuration * this.props.timeScale).toString() + 'px'
+			'width': ((segmentLineItem.duration || segmentLineItem.expectedDuration) * this.props.timeScale).toString() + 'px'
 		}
 	}
 
@@ -49,9 +52,9 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 	getLayerStyle () {
 		return {
 			// TODO: Use actual segment line duration, instead of the max(items.duration) one
-			width: ((this.props.segmentLine.items !== undefined && _.max(this.props.segmentLine.items!.map((item) => {
-				return item.duration || item.expectedDuration
-			}))) || 0 ).toString() + 'px'
+			width: ((this.props.segmentLine.items &&
+					 (RundownUtils.getSegmentLineDuration(this.props.segmentLine.items)) * this.props.timeScale)
+					 || 0 ).toString() + 'px'
 		}
 	}
 
@@ -133,9 +136,16 @@ interface IPropsHeader {
 	onCollapseOutputToggle?: (layer: IOutputLayerUi, event: any) => void
 	collapsedOutputs: {
 		[key: string]: boolean
-	}
+	},
+	onCollapseSegmentToggle?: (event: any) => void,
+	isCollapsed?: boolean,
+	scrollLeft: number
 }
 export class SegmentTimeline extends React.Component<IPropsHeader> {
+	getSegmentDuration () {
+		return (this.props.segmentLines && RundownUtils.getSegmentDuration(this.props.segmentLines)) || 0
+	}
+
 	renderTimelineOutputGroups (segmentLine: SegmentLineUi) {
 		if (this.props.segment.outputLayers !== undefined) {
 			return _.map(_.filter(this.props.segment.outputLayers, (layer) => {
@@ -203,12 +213,17 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 
 	render () {
 		return (
-			<div className='segment-timeline'>
-				<h2 className='segment-timeline__title'>{this.props.segment.name}</h2>
+			<div className={ClassNames('segment-timeline', {
+				'collapsed': this.props.isCollapsed
+			})}>
+				<h2 className='segment-timeline__title'
+					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>{this.props.segment.name}</h2>
+				<div className='segment-timeline__duration'>{this.getSegmentDuration()}</div>
 				<div className='segment-timeline__mos-id'>{this.props.segment.mosId}</div>
 				<div className='segment-timeline__output-layers'>
 					{this.renderOutputLayerControls()}
 				</div>
+				<TimelineGrid {...this.props} />
 				<div className='segment-timeline__timeline'>
 					{this.renderTimeline()}
 				</div>

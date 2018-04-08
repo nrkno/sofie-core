@@ -23,6 +23,11 @@ $output-layer-group-collapse-animation-duration: 0.5s;
 		display: none;
 	}
 
+	.segment-timeline__timeline-grid {
+		grid-column: timeline / end;
+		grid-row: main-view / zoom-area;
+	}
+
 	.segment-timeline__timeline {
 		grid-column: timeline / end;
 		grid-row: main-view / zoom-area;
