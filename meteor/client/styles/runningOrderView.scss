@@ -10,6 +10,7 @@ $output-layer-group-collapse-animation-duration: 0.5s;
 	grid-template-columns: [segment-name] 200px [segment-group-controls] 120px [timeline] auto [end];
 	grid-template-rows: [header] 3em [main-view] auto [zoom-area] 3em [end];
 	overflow: hidden;
+	width: 100%;
 
 	.segment-timeline__title {
 		display: block;
@@ -27,11 +28,19 @@ $output-layer-group-collapse-animation-duration: 0.5s;
 	.segment-timeline__timeline-grid {
 		grid-column: timeline / end;
 		grid-row: main-view / zoom-area;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	.segment-timeline__timeline-container {
+		grid-column: timeline / end;
+		grid-row: main-view / zoom-area;
+		min-width: 0;
+		min-height: 0;
 	}
 
 	.segment-timeline__timeline {
-		grid-column: timeline / end;
-		grid-row: main-view / zoom-area;
+		overflow: auto;
 
 		.segment-timeline__segment-line {
 			.segment-timeline__output-group {

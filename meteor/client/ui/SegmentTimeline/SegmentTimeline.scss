@@ -6,15 +6,24 @@ $timeline-layer-height: 1em;
     width: 100%;
     max-width: 100%;
 }
-.segment-timeline__timeline {
+.segment-timeline__timeline-container {
     position: relative;
-    display: flex;
-    width: 100%;
-    flex-flow: row nowrap;
-    align-items: flex-start;
-    align-content: flex-start;
-    justify-content: flex-start;
-    overflow: auto;
+
+    .segment-timeline__timeline {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        
+        display: flex;
+        width: 100%;
+        flex-flow: row nowrap;
+        align-items: flex-start;
+        align-content: flex-start;
+        justify-content: flex-start;
+        overflow: auto;
+    }
 }
 .segment-timeline__timeline-grid {
     position: relative;

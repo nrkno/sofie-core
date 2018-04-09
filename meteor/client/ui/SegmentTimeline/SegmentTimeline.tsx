@@ -224,8 +224,10 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 					{this.renderOutputLayerControls()}
 				</div>
 				<TimelineGrid {...this.props} />
-				<div className='segment-timeline__timeline'>
-					{this.renderTimeline()}
+				<div className='segment-timeline__timeline-container'>
+					<div className='segment-timeline__timeline'>
+						{this.renderTimeline()}
+					</div>
 				</div>
 			</div>
 		)
