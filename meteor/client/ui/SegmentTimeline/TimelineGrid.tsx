@@ -34,7 +34,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 			this.repaint()
 		}
-	}, 100)
+	}, Math.ceil(1000 / 15)) // don't repaint faster than 15 fps
 
 	setCanvasRef = (element: HTMLCanvasElement) => {
 		this.canvasElement = element
@@ -53,6 +53,8 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			this.ctx.lineCap = 'butt'
 			this.ctx.lineWidth = 1
 			this.ctx.strokeStyle = 'rgb(200,200,200)'
+			this.ctx.font = (10 * this.pixelRatio).toString() + 'px Ethica, Arial, sans-serif'
+			this.ctx.fillStyle = 'rgb(0,0,0)'
 
 			let step = 30 * this.props.timeScale * this.pixelRatio
 
@@ -63,6 +65,8 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				this.ctx.moveTo(i, 0)
 				this.ctx.lineTo(i, this.height)
 				this.ctx.stroke()
+
+				this.ctx.fillText((i / this.props.timeScale / this.pixelRatio).toString(), i, 15 * this.pixelRatio)
 			}
 		}
 	}
