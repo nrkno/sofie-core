@@ -42,6 +42,7 @@ class App extends React.Component {
 		let sub5 = Meteor.subscribe('segmentLineItems', {})
 		let sub6 = Meteor.subscribe('studioInstallations', {})
 		let sub7 = Meteor.subscribe('showStyles', {})
+		let sub8 = Meteor.subscribe('timeline', {})
 
 		return (
 			<Router>
