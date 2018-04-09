@@ -1,3 +1,4 @@
+import * as elementResizeEvent from 'element-resize-event'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import * as $ from 'jquery'
@@ -9,6 +10,7 @@ interface ITimelineGridProps {
 }
 export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	canvasElement: HTMLCanvasElement
+	parentElement: HTMLDivElement
 	ctx: CanvasRenderingContext2D | null
 
 	width: number
@@ -35,6 +37,10 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			this.repaint()
 		}
 	}, Math.ceil(1000 / 15)) // don't repaint faster than 15 fps
+
+	setParentRef = (element: HTMLDivElement) => {
+		this.parentElement = element
+	}
 
 	setCanvasRef = (element: HTMLCanvasElement) => {
 		this.canvasElement = element
@@ -73,7 +79,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 	render () {
 		return (
-			<div className='segment-timeline__timeline-grid'>
+			<div className='segment-timeline__timeline-grid' ref={this.setParentRef}>
 				<canvas className='segment-timeline__timeline-grid__canvas' ref={this.setCanvasRef}></canvas>
 			</div>
 		)
@@ -87,7 +93,8 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		if (this.ctx) {
 			this.contextResize()
 
-			$(window).on('resize', this.onCanvasResize)
+			// $(window).on('resize', this.onCanvasResize)
+			elementResizeEvent(this.parentElement, this.onCanvasResize)
 		}
 	}
 
@@ -100,6 +107,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	componentWillUnmount () {
 		console.log('Detach resize notifiers')
 
-		$(window).off('resize', this.onCanvasResize)
+		// $(window).off('resize', this.onCanvasResize)
+		elementResizeEvent.unbind(this.parentElement, this.onCanvasResize)
 	}
 }
