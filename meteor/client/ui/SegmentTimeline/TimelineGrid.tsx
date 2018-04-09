@@ -66,7 +66,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				this.ctx.lineTo(i, this.height)
 				this.ctx.stroke()
 
-				this.ctx.fillText((i / this.props.timeScale / this.pixelRatio).toString(), i, 15 * this.pixelRatio)
+				this.ctx.fillText((i / this.props.timeScale / this.pixelRatio).toString(), i, 10 * this.pixelRatio)
 			}
 		}
 	}

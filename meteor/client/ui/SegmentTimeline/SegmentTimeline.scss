@@ -4,6 +4,7 @@ $timeline-layer-height: 1em;
 .segment-timeline {
     display: block;
     width: 100%;
+    max-width: 100%;
 }
 .segment-timeline__timeline {
     position: relative;

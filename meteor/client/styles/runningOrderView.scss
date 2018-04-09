@@ -9,6 +9,7 @@ $output-layer-group-collapse-animation-duration: 0.5s;
 	grid-row-gap: 0;
 	grid-template-columns: [segment-name] 200px [segment-group-controls] 120px [timeline] auto [end];
 	grid-template-rows: [header] 3em [main-view] auto [zoom-area] 3em [end];
+	overflow: hidden;
 
 	.segment-timeline__title {
 		display: block;
