@@ -33,6 +33,8 @@ $output-layer-group-collapse-animation-duration: 0.5s;
 			.segment-timeline__output-layer-control {
 				line-height: 0.5em;
 				min-height: 0.5em;
+				transition: $output-layer-group-collapse-animation-duration line-height ease-out,
+							$output-layer-group-collapse-animation-duration min-height ease-out;
 
 				.segment-timeline__output-layer-control__label {
 					opacity: 0;
@@ -64,6 +66,7 @@ $output-layer-group-collapse-animation-duration: 0.5s;
 			.segment-timeline__segment-line {
 				.segment-timeline__output-group {
 					min-height: 0.5em;
+					transition: $output-layer-group-collapse-animation-duration min-height ease-out;
 
 					.segment-timeline__layer {
 						transition: $output-layer-group-collapse-animation-duration min-height ease-in-out;
