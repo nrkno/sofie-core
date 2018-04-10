@@ -7,130 +7,21 @@ import Moment from 'react-moment'
 import * as _ from 'underscore'
 import * as $ from 'jquery'
 
+import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
 import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
 import { SegmentUi, SegmentLineUi, IOutputLayerUi, ISourceLayerUi, SegmentLineItemUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
+import { SegmentTimelineLine } from './SegmentTimelineLine'
 
 import { RundownUtils } from '../../lib/rundown'
-
-interface ISourceLayerItemProps {
-	layer: ISourceLayerUi
-	outputLayer: IOutputLayerUi
-	segment: SegmentUi
-	segmentLine: SegmentLineUi
-	segmentLineItem: SegmentLineItemUi
-	timeScale: number
-}
-class SourceLayerItem extends React.Component<ISourceLayerItemProps> {
-	getItemStyle (): { [key: string]: string } {
-		let segmentLineItem = this.props.segmentLineItem
-
-		return {
-			'width': ((segmentLineItem.duration || segmentLineItem.expectedDuration) * this.props.timeScale).toString() + 'px'
-		}
-	}
-
-	render () {
-		return (
-			<div className='segment-timeline__layer-item' style={this.getItemStyle()}>
-				<span className='segment-timeline__layer-item__label'>{this.props.segmentLineItem.name}</span>
-			</div>
-		)
-	}
-}
-
-interface ISourceLayerProps {
-	layer: ISourceLayerUi
-	outputLayer: IOutputLayerUi
-	segment: SegmentUi
-	segmentLine: SegmentLineUi
-	timeScale: number
-}
-class SourceLayer extends React.Component<ISourceLayerProps> {
-	getLayerStyle () {
-		return {
-			// TODO: Use actual segment line duration, instead of the max(items.duration) one
-			width: ((this.props.segmentLine.items &&
-					 (RundownUtils.getSegmentLineDuration(this.props.segmentLine.items)) * this.props.timeScale)
-					 || 0 ).toString() + 'px'
-		}
-	}
-
-	renderInside () {
-		console.log(this.props.layer)
-
-		if (this.props.layer.items !== undefined) {
-			return this.props.layer.items
-			.filter((segmentLineItem) => {
-				// filter only segment line items belonging to this segment line
-				return (segmentLineItem.segmentLineId === this.props.segmentLine._id) ? true : false
-			})
-			.map((segmentLineItem) => {
-				return (
-					<SourceLayerItem key={segmentLineItem._id}
-									 {...this.props}
-									 segmentLineItem={segmentLineItem}
-									 layer={this.props.layer}
-									 outputLayer={this.props.outputLayer}
-									 segment={this.props.segment}
-									 segmentLine={this.props.segmentLine}
-									 timeScale={this.props.timeScale} />
-				)
-			})
-		}
-	}
-
-	render () {
-		return (
-			<div className='segment-timeline__layer' style={this.getLayerStyle()}>
-				{this.renderInside()}
-			</div>
-		)
-	}
-}
-
-interface IOutputGroupProps {
-	layer: IOutputLayerUi
-	segment: SegmentUi
-	segmentLine: SegmentLineUi
-	timeScale: number
-	collapsedOutputs: {
-		[key: string]: boolean
-	}
-}
-class OutputGroup extends React.Component<IOutputGroupProps> {
-	renderInside () {
-		if (this.props.layer.sourceLayers !== undefined) {
-			return this.props.layer.sourceLayers.map((sourceLayer) => {
-				return <SourceLayer key={sourceLayer._id}
-									{...this.props}
-									layer={sourceLayer}
-									outputLayer={this.props.layer}
-									segment={this.props.segment}
-									segmentLine={this.props.segmentLine}
-									timeScale={this.props.timeScale} />
-			})
-		}
-	}
-
-	render () {
-		return (
-			<div className={ClassNames('segment-timeline__output-group', {
-				'collapsable': this.props.layer.sourceLayers && this.props.layer.sourceLayers.length > 1,
-				'collapsed': this.props.collapsedOutputs[this.props.layer._id] === true
-			})}>
-				{this.renderInside()}
-			</div>
-		)
-	}
-}
 
 interface IPropsHeader {
 	key: string
 	segment: SegmentUi
+	runningOrder: RunningOrder,
 	studioInstallation: StudioInstallation
 	segmentLines: Array<SegmentLineUi>
 	timeScale: number
@@ -161,34 +52,12 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 		return (this.props.segmentLines && RundownUtils.getSegmentDuration(this.props.segmentLines)) || 0
 	}
 
-	renderTimelineOutputGroups (segmentLine: SegmentLineUi) {
-		if (this.props.segment.outputLayers !== undefined) {
-			return _.map(_.filter(this.props.segment.outputLayers, (layer) => {
-				return (layer.used) ? true : false
-			}).sort((a, b) => {
-				return a._rank - b._rank
-			}), (layer, id) => {
-				// Only render output layers used by the segment
-				if (layer.used) {
-					return (
-						<OutputGroup key={layer._id}
-									 {...this.props}
-									 layer={layer}
-									 segment={this.props.segment}
-									 segmentLine={segmentLine}
-									 timeScale={this.props.timeScale} />
-					)
-				}
-			})
-		}
-	}
-
 	renderTimeline () {
 		return this.props.segmentLines.map((segmentLine) => {
 			return (
-				<div key={segmentLine._id} className='segment-timeline__segment-line'>
-					{this.renderTimelineOutputGroups(segmentLine)}
-				</div>
+				<SegmentTimelineLine key={segmentLine._id}
+									 {...this.props}
+									 segmentLine={segmentLine} />
 			)
 		})
 	}

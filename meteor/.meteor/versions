@@ -58,6 +58,7 @@ mongo-id@1.0.7
 nerdmed:catiline@0.0.1
 npm-mongo@2.2.34
 ordered-dict@1.1.0
+peerlibrary:computed-field@0.9.0
 practicalmeteor:mocha-core@1.0.1
 promise@0.10.2
 random@1.1.0

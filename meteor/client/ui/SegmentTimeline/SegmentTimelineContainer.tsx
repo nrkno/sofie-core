@@ -6,6 +6,7 @@ import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 
 import { normalizeArray } from '../../lib/utils'
 
+import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
@@ -50,6 +51,7 @@ interface IPropsHeader {
 	segment: SegmentUi,
 	studioInstallation: StudioInstallation,
 	segmentLines: Array<SegmentLine>,
+	runningOrder: RunningOrder,
 	timeScale?: number
 }
 interface IStateHeader {
@@ -168,6 +170,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 							 onCollapseSegmentToggle={this.onCollapseSegmentToggle}
 							 isCollapsed={this.state.collapsed}
 							 scrollLeft={this.state.scrollLeft}
+							 runningOrder={this.props.runningOrder}
 							 onScroll={this.onScroll} />
 		)
 	}

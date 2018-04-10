@@ -23,8 +23,10 @@ export interface RunningOrder {
 	status?: IMOSObjectStatus
 	airStatus?: IMOSObjectAirStatus
 	// There should be something like a Owner user here somewhere?
-	currentSegmentLineId: string
-	nextSegmentLineId: string
+	/** the id of the Live Segment Line - if empty, no segment line in this rundown is live */
+	currentSegmentLineId: string | null
+	/** the id of the Next Segment Line - if empty, no segment will follow Live Segment Line */
+	nextSegmentLineId: string | null
 }
 
 export const RunningOrders = new Mongo.Collection<RunningOrder>('rundowns')

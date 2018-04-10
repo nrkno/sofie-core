@@ -25,7 +25,7 @@ export interface SegmentLineItem {
 	status: RundownAPI.LineItemStatusCode
 	/** Source layer the timeline item belongs to */
 	sourceLayerId: string
-  /** Layer output this segment line item belongs to */
+  	/** Layer output this segment line item belongs to */
 	outputLayerId: string
 	/** Expected duration of the item as planned or as estimated by the system (in case of Script layers), in seconds. */
 	expectedDuration: number
