@@ -20,7 +20,7 @@
     "lottie-web": "^5.1.10",
     "meteor-node-stubs": "^0.3.3",
     "moment": "^2.19.1",
-    "mos-connection": "git+https://github.com/nrkno/tv-automation-mos-connection.git#feature/fixGitNpm",
+    "mos-connection": "git+https://github.com/nrkno/tv-automation-mos-connection.git#develop",
     "react": "^16.3.0",
     "react-bootstrap": "^0.32.1",
     "react-dom": "^16.3.0",
