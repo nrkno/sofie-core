@@ -13,4 +13,8 @@ export namespace RundownUtils {
 			return (item.items && this.getSegmentLineDuration(item.items)) || 0
 		}))) || 0
 	}
+
+	export function formatTimeToTimecode (seconds: number, format: string): string {
+		return seconds.toString()
+	}
 }

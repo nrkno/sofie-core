@@ -152,6 +152,10 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 	onCollapseSegmentToggle = () => {
 		this.setState({ collapsed: !this.state.collapsed })
 	}
+	/** The user has scrolled scrollLeft seconds to the left in a child component */
+	onScroll = (scrollLeft: number, event: any) => {
+		console.log('User has scrolled')
+	}
 
 	render () {
 		return (
@@ -163,7 +167,8 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 							 collapsedOutputs={this.state.collapsedOutputs}
 							 onCollapseSegmentToggle={this.onCollapseSegmentToggle}
 							 isCollapsed={this.state.collapsed}
-							 scrollLeft={this.state.scrollLeft} />
+							 scrollLeft={this.state.scrollLeft}
+							 onScroll={this.onScroll} />
 		)
 	}
 }

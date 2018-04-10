@@ -5,6 +5,7 @@ import * as ReactDOM from 'react-dom'
 import * as ClassNames from 'classnames'
 import Moment from 'react-moment'
 import * as _ from 'underscore'
+import * as $ from 'jquery'
 
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
@@ -139,9 +140,23 @@ interface IPropsHeader {
 	},
 	onCollapseSegmentToggle?: (event: any) => void,
 	isCollapsed?: boolean,
-	scrollLeft: number
+	scrollLeft: number,
+	onScroll: (scrollLeft: number, event: any) => void
 }
 export class SegmentTimeline extends React.Component<IPropsHeader> {
+	timeline: HTMLDivElement
+
+	setTimelineRef = (el: HTMLDivElement) => {
+		this.timeline = el
+	}
+
+	onTimelineScroll = (e: any) => {
+		let secondsScroll = (($(this.timeline).scrollLeft() || 0) / this.props.timeScale)
+		console.log('Timeline has been scrolled: ' + secondsScroll + 's')
+
+		this.props.onScroll(secondsScroll, e)
+	}
+
 	getSegmentDuration () {
 		return (this.props.segmentLines && RundownUtils.getSegmentDuration(this.props.segmentLines)) || 0
 	}
@@ -216,16 +231,18 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 			<div className={ClassNames('segment-timeline', {
 				'collapsed': this.props.isCollapsed
 			})}>
-				<h2 className='segment-timeline__title'
-					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>{this.props.segment.name}</h2>
-				<div className='segment-timeline__duration'>{this.getSegmentDuration()}</div>
+				<h2 className='segment-timeline__title'>{this.props.segment.name}</h2>
+				<div className='segment-timeline__duration'
+					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
+					 {this.getSegmentDuration()}
+				</div>
 				<div className='segment-timeline__mos-id'>{this.props.segment.mosId}</div>
 				<div className='segment-timeline__output-layers'>
 					{this.renderOutputLayerControls()}
 				</div>
 				<TimelineGrid {...this.props} />
 				<div className='segment-timeline__timeline-container'>
-					<div className='segment-timeline__timeline'>
+					<div className='segment-timeline__timeline' ref={this.setTimelineRef} onScroll={this.onTimelineScroll}>
 						{this.renderTimeline()}
 					</div>
 				</div>
