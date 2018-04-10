@@ -64,7 +64,22 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			this.ctx.font = (10 * this.pixelRatio).toString() + 'px Ethica, Arial, sans-serif'
 			this.ctx.fillStyle = 'rgb(0,0,0)'
 
-			let step = 30 * this.props.timeScale * this.pixelRatio
+			let secondsStep = 5 * 60
+			if ((this.props.timeScale > 0) && (this.props.timeScale < 1)) {
+				secondsStep = 90
+			} else if ((this.props.timeScale >= 1) && (this.props.timeScale < 3)) {
+				secondsStep = 60
+			} else if ((this.props.timeScale >= 3) && (this.props.timeScale < 7)) {
+				secondsStep = 30
+			} else if ((this.props.timeScale >= 7) && (this.props.timeScale < 13)) {
+				secondsStep = 10
+			} else if ((this.props.timeScale >= 13) && (this.props.timeScale < 33)) {
+				secondsStep = 5
+			} else if ((this.props.timeScale >= 33)) {
+				secondsStep = 2
+			}
+
+			let step = secondsStep * this.props.timeScale * this.pixelRatio
 
 			this.ctx.clearRect(0, 0, this.width, this.height)
 
