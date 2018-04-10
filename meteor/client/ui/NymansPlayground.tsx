@@ -9,6 +9,8 @@ import { Task, Tasks } 			from '../../lib/collections/Tasks'
 import { Mongo } 				from 'meteor/mongo'
 import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders'
 import { Segments, Segment } from '../../lib/collections/Segments'
+import { Timeline, TimelineObj, TimelineContentType } from '../../lib/collections/Timeline'
+import { TriggerType } from 'superfly-timeline'
 
 // ----------------------------------------------------------------------------
 
@@ -22,9 +24,17 @@ class EditAttribute extends React.Component<IEditAttribute> {
 			return (
 				<EditAttributeText {...this.props} />
 			)
+		} else if (this.props.type === 'int') {
+			return (
+				<EditAttributeInt {...this.props} />
+			)
 		} else if (this.props.type === 'checkbox') {
 			return (
 				<EditAttributeCheckbox {...this.props} />
+			)
+		} else if (this.props.type === 'dropdown') {
+			return (
+				<EditAttributeDropdown {...this.props} />
 			)
 		}
 	}
@@ -35,6 +45,7 @@ interface IPropsEditAttributeBase {
 	collection: Mongo.Collection<any>,
 	myObject?: any,
 	obj?: any
+	options?: any
 }
 interface IStateEditAttributeBase {
 	value: any,
@@ -131,10 +142,38 @@ const EditAttributeText = wrapEditAttribute(class extends EditAttributeBase {
 		this.handleUpdate(event.target.value)
 	}
 	render () {
-		console.log('render', this.getEditAttribute())
 		return (
 			<div>
 				<input type='text'
+					className='form-control'
+
+					value={this.getEditAttribute() || ''}
+					onChange={this.handleChange}
+					onBlur={this.handleBlur}
+				/>
+
+			</div>
+		)
+	}
+})
+const EditAttributeInt = wrapEditAttribute(class extends EditAttributeBase {
+	constructor (props) {
+		super(props)
+
+		this.handleChange 	= this.handleChange.bind(this)
+		this.handleBlur 	= this.handleBlur.bind(this)
+	}
+	handleChange (event) {
+		this.handleEdit(event.target.value)
+	}
+	handleBlur (event) {
+		this.handleUpdate(parseInt(event.target.value, 10))
+	}
+	render () {
+		return (
+			<div>
+				<input type='number'
+					step='1'
 					className='form-control'
 
 					value={this.getEditAttribute()}
@@ -172,9 +211,68 @@ const EditAttributeCheckbox = wrapEditAttribute(class extends EditAttributeBase 
 		)
 	}
 })
+const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase {
+	constructor (props) {
+		super(props)
 
+		this.handleChange 	= this.handleChange.bind(this)
+	}
+	isChecked () {
+		return !!this.getEditAttribute()
+	}
+	handleChange (event) {
+		this.handleUpdate(event.target.value)
+	}
+	getOptions () {
+		let options: Array<{value: any, name: string, i?: number}> = []
+
+		if (Array.isArray(this.props.options)) {
+			for (let key in this.props.options) {
+				let val = this.props.options[key]
+				if (typeof val === 'object') {
+					options.push({
+						name: val.name,
+						value: val.value
+					})
+				} else {
+					options.push({
+						name: val,
+						value: val
+					})
+				}
+			}
+		} else if (typeof this.props.options === 'object') {
+			for (let key in this.props.options) {
+				let val = this.props.options[key]
+				options.push({
+					name: key + ': ' + val,
+					value: val
+				})
+			}
+		}
+
+		for (let i = 0; i < options.length; i++) {
+			options[i].i = i
+		}
+		
+		return options
+	}
+	render () {
+		return (
+			<div>
+				<select
+					value={this.getAttribute()}
+					onChange={this.handleChange}
+				>
+					{this.getOptions().map((o) => (
+						<option key={o.i} value={o.value}>{o.name}</option>
+					))}
+				</select>
+			</div>
+		)
+	}
+})
 // ----------------------------------------------------------------------------
-
 interface IEditTasks {
 	tasks: Array<Task>
 }
@@ -241,9 +339,7 @@ class extends React.Component<IEditTasks> {
 		)
 	}
 })
-
 // ----------------------------------------------------------------------------
-
 export class NymansPlayground extends React.Component {
 	render () {
 		return (
@@ -251,6 +347,9 @@ export class NymansPlayground extends React.Component {
 				<h1>Nyman's playground</h1>
 				<div>
 					<ComponentRunningOrders />
+				</div>
+				<div>
+					<ComponentTimeline />
 				</div>
 			</div>
 		)
@@ -306,7 +405,6 @@ class extends React.Component<IRunningOrders> {
 		)
 	}
 })
-
 interface ISegments {
 	segments: Array<Segment>
 	runningOrderId?: String
@@ -315,7 +413,6 @@ export const ComponentSegments = withTracker((props) => {
 
 	// These properties will be exposed under this.props
 	// Note that these properties are reactively recalculated
-	console.log('props', props)
 	return {
 		segments: Segments.find({
 			runningOrderId: props.runningOrderId
@@ -338,6 +435,50 @@ class extends React.Component<ISegments> {
 				<h2>Segments</h2>
 				<div>
 					{this.renderROs()}
+				</div>
+			</div>
+		)
+	}
+})
+interface ITimeline {
+	timeline: Array<TimelineObj>
+}
+export const ComponentTimeline = withTracker(() => {
+
+	// These properties will be exposed under this.props
+	// Note that these properties are reactively recalculated
+	return {
+		timeline: Timeline.find({}, { sort: { _id: 1 } }).fetch()
+	}
+})(
+class extends React.Component<ITimeline> {
+	renderTimeline () {
+		return this.props.timeline.map((timelineObj) => (
+			<div key={timelineObj._id}>
+				<table><tbody>
+				<tr><td>ID:</td><td> <i>{timelineObj._id}</i></td></tr>
+				<tr><td>DeviceId:</td><td> <EditAttribute type='text' collection={Timeline}	obj={timelineObj} attribute='deviceId'/> </td></tr>
+				<tr><td>trigger.type:</td><td> <EditAttribute type='dropdown' collection={Timeline}	obj={timelineObj} attribute='trigger.type' options={TriggerType} /></td></tr>
+				<tr><td>trigger.value:</td><td> <EditAttribute type='text' collection={Timeline}	obj={timelineObj} attribute='trigger.value'/></td></tr>
+				<tr><td>duration:</td><td> <EditAttribute type='text' collection={Timeline}	obj={timelineObj} attribute='duration'/></td></tr>
+				<tr><td>LLayer:</td><td> <EditAttribute type='text' collection={Timeline}	obj={timelineObj} attribute='LLayer'/></td></tr>
+				<tr><td>disabled:</td><td> <EditAttribute type='checkbox' collection={Timeline}	obj={timelineObj} attribute='disabled'/></td></tr>
+				<tr><td>
+					<strong>Content</strong>
+				</td></tr>
+					<tr><td>type:</td><td> <EditAttribute type='dropdown' collection={Timeline}	obj={timelineObj} attribute='content.type' options={TimelineContentType} /></td></tr>
+					
+
+				</tbody></table>
+			</div>
+		))
+	}
+	render () {
+		return (
+			<div>
+				<h2>Timeline objects</h2>
+				<div>
+					{this.renderTimeline()}
 				</div>
 			</div>
 		)

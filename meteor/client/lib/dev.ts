@@ -6,6 +6,7 @@ import { SegmentLines } from '../../lib/collections/SegmentLines'
 import { Segments } from '../../lib/collections/Segments'
 import { ShowStyles } from '../../lib/collections/ShowStyles'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { Timeline } from '../../lib/collections/Timeline'
 
 // Note: These things are convenience functions to be used during development
 
@@ -17,3 +18,4 @@ window['SegmentLines'] = SegmentLines
 window['Segments'] = Segments
 window['ShowStyles'] = ShowStyles
 window['StudioInstallations'] = StudioInstallations
+window['Timeline'] = Timeline
