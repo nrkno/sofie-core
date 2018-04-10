@@ -4,6 +4,8 @@ import * as ReactDOM from 'react-dom'
 import * as $ from 'jquery'
 import * as _ from 'underscore'
 
+import { RundownUtils } from '../../lib/rundown'
+
 interface ITimelineGridProps {
 	timeScale: number
 	scrollLeft: number
@@ -72,7 +74,9 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				this.ctx.lineTo(i, this.height)
 				this.ctx.stroke()
 
-				this.ctx.fillText((i / this.props.timeScale / this.pixelRatio).toString(), i, 10 * this.pixelRatio)
+				this.ctx.fillText(
+					RundownUtils.formatTimeToTimecode(i / this.props.timeScale / this.pixelRatio)
+					, i, 10 * this.pixelRatio)
 			}
 		}
 	}

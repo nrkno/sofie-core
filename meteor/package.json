@@ -28,7 +28,8 @@
     "react-lottie": "^1.1.0",
     "react-moment": "^0.7.0",
     "react-router-dom": "^4.2.2",
-    "superfly-timeline": "git+https://github.com/jstarpl/supertimeline.git#feature/fixGitNpm",
+    "smpte-timecode": "^1.2.1",
+    "superfly-timeline": "git+https://github.com/SuperFlyTV/supertimeline.git#develop",
     "underscore": "^1.8.3",
     "velocity-react": "^1.3.3"
   },
