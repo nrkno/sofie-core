@@ -6,6 +6,8 @@ import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 
 import { normalizeArray } from '../../lib/utils'
 
+import * as SuperTimeline from 'superfly-timeline'
+
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
@@ -27,6 +29,7 @@ export interface SegmentUi extends Segment {
 export interface SegmentLineUi extends SegmentLine {
 	/** Segment line items belonging to this segment line */
 	items?: Array<SegmentLineItem>
+	renderedDuration?: number
 }
 export interface IOutputLayerUi extends IOutputLayer {
 	/** Is this output layer used in this segment */
@@ -46,9 +49,9 @@ export interface SegmentLineItemUi extends SegmentLineItem {
 	/** Output layer that this segment line uses */
 	outputLayer?: IOutputLayerUi
 	/** Position in timeline, relative to the beginning of the segment */
-	renderedInPoint?: number
+	renderedInPoint?: number | null
 	/** Duration in timeline */
-	renderedDuration?: number
+	renderedDuration?: number | null
 }
 interface IPropsHeader {
 	key: string,
@@ -82,6 +85,8 @@ export const SegmentTimelineContainer = withTracker((props) => {
 	const outputLayers = normalizeArray<IOutputLayerUi>(props.studioInstallation.outputLayers.map((layer) => { return _.clone(layer) }), '_id')
 	const sourceLayers = normalizeArray<ISourceLayerUi>(props.studioInstallation.sourceLayers.map((layer) => { return _.clone(layer) }), '_id')
 
+	const TIMELINE_TEMP_OFFSET = 1
+
 	// ensure that the sourceLayers array in the segment outputLayers is created
 	_.forEach(outputLayers, (outputLayer) => {
 		if (_.isArray(outputLayer.sourceLayers)) {
@@ -104,12 +109,35 @@ export const SegmentTimelineContainer = withTracker((props) => {
 
 	// fetch all the segment line items for the segment lines
 	_.forEach<SegmentLineUi>(segmentLines, (segmentLine) => {
+		let slTimeline: SuperTimeline.UnresolvedTimeline = []
+
 		let segmentLineItems = SegmentLineItems.find({
 			segmentLineId: segmentLine._id
 		}).fetch()
 		segmentLine.items = segmentLineItems
 
+		const offsetTrigger = (trigger: {
+			type: SuperTimeline.TriggerType,
+			value: string | number | null
+		}, offset) => {
+			if (trigger.type !== SuperTimeline.TriggerType.TIME_ABSOLUTE) {
+				return trigger
+			} else {
+				return _.extend({}, trigger, {
+					value: trigger.value + offset
+				})
+			}
+		}
+
 		_.forEach<SegmentLineItemUi>(segmentLine.items, (segmentLineItem) => {
+			slTimeline.push({
+				id: segmentLineItem._id,
+				trigger: offsetTrigger(segmentLineItem.trigger, TIMELINE_TEMP_OFFSET),
+				duration: segmentLineItem.duration || segmentLineItem.expectedDuration,
+				LLayer: segmentLineItem.outputLayerId,
+				content: segmentLineItem
+			})
+
 			segmentLineItem.outputLayer = outputLayers[segmentLineItem.outputLayerId]
 			// mark the output layer as used within this segment
 			outputLayers[segmentLineItem.outputLayerId].used = true
@@ -123,6 +151,23 @@ export const SegmentTimelineContainer = withTracker((props) => {
 				outputLayers[segmentLineItem.outputLayerId].sourceLayers!.push(segmentLineItem.sourceLayer)
 			}
 		})
+
+		// SuperTimeline.Resolver.setTraceLevel(SuperTimeline.TraceLevel.TRACE)
+
+		let slRTimeline = SuperTimeline.Resolver.getTimelineInWindow(slTimeline)
+		let furthestDuration = 0
+		slRTimeline.resolved.forEach((tlItem) => {
+			let segmentLineItem = tlItem.content as SegmentLineItemUi
+			segmentLineItem.renderedDuration = tlItem.resolved.outerDuration
+			// if there is no renderedInPoint, use 0 as the starting time for the item
+			segmentLineItem.renderedInPoint = tlItem.resolved.startTime ? tlItem.resolved.startTime - TIMELINE_TEMP_OFFSET : 0
+
+			if ((segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || 0) > furthestDuration) {
+				furthestDuration = (segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || 0)
+			}
+		})
+
+		segmentLine.renderedDuration = furthestDuration
 	})
 
 	segment.outputLayers = outputLayers

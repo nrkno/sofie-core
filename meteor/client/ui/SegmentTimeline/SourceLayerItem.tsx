@@ -20,7 +20,9 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps> {
 		let segmentLineItem = this.props.segmentLineItem
 
 		return {
-			'width': ((segmentLineItem.duration || segmentLineItem.expectedDuration) * this.props.timeScale).toString() + 'px'
+			// as-run "duration" takes priority over renderdDuration which takes priority over MOS-import expectedDuration (editorial duration)
+			'left': ((segmentLineItem.renderedInPoint || 0) * this.props.timeScale).toString() + 'px',
+			'width': ((segmentLineItem.duration || segmentLineItem.renderedDuration || segmentLineItem.expectedDuration) * this.props.timeScale).toString() + 'px'
 		}
 	}
 

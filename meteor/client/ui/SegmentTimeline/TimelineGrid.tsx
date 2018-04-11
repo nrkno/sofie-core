@@ -68,7 +68,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			this.ctx.lineCap = 'butt'
 			this.ctx.lineWidth = 1
 			this.ctx.strokeStyle = 'rgb(200,200,200)'
-			this.ctx.font = (10 * this.pixelRatio).toString() + 'px GridTimecodeFont, Arial, sans-serif'
+			this.ctx.font = (10 * this.pixelRatio).toString() + 'px GridTimecodeFont, Roboto, Arial, sans-serif'
 			this.ctx.fillStyle = 'rgb(0,0,0)'
 
 			// timeScale is how many pixels does a second take

@@ -5,7 +5,6 @@ import * as ReactDOM from 'react-dom'
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
 import * as $ from 'jquery'
-import { Resolver, TimelineObject, TimelineGroup } from 'superfly-timeline'
 
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../../lib/collections/Segments'
@@ -31,10 +30,7 @@ interface ISourceLayerProps {
 class SourceLayer extends React.Component<ISourceLayerProps> {
 	getLayerStyle () {
 		return {
-			// TODO: Use actual segment line duration, instead of the max(items.duration) one
-			width: ((this.props.segmentLine.items &&
-				(RundownUtils.getSegmentLineDuration(this.props.segmentLine.items)) * this.props.timeScale)
-				|| 0).toString() + 'px'
+			width: ((this.props.segmentLine.renderedDuration || 0) * this.props.timeScale).toString() + 'px'
 		}
 	}
 

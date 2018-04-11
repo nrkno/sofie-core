@@ -5,16 +5,10 @@ import * as Timecode from 'smpte-timecode'
 import { Settings } from '../../lib/Settings'
 
 export namespace RundownUtils {
-	export function getSegmentLineDuration (segmentLineItems: Array<SegmentLineItemUi>): number {
-		return (_.max(segmentLineItems.map((item) => {
-			return item.duration || item.expectedDuration
-		}))) || 0
-	}
-
-	export function getSegmentDuration (segmentLines: Array<SegmentLineUi>): number {
-		return (_.max(segmentLines.map((item) => {
-			return (item.items && this.getSegmentLineDuration(item.items)) || 0
-		}))) || 0
+	export function getSegmentDuration (lines: Array<SegmentLineUi>) {
+		return lines.reduce((memo, item) => {
+			return memo + (item.renderedDuration || 0)
+		}, 0)
 	}
 
 	export function formatTimeToTimecode (seconds: number): string {
