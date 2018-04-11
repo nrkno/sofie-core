@@ -43,7 +43,6 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 
 	onTimelineScroll = (e: any) => {
 		let secondsScroll = (($(this.timeline).scrollLeft() || 0) / this.props.timeScale)
-		console.log('Timeline has been scrolled: ' + secondsScroll + 's')
 
 		this.props.onScroll(secondsScroll, e)
 	}

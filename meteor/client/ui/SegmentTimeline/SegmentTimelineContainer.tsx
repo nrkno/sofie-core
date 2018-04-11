@@ -45,6 +45,10 @@ export interface SegmentLineItemUi extends SegmentLineItem {
 	sourceLayer?: ISourceLayerUi
 	/** Output layer that this segment line uses */
 	outputLayer?: IOutputLayerUi
+	/** Position in timeline, relative to the beginning of the segment */
+	renderedInPoint?: number
+	/** Duration in timeline */
+	renderedDuration?: number
 }
 interface IPropsHeader {
 	key: string,
@@ -156,7 +160,9 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 	}
 	/** The user has scrolled scrollLeft seconds to the left in a child component */
 	onScroll = (scrollLeft: number, event: any) => {
-		console.log('User has scrolled')
+		this.setState({
+			scrollLeft: scrollLeft
+		})
 	}
 
 	render () {

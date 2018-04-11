@@ -1,6 +1,7 @@
 import { Mongo } from 'meteor/mongo'
 import { RundownAPI } from '../../lib/api/rundown'
 import { TriggerType } from 'superfly-timeline'
+import { TimelineTransition } from './Timeline'
 
 /** A trigger interface compatible with that of supertimeline */
 export interface ITimelineTrigger {
@@ -33,6 +34,13 @@ export interface SegmentLineItem {
 	duration?: number
 	/** A flag to signal a given SegmentLineItem has been deactivated manually */
 	disabled?: boolean
+	/** The transition used by this segment line item to transition to and from the item */
+	transitions?: {
+		/** In transition for the item */
+		inTransition?: TimelineTransition
+		/** The out transition for the item */
+		outTransition?: TimelineTransition
+	}
 	/** The object describing the item in detail */
 	content?: object
 }

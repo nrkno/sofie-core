@@ -54,9 +54,11 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		this.contextResize()
 	}
 
-	repaint = () => {
-		console.log('Repainting')
+	ring (value, ringMax) {
+		return (value < 0) ? (ringMax + (value % ringMax)) : value % ringMax
+	}
 
+	repaint = () => {
 		if (this.ctx) {
 			this.ctx.lineCap = 'butt'
 			this.ctx.lineWidth = 1
@@ -80,18 +82,26 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			}
 
 			let step = secondsStep * this.props.timeScale * this.pixelRatio
+			let pixelOffset = this.props.scrollLeft * this.props.timeScale * this.pixelRatio
 
 			this.ctx.clearRect(0, 0, this.width, this.height)
 
-			for (let i = 0; i < this.width; i += step) {
+			let maxTicks = Math.ceil(this.width / step) + 1
+
+			// Go up to (width / step) + 1, to allow for the grid line + text, dissapearing on the left
+			// in effect, we are rendering +1 grid lines than there should fit inside the area
+			for (let i = 0; i < maxTicks; i++) {
+				// we should offset the first step -1, as this is the one that will be dissaperaing as the
+				// timeline is moving
+				let xPosition = this.ring((i * step) - pixelOffset, maxTicks * step) - (pixelOffset > 0 ? step : 0)
 				this.ctx.beginPath()
-				this.ctx.moveTo(i, 0)
-				this.ctx.lineTo(i, this.height)
+				this.ctx.moveTo(xPosition, 0)
+				this.ctx.lineTo(xPosition, this.height)
 				this.ctx.stroke()
 
 				this.ctx.fillText(
-					RundownUtils.formatTimeToTimecode(i / this.props.timeScale / this.pixelRatio)
-					, i, 10 * this.pixelRatio)
+					RundownUtils.formatTimeToTimecode((xPosition + pixelOffset) / step),
+					xPosition, 10 * this.pixelRatio)
 			}
 		}
 	}
@@ -118,8 +128,6 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	}
 
 	componentDidUpdate () {
-		console.log('TimelineGrid props changed, rerender the grid')
-
 		this.repaint()
 	}
 

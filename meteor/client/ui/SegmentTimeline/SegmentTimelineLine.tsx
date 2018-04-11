@@ -5,6 +5,7 @@ import * as ReactDOM from 'react-dom'
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
 import * as $ from 'jquery'
+import { Resolver, TimelineObject, TimelineGroup } from 'superfly-timeline'
 
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../../lib/collections/Segments'
