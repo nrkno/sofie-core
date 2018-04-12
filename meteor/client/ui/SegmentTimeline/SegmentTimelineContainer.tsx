@@ -16,6 +16,8 @@ import { StudioInstallation, StudioInstallations, IOutputLayer, ISourceLayer } f
 
 import { SegmentTimeline } from './SegmentTimeline'
 
+import { Settings } from '../../../lib/Settings'
+
 export interface SegmentUi extends Segment {
 	/** Output layers available in the installation used by this segment */
 	outputLayers?: {
@@ -202,7 +204,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		let that = this
 		this.state = {
 			/** The amount of pixels representing one second */
-			timeScale: props.initialTimeScale || 1,
+			timeScale: props.initialTimeScale || 10,
 			collapsedOutputs: {},
 			collapsed: false,
 			scrollLeft: 0,
@@ -235,10 +237,12 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		})
 
 		setInterval(() => {
+			let newLivePosition = this.state.livePosition + (1 / 60)
 			this.setState({
-				livePosition: this.state.livePosition + (1 / 25)
+				livePosition: newLivePosition,
+				scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.state.timeScale), 0)
 			})
-		}, 1000 / 25)
+		}, 1000 / 60)
 	}
 
 	render () {

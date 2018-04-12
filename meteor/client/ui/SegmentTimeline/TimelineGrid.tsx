@@ -78,13 +78,13 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	}
 
 	repaint = () => {
-		console.log('Repainting grid')
-
 		if (this.ctx) {
 			this.ctx.lineCap = 'butt'
 			this.ctx.lineWidth = 1
 			this.ctx.font = (15 * this.pixelRatio).toString() + 'px GridTimecodeFont, Roboto, Arial, sans-serif'
 			this.ctx.fillStyle = TIMELINE_GRID_LABEL_COLOR
+
+			const fps = Settings['frameRate']
 
 			// timeScale is how many pixels does a second take
 			// secondsStep - draw the big, labeled line very X seconds
@@ -117,7 +117,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				interStep = 1
 			} else if ((this.props.timeScale >= 250)) {
 				secondsStep = 1
-				interStep = Settings['frameRate'] || 25
+				interStep = fps || 25
 			}
 
 			let step = (secondsStep * this.props.timeScale * this.pixelRatio) / interStep
@@ -129,22 +129,28 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			// "large" ticks (one's with label), so we divide the display width by the amount of large steps (step / interStep)
 			// and then after getting the ceil of the value, multiply it back for all the inter-steps,
 			// beacuse we do the paint iteration for every line
-			let maxTicks = (Math.ceil(this.width / (step / interStep)) * interStep)
+			let maxTicks = Math.ceil(this.width / (step * interStep)) * interStep + (interStep)
 
 			// Go up to (width / step) + 1, to allow for the grid line + text, dissapearing on the left
 			// in effect, we are rendering +1 grid lines than there should fit inside the area
-			for (let i = 0; i < maxTicks; i++) {
+			let i = 0
+			for (i = 0; i < maxTicks; i++) {
 				// we should offset the first step -1, as this is the one that will be dissaperaing as the
 				// timeline is moving
-				let xPosition = this.ring((i * step) - pixelOffset, maxTicks * step) - (pixelOffset > 0 ? (step * interStep) : 0)
+				let xPosition = this.ring((i * step) - pixelOffset, maxTicks * step) - (step * interStep)
 
 				let isLabel = (i % interStep === 0)
 
 				if (isLabel === true) {
 					this.ctx.strokeStyle = LARGE_STEP_GRID_COLOR
 
+					// let t = i - interStep
+					// let t = (xPosition + this.props.scrollLeft * this.props.timeScale * this.pixelRatio) / (this.props.timeScale * this.pixelRatio)
+					let t = Math.max(Math.floor((Math.ceil(xPosition * fps) / (this.props.timeScale * this.pixelRatio)) + this.props.scrollLeft * fps), 0)
+
 					this.ctx.fillText(
-						RundownUtils.formatTimeToTimecode((xPosition + pixelOffset) / (step * interStep / secondsStep)),
+						// RundownUtils.formatTimeToTimecode((i * step) / (this.props.timeScale * this.pixelRatio)),
+						RundownUtils.formatTimeToTimecode(Math.floor(t / fps)),
 						xPosition, 18 * this.pixelRatio)
 				} else {
 					this.ctx.strokeStyle = INNER_STEP_GRID_COLOR

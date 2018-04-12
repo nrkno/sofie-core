@@ -89,6 +89,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 						0s visibility $output-layer-group-collapse-animation-duration;
 		}
 
+		.segment-timeline__liveline {
+			top: 0.15em;
+		}
+
 		.segment-timeline__output-layers {
 			padding: 0.2em 0 0;
 
@@ -124,7 +128,6 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 		.segment-timeline__timeline {
 			padding: 0.2em 0 0;
-			overflow: hidden;
 
 			.segment-timeline__segment-line {
 				.segment-timeline__output-group {
@@ -234,29 +237,30 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		grid-row: header / zoom-area;
 		min-width: 0;
 		min-height: 0;
+
+		overflow: hidden;
+	}
+
+	.segment-timeline__liveline {
+		width: 3px;
+		border-left: 3px solid $general-live-color;
+		box-shadow: -3px 0 20px rgba(0,0,0,1);
+		transition: $output-layer-group-collapse-animation-duration top ease-in-out;
+
+		.segment-timeline__liveline__label {
+			position: absolute;
+			top: -2px;
+			left: 5px;
+			color: #F9FF16;
+			text-transform: uppercase;
+			font-weight: bold;
+			line-height: 1em;
+		}
 	}
 
 	.segment-timeline__timeline {
-		overflow-x: auto;
-		overflow-y: hidden;
-
+		overflow: visible;
 		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
-
-		.segment-timeline__liveline {
-			width: 3px;
-			border-left: 3px solid $general-live-color;
-			box-shadow: -3px 0 20px rgba(0,0,0,1);
-
-			.segment-timeline__liveline__label {
-				position: absolute;
-				top: -2px;
-				left: 5px;
-				color: #F9FF16;
-				text-transform: uppercase;
-				font-weight: bold;
-				line-height: 1em;
-			}
-		}
 
 		.segment-timeline__segment-line {
 			

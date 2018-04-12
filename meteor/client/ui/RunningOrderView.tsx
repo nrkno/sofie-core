@@ -57,7 +57,7 @@ class extends React.Component<IPropsHeader> {
 										  studioInstallation={this.props.studioInstallation}
 										  segment={segment}
 										  runningOrder={this.props.runningOrder}
-										  liveLineHistorySize='10' />
+										  liveLineHistorySize='100' />
 			))
 		} else {
 			return (

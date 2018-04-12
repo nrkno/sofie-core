@@ -52,7 +52,6 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 
 		this.props.onScroll(secondsScroll, e)
 
-		console.log(e.nativeEvent)
 		// this.props.onFollowLiveLine(false, e)
 	}
 
@@ -60,15 +59,17 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 		return (this.props.segmentLines && RundownUtils.getSegmentDuration(this.props.segmentLines)) || 0
 	}
 
+	timelineStyle () {
+		return {
+			'transform': 'translateX(-' + (this.props.scrollLeft * this.props.timeScale).toString() + 'px)'
+		}
+	}
+
 	renderLiveLine () {
 		if (this.props.isLiveSegment) {
 			let pixelPostion = this.props.livePosition * this.props.timeScale
 			let lineStyle = {
-				'left': pixelPostion.toString() + 'px'
-			}
-
-			if (this.props.followLiveLine && pixelPostion > this.props.liveLineHistorySize) {
-				$(this.timeline).scrollLeft(pixelPostion - this.props.liveLineHistorySize)
+				'left': Math.min(pixelPostion, this.props.liveLineHistorySize).toString() + 'px'
 			}
 
 			return (
@@ -145,10 +146,10 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 				<div className='segment-timeline__timeline-background'/>
 				<TimelineGrid {...this.props} />
 				<div className='segment-timeline__timeline-container'>
-					<div className='segment-timeline__timeline' ref={this.setTimelineRef} onScroll={this.onTimelineScroll}>
+					<div className='segment-timeline__timeline' ref={this.setTimelineRef} style={this.timelineStyle()} onScroll={this.onTimelineScroll}>
 						{this.renderTimeline()}
-						{this.renderLiveLine()}
 					</div>
+					{this.renderLiveLine()}
 				</div>
 				<div className='segment-timeline__zoom-area'></div>
 			</div>
