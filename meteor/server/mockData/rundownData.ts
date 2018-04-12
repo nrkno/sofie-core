@@ -123,6 +123,44 @@ Meteor.methods({
 		})
 	},
 
+	'debug_additionalItems' () {
+		let segmentLine = SegmentLines.findOne({ _id: 'ro_96857485_5983A501:0049B924:8390EF2B_0'})
+		let remoteSegmentItem = literal<SegmentLineItem>({
+			_id: segmentLine._id + ':' + Random.id(5),
+			mosId: segmentLine.mosId,
+			segmentLineId: segmentLine._id,
+			runningOrderId: segmentLine.runningOrderId,
+			name: 'Remote Finland',
+			trigger: {
+				type: 0,
+				value: 120
+			},
+			status: RundownAPI.LineItemStatusCode.OK,
+			sourceLayerId: 'studio0-remote0',
+			outputLayerId: 'studio0-pgm0',
+			expectedDuration: 60,
+			disabled: false
+		})
+		let studioIdentLoopItem = literal<SegmentLineItem>({
+			_id: segmentLine._id + ':' + Random.id(5),
+			mosId: segmentLine.mosId,
+			segmentLineId: segmentLine._id,
+			runningOrderId: segmentLine.runningOrderId,
+			name: 'Program Ident',
+			trigger: {
+				type: 0,
+				value: 0
+			},
+			status: RundownAPI.LineItemStatusCode.OK,
+			sourceLayerId: 'studio0-vt0',
+			outputLayerId: 'studio0-monitor0',
+			expectedDuration: Math.floor(Random.fraction() * 645),
+			disabled: false
+		})
+		SegmentLineItems.insert(studioIdentLoopItem)
+		SegmentLineItems.insert(remoteSegmentItem)
+	},
+
 	'debug_emptyDatabase' () {
 		console.log('Clear the database')
 

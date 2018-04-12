@@ -130,6 +130,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			// and then after getting the ceil of the value, multiply it back for all the inter-steps,
 			// beacuse we do the paint iteration for every line
 			let maxTicks = Math.ceil(this.width / (step * interStep)) * interStep + (interStep)
+			let idealWidth = Math.ceil(this.width / (step * interStep)) * (step * interStep)
 
 			// Go up to (width / step) + 1, to allow for the grid line + text, dissapearing on the left
 			// in effect, we are rendering +1 grid lines than there should fit inside the area
@@ -147,10 +148,14 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 					// let t = i - interStep
 					// let t = (xPosition + this.props.scrollLeft * this.props.timeScale * this.pixelRatio) / (this.props.timeScale * this.pixelRatio)
 					let t = Math.max(Math.floor((Math.ceil(xPosition * fps) / (this.props.timeScale * this.pixelRatio)) + this.props.scrollLeft * fps), 0)
+					// let t = pixelOffset / tg
+					// let t = Math.floor((((i + 1) * step) - pixelOffset) / (this.width))
 
 					this.ctx.fillText(
 						// RundownUtils.formatTimeToTimecode((i * step) / (this.props.timeScale * this.pixelRatio)),
 						RundownUtils.formatTimeToTimecode(Math.floor(t / fps)),
+						// t.toString(),
+						// i + ':' + t,
 						xPosition, 18 * this.pixelRatio)
 				} else {
 					this.ctx.strokeStyle = INNER_STEP_GRID_COLOR
