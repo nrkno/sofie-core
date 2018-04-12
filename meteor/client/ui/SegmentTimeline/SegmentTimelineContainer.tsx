@@ -158,14 +158,30 @@ export const SegmentTimelineContainer = withTracker((props) => {
 			segmentLineItem.outputLayer = outputLayers[segmentLineItem.outputLayerId]
 			// mark the output layer as used within this segment
 			outputLayers[segmentLineItem.outputLayerId].used = true
-			segmentLineItem.sourceLayer = sourceLayers[segmentLineItem.sourceLayerId]
-
-			// attach the segmentLineItem to the sourceLayer in this segment
-			sourceLayers[segmentLineItem.sourceLayerId].items!.push(segmentLineItem)
 			// attach the sourceLayer to the outputLayer, if it hasn't been already
-			let index = outputLayers[segmentLineItem.outputLayerId].sourceLayers!.indexOf(segmentLineItem.sourceLayer)
-			if (index < 0) {
-				outputLayers[segmentLineItem.outputLayerId].sourceLayers!.push(segmentLineItem.sourceLayer)
+
+			// find matching layer in the output layer
+			let sourceLayer = outputLayers[segmentLineItem.outputLayerId].sourceLayers!.find((el) => {
+				return el._id === segmentLineItem.sourceLayerId
+			})
+
+			if (sourceLayer === undefined) {
+				sourceLayer = sourceLayers[segmentLineItem.sourceLayerId]
+				if (sourceLayer) {
+					sourceLayer = _.clone(sourceLayer)
+					let sl = sourceLayer as ISourceLayerUi
+					sl.items = []
+					outputLayers[segmentLineItem.outputLayerId].sourceLayers!.push(sl)
+				}
+			}
+
+			if (sourceLayer !== undefined) {
+				segmentLineItem.sourceLayer = sourceLayer
+				if (segmentLineItem.sourceLayer.items === undefined) {
+					segmentLineItem.sourceLayer.items = []
+				}
+				// attach the segmentLineItem to the sourceLayer in this segment
+				segmentLineItem.sourceLayer.items.push(segmentLineItem)
 			}
 		})
 
@@ -237,7 +253,8 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		})
 
 		setInterval(() => {
-			let newLivePosition = this.state.livePosition + (1 / 60)
+			let speed = 1
+			let newLivePosition = this.state.livePosition + (1 / 60) * speed
 			this.setState({
 				livePosition: newLivePosition,
 				scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.state.timeScale), 0)
