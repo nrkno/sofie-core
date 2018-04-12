@@ -7,6 +7,10 @@ import { ISourceLayerUi,
 		 SegmentLineUi,
 		 SegmentLineItemUi } from './SegmentTimelineContainer'
 
+import { RundownAPI } from './../../../lib/api/rundown'
+
+import * as ClassNames from 'classnames'
+
 interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
@@ -28,7 +32,17 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps> {
 
 	render () {
 		return (
-			<div className='segment-timeline__layer-item' style={this.getItemStyle()}>
+			<div className={ClassNames('segment-timeline__layer-item', {
+				'audio': this.props.layer.type === RundownAPI.SourceLayerType.AUDIO,
+				'cam': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA,
+				'cam-movement': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA_MOVEMENT,
+				'gfx': this.props.layer.type === RundownAPI.SourceLayerType.GRAPHICS,
+				'metadata': this.props.layer.type === RundownAPI.SourceLayerType.METADATA,
+				'remote': this.props.layer.type === RundownAPI.SourceLayerType.REMOTE,
+				'script': this.props.layer.type === RundownAPI.SourceLayerType.SCRIPT,
+				'splits': this.props.layer.type === RundownAPI.SourceLayerType.SPLITS,
+				'vt': this.props.layer.type === RundownAPI.SourceLayerType.VT,
+			})} style={this.getItemStyle()}>
 				<span className='segment-timeline__layer-item__label'>{this.props.segmentLineItem.name}</span>
 			</div>
 		)

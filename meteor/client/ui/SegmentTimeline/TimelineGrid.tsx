@@ -9,6 +9,9 @@ import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
 
 const GRID_FONT_URL = 'url("/origo-ui/fonts/roboto-bold-webfont.woff")'
+const TIMELINE_GRID_LABEL_COLOR = 'rgb(175,175,175)'
+const INNER_STEP_GRID_COLOR = 'rgb(112,112,112)'
+const LARGE_STEP_GRID_COLOR = 'rgb(112,112,112)'
 
 interface ITimelineGridProps {
 	timeScale: number
@@ -67,9 +70,8 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		if (this.ctx) {
 			this.ctx.lineCap = 'butt'
 			this.ctx.lineWidth = 1
-			this.ctx.strokeStyle = 'rgb(200,200,200)'
-			this.ctx.font = (10 * this.pixelRatio).toString() + 'px GridTimecodeFont, Roboto, Arial, sans-serif'
-			this.ctx.fillStyle = 'rgb(0,0,0)'
+			this.ctx.font = (15 * this.pixelRatio).toString() + 'px GridTimecodeFont, Roboto, Arial, sans-serif'
+			this.ctx.fillStyle = TIMELINE_GRID_LABEL_COLOR
 
 			// timeScale is how many pixels does a second take
 			// secondsStep - draw the big, labeled line very X seconds
@@ -77,24 +79,30 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			// interStep - drax X lines between every big line
 			let interStep = 5
 			if ((this.props.timeScale > 0) && (this.props.timeScale < 1)) {
-				secondsStep = 90
-				interStep = 3
+				secondsStep = 600
+				interStep = 60
 			} else if ((this.props.timeScale >= 1) && (this.props.timeScale < 3)) {
-				secondsStep = 60
+				secondsStep = 300
 				interStep = 10
-			} else if ((this.props.timeScale >= 3) && (this.props.timeScale < 7)) {
+			} else if ((this.props.timeScale >= 3) && (this.props.timeScale < 10)) {
 				secondsStep = 30
 				interStep = 10
-			} else if ((this.props.timeScale >= 7) && (this.props.timeScale < 13)) {
+			} else if ((this.props.timeScale >= 10) && (this.props.timeScale < 20)) {
 				secondsStep = 10
 				interStep = 10
-			} else if ((this.props.timeScale >= 13) && (this.props.timeScale < 33)) {
+			} else if ((this.props.timeScale >= 20) && (this.props.timeScale < 45)) {
 				secondsStep = 5
 				interStep = 5
-			} else if ((this.props.timeScale >= 33) && (this.props.timeScale < 120)) {
+			} else if ((this.props.timeScale >= 45) && (this.props.timeScale < 90)) {
 				secondsStep = 2
 				interStep = 2
-			} else if ((this.props.timeScale >= 120)) {
+			} else if ((this.props.timeScale >= 90) && (this.props.timeScale < 120)) {
+				secondsStep = 2
+				interStep = 1
+			} else if ((this.props.timeScale >= 120) && (this.props.timeScale < 250)) {
+				secondsStep = 1
+				interStep = 1
+			} else if ((this.props.timeScale >= 250)) {
 				secondsStep = 1
 				interStep = Settings['frameRate'] || 25
 			}
@@ -120,18 +128,18 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				let isLabel = (i % interStep === 0)
 
 				if (isLabel === true) {
-					this.ctx.strokeStyle = 'rgb(120,120,120)'
+					this.ctx.strokeStyle = LARGE_STEP_GRID_COLOR
 
 					this.ctx.fillText(
 						RundownUtils.formatTimeToTimecode((xPosition + pixelOffset) / (step * interStep / secondsStep)),
-						xPosition, 10 * this.pixelRatio)
+						xPosition, 18 * this.pixelRatio)
 				} else {
-					this.ctx.strokeStyle = 'rgb(220,220,220)'
+					this.ctx.strokeStyle = INNER_STEP_GRID_COLOR
 				}
 
 				this.ctx.beginPath()
-				this.ctx.moveTo(xPosition, isLabel ? (10 * this.pixelRatio) : (15 * this.pixelRatio))
-				this.ctx.lineTo(xPosition, this.height)
+				this.ctx.moveTo(xPosition, isLabel ? (25 * this.pixelRatio) : (30 * this.pixelRatio))
+				this.ctx.lineTo(xPosition, isLabel ? (this.height) : (36 * this.pixelRatio))
 				this.ctx.stroke()
 			}
 		}

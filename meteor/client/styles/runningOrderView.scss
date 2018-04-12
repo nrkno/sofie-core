@@ -1,35 +1,93 @@
 @import "colorScheme";
 
-$output-layer-group-line: 1px solid #000;
+$output-layer-group-line: 1px solid #5C5C5C;
 $output-layer-group-collapse-animation-duration: 0.5s;
+
+$segment-background-color: #000;
+$segment-timeline-background-color: #1F1F1F;
+$segment-title-background-color: #4B4B4B;
+$segment-title-background-color-next: #FF0000;
+$segment-title-background-color-live: #F9FF16;
+
+$segment-layer-height: 2.5em;
+$segment-layer-background-unknown: #4B4B4B;
+$segment-layer-background-cam: #00C800;
+$segment-layer-background-gfx: #FF6F00;
+$segment-layer-background-remote: #FF0059;
+$segment-layer-background-script: #1C721F;
+$segment-layer-background-vt: #1769FF;
+$segment-layer-separator-color: transparentize(#000, 0.5);
+
+@mixin collapse-triangle {
+	&::before {
+		top: 50%;
+		left: 0;
+		position: absolute;
+		transform: translate(0, -50%) rotate(0deg);
+		content: ' ';
+		display: block;
+		background: url('/images/collapse-triangle.svg') no-repeat scroll center center;
+		background-size: contain;
+		width: 15px;
+		height: 15px;
+		transition: $output-layer-group-collapse-animation-duration transform ease-in-out;
+	}
+}
+
+@mixin collapse-triangle-collapsed {
+	&::before {
+		transform: translate(0, -50%) rotate(-90deg);
+	}
+}
 
 .segment-timeline {
 	display: grid;
 	grid-column-gap: 0;
 	grid-row-gap: 0;
 	grid-template-columns: [segment-name] 200px [segment-group-controls] 120px [timeline] auto [end];
-	grid-template-rows: [header] 1.5em [main-view] auto [zoom-area] 3em [end];
+	grid-template-rows: [header] 2.3em [main-view] auto [zoom-area] auto [end];
 	overflow: hidden;
-	width: 100%;
+	
+	width: auto;
+	margin: 1.5em;
+	padding: 0 0 0.15em 0.15em;
+
+	background: $segment-background-color;
 
 	&.collapsed {
 		transition: $output-layer-group-collapse-animation-duration height ease-out;
 
+		.segment-timeline__duration {
+			@include collapse-triangle-collapsed();
+		}
+		
 		.segment-timeline__title { // TODO: This is just temporary, to have some aciton on collapsed
 			text-overflow: ellipsis;
 			overflow: hidden;
 			white-space: nowrap;
 		}
 
+		.segment-timeline__zoom-area {
+			min-height: 0;
+		}
+		
+		.segment-timeline__timeline-background {
+			opacity: 0;
+
+			transition: $output-layer-group-collapse-animation-duration opacity;
+		}
+
 		.segment-timeline__timeline-grid {
 			opacity: 0;
 			visibility: hidden;
-
+			
 			transition: $output-layer-group-collapse-animation-duration opacity,
 						0s visibility $output-layer-group-collapse-animation-duration;
 		}
 
 		.segment-timeline__output-layers {
+			padding: 0.2em 0 0;
+
 			.segment-timeline__output-layer-control {
 				line-height: 0.5em;
 				min-height: 0.5em;
@@ -61,6 +119,7 @@ $output-layer-group-collapse-animation-duration: 0.5s;
 		}
 
 		.segment-timeline__timeline {
+			padding: 0.2em 0 0;
 			overflow: hidden;
 
 			.segment-timeline__segment-line {
@@ -69,17 +128,8 @@ $output-layer-group-collapse-animation-duration: 0.5s;
 					transition: $output-layer-group-collapse-animation-duration min-height ease-out;
 
 					.segment-timeline__layer {
-						transition: $output-layer-group-collapse-animation-duration min-height ease-in-out;
-
-						.segment-timeline__layer-item {
-							.segment-timeline__layer-item__label {
-								transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity ($output-layer-group-collapse-animation-duration * 2/3)
-							}
-						}
-					}
-
-					.segment-timeline__layer {
 						min-height: 0;
+						border-bottom: 0px solid $segment-layer-separator-color;
 
 						.segment-timeline__layer-item {
 							.segment-timeline__layer-item__label {
@@ -98,17 +148,56 @@ $output-layer-group-collapse-animation-duration: 0.5s;
 	.segment-timeline__title {
 		display: block;
 		margin: 0;
-		padding: 0;
+		padding: 0.3em;
 
 		grid-column: segment-name / segment-group-controls;
 		grid-row: main-view / zoom-area;
 
 		transition: $output-layer-group-collapse-animation-duration opacity,
 					$output-layer-group-collapse-animation-duration visibility 0s;
+
+		background: $segment-title-background-color;
 	}
 
 	.segment-timeline__mos-id {
 		display: none;
+	}
+
+	.segment-timeline__duration {
+		position: relative;
+		display: block;
+		margin: 0;
+		padding: 0;
+
+		grid-column: segment-name / segment-group-controls;
+		grid-row: header / main-view;
+
+		cursor: pointer;
+
+		font-size: 1.3em;
+		line-height: 1.8em;
+		padding-left: 25px;
+		margin-left: 0.3em;
+
+		@include collapse-triangle();
+	}
+
+	.segment-timeline__zoom-area {
+		grid-column: timeline / end;
+		grid-row: zoom-area / end;
+		min-height: 3em;
+
+		transition: $output-layer-group-collapse-animation-duration min-height ease-in-out;
+	}
+
+	.segment-timeline__timeline-background {
+		grid-column: timeline / end;
+		grid-row: main-view / zoom-area;
+		min-width: 0;
+		overflow: hidden;
+		background: $segment-timeline-background-color;
+		opacity: 1;
+		transition: $output-layer-group-collapse-animation-duration opacity ($output-layer-group-collapse-animation-duration * 1/2);
 	}
 
 	.segment-timeline__timeline-grid {
@@ -119,7 +208,7 @@ $output-layer-group-collapse-animation-duration: 0.5s;
 
 		opacity: 1;
 		visibility: visible;
-		transition: $output-layer-group-collapse-animation-duration opacity,
+		transition: $output-layer-group-collapse-animation-duration opacity ($output-layer-group-collapse-animation-duration * 1/2),
 					$output-layer-group-collapse-animation-duration visibility 0s;
 	}
 
@@ -131,15 +220,52 @@ $output-layer-group-collapse-animation-duration: 0.5s;
 	}
 
 	.segment-timeline__timeline {
-		overflow: auto;
+		overflow-x: auto;
+		overflow-y: hidden;
+
+		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
 
 		.segment-timeline__segment-line {
+			
 			.segment-timeline__output-group {
+				min-height: $segment-layer-height;
+				border-bottom: 0px solid $segment-layer-separator-color;
+
+				transition: $output-layer-group-collapse-animation-duration border ease-in-out;
+				
 				.segment-timeline__layer {
-					transition: $output-layer-group-collapse-animation-duration min-height ease-in-out;
+					min-height: $segment-layer-height;
+					line-height: $segment-layer-height;
+					border-bottom: 2px solid $segment-layer-separator-color;
+
+					transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
+								$output-layer-group-collapse-animation-duration border ease-in-out;
 
 					.segment-timeline__layer-item {
+						background: $segment-layer-background-unknown;
+
+						&.cam {
+							background: $segment-layer-background-cam;
+						}
+
+						&.gfx {
+							background: $segment-layer-background-gfx;
+						}
+
+						&.vt {
+							background: $segment-layer-background-vt;
+						}
+
+						&.remote {
+							background: $segment-layer-background-remote;
+						}
+
+						&.script {
+							background: $segment-layer-background-script;
+						}
+
 						.segment-timeline__layer-item__label {
+							margin: 0 0.5em;
 							transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity ($output-layer-group-collapse-animation-duration * 2/3)
 						}
 					}
@@ -147,8 +273,11 @@ $output-layer-group-collapse-animation-duration: 0.5s;
 
 				&.collapsable {
 					&.collapsed {
+						border-bottom: 2px solid $segment-layer-separator-color;
+
 						.segment-timeline__layer {
 							min-height: 0;
+							border-bottom: 0px solid $segment-layer-separator-color;
 	
 							.segment-timeline__layer-item {
 								.segment-timeline__layer-item__label {
@@ -169,8 +298,24 @@ $output-layer-group-collapse-animation-duration: 0.5s;
 		grid-column: segment-group-controls / timeline;
 		grid-row: header / zoom-area;
 
+		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
+
+		margin: 0 0.5em;
+
 		.segment-timeline__output-layer-control {
+			line-height: $segment-layer-height;
+			min-height: $segment-layer-height;
+			
+			.segment-timeline__output-layer-control__label {
+				font-weight: bold;
+				padding-left: 20px;
+			}
+
 			.segment-timeline__output-layer-control__layer {
+				line-height: $segment-layer-height;
+				height: $segment-layer-height;
+				min-height: $segment-layer-height;
+	
 				transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
 							$output-layer-group-collapse-animation-duration height ease-in-out,
 							$output-layer-group-collapse-animation-duration opacity,
@@ -184,16 +329,26 @@ $output-layer-group-collapse-animation-duration: 0.5s;
 					position: absolute;
 					border-left: $output-layer-group-line;
 					border-bottom: $output-layer-group-line;
-					top: 1em;
-					left: 1em;
-					bottom: 0.4em;
+					top: 2em;
+					left: 7px;
+					bottom: 1.2em;
 					width: 50px;
 					box-sizing: border-box;
 					opacity: 1;
 					transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity ($output-layer-group-collapse-animation-duration * 2/3);
 				}
 
+				.segment-timeline__output-layer-control__label {
+					cursor: pointer;
+
+					@include collapse-triangle();
+				}
+
 				&.collapsed {
+					.segment-timeline__output-layer-control__label {
+						@include collapse-triangle-collapsed();
+					}
+
 					.segment-timeline__output-layer-control__layer {
 						transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
 									$output-layer-group-collapse-animation-duration height ease-in-out,

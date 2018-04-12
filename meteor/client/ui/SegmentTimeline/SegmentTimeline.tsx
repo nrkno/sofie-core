@@ -108,12 +108,14 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 				<div className='segment-timeline__output-layers'>
 					{this.renderOutputLayerControls()}
 				</div>
+				<div className='segment-timeline__timeline-background'/>
 				<TimelineGrid {...this.props} />
 				<div className='segment-timeline__timeline-container'>
 					<div className='segment-timeline__timeline' ref={this.setTimelineRef} onScroll={this.onTimelineScroll}>
 						{this.renderTimeline()}
 					</div>
 				</div>
+				<div className='segment-timeline__zoom-area'></div>
 			</div>
 		)
 	}

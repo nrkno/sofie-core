@@ -4,6 +4,7 @@ import * as ReactDOM from 'react-dom'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 
 import * as ClassNames from 'classnames'
+import * as $ from 'jquery'
 import { Time } from '../../lib/lib'
 
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
@@ -41,6 +42,14 @@ export const RunningOrderView = withTracker((props) => {
 	}
 })(
 class extends React.Component<IPropsHeader> {
+	componentDidMount () {
+		$(document.body).addClass('dark')
+	}
+
+	componentWillUnmount () {
+		$(document.body).removeClass('dark')
+	}
+
 	renderSegments () {
 		if (this.props.segments !== undefined && this.props.studioInstallation !== undefined) {
 			return this.props.segments.map((segment) => (
