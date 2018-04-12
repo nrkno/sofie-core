@@ -6,6 +6,12 @@ $timeline-layer-height: 1em;
     width: 100%;
     max-width: 100%;
 }
+.segment-timeline__liveline {
+    position: absolute;
+    top: 1.3em;
+    left: 0;
+    bottom: 0;
+}
 .segment-timeline__timeline-container {
     position: relative;
 

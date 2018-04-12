@@ -3,11 +3,15 @@
 $output-layer-group-line: 1px solid #5C5C5C;
 $output-layer-group-collapse-animation-duration: 0.5s;
 
+$general-live-color: #F9FF16;
+$general-next-color: #FF0000;
+
 $segment-background-color: #000;
 $segment-timeline-background-color: #1F1F1F;
 $segment-title-background-color: #4B4B4B;
-$segment-title-background-color-next: #FF0000;
-$segment-title-background-color-live: #F9FF16;
+$segment-title-background-color-next: $general-next-color;
+$segment-title-text-color-live: #8B8B8B;
+$segment-title-background-color-live: $general-live-color;
 
 $segment-layer-height: 2.5em;
 $segment-layer-background-unknown: #4B4B4B;
@@ -159,6 +163,19 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		background: $segment-title-background-color;
 	}
 
+	&.live {
+		.segment-timeline__title {
+			color: $segment-title-text-color-live;
+			background: $segment-title-background-color-live
+		}
+	}
+
+	&.next {
+		.segment-timeline__title {
+			background: $segment-title-background-color-next
+		}
+	}
+
 	.segment-timeline__mos-id {
 		display: none;
 	}
@@ -224,6 +241,22 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		overflow-y: hidden;
 
 		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
+
+		.segment-timeline__liveline {
+			width: 3px;
+			border-left: 3px solid $general-live-color;
+			box-shadow: -3px 0 20px rgba(0,0,0,1);
+
+			.segment-timeline__liveline__label {
+				position: absolute;
+				top: -2px;
+				left: 5px;
+				color: #F9FF16;
+				text-transform: uppercase;
+				font-weight: bold;
+				line-height: 1em;
+			}
+		}
 
 		.segment-timeline__segment-line {
 			

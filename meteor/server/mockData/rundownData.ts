@@ -161,5 +161,27 @@ Meteor.methods({
 		})
 
 		RunningOrders.update({showStyleId: { $not: { $exists: true }}}, { $set: { showStyleId: 'dummyShow0' }})
+	},
+
+	'debug_setLiveLine' () {
+		let segmentLine = SegmentLines.findOne()
+
+		if (segmentLine) {
+			let runningOrder = RunningOrders.findOne()
+			RunningOrders.update({_id: runningOrder._id}, {
+				$set: { currentSegmentLineId: segmentLine._id }
+			})
+		}
+	},
+
+	'debug_setNextLine' () {
+		let segmentLine = SegmentLines.findOne()
+
+		if (segmentLine) {
+			let runningOrder = RunningOrders.findOne()
+			RunningOrders.update({ _id: runningOrder._id }, {
+				$set: { nextSegmentLineId: segmentLine._id }
+			})
+		}
 	}
 })

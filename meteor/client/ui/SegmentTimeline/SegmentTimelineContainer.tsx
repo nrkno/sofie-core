@@ -59,7 +59,10 @@ interface IPropsHeader {
 	studioInstallation: StudioInstallation,
 	segmentLines: Array<SegmentLine>,
 	runningOrder: RunningOrder,
-	timeScale?: number
+	timeScale?: number,
+	isLiveSegment: boolean,
+	isNextSegment: boolean,
+	liveLineHistorySize: number
 }
 interface IStateHeader {
 	timeScale: number,
@@ -68,12 +71,17 @@ interface IStateHeader {
 		[key: string]: boolean
 	},
 	collapsed: boolean,
+	followLiveLine: boolean,
+	livePosition: number
 }
 export const SegmentTimelineContainer = withTracker((props) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
 	let segment = _.clone(props.segment)
+
+	let isLiveSegment = false
+	let isNextSegment = false
 
 	// fetch all the segment lines for the segment
 	let segmentLines = SegmentLines.find({
@@ -110,6 +118,13 @@ export const SegmentTimelineContainer = withTracker((props) => {
 	// fetch all the segment line items for the segment lines
 	_.forEach<SegmentLineUi>(segmentLines, (segmentLine) => {
 		let slTimeline: SuperTimeline.UnresolvedTimeline = []
+
+		if (props.runningOrder.currentSegmentLineId === segmentLine._id) {
+			isLiveSegment = true
+		}
+		if (!isLiveSegment && props.runningOrder.nextSegmentLineId === segmentLine._id) {
+			isNextSegment = true
+		}
 
 		let segmentLineItems = SegmentLineItems.find({
 			segmentLineId: segmentLine._id
@@ -175,7 +190,9 @@ export const SegmentTimelineContainer = withTracker((props) => {
 
 	return {
 		segment,
-		segmentLines
+		segmentLines,
+		isLiveSegment,
+		isNextSegment
 	}
 })(
 class extends React.Component<IPropsHeader, IStateHeader> {
@@ -188,7 +205,9 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 			timeScale: props.initialTimeScale || 1,
 			collapsedOutputs: {},
 			collapsed: false,
-			scrollLeft: 0
+			scrollLeft: 0,
+			followLiveLine: true,
+			livePosition: 0
 		}
 
 		/* that.setState({
@@ -210,6 +229,18 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		})
 	}
 
+	onFollowLiveLine = (state: boolean, event: any) => {
+		this.setState({
+			followLiveLine: state
+		})
+
+		setInterval(() => {
+			this.setState({
+				livePosition: this.state.livePosition + (1 / 25)
+			})
+		}, 1000 / 25)
+	}
+
 	render () {
 		return (
 			<SegmentTimeline key={this.props.segment._id} segment={this.props.segment}
@@ -222,6 +253,12 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 							 isCollapsed={this.state.collapsed}
 							 scrollLeft={this.state.scrollLeft}
 							 runningOrder={this.props.runningOrder}
+							 isLiveSegment={this.props.isLiveSegment}
+							 isNextSegment={this.props.isNextSegment}
+							 followLiveLine={this.state.followLiveLine}
+							 liveLineHistorySize={this.props.liveLineHistorySize}
+							 livePosition={this.state.livePosition}
+							 onFollowLiveLine={this.onFollowLiveLine}
 							 onScroll={this.onScroll} />
 		)
 	}

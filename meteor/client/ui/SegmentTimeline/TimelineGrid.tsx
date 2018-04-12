@@ -26,6 +26,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	width: number
 	height: number
 	pixelRatio: number
+	scheduledRepaint?: number | null
 
 	contextResize = _.throttle(() => {
 		if (this.ctx) {
@@ -66,7 +67,19 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		return (value < 0) ? (ringMax + (value % ringMax)) : value % ringMax
 	}
 
+	requestRepaint = () => {
+		if (this.scheduledRepaint) {
+			window.cancelAnimationFrame(this.scheduledRepaint)
+		}
+		this.scheduledRepaint = window.requestAnimationFrame(() => {
+			this.scheduledRepaint = null
+			this.repaint()
+		})
+	}
+
 	repaint = () => {
+		console.log('Repainting grid')
+
 		if (this.ctx) {
 			this.ctx.lineCap = 'butt'
 			this.ctx.lineWidth = 1
@@ -184,8 +197,15 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		}
 	}
 
+	shouldComponentUpdate (nextProps, nextState) {
+		if ((nextProps.timeScale !== this.props.timeScale) || (nextProps.scrollLeft !== this.props.scrollLeft)) {
+			return true
+		}
+		return false
+	}
+
 	componentDidUpdate () {
-		this.repaint()
+		this.requestRepaint()
 	}
 
 	componentWillUnmount () {

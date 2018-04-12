@@ -32,7 +32,13 @@ interface IPropsHeader {
 	onCollapseSegmentToggle?: (event: any) => void,
 	isCollapsed?: boolean,
 	scrollLeft: number,
+	isLiveSegment: boolean,
+	isNextSegment: boolean,
+	followLiveLine: boolean,
+	liveLineHistorySize: number,
+	livePosition: number,
 	onScroll: (scrollLeft: number, event: any) => void
+	onFollowLiveLine: (state: boolean, event: any) => void
 }
 export class SegmentTimeline extends React.Component<IPropsHeader> {
 	timeline: HTMLDivElement
@@ -45,10 +51,36 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 		let secondsScroll = (($(this.timeline).scrollLeft() || 0) / this.props.timeScale)
 
 		this.props.onScroll(secondsScroll, e)
+
+		console.log(e.nativeEvent)
+		// this.props.onFollowLiveLine(false, e)
 	}
 
 	getSegmentDuration () {
 		return (this.props.segmentLines && RundownUtils.getSegmentDuration(this.props.segmentLines)) || 0
+	}
+
+	renderLiveLine () {
+		if (this.props.isLiveSegment) {
+			let pixelPostion = this.props.livePosition * this.props.timeScale
+			let lineStyle = {
+				'left': pixelPostion.toString() + 'px'
+			}
+
+			if (this.props.followLiveLine && pixelPostion > this.props.liveLineHistorySize) {
+				$(this.timeline).scrollLeft(pixelPostion - this.props.liveLineHistorySize)
+			}
+
+			return (
+				<div className='segment-timeline__liveline'
+					 style={lineStyle}>
+					<div className='segment-timeline__liveline__label'
+						 onClick={(e) => this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, e)}>
+						Live
+					</div>
+				</div>
+			)
+		}
 	}
 
 	renderTimeline () {
@@ -97,7 +129,9 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 	render () {
 		return (
 			<div className={ClassNames('segment-timeline', {
-				'collapsed': this.props.isCollapsed
+				'collapsed': this.props.isCollapsed,
+				'live': this.props.isLiveSegment,
+				'next': this.props.isNextSegment
 			})}>
 				<h2 className='segment-timeline__title'>{this.props.segment.name}</h2>
 				<div className='segment-timeline__duration'
@@ -113,6 +147,7 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 				<div className='segment-timeline__timeline-container'>
 					<div className='segment-timeline__timeline' ref={this.setTimelineRef} onScroll={this.onTimelineScroll}>
 						{this.renderTimeline()}
+						{this.renderLiveLine()}
 					</div>
 				</div>
 				<div className='segment-timeline__zoom-area'></div>

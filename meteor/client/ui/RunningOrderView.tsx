@@ -53,7 +53,11 @@ class extends React.Component<IPropsHeader> {
 	renderSegments () {
 		if (this.props.segments !== undefined && this.props.studioInstallation !== undefined) {
 			return this.props.segments.map((segment) => (
-				<SegmentTimelineContainer key={segment._id} studioInstallation={this.props.studioInstallation} segment={segment} runningOrder={this.props.runningOrder} />
+				<SegmentTimelineContainer key={segment._id}
+										  studioInstallation={this.props.studioInstallation}
+										  segment={segment}
+										  runningOrder={this.props.runningOrder}
+										  liveLineHistorySize='10' />
 			))
 		} else {
 			return (
