@@ -105,6 +105,9 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 				.segment-timeline__output-layer-control__label {
 					opacity: 0;
 					visibility: hidden;
+
+					transition: $output-layer-group-collapse-animation-duration opacity 0s,
+								0s visibility $output-layer-group-collapse-animation-duration;
 				}
 				
 				&::after {
@@ -346,6 +349,9 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			.segment-timeline__output-layer-control__label {
 				font-weight: bold;
 				padding-left: 20px;
+
+				opacity: 1;
+				transition: $output-layer-group-collapse-animation-duration opacity;
 			}
 
 			.segment-timeline__output-layer-control__layer {
