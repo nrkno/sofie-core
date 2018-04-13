@@ -45,6 +45,8 @@ export namespace ServerPeripheralDeviceAPI {
 		check(options.name, String)
 		check(options.type, Number)
 
+		console.log('initialize', options)
+
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 
 		if (!peripheralDevice) {
@@ -56,8 +58,8 @@ export namespace ServerPeripheralDeviceAPI {
 				status: {
 					statusCode: PeripheralDeviceAPI.StatusCode.UNKNOWN
 				},
-				connected: false, // this is set at another place
-				connectionSession: null,
+				connected: true,
+				connectionId: options.connectionId,
 				lastSeen: getCurrentTime(),
 				token: token,
 				type: options.type,
@@ -66,10 +68,14 @@ export namespace ServerPeripheralDeviceAPI {
 			})
 
 		} else {
-			// Udate the device:
+			// Update the device:
 
 			PeripheralDevices.update(id, {$set: {
-				lastSeen: getCurrentTime()
+				lastSeen: getCurrentTime(),
+				connected: true,
+				connectionId: options.connectionId,
+				type: options.type,
+				name: options.name
 			}})
 
 		}
@@ -90,6 +96,7 @@ export namespace ServerPeripheralDeviceAPI {
 		check(token, String)
 		check(status, Object)
 		check(status.statusCode, Number)
+		console.log('setStatus', status.statusCode)
 
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
@@ -106,7 +113,7 @@ export namespace ServerPeripheralDeviceAPI {
 	// export {P.initialize}
 	 // MOS-functions:
 	export function mosRoCreate (ro: IMOSRunningOrder) {
-
+		console.log('mosRoCreate')
 		// Save RO into database:
 		saveIntoDb(RunningOrders, {
 			_id: roId(ro.ID)
@@ -150,15 +157,18 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 	}
 	export function mosRoReplace (ro: IMOSRunningOrder) {
+		console.log('mosRoReplace')
 		return mosRoCreate(ro) // it's the same
 	}
 	export function mosRoDelete (runningOrderId: MosString128) {
+		console.log('mosRoDelete')
 		RunningOrders.remove(roId(runningOrderId))
 		Segments.remove({runningOrderId: roId(runningOrderId)})
 		SegmentLines.remove({runningOrderId: roId(runningOrderId)})
 		SegmentLineItems.remove({ runningOrderId: roId(runningOrderId)})
 	}
 	export function mosRoMetadata (metadata: IMOSRunningOrderBase) {
+		console.log('mosRoMetadata')
 		let ro = getRO(metadata.ID)
 		if (metadata.MosExternalMetaData) {
 			RunningOrders.update(ro._id, {$set: {
@@ -167,12 +177,14 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 	}
 	export function mosRoStatus (status: IMOSRunningOrderStatus) {
+		console.log('mosRoStatus')
 		let ro = getRO(status.ID)
 		RunningOrders.update(ro._id, {$set: {
 			status: status.Status
 		}})
 	}
 	export function mosRoStoryStatus (status: IMOSStoryStatus) {
+		console.log('mosRoStoryStatus')
 		// Save Stories (aka Segments) status into database:
 		let segment = Segments.findOne({
 			_id: 			segmentId(roId(status.RunningOrderId), status.ID),
@@ -185,6 +197,7 @@ export namespace ServerPeripheralDeviceAPI {
 		} else throw new Meteor.Error(404, 'Segment ' + status.ID + ' in RO ' + status.RunningOrderId + ' not found')
 	}
 	export function mosRoItemStatus (status: IMOSItemStatus) {
+		console.log('mosRoItemStatus')
 		// Save Items (aka SegmentLines) into database:
 		let segmentID = segmentId(roId(status.RunningOrderId), status.StoryId)
 		let segmentLine = SegmentLines.findOne({
@@ -199,6 +212,7 @@ export namespace ServerPeripheralDeviceAPI {
 		} else throw new Meteor.Error(404, 'SegmentLine ' + status.ID + ' in segment ' + status.StoryId + ' in RO ' + status.RunningOrderId + ' not found')
 	}
 	export function mosRoStoryInsert (Action: IMOSStoryAction, Stories: Array<IMOSROStory>) {
+		console.log('mosRoStoryInsert')
 		// insert a story (aka Segment) before another story:
 		let ro = getRO(Action.RunningOrderID)
 		let segmentAfter = (Action.StoryID ? getSegment(Action.RunningOrderID, Action.StoryID) : null)
@@ -224,6 +238,7 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 	}
 	export function mosRoItemInsert (Action: IMOSItemAction, Items: Array<IMOSItem>) {
+		console.log('mosRoItemInsert')
 		// insert an item (aka SegmentLine) before another story:
 		let ro = getRO(Action.RunningOrderID)
 		let segment = getSegment(Action.RunningOrderID, Action.StoryID)
@@ -250,6 +265,7 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 	}
 	export function mosRoStoryReplace (Action: IMOSStoryAction, Stories: Array<IMOSROStory>) {
+		console.log('mosRoStoryReplace')
 		// Replace a Story (aka a Segment) with one or more Stories
 		let ro = getRO(Action.RunningOrderID)
 		let segmentToReplace = getSegment(Action.RunningOrderID, Action.StoryID)
@@ -265,6 +281,7 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 	}
 	export function mosRoItemReplace (Action: IMOSItemAction, Items: Array<IMOSItem>) {
+		console.log('mosRoItemReplace')
 		// Replace an item (aka SegmentLine) with one or more items
 		let ro = getRO(Action.RunningOrderID)
 		let segmentLineToReplace = getSegmentLine(Action.RunningOrderID, Action.StoryID, Action.ItemID)
@@ -280,6 +297,7 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 	}
 	export function mosRoStoryMove (Action: IMOSStoryAction, Stories: Array<MosString128>) {
+		console.log('mosRoStoryMove')
 		// Move Stories (aka Segments) to before a story
 		let ro = getRO(Action.RunningOrderID)
 		let segmentAfter = getSegment(Action.RunningOrderID, Action.StoryID)
@@ -293,6 +311,7 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 	}
 	export function mosRoItemMove (Action: IMOSItemAction, Items: Array<MosString128>) {
+		console.log('mosRoItemMove')
 		// Move Items (aka SegmentLines) to before a story
 		let ro = getRO(Action.RunningOrderID)
 		let segmentLineAfter = getSegmentLine(Action.RunningOrderID, Action.StoryID, Action.ItemID)
@@ -308,6 +327,7 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 	}
 	export function mosRoStoryDelete (Action: IMOSROAction, Stories: Array<MosString128>) {
+		console.log('mosRoStoryDelete')
 		// Delete Stories (aka Segments)
 		let ro = getRO(Action.RunningOrderID)
 		_.each(Stories, (storyId: MosString128, i: number) => {
@@ -315,6 +335,7 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 	}
 	export function mosRoItemDelete (Action: IMOSStoryAction, Items: Array<MosString128>) {
+		console.log('mosRoItemDelete')
 		// Delete Items (aka SegmentsLines)
 		let ro = getRO(Action.RunningOrderID)
 		_.each(Items, (itemId: MosString128, i: number) => {
@@ -322,6 +343,7 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 	}
 	export function mosRoStorySwap (Action: IMOSROAction, StoryID0: MosString128, StoryID1: MosString128) {
+		console.log('mosRoStorySwap')
 		// Swap Stories (aka Segments)
 		let ro = getRO(Action.RunningOrderID)
 
@@ -332,6 +354,7 @@ export namespace ServerPeripheralDeviceAPI {
 		Segments.update(segment1._id, {$set: {_rank: segment0._rank}})
 	}
 	export function mosRoItemSwap (Action: IMOSStoryAction, ItemID0: MosString128, ItemID1: MosString128) {
+		console.log('mosRoItemSwap')
 		// Swap Stories (aka Segments)
 		let ro = getRO(Action.RunningOrderID)
 
@@ -342,7 +365,9 @@ export namespace ServerPeripheralDeviceAPI {
 		Segments.update(segmentLine1._id, {$set: {_rank: segmentLine0._rank}})
 	}
 	export function mosRoReadyToAir (Action: IMOSROReadyToAir) {
+		console.log('mosRoReadyToAir')
 		// Set the ready to air status of a Running Order
+		console.log('mosRoReadyToAir')
 		let ro = getRO(Action.ID)
 
 		RunningOrders.update(ro._id, {$set: {
@@ -351,6 +376,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 	}
 	export function mosRoFullStory (story: IMOSROFullStory ) {
+		console.log('mosRoFullStory')
 		// Update db with the full story:
 		let ro = getRO(story.RunningOrderId)
 		// TODO: Do something
@@ -359,6 +385,7 @@ export namespace ServerPeripheralDeviceAPI {
 	}
 }
 export function roId (roId: MosString128): string {
+	console.log('roId')
 	return 'ro_' + roId.toString()
 }
 export function segmentId (roId: string, storyId: MosString128): string {
