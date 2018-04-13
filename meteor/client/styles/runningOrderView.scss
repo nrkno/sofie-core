@@ -217,6 +217,16 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 					.segment-timeline__layer-item {
 						background: $segment-layer-background-unknown;
+						transition: none;
+						box-shadow: 0 0 0 0 rgba(255,255,255,0);
+						cursor: pointer;
+
+						// TODO: This is just temporary styling, to indicate that the layers are clickable
+						&:hover {
+							transition: 0.3s box-shadow 0.3s ease-in-out;
+							box-shadow: 0 0 8px 4px rgba(255,255,255,1);
+							z-index: 10;
+						}
 
 						&.cam {
 							background: $segment-layer-background-cam;

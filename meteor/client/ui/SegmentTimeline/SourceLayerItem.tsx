@@ -18,6 +18,7 @@ interface ISourceLayerItemProps {
 	segmentLine: SegmentLineUi
 	segmentLineItem: SegmentLineItemUi
 	timeScale: number
+	onFollowLiveLine?: (state: boolean, event: any) => void
 }
 export class SourceLayerItem extends React.Component<ISourceLayerItemProps> {
 	getItemStyle (): { [key: string]: string } {
@@ -28,6 +29,10 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps> {
 			'left': ((segmentLineItem.renderedInPoint || 0) * this.props.timeScale).toString() + 'px',
 			'width': ((segmentLineItem.duration || segmentLineItem.renderedDuration || segmentLineItem.expectedDuration) * this.props.timeScale).toString() + 'px'
 		}
+	}
+
+	itemClick = (e: any) => {
+		this.props.onFollowLiveLine && this.props.onFollowLiveLine(false, e)
 	}
 
 	render () {
@@ -42,7 +47,9 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps> {
 				'script': this.props.layer.type === RundownAPI.SourceLayerType.SCRIPT,
 				'splits': this.props.layer.type === RundownAPI.SourceLayerType.SPLITS,
 				'vt': this.props.layer.type === RundownAPI.SourceLayerType.VT,
-			})} style={this.getItemStyle()}>
+			})}
+				onClick={this.itemClick}
+				style={this.getItemStyle()}>
 				<span className='segment-timeline__layer-item__label'>{this.props.segmentLineItem.name}</span>
 			</div>
 		)
