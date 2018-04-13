@@ -6,12 +6,18 @@ $output-layer-group-collapse-animation-duration: 0.5s;
 $general-live-color: #F9FF16;
 $general-next-color: #FF0000;
 
+$segment-header-height: 2.3em;
 $segment-background-color: #000;
 $segment-timeline-background-color: #1F1F1F;
 $segment-title-background-color: #4B4B4B;
 $segment-title-background-color-next: $general-next-color;
 $segment-title-text-color-live: #8B8B8B;
 $segment-title-background-color-live: $general-live-color;
+
+/** The top padding of the timeline has to be equal to the header-height, so that the
+	functional part of the timeline starts at the same level as the segment title
+*/
+$segment-timeline-padding: $segment-header-height 0 1.5em;
 
 $segment-layer-height: 2.5em;
 $segment-layer-background-unknown: #4B4B4B;
@@ -22,6 +28,7 @@ $segment-layer-background-script: #1C721F;
 $segment-layer-background-vt: #1769FF;
 $segment-layer-separator-color: transparentize(#000, 0.5);
 
+// A utility mix-in, to add an interactive collapse triangle on an item
 @mixin collapse-triangle {
 	&::before {
 		top: 50%;
@@ -44,12 +51,13 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	}
 }
 
+// A component for displaying the segments
 .segment-timeline {
 	display: grid;
 	grid-column-gap: 0;
 	grid-row-gap: 0;
 	grid-template-columns: [segment-name] 200px [segment-group-controls] 120px [timeline] auto [end];
-	grid-template-rows: [header] 2.3em [main-view] auto [zoom-area] auto [end];
+	grid-template-rows: [header] $segment-header-height [main-view] auto [zoom-area] auto [end];
 	overflow: hidden;
 	
 	width: auto;
@@ -58,101 +66,9 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 	background: $segment-background-color;
 
-	&.collapsed {
-		transition: $output-layer-group-collapse-animation-duration height ease-out;
-
-		.segment-timeline__duration {
-			@include collapse-triangle-collapsed();
-		}
-		
-		.segment-timeline__title { // TODO: This is just temporary, to have some aciton on collapsed
-			text-overflow: ellipsis;
-			overflow: hidden;
-			white-space: nowrap;
-		}
-
-		.segment-timeline__zoom-area {
-			min-height: 0;
-		}
-		
-		.segment-timeline__timeline-background {
-			opacity: 0;
-
-			transition: $output-layer-group-collapse-animation-duration opacity;
-		}
-
-		.segment-timeline__timeline-grid {
-			opacity: 0;
-			visibility: hidden;
-			
-			transition: $output-layer-group-collapse-animation-duration opacity,
-						0s visibility $output-layer-group-collapse-animation-duration;
-		}
-
-		.segment-timeline__liveline {
-			top: 0.15em;
-		}
-
-		.segment-timeline__output-layers {
-			padding: 0.2em 0 0;
-
-			.segment-timeline__output-layer-control {
-				line-height: 0.5em;
-				min-height: 0.5em;
-				transition: $output-layer-group-collapse-animation-duration line-height ease-out,
-							$output-layer-group-collapse-animation-duration min-height ease-out;
-
-				.segment-timeline__output-layer-control__label {
-					opacity: 0;
-					visibility: hidden;
-
-					transition: $output-layer-group-collapse-animation-duration opacity 0s,
-								0s visibility $output-layer-group-collapse-animation-duration;
-				}
-				
-				&::after {
-					transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity;
-					opacity: 0 !important;
-					visibility: hidden;
-				}
-
-				.segment-timeline__output-layer-control__layer {
-					transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
-								$output-layer-group-collapse-animation-duration height ease-in-out,
-								$output-layer-group-collapse-animation-duration opacity,
-								0s visibility $output-layer-group-collapse-animation-duration;
-					height: 0;
-					min-height: 0;
-					opacity: 0;
-					visibility: hidden;
-				}
-			}
-		}
-
-		.segment-timeline__timeline {
-			padding: 0.2em 0 0;
-
-			.segment-timeline__segment-line {
-				.segment-timeline__output-group {
-					min-height: 0.5em;
-					transition: $output-layer-group-collapse-animation-duration min-height ease-out;
-
-					.segment-timeline__layer {
-						min-height: 0;
-						border-bottom: 0px solid $segment-layer-separator-color;
-
-						.segment-timeline__layer-item {
-							.segment-timeline__layer-item__label {
-								opacity: 0;
-								visibility: hidden;
-								transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity,
-											0s visibility ($output-layer-group-collapse-animation-duration * 1/3);
-							}
-						}
-					}
-				}
-			}
-		}
+	// padding has to be the same on both of these elements so that the layers and their controls line up
+	.segment-timeline__output-layers, .segment-timeline__timeline {
+		padding: $segment-timeline-padding;
 	}
 
 	.segment-timeline__title {
@@ -169,6 +85,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		background: $segment-title-background-color;
 	}
 
+	// the live and next states are the states of the entire segment component
 	&.live {
 		.segment-timeline__title {
 			color: $segment-title-text-color-live;
@@ -182,10 +99,13 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		}
 	}
 
+	// mos-id is a utility element, so that we can quickly check the mos Id of a segment using the inspector
+	// let's hide it in the UI
 	.segment-timeline__mos-id {
 		display: none;
 	}
 
+	// This is the display in the top-left corner of the segment
 	.segment-timeline__duration {
 		position: relative;
 		display: block;
@@ -205,6 +125,8 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		@include collapse-triangle();
 	}
 
+	// The area controlling the zoom at the bottom of the segment
+	// TODO: implement zoom area
 	.segment-timeline__zoom-area {
 		grid-column: timeline / end;
 		grid-row: zoom-area / end;
@@ -213,6 +135,11 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		transition: $output-layer-group-collapse-animation-duration min-height ease-in-out;
 	}
 
+	/* The timeline itself is constructed out of three overlapping layers:
+			.segment-timeline__timeline-background - renders the big, flat gray background
+			.segment-timeline__timeline-grid - renders just the time grid and the labels above them
+			.segment-timeline__timeline-container - contains the timeline elements and the live-line and other lines
+	*/
 	.segment-timeline__timeline-background {
 		grid-column: timeline / end;
 		grid-row: main-view / zoom-area;
@@ -244,6 +171,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		overflow: hidden;
 	}
 
+	// The liveline lives in the .segment-timeline__timeline-container
 	.segment-timeline__liveline {
 		width: 3px;
 		border-left: 3px solid $general-live-color;
@@ -261,18 +189,24 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		}
 	}
 
+	/** This is a child element of the .segment-timeline__timeline-container.
+	    This is the parent of all segment items
+	*/
 	.segment-timeline__timeline {
 		overflow: visible;
 		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
 
+		// Segment line is an element grouping all segment-lines
 		.segment-timeline__segment-line {
 			
+			// Group all layers belonging to an output group
 			.segment-timeline__output-group {
 				min-height: $segment-layer-height;
 				border-bottom: 0px solid $segment-layer-separator-color;
 
 				transition: $output-layer-group-collapse-animation-duration border ease-in-out;
 				
+				// The layer container for all segment-line-items
 				.segment-timeline__layer {
 					min-height: $segment-layer-height;
 					line-height: $segment-layer-height;
@@ -311,11 +245,13 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 					}
 				}
 
+				// The output group is collapsable if it has more than a single source layer attached to it
 				&.collapsable {
 					&.collapsed {
 						border-bottom: 2px solid $segment-layer-separator-color;
 
 						.segment-timeline__layer {
+							// min-height: 0 causes the layers to collapse and divide the output-group min-height amongst themselves
 							min-height: 0;
 							border-bottom: 0px solid $segment-layer-separator-color;
 	
@@ -334,6 +270,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		}
 	}
 
+	// This is the output layer controls section in the middle
 	.segment-timeline__output-layers {
 		grid-column: segment-group-controls / timeline;
 		grid-row: header / zoom-area;
@@ -342,10 +279,12 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 		margin: 0 0.5em;
 
+		// this is a single output-layer container
 		.segment-timeline__output-layer-control {
 			line-height: $segment-layer-height;
 			min-height: $segment-layer-height;
 			
+			// the label with the name for the output layer
 			.segment-timeline__output-layer-control__label {
 				font-weight: bold;
 				padding-left: 20px;
@@ -354,6 +293,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 				transition: $output-layer-group-collapse-animation-duration opacity;
 			}
 
+			// the label for the source-layer within this output group
 			.segment-timeline__output-layer-control__layer {
 				line-height: $segment-layer-height;
 				height: $segment-layer-height;
@@ -365,7 +305,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 							0s visibility 0s;
 			}
 
+			// the output layer group is collapsable if it has more than one source layer assinged
 			&.collapsable {
+
+				// this is the "line" grouping source layers together
 				&::after {
 					content: ' ';
 					display: block;
@@ -406,6 +349,106 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 					&::after {
 						transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity;
 						opacity: 0;
+					}
+				}
+			}
+		}
+	}
+
+	// the collapsed state for the entire segment
+	&.collapsed {
+		transition: $output-layer-group-collapse-animation-duration height ease-out;
+
+		.segment-timeline__duration {
+			@include collapse-triangle-collapsed();
+		}
+		
+		.segment-timeline__title { // TODO: This is just temporary, to have some aciton on collapsed
+			text-overflow: ellipsis;
+			overflow: hidden;
+			white-space: nowrap;
+		}
+
+		.segment-timeline__zoom-area {
+			min-height: 0;
+		}
+		
+		.segment-timeline__timeline-background {
+			opacity: 0;
+
+			transition: $output-layer-group-collapse-animation-duration opacity;
+		}
+
+		.segment-timeline__timeline-grid {
+			opacity: 0;
+			visibility: hidden;
+			
+			transition: $output-layer-group-collapse-animation-duration opacity,
+						0s visibility $output-layer-group-collapse-animation-duration;
+		}
+
+		.segment-timeline__liveline {
+			top: 0.15em;
+		}
+
+		/** segment-timeline__output-layer & segment-timeline__timelien will have a different
+			padding in the collapsed state, but it still matches
+		*/
+		.segment-timeline__timeline, .segment-timeline__output-layers {
+			padding: 0.2em 0 0;
+		}
+		.segment-timeline__output-layers {
+			.segment-timeline__output-layer-control {
+				line-height: 0.5em;
+				min-height: 0.5em;
+				transition: $output-layer-group-collapse-animation-duration line-height ease-out,
+							$output-layer-group-collapse-animation-duration min-height ease-out;
+
+				.segment-timeline__output-layer-control__label {
+					opacity: 0;
+					visibility: hidden;
+
+					transition: $output-layer-group-collapse-animation-duration opacity 0s,
+								0s visibility $output-layer-group-collapse-animation-duration;
+				}
+				
+				&::after {
+					transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity;
+					opacity: 0 !important;
+					visibility: hidden;
+				}
+
+				.segment-timeline__output-layer-control__layer {
+					transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
+								$output-layer-group-collapse-animation-duration height ease-in-out,
+								$output-layer-group-collapse-animation-duration opacity,
+								0s visibility $output-layer-group-collapse-animation-duration;
+					height: 0;
+					min-height: 0;
+					opacity: 0;
+					visibility: hidden;
+				}
+			}
+		}
+
+		.segment-timeline__timeline {
+			.segment-timeline__segment-line {
+				.segment-timeline__output-group {
+					min-height: 0.5em;
+					transition: $output-layer-group-collapse-animation-duration min-height ease-out;
+
+					.segment-timeline__layer {
+						min-height: 0;
+						border-bottom: 0px solid $segment-layer-separator-color;
+
+						.segment-timeline__layer-item {
+							.segment-timeline__layer-item__label {
+								opacity: 0;
+								visibility: hidden;
+								transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity,
+											0s visibility ($output-layer-group-collapse-animation-duration * 1/3);
+							}
+						}
 					}
 				}
 			}

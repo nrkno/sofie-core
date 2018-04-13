@@ -1,4 +1,3 @@
-$timeline-padding: 2.3em 0 1.5em;
 $timeline-layer-height: 1em;
 
 .segment-timeline {
@@ -68,10 +67,6 @@ $timeline-layer-height: 1em;
             }
         }
     }
-}
-// padding has to be the same on both of these elements so that the layers and their controls line up
-.segment-timeline__output-layers, .segment-timeline__timeline {
-    padding: $timeline-padding;
 }
 .segment-timeline__output-layers {
     display: block;
