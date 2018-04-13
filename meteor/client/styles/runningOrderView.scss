@@ -51,7 +51,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	}
 }
 
-// A component for displaying the segments
+// A component for displaying the segments (ENPS Stories/NKR Titles)
 .segment-timeline {
 	display: grid;
 	grid-column-gap: 0;
@@ -174,7 +174,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	// The liveline lives in the .segment-timeline__timeline-container
 	.segment-timeline__liveline {
 		width: 3px;
-		border-left: 3px solid $general-live-color;
+		background: $general-live-color;
 		box-shadow: -3px 0 20px rgba(0,0,0,1);
 		transition: $output-layer-group-collapse-animation-duration top ease-in-out;
 
@@ -182,7 +182,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			position: absolute;
 			top: -2px;
 			left: 5px;
-			color: #F9FF16;
+			color: $general-live-color;
 			text-transform: uppercase;
 			font-weight: bold;
 			line-height: 1em;
