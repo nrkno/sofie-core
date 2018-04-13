@@ -8,7 +8,8 @@
     "test-i": "npm run integration-test",
     "unit-test": "TEST_WATCH=1 meteor test --driver-package meteortesting:mocha",
     "integration-test": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
-    "test-once": "meteor test --once --driver-package meteortesting:mocha"
+    "test-once": "meteor test --once --driver-package meteortesting:mocha",
+    "license-validate": "node-license-validator -p -d --allow-licenses MIT BSD BSD-3-Clause ISC Apache"
   },
   "dependencies": {
     "@babel/runtime": "^7.0.0-beta.44",
@@ -36,13 +37,14 @@
   "devDependencies": {
     "@types/chai": "^4.1.2",
     "@types/classnames": "^2.2.3",
+    "@types/css-font-loading-module": "0.0.1",
     "@types/jquery": "^3.3.1",
     "@types/meteor": "^1.4.13",
     "@types/mocha": "^2.2.48",
     "@types/node": "^9.6.1",
     "@types/react": "^16.3.2",
     "@types/react-dom": "^16.0.4",
-    "@types/css-font-loading-module": "0.0.1",
+    "node-license-validator": "^1.3.0",
     "tslint": "^5.4.3",
     "tslint-config-standard": "^6.0.1",
     "typedoc": "^0.8.0",
