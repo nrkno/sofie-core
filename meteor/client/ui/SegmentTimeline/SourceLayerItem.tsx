@@ -48,6 +48,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps> {
 				'splits': this.props.layer.type === RundownAPI.SourceLayerType.SPLITS,
 				'vt': this.props.layer.type === RundownAPI.SourceLayerType.VT,
 			})}
+				data-mos-id={this.props.segmentLineItem._id}
 				onClick={this.itemClick}
 				style={this.getItemStyle()}>
 				<span className='segment-timeline__layer-item__label'>{this.props.segmentLineItem.name}</span>

@@ -149,7 +149,7 @@ export class SegmentTimelineLine extends React.Component<IPropsHeader> {
 
 	render () {
 		return (
-			<div className='segment-timeline__segment-line'>
+			<div className='segment-timeline__segment-line' data-mos-id={this.props.segmentLine._id}>
 				{this.renderTimelineOutputGroups(this.props.segmentLine)}
 			</div>
 		)

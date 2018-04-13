@@ -101,6 +101,7 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 							'collapsed': this.props.collapsedOutputs[outputLayer._id] === true
 						})}>
 							<div className='segment-timeline__output-layer-control__label'
+								 data-output-id={outputLayer._id}
 								 onClick={(e) => this.props.onCollapseOutputToggle && this.props.onCollapseOutputToggle(outputLayer, e)}>{outputLayer.name}
 							</div>
 							{(
@@ -109,7 +110,7 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 									return a._rank - b._rank
 								}).map((sourceLayer) => {
 									return (
-										<div key={sourceLayer._id} className='segment-timeline__output-layer-control__layer'>
+										<div key={sourceLayer._id} className='segment-timeline__output-layer-control__layer' data-source-id={sourceLayer._id}>
 											{sourceLayer.name}
 										</div>
 									)
@@ -128,7 +129,8 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 				'collapsed': this.props.isCollapsed,
 				'live': this.props.isLiveSegment,
 				'next': this.props.isNextSegment
-			})}>
+			})}
+				data-mos-id={this.props.segment._id}>
 				<h2 className='segment-timeline__title'>{this.props.segment.name}</h2>
 				<div className='segment-timeline__duration'
 					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
