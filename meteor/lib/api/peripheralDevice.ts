@@ -27,7 +27,8 @@ export enum DeviceType {
 }
 export interface InitOptions {
 	type: DeviceType,
-	name: string
+	name: string,
+	connectionId: string
 }
 
 export enum methods {

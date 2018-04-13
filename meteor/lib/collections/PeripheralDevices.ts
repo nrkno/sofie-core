@@ -13,7 +13,7 @@ export interface PeripheralDevice {
 	lastSeen: Time
 
 	connected: boolean
-	connectionSession: string|null
+	connectionId: string|null // Id of the current ddp-Connection
 
 	token: string
 
