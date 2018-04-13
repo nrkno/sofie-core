@@ -255,10 +255,11 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		setInterval(() => {
 			let speed = 1
 			let newLivePosition = this.state.livePosition + (1 / 60) * speed
-			this.setState({
+			this.setState(_.extend({
 				livePosition: newLivePosition,
+			}, this.state.followLiveLine ? {
 				scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.state.timeScale), 0)
-			})
+			} : null))
 		}, 1000 / 60)
 	}
 

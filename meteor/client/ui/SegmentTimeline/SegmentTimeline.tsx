@@ -67,9 +67,12 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 
 	renderLiveLine () {
 		if (this.props.isLiveSegment) {
-			let pixelPostion = this.props.livePosition * this.props.timeScale
+			let pixelPostion = (this.props.livePosition * this.props.timeScale) - (!this.props.followLiveLine ? (this.props.scrollLeft * this.props.timeScale) : 0)
 			let lineStyle = {
-				'left': Math.min(pixelPostion, this.props.liveLineHistorySize).toString() + 'px'
+				'left': (this.props.followLiveLine ?
+							Math.min(pixelPostion, this.props.liveLineHistorySize).toString() :
+							pixelPostion
+						) + 'px'
 			}
 
 			return (
