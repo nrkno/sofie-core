@@ -24,9 +24,10 @@ interface IPropsHeader {
 	segment: SegmentUi
 	segmentLine: SegmentLineUi
 	segmentLineItem: SegmentLineItemUi
-	timeScale: number,
-	isLiveLine: boolean,
+	timeScale: number
+	isLiveLine: boolean
 	isNextLine: boolean
+	onFollowLiveLine?: (state: boolean, event: any) => void
 }
 /** This is an  */
 export const SourceLayerItemContainer = withTracker((props) => {

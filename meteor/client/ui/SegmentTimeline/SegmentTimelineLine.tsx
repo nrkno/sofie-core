@@ -23,9 +23,10 @@ interface ISourceLayerProps {
 	outputLayer: IOutputLayerUi
 	segment: SegmentUi
 	segmentLine: SegmentLineUi
-	timeScale: number,
-	isLiveLine: boolean,
+	timeScale: number
+	isLiveLine: boolean
 	isNextLine: boolean
+	onFollowLiveLine?: (state: boolean, event: any) => void
 }
 class SourceLayer extends React.Component<ISourceLayerProps> {
 	getLayerStyle () {
@@ -73,8 +74,9 @@ interface IOutputGroupProps {
 	collapsedOutputs: {
 		[key: string]: boolean
 	}
-	isLiveLine: boolean,
+	isLiveLine: boolean
 	isNextLine: boolean
+	onFollowLiveLine?: (state: boolean, event: any) => void
 }
 class OutputGroup extends React.Component<IOutputGroupProps> {
 	renderInside () {
@@ -117,6 +119,7 @@ interface IPropsHeader {
 	isCollapsed?: boolean,
 	scrollLeft: number,
 	onScroll: (scrollLeft: number, event: any) => void
+	onFollowLiveLine?: (state: boolean, event: any) => void
 }
 
 export class SegmentTimelineLine extends React.Component<IPropsHeader> {

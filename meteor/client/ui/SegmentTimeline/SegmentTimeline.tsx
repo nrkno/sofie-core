@@ -47,14 +47,6 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 		this.timeline = el
 	}
 
-	onTimelineScroll = (e: any) => {
-		let secondsScroll = (($(this.timeline).scrollLeft() || 0) / this.props.timeScale)
-
-		this.props.onScroll(secondsScroll, e)
-
-		// this.props.onFollowLiveLine(false, e)
-	}
-
 	getSegmentDuration () {
 		return (this.props.segmentLines && RundownUtils.getSegmentDuration(this.props.segmentLines)) || 0
 	}
@@ -149,7 +141,7 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 				<div className='segment-timeline__timeline-background'/>
 				<TimelineGrid {...this.props} />
 				<div className='segment-timeline__timeline-container'>
-					<div className='segment-timeline__timeline' ref={this.setTimelineRef} style={this.timelineStyle()} onScroll={this.onTimelineScroll}>
+					<div className='segment-timeline__timeline' ref={this.setTimelineRef} style={this.timelineStyle()}>
 						{this.renderTimeline()}
 					</div>
 					{this.renderLiveLine()}
