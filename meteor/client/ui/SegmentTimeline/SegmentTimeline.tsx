@@ -47,14 +47,6 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 		this.timeline = el
 	}
 
-	onTimelineScroll = (e: any) => {
-		let secondsScroll = (($(this.timeline).scrollLeft() || 0) / this.props.timeScale)
-
-		this.props.onScroll(secondsScroll, e)
-
-		// this.props.onFollowLiveLine(false, e)
-	}
-
 	getSegmentDuration () {
 		return (this.props.segmentLines && RundownUtils.getSegmentDuration(this.props.segmentLines)) || 0
 	}
@@ -67,9 +59,12 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 
 	renderLiveLine () {
 		if (this.props.isLiveSegment) {
-			let pixelPostion = this.props.livePosition * this.props.timeScale
+			let pixelPostion = (this.props.livePosition * this.props.timeScale) - (!this.props.followLiveLine ? (this.props.scrollLeft * this.props.timeScale) : 0)
 			let lineStyle = {
-				'left': Math.min(pixelPostion, this.props.liveLineHistorySize).toString() + 'px'
+				'left': (this.props.followLiveLine ?
+							Math.min(pixelPostion, this.props.liveLineHistorySize).toString() :
+							pixelPostion
+						) + 'px'
 			}
 
 			return (
@@ -106,6 +101,7 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 							'collapsed': this.props.collapsedOutputs[outputLayer._id] === true
 						})}>
 							<div className='segment-timeline__output-layer-control__label'
+								 data-output-id={outputLayer._id}
 								 onClick={(e) => this.props.onCollapseOutputToggle && this.props.onCollapseOutputToggle(outputLayer, e)}>{outputLayer.name}
 							</div>
 							{(
@@ -114,7 +110,7 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 									return a._rank - b._rank
 								}).map((sourceLayer) => {
 									return (
-										<div key={sourceLayer._id} className='segment-timeline__output-layer-control__layer'>
+										<div key={sourceLayer._id} className='segment-timeline__output-layer-control__layer' data-source-id={sourceLayer._id}>
 											{sourceLayer.name}
 										</div>
 									)
@@ -133,7 +129,8 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 				'collapsed': this.props.isCollapsed,
 				'live': this.props.isLiveSegment,
 				'next': this.props.isNextSegment
-			})}>
+			})}
+				data-mos-id={this.props.segment._id}>
 				<h2 className='segment-timeline__title'>{this.props.segment.name}</h2>
 				<div className='segment-timeline__duration'
 					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
@@ -146,7 +143,7 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 				<div className='segment-timeline__timeline-background'/>
 				<TimelineGrid {...this.props} />
 				<div className='segment-timeline__timeline-container'>
-					<div className='segment-timeline__timeline' ref={this.setTimelineRef} style={this.timelineStyle()} onScroll={this.onTimelineScroll}>
+					<div className='segment-timeline__timeline' ref={this.setTimelineRef} style={this.timelineStyle()}>
 						{this.renderTimeline()}
 					</div>
 					{this.renderLiveLine()}

@@ -22,7 +22,11 @@ interface IPropsHeader {
 	}
 }
 
-export const RunningOrderView = withTracker((props) => {
+interface IStateHeader {
+	timeScale: number
+}
+
+export const RunningOrderView = withTracker((props, state) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
@@ -41,13 +45,29 @@ export const RunningOrderView = withTracker((props) => {
 		studioInstallation: runningOrder ? StudioInstallations.findOne({ _id: runningOrder.studioInstallationId }) : undefined,
 	}
 })(
-class extends React.Component<IPropsHeader> {
+class extends React.Component<IPropsHeader, IStateHeader> {
+	constructor (props) {
+		super(props)
+
+		this.state = {
+			timeScale: 10
+		}
+	}
+
 	componentDidMount () {
 		$(document.body).addClass('dark')
 	}
 
 	componentWillUnmount () {
 		$(document.body).removeClass('dark')
+	}
+
+	onTimeScaleChange = (timeScaleVal) => {
+		if (Number.isFinite(timeScaleVal) && timeScaleVal > 0) {
+			this.setState({
+				timeScale: timeScaleVal
+			})
+		}
 	}
 
 	renderSegments () {
@@ -57,7 +77,10 @@ class extends React.Component<IPropsHeader> {
 										  studioInstallation={this.props.studioInstallation}
 										  segment={segment}
 										  runningOrder={this.props.runningOrder}
-										  liveLineHistorySize='100' />
+										  liveLineHistorySize='100'
+										  timeScale={this.state.timeScale}
+										  onTimeScaleChange={this.onTimeScaleChange}
+										  />
 			))
 		} else {
 			return (

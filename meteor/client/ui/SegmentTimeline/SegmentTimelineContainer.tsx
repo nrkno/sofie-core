@@ -61,13 +61,13 @@ interface IPropsHeader {
 	studioInstallation: StudioInstallation,
 	segmentLines: Array<SegmentLine>,
 	runningOrder: RunningOrder,
-	timeScale?: number,
+	timeScale: number,
 	isLiveSegment: boolean,
 	isNextSegment: boolean,
 	liveLineHistorySize: number
+	onTimeScaleChange?: (timeScaleVal: number) => void
 }
 interface IStateHeader {
-	timeScale: number,
 	scrollLeft: number,
 	collapsedOutputs: {
 		[key: string]: boolean
@@ -195,7 +195,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 			// if there is no renderedInPoint, use 0 as the starting time for the item
 			segmentLineItem.renderedInPoint = tlItem.resolved.startTime ? tlItem.resolved.startTime - TIMELINE_TEMP_OFFSET : 0
 
-			if ((segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || 0) > furthestDuration) {
+			if (Number.isFinite(segmentLineItem.renderedDuration || 0) && ((segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || 0) > furthestDuration)) {
 				furthestDuration = (segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || 0)
 			}
 		})
@@ -214,13 +214,13 @@ export const SegmentTimelineContainer = withTracker((props) => {
 	}
 })(
 class extends React.Component<IPropsHeader, IStateHeader> {
+	debugDemoLiveLineInterval?: NodeJS.Timer
+
 	constructor (props) {
 		super(props)
 
 		let that = this
 		this.state = {
-			/** The amount of pixels representing one second */
-			timeScale: props.initialTimeScale || 10,
 			collapsedOutputs: {},
 			collapsed: false,
 			scrollLeft: 0,
@@ -247,19 +247,28 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		})
 	}
 
+	debugDemoLiveLine = () => {
+		if (!this.debugDemoLiveLineInterval) {
+			this.debugDemoLiveLineInterval = setInterval(() => {
+				let speed = 1
+				let newLivePosition = this.state.livePosition + (1 / 60) * speed
+				this.setState(_.extend({
+					livePosition: newLivePosition,
+				}, this.state.followLiveLine ? {
+					scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
+				} : null))
+			}, 1000 / 60)
+		}
+	}
+
 	onFollowLiveLine = (state: boolean, event: any) => {
 		this.setState({
 			followLiveLine: state
 		})
 
-		setInterval(() => {
-			let speed = 1
-			let newLivePosition = this.state.livePosition + (1 / 60) * speed
-			this.setState({
-				livePosition: newLivePosition,
-				scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.state.timeScale), 0)
-			})
-		}, 1000 / 60)
+		if (this.state.followLiveLine) {
+			this.debugDemoLiveLine()
+		}
 	}
 
 	render () {
@@ -267,7 +276,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 			<SegmentTimeline key={this.props.segment._id} segment={this.props.segment}
 							 studioInstallation={this.props.studioInstallation}
 							 segmentLines={this.props.segmentLines}
-							 timeScale={this.state.timeScale}
+							 timeScale={this.props.timeScale}
 							 onCollapseOutputToggle={this.onCollapseOutputToggle}
 							 collapsedOutputs={this.state.collapsedOutputs}
 							 onCollapseSegmentToggle={this.onCollapseSegmentToggle}
