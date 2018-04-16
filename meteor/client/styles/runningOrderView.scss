@@ -1,7 +1,7 @@
 @import "colorScheme";
 
 $output-layer-group-line: 1px solid #5C5C5C;
-$output-layer-group-collapse-animation-duration: 0.5s;
+$output-layer-group-collapse-animation-duration: 0.3s;
 
 $general-live-color: #F9FF16;
 $general-next-color: #FF0000;
@@ -251,9 +251,9 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 						}
 
 						.segment-timeline__layer-item__label {
-							margin: 0 0.5em;
-							text-shadow: 0 0 4px rgba(0,0,0,0.50);
-							font-weight: 600;
+							margin: 0 0.3em;
+							text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
+							font-weight: 400;
 							transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity ($output-layer-group-collapse-animation-duration * 2/3)
 						}
 					}
@@ -300,8 +300,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			
 			// the label with the name for the output layer
 			.segment-timeline__output-layer-control__label {
-				font-weight: bold;
+				font-weight: 500;
 				padding-left: 20px;
+				letter-spacing: 0.02em;
+				color: rgb(255, 255, 255);
 
 				opacity: 1;
 				transition: $output-layer-group-collapse-animation-duration opacity;
@@ -312,6 +314,8 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 				line-height: $segment-layer-height;
 				height: $segment-layer-height;
 				min-height: $segment-layer-height;
+				letter-spacing: 0em;
+				color: rgb(207, 207, 207);
 	
 				transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
 							$output-layer-group-collapse-animation-duration height ease-in-out,
@@ -329,13 +333,13 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 					position: absolute;
 					border-left: $output-layer-group-line;
 					border-bottom: $output-layer-group-line;
-					top: 2em;
+					top: 1.1em;
 					left: 7px;
-					bottom: 1.2em;
+					bottom: 0.8em;
 					width: 50px;
 					box-sizing: border-box;
 					opacity: 1;
-					transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity ($output-layer-group-collapse-animation-duration * 2/3);
+					transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity ($output-layer-group-collapse-animation-duration * 1/3);
 				}
 
 				.segment-timeline__output-layer-control__label {
