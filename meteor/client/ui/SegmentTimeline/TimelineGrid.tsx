@@ -8,7 +8,7 @@ import { RundownUtils } from '../../lib/rundown'
 
 import { Settings } from '../../../lib/Settings'
 
-const GRID_FONT_URL = 'url("/fonts/Bold/Roboto-Bold.woff")'
+const GRID_FONT_URL = 'url("/roboto-gh-pages/fonts/Bold/Roboto-Bold.woff")'
 const GRID_FONT_SIZE = 15
 const TIMELINE_GRID_LABEL_COLOR = 'rgb(175,175,175)'
 const INNER_STEP_GRID_COLOR = 'rgb(112,112,112)'
