@@ -11,6 +11,7 @@ import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders
 import { Segments, Segment } from '../../lib/collections/Segments'
 import { Timeline, TimelineObj, TimelineContentType } from '../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
+import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines';
 
 // ----------------------------------------------------------------------------
 
@@ -424,8 +425,13 @@ class extends React.Component<ISegments> {
 
 		return this.props.segments.map((segment) => (
 			<div key={segment._id}>
+				<b>Segment</b>
 				<div>ID: <i>{segment._id}</i></div>
 				<div>Name: <i>{segment.name}</i></div>
+				<div>Number: <i>{segment.number}</i></div>
+				<div>
+				<ComponentSegmentLines segmentId={segment._id} />
+				</div>
 			</div>
 		))
 	}
@@ -433,6 +439,41 @@ class extends React.Component<ISegments> {
 		return (
 			<div>
 				<h2>Segments</h2>
+				<div>
+					{this.renderROs()}
+				</div>
+			</div>
+		)
+	}
+})
+interface ISegmentLine {
+	segmentLines: Array<SegmentLine>
+	segmentId?: String
+}
+export const ComponentSegmentLines = withTracker((props) => {
+
+	// These properties will be exposed under this.props
+	// Note that these properties are reactively recalculated
+	return {
+		segmentLines: SegmentLines.find({
+			segmentId: props.segmentId
+		}, { sort: { _rank: 1 } }).fetch()
+	}
+})(
+class extends React.Component<ISegmentLine> {
+	renderROs () {
+
+		return this.props.segmentLines.map((segmentLine) => (
+			<div key={segmentLine._id}>
+				<b>SegmentLine</b>
+				<div>ID: <i>{segmentLine._id}</i></div>
+				<div>MosId: <i>{segmentLine.mosId}</i></div>
+			</div>
+		))
+	}
+	render () {
+		return (
+			<div>
 				<div>
 					{this.renderROs()}
 				</div>

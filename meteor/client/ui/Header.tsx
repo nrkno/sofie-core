@@ -15,7 +15,7 @@ export default class Header extends React.Component<IPropsHeader> {
 				<div className='col c6 dark'>
 					<div className='mod'>
 						<img className='media-elem mrs' src='/origo-ui/images/nrk.svg' width='58' />
-						<div className='bd mls'><span className='logo-text'>SEFF</span></div>
+						<div className='bd mls'><span className='logo-text'>Sofie</span></div>
 					</div>
 				</div>
 				<div className='col c6 dark'>
