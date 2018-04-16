@@ -16,6 +16,7 @@ export interface Segment {
 	runningOrderId: string
   /** User-presentable name (Slug) for the Title */
 	name: string
+	number: string
 
 	metaData?: Array<IMOSExternalMetaData>
 	status?: IMOSObjectStatus
