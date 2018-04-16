@@ -27,11 +27,19 @@ interface ISourceLayerProps {
 	isLiveLine: boolean
 	isNextLine: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	relative?: boolean
+	totalSegmentDuration?: number
 }
 class SourceLayer extends React.Component<ISourceLayerProps> {
 	getLayerStyle () {
-		return {
-			width: ((this.props.segmentLine.renderedDuration || 0) * this.props.timeScale).toString() + 'px'
+		if (this.props.relative) {
+			return {
+				width: ((this.props.segmentLine.renderedDuration || 0) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%'
+			}
+		} else {
+			return {
+				width: ((this.props.segmentLine.renderedDuration || 0) * this.props.timeScale).toString() + 'px'
+			}
 		}
 	}
 
@@ -51,7 +59,10 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 							outputLayer={this.props.outputLayer}
 							segment={this.props.segment}
 							segmentLine={this.props.segmentLine}
-							timeScale={this.props.timeScale} />
+							timeScale={this.props.timeScale}
+							relative={this.props.relative}
+							totalSegmentLineDuration={this.props.relative ? (this.props.segmentLine.renderedDuration || 0) : undefined}
+							/>
 					)
 				})
 		}
@@ -118,8 +129,10 @@ interface IPropsHeader {
 	onCollapseSegmentToggle?: (event: any) => void,
 	isCollapsed?: boolean,
 	scrollLeft: number,
-	onScroll: (scrollLeft: number, event: any) => void
+	onScroll?: (scrollLeft: number, event: any) => void
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	relative?: boolean
+	totalSegmentDuration?: number
 }
 
 export class SegmentTimelineLine extends React.Component<IPropsHeader> {

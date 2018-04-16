@@ -47,6 +47,10 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 		this.timeline = el
 	}
 
+	setZoomTimelineRef = (el: HTMLDivElement) => {
+		return
+	}
+
 	getSegmentDuration () {
 		return (this.props.segmentLines && RundownUtils.getSegmentDuration(this.props.segmentLines)) || 0
 	}
@@ -74,9 +78,30 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 						 onClick={(e) => this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, e)}>
 						Live
 					</div>
+					<div className='segment-timeline__liveline__timecode'>
+						{RundownUtils.formatTimeToTimecode(this.props.livePosition)}
+					</div>
 				</div>
 			)
 		}
+	}
+
+	renderZoomTimeline () {
+		return this.props.segmentLines.map((segmentLine) => {
+			return (
+				<SegmentTimelineLine key={segmentLine._id}
+					segment={this.props.segment}
+					runningOrder={this.props.runningOrder}
+					studioInstallation={this.props.studioInstallation}
+					collapsedOutputs={this.props.collapsedOutputs}
+					isCollapsed={this.props.isCollapsed}
+					scrollLeft={0}
+					timeScale={1}
+					relative={true}
+					totalSegmentDuration={this.getSegmentDuration()}
+					segmentLine={segmentLine} />
+			)
+		})
 	}
 
 	renderTimeline () {
@@ -148,7 +173,23 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 					</div>
 					{this.renderLiveLine()}
 				</div>
-				<div className='segment-timeline__zoom-area'></div>
+				<div className='segment-timeline__zoom-area'>
+					<div className='segment-timeline__timeline' ref={this.setZoomTimelineRef}>
+						{this.renderZoomTimeline()}
+					</div>
+					<div className='segment-timeline__zoom-area__controls'>
+						<div className='segment-timeline__zoom-area__controls__left-mask'>
+						</div>
+						<div className='segment-timeline__zoom-area__controls__right-mask'>
+						</div>
+						<div className='segment-timeline__zoom-area__controls__selected-area'>
+							<div className='segment-timeline__zoom-area__controls__selected-area__left-handle'>
+							</div>
+							<div className='segment-timeline__zoom-area__controls__selected-area__right-handle'>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		)
 	}

@@ -59,8 +59,6 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	}
 
 	onCanvasResize = (event: JQuery.Event) => {
-		console.log('Canvas possibly resized')
-
 		this.contextResize()
 	}
 

@@ -19,15 +19,25 @@ interface ISourceLayerItemProps {
 	segmentLineItem: SegmentLineItemUi
 	timeScale: number
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	relative?: boolean
+	totalSegmentLineDuration?: number
 }
 export class SourceLayerItem extends React.Component<ISourceLayerItemProps> {
 	getItemStyle (): { [key: string]: string } {
 		let segmentLineItem = this.props.segmentLineItem
 
-		return {
-			// as-run "duration" takes priority over renderdDuration which takes priority over MOS-import expectedDuration (editorial duration)
-			'left': ((segmentLineItem.renderedInPoint || 0) * this.props.timeScale).toString() + 'px',
-			'width': ((segmentLineItem.duration || segmentLineItem.renderedDuration || segmentLineItem.expectedDuration) * this.props.timeScale).toString() + 'px'
+		if (this.props.relative) {
+			return {
+				// as-run "duration" takes priority over renderdDuration which takes priority over MOS-import expectedDuration (editorial duration)
+				'left': ((segmentLineItem.renderedInPoint || 0) / (this.props.totalSegmentLineDuration || 1) * 100).toString() + '%',
+				'width': ((segmentLineItem.duration || segmentLineItem.renderedDuration || segmentLineItem.expectedDuration) / (this.props.totalSegmentLineDuration || 1) * 100).toString() + '%'
+			}
+		} else {
+			return {
+				// as-run "duration" takes priority over renderdDuration which takes priority over MOS-import expectedDuration (editorial duration)
+				'left': ((segmentLineItem.renderedInPoint || 0) * this.props.timeScale).toString() + 'px',
+				'width': ((segmentLineItem.duration || segmentLineItem.renderedDuration || segmentLineItem.expectedDuration) * this.props.timeScale).toString() + 'px'
+			}
 		}
 	}
 

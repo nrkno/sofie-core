@@ -28,6 +28,8 @@ interface IPropsHeader {
 	isLiveLine: boolean
 	isNextLine: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	relative?: boolean
+	totalSegmentLineDuration?: number
 }
 /** This is an  */
 export const SourceLayerItemContainer = withTracker((props) => {
