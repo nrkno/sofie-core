@@ -9,6 +9,7 @@ import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
 
 const GRID_FONT_URL = 'url("/fonts/Bold/Roboto-Bold.woff")'
+const GRID_FONT_SIZE = 15
 const TIMELINE_GRID_LABEL_COLOR = 'rgb(175,175,175)'
 const INNER_STEP_GRID_COLOR = 'rgb(112,112,112)'
 const LARGE_STEP_GRID_COLOR = 'rgb(112,112,112)'
@@ -81,7 +82,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		if (this.ctx) {
 			this.ctx.lineCap = 'butt'
 			this.ctx.lineWidth = 1
-			this.ctx.font = (15 * this.pixelRatio).toString() + 'px GridTimecodeFont, Roboto, Arial, sans-serif'
+			this.ctx.font = (GRID_FONT_SIZE * this.pixelRatio).toString() + 'px GridTimecodeFont, Roboto, Arial, sans-serif'
 			this.ctx.fillStyle = TIMELINE_GRID_LABEL_COLOR
 
 			const fps = Settings['frameRate']
