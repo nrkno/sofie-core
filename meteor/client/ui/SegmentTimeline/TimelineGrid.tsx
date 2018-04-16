@@ -8,7 +8,7 @@ import { RundownUtils } from '../../lib/rundown'
 
 import { Settings } from '../../../lib/Settings'
 
-const GRID_FONT_URL = 'url("/origo-ui/fonts/roboto-bold-webfont.woff")'
+const GRID_FONT_URL = 'url("/fonts/Bold/Roboto-Bold.woff")'
 const TIMELINE_GRID_LABEL_COLOR = 'rgb(175,175,175)'
 const INNER_STEP_GRID_COLOR = 'rgb(112,112,112)'
 const LARGE_STEP_GRID_COLOR = 'rgb(112,112,112)'
