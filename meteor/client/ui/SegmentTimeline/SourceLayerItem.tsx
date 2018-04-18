@@ -25,7 +25,17 @@ interface ISourceLayerItemProps {
 	liveLineHistorySize: number
 	livePosition: number
 }
-export class SourceLayerItem extends React.Component<ISourceLayerItemProps> {
+interface ISourceLayerItemState {
+	itemState: number
+}
+export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISourceLayerItemState> {
+	constructor (props) {
+		super(props)
+		this.state = {
+			itemState: 0
+		}
+	}
+
 	getItemStyle (): { [key: string]: string } {
 		let segmentLineItem = this.props.segmentLineItem
 
@@ -48,6 +58,18 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps> {
 		this.props.onFollowLiveLine && this.props.onFollowLiveLine(false, e)
 	}
 
+	itemMouseUp = (e: any) => {
+		let eM = e as MouseEvent
+		if (eM.ctrlKey === true) {
+			this.setState({
+				itemState: (this.state.itemState + 1) % 4
+			})
+			eM.preventDefault()
+			eM.stopPropagation()
+		}
+		return
+	}
+
 	render () {
 		return (
 			<div className={ClassNames('segment-timeline__layer-item', {
@@ -63,8 +85,17 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps> {
 			})}
 				data-mos-id={this.props.segmentLineItem._id}
 				onClick={this.itemClick}
+				onMouseUp={this.itemMouseUp}
 				style={this.getItemStyle()}>
-				<span className='segment-timeline__layer-item__label'>{this.props.segmentLineItem.name}</span>
+				<span className={
+					ClassNames('segment-timeline__layer-item__label', {
+						'bold': this.state.itemState === 0,
+						'regular': this.state.itemState === 1,
+						'light': this.state.itemState === 2,
+						'light-file-missing': this.state.itemState === 3,
+					})
+				}
+				>{this.props.segmentLineItem.name}</span>
 			</div>
 		)
 	}
