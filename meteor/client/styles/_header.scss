@@ -3,6 +3,25 @@
 		> a {
 			color: #fff;
 			margin-left: 1em;
+
+			> .icon {
+				margin: -4px 0 -2px;
+			}
 		}
 	}
+
+	.badge {
+		.sofie-logo {
+			background: url('/images/sofie-logo.svg') center center no-repeat;
+			background-size: contain;
+			width: 2em;
+    		height: 1.3em;
+    		margin-top: -0.1em;
+		}
+	}
+}
+
+.super-dark {
+	background: #191919;
+	color: #fff;
 }

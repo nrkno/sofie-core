@@ -12,8 +12,13 @@ import { NymansPlayground } from '../ui/NymansPlayground'
 import {
   BrowserRouter as Router,
   Route,
-  Link
+  Link,
+  NavLink,
+  Switch,
+  Redirect
 } from 'react-router-dom'
+
+const NullComponent = () => null
 
 // App component - represents the whole app
 class App extends React.Component {
@@ -47,12 +52,20 @@ class App extends React.Component {
 		return (
 			<Router>
 				<div className='container-fluid'>
-					<Header />
-					<Route exact path='/' component={Dashboard} />
-					<Route exact path='/runningOrders' component={RunningOrderList} />
-					<Route path='/ro/:runningOrderId' component={RunningOrderView} />
-					<Route path='/nymansPlayground' component={NymansPlayground} />
-					<Route path='/status' component={SystemStatus} />
+					{/* Header switch - render the usual header for all pages but the running order view */}
+					<Switch>
+						<Route path='/ro/:runningOrderId' component={NullComponent} />
+						<Route path='/' component={Header} />
+					</Switch>
+					{/* Main app switch */}
+					<Switch>
+						<Route exact path='/' component={Dashboard} />
+						<Route path='/runningOrders' component={RunningOrderList} />
+						<Route path='/ro/:runningOrderId' component={RunningOrderView} />
+						<Route path='/nymansPlayground' component={NymansPlayground} />
+						<Route path='/status' component={SystemStatus} />
+						<Redirect to='/' />
+					</Switch>
 				</div>
 			</Router>
 		)

@@ -7,10 +7,43 @@ import * as ClassNames from 'classnames'
 import * as $ from 'jquery'
 import { Time } from '../../lib/lib'
 
+import { NavLink } from 'react-router-dom'
+
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { SegmentTimelineContainer } from './SegmentTimeline/SegmentTimelineContainer'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
+
+interface IHeaderProps {
+	timeNow: number
+}
+
+const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
+	<div className='header row'>
+		<div className='col c4 super-dark'>
+			<div className='badge mod'>
+				<div className='media-elem mrs sofie-logo' />
+				<div className='bd mls'><span className='logo-text'>Sofie</span></div>
+			</div>
+		</div>
+		<div className='col c4 super-dark'>
+			<div className='timing mod'>
+				<span className='timing-clock heavy-light heavy'>-00:15</span>
+				<span className='timing-clock time-end'>Finish: 18:59:00</span>
+				<span className='timing-clock time-now'>Now: 18:59:00</span>
+			</div>
+		</div>
+		<div className='flex-col c4 super-dark horizontal-align-right'>
+			<div className='links mod'>
+				<NavLink to='/runningOrders'>
+					<svg className='icon' aria-hidden='true' role='presentation'>
+						<use xlinkHref='#icon-x'/>
+					</svg>
+				</NavLink>
+			</div>
+		</div>
+	</div>
+)
 
 interface IPropsHeader {
 	key: string
@@ -89,11 +122,10 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		}
 	}
 
-	render () {
+	renderSegmentsList () {
 		if (this.props.runningOrder !== undefined) {
 			return (
 				<div>
-					<h1>{this.props.runningOrder.name}</h1>
 					{this.renderSegments()}
 				</div>
 			)
@@ -104,6 +136,15 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 				</div>
 			)
 		}
+	}
+
+	render () {
+		return (
+			<div>
+				<RunningOrderHeader timeNow={0} />
+				{this.renderSegmentsList()}
+			</div>
+		)
 	}
 }
 )

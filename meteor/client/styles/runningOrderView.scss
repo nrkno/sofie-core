@@ -6,6 +6,8 @@ $output-layer-group-collapse-animation-duration: 0.3s;
 $general-live-color: #F9FF16;
 $general-next-color: #FF0000;
 
+$general-late-color: #FF0000;
+
 $segment-header-height: 2.3em;
 $segment-background-color: #000;
 $segment-timeline-background-color: #1F1F1F;
@@ -50,6 +52,26 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 @mixin collapse-triangle-collapsed {
 	&::before {
 		transform: translate(0, -50%) rotate(-90deg);
+	}
+}
+
+.header {
+	.timing {
+		display: flex;
+		margin: 18px 20px 17px;
+		font-size: 20px;
+	
+		.timing-clock {
+			margin-right: 1.5em;
+			font-family: 'Ethica Regular', 'Roboto', Helvetica, sans-serif;
+			font-weight: normal;
+
+			&.heavy-light {
+				&.heavy {
+					color: $general-late-color;
+				}
+			}
+		}
 	}
 }
 
