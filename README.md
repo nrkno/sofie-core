@@ -28,3 +28,7 @@ npm link
 cd ../tv-automation-server-core/meteor
 npm link mos-connection
 ```
+
+---
+
+*The NRK logo is a registered trademark of Norsk rikskringkasting AS. The license does not grant any right to use, in any way, any trademarks, service marks or logos of Norsk rikskringkasting AS.*
