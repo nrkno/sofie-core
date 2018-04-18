@@ -21,6 +21,9 @@ interface ISourceLayerItemProps {
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	relative?: boolean
 	totalSegmentLineDuration?: number
+	followLiveLine: boolean
+	liveLineHistorySize: number
+	livePosition: number
 }
 export class SourceLayerItem extends React.Component<ISourceLayerItemProps> {
 	getItemStyle (): { [key: string]: string } {

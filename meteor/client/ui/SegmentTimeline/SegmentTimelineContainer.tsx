@@ -32,6 +32,7 @@ export interface SegmentLineUi extends SegmentLine {
 	/** Segment line items belonging to this segment line */
 	items?: Array<SegmentLineItem>
 	renderedDuration?: number
+	startsAt?: number
 }
 export interface IOutputLayerUi extends IOutputLayer {
 	/** Is this output layer used in this segment */
@@ -117,6 +118,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		}
 	})
 
+	let startsAt = 0
 	// fetch all the segment line items for the segment lines
 	_.forEach<SegmentLineUi>(segmentLines, (segmentLine) => {
 		let slTimeline: SuperTimeline.UnresolvedTimeline = []
@@ -201,6 +203,8 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		})
 
 		segmentLine.renderedDuration = furthestDuration
+		segmentLine.startsAt = startsAt
+		startsAt = segmentLine.startsAt + (segmentLine.renderedDuration || 0)
 	})
 
 	segment.outputLayers = outputLayers

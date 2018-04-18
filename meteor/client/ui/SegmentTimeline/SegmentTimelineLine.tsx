@@ -29,6 +29,9 @@ interface ISourceLayerProps {
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	relative?: boolean
 	totalSegmentDuration?: number
+	followLiveLine: boolean
+	liveLineHistorySize: number
+	livePosition: number
 }
 class SourceLayer extends React.Component<ISourceLayerProps> {
 	getLayerStyle () {
@@ -62,6 +65,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 							timeScale={this.props.timeScale}
 							relative={this.props.relative}
 							totalSegmentLineDuration={this.props.relative ? (this.props.segmentLine.renderedDuration || 0) : undefined}
+							lineStartsAt={this.props.segmentLine.startsAt}
 							/>
 					)
 				})
@@ -88,6 +92,9 @@ interface IOutputGroupProps {
 	isLiveLine: boolean
 	isNextLine: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	followLiveLine: boolean
+	liveLineHistorySize: number
+	livePosition: number
 }
 class OutputGroup extends React.Component<IOutputGroupProps> {
 	renderInside () {
@@ -131,6 +138,9 @@ interface IPropsHeader {
 	scrollLeft: number,
 	onScroll?: (scrollLeft: number, event: any) => void
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	followLiveLine: boolean
+	liveLineHistorySize: number
+	livePosition: number
 	relative?: boolean
 	totalSegmentDuration?: number
 }
