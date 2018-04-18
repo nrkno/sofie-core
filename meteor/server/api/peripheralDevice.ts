@@ -468,7 +468,7 @@ export function convertToSegment (story: IMOSStory, runningOrderId: string, rank
 		_rank: rank,
 		mosId: story.ID.toString(),
 		name: (story.Slug ? story.Slug.toString() : ''),
-		number: (story.Number)
+		number: (story.Number ? story.Number.toString() : '')
 	}
 	// console.log('story.Number', story.Number)
 }
