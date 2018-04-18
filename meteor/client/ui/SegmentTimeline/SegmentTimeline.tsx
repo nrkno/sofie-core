@@ -161,6 +161,10 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
 					 {RundownUtils.formatTimeToTimecode(this.getSegmentDuration())}
 				</div>
+				<div className='segment-timeline__timeUntil'
+					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
+					00:25
+					</div>
 				<div className='segment-timeline__mos-id'>{this.props.segment.mosId}</div>
 				<div className='segment-timeline__output-layers'>
 					{this.renderOutputLayerControls()}
