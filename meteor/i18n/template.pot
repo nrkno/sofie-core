@@ -8,7 +8,7 @@ msgstr ""
 "POT-Creation-Date: 2018-04-19T11:17:59.110Z\n"
 "PO-Revision-Date: 2018-04-19T11:17:59.110Z\n"
 
-msgid "Welcome to SEFF"
+msgid "Welcome to Sofie"
 msgstr ""
 
 msgid "Home"
