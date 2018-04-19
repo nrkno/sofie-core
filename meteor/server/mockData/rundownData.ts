@@ -190,7 +190,7 @@ Meteor.methods({
 	},
 
 	'debug_additionalItems' () {
-		let segmentLine = SegmentLines.findOne({ _id: 'ro_96857485_5983A501:0049B924:8390EF2B_0'})
+		let segmentLine = SegmentLines.findOne({ _id: 'ro0-seg1-line0'})
 		let remoteSegmentItem = literal<SegmentLineItem>({
 			_id: segmentLine._id + ':' + Random.id(5),
 			mosId: segmentLine.mosId,
