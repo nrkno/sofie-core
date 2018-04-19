@@ -39,7 +39,6 @@ Meteor.methods({
 					name: 'CAMS',
 					type: RundownAPI.SourceLayerType.CAMERA,
 					unlimited: false,
-					onPGMClean: true,
 				},
 				{
 					_id: 'studio0-vt0',
@@ -175,7 +174,7 @@ Meteor.methods({
 					expectedDuration: Math.floor(Random.fraction() * 645),
 					disabled: false
 				})
-				let lower-thirdSegmentLineItem = literal<SegmentLineItem>({
+				let lowerthirdSegmentLineItem = literal<SegmentLineItem>({
 					_id: segmentLine._id + ':' + Random.id(5),
 					mosId: segmentLine.mosId,
 					segmentLineId: segmentLine._id,
@@ -186,13 +185,13 @@ Meteor.methods({
 						value: 10
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
-					sourceLayerId: 'studio0-graphics0',
+					sourceLayerId: 'studio0-lower-third0',
 					outputLayerId: 'studio0-pgm0',
 					expectedDuration: 10,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
-				SegmentLineItems.insert(lower-thirdSegmentLineItem)
+				SegmentLineItems.insert(lowerthirdSegmentLineItem)
 			})
 		})
 	},
