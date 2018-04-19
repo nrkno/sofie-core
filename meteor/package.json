@@ -11,8 +11,9 @@
     "test-once": "meteor test --once --driver-package meteortesting:mocha",
     "license-validate": "node-license-validator -p -d --allow-licenses MIT BSD BSD-3-Clause ISC Apache",
     "i18n-extract-pot": "i18next-extract-gettext --files=\"./client/ui/**/*.tsx\" --output=i18n/template.pot",
-    "i18n-compile-json": "npm run i18n-compile-json-no",
-    "i18n-compile-json-no": "i18next-conv -l no -s i18n/no.po -t public/locales/no/translations.json"
+    "i18n-compile-json": "npm run i18n-compile-json-nb & npm run i18n-compile-json-sv",
+    "i18n-compile-json-nb": "i18next-conv -l nb -s i18n/nb.po -t public/locales/nb/translations.json",
+    "i18n-compile-json-sv": "i18next-conv -l sv -s i18n/sv.po -t public/locales/sv/translations.json"
   },
   "dependencies": {
     "@babel/runtime": "^7.0.0-beta.44",
