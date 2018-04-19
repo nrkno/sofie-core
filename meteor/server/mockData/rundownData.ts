@@ -50,7 +50,7 @@ Meteor.methods({
 					onPGMClean: true,
 				},
 				{
-					_id: 'studio0-lower_third0',
+					_id: 'studio0-lower-third0',
 					_rank: 10,
 					name: 'L3rd',
 					type: RundownAPI.SourceLayerType.LOWER_THIRD,
@@ -61,7 +61,7 @@ Meteor.methods({
 					_id: 'studio0-graphics0',
 					_rank: 10,
 					name: 'GFX',
-					type: RundownAPI.SourceLayerType.GFX,
+					type: RundownAPI.SourceLayerType.GRAPHICS,
 					unlimited: true,
 					onPGMClean: false
 				},
@@ -175,7 +175,7 @@ Meteor.methods({
 					expectedDuration: Math.floor(Random.fraction() * 645),
 					disabled: false
 				})
-				let l3rdSegmentLineItem = literal<SegmentLineItem>({
+				let lower-thirdSegmentLineItem = literal<SegmentLineItem>({
 					_id: segmentLine._id + ':' + Random.id(5),
 					mosId: segmentLine.mosId,
 					segmentLineId: segmentLine._id,
@@ -192,7 +192,7 @@ Meteor.methods({
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
-				SegmentLineItems.insert(l3rdSegmentLineItem)
+				SegmentLineItems.insert(lower-thirdSegmentLineItem)
 			})
 		})
 	},

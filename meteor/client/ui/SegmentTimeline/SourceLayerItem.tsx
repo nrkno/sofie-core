@@ -77,7 +77,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				'cam': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA,
 				'cam-movement': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA_MOVEMENT,
 				'gfx': this.props.layer.type === RundownAPI.SourceLayerType.GRAPHICS,
-				'l3rd': this.props.layer.type === RundownAPI.SourceLayerType.LOWER_THIRD,
+				'lower-third': this.props.layer.type === RundownAPI.SourceLayerType.LOWER_THIRD,
 				'metadata': this.props.layer.type === RundownAPI.SourceLayerType.METADATA,
 				'remote': this.props.layer.type === RundownAPI.SourceLayerType.REMOTE,
 				'script': this.props.layer.type === RundownAPI.SourceLayerType.SCRIPT,

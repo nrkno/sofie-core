@@ -26,7 +26,7 @@ $segment-timeline-padding: $segment-header-height 0 1.5em;
 $segment-layer-height: 1.6em;
 $segment-layer-background-unknown: #4B4B4B;
 $segment-layer-background-cam: #00C800;
-$segment-layer-background-l3rd: #FF6F00;
+$segment-layer-background-lower-third: #FF6F00;
 $segment-layer-background-gfx: #00AEBF;
 $segment-layer-background-remote: #FF0059;
 $segment-layer-background-script: #1C721F;
@@ -341,8 +341,8 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 							background: $segment-layer-background-gfx;
 						}
 
-						&.l3rd {
-							background: $segment-layer-background-l3rd;
+						&.lower-third {
+							background: $segment-layer-background-lower-third;
 						}
 
 						&.vt {
