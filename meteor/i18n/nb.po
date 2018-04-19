@@ -6,7 +6,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "POT-Creation-Date: 2018-04-19T11:17:59.110Z\n"
-"PO-Revision-Date: 2018-04-19 16:47+0200\n"
+"PO-Revision-Date: 2018-04-19 17:26+0200\n"
 "Language-Team: \n"
 "X-Generator: Poedit 2.0.6\n"
 "Last-Translator: \n"
@@ -22,7 +22,7 @@ msgid "Running Orders"
 msgstr "Kjøreplaner"
 
 msgid "Nyman's Playground"
-msgstr "Tests"
+msgstr "Tester"
 
 msgid "Status"
 msgstr "Status"
@@ -59,28 +59,28 @@ msgid "Good"
 msgstr "Bra"
 
 msgid "Minor Warning"
-msgstr "Mindre advarsel"
+msgstr "Avvik"
 
 msgid "Warning"
 msgstr "Advarsel"
 
 msgid "Bad"
-msgstr "Dårlig"
+msgstr "Feil"
 
 msgid "Fatal"
-msgstr "Fatal"
+msgstr "Kritisk"
 
 msgid "Connected"
 msgstr "Tilkoblet"
 
 msgid "Disconnected"
-msgstr "Koblet"
+msgstr "Frakoblet"
 
 msgid "MOS Device"
 msgstr "MOS-enhet"
 
 msgid "Playout Device"
-msgstr "Avspillsenhet"
+msgstr "Avspillingssenhet"
 
 msgid "Unknown Device"
 msgstr "Ukjent enhet"
