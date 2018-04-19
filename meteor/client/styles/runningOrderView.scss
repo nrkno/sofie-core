@@ -357,21 +357,29 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 							font-weight: 400;
 							transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity ($output-layer-group-collapse-animation-duration * 2/3);
 
-							// TODO: These are just temporary, to show that the classes are changing
-							&.bold {
-								color: white
+							&.secondary {
+								font-weight: 300;
 							}
 
-							&.regular {
-								color: palegoldenrod
+							&.third {
+								font-weight: 200;
 							}
 
-							&.light {
-								color: pink
+							&.emphasis {
+								font-weight: 500;
 							}
 
-							&.light-file-missing {
-								color: palegreen
+							&.missing {
+								color: orange
+							}
+
+							&.last-words {
+								font-weight: 300;
+								font-style: italic;	
+							}
+
+							&.file-name {
+								font-weight: 200;
 							}
 						}
 					}
