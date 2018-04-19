@@ -190,7 +190,7 @@ Meteor.methods({
 	},
 
 	'debug_additionalItems' () {
-		let segmentLine = SegmentLines.findOne({ _id: 'ro0-seg1-line0'})
+		let segmentLine = SegmentLines.findOne({ _id: 'ro0-seg0-line0'})
 		let remoteSegmentItem = literal<SegmentLineItem>({
 			_id: segmentLine._id + ':' + Random.id(5),
 			mosId: segmentLine.mosId,
@@ -267,11 +267,11 @@ Meteor.methods({
 		RunningOrders.update({showStyleId: { $not: { $exists: true }}}, { $set: { showStyleId: 'dummyShow0' }})
 	},
 
-	'debug_setLiveLine' () {
-		let segmentLine = SegmentLines.findOne()
+	'debug_setOnAirLine' () {
+		let segmentLine = SegmentLines.findOne('ro0-seg0-line0')
 
 		if (segmentLine) {
-			let runningOrder = RunningOrders.findOne()
+			let runningOrder = RunningOrders.findOne('ro0')
 			RunningOrders.update({_id: runningOrder._id}, {
 				$set: { currentSegmentLineId: segmentLine._id }
 			})
@@ -279,10 +279,10 @@ Meteor.methods({
 	},
 
 	'debug_setNextLine' () {
-		let segmentLine = SegmentLines.findOne()
+		let segmentLine = SegmentLines.findOne('ro0-seg1-line0')
 
 		if (segmentLine) {
-			let runningOrder = RunningOrders.findOne()
+			let runningOrder = RunningOrders.findOne('ro0')
 			RunningOrders.update({ _id: runningOrder._id }, {
 				$set: { nextSegmentLineId: segmentLine._id }
 			})
