@@ -79,6 +79,72 @@ Meteor.methods({
 		})
 	},
 
+	'debug_sampleRundown' () {
+		let ro: RunningOrder = {
+			_id: 'ro0',
+			mosId: 'MOCK_RO0',
+			studioInstallationId: 'studio0',
+			showStyleId: 'dummyShow0',
+			name: '5PM NEWSCAST',
+			created: Date.now(),
+			currentSegmentLineId: null,
+			nextSegmentLineId: null
+		}
+		RunningOrders.insert(ro)
+
+		let seg0: Segment = {
+			_id: 'ro0-seg0',
+			_rank: 0,
+			mosId: 'MOCK_RO0_SEG0',
+			runningOrderId: 'ro0',
+			name: 'SHOW OPEN',
+			number: '0'
+		}
+		let seg1: Segment = {
+			_id: 'ro0-seg1',
+			_rank: 0,
+			mosId: 'MOCK_RO0_SEG1',
+			runningOrderId: 'ro0',
+			name: 'MAILMEN ON STRIKE',
+			number: '1'
+		}
+		let seg2: Segment = {
+			_id: 'ro0-seg2',
+			_rank: 0,
+			mosId: 'MOCK_RO0_SEG2',
+			runningOrderId: 'ro0',
+			name: 'WALKING ON BROKEN GLASS',
+			number: '1'
+		}
+		let seg3: Segment = {
+			_id: 'ro0-seg3',
+			_rank: 0,
+			mosId: 'MOCK_RO0_SEG3',
+			runningOrderId: 'ro0',
+			name: 'CENTENNIAL CELEBRATIONS',
+			number: '1'
+		}
+		Segments.insert(seg0)
+		Segments.insert(seg1)
+		Segments.insert(seg2)
+		Segments.insert(seg3)
+
+		let segs = [ seg0, seg1, seg2, seg3 ]
+		segs.map((seg) => {
+			let maxSeg = Math.round(Math.random() * 3) + 1
+			for (let i = 0; i < maxSeg; i++) {
+				let segLine: SegmentLine = {
+					_id: seg._id + '-line' + i.toString(),
+					_rank: i,
+					mosId: seg.mosId + '_LINE' + i.toString(),
+					segmentId: seg._id,
+					runningOrderId: seg.runningOrderId
+				}
+				SegmentLines.insert(segLine)
+			}
+		})
+	},
+
 	'debug_mockRelationships' () {
 		let runningOrder = RunningOrders.findOne()
 		let segments = Segments.find({ runningOrderId: runningOrder._id }).fetch()
