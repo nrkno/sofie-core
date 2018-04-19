@@ -36,7 +36,7 @@ Meteor.methods({
 				{
 					_id: 'studio0-camera0',
 					_rank: 100,
-					name: 'Cams',
+					name: 'CAMS',
 					type: RundownAPI.SourceLayerType.CAMERA,
 					unlimited: false,
 					onPGMClean: true,
@@ -44,16 +44,24 @@ Meteor.methods({
 				{
 					_id: 'studio0-vt0',
 					_rank: 80,
-					name: 'VB',
+					name: 'VT',
 					type: RundownAPI.SourceLayerType.VT,
 					unlimited: true,
 					onPGMClean: true,
 				},
 				{
+					_id: 'studio0-lower_third0',
+					_rank: 10,
+					name: 'L3rd',
+					type: RundownAPI.SourceLayerType.LOWER_THIRD,
+					unlimited: true,
+					onPGMClean: false
+				},
+				{
 					_id: 'studio0-graphics0',
 					_rank: 10,
 					name: 'GFX',
-					type: RundownAPI.SourceLayerType.GRAPHICS,
+					type: RundownAPI.SourceLayerType.GFX,
 					unlimited: true,
 					onPGMClean: false
 				},
@@ -167,12 +175,12 @@ Meteor.methods({
 					expectedDuration: Math.floor(Random.fraction() * 645),
 					disabled: false
 				})
-				let gfxSegmentLineItem = literal<SegmentLineItem>({
+				let l3rdSegmentLineItem = literal<SegmentLineItem>({
 					_id: segmentLine._id + ':' + Random.id(5),
 					mosId: segmentLine.mosId,
 					segmentLineId: segmentLine._id,
 					runningOrderId: runningOrder._id,
-					name: 'Thomas Jorgerson',
+					name: 'Åge Øyvindsen',
 					trigger: {
 						type: 0,
 						value: 10
@@ -184,7 +192,7 @@ Meteor.methods({
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
-				SegmentLineItems.insert(gfxSegmentLineItem)
+				SegmentLineItems.insert(l3rdSegmentLineItem)
 			})
 		})
 	},
