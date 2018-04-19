@@ -2,14 +2,19 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { I18nextProvider, translate, InjectedTranslateProps, InjectedI18nProps } from 'react-i18next'
+import { InjectedTranslateI18nProps } from './App'
 
 import { Link, NavLink } from 'react-router-dom'
 
-interface IPropsHeader {
+interface IPropsHeader extends InjectedTranslateI18nProps {
 
 }
-export default class Header extends React.Component<IPropsHeader> {
+
+class Header extends React.Component<IPropsHeader> {
 	render () {
+		const { t, i18n } = this.props
+
 		return (
 			<div className='header row'>
 				<div className='col c6 dark'>
@@ -20,13 +25,15 @@ export default class Header extends React.Component<IPropsHeader> {
 				</div>
 				<div className='col c6 dark'>
 					<div className='links mod'>
-						<NavLink to='/' activeClassName='active'>Home</NavLink>
-						<NavLink to='/runningOrders' activeClassName='active'>Running Orders</NavLink>
-						<NavLink to='/nymansPlayground' activeClassName='active'>Nyman's Playground</NavLink>
-						<NavLink to='/status' activeClassName='active'>Status</NavLink>
+						<NavLink to='/' activeClassName='active'>{t('Home')}</NavLink>
+						<NavLink to='/runningOrders' activeClassName='active'>{t('Running Orders')}</NavLink>
+						<NavLink to='/nymansPlayground' activeClassName='active'>{t('Nyman\'s Playground')}</NavLink>
+						<NavLink to='/status' activeClassName='active'>{t('Status')}</NavLink>
 					</div>
 				</div>
 			</div>
 		)
 	}
 }
+
+export default translate()(Header)

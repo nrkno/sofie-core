@@ -7,45 +7,52 @@ import { PeripheralDevice,
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import * as ClassNames from 'classnames'
 import Moment from 'react-moment'
+import { translate, InjectedTranslateProps } from 'react-i18next'
 
-interface IDeviceItemPropsHeader {
+interface IDeviceItemPropsHeader extends InjectedTranslateProps {
 	key: string,
 	device: PeripheralDevice
 }
-export class DeviceItem extends React.Component<IDeviceItemPropsHeader> {
+export const DeviceItem = translate()(class extends React.Component<IDeviceItemPropsHeader> {
 	statusCodeString () {
+		let t = this.props.t
+
 		switch (this.props.device.status.statusCode) {
 			case PeripheralDeviceAPI.StatusCode.UNKNOWN:
-				return 'Unknown'
+				return t('Unknown')
 			case PeripheralDeviceAPI.StatusCode.GOOD:
-				return 'Good'
+				return t('Good')
 			case PeripheralDeviceAPI.StatusCode.WARNING_MINOR:
-				return 'Minor Warning'
+				return t('Minor Warning')
 			case PeripheralDeviceAPI.StatusCode.WARNING_MAJOR:
-				return 'Warning'
+				return t('Warning')
 			case PeripheralDeviceAPI.StatusCode.BAD:
-				return 'Bad'
+				return t('Bad')
 			case PeripheralDeviceAPI.StatusCode.FATAL:
-				return 'Fatal'
+				return t('Fatal')
 		}
 	}
 
 	connectedString () {
+		let t = this.props.t
+
 		if (this.props.device.connected) {
-			return 'Connected'
+			return t('Connected')
 		} else {
-			return 'Disconnected'
+			return t('Disconnected')
 		}
 	}
 
 	deviceTypeString () {
+		let t = this.props.t
+
 		switch (this.props.device.type) {
 			case PeripheralDeviceAPI.DeviceType.MOSDEVICE:
-				return 'MOS Device'
+				return t('MOS Device')
 			case PeripheralDeviceAPI.DeviceType.PLAYOUT:
-				return 'Playout Device'
+				return t('Playout Device')
 			default:
-				return 'Unknown Device'
+				return t('Unknown Device')
 		}
 	}
 
@@ -82,9 +89,9 @@ export class DeviceItem extends React.Component<IDeviceItemPropsHeader> {
 			</tr>
 		)
 	}
-}
+})
 
-interface IPropsHeader {
+interface IPropsHeader extends InjectedTranslateProps {
 	devices: Array<PeripheralDevice>
 }
 export class SystemStatus extends React.Component<IPropsHeader> {
@@ -95,29 +102,31 @@ export class SystemStatus extends React.Component<IPropsHeader> {
 	}
 
 	render () {
+		const { t } = this.props
+
 		return (
 			<div>
 				<header className='mvl'>
-					<h1>System Status</h1>
+					<h1>{t('System Status')}</h1>
 				</header>
 				<div className='mod mvl'>
 					<table className='table system-status-table'>
 						<thead>
 							<tr>
 								<th className='c3'>
-									Name
+									{t('Name')}
 								</th>
 								<th className='c1'>
-									Connected
+									{t('Connected')}
 								</th>
 								<th className='c1'>
-									Type
+									{t('Type')}
 								</th>
 								<th className='c2'>
-									Status
+									{t('Status')}
 								</th>
 								<th className='c5'>
-									Last seen
+									{t('Last seen')}
 								</th>
 							</tr>
 						</thead>
@@ -131,11 +140,11 @@ export class SystemStatus extends React.Component<IPropsHeader> {
 	}
 }
 
-export default withTracker(() => {
+export default translate()(withTracker(() => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
 	return {
 		devices: PeripheralDevices.find({}, { sort: { created: -1 } }).fetch()
 	}
-})(SystemStatus)
+})(SystemStatus))

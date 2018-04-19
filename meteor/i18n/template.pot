@@ -1,0 +1,93 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: i18next-conv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"POT-Creation-Date: 2018-04-19T11:17:59.110Z\n"
+"PO-Revision-Date: 2018-04-19T11:17:59.110Z\n"
+
+msgid "Welcome to SEFF"
+msgstr ""
+
+msgid "Home"
+msgstr ""
+
+msgid "Running Orders"
+msgstr ""
+
+msgid "Nyman's Playground"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Slug"
+msgstr ""
+
+msgid "ID"
+msgstr ""
+
+msgid "Created"
+msgstr ""
+
+msgid "Air Status"
+msgstr ""
+
+msgid "Finish"
+msgstr ""
+
+msgid "Now"
+msgstr ""
+
+msgid "Loading..."
+msgstr ""
+
+msgid "On Air"
+msgstr ""
+
+msgid "Unknown"
+msgstr ""
+
+msgid "Good"
+msgstr ""
+
+msgid "Minor Warning"
+msgstr ""
+
+msgid "Warning"
+msgstr ""
+
+msgid "Bad"
+msgstr ""
+
+msgid "Fatal"
+msgstr ""
+
+msgid "Connected"
+msgstr ""
+
+msgid "Disconnected"
+msgstr ""
+
+msgid "MOS Device"
+msgstr ""
+
+msgid "Playout Device"
+msgstr ""
+
+msgid "Unknown Device"
+msgstr ""
+
+msgid "System Status"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "Last seen"
+msgstr ""

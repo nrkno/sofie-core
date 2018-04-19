@@ -2,18 +2,23 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { translate, InjectedTranslateProps } from 'react-i18next'
 
-interface IPropsHeader {
+interface IPropsHeader extends InjectedTranslateProps {
 
 }
-export default class Dashboard extends React.Component<IPropsHeader> {
+class Dashboard extends React.Component<IPropsHeader> {
 	render () {
+		const { t } = this.props
+
 		return (
 			<div>
 				<div className='mvl'>
-					<h1>Welcome to SEFF</h1>
+					<h1>{t('Welcome to SEFF')}</h1>
 				</div>
 			</div>
 		)
 	}
 }
+
+export default translate()(Dashboard)

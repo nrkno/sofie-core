@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { translate, InjectedTranslateProps } from 'react-i18next'
 
 import * as ClassNames from 'classnames'
 import * as $ from 'jquery'
@@ -18,6 +19,20 @@ interface IHeaderProps {
 	timeNow: number
 }
 
+const TimingDisplay = translate()(class extends React.Component<IHeaderProps & InjectedTranslateProps> {
+	render () {
+		const { t } = this.props
+
+		return (
+			<div className='timing mod'>
+				<span className='timing-clock heavy-light heavy'>-00:15</span>
+				<span className='timing-clock time-end'>{t('Finish')}: 18:59:00</span>
+				<span className='timing-clock time-now'>{t('Now')}: 18:59:00</span>
+			</div>
+		)
+	}
+})
+
 const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 	<div className='header row'>
 		<div className='col c4 super-dark'>
@@ -27,11 +42,7 @@ const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 			</div>
 		</div>
 		<div className='col c4 super-dark'>
-			<div className='timing mod'>
-				<span className='timing-clock heavy-light heavy'>-00:15</span>
-				<span className='timing-clock time-end'>Finish: 18:59:00</span>
-				<span className='timing-clock time-now'>Now: 18:59:00</span>
-			</div>
+			<TimingDisplay {...props} />
 		</div>
 		<div className='flex-col c4 super-dark horizontal-align-right'>
 			<div className='links mod'>
@@ -45,7 +56,7 @@ const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 	</div>
 )
 
-interface IPropsHeader {
+interface IPropsHeader extends InjectedTranslateProps {
 	key: string
 	runningOrder: RunningOrder
 	segments: Array<Segment>
@@ -59,7 +70,7 @@ interface IStateHeader {
 	timeScale: number
 }
 
-export const RunningOrderView = withTracker((props, state) => {
+export const RunningOrderView = translate()(withTracker((props, state) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
@@ -123,6 +134,8 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 	}
 
 	renderSegmentsList () {
+		const { t } = this.props
+
 		if (this.props.runningOrder !== undefined) {
 			return (
 				<div>
@@ -132,7 +145,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		} else {
 			return (
 				<div>
-					Loading...
+					{t('Loading...')}
 				</div>
 			)
 		}
@@ -147,4 +160,4 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		)
 	}
 }
-)
+))

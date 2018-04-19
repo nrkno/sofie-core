@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
+import { translate, InjectedTranslateProps } from 'react-i18next'
 
 import * as ClassNames from 'classnames'
 import Moment from 'react-moment'
@@ -40,7 +41,7 @@ interface IPropsHeader {
 	onScroll: (scrollLeft: number, event: any) => void
 	onFollowLiveLine: (state: boolean, event: any) => void
 }
-export class SegmentTimeline extends React.Component<IPropsHeader> {
+export const SegmentTimeline = translate()(class extends React.Component<IPropsHeader & InjectedTranslateProps> {
 	timeline: HTMLDivElement
 
 	setTimelineRef = (el: HTMLDivElement) => {
@@ -62,6 +63,8 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 	}
 
 	renderLiveLine () {
+		const { t } = this.props
+
 		if (this.props.isLiveSegment) {
 			let pixelPostion = (this.props.livePosition * this.props.timeScale) - (!this.props.followLiveLine ? (this.props.scrollLeft * this.props.timeScale) : 0)
 			let lineStyle = {
@@ -76,7 +79,7 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 					 style={lineStyle}>
 					<div className='segment-timeline__liveline__label'
 						 onClick={(e) => this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, e)}>
-						Live
+						{t('On Air')}
 					</div>
 					<div className='segment-timeline__liveline__timecode'>
 						{RundownUtils.formatTimeToTimecode(this.props.livePosition)}
@@ -99,7 +102,10 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 					timeScale={1}
 					relative={true}
 					totalSegmentDuration={this.getSegmentDuration()}
-					segmentLine={segmentLine} />
+					segmentLine={segmentLine}
+					followLiveLine={this.props.followLiveLine}
+					liveLineHistorySize={this.props.liveLineHistorySize}
+					livePosition={this.props.livePosition} />
 			)
 		})
 	}
@@ -164,7 +170,7 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 				<div className='segment-timeline__timeUntil'
 					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
 					00:25
-					</div>
+				</div>
 				<div className='segment-timeline__mos-id'>{this.props.segment.mosId}</div>
 				<div className='segment-timeline__output-layers'>
 					{this.renderOutputLayerControls()}
@@ -197,4 +203,4 @@ export class SegmentTimeline extends React.Component<IPropsHeader> {
 			</div>
 		)
 	}
-}
+})
