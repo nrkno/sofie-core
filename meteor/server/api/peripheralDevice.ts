@@ -109,8 +109,12 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 		return status
 	}
+	export function getPeripheralDevice (id: string, token: string) {
+		return PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+	}
 	// export {P.initialize}
-	 // MOS-functions:
+	// ----------------------------------------------------------------------------
+// Mos-functions:
 	export function mosRoCreate (id, token, ro: IMOSRunningOrder) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		
@@ -645,6 +649,11 @@ methods[PeripheralDeviceAPI.methods.unInitialize] = (deviceId, deviceToken) => {
 methods[PeripheralDeviceAPI.methods.setStatus] = (deviceId, deviceToken, status) => {
 	return ServerPeripheralDeviceAPI.setStatus(deviceId, deviceToken, status)
 }
+methods[PeripheralDeviceAPI.methods.getPeripheralDevice ] = (deviceId, deviceToken) => {
+	return ServerPeripheralDeviceAPI.getPeripheralDevice(deviceId, deviceToken)
+}
+// ----------------------------------------------------------------------------
+// Mos-functions:
 methods[PeripheralDeviceAPI.methods.mosRoCreate] = (deviceId, deviceToken, ro: IMOSRunningOrder) => {
 	return ServerPeripheralDeviceAPI.mosRoCreate(deviceId, deviceToken, ro)
 }

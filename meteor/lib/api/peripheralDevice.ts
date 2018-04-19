@@ -35,6 +35,7 @@ export enum methods {
 	'setStatus' 		= 'peripheralDevice.status',
 	'initialize' 		= 'peripheralDevice.initialize',
 	'unInitialize' 		= 'peripheralDevice.unInitialize',
+	'getPeripheralDevice'= 'peripheralDevice.getPeripheralDevice',
 
 	'mosRoCreate' 		= 'peripheralDevice.mos.roCreate',
 	'mosRoReplace' 		= 'peripheralDevice.mos.roReplace',
