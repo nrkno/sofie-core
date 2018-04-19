@@ -4,6 +4,11 @@ import * as ReactDOM from 'react-dom'
 // import * as withTracker from 'meteor/react-meteor-data';
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { I18nextProvider, translate, InjectedTranslateProps, InjectedI18nProps } from 'react-i18next'
+
+import * as m from 'moment'
+import 'moment/min/locales'
+import i18n from './i18n'
+
 import Header from './Header'
 import Dashboard from './Dashboard'
 import SystemStatus from './SystemStatus'
@@ -26,8 +31,15 @@ export interface InjectedTranslateI18nProps extends InjectedI18nProps, InjectedT
 const NullComponent = () => null
 
 // App component - represents the whole app
-class App extends React.Component {
+class App extends React.Component<InjectedI18nProps> {
+	constructor (props) {
+		super(props)
+	}
+
 	render () {
+		const { i18n } = this.props
+
+		m.locale(i18n.language)
 
 		// EXAMPLE IMPLEMENTATION of subscription
 		//
@@ -77,4 +89,4 @@ class App extends React.Component {
 	}
 }
 
-export default App
+export default translate()(App)
