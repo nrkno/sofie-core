@@ -34,18 +34,6 @@ interface ISourceLayerProps {
 	livePosition: number
 }
 class SourceLayer extends React.Component<ISourceLayerProps> {
-	getLayerStyle () {
-		if (this.props.relative) {
-			return {
-				width: ((this.props.segmentLine.renderedDuration || 0) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%'
-			}
-		} else {
-			return {
-				width: ((this.props.segmentLine.renderedDuration || 0) * this.props.timeScale).toString() + 'px'
-			}
-		}
-	}
-
 	renderInside () {
 		if (this.props.layer.items !== undefined) {
 			return this.props.layer.items
@@ -74,7 +62,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 
 	render () {
 		return (
-			<div className='segment-timeline__layer' style={this.getLayerStyle()}>
+			<div className='segment-timeline__layer'>
 				{this.renderInside()}
 			</div>
 		)
@@ -146,6 +134,18 @@ interface IPropsHeader {
 }
 
 export class SegmentTimelineLine extends React.Component<IPropsHeader> {
+	getLayerStyle () {
+		if (this.props.relative) {
+			return {
+				width: ((this.props.segmentLine.renderedDuration || 0) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%'
+			}
+		} else {
+			return {
+				width: ((this.props.segmentLine.renderedDuration || 0) * this.props.timeScale).toString() + 'px'
+			}
+		}
+	}
+
 	renderTimelineOutputGroups (segmentLine: SegmentLineUi) {
 		if (this.props.segment.outputLayers !== undefined) {
 			return _.map(_.filter(this.props.segment.outputLayers, (layer) => {
@@ -172,7 +172,7 @@ export class SegmentTimelineLine extends React.Component<IPropsHeader> {
 
 	render () {
 		return (
-			<div className='segment-timeline__segment-line' data-mos-id={this.props.segmentLine._id}>
+			<div className='segment-timeline__segment-line' data-mos-id={this.props.segmentLine._id} style={this.getLayerStyle()}>
 				{this.renderTimelineOutputGroups(this.props.segmentLine)}
 			</div>
 		)

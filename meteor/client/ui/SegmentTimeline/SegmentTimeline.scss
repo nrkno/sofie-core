@@ -30,6 +30,13 @@ $timeline-layer-height: 1em;
         justify-content: flex-start;
     }
 }
+.segment-timeline__zoom-area {
+    .segment-timeline__timeline {
+        .segment-timeline__segment-line {
+            display: inline-block;
+        }
+    }
+}
 .segment-timeline__timeline-grid {
     position: relative;
     

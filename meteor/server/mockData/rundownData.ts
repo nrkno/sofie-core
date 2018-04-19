@@ -39,6 +39,7 @@ Meteor.methods({
 					name: 'CAMS',
 					type: RundownAPI.SourceLayerType.CAMERA,
 					unlimited: false,
+					onPGMClean: true,
 				},
 				{
 					_id: 'studio0-vt0',
@@ -58,7 +59,7 @@ Meteor.methods({
 				},
 				{
 					_id: 'studio0-graphics0',
-					_rank: 10,
+					_rank: 20,
 					name: 'GFX',
 					type: RundownAPI.SourceLayerType.GRAPHICS,
 					unlimited: true,
