@@ -83,6 +83,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				'script': this.props.layer.type === RundownAPI.SourceLayerType.SCRIPT,
 				'splits': this.props.layer.type === RundownAPI.SourceLayerType.SPLITS,
 				'vt': this.props.layer.type === RundownAPI.SourceLayerType.VT,
+				'lower-third': this.props.layer.type === RundownAPI.SourceLayerType.LOWER_THIRD,
 			})}
 				data-mos-id={this.props.segmentLineItem._id}
 				onClick={this.itemClick}
