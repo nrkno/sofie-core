@@ -7,6 +7,7 @@ import { translate, InjectedTranslateProps } from 'react-i18next'
 import * as ClassNames from 'classnames'
 import * as $ from 'jquery'
 import { Time } from '../../lib/lib'
+import { parse as queryStringParse } from 'query-string'
 
 import { NavLink } from 'react-router-dom'
 
@@ -68,6 +69,7 @@ interface IPropsHeader extends InjectedTranslateProps {
 
 interface IStateHeader {
 	timeScale: number
+	studioMode: boolean
 }
 
 export const RunningOrderView = translate()(withTracker((props, state) => {
@@ -94,7 +96,8 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		super(props)
 
 		this.state = {
-			timeScale: 10
+			timeScale: 10,
+			studioMode: localStorage.getItem('studioMode') === '1' ? true : false
 		}
 	}
 

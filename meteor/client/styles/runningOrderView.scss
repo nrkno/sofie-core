@@ -177,6 +177,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	// The area controlling the zoom at the bottom of the segment
 	// TODO: implement zoom area
 	.segment-timeline__zoom-area {
+		position: relative;
 		grid-column: timeline / end;
 		grid-row: zoom-area / end;
 		max-height: 4em;
@@ -225,6 +226,40 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 						}
 					}
 				}
+			}
+		}
+
+		.segment-timeline__zoom-area__liveline {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			width: 0;
+			border-left: 2px solid $general-live-color;
+			background: none;
+		}
+
+		.segment-timeline__zoom-area__controls {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+
+			.segment-timeline__zoom-area__controls__left-mask {
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				background: rgba(0, 0, 0, 0.5);
+			}
+
+			.segment-timeline__zoom-area__controls__selected-area {
+				position: absolute;
+				border: 1px solid white;
+				top: 0;
+				bottom: 0;
+				width: 250px;
+				background: none;
 			}
 		}
 	}
@@ -358,6 +393,8 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 						}
 
 						.segment-timeline__layer-item__label {
+							position: relative;
+							z-index: 10;
 							margin: 0 0.3em;
 							text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
 							font-weight: 400;

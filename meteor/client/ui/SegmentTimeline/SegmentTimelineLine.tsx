@@ -141,7 +141,7 @@ export class SegmentTimelineLine extends React.Component<IPropsHeader> {
 			}
 		} else {
 			return {
-				width: ((this.props.segmentLine.renderedDuration || 0) * this.props.timeScale).toString() + 'px'
+				minWidth: ((this.props.segmentLine.renderedDuration || 0) * this.props.timeScale).toString() + 'px'
 			}
 		}
 	}

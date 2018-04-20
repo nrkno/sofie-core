@@ -8,6 +8,7 @@ import { I18nextProvider, translate, InjectedTranslateProps, InjectedI18nProps }
 import * as m from 'moment'
 import 'moment/min/locales'
 import i18n from './i18n'
+import { parse as queryStringParse } from 'query-string'
 
 import Header from './Header'
 import Dashboard from './Dashboard'
@@ -28,12 +29,26 @@ export interface InjectedTranslateI18nProps extends InjectedI18nProps, InjectedT
 
 }
 
+interface IAppState {
+	studioMode: boolean
+}
+
 const NullComponent = () => null
 
 // App component - represents the whole app
-class App extends React.Component<InjectedI18nProps> {
+class App extends React.Component<InjectedI18nProps, IAppState> {
 	constructor (props) {
 		super(props)
+
+		const params = queryStringParse(location.search)
+
+		this.state = {
+			studioMode: params['studio'] !== undefined ? true : false
+		}
+
+		if (this.state.studioMode) {
+			localStorage.setItem('studioMode', '1')
+		}
 	}
 
 	render () {

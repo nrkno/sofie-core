@@ -62,6 +62,22 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 		}
 	}
 
+	renderMiniLiveLine () {
+		const { t } = this.props
+
+		if (this.props.isLiveSegment) {
+			let lineStyle = {
+				'left': (this.props.livePosition / this.getSegmentDuration() * 100).toString() + '%'
+			}
+
+			return (
+				<div className='segment-timeline__zoom-area__liveline'
+					style={lineStyle}>
+				</div>
+			)
+		}
+	}
+
 	renderLiveLine () {
 		const { t } = this.props
 
@@ -187,12 +203,19 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 					<div className='segment-timeline__timeline' ref={this.setZoomTimelineRef}>
 						{this.renderZoomTimeline()}
 					</div>
+					{this.renderMiniLiveLine()}
 					<div className='segment-timeline__zoom-area__controls'>
-						<div className='segment-timeline__zoom-area__controls__left-mask'>
+						<div className='segment-timeline__zoom-area__controls__left-mask'
+							style={{
+								width: (this.props.scrollLeft / this.getSegmentDuration() * 100).toString() + '%'
+							}}>
 						</div>
 						<div className='segment-timeline__zoom-area__controls__right-mask'>
 						</div>
-						<div className='segment-timeline__zoom-area__controls__selected-area'>
+						<div className='segment-timeline__zoom-area__controls__selected-area'
+							style={{
+								left: (this.props.scrollLeft / this.getSegmentDuration() * 100).toString() + '%'
+							}}>
 							<div className='segment-timeline__zoom-area__controls__selected-area__left-handle'>
 							</div>
 							<div className='segment-timeline__zoom-area__controls__selected-area__right-handle'>
