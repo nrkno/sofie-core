@@ -268,7 +268,8 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 
 	onFollowLiveLine = (state: boolean, event: any) => {
 		this.setState({
-			followLiveLine: state
+			followLiveLine: state,
+			scrollLeft: Math.max(this.state.livePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
 		})
 
 		if (this.state.followLiveLine) {
