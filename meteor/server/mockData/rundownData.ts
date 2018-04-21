@@ -87,6 +87,86 @@ Meteor.methods({
 		})
 	},
 
+	'debug_demoRundown' () {
+		let roId = 'ro1'
+		let ro: RunningOrder = {
+			_id: roId,
+			mosId: 'MOCK_RO0',
+			studioInstallationId: 'studio0',
+			showStyleId: 'dummyShow0',
+			name: '5PM NEWSCAST',
+			created: Date.now(),
+			currentSegmentLineId: null,
+			nextSegmentLineId: null
+		}
+		RunningOrders.insert(ro)
+
+		let seg0: Segment = {
+			_id: 'ro0-seg0',
+			_rank: 0,
+			mosId: 'MOCK_RO0_SEG0',
+			runningOrderId: roId,
+			name: 'SHOW OPEN',
+			number: '0'
+		}
+		let seg1: Segment = {
+			_id: 'ro0-seg1',
+			_rank: 0,
+			mosId: 'MOCK_RO0_SEG1',
+			runningOrderId: roId,
+			name: 'MAILMEN ON STRIKE',
+			number: '1'
+		}
+		let seg2: Segment = {
+			_id: 'ro0-seg2',
+			_rank: 0,
+			mosId: 'MOCK_RO0_SEG2',
+			runningOrderId: roId,
+			name: 'WALKING ON BROKEN GLASS',
+			number: '1'
+		}
+		let seg3: Segment = {
+			_id: 'ro0-seg3',
+			_rank: 0,
+			mosId: 'MOCK_RO0_SEG3',
+			runningOrderId: roId,
+			name: 'CENTENNIAL CELEBRATIONS',
+			number: '1'
+		}
+		Segments.insert(seg0)
+		Segments.insert(seg1)
+		Segments.insert(seg2)
+		Segments.insert(seg3)
+
+		/* Segment 0 */
+		let line = 0
+		let segLine: SegmentLine = {
+			_id: seg0._id + '-line' + line,
+			_rank: line++,
+			mosId: seg0.mosId + '_LINE' + line++,
+			segmentId: seg0._id,
+			runningOrderId: seg0.runningOrderId
+		}
+		SegmentLines.insert(segLine)
+
+		let segmentLineItem = literal<SegmentLineItem>({
+			_id: segLine._id + ':' + Random.id(5),
+			mosId: segLine.mosId,
+			segmentLineId: segLine._id,
+			runningOrderId: roId,
+			name: seg0.name + ':VO',
+			trigger: {
+				type: 0,
+				value: 0
+			},
+			status: RundownAPI.LineItemStatusCode.OK,
+			sourceLayerId: 'studio0-vt0',
+			outputLayerId: 'studio0-pgm0',
+			expectedDuration: Math.floor(Random.fraction() * 645),
+			disabled: false
+		})
+	},
+
 	'debug_sampleRundown' () {
 		let ro: RunningOrder = {
 			_id: 'ro0',
