@@ -228,7 +228,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 			collapsedOutputs: {},
 			collapsed: false,
 			scrollLeft: 0,
-			followLiveLine: true,
+			followLiveLine: false,
 			livePosition: 0
 		}
 
@@ -247,7 +247,8 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 	/** The user has scrolled scrollLeft seconds to the left in a child component */
 	onScroll = (scrollLeft: number, event: any) => {
 		this.setState({
-			scrollLeft: scrollLeft
+			scrollLeft: scrollLeft,
+			followLiveLine: false
 		})
 	}
 

@@ -253,6 +253,14 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 				background: rgba(0, 0, 0, 0.5);
 			}
 
+			.segment-timeline__zoom-area__controls__right-mask {
+				position: absolute;
+				top: 0;
+				right: 0;
+				bottom: 0;
+				background: rgba(0, 0, 0, 0.5);
+			}
+
 			.segment-timeline__zoom-area__controls__selected-area {
 				position: absolute;
 				border: 1px solid white;
@@ -260,6 +268,26 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 				bottom: 0;
 				width: 250px;
 				background: none;
+
+				.segment-timeline__zoom-area__controls__selected-area__right-handle {
+					position: absolute;
+					top: 0;
+					right: -5px;
+					bottom: 0;
+					width: 5px;
+					cursor: e-resize;
+					z-index: 20;
+				}
+
+				.segment-timeline__zoom-area__controls__selected-area__left-handle {
+					position: absolute;
+					top: 0;
+					left: -5px;
+					bottom: 0;
+					width: 5px;
+					cursor: w-resize;
+					z-index: 20;
+				}
 			}
 		}
 	}

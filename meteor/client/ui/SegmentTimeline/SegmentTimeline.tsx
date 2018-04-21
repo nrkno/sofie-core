@@ -16,6 +16,7 @@ import { StudioInstallation, StudioInstallations } from '../../../lib/collection
 import { SegmentUi, SegmentLineUi, IOutputLayerUi, ISourceLayerUi, SegmentLineItemUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
 import { SegmentTimelineLine } from './SegmentTimelineLine'
+import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
 
 import { RundownUtils } from '../../lib/rundown'
 
@@ -41,8 +42,18 @@ interface IPropsHeader {
 	onScroll: (scrollLeft: number, event: any) => void
 	onFollowLiveLine: (state: boolean, event: any) => void
 }
-export const SegmentTimeline = translate()(class extends React.Component<IPropsHeader & InjectedTranslateProps> {
+interface IStateHeader {
+	timelineWidth: number
+}
+export const SegmentTimeline = translate()(class extends React.Component<IPropsHeader & InjectedTranslateProps, IStateHeader> {
 	timeline: HTMLDivElement
+
+	constructor (props) {
+		super(props)
+		this.state = {
+			timelineWidth: 1
+		}
+	}
 
 	setTimelineRef = (el: HTMLDivElement) => {
 		this.timeline = el
@@ -50,6 +61,18 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 
 	setZoomTimelineRef = (el: HTMLDivElement) => {
 		return
+	}
+
+	onTimelineResize = (size: number[]) => {
+		this.setState({
+			timelineWidth: size[0]
+		})
+	}
+
+	onZoomDblClick = (e) => {
+		if (this.props.onFollowLiveLine) {
+			this.props.onFollowLiveLine(true, e)
+		}
 	}
 
 	getSegmentDuration () {
@@ -86,7 +109,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 			let lineStyle = {
 				'left': (this.props.followLiveLine ?
 							Math.min(pixelPostion, this.props.liveLineHistorySize).toString() :
-							pixelPostion
+							pixelPostion.toString()
 						) + 'px'
 			}
 
@@ -192,36 +215,24 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 					{this.renderOutputLayerControls()}
 				</div>
 				<div className='segment-timeline__timeline-background'/>
-				<TimelineGrid {...this.props} />
+				<TimelineGrid {...this.props}
+							  onResize={this.onTimelineResize} />
 				<div className='segment-timeline__timeline-container'>
 					<div className='segment-timeline__timeline' ref={this.setTimelineRef} style={this.timelineStyle()}>
 						{this.renderTimeline()}
 					</div>
 					{this.renderLiveLine()}
 				</div>
-				<div className='segment-timeline__zoom-area'>
+				<div className='segment-timeline__zoom-area'
+					onDoubleClick={(e) => this.onZoomDblClick(e)}>
 					<div className='segment-timeline__timeline' ref={this.setZoomTimelineRef}>
 						{this.renderZoomTimeline()}
 					</div>
+					<SegmentTimelineZoomControls scrollLeft={this.props.scrollLeft}
+												 scrollWidth={this.state.timelineWidth / this.props.timeScale}
+												 onScroll={(left, e) => this.props.onScroll(left, e)}
+												 segmentDuration={this.getSegmentDuration()} />
 					{this.renderMiniLiveLine()}
-					<div className='segment-timeline__zoom-area__controls'>
-						<div className='segment-timeline__zoom-area__controls__left-mask'
-							style={{
-								width: (this.props.scrollLeft / this.getSegmentDuration() * 100).toString() + '%'
-							}}>
-						</div>
-						<div className='segment-timeline__zoom-area__controls__right-mask'>
-						</div>
-						<div className='segment-timeline__zoom-area__controls__selected-area'
-							style={{
-								left: (this.props.scrollLeft / this.getSegmentDuration() * 100).toString() + '%'
-							}}>
-							<div className='segment-timeline__zoom-area__controls__selected-area__left-handle'>
-							</div>
-							<div className='segment-timeline__zoom-area__controls__selected-area__right-handle'>
-							</div>
-						</div>
-					</div>
 				</div>
 			</div>
 		)
