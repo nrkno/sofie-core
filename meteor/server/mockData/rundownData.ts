@@ -89,6 +89,12 @@ Meteor.methods({
 
 	'debug_demoRundown' () {
 		let roId = 'ro1'
+
+		let oldRo = RunningOrders.findOne({_id: roId})
+		if (oldRo) {
+			RunningOrders.remove({_id: roId})
+		}
+
 		let ro: RunningOrder = {
 			_id: roId,
 			mosId: 'MOCK_RO0',
