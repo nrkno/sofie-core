@@ -88,6 +88,10 @@ Meteor.methods({
 	},
 
 	'debug_demoRundown' () {
+		Meteor.call('debug_emptyDatabase');
+		Meteor.call('debug_sampleSetup');
+		Meteor.call('debug_sampleShowStyle');
+
 		let roId = 'ro1'
 
 		let oldRo = RunningOrders.findOne({_id: roId})
@@ -100,7 +104,7 @@ Meteor.methods({
 			mosId: 'MOCK_RO0',
 			studioInstallationId: 'studio0',
 			showStyleId: 'dummyShow0',
-			name: '5PM NEWSCAST',
+			name: 'Distriktsnyheter Sørlandet',
 			created: Date.now(),
 			currentSegmentLineId: null,
 			nextSegmentLineId: null
@@ -108,41 +112,90 @@ Meteor.methods({
 		RunningOrders.insert(ro)
 
 		let seg0: Segment = {
-			_id: 'ro0-seg0',
+			_id: roId + '-seg0',
 			_rank: 0,
 			mosId: 'MOCK_RO0_SEG0',
 			runningOrderId: roId,
-			name: 'SHOW OPEN',
+			name: 'Vignett',
 			number: '0'
 		}
 		let seg1: Segment = {
-			_id: 'ro0-seg1',
+			_id: roId + '-seg1',
 			_rank: 0,
 			mosId: 'MOCK_RO0_SEG1',
 			runningOrderId: roId,
-			name: 'MAILMEN ON STRIKE',
+			name: 'Ordfører skeptisk til Liberstad',
 			number: '1'
 		}
 		let seg2: Segment = {
-			_id: 'ro0-seg2',
+			_id: roId + '-seg2',
 			_rank: 0,
 			mosId: 'MOCK_RO0_SEG2',
 			runningOrderId: roId,
-			name: 'WALKING ON BROKEN GLASS',
+			name: 'Savnet i Sør-Afrika',
 			number: '1'
 		}
 		let seg3: Segment = {
-			_id: 'ro0-seg3',
+			_id:  roId + '-seg3',
 			_rank: 0,
 			mosId: 'MOCK_RO0_SEG3',
 			runningOrderId: roId,
-			name: 'CENTENNIAL CELEBRATIONS',
+			name: 'Havarist kan havne i Tyrkia',
+			number: '1'
+		}
+		let seg4: Segment = {
+			_id:  roId + '-seg4',
+			_rank: 0,
+			mosId: 'MOCK_RO0_SEG4',
+			runningOrderId: roId,
+			name: 'Skatepark i Mandal',
+			number: '1'
+		}
+		let seg5: Segment = {
+			_id:  roId + '-seg5',
+			_rank: 0,
+			mosId: 'MOCK_RO0_SEG5',
+			runningOrderId: roId,
+			name: 'Paddeparring',
+			number: '1'
+		}
+		let seg6: Segment = {
+			_id:  roId + '-seg6',
+			_rank: 0,
+			mosId: 'MOCK_RO0_SEG6',
+			runningOrderId: roId,
+			name: 'Cup oppsett',
+			number: '1'
+		}
+		let seg7: Segment = {
+			_id:  roId + '-seg7',
+			_rank: 0,
+			mosId: 'MOCK_RO0_SEG7',
+			runningOrderId: roId,
+			name: 'Været',
+			number: '1'
+		}
+		let seg8: Segment = {
+			_id:  roId + '-seg8',
+			_rank: 0,
+			mosId: 'MOCK_RO0_SEG8',
+			runningOrderId: roId,
+			name: 'Seerbilde',
 			number: '1'
 		}
 		Segments.insert(seg0)
 		Segments.insert(seg1)
 		Segments.insert(seg2)
 		Segments.insert(seg3)
+		Segments.insert(seg4)
+		Segments.insert(seg5)
+		Segments.insert(seg6)
+		Segments.insert(seg7)
+
+		/*
+		Meteor.call('debug_emptyDatabase');
+		Meteor.call('debug_demoRundown')
+		*/
 
 		/* Segment 0 */
 		let line = 0
@@ -171,6 +224,7 @@ Meteor.methods({
 			expectedDuration: Math.floor(Random.fraction() * 645),
 			disabled: false
 		})
+		SegmentLineItems.insert(segmentLineItem)
 	},
 
 	'debug_sampleRundown' () {
