@@ -405,7 +405,9 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		top: $segment-header-height;
 		left: 0;
 		bottom: 0;
-		background: rgba(0, 0, 0, 0.7)
+		background: linear-gradient(to left, rgba(0, 0, 0, 0.3) 0, rgba(0, 0, 0, 0.7) 75px);
+		pointer-events: none;
+		transition: $output-layer-group-collapse-animation-duration top ease-in-out;
 	}
 
 	// The liveline lives in the .segment-timeline__timeline-container
@@ -794,9 +796,11 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		}
 
 		.segment-timeline__zoom-area {
-			max-height: 0;
-			margin: 0 0.2em 0 0;
-			overflow: hidden;
+			margin: 0.5em 0 0 0;
+
+			.segment-timeline__timeline {
+				padding: 0;
+			}
 		}
 		
 		.segment-timeline__timeline-background {
@@ -814,7 +818,11 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		}
 
 		.segment-timeline__liveline {
-			top: 0.15em;
+			top: 0;
+		}
+
+		.segment-timeline__liveline-shade {
+			top: 0;
 		}
 
 		/** segment-timeline__output-layer & segment-timeline__timelien will have a different
@@ -859,6 +867,17 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 		> .segment-timeline__timeline-container > .segment-timeline__timeline {
 			.segment-timeline__segment-line {
+				.segment-timeline__segment-line__nextline {
+					top: -1em;
+
+					.segment-timeline__segment-line__nextline__label {
+						display: none;
+					}
+
+					&::after {
+						display: none;
+					}
+				}
 				.segment-timeline__output-group {
 					min-height: 0;
 					transition: $output-layer-group-collapse-animation-duration min-height ease-out;
