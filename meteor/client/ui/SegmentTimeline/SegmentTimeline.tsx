@@ -116,6 +116,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 
 			return [
 				<div className='segment-timeline__liveline-shade'
+					key={this.props.segment._id + '-liveline-shade'}
 					style={{
 						'width': (this.props.followLiveLine ?
 							Math.min(pixelPostion, this.props.liveLineHistorySize).toString() :
@@ -123,7 +124,8 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 						) + 'px'
 					}} />,
 				<div className='segment-timeline__liveline'
-					 style={lineStyle}>
+					key={this.props.segment._id + '-liveline'}
+					style={lineStyle}>
 					<div className='segment-timeline__liveline__label'
 						 onClick={(e) => this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, e)}>
 						{t('On Air')}
@@ -226,7 +228,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 				<TimelineGrid {...this.props}
 							  onResize={this.onTimelineResize} />
 				<div className='segment-timeline__timeline-container'>
-					<div className='segment-timeline__timeline' ref={this.setTimelineRef} style={this.timelineStyle()}>
+					<div className='segment-timeline__timeline' key={this.props.segment._id + '-timeline'} ref={this.setTimelineRef} style={this.timelineStyle()}>
 						{this.renderTimeline()}
 					</div>
 					{this.renderLiveLine()}

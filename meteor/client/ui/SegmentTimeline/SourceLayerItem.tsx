@@ -16,6 +16,8 @@ import { Transition } from '../../../lib/constants/casparcg'
 import { FloatingInspector } from '../FloatingInspector'
 
 import * as ClassNames from 'classnames'
+import { MicSourceLayerItem } from './MicSourceLayerItem'
+import { VTSourceLayerItem } from './VTSourceLayerItem'
 
 interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
@@ -118,6 +120,35 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		})
 	}
 
+	renderInsideItem () {
+		switch (this.props.layer.type) {
+			case RundownAPI.SourceLayerType.MIC:
+				return <MicSourceLayerItem key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
+			case RundownAPI.SourceLayerType.VT:
+				return <VTSourceLayerItem key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
+			default:
+				return [
+					<span key={this.props.segmentLineItem._id} className={
+						ClassNames('segment-timeline__layer-item__label', {
+							'bold': this.state.itemState === 0,
+							'regular': this.state.itemState === 1,
+							'light': this.state.itemState === 2,
+							'light-file-missing': this.state.itemState === 3,
+						})
+					}
+					>{this.props.segmentLineItem.name}</span>,
+					<FloatingInspector key={this.props.segmentLineItem._id + '-fi'} shown={this.state.showMiniInspector && this.itemElement !== undefined}>
+						<div className='segment-timeline__mini-inspector' style={{
+							'left': this.state.elementPosition.left + 'px',
+							'top': this.state.elementPosition.top + 'px'
+						}}>
+							Item properties
+					</div>
+					</FloatingInspector>
+				]
+		}
+	}
+
 	render () {
 		return (
 			<div className={ClassNames('segment-timeline__layer-item', {
@@ -145,23 +176,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				onMouseOver={() => this.toggleMiniInspector(true)}
 				onMouseLeave={() => this.toggleMiniInspector(false)}
 				style={this.getItemStyle()}>
-				<span className={
-					ClassNames('segment-timeline__layer-item__label', {
-						'bold': this.state.itemState === 0,
-						'regular': this.state.itemState === 1,
-						'light': this.state.itemState === 2,
-						'light-file-missing': this.state.itemState === 3,
-					})
-				}
-				>{this.props.segmentLineItem.name}</span>
-				<FloatingInspector shown={this.state.showMiniInspector && this.itemElement !== undefined}>
-					<div className='segment-timeline__mini-inspector' style={{
-						'left': this.state.elementPosition.left + 'px',
-						'top': this.state.elementPosition.top + 'px'
-					}}>
-						Item properties
-					</div>
-				</FloatingInspector>
+				{this.renderInsideItem()}
 				{
 					this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.inTransition && this.props.segmentLineItem.transitions.inTransition.duration > 0 ? (
 						<div className={ClassNames('segment-timeline__layer-item__transition', 'in', {
