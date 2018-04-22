@@ -208,8 +208,8 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 				</div>
 				<div className='segment-timeline__zoom-area__controls__selected-area'
 					style={{
-						left: (this.props.scrollLeft / this.props.segmentDuration * 100).toString() + '%',
-						width: (this.props.scrollWidth / this.props.segmentDuration * 100).toString() + '%'
+						left: (Math.max(this.props.scrollLeft / this.props.segmentDuration * 100, 0)).toString() + '%',
+						width: (Math.min(this.props.scrollWidth / this.props.segmentDuration * 100, 100)).toString() + '%'
 					}}
 					ref={this.setSelAreaRef}
 					onMouseDown={(e) => this.zoomAreaBeginMove(e)}
