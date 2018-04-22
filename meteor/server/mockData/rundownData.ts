@@ -440,11 +440,11 @@ Meteor.methods({
 		}
 	},
 
-	'debug_setNextLine' () {
-		let segmentLine = SegmentLines.findOne('ro0-seg1-line0')
+	'debug_setNextLine' (nextId) {
+		let segmentLine = SegmentLines.findOne(nextId || 'ro0-seg1-line0')
 
 		if (segmentLine) {
-			let runningOrder = RunningOrders.findOne('ro0')
+			let runningOrder = RunningOrders.findOne(segmentLine.runningOrderId)
 			RunningOrders.update({ _id: runningOrder._id }, {
 				$set: { nextSegmentLineId: segmentLine._id }
 			})
