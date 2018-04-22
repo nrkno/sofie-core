@@ -94,7 +94,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 	}
 
 	zoomAreaEndMove (e: React.SyntheticEvent<HTMLDivElement>) {
-		$(document.body).off('mousemove', '', this.zoomAreaMove)
+		$(document).off('mousemove', '', this.zoomAreaMove)
 		this.setState({
 			zoomAreaMoving: false
 		})
@@ -103,8 +103,8 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 
 	zoomAreaBeginMove (e: React.SyntheticEvent<HTMLDivElement> & JQueryMouseEventObject | any) {
 		// console.log(e.clientX)
-		$(document.body).on('mousemove', this.zoomAreaMove)
-		$(document.body).one('mouseup mouseleave', () => {
+		$(document).on('mousemove', this.zoomAreaMove)
+		$(document).one('mouseup', () => {
 			this.zoomAreaEndMove(e)
 		})
 		let offset = $(this.parentElement).offset()
@@ -132,7 +132,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 	}
 
 	zoomAreaEndLeftMove (e: React.SyntheticEvent<HTMLDivElement>) {
-		$(document.body).off('mousemove', '', this.zoomAreaLeftMove)
+		$(document).off('mousemove', '', this.zoomAreaLeftMove)
 		this.setState({
 			zoomAreaResizeBegin: false
 		})
@@ -144,8 +144,8 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		e.preventDefault()
 		e.stopPropagation()
 
-		$(document.body).on('mousemove', this.zoomAreaLeftMove)
-		$(document.body).one('mouseup mouseleave', () => {
+		$(document).on('mousemove', this.zoomAreaLeftMove)
+		$(document).one('mouseup', () => {
 			this.zoomAreaEndLeftMove(e)
 		})
 		let offset = $(this.parentElement).offset()
@@ -159,7 +159,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 	}
 
 	zoomAreaEndRightMove (e: React.SyntheticEvent<HTMLDivElement>) {
-		$(document.body).off('mousemove', '', this.zoomAreaRightMove)
+		$(document).off('mousemove', '', this.zoomAreaRightMove)
 		this.setState({
 			zoomAreaResizeEnd: false
 		})
@@ -181,8 +181,8 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		e.preventDefault()
 		e.stopPropagation()
 
-		$(document.body).on('mousemove', this.zoomAreaRightMove)
-		$(document.body).one('mouseup mouseleave', () => {
+		$(document).on('mousemove', this.zoomAreaRightMove)
+		$(document).one('mouseup', () => {
 			this.zoomAreaEndRightMove(e)
 		})
 		let offset = $(this.parentElement).offset()
