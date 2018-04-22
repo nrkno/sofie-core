@@ -74,9 +74,9 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		return (
 			<div className={ClassNames('segment-timeline__layer-item', {
 				'audio': this.props.layer.type === RundownAPI.SourceLayerType.AUDIO,
-				'cam': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA,
-				'cam-movement': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA_MOVEMENT,
-				'gfx': this.props.layer.type === RundownAPI.SourceLayerType.GRAPHICS,
+				'camera': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA,
+				'camera-movement': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA_MOVEMENT,
+				'graphics': this.props.layer.type === RundownAPI.SourceLayerType.GRAPHICS,
 				'lower-third': this.props.layer.type === RundownAPI.SourceLayerType.LOWER_THIRD,
 				'live-speak': this.props.layer.type === RundownAPI.SourceLayerType.LIVE_SPEAK,
 				'metadata': this.props.layer.type === RundownAPI.SourceLayerType.METADATA,
