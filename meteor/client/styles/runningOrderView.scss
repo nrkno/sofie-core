@@ -458,11 +458,12 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			.segment-timeline__segment-line__nextline {
 				display: block;
 				position: absolute;
-				top: -5px;
+				top: -11px;
 				left: 0;
 				bottom: -2em;
 				flex: 0;
 				border-left: 2px solid $segment-line-start-color;
+				box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.7);
 				z-index: 10;
 
 				.segment-timeline__segment-line__nextline__label {
