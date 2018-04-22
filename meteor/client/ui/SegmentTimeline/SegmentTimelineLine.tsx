@@ -129,7 +129,7 @@ interface IPropsHeader {
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	followLiveLine: boolean
 	liveLineHistorySize: number
-	livePosition: number
+	livePosition: number | null
 	relative?: boolean
 	totalSegmentDuration?: number
 }
