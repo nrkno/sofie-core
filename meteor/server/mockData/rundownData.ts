@@ -52,8 +52,16 @@ Meteor.methods({
 				{
 					_id: 'studio0-lower-third0',
 					_rank: 10,
-					name: 'L3rd',
+					name: 'Lower-third',
 					type: RundownAPI.SourceLayerType.LOWER_THIRD,
+					unlimited: true,
+					onPGMClean: false
+				},
+				{
+					_id: 'studio0-live-speak0',
+					_rank: 10,
+					name: 'Live Speak',
+					type: RundownAPI.SourceLayerType.LIVE_SPEAK,
 					unlimited: true,
 					onPGMClean: false
 				},
@@ -256,6 +264,25 @@ Meteor.methods({
 			sourceLayerId: 'studio0-graphics0',
 			outputLayerId: 'studio0-pgm0',
 			expectedDuration: 4,
+			disabled: false
+		})
+		SegmentLineItems.insert(segmentLineItem)
+
+		//Lower-third: Name
+		segmentLineItem = literal<SegmentLineItem>({
+			_id: segLine._id + ':' + Random.id(5),
+			mosId: segLine.mosId,
+			segmentLineId: segLine._id,
+			runningOrderId: roId,
+			name: 'Knut Knudsen Eigeland',
+				trigger: {
+				type: 0,
+				value: 22
+			},
+			status: RundownAPI.LineItemStatusCode.OK,
+			sourceLayerId: 'studio0-lower-third0',
+			outputLayerId: 'studio0-pgm0',
+			expectedDuration: 3.5,
 			disabled: false
 		})
 		SegmentLineItems.insert(segmentLineItem)
