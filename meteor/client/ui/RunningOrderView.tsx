@@ -26,9 +26,9 @@ const TimingDisplay = translate()(class extends React.Component<IHeaderProps & I
 
 		return (
 			<div className='timing mod'>
-				<span className='timing-clock time-end'>{t('Slutt')}: 18:59:00</span>
+				<span className='timing-clock time-end'>{t('Finish')}: 18:59:00</span>
 				<span className='timing-clock heavy-light heavy'>-00:15</span>
-				<span className='timing-clock time-now'>{t('Nå')}: 18:53:10</span>
+				<span className='timing-clock time-now'>{t('Now')}: 18:53:10</span>
 			</div>
 		)
 	}
