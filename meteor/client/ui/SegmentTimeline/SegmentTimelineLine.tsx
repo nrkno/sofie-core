@@ -53,7 +53,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 							segmentLine={this.props.segmentLine}
 							timeScale={this.props.timeScale}
 							relative={this.props.relative}
-							totalSegmentLineDuration={this.props.relative ? (this.props.segmentLine.renderedDuration || 0) : undefined}
+							totalSegmentLineDuration={this.props.segmentLine.renderedDuration || 0}
 							lineStartsAt={this.props.segmentLine.startsAt}
 							/>
 					)
