@@ -35,6 +35,7 @@ $segment-layer-background-graphics: #C27632;
 $segment-layer-background-live-speak: #00C800;
 $segment-layer-background-remote: #FF0059;
 $segment-layer-background-script: #1C721F;
+$segment-layer-background-mic:#1C721F;
 $segment-layer-background-vt: #1769FF;
 $segment-layer-separator-color: transparentize(#000, 0.5);
 
@@ -95,6 +96,9 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	// padding: 0 0 0.15em 0.15em;
 
 	background: $segment-background-color;
+	-webkit-box-shadow: 7px 6px 20px 0px rgba(0,0,0,0.7);
+	-moz-box-shadow: 7px 6px 20px 0px rgba(0,0,0,0.7);
+	box-shadow: 7px 6px 20px 0px rgba(0,0,0,0.7);
 
 	// padding has to be the same on both of these elements so that the layers and their controls line up
 	.segment-timeline__output-layers, .segment-timeline__timeline {
@@ -186,7 +190,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		grid-column: timeline / end;
 		grid-row: zoom-area / end;
 		max-height: 4em;
-		margin: 1.5em 0.2em 1em 0;
+		margin: 1.5em 0.2em 0em 0;
 
 		transition: $output-layer-group-collapse-animation-duration max-height ease-in-out,
 					$output-layer-group-collapse-animation-duration margin ease-in-out;
@@ -576,6 +580,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 						&.script {
 							background: $segment-layer-background-script;
+						}
+
+						&.mic {
+							background: $segment-layer-background-mic;
 						}
 
 						.segment-timeline__layer-item__label {
