@@ -13,7 +13,8 @@ export namespace RundownAPI {
 		AUDIO 			= 7,
 		CAMERA_MOVEMENT = 8,
 		METADATA 		= 9,
-		LOWER_THIRD		= 10
+		LOWER_THIRD		= 10,
+		LIVE_SPEAK		= 11
 	}
 
 	/** A generic list of playback availability statuses for a source layer/line item */

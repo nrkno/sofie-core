@@ -73,8 +73,8 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 				this.props.onScroll(Math.min(Math.max(0, seconds), this.props.segmentDuration), e)
 			}
 
-			e.persist()
-			setTimeout(() => this.zoomAreaBeginMove(e))
+			e.preventDefault()
+			e.stopPropagation()
 		}
 	}
 
@@ -221,13 +221,13 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 					style={{
 						width: (this.props.scrollLeft / this.props.segmentDuration * 100).toString() + '%'
 					}}
-					onMouseDown={(e) => this.outsideZoomAreaClick(e)}>
+					onDoubleClick={(e) => this.outsideZoomAreaClick(e)}>
 				</div>
 				<div className='segment-timeline__zoom-area__controls__right-mask'
 					style={{
 						width: ((1 - (this.props.scrollLeft + this.props.scrollWidth) / this.props.segmentDuration) * 100).toString() + '%'
 					}}
-					onMouseDown={(e) => this.outsideZoomAreaClick(e)}>
+					onDoubleClick={(e) => this.outsideZoomAreaClick(e)}>
 				</div>
 				<div className={
 						ClassNames('segment-timeline__zoom-area__controls__selected-area',

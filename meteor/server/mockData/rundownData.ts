@@ -6,6 +6,8 @@ import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/Segment
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { getCurrentTime, saveIntoDb, literal, DBObj, partialExceptId } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
+import { TimelineTransition } from '../../lib/collections/Timeline'
+import { Transition, Ease, Direction } from '../../lib/constants/casparcg'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
@@ -389,6 +391,14 @@ Meteor.methods({
 					trigger: {
 						type: 0,
 						value: 0
+					},
+					transitions: {
+						inTransition: {
+							type: Transition.MIX,
+							duration: 0.5,
+							easing: Ease.EASEINOUTSINE,
+							direction: Direction.LEFT
+						}
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-vt0',

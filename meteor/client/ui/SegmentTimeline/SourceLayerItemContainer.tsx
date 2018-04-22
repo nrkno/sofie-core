@@ -32,7 +32,7 @@ interface IPropsHeader {
 	totalSegmentLineDuration?: number
 	followLiveLine: boolean
 	liveLineHistorySize: number
-	livePosition: number
+	livePosition: number | null
 }
 /** This is an  */
 export const SourceLayerItemContainer = withTracker((props) => {
