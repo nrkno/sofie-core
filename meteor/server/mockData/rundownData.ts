@@ -434,7 +434,7 @@ Meteor.methods({
 
 		/* Segment 1 */
 			line = 1
-			segLine: SegmentLine = {
+			segLine = {
 				_id: seg1._id + '-line' + line,
 				_rank: line++,
 				mosId: seg1.mosId + '_LINE' + line++,
@@ -456,8 +456,8 @@ Meteor.methods({
 						value: 0
 					},	
 					status: RundownAPI.LineItemStatusCode.OK,
-					sourceLayerId: 'studio0-vt1',
-					outputLayerId: 'studio1-monitor0',
+					sourceLayerId: 'studio0-vt0',
+					outputLayerId: 'studio0-monitor0',
 					expectedDuration: Number.POSITIVE_INFINITY,
 					disabled: false
 				})
@@ -642,8 +642,8 @@ Meteor.methods({
 						value: 28
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
-					sourceLayerId: 'studio0-lower-third1',
-					outputLayerId: 'studio0-pgm1',
+					sourceLayerId: 'studio0-lower-third0',
+					outputLayerId: 'studio0-pgm0',
 					expectedDuration: 3.5,
 					disabled: false
 				})

@@ -159,6 +159,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 
 			segmentLineItem.outputLayer = outputLayers[segmentLineItem.outputLayerId]
 			// mark the output layer as used within this segment
+			console.log(segmentLineItem)
 			outputLayers[segmentLineItem.outputLayerId].used = true
 			// attach the sourceLayer to the outputLayer, if it hasn't been already
 
