@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as elementResizeEvent from 'element-resize-event'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
+import * as ClassNames from 'classnames'
 
 import * as _ from 'underscore'
 import * as $ from 'jquery'
@@ -20,6 +21,7 @@ interface IStateHeader {
 	zoomAreaMoving: boolean
 	zoomAreaResizeEnd: boolean
 	zoomAreaResizeBegin: boolean
+	smallMode: boolean
 	width: number
 }
 
@@ -38,7 +40,21 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 			zoomAreaMoving: false,
 			zoomAreaResizeEnd: false,
 			zoomAreaResizeBegin: false,
+			smallMode: false,
 			width: 1
+		}
+	}
+
+	checkSmallMode = () => {
+		let selAreaElementWidth = $(this.selAreaElement).width()
+		if (selAreaElementWidth && selAreaElementWidth < 7) {
+			this.setState({
+				smallMode: true
+			})
+		} else {
+			this.setState({
+				smallMode: false
+			})
 		}
 	}
 
@@ -71,6 +87,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		this.setState({
 			width: $(this.parentElement).width() || 1
 		})
+		this.checkSmallMode()
 	}
 
 	zoomAreaEndMove (e: React.SyntheticEvent<HTMLDivElement>) {
@@ -78,6 +95,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		this.setState({
 			zoomAreaMoving: false
 		})
+		this.checkSmallMode()
 	}
 
 	zoomAreaBeginMove (e: React.SyntheticEvent<HTMLDivElement> & JQueryMouseEventObject | any) {
@@ -115,6 +133,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		this.setState({
 			zoomAreaResizeBegin: false
 		})
+		this.checkSmallMode()
 	}
 
 	zoomAreaLeftBeginMove (e: JQueryMouseEventObject & any) {
@@ -141,6 +160,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		this.setState({
 			zoomAreaResizeEnd: false
 		})
+		this.checkSmallMode()
 	}
 
 	zoomAreaRightMove = (e: JQueryMouseEventObject & any) => {
@@ -206,7 +226,12 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 					}}
 					onMouseDown={(e) => this.outsideZoomAreaClick(e)}>
 				</div>
-				<div className='segment-timeline__zoom-area__controls__selected-area'
+				<div className={
+						ClassNames('segment-timeline__zoom-area__controls__selected-area',
+							{
+								'small-mode': this.state.smallMode
+							})
+						}
 					style={{
 						left: (Math.max(this.props.scrollLeft / this.props.segmentDuration * 100, 0)).toString() + '%',
 						width: (Math.min(this.props.scrollWidth / this.props.segmentDuration * 100, 100)).toString() + '%'
@@ -215,11 +240,12 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 					onMouseDown={(e) => this.zoomAreaBeginMove(e)}
 				>
 					<div className='segment-timeline__zoom-area__controls__selected-area__left-handle'
-						onMouseDown={(e) => this.zoomAreaLeftBeginMove(e)}
-					>
+						onMouseDown={(e) => this.zoomAreaLeftBeginMove(e)}>
 					</div>
 					<div className='segment-timeline__zoom-area__controls__selected-area__right-handle'
 						onMouseDown={(e) => this.zoomAreaRightBeginMove(e)}>
+					</div>
+					<div className='segment-timeline__zoom-area__controls__selected-area__center-handle'>
 					</div>
 				</div>
 			</div>
