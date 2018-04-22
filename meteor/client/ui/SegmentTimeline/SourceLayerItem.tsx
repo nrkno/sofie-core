@@ -1,14 +1,19 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import * as _ from 'underscore'
+import * as $ from 'jquery'
 import { ISourceLayerUi,
 		 IOutputLayerUi,
 		 SegmentUi,
 		 SegmentLineUi,
 		 SegmentLineItemUi } from './SegmentTimelineContainer'
 
+import * as FloatAffixed from 'react-float-affixed'
+
 import { RundownAPI } from './../../../lib/api/rundown'
 import { Transition } from '../../../lib/constants/casparcg'
+
+import { FloatingInspector } from '../FloatingInspector'
 
 import * as ClassNames from 'classnames'
 
@@ -28,13 +33,26 @@ interface ISourceLayerItemProps {
 }
 interface ISourceLayerItemState {
 	itemState: number
+	showMiniInspector: boolean
+	elementPosition: JQueryCoordinates
 }
 export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISourceLayerItemState> {
+	itemElement: HTMLDivElement
+
 	constructor (props) {
 		super(props)
 		this.state = {
-			itemState: 0
+			itemState: 0,
+			showMiniInspector: false,
+			elementPosition: {
+				top: 0,
+				left: 0
+			}
 		}
+	}
+
+	setRef = (e: HTMLDivElement) => {
+		this.itemElement = e
 	}
 
 	getItemStyle (): { [key: string]: string } {
@@ -43,17 +61,22 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration : 0
 		let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration : 0
 
+		let itemDuration = (segmentLineItem.duration || segmentLineItem.renderedDuration || segmentLineItem.expectedDuration)
+		if (!Number.isFinite(itemDuration)) {
+			itemDuration = (this.props.totalSegmentLineDuration || 0) - (segmentLineItem.renderedInPoint || 0)
+		}
+
 		if (this.props.relative) {
 			return {
 				// as-run "duration" takes priority over renderdDuration which takes priority over MOS-import expectedDuration (editorial duration)
 				'left': (((segmentLineItem.renderedInPoint || 0) + inTransitionDuration) / (this.props.totalSegmentLineDuration || 1) * 100).toString() + '%',
-				'width': (((segmentLineItem.duration || segmentLineItem.renderedDuration || segmentLineItem.expectedDuration) - inTransitionDuration - outTransitionDuration) / (this.props.totalSegmentLineDuration || 1) * 100).toString() + '%'
+				'width': ((itemDuration - inTransitionDuration - outTransitionDuration) / (this.props.totalSegmentLineDuration || 1) * 100).toString() + '%'
 			}
 		} else {
 			return {
 				// as-run "duration" takes priority over renderdDuration which takes priority over MOS-import expectedDuration (editorial duration)
 				'left': (((segmentLineItem.renderedInPoint || 0) + inTransitionDuration) * this.props.timeScale).toString() + 'px',
-				'width': (((segmentLineItem.duration || segmentLineItem.renderedDuration || segmentLineItem.expectedDuration) - inTransitionDuration - outTransitionDuration) * this.props.timeScale).toString() + 'px'
+				'width': ((itemDuration - inTransitionDuration - outTransitionDuration) * this.props.timeScale).toString() + 'px'
 			}
 		}
 	}
@@ -72,6 +95,27 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			eM.stopPropagation()
 		}
 		return
+	}
+
+	toggleMiniInspector = (v: boolean) => {
+		this.setState({
+			showMiniInspector: v
+		})
+		console.log($(this.itemElement).offset())
+		this.setState({
+			elementPosition: $(this.itemElement).offset() || {
+				top: 0,
+				left: 0
+			}
+		})
+	}
+
+	moveMiniInspector = (e: MouseEvent) => {
+		this.setState({
+			elementPosition: _.extend(this.state.elementPosition, {
+				left: e.clientX
+			})
+		})
 	}
 
 	render () {
@@ -93,8 +137,12 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				'with-out-transition': this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.outTransition && this.props.segmentLineItem.transitions.outTransition.duration > 0
 			})}
 				data-mos-id={this.props.segmentLineItem._id}
+				ref={this.setRef}
 				onClick={this.itemClick}
 				onMouseUp={this.itemMouseUp}
+				onMouseMove={(e) => this.moveMiniInspector(e)}
+				onMouseOver={() => this.toggleMiniInspector(true)}
+				onMouseLeave={() => this.toggleMiniInspector(false)}
 				style={this.getItemStyle()}>
 				<span className={
 					ClassNames('segment-timeline__layer-item__label', {
@@ -105,6 +153,14 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 					})
 				}
 				>{this.props.segmentLineItem.name}</span>
+				<FloatingInspector shown={this.state.showMiniInspector && this.itemElement !== undefined}>
+					<div className='segment-timeline__mini-inspector' style={{
+						'left': this.state.elementPosition.left + 'px',
+						'top': this.state.elementPosition.top + 'px'
+					}}>
+						Item properties
+					</div>
+				</FloatingInspector>
 				{
 					this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.inTransition && this.props.segmentLineItem.transitions.inTransition.duration > 0 ? (
 						<div className={ClassNames('segment-timeline__layer-item__transition', 'in', {
