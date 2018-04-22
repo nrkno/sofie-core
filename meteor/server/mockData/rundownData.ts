@@ -203,12 +203,13 @@ Meteor.methods({
 		}
 		SegmentLines.insert(segLine)
 
+		// Opening title VT
 		let segmentLineItem = literal<SegmentLineItem>({
 			_id: segLine._id + ':' + Random.id(5),
 			mosId: segLine.mosId,
 			segmentLineId: segLine._id,
 			runningOrderId: roId,
-			name: 'Fyr',
+			name: 'Vignett',
 			trigger: {
 				type: 0,
 				value: 0
@@ -216,11 +217,31 @@ Meteor.methods({
 			status: RundownAPI.LineItemStatusCode.OK,
 			sourceLayerId: 'studio0-vt0',
 			outputLayerId: 'studio0-pgm0',
-			expectedDuration: 3,
+			expectedDuration: 3.5,
 			disabled: false
 		})
 		SegmentLineItems.insert(segmentLineItem)
 
+		//Studio screen
+		segmentLineItem = literal<SegmentLineItem>({
+			_id: segLine._id + ':' + Random.id(5),
+			mosId: segLine.mosId,
+			segmentLineId: segLine._id,
+			runningOrderId: roId,
+			name: 'Skjermloop',
+			trigger: {
+				type: 0,
+				value: 0
+			},
+			status: RundownAPI.LineItemStatusCode.OK,
+			sourceLayerId: 'studio0-vt0',
+			outputLayerId: 'studio0-monitor0',
+			expectedDuration: 400,
+			disabled: false
+		})
+		SegmentLineItems.insert(segmentLineItem)
+
+		//Graphics: NRK logo
 		segmentLineItem = literal<SegmentLineItem>({
 			_id: segLine._id + ':' + Random.id(5),
 			mosId: segLine.mosId,
