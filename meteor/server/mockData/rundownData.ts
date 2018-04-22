@@ -251,62 +251,98 @@ Meteor.methods({
 		})
 		SegmentLineItems.insert(segmentLineItem)
 
-		//Graphics: NRK logo
-		segmentLineItem = literal<SegmentLineItem>({
-			_id: segLine._id + ':' + Random.id(5),
-			mosId: segLine.mosId,
-			segmentLineId: segLine._id,
-			runningOrderId: roId,
-			name: 'NRK Nyheter Logo',
-			trigger: {
-				type: 0,
-				value: 0
-			},
-			status: RundownAPI.LineItemStatusCode.OK,
-			sourceLayerId: 'studio0-graphics0',
-			outputLayerId: 'studio0-pgm0',
-			expectedDuration: 4,
-			disabled: false
-		})
-		SegmentLineItems.insert(segmentLineItem)
+		// Fribyen
+			segmentLineItem = literal<SegmentLineItem>({
+				_id: segLine._id + ':' + Random.id(5),
+				mosId: segLine.mosId,
+				segmentLineId: segLine._id,
+				runningOrderId: roId,
+				name: 'Fribyen tar form',
+				trigger: {
+					type: 0,
+					value: 3.0
+				},
+				status: RundownAPI.LineItemStatusCode.OK,
+				sourceLayerId: 'studio0-graphics0',
+				outputLayerId: 'studio0-pgm0',
+				expectedDuration: 4.9,
+				disabled: false
+			})
+			SegmentLineItems.insert(segmentLineItem)
 
-		// Headlines VT (STKs)
-		segmentLineItem = literal<SegmentLineItem>({
-			_id: segLine._id + ':' + Random.id(5),
-			mosId: segLine.mosId,
-			segmentLineId: segLine._id,
-			runningOrderId: roId,
-			name: 'Rubrikk 1',
-			trigger: {
-				type: 0,
-				value: 3
-			},
-			status: RundownAPI.LineItemStatusCode.OK,
-			sourceLayerId: 'studio0-live-speak0',
-			outputLayerId: 'studio0-pgm0',
-			expectedDuration: 3.5,
-			disabled: false
-		})
-		SegmentLineItems.insert(segmentLineItem)
+			segmentLineItem = literal<SegmentLineItem>({
+				_id: segLine._id + ':' + Random.id(5),
+				mosId: segLine.mosId,
+				segmentLineId: segLine._id,
+				runningOrderId: roId,
+				name: 'Fribyen',
+				trigger: {
+					type: 0,
+					value: 3.0
+				},
+				status: RundownAPI.LineItemStatusCode.OK,
+				sourceLayerId: 'studio0-live-speak0',
+				outputLayerId: 'studio0-pgm0',
+				expectedDuration: 4.9,
+				disabled: false
+			})
+			SegmentLineItems.insert(segmentLineItem)
+
+		// Padder
+			segmentLineItem = literal<SegmentLineItem>({
+				_id: segLine._id + ':' + Random.id(5),
+				mosId: segLine.mosId,
+				segmentLineId: segLine._id,
+				runningOrderId: roId,
+				name: 'Våryre padder',
+				trigger: {
+					type: 0,
+					value: 8.0
+				},
+				status: RundownAPI.LineItemStatusCode.OK,
+				sourceLayerId: 'studio0-graphics0',
+				outputLayerId: 'studio0-pgm0',
+				expectedDuration: 3.5,
+				disabled: false
+			})
+			SegmentLineItems.insert(segmentLineItem)
+
+			segmentLineItem = literal<SegmentLineItem>({
+				_id: segLine._id + ':' + Random.id(5),
+				mosId: segLine.mosId,
+				segmentLineId: segLine._id,
+				runningOrderId: roId,
+				name: 'Padder',
+				trigger: {
+					type: 0,
+					value: 8.0
+				},
+				status: RundownAPI.LineItemStatusCode.OK,
+				sourceLayerId: 'studio0-live-speak0',
+				outputLayerId: 'studio0-pgm0',
+				expectedDuration: 3.5,
+				disabled: false
+			})
+			SegmentLineItems.insert(segmentLineItem)
 
 		//Lower-third: Name
-		segmentLineItem = literal<SegmentLineItem>({
-			_id: segLine._id + ':' + Random.id(5),
-			mosId: segLine.mosId,
-			segmentLineId: segLine._id,
-			runningOrderId: roId,
-			name: 'Knut Knudsen Eigeland',
-				trigger: {
-				type: 0,
-				value: 22
-			},
-			status: RundownAPI.LineItemStatusCode.OK,
-			sourceLayerId: 'studio0-lower-third0',
-			outputLayerId: 'studio0-pgm0',
-			expectedDuration: 3.5,
-			disabled: false
-		})
-		SegmentLineItems.insert(segmentLineItem)
+			segmentLineItem = literal<SegmentLineItem>({
+				_id: segLine._id + ':' + Random.id(5),
+				mosId: segLine.mosId,
+				segmentLineId: segLine._id,
+				runningOrderId: roId,
+				name: 'Knut Knudsen Eigeland',
+					trigger: {
+					type: 0,
+					value: 22
+				},
+				status: RundownAPI.LineItemStatusCode.OK,
+				sourceLayerId: 'studio0-lower-third0',
+				outputLayerId: 'studio0-pgm0',
+				expectedDuration: 3.5,
+				disabled: false
+			})
+			SegmentLineItems.insert(segmentLineItem)
 
 	},
 
