@@ -219,6 +219,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 })(
 class extends React.Component<IPropsHeader, IStateHeader> {
 	debugDemoLiveLineInterval?: NodeJS.Timer
+	debugDemoLiveLineStart: number
 
 	constructor (props) {
 		super(props)
@@ -254,9 +255,10 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 
 	debugDemoLiveLine = () => {
 		if (!this.debugDemoLiveLineInterval) {
+			this.debugDemoLiveLineStart = Date.now()
 			this.debugDemoLiveLineInterval = setInterval(() => {
 				let speed = 1
-				let newLivePosition = this.state.livePosition + (1 / 60) * speed
+				let newLivePosition = (Date.now() - this.debugDemoLiveLineStart) / 1000
 				this.setState(_.extend({
 					livePosition: newLivePosition,
 				}, this.state.followLiveLine ? {
