@@ -192,11 +192,6 @@ Meteor.methods({
 		Segments.insert(seg6)
 		Segments.insert(seg7)
 
-		/*
-		Meteor.call('debug_emptyDatabase');
-		Meteor.call('debug_demoRundown')
-		*/
-
 		/* Segment 0 */
 		let line = 0
 		let segLine: SegmentLine = {
@@ -213,7 +208,7 @@ Meteor.methods({
 			mosId: segLine.mosId,
 			segmentLineId: segLine._id,
 			runningOrderId: roId,
-			name: seg0.name + ':VO',
+			name: 'Fyr',
 			trigger: {
 				type: 0,
 				value: 0
@@ -221,10 +216,29 @@ Meteor.methods({
 			status: RundownAPI.LineItemStatusCode.OK,
 			sourceLayerId: 'studio0-vt0',
 			outputLayerId: 'studio0-pgm0',
-			expectedDuration: Math.floor(Random.fraction() * 645),
+			expectedDuration: 3,
 			disabled: false
 		})
 		SegmentLineItems.insert(segmentLineItem)
+
+		segmentLineItem = literal<SegmentLineItem>({
+			_id: segLine._id + ':' + Random.id(5),
+			mosId: segLine.mosId,
+			segmentLineId: segLine._id,
+			runningOrderId: roId,
+			name: 'NRK Nyheter Logo',
+			trigger: {
+				type: 0,
+				value: 0
+			},
+			status: RundownAPI.LineItemStatusCode.OK,
+			sourceLayerId: 'studio0-graphics0',
+			outputLayerId: 'studio0-pgm0',
+			expectedDuration: 4,
+			disabled: false
+		})
+		SegmentLineItems.insert(segmentLineItem)
+
 	},
 
 	'debug_sampleRundown' () {
