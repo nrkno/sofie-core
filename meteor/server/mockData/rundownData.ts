@@ -28,7 +28,7 @@ Meteor.methods({
 				{
 					_id: 'studio0-monitor0',
 					_rank: 1,
-					name: 'Studio 1',
+					name: 'Skjerm',
 					isPGM: false,
 				}
 			],
@@ -36,7 +36,7 @@ Meteor.methods({
 				{
 					_id: 'studio0-camera0',
 					_rank: 100,
-					name: 'CAMS',
+					name: 'Kam',
 					type: RundownAPI.SourceLayerType.CAMERA,
 					unlimited: false,
 					onPGMClean: true,
@@ -44,7 +44,7 @@ Meteor.methods({
 				{
 					_id: 'studio0-vt0',
 					_rank: 80,
-					name: 'VT',
+					name: 'VB',
 					type: RundownAPI.SourceLayerType.VT,
 					unlimited: true,
 					onPGMClean: true,
@@ -52,15 +52,15 @@ Meteor.methods({
 				{
 					_id: 'studio0-lower-third0',
 					_rank: 10,
-					name: 'Lower-third',
+					name: 'Super',
 					type: RundownAPI.SourceLayerType.LOWER_THIRD,
 					unlimited: true,
 					onPGMClean: false
 				},
 				{
 					_id: 'studio0-live-speak0',
-					_rank: 10,
-					name: 'Live Speak',
+					_rank: 50,
+					name: 'STK',
 					type: RundownAPI.SourceLayerType.LIVE_SPEAK,
 					unlimited: true,
 					onPGMClean: false
@@ -75,7 +75,7 @@ Meteor.methods({
 				},
 				{
 					_id: 'studio0-remote0',
-					_rank: 50,
+					_rank: 60,
 					name: 'RM1',
 					type: RundownAPI.SourceLayerType.REMOTE,
 					unlimited: false,
@@ -264,6 +264,25 @@ Meteor.methods({
 			sourceLayerId: 'studio0-graphics0',
 			outputLayerId: 'studio0-pgm0',
 			expectedDuration: 4,
+			disabled: false
+		})
+		SegmentLineItems.insert(segmentLineItem)
+
+		// Headlines VT (STKs)
+		segmentLineItem = literal<SegmentLineItem>({
+			_id: segLine._id + ':' + Random.id(5),
+			mosId: segLine.mosId,
+			segmentLineId: segLine._id,
+			runningOrderId: roId,
+			name: 'Rubrikk 1',
+			trigger: {
+				type: 0,
+				value: 3
+			},
+			status: RundownAPI.LineItemStatusCode.OK,
+			sourceLayerId: 'studio0-live-speak0',
+			outputLayerId: 'studio0-pgm0',
+			expectedDuration: 3.5,
 			disabled: false
 		})
 		SegmentLineItems.insert(segmentLineItem)
