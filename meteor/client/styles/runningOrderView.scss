@@ -612,8 +612,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 							}
 
 							&.last-words {
+								position: absolute;
+								right: 0;
 								font-weight: 300;
-								font-style: italic;	
+								font-style: italic;
 							}
 
 							&.file-name {
@@ -937,4 +939,13 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	transform: translate(-50%, -100%);
 	animation: 0.5s inspector-fadeIn;
 	animation-iteration-count: 1;
+
+	&.segment-timeline__mini-inspector--video {
+		padding: 0;
+		border: 1px solid #1f1f1f;
+
+		> video {
+			display: block
+		}
+	}
 }
