@@ -267,7 +267,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 				top: 0;
 				bottom: 0;
 				width: 250px;
-				cursor: move;				
+				cursor: move;		
 				cursor: -webkit-grab;
 				background: none;
 
@@ -299,31 +299,31 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 					.segment-timeline__zoom-area__controls__selected-area__right-handle {
 						position: absolute;
 						top: 0;
-						right: -15px;
+						right: -13px;
 						bottom: 0;
 						width: 10px;
-						cursor: e-resize;
 						z-index: 20;
 					}
 
 					.segment-timeline__zoom-area__controls__selected-area__left-handle {
 						position: absolute;
 						top: 0;
-						left: -15px;
+						left: -13px;
 						bottom: 0;
 						width: 10px;
-						cursor: w-resize;
 						z-index: 20;
 					}
 
 					.segment-timeline__zoom-area__controls__selected-area__center-handle {
 						position: absolute;
 						top: 0;
-						left: -5px;
+						left: -3px;
 						bottom: 0;
 						width: 10px;
-						cursor: row-resize;
+						cursor: move;				
+						cursor: -webkit-grab;
 						z-index: 20;
+						display: block;
 					}
 				}
 			}

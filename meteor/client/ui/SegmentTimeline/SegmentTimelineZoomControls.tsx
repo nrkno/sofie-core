@@ -33,6 +33,8 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 	clickOffsetX: number
 	clickOffsetY: number
 
+	const SMALL_WIDTH_BREAKPOINT = 25
+
 	constructor (props) {
 		super(props)
 
@@ -47,7 +49,8 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 
 	checkSmallMode = () => {
 		let selAreaElementWidth = $(this.selAreaElement).width()
-		if (selAreaElementWidth && selAreaElementWidth < 7) {
+		console.log(selAreaElementWidth)
+		if (selAreaElementWidth && selAreaElementWidth < this.SMALL_WIDTH_BREAKPOINT) {
 			this.setState({
 				smallMode: true
 			})
