@@ -477,11 +477,11 @@ Meteor.methods({
 		RunningOrders.update({showStyleId: { $not: { $exists: true }}}, { $set: { showStyleId: 'dummyShow0' }})
 	},
 
-	'debug_setOnAirLine' () {
-		let segmentLine = SegmentLines.findOne('ro0-seg0-line0')
+	'debug_setOnAirLine' (liveId) {
+		let segmentLine = SegmentLines.findOne(liveId || 'ro0-seg0-line0')
 
 		if (segmentLine) {
-			let runningOrder = RunningOrders.findOne('ro0')
+			let runningOrder = RunningOrders.findOne(segmentLine.runningOrderId)
 			RunningOrders.update({_id: runningOrder._id}, {
 				$set: { currentSegmentLineId: segmentLine._id }
 			})
