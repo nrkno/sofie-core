@@ -550,7 +550,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 						// TODO: This is just temporary styling, to indicate that the layers are clickable
 						&:hover {
-							transition: 0.3s box-shadow 0.3s ease-in-out;
+							transition: box-shadow 0.3s ease-in-out;
 							box-shadow: 0 0 8px 4px rgba(255,255,255,1);
 							z-index: 10;
 						}
@@ -917,4 +917,24 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			}
 		}
 	}
+}
+
+@keyframes inspector-fadeIn {
+	0% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+
+.segment-timeline__mini-inspector {
+	position: absolute;
+	display: block;
+	background: rgba(0, 0, 0, 0.95);
+	padding: 1em;
+	white-space: nowrap;
+	transform: translate(-50%, -100%);
+	animation: 0.5s inspector-fadeIn;
+	animation-iteration-count: 1;
 }
