@@ -268,25 +268,27 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 				top: 0;
 				bottom: 0;
 				width: 250px;
+				cursor: move;				
+				cursor: -webkit-grab;
 				background: none;
 
 				.segment-timeline__zoom-area__controls__selected-area__right-handle {
 					position: absolute;
 					top: 0;
-					right: -5px;
+					right: -10px;
 					bottom: 0;
-					width: 5px;
-					cursor: e-resize;
+					width: 20px;
+					cursor: ew-resize;
 					z-index: 20;
 				}
 
 				.segment-timeline__zoom-area__controls__selected-area__left-handle {
 					position: absolute;
 					top: 0;
-					left: -5px;
+					left: -10px;
 					bottom: 0;
-					width: 5px;
-					cursor: w-resize;
+					width: 20px;
+					cursor: ew-resize;
 					z-index: 20;
 				}
 			}
