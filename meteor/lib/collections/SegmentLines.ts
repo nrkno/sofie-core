@@ -19,6 +19,9 @@ export interface SegmentLine {
 
 	metaData?: Array<IMOSExternalMetaData>
 	status?: IMOSObjectStatus
+
+	/** The time the system started playback of this segment line, null if not yet played back */
+	startedPlayback?: number
 }
 
 export const SegmentLines = new Mongo.Collection<SegmentLine>('segmentLines')

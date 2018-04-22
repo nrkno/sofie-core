@@ -145,7 +145,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 					segmentLine={segmentLine}
 					followLiveLine={this.props.followLiveLine}
 					liveLineHistorySize={this.props.liveLineHistorySize}
-					livePosition={this.props.livePosition} />
+					livePosition={this.props.segment._id === this.props.runningOrder.currentSegmentLineId && segmentLine.startedPlayback ? this.props.livePosition - segmentLine.startedPlayback : null} />
 			)
 		})
 	}

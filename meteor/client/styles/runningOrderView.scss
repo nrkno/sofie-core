@@ -197,17 +197,23 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			padding: 0;
 
 			.segment-timeline__segment-line {
+				vertical-align: top;
 				z-index: inherit;
 
 				.segment-timeline__segment-line__nextline {
-					display: none;
+					border-left-width: 1px;
+
+					&::before, &::after {
+						display: none;
+					}
+
+					.segment-timeline__segment-line__nextline__label {
+						display: none;
+					}
 				}
 
 				&.next {
 					.segment-timeline__segment-line__nextline {
-						display: block;
-						border-left: 1px solid $general-next-color;
-
 						&::before, &::after {
 							display: none;
 						}
@@ -215,7 +221,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 						.segment-timeline__segment-line__nextline__label {
 							display: none;
 						}
-					}	
+					}
 				}
 
 				.segment-timeline__output-group {
@@ -485,7 +491,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 						display: block;
 						content: ' ';
 						top: 0;
-						left: ($segment-nextline-shade-width * -1) + 2px;
+						left: ($segment-nextline-shade-width * -1) - 2px;
 						width: $segment-nextline-shade-width;
 						bottom: -2em;
 						position: absolute;
