@@ -301,6 +301,20 @@ Meteor.methods({
 						value: 0
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
+					transitions: {
+						inTransition: {
+							type: Transition.MIX,
+							duration: 0.5,
+							easing: Ease.EASEINOUTSINE,
+							direction: Direction.RIGHT
+						},
+						outTransition: {
+							type: Transition.CUT,
+							duration: 0.0,
+							easing: Ease.NONE,
+							direction: Direction.RIGHT
+						}
+					},
 					sourceLayerId: 'studio0-mic0',
 					outputLayerId: 'studio0-pgm0',
 					expectedDuration: 7,
@@ -365,6 +379,14 @@ Meteor.methods({
 						value: 0
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
+					transitions: {
+						inTransition: {
+							type: Transition.CUT,
+							duration: 0.0,
+							easing: Ease.NONE,
+							direction: Direction.RIGHT
+						}
+					},
 					sourceLayerId: 'studio0-mic0',
 					outputLayerId: 'studio0-pgm0',
 					expectedDuration: 7,
@@ -432,7 +454,7 @@ Meteor.methods({
 					trigger: {
 						type: 0,
 						value: 0
-					},
+					},	
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-vt1',
 					outputLayerId: 'studio1-monitor0',
