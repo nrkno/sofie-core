@@ -16,6 +16,7 @@ const LARGE_STEP_GRID_COLOR = 'rgb(112,112,112)'
 interface ITimelineGridProps {
 	timeScale: number
 	scrollLeft: number
+	onResize: (size: number[]) => void
 }
 
 export class TimelineGrid extends React.Component<ITimelineGridProps> {
@@ -202,6 +203,10 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 					console.log('Grid font failed to load: ' + fontFace.status)
 				})
 				document.fonts.add(ethicaFont)
+			}
+
+			if (this.props.onResize) {
+				this.props.onResize([$(this.parentElement).width() || 1, $(this.parentElement).height() || 1])
 			}
 		}
 	}

@@ -88,9 +88,9 @@ Meteor.methods({
 	},
 
 	'debug_demoRundown' () {
-		Meteor.call('debug_emptyDatabase');
-		Meteor.call('debug_sampleSetup');
-		Meteor.call('debug_sampleShowStyle');
+		Meteor.call('debug_emptyDatabase')
+		Meteor.call('debug_sampleSetup')
+		Meteor.call('debug_sampleShowStyle')
 
 		let roId = 'ro1'
 

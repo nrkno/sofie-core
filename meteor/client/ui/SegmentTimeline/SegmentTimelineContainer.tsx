@@ -228,7 +228,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 			collapsedOutputs: {},
 			collapsed: false,
 			scrollLeft: 0,
-			followLiveLine: true,
+			followLiveLine: false,
 			livePosition: 0
 		}
 
@@ -247,7 +247,8 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 	/** The user has scrolled scrollLeft seconds to the left in a child component */
 	onScroll = (scrollLeft: number, event: any) => {
 		this.setState({
-			scrollLeft: scrollLeft
+			scrollLeft: scrollLeft,
+			followLiveLine: false
 		})
 	}
 
@@ -267,7 +268,8 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 
 	onFollowLiveLine = (state: boolean, event: any) => {
 		this.setState({
-			followLiveLine: state
+			followLiveLine: state,
+			scrollLeft: Math.max(this.state.livePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
 		})
 
 		if (this.state.followLiveLine) {
@@ -293,6 +295,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 							 liveLineHistorySize={this.props.liveLineHistorySize}
 							 livePosition={this.state.livePosition}
 							 onFollowLiveLine={this.onFollowLiveLine}
+							 onZoomChange={(newScale: number, e) => this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)}
 							 onScroll={this.onScroll} />
 		)
 	}
