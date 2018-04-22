@@ -213,43 +213,45 @@ Meteor.methods({
 		}
 		SegmentLines.insert(segLine)
 
+		let
+		// Studio screen
+			segmentLineItem = literal<SegmentLineItem>({
+				_id: segLine._id + ':' + Random.id(5),
+				mosId: segLine.mosId,
+				segmentLineId: segLine._id,
+				runningOrderId: roId,
+				name: 'Skjermloop',
+				trigger: {
+					type: 0,
+					value: 0
+				},
+				status: RundownAPI.LineItemStatusCode.OK,
+				sourceLayerId: 'studio0-vt0',
+				outputLayerId: 'studio0-monitor0',
+				expectedDuration: 400,
+				disabled: false
+			})
+			SegmentLineItems.insert(segmentLineItem)
+	
+	
 		// Opening title VT
-		let segmentLineItem = literal<SegmentLineItem>({
-			_id: segLine._id + ':' + Random.id(5),
-			mosId: segLine.mosId,
-			segmentLineId: segLine._id,
-			runningOrderId: roId,
-			name: 'Vignett',
-			trigger: {
-				type: 0,
-				value: 0
-			},
-			status: RundownAPI.LineItemStatusCode.OK,
-			sourceLayerId: 'studio0-vt0',
-			outputLayerId: 'studio0-pgm0',
-			expectedDuration: 3.5,
-			disabled: false
-		})
-		SegmentLineItems.insert(segmentLineItem)
-
-		//Studio screen
-		segmentLineItem = literal<SegmentLineItem>({
-			_id: segLine._id + ':' + Random.id(5),
-			mosId: segLine.mosId,
-			segmentLineId: segLine._id,
-			runningOrderId: roId,
-			name: 'Skjermloop',
-			trigger: {
-				type: 0,
-				value: 0
-			},
-			status: RundownAPI.LineItemStatusCode.OK,
-			sourceLayerId: 'studio0-vt0',
-			outputLayerId: 'studio0-monitor0',
-			expectedDuration: 400,
-			disabled: false
-		})
-		SegmentLineItems.insert(segmentLineItem)
+			segmentLineItem = literal<SegmentLineItem>({
+				_id: segLine._id + ':' + Random.id(5),
+				mosId: segLine.mosId,
+				segmentLineId: segLine._id,
+				runningOrderId: roId,
+				name: 'Vignett',
+				trigger: {
+					type: 0,
+					value: 0
+				},
+				status: RundownAPI.LineItemStatusCode.OK,
+				sourceLayerId: 'studio0-vt0',
+				outputLayerId: 'studio0-pgm0',
+				expectedDuration: 5,
+				disabled: false
+			})
+			SegmentLineItems.insert(segmentLineItem)
 
 		// Fribyen
 			segmentLineItem = literal<SegmentLineItem>({
@@ -260,12 +262,12 @@ Meteor.methods({
 				name: 'Fribyen tar form',
 				trigger: {
 					type: 0,
-					value: 3.0
+					value: 5.5
 				},
 				status: RundownAPI.LineItemStatusCode.OK,
 				sourceLayerId: 'studio0-graphics0',
 				outputLayerId: 'studio0-pgm0',
-				expectedDuration: 4.9,
+				expectedDuration: 6.4,
 				disabled: false
 			})
 			SegmentLineItems.insert(segmentLineItem)
@@ -278,12 +280,12 @@ Meteor.methods({
 				name: 'Fribyen',
 				trigger: {
 					type: 0,
-					value: 3.0
+					value: 5.0
 				},
 				status: RundownAPI.LineItemStatusCode.OK,
 				sourceLayerId: 'studio0-live-speak0',
 				outputLayerId: 'studio0-pgm0',
-				expectedDuration: 4.9,
+				expectedDuration: 6.9,
 				disabled: false
 			})
 			SegmentLineItems.insert(segmentLineItem)
@@ -297,12 +299,12 @@ Meteor.methods({
 				name: 'Våryre padder',
 				trigger: {
 					type: 0,
-					value: 8.0
+					value: 12.5
 				},
 				status: RundownAPI.LineItemStatusCode.OK,
 				sourceLayerId: 'studio0-graphics0',
 				outputLayerId: 'studio0-pgm0',
-				expectedDuration: 3.5,
+				expectedDuration: 8.0,
 				disabled: false
 			})
 			SegmentLineItems.insert(segmentLineItem)
@@ -315,17 +317,35 @@ Meteor.methods({
 				name: 'Padder',
 				trigger: {
 					type: 0,
-					value: 8.0
+					value: 12.0
 				},
 				status: RundownAPI.LineItemStatusCode.OK,
 				sourceLayerId: 'studio0-live-speak0',
 				outputLayerId: 'studio0-pgm0',
-				expectedDuration: 3.5,
+				expectedDuration: 8.5,
 				disabled: false
 			})
 			SegmentLineItems.insert(segmentLineItem)
 
-		//Lower-third: Name
+		// Camera 1
+			segmentLineItem = literal<SegmentLineItem>({
+				_id: segLine._id + ':' + Random.id(5),
+				mosId: segLine.mosId,
+				segmentLineId: segLine._id,
+				runningOrderId: roId,
+				name: '1',
+					trigger: {
+					type: 0,
+					value: 20
+				},
+				status: RundownAPI.LineItemStatusCode.OK,
+				sourceLayerId: 'studio0-camera0',
+				outputLayerId: 'studio0-pgm0',
+				expectedDuration: 35,
+				disabled: false
+			})
+			SegmentLineItems.insert(segmentLineItem)
+		// Name
 			segmentLineItem = literal<SegmentLineItem>({
 				_id: segLine._id + ':' + Random.id(5),
 				mosId: segLine.mosId,
@@ -334,7 +354,7 @@ Meteor.methods({
 				name: 'Knut Knudsen Eigeland',
 					trigger: {
 					type: 0,
-					value: 22
+					value: 21
 				},
 				status: RundownAPI.LineItemStatusCode.OK,
 				sourceLayerId: 'studio0-lower-third0',
