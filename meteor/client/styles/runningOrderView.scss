@@ -15,6 +15,7 @@ $segment-title-background-color: #4B4B4B;
 $segment-title-background-color-next: $general-next-color;
 $segment-title-text-color-live: #8B8B8B;
 $segment-title-background-color-live: $general-live-color;
+$segment-line-start-color: #898989;
 
 $liveline-timecode-color: #fff;
 
@@ -192,6 +193,21 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			padding: 0;
 
 			.segment-timeline__segment-line {
+				.segment-timeline__segment-line__nextline {
+					display: none;
+				}
+
+				&.next {
+					.segment-timeline__segment-line__nextline {
+						display: block;
+						border-left: 1px solid $general-next-color;
+
+						.segment-timeline__segment-line__nextline__label {
+							display: none;
+						}
+					}	
+				}
+
 				.segment-timeline__output-group {
 					min-height: 0em;
 					border-bottom: none;
@@ -404,6 +420,65 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 		// Segment line is an element grouping all segment-lines
 		.segment-timeline__segment-line {
+			position: relative;
+
+			.segment-timeline__segment-line__nextline {
+				display: block;
+				position: absolute;
+				top: -5px;
+				left: 0;
+				bottom: -2em;
+				flex: 0;
+				border-left: 2px solid $segment-line-start-color;
+				z-index: 10;
+
+				.segment-timeline__segment-line__nextline__label {
+					display: none;
+					text-transform: uppercase;
+					position: absolute;
+					top: -1em;
+					left: -3px;
+					text-transform: uppercase;
+					font-weight: bold;
+					line-height: 1em;
+					white-space: nowrap;
+				}
+
+				&::before {
+					content: ' ';
+					display: block;
+					position: absolute;
+					top: 0;
+    				left: -0.5px;
+					width: 0;
+					height: 0;
+					border-style: solid;
+					border-width: 5px 0 5px 8px;
+					border-color: transparent transparent transparent $segment-line-start-color;
+				}
+			}
+
+			&.live {
+				.segment-timeline__segment-line__nextline {
+					display: none;
+				}
+			}
+
+			&.next {
+				.segment-timeline__segment-line__nextline {
+					border-left-color: $general-next-color;
+					color: $general-next-color;
+					top: 0;
+
+					.segment-timeline__segment-line__nextline__label {
+						display: block;
+					}
+
+					&::before {
+						display: none;
+					}
+				}
+			}
 			
 			// Group all layers belonging to an output group
 			.segment-timeline__output-group {

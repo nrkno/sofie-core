@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
+import { translate, InjectedTranslateProps } from 'react-i18next'
 
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
@@ -133,7 +134,7 @@ interface IPropsHeader {
 	totalSegmentDuration?: number
 }
 
-export class SegmentTimelineLine extends React.Component<IPropsHeader> {
+export const SegmentTimelineLine = translate()(class extends React.Component<IPropsHeader & InjectedTranslateProps> {
 	getLayerStyle () {
 		if (this.props.relative) {
 			return {
@@ -171,10 +172,22 @@ export class SegmentTimelineLine extends React.Component<IPropsHeader> {
 	}
 
 	render () {
+		const { t } = this.props
+
 		return (
-			<div className='segment-timeline__segment-line' data-mos-id={this.props.segmentLine._id} style={this.getLayerStyle()}>
+			<div className={ClassNames('segment-timeline__segment-line', {
+				'live': (this.props.runningOrder.currentSegmentLineId === this.props.segmentLine._id),
+				'next': (this.props.runningOrder.nextSegmentLineId === this.props.segmentLine._id)
+			})} data-mos-id={this.props.segmentLine._id}
+				style={this.getLayerStyle()}
+				>
+				<div className='segment-timeline__segment-line__nextline'>
+					<div className='segment-timeline__segment-line__nextline__label'>
+						{t('Next')}
+					</div>
+				</div>
 				{this.renderTimelineOutputGroups(this.props.segmentLine)}
 			</div>
 		)
 	}
-}
+})

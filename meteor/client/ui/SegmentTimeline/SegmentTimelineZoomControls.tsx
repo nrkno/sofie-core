@@ -49,7 +49,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 
 	checkSmallMode = () => {
 		let selAreaElementWidth = $(this.selAreaElement).width()
-		console.log(selAreaElementWidth)
+		// console.log(selAreaElementWidth)
 		if (selAreaElementWidth && selAreaElementWidth < this.SMALL_WIDTH_BREAKPOINT) {
 			this.setState({
 				smallMode: true
