@@ -83,6 +83,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				'graphics': this.props.layer.type === RundownAPI.SourceLayerType.GRAPHICS,
 				'lower-third': this.props.layer.type === RundownAPI.SourceLayerType.LOWER_THIRD,
 				'live-speak': this.props.layer.type === RundownAPI.SourceLayerType.LIVE_SPEAK,
+				'mic': this.props.layer.type === RundownAPI.SourceLayerType.MIC,
 				'metadata': this.props.layer.type === RundownAPI.SourceLayerType.METADATA,
 				'remote': this.props.layer.type === RundownAPI.SourceLayerType.REMOTE,
 				'script': this.props.layer.type === RundownAPI.SourceLayerType.SCRIPT,
