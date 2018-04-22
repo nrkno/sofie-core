@@ -48,6 +48,9 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 			this.repaint()
 		}
+		if (this.props.onResize) {
+			this.props.onResize([$(this.parentElement).width() || 1, $(this.parentElement).height() || 1])
+		}
 	}, Math.ceil(1000 / 15)) // don't repaint faster than 15 fps
 
 	setParentRef = (element: HTMLDivElement) => {

@@ -181,7 +181,6 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		grid-column: timeline / end;
 		grid-row: zoom-area / end;
 		max-height: 4em;
-		overflow: hidden;
 		margin: 1.5em 0.2em 1em 0;
 
 		transition: $output-layer-group-collapse-animation-duration max-height ease-in-out,
@@ -290,6 +289,42 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 					width: 20px;
 					cursor: ew-resize;
 					z-index: 20;
+				}
+
+				.segment-timeline__zoom-area__controls__selected-area__center-handle {
+					display: none;
+				}
+
+				&.small-mode {
+					.segment-timeline__zoom-area__controls__selected-area__right-handle {
+						position: absolute;
+						top: 0;
+						right: -15px;
+						bottom: 0;
+						width: 10px;
+						cursor: e-resize;
+						z-index: 20;
+					}
+
+					.segment-timeline__zoom-area__controls__selected-area__left-handle {
+						position: absolute;
+						top: 0;
+						left: -15px;
+						bottom: 0;
+						width: 10px;
+						cursor: w-resize;
+						z-index: 20;
+					}
+
+					.segment-timeline__zoom-area__controls__selected-area__center-handle {
+						position: absolute;
+						top: 0;
+						left: -5px;
+						bottom: 0;
+						width: 10px;
+						cursor: row-resize;
+						z-index: 20;
+					}
 				}
 			}
 		}
