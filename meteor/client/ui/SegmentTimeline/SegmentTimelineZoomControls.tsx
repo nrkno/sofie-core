@@ -10,11 +10,16 @@ interface IPropsHeader {
 	scrollLeft: number
 	scrollWidth: number
 	segmentDuration: number
+	liveLineHistorySize: number
+	timeScale: number
 	onScroll: (scrollLeft: number, event: MouseEvent) => void
+	onZoomChange: (newScale: number, event: MouseEvent) => void
 }
 
 interface IStateHeader {
 	zoomAreaMoving: boolean
+	zoomAreaResizeEnd: boolean
+	zoomAreaResizeBegin: boolean
 	width: number
 }
 
@@ -31,13 +36,32 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 
 		this.state = {
 			zoomAreaMoving: false,
+			zoomAreaResizeEnd: false,
+			zoomAreaResizeBegin: false,
 			width: 1
+		}
+	}
+
+	outsideZoomAreaClick = (e: JQueryMouseEventObject & any) => {
+		let offset = $(this.parentElement).offset()
+		if (offset) {
+			this.offsetX = offset.left
+			this.offsetY = offset.top
+			// - (this.props.liveLineHistorySize * (this.props.segmentDuration / this.state.width))
+			let seconds = (((e.clientX - this.offsetX) / this.state.width) * this.props.segmentDuration)
+			seconds -= (this.props.liveLineHistorySize) / this.props.timeScale
+			if (this.props.onScroll) {
+				this.props.onScroll(Math.min(Math.max(0, seconds), this.props.segmentDuration), e)
+			}
+
+			e.persist()
+			setTimeout(() => this.zoomAreaBeginMove(e))
 		}
 	}
 
 	zoomAreaMove = (e: JQueryMouseEventObject & any) => {
 		let percent = Math.max(0, Math.min(1, (e.clientX - this.offsetX - this.clickOffsetX) / this.state.width))
-		console.log(percent)
+		// console.log(percent)
 		if (this.props.onScroll) {
 			this.props.onScroll(percent * this.props.segmentDuration, e)
 		}
@@ -59,7 +83,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 	zoomAreaBeginMove (e: React.SyntheticEvent<HTMLDivElement> & JQueryMouseEventObject | any) {
 		// console.log(e.clientX)
 		$(document.body).on('mousemove', this.zoomAreaMove)
-		$(document.body).one('mouseup', () => {
+		$(document.body).one('mouseup mouseleave', () => {
 			this.zoomAreaEndMove(e)
 		})
 		let offset = $(this.parentElement).offset()
@@ -75,12 +99,77 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		})
 	}
 
-	zoomAreaLeftBeginMove (e: any) {
-		console.log('Left handle')
+	zoomAreaLeftMove = (e: JQueryMouseEventObject & any) => {
+		let begin = Math.max(0, Math.min(1, (e.clientX - this.offsetX) / this.state.width))
+		let end = (this.props.scrollLeft + this.props.scrollWidth) / this.props.segmentDuration
+		let newScale = this.props.scrollWidth / ((end - begin) * this.props.segmentDuration) * this.props.timeScale
+		// console.log(this.props.scrollWidth, newScale)
+		if (this.props.onZoomChange) {
+			this.props.onScroll(begin * this.props.segmentDuration, e)
+			this.props.onZoomChange(newScale, e)
+		}
 	}
 
-	zoomAreaRightBeginMove (e: any) {
-		console.log('Right handle')
+	zoomAreaEndLeftMove (e: React.SyntheticEvent<HTMLDivElement>) {
+		$(document.body).off('mousemove', '', this.zoomAreaLeftMove)
+		this.setState({
+			zoomAreaResizeBegin: false
+		})
+	}
+
+	zoomAreaLeftBeginMove (e: JQueryMouseEventObject & any) {
+		// console.log('Left handle')
+		e.preventDefault()
+		e.stopPropagation()
+
+		$(document.body).on('mousemove', this.zoomAreaLeftMove)
+		$(document.body).one('mouseup mouseleave', () => {
+			this.zoomAreaEndLeftMove(e)
+		})
+		let offset = $(this.parentElement).offset()
+		if (offset) {
+			this.offsetX = offset.left
+			this.offsetY = offset.top
+		}
+		this.setState({
+			zoomAreaResizeBegin: true
+		})
+	}
+
+	zoomAreaEndRightMove (e: React.SyntheticEvent<HTMLDivElement>) {
+		$(document.body).off('mousemove', '', this.zoomAreaRightMove)
+		this.setState({
+			zoomAreaResizeEnd: false
+		})
+	}
+
+	zoomAreaRightMove = (e: JQueryMouseEventObject & any) => {
+		let end = Math.max(0, Math.min(1, (e.clientX - this.offsetX) / this.state.width))
+		let begin = this.props.scrollLeft / this.props.segmentDuration
+		let newScale = this.props.scrollWidth / ((end - begin) * this.props.segmentDuration) * this.props.timeScale
+		// console.log(this.props.scrollWidth, newScale)
+		if (this.props.onZoomChange) {
+			this.props.onZoomChange(newScale, e)
+		}
+	}
+
+	zoomAreaRightBeginMove (e: JQueryMouseEventObject & any) {
+		// console.log('Right handle')
+		e.preventDefault()
+		e.stopPropagation()
+
+		$(document.body).on('mousemove', this.zoomAreaRightMove)
+		$(document.body).one('mouseup mouseleave', () => {
+			this.zoomAreaEndRightMove(e)
+		})
+		let offset = $(this.parentElement).offset()
+		if (offset) {
+			this.offsetX = offset.left
+			this.offsetY = offset.top
+		}
+		this.setState({
+			zoomAreaResizeEnd: true
+		})
 	}
 
 	setParentRef = (element: HTMLDivElement) => {
@@ -108,12 +197,14 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 				<div className='segment-timeline__zoom-area__controls__left-mask'
 					style={{
 						width: (this.props.scrollLeft / this.props.segmentDuration * 100).toString() + '%'
-					}}>
+					}}
+					onMouseDown={(e) => this.outsideZoomAreaClick(e)}>
 				</div>
 				<div className='segment-timeline__zoom-area__controls__right-mask'
 					style={{
 						width: ((1 - (this.props.scrollLeft + this.props.scrollWidth) / this.props.segmentDuration) * 100).toString() + '%'
-					}}>
+					}}
+					onMouseDown={(e) => this.outsideZoomAreaClick(e)}>
 				</div>
 				<div className='segment-timeline__zoom-area__controls__selected-area'
 					style={{

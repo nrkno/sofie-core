@@ -40,6 +40,7 @@ interface IPropsHeader {
 	liveLineHistorySize: number,
 	livePosition: number,
 	onScroll: (scrollLeft: number, event: any) => void
+	onZoomChange: (newScale: number, event: any) => void
 	onFollowLiveLine: (state: boolean, event: any) => void
 }
 interface IStateHeader {
@@ -231,7 +232,10 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 					<SegmentTimelineZoomControls scrollLeft={this.props.scrollLeft}
 												 scrollWidth={this.state.timelineWidth / this.props.timeScale}
 												 onScroll={(left, e) => this.props.onScroll(left, e)}
-												 segmentDuration={this.getSegmentDuration()} />
+												 segmentDuration={this.getSegmentDuration()}
+												 liveLineHistorySize={this.props.liveLineHistorySize}
+												 timeScale={this.props.timeScale}
+												 onZoomChange={(newScale, e) => this.props.onZoomChange(newScale, e)}/>
 					{this.renderMiniLiveLine()}
 				</div>
 			</div>

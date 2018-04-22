@@ -295,6 +295,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 							 liveLineHistorySize={this.props.liveLineHistorySize}
 							 livePosition={this.state.livePosition}
 							 onFollowLiveLine={this.onFollowLiveLine}
+							 onZoomChange={(newScale: number, e) => this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)}
 							 onScroll={this.onScroll} />
 		)
 	}

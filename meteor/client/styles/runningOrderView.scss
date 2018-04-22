@@ -236,6 +236,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			width: 0;
 			border-left: 2px solid $general-live-color;
 			background: none;
+			pointer-events: none;
 		}
 
 		.segment-timeline__zoom-area__controls {
