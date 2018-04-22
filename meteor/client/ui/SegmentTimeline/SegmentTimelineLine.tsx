@@ -32,7 +32,7 @@ interface ISourceLayerProps {
 	totalSegmentDuration?: number
 	followLiveLine: boolean
 	liveLineHistorySize: number
-	livePosition: number
+	livePosition: number | null
 }
 class SourceLayer extends React.Component<ISourceLayerProps> {
 	renderInside () {
@@ -83,7 +83,7 @@ interface IOutputGroupProps {
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	followLiveLine: boolean
 	liveLineHistorySize: number
-	livePosition: number
+	livePosition: number | null
 }
 class OutputGroup extends React.Component<IOutputGroupProps> {
 	renderInside () {

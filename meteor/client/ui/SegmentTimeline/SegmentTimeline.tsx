@@ -114,7 +114,14 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 						) + 'px'
 			}
 
-			return (
+			return [
+				<div className='segment-timeline__liveline-shade'
+					style={{
+						'width': (this.props.followLiveLine ?
+							Math.min(pixelPostion, this.props.liveLineHistorySize).toString() :
+							pixelPostion.toString()
+						) + 'px'
+					}} />,
 				<div className='segment-timeline__liveline'
 					 style={lineStyle}>
 					<div className='segment-timeline__liveline__label'
@@ -125,7 +132,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 						{RundownUtils.formatTimeToTimecode(this.props.livePosition)}
 					</div>
 				</div>
-			)
+			]
 		}
 	}
 

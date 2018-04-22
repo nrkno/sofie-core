@@ -92,7 +92,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	
 	width: auto;
 	margin: 1.5em;
-	padding: 0 0 0.15em 0.15em;
+	// padding: 0 0 0.15em 0.15em;
 
 	background: $segment-background-color;
 
@@ -109,7 +109,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		letter-spacing: 0px;
 		
 		grid-column: segment-name / segment-group-controls;
-		grid-row: main-view / zoom-area;
+		grid-row: main-view / end;
 
 		transition: $output-layer-group-collapse-animation-duration opacity,
 					$output-layer-group-collapse-animation-duration visibility 0s;
@@ -236,6 +236,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 						.segment-timeline__layer-item {
 							pointer-events: none;
 							cursor: default;
+							z-index: inherit;
 
 							&:hover {
 								box-shadow: none;
@@ -375,6 +376,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		background: $segment-timeline-background-color;
 		opacity: 1;
 		transition: $output-layer-group-collapse-animation-duration opacity ($output-layer-group-collapse-animation-duration * 1/2);
+		margin-bottom: 1.5em;
 	}
 
 	.segment-timeline__timeline-grid {
@@ -396,6 +398,14 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		min-height: 0;
 
 		overflow: hidden;
+	}
+
+	.segment-timeline__liveline-shade {
+		position: absolute;
+		top: $segment-header-height;
+		left: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.7)
 	}
 
 	// The liveline lives in the .segment-timeline__timeline-container
@@ -529,6 +539,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 						transition: none;
 						box-shadow: 0 0 0 0 rgba(255,255,255,0);
 						cursor: pointer;
+						z-index: 1;
 
 						// TODO: This is just temporary styling, to indicate that the layers are clickable
 						&:hover {
@@ -596,6 +607,59 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 							&.file-name {
 								font-weight: 200;
+							}
+						}
+
+						.segment-timeline__layer-item__transition {
+							position: absolute;
+							top: 0;
+							bottom: 0;
+							background: inherit;
+
+							&.in {
+								left: 0;
+								transform: translateX(calc(-100% + 0.5px));
+							}
+
+							&.out {
+								right: 0;
+								transform: translateX(calc(100% - 0.5px));
+							}
+
+							&.mix {
+								&::before {
+									content: ' ';
+									display: block;
+									position: absolute;
+									top: 0;
+									left: 0;
+									bottom: 0;
+									right: 0;
+								}
+								
+								&.in {
+									clip-path: polygon(100% 100%, 100% 0, 1% 0);
+
+									&::before {
+										background: linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0))
+									}
+								}
+								&.out {
+									clip-path: polygon(99% 100%, 0 100%, 0 0);
+
+									&::before {
+										background: linear-gradient(to left, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0))
+									}
+								}
+							}
+
+							&.wipe {								
+								&.in {
+									clip-path: polygon(100% 100%, 100% 0, 1% 0, 1% 49%, 100% 49%, 100% 100%);
+								}
+								&.out {
+									clip-path: polygon(polygon(99% 100%, 99% 51%, 0% 51%, 0 0, 0 100%));
+								}
 							}
 						}
 					}
