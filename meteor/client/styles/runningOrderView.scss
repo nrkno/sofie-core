@@ -651,8 +651,8 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 								}
 								
 								&.in {
-									clip-path: polygon(100% 100%, 100% 0, 1% 0);
-
+									clip-path: polygon(100% 100%, 100% 0, 1% 100%);
+									
 									&::before {
 										background: linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0))
 									}
