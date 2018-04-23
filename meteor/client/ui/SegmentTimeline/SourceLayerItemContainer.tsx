@@ -30,6 +30,7 @@ interface IPropsHeader {
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	relative?: boolean
 	totalSegmentLineDuration?: number
+	outputGroupCollapsed: boolean
 	followLiveLine: boolean
 	liveLineHistorySize: number
 	livePosition: number | null

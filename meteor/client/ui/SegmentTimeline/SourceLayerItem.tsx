@@ -32,6 +32,7 @@ interface ISourceLayerItemProps {
 	followLiveLine: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
+	outputGroupCollapsed: boolean
 }
 interface ISourceLayerItemState {
 	itemState: number
@@ -185,7 +186,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				onClick={this.itemClick}
 				onMouseUp={this.itemMouseUp}
 				onMouseMove={(e) => this.moveMiniInspector(e)}
-				onMouseOver={(e) => this.toggleMiniInspector(e, true)}
+				onMouseOver={(e) => !this.props.outputGroupCollapsed && this.toggleMiniInspector(e, true)}
 				onMouseLeave={(e) => this.toggleMiniInspector(e, false)}
 				style={this.getItemStyle()}>
 				{this.renderInsideItem()}
