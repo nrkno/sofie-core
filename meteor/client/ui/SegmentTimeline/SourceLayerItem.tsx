@@ -37,6 +37,7 @@ interface ISourceLayerItemState {
 	itemState: number
 	showMiniInspector: boolean
 	elementPosition: JQueryCoordinates
+	cursorPosition: JQueryCoordinates
 }
 export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISourceLayerItemState> {
 	itemElement: HTMLDivElement
@@ -47,6 +48,10 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			itemState: 0,
 			showMiniInspector: false,
 			elementPosition: {
+				top: 0,
+				left: 0
+			},
+			cursorPosition: {
 				top: 0,
 				left: 0
 			}
@@ -99,23 +104,30 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		return
 	}
 
-	toggleMiniInspector = (v: boolean) => {
+	toggleMiniInspector = (e: MouseEvent, v: boolean) => {
 		this.setState({
 			showMiniInspector: v
 		})
-		console.log($(this.itemElement).offset())
+		// console.log($(this.itemElement).offset())
+		let elementPos = $(this.itemElement).offset() || {
+			top: 0,
+			left: 0
+		}
+
 		this.setState({
-			elementPosition: $(this.itemElement).offset() || {
-				top: 0,
-				left: 0
+			elementPosition: elementPos,
+			cursorPosition: {
+				left: e.clientX - elementPos.left,
+				top: e.clientY - elementPos.top
 			}
 		})
 	}
 
 	moveMiniInspector = (e: MouseEvent) => {
 		this.setState({
-			elementPosition: _.extend(this.state.elementPosition, {
-				left: e.clientX
+			cursorPosition: _.extend(this.state.cursorPosition, {
+				left: e.clientX - this.state.elementPosition.left,
+				top: e.clientY - this.state.elementPosition.top
 			})
 		})
 	}
@@ -139,8 +151,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 					>{this.props.segmentLineItem.name}</span>,
 					<FloatingInspector key={this.props.segmentLineItem._id + '-fi'} shown={this.state.showMiniInspector && this.itemElement !== undefined}>
 						<div className='segment-timeline__mini-inspector' style={{
-							'left': this.state.elementPosition.left + 'px',
-							'top': this.state.elementPosition.top + 'px'
+							'left': (this.state.elementPosition.left + this.state.cursorPosition.left).toString() + 'px',
+							'top': this.state.elementPosition.top.toString() + 'px'
 						}}>
 							Item properties
 					</div>
@@ -173,8 +185,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				onClick={this.itemClick}
 				onMouseUp={this.itemMouseUp}
 				onMouseMove={(e) => this.moveMiniInspector(e)}
-				onMouseOver={() => this.toggleMiniInspector(true)}
-				onMouseLeave={() => this.toggleMiniInspector(false)}
+				onMouseOver={(e) => this.toggleMiniInspector(e, true)}
+				onMouseLeave={(e) => this.toggleMiniInspector(e, false)}
 				style={this.getItemStyle()}>
 				{this.renderInsideItem()}
 				{
