@@ -23,6 +23,7 @@ interface ISourceLayerItemProps {
 	showMiniInspector: boolean
 	itemElement: HTMLDivElement
 	elementPosition: JQueryCoordinates
+	cursorPosition: JQueryCoordinates
 }
 export class VTSourceLayerItem extends React.Component<ISourceLayerItemProps> {
 	vPreview: HTMLVideoElement
@@ -30,13 +31,13 @@ export class VTSourceLayerItem extends React.Component<ISourceLayerItemProps> {
 	setVideoRef = (e: HTMLVideoElement) => {
 		if (e) {
 			this.vPreview = e
-			this.vPreview.currentTime = 5
 		}
 	}
 
 	updateTime = () => {
 		if (this.vPreview) {
-			this.vPreview.currentTime = this.props.elementPosition.left / ((this.props.totalSegmentLineDuration || 1) * this.props.timeScale)
+			let targetTime = Math.max(this.props.cursorPosition.left, 0) / this.props.timeScale
+			this.vPreview.currentTime = targetTime
 		}
 	}
 
@@ -53,12 +54,12 @@ export class VTSourceLayerItem extends React.Component<ISourceLayerItemProps> {
 			<span className='segment-timeline__layer-item__label bold' key={this.props.segmentLineItem._id + '-start'}>
 				{begin}
 			</span>,
-			<span className='segment-timeline__layer-item__label finish bold' key={this.props.segmentLineItem._id + '-finish'}>
+			<span className='segment-timeline__layer-item__label last-words bold' key={this.props.segmentLineItem._id + '-finish'}>
 				{end}
 			</span>,
 			<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 				<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={{
-					'left': this.props.elementPosition.left + 'px',
+					'left': (this.props.elementPosition.left + this.props.cursorPosition.left).toString() + 'px',
 					'top': this.props.elementPosition.top + 'px'
 				}}>
 					<video src='/segment0_vt_preview.mp4' ref={this.setVideoRef} />

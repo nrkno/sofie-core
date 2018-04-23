@@ -295,7 +295,7 @@ Meteor.methods({
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
-					name: 'Norges første...   ...i en privat by.',
+					name: 'Norges første...||...i en privat by.',
 					trigger: {
 						type: 0,
 						value: 0
@@ -373,7 +373,7 @@ Meteor.methods({
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
-					name: 'Nå er padd...   ...på direkten.',
+					name: 'Nå er padd...||...på direkten.',
 					trigger: {
 						type: 0,
 						value: 0
@@ -454,7 +454,7 @@ Meteor.methods({
 					trigger: {
 						type: 0,
 						value: 0
-					},	
+					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-vt0',
 					outputLayerId: 'studio0-monitor0',
@@ -504,11 +504,11 @@ Meteor.methods({
 
 			// Fribyen
 				segLine = {
-					_id: seg0._id + '-line' + line,
+					_id: seg1._id + '-line' + line,
 					_rank: line++,
-					mosId: seg0.mosId + '_LINE' + line++,
-					segmentId: seg0._id,
-					runningOrderId: seg0.runningOrderId
+					mosId: seg1.mosId + '_LINE' + line++,
+					segmentId: seg1._id,
+					runningOrderId: seg1.runningOrderId
 				}
 				SegmentLines.insert(segLine)
 
@@ -517,7 +517,7 @@ Meteor.methods({
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
-					name: 'Norges første...   ...i en privat by.',
+					name: 'Norges første...||...i en privat by.',
 					trigger: {
 						type: 0,
 						value: 0
@@ -568,11 +568,11 @@ Meteor.methods({
 
 			// Padder
 				segLine = {
-					_id: seg0._id + '-line' + line,
+					_id: seg1._id + '-line' + line,
 					_rank: line++,
-					mosId: seg0.mosId + '_LINE' + line++,
+					mosId: seg1.mosId + '_LINE' + line++,
 					segmentId: seg0._id,
-					runningOrderId: seg0.runningOrderId
+					runningOrderId: seg1.runningOrderId
 				}
 				SegmentLines.insert(segLine)
 
@@ -581,7 +581,7 @@ Meteor.methods({
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
-					name: 'Padd..   ...padd.',
+					name: 'Padd..||...padd.',
 					trigger: {
 						type: 0,
 						value: 0

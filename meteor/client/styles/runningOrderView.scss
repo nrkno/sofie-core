@@ -945,7 +945,9 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		border: 1px solid #1f1f1f;
 
 		> video {
-			display: block
+			display: block;
+			width: 160px;
+			height: 90px;
 		}
 	}
 }
