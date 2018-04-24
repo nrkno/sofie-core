@@ -446,8 +446,9 @@ Meteor.methods({
 				SegmentLineItems.insert(segmentLineItem)
 
 			// Camera 1
+				let cameraStartSegmentLineItemId = segLine._id + ':' + Random.id(5)
 				segmentLineItem = literal<SegmentLineItem>({
-					_id: segLine._id + ':' + Random.id(5),
+					_id: cameraStartSegmentLineItemId,
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
@@ -518,7 +519,6 @@ Meteor.methods({
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
-					name: 'Padd..   ...padd.',
 					name: 'Padd..||...padd.',
 					trigger: {
 						type: 0,
@@ -565,6 +565,25 @@ Meteor.methods({
 					outputLayerId: 'studio0-pgm0',
 					expectedDuration: 6.9,
 					disabled: false
+				})
+				SegmentLineItems.insert(segmentLineItem)
+
+				segmentLineItem = literal<SegmentLineItem>({
+					_id: segLine._id + ':' + Random.id(5),
+					mosId: segLine.mosId,
+					segmentLineId: segLine._id,
+					runningOrderId: roId,
+					name: '1',
+					trigger: {
+						type: 0,
+						value: 0
+					},
+					status: RundownAPI.LineItemStatusCode.OK,
+					sourceLayerId: 'studio0-camera0',
+					outputLayerId: 'studio0-pgm0',
+					expectedDuration: Number.POSITIVE_INFINITY,
+					disabled: false,
+					continuesRefId: cameraStartSegmentLineItemId
 				})
 				SegmentLineItems.insert(segmentLineItem)
 
