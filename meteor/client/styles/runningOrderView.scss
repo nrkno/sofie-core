@@ -677,10 +677,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 							&.wipe {								
 								&.in {
-									clip-path: polygon(100% 100%, 100% 0, 1% 0, 1% 49%, 100% 49%, 100% 100%);
+									clip-path: polygon(1% 100%, 1% 49%, 100% 49%, 100% 100%);
 								}
 								&.out {
-									clip-path: polygon(polygon(99% 100%, 99% 51%, 0% 51%, 0 0, 0 100%));
+									clip-path: polygon(polygon(99% 51%, 0% 51%, 0 0, 100% 100%));
 								}
 							}
 						}
