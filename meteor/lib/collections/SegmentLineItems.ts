@@ -43,6 +43,8 @@ export interface SegmentLineItem {
 	}
 	/** The object describing the item in detail */
 	content?: object
+	/** The id of the item this item is a continuation of. If it is a continuation, the inTranstion must not be set, and trigger must be 0 */
+	continuesRefId?: string
 }
 
 export const SegmentLineItems = new Mongo.Collection<SegmentLineItem>('segmentLineItems')
