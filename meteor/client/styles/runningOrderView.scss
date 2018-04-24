@@ -944,6 +944,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	display: block;
 	border-radius: 2px;
 	background: rgba(100, 100, 100, 0.95);
+	box-shadow: 0 -5px 18px 1px rgb(0, 0, 0);
 	padding: 1em;
 	white-space: nowrap;
 	transform: translate(-50%, -100%);
@@ -954,7 +955,6 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		padding: 0;
 		border: 1px solid #1f1f1f;
 		border-radius: 0px;
-		box-shadow: 0 0 18px 1px rgb(0, 0, 0);
 		transform: translate(-100%, -100%);
 
 		> video {

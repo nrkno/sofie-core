@@ -35,7 +35,7 @@ export class L3rdSourceLayerItem extends React.Component<ISourceLayerItemProps> 
 			<span className='segment-timeline__layer-item__label' key={this.props.segmentLineItem._id + '-start'}>
 				{begin}
 			</span>,
-			<span className='segment-timeline__layer-item__label secondary' key={this.props.segmentLineItem._id + '-finish'}>
+			<span className='segment-timeline__layer-item__label third' key={this.props.segmentLineItem._id + '-finish'}>
 				{end}
 			</span>,
 			<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>

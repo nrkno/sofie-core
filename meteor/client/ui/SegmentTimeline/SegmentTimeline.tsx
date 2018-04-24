@@ -202,7 +202,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 			})
 		}
 	}
-
+	
 	render () {
 		return (
 			<div className={ClassNames('segment-timeline', {
@@ -218,7 +218,10 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 				</div>
 				<div className='segment-timeline__timeUntil'
 					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
-					00:25
+					00:{
+						// Dummy data for demo
+						Math.round(Math.random() * 10) + 10
+						}
 				</div>
 				<div className='segment-timeline__mos-id'>{this.props.segment.mosId}</div>
 				<div className='segment-timeline__output-layers'>
