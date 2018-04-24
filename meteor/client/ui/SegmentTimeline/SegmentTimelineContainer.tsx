@@ -260,6 +260,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 class extends React.Component<IPropsHeader, IStateHeader> {
 	debugDemoLiveLineInterval?: NodeJS.Timer
 	debugDemoLiveLineStart: number
+	isLiveSegment: boolean
 
 	constructor (props) {
 		super(props)
@@ -273,9 +274,23 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 			livePosition: 0
 		}
 
+		this.isLiveSegment = props.isLiveSegment || false
+
 		/* that.setState({
 			timeScale: that.state.timeScale * 1.1
 		}) */
+	}
+
+	componentDidUpdate () {
+		if (this.isLiveSegment === false && this.props.isLiveSegment === true) {
+			this.isLiveSegment = true
+			this.onFollowLiveLine(true, {})
+			this.debugDemoLiveLine()
+		}
+		if (this.isLiveSegment === true && this.props.isLiveSegment === false) {
+			this.isLiveSegment = false
+			this.debugStopDemoLiveLine()
+		}
 	}
 
 	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
@@ -292,6 +307,12 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 			scrollLeft: scrollLeft,
 			followLiveLine: false
 		})
+	}
+
+	debugStopDemoLiveLine = () => {
+		if (this.debugDemoLiveLineInterval) {
+			clearInterval(this.debugDemoLiveLineInterval)
+		}
 	}
 
 	debugDemoLiveLine = () => {
@@ -319,9 +340,9 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 			scrollLeft: Math.max(this.state.livePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
 		})
 
-		if (this.state.followLiveLine) {
+		/* if (this.state.followLiveLine) {
 			this.debugDemoLiveLine()
-		}
+		} */
 	}
 
 	render () {
