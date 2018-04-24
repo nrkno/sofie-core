@@ -25,31 +25,7 @@ interface ISourceLayerItemProps {
 	elementPosition: JQueryCoordinates
 	cursorPosition: JQueryCoordinates
 }
-export class VTSourceLayerItem extends React.Component<ISourceLayerItemProps> {
-	vPreview: HTMLVideoElement
-
-	setVideoRef = (e: HTMLVideoElement) => {
-		if (e) {
-			this.vPreview = e
-		}
-	}
-
-	updateTime = () => {
-		if (this.vPreview) {
-			let targetTime = Math.max(this.props.cursorPosition.left, 0) / this.props.timeScale
-			let segmentLineItem = this.props.segmentLineItem
-			let itemDuration = (segmentLineItem.duration || segmentLineItem.renderedDuration || segmentLineItem.expectedDuration)
-			if (!Number.isFinite(itemDuration) && this.vPreview.duration > 0) {
-				targetTime = targetTime % this.vPreview.duration
-			}
-			this.vPreview.currentTime = targetTime
-		}
-	}
-
-	componentDidUpdate () {
-		this.updateTime()
-	}
-
+export class L3rdSourceLayerItem extends React.Component<ISourceLayerItemProps> {
 	render () {
 		let labelItems = this.props.segmentLineItem.name.split('||')
 		let begin = labelItems[0] || ''
@@ -59,15 +35,16 @@ export class VTSourceLayerItem extends React.Component<ISourceLayerItemProps> {
 			<span className='segment-timeline__layer-item__label' key={this.props.segmentLineItem._id + '-start'}>
 				{begin}
 			</span>,
-			<span className='segment-timeline__layer-item__label last-words' key={this.props.segmentLineItem._id + '-finish'}>
+			<span className='segment-timeline__layer-item__label secondary' key={this.props.segmentLineItem._id + '-finish'}>
 				{end}
 			</span>,
 			<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
-				<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={{
+				<div className='segment-timeline__mini-inspector' style={{
 					'left': (this.props.elementPosition.left + this.props.cursorPosition.left).toString() + 'px',
 					'top': this.props.elementPosition.top + 'px'
 				}}>
-					<video src='/segment0_vt_preview.mp4' ref={this.setVideoRef} />
+					<div>Name: {begin}</div>
+					<div>Title: {end}</div>
 				</div>
 			</FloatingInspector>
 		]

@@ -18,6 +18,7 @@ import { FloatingInspector } from '../FloatingInspector'
 import * as ClassNames from 'classnames'
 import { MicSourceLayerItem } from './MicSourceLayerItem'
 import { VTSourceLayerItem } from './VTSourceLayerItem'
+import { L3rdSourceLayerItem } from './L3rdSourceLayerItem'
 
 interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
@@ -102,7 +103,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		return
 	}
 
-	toggleMiniInspector = (e: MouseEvent, v: boolean) => {
+	toggleMiniInspector = (e: MouseEvent | any, v: boolean) => {
 		this.setState({
 			showMiniInspector: v
 		})
@@ -121,7 +122,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		})
 	}
 
-	moveMiniInspector = (e: MouseEvent) => {
+	moveMiniInspector = (e: MouseEvent | any) => {
 		this.setState({
 			cursorPosition: _.extend(this.state.cursorPosition, {
 				left: e.clientX - this.state.elementPosition.left,
@@ -136,6 +137,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				return <MicSourceLayerItem key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
 			case RundownAPI.SourceLayerType.VT:
 				return <VTSourceLayerItem key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
+			case RundownAPI.SourceLayerType.LOWER_THIRD:
+				return <L3rdSourceLayerItem key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
 			default:
 				return [
 					<span key={this.props.segmentLineItem._id} className={

@@ -490,7 +490,7 @@ Meteor.methods({
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
-					name: 'Knut Knudsen Eigeland',
+					name: 'Knut Knudsen Eigeland||NRK',
 						trigger: {
 						type: 0,
 						value: 1.5
