@@ -223,45 +223,6 @@ Meteor.methods({
 			SegmentLines.insert(segLine)
 
 			let
-			// Studio screen
-				segmentLineItem = literal<SegmentLineItem>({
-					_id: segLine._id + ':' + Random.id(5),
-					mosId: segLine.mosId,
-					segmentLineId: segLine._id,
-					runningOrderId: roId,
-					name: 'Skjermloop',
-					trigger: {
-						type: 0,
-						value: 0
-					},
-					status: RundownAPI.LineItemStatusCode.OK,
-					sourceLayerId: 'studio0-vt0',
-					outputLayerId: 'studio0-monitor0',
-					expectedDuration: Number.POSITIVE_INFINITY,
-					disabled: false
-				})
-				SegmentLineItems.insert(segmentLineItem)
-
-			// Camera 1
-				segmentLineItem = literal<SegmentLineItem>({
-					_id: segLine._id + ':' + Random.id(5),
-					mosId: segLine.mosId,
-					segmentLineId: segLine._id,
-					runningOrderId: roId,
-					name: '1',
-						trigger: {
-						type: 0,
-						value: 0
-					},
-					status: RundownAPI.LineItemStatusCode.OK,
-					sourceLayerId: 'studio0-camera0',
-					outputLayerId: 'studio0-pgm0',
-					expectedDuration: Number.POSITIVE_INFINITY,
-					disabled: false
-				})
-				SegmentLineItems.insert(segmentLineItem)
-
-		
 			// Opening title VT
 				segmentLineItem = literal<SegmentLineItem>({
 					_id: segLine._id + ':' + Random.id(5),
@@ -296,7 +257,6 @@ Meteor.methods({
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
-					name: 'Norges første...   ...i en privat by.',
 					name: 'Norges første...||...i en privat by.',
 					trigger: {
 						type: 0,
@@ -446,7 +406,26 @@ Meteor.methods({
 			}
 			SegmentLines.insert(segLine)
 
-			
+			// Bumper VT
+			segmentLineItem = literal<SegmentLineItem>({
+				_id: segLine._id + ':' + Random.id(5),
+				mosId: segLine.mosId,
+				segmentLineId: segLine._id,
+				runningOrderId: roId,
+				name: 'Wipe Bumper',
+				trigger: {
+					type: 0,
+					value: 0
+				},
+				status: RundownAPI.LineItemStatusCode.OK,
+				sourceLayerId: 'studio0-vt0',
+				outputLayerId: 'studio0-pgm0',
+				expectedDuration: 0.5,
+				disabled: false
+			})
+			SegmentLineItems.insert(segmentLineItem)
+
+		
 			// Studio screen
 				segmentLineItem = literal<SegmentLineItem>({
 					_id: segLine._id + ':' + Random.id(5),
@@ -484,44 +463,14 @@ Meteor.methods({
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
-
-		
-			// Opening title VT
+				
+			// Script
 				segmentLineItem = literal<SegmentLineItem>({
 					_id: segLine._id + ':' + Random.id(5),
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
-					name: 'Vignett',
-					trigger: {
-						type: 0,
-						value: 0
-					},
-					status: RundownAPI.LineItemStatusCode.OK,
-					sourceLayerId: 'studio0-vt0',
-					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 5,
-					disabled: false
-				})
-				SegmentLineItems.insert(segmentLineItem)
-
-			// Fribyen
-				segLine = {
-					_id: seg1._id + '-line' + line,
-					_rank: line++,
-					mosId: seg1.mosId + '_LINE' + line++,
-					segmentId: seg1._id,
-					runningOrderId: seg1.runningOrderId
-				}
-				SegmentLines.insert(segLine)
-
-				segmentLineItem = literal<SegmentLineItem>({
-					_id: segLine._id + ':' + Random.id(5),
-					mosId: segLine.mosId,
-					segmentLineId: segLine._id,
-					runningOrderId: roId,
-					name: 'Norges første...   ...i en privat by.',
-					name: 'Norges første...||...i en privat by.',
+					name: 'God kveld, vi ska først...||...til heile prosjektet.',
 					trigger: {
 						type: 0,
 						value: 0
@@ -534,41 +483,25 @@ Meteor.methods({
 				})
 				SegmentLineItems.insert(segmentLineItem)
 
+			// Name
 				segmentLineItem = literal<SegmentLineItem>({
 					_id: segLine._id + ':' + Random.id(5),
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
-					name: 'Fribyen tar form',
-					trigger: {
+					name: 'Knut Knudsen Eigeland',
+						trigger: {
 						type: 0,
-						value: 0.5
+						value: 1.5
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
-					sourceLayerId: 'studio0-graphics0',
+					sourceLayerId: 'studio0-lower-third0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 6.4,
+					expectedDuration: 3.5,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
 
-				segmentLineItem = literal<SegmentLineItem>({
-					_id: segLine._id + ':' + Random.id(5),
-					mosId: segLine.mosId,
-					segmentLineId: segLine._id,
-					runningOrderId: roId,
-					name: 'Fribyen',
-					trigger: {
-						type: 0,
-						value: 0.0
-					},
-					status: RundownAPI.LineItemStatusCode.OK,
-					sourceLayerId: 'studio0-live-speak0',
-					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 6.9,
-					disabled: false
-				})
-				SegmentLineItems.insert(segmentLineItem)
 
 			// Padder
 				segLine = {
@@ -635,24 +568,6 @@ Meteor.methods({
 				})
 				SegmentLineItems.insert(segmentLineItem)
 
-			// Name
-				segmentLineItem = literal<SegmentLineItem>({
-					_id: segLine._id + ':' + Random.id(5),
-					mosId: segLine.mosId,
-					segmentLineId: segLine._id,
-					runningOrderId: roId,
-					name: 'Knut Knudsen Eigeland',
-						trigger: {
-						type: 0,
-						value: 5
-					},
-					status: RundownAPI.LineItemStatusCode.OK,
-					sourceLayerId: 'studio0-lower-third0',
-					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 3.5,
-					disabled: false
-				})
-				SegmentLineItems.insert(segmentLineItem)
 
 	},
 
