@@ -1,31 +1,15 @@
+
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 
 import { ISourceLayerUi, IOutputLayerUi, SegmentUi, SegmentLineUi, SegmentLineItemUi } from './SegmentTimelineContainer'
 
-import { FloatingInspector } from '../FloatingInspector'
+import { FloatingInspector } from '../../FloatingInspector'
 
 import * as ClassNames from 'classnames'
+import { CustomLayerItemRenderer } from './CustomLayerItemRenderer'
 
-interface ISourceLayerItemProps {
-	layer: ISourceLayerUi
-	outputLayer: IOutputLayerUi
-	segment: SegmentUi
-	segmentLine: SegmentLineUi
-	segmentLineItem: SegmentLineItemUi
-	timeScale: number
-	onFollowLiveLine?: (state: boolean, event: any) => void
-	relative?: boolean
-	totalSegmentLineDuration?: number
-	followLiveLine: boolean
-	liveLineHistorySize: number
-	livePosition: number | null
-	showMiniInspector: boolean
-	itemElement: HTMLDivElement
-	elementPosition: JQueryCoordinates
-	cursorPosition: JQueryCoordinates
-}
-export class L3rdSourceLayerItem extends React.Component<ISourceLayerItemProps> {
+export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 	render () {
 		let labelItems = this.props.segmentLineItem.name.split('||')
 		let begin = labelItems[0] || ''
@@ -39,10 +23,7 @@ export class L3rdSourceLayerItem extends React.Component<ISourceLayerItemProps> 
 				{end}
 			</span>,
 			<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
-				<div className='segment-timeline__mini-inspector' style={{
-					'left': (this.props.elementPosition.left + this.props.cursorPosition.left).toString() + 'px',
-					'top': this.props.elementPosition.top + 'px'
-				}}>
+				<div className='segment-timeline__mini-inspector' style={this.getFloatingInspectorStyle()}>
 					<div>Name: {begin}</div>
 					<div>Title: {end}</div>
 				</div>

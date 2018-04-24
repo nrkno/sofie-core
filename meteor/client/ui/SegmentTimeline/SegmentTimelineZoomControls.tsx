@@ -219,13 +219,13 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 			<div className='segment-timeline__zoom-area__controls' ref={this.setParentRef}>
 				<div className='segment-timeline__zoom-area__controls__left-mask'
 					style={{
-						width: (this.props.scrollLeft / this.props.segmentDuration * 100).toString() + '%'
+						width: (Math.min(100, Math.max(0, this.props.scrollLeft / this.props.segmentDuration * 100))).toString() + '%'
 					}}
 					onDoubleClick={(e) => this.outsideZoomAreaClick(e)}>
 				</div>
 				<div className='segment-timeline__zoom-area__controls__right-mask'
 					style={{
-						width: ((1 - (this.props.scrollLeft + this.props.scrollWidth) / this.props.segmentDuration) * 100).toString() + '%'
+						width: (Math.min(100, Math.max(0, (1 - (this.props.scrollLeft + this.props.scrollWidth) / this.props.segmentDuration) * 100))).toString() + '%'
 					}}
 					onDoubleClick={(e) => this.outsideZoomAreaClick(e)}>
 				</div>
