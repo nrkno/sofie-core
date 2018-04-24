@@ -38,12 +38,16 @@ const TimingDisplay = translate()(class extends React.Component<IHeaderProps & I
 const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 	<div className='header row'>
 		<div className='col c4 super-dark'>
-			{/* !!! TODO: This is just a temporary soltuon !!! */}
+			{/* !!! TODO: This is just a temporary solution !!! */}
 			<div className='right' style={{
 				'marginTop': '0.9em'
 			}}>
-				<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_setOnAirLine', 'ro1-seg0-line0')}>
-					OnAir Line
+				<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_demoRundown')}>
+					Ladde rundown
+				</button>
+ 
+				<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_setOnAirLine', 'ro1-seg1-line0')}>
+					Tittel 2 On Air
 				</button>
 			</div>
 			<div className='badge mod'>
