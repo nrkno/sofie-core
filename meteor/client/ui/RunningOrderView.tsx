@@ -18,6 +18,7 @@ import { StudioInstallation, StudioInstallations } from '../../lib/collections/S
 
 interface IHeaderProps {
 	timeNow: number
+	debugOnAirLine: () => void
 }
 
 const TimingDisplay = translate()(class extends React.Component<IHeaderProps & InjectedTranslateProps> {
@@ -37,6 +38,14 @@ const TimingDisplay = translate()(class extends React.Component<IHeaderProps & I
 const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 	<div className='header row'>
 		<div className='col c4 super-dark'>
+			{/* !!! TODO: This is just a temporary soltuon !!! */}
+			<div className='right' style={{
+				'marginTop': '0.9em'
+			}}>
+				<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_setOnAirLine', 'ro1-seg0-line0')}>
+					OnAir Line
+				</button>
+			</div>
 			<div className='badge mod'>
 				<div className='media-elem mrs sofie-logo' />
 				<div className='bd mls'><span className='logo-text'>Sofie</span></div>
@@ -157,7 +166,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 	render () {
 		return (
 			<div>
-				<RunningOrderHeader timeNow={0} />
+				<RunningOrderHeader timeNow={0} debugOnAirLine={this.debugOnAirLine}/>
 				{this.renderSegmentsList()}
 			</div>
 		)

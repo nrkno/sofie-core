@@ -16,9 +16,9 @@ import { Transition } from '../../../lib/constants/casparcg'
 import { FloatingInspector } from '../FloatingInspector'
 
 import * as ClassNames from 'classnames'
-import { MicSourceLayerItem } from './MicSourceLayerItem'
-import { VTSourceLayerItem } from './VTSourceLayerItem'
-import { L3rdSourceLayerItem } from './L3rdSourceLayerItem'
+import { MicSourceRenderer } from './Renderers/MicSourceRenderer'
+import { VTSourceRenderer } from './Renderers/VTSourceRenderer'
+import { L3rdSourceRenderer } from './Renderers/L3rdSourceRenderer'
 
 interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
@@ -134,11 +134,11 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 	renderInsideItem () {
 		switch (this.props.layer.type) {
 			case RundownAPI.SourceLayerType.MIC:
-				return <MicSourceLayerItem key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
+				return <MicSourceRenderer key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
 			case RundownAPI.SourceLayerType.VT:
-				return <VTSourceLayerItem key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
+				return <VTSourceRenderer key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
 			case RundownAPI.SourceLayerType.LOWER_THIRD:
-				return <L3rdSourceLayerItem key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
+				return <L3rdSourceRenderer key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
 			default:
 				return [
 					<span key={this.props.segmentLineItem._id} className={
