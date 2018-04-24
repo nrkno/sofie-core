@@ -612,6 +612,13 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 								color: orange
 							}
 
+							&.first-words {
+								position: absolute;
+								left: 0;
+								font-weight: 300;
+								font-style: italic;
+							}
+
 							&.last-words {
 								position: absolute;
 								right: 0;
