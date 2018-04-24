@@ -644,7 +644,7 @@ Meteor.methods({
 					name: 'Knut Knudsen Eigeland',
 						trigger: {
 						type: 0,
-						value: 28
+						value: 5
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-lower-third0',
@@ -752,7 +752,7 @@ Meteor.methods({
 					expectedDuration: Math.floor(Random.fraction() * 645),
 					disabled: false
 				})
-				let lowerthirdSegmentLineItem = literal<SegmentLineItem>({
+/* 				let lowerthirdSegmentLineItem = literal<SegmentLineItem>({
 					_id: segmentLine._id + ':' + Random.id(5),
 					mosId: segmentLine.mosId,
 					segmentLineId: segmentLine._id,
@@ -760,7 +760,7 @@ Meteor.methods({
 					name: 'Åge Øyvindsen',
 					trigger: {
 						type: 0,
-						value: 10
+						value: 0
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-lower-third0',
@@ -770,6 +770,7 @@ Meteor.methods({
 				})
 				SegmentLineItems.insert(segmentLineItem)
 				SegmentLineItems.insert(lowerthirdSegmentLineItem)
+*/
 			})
 		})
 	},

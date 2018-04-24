@@ -44,7 +44,7 @@ export class MicSourceLayerItem extends React.Component<ISourceLayerItemProps> {
 					'left': (this.props.elementPosition.left + this.props.cursorPosition.left).toString() + 'px',
 					'top': this.props.elementPosition.top + 'px'
 				}}>
-					This is a Mic
+					Manus
 				</div>
 			</FloatingInspector>
 		]
