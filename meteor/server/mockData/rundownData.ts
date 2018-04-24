@@ -109,6 +109,7 @@ Meteor.methods({
 		Meteor.call('debug_emptyDatabase')
 		Meteor.call('debug_sampleSetup')
 		Meteor.call('debug_sampleShowStyle')
+		Meteor.call('debug_setOnAirLine', 'ro1-seg0-line0')
 
 		let roId = 'ro1'
 
@@ -433,7 +434,7 @@ Meteor.methods({
 
 
 		/* Segment 1 */
-			line = 1
+			line = 0
 			segLine = {
 				_id: seg1._id + '-line' + line,
 				_rank: line++,
@@ -504,11 +505,11 @@ Meteor.methods({
 
 			// Fribyen
 				segLine = {
-					_id: seg0._id + '-line' + line,
+					_id: seg1._id + '-line' + line,
 					_rank: line++,
-					mosId: seg0.mosId + '_LINE' + line++,
-					segmentId: seg0._id,
-					runningOrderId: seg0.runningOrderId
+					mosId: seg1.mosId + '_LINE' + line++,
+					segmentId: seg1._id,
+					runningOrderId: seg1.runningOrderId
 				}
 				SegmentLines.insert(segLine)
 
@@ -568,11 +569,11 @@ Meteor.methods({
 
 			// Padder
 				segLine = {
-					_id: seg0._id + '-line' + line,
+					_id: seg1._id + '-line' + line,
 					_rank: line++,
-					mosId: seg0.mosId + '_LINE' + line++,
-					segmentId: seg0._id,
-					runningOrderId: seg0.runningOrderId
+					mosId: seg1.mosId + '_LINE' + line++,
+					segmentId: seg1._id,
+					runningOrderId: seg1.runningOrderId
 				}
 				SegmentLines.insert(segLine)
 
