@@ -297,6 +297,7 @@ Meteor.methods({
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
 					name: 'Norges første...   ...i en privat by.',
+					name: 'Norges første...||...i en privat by.',
 					trigger: {
 						type: 0,
 						value: 0
@@ -375,6 +376,7 @@ Meteor.methods({
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
 					name: 'Nå er padd...   ...på direkten.',
+					name: 'Nå er padd...||...på direkten.',
 					trigger: {
 						type: 0,
 						value: 0
@@ -519,6 +521,7 @@ Meteor.methods({
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
 					name: 'Norges første...   ...i en privat by.',
+					name: 'Norges første...||...i en privat by.',
 					trigger: {
 						type: 0,
 						value: 0
@@ -583,6 +586,7 @@ Meteor.methods({
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
 					name: 'Padd..   ...padd.',
+					name: 'Padd..||...padd.',
 					trigger: {
 						type: 0,
 						value: 0

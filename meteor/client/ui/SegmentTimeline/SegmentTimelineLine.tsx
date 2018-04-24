@@ -27,6 +27,7 @@ interface ISourceLayerProps {
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
+	outputGroupCollapsed: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	relative?: boolean
 	totalSegmentDuration?: number
@@ -53,7 +54,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 							segmentLine={this.props.segmentLine}
 							timeScale={this.props.timeScale}
 							relative={this.props.relative}
-							totalSegmentLineDuration={this.props.relative ? (this.props.segmentLine.renderedDuration || 0) : undefined}
+							totalSegmentLineDuration={this.props.segmentLine.renderedDuration || 0}
 							lineStartsAt={this.props.segmentLine.startsAt}
 							/>
 					)
@@ -93,6 +94,7 @@ class OutputGroup extends React.Component<IOutputGroupProps> {
 					{...this.props}
 					layer={sourceLayer}
 					outputLayer={this.props.layer}
+					outputGroupCollapsed={this.props.collapsedOutputs[this.props.layer._id] === true}
 					segment={this.props.segment}
 					segmentLine={this.props.segmentLine}
 					timeScale={this.props.timeScale} />
