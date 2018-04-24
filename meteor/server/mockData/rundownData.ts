@@ -140,7 +140,7 @@ Meteor.methods({
 		}
 		let seg1: Segment = {
 			_id: roId + '-seg1',
-			_rank: 0,
+			_rank: 1,
 			mosId: 'MOCK_RO0_SEG1',
 			runningOrderId: roId,
 			name: 'Ordfører skeptisk til Liberstad',
@@ -148,7 +148,7 @@ Meteor.methods({
 		}
 		let seg2: Segment = {
 			_id: roId + '-seg2',
-			_rank: 0,
+			_rank: 2,
 			mosId: 'MOCK_RO0_SEG2',
 			runningOrderId: roId,
 			name: 'Savnet i Sør-Afrika',
@@ -156,7 +156,7 @@ Meteor.methods({
 		}
 		let seg3: Segment = {
 			_id:  roId + '-seg3',
-			_rank: 0,
+			_rank: 3,
 			mosId: 'MOCK_RO0_SEG3',
 			runningOrderId: roId,
 			name: 'Havarist kan havne i Tyrkia',
@@ -164,7 +164,7 @@ Meteor.methods({
 		}
 		let seg4: Segment = {
 			_id:  roId + '-seg4',
-			_rank: 0,
+			_rank: 4,
 			mosId: 'MOCK_RO0_SEG4',
 			runningOrderId: roId,
 			name: 'Skatepark i Mandal',
@@ -172,7 +172,7 @@ Meteor.methods({
 		}
 		let seg5: Segment = {
 			_id:  roId + '-seg5',
-			_rank: 0,
+			_rank: 5,
 			mosId: 'MOCK_RO0_SEG5',
 			runningOrderId: roId,
 			name: 'Paddeparring',
@@ -180,7 +180,7 @@ Meteor.methods({
 		}
 		let seg6: Segment = {
 			_id:  roId + '-seg6',
-			_rank: 0,
+			_rank: 6,
 			mosId: 'MOCK_RO0_SEG6',
 			runningOrderId: roId,
 			name: 'Cup oppsett',
@@ -188,7 +188,7 @@ Meteor.methods({
 		}
 		let seg7: Segment = {
 			_id:  roId + '-seg7',
-			_rank: 0,
+			_rank: 7,
 			mosId: 'MOCK_RO0_SEG7',
 			runningOrderId: roId,
 			name: 'Været',
@@ -196,7 +196,7 @@ Meteor.methods({
 		}
 		let seg8: Segment = {
 			_id:  roId + '-seg8',
-			_rank: 0,
+			_rank: 8,
 			mosId: 'MOCK_RO0_SEG8',
 			runningOrderId: roId,
 			name: 'Seerbilde',
@@ -335,7 +335,6 @@ Meteor.methods({
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
-					name: 'Nå er padd...   ...på direkten.',
 					name: 'Nå er padd...||...på direkten.',
 					trigger: {
 						type: 0,
@@ -847,6 +846,120 @@ Meteor.methods({
 		})
 
 		RunningOrders.update({showStyleId: { $not: { $exists: true }}}, { $set: { showStyleId: 'dummyShow0' }})
+	},
+
+	'debug_takeNext' (roId) {
+		let runningOrder = RunningOrders.findOne(roId || 'ro1')
+
+		if (runningOrder) {
+			let nextLine: SegmentLine | null = null
+			let segment: Segment | null = null
+
+			if (!runningOrder.currentSegmentLineId) {
+				segment = Segments.findOne({
+					'runningOrderId': {
+						'$eq': runningOrder._id
+					}
+				}, {
+					sort: {
+						'_rank': 1
+					}
+				})
+				if (segment) {
+					nextLine = SegmentLines.findOne({
+						'segmentId': {
+							'$eq': segment._id
+						}
+					}, {
+						sort: {
+							'_rank': 1
+						}
+					})
+				}
+			} else if (runningOrder.nextSegmentLineId) {
+				nextLine = SegmentLines.findOne(runningOrder.nextSegmentLineId)
+				segment = Segments.findOne(nextLine.segmentId)
+			}
+
+			if (nextLine && segment) {
+				RunningOrders.update(runningOrder._id, {
+					'$set': {
+						'currentSegmentLineId': nextLine._id
+					}
+				})
+
+				let nextPlusLine = SegmentLines.findOne({
+					'runningOrderId': {
+						'$eq': runningOrder._id
+					},
+					'segmentId': {
+						'$eq': nextLine.segmentId
+					},
+					'_rank': {
+						'$gt': nextLine._rank
+					}
+				}, {
+					sort: {
+						'_rank': 1
+					}
+				})
+
+				// if found next+1 line in current segment, go with that
+				if (nextPlusLine) {
+					RunningOrders.update(runningOrder._id, {
+						'$set': {
+							'nextSegmentLineId': nextPlusLine._id
+						}
+					})
+				// if not, try next segment
+				} else {
+					let newSegment = Segments.findOne({
+						'runningOrderId': {
+							'$eq': runningOrder._id
+						},
+						'_rank': {
+							'$gt': segment._rank
+						}
+					}, {
+						sort: {
+							'_rank': 1
+						}
+					})
+
+					// if next segment found
+					if (newSegment) {
+						segment = newSegment
+						nextPlusLine = SegmentLines.findOne({
+							'runningOrderId': {
+								'$eq': runningOrder._id
+							},
+							'segmentId': {
+								'$eq': segment._id
+							}
+						}, {
+							sort: {
+								'_rank': 1
+							}
+						})
+
+						// if next segmentLine found in next segment
+						if (nextPlusLine) {
+							RunningOrders.update(runningOrder._id, {
+								'$set': {
+									'nextSegmentLineId': nextPlusLine._id
+								}
+							})
+						}
+					} else {
+						RunningOrders.update(runningOrder._id, {
+							'$set': {
+								'nextSegmentLineId': null
+							}
+						})
+					}
+				}
+			}
+		}
 	},
 
 	'debug_setOnAirLine' (liveId) {

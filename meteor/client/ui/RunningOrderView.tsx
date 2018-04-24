@@ -19,6 +19,7 @@ import { StudioInstallation, StudioInstallations } from '../../lib/collections/S
 interface IHeaderProps {
 	timeNow: number
 	debugOnAirLine: () => void
+	runningOrder: RunningOrder
 }
 
 const TimingDisplay = translate()(class extends React.Component<IHeaderProps & InjectedTranslateProps> {
@@ -42,8 +43,8 @@ const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 			<div className='right' style={{
 				'marginTop': '0.9em'
 			}}>
-				<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_setOnAirLine', 'ro1-seg0-line0')}>
-					OnAir Line
+				<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_takeNext', props.runningOrder._id)}>
+					Next
 				</button>
 			</div>
 			<div className='badge mod'>
@@ -96,7 +97,11 @@ export const RunningOrderView = translate()(withTracker((props, state) => {
 
 	return {
 		runningOrder: runningOrder,
-		segments: runningOrder ? Segments.find({ runningOrderId: runningOrder._id }).fetch() : undefined,
+		segments: runningOrder ? Segments.find({ runningOrderId: runningOrder._id }, {
+			sort: {
+				'_rank': 1
+			}
+		}).fetch() : undefined,
 		studioInstallation: runningOrder ? StudioInstallations.findOne({ _id: runningOrder.studioInstallationId }) : undefined,
 	}
 })(
@@ -166,7 +171,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 	render () {
 		return (
 			<div>
-				<RunningOrderHeader timeNow={0} debugOnAirLine={this.debugOnAirLine}/>
+				<RunningOrderHeader timeNow={0} debugOnAirLine={this.debugOnAirLine} runningOrder={this.props.runningOrder} />
 				{this.renderSegmentsList()}
 			</div>
 		)
