@@ -50,6 +50,7 @@ $timeline-layer-height: 1em;
 }
 .segment-timeline__segment-line {
     flex: 0 0;
+    pointer-events: none;
 
     .segment-timeline__output-group {
         display: flex;
@@ -71,6 +72,7 @@ $timeline-layer-height: 1em;
                 right: auto;
                 box-sizing: border-box;
                 white-space: nowrap;
+                pointer-events: auto;
             }
         }
     }

@@ -55,6 +55,13 @@ export interface SegmentLineItemUi extends SegmentLineItem {
 	renderedInPoint?: number | null
 	/** Duration in timeline */
 	renderedDuration?: number | null
+	/** This item is being continued by another, linked, item in another SegmentLine */
+	continuedByRef?: SegmentLineItemUi
+	/** This item has already been linked to the parent item of the spanning item group */
+	linked?: boolean
+}
+interface ISegmentLineItemUiDictionary {
+	[key: string]: SegmentLineItemUi
 }
 interface IPropsHeader {
 	key: string,
@@ -117,6 +124,8 @@ export const SegmentTimelineContainer = withTracker((props) => {
 			sourceLayer.items = new Array<SegmentLineItem>()
 		}
 	})
+
+	let segmentLineItemsLookup: ISegmentLineItemUiDictionary = {}
 
 	let startsAt = 0
 	// fetch all the segment line items for the segment lines
@@ -186,6 +195,11 @@ export const SegmentTimelineContainer = withTracker((props) => {
 				// attach the segmentLineItem to the sourceLayer in this segment
 				segmentLineItem.sourceLayer.items.push(segmentLineItem)
 			}
+
+			segmentLineItemsLookup[segmentLineItem._id] = segmentLineItem
+			if (segmentLineItem.continuesRefId && segmentLineItemsLookup[segmentLineItem.continuesRefId]) {
+				segmentLineItemsLookup[segmentLineItem.continuesRefId].continuedByRef = segmentLineItem
+			}
 		})
 
 		// SuperTimeline.Resolver.setTraceLevel(SuperTimeline.TraceLevel.TRACE)
@@ -195,6 +209,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		slRTimeline.resolved.forEach((tlItem) => {
 			let segmentLineItem = tlItem.content as SegmentLineItemUi
 			segmentLineItem.renderedDuration = tlItem.resolved.outerDuration
+
 			// if there is no renderedInPoint, use 0 as the starting time for the item
 			segmentLineItem.renderedInPoint = tlItem.resolved.startTime ? tlItem.resolved.startTime - TIMELINE_TEMP_OFFSET : 0
 
@@ -206,6 +221,30 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		segmentLine.renderedDuration = furthestDuration
 		segmentLine.startsAt = startsAt
 		startsAt = segmentLine.startsAt + (segmentLine.renderedDuration || 0)
+
+		segmentLineItems.forEach((item) => {
+			let itemUi = item as SegmentLineItemUi
+			if (itemUi.renderedDuration && !Number.isFinite(itemUi.renderedDuration)) {
+				itemUi.renderedDuration = segmentLine.renderedDuration! - itemUi.renderedInPoint!
+			}
+		})
+	})
+
+	const resolveDuration = (item: SegmentLineItemUi): number => {
+		let childDuration = 0
+		if (item.continuedByRef) {
+			childDuration = resolveDuration(item.continuedByRef)
+			item.continuedByRef.linked = true
+		}
+		return (item.duration || item.renderedDuration || item.expectedDuration) + childDuration
+	}
+
+	_.forEach<SegmentLineUi>(segmentLines, (line) => {
+		line.items && _.forEach<SegmentLineItemUi>(line.items, (item) => {
+			if (item.continuedByRef && !item.linked) {
+				item.renderedDuration = resolveDuration(item)
+			}
+		})
 	})
 
 	segment.outputLayers = outputLayers
@@ -238,6 +277,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 			timeScale: that.state.timeScale * 1.1
 		}) */
 	}
+
 	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
 		let collapsedOutputs = {...this.state.collapsedOutputs}
 		collapsedOutputs[outputLayer._id] = collapsedOutputs[outputLayer._id] === true ? false : true
