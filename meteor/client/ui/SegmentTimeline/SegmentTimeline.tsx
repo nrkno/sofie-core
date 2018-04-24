@@ -218,10 +218,10 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 				</div>
 				<div className='segment-timeline__timeUntil'
 					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
-					00:{
+					{
 						// Dummy data for demo
-						Math.round(Math.random() * 10) + 10
-						}
+						RundownUtils.formatTimeToTimecode(Math.max(0, this.getSegmentDuration() - this.props.livePosition)).substr(3, 5)
+					}
 				</div>
 				<div className='segment-timeline__mos-id'>{this.props.segment.mosId}</div>
 				<div className='segment-timeline__output-layers'>
