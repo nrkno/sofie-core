@@ -469,7 +469,7 @@ Meteor.methods({
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
-					name: 'Knut Knudsen Eigeland||NRK',
+					name: 'Knut Knudsen Eigeland',
 						trigger: {
 						type: 0,
 						value: 2.5
@@ -530,7 +530,7 @@ Meteor.methods({
 					runningOrderId: seg1.runningOrderId
 				}
 				SegmentLines.insert(segLine)
-				
+
 			// Cam	
 				segmentLineItem = literal<SegmentLineItem>({
 					_id: segLine._id + ':' + Random.id(5),
@@ -577,7 +577,7 @@ Meteor.methods({
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
-					name: 'Siv Kristin Sællmann',
+					name: 'Siv Kristin Sællmann||reporter',
 						trigger: {
 						type: 0,
 						value: 2.5
@@ -596,7 +596,7 @@ Meteor.methods({
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
-					name: 'Helge Sandåker',
+					name: 'Helge Sandåker||ordfører Marnadal (Ap)',
 						trigger: {
 						type: 0,
 						value: 26
@@ -618,7 +618,25 @@ Meteor.methods({
 					name: 'Foto: Dag Lauvland/Lindesnes Avis',
 					trigger: {
 						type: 0,
-						value: 36
+						value: 39
+					},
+					status: RundownAPI.LineItemStatusCode.OK,
+					sourceLayerId: 'studio0-graphics0',
+					outputLayerId: 'studio0-pgm0',
+					expectedDuration: 4,
+					disabled: false
+				})
+				SegmentLineItems.insert(segmentLineItem)
+
+				segmentLineItem = literal<SegmentLineItem>({
+					_id: segLine._id + ':' + Random.id(5),
+					mosId: segLine.mosId,
+					segmentLineId: segLine._id,
+					runningOrderId: roId,
+					name: 'Foto/redigering Geir Ingar Egeland',
+					trigger: {
+						type: 0,
+						value: 97
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-graphics0',
