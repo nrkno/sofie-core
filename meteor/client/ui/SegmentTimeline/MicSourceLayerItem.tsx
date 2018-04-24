@@ -32,10 +32,10 @@ export class MicSourceLayerItem extends React.Component<ISourceLayerItemProps> {
 		let end = labelItems[1] || ''
 
 		return [
-			<span className='segment-timeline__layer-item__label bold' key={this.props.segmentLineItem._id + '-start'}>
+			<span className='segment-timeline__layer-item__label first-words' key={this.props.segmentLineItem._id + '-start'}>
 				{begin}
 			</span>,
-			<span className='segment-timeline__layer-item__label last-words bold' key={this.props.segmentLineItem._id + '-finish'}>
+			<span className='segment-timeline__layer-item__label last-words' key={this.props.segmentLineItem._id + '-finish'}>
 				{end}
 			</span>,
 			<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'}

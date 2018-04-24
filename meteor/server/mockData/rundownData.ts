@@ -425,26 +425,6 @@ Meteor.methods({
 			})
 			SegmentLineItems.insert(segmentLineItem)
 
-		
-			// Studio screen
-				segmentLineItem = literal<SegmentLineItem>({
-					_id: segLine._id + ':' + Random.id(5),
-					mosId: segLine.mosId,
-					segmentLineId: segLine._id,
-					runningOrderId: roId,
-					name: 'Skjermloop',
-					trigger: {
-						type: 0,
-						value: 0
-					},	
-					status: RundownAPI.LineItemStatusCode.OK,
-					sourceLayerId: 'studio0-vt0',
-					outputLayerId: 'studio0-monitor0',
-					expectedDuration: Number.POSITIVE_INFINITY,
-					disabled: false
-				})
-				SegmentLineItems.insert(segmentLineItem)
-
 			// Camera 1
 				let cameraStartSegmentLineItemId = segLine._id + ':' + Random.id(5)
 				segmentLineItem = literal<SegmentLineItem>({
@@ -471,10 +451,10 @@ Meteor.methods({
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
-					name: 'God kveld, vi ska først...||...til heile prosjektet.',
+					name: 'God fredagskveld, vi ska først...||...til heile prosjektet.',
 					trigger: {
 						type: 0,
-						value: 0
+						value: 0.5
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-mic0',
@@ -493,7 +473,7 @@ Meteor.methods({
 					name: 'Knut Knudsen Eigeland||NRK',
 						trigger: {
 						type: 0,
-						value: 1.5
+						value: 2.5
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-lower-third0',
@@ -503,8 +483,7 @@ Meteor.methods({
 				})
 				SegmentLineItems.insert(segmentLineItem)
 
-
-			// Padder
+			// Next	
 				segLine = {
 					_id: seg1._id + '-line' + line,
 					_rank: line++,
@@ -514,60 +493,143 @@ Meteor.methods({
 				}
 				SegmentLines.insert(segLine)
 
+			// Studio screen
 				segmentLineItem = literal<SegmentLineItem>({
 					_id: segLine._id + ':' + Random.id(5),
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
-					name: 'Padd..||...padd.',
+					name: 'Liberstad skjerm',
+					trigger: {
+						type: 0,
+						value: 0
+					},
+					transitions: {
+						inTransition: {
+							type: Transition.WIPE,
+							duration: 0.5,
+							easing: Ease.EASEINOUTSINE,
+							direction: Direction.LEFT
+						}
+					},
+	
+					status: RundownAPI.LineItemStatusCode.OK,
+					sourceLayerId: 'studio0-vt0',
+					outputLayerId: 'studio0-monitor0',
+					expectedDuration: 20,
+					disabled: false
+				})
+				SegmentLineItems.insert(segmentLineItem)
+
+
+			// Next	
+				segLine = {
+					_id: seg1._id + '-line' + line,
+					_rank: line++,
+					mosId: seg1.mosId + '_LINE' + line++,
+					segmentId: seg1._id,
+					runningOrderId: seg1.runningOrderId
+				}
+				SegmentLines.insert(segLine)
+				
+			// Cam	
+				segmentLineItem = literal<SegmentLineItem>({
+					_id: segLine._id + ':' + Random.id(5),
+					mosId: segLine.mosId,
+					segmentLineId: segLine._id,
+					runningOrderId: roId,
+					name: '1',
 					trigger: {
 						type: 0,
 						value: 0
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
-					sourceLayerId: 'studio0-mic0',
+					sourceLayerId: 'studio0-camera0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 8,
-					disabled: false
+					expectedDuration: Number.POSITIVE_INFINITY,
+					disabled: false,
+					continuesRefId: cameraStartSegmentLineItemId
 				})
 				SegmentLineItems.insert(segmentLineItem)
 
+			// VT
 				segmentLineItem = literal<SegmentLineItem>({
 					_id: segLine._id + ':' + Random.id(5),
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
-					name: 'Våryre padder',
+					name: 'Liberstad VB',
 					trigger: {
 						type: 0,
-						value: 0.5
+						value: 0
+					},
+					status: RundownAPI.LineItemStatusCode.OK,
+					sourceLayerId: 'studio0-vt0',
+					outputLayerId: 'studio0-pgm0',
+					expectedDuration: 103,
+					disabled: false
+				})
+				SegmentLineItems.insert(segmentLineItem)
+
+
+			// Name
+				segmentLineItem = literal<SegmentLineItem>({
+					_id: segLine._id + ':' + Random.id(5),
+					mosId: segLine.mosId,
+					segmentLineId: segLine._id,
+					runningOrderId: roId,
+					name: 'Siv Kristin Sællmann',
+						trigger: {
+						type: 0,
+						value: 2.5
+					},
+					status: RundownAPI.LineItemStatusCode.OK,
+					sourceLayerId: 'studio0-lower-third0',
+					outputLayerId: 'studio0-pgm0',
+					expectedDuration: 4,
+					disabled: false
+				})
+				SegmentLineItems.insert(segmentLineItem)
+		
+			// Name
+				segmentLineItem = literal<SegmentLineItem>({
+					_id: segLine._id + ':' + Random.id(5),
+					mosId: segLine.mosId,
+					segmentLineId: segLine._id,
+					runningOrderId: roId,
+					name: 'Helge Sandåker',
+						trigger: {
+						type: 0,
+						value: 26
+					},
+					status: RundownAPI.LineItemStatusCode.OK,
+					sourceLayerId: 'studio0-lower-third0',
+					outputLayerId: 'studio0-pgm0',
+					expectedDuration: 4,
+					disabled: false
+				})
+				SegmentLineItems.insert(segmentLineItem)
+		
+			// Graphics	
+				segmentLineItem = literal<SegmentLineItem>({
+					_id: segLine._id + ':' + Random.id(5),
+					mosId: segLine.mosId,
+					segmentLineId: segLine._id,
+					runningOrderId: roId,
+					name: 'Foto: Dag Lauvland/Lindesnes Avis',
+					trigger: {
+						type: 0,
+						value: 36
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-graphics0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 6.4,
+					expectedDuration: 4,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
 
-				segmentLineItem = literal<SegmentLineItem>({
-					_id: segLine._id + ':' + Random.id(5),
-					mosId: segLine.mosId,
-					segmentLineId: segLine._id,
-					runningOrderId: roId,
-					name: 'Padder',
-					trigger: {
-						type: 0,
-						value: 0.0
-					},
-					status: RundownAPI.LineItemStatusCode.OK,
-					sourceLayerId: 'studio0-live-speak0',
-					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 6.9,
-					disabled: false
-				})
-				SegmentLineItems.insert(segmentLineItem)
-
+			// Cam	
 				segmentLineItem = literal<SegmentLineItem>({
 					_id: segLine._id + ':' + Random.id(5),
 					mosId: segLine.mosId,
