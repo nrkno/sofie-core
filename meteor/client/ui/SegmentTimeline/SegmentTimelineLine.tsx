@@ -41,7 +41,11 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 			return this.props.layer.items
 				.filter((segmentLineItem) => {
 					// filter only segment line items belonging to this segment line
-					return (segmentLineItem.segmentLineId === this.props.segmentLine._id) ? true : false
+					return (segmentLineItem.segmentLineId === this.props.segmentLine._id) ?
+						// filter only segment line items, that have not yet been linked to parent items
+						((segmentLineItem as SegmentLineItemUi).linked !== true) ?
+						true : false
+					: false
 				})
 				.map((segmentLineItem) => {
 					return (

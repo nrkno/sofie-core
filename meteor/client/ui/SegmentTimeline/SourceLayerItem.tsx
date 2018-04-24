@@ -69,10 +69,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration : 0
 		let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration : 0
 
-		let itemDuration = (segmentLineItem.duration || segmentLineItem.renderedDuration || segmentLineItem.expectedDuration)
-		if (!Number.isFinite(itemDuration)) {
-			itemDuration = (this.props.totalSegmentLineDuration || 0) - (segmentLineItem.renderedInPoint || 0)
-		}
+		let itemDuration = segmentLineItem.renderedDuration || segmentLineItem.expectedDuration
 
 		if (this.props.relative) {
 			return {
