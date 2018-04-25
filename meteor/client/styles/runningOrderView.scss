@@ -91,6 +91,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	grid-template-columns: [segment-name] 200px [segment-group-controls] 120px [timeline] auto [end];
 	grid-template-rows: [header] $segment-header-height [main-view] auto [zoom-area] auto [end];
 	overflow: hidden;
+	user-select: none;
 	
 	width: auto;
 	margin: 1.5em;
