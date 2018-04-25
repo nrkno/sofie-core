@@ -67,7 +67,7 @@ interface IPropsHeader {
 	key: string,
 	segment: SegmentUi,
 	studioInstallation: StudioInstallation,
-	segmentLines: Array<SegmentLine>,
+	segmentLines: Array<SegmentLineUi>,
 	runningOrder: RunningOrder,
 	timeScale: number,
 	isLiveSegment: boolean,
@@ -261,6 +261,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 	debugDemoLiveLineInterval?: NodeJS.Timer
 	debugDemoLiveLineStart: number
 	isLiveSegment: boolean
+	roCurrentSegmentId: string | null
 
 	constructor (props) {
 		super(props)
@@ -290,6 +291,25 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		if (this.isLiveSegment === true && this.props.isLiveSegment === false) {
 			this.isLiveSegment = false
 			this.debugStopDemoLiveLine()
+		}
+		// TODO: This is just a debug/mock implementation. The segments should be cut short on Take Next,
+		// thus automatically making the OnAir line be, where it should be
+		if (this.roCurrentSegmentId && this.props.runningOrder.currentSegmentLineId !== this.roCurrentSegmentId) {
+			if (this.debugDemoLiveLineInterval) {
+				let newCurrentSegmentLine = this.props.segmentLines.findIndex((item) => item._id === this.props.runningOrder.currentSegmentLineId)
+				if (newCurrentSegmentLine >= 0 && this.props.segmentLines[newCurrentSegmentLine].startsAt) {
+					const playoutLength = (Date.now() - this.debugDemoLiveLineStart) / 1000
+					console.log(playoutLength, this.props.segmentLines[newCurrentSegmentLine].startsAt)
+					if (this.props.segmentLines[newCurrentSegmentLine].startsAt! > playoutLength) {
+						console.log(this.debugDemoLiveLineStart)
+						this.debugDemoLiveLineStart -= (this.props.segmentLines[newCurrentSegmentLine].startsAt! - playoutLength) * 1000
+						console.log(this.debugDemoLiveLineStart)
+					}
+				}
+			}
+			this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
+		} else {
+			this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
 		}
 	}
 
@@ -347,7 +367,8 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 
 	render () {
 		return (
-			<SegmentTimeline key={this.props.segment._id} segment={this.props.segment}
+			<SegmentTimeline key={this.props.segment._id}
+							 segment={this.props.segment}
 							 studioInstallation={this.props.studioInstallation}
 							 segmentLines={this.props.segmentLines}
 							 timeScale={this.props.timeScale}
