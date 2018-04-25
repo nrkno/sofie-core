@@ -496,7 +496,9 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 			&.live {
 				.segment-timeline__segment-line__nextline {
-					display: none;
+					&::after {
+						display: none;
+					}
 				}
 			}
 
