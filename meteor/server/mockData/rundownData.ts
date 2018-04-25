@@ -557,7 +557,7 @@ Meteor.methods({
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
-					name: 'Liberstad VB',
+					name: 'Liberstad VB||...som de da planlegger.',
 					trigger: {
 						type: 0,
 						value: 0

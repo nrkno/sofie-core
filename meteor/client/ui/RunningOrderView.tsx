@@ -47,10 +47,6 @@ const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 					Ladde rundown
 				</button>
 
-				<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_setOnAirLine', 'ro1-seg1-line0')}>
-					Tittel 2 On Air
-				</button>
-
 				<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_takeNext', props.runningOrder._id)}>
 					Take
 				</button>
