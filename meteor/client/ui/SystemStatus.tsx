@@ -69,6 +69,9 @@ export const DeviceItem = translate()(class extends React.Component<IDeviceItemP
 
 		return (
 			<tr className='device-item'>
+				<td className='device-item__id'>
+					<p>{this.props.device._id}</p>
+				</td>
 				<td className='device-item__name'>
 					<p>{this.props.device.name}</p>
 				</td>
@@ -113,6 +116,9 @@ export class SystemStatus extends React.Component<IPropsHeader> {
 					<table className='table system-status-table'>
 						<thead>
 							<tr>
+								<th className='c1'>
+									{t('ID')}
+								</th>
 								<th className='c3'>
 									{t('Name')}
 								</th>
@@ -125,7 +131,7 @@ export class SystemStatus extends React.Component<IPropsHeader> {
 								<th className='c2'>
 									{t('Status')}
 								</th>
-								<th className='c5'>
+								<th className='c4'>
 									{t('Last seen')}
 								</th>
 							</tr>
@@ -145,6 +151,6 @@ export default translate()(withTracker(() => {
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
 	return {
-		devices: PeripheralDevices.find({}, { sort: { created: -1 } }).fetch()
+		devices: PeripheralDevices.find({}, { sort: { lastSeen: -1 } }).fetch()
 	}
 })(SystemStatus))
