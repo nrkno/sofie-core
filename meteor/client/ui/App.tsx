@@ -13,6 +13,7 @@ import { parse as queryStringParse } from 'query-string'
 import Header from './Header'
 import Dashboard from './Dashboard'
 import SystemStatus from './SystemStatus'
+import Settings from './Settings'
 import { RunningOrderList } from './RunningOrderList'
 import { RunningOrderView } from './RunningOrderView'
 import { NymansPlayground } from '../ui/NymansPlayground'
@@ -96,6 +97,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 						<Route path='/ro/:runningOrderId' component={RunningOrderView} />
 						<Route path='/nymansPlayground' component={NymansPlayground} />
 						<Route path='/status' component={SystemStatus} />
+						<Route path='/settings' component={Settings} />
 						<Redirect to='/' />
 					</Switch>
 				</div>

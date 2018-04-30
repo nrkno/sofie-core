@@ -295,6 +295,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		// TODO: This is just a debug/mock implementation. The segments should be cut short on Take Next,
 		// thus automatically making the OnAir line be, where it should be
 		if (this.roCurrentSegmentId && this.props.runningOrder.currentSegmentLineId !== this.roCurrentSegmentId) {
+			// DISABLE THIS ENTIRE SECTION TO REMOVE "JUMP TO NEXT LINE"
 			if (this.debugDemoLiveLineInterval) {
 				let newCurrentSegmentLine = this.props.segmentLines.findIndex((item) => item._id === this.props.runningOrder.currentSegmentLineId)
 				if (newCurrentSegmentLine >= 0 && this.props.segmentLines[newCurrentSegmentLine].startsAt) {
