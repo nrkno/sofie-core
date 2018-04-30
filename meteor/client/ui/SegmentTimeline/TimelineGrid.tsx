@@ -192,12 +192,12 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 			if (typeof FontFace !== 'undefined') {
 				console.log('Loading grid font')
-				let ethicaFont = new FontFace('GridTimecodeFont', GRID_FONT_URL, {
+				let eticaFont = new FontFace('GridTimecodeFont', GRID_FONT_URL, {
 					style: 'normal',
 					weight: 100
 				})
-				ethicaFont.load()
-				ethicaFont.loaded.then((fontFace) => {
+				eticaFont.load()
+				eticaFont.loaded.then((fontFace) => {
 					console.log('Grid font loaded: ' + fontFace.status)
 					window.requestAnimationFrame(() => {
 						this.repaint()
@@ -205,7 +205,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				}, (fontFace) => {
 					console.log('Grid font failed to load: ' + fontFace.status)
 				})
-				document.fonts.add(ethicaFont)
+				document.fonts.add(eticaFont)
 			}
 
 			if (this.props.onResize) {

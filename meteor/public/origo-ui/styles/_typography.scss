@@ -1,5 +1,5 @@
 html, body {
-  font-family: Roboto, arial, sans-serif;
+  font-family: Roboto, Helvetica Neue, Arial, sans-serif;
   font-weight: 100;
   font-size: 16px;
   letter-spacing: 0.5px;
@@ -8,14 +8,14 @@ html, body {
 p,
 center,
 .table {
-  font-family: Roboto, arial, sans-serif;
+  font-family: Roboto, Helvetica Neue, Arial, sans-serif;
   font-weight: 100;
   line-height: 1.5;
 }
 
 h1,
 .h1 {
-  font-family: Ethica, arial, serif !important;
+  font-family: Roboto, Helvetica Neue, Arial, sans-serif !important;
   font-size: 1.5rem;
   font-weight: normal;
   font-family: inherit;
@@ -26,7 +26,7 @@ h2,
 .h2,
 .text-l,
 .text-l p {
-  font-family: Ethica, arial, serif !important;
+  font-family: Roboto, Helvetica Neue, Arial, sans-serif !important;
   font-size: 1.5rem;
   font-weight: normal;
   font-family: inherit;
@@ -35,7 +35,7 @@ h2,
 
 h3,
 .h3 {
-  font-family: Roboto, arial, sans-serif;
+  font-family: Roboto, Helvetica Neue, Arial, sans-serif;
   font-size: 0.875rem;
   text-transform: uppercase;
   font-weight: bold;
@@ -45,7 +45,7 @@ h3,
 
 h4,
 .h4 {
-  font-family: Roboto, arial, sans-serif;
+  font-family: Roboto, Helvetica Neue, Arial, sans-serif;
   font-size: 0.875rem;
   text-transform: uppercase;
   font-weight: normal;
@@ -61,7 +61,7 @@ h4,
 .text-m,
 .bi,
 .mi{
-  font-family: Roboto, arial, sans-serif;
+  font-family: Roboto, Helvetica Neue, Arial, sans-serif;
   font-size: 1.25rem;
   font-weight: 100;
   line-height: 1.5;
@@ -69,7 +69,7 @@ h4,
 
 .action-btn{
   font-size: 1rem;
-  font-family: Roboto, arial, sans-serif;
+  font-family: Roboto, Helvetica Neue, Arial, sans-serif;
   font-weight: 100;
   line-height: 1.5;
 }
@@ -89,7 +89,7 @@ h5,
 .btn,
 .btn-tight {
   font-size: 0.875rem;
-  font-family: Roboto, arial, sans-serif;
+  font-family: Roboto, Helvetica Neue, Arial, sans-serif;
   font-weight: 100;
   line-height: 1.5;
   letter-spacing: 0.5px;
@@ -103,7 +103,7 @@ h5,
 .text-xs .action-btn,
   //.notification-s,
 .tooltip-tight {
-  font-family: Roboto, arial, sans-serif;
+  font-family: Roboto, Helvetica Neue, Arial, sans-serif;
   font-size: 0.75rem;
   font-weight: 100;
   line-height: 1.5;
@@ -208,6 +208,6 @@ h5,
 }
 
 .force-etica{
-  font-family: Ethica, arial, serif !important;
+  font-family: Etica, Roboto, Helvetica Neue, Arial, sans-serif !important;
   font-weight: normal;
 }

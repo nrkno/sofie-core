@@ -31,14 +31,15 @@ $font-path: '../fonts'!default;
   font-weight: 100;
   font-style: normal;
 }
-
+/*
 @font-face {
-  font-family: 'Ethica Book';
+  font-family: 'Etica Book';
   src: url('#{$font-path}/LFT_Etica_Book.eot');
-  src: local('LFT Ethica Book'), local('LFT_Ethica_Book'),
+  src: local('LFT Etica Book'), local('LFT_Etica_Book'),
   url('#{$font-path}/LFT_Etica_Book.eot?#iefix') format('embedded-opentype'),
   url('#{$font-path}/LFT_Etica_Book.woff2') format('woff2'),
   url('#{$font-path}/LFT_Etica_Book.woff') format('woff');
   font-weight: normal;
   font-style: normal;
 }
+*/
