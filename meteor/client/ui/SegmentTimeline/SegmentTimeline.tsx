@@ -44,6 +44,7 @@ interface IPropsHeader {
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
 	onFollowLiveLine: (state: boolean, event: any) => void
+	onContextMenu?: (contextMenuContext: any) => void
 }
 interface IStateHeader {
 	timelineWidth: number
@@ -76,6 +77,19 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 		if (this.props.onFollowLiveLine) {
 			this.props.onFollowLiveLine(true, e)
 		}
+	}
+
+	getSegmentContext = (props) => {
+		const ctx = {
+			segment: this.props.segment,
+			segmentLine: this.props.segmentLines.length > 0 ? this.props.segmentLines[0] : null
+		}
+
+		if (this.props.onContextMenu && typeof this.props.onContextMenu === 'function') {
+			this.props.onContextMenu(ctx)
+		}
+
+		return ctx
 	}
 
 	getSegmentDuration () {
@@ -214,6 +228,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 			})}
 			data-mos-id={this.props.segment._id}>
 				<ContextMenuTrigger id='segment-timeline-context-menu'
+					collect={this.getSegmentContext}
 					attributes={{
 						className: 'segment-timeline__title'
 					}}

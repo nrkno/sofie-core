@@ -3,7 +3,6 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { translate, InjectedTranslateProps } from 'react-i18next'
-import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
 import * as ClassNames from 'classnames'
 import * as $ from 'jquery'
@@ -15,7 +14,9 @@ import { NavLink } from 'react-router-dom'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { SegmentTimelineContainer } from './SegmentTimeline/SegmentTimelineContainer'
+import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { SegmentLine } from '../../lib/collections/SegmentLines'
 
 interface IHeaderProps {
 	timeNow: number
@@ -85,6 +86,7 @@ interface IPropsHeader extends InjectedTranslateProps {
 interface IStateHeader {
 	timeScale: number
 	studioMode: boolean
+	contextMenuContext: any
 }
 
 export const RunningOrderView = translate()(withTracker((props, state) => {
@@ -116,7 +118,8 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 
 		this.state = {
 			timeScale: 50,
-			studioMode: localStorage.getItem('studioMode') === '1' ? true : false
+			studioMode: localStorage.getItem('studioMode') === '1' ? true : false,
+			contextMenuContext: null
 		}
 	}
 
@@ -136,6 +139,18 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		}
 	}
 
+	onContextMenu = (contextMenuContext: any) => {
+		this.setState({
+			contextMenuContext
+		})
+	}
+
+	onSetNext = (segmentLine: SegmentLine) => {
+		if (segmentLine && segmentLine._id) {
+			Meteor.call('debug_setNextLine', segmentLine._id)
+		}
+	}
+
 	renderSegments () {
 		if (this.props.segments !== undefined && this.props.studioInstallation !== undefined) {
 			return this.props.segments.map((segment) => (
@@ -146,6 +161,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 										  liveLineHistorySize='100'
 										  timeScale={this.state.timeScale}
 										  onTimeScaleChange={this.onTimeScaleChange}
+										  onContextMenu={this.onContextMenu}
 										  />
 			))
 		} else {
@@ -179,11 +195,8 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		return (
 			<div>
 				<RunningOrderHeader timeNow={0} debugOnAirLine={this.debugOnAirLine} runningOrder={this.props.runningOrder} />
-				<ContextMenu id='segment-timeline-context-menu'>
-					<MenuItem>
-						{t('Set as Next')}
-					</MenuItem>
-				</ContextMenu>
+				<SegmentContextMenu contextMenuContext={this.state.contextMenuContext}
+					onSetNext={this.onSetNext} />
 				{this.renderSegmentsList()}
 			</div>
 		)

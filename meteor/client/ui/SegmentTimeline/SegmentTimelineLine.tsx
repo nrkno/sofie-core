@@ -16,6 +16,8 @@ import { SegmentUi, SegmentLineUi, IOutputLayerUi, ISourceLayerUi, SegmentLineIt
 import { TimelineGrid } from './TimelineGrid'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 
+import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
+
 import { RundownUtils } from '../../lib/rundown'
 
 interface ISourceLayerProps {
@@ -34,8 +36,23 @@ interface ISourceLayerProps {
 	followLiveLine: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
+	onContextMenu?: (contextMenuContext: any) => void
 }
 class SourceLayer extends React.Component<ISourceLayerProps> {
+
+	getSegmentLineContext = (props) => {
+		const ctx = {
+			segment: this.props.segment,
+			segmentLine: this.props.segmentLine
+		}
+
+		if (this.props.onContextMenu && typeof this.props.onContextMenu === 'function') {
+			this.props.onContextMenu(ctx)
+		}
+
+		return ctx
+	}
+
 	renderInside () {
 		if (this.props.layer.items !== undefined) {
 			return this.props.layer.items
@@ -68,9 +85,12 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 
 	render () {
 		return (
-			<div className='segment-timeline__layer'>
+			<ContextMenuTrigger id='segment-timeline-context-menu' attributes={{
+				className: 'segment-timeline__layer'
+			}}
+				collect={this.getSegmentLineContext}>
 				{this.renderInside()}
-			</div>
+			</ContextMenuTrigger>
 		)
 	}
 }
@@ -89,6 +109,7 @@ interface IOutputGroupProps {
 	followLiveLine: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
+	onContextMenu?: (contextMenuContext: any) => void
 }
 class OutputGroup extends React.Component<IOutputGroupProps> {
 	renderInside () {
@@ -138,6 +159,7 @@ interface IPropsHeader {
 	livePosition: number | null
 	relative?: boolean
 	totalSegmentDuration?: number
+	onContextMenu?: (contextMenuContext: any) => void
 }
 
 export const SegmentTimelineLine = translate()(class extends React.Component<IPropsHeader & InjectedTranslateProps> {

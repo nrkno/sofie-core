@@ -74,6 +74,7 @@ interface IPropsHeader {
 	isNextSegment: boolean,
 	liveLineHistorySize: number
 	onTimeScaleChange?: (timeScaleVal: number) => void
+	onContextMenu?: (contextMenuContext: any) => void
 }
 interface IStateHeader {
 	scrollLeft: number,
@@ -384,6 +385,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 							 followLiveLine={this.state.followLiveLine}
 							 liveLineHistorySize={this.props.liveLineHistorySize}
 							 livePosition={this.state.livePosition}
+							 onContextMenu={this.props.onContextMenu}
 							 onFollowLiveLine={this.onFollowLiveLine}
 							 onZoomChange={(newScale: number, e) => this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)}
 							 onScroll={this.onScroll} />

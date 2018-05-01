@@ -8,8 +8,6 @@ import { ISourceLayerUi,
 		 SegmentLineUi,
 		 SegmentLineItemUi } from './SegmentTimelineContainer'
 
-import * as FloatAffixed from 'react-float-affixed'
-
 import { RundownAPI } from './../../../lib/api/rundown'
 import { Transition } from '../../../lib/constants/casparcg'
 

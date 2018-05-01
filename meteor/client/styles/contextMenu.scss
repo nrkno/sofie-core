@@ -1,6 +1,6 @@
 nav.react-contextmenu {
 	font-size: 0.9rem;
-	background: #000;
+	background: #111;
 	color: #fff;
 	padding: 0.5em 0;
 	box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
@@ -11,8 +11,12 @@ nav.react-contextmenu {
 		padding: 0.3em 0.5em;
 		cursor: pointer;
 
-		&--selected {
+		&.react-contextmenu-item--selected:not(.react-contextmenu-item--disabled) {
 			background: #444;
+		}
+
+		&.react-contextmenu-item--disabled {
+			opacity: 0.5;
 		}
 	}
 }

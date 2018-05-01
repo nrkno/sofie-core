@@ -63,6 +63,11 @@ $timeline-layer-height: 1em;
             position: relative;
             min-height: 1em;
             line-height: 1em;
+            pointer-events: auto;
+
+            > * {
+                pointer-events: none;
+            }
 
             > .segment-timeline__layer-item {
                 position: absolute;
