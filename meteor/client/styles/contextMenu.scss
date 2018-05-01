@@ -1,0 +1,18 @@
+nav.react-contextmenu {
+	font-size: 0.9rem;
+	background: #000;
+	color: #fff;
+	padding: 0.5em 0;
+	box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
+	min-width: 10rem;
+    z-index: 10;
+
+	.react-contextmenu-item {
+		padding: 0.3em 0.5em;
+		cursor: pointer;
+
+		&--selected {
+			background: #444;
+		}
+	}
+}

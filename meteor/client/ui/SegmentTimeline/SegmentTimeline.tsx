@@ -8,6 +8,8 @@ import Moment from 'react-moment'
 import * as _ from 'underscore'
 import * as $ from 'jquery'
 
+import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
+
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
@@ -202,7 +204,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 			})
 		}
 	}
-	
+
 	render () {
 		return (
 			<div className={ClassNames('segment-timeline', {
@@ -210,8 +212,14 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 				'live': this.props.isLiveSegment,
 				'next': this.props.isNextSegment
 			})}
-				data-mos-id={this.props.segment._id}>
-				<h2 className='segment-timeline__title'>{this.props.segment.name}</h2>
+			data-mos-id={this.props.segment._id}>
+				<ContextMenuTrigger id='segment-timeline-context-menu'
+					attributes={{
+						className: 'segment-timeline__title'
+					}}
+					renderTag='h2'>
+					{this.props.segment.name}
+				</ContextMenuTrigger>
 				<div className='segment-timeline__duration'
 					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
 					 {RundownUtils.formatTimeToTimecode(this.getSegmentDuration())}

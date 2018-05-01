@@ -3,6 +3,7 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { translate, InjectedTranslateProps } from 'react-i18next'
+import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
 import * as ClassNames from 'classnames'
 import * as $ from 'jquery'
@@ -173,9 +174,16 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 	}
 
 	render () {
+		const { t } = this.props
+
 		return (
 			<div>
 				<RunningOrderHeader timeNow={0} debugOnAirLine={this.debugOnAirLine} runningOrder={this.props.runningOrder} />
+				<ContextMenu id='segment-timeline-context-menu'>
+					<MenuItem>
+						{t('Set as Next')}
+					</MenuItem>
+				</ContextMenu>
 				{this.renderSegmentsList()}
 			</div>
 		)
