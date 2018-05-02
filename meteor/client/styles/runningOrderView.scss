@@ -591,6 +591,54 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 							background: $segment-layer-background-mic;
 						}
 
+						&.splits {
+							.segment-timeline__layer-item__preview {
+								position: absolute;
+								top: 0;
+								left: 0;
+								right: 0;
+								bottom: 0;
+								display: flex;
+								flex-direction: column-reverse;
+
+								.segment-timeline__layer-item__preview__item {
+									flex: 1 1;
+
+									&.camera {
+										background: $segment-layer-background-camera;
+									}
+
+									&.graphics {
+										background: $segment-layer-background-graphics;
+									}
+
+									&.lower-third {
+										background: $segment-layer-background-lower-third;
+									}
+
+									&.live-speak {
+										background: $segment-layer-background-live-speak;
+									}
+
+									&.vt {
+										background: $segment-layer-background-vt;
+									}
+
+									&.remote {
+										background: $segment-layer-background-remote;
+									}
+
+									&.script {
+										background: $segment-layer-background-script;
+									}
+
+									&.mic {
+										background: $segment-layer-background-mic;
+									}
+								}
+							}
+						}
+
 						.segment-timeline__layer-item__label {
 							position: relative;
 							z-index: 10;

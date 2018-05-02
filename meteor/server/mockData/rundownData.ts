@@ -44,6 +44,14 @@ Meteor.methods({
 					onPGMClean: false
 				},
 				{
+					_id: 'studio0-split0',
+					_rank: 15,
+					name: 'Split',
+					type: RundownAPI.SourceLayerType.SPLITS,
+					unlimited: false,
+					onPGMClean: true,
+				},
+				{
 					_id: 'studio0-graphics0',
 					_rank: 20,
 					name: 'GFX',
@@ -666,7 +674,24 @@ Meteor.methods({
 				})
 				SegmentLineItems.insert(segmentLineItem)
 
-
+			// Split	
+				segmentLineItem = literal<SegmentLineItem>({
+					_id: segLine._id + ':' + Random.id(5),
+					mosId: segLine.mosId,
+					segmentLineId: segLine._id,
+					runningOrderId: roId,
+					name: 'Split Demo',
+					trigger: {
+						type: 0,
+						value: 50
+					},
+					status: RundownAPI.LineItemStatusCode.OK,
+					sourceLayerId: 'studio0-split0',
+					outputLayerId: 'studio0-pgm0',
+					expectedDuration: 10,
+					disabled: false
+				})
+				SegmentLineItems.insert(segmentLineItem)
 	},
 
 	'debug_sampleRundown' () {

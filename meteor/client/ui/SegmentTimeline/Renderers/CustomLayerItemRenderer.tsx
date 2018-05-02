@@ -26,7 +26,7 @@ interface ISourceLayerItemProps {
 	cursorPosition: JQueryCoordinates
 }
 
-export class CustomLayerItemRenderer extends React.Component<ISourceLayerItemProps> {
+export class CustomLayerItemRenderer<IProps = any, IState = any> extends React.Component<ISourceLayerItemProps & IProps, IState> {
 
 	getFloatingInspectorStyle (): {
 		[key: string]: string

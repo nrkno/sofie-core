@@ -17,6 +17,7 @@ import * as ClassNames from 'classnames'
 import { MicSourceRenderer } from './Renderers/MicSourceRenderer'
 import { VTSourceRenderer } from './Renderers/VTSourceRenderer'
 import { L3rdSourceRenderer } from './Renderers/L3rdSourceRenderer'
+import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
 
 interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
@@ -137,6 +138,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				return <VTSourceRenderer key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
 			case RundownAPI.SourceLayerType.LOWER_THIRD:
 				return <L3rdSourceRenderer key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
+			case RundownAPI.SourceLayerType.SPLITS:
+				return <SplitsSourceRenderer key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
 			default:
 				return [
 					<span key={this.props.segmentLineItem._id} className={
