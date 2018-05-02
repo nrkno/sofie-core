@@ -708,6 +708,9 @@ methods[PeripheralDeviceAPI.methods.mosRoItemSwap] = (deviceId, deviceToken, Act
 methods[PeripheralDeviceAPI.methods.mosRoReadyToAir] = (deviceId, deviceToken, Action: IMOSROReadyToAir) => {
 	return ServerPeripheralDeviceAPI.mosRoReadyToAir(deviceId, deviceToken, Action)
 }
+methods[PeripheralDeviceAPI.methods.mosRoFullStory] = (deviceId, deviceToken, story: IMOSROFullStory) => {
+	return ServerPeripheralDeviceAPI.mosRoFullStory(deviceId, deviceToken, story)
+}
 
 // Apply methods:
 Meteor.methods(methods)
