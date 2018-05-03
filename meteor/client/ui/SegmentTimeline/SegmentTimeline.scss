@@ -81,6 +81,13 @@ $timeline-layer-height: 1em;
             }
         }
     }
+
+    .segment-timeline__layer-item-appendage {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        display: block;
+    }
 }
 .segment-timeline__output-layers {
     display: block;

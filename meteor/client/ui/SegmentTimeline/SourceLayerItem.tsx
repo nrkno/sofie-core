@@ -39,9 +39,9 @@ interface ISourceLayerItemState {
 	showMiniInspector: boolean
 	elementPosition: JQueryCoordinates
 	cursorPosition: JQueryCoordinates
+	itemElement: HTMLDivElement | null
 }
 export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISourceLayerItemState> {
-	itemElement: HTMLDivElement
 
 	constructor (props) {
 		super(props)
@@ -55,12 +55,15 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			cursorPosition: {
 				top: 0,
 				left: 0
-			}
+			},
+			itemElement: null
 		}
 	}
 
 	setRef = (e: HTMLDivElement) => {
-		this.itemElement = e
+		this.setState({
+			itemElement: e
+		})
 	}
 
 	getItemStyle (): { [key: string]: string } {
@@ -107,7 +110,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			showMiniInspector: v
 		})
 		// console.log($(this.itemElement).offset())
-		let elementPos = $(this.itemElement).offset() || {
+		let elementPos = this.state.itemElement && $(this.state.itemElement).offset() || {
 			top: 0,
 			left: 0
 		}
@@ -132,14 +135,15 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 	renderInsideItem () {
 		switch (this.props.layer.type) {
+			case RundownAPI.SourceLayerType.SCRIPT:
 			case RundownAPI.SourceLayerType.MIC:
-				return <MicSourceRenderer key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
+				return <MicSourceRenderer key={this.props.segmentLineItem._id} {...this.props} {...this.state} />
 			case RundownAPI.SourceLayerType.VT:
-				return <VTSourceRenderer key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
+				return <VTSourceRenderer key={this.props.segmentLineItem._id} {...this.props} {...this.state} />
 			case RundownAPI.SourceLayerType.LOWER_THIRD:
-				return <L3rdSourceRenderer key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
+				return <L3rdSourceRenderer key={this.props.segmentLineItem._id} {...this.props} {...this.state} />
 			case RundownAPI.SourceLayerType.SPLITS:
-				return <SplitsSourceRenderer key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
+				return <SplitsSourceRenderer key={this.props.segmentLineItem._id} {...this.props} {...this.state} />
 			default:
 				return [
 					<span key={this.props.segmentLineItem._id} className={
@@ -151,7 +155,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						})
 					}
 					>{this.props.segmentLineItem.name}</span>,
-					<FloatingInspector key={this.props.segmentLineItem._id + '-fi'} shown={this.state.showMiniInspector && this.itemElement !== undefined}>
+					<FloatingInspector key={this.props.segmentLineItem._id + '-fi'} shown={this.state.showMiniInspector && this.state.itemElement !== null}>
 						<div className='segment-timeline__mini-inspector' style={{
 							'left': (this.state.elementPosition.left + this.state.cursorPosition.left).toString() + 'px',
 							'top': this.state.elementPosition.top.toString() + 'px'

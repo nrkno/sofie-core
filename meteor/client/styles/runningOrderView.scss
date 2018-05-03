@@ -220,7 +220,6 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	}
 
 	// The area controlling the zoom at the bottom of the segment
-	// TODO: implement zoom area
 	.segment-timeline__zoom-area {
 		position: relative;
 		grid-column: timeline / end;
@@ -297,6 +296,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 							border-bottom: none;
 						}
 					}
+				}
+
+				.segment-timeline__layer-item-appendage {
+					display: none;
 				}
 			}
 		}
@@ -732,6 +735,15 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 							}
 						}
 					}
+				}
+			}
+
+			// Layer-item appendages are parts of a layer item going beyond the layer (usually, across the entire timeline)
+			.segment-timeline__layer-item-appendage {
+				&.script-line {
+					width: 0;
+					z-index: 100;
+					border-left: 2px dashed $segment-layer-background-mic;
 				}
 			}
 		}

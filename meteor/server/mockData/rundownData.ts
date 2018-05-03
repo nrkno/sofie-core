@@ -359,7 +359,7 @@ Meteor.methods({
 					},
 					sourceLayerId: 'studio0-mic0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 7,
+					expectedDuration: 6.3,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
