@@ -63,6 +63,40 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	}
 }
 
+@mixin item-type-colors {
+	&.camera {
+		background: $segment-layer-background-camera;
+	}
+
+	&.graphics {
+		background: $segment-layer-background-graphics;
+	}
+
+	&.lower-third {
+		background: $segment-layer-background-lower-third;
+	}
+
+	&.live-speak {
+		background: $segment-layer-background-live-speak;
+	}
+
+	&.vt {
+		background: $segment-layer-background-vt;
+	}
+
+	&.remote {
+		background: $segment-layer-background-remote;
+	}
+
+	&.script {
+		background: $segment-layer-background-script;
+	}
+
+	&.mic {
+		background: $segment-layer-background-mic;
+	}
+}
+
 .header {
 	.timing {
 		display: flex;
@@ -559,37 +593,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 							z-index: 10;
 						}
 
-						&.camera {
-							background: $segment-layer-background-camera;
-						}
-
-						&.graphics {
-							background: $segment-layer-background-graphics;
-						}
-
-						&.lower-third {
-							background: $segment-layer-background-lower-third;
-						}
-
-						&.live-speak {
-							background: $segment-layer-background-live-speak;
-						}
-
-						&.vt {
-							background: $segment-layer-background-vt;
-						}
-
-						&.remote {
-							background: $segment-layer-background-remote;
-						}
-
-						&.script {
-							background: $segment-layer-background-script;
-						}
-
-						&.mic {
-							background: $segment-layer-background-mic;
-						}
+						@include item-type-colors();
 
 						&.splits {
 							.segment-timeline__layer-item__preview {
@@ -604,37 +608,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 								.segment-timeline__layer-item__preview__item {
 									flex: 1 1;
 
-									&.camera {
-										background: $segment-layer-background-camera;
-									}
-
-									&.graphics {
-										background: $segment-layer-background-graphics;
-									}
-
-									&.lower-third {
-										background: $segment-layer-background-lower-third;
-									}
-
-									&.live-speak {
-										background: $segment-layer-background-live-speak;
-									}
-
-									&.vt {
-										background: $segment-layer-background-vt;
-									}
-
-									&.remote {
-										background: $segment-layer-background-remote;
-									}
-
-									&.script {
-										background: $segment-layer-background-script;
-									}
-
-									&.mic {
-										background: $segment-layer-background-mic;
-									}
+									@include item-type-colors();
 								}
 							}
 						}
@@ -1008,10 +982,33 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		border-radius: 0px;
 		transform: translate(-100%, -100%);
 
-		> video {
+		> video, > .video-preview {
 			display: block;
 			width: 160px;
 			height: 90px;
+			background: #000;
+		}
+
+		> .video-preview {
+			position: relative;
+			overflow: hidden;
+
+			> .background {
+				position: absolute;
+				top: 0;
+				bottom: 0;
+				left: 0;
+				right: 0;
+			}
+
+			> .box {
+				position: absolute;
+				transform: translate(-50%, -50%);
+			}
+
+			& > * {
+				@include item-type-colors();
+			}
 		}
 	}
 }

@@ -42,7 +42,7 @@ export interface SegmentLineItem {
 		outTransition?: TimelineTransition
 	}
 	/** The object describing the item in detail */
-	content?: object
+	content?: any
 	/** The id of the item this item is a continuation of. If it is a continuation, the inTranstion must not be set, and trigger must be 0 */
 	continuesRefId?: string
 }
