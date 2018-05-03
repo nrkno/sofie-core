@@ -24,13 +24,13 @@ class Header extends React.Component<IPropsHeader> {
 					</div>
 				</div>
 				<div className='col c6 dark'>
-					<div className='links mod'>
+					<nav className='links mod'>
 						<NavLink to='/' activeClassName='active'>{t('Home')}</NavLink>
 						<NavLink to='/runningOrders' activeClassName='active'>{t('Running Orders')}</NavLink>
 						<NavLink to='/nymansPlayground' activeClassName='active'>{t('Nyman\'s Playground')}</NavLink>
 						<NavLink to='/status' activeClassName='active'>{t('Status')}</NavLink>
 						<NavLink to='/settings' activeClassName='active'>{t('Settings')}</NavLink>
-					</div>
+					</nav>
 				</div>
 			</div>
 		)

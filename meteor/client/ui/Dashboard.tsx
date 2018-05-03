@@ -13,7 +13,7 @@ class Dashboard extends React.Component<IPropsHeader> {
 
 		return (
 			<div>
-				<div className='mvl'>
+				<div className='mvs'>
 					<h1>{t('Welcome to Sofie')}</h1>
 				</div>
 			</div>
