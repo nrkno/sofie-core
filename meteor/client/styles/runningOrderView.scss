@@ -20,7 +20,7 @@ $segment-line-start-color: #898989;
 $segment-nextline-shade-width: 30px;
 $segment-nextline-shade-fill: linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.5));
 
-$liveline-timecode-color: #fff;
+$liveline-timecode-color:  #F9FF16;
 
 /** The top padding of the timeline has to be equal to the header-height, so that the
 	functional part of the timeline starts at the same level as the segment title
@@ -477,7 +477,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 		.segment-timeline__liveline__timecode {
 			position: absolute;
-			bottom: 0.1em;
+			bottom: -0.1em;
 			left: 5px;
 			font-size: 1.2em;
 			line-height: 1em;
@@ -525,12 +525,12 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 					content: ' ';
 					display: block;
 					position: absolute;
-					top: 0;
-    				left: 0;
+					top: -3px;
+    				left: -2px;
 					width: 0;
 					height: 0;
 					border-style: solid;
-					border-width: 3px 0 3px 9px;
+					border-width: 6px 0 6px 12px;
 					border-color: transparent transparent transparent $segment-line-start-color;
 				}
 			}
@@ -747,7 +747,9 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 				&.script-line {
 					width: 0;
 					z-index: 100;
-					border-left: 2px dashed $segment-layer-background-mic;
+					border-left: 2px dotted $segment-layer-background-mic;
+					margin-left: -2px;
+					box-shadow: 0px 0px 1px 1px rgba(0, 30, 0, 0.18);
 				}
 			}
 		}
