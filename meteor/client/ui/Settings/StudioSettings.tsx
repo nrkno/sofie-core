@@ -3,6 +3,7 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as ClassNames from 'classnames'
+import * as _ from 'underscore'
 import Moment from 'react-moment'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import * as CoreIcon from '@nrk/core-icons/jsx'
@@ -47,7 +48,7 @@ class StudioOutputSettings extends React.Component<IPropsHeader & InjectedTransl
 	}
 
 	isItemEdited = (item: IOutputLayer) => {
-		return this.state.editedOutputs.indexOf(item._id) >= 0;
+		return this.state.editedOutputs.indexOf(item._id) >= 0
 	}
 
 	finishEditItem = (item: IOutputLayer) => {
@@ -197,6 +198,7 @@ class StudioOutputSettings extends React.Component<IPropsHeader & InjectedTransl
 interface IStudioSourcesSettingsState {
 	showDeleteConfirm: boolean
 	deleteConfirmItem: ISourceLayer | undefined
+	editedSources: Array<string>
 }
 
 class StudioSourcesSettings extends React.Component<IPropsHeader & InjectedTranslateProps, IStudioSourcesSettingsState> {
@@ -205,7 +207,31 @@ class StudioSourcesSettings extends React.Component<IPropsHeader & InjectedTrans
 
 		this.state = {
 			showDeleteConfirm: false,
-			deleteConfirmItem: undefined
+			deleteConfirmItem: undefined,
+			editedSources: []
+		}
+	}
+
+	isItemEdited = (item: ISourceLayer) => {
+		return this.state.editedSources.indexOf(item._id) >= 0
+	}
+
+	finishEditItem = (item: ISourceLayer) => {
+		let index = this.state.editedSources.indexOf(item._id)
+		if (index >= 0) {
+			this.state.editedSources.splice(index, 1)
+			this.setState({
+				editedSources: this.state.editedSources
+			})
+		}
+	}
+
+	editItem = (item: ISourceLayer) => {
+		if (this.state.editedSources.indexOf(item._id) < 0) {
+			this.state.editedSources.push(item._id)
+			this.setState({
+				editedSources: this.state.editedSources
+			})
 		}
 	}
 
@@ -233,7 +259,7 @@ class StudioSourcesSettings extends React.Component<IPropsHeader & InjectedTrans
 			case RundownAPI.SourceLayerType.METADATA:
 				return t('Metadata')
 			default:
-				return t('Unknown source') + ' (' + type.toString() + ')'
+				return RundownAPI.SourceLayerType[type]
 		}
 	}
 
@@ -262,11 +288,25 @@ class StudioSourcesSettings extends React.Component<IPropsHeader & InjectedTrans
 
 	renderInputSources () {
 		const { t } = this.props
+
+		let sourceLayerTypeOptions = _.keys(RundownAPI.SourceLayerType).filter((item) => {
+			if (!Number.isNaN(Number.parseFloat(item))) {
+				return true
+			} else {
+				return false
+			}
+		}).map((item) => {
+			return ({
+				name: this.sourceLayerString(Number.parseInt(item) as RundownAPI.SourceLayerType),
+				value: item
+			})
+		})
+
 		return (
 			this.props.studioInstallation.sourceLayers.sort((a, b) => {
 				return a._rank - b._rank
-			}).map((item) => {
-				return (
+			}).map((item, index) => {
+				return [
 					<tr key={item._id}>
 						<th className='settings-studio-source-table__name c2'>
 							{item.name}
@@ -278,15 +318,90 @@ class StudioSourcesSettings extends React.Component<IPropsHeader & InjectedTrans
 							{this.sourceLayerString(item.type)}
 						</td>
 						<td className='settings-studio-source-table__actions table-item-actions c2'>
-							<button className='action-btn'>
+							<button className='action-btn' onClick={(e) => this.editItem(item)}>
 								Edit
 							</button>
 							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
 								Delete
 							</button>
 						</td>
-					</tr>
-				)
+					</tr>,
+					this.isItemEdited(item) ?
+						<tr className='expando-details hl' key={item._id + '-details'}>
+							<td colSpan={4}>
+								<div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Source name')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + index + '.name'}
+												obj={this.props.studioInstallation}
+												type='text'
+												collection={StudioInstallations}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Internal ID')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + index + '._id'}
+												obj={this.props.studioInstallation}
+												type='text'
+												collection={StudioInstallations}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Source type')}
+											<div className='select focusable'>
+												<EditAttribute
+													modifiedClassName='bghl'
+													attribute={'sourceLayers.' + index + '.type'}
+													obj={this.props.studioInstallation}
+													type='dropdown'
+													options={sourceLayerTypeOptions}
+													collection={StudioInstallations}
+													className='focusable-main input-l'></EditAttribute>
+											</div>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Is unlimited')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + index + '.unlimited'}
+												obj={this.props.studioInstallation}
+												type='checkbox'
+												collection={StudioInstallations}
+												className=''></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Is on clean PGM')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + index + '.onPGMClean'}
+												obj={this.props.studioInstallation}
+												type='checkbox'
+												collection={StudioInstallations}
+												className=''></EditAttribute>
+										</label>
+									</div>
+								</div>
+								<div className='mod alright'>
+									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>{t('Done')}</button>
+								</div>
+							</td>
+						</tr>
+						:
+						null
+				]
 			})
 		)
 	}
