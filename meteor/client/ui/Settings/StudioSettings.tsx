@@ -95,7 +95,9 @@ class StudioOutputSettings extends React.Component<IPropsHeader & InjectedTransl
 	renderOutputs () {
 		const { t } = this.props
 		return (
-			this.props.studioInstallation.outputLayers.map((item, index) => {
+			this.props.studioInstallation.outputLayers.sort((a, b) => {
+				return a._rank - b._rank
+			}).map((item, index) => {
 				return [
 					<tr key={item._id} className={ClassNames({
 						'hl': this.isItemEdited(item)
@@ -123,20 +125,43 @@ class StudioOutputSettings extends React.Component<IPropsHeader & InjectedTransl
 					this.isItemEdited(item) ?
 						<tr className='expando-details hl' key={item._id + '-details'}>
 							<td colSpan={4}>
-								<div className='mod'>
-									<label className='field'>
-										{t('Channel name')}
-										<div className='mdi'>
+								<div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Channel name')}
+												<EditAttribute
+													modifiedClassName='bghl'
+													attribute={'outputLayers.' + index + '.name'}
+													obj={this.props.studioInstallation}
+													type='text'
+													collection={StudioInstallations}
+													className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Internal ID')}
 											<EditAttribute
 												modifiedClassName='bghl'
-												attribute={'outputLayers.' + index + '.name'}
+												attribute={'outputLayers.' + index + '._id'}
 												obj={this.props.studioInstallation}
 												type='text'
 												collection={StudioInstallations}
-												className='mdinput'></EditAttribute>
-											<span className='mdfx'></span>
-										</div>
-									</label>
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Is PGM output')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'outputLayers.' + index + '.isPGM'}
+												obj={this.props.studioInstallation}
+												type='checkbox'
+												collection={StudioInstallations}
+												className=''></EditAttribute>
+										</label>
+									</div>
 								</div>
 								<div className='mod alright'>
 									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>{t('Done')}</button>
@@ -238,7 +263,9 @@ class StudioSourcesSettings extends React.Component<IPropsHeader & InjectedTrans
 	renderInputSources () {
 		const { t } = this.props
 		return (
-			this.props.studioInstallation.sourceLayers.map((item) => {
+			this.props.studioInstallation.sourceLayers.sort((a, b) => {
+				return a._rank - b._rank
+			}).map((item) => {
 				return (
 					<tr key={item._id}>
 						<th className='settings-studio-source-table__name c2'>

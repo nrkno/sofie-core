@@ -141,7 +141,6 @@ const SettingsMenu = translate()(withTracker(() => {
 class Settings extends React.Component<InjectedTranslateProps> {
 	render () {
 		const { t } = this.props
-		console.log(this.props)
 
 		return (
 			<div>

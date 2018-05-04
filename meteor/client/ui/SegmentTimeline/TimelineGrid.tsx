@@ -180,7 +180,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	}
 
 	componentDidMount () {
-		console.log('TimelineGrid mounted, render the grid & attach resize notifiers')
+		// console.log('TimelineGrid mounted, render the grid & attach resize notifiers')
 		this.ctx = this.canvasElement.getContext('2d', {
 			// alpha: false
 		})
@@ -191,21 +191,21 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			elementResizeEvent(this.parentElement, this.onCanvasResize)
 
 			if (typeof FontFace !== 'undefined') {
-				console.log('Loading grid font')
-				let eticaFont = new FontFace('GridTimecodeFont', GRID_FONT_URL, {
+				// console.log('Loading grid font')
+				let gridFont = new FontFace('GridTimecodeFont', GRID_FONT_URL, {
 					style: 'normal',
 					weight: 100
 				})
-				eticaFont.load()
-				eticaFont.loaded.then((fontFace) => {
-					console.log('Grid font loaded: ' + fontFace.status)
+				gridFont.load()
+				gridFont.loaded.then((fontFace) => {
+					// console.log('Grid font loaded: ' + fontFace.status)
 					window.requestAnimationFrame(() => {
 						this.repaint()
 					})
 				}, (fontFace) => {
-					console.log('Grid font failed to load: ' + fontFace.status)
+					// console.log('Grid font failed to load: ' + fontFace.status)
 				})
-				document.fonts.add(eticaFont)
+				document.fonts.add(gridFont)
 			}
 
 			if (this.props.onResize) {
@@ -226,7 +226,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	}
 
 	componentWillUnmount () {
-		console.log('Detach resize notifiers')
+		// console.log('Detach resize notifiers')
 
 		// $(window).off('resize', this.onCanvasResize)
 		elementResizeEvent.unbind(this.parentElement, this.onCanvasResize)
