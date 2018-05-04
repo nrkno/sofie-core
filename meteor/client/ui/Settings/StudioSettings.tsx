@@ -10,6 +10,7 @@ import * as CoreIcon from '@nrk/core-icons/jsx'
 import { RundownAPI } from '../../../lib/api/rundown'
 
 import { EditAttribute } from '../../lib/EditAttribute'
+import { ModalDialog } from '../../lib/ModalDialog'
 import { Spinner } from '../../lib/Spinner'
 
 import {
@@ -22,19 +23,83 @@ import {
 	match
 } from 'react-router-dom'
 
-import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { StudioInstallation, StudioInstallations, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
 
 interface IPropsHeader {
 	studioInstallation: StudioInstallation
 }
 
-class StudioOutputSettings extends React.Component<IPropsHeader & InjectedTranslateProps> {
+interface IStudioOutputSettingsState {
+	showDeleteConfirm: boolean
+	deleteConfirmItem: IOutputLayer | undefined
+	editedOutputs: Array<string>
+}
+
+class StudioOutputSettings extends React.Component<IPropsHeader & InjectedTranslateProps, IStudioOutputSettingsState> {
+	constructor (props) {
+		super(props)
+
+		this.state = {
+			showDeleteConfirm: false,
+			deleteConfirmItem: undefined,
+			editedOutputs: []
+		}
+	}
+
+	isItemEdited = (item: IOutputLayer) => {
+		return this.state.editedOutputs.indexOf(item._id) >= 0;
+	}
+
+	finishEditItem = (item: IOutputLayer) => {
+		let index = this.state.editedOutputs.indexOf(item._id)
+		if (index >= 0) {
+			this.state.editedOutputs.splice(index, 1)
+			this.setState({
+				editedOutputs: this.state.editedOutputs
+			})
+		}
+	}
+
+	editItem = (item: IOutputLayer) => {
+		if (this.state.editedOutputs.indexOf(item._id) < 0) {
+			this.state.editedOutputs.push(item._id)
+			this.setState({
+				editedOutputs: this.state.editedOutputs
+			})
+		}
+	}
+
+	confirmDelete = (item: IOutputLayer) => {
+		this.setState({
+			showDeleteConfirm: true,
+			deleteConfirmItem: item
+		})
+	}
+
+	handleConfirmDeleteCancel = (e) => {
+		this.setState({
+			deleteConfirmItem: undefined,
+			showDeleteConfirm: false
+		})
+	}
+
+	handleConfirmDeleteAccept = (e) => {
+		console.log(this.state.deleteConfirmItem)
+
+		this.setState({
+			deleteConfirmItem: undefined,
+			showDeleteConfirm: false
+		})
+	}
+
 	renderOutputs () {
 		const { t } = this.props
 		return (
-			this.props.studioInstallation.outputLayers.map((item) => {
-				return (
-					<tr key={item._id}>
+			this.props.studioInstallation.outputLayers.map((item, index) => {
+				return [
+					<tr key={item._id} className={ClassNames({
+						'hl': this.isItemEdited(item)
+					})}>
 						<th className='settings-studio-output-table__name c2'>
 							{item.name}
 						</th>
@@ -47,23 +112,52 @@ class StudioOutputSettings extends React.Component<IPropsHeader & InjectedTransl
 							})}>PGM</div>
 						</td>
 						<td className='settings-studio-output-table__actions table-item-actions c2'>
-							<button className='action-btn'>
-								<CoreIcon id='nrk-minus' />
-							</button>
-							<button className='action-btn'>
+							<button className='action-btn' onClick={(e) => this.editItem(item)}>
 								Edit
 							</button>
+							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
+								Delete
+							</button>
 						</td>
-					</tr>
-				)
+					</tr>,
+					this.isItemEdited(item) ?
+						<tr className='expando-details hl' key={item._id + '-details'}>
+							<td colSpan={4}>
+								<div className='mod'>
+									<label className='field'>
+										{t('Channel name')}
+										<div className='mdi'>
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'outputLayers.' + index + '.name'}
+												obj={this.props.studioInstallation}
+												type='text'
+												collection={StudioInstallations}
+												className='mdinput'></EditAttribute>
+											<span className='mdfx'></span>
+										</div>
+									</label>
+								</div>
+								<div className='mod alright'>
+									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>{t('Done')}</button>
+								</div>
+							</td>
+						</tr>
+					:
+						null
+				]
 			})
 		)
 	}
 
-	render() {
+	render () {
 		const { t } = this.props
 		return (
 			<div>
+				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
+					<p>{t(`Are you sure you want to delete output channel ${this.state.deleteConfirmItem && this.state.deleteConfirmItem.name}?`)}</p>
+					<p>{t('This action is irreversible.')}</p>
+				</ModalDialog>
 				<h3>{t('Output channels')}</h3>
 				<table className='expando settings-studio-output-table'>
 					<tbody>
@@ -75,7 +169,21 @@ class StudioOutputSettings extends React.Component<IPropsHeader & InjectedTransl
 	}
 }
 
-class StudioSourcesSettings extends React.Component<IPropsHeader & InjectedTranslateProps> {
+interface IStudioSourcesSettingsState {
+	showDeleteConfirm: boolean
+	deleteConfirmItem: ISourceLayer | undefined
+}
+
+class StudioSourcesSettings extends React.Component<IPropsHeader & InjectedTranslateProps, IStudioSourcesSettingsState> {
+	constructor (props) {
+		super(props)
+
+		this.state = {
+			showDeleteConfirm: false,
+			deleteConfirmItem: undefined
+		}
+	}
+
 	sourceLayerString (type: RundownAPI.SourceLayerType) {
 		const { t } = this.props
 		switch (type) {
@@ -104,6 +212,29 @@ class StudioSourcesSettings extends React.Component<IPropsHeader & InjectedTrans
 		}
 	}
 
+	confirmDelete = (item: ISourceLayer) => {
+		this.setState({
+			showDeleteConfirm: true,
+			deleteConfirmItem: item
+		})
+	}
+
+	handleConfirmDeleteCancel = (e) => {
+		this.setState({
+			deleteConfirmItem: undefined,
+			showDeleteConfirm: false
+		})
+	}
+
+	handleConfirmDeleteAccept = (e) => {
+		console.log(this.state.deleteConfirmItem)
+
+		this.setState({
+			deleteConfirmItem: undefined,
+			showDeleteConfirm: false
+		})
+	}
+
 	renderInputSources () {
 		const { t } = this.props
 		return (
@@ -121,10 +252,10 @@ class StudioSourcesSettings extends React.Component<IPropsHeader & InjectedTrans
 						</td>
 						<td className='settings-studio-source-table__actions table-item-actions c2'>
 							<button className='action-btn'>
-								<CoreIcon id='nrk-minus' />
-							</button>
-							<button className='action-btn'>
 								Edit
+							</button>
+							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
+								Delete
 							</button>
 						</td>
 					</tr>
@@ -137,6 +268,10 @@ class StudioSourcesSettings extends React.Component<IPropsHeader & InjectedTrans
 		const { t } = this.props
 		return (
 			<div>
+				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
+					<p>{t(`Are you sure you want to delete source layer ${this.state.deleteConfirmItem && this.state.deleteConfirmItem.name}?`)}</p>
+					<p>{t('This action is irreversible.')}</p>
+				</ModalDialog>
 				<h3>{t('Source layers')}</h3>
 				<table className='expando settings-studio-source-table'>
 					<tbody>
@@ -172,10 +307,10 @@ class StudioSettings extends React.Component<IPropsHeader & InjectedTranslatePro
 					</div>
 
 					<div className='row'>
-						<div className='col c6'>
+						<div className='col c12 rl-c6'>
 							<StudioSourcesSettings {...this.props} />
 						</div>
-						<div className='col c6'>
+						<div className='col c12 rl-c6'>
 							<StudioOutputSettings {...this.props} />
 						</div>
 					</div>

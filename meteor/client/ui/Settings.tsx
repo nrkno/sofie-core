@@ -95,8 +95,7 @@ const SettingsMenu = translate()(withTracker(() => {
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/studio/' + item._id}>
 								<h3>{item.name}</h3>
 								<p>
-									<span>{t('Source layers')}: {item.sourceLayers.length.toString()}</span>
-									<span>{t('Output channels')}: {item.outputLayers.length.toString()}</span>
+									{t('Source layers')}: {item.sourceLayers.length.toString()} {t('Output channels')}: {item.outputLayers.length.toString()}
 								</p>
 							</NavLink>,
 							<hr className='vsubtle man' key={item._id + '-hr'} />
@@ -126,8 +125,7 @@ const SettingsMenu = translate()(withTracker(() => {
 								<div className='selectable clickable'>
 									<h3>{item.name}</h3>
 									<p>
-										<span>{t('Status')}: {this.statusCodeString(item.status.statusCode)}</span>
-										<span>{t('Type')}: {this.deviceTypeString(item.type)}</span>
+										{t('Status')}: {this.statusCodeString(item.status.statusCode)} {t('Type')}: {this.deviceTypeString(item.type)}
 									</p>
 								</div>
 								<hr className='vsubtle man' />
@@ -152,10 +150,10 @@ class Settings extends React.Component<InjectedTranslateProps> {
 				</header>
 				<div className='mod mvl mhs'>
 					<div className='row'>
-						<div className='col c3 settings-menu'>
+						<div className='col c12 rm-c3 settings-menu'>
 							<SettingsMenu match={this.props.match} />
 						</div>
-						<div className='col c9 settings-dialog'>
+						<div className='col c12 rm-c9 settings-dialog'>
 							<Switch>
 								<Route path='/settings/studio/:studioId' component={StudioSettings} />
 								<Route path='/settings/showStyle/:showStyleId' component={Settings} />
