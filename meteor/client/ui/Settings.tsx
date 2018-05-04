@@ -27,6 +27,7 @@ interface IPropsMenuHeader {
 	studioInstallations: Array<StudioInstallation>
 	showStyles: Array<ShowStyle>
 	peripheralDevices: Array<PeripheralDevice>
+	match?: any
 }
 const SettingsMenu = translate()(withTracker(() => {
 	let subStudioInstallations = Meteor.subscribe('studioInstallations', {})
@@ -86,7 +87,7 @@ const SettingsMenu = translate()(withTracker(() => {
 
 		return (
 			<div className='tight-xs htight-xs text-s'>
-				<h3 className='mhs'>Studios</h3>
+				<h2 className='mhs'>Studios</h2>
 				<hr className='vsubtle man' />
 				{
 					this.props.studioInstallations.map((item) => {
@@ -94,7 +95,7 @@ const SettingsMenu = translate()(withTracker(() => {
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/studio/' + item._id}>
 								<h3>{item.name}</h3>
 								<p>
-									<span>{t('Input layers')}: {item.sourceLayers.length.toString()}</span>
+									<span>{t('Source layers')}: {item.sourceLayers.length.toString()}</span>
 									<span>{t('Output channels')}: {item.outputLayers.length.toString()}</span>
 								</p>
 							</NavLink>,
@@ -102,7 +103,7 @@ const SettingsMenu = translate()(withTracker(() => {
 						]
 					})
 				}
-				<h3 className='mhs'>Show Styles</h3>
+				<h2 className='mhs'>Show Styles</h2>
 				<hr className='vsubtle man' />
 				{
 					this.props.showStyles.map((item) => {
@@ -116,7 +117,7 @@ const SettingsMenu = translate()(withTracker(() => {
 						)
 					})
 				}
-				<h3 className='mhs'>Devices</h3>
+				<h2 className='mhs'>Devices</h2>
 				<hr className='vsubtle man' />
 				{
 					this.props.peripheralDevices.map((item) => {
@@ -142,18 +143,19 @@ const SettingsMenu = translate()(withTracker(() => {
 class Settings extends React.Component<InjectedTranslateProps> {
 	render () {
 		const { t } = this.props
+		console.log(this.props)
 
 		return (
 			<div>
 				<header className='mvs'>
 					<h1>{t('System Settings')}</h1>
 				</header>
-				<div className='mod mvl'>
+				<div className='mod mvl mhs'>
 					<div className='row'>
 						<div className='col c3 settings-menu'>
-							<SettingsMenu />
+							<SettingsMenu match={this.props.match} />
 						</div>
-						<div className='col c9'>
+						<div className='col c9 settings-dialog'>
 							<Switch>
 								<Route path='/settings/studio/:studioId' component={StudioSettings} />
 								<Route path='/settings/showStyle/:showStyleId' component={Settings} />

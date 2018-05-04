@@ -4,6 +4,7 @@ import * as ReactDOM from 'react-dom'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import * as CoreIcon from '@nrk/core-icons/jsx'
+import { Spinner } from '../lib/Spinner'
 
 import * as ClassNames from 'classnames'
 import * as $ from 'jquery'
@@ -181,8 +182,8 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 			)
 		} else {
 			return (
-				<div>
-					{t('Loading...')}
+				<div className='mod'>
+					<Spinner />
 				</div>
 			)
 		}

@@ -3,5 +3,44 @@
 		display: block;
 		text-decoration: none;
 		color: #000;
+
+		&:hover {
+			text-decoration: none;
+		}
+	}
+}
+
+.settings-dialog {
+	table {
+		.switch-tight {
+			padding: 0px 8px;
+		}
+		
+		.table-item-actions {
+			text-align: right;
+
+			.action-btn {
+				vertical-align: top;
+				margin-left: 10px;
+
+				svg {
+					font-size: 10px;
+					vertical-align: middle;
+				}
+			}
+
+			.btn {
+				&.btn-tight {
+					svg {
+						font-size: 10px;
+						vertical-align: middle;
+					}
+				}
+			}
+		}
+	}
+
+	.settings-studio-source-table, .settings-studio-output-table {
+		width: 100%;
 	}
 }

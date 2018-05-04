@@ -147,17 +147,14 @@ const EditAttributeText = wrapEditAttribute(class extends EditAttributeBase {
 	}
 	render () {
 		return (
-			<div>
-				<input type='text'
-					className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+			<input type='text'
+				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
 
-					value={this.getEditAttribute() || ''}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
-					onKeyUp={this.handleEscape}
-				/>
-
-			</div>
+				value={this.getEditAttribute() || ''}
+				onChange={this.handleChange}
+				onBlur={this.handleBlur}
+				onKeyUp={this.handleEscape}
+			/>
 		)
 	}
 })
@@ -176,17 +173,14 @@ const EditAttributeInt = wrapEditAttribute(class extends EditAttributeBase {
 	}
 	render () {
 		return (
-			<div>
-				<input type='number'
-					step='1'
-					className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+			<input type='number'
+				step='1'
+				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
 
-					value={this.getEditAttribute()}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
-				/>
-
-			</div>
+				value={this.getEditAttribute()}
+				onChange={this.handleChange}
+				onBlur={this.handleBlur}
+			/>
 		)
 	}
 })
@@ -205,14 +199,12 @@ const EditAttributeCheckbox = wrapEditAttribute(class extends EditAttributeBase 
 	}
 	render () {
 		return (
-			<div>
-				<input type='checkbox'
-					className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+			<input type='checkbox'
+				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
 
-					checked={this.isChecked()}
-					onChange={this.handleChange}
-				/>
-			</div>
+				checked={this.isChecked()}
+				onChange={this.handleChange}
+			/>
 		)
 	}
 })
@@ -264,18 +256,16 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 	}
 	render () {
 		return (
-			<div>
-				<select
-					className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+			<select
+				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
 
-					value={this.getAttribute()}
-					onChange={this.handleChange}
-				>
-					{this.getOptions().map((o) => (
-						<option key={o.i} value={o.value}>{o.name}</option>
-					))}
-				</select>
-			</div>
+				value={this.getAttribute()}
+				onChange={this.handleChange}
+			>
+				{this.getOptions().map((o) => (
+					<option key={o.i} value={o.value}>{o.name}</option>
+				))}
+			</select>
 		)
 	}
 })
