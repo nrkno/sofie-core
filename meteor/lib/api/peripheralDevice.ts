@@ -1,8 +1,11 @@
 import { Meteor } from 'meteor/meteor'
+import { Random } from 'meteor/random'
 
 import { ServerPeripheralDeviceAPI } from '../../server/api/peripheralDevice'
 
-import { MeteorPromiseCall } from '../lib'
+import { PeripheralDeviceCommands } from '../collections/PeripheralDeviceCommands'
+
+import { MeteorPromiseCall, getCurrentTime } from '../lib'
 
 namespace PeripheralDeviceAPI {
 
@@ -32,6 +35,8 @@ export interface InitOptions {
 }
 
 export enum methods {
+	'functionReply' 	= 'peripheralDevice.functionReply',
+
 	'setStatus' 		= 'peripheralDevice.status',
 	'initialize' 		= 'peripheralDevice.initialize',
 	'unInitialize' 		= 'peripheralDevice.unInitialize',
@@ -67,6 +72,50 @@ export function setStatus (id: string, token: string, status: StatusObject): Pro
 	return MeteorPromiseCall(methods.setStatus, id, token, status)
 }
 
+export function executeFunction (deviceId: string, cb: (err, result) => void, functionName: string, ...args: any[],) {
+
+	let commandId = Random.id()
+	PeripheralDeviceCommands.insert({
+		_id: commandId,
+		deviceId: deviceId,
+		time: getCurrentTime(),
+		functionName,
+		args: args,
+		hasReply: false
+	})
+	let subscription: Meteor.SubscriptionHandle | null = null
+	if (Meteor.isClient) {
+		subscription = Meteor.subscribe('peripheralDeviceCommands', deviceId )
+	}
+	console.log('command created')
+	// we've sent the command, let's just wait for the reply
+	let checkReply = () => {
+		let cmd = PeripheralDeviceCommands.findOne(commandId)
+		console.log('checkReply')
+		if (cmd.hasReply) {
+			console.log('got reply')
+			// We've got a reply!
+			cb(null, cmd.reply)
+			cursor.stop()
+			PeripheralDeviceCommands.remove(cmd._id)
+			if (subscription) subscription.stop()
+		} else if (getCurrentTime() - (cmd.time || 0) > 3000) { // timeout
+			console.log('timeout')
+			cb('Timeout', null)
+			cursor.stop()
+			PeripheralDeviceCommands.remove(cmd._id)
+			if (subscription) subscription.stop()
+		}
+	}
+
+	let cursor = PeripheralDeviceCommands.find({
+		_id: commandId
+	}).observeChanges({
+		added: checkReply,
+		changed: checkReply,
+	})
 }
 
-export {PeripheralDeviceAPI}
+}
+
+export { PeripheralDeviceAPI }

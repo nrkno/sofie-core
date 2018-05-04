@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+import { check } from 'meteor/check'
 
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 
