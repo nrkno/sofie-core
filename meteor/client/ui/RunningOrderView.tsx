@@ -3,6 +3,7 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { translate, InjectedTranslateProps } from 'react-i18next'
+import * as CoreIcon from '@nrk/core-icons/jsx'
 
 import * as ClassNames from 'classnames'
 import * as $ from 'jquery'
@@ -62,11 +63,9 @@ const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 			<TimingDisplay {...props} />
 		</div>
 		<div className='flex-col c4 super-dark horizontal-align-right'>
-			<div className='links mod'>
+			<div className='links mod close'>
 				<NavLink to='/runningOrders'>
-					<svg className='icon' aria-hidden='true' role='presentation'>
-						<use xlinkHref='#icon-x'/>
-					</svg>
+					<CoreIcon id='nrk-close' />
 				</NavLink>
 			</div>
 		</div>

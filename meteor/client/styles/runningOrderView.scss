@@ -115,6 +115,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			}
 		}
 	}
+
+	.close {
+		margin: 17px 20px 14px;
+	}
 }
 
 // A component for displaying the segments (ENPS Stories/NKR Titles)
