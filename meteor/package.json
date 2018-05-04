@@ -29,6 +29,7 @@
     "meteor-node-stubs": "^0.3.3",
     "moment": "^2.19.1",
     "mos-connection": "git+https://github.com/nrkno/tv-automation-mos-connection.git#dist",
+    "ntp-client": "^0.5.3",
     "query-string": "^6.0.0",
     "react": "^16.3.0",
     "react-bootstrap": "^0.32.1",
