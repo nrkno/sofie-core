@@ -1,6 +1,8 @@
 
 import * as ntpClient from 'ntp-client'
 import { GridAutoColumnsProperty } from 'csstype'
+import { getCurrentTime, systemTime } from '../lib/lib'
+import { StatusCode, setSystemStatus } from './systemStatus'
 
 interface ServerTime {
 	diff: number
@@ -116,6 +118,74 @@ export function determineDiffTime (config: Config): Promise<{mean: number, stdDe
 		return stat
 	})
 }
+Meteor.methods({
+	'systemTime.determineDiffTime': () => {
+		return determineDiffTime({
+			maxSampleCount: 20,
+			minSampleCount: 10,
+			maxAllowedDelay: 500
+		})
+	},
+	'systemTime.getTimeDiff': () => {
+		return {
+			currentTime: getCurrentTime(),
+			systemRawTime: Date.now(),
+			diff: systemTime.diff,
+			stdDev: systemTime.stdDev,
+			good: (systemTime.stdDev < 1000 / 50)
+		}
+	},
+	'systemTime.getTime': () => {
+		return getCurrentTime()
+	}
+})
+
+let updateServerTime = () => {
+	console.log('Updating systemTime...')
+	determineDiffTime({
+		maxSampleCount: 20,
+		minSampleCount: 10,
+		maxAllowedDelay: 500
+	})
+	.then((result) => {
+		// if result.stdDev is less than one frame-time, it should be okay:
+		if (result.stdDev < 1000 / 50) {
+			console.log('Setting time-diff to ' + Math.round(result.mean) +
+				' (stdDev: ' + result.stdDev + ')')
+			systemTime.diff = result.mean
+			systemTime.stdDev = result.stdDev
+			setSystemStatus('systemTime', {statusCode: StatusCode.GOOD})
+		} else {
+			if (result.stdDev < systemTime.stdDev ) {
+				systemTime.diff = result.mean
+				systemTime.stdDev = result.stdDev
+			}
+			if (systemTime.stdDev < 200) {
+				setSystemStatus('systemTime', {statusCode: StatusCode.WARNING_MAJOR})
+			} else {
+				setSystemStatus('systemTime', {statusCode: StatusCode.BAD})
+			}
+			setTimeout(() => {
+				updateServerTime()
+			}, 20 * 1000)
+		}
+	})
+	.catch((err) => {
+		console.log('systemTime Error', err)
+		setSystemStatus('systemTime', {statusCode: StatusCode.BAD, messages: [err.toString()]})
+
+		setTimeout(() => {
+			updateServerTime()
+		}, 20 * 1000)
+	})
+}
+setSystemStatus('systemTime', {statusCode: StatusCode.BAD, messages: ['Starting up...'] })
+Meteor.startup(() => {
+	setInterval(() => {
+		updateServerTime()
+	}, 3600 * 1000)
+	updateServerTime()
+})
 
 // Example usage:
 // determineDiffTime({

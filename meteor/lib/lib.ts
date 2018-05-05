@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Mongo } from 'meteor/mongo'
+
 /**
  * Convenience method to convert a Meteor.call() into a Promise
  * @param  {string} Method name
@@ -22,10 +23,51 @@ export type Time = number
  * @return {Time}
  */
 export function getCurrentTime (): Time {
-	// TODO: Implement time sync feature
-	// Just return the system time for now:
-	return Date.now()
+	return Date.now() + systemTime.diff // todo: check this, so it actually works.. /Johan
 }
+let systemTime = {
+	diff: 0,
+	stdDev: 9999
+}
+export {systemTime}
+
+if (Meteor.isServer) {
+	// handled in timesync
+} else {
+	// fetch time from server:
+	let updateDiffTime = () => {
+		let sentTime = Date.now()
+		Meteor.call('systemTime.getTimeDiff', (err, stat) => {
+			let replyTime = Date.now()
+			if (err) {
+				console.log(err)
+			} else {
+				console.log(stat)
+				let diffTime = ((sentTime + replyTime) / 2) - stat.currentTime
+
+				systemTime.diff = diffTime
+				systemTime.stdDev = Math.abs(sentTime - replyTime) / 2
+				console.log('time diff to server: ' + systemTime.diff + ' (stdDev: ' + systemTime.stdDev + ')')
+				if (!stat.good || systemTime.stdDev > 50) {
+					setTimeout(() => {
+						updateDiffTime()
+					}, 2000)
+				}
+			}
+		})
+	}
+
+	Meteor.startup(() => {
+		setInterval(() => {
+			updateDiffTime()
+		}, 3600 * 1000)
+		updateDiffTime()
+		// setTimeout(() => {
+		// 	updateDiffTime()
+		// }, 2000)
+	})
+}
+
 export interface DBObj {
 	_id: string,
 	[key: string]: any

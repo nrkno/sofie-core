@@ -8,7 +8,8 @@ import { Segments } from '../../lib/collections/Segments'
 import { ShowStyles } from '../../lib/collections/ShowStyles'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { Timeline } from '../../lib/collections/Timeline'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice';
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { getCurrentTime } from '../../lib/lib'
 
 // Note: These things are convenience functions to be used during development
 
@@ -23,3 +24,5 @@ window['Segments'] = Segments
 window['ShowStyles'] = ShowStyles
 window['StudioInstallations'] = StudioInstallations
 window['Timeline'] = Timeline
+
+window['getCurrentTime'] = getCurrentTime
