@@ -312,7 +312,7 @@ class StudioSourcesSettings extends React.Component<IChildStudioInterfaceProps &
 		}).map((item) => {
 			return ({
 				name: this.sourceLayerString(Number.parseInt(item) as RundownAPI.SourceLayerType),
-				value: item
+				value: Number.parseInt(item)
 			})
 		})
 
@@ -380,6 +380,7 @@ class StudioSourcesSettings extends React.Component<IChildStudioInterfaceProps &
 													obj={this.props.studioInstallation}
 													type='dropdown'
 													options={sourceLayerTypeOptions}
+													optionsAreNumbers
 													collection={StudioInstallations}
 													className='focusable-main input-l'></EditAttribute>
 											</div>

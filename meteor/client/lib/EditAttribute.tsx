@@ -34,6 +34,7 @@ interface IPropsEditAttributeBase {
 	myObject?: any,
 	obj?: any
 	options?: any
+	optionsAreNumbers?: boolean
 	className?: string
 	modifiedClassName?: string
 }
@@ -166,7 +167,7 @@ const EditAttributeInt = wrapEditAttribute(class extends EditAttributeBase {
 		this.handleBlur = this.handleBlur.bind(this)
 	}
 	handleChange (event) {
-		this.handleEdit(event.target.value)
+		this.handleEdit(parseInt(event.target.value, 10))
 	}
 	handleBlur (event) {
 		this.handleUpdate(parseInt(event.target.value, 10))
@@ -214,11 +215,8 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 
 		this.handleChange = this.handleChange.bind(this)
 	}
-	isChecked () {
-		return !!this.getEditAttribute()
-	}
 	handleChange (event) {
-		this.handleUpdate(event.target.value)
+		this.handleUpdate(this.props.optionsAreNumbers !== undefined ? parseInt(event.target.value, 10) : event.target.value)
 	}
 	getOptions () {
 		let options: Array<{ value: any, name: string, i?: number }> = []
