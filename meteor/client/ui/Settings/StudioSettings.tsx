@@ -321,7 +321,9 @@ class StudioSourcesSettings extends React.Component<IChildStudioInterfaceProps &
 				return a._rank - b._rank
 			}).map((item, index) => {
 				return [
-					<tr key={item._id}>
+					<tr key={item._id} className={ClassNames({
+						'hl': this.isItemEdited(item)
+					})}>
 						<th className='settings-studio-source-table__name c2'>
 							{item.name}
 						</th>
