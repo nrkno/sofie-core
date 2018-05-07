@@ -22,6 +22,13 @@ import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 
 import StudioSettings from './Settings/StudioSettings'
+import DeviceSettings from './Settings/DeviceSettings'
+
+class WelcomeToSettings extends React.Component {
+	render () {
+		return (<div></div>)
+	}
+}
 
 interface IPropsMenuHeader {
 	studioInstallations: Array<StudioInstallation>
@@ -120,17 +127,15 @@ const SettingsMenu = translate()(withTracker(() => {
 				<hr className='vsubtle man' />
 				{
 					this.props.peripheralDevices.map((item) => {
-						return (
-							<div className='settings-menu__settings-menu-item' key={item._id}>
-								<div className='selectable clickable'>
-									<h3>{item.name}</h3>
-									<p>
-										{t('Status')}: {this.statusCodeString(item.status.statusCode)} {t('Type')}: {this.deviceTypeString(item.type)}
-									</p>
-								</div>
-								<hr className='vsubtle man' />
-							</div>
-						)
+						return [
+							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/peripheralDevice/' + item._id}>
+								<h3>{item.name}</h3>
+								<p>
+									{t('Status')}: {this.statusCodeString(item.status.statusCode)} {t('Type')}: {this.deviceTypeString(item.type)}
+								</p>
+							</NavLink>,
+							<hr className='vsubtle man' key={item._id + '-hr'} />
+						]
 					})
 				}
 			</div>
@@ -154,9 +159,11 @@ class Settings extends React.Component<InjectedTranslateProps> {
 						</div>
 						<div className='col c12 rm-c9 settings-dialog'>
 							<Switch>
+								<Route path='/settings' exact component={WelcomeToSettings} />
 								<Route path='/settings/studio/:studioId' component={StudioSettings} />
 								<Route path='/settings/showStyle/:showStyleId' component={Settings} />
-								<Route path='/settings/peripheralDevice/:peripheralId' component={Settings} />
+								<Route path='/settings/peripheralDevice/:deviceId' component={DeviceSettings} />
+								<Redirect to='/settings' />
 							</Switch>
 						</div>
 					</div>
