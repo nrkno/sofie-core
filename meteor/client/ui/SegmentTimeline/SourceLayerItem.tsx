@@ -77,8 +77,9 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		if (this.props.relative) {
 			return {
 				// as-run "duration" takes priority over renderdDuration which takes priority over MOS-import expectedDuration (editorial duration)
-				'left': (((segmentLineItem.renderedInPoint || 0) + inTransitionDuration) / (this.props.totalSegmentLineDuration || 1) * 100).toString() + '%',
-				'width': ((itemDuration - inTransitionDuration - outTransitionDuration) / (this.props.totalSegmentLineDuration || 1) * 100).toString() + '%'
+				// also: don't render transitions in relative mode
+				'left': (((segmentLineItem.renderedInPoint || 0)) / (this.props.totalSegmentLineDuration || 1) * 100).toString() + '%',
+				'width': ((itemDuration) / (this.props.totalSegmentLineDuration || 1) * 100).toString() + '%'
 			}
 		} else {
 			return {
@@ -183,8 +184,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				'splits': this.props.layer.type === RundownAPI.SourceLayerType.SPLITS,
 				'vt': this.props.layer.type === RundownAPI.SourceLayerType.VT,
 
-				'with-in-transition': this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.inTransition && this.props.segmentLineItem.transitions.inTransition.duration > 0,
-				'with-out-transition': this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.outTransition && this.props.segmentLineItem.transitions.outTransition.duration > 0
+				'with-in-transition': !this.props.relative && this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.inTransition && this.props.segmentLineItem.transitions.inTransition.duration > 0,
+				'with-out-transition': !this.props.relative && this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.outTransition && this.props.segmentLineItem.transitions.outTransition.duration > 0
 			})}
 				data-mos-id={this.props.segmentLineItem._id}
 				ref={this.setRef}
