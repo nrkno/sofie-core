@@ -28,6 +28,10 @@
 				svg {
 					font-size: 10px;
 					vertical-align: middle;
+
+					&.svg-inline--fa {
+						font-size: 15px;
+					}
 				}
 			}
 
@@ -36,6 +40,10 @@
 					svg {
 						font-size: 10px;
 						vertical-align: middle;
+
+						&.svg-inline--fa {
+							font-size: 15px;
+						}
 					}
 				}
 			}

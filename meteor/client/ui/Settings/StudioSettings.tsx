@@ -1,33 +1,30 @@
-import { Meteor } from 'meteor/meteor'
-import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as ClassNames from 'classnames'
+import * as React from 'react'
+import { InjectedTranslateProps, translate } from 'react-i18next'
 import * as _ from 'underscore'
-import Moment from 'react-moment'
-import { translate, InjectedTranslateProps } from 'react-i18next'
-import * as CoreIcon from '@nrk/core-icons/jsx'
-
 import { RundownAPI } from '../../../lib/api/rundown'
-
+import { IOutputLayer, ISourceLayer, StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
+import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-
-import {
-	BrowserRouter as Router,
-	Route,
-	Link,
-	NavLink,
-	Switch,
-	Redirect,
-	match
-} from 'react-router-dom'
-
-import { StudioInstallation, StudioInstallations, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
+import { literal } from '../../../lib/lib'
+import { Random } from 'meteor/random'
+import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
+import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
+import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
+import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 interface IPropsHeader {
 	studioInstallation: StudioInstallation
+}
+
+interface IChildStudioInterfaceProps {
+	onDeleteSource?: (item: ISourceLayer) => void
+	onDeleteOutput?: (item: IOutputLayer) => void
+	onAddSource?: () => void
+	onAddOutput?: () => void
 }
 
 interface IStudioOutputSettingsState {
@@ -36,7 +33,7 @@ interface IStudioOutputSettingsState {
 	editedOutputs: Array<string>
 }
 
-class StudioOutputSettings extends React.Component<IPropsHeader & InjectedTranslateProps, IStudioOutputSettingsState> {
+class StudioOutputSettings extends React.Component<IChildStudioInterfaceProps & IPropsHeader & InjectedTranslateProps, IStudioOutputSettingsState> {
 	constructor (props) {
 		super(props)
 
@@ -85,7 +82,9 @@ class StudioOutputSettings extends React.Component<IPropsHeader & InjectedTransl
 	}
 
 	handleConfirmDeleteAccept = (e) => {
-		console.log(this.state.deleteConfirmItem)
+		if (this.props.onDeleteOutput && typeof this.props.onDeleteOutput === 'function' && this.state.deleteConfirmItem) {
+			this.props.onDeleteOutput(this.state.deleteConfirmItem)
+		}
 
 		this.setState({
 			deleteConfirmItem: undefined,
@@ -106,7 +105,7 @@ class StudioOutputSettings extends React.Component<IPropsHeader & InjectedTransl
 						<th className='settings-studio-output-table__name c2'>
 							{item.name}
 						</th>
-						<td className='settings-studio-output-table__id c5'>
+						<td className='settings-studio-output-table__id c4'>
 							{item._id}
 						</td>
 						<td className='settings-studio-output-table__isPGM c3'>
@@ -114,12 +113,12 @@ class StudioOutputSettings extends React.Component<IPropsHeader & InjectedTransl
 								'switch-active': item.isPGM
 							})}>PGM</div>
 						</td>
-						<td className='settings-studio-output-table__actions table-item-actions c2'>
+						<td className='settings-studio-output-table__actions table-item-actions c3'>
 							<button className='action-btn' onClick={(e) => this.editItem(item)}>
-								Edit
+								<FontAwesomeIcon icon={faPencilAlt} />
 							</button>
 							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
-								Delete
+								<FontAwesomeIcon icon={faTrash} />
 							</button>
 						</td>
 					</tr>,
@@ -165,7 +164,9 @@ class StudioOutputSettings extends React.Component<IPropsHeader & InjectedTransl
 									</div>
 								</div>
 								<div className='mod alright'>
-									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>{t('Done')}</button>
+									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>
+										<FontAwesomeIcon icon={faCheck} />
+									</button>
 								</div>
 							</td>
 						</tr>
@@ -190,6 +191,11 @@ class StudioOutputSettings extends React.Component<IPropsHeader & InjectedTransl
 						{this.renderOutputs()}
 					</tbody>
 				</table>
+				<div className='mod mhs'>
+					<button className='btn btn-primary' onClick={this.props.onAddOutput}>
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
+				</div>
 			</div>
 		)
 	}
@@ -201,7 +207,7 @@ interface IStudioSourcesSettingsState {
 	editedSources: Array<string>
 }
 
-class StudioSourcesSettings extends React.Component<IPropsHeader & InjectedTranslateProps, IStudioSourcesSettingsState> {
+class StudioSourcesSettings extends React.Component<IChildStudioInterfaceProps & IPropsHeader & InjectedTranslateProps, IStudioSourcesSettingsState> {
 	constructor (props) {
 		super(props)
 
@@ -258,6 +264,12 @@ class StudioSourcesSettings extends React.Component<IPropsHeader & InjectedTrans
 				return t('Clips')
 			case RundownAPI.SourceLayerType.METADATA:
 				return t('Metadata')
+			case RundownAPI.SourceLayerType.CAMERA_MOVEMENT:
+				return t('Camera Movement')
+			case RundownAPI.SourceLayerType.UNKNOWN:
+				return t('Unknown layer')
+			case RundownAPI.SourceLayerType.AUDIO:
+				return t('Audio Mixing')
 			default:
 				return RundownAPI.SourceLayerType[type]
 		}
@@ -278,7 +290,9 @@ class StudioSourcesSettings extends React.Component<IPropsHeader & InjectedTrans
 	}
 
 	handleConfirmDeleteAccept = (e) => {
-		console.log(this.state.deleteConfirmItem)
+		if (this.props.onDeleteSource && typeof this.props.onDeleteSource === 'function' && this.state.deleteConfirmItem) {
+			this.props.onDeleteSource(this.state.deleteConfirmItem)
+		}
 
 		this.setState({
 			deleteConfirmItem: undefined,
@@ -311,18 +325,18 @@ class StudioSourcesSettings extends React.Component<IPropsHeader & InjectedTrans
 						<th className='settings-studio-source-table__name c2'>
 							{item.name}
 						</th>
-						<td className='settings-studio-source-table__id c5'>
+						<td className='settings-studio-source-table__id c4'>
 							{item._id}
 						</td>
 						<td className='settings-studio-source-table__type c3'>
-							{this.sourceLayerString(item.type)}
+							{this.sourceLayerString(Number.parseInt(item.type.toString()) as RundownAPI.SourceLayerType)}
 						</td>
-						<td className='settings-studio-source-table__actions table-item-actions c2'>
+						<td className='settings-studio-source-table__actions table-item-actions c3'>
 							<button className='action-btn' onClick={(e) => this.editItem(item)}>
-								Edit
+								<FontAwesomeIcon icon={faPencilAlt} />
 							</button>
 							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
-								Delete
+								<FontAwesomeIcon icon={faTrash} />
 							</button>
 						</td>
 					</tr>,
@@ -395,7 +409,9 @@ class StudioSourcesSettings extends React.Component<IPropsHeader & InjectedTrans
 									</div>
 								</div>
 								<div className='mod alright'>
-									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>{t('Done')}</button>
+									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>
+										<FontAwesomeIcon icon={faCheck} />
+									</button>
 								</div>
 							</td>
 						</tr>
@@ -420,12 +436,92 @@ class StudioSourcesSettings extends React.Component<IPropsHeader & InjectedTrans
 						{this.renderInputSources()}
 					</tbody>
 				</table>
+				<div className='mod mhs'>
+					<button className='btn btn-primary' onClick={this.props.onAddSource}>
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
+				</div>
 			</div>
 		)
 	}
 }
 
 class StudioSettings extends React.Component<IPropsHeader & InjectedTranslateProps> {
+
+	onDeleteSource = (item: ISourceLayer) => {
+		if (this.props.studioInstallation) {
+			StudioInstallations.update(this.props.studioInstallation._id, {
+				$pull: {
+					sourceLayers: {
+						_id: item._id
+					}
+				}
+			})
+		}
+	}
+
+	onDeleteOutput = (item: IOutputLayer) => {
+		if (this.props.studioInstallation) {
+			StudioInstallations.update(this.props.studioInstallation._id, {
+				$pull: {
+					outputLayers: {
+						_id: item._id
+					}
+				}
+			})
+		}
+	}
+
+	findHighestRank (array: Array<{_rank: number}>): {_rank: number} | null {
+		let max: {_rank: number} | null = null
+
+		array.forEach((value, index) => {
+			if (max == null || max._rank < value._rank) {
+				max = value
+			}
+		})
+
+		return max
+	}
+
+	onAddSource = () => {
+		const maxRank = this.findHighestRank(this.props.studioInstallation.sourceLayers)
+		const { t } = this.props
+
+		const newSource = literal<ISourceLayer>({
+			_id: this.props.studioInstallation._id + '-' + Random.id(5),
+			_rank: maxRank ? maxRank._rank + 10 : 0,
+			name: t('New source'),
+			type: RundownAPI.SourceLayerType.UNKNOWN,
+			unlimited: false,
+			onPGMClean: true
+		})
+
+		StudioInstallations.update(this.props.studioInstallation._id, {
+			$push: {
+				sourceLayers: newSource
+			}
+		})
+	}
+
+	onAddOutput = () => {
+		const maxRank = this.findHighestRank(this.props.studioInstallation.outputLayers)
+		const { t } = this.props
+
+		const newOutput = literal<IOutputLayer>({
+			_id: this.props.studioInstallation._id + '-' + Random.id(5),
+			_rank: maxRank ? maxRank._rank + 10 : 0,
+			name: t('New output'),
+			isPGM: false
+		})
+
+		StudioInstallations.update(this.props.studioInstallation._id, {
+			$push: {
+				outputLayers: newOutput
+			}
+		})
+	}
+
 	renderEditForm () {
 		const { t } = this.props
 
@@ -450,10 +546,10 @@ class StudioSettings extends React.Component<IPropsHeader & InjectedTranslatePro
 
 					<div className='row'>
 						<div className='col c12 rl-c6'>
-							<StudioSourcesSettings {...this.props} />
+							<StudioSourcesSettings {...this.props} onDeleteSource={this.onDeleteSource} onAddSource={this.onAddSource} />
 						</div>
 						<div className='col c12 rl-c6'>
-							<StudioOutputSettings {...this.props} />
+							<StudioOutputSettings {...this.props} onDeleteOutput={this.onDeleteOutput} onAddOutput={this.onAddOutput} />
 						</div>
 					</div>
 				</div>
