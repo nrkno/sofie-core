@@ -7,7 +7,7 @@ $timeline-layer-height: 1em;
 }
 .segment-timeline__liveline {
     position: absolute;
-    top: 2.2em;
+    top: 2.4em;
     left: 0;
     bottom: 0;
 }
@@ -80,6 +80,13 @@ $timeline-layer-height: 1em;
                 pointer-events: auto;
             }
         }
+    }
+
+    .segment-timeline__layer-item-appendage {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        display: block;
     }
 }
 .segment-timeline__output-layers {

@@ -33,7 +33,7 @@ class extends React.Component<IRunningOrdersListPropsHeader> {
 
 		return (
 			<div>
-				<header className='mvl'>
+				<header className='mvs'>
 					<h1>{t('Running Orders')}</h1>
 				</header>
 				<div className='mod mvl'>

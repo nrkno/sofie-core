@@ -13,7 +13,7 @@ interface IDeviceItemPropsHeader extends InjectedTranslateProps {
 	key: string,
 	device: PeripheralDevice
 }
-export const DeviceItem = translate()(class extends React.Component<IDeviceItemPropsHeader> {
+const DeviceItem = translate()(class extends React.Component<IDeviceItemPropsHeader> {
 	statusCodeString () {
 		let t = this.props.t
 
@@ -109,7 +109,7 @@ export class SystemStatus extends React.Component<IPropsHeader> {
 
 		return (
 			<div>
-				<header className='mvl'>
+				<header className='mvs'>
 					<h1>{t('System Status')}</h1>
 				</header>
 				<div className='mod mvl'>

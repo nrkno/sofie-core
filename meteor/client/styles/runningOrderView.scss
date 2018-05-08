@@ -20,7 +20,7 @@ $segment-line-start-color: #898989;
 $segment-nextline-shade-width: 30px;
 $segment-nextline-shade-fill: linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.5));
 
-$liveline-timecode-color: #fff;
+$liveline-timecode-color:  #F9FF16;
 
 /** The top padding of the timeline has to be equal to the header-height, so that the
 	functional part of the timeline starts at the same level as the segment title
@@ -63,6 +63,40 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	}
 }
 
+@mixin item-type-colors {
+	&.camera {
+		background: $segment-layer-background-camera;
+	}
+
+	&.graphics {
+		background: $segment-layer-background-graphics;
+	}
+
+	&.lower-third {
+		background: $segment-layer-background-lower-third;
+	}
+
+	&.live-speak {
+		background: $segment-layer-background-live-speak;
+	}
+
+	&.vt {
+		background: $segment-layer-background-vt;
+	}
+
+	&.remote {
+		background: $segment-layer-background-remote;
+	}
+
+	&.script {
+		background: $segment-layer-background-script;
+	}
+
+	&.mic {
+		background: $segment-layer-background-mic;
+	}
+}
+
 .header {
 	.timing {
 		display: flex;
@@ -80,6 +114,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 				}
 			}
 		}
+	}
+
+	.close {
+		margin: 17px 20px 14px;
 	}
 }
 
@@ -186,7 +224,6 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	}
 
 	// The area controlling the zoom at the bottom of the segment
-	// TODO: implement zoom area
 	.segment-timeline__zoom-area {
 		position: relative;
 		grid-column: timeline / end;
@@ -248,7 +285,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 								box-shadow: none;
 							}
 
-							> * {
+							> *, > .segment-timeline__layer-item__label {
 								display: none;
 							}
 						}
@@ -263,6 +300,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 							border-bottom: none;
 						}
 					}
+				}
+
+				.segment-timeline__layer-item-appendage {
+					display: none;
 				}
 			}
 		}
@@ -436,7 +477,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 		.segment-timeline__liveline__timecode {
 			position: absolute;
-			bottom: 0.1em;
+			bottom: -0.1em;
 			left: 5px;
 			font-size: 1.2em;
 			line-height: 1em;
@@ -484,12 +525,12 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 					content: ' ';
 					display: block;
 					position: absolute;
-					top: 0;
-    				left: 0;
+					top: -3px;
+    				left: -2px;
 					width: 0;
 					height: 0;
 					border-style: solid;
-					border-width: 3px 0 3px 9px;
+					border-width: 6px 0 6px 12px;
 					border-color: transparent transparent transparent $segment-line-start-color;
 				}
 			}
@@ -559,36 +600,24 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 							z-index: 10;
 						}
 
-						&.camera {
-							background: $segment-layer-background-camera;
-						}
+						@include item-type-colors();
 
-						&.graphics {
-							background: $segment-layer-background-graphics;
-						}
+						&.splits {
+							.segment-timeline__layer-item__preview {
+								position: absolute;
+								top: 0;
+								left: 0;
+								right: 0;
+								bottom: 0;
+								display: flex;
+								flex-direction: column-reverse;
 
-						&.lower-third {
-							background: $segment-layer-background-lower-third;
-						}
+								.segment-timeline__layer-item__preview__item {
+									flex: 1 1;
 
-						&.live-speak {
-							background: $segment-layer-background-live-speak;
-						}
-
-						&.vt {
-							background: $segment-layer-background-vt;
-						}
-
-						&.remote {
-							background: $segment-layer-background-remote;
-						}
-
-						&.script {
-							background: $segment-layer-background-script;
-						}
-
-						&.mic {
-							background: $segment-layer-background-mic;
+									@include item-type-colors();
+								}
+							}
 						}
 
 						.segment-timeline__layer-item__label {
@@ -599,6 +628,8 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 							font-weight: 400;
 							transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity ($output-layer-group-collapse-animation-duration * 2/3);
 							pointer-events: none;
+							display: inline-block;
+							white-space: nowrap;
 
 							&.secondary {
 								font-weight: 300;
@@ -632,6 +663,14 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 							&.file-name {
 								font-weight: 200;
+							}
+						}
+
+						&.hide-overflow-labels {
+							.segment-timeline__layer-item__label {
+								&.overflow-label {
+									display: none;
+								}
 							}
 						}
 
@@ -710,6 +749,17 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 							}
 						}
 					}
+				}
+			}
+
+			// Layer-item appendages are parts of a layer item going beyond the layer (usually, across the entire timeline)
+			.segment-timeline__layer-item-appendage {
+				&.script-line {
+					width: 0;
+					z-index: 100;
+					border-left: 2px dotted $segment-layer-background-mic;
+					margin-left: -2px;
+					box-shadow: 0px 0px 1px 1px rgba(0, 30, 0, 0.18);
 				}
 			}
 		}
@@ -960,10 +1010,33 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		border-radius: 0px;
 		transform: translate(-100%, -100%);
 
-		> video {
+		> video, > .video-preview {
 			display: block;
 			width: 160px;
 			height: 90px;
+			background: #000;
+		}
+
+		> .video-preview {
+			position: relative;
+			overflow: hidden;
+
+			> .background {
+				position: absolute;
+				top: 0;
+				bottom: 0;
+				left: 0;
+				right: 0;
+			}
+
+			> .box {
+				position: absolute;
+				transform: translate(-50%, -50%);
+			}
+
+			& > * {
+				@include item-type-colors();
+			}
 		}
 	}
 }

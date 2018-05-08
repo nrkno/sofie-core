@@ -1,20 +1,31 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
+import * as $ from 'jquery'
 
 import { ISourceLayerUi, IOutputLayerUi, SegmentUi, SegmentLineUi, SegmentLineItemUi } from '../SegmentTimelineContainer'
 
 import { FloatingInspector } from '../../FloatingInspector'
 
 import * as ClassNames from 'classnames'
-import { CustomLayerItemRenderer } from './CustomLayerItemRenderer'
+import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
 
 export class VTSourceRenderer extends CustomLayerItemRenderer {
 	vPreview: HTMLVideoElement
+	leftLabel: HTMLSpanElement
+	rightLabel: HTMLSpanElement
+	begin: string
+	end: string
 
 	setVideoRef = (e: HTMLVideoElement) => {
-		if (e) {
-			this.vPreview = e
-		}
+		this.vPreview = e
+	}
+
+	setLeftLabelRef = (e: HTMLSpanElement) => {
+		this.leftLabel = e
+	}
+
+	setRightLabelRef = (e: HTMLSpanElement) => {
+		this.rightLabel = e
 	}
 
 	updateTime = () => {
@@ -29,21 +40,39 @@ export class VTSourceRenderer extends CustomLayerItemRenderer {
 		}
 	}
 
-	componentDidUpdate () {
+	componentDidMount () {
+		this.updateAnchoredElsWidths()
+	}
+
+	updateAnchoredElsWidths = () => {
+		let leftLabelWidth = $(this.leftLabel).width() || 0
+		let rightLabelWidth = $(this.rightLabel).width() || 0
+
+		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
+	}
+
+	componentDidUpdate (prevProps: Readonly<ISourceLayerItemProps>, prevState: Readonly<any>) {
+		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
+			super.componentDidUpdate(prevProps, prevState)
+		}
 		this.updateTime()
+
+		if (this.props.segmentLineItem.name !== prevProps.segmentLineItem.name) {
+			this.updateAnchoredElsWidths()
+		}
 	}
 
 	render () {
 		let labelItems = this.props.segmentLineItem.name.split('||')
-		let begin = labelItems[0] || ''
-		let end = labelItems[1] || ''
+		this.begin = labelItems[0] || ''
+		this.end = labelItems[1] || ''
 
 		return [
-			<span className='segment-timeline__layer-item__label' key={this.props.segmentLineItem._id + '-start'}>
-				{begin}
+			<span className='segment-timeline__layer-item__label overflow-label' key={this.props.segmentLineItem._id + '-start'} ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
+				{this.begin}
 			</span>,
-			<span className='segment-timeline__layer-item__label last-words' key={this.props.segmentLineItem._id + '-finish'}>
-				{end}
+			<span className='segment-timeline__layer-item__label last-words' key={this.props.segmentLineItem._id + '-finish'} ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
+				{this.end}
 			</span>,
 			<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 				<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>

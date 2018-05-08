@@ -17,6 +17,10 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.0.0-beta.44",
+    "@fortawesome/fontawesome": "^1.1.7",
+    "@fortawesome/fontawesome-free-solid": "^5.0.12",
+    "@fortawesome/react-fontawesome": "0.0.19",
+    "@nrk/core-icons": "github:nrkno/core-icons",
     "chai": "^4.1.2",
     "classnames": "^2.2.5",
     "core-js": "^2.5.4",

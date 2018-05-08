@@ -14,9 +14,11 @@ import { Transition } from '../../../lib/constants/casparcg'
 import { FloatingInspector } from '../FloatingInspector'
 
 import * as ClassNames from 'classnames'
+import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MicSourceRenderer } from './Renderers/MicSourceRenderer'
 import { VTSourceRenderer } from './Renderers/VTSourceRenderer'
 import { L3rdSourceRenderer } from './Renderers/L3rdSourceRenderer'
+import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
 
 interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
@@ -32,15 +34,20 @@ interface ISourceLayerItemProps {
 	liveLineHistorySize: number
 	livePosition: number | null
 	outputGroupCollapsed: boolean
+	scrollLeft: number
+	scrollWidth: number
 }
 interface ISourceLayerItemState {
 	itemState: number
 	showMiniInspector: boolean
 	elementPosition: JQueryCoordinates
 	cursorPosition: JQueryCoordinates
+	elementWidth: number
+	itemElement: HTMLDivElement | null
+	leftAnchoredWidth: number
+	rightAnchoredWidth: number
 }
 export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISourceLayerItemState> {
-	itemElement: HTMLDivElement
 
 	constructor (props) {
 		super(props)
@@ -54,12 +61,97 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			cursorPosition: {
 				top: 0,
 				left: 0
-			}
+			},
+			elementWidth: 0,
+			itemElement: null,
+			leftAnchoredWidth: 0,
+			rightAnchoredWidth: 0
 		}
 	}
 
 	setRef = (e: HTMLDivElement) => {
-		this.itemElement = e
+		this.setState({
+			itemElement: e
+		})
+	}
+
+	getItemLabelOffsetLeft = (): { [key: string]: string } => {
+		if (this.props.relative) {
+			return {}
+		} else {
+			if (this.props.segmentLine && this.props.segmentLine.startsAt !== undefined && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined) {
+				let segmentLineItem = this.props.segmentLineItem
+
+				let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration : 0
+				let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration : 0
+
+				const inPoint = segmentLineItem.renderedInPoint || 0
+				const duration = segmentLineItem.renderedDuration || this.props.segmentLine.renderedDuration || 0
+
+				const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
+
+				if (!this.props.followLiveLine) {
+					if (this.props.scrollLeft > (inPoint + this.props.segmentLine.startsAt + inTransitionDuration) &&
+						this.props.scrollLeft < (inPoint + duration + this.props.segmentLine.startsAt - outTransitionDuration)) {
+						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLine.startsAt - inTransitionDuration) * this.props.timeScale
+
+						let styleObj = {
+							'transform': 'translate(' + (widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth))).toString() + 'px,  0)'
+						}
+
+						return styleObj
+					}
+				} else {
+					const liveLineHistoryWithMargin = this.props.liveLineHistorySize - 10
+					if (this.props.scrollLeft + (liveLineHistoryWithMargin / this.props.timeScale) > (inPoint + this.props.segmentLine.startsAt + inTransitionDuration + (this.state.leftAnchoredWidth / this.props.timeScale)) &&
+						this.props.scrollLeft + (liveLineHistoryWithMargin / this.props.timeScale) < (inPoint + duration + this.props.segmentLine.startsAt - outTransitionDuration)) {
+						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLine.startsAt - inTransitionDuration) * this.props.timeScale
+
+						// console.log(this.state.itemElement)
+
+						let styleObj = {
+							'transform': 'translate(' + (widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth))).toString() + 'px, 0) ' +
+										 'translate(' + (liveLineHistoryWithMargin).toString() + 'px, 0) ' +
+										 'translate(-100%, 0)'
+						}
+
+						// console.log(styleObj)
+
+						return styleObj
+					}
+				}
+			}
+			return {}
+		}
+	}
+
+	getItemLabelOffsetRight = (): { [key: string]: string } => {
+		if (this.props.relative) {
+			return {}
+		} else {
+			if (this.props.segmentLine && this.props.segmentLine.startsAt !== undefined && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined) {
+				let segmentLineItem = this.props.segmentLineItem
+
+				let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration : 0
+				let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration : 0
+
+				const inPoint = segmentLineItem.renderedInPoint || 0
+				const duration = segmentLineItem.renderedDuration || this.props.segmentLine.renderedDuration || 0
+				const outPoint = inPoint + duration
+
+				const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
+
+				if (this.props.scrollLeft + this.props.scrollWidth < (outPoint - outTransitionDuration + this.props.segmentLine.startsAt) &&
+					this.props.scrollLeft + this.props.scrollWidth > (inPoint + this.props.segmentLine.startsAt)) {
+					const targetPos = ((this.props.scrollLeft + this.props.scrollWidth) - outPoint - this.props.segmentLine.startsAt - outTransitionDuration) * this.props.timeScale
+
+					return {
+						'transform': 'translate(' + (widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.max(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth) * -1)).toString() + 'px,  0)'
+					}
+				}
+			}
+			return {}
+		}
 	}
 
 	getItemStyle (): { [key: string]: string } {
@@ -73,8 +165,9 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		if (this.props.relative) {
 			return {
 				// as-run "duration" takes priority over renderdDuration which takes priority over MOS-import expectedDuration (editorial duration)
-				'left': (((segmentLineItem.renderedInPoint || 0) + inTransitionDuration) / (this.props.totalSegmentLineDuration || 1) * 100).toString() + '%',
-				'width': ((itemDuration - inTransitionDuration - outTransitionDuration) / (this.props.totalSegmentLineDuration || 1) * 100).toString() + '%'
+				// also: don't render transitions in relative mode
+				'left': (((segmentLineItem.renderedInPoint || 0)) / (this.props.totalSegmentLineDuration || 1) * 100).toString() + '%',
+				'width': ((itemDuration) / (this.props.totalSegmentLineDuration || 1) * 100).toString() + '%'
 			}
 		} else {
 			return {
@@ -83,6 +176,25 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				'width': ((itemDuration - inTransitionDuration - outTransitionDuration) * this.props.timeScale).toString() + 'px'
 			}
 		}
+	}
+
+	checkElementWidth = () => {
+		if (this.state.itemElement) {
+			const width = $(this.state.itemElement).width() || 0
+			if (this.state.elementWidth !== width) {
+				this.setState({
+					elementWidth: width
+				})
+			}
+		}
+	}
+
+	componentDidMount () {
+		this.checkElementWidth()
+	}
+
+	componentDidUpdate () {
+		this.checkElementWidth()
 	}
 
 	itemClick = (e: any) => {
@@ -106,7 +218,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			showMiniInspector: v
 		})
 		// console.log($(this.itemElement).offset())
-		let elementPos = $(this.itemElement).offset() || {
+		let elementPos = this.state.itemElement && $(this.state.itemElement).offset() || {
 			top: 0,
 			left: 0
 		}
@@ -129,34 +241,46 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		})
 	}
 
+	setAnchoredElsWidths = (leftAnchoredWidth: number, rightAnchoredWidth: number) => {
+		this.setState({
+			leftAnchoredWidth: leftAnchoredWidth,
+			rightAnchoredWidth: rightAnchoredWidth
+		})
+	}
+
 	renderInsideItem () {
 		switch (this.props.layer.type) {
+			case RundownAPI.SourceLayerType.SCRIPT:
 			case RundownAPI.SourceLayerType.MIC:
-				return <MicSourceRenderer key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
+				return <MicSourceRenderer key={this.props.segmentLineItem._id}
+						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+						setAnchoredElsWidths={this.setAnchoredElsWidths}
+						{...this.props} {...this.state} />
 			case RundownAPI.SourceLayerType.VT:
-				return <VTSourceRenderer key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
+				return <VTSourceRenderer key={this.props.segmentLineItem._id}
+						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+						setAnchoredElsWidths={this.setAnchoredElsWidths}
+						{...this.props} {...this.state} />
 			case RundownAPI.SourceLayerType.LOWER_THIRD:
-				return <L3rdSourceRenderer key={this.props.segmentLineItem._id} {...this.props} {...this.state} itemElement={this.itemElement} />
+				return <L3rdSourceRenderer key={this.props.segmentLineItem._id}
+						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+						setAnchoredElsWidths={this.setAnchoredElsWidths}
+						{...this.props} {...this.state} />
+			case RundownAPI.SourceLayerType.SPLITS:
+				return <SplitsSourceRenderer key={this.props.segmentLineItem._id}
+						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+						setAnchoredElsWidths={this.setAnchoredElsWidths}
+						{...this.props} {...this.state} />
 			default:
-				return [
-					<span key={this.props.segmentLineItem._id} className={
-						ClassNames('segment-timeline__layer-item__label', {
-							'bold': this.state.itemState === 0,
-							'regular': this.state.itemState === 1,
-							'light': this.state.itemState === 2,
-							'light-file-missing': this.state.itemState === 3,
-						})
-					}
-					>{this.props.segmentLineItem.name}</span>,
-					<FloatingInspector key={this.props.segmentLineItem._id + '-fi'} shown={this.state.showMiniInspector && this.itemElement !== undefined}>
-						<div className='segment-timeline__mini-inspector' style={{
-							'left': (this.state.elementPosition.left + this.state.cursorPosition.left).toString() + 'px',
-							'top': this.state.elementPosition.top.toString() + 'px'
-						}}>
-							Item properties
-					</div>
-					</FloatingInspector>
-				]
+				return <DefaultLayerItemRenderer key={this.props.segmentLineItem._id}
+						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+						setAnchoredElsWidths={this.setAnchoredElsWidths}
+						{...this.props} {...this.state} />
 		}
 	}
 
@@ -176,8 +300,10 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				'splits': this.props.layer.type === RundownAPI.SourceLayerType.SPLITS,
 				'vt': this.props.layer.type === RundownAPI.SourceLayerType.VT,
 
-				'with-in-transition': this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.inTransition && this.props.segmentLineItem.transitions.inTransition.duration > 0,
-				'with-out-transition': this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.outTransition && this.props.segmentLineItem.transitions.outTransition.duration > 0
+				'with-in-transition': !this.props.relative && this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.inTransition && this.props.segmentLineItem.transitions.inTransition.duration > 0,
+				'with-out-transition': !this.props.relative && this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.outTransition && this.props.segmentLineItem.transitions.outTransition.duration > 0,
+
+				'hide-overflow-labels': this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
 			})}
 				data-mos-id={this.props.segmentLineItem._id}
 				ref={this.setRef}

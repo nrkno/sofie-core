@@ -26,6 +26,9 @@ export const SegmentContextMenu = translate()(class extends React.Component<IPro
 
 		return (
 			<ContextMenu id='segment-timeline-context-menu'>
+				<div className='react-contextmenu-label'>
+					{this.props.contextMenuContext && this.props.contextMenuContext.segment && this.props.contextMenuContext.segment.name || t('Unknown segment')}: {this.props.contextMenuContext && this.props.contextMenuContext.segmentLine && this.props.contextMenuContext.segmentLine._rank !== undefined && t(`Line ${this.props.contextMenuContext.segmentLine._id}`) || t('Unknown line')}
+				</div>
 				<MenuItem onClick={(e) => this.props.onSetNext(this.getSegmentLineFromContext())}>
 					{t('Set as Next')}
 				</MenuItem>

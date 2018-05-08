@@ -36,6 +36,8 @@ interface ISourceLayerProps {
 	followLiveLine: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
+	scrollLeft: number
+	scrollWidth: number
 	onContextMenu?: (contextMenuContext: any) => void
 }
 class SourceLayer extends React.Component<ISourceLayerProps> {
@@ -109,6 +111,8 @@ interface IOutputGroupProps {
 	followLiveLine: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
+	scrollLeft: number
+	scrollWidth: number
 	onContextMenu?: (contextMenuContext: any) => void
 }
 class OutputGroup extends React.Component<IOutputGroupProps> {
@@ -152,6 +156,7 @@ interface IPropsHeader {
 	onCollapseSegmentToggle?: (event: any) => void,
 	isCollapsed?: boolean,
 	scrollLeft: number,
+	scrollWidth: number
 	onScroll?: (scrollLeft: number, event: any) => void
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	followLiveLine: boolean
