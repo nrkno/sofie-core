@@ -34,6 +34,7 @@ import { Segment, Segments } from '../../lib/collections/Segments'
 
 import { saveIntoDb, partialExceptId, getCurrentTime } from '../../lib/lib'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
+import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands';
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -639,7 +640,7 @@ export function getRank (beforeOrLast, after, i: number, count: number): number 
 	return newRankMin + ( (i + 1) / (count + 1) ) * (newRankMax - newRankMin)
 }
 
-const methods = {}
+let methods = {}
 methods[PeripheralDeviceAPI.methods.initialize] = (deviceId, deviceToken, options) => {
 	return ServerPeripheralDeviceAPI.initialize(deviceId, deviceToken, options)
 }
@@ -661,6 +662,7 @@ methods[PeripheralDeviceAPI.methods.mosRoReplace] = (deviceId, deviceToken, ro: 
 	return ServerPeripheralDeviceAPI.mosRoReplace(deviceId, deviceToken, ro)
 }
 methods[PeripheralDeviceAPI.methods.mosRoDelete] = (deviceId, deviceToken, runningOrderId: MosString128) => {
+	console.log('mosRoDelete')
 	return ServerPeripheralDeviceAPI.mosRoDelete(deviceId, deviceToken, runningOrderId)
 }
 methods[PeripheralDeviceAPI.methods.mosRoMetadata] = (deviceId, deviceToken, metadata: IMOSRunningOrderBase) => {
@@ -708,6 +710,32 @@ methods[PeripheralDeviceAPI.methods.mosRoItemSwap] = (deviceId, deviceToken, Act
 methods[PeripheralDeviceAPI.methods.mosRoReadyToAir] = (deviceId, deviceToken, Action: IMOSROReadyToAir) => {
 	return ServerPeripheralDeviceAPI.mosRoReadyToAir(deviceId, deviceToken, Action)
 }
+methods[PeripheralDeviceAPI.methods.mosRoFullStory] = (deviceId, deviceToken, story: IMOSROFullStory) => {
+	return ServerPeripheralDeviceAPI.mosRoFullStory(deviceId, deviceToken, story)
+}
+
+// --------------------
+methods[PeripheralDeviceAPI.methods.functionReply] = (deviceId, deviceToken, commandId, err: any, result: any) => {
+	console.log('functionReply', err, result)
+	PeripheralDeviceCommands.update(commandId, {
+		$set: {
+			hasReply: true,
+			reply: result,
+			replyError: err
+		}
+	})
+}
+
+// Transform methods:
+// _.each(methods, (fcn: Function, key) => {
+// 	methods[key] = (...args: any[]) => {
+// 		console.log('------- Method call -------')
+// 		console.log(key)
+// 		console.log(args)
+// 		console.log('---------------------------')
+// 		fcn.apply(null, args)
+// 	}
+// })
 
 // Apply methods:
 Meteor.methods(methods)
