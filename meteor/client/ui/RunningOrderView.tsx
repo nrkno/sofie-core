@@ -32,9 +32,11 @@ const TimingDisplay = translate()(class extends React.Component<IHeaderProps & I
 
 		return (
 			<div className='timing mod'>
-				<span className='timing-clock time-now'>{t('Now')}: 18:53:10</span>
+				<span className='timing-clock-header-label'>{t('Now')}: </span>
+				<span className='timing-clock time-now'>18:53:10</span>
 				<span className='timing-clock heavy-light heavy'>-00:15</span>
-				<span className='timing-clock time-end'>{t('Finish')}: 18:59:00</span>
+				<span className='timing-clock-header-label'>{t('Finish')}: </span>
+				<span className='timing-clock time-end'>18:59:00</span>
 			</div>
 		)
 	}
@@ -48,7 +50,7 @@ const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 				'marginTop': '0.9em'
 			}}>
 				<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_demoRundown')}>
-					Ladde rundown
+					Last inn rundown
 				</button>
 
 				<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_takeNext', props.runningOrder._id)}>
