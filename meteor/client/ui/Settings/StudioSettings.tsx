@@ -10,11 +10,11 @@ import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
 import { literal } from '../../../lib/lib'
 import { Random } from 'meteor/random'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
-import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
-import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
-import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import * as faTrash from '@fontawesome/fontawesome-free-solid/faTrash'
+import * as faPencilAlt from '@fontawesome/fontawesome-free-solid/faPencilAlt'
+import * as faCheck from '@fontawesome/fontawesome-free-solid/faCheck'
+import * as faPlus from '@fontawesome/fontawesome-free-solid/faPlus'
+import * as FontAwesomeIcon from '@fontawesome/react-fontawesome'
 
 interface IPropsHeader {
 	studioInstallation: StudioInstallation
