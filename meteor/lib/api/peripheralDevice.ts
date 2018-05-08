@@ -93,9 +93,14 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 		let cmd = PeripheralDeviceCommands.findOne(commandId)
 		console.log('checkReply')
 		if (cmd.hasReply) {
-			console.log('got reply')
 			// We've got a reply!
-			cb(null, cmd.reply)
+			console.log('got reply')
+
+			if (cmd.replyError) {
+				cb(cmd.replyError, null)
+			} else {
+				cb(null, cmd.reply)
+			}
 			cursor.stop()
 			PeripheralDeviceCommands.remove(cmd._id)
 			if (subscription) subscription.stop()
