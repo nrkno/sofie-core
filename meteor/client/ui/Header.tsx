@@ -25,7 +25,7 @@ class Header extends React.Component<IPropsHeader> {
 				</div>
 				<div className='col c6 dark'>
 					<nav className='links mod'>
-						<NavLink to='/' activeClassName='active'>{t('Home')}</NavLink>
+						<NavLink to='/?lng=nb' activeClassName='active'>{t('Home')}</NavLink>
 						<NavLink to='/runningOrders' activeClassName='active'>{t('Running Orders')}</NavLink>
 						<NavLink to='/nymansPlayground' activeClassName='active'>{t('Nyman\'s Playground')}</NavLink>
 						<NavLink to='/status' activeClassName='active'>{t('Status')}</NavLink>

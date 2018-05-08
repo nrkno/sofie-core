@@ -50,7 +50,7 @@ const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 				'marginTop': '0.9em'
 			}}>
 				<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_demoRundown')}>
-					Last inn rundown
+					Last inn kjøreplan
 				</button>
 
 				<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_takeNext', props.runningOrder._id)}>
