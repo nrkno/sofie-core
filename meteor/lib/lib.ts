@@ -48,7 +48,11 @@ if (Meteor.isServer) {
 				systemTime.diff = diffTime
 				systemTime.stdDev = Math.abs(sentTime - replyTime) / 2
 				console.log('time diff to server: ' + systemTime.diff + ' (stdDev: ' + systemTime.stdDev + ')')
-				if (!stat.good || systemTime.stdDev > 50) {
+				if (!stat.good) {
+					setTimeout(() => {
+						updateDiffTime()
+					}, 20 * 1000)
+				} else if (!stat.good || systemTime.stdDev > 50) {
 					setTimeout(() => {
 						updateDiffTime()
 					}, 2000)
