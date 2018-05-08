@@ -672,6 +672,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 								> * {
 									position: relative;
 								}
+
+								> .label-icon {
+									margin: 0 -10px 0 0;
+								}
 							}
 
 							&.file-name {
@@ -680,7 +684,6 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 							&.label-icon {
 								margin: 0;
-								margin-right: -10px;
 							}
 						}
 

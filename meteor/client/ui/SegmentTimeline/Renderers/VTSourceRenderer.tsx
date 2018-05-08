@@ -84,12 +84,19 @@ export class VTSourceRenderer extends CustomLayerItemRenderer {
 
 		return [
 			<span className='segment-timeline__layer-item__label' key={this.props.segmentLineItem._id + '-start'} ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
-				<span className='segment-timeline__layer-item__label overflow-label' key={this.props.segmentLineItem._id + '-start'}>
+				<span className={ClassNames('segment-timeline__layer-item__label', {
+					'overflow-label': this.end !== ''
+				})} key={this.props.segmentLineItem._id + '-start'}>
 					{this.begin}
 				</span>
+				{(this.begin && this.end === '' && (this.props.segmentLineItem as SegmentLineItemUi).content && (this.props.segmentLineItem as SegmentLineItemUi).content.loop) &&
+					(<div className='segment-timeline__layer-item__label label-icon'>
+						<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
+					</div>)
+				}
 			</span>,
 			<span className='segment-timeline__layer-item__label last-words' key={this.props.segmentLineItem._id + '-finish'} ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
-				{((this.props.segmentLineItem as SegmentLineItemUi).content && (this.props.segmentLineItem as SegmentLineItemUi).content.loop) &&
+				{(this.end && (this.props.segmentLineItem as SegmentLineItemUi).content && (this.props.segmentLineItem as SegmentLineItemUi).content.loop) &&
 					(<div className='segment-timeline__layer-item__label label-icon'>
 						<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
 					</div>)
