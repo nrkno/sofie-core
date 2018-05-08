@@ -51,9 +51,6 @@ export class VTSourceRenderer extends CustomLayerItemRenderer {
 		let leftLabelWidth = $(this.leftLabel).width() || 0
 		let rightLabelWidth = $(this.rightLabel).width() || 0
 
-		console.log(this.leftLabel, this.rightLabel)
-		console.log(leftLabelWidth, rightLabelWidth)
-
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 

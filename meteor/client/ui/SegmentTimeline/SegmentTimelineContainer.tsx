@@ -57,6 +57,8 @@ export interface SegmentLineItemUi extends SegmentLineItem {
 	renderedDuration?: number | null
 	/** This item is being continued by another, linked, item in another SegmentLine */
 	continuedByRef?: SegmentLineItemUi
+	/** This item is continuing another, linked, item in another SegmentLine */
+	continuesRef?: SegmentLineItemUi
 	/** This item has already been linked to the parent item of the spanning item group */
 	linked?: boolean
 }
@@ -200,6 +202,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 			segmentLineItemsLookup[segmentLineItem._id] = segmentLineItem
 			if (segmentLineItem.continuesRefId && segmentLineItemsLookup[segmentLineItem.continuesRefId]) {
 				segmentLineItemsLookup[segmentLineItem.continuesRefId].continuedByRef = segmentLineItem
+				segmentLineItem.continuesRef = segmentLineItemsLookup[segmentLineItem.continuesRefId]
 			}
 		})
 
@@ -242,7 +245,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 
 	_.forEach<SegmentLineUi>(segmentLines, (line) => {
 		line.items && _.forEach<SegmentLineItemUi>(line.items, (item) => {
-			if (item.continuedByRef && !item.linked) {
+			if (item.continuedByRef) {
 				item.renderedDuration = resolveDuration(item)
 			}
 		})

@@ -532,20 +532,10 @@ Meteor.methods({
 				})
 				SegmentLineItems.insert(segmentLineItem)
 
-
-			// Next	
-				segLine = {
-					_id: seg1._id + '-line' + line,
-					_rank: line++,
-					mosId: seg1.mosId + '_LINE' + line++,
-					segmentId: seg1._id,
-					runningOrderId: seg1.runningOrderId
-				}
-				SegmentLines.insert(segLine)
-
 			// Cam	
+				let nextCameraSegmentLineItemId = segLine._id + ':' + Random.id(5)
 				segmentLineItem = literal<SegmentLineItem>({
-					_id: segLine._id + ':' + Random.id(5),
+					_id: nextCameraSegmentLineItemId,
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
@@ -562,6 +552,18 @@ Meteor.methods({
 					continuesRefId: cameraStartSegmentLineItemId
 				})
 				SegmentLineItems.insert(segmentLineItem)
+
+				cameraStartSegmentLineItemId = nextCameraSegmentLineItemId
+
+			// Next	
+				segLine = {
+					_id: seg1._id + '-line' + line,
+					_rank: line++,
+					mosId: seg1.mosId + '_LINE' + line++,
+					segmentId: seg1._id,
+					runningOrderId: seg1.runningOrderId
+				}
+				SegmentLines.insert(segLine)
 
 			// VT
 				segmentLineItem = literal<SegmentLineItem>({

@@ -60,10 +60,12 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 			return this.props.layer.items
 				.filter((segmentLineItem) => {
 					// filter only segment line items belonging to this segment line
+					console.log((this.props.scrollLeft >= ((this.props.segmentLine.startsAt || 0) + ((segmentLineItem as SegmentLineItemUi).renderedInPoint || 0))))
 					return (segmentLineItem.segmentLineId === this.props.segmentLine._id) ?
 						// filter only segment line items, that have not yet been linked to parent items
 						((segmentLineItem as SegmentLineItemUi).linked !== true) ?
-						true : false
+							true :
+							(this.props.scrollLeft >= ((this.props.segmentLine.startsAt || 0) + ((segmentLineItem as SegmentLineItemUi).renderedInPoint || 0)))
 					: false
 				})
 				.map((segmentLineItem) => {
@@ -180,6 +182,14 @@ export const SegmentTimelineLine = translate()(class extends React.Component<IPr
 		}
 	}
 
+	isInsideViewport () {
+		if (this.props.relative) {
+			return true
+		} else {
+			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine)
+		}
+	}
+
 	renderTimelineOutputGroups (segmentLine: SegmentLineUi) {
 		if (this.props.segment.outputLayers !== undefined) {
 			return _.map(_.filter(this.props.segment.outputLayers, (layer) => {
@@ -207,20 +217,34 @@ export const SegmentTimelineLine = translate()(class extends React.Component<IPr
 	render () {
 		const { t } = this.props
 
-		return (
-			<div className={ClassNames('segment-timeline__segment-line', {
-				'live': (this.props.runningOrder.currentSegmentLineId === this.props.segmentLine._id),
-				'next': (this.props.runningOrder.nextSegmentLineId === this.props.segmentLine._id)
-			})} data-mos-id={this.props.segmentLine._id}
-				style={this.getLayerStyle()}
-				>
-				<div className='segment-timeline__segment-line__nextline'>
-					<div className='segment-timeline__segment-line__nextline__label'>
-						{t('Next')}
+		if (this.isInsideViewport()) {
+			return (
+				<div className={ClassNames('segment-timeline__segment-line', {
+					'live': (this.props.runningOrder.currentSegmentLineId === this.props.segmentLine._id),
+					'next': (this.props.runningOrder.nextSegmentLineId === this.props.segmentLine._id)
+				})} data-mos-id={this.props.segmentLine._id}
+					style={this.getLayerStyle()}
+					>
+					<div className='segment-timeline__segment-line__nextline'>
+						<div className='segment-timeline__segment-line__nextline__label'>
+							{t('Next')}
+						</div>
 					</div>
+					{this.renderTimelineOutputGroups(this.props.segmentLine)}
 				</div>
-				{this.renderTimelineOutputGroups(this.props.segmentLine)}
-			</div>
-		)
+			)
+		} else { // render placeholder
+			return (
+				<div className={ClassNames('segment-timeline__segment-line', {
+					'live': (this.props.runningOrder.currentSegmentLineId === this.props.segmentLine._id),
+					'next': (this.props.runningOrder.nextSegmentLineId === this.props.segmentLine._id)
+				})} data-mos-id={this.props.segmentLine._id}
+					style={this.getLayerStyle()}
+				>
+					{ /* render it empty, just to take up space */ }
+				</div>
+			)
+		}
+
 	}
 })

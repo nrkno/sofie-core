@@ -9,6 +9,7 @@ import { ISourceLayerUi,
 		 SegmentLineItemUi } from './SegmentTimelineContainer'
 
 import { RundownAPI } from './../../../lib/api/rundown'
+import { RundownUtils } from './../../lib/rundown'
 import { Transition } from '../../../lib/constants/casparcg'
 
 import { FloatingInspector } from '../FloatingInspector'
@@ -284,59 +285,81 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		}
 	}
 
+	isInsideViewport () {
+		if (this.props.relative) {
+			return true
+		} else {
+			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine, this.props.segmentLineItem)
+		}
+	}
+
 	render () {
-		return (
-			<div className={ClassNames('segment-timeline__layer-item', {
-				'audio': this.props.layer.type === RundownAPI.SourceLayerType.AUDIO,
-				'camera': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA,
-				'camera-movement': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA_MOVEMENT,
-				'graphics': this.props.layer.type === RundownAPI.SourceLayerType.GRAPHICS,
-				'lower-third': this.props.layer.type === RundownAPI.SourceLayerType.LOWER_THIRD,
-				'live-speak': this.props.layer.type === RundownAPI.SourceLayerType.LIVE_SPEAK,
-				'mic': this.props.layer.type === RundownAPI.SourceLayerType.MIC,
-				'metadata': this.props.layer.type === RundownAPI.SourceLayerType.METADATA,
-				'remote': this.props.layer.type === RundownAPI.SourceLayerType.REMOTE,
-				'script': this.props.layer.type === RundownAPI.SourceLayerType.SCRIPT,
-				'splits': this.props.layer.type === RundownAPI.SourceLayerType.SPLITS,
-				'vt': this.props.layer.type === RundownAPI.SourceLayerType.VT,
+		if (this.isInsideViewport()) {
 
-				'with-in-transition': !this.props.relative && this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.inTransition && this.props.segmentLineItem.transitions.inTransition.duration > 0,
-				'with-out-transition': !this.props.relative && this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.outTransition && this.props.segmentLineItem.transitions.outTransition.duration > 0,
+			return (
+				<div className={ClassNames('segment-timeline__layer-item', {
+					'audio': this.props.layer.type === RundownAPI.SourceLayerType.AUDIO,
+					'camera': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA,
+					'camera-movement': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA_MOVEMENT,
+					'graphics': this.props.layer.type === RundownAPI.SourceLayerType.GRAPHICS,
+					'lower-third': this.props.layer.type === RundownAPI.SourceLayerType.LOWER_THIRD,
+					'live-speak': this.props.layer.type === RundownAPI.SourceLayerType.LIVE_SPEAK,
+					'mic': this.props.layer.type === RundownAPI.SourceLayerType.MIC,
+					'metadata': this.props.layer.type === RundownAPI.SourceLayerType.METADATA,
+					'remote': this.props.layer.type === RundownAPI.SourceLayerType.REMOTE,
+					'script': this.props.layer.type === RundownAPI.SourceLayerType.SCRIPT,
+					'splits': this.props.layer.type === RundownAPI.SourceLayerType.SPLITS,
+					'vt': this.props.layer.type === RundownAPI.SourceLayerType.VT,
 
-				'hide-overflow-labels': this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
-			})}
-				data-mos-id={this.props.segmentLineItem._id}
-				ref={this.setRef}
-				onClick={this.itemClick}
-				onMouseUp={this.itemMouseUp}
-				onMouseMove={(e) => this.moveMiniInspector(e)}
-				onMouseOver={(e) => !this.props.outputGroupCollapsed && this.toggleMiniInspector(e, true)}
-				onMouseLeave={(e) => this.toggleMiniInspector(e, false)}
-				style={this.getItemStyle()}>
-				{this.renderInsideItem()}
-				{
-					this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.inTransition && this.props.segmentLineItem.transitions.inTransition.duration > 0 ? (
-						<div className={ClassNames('segment-timeline__layer-item__transition', 'in', {
-							'mix': this.props.segmentLineItem.transitions.inTransition.type === Transition.MIX,
-							'wipe': this.props.segmentLineItem.transitions.inTransition.type === Transition.WIPE
-						})}
-							style={{
-								'width': (this.props.segmentLineItem.transitions.inTransition.duration * this.props.timeScale).toString() + 'px'
-							}} />
-					) : null
-				}
-				{
-					this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.outTransition && this.props.segmentLineItem.transitions.outTransition.duration > 0 ? (
-						<div className={ClassNames('segment-timeline__layer-item__transition', 'out', {
-							'mix': this.props.segmentLineItem.transitions.outTransition.type === Transition.MIX,
-							'wipe': this.props.segmentLineItem.transitions.outTransition.type === Transition.WIPE
-						})}
-							style={{
-								'width': (this.props.segmentLineItem.transitions.outTransition.duration * this.props.timeScale).toString() + 'px'
-							}} />
-					) : null
-				}
-			</div>
-		)
+					'with-in-transition': !this.props.relative && this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.inTransition && this.props.segmentLineItem.transitions.inTransition.duration > 0,
+					'with-out-transition': !this.props.relative && this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.outTransition && this.props.segmentLineItem.transitions.outTransition.duration > 0,
+
+					'hide-overflow-labels': this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
+				})}
+					data-mos-id={this.props.segmentLineItem._id}
+					ref={this.setRef}
+					onClick={this.itemClick}
+					onMouseUp={this.itemMouseUp}
+					onMouseMove={(e) => this.moveMiniInspector(e)}
+					onMouseOver={(e) => !this.props.outputGroupCollapsed && this.toggleMiniInspector(e, true)}
+					onMouseLeave={(e) => this.toggleMiniInspector(e, false)}
+					style={this.getItemStyle()}>
+					{this.renderInsideItem()}
+					{
+						this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.inTransition && this.props.segmentLineItem.transitions.inTransition.duration > 0 ? (
+							<div className={ClassNames('segment-timeline__layer-item__transition', 'in', {
+								'mix': this.props.segmentLineItem.transitions.inTransition.type === Transition.MIX,
+								'wipe': this.props.segmentLineItem.transitions.inTransition.type === Transition.WIPE
+							})}
+								style={{
+									'width': (this.props.segmentLineItem.transitions.inTransition.duration * this.props.timeScale).toString() + 'px'
+								}} />
+						) : null
+					}
+					{
+						this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.outTransition && this.props.segmentLineItem.transitions.outTransition.duration > 0 ? (
+							<div className={ClassNames('segment-timeline__layer-item__transition', 'out', {
+								'mix': this.props.segmentLineItem.transitions.outTransition.type === Transition.MIX,
+								'wipe': this.props.segmentLineItem.transitions.outTransition.type === Transition.WIPE
+							})}
+								style={{
+									'width': (this.props.segmentLineItem.transitions.outTransition.duration * this.props.timeScale).toString() + 'px'
+								}} />
+						) : null
+					}
+				</div>
+			)
+
+		} else { // render a placeholder
+
+			return (
+				<div className='segment-timeline__layer-item'
+					data-mos-id={this.props.segmentLineItem._id}
+					ref={this.setRef}
+					style={this.getItemStyle()}>
+				</div>
+			)
+
+		}
 	}
 }
