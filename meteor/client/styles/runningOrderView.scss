@@ -285,7 +285,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 								box-shadow: none;
 							}
 
-							> * {
+							> *, > .segment-timeline__layer-item__label {
 								display: none;
 							}
 						}
@@ -628,6 +628,8 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 							font-weight: 400;
 							transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity ($output-layer-group-collapse-animation-duration * 2/3);
 							pointer-events: none;
+							display: inline-block;
+							white-space: nowrap;
 
 							&.secondary {
 								font-weight: 300;
@@ -661,6 +663,14 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 							&.file-name {
 								font-weight: 200;
+							}
+						}
+
+						&.hide-overflow-labels {
+							.segment-timeline__layer-item__label {
+								&.overflow-label {
+									display: none;
+								}
 							}
 						}
 

@@ -164,6 +164,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 					collapsedOutputs={this.props.collapsedOutputs}
 					isCollapsed={this.props.isCollapsed}
 					scrollLeft={0}
+					scrollWidth={1}
 					timeScale={1}
 					relative={true}
 					totalSegmentDuration={this.getSegmentDuration()}
@@ -180,6 +181,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 			return (
 				<SegmentTimelineLine key={segmentLine._id}
 									 {...this.props}
+									 scrollWidth={this.state.timelineWidth / this.props.timeScale}
 									 segmentLine={segmentLine} />
 			)
 		})

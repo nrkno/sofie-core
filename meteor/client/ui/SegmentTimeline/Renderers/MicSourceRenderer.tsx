@@ -15,6 +15,8 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 	itemElement: HTMLDivElement
 	lineItem: JQuery<HTMLDivElement>
 	linePosition: number
+	leftLabel: HTMLSpanElement
+	rightLabel: HTMLSpanElement
 
 	constructor (props) {
 		super(props)
@@ -24,12 +26,32 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 		this.lineItem.css('left', this.linePosition + 'px')
 	}
 
+	setLeftLabelRef = (e: HTMLSpanElement) => {
+		this.leftLabel = e
+	}
+
+	setRightLabelRef = (e: HTMLSpanElement) => {
+		this.rightLabel = e
+	}
+
 	componentDidMount () {
 		// Create line element
 		this.lineItem = $('<div class="segment-timeline__layer-item-appendage script-line"></div>') as JQuery<HTMLDivElement>
+		this.updateAnchoredElsWidths()
 	}
 
-	componentDidUpdate () {
+	updateAnchoredElsWidths = () => {
+		let leftLabelWidth = $(this.leftLabel).width() || 0
+		let rightLabelWidth = $(this.rightLabel).width() || 0
+
+		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
+	}
+
+	componentDidUpdate (prevProps: Readonly<any>, prevState: Readonly<any>) {
+		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
+			super.componentDidUpdate(prevProps, prevState)
+		}
+
 		// Move the line element
 		if (this.itemElement !== this.props.itemElement) {
 			if (this.itemElement) {
@@ -48,6 +70,10 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 				this.repositionLine()
 			}
 		}
+
+		if (this.props.segmentLineItem.name !== prevProps.segmentLineItem.name) {
+			this.updateAnchoredElsWidths()
+		}
 	}
 
 	componentWillUnmount () {
@@ -61,10 +87,10 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 		let end = labelItems[1] || ''
 
 		return [
-			<span className='segment-timeline__layer-item__label first-words' key={this.props.segmentLineItem._id + '-start'}>
+			<span className='segment-timeline__layer-item__label first-words overflow-label' ref={this.setLeftLabelRef} key={this.props.segmentLineItem._id + '-start'} style={this.getItemLabelOffsetLeft()}>
 				{begin}
 			</span>,
-			<span className='segment-timeline__layer-item__label last-words' key={this.props.segmentLineItem._id + '-finish'}>
+			<span className='segment-timeline__layer-item__label last-words' ref={this.setRightLabelRef} key={this.props.segmentLineItem._id + '-finish'} style={this.getItemLabelOffsetRight()}>
 				{end}
 			</span>,
 			<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'}

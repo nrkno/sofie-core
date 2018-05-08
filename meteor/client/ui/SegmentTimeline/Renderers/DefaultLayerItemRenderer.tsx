@@ -9,21 +9,21 @@ import { FloatingInspector } from '../../FloatingInspector'
 import * as ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
 
-export class L3rdSourceRenderer extends CustomLayerItemRenderer {
-	label: HTMLElement
-
-	updateAnchoredElsWidths = () => {
-		let leftLabelWidth = $(this.label).width() || 0
-
-		this.setAnchoredElsWidths(leftLabelWidth, 0)
-	}
+export class DefaultLayerItemRenderer extends CustomLayerItemRenderer {
+	leftLabel: HTMLSpanElement
 
 	setLabelRef = (e: HTMLSpanElement) => {
-		this.label = e
+		this.leftLabel = e
 	}
 
 	componentDidMount () {
 		this.updateAnchoredElsWidths()
+	}
+
+	updateAnchoredElsWidths = () => {
+		let leftLabelWidth = $(this.leftLabel).width() || 0
+
+		this.setAnchoredElsWidths(leftLabelWidth, 0)
 	}
 
 	componentDidUpdate (prevProps: Readonly<ISourceLayerItemProps>, prevState: Readonly<any>) {
@@ -37,23 +37,21 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 	}
 
 	render () {
-		let labelItems = this.props.segmentLineItem.name.split('||')
-		let begin = labelItems[0] || ''
-		let end = labelItems[1] || ''
-
 		return [
-			<span className='segment-timeline__layer-item__label' key={this.props.segmentLineItem._id} ref={this.setLabelRef} style={this.getItemLabelOffsetLeft()}>
-				<span className='segment-timeline__layer-item__label'>
-					{begin}
-				</span>
-				<span className='segment-timeline__layer-item__label secondary'>
-					{end}
-				</span>
-			</span>,
-			<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
+			<span key={this.props.segmentLineItem._id} className={
+				ClassNames('segment-timeline__layer-item__label', {
+					'bold': this.props.itemState === 0,
+					'regular': this.props.itemState === 1,
+					'light': this.props.itemState === 2,
+					'light-file-missing': this.props.itemState === 3,
+				})
+			}
+				ref={this.setLabelRef}
+				style={this.getItemLabelOffsetLeft()}
+			>{this.props.segmentLineItem.name}</span>,
+			<FloatingInspector key={this.props.segmentLineItem._id + '-fi'} shown={this.props.showMiniInspector && this.props.itemElement !== null}>
 				<div className='segment-timeline__mini-inspector' style={this.getFloatingInspectorStyle()}>
-					<div>Name: {begin}</div>
-					<div>Title: {end}</div>
+					Item properties
 				</div>
 			</FloatingInspector>
 		]
