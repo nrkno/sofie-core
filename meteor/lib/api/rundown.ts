@@ -20,6 +20,8 @@ export namespace RundownAPI {
 
 	/** A generic list of playback availability statuses for a source layer/line item */
 	export enum LineItemStatusCode {
+		/** No status has been determined (yet) */
+		UNKNOWN = -1,
 		/** No fault with item, can be played */
 		OK = 0,
 		/** The source (file, live input) is missing and cannot be played, as it would result in BTA */
