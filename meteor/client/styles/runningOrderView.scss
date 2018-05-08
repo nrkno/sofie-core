@@ -657,6 +657,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 								left: 0;
 								font-weight: 300;
 								font-style: italic;
+
+								> * {
+									position: relative;
+								}
 							}
 
 							&.last-words {
@@ -664,12 +668,22 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 								right: 0;
 								font-weight: 300;
 								font-style: italic;
+								
+								> * {
+									position: relative;
+								}
 							}
 
 							&.file-name {
 								font-weight: 200;
 							}
+
+							&.label-icon {
+								margin: 0;
+								margin-right: -10px;
+							}
 						}
+
 
 						&.hide-overflow-labels {
 							.segment-timeline__layer-item__label {

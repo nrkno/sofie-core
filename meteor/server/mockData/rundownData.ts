@@ -519,6 +519,10 @@ Meteor.methods({
 							direction: Direction.LEFT
 						}
 					},
+
+					content: {
+						loop: true
+					},
 	
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-vt0',

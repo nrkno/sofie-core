@@ -9,6 +9,9 @@ import { FloatingInspector } from '../../FloatingInspector'
 import * as ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
 
+import Lottie from 'react-lottie'
+import * as loopAnimation from './icon-loop.json'
+
 export class VTSourceRenderer extends CustomLayerItemRenderer {
 	vPreview: HTMLVideoElement
 	leftLabel: HTMLSpanElement
@@ -48,6 +51,9 @@ export class VTSourceRenderer extends CustomLayerItemRenderer {
 		let leftLabelWidth = $(this.leftLabel).width() || 0
 		let rightLabelWidth = $(this.rightLabel).width() || 0
 
+		console.log(this.leftLabel, this.rightLabel)
+		console.log(leftLabelWidth, rightLabelWidth)
+
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
@@ -67,12 +73,30 @@ export class VTSourceRenderer extends CustomLayerItemRenderer {
 		this.begin = labelItems[0] || ''
 		this.end = labelItems[1] || ''
 
+		const defaultOptions = {
+			loop: true,
+			autoplay: false,
+			animationData: loopAnimation,
+			rendererSettings: {
+				preserveAspectRatio: 'xMidYMid slice'
+			}
+		}
+
 		return [
-			<span className='segment-timeline__layer-item__label overflow-label' key={this.props.segmentLineItem._id + '-start'} ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
-				{this.begin}
+			<span className='segment-timeline__layer-item__label' key={this.props.segmentLineItem._id + '-start'} ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
+				<span className='segment-timeline__layer-item__label overflow-label' key={this.props.segmentLineItem._id + '-start'}>
+					{this.begin}
+				</span>
 			</span>,
 			<span className='segment-timeline__layer-item__label last-words' key={this.props.segmentLineItem._id + '-finish'} ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
-				{this.end}
+				{((this.props.segmentLineItem as SegmentLineItemUi).content && (this.props.segmentLineItem as SegmentLineItemUi).content.loop) &&
+					(<div className='segment-timeline__layer-item__label label-icon'>
+						<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
+					</div>)
+				}
+				<span className='segment-timeline__layer-item__label last-words'>
+					{this.end}
+				</span>
 			</span>,
 			<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 				<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
