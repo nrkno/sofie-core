@@ -3,6 +3,7 @@ import * as ReactDOM from 'react-dom'
 import * as $ from 'jquery'
 
 import { ISourceLayerUi, IOutputLayerUi, SegmentUi, SegmentLineUi, SegmentLineItemUi } from '../SegmentTimelineContainer'
+import { ISourceLayerItemProps } from './../SourceLayerItem'
 
 import { FloatingInspector } from '../../FloatingInspector'
 
@@ -10,6 +11,7 @@ import * as ClassNames from 'classnames'
 import { CustomLayerItemRenderer } from './CustomLayerItemRenderer'
 
 export class MicSourceRenderer extends CustomLayerItemRenderer {
+
 	itemPosition: number
 	itemWidth: number
 	itemElement: HTMLDivElement
@@ -17,6 +19,8 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 	linePosition: number
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
+
+	private _forceSizingRecheck: boolean
 
 	constructor (props) {
 		super(props)
@@ -32,6 +36,21 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 
 	setRightLabelRef = (e: HTMLSpanElement) => {
 		this.rightLabel = e
+	}
+
+	componentWillReceiveProps (nextProps: ISourceLayerItemProps, nextContext: any) {
+		if (super.componentWillReceiveProps && typeof super.componentWillReceiveProps === 'function') {
+			super.componentWillReceiveProps(nextProps, nextContext)
+		}
+
+		if ((nextProps.totalSegmentLineDuration !== this.props.totalSegmentLineDuration) ||
+			(nextProps.segmentLineItem.renderedInPoint !== this.props.segmentLineItem.renderedInPoint) ||
+			(nextProps.segmentLineItem.renderedDuration !== this.props.segmentLineItem.renderedDuration) ||
+			(nextProps.segmentLineItem.duration !== this.props.segmentLineItem.duration) ||
+			(nextProps.segmentLineItem.expectedDuration !== this.props.segmentLineItem.expectedDuration) ||
+			(nextProps.segmentLineItem.trigger !== this.props.segmentLineItem.trigger)) {
+			this._forceSizingRecheck = true
+		}
 	}
 
 	componentDidMount () {
@@ -60,8 +79,10 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 			this.itemElement = this.props.itemElement
 			$(this.props.itemElement).parent().parent().append(this.lineItem)
 		}
-		if (this.itemElement) {
+		if (this.itemElement && this._forceSizingRecheck) {
 			// Update sizing information
+			this._forceSizingRecheck = false
+
 			this.itemPosition = $(this.itemElement).position().left || 0
 			this.itemWidth = $(this.itemElement).outerWidth() || 0
 

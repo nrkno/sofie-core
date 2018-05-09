@@ -21,7 +21,7 @@ import { VTSourceRenderer } from './Renderers/VTSourceRenderer'
 import { L3rdSourceRenderer } from './Renderers/L3rdSourceRenderer'
 import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
 
-interface ISourceLayerItemProps {
+export interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
 	segment: SegmentUi
@@ -49,6 +49,7 @@ interface ISourceLayerItemState {
 	rightAnchoredWidth: number
 }
 export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISourceLayerItemState> {
+	private _forceSizingRecheck: boolean
 
 	constructor (props) {
 		super(props)
@@ -68,6 +69,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			leftAnchoredWidth: 0,
 			rightAnchoredWidth: 0
 		}
+
+		this._forceSizingRecheck = false
 	}
 
 	setRef = (e: HTMLDivElement) => {
@@ -183,7 +186,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 	}
 
 	checkElementWidth = () => {
-		if (this.state.itemElement) {
+		if (this.state.itemElement && this._forceSizingRecheck) {
+			this._forceSizingRecheck = false
 			const width = $(this.state.itemElement).width() || 0
 			if (this.state.elementWidth !== width) {
 				this.setState({
@@ -195,6 +199,17 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 	componentDidMount () {
 		this.checkElementWidth()
+	}
+
+	componentWillReceiveProps (nextProps: ISourceLayerItemProps) {
+		if ((nextProps.totalSegmentLineDuration !== this.props.totalSegmentLineDuration) ||
+			(nextProps.segmentLineItem.renderedInPoint !== this.props.segmentLineItem.renderedInPoint) ||
+			(nextProps.segmentLineItem.renderedDuration !== this.props.segmentLineItem.renderedDuration) ||
+			(nextProps.segmentLineItem.duration !== this.props.segmentLineItem.duration) ||
+			(nextProps.segmentLineItem.expectedDuration !== this.props.segmentLineItem.expectedDuration) ||
+			(nextProps.segmentLineItem.trigger !== this.props.segmentLineItem.trigger)) {
+			this._forceSizingRecheck = true
+		}
 	}
 
 	componentDidUpdate () {
