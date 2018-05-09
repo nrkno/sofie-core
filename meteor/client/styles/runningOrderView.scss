@@ -97,7 +97,17 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	}
 }
 
-.header {
+.running-order-view {
+	padding-top: 60px;
+}
+
+.header.running-order {
+	position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+	z-index: 20;
+	
 	.timing {
 		display: flex;
 		margin: 18px 20px 17px;

@@ -43,7 +43,7 @@ const TimingDisplay = translate()(class extends React.Component<IHeaderProps & I
 })
 
 const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
-	<div className='header row'>
+	<div className='header row running-order'>
 		<div className='col c4 super-dark'>
 			{/* !!! TODO: This is just a temporary solution !!! */}
 			<div className='right' style={{
@@ -195,7 +195,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		const { t } = this.props
 
 		return (
-			<div>
+			<div className='running-order-view'>
 				<RunningOrderHeader timeNow={0} debugOnAirLine={this.debugOnAirLine} runningOrder={this.props.runningOrder} />
 				<SegmentContextMenu contextMenuContext={this.state.contextMenuContext}
 					onSetNext={this.onSetNext} />
