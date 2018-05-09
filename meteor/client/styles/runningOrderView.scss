@@ -235,6 +235,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		grid-row: zoom-area / end;
 		max-height: 4em;
 		margin: 1.5em 0.2em 0em 0;
+		padding: 1px 0;
 
 		transition: $output-layer-group-collapse-animation-duration max-height ease-in-out,
 					$output-layer-group-collapse-animation-duration margin ease-in-out;
