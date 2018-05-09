@@ -73,7 +73,8 @@ Meteor.methods({
 					name: 'RM1',
 					type: RundownAPI.SourceLayerType.REMOTE,
 					unlimited: false,
-					onPGMClean: true
+					onPGMClean: true,
+					isRemoteInput: true
 				},
 				{
 					_id: 'studio0-vt0',
@@ -693,6 +694,25 @@ Meteor.methods({
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-split0',
+					outputLayerId: 'studio0-pgm0',
+					expectedDuration: 10,
+					disabled: false
+				})
+				SegmentLineItems.insert(segmentLineItem)
+
+			// Live In
+				segmentLineItem = literal<SegmentLineItem>({
+					_id: segLine._id + ':' + Random.id(5),
+					mosId: segLine.mosId,
+					segmentLineId: segLine._id,
+					runningOrderId: roId,
+					name: 'RM0 LIVE HELSINKI',
+					trigger: {
+						type: 0,
+						value: 50
+					},
+					status: RundownAPI.LineItemStatusCode.OK,
+					sourceLayerId: 'studio0-remote0',
 					outputLayerId: 'studio0-pgm0',
 					expectedDuration: 10,
 					disabled: false

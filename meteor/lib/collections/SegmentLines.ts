@@ -22,6 +22,8 @@ export interface SegmentLine {
 
 	/** The time the system started playback of this segment line, null if not yet played back */
 	startedPlayback?: number
+	/** The time the system played back this segment line, null if not yet finished playing */
+	playbackDuration?: number
 }
 
 export const SegmentLines = new Mongo.Collection<SegmentLine>('segmentLines')

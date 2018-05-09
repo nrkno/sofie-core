@@ -21,8 +21,10 @@ export interface ISourceLayer {
 	type: RundownAPI.SourceLayerType
 	/** If set to true, the layer can handle any number of simultaneus Line Items */
 	unlimited: boolean
-	/** Ifs set to true, the layer will be shown in PGM Clean */
+	/** If set to true, the layer will be shown in PGM Clean */
 	onPGMClean: boolean
+	/** If set to true, the layer should be treated as a Live Remote input layer */
+	isRemoteInput?: boolean
 }
 
 /** A layer output group, f.g. PGM, Studio Monitor 1, etc. */

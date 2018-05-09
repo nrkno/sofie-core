@@ -36,6 +36,8 @@ interface IPropsHeader {
 	onCollapseSegmentToggle?: (event: any) => void,
 	isCollapsed?: boolean,
 	scrollLeft: number,
+	hasAlreadyPlayed: boolean,
+	hasRemoteItems: boolean,
 	isLiveSegment: boolean,
 	isNextSegment: boolean,
 	followLiveLine: boolean,
@@ -222,11 +224,17 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 	}
 
 	render () {
+		// console.log(this.props.hasRemoteItems && !this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment)
+
 		return (
 			<div className={ClassNames('segment-timeline', {
 				'collapsed': this.props.isCollapsed,
+
 				'live': this.props.isLiveSegment,
-				'next': this.props.isNextSegment
+				'next': this.props.isNextSegment,
+
+				'has-played': this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment,
+				'has-remote-items': this.props.hasRemoteItems && !this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment
 			})}
 			data-mos-id={this.props.segment._id}>
 				<ContextMenuTrigger id='segment-timeline-context-menu'

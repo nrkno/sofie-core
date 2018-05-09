@@ -74,6 +74,8 @@ interface IPropsHeader {
 	timeScale: number,
 	isLiveSegment: boolean,
 	isNextSegment: boolean,
+	hasRemoteItems: boolean,
+	hasAlreadyPlayed: boolean,
 	liveLineHistorySize: number
 	onTimeScaleChange?: (timeScaleVal: number) => void
 	onContextMenu?: (contextMenuContext: any) => void
@@ -91,10 +93,12 @@ export const SegmentTimelineContainer = withTracker((props) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
-	let segment = _.clone(props.segment)
+	let segment = _.clone(props.segment) as SegmentUi
 
 	let isLiveSegment = false
 	let isNextSegment = false
+	let hasAlreadyPlayed = false
+	let hasRemoteItems = false
 
 	// fetch all the segment lines for the segment
 	let segmentLines = SegmentLines.find({
@@ -140,6 +144,10 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		}
 		if (!isLiveSegment && props.runningOrder.nextSegmentLineId === segmentLine._id) {
 			isNextSegment = true
+		}
+
+		if (segmentLine.startedPlayback !== undefined) {
+			hasAlreadyPlayed = true
 		}
 
 		let segmentLineItems = SegmentLineItems.find({
@@ -197,6 +205,11 @@ export const SegmentTimelineContainer = withTracker((props) => {
 				}
 				// attach the segmentLineItem to the sourceLayer in this segment
 				segmentLineItem.sourceLayer.items.push(segmentLineItem)
+
+				// check if the segment should be in a special state for segments with remote input
+				if (segmentLineItem.sourceLayer.isRemoteInput) {
+					hasRemoteItems = true
+				}
 			}
 
 			segmentLineItemsLookup[segmentLineItem._id] = segmentLineItem
@@ -258,7 +271,9 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		segment,
 		segmentLines,
 		isLiveSegment,
-		isNextSegment
+		isNextSegment,
+		hasAlreadyPlayed,
+		hasRemoteItems
 	}
 })(
 class extends React.Component<IPropsHeader, IStateHeader> {
@@ -385,6 +400,8 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 							 runningOrder={this.props.runningOrder}
 							 isLiveSegment={this.props.isLiveSegment}
 							 isNextSegment={this.props.isNextSegment}
+							 hasRemoteItems={this.props.hasRemoteItems}
+							 hasAlreadyPlayed={this.props.hasAlreadyPlayed}
 							 followLiveLine={this.state.followLiveLine}
 							 liveLineHistorySize={this.props.liveLineHistorySize}
 							 livePosition={this.state.livePosition}
