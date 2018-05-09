@@ -304,11 +304,11 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 				let newCurrentSegmentLine = this.props.segmentLines.findIndex((item) => item._id === this.props.runningOrder.currentSegmentLineId)
 				if (newCurrentSegmentLine >= 0 && this.props.segmentLines[newCurrentSegmentLine].startsAt) {
 					const playoutLength = (Date.now() - this.debugDemoLiveLineStart) / 1000
-					console.log(playoutLength, this.props.segmentLines[newCurrentSegmentLine].startsAt)
+					// console.log(playoutLength, this.props.segmentLines[newCurrentSegmentLine].startsAt)
 					if (this.props.segmentLines[newCurrentSegmentLine].startsAt! > playoutLength) {
-						console.log(this.debugDemoLiveLineStart)
+						// console.log(this.debugDemoLiveLineStart)
 						this.debugDemoLiveLineStart -= (this.props.segmentLines[newCurrentSegmentLine].startsAt! - playoutLength) * 1000
-						console.log(this.debugDemoLiveLineStart)
+						// console.log(this.debugDemoLiveLineStart)
 					}
 				}
 			}

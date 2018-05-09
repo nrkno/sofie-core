@@ -30,6 +30,18 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 		this.lineItem.css('left', this.linePosition + 'px')
 	}
 
+	refreshLine = () => {
+		if (this.itemElement) {
+			this.itemPosition = $(this.itemElement).position().left || 0
+			this.itemWidth = $(this.itemElement).outerWidth() || 0
+
+			if (this.itemPosition + this.itemWidth !== this.linePosition) {
+				this.linePosition = this.itemPosition + this.itemWidth
+				this.repositionLine()
+			}
+		}
+	}
+
 	setLeftLabelRef = (e: HTMLSpanElement) => {
 		this.leftLabel = e
 	}
@@ -57,6 +69,11 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 		// Create line element
 		this.lineItem = $('<div class="segment-timeline__layer-item-appendage script-line"></div>') as JQuery<HTMLDivElement>
 		this.updateAnchoredElsWidths()
+		if (this.props.itemElement) {
+			this.itemElement = this.props.itemElement
+			$(this.itemElement).parent().parent().append(this.lineItem)
+			this.refreshLine()
+		}
 	}
 
 	updateAnchoredElsWidths = () => {
@@ -77,19 +94,14 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 				this.lineItem.remove()
 			}
 			this.itemElement = this.props.itemElement
-			$(this.props.itemElement).parent().parent().append(this.lineItem)
+			$(this.itemElement).parent().parent().append(this.lineItem)
+			this._forceSizingRecheck = true
 		}
-		if (this.itemElement && this._forceSizingRecheck) {
+		if (this._forceSizingRecheck) {
 			// Update sizing information
 			this._forceSizingRecheck = false
 
-			this.itemPosition = $(this.itemElement).position().left || 0
-			this.itemWidth = $(this.itemElement).outerWidth() || 0
-
-			if (this.itemPosition + this.itemWidth !== this.linePosition) {
-				this.linePosition = this.itemPosition + this.itemWidth
-				this.repositionLine()
-			}
+			this.refreshLine()
 		}
 
 		if (this.props.segmentLineItem.name !== prevProps.segmentLineItem.name) {

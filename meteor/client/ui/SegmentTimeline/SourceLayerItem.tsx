@@ -50,6 +50,7 @@ interface ISourceLayerItemState {
 }
 export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISourceLayerItemState> {
 	private _forceSizingRecheck: boolean
+	private _placeHolderElement: boolean
 
 	constructor (props) {
 		super(props)
@@ -207,12 +208,14 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			(nextProps.segmentLineItem.renderedDuration !== this.props.segmentLineItem.renderedDuration) ||
 			(nextProps.segmentLineItem.duration !== this.props.segmentLineItem.duration) ||
 			(nextProps.segmentLineItem.expectedDuration !== this.props.segmentLineItem.expectedDuration) ||
-			(nextProps.segmentLineItem.trigger !== this.props.segmentLineItem.trigger)) {
+			(nextProps.segmentLineItem.trigger !== this.props.segmentLineItem.trigger) ||
+			(this.isInsideViewport() && this._placeHolderElement)) {
 			this._forceSizingRecheck = true
 		}
 	}
 
 	componentDidUpdate () {
+		this._forceSizingRecheck = true
 		this.checkElementWidth()
 	}
 
@@ -314,6 +317,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 	render () {
 		if (this.isInsideViewport()) {
 
+			this._placeHolderElement = false
+
 			return (
 				<div className={ClassNames('segment-timeline__layer-item', {
 					'audio': this.props.layer.type === RundownAPI.SourceLayerType.AUDIO,
@@ -369,6 +374,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			)
 
 		} else { // render a placeholder
+
+			this._placeHolderElement = true
 
 			return (
 				<div className='segment-timeline__layer-item'
