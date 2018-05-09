@@ -64,7 +64,8 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 						// filter only segment line items, that have not yet been linked to parent items
 						((segmentLineItem as SegmentLineItemUi).linked !== true) ?
 							true :
-							(this.props.scrollLeft >= ((this.props.segmentLine.startsAt || 0) + ((segmentLineItem as SegmentLineItemUi).renderedInPoint || 0)))
+							//(this.props.scrollLeft >= ((this.props.segmentLine.startsAt || 0) + ((segmentLineItem as SegmentLineItemUi).renderedInPoint || 0)))
+							true
 					: false
 				})
 				.map((segmentLineItem) => {

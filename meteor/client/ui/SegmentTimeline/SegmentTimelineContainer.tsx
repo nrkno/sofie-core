@@ -236,10 +236,10 @@ export const SegmentTimelineContainer = withTracker((props) => {
 
 	const resolveDuration = (item: SegmentLineItemUi): number => {
 		let childDuration = 0
-		if (item.continuedByRef) {
+		/* if (item.continuedByRef) {
 			childDuration = resolveDuration(item.continuedByRef)
 			item.continuedByRef.linked = true
-		}
+		} */
 		return (item.duration || item.renderedDuration || item.expectedDuration) + childDuration
 	}
 

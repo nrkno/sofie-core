@@ -43,33 +43,40 @@ const TimingDisplay = translate()(class extends React.Component<IHeaderProps & I
 })
 
 const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
-	<div className='header row running-order'>
-		<div className='col c4 super-dark'>
-			{/* !!! TODO: This is just a temporary solution !!! */}
-			<div className='right' style={{
-				'marginTop': '0.9em'
-			}}>
-				<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_demoRundown')}>
-					Last inn kjøreplan
-				</button>
+	<div className='header running-order'>
+		<div className='row'>
+			<div className='col c4 super-dark'>
+				{/* !!! TODO: This is just a temporary solution !!! */}
+				<div className='right' style={{
+					'marginTop': '0.9em'
+				}}>
+					<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_demoRundown')}>
+						Last inn kjøreplan
+					</button>
 
-				<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_takeNext', props.runningOrder._id)}>
-					Take
-				</button>
+					<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_takeNext', props.runningOrder._id)}>
+						Take
+					</button>
+				</div>
+				<div className='badge mod'>
+					<div className='media-elem mrs sofie-logo' />
+					<div className='bd mls'><span className='logo-text'>Sofie</span></div>
+				</div>
 			</div>
-			<div className='badge mod'>
-				<div className='media-elem mrs sofie-logo' />
-				<div className='bd mls'><span className='logo-text'>Sofie</span></div>
+			<div className='col c4 super-dark'>
+				<TimingDisplay {...props} />
+			</div>
+			<div className='flex-col c4 super-dark horizontal-align-right'>
+				<div className='links mod close'>
+					<NavLink to='/runningOrders'>
+						<CoreIcon id='nrk-close' />
+					</NavLink>
+				</div>
 			</div>
 		</div>
-		<div className='col c4 super-dark'>
-			<TimingDisplay {...props} />
-		</div>
-		<div className='flex-col c4 super-dark horizontal-align-right'>
-			<div className='links mod close'>
-				<NavLink to='/runningOrders'>
-					<CoreIcon id='nrk-close' />
-				</NavLink>
+		<div className='row'>
+			<div className='col c12 running-order-overview'>
+				<img src='/mock_runningOrder_overview.png' />
 			</div>
 		</div>
 	</div>
