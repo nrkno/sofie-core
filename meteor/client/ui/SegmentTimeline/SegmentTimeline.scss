@@ -28,6 +28,8 @@ $timeline-layer-height: 1em;
         align-items: flex-start;
         align-content: flex-start;
         justify-content: flex-start;
+
+        will-change: transform;
     }
 }
 .segment-timeline__zoom-area {

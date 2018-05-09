@@ -97,7 +97,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLine.startsAt - inTransitionDuration) * this.props.timeScale
 
 						let styleObj = {
-							'transform': 'translate(' + (widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth))).toString() + 'px,  0)'
+							'transform': 'translate3d(' + (widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth))).toString() + 'px,  0, 0)',
+							'willChange': 'transform'
 						}
 
 						return styleObj
@@ -111,9 +112,10 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						// console.log(this.state.itemElement)
 
 						let styleObj = {
-							'transform': 'translate(' + (widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth))).toString() + 'px, 0) ' +
-										 'translate(' + (liveLineHistoryWithMargin).toString() + 'px, 0) ' +
-										 'translate(-100%, 0)'
+							'transform': 'translate3d(' + (widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin))).toString() + 'px, 0, 0) ' +
+										 'translate3d(' + (liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
+										 'translate3d(-100%, 0, 0)',
+							'willChange': 'transform'
 						}
 
 						// console.log(styleObj)
@@ -147,7 +149,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 					const targetPos = ((this.props.scrollLeft + this.props.scrollWidth) - outPoint - this.props.segmentLine.startsAt - outTransitionDuration) * this.props.timeScale
 
 					return {
-						'transform': 'translate(' + (widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.max(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth) * -1)).toString() + 'px,  0)'
+						'transform': 'translate3d(' + (widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.max(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth) * -1)).toString() + 'px,  0, 0)',
+						'willChange': 'transform'
 					}
 				}
 			}

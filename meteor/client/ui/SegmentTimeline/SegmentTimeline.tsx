@@ -98,7 +98,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 
 	timelineStyle () {
 		return {
-			'transform': 'translateX(-' + (this.props.scrollLeft * this.props.timeScale).toString() + 'px)'
+			'transform': 'translate3d(-' + (this.props.scrollLeft * this.props.timeScale).toString() + 'px, 0, 0)'
 		}
 	}
 
