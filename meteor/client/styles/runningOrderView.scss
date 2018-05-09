@@ -455,7 +455,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		overflow: hidden;
 		background: $segment-timeline-background-color;
 		opacity: 1;
-		transition: $output-layer-group-collapse-animation-duration opacity ($output-layer-group-collapse-animation-duration * 1/2);
+		transition: $output-layer-group-collapse-animation-duration opacity ($output-layer-group-collapse-animation-duration * 1/2), $output-layer-group-collapse-animation-duration margin-bottom ($output-layer-group-collapse-animation-duration * 1/2);
 		margin-bottom: 1.5em;
 	}
 
@@ -928,8 +928,9 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		
 		.segment-timeline__timeline-background {
 			opacity: 0;
+			margin-bottom: 0;
 
-			transition: $output-layer-group-collapse-animation-duration opacity;
+			transition: $output-layer-group-collapse-animation-duration opacity, $output-layer-group-collapse-animation-duration margin-bottom;
 		}
 
 		.segment-timeline__timeline-grid {
