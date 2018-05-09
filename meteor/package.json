@@ -45,6 +45,7 @@
     "react-lottie": "^1.1.0",
     "react-moment": "^0.7.0",
     "react-router-dom": "^4.2.2",
+    "react-timer-hoc": "^2.3.0",
     "safer-eval": "^1.2.3",
     "smpte-timecode": "^1.2.1",
     "superfly-timeline": "git+https://github.com/superflytv/supertimeline.git#dist",

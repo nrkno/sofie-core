@@ -410,6 +410,18 @@ class StudioSourcesSettings extends React.Component<IChildStudioInterfaceProps &
 												className=''></EditAttribute>
 										</label>
 									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Is a live remote input')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + index + '.isRemoteInput'}
+												obj={this.props.studioInstallation}
+												type='checkbox'
+												collection={StudioInstallations}
+												className=''></EditAttribute>
+										</label>
+									</div>
 								</div>
 								<div className='mod alright'>
 									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>

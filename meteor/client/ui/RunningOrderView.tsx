@@ -9,6 +9,8 @@ import { Spinner } from '../lib/Spinner'
 import * as ClassNames from 'classnames'
 import * as $ from 'jquery'
 import { Time } from '../../lib/lib'
+import Moment from 'react-moment'
+import timer from 'react-timer-hoc'
 import { parse as queryStringParse } from 'query-string'
 
 import { NavLink } from 'react-router-dom'
@@ -19,6 +21,7 @@ import { SegmentTimelineContainer } from './SegmentTimeline/SegmentTimelineConta
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { SegmentLine } from '../../lib/collections/SegmentLines'
+import { getCurrentTime } from '../../lib/lib'
 
 interface IHeaderProps {
 	timeNow: number
@@ -26,21 +29,21 @@ interface IHeaderProps {
 	runningOrder: RunningOrder
 }
 
-const TimingDisplay = translate()(class extends React.Component<IHeaderProps & InjectedTranslateProps> {
+const TimingDisplay = timer(250)(translate()(class extends React.Component<IHeaderProps & InjectedTranslateProps> {
 	render () {
 		const { t } = this.props
 
 		return (
 			<div className='timing mod'>
 				<span className='timing-clock-header-label'>{t('Now')}: </span>
-				<span className='timing-clock time-now'>18:53:10</span>
+				<span className='timing-clock time-now'><Moment format='HH:mm:ss' date={getCurrentTime()} /></span>
 				<span className='timing-clock heavy-light heavy'>-00:15</span>
 				<span className='timing-clock-header-label'>{t('Finish')}: </span>
 				<span className='timing-clock time-end'>18:59:00</span>
 			</div>
 		)
 	}
-})
+}))
 
 const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 	<div className='header running-order'>
