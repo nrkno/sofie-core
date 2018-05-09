@@ -1,5 +1,6 @@
 import * as _ from 'underscore'
 import * as saferEval from 'safer-eval'
+import * as objectPath from 'object-path'
 import {
 	IMOSConnectionStatus,
 	IMOSDevice,
@@ -62,6 +63,9 @@ function getContext (context: TemplateContext): TemplateContextInner {
 	return _.extend({
 		id () {
 			return Random.id()
+		},
+		oGet (obj: object, path: string): any {
+			return objectPath.get(obj, path)
 		}
 	}, context)
 }
