@@ -1,8 +1,10 @@
 // !! HUMAN READABLE DOCUMENTATION ONLY, NOT INTENDED FOR IMPLEMENTATION
-export const sourceLayers = [
+const Lawo = {
+    channels: {
 
-]
+    },
+    functions: {
 
-export const outputLayers = [
-
-]
+    }
+}
+export default Lawo

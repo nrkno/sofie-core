@@ -54,7 +54,7 @@ const CasparCG = {
                 embedded: true,
                 signalPath: "DDA, MV, RIn, BM IN12/13"
             },
-            description: "DSK2 Vignett (opener) with alpha, wipes/bumpers, effect sounds"   // @todo: TBD swap DSK1/2 dependant on if we need one (current) or two levels of CLEAN
+            description: "DSK2 Vignett (opening title) with alpha, wipes/bumpers, effect sounds"   // @todo: TBD swap DSK1/2 dependant on if we need one (current) or two levels of CLEAN
         }
     },
     inputs: {
