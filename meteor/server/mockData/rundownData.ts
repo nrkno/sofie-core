@@ -741,13 +741,10 @@ Meteor.methods({
 						value: 0
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
-					sourceLayerId: 'studio0-vt0',
+					sourceLayerId: 'studio0-live-speak0',
 					outputLayerId: 'studio0-pgm0',
 					expectedDuration: 64,
-					disabled: false,
-					content: {
-						isSTK: true
-					}
+					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
 	},

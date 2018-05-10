@@ -18,6 +18,7 @@ import * as ClassNames from 'classnames'
 import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MicSourceRenderer } from './Renderers/MicSourceRenderer'
 import { VTSourceRenderer } from './Renderers/VTSourceRenderer'
+import { STKSourceRenderer } from './Renderers/STKSourceRenderer'
 import { L3rdSourceRenderer } from './Renderers/L3rdSourceRenderer'
 import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
 
@@ -293,6 +294,12 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						{...this.props} {...this.state} />
 			case RundownAPI.SourceLayerType.SPLITS:
 				return <SplitsSourceRenderer key={this.props.segmentLineItem._id}
+						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+						setAnchoredElsWidths={this.setAnchoredElsWidths}
+						{...this.props} {...this.state} />
+			case RundownAPI.SourceLayerType.LIVE_SPEAK:
+				return <STKSourceRenderer key={this.props.segmentLineItem._id}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}

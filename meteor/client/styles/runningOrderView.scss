@@ -651,7 +651,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 						@include item-type-colors();
 
-						&.splits, &.vt {
+						&.splits, &.live-speak {
 							.segment-timeline__layer-item__preview {
 								position: absolute;
 								top: 0;
