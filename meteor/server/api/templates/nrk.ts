@@ -218,9 +218,9 @@ let nrk: TemplateSet = {
 		fullVignettxx: literal<TemplateFunctionOptional>((story: IMOSROFullStory) => {
 			return myTemplates.full('vignettxx', story)
 		}),
-		full: (story: IMOSROFullStory, variant: string) => {
-			return myTemplates.full('', story)
-		},
+		// full: (story: IMOSROFullStory, variant: string) => {
+		// 	return myTemplates.full('', story)
+		// },
 		stkHead: literal<TemplateFunctionOptional>(function (story: IMOSROFullStory) {
 			// Wipe from vignett to first head with white wipe. Sound is from vignett outro.
 
