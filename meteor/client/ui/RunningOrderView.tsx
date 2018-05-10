@@ -17,14 +17,15 @@ import { NavLink } from 'react-router-dom'
 
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
-import { SegmentTimelineContainer } from './SegmentTimeline/SegmentTimelineContainer'
+import { SegmentTimelineContainer, SegmentLineItemUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { SegmentLine } from '../../lib/collections/SegmentLines'
+import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 import { getCurrentTime } from '../../lib/lib'
+import { RundownUtils } from '../lib/rundown';
 
 interface IHeaderProps {
-	timeNow: number
+	totalRundownDuration: number
 	debugOnAirLine: () => void
 	runningOrder: RunningOrder
 }
@@ -39,7 +40,7 @@ const TimingDisplay = timer(250)(translate()(class extends React.Component<IHead
 				<span className='timing-clock time-now'><Moment format='HH:mm:ss' date={getCurrentTime()} /></span>
 				<span className='timing-clock heavy-light heavy'>-00:15</span>
 				<span className='timing-clock-header-label'>{t('Finish')}: </span>
-				<span className='timing-clock time-end'>18:59:00</span>
+				<span className='timing-clock time-end'><Moment format='HH:mm:ss' date={getCurrentTime() + (this.props.totalRundownDuration * 1000)} /></span>
 			</div>
 		)
 	}
@@ -90,6 +91,7 @@ interface IPropsHeader extends InjectedTranslateProps {
 	runningOrder: RunningOrder
 	segments: Array<Segment>
 	studioInstallation: StudioInstallation
+	totalRundownDuration: number
 	match: {
 		runningOrderId: String
 	}
@@ -113,6 +115,7 @@ export const RunningOrderView = translate()(withTracker((props, state) => {
 	let subShowStyles = Meteor.subscribe('showStyles', {})
 
 	let runningOrder = RunningOrders.findOne({ _id: props.match.params.runningOrderId })
+	let segmentLines = SegmentLines.find({ runningOrderId: props.match.params.runningOrderId }).fetch()
 
 	return {
 		runningOrder: runningOrder,
@@ -121,6 +124,7 @@ export const RunningOrderView = translate()(withTracker((props, state) => {
 				'_rank': 1
 			}
 		}).fetch() : undefined,
+		totalRundownDuration: RundownUtils.getSegmentDuration(segmentLines),
 		studioInstallation: runningOrder ? StudioInstallations.findOne({ _id: runningOrder.studioInstallationId }) : undefined,
 	}
 })(
@@ -149,6 +153,10 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 				timeScale: timeScaleVal
 			})
 		}
+	}
+
+	totalRundownDuration () {
+		return 0
 	}
 
 	onContextMenu = (contextMenuContext: any) => {
@@ -206,7 +214,8 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 
 		return (
 			<div className='running-order-view'>
-				<RunningOrderHeader timeNow={0} debugOnAirLine={this.debugOnAirLine} runningOrder={this.props.runningOrder} />
+				<RunningOrderHeader debugOnAirLine={this.debugOnAirLine} runningOrder={this.props.runningOrder}
+					totalRundownDuration={this.props.totalRundownDuration}/>
 				<SegmentContextMenu contextMenuContext={this.state.contextMenuContext}
 					onSetNext={this.onSetNext} />
 				{this.renderSegmentsList()}

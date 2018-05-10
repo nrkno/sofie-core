@@ -227,7 +227,8 @@ Meteor.methods({
 				_rank: line++,
 				mosId: seg0.mosId + '_LINE' + line++,
 				segmentId: seg0._id,
-				runningOrderId: seg0.runningOrderId
+				runningOrderId: seg0.runningOrderId,
+				expectedDuration: 5
 			}
 			SegmentLines.insert(segLine)
 
@@ -257,7 +258,8 @@ Meteor.methods({
 					_rank: line++,
 					mosId: seg0.mosId + '_LINE' + line++,
 					segmentId: seg0._id,
-					runningOrderId: seg0.runningOrderId
+					runningOrderId: seg0.runningOrderId,
+					expectedDuration: 7
 				}
 				SegmentLines.insert(segLine)
 
@@ -335,7 +337,8 @@ Meteor.methods({
 					_rank: line++,
 					mosId: seg0.mosId + '_LINE' + line++,
 					segmentId: seg0._id,
-					runningOrderId: seg0.runningOrderId
+					runningOrderId: seg0.runningOrderId,
+					expectedDuration: 7
 				}
 				SegmentLines.insert(segLine)
 
@@ -410,7 +413,8 @@ Meteor.methods({
 				_rank: line++,
 				mosId: seg1.mosId + '_LINE' + line++,
 				segmentId: seg1._id,
-				runningOrderId: seg1.runningOrderId
+				runningOrderId: seg1.runningOrderId,
+				expectedDuration: 7.5
 			}
 			SegmentLines.insert(segLine)
 
@@ -497,7 +501,8 @@ Meteor.methods({
 					_rank: line++,
 					mosId: seg1.mosId + '_LINE' + line++,
 					segmentId: seg1._id,
-					runningOrderId: seg1.runningOrderId
+					runningOrderId: seg1.runningOrderId,
+					expectedDuration: 20
 				}
 				SegmentLines.insert(segLine)
 
@@ -562,7 +567,8 @@ Meteor.methods({
 					_rank: line++,
 					mosId: seg1.mosId + '_LINE' + line++,
 					segmentId: seg1._id,
-					runningOrderId: seg1.runningOrderId
+					runningOrderId: seg1.runningOrderId,
+					expectedDuration: 103
 				}
 				SegmentLines.insert(segLine)
 
@@ -725,7 +731,8 @@ Meteor.methods({
 				_rank: line++,
 				mosId: seg2.mosId + '_LINE' + line++,
 				segmentId: seg2._id,
-				runningOrderId: seg1.runningOrderId
+				runningOrderId: seg1.runningOrderId,
+				expectedDuration: 64
 			}
 			SegmentLines.insert(segLine)
 

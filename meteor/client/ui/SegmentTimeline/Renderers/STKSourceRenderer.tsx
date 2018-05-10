@@ -80,33 +80,33 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 		}
 
 		return [
-				<div className='segment-timeline__layer-item__preview'>
-					<div className='segment-timeline__layer-item__preview__item mic'></div>
-					<div className='segment-timeline__layer-item__preview__item vt'>
-						<span className='segment-timeline__layer-item__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
-							<span className={ClassNames('segment-timeline__layer-item__label', {
-								'overflow-label': this.end !== ''
-							})} key={this.props.segmentLineItem._id + '-start'}>
-								{this.begin}
-							</span>
-							{(this.begin && this.end === '' && (this.props.segmentLineItem as SegmentLineItemUi).content && (this.props.segmentLineItem as SegmentLineItemUi).content.loop) &&
-								(<div className='segment-timeline__layer-item__label label-icon'>
-									<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
-								</div>)
-							}
+			<div className='segment-timeline__layer-item__preview' key={this.props.segmentLineItem._id + '-item'} >
+				<div className='segment-timeline__layer-item__preview__item mic'></div>
+				<div className='segment-timeline__layer-item__preview__item vt'>
+					<span className='segment-timeline__layer-item__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
+						<span className={ClassNames('segment-timeline__layer-item__label', {
+							'overflow-label': this.end !== ''
+						})} key={this.props.segmentLineItem._id + '-start'}>
+							{this.begin}
 						</span>
-						<span className='segment-timeline__layer-item__label last-words' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
-							{(this.end && (this.props.segmentLineItem as SegmentLineItemUi).content && (this.props.segmentLineItem as SegmentLineItemUi).content.loop) &&
-								(<div className='segment-timeline__layer-item__label label-icon'>
-									<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
-								</div>)
-							}
-							<span className='segment-timeline__layer-item__label last-words'>
-								{this.end}
-							</span>
+						{(this.begin && this.end === '' && (this.props.segmentLineItem as SegmentLineItemUi).content && (this.props.segmentLineItem as SegmentLineItemUi).content.loop) &&
+							(<div className='segment-timeline__layer-item__label label-icon'>
+								<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
+							</div>)
+						}
+					</span>
+					<span className='segment-timeline__layer-item__label last-words' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
+						{(this.end && (this.props.segmentLineItem as SegmentLineItemUi).content && (this.props.segmentLineItem as SegmentLineItemUi).content.loop) &&
+							(<div className='segment-timeline__layer-item__label label-icon'>
+								<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
+							</div>)
+						}
+						<span className='segment-timeline__layer-item__label last-words'>
+							{this.end}
 						</span>
-					</div>
+					</span>
 				</div>
+			</div>
 			,
 			<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 				<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>

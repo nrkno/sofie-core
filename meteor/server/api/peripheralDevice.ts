@@ -531,7 +531,9 @@ export function convertToSegmentLine (item: IMOSItem, runningOrderId: string, se
 		runningOrderId: runningOrderId,
 		segmentId: segmentId,
 		_rank: rank,
-		mosId: item.ID.toString()
+		mosId: item.ID.toString(),
+		expectedDuration: item.EditorialDuration,
+		// autoNext: item.Trigger === ??
 	}
 }
 /**
