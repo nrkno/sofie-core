@@ -8,7 +8,7 @@ const CasparCG = {
                 device: 9,
                 type: "FILL",
                 embedded: true,
-                signalPath: "DDA, MV, RIn, BM IN14"
+                signalPath: "DDA, MV, RIn 31, BM IN14"
             },
             description: "Layers(s) of clip. Audio on dedicated fader."
         },
@@ -19,7 +19,7 @@ const CasparCG = {
                 device: 13,
                 type: "FILL",
                 embedded: true,
-                signalPath: "DDA, MV, RIn, BM IN15" // @todo: remove from BM or simply disable XPT to prevent getting on air?
+                signalPath: "DDA, MV, RIn 32, BM IN15" // @todo: remove from BM or simply disable XPT to prevent getting on air?
             },
             description: "Completely free usage to help Producer view/listen/check content. Audio to PFL."  // @todo: prevent audio from PGM mix?
         },
@@ -30,7 +30,7 @@ const CasparCG = {
                 device: 10,
                 type: "KEY/FILL",
                 embedded: false,
-                signalPath: "DDA, MV, RIn, BM IN16/17"
+                signalPath: "DDA, MV, RIn 33/34, BM IN16/17"
             },
             description: "Studio screen + other fullscreen sources/backgrounds."
         },
@@ -41,7 +41,7 @@ const CasparCG = {
                 device: 11,
                 type: "KEY/FILL",
                 embedded: false,
-                signalPath: "DDA, MV, RIn, BM IN10/11"
+                signalPath: "DDA, MV, RIn 35/36, BM IN10/11"
             },
             description: "DSK1. Graphic overlays for PGM, stripped from CLEAN." // @todo: TBD swap DSK1/2 dependant on if we need one (current) or two levels of CLEAN
         },
@@ -52,7 +52,7 @@ const CasparCG = {
                 device: 12,
                 type: "KEY/FILL",
                 embedded: true,
-                signalPath: "DDA, MV, RIn, BM IN12/13"
+                signalPath: "DDA, MV, RIn 37/38, BM IN12/13"
             },
             description: "DSK2 Vignett (opening title) with alpha, wipes/bumpers, effect sounds"   // @todo: TBD swap DSK1/2 dependant on if we need one (current) or two levels of CLEAN
         }
@@ -63,7 +63,7 @@ const CasparCG = {
             signalID: "RC1",
             decklink: {
                 device: 1,
-                signalPath: "R ut"
+                signalPath: "R ut 7"
             },
             description: "n/a"
         },
@@ -72,7 +72,7 @@ const CasparCG = {
             signalID: "RC2",
             decklink: {
                 device: 2,
-                signalPath: "R ut"
+                signalPath: "R ut 8"
             },
             description: "n/a"
         },
@@ -81,7 +81,7 @@ const CasparCG = {
             signalID: "RC3",
             decklink: {
                 device: 3,
-                signalPath: "R ut"
+                signalPath: "R ut 9"
             },
             description: "n/a"
         },
@@ -90,7 +90,7 @@ const CasparCG = {
             signalID: "RC4",
             decklink: {
                 device: 4,
-                signalPath: "R ut"
+                signalPath: "R ut 10"
             },
             description: "n/a"
         }
