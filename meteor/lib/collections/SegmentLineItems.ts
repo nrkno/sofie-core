@@ -2,6 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { RundownAPI } from '../../lib/api/rundown'
 import { TriggerType } from 'superfly-timeline'
 import { TimelineTransition } from './Timeline'
+import { Dictionary } from 'underscore';
 
 /** A trigger interface compatible with that of supertimeline */
 export interface ITimelineTrigger {
@@ -48,3 +49,89 @@ export interface SegmentLineItem {
 }
 
 export const SegmentLineItems = new Mongo.Collection<SegmentLineItem>('segmentLineItems')
+
+export interface MetadataElement {
+	_id: string,
+	key: string,
+	value: string,
+	source: string
+}
+
+export interface BaseContent {
+	timelineObjects?: any
+}
+
+export interface VTContent extends BaseContent {
+	filename: string
+	path: string
+	firstWords: string
+	lastWords: string
+	proxyPath?: string
+	thumbnail?: string
+	loop?: boolean
+	sourceDuration: number
+	metadata?: Array<MetadataElement>
+	timelineObjects: any
+}
+
+export interface CameraContent extends BaseContent {
+	studioLabel: string
+	switcherInput: number | string
+	thumbnail?: string
+	timelineObjects: any
+}
+
+export interface RemoteContent extends BaseContent {
+	studioLabel: string
+	switcherInput: string | string
+	thumbnail?: string
+	timelineObjects: any
+}
+
+export interface ScriptContent extends BaseContent {
+	firstWords: string
+	lastWords: string
+	fullScript?: any
+}
+
+export interface GraphicsContent extends BaseContent {
+	filename: string
+	path: string
+	thumbnail?: string
+	templateData?: object
+	metadata?: Array<MetadataElement>
+	timelineObjects: any
+}
+
+export interface SplitsContent extends BaseContent {
+	dveConfiguration: any
+	/** Array of contents, 0 index is DVE art */
+	boxSourceConfiguration: Array<VTContent | CameraContent | RemoteContent | GraphicsContent>
+	timelineObjects: any
+}
+
+export interface AudioContent extends BaseContent {
+	filename: string
+	path: string
+	proxyPath?: string
+	loop?: boolean
+	sourceDuration: number
+	metadata?: Array<MetadataElement>
+	timelineObjects: any
+}
+
+export interface CameraMovementContent extends BaseContent {
+	cameraConfiguration: any
+	timelineObjects: any
+}
+
+export interface LowerThirdContent extends GraphicsContent {
+}
+
+export interface LiveSpeakContent extends VTContent {
+}
+
+export interface MicContent extends ScriptContent {
+	mixConfiguration: any
+	timelineObjects: any
+}
