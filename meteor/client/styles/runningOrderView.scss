@@ -730,6 +730,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 							&.label-icon {
 								margin: 0;
 							}
+
+							> .segment-timeline__layer-item__label {
+								margin: 0;
+							}
 						}
 
 
