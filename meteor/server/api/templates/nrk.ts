@@ -20,7 +20,8 @@ import {
 	IMOSROReadyToAir,
 	IMOSROFullStory,
 	IMOSStory,
-	IMOSExternalMetaData
+	IMOSExternalMetaData,
+	IMOSROFullStoryBodyItem
 } from 'mos-connection'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
@@ -55,10 +56,36 @@ let outputLayers: Array<IOutputLayer> = [
 		isPGM: false,
 	}
 ]
+
+/*
+Caspar Channels:
+1: [CServ1] Fill, Primary Video channel
+	+ sound
+2: [CServ_PVW] Fill, Video channel for preview (usage TBD)
+	+ sound
+3: [Serv2] Key + Fill, Studio-screen?
+	+ no sound
+4: [CG1] Fill + Key, Graphics (DSK1)
+	+ no sound
+5: [CG2] Fill + Key, Video / Graphics (DSK2)
+	+ sound, effect sounds
+
+Fill: Video (comes as a camera)
+	+ sound
+Key + Fill: graphics / video to be keyed onto PGM
+	+ sound
+
 let sourceLayers = [
+
+	// on top of PGM, to be keyed
+	{ _id: 'vignett', 	name: 'Vignett', 	type: RundownAPI.SourceLayerType.LIVE_SPEAK,unlimited: true, 	onPGMClean: false},
+	{ _id: 'vignett', 	name: 'Vignett', 	type: RundownAPI.SourceLayerType.LIVE_SPEAK,unlimited: true, 	onPGMClean: false},
+
+
+
+	{ _id: 'live-speak0', 	name: 'STK', 	type: RundownAPI.SourceLayerType.LIVE_SPEAK, 	unlimited: true, 	onPGMClean: false},
 	{ _id: 'lower-third0', 	name: 'Super', 	type: RundownAPI.SourceLayerType.LOWER_THIRD, 	unlimited: true, 	onPGMClean: false},
 	{ _id: 'graphics0', 	name: 'GFX', 	type: RundownAPI.SourceLayerType.GRAPHICS, 		unlimited: true, 	onPGMClean: false},
-	{ _id: 'live-speak0', 	name: 'STK', 	type: RundownAPI.SourceLayerType.LIVE_SPEAK, 	unlimited: true, 	onPGMClean: false},
 	{ _id: 'remote0', 		name: 'RM1', 	type: RundownAPI.SourceLayerType.REMOTE, 		unlimited: false, 	onPGMClean: true},
 	{ _id: 'vt0', 			name: 'VB', 	type: RundownAPI.SourceLayerType.VT, 			unlimited: true, 	onPGMClean: true},
 	{ _id: 'mic0', 			name: 'Mic', 	type: RundownAPI.SourceLayerType.MIC, 			unlimited: false, 	onPGMClean: true},
@@ -75,6 +102,7 @@ let nrk: TemplateSet = {
 	 */
 	getId (story: IMOSROFullStory): string {
 		let templateId = ''
+
 		if (story.MosExternalMetaData) {
 			_.find(story.MosExternalMetaData, (md) => {
 				if (
@@ -87,10 +115,10 @@ let nrk: TemplateSet = {
 					if (type.match(/break/i)) 			templateId = 'break'
 					// else if (type.match(/full/i) &&
 					// 		!variant)			 		templateId = 'full'
-					// else if (type.match(/full/i) &&
-					// 		variant.match(/vignett/i)) 	templateId = 'fullVignett'
-					// else if (type.match(/full/i) &&
-					// 		variant.match(/vignettxx/i)) 	templateId = 'fullVignettxx'
+					else if (type.match(/full/i) &&
+							variant.match(/vignett/i)) 	templateId = 'fullVignett'
+					else if (type.match(/full/i) &&
+							variant.match(/vignettxx/i)) 	templateId = 'fullVignettxx'
 					else if (type.match(/stk/i) &&
 							variant.match(/head/i)) 	templateId = 'stkHead'
 				}
@@ -98,6 +126,7 @@ let nrk: TemplateSet = {
 				else return false // keep looking
 			})
 		}
+		console.log('getId', templateId)
 		return templateId
 	},
 	templates: {
@@ -183,88 +212,15 @@ let nrk: TemplateSet = {
 				}
 			*/
 		}),
-		full: literal<TemplateFunctionOptional>((story: IMOSROFullStory) => {
-			return []
-			/*
-				// Example data:
-				{
-					"ID": "2012R2ENPS8VM;P_ENPSNEWS\\W\\R_696297DF-1568-4B36-B43B3B79514B40D4;9908CC68-E390-4A6B-80BD0B07736B1AFF",
-					"Slug": "NRK ï뾽stafjells;ddmm18-1850",
-					"MosExternalMetaData": [
-						{
-							"MosScope": "PLAYLIST",
-							"MosSchema": "http://2012R2ENPS8VM:10505/schema/enps.dtd",
-							"MosPayload": {
-								"Approved": 0,
-								"Creator": "LINUXENPS",
-								"MediaTime": 0,
-								"ModBy": "LINUXENPS",
-								"ModTime": "20180227T004206Z",
-								"MOSItemDurations": 0,
-								"MOSObjSlugs": "201 loop 1:  2:",
-								"MOSSlugs": "NRK ï뾽STAFJELLS;ddmm15-1845-3",
-								"Owner": "LINUXENPS",
-								"pubApproved": 0,
-								"SourceMediaTime": 0,
-								"SourceTextTime": 0,
-								"TextTime": 0,
-								"mosartType": "BREAK",
-								"ENPSItemType": 3
-							}
-						}
-					],
-					"RunningOrderId": "2012R2ENPS8VM;P_ENPSNEWS\\W;696297DF-1568-4B36-B43B3B79514B40D4",
-					"Body": [
-						{
-							"Type": "storyItem",
-							"Content": {
-								"mosID": "chyron.techycami02.ndte.nrk.mos",
-								"mosAbstract": "_00:00:03:00 | @M=Auto Openend | 201 loop | 1: | 2: | 3: | 4: | 00:00:00:00",
-								"objPaths": {
-								"objProxyPath": {
-									"techDescription": "JPEG Thumbnail",
-									"$t": "http://160.68.33.159/thumbs/NYHETER/10000/Objects_NYHETER_00010001_v1_big.jpg"
-								},
-								"objMetadataPath": {}
-								},
-								"itemChannel": "CG2",
-								"itemSlug": "NRK ï뾽STAFJELLS;ddmm15-1845-3",
-								"mosObj": {
-								"objID": "NYHETER\\00010001?version=1",
-								"objSlug": "201 loop 1:2:",
-								"mosItemEditorProgID": "Chymox.AssetBrowser.1",
-								"objDur": 0,
-								"objTB": 0,
-								"objPaths": {
-									"objProxyPath": {
-										"techDescription": "JPEG Thumbnail",
-										"$t": "http://160.68.33.159/thumbs/NYHETER/10000/Objects_NYHETER_00010001_v1_big.jpg"
-									},
-									"objMetadataPath": {}
-								},
-								"mosExternalMetadata": {
-									"mosScope": "PLAYLIST",
-									"mosSchema": "http://ncsA4.com/mos/supported_schemas/NCSAXML2.08",
-									"mosPayload": {
-										"sAVsom": "00:00:03:00",
-										"sAVeom": "00:00:00:00",
-										"createdBy": "N18685",
-										"subtype": "lyric/data",
-										"subtypeid": "I:\\CAMIO\\NYHETER\\Templates\\Bakskjerm\\00000201.lyr",
-										"ObjectDetails": {
-											"ServerID": "chyron.techycami02.ndte.nrk.mos",
-											"ServerURL": "http://160.68.33.159/CAMIO/Redirection/MOSRedirection.asmx"
-										}
-									}
-								}
-								},
-								"itemID": 3
-							}
-						}
-					]
-				}
-			*/
+		fullVignett: literal<TemplateFunctionOptional>((story: IMOSROFullStory) => {
+			return myTemplates.full('vignett', story)
 		}),
+		fullVignettxx: literal<TemplateFunctionOptional>((story: IMOSROFullStory) => {
+			return myTemplates.full('vignettxx', story)
+		}),
+		full: (story: IMOSROFullStory, variant: string) => {
+			return myTemplates.full('', story)
+		},
 		stkHead: literal<TemplateFunctionOptional>(function (story: IMOSROFullStory) {
 			// Wipe from vignett to first head with white wipe. Sound is from vignett outro.
 
@@ -294,6 +250,19 @@ let nrk: TemplateSet = {
 				// segmentLineId: this.segmentLine._id,
 				// runningOrderId: this.runningOrder._id,
 			}
+			let mosVideo = story.Body.find((item: IMOSROFullStoryBodyItem) => {
+				if (item.Type === 'storyItem') {
+					let content: IMOSItem = item.Content
+
+					let md = (content.MosExternalMetaData || []).find((md: IMOSExternalMetaData) => {
+						return md.MosSchema === 'OMNIBUS'
+					})
+					if (!md) throw new Meteor.Error(404, 'no OMNIBUS metadata tag found')
+
+					return md.MosPayload.clipType.match(/clip/i)
+				}
+			})
+			if (!mosVideo) throw new Meteor.Error(404, 'no video mosObj found')
 			// Video:
 			let video: SegmentLineItemOptional = {
 				// _id: this.id(),
@@ -409,6 +378,150 @@ let nrk: TemplateSet = {
 				}
 			*/
 		})
+	}
+}
+
+let myTemplates = {
+	full (variant, story: IMOSROFullStory): Array<SegmentLineItemOptional> {
+		// let video: SegmentLineItemOptional
+		let objs: Array<SegmentLineItemOptional> = []
+		if (
+			variant === 'vignett' ||
+			variant === 'vignettxx'
+		) {
+
+			let video: SegmentLineItemOptional = {
+				_id: this.id(),
+				mosId: 'video',
+				name: 'Video',
+				trigger: {
+					type: TriggerType.TIME_RELATIVE,
+					value: 0
+				},
+				status: RundownAPI.LineItemStatusCode.UNKNOWN,
+				sourceLayerId: '',
+				outputLayerId: '',
+				expectedDuration: 5,
+				duration: 5,
+				content: {
+					clip: 'VIGNETT', // todo: vignett video file
+					mixer: {
+						volume: 1
+					}
+				}
+			}
+			objs.push(video)
+		} else {
+			let objs: Array<SegmentLineItemOptional> = []
+			let storyItem: any = {} // Question: How do I know which storyItem is the one containing the video?
+			if (storyItem.Content.mosExternalMetadata.mosPayload.objectType !== 'CLIP') {
+				throw Error('Unknown objectType: ' + storyItem.Content.mosExternalMetadata.mosPayload.objectType)
+			}
+			let timeBase = storyItem.Content.objTB || 0
+			let duration = storyItem.Content.objDur || 0
+			let video = {
+				_id: this.id(),
+				mosId: 'video',
+				name: 'Video',
+				trigger: {
+					type: TriggerType.TIME_RELATIVE,
+					value: 0
+				},
+				status: RundownAPI.LineItemStatusCode.UNKNOWN,
+				sourceLayerId: '',
+				outputLayerId: '',
+				expectedDuration: duration * timeBase,
+				duration: duration * timeBase,
+				content: {
+					clip: storyItem.Content.mosExternalMetadata.mosPayload.title, // todo: vignett video file
+					mixer: {
+						volume: 1
+					}
+				}
+			}
+			objs.push(video)
+
+		}
+		return objs
+		/*
+			// Example data:
+			{
+				"ID": "2012R2ENPS8VM;P_ENPSNEWS\\W\\R_696297DF-1568-4B36-B43B3B79514B40D4;9908CC68-E390-4A6B-80BD0B07736B1AFF",
+				"Slug": "NRK ï뾽stafjells;ddmm18-1850",
+				"MosExternalMetaData": [
+					{
+						"MosScope": "PLAYLIST",
+						"MosSchema": "http://2012R2ENPS8VM:10505/schema/enps.dtd",
+						"MosPayload": {
+							"Approved": 0,
+							"Creator": "LINUXENPS",
+							"MediaTime": 0,
+							"ModBy": "LINUXENPS",
+							"ModTime": "20180227T004206Z",
+							"MOSItemDurations": 0,
+							"MOSObjSlugs": "201 loop 1:  2:",
+							"MOSSlugs": "NRK ï뾽STAFJELLS;ddmm15-1845-3",
+							"Owner": "LINUXENPS",
+							"pubApproved": 0,
+							"SourceMediaTime": 0,
+							"SourceTextTime": 0,
+							"TextTime": 0,
+							"mosartType": "BREAK",
+							"ENPSItemType": 3
+						}
+					}
+				],
+				"RunningOrderId": "2012R2ENPS8VM;P_ENPSNEWS\\W;696297DF-1568-4B36-B43B3B79514B40D4",
+				"Body": [
+					{
+						"Type": "storyItem",
+						"Content": {
+							"mosID": "chyron.techycami02.ndte.nrk.mos",
+							"mosAbstract": "_00:00:03:00 | @M=Auto Openend | 201 loop | 1: | 2: | 3: | 4: | 00:00:00:00",
+							"objPaths": {
+							"objProxyPath": {
+								"techDescription": "JPEG Thumbnail",
+								"$t": "http://160.68.33.159/thumbs/NYHETER/10000/Objects_NYHETER_00010001_v1_big.jpg"
+							},
+							"objMetadataPath": {}
+							},
+							"itemChannel": "CG2",
+							"itemSlug": "NRK ï뾽STAFJELLS;ddmm15-1845-3",
+							"mosObj": {
+							"objID": "NYHETER\\00010001?version=1",
+							"objSlug": "201 loop 1:2:",
+							"mosItemEditorProgID": "Chymox.AssetBrowser.1",
+							"objDur": 0,
+							"objTB": 0,
+							"objPaths": {
+								"objProxyPath": {
+									"techDescription": "JPEG Thumbnail",
+									"$t": "http://160.68.33.159/thumbs/NYHETER/10000/Objects_NYHETER_00010001_v1_big.jpg"
+								},
+								"objMetadataPath": {}
+							},
+							"mosExternalMetadata": {
+								"mosScope": "PLAYLIST",
+								"mosSchema": "http://ncsA4.com/mos/supported_schemas/NCSAXML2.08",
+								"mosPayload": {
+									"sAVsom": "00:00:03:00",
+									"sAVeom": "00:00:00:00",
+									"createdBy": "N18685",
+									"subtype": "lyric/data",
+									"subtypeid": "I:\\CAMIO\\NYHETER\\Templates\\Bakskjerm\\00000201.lyr",
+									"ObjectDetails": {
+										"ServerID": "chyron.techycami02.ndte.nrk.mos",
+										"ServerURL": "http://160.68.33.159/CAMIO/Redirection/MOSRedirection.asmx"
+									}
+								}
+							}
+							},
+							"itemID": 3
+						}
+					}
+				]
+			}
+		*/
 	}
 }
 
