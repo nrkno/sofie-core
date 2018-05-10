@@ -334,7 +334,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 								box-shadow: none;
 							}
 
-							> *, > .segment-timeline__layer-item__label {
+							.segment-timeline__layer-item__label {
 								display: none;
 							}
 						}
@@ -651,7 +651,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 						@include item-type-colors();
 
-						&.splits {
+						&.splits, &.vt {
 							.segment-timeline__layer-item__preview {
 								position: absolute;
 								top: 0;
@@ -663,6 +663,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 								.segment-timeline__layer-item__preview__item {
 									flex: 1 1;
+									min-height: 0;
 
 									@include item-type-colors();
 								}
