@@ -7,7 +7,7 @@ import { Settings } from '../../lib/Settings'
 export namespace RundownUtils {
 	export function getSegmentDuration (lines: Array<SegmentLineUi>) {
 		return lines.reduce((memo, item) => {
-			return memo + (item.renderedDuration || 0)
+			return memo + (item.renderedDuration || item.expectedDuration || 0)
 		}, 0)
 	}
 
