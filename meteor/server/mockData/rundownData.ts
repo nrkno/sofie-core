@@ -718,6 +718,35 @@ Meteor.methods({
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
+		// Segment 2
+			line = 0
+			segLine = {
+				_id: seg2._id + '-line' + line,
+				_rank: line++,
+				mosId: seg2.mosId + '_LINE' + line++,
+				segmentId: seg2._id,
+				runningOrderId: seg1.runningOrderId
+			}
+			SegmentLines.insert(segLine)
+
+			// STK
+				segmentLineItem = literal<SegmentLineItem>({
+					_id: segLine._id + ':' + Random.id(5),
+					mosId: segLine.mosId,
+					segmentLineId: segLine._id,
+					runningOrderId: roId,
+					name: 'Savnet VB||...som de da planlegger.',
+					trigger: {
+						type: 0,
+						value: 0
+					},
+					status: RundownAPI.LineItemStatusCode.OK,
+					sourceLayerId: 'studio0-live-speak0',
+					outputLayerId: 'studio0-pgm0',
+					expectedDuration: 64,
+					disabled: false
+				})
+				SegmentLineItems.insert(segmentLineItem)
 	},
 
 	'debug_sampleRundown' () {
