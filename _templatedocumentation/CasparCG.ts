@@ -3,7 +3,7 @@ const CasparCG = {
     channels: {
         1: {
             systemName: "VB1",
-            signalID: "CSERV 1",
+            id: "CSERV 1",
             decklink: {
                 device: 9,
                 type: "FILL",
@@ -14,7 +14,7 @@ const CasparCG = {
         },
         2: {
             systemName: "PVW",
-            signalID: "CSERV PVW",
+            id: "CSERV PVW",
             decklink: {
                 device: 13,
                 type: "FILL",
@@ -25,7 +25,7 @@ const CasparCG = {
         },
         3: {
             systemName: "VB2",
-            signalID: "CSERV 2-1 / CSERV 2-2",
+            id: "CSERV 2-1 / CSERV 2-2",
             decklink: {
                 device: 10,
                 type: "KEY/FILL",
@@ -36,7 +36,7 @@ const CasparCG = {
         },
         4: {
             systemName: "CG1",
-            signalID: "CG1-1 / CG1-2",
+            id: "CG1-1 / CG1-2",
             decklink: {
                 device: 11,
                 type: "KEY/FILL",
@@ -47,7 +47,7 @@ const CasparCG = {
         },
         5: {
             systemName: "CG2",
-            signalID: "CG2-1 / CG2-2",
+            id: "CG2-1 / CG2-2",
             decklink: {
                 device: 12,
                 type: "KEY/FILL",
@@ -58,42 +58,42 @@ const CasparCG = {
         }
     },
     inputs: {
-        1: {
-            systemName: "Input 1",
-            signalID: "RC1",
-            decklink: {
-                device: 1,
-                signalPath: "R ut 7"
-            },
-            description: "n/a"
-        },
-        2: {
-            systemName: "Input 2",
-            signalID: "RC2",
-            decklink: {
-                device: 2,
-                signalPath: "R ut 8"
-            },
-            description: "n/a"
-        },
-        3: {
-            systemName: "Input 3",
-            signalID: "RC3",
-            decklink: {
-                device: 3,
-                signalPath: "R ut 9"
-            },
-            description: "n/a"
-        },
-        4: {
-            systemName: "Input 4",
-            signalID: "RC4",
-            decklink: {
-                device: 4,
-                signalPath: "R ut 10"
-            },
-            description: "n/a"
-        }
+        // 1: {
+        //     systemName: "Input 1",
+        //     id: "RC1",
+        //     decklink: {
+        //         device: 1,
+        //         signalPath: "R ut 7"
+        //     },
+        //     description: "n/a"
+        // },
+        // 2: {
+        //     systemName: "Input 2",
+        //     id: "RC2",
+        //     decklink: {
+        //         device: 2,
+        //         signalPath: "R ut 8"
+        //     },
+        //     description: "n/a"
+        // },
+        // 3: {
+        //     systemName: "Input 3",
+        //     id: "RC3",
+        //     decklink: {
+        //         device: 3,
+        //         signalPath: "R ut 9"
+        //     },
+        //     description: "n/a"
+        // },
+        // 4: {
+        //     systemName: "Input 4",
+        //     id: "RC4",
+        //     decklink: {
+        //         device: 4,
+        //         signalPath: "R ut 10"
+        //     },
+        //     description: "n/a"
+        // }
     }
 }
 
