@@ -44,6 +44,7 @@ interface ISourceLayerItemState {
 	showMiniInspector: boolean
 	elementPosition: JQueryCoordinates
 	cursorPosition: JQueryCoordinates
+	cursorTimePostion: number
 	elementWidth: number
 	itemElement: HTMLDivElement | null
 	leftAnchoredWidth: number
@@ -66,6 +67,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				top: 0,
 				left: 0
 			},
+			cursorTimePostion: 0,
 			elementWidth: 0,
 			itemElement: null,
 			leftAnchoredWidth: 0,
@@ -213,6 +215,12 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			(this.isInsideViewport() && this._placeHolderElement)) {
 			this._forceSizingRecheck = true
 		}
+
+		if (nextProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
+			this.setState({
+				cursorTimePostion: this.state.cursorTimePostion + (nextProps.scrollLeft - this.props.scrollLeft)
+			})
+		}
 	}
 
 	componentDidUpdate () {
@@ -241,26 +249,35 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			showMiniInspector: v
 		})
 		// console.log($(this.itemElement).offset())
-		let elementPos = this.state.itemElement && $(this.state.itemElement).offset() || {
+		const elementPos = this.state.itemElement && $(this.state.itemElement).offset() || {
 			top: 0,
 			left: 0
 		}
 
+		const cursorPosition = {
+			left: e.clientX - elementPos.left,
+			top: e.clientY - elementPos.top
+		};
+
+		const cursorTimePostion = Math.max(cursorPosition.left, 0) / this.props.timeScale
+
 		this.setState({
 			elementPosition: elementPos,
-			cursorPosition: {
-				left: e.clientX - elementPos.left,
-				top: e.clientY - elementPos.top
-			}
+			cursorPosition,
+			cursorTimePostion
 		})
 	}
 
 	moveMiniInspector = (e: MouseEvent | any) => {
+		const cursorPosition = {
+			left: e.clientX - this.state.elementPosition.left,
+			top: e.clientY - this.state.elementPosition.top
+		}
+		const cursorTimePostion = Math.max(cursorPosition.left, 0) / this.props.timeScale
+
 		this.setState({
-			cursorPosition: _.extend(this.state.cursorPosition, {
-				left: e.clientX - this.state.elementPosition.left,
-				top: e.clientY - this.state.elementPosition.top
-			})
+			cursorPosition: _.extend(this.state.cursorPosition, cursorPosition),
+			cursorTimePostion
 		})
 	}
 

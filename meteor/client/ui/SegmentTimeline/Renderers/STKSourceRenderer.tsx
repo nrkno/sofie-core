@@ -33,11 +33,13 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 
 	updateTime = () => {
 		if (this.vPreview) {
-			let targetTime = Math.max(this.props.cursorPosition.left, 0) / this.props.timeScale
-			let segmentLineItem = this.props.segmentLineItem
-			let itemDuration = (segmentLineItem.duration || segmentLineItem.renderedDuration || segmentLineItem.expectedDuration)
+			let targetTime = this.props.cursorTimePostion
+			const segmentLineItem = this.props.segmentLineItem
+			const itemDuration = (segmentLineItem.duration || segmentLineItem.renderedDuration || segmentLineItem.expectedDuration)
 			if (!Number.isFinite(itemDuration) && this.vPreview.duration > 0) {
 				targetTime = targetTime % this.vPreview.duration
+			} else {
+				targetTime = Math.min(targetTime, itemDuration)
 			}
 			this.vPreview.currentTime = targetTime
 		}
