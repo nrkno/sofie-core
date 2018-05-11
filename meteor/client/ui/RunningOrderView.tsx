@@ -104,8 +104,16 @@ interface IStateHeader {
 }
 
 export const RunningOrderView = translate()(withTracker((props, state) => {
-	// console.log('PeripheralDevices',PeripheralDevices);
-	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
+	const calculateRundownDuration = (runningOrder: RunningOrder, segmentLines: Array<SegmentLine>) => {
+		return segmentLines.reduce((memo, item) => {
+			// item is onAir right now, and it's already taking longer than rendered/expectedDuration
+			if (item.startedPlayback && !item.duration && runningOrder.currentSegmentLineId === item._id && item.startedPlayback + (item.expectedDuration || 0) < (getCurrentTime() / 1000)) {
+				return memo + ((getCurrentTime() / 1000) - item.startedPlayback)
+			} else {
+				return memo + (item.duration || item.expectedDuration || 0)
+			}
+		}, 0)
+	}
 
 	let subRunningOrders = Meteor.subscribe('runningOrders', {})
 	let subSegments = Meteor.subscribe('segments', {})
@@ -124,7 +132,7 @@ export const RunningOrderView = translate()(withTracker((props, state) => {
 				'_rank': 1
 			}
 		}).fetch() : undefined,
-		totalRundownDuration: RundownUtils.getSegmentDuration(segmentLines),
+		totalRundownDuration: calculateRundownDuration(runningOrder, segmentLines),
 		studioInstallation: runningOrder ? StudioInstallations.findOne({ _id: runningOrder.studioInstallationId }) : undefined,
 	}
 })(
