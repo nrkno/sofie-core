@@ -3,7 +3,7 @@
 pipeline {
   agent any
   stages {
-    stage('Build docker image') {
+    stage('Build Docker image') {
       steps {
           dockerBuild('sofie/tv-automation-server-core')
       }
