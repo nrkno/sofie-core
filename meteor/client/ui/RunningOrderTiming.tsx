@@ -175,13 +175,6 @@ export function withTiming (options?) {
 
 			constructor (props, context) {
 				super(props, context)
-<<<<<<< HEAD
-=======
-
-				this.state = {
-					refresh: 0
-				}
->>>>>>> 4d1b7ca08bc8a584509b2baf3b6268f156c6402c
 			}
 
 			componentDidMount () {
@@ -189,13 +182,7 @@ export function withTiming (options?) {
 			}
 
 			refreshComponent = () => {
-<<<<<<< HEAD
 				this.forceUpdate()
-=======
-				this.setState({
-					refresh: Date.now()
-				})
->>>>>>> 4d1b7ca08bc8a584509b2baf3b6268f156c6402c
 			}
 
 			render () {
