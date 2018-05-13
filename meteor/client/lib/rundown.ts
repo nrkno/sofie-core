@@ -15,6 +15,26 @@ export namespace RundownUtils {
 		return (new Timecode(seconds * Settings['frameRate'], Settings['frameRate'], false)).toString()
 	}
 
+	export function formatDiffToTimecode (seconds: number, showPlus?: boolean): string {
+		function padZero (input: number): string {
+			if (input < 10) {
+				return '0' + input.toString(10)
+			} else {
+				return input.toString(10)
+			}
+		}
+
+		const isNegative = seconds < 0
+		if (isNegative) {
+			seconds = seconds * -1
+		}
+
+		const minutes = Math.floor(seconds / 60)
+		const secondsRest = Math.floor(seconds % 60)
+
+		return (isNegative ? '-' : (showPlus && seconds > 0 ? '+' : '')) + padZero(minutes) + ':' + padZero(secondsRest)
+	}
+
 	export function isInsideViewport (scrollLeft: number, scrollWidth: number, segmentLine: SegmentLineUi, segmentLineItem?: SegmentLineItemUi) {
 		if (scrollLeft + scrollWidth < (segmentLine.startsAt || 0) + (segmentLineItem !== undefined ? (segmentLineItem.renderedInPoint || 0) : 0)) {
 			return false

@@ -17,9 +17,22 @@ import { getCurrentTime } from '../../lib/lib'
 
 import { RundownUtils } from '../lib/rundown'
 
-namespace RunningOrderTiming {
+export namespace RunningOrderTiming {
 	export enum Events {
 		'timeupdate'		= 'sofie:roTimeUpdate'
+	}
+
+	export interface RunningOrderTimingContext {
+		totalRundownDuration?: number
+		remainingRundownDuration?: number
+		asPlayedRundownDuration?: number
+		segmentLineCountdown?: {
+			[key: string]: number
+		}
+	}
+
+	export interface InjectedROTimingProps {
+		timingDurations: RunningOrderTimingContext
 	}
 }
 
@@ -31,7 +44,7 @@ interface IRunningOrderTimingProviderProps {
 	refreshInterval?: number
 }
 interface IRunningOrderTimingProviderChildContext {
-	durations: any
+	durations: RunningOrderTiming.RunningOrderTimingContext
 }
 
 export const RunningOrderTimingProvider = withTracker((props, state) => {
@@ -69,7 +82,7 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 		durations: PropTypes.object.isRequired
 	}
 
-	durations: any = {}
+	durations: RunningOrderTiming.RunningOrderTimingContext = {}
 	refreshTimer: NodeJS.Timer
 	refreshTimerInterval: number
 
@@ -229,7 +242,7 @@ export function withTiming (options?) {
 
 interface ISegmentLineCountdownProps {
 	segmentLineId: string
-	timingDurations: any
+	timingDurations: RunningOrderTiming.RunningOrderTimingContext
 }
 export const SegmentLineCountdown = withTiming()((props: ISegmentLineCountdownProps) => (
 	<span>

@@ -9,6 +9,7 @@ $general-next-color: #FF0000;
 $general-live-remote-color: #8d008d;
 
 $general-late-color: #FF0000;
+$general-fast-color: #FF0000;
 
 $segment-header-height: 2.3em;
 $segment-background-color: #000;
@@ -142,6 +143,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			&.heavy-light {
 				&.heavy {
 					color: $general-late-color;
+				}
+
+				&.light {
+					color: $general-fast-color;
 				}
 			}
 		}

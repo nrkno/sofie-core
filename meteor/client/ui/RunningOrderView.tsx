@@ -22,7 +22,7 @@ import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 
-import { RunningOrderTimingProvider, withTiming } from './RunningOrderTiming'
+import { RunningOrderTimingProvider, withTiming, RunningOrderTiming } from './RunningOrderTiming'
 
 import { getCurrentTime } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
@@ -33,10 +33,9 @@ interface IHeaderProps {
 }
 
 interface ITimerHeaderProps extends IHeaderProps {
-	timingDurations: any
 }
 
-const TimingDisplay = translate()(withTiming()(class extends React.Component<ITimerHeaderProps & InjectedTranslateProps> {
+const TimingDisplay = translate()(withTiming()(class extends React.Component<ITimerHeaderProps & InjectedTranslateProps & RunningOrderTiming.InjectedROTimingProps> {
 	render () {
 		const { t } = this.props
 
@@ -44,9 +43,14 @@ const TimingDisplay = translate()(withTiming()(class extends React.Component<ITi
 			<div className='timing mod'>
 				<span className='timing-clock-header-label'>{t('Now')}: </span>
 				<span className='timing-clock time-now'><Moment format='HH:mm:ss' date={getCurrentTime()} /></span>
-				<span className='timing-clock heavy-light heavy'>-00:15</span>
+				<span className={ClassNames('timing-clock heavy-light', {
+					'heavy': (this.props.timingDurations.asPlayedRundownDuration || 0) > (this.props.timingDurations.totalRundownDuration || 0),
+					'light': (this.props.timingDurations.asPlayedRundownDuration || 0) < (this.props.timingDurations.totalRundownDuration || 0)
+				})}>
+					{RundownUtils.formatDiffToTimecode((this.props.timingDurations.totalRundownDuration || 0) - (this.props.timingDurations.asPlayedRundownDuration || 0), true)}
+				</span>
 				<span className='timing-clock-header-label'>{t('Finish')}: </span>
-				<span className='timing-clock time-end'><Moment format='HH:mm:ss' date={getCurrentTime() + (this.props.timingDurations.remainingRundownDuration * 1000)} /></span>
+				<span className='timing-clock time-end'><Moment format='HH:mm:ss' date={getCurrentTime() + ((this.props.timingDurations.remainingRundownDuration || 0) * 1000)} /></span>
 			</div>
 		)
 	}
