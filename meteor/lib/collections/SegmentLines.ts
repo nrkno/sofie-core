@@ -17,7 +17,8 @@ export interface SegmentLine {
 	segmentId: string
   /** The running order this line belongs to */
 	runningOrderId: string
-
+	/** The story Slug (like a title, but slimier) */
+	slug: string
 	/** Should this item be taken live automatically */
 	autoNext?: boolean
 

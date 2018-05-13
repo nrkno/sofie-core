@@ -15,7 +15,6 @@ import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
-
 // Imports from TSR (TODO make into an import)
 export interface Mappings {
 	[layerName: string]: Mapping
@@ -192,7 +191,7 @@ Meteor.methods({
 				channel: 3,
 				layer: 120
 			}),
-			'atem_me_pgm': literal<MappingAtem>({
+			'atem_me_program': literal<MappingAtem>({
 				device: DeviceType.ATEM,
 				deviceId: 'atem0',
 				mappingType: MappingAtemType.MixEffect,
@@ -203,6 +202,18 @@ Meteor.methods({
 				deviceId: 'atem0',
 				mappingType: MappingAtemType.MixEffect,
 				index: 1 // 1 = ME2
+			}),
+			'atem_aux_clean': literal<MappingAtem>({
+				device: DeviceType.ATEM,
+				deviceId: 'atem0',
+				mappingType: MappingAtemType.Auxilliary,
+				index: 1
+			}),
+			'atem_aux_preview': literal<MappingAtem>({
+				device: DeviceType.ATEM,
+				deviceId: 'atem0',
+				mappingType: MappingAtemType.Auxilliary,
+				index: 2
 			}),
 			'atem_dsk_graphics': literal<MappingAtem>({
 				device: DeviceType.ATEM,
@@ -236,6 +247,11 @@ Meteor.methods({
 				device: DeviceType.LAWO,
 				deviceId: 'lawo0',
 				channel: 3
+			}),
+			'lawo_source_preview': literal<MappingLawo>({
+				device: DeviceType.LAWO,
+				deviceId: 'lawo0',
+				channel: 4
 			})
 		}
 		PeripheralDevices.find({

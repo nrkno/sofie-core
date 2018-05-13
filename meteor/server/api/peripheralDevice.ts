@@ -133,7 +133,7 @@ export namespace ServerPeripheralDeviceAPI {
 			return partialExceptId<RunningOrder>({
 				_id: roId(ro.ID),
 				mosId: ro.ID.toString(),
-				// studioInstallationId: '',
+				studioInstallationId: 'studio0',
 				// showStyleId: '',
 				name: ro.Slug.toString()
 			})
@@ -144,7 +144,11 @@ export namespace ServerPeripheralDeviceAPI {
 			}
 		})
 
+		let dbRo = RunningOrders.findOne(roId(ro.ID))
+		if (!dbRo) throw new Meteor.Error(500, 'Running order not found (it should have been)')
+
 		// Save Stories into database:
+		// Note: a number of X stories will result in (<=X) Segments and X SegmentLines
 		let segments: Segment[] = []
 		let segmentLines: SegmentLine[] = []
 		let rankSegment = 0
@@ -155,57 +159,49 @@ export namespace ServerPeripheralDeviceAPI {
 			// divide into
 			let slugParts = (story.Slug || '').toString().split(';')
 
-			if (slugParts[0] !== prevSlugParts[0]) {
-				segment = convertToSegment(story, roId(ro.ID), rankSegment++)
-				segments.push(segment)
-			}
-			segmentLines.push(convertToSegmentLine(story, segment, rankSegmentLine++))
+			// if (slugParts[0] !== prevSlugParts[0]) {
+				// segment = convertToSegment(story, roId(ro.ID), rankSegment++)
+				// segments.push(segment)
+			// }
+			let segmentLine = convertToSegmentLine(story, dbRo._id, rankSegmentLine++)
+			segmentLines.push(segmentLine)
 
 			prevSlugParts = slugParts
 		})
-		saveIntoDb(Segments, {
-			runningOrderId: roId(ro.ID)
-		}, segments, {
-			afterInsert (segment) {
-				let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
-				if (story) {
-					afterInsertUpdateSegment (story, roId(ro.ID))
-				} else throw new Meteor.Error(500, 'Story not found (it should have been)')
+		// console.log('segmentLines', segmentLines)
+		// console.log('---------------')
+		// console.log(SegmentLines.find({runningOrderId: dbRo._id}).fetch())
+		saveIntoDb<SegmentLine>(SegmentLines, {
+			runningOrderId: dbRo._id
+		}, segmentLines, {
+			beforeDiff (obj, oldObj) {
+				let o = _.extend({}, obj, {
+					segmentId: oldObj.segmentId
+				})
+				return o
 			},
-			afterUpdate (segment) {
-				let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
-				if (story) {
-					afterInsertUpdateSegment (story, roId(ro.ID))
-				} else throw new Meteor.Error(500, 'Story not found (it should have been)')
+			afterInsert (segmentLine) {
+				// console.log('inserted segmentLine ' + segmentLine._id)
+				// @todo: have something here?
+				// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+				// if (story) {
+					// afterInsertUpdateSegment (story, roId(ro.ID))
+				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 			},
-			afterRemove (segment) {
-				afterRemoveSegment(segment._id, segment.runningOrderId)
+			afterUpdate (segmentLine) {
+				// console.log('updated segmentLine ' + segmentLine._id)
+				// @todo: have something here?
+				// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+				// if (story) {
+				// 	afterInsertUpdateSegment (story, roId(ro.ID))
+				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
+			},
+			afterRemove (segmentLine) {
+				afterRemoveSegmentLine(segmentLine._id)
 			}
 		})
-		/*
-		let rank = 0
-		saveIntoDb(Segments, {
-			runningOrderId: roId(ro.ID)
-		}, _.map(ro.Stories, (story: IMOSStory) => {
-			return convertToSegment(story, roId(ro.ID), rank++)
-		}),{
-			afterInsert (segment) {
-				let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
-				if (story) {
-					afterInsertUpdateSegment (story, roId(ro.ID))
-				} else throw new Meteor.Error(500, 'Story not found (it should have been)')
-			},
-			afterUpdate (segment) {
-				let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
-				if (story) {
-					afterInsertUpdateSegment (story, roId(ro.ID))
-				} else throw new Meteor.Error(500, 'Story not found (it should have been)')
-			},
-			afterRemove (segment) {
-				afterRemoveSegment(segment._id, segment.runningOrderId)
-			}
-		})
-		*/
+
+		updateSegments(roId(ro.ID))
 	}
 	export function mosRoReplace (id, token, ro: IMOSRunningOrder) {
 		// let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -251,26 +247,26 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.info('mosRoStoryStatus')
 		// @ts-ignore
 		logger.debug(status)
-		// Save Stories (aka SegmentLines) status into database:
+		// Save Stories (aka SegmentLine ) status into database:
 		let segmentLine = SegmentLines.findOne({
-			_id: 			segmentLineId(roId(status.RunningOrderId), status.ID),
+			_id: 			segmentLineId(roId(status.RunningOrderId), status.ID, true),
 			runningOrderId: roId(status.RunningOrderId)
 		})
-		if (segment) {
-			Segments.update(segment._id, {$set: {
+		if (segmentLine) {
+			SegmentLines.update(segmentLine._id, {$set: {
 				status: status.Status
 			}})
 		} else throw new Meteor.Error(404, 'Segment ' + status.ID + ' in RO ' + status.RunningOrderId + ' not found')
 	}
 	export function mosRoItemStatus (id, token, status: IMOSItemStatus) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.error('mosRoItemStatus!')
+		logger.warning('mosRoItemStatus NOT IMPLEMENTED YET')
 		// @ts-ignore
 		logger.debug(status)
-
+		/*
 		// Save status of Item database:
 		let segmentID = segmentId(roId(status.RunningOrderId), status.StoryId)
-		let segmentLine = SegmentLines.findOne({
+		let segmentLine = SegmentLineIte.findOne({
 			_id: 			segmentLineId(segmentID, status.ID),
 			segmentId: 		segmentID,
 			runningOrderId: roId(status.RunningOrderId)
@@ -280,7 +276,7 @@ export namespace ServerPeripheralDeviceAPI {
 				status: status.Status
 			}})
 		} else throw new Meteor.Error(404, 'SegmentLine ' + status.ID + ' in segment ' + status.StoryId + ' in RO ' + status.RunningOrderId + ' not found')
-	
+		*/
 	}
 	export function mosRoStoryInsert (id, token, Action: IMOSStoryAction, Stories: Array<IMOSROStory>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -288,36 +284,39 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// @ts-ignore		logger.debug(
 		logger.debug(Action, Stories)
-		// insert a story (aka Segment) before another story:
+		// insert a story (aka SegmentLine) before another story:
 		let ro = getRO(Action.RunningOrderID)
-		let segmentAfter = (Action.StoryID ? getSegment(Action.RunningOrderID, Action.StoryID) : null)
+		let segmentLineAfter = (Action.StoryID ? getSegmentLine(Action.RunningOrderID, Action.StoryID) : null)
 
 		let segmentBeforeOrLast
 		let newRankMax
 		let newRankMin
-		if (segmentAfter) {
-			segmentBeforeOrLast = fetchBefore(Segments,
-				{ runningOrderId: roId(Action.RunningOrderID) },
-				segmentAfter._rank
+		if (segmentLineAfter) {
+			segmentBeforeOrLast = fetchBefore(SegmentLines,
+				{ runningOrderId: ro._id },
+				segmentLineAfter._rank
 			)
 		} else {
-			segmentBeforeOrLast = fetchBefore(Segments,
-				{ runningOrderId: roId(Action.RunningOrderID) },
+			segmentBeforeOrLast = fetchBefore(SegmentLines,
+				{ runningOrderId: ro._id },
 				null
 			)
 		}
 		_.each(Stories, (story: IMOSROStory, i: number) => {
-			let rank = getRank(segmentBeforeOrLast, segmentAfter, i, Stories.length)
+			let rank = getRank(segmentBeforeOrLast, segmentLineAfter, i, Stories.length)
 			// let rank = newRankMin + ( i / Stories.length ) * (newRankMax - newRankMin)
-			insertSegment(story, ro._id, rank)
+			insertSegmentLine(story, ro._id, rank)
 		})
+
+		updateSegments(ro._id)
 	}
 	export function mosRoItemInsert (id, token, Action: IMOSItemAction, Items: Array<IMOSItem>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoItemInsert')
+		logger.warning('mosRoItemInsert NOT SUPPORTED')
 		// @ts-ignore
 		logger.debug(Action, Items)
-		// insert an item (aka SegmentLine) before another story:
+		/*
+		// insert an item (aka SegmentLine ## TODO ##Line) before another story:
 		let ro = getRO(Action.RunningOrderID)
 		let segment = getSegment(Action.RunningOrderID, Action.StoryID)
 		let segmentLineAfter = (Action.ItemID ? getSegmentLine(Action.RunningOrderID, Action.StoryID, Action.ItemID) : null)
@@ -341,32 +340,36 @@ export namespace ServerPeripheralDeviceAPI {
 			// let rank = newRankMin + ( i / Items.length ) * (newRankMax - newRankMin)
 			insertSegmentLine(item, ro._id, segment._id, rank)
 		})
+		*/
 	}
 	export function mosRoStoryReplace (id, token, Action: IMOSStoryAction, Stories: Array<IMOSROStory>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStoryReplace')
 		// @ts-ignore
 		logger.debug(Action, Stories)
-		// Replace a Story (aka a Segment) with one or more Stories
+		// Replace a Story (aka a SegmentLine) with one or more Stories
 		let ro = getRO(Action.RunningOrderID)
-		let segmentToReplace = getSegment(Action.RunningOrderID, Action.StoryID)
+		let segmentLineToReplace = getSegmentLine(Action.RunningOrderID, Action.StoryID)
 
-		let segmentBefore = fetchBefore(Segments, { runningOrderId: ro._id }, segmentToReplace._rank)
-		let segmentAfter = fetchAfter(Segments, { runningOrderId: ro._id }, segmentToReplace._rank)
+		let segmentLineBefore = fetchBefore(SegmentLines, { runningOrderId: ro._id }, segmentLineToReplace._rank)
+		let segmentLineAfter = fetchAfter(SegmentLines, { runningOrderId: ro._id }, segmentLineToReplace._rank)
 
-		removeSegment(segmentToReplace._id, segmentToReplace.runningOrderId)
+		removeSegment(segmentLineToReplace._id, segmentLineToReplace.runningOrderId)
 
 		_.each(Stories, (story: IMOSROStory, i: number) => {
-			let rank = getRank(segmentBefore, segmentAfter, i, Stories.length)
-			insertSegment(story, roId(Action.RunningOrderID), rank)
+			let rank = getRank(segmentLineBefore, segmentLineAfter, i, Stories.length)
+			insertSegmentLine(story, ro._id, rank)
 		})
+
+		updateSegments(ro._id)
 	}
 	export function mosRoItemReplace (id, token, Action: IMOSItemAction, Items: Array<IMOSItem>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoItemReplace')
+		logger.warning('mosRoItemReplace NOT IMPLEMENTED YET')
 		// @ts-ignore
 		logger.debug(Action, Items)
-		// Replace an item (aka SegmentLine) with one or more items
+		/*
+		// Replace an item (aka SegmentLine ## TODO ##Line) with one or more items
 		let ro = getRO(Action.RunningOrderID)
 		let segmentLineToReplace = getSegmentLine(Action.RunningOrderID, Action.StoryID, Action.ItemID)
 
@@ -377,31 +380,36 @@ export namespace ServerPeripheralDeviceAPI {
 
 		_.each(Items, (item: IMOSItem, i: number) => {
 			let rank = getRank (segmentLineBefore, segmentLineAfter, i, Items.length)
-			insertSegmentLine(item, ro._id, segmentLineToReplace.segmentId, rank)
+			insertSegmentLine(item, ro._id, rank)
 		})
+		*/
 	}
 	export function mosRoStoryMove (id, token, Action: IMOSStoryAction, Stories: Array<MosString128>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoStoryMove')
+		logger.warning ('mosRoStoryMove')
 		// @ts-ignore
 		logger.debug(Action, Stories)
-		// Move Stories (aka SegmentLines) to before a story
+
+		// Move Stories (aka SegmentLine ## TODO ##Lines) to before a story
 		let ro = getRO(Action.RunningOrderID)
-		let segmentAfter = getSegment(Action.RunningOrderID, Action.StoryID)
-		let segmentBefore = fetchBefore(Segments, { runningOrderId: ro._id }, segmentAfter._rank)
+		let segmentLineAfter = getSegmentLine(Action.RunningOrderID, Action.StoryID)
+		let segmentLineBefore = fetchBefore(SegmentLines, { runningOrderId: ro._id }, segmentLineAfter._rank)
 
 		_.each(Stories, (storyId: MosString128, i: number) => {
-			let rank = getRank(segmentBefore, segmentAfter, i, Stories.length)
-			Segments.update(segmentId(ro._id, storyId), {$set: {
+			let rank = getRank(segmentLineBefore, segmentLineAfter, i, Stories.length)
+			SegmentLines.update(segmentLineId(ro._id, storyId, true), {$set: {
 				_rank: rank
 			}})
 		})
+
+		updateSegments(ro._id)
 	}
 	export function mosRoItemMove (id, token, Action: IMOSItemAction, Items: Array<MosString128>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoItemMove')
+		logger.warning('mosRoItemMove NOT IMPLEMENTED YET')
 		// @ts-ignore
 		logger.debug(Action, Items)
+		/*
 		// Move Items (#####) to before a story
 		let ro = getRO(Action.RunningOrderID)
 		let segmentLineAfter = getSegmentLine(Action.RunningOrderID, Action.StoryID, Action.ItemID)
@@ -411,53 +419,60 @@ export namespace ServerPeripheralDeviceAPI {
 
 		_.each(Items, (itemId: MosString128, i: number) => {
 			let rank = getRank(segmentLineBefore, segmentLineAfter, i, Items.length)
-			SegmentLines.update(segmentLineId(segmentLineAfter.segmentId, itemId), {$set: {
+			SegmentLines.update(segmentLineId(segmentId, itemId), {$set: {
 				_rank: rank
 			}})
 		})
+		*/
 	}
 	export function mosRoStoryDelete (id, token, Action: IMOSROAction, Stories: Array<MosString128>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStoryDelete')
 		// @ts-ignore
 		logger.debug(Action, Stories)
-		// Delete Stories (aka SegmentLines)
+		// Delete Stories (aka SegmentLine)
 		let ro = getRO(Action.RunningOrderID)
 		_.each(Stories, (storyId: MosString128, i: number) => {
-			removeSegment(segmentId(ro._id,storyId), ro._id)
+			removeSegmentLine(segmentLineId(ro._id, storyId, true))
 		})
+		updateSegments(ro._id)
 	}
 	export function mosRoItemDelete (id, token, Action: IMOSStoryAction, Items: Array<MosString128>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoItemDelete')
+		logger.warning('mosRoItemDelete NOT IMPLEMENTED YET')
 		// @ts-ignore
 		logger.debug(Action, Items)
-		// Delete Items (aka SegmentLinesLines)
+		/*
+		// Delete Items (aka SegmentLine ## TODO ##LinesLines)
 		let ro = getRO(Action.RunningOrderID)
 		_.each(Items, (itemId: MosString128, i: number) => {
 			removeSegmentLine( segmentLineId(segmentId(ro._id, Action.StoryID), itemId))
 		})
+		*/
 	}
 	export function mosRoStorySwap (id, token, Action: IMOSROAction, StoryID0: MosString128, StoryID1: MosString128) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStorySwap')
 		// @ts-ignore
 		logger.debug(Action, StoryID0, StoryID1)
-		// Swap Stories (aka SegmentLines)
+		// Swap Stories (aka SegmentLine)
 		let ro = getRO(Action.RunningOrderID)
 
-		let segment0 = getSegment(Action.RunningOrderID, StoryID0)
-		let segment1 = getSegment(Action.RunningOrderID, StoryID1)
+		let segmentLine0 = getSegmentLine(Action.RunningOrderID, StoryID0)
+		let segmentLine1 = getSegmentLine(Action.RunningOrderID, StoryID1)
 
-		Segments.update(segment0._id, {$set: {_rank: segment1._rank}})
-		Segments.update(segment1._id, {$set: {_rank: segment0._rank}})
+		SegmentLines.update(segmentLine0._id, {$set: {_rank: segmentLine1._rank}})
+		SegmentLines.update(segmentLine1._id, {$set: {_rank: segmentLine0._rank}})
+
+		updateSegments(ro._id)
 	}
 	export function mosRoItemSwap (id, token, Action: IMOSStoryAction, ItemID0: MosString128, ItemID1: MosString128) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoItemSwap')
+		logger.warning('mosRoItemSwap NOT IMPLEMENTED YET')
 		// @ts-ignore
 		logger.debug(Action, ItemID0, ItemID1)
-		// Swap Stories (aka SegmentLines)
+		/*
+		// Swap Stories (aka SegmentLine ## TODO ##Lines)
 		let ro = getRO(Action.RunningOrderID)
 
 		let segmentLine0 = getSegmentLine(Action.RunningOrderID, Action.StoryID, ItemID0)
@@ -465,6 +480,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 		Segments.update(segmentLine0._id, {$set: {_rank: segmentLine1._rank}})
 		Segments.update(segmentLine1._id, {$set: {_rank: segmentLine0._rank}})
+		*/
 	}
 	export function mosRoReadyToAir (id, token, Action: IMOSROReadyToAir) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -487,17 +503,42 @@ export namespace ServerPeripheralDeviceAPI {
 		// Update db with the full story:
 		let ro = getRO(story.RunningOrderId)
 		// let segment = getSegment(story.RunningOrderId, story.ID)
-		// let segmentLine = getSegmentLine(story.RunningOrderId, story.ID)
+		let segmentLine = getSegmentLine(story.RunningOrderId, story.ID)
 		// TODO: Do something
 
 		let context: TemplateContext = {
-			runningOrderId: ro._id
-			// segment: Segment
-			// segmentLine: SegmentLine
+			runningOrderId: ro._id,
+			// segment: Segment,
+			segmentLine: segmentLine
 		}
-		let results = runTemplate(context, story)
+		let result = runTemplate(context, story)
 
-
+		saveIntoDb<SegmentLineItem>(SegmentLineItems, {
+			runningOrderId: ro._id,
+			segmentLineId: segmentLine._id,
+		}, result.segmentLineItems, {
+			afterInsert (segmentLineItem) {
+				console.log('inserted segmentLineItem ' + segmentLineItem._id)
+				// @todo: have something here?
+				// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+				// if (story) {
+					// afterInsertUpdateSegment (story, roId(ro.ID))
+				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
+			},
+			afterUpdate (segmentLineItem) {
+				console.log('updated segmentLineItem ' + segmentLineItem._id)
+				// @todo: have something here?
+				// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+				// if (story) {
+				// 	afterInsertUpdateSegment (story, roId(ro.ID))
+				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
+			},
+			afterRemove (segmentLineItem) {
+				console.log('deleted segmentLineItem ' + segmentLineItem._id)
+				// @todo: handle this:
+				// afterRemoveSegmentLineItem(segmentLine._id)
+			}
+		})
 
 		// return this.core.mosManipulate(P.methods.mosRoReadyToAir, story)
 	}
@@ -506,12 +547,12 @@ export function roId (roId: MosString128): string {
 	// console.log('roId', roId)
 	return 'ro_' + roId.toString()
 }
-export function segmentId (roId: string, storySlug: MosString128 | undefined, rank: number): string {
-	let slugParts = (storySlug || '').toString().split(';')
+export function segmentId (roId: string, storySlug: string, rank: number): string {
+	let slugParts = storySlug.split(';')
 	return roId + '_' + slugParts[0] + '_' + rank
 }
-export function segmentLineId (segmentId: string, storyId: MosString128): string {
-	return segmentId + '_' + storyId.toString()
+export function segmentLineId (runningOrderId: string, storyId: MosString128, tmp: boolean): string {
+	return runningOrderId + '_' + storyId.toString()
 }
 /**
  * Returns a Running order, throws error if not found
@@ -529,8 +570,8 @@ export function getRO (roID: MosString128): RunningOrder {
  * @param roId Running order id
  * @param segmentId Segment / Story id
  */
-export function getSegment (roID: MosString128, storyID: MosString128): Segment {
-	let id = segmentId(roId(roID), storyID)
+export function getSegment (roID: MosString128, storyID: MosString128, rank: number): Segment {
+	let id = segmentId(roId(roID), storyID, rank)
 	let segments = Segments.findOne({
 		runningOrderId: roId(roID),
 		_id: id
@@ -544,14 +585,14 @@ export function getSegment (roID: MosString128, storyID: MosString128): Segment 
  * @param roId
  * @param segmentLineId
  */
-export function getSegmentLine (roID: MosString128, storyID: MosString128, itemID: MosString128): SegmentLine {
-	let id = segmentLineId(segmentId(roId(roID), storyID), itemID)
-	let segmentLines = SegmentLines.findOne({
+export function getSegmentLine (roID: MosString128, storyID: MosString128): SegmentLine {
+	let id = segmentLineId(roId(roID), storyID, true)
+	let segmentLine = SegmentLines.findOne({
 		runningOrderId: roId( roID ),
 		_id: id
 	})
-	if (segmentLines) {
-		return segmentLines
+	if (segmentLine) {
+		return segmentLine
 	} else throw new Meteor.Error(404, 'SegmentLine ' + id + ' not found')
 }
 /**
@@ -560,14 +601,15 @@ export function getSegmentLine (roID: MosString128, storyID: MosString128, itemI
  * @param runningOrderId Running order id of the story
  * @param rank Rank of the story
  */
-export function convertToSegment (story: IMOSStory, runningOrderId: string, rank: number): Segment {
-	let slugParts = (story.Slug || '').toString().split(';')
+export function convertToSegment (segmentLine: SegmentLine, rank: number): Segment {
+	// let slugParts = (story.Slug || '').toString().split(';')
+	let slugParts = segmentLine.slug.split(';')
 
 	return {
-		_id: segmentId(runningOrderId, story.Slug, rank),
-		runningOrderId: runningOrderId,
+		_id: segmentId(segmentLine.runningOrderId, segmentLine.slug, rank),
+		runningOrderId: segmentLine.runningOrderId,
 		_rank: rank,
-		mosId: story.ID.toString(),
+		mosId: 'N/A', // to be removed?
 		name: slugParts[0],
 		number: 'N/A' // @todo: to be removed from data structure
 		// number: (story.Number ? story.Number.toString() : '')
@@ -581,15 +623,16 @@ export function convertToSegment (story: IMOSStory, runningOrderId: string, rank
  * @param segmentId Segment / Story id of the item
  * @param rank Rank of the story
  */
-export function convertToSegmentLine (story: IMOSStory, segment: Segment, rank: number) {
+export function convertToSegmentLine (story: IMOSStory, runningOrderId: string, rank: number): SegmentLine {
 
 // item: IMOSItem, runningOrderId: string, segmentId: string, rank: number): SegmentLine {
 	return {
-		_id: segmentLineId(segment._id, story.ID),
-		runningOrderId: segment.runningOrderId,
-		segmentId: segment._id,
+		_id: segmentLineId(runningOrderId, story.ID, true),
+		runningOrderId: runningOrderId,
+		segmentId: '', // to be coupled later
 		_rank: rank,
 		mosId: story.ID.toString(),
+		slug: (story.Slug || '').toString()
 		// expectedDuration: item.EditorialDuration,
 		// autoNext: item.Trigger === ??
 	}
@@ -673,15 +716,15 @@ export function afterRemoveSegment (segmentId: string, runningOrderId: string) {
  * @param segmentId The id of the Segment / Story
  * @param rank The new rank of the SegmentLine
  */
-export function insertSegmentLine (item: IMOSItem, runningOrderId: string, segmentId: string, rank: number) {
-	SegmentLines.insert(convertToSegmentLine(item, runningOrderId, segmentId, rank))
-	afterInsertUpdateSegmentLine(item, runningOrderId, segmentId)
+export function insertSegmentLine (story: IMOSStory, runningOrderId: string, rank: number) {
+	SegmentLines.insert(convertToSegmentLine(story, runningOrderId, rank))
+	afterInsertUpdateSegmentLine(story, runningOrderId)
 }
 export function removeSegmentLine (segmentLineId: string) {
 	SegmentLines.remove(segmentLineId)
 	afterRemoveSegmentLine(segmentLineId)
 }
-export function afterInsertUpdateSegmentLine (item: IMOSItem, runningOrderId: string, segmentId: string) {
+export function afterInsertUpdateSegmentLine (story: IMOSStory, runningOrderId: string) {
 	// TODO: create segmentLineItems
 
 	// use the Template-generator to generate the segmentLineItems
@@ -741,6 +784,85 @@ export function getRank (beforeOrLast, after, i: number, count: number): number 
 		}
 	}
 	return newRankMin + ( (i + 1) / (count + 1) ) * (newRankMax - newRankMin)
+}
+
+// _.each(ro.Stories, (story: IMOSStory) => {
+// 	// divide into
+// 	let slugParts = (story.Slug || '').toString().split(';')
+
+// 	if (slugParts[0] !== prevSlugParts[0]) {
+// 		segment = convertToSegment(story, roId(ro.ID), rankSegment++)
+// 		segments.push(segment)
+// 	}
+// 	segmentLines.push(convertToSegmentLine(story, segment, rankSegmentLine++))
+
+// 	prevSlugParts = slugParts
+// })
+// saveIntoDb(Segments, {
+// 	runningOrderId: roId(ro.ID)
+// }, segments, {
+// 	afterInsert (segment) {
+// 		let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+// 		if (story) {
+// 			afterInsertUpdateSegment (story, roId(ro.ID))
+// 		} else throw new Meteor.Error(500, 'Story not found (it should have been)')
+// 	},
+// 	afterUpdate (segment) {
+// 		let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+// 		if (story) {
+// 			afterInsertUpdateSegment (story, roId(ro.ID))
+// 		} else throw new Meteor.Error(500, 'Story not found (it should have been)')
+// 	},
+// 	afterRemove (segment) {
+// 		afterRemoveSegment(segment._id, segment.runningOrderId)
+// 	}
+// })
+
+function updateSegments (runningOrderId: string) {
+	// using SegmentLines, determine which segments are to be created
+	let segmentLines = SegmentLines.find({runningOrderId: runningOrderId}, {sort: {_rank: 1}}).fetch()
+
+	let prevSlugParts: string[] = []
+	let segment: Segment
+	let segments: Array<Segment> = []
+	let rankSegment = 0
+	let segmentLineUpdates = {}
+	_.each(segmentLines, (segmentLine: SegmentLine) => {
+		let slugParts = segmentLine.slug.split(';')
+
+		if (slugParts[0] !== prevSlugParts[0]) {
+			segment = convertToSegment(segmentLine, rankSegment++)
+			segments.push(segment)
+		}
+		if (segmentLine.segmentId !== segment._id) {
+			console.log(segmentLine)
+			console.log(segmentLine._id + ' old segmentId: ' + segmentLine.segmentId + ', new: ' + segment._id )
+			segmentLineUpdates[segmentLine._id] = { segmentId: segment._id }
+		}
+
+		prevSlugParts = slugParts
+	})
+
+	// Update SegmentLines:
+	_.each(segmentLineUpdates, (modifier, id) => {
+		logger.info('added SegmentLine to segment ' + modifier['segmentId'])
+		SegmentLines.update(id, {$set: modifier})
+	})
+	// Update Segments:
+	saveIntoDb(Segments, {
+		runningOrderId: runningOrderId
+	}, segments, {
+		afterInsert (segment) {
+			logger.info('inserted segment ' + segment._id)
+		},
+		afterUpdate (segment) {
+			logger.info('updated segment ' + segment._id)
+		},
+		afterRemove (segment) {
+			logger.info('removed segment ' + segment._id)
+			afterRemoveSegment(segment._id, segment.runningOrderId)
+		}
+	})
 }
 
 let methods = {}
@@ -829,15 +951,20 @@ methods[PeripheralDeviceAPI.methods.functionReply] = (deviceId, deviceToken, com
 }
 
 // Transform methods:
-// _.each(methods, (fcn: Function, key) => {
-// 	methods[key] = (...args: any[]) => {
-// 		console.log('------- Method call -------')
-// 		console.log(key)
-// 		console.log(args)
-// 		console.log('---------------------------')
-// 		fcn.apply(null, args)
-// 	}
-// })
+_.each(methods, (fcn: Function, key) => {
+	methods[key] = (...args: any[]) => {
+		// logger.info('------- Method call -------')
+		// logger.info(key)
+		// logger.info(args)
+		// logger.info('---------------------------')
+		try {
+			return fcn.apply(null, args)
+		} catch (e) {
+			logger.error(e.message || e.reason || (e.toString ? e.toString() : null) || e)
+			throw e
+		}
+	}
+})
 
 // Apply methods:
 Meteor.methods(methods)

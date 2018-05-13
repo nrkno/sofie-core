@@ -116,9 +116,10 @@ export const RunningOrderView = translate()(withTracker((props, state) => {
 	let subStudioInstallations = Meteor.subscribe('studioInstallations', {})
 	let subShowStyles = Meteor.subscribe('showStyles', {})
 
-	let runningOrder = RunningOrders.findOne({ _id: props.match.params.runningOrderId })
-	// let roDurations = calculateDurations(runningOrder, segmentLines)
+	let runningOrderId = decodeURIComponent(props.match.params.runningOrderId)
 
+	let runningOrder = RunningOrders.findOne({ _id: runningOrderId })
+	// let roDurations = calculateDurations(runningOrder, segmentLines)
 	return {
 		runningOrder: runningOrder,
 		segments: runningOrder ? Segments.find({ runningOrderId: runningOrder._id }, {

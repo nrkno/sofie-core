@@ -700,11 +700,7 @@ let segmentLines: Array<SegmentLine | SegmentLineItem> = [
 							// keyframes?: Array<TimelineKeyframe>
 							type: TimelineContentType.TEMPLATE,
 							attributes: {
-								file: 'vignett.mp4',
-								loop: false
-								// seek?: number
-								// videoFilter?: string
-								// audioFilter?: string
+								name: 'vignett.mp4',
 							}
 							// transitions?: {
 							// 	inTransition?: TimelineTransition

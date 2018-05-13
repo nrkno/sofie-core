@@ -35,7 +35,8 @@ import {
 	TemplateFunction,
 	TemplateSet,
 	SegmentLineItemOptional,
-	TemplateFunctionOptional
+	TemplateFunctionOptional,
+	TemplateResult
 } from './templates'
 
 const literal = <T>(o: T) => o
@@ -107,7 +108,7 @@ let nrk: TemplateSet = {
 			_.find(story.MosExternalMetaData, (md) => {
 				if (
 					md.MosScope === 'PLAYLIST' &&
-					md.MosSchema === 'http://2012R2ENPS8VM:10505/schema/enps.dtd'
+					md.MosSchema.match(/10505\/schema\/enps.dtd/)
 				) {
 					let type = md.MosPayload.mosartType + ''
 					let variant = md.MosPayload.mosartVariant + ''
@@ -130,8 +131,48 @@ let nrk: TemplateSet = {
 		return templateId
 	},
 	templates: {
-		break: literal<TemplateFunctionOptional>((story: IMOSROFullStory) => {
-			return []
+		break: literal<TemplateFunctionOptional>((story: IMOSROFullStory): TemplateResult => {
+			return {
+				segmentLine: literal<SegmentLine>({
+					_id: '',
+					_rank: 0,
+					mosId: 'test test',
+					segmentId: '',
+					runningOrderId: '',
+					slug: 'test test',
+					// autoNext?: boolean
+					// metaData?: Array<IMOSExternalMetaData>
+					// status?: IMOSObjectStatus
+					// expectedDuration?: 0,
+					// startedPlayback?: 0,
+					// duration?: 0,
+				}),
+				segmentLineItems: [
+					literal<SegmentLineItem>({
+						_id: '',
+						mosId: '',
+						segmentLineId: '',
+						runningOrderId: '',
+						name: '',
+						trigger: {
+							type: TriggerType.TIME_ABSOLUTE,
+							value: 'now'
+						},
+						status: RundownAPI.LineItemStatusCode.OK,
+						sourceLayerId: 'studio0_vignett',
+						outputLayerId: 'pgm0',
+						expectedDuration: 15
+						// duration?: number
+						// disabled?: boolean
+						// transitions?: {
+							// inTransition?: TimelineTransition
+							// outTransition?: TimelineTransition
+						// }
+						// content?: BaseContent
+						// continuesRefId?: '',
+					})
+				]
+			}
 			/*
 				// Example data:
 				{
@@ -212,11 +253,11 @@ let nrk: TemplateSet = {
 				}
 			*/
 		}),
-		fullVignett: literal<TemplateFunctionOptional>((story: IMOSROFullStory) => {
-			return myTemplates.full('vignett', story)
+		fullVignett: literal<TemplateFunctionOptional>(function (story: IMOSROFullStory) {
+			return myTemplates.full.apply(this, ['vignett', story])
 		}),
-		fullVignettxx: literal<TemplateFunctionOptional>((story: IMOSROFullStory) => {
-			return myTemplates.full('vignettxx', story)
+		fullVignettxx: literal<TemplateFunctionOptional>(function (story: IMOSROFullStory) {
+			return myTemplates.full.apply(this, ['vignettxx', story])
 		}),
 		// full: (story: IMOSROFullStory, variant: string) => {
 		// 	return myTemplates.full('', story)

@@ -1,3 +1,4 @@
+import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import * as saferEval from 'safer-eval'
 import * as objectPath from 'object-path'
@@ -27,9 +28,9 @@ import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
 
-export type TemplateGeneralFunction = (story: IMOSROFullStory) => any
+export type TemplateGeneralFunction = (story: IMOSROFullStory) => TemplateResult | string
 export type TemplateFunction = (story: IMOSROFullStory) => Array<SegmentLineItem>
-export type TemplateFunctionOptional = (story: IMOSROFullStory) => Array<SegmentLineItemOptional>
+export type TemplateFunctionOptional = (story: IMOSROFullStory) => TemplateResult | string
 
 /*
 // Note: This syntax requires Typescript 2.8, and we're on 2.5 for the time being..
@@ -55,7 +56,7 @@ export interface TemplateSet {
 export interface TemplateContext {
 	runningOrderId: string
 	// segment: Segment
-	// segmentLine: SegmentLine
+	segmentLine: SegmentLine
 }
 export interface TemplateContextInner extends TemplateContext {
 	id: () => string
@@ -71,7 +72,8 @@ function getContext (context: TemplateContext): TemplateContextInner {
 	}, context)
 }
 export interface TemplateResult {
-	segment: Segment,
+	// segment: Segment,
+	segmentLine: SegmentLine | null,
 	segmentLineItems: Array<SegmentLineItem>
 }
 
@@ -96,10 +98,14 @@ function findFunction (functionId: string, context: TemplateContextInner): Templ
 		}
 	} else {
 		// resort to built-in functions:
+		let fcn0
 		if (functionId === 'getId') {
-			fcn = template.getId
+			fcn0 = template.getId
 		} else {
-			fcn = template.templates[functionId]
+			fcn0 = template.templates[functionId]
+		}
+		fcn = (...args: any[]) => {
+			return fcn0.apply(context, args)
 		}
 	}
 	if (fcn) {
@@ -113,18 +119,18 @@ export function runTemplate (context: TemplateContext, story: IMOSROFullStory): 
 	let innerContext = getContext(context)
 	let getId = findFunction('getId', innerContext)
 
-	let templateId: string = getId(story)
+	let templateId: string = getId(story) as string
 
 	if (templateId) {
 		let fcn = findFunction(templateId, innerContext)
-		let result = fcn(story)
+		let result: TemplateResult = fcn(story)
 
 		// Post-process the result:
 		result.segmentLineItems = _.map(result.segmentLineItems, (itemOrg: SegmentLineItemOptional) => {
 			let item: SegmentLineItem = itemOrg as SegmentLineItem
 
 			if (!item._id) item._id = innerContext.id()
-			if (!item.runningOrderId) item.runningOrderId = innerContext.segment.runningOrderId
+			if (!item.runningOrderId) item.runningOrderId = innerContext.segmentLine.runningOrderId
 			if (!item.segmentLineId) item.segmentLineId = innerContext.segmentLine._id
 
 			return item
@@ -133,7 +139,7 @@ export function runTemplate (context: TemplateContext, story: IMOSROFullStory): 
 		return result
 
 	} else {
-		throw new Meteor.Error(500, 'No id found for story "' + story.ID + '"')
+		throw new Meteor.Error(500, 'No template id found for story "' + story.ID + '"')
 	}
 }
 
