@@ -4,7 +4,6 @@ import {
 	IMOSExternalMetaData,
 	IMOSObjectStatus
 } from 'mos-connection'
-import { duration } from 'moment';
 
 /** A "Line" in NRK Lingo. */
 export interface SegmentLine {

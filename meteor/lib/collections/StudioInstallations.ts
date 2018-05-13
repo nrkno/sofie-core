@@ -37,7 +37,7 @@ export interface IOutputLayer {
 	/** PGM treatment of this output should be in effect
 	 * (generate PGM Clean out based on SourceLayer properties)
 	 */
-	isPGM: boolean,
+	isPGM: boolean
 }
 
 export const StudioInstallations = new Mongo.Collection<StudioInstallation>('studioInstallation')

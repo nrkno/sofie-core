@@ -2,7 +2,6 @@ import { Mongo } from 'meteor/mongo'
 import { RundownAPI } from '../../lib/api/rundown'
 import { TriggerType } from 'superfly-timeline'
 import { TimelineTransition } from './Timeline'
-import { Dictionary } from 'underscore';
 
 /** A trigger interface compatible with that of supertimeline */
 export interface ITimelineTrigger {
