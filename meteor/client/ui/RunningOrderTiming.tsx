@@ -182,12 +182,15 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 					localAccum += linearSegLines[i][1] || 0
 					linearSegLines[i][1] = null
 				} else if (i === nextAIndex) {
+					// localAccum += linearSegLines[i][1] || 0
 					linearSegLines[i][1] = currentRemaining
 				} else {
 					linearSegLines[i][1] = (linearSegLines[i][1] || 0) - localAccum + currentRemaining
 				}
 			}
 		}
+
+		// console.log(linearSegLines.map((value) => value[1]))
 
 		this.durations = _.extend(this.durations, {
 			totalRundownDuration,
