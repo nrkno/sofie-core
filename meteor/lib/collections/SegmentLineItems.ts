@@ -1,8 +1,9 @@
 import { Mongo } from 'meteor/mongo'
 import { RundownAPI } from '../../lib/api/rundown'
 import { TriggerType } from 'superfly-timeline'
-import { TimelineTransition } from './Timeline'
-import { Dictionary } from 'underscore';
+import { TimelineTransition, TimelineObjGroup, TimelineObjCCGVideo, TimelineObjLawo } from './Timeline'
+import { Dictionary } from 'underscore'
+import { TimelineObj } from './Timeline'
 
 /** A trigger interface compatible with that of supertimeline */
 export interface ITimelineTrigger {
@@ -43,7 +44,7 @@ export interface SegmentLineItem {
 		outTransition?: TimelineTransition
 	}
 	/** The object describing the item in detail */
-	content?: any
+	content?: BaseContent
 	/** The id of the item this item is a continuation of. If it is a continuation, the inTranstion must not be set, and trigger must be 0 */
 	continuesRefId?: string
 }
@@ -58,9 +59,10 @@ export interface MetadataElement {
 }
 
 export interface BaseContent {
-	timelineObjects?: any
+	timelineObjects?: Array<TimelineObj>
 }
 
+export type SomeTimelineObject = TimelineObj | TimelineObjGroup | TimelineObjCCGVideo | TimelineObjLawo
 export interface VTContent extends BaseContent {
 	filename: string
 	path: string
@@ -71,21 +73,21 @@ export interface VTContent extends BaseContent {
 	loop?: boolean
 	sourceDuration: number
 	metadata?: Array<MetadataElement>
-	timelineObjects: any
+	timelineObjects: Array<SomeTimelineObject>
 }
 
 export interface CameraContent extends BaseContent {
 	studioLabel: string
 	switcherInput: number | string
 	thumbnail?: string
-	timelineObjects: any
+	timelineObjects: Array<SomeTimelineObject>
 }
 
 export interface RemoteContent extends BaseContent {
 	studioLabel: string
 	switcherInput: string | string
 	thumbnail?: string
-	timelineObjects: any
+	timelineObjects: Array<SomeTimelineObject>
 }
 
 export interface ScriptContent extends BaseContent {
@@ -100,14 +102,14 @@ export interface GraphicsContent extends BaseContent {
 	thumbnail?: string
 	templateData?: object
 	metadata?: Array<MetadataElement>
-	timelineObjects: any
+	timelineObjects: Array<SomeTimelineObject>
 }
 
 export interface SplitsContent extends BaseContent {
 	dveConfiguration: any
 	/** Array of contents, 0 index is DVE art */
 	boxSourceConfiguration: Array<VTContent | CameraContent | RemoteContent | GraphicsContent>
-	timelineObjects: any
+	timelineObjects: Array<SomeTimelineObject>
 }
 
 export interface AudioContent extends BaseContent {
@@ -117,12 +119,12 @@ export interface AudioContent extends BaseContent {
 	loop?: boolean
 	sourceDuration: number
 	metadata?: Array<MetadataElement>
-	timelineObjects: any
+	timelineObjects: Array<SomeTimelineObject>
 }
 
 export interface CameraMovementContent extends BaseContent {
 	cameraConfiguration: any
-	timelineObjects: any
+	timelineObjects: Array<SomeTimelineObject>
 }
 
 export interface LowerThirdContent extends GraphicsContent {

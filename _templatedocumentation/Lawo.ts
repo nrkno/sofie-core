@@ -1,7 +1,7 @@
 // !! HUMAN READABLE DOCUMENTATION ONLY, NOT INTENDED FOR IMPLEMENTATION
 const Lawo = {
     channels: {
-        "": {
+        1: {
             systemName: "Automiks",
             id: "",
             source: {
@@ -10,7 +10,7 @@ const Lawo = {
             },
             description: "Sum of host and guests in studio."
         },
-        "": {
+        2: {
             systemName: "VB1",
             id: "",
             source: {
@@ -19,7 +19,7 @@ const Lawo = {
             },
             description: "Clips and other FULL content from VB1."
         },
-        "": {
+        3: {
             systemName: "CG2",
             id: "",
             source: {
@@ -28,7 +28,7 @@ const Lawo = {
             },
             description: "Effect sounds from CG2."
         },
-        "": {
+        4: {
             systemName: "Preview",
             id: "",
             source: {

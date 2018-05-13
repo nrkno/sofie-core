@@ -53,8 +53,9 @@ export interface TemplateSet {
 	}
 }
 export interface TemplateContext {
-	segment: Segment
-	segmentLine: SegmentLine
+	runningOrderId: string
+	// segment: Segment
+	// segmentLine: SegmentLine
 }
 export interface TemplateContextInner extends TemplateContext {
 	id: () => string
@@ -68,6 +69,10 @@ function getContext (context: TemplateContext): TemplateContextInner {
 			return objectPath.get(obj, path)
 		}
 	}, context)
+}
+export interface TemplateResult {
+	segment: Segment,
+	segmentLineItems: Array<SegmentLineItem>
 }
 
 import { nrk } from './nrk'
@@ -104,7 +109,7 @@ function findFunction (functionId: string, context: TemplateContextInner): Templ
 	}
 }
 
-export function runTemplate (context: TemplateContext, story: IMOSROFullStory): Array<SegmentLineItem> {
+export function runTemplate (context: TemplateContext, story: IMOSROFullStory): TemplateResult {
 	let innerContext = getContext(context)
 	let getId = findFunction('getId', innerContext)
 
@@ -112,18 +117,20 @@ export function runTemplate (context: TemplateContext, story: IMOSROFullStory): 
 
 	if (templateId) {
 		let fcn = findFunction(templateId, innerContext)
-		let results = fcn(story)
-		
+		let result = fcn(story)
+
 		// Post-process the result:
-		return _.map(results, (itemOrg: SegmentLineItemOptional) => {
+		result.segmentLineItems = _.map(result.segmentLineItems, (itemOrg: SegmentLineItemOptional) => {
 			let item: SegmentLineItem = itemOrg as SegmentLineItem
-			
+
 			if (!item._id) item._id = innerContext.id()
 			if (!item.runningOrderId) item.runningOrderId = innerContext.segment.runningOrderId
 			if (!item.segmentLineId) item.segmentLineId = innerContext.segmentLine._id
-			
+
 			return item
 		})
+
+		return result
 
 	} else {
 		throw new Meteor.Error(500, 'No id found for story "' + story.ID + '"')

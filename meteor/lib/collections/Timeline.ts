@@ -14,8 +14,20 @@ export enum TimelineContentType {
 	TEMPLATE = 'template',
 	ROUTE = 'route',
 	RECORD = 'record',
-
-	GROUP = 'group'
+	AUDIO = 'audio',
+	GROUP = 'group',
+	LAWO_AUDIO_SOURCE = 'lawo_audio_source',
+	ATEM_ME = 'atem_ME'
+}
+export declare namespace Atem_Enums {
+	enum TransitionStyle {
+		MIX = 0,
+		DIP = 1,
+		WIPE = 2,
+		DVE = 3,
+		STING = 4,
+		CUT = 5,
+	}
 }
 
 export interface TimelineTransition {
@@ -78,22 +90,22 @@ export interface TimelineObjCCGVideo extends TimelineObj {
 		}
 	}
 }
-export interface TimelineObjCCGIP extends TimelineObj {
-	content: {
-		objects?: Array<TimelineObject>
-		keyframes?: Array<TimelineKeyframe>
-		type: TimelineContentType.IP
-		transitions?: {
-			inTransition?: TimelineTransition
-			outTransition?: TimelineTransition
-		}
-		attributes: {
-			uri: string
-			videoFilter?: string
-			audioFilter?: string
-		}
-	}
-}
+// export interface TimelineObjCCGIP extends TimelineObj {
+// 	content: {
+// 		objects?: Array<TimelineObject>
+// 		keyframes?: Array<TimelineKeyframe>
+// 		type: TimelineContentType.IP
+// 		transitions?: {
+// 			inTransition?: TimelineTransition
+// 			outTransition?: TimelineTransition
+// 		}
+// 		attributes: {
+// 			uri: string
+// 			videoFilter?: string
+// 			audioFilter?: string
+// 		}
+// 	}
+// }
 export interface TimelineObjCCGInput extends TimelineObj {
 	content: {
 		objects?: Array<TimelineObject>
@@ -152,6 +164,31 @@ export interface TimelineObjCCGRecord extends TimelineObj {
 		attributes: {
 			file?: string,
 			encoderOptions: string
+		}
+	}
+}
+export interface TimelineObjLawoSource extends TimelineObj {
+	content: {
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentType.LAWO_AUDIO_SOURCE
+		transitions?: {
+			inTransition?: TimelineTransition
+		}
+		attributes: {
+			db: number
+		}
+	}
+}
+export interface TimelineObjAtemME extends TimelineObj {
+	content: {
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentType.ATEM_ME
+		transitions?: {
+			inTransition?: TimelineTransition
+		}
+		attributes: {
+			input: number,
+			transition: Atem_Enums.TransitionStyle
 		}
 	}
 }
