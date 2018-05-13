@@ -17,12 +17,18 @@ import { getCurrentTime } from '../../lib/lib'
 
 import { RundownUtils } from '../lib/rundown'
 
-const TIMING_REFRESH_INTERVAL = 250
-const TIMING_REFRESH_EVENT = 'sofie:roTimingUpdated'
+namespace RunningOrderTiming {
+	export enum Events {
+		'timeupdate'		= 'sofie:roTimeUpdate'
+	}
+}
+
+const TIMING_DEFAULT_REFRESH_INTERVAL = 250
 
 interface IRunningOrderTimingProviderProps {
 	runningOrder: RunningOrder
 	segments: Array<Segment & { items: Array<SegmentLine> }>
+	refreshInterval?: number
 }
 interface IRunningOrderTimingProviderChildContext {
 	durations: any
@@ -65,6 +71,17 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 
 	durations: any = {}
 	refreshTimer: NodeJS.Timer
+	refreshTimerInterval: number
+
+	constructor (props) {
+		super(props)
+
+		if (props.refreshInterval && _.isNumber(props.refreshInterval)) {
+			this.refreshTimerInterval = props.refreshInverval
+		} else {
+			this.refreshTimerInterval = TIMING_DEFAULT_REFRESH_INTERVAL
+		}
+	}
 
 	getChildContext (): IRunningOrderTimingProviderChildContext {
 		return {
@@ -75,7 +92,18 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 	componentDidMount () {
 		this.refreshTimer = setInterval(() => {
 			this.updateDurations()
-		}, TIMING_REFRESH_INTERVAL)
+		}, this.refreshTimerInterval)
+	}
+
+	componentWillReceiveProps (nextProps) {
+		// change refresh interval if needed
+		if (this.refreshTimerInterval !== nextProps.refreshInterval && _.isNumber(nextProps.refreshInterval) && this.refreshTimer) {
+			this.refreshTimerInterval = nextProps.refreshInterval
+			clearInterval(this.refreshTimer)
+			this.refreshTimer = setInterval(() => {
+				this.updateDurations()
+			}, this.refreshTimerInterval)
+		}
 	}
 
 	componentWillUnmount () {
@@ -155,7 +183,7 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 			segmentLineCountdown: _.object(linearSegLines)
 		})
 
-		const event = new Event(TIMING_REFRESH_EVENT)
+		const event = new Event(RunningOrderTiming.Events.timeupdate)
 
 		window.dispatchEvent(event)
 	}
@@ -179,11 +207,11 @@ export function withTiming (options?) {
 			}
 
 			componentDidMount () {
-				window.addEventListener(TIMING_REFRESH_EVENT, this.refreshComponent)
+				window.addEventListener(RunningOrderTiming.Events.timeupdate, this.refreshComponent)
 			}
 
 			componentWillUnmount () {
-				window.removeEventListener(TIMING_REFRESH_EVENT, this.refreshComponent)
+				window.removeEventListener(RunningOrderTiming.Events.timeupdate, this.refreshComponent)
 			}
 
 			refreshComponent = () => {
