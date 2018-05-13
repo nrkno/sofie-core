@@ -52,7 +52,7 @@ const ATEM = {
             input: {
                 xpt: false
             },
-            description: "Completely free usage to help Producer view/check content. "
+            description: "Completely free usage to help Producer view/check content."
 
         },
         16: {

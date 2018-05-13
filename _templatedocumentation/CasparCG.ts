@@ -56,6 +56,18 @@ const CasparCG = {
             },
             description: "DSK2 Vignett (opening title) with alpha, wipes/bumpers, effect sounds"   // @todo: TBD swap DSK1/2 dependant on if we need one (current) or two levels of CLEAN
         }
+        },
+        5: {
+            systemName: "NEXT",
+            id: "M/E1 PVW",
+            decklink: {
+                device: 4,
+                type: "INTERNAL",
+                embedded: true,
+                signalPath: "M/E1 PVW loop-through internal DSK"
+            },
+            description: ""
+        }
     },
     inputs: {
         // 1: {
@@ -82,15 +94,6 @@ const CasparCG = {
         //     decklink: {
         //         device: 3,
         //         signalPath: "R ut 9"
-        //     },
-        //     description: "n/a"
-        // },
-        // 4: {
-        //     systemName: "Input 4",
-        //     id: "RC4",
-        //     decklink: {
-        //         device: 4,
-        //         signalPath: "R ut 10"
         //     },
         //     description: "n/a"
         // }
