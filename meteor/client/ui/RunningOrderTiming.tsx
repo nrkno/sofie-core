@@ -18,6 +18,7 @@ import { getCurrentTime } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
 
 const TIMING_REFRESH_INTERVAL = 250
+const TIMING_REFRESH_EVENT = 'sofie:roTimingUpdated'
 
 interface IRunningOrderTimingProviderProps {
 	runningOrder: RunningOrder
@@ -154,7 +155,7 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 			segmentLineCountdown: _.object(linearSegLines)
 		})
 
-		const event = new Event('sofie:roTimingUpdated')
+		const event = new Event(TIMING_REFRESH_EVENT)
 
 		window.dispatchEvent(event)
 	}
@@ -178,7 +179,11 @@ export function withTiming (options?) {
 			}
 
 			componentDidMount () {
-				window.addEventListener('sofie:roTimingUpdated', this.refreshComponent)
+				window.addEventListener(TIMING_REFRESH_EVENT, this.refreshComponent)
+			}
+
+			componentWillUnmount () {
+				window.removeEventListener(TIMING_REFRESH_EVENT, this.refreshComponent)
 			}
 
 			refreshComponent = () => {
