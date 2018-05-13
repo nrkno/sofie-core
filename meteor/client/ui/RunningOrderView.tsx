@@ -21,6 +21,9 @@ import { SegmentTimelineContainer, SegmentLineItemUi, SegmentUi } from './Segmen
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
+
+import { RunningOrderTimingProvider, withTiming } from './RunningOrderTiming'
+
 import { getCurrentTime } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
 
@@ -30,68 +33,10 @@ interface IHeaderProps {
 }
 
 interface ITimerHeaderProps extends IHeaderProps {
-	totalRundownDuration: number
-	remainingRundownDuration: number
-	asPlayedRundownDuration: number
+	timingDurations: any
 }
 
-const TimingDisplay = translate()(withTracker((props, state) => {
-	const calculateDurations = (runningOrder: RunningOrder, segmentLines: Array<SegmentLine>) => {
-		const durations = {
-			expected: 0,
-			remaining: 0,
-			asPlayed: 0
-		}
-
-		segmentLines.forEach((item) => {
-			// expected is just a sum of expectedDurations
-			durations.expected += item.expectedDuration || 0
-
-			// asPlayed is the actual duration so far and expected durations in unplayed lines
-			// item is onAir right now, and it's already taking longer than rendered/expectedDuration
-			if (item.startedPlayback && !item.duration && runningOrder.currentSegmentLineId === item._id && item.startedPlayback + (item.expectedDuration || 0) < (getCurrentTime() / 1000)) {
-				durations.asPlayed += ((getCurrentTime() / 1000) - item.startedPlayback)
-			} else {
-				durations.asPlayed += (item.duration || item.expectedDuration || 0)
-			}
-
-			// remaining is the sum of unplayed lines + whatever is left of the current segment
-			if (!item.startedPlayback) {
-				durations.remaining += item.expectedDuration || 0
-				// item is onAir right now, and it's is currently shorter than expectedDuration
-			} else if (item.startedPlayback && !item.duration && runningOrder.currentSegmentLineId === item._id && item.startedPlayback + (item.expectedDuration || 0) > (getCurrentTime() / 1000)) {
-				durations.remaining += (item.expectedDuration || 0) - ((getCurrentTime() / 1000) - item.startedPlayback)
-			}
-		})
-
-		console.log(durations)
-
-		return durations
-	}
-
-	// let runningOrder = RunningOrders.findOne({ _id: props.match.params.runningOrderId })
-	// let roDurations = calculateDurations(runningOrder, segmentLines)
-	let totalRundownDuration = 0
-	let remainingRundownDuration = 0
-	let asPlayedRundownDuration = 0
-
-	if (props.runningOrder) {
-		const segmentLines = SegmentLines.find({ 'runningOrderId': props.runningOrder._id }).fetch()
-	
-		if (segmentLines) {
-			const d = calculateDurations(props.runningOrder, segmentLines)
-			totalRundownDuration = d.expected
-			remainingRundownDuration = d.remaining
-			asPlayedRundownDuration = d.asPlayed
-		}
-	}
-
-	return {
-		totalRundownDuration,
-		remainingRundownDuration,
-		asPlayedRundownDuration
-	}
-})(timer(250)(class extends React.Component<IHeaderProps & InjectedTranslateProps> {
+const TimingDisplay = translate()(withTiming()(class extends React.Component<ITimerHeaderProps & InjectedTranslateProps> {
 	render () {
 		const { t } = this.props
 
@@ -101,11 +46,11 @@ const TimingDisplay = translate()(withTracker((props, state) => {
 				<span className='timing-clock time-now'><Moment format='HH:mm:ss' date={getCurrentTime()} /></span>
 				<span className='timing-clock heavy-light heavy'>-00:15</span>
 				<span className='timing-clock-header-label'>{t('Finish')}: </span>
-				<span className='timing-clock time-end'><Moment format='HH:mm:ss' date={getCurrentTime() + (this.props.remainingRundownDuration * 1000)} /></span>
+				<span className='timing-clock time-end'><Moment format='HH:mm:ss' date={getCurrentTime() + (this.props.timingDurations.remainingRundownDuration * 1000)} /></span>
 			</div>
 		)
 	}
-})))
+}))
 
 const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 	<div className='header running-order'>
@@ -269,12 +214,14 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		const { t } = this.props
 
 		return (
-			<div className='running-order-view'>
-				<RunningOrderHeader debugOnAirLine={this.debugOnAirLine} runningOrder={this.props.runningOrder} />
-				<SegmentContextMenu contextMenuContext={this.state.contextMenuContext}
-					onSetNext={this.onSetNext} />
-				{this.renderSegmentsList()}
-			</div>
+			<RunningOrderTimingProvider runningOrder={this.props.runningOrder}>
+				<div className='running-order-view'>
+					<RunningOrderHeader debugOnAirLine={this.debugOnAirLine} runningOrder={this.props.runningOrder} />
+					<SegmentContextMenu contextMenuContext={this.state.contextMenuContext}
+						onSetNext={this.onSetNext} />
+					{this.renderSegmentsList()}
+				</div>
+			</RunningOrderTimingProvider>
 		)
 	}
 }
