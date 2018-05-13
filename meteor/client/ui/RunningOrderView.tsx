@@ -9,65 +9,84 @@ import { Spinner } from '../lib/Spinner'
 import * as ClassNames from 'classnames'
 import * as $ from 'jquery'
 import { Time } from '../../lib/lib'
+import Moment from 'react-moment'
+import timer from 'react-timer-hoc'
 import { parse as queryStringParse } from 'query-string'
 
 import { NavLink } from 'react-router-dom'
 
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
-import { SegmentTimelineContainer } from './SegmentTimeline/SegmentTimelineContainer'
+import { SegmentTimelineContainer, SegmentLineItemUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { SegmentLine } from '../../lib/collections/SegmentLines'
+import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
+
+import { RunningOrderTimingProvider, withTiming } from './RunningOrderTiming'
+
+import { getCurrentTime } from '../../lib/lib'
+import { RundownUtils } from '../lib/rundown'
 
 interface IHeaderProps {
-	timeNow: number
 	debugOnAirLine: () => void
 	runningOrder: RunningOrder
 }
 
-const TimingDisplay = translate()(class extends React.Component<IHeaderProps & InjectedTranslateProps> {
+interface ITimerHeaderProps extends IHeaderProps {
+	timingDurations: any
+}
+
+const TimingDisplay = translate()(withTiming()(class extends React.Component<ITimerHeaderProps & InjectedTranslateProps> {
 	render () {
 		const { t } = this.props
 
 		return (
 			<div className='timing mod'>
-				<span className='timing-clock time-now'>{t('Now')}: 18:53:10</span>
+				<span className='timing-clock-header-label'>{t('Now')}: </span>
+				<span className='timing-clock time-now'><Moment format='HH:mm:ss' date={getCurrentTime()} /></span>
 				<span className='timing-clock heavy-light heavy'>-00:15</span>
-				<span className='timing-clock time-end'>{t('Finish')}: 18:59:00</span>
+				<span className='timing-clock-header-label'>{t('Finish')}: </span>
+				<span className='timing-clock time-end'><Moment format='HH:mm:ss' date={getCurrentTime() + (this.props.timingDurations.remainingRundownDuration * 1000)} /></span>
 			</div>
 		)
 	}
-})
+}))
 
 const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
-	<div className='header row'>
-		<div className='col c4 super-dark'>
-			{/* !!! TODO: This is just a temporary solution !!! */}
-			<div className='right' style={{
-				'marginTop': '0.9em'
-			}}>
-				<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_demoRundown')}>
-					Ladde rundown
-				</button>
+	<div className='header running-order'>
+		<div className='row'>
+			<div className='col c4 super-dark'>
+				{/* !!! TODO: This is just a temporary solution !!! */}
+				<div className='right' style={{
+					'marginTop': '0.9em'
+				}}>
+					<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_demoRundown')}>
+						Last inn kjøreplan
+					</button>
 
-				<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_takeNext', props.runningOrder._id)}>
-					Take
-				</button>
+					<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_takeNext', props.runningOrder._id)}>
+						Take
+					</button>
+				</div>
+				<div className='badge mod'>
+					<div className='media-elem mrs sofie-logo' />
+					<div className='bd mls'><span className='logo-text'>Sofie</span></div>
+				</div>
 			</div>
-			<div className='badge mod'>
-				<div className='media-elem mrs sofie-logo' />
-				<div className='bd mls'><span className='logo-text'>Sofie</span></div>
+			<div className='col c4 super-dark'>
+				<TimingDisplay {...props} />
+			</div>
+			<div className='flex-col c4 super-dark horizontal-align-right'>
+				<div className='links mod close'>
+					<NavLink to='/runningOrders'>
+						<CoreIcon id='nrk-close' />
+					</NavLink>
+				</div>
 			</div>
 		</div>
-		<div className='col c4 super-dark'>
-			<TimingDisplay {...props} />
-		</div>
-		<div className='flex-col c4 super-dark horizontal-align-right'>
-			<div className='links mod close'>
-				<NavLink to='/runningOrders'>
-					<CoreIcon id='nrk-close' />
-				</NavLink>
+		<div className='row'>
+			<div className='col c12 running-order-overview'>
+				<img src='/mock_runningOrder_overview.png' />
 			</div>
 		</div>
 	</div>
@@ -90,9 +109,6 @@ interface IStateHeader {
 }
 
 export const RunningOrderView = translate()(withTracker((props, state) => {
-	// console.log('PeripheralDevices',PeripheralDevices);
-	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
-
 	let subRunningOrders = Meteor.subscribe('runningOrders', {})
 	let subSegments = Meteor.subscribe('segments', {})
 	let subSegmentLines = Meteor.subscribe('segmentLines', {})
@@ -101,6 +117,7 @@ export const RunningOrderView = translate()(withTracker((props, state) => {
 	let subShowStyles = Meteor.subscribe('showStyles', {})
 
 	let runningOrder = RunningOrders.findOne({ _id: props.match.params.runningOrderId })
+	// let roDurations = calculateDurations(runningOrder, segmentLines)
 
 	return {
 		runningOrder: runningOrder,
@@ -137,6 +154,10 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 				timeScale: timeScaleVal
 			})
 		}
+	}
+
+	totalRundownDuration () {
+		return 0
 	}
 
 	onContextMenu = (contextMenuContext: any) => {
@@ -193,12 +214,14 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		const { t } = this.props
 
 		return (
-			<div>
-				<RunningOrderHeader timeNow={0} debugOnAirLine={this.debugOnAirLine} runningOrder={this.props.runningOrder} />
-				<SegmentContextMenu contextMenuContext={this.state.contextMenuContext}
-					onSetNext={this.onSetNext} />
-				{this.renderSegmentsList()}
-			</div>
+			<RunningOrderTimingProvider runningOrder={this.props.runningOrder}>
+				<div className='running-order-view'>
+					<RunningOrderHeader debugOnAirLine={this.debugOnAirLine} runningOrder={this.props.runningOrder} />
+					<SegmentContextMenu contextMenuContext={this.state.contextMenuContext}
+						onSetNext={this.onSetNext} />
+					{this.renderSegmentsList()}
+				</div>
+			</RunningOrderTimingProvider>
 		)
 	}
 }

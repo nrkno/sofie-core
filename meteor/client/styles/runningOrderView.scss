@@ -6,6 +6,8 @@ $output-layer-group-collapse-animation-duration: 0.3s;
 $general-live-color: #F9FF16;
 $general-next-color: #FF0000;
 
+$general-live-remote-color: #8d008d;
+
 $general-late-color: #FF0000;
 
 $segment-header-height: 2.3em;
@@ -15,6 +17,8 @@ $segment-title-background-color: #4B4B4B;
 $segment-title-background-color-next: $general-next-color;
 $segment-title-text-color-live: #8B8B8B;
 $segment-title-background-color-live: $general-live-color;
+$segment-title-background-color-remote: $general-live-remote-color;
+$segment-title-background-color-has-played: #2c2c2c;
 $segment-line-start-color: #898989;
 
 $segment-nextline-shade-width: 30px;
@@ -95,9 +99,36 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	&.mic {
 		background: $segment-layer-background-mic;
 	}
+
+	&.infinite {
+		&::after {
+			position: absolute;
+			content: ' ';
+			display: block;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			z-index: 0;
+
+			width: 20%;
+			max-width: 75px;
+
+			background: linear-gradient(to right, transparentize($segment-timeline-background-color, 1) 0%, transparentize($segment-timeline-background-color, 0.3) 100%);
+		}
+	}
 }
 
-.header {
+.running-order-view {
+	padding-top: 150px;
+}
+
+.header.running-order {
+	position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+	z-index: 20;
+	
 	.timing {
 		display: flex;
 		margin: 18px 20px 17px;
@@ -113,6 +144,11 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 					color: $general-late-color;
 				}
 			}
+		}
+
+		.timing-clock-header-label {
+			font-weight: 100px;
+
 		}
 	}
 
@@ -175,6 +211,18 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		}
 	}
 
+	&.has-remote-items {
+		.segment-timeline__title {
+			background: $segment-title-background-color-remote
+		}
+	}
+
+	&.has-played {
+		.segment-timeline__title {
+			background: $segment-title-background-color-has-played
+		}
+	}
+
 	// mos-id is a utility element, so that we can quickly check the mos Id of a segment using the inspector
 	// let's hide it in the UI
 	.segment-timeline__mos-id {
@@ -230,6 +278,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		grid-row: zoom-area / end;
 		max-height: 4em;
 		margin: 1.5em 0.2em 0em 0;
+		padding: 1px 0;
 
 		transition: $output-layer-group-collapse-animation-duration max-height ease-in-out,
 					$output-layer-group-collapse-animation-duration margin ease-in-out;
@@ -285,7 +334,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 								box-shadow: none;
 							}
 
-							> *, > .segment-timeline__layer-item__label {
+							.segment-timeline__layer-item__label {
 								display: none;
 							}
 						}
@@ -422,7 +471,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		overflow: hidden;
 		background: $segment-timeline-background-color;
 		opacity: 1;
-		transition: $output-layer-group-collapse-animation-duration opacity ($output-layer-group-collapse-animation-duration * 1/2);
+		transition: $output-layer-group-collapse-animation-duration opacity ($output-layer-group-collapse-animation-duration * 1/2), $output-layer-group-collapse-animation-duration margin-bottom ($output-layer-group-collapse-animation-duration * 1/2);
 		margin-bottom: 1.5em;
 	}
 
@@ -602,7 +651,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 						@include item-type-colors();
 
-						&.splits {
+						&.splits, &.live-speak {
 							.segment-timeline__layer-item__preview {
 								position: absolute;
 								top: 0;
@@ -614,6 +663,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 								.segment-timeline__layer-item__preview__item {
 									flex: 1 1;
+									min-height: 0;
 
 									@include item-type-colors();
 								}
@@ -652,6 +702,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 								left: 0;
 								font-weight: 300;
 								font-style: italic;
+
+								> * {
+									position: relative;
+								}
 							}
 
 							&.last-words {
@@ -659,12 +713,33 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 								right: 0;
 								font-weight: 300;
 								font-style: italic;
+								
+								> * {
+									position: relative;
+								}
+
+								> .label-icon {
+									margin: 0 -10px 0 0;
+								}
 							}
 
 							&.file-name {
 								font-weight: 200;
 							}
+
+							&.label-icon {
+								margin: 0;
+							}
+
+							> .segment-timeline__layer-item__label {
+								margin: 0;
+							}
+
+							> .segment-timeline__layer-item__label + .segment-timeline__layer-item__label {
+								margin: 0 0.3em;
+							}
 						}
+
 
 						&.hide-overflow-labels {
 							.segment-timeline__layer-item__label {
@@ -878,8 +953,9 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		
 		.segment-timeline__timeline-background {
 			opacity: 0;
+			margin-bottom: 0;
 
-			transition: $output-layer-group-collapse-animation-duration opacity;
+			transition: $output-layer-group-collapse-animation-duration opacity, $output-layer-group-collapse-animation-duration margin-bottom;
 		}
 
 		.segment-timeline__timeline-grid {

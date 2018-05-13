@@ -73,7 +73,8 @@ Meteor.methods({
 					name: 'RM1',
 					type: RundownAPI.SourceLayerType.REMOTE,
 					unlimited: false,
-					onPGMClean: true
+					onPGMClean: true,
+					isRemoteInput: true
 				},
 				{
 					_id: 'studio0-vt0',
@@ -226,7 +227,8 @@ Meteor.methods({
 				_rank: line++,
 				mosId: seg0.mosId + '_LINE' + line++,
 				segmentId: seg0._id,
-				runningOrderId: seg0.runningOrderId
+				runningOrderId: seg0.runningOrderId,
+				expectedDuration: 5
 			}
 			SegmentLines.insert(segLine)
 
@@ -256,7 +258,8 @@ Meteor.methods({
 					_rank: line++,
 					mosId: seg0.mosId + '_LINE' + line++,
 					segmentId: seg0._id,
-					runningOrderId: seg0.runningOrderId
+					runningOrderId: seg0.runningOrderId,
+					expectedDuration: 7
 				}
 				SegmentLines.insert(segLine)
 
@@ -334,7 +337,8 @@ Meteor.methods({
 					_rank: line++,
 					mosId: seg0.mosId + '_LINE' + line++,
 					segmentId: seg0._id,
-					runningOrderId: seg0.runningOrderId
+					runningOrderId: seg0.runningOrderId,
+					expectedDuration: 7
 				}
 				SegmentLines.insert(segLine)
 
@@ -409,7 +413,8 @@ Meteor.methods({
 				_rank: line++,
 				mosId: seg1.mosId + '_LINE' + line++,
 				segmentId: seg1._id,
-				runningOrderId: seg1.runningOrderId
+				runningOrderId: seg1.runningOrderId,
+				expectedDuration: 7.5
 			}
 			SegmentLines.insert(segLine)
 
@@ -496,7 +501,8 @@ Meteor.methods({
 					_rank: line++,
 					mosId: seg1.mosId + '_LINE' + line++,
 					segmentId: seg1._id,
-					runningOrderId: seg1.runningOrderId
+					runningOrderId: seg1.runningOrderId,
+					expectedDuration: 20
 				}
 				SegmentLines.insert(segLine)
 
@@ -519,6 +525,10 @@ Meteor.methods({
 							direction: Direction.LEFT
 						}
 					},
+
+					content: {
+						loop: true
+					},
 	
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-vt0',
@@ -528,20 +538,10 @@ Meteor.methods({
 				})
 				SegmentLineItems.insert(segmentLineItem)
 
-
-			// Next	
-				segLine = {
-					_id: seg1._id + '-line' + line,
-					_rank: line++,
-					mosId: seg1.mosId + '_LINE' + line++,
-					segmentId: seg1._id,
-					runningOrderId: seg1.runningOrderId
-				}
-				SegmentLines.insert(segLine)
-
 			// Cam	
+				let nextCameraSegmentLineItemId = segLine._id + ':' + Random.id(5)
 				segmentLineItem = literal<SegmentLineItem>({
-					_id: segLine._id + ':' + Random.id(5),
+					_id: nextCameraSegmentLineItemId,
 					mosId: segLine.mosId,
 					segmentLineId: segLine._id,
 					runningOrderId: roId,
@@ -558,6 +558,19 @@ Meteor.methods({
 					continuesRefId: cameraStartSegmentLineItemId
 				})
 				SegmentLineItems.insert(segmentLineItem)
+
+				cameraStartSegmentLineItemId = nextCameraSegmentLineItemId
+
+			// Next	
+				segLine = {
+					_id: seg1._id + '-line' + line,
+					_rank: line++,
+					mosId: seg1.mosId + '_LINE' + line++,
+					segmentId: seg1._id,
+					runningOrderId: seg1.runningOrderId,
+					expectedDuration: 103
+				}
+				SegmentLines.insert(segLine)
 
 			// VT
 				segmentLineItem = literal<SegmentLineItem>({
@@ -689,6 +702,55 @@ Meteor.methods({
 					sourceLayerId: 'studio0-split0',
 					outputLayerId: 'studio0-pgm0',
 					expectedDuration: 10,
+					disabled: false
+				})
+				SegmentLineItems.insert(segmentLineItem)
+
+			// Live In
+				segmentLineItem = literal<SegmentLineItem>({
+					_id: segLine._id + ':' + Random.id(5),
+					mosId: segLine.mosId,
+					segmentLineId: segLine._id,
+					runningOrderId: roId,
+					name: 'RM0 LIVE HELSINKI',
+					trigger: {
+						type: 0,
+						value: 50
+					},
+					status: RundownAPI.LineItemStatusCode.OK,
+					sourceLayerId: 'studio0-remote0',
+					outputLayerId: 'studio0-pgm0',
+					expectedDuration: 10,
+					disabled: false
+				})
+				SegmentLineItems.insert(segmentLineItem)
+		// Segment 2
+			line = 0
+			segLine = {
+				_id: seg2._id + '-line' + line,
+				_rank: line++,
+				mosId: seg2.mosId + '_LINE' + line++,
+				segmentId: seg2._id,
+				runningOrderId: seg1.runningOrderId,
+				expectedDuration: 64
+			}
+			SegmentLines.insert(segLine)
+
+			// STK
+				segmentLineItem = literal<SegmentLineItem>({
+					_id: segLine._id + ':' + Random.id(5),
+					mosId: segLine.mosId,
+					segmentLineId: segLine._id,
+					runningOrderId: roId,
+					name: 'Savnet VB||...som de da planlegger.',
+					trigger: {
+						type: 0,
+						value: 0
+					},
+					status: RundownAPI.LineItemStatusCode.OK,
+					sourceLayerId: 'studio0-live-speak0',
+					outputLayerId: 'studio0-pgm0',
+					expectedDuration: 64,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)

@@ -48,6 +48,7 @@ export interface TimelineObj {
 	classes?: Array<string>
 	disabled?: boolean
 	isGroup?: boolean
+	inGroup?: string
 	repeating?: boolean
 	priority?: number
 	externalFunction?: string

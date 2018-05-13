@@ -20,6 +20,8 @@ import { TimelineGrid } from './TimelineGrid'
 import { SegmentTimelineLine } from './SegmentTimelineLine'
 import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
 
+import { SegmentLineCountdown } from './../RunningOrderTiming'
+
 import { RundownUtils } from '../../lib/rundown'
 
 interface IPropsHeader {
@@ -36,6 +38,8 @@ interface IPropsHeader {
 	onCollapseSegmentToggle?: (event: any) => void,
 	isCollapsed?: boolean,
 	scrollLeft: number,
+	hasAlreadyPlayed: boolean,
+	hasRemoteItems: boolean,
 	isLiveSegment: boolean,
 	isNextSegment: boolean,
 	followLiveLine: boolean,
@@ -98,7 +102,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 
 	timelineStyle () {
 		return {
-			'transform': 'translateX(-' + (this.props.scrollLeft * this.props.timeScale).toString() + 'px)'
+			'transform': 'translate3d(-' + (this.props.scrollLeft * this.props.timeScale).toString() + 'px, 0, 0)'
 		}
 	}
 
@@ -222,11 +226,17 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 	}
 
 	render () {
+		// console.log(this.props.hasRemoteItems && !this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment)
+
 		return (
 			<div className={ClassNames('segment-timeline', {
 				'collapsed': this.props.isCollapsed,
+
 				'live': this.props.isLiveSegment,
-				'next': this.props.isNextSegment
+				'next': this.props.isNextSegment,
+
+				'has-played': this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment,
+				'has-remote-items': this.props.hasRemoteItems && !this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment
 			})}
 			data-mos-id={this.props.segment._id}>
 				<ContextMenuTrigger id='segment-timeline-context-menu'
@@ -243,10 +253,9 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 				</div>
 				<div className='segment-timeline__timeUntil'
 					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
-					{
-						// Dummy data for demo
-						RundownUtils.formatTimeToTimecode(Math.max(0, Math.ceil(this.getSegmentDuration() - this.props.livePosition))).substr(3, 5)
-					}
+					 {this.props.runningOrder && this.props.segmentLines && this.props.segmentLines.length > 0 &&
+						<SegmentLineCountdown segmentLineId={this.props.isNextSegment ? this.props.runningOrder.nextSegmentLineId : this.props.segmentLines[0]._id} />
+					 }
 				</div>
 				<div className='segment-timeline__mos-id'>{this.props.segment.mosId}</div>
 				<div className='segment-timeline__output-layers'>

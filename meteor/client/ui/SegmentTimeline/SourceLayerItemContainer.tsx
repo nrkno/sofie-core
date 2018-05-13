@@ -35,7 +35,7 @@ interface IPropsHeader {
 	liveLineHistorySize: number
 	livePosition: number | null
 }
-/** This is an  */
+/** This is a container component that allows ractivity with the Timeline collection */
 export const SourceLayerItemContainer = withTracker((props) => {
 	if (props.isLiveLine) {
 		// Check in Timeline collection for any changes to the related object
@@ -46,8 +46,13 @@ export const SourceLayerItemContainer = withTracker((props) => {
 
 			segmentCopy.trigger = timelineObj.trigger
 			if (timelineObj.trigger.type === TriggerType.TIME_ABSOLUTE) {
-				// if the TIME_ABSOLUTE is, the value is certainly a number
-				segmentCopy.renderedInPoint = (timelineObj.trigger.value as number)
+				if (_.isNumber(timelineObj.trigger.value)) { // this is a normal absolute trigger value
+					segmentCopy.renderedInPoint = (timelineObj.trigger.value as number)
+				} else if (timelineObj.trigger.value === 'now') { // this is a special absolute trigger value
+					segmentCopy.renderedInPoint = 0
+				} else {
+					segmentCopy.renderedInPoint = 0
+				}
 			}
 			segmentCopy.renderedDuration = timelineObj.duration
 

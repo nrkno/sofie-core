@@ -57,6 +57,8 @@ export interface SegmentLineItemUi extends SegmentLineItem {
 	renderedDuration?: number | null
 	/** This item is being continued by another, linked, item in another SegmentLine */
 	continuedByRef?: SegmentLineItemUi
+	/** This item is continuing another, linked, item in another SegmentLine */
+	continuesRef?: SegmentLineItemUi
 	/** This item has already been linked to the parent item of the spanning item group */
 	linked?: boolean
 }
@@ -72,6 +74,8 @@ interface IPropsHeader {
 	timeScale: number,
 	isLiveSegment: boolean,
 	isNextSegment: boolean,
+	hasRemoteItems: boolean,
+	hasAlreadyPlayed: boolean,
 	liveLineHistorySize: number
 	onTimeScaleChange?: (timeScaleVal: number) => void
 	onContextMenu?: (contextMenuContext: any) => void
@@ -89,10 +93,12 @@ export const SegmentTimelineContainer = withTracker((props) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
-	let segment = _.clone(props.segment)
+	let segment = _.clone(props.segment) as SegmentUi
 
 	let isLiveSegment = false
 	let isNextSegment = false
+	let hasAlreadyPlayed = false
+	let hasRemoteItems = false
 
 	// fetch all the segment lines for the segment
 	let segmentLines = SegmentLines.find({
@@ -138,6 +144,10 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		}
 		if (!isLiveSegment && props.runningOrder.nextSegmentLineId === segmentLine._id) {
 			isNextSegment = true
+		}
+
+		if (segmentLine.startedPlayback !== undefined) {
+			hasAlreadyPlayed = true
 		}
 
 		let segmentLineItems = SegmentLineItems.find({
@@ -195,11 +205,17 @@ export const SegmentTimelineContainer = withTracker((props) => {
 				}
 				// attach the segmentLineItem to the sourceLayer in this segment
 				segmentLineItem.sourceLayer.items.push(segmentLineItem)
+
+				// check if the segment should be in a special state for segments with remote input
+				if (segmentLineItem.sourceLayer.isRemoteInput) {
+					hasRemoteItems = true
+				}
 			}
 
 			segmentLineItemsLookup[segmentLineItem._id] = segmentLineItem
 			if (segmentLineItem.continuesRefId && segmentLineItemsLookup[segmentLineItem.continuesRefId]) {
 				segmentLineItemsLookup[segmentLineItem.continuesRefId].continuedByRef = segmentLineItem
+				segmentLineItem.continuesRef = segmentLineItemsLookup[segmentLineItem.continuesRefId]
 			}
 		})
 
@@ -233,16 +249,16 @@ export const SegmentTimelineContainer = withTracker((props) => {
 
 	const resolveDuration = (item: SegmentLineItemUi): number => {
 		let childDuration = 0
-		if (item.continuedByRef) {
+		/* if (item.continuedByRef) {
 			childDuration = resolveDuration(item.continuedByRef)
 			item.continuedByRef.linked = true
-		}
+		} */
 		return (item.duration || item.renderedDuration || item.expectedDuration) + childDuration
 	}
 
 	_.forEach<SegmentLineUi>(segmentLines, (line) => {
 		line.items && _.forEach<SegmentLineItemUi>(line.items, (item) => {
-			if (item.continuedByRef && !item.linked) {
+			if (item.continuedByRef) {
 				item.renderedDuration = resolveDuration(item)
 			}
 		})
@@ -255,7 +271,9 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		segment,
 		segmentLines,
 		isLiveSegment,
-		isNextSegment
+		isNextSegment,
+		hasAlreadyPlayed,
+		hasRemoteItems
 	}
 })(
 class extends React.Component<IPropsHeader, IStateHeader> {
@@ -301,11 +319,11 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 				let newCurrentSegmentLine = this.props.segmentLines.findIndex((item) => item._id === this.props.runningOrder.currentSegmentLineId)
 				if (newCurrentSegmentLine >= 0 && this.props.segmentLines[newCurrentSegmentLine].startsAt) {
 					const playoutLength = (Date.now() - this.debugDemoLiveLineStart) / 1000
-					console.log(playoutLength, this.props.segmentLines[newCurrentSegmentLine].startsAt)
+					// console.log(playoutLength, this.props.segmentLines[newCurrentSegmentLine].startsAt)
 					if (this.props.segmentLines[newCurrentSegmentLine].startsAt! > playoutLength) {
-						console.log(this.debugDemoLiveLineStart)
+						// console.log(this.debugDemoLiveLineStart)
 						this.debugDemoLiveLineStart -= (this.props.segmentLines[newCurrentSegmentLine].startsAt! - playoutLength) * 1000
-						console.log(this.debugDemoLiveLineStart)
+						// console.log(this.debugDemoLiveLineStart)
 					}
 				}
 			}
@@ -382,6 +400,8 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 							 runningOrder={this.props.runningOrder}
 							 isLiveSegment={this.props.isLiveSegment}
 							 isNextSegment={this.props.isNextSegment}
+							 hasRemoteItems={this.props.hasRemoteItems}
+							 hasAlreadyPlayed={this.props.hasAlreadyPlayed}
 							 followLiveLine={this.state.followLiveLine}
 							 liveLineHistorySize={this.props.liveLineHistorySize}
 							 livePosition={this.state.livePosition}

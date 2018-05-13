@@ -4,6 +4,7 @@ import {
 	IMOSExternalMetaData,
 	IMOSObjectStatus
 } from 'mos-connection'
+import { duration } from 'moment';
 
 /** A "Line" in NRK Lingo. */
 export interface SegmentLine {
@@ -17,11 +18,19 @@ export interface SegmentLine {
   /** The running order this line belongs to */
 	runningOrderId: string
 
+	/** Should this item be taken live automatically */
+	autoNext?: boolean
+
 	metaData?: Array<IMOSExternalMetaData>
 	status?: IMOSObjectStatus
 
+	/** Expected duration of the line */
+	expectedDuration?: number
+
 	/** The time the system started playback of this segment line, null if not yet played back */
 	startedPlayback?: number
+	/** The time the system played back this segment line, null if not yet finished playing */
+	duration?: number
 }
 
 export const SegmentLines = new Mongo.Collection<SegmentLine>('segmentLines')

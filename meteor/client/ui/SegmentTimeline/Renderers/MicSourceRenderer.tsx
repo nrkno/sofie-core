@@ -3,6 +3,7 @@ import * as ReactDOM from 'react-dom'
 import * as $ from 'jquery'
 
 import { ISourceLayerUi, IOutputLayerUi, SegmentUi, SegmentLineUi, SegmentLineItemUi } from '../SegmentTimelineContainer'
+import { ISourceLayerItemProps } from './../SourceLayerItem'
 
 import { FloatingInspector } from '../../FloatingInspector'
 
@@ -10,6 +11,7 @@ import * as ClassNames from 'classnames'
 import { CustomLayerItemRenderer } from './CustomLayerItemRenderer'
 
 export class MicSourceRenderer extends CustomLayerItemRenderer {
+
 	itemPosition: number
 	itemWidth: number
 	itemElement: HTMLDivElement
@@ -18,12 +20,26 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
 
+	private _forceSizingRecheck: boolean
+
 	constructor (props) {
 		super(props)
 	}
 
 	repositionLine = () => {
 		this.lineItem.css('left', this.linePosition + 'px')
+	}
+
+	refreshLine = () => {
+		if (this.itemElement) {
+			this.itemPosition = $(this.itemElement).position().left || 0
+			this.itemWidth = $(this.itemElement).outerWidth() || 0
+
+			if (this.itemPosition + this.itemWidth !== this.linePosition) {
+				this.linePosition = this.itemPosition + this.itemWidth
+				this.repositionLine()
+			}
+		}
 	}
 
 	setLeftLabelRef = (e: HTMLSpanElement) => {
@@ -34,10 +50,30 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 		this.rightLabel = e
 	}
 
+	componentWillReceiveProps (nextProps: ISourceLayerItemProps, nextContext: any) {
+		if (super.componentWillReceiveProps && typeof super.componentWillReceiveProps === 'function') {
+			super.componentWillReceiveProps(nextProps, nextContext)
+		}
+
+		if ((nextProps.totalSegmentLineDuration !== this.props.totalSegmentLineDuration) ||
+			(nextProps.segmentLineItem.renderedInPoint !== this.props.segmentLineItem.renderedInPoint) ||
+			(nextProps.segmentLineItem.renderedDuration !== this.props.segmentLineItem.renderedDuration) ||
+			(nextProps.segmentLineItem.duration !== this.props.segmentLineItem.duration) ||
+			(nextProps.segmentLineItem.expectedDuration !== this.props.segmentLineItem.expectedDuration) ||
+			(nextProps.segmentLineItem.trigger !== this.props.segmentLineItem.trigger)) {
+			this._forceSizingRecheck = true
+		}
+	}
+
 	componentDidMount () {
 		// Create line element
 		this.lineItem = $('<div class="segment-timeline__layer-item-appendage script-line"></div>') as JQuery<HTMLDivElement>
 		this.updateAnchoredElsWidths()
+		if (this.props.itemElement) {
+			this.itemElement = this.props.itemElement
+			$(this.itemElement).parent().parent().append(this.lineItem)
+			this.refreshLine()
+		}
 	}
 
 	updateAnchoredElsWidths = () => {
@@ -58,17 +94,14 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 				this.lineItem.remove()
 			}
 			this.itemElement = this.props.itemElement
-			$(this.props.itemElement).parent().parent().append(this.lineItem)
+			$(this.itemElement).parent().parent().append(this.lineItem)
+			this._forceSizingRecheck = true
 		}
-		if (this.itemElement) {
+		if (this._forceSizingRecheck) {
 			// Update sizing information
-			this.itemPosition = $(this.itemElement).position().left || 0
-			this.itemWidth = $(this.itemElement).outerWidth() || 0
+			this._forceSizingRecheck = false
 
-			if (this.itemPosition + this.itemWidth !== this.linePosition) {
-				this.linePosition = this.itemPosition + this.itemWidth
-				this.repositionLine()
-			}
+			this.refreshLine()
 		}
 
 		if (this.props.segmentLineItem.name !== prevProps.segmentLineItem.name) {
