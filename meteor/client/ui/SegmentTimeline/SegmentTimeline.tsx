@@ -20,6 +20,8 @@ import { TimelineGrid } from './TimelineGrid'
 import { SegmentTimelineLine } from './SegmentTimelineLine'
 import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
 
+import { SegmentLineCountdown } from './../RunningOrderTiming'
+
 import { RundownUtils } from '../../lib/rundown'
 
 interface IPropsHeader {
@@ -251,10 +253,9 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 				</div>
 				<div className='segment-timeline__timeUntil'
 					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
-					{
-						// Dummy data for demo
-						RundownUtils.formatTimeToTimecode(Math.max(0, Math.ceil(this.getSegmentDuration() - this.props.livePosition))).substr(3, 5)
-					}
+					 {this.props.runningOrder && this.props.segmentLines && this.props.segmentLines.length > 0 &&
+						<SegmentLineCountdown segmentLineId={this.props.isNextSegment ? this.props.runningOrder.nextSegmentLineId : this.props.segmentLines[0]._id} />
+					 }
 				</div>
 				<div className='segment-timeline__mos-id'>{this.props.segment.mosId}</div>
 				<div className='segment-timeline__output-layers'>
