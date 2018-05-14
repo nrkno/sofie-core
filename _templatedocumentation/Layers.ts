@@ -77,8 +77,8 @@ const OutputLayers = [
 	}
 ]
 
-const Llayers = [
+const LLayers = [
 
 ]
 
-export {SourceLayers, OutputLayers, Llayers}
+export {SourceLayers, OutputLayers, LLayers}

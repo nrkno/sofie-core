@@ -101,21 +101,21 @@ Meteor.methods({
 					onPGMClean: true
 				},
 				{
-					_id: 'studio0-graphics0',
+					_id: 'studio0_graphics0',
 					_rank: 100,
 					name: 'Suprer',
 					type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: false
 				},
 				// {
-				// 	_id: 'studio0-lower-third0',
+				// 	_id: 'studio0_lower_third0',
 				// 	_rank: 10,
 				// 	name: 'Super',
 				// 	type: RundownAPI.SourceLayerType.LOWER_THIRD,
 				// 	onPGMClean: false
 				// },
 				// {
-				// 	_id: 'studio0-split0',
+				// 	_id: 'studio0_split0',
 				// 	_rank: 15,
 				// 	name: 'Split',
 				// 	type: RundownAPI.SourceLayerType.SPLITS,
@@ -123,7 +123,7 @@ Meteor.methods({
 				// },
 				// {
 				// {
-				// 	_id: 'studio0-remote0',
+				// 	_id: 'studio0_remote0',
 				// 	_rank: 60,
 				// 	name: 'RM1',
 				// 	type: RundownAPI.SourceLayerType.REMOTE,
@@ -131,21 +131,21 @@ Meteor.methods({
 				// 	isRemoteInput: true
 				// },
 				// {
-				// 	_id: 'studio0-vt0',
+				// 	_id: 'studio0_vt0',
 				// 	_rank: 80,
 				// 	name: 'VB',
 				// 	type: RundownAPI.SourceLayerType.VT,
 				// 	onPGMClean: true,
 				// },
 				// {
-				// 	_id: 'studio0-mic0',
+				// 	_id: 'studio0_mic0',
 				// 	_rank: 90,
 				// 	name: 'Mic',
 				// 	type: RundownAPI.SourceLayerType.MIC,
 				// 	onPGMClean: true,
 				// },
 				// {
-				// 	_id: 'studio0-camera0',
+				// 	_id: 'studio0_camera0',
 				// 	_rank: 100,
 				// 	name: 'Kam',
 				// 	type: RundownAPI.SourceLayerType.CAMERA,

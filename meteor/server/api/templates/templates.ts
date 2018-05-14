@@ -27,10 +27,11 @@ import { RuntimeFunctions } from '../../../lib/collections/RuntimeFunctions'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
+import { literal } from '../../../lib/lib'
 
 export type TemplateGeneralFunction = (story: IMOSROFullStory) => TemplateResult | string
-export type TemplateFunction = (story: IMOSROFullStory) => Array<SegmentLineItem>
-export type TemplateFunctionOptional = (story: IMOSROFullStory) => TemplateResult | string
+export type TemplateFunction = (story: StoryWithContext) => Array<SegmentLineItem>
+export type TemplateFunctionOptional = (context: TemplateContextInner, story: StoryWithContext) => TemplateResult | string
 
 /*
 // Note: This syntax requires Typescript 2.8, and we're on 2.5 for the time being..
@@ -45,6 +46,11 @@ export type SegmentLineItemOptional = Fix<SegmentLineItem>
 type Optional<T> = {
 	[K in keyof T]?: T[K]
 }
+
+// type Test<T> = {
+// 	[K in keyof T]: T[K]
+// }
+
 export type SegmentLineItemOptional = Optional<SegmentLineItem>
 
 export interface TemplateSet {
@@ -58,27 +64,77 @@ export interface TemplateContext {
 	// segment: Segment
 	segmentLine: SegmentLine
 }
-export interface TemplateContextInner extends TemplateContext {
-	id: () => string
+export interface TemplateContextInnerBase {
+	getRandomId: () => string
+	getValueByPath: (obj: object | undefined, path: string, defaultValue?: any) => any
+	sumMosItemDurations: (str: string) => number
+	error: (message: string) => void
+	warning: (message: string) => void
+}
+
+export interface TemplateContextInner extends TemplateContext, TemplateContextInnerBase {
 }
 function getContext (context: TemplateContext): TemplateContextInner {
-	return _.extend({
-		id () {
+	let c0 = literal<TemplateContextInnerBase>({
+		getRandomId () {
 			return Random.id()
 		},
-		oGet (obj: object, path: string): any {
-			return objectPath.get(obj, path)
+		getValueByPath (obj: object | undefined, path: string, defaultValue?: any): any {
+			let value = (
+				_.isUndefined(obj) ?
+				undefined :
+				objectPath.get(obj, path)
+			)
+			if (_.isUndefined(value) && !_.isUndefined(defaultValue)) value = defaultValue
+			return value
+		},
+		sumMosItemDurations (str: string): number {
+			let sum = 0
+			str.split(/[\n\\n]/).forEach((num) => {
+				sum = (sum || 0) + (parseFloat(num) || 0)
+			})
+			return sum
+		},
+		error: (message: string) => {
+			logger.error('Error from template: ' + message)
+			throw new Meteor.Error(500, message)
+		},
+		warning: (message: string) => {
+			logger.warning('Warning from template: ' + message)
+			// @todo: save warnings, maybe to the RO somewhere?
+			// it should be displayed to the user in the UI
 		}
-	}, context)
+	})
+	return _.extend(c0, context)
 }
 export interface TemplateResult {
 	// segment: Segment,
 	segmentLine: SegmentLine | null,
-	segmentLineItems: Array<SegmentLineItem>
+	segmentLineItems: Array<SegmentLineItemOptional>
 }
 
 import { nrk } from './nrk'
+import { logger } from '../../logging';
 let template: TemplateSet = nrk
+function injectContextIntoArguments (context: TemplateContextInner, args: any[]): Array<any> {
+	_.each(args, (arg: StoryWithContext) => {
+		if (_.isObject(arg)) {
+			// inject functions
+			let c0 = literal<StoryWithContextBase>({
+				getValueByPath (path: string, defaultValue?: any) {
+					return context.getValueByPath(arg, path, defaultValue)
+				}
+			})
+			_.extend(arg, c0)
+		}
+	})
+	return args
+}
+export interface StoryWithContextBase {
+	getValueByPath: (path: string, defaultValue?: any) => any
+}
+export interface StoryWithContext extends IMOSROFullStory, StoryWithContextBase {
+}
 
 function findFunction (functionId: string, context: TemplateContextInner): TemplateGeneralFunction {
 	let fcn: null | TemplateGeneralFunction = null
@@ -90,7 +146,7 @@ function findFunction (functionId: string, context: TemplateContextInner): Templ
 		try {
 			let runtimeFcn: TemplateGeneralFunction = saferEval(functionStr, {})
 			fcn = (story) => {
-				let result = runtimeFcn.apply(context, [story])
+				let result = runtimeFcn.apply(context, [context].concat(injectContextIntoArguments(context, [story])))
 				return result
 			}
 		} catch (e) {
@@ -105,7 +161,7 @@ function findFunction (functionId: string, context: TemplateContextInner): Templ
 			fcn0 = template.templates[functionId]
 		}
 		fcn = (...args: any[]) => {
-			return fcn0.apply(context, args)
+			return fcn0.apply(context, [context].concat(injectContextIntoArguments(context, args)))
 		}
 	}
 	if (fcn) {
@@ -123,13 +179,13 @@ export function runTemplate (context: TemplateContext, story: IMOSROFullStory): 
 
 	if (templateId) {
 		let fcn = findFunction(templateId, innerContext)
-		let result: TemplateResult = fcn(story)
+		let result: TemplateResult = fcn(story) as TemplateResult
 
 		// Post-process the result:
 		result.segmentLineItems = _.map(result.segmentLineItems, (itemOrg: SegmentLineItemOptional) => {
 			let item: SegmentLineItem = itemOrg as SegmentLineItem
 
-			if (!item._id) item._id = innerContext.id()
+			if (!item._id) item._id = innerContext.getRandomId()
 			if (!item.runningOrderId) item.runningOrderId = innerContext.segmentLine.runningOrderId
 			if (!item.segmentLineId) item.segmentLineId = innerContext.segmentLine._id
 
@@ -143,6 +199,7 @@ export function runTemplate (context: TemplateContext, story: IMOSROFullStory): 
 	}
 }
 
+/*
 Meteor.methods({
 	"debug_testRO" () {
 		// @ts-ignore
@@ -151,10 +208,8 @@ Meteor.methods({
 		let res = runTemplate({}, {"ID": "MAENPSTEST14;P_SERVER14\\W\\R_07C8C71B-1835-493D-94E1678FD1425B71;1E3CAE45-F5D8-4378-AA627DF2C6089897","Slug": "NRK Østafjells;020518-1850","MosExternalMetaData": [{"MosScope": "PLAYLIST","MosSchema": "http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload": {"Approved": 1,"Creator": "LINUXENPS","MediaTime": 0,"ModBy": "N12914","ModTime": "20180502T144559Z","MOSAbstracts": "_00:00:03:00 | @M=Auto Openend | 201 loop | 1: | 2: | 3: | 4: | 00:00:00:00","MOSItemDurations": 0,"MOSObjSlugs": "201 loop 1:  2:","MOSSlugs": "NRK ØSTAFJELLS;ddmm15-1845-3","MOSTimes": "20180502T131049Z","Owner": "LINUXENPS","SourceMediaTime": 0,"SourceTextTime": 0,"StoryLogPreview": "<BAK KLARHD<00:01>>","TextTime": 0,"SystemApprovedBy": "N12914","mosartType": "BREAK","ReadTime": 0,"ENPSItemType": 3}}],"RunningOrderId": "MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71","Body": [{"Type": "storyItem","Content": {"mosID": "chyron.techycami02.ndte.nrk.mos","abstract": "_00:00:03:00 | @M=Auto Openend | 201 loop | 1: | 2: | 3: | 4: | 00:00:00:00","objPaths": {"objProxyPath": {"techDescription": "JPEG Thumbnail","$t": "http://160.68.33.159/thumbs/NYHETER/10000/Objects_NYHETER_00010001_v1_big.jpg"},"objMetadataPath": {}},"itemChannel": "CG2","itemSlug": "NRK ØSTAFJELLS;ddmm15-1845-3","mosObj": {"objID": "NYHETER\\00010001?version=1","objSlug": "201 loop 1:  2:","mosItemEditorProgID": "Chymox.AssetBrowser.1","objDur": 0,"objTB": 0,"objPaths": {"objProxyPath": {"techDescription": "JPEG Thumbnail","$t": "http://160.68.33.159/thumbs/NYHETER/10000/Objects_NYHETER_00010001_v1_big.jpg"},"objMetadataPath": {}},"mosExternalMetadata": {"mosSchema": "http://ncsA4.com/mos/supported_schemas/NCSAXML2.08"}},"itemID": 3}}],"level": "debug","message": "mosRoFullStory","timestamp": "2018-05-09T10:26:42.951Z"})
 		// @ts-ignore
 		// let res = runTemplate({}, {"ID": "MAENPSTEST14;P_SERVER14\\W\\R_07C8C71B-1835-493D-94E1678FD1425B71;9141DBA1-93DD-4B19-BEBB32E0D6222E1B","Slug": "ÅPNING;vignett","MosExternalMetaData": [{"MosScope": "PLAYLIST","MosSchema": "http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload": {"Actual": 4,"Approved": 1,"Creator": "LINUXENPS","ElapsedTime": 3,"MediaTime": 0,"ModBy": "N12914","ModTime": "20180502T144559Z","MOSAbstracts": "M: NRK Østafjells(20-04-16 09:07)\nTIDSMARKØR IKKE RØR","MOSItemDurations": "","MOSItemEdDurations": "","MOSObjSlugs": "M: NRK Østafjells\nStory status","MOSSlugs": "VIGNETT;vignett-5\nVIGNETT;vignett-3","MOSTimes": "20180502T165008720Z","Owner": "LINUXENPS","SourceMediaTime": 0,"SourceTextTime": 0,"StoryLogPreview": "<LYS Q1>","StoryProducer": "DKTE","TextTime": 0,"SystemApprovedBy": "N12914","Kilde": "TV","mosartType": "FULL","mosartVariant": "VIGNETT2018","ReadTime": 0,"ENPSItemType": 3}}],"RunningOrderId": "MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71","Body": [{"Type": "storyItem","Content": {"itemID": 9,"objID": "N11580_1461136025","mosID": "METADATA.NRK.MOS","mosAbstract": "M: NRK Østafjells (20-04-16 09:07)","objSlug": "M: NRK Østafjells","mosExternalMetadata": {"mosScope": "PLAYLIST","mosSchema": "http://mosA4.com/mos/supported_schemas/MOSAXML2.08","mosPayload": {"nrk": {"type": "video","changedBy": "N11580","changetime": "2016-04-20T09:07:05 +02:00","mdSource": "ncs","title": "NRK Østafjells","description": {},"hbbtv": {"link": ""},"rights": {"notes": "","owner": "NRK","$t": "Green"}}}},"itemSlug": "VIGNETT;vignett-5"}},{"Type": "storyItem","Content": {"mosID": "mosart.morten.mos","abstract": "TIDSMARKØR IKKE RØR","objID": "STORYSTATUS","objSlug": "Story status","itemID": 10,"itemSlug": "VIGNETT;vignett-3"}}],"level": "debug","message": "mosRoFullStory","timestamp": "2018-05-09T10:26:43.127Z"})
-		
-		
+
 		console.log(res)
-		
 		// @ts-ignore
 		// ServerPeripheralDeviceAPI.mosRoFullStory(id, token, {"ID": "MAENPSTEST14;P_SERVER14\\W\\R_07C8C71B-1835-493D-94E1678FD1425B71;6364CE48-9B6A-4D36-B7F8352E6E11EDB7","Slug": "ÅPNING;head-hundepose-020518","MosExternalMetaData": [{"MosScope": "PLAYLIST","MosSchema": "http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload": {"Approved": 1,"Creator": "LINUXENPS","ElapsedTime": 5,"Estimated": 10,"MediaTime": 0,"ModBy": "N12914","ModTime": "20180502T163055Z","MOSAbstracts": "head-hundepose-020518-te NYHETER 00:00:11:19 \n_00:00:00:00 | @M=Auto Openend | 52 headline | 1:Vil ikkje ha poser til hundebæsj | 2:Østafjells | 3: | 4: | 00:00:07:00\nTIDSMARKØR IKKE RØR","MOSItemDurations": "11,76\n0","MOSItemEdDurations": "","MOSObjSlugs": "head-hundepose-020518-te\n52 headline 1:Vil ikkje ha poser til hundebæsj  2:Østafjells\nStory status","MOSSlugs": "HEAD;head-Bæsjepose-4\n52 headline 1:Vil ikkje ha poser til hundebæsj  2:Østafjells\nSAK VESTFOLD;head-3","MOSTimes": "20180502T165013906Z","Owner": "LINUXENPS","Printed": "20180502T164204Z","SourceMediaTime": 0,"SourceTextTime": 0,"StoryLogPreview": "Miljøpartiet vil droppe posen til hundebæsjen - slik vil dei spare miljøet.","StoryProducer": "DKTE","TextTime": 5,"SystemApprovedBy": "N12914","Kilde": "TV","mosartType": "STK","mosartVariant": "HEAD","OpprLand": "Norge","ReadTime": 5,"Rettigheter": "Grønt","Team": "(Kun for STK:) Foto: / Redigering:","ENPSItemType": 3}}],"RunningOrderId": "MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71","Body": [{"Type": "storyItem","Content": {"itemID": 4,"itemSlug": "HEAD;head-Bæsjepose-4","objID": "\\\\NDTE\\Omn\\C\\S\\25\\07","mosID": "OMNIBUS.NDTE.MOS","abstract": "head-hundepose-020518-te NYHETER 00:00:11:19","objDur": 588,"objTB": 50,"objSlug": "head-hundepose-020518-te","mosExternalMetadata": {"mosSchema": "OMNIBUS"}}},{"Type": "storyItem","Content": {"mosID": "chyron.techycami02.ndte.nrk.mos","abstract": {},"objPaths": {"objProxyPath": {"techDescription": "JPEG Thumbnail","$t": "http://160.68.33.159/thumbs/NYHETER/58000/Objects_NYHETER_00058473_v1_big.jpg"},"objMetadataPath": {}},"itemChannel": "CG1","itemSlug": "52 headline 1:Vil ikkje ha poser til hundebæsj  2:Østafjells","mosObj": {"objID": "NYHETER\\00058473?version=1","objSlug": "52 headline 1:Vil ikkje ha poser til hundebæsj  2:Østafjells","mosItemEditorProgID": "Chymox.AssetBrowser.1","objDur": 0,"objTB": 0,"objPaths": {"objProxyPath": {"techDescription": "JPEG Thumbnail","$t": "http://160.68.33.159/thumbs/NYHETER/58000/Objects_NYHETER_00058473_v1_big.jpg"},"objMetadataPath": {}},"mosExternalMetadata": {"mosSchema": "http://ncsA4.com/mos/supported_schemas/NCSAXML2.08"}},"itemID": 2}},{"Type": "storyItem","Content": {"mosID": "mosart.morten.mos","abstract": "TIDSMARKØR IKKE RØR","objID": "STORYSTATUS","objSlug": "Story status","itemID": 3,"itemSlug": "SAK VESTFOLD;head-3"}}],"level": "debug","message": "mosRoFullStory","timestamp": "2018-05-09T10:26:43.331Z"})
 		// // @ts-ignore
@@ -199,3 +254,4 @@ Meteor.methods({
 		// ServerPeripheralDeviceAPI.mosRoFullStory(id, token, {"ID": "MAENPSTEST14;P_SERVER14\\W\\R_07C8C71B-1835-493D-94E1678FD1425B71;EF1A29D9-EF4C-4965-893A4910B2212E66","Slug": "AVSLUTT;Slutt 18.59.00","MosExternalMetaData": [{"MosScope": "PLAYLIST","MosSchema": "http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload": {"Approved": 1,"Creator": "LINUXENPS","MediaTime": 0,"ModBy": "N12914","ModTime": "20180502T132213Z","MOSAbstracts": "TIDSMARKØR IKKE RØR","MOSObjSlugs": "Story status","MOSSlugs": "SAK 1;intro-3","Owner": "LINUXENPS","SourceMediaTime": 0,"SourceTextTime": 0,"TextTime": 0,"SystemApprovedBy": "N12914","mosartType": "BREAK","ReadTime": 0,"ENPSItemType": 3}}],"RunningOrderId": "MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71","Body": [{"Type": "storyItem","Content": {"mosID": "mosart.morten.mos","abstract": "TIDSMARKØR IKKE RØR","objID": "STORYSTATUS","objSlug": "Story status","itemID": 2,"itemSlug": "SAK 1;intro-3"}}],"level": "debug","message": "mosRoFullStory","timestamp": "2018-05-09T10:26:47.387Z"})
 	}
 })
+*/

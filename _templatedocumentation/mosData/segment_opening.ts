@@ -142,7 +142,7 @@ let sourceData = [
 				"ModBy": "N12914",
 				"ModTime": "20180502T163055Z",
 				"MOSAbstracts": "head-hundepose-020518-te NYHETER 00:00:11:19 \n_00:00:00:00 | @M=Auto Openend | 52 headline | 1:Vil ikkje ha poser til hundebæsj | 2:Østafjells | 3: | 4: | 00:00:07:00\nTIDSMARKØR IKKE RØR",
-				"MOSItemDurations": "11,76\n0",
+				"MOSItemDurations": "11,76\n14",
 				"MOSItemEdDurations": "",
 				"MOSObjSlugs": "head-hundepose-020518-te\n52 headline 1:Vil ikkje ha poser til hundebæsj  2:Østafjells\nStory status",
 				"MOSSlugs": "HEAD;head-Bæsjepose-4\n52 headline 1:Vil ikkje ha poser til hundebæsj  2:Østafjells\nSAK VESTFOLD;head-3",
@@ -443,9 +443,9 @@ let sourceData = [
 
 
 
-1) plays clip [vignett-file] on sourceLayer 'studio0-vignett' and Llayer 'vignett' in segmentLine 0
+1) plays clip [vignett-file] on sourceLayer 'studio0-vignett' and LLayer 'vignett' in segmentLine 0
 	 - the  file to play is a variable that maps to the 'variant of template type 'FULL' (different files for different shows)
-2) plays clip [head 1] on sourceLayer 'studio0-live-speak0' and Llayer 'clip' in segmentLine 1
+2) plays clip [head 1] on sourceLayer 'studio0-live-speak0' and LLayer 'clip' in segmentLine 1
 	 - continuesRefId = [vignett]
 	 - Segment line 1 has autotake 
 	 - the fixes timing for autotake is hardcoded and a variable that depens on the 'variant'. Short vignett-file = short timing

@@ -51,6 +51,7 @@ export interface SegmentLineItem {
 
 export const SegmentLineItems = new Mongo.Collection<SegmentLineItem>('segmentLineItems')
 
+
 export interface MetadataElement {
 	_id: string,
 	key: string,
@@ -59,6 +60,7 @@ export interface MetadataElement {
 }
 
 export interface BaseContent {
+	[key: string]: Array<SomeTimelineObject> | number | string | boolean | object | undefined
 	timelineObjects?: Array<TimelineObj>
 }
 
