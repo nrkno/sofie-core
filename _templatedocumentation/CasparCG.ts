@@ -59,12 +59,12 @@ const CasparCG = {
         },
         5: {
             systemName: "NEXT",
-            id: "M/E1 PVW",
+            id: "AUX 2",
             decklink: {
                 device: 4,
                 type: "INTERNAL",
                 embedded: true,
-                signalPath: "M/E1 PVW loop-through internal DSK"
+                signalPath: "AUX 2 (PVW ?) loop-through internal DSK"
             },
             description: ""
         }

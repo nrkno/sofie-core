@@ -102,7 +102,7 @@ const ATEM = {
         },
         pvw: {
             systemName: "NEXT",
-            id: "M/E1 PVW",
+            id: "AUX2",
             output: {
 
             },
