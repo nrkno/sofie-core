@@ -21,7 +21,6 @@
     "@fortawesome/fontawesome-free-solid": "^5.0.12",
     "@fortawesome/react-fontawesome": "0.0.19",
     "@nrk/core-icons": "github:nrkno/core-icons",
-    "@types/prop-types": "^15.5.2",
     "chai": "^4.1.2",
     "classnames": "^2.2.5",
     "core-js": "^2.5.4",
@@ -52,6 +51,7 @@
     "smpte-timecode": "^1.2.1",
     "superfly-timeline": "git+https://github.com/superflytv/supertimeline.git#dist",
     "underscore": "^1.8.3",
+    "velocity-animate": "^1.5.1",
     "velocity-react": "^1.3.3"
   },
   "devDependencies": {
@@ -67,6 +67,7 @@
     "@types/react-dom": "^16.0.4",
     "@types/react-i18next": "^7.3.2",
     "@types/react-router-dom": "^4.2.6",
+    "@types/prop-types": "^15.5.2",
     "i18next-conv": "^6.0.0",
     "i18next-extract-gettext": "^3.2.0",
     "node-license-validator": "^1.3.0",

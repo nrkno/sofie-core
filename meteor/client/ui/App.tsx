@@ -16,6 +16,7 @@ import SystemStatus from './SystemStatus'
 import Settings from './Settings'
 import { RunningOrderList } from './RunningOrderList'
 import { RunningOrderView } from './RunningOrderView'
+import { ConnectionStatusNotification } from './ConnectionStatusNotification'
 import { NymansPlayground } from '../ui/NymansPlayground'
 import {
   BrowserRouter as Router,
@@ -100,6 +101,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 						<Route path='/settings' component={Settings} />
 						<Redirect to='/' />
 					</Switch>
+					<ConnectionStatusNotification />
 				</div>
 			</Router>
 		)
