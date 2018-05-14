@@ -125,7 +125,16 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 							'willChange': 'transform'
 						}
 
-						// console.log(styleObj)
+						return styleObj
+					} else if (this.props.scrollLeft + (liveLineHistoryWithMargin / this.props.timeScale) >= (inPoint + duration + this.props.segmentLine.startsAt - outTransitionDuration)) {
+						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLine.startsAt - inTransitionDuration) * this.props.timeScale
+
+						let styleObj = {
+							'transform': 'translate3d(' + (targetPos).toString() + 'px, 0, 0) ' +
+										 'translate3d(' + (liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
+										 'translate3d(-100%, 0, 0)',
+							'willChange': 'transform'
+						}
 
 						return styleObj
 					}

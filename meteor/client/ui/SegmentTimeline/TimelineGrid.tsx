@@ -88,41 +88,43 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 			const fps = Settings['frameRate']
 
+			const secondTimeScale = this.props.timeScale * 1000
+
 			// timeScale is how many pixels does a second take
 			// secondsStep - draw the big, labeled line very X seconds
 			let secondsStep = 5 * 60
 			// interStep - drax X lines between every big line
 			let interStep = 5
-			if ((this.props.timeScale > 0) && (this.props.timeScale < 1)) {
+			if ((secondTimeScale > 0) && (secondTimeScale < 1)) {
 				secondsStep = 600
 				interStep = 60
-			} else if ((this.props.timeScale >= 1) && (this.props.timeScale < 3)) {
+			} else if ((secondTimeScale >= 1) && (secondTimeScale < 3)) {
 				secondsStep = 300
 				interStep = 10
-			} else if ((this.props.timeScale >= 3) && (this.props.timeScale < 10)) {
+			} else if ((secondTimeScale >= 3) && (secondTimeScale < 10)) {
 				secondsStep = 30
 				interStep = 10
-			} else if ((this.props.timeScale >= 10) && (this.props.timeScale < 20)) {
+			} else if ((secondTimeScale >= 10) && (secondTimeScale < 20)) {
 				secondsStep = 10
 				interStep = 10
-			} else if ((this.props.timeScale >= 20) && (this.props.timeScale < 45)) {
+			} else if ((secondTimeScale >= 20) && (secondTimeScale < 45)) {
 				secondsStep = 5
 				interStep = 5
-			} else if ((this.props.timeScale >= 45) && (this.props.timeScale < 90)) {
+			} else if ((secondTimeScale >= 45) && (secondTimeScale < 90)) {
 				secondsStep = 2
 				interStep = 2
-			} else if ((this.props.timeScale >= 90) && (this.props.timeScale < 120)) {
+			} else if ((secondTimeScale >= 90) && (secondTimeScale < 120)) {
 				secondsStep = 2
 				interStep = 1
-			} else if ((this.props.timeScale >= 120) && (this.props.timeScale < 250)) {
+			} else if ((secondTimeScale >= 120) && (secondTimeScale < 250)) {
 				secondsStep = 1
 				interStep = 1
-			} else if ((this.props.timeScale >= 250)) {
+			} else if ((secondTimeScale >= 250)) {
 				secondsStep = 1
 				interStep = fps || 25
 			}
 
-			let step = (secondsStep * this.props.timeScale * this.pixelRatio) / interStep
+			let step = (secondsStep * secondTimeScale * this.pixelRatio) / interStep
 			let pixelOffset = this.props.scrollLeft * this.props.timeScale * this.pixelRatio
 
 			this.ctx.clearRect(0, 0, this.width, this.height)

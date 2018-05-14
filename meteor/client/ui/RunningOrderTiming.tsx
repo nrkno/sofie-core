@@ -136,7 +136,7 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 		let nextAIndex = -1
 		let curAIndex = -1
 
-		let now = getCurrentTime() / 1000
+		let now = getCurrentTime()
 
 		if (runningOrder && segments) {
 			segments.forEach((seg, segIndex) => {

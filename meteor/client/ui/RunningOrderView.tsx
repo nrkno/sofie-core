@@ -139,7 +139,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		super(props)
 
 		this.state = {
-			timeScale: 50,
+			timeScale: 0.05,
 			studioMode: localStorage.getItem('studioMode') === '1' ? true : false,
 			contextMenuContext: null
 		}

@@ -11,11 +11,11 @@ export namespace RundownUtils {
 		}, 0)
 	}
 
-	export function formatTimeToTimecode (seconds: number): string {
-		return (new Timecode(seconds * Settings['frameRate'], Settings['frameRate'], false)).toString()
+	export function formatTimeToTimecode (milliseconds: number): string {
+		return (new Timecode(milliseconds * Settings['frameRate'] / 1000, Settings['frameRate'], false)).toString()
 	}
 
-	export function formatDiffToTimecode (seconds: number, showPlus?: boolean): string {
+	export function formatDiffToTimecode (milliseconds: number, showPlus?: boolean): string {
 		function padZero (input: number): string {
 			if (input < 10) {
 				return '0' + input.toString(10)
@@ -24,15 +24,15 @@ export namespace RundownUtils {
 			}
 		}
 
-		const isNegative = seconds < 0
+		const isNegative = milliseconds < 0
 		if (isNegative) {
-			seconds = seconds * -1
+			milliseconds = milliseconds * -1
 		}
 
-		const minutes = Math.floor(seconds / 60)
-		const secondsRest = Math.floor(seconds % 60)
+		const minutes = Math.floor(milliseconds / (60 * 1000))
+		const secondsRest = Math.floor(milliseconds % (60 * 1000))
 
-		return (isNegative ? '-' : (showPlus && seconds > 0 ? '+' : '')) + padZero(minutes) + ':' + padZero(secondsRest)
+		return (isNegative ? '-' : (showPlus && milliseconds > 0 ? '+' : '')) + padZero(minutes) + ':' + padZero(secondsRest)
 	}
 
 	export function isInsideViewport (scrollLeft: number, scrollWidth: number, segmentLine: SegmentLineUi, segmentLineItem?: SegmentLineItemUi) {

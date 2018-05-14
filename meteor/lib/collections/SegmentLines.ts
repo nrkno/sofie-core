@@ -24,12 +24,12 @@ export interface SegmentLine {
 	metaData?: Array<IMOSExternalMetaData>
 	status?: IMOSObjectStatus
 
-	/** Expected duration of the line */
+	/** Expected duration of the line, in milliseconds */
 	expectedDuration?: number
 
-	/** The time the system started playback of this segment line, null if not yet played back */
+	/** The time the system started playback of this segment line, null if not yet played back (milliseconds since epoch) */
 	startedPlayback?: number
-	/** The time the system played back this segment line, null if not yet finished playing */
+	/** The time the system played back this segment line, null if not yet finished playing, in milliseconds */
 	duration?: number
 }
 

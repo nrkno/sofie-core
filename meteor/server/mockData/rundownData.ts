@@ -228,7 +228,7 @@ Meteor.methods({
 				mosId: seg0.mosId + '_LINE' + line++,
 				segmentId: seg0._id,
 				runningOrderId: seg0.runningOrderId,
-				expectedDuration: 5
+				expectedDuration: 5 * 1000
 			}
 			SegmentLines.insert(segLine)
 
@@ -247,7 +247,7 @@ Meteor.methods({
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-vt0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 5,
+					expectedDuration: 5 * 1000,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
@@ -259,7 +259,7 @@ Meteor.methods({
 					mosId: seg0.mosId + '_LINE' + line++,
 					segmentId: seg0._id,
 					runningOrderId: seg0.runningOrderId,
-					expectedDuration: 7
+					expectedDuration: 7 * 1000
 				}
 				SegmentLines.insert(segLine)
 
@@ -277,20 +277,20 @@ Meteor.methods({
 					transitions: {
 						inTransition: {
 							type: Transition.MIX,
-							duration: 0.5,
+							duration: 0.5 * 1000,
 							easing: Ease.EASEINOUTSINE,
 							direction: Direction.RIGHT
 						},
 						outTransition: {
 							type: Transition.CUT,
-							duration: 0.0,
+							duration: 0.0 * 1000,
 							easing: Ease.NONE,
 							direction: Direction.RIGHT
 						}
 					},
 					sourceLayerId: 'studio0-mic0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 7,
+					expectedDuration: 7 * 1000,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
@@ -303,12 +303,12 @@ Meteor.methods({
 					name: 'Fribyen tar form',
 					trigger: {
 						type: 0,
-						value: 0.5
+						value: 0.5 * 1000
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-graphics0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 6.4,
+					expectedDuration: 6.4 * 1000,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
@@ -321,12 +321,12 @@ Meteor.methods({
 					name: 'Fribyen',
 					trigger: {
 						type: 0,
-						value: 0.0
+						value: 0.0 * 1000
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-live-speak0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 6.9,
+					expectedDuration: 6.9 * 1000,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
@@ -338,7 +338,7 @@ Meteor.methods({
 					mosId: seg0.mosId + '_LINE' + line++,
 					segmentId: seg0._id,
 					runningOrderId: seg0.runningOrderId,
-					expectedDuration: 7
+					expectedDuration: 7 * 1000
 				}
 				SegmentLines.insert(segLine)
 
@@ -350,20 +350,20 @@ Meteor.methods({
 					name: 'Nå er padd...||...på direkten.',
 					trigger: {
 						type: 0,
-						value: 0
+						value: 0 * 1000
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					transitions: {
 						inTransition: {
 							type: Transition.CUT,
-							duration: 0.0,
+							duration: 0.0 * 1000,
 							easing: Ease.NONE,
 							direction: Direction.RIGHT
 						}
 					},
 					sourceLayerId: 'studio0-mic0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 6.3,
+					expectedDuration: 6.3 * 1000,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
@@ -376,12 +376,12 @@ Meteor.methods({
 					name: 'Våryre padder',
 					trigger: {
 						type: 0,
-						value: 0.5
+						value: 0.5 * 1000
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-graphics0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 6.5,
+					expectedDuration: 6.5 * 1000,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
@@ -394,12 +394,12 @@ Meteor.methods({
 					name: 'Padder',
 					trigger: {
 						type: 0,
-						value: 0.0
+						value: 0.0 * 1000
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-live-speak0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 7,
+					expectedDuration: 7 * 1000,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
@@ -414,7 +414,7 @@ Meteor.methods({
 				mosId: seg1.mosId + '_LINE' + line++,
 				segmentId: seg1._id,
 				runningOrderId: seg1.runningOrderId,
-				expectedDuration: 7.5
+				expectedDuration: 7.5 * 1000
 			}
 			SegmentLines.insert(segLine)
 
@@ -427,12 +427,12 @@ Meteor.methods({
 				name: 'Wipe Bumper',
 				trigger: {
 					type: 0,
-					value: 0
+					value: 0 * 1000
 				},
 				status: RundownAPI.LineItemStatusCode.OK,
 				sourceLayerId: 'studio0-vt0',
 				outputLayerId: 'studio0-pgm0',
-				expectedDuration: 0.5,
+				expectedDuration: 0.5 * 1000,
 				disabled: false
 			})
 			SegmentLineItems.insert(segmentLineItem)
@@ -447,7 +447,7 @@ Meteor.methods({
 					name: '1',
 						trigger: {
 						type: 0,
-						value: 0
+							value: 0 * 1000
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-camera0',
@@ -466,12 +466,12 @@ Meteor.methods({
 					name: 'God fredagskveld, vi ska først...||...til heile prosjektet.',
 					trigger: {
 						type: 0,
-						value: 0.5
+						value: 0.5 * 1000
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-mic0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 7,
+					expectedDuration: 7 * 1000,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
@@ -485,12 +485,12 @@ Meteor.methods({
 					name: 'Knut Knudsen Eigeland',
 						trigger: {
 						type: 0,
-						value: 2.5
+						value: 2.5 * 1000
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-lower-third0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 3.5,
+					expectedDuration: 3.5 * 1000,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
@@ -502,7 +502,7 @@ Meteor.methods({
 					mosId: seg1.mosId + '_LINE' + line++,
 					segmentId: seg1._id,
 					runningOrderId: seg1.runningOrderId,
-					expectedDuration: 20
+					expectedDuration: 20 * 1000
 				}
 				SegmentLines.insert(segLine)
 
@@ -533,7 +533,7 @@ Meteor.methods({
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-vt0',
 					outputLayerId: 'studio0-monitor0',
-					expectedDuration: 20,
+					expectedDuration: 20 * 1000,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
@@ -568,7 +568,7 @@ Meteor.methods({
 					mosId: seg1.mosId + '_LINE' + line++,
 					segmentId: seg1._id,
 					runningOrderId: seg1.runningOrderId,
-					expectedDuration: 103
+					expectedDuration: 103 * 1000
 				}
 				SegmentLines.insert(segLine)
 
@@ -586,7 +586,7 @@ Meteor.methods({
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-vt0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 103,
+					expectedDuration: 103 * 1000,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
@@ -606,7 +606,7 @@ Meteor.methods({
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-lower-third0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 4,
+					expectedDuration: 4 * 1000,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
@@ -620,12 +620,12 @@ Meteor.methods({
 					name: 'Helge Sandåker||ordfører Marnadal (Ap)',
 						trigger: {
 						type: 0,
-						value: 26
+						value: 26 * 1000
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-lower-third0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 4,
+					expectedDuration: 4 * 1000,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
@@ -639,12 +639,12 @@ Meteor.methods({
 					name: 'Foto: Dag Lauvland/Lindesnes Avis',
 					trigger: {
 						type: 0,
-						value: 39
+						value: 39 * 1000
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-graphics0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 4,
+					expectedDuration: 4 * 1000,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
@@ -657,12 +657,12 @@ Meteor.methods({
 					name: 'Foto/redigering Geir Ingar Egeland',
 					trigger: {
 						type: 0,
-						value: 97
+						value: 97 * 1000
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-graphics0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 4,
+					expectedDuration: 4 * 1000,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
@@ -696,12 +696,12 @@ Meteor.methods({
 					name: 'Split Demo',
 					trigger: {
 						type: 0,
-						value: 50
+						value: 50 * 1000
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-split0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 10,
+					expectedDuration: 10 * 1000,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
@@ -715,12 +715,12 @@ Meteor.methods({
 					name: 'RM0 LIVE HELSINKI',
 					trigger: {
 						type: 0,
-						value: 50
+						value: 50 * 1000
 					},
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-remote0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 10,
+					expectedDuration: 10 * 1000,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)
@@ -732,7 +732,7 @@ Meteor.methods({
 				mosId: seg2.mosId + '_LINE' + line++,
 				segmentId: seg2._id,
 				runningOrderId: seg1.runningOrderId,
-				expectedDuration: 64
+				expectedDuration: 64 * 1000
 			}
 			SegmentLines.insert(segLine)
 
@@ -750,7 +750,7 @@ Meteor.methods({
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-live-speak0',
 					outputLayerId: 'studio0-pgm0',
-					expectedDuration: 64,
+					expectedDuration: 64 * 1000,
 					disabled: false
 				})
 				SegmentLineItems.insert(segmentLineItem)

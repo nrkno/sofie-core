@@ -30,9 +30,9 @@ export interface SegmentLineItem {
 	sourceLayerId: string
   	/** Layer output this segment line item belongs to */
 	outputLayerId: string
-	/** Expected duration of the item as planned or as estimated by the system (in case of Script layers), in seconds. */
+	/** Expected duration of the item as planned or as estimated by the system (in case of Script layers), in milliseconds. */
 	expectedDuration: number
-	/** Actual duration of the item, as played-back, in seconds. This value will be updated during playback for some types of items. */
+	/** Actual duration of the item, as played-back, in milliseconds. This value will be updated during playback for some types of items. */
 	duration?: number
 	/** A flag to signal a given SegmentLineItem has been deactivated manually */
 	disabled?: boolean
