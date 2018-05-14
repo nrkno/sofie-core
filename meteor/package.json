@@ -34,6 +34,7 @@
     "moment": "^2.19.1",
     "mos-connection": "git+https://github.com/nrkno/tv-automation-mos-connection.git#dist",
     "ntp-client": "^0.5.3",
+    "object-path": "^0.11.4",
     "prop-types": "^15.6.1",
     "query-string": "^6.0.0",
     "react": "^16.3.0",
@@ -52,7 +53,8 @@
     "superfly-timeline": "git+https://github.com/superflytv/supertimeline.git#dist",
     "underscore": "^1.8.3",
     "velocity-animate": "^1.5.1",
-    "velocity-react": "^1.3.3"
+    "velocity-react": "^1.3.3",
+    "winston": "^2.4.2"
   },
   "devDependencies": {
     "@types/chai": "^4.1.2",
@@ -68,6 +70,7 @@
     "@types/react-i18next": "^7.3.2",
     "@types/react-router-dom": "^4.2.6",
     "@types/prop-types": "^15.5.2",
+    "@types/winston": "^2.3.9",
     "i18next-conv": "^6.0.0",
     "i18next-extract-gettext": "^3.2.0",
     "node-license-validator": "^1.3.0",

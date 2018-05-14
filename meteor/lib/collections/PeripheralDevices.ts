@@ -25,7 +25,10 @@ export interface MosDeviceSettings { // TODO
 }
 export enum PlayoutDeviceType { // to match DeviceType in TSR
 	ABSTRACT = 0,
-	CASPARCG = 1
+	CASPARCG = 1,
+	ATEM = 2,
+	LAWO = 3,
+	HTTPSEND = 4
 }
 export interface Mappings {
 	[layerName: string]: Mapping

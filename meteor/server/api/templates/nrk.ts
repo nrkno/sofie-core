@@ -20,11 +20,12 @@ import {
 	IMOSROReadyToAir,
 	IMOSROFullStory,
 	IMOSStory,
-	IMOSExternalMetaData
+	IMOSExternalMetaData,
+	IMOSROFullStoryBodyItem
 } from 'mos-connection'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
+import { SegmentLineItem, SegmentLineItems, ITimelineTrigger } from '../../../lib/collections/SegmentLineItems'
 import { TriggerType } from 'superfly-timeline'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { IOutputLayer,
@@ -34,8 +35,12 @@ import {
 	TemplateFunction,
 	TemplateSet,
 	SegmentLineItemOptional,
-	TemplateFunctionOptional
+	TemplateFunctionOptional,
+	TemplateResult,
+	TemplateContextInner,
+	StoryWithContext
 } from './templates'
+import { TimelineContentType, TimelineObjCCGVideo, TimelineObjLawoSource, TimelineObjCCGTemplate } from '../../../lib/collections/Timeline';
 
 const literal = <T>(o: T) => o
 
@@ -55,10 +60,36 @@ let outputLayers: Array<IOutputLayer> = [
 		isPGM: false,
 	}
 ]
+
+/*
+Caspar Channels:
+1: [CServ1] Fill, Primary Video channel
+	+ sound
+2: [CServ_PVW] Fill, Video channel for preview (usage TBD)
+	+ sound
+3: [Serv2] Key + Fill, Studio-screen?
+	+ no sound
+4: [CG1] Fill + Key, Graphics (DSK1)
+	+ no sound
+5: [CG2] Fill + Key, Video / Graphics (DSK2)
+	+ sound, effect sounds
+
+Fill: Video (comes as a camera)
+	+ sound
+Key + Fill: graphics / video to be keyed onto PGM
+	+ sound
+
 let sourceLayers = [
+
+	// on top of PGM, to be keyed
+	{ _id: 'vignett', 	name: 'Vignett', 	type: RundownAPI.SourceLayerType.LIVE_SPEAK,unlimited: true, 	onPGMClean: false},
+	{ _id: 'vignett', 	name: 'Vignett', 	type: RundownAPI.SourceLayerType.LIVE_SPEAK,unlimited: true, 	onPGMClean: false},
+
+
+
+	{ _id: 'live-speak0', 	name: 'STK', 	type: RundownAPI.SourceLayerType.LIVE_SPEAK, 	unlimited: true, 	onPGMClean: false},
 	{ _id: 'lower-third0', 	name: 'Super', 	type: RundownAPI.SourceLayerType.LOWER_THIRD, 	unlimited: true, 	onPGMClean: false},
 	{ _id: 'graphics0', 	name: 'GFX', 	type: RundownAPI.SourceLayerType.GRAPHICS, 		unlimited: true, 	onPGMClean: false},
-	{ _id: 'live-speak0', 	name: 'STK', 	type: RundownAPI.SourceLayerType.LIVE_SPEAK, 	unlimited: true, 	onPGMClean: false},
 	{ _id: 'remote0', 		name: 'RM1', 	type: RundownAPI.SourceLayerType.REMOTE, 		unlimited: false, 	onPGMClean: true},
 	{ _id: 'vt0', 			name: 'VB', 	type: RundownAPI.SourceLayerType.VT, 			unlimited: true, 	onPGMClean: true},
 	{ _id: 'mic0', 			name: 'Mic', 	type: RundownAPI.SourceLayerType.MIC, 			unlimited: false, 	onPGMClean: true},
@@ -73,13 +104,14 @@ let nrk: TemplateSet = {
 	 * Returns the id of the template-function to be run
 	 * @param story
 	 */
-	getId (story: IMOSROFullStory): string {
+	getId: literal<TemplateFunctionOptional>(function (context, story): string {
 		let templateId = ''
+
 		if (story.MosExternalMetaData) {
 			_.find(story.MosExternalMetaData, (md) => {
 				if (
 					md.MosScope === 'PLAYLIST' &&
-					md.MosSchema === 'http://2012R2ENPS8VM:10505/schema/enps.dtd'
+					md.MosSchema.match(/10505\/schema\/enps.dtd/)
 				) {
 					let type = md.MosPayload.mosartType + ''
 					let variant = md.MosPayload.mosartVariant + ''
@@ -87,10 +119,8 @@ let nrk: TemplateSet = {
 					if (type.match(/break/i)) 			templateId = 'break'
 					// else if (type.match(/full/i) &&
 					// 		!variant)			 		templateId = 'full'
-					// else if (type.match(/full/i) &&
-					// 		variant.match(/vignett/i)) 	templateId = 'fullVignett'
-					// else if (type.match(/full/i) &&
-					// 		variant.match(/vignettxx/i)) 	templateId = 'fullVignettxx'
+					else if (type.match(/full/i) &&
+							variant.match(/vignett/i)) 	templateId = 'vignett'
 					else if (type.match(/stk/i) &&
 							variant.match(/head/i)) 	templateId = 'stkHead'
 				}
@@ -98,319 +128,330 @@ let nrk: TemplateSet = {
 				else return false // keep looking
 			})
 		}
+		console.log('getId', templateId)
 		return templateId
-	},
+	}),
 	templates: {
-		break: literal<TemplateFunctionOptional>((story: IMOSROFullStory) => {
-			return []
-			/*
-				// Example data:
-				{
-					"ID": "2012R2ENPS8VM;P_ENPSNEWS\\W\\R_696297DF-1568-4B36-B43B3B79514B40D4;9908CC68-E390-4A6B-80BD0B07736B1AFF",
-					"Slug": "NRK ï뾽stafjells;ddmm18-1850",
-					"MosExternalMetaData": [
-						{
-							"MosScope": "PLAYLIST",
-							"MosSchema": "http://2012R2ENPS8VM:10505/schema/enps.dtd",
-							"MosPayload": {
-								"Approved": 0,
-								"Creator": "LINUXENPS",
-								"MediaTime": 0,
-								"ModBy": "LINUXENPS",
-								"ModTime": "20180227T004206Z",
-								"MOSItemDurations": 0,
-								"MOSObjSlugs": "201 loop 1:  2:",
-								"MOSSlugs": "NRK ï뾽STAFJELLS;ddmm15-1845-3",
-								"Owner": "LINUXENPS",
-								"pubApproved": 0,
-								"SourceMediaTime": 0,
-								"SourceTextTime": 0,
-								"TextTime": 0,
-								"mosartType": "BREAK",
-								"ENPSItemType": 3
-							}
-						}
-					],
-					"RunningOrderId": "2012R2ENPS8VM;P_ENPSNEWS\\W;696297DF-1568-4B36-B43B3B79514B40D4",
-					"Body": [
-						{
-							"Type": "storyItem",
-							"Content": {
-								"mosID": "chyron.techycami02.ndte.nrk.mos",
-								"mosAbstract": "_00:00:03:00 | @M=Auto Openend | 201 loop | 1: | 2: | 3: | 4: | 00:00:00:00",
-								"objPaths": {
-								"objProxyPath": {
-									"techDescription": "JPEG Thumbnail",
-									"$t": "http://160.68.33.159/thumbs/NYHETER/10000/Objects_NYHETER_00010001_v1_big.jpg"
-								},
-								"objMetadataPath": {}
-								},
-								"itemChannel": "CG2",
-								"itemSlug": "NRK ï뾽STAFJELLS;ddmm15-1845-3",
-								"mosObj": {
-								"objID": "NYHETER\\00010001?version=1",
-								"objSlug": "201 loop 1:  2:",
-								"mosItemEditorProgID": "Chymox.AssetBrowser.1",
-								"objDur": 0,
-								"objTB": 0,
-								"objPaths": {
-									"objProxyPath": {
-										"techDescription": "JPEG Thumbnail",
-										"$t": "http://160.68.33.159/thumbs/NYHETER/10000/Objects_NYHETER_00010001_v1_big.jpg"
-									},
-									"objMetadataPath": {}
-								},
-								"mosExternalMetadata": {
-									"mosScope": "PLAYLIST",
-									"mosSchema": "http://ncsA4.com/mos/supported_schemas/NCSAXML2.08",
-									"mosPayload": {
-										"sAVsom": "00:00:03:00",
-										"sAVeom": "00:00:00:00",
-										"createdBy": "N18685",
-										"subtype": "lyric/data",
-										"subtypeid": "I:\\CAMIO\\NYHETER\\Templates\\Bakskjerm\\00000201.lyr",
-										"ObjectDetails": {
-											"ServerID": "chyron.techycami02.ndte.nrk.mos",
-											"ServerURL": "http://160.68.33.159/CAMIO/Redirection/MOSRedirection.asmx"
-										}
-									}
-								}
-								},
-								"itemID": 3
-							}
-						}
-					]
-				}
-			*/
-		}),
-		full: literal<TemplateFunctionOptional>((story: IMOSROFullStory) => {
-			return []
-			/*
-				// Example data:
-				{
-					"ID": "2012R2ENPS8VM;P_ENPSNEWS\\W\\R_696297DF-1568-4B36-B43B3B79514B40D4;9908CC68-E390-4A6B-80BD0B07736B1AFF",
-					"Slug": "NRK ï뾽stafjells;ddmm18-1850",
-					"MosExternalMetaData": [
-						{
-							"MosScope": "PLAYLIST",
-							"MosSchema": "http://2012R2ENPS8VM:10505/schema/enps.dtd",
-							"MosPayload": {
-								"Approved": 0,
-								"Creator": "LINUXENPS",
-								"MediaTime": 0,
-								"ModBy": "LINUXENPS",
-								"ModTime": "20180227T004206Z",
-								"MOSItemDurations": 0,
-								"MOSObjSlugs": "201 loop 1:  2:",
-								"MOSSlugs": "NRK ï뾽STAFJELLS;ddmm15-1845-3",
-								"Owner": "LINUXENPS",
-								"pubApproved": 0,
-								"SourceMediaTime": 0,
-								"SourceTextTime": 0,
-								"TextTime": 0,
-								"mosartType": "BREAK",
-								"ENPSItemType": 3
-							}
-						}
-					],
-					"RunningOrderId": "2012R2ENPS8VM;P_ENPSNEWS\\W;696297DF-1568-4B36-B43B3B79514B40D4",
-					"Body": [
-						{
-							"Type": "storyItem",
-							"Content": {
-								"mosID": "chyron.techycami02.ndte.nrk.mos",
-								"mosAbstract": "_00:00:03:00 | @M=Auto Openend | 201 loop | 1: | 2: | 3: | 4: | 00:00:00:00",
-								"objPaths": {
-								"objProxyPath": {
-									"techDescription": "JPEG Thumbnail",
-									"$t": "http://160.68.33.159/thumbs/NYHETER/10000/Objects_NYHETER_00010001_v1_big.jpg"
-								},
-								"objMetadataPath": {}
-								},
-								"itemChannel": "CG2",
-								"itemSlug": "NRK ï뾽STAFJELLS;ddmm15-1845-3",
-								"mosObj": {
-								"objID": "NYHETER\\00010001?version=1",
-								"objSlug": "201 loop 1:2:",
-								"mosItemEditorProgID": "Chymox.AssetBrowser.1",
-								"objDur": 0,
-								"objTB": 0,
-								"objPaths": {
-									"objProxyPath": {
-										"techDescription": "JPEG Thumbnail",
-										"$t": "http://160.68.33.159/thumbs/NYHETER/10000/Objects_NYHETER_00010001_v1_big.jpg"
-									},
-									"objMetadataPath": {}
-								},
-								"mosExternalMetadata": {
-									"mosScope": "PLAYLIST",
-									"mosSchema": "http://ncsA4.com/mos/supported_schemas/NCSAXML2.08",
-									"mosPayload": {
-										"sAVsom": "00:00:03:00",
-										"sAVeom": "00:00:00:00",
-										"createdBy": "N18685",
-										"subtype": "lyric/data",
-										"subtypeid": "I:\\CAMIO\\NYHETER\\Templates\\Bakskjerm\\00000201.lyr",
-										"ObjectDetails": {
-											"ServerID": "chyron.techycami02.ndte.nrk.mos",
-											"ServerURL": "http://160.68.33.159/CAMIO/Redirection/MOSRedirection.asmx"
-										}
-									}
-								}
-								},
-								"itemID": 3
-							}
-						}
-					]
-				}
-			*/
-		}),
-		stkHead: literal<TemplateFunctionOptional>(function (story: IMOSROFullStory) {
-			// Wipe from vignett to first head with white wipe. Sound is from vignett outro.
 
-			// Vignett
-			// (Wipe)
-			// Sound: Hale fra vignett
-			// Video, no sound
-			// GFX: Head
-			// Sound: mic Host
-
-			let wipe: SegmentLineItemOptional = {
-				_id: this.getId(),
-				mosId: 'wip_wipe',
-				name: 'Wipe',
-				trigger: {
-					type: TriggerType.TIME_ABSOLUTE,
-					value: 0 // to be played right away
-				},
-				status: RundownAPI.LineItemStatusCode.UNKNOWN,
-				sourceLayerId: '',
-				outputLayerId: '',
-				expectedDuration: 0.3,
-				duration: 0.3,
-				content: {
-					clip: 'AMB'
-				}
-				// segmentLineId: this.segmentLine._id,
-				// runningOrderId: this.runningOrder._id,
+		/**
+		 * BREAK
+		 */
+		break: literal<TemplateFunctionOptional>((context, story): TemplateResult => {
+			return {
+				segmentLine: literal<SegmentLine>({
+					_id: '',
+					_rank: 0,
+					mosId: '',
+					segmentId: '',
+					runningOrderId: '',
+					slug: 'BREAK',
+				}),
+				segmentLineItems: [
+					literal<SegmentLineItem>({
+						_id: '',
+						mosId: '',
+						segmentLineId: '',
+						runningOrderId: '',
+						name: 'BREAK',
+						trigger: {
+							type: TriggerType.TIME_ABSOLUTE,
+							value: 'now'
+						},
+						status: RundownAPI.LineItemStatusCode.OK,
+						sourceLayerId: 'studio0_vignett',
+						outputLayerId: 'pgm0',
+						expectedDuration: 0
+					})
+				]
 			}
-			// Video:
+		}),
+
+		/**
+		 * VIGNETT
+		 */
+		vignett: literal<TemplateFunctionOptional>(function (context, story) {
+			let clip: string = ''
+			let sourceDuration: number = 0
+			let segmentLineduration: number = 0
+
+			// selects correct vignett clip file and sets the assosciated hard coded durations to match
+			let mosartVariant = story.getValueByPath('MosExternalMetaData.0.MosPayload.mosartVariant', 'VIGNETT')
+			switch (mosartVariant) {
+				case 'VIGNETT2018':
+					clip = 'vignett.mp4'	// @todo TBD
+					sourceDuration = 40		// @todo TBD
+					segmentLineduration = 5	// @todo TBD
+					break
+			}
+
+			let segmentLineItems: Array<SegmentLineItemOptional> = []
+			let IDs = {
+				lawo: context.getRandomId(),
+				vignett: context.getRandomId()
+			}
+
 			let video: SegmentLineItemOptional = {
-				// _id: this.id(),
-				mosId: 'wip_wipe',
+				_id: context.getRandomId(),
+				mosId: 'video',
 				name: 'Video',
 				trigger: {
-					type: TriggerType.TIME_RELATIVE,
-					value: '#' + wipe._id + '.end - 0.5'
+					type: TriggerType.TIME_ABSOLUTE,
+					value: 'now'
 				},
 				status: RundownAPI.LineItemStatusCode.UNKNOWN,
-				sourceLayerId: '',
-				outputLayerId: '',
-				expectedDuration: 0.3,
-				duration: 0.3,
+				sourceLayerId: 'studio0_vignett',
+				outputLayerId: 'pgm0',
+				expectedDuration: segmentLineduration,
 				content: {
-					clip: 'AMB'
-				}
-				// segmentLineId: this.segmentLine._id,
-				// runningOrderId: this.runningOrder._id,
-			}
-			return [wipe, video]
-			/*
-				// Example data:
-				{
-					"ID": "2012R2ENPS8VM;P_ENPSNEWS\\W\\R_696297DF-1568-4B36-B43B3B79514B40D4;05D95BFE-F50E-4B0D-BB29EF892673D266",
-					"Slug": "VIGNETT;head",
-					"MosExternalMetaData": [
-						{
-							"MosScope": "PLAYLIST",
-							"MosSchema": "http://2012R2ENPS8VM:10505/schema/enps.dtd",
-							"MosPayload": {
-								"Approved": 0,
-								"Creator": "LINUXENPS",
-								"MediaTime": 0,
-								"ModBy": "LINUXENPS",
-								"ModTime": "20180227T004205Z",
-								"MOSItemDurations": 0,
-								"MOSItemEdDurations": "",
-								"MOSObjSlugs": "52 headline 1:  2:Østafjells\nStory status",
-								"MOSSlugs": "SAK VESTFOLD;head-4\nSAK VESTFOLD;head-3",
-								"Owner": "LINUXENPS",
-								"pubApproved": 0,
-								"SourceMediaTime": 0,
-								"SourceTextTime": 0,
-								"StoryProducer": "DKTE",
-								"TextTime": 0,
-								"mosartType": "STK",
-								"mosartVariant": "HEAD",
-								"ENPSItemType": 3
-							}
-						}
-					],
-					"RunningOrderId": "2012R2ENPS8VM;P_ENPSNEWS\\W;696297DF-1568-4B36-B43B3B79514B40D4",
-					"Body": [
-						{
-							"Type": "storyItem",
-							"Content": {
-								"mosID": "chyron.techycami02.ndte.nrk.mos",
-								"mosAbstract": "_00:00:00:00 | @M=Auto Openend | 52 headline | 1: | 2:Østafjells | 3: | 4: | 00:00:07:00",
-								"objPaths": {
-								"objProxyPath": {
-									"techDescription": "JPEG Thumbnail",
-									"$t": "http://160.68.33.159/thumbs/NYHETER/10000/Objects_NYHETER_00010044_v1_big.jpg"
-								},
-								"objMetadataPath": {}
-								},
-								"itemChannel": "CG1",
-								"itemSlug": "SAK VESTFOLD;head-4",
-								"mosObj": {
-								"objID": "NYHETER\\00010044?version=1",
-								"objSlug": "52 headline 1:  2:Østafjells",
-								"mosItemEditorProgID": "Chymox.AssetBrowser.1",
-								"objDur": 0,
-								"objTB": 0,
-								"objPaths": {
-									"objProxyPath": {
-										"techDescription": "JPEG Thumbnail",
-										"$t": "http://160.68.33.159/thumbs/NYHETER/10000/Objects_NYHETER_00010044_v1_big.jpg"
-									},
-									"objMetadataPath": {}
-								},
-								"mosExternalMetadata": {
-									"mosScope": "PLAYLIST",
-									"mosSchema": "http://ncsA4.com/mos/supported_schemas/NCSAXML2.08",
-									"mosPayload": {
-										"sAVsom": "00:00:00:00",
-										"sAVeom": "00:00:07:00",
-										"createdBy": "N18685",
-										"subtype": "lyric/data",
-										"subtypeid": "I:\\CAMIO\\NYHETER\\Templates\\Super\\00000052.lyr",
-										"ObjectDetails": {
-											"ServerID": "chyron.techycami02.ndte.nrk.mos",
-											"ServerURL": "http://160.68.33.159/CAMIO/Redirection/MOSRedirection.asmx"
-										}
-									}
+					fileName: clip,
+					sourceDuration: sourceDuration,
+					timelineObjects: [
+						literal<TimelineObjLawoSource>({
+							_id: IDs.lawo, deviceId: '',
+							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 'now' },
+							priority: -1,
+							duration: 0,
+							LLayer: 'lawo_source_effect',
+							content: {
+								type: TimelineContentType.LAWO_AUDIO_SOURCE,
+								attributes: {
+									db: 0
 								}
-								},
-								"itemID": 2
 							}
-						},
-						{
-							"Type": "storyItem",
-							"Content": {
-								"mosID": "mosart.morten.mos",
-								"mosAbstract": "TIDSMARKØR IKKE RØR",
-								"objID": "STORYSTATUS",
-								"objSlug": "Story status",
-								"itemID": 3,
-								"itemSlug": "SAK VESTFOLD;head-3"
+						}),
+						literal<TimelineObjCCGVideo>({
+							_id: IDs.vignett, deviceId: '',
+							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo}.start + 0` },
+							priority: -1,
+							duration: sourceDuration,
+							LLayer: 'casparcg_player_vignett',
+							content: {
+								type: TimelineContentType.VIDEO,
+								attributes: {
+									file: clip
+								}
 							}
-						}
+						})
 					]
 				}
-			*/
+			}
+
+			segmentLineItems.push(video)
+
+			return literal<TemplateResult>({
+				segmentLine: null,
+				segmentLineItems: segmentLineItems
+			})
+		}),
+
+		/**
+		 * STK HEAD
+		 */
+		stkHead: literal<TemplateFunctionOptional>(function (context, story) {
+			let IDs = {
+				lawo_automix: context.getRandomId(),
+				headVideo: context.getRandomId(),
+				headGfx: context.getRandomId()
+			}
+
+			let isFirstHeadAfterVignett = false // @todo @johan
+
+			let storyItemClip = _.find(story.Body, (item) => {
+				return (
+					item.Type === 'storyItem' &&
+					context.getValueByPath(item, 'Content.mosExternalMetadata.0.mosPayload.objectType')
+						=== 'CLIP'
+				)
+			})
+			if (!storyItemClip) context.warning('Clip missing in mos data')
+			let storyItemGfx = _.find(story.Body, (item) => {
+				return (
+					item.Type === 'storyItem' &&
+					context.getValueByPath(item, 'Content.mosExternalMetadata.0.mosPayload.subtype')
+						=== 'lyric/data'
+					// context.getValueByPath(item, 'Content.mosID') // for kompatibilitet med ny grafikk
+					// === 'GFX.NRK.MOS'
+				)
+			})
+			if (!storyItemGfx) context.warning('Super missing in mos data')
+
+			let clip = context.getValueByPath(storyItemClip, 'Content.myclipNameSomething')	// @todo Missing data in mos
+
+			let segmentLineItems: Array<SegmentLineItemOptional> = []
+			let video: SegmentLineItemOptional = {
+				_id: context.getRandomId(),
+				mosId: 'video',
+				name: 'Video',
+				trigger: {
+					type: TriggerType.TIME_ABSOLUTE,
+					value: 'now'
+				},
+				status: RundownAPI.LineItemStatusCode.UNKNOWN,
+				sourceLayerId: 'studio0_live_speak0',
+				outputLayerId: 'pgm0',
+				expectedDuration: (
+					story.getValueByPath('MosExternalMetaData.0.MosPayload.Estimated') ||
+					context.sumMosItemDurations(story.getValueByPath('MosExternalMetaData.0.MosPayload.MOSItemDurations')) ||
+					story.getValueByPath('MosExternalMetaData.0.MosPayload.MediaTime') ||
+					story.getValueByPath('MosExternalMetaData.0.MosPayload.SourceMediaTime') ||
+					10
+				),
+				content: {
+					fileName: clip,
+					sourceDuration: (
+						context.getValueByPath(storyItemClip, 'Content.objDur', 0) /
+						(context.getValueByPath(storyItemClip, 'Content.objTB') || 1)
+					),
+					timelineObjects: [
+						literal<TimelineObjLawoSource>({
+							_id: IDs.lawo_automix, deviceId: '',
+							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 'now' },
+							priority: -1,
+							duration: 0,
+							LLayer: 'lawo_source_automix',
+							content: {
+								type: TimelineContentType.LAWO_AUDIO_SOURCE,
+								transitions: {
+									inTransition: {
+										type: 'MIX',
+										duration: 200
+									}
+								},
+								attributes: {
+									db: 0
+								}
+							}
+						}),
+						literal<TimelineObjCCGVideo>({
+							_id: IDs.headVideo, deviceId: '',
+							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
+							priority: -1,
+							duration: (
+								context.getValueByPath(storyItemClip, 'Content.objDur', 0) /
+								(context.getValueByPath(storyItemClip, 'Content.objTB') || 1)
+							),
+							LLayer: 'casparcg_player_vignett',
+							content: {
+								type: TimelineContentType.VIDEO,
+								attributes: {
+									file: clip
+								}
+							}
+						})
+					]
+				}
+			}
+			segmentLineItems.push(video)
+
+			let trigger: ITimelineTrigger = {
+				type: TriggerType.TIME_ABSOLUTE,
+				value: 0
+			}
+			let triggerType = context.getValueByPath(storyItemGfx, 'Content.mosExternalMetadata.0.mosPayload.trigger','') + ''
+			let outType = context.getValueByPath(storyItemGfx, 'Content.mosExternalMetadata.0.mosPayload.out','')
+
+			let mosInTime = (parseFloat(context.getValueByPath(storyItemGfx, 'Content.mosExternalMetadata.0.mosPayload.in',0)) || 0) / 1000
+			let mosDuration = (parseFloat(context.getValueByPath(storyItemGfx, 'Content.mosExternalMetadata.0.mosPayload.duration',0)) || 0 ) / 1000
+
+			if (triggerType.match(/auto/i)) {
+				trigger = {
+					type: TriggerType.TIME_RELATIVE,
+					value: `#${video._id}.start + ${mosInTime}`
+				}
+			} else if (triggerType.match(/manual/i)) {
+				trigger = {
+					type: TriggerType.TIME_RELATIVE,
+					value: `#${video._id}.start + ${inpoint}`
+				}
+			} else {
+				context.warning('Unknown trigger: "' + triggerType + '"')
+			}
+
+			let gfx: SegmentLineItemOptional = {
+				_id: context.getRandomId(),
+				mosId: 'super',
+				name: 'Super',
+				trigger: trigger,
+				status: RundownAPI.LineItemStatusCode.UNKNOWN,
+				sourceLayerId: 'studio0_graphics0',
+				outputLayerId: 'pgm0',
+				expectedDuration: 8, // @todo TBD
+				content: {
+					fileName: clip,
+					sourceDuration: 8, // @todo TBD
+					timelineObjects: [
+						literal<TimelineObjCCGTemplate>({ // to be changed to NRKPOST-something
+							_id: IDs.headGfx, deviceId: '',
+							trigger: {
+								type: TriggerType.TIME_RELATIVE,
+								value: `#${IDs.headVideo}.start + 5`
+							},
+							priority: -1,
+							duration: 8, // @todo TBD
+							LLayer: 'casparcg_cg_graphics',
+							content: {
+								type: TimelineContentType.TEMPLATE, // to be changed to NRKPOST-something
+								attributes: {
+									name: 'nrkgfx', // @todo: TBD
+									useStopCommand: false
+								}
+							}
+						})
+					]
+				}
+			}
+			segmentLineItems.push(gfx)
+
+			return literal<TemplateResult>({
+				segmentLine: null,
+				segmentLineItems: segmentLineItems
+			})
 		})
 	}
 }
+
+/*
+let myTemplates = {
+	full (variant, story: IMOSROFullStory): Array<SegmentLineItemOptional> {
+		// let video: SegmentLineItemOptional
+		if (
+			variant === 'vignett'
+		) {
+		} else {
+			let objs: Array<SegmentLineItemOptional> = []
+			let storyItem: any = {} // Question: How do I know which storyItem is the one containing the video?
+			if (storyItem.Content.mosExternalMetadata.mosPayload.objectType !== 'CLIP') {
+				throw Error('Unknown objectType: ' + storyItem.Content.mosExternalMetadata.mosPayload.objectType)
+			}
+			let timeBase = storyItem.Content.objTB || 0
+			let duration = storyItem.Content.objDur || 0
+			let video = {
+				_id: this.id(),
+				mosId: 'video',
+				name: 'Video',
+				trigger: {
+					type: TriggerType.TIME_RELATIVE,
+					value: 0
+				},
+				status: RundownAPI.LineItemStatusCode.UNKNOWN,
+				sourceLayerId: '',
+				outputLayerId: '',
+				expectedDuration: duration * timeBase,
+				duration: duration * timeBase,
+				content: {
+					clip: storyItem.Content.mosExternalMetadata.mosPayload.title, // todo: vignett video file
+					mixer: {
+						volume: 1
+					}
+				}
+			}
+			objs.push(video)
+
+		}
+		return objs
+	}
+}
+*/
 
 export {nrk}
 /*

@@ -14,8 +14,47 @@ export enum TimelineContentType {
 	TEMPLATE = 'template',
 	ROUTE = 'route',
 	RECORD = 'record',
+	AUDIO = 'audio',
+	GROUP = 'group',
+	LAWO_AUDIO_SOURCE = 'lawo_audio_source',
+	ATEM_ME = 'atem_me',
+	ATEM_DSK = 'atem_dsk',
+	ATEM_AUX = 'atem_aux',
+	ATEM_SSRC = 'atem_ssrc'
+}
+export declare namespace Atem_Enums {
+	enum TransitionStyle {
+		MIX = 0,
+		DIP = 1,
+		WIPE = 2,
+		DVE = 3,
+		STING = 4,
+		CUT = 5,
+	}
 
-	GROUP = 'group'
+	enum SourceIndex {
+		Blk = 0,
+		Bars = 1000,
+		Col1 = 2001,
+		Col2 = 2002,
+		MP1 = 3010,
+		MP1K = 3011,
+		MP2 = 3020,
+		MP2K = 3021,
+		SSrc = 6000,
+		Cfd1 = 7001,
+		Cfd2 = 7002,
+		Aux1 = 8001,
+		Aux2 = 8002,
+		Aux3 = 8003,
+		Aux4 = 8004,
+		Aux5 = 8005,
+		Aux6 = 8006,
+		Prg1 = 10010,
+		Prv1 = 10011,
+		Prg2 = 10020,
+		Prv2 = 10021
+	}
 }
 
 export interface TimelineTransition {
@@ -23,6 +62,19 @@ export interface TimelineTransition {
 	duration: number,
 	easing: Ease,
 	direction: Direction
+}
+
+export type SuperSourceBox = {
+	enabled: boolean,
+	source?: number,
+	x?: number,
+	y?: number,
+	size?: number,
+	cropped?: boolean,
+	cropTop?: number,
+	cropBottom?: number,
+	cropLeft?: number,
+	cropRight?: number
 }
 
 export interface TimelineObj {
@@ -78,22 +130,22 @@ export interface TimelineObjCCGVideo extends TimelineObj {
 		}
 	}
 }
-export interface TimelineObjCCGIP extends TimelineObj {
-	content: {
-		objects?: Array<TimelineObject>
-		keyframes?: Array<TimelineKeyframe>
-		type: TimelineContentType.IP
-		transitions?: {
-			inTransition?: TimelineTransition
-			outTransition?: TimelineTransition
-		}
-		attributes: {
-			uri: string
-			videoFilter?: string
-			audioFilter?: string
-		}
-	}
-}
+// export interface TimelineObjCCGIP extends TimelineObj {
+// 	content: {
+// 		objects?: Array<TimelineObject>
+// 		keyframes?: Array<TimelineKeyframe>
+// 		type: TimelineContentType.IP
+// 		transitions?: {
+// 			inTransition?: TimelineTransition
+// 			outTransition?: TimelineTransition
+// 		}
+// 		attributes: {
+// 			uri: string
+// 			videoFilter?: string
+// 			audioFilter?: string
+// 		}
+// 	}
+// }
 export interface TimelineObjCCGInput extends TimelineObj {
 	content: {
 		objects?: Array<TimelineObject>
@@ -152,6 +204,70 @@ export interface TimelineObjCCGRecord extends TimelineObj {
 		attributes: {
 			file?: string,
 			encoderOptions: string
+		}
+	}
+}
+export interface TimelineObjLawoSource extends TimelineObj {
+	content: {
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentType.LAWO_AUDIO_SOURCE
+		transitions?: {
+			inTransition?: TimelineTransition
+		}
+		attributes: {
+			db: number
+		}
+	}
+}
+export interface TimelineObjAtemME extends TimelineObj {
+	content: {
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentType.ATEM_ME
+		transitions?: {
+			inTransition?: TimelineTransition
+		}
+		attributes: {
+			input: number,
+			transition: Atem_Enums.TransitionStyle
+		}
+	}
+}
+export interface TimelineObjAtemDSK extends TimelineObj {
+	content: {
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentType.ATEM_DSK
+		transitions?: {
+			inTransition?: TimelineTransition
+		}
+		attributes: {
+			onAir: boolean,
+			fillSource: number,
+			keySource: number
+		}
+	}
+}
+export interface TimelineObjAtemAUX extends TimelineObj {
+	content: {
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentType.ATEM_AUX
+		transitions?: {
+			inTransition?: TimelineTransition
+		}
+		attributes: {
+			input: number,
+		}
+	}
+}
+export interface TimelineObjAtemSsrc extends TimelineObj {
+	content: {
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentType.ATEM_SSRC
+		transitions?: {
+			inTransition?: TimelineTransition
+		}
+		attributes: {
+			boxes: Array<SuperSourceBox>,
+			artfillSource: number
 		}
 	}
 }

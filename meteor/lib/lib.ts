@@ -80,6 +80,7 @@ interface SaveIntoDbOptions<T> {
 	beforeInsert?: (o: T) => T
 	beforeUpdate?: (o: T) => T
 	beforeRemove?: (o: T) => T
+	beforeDiff?: (o: T, oldObj: DBObj) => T
 	insert?: (o: T ) => void
 	update?: (id: string, o: T ) => void
 	remove?: (o: T ) => void
@@ -107,14 +108,14 @@ export function saveIntoDb<T extends DBObj> (
 	}
 	let options: SaveIntoDbOptions<T> = optionsOrg || {}
 
-	let identifier = 'id'
+	let identifier = '_id'
 
 	let oldObjs = collection.find(filter).fetch()
 
 	let newObjs2 = []
 
-	let removeObjs: {[id: string]: DBObj} = {}
-	_.each(oldObjs,function (o: DBObj) {
+	let removeObjs: {[id: string]: T} = {}
+	_.each(oldObjs,function (o: T) {
 
 		if (removeObjs['' + o[identifier]]) {
 			// duplicate id:
@@ -136,7 +137,9 @@ export function saveIntoDb<T extends DBObj> (
 		let oldObj = removeObjs['' + o[identifier]]
 		if (oldObj) {
 
-			let diff = compareObjs(oldObj,o)
+			let o2 = o
+			if (options.beforeDiff) o2 = options.beforeDiff(o, oldObj)
+			let diff = compareObjs(oldObj,o2)
 
 			if (!diff) {
 				let oUpdate = ( options.beforeUpdate ? options.beforeUpdate(o) : o)

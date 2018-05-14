@@ -73,7 +73,7 @@ export const ConnectionStatusNotification = withTracker((props, state) => {
 			case 'failed':
 				return <span>{t('Cannot connect to the automation server') + ': ' + this.props.reason}</span>
 			case 'waiting':
-				return <span>{t('Reconnecing to the automation server')} <Moment fromNow>{this.props.retryTime}</Moment></span>
+				return <span>{t('Reconnecing to the automation server in')} <Moment fromNow unit='seconds'>{this.props.retryTime}</Moment></span>
 			case 'offline':
 				return <span>{t('Your machine is off-line.')}</span>
 			case 'connected':
