@@ -14,4 +14,8 @@
 			line-height: 1em;
 		}
 	}
+
+	&.text-s > p {
+		font-weight: 400;
+	}
 }

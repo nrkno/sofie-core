@@ -18,7 +18,6 @@ interface IPropsHeader {
 
 interface IStateHeader {
 	dismissed: boolean
-	show: boolean
 }
 
 export const ConnectionStatusNotification = withTracker((props, state) => {
@@ -37,24 +36,14 @@ export const ConnectionStatusNotification = withTracker((props, state) => {
 	constructor (props) {
 		super(props)
 		this.state = {
-			dismissed: false,
-			show: false
+			dismissed: false
 		}
-	}
-
-	componentDidMount () {
-		setTimeout(() => {
-			this.setState({
-				show: true
-			})
-		}, 2000)
 	}
 
 	componentWillReceiveProps (nextProps) {
 		if ((nextProps.connected !== this.props.connected) || (nextProps.status !== this.props.status)) {
 			this.setState({
-				dismissed: false,
-				show: true
+				dismissed: false
 			})
 		}
 	}
@@ -102,7 +91,7 @@ export const ConnectionStatusNotification = withTracker((props, state) => {
 								<CoreIcons id='nrk-close' />
 							</button>
 						</p>
-						<p>
+						<p className=''>
 							{this.getStatusText()}
 						</p>
 						<p>
