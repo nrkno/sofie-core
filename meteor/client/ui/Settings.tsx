@@ -5,6 +5,10 @@ import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import * as ClassNames from 'classnames'
 import Moment from 'react-moment'
 import { translate, InjectedTranslateProps } from 'react-i18next'
+import { Random } from 'meteor/random'
+import { literal } from '../../lib/lib'
+
+import { ModalDialog } from '../lib/ModalDialog'
 
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
@@ -20,9 +24,15 @@ import {
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { RuntimeFunction, RuntimeFunctions } from '../../lib/collections/RuntimeFunctions'
 
 import StudioSettings from './Settings/StudioSettings'
 import DeviceSettings from './Settings/DeviceSettings'
+import LineTemplates from './Settings/LineTemplates'
+
+import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
+import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 class WelcomeToSettings extends React.Component {
 	render () {
@@ -34,19 +44,34 @@ interface IPropsMenuHeader {
 	studioInstallations: Array<StudioInstallation>
 	showStyles: Array<ShowStyle>
 	peripheralDevices: Array<PeripheralDevice>
+	lineTemplates: Array<RuntimeFunction>
 	match?: any
+}
+interface IStateMenuHeader {
+	deleteConfirmItem: any
+	showDeleteLineTemplateConfirm: boolean
 }
 const SettingsMenu = translate()(withTracker(() => {
 	let subStudioInstallations = Meteor.subscribe('studioInstallations', {})
 	let subShowStyles = Meteor.subscribe('showStyles', {})
 	let subPeripheralDevices = Meteor.subscribe('peripheralDevices', {})
+	let subRuntimeFunctions = Meteor.subscribe('runtimeFunctions', {})
 
 	return {
 		studioInstallations: StudioInstallations.find({}).fetch(),
 		showStyles: ShowStyles.find({}).fetch(),
-		peripheralDevices: PeripheralDevices.find({}).fetch()
+		peripheralDevices: PeripheralDevices.find({}).fetch(),
+		lineTemplates: RuntimeFunctions.find({}).fetch()
 	}
-})(class extends React.Component<IPropsMenuHeader & InjectedTranslateProps> {
+})(class extends React.Component<IPropsMenuHeader & InjectedTranslateProps, IStateMenuHeader> {
+	constructor (props) {
+		super(props)
+		this.state = {
+			deleteConfirmItem: undefined,
+			showDeleteLineTemplateConfirm: false
+		}
+	}
+
 	statusCodeString (statusCode: PeripheralDeviceAPI.StatusCode) {
 		let t = this.props.t
 
@@ -89,12 +114,40 @@ const SettingsMenu = translate()(withTracker(() => {
 		}
 	}
 
+	onAddLineTemplate () {
+		RuntimeFunctions.insert(literal<RuntimeFunction>({
+			_id: Random.hexString(5),
+			code: ''
+		}))
+	}
+
+	onDeleteLineTemplate (item: RuntimeFunction) {
+		this.setState({
+			deleteConfirmItem: item,
+			showDeleteLineTemplateConfirm: true
+		})
+	}
+
+	handleConfirmDeleteLineTemplateAccept = (e) => {
+		RuntimeFunctions.remove(this.state.deleteConfirmItem._id)
+		this.setState({
+			showDeleteLineTemplateConfirm: false
+		})
+	}
+
+	handleConfirmDeleteLineTemplateCancel = (e) => {
+		this.setState({
+			deleteConfirmItem: undefined,
+			showDeleteLineTemplateConfirm: false
+		})
+	}
+
 	render () {
 		const { t } = this.props
 
 		return (
 			<div className='tight-xs htight-xs text-s'>
-				<h2 className='mhs'>Studios</h2>
+				<h2 className='mhs'>{t('Studios')}</h2>
 				<hr className='vsubtle man' />
 				{
 					this.props.studioInstallations.map((item) => {
@@ -109,7 +162,7 @@ const SettingsMenu = translate()(withTracker(() => {
 						]
 					})
 				}
-				<h2 className='mhs'>Show Styles</h2>
+				<h2 className='mhs'>{t('Show Styles')}</h2>
 				<hr className='vsubtle man' />
 				{
 					this.props.showStyles.map((item) => {
@@ -123,7 +176,33 @@ const SettingsMenu = translate()(withTracker(() => {
 						)
 					})
 				}
-				<h2 className='mhs'>Devices</h2>
+				<h2 className='mhs'>
+					<button className='action-btn right' onClick={(e) => this.onAddLineTemplate()}>
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
+					{t('Line Templates')}
+				</h2>
+				<hr className='vsubtle man' />
+				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteLineTemplateConfirm} onAccept={(e) => this.handleConfirmDeleteLineTemplateAccept(e)} onSecondary={(e) => this.handleConfirmDeleteLineTemplateCancel(e)}>
+					<p>{t(`Are you sure you want to delete line template ${this.state.deleteConfirmItem && this.state.deleteConfirmItem._id}?`)}</p>
+					<p>{t('This action is irreversible.')}</p>
+				</ModalDialog>
+				{
+					this.props.lineTemplates.map((item) => {
+						return (
+							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/lineTemplate/' + item._id}>
+								<div className='selectable clickable'>
+									<button className='action-btn right' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteLineTemplate(item)}>
+										<FontAwesomeIcon icon={faTrash} />
+									</button>
+									<h3>{item._id}</h3>
+								</div>
+								<hr className='vsubtle man' />
+							</NavLink>
+						)
+					})
+				}
+				<h2 className='mhs'>{t('Devices')}</h2>
 				<hr className='vsubtle man' />
 				{
 					this.props.peripheralDevices.map((item) => {
@@ -163,6 +242,7 @@ class Settings extends React.Component<InjectedTranslateProps> {
 								<Route path='/settings/studio/:studioId' component={StudioSettings} />
 								<Route path='/settings/showStyle/:showStyleId' component={Settings} />
 								<Route path='/settings/peripheralDevice/:deviceId' component={DeviceSettings} />
+								<Route path='/settings/lineTemplate/:ltId' component={LineTemplates} />
 								<Redirect to='/settings' />
 							</Switch>
 						</div>

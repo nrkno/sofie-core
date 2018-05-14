@@ -11,6 +11,10 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 			return (
 				<EditAttributeText {...this.props} />
 			)
+		} else if (this.props.type === 'multiline') {
+			return (
+				<EditAttributeMultilineText {...this.props} />
+			)
 		} else if (this.props.type === 'int') {
 			return (
 				<EditAttributeInt {...this.props} />
@@ -149,6 +153,39 @@ const EditAttributeText = wrapEditAttribute(class extends EditAttributeBase {
 	render () {
 		return (
 			<input type='text'
+				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+
+				value={this.getEditAttribute() || ''}
+				onChange={this.handleChange}
+				onBlur={this.handleBlur}
+				onKeyUp={this.handleEscape}
+			/>
+		)
+	}
+})
+const EditAttributeMultilineText = wrapEditAttribute(class extends EditAttributeBase {
+	constructor (props) {
+		super(props)
+
+		this.handleChange = this.handleChange.bind(this)
+		this.handleBlur = this.handleBlur.bind(this)
+		this.handleEscape = this.handleEscape.bind(this)
+	}
+	handleChange (event) {
+		this.handleEdit(event.target.value)
+	}
+	handleBlur (event) {
+		this.handleUpdate(event.target.value)
+	}
+	handleEscape (event) {
+		let e = event as KeyboardEvent
+		if (e.key === 'Escape') {
+			this.handleDiscard()
+		}
+	}
+	render () {
+		return (
+			<textarea
 				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
 
 				value={this.getEditAttribute() || ''}
