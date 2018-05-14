@@ -30,3 +30,4 @@ runisland:static-assets
 dynamic-import
 peerlibrary:computed-field
 meteorhacks:picker
+ostrio:meteor-root
