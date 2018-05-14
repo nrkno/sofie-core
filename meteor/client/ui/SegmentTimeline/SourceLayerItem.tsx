@@ -118,19 +118,24 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 						// console.log(this.state.itemElement)
 
+						// || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0)
 						let styleObj = {
-							'transform': 'translate3d(' + (widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin))).toString() + 'px, 0, 0) ' +
+							'transform': 'translate3d(' + (widthConstrictedMode ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
 										 'translate3d(' + (liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
 										 'translate3d(-100%, 0, 0)',
 							'willChange': 'transform'
 						}
 
 						return styleObj
-					} else if (this.props.scrollLeft + (liveLineHistoryWithMargin / this.props.timeScale) >= (inPoint + duration + this.props.segmentLine.startsAt - outTransitionDuration)) {
+					} else if ((this.state.rightAnchoredWidth < this.state.elementWidth) &&
+							   (this.state.leftAnchoredWidth < this.state.elementWidth) &&
+							   (this.props.scrollLeft + (liveLineHistoryWithMargin / this.props.timeScale) >= (inPoint + duration + this.props.segmentLine.startsAt - outTransitionDuration))) {
+						console.log(segmentLineItem.name + ': constrictedMode')
+						console.log(this.state.leftAnchoredWidth, this.state.rightAnchoredWidth, this.state.elementWidth)
 						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLine.startsAt - inTransitionDuration) * this.props.timeScale
 
 						let styleObj = {
-							'transform': 'translate3d(' + (targetPos).toString() + 'px, 0, 0) ' +
+							'transform': 'translate3d(' + (Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
 										 'translate3d(' + (liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
 										 'translate3d(-100%, 0, 0)',
 							'willChange': 'transform'
