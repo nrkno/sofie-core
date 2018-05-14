@@ -50,7 +50,7 @@ const TimingDisplay = translate()(withTiming()(class extends React.Component<ITi
 					{RundownUtils.formatDiffToTimecode((this.props.timingDurations.totalRundownDuration || 0) - (this.props.timingDurations.asPlayedRundownDuration || 0), true)}
 				</span>
 				<span className='timing-clock-header-label'>{t('Finish')}: </span>
-				<span className='timing-clock time-end'><Moment format='HH:mm:ss' date={getCurrentTime() + ((this.props.timingDurations.remainingRundownDuration || 0) * 1000)} /></span>
+				<span className='timing-clock time-end'><Moment format='HH:mm:ss' date={getCurrentTime() + ((this.props.timingDurations.remainingRundownDuration || 0))} /></span>
 			</div>
 		)
 	}
