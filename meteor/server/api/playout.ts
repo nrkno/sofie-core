@@ -22,7 +22,7 @@ Meteor.methods({
 	 */
 	'playout_activate': (roId: string) => {
 		let runningOrder = RunningOrders.findOne(roId)
-		if (!runningOrder) throw new Meteor.Error(404, 'RunningOrder "' + roId + '" not found!')
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
 		let anyOtherActiveRunningOrders = RunningOrders.find({
 			studioInstallationId: runningOrder.studioInstallationId,
@@ -36,6 +36,7 @@ Meteor.methods({
 
 		RunningOrders.update(runningOrder._id, {$set: {
 			active: true,
+			previousSegmentLineId: null,
 			currentSegmentLineId: null,
 			nextSegmentLineId: segmentLines[0]._id // put the first on queue
 		}})
@@ -46,10 +47,11 @@ Meteor.methods({
 	 */
 	'playout_inactivate': (roId: string) => {
 		let runningOrder = RunningOrders.findOne(roId)
-		if (!runningOrder) throw new Meteor.Error(404, 'RunningOrder "' + roId + '" not found!')
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
 		RunningOrders.update(runningOrder._id, {$set: {
 			active: false,
+			previousSegmentLineId: null,
 			currentSegmentLineId: null,
 			nextSegmentLineId: null
 		}})
@@ -59,7 +61,7 @@ Meteor.methods({
 	 */
 	'playout_take': (roId: string) => {
 		let runningOrder = RunningOrders.findOne(roId)
-		if (!runningOrder) throw new Meteor.Error(404, 'RunningOrder "' + roId + '" not found!')
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (!runningOrder.nextSegmentLineId) throw new Meteor.Error(500, 'nextSegmentLineId is not set!')
 
 		let takeSegmentLine = SegmentLines.findOne(runningOrder.nextSegmentLineId)
@@ -76,6 +78,7 @@ Meteor.methods({
 		let nextSegmentLine: SegmentLine | null = segmentLinesAfter[0] || null
 
 		RunningOrders.update(runningOrder._id, {$set: {
+			previousSegmentLineId: runningOrder.currentSegmentLineId,
 			currentSegmentLineId: takeSegmentLine._id,
 			nextSegmentLineId: nextSegmentLine._id
 		}})
@@ -86,7 +89,7 @@ Meteor.methods({
 	'playout_setNext': (roId: string, nextSlId: string) => {
 
 		let runningOrder = RunningOrders.findOne(roId)
-		if (!runningOrder) throw new Meteor.Error(404, 'RunningOrder "' + roId + '" not found!')
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
 		RunningOrders.update(runningOrder._id, {$set: {
 			nextSegmentLineId: nextSlId
@@ -94,6 +97,107 @@ Meteor.methods({
 
 		// remove old auto-next from timeline, and add new one
 		updateTimeline(runningOrder.studioInstallationId)
+	},
+
+	'playout_segmentLinePlaybackStart': (roId: string, slId: string, startedPlayback: Time) => {
+		logger.info(`TSR reports segment line "${slId}" has just started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
+
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+
+		let segLine = SegmentLines.findOne({
+			_id: slId,
+			runningOrderId: roId
+		})
+
+		if (segLine) {
+			if (runningOrder.currentSegmentLineId === slId) {
+				// this is the current segment line, it has just started playback
+				if (runningOrder.previousSegmentLineId) {
+					let prevSegLine = SegmentLines.findOne(runningOrder.previousSegmentLineId)
+
+					if (!prevSegLine) {
+						// We couldn't find the previous segment line: this is not a critical issue, but is clearly is a symptom of a larger issue
+						logger.error(`Previous segment line "${runningOrder.previousSegmentLineId}" on running order "${roId}" could not be found.`)
+					} else {
+						if (prevSegLine.startedPlayback && prevSegLine.startedPlayback > 0) {
+							SegmentLines.update(prevSegLine._id, {$set: {
+								duration: startedPlayback - prevSegLine.startedPlayback
+							}})
+						} else {
+							logger.error(`Previous segment line "${runningOrder.previousSegmentLineId}" has never started playback on running order "${roId}".`)
+						}
+					}
+				}
+
+				RunningOrders.update(runningOrder._id, {
+					$set: {
+						previousSegmentLineId: null
+					}
+				})
+			} else if (runningOrder.nextSegmentLineId === slId) {
+				// this is the next segment line, clearly an autoNext has taken place
+				if (runningOrder.currentSegmentLineId) {
+					let prevSegLine = SegmentLines.findOne(runningOrder.currentSegmentLineId)
+
+					if (!prevSegLine) {
+						// We couldn't find the previous segment line: this is not a critical issue, but is clearly is a symptom of a larger issue
+						logger.error(`Previous segment line "${runningOrder.currentSegmentLineId}" on running order "${roId}" could not be found.`)
+					} else {
+						if (prevSegLine.startedPlayback && prevSegLine.startedPlayback > 0) {
+							SegmentLines.update(prevSegLine._id, {$set: {
+								duration: startedPlayback - prevSegLine.startedPlayback
+							}})
+						} else {
+							logger.error(`Previous segment line "${runningOrder.currentSegmentLineId}" has never started playback on running order "${roId}".`)
+						}
+					}
+				}
+
+				let segmentLinesAfter = runningOrder.getSegmentLines({
+					_rank: {
+						$gt: segLine._rank,
+					},
+					_id: { $ne: segLine._id }
+				})
+
+				let nextSegmentLine: SegmentLine | null = segmentLinesAfter[0] || null
+
+				RunningOrders.update(runningOrder._id, {
+					$set: {
+						previousSegmentLineId: null,
+						currentSegmentLineId: segLine._id,
+						nextSegmentLineId: nextSegmentLine._id
+					}
+				})
+			} else {
+				// a segment line is being played that has not been selected for playback by Core
+				// show must go on, so find next segmentLine and update the RunningOrder, but log an error
+				let segmentLinesAfter = runningOrder.getSegmentLines({
+					_rank: {
+						$gt: segLine._rank,
+					},
+					_id: { $ne: segLine._id }
+				})
+
+				let nextSegmentLine: SegmentLine | null = segmentLinesAfter[0] || null
+
+				RunningOrders.update(runningOrder._id, {
+					$set: {
+						currentSegmentLineId: segLine._id,
+						nextSegmentLineId: nextSegmentLine._id
+					}
+				})
+
+				logger.crit(`Segment Line "${segLine._id}" has started playback by the TSR, but has not been selected for playback!`)
+			}
+
+			SegmentLines.update(segLine._id, {$set: {
+				startedPlayback
+			}})
+		} else {
+			throw new Meteor.Error(404, `Segment line "${slId}" on running order "${roId}" not found!`)
+		}
 	}
 })
 
@@ -174,12 +278,12 @@ function updateTimeline (studioInstallationId: string) {
 		if (activeRunningOrder.nextSegmentLineId) {
 			// We may be at the beginning of a show, and there can be no currentSegmentLine and we are waiting for the user to Take
 			nextSegmentLine = SegmentLines.findOne(activeRunningOrder.nextSegmentLineId)
-			if (!nextSegmentLine) throw new Meteor.Error(404, 'SegmentLine "' + activeRunningOrder.nextSegmentLineId + '" not found!')
+			if (!nextSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.nextSegmentLineId}" not found!`)
 		}
 
 		if (activeRunningOrder.currentSegmentLineId) {
 			currentSegmentLine = SegmentLines.findOne(activeRunningOrder.currentSegmentLineId)
-			if (!currentSegmentLine) throw new Meteor.Error(404, 'SegmentLine "' + activeRunningOrder.currentSegmentLineId + '" not found!')
+			if (!currentSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.currentSegmentLineId}" not found!`)
 
 			// fetch items
 			// fetch the timelineobjs in items
@@ -194,7 +298,7 @@ function updateTimeline (studioInstallationId: string) {
 			if (currentSegmentLineGroup) {
 				nextSegmentLineGroup.trigger = literal<ITimelineTrigger>({
 					type: TriggerType.TIME_RELATIVE,
-					value: '#' + currentSegmentLineGroup._id + '.end'
+					value: `#${currentSegmentLineGroup._id}.end`
 				})
 			}
 			timelineObjs = timelineObjs.concat(nextSegmentLineGroup, transformSegmentLineIntoTimeline(nextSegmentLine, nextSegmentLineGroup))
@@ -202,7 +306,7 @@ function updateTimeline (studioInstallationId: string) {
 
 		if (!activeRunningOrder.nextSegmentLineId && !activeRunningOrder.currentSegmentLineId) {
 			// maybe at the end of the show
-			logger.info('No next segmentLine and no current segment line set on running order "' + activeRunningOrder._id + '".')
+			logger.info(`No next segmentLine and no current segment line set on running order "${activeRunningOrder._id}".`)
 		}
 
 		// next (on pvw (or on pgm if first))

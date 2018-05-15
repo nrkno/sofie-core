@@ -40,7 +40,7 @@ const TIMING_DEFAULT_REFRESH_INTERVAL = 250
 
 interface IRunningOrderTimingProviderProps {
 	runningOrder: RunningOrder
-	segments: Array<Segment & { items: Array<SegmentLine> }>
+	segmentLines: Array<SegmentLine>
 	refreshInterval?: number
 }
 interface IRunningOrderTimingProviderChildContext {
@@ -49,30 +49,16 @@ interface IRunningOrderTimingProviderChildContext {
 
 export const RunningOrderTimingProvider = withTracker((props, state) => {
 	if (props.runningOrder) {
-		const segments = Segments.find({ 'runningOrderId': props.runningOrder._id }, {
+		const segmentLines = SegmentLines.find({
+			'runningOrderId': props.runningOrder._id,
+		}, {
 			sort: {
 				'_rank': 1
 			}
 		}).fetch()
 
-		if (segments) {
-			segments.forEach((item) => {
-				const segmentLines = SegmentLines.find({
-					'runningOrderId': props.runningOrder._id,
-					'segmentId': item._id
-				}, {
-					sort: {
-						'_rank': 1
-					}
-				}).fetch()
-
-				const seg = item as any
-				seg.items = segmentLines
-			})
-		}
-
 		return {
-			segments
+			segmentLines
 		}
 	} else {
 		return {}
@@ -130,7 +116,7 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 		let waitAccumulator = 0
 		let currentRemaining = 0
 
-		const { runningOrder, segments } = this.props
+		const { runningOrder, segmentLines } = this.props
 		const linearSegLines: Array<[string, number | null]> = []
 
 		let nextAIndex = -1
@@ -138,42 +124,40 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 
 		let now = getCurrentTime()
 
-		if (runningOrder && segments) {
-			segments.forEach((seg, segIndex) => {
-				seg.items.forEach((item, itIndex) => {
-					// add segmentLineItem to accumulator
-					const aIndex = linearSegLines.push([item._id, waitAccumulator]) - 1
+		if (runningOrder && segmentLines) {
+			segmentLines.forEach((item, itIndex) => {
+				// add segmentLineItem to accumulator
+				const aIndex = linearSegLines.push([item._id, waitAccumulator]) - 1
 
-					// if this is next segementLine, clear previous countdowns and clear accumulator
-					if (runningOrder.nextSegmentLineId === item._id) {
-						nextAIndex = aIndex
-					}
+				// if this is next segementLine, clear previous countdowns and clear accumulator
+				if (runningOrder.nextSegmentLineId === item._id) {
+					nextAIndex = aIndex
+				}
 
-					// expected is just a sum of expectedDurations
-					totalRundownDuration += item.expectedDuration || 0
+				// expected is just a sum of expectedDurations
+				totalRundownDuration += item.expectedDuration || 0
 
-					// asPlayed is the actual duration so far and expected durations in unplayed lines
-					// item is onAir right now, and it's already taking longer than rendered/expectedDuration
-					if (item.startedPlayback && !item.duration && runningOrder.currentSegmentLineId === item._id && item.startedPlayback + (item.expectedDuration || 0) < now) {
-						asPlayedRundownDuration += (now - item.startedPlayback)
-					} else {
-						asPlayedRundownDuration += (item.duration || item.expectedDuration || 0)
-					}
+				// asPlayed is the actual duration so far and expected durations in unplayed lines
+				// item is onAir right now, and it's already taking longer than rendered/expectedDuration
+				if (item.startedPlayback && !item.duration && runningOrder.currentSegmentLineId === item._id && item.startedPlayback + (item.expectedDuration || 0) < now) {
+					asPlayedRundownDuration += (now - item.startedPlayback)
+				} else {
+					asPlayedRundownDuration += (item.duration || item.expectedDuration || 0)
+				}
 
-					if (item.startedPlayback && !item.duration && runningOrder.currentSegmentLineId === item._id) {
-						currentRemaining = Math.max(0, (item.duration || item.expectedDuration || 0) - (now - item.startedPlayback))
-					}
-					// always add the full duration, in case by some manual intervention this segment should play twice
-					waitAccumulator += (item.duration || item.expectedDuration || 0)
+				if (item.startedPlayback && !item.duration && runningOrder.currentSegmentLineId === item._id) {
+					currentRemaining = Math.max(0, (item.duration || item.expectedDuration || 0) - (now - item.startedPlayback))
+				}
+				// always add the full duration, in case by some manual intervention this segment should play twice
+				waitAccumulator += (item.duration || item.expectedDuration || 0)
 
-					// remaining is the sum of unplayed lines + whatever is left of the current segment
-					if (!item.startedPlayback) {
-						remainingRundownDuration += item.expectedDuration || 0
-						// item is onAir right now, and it's is currently shorter than expectedDuration
-					} else if (item.startedPlayback && !item.duration && runningOrder.currentSegmentLineId === item._id && item.startedPlayback + (item.expectedDuration || 0) > now) {
-						remainingRundownDuration += (item.expectedDuration || 0) - (now - item.startedPlayback)
-					}
-				})
+				// remaining is the sum of unplayed lines + whatever is left of the current segment
+				if (!item.startedPlayback) {
+					remainingRundownDuration += item.expectedDuration || 0
+					// item is onAir right now, and it's is currently shorter than expectedDuration
+				} else if (item.startedPlayback && !item.duration && runningOrder.currentSegmentLineId === item._id && item.startedPlayback + (item.expectedDuration || 0) > now) {
+					remainingRundownDuration += (item.expectedDuration || 0) - (now - item.startedPlayback)
+				}
 			})
 
 			let localAccum = 0

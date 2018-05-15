@@ -31,6 +31,8 @@ export interface DBRunningOrder {
 	currentSegmentLineId: string | null
 	/** the id of the Next Segment Line - if empty, no segment will follow Live Segment Line */
 	nextSegmentLineId: string | null
+	/** the id of the Previous Segment Line - cleared once playback of the currentSegmentLine has been confirmed by TSR */
+	previousSegmentLineId: string | null
 }
 export class RunningOrder implements DBRunningOrder {
 	public _id: string
@@ -43,6 +45,7 @@ export class RunningOrder implements DBRunningOrder {
 	public status?: IMOSObjectStatus
 	public airStatus?: IMOSObjectAirStatus
 	public active?: boolean
+	public previousSegmentLineId: string | null
 	public currentSegmentLineId: string | null
 	public nextSegmentLineId: string | null
 
