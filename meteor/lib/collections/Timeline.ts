@@ -4,6 +4,8 @@ import { Mongo } from 'meteor/mongo'
 import { TimelineObject, ObjectId, TriggerType, TimelineKeyframe } from 'superfly-timeline'
 
 import { ChannelFormat, Transition, Ease, Direction } from '../constants/casparcg'
+import { StudioInstallations } from './StudioInstallations'
+import { FindOptions, Selector, TransformedCollection } from './typings'
 
 // Note: The data structure is based on what works with the CasparCG-state library
 
@@ -79,6 +81,10 @@ export type SuperSourceBox = {
 
 export interface TimelineObj {
 	_id: string
+	/** Studio installation Id */
+	siId: string
+	/** Running Order Id */
+	roId: string
 	/** Id of the Device */
 	deviceId: string
 
@@ -272,4 +278,6 @@ export interface TimelineObjAtemSsrc extends TimelineObj {
 	}
 }
 
-export const Timeline = new Mongo.Collection<TimelineObj>('timeline')
+// export const Timeline = new Mongo.Collection<TimelineObj>('timeline')
+export const Timeline: TransformedCollection<TimelineObj, TimelineObj>
+	= new Mongo.Collection<TimelineObj>('timeline')

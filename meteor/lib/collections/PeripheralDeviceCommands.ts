@@ -1,6 +1,7 @@
 import { Mongo } from 'meteor/mongo'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Time, getCurrentTime } from '../../lib/lib'
+import { TransformedCollection } from './typings'
 
 export interface PeripheralDeviceCommand {
 	_id: string
@@ -15,7 +16,8 @@ export interface PeripheralDeviceCommand {
 
 	time: number // time
 }
-export const PeripheralDeviceCommands = new Mongo.Collection<PeripheralDeviceCommand>('peripheralDeviceCommands')
+export const PeripheralDeviceCommands: TransformedCollection<PeripheralDeviceCommand, PeripheralDeviceCommand>
+	= new Mongo.Collection<PeripheralDeviceCommand>('peripheralDeviceCommands')
 
 // Monitor and remove old, lingering commands:
 setInterval(() => {

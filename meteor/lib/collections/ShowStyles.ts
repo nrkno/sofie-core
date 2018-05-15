@@ -1,4 +1,5 @@
 import { Mongo } from 'meteor/mongo'
+import { TransformedCollection } from './typings'
 
 export interface ShowStyle {
 	_id: string
@@ -9,4 +10,5 @@ export interface ShowStyle {
 	logicalSegmentLineItems: Array<object>
 }
 
-export const ShowStyles = new Mongo.Collection<ShowStyle>('showStyles')
+export const ShowStyles: TransformedCollection<ShowStyle, ShowStyle>
+	= new Mongo.Collection<ShowStyle>('showStyles')

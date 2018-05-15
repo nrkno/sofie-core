@@ -1,5 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import { RundownAPI } from '../../lib/api/rundown'
+import { TransformedCollection } from './typings';
 
 /** A set of available layer groups in a given installation */
 export interface StudioInstallation {
@@ -40,4 +41,5 @@ export interface IOutputLayer {
 	isPGM: boolean
 }
 
-export const StudioInstallations = new Mongo.Collection<StudioInstallation>('studioInstallation')
+export const StudioInstallations: TransformedCollection<StudioInstallation, StudioInstallation>
+	= new Mongo.Collection<StudioInstallation>('studioInstallation')

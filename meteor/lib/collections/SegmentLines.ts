@@ -4,6 +4,7 @@ import {
 	IMOSExternalMetaData,
 	IMOSObjectStatus
 } from 'mos-connection'
+import { TransformedCollection } from './typings';
 
 /** A "Line" in NRK Lingo. */
 export interface SegmentLine {
@@ -33,4 +34,5 @@ export interface SegmentLine {
 	duration?: number
 }
 
-export const SegmentLines = new Mongo.Collection<SegmentLine>('segmentLines')
+export const SegmentLines: TransformedCollection<SegmentLine, SegmentLine>
+	= new Mongo.Collection<SegmentLine>('segmentLines')

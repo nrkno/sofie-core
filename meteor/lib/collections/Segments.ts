@@ -7,7 +7,7 @@ import {
 	IMOSObjectStatus
 } from 'mos-connection'
 import { RunningOrders } from './RunningOrders';
-import { FindOptions, Selector, TransformedCollection } from './typings';
+import { FindOptions, Selector, TransformedCollection } from './typings'
 
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
 export interface DBSegment {

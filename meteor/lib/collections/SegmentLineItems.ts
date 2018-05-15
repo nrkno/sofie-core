@@ -4,6 +4,7 @@ import { TriggerType } from 'superfly-timeline'
 import { TimelineTransition, TimelineObjGroup, TimelineObjCCGVideo, TimelineObjLawoSource } from './Timeline'
 import { Dictionary } from 'underscore'
 import { TimelineObj } from './Timeline'
+import { TransformedCollection } from './typings'
 
 /** A trigger interface compatible with that of supertimeline */
 export interface ITimelineTrigger {
@@ -49,7 +50,8 @@ export interface SegmentLineItem {
 	continuesRefId?: string
 }
 
-export const SegmentLineItems = new Mongo.Collection<SegmentLineItem>('segmentLineItems')
+export const SegmentLineItems: TransformedCollection<SegmentLineItem, SegmentLineItem>
+	= new Mongo.Collection<SegmentLineItem>('segmentLineItems')
 export interface MetadataElement {
 	_id: string,
 	key: string,
