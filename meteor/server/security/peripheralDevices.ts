@@ -47,7 +47,7 @@ PeripheralDevices.allow({
 	},
 	update (userId, doc, fields, modifier) {
 		return true // Temporary: allow all updates client-side
-		return false // Not allowed client-side
+		// return false // Not allowed client-side
 	},
 
 	remove (userId, doc) {

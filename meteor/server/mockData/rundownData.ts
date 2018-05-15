@@ -228,7 +228,8 @@ Meteor.methods({
 				mosId: seg0.mosId + '_LINE' + line++,
 				segmentId: seg0._id,
 				runningOrderId: seg0.runningOrderId,
-				expectedDuration: 5 * 1000
+				expectedDuration: 5 * 1000,
+				slug: ''
 			}
 			SegmentLines.insert(segLine)
 
@@ -253,14 +254,15 @@ Meteor.methods({
 				SegmentLineItems.insert(segmentLineItem)
 
 			// Fribyen
-				segLine = {
+				segLine = literal<SegmentLine>({
 					_id: seg0._id + '-line' + line,
 					_rank: line++,
 					mosId: seg0.mosId + '_LINE' + line++,
 					segmentId: seg0._id,
 					runningOrderId: seg0.runningOrderId,
-					expectedDuration: 7 * 1000
-				}
+					expectedDuration: 7 * 1000,
+					slug: ''
+				})
 				SegmentLines.insert(segLine)
 
 				segmentLineItem = literal<SegmentLineItem>({
@@ -332,14 +334,15 @@ Meteor.methods({
 				SegmentLineItems.insert(segmentLineItem)
 
 			// Padder
-				segLine = {
+				segLine = literal<SegmentLine>({
 					_id: seg0._id + '-line' + line,
 					_rank: line++,
 					mosId: seg0.mosId + '_LINE' + line++,
 					segmentId: seg0._id,
 					runningOrderId: seg0.runningOrderId,
-					expectedDuration: 7 * 1000
-				}
+					expectedDuration: 7 * 1000,
+					slug: ''
+				})
 				SegmentLines.insert(segLine)
 
 				segmentLineItem = literal<SegmentLineItem>({
@@ -408,14 +411,15 @@ Meteor.methods({
 
 		/* Segment 1 */
 			line = 0
-			segLine = {
+			segLine = literal<SegmentLine>({
 				_id: seg1._id + '-line' + line,
 				_rank: line++,
 				mosId: seg1.mosId + '_LINE' + line++,
 				segmentId: seg1._id,
 				runningOrderId: seg1.runningOrderId,
-				expectedDuration: 7.5 * 1000
-			}
+				expectedDuration: 7.5 * 1000,
+				slug: ''
+			})
 			SegmentLines.insert(segLine)
 
 			// Bumper VT
@@ -495,15 +499,16 @@ Meteor.methods({
 				})
 				SegmentLineItems.insert(segmentLineItem)
 
-			// Next	
-				segLine = {
+			// Next
+				segLine = literal<SegmentLine>({
 					_id: seg1._id + '-line' + line,
 					_rank: line++,
 					mosId: seg1.mosId + '_LINE' + line++,
 					segmentId: seg1._id,
 					runningOrderId: seg1.runningOrderId,
-					expectedDuration: 20 * 1000
-				}
+					expectedDuration: 20 * 1000,
+					slug: ''
+				})
 				SegmentLines.insert(segLine)
 
 			// Studio screen
@@ -529,7 +534,7 @@ Meteor.methods({
 					content: {
 						loop: true
 					},
-	
+
 					status: RundownAPI.LineItemStatusCode.OK,
 					sourceLayerId: 'studio0-vt0',
 					outputLayerId: 'studio0-monitor0',
@@ -562,14 +567,15 @@ Meteor.methods({
 				cameraStartSegmentLineItemId = nextCameraSegmentLineItemId
 
 			// Next	
-				segLine = {
+				segLine = literal<SegmentLine>({
 					_id: seg1._id + '-line' + line,
 					_rank: line++,
 					mosId: seg1.mosId + '_LINE' + line++,
 					segmentId: seg1._id,
 					runningOrderId: seg1.runningOrderId,
-					expectedDuration: 103 * 1000
-				}
+					expectedDuration: 103 * 1000,
+					slug: ''
+				})
 				SegmentLines.insert(segLine)
 
 			// VT
@@ -726,14 +732,15 @@ Meteor.methods({
 				SegmentLineItems.insert(segmentLineItem)
 		// Segment 2
 			line = 0
-			segLine = {
+			segLine = literal<SegmentLine>({
 				_id: seg2._id + '-line' + line,
 				_rank: line++,
 				mosId: seg2.mosId + '_LINE' + line++,
 				segmentId: seg2._id,
 				runningOrderId: seg1.runningOrderId,
-				expectedDuration: 64 * 1000
-			}
+				expectedDuration: 64 * 1000,
+				slug: ''
+			})
 			SegmentLines.insert(segLine)
 
 			// STK
@@ -815,7 +822,8 @@ Meteor.methods({
 					_rank: i,
 					mosId: seg.mosId + '_LINE' + i.toString(),
 					segmentId: seg._id,
-					runningOrderId: seg.runningOrderId
+					runningOrderId: seg.runningOrderId,
+					slug: ''
 				}
 				SegmentLines.insert(segLine)
 			}
@@ -916,12 +924,17 @@ Meteor.methods({
 	'debug_emptyDatabase' () {
 		console.log('Clear the database')
 
+		ShowStyles.remove({})
+		StudioInstallations.remove({})
+		Meteor.call('debug_removeAllRos')
+	},
+	'debug_removeAllRos' () {
+		console.log('Clear the database')
+
 		SegmentLineItems.remove({})
 		SegmentLines.remove({})
 		Segments.remove({})
 		RunningOrders.remove({})
-		ShowStyles.remove({})
-		StudioInstallations.remove({})
 	},
 
 	'debug_sampleShowStyle' () {

@@ -27,7 +27,7 @@ import { RuntimeFunctions } from '../../../lib/collections/RuntimeFunctions'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
-import { literal } from '../../../lib/lib'
+import { literal, Optional } from '../../../lib/lib'
 
 export type TemplateGeneralFunction = (story: IMOSROFullStory) => TemplateResult | string
 export type TemplateFunction = (story: StoryWithContext) => Array<SegmentLineItem>
@@ -43,9 +43,9 @@ type Fix<T> = {
 }
 export type SegmentLineItemOptional = Fix<SegmentLineItem>
 */
-type Optional<T> = {
-	[K in keyof T]?: T[K]
-}
+// type Optional<T> = {
+// 	[K in keyof T]?: T[K]
+// }
 
 // type Test<T> = {
 // 	[K in keyof T]: T[K]
@@ -54,7 +54,7 @@ type Optional<T> = {
 export type SegmentLineItemOptional = Optional<SegmentLineItem>
 
 export interface TemplateSet {
-	getId: (story: IMOSROFullStory) => string
+	getId: (context: TemplateContextInner, story: IMOSROFullStory) => string
 	templates: {
 		[key: string]: TemplateFunctionOptional
 	}
@@ -100,7 +100,7 @@ function getContext (context: TemplateContext): TemplateContextInner {
 			throw new Meteor.Error(500, message)
 		},
 		warning: (message: string) => {
-			logger.warning('Warning from template: ' + message)
+			logger.warn('Warning from template: ' + message)
 			// @todo: save warnings, maybe to the RO somewhere?
 			// it should be displayed to the user in the UI
 		}
@@ -112,9 +112,14 @@ export interface TemplateResult {
 	segmentLine: SegmentLine | null,
 	segmentLineItems: Array<SegmentLineItemOptional>
 }
+export interface TemplateResultAfterPost {
+	// segment: Segment,
+	segmentLine: SegmentLine | null,
+	segmentLineItems: Array<SegmentLineItem>
+}
 
 import { nrk } from './nrk'
-import { logger } from '../../logging';
+import { logger } from '../../logging'
 let template: TemplateSet = nrk
 function injectContextIntoArguments (context: TemplateContextInner, args: any[]): Array<any> {
 	_.each(args, (arg: StoryWithContext) => {
@@ -171,7 +176,7 @@ function findFunction (functionId: string, context: TemplateContextInner): Templ
 	}
 }
 
-export function runTemplate (context: TemplateContext, story: IMOSROFullStory): TemplateResult {
+export function runTemplate (context: TemplateContext, story: IMOSROFullStory): TemplateResultAfterPost {
 	let innerContext = getContext(context)
 	let getId = findFunction('getId', innerContext)
 
@@ -182,20 +187,22 @@ export function runTemplate (context: TemplateContext, story: IMOSROFullStory): 
 		let result: TemplateResult = fcn(story) as TemplateResult
 
 		// Post-process the result:
-		result.segmentLineItems = _.map(result.segmentLineItems, (itemOrg: SegmentLineItemOptional) => {
-			let item: SegmentLineItem = itemOrg as SegmentLineItem
+		let resultAfterPost: TemplateResultAfterPost = {
+			segmentLine: result.segmentLine,
+			segmentLineItems: _.map(result.segmentLineItems, (itemOrg: SegmentLineItemOptional) => {
+				let item: SegmentLineItem = itemOrg as SegmentLineItem
 
-			if (!item._id) item._id = innerContext.getRandomId()
-			if (!item.runningOrderId) item.runningOrderId = innerContext.segmentLine.runningOrderId
-			if (!item.segmentLineId) item.segmentLineId = innerContext.segmentLine._id
+				if (!item._id) item._id = innerContext.getRandomId()
+				if (!item.runningOrderId) item.runningOrderId = innerContext.segmentLine.runningOrderId
+				if (!item.segmentLineId) item.segmentLineId = innerContext.segmentLine._id
 
-			return item
-		})
-
-		return result
+				return item
+			})
+		}
+		return resultAfterPost
 
 	} else {
-		throw new Meteor.Error(500, 'No template id found for story "' + story.ID + '"')
+		throw new Meteor.Error(500, 'No template id found for story "' + story.ID + '" ("' + story.Slug + '")')
 	}
 }
 

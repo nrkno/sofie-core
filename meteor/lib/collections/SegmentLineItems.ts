@@ -1,7 +1,7 @@
 import { Mongo } from 'meteor/mongo'
 import { RundownAPI } from '../../lib/api/rundown'
 import { TriggerType } from 'superfly-timeline'
-import { TimelineTransition, TimelineObjGroup, TimelineObjCCGVideo, TimelineObjLawo } from './Timeline'
+import { TimelineTransition, TimelineObjGroup, TimelineObjCCGVideo, TimelineObjLawoSource } from './Timeline'
 import { Dictionary } from 'underscore'
 import { TimelineObj } from './Timeline'
 
@@ -50,8 +50,6 @@ export interface SegmentLineItem {
 }
 
 export const SegmentLineItems = new Mongo.Collection<SegmentLineItem>('segmentLineItems')
-
-
 export interface MetadataElement {
 	_id: string,
 	key: string,
@@ -64,7 +62,7 @@ export interface BaseContent {
 	timelineObjects?: Array<TimelineObj>
 }
 
-export type SomeTimelineObject = TimelineObj | TimelineObjGroup | TimelineObjCCGVideo | TimelineObjLawo
+export type SomeTimelineObject = TimelineObj | TimelineObjGroup | TimelineObjCCGVideo | TimelineObjLawoSource
 export interface VTContent extends BaseContent {
 	filename: string
 	path: string

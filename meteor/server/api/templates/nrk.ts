@@ -41,6 +41,7 @@ import {
 	StoryWithContext
 } from './templates'
 import { TimelineContentType, TimelineObjCCGVideo, TimelineObjLawoSource, TimelineObjCCGTemplate } from '../../../lib/collections/Timeline';
+import { Transition, Ease, Direction } from '../../../lib/constants/casparcg';
 
 const literal = <T>(o: T) => o
 
@@ -104,7 +105,7 @@ let nrk: TemplateSet = {
 	 * Returns the id of the template-function to be run
 	 * @param story
 	 */
-	getId: literal<TemplateFunctionOptional>(function (context, story): string {
+	getId: literal<TemplateSet['getId']>(function (context, story): string {
 		let templateId = ''
 
 		if (story.MosExternalMetaData) {
@@ -313,8 +314,10 @@ let nrk: TemplateSet = {
 								type: TimelineContentType.LAWO_AUDIO_SOURCE,
 								transitions: {
 									inTransition: {
-										type: 'MIX',
-										duration: 200
+										type: Transition.MIX,
+										duration: 200,
+										easing: Ease.LINEAR,
+										direction: Direction.LEFT
 									}
 								},
 								attributes: {
@@ -359,9 +362,11 @@ let nrk: TemplateSet = {
 					value: `#${video._id}.start + ${mosInTime}`
 				}
 			} else if (triggerType.match(/manual/i)) {
+				// @todo: how to handle this?
+				// probably create a new segmentline?
 				trigger = {
 					type: TriggerType.TIME_RELATIVE,
-					value: `#${video._id}.start + ${inpoint}`
+					value: `#${video._id}.start + 0`
 				}
 			} else {
 				context.warning('Unknown trigger: "' + triggerType + '"')
