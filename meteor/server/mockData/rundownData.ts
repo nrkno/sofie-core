@@ -924,12 +924,17 @@ Meteor.methods({
 	'debug_emptyDatabase' () {
 		console.log('Clear the database')
 
+		ShowStyles.remove({})
+		StudioInstallations.remove({})
+		Meteor.call('debug_removeAllRos')
+	},
+	'debug_removeAllRos' () {
+		console.log('Clear the database')
+
 		SegmentLineItems.remove({})
 		SegmentLines.remove({})
 		Segments.remove({})
 		RunningOrders.remove({})
-		ShowStyles.remove({})
-		StudioInstallations.remove({})
 	},
 
 	'debug_sampleShowStyle' () {

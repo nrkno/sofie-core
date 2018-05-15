@@ -100,7 +100,7 @@ function getContext (context: TemplateContext): TemplateContextInner {
 			throw new Meteor.Error(500, message)
 		},
 		warning: (message: string) => {
-			logger.warning('Warning from template: ' + message)
+			logger.warn('Warning from template: ' + message)
 			// @todo: save warnings, maybe to the RO somewhere?
 			// it should be displayed to the user in the UI
 		}
@@ -119,7 +119,7 @@ export interface TemplateResultAfterPost {
 }
 
 import { nrk } from './nrk'
-import { logger } from '../../logging';
+import { logger } from '../../logging'
 let template: TemplateSet = nrk
 function injectContextIntoArguments (context: TemplateContextInner, args: any[]): Array<any> {
 	_.each(args, (arg: StoryWithContext) => {
@@ -202,7 +202,7 @@ export function runTemplate (context: TemplateContext, story: IMOSROFullStory): 
 		return resultAfterPost
 
 	} else {
-		throw new Meteor.Error(500, 'No template id found for story "' + story.ID + '"')
+		throw new Meteor.Error(500, 'No template id found for story "' + story.ID + '" ("' + story.Slug + '")')
 	}
 }
 

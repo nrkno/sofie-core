@@ -546,7 +546,7 @@ export namespace ServerPeripheralDeviceAPI {
 }
 export function roId (roId: MosString128): string {
 	// console.log('roId', roId)
-	return 'ro_' + roId['_str'] || roId.toString()
+	return 'ro_' + (roId['_str'] || roId.toString())
 }
 export function segmentId (roId: string, storySlug: string, rank: number): string {
 	let slugParts = storySlug.split(';')
