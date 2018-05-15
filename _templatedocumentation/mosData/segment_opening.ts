@@ -1,6 +1,6 @@
 // ----------------------------------------------------------------------------
 // SOURCE DATA
-import { Segment } from '../../meteor/lib/collections/Segments'
+import { Segment, DBSegment } from '../../meteor/lib/collections/Segments'
 import { SegmentLine } from '../../meteor/lib/collections/SegmentLines'
 import { SegmentLineItem, ITimelineTrigger, BaseContent, VTContent, GraphicsContent } from '../../meteor/lib/collections/SegmentLineItems'
 import { TimelineContentType, TimelineObj, TimelineObjCCGVideo, TimelineObjLawoSource, TimelineObjCCGTemplate } from '../../meteor/lib/collections/Timeline'
@@ -459,7 +459,7 @@ let sourceData = [
 */
 // ----------------------------------------------------------------------------
 // Resulting Segment, Segment lines, items etc
-let segment: Segment = {
+let segment: DBSegment = {
 	_id: '',                //
 	_rank: 0,               //
 	mosId: 'ÅPNING',        // same as .name?
@@ -485,6 +485,7 @@ let segmentLines: Array<SegmentLine | SegmentLineItem> = [
 		metaData: story.MosExternalMetaData,
 		// status: [todo: check where we get this from, it's not in roFullStatus
 		expectedDuration: 0,
+		slug: ''
 		//   startedPlayback?: number
 		//   duration?: number
 	}),

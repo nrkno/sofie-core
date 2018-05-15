@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
+import { RunningOrder, RunningOrders, DBRunningOrder } from '../../lib/collections/RunningOrders'
 import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
@@ -8,7 +8,7 @@ import { getCurrentTime, saveIntoDb, literal, DBObj, partialExceptId } from '../
 import { RundownAPI } from '../../lib/api/rundown'
 import { TimelineTransition } from '../../lib/collections/Timeline'
 import { Transition, Ease, Direction } from '../../lib/constants/casparcg'
-import { Segment, Segments } from '../../lib/collections/Segments'
+import { Segment, Segments, DBSegment } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 
@@ -127,7 +127,7 @@ Meteor.methods({
 			RunningOrders.remove({_id: roId})
 		}
 
-		let ro: RunningOrder = {
+		let ro: DBRunningOrder = {
 			_id: roId,
 			mosId: 'MOCK_RO0',
 			studioInstallationId: 'studio0',
@@ -139,7 +139,7 @@ Meteor.methods({
 		}
 		RunningOrders.insert(ro)
 
-		let seg0: Segment = {
+		let seg0: DBSegment = {
 			_id: roId + '-seg0',
 			_rank: 0,
 			mosId: 'MOCK_RO0_SEG0',
@@ -147,7 +147,7 @@ Meteor.methods({
 			name: 'Vignett',
 			number: '0'
 		}
-		let seg1: Segment = {
+		let seg1: DBSegment = {
 			_id: roId + '-seg1',
 			_rank: 1,
 			mosId: 'MOCK_RO0_SEG1',
@@ -155,7 +155,7 @@ Meteor.methods({
 			name: 'Ordfører skeptisk til Liberstad',
 			number: '1'
 		}
-		let seg2: Segment = {
+		let seg2: DBSegment = {
 			_id: roId + '-seg2',
 			_rank: 2,
 			mosId: 'MOCK_RO0_SEG2',
@@ -163,7 +163,7 @@ Meteor.methods({
 			name: 'Savnet i Sør-Afrika',
 			number: '1'
 		}
-		let seg3: Segment = {
+		let seg3: DBSegment = {
 			_id:  roId + '-seg3',
 			_rank: 3,
 			mosId: 'MOCK_RO0_SEG3',
@@ -171,7 +171,7 @@ Meteor.methods({
 			name: 'Havarist kan havne i Tyrkia',
 			number: '1'
 		}
-		let seg4: Segment = {
+		let seg4: DBSegment = {
 			_id:  roId + '-seg4',
 			_rank: 4,
 			mosId: 'MOCK_RO0_SEG4',
@@ -179,7 +179,7 @@ Meteor.methods({
 			name: 'Skatepark i Mandal',
 			number: '1'
 		}
-		let seg5: Segment = {
+		let seg5: DBSegment = {
 			_id:  roId + '-seg5',
 			_rank: 5,
 			mosId: 'MOCK_RO0_SEG5',
@@ -187,7 +187,7 @@ Meteor.methods({
 			name: 'Paddeparring',
 			number: '1'
 		}
-		let seg6: Segment = {
+		let seg6: DBSegment = {
 			_id:  roId + '-seg6',
 			_rank: 6,
 			mosId: 'MOCK_RO0_SEG6',
@@ -195,7 +195,7 @@ Meteor.methods({
 			name: 'Cup oppsett',
 			number: '1'
 		}
-		let seg7: Segment = {
+		let seg7: DBSegment = {
 			_id:  roId + '-seg7',
 			_rank: 7,
 			mosId: 'MOCK_RO0_SEG7',
@@ -203,7 +203,7 @@ Meteor.methods({
 			name: 'Været',
 			number: '1'
 		}
-		let seg8: Segment = {
+		let seg8: DBSegment = {
 			_id:  roId + '-seg8',
 			_rank: 8,
 			mosId: 'MOCK_RO0_SEG8',
@@ -764,7 +764,7 @@ Meteor.methods({
 	},
 
 	'debug_sampleRundown' () {
-		let ro: RunningOrder = {
+		let ro: DBRunningOrder = {
 			_id: 'ro0',
 			mosId: 'MOCK_RO0',
 			studioInstallationId: 'studio0',
@@ -776,7 +776,7 @@ Meteor.methods({
 		}
 		RunningOrders.insert(ro)
 
-		let seg0: Segment = {
+		let seg0: DBSegment = {
 			_id: 'ro0-seg0',
 			_rank: 0,
 			mosId: 'MOCK_RO0_SEG0',
@@ -784,7 +784,7 @@ Meteor.methods({
 			name: 'SHOW OPEN',
 			number: '0'
 		}
-		let seg1: Segment = {
+		let seg1: DBSegment = {
 			_id: 'ro0-seg1',
 			_rank: 0,
 			mosId: 'MOCK_RO0_SEG1',
@@ -792,7 +792,7 @@ Meteor.methods({
 			name: 'MAILMEN ON STRIKE',
 			number: '1'
 		}
-		let seg2: Segment = {
+		let seg2: DBSegment = {
 			_id: 'ro0-seg2',
 			_rank: 0,
 			mosId: 'MOCK_RO0_SEG2',
@@ -800,7 +800,7 @@ Meteor.methods({
 			name: 'WALKING ON BROKEN GLASS',
 			number: '1'
 		}
-		let seg3: Segment = {
+		let seg3: DBSegment = {
 			_id: 'ro0-seg3',
 			_rank: 0,
 			mosId: 'MOCK_RO0_SEG3',

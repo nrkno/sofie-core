@@ -9,6 +9,7 @@ import {
 	IMOSObjectStatus,
 	IMOSObjectAirStatus
 } from 'mos-connection'
+import { FindOptions, Selector, TransformedCollection } from './typings'
 
 /** This is a very uncomplete mock-up of the Rundown object */
 export interface DBRunningOrder {
@@ -33,22 +34,16 @@ export interface DBRunningOrder {
 }
 export class RunningOrder implements DBRunningOrder {
 	public _id: string
-	/** ID of the object in MOS */
 	public mosId: string
 	public studioInstallationId: string
 	public showStyleId: string
-	/** Rundown slug - user-presentable name */
 	public name: string
 	public created: Time
-
 	public metaData?: Array<IMOSExternalMetaData>
 	public status?: IMOSObjectStatus
 	public airStatus?: IMOSObjectAirStatus
-	// There should be something like a Owner user here somewhere?
 	public active?: boolean
-	/** the id of the Live Segment Line - if empty, no segment line in this rundown is live */
 	public currentSegmentLineId: string | null
-	/** the id of the Next Segment Line - if empty, no segment will follow Live Segment Line */
 	public nextSegmentLineId: string | null
 
 	constructor (document: DBRunningOrder) {
@@ -56,7 +51,7 @@ export class RunningOrder implements DBRunningOrder {
 			this[key] = document[key]
 		})
 	}
-	getSegments (selector?: any, options?: any) {
+	getSegments (selector?: Selector<DBRunningOrder>, options?: FindOptions) {
 		return Segments.find(
 			_.extend({
 				runningOrderId: this._id
@@ -66,7 +61,7 @@ export class RunningOrder implements DBRunningOrder {
 			}, options)
 		).fetch()
 	}
-	getSegmentLines (selector?: any, options?: any) {
+	getSegmentLines (selector?: Selector<DBRunningOrder>, options?: FindOptions) {
 		return SegmentLines.find(
 			_.extend({
 				runningOrderId: this._id
@@ -78,4 +73,8 @@ export class RunningOrder implements DBRunningOrder {
 	}
 }
 
-export const RunningOrders = new Mongo.Collection<RunningOrder>('rundowns', {transform: (doc) => applyClassToDocument(RunningOrder, doc) })
+// export const RunningOrders = new Mongo.Collection<RunningOrder>('rundowns', {transform: (doc) => applyClassToDocument(RunningOrder, doc) })
+export const RunningOrders: TransformedCollection<RunningOrder, DBRunningOrder>
+	= new Mongo.Collection<RunningOrder>('rundowns', {transform: (doc) => applyClassToDocument(RunningOrder, doc) })
+
+let c = RunningOrders

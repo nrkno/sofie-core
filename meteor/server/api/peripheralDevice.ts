@@ -27,10 +27,10 @@ import {
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
+import { RunningOrder, RunningOrders, DBRunningOrder } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
-import { Segment, Segments } from '../../lib/collections/Segments'
+import { Segment, Segments, DBSegment } from '../../lib/collections/Segments'
 
 import { saveIntoDb, partialExceptId, getCurrentTime, literal } from '../../lib/lib'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
@@ -130,7 +130,7 @@ export namespace ServerPeripheralDeviceAPI {
 		saveIntoDb(RunningOrders, {
 			_id: roId(ro.ID)
 		}, _.map([ro], (ro) => {
-			return partialExceptId<RunningOrder>({
+			return partialExceptId<DBRunningOrder>({
 				_id: roId(ro.ID),
 				mosId: ro.ID.toString(),
 				studioInstallationId: 'studio0',
@@ -149,12 +149,12 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// Save Stories into database:
 		// Note: a number of X stories will result in (<=X) Segments and X SegmentLines
-		let segments: Segment[] = []
+		let segments: DBSegment[] = []
 		let segmentLines: SegmentLine[] = []
 		let rankSegment = 0
 		let rankSegmentLine = 0
 		let prevSlugParts: string[] = []
-		let segment: Segment
+		let segment: DBSegment
 		_.each(ro.Stories, (story: IMOSStory) => {
 			// divide into
 			let slugParts = (story.Slug || '').toString().split(';')
@@ -602,7 +602,7 @@ export function getSegmentLine (roID: MosString128, storyID: MosString128): Segm
  * @param runningOrderId Running order id of the story
  * @param rank Rank of the story
  */
-export function convertToSegment (segmentLine: SegmentLine, rank: number): Segment {
+export function convertToSegment (segmentLine: SegmentLine, rank: number): DBSegment {
 	// let slugParts = (story.Slug || '').toString().split(';')
 	let slugParts = segmentLine.slug.split(';')
 
@@ -824,8 +824,8 @@ function updateSegments (runningOrderId: string) {
 	let segmentLines = SegmentLines.find({runningOrderId: runningOrderId}, {sort: {_rank: 1}}).fetch()
 
 	let prevSlugParts: string[] = []
-	let segment: Segment
-	let segments: Array<Segment> = []
+	let segment: DBSegment
+	let segments: Array<DBSegment> = []
 	let rankSegment = 0
 	let segmentLineUpdates = {}
 	_.each(segmentLines, (segmentLine: SegmentLine) => {
