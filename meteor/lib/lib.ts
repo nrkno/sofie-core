@@ -246,3 +246,6 @@ export interface IDObj {
 export function partialExceptId<T> (o: Partial<T> & IDObj) {
 	return o
 }
+export function applyClassToDocument (docClass, document) {
+	return new docClass(document)
+}

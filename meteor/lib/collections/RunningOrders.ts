@@ -1,7 +1,9 @@
 import { Mongo } from 'meteor/mongo'
+import * as _ from 'underscore'
 import { RundownAPI } from '../../lib/api/rundown'
-import { Time } from '../../lib/lib'
-
+import { Time, applyClassToDocument } from '../../lib/lib'
+import { Segments } from './Segments'
+import { SegmentLines } from './SegmentLines'
 import {
 	IMOSExternalMetaData,
 	IMOSObjectStatus,
@@ -9,7 +11,7 @@ import {
 } from 'mos-connection'
 
 /** This is a very uncomplete mock-up of the Rundown object */
-export interface RunningOrder {
+export interface DBRunningOrder {
 	_id: string
 	/** ID of the object in MOS */
 	mosId: string
@@ -23,10 +25,57 @@ export interface RunningOrder {
 	status?: IMOSObjectStatus
 	airStatus?: IMOSObjectAirStatus
 	// There should be something like a Owner user here somewhere?
+	active?: boolean
 	/** the id of the Live Segment Line - if empty, no segment line in this rundown is live */
 	currentSegmentLineId: string | null
 	/** the id of the Next Segment Line - if empty, no segment will follow Live Segment Line */
 	nextSegmentLineId: string | null
 }
+export class RunningOrder implements DBRunningOrder {
+	public _id: string
+	/** ID of the object in MOS */
+	public mosId: string
+	public studioInstallationId: string
+	public showStyleId: string
+	/** Rundown slug - user-presentable name */
+	public name: string
+	public created: Time
 
-export const RunningOrders = new Mongo.Collection<RunningOrder>('rundowns')
+	public metaData?: Array<IMOSExternalMetaData>
+	public status?: IMOSObjectStatus
+	public airStatus?: IMOSObjectAirStatus
+	// There should be something like a Owner user here somewhere?
+	public active?: boolean
+	/** the id of the Live Segment Line - if empty, no segment line in this rundown is live */
+	public currentSegmentLineId: string | null
+	/** the id of the Next Segment Line - if empty, no segment will follow Live Segment Line */
+	public nextSegmentLineId: string | null
+
+	constructor (document: DBRunningOrder) {
+		_.each(_.keys(document), (key) => {
+			this[key] = document[key]
+		})
+	}
+	getSegments (selector?: any, options?: any) {
+		return Segments.find(
+			_.extend({
+				runningOrderId: this._id
+			}, selector),
+			_.extend({
+				sort: {_rank: 1}
+			}, options)
+		).fetch()
+	}
+	getSegmentLines (selector?: any, options?: any) {
+		return SegmentLines.find(
+			_.extend({
+				runningOrderId: this._id
+			}, selector),
+			_.extend({
+				sort: {_rank: 1}
+			}, options)
+		).fetch()
+	}
+}
+
+export const RunningOrders = new Mongo.Collection<RunningOrder>('rundowns', {transform: (doc) => applyClassToDocument(RunningOrder, doc) })
