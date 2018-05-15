@@ -86,7 +86,7 @@ export interface DBObj {
 }
 interface SaveIntoDbOptions<DocClass, DBInterface> {
 	beforeInsert?: (o: DBInterface) => DBInterface
-	beforeUpdate?: (o: DBInterface) => DBInterface
+	beforeUpdate?: (o: DBInterface, pre?: DocClass) => DBInterface
 	beforeRemove?: (o: DocClass) => DBInterface
 	beforeDiff?: (o: DBInterface, oldObj: DocClass) => DBInterface
 	insert?: (o: DBInterface) => void
@@ -150,7 +150,7 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 			let diff = compareObjs(oldObj,o2)
 
 			if (!diff) {
-				let oUpdate = ( options.beforeUpdate ? options.beforeUpdate(o) : o)
+				let oUpdate = ( options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o)
 				if (options.update) options.update(oldObj._id, oUpdate)
 				else collection.update(oldObj._id,{$set: oUpdate})
 				if (options.afterUpdate) options.afterUpdate(oUpdate)
