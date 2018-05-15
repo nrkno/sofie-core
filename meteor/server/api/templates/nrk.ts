@@ -24,7 +24,7 @@ import {
 	IMOSROFullStoryBodyItem
 } from 'mos-connection'
 import { Segment, Segments } from '../../../lib/collections/Segments'
-import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
+import { SegmentLine, SegmentLines, DBSegmentLine } from '../../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems, ITimelineTrigger } from '../../../lib/collections/SegmentLineItems'
 import { TriggerType } from 'superfly-timeline'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -40,8 +40,9 @@ import {
 	TemplateContextInner,
 	StoryWithContext
 } from './templates'
-import { TimelineContentType, TimelineObjCCGVideo, TimelineObjLawoSource, TimelineObjCCGTemplate } from '../../../lib/collections/Timeline';
-import { Transition, Ease, Direction } from '../../../lib/constants/casparcg';
+import { TimelineContentType, TimelineObjCCGVideo, TimelineObjLawoSource, TimelineObjCCGTemplate } from '../../../lib/collections/Timeline'
+import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
+import { Optional } from '../../../lib/lib'
 
 const literal = <T>(o: T) => o
 
@@ -85,9 +86,6 @@ let sourceLayers = [
 	// on top of PGM, to be keyed
 	{ _id: 'vignett', 	name: 'Vignett', 	type: RundownAPI.SourceLayerType.LIVE_SPEAK,unlimited: true, 	onPGMClean: false},
 	{ _id: 'vignett', 	name: 'Vignett', 	type: RundownAPI.SourceLayerType.LIVE_SPEAK,unlimited: true, 	onPGMClean: false},
-
-
-
 	{ _id: 'live-speak0', 	name: 'STK', 	type: RundownAPI.SourceLayerType.LIVE_SPEAK, 	unlimited: true, 	onPGMClean: false},
 	{ _id: 'lower-third0', 	name: 'Super', 	type: RundownAPI.SourceLayerType.LOWER_THIRD, 	unlimited: true, 	onPGMClean: false},
 	{ _id: 'graphics0', 	name: 'GFX', 	type: RundownAPI.SourceLayerType.GRAPHICS, 		unlimited: true, 	onPGMClean: false},
@@ -139,7 +137,7 @@ let nrk: TemplateSet = {
 		 */
 		break: literal<TemplateFunctionOptional>((context, story): TemplateResult => {
 			return {
-				segmentLine: literal<SegmentLine>({
+				segmentLine: literal<DBSegmentLine>({
 					_id: '',
 					_rank: 0,
 					mosId: '',
@@ -187,12 +185,12 @@ let nrk: TemplateSet = {
 
 			let segmentLineItems: Array<SegmentLineItemOptional> = []
 			let IDs = {
-				lawo: context.getRandomId(),
-				vignett: context.getRandomId()
+				lawo: context.getHashId(),
+				vignett: context.getHashId()
 			}
 
 			let video: SegmentLineItemOptional = {
-				_id: context.getRandomId(),
+				_id: context.getHashId(),
 				mosId: 'video',
 				name: 'Video',
 				trigger: {
@@ -207,7 +205,7 @@ let nrk: TemplateSet = {
 					fileName: clip,
 					sourceDuration: sourceDuration,
 					timelineObjects: [
-						literal<TimelineObjLawoSource>({
+						literal<Optional<TimelineObjLawoSource>>({
 							_id: IDs.lawo, deviceId: '',
 							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 'now' },
 							priority: -1,
@@ -220,7 +218,7 @@ let nrk: TemplateSet = {
 								}
 							}
 						}),
-						literal<TimelineObjCCGVideo>({
+						literal<Optional<TimelineObjCCGVideo>>({
 							_id: IDs.vignett, deviceId: '',
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo}.start + 0` },
 							priority: -1,
@@ -250,9 +248,9 @@ let nrk: TemplateSet = {
 		 */
 		stkHead: literal<TemplateFunctionOptional>(function (context, story) {
 			let IDs = {
-				lawo_automix: context.getRandomId(),
-				headVideo: context.getRandomId(),
-				headGfx: context.getRandomId()
+				lawo_automix: context.getHashId(),
+				headVideo: context.getHashId(),
+				headGfx: context.getHashId()
 			}
 
 			let isFirstHeadAfterVignett = false // @todo @johan
@@ -280,7 +278,7 @@ let nrk: TemplateSet = {
 
 			let segmentLineItems: Array<SegmentLineItemOptional> = []
 			let video: SegmentLineItemOptional = {
-				_id: context.getRandomId(),
+				_id: context.getHashId(),
 				mosId: 'video',
 				name: 'Video',
 				trigger: {
@@ -304,7 +302,7 @@ let nrk: TemplateSet = {
 						(context.getValueByPath(storyItemClip, 'Content.objTB') || 1)
 					),
 					timelineObjects: [
-						literal<TimelineObjLawoSource>({
+						literal<Optional<TimelineObjLawoSource>>({
 							_id: IDs.lawo_automix, deviceId: '',
 							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 'now' },
 							priority: -1,
@@ -325,7 +323,7 @@ let nrk: TemplateSet = {
 								}
 							}
 						}),
-						literal<TimelineObjCCGVideo>({
+						literal<Optional<TimelineObjCCGVideo>>({
 							_id: IDs.headVideo, deviceId: '',
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
 							priority: -1,
@@ -373,7 +371,7 @@ let nrk: TemplateSet = {
 			}
 
 			let gfx: SegmentLineItemOptional = {
-				_id: context.getRandomId(),
+				_id: context.getHashId(),
 				mosId: 'super',
 				name: 'Super',
 				trigger: trigger,
@@ -385,7 +383,7 @@ let nrk: TemplateSet = {
 					fileName: clip,
 					sourceDuration: 8, // @todo TBD
 					timelineObjects: [
-						literal<TimelineObjCCGTemplate>({ // to be changed to NRKPOST-something
+						literal<Optional<TimelineObjCCGTemplate>>({ // to be changed to NRKPOST-something
 							_id: IDs.headGfx, deviceId: '',
 							trigger: {
 								type: TriggerType.TIME_RELATIVE,

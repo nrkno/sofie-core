@@ -1,13 +1,18 @@
 import { Mongo } from 'meteor/mongo'
-
+import * as _ from 'underscore'
 import {
 	IMOSExternalMetaData,
 	IMOSObjectStatus
 } from 'mos-connection'
-import { TransformedCollection } from './typings';
+import { TransformedCollection, FindOptions, Selector } from './typings'
+import { RunningOrders } from './RunningOrders'
+import { SegmentLineItem, SegmentLineItems } from './SegmentLineItems'
+import { Segment, Segments } from './Segments'
+import { applyClassToDocument } from '../lib'
+
 
 /** A "Line" in NRK Lingo. */
-export interface SegmentLine {
+export interface DBSegmentLine {
 	_id: string
   /** Position inside the segment */
 	_rank: number
@@ -33,6 +38,45 @@ export interface SegmentLine {
 	/** The time the system played back this segment line, null if not yet finished playing, in milliseconds */
 	duration?: number
 }
+export class SegmentLine implements DBSegmentLine {
+	public _id: string
+	public _rank: number
+	public mosId: string
+	public segmentId: string
+	public runningOrderId: string
+	public slug: string
+	public autoNext?: boolean
+	public metaData?: Array<IMOSExternalMetaData>
+	public status?: IMOSObjectStatus
+	public expectedDuration?: number
+	public startedPlayback?: number
+	public duration?: number
 
-export const SegmentLines: TransformedCollection<SegmentLine, SegmentLine>
-	= new Mongo.Collection<SegmentLine>('segmentLines')
+	constructor (document: DBSegmentLine) {
+		_.each(_.keys(document), (key) => {
+			this[key] = document[key]
+		})
+	}
+	getRunningOrder () {
+		return RunningOrders.findOne(this.runningOrderId)
+	}
+	getSegment () {
+		return Segments.findOne(this.segmentId)
+	}
+	getSegmentLinesItems (selector?: Selector<SegmentLineItem>, options?: FindOptions) {
+		selector = selector || {}
+		options = options || {}
+		return SegmentLineItems.find(
+			_.extend({
+				runningOrderId: this.runningOrderId,
+				segmentLineId: this._id
+			}, selector),
+			_.extend({
+				sort: {_rank: 1}
+			}, options)
+		).fetch()
+	}
+}
+
+export const SegmentLines: TransformedCollection<SegmentLine, DBSegmentLine>
+	= new Mongo.Collection<SegmentLine>('segmentLines', {transform: (doc) => applyClassToDocument(SegmentLine, doc) })

@@ -25,9 +25,15 @@ import {
 } from 'mos-connection'
 import { RuntimeFunctions } from '../../../lib/collections/RuntimeFunctions'
 import { Segment, Segments } from '../../../lib/collections/Segments'
-import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
+import { SegmentLine, SegmentLines, DBSegmentLine } from '../../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
 import { literal, Optional } from '../../../lib/lib'
+import * as crypto from 'crypto'
+
+export function getHash (str: string): string {
+	const hash = crypto.createHash('sha1')
+	return hash.update(str).digest('base64')
+}
 
 export type TemplateGeneralFunction = (story: IMOSROFullStory) => TemplateResult | string
 export type TemplateFunction = (story: StoryWithContext) => Array<SegmentLineItem>
@@ -65,7 +71,7 @@ export interface TemplateContext {
 	segmentLine: SegmentLine
 }
 export interface TemplateContextInnerBase {
-	getRandomId: () => string
+	getHashId: (str?: any) => string
 	getValueByPath: (obj: object | undefined, path: string, defaultValue?: any) => any
 	sumMosItemDurations: (str: string) => number
 	error: (message: string) => void
@@ -75,9 +81,15 @@ export interface TemplateContextInnerBase {
 export interface TemplateContextInner extends TemplateContext, TemplateContextInnerBase {
 }
 function getContext (context: TemplateContext): TemplateContextInner {
+	let hashI = 0
 	let c0 = literal<TemplateContextInnerBase>({
-		getRandomId () {
-			return Random.id()
+		getHashId (str?: any) {
+			if (!_.isUndefined(str)) {
+				return getHash(str.toString() + '')
+			} else {
+				return getHash(context.segmentLine._id + 'hash' + (hashI++) )
+			}
+			// return Random.id()
 		},
 		getValueByPath (obj: object | undefined, path: string, defaultValue?: any): any {
 			let value = (
@@ -109,12 +121,12 @@ function getContext (context: TemplateContext): TemplateContextInner {
 }
 export interface TemplateResult {
 	// segment: Segment,
-	segmentLine: SegmentLine | null,
+	segmentLine: DBSegmentLine | null,
 	segmentLineItems: Array<SegmentLineItemOptional>
 }
 export interface TemplateResultAfterPost {
 	// segment: Segment,
-	segmentLine: SegmentLine | null,
+	segmentLine: DBSegmentLine | null,
 	segmentLineItems: Array<SegmentLineItem>
 }
 
@@ -187,12 +199,13 @@ export function runTemplate (context: TemplateContext, story: IMOSROFullStory): 
 		let result: TemplateResult = fcn(story) as TemplateResult
 
 		// Post-process the result:
+		let i = 0
 		let resultAfterPost: TemplateResultAfterPost = {
 			segmentLine: result.segmentLine,
 			segmentLineItems: _.map(result.segmentLineItems, (itemOrg: SegmentLineItemOptional) => {
 				let item: SegmentLineItem = itemOrg as SegmentLineItem
 
-				if (!item._id) item._id = innerContext.getRandomId()
+				if (!item._id) item._id = innerContext.getHashId(innerContext.segmentLine._id + ( i++ ))
 				if (!item.runningOrderId) item.runningOrderId = innerContext.segmentLine.runningOrderId
 				if (!item.segmentLineId) item.segmentLineId = innerContext.segmentLine._id
 

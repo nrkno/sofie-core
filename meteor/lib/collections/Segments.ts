@@ -46,6 +46,8 @@ export class Segment implements DBSegment {
 		return RunningOrders.findOne(this.runningOrderId)
 	}
 	getSegmentLines (selector?: Selector<DBSegment>, options?: FindOptions) {
+		selector = selector || {}
+		options = options || {}
 		return SegmentLines.find(
 			_.extend({
 				runningOrderId: this.runningOrderId,

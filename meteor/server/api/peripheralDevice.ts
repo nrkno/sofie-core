@@ -36,7 +36,7 @@ import { saveIntoDb, partialExceptId, getCurrentTime, literal } from '../../lib/
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from './../logging'
-import { runTemplate, TemplateContext } from './templates/templates'
+import { runTemplate, TemplateContext, getHash } from './templates/templates'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -520,6 +520,7 @@ export namespace ServerPeripheralDeviceAPI {
 		}, result.segmentLineItems, {
 			afterInsert (segmentLineItem) {
 				console.log('inserted segmentLineItem ' + segmentLineItem._id)
+				console.log(segmentLineItem)
 				// @todo: have something here?
 				// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 				// if (story) {
@@ -544,16 +545,19 @@ export namespace ServerPeripheralDeviceAPI {
 		// return this.core.mosManipulate(P.methods.mosRoReadyToAir, story)
 	}
 }
-export function roId (roId: MosString128): string {
+export function roId (roId: MosString128, original?: boolean): string {
 	// console.log('roId', roId)
-	return 'ro_' + (roId['_str'] || roId.toString())
+	let id = 'ro_' + (roId['_str'] || roId.toString())
+	return (original ? id : getHash(id))
 }
-export function segmentId (roId: string, storySlug: string, rank: number): string {
+export function segmentId (roId: string, storySlug: string, rank: number, original?: boolean): string {
 	let slugParts = storySlug.split(';')
-	return roId + '_' + slugParts[0] + '_' + rank
+	let id = roId + '_' + slugParts[0] + '_' + rank
+	return (original ? id : getHash(id))
 }
-export function segmentLineId (runningOrderId: string, storyId: MosString128, tmp: boolean): string {
-	return runningOrderId + '_' + storyId.toString()
+export function segmentLineId (runningOrderId: string, storyId: MosString128, tmp: boolean, original?: boolean): string {
+	let id = runningOrderId + '_' + storyId.toString()
+	return (original ? id : getHash(id))
 }
 /**
  * Returns a Running order, throws error if not found

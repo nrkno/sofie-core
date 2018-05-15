@@ -52,6 +52,8 @@ export class RunningOrder implements DBRunningOrder {
 		})
 	}
 	getSegments (selector?: Selector<DBSegment>, options?: FindOptions) {
+		selector = selector || {}
+		options = options || {}
 		return Segments.find(
 			_.extend({
 				runningOrderId: this._id
@@ -62,6 +64,8 @@ export class RunningOrder implements DBRunningOrder {
 		).fetch()
 	}
 	getSegmentLines (selector?: Selector<SegmentLine>, options?: FindOptions) {
+		selector = selector || {}
+		options = options || {}
 		return SegmentLines.find(
 			_.extend({
 				runningOrderId: this._id
