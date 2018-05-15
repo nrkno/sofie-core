@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Mongo } from 'meteor/mongo'
+import { TransformedCollection, Selector } from './collections/typings'
 
 /**
  * Convenience method to convert a Meteor.call() into a Promise
@@ -83,17 +84,17 @@ export interface DBObj {
 	_id: string,
 	[key: string]: any
 }
-interface SaveIntoDbOptions<T> {
-	beforeInsert?: (o: T) => T
-	beforeUpdate?: (o: T) => T
-	beforeRemove?: (o: T) => T
-	beforeDiff?: (o: T, oldObj: DBObj) => T
-	insert?: (o: T ) => void
-	update?: (id: string, o: T ) => void
-	remove?: (o: T ) => void
-	afterInsert?: (o: T) => void
-	afterUpdate?: (o: T) => void
-	afterRemove?: (o: T) => void
+interface SaveIntoDbOptions<DocClass, DBInterface> {
+	beforeInsert?: (o: DBInterface) => DBInterface
+	beforeUpdate?: (o: DBInterface) => DBInterface
+	beforeRemove?: (o: DocClass) => DBInterface
+	beforeDiff?: (o: DBInterface, oldObj: DocClass) => DBInterface
+	insert?: (o: DBInterface) => void
+	update?: (id: string, o: DBInterface, ) => void
+	remove?: (o: DBInterface ) => void
+	afterInsert?: (o: DBInterface) => void
+	afterUpdate?: (o: DBInterface) => void
+	afterRemove?: (o: DBInterface) => void
 }
 /**
  * Saves an array of data into a collection
@@ -102,27 +103,27 @@ interface SaveIntoDbOptions<T> {
  * @param filter The filter defining the data subset to be affected in db
  * @param newData The new data
  */
-export function saveIntoDb<T extends DBObj> (
-	collection: Mongo.Collection<T>,
-	filter: object,
-	newData: Array<T>,
-	optionsOrg?: SaveIntoDbOptions<T>
+export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	filter: Selector<DBInterface>,
+	newData: Array<DBInterface>,
+	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
 ) {
 	let change = {
 		added: 0,
 		updated: 0,
 		removed: 0
 	}
-	let options: SaveIntoDbOptions<T> = optionsOrg || {}
+	let options: SaveIntoDbOptions<DocClass, DBInterface> = optionsOrg || {}
 
 	let identifier = '_id'
 
-	let oldObjs = collection.find(filter).fetch()
+	let oldObjs: Array<DocClass> = collection.find(filter).fetch()
 
 	let newObjs2 = []
 
-	let removeObjs: {[id: string]: T} = {}
-	_.each(oldObjs,function (o: T) {
+	let removeObjs: {[id: string]: DocClass} = {}
+	_.each(oldObjs,function (o: DocClass) {
 
 		if (removeObjs['' + o[identifier]]) {
 			// duplicate id:
@@ -136,10 +137,10 @@ export function saveIntoDb<T extends DBObj> (
 
 	_.each(newData,function (o) {
 
-		if (_.has(o,'type')) {
-			o.type2 = o.type
-			delete o.type
-		}
+		// if (_.has(o,'type')) {
+		// 	o.type2 = o.type
+		// 	delete o.type
+		// }
 
 		let oldObj = removeObjs['' + o[identifier]]
 		if (oldObj) {
@@ -166,17 +167,15 @@ export function saveIntoDb<T extends DBObj> (
 		}
 		delete removeObjs['' + o[identifier]]
 	})
-	_.each(removeObjs,function (obj: T, key) {
+	_.each(removeObjs, function (obj: DocClass, key) {
 		if (obj) {
 
-			if (!(obj.OP || {}).isActive) {
-				let oRemove = ( options.beforeRemove ? options.beforeRemove(obj) : obj)
-				if (options.remove) options.remove(oRemove)
-				else collection.remove(oRemove._id)
-				if (options.afterRemove) options.afterRemove(oRemove)
-				change.removed++
+			let oRemove = ( options.beforeRemove ? options.beforeRemove(obj) : obj)
+			if (options.remove) options.remove(oRemove)
+			else collection.remove(oRemove._id)
+			if (options.afterRemove) options.afterRemove(oRemove)
+			change.removed++
 
-			}
 		}
 	})
 	return change

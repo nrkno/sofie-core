@@ -76,7 +76,7 @@ export interface TransformedCollection<Class, DBInterface> {
 		fields?: Mongo.FieldSpecifier
 		reactive?: boolean
 		transform?: Function
-	}): Class
+	}): Class | undefined
 	insert (doc: DBInterface, callback?: Function): string
 	rawCollection (): any
 	rawDatabase (): any
