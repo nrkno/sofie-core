@@ -43,7 +43,7 @@ export namespace PeripheralDeviceSecurity {
 
 PeripheralDevices.allow({
 	insert (userId: string, doc: PeripheralDevice): boolean {
-		return false // Not allowed client-side
+		return true // Not allowed client-side
 	},
 	update (userId, doc, fields, modifier) {
 		return true // Temporary: allow all updates client-side

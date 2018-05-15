@@ -71,7 +71,7 @@ const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 						(props.runningOrder && (props.runningOrder.active ?
 							<React.Fragment>
 								<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('playout_inactivate', props.runningOrder._id)}>
-									Inactivate
+									Deactivate
 								</button>
 								<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('playout_take', props.runningOrder._id)}>
 									Take

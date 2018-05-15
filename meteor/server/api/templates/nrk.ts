@@ -177,9 +177,10 @@ let nrk: TemplateSet = {
 			let mosartVariant = story.getValueByPath('MosExternalMetaData.0.MosPayload.mosartVariant', 'VIGNETT')
 			switch (mosartVariant) {
 				case 'VIGNETT2018':
+					// lengths and times are milliseconds
 					clip = 'vignett.mp4'	// @todo TBD
-					sourceDuration = 40		// @todo TBD
-					segmentLineduration = 5	// @todo TBD
+					sourceDuration = 40	* 1000	// @todo TBD
+					segmentLineduration = 5 * 1000	// @todo TBD
 					break
 			}
 
@@ -294,13 +295,13 @@ let nrk: TemplateSet = {
 					story.getValueByPath('MosExternalMetaData.0.MosPayload.MediaTime') ||
 					story.getValueByPath('MosExternalMetaData.0.MosPayload.SourceMediaTime') ||
 					10
-				),
+				) * 1000, // transform into milliseconds
 				content: {
 					fileName: clip,
 					sourceDuration: (
 						context.getValueByPath(storyItemClip, 'Content.objDur', 0) /
 						(context.getValueByPath(storyItemClip, 'Content.objTB') || 1)
-					),
+					) * 1000,
 					timelineObjects: [
 						literal<Optional<TimelineObjLawoSource>>({
 							_id: IDs.lawo_automix, deviceId: '',
@@ -330,7 +331,7 @@ let nrk: TemplateSet = {
 							duration: (
 								context.getValueByPath(storyItemClip, 'Content.objDur', 0) /
 								(context.getValueByPath(storyItemClip, 'Content.objTB') || 1)
-							),
+							) * 1000,
 							LLayer: 'casparcg_player_vignett',
 							content: {
 								type: TimelineContentType.VIDEO,
@@ -351,8 +352,8 @@ let nrk: TemplateSet = {
 			let triggerType = context.getValueByPath(storyItemGfx, 'Content.mosExternalMetadata.0.mosPayload.trigger','') + ''
 			let outType = context.getValueByPath(storyItemGfx, 'Content.mosExternalMetadata.0.mosPayload.out','')
 
-			let mosInTime = (parseFloat(context.getValueByPath(storyItemGfx, 'Content.mosExternalMetadata.0.mosPayload.in',0)) || 0) / 1000
-			let mosDuration = (parseFloat(context.getValueByPath(storyItemGfx, 'Content.mosExternalMetadata.0.mosPayload.duration',0)) || 0 ) / 1000
+			let mosInTime = (parseFloat(context.getValueByPath(storyItemGfx, 'Content.mosExternalMetadata.0.mosPayload.in',0)) || 0)
+			let mosDuration = (parseFloat(context.getValueByPath(storyItemGfx, 'Content.mosExternalMetadata.0.mosPayload.duration',0)) || 0 )
 
 			if (triggerType.match(/auto/i)) {
 				trigger = {
@@ -378,10 +379,10 @@ let nrk: TemplateSet = {
 				status: RundownAPI.LineItemStatusCode.UNKNOWN,
 				sourceLayerId: 'studio0_graphics0',
 				outputLayerId: 'pgm0',
-				expectedDuration: 8, // @todo TBD
+				expectedDuration: 8 * 1000, // @todo TBD
 				content: {
 					fileName: clip,
-					sourceDuration: 8, // @todo TBD
+					sourceDuration: 8 * 1000, // @todo TBD
 					timelineObjects: [
 						literal<Optional<TimelineObjCCGTemplate>>({ // to be changed to NRKPOST-something
 							_id: IDs.headGfx, deviceId: '',
@@ -390,7 +391,7 @@ let nrk: TemplateSet = {
 								value: `#${IDs.headVideo}.start + 5`
 							},
 							priority: -1,
-							duration: 8, // @todo TBD
+							duration: 8 * 1000, // @todo TBD
 							LLayer: 'casparcg_cg_graphics',
 							content: {
 								type: TimelineContentType.TEMPLATE, // to be changed to NRKPOST-something

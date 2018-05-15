@@ -162,9 +162,15 @@ export const SegmentTimelineContainer = withTracker((props) => {
 			if (trigger.type !== SuperTimeline.TriggerType.TIME_ABSOLUTE) {
 				return trigger
 			} else {
-				return _.extend({}, trigger, {
-					value: trigger.value + offset
-				})
+				if (trigger.type === SuperTimeline.TriggerType.TIME_ABSOLUTE && trigger.value === 'now') {
+					return _.extend({}, trigger, {
+						value: offset
+					})
+				} else {
+					return _.extend({}, trigger, {
+						value: trigger.value + offset
+					})
+				}
 			}
 		}
 
