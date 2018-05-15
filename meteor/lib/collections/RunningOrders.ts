@@ -2,8 +2,8 @@ import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { RundownAPI } from '../../lib/api/rundown'
 import { Time, applyClassToDocument } from '../../lib/lib'
-import { Segments } from './Segments'
-import { SegmentLines } from './SegmentLines'
+import { Segments, DBSegment, Segment } from './Segments'
+import { SegmentLines, SegmentLine } from './SegmentLines'
 import {
 	IMOSExternalMetaData,
 	IMOSObjectStatus,
@@ -51,7 +51,7 @@ export class RunningOrder implements DBRunningOrder {
 			this[key] = document[key]
 		})
 	}
-	getSegments (selector?: Selector<DBRunningOrder>, options?: FindOptions) {
+	getSegments (selector?: Selector<DBSegment>, options?: FindOptions) {
 		return Segments.find(
 			_.extend({
 				runningOrderId: this._id
@@ -61,7 +61,7 @@ export class RunningOrder implements DBRunningOrder {
 			}, options)
 		).fetch()
 	}
-	getSegmentLines (selector?: Selector<DBRunningOrder>, options?: FindOptions) {
+	getSegmentLines (selector?: Selector<SegmentLine>, options?: FindOptions) {
 		return SegmentLines.find(
 			_.extend({
 				runningOrderId: this._id

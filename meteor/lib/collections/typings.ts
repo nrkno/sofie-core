@@ -11,13 +11,39 @@ export interface FindOptions {
 	reactive?: boolean
 	transform?: Function
 }
-export type Selector<T> = Optional<T>
 export type OptionalNumbers<T> = {
 	[K in keyof T]?: number
 }
 export type Modifier<T> = {
 	$set?: Optional<T>
 	$unset?: OptionalNumbers<T>
+}
+export type MongoBits = Array<number> | number // | BinData
+export type SelectorValue<T, Selector> =
+	T |
+	{$eq: T} |
+	{$ne: T} |
+	{$gt: T} |
+	{$lt: T} |
+	{$gte: T} |
+	{$lte: T} |
+	{$nin: Array<T>} |
+	{$in: Array<T>} |
+	{$and: Array<Selector>} |
+	{$not: SelectorValue<T, Selector>} |
+	{$or: Array<Selector>} |
+	{$nor: Array<Selector>} |
+	{$exists: boolean} |
+	{$all: Array<T>} |
+	{$elemMatch: Array<Selector>} |
+	{$size: number} |
+	{$bitsAllClear: MongoBits} |
+	{$bitsAllSet: MongoBits} |
+	{$bitsAnySet: MongoBits} |
+	{$bitsAnySet: MongoBits}
+
+export type Selector<DBInterface> = {
+	[K in keyof DBInterface]?: SelectorValue<DBInterface[K], Selector<DBInterface>>
 }
 
 // export interface TransformedCollection<Class, DBInterface> extends Mongo.Collection<Class> {
@@ -36,7 +62,7 @@ export interface TransformedCollection<Class, DBInterface> {
 		fetch?: string[]
 		transform?: Function
 	}): boolean
-	find (selector?: Mongo.Selector | Mongo.ObjectID | string, options?: {
+	find (selector?: Selector<DBInterface> | Mongo.ObjectID | string, options?: {
 		sort?: Mongo.SortSpecifier
 		skip?: number
 		limit?: number
@@ -44,7 +70,7 @@ export interface TransformedCollection<Class, DBInterface> {
 		reactive?: boolean
 		transform?: Function
 	}): Mongo.Cursor<Class>
-	findOne (selector?: Mongo.Selector | Mongo.ObjectID | string, options?: {
+	findOne (selector?: Selector<DBInterface> | Mongo.ObjectID | string, options?: {
 		sort?: Mongo.SortSpecifier
 		skip?: number
 		fields?: Mongo.FieldSpecifier
@@ -54,12 +80,12 @@ export interface TransformedCollection<Class, DBInterface> {
 	insert (doc: DBInterface, callback?: Function): string
 	rawCollection (): any
 	rawDatabase (): any
-	remove (selector: Mongo.Selector | Mongo.ObjectID | string, callback?: Function): number
-	update (selector: Mongo.Selector | Mongo.ObjectID | string, modifier: Modifier<DBInterface>, options?: {
+	remove (selector: Selector<DBInterface> | Mongo.ObjectID | string, callback?: Function): number
+	update (selector: Selector<DBInterface> | Mongo.ObjectID | string, modifier: Modifier<DBInterface>, options?: {
 		multi?: boolean
 		upsert?: boolean
 	}, callback?: Function): number
-	upsert (selector: Mongo.Selector | Mongo.ObjectID | string, modifier: Modifier<DBInterface>, options?: {
+	upsert (selector: Selector<DBInterface> | Mongo.ObjectID | string, modifier: Modifier<DBInterface>, options?: {
 		multi?: boolean
 	}, callback?: Function): {
 		numberAffected?: number; insertedId?: string
