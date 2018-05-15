@@ -3,7 +3,32 @@ import { Meteor } from 'meteor/meteor'
 import * as Winston from 'winston'
 import * as fs from 'fs'
 
-let logger: Winston.LoggerInstance = new (Winston.Logger)({
+// @todo: remove this and do a PR to https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/winston
+// because there's an error in the typings logging.debug() takes any, not only string
+interface LoggerInstanceFixed extends Winston.LoggerInstance {
+	error: LeveledLogMethodFixed
+	warn: LeveledLogMethodFixed
+	help: LeveledLogMethodFixed
+	data: LeveledLogMethodFixed
+	info: LeveledLogMethodFixed
+	debug: LeveledLogMethodFixed
+	prompt: LeveledLogMethodFixed
+	verbose: LeveledLogMethodFixed
+	input: LeveledLogMethodFixed
+	silly: LeveledLogMethodFixed
+
+	emerg: LeveledLogMethodFixed
+	alert: LeveledLogMethodFixed
+	crit: LeveledLogMethodFixed
+	warning: LeveledLogMethodFixed
+	notice: LeveledLogMethodFixed
+}
+interface LeveledLogMethodFixed {
+	(msg: any, callback: Winston.LogCallback): LoggerInstanceFixed
+	(msg: any, meta: any, callback: Winston.LogCallback): LoggerInstanceFixed
+	(msg: any, ...meta: any[]): LoggerInstanceFixed
+}
+let logger: LoggerInstanceFixed = new (Winston.Logger)({
 })
 
 let leadingZeros = (num,length) => {

@@ -123,7 +123,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// console.log('mosRoCreate', ro)
 		logger.info('mosRoCreate')
-		// @ts-ignore
+
 		logger.debug(ro)
 
 		// Save RO into database:
@@ -571,16 +571,16 @@ export function getRO (roID: MosString128): RunningOrder {
  * @param roId Running order id
  * @param segmentId Segment / Story id
  */
-export function getSegment (roID: MosString128, storyID: MosString128, rank: number): Segment {
-	let id = segmentId(roId(roID), storyID, rank)
-	let segments = Segments.findOne({
-		runningOrderId: roId(roID),
-		_id: id
-	})
-	if (segments) {
-		return segments
-	} else throw new Meteor.Error(404, 'Segment ' + id + ' not found')
-}
+// export function getSegment (roID: MosString128, storyID: MosString128, rank: number): Segment {
+// 	let id = segmentId(roId(roID), storyID, rank)
+// 	let segments = Segments.findOne({
+// 		runningOrderId: roId(roID),
+// 		_id: id
+// 	})
+// 	if (segments) {
+// 		return segments
+// 	} else throw new Meteor.Error(404, 'Segment ' + id + ' not found')
+// }
 /**
  * Returns a SegmentLine (aka an Item), throws error if not found
  * @param roId
@@ -644,11 +644,11 @@ export function convertToSegmentLine (story: IMOSStory, runningOrderId: string, 
  * @param runningOrderId The Running order id to insert into
  * @param rank The rank (position) to insert at
  */
-export function insertSegment (story: IMOSROStory, runningOrderId: string, rank: number) {
-	let segment = convertToSegment(story, runningOrderId, rank)
-	Segments.upsert(segment._id, {$set: _.omit(segment,['_id']) })
-	afterInsertUpdateSegment(story, runningOrderId)
-}
+// export function insertSegment (story: IMOSROStory, runningOrderId: string, rank: number) {
+// 	let segment = convertToSegment(story, rank)
+// 	Segments.upsert(segment._id, {$set: _.omit(segment,['_id']) })
+// 	afterInsertUpdateSegment(story, runningOrderId)
+// }
 /**
  * Removes a Story (aka a Segment) into the database
  * @param story The story to be inserted

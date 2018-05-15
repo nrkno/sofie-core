@@ -71,6 +71,13 @@ if (Meteor.isServer) {
 		// }, 2000)
 	})
 }
+export type Optional<T> = {
+	[K in keyof T]?: T[K]
+}
+
+// type Test<T> = {
+// 	[K in keyof T]: T[K]
+// }
 
 export interface DBObj {
 	_id: string,
