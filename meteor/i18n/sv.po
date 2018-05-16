@@ -1,0 +1,98 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: i18next-conv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"POT-Creation-Date: 2018-04-19T11:17:59.110Z\n"
+"PO-Revision-Date: 2018-04-19 16:51+0200\n"
+"Language-Team: \n"
+"X-Generator: Poedit 2.0.6\n"
+"Last-Translator: \n"
+"Language: sv\n"
+
+msgid "Welcome to Sofie"
+msgstr "Välkommen till Sofie"
+
+msgid "Home"
+msgstr "Hem"
+
+msgid "Running Orders"
+msgstr "Körscheman"
+
+msgid "Nyman's Playground"
+msgstr "Tester"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Slug"
+msgstr "Titel"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Created"
+msgstr "Skapad"
+
+msgid "Air Status"
+msgstr "Sändningsstatus"
+
+msgid "Finish"
+msgstr "Slutar"
+
+msgid "Now"
+msgstr "Nu"
+
+msgid "Loading..."
+msgstr "Laddar..."
+
+msgid "On Air"
+msgstr "On Air"
+
+msgid "Unknown"
+msgstr "Okänd"
+
+msgid "Good"
+msgstr "Bra"
+
+msgid "Minor Warning"
+msgstr "Liten varning"
+
+msgid "Warning"
+msgstr "Varning"
+
+msgid "Bad"
+msgstr "Dålig"
+
+#, fuzzy
+msgid "Fatal"
+msgstr "Fatal"
+
+msgid "Connected"
+msgstr "Ansluten"
+
+msgid "Disconnected"
+msgstr "Oansluten"
+
+msgid "MOS Device"
+msgstr "MOS-enhet"
+
+msgid "Playout Device"
+msgstr "Uppspelningsenhet"
+
+msgid "Unknown Device"
+msgstr "Okänd enhet"
+
+msgid "System Status"
+msgstr "Systemstatus"
+
+msgid "Name"
+msgstr "Namn"
+
+msgid "Type"
+msgstr "Typ"
+
+msgid "Last seen"
+msgstr "Senast sedd"

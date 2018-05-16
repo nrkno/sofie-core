@@ -1,0 +1,74 @@
+.settings-menu {
+	.settings-menu__settings-menu-item {
+		display: block;
+		text-decoration: none;
+		color: #000;
+
+		&:hover {
+			text-decoration: none;
+		}
+
+		button.action-btn {
+			padding: 0 5px;
+			margin-top: 0.6em;
+			margin-right: 0.7em;
+		}
+	}
+
+	h2 {
+		> button.action-btn {
+			padding: 0 5px;
+			margin-top: 0.6em;
+		}
+	}
+}
+
+.settings-dialog {
+	table {
+		.switch-tight {
+			padding: 0px 8px;
+			margin: -6px 0 -1px;
+		}
+		
+		.table-item-actions {
+			text-align: right;
+
+			.action-btn {
+				vertical-align: top;
+				margin-left: 10px;
+				line-height: 1em;
+
+				svg {
+					font-size: 10px;
+					vertical-align: middle;
+
+					&.svg-inline--fa {
+						font-size: 15px;
+					}
+				}
+			}
+
+			.btn {
+				&.btn-tight {
+					svg {
+						font-size: 10px;
+						vertical-align: middle;
+
+						&.svg-inline--fa {
+							font-size: 15px;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	.settings-studio-source-table, .settings-studio-output-table {
+		width: 100%;
+	}
+
+	.runtime-function-edit__editor {
+		width: 100%;
+		height: 500px;
+	}
+}

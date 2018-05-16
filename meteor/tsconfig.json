@@ -2,12 +2,17 @@
   "compilerOptions": {
     "target": "es6",
 
-
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
     "strictNullChecks": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "allowJs": true,
+    "jsx": "react",
 
-    
+    "types": ["node", "mocha"]
 
-  }
-  
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }
