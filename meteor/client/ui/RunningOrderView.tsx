@@ -64,21 +64,21 @@ const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 				<div className='right' style={{
 					'marginTop': '0.9em'
 				}}>
-					<button className='btn btn-secondary btn-compact' onClick={(e) => console.log('Reload data')}>
+					<button className='btn btn-secondary btn-compact aciton reload-data' onClick={(e) => console.log('Reload data')}>
 						Reload data
 					</button>
 					{
 						(props.runningOrder && (props.runningOrder.active ?
 							<React.Fragment>
-								<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('playout_inactivate', props.runningOrder._id)}>
+								<button className='btn btn-secondary btn-compact aciton activate-deactivate deactivate' onClick={(e) => Meteor.call('playout_inactivate', props.runningOrder._id)}>
 									Deactivate
 								</button>
-								<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('playout_take', props.runningOrder._id)}>
+								<button className='btn btn-secondary btn-compact aciton take' onClick={(e) => Meteor.call('playout_take', props.runningOrder._id)}>
 									Take
 								</button>
 							</React.Fragment>
 						: <React.Fragment>
-							<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('playout_activate', props.runningOrder._id)}>
+								<button className='btn btn-secondary btn-compact aciton activate-deactivate activate' onClick={(e) => Meteor.call('playout_activate', props.runningOrder._id)}>
 								Activate
 							</button>
 						</React.Fragment>
