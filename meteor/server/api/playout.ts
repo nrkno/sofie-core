@@ -320,7 +320,7 @@ function updateTimeline (studioInstallationId: string) {
 			o.siId = activeRunningOrder.studioInstallationId
 		})
 
-		// console.log('timelineObjs', timelineObjs)
+		console.log('timelineObjs', timelineObjs)
 
 		saveIntoDb<TimelineObj, TimelineObj>(Timeline, {
 			roId: activeRunningOrder._id
