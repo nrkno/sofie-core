@@ -120,13 +120,7 @@ Meteor.methods({
 						// We couldn't find the previous segment line: this is not a critical issue, but is clearly is a symptom of a larger issue
 						logger.error(`Previous segment line "${runningOrder.previousSegmentLineId}" on running order "${roId}" could not be found.`)
 					} else {
-						if (prevSegLine.startedPlayback && prevSegLine.startedPlayback > 0) {
-							SegmentLines.update(prevSegLine._id, {$set: {
-								duration: startedPlayback - prevSegLine.startedPlayback
-							}})
-						} else {
-							logger.error(`Previous segment line "${runningOrder.previousSegmentLineId}" has never started playback on running order "${roId}".`)
-						}
+						setPreviousLinePlaybackDuration(roId, prevSegLine, startedPlayback)
 					}
 				}
 
@@ -144,13 +138,7 @@ Meteor.methods({
 						// We couldn't find the previous segment line: this is not a critical issue, but is clearly is a symptom of a larger issue
 						logger.error(`Previous segment line "${runningOrder.currentSegmentLineId}" on running order "${roId}" could not be found.`)
 					} else {
-						if (prevSegLine.startedPlayback && prevSegLine.startedPlayback > 0) {
-							SegmentLines.update(prevSegLine._id, {$set: {
-								duration: startedPlayback - prevSegLine.startedPlayback
-							}})
-						} else {
-							logger.error(`Previous segment line "${runningOrder.currentSegmentLineId}" has never started playback on running order "${roId}".`)
-						}
+						setPreviousLinePlaybackDuration(roId, prevSegLine, startedPlayback)
 					}
 				}
 
@@ -184,6 +172,7 @@ Meteor.methods({
 
 				RunningOrders.update(runningOrder._id, {
 					$set: {
+						previousSegmentLineId: null,
 						currentSegmentLineId: segLine._id,
 						nextSegmentLineId: nextSegmentLine._id
 					}
@@ -200,6 +189,18 @@ Meteor.methods({
 		}
 	}
 })
+
+function setPreviousLinePlaybackDuration (roId: string, prevSegLine: SegmentLine, lastChange: Time) {
+	if (prevSegLine.startedPlayback && prevSegLine.startedPlayback > 0) {
+		SegmentLines.update(prevSegLine._id, {
+			$set: {
+				duration: lastChange - prevSegLine.startedPlayback
+			}
+		})
+	} else {
+		logger.error(`Previous segment line "${prevSegLine._id}" has never started playback on running order "${roId}".`)
+	}
+}
 
 function createSegmentLineGroup (segmentLine: SegmentLine, duration: Time): TimelineObj {
 	let slGrp = literal<TimelineObj>({
@@ -317,7 +318,7 @@ function updateTimeline (studioInstallationId: string) {
 			o.siId = activeRunningOrder.studioInstallationId
 		})
 
-		console.log('timelineObjs', timelineObjs)
+		// console.log('timelineObjs', timelineObjs)
 
 		saveIntoDb<TimelineObj, TimelineObj>(Timeline, {
 			roId: activeRunningOrder._id
@@ -337,7 +338,4 @@ function updateTimeline (studioInstallationId: string) {
 			siId: studioInstallationId
 		})
 	}
-
-
-
 }
