@@ -28,7 +28,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { RunningOrder, RunningOrders, DBRunningOrder } from '../../lib/collections/RunningOrders'
-import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
+import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Segment, Segments, DBSegment } from '../../lib/collections/Segments'
 
@@ -168,7 +168,7 @@ export namespace ServerPeripheralDeviceAPI {
 		// Save Stories into database:
 		// Note: a number of X stories will result in (<=X) Segments and X SegmentLines
 		let segments: DBSegment[] = []
-		let segmentLines: SegmentLine[] = []
+		let segmentLines: DBSegmentLine[] = []
 		let rankSegment = 0
 		let rankSegmentLine = 0
 		let prevSlugParts: string[] = []
@@ -189,7 +189,7 @@ export namespace ServerPeripheralDeviceAPI {
 		// console.log('segmentLines', segmentLines)
 		// console.log('---------------')
 		// console.log(SegmentLines.find({runningOrderId: dbRo._id}).fetch())
-		saveIntoDb<SegmentLine>(SegmentLines, {
+		saveIntoDb<SegmentLine, DBSegmentLine>(SegmentLines, {
 			runningOrderId: dbRo._id
 		}, segmentLines, {
 			beforeDiff (obj, oldObj) {
@@ -532,7 +532,7 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 		let result = runTemplate(context, story)
 
-		saveIntoDb<SegmentLineItem>(SegmentLineItems, {
+		saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
 			runningOrderId: ro._id,
 			segmentLineId: segmentLine._id,
 		}, result.segmentLineItems, {
@@ -646,7 +646,7 @@ export function convertToSegment (segmentLine: SegmentLine, rank: number): DBSeg
  * @param segmentId Segment / Story id of the item
  * @param rank Rank of the story
  */
-export function convertToSegmentLine (story: IMOSStory, runningOrderId: string, rank: number): SegmentLine {
+export function convertToSegmentLine (story: IMOSStory, runningOrderId: string, rank: number): DBSegmentLine {
 
 // item: IMOSItem, runningOrderId: string, segmentId: string, rank: number): SegmentLine {
 	return {
