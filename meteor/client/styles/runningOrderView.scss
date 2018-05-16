@@ -806,6 +806,18 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 								}
 							}
 						}
+
+						&.source-missing {
+							// Source missing style
+						}
+
+						&.source-broken {
+							// Source broken style
+						}
+
+						&.unknown-state {
+							// Unknown state style
+						}
 					}
 				}
 
