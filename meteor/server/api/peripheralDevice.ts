@@ -960,6 +960,9 @@ methods[PeripheralDeviceAPI.methods.mosRoReadyToAir] = (deviceId, deviceToken, A
 methods[PeripheralDeviceAPI.methods.mosRoFullStory] = (deviceId, deviceToken, story: IMOSROFullStory) => {
 	return ServerPeripheralDeviceAPI.mosRoFullStory(deviceId, deviceToken, story)
 }
+methods[PeripheralDeviceAPI.methods.timelineTriggerTime] = (deviceId, deviceToken, r: PeripheralDeviceAPI.TimelineTriggerTimeResult) => {
+	return ServerPeripheralDeviceAPI.timelineTriggerTime(deviceId, deviceToken, r)
+}
 
 // --------------------
 methods[PeripheralDeviceAPI.methods.functionReply] = (deviceId, deviceToken, commandId, err: any, result: any) => {
