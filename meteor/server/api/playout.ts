@@ -219,7 +219,8 @@ function createSegmentLineGroup (segmentLine: SegmentLine, duration: Time): Time
 			objects: []
 		},
 		isGroup: true,
-		isSegmentLineGroup: true
+		isSegmentLineGroup: true,
+		slId: segmentLine._id
 	})
 
 	return slGrp

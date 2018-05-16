@@ -120,6 +120,7 @@ export interface TimelineObjGroup extends TimelineObj {
 }
 export interface TimelineObjGroupSegmentLine extends TimelineObjGroup {
 	isSegmentLineGroup: true
+	slId: string
 }
 export interface TimelineObjCCGVideo extends TimelineObj {
 	content: {
