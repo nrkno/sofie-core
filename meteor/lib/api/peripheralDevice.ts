@@ -37,6 +37,11 @@ export interface TimelineTriggerTimeResult {
 	time: number,
 	objectIds: Array<string>
 }
+export interface SegmentLinePlaybackStartedResult {
+	roId: string,
+	slId: string,
+	time: number
+}
 
 export enum methods {
 	'functionReply' 	= 'peripheralDevice.functionReply',
@@ -47,6 +52,7 @@ export enum methods {
 	'getPeripheralDevice'= 'peripheralDevice.getPeripheralDevice',
 
 	'timelineTriggerTime'= 'peripheralDevice.timeline.setTimelineTriggerTime',
+	'segmentLinePlaybackStarted' = 'peripheralDevice.runningOrder.segmentLinePlaybackStarted',
 
 	'mosRoCreate' 		= 'peripheralDevice.mos.roCreate',
 	'mosRoReplace' 		= 'peripheralDevice.mos.roReplace',

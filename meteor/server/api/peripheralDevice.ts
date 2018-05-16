@@ -132,6 +132,17 @@ export namespace ServerPeripheralDeviceAPI {
 			multi: true
 		})
 	}
+	export function segmentLinePlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) {
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
+
+		check(r.time, Number)
+		check(r.roId, String)
+		check(r.slId, String)
+		logger.info('RunningOrder: Setting playback started ' + r.time + ' to id ' + r.slId)
+
+		Meteor.call('playout_segmentLinePlaybackStart', r.roId, r.slId, r.time)
+	}
 
 	// export {P.initialize}
 	// ----------------------------------------------------------------------------
@@ -900,6 +911,9 @@ methods[PeripheralDeviceAPI.methods.setStatus] = (deviceId, deviceToken, status)
 }
 methods[PeripheralDeviceAPI.methods.getPeripheralDevice ] = (deviceId, deviceToken) => {
 	return ServerPeripheralDeviceAPI.getPeripheralDevice(deviceId, deviceToken)
+}
+methods[PeripheralDeviceAPI.methods.segmentLinePlaybackStarted] = (deviceId, deviceToken, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) => {
+	return ServerPeripheralDeviceAPI.segmentLinePlaybackStarted(deviceId, deviceToken, r)
 }
 // ----------------------------------------------------------------------------
 // Mos-functions:
