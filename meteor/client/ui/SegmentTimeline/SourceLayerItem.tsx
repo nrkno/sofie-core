@@ -377,7 +377,11 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 					'hide-overflow-labels': this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth),
 
-					'infinite': this.props.segmentLineItem.expectedDuration === Number.POSITIVE_INFINITY
+					'infinite': this.props.segmentLineItem.expectedDuration === Number.POSITIVE_INFINITY,
+
+					'source-missing': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING,
+					'source-broken': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN,
+					'unknown-state': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.UNKNOWN
 				})}
 					data-mos-id={this.props.segmentLineItem._id}
 					ref={this.setRef}
