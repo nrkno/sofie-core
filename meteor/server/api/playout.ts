@@ -6,7 +6,7 @@ import { SegmentLineItem, SegmentLineItems, ITimelineTrigger } from '../../lib/c
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { getCurrentTime, saveIntoDb, literal, DBObj, partialExceptId, Time, partial } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
-import { TimelineTransition, Timeline, TimelineObj, TimelineContentType } from '../../lib/collections/Timeline'
+import { TimelineTransition, Timeline, TimelineObj, TimelineObjGroupSegmentLine, TimelineContentType } from '../../lib/collections/Timeline'
 import { TimelineObject, ObjectId, TriggerType, TimelineKeyframe } from 'superfly-timeline'
 import { Transition, Ease, Direction } from '../../lib/constants/casparcg'
 import { Segment, Segments } from '../../lib/collections/Segments'
@@ -203,7 +203,7 @@ function setPreviousLinePlaybackDuration (roId: string, prevSegLine: SegmentLine
 }
 
 function createSegmentLineGroup (segmentLine: SegmentLine, duration: Time): TimelineObj {
-	let slGrp = literal<TimelineObj>({
+	let slGrp = literal<TimelineObjGroupSegmentLine>({
 		_id: 'sl-group-' + segmentLine._id,
 		siId: undefined,
 		roId: undefined,
@@ -215,9 +215,11 @@ function createSegmentLineGroup (segmentLine: SegmentLine, duration: Time): Time
 		duration: duration,
 		LLayer: 'core',
 		content: {
-			type: TimelineContentType.GROUP
+			type: TimelineContentType.GROUP,
+			objects: []
 		},
-		isGroup: true
+		isGroup: true,
+		isSegmentLineGroup: true
 	})
 
 	return slGrp

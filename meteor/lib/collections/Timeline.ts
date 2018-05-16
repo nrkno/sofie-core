@@ -118,6 +118,9 @@ export interface TimelineObjGroup extends TimelineObj {
 	}
 	isGroup: true
 }
+export interface TimelineObjGroupSegmentLine extends TimelineObjGroup {
+	isSegmentLineGroup: true
+}
 export interface TimelineObjCCGVideo extends TimelineObj {
 	content: {
 		objects?: Array<TimelineObject>
