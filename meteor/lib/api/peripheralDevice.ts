@@ -33,6 +33,10 @@ export interface InitOptions {
 	name: string,
 	connectionId: string
 }
+export interface TimelineTriggerTimeResult {
+	time: number,
+	objectIds: Array<string>
+}
 
 export enum methods {
 	'functionReply' 	= 'peripheralDevice.functionReply',
@@ -41,6 +45,8 @@ export enum methods {
 	'initialize' 		= 'peripheralDevice.initialize',
 	'unInitialize' 		= 'peripheralDevice.unInitialize',
 	'getPeripheralDevice'= 'peripheralDevice.getPeripheralDevice',
+
+	'timelineTriggerTime'= 'peripheralDevice.timeline.setTimelineTriggerTime',
 
 	'mosRoCreate' 		= 'peripheralDevice.mos.roCreate',
 	'mosRoReplace' 		= 'peripheralDevice.mos.roReplace',

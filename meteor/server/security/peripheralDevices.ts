@@ -9,6 +9,8 @@ export namespace PeripheralDeviceSecurity {
 
 		if (!id) throw new Meteor.Error(400,'id missing!')
 		if (!token) throw new Meteor.Error(400,'token missing!')
+		check(id, String)
+		check(token, String)
 
 		let peripheralDevice = PeripheralDevices.findOne(id)
 		if (!peripheralDevice) return null

@@ -37,6 +37,7 @@ import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from './../logging'
 import { runTemplate, TemplateContext, getHash } from './templates/templates'
+import { Timeline } from '../../lib/collections/Timeline'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -115,6 +116,23 @@ export namespace ServerPeripheralDeviceAPI {
 	export function getPeripheralDevice (id: string, token: string) {
 		return PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 	}
+	export function timelineTriggerTime (id: string, token: string, r: PeripheralDeviceAPI.TimelineTriggerTimeResult) {
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
+
+		check(r.time, Number)
+		check(r.objectIds, [String])
+		logger.info('Timeline: Setting time ' + r.time + ' to ids [' + r.objectIds.join(',') + ']')
+
+		Timeline.update({
+			_id: {$in: r.objectIds}
+		}, {$set: {
+			'trigger.value': r.time
+		}},{
+			multi: true
+		})
+	}
+
 	// export {P.initialize}
 	// ----------------------------------------------------------------------------
 // Mos-functions:

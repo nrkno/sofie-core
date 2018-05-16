@@ -15,8 +15,8 @@ export type OptionalNumbers<T> = {
 	[K in keyof T]?: number
 }
 export type Modifier<T> = {
-	$set?: Optional<T>
-	$unset?: OptionalNumbers<T>
+	$set?: Optional<T> | {[path: string]: any}
+	$unset?: OptionalNumbers<T> | {[path: string]: any}
 }
 export type MongoBits = Array<number> | number // | BinData
 export type SelectorValue<T, Selector> =
