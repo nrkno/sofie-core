@@ -39,40 +39,50 @@ let leadingZeros = (num,length) => {
 		return num
 	}
 }
+let logToFile = false
 
-// console.log(Meteor)
-let time = new Date()
-let startDate = time.getFullYear() + '-' +
-	leadingZeros(time.getMonth(),2) + '-' +
-	leadingZeros(time.getDate(),2) + '_' +
-	leadingZeros(time.getHours(),2) + '_' +
-	leadingZeros(time.getMinutes(),2) + '_ ' +
-	leadingZeros(time.getSeconds(),2)
-let logDirectory = Meteor['absolutePath'] + '/.meteor/local/log'
-let logPath = logDirectory + '/log_' + startDate + '.log'
-// let logPath = './log/'
+if (logToFile) {
 
-if (!fs.existsSync(logDirectory)) {
-	fs.mkdirSync(logDirectory)
+	// console.log(Meteor)
+	let time = new Date()
+	let startDate = time.getFullYear() + '-' +
+		leadingZeros(time.getMonth(),2) + '-' +
+		leadingZeros(time.getDate(),2) + '_' +
+		leadingZeros(time.getHours(),2) + '_' +
+		leadingZeros(time.getMinutes(),2) + '_ ' +
+		leadingZeros(time.getSeconds(),2)
+	let logDirectory = Meteor['absolutePath'] + '/.meteor/local/log'
+	let logPath = logDirectory + '/log_' + startDate + '.log'
+	// let logPath = './log/'
+
+	if (!fs.existsSync(logDirectory)) {
+		fs.mkdirSync(logDirectory)
+	}
+	logger.add(Winston.transports.Console, {
+		level: 'verbose',
+		handleExceptions: true,
+		json: false
+	})
+	logger.add(Winston.transports.File, {
+		level: 'silly',
+		handleExceptions: true,
+		json: true,
+		filename: logPath
+	})
+	console.log('Logging to ' + logPath)
+} else {
+	logger.add(Winston.transports.Console, {
+		level: 'silly',
+		handleExceptions: true,
+		json: true
+	})
 }
 
-logger.add(Winston.transports.Console, {
-	level: 'verbose',
-	handleExceptions: true,
-	json: false
-})
-logger.add(Winston.transports.File, {
-	level: 'silly',
-	handleExceptions: true,
-	json: true,
-	filename: logPath
-})
 // let orgConsoleLog = console.log
 // console.log = (...args) => {
 // 	// @ts-ignore
 // 	logger.debug(...args)
 // }
-console.log('Logging to ' + logPath)
 
 logger.info('Starting up')
 
