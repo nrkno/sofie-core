@@ -536,6 +536,21 @@ export namespace ServerPeripheralDeviceAPI {
 		let segmentLine = getSegmentLine(story.RunningOrderId, story.ID)
 		// TODO: Do something
 
+		if (story.MosExternalMetaData && story.MosExternalMetaData[0] &&
+			story.MosExternalMetaData[0].MosPayload &&
+			(story.MosExternalMetaData[0].MosPayload.Actual || story.MosExternalMetaData[0].MosPayload.Estimated || story.MosExternalMetaData[0].MosPayload.ReadTime)) {
+
+			const duration = story.MosExternalMetaData[0].MosPayload.Actual && parseFloat(story.MosExternalMetaData[0].MosPayload.Actual) ||
+							 story.MosExternalMetaData[0].MosPayload.Estimated && parseFloat(story.MosExternalMetaData[0].MosPayload.Estimated) ||
+							 story.MosExternalMetaData[0].MosPayload.ReadTime && parseFloat(story.MosExternalMetaData[0].MosPayload.ReadTime)
+
+			console.log('updating segment line duration: ' + segmentLine._id + ' ' + duration)
+			segmentLine.expectedDuration = duration * 1000
+			SegmentLines.update(segmentLine._id, {$set: {
+				expectedDuration: segmentLine.expectedDuration
+			}})
+		}
+
 		let context: TemplateContext = {
 			runningOrderId: ro._id,
 			// segment: Segment,

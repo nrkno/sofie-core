@@ -21,7 +21,8 @@
             "type": "node",
             "request": "attach",
             "name": "Meteor: Attach Node",
-            "port": 9229
+            "port": 9229,
+            "timeout": 240000
         }
     ],
     "compounds": [

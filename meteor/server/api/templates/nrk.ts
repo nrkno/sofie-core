@@ -180,7 +180,7 @@ let nrk: TemplateSet = {
 					// lengths and times are milliseconds
 					clip = 'vignett.mp4'	// @todo TBD
 					sourceDuration = 40	* 1000	// @todo TBD
-					segmentLineduration = 5 * 1000	// @todo TBD
+					segmentLineduration = 4 * 1000	// @todo TBD
 					break
 			}
 
