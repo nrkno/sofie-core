@@ -29,6 +29,12 @@ export namespace RunningOrderTiming {
 		segmentLineCountdown?: {
 			[key: string]: number
 		}
+		segmentLineDurations?: {
+			[key: string]: number
+		}
+		segmentLineStartsAt?: {
+			[key: string]: number
+		}
 	}
 
 	export interface InjectedROTimingProps {
@@ -49,7 +55,7 @@ interface IRunningOrderTimingProviderChildContext {
 
 export const RunningOrderTimingProvider = withTracker((props, state) => {
 	if (props.runningOrder) {
-		const segmentLines = SegmentLines.find({
+		let segmentLines = SegmentLines.find({
 			'runningOrderId': props.runningOrder._id,
 		}, {
 			sort: {
@@ -115,9 +121,16 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 		let asPlayedRundownDuration = 0
 		let waitAccumulator = 0
 		let currentRemaining = 0
+		let startsAtAccumulator = 0
 
 		const { runningOrder, segmentLines } = this.props
 		const linearSegLines: Array<[string, number | null]> = []
+		const segLineDurations: {
+			[key: string]: number
+		} = {}
+		const segLineStartsAt: {
+			[key: string]: number
+		} = {}
 
 		let nextAIndex = -1
 		let curAIndex = -1
@@ -147,7 +160,12 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 
 				if (item.startedPlayback && !item.duration && runningOrder.currentSegmentLineId === item._id) {
 					currentRemaining = Math.max(0, (item.duration || item.expectedDuration || 0) - (now - item.startedPlayback))
+					segLineDurations[item._id] = Math.max((item.duration || item.expectedDuration || 0), (now - item.startedPlayback))
+				} else {
+					segLineDurations[item._id] = item.duration || item.expectedDuration || 0
 				}
+				segLineStartsAt[item._id] = startsAtAccumulator
+				startsAtAccumulator += segLineDurations[item._id]
 				// always add the full duration, in case by some manual intervention this segment should play twice
 				waitAccumulator += (item.duration || item.expectedDuration || 0)
 
@@ -180,7 +198,9 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 			totalRundownDuration,
 			remainingRundownDuration,
 			asPlayedRundownDuration,
-			segmentLineCountdown: _.object(linearSegLines)
+			segmentLineCountdown: _.object(linearSegLines),
+			segmentLineDurations: segLineDurations,
+			segmentLineStartsAt: segLineStartsAt
 		})
 
 		const event = new Event(RunningOrderTiming.Events.timeupdate)

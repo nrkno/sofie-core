@@ -12,11 +12,11 @@ export interface ISourceLayerItemProps {
 	outputLayer: IOutputLayerUi
 	segment: SegmentUi
 	segmentLine: SegmentLineUi
+	segmentLineDuration?: number
 	segmentLineItem: SegmentLineItemUi
 	timeScale: number
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	relative?: boolean
-	totalSegmentLineDuration?: number
 	followLiveLine: boolean
 	liveLineHistorySize: number
 	livePosition: number | null

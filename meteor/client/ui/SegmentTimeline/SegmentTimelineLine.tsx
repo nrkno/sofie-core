@@ -15,10 +15,13 @@ import { StudioInstallation, StudioInstallations } from '../../../lib/collection
 import { SegmentUi, SegmentLineUi, IOutputLayerUi, ISourceLayerUi, SegmentLineItemUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
+import { RunningOrderTiming } from '../RunningOrderTiming'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
 import { RundownUtils } from '../../lib/rundown'
+import { getCurrentTime } from '../../../lib/lib'
+import { withTiming } from '../RunningOrderTiming'
 
 interface ISourceLayerProps {
 	key: string
@@ -26,6 +29,8 @@ interface ISourceLayerProps {
 	outputLayer: IOutputLayerUi
 	segment: SegmentUi
 	segmentLine: SegmentLineUi
+	startsAt: number
+	duration: number
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
@@ -77,9 +82,10 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 							outputLayer={this.props.outputLayer}
 							segment={this.props.segment}
 							segmentLine={this.props.segmentLine}
+							segmentLineStartsAt={this.props.startsAt}
+							segmentLineDuration={this.props.duration}
 							timeScale={this.props.timeScale}
 							relative={this.props.relative}
-							totalSegmentLineDuration={this.props.segmentLine.renderedDuration || 0}
 							lineStartsAt={this.props.segmentLine.startsAt}
 							/>
 					)
@@ -103,6 +109,8 @@ interface IOutputGroupProps {
 	layer: IOutputLayerUi
 	segment: SegmentUi
 	segmentLine: SegmentLineUi
+	startsAt: number
+	duration: number
 	timeScale: number
 	collapsedOutputs: {
 		[key: string]: boolean
@@ -128,6 +136,8 @@ class OutputGroup extends React.Component<IOutputGroupProps> {
 					outputGroupCollapsed={this.props.collapsedOutputs[this.props.layer._id] === true}
 					segment={this.props.segment}
 					segmentLine={this.props.segmentLine}
+					startsAt={this.props.startsAt}
+					duration={this.props.duration}
 					timeScale={this.props.timeScale} />
 			})
 		}
@@ -169,15 +179,67 @@ interface IPropsHeader {
 	onContextMenu?: (contextMenuContext: any) => void
 }
 
-export const SegmentTimelineLine = translate()(class extends React.Component<IPropsHeader & InjectedTranslateProps> {
+interface IStateHader {
+	isLive: boolean
+	isNext: boolean
+	liveDuration: number
+}
+
+const LIVE_LINE_TIME_PADDING = 2000
+
+export const SegmentTimelineLine = translate()(withTiming()(class extends React.Component<IPropsHeader & InjectedTranslateProps & RunningOrderTiming.InjectedROTimingProps, IStateHader> {
+	_refreshTimer: NodeJS.Timer | undefined
+
+	constructor (props) {
+		super(props)
+
+		const isLive = (this.props.runningOrder.currentSegmentLineId === this.props.segmentLine._id)
+		const isNext = (this.props.runningOrder.nextSegmentLineId === this.props.segmentLine._id)
+		const startedPlayback = this.props.segmentLine.startedPlayback
+
+		this.state = {
+			isLive,
+			isNext,
+			liveDuration: isLive ?
+				Math.max(
+				(
+					(startedPlayback && props.timingDurations.segmentLineDurations &&
+						(props.timingDurations.segmentLineDurations[props.segmentLine._id] + LIVE_LINE_TIME_PADDING)
+					) || 0),
+				0)
+				: 0
+		}
+	}
+
+	componentWillReceiveProps (nextProps: IPropsHeader) {
+		const isLive = (nextProps.runningOrder.currentSegmentLineId === nextProps.segmentLine._id)
+		const isNext = (nextProps.runningOrder.nextSegmentLineId === nextProps.segmentLine._id)
+
+		const startedPlayback = this.props.segmentLine.startedPlayback
+		this.setState({
+			isLive,
+			isNext,
+			liveDuration: isLive ?
+				Math.max(
+				(
+					(startedPlayback && this.props.timingDurations.segmentLineDurations &&
+						(this.props.timingDurations.segmentLineDurations[this.props.segmentLine._id] + LIVE_LINE_TIME_PADDING)
+					) || 0),
+				0)
+				: 0
+		})
+	}
+
 	getLayerStyle () {
 		if (this.props.relative) {
 			return {
-				width: ((this.props.segmentLine.renderedDuration || 0) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%'
+				width: (Math.max(this.state.liveDuration, this.props.segmentLine.expectedDuration || this.props.segmentLine.renderedDuration || 0) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
+				willChange: this.state.isLive ? 'width' : undefined
 			}
 		} else {
 			return {
-				minWidth: ((this.props.segmentLine.renderedDuration || 0) * this.props.timeScale).toString() + 'px'
+				minWidth: (Math.max(this.state.liveDuration, this.props.segmentLine.expectedDuration || this.props.segmentLine.renderedDuration || 0) * this.props.timeScale).toString() + 'px',
+				willChange: this.state.isLive ? 'minWidth' : undefined
 			}
 		}
 	}
@@ -186,7 +248,7 @@ export const SegmentTimelineLine = translate()(class extends React.Component<IPr
 		if (this.props.relative) {
 			return true
 		} else {
-			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine)
+			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine, (this.props.timingDurations.segmentLineStartsAt && this.props.timingDurations.segmentLineStartsAt[this.props.segmentLine._id]))
 		}
 	}
 
@@ -205,6 +267,8 @@ export const SegmentTimelineLine = translate()(class extends React.Component<IPr
 							layer={layer}
 							segment={this.props.segment}
 							segmentLine={segmentLine}
+							startsAt={(this.props.timingDurations.segmentLineStartsAt && this.props.timingDurations.segmentLineStartsAt[segmentLine._id]) || this.props.segmentLine.startsAt || 0}
+							duration={(this.props.timingDurations.segmentLineDurations && this.props.timingDurations.segmentLineDurations[segmentLine._id]) || this.props.segmentLine.renderedDuration || 0}
 							isLiveLine={this.props.runningOrder.currentSegmentLineId === segmentLine._id ? true : false}
 							isNextLine={this.props.runningOrder.nextSegmentLineId === segmentLine._id ? true : false}
 							timeScale={this.props.timeScale} />
@@ -220,8 +284,8 @@ export const SegmentTimelineLine = translate()(class extends React.Component<IPr
 		if (this.isInsideViewport()) {
 			return (
 				<div className={ClassNames('segment-timeline__segment-line', {
-					'live': (this.props.runningOrder.currentSegmentLineId === this.props.segmentLine._id),
-					'next': (this.props.runningOrder.nextSegmentLineId === this.props.segmentLine._id)
+					'live': this.state.isLive,
+					'next': this.state.isNext
 				})} data-mos-id={this.props.segmentLine._id}
 					style={this.getLayerStyle()}
 					>
@@ -236,8 +300,8 @@ export const SegmentTimelineLine = translate()(class extends React.Component<IPr
 		} else { // render placeholder
 			return (
 				<div className={ClassNames('segment-timeline__segment-line', {
-					'live': (this.props.runningOrder.currentSegmentLineId === this.props.segmentLine._id),
-					'next': (this.props.runningOrder.nextSegmentLineId === this.props.segmentLine._id)
+					'live': this.state.isLive,
+					'next': this.state.isNext
 				})} data-mos-id={this.props.segmentLine._id}
 					style={this.getLayerStyle()}
 				>
@@ -247,4 +311,4 @@ export const SegmentTimelineLine = translate()(class extends React.Component<IPr
 		}
 
 	}
-})
+}))

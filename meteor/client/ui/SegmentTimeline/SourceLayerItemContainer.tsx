@@ -23,13 +23,14 @@ interface IPropsHeader {
 	outputLayer: IOutputLayerUi
 	segment: SegmentUi
 	segmentLine: SegmentLineUi
+	segmentLineStartsAt: number
+	segmentLineDuration: number
 	segmentLineItem: SegmentLineItemUi
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	relative?: boolean
-	totalSegmentLineDuration?: number
 	outputGroupCollapsed: boolean
 	followLiveLine: boolean
 	liveLineHistorySize: number

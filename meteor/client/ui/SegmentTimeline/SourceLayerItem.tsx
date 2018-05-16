@@ -27,11 +27,14 @@ export interface ISourceLayerItemProps {
 	outputLayer: IOutputLayerUi
 	segment: SegmentUi
 	segmentLine: SegmentLineUi
+	segmentLineStartsAt: number
+	segmentLineDuration: number
 	segmentLineItem: SegmentLineItemUi
 	timeScale: number
+	isLiveLine: boolean
+	isNextLine: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	relative?: boolean
-	totalSegmentLineDuration?: number
 	followLiveLine: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
@@ -87,57 +90,57 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		if (this.props.relative) {
 			return {}
 		} else {
-			if (this.props.segmentLine && this.props.segmentLine.startsAt !== undefined && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined) {
+			if (this.props.segmentLine && this.props.segmentLineStartsAt !== undefined && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined) {
 				let segmentLineItem = this.props.segmentLineItem
 
 				let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration : 0
 				let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration : 0
 
 				const inPoint = segmentLineItem.renderedInPoint || 0
-				const duration = segmentLineItem.renderedDuration || this.props.segmentLine.renderedDuration || 0
+				const duration = (Number.isFinite(segmentLineItem.renderedDuration || 0)) ?
+					segmentLineItem.renderedDuration || this.props.segmentLineDuration || this.props.segmentLine.renderedDuration || 0 :
+					this.props.segmentLineDuration || this.props.segmentLine.renderedDuration || 0
 
 				const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
 
-				if (!this.props.followLiveLine) {
-					if (this.props.scrollLeft > (inPoint + this.props.segmentLine.startsAt + inTransitionDuration) &&
-						this.props.scrollLeft < (inPoint + duration + this.props.segmentLine.startsAt - outTransitionDuration)) {
-						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLine.startsAt - inTransitionDuration) * this.props.timeScale
-
-						let styleObj = {
-							'transform': 'translate3d(' + (widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth))).toString() + 'px,  0, 0)',
-							'willChange': 'transform'
-						}
-
-						return styleObj
-					}
-				} else {
+				if (this.props.followLiveLine && this.props.isLiveLine) {
 					const liveLineHistoryWithMargin = this.props.liveLineHistorySize - 10
-					if (this.props.scrollLeft + (liveLineHistoryWithMargin / this.props.timeScale) > (inPoint + this.props.segmentLine.startsAt + inTransitionDuration + (this.state.leftAnchoredWidth / this.props.timeScale)) &&
-						this.props.scrollLeft + (liveLineHistoryWithMargin / this.props.timeScale) < (inPoint + duration + this.props.segmentLine.startsAt - outTransitionDuration)) {
-						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLine.startsAt - inTransitionDuration) * this.props.timeScale
+					if (this.props.scrollLeft + (liveLineHistoryWithMargin / this.props.timeScale) > (inPoint + this.props.segmentLineStartsAt + inTransitionDuration + (this.state.leftAnchoredWidth / this.props.timeScale)) &&
+						this.props.scrollLeft + (liveLineHistoryWithMargin / this.props.timeScale) < (inPoint + duration + this.props.segmentLineStartsAt - outTransitionDuration)) {
+						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLineStartsAt - inTransitionDuration) * this.props.timeScale
 
 						// console.log(this.state.itemElement)
 
 						// || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0)
 						let styleObj = {
 							'transform': 'translate3d(' + (widthConstrictedMode ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
-										 'translate3d(' + (liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
-										 'translate3d(-100%, 0, 0)',
+								'translate3d(' + (liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
+								'translate3d(-100%, 0, 0)',
 							'willChange': 'transform'
 						}
 
 						return styleObj
 					} else if ((this.state.rightAnchoredWidth < this.state.elementWidth) &&
-							   (this.state.leftAnchoredWidth < this.state.elementWidth) &&
-							   (this.props.scrollLeft + (liveLineHistoryWithMargin / this.props.timeScale) >= (inPoint + duration + this.props.segmentLine.startsAt - outTransitionDuration))) {
-						console.log(segmentLineItem.name + ': constrictedMode')
-						console.log(this.state.leftAnchoredWidth, this.state.rightAnchoredWidth, this.state.elementWidth)
-						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLine.startsAt - inTransitionDuration) * this.props.timeScale
+						(this.state.leftAnchoredWidth < this.state.elementWidth) &&
+						(this.props.scrollLeft + (liveLineHistoryWithMargin / this.props.timeScale) >= (inPoint + duration + this.props.segmentLineStartsAt - outTransitionDuration))) {
+						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLineStartsAt - inTransitionDuration) * this.props.timeScale
 
 						let styleObj = {
 							'transform': 'translate3d(' + (Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
-										 'translate3d(' + (liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
-										 'translate3d(-100%, 0, 0)',
+								'translate3d(' + (liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
+								'translate3d(-100%, 0, 0)',
+							'willChange': 'transform'
+						}
+
+						return styleObj
+					}
+				} else {
+					if (this.props.scrollLeft > (inPoint + this.props.segmentLineStartsAt + inTransitionDuration) &&
+						this.props.scrollLeft < (inPoint + duration + this.props.segmentLineStartsAt - outTransitionDuration)) {
+						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLineStartsAt - inTransitionDuration) * this.props.timeScale
+
+						let styleObj = {
+							'transform': 'translate3d(' + (widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth))).toString() + 'px,  0, 0)',
 							'willChange': 'transform'
 						}
 
@@ -160,7 +163,9 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration : 0
 
 				const inPoint = segmentLineItem.renderedInPoint || 0
-				const duration = segmentLineItem.renderedDuration || this.props.segmentLine.renderedDuration || 0
+				const duration = (Number.isFinite(segmentLineItem.renderedDuration || 0)) ?
+					segmentLineItem.renderedDuration || this.props.segmentLineDuration || this.props.segmentLine.renderedDuration || 0 :
+					this.props.segmentLineDuration || this.props.segmentLine.renderedDuration || 0
 				const outPoint = inPoint + duration
 
 				const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
@@ -191,8 +196,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			return {
 				// as-run "duration" takes priority over renderdDuration which takes priority over MOS-import expectedDuration (editorial duration)
 				// also: don't render transitions in relative mode
-				'left': (((segmentLineItem.renderedInPoint || 0)) / (this.props.totalSegmentLineDuration || 1) * 100).toString() + '%',
-				'width': ((itemDuration) / (this.props.totalSegmentLineDuration || 1) * 100).toString() + '%'
+				'left': (((segmentLineItem.renderedInPoint || 0)) / (this.props.segmentLineDuration || 1) * 100).toString() + '%',
+				'width': ((itemDuration) / (this.props.segmentLineDuration || 1) * 100).toString() + '%'
 			}
 		} else {
 			return {
@@ -220,7 +225,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 	}
 
 	componentWillReceiveProps (nextProps: ISourceLayerItemProps) {
-		if ((nextProps.totalSegmentLineDuration !== this.props.totalSegmentLineDuration) ||
+		if ((nextProps.segmentLineDuration !== this.props.segmentLineDuration) ||
 			(nextProps.segmentLineItem.renderedInPoint !== this.props.segmentLineItem.renderedInPoint) ||
 			(nextProps.segmentLineItem.renderedDuration !== this.props.segmentLineItem.renderedDuration) ||
 			(nextProps.segmentLineItem.duration !== this.props.segmentLineItem.duration) ||
@@ -271,7 +276,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		const cursorPosition = {
 			left: e.clientX - elementPos.left,
 			top: e.clientY - elementPos.top
-		};
+		}
 
 		const cursorTimePostion = Math.max(cursorPosition.left, 0) / this.props.timeScale
 
@@ -348,7 +353,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		if (this.props.relative) {
 			return true
 		} else {
-			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine, this.props.segmentLineItem)
+			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine, this.props.segmentLineStartsAt, this.props.segmentLineItem)
 		}
 	}
 

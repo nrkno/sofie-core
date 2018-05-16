@@ -35,10 +35,10 @@ export namespace RundownUtils {
 		return (isNegative ? '-' : (showPlus && milliseconds > 0 ? '+' : '')) + padZero(minutes) + ':' + padZero(secondsRest)
 	}
 
-	export function isInsideViewport (scrollLeft: number, scrollWidth: number, segmentLine: SegmentLineUi, segmentLineItem?: SegmentLineItemUi) {
-		if (scrollLeft + scrollWidth < (segmentLine.startsAt || 0) + (segmentLineItem !== undefined ? (segmentLineItem.renderedInPoint || 0) : 0)) {
+	export function isInsideViewport (scrollLeft: number, scrollWidth: number, segmentLine: SegmentLineUi, segmentLineStartsAt: number | undefined, segmentLineItem?: SegmentLineItemUi) {
+		if (scrollLeft + scrollWidth < (segmentLineStartsAt || segmentLine.startsAt || 0) + (segmentLineItem !== undefined ? (segmentLineItem.renderedInPoint || 0) : 0)) {
 			return false
-		} else if (scrollLeft > (segmentLine.startsAt || 0) + (segmentLineItem !== undefined ? (segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || 0) : (segmentLine.renderedDuration || 0))) {
+		} else if (scrollLeft > (segmentLineStartsAt || segmentLine.startsAt || 0) + (segmentLineItem !== undefined ? (segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || 0) : (segmentLine.renderedDuration || 0))) {
 			return false
 		}
 		return true

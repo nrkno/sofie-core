@@ -55,7 +55,7 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 			super.componentWillReceiveProps(nextProps, nextContext)
 		}
 
-		if ((nextProps.totalSegmentLineDuration !== this.props.totalSegmentLineDuration) ||
+		if ((nextProps.segmentLineDuration !== this.props.segmentLineDuration) ||
 			(nextProps.segmentLineItem.renderedInPoint !== this.props.segmentLineItem.renderedInPoint) ||
 			(nextProps.segmentLineItem.renderedDuration !== this.props.segmentLineItem.renderedDuration) ||
 			(nextProps.segmentLineItem.duration !== this.props.segmentLineItem.duration) ||

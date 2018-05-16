@@ -245,12 +245,12 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		segmentLine.startsAt = startsAt
 		startsAt = segmentLine.startsAt + (segmentLine.renderedDuration || 0)
 
-		segmentLineItems.forEach((item) => {
+		/* segmentLineItems.forEach((item) => {
 			let itemUi = item as SegmentLineItemUi
 			if (itemUi.renderedDuration && !Number.isFinite(itemUi.renderedDuration)) {
 				itemUi.renderedDuration = segmentLine.renderedDuration! - itemUi.renderedInPoint!
 			}
-		})
+		}) */
 	})
 
 	const resolveDuration = (item: SegmentLineItemUi): number => {
@@ -281,8 +281,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		hasAlreadyPlayed,
 		hasRemoteItems
 	}
-})(
-class extends React.Component<IPropsHeader, IStateHeader> {
+})(class extends React.Component<IPropsHeader, IStateHeader> {
 	debugDemoLiveLineInterval?: NodeJS.Timer
 	debugDemoLiveLineStart: number
 	isLiveSegment: boolean
