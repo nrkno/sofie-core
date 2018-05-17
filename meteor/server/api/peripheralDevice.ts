@@ -536,19 +536,21 @@ export namespace ServerPeripheralDeviceAPI {
 		let segmentLine = getSegmentLine(story.RunningOrderId, story.ID)
 		// TODO: Do something
 
-		if (story.MosExternalMetaData && story.MosExternalMetaData[0] &&
-			story.MosExternalMetaData[0].MosPayload &&
-			(story.MosExternalMetaData[0].MosPayload.Actual || story.MosExternalMetaData[0].MosPayload.Estimated || story.MosExternalMetaData[0].MosPayload.ReadTime)) {
+		// TODO: Find good MosExternalMetaData for durations
+		const durationMosMetaData = findDurationInfoMOSExternalMetaData(story)
+		if (durationMosMetaData && (durationMosMetaData.Actual || durationMosMetaData.Estimated || durationMosMetaData.ReadTime)) {
 
-			const duration = story.MosExternalMetaData[0].MosPayload.Actual && parseFloat(story.MosExternalMetaData[0].MosPayload.Actual) ||
-							 story.MosExternalMetaData[0].MosPayload.Estimated && parseFloat(story.MosExternalMetaData[0].MosPayload.Estimated) ||
-							 story.MosExternalMetaData[0].MosPayload.ReadTime && parseFloat(story.MosExternalMetaData[0].MosPayload.ReadTime)
+			const duration = durationMosMetaData.Actual && parseFloat(durationMosMetaData.Actual) ||
+							 durationMosMetaData.Estimated && parseFloat(durationMosMetaData.Estimated) ||
+							 durationMosMetaData.ReadTime && parseFloat(durationMosMetaData.ReadTime)
 
-			console.log('updating segment line duration: ' + segmentLine._id + ' ' + duration)
+			// console.log('updating segment line duration: ' + segmentLine._id + ' ' + duration)
 			segmentLine.expectedDuration = duration * 1000
 			SegmentLines.update(segmentLine._id, {$set: {
 				expectedDuration: segmentLine.expectedDuration
 			}})
+		} else {
+			logger.warn('Could not find duration information for segment line: ' + segmentLine._id)
 		}
 
 		let context: TemplateContext = {
@@ -866,6 +868,21 @@ export function getRank (beforeOrLast, after, i: number, count: number): number 
 // 		afterRemoveSegment(segment._id, segment.runningOrderId)
 // 	}
 // })
+
+function findDurationInfoMOSExternalMetaData (story: IMOSROFullStory): any | undefined {
+	if (story.MosExternalMetaData) {
+		let matchingMetaData = story.MosExternalMetaData.find((metaData) => {
+			if (metaData.MosSchema.match(/http(s)?:\/\/[\d\w\.\:]+\/schema\/enps.dtd$/)) {
+				return true
+			}
+			return false
+		})
+		if (matchingMetaData) {
+			return matchingMetaData
+		}
+	}
+	return undefined
+}
 
 function updateSegments (runningOrderId: string) {
 	// using SegmentLines, determine which segments are to be created
