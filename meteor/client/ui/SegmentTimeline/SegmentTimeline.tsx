@@ -324,7 +324,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 				<div className='segment-timeline__timeUntil'
 					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
 					 {this.props.runningOrder && this.props.segmentLines && this.props.segmentLines.length > 0 &&
-					 	// The following code is fine, just withTracer HOC messing with the available properties
+					 	// The following code is fine, just withTiming HOC messing with the available properties
 						// @ts-ignore
 						<SegmentLineCountdown segmentLineId={this.props.isNextSegment ? this.props.runningOrder.nextSegmentLineId : this.props.segmentLines[0]._id} />
 					 }
