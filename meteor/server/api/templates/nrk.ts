@@ -154,7 +154,7 @@ let nrk: TemplateSet = {
 						name: 'BREAK',
 						trigger: {
 							type: TriggerType.TIME_ABSOLUTE,
-							value: 'now'
+							value: 0
 						},
 						status: RundownAPI.LineItemStatusCode.OK,
 						sourceLayerId: 'studio0_vignett',
@@ -196,7 +196,7 @@ let nrk: TemplateSet = {
 				name: 'Video',
 				trigger: {
 					type: TriggerType.TIME_ABSOLUTE,
-					value: 'now'
+					value: 0
 				},
 				status: RundownAPI.LineItemStatusCode.UNKNOWN,
 				sourceLayerId: 'studio0_vignett',
@@ -208,7 +208,7 @@ let nrk: TemplateSet = {
 					timelineObjects: [
 						literal<Optional<TimelineObjLawoSource>>({
 							_id: IDs.lawo, deviceId: '',
-							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 'now' },
+							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 							priority: -1,
 							duration: 0,
 							LLayer: 'lawo_source_effect',
@@ -284,7 +284,7 @@ let nrk: TemplateSet = {
 				name: 'Video',
 				trigger: {
 					type: TriggerType.TIME_ABSOLUTE,
-					value: 'now'
+					value: 0
 				},
 				status: RundownAPI.LineItemStatusCode.UNKNOWN,
 				sourceLayerId: 'studio0_live_speak0',
@@ -305,7 +305,7 @@ let nrk: TemplateSet = {
 					timelineObjects: [
 						literal<Optional<TimelineObjLawoSource>>({
 							_id: IDs.lawo_automix, deviceId: '',
-							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 'now' },
+							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 							priority: -1,
 							duration: 0,
 							LLayer: 'lawo_source_automix',
