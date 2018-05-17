@@ -66,8 +66,11 @@ Meteor.methods({
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, pd._id, pd.token,
 			new MosString128('MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71'))
 	},
-	"debug_roMock0" () {
+	'debug_roMock0' () {
 		let pd = getPD()
+		if (!pd) {
+			throw new Meteor.Error(404, 'MOS Device not found to be used for mock running order!')
+		}
 		let id = pd._id
 		let token = pd.token
 		logger.info('debug_roMock0')
