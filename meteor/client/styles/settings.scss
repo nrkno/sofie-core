@@ -63,8 +63,13 @@
 		}
 	}
 
-	.settings-studio-source-table, .settings-studio-output-table {
+	.settings-studio-source-table, .settings-studio-output-table, .settings-studio-device-table, .settings-studio-mappings-table {
 		width: 100%;
+	}
+
+	.settings-studio-device-dropdown {
+		position: absolute;
+    	max-height: 300px;
 	}
 
 	.runtime-function-edit__editor {

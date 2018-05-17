@@ -10,6 +10,7 @@ import {
 	IMOSObjectAirStatus
 } from 'mos-connection'
 import { FindOptions, Selector, TransformedCollection } from './typings'
+import { StudioInstallations, StudioInstallation } from './StudioInstallations'
 
 /** This is a very uncomplete mock-up of the Rundown object */
 export interface DBRunningOrder {
@@ -53,6 +54,13 @@ export class RunningOrder implements DBRunningOrder {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
+	}
+	getStudioInstallation (): StudioInstallation {
+		if (!this.studioInstallationId) throw new Meteor.Error(500,'RunningOrder is not in a studioInstallation!')
+		let si = StudioInstallations.findOne(this.studioInstallationId)
+		if (si) {
+			return si
+		} else throw new Meteor.Error(404, 'StudioInstallation "' + this.studioInstallationId + '" not found!')
 	}
 	getSegments (selector?: Selector<DBSegment>, options?: FindOptions) {
 		selector = selector || {}

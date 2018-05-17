@@ -9,6 +9,8 @@ export interface PeripheralDevice {
 	name: string
 	type: PeripheralDeviceAPI.DeviceType
 
+	studioInstallationId: string
+
 	created: Time
 	status: PeripheralDeviceAPI.StatusObject
 	lastSeen: Time
@@ -21,7 +23,6 @@ export interface PeripheralDevice {
 	settings?: MosDeviceSettings | PlayoutDeviceSettings
 
 }
-
 export interface MosDeviceSettings { // TODO
 }
 export enum PlayoutDeviceType { // to match DeviceType in TSR
@@ -31,23 +32,16 @@ export enum PlayoutDeviceType { // to match DeviceType in TSR
 	LAWO = 3,
 	HTTPSEND = 4
 }
-export interface Mappings {
-	[layerName: string]: Mapping
-}
-export interface Mapping {
-	device: PlayoutDeviceType,
-	deviceId: string
-	// [key: string]: any
-}
+
 export interface PlayoutDeviceSettings {
 	devices: {
-		[deviceId: string]: {
-			type: PlayoutDeviceType
-			options?: {}
-		}
+		[deviceId: string]: PlayoutDeviceSettingsDevice
 	}
 	initializeAsClear: boolean
-	mappings: Mappings,
+}
+export interface PlayoutDeviceSettingsDevice {
+	type: PlayoutDeviceType
+	options?: {}
 }
 
 export const PeripheralDevices: TransformedCollection<PeripheralDevice, PeripheralDevice>

@@ -86,7 +86,7 @@ export interface TimelineObj {
 	/** Running Order Id */
 	roId: string
 	/** Id of the Device */
-	deviceId: string
+	deviceId: Array<string>
 
 	trigger: {
 		type: TriggerType;

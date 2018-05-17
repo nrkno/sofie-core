@@ -13,6 +13,8 @@ import { Segment, Segments } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from './../logging'
+import { PeripheralDevice, PeripheralDevices, PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice';
 
 Meteor.methods({
 	/**
@@ -205,9 +207,9 @@ function setPreviousLinePlaybackDuration (roId: string, prevSegLine: SegmentLine
 function createSegmentLineGroup (segmentLine: SegmentLine, duration: Time): TimelineObj {
 	let slGrp = literal<TimelineObjGroupSegmentLine>({
 		_id: 'sl-group-' + segmentLine._id,
-		siId: undefined,
-		roId: undefined,
-		deviceId: '',
+		siId: '', // added later
+		roId: '', // added later
+		deviceId: [],
 		trigger: {
 			type: TriggerType.TIME_ABSOLUTE,
 			value: 'now'
@@ -256,6 +258,8 @@ function updateTimeline (studioInstallationId: string) {
 	})
 
 	if (activeRunningOrder) {
+		let studioInstallation = activeRunningOrder.getStudioInstallation()
+
 		// remove anything not related to active running order:
 		Timeline.remove({
 			siId: studioInstallationId,
@@ -315,11 +319,73 @@ function updateTimeline (studioInstallationId: string) {
 
 		// next (on pvw (or on pgm if first))
 
-		// Pre-process the timelineObjects
+		// Pre-process the timelineObjects:
+
+		// create a mapping of which playout parent processes that has which playoutdevices:
+		let deviceParentDevice: {[deviceId: string]: PeripheralDevice} = {}
+		let peripheralDevicesInStudio = PeripheralDevices.find({
+			studioInstallationId: studioInstallation._id,
+			type: PeripheralDeviceAPI.DeviceType.PLAYOUT
+		}).fetch()
+		_.each(peripheralDevicesInStudio, (pd) => {
+			if (pd.settings) {
+				let settings = pd.settings as PlayoutDeviceSettings
+				_.each(settings.devices, (device, deviceId) => {
+					deviceParentDevice[deviceId] = pd
+				})
+			}
+		})
+		let groupDevices: {[groupId: string]: Array<string>} = {}
+
 		_.each(timelineObjs, (o) => {
 			o.roId = activeRunningOrder._id
-			o.siId = activeRunningOrder.studioInstallationId
+			o.siId = studioInstallation._id
+			if (!o.isGroup) {
+
+				let LLayerMapping = (studioInstallation.mappings || {})[o.LLayer + '']
+				if (LLayerMapping) {
+					let parentDevice = deviceParentDevice[LLayerMapping.deviceId]
+					if (!parentDevice) throw new Meteor.Error(404, 'No parent-device found for device "' + LLayerMapping.deviceId + '"')
+
+					o.deviceId = [parentDevice._id]
+
+					if (o.inGroup) {
+						if (!groupDevices[o.inGroup]) groupDevices[o.inGroup] = []
+						groupDevices[o.inGroup].push(parentDevice._id)
+					}
+
+				} else logger.warn('TimelineObject "' + o._id + '" has an unknown LLayer: "' + o.LLayer + '"')
+			}
 		})
+		let groupObjs = _.compact(_.map(timelineObjs, (o) => {
+			if (o.isGroup) {
+				return o
+			}
+			return null
+		}))
+
+		let shouldNotRunAgain = true
+		let shouldRunAgain = true
+		for (let i = 0; i < 10; i++) {
+			shouldNotRunAgain = true
+			shouldRunAgain = false
+			_.each(groupObjs, (o) => {
+				if (o.inGroup) {
+					if (!groupDevices[o.inGroup]) groupDevices[o.inGroup] = []
+					groupDevices[o.inGroup].concat(o.deviceId)
+					shouldNotRunAgain = false
+				}
+				if (o.isGroup) {
+					let newDeviceId = groupDevices[o._id] || []
+
+					if (!_.isEqual(o.deviceId, newDeviceId)) {
+						shouldRunAgain = true
+						o.deviceId = newDeviceId
+					}
+				}
+			})
+			if (!shouldRunAgain || shouldNotRunAgain) break
+		}
 
 		console.log('timelineObjs', timelineObjs)
 

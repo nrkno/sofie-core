@@ -5,7 +5,7 @@ import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/Perip
 
 export namespace PeripheralDeviceSecurity {
 
-	export function getPeripheralDevice (id: string, token: string, context: any): PeripheralDevice|null {
+	export function getPeripheralDevice (id: string, token: string, context: any): PeripheralDevice {
 
 		if (!id) throw new Meteor.Error(400,'id missing!')
 		if (!token) throw new Meteor.Error(400,'token missing!')
@@ -13,7 +13,8 @@ export namespace PeripheralDeviceSecurity {
 		check(token, String)
 
 		let peripheralDevice = PeripheralDevices.findOne(id)
-		if (!peripheralDevice) return null
+		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + id + '" not found' )
+		// if (!peripheralDevice) return null
 
 		if (peripheralDevice.token === token) return peripheralDevice
 

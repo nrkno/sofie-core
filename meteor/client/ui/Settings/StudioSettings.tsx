@@ -1,10 +1,12 @@
 import * as ClassNames from 'classnames'
 import * as React from 'react'
-import { InjectedTranslateProps, translate } from 'react-i18next'
+import { Meteor } from 'meteor/meteor'
+import { InjectedTranslateProps, translate, Trans } from 'react-i18next'
 import * as _ from 'underscore'
+import Moment from 'react-moment'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { IOutputLayer, ISourceLayer, StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
-import { EditAttribute } from '../../lib/EditAttribute'
+import { IOutputLayer, ISourceLayer, StudioInstallation, StudioInstallations, Mapping, MappingCasparCG, MappingAtem, MappingLawo, MappingAtemType } from '../../../lib/collections/StudioInstallations'
+import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
@@ -15,16 +17,26 @@ import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import * as objectPath from 'object-path'
+import { PeripheralDevice, PeripheralDevices, PlayoutDeviceType } from '../../../lib/collections/PeripheralDevices'
+
+import { Link } from 'react-router-dom'
 
 interface IPropsHeader {
 	studioInstallation: StudioInstallation
+	studioDevices: Array<PeripheralDevice>
+	availableDevices: Array<PeripheralDevice>
 }
 
 interface IChildStudioInterfaceProps {
 	onDeleteSource?: (item: ISourceLayer) => void
 	onDeleteOutput?: (item: IOutputLayer) => void
+	onRemoveDevice?: (item: PeripheralDevice) => void
+	onRemoveMapping?: (layerId: string) => void
 	onAddSource?: () => void
 	onAddOutput?: () => void
+	onAddDevice?: (item: PeripheralDevice) => void
+	onAddMapping?: () => void
 }
 
 interface IStudioOutputSettingsState {
@@ -182,7 +194,7 @@ class StudioOutputSettings extends React.Component<IChildStudioInterfaceProps & 
 		return (
 			<div>
 				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
-					<p>{t(`Are you sure you want to delete output channel ${this.state.deleteConfirmItem && this.state.deleteConfirmItem.name}?`)}</p>
+					<p>{t('Are you sure you want to delete output channel ') + (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) + '?'}</p>
 					<p>{t('This action is irreversible.')}</p>
 				</ModalDialog>
 				<h3>{t('Output channels')}</h3>
@@ -303,19 +315,6 @@ class StudioSourcesSettings extends React.Component<IChildStudioInterfaceProps &
 	renderInputSources () {
 		const { t } = this.props
 
-		let sourceLayerTypeOptions = _.keys(RundownAPI.SourceLayerType).filter((item) => {
-			if (!Number.isNaN(Number.parseFloat(item))) {
-				return true
-			} else {
-				return false
-			}
-		}).map((item) => {
-			return ({
-				name: this.sourceLayerString(Number.parseInt(item) as RundownAPI.SourceLayerType),
-				value: Number.parseInt(item)
-			})
-		})
-
 		return (
 			this.props.studioInstallation.sourceLayers.sort((a, b) => {
 				return a._rank - b._rank
@@ -379,7 +378,7 @@ class StudioSourcesSettings extends React.Component<IChildStudioInterfaceProps &
 													attribute={'sourceLayers.' + index + '.type'}
 													obj={this.props.studioInstallation}
 													type='dropdown'
-													options={sourceLayerTypeOptions}
+													options={RundownAPI.SourceLayerType}
 													optionsAreNumbers
 													collection={StudioInstallations}
 													className='focusable-main input-l'></EditAttribute>
@@ -442,7 +441,7 @@ class StudioSourcesSettings extends React.Component<IChildStudioInterfaceProps &
 		return (
 			<div>
 				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
-					<p>{t(`Are you sure you want to delete source layer ${this.state.deleteConfirmItem && this.state.deleteConfirmItem.name}?`)}</p>
+					<p>{t('Are you sure you want to delete source layer ') + (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) + '?'}</p>
 					<p>{t('This action is irreversible.')}</p>
 				</ModalDialog>
 				<h3>{t('Source layers')}</h3>
@@ -453,6 +452,420 @@ class StudioSourcesSettings extends React.Component<IChildStudioInterfaceProps &
 				</table>
 				<div className='mod mhs'>
 					<button className='btn btn-primary' onClick={this.props.onAddSource}>
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
+				</div>
+			</div>
+		)
+	}
+}
+
+interface IStudioDevicesSettingsState {
+	showDeleteConfirm: boolean
+	deleteConfirmItem: PeripheralDevice | undefined
+	showAvailableDevices: boolean
+}
+class StudioDevices extends React.Component<IChildStudioInterfaceProps & IPropsHeader & InjectedTranslateProps, IStudioDevicesSettingsState> {
+	constructor (props) {
+		super(props)
+
+		this.state = {
+			showDeleteConfirm: false,
+			deleteConfirmItem: undefined,
+			showAvailableDevices: false,
+		}
+	}
+
+	handleConfirmRemoveCancel = (e) => {
+		this.setState({
+			showDeleteConfirm: false,
+			deleteConfirmItem: undefined
+		})
+	}
+
+	handleConfirmRemoveAccept = (e) => {
+		if (this.props.onRemoveDevice && typeof this.props.onRemoveDevice === 'function' && this.state.deleteConfirmItem) {
+			this.props.onRemoveDevice(this.state.deleteConfirmItem)
+		}
+		this.setState({
+			showDeleteConfirm: false,
+			deleteConfirmItem: undefined
+		})
+	}
+
+	confirmRemove = (item: PeripheralDevice) => {
+		this.setState({
+			showDeleteConfirm: true,
+			deleteConfirmItem: item
+		})
+	}
+
+	renderDevices () {
+		const { t } = this.props
+
+		return (
+			this.props.studioDevices.map((item, index) => {
+				return <tr key={item._id}>
+							<th className='settings-studio-device__name c5'>
+								<Link to={'/settings/peripheralDevice/' + item._id}>{item.name}</Link>
+							</th>
+							<td className='settings-studio-device__id c4'>
+								{item._id}
+							</td>
+							<td className='settings-studio-device__actions table-item-actions c3'>
+								<button className='action-btn' onClick={(e) => this.confirmRemove(item)}>
+									<FontAwesomeIcon icon={faTrash} />
+								</button>
+							</td>
+						</tr>
+			})
+		)
+	}
+
+	showAvailableDevices () {
+		this.setState({
+			showAvailableDevices: !this.state.showAvailableDevices
+		})
+	}
+
+	render () {
+		const { t } = this.props
+		return (
+			<div>
+				<ModalDialog title={t('Remove this device?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
+					<p>{t('Are you sure you want to remove device ') + (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) + '?'}</p>
+				</ModalDialog>
+				<h3>{t('Attached devices')}</h3>
+				<table className='expando settings-studio-device-table'>
+					<tbody>
+						{this.renderDevices()}
+					</tbody>
+				</table>
+				<div className='mod mhs'>
+					<button className='btn btn-primary' onClick={(e) => this.showAvailableDevices()}>
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
+					{ this.state.showAvailableDevices &&
+						<div className='border-box text-s studio-devices-dropdown'>
+							<div className='ctx-menu'>
+								{
+									this.props.availableDevices.map((device) => {
+										return (
+											<div className='ctx-menu-item' key={device._id} onClick={(e) => this.props.onAddDevice && this.props.onAddDevice(device)}>
+												<b>{device.name}</b> <Moment fromNow date={device.lastSeen} /> ({device._id})
+											</div>
+										)
+									})
+								}
+							</div>
+						</div>
+					}
+				</div>
+			</div>
+		)
+	}
+}
+
+interface IStudioMappingsSettingsState {
+	showDeleteConfirm: boolean
+	deleteConfirmLayerId: string | undefined
+	editedMappings: Array<string>
+}
+class StudioMappings extends React.Component<IChildStudioInterfaceProps & IPropsHeader & InjectedTranslateProps, IStudioMappingsSettingsState> {
+	constructor (props) {
+		super(props)
+
+		this.state = {
+			showDeleteConfirm: false,
+			deleteConfirmLayerId: undefined,
+			editedMappings: []
+		}
+	}
+
+	isItemEdited = (layerId: string) => {
+		return this.state.editedMappings.indexOf(layerId) >= 0
+	}
+
+	finishEditItem = (layerId: string) => {
+		let index = this.state.editedMappings.indexOf(layerId)
+		if (index >= 0) {
+			this.state.editedMappings.splice(index, 1)
+			this.setState({
+				editedMappings: this.state.editedMappings
+			})
+		}
+	}
+
+	editItem = (layerId: string) => {
+		if (this.state.editedMappings.indexOf(layerId) < 0) {
+			this.state.editedMappings.push(layerId)
+			this.setState({
+				editedMappings: this.state.editedMappings
+			})
+		}
+	}
+
+	handleConfirmRemoveCancel = (e) => {
+		this.setState({
+			showDeleteConfirm: false,
+			deleteConfirmLayerId: undefined
+		})
+	}
+
+	handleConfirmRemoveAccept = (e) => {
+		this.state.deleteConfirmLayerId && this.removeLayer(this.state.deleteConfirmLayerId)
+		this.setState({
+			showDeleteConfirm: false,
+			deleteConfirmLayerId: undefined
+		})
+	}
+
+	confirmRemove = (layerId: string) => {
+		this.setState({
+			showDeleteConfirm: true,
+			deleteConfirmLayerId: layerId
+		})
+	}
+	removeLayer = (layerId: string) => {
+		let unsetObject = {}
+		unsetObject['mappings.' + layerId] = ''
+		StudioInstallations.update(this.props.studioInstallation._id, {
+			$unset: unsetObject
+		})
+	}
+	addNewLayer = () => {
+		// find free key name
+		let newLayerKeyName = 'newLayer'
+		let iter = 0
+		while (this.props.studioInstallation.mappings[newLayerKeyName + iter.toString()]) {
+			iter++
+		}
+		let setObject = {}
+		setObject['mappings.' + newLayerKeyName + iter.toString()] = {
+			device: PlayoutDeviceType.CASPARCG,
+			deviceId: 'newDeviceId',
+		}
+
+		StudioInstallations.update(this.props.studioInstallation._id, {
+			$set: setObject
+		})
+	}
+	updateLayerId = (edit: EditAttributeBase, newValue: string) => {
+
+		let oldLayerId = edit.props.overrideDisplayValue
+		let newLayerId = newValue + ''
+		let layer = this.props.studioInstallation.mappings[oldLayerId]
+
+		if (this.props.studioInstallation.mappings[newLayerId]) {
+			throw new Meteor.Error(400, 'Layer "' + newLayerId + '" already exists')
+		}
+
+		let mSet = {}
+		let mUnset = {}
+		mSet['mappings.' + newLayerId] = layer
+		mUnset['mappings.' + oldLayerId] = 1
+
+		edit.props.collection.update(this.props.studioInstallation._id, {
+			$set: mSet,
+			$unset: mUnset
+		})
+
+		this.finishEditItem(oldLayerId)
+		this.editItem(newLayerId)
+	}
+
+	renderCaparCGMappingSettings (layerId: string) {
+		const { t } = this.props
+		return (
+			<React.Fragment>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('channel')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.channel'}
+							obj={this.props.studioInstallation}
+							type='int'
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('layer')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.layer'}
+							obj={this.props.studioInstallation}
+							type='int'
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+			</React.Fragment>
+		)
+	}
+
+	renderAtemMappingSettings (layerId: string) {
+		const { t } = this.props
+		return (
+			<React.Fragment>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('mappingType')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.mappingType'}
+							obj={this.props.studioInstallation}
+							type='dropdown'
+							options={MappingAtemType}
+							optionsAreNumbers={true}
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('index')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.index'}
+							obj={this.props.studioInstallation}
+							type='int'
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+			</React.Fragment>
+		)
+	}
+
+	renderMappings () {
+		const { t } = this.props
+
+		return (
+			_.map(this.props.studioInstallation.mappings, (mapping: Mapping , layerId: string) => {
+				return (
+					!this.isItemEdited(layerId) ?
+					<tr key={layerId}>
+						<th className='settings-studio-device__name c3'>
+							{layerId}
+						</th>
+						<td className='settings-studio-device__id c2'>
+							{mapping.device}
+						</td>
+						<td className='settings-studio-device__id c2'>
+							{mapping.deviceId}
+						</td>
+						<td className='settings-studio-device__id c4'>
+						{
+							(
+								mapping.device === PlayoutDeviceType.CASPARCG && (
+								<span>{ (mapping as MappingCasparCG).channel } - { (mapping as MappingCasparCG).layer }</span>
+							)) ||
+							(
+								mapping.device === PlayoutDeviceType.ATEM && (
+								<span>{ (mapping as MappingAtem).mappingType } - { (mapping as MappingAtem).index }</span>
+							)) ||
+							(
+								mapping.device === PlayoutDeviceType.LAWO && (
+								<span>{ (mapping as MappingLawo).channel }</span>
+							)) ||
+							(
+								<span>Unknown device type: {PlayoutDeviceType[mapping.device] } </span>
+							)
+						}
+						</td>
+
+						<td className='settings-studio-device__actions table-item-actions c3'>
+							<button className='action-btn' onClick={(e) => this.editItem(layerId)}>
+								<FontAwesomeIcon icon={faPencilAlt} />
+							</button>
+							<button className='action-btn' onClick={(e) => this.confirmRemove(layerId)}>
+								<FontAwesomeIcon icon={faTrash} />
+							</button>
+						</td>
+					</tr> :
+					<tr className='expando-details hl' key={layerId + '-details'}>
+						<td colSpan={5}>
+							<div>
+								<div className='mod mvs mhs'>
+									<label className='field'>
+										{t('Layer ID')}
+										<EditAttribute
+											modifiedClassName='bghl'
+											attribute={'mappings' }
+											overrideDisplayValue={layerId }
+											obj={this.props.studioInstallation}
+											type='text'
+											collection={StudioInstallations}
+											updateFunction={this.updateLayerId}
+											className='input text-input input-l'></EditAttribute>
+									</label>
+								</div>
+								<div className='mod mvs mhs'>
+									<label className='field'>
+										{t('Device type')}
+										<EditAttribute
+											modifiedClassName='bghl'
+											attribute={'mappings.' + layerId + '.device'}
+											obj={this.props.studioInstallation}
+											type='dropdown'
+											options={PlayoutDeviceType}
+											optionsAreNumbers={true}
+											collection={StudioInstallations}
+											className='input text-input input-l'></EditAttribute>
+									</label>
+								</div>
+								<div className='mod mvs mhs'>
+									<label className='field'>
+										{t('Device Id')}
+										<EditAttribute
+											modifiedClassName='bghl'
+											attribute={'mappings.' + layerId + '.deviceId'}
+											obj={this.props.studioInstallation}
+											type='text'
+											collection={StudioInstallations}
+											className='input text-input input-l'></EditAttribute>
+									</label>
+								</div>
+								{(
+									mapping.device === PlayoutDeviceType.CASPARCG && (
+										this.renderCaparCGMappingSettings(layerId)
+									) ||
+									(
+									mapping.device === PlayoutDeviceType.ATEM && (
+										this.renderAtemMappingSettings(layerId)
+									))
+								)}
+							</div>
+							<div className='mod alright'>
+								<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(layerId)}>
+									<FontAwesomeIcon icon={faCheck} />
+								</button>
+							</div>
+						</td>
+					</tr>
+				)
+			})
+		)
+	}
+
+	render () {
+		const { t } = this.props
+		return (
+			<div>
+				<ModalDialog title={t('Remove this mapping?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
+					<p>{t('Are you sure you want to remove mapping for LLayer ') + (this.state.deleteConfirmLayerId && this.state.deleteConfirmLayerId) + '?'}</p>
+				</ModalDialog>
+				<h3>{t('Layer Mappings')}</h3>
+				<table className='expando settings-studio-mappings-table'>
+					<tbody>
+						{this.renderMappings()}
+					</tbody>
+				</table>
+				<div className='mod mhs'>
+					<button className='btn btn-primary' onClick={(e) => this.addNewLayer()}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 				</div>
@@ -537,6 +950,18 @@ class StudioSettings extends React.Component<IPropsHeader & InjectedTranslatePro
 		})
 	}
 
+	onRemoveDevice = (item: PeripheralDevice) => {
+		PeripheralDevices.update(item._id, {$unset: {
+			studioInstallationId: ''
+		}})
+	}
+
+	onAddDevice = (item: PeripheralDevice) => {
+		PeripheralDevices.update(item._id, {$set: {
+			studioInstallationId: this.props.studioInstallation._id
+		}})
+	}
+
 	renderEditForm () {
 		const { t } = this.props
 
@@ -567,6 +992,16 @@ class StudioSettings extends React.Component<IPropsHeader & InjectedTranslatePro
 							<StudioOutputSettings {...this.props} onDeleteOutput={this.onDeleteOutput} onAddOutput={this.onAddOutput} />
 						</div>
 					</div>
+					<div className='row'>
+						<div className='col c12 r1-c12'>
+							<StudioDevices {...this.props} onRemoveDevice={this.onRemoveDevice} onAddDevice={this.onAddDevice} />
+						</div>
+					</div>
+					<div className='row'>
+						<div className='col c12 r1-c12'>
+							<StudioMappings {...this.props} />
+						</div>
+					</div>
 				</div>
 		)
 	}
@@ -584,6 +1019,20 @@ class StudioSettings extends React.Component<IPropsHeader & InjectedTranslatePro
 
 export default translate()(withTracker((props, state) => {
 	return {
-		studioInstallation: StudioInstallations.findOne(props.match.params.studioId)
+		studioInstallation: StudioInstallations.findOne(props.match.params.studioId),
+		studioDevices: PeripheralDevices.find({
+			studioInstallationId: props.match.params.studioId
+		}).fetch(),
+		availableDevices: PeripheralDevices.find({
+			studioInstallationId: {
+				$not: {
+					$eq: props.match.params.studioId
+				}
+			}
+		}, {
+			sort: {
+				lastSeen: -1
+			}
+		}).fetch()
 	}
 })(StudioSettings))

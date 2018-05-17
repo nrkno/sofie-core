@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as _ from 'underscore'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 
 interface IEditAttribute extends IPropsEditAttributeBase {
@@ -28,6 +29,8 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 				<EditAttributeDropdown {...this.props} />
 			)
 		}
+
+		return <div>Unknown edit type {this.props.type}</div>
 	}
 }
 
@@ -41,12 +44,14 @@ interface IPropsEditAttributeBase {
 	optionsAreNumbers?: boolean
 	className?: string
 	modifiedClassName?: string
+	updateFunction?: (edit: EditAttributeBase, newValue: any ) => void
+	overrideDisplayValue?: any
 }
 interface IStateEditAttributeBase {
 	value: any,
 	editing: boolean
 }
-class EditAttributeBase extends React.Component<IPropsEditAttributeBase, IStateEditAttributeBase> {
+export class EditAttributeBase extends React.Component<IPropsEditAttributeBase, IStateEditAttributeBase> {
 	constructor (props) {
 		super(props)
 
@@ -69,12 +74,14 @@ class EditAttributeBase extends React.Component<IPropsEditAttributeBase, IStateE
 		}
 	}
 	handleUpdate (newValue) {
+		this.handleUpdateButDontSave(newValue)
+		this.updateValue(newValue)
+	}
+	handleUpdateButDontSave (newValue) {
 		this.setState({
 			value: newValue,
 			editing: false
 		})
-
-		this.updateValue(newValue)
 	}
 	handleDiscard () {
 		this.setState({
@@ -106,6 +113,7 @@ class EditAttributeBase extends React.Component<IPropsEditAttributeBase, IStateE
 		return f(obj, attr)
 	}
 	getAttribute () {
+		if (this.props.overrideDisplayValue) return this.props.overrideDisplayValue
 		return this.deepAttribute(this.props.myObject, this.props.attribute)
 	}
 	getAttributeText () {
@@ -115,9 +123,14 @@ class EditAttributeBase extends React.Component<IPropsEditAttributeBase, IStateE
 		return (this.state.editing ? this.state.value : this.getAttribute())
 	}
 	updateValue (newValue) {
-		let m = {}
-		m[this.props.attribute] = newValue
-		this.props.collection.update(this.props.obj._id, { $set: m })
+		if (this.props.updateFunction && typeof this.props.updateFunction === 'function') {
+			this.props.updateFunction(this, newValue)
+		} else {
+			let m = {}
+			m[this.props.attribute] = newValue
+			this.props.collection.update(this.props.obj._id, { $set: m })
+		}
+
 	}
 }
 let wrapEditAttribute = (newClass) => {
@@ -203,11 +216,22 @@ const EditAttributeInt = wrapEditAttribute(class extends EditAttributeBase {
 		this.handleChange = this.handleChange.bind(this)
 		this.handleBlur = this.handleBlur.bind(this)
 	}
+	getValue (event) {
+		return parseInt(event.target.value, 10)
+	}
 	handleChange (event) {
-		this.handleEdit(parseInt(event.target.value, 10))
+		// this.handleEdit(this.getValue(event))
+		let v = this.getValue(event)
+		_.isNaN(v) ? this.handleUpdateButDontSave(v) : this.handleUpdate(v)
 	}
 	handleBlur (event) {
-		this.handleUpdate(parseInt(event.target.value, 10))
+		let v = this.getValue(event)
+		_.isNaN(v) ? this.handleDiscard() : this.handleUpdate(v)
+	}
+	getEditAttributeNumber () {
+		let val = this.getEditAttribute()
+		if (_.isNaN(val)) val = 'NaN'
+		return val
 	}
 	render () {
 		return (
@@ -215,7 +239,7 @@ const EditAttributeInt = wrapEditAttribute(class extends EditAttributeBase {
 				step='1'
 				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
 
-				value={this.getEditAttribute()}
+				value={this.getEditAttributeNumber()}
 				onChange={this.handleChange}
 				onBlur={this.handleBlur}
 			/>
@@ -259,6 +283,7 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 		let options: Array<{ value: any, name: string, i?: number }> = []
 
 		if (Array.isArray(this.props.options)) {
+			// is it an enum?
 			for (let key in this.props.options) {
 				let val = this.props.options[key]
 				if (typeof val === 'object') {
@@ -274,13 +299,32 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 				}
 			}
 		} else if (typeof this.props.options === 'object') {
-			for (let key in this.props.options) {
-				let val = this.props.options[key]
-				options.push({
-					name: key + ': ' + val,
-					value: val
-				})
+
+			// Is options an enum?
+			let keys = Object.keys(this.props.options)
+			let first = this.props.options[keys[0]]
+			if ((this.props.options[first] + '') === (keys[0] + '')) {
+				// is an enum, only pick
+				for (let key in this.props.options) {
+					if ( !_.isNaN(parseInt(key, 10)) ) {
+						let val = this.props.options[key]
+						options.push({
+							name: val,
+							value: key
+						})
+					}
+				}
+			} else {
+
+				for (let key in this.props.options) {
+					let val = this.props.options[key]
+					options.push({
+						name: key + ': ' + val,
+						value: val
+					})
+				}
 			}
+
 		}
 
 		for (let i = 0; i < options.length; i++) {

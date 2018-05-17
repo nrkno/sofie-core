@@ -26,7 +26,8 @@ export interface StatusObject {
 
 export enum DeviceType {
 	MOSDEVICE = 0,
-	PLAYOUT = 1
+	PLAYOUT = 1,
+	OTHER = 2, // i.e. sub-devices
 }
 export interface InitOptions {
 	type: DeviceType,
@@ -103,6 +104,7 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 	// we've sent the command, let's just wait for the reply
 	let checkReply = () => {
 		let cmd = PeripheralDeviceCommands.findOne(commandId)
+		if (!cmd) throw new Meteor.Error('Command "' + commandId + '" not found')
 		console.log('checkReply')
 		if (cmd.hasReply) {
 			// We've got a reply!

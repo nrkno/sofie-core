@@ -15,6 +15,8 @@ export type OptionalNumbers<T> = {
 	[K in keyof T]?: number
 }
 export type Modifier<T> = {
+	$pull?: Optional<T> | {[path: string]: any}
+	$push?: Optional<T> | {[path: string]: any}
 	$set?: Optional<T> | {[path: string]: any}
 	$unset?: OptionalNumbers<T> | {[path: string]: any}
 }

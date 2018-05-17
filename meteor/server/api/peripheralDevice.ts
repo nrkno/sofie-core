@@ -38,6 +38,7 @@ import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDevice
 import { logger } from './../logging'
 import { runTemplate, TemplateContext, getHash } from './templates/templates'
 import { Timeline } from '../../lib/collections/Timeline'
+import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -61,6 +62,7 @@ export namespace ServerPeripheralDeviceAPI {
 				status: {
 					statusCode: PeripheralDeviceAPI.StatusCode.UNKNOWN
 				},
+				studioInstallationId: '',
 				connected: true,
 				connectionId: options.connectionId,
 				lastSeen: getCurrentTime(),
@@ -149,11 +151,14 @@ export namespace ServerPeripheralDeviceAPI {
 // Mos-functions:
 	export function mosRoCreate (id, token, ro: IMOSRunningOrder) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-
 		// console.log('mosRoCreate', ro)
 		logger.info('mosRoCreate')
 
 		logger.debug(ro)
+
+		if (!peripheralDevice.studioInstallationId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no StudioInstallation')
+		let studioInstallation = StudioInstallations.findOne(peripheralDevice.studioInstallationId) as StudioInstallation
+		if (!studioInstallation) throw new Meteor.Error(404, 'StudioInstallation "' + peripheralDevice.studioInstallationId + '" not found')
 
 		// Save RO into database:
 		saveIntoDb(RunningOrders, {
@@ -162,7 +167,7 @@ export namespace ServerPeripheralDeviceAPI {
 			return partialExceptId<DBRunningOrder>({
 				_id: roId(ro.ID),
 				mosId: ro.ID.toString(),
-				studioInstallationId: 'studio0',
+				studioInstallationId: studioInstallation._id,
 				// showStyleId: '',
 				name: ro.Slug.toString()
 			})
@@ -192,8 +197,10 @@ export namespace ServerPeripheralDeviceAPI {
 				// segment = convertToSegment(story, roId(ro.ID), rankSegment++)
 				// segments.push(segment)
 			// }
-			let segmentLine = convertToSegmentLine(story, dbRo._id, rankSegmentLine++)
-			segmentLines.push(segmentLine)
+			if (dbRo) {
+				let segmentLine = convertToSegmentLine(story, dbRo._id, rankSegmentLine++)
+				segmentLines.push(segmentLine)
+			} else throw new Meteor.Error(500, 'Running order not found (it should have been)')
 
 			prevSlugParts = slugParts
 		})
@@ -229,7 +236,6 @@ export namespace ServerPeripheralDeviceAPI {
 				afterRemoveSegmentLine(segmentLine._id)
 			}
 		})
-
 		updateSegments(roId(ro.ID))
 	}
 	export function mosRoReplace (id, token, ro: IMOSRunningOrder) {

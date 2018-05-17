@@ -3,7 +3,7 @@ import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders
 import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
-import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { StudioInstallation, StudioInstallations, Mappings, MappingCasparCG, MappingAtem, MappingAtemType, MappingLawo } from '../../lib/collections/StudioInstallations'
 import { getCurrentTime, saveIntoDb, literal, DBObj, partialExceptId } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
 import { TimelineTransition } from '../../lib/collections/Timeline'
@@ -16,47 +16,31 @@ import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 // Imports from TSR (TODO make into an import)
-export interface Mappings {
-	[layerName: string]: Mapping
-}
-export interface Mapping {
-	device: DeviceType,
-	deviceId: string,
-	channel?: number,
-	layer?: number
-	// [key: string]: any
-}
-export interface MappingCasparCG extends Mapping {
-	device: DeviceType.CASPARCG,
-	channel: number,
-	layer: number
-}
-export interface MappingAbstract extends Mapping {
-	device: DeviceType.ABSTRACT,
-	abstractPipe: number
-}
-export interface MappingAtem extends Mapping {
-	mappingType: MappingAtemType
-	index?: number
-}
-export interface MappingLawo extends Mapping {
-	device: DeviceType.LAWO,
-	channel: number
-}
-export enum MappingAtemType {
-	MixEffect,
-	DownStreamKeyer,
-	SuperSourceBox,
-	Auxilliary,
-	MediaPlayer
-}
-export enum DeviceType {
-	ABSTRACT = 0,
-	CASPARCG = 1,
-	ATEM = 2,
-	LAWO = 3,
-	HTTPSEND = 4
-}
+// export interface Mappings {
+// 	[layerName: string]: Mapping
+// }
+// export interface Mapping {
+// 	device: PlayoutDeviceType,
+// 	deviceId: string,
+// 	channel?: number,
+// 	layer?: number
+// 	// [key: string]: any
+// }
+
+// export enum MappingAtemType {
+// 	MixEffect,
+// 	DownStreamKeyer,
+// 	SuperSourceBox,
+// 	Auxilliary,
+// 	MediaPlayer
+// }
+// export enum PlayoutDeviceType { // moved to PlayoutDeviceType in PeripheripheralDevices
+// 	ABSTRACT = 0,
+// 	CASPARCG = 1,
+// 	ATEM = 2,
+// 	LAWO = 3,
+// 	HTTPSEND = 4
+// }
 // const literal = <T>(o: T) => o
 
 Meteor.methods({
@@ -156,100 +140,100 @@ Meteor.methods({
 		// Create Timeline mappings:
 		const mappings: Mappings = { // Logical layers and their mappings
 			'casparcg_player_vignett': literal<MappingCasparCG>({
-				device: DeviceType.CASPARCG,
+				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				channel: 5,
 				layer: 140
 			}),
 			'casparcg_player_soundeffect': literal<MappingCasparCG>({
-				device: DeviceType.CASPARCG,
+				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				channel: 5,
 				layer: 130
 			}),
 			'casparcg_player_clip': literal<MappingCasparCG>({
-				device: DeviceType.CASPARCG,
+				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				channel: 1,
 				layer: 110
 			}),
 			'casparcg_cg_graphics': literal<MappingCasparCG>({
-				device: DeviceType.CASPARCG,
+				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				channel: 4,
 				layer: 120
 			}),
 			'casparcg_cg_logo': literal<MappingCasparCG>({
-				device: DeviceType.CASPARCG,
+				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				channel: 4,
 				layer: 121
 			}),
 			'casparcg_cg_studiomonitor': literal<MappingCasparCG>({
-				device: DeviceType.CASPARCG,
+				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				channel: 3,
 				layer: 120
 			}),
 			'atem_me_program': literal<MappingAtem>({
-				device: DeviceType.ATEM,
+				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				mappingType: MappingAtemType.MixEffect,
 				index: 0 // 0 = ME1
 			}),
 			'atem_me_studiomonitor': literal<MappingAtem>({
-				device: DeviceType.ATEM,
+				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				mappingType: MappingAtemType.MixEffect,
 				index: 1 // 1 = ME2
 			}),
 			'atem_aux_clean': literal<MappingAtem>({
-				device: DeviceType.ATEM,
+				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				mappingType: MappingAtemType.Auxilliary,
 				index: 1
 			}),
 			'atem_aux_preview': literal<MappingAtem>({
-				device: DeviceType.ATEM,
+				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				mappingType: MappingAtemType.Auxilliary,
 				index: 2
 			}),
 			'atem_dsk_graphics': literal<MappingAtem>({
-				device: DeviceType.ATEM,
+				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				mappingType: MappingAtemType.DownStreamKeyer,
 				index: 0 // 0 = DSK1
 			}),
 			'atem_dsk_effect': literal<MappingAtem>({
-				device: DeviceType.ATEM,
+				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				mappingType: MappingAtemType.DownStreamKeyer,
 				index: 1 // 1 = DSK2
 			}),
 			'atem_supersource': literal<MappingAtem>({
-				device: DeviceType.ATEM,
+				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				mappingType: MappingAtemType.SuperSourceBox,
 				index: 0 // 0 = SS
 			}),
 			'lawo_source_automix': literal<MappingLawo>({
-				device: DeviceType.LAWO,
+				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				channel: 1
 			}),
 			'lawo_source_clip': literal<MappingLawo>({
-				device: DeviceType.LAWO,
+				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				channel: 2
 			}),
 			'lawo_source_effect': literal<MappingLawo>({
-				device: DeviceType.LAWO,
+				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				channel: 3
 			}),
 			'lawo_source_preview': literal<MappingLawo>({
-				device: DeviceType.LAWO,
+				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				channel: 4
 			})
