@@ -146,12 +146,27 @@ let nrk: TemplateSet = {
 					slug: 'BREAK',
 				}),
 				segmentLineItems: [
-					literal<SegmentLineItem>({
+					// literal<SegmentLineItemOptional>({
+					// 	_id: '',
+					// 	mosId: '',
+					// 	segmentLineId: '',
+					// 	runningOrderId: '',
+					// 	name: 'BREAK',
+					// 	trigger: {
+					// 		type: TriggerType.TIME_ABSOLUTE,
+					// 		value: 'now'
+					// 	},
+					// 	status: RundownAPI.LineItemStatusCode.OK,
+					// 	sourceLayerId: 'studio0_vignett',
+					// 	outputLayerId: 'pgm0',
+					// 	expectedDuration: 0
+					// })
+					literal<SegmentLineItemOptional>({
 						_id: '',
 						mosId: '',
 						segmentLineId: '',
 						runningOrderId: '',
-						name: 'BREAK',
+						name: 'AMB',
 						trigger: {
 							type: TriggerType.TIME_ABSOLUTE,
 							value: 'now'
@@ -159,7 +174,28 @@ let nrk: TemplateSet = {
 						status: RundownAPI.LineItemStatusCode.OK,
 						sourceLayerId: 'studio0_vignett',
 						outputLayerId: 'pgm0',
-						expectedDuration: 0
+						expectedDuration: 100000,
+						content: {
+							fileName: 'AMB',
+							sourceDuration: 100000,
+							timelineObjects: [
+								literal<TimelineObjCCGVideo>({
+									_id: 'AMB', deviceId: [''],
+									siId: '',roId: '',
+									trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+									priority: 0,
+									duration: 100000,
+									LLayer: 'casparcg_player_vignett',
+									content: {
+										type: TimelineContentType.VIDEO,
+										attributes: {
+											file: 'AMB',
+											loop: true
+										}
+									}
+								})
+							]
+						}
 					})
 				]
 			}
@@ -207,9 +243,9 @@ let nrk: TemplateSet = {
 					sourceDuration: sourceDuration,
 					timelineObjects: [
 						literal<Optional<TimelineObjLawoSource>>({
-							_id: IDs.lawo, deviceId: '',
-							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 'now' },
-							priority: -1,
+							_id: IDs.lawo, deviceId: [''],
+							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+							priority: 0,
 							duration: 0,
 							LLayer: 'lawo_source_effect',
 							content: {
@@ -220,9 +256,9 @@ let nrk: TemplateSet = {
 							}
 						}),
 						literal<Optional<TimelineObjCCGVideo>>({
-							_id: IDs.vignett, deviceId: '',
+							_id: IDs.vignett, deviceId: [''],
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo}.start + 0` },
-							priority: -1,
+							priority: 0,
 							duration: sourceDuration,
 							LLayer: 'casparcg_player_vignett',
 							content: {
@@ -304,9 +340,9 @@ let nrk: TemplateSet = {
 					) * 1000,
 					timelineObjects: [
 						literal<Optional<TimelineObjLawoSource>>({
-							_id: IDs.lawo_automix, deviceId: '',
-							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 'now' },
-							priority: -1,
+							_id: IDs.lawo_automix, deviceId: [''],
+							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+							priority: 0,
 							duration: 0,
 							LLayer: 'lawo_source_automix',
 							content: {
@@ -325,9 +361,9 @@ let nrk: TemplateSet = {
 							}
 						}),
 						literal<Optional<TimelineObjCCGVideo>>({
-							_id: IDs.headVideo, deviceId: '',
+							_id: IDs.headVideo, deviceId: [''],
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
-							priority: -1,
+							priority: 0,
 							duration: (
 								context.getValueByPath(storyItemClip, 'Content.objDur', 0) /
 								(context.getValueByPath(storyItemClip, 'Content.objTB') || 1)
@@ -385,12 +421,12 @@ let nrk: TemplateSet = {
 					sourceDuration: 8 * 1000, // @todo TBD
 					timelineObjects: [
 						literal<Optional<TimelineObjCCGTemplate>>({ // to be changed to NRKPOST-something
-							_id: IDs.headGfx, deviceId: '',
+							_id: IDs.headGfx, deviceId: [''],
 							trigger: {
 								type: TriggerType.TIME_RELATIVE,
 								value: `#${IDs.headVideo}.start + 5`
 							},
-							priority: -1,
+							priority: 0,
 							duration: 8 * 1000, // @todo TBD
 							LLayer: 'casparcg_cg_graphics',
 							content: {

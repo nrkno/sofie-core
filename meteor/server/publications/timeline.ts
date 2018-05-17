@@ -10,7 +10,7 @@ Meteor.publish('timeline', function (selector, token) {
 			token: 0
 		}
 	}
-	console.log('pub timeline')
+	console.log('pub timeline', selector)
 	if (TimelineSecurity.allowReadAccess(selector, token, this)) {
 		return Timeline.find(selector, modifier)
 	}

@@ -333,6 +333,8 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 
 		return options
 	}
+	// getAttributeOption () {
+	// }
 	render () {
 		return (
 			<select

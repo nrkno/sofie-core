@@ -57,6 +57,7 @@ Meteor.methods({
 			currentSegmentLineId: null,
 			nextSegmentLineId: null
 		}})
+		updateTimeline(runningOrder.studioInstallationId)
 	},
 	/**
 	 * Perform the TAKE action, i.e start playing a segmentLineItem
@@ -296,13 +297,13 @@ function updateTimeline (studioInstallationId: string) {
 			// fetch items
 			// fetch the timelineobjs in items
 			const isFollowed = nextSegmentLine && nextSegmentLine.autoNext
-			currentSegmentLineGroup = createSegmentLineGroup(currentSegmentLine, isFollowed ? currentSegmentLine.expectedDuration : Number.POSITIVE_INFINITY)
+			currentSegmentLineGroup = createSegmentLineGroup(currentSegmentLine, (isFollowed ? (currentSegmentLine.expectedDuration || 0) : 0))
 			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentSegmentLine, currentSegmentLineGroup))
 		}
 
 		// only add the next objects into the timeline if the next segment is autoNext
 		if (nextSegmentLine && nextSegmentLine.autoNext) {
-			let nextSegmentLineGroup = createSegmentLineGroup(nextSegmentLine, Number.POSITIVE_INFINITY)
+			let nextSegmentLineGroup = createSegmentLineGroup(nextSegmentLine, 0)
 			if (currentSegmentLineGroup) {
 				nextSegmentLineGroup.trigger = literal<ITimelineTrigger>({
 					type: TriggerType.TIME_RELATIVE,

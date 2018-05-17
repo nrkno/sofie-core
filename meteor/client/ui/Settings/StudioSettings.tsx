@@ -504,16 +504,19 @@ class StudioDevices extends React.Component<IChildStudioInterfaceProps & IPropsH
 		const { t } = this.props
 
 		return (
-			this.props.studioDevices.map((item, index) => {
-				return <tr key={item._id}>
-							<th className='settings-studio-device__name c5'>
-								<Link to={'/settings/peripheralDevice/' + item._id}>{item.name}</Link>
+			this.props.studioDevices.map((device, index) => {
+				return <tr key={device._id}>
+							<th className='settings-studio-device__name c3'>
+								<Link to={'/settings/peripheralDevice/' + device._id}>{device.name}</Link>
 							</th>
-							<td className='settings-studio-device__id c4'>
-								{item._id}
+							<td className='settings-studio-device__id c3'>
+								{device._id}
+							</td>
+							<td className='settings-studio-device__id c3'>
+								<Moment fromNow date={device.lastSeen} />
 							</td>
 							<td className='settings-studio-device__actions table-item-actions c3'>
-								<button className='action-btn' onClick={(e) => this.confirmRemove(item)}>
+								<button className='action-btn' onClick={(e) => this.confirmRemove(device)}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							</td>

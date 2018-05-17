@@ -17,6 +17,6 @@ $FontPath: "./roboto-gh-pages/fonts";
 @import "./../../../public/roboto-gh-pages/roboto.scss";
 
 /* Don't show visited status, since people will browse around the app a lot */
-:visited {
+a:visited {
 	color: #1769ff
 }

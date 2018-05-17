@@ -43,6 +43,20 @@ export interface PlayoutDeviceSettingsDevice {
 	type: PlayoutDeviceType
 	options?: {}
 }
+export interface PlayoutDeviceSettingsDeviceCasparCG extends PlayoutDeviceSettingsDevice {
+	type: PlayoutDeviceType.CASPARCG
+	options: {
+		host: string,
+		port: number
+	}
+}
+export interface PlayoutDeviceSettingsDeviceAtem extends PlayoutDeviceSettingsDevice {
+	type: PlayoutDeviceType.ATEM
+	options: {
+		host: string,
+		port?: number
+	}
+}
 
 export const PeripheralDevices: TransformedCollection<PeripheralDevice, PeripheralDevice>
 	= new Mongo.Collection<PeripheralDevice>('peripheralDevices')
