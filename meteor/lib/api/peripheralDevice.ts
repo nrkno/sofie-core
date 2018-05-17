@@ -104,24 +104,28 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 	let checkReply = () => {
 		let cmd = PeripheralDeviceCommands.findOne(commandId)
 		console.log('checkReply')
-		if (cmd.hasReply) {
-			// We've got a reply!
-			console.log('got reply')
-
-			if (cmd.replyError) {
-				cb(cmd.replyError, null)
-			} else {
-				cb(null, cmd.reply)
+		if (cmd) {
+			if (cmd.hasReply) {
+				// We've got a reply!
+				console.log('got reply')
+	
+				if (cmd.replyError) {
+					cb(cmd.replyError, null)
+				} else {
+					cb(null, cmd.reply)
+				}
+				cursor.stop()
+				PeripheralDeviceCommands.remove(cmd._id)
+				if (subscription) subscription.stop()
+			} else if (getCurrentTime() - (cmd.time || 0) > 3000) { // timeout
+				console.log('timeout')
+				cb('Timeout', null)
+				cursor.stop()
+				PeripheralDeviceCommands.remove(cmd._id)
+				if (subscription) subscription.stop()
 			}
-			cursor.stop()
-			PeripheralDeviceCommands.remove(cmd._id)
-			if (subscription) subscription.stop()
-		} else if (getCurrentTime() - (cmd.time || 0) > 3000) { // timeout
-			console.log('timeout')
-			cb('Timeout', null)
-			cursor.stop()
-			PeripheralDeviceCommands.remove(cmd._id)
-			if (subscription) subscription.stop()
+		} else {
+			console.log('Command "' + commandId + '" not found when looking for reply')
 		}
 	}
 

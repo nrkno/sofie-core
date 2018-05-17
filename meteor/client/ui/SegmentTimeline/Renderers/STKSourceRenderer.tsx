@@ -10,6 +10,7 @@ import * as ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
 
 import Lottie from 'react-lottie'
+// @ts-ignore
 import * as loopAnimation from './icon-loop.json'
 
 export class STKSourceRenderer extends CustomLayerItemRenderer {

@@ -192,8 +192,11 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			// $(window).on('resize', this.onCanvasResize)
 			elementResizeEvent(this.parentElement, this.onCanvasResize)
 
+			// TypeScript doesnt know about FontFace
+			// @ts-ignore
 			if (typeof FontFace !== 'undefined') {
 				// console.log('Loading grid font')
+				// @ts-ignore
 				let gridFont = new FontFace('GridTimecodeFont', GRID_FONT_URL, {
 					style: 'normal',
 					weight: 100
@@ -207,6 +210,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				}, (fontFace) => {
 					// console.log('Grid font failed to load: ' + fontFace.status)
 				})
+				// @ts-ignore
 				document.fonts.add(gridFont)
 			}
 

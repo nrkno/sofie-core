@@ -77,6 +77,8 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 					return (
 						<SourceLayerItemContainer key={segmentLineItem._id}
 							{...this.props}
+							// The following code is fine, just withTracker HOC messing with available props
+							// @ts-ignore
 							segmentLineItem={segmentLineItem}
 							layer={this.props.layer}
 							outputLayer={this.props.outputLayer}
