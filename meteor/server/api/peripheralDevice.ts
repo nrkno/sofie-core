@@ -51,38 +51,38 @@ export namespace ServerPeripheralDeviceAPI {
 
 		console.log('initialize', options)
 
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		let peripheralDevice
+		try {
+			peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 
-		if (!peripheralDevice) {
-			// Add a new device
-
-			PeripheralDevices.insert({
-				_id: id,
-				created: getCurrentTime(),
-				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.UNKNOWN
-				},
-				studioInstallationId: '',
-				connected: true,
-				connectionId: options.connectionId,
-				lastSeen: getCurrentTime(),
-				token: token,
-				type: options.type,
-				name: options.name
-
+			PeripheralDevices.update(id, {
+				$set: {
+					lastSeen: getCurrentTime(),
+					connected: true,
+					connectionId: options.connectionId,
+					type: options.type,
+					name: options.name
+				}
 			})
-
-		} else {
-			// Update the device:
-
-			PeripheralDevices.update(id, {$set: {
-				lastSeen: getCurrentTime(),
-				connected: true,
-				connectionId: options.connectionId,
-				type: options.type,
-				name: options.name
-			}})
-
+		} catch (e) {
+			if ((e as Meteor.Error).error === 404) {
+				PeripheralDevices.insert({
+					_id: id,
+					created: getCurrentTime(),
+					status: {
+						statusCode: PeripheralDeviceAPI.StatusCode.UNKNOWN
+					},
+					studioInstallationId: '',
+					connected: true,
+					connectionId: options.connectionId,
+					lastSeen: getCurrentTime(),
+					token: token,
+					type: options.type,
+					name: options.name
+				})
+			} else {
+				throw e
+			}
 		}
 		return id
 	}

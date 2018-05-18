@@ -89,11 +89,11 @@ class PlayoutDeviceSettingsComponent extends React.Component<IPropsHeader & Inje
 		})
 	}
 	addNewDevice = () => {
-		let settings = this.props.device.settings as PlayoutDeviceSettings
+		let settings = this.props.device.settings as PlayoutDeviceSettings || {}
 		// find free key name
 		let newDeviceId = 'newDevice'
 		let iter = 0
-		while (settings.devices[newDeviceId + iter.toString()]) {
+		while ((settings.devices || {})[newDeviceId + iter.toString()]) {
 			iter++
 		}
 		let setObject = {}

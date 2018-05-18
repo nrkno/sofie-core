@@ -640,7 +640,7 @@ class StudioMappings extends React.Component<IChildStudioInterfaceProps & IProps
 		// find free key name
 		let newLayerKeyName = 'newLayer'
 		let iter = 0
-		while (this.props.studioInstallation.mappings[newLayerKeyName + iter.toString()]) {
+		while ((this.props.studioInstallation.mappings || {})[newLayerKeyName + iter.toString()]) {
 			iter++
 		}
 		let setObject = {}
