@@ -113,7 +113,8 @@ Meteor.methods({
 			runningOrderId: roId
 		})
 
-		if (segLine) {
+		// make sure we don't run multiple times, even if TSR calls us multiple times
+		if (segLine && !segLine.startedPlayback) {
 			if (runningOrder.currentSegmentLineId === slId) {
 				// this is the current segment line, it has just started playback
 				if (runningOrder.previousSegmentLineId) {
