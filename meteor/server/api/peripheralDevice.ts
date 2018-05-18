@@ -544,11 +544,11 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// TODO: Find good MosExternalMetaData for durations
 		const durationMosMetaData = findDurationInfoMOSExternalMetaData(story)
-		if (durationMosMetaData && (durationMosMetaData.Actual || durationMosMetaData.Estimated || durationMosMetaData.ReadTime)) {
+		if (durationMosMetaData && durationMosMetaData.MosPayload && (durationMosMetaData.MosPayload.Actual || durationMosMetaData.MosPayload.Estimated || durationMosMetaData.MosPayload.ReadTime)) {
 
-			const duration = durationMosMetaData.Actual && parseFloat(durationMosMetaData.Actual) ||
-							 durationMosMetaData.Estimated && parseFloat(durationMosMetaData.Estimated) ||
-							 durationMosMetaData.ReadTime && parseFloat(durationMosMetaData.ReadTime)
+			const duration = durationMosMetaData.MosPayload.Actual && parseFloat(durationMosMetaData.MosPayload.Actual) ||
+							 durationMosMetaData.MosPayload.Estimated && parseFloat(durationMosMetaData.MosPayload.Estimated) ||
+							 durationMosMetaData.MosPayload.ReadTime && parseFloat(durationMosMetaData.MosPayload.ReadTime)
 
 			// console.log('updating segment line duration: ' + segmentLine._id + ' ' + duration)
 			segmentLine.expectedDuration = duration * 1000

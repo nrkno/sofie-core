@@ -72,6 +72,8 @@ export const SourceLayerItemContainer = withTracker((props) => {
 class extends React.Component<IPropsHeader> {
 	render () {
 		return (
+			// The following code is fine, just withTracker HOC messing with available props
+			// @ts-ignore
 			<SourceLayerItem {...this.props} />
 		)
 	}

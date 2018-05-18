@@ -361,8 +361,8 @@ export const SegmentTimelineContainer = withTracker((props) => {
 	}
 
 	debugDemoLiveLine = () => {
-		if (!this.debugDemoLiveLineInterval) {
-			let currentSegmentLine = SegmentLines.findOne({'_id': this.props.runningOrder.currentSegmentLineId})
+		if (!this.debugDemoLiveLineInterval && this.props.runningOrder.currentSegmentLineId) {
+			let currentSegmentLine = SegmentLines.findOne(this.props.runningOrder.currentSegmentLineId)
 
 			if (currentSegmentLine) {
 				this.debugDemoLiveLineStart = Date.now()
@@ -393,6 +393,8 @@ export const SegmentTimelineContainer = withTracker((props) => {
 	render () {
 		return (
 			<SegmentTimeline key={this.props.segment._id}
+							 // The following code is fine, just withTracker HOC messing with available props
+							 // @ts-ignore
 							 segment={this.props.segment}
 							 studioInstallation={this.props.studioInstallation}
 							 segmentLines={this.props.segmentLines}

@@ -44,7 +44,7 @@ class MonacoWrapper extends React.Component<IMonacoPropsHeader> {
 	}
 
 	attachEditor = () => {
-		this._editor = monaco.editor.create(document.getElementById('monaco-container'), {
+		this._editor = monaco.editor.create(document.getElementById('monaco-container')!, {
 			value: this.props.runtimeFunction.code,
 			language: 'javascript'
 		})

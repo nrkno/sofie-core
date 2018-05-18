@@ -109,6 +109,8 @@ const SegmentTimelineZoom = class extends React.Component<IPropsHeader & IZoomPr
 		return this.props.segmentLines.map((segmentLine) => {
 			return (
 				<SegmentTimelineLine key={segmentLine._id}
+				// The following code is fine, just withTracker HOC messing with the available properties
+				// @ts-ignore
 					segment={this.props.segment}
 					runningOrder={this.props.runningOrder}
 					studioInstallation={this.props.studioInstallation}
@@ -251,6 +253,8 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 			return (
 				<SegmentTimelineLine key={segmentLine._id}
 									 {...this.props}
+									 // The following code is fine, just withTracer HOC messing with the available properties
+									 // @ts-ignore
 									 scrollWidth={this.state.timelineWidth / this.props.timeScale}
 									 segmentLine={segmentLine} />
 			)
@@ -320,6 +324,8 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 				<div className='segment-timeline__timeUntil'
 					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
 					 {this.props.runningOrder && this.props.segmentLines && this.props.segmentLines.length > 0 &&
+					 	// The following code is fine, just withTiming HOC messing with the available properties
+						// @ts-ignore
 						<SegmentLineCountdown segmentLineId={this.props.isNextSegment ? this.props.runningOrder.nextSegmentLineId : this.props.segmentLines[0]._id} />
 					 }
 				</div>

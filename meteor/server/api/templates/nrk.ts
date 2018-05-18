@@ -169,7 +169,7 @@ let nrk: TemplateSet = {
 						name: 'AMB',
 						trigger: {
 							type: TriggerType.TIME_ABSOLUTE,
-							value: 'now'
+							value: 0
 						},
 						status: RundownAPI.LineItemStatusCode.OK,
 						sourceLayerId: 'studio0_vignett',
@@ -232,7 +232,7 @@ let nrk: TemplateSet = {
 				name: 'Video',
 				trigger: {
 					type: TriggerType.TIME_ABSOLUTE,
-					value: 'now'
+					value: 0
 				},
 				status: RundownAPI.LineItemStatusCode.UNKNOWN,
 				sourceLayerId: 'studio0_vignett',
@@ -320,7 +320,7 @@ let nrk: TemplateSet = {
 				name: 'Video',
 				trigger: {
 					type: TriggerType.TIME_ABSOLUTE,
-					value: 'now'
+					value: 0
 				},
 				status: RundownAPI.LineItemStatusCode.UNKNOWN,
 				sourceLayerId: 'studio0_live_speak0',
