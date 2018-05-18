@@ -30,7 +30,7 @@ export namespace RundownUtils {
 		}
 
 		const minutes = Math.floor(milliseconds / (60 * 1000))
-		const secondsRest = Math.floor(milliseconds % (60 * 1000))
+		const secondsRest = Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000)
 
 		return (isNegative ? '-' : (showPlus && milliseconds > 0 ? '+' : '')) + padZero(minutes) + ':' + padZero(secondsRest)
 	}

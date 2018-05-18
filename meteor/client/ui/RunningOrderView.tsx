@@ -73,7 +73,7 @@ const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 								<button className='btn btn-secondary btn-compact aciton activate-deactivate deactivate' onClick={(e) => Meteor.call('playout_inactivate', props.runningOrder._id)}>
 									Deactivate
 								</button>
-								<button className='btn btn-secondary btn-compact aciton take' onClick={(e) => Meteor.call('playout_take', props.runningOrder._id)}>
+								<button className='btn btn-secondary btn-compact aciton take' onClick={(e) => Meteor.call('playout_take', props.runningOrder._id) || console.log(new Date(getCurrentTime())) }>
 									Take
 								</button>
 							</React.Fragment>
@@ -87,7 +87,9 @@ const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 					<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_demoRundown')}>
 						Debug: Last inn kjøreplan
 					</button>
-
+					<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug__printTime', (err, res) => { console.log(new Date(res)) }) || console.log(new Date(getCurrentTime()))}>
+						Print Time
+					</button>
 				</div>
 				<div className='badge mod'>
 					<div className='media-elem mrs sofie-logo' />

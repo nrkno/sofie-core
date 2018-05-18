@@ -36,6 +36,13 @@ Meteor.methods({
 		}
 		let segmentLines = runningOrder.getSegmentLines()
 
+		SegmentLines.update({ runningOrderId: runningOrder._id }, { $unset: {
+			startedPlayback: 0,
+			duration: 0
+		}}, {
+			multi: true
+		})
+
 		RunningOrders.update(runningOrder._id, {$set: {
 			active: true,
 			previousSegmentLineId: null,
@@ -59,6 +66,13 @@ Meteor.methods({
 		}})
 		updateTimeline(runningOrder.studioInstallationId)
 	},
+
+	'debug__printTime': () => {
+		let now = getCurrentTime()
+		console.log(new Date(now))
+		return now
+	},
+
 	/**
 	 * Perform the TAKE action, i.e start playing a segmentLineItem
 	 */
@@ -85,6 +99,12 @@ Meteor.methods({
 			currentSegmentLineId: takeSegmentLine._id,
 			nextSegmentLineId: nextSegmentLine._id
 		}})
+
+		// ------ TODO: JUST A STOPGAP UNTIL TSR REPORTS PROPER startedPlayback
+		SegmentLines.update(takeSegmentLine._id, {$set: {
+			startedPlayback: getCurrentTime()
+		}})
+		// ------
 
 		clearNextLineStartedPlaybackAndDuration(roId, nextSegmentLine._id)
 

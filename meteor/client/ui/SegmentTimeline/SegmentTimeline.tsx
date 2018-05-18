@@ -21,7 +21,7 @@ import { TimelineGrid } from './TimelineGrid'
 import { SegmentTimelineLine } from './SegmentTimelineLine'
 import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
 
-import { SegmentLineCountdown, RunningOrderTiming } from './../RunningOrderTiming'
+import { SegmentDuration, SegmentLineCountdown, RunningOrderTiming } from './../RunningOrderTiming'
 
 import { RundownUtils } from '../../lib/rundown'
 
@@ -319,7 +319,10 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 				</ContextMenuTrigger>
 				<div className='segment-timeline__duration'
 					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
-					 {RundownUtils.formatTimeToTimecode(this.getSegmentDuration())}
+					 {this.props.runningOrder && this.props.segmentLines && this.props.segmentLines.length > 0 &&
+						// @ts-ignore
+					 	<SegmentDuration segmentLineIds={this.props.segmentLines.map((item) => item._id)} />
+					 }
 				</div>
 				<div className='segment-timeline__timeUntil'
 					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>

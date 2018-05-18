@@ -174,6 +174,7 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 					remainingRundownDuration += item.expectedDuration || 0
 					// item is onAir right now, and it's is currently shorter than expectedDuration
 				} else if (item.startedPlayback && !item.duration && runningOrder.currentSegmentLineId === item._id && item.startedPlayback + (item.expectedDuration || 0) > now) {
+					// console.log((now - item.startedPlayback))
 					remainingRundownDuration += (item.expectedDuration || 0) - (now - item.startedPlayback)
 				}
 			})
@@ -202,6 +203,8 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 			segmentLineDurations: segLineDurations,
 			segmentLineStartsAt: segLineStartsAt
 		})
+
+		console.log(remainingRundownDuration)
 
 		const event = new Event(RunningOrderTiming.Events.timeupdate)
 
@@ -254,5 +257,17 @@ interface ISegmentLineCountdownProps {
 export const SegmentLineCountdown = withTiming()((props: ISegmentLineCountdownProps) => (
 	<span>
 		{props.segmentLineId && props.timingDurations && props.timingDurations.segmentLineCountdown && RundownUtils.formatTimeToTimecode(props.timingDurations.segmentLineCountdown[props.segmentLineId]).substr(3, 5)}
+	</span>
+))
+
+interface ISegmentLineCountdownProps {
+	segmentLineIds: Array<string>
+	timingDurations: RunningOrderTiming.RunningOrderTimingContext
+}
+export const SegmentDuration = withTiming()((props: ISegmentLineCountdownProps) => (
+	<span>
+		{props.segmentLineIds && props.timingDurations && props.timingDurations.segmentLineDurations && RundownUtils.formatTimeToTimecode(props.segmentLineIds.reduce((memo, item) => {
+			return memo + props.timingDurations!.segmentLineDurations![item]
+		}, 0))}
 	</span>
 ))
