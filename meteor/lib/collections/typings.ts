@@ -11,14 +11,28 @@ export interface FindOptions {
 	reactive?: boolean
 	transform?: Function
 }
-export type OptionalNumbers<T> = {
-	[K in keyof T]?: number
+export type OptionalType<T, M> = {
+	[K in keyof T]?: M
 }
+export type PopModifierSelector = -1 | 1
+export type PullModifierSelector<T> = Array<any> | string | number | Optional<T> | Selector<T>
+export type BitModifierSelector = {and: number} | {or: number} | {xor: number}
 export type Modifier<T> = {
-	$pull?: Optional<T> | {[path: string]: any}
-	$push?: Optional<T> | {[path: string]: any}
 	$set?: Optional<T> | {[path: string]: any}
-	$unset?: OptionalNumbers<T> | {[path: string]: any}
+	$unset?: OptionalType<T, number> | {[path: string]: number}
+	$setOnInsert?: Optional<T> | {[path: string]: any}
+	$inc?: OptionalType<T, number> | {[path: string]: number}
+	$min?: Optional<T> | {[path: string]: any}
+	$max?: Optional<T> | {[path: string]: any}
+	$mul?: OptionalType<T, number> | {[path: string]: number}
+	$rename?: OptionalType<T, string> | {[path: string]: string}
+
+	$push?: Optional<T> | {[path: string]: any}
+	$pop?: OptionalType<T, PopModifierSelector> | {[path: string]: PopModifierSelector}
+	$pull?: OptionalType<T, PullModifierSelector<T>> | {[path: string]: PullModifierSelector<T>}
+	$pullAll?: Optional<T> | {[path: string]: any}
+
+	$bit?: OptionalType<T, BitModifierSelector> | {[path: string]: BitModifierSelector}
 }
 export type MongoBits = Array<number> | number // | BinData
 export type SelectorValue<T, Selector> =

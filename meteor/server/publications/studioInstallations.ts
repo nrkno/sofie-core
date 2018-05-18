@@ -2,8 +2,8 @@ import { Meteor } from 'meteor/meteor'
 
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { StudioInstallationsSecurity } from '../security/studioInstallations'
-import { PeripheralDeviceSecurity } from '../security/peripheralDevices';
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices';
+import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 
 Meteor.publish('studioInstallations', (selector, token) => {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')

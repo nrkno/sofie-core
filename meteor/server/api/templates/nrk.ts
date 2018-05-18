@@ -40,7 +40,13 @@ import {
 	TemplateContextInner,
 	StoryWithContext
 } from './templates'
-import { TimelineContentType, TimelineObjCCGVideo, TimelineObjLawoSource, TimelineObjCCGTemplate } from '../../../lib/collections/Timeline'
+import {
+	TimelineObjCCGVideo,
+	TimelineObjLawoSource,
+	TimelineObjCCGTemplate,
+	TimelineContentTypeCasparCg,
+	TimelineContentTypeLawo
+} from '../../../lib/collections/Timeline'
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 
@@ -187,7 +193,7 @@ let nrk: TemplateSet = {
 									duration: 100000,
 									LLayer: 'casparcg_player_vignett',
 									content: {
-										type: TimelineContentType.VIDEO,
+										type: TimelineContentTypeCasparCg.VIDEO,
 										attributes: {
 											file: 'AMB',
 											loop: true
@@ -214,7 +220,7 @@ let nrk: TemplateSet = {
 			switch (mosartVariant) {
 				case 'VIGNETT2018':
 					// lengths and times are milliseconds
-					clip = 'vignett.mp4'	// @todo TBD
+					clip = 'vignett'	// @todo TBD
 					sourceDuration = 40	* 1000	// @todo TBD
 					segmentLineduration = 4 * 1000	// @todo TBD
 					break
@@ -242,27 +248,27 @@ let nrk: TemplateSet = {
 					fileName: clip,
 					sourceDuration: sourceDuration,
 					timelineObjects: [
-						literal<Optional<TimelineObjLawoSource>>({
-							_id: IDs.lawo, deviceId: [''],
+						literal<TimelineObjLawoSource>({
+							_id: IDs.lawo, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 							priority: 0,
 							duration: 0,
 							LLayer: 'lawo_source_effect',
 							content: {
-								type: TimelineContentType.LAWO_AUDIO_SOURCE,
+								type: TimelineContentTypeLawo.AUDIO_SOURCE,
 								attributes: {
 									db: 0
 								}
 							}
 						}),
-						literal<Optional<TimelineObjCCGVideo>>({
-							_id: IDs.vignett, deviceId: [''],
+						literal<TimelineObjCCGVideo>({
+							_id: IDs.vignett, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo}.start + 0` },
 							priority: 0,
 							duration: sourceDuration,
 							LLayer: 'casparcg_player_vignett',
 							content: {
-								type: TimelineContentType.VIDEO,
+								type: TimelineContentTypeCasparCg.VIDEO,
 								attributes: {
 									file: clip
 								}
@@ -339,14 +345,14 @@ let nrk: TemplateSet = {
 						(context.getValueByPath(storyItemClip, 'Content.objTB') || 1)
 					) * 1000,
 					timelineObjects: [
-						literal<Optional<TimelineObjLawoSource>>({
-							_id: IDs.lawo_automix, deviceId: [''],
+						literal<TimelineObjLawoSource>({
+							_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 							priority: 0,
 							duration: 0,
 							LLayer: 'lawo_source_automix',
 							content: {
-								type: TimelineContentType.LAWO_AUDIO_SOURCE,
+								type: TimelineContentTypeLawo.AUDIO_SOURCE,
 								transitions: {
 									inTransition: {
 										type: Transition.MIX,
@@ -360,8 +366,8 @@ let nrk: TemplateSet = {
 								}
 							}
 						}),
-						literal<Optional<TimelineObjCCGVideo>>({
-							_id: IDs.headVideo, deviceId: [''],
+						literal<TimelineObjCCGVideo>({
+							_id: IDs.headVideo, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
 							priority: 0,
 							duration: (
@@ -370,7 +376,7 @@ let nrk: TemplateSet = {
 							) * 1000,
 							LLayer: 'casparcg_player_vignett',
 							content: {
-								type: TimelineContentType.VIDEO,
+								type: TimelineContentTypeCasparCg.VIDEO,
 								attributes: {
 									file: clip
 								}
@@ -420,8 +426,8 @@ let nrk: TemplateSet = {
 					fileName: clip,
 					sourceDuration: 8 * 1000, // @todo TBD
 					timelineObjects: [
-						literal<Optional<TimelineObjCCGTemplate>>({ // to be changed to NRKPOST-something
-							_id: IDs.headGfx, deviceId: [''],
+						literal<TimelineObjCCGTemplate>({ // to be changed to NRKPOST-something
+							_id: IDs.headGfx, deviceId: [''], siId: '', roId: '',
 							trigger: {
 								type: TriggerType.TIME_RELATIVE,
 								value: `#${IDs.headVideo}.start + 5`
@@ -430,7 +436,7 @@ let nrk: TemplateSet = {
 							duration: 8 * 1000, // @todo TBD
 							LLayer: 'casparcg_cg_graphics',
 							content: {
-								type: TimelineContentType.TEMPLATE, // to be changed to NRKPOST-something
+								type: TimelineContentTypeCasparCg.TEMPLATE, // to be changed to NRKPOST-something
 								attributes: {
 									name: 'nrkgfx', // @todo: TBD
 									useStopCommand: false

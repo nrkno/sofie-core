@@ -110,7 +110,7 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 			if (cmd.hasReply) {
 				// We've got a reply!
 				console.log('got reply')
-	
+
 				if (cmd.replyError) {
 					cb(cmd.replyError, null)
 				} else {

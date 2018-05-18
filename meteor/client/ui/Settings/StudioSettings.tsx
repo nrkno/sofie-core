@@ -955,7 +955,7 @@ class StudioSettings extends React.Component<IPropsHeader & InjectedTranslatePro
 
 	onRemoveDevice = (item: PeripheralDevice) => {
 		PeripheralDevices.update(item._id, {$unset: {
-			studioInstallationId: ''
+			studioInstallationId: 1
 		}})
 	}
 

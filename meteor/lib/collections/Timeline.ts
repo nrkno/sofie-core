@@ -7,22 +7,35 @@ import { ChannelFormat, Transition, Ease, Direction } from '../constants/casparc
 import { StudioInstallations } from './StudioInstallations'
 import { FindOptions, Selector, TransformedCollection } from './typings'
 
-// Note: The data structure is based on what works with the CasparCG-state library
+// Note: The data structure is based on what works with the state libraries, such as
 
-export enum TimelineContentType {
+export type TimelineContentTypeAny =
+	TimelineContentTypeOther |
+	TimelineContentTypeCasparCg |
+	TimelineContentTypeLawo |
+	TimelineContentTypeAtem
+
+export enum TimelineContentTypeOther {
+	NOTHING = 'nothing',
+	GROUP = 'group',
+}
+export enum TimelineContentTypeCasparCg { //  CasparCG-state
 	VIDEO = 'video',
 	IP = 'ip',
 	INPUT = 'input',
 	TEMPLATE = 'template',
 	ROUTE = 'route',
 	RECORD = 'record',
-	AUDIO = 'audio',
-	GROUP = 'group',
-	LAWO_AUDIO_SOURCE = 'lawo_audio_source',
-	ATEM_ME = 'atem_me',
-	ATEM_DSK = 'atem_dsk',
-	ATEM_AUX = 'atem_aux',
-	ATEM_SSRC = 'atem_ssrc'
+	AUDIO = 'audio'
+}
+export enum TimelineContentTypeLawo { // lawo-state
+	AUDIO_SOURCE = 'audio_source'
+}
+export enum TimelineContentTypeAtem { //  Atem-state
+	ME = 'me',
+	DSK = 'dsk',
+	AUX = 'aux',
+	SSRC = 'ssrc'
 }
 export declare namespace Atem_Enums {
 	enum TransitionStyle {
@@ -97,7 +110,7 @@ export interface TimelineObj {
 	content: {
 		// objects?: Array<TimelineObject>
 		// keyframes?: Array<TimelineKeyframe>
-		type: TimelineContentType
+		type: TimelineContentTypeAny
 		// transitions?: {
 		// 	inTransition?: TimelineTransition
 		// 	outTransition?: TimelineTransition
@@ -113,20 +126,22 @@ export interface TimelineObj {
 }
 export interface TimelineObjGroup extends TimelineObj {
 	content: {
-		type: TimelineContentType.GROUP
+		type: TimelineContentTypeOther.GROUP
 		objects: Array<TimelineObject>
 	}
 	isGroup: true
 }
 export interface TimelineObjGroupSegmentLine extends TimelineObjGroup {
 	isSegmentLineGroup: true
-	slId: string
+}
+export interface TimelineObjAbstract extends TimelineObj { // used for sending callbacks
+	slId?: string
 }
 export interface TimelineObjCCGVideo extends TimelineObj {
 	content: {
 		objects?: Array<TimelineObject>
 		keyframes?: Array<TimelineKeyframe>
-		type: TimelineContentType.VIDEO
+		type: TimelineContentTypeCasparCg.VIDEO
 		transitions?: {
 			inTransition?: TimelineTransition
 			outTransition?: TimelineTransition
@@ -160,7 +175,7 @@ export interface TimelineObjCCGInput extends TimelineObj {
 	content: {
 		objects?: Array<TimelineObject>
 		keyframes?: Array<TimelineKeyframe>
-		type: TimelineContentType.INPUT
+		type: TimelineContentTypeCasparCg.INPUT
 		transitions?: {
 			inTransition?: TimelineTransition
 			outTransition?: TimelineTransition
@@ -178,7 +193,7 @@ export interface TimelineObjCCGTemplate extends TimelineObj {
 	content: {
 		objects?: Array<TimelineObject>
 		keyframes?: Array<TimelineKeyframe>
-		type: TimelineContentType.TEMPLATE
+		type: TimelineContentTypeCasparCg.TEMPLATE
 		transitions?: {
 			inTransition?: TimelineTransition
 			outTransition?: TimelineTransition
@@ -194,7 +209,7 @@ export interface TimelineObjCCGRoute extends TimelineObj {
 	content: {
 		objects?: Array<TimelineObject>
 		keyframes?: Array<TimelineKeyframe>
-		type: TimelineContentType.ROUTE
+		type: TimelineContentTypeCasparCg.ROUTE
 		transitions?: {
 			inTransition?: TimelineTransition
 			outTransition?: TimelineTransition
@@ -210,7 +225,7 @@ export interface TimelineObjCCGRecord extends TimelineObj {
 	content: {
 		objects?: Array<TimelineObject>
 		keyframes?: Array<TimelineKeyframe>
-		type: TimelineContentType.ROUTE
+		type: TimelineContentTypeCasparCg.ROUTE
 		attributes: {
 			file?: string,
 			encoderOptions: string
@@ -220,7 +235,7 @@ export interface TimelineObjCCGRecord extends TimelineObj {
 export interface TimelineObjLawoSource extends TimelineObj {
 	content: {
 		keyframes?: Array<TimelineKeyframe>
-		type: TimelineContentType.LAWO_AUDIO_SOURCE
+		type: TimelineContentTypeLawo.AUDIO_SOURCE
 		transitions?: {
 			inTransition?: TimelineTransition
 		}
@@ -232,7 +247,7 @@ export interface TimelineObjLawoSource extends TimelineObj {
 export interface TimelineObjAtemME extends TimelineObj {
 	content: {
 		keyframes?: Array<TimelineKeyframe>
-		type: TimelineContentType.ATEM_ME
+		type: TimelineContentTypeAtem.ME
 		transitions?: {
 			inTransition?: TimelineTransition
 		}
@@ -245,7 +260,7 @@ export interface TimelineObjAtemME extends TimelineObj {
 export interface TimelineObjAtemDSK extends TimelineObj {
 	content: {
 		keyframes?: Array<TimelineKeyframe>
-		type: TimelineContentType.ATEM_DSK
+		type: TimelineContentTypeAtem.DSK
 		transitions?: {
 			inTransition?: TimelineTransition
 		}
@@ -259,7 +274,7 @@ export interface TimelineObjAtemDSK extends TimelineObj {
 export interface TimelineObjAtemAUX extends TimelineObj {
 	content: {
 		keyframes?: Array<TimelineKeyframe>
-		type: TimelineContentType.ATEM_AUX
+		type: TimelineContentTypeAtem.AUX
 		transitions?: {
 			inTransition?: TimelineTransition
 		}
@@ -271,7 +286,7 @@ export interface TimelineObjAtemAUX extends TimelineObj {
 export interface TimelineObjAtemSsrc extends TimelineObj {
 	content: {
 		keyframes?: Array<TimelineKeyframe>
-		type: TimelineContentType.ATEM_SSRC
+		type: TimelineContentTypeAtem.SSRC
 		transitions?: {
 			inTransition?: TimelineTransition
 		}

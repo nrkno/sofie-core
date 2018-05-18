@@ -31,7 +31,7 @@ import {
 } from 'mos-connection'
 
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { getCurrentTime, saveIntoDb, literal, DBObj, partialExceptId } from '../../lib/lib'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 
@@ -43,10 +43,10 @@ import { ServerPeripheralDeviceAPI } from '../api/peripheralDevice'
 import { logger } from './../logging'
 
 // These are temporary methods, used during development to put some data into the database
-function getPD () {
+function getPD (): PeripheralDevice {
 	return PeripheralDevices.findOne({
 		type: PeripheralDeviceAPI.DeviceType.MOSDEVICE
-	})
+	}) as PeripheralDevice
 }
 Meteor.methods({
 	'debug_roCreate' () {
