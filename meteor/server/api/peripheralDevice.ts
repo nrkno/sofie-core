@@ -39,6 +39,7 @@ import { logger } from './../logging'
 import { runTemplate, TemplateContext, getHash } from './templates/templates'
 import { Timeline } from '../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
+import { settings } from 'cluster';
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -78,7 +79,8 @@ export namespace ServerPeripheralDeviceAPI {
 					lastSeen: getCurrentTime(),
 					token: token,
 					type: options.type,
-					name: options.name
+					name: options.name,
+					settings: {}
 				})
 			} else {
 				throw e

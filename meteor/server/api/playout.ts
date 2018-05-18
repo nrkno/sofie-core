@@ -86,6 +86,8 @@ Meteor.methods({
 			nextSegmentLineId: nextSegmentLine._id
 		}})
 
+		clearNextLineStartedPlaybackAndDuration(roId, nextSegmentLine._id)
+
 		updateTimeline(runningOrder.studioInstallationId)
 	},
 
@@ -97,6 +99,8 @@ Meteor.methods({
 		RunningOrders.update(runningOrder._id, {$set: {
 			nextSegmentLineId: nextSlId
 		}})
+
+		clearNextLineStartedPlaybackAndDuration(roId, nextSlId)
 
 		// remove old auto-next from timeline, and add new one
 		updateTimeline(runningOrder.studioInstallationId)
@@ -162,6 +166,8 @@ Meteor.methods({
 						nextSegmentLineId: nextSegmentLine._id
 					}
 				})
+
+				clearNextLineStartedPlaybackAndDuration(roId, nextSegmentLine._id)
 			} else {
 				// a segment line is being played that has not been selected for playback by Core
 				// show must go on, so find next segmentLine and update the RunningOrder, but log an error
@@ -181,6 +187,8 @@ Meteor.methods({
 						nextSegmentLineId: nextSegmentLine._id
 					}
 				})
+
+				clearNextLineStartedPlaybackAndDuration(roId, nextSegmentLine._id)
 
 				logger.crit(`Segment Line "${segLine._id}" has started playback by the TSR, but has not been selected for playback!`)
 			}
@@ -204,6 +212,15 @@ function setPreviousLinePlaybackDuration (roId: string, prevSegLine: SegmentLine
 	} else {
 		logger.error(`Previous segment line "${prevSegLine._id}" has never started playback on running order "${roId}".`)
 	}
+}
+
+function clearNextLineStartedPlaybackAndDuration (roId: string, nextSlId: string) {
+	SegmentLines.update(nextSlId, {
+		$unset: {
+			duration: 0,
+			startedPlayback: 0
+		}
+	})
 }
 
 function createSegmentLineGroup (segmentLine: SegmentLine, duration: Time): TimelineObj {
