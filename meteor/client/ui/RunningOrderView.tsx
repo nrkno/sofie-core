@@ -84,9 +84,6 @@ const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 						</React.Fragment>
 						))
 					}
-					<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_demoRundown')}>
-						Debug: Last inn kjøreplan
-					</button>
 				</div>
 				<div className='badge mod'>
 					<div className='media-elem mrs sofie-logo' />
