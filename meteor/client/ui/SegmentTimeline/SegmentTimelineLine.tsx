@@ -225,7 +225,9 @@ export const SegmentTimelineLine = translate()(withTiming()(class extends React.
 				Math.max(
 				(
 					(startedPlayback && this.props.timingDurations.segmentLineDurations &&
-						(this.props.timingDurations.segmentLineDurations[this.props.segmentLine._id] + LIVE_LINE_TIME_PADDING)
+						(this.props.relative ?
+							this.props.timingDurations.segmentLineDurations[this.props.segmentLine._id] :
+							this.props.timingDurations.segmentLineDurations[this.props.segmentLine._id] + LIVE_LINE_TIME_PADDING)
 					) || 0),
 				0)
 				: 0

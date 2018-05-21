@@ -87,9 +87,6 @@ const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 					<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug_demoRundown')}>
 						Debug: Last inn kjøreplan
 					</button>
-					<button className='btn btn-secondary btn-compact' onClick={(e) => Meteor.call('debug__printTime', (err, res) => { console.log(new Date(res)) }) || console.log(new Date(getCurrentTime()))}>
-						Print Time
-					</button>
 				</div>
 				<div className='badge mod'>
 					<div className='media-elem mrs sofie-logo' />

@@ -98,6 +98,7 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 	componentDidMount () {
 		this.refreshTimer = setInterval(() => {
 			this.updateDurations()
+			this.dispatchEvent()
 		}, this.refreshTimerInterval)
 	}
 
@@ -108,15 +109,18 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 			clearInterval(this.refreshTimer)
 			this.refreshTimer = setInterval(() => {
 				this.updateDurations()
-
-				const event = new Event(RunningOrderTiming.Events.timeupdate)
-				window.dispatchEvent(event)
+				this.dispatchEvent()
 			}, this.refreshTimerInterval)
 		}
 	}
 
 	componentWillUnmount () {
 		clearInterval(this.refreshTimer)
+	}
+
+	dispatchEvent () {
+		const event = new Event(RunningOrderTiming.Events.timeupdate)
+		window.dispatchEvent(event)
 	}
 
 	updateDurations () {
