@@ -217,7 +217,7 @@ Meteor.methods({
 				startedPlayback
 			}})
 		} else {
-			throw new Meteor.Error(404, `Segment line "${slId}" on running order "${roId}" not found!`)
+			throw new Meteor.Error(404, `Segment line "${slId}" in running order "${roId}" not found!`)
 		}
 	}
 })
@@ -266,7 +266,7 @@ function createSegmentLineGroup (segmentLine: SegmentLine, duration: Time): Time
 
 	return slGrp
 }
-function createSegmentLineGroupFirstObject (segmentLine: SegmentLine, duration: Time): TimelineObj {
+function createSegmentLineGroupFirstObject (segmentLine: SegmentLine): TimelineObj {
 	return literal<TimelineObjAbstract>({
 		_id: 'sl-group-firstobject-' + segmentLine._id,
 		siId: '', // added later
@@ -356,6 +356,8 @@ function updateTimeline (studioInstallationId: string) {
 			const isFollowed = nextSegmentLine && nextSegmentLine.autoNext
 			currentSegmentLineGroup = createSegmentLineGroup(currentSegmentLine, (isFollowed ? (currentSegmentLine.expectedDuration || 0) : 0))
 			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentSegmentLine, currentSegmentLineGroup))
+
+			timelineObjs.push(createSegmentLineGroupFirstObject(currentSegmentLine))
 		}
 
 		// only add the next objects into the timeline if the next segment is autoNext
@@ -368,6 +370,7 @@ function updateTimeline (studioInstallationId: string) {
 				})
 			}
 			timelineObjs = timelineObjs.concat(nextSegmentLineGroup, transformSegmentLineIntoTimeline(nextSegmentLine, nextSegmentLineGroup))
+			timelineObjs.push(createSegmentLineGroupFirstObject(nextSegmentLine))
 		}
 
 		if (!activeRunningOrder.nextSegmentLineId && !activeRunningOrder.currentSegmentLineId) {
