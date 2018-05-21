@@ -78,6 +78,7 @@ export interface TemplateContext {
 }
 export interface TemplateContextInnerBase {
 	getHashId: (str?: any) => string
+	unhashId: (hash: string) => string
 	getValueByPath: (obj: object | undefined, path: string, defaultValue?: any) => any
 	sumMosItemDurations: (str: string) => number
 	error: (message: string) => void
@@ -89,18 +90,24 @@ export interface TemplateContextInner extends TemplateContext, TemplateContextIn
 }
 function getContext (context: TemplateContext): TemplateContextInner {
 	let hashI = 0
+	let hashed: {[hash: string]: string} = {}
 	let c0 = literal<TemplateContextInnerBase>({
 		getHashId (str?: any) {
-			if (!_.isUndefined(str)) {
-				return getHash(
-					context.runningOrderId + '_' +
-					context.segmentLine._id + '_' +
-					str.toString()
-				)
-			} else {
-				return getHash(context.segmentLine._id + 'hash' + (hashI++) )
-			}
+
+			if (!str) str = 'hash' + (hashI++)
+
+			let id
+			id = getHash(
+				context.runningOrderId + '_' +
+				context.segmentLine._id + '_' +
+				str.toString()
+			)
+			hashed[id] = str
+			return id
 			// return Random.id()
+		},
+		unhashId (hash: string): string {
+			return hashed[hash] || hash
 		},
 		getValueByPath (obj: object | undefined, path: string, defaultValue?: any): any {
 			let value = (
@@ -208,12 +215,13 @@ function findFunction (functionId: string, context: TemplateContextInner): Templ
 }
 
 export function runTemplate (context: TemplateContext, story: IMOSROFullStory): TemplateResultAfterPost {
-	let innerContext = getContext(context)
-	let getId = findFunction('getId', innerContext)
+	let innerContext0 = getContext(context)
+	let getId = findFunction('getId', innerContext0)
 
 	let templateId: string = getId(story) as string
 
 	if (templateId) {
+		let innerContext = getContext(context)
 		let fcn = findFunction(templateId, innerContext)
 		let result: TemplateResult = fcn(story) as TemplateResult
 
@@ -225,11 +233,11 @@ export function runTemplate (context: TemplateContext, story: IMOSROFullStory): 
 			segmentLineItems: _.map(_.compact(result.segmentLineItems), (itemOrg: SegmentLineItemOptional) => {
 				let item: SegmentLineItem = itemOrg as SegmentLineItem
 
-				if (!item._id) item._id = innerContext.getHashId('postprocess_'+( i++ ))
+				if (!item._id) item._id = innerContext.getHashId('postprocess_' + ( i++ ))
 				if (!item.runningOrderId) item.runningOrderId = innerContext.runningOrderId
 				if (!item.segmentLineId) item.segmentLineId = innerContext.segmentLine._id
 
-				if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLines must be unique! ("' + item._id + '")')
+				if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLines must be unique! ("' + innerContext.unhashId(item._id) + '")')
 				segmentLinesUniqueIds[item._id] = true
 
 				if (item.content && item.content.timelineObjects) {
@@ -237,14 +245,13 @@ export function runTemplate (context: TemplateContext, story: IMOSROFullStory): 
 
 					let timelineUniqueIds: {[id: string]: true} = {}
 					_.each(item.content.timelineObjects, (o: TimelineObj) => {
-						
+
 						if (!o._id) o._id = innerContext.getHashId('postprocess_'+( i++ ))
-						
-						if (timelineUniqueIds[o._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLines must be unique! ("' + o._id + '")')
+
+						if (timelineUniqueIds[o._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLines must be unique! ("' + innerContext.unhashId(o._id) + '")')
 						timelineUniqueIds[o._id] = true
 					})
 				}
-				
 
 				return item
 			})

@@ -541,7 +541,8 @@ let nrk: TemplateSet = {
 				wipeVideo: 			context.getHashId('wipeVideo'),
 				wipeAudioSkille: 	context.getHashId('wipeAudioSkille'),
 				wipeAudioPunktum: 	context.getHashId('wipeAudioPunktum'),
-				headGfx: 			context.getHashId('headGfx')
+				headGfx: 			context.getHashId('headGfx'),
+				playerClip: 		context.getHashId('playerClip')
 			}
 			
 			let segmentLines = context.getSegmentLines()
@@ -668,7 +669,7 @@ let nrk: TemplateSet = {
 						// wipe to head (if not first head after vignett)
 						(!isFirstHeadAfterVignett) ? 
 						literal<TimelineObjCCGVideo>({
-							_id: IDs.headVideo, deviceId: [''], siId: '', roId: '',
+							_id: IDs.wipeVideo, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
 							priority: 0,
 							duration: 500,
@@ -680,11 +681,11 @@ let nrk: TemplateSet = {
 								}
 							}
 						}) : null,
-						
+
 						// wipe audio (skille between and punktum for the last)
-						(!isLastHead) ? 
+						(!isLastHead) ?
 						literal<TimelineObjCCGVideo>({
-							_id: IDs.headVideo, deviceId: [''], siId: '', roId: '',
+							_id: IDs.wipeAudioSkille, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
 							priority: 0,
 							duration: 500,
@@ -697,7 +698,7 @@ let nrk: TemplateSet = {
 							}
 						}) : 
 						literal<TimelineObjCCGVideo>({
-							_id: IDs.headVideo, deviceId: [''], siId: '', roId: '',
+							_id: IDs.wipeAudioPunktum, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
 							priority: 0,
 							duration: 500,
@@ -712,7 +713,7 @@ let nrk: TemplateSet = {
 
 						// play HEAD
 						literal<TimelineObjCCGVideo>({
-							_id: IDs.headVideo, deviceId: [''], siId: '', roId: '',
+							_id: IDs.playerClip, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
 							priority: 0,
 							duration: (
