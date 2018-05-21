@@ -77,14 +77,29 @@ const SegmentTimelineZoom = class extends React.Component<IPropsHeader & IZoomPr
 
 	componentDidMount () {
 		this.checkTimingChange()
-		window.addEventListener(RunningOrderTiming.Events.timeupdate, this.checkTimingChange)
+		window.addEventListener(RunningOrderTiming.Events.timeupdateHR, this.onTimeupdate)
 	}
 
 	componentWillUnmount () {
-		window.removeEventListener(RunningOrderTiming.Events.timeupdate, this.checkTimingChange)
+		window.removeEventListener(RunningOrderTiming.Events.timeupdateHR, this.onTimeupdate)
+	}
+
+	onTimeupdate = () => {
+		if (!this.props.isLiveSegment) {
+			this.checkTimingChange()
+		}
 	}
 
 	checkTimingChange = () => {
+		const total = this.calculateSegmentDuration()
+		if (total !== this.state.totalSegmentDuration) {
+			this.setState({
+				totalSegmentDuration: total
+			})
+		}
+	}
+
+	calculateSegmentDuration (): number {
 		let total = 0
 		if (this.context && this.context.durations) {
 			const durations = this.context.durations as RunningOrderTiming.RunningOrderTimingContext
@@ -94,15 +109,11 @@ const SegmentTimelineZoom = class extends React.Component<IPropsHeader & IZoomPr
 		} else {
 			total = RundownUtils.getSegmentDuration(this.props.segmentLines)
 		}
-		if (total !== this.state.totalSegmentDuration) {
-			this.setState({
-				totalSegmentDuration: total
-			})
-		}
+		return total
 	}
 
 	getSegmentDuration (): number {
-		return this.state.totalSegmentDuration
+		return this.props.isLiveSegment ? this.calculateSegmentDuration() : this.state.totalSegmentDuration
 	}
 
 	renderZoomTimeline () {

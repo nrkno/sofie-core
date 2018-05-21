@@ -189,7 +189,9 @@ interface IStateHader {
 
 const LIVE_LINE_TIME_PADDING = 2000
 
-export const SegmentTimelineLine = translate()(withTiming()(class extends React.Component<IPropsHeader & InjectedTranslateProps & RunningOrderTiming.InjectedROTimingProps, IStateHader> {
+export const SegmentTimelineLine = translate()(withTiming({
+	isHighResolution: false
+})(class extends React.Component<IPropsHeader & InjectedTranslateProps & RunningOrderTiming.InjectedROTimingProps, IStateHader> {
 	_refreshTimer: NodeJS.Timer | undefined
 
 	constructor (props) {

@@ -43,7 +43,7 @@ export namespace RunningOrderTiming {
 	}
 }
 
-const TIMING_DEFAULT_REFRESH_INTERVAL = 250
+const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60
 
 interface IRunningOrderTimingProviderProps {
 	runningOrder: RunningOrder
@@ -78,6 +78,7 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 	durations: RunningOrderTiming.RunningOrderTimingContext = {}
 	refreshTimer: NodeJS.Timer
 	refreshTimerInterval: number
+	refreshDecimator: number
 
 	constructor (props) {
 		super(props)
@@ -87,6 +88,8 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 		} else {
 			this.refreshTimerInterval = TIMING_DEFAULT_REFRESH_INTERVAL
 		}
+
+		this.refreshDecimator = 15
 	}
 
 	getChildContext (): IRunningOrderTimingProviderChildContext {
@@ -95,11 +98,20 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 		}
 	}
 
-	componentDidMount () {
-		this.refreshTimer = setInterval(() => {
-			this.updateDurations()
+	onRefreshTimer = () => {
+		this.updateDurations()
+
+		this.dispatchHREvent()
+
+		this.refreshDecimator++
+		if (this.refreshDecimator % 15 === 0) {
+			// console.log('Regular event')
 			this.dispatchEvent()
-		}, this.refreshTimerInterval)
+		}
+	}
+
+	componentDidMount () {
+		this.refreshTimer = setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 	}
 
 	componentWillReceiveProps (nextProps) {
@@ -107,15 +119,17 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 		if (this.refreshTimerInterval !== nextProps.refreshInterval && _.isNumber(nextProps.refreshInterval) && this.refreshTimer) {
 			this.refreshTimerInterval = nextProps.refreshInterval
 			clearInterval(this.refreshTimer)
-			this.refreshTimer = setInterval(() => {
-				this.updateDurations()
-				this.dispatchEvent()
-			}, this.refreshTimerInterval)
+			this.refreshTimer = setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 		}
 	}
 
 	componentWillUnmount () {
 		clearInterval(this.refreshTimer)
+	}
+
+	dispatchHREvent () {
+		const event = new Event(RunningOrderTiming.Events.timeupdateHR)
+		window.dispatchEvent(event)
 	}
 
 	dispatchEvent () {
@@ -234,11 +248,19 @@ export function withTiming (options?) {
 			}
 
 			componentDidMount () {
-				window.addEventListener(RunningOrderTiming.Events.timeupdate, this.refreshComponent)
+				window.addEventListener(
+					expandedOptions.isHighResolution ?
+						RunningOrderTiming.Events.timeupdateHR :
+						RunningOrderTiming.Events.timeupdate
+				, this.refreshComponent)
 			}
 
 			componentWillUnmount () {
-				window.removeEventListener(RunningOrderTiming.Events.timeupdate, this.refreshComponent)
+				window.removeEventListener(
+					expandedOptions.isHighResolution ?
+						RunningOrderTiming.Events.timeupdateHR :
+						RunningOrderTiming.Events.timeupdate
+					, this.refreshComponent)
 			}
 
 			refreshComponent = () => {
