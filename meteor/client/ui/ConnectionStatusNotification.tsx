@@ -71,6 +71,12 @@ export const ConnectionStatusNotification = withTracker((props, state) => {
 		return null
 	}
 
+	tryReconnect () {
+		if (!this.props.connected) {
+			Meteor.reconnect()
+		}
+	}
+
 	render () {
 		// this.props.connected
 		return <VelocityReact.VelocityTransitionGroup enter={{ animation: {
@@ -85,7 +91,8 @@ export const ConnectionStatusNotification = withTracker((props, state) => {
 							'bghl': this.props.status === 'connecting',
 							'info': this.props.status === 'connected'
 						}
-					)}>
+					)}
+					onClick={(e) => this.tryReconnect()}>
 						<p className='right'>
 							<button className='action-btn' onClick={(e) => this.dimissNotification()}>
 								<CoreIcons id='nrk-close' />
