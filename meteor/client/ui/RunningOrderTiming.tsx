@@ -282,7 +282,11 @@ interface ISegmentLineCountdownProps {
 }
 export const SegmentLineCountdown = withTiming()((props: ISegmentLineCountdownProps) => (
 	<span>
-		{props.segmentLineId && props.timingDurations && props.timingDurations.segmentLineCountdown && RundownUtils.formatTimeToTimecode(props.timingDurations.segmentLineCountdown[props.segmentLineId]).substr(3, 5)}
+		{props.segmentLineId &&
+			props.timingDurations &&
+			props.timingDurations.segmentLineCountdown &&
+			props.timingDurations.segmentLineCountdown[props.segmentLineId] !== undefined &&
+				RundownUtils.formatTimeToTimecode(props.timingDurations.segmentLineCountdown[props.segmentLineId]).substr(3, 5)}
 	</span>
 ))
 
@@ -292,8 +296,13 @@ interface ISegmentLineCountdownProps {
 }
 export const SegmentDuration = withTiming()((props: ISegmentLineCountdownProps) => (
 	<span>
-		{props.segmentLineIds && props.timingDurations && props.timingDurations.segmentLineDurations && RundownUtils.formatTimeToTimecode(props.segmentLineIds.reduce((memo, item) => {
-			return memo + props.timingDurations!.segmentLineDurations![item]
-		}, 0))}
+		{props.segmentLineIds &&
+			props.timingDurations &&
+			props.timingDurations.segmentLineDurations &&
+				RundownUtils.formatTimeToTimecode(props.segmentLineIds.reduce((memo, item) => {
+					return props.timingDurations!.segmentLineDurations![item] !== undefined ?
+						memo + props.timingDurations!.segmentLineDurations![item] :
+						memo
+				}, 0))}
 	</span>
 ))

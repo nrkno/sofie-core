@@ -187,7 +187,7 @@ interface IStateHader {
 	liveDuration: number
 }
 
-const LIVE_LINE_TIME_PADDING = 2000
+const LIVE_LINE_TIME_PADDING = 150
 
 export const SegmentTimelineLine = translate()(withTiming({
 	isHighResolution: false
@@ -208,11 +208,28 @@ export const SegmentTimelineLine = translate()(withTiming({
 				Math.max(
 				(
 					(startedPlayback && props.timingDurations.segmentLineDurations &&
-						(props.timingDurations.segmentLineDurations[props.segmentLine._id] + LIVE_LINE_TIME_PADDING)
+						(this.getCurrentLiveLinePosition() + this.getLiveLineTimePadding(props.timeScale))
 					) || 0),
-				0)
+					props.timingDurations.segmentLineDurations[props.segmentLine._id]
+				)
 				: 0
 		}
+	}
+
+	getCurrentLiveLinePosition () {
+		if (this.props.segmentLine.startedPlayback) {
+			if (this.props.segmentLine.duration) {
+				return this.props.segmentLine.duration
+			} else {
+				return getCurrentTime() - this.props.segmentLine.startedPlayback
+			}
+		} else {
+			return 0
+		}
+	}
+
+	getLiveLineTimePadding (timeScale) {
+		return LIVE_LINE_TIME_PADDING / timeScale
 	}
 
 	componentWillReceiveProps (nextProps: IPropsHeader) {
@@ -228,10 +245,13 @@ export const SegmentTimelineLine = translate()(withTiming({
 				(
 					(startedPlayback && this.props.timingDurations.segmentLineDurations &&
 						(this.props.relative ?
-							this.props.timingDurations.segmentLineDurations[this.props.segmentLine._id] :
-							this.props.timingDurations.segmentLineDurations[this.props.segmentLine._id] + LIVE_LINE_TIME_PADDING)
+							this.getCurrentLiveLinePosition() :
+							this.getCurrentLiveLinePosition() + this.getLiveLineTimePadding(this.props.timeScale))
 					) || 0),
-				0)
+					this.props.timingDurations.segmentLineDurations ?
+						this.props.timingDurations.segmentLineDurations[this.props.segmentLine._id] :
+						0
+				)
 				: 0
 		})
 	}
