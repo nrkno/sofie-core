@@ -19,7 +19,8 @@ import { RundownUtils } from '../lib/rundown'
 
 export namespace RunningOrderTiming {
 	export enum Events {
-		'timeupdate'		= 'sofie:roTimeUpdate'
+		'timeupdate'		= 'sofie:roTimeUpdate',
+		'timeupdateHR'		= 'sofie:roTimeUpdateHR'
 	}
 
 	export interface RunningOrderTimingContext {
@@ -107,6 +108,9 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 			clearInterval(this.refreshTimer)
 			this.refreshTimer = setInterval(() => {
 				this.updateDurations()
+
+				const event = new Event(RunningOrderTiming.Events.timeupdate)
+				window.dispatchEvent(event)
 			}, this.refreshTimerInterval)
 		}
 	}
@@ -203,12 +207,6 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 			segmentLineDurations: segLineDurations,
 			segmentLineStartsAt: segLineStartsAt
 		})
-
-		console.log(remainingRundownDuration)
-
-		const event = new Event(RunningOrderTiming.Events.timeupdate)
-
-		window.dispatchEvent(event)
 	}
 
 	render () {
@@ -217,7 +215,9 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 })
 
 export function withTiming (options?) {
-	let expandedOptions = options
+	let expandedOptions = _.extend({
+		isHighResolution: false
+	}, options)
 
 	return (WrappedComponent) => (
 		class WithTimingHOCComponent extends React.Component {

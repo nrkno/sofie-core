@@ -152,57 +152,57 @@ let nrk: TemplateSet = {
 					slug: 'BREAK',
 				}),
 				segmentLineItems: [
-					// literal<SegmentLineItemOptional>({
-					// 	_id: '',
-					// 	mosId: '',
-					// 	segmentLineId: '',
-					// 	runningOrderId: '',
-					// 	name: 'BREAK',
-					// 	trigger: {
-					// 		type: TriggerType.TIME_ABSOLUTE,
-					// 		value: 'now'
-					// 	},
-					// 	status: RundownAPI.LineItemStatusCode.OK,
-					// 	sourceLayerId: 'studio0_vignett',
-					// 	outputLayerId: 'pgm0',
-					// 	expectedDuration: 0
-					// })
 					literal<SegmentLineItemOptional>({
 						_id: '',
 						mosId: '',
 						segmentLineId: '',
 						runningOrderId: '',
-						name: 'AMB',
+						name: 'BREAK',
 						trigger: {
 							type: TriggerType.TIME_ABSOLUTE,
-							value: 0
+							value: 'now'
 						},
 						status: RundownAPI.LineItemStatusCode.OK,
 						sourceLayerId: 'studio0_vignett',
 						outputLayerId: 'pgm0',
-						expectedDuration: 100000,
-						content: {
-							fileName: 'AMB',
-							sourceDuration: 100000,
-							timelineObjects: [
-								literal<TimelineObjCCGVideo>({
-									_id: 'AMB', deviceId: [''],
-									siId: '',roId: '',
-									trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-									priority: 0,
-									duration: 100000,
-									LLayer: 'casparcg_player_vignett',
-									content: {
-										type: TimelineContentTypeCasparCg.VIDEO,
-										attributes: {
-											file: 'AMB',
-											loop: true
-										}
-									}
-								})
-							]
-						}
+						expectedDuration: 0
 					})
+					// literal<SegmentLineItemOptional>({
+					// 	_id: '',
+					// 	mosId: '',
+					// 	segmentLineId: '',
+					// 	runningOrderId: '',
+					// 	name: 'AMB',
+					// 	trigger: {
+					// 		type: TriggerType.TIME_ABSOLUTE,
+					// 		value: 0
+					// 	},
+					// 	status: RundownAPI.LineItemStatusCode.OK,
+					// 	sourceLayerId: 'studio0_vignett',
+					// 	outputLayerId: 'pgm0',
+					// 	expectedDuration: 100000,
+					// 	content: {
+					// 		fileName: 'AMB',
+					// 		sourceDuration: 100000,
+					// 		timelineObjects: [
+					// 			literal<TimelineObjCCGVideo>({
+					// 				_id: 'AMB', deviceId: [''],
+					// 				siId: '',roId: '',
+					// 				trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+					// 				priority: 0,
+					// 				duration: 100000,
+					// 				LLayer: 'casparcg_player_vignett',
+					// 				content: {
+					// 					type: TimelineContentTypeCasparCg.VIDEO,
+					// 					attributes: {
+					// 						file: 'AMB',
+					// 						loop: true
+					// 					}
+					// 				}
+					// 			})
+					// 		]
+					// 	}
+					// })
 				]
 			}
 		}),

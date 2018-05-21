@@ -17,6 +17,7 @@ import { StudioInstallation, StudioInstallations, IOutputLayer, ISourceLayer } f
 import { SegmentTimeline } from './SegmentTimeline'
 
 import { Settings } from '../../../lib/Settings'
+import { getCurrentTime } from '../../../lib/lib'
 
 export interface SegmentUi extends Segment {
 	/** Output layers available in the installation used by this segment */
@@ -323,7 +324,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 			if (this.debugDemoLiveLineInterval) {
 				let newCurrentSegmentLine = this.props.segmentLines.findIndex((item) => item._id === this.props.runningOrder.currentSegmentLineId)
 				if (newCurrentSegmentLine >= 0 && this.props.segmentLines[newCurrentSegmentLine].startsAt) {
-					const playoutLength = (Date.now() - this.debugDemoLiveLineStart)
+					const playoutLength = (getCurrentTime() - this.debugDemoLiveLineStart)
 					// console.log(playoutLength, this.props.segmentLines[newCurrentSegmentLine].startsAt)
 					if (this.props.segmentLines[newCurrentSegmentLine].startsAt! > playoutLength) {
 						// console.log(this.debugDemoLiveLineStart)
@@ -365,10 +366,10 @@ export const SegmentTimelineContainer = withTracker((props) => {
 			let currentSegmentLine = SegmentLines.findOne(this.props.runningOrder.currentSegmentLineId)
 
 			if (currentSegmentLine) {
-				this.debugDemoLiveLineStart = Date.now()
+				this.debugDemoLiveLineStart = getCurrentTime()
 				this.debugDemoLiveLineInterval = setInterval(() => {
 					let speed = 1
-					let newLivePosition = (Date.now() - this.debugDemoLiveLineStart)
+					let newLivePosition = (getCurrentTime() - this.debugDemoLiveLineStart)
 					this.setState(_.extend({
 						livePosition: newLivePosition,
 					}, this.state.followLiveLine ? {
