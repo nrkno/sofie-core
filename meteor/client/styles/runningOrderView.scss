@@ -200,6 +200,8 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 					$output-layer-group-collapse-animation-duration visibility 0s;
 
 		background: $segment-title-background-color;
+
+		word-break: break-word;
 	}
 
 	// the live and next states are the states of the entire segment component
