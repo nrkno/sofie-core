@@ -31,7 +31,7 @@ import {
 } from 'mos-connection'
 
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice, PlayoutDeviceType } from '../../lib/collections/PeripheralDevices'
 import { getCurrentTime, saveIntoDb, literal, DBObj, partialExceptId } from '../../lib/lib'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 
@@ -65,6 +65,17 @@ Meteor.methods({
 		let pd = getPD()
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, pd._id, pd.token,
 			new MosString128('MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71'))
+	},
+	'debug_fakeMosDevice' () {
+		Meteor.call(PeripheralDeviceAPI.methods.initialize, 'myMockMosDevice', 'token0' , {
+			type: PeripheralDeviceAPI.DeviceType.MOSDEVICE,
+			name: 'My mockDevice',
+			connectionId: '1234'
+		})
+		PeripheralDevices.update('myMockMosDevice', {$set: {
+			studioInstallationId: 'studio0'
+		}})
+		
 	},
 	'debug_roMock0' () {
 		let pd = getPD()

@@ -37,8 +37,8 @@ export enum TimelineContentTypeAtem { //  Atem-state
 	AUX = 'aux',
 	SSRC = 'ssrc'
 }
-export declare namespace Atem_Enums {
-	enum TransitionStyle {
+export namespace Atem_Enums {
+	export enum TransitionStyle {
 		MIX = 0,
 		DIP = 1,
 		WIPE = 2,
@@ -47,7 +47,7 @@ export declare namespace Atem_Enums {
 		CUT = 5,
 	}
 
-	enum SourceIndex {
+	export enum SourceIndex {
 		Blk = 0,
 		Bars = 1000,
 		Col1 = 2001,

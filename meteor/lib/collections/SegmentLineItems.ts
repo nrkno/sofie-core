@@ -60,8 +60,8 @@ export interface MetadataElement {
 }
 
 export interface BaseContent {
-	[key: string]: Array<SomeTimelineObject> | number | string | boolean | object | undefined
-	timelineObjects?: Array<TimelineObj>
+	[key: string]: Array<SomeTimelineObject> | number | string | boolean | object | undefined | null
+	timelineObjects?: Array<TimelineObj | null>
 }
 
 export type SomeTimelineObject = TimelineObj | TimelineObjGroup | TimelineObjCCGVideo | TimelineObjLawoSource

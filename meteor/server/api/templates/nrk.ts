@@ -45,7 +45,15 @@ import {
 	TimelineObjLawoSource,
 	TimelineObjCCGTemplate,
 	TimelineContentTypeCasparCg,
-	TimelineContentTypeLawo
+	TimelineContentTypeLawo,
+	TimelineContentTypeAtem,
+	TimelineObj,
+	TimelineObjAbstract,
+	Atem_Enums,
+	TimelineObjAtemME,
+	TimelineObjAtemAUX,
+	TimelineObjAtemDSK,
+	TimelineObjAtemSsrc
 } from '../../../lib/collections/Timeline'
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
@@ -101,6 +109,16 @@ let sourceLayers = [
 	{ _id: 'camera0', 		name: 'Kam', 	type: RundownAPI.SourceLayerType.CAMERA, 		unlimited: false, 	onPGMClean: true},
 ]
 */
+enum LLayers {
+	casparcg_player_vignett = 'casparcg_player_vignett',
+	casparcg_player_clip = 'casparcg_player_clip',
+	lawo_source_effect = 'lawo_source_effect',
+	lawo_source_automix = 'lawo_source_automix',
+	lawo_source_clip = 'lawo_source_clip',
+	atem_me_program = 'atem_me_program',
+	casparcg_player_wipe = 'casparcg_player_wipe',
+	casparcg_player_soundeffect = 'casparcg_player_soundeffect',
+}
 
 // -------------------------------
 // The template set:
@@ -128,6 +146,7 @@ let nrk: TemplateSet = {
 							variant.match(/vignett/i)) 	templateId = 'vignett'
 					else if (type.match(/stk/i) &&
 							variant.match(/head/i)) 	templateId = 'stkHead'
+					else if (type.match(/kam/i)) 		templateId = 'kam'
 				}
 				if (templateId) return true // break
 				else return false // keep looking
@@ -137,7 +156,6 @@ let nrk: TemplateSet = {
 		return templateId
 	}),
 	templates: {
-
 		/**
 		 * BREAK
 		 */
@@ -165,7 +183,229 @@ let nrk: TemplateSet = {
 						status: RundownAPI.LineItemStatusCode.OK,
 						sourceLayerId: 'studio0_vignett',
 						outputLayerId: 'pgm0',
-						expectedDuration: 0
+						expectedDuration: 0,
+						content: {
+							timelineObjects: [
+								// Default timeline
+								literal<TimelineObjAtemME>({
+									_id: '', deviceId: [''], siId: '', roId: '',
+									trigger: { type: TriggerType.LOGICAL, value: '1' },
+									priority: -1, duration: 0,
+									LLayer: 'atem_me_program',
+									content: {
+										type: TimelineContentTypeAtem.ME,
+										// transitions?: {
+										//     inTransition?: TimelineTransition
+										// }
+										attributes: {
+											input: 1, // to be changed?
+											transition: Atem_Enums.TransitionStyle.CUT
+										}
+									}
+								}),
+								literal<TimelineObjAtemME>({
+									_id: '', deviceId: [''], siId: '', roId: '',
+									trigger: { type: TriggerType.LOGICAL, value: '1' },
+									priority: -1, duration: 0,
+									LLayer: 'atem_me_studiomonitor',
+									content: {
+										type: TimelineContentTypeAtem.ME,
+										// transitions?: {
+										//     inTransition?: TimelineTransition
+										// }
+										attributes: {
+											input: 16,
+											transition: Atem_Enums.TransitionStyle.CUT
+										}
+									}
+								}),
+								literal<TimelineObjAtemAUX>({
+									_id: '', deviceId: [''], siId: '', roId: '',
+									trigger: { type: TriggerType.LOGICAL, value: '1' },
+									priority: -1, duration: 0,
+									LLayer: 'atem_aux_clean',
+									content: {
+										type: TimelineContentTypeAtem.AUX,
+										// transitions?: {
+										//     inTransition?: TimelineTransition
+										// }
+										attributes: {
+											input: Atem_Enums.SourceIndex.Cfd1
+										}
+									}
+								}),
+								literal<TimelineObjAtemAUX>({
+									_id: '', deviceId: [''], siId: '', roId: '',
+									trigger: { type: TriggerType.LOGICAL, value: '1' },
+									priority: -1, duration: 0,
+									LLayer: 'atem_aux_preview',
+									content: {
+										type: TimelineContentTypeAtem.AUX,
+										// transitions?: {
+										//     inTransition?: TimelineTransition
+										// }
+										attributes: {
+											input: Atem_Enums.SourceIndex.Prv1
+										}
+									}
+								}),
+								literal<TimelineObjAtemDSK>({
+									_id: '', deviceId: [''], siId: '', roId: '',
+									trigger: { type: TriggerType.LOGICAL, value: '1' },
+									priority: -1, duration: 0,
+									LLayer: 'atem_dsk_graphics',
+									content: {
+										type: TimelineContentTypeAtem.DSK,
+										// transitions?: {
+										//     inTransition?: TimelineTransition
+										// }
+										attributes: {
+											onAir: true,
+											fillSource: 10,
+											keySource: 11
+										}
+									}
+								}),
+								literal<TimelineObjAtemDSK>({
+									_id: '', deviceId: [''], siId: '', roId: '',
+									trigger: { type: TriggerType.LOGICAL, value: '1' },
+									priority: -1, duration: 0,
+									LLayer: 'atem_dsk_effect',
+									content: {
+										type: TimelineContentTypeAtem.DSK,
+										// transitions?: {
+										//     inTransition?: TimelineTransition
+										// }
+										attributes: {
+											onAir: true,
+											fillSource: 12,
+											keySource: 13
+										}
+									}
+								}),
+								literal<TimelineObjAtemSsrc>({
+									_id: '', deviceId: [''], siId: '', roId: '',
+									trigger: { type: TriggerType.LOGICAL, value: '1' },
+									priority: -1, duration: 0,
+									LLayer: 'atem_dsk_effect',
+									content: {
+										type: TimelineContentTypeAtem.SSRC,
+										// transitions?: {
+										//     inTransition?: TimelineTransition
+										// }
+										attributes: {
+											boxes: [
+												{
+													enabled: true,
+													source: 1
+												},
+												{
+													enabled: true,
+													source: 4
+												}
+											],
+											artfillSource: 16
+										}
+									}
+								}),
+								literal<TimelineObjLawoSource>({
+									_id: '', deviceId: [''], siId: '', roId: '',
+									trigger: { type: TriggerType.LOGICAL, value: '1' },
+									priority: -1, duration: 0,
+									LLayer: 'lawo_source_automix',
+									content: {
+										type: TimelineContentTypeLawo.AUDIO_SOURCE,
+										attributes:{
+											db: -191
+										}
+									}
+								}),
+								literal<TimelineObjLawoSource>({
+									_id: '', deviceId: [''], siId: '', roId: '',
+									trigger: { type: TriggerType.LOGICAL, value: '1' },
+									priority: -1, duration: 0,
+									LLayer: 'lawo_source_clip',
+									content: {
+										type: TimelineContentTypeLawo.AUDIO_SOURCE,
+										attributes:{
+											db: -191
+										}
+									}
+								}),
+								literal<TimelineObjLawoSource>({
+									_id: '', deviceId: [''], siId: '', roId: '',
+									trigger: { type: TriggerType.LOGICAL, value: '1' },
+									priority: -1, duration: 0,
+									LLayer: 'lawo_source_effect',
+									content: {
+										type: TimelineContentTypeLawo.AUDIO_SOURCE,
+										attributes:{
+											db: -191
+										}
+									}
+								}),
+								literal<TimelineObjLawoSource>({
+									_id: '', deviceId: [''], siId: '', roId: '',
+									trigger: { type: TriggerType.LOGICAL, value: '1' },
+									priority: -1, duration: 0,
+									LLayer: 'lawo_source_preview',
+									content: {
+										type: TimelineContentTypeLawo.AUDIO_SOURCE,
+										attributes:{
+											db: 0
+										}
+									}
+								}),
+								literal<TimelineObjCCGTemplate>({
+									_id: '', deviceId: [''], siId: '', roId: '',
+									trigger: { type: TriggerType.LOGICAL, value: '1' },
+									priority: -1, duration: 0,
+									LLayer: 'casparcg_cg_graphics',
+									content: {
+										type: TimelineContentTypeCasparCg.TEMPLATE,
+										attributes:{
+											name: 'http://design-nyheter.mesosint.nrk.no/?group=DKKristiansand&channel=gfx1',
+											data: {
+
+											},
+											useStopCommand: false
+										}
+									}
+								}),
+								literal<TimelineObjCCGTemplate>({
+									_id: '', deviceId: [''], siId: '', roId: '',
+									trigger: { type: TriggerType.LOGICAL, value: '1' },
+									priority: -1, duration: 0,
+									LLayer: 'casparcg_cg_logo',
+									content: {
+										type: TimelineContentTypeCasparCg.TEMPLATE,
+										attributes:{
+											name: 'http://design-nyheter.mesosint.nrk.no/?group=DKKristiansand&channel=gfx1',
+											data: {
+
+											},
+											useStopCommand: false
+										}
+									}
+								}),
+								literal<TimelineObjCCGTemplate>({
+									_id: '', deviceId: [''], siId: '', roId: '',
+									trigger: { type: TriggerType.LOGICAL, value: '1' },
+									priority: -1, duration: 0,
+									LLayer: 'casparcg_cg_studiomonitor',
+									content: {
+										type: TimelineContentTypeCasparCg.TEMPLATE,
+										attributes:{
+											name: 'http://design-nyheter.mesosint.nrk.no/?group=DKKristiansand&channel=gfx2',
+											data: {
+
+											},
+											useStopCommand: false
+										}
+									}
+								})
+							]
+						}
 					})
 					// literal<SegmentLineItemOptional>({
 					// 	_id: '',
@@ -228,14 +468,14 @@ let nrk: TemplateSet = {
 
 			let segmentLineItems: Array<SegmentLineItemOptional> = []
 			let IDs = {
-				lawo: context.getHashId(),
-				vignett: context.getHashId()
+				lawo: context.getHashId('lawo'),
+				vignett: context.getHashId('vignett')
 			}
 
 			let video: SegmentLineItemOptional = {
-				_id: context.getHashId(),
-				mosId: 'video',
-				name: 'Video',
+				_id: context.getHashId('vignett'),
+				mosId: 'vignett',
+				name: 'Vignett',
 				trigger: {
 					type: TriggerType.TIME_ABSOLUTE,
 					value: 0
@@ -248,12 +488,13 @@ let nrk: TemplateSet = {
 					fileName: clip,
 					sourceDuration: sourceDuration,
 					timelineObjects: [
+						// full sound vignett
 						literal<TimelineObjLawoSource>({
 							_id: IDs.lawo, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 							priority: 0,
 							duration: 0,
-							LLayer: 'lawo_source_effect',
+							LLayer: LLayers.lawo_source_effect,
 							content: {
 								type: TimelineContentTypeLawo.AUDIO_SOURCE,
 								attributes: {
@@ -261,12 +502,14 @@ let nrk: TemplateSet = {
 								}
 							}
 						}),
+
+						// play vignett over dsk2
 						literal<TimelineObjCCGVideo>({
 							_id: IDs.vignett, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo}.start + 0` },
 							priority: 0,
 							duration: sourceDuration,
-							LLayer: 'casparcg_player_vignett',
+							LLayer: LLayers.casparcg_player_vignett,
 							content: {
 								type: TimelineContentTypeCasparCg.VIDEO,
 								attributes: {
@@ -291,12 +534,26 @@ let nrk: TemplateSet = {
 		 */
 		stkHead: literal<TemplateFunctionOptional>(function (context, story) {
 			let IDs = {
-				lawo_automix: context.getHashId(),
-				headVideo: context.getHashId(),
-				headGfx: context.getHashId()
+				lawo_automix: 		context.getHashId('lawo_automix'),
+				lawo_effect: 		context.getHashId('lawo_effect'),
+				headVideo: 			context.getHashId('headVideo'),
+				atemSrv1: 			context.getHashId('atemSrv1'),
+				wipeVideo: 			context.getHashId('wipeVideo'),
+				wipeAudioSkille: 	context.getHashId('wipeAudioSkille'),
+				wipeAudioPunktum: 	context.getHashId('wipeAudioPunktum'),
+				headGfx: 			context.getHashId('headGfx')
 			}
+			
+			let segmentLines = context.getSegmentLines()
+			let segmentLineI = -1
+			_.find(segmentLines, (sl: SegmentLine) => {
+				segmentLineI++
+				return (sl._id === context.segmentLine._id) 
+			})
+			let isFirstHeadAfterVignett = (segmentLineI === 0)
+			let isLastHead = (segmentLineI === segmentLines.length-1)
 
-			let isFirstHeadAfterVignett = false // @todo @johan
+			
 
 			let storyItemClip = _.find(story.Body, (item) => {
 				return (
@@ -321,9 +578,9 @@ let nrk: TemplateSet = {
 
 			let segmentLineItems: Array<SegmentLineItemOptional> = []
 			let video: SegmentLineItemOptional = {
-				_id: context.getHashId(),
-				mosId: 'video',
-				name: 'Video',
+				_id: context.getHashId('video'),
+				mosId: 'headvideo',
+				name: 'HeadVideo',
 				trigger: {
 					type: TriggerType.TIME_ABSOLUTE,
 					value: 0
@@ -344,13 +601,15 @@ let nrk: TemplateSet = {
 						context.getValueByPath(storyItemClip, 'Content.objDur', 0) /
 						(context.getValueByPath(storyItemClip, 'Content.objTB') || 1)
 					) * 1000,
-					timelineObjects: [
+					timelineObjects: _.compact([
+
+						// mic host hot
 						literal<TimelineObjLawoSource>({
 							_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 							priority: 0,
 							duration: 0,
-							LLayer: 'lawo_source_automix',
+							LLayer: LLayers.lawo_source_automix,
 							content: {
 								type: TimelineContentTypeLawo.AUDIO_SOURCE,
 								transitions: {
@@ -366,6 +625,92 @@ let nrk: TemplateSet = {
 								}
 							}
 						}),
+
+						// audio STK/HEADS -15dB
+						literal<TimelineObjLawoSource>({
+							_id: IDs.lawo_effect, deviceId: [''], siId: '', roId: '',
+							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+							priority: 0,
+							duration: 0,
+							LLayer: LLayers.lawo_source_clip,
+							content: {
+								type: TimelineContentTypeLawo.AUDIO_SOURCE,
+								transitions: {
+									inTransition: {
+										type: Transition.MIX,
+										duration: 200,
+										easing: Ease.LINEAR,
+										direction: Direction.LEFT
+									}
+								},
+								attributes: {
+									db: -15
+								}
+							}
+						}),
+
+						// switch to server1
+						literal<TimelineObjAtemME>({
+							_id: IDs.atemSrv1, deviceId: [''], siId: '', roId: '',
+							trigger: {type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0`},
+							priority: 0,
+							duration: 0,
+							LLayer: LLayers.atem_me_program,
+							content: {
+								type: TimelineContentTypeAtem.ME,
+								attributes: {
+									input: 2, // @todo: 14
+									transition: Atem_Enums.TransitionStyle.CUT
+								}
+							}
+						}),
+
+						// wipe to head (if not first head after vignett)
+						(!isFirstHeadAfterVignett) ? 
+						literal<TimelineObjCCGVideo>({
+							_id: IDs.headVideo, deviceId: [''], siId: '', roId: '',
+							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
+							priority: 0,
+							duration: 500,
+							LLayer: LLayers.casparcg_player_wipe,
+							content: {
+								type: TimelineContentTypeCasparCg.VIDEO,
+								attributes: {
+									file: 'wipe_white'
+								}
+							}
+						}) : null,
+						
+						// wipe audio (skille between and punktum for the last)
+						(!isLastHead) ? 
+						literal<TimelineObjCCGVideo>({
+							_id: IDs.headVideo, deviceId: [''], siId: '', roId: '',
+							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
+							priority: 0,
+							duration: 500,
+							LLayer: LLayers.casparcg_player_soundeffect,
+							content: {
+								type: TimelineContentTypeCasparCg.VIDEO,
+								attributes: {
+									file: 'wipe_audio_skillelyd'
+								}
+							}
+						}) : 
+						literal<TimelineObjCCGVideo>({
+							_id: IDs.headVideo, deviceId: [''], siId: '', roId: '',
+							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
+							priority: 0,
+							duration: 500,
+							LLayer: LLayers.casparcg_player_soundeffect,
+							content: {
+								type: TimelineContentTypeCasparCg.VIDEO,
+								attributes: {
+									file: 'wipe_audio_punktum'
+								}
+							}
+						}),
+
+						// play HEAD
 						literal<TimelineObjCCGVideo>({
 							_id: IDs.headVideo, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
@@ -374,7 +719,7 @@ let nrk: TemplateSet = {
 								context.getValueByPath(storyItemClip, 'Content.objDur', 0) /
 								(context.getValueByPath(storyItemClip, 'Content.objTB') || 1)
 							) * 1000,
-							LLayer: 'casparcg_player_vignett',
+							LLayer: 'casparcg_player_clip',
 							content: {
 								type: TimelineContentTypeCasparCg.VIDEO,
 								attributes: {
@@ -382,7 +727,7 @@ let nrk: TemplateSet = {
 								}
 							}
 						})
-					]
+					])
 				}
 			}
 			segmentLineItems.push(video)
@@ -414,7 +759,7 @@ let nrk: TemplateSet = {
 			}
 
 			let gfx: SegmentLineItemOptional = {
-				_id: context.getHashId(),
+				_id: context.getHashId('super'),
 				mosId: 'super',
 				name: 'Super',
 				trigger: trigger,
@@ -452,7 +797,72 @@ let nrk: TemplateSet = {
 				segmentLine: null,
 				segmentLineItems: segmentLineItems
 			})
-		})
+		}),
+		/**
+		 * KAM
+		 */
+		kam: literal<TemplateFunctionOptional>((context: TemplateContextInner, story): TemplateResult => {
+			
+			let cameraInput = 0
+			let mosartVariant = story.getValueByPath('MosExternalMetaData.0.MosPayload.mosartVariant', '')
+			if (mosartVariant) {
+				cameraInput = parseInt(mosartVariant, 10) || 0
+			} else {
+				context.warning('mosartVariant for KAM should be the camera to cut to')
+			}
+			
+
+
+			return {
+				segmentLine: literal<DBSegmentLine>({
+					_id: '',
+					_rank: 0,
+					mosId: '',
+					segmentId: '',
+					runningOrderId: '',
+					slug: 'KAM',
+				}),
+				segmentLineItems: [
+					literal<SegmentLineItemOptional>({
+						_id: '',
+						mosId: '',
+						segmentLineId: '',
+						runningOrderId: '',
+						name: 'KAM',
+						trigger: {
+							type: TriggerType.TIME_ABSOLUTE,
+							value: 'now'
+						},
+						status: RundownAPI.LineItemStatusCode.OK,
+						sourceLayerId: 'studio0_vignett',
+						outputLayerId: 'pgm0',
+						expectedDuration: 0,
+						content: {
+							timelineObjects: _.compact([
+								literal<TimelineObjAtemME>({ // to be changed to NRKPOST-something
+									_id: context.getHashId('atem_me0'), deviceId: [''], siId: '', roId: '',
+									trigger: {
+										type: TriggerType.TIME_ABSOLUTE,
+										value: 0
+									},
+									priority: 0,
+									duration: 0, // @todo TBD
+									LLayer: 'casparcg_cg_graphics',
+									content: {
+										type: TimelineContentTypeAtem.ME,
+										attributes: {
+											input: cameraInput,
+											transition: Atem_Enums.TransitionStyle.CUT
+										}
+									}
+								})
+							])
+						}
+					})
+					
+				]
+			}
+		}),
 	}
 }
 

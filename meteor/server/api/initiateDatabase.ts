@@ -48,7 +48,7 @@ Meteor.methods({
 		console.log('initDB')
 		// Initiate database:
 		StudioInstallations.upsert('studio0', {$set: {
-			name: 'Dummy studio',
+			name: 'VR3',
 			outputLayers: [],
 		}})
 
@@ -62,7 +62,7 @@ Meteor.methods({
 				},
 				{
 					_id: 'monitor0',
-					name: 'Skjerm',
+					name: 'Bakskjerm',
 					isPGM: false,
 				}
 			],
@@ -139,6 +139,12 @@ Meteor.methods({
 		}})
 		// Create Timeline mappings:
 		const mappings: Mappings = { // Logical layers and their mappings
+			'casparcg_player_wipe': literal<MappingCasparCG>({
+				device: PlayoutDeviceType.CASPARCG,
+				deviceId: 'casparcg0',
+				channel: 5,
+				layer: 199
+			}),
 			'casparcg_player_vignett': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
@@ -238,6 +244,10 @@ Meteor.methods({
 				channel: 4
 			})
 		}
+		StudioInstallations.update('studio0', {$set: {
+			mappings: mappings
+		}})
+
 		PeripheralDevices.find({
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT
 		}).forEach((pd) => {
@@ -245,14 +255,14 @@ Meteor.methods({
 				'settings.devices.casparcg0': ((pd['settings'] || {})['devices'] || {})['casparcg0'] || {
 					type: PlayoutDeviceType.CASPARCG,
 					options: {
-						host: '127.0.0.1',
+						host: '10.0.1.111',
 						port: 5250
 					}
 				},
 				'settings.devices.atem0': ((pd['settings'] || {})['devices'] || {})['atem0'] || {
 					type: PlayoutDeviceType.ATEM,
 					options: {
-						host: '192.168.1.101',
+						host: '10.0.1.118',
 						port: 9910
 					}
 				},
@@ -264,9 +274,9 @@ Meteor.methods({
 					}
 				}
 			}})
-			PeripheralDevices.update(pd._id, {$set: {
-				mappings: mappings
-			}})
+			// PeripheralDevices.update(pd._id, {$set: {
+			// 	mappings: mappings
+			// }})
 		})
 	}
 })

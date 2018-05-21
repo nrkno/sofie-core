@@ -26,7 +26,7 @@ import {
 import { RuntimeFunctions } from '../../../lib/collections/RuntimeFunctions'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines, DBSegmentLine } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
+import { SegmentLineItem, SegmentLineItems, SomeTimelineObject } from '../../../lib/collections/SegmentLineItems'
 import { literal, Optional } from '../../../lib/lib'
 import * as crypto from 'crypto'
 
@@ -57,6 +57,12 @@ export type SegmentLineItemOptional = Fix<SegmentLineItem>
 // 	[K in keyof T]: T[K]
 // }
 
+// export interface SegmentLineItemOptional extends Optional<SegmentLineItem> {
+// 	content?: {
+// 		[key: string]: Array<SomeTimelineObject> | number | string | boolean | object | undefined | null
+// 		timelineObjects?: Array<SomeTimelineObject | null>
+// 	}
+// }
 export type SegmentLineItemOptional = Optional<SegmentLineItem>
 
 export interface TemplateSet {
@@ -76,6 +82,7 @@ export interface TemplateContextInnerBase {
 	sumMosItemDurations: (str: string) => number
 	error: (message: string) => void
 	warning: (message: string) => void
+	getSegmentLines (): Array<SegmentLine>
 }
 
 export interface TemplateContextInner extends TemplateContext, TemplateContextInnerBase {
@@ -85,7 +92,11 @@ function getContext (context: TemplateContext): TemplateContextInner {
 	let c0 = literal<TemplateContextInnerBase>({
 		getHashId (str?: any) {
 			if (!_.isUndefined(str)) {
-				return getHash(str.toString() + '')
+				return getHash(
+					context.runningOrderId + '_' +
+					context.segmentLine._id + '_' +
+					str.toString()
+				)
 			} else {
 				return getHash(context.segmentLine._id + 'hash' + (hashI++) )
 			}
@@ -99,6 +110,12 @@ function getContext (context: TemplateContext): TemplateContextInner {
 			)
 			if (_.isUndefined(value) && !_.isUndefined(defaultValue)) value = defaultValue
 			return value
+		},
+		getSegmentLines (): Array<SegmentLine> {
+			// return stories in segmentLine
+			let ro = RunningOrders.findOne(context.runningOrderId)
+			if (!ro) throw new Meteor.Error(404, 'RunningOrder "' + context.runningOrderId + '" not found')
+			return ro.getSegmentLines()
 		},
 		sumMosItemDurations (str: string): number {
 			let sum = 0
@@ -132,6 +149,8 @@ export interface TemplateResultAfterPost {
 
 import { nrk } from './nrk'
 import { logger } from '../../logging'
+import { RunningOrders } from '../../../lib/collections/RunningOrders';
+import { TimelineObj } from '../../../lib/collections/Timeline';
 let template: TemplateSet = nrk
 function injectContextIntoArguments (context: TemplateContextInner, args: any[]): Array<any> {
 	_.each(args, (arg: StoryWithContext) => {
@@ -200,14 +219,32 @@ export function runTemplate (context: TemplateContext, story: IMOSROFullStory): 
 
 		// Post-process the result:
 		let i = 0
+		let segmentLinesUniqueIds: {[id: string]: true} = {}
 		let resultAfterPost: TemplateResultAfterPost = {
 			segmentLine: result.segmentLine,
-			segmentLineItems: _.map(result.segmentLineItems, (itemOrg: SegmentLineItemOptional) => {
+			segmentLineItems: _.map(_.compact(result.segmentLineItems), (itemOrg: SegmentLineItemOptional) => {
 				let item: SegmentLineItem = itemOrg as SegmentLineItem
 
-				if (!item._id) item._id = innerContext.getHashId(innerContext.segmentLine._id + ( i++ ))
-				if (!item.runningOrderId) item.runningOrderId = innerContext.segmentLine.runningOrderId
+				if (!item._id) item._id = innerContext.getHashId('postprocess_'+( i++ ))
+				if (!item.runningOrderId) item.runningOrderId = innerContext.runningOrderId
 				if (!item.segmentLineId) item.segmentLineId = innerContext.segmentLine._id
+
+				if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLines must be unique! ("' + item._id + '")')
+				segmentLinesUniqueIds[item._id] = true
+
+				if (item.content && item.content.timelineObjects) {
+					item.content.timelineObjects = _.compact(item.content.timelineObjects)
+
+					let timelineUniqueIds: {[id: string]: true} = {}
+					_.each(item.content.timelineObjects, (o: TimelineObj) => {
+						
+						if (!o._id) o._id = innerContext.getHashId('postprocess_'+( i++ ))
+						
+						if (timelineUniqueIds[o._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLines must be unique! ("' + o._id + '")')
+						timelineUniqueIds[o._id] = true
+					})
+				}
+				
 
 				return item
 			})
