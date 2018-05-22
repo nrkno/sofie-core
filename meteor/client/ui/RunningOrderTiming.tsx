@@ -76,7 +76,7 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 	}
 
 	durations: RunningOrderTiming.RunningOrderTimingContext = {}
-	refreshTimer: NodeJS.Timer
+	refreshTimer: number
 	refreshTimerInterval: number
 	refreshDecimator: number
 
@@ -111,7 +111,7 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 	}
 
 	componentDidMount () {
-		this.refreshTimer = setInterval(this.onRefreshTimer, this.refreshTimerInterval)
+		this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 	}
 
 	componentWillReceiveProps (nextProps) {
@@ -119,7 +119,7 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 		if (this.refreshTimerInterval !== nextProps.refreshInterval && _.isNumber(nextProps.refreshInterval) && this.refreshTimer) {
 			this.refreshTimerInterval = nextProps.refreshInterval
 			clearInterval(this.refreshTimer)
-			this.refreshTimer = setInterval(this.onRefreshTimer, this.refreshTimerInterval)
+			this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 		}
 	}
 

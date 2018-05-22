@@ -283,7 +283,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		hasRemoteItems
 	}
 })(class extends React.Component<IPropsHeader, IStateHeader> {
-	debugDemoLiveLineInterval?: NodeJS.Timer
+	debugDemoLiveLineInterval?: number
 	debugDemoLiveLineStart: number
 	isLiveSegment: boolean
 	roCurrentSegmentId: string | null
@@ -367,7 +367,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 
 			if (currentSegmentLine) {
 				this.debugDemoLiveLineStart = getCurrentTime()
-				this.debugDemoLiveLineInterval = setInterval(() => {
+				this.debugDemoLiveLineInterval = Meteor.setInterval(() => {
 					let speed = 1
 					let newLivePosition = (getCurrentTime() - this.debugDemoLiveLineStart)
 					this.setState(_.extend({

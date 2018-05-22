@@ -20,7 +20,7 @@ export const PeripheralDeviceCommands: TransformedCollection<PeripheralDeviceCom
 	= new Mongo.Collection<PeripheralDeviceCommand>('peripheralDeviceCommands')
 
 // Monitor and remove old, lingering commands:
-setInterval(() => {
+Meteor.setInterval(() => {
 	PeripheralDeviceCommands.find().forEach((cmd) => {
 		if (getCurrentTime() - (cmd.time || 0) > (20 * 1000)) { // timeout a long time ago
 			PeripheralDeviceCommands.remove(cmd._id)

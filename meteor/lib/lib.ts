@@ -50,11 +50,11 @@ if (Meteor.isServer) {
 				systemTime.stdDev = Math.abs(sentTime - replyTime) / 2
 				console.log('time diff to server: ' + systemTime.diff + ' (stdDev: ' + systemTime.stdDev + ')')
 				if (!stat.good) {
-					setTimeout(() => {
+					Meteor.setTimeout(() => {
 						updateDiffTime()
 					}, 20 * 1000)
 				} else if (!stat.good || systemTime.stdDev > 50) {
-					setTimeout(() => {
+					Meteor.setTimeout(() => {
 						updateDiffTime()
 					}, 2000)
 				}
@@ -63,11 +63,11 @@ if (Meteor.isServer) {
 	}
 
 	Meteor.startup(() => {
-		setInterval(() => {
+		Meteor.setInterval(() => {
 			updateDiffTime()
 		}, 3600 * 1000)
 		updateDiffTime()
-		// setTimeout(() => {
+		// Meteor.setTimeout(() => {
 		// 	updateDiffTime()
 		// }, 2000)
 	})

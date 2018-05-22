@@ -192,7 +192,7 @@ const LIVE_LINE_TIME_PADDING = 150
 export const SegmentTimelineLine = translate()(withTiming({
 	isHighResolution: false
 })(class extends React.Component<IPropsHeader & InjectedTranslateProps & RunningOrderTiming.InjectedROTimingProps, IStateHader> {
-	_refreshTimer: NodeJS.Timer | undefined
+	_refreshTimer: number | undefined
 
 	constructor (props) {
 		super(props)

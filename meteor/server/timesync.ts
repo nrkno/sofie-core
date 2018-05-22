@@ -165,7 +165,7 @@ let updateServerTime = () => {
 			} else {
 				setSystemStatus('systemTime', {statusCode: StatusCode.BAD})
 			}
-			setTimeout(() => {
+			Meteor.setTimeout(() => {
 				updateServerTime()
 			}, 20 * 1000)
 		}
@@ -174,14 +174,14 @@ let updateServerTime = () => {
 		console.log('systemTime Error', err)
 		setSystemStatus('systemTime', {statusCode: StatusCode.BAD, messages: [err.toString()]})
 
-		setTimeout(() => {
+		Meteor.setTimeout(() => {
 			updateServerTime()
 		}, 20 * 1000)
 	})
 }
 setSystemStatus('systemTime', {statusCode: StatusCode.BAD, messages: ['Starting up...'] })
 Meteor.startup(() => {
-	setInterval(() => {
+	Meteor.setInterval(() => {
 		updateServerTime()
 	}, 3600 * 1000)
 	updateServerTime()
