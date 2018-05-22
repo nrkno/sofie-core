@@ -112,12 +112,21 @@ let sourceLayers = [
 enum LLayers {
 	casparcg_player_vignett = 'casparcg_player_vignett',
 	casparcg_player_clip = 'casparcg_player_clip',
+	casparcg_cg_graphics = 'casparcg_cg_graphics',
+	casparcg_cg_logo = 'casparcg_cg_logo',
+	casparcg_cg_studiomonitor = 'casparcg_cg_studiomonitor',
 	lawo_source_effect = 'lawo_source_effect',
 	lawo_source_automix = 'lawo_source_automix',
 	lawo_source_clip = 'lawo_source_clip',
 	atem_me_program = 'atem_me_program',
 	casparcg_player_wipe = 'casparcg_player_wipe',
 	casparcg_player_soundeffect = 'casparcg_player_soundeffect',
+	atem_me_studiomonitor = 'atem_me_studiomonitor',
+	atem_aux_clean = 'atem_aux_clean',
+	atem_aux_preview = 'atem_aux_preview',
+	atem_dsk_effect = 'atem_dsk_effect',
+	atem_dsk_graphics = 'atem_dsk_graphics',
+	lawo_source_preview = 'lawo_source_preview',
 }
 
 // -------------------------------
@@ -191,7 +200,7 @@ let nrk: TemplateSet = {
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
 									priority: -1, duration: 0,
-									LLayer: 'atem_me_program',
+									LLayer: LLayers.atem_me_program,
 									content: {
 										type: TimelineContentTypeAtem.ME,
 										// transitions?: {
@@ -207,7 +216,7 @@ let nrk: TemplateSet = {
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
 									priority: -1, duration: 0,
-									LLayer: 'atem_me_studiomonitor',
+									LLayer: LLayers.atem_me_studiomonitor,
 									content: {
 										type: TimelineContentTypeAtem.ME,
 										// transitions?: {
@@ -223,7 +232,7 @@ let nrk: TemplateSet = {
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
 									priority: -1, duration: 0,
-									LLayer: 'atem_aux_clean',
+									LLayer: LLayers.atem_aux_clean,
 									content: {
 										type: TimelineContentTypeAtem.AUX,
 										// transitions?: {
@@ -238,7 +247,7 @@ let nrk: TemplateSet = {
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
 									priority: -1, duration: 0,
-									LLayer: 'atem_aux_preview',
+									LLayer: LLayers.atem_aux_preview,
 									content: {
 										type: TimelineContentTypeAtem.AUX,
 										// transitions?: {
@@ -253,7 +262,7 @@ let nrk: TemplateSet = {
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
 									priority: -1, duration: 0,
-									LLayer: 'atem_dsk_graphics',
+									LLayer: LLayers.atem_dsk_graphics,
 									content: {
 										type: TimelineContentTypeAtem.DSK,
 										// transitions?: {
@@ -270,7 +279,7 @@ let nrk: TemplateSet = {
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
 									priority: -1, duration: 0,
-									LLayer: 'atem_dsk_effect',
+									LLayer: LLayers.atem_dsk_effect,
 									content: {
 										type: TimelineContentTypeAtem.DSK,
 										// transitions?: {
@@ -287,7 +296,7 @@ let nrk: TemplateSet = {
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
 									priority: -1, duration: 0,
-									LLayer: 'atem_dsk_effect',
+									LLayer: LLayers.atem_dsk_effect,
 									content: {
 										type: TimelineContentTypeAtem.SSRC,
 										// transitions?: {
@@ -312,7 +321,7 @@ let nrk: TemplateSet = {
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
 									priority: -1, duration: 0,
-									LLayer: 'lawo_source_automix',
+									LLayer: LLayers.lawo_source_automix,
 									content: {
 										type: TimelineContentTypeLawo.AUDIO_SOURCE,
 										attributes:{
@@ -324,7 +333,7 @@ let nrk: TemplateSet = {
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
 									priority: -1, duration: 0,
-									LLayer: 'lawo_source_clip',
+									LLayer: LLayers.lawo_source_clip,
 									content: {
 										type: TimelineContentTypeLawo.AUDIO_SOURCE,
 										attributes:{
@@ -336,7 +345,7 @@ let nrk: TemplateSet = {
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
 									priority: -1, duration: 0,
-									LLayer: 'lawo_source_effect',
+									LLayer: LLayers.lawo_source_effect,
 									content: {
 										type: TimelineContentTypeLawo.AUDIO_SOURCE,
 										attributes:{
@@ -348,7 +357,7 @@ let nrk: TemplateSet = {
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
 									priority: -1, duration: 0,
-									LLayer: 'lawo_source_preview',
+									LLayer: LLayers.lawo_source_preview,
 									content: {
 										type: TimelineContentTypeLawo.AUDIO_SOURCE,
 										attributes:{
@@ -360,7 +369,7 @@ let nrk: TemplateSet = {
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
 									priority: -1, duration: 0,
-									LLayer: 'casparcg_cg_graphics',
+									LLayer: LLayers.casparcg_cg_graphics,
 									content: {
 										type: TimelineContentTypeCasparCg.TEMPLATE,
 										attributes:{
@@ -376,7 +385,7 @@ let nrk: TemplateSet = {
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
 									priority: -1, duration: 0,
-									LLayer: 'casparcg_cg_logo',
+									LLayer: LLayers.casparcg_cg_logo,
 									content: {
 										type: TimelineContentTypeCasparCg.TEMPLATE,
 										attributes:{
@@ -392,7 +401,7 @@ let nrk: TemplateSet = {
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
 									priority: -1, duration: 0,
-									LLayer: 'casparcg_cg_studiomonitor',
+									LLayer: LLayers.casparcg_cg_studiomonitor,
 									content: {
 										type: TimelineContentTypeCasparCg.TEMPLATE,
 										attributes:{
@@ -431,7 +440,7 @@ let nrk: TemplateSet = {
 					// 				trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 					// 				priority: 0,
 					// 				duration: 100000,
-					// 				LLayer: 'casparcg_player_vignett',
+					// 				LLLayers.ayer: 'casparcg_player_vignett,
 					// 				content: {
 					// 					type: TimelineContentTypeCasparCg.VIDEO,
 					// 					attributes: {
@@ -720,7 +729,7 @@ let nrk: TemplateSet = {
 								context.getValueByPath(storyItemClip, 'Content.objDur', 0) /
 								(context.getValueByPath(storyItemClip, 'Content.objTB') || 1)
 							) * 1000,
-							LLayer: 'casparcg_player_clip',
+							LLayer: LLayers.casparcg_player_clip,
 							content: {
 								type: TimelineContentTypeCasparCg.VIDEO,
 								attributes: {
@@ -780,7 +789,7 @@ let nrk: TemplateSet = {
 							},
 							priority: 0,
 							duration: 8 * 1000, // @todo TBD
-							LLayer: 'casparcg_cg_graphics',
+							LLayer: LLayers.casparcg_cg_graphics,
 							content: {
 								type: TimelineContentTypeCasparCg.TEMPLATE, // to be changed to NRKPOST-something
 								attributes: {
@@ -848,7 +857,7 @@ let nrk: TemplateSet = {
 									},
 									priority: 0,
 									duration: 0, // @todo TBD
-									LLayer: 'casparcg_cg_graphics',
+									LLayer: LLayers.casparcg_cg_graphics,
 									content: {
 										type: TimelineContentTypeAtem.ME,
 										attributes: {
