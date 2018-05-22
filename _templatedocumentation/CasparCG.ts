@@ -67,6 +67,17 @@ const CasparCG = {
                 signalPath: "AUX 2 (PVW ?) loop-through internal DSK"
             },
             description: ""
+        },
+        6: {
+            systemName: "CLOCK",
+            id: "",
+            decklink: {
+                device: ,
+                type: "FILL",
+                embedded: false,    // @todo: audio countdown?
+                signalPath: ""
+            },
+            description: ""
         }
     },
     inputs: {
