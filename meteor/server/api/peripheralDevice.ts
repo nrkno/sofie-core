@@ -40,6 +40,7 @@ import { runTemplate, TemplateContext, getHash } from './templates/templates'
 import { Timeline } from '../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { settings } from 'cluster';
+import { MediaObject, MediaObjects } from '../../lib/collections/MediaObjects';
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -598,6 +599,45 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// return this.core.mosManipulate(P.methods.mosRoReadyToAir, story)
 	}
+// Media scanner functions:
+	export function getMediaObjectRevisions (id, token, collectionId: string) {
+		console.log('getMediaObjectRevisions')
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+
+		if (peripheralDevice.studioInstallationId) {
+			return _.map(MediaObjects.find({
+				studioId: peripheralDevice.studioInstallationId,
+				collectionId: collectionId
+			}).fetch(), (mo: MediaObject) => {
+				return {
+					id: 	mo.objId,
+					rev: 	mo._rev
+				}
+			})
+		} else {
+			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studioInstallation')
+		}
+	}
+	export function updateMediaObject (id, token, collectionId: string, objId, doc: MediaObject | null) {
+		console.log('updateMediaObject')
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+
+		let _id = collectionId + '_' + objId
+		if (_.isNull(doc)) {
+			MediaObjects.remove(_id)
+		} else if (doc) {
+			let doc2 = _.extend(doc, {
+				studioId: peripheralDevice.studioInstallationId,
+				collectionId: collectionId,
+				objId: objId,
+				_id: _id
+			})
+			// console.log(doc2)
+			MediaObjects.upsert(_id, {$set: doc2})
+		} else {
+			throw new Meteor.Error(400, 'missing doc argument')
+		}
+	}
 }
 export function roId (roId: MosString128, original?: boolean): string {
 	// console.log('roId', roId)
@@ -845,38 +885,6 @@ export function getRank (beforeOrLast, after, i: number, count: number): number 
 	return newRankMin + ( (i + 1) / (count + 1) ) * (newRankMax - newRankMin)
 }
 
-// _.each(ro.Stories, (story: IMOSStory) => {
-// 	// divide into
-// 	let slugParts = (story.Slug || '').toString().split(';')
-
-// 	if (slugParts[0] !== prevSlugParts[0]) {
-// 		segment = convertToSegment(story, roId(ro.ID), rankSegment++)
-// 		segments.push(segment)
-// 	}
-// 	segmentLines.push(convertToSegmentLine(story, segment, rankSegmentLine++))
-
-// 	prevSlugParts = slugParts
-// })
-// saveIntoDb(Segments, {
-// 	runningOrderId: roId(ro.ID)
-// }, segments, {
-// 	afterInsert (segment) {
-// 		let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
-// 		if (story) {
-// 			afterInsertUpdateSegment (story, roId(ro.ID))
-// 		} else throw new Meteor.Error(500, 'Story not found (it should have been)')
-// 	},
-// 	afterUpdate (segment) {
-// 		let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
-// 		if (story) {
-// 			afterInsertUpdateSegment (story, roId(ro.ID))
-// 		} else throw new Meteor.Error(500, 'Story not found (it should have been)')
-// 	},
-// 	afterRemove (segment) {
-// 		afterRemoveSegment(segment._id, segment.runningOrderId)
-// 	}
-// })
-
 function findDurationInfoMOSExternalMetaData (story: IMOSROFullStory): any | undefined {
 	if (story.MosExternalMetaData) {
 		let matchingMetaData = story.MosExternalMetaData.find((metaData) => {
@@ -1016,6 +1024,13 @@ methods[PeripheralDeviceAPI.methods.mosRoFullStory] = (deviceId, deviceToken, st
 }
 methods[PeripheralDeviceAPI.methods.timelineTriggerTime] = (deviceId, deviceToken, r: PeripheralDeviceAPI.TimelineTriggerTimeResult) => {
 	return ServerPeripheralDeviceAPI.timelineTriggerTime(deviceId, deviceToken, r)
+}
+
+methods[PeripheralDeviceAPI.methods.getMediaObjectRevisions] = (deviceId, deviceToken, collectionId: string,) => {
+	return ServerPeripheralDeviceAPI.getMediaObjectRevisions(deviceId, deviceToken, collectionId)
+}
+methods[PeripheralDeviceAPI.methods.updateMediaObject] = (deviceId, deviceToken, collectionId: string, id: string, doc: MediaObject | null) => {
+	return ServerPeripheralDeviceAPI.updateMediaObject(deviceId, deviceToken, collectionId, id, doc)
 }
 
 // --------------------
