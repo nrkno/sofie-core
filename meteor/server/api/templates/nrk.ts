@@ -599,7 +599,7 @@ let nrk: TemplateSet = {
 			})
 			if (!storyItemGfx) context.warning('Super missing in mos data')
 
-			let clip = context.getValueByPath(storyItemClip, 'Content.myclipNameSomething')	// @todo Missing data in mos
+			let clip = context.getValueByPath(storyItemClip, 'Content.myclipNameSomething') || 'clipPlaceholder'	// @todo Missing data in mos
 
 			let segmentLineItems: Array<SegmentLineItemOptional> = []
 			let video: SegmentLineItemOptional = {
