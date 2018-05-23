@@ -182,6 +182,7 @@ interface IPropsHeader {
 	livePosition: number | null
 	relative?: boolean
 	totalSegmentDuration?: number
+	firstSegmentLineInSegment?: SegmentLineUi
 	onContextMenu?: (contextMenuContext: any) => void
 }
 
@@ -276,11 +277,15 @@ export const SegmentTimelineLine = translate()(withTiming({
 		}
 	}
 
+	getSegmentLineStartsAt (): number {
+		return Math.max(0, (this.props.firstSegmentLineInSegment && this.props.timingDurations.segmentLineStartsAt && (this.props.timingDurations.segmentLineStartsAt[this.props.segmentLine._id] - this.props.timingDurations.segmentLineStartsAt[this.props.firstSegmentLineInSegment._id])) || 0)
+	}
+
 	isInsideViewport () {
 		if (this.props.relative || this.state.isLive) {
 			return true
 		} else {
-			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine, (this.props.timingDurations.segmentLineStartsAt && this.props.timingDurations.segmentLineStartsAt[this.props.segmentLine._id]))
+			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine, this.getSegmentLineStartsAt())
 		}
 	}
 
@@ -299,7 +304,7 @@ export const SegmentTimelineLine = translate()(withTiming({
 							layer={layer}
 							segment={this.props.segment}
 							segmentLine={segmentLine}
-							startsAt={(this.props.timingDurations.segmentLineStartsAt && this.props.timingDurations.segmentLineStartsAt[segmentLine._id]) || this.props.segmentLine.startsAt || 0}
+							startsAt={this.getSegmentLineStartsAt() || this.props.segmentLine.startsAt || 0}
 							duration={(this.props.timingDurations.segmentLineDurations && this.props.timingDurations.segmentLineDurations[segmentLine._id]) || this.props.segmentLine.renderedDuration || 0}
 							isLiveLine={this.props.runningOrder.currentSegmentLineId === segmentLine._id ? true : false}
 							isNextLine={this.props.runningOrder.nextSegmentLineId === segmentLine._id ? true : false}

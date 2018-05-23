@@ -5,6 +5,11 @@ import * as Timecode from 'smpte-timecode'
 import { Settings } from '../../lib/Settings'
 
 export namespace RundownUtils {
+	function padZero (input: number, places?: number): string {
+		places = places || 2
+		return input < Math.pow(10, places - 1) ? '0'.repeat(places - 1) + input.toString(10) : input.toString(10)
+	}
+
 	export function getSegmentDuration (lines: Array<SegmentLineUi>) {
 		return lines.reduce((memo, item) => {
 			return memo + (item.duration || item.expectedDuration || item.renderedDuration || 0)
@@ -15,14 +20,11 @@ export namespace RundownUtils {
 		return (new Timecode(milliseconds * Settings['frameRate'] / 1000, Settings['frameRate'], false)).toString()
 	}
 
+	export function formatTimeToShortTime (milliseconds: number): string {
+		return formatDiffToTimecode(Math.max(milliseconds, 0), false)
+	}
+
 	export function formatDiffToTimecode (milliseconds: number, showPlus?: boolean): string {
-		function padZero (input: number): string {
-			if (input < 10) {
-				return '0' + input.toString(10)
-			} else {
-				return input.toString(10)
-			}
-		}
 
 		const isNegative = milliseconds < 0
 		if (isNegative) {

@@ -267,6 +267,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 									 // The following code is fine, just withTracer HOC messing with the available properties
 									 // @ts-ignore
 									 scrollWidth={this.state.timelineWidth / this.props.timeScale}
+									 firstSegmentLineInSegment={this.props.segmentLines[0]}
 									 segmentLine={segmentLine} />
 			)
 		})

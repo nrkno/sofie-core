@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
+import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 
@@ -18,6 +19,7 @@ import { SegmentTimeline } from './SegmentTimeline'
 
 import { Settings } from '../../../lib/Settings'
 import { getCurrentTime } from '../../../lib/lib'
+import { RunningOrderTiming } from '../RunningOrderTiming'
 
 export interface SegmentUi extends Segment {
 	/** Output layers available in the installation used by this segment */
@@ -283,13 +285,17 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		hasRemoteItems
 	}
 })(class extends React.Component<IPropsHeader, IStateHeader> {
-	debugDemoLiveLineInterval?: number
+	static contextTypes = {
+		durations: PropTypes.object.isRequired
+	}
+
+	debugDemoLiveLineInterval?: boolean
 	debugDemoLiveLineStart?: number
 	isLiveSegment: boolean
 	roCurrentSegmentId: string | null
 
-	constructor (props) {
-		super(props)
+	constructor (props, context) {
+		super(props, context)
 
 		let that = this
 		this.state = {
@@ -317,26 +323,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 			this.isLiveSegment = false
 			this.debugStopDemoLiveLine()
 		}
-		// TODO: This is just a debug/mock implementation. The segments should be cut short on Take Next,
-		// thus automatically making the OnAir line be, where it should be
-		if (this.roCurrentSegmentId && this.props.runningOrder.currentSegmentLineId !== this.roCurrentSegmentId) {
-			// DISABLE THIS ENTIRE SECTION TO REMOVE "JUMP TO NEXT LINE"
-			if (this.debugDemoLiveLineInterval && this.debugDemoLiveLineStart) {
-				let newCurrentSegmentLine = this.props.segmentLines.findIndex((item) => item._id === this.props.runningOrder.currentSegmentLineId)
-				if (newCurrentSegmentLine >= 0 && this.props.segmentLines[newCurrentSegmentLine].startsAt) {
-					const playoutLength = (getCurrentTime() - this.debugDemoLiveLineStart)
-					// console.log(playoutLength, this.props.segmentLines[newCurrentSegmentLine].startsAt)
-					if (this.props.segmentLines[newCurrentSegmentLine].startsAt! > playoutLength) {
-						// console.log(this.debugDemoLiveLineStart)
-						this.debugDemoLiveLineStart -= (this.props.segmentLines[newCurrentSegmentLine].startsAt! - playoutLength)
-						// console.log(this.debugDemoLiveLineStart)
-					}
-				}
-			}
-			this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
-		} else {
-			this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
-		}
+		this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
 	}
 
 	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
@@ -355,11 +342,23 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		})
 	}
 
+	debugLiveLineRefresh = () => {
+		if (this.debugDemoLiveLineInterval && this.debugDemoLiveLineStart) {
+			let speed = 1
+			let newLivePosition = (getCurrentTime() - this.debugDemoLiveLineStart)
+			this.setState(_.extend({
+				livePosition: newLivePosition,
+			}, this.state.followLiveLine ? {
+				scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
+			} : null))
+		}
+	}
+
 	debugStopDemoLiveLine = () => {
 		if (this.debugDemoLiveLineInterval) {
 			this.debugDemoLiveLineStart = undefined
 			this.debugDemoLiveLineInterval = undefined
-			Meteor.clearInterval(this.debugDemoLiveLineInterval!)
+			window.removeEventListener(RunningOrderTiming.Events.timeupdateHR, this.debugLiveLineRefresh)
 		}
 	}
 
@@ -369,17 +368,8 @@ export const SegmentTimelineContainer = withTracker((props) => {
 
 			if (currentSegmentLine) {
 				this.debugDemoLiveLineStart = getCurrentTime()
-				this.debugDemoLiveLineInterval = Meteor.setInterval(() => {
-					if (this.debugDemoLiveLineInterval && this.debugDemoLiveLineStart) {
-						let speed = 1
-						let newLivePosition = (getCurrentTime() - this.debugDemoLiveLineStart)
-						this.setState(_.extend({
-							livePosition: newLivePosition,
-						}, this.state.followLiveLine ? {
-							scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
-						} : null))
-					}
-				}, 1000 / 60)
+				this.debugDemoLiveLineInterval = true
+				window.addEventListener(RunningOrderTiming.Events.timeupdateHR, this.debugLiveLineRefresh)
 			}
 		}
 	}

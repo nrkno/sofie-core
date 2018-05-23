@@ -105,7 +105,6 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 
 		this.refreshDecimator++
 		if (this.refreshDecimator % 15 === 0) {
-			// console.log('Regular event')
 			this.dispatchEvent()
 		}
 	}
@@ -286,7 +285,7 @@ export const SegmentLineCountdown = withTiming()((props: ISegmentLineCountdownPr
 			props.timingDurations &&
 			props.timingDurations.segmentLineCountdown &&
 			props.timingDurations.segmentLineCountdown[props.segmentLineId] !== undefined &&
-				RundownUtils.formatTimeToTimecode(props.timingDurations.segmentLineCountdown[props.segmentLineId]).substr(3, 5)}
+				RundownUtils.formatTimeToShortTime(props.timingDurations.segmentLineCountdown[props.segmentLineId])}
 	</span>
 ))
 
