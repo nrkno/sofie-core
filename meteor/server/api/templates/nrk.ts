@@ -198,8 +198,8 @@ let nrk: TemplateSet = {
 								// Default timeline
 								literal<TimelineObjAtemME>({
 									_id: '', deviceId: [''], siId: '', roId: '',
-									trigger: { type: TriggerType.LOGICAL, value: '1' },
-									priority: -1, duration: 0,
+									trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+									priority: 0, duration: 0,
 									LLayer: LLayers.atem_me_program,
 									content: {
 										type: TimelineContentTypeAtem.ME,
@@ -215,7 +215,7 @@ let nrk: TemplateSet = {
 								literal<TimelineObjAtemME>({
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
-									priority: -1, duration: 0,
+									priority: 0, duration: 0,
 									LLayer: LLayers.atem_me_studiomonitor,
 									content: {
 										type: TimelineContentTypeAtem.ME,
@@ -223,7 +223,7 @@ let nrk: TemplateSet = {
 										//     inTransition?: TimelineTransition
 										// }
 										attributes: {
-											input: 16,
+											input: 1, // TMP! should be 16
 											transition: Atem_Enums.TransitionStyle.CUT
 										}
 									}
@@ -231,7 +231,7 @@ let nrk: TemplateSet = {
 								literal<TimelineObjAtemAUX>({
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
-									priority: -1, duration: 0,
+									priority: 0, duration: 0,
 									LLayer: LLayers.atem_aux_clean,
 									content: {
 										type: TimelineContentTypeAtem.AUX,
@@ -246,7 +246,7 @@ let nrk: TemplateSet = {
 								literal<TimelineObjAtemAUX>({
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
-									priority: -1, duration: 0,
+									priority: 0, duration: 0,
 									LLayer: LLayers.atem_aux_preview,
 									content: {
 										type: TimelineContentTypeAtem.AUX,
@@ -261,7 +261,7 @@ let nrk: TemplateSet = {
 								literal<TimelineObjAtemDSK>({
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
-									priority: -1, duration: 0,
+									priority: 0, duration: 0,
 									LLayer: LLayers.atem_dsk_graphics,
 									content: {
 										type: TimelineContentTypeAtem.DSK,
@@ -278,7 +278,7 @@ let nrk: TemplateSet = {
 								literal<TimelineObjAtemDSK>({
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
-									priority: -1, duration: 0,
+									priority: 0, duration: 0,
 									LLayer: LLayers.atem_dsk_effect,
 									content: {
 										type: TimelineContentTypeAtem.DSK,
@@ -295,7 +295,7 @@ let nrk: TemplateSet = {
 								literal<TimelineObjAtemSsrc>({
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
-									priority: -1, duration: 0,
+									priority: 0, duration: 0,
 									LLayer: LLayers.atem_dsk_effect,
 									content: {
 										type: TimelineContentTypeAtem.SSRC,
@@ -320,7 +320,7 @@ let nrk: TemplateSet = {
 								literal<TimelineObjLawoSource>({
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
-									priority: -1, duration: 0,
+									priority: 0, duration: 0,
 									LLayer: LLayers.lawo_source_automix,
 									content: {
 										type: TimelineContentTypeLawo.AUDIO_SOURCE,
@@ -332,7 +332,7 @@ let nrk: TemplateSet = {
 								literal<TimelineObjLawoSource>({
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
-									priority: -1, duration: 0,
+									priority: 0, duration: 0,
 									LLayer: LLayers.lawo_source_clip,
 									content: {
 										type: TimelineContentTypeLawo.AUDIO_SOURCE,
@@ -344,11 +344,11 @@ let nrk: TemplateSet = {
 								literal<TimelineObjLawoSource>({
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
-									priority: -1, duration: 0,
+									priority: 0, duration: 0,
 									LLayer: LLayers.lawo_source_effect,
 									content: {
 										type: TimelineContentTypeLawo.AUDIO_SOURCE,
-										attributes:{
+										attributes: {
 											db: -191
 										}
 									}
@@ -356,7 +356,7 @@ let nrk: TemplateSet = {
 								literal<TimelineObjLawoSource>({
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
-									priority: -1, duration: 0,
+									priority: 0, duration: 0,
 									LLayer: LLayers.lawo_source_preview,
 									content: {
 										type: TimelineContentTypeLawo.AUDIO_SOURCE,
@@ -368,7 +368,7 @@ let nrk: TemplateSet = {
 								literal<TimelineObjCCGTemplate>({
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
-									priority: -1, duration: 0,
+									priority: 0, duration: 0,
 									LLayer: LLayers.casparcg_cg_graphics,
 									content: {
 										type: TimelineContentTypeCasparCg.TEMPLATE,
@@ -384,7 +384,7 @@ let nrk: TemplateSet = {
 								literal<TimelineObjCCGTemplate>({
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
-									priority: -1, duration: 0,
+									priority: 0, duration: 0,
 									LLayer: LLayers.casparcg_cg_logo,
 									content: {
 										type: TimelineContentTypeCasparCg.TEMPLATE,
@@ -400,7 +400,7 @@ let nrk: TemplateSet = {
 								literal<TimelineObjCCGTemplate>({
 									_id: '', deviceId: [''], siId: '', roId: '',
 									trigger: { type: TriggerType.LOGICAL, value: '1' },
-									priority: -1, duration: 0,
+									priority: 0, duration: 0,
 									LLayer: LLayers.casparcg_cg_studiomonitor,
 									content: {
 										type: TimelineContentTypeCasparCg.TEMPLATE,
@@ -438,7 +438,7 @@ let nrk: TemplateSet = {
 					// 				_id: 'AMB', deviceId: [''],
 					// 				siId: '',roId: '',
 					// 				trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-					// 				priority: 0,
+					// 				priority: 1,
 					// 				duration: 100000,
 					// 				LLLayers.ayer: 'casparcg_player_vignett,
 					// 				content: {
@@ -501,7 +501,7 @@ let nrk: TemplateSet = {
 						literal<TimelineObjLawoSource>({
 							_id: IDs.lawo, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-							priority: 0,
+							priority: 1,
 							duration: 0,
 							LLayer: LLayers.lawo_source_effect,
 							content: {
@@ -516,13 +516,28 @@ let nrk: TemplateSet = {
 						literal<TimelineObjCCGVideo>({
 							_id: IDs.vignett, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo}.start + 0` },
-							priority: 0,
+							priority: 1,
 							duration: sourceDuration,
 							LLayer: LLayers.casparcg_player_vignett,
 							content: {
 								type: TimelineContentTypeCasparCg.VIDEO,
 								attributes: {
 									file: clip
+								}
+							}
+						}),
+						// TMP
+						literal<TimelineObjAtemME>({
+							_id: '', deviceId: [''], siId: '', roId: '',
+							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+							priority: 1,
+							duration: 0,
+							LLayer: LLayers.atem_me_program,
+							content: {
+								type: TimelineContentTypeAtem.ME,
+								attributes: {
+									input: 3,
+									transition: Atem_Enums.TransitionStyle.CUT
 								}
 							}
 						})
@@ -617,7 +632,7 @@ let nrk: TemplateSet = {
 						literal<TimelineObjLawoSource>({
 							_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-							priority: 0,
+							priority: 1,
 							duration: 0,
 							LLayer: LLayers.lawo_source_automix,
 							content: {
@@ -640,7 +655,7 @@ let nrk: TemplateSet = {
 						literal<TimelineObjLawoSource>({
 							_id: IDs.lawo_effect, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-							priority: 0,
+							priority: 1,
 							duration: 0,
 							LLayer: LLayers.lawo_source_clip,
 							content: {
@@ -663,7 +678,7 @@ let nrk: TemplateSet = {
 						literal<TimelineObjAtemME>({
 							_id: IDs.atemSrv1, deviceId: [''], siId: '', roId: '',
 							trigger: {type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0`},
-							priority: 0,
+							priority: 1,
 							duration: 0,
 							LLayer: LLayers.atem_me_program,
 							content: {
@@ -680,7 +695,7 @@ let nrk: TemplateSet = {
 						literal<TimelineObjCCGVideo>({
 							_id: IDs.wipeVideo, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
-							priority: 0,
+							priority: 1,
 							duration: 500,
 							LLayer: LLayers.casparcg_player_wipe,
 							content: {
@@ -696,7 +711,7 @@ let nrk: TemplateSet = {
 						literal<TimelineObjCCGVideo>({
 							_id: IDs.wipeAudioSkille, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
-							priority: 0,
+							priority: 1,
 							duration: 500,
 							LLayer: LLayers.casparcg_player_soundeffect,
 							content: {
@@ -709,7 +724,7 @@ let nrk: TemplateSet = {
 						literal<TimelineObjCCGVideo>({
 							_id: IDs.wipeAudioPunktum, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
-							priority: 0,
+							priority: 1,
 							duration: 500,
 							LLayer: LLayers.casparcg_player_soundeffect,
 							content: {
@@ -724,7 +739,7 @@ let nrk: TemplateSet = {
 						literal<TimelineObjCCGVideo>({
 							_id: IDs.playerClip, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
-							priority: 0,
+							priority: 1,
 							duration: (
 								context.getValueByPath(storyItemClip, 'Content.objDur', 0) /
 								(context.getValueByPath(storyItemClip, 'Content.objTB') || 1)
@@ -787,7 +802,7 @@ let nrk: TemplateSet = {
 								type: TriggerType.TIME_RELATIVE,
 								value: `#${IDs.headVideo}.start + 5`
 							},
-							priority: 0,
+							priority: 1,
 							duration: 8 * 1000, // @todo TBD
 							LLayer: LLayers.casparcg_cg_graphics,
 							content: {
@@ -855,7 +870,7 @@ let nrk: TemplateSet = {
 										type: TriggerType.TIME_ABSOLUTE,
 										value: 0
 									},
-									priority: 0,
+									priority: 1,
 									duration: 0, // @todo TBD
 									LLayer: LLayers.casparcg_cg_graphics,
 									content: {
