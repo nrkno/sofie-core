@@ -284,7 +284,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 	}
 })(class extends React.Component<IPropsHeader, IStateHeader> {
 	debugDemoLiveLineInterval?: number
-	debugDemoLiveLineStart: number
+	debugDemoLiveLineStart?: number
 	isLiveSegment: boolean
 	roCurrentSegmentId: string | null
 
@@ -321,7 +321,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		// thus automatically making the OnAir line be, where it should be
 		if (this.roCurrentSegmentId && this.props.runningOrder.currentSegmentLineId !== this.roCurrentSegmentId) {
 			// DISABLE THIS ENTIRE SECTION TO REMOVE "JUMP TO NEXT LINE"
-			if (this.debugDemoLiveLineInterval) {
+			if (this.debugDemoLiveLineInterval && this.debugDemoLiveLineStart) {
 				let newCurrentSegmentLine = this.props.segmentLines.findIndex((item) => item._id === this.props.runningOrder.currentSegmentLineId)
 				if (newCurrentSegmentLine >= 0 && this.props.segmentLines[newCurrentSegmentLine].startsAt) {
 					const playoutLength = (getCurrentTime() - this.debugDemoLiveLineStart)
@@ -357,7 +357,9 @@ export const SegmentTimelineContainer = withTracker((props) => {
 
 	debugStopDemoLiveLine = () => {
 		if (this.debugDemoLiveLineInterval) {
-			clearInterval(this.debugDemoLiveLineInterval)
+			this.debugDemoLiveLineStart = undefined
+			this.debugDemoLiveLineInterval = undefined
+			Meteor.clearInterval(this.debugDemoLiveLineInterval!)
 		}
 	}
 
@@ -368,13 +370,15 @@ export const SegmentTimelineContainer = withTracker((props) => {
 			if (currentSegmentLine) {
 				this.debugDemoLiveLineStart = getCurrentTime()
 				this.debugDemoLiveLineInterval = Meteor.setInterval(() => {
-					let speed = 1
-					let newLivePosition = (getCurrentTime() - this.debugDemoLiveLineStart)
-					this.setState(_.extend({
-						livePosition: newLivePosition,
-					}, this.state.followLiveLine ? {
-						scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
-					} : null))
+					if (this.debugDemoLiveLineInterval && this.debugDemoLiveLineStart) {
+						let speed = 1
+						let newLivePosition = (getCurrentTime() - this.debugDemoLiveLineStart)
+						this.setState(_.extend({
+							livePosition: newLivePosition,
+						}, this.state.followLiveLine ? {
+							scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
+						} : null))
+					}
 				}, 1000 / 60)
 			}
 		}
