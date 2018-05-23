@@ -43,6 +43,7 @@ interface ISourceLayerProps {
 	livePosition: number | null
 	scrollLeft: number
 	scrollWidth: number
+	liveLinePadding: number
 	onContextMenu?: (contextMenuContext: any) => void
 }
 class SourceLayer extends React.Component<ISourceLayerProps> {
@@ -89,6 +90,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 							timeScale={this.props.timeScale}
 							relative={this.props.relative}
 							lineStartsAt={this.props.segmentLine.startsAt}
+							liveLinePadding={this.props.liveLinePadding}
 							/>
 					)
 				})
@@ -125,6 +127,7 @@ interface IOutputGroupProps {
 	livePosition: number | null
 	scrollLeft: number
 	scrollWidth: number
+	liveLinePadding: number
 	onContextMenu?: (contextMenuContext: any) => void
 }
 class OutputGroup extends React.Component<IOutputGroupProps> {
@@ -140,7 +143,8 @@ class OutputGroup extends React.Component<IOutputGroupProps> {
 					segmentLine={this.props.segmentLine}
 					startsAt={this.props.startsAt}
 					duration={this.props.duration}
-					timeScale={this.props.timeScale} />
+					timeScale={this.props.timeScale}
+					liveLinePadding={this.props.liveLinePadding} />
 			})
 		}
 	}
@@ -299,7 +303,8 @@ export const SegmentTimelineLine = translate()(withTiming({
 							duration={(this.props.timingDurations.segmentLineDurations && this.props.timingDurations.segmentLineDurations[segmentLine._id]) || this.props.segmentLine.renderedDuration || 0}
 							isLiveLine={this.props.runningOrder.currentSegmentLineId === segmentLine._id ? true : false}
 							isNextLine={this.props.runningOrder.nextSegmentLineId === segmentLine._id ? true : false}
-							timeScale={this.props.timeScale} />
+							timeScale={this.props.timeScale}
+							liveLinePadding={this.getLiveLineTimePadding(this.props.timeScale)} />
 					)
 				}
 			})
