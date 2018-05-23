@@ -236,6 +236,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 				<div className='running-order-view'>
 					<RunningOrderHeader debugOnAirLine={this.debugOnAirLine} runningOrder={this.props.runningOrder} />
 					<SegmentContextMenu contextMenuContext={this.state.contextMenuContext}
+						runningOrder={this.props.runningOrder}
 						onSetNext={this.onSetNext} />
 					{this.renderSegmentsList()}
 				</div>

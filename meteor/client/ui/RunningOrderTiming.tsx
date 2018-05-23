@@ -118,13 +118,13 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 		// change refresh interval if needed
 		if (this.refreshTimerInterval !== nextProps.refreshInterval && _.isNumber(nextProps.refreshInterval) && this.refreshTimer) {
 			this.refreshTimerInterval = nextProps.refreshInterval
-			clearInterval(this.refreshTimer)
+			Meteor.clearInterval(this.refreshTimer)
 			this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 		}
 	}
 
 	componentWillUnmount () {
-		clearInterval(this.refreshTimer)
+		Meteor.clearInterval(this.refreshTimer)
 	}
 
 	dispatchHREvent () {
