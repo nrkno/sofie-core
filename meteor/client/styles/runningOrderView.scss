@@ -599,6 +599,16 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 				}
 			}
 
+			.segment-timeline__segment-line__future-shade {
+				display: block;
+				position: absolute;
+				top: 0;
+				bottom: 0;
+				right: 0;
+				background: linear-gradient(to left, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 50%);
+				z-index: 3;
+			}
+
 			&.next {
 				.segment-timeline__segment-line__nextline {
 					border-left-color: $general-next-color;

@@ -311,6 +311,17 @@ export const SegmentTimelineLine = translate()(withTiming({
 		}
 	}
 
+	getFutureShadeStyle = () => {
+		return {
+			'width': (Math.min(
+						Math.max(
+							0,
+							(this.props.livePosition || 0) + this.getLiveLineTimePadding(this.props.timeScale) - (this.props.segmentLine.expectedDuration || this.props.segmentLine.renderedDuration || 0)),
+						this.getLiveLineTimePadding(this.props.timeScale)
+					) * this.props.timeScale) + 'px'
+		}
+	}
+
 	render () {
 		const { t } = this.props
 
@@ -328,6 +339,10 @@ export const SegmentTimelineLine = translate()(withTiming({
 						</div>
 					</div>
 					{this.renderTimelineOutputGroups(this.props.segmentLine)}
+					{this.state.isLive && !this.props.relative &&
+						<div className='segment-timeline__segment-line__future-shade' style={this.getFutureShadeStyle()}>
+						</div>
+					}
 				</div>
 			)
 		} else { // render placeholder
