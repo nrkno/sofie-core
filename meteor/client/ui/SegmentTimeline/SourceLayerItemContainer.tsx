@@ -55,7 +55,7 @@ export const SourceLayerItemContainer = withTracker((props) => {
 					segmentCopy.renderedInPoint = 0
 				}
 			}
-			segmentCopy.renderedDuration = timelineObj.duration
+			segmentCopy.renderedDuration = Math.min(timelineObj.duration, props.segmentLineDuration - segmentCopy.renderedInPoint!)
 
 			return {
 				segmentLineItem: segmentCopy

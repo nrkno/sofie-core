@@ -273,7 +273,7 @@ export const SegmentTimelineLine = translate()(withTiming({
 	}
 
 	isInsideViewport () {
-		if (this.props.relative) {
+		if (this.props.relative || this.state.isLive) {
 			return true
 		} else {
 			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine, (this.props.timingDurations.segmentLineStartsAt && this.props.timingDurations.segmentLineStartsAt[this.props.segmentLine._id]))
