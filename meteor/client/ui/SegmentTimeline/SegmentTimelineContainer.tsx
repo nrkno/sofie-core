@@ -143,7 +143,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		if (props.runningOrder.currentSegmentLineId === segmentLine._id) {
 			isLiveSegment = true
 		}
-		if (!isLiveSegment && props.runningOrder.nextSegmentLineId === segmentLine._id) {
+		if (props.runningOrder.nextSegmentLineId === segmentLine._id) {
 			isNextSegment = true
 		}
 

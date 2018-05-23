@@ -314,7 +314,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 				'collapsed': this.props.isCollapsed,
 
 				'live': this.props.isLiveSegment,
-				'next': this.props.isNextSegment,
+				'next': !this.props.isLiveSegment && this.props.isNextSegment,
 
 				'has-played': this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment,
 				'has-remote-items': this.props.hasRemoteItems && !this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment
