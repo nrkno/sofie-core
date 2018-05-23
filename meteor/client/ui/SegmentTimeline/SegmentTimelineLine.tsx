@@ -210,7 +210,9 @@ export const SegmentTimelineLine = translate()(withTiming({
 					(startedPlayback && props.timingDurations.segmentLineDurations &&
 						(this.getCurrentLiveLinePosition() + this.getLiveLineTimePadding(props.timeScale))
 					) || 0),
-					props.timingDurations.segmentLineDurations[props.segmentLine._id]
+					props.timingDurations.segmentLineDurations ?
+						props.timingDurations.segmentLineDurations[props.segmentLine._id] :
+						0
 				)
 				: 0
 		}
