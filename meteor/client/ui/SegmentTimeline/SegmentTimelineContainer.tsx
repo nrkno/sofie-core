@@ -77,6 +77,7 @@ interface IPropsHeader {
 	timeScale: number,
 	isLiveSegment: boolean,
 	isNextSegment: boolean,
+	currentLiveSegmentLine: SegmentLineUi | undefined,
 	hasRemoteItems: boolean,
 	hasAlreadyPlayed: boolean,
 	liveLineHistorySize: number
@@ -100,6 +101,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 
 	let isLiveSegment = false
 	let isNextSegment = false
+	let currentLiveSegmentLine: SegmentLineUi | undefined = undefined
 	let hasAlreadyPlayed = false
 	let hasRemoteItems = false
 
@@ -144,6 +146,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 
 		if (props.runningOrder.currentSegmentLineId === segmentLine._id) {
 			isLiveSegment = true
+			currentLiveSegmentLine = segmentLine
 		}
 		if (props.runningOrder.nextSegmentLineId === segmentLine._id) {
 			isNextSegment = true
@@ -280,6 +283,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		segment,
 		segmentLines,
 		isLiveSegment,
+		currentLiveSegmentLine,
 		isNextSegment,
 		hasAlreadyPlayed,
 		hasRemoteItems
@@ -289,8 +293,6 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		durations: PropTypes.object.isRequired
 	}
 
-	debugDemoLiveLineInterval?: boolean
-	debugDemoLiveLineStart?: number
 	isLiveSegment: boolean
 	roCurrentSegmentId: string | null
 
@@ -314,16 +316,16 @@ export const SegmentTimelineContainer = withTracker((props) => {
 	}
 
 	componentDidUpdate () {
+		this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
 		if (this.isLiveSegment === false && this.props.isLiveSegment === true) {
 			this.isLiveSegment = true
 			this.onFollowLiveLine(true, {})
-			this.debugDemoLiveLine()
+			this.startOnAirLine()
 		}
 		if (this.isLiveSegment === true && this.props.isLiveSegment === false) {
 			this.isLiveSegment = false
-			this.debugStopDemoLiveLine()
+			this.stopOnAirLine()
 		}
-		this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
 	}
 
 	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
@@ -342,10 +344,17 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		})
 	}
 
-	debugLiveLineRefresh = () => {
-		if (this.debugDemoLiveLineInterval && this.debugDemoLiveLineStart) {
+	onAirLineRefresh = () => {
+		if (this.props.isLiveSegment && this.props.currentLiveSegmentLine) {
 			let speed = 1
-			let newLivePosition = (getCurrentTime() - this.debugDemoLiveLineStart)
+			const segmentLineOffset = this.context.durations &&
+									  this.context.durations.segmentLineStartsAt &&
+									  (this.context.durations.segmentLineStartsAt[this.props.currentLiveSegmentLine._id] - this.context.durations.segmentLineStartsAt[this.props.segmentLines[0]._id])
+									  || 0
+			let newLivePosition = this.props.currentLiveSegmentLine.startedPlayback ?
+				(getCurrentTime() - this.props.currentLiveSegmentLine.startedPlayback + segmentLineOffset) :
+				segmentLineOffset
+
 			this.setState(_.extend({
 				livePosition: newLivePosition,
 			}, this.state.followLiveLine ? {
@@ -354,24 +363,12 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		}
 	}
 
-	debugStopDemoLiveLine = () => {
-		if (this.debugDemoLiveLineInterval) {
-			this.debugDemoLiveLineStart = undefined
-			this.debugDemoLiveLineInterval = undefined
-			window.removeEventListener(RunningOrderTiming.Events.timeupdateHR, this.debugLiveLineRefresh)
-		}
+	startOnAirLine = () => {
+		window.addEventListener(RunningOrderTiming.Events.timeupdateHR, this.onAirLineRefresh)
 	}
 
-	debugDemoLiveLine = () => {
-		if (!this.debugDemoLiveLineInterval && this.props.runningOrder.currentSegmentLineId) {
-			let currentSegmentLine = SegmentLines.findOne(this.props.runningOrder.currentSegmentLineId)
-
-			if (currentSegmentLine) {
-				this.debugDemoLiveLineStart = getCurrentTime()
-				this.debugDemoLiveLineInterval = true
-				window.addEventListener(RunningOrderTiming.Events.timeupdateHR, this.debugLiveLineRefresh)
-			}
-		}
+	stopOnAirLine = () => {
+		window.removeEventListener(RunningOrderTiming.Events.timeupdateHR, this.onAirLineRefresh)
 	}
 
 	onFollowLiveLine = (state: boolean, event: any) => {
