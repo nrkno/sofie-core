@@ -10,7 +10,7 @@ pipeline {
     }
     stage('Deploy') {
       steps {
-          meteorDeploy('tv-automation-server-core')
+          coreDeploy()
       }
     }
   }
