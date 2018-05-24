@@ -100,12 +100,6 @@ Meteor.methods({
 			nextSegmentLineId: nextSegmentLine._id
 		}})
 
-		// ------ TODO: JUST A STOPGAP UNTIL TSR REPORTS PROPER startedPlayback
-		SegmentLines.update(takeSegmentLine._id, {$set: {
-			startedPlayback: getCurrentTime()
-		}})
-		// ------
-
 		clearNextLineStartedPlaybackAndDuration(roId, nextSegmentLine._id)
 
 		updateTimeline(runningOrder.studioInstallationId)
