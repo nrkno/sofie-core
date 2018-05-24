@@ -3,6 +3,7 @@ import * as ntpClient from 'ntp-client'
 import { GridAutoColumnsProperty } from 'csstype'
 import { getCurrentTime, systemTime } from '../lib/lib'
 import { StatusCode, setSystemStatus } from './systemStatus'
+import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 
 interface ServerTime {
 	diff: number
@@ -118,27 +119,27 @@ export function determineDiffTime (config: Config): Promise<{mean: number, stdDe
 		return stat
 	})
 }
-Meteor.methods({
-	'systemTime.determineDiffTime': () => {
-		return determineDiffTime({
-			maxSampleCount: 20,
-			minSampleCount: 10,
-			maxAllowedDelay: 500
-		})
-	},
-	'systemTime.getTimeDiff': () => {
-		return {
-			currentTime: getCurrentTime(),
-			systemRawTime: Date.now(),
-			diff: systemTime.diff,
-			stdDev: systemTime.stdDev,
-			good: (systemTime.stdDev < 1000 / 50)
-		}
-	},
-	'systemTime.getTime': () => {
-		return getCurrentTime()
+let methods = {}
+methods[PeripheralDeviceAPI.methods.determineDiffTime] = () => {
+	return determineDiffTime({
+		maxSampleCount: 20,
+		minSampleCount: 10,
+		maxAllowedDelay: 500
+	})
+}
+methods[PeripheralDeviceAPI.methods.getTimeDiff] = () => {
+	return {
+		currentTime: getCurrentTime(),
+		systemRawTime: Date.now(),
+		diff: systemTime.diff,
+		stdDev: systemTime.stdDev,
+		good: (systemTime.stdDev < 1000 / 50)
 	}
-})
+}
+methods[PeripheralDeviceAPI.methods.getTime] = () => {
+	return getCurrentTime()
+}
+Meteor.methods(methods)
 
 let updateServerTime = () => {
 	console.log('Updating systemTime...')
