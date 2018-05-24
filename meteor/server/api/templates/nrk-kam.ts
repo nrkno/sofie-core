@@ -74,8 +74,6 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
         context.warning('mosartVariant for KAM should be the camera to cut to')
     }
 
-    context.warning("Got camera " + cameraInput + " from " + mosartVariant)
-
     let IDs = {
         lawo_automix: 		context.getHashId('lawo_automix'),
         lawo_effect: 		context.getHashId('lawo_effect'),
@@ -98,11 +96,11 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
         value: 0
     }
 
+    // @todo try and move this to be run at the end of other templates, as it really is just an out animation for them
 
-
-    // @todo check for prefix to kam number (eg ÅPNING3), which defines additional behaviour
-
-    if (mosartVariant.indexOf('ÅPNING') === 0) {
+    // if previous SegmentLine is head, then wipe out of it
+    let segmentLines = context.getSegmentLines()
+    if ((context.segmentLine._rank > 1 && segmentLines[context.segmentLine._rank - 1].slug.indexOf(';head') > 0)) { // @todo make check better
         components.push(literal<TimelineObjCCGVideo>({
             _id: IDs.wipeVideo, deviceId: [''], siId: '', roId: '',
             trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
