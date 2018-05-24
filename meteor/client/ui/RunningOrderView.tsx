@@ -17,12 +17,13 @@ import { NavLink } from 'react-router-dom'
 
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
-import { SegmentTimelineContainer, SegmentLineItemUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
-import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 
 import { RunningOrderTimingProvider, withTiming, RunningOrderTiming } from './RunningOrderTiming'
+import { SegmentTimelineContainer, SegmentLineItemUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
+import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
+import { InspectorDrawer } from './InspectorDrawer/InspectorDrawer'
 
 import { getCurrentTime } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
@@ -132,6 +133,7 @@ export const RunningOrderView = translate()(withTracker((props, state) => {
 	let subSegmentLineItems = Meteor.subscribe('segmentLineItems', {})
 	let subStudioInstallations = Meteor.subscribe('studioInstallations', {})
 	let subShowStyles = Meteor.subscribe('showStyles', {})
+	let subSegmentLineAdLibItems = Meteor.subscribe('segmentLineAdLibItems', {})
 
 	let runningOrderId = decodeURIComponent(props.match.params.runningOrderId)
 
@@ -239,6 +241,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 						runningOrder={this.props.runningOrder}
 						onSetNext={this.onSetNext} />
 					{this.renderSegmentsList()}
+					<InspectorDrawer {...this.props}></InspectorDrawer>
 				</div>
 			</RunningOrderTimingProvider>
 		)

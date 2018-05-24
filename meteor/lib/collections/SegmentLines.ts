@@ -7,6 +7,7 @@ import {
 import { TransformedCollection, FindOptions, Selector } from './typings'
 import { RunningOrders } from './RunningOrders'
 import { SegmentLineItem, SegmentLineItems } from './SegmentLineItems'
+import { SegmentLineAdLibItem, SegmentLineAdLibItems } from './SegmentLineAdLibItems'
 import { Segment, Segments } from './Segments'
 import { applyClassToDocument } from '../lib'
 
@@ -73,6 +74,19 @@ export class SegmentLine implements DBSegmentLine {
 			}, selector),
 			_.extend({
 				sort: {_rank: 1}
+			}, options)
+		).fetch()
+	}
+	getSegmentLinesAdLibItems (selector?: Selector<SegmentLineItem>, options?: FindOptions) {
+		selector = selector || {}
+		options = options || {}
+		return SegmentLineAdLibItems.find(
+			_.extend({
+				runningOrderId: this.runningOrderId,
+				segmentLineId: this._id
+			}, selector),
+			_.extend({
+				sort: { _rank: 1 }
 			}, options)
 		).fetch()
 	}

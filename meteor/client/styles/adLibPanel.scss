@@ -1,0 +1,70 @@
+@import "colorScheme";
+
+.adlib-panel {
+	display: grid;
+	grid-column-gap: 0;
+	grid-row-gap: 0;
+	grid-template-columns: [template-list] 20% [list-view] auto [end];
+	grid-template-rows: [tool-bar] 30px [list-view] auto [end];
+	overflow: hidden;
+	user-select: none;
+
+	.adlib-panel__segments {
+		grid-column: template-list / list-view;
+		grid-row: tool-bar / end;
+		overflow: auto;
+
+		.adlib-panel__segments__segment {
+			position: relative;
+			line-height: 1.5em;
+			padding: 0 1em;
+			margin: 0.5em 2em 0.5em 0;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			cursor: pointer;
+
+			&::after {
+				display: none;
+				content: ' ';
+				background: inherit;
+				width:0.7em;
+				top: 0;
+				right: -0.7em;
+				bottom: 0;
+				clip-path: polygon(0 0, 100% 50%, 0 100%);
+				position: absolute;
+			}
+
+			&.live {
+				background: $general-live-color;
+				font-weight: 500;
+				color: #000;
+
+				&::after {
+					display: block;
+				}
+			}
+
+			&.next {
+				background: $general-next-color;
+				color: #fff;
+				font-weight: 500;
+				text-shadow: 0 0 5px #000;
+
+				&::after {
+					display: block;
+				}
+			}
+		}
+	}
+
+	.adlib-panel__list-view__toolbar {
+		grid-column: list-view / end;
+		grid-row: tool-bar / list-view;
+	}
+
+	.adlib-panel__list-view__list {
+		grid-column: list-view / end;
+		grid-row: list-view / end;
+	}
+}

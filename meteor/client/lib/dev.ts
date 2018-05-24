@@ -12,6 +12,7 @@ import { RuntimeFunctions } from '../../lib/collections/RuntimeFunctions'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { getCurrentTime } from '../../lib/lib'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
+import { SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
 
 // Note: These things are convenience functions to be used during development
 
@@ -28,5 +29,6 @@ window['StudioInstallations'] = StudioInstallations
 window['RuntimeFunctions'] = RuntimeFunctions
 window['Timeline'] = Timeline
 window['MediaObjects'] = MediaObjects
+window['SegmentLineAdLibItems'] = SegmentLineAdLibItems
 
 window['getCurrentTime'] = getCurrentTime
