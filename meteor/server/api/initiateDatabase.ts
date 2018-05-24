@@ -173,6 +173,12 @@ Meteor.methods({
 				channel: 4,
 				layer: 120
 			}),
+			'casparcg_cg_countdown': literal<MappingCasparCG>({
+				device: PlayoutDeviceType.CASPARCG,
+				deviceId: 'casparcg0',
+				channel: 6,
+				layer: 120
+			}),
 			'casparcg_cg_logo': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
