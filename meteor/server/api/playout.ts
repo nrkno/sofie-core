@@ -123,7 +123,6 @@ Meteor.methods({
 	'playout_segmentLinePlaybackStart': (roId: string, slId: string, startedPlayback: Time) => {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
-
 		let segLine = SegmentLines.findOne({
 			_id: slId,
 			runningOrderId: roId
@@ -205,7 +204,7 @@ Meteor.methods({
 
 					clearNextLineStartedPlaybackAndDuration(roId, nextSegmentLine._id)
 
-					logger.crit(`Segment Line "${segLine._id}" has started playback by the TSR, but has not been selected for playback!`)
+					logger.error(`Segment Line "${segLine._id}" has started playback by the TSR, but has not been selected for playback!`)
 				}
 
 				SegmentLines.update(segLine._id, {$set: {

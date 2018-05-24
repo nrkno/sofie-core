@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection, Selector } from './collections/typings'
+import { PeripheralDeviceAPI } from './api/peripheralDevice'
 
 /**
  * Convenience method to convert a Meteor.call() into a Promise
@@ -38,7 +39,7 @@ if (Meteor.isServer) {
 	// fetch time from server:
 	let updateDiffTime = () => {
 		let sentTime = Date.now()
-		Meteor.call('systemTime.getTimeDiff', (err, stat) => {
+		Meteor.call(PeripheralDeviceAPI.methods.getTimeDiff, (err, stat) => {
 			let replyTime = Date.now()
 			if (err) {
 				console.log(err)

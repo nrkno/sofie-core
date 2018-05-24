@@ -52,6 +52,10 @@ export enum methods {
 	'unInitialize' 		= 'peripheralDevice.unInitialize',
 	'getPeripheralDevice'= 'peripheralDevice.getPeripheralDevice',
 
+	'determineDiffTime'		= 'systemTime.determineDiffTime',
+	'getTimeDiff'			= 'systemTime.getTimeDiff',
+	'getTime'				= 'systemTime.getTime',
+
 	'timelineTriggerTime'			= 'peripheralDevice.timeline.setTimelineTriggerTime',
 	'segmentLinePlaybackStarted' 	= 'peripheralDevice.runningOrder.segmentLinePlaybackStarted',
 
