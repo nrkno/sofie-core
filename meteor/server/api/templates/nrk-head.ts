@@ -80,9 +80,8 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
     })
     // @todo both these numbers assume a certain show flow. is this ok?
     let isFirstHeadAfterVignett = (context.segmentLine._rank === 1)
-    let isLastHead = (context.segmentLine._rank === segmentLines.length - 2)
 
-    context.warning("head: " + context.segmentLine._rank + "/" + segmentLines.length + "isFirstHeadAfterVignett: " + isFirstHeadAfterVignett + " isLastHead: " + isLastHead)
+    context.warning("head: " + context.segmentLine._rank + "/" + segmentLines.length + "isFirstHeadAfterVignett: " + isFirstHeadAfterVignett)
 
     let storyItemClip = _.find(story.Body, (item) => {
         return (
@@ -189,7 +188,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                     content: {
                         type: TimelineContentTypeAtem.ME,
                         attributes: {
-                            input: 2, // @todo: 14
+                            input: 14,
                             transition: Atem_Enums.TransitionStyle.CUT
                         }
                     }
@@ -202,7 +201,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                     _id: IDs.wipeVideo, deviceId: [''], siId: '', roId: '',
                     trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
                     priority: 1,
-                    duration: 600,
+                    duration: 800,
                     LLayer: LLayers.casparcg_player_wipe,
                     content: {
                         type: TimelineContentTypeCasparCg.VIDEO,
@@ -213,12 +212,12 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                 }) : null,
 
                 // wipe audio (skille between and punktum for the last)
-                (!isLastHead) ?
+                (!isFirstHeadAfterVignett) ?
                 literal<TimelineObjCCGVideo>({
                     _id: IDs.wipeAudioSkille, deviceId: [''], siId: '', roId: '',
                     trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
                     priority: 1,
-                    duration: 500,
+                    duration: 800,
                     LLayer: LLayers.casparcg_player_soundeffect,
                     content: {
                         type: TimelineContentTypeCasparCg.VIDEO,
@@ -226,25 +225,12 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                             file: 'wipe_audio_skillelyd'
                         }
                     }
-                }) : 
-                literal<TimelineObjCCGVideo>({
-                    _id: IDs.wipeAudioPunktum, deviceId: [''], siId: '', roId: '',
-                    trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
-                    priority: 1,
-                    duration: 500,
-                    LLayer: LLayers.casparcg_player_soundeffect,
-                    content: {
-                        type: TimelineContentTypeCasparCg.VIDEO,
-                        attributes: {
-                            file: 'wipe_audio_punktum'
-                        }
-                    }
-                }),
+                }) : null,
 
                 // play HEAD
                 literal<TimelineObjCCGVideo>({
                     _id: IDs.playerClip, deviceId: [''], siId: '', roId: '',
-                    trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + ${isFirstHeadAfterVignett ? 0 : 0.3}` }, // @todo check trigger point
+                    trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + ${isFirstHeadAfterVignett ? 0 : 400}` }, // @todo check trigger point
                     priority: 1,
                     duration: (
                         context.getValueByPath(storyItemClip, 'Content.objDur', 0) /

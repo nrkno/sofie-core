@@ -134,7 +134,7 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
                 // TMP
                 literal<TimelineObjAtemME>({
                     _id: '', deviceId: [''], siId: '', roId: '',
-                    trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+                    trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.vignett}.start + 100` },
                     priority: 1,
                     duration: 0,
                     LLayer: LLayers.atem_me_program,
