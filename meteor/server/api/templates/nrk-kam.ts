@@ -137,7 +137,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
         camTrigger = { type: TriggerType.TIME_RELATIVE, value: `#${IDs.wipeVideo}.start + 1500` } // @todo better trigger point
     }
 
-    components.push(literal<TimelineObjAtemME>({ // to be changed to NRKPOST-something
+    components.push(literal<TimelineObjAtemME>({
         _id: IDs.atemSrv1, deviceId: [''], siId: '', roId: '',
         trigger: camTrigger,
         priority: 1,
@@ -174,12 +174,12 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
                     value: 0
                 },
                 status: RundownAPI.LineItemStatusCode.UNKNOWN,
-                sourceLayerId: 'studio0_vignett',
+                sourceLayerId: 'studio0_camera0',
                 outputLayerId: 'pgm0',
                 expectedDuration: ( // @todo rewrite this
                     story.getValueByPath('MosExternalMetaData.0.MosPayload.ElapsedTime') ||
                     5
-                ),
+                ) * 1000,
                 content: {
                     timelineObjects: _.compact(components)
                 }

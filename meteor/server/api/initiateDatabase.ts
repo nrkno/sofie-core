@@ -128,13 +128,13 @@ Meteor.methods({
 				// 	type: RundownAPI.SourceLayerType.MIC,
 				// 	onPGMClean: true,
 				// },
-				// {
-				// 	_id: 'studio0_camera0',
-				// 	_rank: 100,
-				// 	name: 'Kam',
-				// 	type: RundownAPI.SourceLayerType.CAMERA,
-				// 	onPGMClean: true,
-				// },
+				{
+					_id: 'studio0_camera0',
+					_rank: 100,
+					name: 'Kam',
+					type: RundownAPI.SourceLayerType.CAMERA,
+					onPGMClean: true,
+				},
 			],
 		}})
 		// Create Timeline mappings:
