@@ -75,13 +75,26 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
         playerClip: 		context.getHashId('playerClip')
     }
     
-    let segmentLines = context.getSegmentLines().filter((sl :SegmentLine) => {
-        return sl.segmentId == context.segmentLine.segmentId
-    })
-    // @todo both these numbers assume a certain show flow. is this ok?
-    let isFirstHeadAfterVignett = (context.segmentLine._rank === 1)
+    let segmentLines = context.getSegmentLines()
+    let segmentTitleMin = -1
+    let segmentTitleMax = -1
+    for (let sl of segmentLines){
+        if (sl.segmentId != context.segmentLine.segmentId) {
+            if (segmentTitleMin != -1) {
+                break
+            }
 
-    context.warning("head: " + context.segmentLine._rank + "/" + segmentLines.length + "isFirstHeadAfterVignett: " + isFirstHeadAfterVignett)
+            continue
+        }
+        if (segmentTitleMin === -1) {
+            segmentTitleMin = sl._rank
+        }
+        segmentTitleMax = sl._rank
+    }
+
+    // @todo this number assumes a certain flow. _rank starts at 1
+    let isFirstHeadAfterVignett = (context.segmentLine._rank === segmentTitleMin + 1)
+    let isLastHead = (context.segmentLine._rank === segmentTitleMax - 1)
 
     let storyItemClip = _.find(story.Body, (item) => {
         return (
@@ -156,6 +169,8 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                 }),
 
                 // audio STK/HEADS -15dB
+                // @todo what is the default state of this? could it cause a burst of noise at the start?
+                // @todo task says -inf is desired
                 literal<TimelineObjLawoSource>({
                     _id: IDs.lawo_effect, deviceId: [''], siId: '', roId: '',
                     trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
@@ -195,13 +210,12 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                 }),
 
                 // wipe to head (if not first head after vignett)
-                // @todo cut from vignett to first head then?
                 (!isFirstHeadAfterVignett) ? 
                 literal<TimelineObjCCGVideo>({
                     _id: IDs.wipeVideo, deviceId: [''], siId: '', roId: '',
                     trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
                     priority: 1,
-                    duration: 800,
+                    duration: 800, // @todo correct duration
                     LLayer: LLayers.casparcg_player_wipe,
                     content: {
                         type: TimelineContentTypeCasparCg.VIDEO,
@@ -211,13 +225,13 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                     }
                 }) : null,
 
-                // wipe audio (skille between and punktum for the last)
+                // wipe audio skille between 
                 (!isFirstHeadAfterVignett) ?
                 literal<TimelineObjCCGVideo>({
                     _id: IDs.wipeAudioSkille, deviceId: [''], siId: '', roId: '',
                     trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
                     priority: 1,
-                    duration: 800,
+                    duration: 800, // @todo correct duration
                     LLayer: LLayers.casparcg_player_soundeffect,
                     content: {
                         type: TimelineContentTypeCasparCg.VIDEO,
@@ -311,7 +325,15 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
     segmentLineItems.push(gfx)
 
     return literal<TemplateResult>({
-        segmentLine: null,
+        segmentLine: literal<DBSegmentLine>({
+            _id: '',
+            _rank: 0,
+            mosId: '',
+            segmentId: '',
+            runningOrderId: '',
+            slug: context.segmentLine._id,
+            autoNext: isFirstHeadAfterVignett, // @todo this doesnt appear to work
+        }),
         segmentLineItems: segmentLineItems
     })
 })

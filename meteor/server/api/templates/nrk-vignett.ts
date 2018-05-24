@@ -134,7 +134,7 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
                 // TMP
                 literal<TimelineObjAtemME>({
                     _id: '', deviceId: [''], siId: '', roId: '',
-                    trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.vignett}.start + 100` },
+                    trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.vignett}.start + 100` }, // give the clip a chance to start before changing the cam underneath
                     priority: 1,
                     duration: 0,
                     LLayer: LLayers.atem_me_program,
@@ -160,7 +160,7 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
             segmentId: '',
             runningOrderId: '',
             slug: context.segmentLine._id,
-            autoNext: true, // @todo doesnt work properly
+            expectedDuration: segmentLineduration,
         }),
         segmentLineItems: segmentLineItems,
     })
