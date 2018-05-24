@@ -70,7 +70,6 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
         atemSrv1: 			context.getHashId('atemSrv1'),
         wipeVideo: 			context.getHashId('wipeVideo'),
         wipeAudioSkille: 	context.getHashId('wipeAudioSkille'),
-        wipeAudioPunktum: 	context.getHashId('wipeAudioPunktum'),
         headGfx: 			context.getHashId('headGfx'),
         playerClip: 		context.getHashId('playerClip')
     }
@@ -122,7 +121,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
     let video: SegmentLineItemOptional = {
         _id: context.getHashId('video'),
         mosId: 'headvideo',
-        name: 'HeadVideo',
+        name: clip, // @todo is this the correct name to use?
         trigger: {
             type: TriggerType.TIME_ABSOLUTE,
             value: 0
