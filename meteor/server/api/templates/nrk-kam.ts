@@ -66,17 +66,91 @@ const literal = <T>(o: T) => o
 export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: TemplateContextInner, story): TemplateResult => {
 			
     let cameraInput = 0
-    let mosartVariant = story.getValueByPath('MosExternalMetaData.0.MosPayload.mosartVariant', '')
+    let mosartVariant = story.getValueByPath('MosExternalMetaData.0.MosPayload.mosartVariant', '') + ''
     if (mosartVariant) {
         // mosartVariant can be something like ÅPNING3, so strip anything non numeric
-        if (mosartVariant.replace) {
-            mosartVariant = mosartVariant.replace(/\D/g,'')
-        }
-
-        cameraInput = parseInt(mosartVariant, 10) || 0
+        cameraInput = parseInt(mosartVariant.replace(/\D/g,''), 10) || 0
     } else {
         context.warning('mosartVariant for KAM should be the camera to cut to')
     }
+
+    context.warning("Got camera " + cameraInput + " from " + mosartVariant)
+
+    let IDs = {
+        lawo_automix: 		context.getHashId('lawo_automix'),
+        lawo_effect: 		context.getHashId('lawo_effect'),
+        headVideo: 			context.getHashId('headVideo'),
+        atemSrv1: 			context.getHashId('atemSrv1'),
+        wipeVideo: 			context.getHashId('wipeVideo'),
+        wipeAudioSkille: 	context.getHashId('wipeAudioSkille'),
+        wipeAudioPunktum: 	context.getHashId('wipeAudioPunktum'),
+        headGfx: 			context.getHashId('headGfx'),
+        playerClip: 		context.getHashId('playerClip')
+    }
+
+    let components: TimelineObj[] = []
+
+    let camTrigger: {
+		type: TriggerType;
+		value: number | string;
+	} = { 
+        type: TriggerType.TIME_ABSOLUTE,
+        value: 0
+    }
+
+
+
+    // @todo check for prefix to kam number (eg ÅPNING3), which defines additional behaviour
+
+    if (mosartVariant.indexOf('ÅPNING') === 0) {
+        components.push(literal<TimelineObjCCGVideo>({
+            _id: IDs.wipeVideo, deviceId: [''], siId: '', roId: '',
+            trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+            priority: 1,
+            duration: 2000,
+            LLayer: LLayers.casparcg_player_wipe,
+            content: {
+                type: TimelineContentTypeCasparCg.VIDEO,
+                attributes: {
+                    file: 'wipe2' // @todo 'wipe_white'
+                }
+            }
+        }))
+
+        components.push(literal<TimelineObjCCGVideo>({
+            _id: IDs.wipeAudioPunktum, deviceId: [''], siId: '', roId: '',
+            trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.wipeVideo}.start + 0` },
+            priority: 1,
+            duration: 800,
+            LLayer: LLayers.casparcg_player_soundeffect,
+            content: {
+                type: TimelineContentTypeCasparCg.VIDEO,
+                attributes: {
+                    file: 'wipe_audio_punktum'
+                }
+            }
+        }))
+
+        // @todo audio levels
+        
+        // delay the camera cut until the trigger point of the wipe
+        camTrigger = { type: TriggerType.TIME_RELATIVE, value: `#${IDs.wipeVideo}.start + 1500` } // @todo better trigger point
+    }
+
+    components.push(literal<TimelineObjAtemME>({ // to be changed to NRKPOST-something
+        _id: IDs.atemSrv1, deviceId: [''], siId: '', roId: '',
+        trigger: camTrigger,
+        priority: 1,
+        duration: 0, // @todo TBD
+        LLayer: LLayers.atem_me_program,
+        content: {
+            type: TimelineContentTypeAtem.ME,
+            attributes: {
+                input: cameraInput,
+                transition: Atem_Enums.TransitionStyle.CUT
+            }
+        }
+    }))
 
     return {
         segmentLine: null,
@@ -99,7 +173,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
                     type: TriggerType.TIME_ABSOLUTE,
                     value: 0
                 },
-                status: RundownAPI.LineItemStatusCode.OK,
+                status: RundownAPI.LineItemStatusCode.UNKNOWN,
                 sourceLayerId: 'studio0_vignett',
                 outputLayerId: 'pgm0',
                 expectedDuration: ( // @todo rewrite this
@@ -107,28 +181,9 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
                     5
                 ),
                 content: {
-                    timelineObjects: _.compact([
-                        literal<TimelineObjAtemME>({ // to be changed to NRKPOST-something
-                            _id: context.getHashId('atemSrv1'), deviceId: [''], siId: '', roId: '',
-                            trigger: {
-                                type: TriggerType.TIME_ABSOLUTE,
-                                value: 0
-                            },
-                            priority: 1,
-                            duration: 0, // @todo TBD
-                            LLayer: LLayers.atem_me_program,
-                            content: {
-                                type: TimelineContentTypeAtem.ME,
-                                attributes: {
-                                    input: cameraInput,
-                                    transition: Atem_Enums.TransitionStyle.CUT
-                                }
-                            }
-                        })
-                    ])
+                    timelineObjects: _.compact(components)
                 }
             })
-            
         ]
     }
 })
