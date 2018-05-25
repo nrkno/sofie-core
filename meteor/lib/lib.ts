@@ -25,7 +25,7 @@ export type Time = number
  * @return {Time}
  */
 export function getCurrentTime (): Time {
-	return Date.now() - systemTime.diff
+	return Math.floor(Date.now() - systemTime.diff)
 }
 let systemTime = {
 	diff: 0,
