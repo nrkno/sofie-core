@@ -385,7 +385,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 					'infinite': this.props.segmentLineItem.expectedDuration === 0, // 0 is a special value
 
-					'source-missing': this.props.layer.type === RundownAPI.SourceLayerType.GRAPHICS || this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING,
+					'source-missing': this.props.layer.type === RundownAPI.SourceLayerType.LOWER_THIRD || this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING,
 					'source-broken': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN,
 					'unknown-state': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.UNKNOWN
 				})}

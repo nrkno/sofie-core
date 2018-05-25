@@ -812,15 +812,39 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 						}
 
 						&.source-missing {
-							// Source missing style
+							background-blend-mode: overlay; 
+							background-image: repeating-linear-gradient(
+							45deg,
+							transparent,
+							transparent 10px,
+							black 11px,
+							black 15px,
+							transparent 16px
+							);						
 						}
 
 						&.source-broken {
-							// Source broken style
+							background-blend-mode: overlay; 
+							background-image: repeating-linear-gradient(
+							45deg,
+							transparent,
+							transparent 10px,
+							black 11px,
+							black 15px,
+							transparent 16px
+							);
 						}
 
 						&.unknown-state {
-							// Unknown state style
+							background-blend-mode: overlay; 
+							background-image: repeating-linear-gradient(
+							45deg,
+							transparent,
+							transparent 10px,
+							black 11px,
+							black 15px,
+							transparent 16px
+							);
 						}
 					}
 				}
