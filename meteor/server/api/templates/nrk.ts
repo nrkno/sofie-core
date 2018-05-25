@@ -412,6 +412,19 @@ let nrk: TemplateSet = {
 											useStopCommand: false
 										}
 									}
+								}),
+								literal<TimelineObjCCGVideo>({
+									_id: '', deviceId: [''], siId: '', roId: '',
+									trigger: { type: TriggerType.LOGICAL, value: '1' },
+									priority: 1,
+									duration: 0,
+									LLayer: LLayers.casparcg_player_vignett,
+									content: {
+										type: TimelineContentTypeCasparCg.VIDEO,
+										attributes: {
+											file: 'amb'
+										}
+									}
 								})
 							]
 						}
@@ -540,7 +553,7 @@ let nrk: TemplateSet = {
 									transition: Atem_Enums.TransitionStyle.CUT
 								}
 							}
-						})
+						}),
 					]
 				}
 			}
