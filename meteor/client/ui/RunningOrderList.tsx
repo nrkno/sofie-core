@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import * as ClassNames from 'classnames'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import Moment from 'react-moment'
+import { RundownUtils } from './../lib/rundown'
 
 interface IRunningOrdersListPropsHeader extends InjectedTranslateProps {
 	runningOrders: Array<RunningOrder>
@@ -40,14 +41,20 @@ class extends React.Component<IRunningOrdersListPropsHeader> {
 					<table className='table system-status-table'>
 						<thead>
 							<tr>
-								<th className='c5'>
+								<th className='c3'>
 									{t('Slug')}
 								</th>
-								<th className='c2'>
+								<th className='c3'>
 									{t('ID')}
 								</th>
-								<th className='c2'>
+								<th className='c1'>
 									{t('Created')}
+								</th>
+								<th className='c2'>
+									{t('Air Time')}
+								</th>
+								<th className='c1'>
+									{t('Duration')}
 								</th>
 								<th className='c1'>
 									{t('Status')}
@@ -91,6 +98,20 @@ export class RunningOrderListItem extends React.Component<IRunningOrderListItemP
 				</td>
 				<td className='running-order-list-item__created'>
 					<p><Moment fromNow>{this.props.runningOrder.created}</Moment></p>
+				</td>
+				<td className='running-order-list-item__airTime'>
+					<p>
+						{this.props.runningOrder.expectedStart &&
+							<Moment format='YYYY/MM/DD HH:mm:ss'>{this.props.runningOrder.expectedStart}</Moment>
+						}
+					</p>
+				</td>
+				<td className='running-order-list-item__duration'>
+					<p>
+						{this.props.runningOrder.expectedDuration &&
+							RundownUtils.formatTimeToTimecode(this.props.runningOrder.expectedDuration)
+						}
+					</p>
 				</td>
 				<td className='running-order-list-item__status'>
 					<p>{this.props.runningOrder.status}</p>

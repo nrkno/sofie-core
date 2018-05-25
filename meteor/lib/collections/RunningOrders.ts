@@ -23,6 +23,11 @@ export interface DBRunningOrder {
 	name: string
 	created: Time
 
+	/** Expected start should be set to the expected time this running order should run on air. Should be set to EditorialStart from IMOSRunningOrder */
+	expectedStart?: Time
+	/** Expected duration of the running order - should be set to EditorialDuration from IMOSRunningOrder */
+	expectedDuration?: number
+
 	metaData?: Array<IMOSExternalMetaData>
 	status?: IMOSObjectStatus
 	airStatus?: IMOSObjectAirStatus
@@ -42,6 +47,8 @@ export class RunningOrder implements DBRunningOrder {
 	public showStyleId: string
 	public name: string
 	public created: Time
+	public expectedStart?: Time
+	public expectedDuration?: number
 	public metaData?: Array<IMOSExternalMetaData>
 	public status?: IMOSObjectStatus
 	public airStatus?: IMOSObjectAirStatus

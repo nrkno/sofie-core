@@ -8,6 +8,7 @@ import {
 	IMOSListMachInfo,
 	MosString128,
 	MosTime,
+	MosDuration,
 	IMOSRunningOrder,
 	IMOSRunningOrderBase,
 	IMOSRunningOrderStatus,
@@ -172,7 +173,9 @@ export namespace ServerPeripheralDeviceAPI {
 				mosId: ro.ID.toString(),
 				studioInstallationId: studioInstallation._id,
 				// showStyleId: '',
-				name: ro.Slug.toString()
+				name: ro.Slug.toString(),
+				expectedStart: ro.EditorialStart ? new MosTime(ro.EditorialStart).getTime() : undefined,
+				expectedDuration: ro.EditorialDuration ? new MosDuration(ro.EditorialDuration).valueOf() * 1000 : undefined
 			})
 		}), {
 			beforeInsert: (o) => {
