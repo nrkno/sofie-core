@@ -18,6 +18,8 @@ import { Spinner } from '../../lib/Spinner'
 
 interface IListViewPropsHeader {
 	segments: Array<SegmentUi>
+	onSelectAdLib: (aSLine: SegmentLineAdLibItem) => void
+	selectedItem: SegmentLineAdLibItem | undefined
 }
 
 const AdLibListView = translate()(class extends React.Component<IListViewPropsHeader & InjectedTranslateProps> {
@@ -29,15 +31,16 @@ const AdLibListView = translate()(class extends React.Component<IListViewPropsHe
 					'next': seg.isNext && !seg.isLive,
 					'past': seg.segLines.reduce((memo, item) => { return item.startedPlayback && item.duration ? memo : false }, true) === true
 				})}>
-					<tr>
-						<td className='adlib-panel__list-view__list__seg-header' colSpan={9}>
+					<tr className='adlib-panel__list-view__list__seg-header'>
+						<td colSpan={9}>
 							{seg.name}
 						</td>
 					</tr>
 					{
 						seg.items && seg.items.map((item) => {
 							return (
-								<tr key={item._id}>
+								<tr className='adlib-panel__list-view__list__segment__item' key={item._id}
+									onClick={(e) => this.props.onSelectAdLib(item)}>
 									<td className='adlib-panel__list-view__list__table__cell--icon'>
 										VB
 									</td>
@@ -78,7 +81,7 @@ const AdLibListView = translate()(class extends React.Component<IListViewPropsHe
 
 		return (
 			<div className='adlib-panel__list-view__list'>
-				<table className='adlib-panel__list-view__list__table'>
+				<table className='adlib-panel__list-view__list__table adlib-panel__list-view__list__table--header'>
 					<thead>
 						<tr>
 							<th className='adlib-panel__list-view__list__table__cell--icon'>&nbsp;</th>
@@ -92,6 +95,8 @@ const AdLibListView = translate()(class extends React.Component<IListViewPropsHe
 							<th className='adlib-panel__list-view__list__table__cell--tc-start'>{t('TC Start')}</th>
 						</tr>
 					</thead>
+				</table>
+				<table className='adlib-panel__list-view__list__table'>
 					{this.renderSegments()}
 				</table>
 			</div>
@@ -150,6 +155,10 @@ interface IPropsHeader {
 	segments: Array<SegmentUi>
 }
 
+interface IStateHeader {
+	selectedItem: SegmentLineAdLibItem | undefined
+}
+
 export const AdLibPanel = translate()(withTracker((props, state) => {
 	let subSegments = Meteor.subscribe('segments', {})
 	let subSegmentLines = Meteor.subscribe('segmentLines', {})
@@ -177,17 +186,31 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 	return {
 		segments
 	}
-})(class AdLibPanel extends React.Component<IPropsHeader> {
+})(class AdLibPanel extends React.Component<IPropsHeader, IStateHeader> {
+	constructor (props) {
+		super(props)
+
+		this.state = {
+			selectedItem: undefined
+		}
+	}
+
+	onSelectAdLib = (aSLine: SegmentLineAdLibItem) => {
+		this.setState({
+			selectedItem: aSLine
+		})
+	}
+
 	renderSegmentList () {
 		return this.props.segments.map((item) => {
 			return (
-				<div className={ClassNames('adlib-panel__segments__segment', {
+				<li className={ClassNames('adlib-panel__segments__segment', {
 					'live': item.isLive,
 					'next': item.isNext && !item.isLive,
 					'past': item.segLines.reduce((memo, item) => { return item.startedPlayback && item.duration ? memo : false }, true) === true
 				})} key={item._id} tabIndex={0}>
 					{item.name}
-				</div>
+				</li>
 			)
 		})
 	}
@@ -196,7 +219,7 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 		return (
 			<React.Fragment>
 				<AdLibPanelToolbar />
-				<AdLibListView segments={this.props.segments} />
+				<AdLibListView segments={this.props.segments} onSelectAdLib={this.onSelectAdLib} selectedItem={this.state.selectedItem} />
 			</React.Fragment>
 		)
 	}
@@ -207,9 +230,9 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 		} else {
 			return (
 				<div className='adlib-panel super-dark'>
-					<div className='adlib-panel__segments'>
+					<ul className='adlib-panel__segments'>
 						{this.renderSegmentList()}
-					</div>
+					</ul>
 					{this.renderListView()}
 				</div>
 			)
