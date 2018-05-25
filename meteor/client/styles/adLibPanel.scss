@@ -109,12 +109,15 @@
 
 		> .adlib-panel__list-view__list__table {
 			position: relative;
-			table-layout: fixed;
+			display: block;
 			width: 100%;
-			margin-top: 1em;
+			padding-top: 1.5em;
 
 			> thead {
 				display: block;
+				top: 0;
+				left: 0;
+				right: 0;
 				position: absolute;
 				font-size: 0.8em;
 
@@ -125,6 +128,42 @@
 
 					> th {
 						font-weight: 400;
+					}
+				}
+			}
+			
+			> tbody.adlib-panel__list-view__list__segment {
+				display: table;
+				width: 100%;
+				table-layout: fixed;
+				border-left: 1px solid #000;
+				font-size: 0.8em;
+				
+				> tr > .adlib-panel__list-view__list__seg-header {
+					font-size: 1.4em;
+					line-height: 1.5em;
+					padding-left: 0.5em;
+					background: #000;
+				}
+
+				&.live {
+					border-left: 1px solid $general-live-color;
+					
+					> tr > .adlib-panel__list-view__list__seg-header {
+						background: $general-live-color;
+						color: #000;
+						font-weight: 500;
+					}
+				}
+
+				&.next {
+					border-left: 1px solid $general-next-color;
+					
+					> tr > .adlib-panel__list-view__list__seg-header {
+						background: $general-next-color;
+						color: #fff;
+						font-weight: 500;
+						text-shadow: 0 0 5px #000;
 					}
 				}
 			}

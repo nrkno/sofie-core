@@ -21,6 +21,58 @@ interface IListViewPropsHeader {
 }
 
 const AdLibListView = translate()(class extends React.Component<IListViewPropsHeader & InjectedTranslateProps> {
+	renderSegments () {
+		return this.props.segments.map((seg) => {
+			return (
+				<tbody key={seg._id} className={ClassNames('adlib-panel__list-view__list__segment', {
+					'live': seg.isLive,
+					'next': seg.isNext && !seg.isLive,
+					'past': seg.segLines.reduce((memo, item) => { return item.startedPlayback && item.duration ? memo : false }, true) === true
+				})}>
+					<tr>
+						<td className='adlib-panel__list-view__list__seg-header' colSpan={9}>
+							{seg.name}
+						</td>
+					</tr>
+					{
+						seg.items && seg.items.map((item) => {
+							return (
+								<tr key={item._id}>
+									<td className='adlib-panel__list-view__list__table__cell--icon'>
+										VB
+									</td>
+									<td className='adlib-panel__list-view__list__table__cell--shortcut'>
+										A
+									</td>
+									<td className='adlib-panel__list-view__list__table__cell--output'>
+										PGM
+									</td>
+									<td className='adlib-panel__list-view__list__table__cell--name'>
+										Live Strap DK
+									</td>
+									<td className='adlib-panel__list-view__list__table__cell--data'>
+										Byen na
+									</td>
+									<td className='adlib-panel__list-view__list__table__cell--resolution'>
+										&nbsp;
+									</td>
+									<td className='adlib-panel__list-view__list__table__cell--fps'>
+										&nbsp;
+									</td>
+									<td className='adlib-panel__list-view__list__table__cell--duration'>
+										&nbsp;
+									</td>
+									<td className='adlib-panel__list-view__list__table__cell--tc-start'>
+										&nbsp;
+									</td>
+								</tr>
+							)
+						})
+					}
+				</tbody>
+			)
+		})
+	}
 	render () {
 		const { t } = this.props
 
@@ -29,21 +81,18 @@ const AdLibListView = translate()(class extends React.Component<IListViewPropsHe
 				<table className='adlib-panel__list-view__list__table'>
 					<thead>
 						<tr>
-							<th>&nbsp;</th>
-							<th>{t('Key')}</th>
-							<th>{t('Output')}</th>
-							<th>{t('Name')}</th>
-							<th>{t('Data')}</th>
-							<th>{t('Resolution')}</th>
-							<th>{t('FPS')}</th>
-							<th>{t('Duration')}</th>
-							<th>{t('TC Start')}</th>
+							<th className='adlib-panel__list-view__list__table__cell--icon'>&nbsp;</th>
+							<th className='adlib-panel__list-view__list__table__cell--shortcut'>{t('Key')}</th>
+							<th className='adlib-panel__list-view__list__table__cell--output'>{t('Output')}</th>
+							<th className='adlib-panel__list-view__list__table__cell--name'>{t('Name')}</th>
+							<th className='adlib-panel__list-view__list__table__cell--data'>{t('Data')}</th>
+							<th className='adlib-panel__list-view__list__table__cell--resolution'>{t('Resolution')}</th>
+							<th className='adlib-panel__list-view__list__table__cell--fps'>{t('FPS')}</th>
+							<th className='adlib-panel__list-view__list__table__cell--duration'>{t('Duration')}</th>
+							<th className='adlib-panel__list-view__list__table__cell--tc-start'>{t('TC Start')}</th>
 						</tr>
 					</thead>
-					<tbody>
-						<tr>
-						</tr>
-					</tbody>
+					{this.renderSegments()}
 				</table>
 			</div>
 		)
@@ -119,7 +168,7 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 			if (segLine._id === props.runningOrder.nextSegmentLineId) {
 				seg.isNext = true
 			}
-			segmentAdLibItems.concat(segLine.getSegmentLinesAdLibItems())
+			segmentAdLibItems = segmentAdLibItems.concat(segLine.getSegmentLinesAdLibItems())
 		})
 		seg.items = segmentAdLibItems
 		return seg
