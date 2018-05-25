@@ -5,14 +5,15 @@
 	grid-column-gap: 0;
 	grid-row-gap: 0;
 	grid-template-columns: [template-list] 20% [list-view] auto [end];
-	grid-template-rows: [tool-bar] 30px [list-view] auto [end];
+	grid-template-rows: [tool-bar] 3.3em [list-view] auto [end];
 	overflow: hidden;
 	user-select: none;
 
 	.adlib-panel__segments {
 		grid-column: template-list / list-view;
 		grid-row: tool-bar / end;
-		overflow: auto;
+		overflow-y: auto;
+		overflow-x: hidden;
 
 		.adlib-panel__segments__segment {
 			position: relative;
@@ -58,13 +59,75 @@
 		}
 	}
 
-	.adlib-panel__list-view__toolbar {
+	> .adlib-panel__list-view__toolbar {
 		grid-column: list-view / end;
 		grid-row: tool-bar / list-view;
+
+		display: flex;
+		padding: 10px 5px;
+
+		> .adlib-panel__list-view__toolbar__filter {
+			flex: 2 2;
+			max-width: 25em;
+			position: relative;
+
+			> .adlib-panel__list-view__toolbar__filter__input {
+				width: 100%;
+				background: #2D2D2D;
+				border: 1px solid #424242;
+				border-radius: 2em;
+				box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) inset, 1px 1px 2px rgba(0, 0, 0, 0.2);
+				line-height: 1.8em;
+				padding: 0 1em;
+				
+				&:hover, &:focus {
+					background: #3b3b3b;
+					transition: 0.2s background-color;
+				}
+			}
+		}
+
+		> .adlib-panel__list-view__toolbar__buttons {
+			flex: 1 1;
+			text-align: right;
+
+			> button {
+				padding: 0 0.5em;
+				font-size: 1.3em;
+				opacity: 0.5;
+
+				&.active {
+					opacity: 1;
+				}
+			}
+		}
 	}
 
-	.adlib-panel__list-view__list {
+	> .adlib-panel__list-view__list {
 		grid-column: list-view / end;
 		grid-row: list-view / end;
+
+		> .adlib-panel__list-view__list__table {
+			position: relative;
+			table-layout: fixed;
+			width: 100%;
+			margin-top: 1em;
+
+			> thead {
+				display: block;
+				position: absolute;
+				font-size: 0.8em;
+
+				> tr {
+					display: table;
+					width: 100%;
+					table-layout: fixed;
+
+					> th {
+						font-weight: 400;
+					}
+				}
+			}
+		}
 	}
 }

@@ -29,7 +29,6 @@ import { getCurrentTime } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
 
 interface IHeaderProps {
-	debugOnAirLine: () => void
 	runningOrder: RunningOrder
 }
 
@@ -236,12 +235,12 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		return (
 			<RunningOrderTimingProvider runningOrder={this.props.runningOrder}>
 				<div className='running-order-view'>
-					<RunningOrderHeader debugOnAirLine={this.debugOnAirLine} runningOrder={this.props.runningOrder} />
+					<RunningOrderHeader runningOrder={this.props.runningOrder} />
 					<SegmentContextMenu contextMenuContext={this.state.contextMenuContext}
 						runningOrder={this.props.runningOrder}
 						onSetNext={this.onSetNext} />
 					{this.renderSegmentsList()}
-					<InspectorDrawer {...this.props}></InspectorDrawer>
+					<InspectorDrawer {...this.props} />
 				</div>
 			</RunningOrderTimingProvider>
 		)
