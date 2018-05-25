@@ -174,8 +174,8 @@ export namespace ServerPeripheralDeviceAPI {
 				studioInstallationId: studioInstallation._id,
 				// showStyleId: '',
 				name: ro.Slug.toString(),
-				expectedStart: ro.EditorialStart ? new MosTime(ro.EditorialStart).getTime() : undefined,
-				expectedDuration: ro.EditorialDuration ? new MosDuration(ro.EditorialDuration).valueOf() * 1000 : undefined
+				expectedStart: ro.EditorialStart ? new MosTime(ro.EditorialStart.toString()).getTime() : undefined,
+				expectedDuration: ro.EditorialDuration ? new MosDuration(ro.EditorialDuration.toString()).valueOf() * 1000 : undefined
 			})
 		}), {
 			beforeInsert: (o) => {
