@@ -38,7 +38,8 @@ import {
 	TemplateFunctionOptional,
 	TemplateResult,
 	TemplateContextInner,
-	StoryWithContext
+	StoryWithContext,
+	SegmentLineAdLibItemOptional
 } from './templates'
 import {
 	TimelineObjCCGVideo,
@@ -57,6 +58,7 @@ import {
 } from '../../../lib/collections/Timeline'
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
+import { SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems';
 
 const literal = <T>(o: T) => o
 
@@ -178,6 +180,7 @@ let nrk: TemplateSet = {
 					runningOrderId: '',
 					slug: 'BREAK',
 				}),
+				segmentLineAdLibItems: null,
 				segmentLineItems: [
 					literal<SegmentLineItemOptional>({
 						_id: '',
@@ -562,7 +565,8 @@ let nrk: TemplateSet = {
 
 			return literal<TemplateResult>({
 				segmentLine: null,
-				segmentLineItems: segmentLineItems
+				segmentLineItems: segmentLineItems,
+				segmentLineAdLibItems: null
 			})
 		}),
 
@@ -831,9 +835,44 @@ let nrk: TemplateSet = {
 			}
 			segmentLineItems.push(gfx)
 
+			let segmentLineAdLibItems: Array<SegmentLineAdLibItemOptional> = []
+			let optionalGfx: SegmentLineAdLibItemOptional = {
+				_id: context.getHashId('superAdLib'),
+				mosId: 'superAdLib',
+				name: 'Super AdLib',
+				status: RundownAPI.LineItemStatusCode.UNKNOWN,
+				sourceLayerId: 'studio0_graphics0',
+				outputLayerId: 'pgm0',
+				content: {
+					fileName: clip,
+					sourceDuration: 8 * 1000, // @todo TBD
+					timelineObjects: [
+						literal<TimelineObjCCGTemplate>({ // to be changed to NRKPOST-something
+							_id: IDs.headGfx, deviceId: [''], siId: '', roId: '',
+							trigger: {
+								type: TriggerType.TIME_RELATIVE,
+								value: `#${IDs.headVideo}.start + 5`
+							},
+							priority: 1,
+							duration: 8 * 1000, // @todo TBD
+							LLayer: LLayers.casparcg_cg_graphics,
+							content: {
+								type: TimelineContentTypeCasparCg.TEMPLATE, // to be changed to NRKPOST-something
+								attributes: {
+									name: 'nrkgfx', // @todo: TBD
+									useStopCommand: false
+								}
+							}
+						})
+					]
+				}
+			}
+			segmentLineAdLibItems.push(optionalGfx)
+
 			return literal<TemplateResult>({
 				segmentLine: null,
-				segmentLineItems: segmentLineItems
+				segmentLineItems: segmentLineItems,
+				segmentLineAdLibItems: segmentLineAdLibItems
 			})
 		}),
 		/**
@@ -860,6 +899,7 @@ let nrk: TemplateSet = {
 					runningOrderId: '',
 					slug: 'KAM',
 				}),
+				segmentLineAdLibItems: null,
 				segmentLineItems: [
 					literal<SegmentLineItemOptional>({
 						_id: '',
