@@ -20,6 +20,7 @@ interface IListViewPropsHeader {
 	segments: Array<SegmentUi>
 	onSelectAdLib: (aSLine: SegmentLineAdLibItem) => void
 	selectedItem: SegmentLineAdLibItem | undefined
+	filter: string | undefined
 }
 
 const AdLibListView = translate()(class extends React.Component<IListViewPropsHeader & InjectedTranslateProps> {
@@ -37,40 +38,47 @@ const AdLibListView = translate()(class extends React.Component<IListViewPropsHe
 						</td>
 					</tr>
 					{
-						seg.items && seg.items.map((item) => {
-							return (
-								<tr className='adlib-panel__list-view__list__segment__item' key={item._id}
-									onClick={(e) => this.props.onSelectAdLib(item)}>
-									<td className='adlib-panel__list-view__list__table__cell--icon'>
-										VB
-									</td>
-									<td className='adlib-panel__list-view__list__table__cell--shortcut'>
-										A
-									</td>
-									<td className='adlib-panel__list-view__list__table__cell--output'>
-										PGM
-									</td>
-									<td className='adlib-panel__list-view__list__table__cell--name'>
-										Live Strap DK
-									</td>
-									<td className='adlib-panel__list-view__list__table__cell--data'>
-										Byen na
-									</td>
-									<td className='adlib-panel__list-view__list__table__cell--resolution'>
-										&nbsp;
-									</td>
-									<td className='adlib-panel__list-view__list__table__cell--fps'>
-										&nbsp;
-									</td>
-									<td className='adlib-panel__list-view__list__table__cell--duration'>
-										&nbsp;
-									</td>
-									<td className='adlib-panel__list-view__list__table__cell--tc-start'>
-										&nbsp;
-									</td>
-								</tr>
-							)
-						})
+						seg.items && seg.items.
+							filter((item) => {
+								if (!this.props.filter) return true
+								if (item.name.indexOf(this.props.filter) >= 0) return true
+								return false
+							}).
+							map((item) => {
+								return (
+									<tr className={ClassNames('adlib-panel__list-view__list__segment__item', {
+										'selected': this.props.selectedItem && this.props.selectedItem._id === item._id
+									})} key={item._id} onClick={(e) => this.props.onSelectAdLib(item)}>
+										<td className='adlib-panel__list-view__list__table__cell--icon'>
+											VB
+										</td>
+										<td className='adlib-panel__list-view__list__table__cell--shortcut'>
+											A
+										</td>
+										<td className='adlib-panel__list-view__list__table__cell--output'>
+											PGM
+										</td>
+										<td className='adlib-panel__list-view__list__table__cell--name'>
+											{item.name}
+										</td>
+										<td className='adlib-panel__list-view__list__table__cell--data'>
+											Byen na
+										</td>
+										<td className='adlib-panel__list-view__list__table__cell--resolution'>
+											&nbsp;
+										</td>
+										<td className='adlib-panel__list-view__list__table__cell--fps'>
+											&nbsp;
+										</td>
+										<td className='adlib-panel__list-view__list__table__cell--duration'>
+											&nbsp;
+										</td>
+										<td className='adlib-panel__list-view__list__table__cell--tc-start'>
+											&nbsp;
+										</td>
+									</tr>
+								)
+							})
 					}
 				</tbody>
 			)
@@ -116,7 +124,8 @@ const AdLibPanelToolbar = translate()(class extends React.Component<IToolbarProp
 	}
 
 	searchInputChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-		console.log(this.searchInput.value)
+		this.props.onFilterChange && typeof this.props.onFilterChange === 'function' &&
+			this.props.onFilterChange(this.searchInput.value)
 	}
 
 	render () {
@@ -157,6 +166,7 @@ interface IPropsHeader {
 
 interface IStateHeader {
 	selectedItem: SegmentLineAdLibItem | undefined
+	filter: string | undefined
 }
 
 export const AdLibPanel = translate()(withTracker((props, state) => {
@@ -191,11 +201,19 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 		super(props)
 
 		this.state = {
-			selectedItem: undefined
+			selectedItem: undefined,
+			filter: undefined
 		}
 	}
 
+	onFilterChange = (filter: string) => {
+		this.setState({
+			filter
+		})
+	}
+
 	onSelectAdLib = (aSLine: SegmentLineAdLibItem) => {
+		console.log(aSLine)
 		this.setState({
 			selectedItem: aSLine
 		})
@@ -218,8 +236,13 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 	renderListView () {
 		return (
 			<React.Fragment>
-				<AdLibPanelToolbar />
-				<AdLibListView segments={this.props.segments} onSelectAdLib={this.onSelectAdLib} selectedItem={this.state.selectedItem} />
+				<AdLibPanelToolbar
+					onFilterChange={this.onFilterChange} />
+				<AdLibListView
+					segments={this.props.segments}
+					onSelectAdLib={this.onSelectAdLib}
+					selectedItem={this.state.selectedItem}
+					filter={this.state.filter} />
 			</React.Fragment>
 		)
 	}
