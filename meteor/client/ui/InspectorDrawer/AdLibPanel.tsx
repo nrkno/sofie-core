@@ -41,7 +41,7 @@ const AdLibListView = translate()(class extends React.Component<IListViewPropsHe
 						seg.items && seg.items.
 							filter((item) => {
 								if (!this.props.filter) return true
-								if (item.name.indexOf(this.props.filter) >= 0) return true
+								if (item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0) return true
 								return false
 							}).
 							map((item) => {
