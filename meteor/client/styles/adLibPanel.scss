@@ -1,5 +1,7 @@
 @import "colorScheme";
 
+$adlib-item-selected-color: #009DFF;
+
 .adlib-panel {
 	display: grid;
 	grid-column-gap: 0;
@@ -9,14 +11,18 @@
 	overflow: hidden;
 	user-select: none;
 
-	.adlib-panel__segments {
+	> .adlib-panel__segments {
 		grid-column: template-list / list-view;
 		grid-row: tool-bar / end;
 		overflow-y: auto;
 		overflow-x: hidden;
+		display: block;
+		margin: 0;
+		padding: 0;
 
-		.adlib-panel__segments__segment {
+		> .adlib-panel__segments__segment {
 			position: relative;
+			display: block;
 			line-height: 1.5em;
 			padding: 0 1em;
 			margin: 0.5em 2em 0.5em 0;
@@ -85,6 +91,18 @@
 					transition: 0.2s background-color;
 				}
 			}
+
+			> .adlib-panel__list-view__toolbar__filter__clear {
+				position: absolute;
+				right: 1em;
+				top: 0.4em;
+				opacity: 0.3;
+				cursor: pointer;
+
+				&:hover {
+					opacity: 0.7;
+				}
+			}
 		}
 
 		> .adlib-panel__list-view__toolbar__buttons {
@@ -106,26 +124,151 @@
 	> .adlib-panel__list-view__list {
 		grid-column: list-view / end;
 		grid-row: list-view / end;
+		position: relative;
+		overflow: hidden;
+		background: inherit;
 
 		> .adlib-panel__list-view__list__table {
 			position: relative;
-			table-layout: fixed;
+			display: block;
 			width: 100%;
-			margin-top: 1em;
+			max-height: calc(100% - 1.3em);
+			overflow-y: auto;
+    		overflow-x: hidden;
+
+			&.adlib-panel__list-view__list__table--header {
+				position: relative;
+				top: 0;
+				padding-top: 0;
+				z-index: 3;
+				background: inherit;
+				padding-bottom: 0.3em;
+			}
 
 			> thead {
-				display: block;
-				position: absolute;
+				display: table;
+				width: 100%;
 				font-size: 0.8em;
 
 				> tr {
-					display: table;
-					width: 100%;
-					table-layout: fixed;
-
 					> th {
 						font-weight: 400;
+						border-left: 1px solid transparent;
+    					border-right: 1px solid transparent;
 					}
+				}
+			}
+
+			.adlib-panel__list-view__list__table__cell--icon {
+				width: 50px;
+				text-align: center;
+			}
+			.adlib-panel__list-view__list__table__cell--shortcut {
+				width: 40px;
+				text-align: center;
+			}
+			.adlib-panel__list-view__list__table__cell--output {
+				width: 50px;
+				text-align: center;
+			}
+			.adlib-panel__list-view__list__table__cell--name {
+				width: 25%;
+			}
+			.adlib-panel__list-view__list__table__cell--data {
+
+			}
+			.adlib-panel__list-view__list__table__cell--resolution {
+				width: 9%
+			}
+			.adlib-panel__list-view__list__table__cell--fps {
+				width: 4%
+			}
+			.adlib-panel__list-view__list__table__cell--duration {
+				width: 7%
+			}
+			.adlib-panel__list-view__list__table__cell--tc-start {
+				width: 7%
+			}
+
+			> tbody.adlib-panel__list-view__list__segment {
+				display: block;
+				width: 100%;
+				border-left: 2px solid #000;
+				font-size: 0.8em;
+
+				border-collapse: separate;
+				position: relative;
+				
+				> .adlib-panel__list-view__list__seg-header {
+					display: table;
+					width: 100%;
+
+					> td {
+						font-size: 1.4em;
+						line-height: 1.5em;
+						padding-left: 0.5em;
+						background: #000;
+					}
+				}
+
+				&.live {
+					border-left: 2px solid $general-live-color;
+					
+					> .adlib-panel__list-view__list__seg-header > td {
+						background: $general-live-color;
+						color: #000;
+						font-weight: 500;
+					}
+				}
+
+				&.next {
+					border-left: 2px solid $general-next-color;
+					
+					> .adlib-panel__list-view__list__seg-header > td {
+						background: $general-next-color;
+						color: #fff;
+						font-weight: 500;
+						text-shadow: 0 0 5px #000;
+					}
+				}
+
+				> .adlib-panel__list-view__list__segment__item {
+					display: table;
+    				position: relative;
+					width: 100%;
+					
+					> td {
+						border: 1px solid #000;
+						line-height: 2em;
+						padding: 0 0.7em;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						white-space: nowrap;
+					}
+
+					&:hover {
+						> td {
+							background: #252525;
+						}
+					}
+
+					&.selected {
+						&::after {
+							content: ' ';
+							display: block;
+							position: absolute;
+							top: 0;
+							left: 0;
+							bottom: 0;
+							right: 0;
+							border: 1px solid $adlib-item-selected-color;
+						}
+					}
+				}
+
+				.adlib-panel__list-view__list__table__cell--icon {
+					border-right-width: 3px !important;
+    				border-left-width: 3px !important;
 				}
 			}
 		}

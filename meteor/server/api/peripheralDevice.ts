@@ -8,6 +8,7 @@ import {
 	IMOSListMachInfo,
 	MosString128,
 	MosTime,
+	MosDuration,
 	IMOSRunningOrder,
 	IMOSRunningOrderBase,
 	IMOSRunningOrderStatus,
@@ -41,6 +42,7 @@ import { Timeline } from '../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { settings } from 'cluster';
 import { MediaObject, MediaObjects } from '../../lib/collections/MediaObjects';
+import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems';
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -172,7 +174,9 @@ export namespace ServerPeripheralDeviceAPI {
 				mosId: ro.ID.toString(),
 				studioInstallationId: studioInstallation._id,
 				// showStyleId: '',
-				name: ro.Slug.toString()
+				name: ro.Slug.toString(),
+				expectedStart: ro.EditorialStart ? new MosTime(ro.EditorialStart.toString()).getTime() : undefined,
+				expectedDuration: ro.EditorialDuration ? new MosDuration(ro.EditorialDuration.toString()).valueOf() * 1000 : undefined
 			})
 		}), {
 			beforeInsert: (o) => {
@@ -592,6 +596,34 @@ export namespace ServerPeripheralDeviceAPI {
 			},
 			afterRemove (segmentLineItem) {
 				console.log('deleted segmentLineItem ' + segmentLineItem._id)
+				// @todo: handle this:
+				// afterRemoveSegmentLineItem(segmentLine._id)
+			}
+		})
+
+		saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
+			runningOrderId: ro._id,
+			segmentLineId: segmentLine._id
+		}, result.segmentLineAdLibItems || [], {
+			afterInsert (segmentLineAdLibItem) {
+				console.log('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
+				console.log(segmentLineAdLibItem)
+				// @todo: have something here?
+				// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+				// if (story) {
+				// afterInsertUpdateSegment (story, roId(ro.ID))
+				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
+			},
+			afterUpdate (segmentLineAdLibItem) {
+				console.log('updated segmentLineItem ' + segmentLineAdLibItem._id)
+				// @todo: have something here?
+				// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+				// if (story) {
+				// 	afterInsertUpdateSegment (story, roId(ro.ID))
+				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
+			},
+			afterRemove (segmentLineAdLibItem) {
+				console.log('deleted segmentLineItem ' + segmentLineAdLibItem._id)
 				// @todo: handle this:
 				// afterRemoveSegmentLineItem(segmentLine._id)
 			}

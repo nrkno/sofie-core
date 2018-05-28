@@ -123,6 +123,7 @@ interface IStateHeader {
 	timeScale: number
 	studioMode: boolean
 	contextMenuContext: any
+	bottomMargin: string
 }
 
 export const RunningOrderView = translate()(withTracker((props, state) => {
@@ -155,7 +156,8 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		this.state = {
 			timeScale: 0.05,
 			studioMode: localStorage.getItem('studioMode') === '1' ? true : false,
-			contextMenuContext: null
+			contextMenuContext: null,
+			bottomMargin: ''
 		}
 	}
 
@@ -229,18 +231,30 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		}
 	}
 
+	onChangeBottomMargin = (newBottomMargin: string) => {
+		this.setState({
+			bottomMargin: newBottomMargin
+		})
+	}
+
+	getStyle () {
+		return {
+			'marginBottom': this.state.bottomMargin
+		}
+	}
+
 	render () {
 		const { t } = this.props
 
 		return (
 			<RunningOrderTimingProvider runningOrder={this.props.runningOrder}>
-				<div className='running-order-view'>
+				<div className='running-order-view' style={this.getStyle()}>
 					<RunningOrderHeader runningOrder={this.props.runningOrder} />
 					<SegmentContextMenu contextMenuContext={this.state.contextMenuContext}
 						runningOrder={this.props.runningOrder}
 						onSetNext={this.onSetNext} />
 					{this.renderSegmentsList()}
-					<InspectorDrawer {...this.props} />
+					<InspectorDrawer {...this.props} onChangeBottomMargin={this.onChangeBottomMargin} />
 				</div>
 			</RunningOrderTimingProvider>
 		)
