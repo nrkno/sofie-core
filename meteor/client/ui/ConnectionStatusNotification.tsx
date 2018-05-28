@@ -92,7 +92,10 @@ export const ConnectionStatusNotification = withTracker((props, state) => {
 							'info': this.props.status === 'connected'
 						}
 					)}
-					onClick={(e) => this.tryReconnect()}>
+					onClick={(e) => {
+						console.log('Reconnecting...')
+						this.tryReconnect()
+					}}>
 						<p className='right'>
 							<button className='action-btn' onClick={(e) => this.dimissNotification()}>
 								<CoreIcons id='nrk-close' />
