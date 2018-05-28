@@ -2,6 +2,8 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import * as _ from 'underscore'
+import * as $ from 'jquery'
+
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
@@ -20,14 +22,30 @@ interface IListViewPropsHeader {
 	segments: Array<SegmentUi>
 	onSelectAdLib: (aSLine: SegmentLineAdLibItem) => void
 	selectedItem: SegmentLineAdLibItem | undefined
+	selectedSegment: SegmentUi | undefined
 	filter: string | undefined
 }
 
 const AdLibListView = translate()(class extends React.Component<IListViewPropsHeader & InjectedTranslateProps> {
+	table: HTMLTableElement
+
+	componentDidUpdate (prevProps: IListViewPropsHeader) {
+		if (this.props.selectedSegment && prevProps.selectedSegment !== this.props.selectedSegment && this.table) {
+			// scroll to selected segment
+			const segmentPosition = $('#adlib-panel__list-view__' + this.props.selectedSegment._id).position()
+			if (segmentPosition) {
+				const targetPosition = segmentPosition.top + ($(this.table).scrollTop() || 0)
+				$(this.table).animate({
+					'scrollTop': targetPosition
+				}, 250, 'swing')
+			}
+		}
+	}
+
 	renderSegments () {
 		return this.props.segments.map((seg) => {
 			return (
-				<tbody key={seg._id} className={ClassNames('adlib-panel__list-view__list__segment', {
+				<tbody id={'adlib-panel__list-view__' + seg._id} key={seg._id} className={ClassNames('adlib-panel__list-view__list__segment', {
 					'live': seg.isLive,
 					'next': seg.isNext && !seg.isLive,
 					'past': seg.segLines.reduce((memo, item) => { return item.startedPlayback && item.duration ? memo : false }, true) === true
@@ -84,6 +102,11 @@ const AdLibListView = translate()(class extends React.Component<IListViewPropsHe
 			)
 		})
 	}
+
+	setTableRef = (el) => {
+		this.table = el
+	}
+
 	render () {
 		const { t } = this.props
 
@@ -104,7 +127,7 @@ const AdLibListView = translate()(class extends React.Component<IListViewPropsHe
 						</tr>
 					</thead>
 				</table>
-				<table className='adlib-panel__list-view__list__table'>
+				<table className='adlib-panel__list-view__list__table' ref={this.setTableRef}>
 					{this.renderSegments()}
 				</table>
 			</div>
@@ -166,6 +189,7 @@ interface IPropsHeader {
 
 interface IStateHeader {
 	selectedItem: SegmentLineAdLibItem | undefined
+	selectedSegment: SegmentUi | undefined
 	filter: string | undefined
 }
 
@@ -202,6 +226,7 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 
 		this.state = {
 			selectedItem: undefined,
+			selectedSegment: undefined,
 			filter: undefined
 		}
 	}
@@ -219,6 +244,13 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 		})
 	}
 
+	onSelectSegment = (segment: SegmentUi) => {
+		console.log(segment)
+		this.setState({
+			selectedSegment: segment
+		})
+	}
+
 	renderSegmentList () {
 		return this.props.segments.map((item) => {
 			return (
@@ -226,7 +258,7 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 					'live': item.isLive,
 					'next': item.isNext && !item.isLive,
 					'past': item.segLines.reduce((memo, item) => { return item.startedPlayback && item.duration ? memo : false }, true) === true
-				})} key={item._id} tabIndex={0}>
+				})} onClick={(e) => this.onSelectSegment(item)} key={item._id} tabIndex={0}>
 					{item.name}
 				</li>
 			)
@@ -242,6 +274,7 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 					segments={this.props.segments}
 					onSelectAdLib={this.onSelectAdLib}
 					selectedItem={this.state.selectedItem}
+					selectedSegment={this.state.selectedSegment}
 					filter={this.state.filter} />
 			</React.Fragment>
 		)
