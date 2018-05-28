@@ -91,6 +91,18 @@ $adlib-item-selected-color: #009DFF;
 					transition: 0.2s background-color;
 				}
 			}
+
+			> .adlib-panel__list-view__toolbar__filter__clear {
+				position: absolute;
+				right: 1em;
+				top: 0.4em;
+				opacity: 0.3;
+				cursor: pointer;
+
+				&:hover {
+					opacity: 0.7;
+				}
+			}
 		}
 
 		> .adlib-panel__list-view__toolbar__buttons {

@@ -14,6 +14,7 @@ import * as ClassNames from 'classnames'
 
 import * as faTh from '@fortawesome/fontawesome-free-solid/faTh'
 import * as faList from '@fortawesome/fontawesome-free-solid/faList'
+import * as faTimes from '@fortawesome/fontawesome-free-solid/faTimes'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { Spinner } from '../../lib/Spinner'
@@ -139,16 +140,38 @@ interface IToolbarPropsHeader {
 	onFilterChange?: (newFilter: string | undefined) => void
 }
 
-const AdLibPanelToolbar = translate()(class extends React.Component<IToolbarPropsHeader & InjectedTranslateProps> {
+interface IToolbarStateHader {
+	searchInputValue: string
+}
+
+const AdLibPanelToolbar = translate()(class extends React.Component<IToolbarPropsHeader & InjectedTranslateProps, IToolbarStateHader> {
 	searchInput: HTMLInputElement
+
+	constructor (props) {
+		super(props)
+
+		this.state = {
+			searchInputValue: ''
+		}
+	}
 
 	setSearchInputRef = (el: HTMLInputElement) => {
 		this.searchInput = el
 	}
 
-	searchInputChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
+	searchInputChanged = (e?: React.ChangeEvent<HTMLInputElement>) => {
+		this.setState({
+			searchInputValue: this.searchInput.value
+		})
+
 		this.props.onFilterChange && typeof this.props.onFilterChange === 'function' &&
 			this.props.onFilterChange(this.searchInput.value)
+	}
+
+	clearSearchInput = () => {
+		this.searchInput.value = ''
+
+		this.searchInputChanged()
 	}
 
 	render () {
@@ -160,6 +183,11 @@ const AdLibPanelToolbar = translate()(class extends React.Component<IToolbarProp
 						   ref={this.setSearchInputRef}
 						   placeholder={t('Search...')}
 						   onChange={this.searchInputChanged} />
+					{ this.state.searchInputValue !== '' &&
+						<div className='adlib-panel__list-view__toolbar__filter__clear' onClick={this.clearSearchInput}>
+							<FontAwesomeIcon icon={faTimes} />
+						</div>
+					}
 				</div>
 				<div className='adlib-panel__list-view__toolbar__buttons'>
 					<button className='action-btn'>
@@ -185,11 +213,13 @@ export interface SegmentUi extends Segment {
 interface IPropsHeader {
 	runningOrder: RunningOrder
 	segments: Array<SegmentUi>
+	liveSegment: SegmentUi | undefined
 }
 
 interface IStateHeader {
 	selectedItem: SegmentLineAdLibItem | undefined
 	selectedSegment: SegmentUi | undefined
+	followLive: boolean
 	filter: string | undefined
 }
 
@@ -200,6 +230,8 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 	let subStudioInstallations = Meteor.subscribe('studioInstallations', {})
 	let subShowStyles = Meteor.subscribe('showStyles', {})
 
+	let liveSegment: SegmentUi | undefined = undefined
+
 	const segments = props.runningOrder && props.segments ? (props.segments as Array<SegmentUi>).map((segSource) => {
 		const seg = _.clone(segSource)
 		seg.segLines = segSource.getSegmentLines()
@@ -207,6 +239,7 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 		seg.segLines.forEach((segLine) => {
 			if (segLine._id === props.runningOrder.currentSegmentLineId) {
 				seg.isLive = true
+				liveSegment = seg
 			}
 			if (segLine._id === props.runningOrder.nextSegmentLineId) {
 				seg.isNext = true
@@ -218,7 +251,8 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 	}) : []
 
 	return {
-		segments
+		segments,
+		liveSegment
 	}
 })(class AdLibPanel extends React.Component<IPropsHeader, IStateHeader> {
 	constructor (props) {
@@ -227,7 +261,16 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 		this.state = {
 			selectedItem: undefined,
 			selectedSegment: undefined,
-			filter: undefined
+			filter: undefined,
+			followLive: true
+		}
+	}
+
+	componentDidUpdate (prevProps: IPropsHeader) {
+		if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
+			this.setState({
+				selectedSegment: this.props.liveSegment
+			})
 		}
 	}
 
@@ -247,7 +290,8 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 	onSelectSegment = (segment: SegmentUi) => {
 		console.log(segment)
 		this.setState({
-			selectedSegment: segment
+			selectedSegment: segment,
+			followLive: (this.props.liveSegment ? segment._id === this.props.liveSegment._id : true)
 		})
 	}
 
