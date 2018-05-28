@@ -58,7 +58,7 @@ import {
 } from '../../../lib/collections/Timeline'
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
-import { SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems';
+import { SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
 
 const literal = <T>(o: T) => o
 
@@ -327,7 +327,7 @@ let nrk: TemplateSet = {
 									LLayer: LLayers.lawo_source_automix,
 									content: {
 										type: TimelineContentTypeLawo.AUDIO_SOURCE,
-										attributes:{
+										attributes: {
 											db: -191
 										}
 									}
@@ -339,7 +339,7 @@ let nrk: TemplateSet = {
 									LLayer: LLayers.lawo_source_clip,
 									content: {
 										type: TimelineContentTypeLawo.AUDIO_SOURCE,
-										attributes:{
+										attributes: {
 											db: -191
 										}
 									}
@@ -363,7 +363,7 @@ let nrk: TemplateSet = {
 									LLayer: LLayers.lawo_source_preview,
 									content: {
 										type: TimelineContentTypeLawo.AUDIO_SOURCE,
-										attributes:{
+										attributes: {
 											db: 0
 										}
 									}
@@ -375,7 +375,7 @@ let nrk: TemplateSet = {
 									LLayer: LLayers.casparcg_cg_graphics,
 									content: {
 										type: TimelineContentTypeCasparCg.TEMPLATE,
-										attributes:{
+										attributes: {
 											name: 'http://design-nyheter.mesosint.nrk.no/?group=DKKristiansand&channel=gfx1',
 											data: {
 
@@ -391,7 +391,7 @@ let nrk: TemplateSet = {
 									LLayer: LLayers.casparcg_cg_logo,
 									content: {
 										type: TimelineContentTypeCasparCg.TEMPLATE,
-										attributes:{
+										attributes: {
 											name: 'http://design-nyheter.mesosint.nrk.no/?group=DKKristiansand&channel=gfx1',
 											data: {
 
@@ -407,7 +407,7 @@ let nrk: TemplateSet = {
 									LLayer: LLayers.casparcg_cg_studiomonitor,
 									content: {
 										type: TimelineContentTypeCasparCg.TEMPLATE,
-										attributes:{
+										attributes: {
 											name: 'http://design-nyheter.mesosint.nrk.no/?group=DKKristiansand&channel=gfx2',
 											data: {
 
@@ -585,17 +585,14 @@ let nrk: TemplateSet = {
 				headGfx: 			context.getHashId('headGfx'),
 				playerClip: 		context.getHashId('playerClip')
 			}
-			
 			let segmentLines = context.getSegmentLines()
 			let segmentLineI = -1
 			_.find(segmentLines, (sl: SegmentLine) => {
 				segmentLineI++
-				return (sl._id === context.segmentLine._id) 
+				return (sl._id === context.segmentLine._id)
 			})
 			let isFirstHeadAfterVignett = (segmentLineI === 0)
-			let isLastHead = (segmentLineI === segmentLines.length-1)
-
-			
+			let isLastHead = (segmentLineI === segmentLines.length - 1)
 
 			let storyItemClip = _.find(story.Body, (item) => {
 				return (
@@ -708,7 +705,7 @@ let nrk: TemplateSet = {
 						}),
 
 						// wipe to head (if not first head after vignett)
-						(!isFirstHeadAfterVignett) ? 
+						(!isFirstHeadAfterVignett) ?
 						literal<TimelineObjCCGVideo>({
 							_id: IDs.wipeVideo, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
@@ -737,7 +734,7 @@ let nrk: TemplateSet = {
 									file: 'wipe_audio_skillelyd'
 								}
 							}
-						}) : 
+						}) :
 						literal<TimelineObjCCGVideo>({
 							_id: IDs.wipeAudioPunktum, deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
@@ -879,7 +876,6 @@ let nrk: TemplateSet = {
 		 * KAM
 		 */
 		kam: literal<TemplateFunctionOptional>((context: TemplateContextInner, story): TemplateResult => {
-			
 			let cameraInput = 0
 			let mosartVariant = story.getValueByPath('MosExternalMetaData.0.MosPayload.mosartVariant', '')
 			if (mosartVariant) {
@@ -887,9 +883,6 @@ let nrk: TemplateSet = {
 			} else {
 				context.warning('mosartVariant for KAM should be the camera to cut to')
 			}
-			
-
-
 			return {
 				segmentLine: literal<DBSegmentLine>({
 					_id: '',
@@ -937,7 +930,6 @@ let nrk: TemplateSet = {
 							])
 						}
 					})
-					
 				]
 			}
 		}),

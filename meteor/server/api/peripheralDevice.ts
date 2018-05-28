@@ -40,9 +40,8 @@ import { logger } from './../logging'
 import { runTemplate, TemplateContext, getHash } from './templates/templates'
 import { Timeline } from '../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
-import { settings } from 'cluster';
-import { MediaObject, MediaObjects } from '../../lib/collections/MediaObjects';
-import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems';
+import { MediaObject, MediaObjects } from '../../lib/collections/MediaObjects'
+import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -83,7 +82,7 @@ export namespace ServerPeripheralDeviceAPI {
 					token: token,
 					type: options.type,
 					name: options.name,
-					settings: {}
+					// settings: {}
 				})
 			} else {
 				throw e

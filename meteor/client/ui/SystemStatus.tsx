@@ -8,7 +8,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import * as ClassNames from 'classnames'
 import Moment from 'react-moment'
 import { translate, InjectedTranslateProps } from 'react-i18next'
-import { getCurrentTime } from '../../lib/lib';
+import { getCurrentTime } from '../../lib/lib'
 
 interface IDeviceItemPropsHeader extends InjectedTranslateProps {
 	key: string,
