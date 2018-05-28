@@ -287,5 +287,26 @@ Meteor.methods({
 			// 	mappings: mappings
 			// }})
 		})
+
+		PeripheralDevices.find({
+			type: PeripheralDeviceAPI.DeviceType.MOSDEVICE
+		}).forEach((pd) => {
+			PeripheralDevices.update(pd._id, {$set: {
+				'settings.mosId': 'SOFIE2.XPRO.MOS',
+				'settings.devices.enps0': ((pd['settings'] || {})['devices'] || {})['enps0'] || {
+					primary: {
+						id: '2012R2ENPS8VM',
+						host: '10.0.1.244'
+					},
+					// secondary: {
+					// 	id: '2012R2ENPS8VM',
+					// 	host: '10.0.1.244'
+					// }
+				},
+			}})
+			// PeripheralDevices.update(pd._id, {$set: {
+			// 	mappings: mappings
+			// }})
+		})
 	}
 })
