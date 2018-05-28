@@ -60,7 +60,9 @@ const SettingsMenu = translate()(withTracker(() => {
 	return {
 		studioInstallations: StudioInstallations.find({}).fetch(),
 		showStyles: ShowStyles.find({}).fetch(),
-		peripheralDevices: PeripheralDevices.find({}).fetch(),
+		peripheralDevices: PeripheralDevices.find({}, {sort: {
+			lastSeen: -1
+		}}).fetch(),
 		lineTemplates: RuntimeFunctions.find({}).fetch()
 	}
 })(class extends React.Component<IPropsMenuHeader & InjectedTranslateProps, IStateMenuHeader> {
@@ -209,6 +211,9 @@ const SettingsMenu = translate()(withTracker(() => {
 						return [
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/peripheralDevice/' + item._id}>
 								<h3>{item.name}</h3>
+								<p>
+									{item._id}
+								</p>
 								<p>
 									{t('Status')}: {this.statusCodeString(item.status.statusCode)} {t('Type')}: {this.deviceTypeString(item.type)}
 								</p>
