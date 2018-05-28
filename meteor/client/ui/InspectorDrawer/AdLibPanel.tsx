@@ -10,6 +10,7 @@ import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
 import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
+import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import * as ClassNames from 'classnames'
 
 import * as faTh from '@fortawesome/fontawesome-free-solid/faTh'
@@ -22,6 +23,7 @@ import { Spinner } from '../../lib/Spinner'
 interface IListViewPropsHeader {
 	segments: Array<SegmentUi>
 	onSelectAdLib: (aSLine: SegmentLineAdLibItem) => void
+	onToggleAdLib: (aSLine: SegmentLineAdLibItem) => void
 	selectedItem: SegmentLineAdLibItem | undefined
 	selectedSegment: SegmentUi | undefined
 	filter: string | undefined
@@ -67,7 +69,9 @@ const AdLibListView = translate()(class extends React.Component<IListViewPropsHe
 								return (
 									<tr className={ClassNames('adlib-panel__list-view__list__segment__item', {
 										'selected': this.props.selectedItem && this.props.selectedItem._id === item._id
-									})} key={item._id} onClick={(e) => this.props.onSelectAdLib(item)}>
+									})} key={item._id}
+										onClick={(e) => this.props.onSelectAdLib(item)}
+										onDoubleClick={(e) => this.props.onToggleAdLib(item)}>
 										<td className='adlib-panel__list-view__list__table__cell--icon'>
 											VB
 										</td>
@@ -212,6 +216,7 @@ export interface SegmentUi extends Segment {
 
 interface IPropsHeader {
 	runningOrder: RunningOrder
+	studioInstallation: StudioInstallation
 	segments: Array<SegmentUi>
 	liveSegment: SegmentUi | undefined
 }
@@ -287,6 +292,13 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 		})
 	}
 
+	onToggleAdLib = (aSLine: SegmentLineAdLibItem) => {
+		console.log(aSLine)
+		if (this.props.runningOrder) {
+			Meteor.call('playout_segmentAdLibLineItemStart', this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
+		}
+	}
+
 	onSelectSegment = (segment: SegmentUi) => {
 		console.log(segment)
 		this.setState({
@@ -317,6 +329,7 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 				<AdLibListView
 					segments={this.props.segments}
 					onSelectAdLib={this.onSelectAdLib}
+					onToggleAdLib={this.onToggleAdLib}
 					selectedItem={this.state.selectedItem}
 					selectedSegment={this.state.selectedSegment}
 					filter={this.state.filter} />

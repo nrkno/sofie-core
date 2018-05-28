@@ -3,6 +3,7 @@ import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders
 import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems, ITimelineTrigger } from '../../lib/collections/SegmentLineItems'
+import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { getCurrentTime, saveIntoDb, literal, DBObj, partialExceptId, Time, partial } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
@@ -41,6 +42,14 @@ Meteor.methods({
 			duration: 0
 		}}, {
 			multi: true
+		})
+
+		// Remove all segment line items that have been created using an adLib item
+		SegmentLineItems.remove({
+			runningOrderId: runningOrder._id,
+			adLibSourceId: {
+				$exists: true
+			}
 		})
 
 		RunningOrders.update(runningOrder._id, {$set: {
@@ -214,8 +223,56 @@ Meteor.methods({
 		} else {
 			throw new Meteor.Error(404, `Segment line "${slId}" in running order "${roId}" not found!`)
 		}
+	},
+	'playout_segmentAdLibLineItemStart': (roId: string, slId: string, slaiId: string) => {
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		let segLine = SegmentLines.findOne({
+			_id: slId,
+			runningOrderId: roId
+		})
+		if (!segLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
+		let adLibItem = SegmentLineAdLibItems.findOne({
+			_id: slaiId,
+			runningOrderId: roId
+		})
+		if (!adLibItem) throw new Meteor.Error(404, `Segment Line Ad Lib Item "${slaiId}" not found!`)
+		if (!runningOrder.active) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in an active running order!`)
+		if (runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only place in a current segment line!`)
+
+		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine)
+		SegmentLineItems.insert(newSegmentLineItem)
+		console.log(newSegmentLineItem)
+
+		updateTimeline(runningOrder.studioInstallationId)
 	}
 })
+
+function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem, segmentLine: SegmentLine): SegmentLineItem {
+	const oldId = adLibItem._id
+	const newId = Random.id()
+	const newSLineItem = literal<SegmentLineItem>(_.extend(
+		adLibItem,
+		{
+			_id: newId,
+			trigger: {
+				type: TriggerType.TIME_ABSOLUTE,
+				value: getCurrentTime() - (segmentLine.startedPlayback || 0)
+			},
+			segmentLineId: segmentLine._id,
+			adLibSourceId: adLibItem._id,
+			expectedDuration: adLibItem.expectedDuration || 0 // set duration to infinite if not set by AdLibItem
+		}
+	))
+	if (newSLineItem.content && newSLineItem.content.timelineObjects) {
+		newSLineItem.content.timelineObjects.forEach((item) => {
+			if (item) {
+				item._id = item._id.replace(oldId, newId)
+			}
+		})
+	}
+	return newSLineItem
+}
 
 function setPreviousLinePlaybackDuration (roId: string, prevSegLine: SegmentLine, lastChange: Time) {
 	if (prevSegLine.startedPlayback && prevSegLine.startedPlayback > 0) {

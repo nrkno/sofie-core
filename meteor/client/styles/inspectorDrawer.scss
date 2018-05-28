@@ -30,6 +30,11 @@ $inspector-drawer-tabs-height: 2.3em;
 		padding-top: 0.5em;
 		font-size: 1.3em;
 		color: #444;
+
+		&:hover {
+			transition: 0.2s color;
+			color: #777;
+		}
 	}
 
 	.running-order-view__inspector-drawer__tabs {

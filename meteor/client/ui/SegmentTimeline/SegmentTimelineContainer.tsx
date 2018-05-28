@@ -3,6 +3,7 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
+import * as $ from 'jquery'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 
 import { normalizeArray } from '../../lib/utils'
@@ -170,6 +171,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 			} else {
 				if (trigger.type === SuperTimeline.TriggerType.TIME_ABSOLUTE && trigger.value === 'now') {
 					return _.extend({}, trigger, {
+						// value: segmentLine.startedPlayback ? getCurrentTime() - segmentLine.startedPlayback : offset
 						value: offset
 					})
 				} else {
@@ -184,7 +186,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 			slTimeline.push({
 				id: segmentLineItem._id,
 				trigger: offsetTrigger(segmentLineItem.trigger, TIMELINE_TEMP_OFFSET),
-				duration: segmentLineItem.duration || segmentLineItem.expectedDuration,
+				duration: segmentLineItem.duration || segmentLineItem.expectedDuration || 0,
 				LLayer: segmentLineItem.outputLayerId,
 				content: segmentLineItem
 			})
@@ -250,13 +252,6 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		segmentLine.renderedDuration = furthestDuration
 		segmentLine.startsAt = startsAt
 		startsAt = segmentLine.startsAt + (segmentLine.renderedDuration || 0)
-
-		/* segmentLineItems.forEach((item) => {
-			let itemUi = item as SegmentLineItemUi
-			if (itemUi.renderedDuration && !Number.isFinite(itemUi.renderedDuration)) {
-				itemUi.renderedDuration = segmentLine.renderedDuration! - itemUi.renderedInPoint!
-			}
-		}) */
 	})
 
 	const resolveDuration = (item: SegmentLineItemUi): number => {
@@ -313,6 +308,14 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		/* that.setState({
 			timeScale: that.state.timeScale * 1.1
 		}) */
+	}
+
+	componentDidMount () {
+		this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
+		if (this.isLiveSegment === true) {
+			this.onFollowLiveLine(true, {})
+			this.startOnAirLine()
+		}
 	}
 
 	componentDidUpdate () {

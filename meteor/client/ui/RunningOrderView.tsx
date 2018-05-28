@@ -247,14 +247,18 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		const { t } = this.props
 
 		return (
-			<RunningOrderTimingProvider runningOrder={this.props.runningOrder}>
+			<RunningOrderTimingProvider
+				runningOrder={this.props.runningOrder}>
 				<div className='running-order-view' style={this.getStyle()}>
-					<RunningOrderHeader runningOrder={this.props.runningOrder} />
-					<SegmentContextMenu contextMenuContext={this.state.contextMenuContext}
+					<RunningOrderHeader
+						runningOrder={this.props.runningOrder} />
+					<SegmentContextMenu
+						contextMenuContext={this.state.contextMenuContext}
 						runningOrder={this.props.runningOrder}
 						onSetNext={this.onSetNext} />
 					{this.renderSegmentsList()}
-					<InspectorDrawer {...this.props} onChangeBottomMargin={this.onChangeBottomMargin} />
+					<InspectorDrawer {...this.props}
+						onChangeBottomMargin={this.onChangeBottomMargin} />
 				</div>
 			</RunningOrderTimingProvider>
 		)
