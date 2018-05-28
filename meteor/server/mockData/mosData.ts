@@ -96,14 +96,353 @@ Meteor.methods({
 			{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_07C8C71B-1835-493D-94E1678FD1425B71;9141DBA1-93DD-4B19-BEBB32E0D6222E1B","Slug":"Åpning;vignett","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Actual":4,"Approved":1,"Creator":"LINUXENPS","ElapsedTime":3,"MediaTime":0,"ModBy":"N12914","ModTime":"20180502T144559Z","MOSAbstracts":"M: NRK Østafjells (20-04-16 09:07)\nTIDSMARKØR IKKE RØR","MOSItemDurations":"","MOSItemEdDurations":"","MOSObjSlugs":"M: NRK Østafjells\nStory status","MOSSlugs":"VIGNETT;vignett-5\nVIGNETT;vignett-3","MOSTimes":"20180502T165008720Z","Owner":"LINUXENPS","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"<LYS Q1>","StoryProducer":"DKTE","TextTime":0,"SystemApprovedBy":"N12914","Kilde":"TV","mosartType":"FULL","mosartVariant":"VIGNETT2018","ReadTime":0,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71","Body":[{"Type":"storyItem","Content":{"itemID":9,"objID":"N11580_1461136025","mosID":"METADATA.NRK.MOS","mosAbstract":"M: NRK Østafjells (20-04-16 09:07)","objSlug":"M: NRK Østafjells","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"http://mosA4.com/mos/supported_schemas/MOSAXML2.08","mosPayload":{"nrk":{"type":"video","changedBy":"N11580","changetime":"2016-04-20T09:07:05 +02:00","mdSource":"ncs","title":"NRK Østafjells","description":{},"hbbtv":{"link":""},"rights":{"notes":"","owner":"NRK","$t":"Green"}}}},"itemSlug":"VIGNETT;vignett-5"}},{"Type":"storyItem","Content":{"mosID":"mosart.morten.mos","abstract":"TIDSMARKØR IKKE RØR","objID":"STORYSTATUS","objSlug":"Story status","itemID":10,"itemSlug":"VIGNETT;vignett-3"}}],"level":"debug","message":"","timestamp":"2018-05-15T06:51:29.665Z"}
 		)
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
-			{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_07C8C71B-1835-493D-94E1678FD1425B71;6364CE48-9B6A-4D36-B7F8352E6E11EDB7","Slug":"Åpning;head-hundepose-020518","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Break":0,"Creator":"LINUXENPS","ElapsedTime":5,"Estimated":10,"MediaTime":0,"ModBy":"N639194","ModTime":"20180514T143249Z","MOSAbstracts":"head-hundepose-020518-te NYHETER 00:00:11:19 \nPhiltest27\n_00:00:00:00 | @M=Auto Openend | 52 headline | 1:Vil ikkje ha poser til hundebæsj | 2:Østafjells | 3: | 4: | 00:00:07:00\nTIDSMARKØR IKKE RØR","MOSItemDurations":"11,76\n11,76\n0","MOSItemEdDurations":"","MOSObjSlugs":"head-hundepose-020518-te\nPhiltest27\n52 headline 1:Vil ikkje ha poser til hundebæsj  2:Østafjells\nStory status","MOSSlugs":"HEAD;head-Bæsjepose-4\nPhiltest27\n52 headline 1:Vil ikkje ha poser til hundebæsj  2:Østafjells\nSAK VESTFOLD;head-3","MOSTimes":"20180502T165013906Z","Owner":"LINUXENPS","Printed":"20180502T164204Z","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"Miljøpartiet vil droppe posen til hundebæsjen - slik vil dei spare miljøet. \nOne Two","StoryProducer":"DKTE","TextTime":6,"SystemApprovedBy":"N12914","Kilde":"TV","mosartType":"STK","mosartVariant":"HEAD","OpprLand":"Norge","ReadTime":6,"Rettigheter":"Grønt","Team":"(Kun for STK:) Foto: / Redigering:","ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71","Body":[{"Type":"storyItem","Content":{"itemID":13,"itemSlug":"HEAD;head-Bæsjepose-4","objID":"\\\\XPRO\\Omn\\C\\S\\25\\07","mosID":"OMNIBUS.XPRO.MOS","mosAbstract":"head-hundepose-020518-te NYHETER 00:00:11:19","objDur":588,"objTB":50,"objSlug":"head-hundepose-020518-te","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"OMNIBUS","mosPayload":{"title":"head-hundepose-020518-te","objectType":"CLIP","clipType":"NYHETER","objDur":588,"objType":"VIDEO"}}}},{"Type":"storyItem","Content":{"itemID":10,"itemSlug":"Philtest27","objID":"Philtest27","mosID":"OMNIBUS.XPRO.MOS","mosAbstract":"Philtest27","objDur":588,"objTB":50,"objSlug":"Philtest27","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"http://mos.ap.org/blah.htm","mosPayload":{"title":"head-hundepose-020518-te","objectTypex":"CLIP","clipTypex":"NYHETER","objDurx":588,"objTypex":"VIDEO"}}}},{"Type":"storyItem","Content":{"mosID":"chyron.techycami02.XPRO.nrk.mos","abstract":"_00:00:00:00 | @M=Auto Openend | 52 headline | 1:Vil ikkje ha poser til hundebæsj | 2:Østafjells | 3: | 4: | 00:00:07:00","objPaths":{"objProxyPath":{"techDescription":"JPEG Thumbnail","$t":"http://160.68.33.159/thumbs/NYHETER/58000/Objects_NYHETER_00058473_v1_big.jpg"},"objMetadataPath":{}},"itemChannel":"CG1","itemSlug":"52 headline 1:Vil ikkje ha poser til hundebæsj  2:Østafjells","mosObj":{"objID":"NYHETER\\00058473?version=1","objSlug":"52 headline 1:Vil ikkje ha poser til hundebæsj  2:Østafjells","mosItemEditorProgID":"Chymox.AssetBrowser.1","objDur":0,"objTB":0,"objPaths":{"objProxyPath":{"techDescription":"JPEG Thumbnail","$t":"http://160.68.33.159/thumbs/NYHETER/58000/Objects_NYHETER_00058473_v1_big.jpg"},"objMetadataPath":{}},"mosExternalMetadata":{"mosSchema":"http://ncsA4.com/mos/supported_schemas/NCSAXML2.08"}},"itemID":14}},{"Type":"storyItem","Content":{"mosID":"mosart.morten.mos","abstract":"TIDSMARKØR IKKE RØR","objID":"STORYSTATUS","objSlug":"Story status","itemID":3,"itemSlug":"SAK VESTFOLD;head-3"}}],"level":"debug","message":"","timestamp":"2018-05-15T06:51:29.876Z"}
-		)
+			{
+				"ID":"MAENPSTEST14;P_SERVER14\\W\\R_07C8C71B-1835-493D-94E1678FD1425B71;6364CE48-9B6A-4D36-B7F8352E6E11EDB7",
+				"Slug":"Åpning;head-hundepose-020518",
+				"MosExternalMetaData":[
+				   {
+					  "MosScope":"PLAYLIST",
+					  "MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd",
+					  "MosPayload":{
+						 "Approved":0,
+						 "Break":0,
+						 "Creator":"LINUXENPS",
+						 "ElapsedTime":5,
+						 "Estimated":10,
+						 "MediaTime":0,
+						 "ModBy":"N639194",
+						 "ModTime":"20180514T143249Z",
+						 "MOSAbstracts":"head-hundepose-020518-te NYHETER 00:00:11:19 \nPhiltest27\n_00:00:00:00 | @M=Auto Openend | 52 headline | 1:Vil ikkje ha poser til hundebæsj | 2:Østafjells | 3: | 4: | 00:00:07:00\nTIDSMARKØR IKKE RØR",
+						 "MOSItemDurations":"11,76\n11,76\n0",
+						 "MOSItemEdDurations":"",
+						 "MOSObjSlugs":"head-hundepose-020518-te\nPhiltest27\n52 headline 1:Vil ikkje ha poser til hundebæsj  2:Østafjells\nStory status",
+						 "MOSSlugs":"HEAD;head-Bæsjepose-4\nPhiltest27\n52 headline 1:Vil ikkje ha poser til hundebæsj  2:Østafjells\nSAK VESTFOLD;head-3",
+						 "MOSTimes":"20180502T165013906Z",
+						 "Owner":"LINUXENPS",
+						 "Printed":"20180502T164204Z",
+						 "SourceMediaTime":0,
+						 "SourceTextTime":0,
+						 "StoryLogPreview":"Miljøpartiet vil droppe posen til hundebæsjen - slik vil dei spare miljøet. \nOne Two",
+						 "StoryProducer":"DKTE",
+						 "TextTime":6,
+						 "SystemApprovedBy":"N12914",
+						 "Kilde":"TV",
+						 "mosartType":"STK",
+						 "mosartVariant":"HEAD",
+						 "OpprLand":"Norge",
+						 "ReadTime":6,
+						 "Rettigheter":"Grønt",
+						 "Team":"(Kun for STK:) Foto: / Redigering:",
+						 "ENPSItemType":3
+					  }
+				   }
+				],
+				"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71",
+				"Body":[
+				   {
+					  "Type":"storyItem",
+					  "Content":{
+						 "itemID":13,
+						 "itemSlug":"HEAD;head-Bæsjepose-4",
+						 "objID":"\\\\XPRO\\Omn\\C\\S\\25\\07",
+						 "mosID":"OMNIBUS.XPRO.MOS",
+						 "mosAbstract":"head-hundepose-020518-te NYHETER 00:00:11:19",
+						 "objDur":588,
+						 "objTB":50,
+						 "objSlug":"head-hundepose-020518-te",
+						 "mosExternalMetadata":{
+							"mosScope":"PLAYLIST",
+							"mosSchema":"OMNIBUS",
+							"mosPayload":{
+							   "title":"head-hundepose-020518-te",
+							   "objectType":"CLIP",
+							   "clipType":"NYHETER",
+							   "objDur":588,
+							   "objType":"VIDEO"
+							}
+						 }
+					  }
+				   },
+				   {
+					  "Type":"storyItem",
+					  "Content":{
+						 "itemID":10,
+						 "itemSlug":"Philtest27",
+						 "objID":"Philtest27",
+						 "mosID":"OMNIBUS.XPRO.MOS",
+						 "mosAbstract":"Philtest27",
+						 "objDur":588,
+						 "objTB":50,
+						 "objSlug":"Philtest27",
+						 "mosExternalMetadata":{
+							"mosScope":"PLAYLIST",
+							"mosSchema":"http://mos.ap.org/blah.htm",
+							"mosPayload":{
+							   "title":"head-hundepose-020518-te",
+							   "objectTypex":"CLIP",
+							   "clipTypex":"NYHETER",
+							   "objDurx":588,
+							   "objTypex":"VIDEO"
+							}
+						 }
+					  }
+				   },
+				   {
+					  "Type":"storyItem",
+					  "Content":{
+						 "mosID":"chyron.techycami02.XPRO.nrk.mos",
+						 "abstract":"_00:00:00:00 | @M=Auto Openend | 52 headline | 1:Vil ikkje ha poser til hundebæsj | 2:Østafjells | 3: | 4: | 00:00:07:00",
+						 "objPaths":{
+							"objProxyPath":{
+							   "techDescription":"JPEG Thumbnail",
+							   "$t":"http://160.68.33.159/thumbs/NYHETER/58000/Objects_NYHETER_00058473_v1_big.jpg"
+							},
+							"objMetadataPath":{
+			 
+							}
+						 },
+						 "itemChannel":"CG1",
+						 "itemSlug":"52 headline 1:Vil ikkje ha poser til hundebæsj  2:Østafjells",
+						 "mosObj":{
+							"objID":"NYHETER\\00058473?version=1",
+							"objSlug":"52 headline 1:Vil ikkje ha poser til hundebæsj  2:Østafjells",
+							"mosItemEditorProgID":"Chymox.AssetBrowser.1",
+							"objDur":0,
+							"objTB":0,
+							"objPaths":{
+							   "objProxyPath":{
+								  "techDescription":"JPEG Thumbnail",
+								  "$t":"http://160.68.33.159/thumbs/NYHETER/58000/Objects_NYHETER_00058473_v1_big.jpg"
+							   },
+							   "objMetadataPath":{
+			 
+							   }
+							},
+							"mosExternalMetadata":{
+							   "mosSchema":"http://ncsA4.com/mos/supported_schemas/NCSAXML2.08"
+							}
+						 },
+						 "itemID":14
+					  }
+				   },
+				   {
+					  "Type":"storyItem",
+					  "Content":{
+						 "mosID":"mosart.morten.mos",
+						 "abstract":"TIDSMARKØR IKKE RØR",
+						 "objID":"STORYSTATUS",
+						 "objSlug":"Story status",
+						 "itemID":3,
+						 "itemSlug":"SAK VESTFOLD;head-3"
+					  }
+				   }
+				],
+				"level":"debug",
+				"message":"",
+				"timestamp":"2018-05-15T06:51:29.876Z"
+			 }		)
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
-			{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_07C8C71B-1835-493D-94E1678FD1425B71;4CBE86C0-9A69-4EF4-81F8E8CD275092E8","Slug":"Åpning;head-mesterskap-020518-te","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"LINUXENPS","ElapsedTime":7,"MediaTime":0,"ModBy":"N639194","ModTime":"20180515T063647Z","MOSAbstracts":"head-mesterskap-020518-te NYHETER 00:00:12:13 \n_00:00:00:00 | @M=Auto Openend | 52 headline | 1:Fylkesmeisterskap i Vestfold | 2:Østafjells | 3: | 4: | 00:00:07:00\nTIDSMARKØR IKKE RØR","MOSItemDurations":"12,52\n0","MOSItemEdDurations":"","MOSObjSlugs":"head-mesterskap-020518-te\n52 headline 1:Fylkesmeisterskap i Vestfold  2:Østafjells\nStory status","MOSSlugs":"FYLKESMESTERSKAP;head-mesterskap-020518-te-4\n52 headline 1:Fylkesmeisterskap i Vestfold  2:Østafjells\nSAK VESTFOLD;head-3","MOSTimes":"20180502T165021004Z","Owner":"LINUXENPS","Printed":"20180502T164204Z","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"Lærlingar konkurrerte i barne- og ungdomsarbeiderfaget. Arrangementet skal skape blest rundt yrket.","StoryProducer":"DKTE","TextTime":7,"SystemApprovedBy":"N12914","Kilde":"TV","mosartType":"STK","mosartVariant":"HEAD","OpprLand":"Norge","ReadTime":7,"Rettigheter":"Grønt","Team":"(Kun for STK:) Foto: / Redigering:","ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71","Body":[{"Type":"storyItem","Content":{"itemID":9,"itemSlug":"FYLKESMESTERSKAP;head-mesterskap-020518-te-4","objID":"\\\\xpro\\Omn\\C\\S\\24\\61","mosID":"OMNIBUS.XPRO.MOS","mosAbstract":"head-mesterskap-020518-te NYHETER 00:00:12:13","objDur":626,"objTB":50,"objSlug":"head-mesterskap-020518-te","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"OMNIBUS","mosPayload":{"title":"head-mesterskap-020518-te","objectType":"CLIP","clipType":"NYHETER","objDur":626,"objType":"VIDEO"}}}},{"Type":"storyItem","Content":{"itemID":8,"itemSlug":"52 headline 1:Fylkesmeisterskap i Vestfold  2:Østafjells","itemChannel":"CG1","mosID":"chyron.techycami02.xpro.nrk.mos","abstract":"_00:00:00:00 | @M=Auto Openend | 52 headline | 1:Fylkesmeisterskap i Vestfold | 2:Østafjells | 3: | 4: | 00:00:07:00","mosObj":{"objID":"NYHETER\\00058435?version=1","objSlug":"52 headline 1:Fylkesmeisterskap i Vestfold  2:Østafjells","mosItemEditorProgID":"Chymox.AssetBrowser.1","objDur":0,"objTB":0,"objPaths":{"objProxyPath":{"techDescription":"JPEG Thumbnail","$t":"http://160.68.33.159/thumbs/NYHETER/58000/Objects_NYHETER_00058435_v1_big.jpg"},"objMetadataPath":{}},"mosExternalMetadata":{"mosSchema":"http://ncsA4.com/mos/supported_schemas/NCSAXML2.08"}}}},{"Type":"storyItem","Content":{"mosID":"mosart.morten.mos","abstract":"TIDSMARKØR IKKE RØR","objID":"STORYSTATUS","objSlug":"Story status","itemID":3,"itemSlug":"SAK VESTFOLD;head-3"}}],"level":"debug","message":"","timestamp":"2018-05-15T06:51:30.074Z"}
-		)
-		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, // @todo is this firing before the heads? it looks like it could be
-			{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_07C8C71B-1835-493D-94E1678FD1425B71;8B0D9EE2-EF9A-472F-80C6DD2CCDCFC2E6","Slug":"Åpning;velkommen","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"LINUXENPS","ElapsedTime":5,"Estimated":0,"MediaTime":0,"ModBy":"N639194","ModTime":"20180514T135619Z","MOSAbstracts":"_00:00:00:00 | @M=Auto Openend | 50 logo | 1: | 2: | 3: | 4: | 00:00:00:00\nTIDSMARKØR IKKE RØR","MOSItemDurations":0,"MOSItemEdDurations":"","MOSObjSlugs":"50 logo 1:  2:\nStory status","MOSSlugs":"50 logo 1:  2:\nVelkommen;velkommen-4","MOSTimes":"20180502T165026622Z","Owner":"LINUXENPS","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"<BAK FADE<00:01:12>>","TextTime":0,"SystemApprovedBy":"N12914","mosartType":"KAM","mosartVariant":"ÅPNING3","ReadTime":0,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71","Body":[{"Type":"storyItem","Content":{"mosID":"chyron.techycami02.xpro.nrk.mos","abstract":"_00:00:00:00 | @M=Auto Openend | 50 logo | 1: | 2: | 3: | 4: | 00:00:00:00","objPaths":{"objProxyPath":{"techDescription":"JPEG Thumbnail","$t":"http://160.68.33.159/thumbs/NYHETER/16000/Objects_NYHETER_00016967_v1_big.jpg"},"objMetadataPath":{}},"itemChannel":"CG1","itemSlug":"50 logo 1:  2:","mosObj":{"objID":"NYHETER\\00016967?version=1","objSlug":"50 logo 1:  2:","mosItemEditorProgID":"Chymox.AssetBrowser.1","objDur":0,"objTB":0,"objPaths":{"objProxyPath":{"techDescription":"JPEG Thumbnail","$t":"http://160.68.33.159/thumbs/NYHETER/16000/Objects_NYHETER_00016967_v1_big.jpg"},"objMetadataPath":{}},"mosExternalMetadata":{"mosSchema":"http://ncsA4.com/mos/supported_schemas/NCSAXML2.08"}},"itemID":6}},{"Type":"storyItem","Content":{"mosID":"mosart.morten.mos","abstract":"TIDSMARKØR IKKE RØR","objID":"STORYSTATUS","objSlug":"Story status","itemID":5,"itemSlug":"Velkommen;velkommen-4"}}],"level":"debug","message":"","timestamp":"2018-05-15T06:51:30.275Z"}
-		)
+			{
+				"ID":"MAENPSTEST14;P_SERVER14\\W\\R_07C8C71B-1835-493D-94E1678FD1425B71;4CBE86C0-9A69-4EF4-81F8E8CD275092E8",
+				"Slug":"Åpning;head-mesterskap-020518-te",
+				"MosExternalMetaData":[
+				   {
+					  "MosScope":"PLAYLIST",
+					  "MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd",
+					  "MosPayload":{
+						 "Approved":0,
+						 "Creator":"LINUXENPS",
+						 "ElapsedTime":7,
+						 "MediaTime":0,
+						 "ModBy":"N639194",
+						 "ModTime":"20180515T063647Z",
+						 "MOSAbstracts":"head-mesterskap-020518-te NYHETER 00:00:12:13 \n_00:00:00:00 | @M=Auto Openend | 52 headline | 1:Fylkesmeisterskap i Vestfold | 2:Østafjells | 3: | 4: | 00:00:07:00\nTIDSMARKØR IKKE RØR",
+						 "MOSItemDurations":"12,52\n0",
+						 "MOSItemEdDurations":"",
+						 "MOSObjSlugs":"head-mesterskap-020518-te\n52 headline 1:Fylkesmeisterskap i Vestfold  2:Østafjells\nStory status",
+						 "MOSSlugs":"FYLKESMESTERSKAP;head-mesterskap-020518-te-4\n52 headline 1:Fylkesmeisterskap i Vestfold  2:Østafjells\nSAK VESTFOLD;head-3",
+						 "MOSTimes":"20180502T165021004Z",
+						 "Owner":"LINUXENPS",
+						 "Printed":"20180502T164204Z",
+						 "SourceMediaTime":0,
+						 "SourceTextTime":0,
+						 "StoryLogPreview":"Lærlingar konkurrerte i barne- og ungdomsarbeiderfaget. Arrangementet skal skape blest rundt yrket.",
+						 "StoryProducer":"DKTE",
+						 "TextTime":7,
+						 "SystemApprovedBy":"N12914",
+						 "Kilde":"TV",
+						 "mosartType":"STK",
+						 "mosartVariant":"HEAD",
+						 "OpprLand":"Norge",
+						 "ReadTime":7,
+						 "Rettigheter":"Grønt",
+						 "Team":"(Kun for STK:) Foto: / Redigering:",
+						 "ENPSItemType":3
+					  }
+				   }
+				],
+				"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71",
+				"Body":[
+				   {
+					  "Type":"storyItem",
+					  "Content":{
+						 "itemID":9,
+						 "itemSlug":"FYLKESMESTERSKAP;head-mesterskap-020518-te-4",
+						 "objID":"\\\\xpro\\Omn\\C\\S\\24\\61",
+						 "mosID":"OMNIBUS.XPRO.MOS",
+						 "mosAbstract":"head-mesterskap-020518-te NYHETER 00:00:12:13",
+						 "objDur":626,
+						 "objTB":50,
+						 "objSlug":"head-mesterskap-020518-te",
+						 "mosExternalMetadata":{
+							"mosScope":"PLAYLIST",
+							"mosSchema":"OMNIBUS",
+							"mosPayload":{
+							   "title":"head-mesterskap-020518-te",
+							   "objectType":"CLIP",
+							   "clipType":"NYHETER",
+							   "objDur":626,
+							   "objType":"VIDEO"
+							}
+						 }
+					  }
+				   },
+				   {
+					  "Type":"storyItem",
+					  "Content":{
+						 "itemID":8,
+						 "itemSlug":"52 headline 1:Fylkesmeisterskap i Vestfold  2:Østafjells",
+						 "itemChannel":"CG1",
+						 "mosID":"chyron.techycami02.xpro.nrk.mos",
+						 "abstract":"_00:00:00:00 | @M=Auto Openend | 52 headline | 1:Fylkesmeisterskap i Vestfold | 2:Østafjells | 3: | 4: | 00:00:07:00",
+						 "mosObj":{
+							"objID":"NYHETER\\00058435?version=1",
+							"objSlug":"52 headline 1:Fylkesmeisterskap i Vestfold  2:Østafjells",
+							"mosItemEditorProgID":"Chymox.AssetBrowser.1",
+							"objDur":0,
+							"objTB":0,
+							"objPaths":{
+							   "objProxyPath":{
+								  "techDescription":"JPEG Thumbnail",
+								  "$t":"http://160.68.33.159/thumbs/NYHETER/58000/Objects_NYHETER_00058435_v1_big.jpg"
+							   },
+							   "objMetadataPath":{
+			 
+							   }
+							},
+							"mosExternalMetadata":{
+							   "mosSchema":"http://ncsA4.com/mos/supported_schemas/NCSAXML2.08"
+							}
+						 }
+					  }
+				   },
+				   {
+					  "Type":"storyItem",
+					  "Content":{
+						 "mosID":"mosart.morten.mos",
+						 "abstract":"TIDSMARKØR IKKE RØR",
+						 "objID":"STORYSTATUS",
+						 "objSlug":"Story status",
+						 "itemID":3,
+						 "itemSlug":"SAK VESTFOLD;head-3"
+					  }
+				   }
+				],
+				"level":"debug",
+				"message":"",
+				"timestamp":"2018-05-15T06:51:30.074Z"
+			 }		)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, // @todo gfx?
+			{
+				"ID":"MAENPSTEST14;P_SERVER14\\W\\R_07C8C71B-1835-493D-94E1678FD1425B71;8B0D9EE2-EF9A-472F-80C6DD2CCDCFC2E6",
+				"Slug":"Åpning;velkommen",
+				"MosExternalMetaData":[
+				   {
+					  "MosScope":"PLAYLIST",
+					  "MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd",
+					  "MosPayload":{
+						 "Approved":0,
+						 "Creator":"LINUXENPS",
+						 "ElapsedTime":5,
+						 "Estimated":0,
+						 "MediaTime":0,
+						 "ModBy":"N639194",
+						 "ModTime":"20180514T135619Z",
+						 "MOSAbstracts":"_00:00:00:00 | @M=Auto Openend | 50 logo | 1: | 2: | 3: | 4: | 00:00:00:00\nTIDSMARKØR IKKE RØR",
+						 "MOSItemDurations":0,
+						 "MOSItemEdDurations":"",
+						 "MOSObjSlugs":"50 logo 1:  2:\nStory status",
+						 "MOSSlugs":"50 logo 1:  2:\nVelkommen;velkommen-4",
+						 "MOSTimes":"20180502T165026622Z",
+						 "Owner":"LINUXENPS",
+						 "SourceMediaTime":0,
+						 "SourceTextTime":0,
+						 "StoryLogPreview":"<BAK FADE<00:01:12>>",
+						 "TextTime":0,
+						 "SystemApprovedBy":"N12914",
+						 "mosartType":"KAM",
+						 "mosartVariant":"ÅPNING3",
+						 "ReadTime":0,
+						 "ENPSItemType":3
+					  }
+				   }
+				],
+				"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71",
+				"Body":[
+				   {
+					  "Type":"storyItem",
+					  "Content":{
+						 "mosID":"chyron.techycami02.xpro.nrk.mos",
+						 "abstract":"_00:00:00:00 | @M=Auto Openend | 50 logo | 1: | 2: | 3: | 4: | 00:00:00:00",
+						 "objPaths":{
+							"objProxyPath":{
+							   "techDescription":"JPEG Thumbnail",
+							   "$t":"http://160.68.33.159/thumbs/NYHETER/16000/Objects_NYHETER_00016967_v1_big.jpg"
+							},
+							"objMetadataPath":{
+			 
+							}
+						 },
+						 "itemChannel":"CG1",
+						 "itemSlug":"50 logo 1:  2:",
+						 "mosObj":{
+							"objID":"NYHETER\\00016967?version=1",
+							"objSlug":"50 logo 1:  2:",
+							"mosItemEditorProgID":"Chymox.AssetBrowser.1",
+							"objDur":0,
+							"objTB":0,
+							"objPaths":{
+							   "objProxyPath":{
+								  "techDescription":"JPEG Thumbnail",
+								  "$t":"http://160.68.33.159/thumbs/NYHETER/16000/Objects_NYHETER_00016967_v1_big.jpg"
+							   },
+							   "objMetadataPath":{
+			 
+							   }
+							},
+							"mosExternalMetadata":{
+							   "mosSchema":"http://ncsA4.com/mos/supported_schemas/NCSAXML2.08"
+							}
+						 },
+						 "itemID":6
+					  }
+				   },
+				   {
+					  "Type":"storyItem",
+					  "Content":{
+						 "mosID":"mosart.morten.mos",
+						 "abstract":"TIDSMARKØR IKKE RØR",
+						 "objID":"STORYSTATUS",
+						 "objSlug":"Story status",
+						 "itemID":5,
+						 "itemSlug":"Velkommen;velkommen-4"
+					  }
+				   }
+				],
+				"level":"debug",
+				"message":"",
+				"timestamp":"2018-05-15T06:51:30.275Z"
+			 }		)
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, // @todo gfx
 			{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_07C8C71B-1835-493D-94E1678FD1425B71;BD68FC84-9654-4E3E-B799104C28B28CAB","Slug":"DROPP BÆSJEPOSE;inn","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"LINUXENPS","ElapsedTime":8,"MediaTime":0,"ModBy":"N639194","ModTime":"20180514T135819Z","MOSAbstracts":"_00:00:00:00 | @M=Auto Storyend | 202 bilde | 1:0205-hundebæsj | 2: | 3: | 4: | 00:00:00:00\n_00:00:02:00 | @M=Auto Timed | 01 ett navn | 1:Martin Torstveit | 2:2.mai 2018 | 3: | 4: | 00:00:05:00\nTIDSMARKØR IKKE RØR","MOSItemDurations":"0\n0","MOSItemEdDurations":"","MOSObjSlugs":"202 bilde 1:0205-hundebæsj  2:\n01 ett navn 1:Martin Torstveit  2:2.mai 2018\nStory status","MOSSlugs":"202 bilde 1:0205-hundebæsj  2:\n01 ett navn 1:Martin Torstveit  2:2.mai 2018\nSAK 1;intro-3","MOSTimes":"20180502T165034836Z","Owner":"LINUXENPS","Printed":"20180502T164204Z","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"(K3) God kveld og velkommen. Folk bør la hundebæsjen bli liggande når dei er ute og lufter bikkja. Det meiner Miljøpartiet De Grønne. Partiet meiner det kan redusere mengden poser me kaster i søpla.","TextTime":13,"SystemApprovedBy":"N12914","mosartType":"KAM","mosartVariant":3,"ReadTime":13,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71","Body":[{"Type":"storyItem","Content":{"itemID":5,"itemSlug":"202 bilde 1:0205-hundebæsj  2:","itemChannel":"CG2","mosID":"chyron.techycami02.xpro.nrk.mos","abstract":"_00:00:00:00 | @M=Auto Storyend | 202 bilde | 1:0205-hundebæsj | 2: | 3: | 4: | 00:00:00:00","mosObj":{"objID":"NYHETER\\00058461?version=1","objSlug":"202 bilde 1:0205-hundebæsj  2:","mosItemEditorProgID":"Chymox.AssetBrowser.1","objDur":0,"objTB":0,"objPaths":{"objProxyPath":{"techDescription":"JPEG Thumbnail","$t":"http://160.68.33.159/thumbs/NYHETER/58000/Objects_NYHETER_00058461_v1_big.jpg"},"objMetadataPath":{}},"mosExternalMetadata":{"mosSchema":"http://ncsA4.com/mos/supported_schemas/NCSAXML2.08"}}}},{"Type":"storyItem","Content":{"mosID":"chyron.techycami02.xpro.nrk.mos","abstract":"_00:00:02:00 | @M=Auto Timed | 01 ett navn | 1:Martin Torstveit | 2:2.mai 2018 | 3: | 4: | 00:00:05:00","objPaths":{"objProxyPath":{"techDescription":"JPEG Thumbnail","$t":"http://160.68.33.159/thumbs/NYHETER/58000/Objects_NYHETER_00058439_v1_big.jpg"},"objMetadataPath":{}},"itemChannel":"CG1","itemSlug":"01 ett navn 1:Martin Torstveit  2:2.mai 2018","mosObj":{"objID":"NYHETER\\00058439?version=1","objSlug":"01 ett navn 1:Martin Torstveit  2:2.mai 2018","mosItemEditorProgID":"Chymox.AssetBrowser.1","objDur":0,"objTB":0,"objPaths":{"objProxyPath":{"techDescription":"JPEG Thumbnail","$t":"http://160.68.33.159/thumbs/NYHETER/58000/Objects_NYHETER_00058439_v1_big.jpg"},"objMetadataPath":{}},"mosExternalMetadata":{"mosSchema":"http://ncsA4.com/mos/supported_schemas/NCSAXML2.08"}},"itemID":8}},{"Type":"storyItem","Content":{"mosID":"mosart.morten.mos","abstract":"TIDSMARKØR IKKE RØR","objID":"STORYSTATUS","objSlug":"Story status","itemID":2,"itemSlug":"SAK 1;intro-3"}}],"level":"debug","message":"","timestamp":"2018-05-15T06:51:30.478Z"}
 		)

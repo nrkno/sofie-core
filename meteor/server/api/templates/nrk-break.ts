@@ -57,6 +57,7 @@ import {
 } from '../../../lib/collections/Timeline'
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
+import { SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems';
 
 import { LLayers } from './nrk-layers'
 
@@ -83,6 +84,7 @@ export const NrkBreakTemplate = literal<TemplateFunctionOptional>((context, stor
             runningOrderId: '',
             slug: 'BREAK',
         }),
+        segmentLineAdLibItems: null,
         segmentLineItems: [
             literal<SegmentLineItemOptional>({
                 _id: '',

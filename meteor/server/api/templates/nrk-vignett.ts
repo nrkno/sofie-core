@@ -72,9 +72,9 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
     switch (mosartVariant) {
         case 'VIGNETT2018':
             // lengths and times are milliseconds
-            clip = 'vignett'	// @todo TBD
-            sourceDuration = 4	* 1000	// @todo TBD
-            segmentLineduration = 3 * 1000	// @todo TBD
+            clip = 'vignett2018-overlay'	// @todo TBD
+            sourceDuration = 60	* 1000	// @todo TBD
+            segmentLineduration = 4400	// @todo TBD
             break
         default:
             context.warning('Unknown mosartVariant: ' + mosartVariant)
@@ -92,7 +92,7 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
         name: 'Vignett',
         trigger: {
             type: TriggerType.TIME_ABSOLUTE,
-            value: 0
+            value: 'now'
         },
         status: RundownAPI.LineItemStatusCode.UNKNOWN,
         sourceLayerId: 'studio0_vignett',
@@ -134,7 +134,7 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
                 // TMP
                 literal<TimelineObjAtemME>({
                     _id: '', deviceId: [''], siId: '', roId: '',
-                    trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.vignett}.start + 100` }, // give the clip a chance to start before changing the cam underneath
+                    trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.vignett}.start + 200` }, // account for caspar output latency 4+frames
                     priority: 1,
                     duration: 0,
                     LLayer: LLayers.atem_me_program,
@@ -163,5 +163,6 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
             expectedDuration: segmentLineduration,
         }),
         segmentLineItems: segmentLineItems,
+        segmentLineAdLibItems: null,
     })
 })
