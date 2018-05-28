@@ -5,13 +5,22 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-          dockerBuild('sofie/tv-automation-server-core')
+        sofieSlackSendBuildStarted()
+        dockerBuild('sofie/tv-automation-server-core')
       }
     }
     stage('Deploy') {
       steps {
-          coreDeploy()
+        coreDeploy()
       }
+    }
+  }
+  post {
+    failure {
+      sofieSlackSendBuildFailure()
+    }
+    success {
+      sofieSlackSendBuildSuccess()
     }
   }
 }
