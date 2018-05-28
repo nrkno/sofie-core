@@ -11,7 +11,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { AdLibPanel } from './AdLibPanel'
 
 interface IPropsHeader {
-
+	onChangeBottomMargin?: (newBottomMargin: string) => void
 }
 
 enum InspectorPanelTabs {
@@ -33,15 +33,22 @@ export const InspectorDrawer = translate()(class extends React.Component<IPropsH
 		}
 	}
 
+	getHeight (newState?: boolean): string | undefined {
+		return (newState !== undefined ? newState : this.state.expanded) ?
+			'50vh'
+			:
+			undefined
+	}
+
 	getStyle () {
 		return this.state.expanded ?
 		{
-			'top': '50vh',
+			'top': this.getHeight(),
 			'transition': '0.5s top ease-out'
 		}
 		:
 		{
-			'top': undefined,
+			'top': this.getHeight(),
 			'transition': '0.5s top ease-out'
 		}
 	}
@@ -50,6 +57,10 @@ export const InspectorDrawer = translate()(class extends React.Component<IPropsH
 		this.setState({
 			expanded: !this.state.expanded
 		})
+		if (this.props.onChangeBottomMargin && typeof this.props.onChangeBottomMargin === 'function') {
+			console.log(this.getHeight(!this.state.expanded) || '0px')
+			this.props.onChangeBottomMargin(this.getHeight(!this.state.expanded) || '0px')
+		}
 	}
 
 	switchTab (tab: InspectorPanelTabs) {
