@@ -90,6 +90,9 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
         value: 0
     }
 
+    let overlapDuration: number | undefined
+    let transition = Atem_Enums.TransitionStyle.CUT
+
     // @todo try and move this to be run at the end of other templates, as it really is just an out animation for them
 
     // if previous SegmentLine is head, then wipe out of it
@@ -99,12 +102,12 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
             _id: IDs.wipeVideo, deviceId: [''], siId: '', roId: '',
             trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
             priority: 1,
-            duration: 2000,
+            duration: 720,
             LLayer: LLayers.casparcg_player_wipe,
             content: {
                 type: TimelineContentTypeCasparCg.VIDEO,
                 attributes: {
-                    file: 'wipe2' // @todo 'wipe_white'
+                    file: 'wipe_white'
                 }
             }
         }))
@@ -113,12 +116,12 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
             _id: IDs.wipeAudioPunktum, deviceId: [''], siId: '', roId: '',
             trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.wipeVideo}.start + 0` },
             priority: 1,
-            duration: 800,
+            duration: 3900,
             LLayer: LLayers.casparcg_player_soundeffect,
             content: {
                 type: TimelineContentTypeCasparCg.VIDEO,
                 attributes: {
-                    file: 'wipe_audio_punktum'
+                    file: 'DK_punktum_etter_head'
                 }
             }
         }))
@@ -126,7 +129,10 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
         // @todo audio levels
         
         // delay the camera cut until the trigger point of the wipe
-        camTrigger = { type: TriggerType.TIME_RELATIVE, value: `#${IDs.wipeVideo}.start + 1500` } // @todo better trigger point
+        camTrigger = { type: TriggerType.TIME_RELATIVE, value: `#${IDs.wipeVideo}.start + 120 + 120` } // @todo better trigger point
+        // @todo - cam mix
+        overlapDuration = 300
+        transition = Atem_Enums.TransitionStyle.MIX
     }
 
     components.push(literal<TimelineObjAtemME>({
@@ -139,21 +145,21 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
             type: TimelineContentTypeAtem.ME,
             attributes: {
                 input: cameraInput,
-                transition: Atem_Enums.TransitionStyle.CUT
+                transition: transition
             }
         }
     }))
 
     return {
-        segmentLine: null,
-        /*literal<DBSegmentLine>({
+        segmentLine: literal<DBSegmentLine>({
             _id: '',
             _rank: 0,
             mosId: '',
             segmentId: '',
             runningOrderId: '',
             slug: 'KAM',
-        }),*/
+            overlapDuration: overlapDuration
+        }),
         segmentLineItems: [
             literal<SegmentLineItemOptional>({
                 _id: '',
@@ -176,6 +182,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
                     timelineObjects: _.compact(components)
                 }
             })
-        ]
+        ],
+        segmentLineAdLibItems: null
     }
 })

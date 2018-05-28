@@ -550,6 +550,7 @@ function updateTimeline (studioInstallationId: string) {
 		let currentSegmentLine: SegmentLine | undefined
 		let nextSegmentLine: SegmentLine | undefined
 		let currentSegmentLineGroup: TimelineObj | undefined
+		let previousSegmentLineGroup: TimelineObj | undefined
 
 		// we get the nextSegmentLine first, because that affects how the currentSegmentLine will be treated
 		if (activeRunningOrder.nextSegmentLineId) {
@@ -561,6 +562,29 @@ function updateTimeline (studioInstallationId: string) {
 		if (activeRunningOrder.currentSegmentLineId) {
 			currentSegmentLine = SegmentLines.findOne(activeRunningOrder.currentSegmentLineId)
 			if (!currentSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.currentSegmentLineId}" not found!`)
+
+
+			if (activeRunningOrder.previousSegmentLineId && currentSegmentLine.overlapDuration) {
+				let previousSegmentLine = SegmentLines.findOne(activeRunningOrder.previousSegmentLineId)
+				if (!previousSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.previousSegmentLineId}" not found!`)
+
+				// TODO - cheat on duration for now
+				// TOOD - is duration the correct thing to do? or do we want to just trigger a reupdate in X ms?
+				// Or this may want to change to a relative trigger, but that is a lot more fiddly
+				const now = Date.now() + 100
+				logger.warn("Continue previous for: " + currentSegmentLine.overlapDuration + " ran for: " + previousSegmentLine.duration + " starting at: " + previousSegmentLine.startedPlayback + " ended at: " + currentSegmentLine.startedPlayback)
+				previousSegmentLineGroup = createSegmentLineGroup(previousSegmentLine, now - (previousSegmentLine.startedPlayback || (now-5000)) + currentSegmentLine.overlapDuration)
+				previousSegmentLineGroup.priority = -1
+				previousSegmentLineGroup.trigger = literal<ITimelineTrigger>({
+					type: TriggerType.TIME_ABSOLUTE,
+					value: previousSegmentLine.startedPlayback || 0
+				})
+
+				timelineObjs = timelineObjs.concat(
+					previousSegmentLineGroup,
+					transformSegmentLineIntoTimeline(previousSegmentLine, previousSegmentLineGroup))
+				timelineObjs.push(createSegmentLineGroupFirstObject(previousSegmentLine, previousSegmentLineGroup))
+			}
 
 			// fetch items
 			// fetch the timelineobjs in items
@@ -577,7 +601,7 @@ function updateTimeline (studioInstallationId: string) {
 			if (currentSegmentLineGroup) {
 				nextSegmentLineGroup.trigger = literal<ITimelineTrigger>({
 					type: TriggerType.TIME_RELATIVE,
-					value: `#${currentSegmentLineGroup._id}.end`
+					value: `#${currentSegmentLineGroup._id}.end - ${nextSegmentLine.overlapDuration || 0}`
 				})
 			}
 			timelineObjs = timelineObjs.concat(
