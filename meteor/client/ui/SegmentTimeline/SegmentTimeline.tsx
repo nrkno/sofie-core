@@ -267,6 +267,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 									 // The following code is fine, just withTracer HOC messing with the available properties
 									 // @ts-ignore
 									 scrollWidth={this.state.timelineWidth / this.props.timeScale}
+									 firstSegmentLineInSegment={this.props.segmentLines[0]}
 									 segmentLine={segmentLine} />
 			)
 		})
@@ -285,6 +286,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 						})}>
 							<div className='segment-timeline__output-layer-control__label'
 								 data-output-id={outputLayer._id}
+								 tabIndex={0}
 								 onClick={(e) => this.props.onCollapseOutputToggle && this.props.onCollapseOutputToggle(outputLayer, e)}>{outputLayer.name}
 							</div>
 							{(
@@ -314,7 +316,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 				'collapsed': this.props.isCollapsed,
 
 				'live': this.props.isLiveSegment,
-				'next': this.props.isNextSegment,
+				'next': !this.props.isLiveSegment && this.props.isNextSegment,
 
 				'has-played': this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment,
 				'has-remote-items': this.props.hasRemoteItems && !this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment
@@ -328,7 +330,7 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 					renderTag='h2'>
 					{this.props.segment.name}
 				</ContextMenuTrigger>
-				<div className='segment-timeline__duration'
+				<div className='segment-timeline__duration' tabIndex={0}
 					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
 					 {this.props.runningOrder && this.props.segmentLines && this.props.segmentLines.length > 0 &&
 						// @ts-ignore

@@ -1,0 +1,276 @@
+@import "colorScheme";
+
+$adlib-item-selected-color: #009DFF;
+
+.adlib-panel {
+	display: grid;
+	grid-column-gap: 0;
+	grid-row-gap: 0;
+	grid-template-columns: [template-list] 20% [list-view] auto [end];
+	grid-template-rows: [tool-bar] 3.3em [list-view] auto [end];
+	overflow: hidden;
+	user-select: none;
+
+	> .adlib-panel__segments {
+		grid-column: template-list / list-view;
+		grid-row: tool-bar / end;
+		overflow-y: auto;
+		overflow-x: hidden;
+		display: block;
+		margin: 0;
+		padding: 0;
+
+		> .adlib-panel__segments__segment {
+			position: relative;
+			display: block;
+			line-height: 1.5em;
+			padding: 0 1em;
+			margin: 0.5em 2em 0.5em 0;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			cursor: pointer;
+
+			&::after {
+				display: none;
+				content: ' ';
+				background: inherit;
+				width:0.7em;
+				top: 0;
+				right: -0.7em;
+				bottom: 0;
+				clip-path: polygon(0 0, 100% 50%, 0 100%);
+				position: absolute;
+			}
+
+			&.live {
+				background: $general-live-color;
+				font-weight: 500;
+				color: #000;
+
+				&::after {
+					display: block;
+				}
+			}
+
+			&.next {
+				background: $general-next-color;
+				color: #fff;
+				font-weight: 500;
+				text-shadow: 0 0 5px #000;
+
+				&::after {
+					display: block;
+				}
+			}
+		}
+	}
+
+	> .adlib-panel__list-view__toolbar {
+		grid-column: list-view / end;
+		grid-row: tool-bar / list-view;
+
+		display: flex;
+		padding: 10px 5px;
+
+		> .adlib-panel__list-view__toolbar__filter {
+			flex: 2 2;
+			max-width: 25em;
+			position: relative;
+
+			> .adlib-panel__list-view__toolbar__filter__input {
+				width: 100%;
+				background: #2D2D2D;
+				border: 1px solid #424242;
+				border-radius: 2em;
+				box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) inset, 1px 1px 2px rgba(0, 0, 0, 0.2);
+				line-height: 1.8em;
+				padding: 0 1em;
+				
+				&:hover, &:focus {
+					background: #3b3b3b;
+					transition: 0.2s background-color;
+				}
+			}
+
+			> .adlib-panel__list-view__toolbar__filter__clear {
+				position: absolute;
+				right: 1em;
+				top: 0.4em;
+				opacity: 0.3;
+				cursor: pointer;
+
+				&:hover {
+					opacity: 0.7;
+				}
+			}
+		}
+
+		> .adlib-panel__list-view__toolbar__buttons {
+			flex: 1 1;
+			text-align: right;
+
+			> button {
+				padding: 0 0.5em;
+				font-size: 1.3em;
+				opacity: 0.5;
+
+				&.active {
+					opacity: 1;
+				}
+			}
+		}
+	}
+
+	> .adlib-panel__list-view__list {
+		grid-column: list-view / end;
+		grid-row: list-view / end;
+		position: relative;
+		overflow: hidden;
+		background: inherit;
+
+		> .adlib-panel__list-view__list__table {
+			position: relative;
+			display: block;
+			width: 100%;
+			max-height: calc(100% - 1.3em);
+			overflow-y: auto;
+    		overflow-x: hidden;
+
+			&.adlib-panel__list-view__list__table--header {
+				position: relative;
+				top: 0;
+				padding-top: 0;
+				z-index: 3;
+				background: inherit;
+				padding-bottom: 0.3em;
+			}
+
+			> thead {
+				display: table;
+				width: 100%;
+				font-size: 0.8em;
+
+				> tr {
+					> th {
+						font-weight: 400;
+						border-left: 1px solid transparent;
+    					border-right: 1px solid transparent;
+					}
+				}
+			}
+
+			.adlib-panel__list-view__list__table__cell--icon {
+				width: 50px;
+				text-align: center;
+			}
+			.adlib-panel__list-view__list__table__cell--shortcut {
+				width: 40px;
+				text-align: center;
+			}
+			.adlib-panel__list-view__list__table__cell--output {
+				width: 50px;
+				text-align: center;
+			}
+			.adlib-panel__list-view__list__table__cell--name {
+				width: 25%;
+			}
+			.adlib-panel__list-view__list__table__cell--data {
+
+			}
+			.adlib-panel__list-view__list__table__cell--resolution {
+				width: 9%
+			}
+			.adlib-panel__list-view__list__table__cell--fps {
+				width: 4%
+			}
+			.adlib-panel__list-view__list__table__cell--duration {
+				width: 7%
+			}
+			.adlib-panel__list-view__list__table__cell--tc-start {
+				width: 7%
+			}
+
+			> tbody.adlib-panel__list-view__list__segment {
+				display: block;
+				width: 100%;
+				border-left: 2px solid #000;
+				font-size: 0.8em;
+
+				border-collapse: separate;
+				position: relative;
+				
+				> .adlib-panel__list-view__list__seg-header {
+					display: table;
+					width: 100%;
+
+					> td {
+						font-size: 1.4em;
+						line-height: 1.5em;
+						padding-left: 0.5em;
+						background: #000;
+					}
+				}
+
+				&.live {
+					border-left: 2px solid $general-live-color;
+					
+					> .adlib-panel__list-view__list__seg-header > td {
+						background: $general-live-color;
+						color: #000;
+						font-weight: 500;
+					}
+				}
+
+				&.next {
+					border-left: 2px solid $general-next-color;
+					
+					> .adlib-panel__list-view__list__seg-header > td {
+						background: $general-next-color;
+						color: #fff;
+						font-weight: 500;
+						text-shadow: 0 0 5px #000;
+					}
+				}
+
+				> .adlib-panel__list-view__list__segment__item {
+					display: table;
+    				position: relative;
+					width: 100%;
+					
+					> td {
+						border: 1px solid #000;
+						line-height: 2em;
+						padding: 0 0.7em;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						white-space: nowrap;
+					}
+
+					&:hover {
+						> td {
+							background: #252525;
+						}
+					}
+
+					&.selected {
+						&::after {
+							content: ' ';
+							display: block;
+							position: absolute;
+							top: 0;
+							left: 0;
+							bottom: 0;
+							right: 0;
+							border: 1px solid $adlib-item-selected-color;
+						}
+					}
+				}
+
+				.adlib-panel__list-view__list__table__cell--icon {
+					border-right-width: 3px !important;
+    				border-left-width: 3px !important;
+				}
+			}
+		}
+	}
+}

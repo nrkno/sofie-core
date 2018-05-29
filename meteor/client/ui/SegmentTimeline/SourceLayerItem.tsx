@@ -190,18 +190,19 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration : 0
 		let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration : 0
 
-		let itemDuration = segmentLineItem.renderedDuration || segmentLineItem.expectedDuration
+		// If this is a live line, take duration verbatim from SegmentLayerItemContainer with a fallback on expectedDuration.
+		// If not, as-run segmentLine "duration" limits renderdDuration which takes priority over MOS-import
+		// expectedDuration (editorial duration)
+		let itemDuration = this.props.isLiveLine ? segmentLineItem.renderedDuration || segmentLineItem.expectedDuration : Math.min(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
 
 		if (this.props.relative) {
 			return {
-				// as-run "duration" takes priority over renderdDuration which takes priority over MOS-import expectedDuration (editorial duration)
 				// also: don't render transitions in relative mode
 				'left': (((segmentLineItem.renderedInPoint || 0)) / (this.props.segmentLineDuration || 1) * 100).toString() + '%',
 				'width': ((itemDuration) / (this.props.segmentLineDuration || 1) * 100).toString() + '%'
 			}
 		} else {
 			return {
-				// as-run "duration" takes priority over renderdDuration which takes priority over MOS-import expectedDuration (editorial duration)
 				'left': (((segmentLineItem.renderedInPoint || 0) + inTransitionDuration) * this.props.timeScale).toString() + 'px',
 				'width': ((itemDuration - inTransitionDuration - outTransitionDuration) * this.props.timeScale).toString() + 'px'
 			}
@@ -382,7 +383,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 					'hide-overflow-labels': this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth),
 
-					'infinite': this.props.segmentLineItem.expectedDuration === Number.POSITIVE_INFINITY,
+					'infinite': this.props.segmentLineItem.expectedDuration === 0, // 0 is a special value
 
 					'source-missing': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING,
 					'source-broken': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN,

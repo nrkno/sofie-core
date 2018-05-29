@@ -35,7 +35,8 @@ export enum TimelineContentTypeAtem { //  Atem-state
 	ME = 'me',
 	DSK = 'dsk',
 	AUX = 'aux',
-	SSRC = 'ssrc'
+	SSRC = 'ssrc',
+	MEDIAPLAYER = 'mp'
 }
 export namespace Atem_Enums {
 	export enum TransitionStyle {
@@ -251,9 +252,20 @@ export interface TimelineObjAtemME extends TimelineObj {
 		transitions?: {
 			inTransition?: TimelineTransition
 		}
-		attributes: {
-			input: number,
-			transition: Atem_Enums.TransitionStyle
+		attributes: { // Casparcg-state
+			input?: number,
+			transition?: Atem_Enums.TransitionStyle,
+
+			// programInput?: number; // programInput exists, bu I don't think we should use it /Nyman
+			previewInput?: number;
+			inTransition?: boolean;
+			transitionPreview?: boolean;
+			transitionPosition?: number;
+			// transitionFramesLeft?: number;
+			// fadeToBlack?: boolean;
+			// numberOfKeyers?: number;
+			// transitionProperties?: AtemTransitionProperties;
+			// transitionSettings?: AtemTransitionSettings;
 		}
 	}
 }

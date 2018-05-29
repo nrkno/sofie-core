@@ -57,15 +57,36 @@ const DeviceItem = translate()(class extends React.Component<IDeviceItemPropsHea
 	}
 
 	render () {
-		let statusClassNames = ClassNames({
-			'device-item__device-status': true,
-			'device-item__device-status--unknown': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN,
-			'device-item__device-status--good': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD,
-			'device-item__device-status--minor-warning': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
-			'device-item__device-status--warning': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
-			'device-item__device-status--bad': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD,
-			'device-item__device-status--fatal': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL
-		})
+		// let statusClassNames = ClassNames({
+		// 	'device-item__device-status': true,
+		// 	'device-item__device-status--unknown': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN,
+		// 	'device-item__device-status--good': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD,
+		// 	'device-item__device-status--minor-warning': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
+		// 	'device-item__device-status--warning': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
+		// 	'device-item__device-status--bad': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD,
+		// 	'device-item__device-status--fatal': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL
+		// })
+		let statusClassNames = [
+			'device-item__device-status',
+			(
+				(
+					this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN
+					|| !this.props.device.connected
+				) ?
+					'device-item__device-status--unknown' :
+				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD ) ?
+					'device-item__device-status--good' :
+				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR ) ?
+					'device-item__device-status--minor-warning' :
+				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR ) ?
+					'device-item__device-status--warning' :
+				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD ) ?
+					'device-item__device-status--bad' :
+				( this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL ) ?
+					'device-item__device-status--fatal' :
+				''
+			)
+		].join(' ')
 
 		return (
 			<tr className='device-item'>

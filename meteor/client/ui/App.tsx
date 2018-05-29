@@ -26,6 +26,7 @@ import {
   Switch,
   Redirect
 } from 'react-router-dom'
+import { StudioInstallations } from '../../lib/collections/StudioInstallations';
 
 export interface InjectedTranslateI18nProps extends InjectedI18nProps, InjectedTranslateProps {
 
@@ -82,6 +83,14 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		let sub6 = Meteor.subscribe('studioInstallations', {})
 		let sub7 = Meteor.subscribe('showStyles', {})
 		let sub8 = Meteor.subscribe('timeline', {})
+
+		Tracker.autorun(() => {
+			// temporary implementation:
+			let studio = StudioInstallations.findOne()
+			if (studio) {
+				let sub9 = Meteor.subscribe('mediaObjects', studio._id, {})
+			}
+		})
 
 		return (
 			<Router>

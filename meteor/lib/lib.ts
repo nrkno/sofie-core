@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection, Selector } from './collections/typings'
+import { PeripheralDeviceAPI } from './api/peripheralDevice'
 
 /**
  * Convenience method to convert a Meteor.call() into a Promise
@@ -24,7 +25,7 @@ export type Time = number
  * @return {Time}
  */
 export function getCurrentTime (): Time {
-	return Date.now() - systemTime.diff
+	return Math.floor(Date.now() - systemTime.diff)
 }
 let systemTime = {
 	diff: 0,
@@ -38,7 +39,7 @@ if (Meteor.isServer) {
 	// fetch time from server:
 	let updateDiffTime = () => {
 		let sentTime = Date.now()
-		Meteor.call('systemTime.getTimeDiff', (err, stat) => {
+		Meteor.call(PeripheralDeviceAPI.methods.getTimeDiff, (err, stat) => {
 			let replyTime = Date.now()
 			if (err) {
 				console.log(err)
@@ -50,11 +51,11 @@ if (Meteor.isServer) {
 				systemTime.stdDev = Math.abs(sentTime - replyTime) / 2
 				console.log('time diff to server: ' + systemTime.diff + ' (stdDev: ' + systemTime.stdDev + ')')
 				if (!stat.good) {
-					setTimeout(() => {
+					Meteor.setTimeout(() => {
 						updateDiffTime()
 					}, 20 * 1000)
 				} else if (!stat.good || systemTime.stdDev > 50) {
-					setTimeout(() => {
+					Meteor.setTimeout(() => {
 						updateDiffTime()
 					}, 2000)
 				}
@@ -63,11 +64,11 @@ if (Meteor.isServer) {
 	}
 
 	Meteor.startup(() => {
-		setInterval(() => {
+		Meteor.setInterval(() => {
 			updateDiffTime()
 		}, 3600 * 1000)
 		updateDiffTime()
-		// setTimeout(() => {
+		// Meteor.setTimeout(() => {
 		// 	updateDiffTime()
 		// }, 2000)
 	})

@@ -13,7 +13,7 @@ export interface ITimelineTrigger {
 }
 
 /** A Single item in a "line": script, VT, cameras */
-export interface SegmentLineItem {
+export interface SegmentLineItemGeneric {
 	_id: string
 	/** ID of the source object in MOS */
 	mosId: string
@@ -24,7 +24,7 @@ export interface SegmentLineItem {
 	/** User-presentable name for the timeline item */
 	name: string
 	/** Timeline item trigger. Possibly, most of these will be manually triggered as next, but maybe some will be automatic. */
-	trigger: ITimelineTrigger
+	trigger?: ITimelineTrigger
 	/** Playback availability status */
 	status: RundownAPI.LineItemStatusCode
 	/** Source layer the timeline item belongs to */
@@ -32,7 +32,7 @@ export interface SegmentLineItem {
   	/** Layer output this segment line item belongs to */
 	outputLayerId: string
 	/** Expected duration of the item as planned or as estimated by the system (in case of Script layers), in milliseconds. */
-	expectedDuration: number
+	expectedDuration?: number
 	/** Actual duration of the item, as played-back, in milliseconds. This value will be updated during playback for some types of items. */
 	duration?: number
 	/** A flag to signal a given SegmentLineItem has been deactivated manually */
@@ -48,6 +48,11 @@ export interface SegmentLineItem {
 	content?: BaseContent
 	/** The id of the item this item is a continuation of. If it is a continuation, the inTranstion must not be set, and trigger must be 0 */
 	continuesRefId?: string
+}
+
+export interface SegmentLineItem extends SegmentLineItemGeneric {
+	trigger: ITimelineTrigger
+	expectedDuration: number
 }
 
 export const SegmentLineItems: TransformedCollection<SegmentLineItem, SegmentLineItem>

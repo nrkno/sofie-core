@@ -43,6 +43,7 @@ interface ISourceLayerProps {
 	livePosition: number | null
 	scrollLeft: number
 	scrollWidth: number
+	liveLinePadding: number
 	onContextMenu?: (contextMenuContext: any) => void
 }
 class SourceLayer extends React.Component<ISourceLayerProps> {
@@ -89,6 +90,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 							timeScale={this.props.timeScale}
 							relative={this.props.relative}
 							lineStartsAt={this.props.segmentLine.startsAt}
+							liveLinePadding={this.props.liveLinePadding}
 							/>
 					)
 				})
@@ -125,6 +127,7 @@ interface IOutputGroupProps {
 	livePosition: number | null
 	scrollLeft: number
 	scrollWidth: number
+	liveLinePadding: number
 	onContextMenu?: (contextMenuContext: any) => void
 }
 class OutputGroup extends React.Component<IOutputGroupProps> {
@@ -140,7 +143,8 @@ class OutputGroup extends React.Component<IOutputGroupProps> {
 					segmentLine={this.props.segmentLine}
 					startsAt={this.props.startsAt}
 					duration={this.props.duration}
-					timeScale={this.props.timeScale} />
+					timeScale={this.props.timeScale}
+					liveLinePadding={this.props.liveLinePadding} />
 			})
 		}
 	}
@@ -178,6 +182,7 @@ interface IPropsHeader {
 	livePosition: number | null
 	relative?: boolean
 	totalSegmentDuration?: number
+	firstSegmentLineInSegment?: SegmentLineUi
 	onContextMenu?: (contextMenuContext: any) => void
 }
 
@@ -192,7 +197,7 @@ const LIVE_LINE_TIME_PADDING = 150
 export const SegmentTimelineLine = translate()(withTiming({
 	isHighResolution: false
 })(class extends React.Component<IPropsHeader & InjectedTranslateProps & RunningOrderTiming.InjectedROTimingProps, IStateHader> {
-	_refreshTimer: NodeJS.Timer | undefined
+	_refreshTimer: number | undefined
 
 	constructor (props) {
 		super(props)
@@ -210,7 +215,9 @@ export const SegmentTimelineLine = translate()(withTiming({
 					(startedPlayback && props.timingDurations.segmentLineDurations &&
 						(this.getCurrentLiveLinePosition() + this.getLiveLineTimePadding(props.timeScale))
 					) || 0),
-					props.timingDurations.segmentLineDurations[props.segmentLine._id]
+					props.timingDurations.segmentLineDurations ?
+						props.timingDurations.segmentLineDurations[props.segmentLine._id] :
+						0
 				)
 				: 0
 		}
@@ -259,22 +266,26 @@ export const SegmentTimelineLine = translate()(withTiming({
 	getLayerStyle () {
 		if (this.props.relative) {
 			return {
-				width: (Math.max(this.state.liveDuration, this.props.segmentLine.expectedDuration || this.props.segmentLine.renderedDuration || 0) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
+				width: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || this.props.segmentLine.renderedDuration || 0) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
 				willChange: this.state.isLive ? 'width' : undefined
 			}
 		} else {
 			return {
-				minWidth: (Math.max(this.state.liveDuration, this.props.segmentLine.expectedDuration || this.props.segmentLine.renderedDuration || 0) * this.props.timeScale).toString() + 'px',
+				minWidth: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || this.props.segmentLine.renderedDuration || 0) * this.props.timeScale).toString() + 'px',
 				willChange: this.state.isLive ? 'minWidth' : undefined
 			}
 		}
 	}
 
+	getSegmentLineStartsAt (): number {
+		return Math.max(0, (this.props.firstSegmentLineInSegment && this.props.timingDurations.segmentLineStartsAt && (this.props.timingDurations.segmentLineStartsAt[this.props.segmentLine._id] - this.props.timingDurations.segmentLineStartsAt[this.props.firstSegmentLineInSegment._id])) || 0)
+	}
+
 	isInsideViewport () {
-		if (this.props.relative) {
+		if (this.props.relative || this.state.isLive) {
 			return true
 		} else {
-			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine, (this.props.timingDurations.segmentLineStartsAt && this.props.timingDurations.segmentLineStartsAt[this.props.segmentLine._id]))
+			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine, this.getSegmentLineStartsAt())
 		}
 	}
 
@@ -293,14 +304,26 @@ export const SegmentTimelineLine = translate()(withTiming({
 							layer={layer}
 							segment={this.props.segment}
 							segmentLine={segmentLine}
-							startsAt={(this.props.timingDurations.segmentLineStartsAt && this.props.timingDurations.segmentLineStartsAt[segmentLine._id]) || this.props.segmentLine.startsAt || 0}
+							startsAt={this.getSegmentLineStartsAt() || this.props.segmentLine.startsAt || 0}
 							duration={(this.props.timingDurations.segmentLineDurations && this.props.timingDurations.segmentLineDurations[segmentLine._id]) || this.props.segmentLine.renderedDuration || 0}
 							isLiveLine={this.props.runningOrder.currentSegmentLineId === segmentLine._id ? true : false}
 							isNextLine={this.props.runningOrder.nextSegmentLineId === segmentLine._id ? true : false}
-							timeScale={this.props.timeScale} />
+							timeScale={this.props.timeScale}
+							liveLinePadding={this.getLiveLineTimePadding(this.props.timeScale)} />
 					)
 				}
 			})
+		}
+	}
+
+	getFutureShadeStyle = () => {
+		return {
+			'width': (Math.min(
+						Math.max(
+							0,
+							(this.props.livePosition || 0) + this.getLiveLineTimePadding(this.props.timeScale) - (this.props.segmentLine.expectedDuration || this.props.segmentLine.renderedDuration || 0)),
+						this.getLiveLineTimePadding(this.props.timeScale)
+					) * this.props.timeScale) + 'px'
 		}
 	}
 
@@ -321,6 +344,10 @@ export const SegmentTimelineLine = translate()(withTiming({
 						</div>
 					</div>
 					{this.renderTimelineOutputGroups(this.props.segmentLine)}
+					{this.state.isLive && !this.props.relative &&
+						<div className='segment-timeline__segment-line__future-shade' style={this.getFutureShadeStyle()}>
+						</div>
+					}
 				</div>
 			)
 		} else { // render placeholder

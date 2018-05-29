@@ -18,5 +18,9 @@ $FontPath: "./roboto-gh-pages/fonts";
 
 /* Don't show visited status, since people will browse around the app a lot */
 a:visited {
-	color: #1769ff
+	color: #1769ff;
+}
+
+#render-target {
+	font-weight: 300;
 }

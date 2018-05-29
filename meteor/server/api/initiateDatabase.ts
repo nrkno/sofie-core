@@ -3,7 +3,7 @@ import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders
 import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
-import { StudioInstallation, StudioInstallations, Mappings, MappingCasparCG, MappingAtem, MappingAtemType, MappingLawo } from '../../lib/collections/StudioInstallations'
+import { StudioInstallation, StudioInstallations, Mappings, MappingCasparCG, MappingAtem, MappingAtemType, MappingLawo, Mapping } from '../../lib/collections/StudioInstallations'
 import { getCurrentTime, saveIntoDb, literal, DBObj, partialExceptId } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
 import { TimelineTransition } from '../../lib/collections/Timeline'
@@ -128,17 +128,21 @@ Meteor.methods({
 				// 	type: RundownAPI.SourceLayerType.MIC,
 				// 	onPGMClean: true,
 				// },
-				// {
-				// 	_id: 'studio0_camera0',
-				// 	_rank: 100,
-				// 	name: 'Kam',
-				// 	type: RundownAPI.SourceLayerType.CAMERA,
-				// 	onPGMClean: true,
-				// },
+				{
+					_id: 'studio0_camera0',
+					_rank: 100,
+					name: 'Kam',
+					type: RundownAPI.SourceLayerType.CAMERA,
+					onPGMClean: true,
+				},
 			],
 		}})
 		// Create Timeline mappings:
 		const mappings: Mappings = { // Logical layers and their mappings
+			'core_abstract': literal<Mapping>({
+				device: PlayoutDeviceType.ABSTRACT,
+				deviceId: 'abstract0',
+			}),
 			'casparcg_player_wipe': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
@@ -167,6 +171,12 @@ Meteor.methods({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				channel: 4,
+				layer: 120
+			}),
+			'casparcg_cg_countdown': literal<MappingCasparCG>({
+				device: PlayoutDeviceType.CASPARCG,
+				deviceId: 'casparcg0',
+				channel: 6,
 				layer: 120
 			}),
 			'casparcg_cg_logo': literal<MappingCasparCG>({
@@ -271,6 +281,11 @@ Meteor.methods({
 					options: {
 						host: '127.0.0.1',
 						port: 9000
+					}
+				},
+				'settings.devices.abstract0': ((pd['settings'] || {})['devices'] || {})['abstract0'] || {
+					type: PlayoutDeviceType.ABSTRACT,
+					options: {
 					}
 				}
 			}})

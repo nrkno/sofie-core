@@ -2,16 +2,22 @@
 Please note that the contents of this file is quite unstructured and for test purposes only
 */
 
-import * as React 				from 'react'
-import { withTracker }       		from '../lib/ReactMeteorData/react-meteor-data'
+import * as React from 'react'
+import * as _ from 'underscore'
+import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 
-import { Task, Tasks } 			from '../../lib/collections/Tasks'
-import { Mongo } 				from 'meteor/mongo'
+import { Task, Tasks } from '../../lib/collections/Tasks'
+import { Mongo } from 'meteor/mongo'
 import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders'
 import { Segments, Segment } from '../../lib/collections/Segments'
-import { Timeline, TimelineObj, TimelineContentType } from '../../lib/collections/Timeline'
-import { TriggerType } from 'superfly-timeline'
-import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines';
+import { Timeline, TimelineObj } from '../../lib/collections/Timeline'
+import { TriggerType, TimelineState } from 'superfly-timeline'
+import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines'
+import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
+import { Resolver, Enums } from 'superfly-timeline'
+import { transformTimeline } from '../../lib/timeline'
+import { getCurrentTime, Time } from '../../lib/lib'
+import { getCurrentTimeReactive } from '../lib/currentTimeReactive'
 
 // ----------------------------------------------------------------------------
 
@@ -347,6 +353,12 @@ export class NymansPlayground extends React.Component {
 			<div>
 				<h1>Nyman's playground</h1>
 				<div>
+					<ComponentTimelineSimulate />
+				</div>
+				<div>
+					<ComponentMediaObjects />
+				</div>
+				<div>
 					<ComponentRunningOrders />
 				</div>
 				<div>
@@ -356,7 +368,55 @@ export class NymansPlayground extends React.Component {
 		)
 	}
 }
+interface IRunningOrders {
+	runningOrders: Array<RunningOrder>,
+	mediaObjects: Array<MediaObject>,
+}
+export const ComponentMediaObjects = withTracker(() => {
 
+	// These properties will be exposed under this.props
+	// Note that these properties are reactively recalculated
+	return {
+		mediaObjects: MediaObjects.find({}, { sort: { _id: 1 } }).fetch()
+
+	}
+})(
+class extends React.Component<IRunningOrders> {
+	renderMOs () {
+
+		return this.props.mediaObjects.map((mo) => (
+			<div key={mo._id}>
+
+				<div>_id: <i>{mo._id}</i></div>
+				<div>_rev: <i>{mo._rev}</i></div>
+				<div>mediaPath: <i>{mo.mediaPath}</i></div>
+				<div>mediaSize: <i>{mo.mediaSize}</i></div>
+				<div>mediaTime: <i>{mo.mediaTime}</i></div>
+				{/* <div>mediainfo: <i>{mo.mediainfo}</i></div> */}
+				
+				<div>thumbSize: <i>{mo.thumbSize}</i></div>
+				<div>thumbTime: <i>{mo.thumbTime}</i></div>
+				<div>previewSize: <i>{mo.previewSize}</i></div>
+				<div>previewTime: <i>{mo.previewTime}</i></div>
+				<div>cinf: <i>{mo.cinf}</i></div>
+				<div>tinf: <i>{mo.tinf}</i></div>
+				<div>studioId: <i>{mo.studioId}</i></div>
+				<div>collectionId: <i>{mo.collectionId}</i></div>
+				<div>objId: <i>{mo.objId}</i></div>
+			</div>
+		))
+	}
+	render () {
+		return (
+			<div>
+				<h2>Media Objects</h2>
+				<div>
+					{this.renderMOs()}
+				</div>
+			</div>
+		)
+	}
+})
 interface IRunningOrders {
 	runningOrders: Array<RunningOrder>
 }
@@ -366,6 +426,7 @@ export const ComponentRunningOrders = withTracker(() => {
 	// Note that these properties are reactively recalculated
 	return {
 		runningOrders: RunningOrders.find({}, { sort: { createdAt: -1 } }).fetch()
+
 	}
 })(
 class extends React.Component<IRunningOrders> {
@@ -507,7 +568,7 @@ class extends React.Component<ITimeline> {
 				<tr><td>
 					<strong>Content</strong>
 				</td></tr>
-					<tr><td>type:</td><td> <EditAttribute type='dropdown' collection={Timeline}	obj={timelineObj} attribute='content.type' options={TimelineContentType} /></td></tr>
+					{/* <tr><td>type:</td><td> <EditAttribute tye='dropdown' collection={Timeline}	obj={timelineObj} attribute='content.type' options={TimelineContentType} /></td></tr> */}
 					
 
 				</tbody></table>
@@ -520,6 +581,87 @@ class extends React.Component<ITimeline> {
 				<h2>Timeline objects</h2>
 				<div>
 					{this.renderTimeline()}
+				</div>
+			</div>
+		)
+	}
+})
+
+interface ITimelineSimulate {
+	state: TimelineState
+	now: Time
+}
+export const ComponentTimelineSimulate = withTracker(() => {
+
+	// These properties will be exposed under this.props
+	// Note that these properties are reactively recalculated
+	let timeline = transformTimeline(
+		Timeline.find({}, { sort: { _id: 1 } }).fetch()
+	)
+
+	// pre-process the timeline
+	let now = getCurrentTimeReactive()
+
+	let tl = Resolver.getTimelineInWindow(timeline)
+
+	let state = Resolver.getState(tl, now)
+
+	return {
+		now: now,
+		state: state
+	}
+})(
+class extends React.Component<ITimelineSimulate> {
+	renderTimelineState () {
+
+		let tableize = (o: any) => {
+			return (
+				<table><tbody>
+					{_.map(o, (val, key) => {
+						return (
+							<tr key={key}>
+								<td>{key}</td>
+								<td>{(
+									_.isObject(val) ? tableize(val) : val
+								)}</td>
+							</tr>
+						)
+					})}
+				</tbody></table>
+			)
+		}
+
+		return _.map(this.props.state.GLayers, (o, GLayerId) => (
+			<tr key={GLayerId}>
+				<td>{GLayerId}</td>
+				<td>{o.id}</td>
+				<td>{Enums.TriggerType[o.trigger.type]}</td>
+				<td>{o.trigger.value}</td>
+				<td>{o.duration}</td>
+				<td>{o.content.type}</td>
+				<td>{tableize(o.content)}</td>
+			</tr>
+		))
+	}
+	render () {
+		return (
+			<div>
+				<h2>Timeline state</h2>
+				<div>
+					Time: {this.props.now}
+					<div>
+						<table><tbody>
+							<tr>
+								<th>GLayer</th>
+								<th>id</th>
+								<th>Trigger.type</th>
+								<th>Trigger.value</th>
+								<th>Duration</th>
+								<th>content</th>
+							</tr>
+							{this.renderTimelineState()}
+						</tbody></table>
+					</div>
 				</div>
 			</div>
 		)

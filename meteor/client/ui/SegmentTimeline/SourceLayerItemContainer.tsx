@@ -35,6 +35,7 @@ interface IPropsHeader {
 	followLiveLine: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
+	liveLinePadding: number
 }
 /** This is a container component that allows ractivity with the Timeline collection */
 export const SourceLayerItemContainer = withTracker((props) => {
@@ -55,7 +56,10 @@ export const SourceLayerItemContainer = withTracker((props) => {
 					segmentCopy.renderedInPoint = 0
 				}
 			}
-			segmentCopy.renderedDuration = timelineObj.duration
+			// if duration is 0, the item is in fact infinite
+			segmentCopy.renderedDuration = Math.min(timelineObj.duration === 0 ? (props.segmentLineDuration - segmentCopy.renderedInPoint! + props.liveLinePadding) : timelineObj.duration,
+				Math.max((props.livePosition || 0) + props.liveLinePadding, (props.segmentLineDuration - segmentCopy.renderedInPoint!))
+			)
 
 			return {
 				segmentLineItem: segmentCopy

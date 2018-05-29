@@ -7,6 +7,7 @@ import {
 import { TransformedCollection, FindOptions, Selector } from './typings'
 import { RunningOrders } from './RunningOrders'
 import { SegmentLineItem, SegmentLineItems } from './SegmentLineItems'
+import { SegmentLineAdLibItem, SegmentLineAdLibItems } from './SegmentLineAdLibItems'
 import { Segment, Segments } from './Segments'
 import { applyClassToDocument } from '../lib'
 
@@ -26,6 +27,8 @@ export interface DBSegmentLine {
 	slug: string
 	/** Should this item be taken live automatically */
 	autoNext?: boolean
+	/** The duration to run overlap with the previous SegmentLine */
+	overlapDuration?: number
 
 	metaData?: Array<IMOSExternalMetaData>
 	status?: IMOSObjectStatus
@@ -51,6 +54,7 @@ export class SegmentLine implements DBSegmentLine {
 	public expectedDuration?: number
 	public startedPlayback?: number
 	public duration?: number
+	public overlapDuration?: number
 
 	constructor (document: DBSegmentLine) {
 		_.each(_.keys(document), (key) => {
@@ -73,6 +77,19 @@ export class SegmentLine implements DBSegmentLine {
 			}, selector),
 			_.extend({
 				sort: {_rank: 1}
+			}, options)
+		).fetch()
+	}
+	getSegmentLinesAdLibItems (selector?: Selector<SegmentLineItem>, options?: FindOptions) {
+		selector = selector || {}
+		options = options || {}
+		return SegmentLineAdLibItems.find(
+			_.extend({
+				runningOrderId: this.runningOrderId,
+				segmentLineId: this._id
+			}, selector),
+			_.extend({
+				sort: { _rank: 1 }
 			}, options)
 		).fetch()
 	}

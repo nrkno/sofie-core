@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
+import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 
@@ -18,6 +19,7 @@ import { SegmentTimeline } from './SegmentTimeline'
 
 import { Settings } from '../../../lib/Settings'
 import { getCurrentTime } from '../../../lib/lib'
+import { RunningOrderTiming } from '../RunningOrderTiming'
 
 export interface SegmentUi extends Segment {
 	/** Output layers available in the installation used by this segment */
@@ -75,6 +77,7 @@ interface IPropsHeader {
 	timeScale: number,
 	isLiveSegment: boolean,
 	isNextSegment: boolean,
+	currentLiveSegmentLine: SegmentLineUi | undefined,
 	hasRemoteItems: boolean,
 	hasAlreadyPlayed: boolean,
 	liveLineHistorySize: number
@@ -98,6 +101,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 
 	let isLiveSegment = false
 	let isNextSegment = false
+	let currentLiveSegmentLine: SegmentLineUi | undefined = undefined
 	let hasAlreadyPlayed = false
 	let hasRemoteItems = false
 
@@ -142,8 +146,9 @@ export const SegmentTimelineContainer = withTracker((props) => {
 
 		if (props.runningOrder.currentSegmentLineId === segmentLine._id) {
 			isLiveSegment = true
+			currentLiveSegmentLine = segmentLine
 		}
-		if (!isLiveSegment && props.runningOrder.nextSegmentLineId === segmentLine._id) {
+		if (props.runningOrder.nextSegmentLineId === segmentLine._id) {
 			isNextSegment = true
 		}
 
@@ -278,18 +283,21 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		segment,
 		segmentLines,
 		isLiveSegment,
+		currentLiveSegmentLine,
 		isNextSegment,
 		hasAlreadyPlayed,
 		hasRemoteItems
 	}
 })(class extends React.Component<IPropsHeader, IStateHeader> {
-	debugDemoLiveLineInterval?: NodeJS.Timer
-	debugDemoLiveLineStart: number
+	static contextTypes = {
+		durations: PropTypes.object.isRequired
+	}
+
 	isLiveSegment: boolean
 	roCurrentSegmentId: string | null
 
-	constructor (props) {
-		super(props)
+	constructor (props, context) {
+		super(props, context)
 
 		let that = this
 		this.state = {
@@ -308,34 +316,15 @@ export const SegmentTimelineContainer = withTracker((props) => {
 	}
 
 	componentDidUpdate () {
+		this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
 		if (this.isLiveSegment === false && this.props.isLiveSegment === true) {
 			this.isLiveSegment = true
 			this.onFollowLiveLine(true, {})
-			this.debugDemoLiveLine()
+			this.startOnAirLine()
 		}
 		if (this.isLiveSegment === true && this.props.isLiveSegment === false) {
 			this.isLiveSegment = false
-			this.debugStopDemoLiveLine()
-		}
-		// TODO: This is just a debug/mock implementation. The segments should be cut short on Take Next,
-		// thus automatically making the OnAir line be, where it should be
-		if (this.roCurrentSegmentId && this.props.runningOrder.currentSegmentLineId !== this.roCurrentSegmentId) {
-			// DISABLE THIS ENTIRE SECTION TO REMOVE "JUMP TO NEXT LINE"
-			if (this.debugDemoLiveLineInterval) {
-				let newCurrentSegmentLine = this.props.segmentLines.findIndex((item) => item._id === this.props.runningOrder.currentSegmentLineId)
-				if (newCurrentSegmentLine >= 0 && this.props.segmentLines[newCurrentSegmentLine].startsAt) {
-					const playoutLength = (getCurrentTime() - this.debugDemoLiveLineStart)
-					// console.log(playoutLength, this.props.segmentLines[newCurrentSegmentLine].startsAt)
-					if (this.props.segmentLines[newCurrentSegmentLine].startsAt! > playoutLength) {
-						// console.log(this.debugDemoLiveLineStart)
-						this.debugDemoLiveLineStart -= (this.props.segmentLines[newCurrentSegmentLine].startsAt! - playoutLength)
-						// console.log(this.debugDemoLiveLineStart)
-					}
-				}
-			}
-			this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
-		} else {
-			this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
+			this.stopOnAirLine()
 		}
 	}
 
@@ -355,29 +344,31 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		})
 	}
 
-	debugStopDemoLiveLine = () => {
-		if (this.debugDemoLiveLineInterval) {
-			clearInterval(this.debugDemoLiveLineInterval)
+	onAirLineRefresh = () => {
+		if (this.props.isLiveSegment && this.props.currentLiveSegmentLine) {
+			let speed = 1
+			const segmentLineOffset = this.context.durations &&
+									  this.context.durations.segmentLineStartsAt &&
+									  (this.context.durations.segmentLineStartsAt[this.props.currentLiveSegmentLine._id] - this.context.durations.segmentLineStartsAt[this.props.segmentLines[0]._id])
+									  || 0
+			let newLivePosition = this.props.currentLiveSegmentLine.startedPlayback ?
+				(getCurrentTime() - this.props.currentLiveSegmentLine.startedPlayback + segmentLineOffset) :
+				segmentLineOffset
+
+			this.setState(_.extend({
+				livePosition: newLivePosition,
+			}, this.state.followLiveLine ? {
+				scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
+			} : null))
 		}
 	}
 
-	debugDemoLiveLine = () => {
-		if (!this.debugDemoLiveLineInterval && this.props.runningOrder.currentSegmentLineId) {
-			let currentSegmentLine = SegmentLines.findOne(this.props.runningOrder.currentSegmentLineId)
+	startOnAirLine = () => {
+		window.addEventListener(RunningOrderTiming.Events.timeupdateHR, this.onAirLineRefresh)
+	}
 
-			if (currentSegmentLine) {
-				this.debugDemoLiveLineStart = getCurrentTime()
-				this.debugDemoLiveLineInterval = setInterval(() => {
-					let speed = 1
-					let newLivePosition = (getCurrentTime() - this.debugDemoLiveLineStart)
-					this.setState(_.extend({
-						livePosition: newLivePosition,
-					}, this.state.followLiveLine ? {
-						scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
-					} : null))
-				}, 1000 / 60)
-			}
-		}
+	stopOnAirLine = () => {
+		window.removeEventListener(RunningOrderTiming.Events.timeupdateHR, this.onAirLineRefresh)
 	}
 
 	onFollowLiveLine = (state: boolean, event: any) => {

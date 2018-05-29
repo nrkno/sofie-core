@@ -76,7 +76,7 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 	}
 
 	durations: RunningOrderTiming.RunningOrderTimingContext = {}
-	refreshTimer: NodeJS.Timer
+	refreshTimer: number
 	refreshTimerInterval: number
 	refreshDecimator: number
 
@@ -105,26 +105,25 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 
 		this.refreshDecimator++
 		if (this.refreshDecimator % 15 === 0) {
-			// console.log('Regular event')
 			this.dispatchEvent()
 		}
 	}
 
 	componentDidMount () {
-		this.refreshTimer = setInterval(this.onRefreshTimer, this.refreshTimerInterval)
+		this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 	}
 
 	componentWillReceiveProps (nextProps) {
 		// change refresh interval if needed
 		if (this.refreshTimerInterval !== nextProps.refreshInterval && _.isNumber(nextProps.refreshInterval) && this.refreshTimer) {
 			this.refreshTimerInterval = nextProps.refreshInterval
-			clearInterval(this.refreshTimer)
-			this.refreshTimer = setInterval(this.onRefreshTimer, this.refreshTimerInterval)
+			Meteor.clearInterval(this.refreshTimer)
+			this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 		}
 	}
 
 	componentWillUnmount () {
-		clearInterval(this.refreshTimer)
+		Meteor.clearInterval(this.refreshTimer)
 	}
 
 	dispatchHREvent () {
@@ -286,7 +285,7 @@ export const SegmentLineCountdown = withTiming()((props: ISegmentLineCountdownPr
 			props.timingDurations &&
 			props.timingDurations.segmentLineCountdown &&
 			props.timingDurations.segmentLineCountdown[props.segmentLineId] !== undefined &&
-				RundownUtils.formatTimeToTimecode(props.timingDurations.segmentLineCountdown[props.segmentLineId]).substr(3, 5)}
+				RundownUtils.formatTimeToShortTime(props.timingDurations.segmentLineCountdown[props.segmentLineId])}
 	</span>
 ))
 

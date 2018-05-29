@@ -17,18 +17,18 @@ import { NavLink } from 'react-router-dom'
 
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
-import { SegmentTimelineContainer, SegmentLineItemUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
-import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 
 import { RunningOrderTimingProvider, withTiming, RunningOrderTiming } from './RunningOrderTiming'
+import { SegmentTimelineContainer, SegmentLineItemUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
+import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
+import { InspectorDrawer } from './InspectorDrawer/InspectorDrawer'
 
 import { getCurrentTime } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
 
 interface IHeaderProps {
-	debugOnAirLine: () => void
 	runningOrder: RunningOrder
 }
 
@@ -123,6 +123,7 @@ interface IStateHeader {
 	timeScale: number
 	studioMode: boolean
 	contextMenuContext: any
+	bottomMargin: string
 }
 
 export const RunningOrderView = translate()(withTracker((props, state) => {
@@ -132,6 +133,7 @@ export const RunningOrderView = translate()(withTracker((props, state) => {
 	let subSegmentLineItems = Meteor.subscribe('segmentLineItems', {})
 	let subStudioInstallations = Meteor.subscribe('studioInstallations', {})
 	let subShowStyles = Meteor.subscribe('showStyles', {})
+	let subSegmentLineAdLibItems = Meteor.subscribe('segmentLineAdLibItems', {})
 
 	let runningOrderId = decodeURIComponent(props.match.params.runningOrderId)
 
@@ -154,7 +156,8 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		this.state = {
 			timeScale: 0.05,
 			studioMode: localStorage.getItem('studioMode') === '1' ? true : false,
-			contextMenuContext: null
+			contextMenuContext: null,
+			bottomMargin: ''
 		}
 	}
 
@@ -228,16 +231,30 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 		}
 	}
 
+	onChangeBottomMargin = (newBottomMargin: string) => {
+		this.setState({
+			bottomMargin: newBottomMargin
+		})
+	}
+
+	getStyle () {
+		return {
+			'marginBottom': this.state.bottomMargin
+		}
+	}
+
 	render () {
 		const { t } = this.props
 
 		return (
 			<RunningOrderTimingProvider runningOrder={this.props.runningOrder}>
-				<div className='running-order-view'>
-					<RunningOrderHeader debugOnAirLine={this.debugOnAirLine} runningOrder={this.props.runningOrder} />
+				<div className='running-order-view' style={this.getStyle()}>
+					<RunningOrderHeader runningOrder={this.props.runningOrder} />
 					<SegmentContextMenu contextMenuContext={this.state.contextMenuContext}
+						runningOrder={this.props.runningOrder}
 						onSetNext={this.onSetNext} />
 					{this.renderSegmentsList()}
+					<InspectorDrawer {...this.props} onChangeBottomMargin={this.onChangeBottomMargin} />
 				</div>
 			</RunningOrderTimingProvider>
 		)
