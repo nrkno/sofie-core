@@ -1,7 +1,7 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { RundownAPI } from '../../lib/api/rundown'
-import { Time, applyClassToDocument } from '../../lib/lib'
+import { Time, applyClassToDocument, getCurrentTime } from '../../lib/lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { SegmentLines, SegmentLine } from './SegmentLines'
 import {
@@ -11,6 +11,8 @@ import {
 } from 'mos-connection'
 import { FindOptions, Selector, TransformedCollection } from './typings'
 import { StudioInstallations, StudioInstallation } from './StudioInstallations'
+import { SegmentLineItems } from './SegmentLineItems'
+import { RunningOrderDataCache } from './RunningOrderDataCache'
 
 /** This is a very uncomplete mock-up of the Rundown object */
 export interface DBRunningOrder {
@@ -19,9 +21,12 @@ export interface DBRunningOrder {
 	mosId: string
 	studioInstallationId: string
 	showStyleId: string
+	/** the mos device the rundown originates from */
+	mosDeviceId: string
 	/** Rundown slug - user-presentable name */
 	name: string
 	created: Time
+	modified: Time
 
 	/** Expected start should be set to the expected time this running order should run on air. Should be set to EditorialStart from IMOSRunningOrder */
 	expectedStart?: Time
@@ -45,8 +50,10 @@ export class RunningOrder implements DBRunningOrder {
 	public mosId: string
 	public studioInstallationId: string
 	public showStyleId: string
+	public mosDeviceId: string
 	public name: string
 	public created: Time
+	public modified: Time
 	public expectedStart?: Time
 	public expectedDuration?: number
 	public metaData?: Array<IMOSExternalMetaData>
@@ -92,6 +99,35 @@ export class RunningOrder implements DBRunningOrder {
 				sort: {_rank: 1}
 			}, options)
 		).fetch()
+	}
+	remove () {
+		RunningOrders.remove(this._id)
+		Segments.remove({runningOrderId: this._id})
+		SegmentLines.remove({runningOrderId: this._id})
+		SegmentLineItems.remove({ runningOrderId: this._id})
+		RunningOrderDataCache.remove({roId: this._id})
+	}
+	touch () {
+		if (getCurrentTime() - this.modified > 3600 * 1000 ) {
+			RunningOrders.update(this._id, {$set: {modified: getCurrentTime()}})
+		}
+	}
+	saveCache (cacheId: string, data: any) {
+		let id = this._id + '_' + cacheId
+		RunningOrderDataCache.upsert(id, {$set: {
+			_id: id,
+			roId: this._id,
+			modified: getCurrentTime(),
+			data: data
+		}})
+	}
+	fetchCache (cacheId: string): any | null {
+		let id = this._id + '_' + cacheId
+		let c = RunningOrderDataCache.findOne(id)
+		if (c) {
+			return c.data
+		}
+		return null
 	}
 }
 

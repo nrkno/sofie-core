@@ -16,6 +16,7 @@ import * as _ from 'underscore'
 import { logger } from './../logging'
 import { PeripheralDevice, PeripheralDevices, PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { IMOSRunningOrder } from 'mos-connection'
 
 Meteor.methods({
 	/**
@@ -23,6 +24,19 @@ Meteor.methods({
 	 * TODO: Set up the Timeline
 	 * Set first item on Next queue
 	 */
+	'playout_reload_data': (roId: string) => {
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+
+		PeripheralDeviceAPI.executeFunction(runningOrder.mosDeviceId, (err: any, ro: IMOSRunningOrder) => {
+			if (err) {
+				logger.error(err)
+			} else {
+				// TODO: what to do with the result?
+				console.log('Recieved reply for triggerGetRunningOrder', ro)
+			}
+		}, 'triggerGetRunningOrder')
+	},
 	'playout_activate': (roId: string) => {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)

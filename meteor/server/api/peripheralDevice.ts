@@ -172,6 +172,7 @@ export namespace ServerPeripheralDeviceAPI {
 				_id: roId(ro.ID),
 				mosId: ro.ID.toString(),
 				studioInstallationId: studioInstallation._id,
+				mosDeviceId: id,
 				// showStyleId: '',
 				name: ro.Slug.toString(),
 				expectedStart: ro.EditorialStart ? new MosTime(ro.EditorialStart.toString()).getTime() : undefined,
@@ -180,6 +181,11 @@ export namespace ServerPeripheralDeviceAPI {
 		}), {
 			beforeInsert: (o) => {
 				o.created = getCurrentTime()
+				o.modified = getCurrentTime()
+				return o
+			},
+			beforeUpdate: (o) => {
+				o.modified = getCurrentTime()
 				return o
 			}
 		})
@@ -255,12 +261,12 @@ export namespace ServerPeripheralDeviceAPI {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoDelete')
 		// @ts-ignore
-		logger.debug(runningOrderId)
+		// logger.debug(runningOrderId)
 		console.info('Removing RO ' + roId(runningOrderId))
-		RunningOrders.remove(roId(runningOrderId))
-		Segments.remove({runningOrderId: roId(runningOrderId)})
-		SegmentLines.remove({runningOrderId: roId(runningOrderId)})
-		SegmentLineItems.remove({ runningOrderId: roId(runningOrderId)})
+		let ro = RunningOrders.findOne(roId(runningOrderId))
+		if (ro) {
+			ro.remove()
+		}
 	}
 	export function mosRoMetadata (id, token, metadata: IMOSRunningOrderBase) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -474,6 +480,7 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.debug(Action, Stories)
 		// Delete Stories (aka SegmentLine)
 		let ro = getRO(Action.RunningOrderID)
+		ro.touch()
 		_.each(Stories, (storyId: MosString128, i: number) => {
 			removeSegmentLine(segmentLineId(ro._id, storyId, true))
 		})
@@ -692,6 +699,7 @@ export function getRO (roID: MosString128): RunningOrder {
 	let id = roId(roID)
 	let ro = RunningOrders.findOne(id)
 	if (ro) {
+		ro.touch()
 		return ro
 	} else throw new Meteor.Error(404, 'RunningOrder ' + id + ' not found')
 }
