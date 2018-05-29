@@ -238,7 +238,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 		if (nextProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
 			this.setState({
-				cursorTimePostion: this.state.cursorTimePostion + (nextProps.scrollLeft - this.props.scrollLeft)
+				cursorTimePostion: this.state.cursorTimePostion + ((nextProps.scrollLeft - this.props.scrollLeft) - (nextProps.segmentLineStartsAt - this.props.segmentLineStartsAt))
 			})
 		}
 	}
