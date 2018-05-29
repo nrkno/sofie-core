@@ -193,7 +193,15 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		// If this is a live line, take duration verbatim from SegmentLayerItemContainer with a fallback on expectedDuration.
 		// If not, as-run segmentLine "duration" limits renderdDuration which takes priority over MOS-import
 		// expectedDuration (editorial duration)
-		let itemDuration = this.props.isLiveLine ? segmentLineItem.renderedDuration || segmentLineItem.expectedDuration : Math.min(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
+		let itemDuration = this.props.isLiveLine ?
+			segmentLineItem.renderedDuration || segmentLineItem.expectedDuration :
+			((segmentLineItem.renderedDuration || segmentLineItem.expectedDuration) === 0 ?
+				this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) :
+				Math.min(
+					segmentLineItem.renderedDuration || segmentLineItem.expectedDuration,
+					this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)
+				)
+			)
 
 		if (this.props.relative) {
 			return {
