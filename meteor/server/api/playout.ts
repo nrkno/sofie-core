@@ -7,8 +7,8 @@ import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collectio
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { getCurrentTime, saveIntoDb, literal, DBObj, partialExceptId, Time, partial } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
-import { TimelineTransition, Timeline, TimelineObj, TimelineObjGroupSegmentLine, TimelineContentTypeOther, TimelineObjAbstract } from '../../lib/collections/Timeline'
-import { TimelineObject, ObjectId, TriggerType, TimelineKeyframe } from 'superfly-timeline'
+import { TimelineTransition, Timeline, TimelineObj, TimelineObjGroupSegmentLine, TimelineContentTypeOther, TimelineObjAbstract, TimelineObjGroup } from '../../lib/collections/Timeline'
+import { TimelineObject, ObjectId, TriggerType, TimelineKeyframe, TimelineGroup } from 'superfly-timeline'
 import { Transition, Ease, Direction } from '../../lib/constants/casparcg'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
@@ -271,7 +271,7 @@ function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem, segmentLine: 
 			_id: newId,
 			trigger: {
 				type: TriggerType.TIME_ABSOLUTE,
-				value: getCurrentTime() - (segmentLine.startedPlayback || 0)
+				value: 'now'
 			},
 			segmentLineId: segmentLine._id,
 			adLibSourceId: adLibItem._id,
@@ -279,11 +279,33 @@ function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem, segmentLine: 
 		}
 	))
 	if (newSLineItem.content && newSLineItem.content.timelineObjects) {
-		newSLineItem.content.timelineObjects.forEach((item) => {
-			if (item) {
-				item._id = item._id.replace(oldId, newId)
-			}
+		let contentObjects = newSLineItem.content.timelineObjects
+		// insert the objects into an AdLib group
+		let adLibGroup = literal<TimelineObjGroup>({
+			_id: newId,
+			trigger: newSLineItem.trigger,
+			siId: newSLineItem.segmentLineId,
+			roId: newSLineItem.runningOrderId,
+			deviceId: [],
+			LLayer: 'core_adlib',
+			duration: newSLineItem.expectedDuration,
+			content: {
+				type: TimelineContentTypeOther.GROUP,
+				objects: _.filter(contentObjects,
+					(item) => {
+						return item !== null
+					}).map(
+						(item) => {
+							const itemCpy = _.extend(item, {
+								id: item!._id,
+								inGroup: newId
+							})
+							return itemCpy as TimelineObject
+						})
+			},
+			isGroup: true
 		})
+		newSLineItem.content.timelineObjects = [ adLibGroup ]
 	}
 	return newSLineItem
 }
