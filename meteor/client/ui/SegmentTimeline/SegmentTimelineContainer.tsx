@@ -331,6 +331,10 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		}
 	}
 
+	componentWillUnmount () {
+		this.stopOnAirLine()
+	}
+
 	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
 		let collapsedOutputs = {...this.state.collapsedOutputs}
 		collapsedOutputs[outputLayer._id] = collapsedOutputs[outputLayer._id] === true ? false : true
