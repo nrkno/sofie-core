@@ -1,4 +1,5 @@
 @import "colorScheme";
+@import "itemTypeColors";
 
 $adlib-item-selected-color: #009DFF;
 
@@ -161,33 +162,45 @@ $adlib-item-selected-color: #009DFF;
 
 			.adlib-panel__list-view__list__table__cell--icon {
 				width: 50px;
+				max-width: 50px;
 				text-align: center;
+				padding: 0 !important;
+
+				@include item-type-colors();
+				@include missing-overlay();
 			}
 			.adlib-panel__list-view__list__table__cell--shortcut {
 				width: 40px;
+				max-width: 40px;
 				text-align: center;
 			}
 			.adlib-panel__list-view__list__table__cell--output {
 				width: 50px;
+				max-width: 50px;
 				text-align: center;
 			}
 			.adlib-panel__list-view__list__table__cell--name {
 				width: 25%;
+				max-width: 25%;
 			}
 			.adlib-panel__list-view__list__table__cell--data {
 
 			}
 			.adlib-panel__list-view__list__table__cell--resolution {
-				width: 9%
+				width: 9%;
+				max-width: 9%;
 			}
 			.adlib-panel__list-view__list__table__cell--fps {
-				width: 4%
+				width: 4%;
+				max-width: 4%;
 			}
 			.adlib-panel__list-view__list__table__cell--duration {
-				width: 7%
+				width: 7%;
+				max-width: 7%;
 			}
 			.adlib-panel__list-view__list__table__cell--tc-start {
-				width: 7%
+				width: 7%;
+				max-width: 7%;
 			}
 
 			> tbody.adlib-panel__list-view__list__segment {
@@ -247,8 +260,11 @@ $adlib-item-selected-color: #009DFF;
 					}
 
 					&:hover {
-						> td {
+						> td:not(.adlib-panel__list-view__list__table__cell--icon) {
 							background: #252525;
+						}
+						> td.adlib-panel__list-view__list__table__cell--icon {
+							overflow: visible;
 						}
 					}
 

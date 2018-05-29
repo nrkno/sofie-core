@@ -1,0 +1,101 @@
+$segment-timeline-background-color: #1F1F1F;
+
+$segment-layer-background-unknown: #4B4B4B;
+$segment-layer-background-camera: #00C800;
+$segment-layer-background-lower-third: #FF6F00;
+//$segment-layer-background-graphics: #C27632;
+$segment-layer-background-graphics: #B96700;
+$segment-layer-background-live-speak: #00C800;
+$segment-layer-background-remote: #FF0059;
+$segment-layer-background-script: #1C721F;
+$segment-layer-background-mic:#1C721F;
+$segment-layer-background-vt: #1769FF;
+
+@mixin item-type-colors {
+	&.camera {
+		background: $segment-layer-background-camera;
+	}
+
+	&.graphics {
+		background: $segment-layer-background-graphics;
+	}
+
+	&.lower-third {
+		background: $segment-layer-background-lower-third;
+	}
+
+	&.live-speak {
+		background: $segment-layer-background-live-speak;
+	}
+
+	&.vt {
+		background: $segment-layer-background-vt;
+	}
+
+	&.remote {
+		background: $segment-layer-background-remote;
+	}
+
+	&.script {
+		background: $segment-layer-background-script;
+	}
+
+	&.mic {
+		background: $segment-layer-background-mic;
+	}
+
+	&.infinite {
+		&::after {
+			position: absolute;
+			content: ' ';
+			display: block;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			z-index: 0;
+
+			width: 20%;
+			max-width: 75px;
+
+			background: linear-gradient(to right, transparentize($segment-timeline-background-color, 1) 0%, transparentize($segment-timeline-background-color, 0.3) 100%);
+		}
+	}
+}
+
+@mixin missing-overlay {
+	&.source-missing {
+		background-blend-mode: overlay; 
+		background-image: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 10px,
+		black 11px,
+		black 15px,
+		transparent 16px
+		);						
+	}
+
+	&.source-broken {
+		background-blend-mode: overlay; 
+		background-image: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 10px,
+		black 11px,
+		black 15px,
+		transparent 16px
+		);
+	}
+
+	&.unknown-state {
+		background-blend-mode: overlay; 
+		background-image: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 10px,
+		black 11px,
+		black 15px,
+		transparent 16px
+		);
+	}
+}

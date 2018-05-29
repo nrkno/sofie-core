@@ -10,7 +10,8 @@ import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
 import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
-import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
+import { AdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
 
 import * as faTh from '@fortawesome/fontawesome-free-solid/faTh'
@@ -27,10 +28,54 @@ interface IListViewPropsHeader {
 	selectedItem: SegmentLineAdLibItem | undefined
 	selectedSegment: SegmentUi | undefined
 	filter: string | undefined
+	studioInstallation: StudioInstallation
 }
 
-const AdLibListView = translate()(class extends React.Component<IListViewPropsHeader & InjectedTranslateProps> {
+interface IListViewStateHeader {
+	outputLayers: {
+		[key: string]: IOutputLayer
+	}
+	sourceLayers: {
+		[key: string]: ISourceLayer
+	}
+}
+
+const AdLibListView = translate()(class extends React.Component<IListViewPropsHeader & InjectedTranslateProps, IListViewStateHeader> {
 	table: HTMLTableElement
+
+	constructor (props) {
+		super(props)
+
+		this.state = {
+			outputLayers: {},
+			sourceLayers: {}
+		}
+	}
+
+	static getDerivedStateFromProps (props: IListViewPropsHeader, state) {
+		let tOLayers: {
+			[key: string]: IOutputLayer
+		} = {}
+		let tSLayers: {
+			[key: string]: ISourceLayer
+		} = {}
+
+		if (props.studioInstallation && props.studioInstallation.outputLayers && props.studioInstallation.sourceLayers) {
+			props.studioInstallation.outputLayers.forEach((item) => {
+				tOLayers[item._id] = item
+			})
+			props.studioInstallation.sourceLayers.forEach((item) => {
+				tSLayers[item._id] = item
+			})
+
+			return _.extend(state, {
+				outputLayers: tOLayers,
+				sourceLayers: tSLayers
+			})
+		} else {
+			return state
+		}
+	}
 
 	componentDidUpdate (prevProps: IListViewPropsHeader) {
 		if (this.props.selectedSegment && prevProps.selectedSegment !== this.props.selectedSegment && this.table) {
@@ -67,39 +112,15 @@ const AdLibListView = translate()(class extends React.Component<IListViewPropsHe
 							}).
 							map((item) => {
 								return (
-									<tr className={ClassNames('adlib-panel__list-view__list__segment__item', {
-										'selected': this.props.selectedItem && this.props.selectedItem._id === item._id
-									})} key={item._id}
-										onClick={(e) => this.props.onSelectAdLib(item)}
-										onDoubleClick={(e) => this.props.onToggleAdLib(item)}>
-										<td className='adlib-panel__list-view__list__table__cell--icon'>
-											VB
-										</td>
-										<td className='adlib-panel__list-view__list__table__cell--shortcut'>
-											A
-										</td>
-										<td className='adlib-panel__list-view__list__table__cell--output'>
-											PGM
-										</td>
-										<td className='adlib-panel__list-view__list__table__cell--name'>
-											{item.name}
-										</td>
-										<td className='adlib-panel__list-view__list__table__cell--data'>
-											Byen na
-										</td>
-										<td className='adlib-panel__list-view__list__table__cell--resolution'>
-											&nbsp;
-										</td>
-										<td className='adlib-panel__list-view__list__table__cell--fps'>
-											&nbsp;
-										</td>
-										<td className='adlib-panel__list-view__list__table__cell--duration'>
-											&nbsp;
-										</td>
-										<td className='adlib-panel__list-view__list__table__cell--tc-start'>
-											&nbsp;
-										</td>
-									</tr>
+									<AdLibListItem
+										key={item._id}
+										item={item}
+										selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
+										layer={this.state.sourceLayers[item.sourceLayerId]}
+										outputLayer={this.state.outputLayers[item.outputLayerId]}
+										onToggleAdLib={this.props.onToggleAdLib}
+										onSelectAdLib={this.props.onSelectAdLib}
+										/>
 								)
 							})
 					}
@@ -294,7 +315,7 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 
 	onToggleAdLib = (aSLine: SegmentLineAdLibItem) => {
 		console.log(aSLine)
-		if (this.props.runningOrder) {
+		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
 			Meteor.call('playout_segmentAdLibLineItemStart', this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
 		}
 	}
@@ -332,6 +353,7 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 					onToggleAdLib={this.onToggleAdLib}
 					selectedItem={this.state.selectedItem}
 					selectedSegment={this.state.selectedSegment}
+					studioInstallation={this.props.studioInstallation}
 					filter={this.state.filter} />
 			</React.Fragment>
 		)
