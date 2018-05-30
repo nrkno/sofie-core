@@ -594,7 +594,8 @@ export namespace ServerPeripheralDeviceAPI {
 		if (result.segmentLine) {
 			SegmentLines.update(segmentLine._id, {$set: {
 				overlapDuration: result.segmentLine.overlapDuration || 0,
-				autoNext: result.segmentLine.autoNext || false
+				autoNext: result.segmentLine.autoNext || false,
+				disableOutTransition: result.segmentLine.disableOutTransition || false,
 			}})
 		}
 

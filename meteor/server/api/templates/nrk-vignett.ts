@@ -161,6 +161,7 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
             runningOrderId: '',
             slug: context.segmentLine._id,
             expectedDuration: segmentLineduration,
+            disableOutTransition: true,
         }),
         segmentLineItems: segmentLineItems,
         segmentLineAdLibItems: null,

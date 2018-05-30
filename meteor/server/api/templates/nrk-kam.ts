@@ -96,8 +96,9 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
     // @todo try and move this to be run at the end of other templates, as it really is just an out animation for them
 
     // if previous SegmentLine is head, then wipe out of it
-    let segmentLines = context.getSegmentLines()
-    if ((context.segmentLine._rank > 1 && segmentLines[context.segmentLine._rank - 1].slug.indexOf(';head') > 0)) { // @todo make check better
+    const segmentLines = context.getSegmentLines()
+    const segmentPos = context.getSegmentLineIndex()
+    if ((segmentPos > 0 && segmentLines[segmentPos - 1].slug.indexOf(';head') > 0)) { // @todo make check better
         components.push(literal<TimelineObjCCGVideo>({
             _id: IDs.wipeVideo, deviceId: [''], siId: '', roId: '',
             trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
@@ -130,7 +131,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
         
         // delay the camera cut until the trigger point of the wipe
         camTrigger = { type: TriggerType.TIME_RELATIVE, value: `#${IDs.wipeVideo}.start + 120 + 120` } // @todo better trigger point
-        // @todo - cam mix
+        // @todo - mix duration
         overlapDuration = 300
         transition = Atem_Enums.TransitionStyle.MIX
     }
