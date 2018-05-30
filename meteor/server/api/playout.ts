@@ -7,7 +7,7 @@ import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collectio
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { getCurrentTime, saveIntoDb, literal, DBObj, partialExceptId, Time, partial } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
-import { TimelineTransition, Timeline, TimelineObj, TimelineObjGroupSegmentLine, TimelineContentTypeOther, TimelineObjAbstract, TimelineObjGroup } from '../../lib/collections/Timeline'
+import { TimelineTransition, Timeline, TimelineObj, TimelineObjGroupSegmentLine, TimelineContentTypeOther, TimelineObjAbstract, TimelineObjGroup, TimelineContentTypeLawo } from '../../lib/collections/Timeline'
 import { TimelineObject, ObjectId, TriggerType, TimelineKeyframe, TimelineGroup } from 'superfly-timeline'
 import { Transition, Ease, Direction } from '../../lib/constants/casparcg'
 import { Segment, Segments } from '../../lib/collections/Segments'
@@ -471,6 +471,24 @@ function createSegmentLineGroupFirstObject (segmentLine: SegmentLine, segmentLin
 	})
 }
 
+function createSegmentLineItemGroup (item: SegmentLineItem, segmentLineGroup?: TimelineObj): TimelineObj {
+	return literal<TimelineObjGroup>({
+		_id: item._id,
+		content: {
+			type: TimelineContentTypeOther.GROUP,
+			objects: []
+		},
+		inGroup: segmentLineGroup && segmentLineGroup._id,
+		isGroup: true,
+		siId: '',
+		roId: '',
+		deviceId: [],
+		trigger: item.trigger,
+		duration: item.duration || item.expectedDuration || 0,
+		LLayer: item.sourceLayerId
+	})
+}
+
 function transformSegmentLineIntoTimeline (segmentLine: SegmentLine, segmentLineGroup?: TimelineObj): Array<TimelineObj> {
 	let timelineObjs: Array<TimelineObj> = []
 	let items = segmentLine.getSegmentLinesItems()
@@ -482,9 +500,13 @@ function transformSegmentLineIntoTimeline (segmentLine: SegmentLine, segmentLine
 		) {
 			let tos = item.content.timelineObjects
 
+			// create a segmentLineItem group for the items and then place all of them there
+			const segmentLineItemGroup = createSegmentLineItemGroup(item, segmentLineGroup)
+			timelineObjs.push(segmentLineItemGroup)
+
 			_.each(tos, (o: TimelineObj) => {
 				if (segmentLineGroup) {
-					o.inGroup = segmentLineGroup._id
+					o.inGroup = segmentLineItemGroup._id
 				}
 
 				timelineObjs.push(o)
