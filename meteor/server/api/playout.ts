@@ -20,6 +20,7 @@ import { IMOSRunningOrder } from 'mos-connection'
 
 const SEGMENT_LINE_GROUP_PREFIX = 'sl-group-'
 const SEGMENT_LINE_GROUP_FIRST_ITEM_PREFIX = 'sl-group-firstobject-'
+const SEGMENT_LINE_ITEM_GROUP_PREFIX = 'sli-group-'
 
 Meteor.methods({
 	/**
@@ -283,7 +284,7 @@ Meteor.methods({
 		})
 		// To establish playback time, we need to look at the actual Timeline
 		let alCopyItemTObj = Timeline.findOne({
-			_id: sliId
+			_id: SEGMENT_LINE_ITEM_GROUP_PREFIX + sliId
 		})
 		let parentOffset = 0
 		if (!alCopyItem) throw new Meteor.Error(404, `Segment Line Ad Lib Copy Item "${sliId}" not found!`)
@@ -473,7 +474,7 @@ function createSegmentLineGroupFirstObject (segmentLine: SegmentLine, segmentLin
 
 function createSegmentLineItemGroup (item: SegmentLineItem, segmentLineGroup?: TimelineObj): TimelineObj {
 	return literal<TimelineObjGroup>({
-		_id: item._id,
+		_id: SEGMENT_LINE_ITEM_GROUP_PREFIX + item._id,
 		content: {
 			type: TimelineContentTypeOther.GROUP,
 			objects: []
