@@ -13,6 +13,7 @@ import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibI
 import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
 import { AdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
+import * as mousetrap from 'mousetrap'
 
 import * as faTh from '@fortawesome/fontawesome-free-solid/faTh'
 import * as faList from '@fortawesome/fontawesome-free-solid/faList'
@@ -239,7 +240,6 @@ export interface SegmentUi extends Segment {
 	isNext: boolean
 }
 
-
 interface IPropsHeader {
 	runningOrder: RunningOrder
 	studioInstallation: StudioInstallation
@@ -281,7 +281,7 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 
 		// automatically assign hotkeys based on adLibItem index
 		if (seg.isLive) {
-			const hotkeyBase = 'A'
+			const hotkeyBase = 'a' // TODO: switch to a more flexible solution
 			seg.items.forEach((item, index) => {
 				item.hotkey = String.fromCharCode(hotkeyBase.charCodeAt(0) + index)
 			})
@@ -294,6 +294,8 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 		liveSegment
 	}
 })(class AdLibPanel extends React.Component<IPropsHeader, IStateHeader> {
+	usedHotkeys: Array<string> = []
+
 	constructor (props) {
 		super(props)
 
@@ -306,9 +308,23 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 	}
 
 	componentDidUpdate (prevProps: IPropsHeader) {
+		mousetrap.unbind(this.usedHotkeys)
+		this.usedHotkeys.length = 0
+
 		if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
 			this.setState({
 				selectedSegment: this.props.liveSegment
+			})
+		}
+
+		if (this.props.liveSegment && this.props.liveSegment.items) {
+			this.props.liveSegment.items.forEach((item) => {
+				if (item.hotkey) {
+					mousetrap.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
+						this.onToggleAdLib(item)
+					}, 'keydown')
+					this.usedHotkeys.push(item.hotkey)
+				}
 			})
 		}
 	}

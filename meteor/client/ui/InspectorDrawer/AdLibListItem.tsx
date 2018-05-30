@@ -66,7 +66,7 @@ export const AdLibListItem = translate()(class extends React.Component<IListView
 					{this.props.layer && this.props.layer.name}
 				</td>
 				<td className='adlib-panel__list-view__list__table__cell--shortcut'>
-					{this.props.item.hotkey}
+					{this.props.item.hotkey && this.props.item.hotkey.toUpperCase()}
 				</td>
 				<td className='adlib-panel__list-view__list__table__cell--output'>
 					{this.props.outputLayer && this.props.outputLayer.name}
