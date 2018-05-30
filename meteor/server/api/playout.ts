@@ -69,6 +69,13 @@ Meteor.methods({
 			}
 		})
 
+		// Remove duration on segmentLineItems, as this is set by the ad-lib playback editing
+		SegmentLineItems.update({ runningOrderId: runningOrder._id }, { $unset: {
+			duration: 0
+		}}, {
+			multi: true
+		})
+
 		RunningOrders.update(runningOrder._id, {$set: {
 			active: true,
 			previousSegmentLineId: null,
@@ -301,7 +308,7 @@ Meteor.methods({
 		SegmentLineItems.update({
 			_id: sliId
 		}, {$set: {
-			expectedDuration: newExpectedDuration
+			duration: newExpectedDuration
 		}})
 
 		updateTimeline(runningOrder.studioInstallationId)
@@ -342,7 +349,7 @@ Meteor.methods({
 				SegmentLineItems.update({
 					_id: item._id
 				}, {$set: {
-					expectedDuration: newExpectedDuration
+					duration: newExpectedDuration
 				}})
 			}
 		})

@@ -194,11 +194,11 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		// If not, as-run segmentLine "duration" limits renderdDuration which takes priority over MOS-import
 		// expectedDuration (editorial duration)
 		let itemDuration = this.props.isLiveLine ?
-			segmentLineItem.renderedDuration || segmentLineItem.expectedDuration :
-			((segmentLineItem.renderedDuration || segmentLineItem.expectedDuration) === 0 ?
+			segmentLineItem.renderedDuration || segmentLineItem.duration || segmentLineItem.expectedDuration :
+			((segmentLineItem.renderedDuration || segmentLineItem.duration || segmentLineItem.expectedDuration) === 0 ?
 				this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) :
 				Math.min(
-					segmentLineItem.renderedDuration || segmentLineItem.expectedDuration,
+					segmentLineItem.renderedDuration || segmentLineItem.duration || segmentLineItem.expectedDuration,
 					this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)
 				)
 			)
@@ -391,7 +391,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 					'hide-overflow-labels': this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth),
 
-					'infinite': this.props.segmentLineItem.expectedDuration === 0, // 0 is a special value
+					'infinite': this.props.segmentLineItem.duration === undefined && this.props.segmentLineItem.expectedDuration === 0, // 0 is a special value
 
 					'source-missing': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING,
 					'source-broken': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN,
