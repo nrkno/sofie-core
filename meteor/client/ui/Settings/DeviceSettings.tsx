@@ -212,6 +212,18 @@ class PlayoutDeviceSettingsComponent extends React.Component<IPropsHeader & Inje
 													className='input text-input input-l'></EditAttribute>
 											</label>
 										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Playout uses Timecode of Caspar')}
+												<EditAttribute
+													modifiedClassName='bghl'
+													attribute={'settings.devices.' + deviceId + '.options.syncTimecode' }
+													obj={this.props.device}
+													type='checkbox'
+													collection={PeripheralDevices}
+													className=''></EditAttribute>
+											</label>
+										</div>
 									</React.Fragment>
 									)
 								) ||
