@@ -487,11 +487,15 @@ function createSegmentLineItemGroup (item: SegmentLineItem, duration: number, se
 	})
 }
 
-function transformSegmentLineIntoTimeline (segmentLine: SegmentLine, segmentLineGroup?: TimelineObj): Array<TimelineObj> {
+function transformSegmentLineIntoTimeline (segmentLine: SegmentLine, segmentLineGroup?: TimelineObj, allowTransition?: boolean): Array<TimelineObj> {
 	let timelineObjs: Array<TimelineObj> = []
 	let items = segmentLine.getSegmentLinesItems()
 
 	_.each(items, (item: SegmentLineItem) => {
+		if (!allowTransition && item.isTransition) {
+			return
+		}
+
 		if (
 			item.content &&
 			item.content.timelineObjects
@@ -550,6 +554,7 @@ function updateTimeline (studioInstallationId: string) {
 		let currentSegmentLine: SegmentLine | undefined
 		let nextSegmentLine: SegmentLine | undefined
 		let currentSegmentLineGroup: TimelineObj | undefined
+		let previousSegmentLineGroup: TimelineObj | undefined
 
 		// we get the nextSegmentLine first, because that affects how the currentSegmentLine will be treated
 		if (activeRunningOrder.nextSegmentLineId) {
@@ -562,11 +567,34 @@ function updateTimeline (studioInstallationId: string) {
 			currentSegmentLine = SegmentLines.findOne(activeRunningOrder.currentSegmentLineId)
 			if (!currentSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.currentSegmentLineId}" not found!`)
 
+			const transition = currentSegmentLine.getSegmentLinesItems().find((sl: SegmentLineItem) => sl.isTransition)
+
+			if (activeRunningOrder.previousSegmentLineId && transition) {
+				let previousSegmentLine = SegmentLines.findOne(activeRunningOrder.previousSegmentLineId)
+				if (!previousSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.previousSegmentLineId}" not found!`)
+
+				if (previousSegmentLine.startedPlayback && !previousSegmentLine.disableOutTransition) {
+					const duration = getCurrentTime() - previousSegmentLine.startedPlayback
+					previousSegmentLineGroup = createSegmentLineGroup(previousSegmentLine, duration + transition.expectedDuration)
+					previousSegmentLineGroup.priority = -1
+					previousSegmentLineGroup.trigger = literal<ITimelineTrigger>({
+						type: TriggerType.TIME_ABSOLUTE,
+						value: previousSegmentLine.startedPlayback
+					})
+
+					timelineObjs = timelineObjs.concat(
+						previousSegmentLineGroup,
+						transformSegmentLineIntoTimeline(previousSegmentLine, previousSegmentLineGroup, false))
+					timelineObjs.push(createSegmentLineGroupFirstObject(previousSegmentLine, previousSegmentLineGroup))
+				}
+			}
+
 			// fetch items
 			// fetch the timelineobjs in items
 			const isFollowed = nextSegmentLine && nextSegmentLine.autoNext
 			currentSegmentLineGroup = createSegmentLineGroup(currentSegmentLine, (isFollowed ? (currentSegmentLine.expectedDuration || 0) : 0))
-			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentSegmentLine, currentSegmentLineGroup))
+			const allowTransition = !!activeRunningOrder.previousSegmentLineId // @todo allow currentSegmentLine to force disable (if it is a video with an out ani)
+			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentSegmentLine, currentSegmentLineGroup, allowTransition))
 
 			timelineObjs.push(createSegmentLineGroupFirstObject(currentSegmentLine, currentSegmentLineGroup))
 		}
@@ -577,12 +605,12 @@ function updateTimeline (studioInstallationId: string) {
 			if (currentSegmentLineGroup) {
 				nextSegmentLineGroup.trigger = literal<ITimelineTrigger>({
 					type: TriggerType.TIME_RELATIVE,
-					value: `#${currentSegmentLineGroup._id}.end`
+					value: `#${currentSegmentLineGroup._id}.end - ${nextSegmentLine.overlapDuration || 0}`
 				})
 			}
 			timelineObjs = timelineObjs.concat(
 				nextSegmentLineGroup,
-				transformSegmentLineIntoTimeline(nextSegmentLine, nextSegmentLineGroup))
+				transformSegmentLineIntoTimeline(nextSegmentLine, nextSegmentLineGroup, currentSegmentLine && !currentSegmentLine.disableOutTransition))
 			timelineObjs.push(createSegmentLineGroupFirstObject(nextSegmentLine, nextSegmentLineGroup))
 		}
 

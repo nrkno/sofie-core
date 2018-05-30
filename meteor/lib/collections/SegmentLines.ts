@@ -27,6 +27,10 @@ export interface DBSegmentLine {
 	slug: string
 	/** Should this item be taken live automatically */
 	autoNext?: boolean
+	/** The duration to run overlap with the previous SegmentLine */
+	overlapDuration?: number
+	/** Should we block a transition at the out of this SegmentLine */
+	disableOutTransition?: boolean
 
 	metaData?: Array<IMOSExternalMetaData>
 	status?: IMOSObjectStatus
@@ -52,6 +56,8 @@ export class SegmentLine implements DBSegmentLine {
 	public expectedDuration?: number
 	public startedPlayback?: number
 	public duration?: number
+	public overlapDuration?: number
+	public disableOutTransition?: boolean
 
 	constructor (document: DBSegmentLine) {
 		_.each(_.keys(document), (key) => {

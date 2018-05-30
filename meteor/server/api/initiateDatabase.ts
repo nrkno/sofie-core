@@ -128,13 +128,13 @@ Meteor.methods({
 				// 	type: RundownAPI.SourceLayerType.MIC,
 				// 	onPGMClean: true,
 				// },
-				// {
-				// 	_id: 'studio0_camera0',
-				// 	_rank: 100,
-				// 	name: 'Kam',
-				// 	type: RundownAPI.SourceLayerType.CAMERA,
-				// 	onPGMClean: true,
-				// },
+				{
+					_id: 'studio0_camera0',
+					_rank: 100,
+					name: 'Kam',
+					type: RundownAPI.SourceLayerType.CAMERA,
+					onPGMClean: true,
+				},
 			],
 		}})
 		// Create Timeline mappings:
@@ -171,6 +171,12 @@ Meteor.methods({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				channel: 4,
+				layer: 120
+			}),
+			'casparcg_cg_countdown': literal<MappingCasparCG>({
+				device: PlayoutDeviceType.CASPARCG,
+				deviceId: 'casparcg0',
+				channel: 6,
 				layer: 120
 			}),
 			'casparcg_cg_logo': literal<MappingCasparCG>({

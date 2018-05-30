@@ -591,6 +591,14 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 		let result = runTemplate(context, story)
 
+		if (result.segmentLine) {
+			SegmentLines.update(segmentLine._id, {$set: {
+				overlapDuration: result.segmentLine.overlapDuration || 0,
+				autoNext: result.segmentLine.autoNext || false,
+				disableOutTransition: result.segmentLine.disableOutTransition || false,
+			}})
+		}
+
 		saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
 			runningOrderId: ro._id,
 			segmentLineId: segmentLine._id,
