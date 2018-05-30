@@ -46,6 +46,7 @@ interface IPropsHeader {
 	followLiveLine: boolean,
 	liveLineHistorySize: number,
 	livePosition: number,
+	autoNextSegmentLine: boolean,
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
 	onFollowLiveLine: (state: boolean, event: any) => void
@@ -134,6 +135,7 @@ const SegmentTimelineZoom = class extends React.Component<IPropsHeader & IZoomPr
 					totalSegmentDuration={this.getSegmentDuration()}
 					segmentLine={segmentLine}
 					followLiveLine={this.props.followLiveLine}
+					autoNextSegmentLine={this.props.autoNextSegmentLine}
 					liveLineHistorySize={this.props.liveLineHistorySize}
 					livePosition={this.props.segment._id === this.props.runningOrder.currentSegmentLineId && segmentLine.startedPlayback ? this.props.livePosition - segmentLine.startedPlayback : null} />
 			)

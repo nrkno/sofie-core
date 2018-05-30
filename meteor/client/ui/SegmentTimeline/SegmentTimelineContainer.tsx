@@ -84,6 +84,7 @@ interface IPropsHeader {
 	liveLineHistorySize: number
 	onTimeScaleChange?: (timeScaleVal: number) => void
 	onContextMenu?: (contextMenuContext: any) => void
+	autoNextSegmentLine: boolean
 }
 interface IStateHeader {
 	scrollLeft: number,
@@ -274,6 +275,14 @@ export const SegmentTimelineContainer = withTracker((props) => {
 	segment.outputLayers = outputLayers
 	segment.sourceLayers = sourceLayers
 
+	const nextSLine = SegmentLines.findOne({
+		_id: props.runningOrder.nextSegmentLineId
+	})
+	let autoNextSegmentLine = false
+	if (nextSLine && nextSLine.autoNext) {
+		autoNextSegmentLine = true
+	}
+
 	return {
 		segment,
 		segmentLines,
@@ -281,7 +290,8 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		currentLiveSegmentLine,
 		isNextSegment,
 		hasAlreadyPlayed,
-		hasRemoteItems
+		hasRemoteItems,
+		autoNextSegmentLine
 	}
 })(class extends React.Component<IPropsHeader, IStateHeader> {
 	static contextTypes = {
@@ -407,6 +417,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 							 isLiveSegment={this.props.isLiveSegment}
 							 isNextSegment={this.props.isNextSegment}
 							 hasRemoteItems={this.props.hasRemoteItems}
+							 autoNextSegmentLine={this.props.autoNextSegmentLine}
 							 hasAlreadyPlayed={this.props.hasAlreadyPlayed}
 							 followLiveLine={this.state.followLiveLine}
 							 liveLineHistorySize={this.props.liveLineHistorySize}
