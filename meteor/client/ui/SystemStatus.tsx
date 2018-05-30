@@ -9,6 +9,7 @@ import * as ClassNames from 'classnames'
 import Moment from 'react-moment'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import { getCurrentTime } from '../../lib/lib'
+import { Link } from 'react-router-dom';
 
 interface IDeviceItemPropsHeader extends InjectedTranslateProps {
 	key: string,
@@ -92,7 +93,7 @@ const DeviceItem = translate()(class extends React.Component<IDeviceItemPropsHea
 		return (
 			<tr className='device-item'>
 				<td className='device-item__id'>
-					<p>{this.props.device._id}</p>
+					<Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device._id}</Link>
 				</td>
 				<td className='device-item__name'>
 					<p>{this.props.device.name}</p>
