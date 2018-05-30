@@ -439,7 +439,7 @@ function createSegmentLineGroup (segmentLine: SegmentLine, duration: Time): Time
 			value: 'now'
 		},
 		duration: duration,
-		LLayer: 'core',
+		LLayer: 'core_abstract',
 		content: {
 			type: TimelineContentTypeOther.GROUP,
 			objects: []
@@ -606,13 +606,33 @@ function updateTimeline (studioInstallationId: string) {
 				})
 			}
 		})
-		let groupDevices: {[groupId: string]: Array<string>} = {}
+
+		// first, split out any grouped objects, to make the timeline shallow:
+		let fixObjectChildren = (o: TimelineObjGroup) => {
+			if (o.isGroup && o.content && o.content.objects && o.content.objects.length) {
+				// let o2 = o as TimelineObjGroup
+				_.each(o.content.objects, (child) => {
+					let childFixed: TimelineObj = _.extend(child, {
+						inGroup: o._id,
+						_id: child.id || child['_id']
+					})
+					delete childFixed['id']
+					timelineObjs.push(childFixed)
+					fixObjectChildren(childFixed as TimelineObjGroup)
+				})
+				delete o.content.objects
+			}
+		}
+		_.each(timelineObjs, (o: TimelineObj) => {
+			fixObjectChildren(o as TimelineObjGroup)
+		})
+		// Add deviceIds to all children objects
+		let groupDeviceIds: {[groupId: string]: Array<string>} = {}
 		_.each(timelineObjs, (o) => {
 
 			o.roId = activeRunningOrder._id
 			o.siId = studioInstallation._id
 			if (!o.isGroup) {
-
 				let LLayerMapping = (studioInstallation.mappings || {})[o.LLayer + '']
 				if (LLayerMapping) {
 					let parentDevice = deviceParentDevice[LLayerMapping.deviceId]
@@ -621,8 +641,8 @@ function updateTimeline (studioInstallationId: string) {
 					o.deviceId = [parentDevice._id]
 
 					if (o.inGroup) {
-						if (!groupDevices[o.inGroup]) groupDevices[o.inGroup] = []
-						groupDevices[o.inGroup].push(parentDevice._id)
+						if (!groupDeviceIds[o.inGroup]) groupDeviceIds[o.inGroup] = []
+						groupDeviceIds[o.inGroup].push(parentDevice._id)
 					}
 
 				} else logger.warn('TimelineObject "' + o._id + '" has an unknown LLayer: "' + o.LLayer + '"')
@@ -635,6 +655,7 @@ function updateTimeline (studioInstallationId: string) {
 			return null
 		}))
 
+		// add the children's deviceIds to their parent groups:
 		let shouldNotRunAgain = true
 		let shouldRunAgain = true
 		for (let i = 0; i < 10; i++) {
@@ -642,12 +663,12 @@ function updateTimeline (studioInstallationId: string) {
 			shouldRunAgain = false
 			_.each(groupObjs, (o) => {
 				if (o.inGroup) {
-					if (!groupDevices[o.inGroup]) groupDevices[o.inGroup] = []
-					groupDevices[o.inGroup].concat(o.deviceId)
+					if (!groupDeviceIds[o.inGroup]) groupDeviceIds[o.inGroup] = []
+					groupDeviceIds[o.inGroup] = groupDeviceIds[o.inGroup].concat(o.deviceId)
 					shouldNotRunAgain = false
 				}
 				if (o.isGroup) {
-					let newDeviceId = _.uniq(groupDevices[o._id] || [], false)
+					let newDeviceId = _.uniq(groupDeviceIds[o._id] || [], false)
 
 					if (!_.isEqual(o.deviceId, newDeviceId)) {
 						shouldRunAgain = true
