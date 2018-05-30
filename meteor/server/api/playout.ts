@@ -265,6 +265,8 @@ Meteor.methods({
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine)
 		SegmentLineItems.insert(newSegmentLineItem)
 
+		console.log('adLibItemStart', newSegmentLineItem)
+
 		updateTimeline(runningOrder.studioInstallationId)
 	},
 	'playout_segmentAdLibLineItemStop': (roId: string, slId: string, sliId: string) => {
@@ -374,32 +376,15 @@ function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem, segmentLine: 
 	))
 	if (newSLineItem.content && newSLineItem.content.timelineObjects) {
 		let contentObjects = newSLineItem.content.timelineObjects
-		// insert the objects into an AdLib group
-		let adLibGroup = literal<TimelineObjGroup>({
-			_id: newId,
-			trigger: newSLineItem.trigger,
-			siId: newSLineItem.segmentLineId,
-			roId: newSLineItem.runningOrderId,
-			deviceId: [],
-			LLayer: 'core_adlib',
-			duration: newSLineItem.expectedDuration,
-			content: {
-				type: TimelineContentTypeOther.GROUP,
-				objects: _.filter(contentObjects,
-					(item) => {
-						return item !== null
-					}).map(
-						(item) => {
-							const itemCpy = _.extend(item, {
-								id: item!._id,
-								inGroup: newId
-							})
-							return itemCpy as TimelineObject
-						})
-			},
-			isGroup: true
-		})
-		newSLineItem.content.timelineObjects = [ adLibGroup ]
+		newSLineItem.content.timelineObjects = _.compact(contentObjects).map(
+			(item) => {
+				const itemCpy = _.extend(item, {
+					_id: newId + '_' + item!._id,
+					id: newId + '_' + item!._id
+				})
+				return itemCpy as TimelineObj
+			}
+		)
 	}
 	return newSLineItem
 }

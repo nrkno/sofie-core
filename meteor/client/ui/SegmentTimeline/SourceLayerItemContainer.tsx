@@ -35,6 +35,7 @@ interface IPropsHeader {
 	relative?: boolean
 	outputGroupCollapsed: boolean
 	followLiveLine: boolean
+	autoNextSegmentLine: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
 	liveLinePadding: number
@@ -59,7 +60,13 @@ export const SourceLayerItemContainer = withTracker((props) => {
 				}
 			}
 			// if duration is 0, the item is in fact infinite
-			segmentCopy.renderedDuration = Math.min(timelineObj.duration === 0 ? (props.segmentLineDuration - segmentCopy.renderedInPoint! + props.liveLinePadding) : timelineObj.duration,
+			segmentCopy.renderedDuration = Math.min(
+				timelineObj.duration === 0 ?
+					(props.autoNextSegmentLine ?
+						(props.segmentLineDuration - segmentCopy.renderedInPoint!) :
+						(props.segmentLineDuration - segmentCopy.renderedInPoint! + props.liveLinePadding)
+					) :
+					timelineObj.duration,
 				Math.max((props.livePosition || 0) + props.liveLinePadding, (props.segmentLineDuration - segmentCopy.renderedInPoint!))
 			)
 

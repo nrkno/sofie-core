@@ -36,6 +36,7 @@ export interface ISourceLayerItemProps {
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	relative?: boolean
 	followLiveLine: boolean
+	autoNextSegmentLine: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
 	outputGroupCollapsed: boolean
