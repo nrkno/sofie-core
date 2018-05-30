@@ -17,10 +17,7 @@ import { logger } from './../logging'
 import { PeripheralDevice, PeripheralDevices, PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { IMOSRunningOrder } from 'mos-connection'
-
-const SEGMENT_LINE_GROUP_PREFIX = 'sl-group-'
-const SEGMENT_LINE_GROUP_FIRST_ITEM_PREFIX = 'sl-group-firstobject-'
-const SEGMENT_LINE_ITEM_GROUP_PREFIX = 'sli-group-'
+import { PlayoutTimelinePrefixes } from '../../lib/api/playout'
 
 Meteor.methods({
 	/**
@@ -284,7 +281,7 @@ Meteor.methods({
 		})
 		// To establish playback time, we need to look at the actual Timeline
 		let alCopyItemTObj = Timeline.findOne({
-			_id: SEGMENT_LINE_ITEM_GROUP_PREFIX + sliId
+			_id: PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + sliId
 		})
 		let parentOffset = 0
 		if (!alCopyItem) throw new Meteor.Error(404, `Segment Line Ad Lib Copy Item "${sliId}" not found!`)
@@ -430,7 +427,7 @@ function clearNextLineStartedPlaybackAndDuration (roId: string, nextSlId: string
 
 function createSegmentLineGroup (segmentLine: SegmentLine, duration: Time): TimelineObj {
 	let slGrp = literal<TimelineObjGroupSegmentLine>({
-		_id: SEGMENT_LINE_GROUP_PREFIX + segmentLine._id,
+		_id: PlayoutTimelinePrefixes.SEGMENT_LINE_GROUP_PREFIX + segmentLine._id,
 		siId: '', // added later
 		roId: '', // added later
 		deviceId: [],
@@ -453,7 +450,7 @@ function createSegmentLineGroup (segmentLine: SegmentLine, duration: Time): Time
 }
 function createSegmentLineGroupFirstObject (segmentLine: SegmentLine, segmentLineGroup: TimelineObj): TimelineObj {
 	return literal<TimelineObjAbstract>({
-		_id: SEGMENT_LINE_GROUP_FIRST_ITEM_PREFIX + segmentLine._id,
+		_id: PlayoutTimelinePrefixes.SEGMENT_LINE_GROUP_FIRST_ITEM_PREFIX + segmentLine._id,
 		siId: '', // added later
 		roId: '', // added later
 		deviceId: [],
@@ -472,9 +469,9 @@ function createSegmentLineGroupFirstObject (segmentLine: SegmentLine, segmentLin
 	})
 }
 
-function createSegmentLineItemGroup (item: SegmentLineItem, segmentLineGroup?: TimelineObj): TimelineObj {
+function createSegmentLineItemGroup (item: SegmentLineItem, duration: number, segmentLineGroup?: TimelineObj): TimelineObj {
 	return literal<TimelineObjGroup>({
-		_id: SEGMENT_LINE_ITEM_GROUP_PREFIX + item._id,
+		_id: PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + item._id,
 		content: {
 			type: TimelineContentTypeOther.GROUP,
 			objects: []
@@ -485,7 +482,7 @@ function createSegmentLineItemGroup (item: SegmentLineItem, segmentLineGroup?: T
 		roId: '',
 		deviceId: [],
 		trigger: item.trigger,
-		duration: item.duration || item.expectedDuration || 0,
+		duration: duration,
 		LLayer: item.sourceLayerId
 	})
 }
@@ -502,16 +499,22 @@ function transformSegmentLineIntoTimeline (segmentLine: SegmentLine, segmentLine
 			let tos = item.content.timelineObjects
 
 			// create a segmentLineItem group for the items and then place all of them there
-			const segmentLineItemGroup = createSegmentLineItemGroup(item, segmentLineGroup)
+			let lineItemDuration = item.duration || item.expectedDuration || 0
+			const segmentLineItemGroup = createSegmentLineItemGroup(item, lineItemDuration, segmentLineGroup)
 			timelineObjs.push(segmentLineItemGroup)
 
 			_.each(tos, (o: TimelineObj) => {
 				if (segmentLineGroup) {
 					o.inGroup = segmentLineItemGroup._id
+					if (o.duration > lineItemDuration && lineItemDuration !== 0) {
+						lineItemDuration = o.duration
+					}
 				}
 
 				timelineObjs.push(o)
 			})
+
+			segmentLineItemGroup.duration = lineItemDuration
 		}
 	})
 	return timelineObjs

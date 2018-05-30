@@ -10,6 +10,8 @@ import { Timeline } from '../../../lib/collections/Timeline'
 
 import { SourceLayerItem } from './SourceLayerItem'
 
+import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
+
 import {
 	ISourceLayerUi,
 	IOutputLayerUi,
@@ -41,7 +43,7 @@ interface IPropsHeader {
 export const SourceLayerItemContainer = withTracker((props) => {
 	if (props.isLiveLine) {
 		// Check in Timeline collection for any changes to the related object
-		let timelineObj = Timeline.findOne({_id: props.segmentLineItem._id})
+		let timelineObj = Timeline.findOne({ _id: PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + props.segmentLineItem._id })
 
 		if (timelineObj) {
 			let segmentCopy = (_.clone(props.segmentLineItem) as SegmentLineItemUi)
