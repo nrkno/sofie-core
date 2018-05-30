@@ -17,8 +17,8 @@ export interface SegmentLineItemGeneric {
 	_id: string
 	/** ID of the source object in MOS */
 	mosId: string
-	/** The segment line this item belongs to */
-	segmentLineId: string
+	/** The segment line this item belongs to - can be undefined for global ad lib segment line items */
+	segmentLineId?: string
 	/** The running order this item belongs to */
 	runningOrderId: string
 	/** User-presentable name for the timeline item */
@@ -54,6 +54,7 @@ export interface SegmentLineItemGeneric {
 
 export interface SegmentLineItem extends SegmentLineItemGeneric {
 	trigger: ITimelineTrigger
+	segmentLineId: string
 	expectedDuration: number
 }
 

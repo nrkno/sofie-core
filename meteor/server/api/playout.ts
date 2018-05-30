@@ -18,6 +18,9 @@ import { PeripheralDevice, PeripheralDevices, PlayoutDeviceSettings } from '../.
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { IMOSRunningOrder } from 'mos-connection'
 
+const SEGMENT_LINE_GROUP_PREFIX = 'sl-group-'
+const SEGMENT_LINE_GROUP_FIRST_ITEM_PREFIX = 'sl-group-firstobject-'
+
 Meteor.methods({
 	/**
 	 * Activates the RunningOrder:
@@ -252,11 +255,97 @@ Meteor.methods({
 		})
 		if (!adLibItem) throw new Meteor.Error(404, `Segment Line Ad Lib Item "${slaiId}" not found!`)
 		if (!runningOrder.active) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in an active running order!`)
-		if (runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only place in a current segment line!`)
+		if (runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in a current segment line!`)
 
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine)
 		SegmentLineItems.insert(newSegmentLineItem)
-		console.log(newSegmentLineItem)
+
+		updateTimeline(runningOrder.studioInstallationId)
+	},
+	'playout_segmentAdLibLineItemStop': (roId: string, slId: string, sliId: string) => {
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		let segLine = SegmentLines.findOne({
+			_id: slId,
+			runningOrderId: roId
+		})
+		if (!segLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
+		let alCopyItem = SegmentLineItems.findOne({
+			_id: sliId,
+			runningOrderId: roId
+		})
+		// To establish playback time, we need to look at the actual Timeline
+		let alCopyItemTObj = Timeline.findOne({
+			_id: sliId
+		})
+		let parentOffset = 0
+		if (!alCopyItem) throw new Meteor.Error(404, `Segment Line Ad Lib Copy Item "${sliId}" not found!`)
+		if (!alCopyItemTObj) throw new Meteor.Error(404, `Segment Line Ad Lib Copy Item "${sliId}" not found in the playout Timeline!`)
+		if (!runningOrder.active) throw new Meteor.Error(403, `Segment Line Ad Lib Copy Items can be only manipulated in an active running order!`)
+		if (runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Ad Lib Copy Items can be only manipulated in a current segment line!`)
+		if (!alCopyItem.adLibSourceId) throw new Meteor.Error(501, `"${sliId}" does not appear to be a Segment Line Ad Lib Copy Item!`)
+
+		// The ad-lib item positioning will be relative to the startedPlayback of the segment line
+		if (segLine.startedPlayback) {
+			parentOffset = segLine.startedPlayback
+		}
+
+		let newExpectedDuration = 1 // smallest, non-zero duration
+		if (alCopyItemTObj.trigger.type === TriggerType.TIME_ABSOLUTE && _.isNumber(alCopyItemTObj.trigger.value)) {
+			const actualStartTime = parentOffset + alCopyItemTObj.trigger.value
+			newExpectedDuration = getCurrentTime() - actualStartTime
+		} else {
+			logger.warn(`"${sliId}" timeline object is not positioned absolutely or is still set to play now, assuming it's about to be played.`)
+		}
+
+		SegmentLineItems.update({
+			_id: sliId
+		}, {$set: {
+			expectedDuration: newExpectedDuration
+		}})
+
+		updateTimeline(runningOrder.studioInstallationId)
+	},
+	'playout_sourceLayerOnLineStop': (roId: string, slId: string, sourceLayerId: string) => {
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		let segLine = SegmentLines.findOne({
+			_id: slId,
+			runningOrderId: roId
+		})
+		if (!segLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
+		let slItems = SegmentLineItems.find({
+			runningOrderId: roId,
+			segmentLineId: slId,
+			sourceLayerId: sourceLayerId
+		}).fetch()
+		if (!runningOrder.active) throw new Meteor.Error(403, `Segment Line Items can be only manipulated in an active running order!`)
+		if (runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Items can be only manipulated in a current segment line!`)
+
+		let parentOffset = 0
+		if (segLine.startedPlayback) {
+			parentOffset = segLine.startedPlayback
+		}
+
+		const now = getCurrentTime()
+		slItems.forEach((item) => {
+			let newExpectedDuration = 1 // smallest, non-zero duration
+			if (item.trigger.type === TriggerType.TIME_ABSOLUTE && _.isNumber(item.trigger.value)) {
+				const actualStartTime = parentOffset + item.trigger.value
+				newExpectedDuration = now - actualStartTime
+			} else {
+				logger.warn(`"${item._id}" timeline object is not positioned absolutely or is still set to play now, assuming it's about to be played.`)
+			}
+
+			// Only update if the new duration is shorter than the old one, since we are supposed to cut stuff short
+			if (newExpectedDuration < item.expectedDuration) {
+				SegmentLineItems.update({
+					_id: item._id
+				}, {$set: {
+					expectedDuration: newExpectedDuration
+				}})
+			}
+		})
 
 		updateTimeline(runningOrder.studioInstallationId)
 	}
@@ -333,7 +422,7 @@ function clearNextLineStartedPlaybackAndDuration (roId: string, nextSlId: string
 
 function createSegmentLineGroup (segmentLine: SegmentLine, duration: Time): TimelineObj {
 	let slGrp = literal<TimelineObjGroupSegmentLine>({
-		_id: 'sl-group-' + segmentLine._id,
+		_id: SEGMENT_LINE_GROUP_PREFIX + segmentLine._id,
 		siId: '', // added later
 		roId: '', // added later
 		deviceId: [],
@@ -356,7 +445,7 @@ function createSegmentLineGroup (segmentLine: SegmentLine, duration: Time): Time
 }
 function createSegmentLineGroupFirstObject (segmentLine: SegmentLine, segmentLineGroup: TimelineObj): TimelineObj {
 	return literal<TimelineObjAbstract>({
-		_id: 'sl-group-firstobject-' + segmentLine._id,
+		_id: SEGMENT_LINE_GROUP_FIRST_ITEM_PREFIX + segmentLine._id,
 		siId: '', // added later
 		roId: '', // added later
 		deviceId: [],
