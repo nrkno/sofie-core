@@ -547,13 +547,17 @@ export namespace ServerPeripheralDeviceAPI {
 	export function mosRoFullStory (id, token, story: IMOSROFullStory ) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoFullStory')
+
+		fixIllegalObject(story)
 		// @ts-ignore
 		logger.debug(story)
 		// Update db with the full story:
 		let ro = getRO(story.RunningOrderId)
 		// let segment = getSegment(story.RunningOrderId, story.ID)
 		let segmentLine = getSegmentLine(story.RunningOrderId, story.ID)
-		// TODO: Do something
+
+		// cache the Data
+		ro.saveCache('fullStory' + story.ID.toString(), story)
 
 		// TODO: Find good MosExternalMetaData for durations
 		const durationMosMetaData = findDurationInfoMOSExternalMetaData(story)
@@ -690,6 +694,24 @@ export function segmentId (roId: string, storySlug: string, rank: number, origin
 export function segmentLineId (runningOrderId: string, storyId: MosString128, tmp: boolean, original?: boolean): string {
 	let id = runningOrderId + '_' + storyId.toString()
 	return (original ? id : getHash(id))
+}
+export function fixIllegalObject (o: any) {
+	if (_.isArray(o)) {
+		_.each(o, (val, key) => {
+			fixIllegalObject(val)
+		})
+	} else if (_.isObject(o)) {
+		_.each(_.keys(o), (key: string) => {
+			let val = o[key]
+			if ((key + '').match(/^\$/)) {
+				let newKey = key.replace(/^\$/,'@')
+				o[newKey] = val
+				delete o[key]
+				key = newKey
+			}
+			fixIllegalObject(val)
+		})
+	}
 }
 /**
  * Returns a Running order, throws error if not found
