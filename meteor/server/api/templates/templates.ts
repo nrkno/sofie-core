@@ -86,6 +86,7 @@ export interface TemplateContextInnerBase {
 	error: (message: string) => void
 	warning: (message: string) => void
 	getSegmentLines (): Array<SegmentLine>
+	getSegmentLineIndex (): number
 }
 
 export interface TemplateContextInner extends TemplateContext, TemplateContextInnerBase {
@@ -124,7 +125,10 @@ function getContext (context: TemplateContext): TemplateContextInner {
 			// return stories in segmentLine
 			let ro = RunningOrders.findOne(context.runningOrderId)
 			if (!ro) throw new Meteor.Error(404, 'RunningOrder "' + context.runningOrderId + '" not found')
-			return ro.getSegmentLines()
+			return ro.getSegmentLines().filter((sl: SegmentLine) => sl.segmentId == context.segmentLine.segmentId)
+		},
+		getSegmentLineIndex (): number {
+			return this.getSegmentLines().findIndex((sl: SegmentLine) => sl._id == context.segmentLine._id)
 		},
 		sumMosItemDurations (str: string): number {
 			let sum = 0

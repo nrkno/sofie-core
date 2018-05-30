@@ -56,6 +56,7 @@ export interface SegmentLineItem extends SegmentLineItemGeneric {
 	trigger: ITimelineTrigger
 	segmentLineId: string
 	expectedDuration: number
+	isTransition: boolean
 }
 
 export const SegmentLineItems: TransformedCollection<SegmentLineItem, SegmentLineItem>
