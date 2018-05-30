@@ -227,13 +227,18 @@ const AdLibPanelToolbar = translate()(class extends React.Component<IToolbarProp
 	}
 })
 
+export interface SegmentLineAdLibItemUi extends SegmentLineAdLibItem {
+	hotkey?: string
+}
+
 export interface SegmentUi extends Segment {
 	/** Segment line items belonging to this segment line */
 	segLines: Array<SegmentLine>
-	items?: Array<SegmentLineAdLibItem>
+	items?: Array<SegmentLineAdLibItemUi>
 	isLive: boolean
 	isNext: boolean
 }
+
 
 interface IPropsHeader {
 	runningOrder: RunningOrder
@@ -273,6 +278,14 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 			segmentAdLibItems = segmentAdLibItems.concat(segLine.getSegmentLinesAdLibItems())
 		})
 		seg.items = segmentAdLibItems
+
+		// automatically assign hotkeys based on adLibItem index
+		if (seg.isLive) {
+			const hotkeyBase = 'A'
+			seg.items.forEach((item, index) => {
+				item.hotkey = String.fromCharCode(hotkeyBase.charCodeAt(0) + index)
+			})
+		}
 		return seg
 	}) : []
 

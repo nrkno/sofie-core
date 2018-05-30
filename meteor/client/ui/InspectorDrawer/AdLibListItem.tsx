@@ -22,9 +22,10 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Spinner } from '../../lib/Spinner'
 
 import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
+import { SegmentLineAdLibItemUi } from './AdLibPanel'
 
 interface IListViewItemPropsHeader {
-	item: SegmentLineAdLibItem
+	item: SegmentLineAdLibItemUi
 	selected: boolean
 	layer: ISourceLayer
 	outputLayer: IOutputLayer
@@ -65,7 +66,7 @@ export const AdLibListItem = translate()(class extends React.Component<IListView
 					{this.props.layer && this.props.layer.name}
 				</td>
 				<td className='adlib-panel__list-view__list__table__cell--shortcut'>
-					A
+					{this.props.item.hotkey}
 				</td>
 				<td className='adlib-panel__list-view__list__table__cell--output'>
 					{this.props.outputLayer && this.props.outputLayer.name}
