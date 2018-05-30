@@ -21,6 +21,8 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { Spinner } from '../../lib/Spinner'
 
+import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
+
 interface IListViewItemPropsHeader {
 	item: SegmentLineAdLibItem
 	selected: boolean
@@ -68,24 +70,7 @@ export const AdLibListItem = translate()(class extends React.Component<IListView
 				<td className='adlib-panel__list-view__list__table__cell--output'>
 					{this.props.outputLayer && this.props.outputLayer.name}
 				</td>
-				<td className='adlib-panel__list-view__list__table__cell--name'>
-					{this.props.item.name}
-				</td>
-				<td className='adlib-panel__list-view__list__table__cell--data'>
-					Byen na
-				</td>
-				<td className='adlib-panel__list-view__list__table__cell--resolution'>
-					&nbsp;
-				</td>
-				<td className='adlib-panel__list-view__list__table__cell--fps'>
-					&nbsp;
-				</td>
-				<td className='adlib-panel__list-view__list__table__cell--duration'>
-					&nbsp;
-				</td>
-				<td className='adlib-panel__list-view__list__table__cell--tc-start'>
-					&nbsp;
-				</td>
+				<DefaultListItemRenderer {...this.props} />
 			</tr>
 		)
 	}
