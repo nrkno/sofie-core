@@ -140,7 +140,8 @@ export namespace ServerPeripheralDeviceAPI {
 			Timeline.update({
 				_id: o.id
 			}, {$set: {
-				'trigger.value': o.time
+				'trigger.value': o.time,
+				'trigger.setFromNow': true
 			}},{
 				multi: true
 			})

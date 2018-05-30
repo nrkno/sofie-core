@@ -701,10 +701,10 @@ function updateTimeline (studioInstallationId: string) {
 			roId: activeRunningOrder._id
 		}, timelineObjs, {
 			beforeUpdate: (o: TimelineObj, oldO: TimelineObj): TimelineObj => {
-				// do not overwrite trigger on the currentSegmentLine if it is already present
-				if (currentSegmentLine && currentSegmentLine._id === oldO._id && o.trigger.value === 'now') {
-					o = _.clone(o)
-					o.trigger = oldO.trigger
+				// do not overwrite trigger when the trigger has been denowified
+				if (o.trigger.value === 'now' && oldO.trigger.setFromNow) {
+					o.trigger.type = oldO.trigger.type
+					o.trigger.value = oldO.trigger.value
 				}
 				return o
 			}

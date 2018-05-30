@@ -105,6 +105,7 @@ export interface TimelineObj {
 	trigger: {
 		type: TriggerType;
 		value: number | string;
+		setFromNow?: boolean;
 	}
 	duration: number
 	LLayer: string | number
