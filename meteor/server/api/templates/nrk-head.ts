@@ -34,7 +34,8 @@ import { IOutputLayer,
 import {
 	TemplateFunction,
 	TemplateSet,
-	SegmentLineItemOptional,
+    SegmentLineItemOptional,
+    SegmentLineAdLibItemOptional,
 	TemplateFunctionOptional,
 	TemplateResult,
 	TemplateContextInner,
@@ -43,13 +44,14 @@ import {
 import {
 	TimelineObjCCGVideo,
 	TimelineObjLawoSource,
-	TimelineObjCCGTemplate,
+    TimelineObjCCGTemplate,
+    TimelineContentTypeOther,
 	TimelineContentTypeCasparCg,
 	TimelineContentTypeLawo,
 	TimelineContentTypeAtem,
 	TimelineObj,
 	TimelineObjAbstract,
-	Atem_Enums,
+    Atem_Enums,
 	TimelineObjAtemME,
 	TimelineObjAtemAUX,
 	TimelineObjAtemDSK,
@@ -73,29 +75,16 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
         wipeAudioSkille: 	context.getHashId('wipeAudioSkille'),
         headGfx: 			context.getHashId('headGfx'),
         playerClip: 		context.getHashId('playerClip'),
+        playerClipTransition: context.getHashId('playerClipTransition'),
         vignett: context.getHashId('vignett')
     }
     
-    let segmentLines = context.getSegmentLines()
-    let segmentTitleMin = -1
-    let segmentTitleMax = -1
-    for (let sl of segmentLines){
-        if (sl.segmentId != context.segmentLine.segmentId) {
-            if (segmentTitleMin != -1) {
-                break
-            }
+    const segmentLines = context.getSegmentLines()
+    const segmentPos = context.getSegmentLineIndex()
 
-            continue
-        }
-        if (segmentTitleMin === -1) {
-            segmentTitleMin = sl._rank
-        }
-        segmentTitleMax = sl._rank
-    }
-
-    // @todo this number assumes a certain flow. _rank starts at 1
-    let isFirstHeadAfterVignett = (context.segmentLine._rank === segmentTitleMin + 1)
-    let isLastHead = (context.segmentLine._rank === segmentTitleMax - 1)
+    // @todo this number assumes a certain flow
+    const isFirstHeadAfterVignett = segmentPos == 1
+    const isLastHead = segmentPos == segmentLines.length - 2
 
     if (!isFirstHeadAfterVignett) {
         context.segmentLine.overlapDuration = 300 // TODO properly
@@ -126,7 +115,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
     // Copy the vignett from the previous segmentLine if it was found. 
     // @todo make this more durable and refactor to reusable.
     // @todo look into if this can be automated more. eg if content is null that means persist from before if found
-    let prev_content = segmentLines[segmentTitleMin].getSegmentLinesItems()[0].content
+    let prev_content = segmentLines[0].getSegmentLinesItems()[0].content
     let vignet_obj: TimelineObjCCGVideo | null | undefined
     if (prev_content && prev_content.timelineObjects){
         vignet_obj = prev_content.timelineObjects.find((o: TimelineObj) => o.LLayer == LLayers.casparcg_player_vignett) as TimelineObjCCGVideo
@@ -143,10 +132,90 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
     }
 
     let segmentLineItems: Array<SegmentLineItemOptional> = []
+    let transiton: SegmentLineItemOptional = {
+        _id: context.getHashId('transition'),
+        mosId: 'transition',
+        name: 'transition',
+        trigger: {
+            type: TriggerType.TIME_ABSOLUTE,
+            value: 0
+        },
+        status: RundownAPI.LineItemStatusCode.UNKNOWN,
+        sourceLayerId: 'studio0_live_transition0',
+        outputLayerId: 'pgm0',
+        expectedDuration: 3600, // transform into milliseconds
+        isTransition: true,
+        content: {
+            fileName: clip,
+            sourceDuration: (
+                context.getValueByPath(storyItemClip, 'Content.objDur', 0) /
+                (context.getValueByPath(storyItemClip, 'Content.objTB') || 1)
+            ) * 1000,
+
+            timelineObjects: _.compact([
+                // wipe to head (if not first head after vignett)
+                literal<TimelineObjCCGVideo>({
+                    _id: IDs.wipeVideo, deviceId: [''], siId: '', roId: '',
+                    trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
+                    priority: 1,
+                    duration: 1440, //720, // @todo duration should be half this
+                    LLayer: LLayers.casparcg_player_wipe,
+                    content: {
+                        type: TimelineContentTypeCasparCg.VIDEO,
+                        attributes: {
+                            file: 'wipe_white'
+                        }
+                    }
+                }),
+
+                // wipe audio skille between 
+                literal<TimelineObjCCGVideo>({
+                    _id: IDs.wipeAudioSkille, deviceId: [''], siId: '', roId: '',
+                    trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
+                    priority: 1,
+                    duration: 3600,
+                    LLayer: LLayers.casparcg_player_soundeffect,
+                    content: {
+                        type: TimelineContentTypeCasparCg.VIDEO,
+                        attributes: {
+                            file: 'DK_skille_head'
+                        }
+                    }
+                }),
+
+                // play HEAD
+                // @todo refactor to make this block less duplicated
+                literal<TimelineObjCCGVideo>({
+                    _id: IDs.playerClipTransition, deviceId: [''], siId: '', roId: '',
+                    trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+                    priority: 2,
+                    duration: (
+                        context.getValueByPath(storyItemClip, 'Content.objDur', 0) /
+                        (context.getValueByPath(storyItemClip, 'Content.objTB') || 1)
+                    ) * 1000,
+                    LLayer: LLayers.casparcg_player_clip,
+                    content: {
+                        type: TimelineContentTypeCasparCg.VIDEO,
+                        transitions: {
+                            inTransition: {
+                                type: Transition.MIX,
+	                            duration: isFirstHeadAfterVignett ? 0 : 200,
+	                            easing: Ease.LINEAR,
+                                direction: Direction.LEFT
+                            }
+                        },
+                        attributes: {
+                            file: clip
+                        }
+                    }
+                })
+            ])
+        },
+    }
     let video: SegmentLineItemOptional = {
         _id: context.getHashId('video'),
         mosId: 'headvideo',
-        name: clip, // @todo is this the correct name to use?
+        name: clip,
         trigger: {
             type: TriggerType.TIME_ABSOLUTE,
             value: 0
@@ -161,15 +230,17 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
             story.getValueByPath('MosExternalMetaData.0.MosPayload.SourceMediaTime') ||
             10
         ) * 1000, // transform into milliseconds
+        isTransition: false,
         content: {
             fileName: clip,
             sourceDuration: (
                 context.getValueByPath(storyItemClip, 'Content.objDur', 0) /
                 (context.getValueByPath(storyItemClip, 'Content.objTB') || 1)
             ) * 1000,
-            timelineObjects: _.compact([
 
+            timelineObjects: _.compact([
                 // try and keep vignett running
+                // @todo. should this be a seperate segmentlineitem to make it clear it continues to the user?
                 vignet_obj,
 
                 // mic host hot
@@ -236,42 +307,10 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                     }
                 }),
 
-                // wipe to head (if not first head after vignett)
-                (!isFirstHeadAfterVignett) ? 
-                literal<TimelineObjCCGVideo>({
-                    _id: IDs.wipeVideo, deviceId: [''], siId: '', roId: '',
-                    trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
-                    priority: 1,
-                    duration: 1440, //720, // @todo duration should be half this
-                    LLayer: LLayers.casparcg_player_wipe,
-                    content: {
-                        type: TimelineContentTypeCasparCg.VIDEO,
-                        attributes: {
-                            file: 'wipe_white'
-                        }
-                    }
-                }) : null,
-
-                // wipe audio skille between 
-                (!isFirstHeadAfterVignett) ?
-                literal<TimelineObjCCGVideo>({
-                    _id: IDs.wipeAudioSkille, deviceId: [''], siId: '', roId: '',
-                    trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
-                    priority: 1,
-                    duration: 3600,
-                    LLayer: LLayers.casparcg_player_soundeffect,
-                    content: {
-                        type: TimelineContentTypeCasparCg.VIDEO,
-                        attributes: {
-                            file: 'DK_skille_head'
-                        }
-                    }
-                }) : null,
-
                 // play HEAD
                 literal<TimelineObjCCGVideo>({
                     _id: IDs.playerClip, deviceId: [''], siId: '', roId: '',
-                    trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + ${isFirstHeadAfterVignett ? 0 : 40}` }, // @todo check trigger point
+                    trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
                     priority: 1,
                     duration: (
                         context.getValueByPath(storyItemClip, 'Content.objDur', 0) /
@@ -280,14 +319,6 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                     LLayer: LLayers.casparcg_player_clip,
                     content: {
                         type: TimelineContentTypeCasparCg.VIDEO,
-                        transitions: {
-                            inTransition: {
-                                type: Transition.MIX,
-	                            duration: isFirstHeadAfterVignett ? 0 : 200,
-	                            easing: Ease.LINEAR,
-                                direction: Direction.LEFT
-                            }
-                        },
                         attributes: {
                             file: clip
                         }
@@ -296,6 +327,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
             ])
         }
     }
+    segmentLineItems.push(transiton)
     segmentLineItems.push(video)
 
     let trigger: ITimelineTrigger = {
@@ -333,6 +365,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
         sourceLayerId: 'studio0_graphics0',
         outputLayerId: 'pgm0',
         expectedDuration: 8 * 1000, // @todo TBD
+        isTransition: false,
         content: {
             fileName: clip,
             sourceDuration: 8 * 1000, // @todo TBD
@@ -402,7 +435,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
             runningOrderId: '',
             slug: context.segmentLine._id,
             autoNext: isFirstHeadAfterVignett,
-            overlapDuration: isFirstHeadAfterVignett ? 760 : 160,
+            overlapDuration: isFirstHeadAfterVignett ? 0 : 160,
         }),
         segmentLineItems: segmentLineItems,
         segmentLineAdLibItems: segmentLineAdLibItems

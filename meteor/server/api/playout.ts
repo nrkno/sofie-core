@@ -487,11 +487,15 @@ function createSegmentLineItemGroup (item: SegmentLineItem, duration: number, se
 	})
 }
 
-function transformSegmentLineIntoTimeline (segmentLine: SegmentLine, segmentLineGroup?: TimelineObj): Array<TimelineObj> {
+function transformSegmentLineIntoTimeline (segmentLine: SegmentLine, segmentLineGroup?: TimelineObj, allowTransition?: boolean): Array<TimelineObj> {
 	let timelineObjs: Array<TimelineObj> = []
 	let items = segmentLine.getSegmentLinesItems()
 
 	_.each(items, (item: SegmentLineItem) => {
+		if (!allowTransition && item.isTransition) {
+			return
+		}
+
 		if (
 			item.content &&
 			item.content.timelineObjects
@@ -563,34 +567,34 @@ function updateTimeline (studioInstallationId: string) {
 			currentSegmentLine = SegmentLines.findOne(activeRunningOrder.currentSegmentLineId)
 			if (!currentSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.currentSegmentLineId}" not found!`)
 
+			const transition = currentSegmentLine.getSegmentLinesItems().find((sl: SegmentLineItem) => sl.isTransition)
 
-			if (activeRunningOrder.previousSegmentLineId && currentSegmentLine.overlapDuration) {
+			if (activeRunningOrder.previousSegmentLineId && transition) {
 				let previousSegmentLine = SegmentLines.findOne(activeRunningOrder.previousSegmentLineId)
 				if (!previousSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.previousSegmentLineId}" not found!`)
 
-				// TODO - cheat on duration for now
-				// TOOD - is duration the correct thing to do? or do we want to just trigger a reupdate in X ms?
-				// Or this may want to change to a relative trigger, but that is a lot more fiddly
-				const now = Date.now() + 100
-				logger.warn("Continue previous for: " + currentSegmentLine.overlapDuration + " ran for: " + previousSegmentLine.duration + " starting at: " + previousSegmentLine.startedPlayback + " ended at: " + currentSegmentLine.startedPlayback)
-				previousSegmentLineGroup = createSegmentLineGroup(previousSegmentLine, now - (previousSegmentLine.startedPlayback || (now-5000)) + currentSegmentLine.overlapDuration)
-				previousSegmentLineGroup.priority = -1
-				previousSegmentLineGroup.trigger = literal<ITimelineTrigger>({
-					type: TriggerType.TIME_ABSOLUTE,
-					value: previousSegmentLine.startedPlayback || 0
-				})
+				if (previousSegmentLine.startedPlayback && !previousSegmentLine.disableOutTransition) {
+					const duration = getCurrentTime() - previousSegmentLine.startedPlayback
+					previousSegmentLineGroup = createSegmentLineGroup(previousSegmentLine, duration + transition.expectedDuration)
+					previousSegmentLineGroup.priority = -1
+					previousSegmentLineGroup.trigger = literal<ITimelineTrigger>({
+						type: TriggerType.TIME_ABSOLUTE,
+						value: previousSegmentLine.startedPlayback
+					})
 
-				timelineObjs = timelineObjs.concat(
-					previousSegmentLineGroup,
-					transformSegmentLineIntoTimeline(previousSegmentLine, previousSegmentLineGroup))
-				timelineObjs.push(createSegmentLineGroupFirstObject(previousSegmentLine, previousSegmentLineGroup))
+					timelineObjs = timelineObjs.concat(
+						previousSegmentLineGroup,
+						transformSegmentLineIntoTimeline(previousSegmentLine, previousSegmentLineGroup, false))
+					timelineObjs.push(createSegmentLineGroupFirstObject(previousSegmentLine, previousSegmentLineGroup))
+				}
 			}
 
 			// fetch items
 			// fetch the timelineobjs in items
 			const isFollowed = nextSegmentLine && nextSegmentLine.autoNext
 			currentSegmentLineGroup = createSegmentLineGroup(currentSegmentLine, (isFollowed ? (currentSegmentLine.expectedDuration || 0) : 0))
-			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentSegmentLine, currentSegmentLineGroup))
+			const allowTransition = !!activeRunningOrder.previousSegmentLineId // @todo allow currentSegmentLine to force disable (if it is a video with an out ani)
+			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentSegmentLine, currentSegmentLineGroup, allowTransition))
 
 			timelineObjs.push(createSegmentLineGroupFirstObject(currentSegmentLine, currentSegmentLineGroup))
 		}
@@ -606,7 +610,7 @@ function updateTimeline (studioInstallationId: string) {
 			}
 			timelineObjs = timelineObjs.concat(
 				nextSegmentLineGroup,
-				transformSegmentLineIntoTimeline(nextSegmentLine, nextSegmentLineGroup))
+				transformSegmentLineIntoTimeline(nextSegmentLine, nextSegmentLineGroup, currentSegmentLine && !currentSegmentLine.disableOutTransition))
 			timelineObjs.push(createSegmentLineGroupFirstObject(nextSegmentLine, nextSegmentLineGroup))
 		}
 
