@@ -122,20 +122,28 @@ export namespace ServerPeripheralDeviceAPI {
 	export function getPeripheralDevice (id: string, token: string) {
 		return PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 	}
-	export function timelineTriggerTime (id: string, token: string, r: PeripheralDeviceAPI.TimelineTriggerTimeResult) {
+	export function timelineTriggerTime (id: string, token: string, results: PeripheralDeviceAPI.TimelineTriggerTimeResult) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
 
-		check(r.time, Number)
-		check(r.objectIds, [String])
-		logger.info('Timeline: Setting time ' + r.time + ' to ids [' + r.objectIds.join(',') + ']')
+		// check(r.time, Number)
+		check(results, Array)
+		_.each(results, (o) => {
+			check(o.id, String)
+			check(o.time, Number)
+		})
 
-		Timeline.update({
-			_id: {$in: r.objectIds}
-		}, {$set: {
-			'trigger.value': r.time
-		}},{
-			multi: true
+		_.each(results, (o) => {
+			// check(o.id, String)
+			// check(o.time, Number)
+			logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
+			Timeline.update({
+				_id: o.id
+			}, {$set: {
+				'trigger.value': o.time
+			}},{
+				multi: true
+			})
 		})
 	}
 	export function segmentLinePlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) {
@@ -547,13 +555,17 @@ export namespace ServerPeripheralDeviceAPI {
 	export function mosRoFullStory (id, token, story: IMOSROFullStory ) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoFullStory')
+
+		fixIllegalObject(story)
 		// @ts-ignore
 		logger.debug(story)
 		// Update db with the full story:
 		let ro = getRO(story.RunningOrderId)
 		// let segment = getSegment(story.RunningOrderId, story.ID)
 		let segmentLine = getSegmentLine(story.RunningOrderId, story.ID)
-		// TODO: Do something
+
+		// cache the Data
+		ro.saveCache('fullStory' + story.ID.toString(), story)
 
 		// TODO: Find good MosExternalMetaData for durations
 		const durationMosMetaData = findDurationInfoMOSExternalMetaData(story)
@@ -690,6 +702,24 @@ export function segmentId (roId: string, storySlug: string, rank: number, origin
 export function segmentLineId (runningOrderId: string, storyId: MosString128, tmp: boolean, original?: boolean): string {
 	let id = runningOrderId + '_' + storyId.toString()
 	return (original ? id : getHash(id))
+}
+export function fixIllegalObject (o: any) {
+	if (_.isArray(o)) {
+		_.each(o, (val, key) => {
+			fixIllegalObject(val)
+		})
+	} else if (_.isObject(o)) {
+		_.each(_.keys(o), (key: string) => {
+			let val = o[key]
+			if ((key + '').match(/^\$/)) {
+				let newKey = key.replace(/^\$/,'@')
+				o[newKey] = val
+				delete o[key]
+				key = newKey
+			}
+			fixIllegalObject(val)
+		})
+	}
 }
 /**
  * Returns a Running order, throws error if not found

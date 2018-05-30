@@ -34,10 +34,8 @@ export interface InitOptions {
 	name: string,
 	connectionId: string
 }
-export interface TimelineTriggerTimeResult {
-	time: number,
-	objectIds: Array<string>
-}
+export type TimelineTriggerTimeResult = Array<{id: string, time: number}>
+
 export interface SegmentLinePlaybackStartedResult {
 	roId: string,
 	slId: string,

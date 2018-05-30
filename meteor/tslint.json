@@ -5,6 +5,7 @@
     "ter-indent": [true, "tab",{
 			"SwitchCase": 1
     }],
-    "trailing-comma": false
+    "trailing-comma": false,
+    "semicolon": [true, "never"]
   }
 }

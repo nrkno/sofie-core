@@ -59,7 +59,8 @@ export interface PlayoutDeviceSettingsDeviceCasparCG extends PlayoutDeviceSettin
 	type: PlayoutDeviceType.CASPARCG
 	options: {
 		host: string,
-		port: number
+		port: number,
+		syncTimecode?: boolean
 	}
 }
 export interface PlayoutDeviceSettingsDeviceAtem extends PlayoutDeviceSettingsDevice {
