@@ -64,7 +64,7 @@ const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
 				<div className='right' style={{
 					'marginTop': '0.9em'
 				}}>
-					<button className='btn btn-secondary btn-compact aciton reload-data' onClick={(e) => console.log('Reload data')}>
+					<button className='btn btn-secondary btn-compact aciton reload-data' onClick={(e) => Meteor.call('playout_reload_data', props.runningOrder._id)}>
 						Reload data
 					</button>
 					{
