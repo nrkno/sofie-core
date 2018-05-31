@@ -461,6 +461,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			font-weight: bold;
 			line-height: 1em;
 			white-space: nowrap;
+			word-wrap: none;
 		}
 
 		.segment-timeline__liveline__timecode {
@@ -471,6 +472,8 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			line-height: 1em;
 			font-weight: normal;
 			color: $liveline-timecode-color;
+			white-space: nowrap;
+			word-wrap: none;
 		}
 	}
 
@@ -507,6 +510,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 					font-weight: bold;
 					line-height: 1em;
 					white-space: nowrap;
+					word-wrap: none;
 				}
 
 				&::after {
