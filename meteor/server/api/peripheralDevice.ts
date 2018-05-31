@@ -145,6 +145,8 @@ export namespace ServerPeripheralDeviceAPI {
 			}},{
 				multi: true
 			})
+
+			Meteor.call('playout_timelineTriggerTimeUpdate', o.id, o.time)
 		})
 	}
 	export function segmentLinePlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) {

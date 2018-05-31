@@ -360,7 +360,7 @@ export const SegmentTimelineLine = translate()(withTiming({
 						</div>
 					</div>
 					{this.renderTimelineOutputGroups(this.props.segmentLine)}
-					{this.state.isLive && !this.props.relative &&
+					{this.state.isLive && !this.props.relative && !this.props.autoNextSegmentLine &&
 						<div className='segment-timeline__segment-line__future-shade' style={this.getFutureShadeStyle()}>
 						</div>
 					}

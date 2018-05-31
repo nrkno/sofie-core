@@ -395,6 +395,10 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 
 	onClearAllSourceLayer = (sourceLayer: ISourceLayer) => {
 		console.log(sourceLayer)
+
+		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
+			Meteor.call('playout_sourceLayerOnLineStop', this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id)
+		}
 	}
 
 	onSelectSegment = (segment: SegmentUi) => {

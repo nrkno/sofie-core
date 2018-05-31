@@ -11,6 +11,7 @@ import { Timeline } from '../../../lib/collections/Timeline'
 import { SourceLayerItem } from './SourceLayerItem'
 
 import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
+import { getCurrentTime } from '../../../lib/lib'
 
 import {
 	ISourceLayerUi,
@@ -41,7 +42,7 @@ interface IPropsHeader {
 	liveLinePadding: number
 }
 /** This is a container component that allows ractivity with the Timeline collection */
-export const SourceLayerItemContainer = withTracker((props) => {
+export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 	if (props.isLiveLine) {
 		// Check in Timeline collection for any changes to the related object
 		let timelineObj = Timeline.findOne({ _id: PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + props.segmentLineItem._id })
@@ -54,21 +55,30 @@ export const SourceLayerItemContainer = withTracker((props) => {
 				if (_.isNumber(timelineObj.trigger.value)) { // this is a normal absolute trigger value
 					segmentCopy.renderedInPoint = (timelineObj.trigger.value as number)
 				} else if (timelineObj.trigger.value === 'now') { // this is a special absolute trigger value
-					segmentCopy.renderedInPoint = 0
+					if (props.segmentLine && props.segmentLine.startedPlayback) {
+						segmentCopy.renderedInPoint = getCurrentTime() - props.segmentLine.startedPlayback
+					} else {
+						segmentCopy.renderedInPoint = 0
+					}
 				} else {
 					segmentCopy.renderedInPoint = 0
 				}
 			}
-			// if duration is 0, the item is in fact infinite
-			segmentCopy.renderedDuration = Math.min(
-				timelineObj.duration === 0 ?
-					(props.autoNextSegmentLine ?
-						(props.segmentLineDuration - segmentCopy.renderedInPoint!) :
-						(props.segmentLineDuration - segmentCopy.renderedInPoint! + props.liveLinePadding)
-					) :
-					timelineObj.duration,
-				Math.max((props.livePosition || 0) + props.liveLinePadding, (props.segmentLineDuration - segmentCopy.renderedInPoint!))
-			)
+			segmentCopy.renderedDuration = props.autoNextSegmentLine ?
+				Math.min(
+					// if duration is 0, the item is in fact infinite
+					timelineObj.duration === 0 ?
+						(props.segmentLineDuration - (segmentCopy.renderedInPoint || 0)) :
+						timelineObj.duration,
+					Math.max((props.livePosition || 0), (props.segmentLineDuration - segmentCopy.renderedInPoint!))
+				) :
+				Math.min(
+					// if duration is 0, the item is in fact infinite
+					timelineObj.duration === 0 ?
+						(props.segmentLineDuration - segmentCopy.renderedInPoint! + props.liveLinePadding) :
+						timelineObj.duration,
+					Math.max((props.livePosition || 0) + props.liveLinePadding, (props.segmentLineDuration - segmentCopy.renderedInPoint!))
+				)
 
 			return {
 				segmentLineItem: segmentCopy

@@ -401,20 +401,19 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
             fileName: clip,
             sourceDuration: 8 * 1000, // @todo TBD
             timelineObjects: [
-                literal<TimelineObjCCGTemplate>({ // to be changed to NRKPOST-something
+                literal<TimelineObjCCGVideo>({ // to be changed to NRKPOST-something
                     _id: IDs.headGfx, deviceId: [''], siId: '', roId: '',
                     trigger: {
-                        type: TriggerType.TIME_RELATIVE,
-                        value: `#${IDs.headVideo}.start + 5`
+                        type: TriggerType.TIME_ABSOLUTE,
+                        value: '0'
                     },
                     priority: 1,
-                    duration: 8 * 1000, // @todo TBD
+                    duration: 0, // @todo TBD
                     LLayer: LLayers.casparcg_cg_graphics,
                     content: {
-                        type: TimelineContentTypeCasparCg.TEMPLATE, // to be changed to NRKPOST-something
+                        type: TimelineContentTypeCasparCg.VIDEO, // to be changed to NRKPOST-something
                         attributes: {
-                            name: 'nrkgfx', // @todo: TBD
-                            useStopCommand: false
+                            file: 'TEST2'
                         }
                     }
                 })

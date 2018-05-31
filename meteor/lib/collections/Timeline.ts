@@ -126,6 +126,9 @@ export interface TimelineObj {
 	repeating?: boolean
 	priority?: number
 	externalFunction?: string
+	metadata?: {
+		[key: string]: any
+	}
 }
 export interface TimelineObjGroup extends TimelineObj {
 	content: {

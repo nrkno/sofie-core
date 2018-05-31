@@ -265,7 +265,7 @@ Meteor.methods({
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine)
 		SegmentLineItems.insert(newSegmentLineItem)
 
-		console.log('adLibItemStart', newSegmentLineItem)
+		// console.log('adLibItemStart', newSegmentLineItem)
 
 		updateTimeline(runningOrder.studioInstallationId)
 	},
@@ -345,7 +345,7 @@ Meteor.methods({
 			}
 
 			// Only update if the new duration is shorter than the old one, since we are supposed to cut stuff short
-			if (newExpectedDuration < item.expectedDuration) {
+			if ((newExpectedDuration < item.expectedDuration) || (item.expectedDuration === 0)) {
 				SegmentLineItems.update({
 					_id: item._id
 				}, {$set: {
@@ -355,6 +355,22 @@ Meteor.methods({
 		})
 
 		updateTimeline(runningOrder.studioInstallationId)
+	},
+	'playout_timelineTriggerTimeUpdate': (timelineObjId: string, time: number) => {
+		let tObj = Timeline.findOne(timelineObjId)
+		if (!tObj) throw new Meteor.Error(404, `Timeline obj "${timelineObjId}" not found!`)
+
+		if (tObj.metadata && tObj.metadata.segmentLineItemId) {
+			console.log('Update segment line id: ', tObj.metadata.segmentLineItemId, new Date(time))
+			SegmentLineItems.update({
+				_id: tObj.metadata.segmentLineItemId
+			}, {$set: {
+				trigger: {
+					type: TriggerType.TIME_ABSOLUTE,
+					value: time
+				}
+			}})
+		}
 	}
 })
 
@@ -468,7 +484,10 @@ function createSegmentLineItemGroup (item: SegmentLineItem, duration: number, se
 		deviceId: [],
 		trigger: item.trigger,
 		duration: duration,
-		LLayer: item.sourceLayerId
+		LLayer: item.sourceLayerId,
+		metadata: {
+			segmentLineItemId: item._id
+		}
 	})
 }
 
@@ -695,7 +714,7 @@ function updateTimeline (studioInstallationId: string) {
 			if (!shouldRunAgain || shouldNotRunAgain) break
 		}
 
-		console.log('timelineObjs', timelineObjs)
+		// console.log('timelineObjs', timelineObjs)
 
 		saveIntoDb<TimelineObj, TimelineObj>(Timeline, {
 			roId: activeRunningOrder._id
