@@ -19,11 +19,8 @@ import { PeripheralDevice, PeripheralDevices, PlayoutDeviceSettings } from '../.
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { IMOSRunningOrder, IMOSObjectStatus } from 'mos-connection'
 import { PlayoutTimelinePrefixes } from '../../lib/api/playout'
-<<<<<<< HEAD
 import { TemplateContext, getHash, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
-=======
-import { ServerPeripheralDeviceAPI, setStoryStatus } from './peripheralDevice';
->>>>>>> Feat: The Yellow Line
+import { ServerPeripheralDeviceAPI, setStoryStatus } from './peripheralDevice'
 
 Meteor.methods({
 	/**
