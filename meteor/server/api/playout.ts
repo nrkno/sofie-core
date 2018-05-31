@@ -19,7 +19,7 @@ import { PeripheralDevice, PeripheralDevices, PlayoutDeviceSettings } from '../.
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { IMOSRunningOrder } from 'mos-connection'
 import { PlayoutTimelinePrefixes } from '../../lib/api/playout'
-import { runTemplate, TemplateContext, getHash, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
+import { TemplateContext, getHash, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 
 Meteor.methods({
 	/**
@@ -388,7 +388,7 @@ Meteor.methods({
 		if (!tObj) throw new Meteor.Error(404, `Timeline obj "${timelineObjId}" not found!`)
 
 		if (tObj.metadata && tObj.metadata.segmentLineItemId) {
-			console.log('Update segment line id: ', tObj.metadata.segmentLineItemId, new Date(time))
+			console.log('Update segment line item: ', tObj.metadata.segmentLineItemId, (new Date(time)).toTimeString())
 			SegmentLineItems.update({
 				_id: tObj.metadata.segmentLineItemId
 			}, {$set: {

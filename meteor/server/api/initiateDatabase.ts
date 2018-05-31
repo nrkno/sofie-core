@@ -265,15 +265,6 @@ Meteor.methods({
 			baselineTemplate: 'sorlandetTemplate'
 		}})
 
-		if (RuntimeFunctions.find({
-			_id: 'sorlandetTemplate'
-		}).fetch().length === 0) {
-			RuntimeFunctions.insert({
-				_id: 'sorlandetTemplate',
-				code: ''
-			})
-		}
-
 		PeripheralDevices.find({
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT
 		}).forEach((pd) => {

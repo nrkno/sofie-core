@@ -29,6 +29,7 @@ import { RuntimeFunction, RuntimeFunctions } from '../../lib/collections/Runtime
 import StudioSettings from './Settings/StudioSettings'
 import DeviceSettings from './Settings/DeviceSettings'
 import LineTemplates from './Settings/LineTemplates'
+import ShowStyleSettings from './Settings/ShowStyleSettings'
 
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
@@ -169,12 +170,12 @@ const SettingsMenu = translate()(withTracker(() => {
 				{
 					this.props.showStyles.map((item) => {
 						return (
-							<div className='settings-menu__settings-menu-item' key={item._id}>
+							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/showStyle/' + item._id}>
 								<div className='selectable clickable'>
 									<h3>{item.name}</h3>
 								</div>
 								<hr className='vsubtle man' />
-							</div>
+							</NavLink>
 						)
 					})
 				}
@@ -245,7 +246,7 @@ class Settings extends React.Component<InjectedTranslateProps> {
 							<Switch>
 								<Route path='/settings' exact component={WelcomeToSettings} />
 								<Route path='/settings/studio/:studioId' component={StudioSettings} />
-								<Route path='/settings/showStyle/:showStyleId' component={Settings} />
+								<Route path='/settings/showStyle/:showStyleId' component={ShowStyleSettings} />
 								<Route path='/settings/peripheralDevice/:deviceId' component={DeviceSettings} />
 								<Route path='/settings/lineTemplate/:ltId' component={LineTemplates} />
 								<Redirect to='/settings' />

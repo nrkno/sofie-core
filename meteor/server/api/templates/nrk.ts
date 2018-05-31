@@ -8,7 +8,8 @@ import { TemplateSet } from './templates'
 import { NrkBreakTemplate } from './nrk-break'
 import { NrkVignettTemplate } from './nrk-vignett'
 import { NrkHeadTemplate } from './nrk-head'
-import { NrkKamTemplate } from './nrk-kam';
+import { NrkKamTemplate } from './nrk-kam'
+import { NrkSorlandetBaseTemplate } from './nrk-sorlandetBase'
 
 const literal = <T>(o: T) => o
 
@@ -102,6 +103,7 @@ let nrk: TemplateSet = {
 		vignett: NrkVignettTemplate,
 		stkHead: NrkHeadTemplate,
 		kam: NrkKamTemplate,
+		sorlandetTemplate: NrkSorlandetBaseTemplate
 	}
 }
 

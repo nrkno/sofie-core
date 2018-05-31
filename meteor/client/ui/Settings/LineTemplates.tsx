@@ -104,7 +104,24 @@ class LineTemplates extends React.Component<IPropsHeader & InjectedTranslateProp
 		const { t } = this.props
 
 		return (
-			<MonacoWrapper runtimeFunction={this.props.lineTemplate} />
+			<div className='studio-edit mod mhl mvs'>
+				<div>
+					<label className='field'>
+						{t('Template ID')}
+						<div className='mdi'>
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='_id'
+								obj={this.props.lineTemplate}
+								type='text'
+								collection={RuntimeFunctions}
+								className='mdinput'></EditAttribute>
+							<span className='mdfx'></span>
+						</div>
+					</label>
+				</div>
+				<MonacoWrapper runtimeFunction={this.props.lineTemplate} />
+			</div>
 		)
 	}
 

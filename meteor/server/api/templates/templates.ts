@@ -154,14 +154,14 @@ function getContext (context: TemplateContext): TemplateContextInner {
 export interface TemplateResult {
 	// segment: Segment,
 	segmentLine: DBSegmentLine | null,
-	segmentLineItems: Array<SegmentLineItemOptional>
+	segmentLineItems: Array<SegmentLineItemOptional> | null
 	segmentLineAdLibItems: Array<SegmentLineAdLibItemOptional> | null
-	baselineItems: Array<RunningOrderBaselineItemOptional> | null
+	baselineItems?: Array<RunningOrderBaselineItemOptional> | null
 }
 export interface TemplateResultAfterPost {
 	// segment: Segment,
 	segmentLine: DBSegmentLine | null,
-	segmentLineItems: Array<SegmentLineItem>
+	segmentLineItems: Array<SegmentLineItem> | null
 	segmentLineAdLibItems: Array<SegmentLineAdLibItem> | null
 	baselineItems: Array<RunningOrderBaselineItem> | null
 }
@@ -287,7 +287,7 @@ export function runNamedTemplate (templateId: string, context: TemplateContext, 
 
 			return item
 		}) : null,
-		baselineItems: result.baselineItems ? _.map(_.compact(result.segmentLineAdLibItems), (itemOrg: RunningOrderBaselineItemOptional) => {
+		baselineItems: result.baselineItems ? _.map(_.compact(result.baselineItems), (itemOrg: RunningOrderBaselineItemOptional) => {
 			let item: RunningOrderBaselineItem = itemOrg as RunningOrderBaselineItem
 
 			if (!item._id) item._id = innerContext.getHashId('postprocess_' + (i++))
