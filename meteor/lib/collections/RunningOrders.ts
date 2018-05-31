@@ -105,7 +105,7 @@ export class RunningOrder implements DBRunningOrder {
 		Segments.remove({runningOrderId: this._id})
 		SegmentLines.remove({runningOrderId: this._id})
 		SegmentLineItems.remove({ runningOrderId: this._id})
-		RunningOrderDataCache.remove({roId: this._id})
+		this.removeCache()
 	}
 	touch () {
 		if (getCurrentTime() - this.modified > 3600 * 1000 ) {
@@ -113,6 +113,7 @@ export class RunningOrder implements DBRunningOrder {
 		}
 	}
 	saveCache (cacheId: string, data: any) {
+		if (!Meteor.isServer) throw new Meteor.Error('The "saveCache" method is available server-side only (sorry)')
 		let id = this._id + '_' + cacheId
 		RunningOrderDataCache.upsert(id, {$set: {
 			_id: id,
@@ -121,7 +122,20 @@ export class RunningOrder implements DBRunningOrder {
 			data: data
 		}})
 	}
+	removeCache (cacheId?: string) {
+		if (!Meteor.isServer) throw new Meteor.Error('The "removeCache" method is available server-side only (sorry)')
+		if (cacheId) {
+			let id = this._id + '_' + cacheId
+			RunningOrderDataCache.remove(id)
+		} else {
+			RunningOrderDataCache.remove({
+				roId: this._id
+			})
+
+		}
+	}
 	fetchCache (cacheId: string): any | null {
+		if (!Meteor.isServer) throw new Meteor.Error('The "fetchCache" method is available server-side only (sorry)')
 		let id = this._id + '_' + cacheId
 		let c = RunningOrderDataCache.findOne(id)
 		if (c) {
