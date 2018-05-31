@@ -17,7 +17,12 @@ export namespace RundownUtils {
 	}
 
 	export function formatTimeToTimecode (milliseconds: number): string {
-		return (new Timecode(milliseconds * Settings['frameRate'] / 1000, Settings['frameRate'], false)).toString()
+		let negativeSign = ''
+		if (milliseconds < 0) {
+			milliseconds = milliseconds * -1
+			negativeSign = '-'
+		}
+		return negativeSign + ((new Timecode(milliseconds * Settings['frameRate'] / 1000, Settings['frameRate'], false)).toString())
 	}
 
 	export function formatTimeToShortTime (milliseconds: number): string {
@@ -40,7 +45,18 @@ export namespace RundownUtils {
 	export function isInsideViewport (scrollLeft: number, scrollWidth: number, segmentLine: SegmentLineUi, segmentLineStartsAt: number | undefined, segmentLineItem?: SegmentLineItemUi) {
 		if (scrollLeft + scrollWidth < (segmentLineStartsAt || segmentLine.startsAt || 0) + (segmentLineItem !== undefined ? (segmentLineItem.renderedInPoint || 0) : 0)) {
 			return false
-		} else if (scrollLeft > (segmentLineStartsAt || segmentLine.startsAt || 0) + (segmentLineItem !== undefined ? (segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || 0) : (segmentLine.renderedDuration || 0))) {
+		} else if (scrollLeft > (segmentLineStartsAt || segmentLine.startsAt || 0)
+					+ (segmentLineItem !== undefined ?
+						(segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || (
+							(segmentLine.duration !== undefined ?
+								segmentLine.duration :
+								(segmentLine.duration || segmentLine.renderedDuration || 0) - (segmentLineItem.renderedInPoint || 0))
+							)
+						) :
+						(segmentLine.duration !== undefined ?
+							segmentLine.duration :
+							(segmentLine.duration || segmentLine.renderedDuration || 0)
+						))) {
 			return false
 		}
 		return true
