@@ -78,6 +78,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
         atemSrv1: 			context.getHashId('atemSrv1'),
         atemSrv1Transition:	context.getHashId('atemSrv1Transition'),
         wipeVideo: 			context.getHashId('wipeVideo'),
+        wipeAudioPunktum:   context.getHashId('wipeAudioPunktum'),
         vignettTransition:  context.getHashId('vignettTransition'),
     }
 
@@ -110,6 +111,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
             ) * 1000,
             content: {
                 timelineObjects: _.compact([
+
                     literal<TimelineObjCCGVideo>({
                         _id: IDs.wipeVideo, deviceId: [''], siId: '', roId: '',
                         trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
@@ -119,7 +121,23 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
                         content: {
                             type: TimelineContentTypeCasparCg.VIDEO,
                             attributes: {
-                                file: 'assets/wipe1_punktum'
+                                file: 'assets/wipe1'
+                            }
+                        }
+                    }),
+
+                    // wipe audio punktum between 
+                    // @todo lower the level of this wipe
+                    literal<TimelineObjCCGVideo>({
+                        _id: IDs.wipeAudioPunktum, deviceId: [''], siId: '', roId: '',
+                        trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.wipeVideo}.start + 0` },
+                        priority: 1,
+                        duration: 3640,
+                        LLayer: LLayers.casparcg_player_soundeffect,
+                        content: {
+                            type: TimelineContentTypeCasparCg.VIDEO,
+                            attributes: {
+                                file: 'assets/DK_punktum_head'
                             }
                         }
                     }),

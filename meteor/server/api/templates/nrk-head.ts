@@ -159,7 +159,23 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                     content: {
                         type: TimelineContentTypeCasparCg.VIDEO,
                         attributes: {
-                            file: 'assets/wipe1_skille'
+                            file: 'assets/wipe1'
+                        }
+                    }
+                }),
+
+                // wipe audio skille between 
+                // @todo lower the level of this wipe
+                literal<TimelineObjCCGVideo>({
+                    _id: IDs.wipeAudioSkille, deviceId: [''], siId: '', roId: '',
+                    trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
+                    priority: 1,
+                    duration: 3360,
+                    LLayer: LLayers.casparcg_player_soundeffect,
+                    content: {
+                        type: TimelineContentTypeCasparCg.VIDEO,
+                        attributes: {
+                            file: 'assets/DK_skille_head'
                         }
                     }
                 }),
@@ -248,8 +264,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                 }),
 
                 // audio STK/HEADS -15dB
-                // @todo what is the default state of this? could it cause a burst of noise at the start?
-                // @todo task says -inf is desired
+                // @todo should this be -inf?
                 literal<TimelineObjLawoSource>({
                     _id: IDs.lawo_effect, deviceId: [''], siId: '', roId: '',
                     trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
@@ -259,7 +274,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                     content: {
                         type: TimelineContentTypeLawo.AUDIO_SOURCE,
                         transitions: {
-                            inTransition: {
+                            inTransition: { // @todo should this have a transition?
                                 type: Transition.MIX,
                                 duration: 200,
                                 easing: Ease.LINEAR,
