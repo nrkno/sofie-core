@@ -17,9 +17,13 @@ import * as _ from 'underscore'
 import { logger } from './../logging'
 import { PeripheralDevice, PeripheralDevices, PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { IMOSRunningOrder } from 'mos-connection'
+import { IMOSRunningOrder, IMOSObjectStatus } from 'mos-connection'
 import { PlayoutTimelinePrefixes } from '../../lib/api/playout'
+<<<<<<< HEAD
 import { TemplateContext, getHash, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
+=======
+import { ServerPeripheralDeviceAPI, setStoryStatus } from './peripheralDevice';
+>>>>>>> Feat: The Yellow Line
 
 Meteor.methods({
 	/**
@@ -110,6 +114,10 @@ Meteor.methods({
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
+		let previousSegmentLine = (runningOrder.currentSegmentLineId ?
+			SegmentLines.findOne(runningOrder.currentSegmentLineId)
+			: null
+		)
 		RunningOrders.update(runningOrder._id, {$set: {
 			active: false,
 			previousSegmentLineId: null,
@@ -123,6 +131,10 @@ Meteor.methods({
 		})
 
 		updateTimeline(runningOrder.studioInstallationId)
+
+		if (previousSegmentLine) {
+			setStoryStatus(runningOrder.mosDeviceId, runningOrder.mosId, previousSegmentLine.mosId, IMOSObjectStatus.STOP)
+		}
 	},
 
 	'debug__printTime': () => {
@@ -139,6 +151,10 @@ Meteor.methods({
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (!runningOrder.nextSegmentLineId) throw new Meteor.Error(500, 'nextSegmentLineId is not set!')
 
+		let previousSegmentLine = (runningOrder.currentSegmentLineId ?
+			SegmentLines.findOne(runningOrder.currentSegmentLineId)
+			: null
+		)
 		let takeSegmentLine = SegmentLines.findOne(runningOrder.nextSegmentLineId)
 		if (!takeSegmentLine) throw new Meteor.Error(404, 'takeSegmentLine not found!')
 		let takeSegment = Segments.findOne(takeSegmentLine.segmentId)
@@ -161,6 +177,11 @@ Meteor.methods({
 		clearNextLineStartedPlaybackAndDuration(roId, nextSegmentLine._id)
 
 		updateTimeline(runningOrder.studioInstallationId)
+
+		if (previousSegmentLine) {
+			setStoryStatus(runningOrder.mosDeviceId, runningOrder.mosId, previousSegmentLine.mosId, IMOSObjectStatus.STOP)
+		}
+		setStoryStatus(runningOrder.mosDeviceId, runningOrder.mosId, takeSegmentLine.mosId, IMOSObjectStatus.PLAY)
 	},
 
 	'playout_setNext': (roId: string, nextSlId: string) => {
