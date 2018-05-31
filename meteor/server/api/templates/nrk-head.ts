@@ -105,7 +105,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
     // Copy the vignett from the previous segmentLine if it was found. 
     // @todo make this more durable and refactor to reusable.
     // @todo look into if this can be automated more. eg if content is null that means persist from before if found
-    let prev_content = segmentLines[0].getSegmentLinesItems()[0].content
+	let prev_content = (segmentLines[0].getSegmentLinesItems()[0] || {}).content
     let vignet_obj: TimelineObjCCGVideo | null | undefined
     if (prev_content && prev_content.timelineObjects){
         vignet_obj = prev_content.timelineObjects.find((o: TimelineObj) => o.LLayer == LLayers.casparcg_player_vignett) as TimelineObjCCGVideo
