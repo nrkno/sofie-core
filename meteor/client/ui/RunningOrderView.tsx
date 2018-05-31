@@ -28,11 +28,64 @@ import { InspectorDrawer } from './InspectorDrawer/InspectorDrawer'
 import { getCurrentTime } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
 
+import * as mousetrap from 'mousetrap'
+
+interface IKeyboardFocusMarkerState {
+	inFocus: boolean
+}
+
+class KeyboardFocusMarker extends React.Component<any, IKeyboardFocusMarkerState> {
+	keyboardFocusInterval: number
+
+	constructor (props) {
+		super(props)
+
+		this.state = {
+			inFocus: true
+		}
+	}
+
+	componentDidMount () {
+		this.keyboardFocusInterval = Meteor.setInterval(this.checkFocus, 3000)
+		$(document.body).on('focusin mousedown focus', this.checkFocus)
+	}
+
+	componentWillUnmount () {
+		Meteor.clearInterval(this.keyboardFocusInterval)
+		$(document.body).off('focusin mousedown focus', this.checkFocus)
+	}
+
+	checkFocus = () => {
+		const focusNow = document.hasFocus()
+		if (this.state.inFocus !== focusNow) {
+			this.setState({
+				inFocus: focusNow
+			})
+		}
+	}
+
+	render () {
+		if (this.state.inFocus) {
+			return null
+		} else {
+			return (
+				<div className='running-order-view__focus-lost-frame'></div>
+			)
+		}
+	}
+}
+
 interface IHeaderProps {
 	runningOrder: RunningOrder
 }
 
 interface ITimerHeaderProps extends IHeaderProps {
+}
+
+enum RunningOrderViewKbdShortcuts {
+	RUNNING_ORDER_TAKE = 'f12',
+	RUNNING_ORDER_ACTIVATE = 'f2',
+	RUNNING_ORDER_DEACTIVATE = 'ctrl+shift+f2'
 }
 
 const TimingDisplay = translate()(withTiming()(class extends React.Component<ITimerHeaderProps & InjectedTranslateProps & RunningOrderTiming.InjectedROTimingProps> {
@@ -56,58 +109,102 @@ const TimingDisplay = translate()(withTiming()(class extends React.Component<ITi
 	}
 }))
 
-const RunningOrderHeader: React.SFC<IHeaderProps> = (props) => (
-	<div className='header running-order'>
-		<div className='row'>
-			<div className='col c4 super-dark'>
-				{/* !!! TODO: This is just a temporary solution !!! */}
-				<div className='right' style={{
-					'marginTop': '0.9em'
-				}}>
-					<button className='btn btn-secondary btn-compact aciton reload-data' onClick={(e) => Meteor.call('playout_reload_data', props.runningOrder._id)}>
-						Reload data
-					</button>
-					{
-						(props.runningOrder && (props.runningOrder.active ?
-							<React.Fragment>
-								<button className='btn btn-secondary btn-compact aciton activate-deactivate deactivate' onClick={(e) => Meteor.call('playout_inactivate', props.runningOrder._id)}>
-									Deactivate
-								</button>
-								<button className='btn btn-secondary btn-compact aciton take' onClick={(e) => Meteor.call('playout_take', props.runningOrder._id) || console.log(new Date(getCurrentTime())) }>
-									Take
-								</button>
-							</React.Fragment>
-						: <React.Fragment>
-								<button className='btn btn-secondary btn-compact aciton activate-deactivate activate' onClick={(e) => Meteor.call('playout_activate', props.runningOrder._id)}>
-								Activate
+class RunningOrderHeader extends React.Component<IHeaderProps> {
+	componentDidMount () {
+		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE, this.keyTake)
+		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE, this.keyActivate)
+		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE, this.keyDeactivate)
+	}
+
+	componentWillUnmount () {
+		mousetrap.unbind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE)
+		mousetrap.unbind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE)
+		mousetrap.unbind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE)
+	}
+
+	keyTake = (e: ExtendedKeyboardEvent) => {
+		e.preventDefault()
+		e.stopImmediatePropagation()
+		e.stopPropagation()
+		this.take()
+	}
+
+	keyActivate = (e: ExtendedKeyboardEvent) => {
+		this.activate()
+	}
+
+	keyDeactivate = (e: ExtendedKeyboardEvent) => {
+		this.deactivate()
+	}
+
+	take = () => {
+		Meteor.call('playout_take', this.props.runningOrder._id)
+		console.log(new Date(getCurrentTime()))
+	}
+
+	activate = () => {
+		Meteor.call('playout_activate', this.props.runningOrder._id)
+	}
+
+	deactivate = () => {
+		Meteor.call('playout_inactivate', this.props.runningOrder._id)
+	}
+
+	render () {
+		return (
+			<div className='header running-order'>
+				<div className='row'>
+					<div className='col c4 super-dark'>
+						{/* !!! TODO: This is just a temporary solution !!! */}
+						<div className='right' style={{
+							'marginTop': '0.9em'
+						}}>
+							<button className='btn btn-secondary btn-compact aciton reload-data' onClick={(e) => Meteor.call('playout_reload_data', this.props.runningOrder._id)}>
+								Reload data
 							</button>
-						</React.Fragment>
-						))
-					}
+							{
+								(this.props.runningOrder && (this.props.runningOrder.active ?
+									<React.Fragment>
+										<button className='btn btn-secondary btn-compact aciton activate-deactivate deactivate' onClick={(e) => this.deactivate()}>
+											Deactivate
+										</button>
+										<button className='btn btn-secondary btn-compact aciton take' onClick={(e) => this.take()}>
+											Take
+										</button>
+									</React.Fragment>
+									: <React.Fragment>
+										<button className='btn btn-secondary btn-compact aciton activate-deactivate activate' onClick={(e) => this.activate()}>
+											Activate
+										</button>
+									</React.Fragment>
+								))
+							}
+						</div>
+						<div className='badge mod'>
+							<div className='media-elem mrs sofie-logo' />
+							<div className='bd mls'><span className='logo-text'>Sofie</span></div>
+						</div>
+					</div>
+					<div className='col c4 super-dark'>
+						<TimingDisplay {...this.props} />
+					</div>
+					<div className='flex-col c4 super-dark horizontal-align-right'>
+						<div className='links mod close'>
+							<NavLink to='/runningOrders'>
+								<CoreIcon id='nrk-close' />
+							</NavLink>
+						</div>
+					</div>
 				</div>
-				<div className='badge mod'>
-					<div className='media-elem mrs sofie-logo' />
-					<div className='bd mls'><span className='logo-text'>Sofie</span></div>
+				<div className='row'>
+					<div className='col c12 running-order-overview'>
+						<img src='/mock_runningOrder_overview.png' />
+					</div>
 				</div>
 			</div>
-			<div className='col c4 super-dark'>
-				<TimingDisplay {...props} />
-			</div>
-			<div className='flex-col c4 super-dark horizontal-align-right'>
-				<div className='links mod close'>
-					<NavLink to='/runningOrders'>
-						<CoreIcon id='nrk-close' />
-					</NavLink>
-				</div>
-			</div>
-		</div>
-		<div className='row'>
-			<div className='col c12 running-order-overview'>
-				<img src='/mock_runningOrder_overview.png' />
-			</div>
-		</div>
-	</div>
-)
+		)
+	}
+}
 
 interface IPropsHeader extends InjectedTranslateProps {
 	key: string
@@ -250,6 +347,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 			<RunningOrderTimingProvider
 				runningOrder={this.props.runningOrder}>
 				<div className='running-order-view' style={this.getStyle()}>
+					<KeyboardFocusMarker />
 					<RunningOrderHeader
 						runningOrder={this.props.runningOrder} />
 					<SegmentContextMenu

@@ -55,6 +55,16 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	padding-top: 150px;
 }
 
+.running-order-view__focus-lost-frame {
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	border: 10px solid $color-status-fatal;
+	z-index: 10000;
+}
+
 .header.running-order {
 	position: fixed;
     top: 0;
