@@ -573,8 +573,7 @@ export namespace ServerPeripheralDeviceAPI {
 		if (durationMosMetaData && durationMosMetaData.MosPayload && (durationMosMetaData.MosPayload.Actual || durationMosMetaData.MosPayload.Estimated || durationMosMetaData.MosPayload.ReadTime)) {
 
 			const duration = durationMosMetaData.MosPayload.Actual && parseFloat(durationMosMetaData.MosPayload.Actual) ||
-							 durationMosMetaData.MosPayload.Estimated && parseFloat(durationMosMetaData.MosPayload.Estimated) ||
-							 durationMosMetaData.MosPayload.ReadTime && parseFloat(durationMosMetaData.MosPayload.ReadTime)
+							 durationMosMetaData.MosPayload.Estimated && parseFloat(durationMosMetaData.MosPayload.Estimated) || 0
 
 			// console.log('updating segment line duration: ' + segmentLine._id + ' ' + duration)
 			segmentLine.expectedDuration = duration * 1000
