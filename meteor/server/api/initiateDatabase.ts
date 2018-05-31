@@ -14,6 +14,7 @@ import { Random } from 'meteor/random'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { RuntimeFunctions } from '../../lib/collections/RuntimeFunctions';
 
 // Imports from TSR (TODO make into an import)
 // export interface Mappings {
@@ -257,6 +258,21 @@ Meteor.methods({
 		StudioInstallations.update('studio0', {$set: {
 			mappings: mappings
 		}})
+
+		ShowStyles.upsert('show0', {$set: {
+			name: 'Distriktsnyheter Sørlandet',
+			templateMappings: [],
+			baselineTemplate: 'sorlandetTemplate'
+		}})
+
+		if (RuntimeFunctions.find({
+			_id: 'sorlandetTemplate'
+		}).fetch().length === 0) {
+			RuntimeFunctions.insert({
+				_id: 'sorlandetTemplate',
+				code: ''
+			})
+		}
 
 		PeripheralDevices.find({
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT

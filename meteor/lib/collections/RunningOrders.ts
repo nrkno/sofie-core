@@ -13,6 +13,7 @@ import { FindOptions, Selector, TransformedCollection } from './typings'
 import { StudioInstallations, StudioInstallation } from './StudioInstallations'
 import { SegmentLineItems } from './SegmentLineItems'
 import { RunningOrderDataCache } from './RunningOrderDataCache'
+import { ShowStyle, ShowStyles } from './ShowStyles'
 
 /** This is a very uncomplete mock-up of the Rundown object */
 export interface DBRunningOrder {
@@ -68,6 +69,13 @@ export class RunningOrder implements DBRunningOrder {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
+	}
+	getShowStyle (): ShowStyle {
+		if (!this.showStyleId) throw new Meteor.Error(500, 'RunningOrder has no show style attached!')
+		let ss = ShowStyles.findOne(this.showStyleId)
+		if (ss) {
+			return ss
+		} else throw new Meteor.Error(404, `ShowStyle "${this.showStyleId}" not found!`)
 	}
 	getStudioInstallation (): StudioInstallation {
 		if (!this.studioInstallationId) throw new Meteor.Error(500,'RunningOrder is not in a studioInstallation!')

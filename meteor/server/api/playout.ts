@@ -1,9 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
-import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems, ITimelineTrigger } from '../../lib/collections/SegmentLineItems'
+import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/SegmentLines'
+import { SegmentLineItemGeneric, SegmentLineItem, SegmentLineItems, ITimelineTrigger } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
+import { RunningOrderBaselineItems, RunningOrderBaselineItem } from '../../lib/collections/RunningOrderBaselineItems'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { getCurrentTime, saveIntoDb, literal, DBObj, partialExceptId, Time, partial } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
@@ -18,6 +19,7 @@ import { PeripheralDevice, PeripheralDevices, PlayoutDeviceSettings } from '../.
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { IMOSRunningOrder } from 'mos-connection'
 import { PlayoutTimelinePrefixes } from '../../lib/api/playout'
+import { runTemplate, TemplateContext, getHash, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 
 Meteor.methods({
 	/**
@@ -80,6 +82,25 @@ Meteor.methods({
 			currentSegmentLineId: null,
 			nextSegmentLineId: segmentLines[0]._id // put the first on queue
 		}})
+
+		logger.info('Building baseline items...')
+
+		const showStyle = runningOrder.getShowStyle()
+		if (showStyle.baselineTemplate) {
+			const result: TemplateResultAfterPost = runNamedTemplate(showStyle.baselineTemplate, literal<TemplateContext>({
+				runningOrderId: runningOrder._id,
+				segmentLine: runningOrder.getSegmentLines()[0]
+			}), {})
+
+			if (result.baselineItems) {
+				logger.info(`... got ${result.baselineItems.length} items from template.`)
+				saveIntoDb<RunningOrderBaselineItem, RunningOrderBaselineItem>(RunningOrderBaselineItems, {
+					runningOrderId: runningOrder._id
+				}, result.baselineItems)
+			}
+		}
+
+		updateTimeline(runningOrder.studioInstallationId)
 	},
 	/**
 	 * Inactivates the RunningOrder
@@ -95,6 +116,12 @@ Meteor.methods({
 			currentSegmentLineId: null,
 			nextSegmentLineId: null
 		}})
+
+		// clean up all runtime baseline items
+		RunningOrderBaselineItems.remove({
+			runningOrderId: runningOrder._id
+		})
+
 		updateTimeline(runningOrder.studioInstallationId)
 	},
 
@@ -470,7 +497,7 @@ function createSegmentLineGroupFirstObject (segmentLine: SegmentLine, segmentLin
 	})
 }
 
-function createSegmentLineItemGroup (item: SegmentLineItem, duration: number, segmentLineGroup?: TimelineObj): TimelineObj {
+function createSegmentLineItemGroup (item: SegmentLineItem | RunningOrderBaselineItem, duration: number, segmentLineGroup?: TimelineObj): TimelineObj {
 	return literal<TimelineObjGroup>({
 		_id: PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + item._id,
 		content: {
@@ -489,6 +516,25 @@ function createSegmentLineItemGroup (item: SegmentLineItem, duration: number, se
 			segmentLineItemId: item._id
 		}
 	})
+}
+
+function transformBaselineItemsIntoTimeline (items: RunningOrderBaselineItem[]): Array<TimelineObj> {
+	let timelineObjs: Array<TimelineObj> = []
+	_.each(items, (item: RunningOrderBaselineItem) => {
+		if (
+			item.content &&
+			item.content.timelineObjects
+		) {
+			let tos = item.content.timelineObjects
+
+			// the baseline items are layed out without any grouping
+			_.each(tos, (o: TimelineObj) => {
+				// do some transforms maybe?
+				timelineObjs.push(o)
+			})
+		}
+	})
+	return timelineObjs
 }
 
 function transformSegmentLineIntoTimeline (segmentLine: SegmentLine, segmentLineGroup?: TimelineObj, allowTransition?: boolean): Array<TimelineObj> {
@@ -552,6 +598,16 @@ function updateTimeline (studioInstallationId: string) {
 		// Generate timeline: -------------------------------------------------
 
 		// Default timelineobjects
+
+		console.log('Timeline update!')
+
+		const baselineItems = RunningOrderBaselineItems.find({
+			runningOrderId: activeRunningOrder._id
+		}).fetch()
+
+		if (baselineItems) {
+			timelineObjs = timelineObjs.concat(transformBaselineItemsIntoTimeline(baselineItems))
+		}
 
 		// Currently playing
 

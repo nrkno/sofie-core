@@ -146,26 +146,8 @@ Meteor.methods({
 		ShowStyles.insert({
 			_id: 'dummyShow0',
 			name: 'Dummy show style',
-			splitConfigurations: [
-				{
-					// a still undefined split configuration object
-				}
-			],
-			graphicsTemplates: [
-				{
-					// a still undefined graphics template object
-				}
-			],
-			wipesAndBumpers: [
-				{
-					// a still undefined wipes and bumpers object
-				}
-			],
-			logicalSegmentLineItems: [
-				{
-					// a still undefined logical objects definition object
-				}
-			]
+			templateMappings: [],
+			baselineTemplate: ''
 		})
 
 		RunningOrders.update({showStyleId: { $not: { $exists: true }}}, { $set: { showStyleId: 'dummyShow0' }})

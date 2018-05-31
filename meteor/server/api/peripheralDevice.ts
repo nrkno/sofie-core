@@ -42,6 +42,7 @@ import { Timeline } from '../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { MediaObject, MediaObjects } from '../../lib/collections/MediaObjects'
 import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
+import { ShowStyles, ShowStyle } from '../../lib/collections/ShowStyles'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -175,6 +176,8 @@ export namespace ServerPeripheralDeviceAPI {
 		let studioInstallation = StudioInstallations.findOne(peripheralDevice.studioInstallationId) as StudioInstallation
 		if (!studioInstallation) throw new Meteor.Error(404, 'StudioInstallation "' + peripheralDevice.studioInstallationId + '" not found')
 
+		let showStyle = ShowStyles.findOne() as ShowStyle
+
 		// Save RO into database:
 		saveIntoDb(RunningOrders, {
 			_id: roId(ro.ID)
@@ -184,7 +187,7 @@ export namespace ServerPeripheralDeviceAPI {
 				mosId: ro.ID.toString(),
 				studioInstallationId: studioInstallation._id,
 				mosDeviceId: id,
-				// showStyleId: '',
+				showStyleId: showStyle._id,
 				name: ro.Slug.toString(),
 				expectedStart: formatTime(ro.EditorialStart),
 				expectedDuration: formatDuration(ro.EditorialDuration)
