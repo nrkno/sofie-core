@@ -201,6 +201,8 @@ export const NrkBreakTemplate = literal<TemplateFunctionOptional>((context, stor
                                 }
                             }
                         }),
+                        // @todo setup me1k2 to be the same as dsk2, but default disabled
+
                         literal<TimelineObjAtemSsrc>({
                             _id: '', deviceId: [''], siId: '', roId: '',
                             trigger: { type: TriggerType.LOGICAL, value: '1' },

@@ -13,7 +13,8 @@ export type TimelineContentTypeAny =
 	TimelineContentTypeOther |
 	TimelineContentTypeCasparCg |
 	TimelineContentTypeLawo |
-	TimelineContentTypeAtem
+	TimelineContentTypeAtem |
+	TimelineContentTypeHttp
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -38,6 +39,9 @@ export enum TimelineContentTypeAtem { //  Atem-state
 	AUX = 'aux',
 	SSRC = 'ssrc',
 	MEDIAPLAYER = 'mp'
+}
+export enum TimelineContentTypeHttp {
+	POST = 'post'
 }
 export namespace Atem_Enums {
 	export enum TransitionStyle {
@@ -326,6 +330,14 @@ export interface TimelineObjAtemSsrc extends TimelineObj {
 			boxes: Array<SuperSourceBox>,
 			artfillSource: number
 		}
+	}
+}
+export interface TimelineObjHTTPPost extends TimelineObj {
+	content: {
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentTypeHttp.POST
+		url: string
+		params: {[key: string]: number | string}
 	}
 }
 

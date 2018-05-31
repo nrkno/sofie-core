@@ -71,6 +71,7 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
     let mosartVariant = story.getValueByPath('MosExternalMetaData.0.MosPayload.mosartVariant', 'VIGNETT2018')
     switch (mosartVariant) {
         case 'VIGNETT2018':
+        case 'VIGNETT':
             // lengths and times are milliseconds
             clip = 'assets/vignett_sl'	// @todo TBD
             sourceDuration = 70	* 1000	// @todo TBD
@@ -116,6 +117,10 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
                         }
                     }
                 }),
+
+
+                // @todo move vignett to me1k2 (disabling dsk2)
+                // @todo and make sure to hold that until after wipe is completed - might be tricky due to how the overlap is currently setup?
 
                 // play vignett over dsk2
                 literal<TimelineObjCCGVideo>({

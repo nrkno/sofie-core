@@ -80,6 +80,8 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
         wipeVideo: 			context.getHashId('wipeVideo'),
         wipeAudioPunktum:   context.getHashId('wipeAudioPunktum'),
         vignettTransition:  context.getHashId('vignettTransition'),
+        lawo_effect:        context.getHashId('lawo_effect'),
+        lawo_automix:       context.getHashId('lawo_automix'),
     }
 
     let overlapDuration: number | undefined
@@ -126,7 +128,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
                         }
                     }),
 
-                    // wipe audio punktum between 
+                    // wipe audio punktum 
                     // @todo lower the level of this wipe
                     literal<TimelineObjCCGVideo>({
                         _id: IDs.wipeAudioPunktum, deviceId: [''], siId: '', roId: '',
@@ -181,6 +183,21 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
                         }
                     }),
 
+
+                    literal<TimelineObjLawoSource>({
+                        _id: IDs.lawo_effect, deviceId: [''], siId: '', roId: '',
+                        trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+                        priority: 1,
+                        duration: 0,
+                        LLayer: LLayers.lawo_source_effect,
+                        content: {
+                            type: TimelineContentTypeLawo.AUDIO_SOURCE,
+                            attributes: {
+                                db: 0
+                            }
+                        }
+                    }),
+
                     // @todo audio levels
                 ])
             }
@@ -222,7 +239,30 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
                             transition: Atem_Enums.TransitionStyle.CUT
                         }
                     }
-                })
+                }),
+
+                // mic host hot
+                literal<TimelineObjLawoSource>({
+                    _id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
+                    trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+                    priority: 1,
+                    duration: 0,
+                    LLayer: LLayers.lawo_source_automix,
+                    content: {
+                        type: TimelineContentTypeLawo.AUDIO_SOURCE,
+                        transitions: {
+                            inTransition: {
+                                type: Transition.MIX,
+                                duration: 200,
+                                easing: Ease.LINEAR,
+                                direction: Direction.LEFT
+                            }
+                        },
+                        attributes: {
+                            db: 0
+                        }
+                    }
+                }),
             ])
         }
     }))

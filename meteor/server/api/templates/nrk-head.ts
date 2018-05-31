@@ -55,7 +55,9 @@ import {
 	TimelineObjAtemME,
 	TimelineObjAtemAUX,
 	TimelineObjAtemDSK,
-	TimelineObjAtemSsrc
+    TimelineObjAtemSsrc,
+    TimelineObjHTTPPost,
+    TimelineContentTypeHttp
 } from '../../../lib/collections/Timeline'
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
@@ -70,6 +72,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
     let IDs = {
         lawo_automix: 		context.getHashId('lawo_automix'),
         lawo_effect: 		context.getHashId('lawo_effect'),
+        lawo_clip: 		    context.getHashId('lawo_clip'),
         headVideo: 			context.getHashId('headVideo'),
         atemSrv1: 			context.getHashId('atemSrv1'),
         wipeVideo: 			context.getHashId('wipeVideo'),
@@ -77,7 +80,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
         headGfx: 			context.getHashId('headGfx'),
         playerClip: 		context.getHashId('playerClip'),
         playerClipTransition: context.getHashId('playerClipTransition'),
-        vignett: context.getHashId('vignett')
+        vignett: context.getHashId('vignett'),
     }
     
     const segmentLines = context.getSegmentLines()
@@ -95,18 +98,8 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
         )
     })
     if (!storyItemClip) context.warning('Clip missing in mos data')
-    let storyItemGfx = _.find(story.Body, (item) => {
-        return ( // @todo I dont see anything that vaguely matches this
-            item.Type === 'storyItem' &&
-            context.getValueByPath(item, 'Content.mosExternalMetadata.mosPayload.subtype')
-                === 'lyric/data'
-            // context.getValueByPath(item, 'Content.mosID') // for kompatibilitet med ny grafikk
-            // === 'GFX.NRK.MOS'
-        )
-    })
-    if (!storyItemGfx) context.warning('Super missing in mos data')
 
-    let clip = context.getValueByPath(storyItemClip, 'Content.mosExternalMetadata.mosPayload.title', 'clipPlaceholder') // @todo Is this correct?
+    let clip = context.getValueByPath(storyItemClip, 'Content.mosExternalMetadata.mosPayload.title', 'head')
     if (!clip || clip == '') context.warning('Clip name missing in mos data')
 
     // Copy the vignett from the previous segmentLine if it was found. 
@@ -166,7 +159,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                 }),
 
                 // wipe audio skille between 
-                // @todo lower the level of this wipe
+                // @todo lower the level of this wipe in ccg
                 literal<TimelineObjCCGVideo>({
                     _id: IDs.wipeAudioSkille, deviceId: [''], siId: '', roId: '',
                     trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
@@ -204,6 +197,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                         },
                         attributes: {
                             file: 'mam/' +  clip
+                            // @todo seek?
                         }
                     }
                 })
@@ -241,6 +235,20 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                 // @todo. should this be a seperate segmentlineitem to make it clear it continues to the user?
                 vignet_obj,
 
+                literal<TimelineObjLawoSource>({
+                    _id: IDs.lawo_effect, deviceId: [''], siId: '', roId: '',
+                    trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+                    priority: 1,
+                    duration: 0,
+                    LLayer: LLayers.lawo_source_effect,
+                    content: {
+                        type: TimelineContentTypeLawo.AUDIO_SOURCE,
+                        attributes: {
+                            db: 0
+                        }
+                    }
+                }),
+
                 // mic host hot
                 literal<TimelineObjLawoSource>({
                     _id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
@@ -267,7 +275,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                 // audio STK/HEADS -15dB
                 // @todo should this be -inf?
                 literal<TimelineObjLawoSource>({
-                    _id: IDs.lawo_effect, deviceId: [''], siId: '', roId: '',
+                    _id: IDs.lawo_clip, deviceId: [''], siId: '', roId: '',
                     trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
                     priority: 1,
                     duration: 0,
@@ -327,100 +335,9 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
     segmentLineItems.push(transiton)
     segmentLineItems.push(video)
 
-    let trigger: ITimelineTrigger = {
-        type: TriggerType.TIME_RELATIVE,
-        value: `#${video._id}.start + 0`
-    }
-    let triggerType = context.getValueByPath(storyItemGfx, 'Content.mosExternalMetadata.0.mosPayload.trigger','') + ''
-    let outType = context.getValueByPath(storyItemGfx, 'Content.mosExternalMetadata.0.mosPayload.out','')
-
-    let mosInTime = (parseFloat(context.getValueByPath(storyItemGfx, 'Content.mosExternalMetadata.0.mosPayload.in',0)) || 0)
-    let mosDuration = (parseFloat(context.getValueByPath(storyItemGfx, 'Content.mosExternalMetadata.0.mosPayload.duration',0)) || 0 )
-
-    if (triggerType.match(/auto/i)) {
-        trigger = {
-            type: TriggerType.TIME_RELATIVE,
-            value: `#${video._id}.start + ${mosInTime}`
-        }
-    } else if (triggerType.match(/manual/i)) {
-        // @todo: how to handle this?
-        // probably create a new segmentlineitem?
-        trigger = {
-            type: TriggerType.TIME_RELATIVE,
-            value: `#${video._id}.start + 0`
-        }
-    } else {
-        context.warning('Unknown trigger: "' + triggerType + '"')
-    }
-
-    let gfx: SegmentLineItemOptional = {
-        _id: context.getHashId('super'),
-        mosId: 'super',
-        name: 'Super',
-        trigger: trigger,
-        status: RundownAPI.LineItemStatusCode.UNKNOWN,
-        sourceLayerId: 'studio0_graphics0',
-        outputLayerId: 'pgm0',
-        expectedDuration: 8 * 1000, // @todo TBD
-        isTransition: false,
-        content: {
-            fileName: clip,
-            sourceDuration: 8 * 1000, // @todo TBD
-            timelineObjects: [
-                literal<TimelineObjCCGTemplate>({ // to be changed to NRKPOST-something
-                    _id: IDs.headGfx, deviceId: [''], siId: '', roId: '',
-                    trigger: {
-                        type: TriggerType.TIME_RELATIVE,
-                        value: `#${IDs.headVideo}.start + 5`
-                    },
-                    priority: 1,
-                    duration: 8 * 1000, // @todo TBD
-                    LLayer: LLayers.casparcg_cg_graphics,
-                    content: {
-                        type: TimelineContentTypeCasparCg.TEMPLATE, // to be changed to NRKPOST-something
-                        attributes: {
-                            name: 'nrkgfx', // @todo: TBD
-                            useStopCommand: false
-                        }
-                    }
-                })
-            ]
-        }
-    }
-    segmentLineItems.push(gfx)
 
     let segmentLineAdLibItems: Array<SegmentLineAdLibItemOptional> = []
-    let optionalGfx: SegmentLineAdLibItemOptional = {
-        _id: context.getHashId('superAdLib'),
-        mosId: 'superAdLib',
-        name: 'Super AdLib',
-        status: RundownAPI.LineItemStatusCode.UNKNOWN,
-        sourceLayerId: 'studio0_graphics0',
-        outputLayerId: 'pgm0',
-        content: {
-            fileName: clip,
-            sourceDuration: 8 * 1000, // @todo TBD
-            timelineObjects: [
-                literal<TimelineObjCCGVideo>({ // to be changed to NRKPOST-something
-                    _id: IDs.headGfx, deviceId: [''], siId: '', roId: '',
-                    trigger: {
-                        type: TriggerType.TIME_ABSOLUTE,
-                        value: '0'
-                    },
-                    priority: 1,
-                    duration: 0, // @todo TBD
-                    LLayer: LLayers.casparcg_cg_graphics,
-                    content: {
-                        type: TimelineContentTypeCasparCg.VIDEO, // to be changed to NRKPOST-something
-                        attributes: {
-                            file: 'TEST2'
-                        }
-                    }
-                })
-            ]
-        }
-    }
-    segmentLineAdLibItems.push(optionalGfx)
+    parseSuperSegments(context, story, segmentLineItems, segmentLineAdLibItems, video._id || '')
 
     return literal<TemplateResult>({
         segmentLine: literal<DBSegmentLine>({
@@ -437,3 +354,115 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
         segmentLineAdLibItems: segmentLineAdLibItems
     })
 })
+
+function parseSuperSegments(context: TemplateContextInner, story: StoryWithContext, segmentLineItems: SegmentLineItemOptional[], adlibItems: SegmentLineAdLibItemOptional[], videoId: string){
+	const storyItemGfx = _.filter(story.Body, item => {
+		return (
+            item.Type === 'storyItem' &&
+            context.getValueByPath(item, 'Content.mosID') === 'GFX.NRK.MOS'
+		)
+	})
+	if (storyItemGfx.length === 0) context.warning('Super missing in mos data')
+
+	for (const item of storyItemGfx) {
+		const itemID = context.getValueByPath(item, 'Content.itemID', 0)
+		const name = context.getValueByPath(item, 'Content.mosAbstract', '')
+		const metadata = context.getValueByPath(item, 'Content.mosExternalMetadata', [])
+		const timing = _.find(metadata, (m: any) => m.mosSchema === 'schema.nrk.no/timing')
+		const content = _.find(metadata, (m: any) => m.mosSchema === 'schema.nrk.no/content')
+
+		if (!timing) context.warning('Super missing timing data. Assuming adlib')
+		if (!content) {
+			context.warning('Super missing content data')
+			continue
+		}
+
+		const payload = context.getValueByPath(content, 'mosPayload', {})
+		const newPayload = {
+			render: Object.assign(payload.render, {
+				group: 'dksl',
+				system: 'html',
+			}),
+			playout: Object.assign(payload.playout, {
+				event: 'take',
+				autoTakeout: true,
+				duration: 4000,
+				loop: false
+			}),
+			content: payload.content
+		}
+
+		const inMode = context.getValueByPath(timing, 'mosPayload.in','') + ''
+		const outMode = context.getValueByPath(timing, 'mosPayload.out','') + ''
+		const duration = context.getValueByPath(timing, 'mosPayload.duration', 0)
+		const inTime = context.getValueByPath(timing, 'mosPayload.timeIn', 0)
+
+		let trigger: ITimelineTrigger = {
+		    type: TriggerType.TIME_RELATIVE,
+			value: `#${videoId}.start + 0`
+		}
+
+		let isAdlib = false
+		if (inMode.match(/auto/i)) {
+		    trigger = {
+		        type: TriggerType.TIME_RELATIVE,
+		        value: `#${videoId}.start + ${inTime}`
+		    }
+		} else {
+		    isAdlib = true
+		    context.warning('Unknown in mode: "' + inMode + '"')
+		}
+
+		const cmd = literal<TimelineObjHTTPPost>({
+			_id: context.getHashId('super_post_' + itemID), deviceId: [''], siId: '', roId: '',
+			trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+			priority: 1,
+			duration: duration,
+			LLayer: LLayers.casparcg_cg_graphics_ctrl,
+			content: {
+				type: TimelineContentTypeHttp.POST,
+				url: 'http://nora.core.mesosint.nrk.no/api/playout?apiKey=' + process.env.MESOS_API_KEY, // @todo url needs to vary too
+				params: newPayload
+			}
+		})
+
+		if (isAdlib) {
+			let gfx: SegmentLineAdLibItemOptional = {
+				_id: context.getHashId('super_' + itemID),
+				mosId: 'super', // TODO
+				name: name,
+				status: RundownAPI.LineItemStatusCode.UNKNOWN,
+				sourceLayerId: 'studio0_graphics0',
+				outputLayerId: 'pgm0',
+				expectedDuration: duration,
+				content: {
+					sourceDuration: duration,
+					timelineObjects: [
+						cmd
+					]
+				}
+			}
+			adlibItems.push(gfx)
+		} else {
+			let gfx: SegmentLineItemOptional = {
+				_id: context.getHashId('super_' + itemID),
+				mosId: 'super', // TODO
+				name: name,
+				trigger: trigger,
+				status: RundownAPI.LineItemStatusCode.UNKNOWN,
+				sourceLayerId: 'studio0_graphics0',
+				outputLayerId: 'pgm0',
+				expectedDuration: duration,
+				isTransition: false,
+				content: {
+					sourceDuration: duration,
+					timelineObjects: [
+						cmd
+					]
+				}
+			}
+
+			segmentLineItems.push(gfx)
+		}
+	}
+}
