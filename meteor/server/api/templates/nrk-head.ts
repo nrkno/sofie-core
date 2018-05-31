@@ -62,6 +62,7 @@ import { Optional } from '../../../lib/lib'
 import { SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems';
 
 import { LLayers } from './nrk-layers'
+import { AtemSource } from './nrk-inputs'
 
 const literal = <T>(o: T) => o
 
@@ -297,7 +298,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                     content: {
                         type: TimelineContentTypeAtem.ME,
                         attributes: {
-                            input: 14,
+                            input: AtemSource.Server1,
                             transition: Atem_Enums.TransitionStyle.CUT
                         }
                     }

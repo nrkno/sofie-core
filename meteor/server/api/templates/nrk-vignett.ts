@@ -141,7 +141,7 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
                     content: {
                         type: TimelineContentTypeAtem.ME,
                         attributes: {
-                            input: 3,
+                            input: 3, // Kam3
                             transition: Atem_Enums.TransitionStyle.CUT
                         }
                     }

@@ -61,6 +61,7 @@ import { Optional } from '../../../lib/lib'
 import { SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems';
 
 import { LLayers } from './nrk-layers'
+import { AtemSource } from './nrk-inputs'
 
 const literal = <T>(o: T) => o
 
@@ -178,8 +179,8 @@ export const NrkBreakTemplate = literal<TemplateFunctionOptional>((context, stor
                                 // }
                                 attributes: {
                                     onAir: true,
-                                    fillSource: 10,
-                                    keySource: 11
+                                    fillSource: AtemSource.DSK1F,
+                                    keySource: AtemSource.DSK1K
                                 }
                             }
                         }),
@@ -195,8 +196,8 @@ export const NrkBreakTemplate = literal<TemplateFunctionOptional>((context, stor
                                 // }
                                 attributes: {
                                     onAir: true,
-                                    fillSource: 12,
-                                    keySource: 13
+                                    fillSource: AtemSource.DSK2F,
+                                    keySource: AtemSource.DSK2K
                                 }
                             }
                         }),
