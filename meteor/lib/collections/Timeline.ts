@@ -201,6 +201,7 @@ export interface TimelineObjCCGTemplate extends TimelineObj {
 			outTransition?: TimelineTransition
 		}
 		attributes: {
+			type?: 'html' | 'flash'
 			name: string,
 			data?: any, // free to do whatever inside the object, so long as the template likes it
 			useStopCommand: boolean // whether to use CG stop or CLEAR layer
