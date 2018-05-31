@@ -36,7 +36,7 @@ Meteor.methods({
 				// TODO: what to do with the result?
 				console.log('Recieved reply for triggerGetRunningOrder', ro)
 			}
-		}, 'triggerGetRunningOrder')
+		}, 'triggerGetRunningOrder', runningOrder.mosId)
 	},
 	'playout_activate': (roId: string) => {
 		let runningOrder = RunningOrders.findOne(roId)
