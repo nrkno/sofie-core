@@ -24,6 +24,7 @@ export enum TimelineContentTypeCasparCg { //  CasparCG-state
 	IP = 'ip',
 	INPUT = 'input',
 	TEMPLATE = 'template',
+	HTMLPAGE = 'htmlpage',
 	ROUTE = 'route',
 	RECORD = 'record',
 	AUDIO = 'audio'
@@ -188,6 +189,20 @@ export interface TimelineObjCCGInput extends TimelineObj {
 			deviceFormat: ChannelFormat // '1080i5000',
 			videoFilter?: string
 			audioFilter?: string
+		}
+	}
+}
+export interface TimelineObjCCGHTMLPage extends TimelineObj {
+	content: {
+		objects?: Array<TimelineObject>
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentTypeCasparCg.HTMLPAGE
+		transitions?: {
+			inTransition?: TimelineTransition
+			outTransition?: TimelineTransition
+		}
+		attributes: {
+			url: string,
 		}
 	}
 }

@@ -84,11 +84,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 
     // @todo this number assumes a certain flow
     const isFirstHeadAfterVignett = segmentPos == 1
-    const isLastHead = segmentPos == segmentLines.length - 2
-
-    if (!isFirstHeadAfterVignett) {
-        context.segmentLine.overlapDuration = 300 // TODO properly
-    }    
+    // const isLastHead = segmentPos == segmentLines.length - 2
 
     let storyItemClip = _.find(story.Body, (item) => {
         return (
@@ -158,27 +154,12 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                     _id: IDs.wipeVideo, deviceId: [''], siId: '', roId: '',
                     trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
                     priority: 1,
-                    duration: 1440, //720, // @todo duration should be half this
+                    duration: 3360,
                     LLayer: LLayers.casparcg_player_wipe,
                     content: {
                         type: TimelineContentTypeCasparCg.VIDEO,
                         attributes: {
-                            file: 'wipe_white'
-                        }
-                    }
-                }),
-
-                // wipe audio skille between 
-                literal<TimelineObjCCGVideo>({
-                    _id: IDs.wipeAudioSkille, deviceId: [''], siId: '', roId: '',
-                    trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
-                    priority: 1,
-                    duration: 3600,
-                    LLayer: LLayers.casparcg_player_soundeffect,
-                    content: {
-                        type: TimelineContentTypeCasparCg.VIDEO,
-                        attributes: {
-                            file: 'DK_skille_head'
+                            file: 'assets/wipe1_skille'
                         }
                     }
                 }),
@@ -187,7 +168,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                 // @todo refactor to make this block less duplicated
                 literal<TimelineObjCCGVideo>({
                     _id: IDs.playerClipTransition, deviceId: [''], siId: '', roId: '',
-                    trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+                    trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
                     priority: 2,
                     duration: (
                         context.getValueByPath(storyItemClip, 'Content.objDur', 0) /
@@ -199,13 +180,13 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                         transitions: {
                             inTransition: {
                                 type: Transition.MIX,
-	                            duration: isFirstHeadAfterVignett ? 0 : 200,
+	                            duration: 200,
 	                            easing: Ease.LINEAR,
                                 direction: Direction.LEFT
                             }
                         },
                         attributes: {
-                            file: clip
+                            file: 'mam/' +  clip
                         }
                     }
                 })
@@ -320,7 +301,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
                     content: {
                         type: TimelineContentTypeCasparCg.VIDEO,
                         attributes: {
-                            file: clip
+                            file: 'mam/' + clip
                         }
                     }
                 })
@@ -435,7 +416,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
             runningOrderId: '',
             slug: context.segmentLine._id,
             autoNext: isFirstHeadAfterVignett,
-            overlapDuration: isFirstHeadAfterVignett ? 0 : 160,
+            overlapDuration: 160,
         }),
         segmentLineItems: segmentLineItems,
         segmentLineAdLibItems: segmentLineAdLibItems

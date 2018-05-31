@@ -42,7 +42,8 @@ import {
 } from './templates'
 import {
 	TimelineObjCCGVideo,
-	TimelineObjLawoSource,
+    TimelineObjLawoSource,
+    TimelineObjCCGHTMLPage,
 	TimelineObjCCGTemplate,
 	TimelineContentTypeCasparCg,
 	TimelineContentTypeLawo,
@@ -272,51 +273,39 @@ export const NrkBreakTemplate = literal<TemplateFunctionOptional>((context, stor
                                 }
                             }
                         }),
-                        literal<TimelineObjCCGTemplate>({
+                        literal<TimelineObjCCGHTMLPage>({
                             _id: '', deviceId: [''], siId: '', roId: '',
                             trigger: { type: TriggerType.LOGICAL, value: '1' },
                             priority: 0, duration: 0,
                             LLayer: LLayers.casparcg_cg_graphics,
                             content: {
-                                type: TimelineContentTypeCasparCg.TEMPLATE,
+                                type: TimelineContentTypeCasparCg.HTMLPAGE,
                                 attributes:{
-                                    name: 'http://design-nyheter.mesosint.nrk.no/?group=DKKristiansand&channel=gfx1',
-                                    data: {
-
-                                    },
-                                    useStopCommand: false
+                                    url: 'http://design-nyheter.mesosint.nrk.no/?group=DKKristiansand&channel=gfx1'
                                 }
                             }
                         }),
-                        literal<TimelineObjCCGTemplate>({
+                        literal<TimelineObjCCGHTMLPage>({
                             _id: '', deviceId: [''], siId: '', roId: '',
                             trigger: { type: TriggerType.LOGICAL, value: '1' },
                             priority: 0, duration: 0,
                             LLayer: LLayers.casparcg_cg_logo,
                             content: {
-                                type: TimelineContentTypeCasparCg.TEMPLATE,
+                                type: TimelineContentTypeCasparCg.HTMLPAGE,
                                 attributes:{
-                                    name: 'http://design-nyheter.mesosint.nrk.no/?group=DKKristiansand&channel=gfx1',
-                                    data: {
-
-                                    },
-                                    useStopCommand: false
+                                    url: 'http://design-nyheter.mesosint.nrk.no/?group=DKKristiansand&channel=gfx1'
                                 }
                             }
                         }),
-                        literal<TimelineObjCCGTemplate>({
+                        literal<TimelineObjCCGHTMLPage>({
                             _id: '', deviceId: [''], siId: '', roId: '',
                             trigger: { type: TriggerType.LOGICAL, value: '1' },
                             priority: 0, duration: 0,
                             LLayer: LLayers.casparcg_cg_studiomonitor,
                             content: {
-                                type: TimelineContentTypeCasparCg.TEMPLATE,
+                                type: TimelineContentTypeCasparCg.HTMLPAGE,
                                 attributes:{
-                                    name: 'http://design-nyheter.mesosint.nrk.no/?group=DKKristiansand&channel=gfx2',
-                                    data: {
-
-                                    },
-                                    useStopCommand: false
+                                    url: 'http://design-nyheter.mesosint.nrk.no/?group=DKKristiansand&channel=gfx2'
                                 }
                             }
                         })

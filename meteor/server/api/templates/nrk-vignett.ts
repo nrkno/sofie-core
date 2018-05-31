@@ -72,9 +72,9 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
     switch (mosartVariant) {
         case 'VIGNETT2018':
             // lengths and times are milliseconds
-            clip = 'vignett2018-overlay'	// @todo TBD
-            sourceDuration = 60	* 1000	// @todo TBD
-            segmentLineduration = 4400	// @todo TBD
+            clip = 'assets/vignett_sl'	// @todo TBD
+            sourceDuration = 70	* 1000	// @todo TBD
+            segmentLineduration = 3000	// @todo TBD
             break
         default:
             context.warning('Unknown mosartVariant: ' + mosartVariant)
