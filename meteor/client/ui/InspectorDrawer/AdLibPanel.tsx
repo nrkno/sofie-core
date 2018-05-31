@@ -240,9 +240,14 @@ export interface SegmentUi extends Segment {
 	isNext: boolean
 }
 
+interface ISourceLayerLookup {
+	[key: string]: ISourceLayer
+}
+
 interface IPropsHeader {
 	runningOrder: RunningOrder
 	studioInstallation: StudioInstallation
+	sourceLayerLookup: ISourceLayerLookup
 	segments: Array<SegmentUi>
 	liveSegment: SegmentUi | undefined
 }
@@ -254,7 +259,7 @@ interface IStateHeader {
 	filter: string | undefined
 }
 
-export const AdLibPanel = translate()(withTracker((props, state) => {
+export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: IStateHeader) => {
 	let subSegments = Meteor.subscribe('segments', {})
 	let subSegmentLines = Meteor.subscribe('segmentLines', {})
 	let subSegmentLineItems = Meteor.subscribe('segmentLineAdLibItems', {})
@@ -263,6 +268,10 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 
 	let liveSegment: SegmentUi | undefined = undefined
 
+	const sourceLayerLookup: ISourceLayerLookup =
+		props.studioInstallation && props.studioInstallation.sourceLayers ?
+			_.object(_.map(props.studioInstallation.sourceLayers, (item) => [item._id, item])) :
+			{}
 	const segments = props.runningOrder && props.segments ? (props.segments as Array<SegmentUi>).map((segSource) => {
 		const seg = _.clone(segSource)
 		seg.segLines = segSource.getSegmentLines()
@@ -281,9 +290,13 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 
 		// automatically assign hotkeys based on adLibItem index
 		if (seg.isLive) {
-			const hotkeyBase = 'a' // TODO: switch to a more flexible solution
 			seg.items.forEach((item, index) => {
-				item.hotkey = String.fromCharCode(hotkeyBase.charCodeAt(0) + index)
+				if (item.sourceLayerId && sourceLayerLookup[item.sourceLayerId] && sourceLayerLookup[item.sourceLayerId].activateKeyboardHotkeys) {
+					let keyboardHotkeysList = sourceLayerLookup[item.sourceLayerId].activateKeyboardHotkeys!.split(',')
+					if (index < keyboardHotkeysList.length) {
+						item.hotkey = keyboardHotkeysList[index]
+					}
+				}
 			})
 		}
 		return seg
@@ -291,7 +304,8 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 
 	return {
 		segments,
-		liveSegment
+		liveSegment,
+		sourceLayerLookup
 	}
 })(class AdLibPanel extends React.Component<IPropsHeader, IStateHeader> {
 	usedHotkeys: Array<string> = []
@@ -307,6 +321,16 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 		}
 	}
 
+	componentDidMount () {
+		if (this.props.liveSegment) {
+			this.setState({
+				selectedSegment: this.props.liveSegment
+			})
+		}
+
+		this.refreshKeyboardHotkeys()
+	}
+
 	componentDidUpdate (prevProps: IPropsHeader) {
 		mousetrap.unbind(this.usedHotkeys)
 		this.usedHotkeys.length = 0
@@ -317,6 +341,15 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 			})
 		}
 
+		this.refreshKeyboardHotkeys()
+	}
+
+	componentWillUnmount () {
+		mousetrap.unbind(this.usedHotkeys)
+		this.usedHotkeys.length = 0
+	}
+
+	refreshKeyboardHotkeys () {
 		if (this.props.liveSegment && this.props.liveSegment.items) {
 			this.props.liveSegment.items.forEach((item) => {
 				if (item.hotkey) {
@@ -324,6 +357,17 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 						this.onToggleAdLib(item)
 					}, 'keydown')
 					this.usedHotkeys.push(item.hotkey)
+				}
+			})
+		}
+
+		if (this.props.sourceLayerLookup) {
+			_.forEach(this.props.sourceLayerLookup, (item) => {
+				if (item.clearKeyboardHotkey) {
+					mousetrap.bind(item.clearKeyboardHotkey, (e: ExtendedKeyboardEvent) => {
+						this.onClearAllSourceLayer(item)
+					}, 'keydown')
+					this.usedHotkeys.push(item.clearKeyboardHotkey)
 				}
 			})
 		}
@@ -347,6 +391,10 @@ export const AdLibPanel = translate()(withTracker((props, state) => {
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
 			Meteor.call('playout_segmentAdLibLineItemStart', this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
 		}
+	}
+
+	onClearAllSourceLayer = (sourceLayer: ISourceLayer) => {
+		console.log(sourceLayer)
 	}
 
 	onSelectSegment = (segment: SegmentUi) => {

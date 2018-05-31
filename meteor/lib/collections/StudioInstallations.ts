@@ -49,9 +49,20 @@ export interface StudioInstallation {
 	mappings: Mappings
 }
 
-/** A single source layer, f.g Cameras, VT, Graphics, Remotes */
-export interface ISourceLayer {
+export interface ISourceLayerBase {
 	_id: string
+	/** Rank for ordering */
+	_rank?: number
+	/** User-presentable name for the source layer */
+	name?: string
+	/** Available shortcuts to be used for ad-lib items assigned to this sourceLayer - comma separated list allowing for chords (keyboard sequences) */
+	activateKeyboardHotkeys?: string
+	/** Single 'clear all from this sourceLayer' keyboard shortcut */
+	clearKeyboardHotkey?: string
+}
+
+/** A single source layer, f.g Cameras, VT, Graphics, Remotes */
+export interface ISourceLayer extends ISourceLayerBase {
 	/** Rank for ordering */
 	_rank: number
 	/** User-presentable name for the source layer */
@@ -61,12 +72,18 @@ export interface ISourceLayer {
 	unlimited: boolean
 	/** If set to true, the layer will be shown in PGM Clean */
 	onPGMClean: boolean
-	/** If set to true, the layer should be treated as a Live Remote input layer */
-	isRemoteInput?: boolean
+}
+
+export interface IOutputLayerBase {
+	_id: string
+	/** User-presentable name for the layer output group */
+	name?: string
+	/** Rank for ordering */
+	_rank?: number
 }
 
 /** A layer output group, f.g. PGM, Studio Monitor 1, etc. */
-export interface IOutputLayer {
+export interface IOutputLayer extends IOutputLayerBase {
 	_id: string
 	/** User-presentable name for the layer output group */
 	name: string
