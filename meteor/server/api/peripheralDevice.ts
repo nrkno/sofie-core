@@ -1092,7 +1092,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 	// return this.core.mosManipulate(P.methods.mosRoReadyToAir, story)
 }
 
-export function setStoryStatus (deviceId: string, roId: string, storyId: string, status: IMOSObjectStatus): Promise<StatusObject> {
+export function setStoryStatus (deviceId: string, roId: string, storyId: string, status: IMOSObjectStatus): Promise<any> {
 	return new Promise((resolve, reject) => {
 		console.log('setStoryStatus', deviceId, roId, storyId, status)
 		PeripheralDeviceAPI.executeFunction(deviceId, (err, result) => {
@@ -1199,7 +1199,8 @@ methods[PeripheralDeviceAPI.methods.functionReply] = (deviceId, deviceToken, com
 		$set: {
 			hasReply: true,
 			reply: result,
-			replyError: err
+			replyError: err,
+			replyTime: getCurrentTime()
 		}
 	})
 }
