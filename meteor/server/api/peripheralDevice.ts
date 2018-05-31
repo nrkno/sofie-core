@@ -184,8 +184,8 @@ export namespace ServerPeripheralDeviceAPI {
 				mosDeviceId: id,
 				// showStyleId: '',
 				name: ro.Slug.toString(),
-				expectedStart: ro.EditorialStart ? new MosTime(ro.EditorialStart.toString()).getTime() : undefined,
-				expectedDuration: ro.EditorialDuration ? new MosDuration(ro.EditorialDuration.toString()).valueOf() * 1000 : undefined
+				expectedStart: formatTime(ro.EditorialStart),
+				expectedDuration: formatDuration(ro.EditorialDuration)
 			})
 		}), {
 			beforeInsert: (o) => {
@@ -960,6 +960,22 @@ export function getRank (beforeOrLast, after, i: number, count: number): number 
 		}
 	}
 	return newRankMin + ( (i + 1) / (count + 1) ) * (newRankMax - newRankMin)
+}
+function formatDuration (duration: any): number | undefined {
+	try {
+		return duration ? new MosDuration(duration.toString()).valueOf() * 1000 : undefined
+	} catch (e) {
+		logger.warn('Bad MosDuration: "' + duration + '"', e)
+		return undefined
+	}
+}
+function formatTime (time: any): number | undefined {
+	try {
+		return time ? new MosTime(time.toString()).getTime() : undefined
+	} catch (e) {
+		logger.warn('Bad MosTime: "' + time + '"', e)
+		return undefined
+	}
 }
 
 function findDurationInfoMOSExternalMetaData (story: IMOSROFullStory): any | undefined {
