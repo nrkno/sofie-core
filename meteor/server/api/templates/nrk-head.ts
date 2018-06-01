@@ -63,7 +63,7 @@ import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 import { SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
 
-import { LLayers } from './nrk-layers'
+import { LLayers, NoraChannels } from './nrk-layers'
 import { AtemSource } from './nrk-inputs'
 
 const literal = <T>(o: T) => o
@@ -377,11 +377,12 @@ function parseSuperSegments (context: TemplateContextInner, story: StoryWithCont
 		}
 
 		const payload = context.getValueByPath(content, 'mosPayload', {})
-		const newPayload = {
-			render: Object.assign(payload.render, {
+		const newPayload: any = {
+			render: {
+				channel: NoraChannels.super,
 				group: 'dksl', // @todo config
 				system: 'html',
-			}),
+			},
 			playout: Object.assign(payload.playout, {
 				event: 'take',
 				autoTakeout: false, // This gets handled by timeline
@@ -420,7 +421,7 @@ function parseSuperSegments (context: TemplateContextInner, story: StoryWithCont
 			LLayer: LLayers.casparcg_cg_graphics_ctrl,
 			content: {
 				type: TimelineContentTypeHttp.POST,
-				url: 'http://nora.core.mesosint.nrk.no/api/playout?apiKey=' + process.env.MESOS_API_KEY, // @todo url needs to vary too
+				url: 'http://nora.core.mesosint.nrk.no/api/playout?apiKey=' + process.env.MESOS_API_KEY,
 				params: newPayload
 			}
 		})

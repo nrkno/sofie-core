@@ -62,7 +62,7 @@ import {
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 
-import { LLayers } from './nrk-layers'
+import { LLayers, NoraChannels } from './nrk-layers'
 import { AtemSource } from './nrk-inputs'
 import { RunningOrderBaselineItem } from '../../../lib/collections/RunningOrderBaselineItems'
 
@@ -71,7 +71,7 @@ const literal = <T>(o: T) => o
 export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(function (context, story) {
 	const clearParams: any = {
 		render: {
-			channel: 'gfx1',
+			channel: NoraChannels.super,
 			group: 'dksl',
 			system: 'html',
 		},
@@ -357,7 +357,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							content: {
 								type: TimelineContentTypeCasparCg.HTMLPAGE,
 								attributes: {
-									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=dksl&channel=gfx1&name=sofie-dev-cg&_=' + Date.now()
+									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=dksl&channel=' + NoraChannels.super + '&name=sofie-dev-cg&_=' + Date.now()
 								}
 							}
 						}),
@@ -369,7 +369,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							content: {
 								type: TimelineContentTypeCasparCg.HTMLPAGE,
 								attributes: {
-									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=dksl&channel=gfx1&name=sofie-dev-logo&_=' + Date.now()
+									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=dksl&channel=' + NoraChannels.logo + '&name=sofie-dev-logo&_=' + Date.now()
 								}
 							}
 						}),
@@ -381,7 +381,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							content: {
 								type: TimelineContentTypeCasparCg.HTMLPAGE,
 								attributes: {
-									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=dksl&channel=gfx2&name=sofie-dev-studio&_=' + Date.now()
+									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=dksl&channel=' + NoraChannels.studio + '&name=sofie-dev-studio&_=' + Date.now()
 								}
 							}
 						}),
