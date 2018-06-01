@@ -79,6 +79,13 @@ Meteor.methods({
 					onPGMClean: true
 				},
 				{
+					_id: 'studio0_vb',
+					_rank: 45,
+					name: 'VB',
+					type: RundownAPI.SourceLayerType.VT,
+					onPGMClean: true
+				},
+				{
 					_id: 'studio0_live_speak0',
 					_rank: 50,
 					name: 'STK',

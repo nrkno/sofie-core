@@ -10,6 +10,7 @@ import { NrkVignettTemplate } from './nrk-vignett'
 import { NrkHeadTemplate } from './nrk-head'
 import { NrkKamTemplate } from './nrk-kam'
 import { NrkSorlandetBaseTemplate } from './nrk-sorlandetBase'
+import { NrkFullTemplate } from './nrk-full'
 
 const literal = <T>(o: T) => o
 
