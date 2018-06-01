@@ -59,185 +59,223 @@ import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 
 import { LLayers } from './nrk-layers'
-import { isNumber } from 'util';
+import { isNumber } from 'util'
 
 const literal = <T>(o: T) => o
 
 export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: TemplateContextInner, story): TemplateResult => {
-			
-    let cameraInput = 0
-    let mosartVariant = story.getValueByPath('MosExternalMetaData.0.MosPayload.mosartVariant', '') + ''
-    if (mosartVariant) {
-        // mosartVariant can be something like ÅPNING3, so strip anything non numeric
-        cameraInput = parseInt(mosartVariant.replace(/\D/g,''), 10) || 0
-    } else {
-        context.warning('mosartVariant for KAM should be the camera to cut to')
-    }
+	let cameraInput = 0
+	let mosartVariant = story.getValueByPath('MosExternalMetaData.0.MosPayload.mosartVariant', '') + ''
+	if (mosartVariant) {
+		// mosartVariant can be something like ÅPNING3, so strip anything non numeric
+		cameraInput = parseInt(mosartVariant.replace(/\D/g,''), 10) || 0
+	} else {
+		context.warning('mosartVariant for KAM should be the camera to cut to')
+	}
 
-    let IDs = {
-        atemSrv1: 			context.getHashId('atemSrv1'),
-        atemSrv1Transition:	context.getHashId('atemSrv1Transition'),
-        wipeVideo: 			context.getHashId('wipeVideo'),
-        wipeAudioPunktum:   context.getHashId('wipeAudioPunktum'),
-        vignettTransition:  context.getHashId('vignettTransition'),
-    }
+	let IDs = {
+		atemSrv1: 			context.getHashId('atemSrv1'),
+		atemSrv1Transition:	context.getHashId('atemSrv1Transition'),
+		wipeVideo: 			context.getHashId('wipeVideo'),
+		wipeAudioPunktum:   context.getHashId('wipeAudioPunktum'),
+		vignettTransition:  context.getHashId('vignettTransition'),
+		lawo_effect:        context.getHashId('lawo_effect'),
+		lawo_automix:       context.getHashId('lawo_automix'),
+	}
 
-    let overlapDuration: number | undefined
+	let overlapDuration: number | undefined
 
-    // @todo try and move this to be run at the end of other templates, as it really is just an out animation for them
-    let segmentLineItems: Array<SegmentLineItemOptional> = []
+	// @todo try and move this to be run at the end of other templates, as it really is just an out animation for them
+	let segmentLineItems: Array<SegmentLineItemOptional> = []
 
-    // if previous SegmentLine is head, then wipe out of it
-    const segmentLines = context.getSegmentLines()
-    const segmentPos = context.getSegmentLineIndex()
-    if ((segmentPos > 0 && segmentLines[segmentPos - 1].slug.indexOf(';head') > 0)) { // @todo make check better
-        segmentLineItems.push(literal<SegmentLineItemOptional>({
-            _id: 'trans', // @todo
-            mosId: '',
-            segmentLineId: '',
-            runningOrderId: '',
-            name: 'Transition',
-            trigger: {
-                type: TriggerType.TIME_ABSOLUTE,
-                value: 0
-            },
-            status: RundownAPI.LineItemStatusCode.UNKNOWN,
-            sourceLayerId: 'studio0_camera0',
-            outputLayerId: 'pgm0',
-            expectedDuration: ( // @todo rewrite this
-                story.getValueByPath('MosExternalMetaData.0.MosPayload.Actual') ||
-                story.getValueByPath('MosExternalMetaData.0.MosPayload.Estimated') ||
-                0
-            ) * 1000,
-            content: {
-                timelineObjects: _.compact([
+	// if previous SegmentLine is head, then wipe out of it
+	const segmentLines = context.getSegmentLines()
+	const segmentPos = context.getSegmentLineIndex()
+	if ((segmentPos > 0 && segmentLines[segmentPos - 1].slug.indexOf(';head') > 0)) { // @todo make check better
+		segmentLineItems.push(literal<SegmentLineItemOptional>({
+			_id: 'trans', // @todo
+			mosId: '',
+			segmentLineId: '',
+			runningOrderId: '',
+			name: 'Transition',
+			trigger: {
+				type: TriggerType.TIME_ABSOLUTE,
+				value: 0
+			},
+			status: RundownAPI.LineItemStatusCode.UNKNOWN,
+			sourceLayerId: 'studio0_camera0',
+			outputLayerId: 'pgm0',
+			expectedDuration: ( // @todo rewrite this
+				story.getValueByPath('MosExternalMetaData.0.MosPayload.Actual') ||
+				story.getValueByPath('MosExternalMetaData.0.MosPayload.Estimated') ||
+				0
+			) * 1000,
+			content: {
+				timelineObjects: _.compact([
 
-                    literal<TimelineObjCCGVideo>({
-                        _id: IDs.wipeVideo, deviceId: [''], siId: '', roId: '',
-                        trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-                        priority: 1,
-                        duration: 3640,
-                        LLayer: LLayers.casparcg_player_wipe,
-                        content: {
-                            type: TimelineContentTypeCasparCg.VIDEO,
-                            attributes: {
-                                file: 'assets/wipe1'
-                            }
-                        }
-                    }),
+					literal<TimelineObjCCGVideo>({
+						_id: IDs.wipeVideo, deviceId: [''], siId: '', roId: '',
+						trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+						priority: 1,
+						duration: 3640,
+						LLayer: LLayers.casparcg_player_wipe,
+						content: {
+							type: TimelineContentTypeCasparCg.VIDEO,
+							attributes: {
+								file: 'assets/wipe1'
+							}
+						}
+					}),
 
-                    // wipe audio punktum between 
-                    // @todo lower the level of this wipe
-                    literal<TimelineObjCCGVideo>({
-                        _id: IDs.wipeAudioPunktum, deviceId: [''], siId: '', roId: '',
-                        trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.wipeVideo}.start + 0` },
-                        priority: 1,
-                        duration: 3640,
-                        LLayer: LLayers.casparcg_player_soundeffect,
-                        content: {
-                            type: TimelineContentTypeCasparCg.VIDEO,
-                            attributes: {
-                                file: 'assets/DK_punktum_head'
-                            }
-                        }
-                    }),
+					// wipe audio punktum
+					// @todo lower the level of this wipe
+					literal<TimelineObjCCGVideo>({
+						_id: IDs.wipeAudioPunktum, deviceId: [''], siId: '', roId: '',
+						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.wipeVideo}.start + 0` },
+						priority: 1,
+						duration: 3640,
+						LLayer: LLayers.casparcg_player_soundeffect,
+						content: {
+							type: TimelineContentTypeCasparCg.VIDEO,
+							attributes: {
+								file: 'assets/DK_punktum_head'
+							}
+						}
+					}),
 
-                    literal<TimelineObjAtemME>({
-                        _id: IDs.atemSrv1Transition, deviceId: [''], siId: '', roId: '',
-                        trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.wipeVideo}.start + 120 + 120` }, // @todo better trigger point
-                        priority: 2,
-                        duration: 0, // @todo TBD
-                        LLayer: LLayers.atem_me_program,
-                        content: {
-                            type: TimelineContentTypeAtem.ME,
-                            attributes: {
-                                input: cameraInput,
-                                transition: Atem_Enums.TransitionStyle.MIX
-                                // @todo - wipe
-                            }
-                        }
-                    }),
+					literal<TimelineObjAtemME>({
+						_id: IDs.atemSrv1Transition, deviceId: [''], siId: '', roId: '',
+						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.wipeVideo}.start + 120 + 120` }, // @todo better trigger point
+						priority: 2,
+						duration: 0, // @todo TBD
+						LLayer: LLayers.atem_me_program,
+						content: {
+							type: TimelineContentTypeAtem.ME,
+							attributes: {
+								input: cameraInput,
+								transition: Atem_Enums.TransitionStyle.MIX
+								// @todo - wipe
+							}
+						}
+					}),
 
-                    // fade out vignett audio
-                    literal<TimelineObjCCGVideo>({
-                        _id: IDs.vignettTransition, deviceId: [''], siId: '', roId: '',
-                        trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-                        priority: 2,
-                        duration: 250,
-                        LLayer: LLayers.casparcg_player_vignett,
-                        content: {
-                            type: TimelineContentTypeCasparCg.VIDEO,
-                            transitions: {
-                                inTransition: {
-                                    type: Transition.MIX,
-                                    duration: 200,
-                                    easing: Ease.LINEAR,
-                                    direction: Direction.LEFT
-                                }
-                            },
-                            attributes: {
-                                file: 'CLEAR'
-                            }
-                        }
-                    }),
+					// fade out vignett audio
+					literal<TimelineObjCCGVideo>({
+						_id: IDs.vignettTransition, deviceId: [''], siId: '', roId: '',
+						trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+						priority: 2,
+						duration: 250,
+						LLayer: LLayers.casparcg_player_vignett,
+						content: {
+							type: TimelineContentTypeCasparCg.VIDEO,
+							transitions: {
+								inTransition: {
+									type: Transition.MIX,
+									duration: 200,
+									easing: Ease.LINEAR,
+									direction: Direction.LEFT
+								}
+							},
+							attributes: {
+								file: 'CLEAR'
+							}
+						}
+					}),
 
-                    // @todo audio levels
-                ])
-            }
-        }))
-        
-        overlapDuration = 300
-    }
+					literal<TimelineObjLawoSource>({
+						_id: IDs.lawo_effect, deviceId: [''], siId: '', roId: '',
+						trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+						priority: 1,
+						duration: 0,
+						LLayer: LLayers.lawo_source_effect,
+						content: {
+							type: TimelineContentTypeLawo.AUDIO_SOURCE,
+							attributes: {
+								db: 0
+							}
+						}
+					}),
 
-    segmentLineItems.push(literal<SegmentLineItemOptional>({
-        _id: '',
-        mosId: '',
-        segmentLineId: '',
-        runningOrderId: '',
-        name: 'KAM ' + cameraInput,
-        trigger: {
-            type: TriggerType.TIME_ABSOLUTE,
-            value: 0
-        },
-        status: RundownAPI.LineItemStatusCode.UNKNOWN,
-        sourceLayerId: 'studio0_camera0',
-        outputLayerId: 'pgm0',
-        expectedDuration: ( // @todo rewrite this
-            story.getValueByPath('MosExternalMetaData.0.MosPayload.Actual') ||
-            story.getValueByPath('MosExternalMetaData.0.MosPayload.Estimated') ||
-            0
-        ) * 1000,
-        content: {
-            timelineObjects: _.compact([
-                literal<TimelineObjAtemME>({
-                    _id: IDs.atemSrv1, deviceId: [''], siId: '', roId: '',
-                    trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-                    priority: 1,
-                    duration: 0, // @todo TBD
-                    LLayer: LLayers.atem_me_program,
-                    content: {
-                        type: TimelineContentTypeAtem.ME,
-                        attributes: {
-                            input: cameraInput,
-                            transition: Atem_Enums.TransitionStyle.CUT
-                        }
-                    }
-                })
-            ])
-        }
-    }))
+					// @todo audio levels
+				])
+			}
+		}))
 
-    return {
-        segmentLine: literal<DBSegmentLine>({
-            _id: '',
-            _rank: 0,
-            mosId: '',
-            segmentId: '',
-            runningOrderId: '',
-            slug: 'KAM',
-            overlapDuration: overlapDuration
-        }),
-        segmentLineItems: segmentLineItems,
-        segmentLineAdLibItems: null
-    }
+		overlapDuration = 300
+	}
+
+	segmentLineItems.push(literal<SegmentLineItemOptional>({
+		_id: '',
+		mosId: '',
+		segmentLineId: '',
+		runningOrderId: '',
+		name: 'KAM ' + cameraInput,
+		trigger: {
+			type: TriggerType.TIME_ABSOLUTE,
+			value: 0
+		},
+		status: RundownAPI.LineItemStatusCode.UNKNOWN,
+		sourceLayerId: 'studio0_camera0',
+		outputLayerId: 'pgm0',
+		expectedDuration: ( // @todo rewrite this
+			story.getValueByPath('MosExternalMetaData.0.MosPayload.Actual') ||
+			story.getValueByPath('MosExternalMetaData.0.MosPayload.Estimated') ||
+			0
+		) * 1000,
+		content: {
+			timelineObjects: _.compact([
+				literal<TimelineObjAtemME>({
+					_id: IDs.atemSrv1, deviceId: [''], siId: '', roId: '',
+					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+					priority: 1,
+					duration: 0, // @todo TBD
+					LLayer: LLayers.atem_me_program,
+					content: {
+						type: TimelineContentTypeAtem.ME,
+						attributes: {
+							input: cameraInput,
+							transition: Atem_Enums.TransitionStyle.CUT
+						}
+					}
+				}),
+
+				// mic host hot
+				literal<TimelineObjLawoSource>({
+					_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
+					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+					priority: 1,
+					duration: 0,
+					LLayer: LLayers.lawo_source_automix,
+					content: {
+						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						transitions: {
+							inTransition: {
+								type: Transition.MIX,
+								duration: 200,
+								easing: Ease.LINEAR,
+								direction: Direction.LEFT
+							}
+						},
+						attributes: {
+							db: 0
+						}
+					}
+				}),
+			])
+		}
+	}))
+
+	return {
+		segmentLine: literal<DBSegmentLine>({
+			_id: '',
+			_rank: 0,
+			mosId: '',
+			segmentId: '',
+			runningOrderId: '',
+			slug: 'KAM',
+			overlapDuration: overlapDuration
+		}),
+		segmentLineItems: segmentLineItems,
+		segmentLineAdLibItems: null
+	}
 })

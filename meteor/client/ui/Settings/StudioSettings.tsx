@@ -837,6 +837,10 @@ class StudioMappings extends React.Component<IChildStudioInterfaceProps & IProps
 								<span>{ (mapping as MappingLawo).channel }</span>
 							)) ||
 							(
+								mapping.device === PlayoutDeviceType.HTTPSEND && (
+								<span></span>
+							)) ||
+							(
 								<span>Unknown device type: {PlayoutDeviceType[mapping.device] } </span>
 							)
 						}
