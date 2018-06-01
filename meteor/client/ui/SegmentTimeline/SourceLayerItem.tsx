@@ -42,6 +42,7 @@ export interface ISourceLayerItemProps {
 	outputGroupCollapsed: boolean
 	scrollLeft: number
 	scrollWidth: number
+	liveLinePadding: number
 }
 interface ISourceLayerItemState {
 	itemState: number
@@ -194,14 +195,20 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		// If this is a live line, take duration verbatim from SegmentLayerItemContainer with a fallback on expectedDuration.
 		// If not, as-run segmentLine "duration" limits renderdDuration which takes priority over MOS-import
 		// expectedDuration (editorial duration)
-		let itemDuration = this.props.isLiveLine ?
-			segmentLineItem.renderedDuration || segmentLineItem.duration || segmentLineItem.expectedDuration :
-			((segmentLineItem.renderedDuration || segmentLineItem.duration || segmentLineItem.expectedDuration) === 0 ?
-				this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) :
-				Math.min(
-					segmentLineItem.renderedDuration || segmentLineItem.duration || segmentLineItem.expectedDuration,
-					this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)
-				)
+
+		let liveLinePadding = this.props.autoNextSegmentLine ? 0 : this.props.liveLinePadding
+
+		let itemDuration = segmentLineItem.duration !== undefined ?
+			Math.min(segmentLineItem.duration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) + liveLinePadding) :
+			( this.props.isLiveLine ?
+				((segmentLineItem.expectedDuration) === 0 ? // segmentLineItem.renderedDuration
+					(this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) + liveLinePadding) :
+					Math.min(
+						segmentLineItem.renderedDuration || segmentLineItem.expectedDuration || 0,
+						this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) + liveLinePadding
+					)
+				) :
+				Math.min(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
 			)
 
 		if (this.props.relative) {

@@ -313,7 +313,7 @@ export const SegmentTimelineLine = translate()(withTiming({
 							segment={this.props.segment}
 							segmentLine={segmentLine}
 							startsAt={this.getSegmentLineStartsAt() || this.props.segmentLine.startsAt || 0}
-							duration={(this.props.timingDurations.segmentLineDurations && this.props.timingDurations.segmentLineDurations[segmentLine._id]) || this.props.segmentLine.renderedDuration || 0}
+							duration={Math.max(((this.props.timingDurations.segmentLineDurations && this.props.timingDurations.segmentLineDurations[segmentLine._id]) || 0), this.props.segmentLine.renderedDuration || 0, 0)}
 							isLiveLine={this.props.runningOrder.currentSegmentLineId === segmentLine._id ? true : false}
 							isNextLine={this.props.runningOrder.nextSegmentLineId === segmentLine._id ? true : false}
 							timeScale={this.props.timeScale}

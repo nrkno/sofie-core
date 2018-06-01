@@ -75,9 +75,9 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 				Math.min(
 					// if duration is 0, the item is in fact infinite
 					timelineObj.duration === 0 ?
-						(props.segmentLineDuration - segmentCopy.renderedInPoint! + props.liveLinePadding) :
+						(props.segmentLineDuration - segmentCopy.renderedInPoint!) :
 						timelineObj.duration,
-					Math.max((props.livePosition || 0) + props.liveLinePadding, (props.segmentLineDuration - segmentCopy.renderedInPoint!))
+					Math.max((props.livePosition || 0), (props.segmentLineDuration - segmentCopy.renderedInPoint!))
 				)
 
 			return {

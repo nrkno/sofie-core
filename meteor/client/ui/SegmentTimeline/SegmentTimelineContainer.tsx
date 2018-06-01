@@ -328,7 +328,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		}
 	}
 
-	componentDidUpdate () {
+	componentDidUpdate (prevProps) {
 		this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
 		if (this.isLiveSegment === false && this.props.isLiveSegment === true) {
 			this.isLiveSegment = true
@@ -338,6 +338,13 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		if (this.isLiveSegment === true && this.props.isLiveSegment === false) {
 			this.isLiveSegment = false
 			this.stopOnAirLine()
+		}
+
+		// rewind all scrollLeft's to 0 on running order activate
+		if (this.props.runningOrder && this.props.runningOrder.active && prevProps.runningOrder && !prevProps.runningOrder.active) {
+			this.setState({
+				scrollLeft: 0
+			})
 		}
 	}
 
