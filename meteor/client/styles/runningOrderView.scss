@@ -1034,6 +1034,24 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	}
 }
 
+// TODO: this is just a debug label, should not be visible in final app
+.segment-timeline__debug-info {
+	position: absolute;
+	white-space: nowrap;
+	word-wrap: none;
+	color: #fff;
+	top: -1.5em;
+	right: 0;
+
+	&.red {
+		color: red;
+		top: auto;
+		bottom: -1.5em;
+		right: auto;
+		left: 0
+	}
+}
+
 .segment-timeline__mini-inspector {
 	position: absolute;
 	display: block;

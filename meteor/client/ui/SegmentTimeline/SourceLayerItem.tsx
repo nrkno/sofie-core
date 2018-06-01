@@ -22,6 +22,8 @@ import { STKSourceRenderer } from './Renderers/STKSourceRenderer'
 import { L3rdSourceRenderer } from './Renderers/L3rdSourceRenderer'
 import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
 
+import { DEBUG_MODE } from './SegmentTimelineDebugMode'
+
 export interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
@@ -196,16 +198,17 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		// If not, as-run segmentLine "duration" limits renderdDuration which takes priority over MOS-import
 		// expectedDuration (editorial duration)
 
-		let liveLinePadding = this.props.autoNextSegmentLine ? 0 : this.props.liveLinePadding
+		let liveLinePadding = this.props.autoNextSegmentLine ? 0 : (this.props.isLiveLine ? this.props.liveLinePadding : 0)
 
 		let itemDuration = segmentLineItem.duration !== undefined ?
 			Math.min(segmentLineItem.duration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) + liveLinePadding) :
-			( this.props.isLiveLine ?
+			(this.props.isLiveLine && this.props.livePosition !== null ?
 				((segmentLineItem.expectedDuration) === 0 ? // segmentLineItem.renderedDuration
 					(this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) + liveLinePadding) :
-					Math.min(
+					Math.max(
 						segmentLineItem.renderedDuration || segmentLineItem.expectedDuration || 0,
-						this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) + liveLinePadding
+						// this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) + liveLinePadding,
+						this.props.livePosition - this.props.segmentLineStartsAt + liveLinePadding - (segmentLineItem.renderedInPoint || 0)
 					)
 				) :
 				Math.min(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
@@ -370,7 +373,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		if (this.props.relative) {
 			return true
 		} else {
-			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine, this.props.segmentLineStartsAt, this.props.segmentLineItem)
+			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine, this.props.segmentLineStartsAt, this.props.segmentLineDuration, this.props.segmentLineItem)
 		}
 	}
 
@@ -414,6 +417,13 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 					onMouseLeave={(e) => this.toggleMiniInspector(e, false)}
 					style={this.getItemStyle()}>
 					{this.renderInsideItem()}
+					{
+						DEBUG_MODE && (
+							<div className='segment-timeline__debug-info'>
+								{RundownUtils.formatTimeToTimecode(this.props.segmentLineDuration).substr(-5)} / {this.props.segmentLineItem.renderedDuration ? RundownUtils.formatTimeToTimecode(this.props.segmentLineItem.renderedDuration).substr(-5) : 'X'} / {RundownUtils.formatTimeToTimecode(this.props.segmentLineItem.expectedDuration).substr(-5)}
+							</div>
+						)
+					}
 					{
 						this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.inTransition && this.props.segmentLineItem.transitions.inTransition.duration > 0 ? (
 							<div className={ClassNames('segment-timeline__layer-item__transition', 'in', {
