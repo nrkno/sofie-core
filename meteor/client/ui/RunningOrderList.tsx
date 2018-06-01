@@ -33,7 +33,7 @@ class extends React.Component<IRunningOrdersListPropsHeader> {
 		const { t } = this.props
 
 		return (
-			<div>
+			<div className='mtl gutter'>
 				<header className='mvs'>
 					<h1>{t('Running Orders')}</h1>
 				</header>

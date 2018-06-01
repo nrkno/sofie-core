@@ -131,7 +131,7 @@ export class SystemStatus extends React.Component<IPropsHeader> {
 		const { t } = this.props
 
 		return (
-			<div>
+			<div className='mtl gutter'>
 				<header className='mvs'>
 					<h1>{t('System Status')}</h1>
 				</header>
