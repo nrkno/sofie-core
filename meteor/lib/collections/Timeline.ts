@@ -13,7 +13,8 @@ export type TimelineContentTypeAny =
 	TimelineContentTypeOther |
 	TimelineContentTypeCasparCg |
 	TimelineContentTypeLawo |
-	TimelineContentTypeAtem
+	TimelineContentTypeAtem |
+	TimelineContentTypeHttp
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -24,6 +25,7 @@ export enum TimelineContentTypeCasparCg { //  CasparCG-state
 	IP = 'ip',
 	INPUT = 'input',
 	TEMPLATE = 'template',
+	HTMLPAGE = 'htmlpage',
 	ROUTE = 'route',
 	RECORD = 'record',
 	AUDIO = 'audio'
@@ -37,6 +39,9 @@ export enum TimelineContentTypeAtem { //  Atem-state
 	AUX = 'aux',
 	SSRC = 'ssrc',
 	MEDIAPLAYER = 'mp'
+}
+export enum TimelineContentTypeHttp {
+	POST = 'post'
 }
 export namespace Atem_Enums {
 	export enum TransitionStyle {
@@ -105,6 +110,7 @@ export interface TimelineObj {
 	trigger: {
 		type: TriggerType;
 		value: number | string;
+		setFromNow?: boolean;
 	}
 	duration: number
 	LLayer: string | number
@@ -124,6 +130,9 @@ export interface TimelineObj {
 	repeating?: boolean
 	priority?: number
 	externalFunction?: string
+	metadata?: {
+		[key: string]: any
+	}
 }
 export interface TimelineObjGroup extends TimelineObj {
 	content: {
@@ -190,6 +199,20 @@ export interface TimelineObjCCGInput extends TimelineObj {
 		}
 	}
 }
+export interface TimelineObjCCGHTMLPage extends TimelineObj {
+	content: {
+		objects?: Array<TimelineObject>
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentTypeCasparCg.HTMLPAGE
+		transitions?: {
+			inTransition?: TimelineTransition
+			outTransition?: TimelineTransition
+		}
+		attributes: {
+			url: string,
+		}
+	}
+}
 export interface TimelineObjCCGTemplate extends TimelineObj {
 	content: {
 		objects?: Array<TimelineObject>
@@ -200,6 +223,7 @@ export interface TimelineObjCCGTemplate extends TimelineObj {
 			outTransition?: TimelineTransition
 		}
 		attributes: {
+			type?: 'html' | 'flash'
 			name: string,
 			data?: any, // free to do whatever inside the object, so long as the template likes it
 			useStopCommand: boolean // whether to use CG stop or CLEAR layer
@@ -306,6 +330,14 @@ export interface TimelineObjAtemSsrc extends TimelineObj {
 			boxes: Array<SuperSourceBox>,
 			artfillSource: number
 		}
+	}
+}
+export interface TimelineObjHTTPPost extends TimelineObj {
+	content: {
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentTypeHttp.POST
+		url: string
+		params: {[key: string]: number | string}
 	}
 }
 

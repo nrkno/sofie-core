@@ -46,6 +46,7 @@ interface IPropsHeader {
 	followLiveLine: boolean,
 	liveLineHistorySize: number,
 	livePosition: number,
+	autoNextSegmentLine: boolean,
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
 	onFollowLiveLine: (state: boolean, event: any) => void
@@ -134,6 +135,7 @@ const SegmentTimelineZoom = class extends React.Component<IPropsHeader & IZoomPr
 					totalSegmentDuration={this.getSegmentDuration()}
 					segmentLine={segmentLine}
 					followLiveLine={this.props.followLiveLine}
+					autoNextSegmentLine={this.props.autoNextSegmentLine}
 					liveLineHistorySize={this.props.liveLineHistorySize}
 					livePosition={this.props.segment._id === this.props.runningOrder.currentSegmentLineId && segmentLine.startedPlayback ? this.props.livePosition - segmentLine.startedPlayback : null} />
 			)
@@ -312,15 +314,16 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 		// console.log(this.props.hasRemoteItems && !this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment)
 
 		return (
-			<div className={ClassNames('segment-timeline', {
-				'collapsed': this.props.isCollapsed,
+			<div id={'running-order__segment__' + this.props.segment._id}
+				className={ClassNames('segment-timeline', {
+					'collapsed': this.props.isCollapsed,
 
-				'live': this.props.isLiveSegment,
-				'next': !this.props.isLiveSegment && this.props.isNextSegment,
+					'live': this.props.isLiveSegment,
+					'next': !this.props.isLiveSegment && this.props.isNextSegment,
 
-				'has-played': this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment,
-				'has-remote-items': this.props.hasRemoteItems && !this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment
-			})}
+					'has-played': this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment,
+					'has-remote-items': this.props.hasRemoteItems && !this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment
+				})}
 			data-mos-id={this.props.segment._id}>
 				<ContextMenuTrigger id='segment-timeline-context-menu'
 					collect={this.getSegmentContext}

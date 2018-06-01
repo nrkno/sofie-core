@@ -3,6 +3,7 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
+import * as $ from 'jquery'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 
 import { normalizeArray } from '../../lib/utils'
@@ -83,6 +84,7 @@ interface IPropsHeader {
 	liveLineHistorySize: number
 	onTimeScaleChange?: (timeScaleVal: number) => void
 	onContextMenu?: (contextMenuContext: any) => void
+	autoNextSegmentLine: boolean
 }
 interface IStateHeader {
 	scrollLeft: number,
@@ -170,6 +172,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 			} else {
 				if (trigger.type === SuperTimeline.TriggerType.TIME_ABSOLUTE && trigger.value === 'now') {
 					return _.extend({}, trigger, {
+						// value: segmentLine.startedPlayback ? getCurrentTime() - segmentLine.startedPlayback : offset
 						value: offset
 					})
 				} else {
@@ -184,7 +187,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 			slTimeline.push({
 				id: segmentLineItem._id,
 				trigger: offsetTrigger(segmentLineItem.trigger, TIMELINE_TEMP_OFFSET),
-				duration: segmentLineItem.duration || segmentLineItem.expectedDuration,
+				duration: segmentLineItem.duration || segmentLineItem.expectedDuration || 0,
 				LLayer: segmentLineItem.outputLayerId,
 				content: segmentLineItem
 			})
@@ -250,13 +253,6 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		segmentLine.renderedDuration = furthestDuration
 		segmentLine.startsAt = startsAt
 		startsAt = segmentLine.startsAt + (segmentLine.renderedDuration || 0)
-
-		/* segmentLineItems.forEach((item) => {
-			let itemUi = item as SegmentLineItemUi
-			if (itemUi.renderedDuration && !Number.isFinite(itemUi.renderedDuration)) {
-				itemUi.renderedDuration = segmentLine.renderedDuration! - itemUi.renderedInPoint!
-			}
-		}) */
 	})
 
 	const resolveDuration = (item: SegmentLineItemUi): number => {
@@ -279,6 +275,14 @@ export const SegmentTimelineContainer = withTracker((props) => {
 	segment.outputLayers = outputLayers
 	segment.sourceLayers = sourceLayers
 
+	const nextSLine = SegmentLines.findOne({
+		_id: props.runningOrder.nextSegmentLineId
+	})
+	let autoNextSegmentLine = false
+	if (nextSLine && nextSLine.autoNext) {
+		autoNextSegmentLine = true
+	}
+
 	return {
 		segment,
 		segmentLines,
@@ -286,7 +290,8 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		currentLiveSegmentLine,
 		isNextSegment,
 		hasAlreadyPlayed,
-		hasRemoteItems
+		hasRemoteItems,
+		autoNextSegmentLine
 	}
 })(class extends React.Component<IPropsHeader, IStateHeader> {
 	static contextTypes = {
@@ -315,6 +320,14 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		}) */
 	}
 
+	componentDidMount () {
+		this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
+		if (this.isLiveSegment === true) {
+			this.onFollowLiveLine(true, {})
+			this.startOnAirLine()
+		}
+	}
+
 	componentDidUpdate () {
 		this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
 		if (this.isLiveSegment === false && this.props.isLiveSegment === true) {
@@ -326,6 +339,10 @@ export const SegmentTimelineContainer = withTracker((props) => {
 			this.isLiveSegment = false
 			this.stopOnAirLine()
 		}
+	}
+
+	componentWillUnmount () {
+		this.stopOnAirLine()
 	}
 
 	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
@@ -400,6 +417,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 							 isLiveSegment={this.props.isLiveSegment}
 							 isNextSegment={this.props.isNextSegment}
 							 hasRemoteItems={this.props.hasRemoteItems}
+							 autoNextSegmentLine={this.props.autoNextSegmentLine}
 							 hasAlreadyPlayed={this.props.hasAlreadyPlayed}
 							 followLiveLine={this.state.followLiveLine}
 							 liveLineHistorySize={this.props.liveLineHistorySize}

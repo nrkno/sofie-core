@@ -29,6 +29,7 @@ import { RuntimeFunction, RuntimeFunctions } from '../../lib/collections/Runtime
 import StudioSettings from './Settings/StudioSettings'
 import DeviceSettings from './Settings/DeviceSettings'
 import LineTemplates from './Settings/LineTemplates'
+import ShowStyleSettings from './Settings/ShowStyleSettings'
 
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
@@ -50,6 +51,7 @@ interface IPropsMenuHeader {
 interface IStateMenuHeader {
 	deleteConfirmItem: any
 	showDeleteLineTemplateConfirm: boolean
+	showDeleteShowStyleConfirm: boolean
 }
 const SettingsMenu = translate()(withTracker(() => {
 	let subStudioInstallations = Meteor.subscribe('studioInstallations', {})
@@ -60,7 +62,9 @@ const SettingsMenu = translate()(withTracker(() => {
 	return {
 		studioInstallations: StudioInstallations.find({}).fetch(),
 		showStyles: ShowStyles.find({}).fetch(),
-		peripheralDevices: PeripheralDevices.find({}).fetch(),
+		peripheralDevices: PeripheralDevices.find({}, {sort: {
+			lastSeen: -1
+		}}).fetch(),
 		lineTemplates: RuntimeFunctions.find({}).fetch()
 	}
 })(class extends React.Component<IPropsMenuHeader & InjectedTranslateProps, IStateMenuHeader> {
@@ -68,7 +72,8 @@ const SettingsMenu = translate()(withTracker(() => {
 		super(props)
 		this.state = {
 			deleteConfirmItem: undefined,
-			showDeleteLineTemplateConfirm: false
+			showDeleteLineTemplateConfirm: false,
+			showDeleteShowStyleConfirm: false
 		}
 	}
 
@@ -121,10 +126,26 @@ const SettingsMenu = translate()(withTracker(() => {
 		}))
 	}
 
+	onAddShowStyle () {
+		ShowStyles.insert(literal<ShowStyle>({
+			_id: Random.hexString(5),
+			name: Random.hexString(5),
+			templateMappings: [],
+			baselineTemplate: ''
+		}))
+	}
+
 	onDeleteLineTemplate (item: RuntimeFunction) {
 		this.setState({
 			deleteConfirmItem: item,
 			showDeleteLineTemplateConfirm: true
+		})
+	}
+
+	onDeleteShowStyle (item: ShowStyle) {
+		this.setState({
+			deleteConfirmItem: item,
+			showDeleteShowStyleConfirm: true
 		})
 	}
 
@@ -139,6 +160,20 @@ const SettingsMenu = translate()(withTracker(() => {
 		this.setState({
 			deleteConfirmItem: undefined,
 			showDeleteLineTemplateConfirm: false
+		})
+	}
+
+	handleConfirmDeleteShowStyleAccept = (e) => {
+		ShowStyles.remove(this.state.deleteConfirmItem._id)
+		this.setState({
+			showDeleteShowStyleConfirm: false
+		})
+	}
+
+	handleConfirmDeleteShowStyleCancel = (e) => {
+		this.setState({
+			deleteConfirmItem: undefined,
+			showDeleteShowStyleConfirm: false
 		})
 	}
 
@@ -162,17 +197,29 @@ const SettingsMenu = translate()(withTracker(() => {
 						]
 					})
 				}
-				<h2 className='mhs'>{t('Show Styles')}</h2>
+				<h2 className='mhs'>
+					<button className='action-btn right' onClick={(e) => this.onAddShowStyle()}>
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
+					{t('Show Styles')}
+					</h2>
 				<hr className='vsubtle man' />
+				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteShowStyleConfirm} onAccept={(e) => this.handleConfirmDeleteShowStyleAccept(e)} onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
+					<p>{t(`Are you sure you want to delete show style ${this.state.deleteConfirmItem && this.state.deleteConfirmItem.name}?`)}</p>
+					<p>{t('This action is irreversible.')}</p>
+				</ModalDialog>
 				{
 					this.props.showStyles.map((item) => {
 						return (
-							<div className='settings-menu__settings-menu-item' key={item._id}>
+							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/showStyle/' + item._id}>
 								<div className='selectable clickable'>
+									<button className='action-btn right' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteShowStyle(item)}>
+										<FontAwesomeIcon icon={faTrash} />
+									</button>
 									<h3>{item.name}</h3>
 								</div>
 								<hr className='vsubtle man' />
-							</div>
+							</NavLink>
 						)
 					})
 				}
@@ -210,6 +257,9 @@ const SettingsMenu = translate()(withTracker(() => {
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/peripheralDevice/' + item._id}>
 								<h3>{item.name}</h3>
 								<p>
+									{item._id}
+								</p>
+								<p>
 									{t('Status')}: {this.statusCodeString(item.status.statusCode)} {t('Type')}: {this.deviceTypeString(item.type)}
 								</p>
 							</NavLink>,
@@ -240,7 +290,7 @@ class Settings extends React.Component<InjectedTranslateProps> {
 							<Switch>
 								<Route path='/settings' exact component={WelcomeToSettings} />
 								<Route path='/settings/studio/:studioId' component={StudioSettings} />
-								<Route path='/settings/showStyle/:showStyleId' component={Settings} />
+								<Route path='/settings/showStyle/:showStyleId' component={ShowStyleSettings} />
 								<Route path='/settings/peripheralDevice/:deviceId' component={DeviceSettings} />
 								<Route path='/settings/lineTemplate/:ltId' component={LineTemplates} />
 								<Redirect to='/settings' />

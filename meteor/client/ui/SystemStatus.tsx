@@ -8,6 +8,8 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import * as ClassNames from 'classnames'
 import Moment from 'react-moment'
 import { translate, InjectedTranslateProps } from 'react-i18next'
+import { getCurrentTime } from '../../lib/lib'
+import { Link } from 'react-router-dom';
 
 interface IDeviceItemPropsHeader extends InjectedTranslateProps {
 	key: string,
@@ -91,7 +93,7 @@ const DeviceItem = translate()(class extends React.Component<IDeviceItemPropsHea
 		return (
 			<tr className='device-item'>
 				<td className='device-item__id'>
-					<p>{this.props.device._id}</p>
+					<Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device._id}</Link>
 				</td>
 				<td className='device-item__name'>
 					<p>{this.props.device.name}</p>
@@ -108,7 +110,7 @@ const DeviceItem = translate()(class extends React.Component<IDeviceItemPropsHea
 					</p>
 				</td>
 				<td className='device-item__last-seen'>
-					<p><Moment fromNow date={this.props.device.lastSeen} /></p>
+					<p><Moment from={getCurrentTime()} date={this.props.device.lastSeen} /></p>
 				</td>
 			</tr>
 		)
@@ -144,7 +146,7 @@ export class SystemStatus extends React.Component<IPropsHeader> {
 									{t('Name')}
 								</th>
 								<th className='c1'>
-									{t('Connected')}
+									{t('Telemetry')}
 								</th>
 								<th className='c1'>
 									{t('Type')}

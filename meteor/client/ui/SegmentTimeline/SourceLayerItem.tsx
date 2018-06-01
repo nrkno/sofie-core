@@ -36,6 +36,7 @@ export interface ISourceLayerItemProps {
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	relative?: boolean
 	followLiveLine: boolean
+	autoNextSegmentLine: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
 	outputGroupCollapsed: boolean
@@ -193,7 +194,15 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		// If this is a live line, take duration verbatim from SegmentLayerItemContainer with a fallback on expectedDuration.
 		// If not, as-run segmentLine "duration" limits renderdDuration which takes priority over MOS-import
 		// expectedDuration (editorial duration)
-		let itemDuration = this.props.isLiveLine ? segmentLineItem.renderedDuration || segmentLineItem.expectedDuration : Math.min(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
+		let itemDuration = this.props.isLiveLine ?
+			segmentLineItem.renderedDuration || segmentLineItem.duration || segmentLineItem.expectedDuration :
+			((segmentLineItem.renderedDuration || segmentLineItem.duration || segmentLineItem.expectedDuration) === 0 ?
+				this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) :
+				Math.min(
+					segmentLineItem.renderedDuration || segmentLineItem.duration || segmentLineItem.expectedDuration,
+					this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)
+				)
+			)
 
 		if (this.props.relative) {
 			return {
@@ -238,7 +247,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 		if (nextProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
 			this.setState({
-				cursorTimePostion: this.state.cursorTimePostion + (nextProps.scrollLeft - this.props.scrollLeft)
+				cursorTimePostion: this.state.cursorTimePostion + ((nextProps.scrollLeft - this.props.scrollLeft) - (nextProps.segmentLineStartsAt - this.props.segmentLineStartsAt))
 			})
 		}
 	}
@@ -383,7 +392,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 					'hide-overflow-labels': this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth),
 
-					'infinite': this.props.segmentLineItem.expectedDuration === 0, // 0 is a special value
+					'infinite': this.props.segmentLineItem.duration === undefined && this.props.segmentLineItem.expectedDuration === 0, // 0 is a special value
 
 					'source-missing': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING,
 					'source-broken': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN,

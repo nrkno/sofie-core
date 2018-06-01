@@ -16,6 +16,8 @@ import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
+import * as faAngleUp from '@fortawesome/fontawesome-free-solid/faAngleUp'
+import * as faAngleDown from '@fortawesome/fontawesome-free-solid/faAngleDown'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as objectPath from 'object-path'
 import { PeripheralDevice, PeripheralDevices, PlayoutDeviceType } from '../../../lib/collections/PeripheralDevices'
@@ -170,6 +172,18 @@ class StudioOutputSettings extends React.Component<IChildStudioInterfaceProps & 
 												attribute={'outputLayers.' + index + '.isPGM'}
 												obj={this.props.studioInstallation}
 												type='checkbox'
+												collection={StudioInstallations}
+												className=''></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Display rank')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'outputLayers.' + index + '._rank'}
+												obj={this.props.studioInstallation}
+												type='int'
 												collection={StudioInstallations}
 												className=''></EditAttribute>
 										</label>
@@ -417,6 +431,42 @@ class StudioSourcesSettings extends React.Component<IChildStudioInterfaceProps &
 												attribute={'sourceLayers.' + index + '.isRemoteInput'}
 												obj={this.props.studioInstallation}
 												type='checkbox'
+												collection={StudioInstallations}
+												className=''></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Display rank')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + index + '._rank'}
+												obj={this.props.studioInstallation}
+												type='int'
+												collection={StudioInstallations}
+												className=''></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('AdLib activate shortcut list')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + index + '.activateKeyboardHotkeys'}
+												obj={this.props.studioInstallation}
+												type='text'
+												collection={StudioInstallations}
+												className=''></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Clear shortcut')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + index + '.clearKeyboardHotkey'}
+												obj={this.props.studioInstallation}
+												type='text'
 												collection={StudioInstallations}
 												className=''></EditAttribute>
 										</label>
@@ -775,6 +825,10 @@ class StudioMappings extends React.Component<IChildStudioInterfaceProps & IProps
 								<span>{ (mapping as MappingLawo).channel }</span>
 							)) ||
 							(
+								mapping.device === PlayoutDeviceType.HTTPSEND && (
+								<span></span>
+							)) ||
+							(
 								<span>Unknown device type: {PlayoutDeviceType[mapping.device] } </span>
 							)
 						}
@@ -879,6 +933,30 @@ class StudioMappings extends React.Component<IChildStudioInterfaceProps & IProps
 
 class StudioSettings extends React.Component<IPropsHeader & InjectedTranslateProps> {
 
+	static setProperty (studioInstallation: StudioInstallation, property: string, value: any) {
+		console.log(property, value)
+		let m = {}
+		if (value !== undefined) {
+			m[property] = value
+			StudioInstallations.update(studioInstallation._id, { $set: m })
+		} else {
+			m[property] = 0
+			StudioInstallations.update(studioInstallation._id, { $unset: m })
+		}
+	}
+
+	static findHighestRank (array: Array<{ _rank: number }>): { _rank: number } | null {
+		let max: { _rank: number } | null = null
+
+		array.forEach((value, index) => {
+			if (max == null || max._rank < value._rank) {
+				max = value
+			}
+		})
+
+		return max
+	}
+
 	onDeleteSource = (item: ISourceLayer) => {
 		if (this.props.studioInstallation) {
 			StudioInstallations.update(this.props.studioInstallation._id, {
@@ -903,20 +981,8 @@ class StudioSettings extends React.Component<IPropsHeader & InjectedTranslatePro
 		}
 	}
 
-	findHighestRank (array: Array<{_rank: number}>): {_rank: number} | null {
-		let max: {_rank: number} | null = null
-
-		array.forEach((value, index) => {
-			if (max == null || max._rank < value._rank) {
-				max = value
-			}
-		})
-
-		return max
-	}
-
 	onAddSource = () => {
-		const maxRank = this.findHighestRank(this.props.studioInstallation.sourceLayers)
+		const maxRank = StudioSettings.findHighestRank(this.props.studioInstallation.sourceLayers)
 		const { t } = this.props
 
 		const newSource = literal<ISourceLayer>({
@@ -936,7 +1002,7 @@ class StudioSettings extends React.Component<IPropsHeader & InjectedTranslatePro
 	}
 
 	onAddOutput = () => {
-		const maxRank = this.findHighestRank(this.props.studioInstallation.outputLayers)
+		const maxRank = StudioSettings.findHighestRank(this.props.studioInstallation.outputLayers)
 		const { t } = this.props
 
 		const newOutput = literal<IOutputLayer>({

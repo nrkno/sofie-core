@@ -261,7 +261,6 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 		for (let i = 0; i < options.length; i++) {
 			options[i].i = i
 		}
-		
 		return options
 	}
 	render () {
@@ -393,7 +392,7 @@ class extends React.Component<IRunningOrders> {
 				<div>mediaSize: <i>{mo.mediaSize}</i></div>
 				<div>mediaTime: <i>{mo.mediaTime}</i></div>
 				{/* <div>mediainfo: <i>{mo.mediainfo}</i></div> */}
-				
+
 				<div>thumbSize: <i>{mo.thumbSize}</i></div>
 				<div>thumbTime: <i>{mo.thumbTime}</i></div>
 				<div>previewSize: <i>{mo.previewSize}</i></div>
@@ -569,7 +568,6 @@ class extends React.Component<ITimeline> {
 					<strong>Content</strong>
 				</td></tr>
 					{/* <tr><td>type:</td><td> <EditAttribute tye='dropdown' collection={Timeline}	obj={timelineObj} attribute='content.type' options={TimelineContentType} /></td></tr> */}
-					
 
 				</tbody></table>
 			</div>

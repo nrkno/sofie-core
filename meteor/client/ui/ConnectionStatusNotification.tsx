@@ -62,9 +62,9 @@ export const ConnectionStatusNotification = withTracker((props, state) => {
 			case 'failed':
 				return <span>{t('Cannot connect to the automation server') + ': ' + this.props.reason}</span>
 			case 'waiting':
-				return <span>{t('Reconnecing to the automation server')} <Moment fromNow unit='seconds'>{this.props.retryTime}</Moment></span>
+				return <span>{t('Reconnecting to the automation server')} <Moment fromNow unit='seconds'>{this.props.retryTime}</Moment></span>
 			case 'offline':
-				return <span>{t('Your machine is off-line.')}</span>
+				return <span>{t('Your machine is offline.')}</span>
 			case 'connected':
 				return <span>Connected to server.</span>
 		}
@@ -92,7 +92,10 @@ export const ConnectionStatusNotification = withTracker((props, state) => {
 							'info': this.props.status === 'connected'
 						}
 					)}
-					onClick={(e) => this.tryReconnect()}>
+					onClick={(e) => {
+						console.log('Reconnecting...')
+						this.tryReconnect()
+					}}>
 						<p className='right'>
 							<button className='action-btn' onClick={(e) => this.dimissNotification()}>
 								<CoreIcons id='nrk-close' />

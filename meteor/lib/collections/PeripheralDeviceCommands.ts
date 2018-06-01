@@ -13,6 +13,7 @@ export interface PeripheralDeviceCommand {
 	hasReply: boolean
 	reply?: any
 	replyError?: any
+	replyTime?: number
 
 	time: number // time
 }
@@ -20,10 +21,17 @@ export const PeripheralDeviceCommands: TransformedCollection<PeripheralDeviceCom
 	= new Mongo.Collection<PeripheralDeviceCommand>('peripheralDeviceCommands')
 
 // Monitor and remove old, lingering commands:
-Meteor.setInterval(() => {
+let removeOldCommands = () => {
 	PeripheralDeviceCommands.find().forEach((cmd) => {
-		if (getCurrentTime() - (cmd.time || 0) > (20 * 1000)) { // timeout a long time ago
+		if (
+			(getCurrentTime() - (cmd.time || 0) > (20 * 1000))
+		) { // timeout a long time ago
 			PeripheralDeviceCommands.remove(cmd._id)
 		}
 	})
-}, 3600 * 1000)
+}
+Meteor.startup(() => {
+	Meteor.setInterval(() => {
+		removeOldCommands()
+	}, 5 * 60 * 1000)
+})

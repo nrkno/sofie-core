@@ -17,8 +17,8 @@ export interface SegmentLineItemGeneric {
 	_id: string
 	/** ID of the source object in MOS */
 	mosId: string
-	/** The segment line this item belongs to */
-	segmentLineId: string
+	/** The segment line this item belongs to - can be undefined for global ad lib segment line items */
+	segmentLineId?: string
 	/** The running order this item belongs to */
 	runningOrderId: string
 	/** User-presentable name for the timeline item */
@@ -48,11 +48,15 @@ export interface SegmentLineItemGeneric {
 	content?: BaseContent
 	/** The id of the item this item is a continuation of. If it is a continuation, the inTranstion must not be set, and trigger must be 0 */
 	continuesRefId?: string
+	/** If this item has been created play-time using an AdLibItem, this should be set to it's source item */
+	adLibSourceId?: string
 }
 
 export interface SegmentLineItem extends SegmentLineItemGeneric {
 	trigger: ITimelineTrigger
+	segmentLineId: string
 	expectedDuration: number
+	isTransition: boolean
 }
 
 export const SegmentLineItems: TransformedCollection<SegmentLineItem, SegmentLineItem>

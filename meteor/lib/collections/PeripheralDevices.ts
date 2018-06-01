@@ -23,7 +23,19 @@ export interface PeripheralDevice {
 	settings?: MosDeviceSettings | PlayoutDeviceSettings
 
 }
-export interface MosDeviceSettings { // TODO
+export interface MosDeviceSettings {
+	mosId: string,
+	devices: {
+		[deviceId: string]: MosDeviceSettingsDevice
+	}
+}
+export interface MosDeviceSettingsDevice {
+	primary: MosDeviceSettingsDeviceOptions
+	secondary?: MosDeviceSettingsDeviceOptions
+}
+export interface MosDeviceSettingsDeviceOptions {
+	id: string
+	host: string
 }
 export enum PlayoutDeviceType { // to match DeviceType in TSR
 	ABSTRACT = 0,
@@ -47,7 +59,8 @@ export interface PlayoutDeviceSettingsDeviceCasparCG extends PlayoutDeviceSettin
 	type: PlayoutDeviceType.CASPARCG
 	options: {
 		host: string,
-		port: number
+		port: number,
+		syncTimecode?: boolean
 	}
 }
 export interface PlayoutDeviceSettingsDeviceAtem extends PlayoutDeviceSettingsDevice {

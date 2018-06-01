@@ -14,6 +14,7 @@ import { Random } from 'meteor/random'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { RuntimeFunctions } from '../../lib/collections/RuntimeFunctions';
 
 // Imports from TSR (TODO make into an import)
 // export interface Mappings {
@@ -87,7 +88,7 @@ Meteor.methods({
 				{
 					_id: 'studio0_graphics0',
 					_rank: 100,
-					name: 'Suprer',
+					name: 'Super',
 					type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: false
 				},
@@ -173,6 +174,10 @@ Meteor.methods({
 				channel: 4,
 				layer: 120
 			}),
+			'casparcg_cg_graphics_ctrl': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0'
+			}),
 			'casparcg_cg_countdown': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
@@ -185,11 +190,19 @@ Meteor.methods({
 				channel: 4,
 				layer: 121
 			}),
+			'casparcg_cg_logo_ctrl': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0'
+			}),
 			'casparcg_cg_studiomonitor': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				channel: 3,
 				layer: 120
+			}),
+			'casparcg_cg_studiomonitor_ctrl': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0'
 			}),
 			'atem_me_program': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
@@ -258,6 +271,12 @@ Meteor.methods({
 			mappings: mappings
 		}})
 
+		ShowStyles.upsert('show0', {$set: {
+			name: 'Distriktsnyheter Sørlandet',
+			templateMappings: [],
+			baselineTemplate: 'sorlandetTemplate'
+		}})
+
 		PeripheralDevices.find({
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT
 		}).forEach((pd) => {
@@ -287,7 +306,33 @@ Meteor.methods({
 					type: PlayoutDeviceType.ABSTRACT,
 					options: {
 					}
+				},
+				'settings.devices.http0': ((pd['settings'] || {})['devices'] || {})['http0'] || {
+					type: PlayoutDeviceType.HTTPSEND,
+					options: {
+					}
 				}
+			}})
+			// PeripheralDevices.update(pd._id, {$set: {
+			// 	mappings: mappings
+			// }})
+		})
+
+		PeripheralDevices.find({
+			type: PeripheralDeviceAPI.DeviceType.MOSDEVICE
+		}).forEach((pd) => {
+			PeripheralDevices.update(pd._id, {$set: {
+				'settings.mosId': 'SOFIE2.XPRO.MOS',
+				'settings.devices.enps0': ((pd['settings'] || {})['devices'] || {})['enps0'] || {
+					primary: {
+						id: '2012R2ENPS8VM',
+						host: '10.0.1.244'
+					},
+					// secondary: {
+					// 	id: '2012R2ENPS8VM',
+					// 	host: '10.0.1.244'
+					// }
+				},
 			}})
 			// PeripheralDevices.update(pd._id, {$set: {
 			// 	mappings: mappings
