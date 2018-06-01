@@ -20,3 +20,9 @@ export enum LLayers {
 	atem_dsk_graphics = 'atem_dsk_graphics',
 	lawo_source_preview = 'lawo_source_preview',
 }
+
+export enum NoraChannels {
+	super = 'gfx1',
+	logo = 'gfx2',
+	studio = 'gfx3'
+}
