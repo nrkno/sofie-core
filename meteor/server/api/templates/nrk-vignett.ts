@@ -84,7 +84,8 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
 	let segmentLineItems: Array<SegmentLineItemOptional> = []
 	let IDs = {
 		lawo: context.getHashId('lawo'),
-		vignett: context.getHashId('vignett')
+		vignett: context.getHashId('vignett'),
+		atemMe: context.getHashId('atemMe')
 	}
 
 	let video: SegmentLineItemOptional = {
@@ -137,7 +138,7 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
 				}),
 				// TMP
 				literal<TimelineObjAtemME>({
-					_id: '', deviceId: [''], siId: '', roId: '',
+					_id: IDs.atemMe, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.vignett}.start + 200` }, // account for caspar output latency 4+frames
 					priority: 1,
 					duration: 0,

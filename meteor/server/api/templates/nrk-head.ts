@@ -379,13 +379,13 @@ function parseSuperSegments (context: TemplateContextInner, story: StoryWithCont
 		const payload = context.getValueByPath(content, 'mosPayload', {})
 		const newPayload = {
 			render: Object.assign(payload.render, {
-				group: 'dksl',
+				group: 'dksl', // @todo config
 				system: 'html',
 			}),
 			playout: Object.assign(payload.playout, {
 				event: 'take',
-				autoTakeout: true,
-				duration: 4000,
+				autoTakeout: false, // This gets handled by timeline
+				duration: 0,
 				loop: false
 			}),
 			content: payload.content

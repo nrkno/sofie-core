@@ -177,7 +177,7 @@ export namespace ServerPeripheralDeviceAPI {
 		let studioInstallation = StudioInstallations.findOne(peripheralDevice.studioInstallationId) as StudioInstallation
 		if (!studioInstallation) throw new Meteor.Error(404, 'StudioInstallation "' + peripheralDevice.studioInstallationId + '" not found')
 
-		let showStyle = ShowStyles.findOne() as ShowStyle
+		let showStyle = ShowStyles.findOne() as ShowStyle || {}
 
 		// Save RO into database:
 		saveIntoDb(RunningOrders, {
