@@ -39,7 +39,8 @@ import {
 	TemplateFunctionOptional,
 	TemplateResult,
 	TemplateContextInner,
-	StoryWithContext
+	StoryWithContext,
+	SegmentLineAdLibItemOptional
 } from './templates'
 import {
 	TimelineObjCCGVideo,
@@ -82,10 +83,80 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 		content: {}
 	}
 
+	let IDs = {
+		atemSrv1: context.getHashId('atemSrv1'),
+		atemSrv1Transition: context.getHashId('atemSrv1Transition'),
+		wipeVideo: context.getHashId('wipeVideo'),
+		wipeAudioPunktum: context.getHashId('wipeAudioPunktum'),
+		vignettTransition: context.getHashId('vignettTransition'),
+		lawo_effect: context.getHashId('lawo_effect'),
+		lawo_automix: context.getHashId('lawo_automix'),
+	}
+
+	function makeCameraAdLib (cameraInput): SegmentLineAdLibItemOptional {
+		return literal<SegmentLineAdLibItemOptional>({
+			_id: '',
+			mosId: '',
+			segmentLineId: '',
+			runningOrderId: '',
+			name: 'KAM ' + cameraInput,
+			trigger: undefined,
+			status: RundownAPI.LineItemStatusCode.UNKNOWN,
+			sourceLayerId: 'studio0_camera0',
+			outputLayerId: 'pgm0',
+			expectedDuration: 0,
+			content: {
+				timelineObjects: _.compact([
+					literal<TimelineObjAtemME>({
+						_id: IDs.atemSrv1, deviceId: [''], siId: '', roId: '',
+						trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+						priority: 1,
+						duration: 0, // @todo TBD
+						LLayer: LLayers.atem_me_program,
+						content: {
+							type: TimelineContentTypeAtem.ME,
+							attributes: {
+								input: cameraInput,
+								transition: Atem_Enums.TransitionStyle.CUT
+							}
+						}
+					}),
+
+					// mic host hot
+					literal<TimelineObjLawoSource>({
+						_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
+						trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+						priority: 1,
+						duration: 0,
+						LLayer: LLayers.lawo_source_automix,
+						content: {
+							type: TimelineContentTypeLawo.AUDIO_SOURCE,
+							transitions: {
+								inTransition: {
+									type: Transition.MIX,
+									duration: 200,
+									easing: Ease.LINEAR,
+									direction: Direction.LEFT
+								}
+							},
+							attributes: {
+								db: 0
+							}
+						}
+					}),
+				])
+			}
+		})
+	}
+
 	return literal<TemplateResult>({
 		segmentLine: null,
 		segmentLineItems: null,
-		segmentLineAdLibItems: null,
+		segmentLineAdLibItems: [
+			makeCameraAdLib(1),
+			makeCameraAdLib(2),
+			makeCameraAdLib(3)
+		],
 		baselineItems: [
 			literal<RunningOrderBaselineItem>({
 				segmentLineId: undefined,

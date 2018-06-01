@@ -326,6 +326,29 @@ Meteor.methods({
 
 		updateTimeline(runningOrder.studioInstallationId)
 	},
+	'playout_runningOrderBaselineAdLibItemStart': (roId: string, slId: string, robaliId: string) => {
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		let segLine = SegmentLines.findOne({
+			_id: slId,
+			runningOrderId: roId
+		})
+		if (!segLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
+		let adLibItem = RunningOrderBaselineAdLibItems.findOne({
+			_id: robaliId,
+			runningOrderId: roId
+		})
+		if (!adLibItem) throw new Meteor.Error(404, `Running Order Baseline Ad Lib Item "${robaliId}" not found!`)
+		if (!runningOrder.active) throw new Meteor.Error(403, `Running Order Baseline Ad Lib Items can be only placed in an active running order!`)
+		if (runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Running Order Baseline Ad Lib Items can be only placed in a current segment line!`)
+
+		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine)
+		SegmentLineItems.insert(newSegmentLineItem)
+
+		// console.log('adLibItemStart', newSegmentLineItem)
+
+		updateTimeline(runningOrder.studioInstallationId)
+	},
 	'playout_segmentAdLibLineItemStop': (roId: string, slId: string, sliId: string) => {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)

@@ -25,9 +25,9 @@ import { Spinner } from '../../lib/Spinner'
 
 interface IListViewPropsHeader {
 	segments: Array<SegmentUi>
-	onSelectAdLib: (aSLine: SegmentLineAdLibItem) => void
-	onToggleAdLib: (aSLine: SegmentLineAdLibItem) => void
-	selectedItem: SegmentLineAdLibItem | undefined
+	onSelectAdLib: (aSLine: SegmentLineAdLibItemUi) => void
+	onToggleAdLib: (aSLine: SegmentLineAdLibItemUi) => void
+	selectedItem: SegmentLineAdLibItemUi | undefined
 	selectedSegment: SegmentUi | undefined
 	filter: string | undefined
 	studioInstallation: StudioInstallation
@@ -259,6 +259,7 @@ const AdLibPanelToolbar = translate()(class extends React.Component<IToolbarProp
 
 export interface SegmentLineAdLibItemUi extends SegmentLineAdLibItem {
 	hotkey?: string
+	isGlobal?: boolean
 }
 
 export interface SegmentUi extends Segment {
@@ -318,6 +319,7 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 				let keyboardHotkeysList = sourceLayerLookup[uiAdLib.sourceLayerId].activateKeyboardHotkeys!.split(',')
 				if ((sourceHotKeyUse[uiAdLib.sourceLayerId] || 0) < keyboardHotkeysList.length) {
 					uiAdLib.hotkey = keyboardHotkeysList[(sourceHotKeyUse[uiAdLib.sourceLayerId] || 0)]
+					uiAdLib.isGlobal = true
 					// add one to the usage hash table
 					sourceHotKeyUse[uiAdLib.sourceLayerId] = (sourceHotKeyUse[uiAdLib.sourceLayerId] || 0) + 1
 				}
@@ -448,17 +450,19 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 		})
 	}
 
-	onSelectAdLib = (aSLine: SegmentLineAdLibItem) => {
+	onSelectAdLib = (aSLine: SegmentLineAdLibItemUi) => {
 		console.log(aSLine)
 		this.setState({
 			selectedItem: aSLine
 		})
 	}
 
-	onToggleAdLib = (aSLine: SegmentLineAdLibItem) => {
+	onToggleAdLib = (aSLine: SegmentLineAdLibItemUi) => {
 		console.log(aSLine)
-		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
+		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && !aSLine.isGlobal) {
 			Meteor.call('playout_segmentAdLibLineItemStart', this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
+		} else if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && aSLine.isGlobal) {
+			Meteor.call('playout_runningOrderBaselineAdLibItemStart', this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
 		}
 	}
 
