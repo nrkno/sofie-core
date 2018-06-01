@@ -17,9 +17,10 @@ import * as _ from 'underscore'
 import { logger } from './../logging'
 import { PeripheralDevice, PeripheralDevices, PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { IMOSRunningOrder } from 'mos-connection'
+import { IMOSRunningOrder, IMOSROFullStory } from 'mos-connection'
 import { PlayoutTimelinePrefixes } from '../../lib/api/playout'
 import { TemplateContext, getHash, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
+import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems';
 
 Meteor.methods({
 	/**
@@ -98,6 +99,13 @@ Meteor.methods({
 					runningOrderId: runningOrder._id
 				}, result.baselineItems)
 			}
+
+			if (result.segmentLineAdLibItems) {
+				logger.info(`... got ${result.segmentLineAdLibItems.length} adLib items from template.`)
+				saveIntoDb<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>(RunningOrderBaselineAdLibItems, {
+					runningOrderId: runningOrder._id
+				}, result.segmentLineAdLibItems)
+			}
 		}
 
 		updateTimeline(runningOrder.studioInstallationId)
@@ -119,6 +127,10 @@ Meteor.methods({
 
 		// clean up all runtime baseline items
 		RunningOrderBaselineItems.remove({
+			runningOrderId: runningOrder._id
+		})
+
+		RunningOrderBaselineAdLibItems.remove({
 			runningOrderId: runningOrder._id
 		})
 

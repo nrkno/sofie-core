@@ -439,22 +439,22 @@ class MosDeviceSettingsComponent extends React.Component<IPropsHeader & Injected
 				return (
 					!this.isItemEdited(deviceId) ?
 					<tr key={deviceId}>
-						<th className='settings-studio-device__name c5'>
+						<th className='settings-studio-device__name c1'>
 							{deviceId}
 						</th>
-						<td className='settings-studio-device__primary_id c4'>
+						<td className='settings-studio-device__primary_id c3'>
 							{(device.primary || {id: ''}).id}
 						</td>
-						<td className='settings-studio-device__primary_host c4'>
+						<td className='settings-studio-device__primary_host c2'>
 							{(device.primary || {host: ''}).host}
 						</td>
-						<td className='settings-studio-device__secondary_id c4'>
+						<td className='settings-studio-device__secondary_id c3'>
 							{(device.secondary || {id: ''}).id}
 						</td>
-						<td className='settings-studio-device__secondary_host c4'>
+						<td className='settings-studio-device__secondary_host c2'>
 							{(device.secondary || {host: ''}).host}
 						</td>
-						<td className='settings-studio-device__actions table-item-actions c3'>
+						<td className='settings-studio-device__actions table-item-actions c1'>
 							<button className='action-btn' onClick={(e) => this.editItem(deviceId)}>
 								<FontAwesomeIcon icon={faPencilAlt} />
 							</button>

@@ -55,12 +55,14 @@ export interface ISourceLayerBase {
 	_rank?: number
 	/** User-presentable name for the source layer */
 	name?: string
-	/** Available shortcuts to be used for ad-lib items assigned to this sourceLayer - comma separated list allowing for chords (keyboard sequences) */
-	activateKeyboardHotkeys?: string
 	/** Use special treatment for remote inputs */
 	isRemoteInput?: boolean
+	/** Available shortcuts to be used for ad-lib items assigned to this sourceLayer - comma separated list allowing for chords (keyboard sequences) */
+	activateKeyboardHotkeys?: string
 	/** Single 'clear all from this sourceLayer' keyboard shortcut */
 	clearKeyboardHotkey?: string
+	/** Do global objects get to be assigned hotkeys? */
+	assignHotkeysToGlobalAdlibs?: boolean
 }
 
 /** A single source layer, f.g Cameras, VT, Graphics, Remotes */
@@ -72,8 +74,6 @@ export interface ISourceLayer extends ISourceLayerBase {
 	type: RundownAPI.SourceLayerType
 	/** If set to true, the layer can handle any number of simultaneus Line Items */
 	unlimited: boolean
-	/** Use special treatment for remote inputs */
-	isRemoteInput?: boolean
 	/** If set to true, the layer will be shown in PGM Clean */
 	onPGMClean: boolean
 }
