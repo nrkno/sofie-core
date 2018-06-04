@@ -722,7 +722,7 @@ function updateTimeline (studioInstallationId: string) {
 
 			// fetch items
 			// fetch the timelineobjs in items
-			const isFollowed = nextSegmentLine && nextSegmentLine.autoNext
+			const isFollowed = nextSegmentLine && currentSegmentLine.autoNext
 			currentSegmentLineGroup = createSegmentLineGroup(currentSegmentLine, (isFollowed ? (currentSegmentLine.expectedDuration || 0) : 0))
 			const allowTransition = !!activeRunningOrder.previousSegmentLineId // @todo allow currentSegmentLine to force disable (if it is a video with an out ani)
 			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentSegmentLine, currentSegmentLineGroup, allowTransition))
@@ -731,7 +731,7 @@ function updateTimeline (studioInstallationId: string) {
 		}
 
 		// only add the next objects into the timeline if the next segment is autoNext
-		if (nextSegmentLine && nextSegmentLine.autoNext) {
+		if (nextSegmentLine && currentSegmentLine && currentSegmentLine.autoNext) {
 			let nextSegmentLineGroup = createSegmentLineGroup(nextSegmentLine, 0)
 			if (currentSegmentLineGroup) {
 				nextSegmentLineGroup.trigger = literal<ITimelineTrigger>({

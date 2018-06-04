@@ -91,9 +91,9 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 	// if previous SegmentLine is head, then wipe out of it
 	const segmentLines = context.getSegmentLines()
 	const segmentPos = context.getSegmentLineIndex()
-	if ((segmentPos > 0 && segmentLines[segmentPos - 1].slug.indexOf(';head') > 0)) { // @todo make check better
+	if (segmentPos > 0 && (segmentLines[segmentPos - 1].slug.match(/;head/i) || segmentLines[segmentPos - 1].slug.match(/ÅPNING/i))) {
 		segmentLineItems.push(literal<SegmentLineItemOptional>({
-			_id: 'trans', // @todo
+			_id: '',
 			mosId: '',
 			segmentLineId: '',
 			runningOrderId: '',
@@ -228,7 +228,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 					_id: IDs.atemSrv1, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 					priority: 1,
-					duration: 0, // @todo TBD
+					duration: 0,
 					LLayer: LLayers.atem_me_program,
 					content: {
 						type: TimelineContentTypeAtem.ME,

@@ -142,6 +142,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 	let segmentLineItemsLookup: ISegmentLineItemUiDictionary = {}
 
 	let startsAt = 0
+	let autoNextSegmentLine = false
 	// fetch all the segment line items for the segment lines
 	_.forEach<SegmentLineUi>(segmentLines, (segmentLine) => {
 		let slTimeline: SuperTimeline.UnresolvedTimeline = []
@@ -149,6 +150,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		if (props.runningOrder.currentSegmentLineId === segmentLine._id) {
 			isLiveSegment = true
 			currentLiveSegmentLine = segmentLine
+			autoNextSegmentLine = segmentLine.autoNext || false
 		}
 		if (props.runningOrder.nextSegmentLineId === segmentLine._id) {
 			isNextSegment = true
@@ -274,14 +276,6 @@ export const SegmentTimelineContainer = withTracker((props) => {
 
 	segment.outputLayers = outputLayers
 	segment.sourceLayers = sourceLayers
-
-	const nextSLine = SegmentLines.findOne({
-		_id: props.runningOrder.nextSegmentLineId
-	})
-	let autoNextSegmentLine = false
-	if (nextSLine && nextSLine.autoNext) {
-		autoNextSegmentLine = true
-	}
 
 	return {
 		segment,

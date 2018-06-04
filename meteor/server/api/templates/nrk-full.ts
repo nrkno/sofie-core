@@ -84,11 +84,6 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 	}
 
 	const segmentLines = context.getSegmentLines()
-	const segmentPos = context.getSegmentLineIndex()
-
-	// @todo this number assumes a certain flow
-	const isFirstHeadAfterVignett = segmentPos === 1
-	// const isLastHead = segmentPos == segmentLines.length - 2
 
 	let storyItemClip = _.find(story.Body, (item) => {
 		return (
@@ -344,7 +339,6 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 			segmentId: '',
 			runningOrderId: '',
 			slug: context.segmentLine._id,
-			autoNext: isFirstHeadAfterVignett,
 			overlapDuration: 160,
 		}),
 		segmentLineItems: segmentLineItems,
