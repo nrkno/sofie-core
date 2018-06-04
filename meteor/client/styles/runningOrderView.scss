@@ -61,7 +61,22 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	left: 0;
 	bottom: 0;
 	right: 0;
-	border: 10px solid $color-status-fatal;
+
+	border: 8px dashed $color-status-fatal;
+	border-image: repeating-linear-gradient(
+		315deg,
+		transparent,
+		transparent 10px,
+		$color-status-fatal 11px,
+		$color-status-fatal 31px,
+		transparent 32px) 8; 
+/* 	border-image: repeating-linear-gradient(
+		315deg,
+		#ffff00,
+		#ffff00 10px,
+		$color-status-fatal 11px,
+		$color-status-fatal 31px,
+		#ffff00 32px) 8;  */
 	z-index: 10000;
 	pointer-events: none;
 }
