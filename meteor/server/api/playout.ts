@@ -83,6 +83,8 @@ Meteor.methods({
 			previousSegmentLineId: null,
 			currentSegmentLineId: null,
 			nextSegmentLineId: segmentLines[0]._id // put the first on queue
+		}, $unset: {
+			startedPlayback: 0
 		}})
 
 		logger.info('Building baseline items...')
