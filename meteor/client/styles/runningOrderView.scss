@@ -73,6 +73,8 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
     right: 0;
 	z-index: 20;
 
+	user-select: none;
+
 	.flex-col.col-timing {
 		flex: 1 1;
 	}
