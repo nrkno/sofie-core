@@ -896,10 +896,16 @@ export function getRank (beforeOrLast, after, i: number, count: number): number 
 }
 function formatDuration (duration: any): number | undefined {
 	try {
+		// first try and parse it as a MosDuration timecode string
 		return duration ? new MosDuration(duration.toString()).valueOf() * 1000 : undefined
 	} catch (e) {
-		logger.warn('Bad MosDuration: "' + duration + '"', e)
-		return undefined
+		try {
+			// second try and parse it as a length in seconds
+			return duration ? Number.parseFloat(duration) * 1000 : undefined
+		} catch (e2) {
+			logger.warn('Bad MosDuration: "' + duration + '"', e)
+			return undefined
+		}
 	}
 }
 function formatTime (time: any): number | undefined {
