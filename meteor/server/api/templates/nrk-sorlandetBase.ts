@@ -289,14 +289,19 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 										literal<SuperSourceBox>({ // left
 											enabled: true,
 											source: Atem_Enums.SourceIndex.Bars,
-											size: 500,
+											size: 570,
 											x: -800,
+											y: 47,
+											cropped: true,
+											cropRight: 2000,
 										}),
 										literal<SuperSourceBox>({ // right
 											enabled: true,
 											source: Atem_Enums.SourceIndex.Bars,
-											size: 500,
+											size: 570,
 											x: 800,
+											y: 47,
+											// note: this sits behind box1, so don't crop it to ensure there is no gap between
 										}),
 										literal<SuperSourceBox>({ // background
 											enabled: true,
