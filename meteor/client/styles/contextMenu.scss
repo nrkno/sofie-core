@@ -5,6 +5,7 @@ nav.react-contextmenu {
 	line-height: 1.5;
 	letter-spacing: 0.5px;
 	z-index: 1000;
+	user-select: none;
 
 	border-radius: 3px;
 	overflow: hidden;
