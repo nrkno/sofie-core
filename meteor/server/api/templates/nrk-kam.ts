@@ -59,6 +59,7 @@ import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 
 import { LLayers, SourceLayers } from './nrk-layers'
+import { KamFirstInput } from './nrk-inputs'
 import { isNumber } from 'util'
 
 const literal = <T>(o: T) => o
@@ -152,7 +153,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 						content: {
 							type: TimelineContentTypeAtem.ME,
 							attributes: {
-								input: cameraInput,
+								input: KamFirstInput + cameraInput - 1,
 								transition: Atem_Enums.TransitionStyle.MIX
 								// @todo - wipe
 							}
@@ -233,7 +234,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 					content: {
 						type: TimelineContentTypeAtem.ME,
 						attributes: {
-							input: cameraInput,
+							input: KamFirstInput + cameraInput - 1,
 							transition: Atem_Enums.TransitionStyle.CUT
 						}
 					}

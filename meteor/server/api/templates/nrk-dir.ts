@@ -58,11 +58,10 @@ import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 
 import { LLayers, SourceLayers } from './nrk-layers'
+import { RMFirstInput } from './nrk-inputs'
 import { isNumber } from 'util'
 
 const literal = <T>(o: T) => o
-
-const DirFirstInput = 4 // First ATEM input number
 
 export const NrkDirTemplate = literal<TemplateFunctionOptional>((context: TemplateContextInner, story): TemplateResult => {
 	let variant = 1
@@ -125,7 +124,7 @@ export const NrkDirTemplate = literal<TemplateFunctionOptional>((context: Templa
 					content: {
 						type: TimelineContentTypeAtem.ME,
 						attributes: {
-							input: DirFirstInput + variant - 1,
+							input: RMFirstInput + variant - 1,
 							transition: Atem_Enums.TransitionStyle.CUT
 						}
 					}

@@ -328,7 +328,7 @@ export interface TimelineObjAtemSsrc extends TimelineObj {
 		}
 		attributes: {
 			boxes: Array<SuperSourceBox>,
-			artfillSource: number
+			// artfillSource: number @todo not supported by atem-connection yet
 		}
 	}
 }

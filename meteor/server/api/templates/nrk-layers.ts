@@ -17,6 +17,7 @@ export enum LLayers {
 	casparcg_player_wipe = 'casparcg_player_wipe',
 	casparcg_player_soundeffect = 'casparcg_player_soundeffect',
 	atem_me_studiomonitor = 'atem_me_studiomonitor',
+	atem_supersource = 'atem_supersource',
 	atem_aux_clean = 'atem_aux_clean',
 	atem_aux_preview = 'atem_aux_preview',
 	atem_dsk_effect = 'atem_dsk_effect',

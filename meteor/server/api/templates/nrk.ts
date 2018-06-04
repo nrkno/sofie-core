@@ -12,6 +12,7 @@ import { NrkKamTemplate } from './nrk-kam'
 import { NrkSorlandetBaseTemplate } from './nrk-sorlandetBase'
 import { NrkFullTemplate } from './nrk-full'
 import { NrkDirTemplate } from './nrk-dir'
+import { NrkSplitTemplate } from './nrk-split'
 
 const literal = <T>(o: T) => o
 
@@ -85,14 +86,15 @@ let nrk: TemplateSet = {
 					let variant = md.MosPayload.mosartVariant + ''
 
 					if (type.match(/break/i)) 			templateId = 'break'
-					// else if (type.match(/full/i) &&
-					// 		!variant)			 		templateId = 'full'
 					else if (type.match(/full/i) &&
 							variant.match(/vignett/i)) 	templateId = 'vignett'
+					else if (type.match(/full/i))		templateId = 'full'
 					else if (type.match(/stk/i) &&
 							variant.match(/head/i)) 	templateId = 'stkHead'
 					else if (type.match(/kam/i)) 		templateId = 'kam'
 					else if (type.match(/dir/i))		templateId = 'dir'
+					else if (type.match(/dve/i) &&
+							variant.match(/2like/i))	templateId = 'split'
 				}
 				if (templateId) return true // break
 				else return false // keep looking
@@ -104,9 +106,11 @@ let nrk: TemplateSet = {
 	templates: {
 		break: NrkBreakTemplate,
 		vignett: NrkVignettTemplate,
+		full: NrkFullTemplate,
 		stkHead: NrkHeadTemplate,
 		kam: NrkKamTemplate,
 		dir: NrkDirTemplate,
+		split: NrkSplitTemplate,
 		sorlandetTemplate: NrkSorlandetBaseTemplate
 	}
 }

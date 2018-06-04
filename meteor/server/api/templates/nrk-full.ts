@@ -65,6 +65,7 @@ import { SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLib
 
 import { LLayers, SourceLayers } from './nrk-layers'
 import { AtemSource } from './nrk-inputs'
+import { ParseSuperSegments } from './nrk-graphics'
 
 const literal = <T>(o: T) => o
 
@@ -97,108 +98,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 	let clip = context.getValueByPath(storyItemClip, 'Content.mosExternalMetadata.mosPayload.title', 'head')
 	if (!clip || clip === '') context.warning('Clip name missing in mos data')
 
-	// Copy the vignett from the previous segmentLine if it was found.
-	// @todo make this more durable and refactor to reusable.
-	// @todo look into if this can be automated more. eg if content is null that means persist from before if found
-	/* let prevContent = (segmentLines[0].getSegmentLinesItems()[0] || {}).content
-	let vignetObj: TimelineObjCCGVideo | null | undefined
-	if (prevContent && prevContent.timelineObjects) {
-		vignetObj = prevContent.timelineObjects.find((o: TimelineObj) => o.LLayer === LLayers.casparcg_player_vignett) as TimelineObjCCGVideo
-		if (vignetObj) {
-			vignetObj = literal<TimelineObjCCGVideo>({
-				_id: IDs.vignett, deviceId: [''], siId: '', roId: '',
-				trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-				priority: 1,
-				duration: vignetObj.duration,
-				LLayer: LLayers.casparcg_player_vignett,
-				content: vignetObj.content
-			})
-		}
-	} */
-
 	let segmentLineItems: Array<SegmentLineItemOptional> = []
-	/* let transiton: SegmentLineItemOptional = {
-		_id: context.getHashId('transition'),
-		mosId: 'transition',
-		name: 'transition',
-		trigger: {
-			type: TriggerType.TIME_ABSOLUTE,
-			value: 0
-		},
-		status: RundownAPI.LineItemStatusCode.UNKNOWN,
-		sourceLayerId: SourceLayers.live_transition0,
-		outputLayerId: 'pgm0',
-		expectedDuration: 3600, // transform into milliseconds
-		isTransition: true,
-		content: {
-			fileName: clip,
-			sourceDuration: (
-				context.getValueByPath(storyItemClip, 'Content.objDur', 0) /
-				(context.getValueByPath(storyItemClip, 'Content.objTB') || 1)
-			) * 1000,
-
-			timelineObjects: _.compact([
-				// wipe to head (if not first head after vignett)
-				literal<TimelineObjCCGVideo>({
-					_id: IDs.wipeVideo, deviceId: [''], siId: '', roId: '',
-					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
-					priority: 1,
-					duration: 3360,
-					LLayer: LLayers.casparcg_player_wipe,
-					content: {
-						type: TimelineContentTypeCasparCg.VIDEO,
-						attributes: {
-							file: 'assets/wipe1'
-						}
-					}
-				}),
-
-				// wipe audio skille between
-				// @todo lower the level of this wipe in ccg
-				literal<TimelineObjCCGVideo>({
-					_id: IDs.wipeAudioSkille, deviceId: [''], siId: '', roId: '',
-					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
-					priority: 1,
-					duration: 3360,
-					LLayer: LLayers.casparcg_player_soundeffect,
-					content: {
-						type: TimelineContentTypeCasparCg.VIDEO,
-						attributes: {
-							file: 'assets/DK_skille_head'
-						}
-					}
-				}),
-
-				// play HEAD
-				// @todo refactor to make this block less duplicated
-				literal<TimelineObjCCGVideo>({
-					_id: IDs.playerClipTransition, deviceId: [''], siId: '', roId: '',
-					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
-					priority: 2,
-					duration: (
-						context.getValueByPath(storyItemClip, 'Content.objDur', 0) /
-						(context.getValueByPath(storyItemClip, 'Content.objTB') || 1)
-					) * 1000,
-					LLayer: LLayers.casparcg_player_clip,
-					content: {
-						type: TimelineContentTypeCasparCg.VIDEO,
-						transitions: {
-							inTransition: {
-								type: Transition.MIX,
-								duration: 200,
-								easing: Ease.LINEAR,
-								direction: Direction.LEFT
-							}
-						},
-						attributes: {
-							file: 'mam/' + clip
-							// @todo seek?
-						}
-					}
-				})
-			])
-		},
-	} */
 	let video: SegmentLineItemOptional = {
 		_id: context.getHashId('video'),
 		mosId: 'fullvideo',
@@ -212,7 +112,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 		outputLayerId: 'pgm0',
 		expectedDuration: ( // @todo rewrite this blob
 			story.getValueByPath('MosExternalMetaData.0.MosPayload.Estimated') ||
-			context.sumMosItemDurations(story.getValueByPath('MosExternalMetaData.0.MosPayload.MOSItemDurations')) ||
+			// context.sumMosItemDurations(story.getValueByPath('MosExternalMetaData.0.MosPayload.MOSItemDurations')) ||
 			story.getValueByPath('MosExternalMetaData.0.MosPayload.MediaTime') ||
 			story.getValueByPath('MosExternalMetaData.0.MosPayload.SourceMediaTime') ||
 			10
@@ -226,24 +126,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 			) * 1000,
 
 			timelineObjects: _.compact([
-				// try and keep vignett running
-				// @todo. should this be a seperate segmentlineitem to make it clear it continues to the user?
-				literal<TimelineObjLawoSource>({
-					_id: IDs.lawo_effect, deviceId: [''], siId: '', roId: '',
-					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-					priority: 1,
-					duration: 0,
-					LLayer: LLayers.lawo_source_effect,
-					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
-						attributes: {
-							db: -15
-						}
-					}
-				}),
-
 				// mic host muted
-				// @todo should this be -inf?
 				literal<TimelineObjLawoSource>({
 					_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
@@ -261,7 +144,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 							}
 						},
 						attributes: {
-							db: -15
+							db: -191
 						}
 					}
 				}),
@@ -329,7 +212,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 	segmentLineItems.push(video)
 
 	let segmentLineAdLibItems: Array<SegmentLineAdLibItemOptional> = []
-	parseSuperSegments(context, story, segmentLineItems, segmentLineAdLibItems, video._id || '')
+	ParseSuperSegments(context, story, segmentLineItems, segmentLineAdLibItems, video._id || '')
 
 	return literal<TemplateResult>({
 		segmentLine: literal<DBSegmentLine>({
@@ -339,121 +222,9 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 			segmentId: '',
 			runningOrderId: '',
 			slug: context.segmentLine._id,
-			overlapDuration: 160,
+			autoNext: true,
 		}),
 		segmentLineItems: segmentLineItems,
 		segmentLineAdLibItems: segmentLineAdLibItems
 	})
 })
-
-function parseSuperSegments (context: TemplateContextInner, story: StoryWithContext, segmentLineItems: SegmentLineItemOptional[], adlibItems: SegmentLineAdLibItemOptional[], videoId: string) {
-	const storyItemGfx = _.filter(story.Body, item => {
-		return (
-			item.Type === 'storyItem' &&
-			context.getValueByPath(item, 'Content.mosID') === 'GFX.NRK.MOS'
-		)
-	})
-	if (storyItemGfx.length === 0) context.warning('Super missing in mos data')
-
-	for (const item of storyItemGfx) {
-		const itemID = context.getValueByPath(item, 'Content.itemID', 0)
-		const name = context.getValueByPath(item, 'Content.mosAbstract', '')
-		const metadata = context.getValueByPath(item, 'Content.mosExternalMetadata', [])
-		const timing = _.find(metadata, (m: any) => m.mosSchema === 'schema.nrk.no/timing')
-		const content = _.find(metadata, (m: any) => m.mosSchema === 'schema.nrk.no/content')
-
-		if (!timing) context.warning('Super missing timing data. Assuming adlib')
-		if (!content) {
-			context.warning('Super missing content data')
-			continue
-		}
-
-		const payload = context.getValueByPath(content, 'mosPayload', {})
-		const newPayload = {
-			render: Object.assign(payload.render, {
-				group: 'dksl', // @todo config
-				system: 'html',
-			}),
-			playout: Object.assign(payload.playout, {
-				event: 'take',
-				autoTakeout: false, // This gets handled by timeline
-				duration: 0,
-				loop: false
-			}),
-			content: payload.content
-		}
-
-		const inMode = context.getValueByPath(timing, 'mosPayload.in','') + ''
-		const outMode = context.getValueByPath(timing, 'mosPayload.out','') + ''
-		const duration = context.getValueByPath(timing, 'mosPayload.duration', 0)
-		const inTime = context.getValueByPath(timing, 'mosPayload.timeIn', 0)
-
-		let trigger: ITimelineTrigger = {
-			type: TriggerType.TIME_RELATIVE,
-			value: `#${videoId}.start + 0` // @todo understand how timing works with supers
-		}
-
-		let isAdlib = false
-		if (inMode.match(/auto/i)) {
-			trigger = {
-				type: TriggerType.TIME_RELATIVE,
-				value: `#${videoId}.start + ${inTime}` // @todo understand how timing works with supers
-			}
-		} else {
-			isAdlib = true
-			context.warning('Unknown in mode: "' + inMode + '"')
-		}
-
-		const cmd = literal<TimelineObjHTTPPost>({
-			_id: context.getHashId('super_post_' + itemID), deviceId: [''], siId: '', roId: '',
-			trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-			priority: 1,
-			duration: duration,
-			LLayer: LLayers.casparcg_cg_graphics_ctrl,
-			content: {
-				type: TimelineContentTypeHttp.POST,
-				url: 'http://nora.core.mesosint.nrk.no/api/playout?apiKey=' + process.env.MESOS_API_KEY, // @todo url needs to vary too
-				params: newPayload
-			}
-		})
-
-		if (isAdlib) {
-			let gfx: SegmentLineAdLibItemOptional = {
-				_id: context.getHashId('super_' + itemID),
-				mosId: 'super', // TODO
-				name: name,
-				status: RundownAPI.LineItemStatusCode.UNKNOWN,
-				sourceLayerId: SourceLayers.graphics0,
-				outputLayerId: 'pgm0',
-				expectedDuration: duration,
-				content: {
-					sourceDuration: duration,
-					timelineObjects: [
-						cmd
-					]
-				}
-			}
-			adlibItems.push(gfx)
-		} else {
-			let gfx: SegmentLineItemOptional = {
-				_id: context.getHashId('super_' + itemID),
-				mosId: 'super', // TODO
-				name: name,
-				trigger: trigger,
-				status: RundownAPI.LineItemStatusCode.UNKNOWN,
-				sourceLayerId: SourceLayers.graphics0,
-				outputLayerId: 'pgm0',
-				expectedDuration: duration,
-				isTransition: false,
-				content: {
-					sourceDuration: duration,
-					timelineObjects: [
-						cmd
-					]
-				}
-			}
-
-			segmentLineItems.push(gfx)
-		}
-	}
-}

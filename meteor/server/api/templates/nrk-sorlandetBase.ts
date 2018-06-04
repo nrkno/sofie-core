@@ -56,6 +56,7 @@ import {
 	TimelineObjAtemAUX,
 	TimelineObjAtemDSK,
 	TimelineObjAtemSsrc,
+	SuperSourceBox,
 	TimelineObjHTTPPost,
 	TimelineContentTypeHttp
 } from '../../../lib/collections/Timeline'
@@ -240,7 +241,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 								}
 							}
 						}),
-						literal<TimelineObjAtemDSK>({ // @todo enabling this causes it to turn off after the segment
+						literal<TimelineObjAtemDSK>({
 							_id: '', deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.LOGICAL, value: '1' },
 							priority: 0, duration: 0,
@@ -275,32 +276,39 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							}
 						}),
 						// @todo setup me1k2 to be the same as dsk2, but default disabled
-
 						literal<TimelineObjAtemSsrc>({
 							_id: '', deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.LOGICAL, value: '1' },
-							priority: 0, duration: 0,
-							LLayer: LLayers.atem_dsk_effect,
+							priority: 0,
+							duration: 0,
+							LLayer: LLayers.atem_supersource,
 							content: {
 								type: TimelineContentTypeAtem.SSRC,
-								// transitions?: {
-								//     inTransition?: TimelineTransition
-								// }
 								attributes: {
 									boxes: [
-										{
+										literal<SuperSourceBox>({ // left
 											enabled: true,
-											source: 1
-										},
-										{
+											source: Atem_Enums.SourceIndex.Bars,
+											size: 500,
+											x: -800,
+										}),
+										literal<SuperSourceBox>({ // right
 											enabled: true,
-											source: 4
-										}
+											source: Atem_Enums.SourceIndex.Bars,
+											size: 500,
+											x: 800,
+										}),
+										literal<SuperSourceBox>({ // background
+											enabled: true,
+											source: AtemSource.Server3,
+											size: 1000,
+										}),
 									],
-									artfillSource: 16
+									// artfillSource: AtemSource.SSrcArtFill,
 								}
 							}
 						}),
+
 						literal<TimelineObjLawoSource>({
 							_id: '', deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.LOGICAL, value: '1' },
