@@ -89,9 +89,9 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			font-family: 'Roboto', Helvetica Neue, Arial, sans-serif;
 			font-weight: normal;
 			color: $general-clock;
-			font-size: 1.7em;
+			font-size: 1.5em;
 			margin-top: 0.8em;
-			font-weight: 300;
+			font-weight: 100;
 			word-break: keep-all;
 			white-space: nowrap;
 
@@ -100,7 +100,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			}
 
 			&.countdown {
-				font-weight: 600;
+				font-weight: 500;
 			}
 
 			&.time-now {
@@ -108,9 +108,9 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 				top: 0.05em;
 				left: 50%;
 				transform: translateX(-50%);
-				margin-top: 0;
+				margin-top: 6px;
 				margin-right: 0;
-				font-size: 2.8em;
+				font-size: 2.3em;
 				font-weight: 100;
 				text-align: center;
 			}
@@ -121,7 +121,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 				color: #B8B8B8;
 				text-transform: uppercase;
 				white-space: nowrap;
-				font-weight: 400;
+				font-weight: 300;
 				font-size: 0.5em;
 
 				&.left {
@@ -138,7 +138,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			}
 
 			&.heavy-light {
-				font-weight: 600;
+				font-weight: 400;
 
 				&.heavy {
 					// color: $general-late-color;
