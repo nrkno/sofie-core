@@ -45,6 +45,9 @@ export interface DBRunningOrder {
 	nextSegmentLineId: string | null
 	/** the id of the Previous Segment Line - cleared once playback of the currentSegmentLine has been confirmed by TSR */
 	previousSegmentLineId: string | null
+
+	/** Actual time of playback starting */
+	startedPlayback?: Time
 }
 export class RunningOrder implements DBRunningOrder {
 	public _id: string
@@ -64,6 +67,7 @@ export class RunningOrder implements DBRunningOrder {
 	public previousSegmentLineId: string | null
 	public currentSegmentLineId: string | null
 	public nextSegmentLineId: string | null
+	public startedPlayback?: Time
 
 	constructor (document: DBRunningOrder) {
 		_.each(_.keys(document), (key) => {

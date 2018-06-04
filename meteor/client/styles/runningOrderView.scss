@@ -9,7 +9,7 @@ $segment-background-color: #000;
 $segment-timeline-background-color: #1F1F1F;
 $segment-title-background-color: #4B4B4B;
 $segment-title-background-color-next: $general-next-color;
-$segment-title-text-color-live: #8B8B8B;
+$segment-title-text-color-live: #4B4B4B;
 $segment-title-background-color-live: $general-live-color;
 $segment-title-background-color-remote: $general-live-remote-color;
 $segment-title-background-color-has-played: #2c2c2c;
@@ -72,24 +72,83 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
     left: 0;
     right: 0;
 	z-index: 20;
+
+	.flex-col.col-timing {
+		flex: 1 1;
+	}
 	
 	.timing {
-		display: flex;
-		margin: 18px 20px 17px;
-		font-size: 20px;
+		margin: 0 0;
+		min-width: auto;
+		width: 100%;
+		text-align: center;
 	
 		.timing-clock {
-			margin-right: 1.5em;
+			position: relative;
+			margin-right: 1em;
 			font-family: 'Roboto', Helvetica Neue, Arial, sans-serif;
 			font-weight: normal;
+			color: $general-clock;
+			font-size: 1.7em;
+			margin-top: 0.8em;
+			font-weight: 300;
+			word-break: keep-all;
+			white-space: nowrap;
+
+			&.visual-last-child {
+				margin-right: 0;
+			}
+
+			&.countdown {
+				font-weight: 600;
+			}
+
+			&.time-now {
+				position: absolute;
+				top: 0.05em;
+				left: 50%;
+				transform: translateX(-50%);
+				margin-top: 0;
+				margin-right: 0;
+				font-size: 2.8em;
+				font-weight: 100;
+				text-align: center;
+			}
+
+			.timing-clock-label {
+				position: absolute;
+				top: -1em;
+				color: #B8B8B8;
+				text-transform: uppercase;
+				white-space: nowrap;
+				font-weight: 400;
+				font-size: 0.5em;
+
+				&.left {
+					left: 0;
+					right: auto;
+					text-align: left;
+				}
+
+				&.right {
+					right: 0;
+					left: auto;
+					text-align: right;
+				}
+			}
 
 			&.heavy-light {
+				font-weight: 600;
+
 				&.heavy {
-					color: $general-late-color;
+					// color: $general-late-color;
+					color: #FFE900;
+					background: none;
 				}
 
 				&.light {
 					color: $general-fast-color;
+					background: none;
 				}
 			}
 		}

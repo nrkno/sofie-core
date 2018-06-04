@@ -234,6 +234,8 @@ Meteor.methods({
 						}
 					}
 
+					setRunningOrderStartedPlayback(runningOrder, startedPlayback) // Set startedPlayback on the running order if this is the first item to be played
+
 					RunningOrders.update(runningOrder._id, {
 						$set: {
 							previousSegmentLineId: null
@@ -251,6 +253,8 @@ Meteor.methods({
 							setPreviousLinePlaybackDuration(roId, prevSegLine, startedPlayback)
 						}
 					}
+
+					setRunningOrderStartedPlayback(runningOrder, startedPlayback) // Set startedPlayback on the running order if this is the first item to be played
 
 					let segmentLinesAfter = runningOrder.getSegmentLines({
 						_rank: {
@@ -281,6 +285,8 @@ Meteor.methods({
 					})
 
 					let nextSegmentLine: SegmentLine | null = segmentLinesAfter[0] || null
+
+					setRunningOrderStartedPlayback(runningOrder, startedPlayback) // Set startedPlayback on the running order if this is the first item to be played
 
 					RunningOrders.update(runningOrder._id, {
 						$set: {
@@ -483,6 +489,16 @@ function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem, segmentLine: 
 		)
 	}
 	return newSLineItem
+}
+
+function setRunningOrderStartedPlayback (runningOrder, startedPlayback) {
+	if (!runningOrder.startedPlayback) { // Set startedPlayback on the running order if this is the first item to be played
+		RunningOrders.update(runningOrder._id, {
+			$set: {
+				startedPlayback
+			}
+		})
+	}
 }
 
 function setPreviousLinePlaybackDuration (roId: string, prevSegLine: SegmentLine, lastChange: Time) {

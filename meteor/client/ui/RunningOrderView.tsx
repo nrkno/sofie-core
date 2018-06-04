@@ -20,6 +20,8 @@ import { Segment, Segments } from '../../lib/collections/Segments'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 
+import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
+
 import { RunningOrderTimingProvider, withTiming, RunningOrderTiming } from './RunningOrderTiming'
 import { SegmentTimelineContainer, SegmentLineItemUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
@@ -92,24 +94,83 @@ const TimingDisplay = translate()(withTiming()(class extends React.Component<ITi
 	render () {
 		const { t } = this.props
 
+		if (!this.props.runningOrder) return null
+
 		return (
 			<div className='timing mod'>
-				<span className='timing-clock-header-label'>{t('Now')}: </span>
-				<span className='timing-clock time-now'><Moment format='HH:mm:ss' date={getCurrentTime()} /></span>
-				<span className={ClassNames('timing-clock heavy-light', {
-					'heavy': (this.props.timingDurations.asPlayedRundownDuration || 0) > (this.props.timingDurations.totalRundownDuration || 0),
-					'light': (this.props.timingDurations.asPlayedRundownDuration || 0) < (this.props.timingDurations.totalRundownDuration || 0)
-				})}>
-					{RundownUtils.formatDiffToTimecode((this.props.timingDurations.totalRundownDuration || 0) - (this.props.timingDurations.asPlayedRundownDuration || 0), true)}
-				</span>
-				<span className='timing-clock-header-label'>{t('Finish')}: </span>
-				<span className='timing-clock time-end'><Moment format='HH:mm:ss' date={getCurrentTime() + ((this.props.timingDurations.remainingRundownDuration || 0))} /></span>
+				{this.props.runningOrder.startedPlayback ?
+					<span className='timing-clock plan-start left'>
+						<span className='timing-clock-label left'>{t('Started')}</span>
+						<Moment interval={0} format='HH:mm:ss' date={this.props.runningOrder.startedPlayback} />
+					</span> :
+					<span className='timing-clock plan-start left'>
+						<span className='timing-clock-label left'>{t('Planned start')}</span>
+						<Moment interval={0} format='HH:mm:ss' date={this.props.runningOrder.expectedStart} />
+					</span>
+				}
+				{ this.props.runningOrder.startedPlayback ?
+					this.props.runningOrder.expectedStart &&
+						<span className='timing-clock countdown playback-started left'>
+							{RundownUtils.formatDiffToTimecode(this.props.runningOrder.startedPlayback - this.props.runningOrder.expectedStart, true, true, true)}
+						</span>
+					:
+					this.props.runningOrder.expectedStart &&
+						<span className={ClassNames('timing-clock countdown plan-start left', {
+							'heavy': getCurrentTime() > this.props.runningOrder.expectedStart
+						})}>
+							{RundownUtils.formatDiffToTimecode(getCurrentTime() - this.props.runningOrder.expectedStart, true, true, true)}
+						</span>
+				}
+				<span className='timing-clock time-now'><Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} /></span>
+				{ this.props.runningOrder.expectedDuration ?
+					(<React.Fragment>
+						{this.props.runningOrder.expectedStart && this.props.runningOrder.expectedDuration &&
+							<span className='timing-clock plan-end right visual-last-child'>
+								<span className='timing-clock-label right'>{t('Planned end')}</span>
+								<Moment interval={0} format='HH:mm:ss' date={this.props.runningOrder.expectedStart + this.props.runningOrder.expectedDuration} />
+							</span>
+						}
+						{this.props.runningOrder.expectedStart && this.props.runningOrder.expectedDuration &&
+							<span className='timing-clock countdown plan-end right'>
+								{RundownUtils.formatDiffToTimecode(getCurrentTime() - (this.props.runningOrder.expectedStart + this.props.runningOrder.expectedDuration), true, true, true)}
+							</span>
+						}
+						{this.props.runningOrder.expectedDuration &&
+							<span className={ClassNames('timing-clock heavy-light right', {
+								'heavy': (this.props.timingDurations.asPlayedRundownDuration || 0) > (this.props.runningOrder.expectedDuration || 0),
+								'light': (this.props.timingDurations.asPlayedRundownDuration || 0) < (this.props.runningOrder.expectedDuration || 0)
+							})}>
+								<span className='timing-clock-label right'>{t('Diff')}</span>
+								{RundownUtils.formatDiffToTimecode(this.props.runningOrder.expectedDuration - (this.props.timingDurations.asPlayedRundownDuration || 0), true, true, true)}
+							</span>
+						}
+					</React.Fragment>) :
+					(<React.Fragment>
+						{this.props.timingDurations ?
+							<span className='timing-clock plan-end right visual-last-child'>
+								<span className='timing-clock-label right'>{t('Expected end')}</span>
+								<Moment interval={0} format='HH:mm:ss' date={getCurrentTime() + (this.props.timingDurations.totalRundownDuration || 0)} />
+							</span> :
+							null
+						}
+						{this.props.timingDurations ?
+							<span className={ClassNames('timing-clock heavy-light right', {
+								'heavy': (this.props.timingDurations.asPlayedRundownDuration || 0) > (this.props.timingDurations.totalRundownDuration || 0),
+								'light': (this.props.timingDurations.asPlayedRundownDuration || 0) < (this.props.timingDurations.totalRundownDuration || 0)
+							})}>
+								<span className='timing-clock-label right'>{t('Diff')}</span>
+								{RundownUtils.formatDiffToTimecode((this.props.timingDurations.totalRundownDuration || 0) - (this.props.timingDurations.asPlayedRundownDuration || 0), true, true, true)}
+							</span> :
+							null
+						}
+					</React.Fragment>)
+				}
 			</div>
 		)
 	}
 }))
 
-class RunningOrderHeader extends React.Component<IHeaderProps> {
+const RunningOrderHeader = translate()(class extends React.Component<InjectedTranslateProps & IHeaderProps> {
 	componentDidMount () {
 		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE, this.keyTake)
 		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE, this.keyActivate)
@@ -143,58 +204,69 @@ class RunningOrderHeader extends React.Component<IHeaderProps> {
 	}
 
 	activate = () => {
-		Meteor.call('playout_activate', this.props.runningOrder._id)
+		if (!this.props.runningOrder.active) {
+			Meteor.call('playout_activate', this.props.runningOrder._id)
+		}
 	}
 
 	deactivate = () => {
-		Meteor.call('playout_inactivate', this.props.runningOrder._id)
+		if (this.props.runningOrder.active) {
+			Meteor.call('playout_inactivate', this.props.runningOrder._id)
+		}
+	}
+
+	reloadRunningOrder = () => {
+		Meteor.call('playout_reload_data', this.props.runningOrder._id)
 	}
 
 	render () {
+		const { t } = this.props
 		return (
 			<div className='header running-order'>
-				<div className='row'>
-					<div className='col c4 super-dark'>
+				<div className='row super-dark'>
+					<div className='flex-col left horizontal-align-left'>
 						{/* !!! TODO: This is just a temporary solution !!! */}
-						<div className='right' style={{
-							'marginTop': '0.9em'
-						}}>
-							<button className='btn btn-secondary btn-compact aciton reload-data' onClick={(e) => Meteor.call('playout_reload_data', this.props.runningOrder._id)}>
-								Reload data
-							</button>
-							{
-								(this.props.runningOrder && (this.props.runningOrder.active ?
-									<React.Fragment>
-										<button className='btn btn-secondary btn-compact aciton activate-deactivate deactivate' onClick={(e) => this.deactivate()}>
-											Deactivate
-										</button>
-										<button className='btn btn-secondary btn-compact aciton take' onClick={(e) => this.take()}>
-											Take
-										</button>
-									</React.Fragment>
-									: <React.Fragment>
-										<button className='btn btn-secondary btn-compact aciton activate-deactivate activate' onClick={(e) => this.activate()}>
-											Activate
-										</button>
-									</React.Fragment>
-								))
-							}
-						</div>
 						<div className='badge mod'>
 							<div className='media-elem mrs sofie-logo' />
 							<div className='bd mls'><span className='logo-text'>Sofie</span></div>
 						</div>
 					</div>
-					<div className='col c4 super-dark'>
-						<TimingDisplay {...this.props} />
-					</div>
-					<div className='flex-col c4 super-dark horizontal-align-right'>
+					<div className='flex-col right horizontal-align-right'>
 						<div className='links mod close'>
 							<NavLink to='/runningOrders'>
 								<CoreIcon id='nrk-close' />
 							</NavLink>
 						</div>
 					</div>
+					<ContextMenu id='running-order-context-menu'>
+						<div className='react-contextmenu-label'>
+							{this.props.runningOrder && this.props.runningOrder.name}
+						</div>
+						{
+							this.props.runningOrder && this.props.runningOrder.active ?
+								<React.Fragment>
+									<MenuItem onClick={(e) => this.deactivate()}>
+										{t('Deactivate')}
+									</MenuItem>
+									<MenuItem onClick={(e) => this.take()}>
+										{t('Take')}
+									</MenuItem>
+								</React.Fragment> :
+								<React.Fragment>
+									<MenuItem onClick={(e) => this.activate()}>
+										{t('Activate')}
+									</MenuItem>
+								</React.Fragment>
+						}
+						<MenuItem onClick={(e) => this.reloadRunningOrder()}>
+							{t('Reload running order')}
+						</MenuItem>
+					</ContextMenu>
+					<ContextMenuTrigger id='running-order-context-menu' attributes={{
+						className: 'flex-col col-timing horizontal-align-center'
+					}}>
+						<TimingDisplay {...this.props} />
+					</ContextMenuTrigger>
 				</div>
 				<div className='row'>
 					<div className='col c12 running-order-overview'>
@@ -204,7 +276,7 @@ class RunningOrderHeader extends React.Component<IHeaderProps> {
 			</div>
 		)
 	}
-}
+})
 
 interface IPropsHeader extends InjectedTranslateProps {
 	key: string
