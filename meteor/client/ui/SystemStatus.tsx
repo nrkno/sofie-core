@@ -93,7 +93,7 @@ const DeviceItem = translate()(class extends React.Component<IDeviceItemPropsHea
 		return (
 			<tr className='device-item'>
 				<td className='device-item__id'>
-					<Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device._id}</Link>
+					<p><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device._id}</Link></p>
 				</td>
 				<td className='device-item__name'>
 					<p>{this.props.device.name}</p>
@@ -139,7 +139,7 @@ export class SystemStatus extends React.Component<IPropsHeader> {
 					<table className='table system-status-table'>
 						<thead>
 							<tr>
-								<th className='c1'>
+								<th className='c2'>
 									{t('ID')}
 								</th>
 								<th className='c3'>
@@ -148,13 +148,13 @@ export class SystemStatus extends React.Component<IPropsHeader> {
 								<th className='c1'>
 									{t('Telemetry')}
 								</th>
-								<th className='c1'>
+								<th className='c2'>
 									{t('Type')}
 								</th>
 								<th className='c2'>
 									{t('Status')}
 								</th>
-								<th className='c4'>
+								<th className='c2'>
 									{t('Last seen')}
 								</th>
 							</tr>
