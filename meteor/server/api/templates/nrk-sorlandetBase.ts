@@ -62,7 +62,7 @@ import {
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 
-import { LLayers, NoraChannels } from './nrk-layers'
+import { LLayers, NoraChannels, SourceLayers } from './nrk-layers'
 import { AtemSource } from './nrk-inputs'
 import { RunningOrderBaselineItem } from '../../../lib/collections/RunningOrderBaselineItems'
 
@@ -102,7 +102,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 			name: 'KAM ' + cameraInput,
 			trigger: undefined,
 			status: RundownAPI.LineItemStatusCode.UNKNOWN,
-			sourceLayerId: 'studio0_camera0',
+			sourceLayerId: SourceLayers.camera0,
 			outputLayerId: 'pgm0',
 			expectedDuration: 0,
 			content: {
@@ -172,7 +172,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 				runningOrderId: '',
 				name: 'baseline',
 				status: RundownAPI.LineItemStatusCode.UNKNOWN,
-				sourceLayerId: 'studio0_camera0',
+				sourceLayerId: SourceLayers.camera0,
 				outputLayerId: 'pgm0',
 
 				content: {
@@ -349,6 +349,43 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 								}
 							}
 						}),
+						literal<TimelineObjLawoSource>({
+							_id: '', deviceId: [''], siId: '', roId: '',
+							trigger: { type: TriggerType.LOGICAL, value: '1' },
+							priority: 0, duration: 0,
+							LLayer: LLayers.lawo_source_rm1,
+							content: {
+								type: TimelineContentTypeLawo.AUDIO_SOURCE,
+								attributes: {
+									db: -191
+								}
+							}
+						}),
+						literal<TimelineObjLawoSource>({
+							_id: '', deviceId: [''], siId: '', roId: '',
+							trigger: { type: TriggerType.LOGICAL, value: '1' },
+							priority: 0, duration: 0,
+							LLayer: LLayers.lawo_source_rm2,
+							content: {
+								type: TimelineContentTypeLawo.AUDIO_SOURCE,
+								attributes: {
+									db: -191
+								}
+							}
+						}),
+						literal<TimelineObjLawoSource>({
+							_id: '', deviceId: [''], siId: '', roId: '',
+							trigger: { type: TriggerType.LOGICAL, value: '1' },
+							priority: 0, duration: 0,
+							LLayer: LLayers.lawo_source_rm3,
+							content: {
+								type: TimelineContentTypeLawo.AUDIO_SOURCE,
+								attributes: {
+									db: -191
+								}
+							}
+						}),
+
 						literal<TimelineObjCCGHTMLPage>({
 							_id: '', deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.LOGICAL, value: '1' },

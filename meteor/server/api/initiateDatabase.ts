@@ -14,7 +14,8 @@ import { Random } from 'meteor/random'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { RuntimeFunctions } from '../../lib/collections/RuntimeFunctions';
+import { RuntimeFunctions } from '../../lib/collections/RuntimeFunctions'
+import { SourceLayers } from './templates/nrk-layers'
 
 // Imports from TSR (TODO make into an import)
 // export interface Mappings {
@@ -272,6 +273,21 @@ Meteor.methods({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				channel: 4
+			}),
+			'lawo_source_rm1': literal<MappingLawo>({
+				device: PlayoutDeviceType.LAWO,
+				deviceId: 'lawo0',
+				channel: 5
+			}),
+			'lawo_source_rm2': literal<MappingLawo>({
+				device: PlayoutDeviceType.LAWO,
+				deviceId: 'lawo0',
+				channel: 6
+			}),
+			'lawo_source_rm3': literal<MappingLawo>({
+				device: PlayoutDeviceType.LAWO,
+				deviceId: 'lawo0',
+				channel: 7
 			})
 		}
 		StudioInstallations.update('studio0', {$set: {

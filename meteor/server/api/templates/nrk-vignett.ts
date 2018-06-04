@@ -58,7 +58,7 @@ import {
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 
-import { LLayers } from './nrk-layers'
+import { LLayers, SourceLayers } from './nrk-layers'
 
 const literal = <T>(o: T) => o
 
@@ -97,7 +97,7 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
 			value: 'now'
 		},
 		status: RundownAPI.LineItemStatusCode.UNKNOWN,
-		sourceLayerId: 'studio0_vignett',
+		sourceLayerId: SourceLayers.vignett,
 		outputLayerId: 'pgm0',
 		expectedDuration: segmentLineduration,
 		content: {

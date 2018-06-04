@@ -58,7 +58,7 @@ import {
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 
-import { LLayers } from './nrk-layers'
+import { LLayers, SourceLayers } from './nrk-layers'
 import { isNumber } from 'util'
 
 const literal = <T>(o: T) => o
@@ -103,7 +103,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 				value: 0
 			},
 			status: RundownAPI.LineItemStatusCode.UNKNOWN,
-			sourceLayerId: 'studio0_camera0',
+			sourceLayerId: SourceLayers.camera0,
 			outputLayerId: 'pgm0',
 			expectedDuration: ( // @todo rewrite this
 				story.getValueByPath('MosExternalMetaData.0.MosPayload.Actual') ||
@@ -215,7 +215,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 			value: 0
 		},
 		status: RundownAPI.LineItemStatusCode.UNKNOWN,
-		sourceLayerId: 'studio0_camera0',
+		sourceLayerId: SourceLayers.camera0,
 		outputLayerId: 'pgm0',
 		expectedDuration: ( // @todo rewrite this
 			story.getValueByPath('MosExternalMetaData.0.MosPayload.Actual') ||

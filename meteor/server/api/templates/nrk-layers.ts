@@ -10,6 +10,9 @@ export enum LLayers {
 	lawo_source_effect = 'lawo_source_effect',
 	lawo_source_automix = 'lawo_source_automix',
 	lawo_source_clip = 'lawo_source_clip',
+	lawo_source_rm1 = 'lawo_source_rm1',
+	lawo_source_rm2 = 'lawo_source_rm2',
+	lawo_source_rm3 = 'lawo_source_rm3',
 	atem_me_program = 'atem_me_program',
 	casparcg_player_wipe = 'casparcg_player_wipe',
 	casparcg_player_soundeffect = 'casparcg_player_soundeffect',
@@ -25,4 +28,13 @@ export enum NoraChannels {
 	super = 'gfx1',
 	logo = 'gfx2',
 	studio = 'gfx3'
+}
+
+export enum SourceLayers {
+	vignett = 'studio0_vignett',
+	vb = 'studio0_vb',
+	live_speak0 = 'studio0_live_speak0',
+	live_transition0 = 'studio0_live_transition0',
+	graphics0 = 'studio0_graphics0',
+	camera0 = 'studio0_camera0',
 }

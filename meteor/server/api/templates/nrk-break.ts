@@ -60,7 +60,7 @@ import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 import { SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
 
-import { LLayers } from './nrk-layers'
+import { LLayers, SourceLayers } from './nrk-layers'
 import { AtemSource } from './nrk-inputs'
 
 const literal = <T>(o: T) => o
@@ -99,7 +99,7 @@ export const NrkBreakTemplate = literal<TemplateFunctionOptional>((context, stor
 					value: 'now'
 				},
 				status: RundownAPI.LineItemStatusCode.OK,
-				sourceLayerId: 'studio0_vignett',
+				sourceLayerId: SourceLayers.vignett,
 				outputLayerId: 'pgm0',
 				expectedDuration: 0,
 				content: {
@@ -118,7 +118,7 @@ export const NrkBreakTemplate = literal<TemplateFunctionOptional>((context, stor
 			// 		value: 0
 			// 	},
 			// 	status: RundownAPI.LineItemStatusCode.OK,
-			// 	sourceLayerId: 'studio0_vignett',
+			// 	sourceLayerId: SourceLayers.vignett,
 			// 	outputLayerId: 'pgm0',
 			// 	expectedDuration: 100000,
 			// 	content: {

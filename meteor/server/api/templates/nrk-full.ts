@@ -63,7 +63,7 @@ import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 import { SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
 
-import { LLayers } from './nrk-layers'
+import { LLayers, SourceLayers } from './nrk-layers'
 import { AtemSource } from './nrk-inputs'
 
 const literal = <T>(o: T) => o
@@ -131,7 +131,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 			value: 0
 		},
 		status: RundownAPI.LineItemStatusCode.UNKNOWN,
-		sourceLayerId: 'studio0_live_transition0',
+		sourceLayerId: SourceLayers.live_transition0,
 		outputLayerId: 'pgm0',
 		expectedDuration: 3600, // transform into milliseconds
 		isTransition: true,
@@ -213,7 +213,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 			value: 0
 		},
 		status: RundownAPI.LineItemStatusCode.UNKNOWN,
-		sourceLayerId: 'studio0_vb',
+		sourceLayerId: SourceLayers.vb,
 		outputLayerId: 'pgm0',
 		expectedDuration: ( // @todo rewrite this blob
 			story.getValueByPath('MosExternalMetaData.0.MosPayload.Estimated') ||
@@ -429,7 +429,7 @@ function parseSuperSegments (context: TemplateContextInner, story: StoryWithCont
 				mosId: 'super', // TODO
 				name: name,
 				status: RundownAPI.LineItemStatusCode.UNKNOWN,
-				sourceLayerId: 'studio0_graphics0',
+				sourceLayerId: SourceLayers.graphics0,
 				outputLayerId: 'pgm0',
 				expectedDuration: duration,
 				content: {
@@ -447,7 +447,7 @@ function parseSuperSegments (context: TemplateContextInner, story: StoryWithCont
 				name: name,
 				trigger: trigger,
 				status: RundownAPI.LineItemStatusCode.UNKNOWN,
-				sourceLayerId: 'studio0_graphics0',
+				sourceLayerId: SourceLayers.graphics0,
 				outputLayerId: 'pgm0',
 				expectedDuration: duration,
 				isTransition: false,

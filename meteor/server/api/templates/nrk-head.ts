@@ -1,4 +1,3 @@
-
 import * as _ from 'underscore'
 
 import {
@@ -63,8 +62,9 @@ import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 import { SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
 
-import { LLayers, NoraChannels } from './nrk-layers'
+import { LLayers, NoraChannels, SourceLayers } from './nrk-layers'
 import { AtemSource } from './nrk-inputs'
+import { ParseSuperSegments } from './nrk-graphics'
 
 const literal = <T>(o: T) => o
 
@@ -131,7 +131,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 			value: 0
 		},
 		status: RundownAPI.LineItemStatusCode.UNKNOWN,
-		sourceLayerId: 'studio0_live_transition0',
+		sourceLayerId: SourceLayers.live_transition0,
 		outputLayerId: 'pgm0',
 		expectedDuration: 3600, // transform into milliseconds
 		isTransition: true,
@@ -213,7 +213,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 			value: 0
 		},
 		status: RundownAPI.LineItemStatusCode.UNKNOWN,
-		sourceLayerId: 'studio0_live_speak0',
+		sourceLayerId: SourceLayers.live_speak0,
 		outputLayerId: 'pgm0',
 		expectedDuration: ( // @todo rewrite this blob
 			story.getValueByPath('MosExternalMetaData.0.MosPayload.Estimated') ||
@@ -336,7 +336,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 	segmentLineItems.push(video)
 
 	let segmentLineAdLibItems: Array<SegmentLineAdLibItemOptional> = []
-	parseSuperSegments(context, story, segmentLineItems, segmentLineAdLibItems, video._id || '')
+	ParseSuperSegments(context, story, segmentLineItems, segmentLineAdLibItems, video._id || '')
 
 	return literal<TemplateResult>({
 		segmentLine: literal<DBSegmentLine>({
@@ -353,116 +353,3 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 		segmentLineAdLibItems: segmentLineAdLibItems
 	})
 })
-
-function parseSuperSegments (context: TemplateContextInner, story: StoryWithContext, segmentLineItems: SegmentLineItemOptional[], adlibItems: SegmentLineAdLibItemOptional[], videoId: string) {
-	const storyItemGfx = _.filter(story.Body, item => {
-		return (
-			item.Type === 'storyItem' &&
-			context.getValueByPath(item, 'Content.mosID') === 'GFX.NRK.MOS'
-		)
-	})
-	if (storyItemGfx.length === 0) context.warning('Super missing in mos data')
-
-	for (const item of storyItemGfx) {
-		const itemID = context.getValueByPath(item, 'Content.itemID', 0)
-		const name = context.getValueByPath(item, 'Content.mosAbstract', '')
-		const metadata = context.getValueByPath(item, 'Content.mosExternalMetadata', [])
-		const timing = _.find(metadata, (m: any) => m.mosSchema === 'schema.nrk.no/timing')
-		const content = _.find(metadata, (m: any) => m.mosSchema === 'schema.nrk.no/content')
-
-		if (!timing) context.warning('Super missing timing data. Assuming adlib')
-		if (!content) {
-			context.warning('Super missing content data')
-			continue
-		}
-
-		const payload = context.getValueByPath(content, 'mosPayload', {})
-		const newPayload: any = {
-			render: {
-				channel: NoraChannels.super,
-				group: 'dksl', // @todo config
-				system: 'html',
-			},
-			playout: Object.assign(payload.playout, {
-				event: 'take',
-				autoTakeout: false, // This gets handled by timeline
-				duration: 0,
-				loop: false
-			}),
-			content: payload.content
-		}
-
-		const inMode = context.getValueByPath(timing, 'mosPayload.in','') + ''
-		const outMode = context.getValueByPath(timing, 'mosPayload.out','') + ''
-		const duration = context.getValueByPath(timing, 'mosPayload.duration', 0)
-		const inTime = context.getValueByPath(timing, 'mosPayload.timeIn', 0)
-
-		let trigger: ITimelineTrigger = {
-			type: TriggerType.TIME_RELATIVE,
-			value: `#${videoId}.start + 0`
-		}
-
-		let isAdlib = false
-		if (inMode.match(/auto/i)) {
-			trigger = {
-				type: TriggerType.TIME_RELATIVE,
-				value: `#${videoId}.start + ${inTime}`
-			}
-		} else {
-			isAdlib = true
-			context.warning('Unknown in mode: "' + inMode + '"')
-		}
-
-		const cmd = literal<TimelineObjHTTPPost>({
-			_id: context.getHashId('super_post_' + itemID), deviceId: [''], siId: '', roId: '',
-			trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-			priority: 1,
-			duration: duration,
-			LLayer: LLayers.casparcg_cg_graphics_ctrl,
-			content: {
-				type: TimelineContentTypeHttp.POST,
-				url: 'http://nora.core.mesosint.nrk.no/api/playout?apiKey=' + process.env.MESOS_API_KEY,
-				params: newPayload
-			}
-		})
-
-		if (isAdlib) {
-			let gfx: SegmentLineAdLibItemOptional = {
-				_id: context.getHashId('super_' + itemID),
-				mosId: 'super', // TODO
-				name: name,
-				status: RundownAPI.LineItemStatusCode.UNKNOWN,
-				sourceLayerId: 'studio0_graphics0',
-				outputLayerId: 'pgm0',
-				expectedDuration: duration,
-				content: {
-					sourceDuration: duration,
-					timelineObjects: [
-						cmd
-					]
-				}
-			}
-			adlibItems.push(gfx)
-		} else {
-			let gfx: SegmentLineItemOptional = {
-				_id: context.getHashId('super_' + itemID),
-				mosId: 'super', // TODO
-				name: name,
-				trigger: trigger,
-				status: RundownAPI.LineItemStatusCode.UNKNOWN,
-				sourceLayerId: 'studio0_graphics0',
-				outputLayerId: 'pgm0',
-				expectedDuration: duration,
-				isTransition: false,
-				content: {
-					sourceDuration: duration,
-					timelineObjects: [
-						cmd
-					]
-				}
-			}
-
-			segmentLineItems.push(gfx)
-		}
-	}
-}

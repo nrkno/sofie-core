@@ -11,6 +11,7 @@ import { NrkHeadTemplate } from './nrk-head'
 import { NrkKamTemplate } from './nrk-kam'
 import { NrkSorlandetBaseTemplate } from './nrk-sorlandetBase'
 import { NrkFullTemplate } from './nrk-full'
+import { NrkDirTemplate } from './nrk-dir'
 
 const literal = <T>(o: T) => o
 
@@ -91,6 +92,7 @@ let nrk: TemplateSet = {
 					else if (type.match(/stk/i) &&
 							variant.match(/head/i)) 	templateId = 'stkHead'
 					else if (type.match(/kam/i)) 		templateId = 'kam'
+					else if (type.match(/dir/i))		templateId = 'dir'
 				}
 				if (templateId) return true // break
 				else return false // keep looking
@@ -104,6 +106,7 @@ let nrk: TemplateSet = {
 		vignett: NrkVignettTemplate,
 		stkHead: NrkHeadTemplate,
 		kam: NrkKamTemplate,
+		dir: NrkDirTemplate,
 		sorlandetTemplate: NrkSorlandetBaseTemplate
 	}
 }
