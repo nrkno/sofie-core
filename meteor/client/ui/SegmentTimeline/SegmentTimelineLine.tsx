@@ -359,7 +359,7 @@ export const SegmentTimelineLine = translate()(withTiming({
 					<div className='segment-timeline__segment-line__nextline'>
 						<div className='segment-timeline__segment-line__nextline__label'>
 							{
-								this.props.segmentLine.autoNext ?
+								this.props.autoNextSegmentLine ?
 									<React.Fragment>
 										<FontAwesomeIcon icon={faFastForward} />
 										{t('Next')}

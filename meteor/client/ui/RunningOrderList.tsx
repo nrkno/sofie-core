@@ -91,7 +91,18 @@ export class RunningOrderListItem extends React.Component<IRunningOrderListItemP
 		return (
 			<tr className='running-order-list-item'>
 				<td className='running-order-list-item__name'>
-					<p><Link to={this.getRunningOrderLink(this.props.runningOrder._id)}>{this.props.runningOrder.name}</Link></p>
+					<p>
+						<Link to={this.getRunningOrderLink(this.props.runningOrder._id)}>{this.props.runningOrder.name}</Link>
+						{this.props.runningOrder.active ?
+							<div className='origo-pulse small'>
+								<div className='pulse-marker'>
+									<div className='pulse-rays'></div>
+									<div className='pulse-rays delay'></div>
+								</div>
+							</div>
+							: null
+						}
+					</p>
 				</td>
 				<td className='running-order-list-item__id'>
 					<p>{this.props.runningOrder._id}</p>

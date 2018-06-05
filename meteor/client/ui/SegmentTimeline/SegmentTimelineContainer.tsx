@@ -143,6 +143,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 
 	let startsAt = 0
 	let autoNextSegmentLine = false
+	let previousSegmentLine: SegmentLineUi
 	// fetch all the segment line items for the segment lines
 	_.forEach<SegmentLineUi>(segmentLines, (segmentLine) => {
 		let slTimeline: SuperTimeline.UnresolvedTimeline = []
@@ -150,10 +151,10 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		if (props.runningOrder.currentSegmentLineId === segmentLine._id) {
 			isLiveSegment = true
 			currentLiveSegmentLine = segmentLine
-			autoNextSegmentLine = segmentLine.autoNext || false
 		}
 		if (props.runningOrder.nextSegmentLineId === segmentLine._id) {
 			isNextSegment = true
+			autoNextSegmentLine = (previousSegmentLine || {}).autoNext || false
 		}
 
 		if (segmentLine.startedPlayback !== undefined) {
@@ -255,6 +256,8 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		segmentLine.renderedDuration = furthestDuration
 		segmentLine.startsAt = startsAt
 		startsAt = segmentLine.startsAt + (segmentLine.renderedDuration || 0)
+
+		previousSegmentLine = segmentLine
 	})
 
 	const resolveDuration = (item: SegmentLineItemUi): number => {
