@@ -80,8 +80,10 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 		wipeVideo: 			context.getHashId('wipeVideo'),
 		wipeAudioPunktum:   context.getHashId('wipeAudioPunktum'),
 		vignettTransition:  context.getHashId('vignettTransition'),
+		vignettVideo:		context.getHashId('vignettVideo'),
 		lawo_effect:        context.getHashId('lawo_effect'),
 		lawo_automix:       context.getHashId('lawo_automix'),
+		lawo_automix_out:   context.getHashId('lawo_automix_out'),
 	}
 
 	let overlapDuration: number | undefined
@@ -92,7 +94,82 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 	// if previous SegmentLine is head, then wipe out of it
 	const segmentLines = context.getSegmentLines()
 	const segmentPos = context.getSegmentLineIndex()
-	if (segmentPos > 0 && (segmentLines[segmentPos - 1].slug.match(/;head/i) || segmentLines[segmentPos - 1].slug.match(/ÅPNING/i))) {
+	if (mosartVariant.match(/SLUTT/i)) { // @todo check another field. slug?
+		segmentLineItems.push(literal<SegmentLineItemOptional>({
+			_id: '',
+			mosId: '',
+			segmentLineId: '',
+			runningOrderId: '',
+			name: 'utvignett',
+			trigger: {
+				type: TriggerType.TIME_ABSOLUTE,
+				value: 0
+			},
+			status: RundownAPI.LineItemStatusCode.UNKNOWN,
+			sourceLayerId: SourceLayers.graphics0,
+			outputLayerId: 'pgm0',
+			expectedDuration: 15 * 1000,
+			content: {
+				timelineObjects: _.compact([
+					// utvignett to 0db
+					literal<TimelineObjLawoSource>({
+						_id: IDs.lawo_effect, deviceId: [''], siId: '', roId: '',
+						trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+						priority: 1,
+						duration: 0,
+						LLayer: LLayers.lawo_source_effect,
+						content: {
+							type: TimelineContentTypeLawo.AUDIO_SOURCE,
+							attributes: {
+								db: 0
+							}
+						}
+					}),
+
+					// play utvignett
+					literal<TimelineObjCCGVideo>({
+						_id: IDs.vignettVideo, deviceId: [''], siId: '', roId: '',
+						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_effect} + 0` },
+						priority: 1,
+						duration: 0, // hold at end
+						LLayer: LLayers.casparcg_player_vignett,
+						content: {
+							type: TimelineContentTypeCasparCg.VIDEO,
+							attributes: {
+								file: 'assets/utvignett'
+							}
+						}
+					}),
+
+					// fade out host mic
+					literal<TimelineObjLawoSource>({
+						_id: IDs.lawo_automix_out, deviceId: [''], siId: '', roId: '',
+						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.vignettVideo} + 0` },
+						priority: 5,
+						duration: 0,
+						LLayer: LLayers.lawo_source_effect,
+						content: {
+							type: TimelineContentTypeLawo.AUDIO_SOURCE,
+							transitions: {
+								inTransition: {
+									type: Transition.MIX,
+									duration: 1400,
+									easing: Ease.LINEAR,
+									direction: Direction.LEFT
+								}
+							},
+							attributes: {
+								db: -191 // -inf
+							}
+						}
+					}),
+
+					// @todo graphics template (on gfx1?)
+
+				]),
+			}
+		}))
+	} else if (segmentPos > 0 && (segmentLines[segmentPos - 1].slug.match(/;head/i) || segmentLines[segmentPos - 1].slug.match(/ÅPNING/i))) {
 		segmentLineItems.push(literal<SegmentLineItemOptional>({
 			_id: '',
 			mosId: '',
@@ -104,7 +181,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 				value: 0
 			},
 			status: RundownAPI.LineItemStatusCode.UNKNOWN,
-			sourceLayerId: SourceLayers.camera0,
+			sourceLayerId: SourceLayers.live_transition0,
 			outputLayerId: 'pgm0',
 			expectedDuration: ( // @todo rewrite this
 				story.getValueByPath('MosExternalMetaData.0.MosPayload.Actual') ||
