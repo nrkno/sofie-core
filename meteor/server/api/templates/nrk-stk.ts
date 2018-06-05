@@ -1,4 +1,3 @@
-
 import * as _ from 'underscore'
 
 import {
@@ -35,7 +34,6 @@ import {
 	TemplateFunction,
 	TemplateSet,
 	SegmentLineItemOptional,
-	SegmentLineAdLibItemOptional,
 	TemplateFunctionOptional,
 	TemplateResult,
 	TemplateContextInner,
@@ -45,7 +43,6 @@ import {
 	TimelineObjCCGVideo,
 	TimelineObjLawoSource,
 	TimelineObjCCGTemplate,
-	TimelineContentTypeOther,
 	TimelineContentTypeCasparCg,
 	TimelineContentTypeLawo,
 	TimelineContentTypeAtem,
@@ -56,36 +53,32 @@ import {
 	TimelineObjAtemAUX,
 	TimelineObjAtemDSK,
 	TimelineObjAtemSsrc,
-	TimelineObjHTTPPost,
-	TimelineContentTypeHttp
+	SuperSourceBox
 } from '../../../lib/collections/Timeline'
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
-import { SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
 
 import { LLayers, SourceLayers } from './nrk-layers'
-import { AtemSource } from './nrk-inputs'
-import { ParseSuperSegments } from './nrk-graphics'
+import { RMFirstInput, KamFirstInput, AtemSource } from './nrk-inputs'
+import { isNumber } from 'util'
 
 const literal = <T>(o: T) => o
 
-// @todo is this essentially just another variant of stk?
-export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (context, story) {
+export const NrkSTKTemplate = literal<TemplateFunctionOptional>((context: TemplateContextInner, story): TemplateResult => {
 	let IDs = {
-		lawo_automix: 		context.getHashId('lawo_automix'),
-		lawo_effect: 		context.getHashId('lawo_effect'),
-		lawo_clip: 		    context.getHashId('lawo_clip'),
-		headVideo: 			context.getHashId('headVideo'),
 		atemSrv1: 			context.getHashId('atemSrv1'),
-		wipeVideo: 			context.getHashId('wipeVideo'),
-		wipeAudioSkille: 	context.getHashId('wipeAudioSkille'),
-		headGfx: 			context.getHashId('headGfx'),
-		playerClip: 		context.getHashId('playerClip'),
-		playerClipTransition: context.getHashId('playerClipTransition'),
-		vignett: context.getHashId('vignett'),
+		playerClip:			context.getHashId('playerClip'),
+		lawo_automix:       context.getHashId('lawo_automix'),
+		lawo_clip:			context.getHashId('lawo_clip'),
 	}
 
-	const segmentLines = context.getSegmentLines()
+	let clipLevel = -15
+	const mosartVariant = story.getValueByPath('MosExternalMetaData.0.MosPayload.mosartVariant', '') + ''
+	if (mosartVariant && mosartVariant.match(/ulyd/i)) {
+		clipLevel = -191 // -inf
+	} else {
+		context.warning('Unknown variant: ' + mosartVariant)
+	}
 
 	let storyItemClip = _.find(story.Body, (item) => {
 		return (
@@ -96,39 +89,71 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 	})
 	if (!storyItemClip) context.warning('Clip missing in mos data')
 
-	let clip = context.getValueByPath(storyItemClip, 'Content.objSlug', 'full')
+	let clip = context.getValueByPath(storyItemClip, 'Content.objSlug', 'head')
 	if (!clip || clip === '') context.warning('Clip slug missing in mos data')
 	let name = context.getValueByPath(storyItemClip, 'Content.mosExternalMetadata.mosPayload.title', clip)
 	if (!name || name === '') context.warning('Clip name missing in mos data')
 
 	let segmentLineItems: Array<SegmentLineItemOptional> = []
-	let video: SegmentLineItemOptional = {
-		_id: context.getHashId('video'),
-		mosId: 'fullvideo',
+	segmentLineItems.push(literal<SegmentLineItemOptional>({
+		_id: '',
+		mosId: '',
+		segmentLineId: '',
+		runningOrderId: '',
 		name: name,
 		trigger: {
 			type: TriggerType.TIME_ABSOLUTE,
 			value: 0
 		},
 		status: RundownAPI.LineItemStatusCode.UNKNOWN,
-		sourceLayerId: SourceLayers.vb,
+		sourceLayerId: SourceLayers.live_speak0,
 		outputLayerId: 'pgm0',
-		expectedDuration: ( // @todo rewrite this blob
+		expectedDuration: ( // @todo rewrite this
+			story.getValueByPath('MosExternalMetaData.0.MosPayload.Actual') ||
 			story.getValueByPath('MosExternalMetaData.0.MosPayload.Estimated') ||
-			story.getValueByPath('MosExternalMetaData.0.MosPayload.MediaTime') ||
-			story.getValueByPath('MosExternalMetaData.0.MosPayload.SourceMediaTime') ||
-			10
-		) * 1000, // transform into milliseconds
-		isTransition: false,
+			0
+		) * 1000,
 		content: {
-			fileName: clip,
-			sourceDuration: (
-				context.getValueByPath(storyItemClip, 'Content.objDur', 0) /
-				(context.getValueByPath(storyItemClip, 'Content.objTB') || 1)
-			) * 1000,
-
 			timelineObjects: _.compact([
-				// mic host muted
+				literal<TimelineObjAtemME>({
+					_id: IDs.atemSrv1, deviceId: [''], siId: '', roId: '',
+					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+					priority: 1,
+					duration: 0,
+					LLayer: LLayers.atem_me_program,
+					content: {
+						type: TimelineContentTypeAtem.ME,
+						attributes: {
+							input: AtemSource.Server1,
+							transition: Atem_Enums.TransitionStyle.CUT
+						}
+					}
+				}),
+
+				// server1 to -15db
+				literal<TimelineObjLawoSource>({
+					_id: IDs.lawo_clip, deviceId: [''], siId: '', roId: '',
+					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+					priority: 1,
+					duration: 0,
+					LLayer: LLayers.lawo_source_clip,
+					content: {
+						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						transitions: {
+							inTransition: {
+								type: Transition.MIX,
+								duration: 200,
+								easing: Ease.LINEAR,
+								direction: Direction.LEFT
+							}
+						},
+						attributes: {
+							db: -15
+						}
+					}
+				}),
+
+				// automix mic hot
 				literal<TimelineObjLawoSource>({
 					_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
@@ -146,51 +171,12 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 							}
 						},
 						attributes: {
-							db: -191
-						}
-					}
-				}),
-
-				// audio FULL 0
-				literal<TimelineObjLawoSource>({
-					_id: IDs.lawo_clip, deviceId: [''], siId: '', roId: '',
-					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
-					priority: 1,
-					duration: 0,
-					LLayer: LLayers.lawo_source_clip,
-					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
-						transitions: {
-							inTransition: { // @todo should this have a transition?
-								type: Transition.MIX,
-								duration: 200,
-								easing: Ease.LINEAR,
-								direction: Direction.LEFT
-							}
-						},
-						attributes: {
 							db: 0
 						}
 					}
 				}),
 
-				// switch to server1
-				literal<TimelineObjAtemME>({
-					_id: IDs.atemSrv1, deviceId: [''], siId: '', roId: '',
-					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
-					priority: 1,
-					duration: 0,
-					LLayer: LLayers.atem_me_program,
-					content: {
-						type: TimelineContentTypeAtem.ME,
-						attributes: {
-							input: AtemSource.Server1,
-							transition: Atem_Enums.TransitionStyle.CUT
-						}
-					}
-				}),
-
-				// play FULL
+				// play STK
 				literal<TimelineObjCCGVideo>({
 					_id: IDs.playerClip, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
@@ -206,24 +192,18 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 				})
 			])
 		}
-	}
-	// segmentLineItems.push(transiton)
-	segmentLineItems.push(video)
+	}))
 
-	let segmentLineAdLibItems: Array<SegmentLineAdLibItemOptional> = []
-	ParseSuperSegments(context, story, segmentLineItems, segmentLineAdLibItems, video._id || '', IDs.playerClip)
-
-	return literal<TemplateResult>({
+	return {
 		segmentLine: literal<DBSegmentLine>({
 			_id: '',
 			_rank: 0,
 			mosId: '',
 			segmentId: '',
 			runningOrderId: '',
-			slug: context.segmentLine._id,
-			autoNext: true,
+			slug: 'STK',
 		}),
 		segmentLineItems: segmentLineItems,
-		segmentLineAdLibItems: segmentLineAdLibItems
-	})
+		segmentLineAdLibItems: null
+	}
 })

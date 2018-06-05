@@ -84,7 +84,6 @@ export interface TemplateContextInnerBase {
 	getHashId: (str?: any) => string
 	unhashId: (hash: string) => string
 	getValueByPath: (obj: object | undefined, path: string, defaultValue?: any) => any
-	sumMosItemDurations: (str: string) => number
 	error: (message: string) => void
 	warning: (message: string) => void
 	getSegmentLines (): Array<SegmentLine>
@@ -131,13 +130,6 @@ function getContext (context: TemplateContext): TemplateContextInner {
 		},
 		getSegmentLineIndex (): number {
 			return this.getSegmentLines().findIndex((sl: SegmentLine) => sl._id === context.segmentLine._id)
-		},
-		sumMosItemDurations (str: string): number {
-			let sum = 0
-			str.split(/[\n\\n]/).forEach((num) => {
-				sum = (sum || 0) + (parseFloat(num) || 0)
-			})
-			return sum
 		},
 		error: (message: string) => {
 			logger.error('Error from template: ' + message)

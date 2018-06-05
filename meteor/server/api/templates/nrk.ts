@@ -13,6 +13,8 @@ import { NrkSorlandetBaseTemplate } from './nrk-sorlandetBase'
 import { NrkFullTemplate } from './nrk-full'
 import { NrkDirTemplate } from './nrk-dir'
 import { NrkSplitTemplate } from './nrk-split'
+import { NrkGrafikkTemplate } from './nrk-grafikk'
+import { NrkSTKTemplate } from './nrk-stk'
 
 const literal = <T>(o: T) => o
 
@@ -95,6 +97,8 @@ let nrk: TemplateSet = {
 					else if (type.match(/dir/i))		templateId = 'dir'
 					else if (type.match(/dve/i) &&
 							variant.match(/2like/i))	templateId = 'split'
+					else if (type.match(/grafikk/i))	templateId = 'grafikk'
+					else if (type.match(/stk/i))		templateId = 'stk'
 				}
 				if (templateId) return true // break
 				else return false // keep looking
@@ -111,6 +115,8 @@ let nrk: TemplateSet = {
 		kam: NrkKamTemplate,
 		dir: NrkDirTemplate,
 		split: NrkSplitTemplate,
+		grafikk: NrkGrafikkTemplate,
+		stk: NrkSTKTemplate,
 		sorlandetTemplate: NrkSorlandetBaseTemplate
 	}
 }

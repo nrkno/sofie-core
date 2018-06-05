@@ -67,7 +67,7 @@ import { AtemSource } from './nrk-inputs'
 
 const literal = <T>(o: T) => o
 
-export function ParseSuperSegments (context: TemplateContextInner, story: StoryWithContext, segmentLineItems: SegmentLineItemOptional[], adlibItems: SegmentLineAdLibItemOptional[], videoId: string) {
+export function ParseSuperSegments (context: TemplateContextInner, story: StoryWithContext, segmentLineItems: SegmentLineItemOptional[], adlibItems: SegmentLineAdLibItemOptional[], groupId: string, videoId: string) {
 	const storyItemGfx = _.filter(story.Body, item => {
 		return (
 			item.Type === 'storyItem' &&
@@ -110,16 +110,24 @@ export function ParseSuperSegments (context: TemplateContextInner, story: StoryW
 		const duration = context.getValueByPath(timing, 'mosPayload.duration', 0)
 		const inTime = context.getValueByPath(timing, 'mosPayload.timeIn', 0)
 
-		let trigger: ITimelineTrigger = {
+		let timelineTrigger: ITimelineTrigger = {
+			type: TriggerType.TIME_RELATIVE,
+			value: `#${videoId}.start + 0`
+		}
+		let groupTrigger: ITimelineTrigger = {
 			type: TriggerType.TIME_RELATIVE,
 			value: `#${videoId}.start + 0`
 		}
 
 		let isAdlib = false
 		if (inMode.match(/auto/i)) {
-			trigger = {
+			timelineTrigger = {
 				type: TriggerType.TIME_RELATIVE,
 				value: `#${videoId}.start + ${inTime}`
+			}
+			groupTrigger = {
+				type: TriggerType.TIME_RELATIVE,
+				value: `#${groupId}.start + ${inTime}`
 			}
 		} else {
 			isAdlib = true
@@ -128,7 +136,7 @@ export function ParseSuperSegments (context: TemplateContextInner, story: StoryW
 
 		const cmd = literal<TimelineObjHTTPPost>({
 			_id: context.getHashId('super_post_' + itemID), deviceId: [''], siId: '', roId: '',
-			trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+			trigger: timelineTrigger,
 			priority: 1,
 			duration: duration,
 			LLayer: LLayers.casparcg_cg_graphics_ctrl,
@@ -161,7 +169,7 @@ export function ParseSuperSegments (context: TemplateContextInner, story: StoryW
 				_id: context.getHashId('super_' + itemID),
 				mosId: 'super', // TODO
 				name: name,
-				trigger: trigger,
+				trigger: groupTrigger,
 				status: RundownAPI.LineItemStatusCode.UNKNOWN,
 				sourceLayerId: SourceLayers.graphics0,
 				outputLayerId: 'pgm0',

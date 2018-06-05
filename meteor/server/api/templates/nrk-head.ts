@@ -68,6 +68,7 @@ import { ParseSuperSegments } from './nrk-graphics'
 
 const literal = <T>(o: T) => o
 
+// @todo can this be merged into the normal stk?
 export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (context, story) {
 	let IDs = {
 		lawo_automix: 		context.getHashId('lawo_automix'),
@@ -94,8 +95,10 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 	})
 	if (!storyItemClip) context.warning('Clip missing in mos data')
 
-	let clip = context.getValueByPath(storyItemClip, 'Content.mosExternalMetadata.mosPayload.title', 'head')
-	if (!clip || clip === '') context.warning('Clip name missing in mos data')
+	let clip = context.getValueByPath(storyItemClip, 'Content.objSlug', 'head')
+	if (!clip || clip === '') context.warning('Clip slug missing in mos data')
+	let name = context.getValueByPath(storyItemClip, 'Content.mosExternalMetadata.mosPayload.title', clip)
+	if (!name || name === '') context.warning('Clip name missing in mos data')
 
 	// Copy the vignett from the previous segmentLine if it was found.
 	// @todo make this more durable and refactor to reusable.
@@ -199,7 +202,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 	let video: SegmentLineItemOptional = {
 		_id: context.getHashId('video'),
 		mosId: 'headvideo',
-		name: clip,
+		name: name,
 		trigger: {
 			type: TriggerType.TIME_ABSOLUTE,
 			value: 0
@@ -209,7 +212,6 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 		outputLayerId: 'pgm0',
 		expectedDuration: ( // @todo rewrite this blob
 			story.getValueByPath('MosExternalMetaData.0.MosPayload.Estimated') ||
-			context.sumMosItemDurations(story.getValueByPath('MosExternalMetaData.0.MosPayload.MOSItemDurations')) ||
 			story.getValueByPath('MosExternalMetaData.0.MosPayload.MediaTime') ||
 			story.getValueByPath('MosExternalMetaData.0.MosPayload.SourceMediaTime') ||
 			10
@@ -324,7 +326,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 	segmentLineItems.push(video)
 
 	let segmentLineAdLibItems: Array<SegmentLineAdLibItemOptional> = []
-	ParseSuperSegments(context, story, segmentLineItems, segmentLineAdLibItems, video._id || '')
+	ParseSuperSegments(context, story, segmentLineItems, segmentLineAdLibItems, video._id || '', IDs.playerClip)
 
 	return literal<TemplateResult>({
 		segmentLine: literal<DBSegmentLine>({
