@@ -6,11 +6,14 @@ import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/Perip
 export namespace PeripheralDeviceSecurity {
 
 	export function getPeripheralDevice (id: string, token: string, context: any): PeripheralDevice {
-
+		context = context || {}
 		if (!id) throw new Meteor.Error(400,'id missing!')
-		if (!token) throw new Meteor.Error(400,'token missing!')
 		check(id, String)
-		check(token, String)
+
+		if (! (context || {}).userId) {
+			if (!token) throw new Meteor.Error(400,'token missing!')
+			check(token, String)
+		}
 
 		let peripheralDevice = PeripheralDevices.findOne(id)
 		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + id + '" not found' )
@@ -18,15 +21,24 @@ export namespace PeripheralDeviceSecurity {
 
 		if (peripheralDevice.token === token) return peripheralDevice
 
+		/*if (context.userId) {
+			check(context.userId, String)
+			let user = Meteor.users.findOne(context.userId)
+			if (user) {
+				// TODO: add user access check here, when accounts have been implemented
+				return peripheralDevice
+			}
+		}*/
+
 		throw new Meteor.Error(401,'Not allowed access to peripheralDevice')
 	}
-	export function allowReadAccess (selector: object, token: string, context) {
+	export function allowReadAccess (selector: object, token: string, context: any) {
 
 		if (selector['_id'] && token) {
 
 			check(selector['_id'], String)
 
-			PeripheralDeviceSecurity.getPeripheralDevice(selector['_id'], token, this)
+			PeripheralDeviceSecurity.getPeripheralDevice(selector['_id'], token, context)
 
 			return true
 		} else {

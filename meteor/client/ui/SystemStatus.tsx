@@ -9,13 +9,25 @@ import * as ClassNames from 'classnames'
 import Moment from 'react-moment'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import { getCurrentTime } from '../../lib/lib'
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
+import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { ModalDialog } from '../lib/ModalDialog'
 
 interface IDeviceItemPropsHeader extends InjectedTranslateProps {
 	key: string,
 	device: PeripheralDevice
 }
-const DeviceItem = translate()(class extends React.Component<IDeviceItemPropsHeader> {
+interface IDeviceItemHeader {
+	showDeleteDeviceConfirm: PeripheralDevice | null
+}
+const DeviceItem = translate()(class extends React.Component<IDeviceItemPropsHeader & InjectedTranslateProps, IDeviceItemHeader> {
+	constructor (props) {
+		super(props)
+		this.state = {
+			showDeleteDeviceConfirm: null
+		}
+	}
 	statusCodeString () {
 		let t = this.props.t
 
@@ -34,7 +46,6 @@ const DeviceItem = translate()(class extends React.Component<IDeviceItemPropsHea
 				return t('Fatal')
 		}
 	}
-
 	connectedString () {
 		let t = this.props.t
 
@@ -44,7 +55,6 @@ const DeviceItem = translate()(class extends React.Component<IDeviceItemPropsHea
 			return t('Disconnected')
 		}
 	}
-
 	deviceTypeString () {
 		let t = this.props.t
 
@@ -57,8 +67,30 @@ const DeviceItem = translate()(class extends React.Component<IDeviceItemPropsHea
 				return t('Unknown Device')
 		}
 	}
+	onDeleteDevice (device: PeripheralDevice) {
+		this.setState({
+			showDeleteDeviceConfirm: device
+		})
+	}
+	handleConfirmDeleteShowStyleAccept = (e) => {
+		if (this.state.showDeleteDeviceConfirm) {
+			Meteor.call('temporaryRemovePeripheralDevice', this.state.showDeleteDeviceConfirm._id)
+			// PeripheralDevices.remove(this.state.showDeleteDeviceConfirm._id)
+		}
+		// ShowStyles.remove(this.state.deleteConfirmItem._id)
+		this.setState({
+			showDeleteDeviceConfirm: null
+		})
+	}
+
+	handleConfirmDeleteShowStyleCancel = (e) => {
+		this.setState({
+			showDeleteDeviceConfirm: null
+		})
+	}
 
 	render () {
+		const { t } = this.props
 		// let statusClassNames = ClassNames({
 		// 	'device-item__device-status': true,
 		// 	'device-item__device-status--unknown': this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN,
@@ -111,6 +143,18 @@ const DeviceItem = translate()(class extends React.Component<IDeviceItemPropsHea
 				</td>
 				<td className='device-item__last-seen'>
 					<p><Moment from={getCurrentTime()} date={this.props.device.lastSeen} /></p>
+				</td>
+				<td>
+					<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')}
+						secondaryText={t('Cancel')}
+						show={!!this.state.showDeleteDeviceConfirm}
+						onAccept={(e) => this.handleConfirmDeleteShowStyleAccept(e)}
+						onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
+						<p>{t(`Are you sure you want to delete this device?`)}</p>
+					</ModalDialog>
+					<button className='action-btn right' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteDevice(this.props.device)}>
+						<FontAwesomeIcon icon={faTrash} />
+					</button>
 				</td>
 			</tr>
 		)

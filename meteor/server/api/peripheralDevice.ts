@@ -1229,3 +1229,12 @@ _.each(methods, (fcn: Function, key) => {
 
 // Apply methods:
 Meteor.methods(methods)
+
+// temporary functions:
+Meteor.methods({
+	'temporaryRemovePeripheralDevice' (id: string) {
+		// TODO: Replace this function with an authorized one
+		PeripheralDevices.remove(id)
+		return id
+	}
+})
