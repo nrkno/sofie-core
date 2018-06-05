@@ -193,10 +193,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 					_id: IDs.playerClip, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
 					priority: 1,
-					duration: (
-						context.getValueByPath(storyItemClip, 'Content.objDur', 0) /
-						(context.getValueByPath(storyItemClip, 'Content.objTB') || 1)
-					) * 1000,
+					duration: 0, // hold at end
 					LLayer: LLayers.casparcg_player_clip,
 					content: {
 						type: TimelineContentTypeCasparCg.VIDEO,
