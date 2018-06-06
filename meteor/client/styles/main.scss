@@ -28,7 +28,7 @@ a:visited {
 .origo-pulse {
 	vertical-align: top;
 	
-	&.small {
-		margin-top: -2px;
+	&.small.left, &.small.right {
+		margin-top: 3px;
 	}
 }

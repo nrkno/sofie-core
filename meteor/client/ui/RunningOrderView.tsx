@@ -26,6 +26,7 @@ import { RunningOrderTimingProvider, withTiming, RunningOrderTiming } from './Ru
 import { SegmentTimelineContainer, SegmentLineItemUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { InspectorDrawer } from './InspectorDrawer/InspectorDrawer'
+import { RunningOrderOverview } from './RunningOrderOverview'
 
 import { getCurrentTime } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
@@ -268,9 +269,9 @@ const RunningOrderHeader = translate()(class extends React.Component<InjectedTra
 						<TimingDisplay {...this.props} />
 					</ContextMenuTrigger>
 				</div>
-				<div className='row'>
+				<div className='row dark'>
 					<div className='col c12 running-order-overview'>
-						<img src='/mock_runningOrder_overview.png' />
+						{this.props.runningOrder && <RunningOrderOverview runningOrderId={this.props.runningOrder._id} /> }
 					</div>
 				</div>
 			</div>

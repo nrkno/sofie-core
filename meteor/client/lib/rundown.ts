@@ -56,7 +56,7 @@ export namespace RundownUtils {
 						(segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || (
 							(segmentLine.duration !== undefined ?
 								segmentLine.duration :
-								(segmentLineDuration || 0) - (segmentLineItem.renderedInPoint || 0))
+								(segmentLineDuration || segmentLine.renderedDuration || 0) - (segmentLineItem.renderedInPoint || 0))
 							)
 						) :
 						(segmentLine.duration !== undefined ?
