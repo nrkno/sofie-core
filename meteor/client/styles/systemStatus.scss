@@ -45,5 +45,14 @@
 				}
 			}
 		}
+
+		.device-item__actions {
+			text-align: right;
+
+			> .action-btn {
+				vertical-align: top;
+    			margin-top: 0.4em;
+			}
+		}
 	}
 }

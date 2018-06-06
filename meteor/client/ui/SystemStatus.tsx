@@ -144,7 +144,7 @@ const DeviceItem = translate()(class extends React.Component<IDeviceItemPropsHea
 				<td className='device-item__last-seen'>
 					<p><Moment from={getCurrentTime()} date={this.props.device.lastSeen} /></p>
 				</td>
-				<td>
+				<td className='device-item__actions'>
 					<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')}
 						secondaryText={t('Cancel')}
 						show={!!this.state.showDeleteDeviceConfirm}
@@ -152,7 +152,7 @@ const DeviceItem = translate()(class extends React.Component<IDeviceItemPropsHea
 						onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
 						<p>{t(`Are you sure you want to delete this device?`)}</p>
 					</ModalDialog>
-					<button className='action-btn right' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteDevice(this.props.device)}>
+					<button className='action-btn' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteDevice(this.props.device)}>
 						<FontAwesomeIcon icon={faTrash} />
 					</button>
 				</td>
