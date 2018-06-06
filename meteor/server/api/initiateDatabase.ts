@@ -307,22 +307,22 @@ Meteor.methods({
 				'settings.devices.casparcg0': ((pd['settings'] || {})['devices'] || {})['casparcg0'] || {
 					type: PlayoutDeviceType.CASPARCG,
 					options: {
-						host: '10.0.1.111',
-						port: 5250
+						host: process.env.CASPARCG_HOST || '',
+						port: process.env.CASPARCG_PORT || 5250
 					}
 				},
 				'settings.devices.atem0': ((pd['settings'] || {})['devices'] || {})['atem0'] || {
 					type: PlayoutDeviceType.ATEM,
 					options: {
-						host: '10.0.1.118',
-						port: 9910
+						host: process.env.ATEM_HOST || '',
+						port: process.env.ATEM_PORT || 9910
 					}
 				},
 				'settings.devices.lawo0': ((pd['settings'] || {})['devices'] || {})['lawo0'] || {
 					type: PlayoutDeviceType.LAWO,
 					options: {
-						host: '127.0.0.1',
-						port: 9000
+						host: process.env.LAWO_HOST || '',
+						port: process.env.LAWO_PORT || 9000
 					}
 				},
 				'settings.devices.abstract0': ((pd['settings'] || {})['devices'] || {})['abstract0'] || {
