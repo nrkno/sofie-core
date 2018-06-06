@@ -55,4 +55,14 @@
 			}
 		}
 	}
+
+	&.expando {
+		> thead {
+			> tr {
+				> th {
+					padding: 3px 5px 3px 10px;
+				}
+			}
+		}
+	}
 }

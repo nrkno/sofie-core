@@ -426,7 +426,7 @@ class MosDeviceSettingsComponent extends React.Component<IPropsHeader & Injected
 		const { t } = this.props
 
 		return ([
-			<tr key={'header'}>
+			<tr className='hl' key={'header'}>
 				<th>DeviceId</th>
 				<th>Primary ID</th>
 				<th>Host</th>
