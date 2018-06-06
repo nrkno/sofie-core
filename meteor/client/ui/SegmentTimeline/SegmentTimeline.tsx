@@ -105,7 +105,8 @@ const SegmentTimelineZoom = class extends React.Component<IPropsHeader & IZoomPr
 		if (this.context && this.context.durations) {
 			const durations = this.context.durations as RunningOrderTiming.RunningOrderTimingContext
 			this.props.segmentLines.forEach((item) => {
-				total += durations.segmentLineDurations ? durations.segmentLineDurations[item._id] : (item.duration || item.renderedDuration || 1)
+				// total += durations.segmentLineDurations ? durations.segmentLineDurations[item._id] : (item.duration || item.renderedDuration || 1)
+				total += Math.max((item.duration || item.renderedDuration || item.expectedDuration || 1), durations.segmentLineDurations && durations.segmentLineDurations[item._id] || 0)
 			})
 		} else {
 			total = RundownUtils.getSegmentDuration(this.props.segmentLines)

@@ -380,6 +380,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 				.segment-timeline__layer-item-appendage {
 					display: none;
 				}
+
+				.segment-timeline__segment-line__difference {
+					background: rgba(0, 0, 0, 0.5);	
+				}
 			}
 		}
 

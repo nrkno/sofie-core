@@ -154,7 +154,8 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		}
 		if (props.runningOrder.nextSegmentLineId === segmentLine._id) {
 			isNextSegment = true
-			autoNextSegmentLine = (previousSegmentLine || {}).autoNext || false
+			// next is only auto, if current has a duration
+			autoNextSegmentLine = ((previousSegmentLine || {}).autoNext || false) && ((previousSegmentLine || {}).expectedDuration !== 0)
 		}
 
 		if (segmentLine.startedPlayback !== undefined) {
