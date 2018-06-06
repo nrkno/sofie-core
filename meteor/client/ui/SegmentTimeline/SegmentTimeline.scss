@@ -90,6 +90,17 @@ $timeline-layer-height: 1em;
         bottom: 0;
         display: block;
     }
+
+    .segment-timeline__segment-line__difference {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 5;
+        pointer-events: none;
+    }
 }
 .segment-timeline__output-layers {
     display: block;

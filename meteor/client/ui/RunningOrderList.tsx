@@ -145,7 +145,7 @@ export class RunningOrderListItem extends React.Component<IRunningOrderListItemP
 						{this.props.runningOrder.airStatus}
 					</td>
 				</tr>
-				{this.props.runningOrder.startedPlayback && this.props.runningOrder.expectedDuration &&
+				{this.props.runningOrder.startedPlayback && this.props.runningOrder.expectedDuration && this.props.runningOrder.active &&
 					<tr className='hl expando-addon'>
 						<td colSpan={7}>
 							<ActiveProgressBar
