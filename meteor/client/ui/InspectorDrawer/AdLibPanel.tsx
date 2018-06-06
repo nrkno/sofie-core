@@ -392,7 +392,7 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 	}
 
 	componentDidUpdate (prevProps: IPropsHeader) {
-		mousetrap.unbind(this.usedHotkeys)
+		mousetrap.unbind(this.usedHotkeys, 'keyup')
 		this.usedHotkeys.length = 0
 
 		if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
@@ -405,7 +405,7 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 	}
 
 	componentWillUnmount () {
-		mousetrap.unbind(this.usedHotkeys)
+		mousetrap.unbind(this.usedHotkeys, 'keyup')
 		this.usedHotkeys.length = 0
 	}
 
@@ -415,7 +415,7 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 				if (item.hotkey) {
 					mousetrap.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						this.onToggleAdLib(item)
-					}, 'keydown')
+					}, 'keyup')
 					this.usedHotkeys.push(item.hotkey)
 				}
 			})
@@ -426,7 +426,7 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 				if (item.hotkey) {
 					mousetrap.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						this.onToggleAdLib(item)
-					}, 'keydown')
+					}, 'keyup')
 					this.usedHotkeys.push(item.hotkey)
 				}
 			})
@@ -437,7 +437,7 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 				if (item.clearKeyboardHotkey) {
 					mousetrap.bind(item.clearKeyboardHotkey, (e: ExtendedKeyboardEvent) => {
 						this.onClearAllSourceLayer(item)
-					}, 'keydown')
+					}, 'keyup')
 					this.usedHotkeys.push(item.clearKeyboardHotkey)
 				}
 			})

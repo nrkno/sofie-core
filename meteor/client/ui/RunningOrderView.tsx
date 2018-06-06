@@ -173,15 +173,15 @@ const TimingDisplay = translate()(withTiming()(class extends React.Component<ITi
 
 const RunningOrderHeader = translate()(class extends React.Component<InjectedTranslateProps & IHeaderProps> {
 	componentDidMount () {
-		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE, this.keyTake)
-		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE, this.keyActivate)
-		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE, this.keyDeactivate)
+		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE, this.keyTake, 'keyup')
+		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE, this.keyActivate, 'keyup')
+		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE, this.keyDeactivate, 'keyup')
 	}
 
 	componentWillUnmount () {
-		mousetrap.unbind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE)
-		mousetrap.unbind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE)
-		mousetrap.unbind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE)
+		mousetrap.unbind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE, 'keyup')
+		mousetrap.unbind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE, 'keyup')
+		mousetrap.unbind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE, 'keyup')
 	}
 
 	keyTake = (e: ExtendedKeyboardEvent) => {
