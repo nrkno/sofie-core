@@ -88,7 +88,7 @@ interface ITimerHeaderProps extends IHeaderProps {
 enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_TAKE = 'f12',
 	RUNNING_ORDER_ACTIVATE = 'f2',
-	RUNNING_ORDER_DEACTIVATE = 'ctrl+shift+f2'
+	RUNNING_ORDER_DEACTIVATE = 'mod+shift+f2'
 }
 
 const TimingDisplay = translate()(withTiming()(class extends React.Component<ITimerHeaderProps & InjectedTranslateProps & RunningOrderTiming.InjectedROTimingProps> {
