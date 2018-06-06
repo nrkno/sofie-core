@@ -4,7 +4,9 @@ export enum AtemSource {
 	DSK2F = 12,
 	DSK2K = 13,
 	Server1 = 14,
-	Server3 = 15, // @todo confirm input for ssrc background
+	Server1Next = 15,
+	Server2 = 16, 
+	Server3 = 17, // @todo confirm input for ssrc background
 	Grafikk = 1000, // @todo
 }
 
