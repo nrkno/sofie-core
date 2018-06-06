@@ -32,12 +32,14 @@ interface ISegmentPropsHeader {
 	runningOrder: RunningOrder
 	totalDuration: number
 	segmentLiveDurations?: TimeMap
+	segmentStartsAt?: TimeMap
 }
 
 interface ISegmentLinePropsHeader {
 	segmentLine: SegmentLineUi
 	totalDuration: number
 	segmentLiveDurations?: TimeMap
+	segmentStartsAt?: TimeMap
 	isLive: boolean
 	isNext: boolean
 }
@@ -48,32 +50,41 @@ interface TimeMap {
 
 const SegmentLineOverview: React.SFC<ISegmentLinePropsHeader> = (props: ISegmentLinePropsHeader) => {
 	return (
-		<div className={ClassNames('running-order__overview__segment__segment-line', {
-			'live': props.isLive,
-			'next': props.isNext,
+		<React.Fragment>
+			<div className={ClassNames('running-order__overview__segment__segment-line', {
+				'live': props.isLive,
+				'next': props.isNext,
 
-			'has-played': ((props.segmentLine.startedPlayback || 0) > 0 && (props.segmentLine.duration || 0) > 0)
-		})}
-			style={{
-				'width': (((Math.max(props.segmentLiveDurations && props.segmentLiveDurations[props.segmentLine._id] || 0, props.segmentLine.duration || props.segmentLine.expectedDuration || 0)) / props.totalDuration) * 100) + '%'
-			}}
-		>
-			{ props.isNext &&
-				<div className={'running-order__overview__segment__segment-line__next-line'}>
+				'has-played': ((props.segmentLine.startedPlayback || 0) > 0 && (props.segmentLine.duration || 0) > 0)
+			})}
+				style={{
+					'width': (((Math.max(props.segmentLiveDurations && props.segmentLiveDurations[props.segmentLine._id] || 0, props.segmentLine.duration || props.segmentLine.expectedDuration || 0)) / props.totalDuration) * 100) + '%'
+				}}
+			>
+				{ props.isNext &&
+					<div className={'running-order__overview__segment__segment-line__next-line'}>
+					</div>
+				}
+				{ props.isLive &&
+					<div className={'running-order__overview__segment__segment-line__live-line'}
+						style={{
+							'left': (((getCurrentTime() - (props.segmentLine.startedPlayback || 0)) /
+								(Math.max(props.segmentLiveDurations && props.segmentLiveDurations[props.segmentLine._id] || 0, props.segmentLine.duration || props.segmentLine.expectedDuration || 0))) * 100) + '%'
+						}}>
+					</div>
+				}
+				<div className='running-order__overview__segment__segment-line__label'>
+					{props.segmentLine.slug}
 				</div>
-			}
-			{ props.isLive &&
-				<div className={'running-order__overview__segment__segment-line__live-line'}
+			</div>
+			{props.isLive && ((((getCurrentTime() - (props.segmentLine.startedPlayback || 0)) + ((props.segmentStartsAt && props.segmentStartsAt[props.segmentLine._id]) || 0)) / props.totalDuration * 100) > 0) &&
+				<div className='running-order__overview__segment__segment-line__live-shade'
 					style={{
-						'left': (((getCurrentTime() - (props.segmentLine.startedPlayback || 0)) /
-							(Math.max(props.segmentLiveDurations && props.segmentLiveDurations[props.segmentLine._id] || 0, props.segmentLine.duration || props.segmentLine.expectedDuration || 0))) * 100) + '%'
+						'width': (((getCurrentTime() - (props.segmentLine.startedPlayback || 0)) + ((props.segmentStartsAt && props.segmentStartsAt[props.segmentLine._id]) || 0)) / props.totalDuration * 100) + '%'
 					}}>
 				</div>
 			}
-			<div className='running-order__overview__segment__segment-line__label'>
-				{props.segmentLine.slug}
-			</div>
-		</div>
+		</React.Fragment>
 	)
 }
 
@@ -86,6 +97,7 @@ const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHea
 						key={item._id}
 						totalDuration={props.totalDuration}
 						segmentLiveDurations={props.segmentLiveDurations}
+						segmentStartsAt={props.segmentStartsAt}
 						isLive={props.runningOrder.currentSegmentLineId === item._id}
 						isNext={props.runningOrder.nextSegmentLineId === item._id}
 						 />
@@ -122,7 +134,12 @@ export const RunningOrderOverview = withTracker((props: IPropsHeader, state) => 
 				<div className='running-order__overview'>
 				{
 					this.props.segments.map((item) => {
-						return <SegmentOverview segment={item} key={item._id} totalDuration={Math.max((this.props.timingDurations && this.props.timingDurations.asPlayedRundownDuration) || 1, this.props.runningOrder.expectedDuration || 1)} segmentLiveDurations={(this.props.timingDurations && this.props.timingDurations.segmentLineDurations) || {}} runningOrder={this.props.runningOrder} />
+						return <SegmentOverview segment={item}
+							key={item._id}
+							totalDuration={Math.max((this.props.timingDurations && this.props.timingDurations.asPlayedRundownDuration) || 1, this.props.runningOrder.expectedDuration || 1)}
+							segmentLiveDurations={(this.props.timingDurations && this.props.timingDurations.segmentLineDurations) || {}} runningOrder={this.props.runningOrder}
+							segmentStartsAt={(this.props.timingDurations && this.props.timingDurations.segmentLineStartsAt) || {}}
+							/>
 					})
 				}
 				</div>

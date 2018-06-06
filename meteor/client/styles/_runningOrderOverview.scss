@@ -1,11 +1,27 @@
+.running-order-overview {
+	display: block;
+	padding: 0 1.5em;
+	overflow: hidden;
+}
+
 .running-order__overview {
-	padding: 1.5em;
 	display: block;
 	position: relative;
 	white-space: nowrap;
-	overflow: hidden;
+	padding: 1.5em 0;
     background: $segment-timeline-background-color;
-    background-clip: content-box;
+	background-clip: content-box;
+	
+	.running-order__overview__segment__segment-line__live-shade {
+		position: absolute;
+		top: 0;
+		left: -1.5em;
+		bottom: 0;
+		padding-left: 1.5em;
+		background: rgba(0,0,0,0.5);
+		box-sizing: content-box;
+		pointer-events: none;
+	}
 
 	.running-order__overview__segment__segment-line {
 		position: relative;
@@ -34,10 +50,10 @@
 
 		.running-order__overview__segment__segment-line__live-line {
 			position: absolute;
-			top: -10px;
+			top: -1.5em;
 			left: 0;
 			right: auto;
-			bottom: -10px;
+			bottom: -1.5em;
 			width: 2px;
 			background: $general-live-color;
 			z-index: 4;
