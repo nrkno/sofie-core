@@ -9,7 +9,7 @@ $segment-background-color: #000;
 $segment-timeline-background-color: #1F1F1F;
 $segment-title-background-color: #4B4B4B;
 $segment-title-background-color-next: $general-next-color;
-$segment-title-text-color-live: #8B8B8B;
+$segment-title-text-color-live: #4B4B4B;
 $segment-title-background-color-live: $general-live-color;
 $segment-title-background-color-remote: $general-live-remote-color;
 $segment-title-background-color-has-played: #2c2c2c;
@@ -61,7 +61,22 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	left: 0;
 	bottom: 0;
 	right: 0;
-	border: 10px solid $color-status-fatal;
+
+	border: 8px dashed $color-status-fatal;
+	border-image: repeating-linear-gradient(
+		315deg,
+		transparent,
+		transparent 10px,
+		$color-status-fatal 11px,
+		$color-status-fatal 31px,
+		transparent 32px) 8; 
+/* 	border-image: repeating-linear-gradient(
+		315deg,
+		#ffff00,
+		#ffff00 10px,
+		$color-status-fatal 11px,
+		$color-status-fatal 31px,
+		#ffff00 32px) 8;  */
 	z-index: 10000;
 	pointer-events: none;
 }
@@ -72,24 +87,85 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
     left: 0;
     right: 0;
 	z-index: 20;
+
+	user-select: none;
+
+	.flex-col.col-timing {
+		flex: 1 1;
+	}
 	
 	.timing {
-		display: flex;
-		margin: 18px 20px 17px;
-		font-size: 20px;
+		margin: 0 0;
+		min-width: auto;
+		width: 100%;
+		text-align: center;
 	
 		.timing-clock {
-			margin-right: 1.5em;
+			position: relative;
+			margin-right: 1em;
 			font-family: 'Roboto', Helvetica Neue, Arial, sans-serif;
 			font-weight: normal;
+			color: $general-clock;
+			font-size: 1.5em;
+			margin-top: 0.8em;
+			font-weight: 100;
+			word-break: keep-all;
+			white-space: nowrap;
+
+			&.visual-last-child {
+				margin-right: 0;
+			}
+
+			&.countdown {
+				font-weight: 500;
+			}
+
+			&.time-now {
+				position: absolute;
+				top: 0.05em;
+				left: 50%;
+				transform: translateX(-50%);
+				margin-top: 6px;
+				margin-right: 0;
+				font-size: 2.3em;
+				font-weight: 100;
+				text-align: center;
+			}
+
+			.timing-clock-label {
+				position: absolute;
+				top: -1em;
+				color: #B8B8B8;
+				text-transform: uppercase;
+				white-space: nowrap;
+				font-weight: 300;
+				font-size: 0.5em;
+
+				&.left {
+					left: 0;
+					right: auto;
+					text-align: left;
+				}
+
+				&.right {
+					right: 0;
+					left: auto;
+					text-align: right;
+				}
+			}
 
 			&.heavy-light {
+				font-weight: 400;
+
 				&.heavy {
-					color: $general-late-color;
+					// color: $general-late-color;
+					color: #FFE900;
+					background: none;
 				}
 
 				&.light {
 					color: $general-fast-color;
+					background: none;
 				}
 			}
 		}
@@ -1034,6 +1110,24 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	}
 }
 
+// TODO: this is just a debug label, should not be visible in final app
+.segment-timeline__debug-info {
+	position: absolute;
+	white-space: nowrap;
+	word-wrap: none;
+	color: #fff;
+	top: -1.5em;
+	right: 0;
+
+	&.red {
+		color: red;
+		top: auto;
+		bottom: -1.5em;
+		right: auto;
+		left: 0
+	}
+}
+
 .segment-timeline__mini-inspector {
 	position: absolute;
 	display: block;
@@ -1082,3 +1176,5 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		}
 	}
 }
+
+@import "runningOrderOverview";

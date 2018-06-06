@@ -17,4 +17,4 @@ export interface RunningOrderBaselineItem extends SegmentLineItemGeneric {
 // @ts-ignore
 export const RunningOrderBaselineItems: TransformedCollection<RunningOrderBaselineItem, RunningOrderBaselineItem>
 	// @ts-ignore
-	= new Mongo.Collection<RunningOrderBaselineItem>('segmentLineBaselineItems')
+	= new Mongo.Collection<RunningOrderBaselineItem>('runningOrderBaselineItems')

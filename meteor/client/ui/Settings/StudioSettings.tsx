@@ -185,7 +185,7 @@ class StudioOutputSettings extends React.Component<IChildStudioInterfaceProps & 
 												obj={this.props.studioInstallation}
 												type='int'
 												collection={StudioInstallations}
-												className=''></EditAttribute>
+												className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
 								</div>
@@ -444,7 +444,7 @@ class StudioSourcesSettings extends React.Component<IChildStudioInterfaceProps &
 												obj={this.props.studioInstallation}
 												type='int'
 												collection={StudioInstallations}
-												className=''></EditAttribute>
+												className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -456,7 +456,7 @@ class StudioSourcesSettings extends React.Component<IChildStudioInterfaceProps &
 												obj={this.props.studioInstallation}
 												type='text'
 												collection={StudioInstallations}
-												className=''></EditAttribute>
+												className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -467,6 +467,18 @@ class StudioSourcesSettings extends React.Component<IChildStudioInterfaceProps &
 												attribute={'sourceLayers.' + index + '.clearKeyboardHotkey'}
 												obj={this.props.studioInstallation}
 												type='text'
+												collection={StudioInstallations}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Assign hotkeys to global adlibs')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + index + '.assignHotkeysToGlobalAdlibs'}
+												obj={this.props.studioInstallation}
+												type='checkbox'
 												collection={StudioInstallations}
 												className=''></EditAttribute>
 										</label>

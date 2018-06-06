@@ -11,6 +11,7 @@ import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
 import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
 import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
+import { RunningOrderBaselineAdLibItems } from '../../../lib/collections/RunningOrderBaselineAdLibItems'
 import { AdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
 import * as mousetrap from 'mousetrap'
@@ -24,12 +25,13 @@ import { Spinner } from '../../lib/Spinner'
 
 interface IListViewPropsHeader {
 	segments: Array<SegmentUi>
-	onSelectAdLib: (aSLine: SegmentLineAdLibItem) => void
-	onToggleAdLib: (aSLine: SegmentLineAdLibItem) => void
-	selectedItem: SegmentLineAdLibItem | undefined
+	onSelectAdLib: (aSLine: SegmentLineAdLibItemUi) => void
+	onToggleAdLib: (aSLine: SegmentLineAdLibItemUi) => void
+	selectedItem: SegmentLineAdLibItemUi | undefined
 	selectedSegment: SegmentUi | undefined
 	filter: string | undefined
 	studioInstallation: StudioInstallation
+	roAdLibs: Array<SegmentLineAdLibItemUi>
 }
 
 interface IListViewStateHeader {
@@ -89,6 +91,32 @@ const AdLibListView = translate()(class extends React.Component<IListViewPropsHe
 				}, 250, 'swing')
 			}
 		}
+	}
+
+	renderGlobalAdLibs () {
+		return (
+			<tbody id={'adlib-panel__list-view__globals'} key='globals' className={ClassNames('adlib-panel__list-view__list__segment')}>
+			{
+					this.props.roAdLibs.map((item) => {
+						if (!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0) {
+							return (
+								<AdLibListItem
+									key={item._id}
+									item={item}
+									selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
+									layer={this.state.sourceLayers[item.sourceLayerId]}
+									outputLayer={this.state.outputLayers[item.outputLayerId]}
+									onToggleAdLib={this.props.onToggleAdLib}
+									onSelectAdLib={this.props.onSelectAdLib}
+								/>
+							)
+						} else {
+							return null
+						}
+					})
+			}
+			</tbody>
+		)
 	}
 
 	renderSegments () {
@@ -155,6 +183,7 @@ const AdLibListView = translate()(class extends React.Component<IListViewPropsHe
 					</thead>
 				</table>
 				<table className='adlib-panel__list-view__list__table' ref={this.setTableRef}>
+					{this.renderGlobalAdLibs()}
 					{this.renderSegments()}
 				</table>
 			</div>
@@ -230,6 +259,7 @@ const AdLibPanelToolbar = translate()(class extends React.Component<IToolbarProp
 
 export interface SegmentLineAdLibItemUi extends SegmentLineAdLibItem {
 	hotkey?: string
+	isGlobal?: boolean
 }
 
 export interface SegmentUi extends Segment {
@@ -250,6 +280,7 @@ interface IPropsHeader {
 	sourceLayerLookup: ISourceLayerLookup
 	segments: Array<SegmentUi>
 	liveSegment: SegmentUi | undefined
+	roAdLibs: Array<SegmentLineAdLibItemUi>
 }
 
 interface IStateHeader {
@@ -263,15 +294,41 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 	let subSegments = Meteor.subscribe('segments', {})
 	let subSegmentLines = Meteor.subscribe('segmentLines', {})
 	let subSegmentLineItems = Meteor.subscribe('segmentLineAdLibItems', {})
+	let subRunningOrderAdLibItems = Meteor.subscribe('runningOrderBaselineAdLibItems', {})
 	let subStudioInstallations = Meteor.subscribe('studioInstallations', {})
 	let subShowStyles = Meteor.subscribe('showStyles', {})
 
 	let liveSegment: SegmentUi | undefined = undefined
 
 	const sourceLayerLookup: ISourceLayerLookup =
-		props.studioInstallation && props.studioInstallation.sourceLayers ?
-			_.object(_.map(props.studioInstallation.sourceLayers, (item) => [item._id, item])) :
-			{}
+	props.studioInstallation && props.studioInstallation.sourceLayers ?
+		_.object(_.map(props.studioInstallation.sourceLayers, (item) => [item._id, item])) :
+		{}
+
+	// a hash to store various indices of the used hotkey lists
+	let sourceHotKeyUse = {}
+
+	let roAdLibs: Array<SegmentLineAdLibItemUi> = []
+
+	if (props.runningOrder) {
+		let roAdLibItems = RunningOrderBaselineAdLibItems.find({runningOrderId: props.runningOrder._id}).fetch()
+		roAdLibItems.forEach((item) => {
+			// automatically assign hotkeys based on adLibItem index
+			const uiAdLib: SegmentLineAdLibItemUi = _.clone(item)
+			if (item.sourceLayerId && sourceLayerLookup[item.sourceLayerId] && sourceLayerLookup[item.sourceLayerId].activateKeyboardHotkeys && sourceLayerLookup[item.sourceLayerId].assignHotkeysToGlobalAdlibs) {
+				let keyboardHotkeysList = sourceLayerLookup[uiAdLib.sourceLayerId].activateKeyboardHotkeys!.split(',')
+				if ((sourceHotKeyUse[uiAdLib.sourceLayerId] || 0) < keyboardHotkeysList.length) {
+					uiAdLib.hotkey = keyboardHotkeysList[(sourceHotKeyUse[uiAdLib.sourceLayerId] || 0)]
+					uiAdLib.isGlobal = true
+					// add one to the usage hash table
+					sourceHotKeyUse[uiAdLib.sourceLayerId] = (sourceHotKeyUse[uiAdLib.sourceLayerId] || 0) + 1
+				}
+			}
+			// always add them to the list
+			roAdLibs.push(uiAdLib)
+		})
+	}
+
 	const segments = props.runningOrder && props.segments ? (props.segments as Array<SegmentUi>).map((segSource) => {
 		const seg = _.clone(segSource)
 		seg.segLines = segSource.getSegmentLines()
@@ -290,11 +347,13 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 
 		// automatically assign hotkeys based on adLibItem index
 		if (seg.isLive) {
-			seg.items.forEach((item, index) => {
+			seg.items.forEach((item) => {
 				if (item.sourceLayerId && sourceLayerLookup[item.sourceLayerId] && sourceLayerLookup[item.sourceLayerId].activateKeyboardHotkeys) {
 					let keyboardHotkeysList = sourceLayerLookup[item.sourceLayerId].activateKeyboardHotkeys!.split(',')
-					if (index < keyboardHotkeysList.length) {
-						item.hotkey = keyboardHotkeysList[index]
+					if ((sourceHotKeyUse[item.sourceLayerId] || 0) < keyboardHotkeysList.length) {
+						item.hotkey = keyboardHotkeysList[(sourceHotKeyUse[item.sourceLayerId] || 0)]
+						// add one to the usage hash table
+						sourceHotKeyUse[item.sourceLayerId] = (sourceHotKeyUse[item.sourceLayerId] || 0) + 1
 					}
 				}
 			})
@@ -305,7 +364,8 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 	return {
 		segments,
 		liveSegment,
-		sourceLayerLookup
+		sourceLayerLookup,
+		roAdLibs
 	}
 })(class AdLibPanel extends React.Component<IPropsHeader, IStateHeader> {
 	usedHotkeys: Array<string> = []
@@ -332,7 +392,7 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 	}
 
 	componentDidUpdate (prevProps: IPropsHeader) {
-		mousetrap.unbind(this.usedHotkeys)
+		mousetrap.unbind(this.usedHotkeys, 'keyup')
 		this.usedHotkeys.length = 0
 
 		if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
@@ -345,17 +405,28 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 	}
 
 	componentWillUnmount () {
-		mousetrap.unbind(this.usedHotkeys)
+		mousetrap.unbind(this.usedHotkeys, 'keyup')
 		this.usedHotkeys.length = 0
 	}
 
 	refreshKeyboardHotkeys () {
+		if (this.props.roAdLibs) {
+			this.props.roAdLibs.forEach((item) => {
+				if (item.hotkey) {
+					mousetrap.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
+						this.onToggleAdLib(item)
+					}, 'keyup')
+					this.usedHotkeys.push(item.hotkey)
+				}
+			})
+		}
+
 		if (this.props.liveSegment && this.props.liveSegment.items) {
 			this.props.liveSegment.items.forEach((item) => {
 				if (item.hotkey) {
 					mousetrap.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						this.onToggleAdLib(item)
-					}, 'keydown')
+					}, 'keyup')
 					this.usedHotkeys.push(item.hotkey)
 				}
 			})
@@ -366,7 +437,7 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 				if (item.clearKeyboardHotkey) {
 					mousetrap.bind(item.clearKeyboardHotkey, (e: ExtendedKeyboardEvent) => {
 						this.onClearAllSourceLayer(item)
-					}, 'keydown')
+					}, 'keyup')
 					this.usedHotkeys.push(item.clearKeyboardHotkey)
 				}
 			})
@@ -379,17 +450,19 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 		})
 	}
 
-	onSelectAdLib = (aSLine: SegmentLineAdLibItem) => {
+	onSelectAdLib = (aSLine: SegmentLineAdLibItemUi) => {
 		console.log(aSLine)
 		this.setState({
 			selectedItem: aSLine
 		})
 	}
 
-	onToggleAdLib = (aSLine: SegmentLineAdLibItem) => {
+	onToggleAdLib = (aSLine: SegmentLineAdLibItemUi) => {
 		console.log(aSLine)
-		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
+		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && !aSLine.isGlobal) {
 			Meteor.call('playout_segmentAdLibLineItemStart', this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
+		} else if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && aSLine.isGlobal) {
+			Meteor.call('playout_runningOrderBaselineAdLibItemStart', this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
 		}
 	}
 
@@ -435,6 +508,7 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 					selectedItem={this.state.selectedItem}
 					selectedSegment={this.state.selectedSegment}
 					studioInstallation={this.props.studioInstallation}
+					roAdLibs={this.props.roAdLibs}
 					filter={this.state.filter} />
 			</React.Fragment>
 		)

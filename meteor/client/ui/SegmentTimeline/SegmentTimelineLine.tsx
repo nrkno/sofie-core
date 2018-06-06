@@ -26,6 +26,8 @@ import { withTiming } from '../RunningOrderTiming'
 import * as faFastForward from '@fortawesome/fontawesome-free-solid/faFastForward'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
+import { DEBUG_MODE } from './SegmentTimelineDebugMode'
+
 interface ISourceLayerProps {
 	key: string
 	layer: ISourceLayerUi
@@ -162,6 +164,11 @@ class OutputGroup extends React.Component<IOutputGroupProps> {
 				'collapsable': this.props.layer.sourceLayers && this.props.layer.sourceLayers.length > 1,
 				'collapsed': this.props.collapsedOutputs[this.props.layer._id] === true
 			})}>
+				{ DEBUG_MODE &&
+					<div className='segment-timeline__debug-info red'>
+						{RundownUtils.formatTimeToTimecode(this.props.startsAt)}
+					</div>
+				}
 				{this.renderInside()}
 			</div>
 		)
@@ -293,7 +300,7 @@ export const SegmentTimelineLine = translate()(withTiming({
 		if (this.props.relative || this.state.isLive) {
 			return true
 		} else {
-			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine, this.getSegmentLineStartsAt())
+			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine, this.getSegmentLineStartsAt(), Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || this.props.segmentLine.renderedDuration || 0))
 		}
 	}
 
@@ -313,7 +320,9 @@ export const SegmentTimelineLine = translate()(withTiming({
 							segment={this.props.segment}
 							segmentLine={segmentLine}
 							startsAt={this.getSegmentLineStartsAt() || this.props.segmentLine.startsAt || 0}
-							duration={(this.props.timingDurations.segmentLineDurations && this.props.timingDurations.segmentLineDurations[segmentLine._id]) || this.props.segmentLine.renderedDuration || 0}
+							duration={segmentLine.duration !== undefined ? segmentLine.duration : Math.max(
+								((this.props.timingDurations.segmentLineDurations && this.props.timingDurations.segmentLineDurations[segmentLine._id]) || 0),
+								this.props.segmentLine.renderedDuration || 0, 0)}
 							isLiveLine={this.props.runningOrder.currentSegmentLineId === segmentLine._id ? true : false}
 							isNextLine={this.props.runningOrder.nextSegmentLineId === segmentLine._id ? true : false}
 							timeScale={this.props.timeScale}
@@ -350,7 +359,7 @@ export const SegmentTimelineLine = translate()(withTiming({
 					<div className='segment-timeline__segment-line__nextline'>
 						<div className='segment-timeline__segment-line__nextline__label'>
 							{
-								this.props.segmentLine.autoNext ?
+								this.props.autoNextSegmentLine ?
 									<React.Fragment>
 										<FontAwesomeIcon icon={faFastForward} />
 										{t('Next')}

@@ -17,9 +17,10 @@ import * as _ from 'underscore'
 import { logger } from './../logging'
 import { PeripheralDevice, PeripheralDevices, PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { IMOSRunningOrder, IMOSObjectStatus } from 'mos-connection'
+import { IMOSRunningOrder, IMOSROFullStory, IMOSObjectStatus } from 'mos-connection'
 import { PlayoutTimelinePrefixes } from '../../lib/api/playout'
 import { TemplateContext, getHash, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
+import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { ServerPeripheralDeviceAPI, setStoryStatus } from './peripheralDevice'
 
 Meteor.methods({
@@ -82,6 +83,8 @@ Meteor.methods({
 			previousSegmentLineId: null,
 			currentSegmentLineId: null,
 			nextSegmentLineId: segmentLines[0]._id // put the first on queue
+		}, $unset: {
+			startedPlayback: 0
 		}})
 
 		logger.info('Building baseline items...')
@@ -98,6 +101,13 @@ Meteor.methods({
 				saveIntoDb<RunningOrderBaselineItem, RunningOrderBaselineItem>(RunningOrderBaselineItems, {
 					runningOrderId: runningOrder._id
 				}, result.baselineItems)
+			}
+
+			if (result.segmentLineAdLibItems) {
+				logger.info(`... got ${result.segmentLineAdLibItems.length} adLib items from template.`)
+				saveIntoDb<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>(RunningOrderBaselineAdLibItems, {
+					runningOrderId: runningOrder._id
+				}, result.segmentLineAdLibItems)
 			}
 		}
 
@@ -124,6 +134,10 @@ Meteor.methods({
 
 		// clean up all runtime baseline items
 		RunningOrderBaselineItems.remove({
+			runningOrderId: runningOrder._id
+		})
+
+		RunningOrderBaselineAdLibItems.remove({
 			runningOrderId: runningOrder._id
 		})
 
@@ -222,6 +236,8 @@ Meteor.methods({
 						}
 					}
 
+					setRunningOrderStartedPlayback(runningOrder, startedPlayback) // Set startedPlayback on the running order if this is the first item to be played
+
 					RunningOrders.update(runningOrder._id, {
 						$set: {
 							previousSegmentLineId: null
@@ -239,6 +255,8 @@ Meteor.methods({
 							setPreviousLinePlaybackDuration(roId, prevSegLine, startedPlayback)
 						}
 					}
+
+					setRunningOrderStartedPlayback(runningOrder, startedPlayback) // Set startedPlayback on the running order if this is the first item to be played
 
 					let segmentLinesAfter = runningOrder.getSegmentLines({
 						_rank: {
@@ -269,6 +287,8 @@ Meteor.methods({
 					})
 
 					let nextSegmentLine: SegmentLine | null = segmentLinesAfter[0] || null
+
+					setRunningOrderStartedPlayback(runningOrder, startedPlayback) // Set startedPlayback on the running order if this is the first item to be played
 
 					RunningOrders.update(runningOrder._id, {
 						$set: {
@@ -306,6 +326,29 @@ Meteor.methods({
 		if (!adLibItem) throw new Meteor.Error(404, `Segment Line Ad Lib Item "${slaiId}" not found!`)
 		if (!runningOrder.active) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in an active running order!`)
 		if (runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in a current segment line!`)
+
+		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine)
+		SegmentLineItems.insert(newSegmentLineItem)
+
+		// console.log('adLibItemStart', newSegmentLineItem)
+
+		updateTimeline(runningOrder.studioInstallationId)
+	},
+	'playout_runningOrderBaselineAdLibItemStart': (roId: string, slId: string, robaliId: string) => {
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		let segLine = SegmentLines.findOne({
+			_id: slId,
+			runningOrderId: roId
+		})
+		if (!segLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
+		let adLibItem = RunningOrderBaselineAdLibItems.findOne({
+			_id: robaliId,
+			runningOrderId: roId
+		})
+		if (!adLibItem) throw new Meteor.Error(404, `Running Order Baseline Ad Lib Item "${robaliId}" not found!`)
+		if (!runningOrder.active) throw new Meteor.Error(403, `Running Order Baseline Ad Lib Items can be only placed in an active running order!`)
+		if (runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Running Order Baseline Ad Lib Items can be only placed in a current segment line!`)
 
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine)
 		SegmentLineItems.insert(newSegmentLineItem)
@@ -448,6 +491,16 @@ function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem, segmentLine: 
 		)
 	}
 	return newSLineItem
+}
+
+function setRunningOrderStartedPlayback (runningOrder, startedPlayback) {
+	if (!runningOrder.startedPlayback) { // Set startedPlayback on the running order if this is the first item to be played
+		RunningOrders.update(runningOrder._id, {
+			$set: {
+				startedPlayback
+			}
+		})
+	}
 }
 
 function setPreviousLinePlaybackDuration (roId: string, prevSegLine: SegmentLine, lastChange: Time) {
@@ -669,7 +722,7 @@ function updateTimeline (studioInstallationId: string) {
 
 			// fetch items
 			// fetch the timelineobjs in items
-			const isFollowed = nextSegmentLine && nextSegmentLine.autoNext
+			const isFollowed = nextSegmentLine && currentSegmentLine.autoNext
 			currentSegmentLineGroup = createSegmentLineGroup(currentSegmentLine, (isFollowed ? (currentSegmentLine.expectedDuration || 0) : 0))
 			const allowTransition = !!activeRunningOrder.previousSegmentLineId // @todo allow currentSegmentLine to force disable (if it is a video with an out ani)
 			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentSegmentLine, currentSegmentLineGroup, allowTransition))
@@ -678,7 +731,7 @@ function updateTimeline (studioInstallationId: string) {
 		}
 
 		// only add the next objects into the timeline if the next segment is autoNext
-		if (nextSegmentLine && nextSegmentLine.autoNext) {
+		if (nextSegmentLine && currentSegmentLine && currentSegmentLine.autoNext) {
 			let nextSegmentLineGroup = createSegmentLineGroup(nextSegmentLine, 0)
 			if (currentSegmentLineGroup) {
 				nextSegmentLineGroup.trigger = literal<ITimelineTrigger>({

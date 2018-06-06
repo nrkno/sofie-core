@@ -15,6 +15,25 @@ interface IModalDialogAttributes {
 	onDiscard?: (e) => void
 }
 export class ModalDialog extends React.Component<IModalDialogAttributes> {
+	constructor (args) {
+		super(args)
+
+		this.componentDidMount = () => {
+			document.addEventListener('keydown', this.handleConfirmKey)
+		}
+		this.componentWillUnmount = () => {
+			document.removeEventListener('keydown', this.handleConfirmKey)
+		}
+	}
+	handleConfirmKey = (e) => {
+		if (this.props.show) {
+			if (e.keyCode === 13) { // Enter
+				this.handleAccept(e)
+			} else if (e.keyCode === 27) { // Escape
+				this.handleSecondary(e)
+			}
+		}
+	}
 	handleAccept = (e) => {
 		if (this.props.onAccept && typeof this.props.onAccept === 'function') {
 			this.props.onAccept(e)

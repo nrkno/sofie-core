@@ -13,6 +13,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { getCurrentTime } from '../../lib/lib'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
+import { RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 
 // Note: These things are convenience functions to be used during development
 
@@ -30,5 +31,6 @@ window['RuntimeFunctions'] = RuntimeFunctions
 window['Timeline'] = Timeline
 window['MediaObjects'] = MediaObjects
 window['SegmentLineAdLibItems'] = SegmentLineAdLibItems
+window['RunningOrderBaselineAdLibItems'] = RunningOrderBaselineAdLibItems
 
 window['getCurrentTime'] = getCurrentTime

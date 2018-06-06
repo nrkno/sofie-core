@@ -24,3 +24,11 @@ a:visited {
 #render-target {
 	font-weight: 300;
 }
+
+.origo-pulse {
+	vertical-align: top;
+	
+	&.small.left, &.small.right {
+		top: 1px;
+	}
+}

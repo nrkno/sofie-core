@@ -29,34 +29,42 @@ export namespace RundownUtils {
 		return formatDiffToTimecode(Math.max(milliseconds, 0), false)
 	}
 
-	export function formatDiffToTimecode (milliseconds: number, showPlus?: boolean): string {
+	export function formatDiffToTimecode (milliseconds: number, showPlus?: boolean, showHours?: boolean, enDashAsMinus?: boolean): string {
 
 		const isNegative = milliseconds < 0
 		if (isNegative) {
 			milliseconds = milliseconds * -1
 		}
 
-		const minutes = Math.floor(milliseconds / (60 * 1000))
+		let hours = 0
+
+		let minutes = Math.floor(milliseconds / (60 * 1000))
+		if (showHours) {
+			hours = Math.floor(minutes / 60)
+			minutes = minutes % 60
+		}
 		const secondsRest = Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000)
 
-		return (isNegative ? '-' : (showPlus && milliseconds > 0 ? '+' : '')) + padZero(minutes) + ':' + padZero(secondsRest)
+		return (isNegative ? (enDashAsMinus ? '\u2013' : '-') : (showPlus && milliseconds > 0 ? '+' : '')) + (showHours ? padZero(hours) + ':' : '') + padZero(minutes) + ':' + padZero(secondsRest)
 	}
 
-	export function isInsideViewport (scrollLeft: number, scrollWidth: number, segmentLine: SegmentLineUi, segmentLineStartsAt: number | undefined, segmentLineItem?: SegmentLineItemUi) {
+	export function isInsideViewport (scrollLeft: number, scrollWidth: number, segmentLine: SegmentLineUi, segmentLineStartsAt: number | undefined, segmentLineDuration: number | undefined, segmentLineItem?: SegmentLineItemUi) {
 		if (scrollLeft + scrollWidth < (segmentLineStartsAt || segmentLine.startsAt || 0) + (segmentLineItem !== undefined ? (segmentLineItem.renderedInPoint || 0) : 0)) {
 			return false
-		} else if (scrollLeft > (segmentLineStartsAt || segmentLine.startsAt || 0)
-					+ (segmentLineItem !== undefined ?
+		} else if (scrollLeft > (segmentLineStartsAt || segmentLine.startsAt || 0) +
+					(segmentLineItem !== undefined ?
 						(segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || (
 							(segmentLine.duration !== undefined ?
 								segmentLine.duration :
-								(segmentLine.duration || segmentLine.renderedDuration || 0) - (segmentLineItem.renderedInPoint || 0))
+								(segmentLineDuration || segmentLine.renderedDuration || 0) - (segmentLineItem.renderedInPoint || 0))
 							)
 						) :
 						(segmentLine.duration !== undefined ?
 							segmentLine.duration :
-							(segmentLine.duration || segmentLine.renderedDuration || 0)
-						))) {
+							(segmentLine.renderedDuration || 0)
+						)
+					)
+				) {
 			return false
 		}
 		return true

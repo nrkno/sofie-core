@@ -142,6 +142,8 @@ export const SegmentTimelineContainer = withTracker((props) => {
 	let segmentLineItemsLookup: ISegmentLineItemUiDictionary = {}
 
 	let startsAt = 0
+	let autoNextSegmentLine = false
+	let previousSegmentLine: SegmentLineUi
 	// fetch all the segment line items for the segment lines
 	_.forEach<SegmentLineUi>(segmentLines, (segmentLine) => {
 		let slTimeline: SuperTimeline.UnresolvedTimeline = []
@@ -152,6 +154,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		}
 		if (props.runningOrder.nextSegmentLineId === segmentLine._id) {
 			isNextSegment = true
+			autoNextSegmentLine = (previousSegmentLine || {}).autoNext || false
 		}
 
 		if (segmentLine.startedPlayback !== undefined) {
@@ -253,6 +256,8 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		segmentLine.renderedDuration = furthestDuration
 		segmentLine.startsAt = startsAt
 		startsAt = segmentLine.startsAt + (segmentLine.renderedDuration || 0)
+
+		previousSegmentLine = segmentLine
 	})
 
 	const resolveDuration = (item: SegmentLineItemUi): number => {
@@ -274,14 +279,6 @@ export const SegmentTimelineContainer = withTracker((props) => {
 
 	segment.outputLayers = outputLayers
 	segment.sourceLayers = sourceLayers
-
-	const nextSLine = SegmentLines.findOne({
-		_id: props.runningOrder.nextSegmentLineId
-	})
-	let autoNextSegmentLine = false
-	if (nextSLine && nextSLine.autoNext) {
-		autoNextSegmentLine = true
-	}
 
 	return {
 		segment,
@@ -328,7 +325,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		}
 	}
 
-	componentDidUpdate () {
+	componentDidUpdate (prevProps) {
 		this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
 		if (this.isLiveSegment === false && this.props.isLiveSegment === true) {
 			this.isLiveSegment = true
@@ -338,6 +335,13 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		if (this.isLiveSegment === true && this.props.isLiveSegment === false) {
 			this.isLiveSegment = false
 			this.stopOnAirLine()
+		}
+
+		// rewind all scrollLeft's to 0 on running order activate
+		if (this.props.runningOrder && this.props.runningOrder.active && prevProps.runningOrder && !prevProps.runningOrder.active) {
+			this.setState({
+				scrollLeft: 0
+			})
 		}
 	}
 

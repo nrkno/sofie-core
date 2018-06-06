@@ -177,7 +177,7 @@ export namespace ServerPeripheralDeviceAPI {
 		let studioInstallation = StudioInstallations.findOne(peripheralDevice.studioInstallationId) as StudioInstallation
 		if (!studioInstallation) throw new Meteor.Error(404, 'StudioInstallation "' + peripheralDevice.studioInstallationId + '" not found')
 
-		let showStyle = ShowStyles.findOne() as ShowStyle
+		let showStyle = ShowStyles.findOne() as ShowStyle || {}
 
 		// Save RO into database:
 		saveIntoDb(RunningOrders, {
@@ -896,10 +896,16 @@ export function getRank (beforeOrLast, after, i: number, count: number): number 
 }
 function formatDuration (duration: any): number | undefined {
 	try {
+		// first try and parse it as a MosDuration timecode string
 		return duration ? new MosDuration(duration.toString()).valueOf() * 1000 : undefined
 	} catch (e) {
-		logger.warn('Bad MosDuration: "' + duration + '"', e)
-		return undefined
+		try {
+			// second try and parse it as a length in seconds
+			return duration ? Number.parseFloat(duration) * 1000 : undefined
+		} catch (e2) {
+			logger.warn('Bad MosDuration: "' + duration + '"', e)
+			return undefined
+		}
 	}
 }
 function formatTime (time: any): number | undefined {
@@ -1223,3 +1229,12 @@ _.each(methods, (fcn: Function, key) => {
 
 // Apply methods:
 Meteor.methods(methods)
+
+// temporary functions:
+Meteor.methods({
+	'temporaryRemovePeripheralDevice' (id: string) {
+		// TODO: Replace this function with an authorized one
+		PeripheralDevices.remove(id)
+		return id
+	}
+})

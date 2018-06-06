@@ -58,7 +58,7 @@ import {
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 
-import { LLayers } from './nrk-layers'
+import { LLayers, SourceLayers } from './nrk-layers'
 
 const literal = <T>(o: T) => o
 
@@ -84,7 +84,8 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
 	let segmentLineItems: Array<SegmentLineItemOptional> = []
 	let IDs = {
 		lawo: context.getHashId('lawo'),
-		vignett: context.getHashId('vignett')
+		vignett: context.getHashId('vignett'),
+		atemMe: context.getHashId('atemMe')
 	}
 
 	let video: SegmentLineItemOptional = {
@@ -96,7 +97,7 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
 			value: 'now'
 		},
 		status: RundownAPI.LineItemStatusCode.UNKNOWN,
-		sourceLayerId: 'studio0_vignett',
+		sourceLayerId: SourceLayers.vignett,
 		outputLayerId: 'pgm0',
 		expectedDuration: segmentLineduration,
 		content: {
@@ -137,7 +138,7 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
 				}),
 				// TMP
 				literal<TimelineObjAtemME>({
-					_id: '', deviceId: [''], siId: '', roId: '',
+					_id: IDs.atemMe, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.vignett}.start + 200` }, // account for caspar output latency 4+frames
 					priority: 1,
 					duration: 0,
@@ -166,6 +167,7 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
 			slug: context.segmentLine._id,
 			expectedDuration: segmentLineduration,
 			disableOutTransition: true,
+			autoNext: true,
 		}),
 		segmentLineItems: segmentLineItems,
 		segmentLineAdLibItems: null,

@@ -1,0 +1,97 @@
+.running-order-overview {
+	display: block;
+	padding: 0 1.5em;
+	overflow: hidden;
+}
+
+.running-order__overview {
+	display: block;
+	position: relative;
+	white-space: nowrap;
+	padding: 1.5em 0;
+    background: $segment-timeline-background-color;
+	background-clip: content-box;
+	
+	.running-order__overview__segment__segment-line__live-shade {
+		position: absolute;
+		top: 0;
+		left: -1.5em;
+		bottom: 0;
+		padding-left: 1.5em;
+		background: rgba(0,0,0,0.5);
+		box-sizing: content-box;
+		pointer-events: none;
+	}
+
+	.running-order__overview__segment__segment-line {
+		position: relative;
+		display: inline-block;
+		vertical-align: top;
+		height: 40px;
+		background: $segment-title-background-color;
+		outline: 1px solid black;
+		// overflow: hidden;
+		word-wrap: none;
+		white-space: nowrap;
+		text-overflow: clip;
+
+		&.live {
+			color: $segment-title-text-color-live;
+			background: $general-live-color;
+		}
+
+		&.next {
+			background: $general-next-color;
+		}
+
+		&.has-played {
+			background: $segment-title-background-color-has-played;
+		}
+
+		.running-order__overview__segment__segment-line__live-line {
+			position: absolute;
+			top: -1.5em;
+			left: 0;
+			right: auto;
+			bottom: -1.5em;
+			width: 2px;
+			background: $general-live-color;
+			z-index: 4;
+		}
+
+		.running-order__overview__segment__segment-line__next-line {
+			position: absolute;
+			top: -5px;
+			left: 0;
+			right: auto;
+			bottom: -5px;
+			width: 2px;
+			background: $general-next-color;
+			z-index: 3;
+		}
+
+		.running-order__overview__segment__segment-line__label {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			line-height: 40px;
+			margin: 0 10px;
+
+			word-wrap: none;
+			white-space: nowrap;
+			text-overflow: clip;
+			overflow: hidden;
+			z-index: 1;
+		}
+
+		&:hover {
+			.running-order__overview__segment__segment-line__label {
+				right: auto;
+				width: auto;
+				z-index: 5;
+			}
+		}
+	}
+}

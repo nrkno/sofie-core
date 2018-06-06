@@ -64,21 +64,7 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 					segmentCopy.renderedInPoint = 0
 				}
 			}
-			segmentCopy.renderedDuration = props.autoNextSegmentLine ?
-				Math.min(
-					// if duration is 0, the item is in fact infinite
-					timelineObj.duration === 0 ?
-						(props.segmentLineDuration - (segmentCopy.renderedInPoint || 0)) :
-						timelineObj.duration,
-					Math.max((props.livePosition || 0), (props.segmentLineDuration - segmentCopy.renderedInPoint!))
-				) :
-				Math.min(
-					// if duration is 0, the item is in fact infinite
-					timelineObj.duration === 0 ?
-						(props.segmentLineDuration - segmentCopy.renderedInPoint! + props.liveLinePadding) :
-						timelineObj.duration,
-					Math.max((props.livePosition || 0) + props.liveLinePadding, (props.segmentLineDuration - segmentCopy.renderedInPoint!))
-				)
+			segmentCopy.renderedDuration = timelineObj.duration !== 0 ? timelineObj.duration : undefined
 
 			return {
 				segmentLineItem: segmentCopy

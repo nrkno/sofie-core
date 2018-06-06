@@ -277,7 +277,7 @@ class Settings extends React.Component<InjectedTranslateProps> {
 		const { t } = this.props
 
 		return (
-			<div>
+			<div className='mtl gutter'>
 				<header className='mvs'>
 					<h1>{t('System Settings')}</h1>
 				</header>

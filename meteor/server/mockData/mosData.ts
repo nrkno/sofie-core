@@ -562,7 +562,106 @@ Meteor.methods({
 		logger.info('debug_roMock1')
 		// @ts-ignore
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, id, token,
-			{"ID":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Slug":"TEST Sofie 2018","EditorialStart":"2018-06-30T11:00:00,000","EditorialDuration":"1800","MosExternalMetaData":[{"MosSchema":"http://MAENPSTEST14:10505/schema/enpsro.dtd","MosPayload":{"EndTime":"2018-06-30T13:30:00","MOSROStatusTime":"1800-01-01T00:00:00","MOSroStorySend":"CASPAR1.XPRO.MOS;SOFIE1.XPRO.MOS;SOFIE2.XPRO.MOS;SOFIE3.XPRO.MOS","RundownDuration":"30:00","StartTime":"2018-06-30T13:00:00","LocalStartTime":"2018-06-30T13:00:00","ENPSItemType":2,"roLayout":"RowStatus|Slug|SegStatus|Segment|Presenter|Approved|Estimated|Actual|FrontTime|BackTime|CumeTime|Inset|ModBy|Camera"},"MosScope":"PLAYLIST"}],"Stories":[{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;D07C8E87-48ED-4F64-A609665CB8B470F4","Slug":"ÅPNING;VIGNETT","Items":[]},{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;67B7A892-D4AD-4796-9473BE948E9DCCF5","Slug":"ÅPNING;Head1","Items":[]},{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;70C18F6A-7713-4884-B4DBBD089254A693","Slug":"ÅPNING;Head2","Items":[]},{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;F1641349-F6EA-4007-BD956A639BD8C85B","Slug":"ÅPNING;Velkommen","Items":[]},{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;21D83E74-236C-482C-B1563BF10BF4A2BA","Slug":"SAK 1;Intro","Items":[]},{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;A253988F-FEF4-4D64-ACC2CCFE78EA7C8C","Slug":"SAK 1;SAK 1","Items":[]},{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;25B5E1DD-082A-4939-B2CC7AD5DA511FC3","Slug":"SAK 2;Intro","Items":[]},{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;619A8B1E-5F39-42B8-9D5C318A48342392","Slug":"SAK 2;SAK 2","Items":[]},{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;B539EBBC-5877-4301-8FFFC0371031A29A","Slug":"DIR;Intro","Items":[]},{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;12ABC87D-6709-447A-B2D9AAE0C4A7E360","Slug":"DIR;Split","Items":[]},{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;9AAC721E-A8C6-4CAA-9DDD6E5835B55582","Slug":"DIR;Direkte","Items":[]},{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;D5CDDB91-2823-48D5-A50829B0907B8D79","Slug":"STK Synk;Tekst","Items":[]},{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;F485B9D0-0D2B-4548-A353E771A7F0F4B6","Slug":"STK Synk;STK","Items":[]},{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;C997A8EF-C221-4678-B31EB0419009628E","Slug":"STK Synk;Synk","Items":[]},{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;AC6784C9-5722-4286-A763BB64775CCB84","Slug":"Nettpromo;Tekst","Items":[]},{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;F39A88CF-9EFE-4881-8E04526996A5E526","Slug":"Nettpromo;Grafikk","Items":[]},{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;95EBAE5C-A888-478E-87234C566DCA3D55","Slug":"Vær;Intro","Items":[]},{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;2E21CEBA-BE5E-483C-9A26F64B5AB51643","Slug":"Vær;Vær","Items":[]},{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;CA207AAF-9B8C-409B-854DE3CFC2AB8DCF","Slug":"Sluttvignett;Credits","Items":[]}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:38.054Z"}
+			{
+				"ID": "MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5",
+				"Slug": "TEST Sofie 2018",
+				"EditorialStart": "2018-06-30T11:00:00,000",
+				"EditorialDuration": "1800",
+				"MosExternalMetaData": [{
+					"MosSchema": "http://MAENPSTEST14:10505/schema/enpsro.dtd",
+					"MosPayload": {
+						"EndTime": "2018-06-30T13:30:00",
+						"MOSROStatusTime": "1800-01-01T00:00:00",
+						"MOSroStorySend": "CASPAR1.XPRO.MOS;SOFIE1.XPRO.MOS;SOFIE2.XPRO.MOS;SOFIE3.XPRO.MOS",
+						"RundownDuration": "30:00",
+						"StartTime": "2018-06-30T13:00:00",
+						"LocalStartTime": "2018-06-30T13:00:00",
+						"ENPSItemType": 2,
+						"roLayout": "RowStatus|Slug|SegStatus|Segment|Presenter|Approved|Estimated|Actual|FrontTime|BackTime|CumeTime|Inset|ModBy|Camera"
+					},
+					"MosScope": "PLAYLIST"
+				}],
+				"Stories": [{
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;D07C8E87-48ED-4F64-A609665CB8B470F4",
+					"Slug": "ÅPNING;VIGNETT",
+					"Items": []
+				}, {
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;67B7A892-D4AD-4796-9473BE948E9DCCF5",
+					"Slug": "ÅPNING;Head1",
+					"Items": []
+				}, {
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;70C18F6A-7713-4884-B4DBBD089254A693",
+					"Slug": "ÅPNING;Head2",
+					"Items": []
+				}, {
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;F1641349-F6EA-4007-BD956A639BD8C85B",
+					"Slug": "ÅPNING;Velkommen",
+					"Items": []
+				}, {
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;21D83E74-236C-482C-B1563BF10BF4A2BA",
+					"Slug": "SAK 1;Intro",
+					"Items": []
+				}, {
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;A253988F-FEF4-4D64-ACC2CCFE78EA7C8C",
+					"Slug": "SAK 1;SAK 1",
+					"Items": []
+				}, {
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;25B5E1DD-082A-4939-B2CC7AD5DA511FC3",
+					"Slug": "SAK 2;Intro",
+					"Items": []
+				}, {
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;619A8B1E-5F39-42B8-9D5C318A48342392",
+					"Slug": "SAK 2;SAK 2",
+					"Items": []
+				}, {
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;B539EBBC-5877-4301-8FFFC0371031A29A",
+					"Slug": "DIR;Intro",
+					"Items": []
+				}, {
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;12ABC87D-6709-447A-B2D9AAE0C4A7E360",
+					"Slug": "DIR;Split",
+					"Items": []
+				}, {
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;9AAC721E-A8C6-4CAA-9DDD6E5835B55582",
+					"Slug": "DIR;Direkte",
+					"Items": []
+				}, {
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;D5CDDB91-2823-48D5-A50829B0907B8D79",
+					"Slug": "STK Synk;Tekst",
+					"Items": []
+				}, {
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;F485B9D0-0D2B-4548-A353E771A7F0F4B6",
+					"Slug": "STK Synk;STK",
+					"Items": []
+				}, {
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;C997A8EF-C221-4678-B31EB0419009628E",
+					"Slug": "STK Synk;Synk",
+					"Items": []
+				}, {
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;AC6784C9-5722-4286-A763BB64775CCB84",
+					"Slug": "Nettpromo;Tekst",
+					"Items": []
+				}, {
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;F39A88CF-9EFE-4881-8E04526996A5E526",
+					"Slug": "Nettpromo;Grafikk",
+					"Items": []
+				}, {
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;95EBAE5C-A888-478E-87234C566DCA3D55",
+					"Slug": "Vær;Intro",
+					"Items": []
+				}, {
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;2E21CEBA-BE5E-483C-9A26F64B5AB51643",
+					"Slug": "Vær;Vær",
+					"Items": []
+				}, {
+					"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;CA207AAF-9B8C-409B-854DE3CFC2AB8DCF",
+					"Slug": "Sluttvignett;Credits",
+					"Items": []
+				}],
+				"level": "debug",
+				"message": "",
+				"timestamp": "2018-05-31T08:19:38.054Z"
+			}
 		)
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
 			{  
@@ -791,22 +890,607 @@ Meteor.methods({
 				"timestamp":"2018-05-31T08:19:38.378Z"
 			 }		),
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;70C18F6A-7713-4884-B4DBBD089254A693","Slug":"ÅPNING;Head2","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":42.36,"ModBy":"N12050","ModTime":"20180522T092307Z","MOSAbstracts":"nv-ungdom-israel-mgp-130518 PUBLISH_QUANTEL 00:00:42:09","MOSItemDurations":"42,36","MOSObjSlugs":"nv-ungdom-israel-mgp-130518","MOSSlugs":"VIGNETT;Head2-2","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":0,"mosartType":"STK","mosartVariant":"HEAD","ReadTime":42.36,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":2,"itemSlug":"VIGNETT;Head2-2","objID":"\\\\XPRO\\Omn\\A\\A\\41\\13","mosID":"OMNIBUS.XPRO.MOS","mosAbstract":"nv-ungdom-israel-mgp-130518 PUBLISH_QUANTEL 00:00:42:09","objDur":2118,"objTB":50,"objSlug":"nv-ungdom-israel-mgp-130518","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"OMNIBUS","mosPayload":{"title":"nv-ungdom-israel-mgp-130518","objectType":"CLIP","clipType":"PUBLISH_QUANTEL","objDur":2118,"objType":"VIDEO"}}}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:38.574Z"}),
-		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;F1641349-F6EA-4007-BD956A639BD8C85B","Slug":"ÅPNING;Velkommen","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180522T092754Z","MOSAbstracts":"Navnesuper: Ivar Johnsen, 22. mai 2018","MOSObjSlugs":"Navnesuper: Ivar Johnsen, 22. mai 2018","MOSSlugs":"VIGNETT;Velkommen-3","MOSTimes":"20180531T081903Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":0,"mosartType":"KAM","mosartVariant":"3ÅPNING","ReadTime":0,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":3,"itemSlug":"VIGNETT;Velkommen-3","objID":"a73f7bc7-258e-4bef-a364-84aab4ac02e2","mosID":"GFX.NRK.MOS","mosAbstract":"Navnesuper: Ivar Johnsen, 22. mai 2018","mosExternalMetadata":[{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/content","mosPayload":{"uuid":"f6103c96-c981-4716-bdbc-b0b654de3041","metaData":{"changedBy":"n23109","changed":"xxx","origin":"ENPS/CORE"},"render":{"channel":"gfx1","system":{},"group":{}},"playout":{"event":{},"layer":"super","template":"navnesuper"},"content":{"navn":"Ivar Johnsen","tittel":"22. mai 2018"}}},{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/timing","mosPayload":{"in":"auto","out":"auto","timeIn":5000,"duration":20,"timeBase":50}}]}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:38.770Z"})
-		// Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;21D83E74-236C-482C-B1563BF10BF4A2BA","Slug":"SAK 1;Intro","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","ModBy":"N12050","ModTime":"20180322T133453Z","Owner":"N12050","mosartType":"KAM","mosartVariant":2,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:38.988Z"}),
-		// Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;A253988F-FEF4-4D64-ACC2CCFE78EA7C8C","Slug":"SAK 1;SAK 1","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":123.48,"ModBy":"N12050","ModTime":"20180522T092414Z","MOSAbstracts":"METADATA\n US-NJ-BEAR-20180501I IMPORT_QUANTEL 00:02:03:12 \nNavnesuper: Alf Hansen, allviter\nNavnesuper: Hans Hansen, reporter","MOSItemDurations":"123,48","MOSItemEdDurations":"","MOSObjSlugs":"M: \nUS-NJ-BEAR-20180501I\nNavnesuper: Alf Hansen, allviter\nNavnesuper: Hans Hansen, reporter","MOSSlugs":"Uten tittel\nSAK 1;SAK 1-3\nSAK 1;SAK 1-4\nSAK 1;SAK 1-5","MOSTimes":"20180531T081903Z\n20180531T081903Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":0,"Bildebeskrivelse":"","mosartType":"FULL","ReadTime":123.48,"Rettigheter":"Gult","ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":2,"objID":"N12050_1525334436","mosID":"METADATA.NRK.MOS","mosAbstract":"METADATA","objSlug":"M:","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"http://mosA4.com/mos/supported_schemas/MOSAXML2.08","mosPayload":{"nrk":{"changetime":"2018-05-03T10:00:36 +02:00","changedBy":"N12050","type":"video","mdSource":"omnibus","title":{},"description":{},"hbbtv":{"link":""},"rights":{"notes":"","owner":"","@t":"Amber"}}}},"itemSlug":"Uten tittel"}},{"Type":"storyItem","Content":{"itemID":3,"itemSlug":"SAK 1;SAK 1-3","objID":"\\\\XPRO\\Omn\\A\\A\\40\\39","mosID":"OMNIBUS.XPRO.MOS","mosAbstract":"US-NJ-BEAR-20180501I IMPORT_QUANTEL 00:02:03:12","objDur":6174,"objTB":50,"objSlug":"US-NJ-BEAR-20180501I","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"OMNIBUS","mosPayload":{"title":"US-NJ-BEAR-20180501I","objectType":"CLIP","clipType":"IMPORT_QUANTEL","objDur":6174,"objType":"VIDEO"}}}},{"Type":"storyItem","Content":{"itemID":4,"itemSlug":"SAK 1;SAK 1-4","objID":"718f3e5a-d065-4cb9-b5f7-f351fe28be48","mosID":"GFX.NRK.MOS","mosAbstract":"Navnesuper: Alf Hansen, allviter","mosExternalMetadata":[{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/content","mosPayload":{"uuid":"f6103c96-c981-4716-bdbc-b0b654de3041","metaData":{"changedBy":"n23109","changed":"xxx","origin":"ENPS/CORE"},"render":{"channel":"gfx1","system":{},"group":{}},"playout":{"event":{},"layer":"super","template":"navnesuper"},"content":{"navn":"Alf Hansen","tittel":"allviter"}}},{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/timing","mosPayload":{"in":"auto","out":"auto","timeIn":5000,"duration":20,"timeBase":50}}]}},{"Type":"storyItem","Content":{"itemID":5,"itemSlug":"SAK 1;SAK 1-5","objID":"f774dbd0-1ef5-44e9-a7dc-54d3e7ce5e76","mosID":"GFX.NRK.MOS","mosAbstract":"Navnesuper: Hans Hansen, reporter","mosExternalMetadata":[{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/content","mosPayload":{"uuid":"f6103c96-c981-4716-bdbc-b0b654de3041","metaData":{"changedBy":"n23109","changed":"xxx","origin":"ENPS/CORE"},"render":{"channel":"gfx1","system":{},"group":{}},"playout":{"event":{},"layer":"super","template":"navnesuper"},"content":{"navn":"Hans Hansen","tittel":"reporter"}}},{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/timing","mosPayload":{"in":"auto","out":"auto","timeIn":5000,"duration":20,"timeBase":50}}]}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:39.191Z"}),
-		// Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;25B5E1DD-082A-4939-B2CC7AD5DA511FC3","Slug":"SAK 2;Intro","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180503T080805Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"Dette er intro sak 2","TextTime":3,"mosartType":"KAM","mosartVariant":2,"ReadTime":3,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:39.374Z"}),
-		// Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;619A8B1E-5F39-42B8-9D5C318A48342392","Slug":"SAK 2;SAK 2","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":328.88,"ModBy":"N12050","ModTime":"20180522T092445Z","MOSAbstracts":"M: Dette er en øvelse (03-05-18 10:02)\nØVELSE-280418-DR19 NYHETER 00:05:28:22\nNavnesuper: Hans Hansen, reporter\nNavnesuper: Alf Ivar Johnsen, baker","MOSItemDurations":"328,88","MOSItemEdDurations":"","MOSObjSlugs":"M: Dette er en øvelse\nØVELSE-280418-DR19\nNavnesuper: Hans Hansen, reporter\nNavnesuper: Alf Ivar Johnsen, baker","MOSSlugs":"Uten tittel\nSAK 2;SAK 2-2\nSAK 2;SAK 2-4\nSAK 2;SAK 2-5","MOSTimes":"20180531T081903Z\n20180531T081903Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":0,"Bildebeskrivelse":"Her er beskrivelsen av bildene","Fylke":"Hordaland","Innslagstittel":"Dette er en øvelse","Kommune":"Bergen","mosartType":"FULL","OpprLand":"Norge","ReadTime":328.88,"Rettigheter":"Grønt","Rettighetseier":"NRK","Sted":"Bergen","Tags":"test","ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":3,"objID":"N12050_1525334564","mosID":"METADATA.NRK.MOS","mosAbstract":"M: Dette er en øvelse (03-05-18 10:02)","objSlug":"M: Dette er en øvelse","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"http://mosA4.com/mos/supported_schemas/MOSAXML2.08","mosPayload":{"nrk":{"mdSource":"omnibus","type":"video","changedBy":"N12050","changetime":"2018-05-03T10:02:44 +02:00","title":"Dette er en øvelse","description":"Her er beskrivelsen av bildene","hbbtv":{"link":""},"location":{"id":"1-92416","region":"Hordaland","lat":60.39826,"lon":5.32907,"@t":"Bergen"},"tag":{"id":6519,"@t":"test"},"rights":{"notes":"","owner":"NRK","@t":"Green"}}}},"itemSlug":"Uten tittel"}},{"Type":"storyItem","Content":{"itemID":2,"itemSlug":"SAK 2;SAK 2-2","objID":"\\\\XPRO\\Omn\\A\\A\\40\\36","mosID":"OMNIBUS.XPRO.MOS","mosAbstract":"ØVELSE-280418-DR19 NYHETER 00:05:28:22","objDur":16444,"objTB":50,"objSlug":"ØVELSE-280418-DR19","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"OMNIBUS","mosPayload":{"title":"Dette er en øvelse","objectType":"CLIP","clipType":"NYHETER","objDur":16444}}}},{"Type":"storyItem","Content":{"itemID":4,"itemSlug":"SAK 2;SAK 2-4","objID":"f774dbd0-1ef5-44e9-a7dc-54d3e7ce5e76","mosID":"GFX.NRK.MOS","mosAbstract":"Navnesuper: Hans Hansen, reporter","mosExternalMetadata":[{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/content","mosPayload":{"uuid":"f6103c96-c981-4716-bdbc-b0b654de3041","metaData":{"changedBy":"n23109","changed":"xxx","origin":"ENPS/CORE"},"render":{"channel":"gfx1","system":{},"group":{}},"playout":{"event":{},"layer":"super","template":"navnesuper"},"content":{"navn":"Hans Hansen","tittel":"reporter"}}},{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/timing","mosPayload":{"in":"auto","out":"auto","timeIn":5000,"duration":20,"timeBase":50}}]}},{"Type":"storyItem","Content":{"itemID":5,"itemSlug":"SAK 2;SAK 2-5","objID":"4f2b1698-7603-4093-b20d-0c5b04b37361","mosID":"GFX.NRK.MOS","mosAbstract":"Navnesuper: Alf Ivar Johnsen, baker","mosExternalMetadata":[{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/content","mosPayload":{"uuid":"f6103c96-c981-4716-bdbc-b0b654de3041","metaData":{"changedBy":"n23109","changed":"xxx","origin":"ENPS/CORE"},"render":{"channel":"gfx1","system":{},"group":{}},"playout":{"event":{},"layer":"super","template":"navnesuper"},"content":{"navn":"Alf Ivar Johnsen","tittel":"baker"}}},{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/timing","mosPayload":{"in":"auto","out":"auto","timeIn":5000,"duration":20,"timeBase":50}}]}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:39.620Z"}),
-		// Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;B539EBBC-5877-4301-8FFFC0371031A29A","Slug":"DIR;Intro","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180503T080349Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"Nå skal vi inn direkte i testen av Sofie. \n<BAK>RM1","TextTime":3,"mosartType":"KAM","mosartVariant":1,"ReadTime":3,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:39.797Z"}),
-		// Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;12ABC87D-6709-447A-B2D9AAE0C4A7E360","Slug":"DIR;Split","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180522T092538Z","MOSAbstracts":"Navnesuper: Alf Ivar Johnsen, baker\nNavnesuper: Hans Hansen, reporter","MOSItemDurations":"","MOSItemEdDurations":"","MOSObjSlugs":"Navnesuper: Alf Ivar Johnsen, baker\nNavnesuper: Hans Hansen, reporter","MOSSlugs":"DIR;Split-2\nDIR;Split-3","MOSTimes":"20180531T081903Z\n20180531T081903Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"Hans Hansen, hva skjer der du er?\nSuper: Direkte, sted","TextTime":4,"mosartType":"DVE","mosartVariant":"2LIKE","ReadTime":4,"ip1":"K1","ip2":"RM1","ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":2,"itemSlug":"DIR;Split-2","objID":"4f2b1698-7603-4093-b20d-0c5b04b37361","mosID":"GFX.NRK.MOS","mosAbstract":"Navnesuper: Alf Ivar Johnsen, baker","mosExternalMetadata":[{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/content","mosPayload":{"uuid":"f6103c96-c981-4716-bdbc-b0b654de3041","metaData":{"changedBy":"n23109","changed":"xxx","origin":"ENPS/CORE"},"render":{"channel":"gfx1","system":{},"group":{}},"playout":{"event":{},"layer":"super","template":"navnesuper"},"content":{"navn":"Alf Ivar Johnsen","tittel":"baker"}}},{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/timing","mosPayload":{"in":"auto","out":"auto","timeIn":5000,"duration":20,"timeBase":50}}]}},{"Type":"storyItem","Content":{"itemID":3,"itemSlug":"DIR;Split-3","objID":"46256d10-f2a4-4230-a72f-96aaf5d08c64","mosID":"GFX.NRK.MOS","mosAbstract":"Navnesuper: Hans Hansen, reporter","mosExternalMetadata":[{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/content","mosPayload":{"uuid":"f6103c96-c981-4716-bdbc-b0b654de3041","metaData":{"changedBy":"n23109","changed":"xxx","origin":"ENPS/CORE"},"render":{"channel":"gfx1","system":{},"group":{}},"playout":{"event":{},"layer":"super","template":"navnesuper"},"content":{"navn":"Hans Hansen","tittel":"reporter"}}},{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/timing","mosPayload":{"in":"auto","out":"auto","timeIn":5000,"duration":20,"timeBase":50}}]}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:39.997Z"}),
-		// Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;9AAC721E-A8C6-4CAA-9DDD6E5835B55582","Slug":"DIR;Direkte","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180503T080705Z","MOSAbstracts":"M: Test av Sofie (03-05-18 10:06)","MOSObjSlugs":"M: Test av Sofie","MOSSlugs":"Uten tittel","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":5,"Bildebeskrivelse":"","Fylke":"Sogn og Fjordane","Innslagstittel":"Test av Sofie","Kommune":"Eid","mosartType":"DIR","mosartVariant":1,"OpprLand":"Norge","ReadTime":5,"Rettigheter":"Grønt","Rettighetseier":"NRK","Sted":"Os","ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":2,"objID":"N12050_1525334819","mosID":"METADATA.NRK.MOS","mosAbstract":"M: Test av Sofie (03-05-18 10:06)","objSlug":"M: Test av Sofie","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"http://mosA4.com/mos/supported_schemas/MOSAXML2.08","mosPayload":{"nrk":{"changetime":"2018-05-03T10:06:58 +02:00","changedBy":"N12050","type":"video","mdSource":"ncs","title":"Test av Sofie","description":{},"hbbtv":{"link":""},"location":{"id":"1-2608277","region":"Eid, Sogn og Fjordane","lat":61.90197,"lon":5.98855,"@t":"Os"},"rights":{"notes":"","owner":"NRK","@t":"Green"}}}},"itemSlug":"Uten tittel"}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:40.233Z"}),
-		// Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;D5CDDB91-2823-48D5-A50829B0907B8D79","Slug":"STK Synk;Tekst","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180503T080833Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"Dette er teksten som programleder skal lese når vi kjører VB","TextTime":4,"mosartType":"KAM","mosartVariant":1,"ReadTime":4,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:40.408Z"}),
-		// Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;F485B9D0-0D2B-4548-A353E771A7F0F4B6","Slug":"STK Synk;STK","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":98.72,"ModBy":"N639194","ModTime":"20180504T084325Z","MOSAbstracts":"M: Du er dum (03-05-18 10:09)\ndu-er-dum-250418 PUBLISH_QUANTEL 00:01:38:18","MOSItemDurations":"98,72","MOSItemEdDurations":"","MOSObjSlugs":"M: Du er dum\ndu-er-dum-250418","MOSSlugs":"Uten tittel\nSTK Synk;STK-3","MOSTimes":"","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":0,"AndreMetadata":"{Fotograf};Helle Rossow;+{Redigerer};Helle Rossow;","Bildebeskrivelse":"beskrivelse","Fylke":"Hordaland","Innslagstittel":"Du er dum","Kommune":"Kvinnherad","mosartType":"STK","OpprLand":"Norge","ReadTime":98.72,"Rettigheter":"Grønt","Rettighetseier":"NRK","Sted":"Berhaug","Tags":"test","Team":"{Fotograf};Helle Rossow;+{Redigerer};Helle Rossow;","ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":4,"objID":"N12050_1525334993","mosID":"METADATA.NRK.MOS","mosAbstract":"M: Du er dum (03-05-18 10:09)","objSlug":"M: Du er dum","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"http://mosA4.com/mos/supported_schemas/MOSAXML2.08","mosPayload":{"nrk":{"changetime":"2018-05-03T10:09:53 +02:00","changedBy":"N12050","type":"video","mdSource":"omnibus","title":"Du er dum","description":"beskrivelse","hbbtv":{"link":""},"staff":{"userid":"n12050","roles":"Fotograf;Redigerer","@t":"Helle Rossow"},"location":{"id":"1-2511926","region":"Kvinnherad, Hordaland","lat":59.78068,"lon":5.81041,"@t":"Berhaug"},"tag":{"id":6519,"@t":"test"},"rights":{"notes":"","owner":"NRK","@t":"Green"}}}},"itemSlug":"Uten tittel"}},{"Type":"storyItem","Content":{"itemID":3,"itemSlug":"STK Synk;STK-3","objID":"\\\\XPRO\\Omn\\A\\A\\40\\31","mosID":"OMNIBUS.XPRO.MOS","mosAbstract":"du-er-dum-250418 PUBLISH_QUANTEL 00:01:38:18","objDur":4936,"objTB":50,"objSlug":"du-er-dum-250418","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"OMNIBUS","mosPayload":{"title":"Du er dum","objectType":"CLIP","clipType":"PUBLISH_QUANTEL","objDur":4936}}}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:40.616Z"}),
-		// Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;C997A8EF-C221-4678-B31EB0419009628E","Slug":"STK Synk;Synk","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":158.32,"ModBy":"N12050","ModTime":"20180522T092658Z","MOSAbstracts":"M: Ny Avengers-film (03-05-18 10:10)\nAVENGERS-190418-DR19 NYHETER 00:02:38:08\nNavnesuper: Petter Hansen, slakter","MOSItemDurations":"158,32","MOSItemEdDurations":"","MOSObjSlugs":"M: Ny Avengers-film\nAVENGERS-190418-DR19\nNavnesuper: Petter Hansen, slakter","MOSSlugs":"Uten tittel\nSTK Synk;Synk-2\nSTK Synk;Synk-4","MOSTimes":"20180531T081903Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":1,"AndreMetadata":"{reporter};Christian Ingebrethsen;","Bildebeskrivelse":"","Fylke":"England","Innslagstittel":"Ny Avengers-film","Kommune":"Greater London","mosartTransition":"effect 2","mosartType":"FULL","OpprLand":"Storbritannia","ReadTime":159.32,"Rettigheter":"Grønt","Rettighetseier":"NRK","Sted":"London","Tags":"avengers; marvel; tegneserier","Team":"{reporter};Christian Ingebrethsen;","ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":3,"objID":"N12050_1525335039","mosID":"METADATA.NRK.MOS","mosAbstract":"M: Ny Avengers-film (03-05-18 10:10)","objSlug":"M: Ny Avengers-film","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"http://mosA4.com/mos/supported_schemas/MOSAXML2.08","mosPayload":{"nrk":{"changetime":"2018-05-03T10:10:39 +02:00","changedBy":"N12050","type":"video","mdSource":"omnibus","title":"Ny Avengers-film","description":{},"hbbtv":{"link":""},"staff":{"userid":"n22621","roles":"reporter","@t":"Christian Ingebrethsen"},"location":{"id":"2-2643743","region":"Greater London, England, Storbritannia","lat":51.50853,"lon":-0.12574,"@t":"London"},"tag":[{"id":95257,"@t":"avengers"},{"id":95258,"@t":"marvel"},{"id":95259,"@t":"tegneserier"}],"rights":{"notes":"","owner":"NRK","@t":"Green"}}}},"itemSlug":"Uten tittel"}},{"Type":"storyItem","Content":{"itemID":2,"itemSlug":"STK Synk;Synk-2","objID":"\\\\XPRO\\Omn\\A\\A\\40\\26","mosID":"OMNIBUS.XPRO.MOS","mosAbstract":"AVENGERS-190418-DR19 NYHETER 00:02:38:08","objDur":7916,"objTB":50,"objSlug":"AVENGERS-190418-DR19","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"OMNIBUS","mosPayload":{"title":"Ny Avengers-film","objectType":"CLIP","clipType":"NYHETER","objDur":7916}}}},{"Type":"storyItem","Content":{"itemID":4,"itemSlug":"STK Synk;Synk-4","objID":"5dac983a-ad64-4780-ab8e-241170b572be","mosID":"GFX.NRK.MOS","mosAbstract":"Navnesuper: Petter Hansen, slakter","mosExternalMetadata":[{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/content","mosPayload":{"uuid":"f6103c96-c981-4716-bdbc-b0b654de3041","metaData":{"changedBy":"n23109","changed":"xxx","origin":"ENPS/CORE"},"render":{"channel":"gfx1","system":{},"group":{}},"playout":{"event":{},"layer":"super","template":"navnesuper"},"content":{"navn":"Petter Hansen","tittel":"slakter"}}},{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/timing","mosPayload":{"in":"auto","out":"auto","timeIn":5000,"duration":20,"timeBase":50}}]}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:40.819Z"}),
-		// Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;AC6784C9-5722-4286-A763BB64775CCB84","Slug":"Nettpromo;Tekst","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180503T081121Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"I dag kan vi lese om Trimp på våre nettsider","TextTime":3,"mosartType":"KAM","mosartVariant":1,"ReadTime":3,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:41.010Z"}),
-		// Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;F39A88CF-9EFE-4881-8E04526996A5E526","Slug":"Nettpromo;Grafikk","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180503T081156Z","MOSAbstracts":"M: Nettet nå (03-05-18 10:11)","MOSObjSlugs":"M: Nettet nå","MOSSlugs":"Uten tittel","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":1,"Bildebeskrivelse":"","Innslagstittel":"Nettet nå","mosartType":"GRAFIKK","mosartVariant":"PROMO","ReadTime":1,"Rettigheter":"Grønt","Rettighetseier":"NRK","ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":2,"objID":"N12050_1525335104","mosID":"METADATA.NRK.MOS","mosAbstract":"M: Nettet nå (03-05-18 10:11)","objSlug":"M: Nettet nå","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"http://mosA4.com/mos/supported_schemas/MOSAXML2.08","mosPayload":{"nrk":{"changetime":"2018-05-03T10:11:44 +02:00","changedBy":"N12050","type":"video","mdSource":"ncs","title":"Nettet nå","description":{},"hbbtv":{"link":""},"rights":{"notes":"","owner":"NRK","@t":"Green"}}}},"itemSlug":"Uten tittel"}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:41.205Z"}),
-		// Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;95EBAE5C-A888-478E-87234C566DCA3D55","Slug":"Vær;Intro","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180503T081217Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"Nå skal vi se hva slags vær vi får de neste tre dagene","TextTime":4,"mosartType":"KAM","mosartVariant":1,"ReadTime":4,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:41.411Z"}),
-		// Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;2E21CEBA-BE5E-483C-9A26F64B5AB51643","Slug":"Vær;Vær","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":600,"ModBy":"N12050","ModTime":"20180503T081321Z","MOSAbstracts":"M: Været (03-05-18 10:12)\n dk-været-to-1955-220318 SLETT_VSERV_Y_TIMER 00:10:00:00","MOSItemDurations":600,"MOSItemEdDurations":"","MOSObjSlugs":"M: Været\ndk-været-to-1955-220318","MOSSlugs":"Uten tittel\nVær;Vær-3","MOSTimes":"","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":4,"Bildebeskrivelse":"","Innslagstittel":"Været","mosartType":"FULL","ReadTime":604,"Rettigheter":"Grønt","Rettighetseier":"NRK","ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":2,"objID":"N12050_1525335158","mosID":"METADATA.NRK.MOS","mosAbstract":"M: Været (03-05-18 10:12)","objSlug":"M: Været","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"http://mosA4.com/mos/supported_schemas/MOSAXML2.08","mosPayload":{"nrk":{"changetime":"2018-05-03T10:12:37 +02:00","changedBy":"N12050","type":"video","mdSource":"ncs","title":"Været","description":{},"hbbtv":{"link":""},"rights":{"notes":"","owner":"NRK","@t":"Green"}}}},"itemSlug":"Uten tittel"}},{"Type":"storyItem","Content":{"itemID":3,"itemSlug":"Vær;Vær-3","objID":"\\\\XPRO\\Omn\\A\\A\\38\\60","mosID":"OMNIBUS.XPRO.MOS","mosAbstract":"dk-været-to-1955-220318 SLETT_VSERV_Y_TIMER 00:10:00:00","objDur":30000,"objTB":50,"objSlug":"dk-været-to-1955-220318","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"OMNIBUS","mosPayload":{"title":"dk-været-to-1955-220318","objectType":"CLIP","clipType":"SLETT_VSERV_Y_TIMER","objDur":30000,"objType":"VIDEO"}}}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:41.614Z"}),
-		// Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;CA207AAF-9B8C-409B-854DE3CFC2AB8DCF","Slug":"Sluttvignett;Credits","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180503T081417Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"det var alt vi hadde for i dag, sees i morgen","TextTime":7,"mosartType":"KAM","mosartVariant":"3SLUTT","ReadTime":7,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:41.850Z"})
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;F1641349-F6EA-4007-BD956A639BD8C85B","Slug":"ÅPNING;Velkommen","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180522T092754Z","MOSAbstracts":"Navnesuper: Ivar Johnsen, 22. mai 2018","MOSObjSlugs":"Navnesuper: Ivar Johnsen, 22. mai 2018","MOSSlugs":"VIGNETT;Velkommen-3","MOSTimes":"20180531T081903Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":0,"mosartType":"KAM","mosartVariant":"3ÅPNING","ReadTime":0,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":3,"itemSlug":"VIGNETT;Velkommen-3","objID":"a73f7bc7-258e-4bef-a364-84aab4ac02e2","mosID":"GFX.NRK.MOS","mosAbstract":"Navnesuper: Ivar Johnsen, 22. mai 2018","mosExternalMetadata":[{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/content","mosPayload":{"uuid":"f6103c96-c981-4716-bdbc-b0b654de3041","metaData":{"changedBy":"n23109","changed":"xxx","origin":"ENPS/CORE"},"render":{"channel":"gfx1","system":{},"group":{}},"playout":{"event":{},"layer":"super","template":"navnesuper"},"content":{"navn":"Ivar Johnsen","tittel":"22. mai 2018"}}},{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/timing","mosPayload":{"in":"auto","out":"auto","timeIn":5000,"duration":4000}}]}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:38.770Z"})
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;21D83E74-236C-482C-B1563BF10BF4A2BA","Slug":"SAK 1;Intro","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","ModBy":"N12050","ModTime":"20180322T133453Z","Owner":"N12050","mosartType":"KAM","mosartVariant":2,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:38.988Z"}),
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, {
+			"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;A253988F-FEF4-4D64-ACC2CCFE78EA7C8C",
+			"Slug": "SAK 1;SAK 1",
+			"MosExternalMetaData": [{
+				"MosScope": "PLAYLIST",
+				"MosSchema": "http://MAENPSTEST14:10505/schema/enps.dtd",
+				"MosPayload": {
+					"Approved": 0,
+					"Creator": "N12050",
+					"MediaTime": 123.48,
+					"ModBy": "N12050",
+					"ModTime": "20180522T092414Z",
+					"MOSAbstracts": "METADATA\n US-NJ-BEAR-20180501I IMPORT_QUANTEL 00:02:03:12 \nNavnesuper: Alf Hansen, allviter\nNavnesuper: Hans Hansen, reporter",
+					"MOSItemDurations": "123,48",
+					"MOSItemEdDurations": "",
+					"MOSObjSlugs": "M: \nUS-NJ-BEAR-20180501I\nNavnesuper: Alf Hansen, allviter\nNavnesuper: Hans Hansen, reporter",
+					"MOSSlugs": "Uten tittel\nSAK 1;SAK 1-3\nSAK 1;SAK 1-4\nSAK 1;SAK 1-5",
+					"MOSTimes": "20180531T081903Z\n20180531T081903Z",
+					"Owner": "N12050",
+					"SourceMediaTime": 0,
+					"SourceTextTime": 0,
+					"TextTime": 0,
+					"Bildebeskrivelse": "",
+					"mosartType": "FULL",
+					"ReadTime": 123.48,
+					"Rettigheter": "Gult",
+					"ENPSItemType": 3
+				}
+			}],
+			"RunningOrderId": "MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5",
+			"Body": [{
+				"Type": "storyItem",
+				"Content": {
+					"itemID": 2,
+					"objID": "N12050_1525334436",
+					"mosID": "METADATA.NRK.MOS",
+					"mosAbstract": "METADATA",
+					"objSlug": "M:",
+					"mosExternalMetadata": {
+						"mosScope": "PLAYLIST",
+						"mosSchema": "http://mosA4.com/mos/supported_schemas/MOSAXML2.08",
+						"mosPayload": {
+							"nrk": {
+								"changetime": "2018-05-03T10:00:36 +02:00",
+								"changedBy": "N12050",
+								"type": "video",
+								"mdSource": "omnibus",
+								"title": {},
+								"description": {},
+								"hbbtv": {
+									"link": ""
+								},
+								"rights": {
+									"notes": "",
+									"owner": "",
+									"@t": "Amber"
+								}
+							}
+						}
+					},
+					"itemSlug": "Uten tittel"
+				}
+			}, {
+				"Type": "storyItem",
+				"Content": {
+					"itemID": 3,
+					"itemSlug": "SAK 1;SAK 1-3",
+					"objID": "\\\\XPRO\\Omn\\A\\A\\40\\39",
+					"mosID": "OMNIBUS.XPRO.MOS",
+					"mosAbstract": "US-NJ-BEAR-20180501I IMPORT_QUANTEL 00:02:03:12",
+					"objDur": 6174,
+					"objTB": 50,
+					"objSlug": "US-NJ-BEAR-20180501I",
+					"mosExternalMetadata": {
+						"mosScope": "PLAYLIST",
+						"mosSchema": "OMNIBUS",
+						"mosPayload": {
+							"title": "US-NJ-BEAR-20180501I",
+							"objectType": "CLIP",
+							"clipType": "IMPORT_QUANTEL",
+							"objDur": 6174,
+							"objType": "VIDEO"
+						}
+					}
+				}
+			}, {
+				"Type": "storyItem",
+				"Content": {
+					"itemID": 4,
+					"itemSlug": "SAK 1;SAK 1-4",
+					"objID": "718f3e5a-d065-4cb9-b5f7-f351fe28be48",
+					"mosID": "GFX.NRK.MOS",
+					"mosAbstract": "Navnesuper: Alf Hansen, allviter",
+					"mosExternalMetadata": [{
+						"mosScope": "PLAYLIST",
+						"mosSchema": "schema.nrk.no/content",
+						"mosPayload": {
+							"uuid": "f6103c96-c981-4716-bdbc-b0b654de3041",
+							"metaData": {
+								"changedBy": "n23109",
+								"changed": "xxx",
+								"origin": "ENPS/CORE"
+							},
+							"render": {
+								"channel": "gfx1",
+								"system": {},
+								"group": {}
+							},
+							"playout": {
+								"event": {},
+								"layer": "super",
+								"template": "navnesuper"
+							},
+							"content": {
+								"navn": "Alf Hansen",
+								"tittel": "allviter"
+							}
+						}
+					}, {
+						"mosScope": "PLAYLIST",
+						"mosSchema": "schema.nrk.no/timing",
+						"mosPayload": {
+							"in": "auto",
+							"out": "auto",
+							"timeIn": 5000,
+							"duration": 4000
+						}
+					}]
+				}
+			}, {
+				"Type": "storyItem",
+				"Content": {
+					"itemID": 5,
+					"itemSlug": "SAK 1;SAK 1-5",
+					"objID": "f774dbd0-1ef5-44e9-a7dc-54d3e7ce5e76",
+					"mosID": "GFX.NRK.MOS",
+					"mosAbstract": "Navnesuper: Hans Hansen, reporter",
+					"mosExternalMetadata": [{
+						"mosScope": "PLAYLIST",
+						"mosSchema": "schema.nrk.no/content",
+						"mosPayload": {
+							"uuid": "f6103c96-c981-4716-bdbc-b0b654de3041",
+							"metaData": {
+								"changedBy": "n23109",
+								"changed": "xxx",
+								"origin": "ENPS/CORE"
+							},
+							"render": {
+								"channel": "gfx1",
+								"system": {},
+								"group": {}
+							},
+							"playout": {
+								"event": {},
+								"layer": "super",
+								"template": "navnesuper"
+							},
+							"content": {
+								"navn": "Hans Hansen",
+								"tittel": "reporter"
+							}
+						}
+					}, {
+						"mosScope": "PLAYLIST",
+						"mosSchema": "schema.nrk.no/timing",
+						"mosPayload": {
+							"in": "auto",
+							"out": "auto",
+							"timeIn": 15000,
+							"duration": 4000
+						}
+					}]
+				}
+			}],
+			"level": "debug",
+			"message": "",
+			"timestamp": "2018-05-31T08:19:39.191Z"
+		}),
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;25B5E1DD-082A-4939-B2CC7AD5DA511FC3","Slug":"SAK 2;Intro","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180503T080805Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"Dette er intro sak 2","TextTime":3,"mosartType":"KAM","mosartVariant":2,"ReadTime":3,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:39.374Z"}),
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;619A8B1E-5F39-42B8-9D5C318A48342392","Slug":"SAK 2;SAK 2","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":328.88,"ModBy":"N12050","ModTime":"20180522T092445Z","MOSAbstracts":"M: Dette er en øvelse (03-05-18 10:02)\nØVELSE-280418-DR19 NYHETER 00:05:28:22\nNavnesuper: Hans Hansen, reporter\nNavnesuper: Alf Ivar Johnsen, baker","MOSItemDurations":"328,88","MOSItemEdDurations":"","MOSObjSlugs":"M: Dette er en øvelse\nØVELSE-280418-DR19\nNavnesuper: Hans Hansen, reporter\nNavnesuper: Alf Ivar Johnsen, baker","MOSSlugs":"Uten tittel\nSAK 2;SAK 2-2\nSAK 2;SAK 2-4\nSAK 2;SAK 2-5","MOSTimes":"20180531T081903Z\n20180531T081903Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":0,"Bildebeskrivelse":"Her er beskrivelsen av bildene","Fylke":"Hordaland","Innslagstittel":"Dette er en øvelse","Kommune":"Bergen","mosartType":"FULL","OpprLand":"Norge","ReadTime":328.88,"Rettigheter":"Grønt","Rettighetseier":"NRK","Sted":"Bergen","Tags":"test","ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":3,"objID":"N12050_1525334564","mosID":"METADATA.NRK.MOS","mosAbstract":"M: Dette er en øvelse (03-05-18 10:02)","objSlug":"M: Dette er en øvelse","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"http://mosA4.com/mos/supported_schemas/MOSAXML2.08","mosPayload":{"nrk":{"mdSource":"omnibus","type":"video","changedBy":"N12050","changetime":"2018-05-03T10:02:44 +02:00","title":"Dette er en øvelse","description":"Her er beskrivelsen av bildene","hbbtv":{"link":""},"location":{"id":"1-92416","region":"Hordaland","lat":60.39826,"lon":5.32907,"@t":"Bergen"},"tag":{"id":6519,"@t":"test"},"rights":{"notes":"","owner":"NRK","@t":"Green"}}}},"itemSlug":"Uten tittel"}},{"Type":"storyItem","Content":{"itemID":2,"itemSlug":"SAK 2;SAK 2-2","objID":"\\\\XPRO\\Omn\\A\\A\\40\\36","mosID":"OMNIBUS.XPRO.MOS","mosAbstract":"ØVELSE-280418-DR19 NYHETER 00:05:28:22","objDur":16444,"objTB":50,"objSlug":"ØVELSE-280418-DR19","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"OMNIBUS","mosPayload":{"title":"Dette er en øvelse","objectType":"CLIP","clipType":"NYHETER","objDur":16444}}}},{"Type":"storyItem","Content":{"itemID":4,"itemSlug":"SAK 2;SAK 2-4","objID":"f774dbd0-1ef5-44e9-a7dc-54d3e7ce5e76","mosID":"GFX.NRK.MOS","mosAbstract":"Navnesuper: Hans Hansen, reporter","mosExternalMetadata":[{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/content","mosPayload":{"uuid":"f6103c96-c981-4716-bdbc-b0b654de3041","metaData":{"changedBy":"n23109","changed":"xxx","origin":"ENPS/CORE"},"render":{"channel":"gfx1","system":{},"group":{}},"playout":{"event":{},"layer":"super","template":"navnesuper"},"content":{"navn":"Hans Hansen","tittel":"reporter"}}},{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/timing","mosPayload":{"in":"auto","out":"auto","timeIn":5000,"duration":4000}}]}},{"Type":"storyItem","Content":{"itemID":5,"itemSlug":"SAK 2;SAK 2-5","objID":"4f2b1698-7603-4093-b20d-0c5b04b37361","mosID":"GFX.NRK.MOS","mosAbstract":"Navnesuper: Alf Ivar Johnsen, baker","mosExternalMetadata":[{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/content","mosPayload":{"uuid":"f6103c96-c981-4716-bdbc-b0b654de3041","metaData":{"changedBy":"n23109","changed":"xxx","origin":"ENPS/CORE"},"render":{"channel":"gfx1","system":{},"group":{}},"playout":{"event":{},"layer":"super","template":"navnesuper"},"content":{"navn":"Alf Ivar Johnsen","tittel":"baker"}}},{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/timing","mosPayload":{"in":"auto","out":"auto","timeIn":5000,"duration":4000}}]}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:39.620Z"}),
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;B539EBBC-5877-4301-8FFFC0371031A29A","Slug":"DIR;Intro","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180503T080349Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"Nå skal vi inn direkte i testen av Sofie. \n<BAK>RM1","TextTime":3,"mosartType":"KAM","mosartVariant":1,"ReadTime":3,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:39.797Z"}),
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, {
+			"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;12ABC87D-6709-447A-B2D9AAE0C4A7E360",
+			"Slug": "DIR;Split",
+			"MosExternalMetaData": [{
+				"MosScope": "PLAYLIST",
+				"MosSchema": "http://MAENPSTEST14:10505/schema/enps.dtd",
+				"MosPayload": {
+					"Approved": 0,
+					"Creator": "N12050",
+					"MediaTime": 0,
+					"ModBy": "N12050",
+					"ModTime": "20180522T092538Z",
+					"MOSAbstracts": "Navnesuper: Alf Ivar Johnsen, baker\nNavnesuper: Hans Hansen, reporter",
+					"MOSItemDurations": "",
+					"MOSItemEdDurations": "",
+					"MOSObjSlugs": "Navnesuper: Alf Ivar Johnsen, baker\nNavnesuper: Hans Hansen, reporter",
+					"MOSSlugs": "DIR;Split-2\nDIR;Split-3",
+					"MOSTimes": "20180531T081903Z\n20180531T081903Z",
+					"Owner": "N12050",
+					"SourceMediaTime": 0,
+					"SourceTextTime": 0,
+					"StoryLogPreview": "Hans Hansen, hva skjer der du er?\nSuper: Direkte, sted",
+					"TextTime": 4,
+					"mosartType": "DVE",
+					"mosartVariant": "2LIKE",
+					"ReadTime": 4,
+					"ip1": "K1",
+					"ip2": "RM1",
+					"ENPSItemType": 3
+				}
+			}],
+			"RunningOrderId": "MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5",
+			"Body": [{
+				"Type": "storyItem",
+				"Content": {
+					"itemID": 2,
+					"itemSlug": "DIR;Split-2",
+					"objID": "4f2b1698-7603-4093-b20d-0c5b04b37361",
+					"mosID": "GFX.NRK.MOS",
+					"mosAbstract": "Navnesuper: Alf Ivar Johnsen, baker",
+					"mosExternalMetadata": [{
+						"mosScope": "PLAYLIST",
+						"mosSchema": "schema.nrk.no/content",
+						"mosPayload": {
+							"uuid": "f6103c96-c981-4716-bdbc-b0b654de3041",
+							"metaData": {
+								"changedBy": "n23109",
+								"changed": "xxx",
+								"origin": "ENPS/CORE"
+							},
+							"render": {
+								"channel": "gfx1",
+								"system": {},
+								"group": {}
+							},
+							"playout": {
+								"event": {},
+								"layer": "super",
+								"template": "navnesuper"
+							},
+							"content": {
+								"navn": "Alf Ivar Johnsen",
+								"tittel": "baker"
+							}
+						}
+					}, {
+						"mosScope": "PLAYLIST",
+						"mosSchema": "schema.nrk.no/timing",
+						"mosPayload": {
+							"in": "auto",
+							"out": "auto",
+							"timeIn": 5000,
+							"duration": 4000
+						}
+					}]
+				}
+			}, {
+				"Type": "storyItem",
+				"Content": {
+					"itemID": 3,
+					"itemSlug": "DIR;Split-3",
+					"objID": "46256d10-f2a4-4230-a72f-96aaf5d08c64",
+					"mosID": "GFX.NRK.MOS",
+					"mosAbstract": "Navnesuper: Hans Hansen, reporter",
+					"mosExternalMetadata": [{
+						"mosScope": "PLAYLIST",
+						"mosSchema": "schema.nrk.no/content",
+						"mosPayload": {
+							"uuid": "f6103c96-c981-4716-bdbc-b0b654de3041",
+							"metaData": {
+								"changedBy": "n23109",
+								"changed": "xxx",
+								"origin": "ENPS/CORE"
+							},
+							"render": {
+								"channel": "gfx1",
+								"system": {},
+								"group": {}
+							},
+							"playout": {
+								"event": {},
+								"layer": "super",
+								"template": "navnesuper"
+							},
+							"content": {
+								"navn": "Hans Hansen",
+								"tittel": "reporter"
+							}
+						}
+					}, {
+						"mosScope": "PLAYLIST",
+						"mosSchema": "schema.nrk.no/timing",
+						"mosPayload": {
+							"in": "auto",
+							"out": "auto",
+							"timeIn": 5000,
+							"duration": 4000
+						}
+					}]
+				}
+			}],
+			"level": "debug",
+			"message": "",
+			"timestamp": "2018-05-31T08:19:39.997Z"
+		}),
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, {
+			"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;9AAC721E-A8C6-4CAA-9DDD6E5835B55582",
+			"Slug": "DIR;Direkte",
+			"MosExternalMetaData": [{
+				"MosScope": "PLAYLIST",
+				"MosSchema": "http://MAENPSTEST14:10505/schema/enps.dtd",
+				"MosPayload": {
+					"Approved": 0,
+					"Creator": "N12050",
+					"MediaTime": 0,
+					"ModBy": "N12050",
+					"ModTime": "20180503T080705Z",
+					"MOSAbstracts": "M: Test av Sofie (03-05-18 10:06)",
+					"MOSObjSlugs": "M: Test av Sofie",
+					"MOSSlugs": "Uten tittel",
+					"Owner": "N12050",
+					"SourceMediaTime": 0,
+					"SourceTextTime": 0,
+					"TextTime": 5,
+					"Bildebeskrivelse": "",
+					"Fylke": "Sogn og Fjordane",
+					"Innslagstittel": "Test av Sofie",
+					"Kommune": "Eid",
+					"mosartType": "DIR",
+					"mosartVariant": 1,
+					"OpprLand": "Norge",
+					"ReadTime": 5,
+					"Rettigheter": "Grønt",
+					"Rettighetseier": "NRK",
+					"Sted": "Os",
+					"ENPSItemType": 3
+				}
+			}],
+			"RunningOrderId": "MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5",
+			"Body": [{
+				"Type": "storyItem",
+				"Content": {
+					"itemID": 2,
+					"objID": "N12050_1525334819",
+					"mosID": "METADATA.NRK.MOS",
+					"mosAbstract": "M: Test av Sofie (03-05-18 10:06)",
+					"objSlug": "M: Test av Sofie",
+					"mosExternalMetadata": {
+						"mosScope": "PLAYLIST",
+						"mosSchema": "http://mosA4.com/mos/supported_schemas/MOSAXML2.08",
+						"mosPayload": {
+							"nrk": {
+								"changetime": "2018-05-03T10:06:58 +02:00",
+								"changedBy": "N12050",
+								"type": "video",
+								"mdSource": "ncs",
+								"title": "Test av Sofie",
+								"description": {},
+								"hbbtv": {
+									"link": ""
+								},
+								"location": {
+									"id": "1-2608277",
+									"region": "Eid, Sogn og Fjordane",
+									"lat": 61.90197,
+									"lon": 5.98855,
+									"@t": "Os"
+								},
+								"rights": {
+									"notes": "",
+									"owner": "NRK",
+									"@t": "Green"
+								}
+							}
+						}
+					},
+					"itemSlug": "Uten tittel"
+				}
+			}],
+			"level": "debug",
+			"message": "",
+			"timestamp": "2018-05-31T08:19:40.233Z"
+		})
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, {
+			"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;D5CDDB91-2823-48D5-A50829B0907B8D79",
+			"Slug": "STK Synk;Tekst",
+			"MosExternalMetaData": [{
+				"MosScope": "PLAYLIST",
+				"MosSchema": "http://MAENPSTEST14:10505/schema/enps.dtd",
+				"MosPayload": {
+					"Approved": 0,
+					"Creator": "N12050",
+					"MediaTime": 0,
+					"ModBy": "N12050",
+					"ModTime": "20180503T080833Z",
+					"Owner": "N12050",
+					"SourceMediaTime": 0,
+					"SourceTextTime": 0,
+					"StoryLogPreview": "Dette er teksten som programleder skal lese når vi kjører VB",
+					"TextTime": 4,
+					"mosartType": "KAM",
+					"mosartVariant": 1,
+					"ReadTime": 4,
+					"ENPSItemType": 3
+				}
+			}],
+			"RunningOrderId": "MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5",
+			"Body": [],
+			"level": "debug",
+			"message": "",
+			"timestamp": "2018-05-31T08:19:40.408Z"
+		}),
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, {
+			"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;F485B9D0-0D2B-4548-A353E771A7F0F4B6",
+			"Slug": "STK Synk;STK",
+			"MosExternalMetaData": [{
+				"MosScope": "PLAYLIST",
+				"MosSchema": "http://MAENPSTEST14:10505/schema/enps.dtd",
+				"MosPayload": {
+					"Approved": 0,
+					"Creator": "N12050",
+					"MediaTime": 98.72,
+					"ModBy": "N639194",
+					"ModTime": "20180504T084325Z",
+					"MOSAbstracts": "M: Du er dum (03-05-18 10:09)\ndu-er-dum-250418 PUBLISH_QUANTEL 00:01:38:18",
+					"MOSItemDurations": "98,72",
+					"MOSItemEdDurations": "",
+					"MOSObjSlugs": "M: Du er dum\ndu-er-dum-250418",
+					"MOSSlugs": "Uten tittel\nSTK Synk;STK-3",
+					"MOSTimes": "",
+					"Owner": "N12050",
+					"SourceMediaTime": 0,
+					"SourceTextTime": 0,
+					"TextTime": 0,
+					"AndreMetadata": "{Fotograf};Helle Rossow;+{Redigerer};Helle Rossow;",
+					"Bildebeskrivelse": "beskrivelse",
+					"Fylke": "Hordaland",
+					"Innslagstittel": "Du er dum",
+					"Kommune": "Kvinnherad",
+					"mosartType": "STK",
+					"OpprLand": "Norge",
+					"ReadTime": 98.72,
+					"Rettigheter": "Grønt",
+					"Rettighetseier": "NRK",
+					"Sted": "Berhaug",
+					"Tags": "test",
+					"Team": "{Fotograf};Helle Rossow;+{Redigerer};Helle Rossow;",
+					"ENPSItemType": 3
+				}
+			}],
+			"RunningOrderId": "MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5",
+			"Body": [{
+				"Type": "storyItem",
+				"Content": {
+					"itemID": 4,
+					"objID": "N12050_1525334993",
+					"mosID": "METADATA.NRK.MOS",
+					"mosAbstract": "M: Du er dum (03-05-18 10:09)",
+					"objSlug": "M: Du er dum",
+					"mosExternalMetadata": {
+						"mosScope": "PLAYLIST",
+						"mosSchema": "http://mosA4.com/mos/supported_schemas/MOSAXML2.08",
+						"mosPayload": {
+							"nrk": {
+								"changetime": "2018-05-03T10:09:53 +02:00",
+								"changedBy": "N12050",
+								"type": "video",
+								"mdSource": "omnibus",
+								"title": "Du er dum",
+								"description": "beskrivelse",
+								"hbbtv": {
+									"link": ""
+								},
+								"staff": {
+									"userid": "n12050",
+									"roles": "Fotograf;Redigerer",
+									"@t": "Helle Rossow"
+								},
+								"location": {
+									"id": "1-2511926",
+									"region": "Kvinnherad, Hordaland",
+									"lat": 59.78068,
+									"lon": 5.81041,
+									"@t": "Berhaug"
+								},
+								"tag": {
+									"id": 6519,
+									"@t": "test"
+								},
+								"rights": {
+									"notes": "",
+									"owner": "NRK",
+									"@t": "Green"
+								}
+							}
+						}
+					},
+					"itemSlug": "Uten tittel"
+				}
+			}, {
+				"Type": "storyItem",
+				"Content": {
+					"itemID": 3,
+					"itemSlug": "STK Synk;STK-3",
+					"objID": "\\\\XPRO\\Omn\\A\\A\\40\\31",
+					"mosID": "OMNIBUS.XPRO.MOS",
+					"mosAbstract": "du-er-dum-250418 PUBLISH_QUANTEL 00:01:38:18",
+					"objDur": 4936,
+					"objTB": 50,
+					"objSlug": "du-er-dum-250418",
+					"mosExternalMetadata": {
+						"mosScope": "PLAYLIST",
+						"mosSchema": "OMNIBUS",
+						"mosPayload": {
+							"title": "Du er dum",
+							"objectType": "CLIP",
+							"clipType": "PUBLISH_QUANTEL",
+							"objDur": 4936
+						}
+					}
+				}
+			}],
+			"level": "debug",
+			"message": "",
+			"timestamp": "2018-05-31T08:19:40.616Z"
+		}),
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;C997A8EF-C221-4678-B31EB0419009628E","Slug":"STK Synk;Synk","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":158.32,"ModBy":"N12050","ModTime":"20180522T092658Z","MOSAbstracts":"M: Ny Avengers-film (03-05-18 10:10)\nAVENGERS-190418-DR19 NYHETER 00:02:38:08\nNavnesuper: Petter Hansen, slakter","MOSItemDurations":"158,32","MOSItemEdDurations":"","MOSObjSlugs":"M: Ny Avengers-film\nAVENGERS-190418-DR19\nNavnesuper: Petter Hansen, slakter","MOSSlugs":"Uten tittel\nSTK Synk;Synk-2\nSTK Synk;Synk-4","MOSTimes":"20180531T081903Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":1,"AndreMetadata":"{reporter};Christian Ingebrethsen;","Bildebeskrivelse":"","Fylke":"England","Innslagstittel":"Ny Avengers-film","Kommune":"Greater London","mosartTransition":"effect 2","mosartType":"FULL","OpprLand":"Storbritannia","ReadTime":159.32,"Rettigheter":"Grønt","Rettighetseier":"NRK","Sted":"London","Tags":"avengers; marvel; tegneserier","Team":"{reporter};Christian Ingebrethsen;","ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":3,"objID":"N12050_1525335039","mosID":"METADATA.NRK.MOS","mosAbstract":"M: Ny Avengers-film (03-05-18 10:10)","objSlug":"M: Ny Avengers-film","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"http://mosA4.com/mos/supported_schemas/MOSAXML2.08","mosPayload":{"nrk":{"changetime":"2018-05-03T10:10:39 +02:00","changedBy":"N12050","type":"video","mdSource":"omnibus","title":"Ny Avengers-film","description":{},"hbbtv":{"link":""},"staff":{"userid":"n22621","roles":"reporter","@t":"Christian Ingebrethsen"},"location":{"id":"2-2643743","region":"Greater London, England, Storbritannia","lat":51.50853,"lon":-0.12574,"@t":"London"},"tag":[{"id":95257,"@t":"avengers"},{"id":95258,"@t":"marvel"},{"id":95259,"@t":"tegneserier"}],"rights":{"notes":"","owner":"NRK","@t":"Green"}}}},"itemSlug":"Uten tittel"}},{"Type":"storyItem","Content":{"itemID":2,"itemSlug":"STK Synk;Synk-2","objID":"\\\\XPRO\\Omn\\A\\A\\40\\26","mosID":"OMNIBUS.XPRO.MOS","mosAbstract":"AVENGERS-190418-DR19 NYHETER 00:02:38:08","objDur":7916,"objTB":50,"objSlug":"AVENGERS-190418-DR19","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"OMNIBUS","mosPayload":{"title":"Ny Avengers-film","objectType":"CLIP","clipType":"NYHETER","objDur":7916}}}},{"Type":"storyItem","Content":{"itemID":4,"itemSlug":"STK Synk;Synk-4","objID":"5dac983a-ad64-4780-ab8e-241170b572be","mosID":"GFX.NRK.MOS","mosAbstract":"Navnesuper: Petter Hansen, slakter","mosExternalMetadata":[{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/content","mosPayload":{"uuid":"f6103c96-c981-4716-bdbc-b0b654de3041","metaData":{"changedBy":"n23109","changed":"xxx","origin":"ENPS/CORE"},"render":{"channel":"gfx1","system":{},"group":{}},"playout":{"event":{},"layer":"super","template":"navnesuper"},"content":{"navn":"Petter Hansen","tittel":"slakter"}}},{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/timing","mosPayload":{"in":"auto","out":"auto","timeIn":5000,"duration":4000}}]}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:40.819Z"})
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;AC6784C9-5722-4286-A763BB64775CCB84","Slug":"Nettpromo;Tekst","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180503T081121Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"I dag kan vi lese om Trimp på våre nettsider","TextTime":3,"mosartType":"KAM","mosartVariant":1,"ReadTime":3,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:41.010Z"})
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, {
+			"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;F39A88CF-9EFE-4881-8E04526996A5E526",
+			"Slug": "Nettpromo;Grafikk",
+			"MosExternalMetaData": [{
+				"MosScope": "PLAYLIST",
+				"MosSchema": "http://MAENPSTEST14:10505/schema/enps.dtd",
+				"MosPayload": {
+					"Approved": 0,
+					"Creator": "N12050",
+					"MediaTime": 0,
+					"ModBy": "N12050",
+					"ModTime": "20180503T081156Z",
+					"MOSAbstracts": "M: Nettet nå (03-05-18 10:11)",
+					"MOSObjSlugs": "M: Nettet nå",
+					"MOSSlugs": "Uten tittel",
+					"Owner": "N12050",
+					"SourceMediaTime": 0,
+					"SourceTextTime": 0,
+					"TextTime": 1,
+					"Bildebeskrivelse": "",
+					"Innslagstittel": "Nettet nå",
+					"mosartType": "GRAFIKK",
+					"mosartVariant": "PROMO",
+					"ReadTime": 1,
+					"Rettigheter": "Grønt",
+					"Rettighetseier": "NRK",
+					"ENPSItemType": 3
+				}
+			}],
+			"RunningOrderId": "MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5",
+			"Body": [{
+				"Type": "storyItem",
+				"Content": {
+					"itemID": 2,
+					"objID": "N12050_1525335104",
+					"mosID": "METADATA.NRK.MOS",
+					"mosAbstract": "M: Nettet nå (03-05-18 10:11)",
+					"objSlug": "M: Nettet nå",
+					"mosExternalMetadata": {
+						"mosScope": "PLAYLIST",
+						"mosSchema": "http://mosA4.com/mos/supported_schemas/MOSAXML2.08",
+						"mosPayload": {
+							"nrk": {
+								"changetime": "2018-05-03T10:11:44 +02:00",
+								"changedBy": "N12050",
+								"type": "video",
+								"mdSource": "ncs",
+								"title": "Nettet nå",
+								"description": {},
+								"hbbtv": {
+									"link": ""
+								},
+								"rights": {
+									"notes": "",
+									"owner": "NRK",
+									"@t": "Green"
+								}
+							}
+						}
+					},
+					"itemSlug": "Uten tittel"
+				}
+			}],
+			"level": "debug",
+			"message": "",
+			"timestamp": "2018-05-31T08:19:41.205Z"
+		}),
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;95EBAE5C-A888-478E-87234C566DCA3D55","Slug":"Vær;Intro","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180503T081217Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"Nå skal vi se hva slags vær vi får de neste tre dagene","TextTime":4,"mosartType":"KAM","mosartVariant":1,"ReadTime":4,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:41.411Z"})
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;2E21CEBA-BE5E-483C-9A26F64B5AB51643","Slug":"Vær;Vær","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":600,"ModBy":"N12050","ModTime":"20180503T081321Z","MOSAbstracts":"M: Været (03-05-18 10:12)\n dk-været-to-1955-220318 SLETT_VSERV_Y_TIMER 00:10:00:00","MOSItemDurations":600,"MOSItemEdDurations":"","MOSObjSlugs":"M: Været\ndk-været-to-1955-220318","MOSSlugs":"Uten tittel\nVær;Vær-3","MOSTimes":"","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":4,"Bildebeskrivelse":"","Innslagstittel":"Været","mosartType":"FULL","ReadTime":604,"Rettigheter":"Grønt","Rettighetseier":"NRK","ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":2,"objID":"N12050_1525335158","mosID":"METADATA.NRK.MOS","mosAbstract":"M: Været (03-05-18 10:12)","objSlug":"M: Været","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"http://mosA4.com/mos/supported_schemas/MOSAXML2.08","mosPayload":{"nrk":{"changetime":"2018-05-03T10:12:37 +02:00","changedBy":"N12050","type":"video","mdSource":"ncs","title":"Været","description":{},"hbbtv":{"link":""},"rights":{"notes":"","owner":"NRK","@t":"Green"}}}},"itemSlug":"Uten tittel"}},{"Type":"storyItem","Content":{"itemID":3,"itemSlug":"Vær;Vær-3","objID":"\\\\XPRO\\Omn\\A\\A\\38\\60","mosID":"OMNIBUS.XPRO.MOS","mosAbstract":"dk-været-to-1955-220318 SLETT_VSERV_Y_TIMER 00:10:00:00","objDur":30000,"objTB":50,"objSlug":"dk-været-to-1955-220318","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"OMNIBUS","mosPayload":{"title":"dk-været-to-1955-220318","objectType":"CLIP","clipType":"SLETT_VSERV_Y_TIMER","objDur":30000,"objType":"VIDEO"}}}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:41.614Z"})
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;CA207AAF-9B8C-409B-854DE3CFC2AB8DCF","Slug":"Sluttvignett;Credits","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180503T081417Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"det var alt vi hadde for i dag, sees i morgen","TextTime":7,"mosartType":"KAM","mosartVariant":"3SLUTT","ReadTime":7,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:41.850Z"})
 
 	}
 })

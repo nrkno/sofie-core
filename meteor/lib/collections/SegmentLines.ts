@@ -25,7 +25,7 @@ export interface DBSegmentLine {
 	runningOrderId: string
 	/** The story Slug (like a title, but slimier) */
 	slug: string
-	/** Should this item be taken live automatically */
+	/** Should this item should progress to the next automatically */
 	autoNext?: boolean
 	/** The duration to run overlap with the previous SegmentLine */
 	overlapDuration?: number
