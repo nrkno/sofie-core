@@ -78,7 +78,7 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
 			segmentLineduration = 3000	// @todo TBD
 			break
 		default:
-			context.warning('Unknown mosartVariant: ' + mosartVariant)
+			context.warning('Unknown vignett mosartVariant: ' + mosartVariant)
 	}
 
 	let segmentLineItems: Array<SegmentLineItemOptional> = []

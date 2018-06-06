@@ -255,7 +255,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 								}
 							},
 							attributes: {
-								file: 'CLEAR'
+								file: 'EMPTY'
 							}
 						}
 					}),
