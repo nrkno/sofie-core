@@ -206,9 +206,12 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				((segmentLineItem.expectedDuration) === 0 ? // segmentLineItem.renderedDuration
 					(this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) + liveLinePadding) :
 					Math.max(
-						segmentLineItem.renderedDuration || segmentLineItem.expectedDuration || 0,
-						// this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) + liveLinePadding,
-						this.props.livePosition - this.props.segmentLineStartsAt + liveLinePadding - (segmentLineItem.renderedInPoint || 0)
+						Math.min(
+							(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration || 0),
+							// this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) + liveLinePadding,
+							(this.props.livePosition - this.props.segmentLineStartsAt + liveLinePadding - (segmentLineItem.renderedInPoint || 0))
+						),
+						Math.min(segmentLineItem.expectedDuration, segmentLineItem.renderedDuration || 0)
 					)
 				) :
 				Math.min(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
