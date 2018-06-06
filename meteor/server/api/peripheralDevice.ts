@@ -1015,7 +1015,8 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 	if (durationMosMetaData && durationMosMetaData.MosPayload && (durationMosMetaData.MosPayload.Actual || durationMosMetaData.MosPayload.Estimated || durationMosMetaData.MosPayload.ReadTime)) {
 
 		const duration = durationMosMetaData.MosPayload.Actual && parseFloat(durationMosMetaData.MosPayload.Actual) ||
-						 durationMosMetaData.MosPayload.Estimated && parseFloat(durationMosMetaData.MosPayload.Estimated) || 0
+						 durationMosMetaData.MosPayload.Estimated && parseFloat(durationMosMetaData.MosPayload.Estimated) ||
+						 durationMosMetaData.MosPayload.MediaTime && parseFloat(durationMosMetaData.MosPayload.MediaTime) || 0
 
 						 // console.log('updating segment line duration: ' + segmentLine._id + ' ' + duration)
 		segmentLine.expectedDuration = duration * 1000
@@ -1035,6 +1036,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 
 	if (result.segmentLine) {
 		SegmentLines.update(segmentLine._id, {$set: {
+			expectedDuration:		result.segmentLine.expectedDuration || segmentLine.expectedDuration,
 			overlapDuration: 		result.segmentLine.overlapDuration || 0,
 			autoNext: 				result.segmentLine.autoNext || false,
 			disableOutTransition: 	result.segmentLine.disableOutTransition || false,

@@ -93,7 +93,88 @@ Meteor.methods({
 			{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_07C8C71B-1835-493D-94E1678FD1425B71;1E3CAE45-F5D8-4378-AA627DF2C6089897","Slug":"NRK Østafjells;020518-1850","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"LINUXENPS","MediaTime":0,"ModBy":"N639194","ModTime":"20180514T144034Z","MOSAbstracts":"_00:00:03:00 | @M=Auto Openend | 201 loop | 1: | 2: | 3: | 4: | 00:00:00:00","MOSItemDurations":0,"MOSObjSlugs":"201 loop 1:  2:","MOSSlugs":"NRK ØSTAFJELLS;ddmm15-1845-3","Owner":"LINUXENPS","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"<BAK KLARHD<00:01>>","TextTime":0,"SystemApprovedBy":"N12914","mosartType":"BREAK","ReadTime":0,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71","Body":[{"Type":"storyItem","Content":{"mosID":"chyron.mprochycami02.npro.nrk.mos","mosAbstract":"_00:00:03:00 | @M=Auto Openend | 201 loop | 1: | 2: | 3: | 4: | 00:00:00:00","objPaths":{"objProxyPath":{"techDescription":"JPEG Thumbnail","$t":"http://160.68.33.159/thumbs/NYHETER/10000/Objects_NYHETER_00010001_v1_big.jpg"},"objMetadataPath":{}},"itemChannel":"CG2","itemSlug":"NRK ØSTAFJELLS;ddmm15-1845-3","mosObj":{"objID":"NYHETER\\00010001?version=1","objSlug":"201 loop 1:  2:","mosItemEditorProgID":"Chymox.AssetBrowser.1","objDur":0,"objTB":0,"objPaths":{"objProxyPath":{"techDescription":"JPEG Thumbnail","$t":"http://160.68.33.159/thumbs/NYHETER/10000/Objects_NYHETER_00010001_v1_big.jpg"},"objMetadataPath":{}},"mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"http://ncsA4.com/mos/supported_schemas/NCSAXML2.08","mosPayload":{"sAVsom":"00:00:03:00","sAVeom":"00:00:00:00","createdBy":"N18685","subtype":"lyric/data","subtypeid":"I:\\CAMIO\\NYHETER\\Templates\\Bakskjerm\\00000201.lyr","ObjectDetails":{"ServerID":"chyron.mprochycami02.npro.nrk.mos","ServerURL":"http://160.68.33.159/CAMIO/Redirection/MOSRedirection.asmx"}}}},"itemID":5}}],"level":"debug","message":"","timestamp":"2018-05-15T06:51:29.460Z"}
 		)
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
-			{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_07C8C71B-1835-493D-94E1678FD1425B71;9141DBA1-93DD-4B19-BEBB32E0D6222E1B","Slug":"Åpning;vignett","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Actual":4,"Approved":1,"Creator":"LINUXENPS","ElapsedTime":3,"MediaTime":0,"ModBy":"N12914","ModTime":"20180502T144559Z","MOSAbstracts":"M: NRK Østafjells (20-04-16 09:07)\nTIDSMARKØR IKKE RØR","MOSItemDurations":"","MOSItemEdDurations":"","MOSObjSlugs":"M: NRK Østafjells\nStory status","MOSSlugs":"VIGNETT;vignett-5\nVIGNETT;vignett-3","MOSTimes":"20180502T165008720Z","Owner":"LINUXENPS","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"<LYS Q1>","StoryProducer":"DKTE","TextTime":0,"SystemApprovedBy":"N12914","Kilde":"TV","mosartType":"FULL","mosartVariant":"VIGNETT2018","ReadTime":0,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71","Body":[{"Type":"storyItem","Content":{"itemID":9,"objID":"N11580_1461136025","mosID":"METADATA.NRK.MOS","mosAbstract":"M: NRK Østafjells (20-04-16 09:07)","objSlug":"M: NRK Østafjells","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"http://mosA4.com/mos/supported_schemas/MOSAXML2.08","mosPayload":{"nrk":{"type":"video","changedBy":"N11580","changetime":"2016-04-20T09:07:05 +02:00","mdSource":"ncs","title":"NRK Østafjells","description":{},"hbbtv":{"link":""},"rights":{"notes":"","owner":"NRK","$t":"Green"}}}},"itemSlug":"VIGNETT;vignett-5"}},{"Type":"storyItem","Content":{"mosID":"mosart.morten.mos","abstract":"TIDSMARKØR IKKE RØR","objID":"STORYSTATUS","objSlug":"Story status","itemID":10,"itemSlug":"VIGNETT;vignett-3"}}],"level":"debug","message":"","timestamp":"2018-05-15T06:51:29.665Z"}
+			{
+				"ID": "MAENPSTEST14;P_SERVER14\\W\\R_07C8C71B-1835-493D-94E1678FD1425B71;9141DBA1-93DD-4B19-BEBB32E0D6222E1B",
+				"Slug": "Åpning;vignett",
+				"MosExternalMetaData": [{
+					"MosScope": "PLAYLIST",
+					"MosSchema": "http://MAENPSTEST14:10505/schema/enps.dtd",
+					"MosPayload": {
+						"Actual": 4,
+						"Approved": 1,
+						"Creator": "LINUXENPS",
+						"ElapsedTime": 3,
+						"MediaTime": 0,
+						"ModBy": "N12914",
+						"ModTime": "20180502T144559Z",
+						"MOSAbstracts": "M: NRK Østafjells (20-04-16 09:07)\nTIDSMARKØR IKKE RØR",
+						"MOSItemDurations": "",
+						"MOSItemEdDurations": "",
+						"MOSObjSlugs": "M: NRK Østafjells\nStory status",
+						"MOSSlugs": "VIGNETT;vignett-5\nVIGNETT;vignett-3",
+						"MOSTimes": "20180502T165008720Z",
+						"Owner": "LINUXENPS",
+						"SourceMediaTime": 0,
+						"SourceTextTime": 0,
+						"StoryLogPreview": "<LYS Q1>",
+						"StoryProducer": "DKTE",
+						"TextTime": 0,
+						"SystemApprovedBy": "N12914",
+						"Kilde": "TV",
+						"mosartType": "FULL",
+						"mosartVariant": "VIGNETT2018",
+						"ReadTime": 0,
+						"ENPSItemType": 3
+					}
+				}],
+				"RunningOrderId": "MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71",
+				"Body": [{
+					"Type": "storyItem",
+					"Content": {
+						"itemID": 9,
+						"objID": "N11580_1461136025",
+						"mosID": "METADATA.NRK.MOS",
+						"mosAbstract": "M: NRK Østafjells (20-04-16 09:07)",
+						"objSlug": "M: NRK Østafjells",
+						"mosExternalMetadata": {
+							"mosScope": "PLAYLIST",
+							"mosSchema": "http://mosA4.com/mos/supported_schemas/MOSAXML2.08",
+							"mosPayload": {
+								"nrk": {
+									"type": "video",
+									"changedBy": "N11580",
+									"changetime": "2016-04-20T09:07:05 +02:00",
+									"mdSource": "ncs",
+									"title": "NRK Østafjells",
+									"description": {},
+									"hbbtv": {
+										"link": ""
+									},
+									"rights": {
+										"notes": "",
+										"owner": "NRK",
+										"$t": "Green"
+									}
+								}
+							}
+						},
+						"itemSlug": "VIGNETT;vignett-5"
+					}
+				}, {
+					"Type": "storyItem",
+					"Content": {
+						"mosID": "mosart.morten.mos",
+						"abstract": "TIDSMARKØR IKKE RØR",
+						"objID": "STORYSTATUS",
+						"objSlug": "Story status",
+						"itemID": 10,
+						"itemSlug": "VIGNETT;vignett-3"
+					}
+				}],
+				"level": "debug",
+				"message": "",
+				"timestamp": "2018-05-15T06:51:29.665Z"
+			}
 		)
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
 			{
@@ -901,7 +982,7 @@ Meteor.methods({
 				"MosPayload": {
 					"Approved": 0,
 					"Creator": "N12050",
-					"MediaTime": 123.48,
+					"MediaTime": 13.48,
 					"ModBy": "N12050",
 					"ModTime": "20180522T092414Z",
 					"MOSAbstracts": "METADATA\n US-NJ-BEAR-20180501I IMPORT_QUANTEL 00:02:03:12 \nNavnesuper: Alf Hansen, allviter\nNavnesuper: Hans Hansen, reporter",

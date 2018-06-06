@@ -130,7 +130,7 @@ export const NrkSTKTemplate = literal<TemplateFunctionOptional>((context: Templa
 					}
 				}),
 
-				// server1 to -15db
+				// server1 to -15db/-inf
 				literal<TimelineObjLawoSource>({
 					_id: IDs.lawo_clip, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
@@ -148,7 +148,7 @@ export const NrkSTKTemplate = literal<TemplateFunctionOptional>((context: Templa
 							}
 						},
 						attributes: {
-							db: -15
+							db: clipLevel
 						}
 					}
 				}),
