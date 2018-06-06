@@ -182,10 +182,12 @@ Meteor.methods({
 		RunningOrders.update(runningOrder._id, {$set: {
 			previousSegmentLineId: runningOrder.currentSegmentLineId,
 			currentSegmentLineId: takeSegmentLine._id,
-			nextSegmentLineId: nextSegmentLine._id
+			nextSegmentLineId: nextSegmentLine ? nextSegmentLine._id : null
 		}})
 
-		clearNextLineStartedPlaybackAndDuration(roId, nextSegmentLine._id)
+		if (nextSegmentLine) {
+			clearNextLineStartedPlaybackAndDuration(roId, nextSegmentLine._id)
+		}
 
 		updateTimeline(runningOrder.studioInstallationId)
 
