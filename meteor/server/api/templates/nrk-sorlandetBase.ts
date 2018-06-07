@@ -70,10 +70,11 @@ import { RunningOrderBaselineItem } from '../../../lib/collections/RunningOrderB
 const literal = <T>(o: T) => o
 
 export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(function (context, story) {
+	const noraGroup = process.env.MESOS_NORA_GROUP || 'dksl' // @todo config not env
 	const clearParams: any = {
 		render: {
 			channel: NoraChannels.super,
-			group: 'dksl',
+			group: noraGroup,
 			system: 'html',
 		},
 		playout: {
@@ -419,7 +420,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							content: {
 								type: TimelineContentTypeCasparCg.HTMLPAGE,
 								attributes: {
-									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=dksl&channel=' + NoraChannels.super + '&name=sofie-dev-cg&_=' + Date.now()
+									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=' + noraGroup + '&channel=' + NoraChannels.super + '&name=sofie-dev-cg&_=' + Date.now()
 								}
 							}
 						}),
@@ -431,7 +432,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							content: {
 								type: TimelineContentTypeCasparCg.HTMLPAGE,
 								attributes: {
-									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=dksl&channel=' + NoraChannels.logo + '&name=sofie-dev-logo&_=' + Date.now()
+									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=' + noraGroup + '&channel=' + NoraChannels.logo + '&name=sofie-dev-logo&_=' + Date.now()
 								}
 							}
 						}),
@@ -443,7 +444,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							content: {
 								type: TimelineContentTypeCasparCg.HTMLPAGE,
 								attributes: {
-									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=dksl&channel=' + NoraChannels.studio + '&name=sofie-dev-studio&_=' + Date.now()
+									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=' + noraGroup + '&channel=' + NoraChannels.studio + '&name=sofie-dev-studio&_=' + Date.now()
 								}
 							}
 						}),

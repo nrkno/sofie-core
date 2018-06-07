@@ -90,10 +90,11 @@ export function ParseSuperSegments (context: TemplateContextInner, story: StoryW
 		}
 
 		const payload = context.getValueByPath(content, 'mosPayload', {})
+		const noraGroup = process.env.MESOS_NORA_GROUP || 'dksl' // @todo config not env
 		const newPayload: any = {
 			render: {
 				channel: NoraChannels.super,
-				group: 'dksl', // @todo config
+				group: noraGroup,
 				system: 'html',
 			},
 			playout: Object.assign(payload.playout, {
