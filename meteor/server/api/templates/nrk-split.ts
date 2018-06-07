@@ -59,7 +59,7 @@ import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 
 import { LLayers, SourceLayers } from './nrk-layers'
-import { RMFirstInput, KamFirstInput, AtemSource } from './nrk-inputs'
+import { RMFirstInput, KamFirstInput, AtemSource, LawoFadeInDuration } from './nrk-inputs'
 import { isNumber } from 'util'
 
 const literal = <T>(o: T) => o
@@ -170,7 +170,7 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 							transitions: {
 								inTransition: {
 									type: Transition.MIX,
-									duration: 200,
+									duration: LawoFadeInDuration,
 									easing: Ease.LINEAR,
 									direction: Direction.LEFT
 								}
@@ -194,7 +194,7 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 						transitions: {
 							inTransition: {
 								type: Transition.MIX,
-								duration: 200,
+								duration: LawoFadeInDuration,
 								easing: Ease.LINEAR,
 								direction: Direction.LEFT
 							}
@@ -218,7 +218,7 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 						transitions: {
 							inTransition: {
 								type: Transition.MIX,
-								duration: 200,
+								duration: LawoFadeInDuration,
 								easing: Ease.LINEAR,
 								direction: Direction.LEFT
 							}

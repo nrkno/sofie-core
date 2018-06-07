@@ -59,7 +59,7 @@ import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 
 import { LLayers, SourceLayers } from './nrk-layers'
-import { KamFirstInput } from './nrk-inputs'
+import { KamFirstInput, LawoFadeInDuration } from './nrk-inputs'
 import { isNumber } from 'util'
 
 const literal = <T>(o: T) => o
@@ -249,7 +249,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 							transitions: {
 								inTransition: {
 									type: Transition.MIX,
-									duration: 200,
+									duration: LawoFadeInDuration,
 									easing: Ease.LINEAR,
 									direction: Direction.LEFT
 								}
@@ -329,7 +329,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 						transitions: {
 							inTransition: {
 								type: Transition.MIX,
-								duration: 200,
+								duration: LawoFadeInDuration,
 								easing: Ease.LINEAR,
 								direction: Direction.LEFT
 							}

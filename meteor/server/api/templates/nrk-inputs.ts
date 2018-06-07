@@ -14,3 +14,5 @@ export enum AtemSource {
 
 export const RMFirstInput = 4 // First ATEM input number
 export const KamFirstInput = 1 // First ATEM input number
+
+export const LawoFadeInDuration = 160 // 4 frames
