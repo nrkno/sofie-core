@@ -98,7 +98,9 @@ Meteor.methods({
 					_rank: 100,
 					name: 'Super',
 					type: RundownAPI.SourceLayerType.GRAPHICS,
-					onPGMClean: false
+					onPGMClean: false,
+					activateKeyboardHotkeys: 'a,s,d,f,g,h',
+					clearKeyboardHotkey: 'l'
 				},
 				// {
 				// 	_id: 'studio0_lower_third0',
@@ -143,6 +145,8 @@ Meteor.methods({
 					name: 'Kam',
 					type: RundownAPI.SourceLayerType.CAMERA,
 					onPGMClean: true,
+					activateKeyboardHotkeys: '1,2,3,4,5,6',
+					assignHotkeysToGlobalAdlibs: true
 				},
 			],
 		}})
