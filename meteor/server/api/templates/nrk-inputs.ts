@@ -5,9 +5,11 @@ export enum AtemSource {
 	DSK2K = 13,
 	Server1 = 14,
 	Server1Next = 15,
-	Server2 = 16, 
+	Server2 = 16,
 	Server3 = 17, // @todo confirm input for ssrc background
 	Grafikk = 1000, // @todo
+
+	Default = 2001, // holder defined in show style - @todo change
 }
 
 export const RMFirstInput = 4 // First ATEM input number
