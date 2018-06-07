@@ -248,13 +248,19 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.atem_dsk_graphics,
 							content: {
 								type: TimelineContentTypeAtem.DSK,
-								// transitions?: {
-								//     inTransition?: TimelineTransition
-								// }
 								attributes: {
 									onAir: true,
-									fillSource: AtemSource.DSK1F,
-									keySource: AtemSource.DSK1K
+									sources: {
+										fillSource: AtemSource.DSK1F,
+										cutSource: AtemSource.DSK1K
+									},
+									properties: {
+										tie: false,
+										preMultiply: true,
+										mask: {
+											enabled: false
+										}
+									}
 								}
 							}
 						}),
@@ -265,13 +271,19 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.atem_dsk_effect,
 							content: {
 								type: TimelineContentTypeAtem.DSK,
-								// transitions?: {
-								//     inTransition?: TimelineTransition
-								// }
 								attributes: {
 									onAir: true,
-									fillSource: AtemSource.DSK2F,
-									keySource: AtemSource.DSK2K
+									sources: {
+										fillSource: AtemSource.DSK2F,
+										cutSource: AtemSource.DSK2K
+									},
+									properties: {
+										tie: false,
+										preMultiply: true,
+										mask: {
+											enabled: false
+										}
+									}
 								}
 							}
 						}),
