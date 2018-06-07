@@ -63,7 +63,7 @@ import { Optional } from '../../../lib/lib'
 import { SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
 
 import { LLayers, NoraChannels, SourceLayers } from './nrk-layers'
-import { AtemSource, LawoFadeInDuration } from './nrk-inputs'
+import { AtemSource, LawoFadeInDuration } from './nrk-constants'
 import { ParseSuperSegments } from './nrk-graphics'
 
 const literal = <T>(o: T) => o

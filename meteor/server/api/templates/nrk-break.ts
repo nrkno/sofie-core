@@ -61,7 +61,7 @@ import { Optional } from '../../../lib/lib'
 import { SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
 
 import { LLayers, SourceLayers } from './nrk-layers'
-import { AtemSource } from './nrk-inputs'
+import { AtemSource } from './nrk-constants'
 
 const literal = <T>(o: T) => o
 

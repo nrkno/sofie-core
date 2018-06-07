@@ -59,7 +59,7 @@ import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 
 import { LLayers, SourceLayers } from './nrk-layers'
-import { RMFirstInput, KamFirstInput, AtemSource, LawoFadeInDuration } from './nrk-inputs'
+import { RMFirstInput, KamFirstInput, AtemSource, LawoFadeInDuration } from './nrk-constants'
 import { isNumber } from 'util'
 
 const literal = <T>(o: T) => o

@@ -64,7 +64,7 @@ import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 
 import { LLayers, NoraChannels, SourceLayers } from './nrk-layers'
-import { AtemSource, LawoFadeInDuration } from './nrk-inputs'
+import { AtemSource, LawoFadeInDuration } from './nrk-constants'
 import { RunningOrderBaselineItem } from '../../../lib/collections/RunningOrderBaselineItems'
 
 const literal = <T>(o: T) => o
@@ -189,23 +189,9 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.atem_me_program,
 							content: {
 								type: TimelineContentTypeAtem.ME,
-								// transitions?: {
-								//     inTransition?: TimelineTransition
-								// }
 								attributes: {
 									input: AtemSource.Default,
-									transition: Atem_Enums.TransitionStyle.CUT,
-									transitionSettings: { // these are set for later use
-										wipe: {
-											rate: 9,
-											pattern: 17,
-											borderWidth: 0,
-											symmetry: 5000,
-											borderSoftness: 10000,
-											reverseDirection: true,
-											flipFlop: false
-										}
-									}
+									transition: Atem_Enums.TransitionStyle.CUT
 								}
 							}
 						}),
@@ -216,23 +202,9 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.atem_me_studiomonitor,
 							content: {
 								type: TimelineContentTypeAtem.ME,
-								// transitions?: {
-								//     inTransition?: TimelineTransition
-								// }
 								attributes: {
 									input: AtemSource.Server2,
-									transition: Atem_Enums.TransitionStyle.CUT,
-									transitionSettings: { // these are set for later use
-										wipe: {
-											rate: 9,
-											pattern: 17,
-											borderWidth: 0,
-											symmetry: 5000,
-											borderSoftness: 10000,
-											reverseDirection: true,
-											flipFlop: false
-										}
-									}
+									transition: Atem_Enums.TransitionStyle.CUT
 								}
 							}
 						}),

@@ -16,3 +16,15 @@ export const RMFirstInput = 4 // First ATEM input number
 export const KamFirstInput = 1 // First ATEM input number
 
 export const LawoFadeInDuration = 160 // 4 frames
+
+export const AtemWipeSettings = {
+	wipe: {
+		rate: 9,
+		pattern: 17,
+		borderWidth: 0,
+		symmetry: 5000,
+		borderSoftness: 10000,
+		reverseDirection: true,
+		flipFlop: false
+	}
+}
