@@ -194,7 +194,18 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 								// }
 								attributes: {
 									input: AtemSource.Default,
-									transition: Atem_Enums.TransitionStyle.CUT
+									transition: Atem_Enums.TransitionStyle.CUT,
+									transitionSettings: { // these are set for later use
+										wipe: {
+											rate: 9,
+											pattern: 17,
+											borderWidth: 0,
+											symmetry: 5000,
+											borderSoftness: 10000,
+											reverseDirection: true,
+											flipFlop: false
+										}
+									}
 								}
 							}
 						}),
@@ -210,7 +221,18 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 								// }
 								attributes: {
 									input: AtemSource.Server2,
-									transition: Atem_Enums.TransitionStyle.CUT
+									transition: Atem_Enums.TransitionStyle.CUT,
+									transitionSettings: { // these are set for later use
+										wipe: {
+											rate: 9,
+											pattern: 17,
+											borderWidth: 0,
+											symmetry: 5000,
+											borderSoftness: 10000,
+											reverseDirection: true,
+											flipFlop: false
+										}
+									}
 								}
 							}
 						}),

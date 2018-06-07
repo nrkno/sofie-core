@@ -289,7 +289,25 @@ export interface TimelineObjAtemME extends TimelineObj {
 			// fadeToBlack?: boolean;
 			// numberOfKeyers?: number;
 			// transitionProperties?: AtemTransitionProperties;
-			// transitionSettings?: AtemTransitionSettings;
+
+			transitionSettings?: {
+				// dip
+				// DVE
+				// mix
+				// stinger
+				wipe: {
+					rate?: number,
+					pattern?: number,
+					borderWidth?: number,
+					borderInput?: number,
+					symmetry?: number,
+					borderSoftness?: number,
+					xPosition?: number,
+					yPosition?: number,
+					reverseDirection?: boolean,
+					flipFlop?: boolean,
+				}
+			}
 		}
 	}
 }
