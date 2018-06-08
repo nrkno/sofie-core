@@ -75,7 +75,7 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
 			// lengths and times are milliseconds
 			clip = 'assets/vignett_sl'	// @todo TBD
 			sourceDuration = 70	* 1000	// @todo TBD
-			segmentLineduration = 3000	// @todo TBD
+			segmentLineduration = 3500	// @todo TBD
 			break
 		default:
 			context.warning('Unknown vignett mosartVariant: ' + mosartVariant)
