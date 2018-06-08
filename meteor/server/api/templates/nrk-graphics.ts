@@ -74,7 +74,6 @@ export function ParseSuperSegments (context: TemplateContextInner, story: StoryW
 			context.getValueByPath(item, 'Content.mosID') === 'GFX.NRK.MOS'
 		)
 	})
-	if (storyItemGfx.length === 0) context.warning('Super missing in mos data')
 
 	for (const item of storyItemGfx) {
 		const itemID = context.getValueByPath(item, 'Content.itemID', 0)

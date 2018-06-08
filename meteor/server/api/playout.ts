@@ -706,10 +706,9 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 			currentSegmentLine = SegmentLines.findOne(activeRunningOrder.currentSegmentLineId)
 			if (!currentSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.currentSegmentLineId}" not found!`)
 
-			const transition = currentSegmentLine.getSegmentLinesItems().find((sl: SegmentLineItem) => sl.isTransition)
 			let allowTransition = false
 
-			if (activeRunningOrder.previousSegmentLineId && transition) {
+			if (activeRunningOrder.previousSegmentLineId) {
 				let previousSegmentLine = SegmentLines.findOne(activeRunningOrder.previousSegmentLineId)
 				if (!previousSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.previousSegmentLineId}" not found!`)
 
@@ -717,17 +716,20 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 
 				if (previousSegmentLine.startedPlayback && !previousSegmentLine.disableOutTransition) {
 					const duration = getCurrentTime() - previousSegmentLine.startedPlayback
-					previousSegmentLineGroup = createSegmentLineGroup(previousSegmentLine, duration + transition.expectedDuration)
-					previousSegmentLineGroup.priority = -1
-					previousSegmentLineGroup.trigger = literal<ITimelineTrigger>({
-						type: TriggerType.TIME_ABSOLUTE,
-						value: previousSegmentLine.startedPlayback
-					})
+					if (duration > 0) {
+						const transition = currentSegmentLine.getSegmentLinesItems().find((sl: SegmentLineItem) => sl.isTransition)
+						previousSegmentLineGroup = createSegmentLineGroup(previousSegmentLine, duration + Math.max(transition ? transition.expectedDuration || 0 : 0, currentSegmentLine.overlapDuration || 0))
+						previousSegmentLineGroup.priority = -1
+						previousSegmentLineGroup.trigger = literal<ITimelineTrigger>({
+							type: TriggerType.TIME_ABSOLUTE,
+							value: previousSegmentLine.startedPlayback
+						})
 
-					timelineObjs = timelineObjs.concat(
-						previousSegmentLineGroup,
-						transformSegmentLineIntoTimeline(previousSegmentLine, previousSegmentLineGroup, false))
-					timelineObjs.push(createSegmentLineGroupFirstObject(previousSegmentLine, previousSegmentLineGroup))
+						timelineObjs = timelineObjs.concat(
+							previousSegmentLineGroup,
+							transformSegmentLineIntoTimeline(previousSegmentLine, previousSegmentLineGroup, false))
+						timelineObjs.push(createSegmentLineGroupFirstObject(previousSegmentLine, previousSegmentLineGroup))
+					}
 				}
 			}
 
