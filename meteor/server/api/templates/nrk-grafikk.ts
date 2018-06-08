@@ -111,6 +111,8 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 		gfxPost:			context.getHashId('gfxPost'),
 		atemSrv1: 			context.getHashId('atemSrv1'),
 		lawo_automix:       context.getHashId('lawo_automix'),
+		lawo_bed: 		    context.getHashId('lawo_bed'),
+		playerBed:			context.getHashId('playerBed'),
 	}
 
 	// @todo does this field mean anything useful?
@@ -177,6 +179,29 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 					}
 				}),
 
+				// audio bed
+				literal<TimelineObjLawoSource>({
+					_id: IDs.lawo_bed, deviceId: [''], siId: '', roId: '',
+					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
+					priority: 1,
+					duration: 0,
+					LLayer: LLayers.lawo_source_clip,
+					content: {
+						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						transitions: {
+							inTransition: {
+								type: Transition.MIX,
+								duration: LawoFadeInDuration,
+								easing: Ease.LINEAR,
+								direction: Direction.LEFT
+							}
+						},
+						attributes: {
+							db: -15
+						}
+					}
+				}),
+
 				// preroll gfx a couple of frames before cutting to it
 				literal<TimelineObjAtemME>({
 					_id: IDs.atemSrv1, deviceId: [''], siId: '', roId: '',
@@ -189,6 +214,21 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 						attributes: {
 							input: AtemSource.Grafikk,
 							transition: Atem_Enums.TransitionStyle.CUT
+						}
+					}
+				}),
+
+				// play bed
+				literal<TimelineObjCCGVideo>({
+					_id: IDs.playerBed, deviceId: [''], siId: '', roId: '',
+					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
+					priority: 1,
+					duration: 0, // hold at end
+					LLayer: LLayers.casparcg_player_clip,
+					content: {
+						type: TimelineContentTypeCasparCg.VIDEO,
+						attributes: {
+							file: 'assets/grafikk_bed'
 						}
 					}
 				}),
