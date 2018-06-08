@@ -134,12 +134,16 @@ Meteor.methods({
 		Meteor.call('debug_removeAllRos')
 	},
 	'debug_removeAllRos' () {
-		console.log('Clear the database')
+		console.log('Remove all runningOrders')
 
-		SegmentLineItems.remove({})
-		SegmentLines.remove({})
-		Segments.remove({})
-		RunningOrders.remove({})
+		// SegmentLineItems.remove({})
+		// SegmentLines.remove({})
+		// Segments.remove({})
+		// RunningOrders.remove({})
+
+		RunningOrders.find({}).forEach((ro) => {
+			ro.remove()
+		})
 	},
 
 	'debug_sampleShowStyle' () {
