@@ -64,7 +64,7 @@ import { Optional } from '../../../lib/lib'
 import { SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
 
 import { LLayers, SourceLayers } from './nrk-layers'
-import { AtemSource } from './nrk-inputs'
+import { AtemSource, LawoFadeInDuration } from './nrk-constants'
 import { ParseSuperSegments } from './nrk-graphics'
 
 const literal = <T>(o: T) => o
@@ -140,7 +140,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 						transitions: {
 							inTransition: {
 								type: Transition.MIX,
-								duration: 200,
+								duration: LawoFadeInDuration,
 								easing: Ease.LINEAR,
 								direction: Direction.LEFT
 							}
@@ -163,7 +163,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 						transitions: {
 							inTransition: { // @todo should this have a transition?
 								type: Transition.MIX,
-								duration: 200,
+								duration: LawoFadeInDuration,
 								easing: Ease.LINEAR,
 								direction: Direction.LEFT
 							}

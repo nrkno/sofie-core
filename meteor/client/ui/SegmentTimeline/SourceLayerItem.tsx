@@ -217,6 +217,10 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				Math.min(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
 			)
 
+		if (itemDuration === 0 && segmentLineItem.renderedInPoint !== null && segmentLineItem.renderedInPoint !== undefined) {
+			itemDuration = this.props.segmentLineDuration - segmentLineItem.renderedInPoint
+		}
+
 		if (this.props.relative) {
 			return {
 				// also: don't render transitions in relative mode

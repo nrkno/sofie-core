@@ -315,11 +315,11 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 		roAdLibItems.forEach((item) => {
 			// automatically assign hotkeys based on adLibItem index
 			const uiAdLib: SegmentLineAdLibItemUi = _.clone(item)
+			uiAdLib.isGlobal = true
 			if (item.sourceLayerId && sourceLayerLookup[item.sourceLayerId] && sourceLayerLookup[item.sourceLayerId].activateKeyboardHotkeys && sourceLayerLookup[item.sourceLayerId].assignHotkeysToGlobalAdlibs) {
 				let keyboardHotkeysList = sourceLayerLookup[uiAdLib.sourceLayerId].activateKeyboardHotkeys!.split(',')
 				if ((sourceHotKeyUse[uiAdLib.sourceLayerId] || 0) < keyboardHotkeysList.length) {
 					uiAdLib.hotkey = keyboardHotkeysList[(sourceHotKeyUse[uiAdLib.sourceLayerId] || 0)]
-					uiAdLib.isGlobal = true
 					// add one to the usage hash table
 					sourceHotKeyUse[uiAdLib.sourceLayerId] = (sourceHotKeyUse[uiAdLib.sourceLayerId] || 0) + 1
 				}

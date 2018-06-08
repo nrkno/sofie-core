@@ -308,6 +308,7 @@ Meteor.methods({
 				SegmentLines.update(segLine._id, {$set: {
 					startedPlayback
 				}})
+				updateTimeline(runningOrder.studioInstallationId, startedPlayback)
 			}
 		} else {
 			throw new Meteor.Error(404, `Segment line "${slId}" in running order "${roId}" not found!`)
@@ -647,7 +648,12 @@ function transformSegmentLineIntoTimeline (segmentLine: SegmentLine, segmentLine
 	return timelineObjs
 }
 
-function updateTimeline (studioInstallationId: string) {
+/**
+ * Updates the Timeline to reflect the state in the RunningOrder, Segments, Segmentlines etc...
+ * @param studioInstallationId id of the studioInstallation to update
+ * @param forceNowToTime if set, instantly forces all "now"-objects to that time (used in autoNext)
+ */
+function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 	const activeRunningOrder = RunningOrders.findOne({
 		studioInstallationId: studioInstallationId,
 		active: true
@@ -701,10 +707,13 @@ function updateTimeline (studioInstallationId: string) {
 			if (!currentSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.currentSegmentLineId}" not found!`)
 
 			const transition = currentSegmentLine.getSegmentLinesItems().find((sl: SegmentLineItem) => sl.isTransition)
+			let allowTransition = false
 
 			if (activeRunningOrder.previousSegmentLineId && transition) {
 				let previousSegmentLine = SegmentLines.findOne(activeRunningOrder.previousSegmentLineId)
 				if (!previousSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.previousSegmentLineId}" not found!`)
+
+				allowTransition = !previousSegmentLine.disableOutTransition
 
 				if (previousSegmentLine.startedPlayback && !previousSegmentLine.disableOutTransition) {
 					const duration = getCurrentTime() - previousSegmentLine.startedPlayback
@@ -726,7 +735,6 @@ function updateTimeline (studioInstallationId: string) {
 			// fetch the timelineobjs in items
 			const isFollowed = nextSegmentLine && currentSegmentLine.autoNext
 			currentSegmentLineGroup = createSegmentLineGroup(currentSegmentLine, (isFollowed ? (currentSegmentLine.expectedDuration || 0) : 0))
-			const allowTransition = !!activeRunningOrder.previousSegmentLineId // @todo allow currentSegmentLine to force disable (if it is a video with an out ani)
 			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentSegmentLine, currentSegmentLineGroup, allowTransition))
 
 			timelineObjs.push(createSegmentLineGroupFirstObject(currentSegmentLine, currentSegmentLineGroup))
@@ -845,6 +853,10 @@ function updateTimeline (studioInstallationId: string) {
 
 		// console.log('timelineObjs', timelineObjs)
 
+		if (forceNowToTime) {
+			setNowToTimeInObjects(timelineObjs, forceNowToTime)
+		}
+
 		saveIntoDb<TimelineObj, TimelineObj>(Timeline, {
 			roId: activeRunningOrder._id
 		}, timelineObjs, {
@@ -863,4 +875,15 @@ function updateTimeline (studioInstallationId: string) {
 			siId: studioInstallationId
 		})
 	}
+}
+
+function setNowToTimeInObjects (timelineObjs: Array<TimelineObj>, now: Time): void {
+	_.each(timelineObjs, (o) => {
+		if (o.trigger.type === TriggerType.TIME_ABSOLUTE &&
+			o.trigger.value === 'now'
+		) {
+			o.trigger.value = now
+			o.trigger.setFromNow = true
+		}
+	})
 }

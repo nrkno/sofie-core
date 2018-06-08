@@ -64,16 +64,19 @@ import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 
 import { LLayers, NoraChannels, SourceLayers } from './nrk-layers'
-import { AtemSource } from './nrk-inputs'
+import { AtemSource, LawoFadeInDuration } from './nrk-constants'
 import { RunningOrderBaselineItem } from '../../../lib/collections/RunningOrderBaselineItems'
 
 const literal = <T>(o: T) => o
 
+const lawoDefaultOutDuration = 1400
+
 export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(function (context, story) {
+	const noraGroup = process.env.MESOS_NORA_GROUP || 'dksl' // @todo config not env
 	const clearParams: any = {
 		render: {
 			channel: NoraChannels.super,
-			group: 'dksl',
+			group: noraGroup,
 			system: 'html',
 		},
 		playout: {
@@ -135,7 +138,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							transitions: {
 								inTransition: {
 									type: Transition.MIX,
-									duration: 200,
+									duration: LawoFadeInDuration,
 									easing: Ease.LINEAR,
 									direction: Direction.LEFT
 								}
@@ -186,11 +189,8 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.atem_me_program,
 							content: {
 								type: TimelineContentTypeAtem.ME,
-								// transitions?: {
-								//     inTransition?: TimelineTransition
-								// }
 								attributes: {
-									input: 2001, // to be changed?
+									input: AtemSource.Default,
 									transition: Atem_Enums.TransitionStyle.CUT
 								}
 							}
@@ -202,11 +202,8 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.atem_me_studiomonitor,
 							content: {
 								type: TimelineContentTypeAtem.ME,
-								// transitions?: {
-								//     inTransition?: TimelineTransition
-								// }
 								attributes: {
-									input: 1, // TMP! should be 16
+									input: AtemSource.Server2,
 									transition: Atem_Enums.TransitionStyle.CUT
 								}
 							}
@@ -218,9 +215,6 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.atem_aux_clean,
 							content: {
 								type: TimelineContentTypeAtem.AUX,
-								// transitions?: {
-								//     inTransition?: TimelineTransition
-								// }
 								attributes: {
 									input: Atem_Enums.SourceIndex.Cfd1
 								}
@@ -233,9 +227,6 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.atem_aux_preview,
 							content: {
 								type: TimelineContentTypeAtem.AUX,
-								// transitions?: {
-								//     inTransition?: TimelineTransition
-								// }
 								attributes: {
 									input: Atem_Enums.SourceIndex.Prv1
 								}
@@ -248,13 +239,19 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.atem_dsk_graphics,
 							content: {
 								type: TimelineContentTypeAtem.DSK,
-								// transitions?: {
-								//     inTransition?: TimelineTransition
-								// }
 								attributes: {
 									onAir: true,
-									fillSource: AtemSource.DSK1F,
-									keySource: AtemSource.DSK1K
+									sources: {
+										fillSource: AtemSource.DSK1F,
+										cutSource: AtemSource.DSK1K
+									},
+									properties: {
+										tie: false,
+										preMultiply: true,
+										mask: {
+											enabled: false
+										}
+									}
 								}
 							}
 						}),
@@ -265,13 +262,19 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.atem_dsk_effect,
 							content: {
 								type: TimelineContentTypeAtem.DSK,
-								// transitions?: {
-								//     inTransition?: TimelineTransition
-								// }
 								attributes: {
 									onAir: true,
-									fillSource: AtemSource.DSK2F,
-									keySource: AtemSource.DSK2K
+									sources: {
+										fillSource: AtemSource.DSK2F,
+										cutSource: AtemSource.DSK2K
+									},
+									properties: {
+										tie: false,
+										preMultiply: true,
+										mask: {
+											enabled: false
+										}
+									}
 								}
 							}
 						}),
@@ -321,6 +324,14 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.lawo_source_automix,
 							content: {
 								type: TimelineContentTypeLawo.AUDIO_SOURCE,
+								transitions: {
+									inTransition: {
+										type: Transition.MIX,
+										duration: lawoDefaultOutDuration,
+										easing: Ease.LINEAR,
+										direction: Direction.LEFT
+									}
+								},
 								attributes: {
 									db: -191
 								}
@@ -333,6 +344,14 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.lawo_source_clip,
 							content: {
 								type: TimelineContentTypeLawo.AUDIO_SOURCE,
+								transitions: {
+									inTransition: {
+										type: Transition.MIX,
+										duration: lawoDefaultOutDuration,
+										easing: Ease.LINEAR,
+										direction: Direction.LEFT
+									}
+								},
 								attributes: {
 									db: -191
 								}
@@ -345,6 +364,14 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.lawo_source_effect,
 							content: {
 								type: TimelineContentTypeLawo.AUDIO_SOURCE,
+								transitions: {
+									inTransition: {
+										type: Transition.MIX,
+										duration: lawoDefaultOutDuration,
+										easing: Ease.LINEAR,
+										direction: Direction.LEFT
+									}
+								},
 								attributes: {
 									db: -191
 								}
@@ -357,6 +384,14 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.lawo_source_preview,
 							content: {
 								type: TimelineContentTypeLawo.AUDIO_SOURCE,
+								transitions: {
+									inTransition: {
+										type: Transition.MIX,
+										duration: lawoDefaultOutDuration,
+										easing: Ease.LINEAR,
+										direction: Direction.LEFT
+									}
+								},
 								attributes: {
 									db: 0
 								}
@@ -369,6 +404,14 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.lawo_source_rm1,
 							content: {
 								type: TimelineContentTypeLawo.AUDIO_SOURCE,
+								transitions: {
+									inTransition: {
+										type: Transition.MIX,
+										duration: lawoDefaultOutDuration,
+										easing: Ease.LINEAR,
+										direction: Direction.LEFT
+									}
+								},
 								attributes: {
 									db: -191
 								}
@@ -381,6 +424,14 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.lawo_source_rm2,
 							content: {
 								type: TimelineContentTypeLawo.AUDIO_SOURCE,
+								transitions: {
+									inTransition: {
+										type: Transition.MIX,
+										duration: lawoDefaultOutDuration,
+										easing: Ease.LINEAR,
+										direction: Direction.LEFT
+									}
+								},
 								attributes: {
 									db: -191
 								}
@@ -393,6 +444,14 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.lawo_source_rm3,
 							content: {
 								type: TimelineContentTypeLawo.AUDIO_SOURCE,
+								transitions: {
+									inTransition: {
+										type: Transition.MIX,
+										duration: lawoDefaultOutDuration,
+										easing: Ease.LINEAR,
+										direction: Direction.LEFT
+									}
+								},
 								attributes: {
 									db: -191
 								}
@@ -407,7 +466,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							content: {
 								type: TimelineContentTypeCasparCg.HTMLPAGE,
 								attributes: {
-									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=dksl&channel=' + NoraChannels.super + '&name=sofie-dev-cg&_=' + Date.now()
+									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=' + noraGroup + '&channel=' + NoraChannels.super + '&name=sofie-dev-cg&_=' + Date.now()
 								}
 							}
 						}),
@@ -419,7 +478,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							content: {
 								type: TimelineContentTypeCasparCg.HTMLPAGE,
 								attributes: {
-									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=dksl&channel=' + NoraChannels.logo + '&name=sofie-dev-logo&_=' + Date.now()
+									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=' + noraGroup + '&channel=' + NoraChannels.logo + '&name=sofie-dev-logo&_=' + Date.now()
 								}
 							}
 						}),
@@ -431,7 +490,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							content: {
 								type: TimelineContentTypeCasparCg.HTMLPAGE,
 								attributes: {
-									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=dksl&channel=' + NoraChannels.studio + '&name=sofie-dev-studio&_=' + Date.now()
+									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=' + noraGroup + '&channel=' + NoraChannels.studio + '&name=sofie-dev-studio&_=' + Date.now()
 								}
 							}
 						}),

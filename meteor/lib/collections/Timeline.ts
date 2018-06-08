@@ -289,7 +289,25 @@ export interface TimelineObjAtemME extends TimelineObj {
 			// fadeToBlack?: boolean;
 			// numberOfKeyers?: number;
 			// transitionProperties?: AtemTransitionProperties;
-			// transitionSettings?: AtemTransitionSettings;
+
+			transitionSettings?: {
+				// dip
+				// DVE
+				// mix
+				// stinger
+				wipe: {
+					rate?: number,
+					pattern?: number,
+					borderWidth?: number,
+					borderInput?: number,
+					symmetry?: number,
+					borderSoftness?: number,
+					xPosition?: number,
+					yPosition?: number,
+					reverseDirection?: boolean,
+					flipFlop?: boolean,
+				}
+			}
 		}
 	}
 }
@@ -302,8 +320,25 @@ export interface TimelineObjAtemDSK extends TimelineObj {
 		}
 		attributes: {
 			onAir: boolean,
-			fillSource: number,
-			keySource: number
+			sources?: {
+				fillSource: number,
+				cutSource: number
+			},
+			properties?: {
+				tie?: boolean,
+				rate?: number,
+				preMultiply?: boolean,
+				clip?: number,
+				gain?: number,
+				invert?: boolean,
+				mask?: {
+					enabled: boolean,
+					top?: number,
+					bottom?: number,
+					left?: number,
+					right?: number
+				}
+			}
 		}
 	}
 }

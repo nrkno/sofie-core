@@ -58,7 +58,7 @@ import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 
 import { LLayers, SourceLayers } from './nrk-layers'
-import { RMFirstInput } from './nrk-inputs'
+import { RMFirstInput, LawoFadeInDuration } from './nrk-constants'
 import { isNumber } from 'util'
 
 const literal = <T>(o: T) => o
@@ -142,7 +142,7 @@ export const NrkDirTemplate = literal<TemplateFunctionOptional>((context: Templa
 						transitions: {
 							inTransition: {
 								type: Transition.MIX,
-								duration: 200,
+								duration: LawoFadeInDuration,
 								easing: Ease.LINEAR,
 								direction: Direction.LEFT
 							}

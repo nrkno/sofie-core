@@ -59,7 +59,7 @@ import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 
 import { LLayers, SourceLayers } from './nrk-layers'
-import { KamFirstInput } from './nrk-inputs'
+import { KamFirstInput, LawoFadeInDuration, AtemWipeSettings } from './nrk-constants'
 import { isNumber } from 'util'
 
 const literal = <T>(o: T) => o
@@ -221,18 +221,19 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 						}
 					}),
 
+					// run the transition
 					literal<TimelineObjAtemME>({
 						_id: IDs.atemSrv1Transition, deviceId: [''], siId: '', roId: '',
-						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.wipeVideo}.start + 120 + 120` }, // @todo better trigger point
-						priority: 2,
-						duration: 0, // @todo TBD
+						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.wipeVideo}.start + 0` },
+						priority: 3,
+						duration: 0,
 						LLayer: LLayers.atem_me_program,
 						content: {
 							type: TimelineContentTypeAtem.ME,
 							attributes: {
-								input: KamFirstInput + cameraInput - 1,
-								transition: Atem_Enums.TransitionStyle.MIX
-								// @todo - wipe
+								input: KamFirstInput + cameraInput ,
+								transition: Atem_Enums.TransitionStyle.WIPE,
+								transitionSettings: AtemWipeSettings
 							}
 						}
 					}),
@@ -249,7 +250,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 							transitions: {
 								inTransition: {
 									type: Transition.MIX,
-									duration: 200,
+									duration: LawoFadeInDuration,
 									easing: Ease.LINEAR,
 									direction: Direction.LEFT
 								}
@@ -279,7 +280,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 			}
 		}))
 
-		overlapDuration = 300
+		overlapDuration = 480
 	}
 
 	segmentLineItems.push(literal<SegmentLineItemOptional>({
@@ -329,7 +330,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 						transitions: {
 							inTransition: {
 								type: Transition.MIX,
-								duration: 200,
+								duration: LawoFadeInDuration,
 								easing: Ease.LINEAR,
 								direction: Direction.LEFT
 							}
