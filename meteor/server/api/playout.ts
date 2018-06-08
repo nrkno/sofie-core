@@ -855,7 +855,7 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 
 		// console.log('timelineObjs', timelineObjs)
 
-		if (forceNowToTime) {
+		if (forceNowToTime) { // used when autoNexting
 			setNowToTimeInObjects(timelineObjs, forceNowToTime)
 		}
 
@@ -878,7 +878,11 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 		})
 	}
 }
-
+/**
+ * goes through timelineObjs and forces the "now"-values to the absolute time specified
+ * @param timelineObjs Array of (flat) timeline objects
+ * @param now The time to set the "now":s to
+ */
 function setNowToTimeInObjects (timelineObjs: Array<TimelineObj>, now: Time): void {
 	_.each(timelineObjs, (o) => {
 		if (o.trigger.type === TriggerType.TIME_ABSOLUTE &&
