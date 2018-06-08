@@ -64,7 +64,7 @@ import { Optional } from '../../../lib/lib'
 import { SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
 
 import { LLayers, SourceLayers } from './nrk-layers'
-import { AtemSource, LawoFadeInDuration } from './nrk-constants'
+import { AtemSource, LawoFadeInDuration, CasparOutputDelay } from './nrk-constants'
 import { ParseSuperSegments } from './nrk-graphics'
 
 const literal = <T>(o: T) => o
@@ -128,10 +128,25 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 			) * 1000,
 
 			timelineObjects: _.compact([
+				// play FULL
+				literal<TimelineObjCCGVideo>({
+					_id: IDs.playerClip, deviceId: [''], siId: '', roId: '',
+					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+					priority: 1,
+					duration: 0, // hold at end
+					LLayer: LLayers.casparcg_player_clip,
+					content: {
+						type: TimelineContentTypeCasparCg.VIDEO,
+						attributes: {
+							file: 'mam/' + clip
+						}
+					}
+				}),
+
 				// mic host muted
 				literal<TimelineObjLawoSource>({
 					_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
-					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.playerClip}.start + ${CasparOutputDelay}` },
 					priority: 1,
 					duration: 0,
 					LLayer: LLayers.lawo_source_automix,
@@ -154,7 +169,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 				// audio FULL 0
 				literal<TimelineObjLawoSource>({
 					_id: IDs.lawo_clip, deviceId: [''], siId: '', roId: '',
-					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
+					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.playerClip}.start + ${CasparOutputDelay}` },
 					priority: 1,
 					duration: 0,
 					LLayer: LLayers.lawo_source_clip,
@@ -177,7 +192,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 				// switch to server1
 				literal<TimelineObjAtemME>({
 					_id: IDs.atemSrv1, deviceId: [''], siId: '', roId: '',
-					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
+					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.playerClip}.start + ${CasparOutputDelay}` },
 					priority: 1,
 					duration: 0,
 					LLayer: LLayers.atem_me_program,
@@ -190,20 +205,6 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 					}
 				}),
 
-				// play FULL
-				literal<TimelineObjCCGVideo>({
-					_id: IDs.playerClip, deviceId: [''], siId: '', roId: '',
-					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
-					priority: 1,
-					duration: 0, // hold at end
-					LLayer: LLayers.casparcg_player_clip,
-					content: {
-						type: TimelineContentTypeCasparCg.VIDEO,
-						attributes: {
-							file: 'mam/' + clip
-						}
-					}
-				})
 			])
 		}
 	}
@@ -222,6 +223,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 			runningOrderId: '',
 			slug: context.segmentLine._id,
 			autoNext: true,
+			overlapDuration: CasparOutputDelay,
 		}),
 		segmentLineItems: segmentLineItems,
 		segmentLineAdLibItems: segmentLineAdLibItems

@@ -100,7 +100,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 			mosId: '',
 			segmentLineId: '',
 			runningOrderId: '',
-			name: 'utvignett',
+			name: 'sluttvignett',
 			trigger: {
 				type: TriggerType.TIME_ABSOLUTE,
 				value: 0
@@ -126,17 +126,19 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 						}
 					}),
 
+					// @todo graphics template (on gfx1?)
+
 					// play utvignett
 					literal<TimelineObjCCGVideo>({
 						_id: IDs.vignettVideo, deviceId: [''], siId: '', roId: '',
-						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_effect} + 0` },
+						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_effect} + 0` }, // @todo offset to after gfx
 						priority: 1,
 						duration: 0, // hold at end
-						LLayer: LLayers.casparcg_player_vignett,
+						LLayer: LLayers.casparcg_player_vignett, // @todo same channel as gfx1
 						content: {
 							type: TimelineContentTypeCasparCg.VIDEO,
 							attributes: {
-								file: 'assets/utvignett'
+								file: 'assets/sluttvignett'
 							}
 						}
 					}),
@@ -163,8 +165,6 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 							}
 						}
 					}),
-
-					// @todo graphics template (on gfx1?)
 
 				]),
 			}

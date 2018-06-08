@@ -65,6 +65,7 @@ import { AtemSource } from './nrk-constants'
 
 const literal = <T>(o: T) => o
 
+// @todo is this template wanted?
 export const NrkBreakTemplate = literal<TemplateFunctionOptional>((context, story): TemplateResult => {
 	let IDs = {
 		lawo_automix: 		context.getHashId('lawo_automix'),

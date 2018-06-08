@@ -28,3 +28,5 @@ export const AtemWipeSettings = {
 		flipFlop: false
 	}
 }
+
+export const CasparOutputDelay = 120 // ms. Delay between playback in ccg and output on sdi

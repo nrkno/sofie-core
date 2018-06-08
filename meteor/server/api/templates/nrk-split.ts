@@ -34,6 +34,7 @@ import {
 	TemplateFunction,
 	TemplateSet,
 	SegmentLineItemOptional,
+	SegmentLineAdLibItemOptional,
 	TemplateFunctionOptional,
 	TemplateResult,
 	TemplateContextInner,
@@ -60,7 +61,9 @@ import { Optional } from '../../../lib/lib'
 
 import { LLayers, SourceLayers } from './nrk-layers'
 import { RMFirstInput, KamFirstInput, AtemSource, LawoFadeInDuration } from './nrk-constants'
+import { ParseSuperSegments } from './nrk-graphics'
 import { isNumber } from 'util'
+import { SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
 
 const literal = <T>(o: T) => o
 
@@ -123,7 +126,7 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 
 	let segmentLineItems: Array<SegmentLineItemOptional> = []
 	segmentLineItems.push(literal<SegmentLineItemOptional>({
-		_id: '',
+		_id: context.getHashId('split'),
 		mosId: '',
 		segmentLineId: '',
 		runningOrderId: '',
@@ -142,93 +145,7 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 		) * 1000,
 		content: {
 			timelineObjects: _.compact([
-				literal<TimelineObjAtemME>({
-					_id: IDs.atemSrv1, deviceId: [''], siId: '', roId: '',
-					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-					priority: 1,
-					duration: 0,
-					LLayer: LLayers.atem_me_program,
-					content: {
-						type: TimelineContentTypeAtem.ME,
-						attributes: {
-							input: Atem_Enums.SourceIndex.SSrc,
-							transition: Atem_Enums.TransitionStyle.CUT
-						}
-					}
-				}),
-
-				// automix mic hot
-				(lawoHost ?
-					literal<TimelineObjLawoSource>({
-						_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
-						trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-						priority: 1,
-						duration: 0,
-						LLayer: LLayers.lawo_source_automix,
-						content: {
-							type: TimelineContentTypeLawo.AUDIO_SOURCE,
-							transitions: {
-								inTransition: {
-									type: Transition.MIX,
-									duration: LawoFadeInDuration,
-									easing: Ease.LINEAR,
-									direction: Direction.LEFT
-								}
-							},
-							attributes: {
-								db: 0
-							}
-						}
-					}) : undefined),
-
-				// mic1 hot
-				(lawoLayer1 ?
-				literal<TimelineObjLawoSource>({
-					_id: IDs.lawo_layer1, deviceId: [''], siId: '', roId: '',
-					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-					priority: 1,
-					duration: 0,
-					LLayer: lawoLayer1,
-					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
-						transitions: {
-							inTransition: {
-								type: Transition.MIX,
-								duration: LawoFadeInDuration,
-								easing: Ease.LINEAR,
-								direction: Direction.LEFT
-							}
-						},
-						attributes: {
-							db: -15
-						}
-					}
-				}) : undefined),
-
-				// mic2 hot
-				(lawoLayer2 ?
-				literal<TimelineObjLawoSource>({
-					_id: IDs.lawo_layer2, deviceId: [''], siId: '', roId: '',
-					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
-					priority: 1,
-					duration: 0,
-					LLayer: lawoLayer2,
-					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
-						transitions: {
-							inTransition: {
-								type: Transition.MIX,
-								duration: LawoFadeInDuration,
-								easing: Ease.LINEAR,
-								direction: Direction.LEFT
-							}
-						},
-						attributes: {
-							db: -15
-						}
-					}
-				}) : undefined),
-
+				// setup ssrc
 				literal<TimelineObjAtemSsrc>({
 					_id: IDs.atemSSrc, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
@@ -255,11 +172,99 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 						}
 					}
 				}),
+
+				literal<TimelineObjAtemME>({
+					_id: IDs.atemSrv1, deviceId: [''], siId: '', roId: '',
+					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.atemSSrc}.start + 40` }, // give the ssrc a frame to get configured
+					priority: 1,
+					duration: 0,
+					LLayer: LLayers.atem_me_program,
+					content: {
+						type: TimelineContentTypeAtem.ME,
+						attributes: {
+							input: Atem_Enums.SourceIndex.SSrc,
+							transition: Atem_Enums.TransitionStyle.CUT
+						}
+					}
+				}),
+
+				// automix mic hot
+				(lawoHost ?
+					literal<TimelineObjLawoSource>({
+						_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
+						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.atemSSrc}.start + 0` },
+						priority: 1,
+						duration: 0,
+						LLayer: LLayers.lawo_source_automix,
+						content: {
+							type: TimelineContentTypeLawo.AUDIO_SOURCE,
+							transitions: {
+								inTransition: {
+									type: Transition.MIX,
+									duration: LawoFadeInDuration,
+									easing: Ease.LINEAR,
+									direction: Direction.LEFT
+								}
+							},
+							attributes: {
+								db: 0
+							}
+						}
+					}) : undefined),
+
+				// mic1 hot
+				(lawoLayer1 ?
+				literal<TimelineObjLawoSource>({
+					_id: IDs.lawo_layer1, deviceId: [''], siId: '', roId: '',
+					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.atemSSrc}.start + 0` },
+					priority: 1,
+					duration: 0,
+					LLayer: lawoLayer1,
+					content: {
+						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						transitions: {
+							inTransition: {
+								type: Transition.MIX,
+								duration: LawoFadeInDuration,
+								easing: Ease.LINEAR,
+								direction: Direction.LEFT
+							}
+						},
+						attributes: {
+							db: -15
+						}
+					}
+				}) : undefined),
+
+				// mic2 hot
+				(lawoLayer2 ?
+				literal<TimelineObjLawoSource>({
+					_id: IDs.lawo_layer2, deviceId: [''], siId: '', roId: '',
+					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.atemSSrc}.start + 0` },
+					priority: 1,
+					duration: 0,
+					LLayer: lawoLayer2,
+					content: {
+						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						transitions: {
+							inTransition: {
+								type: Transition.MIX,
+								duration: LawoFadeInDuration,
+								easing: Ease.LINEAR,
+								direction: Direction.LEFT
+							}
+						},
+						attributes: {
+							db: -15
+						}
+					}
+				}) : undefined),
 			])
 		}
 	}))
 
-	// @todo parse graphics
+	let segmentLineAdLibItems: Array<SegmentLineAdLibItemOptional> = []
+	ParseSuperSegments(context, story, segmentLineItems, segmentLineAdLibItems, segmentLineItems[0]._id || '', IDs.atemSSrc)
 
 	return {
 		segmentLine: literal<DBSegmentLine>({
@@ -269,8 +274,9 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 			segmentId: '',
 			runningOrderId: '',
 			slug: 'DIR',
+			overlapDuration: 40 // one frame for ssrc box configuration
 		}),
 		segmentLineItems: segmentLineItems,
-		segmentLineAdLibItems: null
+		segmentLineAdLibItems: segmentLineAdLibItems
 	}
 })
