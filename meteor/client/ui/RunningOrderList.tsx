@@ -26,10 +26,22 @@ export const RunningOrderList = translate()(withTracker(() => {
 	}
 })(
 class extends React.Component<IRunningOrdersListPropsHeader> {
+	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
+
 	renderRunningOrders () {
 		return this.props.runningOrders.map((runningOrder) => (
 			<RunningOrderListItem key={runningOrder._id} runningOrder={runningOrder} />
 		))
+	}
+	componentWillMount () {
+		// Subscribe to data:
+		this._subscriptions.push(Meteor.subscribe('runningOrders', {
+		}))
+	}
+	componentWillUnmount () {
+		_.each(this._subscriptions, (sub ) => {
+			sub.stop()
+		})
 	}
 
 	render () {

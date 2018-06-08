@@ -12,6 +12,7 @@ import { getCurrentTime } from '../../lib/lib'
 import { Link } from 'react-router-dom'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import * as _ from 'underscore'
 import { ModalDialog } from '../lib/ModalDialog'
 
 interface IDeviceItemPropsHeader extends InjectedTranslateProps {
@@ -165,6 +166,18 @@ interface IPropsHeader extends InjectedTranslateProps {
 	devices: Array<PeripheralDevice>
 }
 export class SystemStatus extends React.Component<IPropsHeader> {
+	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
+	componentWillMount () {
+		// Subscribe to data:
+
+		this._subscriptions.push(Meteor.subscribe('peripheralDevices', {}))
+	}
+	componentWillUnmount () {
+		_.each(this._subscriptions, (sub ) => {
+			sub.stop()
+		})
+	}
+
 	renderPeripheralDevices () {
 		return this.props.devices.map((device) => (
 			<DeviceItem key={device._id} device={device} />

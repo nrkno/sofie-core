@@ -273,6 +273,20 @@ const SettingsMenu = translate()(withTracker(() => {
 }))
 
 class Settings extends React.Component<InjectedTranslateProps> {
+	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
+	componentWillMount () {
+		// Subscribe to data:
+
+		this._subscriptions.push(Meteor.subscribe('peripheralDevices', {}))
+		this._subscriptions.push(Meteor.subscribe('studioInstallations', {}))
+		this._subscriptions.push(Meteor.subscribe('showStyles', {}))
+		this._subscriptions.push(Meteor.subscribe('runtimeFunctions', {}))
+	}
+	componentWillUnmount () {
+		_.each(this._subscriptions, (sub ) => {
+			sub.stop()
+		})
+	}
 	render () {
 		const { t } = this.props
 

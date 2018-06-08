@@ -32,6 +32,7 @@ import { getCurrentTime } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
 
 import * as mousetrap from 'mousetrap'
+import * as _ from 'underscore'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -297,7 +298,9 @@ interface IPropsHeader extends InjectedTranslateProps {
 	segments: Array<Segment>
 	studioInstallation: StudioInstallation
 	match: {
-		runningOrderId: String
+		params: {
+			runningOrderId: string
+		}
 	}
 }
 
@@ -308,14 +311,7 @@ interface IStateHeader {
 	bottomMargin: string
 }
 
-export const RunningOrderView = translate()(withTracker((props, state) => {
-	let subRunningOrders = Meteor.subscribe('runningOrders', {})
-	let subSegments = Meteor.subscribe('segments', {})
-	let subSegmentLines = Meteor.subscribe('segmentLines', {})
-	let subSegmentLineItems = Meteor.subscribe('segmentLineItems', {})
-	let subStudioInstallations = Meteor.subscribe('studioInstallations', {})
-	let subShowStyles = Meteor.subscribe('showStyles', {})
-	let subSegmentLineAdLibItems = Meteor.subscribe('segmentLineAdLibItems', {})
+export const RunningOrderView = translate()(withTracker((props: IPropsHeader, state) => {
 
 	let runningOrderId = decodeURIComponent(props.match.params.runningOrderId)
 
@@ -332,6 +328,8 @@ export const RunningOrderView = translate()(withTracker((props, state) => {
 	}
 })(
 class extends React.Component<IPropsHeader, IStateHeader> {
+
+	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
 	constructor (props) {
 		super(props)
 
@@ -341,14 +339,44 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 			contextMenuContext: null,
 			bottomMargin: ''
 		}
+
 	}
 
+	componentWillMount () {
+		// Subscribe to data:
+		let runningOrderId = this.props.match.params.runningOrderId
+
+		this._subscriptions.push(Meteor.subscribe('runningOrders', {
+			_id: runningOrderId
+		}))
+		this._subscriptions.push(Meteor.subscribe('segments', {
+			runningOrderId: runningOrderId
+		}))
+		this._subscriptions.push(Meteor.subscribe('segmentLines', {
+			runningOrderId: runningOrderId
+		}))
+		this._subscriptions.push(Meteor.subscribe('segmentLineItems', {
+			runningOrderId: runningOrderId
+		}))
+		this._subscriptions.push(Meteor.subscribe('studioInstallations', {
+			runningOrderId: runningOrderId
+		}))
+		this._subscriptions.push(Meteor.subscribe('showStyles', {
+			runningOrderId: runningOrderId
+		}))
+		this._subscriptions.push(Meteor.subscribe('segmentLineAdLibItems', {
+			runningOrderId: runningOrderId
+		}))
+	}
 	componentDidMount () {
 		$(document.body).addClass('dark')
 	}
-
 	componentWillUnmount () {
 		$(document.body).removeClass('dark')
+
+		_.each(this._subscriptions, (sub ) => {
+			sub.stop()
+		})
 	}
 
 	onTimeScaleChange = (timeScaleVal) => {
