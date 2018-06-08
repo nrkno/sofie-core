@@ -55,7 +55,7 @@ import {
 	TimelineObjAtemSsrc,
 	SuperSourceBox,
 	TimelineObjHTTPPost,
-	TimelineContentTypeHttp,
+	TimelineContentTypeHttp
 } from '../../../lib/collections/Timeline'
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
@@ -64,58 +64,36 @@ import { LLayers, SourceLayers } from './nrk-layers'
 import { RMFirstInput, KamFirstInput, AtemSource, LawoFadeInDuration, CasparOutputDelay } from './nrk-constants'
 import { isNumber } from 'util'
 
+import { ParseGraffikData } from './nrk-grafikk'
+
 const literal = <T>(o: T) => o
 
-export function ParseGraffikData (context: TemplateContextInner, story: StoryWithContext): any {
-	const storyItemGfx = _.find(story.Body, item => {
-		return (
-			item.Type === 'storyItem' &&
-			context.getValueByPath(item, 'Content.mosID') === 'GFX.NRK.MOS'
-		)
-	})
-	if (!storyItemGfx) {
-		context.warning('Grafikk missing item')
-		return
+function inputToLawoSource (str: string): string | undefined {
+	str = (str || '').toLowerCase()
+
+	const ind = parseInt(str.replace(/\D/g,''), 10) || 1
+	switch (ind) {
+		case 1:
+			return LLayers.lawo_source_tlf1
+		case 2:
+			return LLayers.lawo_source_tlf2
 	}
 
-	const itemID = context.getValueByPath(storyItemGfx, 'Content.itemID', 0)
-	const name = context.getValueByPath(storyItemGfx, 'Content.mosAbstract', '')
-	const metadata = context.getValueByPath(storyItemGfx, 'Content.mosExternalMetadata', [])
-	const content = _.find(metadata, (m: any) => m.mosSchema === 'schema.nrk.no/content')
-
-	if (!content) {
-		context.warning('Grafikk missing content data')
-		return
-	}
-
-	const payload = context.getValueByPath(content, 'mosPayload', {})
-	const noraGroup = process.env.MESOS_NORA_GROUP || 'dksl' // @todo config not env
-	return {
-		render: {
-			channel: payload.render.channel,
-			group: noraGroup,
-			system: 'html',
-		},
-		playout: Object.assign(payload.playout, {
-			event: 'take',
-			autoTakeout: false, // This gets handled by timeline
-			duration: 0,
-			loop: false
-		}),
-		content: payload.content
-	}
+	return undefined
 }
 
-export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: TemplateContextInner, story): TemplateResult => {
+export const NrkTLFTemplate = literal<TemplateFunctionOptional>((context: TemplateContextInner, story): TemplateResult => {
 	let IDs = {
-		gfxPost:			context.getHashId('gfxPost'),
 		atemSrv1: 			context.getHashId('atemSrv1'),
 		lawo_automix:       context.getHashId('lawo_automix'),
+		lawo_tlf:           context.getHashId('lawo_tlf'),
+		gfxPost:			context.getHashId('gfxPost'),
 	}
 
-	// @todo does this field mean anything useful?
-	let mosartVariant = story.getValueByPath('MosExternalMetaData.0.MosPayload.mosartVariant', '') + ''
-	context.warning('Unknown variant: ' + mosartVariant)
+	let tlfSource = inputToLawoSource(story.getValueByPath('MosExternalMetaData.0.MosPayload.tlf', '') + '')
+	if (!tlfSource) {
+		context.warning('tlf source missing')
+	}
 
 	const gfxPayload = ParseGraffikData(context, story)
 
@@ -125,7 +103,7 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 		mosId: '',
 		segmentLineId: '',
 		runningOrderId: '',
-		name: 'GRAFIKK',
+		name: 'TLF',
 		trigger: {
 			type: TriggerType.TIME_ABSOLUTE,
 			value: 0
@@ -177,6 +155,29 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 					}
 				}),
 
+				(tlfSource ?
+				literal<TimelineObjLawoSource>({
+					_id: IDs.lawo_tlf, deviceId: [''], siId: '', roId: '',
+					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+					priority: 1,
+					duration: 0,
+					LLayer: tlfSource,
+					content: {
+						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						transitions: {
+							inTransition: {
+								type: Transition.MIX,
+								duration: LawoFadeInDuration,
+								easing: Ease.LINEAR,
+								direction: Direction.LEFT
+							}
+						},
+						attributes: {
+							db: 0
+						}
+					}
+				}) : undefined),
+
 				// preroll gfx a couple of frames before cutting to it
 				literal<TimelineObjAtemME>({
 					_id: IDs.atemSrv1, deviceId: [''], siId: '', roId: '',
@@ -203,7 +204,7 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 			mosId: '',
 			segmentId: '',
 			runningOrderId: '',
-			slug: 'GRAFIKK',
+			slug: 'TLF',
 		}),
 		segmentLineItems: segmentLineItems,
 		segmentLineAdLibItems: null
