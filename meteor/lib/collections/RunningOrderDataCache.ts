@@ -4,7 +4,7 @@ import { RundownAPI } from '../../lib/api/rundown'
 import { Time, applyClassToDocument } from '../../lib/lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { SegmentLines, SegmentLine } from './SegmentLines'
-import { FindOptions, Selector, TransformedCollection } from './typings'
+import { FindOptions, Selector, TransformedCollection } from '../typings/meteor'
 
 export interface RunningOrderDataCacheObj {
 	_id: string,

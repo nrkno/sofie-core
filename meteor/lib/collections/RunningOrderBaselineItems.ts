@@ -1,5 +1,5 @@
 import { SegmentLineItemGeneric } from './SegmentLineItems'
-import { TransformedCollection } from './typings'
+import { TransformedCollection } from '../typings/meteor'
 
 export interface RunningOrderBaselineItem extends SegmentLineItemGeneric {
 	segmentLineId: undefined

@@ -1,5 +1,5 @@
 import { Mongo } from 'meteor/mongo'
-import { TransformedCollection } from './typings'
+import { TransformedCollection } from '../typings/meteor'
 
 export interface Task {
 	_id: string

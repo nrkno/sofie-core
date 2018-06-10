@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import { RundownAPI } from '../../lib/api/rundown'
-import { TransformedCollection } from './typings'
+import { TransformedCollection } from '../typings/meteor'
 import { PlayoutDeviceType } from './PeripheralDevices'
 
 // Imports from TSR (TODO make into an import)

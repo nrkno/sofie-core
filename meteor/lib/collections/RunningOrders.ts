@@ -9,7 +9,7 @@ import {
 	IMOSObjectStatus,
 	IMOSObjectAirStatus
 } from 'mos-connection'
-import { FindOptions, Selector, TransformedCollection } from './typings'
+import { FindOptions, Selector, TransformedCollection } from '../typings/meteor'
 import { StudioInstallations, StudioInstallation } from './StudioInstallations'
 import { SegmentLineItems } from './SegmentLineItems'
 import { RunningOrderDataCache } from './RunningOrderDataCache'

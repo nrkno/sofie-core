@@ -6,8 +6,8 @@ import {
 	IMOSExternalMetaData,
 	IMOSObjectStatus
 } from 'mos-connection'
-import { RunningOrders } from './RunningOrders';
-import { FindOptions, Selector, TransformedCollection } from './typings'
+import { RunningOrders } from './RunningOrders'
+import { FindOptions, Selector, TransformedCollection } from '../typings/meteor'
 
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
 export interface DBSegment {

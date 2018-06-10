@@ -4,7 +4,7 @@ import { TriggerType } from 'superfly-timeline'
 import { TimelineTransition, TimelineObjGroup, TimelineObjCCGVideo, TimelineObjLawoSource } from './Timeline'
 import { Dictionary } from 'underscore'
 import { TimelineObj } from './Timeline'
-import { TransformedCollection } from './typings'
+import { TransformedCollection } from '../typings/meteor'
 
 /** A trigger interface compatible with that of supertimeline */
 export interface ITimelineTrigger {
