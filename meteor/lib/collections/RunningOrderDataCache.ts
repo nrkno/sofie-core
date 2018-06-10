@@ -14,7 +14,5 @@ export interface RunningOrderDataCacheObj {
 	data: any
 }
 
-// @ts-ignore
 export const RunningOrderDataCache: TransformedCollection<RunningOrderDataCacheObj, RunningOrderDataCacheObj>
-// @ts-ignore
 	= new Mongo.Collection<RunningOrderDataCacheObj>('runningorderdatacache')

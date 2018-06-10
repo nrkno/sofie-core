@@ -8,6 +8,14 @@ import { RundownUtils } from '../../lib/rundown'
 
 import { Settings } from '../../../lib/Settings'
 
+// We're cheating a little: Fontface
+declare class FontFace {
+	loaded: Promise<FontFace>
+	constructor (font: string, url: string, options: object)
+
+	load (): void
+}
+
 const GRID_FONT_URL = 'url("/roboto-gh-pages/fonts/Light/Roboto-Light.woff")'
 const TIMELINE_GRID_LABEL_COLOR = 'rgb(175,175,175)'
 const INNER_STEP_GRID_COLOR = 'rgb(112,112,112)'
@@ -192,11 +200,8 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			// $(window).on('resize', this.onCanvasResize)
 			elementResizeEvent(this.parentElement, this.onCanvasResize)
 
-			// TypeScript doesnt know about FontFace
-			// @ts-ignore
 			if (typeof FontFace !== 'undefined') {
-				// console.log('Loading grid font')
-				// @ts-ignore
+
 				let gridFont = new FontFace('GridTimecodeFont', GRID_FONT_URL, {
 					style: 'normal',
 					weight: 100
@@ -210,8 +215,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				}, (fontFace) => {
 					// console.log('Grid font failed to load: ' + fontFace.status)
 				})
-				// @ts-ignore
-				document.fonts.add(gridFont)
+				document['fonts'].add(gridFont)
 			}
 
 			if (this.props.onResize) {

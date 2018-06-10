@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { translate } from 'react-i18next'
 
 import * as ClassNames from 'classnames'
 
@@ -9,22 +9,31 @@ import * as faBars from '@fortawesome/fontawesome-free-solid/faBars'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { AdLibPanel } from './AdLibPanel'
-
-interface IPropsHeader {
-	onChangeBottomMargin?: (newBottomMargin: string) => void
-}
+import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { Segment } from '../../../lib/collections/Segments'
+import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { RunningOrder } from '../../../lib/collections/RunningOrders'
+import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 
 enum InspectorPanelTabs {
 	ADLIB = 'adlib'
 }
+interface IProps {
+	segments: Array<SegmentUi>
+	liveSegment?: SegmentUi
+	runningOrder: RunningOrder
+	studioInstallation: StudioInstallation
 
-interface IStateHeader {
+	onChangeBottomMargin?: (newBottomMargin: string) => void
+}
+
+interface IState {
 	expanded: boolean
 	selectedTab: InspectorPanelTabs
 }
 
-export const InspectorDrawer = translate()(class extends React.Component<IPropsHeader & InjectedTranslateProps, IStateHeader> {
-	constructor (props) {
+export const InspectorDrawer = translate()(class extends React.Component<Translated<IProps>, IState> {
+	constructor (props: Translated<IProps>) {
 		super(props)
 
 		this.state = {

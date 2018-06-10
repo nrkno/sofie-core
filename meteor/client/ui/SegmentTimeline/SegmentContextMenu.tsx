@@ -1,20 +1,21 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { translate } from 'react-i18next'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 import { SegmentLine } from '../../../lib/collections/SegmentLines'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
+import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
-interface IPropsHeader {
+interface IProps {
 	onSetNext: (segmentLine: SegmentLine | undefined) => void
-	runningOrder: RunningOrder
+	runningOrder?: RunningOrder
 	contextMenuContext: any
 }
-interface IStateHeader {
+interface IState {
 }
 
-export const SegmentContextMenu = translate()(class extends React.Component<IPropsHeader & InjectedTranslateProps, IStateHeader> {
+export const SegmentContextMenu = translate()(class extends React.Component<Translated<IProps>, IState> {
 	getSegmentLineFromContext = () => {
 		if (this.props.contextMenuContext && this.props.contextMenuContext.segmentLine) {
 			return this.props.contextMenuContext.segmentLine

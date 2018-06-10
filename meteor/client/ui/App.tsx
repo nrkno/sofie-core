@@ -3,7 +3,7 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 // import * as withTracker from 'meteor/react-meteor-data';
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { I18nextProvider, translate, InjectedTranslateProps, InjectedI18nProps } from 'react-i18next'
+import { I18nextProvider, translate, InjectedI18nProps } from 'react-i18next'
 
 import * as m from 'moment'
 import 'moment/min/locales'
@@ -26,11 +26,7 @@ import {
   Switch,
   Redirect
 } from 'react-router-dom'
-import { StudioInstallations } from '../../lib/collections/StudioInstallations';
-
-export interface InjectedTranslateI18nProps extends InjectedI18nProps, InjectedTranslateProps {
-
-}
+import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 
 interface IAppState {
 	studioMode: boolean

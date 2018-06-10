@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 
-interface IEditAttribute extends IPropsEditAttributeBase {
+interface IEditAttribute extends IEditAttributeBaseProps {
 	type: string
 }
 export class EditAttribute extends React.Component<IEditAttribute> {
@@ -34,7 +34,7 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 	}
 }
 
-interface IPropsEditAttributeBase {
+interface IEditAttributeBaseProps {
 	updateOnKey?: boolean,
 	attribute: string,
 	collection: Mongo.Collection<any>,
@@ -47,11 +47,11 @@ interface IPropsEditAttributeBase {
 	updateFunction?: (edit: EditAttributeBase, newValue: any ) => void
 	overrideDisplayValue?: any
 }
-interface IStateEditAttributeBase {
+interface IEditAttributeBaseState {
 	value: any,
 	editing: boolean
 }
-export class EditAttributeBase extends React.Component<IPropsEditAttributeBase, IStateEditAttributeBase> {
+export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, IEditAttributeBaseState> {
 	constructor (props) {
 		super(props)
 
@@ -133,8 +133,8 @@ export class EditAttributeBase extends React.Component<IPropsEditAttributeBase, 
 
 	}
 }
-let wrapEditAttribute = (newClass) => {
-	return withTracker((props) => {
+function wrapEditAttribute (newClass) {
+	return withTracker((props: IEditAttributeBaseProps) => {
 		// These properties will be exposed under this.props
 		// Note that these properties are reactively recalculated
 		return {

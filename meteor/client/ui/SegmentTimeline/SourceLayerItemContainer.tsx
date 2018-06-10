@@ -40,6 +40,8 @@ interface IPropsHeader {
 	liveLineHistorySize: number
 	livePosition: number | null
 	liveLinePadding: number
+	scrollLeft: number
+	scrollWidth: number
 }
 /** This is a container component that allows ractivity with the Timeline collection */
 export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
@@ -81,8 +83,6 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 class extends React.Component<IPropsHeader> {
 	render () {
 		return (
-			// The following code is fine, just withTracker HOC messing with available props
-			// @ts-ignore
 			<SourceLayerItem {...this.props} />
 		)
 	}

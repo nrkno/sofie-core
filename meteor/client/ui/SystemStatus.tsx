@@ -1,13 +1,13 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { withTracker, Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { PeripheralDevice,
 		PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import * as ClassNames from 'classnames'
 import Moment from 'react-moment'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { translate } from 'react-i18next'
 import { getCurrentTime } from '../../lib/lib'
 import { Link } from 'react-router-dom'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
@@ -15,15 +15,15 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { ModalDialog } from '../lib/ModalDialog'
 
-interface IDeviceItemPropsHeader extends InjectedTranslateProps {
+interface IDeviceItemProps {
 	key: string,
 	device: PeripheralDevice
 }
-interface IDeviceItemHeader {
+interface IDeviceItemState {
 	showDeleteDeviceConfirm: PeripheralDevice | null
 }
-const DeviceItem = translate()(class extends React.Component<IDeviceItemPropsHeader & InjectedTranslateProps, IDeviceItemHeader> {
-	constructor (props) {
+const DeviceItem = translate()(class extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
+	constructor (props: Translated<IDeviceItemProps>) {
 		super(props)
 		this.state = {
 			showDeleteDeviceConfirm: null
@@ -162,10 +162,22 @@ const DeviceItem = translate()(class extends React.Component<IDeviceItemPropsHea
 	}
 })
 
-interface IPropsHeader extends InjectedTranslateProps {
+interface ISystemStatusProps {
+}
+interface ISystemStatusState {
 	devices: Array<PeripheralDevice>
 }
-export class SystemStatus extends React.Component<IPropsHeader> {
+interface ISystemStatusTrackedProps {
+	devices: Array<PeripheralDevice>
+}
+export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISystemStatusTrackedProps>((props: ISystemStatusProps) => {
+	// console.log('PeripheralDevices',PeripheralDevices);
+	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
+
+	return {
+		devices: PeripheralDevices.find({}, { sort: { lastSeen: -1 } }).fetch()
+	}
+})(class SystemStatus extends React.Component<Translated<ISystemStatusProps & ISystemStatusTrackedProps>, ISystemStatusState> {
 	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
 	componentWillMount () {
 		// Subscribe to data:
@@ -224,13 +236,4 @@ export class SystemStatus extends React.Component<IPropsHeader> {
 			</div>
 		)
 	}
-}
-
-export default translate()(withTracker(() => {
-	// console.log('PeripheralDevices',PeripheralDevices);
-	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
-
-	return {
-		devices: PeripheralDevices.find({}, { sort: { lastSeen: -1 } }).fetch()
-	}
-})(SystemStatus))
+})

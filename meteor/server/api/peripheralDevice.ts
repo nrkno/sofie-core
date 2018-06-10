@@ -1045,7 +1045,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 	saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
 		runningOrderId: ro._id,
 		segmentLineId: segmentLine._id,
-	}, result.segmentLineItems, {
+	}, result.segmentLineItems || [], {
 		afterInsert (segmentLineItem) {
 			console.log('inserted segmentLineItem ' + segmentLineItem._id)
 			console.log(segmentLineItem)

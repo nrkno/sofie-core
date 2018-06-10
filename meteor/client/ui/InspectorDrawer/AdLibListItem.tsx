@@ -4,8 +4,8 @@ import * as ReactDOM from 'react-dom'
 import * as _ from 'underscore'
 import * as $ from 'jquery'
 
-import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { withTracker, Translated } from '../../lib/ReactMeteorData/react-meteor-data'
+import { translate } from 'react-i18next'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
@@ -24,7 +24,7 @@ import { Spinner } from '../../lib/Spinner'
 import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { SegmentLineAdLibItemUi } from './AdLibPanel'
 
-interface IListViewItemPropsHeader {
+interface IListViewItemProps {
 	item: SegmentLineAdLibItemUi
 	selected: boolean
 	layer: ISourceLayer
@@ -33,8 +33,8 @@ interface IListViewItemPropsHeader {
 	onToggleAdLib: (aSLine: SegmentLineAdLibItem) => void
 }
 
-export const AdLibListItem = translate()(class extends React.Component<IListViewItemPropsHeader & InjectedTranslateProps> {
-	constructor (props) {
+export const AdLibListItem = translate()(class extends React.Component<Translated<IListViewItemProps>> {
+	constructor (props: Translated<IListViewItemProps>) {
 		super(props)
 	}
 

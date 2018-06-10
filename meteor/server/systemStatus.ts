@@ -1,6 +1,5 @@
 import * as _ from 'underscore'
 import { ServerResponse, IncomingMessage } from 'http'
-// @ts-ignore Meteor package
 import { Picker } from 'meteor/meteorhacks:picker'
 
 // This data structure is to be used to determine the system-wide status of the Core instance

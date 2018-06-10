@@ -1,8 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import * as _ from 'underscore'
+import { withTracker, Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Link } from 'react-router-dom'
 import timer from 'react-timer-hoc'
 
@@ -10,14 +10,14 @@ import * as ClassNames from 'classnames'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import Moment from 'react-moment'
 import { RundownUtils } from './../lib/rundown'
-import { getCurrentTime } from '../../lib/lib';
-import { getCurrentTimeReactive } from '../lib/currentTimeReactive';
+import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTimeReactive } from '../lib/currentTimeReactive'
 
-interface IRunningOrdersListPropsHeader extends InjectedTranslateProps {
+interface IRunningOrdersListProps {
 	runningOrders: Array<RunningOrder>
 }
 
-export const RunningOrderList = translate()(withTracker(() => {
+export const RunningOrderList = translateWithTracker(() => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
@@ -25,7 +25,7 @@ export const RunningOrderList = translate()(withTracker(() => {
 		runningOrders: RunningOrders.find({}, { sort: { created: -1 } }).fetch()
 	}
 })(
-class extends React.Component<IRunningOrdersListPropsHeader> {
+class extends React.Component<Translated<IRunningOrdersListProps>> {
 	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
 
 	renderRunningOrders () {
@@ -89,7 +89,6 @@ class extends React.Component<IRunningOrdersListPropsHeader> {
 	}
 }
 )
-)
 
 interface IActiveProgressBarProps {
 	runningOrder: RunningOrder
@@ -107,12 +106,12 @@ const ActiveProgressBar = timer(1000)(class extends React.Component<IActiveProgr
 	}
 })
 
-interface IRunningOrderListItemPropsHeader {
+interface IRunningOrderListItemProps {
 	key: string,
 	runningOrder: RunningOrder
 }
 
-export class RunningOrderListItem extends React.Component<IRunningOrderListItemPropsHeader> {
+export class RunningOrderListItem extends React.Component<IRunningOrderListItemProps> {
 	getRunningOrderLink (runningOrderId) {
 		// double encoding so that "/" are handled correctly
 		return '/ro/' + encodeURIComponent(encodeURIComponent( runningOrderId ))
