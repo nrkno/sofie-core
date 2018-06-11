@@ -739,6 +739,13 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 			// fetch the timelineobjs in items
 			const isFollowed = nextSegmentLine && currentSegmentLine.autoNext
 			currentSegmentLineGroup = createSegmentLineGroup(currentSegmentLine, (isFollowed ? (currentSegmentLine.expectedDuration || 0) : 0))
+			if (currentSegmentLine.startedPlayback) { // If we are recalculating the currentLine, then ensure it doesnt think it is starting now
+				currentSegmentLineGroup.trigger = literal<ITimelineTrigger>({
+					type: TriggerType.TIME_ABSOLUTE,
+					value: currentSegmentLine.startedPlayback
+				})
+			}
+
 			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentSegmentLine, currentSegmentLineGroup, allowTransition))
 
 			timelineObjs.push(createSegmentLineGroupFirstObject(currentSegmentLine, currentSegmentLineGroup))
