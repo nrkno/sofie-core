@@ -15,7 +15,7 @@ import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import * as monaco from 'monaco-editor'
+// import * as monaco from 'monaco-editor' // instead globally available through public folder
 // import MonacoEditor from 'react-monaco-editor'
 
 interface IMonacoPropsHeader {
