@@ -235,18 +235,12 @@ Meteor.methods({
 						if (!prevSegLine) {
 							// We couldn't find the previous segment line: this is not a critical issue, but is clearly is a symptom of a larger issue
 							logger.error(`Previous segment line "${runningOrder.previousSegmentLineId}" on running order "${roId}" could not be found.`)
-						} else {
+						} else if (!prevSegLine.duration) {
 							setPreviousLinePlaybackDuration(roId, prevSegLine, startedPlayback)
 						}
 					}
 
 					setRunningOrderStartedPlayback(runningOrder, startedPlayback) // Set startedPlayback on the running order if this is the first item to be played
-
-					RunningOrders.update(runningOrder._id, {
-						$set: {
-							previousSegmentLineId: null
-						}
-					})
 				} else if (runningOrder.nextSegmentLineId === slId) {
 					// this is the next segment line, clearly an autoNext has taken place
 					if (runningOrder.currentSegmentLineId) {
@@ -255,7 +249,7 @@ Meteor.methods({
 						if (!prevSegLine) {
 							// We couldn't find the previous segment line: this is not a critical issue, but is clearly is a symptom of a larger issue
 							logger.error(`Previous segment line "${runningOrder.currentSegmentLineId}" on running order "${roId}" could not be found.`)
-						} else {
+						} else if (!prevSegLine.duration) {
 							setPreviousLinePlaybackDuration(roId, prevSegLine, startedPlayback)
 						}
 					}
@@ -273,7 +267,6 @@ Meteor.methods({
 
 					RunningOrders.update(runningOrder._id, {
 						$set: {
-							previousSegmentLineId: null,
 							currentSegmentLineId: segLine._id,
 							nextSegmentLineId: nextSegmentLine._id
 						}
@@ -717,7 +710,7 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 				allowTransition = !previousSegmentLine.disableOutTransition
 
 				if (previousSegmentLine.startedPlayback && !previousSegmentLine.disableOutTransition) {
-					const duration = getCurrentTime() - previousSegmentLine.startedPlayback
+					const duration = (currentSegmentLine.startedPlayback || getCurrentTime()) - previousSegmentLine.startedPlayback
 					if (duration > 0) {
 						const transition = currentSegmentLine.getSegmentLinesItems().find((sl: SegmentLineItem) => sl.isTransition)
 						previousSegmentLineGroup = createSegmentLineGroup(previousSegmentLine, duration + Math.max(transition ? transition.expectedDuration || 0 : 0, currentSegmentLine.overlapDuration || 0))

@@ -206,7 +206,6 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 					}),
 
 					// wipe audio punktum
-					// @todo lower the level of this wipe
 					literal<TimelineObjCCGVideo>({
 						_id: IDs.wipeAudioPunktum, deviceId: [''], siId: '', roId: '',
 						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.wipeVideo}.start + 0` },
