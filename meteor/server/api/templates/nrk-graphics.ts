@@ -62,7 +62,7 @@ export function ParseSuperSegments (context: TemplateContextInner, story: StoryW
 		}
 		let groupTrigger: ITimelineTrigger = {
 			type: TriggerType.TIME_RELATIVE,
-			value: `#${videoId}.start + 0`
+			value: `#${groupId}.start + 0`
 		}
 
 		let isAdlib = false
