@@ -20,7 +20,7 @@
     "@fortawesome/fontawesome": "^1.1.7",
     "@fortawesome/fontawesome-free-solid": "^5.0.13",
     "@fortawesome/react-fontawesome": "0.0.19",
-    "@nrk/core-icons": "github:nrkno/core-icons",
+    "@nrk/core-icons": "git+https://github.com/nrkno/core-icons.git#49ccc844ce85c94404b26c8914446cb94cea7150",
     "chai": "^4.1.2",
     "classnames": "^2.2.5",
     "core-js": "^2.5.4",
