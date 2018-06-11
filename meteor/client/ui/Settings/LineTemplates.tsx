@@ -5,6 +5,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Spinner } from '../../lib/Spinner'
 // import * as monaco from 'monaco-editor' // instead globally available through public folder
 // import MonacoEditor from 'react-monaco-editor'
+import '../../../lib/typings/monaco'
 
 interface IMonacoPropsHeader {
 	runtimeFunction: RuntimeFunction

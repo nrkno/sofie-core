@@ -8,6 +8,8 @@ import {
 	StoryWithContext
 } from './templates'
 import { LLayers, NoraChannels, SourceLayers } from './nrk-layers'
+import { TriggerType } from 'superfly-timeline'
+import { TimelineObjHTTPPost, TimelineContentTypeHttp } from '../../../lib/collections/Timeline'
 
 const literal = <T>(o: T) => o
 
