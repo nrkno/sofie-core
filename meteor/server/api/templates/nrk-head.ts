@@ -168,6 +168,9 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 						type: TimelineContentTypeCasparCg.VIDEO,
 						attributes: {
 							file: 'assets/DK_skille_head'
+						},
+						mixer: {
+							volume: 0.25
 						}
 					}
 				}),

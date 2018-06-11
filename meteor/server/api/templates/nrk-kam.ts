@@ -217,6 +217,9 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 							type: TimelineContentTypeCasparCg.VIDEO,
 							attributes: {
 								file: 'assets/DK_punktum_head'
+							},
+							mixer: {
+								volume: 0.25
 							}
 						}
 					}),
