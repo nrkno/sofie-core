@@ -1,15 +1,9 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { TriggerType } from 'superfly-timeline'
-
-import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Timeline } from '../../../lib/collections/Timeline'
-
 import { SourceLayerItem } from './SourceLayerItem'
-
 import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 import { getCurrentTime } from '../../../lib/lib'
 

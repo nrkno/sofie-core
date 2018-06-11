@@ -1,9 +1,6 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
-import * as $ from 'jquery'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 
 import { normalizeArray } from '../../lib/utils'
@@ -11,14 +8,13 @@ import { normalizeArray } from '../../lib/utils'
 import * as SuperTimeline from 'superfly-timeline'
 
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
-import { Segment, Segments } from '../../../lib/collections/Segments'
+import { Segment } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
-import { StudioInstallation, StudioInstallations, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
+import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
 
 import { SegmentTimeline } from './SegmentTimeline'
 
-import { Settings } from '../../../lib/Settings'
 import { getCurrentTime } from '../../../lib/lib'
 import { RunningOrderTiming } from '../RunningOrderTiming'
 

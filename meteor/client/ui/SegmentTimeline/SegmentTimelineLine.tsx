@@ -1,23 +1,15 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { translate } from 'react-i18next'
 
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
-import * as $ from 'jquery'
-
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
-import { Segment, Segments } from '../../../lib/collections/Segments'
-import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
-import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { SegmentUi, SegmentLineUi, IOutputLayerUi, ISourceLayerUi, SegmentLineItemUi } from './SegmentTimelineContainer'
-import { TimelineGrid } from './TimelineGrid'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { RunningOrderTiming, WithTiming } from '../RunningOrderTiming'
 
-import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
+import { ContextMenuTrigger } from 'react-contextmenu'
 
 import { RundownUtils } from '../../lib/rundown'
 import { getCurrentTime } from '../../../lib/lib'

@@ -1,11 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-import { withTracker, Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { PeripheralDevice,
 		PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import * as ClassNames from 'classnames'
 import Moment from 'react-moment'
 import { translate } from 'react-i18next'
 import { getCurrentTime } from '../../lib/lib'

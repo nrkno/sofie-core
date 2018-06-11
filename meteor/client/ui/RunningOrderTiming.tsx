@@ -1,20 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
-
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-import { Segment, Segments } from '../../lib/collections/Segments'
-import { SegmentLineItemUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
-import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
-import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
-
-import timer from 'react-timer-hoc'
 import { getCurrentTime } from '../../lib/lib'
-
 import { RundownUtils } from '../lib/rundown'
 
 export namespace RunningOrderTiming {

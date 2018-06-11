@@ -1,22 +1,14 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-import { withTracker, Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import * as ClassNames from 'classnames'
+import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
-import Moment from 'react-moment'
 import { translate } from 'react-i18next'
 import { Random } from 'meteor/random'
 import { literal } from '../../lib/lib'
-
 import { ModalDialog } from '../lib/ModalDialog'
-
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-
 import {
-	BrowserRouter as Router,
 	Route,
-	Link,
 	NavLink,
 	Switch,
 	Redirect

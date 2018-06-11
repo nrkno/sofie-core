@@ -1,17 +1,13 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import * as _ from 'underscore'
-import { withTracker, Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Link } from 'react-router-dom'
 import timer from 'react-timer-hoc'
-
-import * as ClassNames from 'classnames'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import Moment from 'react-moment'
 import { RundownUtils } from './../lib/rundown'
 import { getCurrentTime } from '../../lib/lib'
-import { getCurrentTimeReactive } from '../lib/currentTimeReactive'
 
 interface IRunningOrdersListProps {
 	runningOrders: Array<RunningOrder>

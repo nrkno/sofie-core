@@ -1,29 +1,24 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-import { withTracker, Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 import * as CoreIcon from '@nrk/core-icons/jsx'
 import { Spinner } from '../lib/Spinner'
-
 import * as ClassNames from 'classnames'
 import * as $ from 'jquery'
-import { Time } from '../../lib/lib'
 import Moment from 'react-moment'
-import timer from 'react-timer-hoc'
-import { parse as queryStringParse } from 'query-string'
 
 import { NavLink } from 'react-router-dom'
 
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
+import { SegmentLine } from '../../lib/collections/SegmentLines'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
-import { RunningOrderTimingProvider, withTiming, RunningOrderTiming, WithTiming } from './RunningOrderTiming'
-import { SegmentTimelineContainer, SegmentLineItemUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
+import { RunningOrderTimingProvider, withTiming, WithTiming } from './RunningOrderTiming'
+import { SegmentTimelineContainer } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { InspectorDrawer } from './InspectorDrawer/InspectorDrawer'
 import { RunningOrderOverview } from './RunningOrderOverview'

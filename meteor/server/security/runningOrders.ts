@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders'
 
 export namespace RunningOrderSecurity {

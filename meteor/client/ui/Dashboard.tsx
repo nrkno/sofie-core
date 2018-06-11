@@ -1,7 +1,5 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-import { withTracker, Translated } from '../lib/ReactMeteorData/react-meteor-data'
+import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 
 interface IProps {

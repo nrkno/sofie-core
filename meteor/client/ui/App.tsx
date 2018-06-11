@@ -1,15 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-// import * as withTracker from 'meteor/react-meteor-data';
-import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { I18nextProvider, translate, InjectedI18nProps } from 'react-i18next'
-
+import { translate, InjectedI18nProps } from 'react-i18next'
 import * as m from 'moment'
 import 'moment/min/locales'
-import i18n from './i18n'
 import { parse as queryStringParse } from 'query-string'
-
 import Header from './Header'
 import Dashboard from './Dashboard'
 import SystemStatus from './SystemStatus'
@@ -21,8 +15,6 @@ import { NymansPlayground } from '../ui/NymansPlayground'
 import {
   BrowserRouter as Router,
   Route,
-  Link,
-  NavLink,
   Switch,
   Redirect
 } from 'react-router-dom'

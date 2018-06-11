@@ -1,20 +1,11 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-import * as PropTypes from 'prop-types'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { translate } from 'react-i18next'
-import * as CoreIcon from '@nrk/core-icons/jsx'
-import { Spinner } from '../lib/Spinner'
 import * as ClassNames from 'classnames'
-
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-
 import { getCurrentTime } from '../../lib/lib'
-
 import { SegmentLineUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { Segment } from '../../lib/collections/Segments'
-import { RunningOrderTiming, withTiming, WithTiming } from './RunningOrderTiming'
+import { withTiming, WithTiming } from './RunningOrderTiming'
 
 interface SegmentUi extends Segment {
 	items?: Array<SegmentLineUi>

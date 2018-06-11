@@ -1,6 +1,4 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { translate } from 'react-i18next'
 
 import * as ClassNames from 'classnames'
@@ -10,7 +8,6 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { AdLibPanel } from './AdLibPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Segment } from '../../../lib/collections/Segments'
 import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'

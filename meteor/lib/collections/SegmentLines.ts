@@ -7,8 +7,8 @@ import {
 import { TransformedCollection, FindOptions, Selector } from '../typings/meteor'
 import { RunningOrders } from './RunningOrders'
 import { SegmentLineItem, SegmentLineItems } from './SegmentLineItems'
-import { SegmentLineAdLibItem, SegmentLineAdLibItems } from './SegmentLineAdLibItems'
-import { Segment, Segments } from './Segments'
+import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
+import { Segments } from './Segments'
 import { applyClassToDocument } from '../lib'
 
 /** A "Line" in NRK Lingo. */

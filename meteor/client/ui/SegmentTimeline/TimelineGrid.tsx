@@ -1,6 +1,5 @@
 import * as elementResizeEvent from 'element-resize-event'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import * as $ from 'jquery'
 import * as _ from 'underscore'
 

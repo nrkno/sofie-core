@@ -1,10 +1,6 @@
-import { Meteor } from 'meteor/meteor'
 import * as elementResizeEvent from 'element-resize-event'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import * as ClassNames from 'classnames'
-
-import * as _ from 'underscore'
 import * as $ from 'jquery'
 
 interface IPropsHeader {

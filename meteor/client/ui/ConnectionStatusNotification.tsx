@@ -1,12 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as VelocityAnimate from 'velocity-animate'
 import * as VelocityReact from 'velocity-react'
 import Moment from 'react-moment'
 import * as CoreIcons from '@nrk/core-icons/jsx'
 import * as ClassNames from 'classnames'
 
-import { withTracker, translateWithTracker, Translated } from '../lib/ReactMeteorData/react-meteor-data'
+import { translateWithTracker, Translated } from '../lib/ReactMeteorData/react-meteor-data'
 
 interface IProps {
 }

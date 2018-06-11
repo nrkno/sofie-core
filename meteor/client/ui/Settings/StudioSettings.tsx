@@ -1,14 +1,22 @@
 import * as ClassNames from 'classnames'
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
-import { translate } from 'react-i18next'
 import * as _ from 'underscore'
 import Moment from 'react-moment'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { IOutputLayer, ISourceLayer, StudioInstallation, StudioInstallations, Mapping, MappingCasparCG, MappingAtem, MappingLawo, MappingAtemType } from '../../../lib/collections/StudioInstallations'
+import { IOutputLayer,
+	ISourceLayer,
+	StudioInstallation,
+	StudioInstallations,
+	Mapping,
+	MappingCasparCG,
+	MappingAtem,
+	MappingLawo,
+	MappingAtemType
+} from '../../../lib/collections/StudioInstallations'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
-import { withTracker, Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
 import { literal } from '../../../lib/lib'
 import { Random } from 'meteor/random'
@@ -16,10 +24,7 @@ import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import * as faAngleUp from '@fortawesome/fontawesome-free-solid/faAngleUp'
-import * as faAngleDown from '@fortawesome/fontawesome-free-solid/faAngleDown'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import * as objectPath from 'object-path'
 import { PeripheralDevice, PeripheralDevices, PlayoutDeviceType } from '../../../lib/collections/PeripheralDevices'
 
 import { Link } from 'react-router-dom'

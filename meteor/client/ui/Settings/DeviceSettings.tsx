@@ -3,13 +3,18 @@ import * as React from 'react'
 import { translate } from 'react-i18next'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { PeripheralDevice, PeripheralDevices, PlayoutDeviceType, PlayoutDeviceSettings, PlayoutDeviceSettingsDevice, MosDeviceSettings, MosDeviceSettingsDevice } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice,
+	PeripheralDevices,
+	PlayoutDeviceType,
+	PlayoutDeviceSettings,
+	PlayoutDeviceSettingsDevice,
+	MosDeviceSettings,
+	MosDeviceSettingsDevice
+} from '../../../lib/collections/PeripheralDevices'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
-import { withTracker, Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-import { literal } from '../../../lib/lib'
-import { Random } from 'meteor/random'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'

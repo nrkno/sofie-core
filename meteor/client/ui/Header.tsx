@@ -1,10 +1,8 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-import { withTracker, Translated } from '../lib/ReactMeteorData/react-meteor-data'
-import { I18nextProvider, translate, InjectedI18nProps } from 'react-i18next'
+import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
+import { translate } from 'react-i18next'
 
-import { Link, NavLink } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 
 interface IPropsHeader {
 
