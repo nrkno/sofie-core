@@ -1,27 +1,11 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-import * as PropTypes from 'prop-types'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { translate, InjectedTranslateProps } from 'react-i18next'
-import * as CoreIcon from '@nrk/core-icons/jsx'
-import { Spinner } from '../lib/Spinner'
 import * as ClassNames from 'classnames'
-
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-
 import { getCurrentTime } from '../../lib/lib'
-
 import { SegmentLineUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { Segment } from '../../lib/collections/Segments'
-import { RunningOrderTiming, withTiming } from './RunningOrderTiming'
-
-interface IPropsHeader {
-	runningOrderId: string
-	runningOrder: RunningOrder
-	segments: Array<SegmentUi>
-	segmentLiveDurations?: TimeMap
-}
+import { withTiming, WithTiming } from './RunningOrderTiming'
 
 interface SegmentUi extends Segment {
 	items?: Array<SegmentLineUi>
@@ -107,43 +91,58 @@ const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHea
 	) || null
 }
 
-export const RunningOrderOverview = withTracker((props: IPropsHeader, state) => {
-	if (props.runningOrderId) {
-		const ro = RunningOrders.findOne(props.runningOrderId)
+interface RunningOrderOverviewProps {
+	runningOrderId: string
+	segmentLiveDurations?: TimeMap
+}
+interface RunningOrderOverviewState {
+}
+interface RunningOrderOverviewTrackedProps {
+	runningOrder?: RunningOrder
+	segments: Array<SegmentUi>
+}
 
-		if (ro) {
-			let segments: Array<SegmentUi> = ro.getSegments()
-			segments.forEach((seg) => {
-				seg.items = seg.getSegmentLines()
-			})
+export const RunningOrderOverview = withTiming<RunningOrderOverviewProps, RunningOrderOverviewState>()(
+withTracker<WithTiming<RunningOrderOverviewProps>, RunningOrderOverviewState, RunningOrderOverviewTrackedProps>((props: RunningOrderOverviewProps, state) => {
 
-			return {
-				segments,
-				runningOrder: ro
-			}
-		}
+	let ro: RunningOrder | undefined
+	if (props.runningOrderId) ro = RunningOrders.findOne(props.runningOrderId)
+	let segments: Array<SegmentUi> = []
+	if (ro) {
+		segments = ro.getSegments()
+		segments.forEach((seg) => {
+			seg.items = seg.getSegmentLines()
+		})
+
 	}
-})(withTiming()(class extends React.Component<IPropsHeader & RunningOrderTiming.InjectedROTimingProps> {
+	return {
+		segments,
+		runningOrder: ro
+	}
+})(
+class extends React.Component<WithTiming<RunningOrderOverviewProps & RunningOrderOverviewTrackedProps>, RunningOrderOverviewState> {
 	render () {
-		if (!this.props.runningOrderId || !this.props.segments) {
-			return null
-		} else {
+		if (this.props.runningOrder && this.props.runningOrderId && this.props.segments) {
 			const totalDuration = 1
 
 			return (
 				<div className='running-order__overview'>
 				{
 					this.props.segments.map((item) => {
-						return <SegmentOverview segment={item}
-							key={item._id}
-							totalDuration={Math.max((this.props.timingDurations && this.props.timingDurations.asPlayedRundownDuration) || 1, this.props.runningOrder.expectedDuration || 1)}
-							segmentLiveDurations={(this.props.timingDurations && this.props.timingDurations.segmentLineDurations) || {}} runningOrder={this.props.runningOrder}
-							segmentStartsAt={(this.props.timingDurations && this.props.timingDurations.segmentLineStartsAt) || {}}
-							/>
+						if (this.props.runningOrder) {
+							return <SegmentOverview
+								segment={item}
+								key={item._id}
+								totalDuration={Math.max((this.props.timingDurations && this.props.timingDurations.asPlayedRundownDuration) || 1, this.props.runningOrder.expectedDuration || 1)}
+								segmentLiveDurations={(this.props.timingDurations && this.props.timingDurations.segmentLineDurations) || {}} runningOrder={this.props.runningOrder}
+								segmentStartsAt={(this.props.timingDurations && this.props.timingDurations.segmentLineStartsAt) || {}}
+								/>
+						}
 					})
 				}
 				</div>
 			)
 		}
+		return null
 	}
 }))

@@ -1,8 +1,11 @@
 import { Mongo } from 'meteor/mongo'
 import { RundownAPI } from '../../lib/api/rundown'
 import { TriggerType } from 'superfly-timeline'
-import { TimelineTransition, TimelineObjGroup, TimelineObjCCGVideo, TimelineObjLawoSource } from './Timeline'
-import { Dictionary } from 'underscore'
+import { TimelineTransition,
+	TimelineObjGroup,
+	TimelineObjCCGVideo,
+	TimelineObjLawoSource
+} from './Timeline'
 import { TimelineObj } from './Timeline'
 import { TransformedCollection } from '../typings/meteor'
 

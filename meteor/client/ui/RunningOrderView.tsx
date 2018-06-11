@@ -1,29 +1,24 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { translate } from 'react-i18next'
 import * as CoreIcon from '@nrk/core-icons/jsx'
 import { Spinner } from '../lib/Spinner'
-
 import * as ClassNames from 'classnames'
 import * as $ from 'jquery'
-import { Time } from '../../lib/lib'
 import Moment from 'react-moment'
-import timer from 'react-timer-hoc'
-import { parse as queryStringParse } from 'query-string'
 
 import { NavLink } from 'react-router-dom'
 
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
+import { SegmentLine } from '../../lib/collections/SegmentLines'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
-import { RunningOrderTimingProvider, withTiming, RunningOrderTiming } from './RunningOrderTiming'
-import { SegmentTimelineContainer, SegmentLineItemUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
+import { RunningOrderTimingProvider, withTiming, WithTiming } from './RunningOrderTiming'
+import { SegmentTimelineContainer } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { InspectorDrawer } from './InspectorDrawer/InspectorDrawer'
 import { RunningOrderOverview } from './RunningOrderOverview'
@@ -79,11 +74,10 @@ class KeyboardFocusMarker extends React.Component<any, IKeyboardFocusMarkerState
 	}
 }
 
-interface IHeaderProps {
+interface ITimingDisplayProps {
 	runningOrder: RunningOrder
 }
-
-interface ITimerHeaderProps extends IHeaderProps {
+interface ITimingDisplayState {
 }
 
 enum RunningOrderViewKbdShortcuts {
@@ -92,7 +86,8 @@ enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_DEACTIVATE = 'mod+shift+f2'
 }
 
-const TimingDisplay = translate()(withTiming()(class extends React.Component<ITimerHeaderProps & InjectedTranslateProps & RunningOrderTiming.InjectedROTimingProps> {
+const TimingDisplay = translate()(withTiming<ITimingDisplayProps, ITimingDisplayState>()(
+class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>, ITimingDisplayState> {
 	render () {
 		const { t } = this.props
 
@@ -171,8 +166,11 @@ const TimingDisplay = translate()(withTiming()(class extends React.Component<ITi
 		)
 	}
 }))
+interface IRunningOrderHeaderProps {
+	runningOrder: RunningOrder
+}
 
-const RunningOrderHeader = translate()(class extends React.Component<InjectedTranslateProps & IHeaderProps> {
+const RunningOrderHeader = translate()(class extends React.Component<Translated<IRunningOrderHeaderProps>> {
 	componentDidMount () {
 		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE, this.disableKey, 'keydown')
 		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE, this.keyTake, 'keyup')
@@ -292,11 +290,8 @@ const RunningOrderHeader = translate()(class extends React.Component<InjectedTra
 	}
 })
 
-interface IPropsHeader extends InjectedTranslateProps {
+interface IProps {
 	key: string
-	runningOrder: RunningOrder
-	segments: Array<Segment>
-	studioInstallation: StudioInstallation
 	match: {
 		params: {
 			runningOrderId: string
@@ -304,14 +299,19 @@ interface IPropsHeader extends InjectedTranslateProps {
 	}
 }
 
-interface IStateHeader {
+interface IState {
 	timeScale: number
 	studioMode: boolean
 	contextMenuContext: any
 	bottomMargin: string
 }
 
-export const RunningOrderView = translate()(withTracker((props: IPropsHeader, state) => {
+interface ITrackedProps {
+	runningOrder?: RunningOrder
+	segments: Array<Segment>
+	studioInstallation?: StudioInstallation
+}
+export const RunningOrderView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state) => {
 
 	let runningOrderId = decodeURIComponent(props.match.params.runningOrderId)
 
@@ -323,14 +323,14 @@ export const RunningOrderView = translate()(withTracker((props: IPropsHeader, st
 			sort: {
 				'_rank': 1
 			}
-		}).fetch() : undefined,
+		}).fetch() : [],
 		studioInstallation: runningOrder ? StudioInstallations.findOne({ _id: runningOrder.studioInstallationId }) : undefined,
 	}
 })(
-class extends React.Component<IPropsHeader, IStateHeader> {
+class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 
 	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
-	constructor (props) {
+	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 
 		this.state = {
@@ -404,18 +404,20 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 	}
 
 	renderSegments () {
-		if (this.props.segments !== undefined && this.props.studioInstallation !== undefined) {
-			return this.props.segments.map((segment) => (
-				<SegmentTimelineContainer key={segment._id}
-										  studioInstallation={this.props.studioInstallation}
-										  segment={segment}
-										  runningOrder={this.props.runningOrder}
-										  liveLineHistorySize='100'
-										  timeScale={this.state.timeScale}
-										  onTimeScaleChange={this.onTimeScaleChange}
-										  onContextMenu={this.onContextMenu}
-										  />
-			))
+		if (this.props.segments) {
+			return this.props.segments.map((segment) => {
+				if (this.props.studioInstallation && this.props.runningOrder) {
+					return <SegmentTimelineContainer key={segment._id}
+											  studioInstallation={this.props.studioInstallation}
+											  segment={segment}
+											  runningOrder={this.props.runningOrder}
+											  liveLineHistorySize={100}
+											  timeScale={this.state.timeScale}
+											  onTimeScaleChange={this.onTimeScaleChange}
+											  onContextMenu={this.onContextMenu}
+											  />
+				}
+			})
 		} else {
 			return (
 				<div></div>
@@ -426,7 +428,7 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 	renderSegmentsList () {
 		const { t } = this.props
 
-		if (this.props.runningOrder !== undefined) {
+		if (this.props.runningOrder) {
 			return (
 				<div>
 					{this.renderSegments()}
@@ -456,23 +458,30 @@ class extends React.Component<IPropsHeader, IStateHeader> {
 	render () {
 		const { t } = this.props
 
-		return (
-			<RunningOrderTimingProvider
-				runningOrder={this.props.runningOrder}>
-				<div className='running-order-view' style={this.getStyle()}>
-					<KeyboardFocusMarker />
-					<RunningOrderHeader
-						runningOrder={this.props.runningOrder} />
-					<SegmentContextMenu
-						contextMenuContext={this.state.contextMenuContext}
-						runningOrder={this.props.runningOrder}
-						onSetNext={this.onSetNext} />
-					{this.renderSegmentsList()}
-					<InspectorDrawer {...this.props}
-						onChangeBottomMargin={this.onChangeBottomMargin} />
-				</div>
-			</RunningOrderTimingProvider>
-		)
+		if (this.props.runningOrder && this.props.studioInstallation) {
+			return (
+				<RunningOrderTimingProvider
+					runningOrder={this.props.runningOrder}>
+					<div className='running-order-view' style={this.getStyle()}>
+						<KeyboardFocusMarker />
+						<RunningOrderHeader
+							runningOrder={this.props.runningOrder} />
+						<SegmentContextMenu
+							contextMenuContext={this.state.contextMenuContext}
+							runningOrder={this.props.runningOrder}
+							onSetNext={this.onSetNext} />
+						{this.renderSegmentsList()}
+						<InspectorDrawer
+							segments={this.props.segments}
+							runningOrder={this.props.runningOrder}
+							studioInstallation={this.props.studioInstallation}
+							onChangeBottomMargin={this.onChangeBottomMargin} />
+					</div>
+				</RunningOrderTimingProvider>
+			)
+		} else {
+			return null
+		}
 	}
 }
-))
+)

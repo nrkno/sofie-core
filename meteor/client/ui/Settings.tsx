@@ -1,21 +1,14 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import * as ClassNames from 'classnames'
-import Moment from 'react-moment'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import * as _ from 'underscore'
+import { translate } from 'react-i18next'
 import { Random } from 'meteor/random'
 import { literal } from '../../lib/lib'
-
 import { ModalDialog } from '../lib/ModalDialog'
-
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-
 import {
-	BrowserRouter as Router,
 	Route,
-	Link,
 	NavLink,
 	Switch,
 	Redirect
@@ -41,19 +34,21 @@ class WelcomeToSettings extends React.Component {
 	}
 }
 
-interface IPropsMenuHeader {
-	studioInstallations: Array<StudioInstallation>
-	showStyles: Array<ShowStyle>
-	peripheralDevices: Array<PeripheralDevice>
-	lineTemplates: Array<RuntimeFunction>
+interface ISettingsMenuProps {
 	match?: any
 }
-interface IStateMenuHeader {
+interface ISettingsMenuState {
 	deleteConfirmItem: any
 	showDeleteLineTemplateConfirm: boolean
 	showDeleteShowStyleConfirm: boolean
 }
-const SettingsMenu = translate()(withTracker(() => {
+interface ISettingsMenuTrackedProps {
+	studioInstallations: Array<StudioInstallation>
+	showStyles: Array<ShowStyle>
+	peripheralDevices: Array<PeripheralDevice>
+	lineTemplates: Array<RuntimeFunction>
+}
+const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps >(() => {
 	let subStudioInstallations = Meteor.subscribe('studioInstallations', {})
 	let subShowStyles = Meteor.subscribe('showStyles', {})
 	let subPeripheralDevices = Meteor.subscribe('peripheralDevices', {})
@@ -67,8 +62,8 @@ const SettingsMenu = translate()(withTracker(() => {
 		}}).fetch(),
 		lineTemplates: RuntimeFunctions.find({}).fetch()
 	}
-})(class extends React.Component<IPropsMenuHeader & InjectedTranslateProps, IStateMenuHeader> {
-	constructor (props) {
+})(class SettingsMenu extends React.Component<Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>, ISettingsMenuState> {
+	constructor (props: Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>) {
 		super(props)
 		this.state = {
 			deleteConfirmItem: undefined,
@@ -270,9 +265,11 @@ const SettingsMenu = translate()(withTracker(() => {
 			</div>
 		)
 	}
-}))
-
-class Settings extends React.Component<InjectedTranslateProps> {
+})
+interface ISettingsProps {
+	match?: any
+}
+class Settings extends React.Component<Translated<ISettingsProps>> {
 	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
 	componentWillMount () {
 		// Subscribe to data:

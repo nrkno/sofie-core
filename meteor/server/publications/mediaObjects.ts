@@ -1,9 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
-
-import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { StudioInstallationsSecurity } from '../security/studioInstallations'
-import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 
 Meteor.publish('mediaObjects', (studioId, selector, token) => {

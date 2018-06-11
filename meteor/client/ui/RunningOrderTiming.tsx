@@ -1,20 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
-
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-import { Segment, Segments } from '../../lib/collections/Segments'
-import { SegmentTimelineContainer, SegmentLineItemUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
-import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
-import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
-
-import timer from 'react-timer-hoc'
 import { getCurrentTime } from '../../lib/lib'
-
 import { RundownUtils } from '../lib/rundown'
 
 export namespace RunningOrderTiming {
@@ -46,31 +37,35 @@ export namespace RunningOrderTiming {
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60
 
 interface IRunningOrderTimingProviderProps {
-	runningOrder: RunningOrder
-	segmentLines: Array<SegmentLine>
+	runningOrder?: RunningOrder
+	// segmentLines: Array<SegmentLine>
 	refreshInterval?: number
 }
 interface IRunningOrderTimingProviderChildContext {
 	durations: RunningOrderTiming.RunningOrderTimingContext
 }
+interface IRunningOrderTimingProviderState {
+}
+interface IRunningOrderTimingProviderTrackedProps {
+	segmentLines: Array<SegmentLine>
+}
 
-export const RunningOrderTimingProvider = withTracker((props, state) => {
+export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProviderProps, IRunningOrderTimingProviderState, IRunningOrderTimingProviderTrackedProps>(
+(props, state) => {
+	let segmentLines: Array<SegmentLine> = []
 	if (props.runningOrder) {
-		let segmentLines = SegmentLines.find({
+		segmentLines = SegmentLines.find({
 			'runningOrderId': props.runningOrder._id,
 		}, {
 			sort: {
 				'_rank': 1
 			}
 		}).fetch()
-
-		return {
-			segmentLines
-		}
-	} else {
-		return {}
 	}
-})(class extends React.Component<IRunningOrderTimingProviderProps> implements React.ChildContextProvider<IRunningOrderTimingProviderChildContext> {
+	return {
+		segmentLines
+	}
+})(class extends React.Component<IRunningOrderTimingProviderProps & IRunningOrderTimingProviderTrackedProps, IRunningOrderTimingProviderState> implements React.ChildContextProvider<IRunningOrderTimingProviderChildContext> {
 	static childContextTypes = {
 		durations: PropTypes.object.isRequired
 	}
@@ -231,13 +226,21 @@ export const RunningOrderTimingProvider = withTracker((props, state) => {
 	}
 })
 
-export function withTiming (options?) {
-	let expandedOptions = _.extend({
+export interface WithTimingOptions {
+	isHighResolution?: boolean
+}
+export type WithTiming<T> = T & RunningOrderTiming.InjectedROTimingProps
+type IWrappedComponent<IProps, IState> = new (props: WithTiming<IProps>, state: IState) => React.Component<WithTiming<IProps>, IState>
+
+export function withTiming<IProps, IState> (options?: WithTimingOptions):
+	(WrappedComponent: IWrappedComponent<IProps, IState>) =>
+		new (props: IProps, context: any ) => React.Component<IProps, IState> {
+	let expandedOptions: WithTimingOptions = _.extend({
 		isHighResolution: false
 	}, options)
 
-	return (WrappedComponent) => (
-		class WithTimingHOCComponent extends React.Component {
+	return (WrappedComponent) => {
+		return class WithTimingHOCComponent extends React.Component<IProps, IState> {
 			static contextTypes = {
 				durations: PropTypes.object.isRequired
 			}
@@ -267,41 +270,54 @@ export function withTiming (options?) {
 			}
 
 			render () {
-				const { durations } = this.context
+				const durations: RunningOrderTiming.RunningOrderTimingContext
+					= this.context.durations
 
-				return <WrappedComponent { ...this.props } timingDurations={durations} />
+				const allProps: WithTiming<IProps> = _.extend({
+					timingDurations: durations
+				}, this.props)
+				return <WrappedComponent { ...allProps } />
 			}
 		}
-	)
+	}
 }
 
 interface ISegmentLineCountdownProps {
-	segmentLineId: string
-	timingDurations: RunningOrderTiming.RunningOrderTimingContext
+	segmentLineId?: string
+	timingDurations?: RunningOrderTiming.RunningOrderTimingContext
 }
-export const SegmentLineCountdown = withTiming()((props: ISegmentLineCountdownProps) => (
-	<span>
-		{props.segmentLineId &&
-			props.timingDurations &&
-			props.timingDurations.segmentLineCountdown &&
-			props.timingDurations.segmentLineCountdown[props.segmentLineId] !== undefined &&
-				RundownUtils.formatTimeToShortTime(props.timingDurations.segmentLineCountdown[props.segmentLineId])}
-	</span>
-))
-
-interface ISegmentLineCountdownProps {
+interface ISegmentLineCountdownState {
+}
+export const SegmentLineCountdown = withTiming<ISegmentLineCountdownProps, ISegmentLineCountdownState>()(
+class extends React.Component<WithTiming<ISegmentLineCountdownProps>, ISegmentLineCountdownState> {
+	render () {
+		return <span>
+			{this.props.segmentLineId &&
+				this.props.timingDurations &&
+				this.props.timingDurations.segmentLineCountdown &&
+				this.props.timingDurations.segmentLineCountdown[this.props.segmentLineId] !== undefined &&
+					RundownUtils.formatTimeToShortTime(this.props.timingDurations.segmentLineCountdown[this.props.segmentLineId])}
+		</span>
+	}
+})
+interface ISegmentDurationProps {
 	segmentLineIds: Array<string>
-	timingDurations: RunningOrderTiming.RunningOrderTimingContext
+	timingDurations?: RunningOrderTiming.RunningOrderTimingContext
 }
-export const SegmentDuration = withTiming()((props: ISegmentLineCountdownProps) => (
-	<span>
-		{props.segmentLineIds &&
-			props.timingDurations &&
-			props.timingDurations.segmentLineDurations &&
-				RundownUtils.formatTimeToTimecode(props.segmentLineIds.reduce((memo, item) => {
-					return props.timingDurations!.segmentLineDurations![item] !== undefined ?
-						memo + props.timingDurations!.segmentLineDurations![item] :
-						memo
-				}, 0))}
-	</span>
-))
+interface ISegmentDurationState {
+}
+export const SegmentDuration = withTiming<ISegmentDurationProps, ISegmentDurationState>()(
+	class extends React.Component<WithTiming<ISegmentDurationProps>, ISegmentDurationState> {
+		render () {
+			return <span>
+				{this.props.segmentLineIds &&
+					this.props.timingDurations &&
+					this.props.timingDurations.segmentLineDurations &&
+						RundownUtils.formatTimeToTimecode(this.props.segmentLineIds.reduce((memo, item) => {
+							return this.props.timingDurations!.segmentLineDurations![item] !== undefined ?
+								memo + this.props.timingDurations!.segmentLineDurations![item] :
+								memo
+						}, 0))}
+			</span>
+		}
+	})

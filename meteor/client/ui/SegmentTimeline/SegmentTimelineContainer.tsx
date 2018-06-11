@@ -1,9 +1,6 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
-import * as $ from 'jquery'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 
 import { normalizeArray } from '../../lib/utils'
@@ -11,14 +8,13 @@ import { normalizeArray } from '../../lib/utils'
 import * as SuperTimeline from 'superfly-timeline'
 
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
-import { Segment, Segments } from '../../../lib/collections/Segments'
+import { Segment } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
-import { StudioInstallation, StudioInstallations, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
+import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
 
 import { SegmentTimeline } from './SegmentTimeline'
 
-import { Settings } from '../../../lib/Settings'
 import { getCurrentTime } from '../../../lib/lib'
 import { RunningOrderTiming } from '../RunningOrderTiming'
 
@@ -69,24 +65,17 @@ export interface SegmentLineItemUi extends SegmentLineItem {
 interface ISegmentLineItemUiDictionary {
 	[key: string]: SegmentLineItemUi
 }
-interface IPropsHeader {
+interface IProps {
 	key: string,
-	segment: SegmentUi,
+	segment: Segment,
 	studioInstallation: StudioInstallation,
-	segmentLines: Array<SegmentLineUi>,
 	runningOrder: RunningOrder,
 	timeScale: number,
-	isLiveSegment: boolean,
-	isNextSegment: boolean,
-	currentLiveSegmentLine: SegmentLineUi | undefined,
-	hasRemoteItems: boolean,
-	hasAlreadyPlayed: boolean,
 	liveLineHistorySize: number
 	onTimeScaleChange?: (timeScaleVal: number) => void
 	onContextMenu?: (contextMenuContext: any) => void
-	autoNextSegmentLine: boolean
 }
-interface IStateHeader {
+interface IState {
 	scrollLeft: number,
 	collapsedOutputs: {
 		[key: string]: boolean
@@ -95,11 +84,21 @@ interface IStateHeader {
 	followLiveLine: boolean,
 	livePosition: number
 }
-export const SegmentTimelineContainer = withTracker((props) => {
+interface ITrackedProps {
+	segmentui: SegmentUi,
+	segmentLines: Array<SegmentLineUi>,
+	isLiveSegment: boolean,
+	isNextSegment: boolean,
+	currentLiveSegmentLine: SegmentLineUi | undefined,
+	hasRemoteItems: boolean,
+	hasAlreadyPlayed: boolean,
+	autoNextSegmentLine: boolean
+}
+export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
-	let segment = _.clone(props.segment) as SegmentUi
+	let segmentui = _.clone(props.segment) as SegmentUi
 
 	let isLiveSegment = false
 	let isNextSegment = false
@@ -114,8 +113,8 @@ export const SegmentTimelineContainer = withTracker((props) => {
 
 	// create local deep copies of the studioInstallation outputLayers and sourceLayers so that we can store
 	// items present on those layers inside and also figure out which layers are used when inside the rundown
-	const outputLayers = normalizeArray<IOutputLayerUi>(props.studioInstallation.outputLayers.map((layer) => { return _.clone(layer) }), '_id')
-	const sourceLayers = normalizeArray<ISourceLayerUi>(props.studioInstallation.sourceLayers.map((layer) => { return _.clone(layer) }), '_id')
+	const outputLayers = props.studioInstallation ? normalizeArray<IOutputLayerUi>(props.studioInstallation.outputLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
+	const sourceLayers = props.studioInstallation ? normalizeArray<ISourceLayerUi>(props.studioInstallation.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
 
 	const TIMELINE_TEMP_OFFSET = 1
 
@@ -278,11 +277,11 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		})
 	})
 
-	segment.outputLayers = outputLayers
-	segment.sourceLayers = sourceLayers
+	segmentui.outputLayers = outputLayers
+	segmentui.sourceLayers = sourceLayers
 
 	return {
-		segment,
+		segmentui,
 		segmentLines,
 		isLiveSegment,
 		currentLiveSegmentLine,
@@ -291,7 +290,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 		hasRemoteItems,
 		autoNextSegmentLine
 	}
-})(class extends React.Component<IPropsHeader, IStateHeader> {
+})(class extends React.Component<IProps & ITrackedProps, IState> {
 	static contextTypes = {
 		durations: PropTypes.object.isRequired
 	}
@@ -299,7 +298,7 @@ export const SegmentTimelineContainer = withTracker((props) => {
 	isLiveSegment: boolean
 	roCurrentSegmentId: string | null
 
-	constructor (props, context) {
+	constructor (props: IProps & ITrackedProps, context) {
 		super(props, context)
 
 		let that = this
@@ -406,31 +405,30 @@ export const SegmentTimelineContainer = withTracker((props) => {
 
 	render () {
 		return (
-			<SegmentTimeline key={this.props.segment._id}
-							 // The following code is fine, just withTracker HOC messing with available props
-							 // @ts-ignore
-							 segment={this.props.segment}
-							 studioInstallation={this.props.studioInstallation}
-							 segmentLines={this.props.segmentLines}
-							 timeScale={this.props.timeScale}
-							 onCollapseOutputToggle={this.onCollapseOutputToggle}
-							 collapsedOutputs={this.state.collapsedOutputs}
-							 onCollapseSegmentToggle={this.onCollapseSegmentToggle}
-							 isCollapsed={this.state.collapsed}
-							 scrollLeft={this.state.scrollLeft}
-							 runningOrder={this.props.runningOrder}
-							 isLiveSegment={this.props.isLiveSegment}
-							 isNextSegment={this.props.isNextSegment}
-							 hasRemoteItems={this.props.hasRemoteItems}
-							 autoNextSegmentLine={this.props.autoNextSegmentLine}
-							 hasAlreadyPlayed={this.props.hasAlreadyPlayed}
-							 followLiveLine={this.state.followLiveLine}
-							 liveLineHistorySize={this.props.liveLineHistorySize}
-							 livePosition={this.state.livePosition}
-							 onContextMenu={this.props.onContextMenu}
-							 onFollowLiveLine={this.onFollowLiveLine}
-							 onZoomChange={(newScale: number, e) => this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)}
-							 onScroll={this.onScroll} />
+			<SegmentTimeline
+				key={this.props.segment._id}
+				segment={this.props.segmentui}
+				studioInstallation={this.props.studioInstallation}
+				segmentLines={this.props.segmentLines}
+				timeScale={this.props.timeScale}
+				onCollapseOutputToggle={this.onCollapseOutputToggle}
+				collapsedOutputs={this.state.collapsedOutputs}
+				onCollapseSegmentToggle={this.onCollapseSegmentToggle}
+				isCollapsed={this.state.collapsed}
+				scrollLeft={this.state.scrollLeft}
+				runningOrder={this.props.runningOrder}
+				isLiveSegment={this.props.isLiveSegment}
+				isNextSegment={this.props.isNextSegment}
+				hasRemoteItems={this.props.hasRemoteItems}
+				autoNextSegmentLine={this.props.autoNextSegmentLine}
+				hasAlreadyPlayed={this.props.hasAlreadyPlayed}
+				followLiveLine={this.state.followLiveLine}
+				liveLineHistorySize={this.props.liveLineHistorySize}
+				livePosition={this.state.livePosition}
+				onContextMenu={this.props.onContextMenu}
+				onFollowLiveLine={this.onFollowLiveLine}
+				onZoomChange={(newScale: number, e) => this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)}
+				onScroll={this.onScroll} />
 		)
 	}
 }

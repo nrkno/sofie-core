@@ -3,8 +3,7 @@
  */
 
 import { Meteor } from 'meteor/meteor'
-// import React from 'react';
-import { withTracker } from './ReactMeteorData.jsx'
+import { withTracker } from './ReactMeteorData'
 
 let hasDisplayedWarning = false
 

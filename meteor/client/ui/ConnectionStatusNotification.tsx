@@ -1,26 +1,25 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as VelocityAnimate from 'velocity-animate'
 import * as VelocityReact from 'velocity-react'
 import Moment from 'react-moment'
 import * as CoreIcons from '@nrk/core-icons/jsx'
 import * as ClassNames from 'classnames'
 
-import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { translateWithTracker, Translated } from '../lib/ReactMeteorData/react-meteor-data'
 
-interface IPropsHeader {
+interface IProps {
+}
+interface IState {
+	dismissed: boolean
+}
+interface ITrackedProps {
 	connected: boolean
 	status: string
 	reason: string
 	retryTime: number
 }
 
-interface IStateHeader {
-	dismissed: boolean
-}
-
-export const ConnectionStatusNotification = withTracker((props, state) => {
+export const ConnectionStatusNotification = translateWithTracker<IProps, IState, ITrackedProps>((props, state) => {
 	const connected = Meteor.status().connected
 	const status = Meteor.status().status
 	const reason = Meteor.status().reason
@@ -32,8 +31,8 @@ export const ConnectionStatusNotification = withTracker((props, state) => {
 		reason,
 		retryTime
 	}
-})(translate()(class extends React.Component<IPropsHeader & InjectedTranslateProps, IStateHeader> {
-	constructor (props) {
+})(class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
+	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {
 			dismissed: false
@@ -110,4 +109,4 @@ export const ConnectionStatusNotification = withTracker((props, state) => {
 				) : undefined }
 			</VelocityReact.VelocityTransitionGroup>
 	}
-}))
+})

@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { RunningOrderDataCache, RunningOrderDataCacheObj } from '../../lib/collections/RunningOrderDataCache'
 
 // Setup rules:

@@ -1,19 +1,16 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { I18nextProvider, translate, InjectedTranslateProps, InjectedI18nProps } from 'react-i18next'
-import { InjectedTranslateI18nProps } from './App'
+import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
+import { translate } from 'react-i18next'
 
-import { Link, NavLink } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 
-interface IPropsHeader extends InjectedTranslateI18nProps {
+interface IPropsHeader {
 
 }
 
-class Header extends React.Component<IPropsHeader> {
+class Header extends React.Component<Translated<IPropsHeader>> {
 	render () {
-		const { t, i18n } = this.props
+		const { t } = this.props
 
 		return (
 			<div className='header dark'>

@@ -1,11 +1,7 @@
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import {
-	IMOSConnectionStatus,
-	IMOSDevice,
-	IMOSListMachInfo,
 	MosString128,
 	MosTime,
 	MosDuration,
@@ -22,18 +18,14 @@ import {
 	IMOSROReadyToAir,
 	IMOSROFullStory,
 	IMOSStory,
-	IMOSExternalMetaData,
 	IMOSObjectStatus
 } from 'mos-connection'
-
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { RunningOrder, RunningOrders, DBRunningOrder } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
-import { Segment, Segments, DBSegment } from '../../lib/collections/Segments'
-
+import { Segments, DBSegment } from '../../lib/collections/Segments'
 import { saveIntoDb, partialExceptId, getCurrentTime, literal } from '../../lib/lib'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
@@ -1045,7 +1037,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 	saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
 		runningOrderId: ro._id,
 		segmentLineId: segmentLine._id,
-	}, result.segmentLineItems, {
+	}, result.segmentLineItems || [], {
 		afterInsert (segmentLineItem) {
 			console.log('inserted segmentLineItem ' + segmentLineItem._id)
 			console.log(segmentLineItem)

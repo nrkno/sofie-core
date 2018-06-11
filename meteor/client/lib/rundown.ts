@@ -1,6 +1,4 @@
-import { Meteor } from 'meteor/meteor'
 import { SegmentLineItemUi, SegmentLineUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
-import * as _ from 'underscore'
 import * as Timecode from 'smpte-timecode'
 import { Settings } from '../../lib/Settings'
 

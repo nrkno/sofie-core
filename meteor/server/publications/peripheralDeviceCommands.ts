@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
 
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
-import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands';
+import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 
 Meteor.publish('peripheralDeviceCommands', function (deviceId: string, token) {
 	if (!deviceId) throw new Meteor.Error(400,'deviceId argument missing')

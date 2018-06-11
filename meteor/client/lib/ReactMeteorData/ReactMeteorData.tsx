@@ -5,6 +5,7 @@ import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
+import { translate, InjectedTranslateProps } from 'react-i18next'
 
 // A class to keep the state and utility methods needed to manage
 // the Meteor data for a component.
@@ -165,30 +166,54 @@ export const ReactMeteorData = {
 	}
 }
 
-class ReactComponent extends React.Component {}
-Object.assign(ReactComponent.prototype, ReactMeteorData)
-class ReactPureComponent extends React.PureComponent {}
-Object.assign(ReactPureComponent.prototype, ReactMeteorData)
+class ReactMeteorComponentWrapper<P, S> extends React.Component<P, S> {
+	data: any
+}
+Object.assign(ReactMeteorComponentWrapper.prototype, ReactMeteorData)
+class ReactMeteorPureComponentWrapper<P, S> extends React.PureComponent<P, S> {}
+Object.assign(ReactMeteorPureComponentWrapper.prototype, ReactMeteorData)
 
-export function withTracker (options) {
-	let expandedOptions = options
-	if (typeof options === 'function') {
-		expandedOptions = {
-			getMeteorData: options
-		}
+export interface WithTrackerOptions<IProps, TrackedProps> {
+	getMeteorData: (props: IProps) => TrackedProps
+	// pure?: boolean
+}
+// @todo: add withTrackerPure()
+type IWrappedComponent<IProps, IState, TrackedProps> = new (props: IProps & TrackedProps, state: IState) => React.Component<IProps & TrackedProps, IState>
+export function withTracker<IProps, IState, TrackedProps> (autorunFunction: (props: IProps, state?: IState) => TrackedProps):
+	(WrappedComponent: IWrappedComponent<IProps, IState, TrackedProps>) =>
+		new (props: IProps ) => React.Component<IProps, IState> {
+
+	let expandedOptions: WithTrackerOptions<IProps, TrackedProps>
+
+	expandedOptions = {
+		getMeteorData: autorunFunction
 	}
 
-	const { getMeteorData, pure = true } = expandedOptions
-
-	const BaseComponent = pure ? ReactPureComponent : ReactComponent
-	return (WrappedComponent) => (
-		class ReactMeteorDataComponent extends BaseComponent {
+	return (WrappedComponent) => {
+		// return ''
+		return class extends ReactMeteorComponentWrapper<IProps, IState> {
 			getMeteorData () {
-				return getMeteorData(this.props)
+				return expandedOptions.getMeteorData(this.props)
 			}
 			render () {
-				return <WrappedComponent {...this.props} {...this['data']} />
+				return <WrappedComponent {...this.props} {...this.data} />
 			}
 		}
-	)
+	}
 }
+export function translateWithTracker<IProps, IState, TrackedProps> (autorunFunction: (props: IProps, state?: IState) => TrackedProps) {
+	return (WrappedComponent: IWrappedComponent<IProps, IState, TrackedProps>) => {
+		return translate()(withTracker(autorunFunction)(WrappedComponent))
+	}
+}
+export type Translated<T> = T & InjectedTranslateProps
+
+// function withTracker<IProps, IState, TrackedProps>
+// 	(
+// 		autorunFunction: (props: IProps, state?: IState | undefined) => TrackedProps
+// 	): (
+// 		WrappedComponent: new (
+// 			props: TrackedProps,
+// 			state: IState
+// 		) => React.Component<TrackedProps, IState, never>
+// 	) => any

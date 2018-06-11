@@ -1,7 +1,4 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-
-import { ISourceLayerUi, IOutputLayerUi, SegmentUi, SegmentLineUi, SegmentLineItemUi } from '../SegmentTimelineContainer'
 
 import { FloatingInspector } from '../../FloatingInspector'
 

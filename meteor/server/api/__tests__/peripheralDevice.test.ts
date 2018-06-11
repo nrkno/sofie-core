@@ -1,5 +1,4 @@
 import * as chai from 'chai'
-// @ts-ignore Meteor package
 import StubCollections from 'meteor/hwillson:stub-collections'
 import { Random } from 'meteor/random'
 import {} from 'mocha'
@@ -13,11 +12,11 @@ import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/Segm
 import {
 	ServerPeripheralDeviceAPI,
 	getRO,
-	getSegment,
+	// getSegment,
 	getSegmentLine,
 	convertToSegment,
 	convertToSegmentLine,
-	insertSegment,
+	// insertSegment,
 	removeSegment,
 	fetchBefore,
 	fetchAfter,
@@ -53,9 +52,10 @@ describe('peripheralDevice: general API methods', function () {
 
 		let deviceId = Random.id()
 		let token = Random.id()
-		let options = {
+		let options: PeripheralDeviceAPI.InitOptions = {
 			type: 0,
-			name: 'test'
+			name: 'test',
+			connectionId: 'test'
 		}
 
 		let returnedId = ServerPeripheralDeviceAPI.initialize(deviceId, token, options)
@@ -66,9 +66,11 @@ describe('peripheralDevice: general API methods', function () {
 		let md = PeripheralDevices.findOne(deviceId)
 
 		expect(md).to.be.an('object')
-		expect(md).to.have.property('_id')
-		expect(md._id).to.be.equal(deviceId)
-		expect(md.created).to.be.closeTo(getCurrentTime(), 1000)
+		if (md) {
+			expect(md).to.have.property('_id')
+			expect(md._id).to.be.equal(deviceId)
+			expect(md.created).to.be.closeTo(getCurrentTime(), 1000)
+		}
 
 	})
 
@@ -76,9 +78,10 @@ describe('peripheralDevice: general API methods', function () {
 
 		let deviceId = Random.id()
 		let token = Random.id()
-		let options = {
+		let options: PeripheralDeviceAPI.InitOptions = {
 			type: 0,
-			name: 'test'
+			name: 'test',
+			connectionId: 'test'
 		}
 
 		let returnedId = ServerPeripheralDeviceAPI.initialize(deviceId, token, options)
@@ -91,20 +94,22 @@ describe('peripheralDevice: general API methods', function () {
 		// check that there is an object
 		let pd = PeripheralDevices.findOne(deviceId)
 		expect(pd).to.be.an('object')
-
-		// Check object status:
-		expect(pd.status).to.be.an('object')
-		expect(pd.status.statusCode).to.be.equal(PeripheralDeviceAPI.StatusCode.GOOD)
-		expect(pd.status.messages).to.have.length(1)
+		if (pd) {
+			// Check object status:
+			expect(pd.status).to.be.an('object')
+			expect(pd.status.statusCode).to.be.equal(PeripheralDeviceAPI.StatusCode.GOOD)
+			expect(pd.status.messages).to.have.length(1)
+		}
 	})
 
 	it('peripheralDevice.initialize() with bad arguments', async function () {
 		let deviceId = Random.id()
 		let token = Random.id()
 
-		let options = {
+		let options: PeripheralDeviceAPI.InitOptions = {
 			type: 0,
-			name: 'test'
+			name: 'test',
+			connectionId: 'test'
 		}
 
 		expect(() => {
@@ -129,9 +134,10 @@ describe('peripheralDevice: general API methods', function () {
 	it('peripheralDevice.setStatus() with bad arguments', async function () {
 		let deviceId = Random.id()
 		let token = Random.id()
-		let options = {
+		let options: PeripheralDeviceAPI.InitOptions = {
 			type: 0,
-			name: 'test'
+			name: 'test',
+			connectionId: 'test'
 		}
 
 		expect(() => {

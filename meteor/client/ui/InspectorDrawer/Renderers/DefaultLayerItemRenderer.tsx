@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 
 import { SegmentLineAdLibItem } from '../../../../lib/collections/SegmentLineAdLibItems'
 import { ISourceLayer, IOutputLayer } from '../../../../lib/collections/StudioInstallations'

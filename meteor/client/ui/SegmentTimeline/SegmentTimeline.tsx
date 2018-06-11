@@ -1,22 +1,14 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import * as PropTypes from 'prop-types'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { translate } from 'react-i18next'
 
 import * as ClassNames from 'classnames'
-import Moment from 'react-moment'
 import * as _ from 'underscore'
-import * as $ from 'jquery'
-
-import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
+import { ContextMenuTrigger } from 'react-contextmenu'
 
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
-import { Segment, Segments } from '../../../lib/collections/Segments'
-import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
-import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
-import { SegmentUi, SegmentLineUi, IOutputLayerUi, ISourceLayerUi, SegmentLineItemUi } from './SegmentTimelineContainer'
+import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { SegmentUi, SegmentLineUi, IOutputLayerUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
 import { SegmentTimelineLine } from './SegmentTimelineLine'
 import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
@@ -24,8 +16,9 @@ import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
 import { SegmentDuration, SegmentLineCountdown, RunningOrderTiming } from './../RunningOrderTiming'
 
 import { RundownUtils } from '../../lib/rundown'
+import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
-interface IPropsHeader {
+interface IProps {
 	key: string
 	segment: SegmentUi
 	runningOrder: RunningOrder,
@@ -64,7 +57,7 @@ interface IZoomStateHeader {
 	totalSegmentDuration: number
 }
 
-const SegmentTimelineZoom = class extends React.Component<IPropsHeader & IZoomPropsHeader, IZoomStateHeader> {
+const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHeader, IZoomStateHeader> {
 	static contextTypes = {
 		durations: PropTypes.object.isRequired
 	}
@@ -122,8 +115,6 @@ const SegmentTimelineZoom = class extends React.Component<IPropsHeader & IZoomPr
 		return this.props.segmentLines.map((segmentLine) => {
 			return (
 				<SegmentTimelineLine key={segmentLine._id}
-				// The following code is fine, just withTracker HOC messing with the available properties
-				// @ts-ignore
 					segment={this.props.segment}
 					runningOrder={this.props.runningOrder}
 					studioInstallation={this.props.studioInstallation}
@@ -177,10 +168,11 @@ const SegmentTimelineZoom = class extends React.Component<IPropsHeader & IZoomPr
 	}
 }
 
-export const SegmentTimeline = translate()(class extends React.Component<IPropsHeader & InjectedTranslateProps, IStateHeader> {
+export const SegmentTimeline = translate()(
+class extends React.Component<Translated<IProps>, IStateHeader> {
 	timeline: HTMLDivElement
 
-	constructor (props) {
+	constructor (props: Translated<IProps>) {
 		super(props)
 		this.state = {
 			timelineWidth: 1
@@ -266,12 +258,10 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 		return this.props.segmentLines.map((segmentLine) => {
 			return (
 				<SegmentTimelineLine key={segmentLine._id}
-									 {...this.props}
-									 // The following code is fine, just withTracer HOC messing with the available properties
-									 // @ts-ignore
-									 scrollWidth={this.state.timelineWidth / this.props.timeScale}
-									 firstSegmentLineInSegment={this.props.segmentLines[0]}
-									 segmentLine={segmentLine} />
+									{...this.props}
+									scrollWidth={this.state.timelineWidth / this.props.timeScale}
+									firstSegmentLineInSegment={this.props.segmentLines[0]}
+									segmentLine={segmentLine} />
 			)
 		})
 	}
@@ -335,18 +325,24 @@ export const SegmentTimeline = translate()(class extends React.Component<IPropsH
 					{this.props.segment.name}
 				</ContextMenuTrigger>
 				<div className='segment-timeline__duration' tabIndex={0}
-					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
-					 {this.props.runningOrder && this.props.segmentLines && this.props.segmentLines.length > 0 &&
-						// @ts-ignore
-					 	<SegmentDuration segmentLineIds={this.props.segmentLines.map((item) => item._id)} />
-					 }
+					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
+					{this.props.runningOrder && this.props.segmentLines && this.props.segmentLines.length > 0 &&
+						<SegmentDuration
+							segmentLineIds={this.props.segmentLines.map((item) => item._id)}
+						/>
+					}
 				</div>
 				<div className='segment-timeline__timeUntil'
 					 onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
 					 {this.props.runningOrder && this.props.segmentLines && this.props.segmentLines.length > 0 &&
-					 	// The following code is fine, just withTiming HOC messing with the available properties
-						// @ts-ignore
-						<SegmentLineCountdown segmentLineId={this.props.isNextSegment ? this.props.runningOrder.nextSegmentLineId : this.props.segmentLines[0]._id} />
+						<SegmentLineCountdown
+							segmentLineId={
+								(
+									this.props.isNextSegment ?
+									this.props.runningOrder.nextSegmentLineId :
+									this.props.segmentLines[0]._id
+								) || undefined }
+						/>
 					 }
 				</div>
 				<div className='segment-timeline__mos-id'>{this.props.segment.mosId}</div>

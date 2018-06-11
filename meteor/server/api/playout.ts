@@ -1,27 +1,23 @@
 import { Meteor } from 'meteor/meteor'
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
-import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/SegmentLines'
-import { SegmentLineItemGeneric, SegmentLineItem, SegmentLineItems, ITimelineTrigger } from '../../lib/collections/SegmentLineItems'
+import { RunningOrders } from '../../lib/collections/RunningOrders'
+import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
+import { SegmentLineItem, SegmentLineItems, ITimelineTrigger } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItems, RunningOrderBaselineItem } from '../../lib/collections/RunningOrderBaselineItems'
-import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { getCurrentTime, saveIntoDb, literal, DBObj, partialExceptId, Time, partial } from '../../lib/lib'
-import { RundownAPI } from '../../lib/api/rundown'
-import { TimelineTransition, Timeline, TimelineObj, TimelineObjGroupSegmentLine, TimelineContentTypeOther, TimelineObjAbstract, TimelineObjGroup, TimelineContentTypeLawo } from '../../lib/collections/Timeline'
-import { TimelineObject, ObjectId, TriggerType, TimelineKeyframe, TimelineGroup } from 'superfly-timeline'
-import { Transition, Ease, Direction } from '../../lib/constants/casparcg'
-import { Segment, Segments } from '../../lib/collections/Segments'
+import { getCurrentTime, saveIntoDb, literal, Time } from '../../lib/lib'
+import { Timeline, TimelineObj, TimelineObjGroupSegmentLine, TimelineContentTypeOther, TimelineObjAbstract, TimelineObjGroup } from '../../lib/collections/Timeline'
+import { TriggerType } from 'superfly-timeline'
+import { Segments } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from './../logging'
 import { PeripheralDevice, PeripheralDevices, PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { IMOSRunningOrder, IMOSROFullStory, IMOSObjectStatus } from 'mos-connection'
+import { IMOSRunningOrder, IMOSObjectStatus, MosString128 } from 'mos-connection'
 import { PlayoutTimelinePrefixes } from '../../lib/api/playout'
-import { TemplateContext, getHash, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
+import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
-import { ServerPeripheralDeviceAPI, setStoryStatus } from './peripheralDevice'
+import { setStoryStatus } from './peripheralDevice'
 
 Meteor.methods({
 	/**
@@ -94,7 +90,13 @@ Meteor.methods({
 			const result: TemplateResultAfterPost = runNamedTemplate(showStyle.baselineTemplate, literal<TemplateContext>({
 				runningOrderId: runningOrder._id,
 				segmentLine: runningOrder.getSegmentLines()[0]
-			}), {})
+			}), {
+				// Rummy object, not used in this template:
+				RunningOrderId: new MosString128(''),
+				Body: [],
+				ID: new MosString128(''),
+
+			})
 
 			if (result.baselineItems) {
 				logger.info(`... got ${result.baselineItems.length} items from template.`)
