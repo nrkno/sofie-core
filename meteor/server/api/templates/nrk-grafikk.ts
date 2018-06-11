@@ -51,7 +51,7 @@ export function ParseGraffikData (context: TemplateContextInner, story: StoryWit
 	}
 
 	const payload = context.getValueByPath(content, 'mosPayload', {})
-	const noraGroup = process.env.MESOS_NORA_GROUP || 'dksl' // @todo config not env
+	const noraGroup = context.getConfigValue('nora_group', 'dksl')
 	return {
 		render: {
 			channel: payload.render.channel,
@@ -83,6 +83,8 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 
 	const gfxPayload = ParseGraffikData(context, story)
 
+	const noraApiKey = context.getConfigValue('nora_apikey', '')
+
 	let segmentLineItems: Array<SegmentLineItemOptional> = []
 	segmentLineItems.push(literal<SegmentLineItemOptional>({
 		_id: '',
@@ -113,7 +115,7 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 					LLayer: LLayers.casparcg_cg_graphics_ctrl, // @todo - this should be a seperate layer to ensure the right animations are run
 					content: {
 						type: TimelineContentTypeHttp.POST,
-						url: 'http://nora.core.mesosint.nrk.no/api/playout?apiKey=' + process.env.MESOS_API_KEY,
+						url: 'http://nora.core.mesosint.nrk.no/api/playout?apiKey=' + noraApiKey,
 						params: gfxPayload
 					}
 				}) : undefined),

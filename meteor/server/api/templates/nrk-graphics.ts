@@ -35,7 +35,7 @@ export function ParseSuperSegments (context: TemplateContextInner, story: StoryW
 		}
 
 		const payload = context.getValueByPath(content, 'mosPayload', {})
-		const noraGroup = process.env.MESOS_NORA_GROUP || 'dksl' // @todo config not env
+		const noraGroup = context.getConfigValue('nora_group', 'dksl')
 		const newPayload: any = {
 			render: {
 				channel: NoraChannels.super,
@@ -80,6 +80,8 @@ export function ParseSuperSegments (context: TemplateContextInner, story: StoryW
 			context.warning('Unknown in mode: "' + inMode + '"')
 		}
 
+		const noraApiKey = context.getConfigValue('nora_apikey', '')
+
 		const cmd = literal<TimelineObjHTTPPost>({
 			_id: context.getHashId('super_post_' + itemID), deviceId: [''], siId: '', roId: '',
 			trigger: timelineTrigger,
@@ -88,7 +90,7 @@ export function ParseSuperSegments (context: TemplateContextInner, story: StoryW
 			LLayer: LLayers.casparcg_cg_graphics_ctrl,
 			content: {
 				type: TimelineContentTypeHttp.POST,
-				url: 'http://nora.core.mesosint.nrk.no/api/playout?apiKey=' + process.env.MESOS_API_KEY,
+				url: 'http://nora.core.mesosint.nrk.no/api/playout?apiKey=' + noraApiKey,
 				params: newPayload
 			}
 		})

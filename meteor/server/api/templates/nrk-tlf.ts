@@ -96,6 +96,7 @@ export const NrkTLFTemplate = literal<TemplateFunctionOptional>((context: Templa
 	}
 
 	const gfxPayload = ParseGraffikData(context, story)
+	const noraApiKey = context.getConfigValue('nora_apikey', '')
 
 	let segmentLineItems: Array<SegmentLineItemOptional> = []
 	segmentLineItems.push(literal<SegmentLineItemOptional>({
@@ -127,7 +128,7 @@ export const NrkTLFTemplate = literal<TemplateFunctionOptional>((context: Templa
 					LLayer: LLayers.casparcg_cg_graphics_ctrl, // @todo - this should be a seperate layer to ensure the right animations are run
 					content: {
 						type: TimelineContentTypeHttp.POST,
-						url: 'http://nora.core.mesosint.nrk.no/api/playout?apiKey=' + process.env.MESOS_API_KEY,
+						url: 'http://nora.core.mesosint.nrk.no/api/playout?apiKey=' + noraApiKey,
 						params: gfxPayload
 					}
 				}) : undefined),
