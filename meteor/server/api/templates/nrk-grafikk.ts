@@ -51,20 +51,17 @@ export function ParseGraffikData (context: TemplateContextInner, story: StoryWit
 	}
 
 	const payload = context.getValueByPath(content, 'mosPayload', {})
-	const noraGroup = process.env.MESOS_NORA_GROUP || 'dksl' // @todo config not env
 	return {
-		render: {
-			channel: payload.render.channel,
-			group: noraGroup,
-			system: 'html',
-		},
-		playout: Object.assign(payload.playout, {
-			event: 'take',
-			autoTakeout: false, // This gets handled by timeline
-			duration: 0,
-			loop: false
-		}),
-		content: payload.content
+		channel: payload.render.channel,
+		payload: {
+			playout: Object.assign(payload.playout, {
+				event: 'take',
+				autoTakeout: false, // This gets handled by timeline
+				duration: 0,
+				loop: false
+			}),
+			content: payload.content
+		}
 	}
 }
 
@@ -81,6 +78,7 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 	let mosartVariant = story.getValueByPath('MosExternalMetaData.0.MosPayload.mosartVariant', '') + ''
 	context.warning('Unknown variant: ' + mosartVariant)
 
+	const noraGroup = process.env.MESOS_NORA_GROUP || 'dksl' // @todo config not env
 	const gfxPayload = ParseGraffikData(context, story)
 
 	let segmentLineItems: Array<SegmentLineItemOptional> = []
@@ -113,7 +111,7 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 					LLayer: LLayers.casparcg_cg_graphics_ctrl, // @todo - this should be a seperate layer to ensure the right animations are run
 					content: {
 						type: TimelineContentTypeHttp.POST,
-						url: 'http://nora.core.mesosint.nrk.no/api/playout?apiKey=' + process.env.MESOS_API_KEY,
+						url: 'http://nora.core.mesosint.nrk.no/api/v1/renders/' + noraGroup + '/' + gfxPayload.channel + '?apiKey=' + process.env.MESOS_API_KEY,
 						params: gfxPayload
 					}
 				}) : undefined),
