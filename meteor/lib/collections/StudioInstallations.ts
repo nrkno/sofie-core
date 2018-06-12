@@ -47,6 +47,8 @@ export interface StudioInstallation {
 	outputLayers: Array<IOutputLayer>
 	sourceLayers: Array<ISourceLayer>
 	mappings: Mappings
+
+	config: Array<IStudioConfigItem>
 }
 
 export interface ISourceLayerBase {
@@ -63,6 +65,12 @@ export interface ISourceLayerBase {
 	clearKeyboardHotkey?: string
 	/** Do global objects get to be assigned hotkeys? */
 	assignHotkeysToGlobalAdlibs?: boolean
+}
+
+export interface IStudioConfigItem {
+	_id: string
+	/** Value */
+	value: string
 }
 
 /** A single source layer, f.g Cameras, VT, Graphics, Remotes */
