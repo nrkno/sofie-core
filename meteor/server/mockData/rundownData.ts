@@ -104,7 +104,18 @@ Meteor.methods({
 					device: PlayoutDeviceType.CASPARCG,
 					deviceId: 'casparcg0'
 				}
-			}
+			},
+
+			config: [
+				{
+					_id: 'nora_group',
+					value: 'dksl'
+				},
+				{
+					_id: 'nora_apikey',
+					value: ''
+				}
+			]
 		})
 
 		// Set all running orders without a studio installation to use the dummy one

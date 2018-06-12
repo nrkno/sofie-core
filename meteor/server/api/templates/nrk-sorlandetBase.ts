@@ -72,19 +72,16 @@ const literal = <T>(o: T) => o
 const lawoDefaultOutDuration = 1400
 
 export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(function (context, story) {
-	const noraGroup = process.env.MESOS_NORA_GROUP || 'dksl' // @todo config not env
+	const noraApiKey = context.getConfigValue('nora_apikey', '')
+	const noraGroup = context.getConfigValue('nora_group', 'dksl')
+
 	const clearParams: any = {
-		render: {
-			channel: NoraChannels.super,
-			group: noraGroup,
-			system: 'html',
-		},
-		playout: {
+		manifest: 'nyheter',
+		template: {
 			event: 'takeout',
-			template: 'navnesuper',
+			name: 'navnesuper',
 			layer: 'super'
-		},
-		content: {}
+		}
 	}
 
 	let IDs = {
@@ -504,7 +501,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.casparcg_cg_graphics_ctrl,
 							content: {
 								type: TimelineContentTypeHttp.POST,
-								url: 'http://nora.core.mesosint.nrk.no/api/playout?apiKey=' + process.env.MESOS_API_KEY, // @todo url needs to vary too
+								url: 'http://nora.core.mesosint.nrk.no/api/v1/renders/' + noraGroup + '/' + NoraChannels.super + '?apiKey=' + noraApiKey,
 								params: clearParams
 							}
 						})

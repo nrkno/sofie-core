@@ -63,6 +63,7 @@ export interface TemplateContext {
 export interface TemplateContextInnerBase {
 	getHashId: (str?: any) => string
 	unhashId: (hash: string) => string
+	getConfigValue: (key: string, defaultValue?: any) => any
 	getValueByPath: (obj: object | undefined, path: string, defaultValue?: any) => any
 	error: (message: string) => void
 	warning: (message: string) => void
@@ -92,6 +93,20 @@ function getContext (context: TemplateContext): TemplateContextInner {
 		},
 		unhashId (hash: string): string {
 			return hashed[hash] || hash
+		},
+		getConfigValue (key: string, defaultValue?: any): any {
+			const ro = RunningOrders.findOne(context.runningOrderId)
+			if (!ro) throw new Meteor.Error(404, 'RunningOrder "' + context.runningOrderId + '" not found')
+
+			const studio = StudioInstallations.findOne(ro.studioInstallationId)
+			if (!studio) throw new Meteor.Error(404, 'StudioInstallation "' + ro.studioInstallationId + '" not found')
+
+			const item = studio.config.find(v => v._id === key)
+			if (item) {
+				return item.value
+			}
+
+			return defaultValue
 		},
 		getValueByPath (obj: object | undefined, path: string, defaultValue?: any): any {
 			let value = (
@@ -142,6 +157,7 @@ import { nrk } from './nrk'
 import { logger } from '../../logging'
 import { RunningOrders } from '../../../lib/collections/RunningOrders'
 import { TimelineObj } from '../../../lib/collections/Timeline'
+import { StudioInstallations } from '../../../lib/collections/StudioInstallations'
 
 let template: TemplateSet = nrk
 function injectContextIntoArguments (context: TemplateContextInner, args: any[]): Array<any> {
