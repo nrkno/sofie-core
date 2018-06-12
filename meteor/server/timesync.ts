@@ -1,9 +1,9 @@
 
 import * as ntpClient from 'ntp-client'
-import { GridAutoColumnsProperty } from 'csstype'
 import { getCurrentTime, systemTime } from '../lib/lib'
 import { StatusCode, setSystemStatus } from './systemStatus'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
+import { logger } from './logging'
 
 interface ServerTime {
 	diff: number
@@ -142,8 +142,18 @@ methods[PeripheralDeviceAPI.methods.getTime] = () => {
 Meteor.methods(methods)
 
 let updateServerTime = () => {
-	console.log('Updating systemTime...')
+	logger.info('Updating systemTime...')
+
+	let ntpServerStr: string = process.env.NTP_SERVERS + ''
+	// if (!ntpServerStr) {
+	// 	ntpServerStr = 'pool.ntp.org'
+	// }
+	ntpServerStr = '0.se.pool.ntp.org,1.se.pool.ntp.org,2.se.pool.ntp.org'
+	let ntpServer = (ntpServerStr.split(',') || [])[0] || 'pool.ntp.org' // Just use the first one specified, for now
+	logger.info('Using ntp-server, ' + ntpServer)
+
 	determineDiffTime({
+		host: ntpServer,
 		maxSampleCount: 20,
 		minSampleCount: 10,
 		maxAllowedDelay: 500
