@@ -16,11 +16,11 @@
     "i18n-compile-json-sv": "i18next-conv -l sv -s i18n/sv.po -t public/locales/sv/translations.json"
   },
   "dependencies": {
-    "@babel/runtime": "^7.0.0-beta.44",
+    "@babel/runtime": "^7.0.0-beta.48",
     "@fortawesome/fontawesome": "^1.1.7",
     "@fortawesome/fontawesome-free-solid": "^5.0.13",
     "@fortawesome/react-fontawesome": "0.0.19",
-    "@nrk/core-icons": "github:nrkno/core-icons",
+    "@nrk/core-icons": "^3.2.0",
     "chai": "^4.1.2",
     "classnames": "^2.2.5",
     "core-js": "^2.5.4",
@@ -34,7 +34,7 @@
     "meteor-node-stubs": "^0.3.3",
     "moment": "^2.19.1",
     "monaco-editor": "^0.13.0",
-    "mos-connection": "git+https://github.com/nrkno/tv-automation-mos-connection.git#dist",
+    "mos-connection": "^0.3.15",
     "ntp-client": "^0.5.3",
     "object-path": "^0.11.4",
     "prop-types": "^15.6.1",

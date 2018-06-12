@@ -1,23 +1,15 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { translate } from 'react-i18next'
 
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
-import * as $ from 'jquery'
-
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
-import { Segment, Segments } from '../../../lib/collections/Segments'
-import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
-import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { SegmentUi, SegmentLineUi, IOutputLayerUi, ISourceLayerUi, SegmentLineItemUi } from './SegmentTimelineContainer'
-import { TimelineGrid } from './TimelineGrid'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
-import { RunningOrderTiming } from '../RunningOrderTiming'
+import { RunningOrderTiming, WithTiming } from '../RunningOrderTiming'
 
-import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
+import { ContextMenuTrigger } from 'react-contextmenu'
 
 import { RundownUtils } from '../../lib/rundown'
 import { getCurrentTime } from '../../../lib/lib'
@@ -27,6 +19,7 @@ import * as faFastForward from '@fortawesome/fontawesome-free-solid/faFastForwar
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
+import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
 interface ISourceLayerProps {
 	key: string
@@ -76,7 +69,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 						// filter only segment line items, that have not yet been linked to parent items
 						((segmentLineItem as SegmentLineItemUi).linked !== true) ?
 							true :
-							//(this.props.scrollLeft >= ((this.props.segmentLine.startsAt || 0) + ((segmentLineItem as SegmentLineItemUi).renderedInPoint || 0)))
+							// (this.props.scrollLeft >= ((this.props.segmentLine.startsAt || 0) + ((segmentLineItem as SegmentLineItemUi).renderedInPoint || 0)))
 							true
 					: false
 				})
@@ -85,7 +78,6 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 						<SourceLayerItemContainer key={segmentLineItem._id}
 							{...this.props}
 							// The following code is fine, just withTracker HOC messing with available props
-							// @ts-ignore
 							segmentLineItem={segmentLineItem}
 							layer={this.props.layer}
 							outputLayer={this.props.outputLayer}
@@ -98,6 +90,8 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 							lineStartsAt={this.props.segmentLine.startsAt}
 							autoNextSegmentLine={this.props.autoNextSegmentLine}
 							liveLinePadding={this.props.liveLinePadding}
+							scrollLeft={this.props.scrollLeft}
+							scrollWidth={this.props.scrollWidth}
 							/>
 					)
 				})
@@ -175,7 +169,7 @@ class OutputGroup extends React.Component<IOutputGroupProps> {
 	}
 }
 
-interface IPropsHeader {
+interface IProps {
 	segment: SegmentUi
 	runningOrder: RunningOrder,
 	studioInstallation: StudioInstallation
@@ -201,7 +195,7 @@ interface IPropsHeader {
 	onContextMenu?: (contextMenuContext: any) => void
 }
 
-interface IStateHader {
+interface IState {
 	isLive: boolean
 	isNext: boolean
 	liveDuration: number
@@ -209,12 +203,12 @@ interface IStateHader {
 
 const LIVE_LINE_TIME_PADDING = 150
 
-export const SegmentTimelineLine = translate()(withTiming({
+export const SegmentTimelineLine = translate()(withTiming<IProps, IState>({
 	isHighResolution: false
-})(class extends React.Component<IPropsHeader & InjectedTranslateProps & RunningOrderTiming.InjectedROTimingProps, IStateHader> {
+})(class extends React.Component<Translated<WithTiming<IProps>>, IState> {
 	_refreshTimer: number | undefined
 
-	constructor (props) {
+	constructor (props: Translated<WithTiming<IProps>>) {
 		super(props)
 
 		const isLive = (this.props.runningOrder.currentSegmentLineId === this.props.segmentLine._id)
@@ -254,7 +248,7 @@ export const SegmentTimelineLine = translate()(withTiming({
 		return LIVE_LINE_TIME_PADDING / timeScale
 	}
 
-	componentWillReceiveProps (nextProps: IPropsHeader & RunningOrderTiming.InjectedROTimingProps) {
+	componentWillReceiveProps (nextProps: IProps & RunningOrderTiming.InjectedROTimingProps) {
 		const isLive = (nextProps.runningOrder.currentSegmentLineId === nextProps.segmentLine._id)
 		const isNext = (nextProps.runningOrder.nextSegmentLineId === nextProps.segmentLine._id)
 
@@ -279,7 +273,7 @@ export const SegmentTimelineLine = translate()(withTiming({
 	}
 
 	getLayerStyle () {
-		// this.props.segmentLine.expectedDuration || 
+		// this.props.segmentLine.expectedDuration ||
 		if (this.props.relative) {
 			return {
 				width: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',

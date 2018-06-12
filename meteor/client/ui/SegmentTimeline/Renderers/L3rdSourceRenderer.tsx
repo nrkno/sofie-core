@@ -1,12 +1,8 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import * as $ from 'jquery'
-
-import { ISourceLayerUi, IOutputLayerUi, SegmentUi, SegmentLineUi, SegmentLineItemUi } from '../SegmentTimelineContainer'
 
 import { FloatingInspector } from '../../FloatingInspector'
 
-import * as ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
 
 export class L3rdSourceRenderer extends CustomLayerItemRenderer {

@@ -7,7 +7,6 @@ import * as _ from 'underscore'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 
 import { Task, Tasks } from '../../lib/collections/Tasks'
-import { Mongo } from 'meteor/mongo'
 import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders'
 import { Segments, Segment } from '../../lib/collections/Segments'
 import { Timeline, TimelineObj } from '../../lib/collections/Timeline'
@@ -16,269 +15,10 @@ import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines'
 import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
 import { Resolver, Enums } from 'superfly-timeline'
 import { transformTimeline } from '../../lib/timeline'
-import { getCurrentTime, Time } from '../../lib/lib'
+import { Time } from '../../lib/lib'
 import { getCurrentTimeReactive } from '../lib/currentTimeReactive'
+import { EditAttribute } from '../lib/EditAttribute'
 
-// ----------------------------------------------------------------------------
-
-interface IEditAttribute extends IPropsEditAttributeBase {
-	type: string
-}
-class EditAttribute extends React.Component<IEditAttribute> {
-	render () {
-
-		if (this.props.type === 'text') {
-			return (
-				<EditAttributeText {...this.props} />
-			)
-		} else if (this.props.type === 'int') {
-			return (
-				<EditAttributeInt {...this.props} />
-			)
-		} else if (this.props.type === 'checkbox') {
-			return (
-				<EditAttributeCheckbox {...this.props} />
-			)
-		} else if (this.props.type === 'dropdown') {
-			return (
-				<EditAttributeDropdown {...this.props} />
-			)
-		}
-	}
-}
-interface IPropsEditAttributeBase {
-	updateOnKey?: boolean,
-	attribute: string,
-	collection: Mongo.Collection<any>,
-	myObject?: any,
-	obj?: any
-	options?: any
-}
-interface IStateEditAttributeBase {
-	value: any,
-	editing: boolean
-}
-class EditAttributeBase extends React.Component<IPropsEditAttributeBase, IStateEditAttributeBase> {
-	constructor (props) {
-		super(props)
-
-		this.state = {
-			value: this.getAttribute(),
-			editing: false
-		}
-
-		this.handleEdit 	= this.handleEdit.bind(this)
-		this.handleUpdate 	= this.handleUpdate.bind(this)
-	}
-	handleEdit (newValue) {
-		this.setState({
-			value: newValue,
-			editing: true
-		})
-		if (this.props.updateOnKey) {
-			this.updateValue(newValue)
-		}
-	}
-	handleUpdate (newValue) {
-		this.setState({
-			value: newValue,
-			editing: false
-		})
-
-		this.updateValue(newValue)
-	}
-	deepAttribute (obj,attr): any {
-		// Returns a value deep inside an object
-		// Example: deepAttribute(company,"ceo.address.street");
-
-		const f = (obj, attr) => {
-			if (obj) {
-				let attributes = attr.split('.')
-
-				if (attributes.length > 1) {
-					let outerAttr = attributes.shift()
-					let innerAttrs = attributes.join('.')
-
-					return f(obj[outerAttr],innerAttrs)
-
-				} else {
-					return obj[attributes[0]]
-				}
-			} else {
-				return obj
-			}
-		}
-		return f(obj,attr)
-	}
-	getAttribute () {
-		return this.deepAttribute(this.props.myObject, this.props.attribute)
-	}
-	getAttributeText () {
-		return this.getAttribute()
-	}
-	getEditAttribute () {
-		return ( this.state.editing ? this.state.value : this.getAttribute())
-	}
-	updateValue (newValue) {
-		let m = {}
-		m[this.props.attribute] = newValue
-		this.props.collection.update(this.props.obj._id, {$set: m})
-	}
-}
-let wrapEditAttribute = (newClass) => {
-	return withTracker((props) => {
-		// These properties will be exposed under this.props
-		// Note that these properties are reactively recalculated
-		return {
-			myObject: props.collection.findOne(props.obj._id)
-		}
-	})(newClass)
-}
-
-const EditAttributeText = wrapEditAttribute(class extends EditAttributeBase {
-	constructor (props) {
-		super(props)
-
-		this.handleChange 	= this.handleChange.bind(this)
-		this.handleBlur 	= this.handleBlur.bind(this)
-	}
-	handleChange (event) {
-		this.handleEdit(event.target.value)
-	}
-	handleBlur (event) {
-		this.handleUpdate(event.target.value)
-	}
-	render () {
-		return (
-			<div>
-				<input type='text'
-					className='form-control'
-
-					value={this.getEditAttribute() || ''}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
-				/>
-
-			</div>
-		)
-	}
-})
-const EditAttributeInt = wrapEditAttribute(class extends EditAttributeBase {
-	constructor (props) {
-		super(props)
-
-		this.handleChange 	= this.handleChange.bind(this)
-		this.handleBlur 	= this.handleBlur.bind(this)
-	}
-	handleChange (event) {
-		this.handleEdit(event.target.value)
-	}
-	handleBlur (event) {
-		this.handleUpdate(parseInt(event.target.value, 10))
-	}
-	render () {
-		return (
-			<div>
-				<input type='number'
-					step='1'
-					className='form-control'
-
-					value={this.getEditAttribute()}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
-				/>
-
-			</div>
-		)
-	}
-})
-const EditAttributeCheckbox = wrapEditAttribute(class extends EditAttributeBase {
-	constructor (props) {
-		super(props)
-
-		this.handleChange 	= this.handleChange.bind(this)
-	}
-	isChecked () {
-		return !!this.getEditAttribute()
-	}
-	handleChange (event) {
-
-		this.handleUpdate(!this.state.value)
-	}
-	render () {
-		return (
-			<div>
-				<input type='checkbox'
-					className='form-control'
-
-					checked={this.isChecked()}
-					onChange={this.handleChange}
-				/>
-			</div>
-		)
-	}
-})
-const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase {
-	constructor (props) {
-		super(props)
-
-		this.handleChange 	= this.handleChange.bind(this)
-	}
-	isChecked () {
-		return !!this.getEditAttribute()
-	}
-	handleChange (event) {
-		this.handleUpdate(event.target.value)
-	}
-	getOptions () {
-		let options: Array<{value: any, name: string, i?: number}> = []
-
-		if (Array.isArray(this.props.options)) {
-			for (let key in this.props.options) {
-				let val = this.props.options[key]
-				if (typeof val === 'object') {
-					options.push({
-						name: val.name,
-						value: val.value
-					})
-				} else {
-					options.push({
-						name: val,
-						value: val
-					})
-				}
-			}
-		} else if (typeof this.props.options === 'object') {
-			for (let key in this.props.options) {
-				let val = this.props.options[key]
-				options.push({
-					name: key + ': ' + val,
-					value: val
-				})
-			}
-		}
-
-		for (let i = 0; i < options.length; i++) {
-			options[i].i = i
-		}
-		return options
-	}
-	render () {
-		return (
-			<div>
-				<select
-					value={this.getAttribute()}
-					onChange={this.handleChange}
-				>
-					{this.getOptions().map((o) => (
-						<option key={o.i} value={o.value}>{o.name}</option>
-					))}
-				</select>
-			</div>
-		)
-	}
-})
-// ----------------------------------------------------------------------------
 interface IEditTasks {
 	tasks: Array<Task>
 }
@@ -483,21 +223,29 @@ class extends React.Component<IRunningOrders> {
 		)
 	}
 })
-interface ISegments {
-	segments: Array<Segment>
-	runningOrderId?: String
+interface ISegmentsProps {
+	runningOrderId?: string
 }
-export const ComponentSegments = withTracker((props) => {
+interface ISegmentsState {
+}
+interface ISegmentsTrackedProps {
+	segments: Array<Segment>
+}
+export const ComponentSegments = withTracker<ISegmentsProps, ISegmentsState, ISegmentsTrackedProps>((props: ISegmentsProps) => {
 
 	// These properties will be exposed under this.props
 	// Note that these properties are reactively recalculated
 	return {
-		segments: Segments.find({
-			runningOrderId: props.runningOrderId
-		}, { sort: { _rank: 1 } }).fetch()
+		segments: (
+			props.runningOrderId ?
+			Segments.find({
+				runningOrderId: props.runningOrderId
+			}, { sort: { _rank: 1 } }).fetch()
+			: []
+		)
 	}
 })(
-class extends React.Component<ISegments> {
+class extends React.Component<ISegmentsProps & ISegmentsTrackedProps, ISegmentsState> {
 	renderROs () {
 
 		return this.props.segments.map((segment) => (
@@ -523,21 +271,29 @@ class extends React.Component<ISegments> {
 		)
 	}
 })
-interface ISegmentLine {
-	segmentLines: Array<SegmentLine>
-	segmentId?: String
+interface ISegmentLineProps {
+	segmentId?: string
 }
-export const ComponentSegmentLines = withTracker((props) => {
+interface ISegmentLineState {
+}
+interface ISegmentLineTrackedState {
+	segmentLines: Array<SegmentLine>
+}
+export const ComponentSegmentLines = withTracker<ISegmentLineProps, ISegmentLineState, ISegmentLineTrackedState>((props: ISegmentLineProps) => {
 
 	// These properties will be exposed under this.props
 	// Note that these properties are reactively recalculated
 	return {
-		segmentLines: SegmentLines.find({
-			segmentId: props.segmentId
-		}, { sort: { _rank: 1 } }).fetch()
+		segmentLines: (
+			props.segmentId ?
+			SegmentLines.find({
+				segmentId: props.segmentId
+			}, { sort: { _rank: 1 } }).fetch()
+			: []
+		)
 	}
 })(
-class extends React.Component<ISegmentLine> {
+class extends React.Component<ISegmentLineProps & ISegmentLineTrackedState, ISegmentLineState> {
 	renderROs () {
 
 		return this.props.segmentLines.map((segmentLine) => (

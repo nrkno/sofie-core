@@ -1,22 +1,27 @@
 import * as ClassNames from 'classnames'
 import * as React from 'react'
-import { InjectedTranslateProps, translate } from 'react-i18next'
+import { translate } from 'react-i18next'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { PeripheralDevice, PeripheralDevices, PlayoutDeviceType, PlayoutDeviceSettings, PlayoutDeviceSettingsDevice, MosDeviceSettings, MosDeviceSettingsDevice } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice,
+	PeripheralDevices,
+	PlayoutDeviceType,
+	PlayoutDeviceSettings,
+	PlayoutDeviceSettingsDevice,
+	MosDeviceSettings,
+	MosDeviceSettingsDevice
+} from '../../../lib/collections/PeripheralDevices'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
-import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-import { literal } from '../../../lib/lib'
-import { Random } from 'meteor/random'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
-interface IPropsHeader {
+interface IPlayoutDeviceSettingsComponentProps {
 	device: PeripheralDevice
 }
 
@@ -25,9 +30,9 @@ interface IPlayoutDeviceSettingsComponentState {
 	showDeleteConfirm: boolean
 	editedDevices: Array<string>
 }
-
-class PlayoutDeviceSettingsComponent extends React.Component<IPropsHeader & InjectedTranslateProps, IPlayoutDeviceSettingsComponentState> {
-	constructor (props) {
+const PlayoutDeviceSettingsComponent = translate()(
+class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayoutDeviceSettingsComponentProps>, IPlayoutDeviceSettingsComponentState> {
+	constructor (props: Translated<IPlayoutDeviceSettingsComponentProps>) {
 		super(props)
 
 		this.state = {
@@ -313,15 +318,16 @@ class PlayoutDeviceSettingsComponent extends React.Component<IPropsHeader & Inje
 			</div>
 		)
 	}
-}
+})
 
 interface IMosDeviceSettingsComponentState {
 	deleteConfirmDeviceId: string | undefined
 	showDeleteConfirm: boolean
 	editedDevices: Array<string>
 }
-class MosDeviceSettingsComponent extends React.Component<IPropsHeader & InjectedTranslateProps, IMosDeviceSettingsComponentState> {
-	constructor (props) {
+const MosDeviceSettingsComponent = translate()(
+class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDeviceSettingsComponentProps>, IMosDeviceSettingsComponentState> {
+	constructor (props: Translated<IPlayoutDeviceSettingsComponentProps>) {
 		super(props)
 
 		this.state = {
@@ -584,9 +590,27 @@ class MosDeviceSettingsComponent extends React.Component<IPropsHeader & Injected
 			</div>
 		)
 	}
-}
+})
 
-class DeviceSettings extends React.Component<IPropsHeader & InjectedTranslateProps> {
+interface IDeviceSettingsProps {
+	match: {
+		params: {
+			deviceId: string
+		}
+	}
+}
+interface IDeviceSettingsState {
+}
+interface IDeviceSettingsTrackedProps {
+	device?: PeripheralDevice
+}
+export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, IDeviceSettingsTrackedProps>(
+(props: IDeviceSettingsProps) => {
+	return {
+		device: PeripheralDevices.findOne(props.match.params.deviceId)
+	}
+})(
+class DeviceSettings extends React.Component<Translated<IDeviceSettingsProps & IDeviceSettingsTrackedProps>> {
 
 	findHighestRank (array: Array<{ _rank: number }>): { _rank: number } | null {
 		let max: { _rank: number } | null = null
@@ -601,14 +625,19 @@ class DeviceSettings extends React.Component<IPropsHeader & InjectedTranslatePro
 	}
 
 	renderSpecifics () {
-		switch (this.props.device.type) {
-			case PeripheralDeviceAPI.DeviceType.MOSDEVICE:
-				return <MosDeviceSettingsComponent {...this.props} />
-			case PeripheralDeviceAPI.DeviceType.PLAYOUT:
-				return <PlayoutDeviceSettingsComponent {...this.props} />
-			default:
-				return null
+		if (this.props.device) {
+			switch (this.props.device.type) {
+				case PeripheralDeviceAPI.DeviceType.MOSDEVICE:
+					return <MosDeviceSettingsComponent
+						device={this.props.device}
+					/>
+				case PeripheralDeviceAPI.DeviceType.PLAYOUT:
+					return <PlayoutDeviceSettingsComponent
+						device={this.props.device}
+					/>
+			}
 		}
+		return null
 	}
 
 	renderEditForm () {
@@ -648,9 +677,4 @@ class DeviceSettings extends React.Component<IPropsHeader & InjectedTranslatePro
 		}
 	}
 }
-
-export default translate()(withTracker((props, state) => {
-	return {
-		device: PeripheralDevices.findOne(props.match.params.deviceId)
-	}
-})(DeviceSettings))
+)

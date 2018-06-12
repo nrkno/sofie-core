@@ -40,6 +40,7 @@ let leadingZeros = (num,length) => {
 	}
 }
 let logToFile = false
+if (process.env.LOG_TO_FILE) logToFile = true
 
 if (logToFile) {
 

@@ -1,27 +1,23 @@
 import { Meteor } from 'meteor/meteor'
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
-import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/SegmentLines'
-import { SegmentLineItemGeneric, SegmentLineItem, SegmentLineItems, ITimelineTrigger } from '../../lib/collections/SegmentLineItems'
+import { RunningOrders } from '../../lib/collections/RunningOrders'
+import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
+import { SegmentLineItem, SegmentLineItems, ITimelineTrigger } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItems, RunningOrderBaselineItem } from '../../lib/collections/RunningOrderBaselineItems'
-import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { getCurrentTime, saveIntoDb, literal, DBObj, partialExceptId, Time, partial } from '../../lib/lib'
-import { RundownAPI } from '../../lib/api/rundown'
-import { TimelineTransition, Timeline, TimelineObj, TimelineObjGroupSegmentLine, TimelineContentTypeOther, TimelineObjAbstract, TimelineObjGroup, TimelineContentTypeLawo } from '../../lib/collections/Timeline'
-import { TimelineObject, ObjectId, TriggerType, TimelineKeyframe, TimelineGroup } from 'superfly-timeline'
-import { Transition, Ease, Direction } from '../../lib/constants/casparcg'
-import { Segment, Segments } from '../../lib/collections/Segments'
+import { getCurrentTime, saveIntoDb, literal, Time } from '../../lib/lib'
+import { Timeline, TimelineObj, TimelineObjGroupSegmentLine, TimelineContentTypeOther, TimelineObjAbstract, TimelineObjGroup } from '../../lib/collections/Timeline'
+import { TriggerType } from 'superfly-timeline'
+import { Segments } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from './../logging'
 import { PeripheralDevice, PeripheralDevices, PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { IMOSRunningOrder, IMOSROFullStory, IMOSObjectStatus } from 'mos-connection'
+import { IMOSRunningOrder, IMOSObjectStatus, MosString128 } from 'mos-connection'
 import { PlayoutTimelinePrefixes } from '../../lib/api/playout'
-import { TemplateContext, getHash, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
+import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
-import { ServerPeripheralDeviceAPI, setStoryStatus } from './peripheralDevice'
+import { setStoryStatus } from './peripheralDevice'
 
 Meteor.methods({
 	/**
@@ -63,12 +59,10 @@ Meteor.methods({
 			multi: true
 		})
 
-		// Remove all segment line items that have been created using an adLib item
+		// Remove all segment line items that have been dynamically created (such as adLib items)
 		SegmentLineItems.remove({
 			runningOrderId: runningOrder._id,
-			adLibSourceId: {
-				$exists: true
-			}
+			dynamicallyInserted: true
 		})
 
 		// Remove duration on segmentLineItems, as this is set by the ad-lib playback editing
@@ -94,7 +88,13 @@ Meteor.methods({
 			const result: TemplateResultAfterPost = runNamedTemplate(showStyle.baselineTemplate, literal<TemplateContext>({
 				runningOrderId: runningOrder._id,
 				segmentLine: runningOrder.getSegmentLines()[0]
-			}), {})
+			}), {
+				// Rummy object, not used in this template:
+				RunningOrderId: new MosString128(''),
+				Body: [],
+				ID: new MosString128(''),
+
+			})
 
 			if (result.baselineItems) {
 				logger.info(`... got ${result.baselineItems.length} items from template.`)
@@ -233,18 +233,12 @@ Meteor.methods({
 						if (!prevSegLine) {
 							// We couldn't find the previous segment line: this is not a critical issue, but is clearly is a symptom of a larger issue
 							logger.error(`Previous segment line "${runningOrder.previousSegmentLineId}" on running order "${roId}" could not be found.`)
-						} else {
+						} else if (!prevSegLine.duration) {
 							setPreviousLinePlaybackDuration(roId, prevSegLine, startedPlayback)
 						}
 					}
 
 					setRunningOrderStartedPlayback(runningOrder, startedPlayback) // Set startedPlayback on the running order if this is the first item to be played
-
-					RunningOrders.update(runningOrder._id, {
-						$set: {
-							previousSegmentLineId: null
-						}
-					})
 				} else if (runningOrder.nextSegmentLineId === slId) {
 					// this is the next segment line, clearly an autoNext has taken place
 					if (runningOrder.currentSegmentLineId) {
@@ -253,7 +247,7 @@ Meteor.methods({
 						if (!prevSegLine) {
 							// We couldn't find the previous segment line: this is not a critical issue, but is clearly is a symptom of a larger issue
 							logger.error(`Previous segment line "${runningOrder.currentSegmentLineId}" on running order "${roId}" could not be found.`)
-						} else {
+						} else if (!prevSegLine.duration) {
 							setPreviousLinePlaybackDuration(roId, prevSegLine, startedPlayback)
 						}
 					}
@@ -271,7 +265,6 @@ Meteor.methods({
 
 					RunningOrders.update(runningOrder._id, {
 						$set: {
-							previousSegmentLineId: null,
 							currentSegmentLineId: segLine._id,
 							nextSegmentLineId: nextSegmentLine._id
 						}
@@ -381,6 +374,7 @@ Meteor.methods({
 		if (!alCopyItemTObj) throw new Meteor.Error(404, `Segment Line Ad Lib Copy Item "${sliId}" not found in the playout Timeline!`)
 		if (!runningOrder.active) throw new Meteor.Error(403, `Segment Line Ad Lib Copy Items can be only manipulated in an active running order!`)
 		if (runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Ad Lib Copy Items can be only manipulated in a current segment line!`)
+		if (!alCopyItem.dynamicallyInserted) throw new Meteor.Error(501, `"${sliId}" does not appear to be a dynamic Segment Line Item!`)
 		if (!alCopyItem.adLibSourceId) throw new Meteor.Error(501, `"${sliId}" does not appear to be a Segment Line Ad Lib Copy Item!`)
 
 		// The ad-lib item positioning will be relative to the startedPlayback of the segment line
@@ -478,9 +472,11 @@ function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem, segmentLine: 
 			},
 			segmentLineId: segmentLine._id,
 			adLibSourceId: adLibItem._id,
+			dynamicallyInserted: true,
 			expectedDuration: adLibItem.expectedDuration || 0 // set duration to infinite if not set by AdLibItem
 		}
 	))
+
 	if (newSLineItem.content && newSLineItem.content.timelineObjects) {
 		let contentObjects = newSLineItem.content.timelineObjects
 		newSLineItem.content.timelineObjects = _.compact(contentObjects).map(
@@ -706,28 +702,30 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 			currentSegmentLine = SegmentLines.findOne(activeRunningOrder.currentSegmentLineId)
 			if (!currentSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.currentSegmentLineId}" not found!`)
 
-			const transition = currentSegmentLine.getSegmentLinesItems().find((sl: SegmentLineItem) => sl.isTransition)
 			let allowTransition = false
 
-			if (activeRunningOrder.previousSegmentLineId && transition) {
+			if (activeRunningOrder.previousSegmentLineId) {
 				let previousSegmentLine = SegmentLines.findOne(activeRunningOrder.previousSegmentLineId)
 				if (!previousSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.previousSegmentLineId}" not found!`)
 
 				allowTransition = !previousSegmentLine.disableOutTransition
 
 				if (previousSegmentLine.startedPlayback && !previousSegmentLine.disableOutTransition) {
-					const duration = getCurrentTime() - previousSegmentLine.startedPlayback
-					previousSegmentLineGroup = createSegmentLineGroup(previousSegmentLine, duration + transition.expectedDuration)
-					previousSegmentLineGroup.priority = -1
-					previousSegmentLineGroup.trigger = literal<ITimelineTrigger>({
-						type: TriggerType.TIME_ABSOLUTE,
-						value: previousSegmentLine.startedPlayback
-					})
+					const duration = (currentSegmentLine.startedPlayback || getCurrentTime()) - previousSegmentLine.startedPlayback
+					if (duration > 0) {
+						const transition = currentSegmentLine.getSegmentLinesItems().find((sl: SegmentLineItem) => sl.isTransition)
+						previousSegmentLineGroup = createSegmentLineGroup(previousSegmentLine, duration + Math.max(transition ? transition.expectedDuration || 0 : 0, currentSegmentLine.overlapDuration || 0))
+						previousSegmentLineGroup.priority = -1
+						previousSegmentLineGroup.trigger = literal<ITimelineTrigger>({
+							type: TriggerType.TIME_ABSOLUTE,
+							value: previousSegmentLine.startedPlayback
+						})
 
-					timelineObjs = timelineObjs.concat(
-						previousSegmentLineGroup,
-						transformSegmentLineIntoTimeline(previousSegmentLine, previousSegmentLineGroup, false))
-					timelineObjs.push(createSegmentLineGroupFirstObject(previousSegmentLine, previousSegmentLineGroup))
+						timelineObjs = timelineObjs.concat(
+							previousSegmentLineGroup,
+							transformSegmentLineIntoTimeline(previousSegmentLine, previousSegmentLineGroup, false))
+						timelineObjs.push(createSegmentLineGroupFirstObject(previousSegmentLine, previousSegmentLineGroup))
+					}
 				}
 			}
 
@@ -735,6 +733,13 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 			// fetch the timelineobjs in items
 			const isFollowed = nextSegmentLine && currentSegmentLine.autoNext
 			currentSegmentLineGroup = createSegmentLineGroup(currentSegmentLine, (isFollowed ? (currentSegmentLine.expectedDuration || 0) : 0))
+			if (currentSegmentLine.startedPlayback) { // If we are recalculating the currentLine, then ensure it doesnt think it is starting now
+				currentSegmentLineGroup.trigger = literal<ITimelineTrigger>({
+					type: TriggerType.TIME_ABSOLUTE,
+					value: currentSegmentLine.startedPlayback
+				})
+			}
+
 			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentSegmentLine, currentSegmentLineGroup, allowTransition))
 
 			timelineObjs.push(createSegmentLineGroupFirstObject(currentSegmentLine, currentSegmentLineGroup))
@@ -853,7 +858,7 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 
 		// console.log('timelineObjs', timelineObjs)
 
-		if (forceNowToTime) {
+		if (forceNowToTime) { // used when autoNexting
 			setNowToTimeInObjects(timelineObjs, forceNowToTime)
 		}
 
@@ -876,7 +881,11 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 		})
 	}
 }
-
+/**
+ * goes through timelineObjs and forces the "now"-values to the absolute time specified
+ * @param timelineObjs Array of (flat) timeline objects
+ * @param now The time to set the "now":s to
+ */
 function setNowToTimeInObjects (timelineObjs: Array<TimelineObj>, now: Time): void {
 	_.each(timelineObjs, (o) => {
 		if (o.trigger.type === TriggerType.TIME_ABSOLUTE &&

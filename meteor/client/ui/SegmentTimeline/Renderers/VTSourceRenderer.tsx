@@ -1,8 +1,7 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import * as $ from 'jquery'
 
-import { ISourceLayerUi, IOutputLayerUi, SegmentUi, SegmentLineUi, SegmentLineItemUi } from '../SegmentTimelineContainer'
+import { SegmentLineItemUi } from '../SegmentTimelineContainer'
 
 import { FloatingInspector } from '../../FloatingInspector'
 
@@ -10,7 +9,7 @@ import * as ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
 
 import Lottie from 'react-lottie'
-// @ts-ignore
+// @ts-ignore Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
 
 export class VTSourceRenderer extends CustomLayerItemRenderer {

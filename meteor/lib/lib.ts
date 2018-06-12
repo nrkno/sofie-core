@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { Mongo } from 'meteor/mongo'
-import { TransformedCollection, Selector } from './collections/typings'
+import { TransformedCollection, Selector } from './typings/meteor'
 import { PeripheralDeviceAPI } from './api/peripheralDevice'
 
 /**

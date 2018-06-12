@@ -1,5 +1,6 @@
+import { Mongo } from 'meteor/mongo'
 import { SegmentLineItemGeneric } from './SegmentLineItems'
-import { TransformedCollection } from './typings'
+import { TransformedCollection } from '../typings/meteor'
 
 export interface RunningOrderBaselineItem extends SegmentLineItemGeneric {
 	segmentLineId: undefined
@@ -12,9 +13,8 @@ export interface RunningOrderBaselineItem extends SegmentLineItemGeneric {
 	transitions: undefined
 	continuesRefId: undefined
 	adLibSourceId: undefined
+	dynamicallyInserted: undefined
 }
 
-// @ts-ignore
 export const RunningOrderBaselineItems: TransformedCollection<RunningOrderBaselineItem, RunningOrderBaselineItem>
-	// @ts-ignore
 	= new Mongo.Collection<RunningOrderBaselineItem>('runningOrderBaselineItems')

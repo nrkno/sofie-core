@@ -1,10 +1,5 @@
 import { Mongo } from 'meteor/mongo'
-import * as _ from 'underscore'
-import { RundownAPI } from '../../lib/api/rundown'
-import { Time, applyClassToDocument } from '../../lib/lib'
-import { Segments, DBSegment, Segment } from './Segments'
-import { SegmentLines, SegmentLine } from './SegmentLines'
-import { FindOptions, Selector, TransformedCollection } from './typings'
+import { TransformedCollection } from '../typings/meteor'
 
 export interface RunningOrderDataCacheObj {
 	_id: string,
@@ -14,7 +9,5 @@ export interface RunningOrderDataCacheObj {
 	data: any
 }
 
-// @ts-ignore
 export const RunningOrderDataCache: TransformedCollection<RunningOrderDataCacheObj, RunningOrderDataCacheObj>
-// @ts-ignore
 	= new Mongo.Collection<RunningOrderDataCacheObj>('runningorderdatacache')

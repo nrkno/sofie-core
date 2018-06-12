@@ -1,13 +1,11 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
+import { translate } from 'react-i18next'
 
-interface IPropsHeader extends InjectedTranslateProps {
+interface IProps {
 
 }
-class Dashboard extends React.Component<IPropsHeader> {
+export default translate()(class Dashboard extends React.Component<Translated<IProps>> {
 	render () {
 		const { t } = this.props
 
@@ -19,6 +17,4 @@ class Dashboard extends React.Component<IPropsHeader> {
 			</div>
 		)
 	}
-}
-
-export default translate()(Dashboard)
+})

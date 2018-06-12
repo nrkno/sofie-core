@@ -1,15 +1,9 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { TriggerType } from 'superfly-timeline'
-
-import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Timeline } from '../../../lib/collections/Timeline'
-
 import { SourceLayerItem } from './SourceLayerItem'
-
 import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 import { getCurrentTime } from '../../../lib/lib'
 
@@ -40,6 +34,8 @@ interface IPropsHeader {
 	liveLineHistorySize: number
 	livePosition: number | null
 	liveLinePadding: number
+	scrollLeft: number
+	scrollWidth: number
 }
 /** This is a container component that allows ractivity with the Timeline collection */
 export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
@@ -81,8 +77,6 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 class extends React.Component<IPropsHeader> {
 	render () {
 		return (
-			// The following code is fine, just withTracker HOC messing with available props
-			// @ts-ignore
 			<SourceLayerItem {...this.props} />
 		)
 	}

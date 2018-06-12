@@ -1,6 +1,3 @@
-import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
-
 import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
 
 PeripheralDeviceCommands.allow({

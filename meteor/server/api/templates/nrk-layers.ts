@@ -13,6 +13,8 @@ export enum LLayers {
 	lawo_source_rm1 = 'lawo_source_rm1',
 	lawo_source_rm2 = 'lawo_source_rm2',
 	lawo_source_rm3 = 'lawo_source_rm3',
+	lawo_source_tlf1 = 'lawo_source_tlf1',
+	lawo_source_tlf2 = 'lawo_source_tlf2',
 	atem_me_program = 'atem_me_program',
 	casparcg_player_wipe = 'casparcg_player_wipe',
 	casparcg_player_soundeffect = 'casparcg_player_soundeffect',

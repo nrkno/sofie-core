@@ -144,7 +144,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 				// wipe to head (if not first head after vignett)
 				literal<TimelineObjCCGVideo>({
 					_id: IDs.wipeVideo, deviceId: [''], siId: '', roId: '',
-					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
+					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 					priority: 1,
 					duration: 3360,
 					LLayer: LLayers.casparcg_player_wipe,
@@ -157,10 +157,9 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 				}),
 
 				// wipe audio skille between
-				// @todo lower the level of this wipe in ccg
 				literal<TimelineObjCCGVideo>({
 					_id: IDs.wipeAudioSkille, deviceId: [''], siId: '', roId: '',
-					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
+					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.wipeVideo}.start + 0` },
 					priority: 1,
 					duration: 3360,
 					LLayer: LLayers.casparcg_player_soundeffect,
@@ -168,6 +167,9 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 						type: TimelineContentTypeCasparCg.VIDEO,
 						attributes: {
 							file: 'assets/DK_skille_head'
+						},
+						mixer: {
+							volume: 0.25
 						}
 					}
 				}),
@@ -176,7 +178,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 				// @todo refactor to make this block less duplicated
 				literal<TimelineObjCCGVideo>({
 					_id: IDs.playerClipTransition, deviceId: [''], siId: '', roId: '',
-					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
+					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.wipeVideo}.start + 0` },
 					priority: 2,
 					duration: 0, // hold at end
 					LLayer: LLayers.casparcg_player_clip,

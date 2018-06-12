@@ -100,7 +100,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 			mosId: '',
 			segmentLineId: '',
 			runningOrderId: '',
-			name: 'utvignett',
+			name: 'sluttvignett',
 			trigger: {
 				type: TriggerType.TIME_ABSOLUTE,
 				value: 0
@@ -126,17 +126,19 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 						}
 					}),
 
+					// @todo graphics template (on gfx1?)
+
 					// play utvignett
 					literal<TimelineObjCCGVideo>({
 						_id: IDs.vignettVideo, deviceId: [''], siId: '', roId: '',
-						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_effect} + 0` },
+						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_effect}.start + 0` }, // @todo offset to after gfx
 						priority: 1,
 						duration: 0, // hold at end
-						LLayer: LLayers.casparcg_player_vignett,
+						LLayer: LLayers.casparcg_player_vignett, // @todo same channel as gfx1
 						content: {
 							type: TimelineContentTypeCasparCg.VIDEO,
 							attributes: {
-								file: 'assets/utvignett'
+								file: 'assets/sluttvignett'
 							}
 						}
 					}),
@@ -144,7 +146,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 					// fade out host mic
 					literal<TimelineObjLawoSource>({
 						_id: IDs.lawo_automix_out, deviceId: [''], siId: '', roId: '',
-						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.vignettVideo} + 0` },
+						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.vignettVideo}.start + 0` },
 						priority: 5,
 						duration: 0,
 						LLayer: LLayers.lawo_source_effect,
@@ -163,8 +165,6 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 							}
 						}
 					}),
-
-					// @todo graphics template (on gfx1?)
 
 				]),
 			}
@@ -206,7 +206,6 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 					}),
 
 					// wipe audio punktum
-					// @todo lower the level of this wipe
 					literal<TimelineObjCCGVideo>({
 						_id: IDs.wipeAudioPunktum, deviceId: [''], siId: '', roId: '',
 						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.wipeVideo}.start + 0` },
@@ -217,6 +216,9 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 							type: TimelineContentTypeCasparCg.VIDEO,
 							attributes: {
 								file: 'assets/DK_punktum_head'
+							},
+							mixer: {
+								volume: 0.25
 							}
 						}
 					}),
@@ -231,7 +233,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 						content: {
 							type: TimelineContentTypeAtem.ME,
 							attributes: {
-								input: KamFirstInput + cameraInput ,
+								input: KamFirstInput + cameraInput - 1,
 								transition: Atem_Enums.TransitionStyle.WIPE,
 								transitionSettings: AtemWipeSettings
 							}

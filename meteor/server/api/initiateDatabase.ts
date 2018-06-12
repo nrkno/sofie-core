@@ -1,21 +1,17 @@
 import { Meteor } from 'meteor/meteor'
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
-import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
-import { StudioInstallation, StudioInstallations, Mappings, MappingCasparCG, MappingAtem, MappingAtemType, MappingLawo, Mapping } from '../../lib/collections/StudioInstallations'
-import { getCurrentTime, saveIntoDb, literal, DBObj, partialExceptId } from '../../lib/lib'
+import { ShowStyles } from '../../lib/collections/ShowStyles'
+import { StudioInstallations,
+	Mappings,
+	MappingCasparCG,
+	MappingAtem,
+	MappingAtemType,
+	MappingLawo,
+	Mapping
+} from '../../lib/collections/StudioInstallations'
+import { literal } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
-import { TimelineTransition } from '../../lib/collections/Timeline'
-import { Transition, Ease, Direction } from '../../lib/constants/casparcg'
-import { Segment, Segments } from '../../lib/collections/Segments'
 import { PeripheralDevices, PlayoutDeviceType } from '../../lib/collections/PeripheralDevices'
-import { Random } from 'meteor/random'
-import { check } from 'meteor/check'
-import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { RuntimeFunctions } from '../../lib/collections/RuntimeFunctions'
-import { SourceLayers } from './templates/nrk-layers'
 
 // Imports from TSR (TODO make into an import)
 // export interface Mappings {

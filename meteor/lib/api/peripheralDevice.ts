@@ -1,10 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
-
-import { ServerPeripheralDeviceAPI } from '../../server/api/peripheralDevice'
-
 import { PeripheralDeviceCommands } from '../collections/PeripheralDeviceCommands'
-
 import { MeteorPromiseCall, getCurrentTime } from '../lib'
 
 namespace PeripheralDeviceAPI {

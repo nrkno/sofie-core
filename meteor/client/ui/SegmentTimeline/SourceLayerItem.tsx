@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import * as _ from 'underscore'
 import * as $ from 'jquery'
 import { ISourceLayerUi,
@@ -11,9 +10,6 @@ import { ISourceLayerUi,
 import { RundownAPI } from './../../../lib/api/rundown'
 import { RundownUtils } from './../../lib/rundown'
 import { Transition } from '../../../lib/constants/casparcg'
-
-import { FloatingInspector } from '../FloatingInspector'
-
 import * as ClassNames from 'classnames'
 import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MicSourceRenderer } from './Renderers/MicSourceRenderer'

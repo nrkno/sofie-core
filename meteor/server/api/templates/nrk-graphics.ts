@@ -1,69 +1,15 @@
 import * as _ from 'underscore'
-
-import {
-	IMOSConnectionStatus,
-	IMOSDevice,
-	IMOSListMachInfo,
-	MosString128,
-	MosTime,
-	IMOSRunningOrder,
-	IMOSRunningOrderBase,
-	IMOSRunningOrderStatus,
-	IMOSStoryStatus,
-	IMOSItemStatus,
-	IMOSStoryAction,
-	IMOSROStory,
-	IMOSROAction,
-	IMOSItemAction,
-	IMOSItem,
-	IMOSROReadyToAir,
-	IMOSROFullStory,
-	IMOSStory,
-	IMOSExternalMetaData,
-	IMOSROFullStoryBodyItem
-} from 'mos-connection'
-import { Segment, Segments } from '../../../lib/collections/Segments'
-import { SegmentLine, SegmentLines, DBSegmentLine } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems, ITimelineTrigger } from '../../../lib/collections/SegmentLineItems'
-import { TriggerType } from 'superfly-timeline'
+import { ITimelineTrigger } from '../../../lib/collections/SegmentLineItems'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { IOutputLayer,
-	ISourceLayer
-} from '../../../lib/collections/StudioInstallations'
 import {
-	TemplateFunction,
-	TemplateSet,
 	SegmentLineItemOptional,
 	SegmentLineAdLibItemOptional,
-	TemplateFunctionOptional,
-	TemplateResult,
 	TemplateContextInner,
 	StoryWithContext
 } from './templates'
-import {
-	TimelineObjCCGVideo,
-	TimelineObjLawoSource,
-	TimelineObjCCGTemplate,
-	TimelineContentTypeOther,
-	TimelineContentTypeCasparCg,
-	TimelineContentTypeLawo,
-	TimelineContentTypeAtem,
-	TimelineObj,
-	TimelineObjAbstract,
-	Atem_Enums,
-	TimelineObjAtemME,
-	TimelineObjAtemAUX,
-	TimelineObjAtemDSK,
-	TimelineObjAtemSsrc,
-	TimelineObjHTTPPost,
-	TimelineContentTypeHttp
-} from '../../../lib/collections/Timeline'
-import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
-import { Optional } from '../../../lib/lib'
-import { SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
-
 import { LLayers, NoraChannels, SourceLayers } from './nrk-layers'
-import { AtemSource } from './nrk-constants'
+import { TriggerType } from 'superfly-timeline'
+import { TimelineObjHTTPPost, TimelineContentTypeHttp } from '../../../lib/collections/Timeline'
 
 const literal = <T>(o: T) => o
 
@@ -74,7 +20,6 @@ export function ParseSuperSegments (context: TemplateContextInner, story: StoryW
 			context.getValueByPath(item, 'Content.mosID') === 'GFX.NRK.MOS'
 		)
 	})
-	if (storyItemGfx.length === 0) context.warning('Super missing in mos data')
 
 	for (const item of storyItemGfx) {
 		const itemID = context.getValueByPath(item, 'Content.itemID', 0)
@@ -117,7 +62,7 @@ export function ParseSuperSegments (context: TemplateContextInner, story: StoryW
 		}
 		let groupTrigger: ITimelineTrigger = {
 			type: TriggerType.TIME_RELATIVE,
-			value: `#${videoId}.start + 0`
+			value: `#${groupId}.start + 0`
 		}
 
 		let isAdlib = false

@@ -1,38 +1,9 @@
 import * as _ from 'underscore'
 
-import {
-	IMOSConnectionStatus,
-	IMOSDevice,
-	IMOSListMachInfo,
-	MosString128,
-	MosTime,
-	IMOSRunningOrder,
-	IMOSRunningOrderBase,
-	IMOSRunningOrderStatus,
-	IMOSStoryStatus,
-	IMOSItemStatus,
-	IMOSStoryAction,
-	IMOSROStory,
-	IMOSROAction,
-	IMOSItemAction,
-	IMOSItem,
-	IMOSROReadyToAir,
-	IMOSROFullStory,
-	IMOSStory,
-	IMOSExternalMetaData,
-	IMOSROFullStoryBodyItem
-} from 'mos-connection'
-import { Segment, Segments } from '../../../lib/collections/Segments'
-import { SegmentLine, SegmentLines, DBSegmentLine } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems, ITimelineTrigger } from '../../../lib/collections/SegmentLineItems'
+import { DBSegmentLine } from '../../../lib/collections/SegmentLines'
 import { TriggerType } from 'superfly-timeline'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { IOutputLayer,
-	ISourceLayer
-} from '../../../lib/collections/StudioInstallations'
 import {
-	TemplateFunction,
-	TemplateSet,
 	SegmentLineItemOptional,
 	TemplateFunctionOptional,
 	TemplateResult,
@@ -42,68 +13,75 @@ import {
 import {
 	TimelineObjCCGVideo,
 	TimelineObjLawoSource,
-	TimelineObjCCGTemplate,
 	TimelineContentTypeCasparCg,
 	TimelineContentTypeLawo,
 	TimelineContentTypeAtem,
-	TimelineObj,
-	TimelineObjAbstract,
 	Atem_Enums,
 	TimelineObjAtemME,
-	TimelineObjAtemAUX,
-	TimelineObjAtemDSK,
-	TimelineObjAtemSsrc,
-	SuperSourceBox
+	TimelineObjHTTPPost,
+	TimelineContentTypeHttp,
 } from '../../../lib/collections/Timeline'
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
-import { Optional } from '../../../lib/lib'
 
 import { LLayers, SourceLayers } from './nrk-layers'
-import { RMFirstInput, KamFirstInput, AtemSource, LawoFadeInDuration } from './nrk-constants'
-import { isNumber } from 'util'
+import { AtemSource, LawoFadeInDuration, CasparOutputDelay } from './nrk-constants'
 
 const literal = <T>(o: T) => o
 
-function parseInputNumber (str: string): number | undefined {
-	str = (str || '').toLowerCase()
-
-	const ind = parseInt(str.replace(/\D/g,''), 10) || 1
-	if (str.indexOf('k') === 0) {
-		return KamFirstInput + ind - 1
-	}
-	if (str.indexOf('r') === 0) {
-		return RMFirstInput + ind - 1
-	}
-
-	return undefined
-}
-
-function inputToLawoSource (inp: number): string | undefined {
-	switch (inp) {
-		case RMFirstInput:
-			return LLayers.lawo_source_rm1
-		case RMFirstInput + 1:
-			return LLayers.lawo_source_rm2
-		case RMFirstInput + 2:
-			return LLayers.lawo_source_rm3
+export function ParseGraffikData (context: TemplateContextInner, story: StoryWithContext): any {
+	const storyItemGfx = _.find(story.Body, item => {
+		return (
+			item.Type === 'storyItem' &&
+			context.getValueByPath(item, 'Content.mosID') === 'GFX.NRK.MOS'
+		)
+	})
+	if (!storyItemGfx) {
+		context.warning('Grafikk missing item')
+		return
 	}
 
-	return undefined
-}
+	const itemID = context.getValueByPath(storyItemGfx, 'Content.itemID', 0)
+	const name = context.getValueByPath(storyItemGfx, 'Content.mosAbstract', '')
+	const metadata = context.getValueByPath(storyItemGfx, 'Content.mosExternalMetadata', [])
+	const content = _.find(metadata, (m: any) => m.mosSchema === 'schema.nrk.no/content')
 
-function isAutomixAudio (inp: number): boolean {
-	return (inp >= KamFirstInput && inp < RMFirstInput)
+	if (!content) {
+		context.warning('Grafikk missing content data')
+		return
+	}
+
+	const payload = context.getValueByPath(content, 'mosPayload', {})
+	const noraGroup = process.env.MESOS_NORA_GROUP || 'dksl' // @todo config not env
+	return {
+		render: {
+			channel: payload.render.channel,
+			group: noraGroup,
+			system: 'html',
+		},
+		playout: Object.assign(payload.playout, {
+			event: 'take',
+			autoTakeout: false, // This gets handled by timeline
+			duration: 0,
+			loop: false
+		}),
+		content: payload.content
+	}
 }
 
 export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: TemplateContextInner, story): TemplateResult => {
 	let IDs = {
+		gfxPost:			context.getHashId('gfxPost'),
 		atemSrv1: 			context.getHashId('atemSrv1'),
 		lawo_automix:       context.getHashId('lawo_automix'),
+		lawo_bed: 		    context.getHashId('lawo_bed'),
+		playerBed:			context.getHashId('playerBed'),
 	}
 
-	// @todo parse grafikk type
+	// @todo does this field mean anything useful?
 	let mosartVariant = story.getValueByPath('MosExternalMetaData.0.MosPayload.mosartVariant', '') + ''
 	context.warning('Unknown variant: ' + mosartVariant)
+
+	const gfxPayload = ParseGraffikData(context, story)
 
 	let segmentLineItems: Array<SegmentLineItemOptional> = []
 	segmentLineItems.push(literal<SegmentLineItemOptional>({
@@ -126,22 +104,19 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 		) * 1000,
 		content: {
 			timelineObjects: _.compact([
-				// @todo run template. might need to preroll template a few frames
-
-				literal<TimelineObjAtemME>({
-					_id: IDs.atemSrv1, deviceId: [''], siId: '', roId: '',
+				(gfxPayload ?
+				literal<TimelineObjHTTPPost>({
+					_id: IDs.gfxPost, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 					priority: 1,
 					duration: 0,
-					LLayer: LLayers.atem_me_program,
+					LLayer: LLayers.casparcg_cg_graphics_ctrl, // @todo - this should be a seperate layer to ensure the right animations are run
 					content: {
-						type: TimelineContentTypeAtem.ME,
-						attributes: {
-							input: AtemSource.Grafikk,
-							transition: Atem_Enums.TransitionStyle.CUT
-						}
+						type: TimelineContentTypeHttp.POST,
+						url: 'http://nora.core.mesosint.nrk.no/api/playout?apiKey=' + process.env.MESOS_API_KEY,
+						params: gfxPayload
 					}
-				}),
+				}) : undefined),
 
 				// automix mic hot
 				literal<TimelineObjLawoSource>({
@@ -162,6 +137,60 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 						},
 						attributes: {
 							db: 0
+						}
+					}
+				}),
+
+				// audio bed
+				literal<TimelineObjLawoSource>({
+					_id: IDs.lawo_bed, deviceId: [''], siId: '', roId: '',
+					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
+					priority: 1,
+					duration: 0,
+					LLayer: LLayers.lawo_source_clip,
+					content: {
+						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						transitions: {
+							inTransition: {
+								type: Transition.MIX,
+								duration: LawoFadeInDuration,
+								easing: Ease.LINEAR,
+								direction: Direction.LEFT
+							}
+						},
+						attributes: {
+							db: -15
+						}
+					}
+				}),
+
+				// preroll gfx a couple of frames before cutting to it
+				literal<TimelineObjAtemME>({
+					_id: IDs.atemSrv1, deviceId: [''], siId: '', roId: '',
+					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + ${CasparOutputDelay} + 80` },
+					priority: 1,
+					duration: 0,
+					LLayer: LLayers.atem_me_program,
+					content: {
+						type: TimelineContentTypeAtem.ME,
+						attributes: {
+							input: AtemSource.Grafikk,
+							transition: Atem_Enums.TransitionStyle.CUT
+						}
+					}
+				}),
+
+				// play bed
+				literal<TimelineObjCCGVideo>({
+					_id: IDs.playerBed, deviceId: [''], siId: '', roId: '',
+					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
+					priority: 1,
+					duration: 0, // hold at end
+					LLayer: LLayers.casparcg_player_clip,
+					content: {
+						type: TimelineContentTypeCasparCg.VIDEO,
+						attributes: {
+							file: 'assets/grafikk_bed'
 						}
 					}
 				}),

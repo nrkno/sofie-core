@@ -1,5 +1,5 @@
 import { Mongo } from 'meteor/mongo'
-import { TransformedCollection } from './typings'
+import { TransformedCollection } from '../typings/meteor'
 import { ISourceLayerBase, IOutputLayerBase } from './StudioInstallations'
 
 export interface TemplateMappings {

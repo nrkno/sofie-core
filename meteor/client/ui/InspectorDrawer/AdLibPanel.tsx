@@ -1,14 +1,13 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import * as _ from 'underscore'
 import * as $ from 'jquery'
 
-import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { translate } from 'react-i18next'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
-import { Segment, Segments } from '../../../lib/collections/Segments'
-import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
+import { Segment } from '../../../lib/collections/Segments'
+import { SegmentLine } from '../../../lib/collections/SegmentLines'
 import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
 import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
 import { RunningOrderBaselineAdLibItems } from '../../../lib/collections/RunningOrderBaselineAdLibItems'
@@ -24,7 +23,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Spinner } from '../../lib/Spinner'
 
 interface IListViewPropsHeader {
-	segments: Array<SegmentUi>
+	uiSegments: Array<SegmentUi>
 	onSelectAdLib: (aSLine: SegmentLineAdLibItemUi) => void
 	onToggleAdLib: (aSLine: SegmentLineAdLibItemUi) => void
 	selectedItem: SegmentLineAdLibItemUi | undefined
@@ -43,10 +42,10 @@ interface IListViewStateHeader {
 	}
 }
 
-const AdLibListView = translate()(class extends React.Component<IListViewPropsHeader & InjectedTranslateProps, IListViewStateHeader> {
+const AdLibListView = translate()(class extends React.Component<Translated<IListViewPropsHeader>, IListViewStateHeader> {
 	table: HTMLTableElement
 
-	constructor (props) {
+	constructor (props: Translated<IListViewPropsHeader>) {
 		super(props)
 
 		this.state = {
@@ -120,7 +119,7 @@ const AdLibListView = translate()(class extends React.Component<IListViewPropsHe
 	}
 
 	renderSegments () {
-		return this.props.segments.map((seg) => {
+		return this.props.uiSegments.map((seg) => {
 			return (
 				<tbody id={'adlib-panel__list-view__' + seg._id} key={seg._id} className={ClassNames('adlib-panel__list-view__list__segment', {
 					'live': seg.isLive,
@@ -199,10 +198,10 @@ interface IToolbarStateHader {
 	searchInputValue: string
 }
 
-const AdLibPanelToolbar = translate()(class extends React.Component<IToolbarPropsHeader & InjectedTranslateProps, IToolbarStateHader> {
+const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Component<Translated<IToolbarPropsHeader>, IToolbarStateHader> {
 	searchInput: HTMLInputElement
 
-	constructor (props) {
+	constructor (props: Translated<IToolbarPropsHeader> ) {
 		super(props)
 
 		this.state = {
@@ -274,23 +273,27 @@ interface ISourceLayerLookup {
 	[key: string]: ISourceLayer
 }
 
-interface IPropsHeader {
+interface IProps {
+	segments: Array<Segment>
+	// liveSegment: Segment | undefined
 	runningOrder: RunningOrder
 	studioInstallation: StudioInstallation
-	sourceLayerLookup: ISourceLayerLookup
-	segments: Array<SegmentUi>
-	liveSegment: SegmentUi | undefined
-	roAdLibs: Array<SegmentLineAdLibItemUi>
 }
 
-interface IStateHeader {
+interface IState {
 	selectedItem: SegmentLineAdLibItem | undefined
 	selectedSegment: SegmentUi | undefined
 	followLive: boolean
 	filter: string | undefined
 }
+interface ITrackedProps {
+	uiSegments: Array<SegmentUi>
+	liveSegment: SegmentUi | undefined
+	sourceLayerLookup: ISourceLayerLookup
+	roAdLibs: Array<SegmentLineAdLibItemUi>
+}
 
-export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: IStateHeader) => {
+export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
 	let subSegments = Meteor.subscribe('segments', {})
 	let subSegmentLines = Meteor.subscribe('segmentLines', {})
 	let subSegmentLineItems = Meteor.subscribe('segmentLineAdLibItems', {})
@@ -329,7 +332,7 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 		})
 	}
 
-	const segments = props.runningOrder && props.segments ? (props.segments as Array<SegmentUi>).map((segSource) => {
+	const uiSegments = props.runningOrder && props.segments ? (props.segments as Array<SegmentUi>).map((segSource) => {
 		const seg = _.clone(segSource)
 		seg.segLines = segSource.getSegmentLines()
 		let segmentAdLibItems: Array<SegmentLineAdLibItem> = []
@@ -362,15 +365,15 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 	}) : []
 
 	return {
-		segments,
+		uiSegments,
 		liveSegment,
 		sourceLayerLookup,
 		roAdLibs
 	}
-})(class AdLibPanel extends React.Component<IPropsHeader, IStateHeader> {
+})(class AdLibPanel extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
-	constructor (props) {
+	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 
 		this.state = {
@@ -391,7 +394,7 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 		this.refreshKeyboardHotkeys()
 	}
 
-	componentDidUpdate (prevProps: IPropsHeader) {
+	componentDidUpdate (prevProps: IProps & ITrackedProps) {
 		mousetrap.unbind(this.usedHotkeys, 'keyup')
 		this.usedHotkeys.length = 0
 
@@ -483,7 +486,7 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 	}
 
 	renderSegmentList () {
-		return this.props.segments.map((item) => {
+		return this.props.uiSegments.map((item) => {
 			return (
 				<li className={ClassNames('adlib-panel__segments__segment', {
 					'live': item.isLive,
@@ -497,12 +500,16 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 	}
 
 	renderListView () {
+		// let a = new AdLibPanelToolbar({
+			// t: () => {},
+			// onFilterChange: () => { console.log('a') }
+		// })
 		return (
 			<React.Fragment>
 				<AdLibPanelToolbar
 					onFilterChange={this.onFilterChange} />
 				<AdLibListView
-					segments={this.props.segments}
+					uiSegments={this.props.uiSegments}
 					onSelectAdLib={this.onSelectAdLib}
 					onToggleAdLib={this.onToggleAdLib}
 					selectedItem={this.state.selectedItem}
@@ -528,4 +535,4 @@ export const AdLibPanel = translate()(withTracker((props: IPropsHeader, state: I
 			)
 		}
 	}
-}))
+})

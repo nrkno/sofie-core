@@ -1,10 +1,13 @@
 import { Mongo } from 'meteor/mongo'
 import { RundownAPI } from '../../lib/api/rundown'
 import { TriggerType } from 'superfly-timeline'
-import { TimelineTransition, TimelineObjGroup, TimelineObjCCGVideo, TimelineObjLawoSource } from './Timeline'
-import { Dictionary } from 'underscore'
+import { TimelineTransition,
+	TimelineObjGroup,
+	TimelineObjCCGVideo,
+	TimelineObjLawoSource
+} from './Timeline'
 import { TimelineObj } from './Timeline'
-import { TransformedCollection } from './typings'
+import { TransformedCollection } from '../typings/meteor'
 
 /** A trigger interface compatible with that of supertimeline */
 export interface ITimelineTrigger {
@@ -50,6 +53,8 @@ export interface SegmentLineItemGeneric {
 	continuesRefId?: string
 	/** If this item has been created play-time using an AdLibItem, this should be set to it's source item */
 	adLibSourceId?: string
+	/** If this item has been insterted during run of RO (such as adLibs). Df set, this won't be affected by updates from MOS */
+	dynamicallyInserted?: boolean,
 }
 
 export interface SegmentLineItem extends SegmentLineItemGeneric {
@@ -57,6 +62,9 @@ export interface SegmentLineItem extends SegmentLineItemGeneric {
 	segmentLineId: string
 	expectedDuration: number
 	isTransition: boolean
+
+	adLibSourceId?: string // only set when generated from an adlib
+	dynamicallyInserted?: boolean // only set when generated from an adlib
 }
 
 export const SegmentLineItems: TransformedCollection<SegmentLineItem, SegmentLineItem>

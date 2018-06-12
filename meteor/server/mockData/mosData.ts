@@ -1,11 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
-import { check } from 'meteor/check'
-import * as _ from 'underscore'
 import {
-	IMOSConnectionStatus,
-	IMOSDevice,
-	IMOSListMachInfo,
 	MosString128,
 	MosTime,
 	IMOSRunningOrder,
@@ -19,8 +13,6 @@ import {
 	IMOSItemAction,
 	IMOSItem,
 	IMOSROReadyToAir,
-	IMOSROFullStory,
-	IMOSStory,
 	IMOSObjectPathType,
 	IMOSObjectPath,
 	MosDuration,
@@ -31,15 +23,8 @@ import {
 } from 'mos-connection'
 
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDevice, PlayoutDeviceType } from '../../lib/collections/PeripheralDevices'
-import { getCurrentTime, saveIntoDb, literal, DBObj, partialExceptId } from '../../lib/lib'
-import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
-
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
-import { Segment, Segments } from '../../lib/collections/Segments'
-import { ServerPeripheralDeviceAPI } from '../api/peripheralDevice'
+import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { literal } from '../../lib/lib'
 import { logger } from './../logging'
 
 // These are temporary methods, used during development to put some data into the database
@@ -75,7 +60,6 @@ Meteor.methods({
 		PeripheralDevices.update('myMockMosDevice', {$set: {
 			studioInstallationId: 'studio0'
 		}})
-		
 	},
 	'debug_roMock0' () {
 		let pd = getPD()

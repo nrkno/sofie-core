@@ -1,14 +1,22 @@
 import * as ClassNames from 'classnames'
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
-import { InjectedTranslateProps, translate, Trans } from 'react-i18next'
 import * as _ from 'underscore'
 import Moment from 'react-moment'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { IOutputLayer, ISourceLayer, StudioInstallation, StudioInstallations, Mapping, MappingCasparCG, MappingAtem, MappingLawo, MappingAtemType } from '../../../lib/collections/StudioInstallations'
+import { IOutputLayer,
+	ISourceLayer,
+	StudioInstallation,
+	StudioInstallations,
+	Mapping,
+	MappingCasparCG,
+	MappingAtem,
+	MappingLawo,
+	MappingAtemType
+} from '../../../lib/collections/StudioInstallations'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
-import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
 import { literal } from '../../../lib/lib'
 import { Random } from 'meteor/random'
@@ -16,15 +24,12 @@ import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import * as faAngleUp from '@fortawesome/fontawesome-free-solid/faAngleUp'
-import * as faAngleDown from '@fortawesome/fontawesome-free-solid/faAngleDown'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import * as objectPath from 'object-path'
 import { PeripheralDevice, PeripheralDevices, PlayoutDeviceType } from '../../../lib/collections/PeripheralDevices'
 
 import { Link } from 'react-router-dom'
 
-interface IPropsHeader {
+interface IProps {
 	studioInstallation: StudioInstallation
 	studioDevices: Array<PeripheralDevice>
 	availableDevices: Array<PeripheralDevice>
@@ -41,14 +46,16 @@ interface IChildStudioInterfaceProps {
 	onAddMapping?: () => void
 }
 
+interface IStudioOutputSettingsProps extends IProps, IChildStudioInterfaceProps {
+}
 interface IStudioOutputSettingsState {
 	showDeleteConfirm: boolean
 	deleteConfirmItem: IOutputLayer | undefined
 	editedOutputs: Array<string>
 }
 
-class StudioOutputSettings extends React.Component<IChildStudioInterfaceProps & IPropsHeader & InjectedTranslateProps, IStudioOutputSettingsState> {
-	constructor (props) {
+class StudioOutputSettings extends React.Component<Translated<IStudioOutputSettingsProps>, IStudioOutputSettingsState> {
+	constructor (props: Translated<IStudioOutputSettingsProps>) {
 		super(props)
 
 		this.state = {
@@ -227,14 +234,16 @@ class StudioOutputSettings extends React.Component<IChildStudioInterfaceProps & 
 	}
 }
 
+interface IStudioSourcesSettingsProps extends IProps, IChildStudioInterfaceProps {
+}
 interface IStudioSourcesSettingsState {
 	showDeleteConfirm: boolean
 	deleteConfirmItem: ISourceLayer | undefined
 	editedSources: Array<string>
 }
 
-class StudioSourcesSettings extends React.Component<IChildStudioInterfaceProps & IPropsHeader & InjectedTranslateProps, IStudioSourcesSettingsState> {
-	constructor (props) {
+class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSettingsProps>, IStudioSourcesSettingsState> {
+	constructor (props: Translated<IStudioSourcesSettingsProps>) {
 		super(props)
 
 		this.state = {
@@ -521,14 +530,15 @@ class StudioSourcesSettings extends React.Component<IChildStudioInterfaceProps &
 		)
 	}
 }
-
+interface IStudioDevicesProps extends IProps, IChildStudioInterfaceProps {
+}
 interface IStudioDevicesSettingsState {
 	showDeleteConfirm: boolean
 	deleteConfirmItem: PeripheralDevice | undefined
 	showAvailableDevices: boolean
 }
-class StudioDevices extends React.Component<IChildStudioInterfaceProps & IPropsHeader & InjectedTranslateProps, IStudioDevicesSettingsState> {
-	constructor (props) {
+class StudioDevices extends React.Component<Translated<IStudioDevicesProps>, IStudioDevicesSettingsState> {
+	constructor (props: Translated<IStudioDevicesProps>) {
 		super(props)
 
 		this.state = {
@@ -631,13 +641,20 @@ class StudioDevices extends React.Component<IChildStudioInterfaceProps & IPropsH
 	}
 }
 
-interface IStudioMappingsSettingsState {
+interface IStudioMappingsState {
 	showDeleteConfirm: boolean
 	deleteConfirmLayerId: string | undefined
 	editedMappings: Array<string>
 }
-class StudioMappings extends React.Component<IChildStudioInterfaceProps & IPropsHeader & InjectedTranslateProps, IStudioMappingsSettingsState> {
-	constructor (props) {
+interface IStudioMappingsProps extends IProps, IChildStudioInterfaceProps {
+	match: {
+		params: {
+			studioId: string
+		}
+	}
+}
+class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, IStudioMappingsState> {
+	constructor (props: Translated<IStudioMappingsProps>) {
 		super(props)
 
 		this.state = {
@@ -943,10 +960,35 @@ class StudioMappings extends React.Component<IChildStudioInterfaceProps & IProps
 	}
 }
 
-class StudioSettings extends React.Component<IPropsHeader & InjectedTranslateProps> {
+interface IStudioSettingsProps extends IProps, IChildStudioInterfaceProps {
+	match: {
+		params: {
+			studioId: string
+		}
+	}
+}
+export default translateWithTracker((props: IStudioSettingsProps, state) => {
+	return {
+		studioInstallation: StudioInstallations.findOne(props.match.params.studioId),
+		studioDevices: PeripheralDevices.find({
+			studioInstallationId: props.match.params.studioId
+		}).fetch(),
+		availableDevices: PeripheralDevices.find({
+			studioInstallationId: {
+				$not: {
+					$eq: props.match.params.studioId
+				}
+			}
+		}, {
+			sort: {
+				lastSeen: -1
+			}
+		}).fetch()
+	}
+})(class StudioSettings extends React.Component<Translated<IStudioSettingsProps>> {
 
 	static setProperty (studioInstallation: StudioInstallation, property: string, value: any) {
-		console.log(property, value)
+		// console.log(property, value)
 		let m = {}
 		if (value !== undefined) {
 			m[property] = value
@@ -1096,24 +1138,4 @@ class StudioSettings extends React.Component<IPropsHeader & InjectedTranslatePro
 			return <Spinner />
 		}
 	}
-}
-
-export default translate()(withTracker((props, state) => {
-	return {
-		studioInstallation: StudioInstallations.findOne(props.match.params.studioId),
-		studioDevices: PeripheralDevices.find({
-			studioInstallationId: props.match.params.studioId
-		}).fetch(),
-		availableDevices: PeripheralDevices.find({
-			studioInstallationId: {
-				$not: {
-					$eq: props.match.params.studioId
-				}
-			}
-		}, {
-			sort: {
-				lastSeen: -1
-			}
-		}).fetch()
-	}
-})(StudioSettings))
+})

@@ -5,7 +5,8 @@ import { TimelineObject, ObjectId, TriggerType, TimelineKeyframe } from 'superfl
 
 import { ChannelFormat, Transition, Ease, Direction } from '../constants/casparcg'
 import { StudioInstallations } from './StudioInstallations'
-import { FindOptions, Selector, TransformedCollection } from './typings'
+import { FindOptions, Selector, TransformedCollection } from '../typings/meteor'
+import { Mixer } from '../typings/casparcg-state'
 
 // Note: The data structure is based on what works with the state libraries, such as
 
@@ -20,15 +21,16 @@ export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
 	GROUP = 'group',
 }
-export enum TimelineContentTypeCasparCg { //  CasparCG-state
-	VIDEO = 'video',
+export enum TimelineContentTypeCasparCg { //  CasparCG-state/TSR
+	VIDEO = 'video', // later to be deprecated & replaced by MEDIA
+	AUDIO = 'audio', // later to be deprecated & replaced by MEDIA
+	MEDIA = 'media',
 	IP = 'ip',
 	INPUT = 'input',
 	TEMPLATE = 'template',
 	HTMLPAGE = 'htmlpage',
 	ROUTE = 'route',
-	RECORD = 'record',
-	AUDIO = 'audio'
+	RECORD = 'record'
 }
 export enum TimelineContentTypeLawo { // lawo-state
 	AUDIO_SOURCE = 'audio_source'
@@ -163,6 +165,7 @@ export interface TimelineObjCCGVideo extends TimelineObj {
 			videoFilter?: string
 			audioFilter?: string
 		}
+		mixer?: Mixer
 	}
 }
 // export interface TimelineObjCCGIP extends TimelineObj {
@@ -179,6 +182,7 @@ export interface TimelineObjCCGVideo extends TimelineObj {
 // 			videoFilter?: string
 // 			audioFilter?: string
 // 		}
+// 		mixer?: Mixer
 // 	}
 // }
 export interface TimelineObjCCGInput extends TimelineObj {
@@ -197,6 +201,7 @@ export interface TimelineObjCCGInput extends TimelineObj {
 			videoFilter?: string
 			audioFilter?: string
 		}
+		mixer?: Mixer
 	}
 }
 export interface TimelineObjCCGHTMLPage extends TimelineObj {
@@ -211,6 +216,7 @@ export interface TimelineObjCCGHTMLPage extends TimelineObj {
 		attributes: {
 			url: string,
 		}
+		mixer?: Mixer
 	}
 }
 export interface TimelineObjCCGTemplate extends TimelineObj {
@@ -228,6 +234,7 @@ export interface TimelineObjCCGTemplate extends TimelineObj {
 			data?: any, // free to do whatever inside the object, so long as the template likes it
 			useStopCommand: boolean // whether to use CG stop or CLEAR layer
 		}
+		mixer?: Mixer
 	}
 }
 export interface TimelineObjCCGRoute extends TimelineObj {
@@ -244,6 +251,7 @@ export interface TimelineObjCCGRoute extends TimelineObj {
 			layer?; number,
 			LLayer?: string // uses mappings to route, overrides channel/layer parameters.
 		}
+		mixer?: Mixer
 	}
 }
 export interface TimelineObjCCGRecord extends TimelineObj {
