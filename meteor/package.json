@@ -34,7 +34,7 @@
     "meteor-node-stubs": "^0.3.3",
     "moment": "^2.19.1",
     "monaco-editor": "^0.13.0",
-    "mos-connection": "git+https://github.com/nrkno/tv-automation-mos-connection.git#dist",
+    "mos-connection": "^0.3.15",
     "ntp-client": "^0.5.3",
     "object-path": "^0.11.4",
     "prop-types": "^15.6.1",
