@@ -69,8 +69,6 @@ export interface ISourceLayerBase {
 
 export interface IStudioConfigItem {
 	_id: string
-	/** Name of the item */
-	name: string
 	/** Value */
 	value: string
 }

@@ -101,7 +101,7 @@ function getContext (context: TemplateContext): TemplateContextInner {
 			const studio = StudioInstallations.findOne(ro.studioInstallationId)
 			if (!studio) throw new Meteor.Error(404, 'StudioInstallation "' + ro.studioInstallationId + '" not found')
 
-			const item = studio.config.find(v => v.name === key)
+			const item = studio.config.find(v => v._id === key)
 			if (item) {
 				return item.value
 			}

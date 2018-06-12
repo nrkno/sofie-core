@@ -108,13 +108,11 @@ Meteor.methods({
 
 			config: [
 				{
-					_id: 'one', // Random id
-					name: 'nora_group',
+					_id: 'nora_group',
 					value: 'dksl'
 				},
 				{
-					_id: 'two', // Random id
-					name: 'nora_apikey',
+					_id: 'nora_apikey',
 					value: ''
 				}
 			]

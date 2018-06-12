@@ -313,7 +313,7 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 						'hl': this.isItemEdited(item)
 					})}>
 						<th className='settings-studio-custom-config-table__name c2'>
-							{item.name}
+							{item._id}
 						</th>
 						<td className='settings-studio-custom-config-table__value c3'>
 							{item.value}
@@ -333,10 +333,10 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 								<div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Channel name')}
+											{t('ID')}
 												<EditAttribute
 													modifiedClassName='bghl'
-													attribute={'config.' + index + '.name'}
+													attribute={'config.' + index + '._id'}
 													obj={this.props.studioInstallation}
 													type='text'
 													collection={StudioInstallations}
@@ -375,7 +375,7 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 		return (
 			<div>
 				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
-					<p>{t('Are you sure you want to delete this config item ') + (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) + '?'}</p>
+					<p>{t('Are you sure you want to delete this config item ') + (this.state.deleteConfirmItem && this.state.deleteConfirmItem._id) + '?'}</p>
 					<p>{t('This action is irreversible.')}</p>
 				</ModalDialog>
 				<h3>{t('Custom config')}</h3>
@@ -1195,7 +1195,6 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 		}
 	}
 
-
 	onDeleteConfigItem = (item: IStudioConfigItem) => {
 		if (this.props.studioInstallation) {
 			StudioInstallations.update(this.props.studioInstallation._id, {
@@ -1250,8 +1249,7 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 		const { t } = this.props
 
 		const newItem = literal<IStudioConfigItem>({
-			_id: this.props.studioInstallation._id + '-' + Random.id(5),
-			name: t('New Config') + '',
+			_id: t('new_config_item'),
 			value: ''
 		})
 
