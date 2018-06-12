@@ -361,7 +361,7 @@ export namespace ServerPeripheralDeviceAPI {
 		_.each(Stories, (story: IMOSROStory, i: number) => {
 			let rank = getRank(segmentBeforeOrLast, segmentLineAfter, i, Stories.length)
 			// let rank = newRankMin + ( i / Stories.length ) * (newRankMax - newRankMin)
-			affectedSegmentLineIds.push(insertSegmentLine(story, ro._id, rank)._id)
+			affectedSegmentLineIds.push(upsertSegmentLine(story, ro._id, rank)._id)
 		})
 
 		updateSegments(ro._id)
@@ -412,15 +412,24 @@ export namespace ServerPeripheralDeviceAPI {
 		let segmentLineAfter = fetchAfter(SegmentLines, { runningOrderId: ro._id }, segmentLineToReplace._rank)
 
 		let affectedSegmentLineIds: Array<string> = []
-		affectedSegmentLineIds.push(segmentLineToReplace._id)
-		removeSegmentLine(segmentLineToReplace._id)
 
+		let insertedSegmentLineIds: {[id: string]: boolean} = {}
 		_.each(Stories, (story: IMOSROStory, i: number) => {
 			let rank = getRank(segmentLineBefore, segmentLineAfter, i, Stories.length)
-			affectedSegmentLineIds.push(insertSegmentLine(story, ro._id, rank)._id)
+			let sl = upsertSegmentLine(story, ro._id, rank)
+			insertedSegmentLineIds[sl._id] = true
+			affectedSegmentLineIds.push(sl._id)
 		})
 
 		updateSegments(ro._id)
+
+		if (!insertedSegmentLineIds[segmentLineToReplace._id]) {
+			// ok, the segmentline to replace wasn't in the inserted segment lines
+			// remove it then:
+			affectedSegmentLineIds.push(segmentLineToReplace._id)
+			removeSegmentLine(segmentLineToReplace._id)
+		}
+
 		updateAffectedSegmentLines(ro, affectedSegmentLineIds)
 	}
 	export function mosRoItemReplace (id, token, Action: IMOSItemAction, Items: Array<IMOSItem>) {
@@ -815,9 +824,9 @@ export function afterRemoveSegment (segmentId: string, runningOrderId: string) {
  * @param segmentId The id of the Segment / Story
  * @param rank The new rank of the SegmentLine
  */
-export function insertSegmentLine (story: IMOSStory, runningOrderId: string, rank: number): DBSegmentLine {
+export function upsertSegmentLine (story: IMOSStory, runningOrderId: string, rank: number): DBSegmentLine {
 	let sl = convertToSegmentLine(story, runningOrderId, rank)
-	SegmentLines.insert(sl)
+	SegmentLines.upsert(sl._id, {$set: sl}) // insert, or update
 	afterInsertUpdateSegmentLine(story, runningOrderId)
 	return sl
 }
@@ -1037,6 +1046,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 	saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
 		runningOrderId: ro._id,
 		segmentLineId: segmentLine._id,
+		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
 	}, result.segmentLineItems || [], {
 		afterInsert (segmentLineItem) {
 			console.log('inserted segmentLineItem ' + segmentLineItem._id)

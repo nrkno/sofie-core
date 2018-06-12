@@ -59,12 +59,10 @@ Meteor.methods({
 			multi: true
 		})
 
-		// Remove all segment line items that have been created using an adLib item
+		// Remove all segment line items that have been dynamically created (such as adLib items)
 		SegmentLineItems.remove({
 			runningOrderId: runningOrder._id,
-			adLibSourceId: {
-				$exists: true
-			}
+			dynamicallyInserted: true
 		})
 
 		// Remove duration on segmentLineItems, as this is set by the ad-lib playback editing
@@ -376,6 +374,7 @@ Meteor.methods({
 		if (!alCopyItemTObj) throw new Meteor.Error(404, `Segment Line Ad Lib Copy Item "${sliId}" not found in the playout Timeline!`)
 		if (!runningOrder.active) throw new Meteor.Error(403, `Segment Line Ad Lib Copy Items can be only manipulated in an active running order!`)
 		if (runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Ad Lib Copy Items can be only manipulated in a current segment line!`)
+		if (!alCopyItem.dynamicallyInserted) throw new Meteor.Error(501, `"${sliId}" does not appear to be a dynamic Segment Line Item!`)
 		if (!alCopyItem.adLibSourceId) throw new Meteor.Error(501, `"${sliId}" does not appear to be a Segment Line Ad Lib Copy Item!`)
 
 		// The ad-lib item positioning will be relative to the startedPlayback of the segment line
@@ -473,9 +472,11 @@ function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem, segmentLine: 
 			},
 			segmentLineId: segmentLine._id,
 			adLibSourceId: adLibItem._id,
+			dynamicallyInserted: true,
 			expectedDuration: adLibItem.expectedDuration || 0 // set duration to infinite if not set by AdLibItem
 		}
 	))
+
 	if (newSLineItem.content && newSLineItem.content.timelineObjects) {
 		let contentObjects = newSLineItem.content.timelineObjects
 		newSLineItem.content.timelineObjects = _.compact(contentObjects).map(

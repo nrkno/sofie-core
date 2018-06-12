@@ -170,6 +170,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 				transitions: undefined,
 				continuesRefId: undefined,
 				adLibSourceId: undefined,
+				dynamicallyInserted: undefined,
 
 				_id: 'baseline',
 				mosId: 'baseline',

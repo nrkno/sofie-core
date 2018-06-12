@@ -13,6 +13,7 @@ export interface RunningOrderBaselineItem extends SegmentLineItemGeneric {
 	transitions: undefined
 	continuesRefId: undefined
 	adLibSourceId: undefined
+	dynamicallyInserted: undefined
 }
 
 export const RunningOrderBaselineItems: TransformedCollection<RunningOrderBaselineItem, RunningOrderBaselineItem>
