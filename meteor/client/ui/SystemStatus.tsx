@@ -140,8 +140,8 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 						<span className='pill device-item__device-status__label'>
 							{this.statusCodeString()}
 						</span>
-						<div><i>{(((this.props.device || {}).status || {}).messages || []).join(', ')}</i></div>
 					</p>
+					<div><i>{(((this.props.device || {}).status || {}).messages || []).join(', ')}</i></div>
 				</td>
 				<td className='device-item__last-seen'>
 					<p><Moment from={getCurrentTime()} date={this.props.device.lastSeen} /></p>
