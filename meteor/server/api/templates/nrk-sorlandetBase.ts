@@ -64,7 +64,7 @@ import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { Optional } from '../../../lib/lib'
 
 import { LLayers, NoraChannels, SourceLayers } from './nrk-layers'
-import { AtemSource, LawoFadeInDuration } from './nrk-constants'
+import { AtemSource, LawoFadeInDuration, NoraHostControlDefault, NoraHostRenderDefault } from './nrk-constants'
 import { RunningOrderBaselineItem } from '../../../lib/collections/RunningOrderBaselineItems'
 
 const literal = <T>(o: T) => o
@@ -72,6 +72,8 @@ const literal = <T>(o: T) => o
 const lawoDefaultOutDuration = 1400
 
 export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(function (context, story) {
+	const noraHostControl = context.getConfigValue('nora_host_control', NoraHostControlDefault)
+	const noraHostRender = context.getConfigValue('nora_host_render', NoraHostRenderDefault)
 	const noraApiKey = context.getConfigValue('nora_apikey', '')
 	const noraGroup = context.getConfigValue('nora_group', 'dksl')
 
@@ -464,7 +466,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							content: {
 								type: TimelineContentTypeCasparCg.HTMLPAGE,
 								attributes: {
-									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=' + noraGroup + '&channel=' + NoraChannels.super + '&name=sofie-dev-cg&_=' + Date.now()
+									url: noraHostRender + '/?group=' + noraGroup + '&channel=' + NoraChannels.super + '&name=sofie-dev-cg&_=' + Date.now()
 								}
 							}
 						}),
@@ -476,7 +478,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							content: {
 								type: TimelineContentTypeCasparCg.HTMLPAGE,
 								attributes: {
-									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=' + noraGroup + '&channel=' + NoraChannels.logo + '&name=sofie-dev-logo&_=' + Date.now()
+									url: noraHostRender + '/?group=' + noraGroup + '&channel=' + NoraChannels.logo + '&name=sofie-dev-logo&_=' + Date.now()
 								}
 							}
 						}),
@@ -488,7 +490,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							content: {
 								type: TimelineContentTypeCasparCg.HTMLPAGE,
 								attributes: {
-									url: 'http://nora.render.nyheter.mesosint.nrk.no/?group=' + noraGroup + '&channel=' + NoraChannels.studio + '&name=sofie-dev-studio&_=' + Date.now()
+									url: noraHostRender + '/?group=' + noraGroup + '&channel=' + NoraChannels.studio + '&name=sofie-dev-studio&_=' + Date.now()
 								}
 							}
 						}),
@@ -501,7 +503,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							LLayer: LLayers.casparcg_cg_graphics_ctrl,
 							content: {
 								type: TimelineContentTypeHttp.POST,
-								url: 'http://nora.core.mesosint.nrk.no/api/v1/renders/' + noraGroup + '/' + NoraChannels.super + '?apiKey=' + noraApiKey,
+								url: noraHostControl + '/api/v1/renders/' + noraGroup + '/' + NoraChannels.super + '?apiKey=' + noraApiKey,
 								params: clearParams
 							}
 						})
