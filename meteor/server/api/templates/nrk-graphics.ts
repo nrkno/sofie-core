@@ -26,8 +26,8 @@ export function ParseSuperSegments (context: TemplateContextInner, story: StoryW
 		const itemID = context.getValueByPath(item, 'Content.itemID', 0)
 		const name = context.getValueByPath(item, 'Content.mosAbstract', '')
 		const metadata = context.getValueByPath(item, 'Content.mosExternalMetadata', [])
-		const timing = _.find(metadata, (m: any) => m.mosSchema === 'schema.nrk.no/timing')
-		const content = _.find(metadata, (m: any) => m.mosSchema === 'schema.nrk.no/content')
+		const timing = _.find(metadata, (m: any) => (m.mosSchema + '').endsWith('/timing'))
+		const content = _.find(metadata, (m: any) => (m.mosSchema + '').endsWith('/content'))
 
 		if (!timing) context.warning('Super missing timing data. Assuming adlib')
 		if (!content) {
