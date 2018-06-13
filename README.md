@@ -10,6 +10,7 @@ First, install meteor:
 * [Meteor Installation Guide](https://www.meteor.com/install)
 
 Then, clone the repository and install all dependencies:
+(Make sure your NODE_ENV is NOT set to production!)
 
 ```
 git clone https://github.com/nrkno/tv-automation-server-core.git
