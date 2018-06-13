@@ -1011,7 +1011,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.LAWO && (
-								<span>{ (mapping as MappingLawo).channel }</span>
+								<span>{ (mapping as MappingLawo).channelName }</span>
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.HTTPSEND && (
