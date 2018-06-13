@@ -24,7 +24,7 @@ import {
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 
 import { LLayers, SourceLayers } from './nrk-layers'
-import { AtemSource, LawoFadeInDuration, CasparOutputDelay } from './nrk-constants'
+import { AtemSource, LawoFadeInDuration, CasparOutputDelay, NoraHostControlDefault } from './nrk-constants'
 
 const literal = <T>(o: T) => o
 
@@ -79,6 +79,7 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 	context.warning('Unknown variant: ' + mosartVariant)
 
 	const noraGroup = context.getConfigValue('nora_group', 'dksl')
+	const noraHost = context.getConfigValue('nora_host_control', NoraHostControlDefault)
 	const noraApiKey = context.getConfigValue('nora_apikey', '')
 	const gfxPayload = ParseGraffikData(context, story)
 
@@ -112,7 +113,7 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 					LLayer: LLayers.casparcg_cg_graphics_ctrl, // @todo - this should be a seperate layer to ensure the right animations are run
 					content: {
 						type: TimelineContentTypeHttp.POST,
-						url: 'http://nora.core.mesosint.nrk.no/api/v1/renders/' + noraGroup + '/' + gfxPayload.channel + '?apiKey=' + noraApiKey,
+						url: noraHost + '/api/v1/renders/' + noraGroup + '/' + gfxPayload.channel + '?apiKey=' + noraApiKey,
 						params: gfxPayload
 					}
 				}) : undefined),

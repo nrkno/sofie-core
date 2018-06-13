@@ -42,12 +42,19 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 // const literal = <T>(o: T) => o
 
 Meteor.methods({
-	'initDB': () => {
+	'initDB': (really) => {
+
+		if (!really) {
+			return 'Do you really want to do this? You chould only do it when initializing a new database. Confirm with initDB(true).'
+		}
 		console.log('initDB')
 		// Initiate database:
 		StudioInstallations.upsert('studio0', {$set: {
 			name: 'VR3',
 			outputLayers: [],
+
+			'config.nora_group': 'dksl',
+			'config.nora_apikey': 'sofie-dev-iufw83'
 		}})
 
 		// Create outputLayers:

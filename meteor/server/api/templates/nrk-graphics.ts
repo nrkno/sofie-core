@@ -8,6 +8,7 @@ import {
 	StoryWithContext
 } from './templates'
 import { LLayers, NoraChannels, SourceLayers } from './nrk-layers'
+import { NoraHostControlDefault } from './nrk-constants'
 import { TriggerType } from 'superfly-timeline'
 import { TimelineObjHTTPPost, TimelineContentTypeHttp } from '../../../lib/collections/Timeline'
 
@@ -25,8 +26,8 @@ export function ParseSuperSegments (context: TemplateContextInner, story: StoryW
 		const itemID = context.getValueByPath(item, 'Content.itemID', 0)
 		const name = context.getValueByPath(item, 'Content.mosAbstract', '')
 		const metadata = context.getValueByPath(item, 'Content.mosExternalMetadata', [])
-		const timing = _.find(metadata, (m: any) => m.mosSchema === 'schema.nrk.no/timing')
-		const content = _.find(metadata, (m: any) => m.mosSchema === 'schema.nrk.no/content')
+		const timing = _.find(metadata, (m: any) => (m.mosSchema + '').endsWith('/timing'))
+		const content = _.find(metadata, (m: any) => (m.mosSchema + '').endsWith('/content'))
 
 		if (!timing) context.warning('Super missing timing data. Assuming adlib')
 		if (!content) {
@@ -35,6 +36,7 @@ export function ParseSuperSegments (context: TemplateContextInner, story: StoryW
 		}
 
 		const payload = context.getValueByPath(content, 'mosPayload', {})
+		const noraHost = context.getConfigValue('nora_host_control', NoraHostControlDefault)
 		const noraGroup = context.getConfigValue('nora_group', 'dksl')
 		const noraApiKey = context.getConfigValue('nora_apikey', '')
 		const newPayload: any = {
@@ -84,7 +86,7 @@ export function ParseSuperSegments (context: TemplateContextInner, story: StoryW
 			LLayer: LLayers.casparcg_cg_graphics_ctrl,
 			content: {
 				type: TimelineContentTypeHttp.POST,
-				url: 'http://nora.core.mesosint.nrk.no/api/v1/renders/' + noraGroup + '/' + NoraChannels.super + '?apiKey=' + noraApiKey,
+				url: noraHost + '/api/v1/renders/' + noraGroup + '/' + NoraChannels.super + '?apiKey=' + noraApiKey,
 				params: newPayload
 			}
 		})

@@ -30,3 +30,6 @@ export const AtemWipeSettings = {
 }
 
 export const CasparOutputDelay = 120 // ms. Delay between playback in ccg and output on sdi
+
+export const NoraHostControlDefault = 'http://nora.core.mesosint.nrk.no'
+export const NoraHostRenderDefault = 'http://nora.render.nyheter.mesosint.nrk.no'
