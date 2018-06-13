@@ -52,9 +52,10 @@ Meteor.methods({
 		StudioInstallations.upsert('studio0', {$set: {
 			name: 'VR3',
 			outputLayers: [],
-
-			'config.nora_group': 'dksl',
-			'config.nora_apikey': 'sofie-dev-iufw83'
+			config: [
+				{_id: 'nora_group', value: 'dksl'},
+				{_id: 'nora_apikey', value: 'sofie-dev-iufw83'}
+			],
 		}})
 
 		// Create outputLayers:
