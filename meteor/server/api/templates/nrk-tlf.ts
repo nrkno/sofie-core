@@ -143,7 +143,7 @@ export const NrkTLFTemplate = literal<TemplateFunctionOptional>((context: Templa
 					duration: 0,
 					LLayer: LLayers.lawo_source_automix,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						type: TimelineContentTypeLawo.LAWO,
 						transitions: {
 							inTransition: {
 								type: Transition.MIX,
@@ -166,7 +166,7 @@ export const NrkTLFTemplate = literal<TemplateFunctionOptional>((context: Templa
 					duration: 0,
 					LLayer: tlfSource,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						type: TimelineContentTypeLawo.LAWO,
 						transitions: {
 							inTransition: {
 								type: Transition.MIX,

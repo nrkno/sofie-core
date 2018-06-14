@@ -238,7 +238,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 					duration: 0,
 					LLayer: LLayers.lawo_source_effect,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						type: TimelineContentTypeLawo.LAWO,
 						attributes: {
 							db: 0
 						}
@@ -253,7 +253,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 					duration: 0,
 					LLayer: LLayers.lawo_source_automix,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						type: TimelineContentTypeLawo.LAWO,
 						transitions: {
 							inTransition: {
 								type: Transition.MIX,
@@ -276,7 +276,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 					duration: 0,
 					LLayer: LLayers.lawo_source_clip,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						type: TimelineContentTypeLawo.LAWO,
 						transitions: {
 							inTransition: { // @todo should this have a transition?
 								type: Transition.MIX,

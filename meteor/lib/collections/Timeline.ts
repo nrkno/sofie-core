@@ -33,7 +33,7 @@ export enum TimelineContentTypeCasparCg { //  CasparCG-state/TSR
 	RECORD = 'record'
 }
 export enum TimelineContentTypeLawo { // lawo-state
-	AUDIO_SOURCE = 'audio_source'
+	LAWO = 'lawo'
 }
 export enum TimelineContentTypeAtem { //  Atem-state
 	ME = 'me',
@@ -268,7 +268,7 @@ export interface TimelineObjCCGRecord extends TimelineObj {
 export interface TimelineObjLawoSource extends TimelineObj {
 	content: {
 		keyframes?: Array<TimelineKeyframe>
-		type: TimelineContentTypeLawo.AUDIO_SOURCE
+		type: TimelineContentTypeLawo.LAWO
 		transitions?: {
 			inTransition?: TimelineTransition
 		}

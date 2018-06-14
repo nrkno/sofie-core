@@ -112,7 +112,7 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
 					duration: 0,
 					LLayer: LLayers.lawo_source_effect,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						type: TimelineContentTypeLawo.LAWO,
 						attributes: {
 							db: 0
 						}

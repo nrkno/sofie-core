@@ -119,7 +119,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 						duration: 0,
 						LLayer: LLayers.lawo_source_effect,
 						content: {
-							type: TimelineContentTypeLawo.AUDIO_SOURCE,
+							type: TimelineContentTypeLawo.LAWO,
 							attributes: {
 								db: 0
 							}
@@ -151,7 +151,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 						duration: 0,
 						LLayer: LLayers.lawo_source_effect,
 						content: {
-							type: TimelineContentTypeLawo.AUDIO_SOURCE,
+							type: TimelineContentTypeLawo.LAWO,
 							transitions: {
 								inTransition: {
 									type: Transition.MIX,
@@ -270,7 +270,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 						duration: 0,
 						LLayer: LLayers.lawo_source_effect,
 						content: {
-							type: TimelineContentTypeLawo.AUDIO_SOURCE,
+							type: TimelineContentTypeLawo.LAWO,
 							attributes: {
 								db: 0
 							}
@@ -328,7 +328,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 					duration: 0,
 					LLayer: LLayers.lawo_source_automix,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						type: TimelineContentTypeLawo.LAWO,
 						transitions: {
 							inTransition: {
 								type: Transition.MIX,

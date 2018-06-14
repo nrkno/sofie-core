@@ -197,7 +197,7 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 						duration: 0,
 						LLayer: LLayers.lawo_source_automix,
 						content: {
-							type: TimelineContentTypeLawo.AUDIO_SOURCE,
+							type: TimelineContentTypeLawo.LAWO,
 							transitions: {
 								inTransition: {
 									type: Transition.MIX,
@@ -221,7 +221,7 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 					duration: 0,
 					LLayer: lawoLayer1,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						type: TimelineContentTypeLawo.LAWO,
 						transitions: {
 							inTransition: {
 								type: Transition.MIX,
@@ -245,7 +245,7 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 					duration: 0,
 					LLayer: lawoLayer2,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						type: TimelineContentTypeLawo.LAWO,
 						transitions: {
 							inTransition: {
 								type: Transition.MIX,

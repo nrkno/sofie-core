@@ -133,7 +133,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 						duration: 0,
 						LLayer: LLayers.lawo_source_automix,
 						content: {
-							type: TimelineContentTypeLawo.AUDIO_SOURCE,
+							type: TimelineContentTypeLawo.LAWO,
 							transitions: {
 								inTransition: {
 									type: Transition.MIX,
@@ -323,7 +323,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							priority: 0, duration: 0,
 							LLayer: LLayers.lawo_source_automix,
 							content: {
-								type: TimelineContentTypeLawo.AUDIO_SOURCE,
+								type: TimelineContentTypeLawo.LAWO,
 								transitions: {
 									inTransition: {
 										type: Transition.MIX,
@@ -343,7 +343,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							priority: 0, duration: 0,
 							LLayer: LLayers.lawo_source_clip,
 							content: {
-								type: TimelineContentTypeLawo.AUDIO_SOURCE,
+								type: TimelineContentTypeLawo.LAWO,
 								transitions: {
 									inTransition: {
 										type: Transition.MIX,
@@ -363,7 +363,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							priority: 0, duration: 0,
 							LLayer: LLayers.lawo_source_effect,
 							content: {
-								type: TimelineContentTypeLawo.AUDIO_SOURCE,
+								type: TimelineContentTypeLawo.LAWO,
 								transitions: {
 									inTransition: {
 										type: Transition.MIX,
@@ -383,7 +383,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							priority: 0, duration: 0,
 							LLayer: LLayers.lawo_source_preview,
 							content: {
-								type: TimelineContentTypeLawo.AUDIO_SOURCE,
+								type: TimelineContentTypeLawo.LAWO,
 								transitions: {
 									inTransition: {
 										type: Transition.MIX,
@@ -403,7 +403,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							priority: 0, duration: 0,
 							LLayer: LLayers.lawo_source_rm1,
 							content: {
-								type: TimelineContentTypeLawo.AUDIO_SOURCE,
+								type: TimelineContentTypeLawo.LAWO,
 								transitions: {
 									inTransition: {
 										type: Transition.MIX,
@@ -423,7 +423,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							priority: 0, duration: 0,
 							LLayer: LLayers.lawo_source_rm2,
 							content: {
-								type: TimelineContentTypeLawo.AUDIO_SOURCE,
+								type: TimelineContentTypeLawo.LAWO,
 								transitions: {
 									inTransition: {
 										type: Transition.MIX,
@@ -443,7 +443,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							priority: 0, duration: 0,
 							LLayer: LLayers.lawo_source_rm3,
 							content: {
-								type: TimelineContentTypeLawo.AUDIO_SOURCE,
+								type: TimelineContentTypeLawo.LAWO,
 								transitions: {
 									inTransition: {
 										type: Transition.MIX,

@@ -108,7 +108,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 					duration: 0,
 					LLayer: LLayers.lawo_source_automix,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						type: TimelineContentTypeLawo.LAWO,
 						transitions: {
 							inTransition: {
 								type: Transition.MIX,
@@ -131,7 +131,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 					duration: 0,
 					LLayer: LLayers.lawo_source_clip,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						type: TimelineContentTypeLawo.LAWO,
 						transitions: {
 							inTransition: { // @todo should this have a transition?
 								type: Transition.MIX,
