@@ -5,7 +5,6 @@ import { RundownAPI } from '../../../lib/api/rundown'
 import { IOutputLayer } from '../../../lib/collections/StudioInstallations'
 import { TemplateSet } from './templates'
 
-import { NrkBreakTemplate } from './nrk-break'
 import { NrkVignettTemplate } from './nrk-vignett'
 import { NrkHeadTemplate } from './nrk-head'
 import { NrkKamTemplate } from './nrk-kam'
@@ -88,8 +87,7 @@ let nrk: TemplateSet = {
 					let type = md.MosPayload.mosartType + ''
 					let variant = md.MosPayload.mosartVariant + ''
 
-					if (type.match(/break/i)) 			templateId = 'break'
-					else if (type.match(/full/i) &&
+					if (type.match(/full/i) &&
 							variant.match(/vignett/i)) 	templateId = 'vignett'
 					else if (type.match(/full/i))		templateId = 'full'
 					else if (type.match(/stk/i) &&
@@ -110,7 +108,6 @@ let nrk: TemplateSet = {
 		return templateId
 	}),
 	templates: {
-		break: NrkBreakTemplate,
 		vignett: NrkVignettTemplate,
 		full: NrkFullTemplate,
 		stkHead: NrkHeadTemplate,
