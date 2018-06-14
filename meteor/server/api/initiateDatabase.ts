@@ -265,37 +265,44 @@ Meteor.methods({
 			'lawo_source_automix': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'Automiks'
+				channelName: 'Automiks',
+				path: [1, 1, 2]
 			}),
 			'lawo_source_clip': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'Innslag'
+				channelName: 'Innslag',
+				path: [1, 1, 8]
 			}),
 			'lawo_source_effect': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'Effekter'
+				channelName: 'Effekter',
+				path: [1, 1, 7]
 			}),
 			'lawo_source_preview': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'Forlytt'
+				channelName: 'Forlytt',
+				path: [1, 1, 6]
 			}),
 			'lawo_source_rm1': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'RM 1'
+				channelName: 'RM 1',
+				path: [1, 1, 5]
 			}),
 			'lawo_source_rm2': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'RM 2'
+				channelName: 'RM 2',
+				path: [1, 1, 9]
 			}),
 			'lawo_source_rm3': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'RM 3'
+				channelName: 'RM 3',
+				path: [1, 1, 4]
 			})
 		}
 		StudioInstallations.update('studio0', {$set: {
