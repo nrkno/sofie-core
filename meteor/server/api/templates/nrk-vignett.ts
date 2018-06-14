@@ -42,7 +42,7 @@ import {
 } from './templates'
 import {
 	TimelineObjCCGVideo,
-	TimelineObjLawoSource,
+	TimelineObjLawo,
 	TimelineObjCCGTemplate,
 	TimelineContentTypeCasparCg,
 	TimelineContentTypeLawo,
@@ -52,6 +52,7 @@ import {
 	Atem_Enums,
 	TimelineObjAtemME,
 	TimelineObjAtemAUX,
+	EmberPlusValueType,
 	TimelineObjAtemDSK,
 	TimelineObjAtemSsrc
 } from '../../../lib/collections/Timeline'
@@ -105,7 +106,7 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
 			sourceDuration: sourceDuration,
 			timelineObjects: [
 				// full sound vignett
-				literal<TimelineObjLawoSource>({
+				literal<TimelineObjLawo>({
 					_id: IDs.lawo, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 					priority: 1,
@@ -113,8 +114,11 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
 					LLayer: LLayers.lawo_source_effect,
 					content: {
 						type: TimelineContentTypeLawo.LAWO,
-						attributes: {
-							db: 0
+						value: {
+							value: {
+								value: 0,
+								type: EmberPlusValueType.REAL
+							}
 						}
 					}
 				}),

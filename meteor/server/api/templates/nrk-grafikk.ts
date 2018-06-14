@@ -1,30 +1,14 @@
-import * as _ from 'underscore'
+import { TriggerType } from 'superfly-timeline';
+import * as _ from 'underscore';
+import { RundownAPI } from '../../../lib/api/rundown';
+import { DBSegmentLine } from '../../../lib/collections/SegmentLines';
+import { Atem_Enums, TimelineContentTypeAtem, TimelineContentTypeCasparCg, TimelineContentTypeHttp, TimelineContentTypeLawo, TimelineObjAtemME, TimelineObjCCGVideo, EmberPlusValueType, TimelineObjHTTPPost, TimelineObjLawo } from '../../../lib/collections/Timeline';
+import { Direction, Ease, Transition } from '../../../lib/constants/casparcg';
+import { AtemSource, CasparOutputDelay, LawoFadeInDuration, NoraHostControlDefault } from './nrk-constants';
+import { LLayers, SourceLayers } from './nrk-layers';
+import { SegmentLineItemOptional, StoryWithContext, TemplateContextInner, TemplateFunctionOptional, TemplateResult } from './templates';
 
-import { DBSegmentLine } from '../../../lib/collections/SegmentLines'
-import { TriggerType } from 'superfly-timeline'
-import { RundownAPI } from '../../../lib/api/rundown'
-import {
-	SegmentLineItemOptional,
-	TemplateFunctionOptional,
-	TemplateResult,
-	TemplateContextInner,
-	StoryWithContext
-} from './templates'
-import {
-	TimelineObjCCGVideo,
-	TimelineObjLawoSource,
-	TimelineContentTypeCasparCg,
-	TimelineContentTypeLawo,
-	TimelineContentTypeAtem,
-	Atem_Enums,
-	TimelineObjAtemME,
-	TimelineObjHTTPPost,
-	TimelineContentTypeHttp,
-} from '../../../lib/collections/Timeline'
-import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 
-import { LLayers, SourceLayers } from './nrk-layers'
-import { AtemSource, LawoFadeInDuration, CasparOutputDelay, NoraHostControlDefault } from './nrk-constants'
 
 const literal = <T>(o: T) => o
 
@@ -119,7 +103,7 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 				}) : undefined),
 
 				// automix mic hot
-				literal<TimelineObjLawoSource>({
+				literal<TimelineObjLawo>({
 					_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 					priority: 1,
@@ -127,22 +111,18 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 					LLayer: LLayers.lawo_source_automix,
 					content: {
 						type: TimelineContentTypeLawo.LAWO,
-						transitions: {
-							inTransition: {
-								type: Transition.MIX,
-								duration: LawoFadeInDuration,
-								easing: Ease.LINEAR,
-								direction: Direction.LEFT
-							}
-						},
-						attributes: {
-							db: 0
+						value: {
+							value: {
+								value: 0,
+								type: EmberPlusValueType.REAL
+							},
+							transitionDuration: LawoFadeInDuration,
 						}
 					}
 				}),
 
 				// audio bed
-				literal<TimelineObjLawoSource>({
+				literal<TimelineObjLawo>({
 					_id: IDs.lawo_bed, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
 					priority: 1,
@@ -150,16 +130,12 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 					LLayer: LLayers.lawo_source_clip,
 					content: {
 						type: TimelineContentTypeLawo.LAWO,
-						transitions: {
-							inTransition: {
-								type: Transition.MIX,
-								duration: LawoFadeInDuration,
-								easing: Ease.LINEAR,
-								direction: Direction.LEFT
-							}
-						},
-						attributes: {
-							db: -15
+						value: {
+							value: {
+								value: -15,
+								type: EmberPlusValueType.REAL
+							},
+							transitionDuration: LawoFadeInDuration,
 						}
 					}
 				}),

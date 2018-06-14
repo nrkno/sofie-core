@@ -266,25 +266,25 @@ Meteor.methods({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				channelName: 'Automiks',
-				path: [1, 1, 2]
+				path: [1, 1, 2, 3, 2]
 			}),
 			'lawo_source_clip': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				channelName: 'Innslag',
-				path: [1, 1, 8]
+				path: [1, 1, 8, 3, 2]
 			}),
 			'lawo_source_effect': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				channelName: 'Effekter',
-				path: [1, 1, 7]
+				path: [1, 1, 7, 3, 2]
 			}),
 			'lawo_source_preview': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				channelName: 'Forlytt',
-				path: [1, 1, 6]
+				path: [1, 1, 6, 3, 2]
 			}),
 			'lawo_source_rm1': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
@@ -296,13 +296,13 @@ Meteor.methods({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				channelName: 'RM 2',
-				path: [1, 1, 9]
+				path: [1, 1, 9, 3, 2]
 			}),
 			'lawo_source_rm3': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				channelName: 'RM 3',
-				path: [1, 1, 4]
+				path: [1, 1, 4, 3, 2]
 			})
 		}
 		StudioInstallations.update('studio0', {$set: {

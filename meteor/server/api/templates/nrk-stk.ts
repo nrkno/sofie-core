@@ -41,7 +41,7 @@ import {
 } from './templates'
 import {
 	TimelineObjCCGVideo,
-	TimelineObjLawoSource,
+	TimelineObjLawo,
 	TimelineObjCCGTemplate,
 	TimelineContentTypeCasparCg,
 	TimelineContentTypeLawo,
@@ -50,6 +50,7 @@ import {
 	TimelineObjAbstract,
 	Atem_Enums,
 	TimelineObjAtemME,
+	EmberPlusValueType,
 	TimelineObjAtemAUX,
 	TimelineObjAtemDSK,
 	TimelineObjAtemSsrc,
@@ -146,7 +147,7 @@ export const NrkSTKTemplate = literal<TemplateFunctionOptional>((context: Templa
 				}),
 
 				// server1 to -15db/-inf
-				literal<TimelineObjLawoSource>({
+				literal<TimelineObjLawo>({
 					_id: IDs.lawo_clip, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.playerClip}.start + ${CasparOutputDelay}` },
 					priority: 1,
@@ -154,22 +155,18 @@ export const NrkSTKTemplate = literal<TemplateFunctionOptional>((context: Templa
 					LLayer: LLayers.lawo_source_clip,
 					content: {
 						type: TimelineContentTypeLawo.LAWO,
-						transitions: {
-							inTransition: {
-								type: Transition.MIX,
-								duration: LawoFadeInDuration,
-								easing: Ease.LINEAR,
-								direction: Direction.LEFT
-							}
-						},
-						attributes: {
-							db: clipLevel
+						value: {
+							value: {
+								value: clipLevel,
+								type: EmberPlusValueType.REAL
+							},
+							transitionDuration: LawoFadeInDuration,
 						}
 					}
 				}),
 
 				// automix mic hot
-				literal<TimelineObjLawoSource>({
+				literal<TimelineObjLawo>({
 					_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.playerClip}.start + ${CasparOutputDelay}` },
 					priority: 1,
@@ -177,16 +174,12 @@ export const NrkSTKTemplate = literal<TemplateFunctionOptional>((context: Templa
 					LLayer: LLayers.lawo_source_automix,
 					content: {
 						type: TimelineContentTypeLawo.LAWO,
-						transitions: {
-							inTransition: {
-								type: Transition.MIX,
-								duration: LawoFadeInDuration,
-								easing: Ease.LINEAR,
-								direction: Direction.LEFT
-							}
-						},
-						attributes: {
-							db: 0
+						value: {
+							value: {
+								value: 0,
+								type: EmberPlusValueType.REAL
+							},
+							transitionDuration: LawoFadeInDuration,
 						}
 					}
 				}),

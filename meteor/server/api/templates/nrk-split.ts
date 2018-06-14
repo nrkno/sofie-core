@@ -42,7 +42,7 @@ import {
 } from './templates'
 import {
 	TimelineObjCCGVideo,
-	TimelineObjLawoSource,
+	TimelineObjLawo,
 	TimelineObjCCGTemplate,
 	TimelineContentTypeCasparCg,
 	TimelineContentTypeLawo,
@@ -51,6 +51,7 @@ import {
 	TimelineObjAbstract,
 	Atem_Enums,
 	TimelineObjAtemME,
+	EmberPlusValueType,
 	TimelineObjAtemAUX,
 	TimelineObjAtemDSK,
 	TimelineObjAtemSsrc,
@@ -190,7 +191,7 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 
 				// automix mic hot
 				(lawoHost ?
-					literal<TimelineObjLawoSource>({
+					literal<TimelineObjLawo>({
 						_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
 						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.atemSSrc}.start + 0` },
 						priority: 1,
@@ -198,23 +199,19 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 						LLayer: LLayers.lawo_source_automix,
 						content: {
 							type: TimelineContentTypeLawo.LAWO,
-							transitions: {
-								inTransition: {
-									type: Transition.MIX,
-									duration: LawoFadeInDuration,
-									easing: Ease.LINEAR,
-									direction: Direction.LEFT
-								}
-							},
-							attributes: {
-								db: 0
+							value: {
+								value: {
+									value: 0,
+									type: EmberPlusValueType.REAL
+								},
+								transitionDuration: LawoFadeInDuration,
 							}
 						}
 					}) : undefined),
 
 				// mic1 hot
 				(lawoLayer1 ?
-				literal<TimelineObjLawoSource>({
+				literal<TimelineObjLawo>({
 					_id: IDs.lawo_layer1, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.atemSSrc}.start + 0` },
 					priority: 1,
@@ -222,23 +219,19 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 					LLayer: lawoLayer1,
 					content: {
 						type: TimelineContentTypeLawo.LAWO,
-						transitions: {
-							inTransition: {
-								type: Transition.MIX,
-								duration: LawoFadeInDuration,
-								easing: Ease.LINEAR,
-								direction: Direction.LEFT
-							}
-						},
-						attributes: {
-							db: -15
+						value: {
+							value: {
+								value: -15,
+								type: EmberPlusValueType.REAL
+							},
+							transitionDuration: LawoFadeInDuration,
 						}
 					}
 				}) : undefined),
 
 				// mic2 hot
 				(lawoLayer2 ?
-				literal<TimelineObjLawoSource>({
+				literal<TimelineObjLawo>({
 					_id: IDs.lawo_layer2, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.atemSSrc}.start + 0` },
 					priority: 1,
@@ -246,16 +239,12 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 					LLayer: lawoLayer2,
 					content: {
 						type: TimelineContentTypeLawo.LAWO,
-						transitions: {
-							inTransition: {
-								type: Transition.MIX,
-								duration: LawoFadeInDuration,
-								easing: Ease.LINEAR,
-								direction: Direction.LEFT
-							}
-						},
-						attributes: {
-							db: -15
+						value: {
+							value: {
+								value: -15,
+								type: EmberPlusValueType.REAL
+							},
+							transitionDuration: LawoFadeInDuration,
 						}
 					}
 				}) : undefined),

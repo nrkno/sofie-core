@@ -42,13 +42,14 @@ import {
 } from './templates'
 import {
 	TimelineObjCCGVideo,
-	TimelineObjLawoSource,
+	TimelineObjLawo,
 	TimelineObjCCGTemplate,
 	TimelineContentTypeCasparCg,
 	TimelineContentTypeLawo,
 	TimelineContentTypeAtem,
 	TimelineObj,
 	TimelineObjAbstract,
+	EmberPlusValueType,
 	Atem_Enums,
 	TimelineObjAtemME,
 	TimelineObjAtemAUX,
@@ -112,7 +113,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 			content: {
 				timelineObjects: _.compact([
 					// utvignett to 0db
-					literal<TimelineObjLawoSource>({
+					literal<TimelineObjLawo>({
 						_id: IDs.lawo_effect, deviceId: [''], siId: '', roId: '',
 						trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 						priority: 1,
@@ -120,8 +121,11 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 						LLayer: LLayers.lawo_source_effect,
 						content: {
 							type: TimelineContentTypeLawo.LAWO,
-							attributes: {
-								db: 0
+							value: {
+								value: {
+									value: 0,
+									type: EmberPlusValueType.REAL
+								}
 							}
 						}
 					}),
@@ -144,7 +148,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 					}),
 
 					// fade out host mic
-					literal<TimelineObjLawoSource>({
+					literal<TimelineObjLawo>({
 						_id: IDs.lawo_automix_out, deviceId: [''], siId: '', roId: '',
 						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.vignettVideo}.start + 0` },
 						priority: 5,
@@ -152,16 +156,12 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 						LLayer: LLayers.lawo_source_effect,
 						content: {
 							type: TimelineContentTypeLawo.LAWO,
-							transitions: {
-								inTransition: {
-									type: Transition.MIX,
-									duration: 1400,
-									easing: Ease.LINEAR,
-									direction: Direction.LEFT
-								}
-							},
-							attributes: {
-								db: -191 // -inf
+							value: {
+								value: {
+									value: -191,
+									type: EmberPlusValueType.REAL
+								},
+								transitionDuration: 1400,
 							}
 						}
 					}),
@@ -263,7 +263,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 						}
 					}),
 
-					literal<TimelineObjLawoSource>({
+					literal<TimelineObjLawo>({
 						_id: IDs.lawo_effect, deviceId: [''], siId: '', roId: '',
 						trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 						priority: 1,
@@ -271,8 +271,11 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 						LLayer: LLayers.lawo_source_effect,
 						content: {
 							type: TimelineContentTypeLawo.LAWO,
-							attributes: {
-								db: 0
+							value: {
+								value: {
+									value: 0,
+									type: EmberPlusValueType.REAL
+								}
 							}
 						}
 					}),
@@ -321,7 +324,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 				}),
 
 				// mic host hot
-				literal<TimelineObjLawoSource>({
+				literal<TimelineObjLawo>({
 					_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 					priority: 1,
@@ -329,16 +332,12 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 					LLayer: LLayers.lawo_source_automix,
 					content: {
 						type: TimelineContentTypeLawo.LAWO,
-						transitions: {
-							inTransition: {
-								type: Transition.MIX,
-								duration: LawoFadeInDuration,
-								easing: Ease.LINEAR,
-								direction: Direction.LEFT
-							}
-						},
-						attributes: {
-							db: 0
+						value: {
+							value: {
+								value: 0,
+								type: EmberPlusValueType.REAL
+							},
+							transitionDuration: LawoFadeInDuration,
 						}
 					}
 				}),
