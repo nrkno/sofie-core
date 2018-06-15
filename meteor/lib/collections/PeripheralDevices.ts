@@ -10,6 +10,7 @@ export interface PeripheralDevice {
 	type: PeripheralDeviceAPI.DeviceType
 
 	studioInstallationId: string
+	parentDeviceId?: string
 
 	created: Time
 	status: PeripheralDeviceAPI.StatusObject

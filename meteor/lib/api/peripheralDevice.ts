@@ -28,7 +28,8 @@ export enum DeviceType {
 export interface InitOptions {
 	type: DeviceType,
 	name: string,
-	connectionId: string
+	connectionId: string,
+	parentDeviceId?: string
 }
 export type TimelineTriggerTimeResult = Array<{id: string, time: number}>
 

@@ -45,6 +45,7 @@ export namespace ServerPeripheralDeviceAPI {
 		check(options, Object)
 		check(options.name, String)
 		check(options.type, Number)
+		check(options.parentDeviceId, Match.Optional(String))
 
 		console.log('initialize', options)
 
@@ -58,7 +59,8 @@ export namespace ServerPeripheralDeviceAPI {
 					connected: true,
 					connectionId: options.connectionId,
 					type: options.type,
-					name: options.name
+					name: options.name,
+					parentDeviceId: options.parentDeviceId
 				}
 			})
 		} catch (e) {
@@ -76,6 +78,7 @@ export namespace ServerPeripheralDeviceAPI {
 					token: token,
 					type: options.type,
 					name: options.name,
+					parentDeviceId: options.parentDeviceId
 					// settings: {}
 				})
 			} else {
