@@ -52,9 +52,10 @@ Meteor.methods({
 		StudioInstallations.upsert('studio0', {$set: {
 			name: 'VR3',
 			outputLayers: [],
-
-			'config.nora_group': 'dksl',
-			'config.nora_apikey': 'sofie-dev-iufw83'
+			config: [
+				{_id: 'nora_group', value: 'dksl'},
+				{_id: 'nora_apikey', value: 'sofie-dev-iufw83'}
+			],
 		}})
 
 		// Create outputLayers:
@@ -264,37 +265,44 @@ Meteor.methods({
 			'lawo_source_automix': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channel: 1
+				channelName: 'Automiks',
+				path: [1, 1, 2, 3, 2]
 			}),
 			'lawo_source_clip': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channel: 2
+				channelName: 'Innslag',
+				path: [1, 1, 8, 3, 2]
 			}),
 			'lawo_source_effect': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channel: 3
+				channelName: 'Effekter',
+				path: [1, 1, 7, 3, 2]
 			}),
 			'lawo_source_preview': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channel: 4
+				channelName: 'Forlytt',
+				path: [1, 1, 6, 3, 2]
 			}),
 			'lawo_source_rm1': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channel: 5
+				channelName: 'RM 1',
+				path: [1, 1, 5]
 			}),
 			'lawo_source_rm2': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channel: 6
+				channelName: 'RM 2',
+				path: [1, 1, 9, 3, 2]
 			}),
 			'lawo_source_rm3': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channel: 7
+				channelName: 'RM 3',
+				path: [1, 1, 4, 3, 2]
 			})
 		}
 		StudioInstallations.update('studio0', {$set: {

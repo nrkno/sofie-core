@@ -263,7 +263,39 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 									</React.Fragment>
 									)
 								))
-							)}
+								) ||
+								(
+								device.type === PlayoutDeviceType.LAWO && (
+									(
+									<React.Fragment>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Host')}
+												<EditAttribute
+													modifiedClassName='bghl'
+													attribute={'settings.devices.' + deviceId + '.options.host'}
+													obj={this.props.device}
+													type='text'
+													collection={PeripheralDevices}
+													className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Port')}
+												<EditAttribute
+													modifiedClassName='bghl'
+													attribute={'settings.devices.' + deviceId + '.options.port'}
+													obj={this.props.device}
+													type='int'
+													collection={PeripheralDevices}
+													className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+									</React.Fragment>
+									)
+								))
+							}
 						</div>
 						<div className='mod alright'>
 							<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(deviceId)}>

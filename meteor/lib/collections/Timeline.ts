@@ -33,7 +33,7 @@ export enum TimelineContentTypeCasparCg { //  CasparCG-state/TSR
 	RECORD = 'record'
 }
 export enum TimelineContentTypeLawo { // lawo-state
-	AUDIO_SOURCE = 'audio_source'
+	LAWO = 'lawo'
 }
 export enum TimelineContentTypeAtem { //  Atem-state
 	ME = 'me',
@@ -295,7 +295,7 @@ export interface EmberPlusValueString extends EmberPlusValue {
 export type LawoStateNodeAttr = EmberPlusValue | LawoStateNodeAttrTransition
 export interface LawoStateNodeAttrTransition {
 	value: EmberPlusValue
-	transitionDuration: number
+	transitionDuration?: number
 }
 export interface TimelineObjLawo extends TimelineObj {
 	content: {

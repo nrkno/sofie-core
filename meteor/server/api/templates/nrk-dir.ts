@@ -99,7 +99,7 @@ export const NrkDirTemplate = literal<TemplateFunctionOptional>((context: Templa
 					duration: 0,
 					LLayer: lawoLayer,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						type: TimelineContentTypeLawo.LAWO,
 						value: {
 							value: {
 								value: 0,

@@ -109,7 +109,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 					duration: 0,
 					LLayer: LLayers.lawo_source_automix,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						type: TimelineContentTypeLawo.LAWO,
 						value: {
 							value: {
 								value: -191,
@@ -128,7 +128,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 					duration: 0,
 					LLayer: LLayers.lawo_source_clip,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
+						type: TimelineContentTypeLawo.LAWO,
 						value: {
 							value: {
 								value: 0,

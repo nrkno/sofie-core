@@ -981,6 +981,37 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 			</React.Fragment>
 		)
 	}
+	renderLawoMappingSettings (layerId: string) {
+		const { t } = this.props
+		return (
+			<React.Fragment>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('channel name')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.channelName'}
+							obj={this.props.studioInstallation}
+							type='text'
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('path')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.path'}
+							obj={this.props.studioInstallation}
+							type='text'
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+			</React.Fragment>
+		)
+	}
 
 	renderMappings () {
 		const { t } = this.props
@@ -1011,7 +1042,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.LAWO && (
-								<span>{ (mapping as MappingLawo).channel }</span>
+								<span>{ (mapping as MappingLawo).channelName }</span>
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.HTTPSEND && (
@@ -1083,7 +1114,12 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 									mapping.device === PlayoutDeviceType.ATEM && (
 										this.renderAtemMappingSettings(layerId)
 									))
-								)}
+									) ||
+									(
+									mapping.device === PlayoutDeviceType.LAWO && (
+										this.renderLawoMappingSettings(layerId)
+									))
+								}
 							</div>
 							<div className='mod alright'>
 								<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(layerId)}>
