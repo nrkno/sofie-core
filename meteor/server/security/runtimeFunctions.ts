@@ -16,13 +16,13 @@ export namespace RuntimeFunctionsSecurity {
 
 RuntimeFunctions.allow({
 	insert (userId: string, doc: RuntimeFunction): boolean {
-		return true // Temporary: allow all updates client-side
+		return false // dont allow any client-side, go through API
 	},
 	update (userId, doc, fields, modifier) {
-		return true // Temporary: allow all updates client-side
+		return false // dont allow any client-side, go through API
 	},
 
 	remove (userId, doc) {
-		return true // Temporary: allow all updates client-side
+		return false // dont allow any client-side, go through API
 	}
 })

@@ -585,7 +585,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 		fixIllegalObject(story)
 		// @ts-ignore
-		logger.debug(story)
+		// logger.debug(story)
 		// Update db with the full story:
 		let ro = getRO(story.RunningOrderId)
 		// let segment = getSegment(story.RunningOrderId, story.ID)
@@ -1034,12 +1034,16 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 		logger.warn('Could not find duration information for segment line: ' + segmentLine._id)
 	}
 
+	let showStyle = ShowStyles.findOne(ro.showStyleId)
+
+	if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + ro.showStyleId + '" not found!')
+
 	let context: TemplateContext = {
 		runningOrderId: ro._id,
 		// segment: Segment,
 		segmentLine: segmentLine
 	}
-	let result = runTemplate(context, story)
+	let result = runTemplate(showStyle, context, story)
 
 	if (result.segmentLine) {
 		SegmentLines.update(segmentLine._id, {$set: {

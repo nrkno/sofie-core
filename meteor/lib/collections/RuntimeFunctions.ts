@@ -3,7 +3,12 @@ import { TransformedCollection } from '../typings/meteor'
 
 export interface RuntimeFunction {
 	_id: string
+	showStyleId: string
+	templateId: string
 	code: string
+	createdVersion: number
+	modified: number
+	active: true
 }
 
 export const RuntimeFunctions: TransformedCollection<RuntimeFunction, RuntimeFunction>

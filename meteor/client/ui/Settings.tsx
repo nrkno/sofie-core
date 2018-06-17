@@ -114,13 +114,6 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}
 	}
 
-	onAddLineTemplate () {
-		RuntimeFunctions.insert(literal<RuntimeFunction>({
-			_id: Random.hexString(5),
-			code: ''
-		}))
-	}
-
 	onAddShowStyle () {
 		ShowStyles.insert(literal<ShowStyle>({
 			_id: Random.hexString(5),
@@ -130,31 +123,10 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}))
 	}
 
-	onDeleteLineTemplate (item: RuntimeFunction) {
-		this.setState({
-			deleteConfirmItem: item,
-			showDeleteLineTemplateConfirm: true
-		})
-	}
-
 	onDeleteShowStyle (item: ShowStyle) {
 		this.setState({
 			deleteConfirmItem: item,
 			showDeleteShowStyleConfirm: true
-		})
-	}
-
-	handleConfirmDeleteLineTemplateAccept = (e) => {
-		RuntimeFunctions.remove(this.state.deleteConfirmItem._id)
-		this.setState({
-			showDeleteLineTemplateConfirm: false
-		})
-	}
-
-	handleConfirmDeleteLineTemplateCancel = (e) => {
-		this.setState({
-			deleteConfirmItem: undefined,
-			showDeleteLineTemplateConfirm: false
 		})
 	}
 
@@ -218,7 +190,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 						)
 					})
 				}
-				<h2 className='mhs'>
+				{/* <h2 className='mhs'>
 					<button className='action-btn right' onClick={(e) => this.onAddLineTemplate()}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
@@ -243,7 +215,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 							</NavLink>
 						)
 					})
-				}
+				} */}
 				<h2 className='mhs'>{t('Devices')}</h2>
 				<hr className='vsubtle man' />
 				{

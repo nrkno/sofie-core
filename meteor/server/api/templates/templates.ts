@@ -155,9 +155,10 @@ export interface TemplateResultAfterPost {
 
 import { nrk } from './nrk'
 import { logger } from '../../logging'
-import { RunningOrders } from '../../../lib/collections/RunningOrders'
+import { RunningOrders, RunningOrder } from '../../../lib/collections/RunningOrders'
 import { TimelineObj } from '../../../lib/collections/Timeline'
 import { StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { ShowStyle } from '../../../lib/collections/ShowStyles'
 
 let template: TemplateSet = nrk
 function injectContextIntoArguments (context: TemplateContextInner, args: any[]): Array<any> {
@@ -180,17 +181,24 @@ export interface StoryWithContextBase {
 export interface StoryWithContext extends IMOSROFullStory, StoryWithContextBase {
 }
 
-function findFunction (functionId: string, context: TemplateContextInner): TemplateGeneralFunction {
-	let fcn: null | TemplateGeneralFunction = null
-	let runtimeFunction = RuntimeFunctions.findOne(functionId)
+let fcn: null | TemplateGeneralFunction = null
+function findFunction (showStyle: ShowStyle, functionId: string, context: TemplateContextInner): TemplateGeneralFunction {
+	let runtimeFunction = RuntimeFunctions.findOne({
+		showStyleId: showStyle._id,
+		active: true,
+		templateId: functionId
+	})
 	if (runtimeFunction && runtimeFunction.code) {
 
 		// Note: the functions will be without the preceeding "function () {" and the ending "}"
-		let functionStr = 'return function (story) { ' + runtimeFunction.code + '}'
+		let functionStr = ((runtimeFunction.code + '').match(/function[\s\S]*}/) || [])[0]
+		// console.log('functionStr', functionStr)
 		try {
+			if (!functionStr) throw Error('Function empty!')
 			let runtimeFcn: TemplateGeneralFunction = saferEval(functionStr, {})
-			fcn = (story) => {
-				let result = runtimeFcn.apply(context, [context].concat(injectContextIntoArguments(context, [story])))
+			// console.log('runtimeFcn', runtimeFcn)
+			fcn = (...args: any[]) => {
+				let result = runtimeFcn.apply(context, [context].concat(injectContextIntoArguments(context, args)))
 				return result
 			}
 		} catch (e) {
@@ -215,11 +223,12 @@ function findFunction (functionId: string, context: TemplateContextInner): Templ
 	}
 }
 
-export function runNamedTemplate (templateId: string, context: TemplateContext, story: IMOSROFullStory): TemplateResultAfterPost {
+export function runNamedTemplate (showStyle: ShowStyle, templateId: string, context: TemplateContext, story: IMOSROFullStory): TemplateResultAfterPost {
 	let innerContext = getContext(context)
-	let fcn = findFunction(templateId, innerContext)
+	let fcn = findFunction(showStyle, templateId, innerContext)
 	let result: TemplateResult = fcn(story) as TemplateResult
 
+	// console.log('runNamedTemplate', templateId)
 	// Post-process the result:
 	let i = 0
 	let segmentLinesUniqueIds: { [id: string]: true } = {}
@@ -304,14 +313,14 @@ export function runNamedTemplate (templateId: string, context: TemplateContext, 
 	return resultAfterPost
 }
 
-export function runTemplate (context: TemplateContext, story: IMOSROFullStory): TemplateResultAfterPost {
+export function runTemplate (showStyle: ShowStyle, context: TemplateContext, story: IMOSROFullStory): TemplateResultAfterPost {
 	let innerContext0 = getContext(context)
-	let getId = findFunction('getId', innerContext0)
+	let getId = findFunction(showStyle, 'getId', innerContext0)
 
 	let templateId: string = getId(story) as string
 
 	if (templateId) {
-		return runNamedTemplate(templateId, context, story)
+		return runNamedTemplate(showStyle, templateId, context, story)
 	} else {
 		throw new Meteor.Error(500, 'No template id found for story "' + story.ID + '" ("' + story.Slug + '")')
 	}
