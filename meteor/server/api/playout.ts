@@ -38,7 +38,8 @@ Meteor.methods({
 			}
 		}, 'triggerGetRunningOrder', runningOrder.mosId)
 	},
-	'playout_activate': (roId: string) => {
+	'playout_activate': (roId: string, rehearsal: boolean) => {
+		rehearsal = !!rehearsal
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
@@ -50,6 +51,8 @@ Meteor.methods({
 		if (anyOtherActiveRunningOrders.length) {
 			throw new Meteor.Error(400, 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders,'_id'))
 		}
+		logger.info('Activating RO ' + roId + (rehearsal ? ' (Rehearsal)' : ''))
+
 		let segmentLines = runningOrder.getSegmentLines()
 
 		SegmentLines.update({ runningOrderId: runningOrder._id }, { $unset: {
@@ -74,6 +77,7 @@ Meteor.methods({
 
 		RunningOrders.update(runningOrder._id, {$set: {
 			active: true,
+			rehearsal: rehearsal,
 			previousSegmentLineId: null,
 			currentSegmentLineId: null,
 			nextSegmentLineId: segmentLines[0]._id // put the first on queue
@@ -121,6 +125,8 @@ Meteor.methods({
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
+		logger.info('Inactivating RO ' + roId )
+
 		let previousSegmentLine = (runningOrder.currentSegmentLineId ?
 			SegmentLines.findOne(runningOrder.currentSegmentLineId)
 			: null
@@ -144,7 +150,7 @@ Meteor.methods({
 		updateTimeline(runningOrder.studioInstallationId)
 
 		if (previousSegmentLine) {
-			setStoryStatus(runningOrder.mosDeviceId, runningOrder.mosId, previousSegmentLine.mosId, IMOSObjectStatus.STOP)
+			setStoryStatus(runningOrder.mosDeviceId, runningOrder, previousSegmentLine.mosId, IMOSObjectStatus.STOP)
 		}
 	},
 
@@ -192,9 +198,9 @@ Meteor.methods({
 		updateTimeline(runningOrder.studioInstallationId)
 
 		if (previousSegmentLine) {
-			setStoryStatus(runningOrder.mosDeviceId, runningOrder.mosId, previousSegmentLine.mosId, IMOSObjectStatus.STOP)
+			setStoryStatus(runningOrder.mosDeviceId, runningOrder, previousSegmentLine.mosId, IMOSObjectStatus.STOP)
 		}
-		setStoryStatus(runningOrder.mosDeviceId, runningOrder.mosId, takeSegmentLine.mosId, IMOSObjectStatus.PLAY)
+		setStoryStatus(runningOrder.mosDeviceId, runningOrder, takeSegmentLine.mosId, IMOSObjectStatus.PLAY)
 	},
 
 	'playout_setNext': (roId: string, nextSlId: string) => {
