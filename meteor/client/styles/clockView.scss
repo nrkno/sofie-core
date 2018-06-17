@@ -1,0 +1,50 @@
+.clocks-full-screen {
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+
+	height: 100vh;
+	width: 100vw;
+
+	text-align: center;
+}
+
+.clocks-half {
+	height: 50vh;
+}
+
+.clocks-top-bar {
+	border-top: solid 10px #454545;
+}
+
+.clocks-segment-title {
+	font-size: 9rem;
+}
+
+.clocks-current-segment-title {
+	color: #ffff00;
+}
+
+.clocks-segment-countdown {
+	font-weight: 100;
+	font-size: 9rem;
+}
+
+.clocks-current-segment-countdown {
+	font-size: 18rem;
+}
+
+.fontweight-normal {
+	font-weight: 300;
+}
+
+.fontweight-light {
+	font-weight: 100;
+}
+
+.clocks-rundown-title {
+	font-size: 4.5rem;
+	color: #aaa;
+}
