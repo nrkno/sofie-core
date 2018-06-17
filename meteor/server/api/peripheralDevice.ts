@@ -46,6 +46,7 @@ export namespace ServerPeripheralDeviceAPI {
 		check(options.name, String)
 		check(options.type, Number)
 		check(options.parentDeviceId, Match.Optional(String))
+		check(options.versions, Match.Optional(Object))
 
 		console.log('initialize', options)
 
@@ -60,7 +61,8 @@ export namespace ServerPeripheralDeviceAPI {
 					connectionId: options.connectionId,
 					type: options.type,
 					name: options.name,
-					parentDeviceId: options.parentDeviceId
+					parentDeviceId: options.parentDeviceId,
+					versions: options.versions,
 				}
 			})
 		} catch (e) {
@@ -78,7 +80,8 @@ export namespace ServerPeripheralDeviceAPI {
 					token: token,
 					type: options.type,
 					name: options.name,
-					parentDeviceId: options.parentDeviceId
+					parentDeviceId: options.parentDeviceId,
+					versions: options.versions,
 					// settings: {}
 				})
 			} else {

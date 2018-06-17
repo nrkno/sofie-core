@@ -26,10 +26,13 @@ export enum DeviceType {
 	OTHER = 2, // i.e. sub-devices
 }
 export interface InitOptions {
-	type: DeviceType,
-	name: string,
-	connectionId: string,
+	type: DeviceType
+	name: string
+	connectionId: string
 	parentDeviceId?: string
+	versions?: {
+		[libraryName: string]: string
+	}
 }
 export type TimelineTriggerTimeResult = Array<{id: string, time: number}>
 
