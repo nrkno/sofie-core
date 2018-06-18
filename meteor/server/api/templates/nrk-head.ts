@@ -214,10 +214,12 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 		sourceLayerId: SourceLayers.live_speak0,
 		outputLayerId: 'pgm0',
 		expectedDuration: ( // @todo rewrite this blob
+			story.getValueByPath('MosExternalMetaData.0.MosPayload.Actual') ||
+			story.getValueByPath('MosExternalMetaData.0.MosPayload.Readtime') ||
 			story.getValueByPath('MosExternalMetaData.0.MosPayload.Estimated') ||
-			story.getValueByPath('MosExternalMetaData.0.MosPayload.MediaTime') ||
-			story.getValueByPath('MosExternalMetaData.0.MosPayload.SourceMediaTime') ||
-			10
+			// story.getValueByPath('MosExternalMetaData.0.MosPayload.MediaTime') ||
+			// story.getValueByPath('MosExternalMetaData.0.MosPayload.SourceMediaTime') ||
+			0
 		) * 1000, // transform into milliseconds
 		isTransition: false,
 		content: {

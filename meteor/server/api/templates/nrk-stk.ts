@@ -92,7 +92,11 @@ export const NrkSTKTemplate = literal<TemplateFunctionOptional>((context: Templa
 
 	let clip = context.getValueByPath(storyItemClip, 'Content.objSlug', 'head')
 	if (!clip || clip === '') context.warning('Clip slug missing in mos data')
-	let name = context.getValueByPath(storyItemClip, 'Content.mosExternalMetadata.mosPayload.title', clip)
+	let name = (
+		context.getValueByPath(storyItemClip, 'Content.objSlug', '') ||
+		context.getValueByPath(storyItemClip, 'Content.mosExternalMetadata.mosPayload.title', '') ||
+		clip
+	)
 	if (!name || name === '') context.warning('Clip name missing in mos data')
 
 	let segmentLineItems: Array<SegmentLineItemOptional> = []
@@ -111,6 +115,7 @@ export const NrkSTKTemplate = literal<TemplateFunctionOptional>((context: Templa
 		outputLayerId: 'pgm0',
 		expectedDuration: ( // @todo rewrite this
 			story.getValueByPath('MosExternalMetaData.0.MosPayload.Actual') ||
+			story.getValueByPath('MosExternalMetaData.0.MosPayload.Readtime') ||
 			story.getValueByPath('MosExternalMetaData.0.MosPayload.Estimated') ||
 			0
 		) * 1000,

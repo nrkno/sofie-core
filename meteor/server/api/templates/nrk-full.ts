@@ -56,7 +56,11 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 
 	let clip = context.getValueByPath(storyItemClip, 'Content.objSlug', 'full')
 	if (!clip || clip === '') context.warning('Clip slug missing in mos data')
-	let name = context.getValueByPath(storyItemClip, 'Content.mosExternalMetadata.mosPayload.title', clip)
+	let name = (
+		context.getValueByPath(storyItemClip, 'Content.objSlug', '') ||
+		context.getValueByPath(storyItemClip, 'Content.mosExternalMetadata.mosPayload.title', '') ||
+		clip
+	)
 	if (!name || name === '') context.warning('Clip name missing in mos data')
 
 	let segmentLineItems: Array<SegmentLineItemOptional> = []
