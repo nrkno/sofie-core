@@ -24,7 +24,6 @@ export function ParseSuperSegments (context: TemplateContextInner, story: StoryW
 
 	for (const item of storyItemGfx) {
 		const itemID = context.getValueByPath(item, 'Content.itemID', 0)
-		const name = context.getValueByPath(item, 'Content.mosAbstract', '')
 		const metadata = context.getValueByPath(item, 'Content.mosExternalMetadata', [])
 		const timing = _.find(metadata, (m: any) => (m.mosSchema + '').endsWith('/timing'))
 		const content = _.find(metadata, (m: any) => (m.mosSchema + '').endsWith('/content'))
@@ -36,6 +35,7 @@ export function ParseSuperSegments (context: TemplateContextInner, story: StoryW
 		}
 
 		const payload = context.getValueByPath(content, 'mosPayload', {})
+		const name = context.getValueByPath(payload, 'metadata.displayName') || context.getValueByPath(item, 'Content.mosAbstract', '')
 		const noraHost = context.getConfigValue('nora_host_control', NoraHostControlDefault)
 		const noraGroup = context.getConfigValue('nora_group', 'dksl')
 		const noraApiKey = context.getConfigValue('nora_apikey', '')
