@@ -152,6 +152,15 @@ Meteor.methods({
 					activateKeyboardHotkeys: '1,2,3,4,5,6',
 					assignHotkeysToGlobalAdlibs: true
 				},
+				{
+					_id: 'studio0_live_transition0',
+					_rank: 100,
+					name: 'Transition',
+					type: RundownAPI.SourceLayerType.UNKNOWN,
+					onPGMClean: true,
+					activateKeyboardHotkeys: '',
+					assignHotkeysToGlobalAdlibs: false
+				},
 			],
 		}})
 		// Create Timeline mappings:
