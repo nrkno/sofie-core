@@ -21,6 +21,9 @@
 
 .clocks-segment-title {
 	font-size: 9rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
 }
 
 .clocks-current-segment-title {
@@ -47,4 +50,7 @@
 .clocks-rundown-title {
 	font-size: 4.5rem;
 	color: #aaa;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
 }
