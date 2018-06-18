@@ -256,11 +256,29 @@ Meteor.methods({
 				mappingType: MappingAtemType.DownStreamKeyer,
 				index: 1 // 1 = DSK2
 			}),
-			'atem_supersource': literal<MappingAtem>({
+			'atem_supersource_default': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				mappingType: MappingAtemType.SuperSourceBox,
 				index: 0 // 0 = SS
+			}),
+			'atem_supersource_override': literal<MappingAtem>({
+				device: PlayoutDeviceType.ATEM,
+				deviceId: 'atem0',
+				mappingType: MappingAtemType.SuperSourceBox,
+				index: 0 // 0 = SS
+			}),
+			'atem_usk_effect_default': literal<MappingAtem>({
+				device: PlayoutDeviceType.ATEM,
+				deviceId: 'atem0',
+				mappingType: MappingAtemType.MixEffect,
+				index: 0 // 0 = ME1
+			}),
+			'atem_usk_effect_override': literal<MappingAtem>({
+				device: PlayoutDeviceType.ATEM,
+				deviceId: 'atem0',
+				mappingType: MappingAtemType.MixEffect,
+				index: 0 // 0 = ME1
 			}),
 			'lawo_source_automix': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,

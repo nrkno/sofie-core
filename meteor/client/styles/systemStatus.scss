@@ -1,11 +1,39 @@
 @import "_colorScheme";
 
-.system-status-table {
+.system-status {
 
 	.device-item-container {
 		border: 1px solid #666;
+		margin: 0.3em;
+
+		.children {
+			padding-left: 0.5em;
+			padding-right: 0.5em;
+		}
 	}
 	.device-item {
+
+		clear: both;
+		padding-bottom: 0.5em;
+
+		.clear {
+			clear: both;
+		}
+
+		.status-container {
+			float: right;
+			text-align: right;
+		}
+		.actions-container {
+			display: block;
+		}
+
+		label {
+			display: inline-block
+		}
+		div.value {
+			display: inline-block
+		}
 		.device-item__device-status {
 			&.device-item__device-status--good {
 				> p > .pill {
@@ -51,7 +79,6 @@
 		}
 
 		.device-item__actions {
-			text-align: right;
 
 			> .action-btn {
 				vertical-align: top;
