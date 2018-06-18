@@ -11,6 +11,9 @@ export interface PeripheralDevice {
 
 	studioInstallationId: string
 	parentDeviceId?: string
+	versions?: {
+		[libraryName: string]: string
+	}
 
 	created: Time
 	status: PeripheralDeviceAPI.StatusObject

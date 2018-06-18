@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
+import { check, Match } from 'meteor/check'
 import * as _ from 'underscore'
 import {
 	MosString128,
@@ -46,6 +46,7 @@ export namespace ServerPeripheralDeviceAPI {
 		check(options.name, String)
 		check(options.type, Number)
 		check(options.parentDeviceId, Match.Optional(String))
+		check(options.versions, Match.Optional(Object))
 
 		console.log('initialize', options)
 
@@ -60,7 +61,8 @@ export namespace ServerPeripheralDeviceAPI {
 					connectionId: options.connectionId,
 					type: options.type,
 					name: options.name,
-					parentDeviceId: options.parentDeviceId
+					parentDeviceId: options.parentDeviceId,
+					versions: options.versions,
 				}
 			})
 		} catch (e) {
@@ -78,7 +80,8 @@ export namespace ServerPeripheralDeviceAPI {
 					token: token,
 					type: options.type,
 					name: options.name,
-					parentDeviceId: options.parentDeviceId
+					parentDeviceId: options.parentDeviceId,
+					versions: options.versions,
 					// settings: {}
 				})
 			} else {
@@ -582,7 +585,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 		fixIllegalObject(story)
 		// @ts-ignore
-		logger.debug(story)
+		// logger.debug(story)
 		// Update db with the full story:
 		let ro = getRO(story.RunningOrderId)
 		// let segment = getSegment(story.RunningOrderId, story.ID)
@@ -1031,12 +1034,16 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 		logger.warn('Could not find duration information for segment line: ' + segmentLine._id)
 	}
 
+	let showStyle = ShowStyles.findOne(ro.showStyleId)
+
+	if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + ro.showStyleId + '" not found!')
+
 	let context: TemplateContext = {
 		runningOrderId: ro._id,
 		// segment: Segment,
 		segmentLine: segmentLine
 	}
-	let result = runTemplate(context, story)
+	let result = runTemplate(showStyle, context, story)
 
 	if (result.segmentLine) {
 		SegmentLines.update(segmentLine._id, {$set: {
@@ -1105,17 +1112,19 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 	// return this.core.mosManipulate(P.methods.mosRoReadyToAir, story)
 }
 
-export function setStoryStatus (deviceId: string, roId: string, storyId: string, status: IMOSObjectStatus): Promise<any> {
+export function setStoryStatus (deviceId: string, ro: RunningOrder, storyId: string, status: IMOSObjectStatus): Promise<any> {
 	return new Promise((resolve, reject) => {
-		console.log('setStoryStatus', deviceId, roId, storyId, status)
-		PeripheralDeviceAPI.executeFunction(deviceId, (err, result) => {
-			console.log('reply', err, result)
-			if (err) {
-				reject(err)
-			} else {
-				resolve(result)
-			}
-		}, 'setStoryStatus', roId, storyId, status)
+		if (!ro.rehearsal) {
+			console.log('setStoryStatus', deviceId, ro.mosId, storyId, status)
+			PeripheralDeviceAPI.executeFunction(deviceId, (err, result) => {
+				console.log('reply', err, result)
+				if (err) {
+					reject(err)
+				} else {
+					resolve(result)
+				}
+			}, 'setStoryStatus', ro.mosId, storyId, status)
+		}
 	})
 }
 

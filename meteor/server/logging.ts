@@ -75,7 +75,8 @@ if (logToFile) {
 	logger.add(Winston.transports.Console, {
 		level: 'silly',
 		handleExceptions: true,
-		json: true
+		json: true,
+		stringify: (obj) => JSON.stringify(obj) // make single line
 	})
 }
 

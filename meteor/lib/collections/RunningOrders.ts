@@ -64,6 +64,7 @@ export class RunningOrder implements DBRunningOrder {
 	public status?: IMOSObjectStatus
 	public airStatus?: IMOSObjectAirStatus
 	public active?: boolean
+	public rehearsal?: boolean
 	public previousSegmentLineId: string | null
 	public currentSegmentLineId: string | null
 	public nextSegmentLineId: string | null
