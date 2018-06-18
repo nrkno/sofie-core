@@ -33,7 +33,7 @@ export enum TimelineContentTypeCasparCg { //  CasparCG-state/TSR
 	RECORD = 'record'
 }
 export enum TimelineContentTypeLawo { // lawo-state
-	LAWO = 'lawo'
+	SOURCE = 'lawosource'
 }
 export enum TimelineContentTypeAtem { //  Atem-state
 	ME = 'me',
@@ -276,6 +276,10 @@ export interface EmberPlusValue {
 	type: EmberPlusValueType,
 	value: EmberPlusValueBase
 }
+export interface EmberPlusValuedB extends EmberPlusValue {
+	type: EmberPlusValueType.REAL,
+	dB: number
+}
 export interface EmberPlusValueReal extends EmberPlusValue {
 	type: EmberPlusValueType.REAL,
 	value: number
@@ -297,10 +301,15 @@ export interface LawoStateNodeAttrTransition {
 	value: EmberPlusValue
 	transitionDuration?: number
 }
-export interface TimelineObjLawo extends TimelineObj {
+export interface TimelineObjLawoSource extends TimelineObj {
 	content: {
 		type: TimelineContentTypeLawo,
-		value: LawoStateNodeAttr
+		attributes: {
+			db: {
+				value: number,
+				transitionDuration?: number
+			}
+		}
 	}
 }
 export interface TimelineObjAtemME extends TimelineObj {

@@ -292,6 +292,30 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 													className='input text-input input-l'></EditAttribute>
 											</label>
 										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Sources Path')}
+												<EditAttribute
+													modifiedClassName='bghl'
+													attribute={'settings.devices.' + deviceId + '.options.sourcesPath'}
+													obj={this.props.device}
+													type='text'
+													collection={PeripheralDevices}
+													className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Ramp Function Path')}
+												<EditAttribute
+													modifiedClassName='bghl'
+													attribute={'settings.devices.' + deviceId + '.options.rampMotorFunctionPath'}
+													obj={this.props.device}
+													type='text'
+													collection={PeripheralDevices}
+													className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
 									</React.Fragment>
 									)
 								))

@@ -6,7 +6,8 @@ import { StudioInstallations,
 	MappingAtem,
 	MappingAtemType,
 	MappingLawo,
-	Mapping
+	Mapping,
+	MappingLawoType
 } from '../../lib/collections/StudioInstallations'
 import { literal } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
@@ -283,44 +284,44 @@ Meteor.methods({
 			'lawo_source_automix': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'Automiks',
-				path: '1.1.71.3.2'
+				mappingType: MappingLawoType.Source,
+				identifier: 'AMix'
 			}),
 			'lawo_source_clip': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'Innslag',
-				path: '1.1.79.3.2'
+				mappingType: MappingLawoType.Source,
+				identifier: 'Server'
 			}),
 			'lawo_source_effect': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'Effekter',
-				path: '1.1.75.3.2'
+				mappingType: MappingLawoType.Source,
+				identifier: 'Eff 1'
 			}),
-			'lawo_source_preview': literal<MappingLawo>({
+			'lawo_source_effect2': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'Forlytt',
-				path: ''
+				mappingType: MappingLawoType.Source,
+				identifier: 'Eff 2'
 			}),
 			'lawo_source_rm1': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'RM 1',
-				path: '1.1.2.3.2'
+				mappingType: MappingLawoType.Source,
+				identifier: 'Rut1'
 			}),
 			'lawo_source_rm2': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'RM 2',
-				path: '1.1.8.3.2'
+				mappingType: MappingLawoType.Source,
+				identifier: 'Rut2'
 			}),
 			'lawo_source_rm3': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'RM 3',
-				path: '1.1.7.3.2'
+				mappingType: MappingLawoType.Source,
+				identifier: 'Rut3'
 			})
 		}
 		StudioInstallations.update('studio0', {$set: {
