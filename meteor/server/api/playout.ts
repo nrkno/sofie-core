@@ -89,11 +89,11 @@ Meteor.methods({
 
 		const showStyle = runningOrder.getShowStyle()
 		if (showStyle.baselineTemplate) {
-			const result: TemplateResultAfterPost = runNamedTemplate(showStyle.baselineTemplate, literal<TemplateContext>({
+			const result: TemplateResultAfterPost = runNamedTemplate(showStyle, showStyle.baselineTemplate, literal<TemplateContext>({
 				runningOrderId: runningOrder._id,
 				segmentLine: runningOrder.getSegmentLines()[0]
 			}), {
-				// Rummy object, not used in this template:
+				// Dummy object, not used in this template:
 				RunningOrderId: new MosString128(''),
 				Body: [],
 				ID: new MosString128(''),
