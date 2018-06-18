@@ -73,7 +73,7 @@ export interface TemplateContextInnerBase {
 
 export interface TemplateContextInner extends TemplateContext, TemplateContextInnerBase {
 }
-function getContext (context: TemplateContext): TemplateContextInner {
+export function getContext (context: TemplateContext): TemplateContextInner {
 	let hashI = 0
 	let hashed: {[hash: string]: string} = {}
 	let c0 = literal<TemplateContextInnerBase>({
@@ -181,26 +181,30 @@ export interface StoryWithContextBase {
 export interface StoryWithContext extends IMOSROFullStory, StoryWithContextBase {
 }
 
-let fcn: null | TemplateGeneralFunction = null
+export function convertCodeToFunction (context: TemplateContextInner, code: string): TemplateGeneralFunction {
+
+	// Just use the function () { .* } parts (omit whatevers before or after)
+	let functionStr = ((code + '').match(/function[\s\S]*}/) || [])[0]
+	// console.log('functionStr', functionStr)
+	if (!functionStr) throw Error('Function empty!')
+	let runtimeFcn: TemplateGeneralFunction = saferEval(functionStr, {})
+	// console.log('runtimeFcn', runtimeFcn)
+	let fcn = (...args: any[]) => {
+		let result = runtimeFcn.apply(context, [context].concat(injectContextIntoArguments(context, args)))
+		return result
+	}
+	return fcn
+}
 function findFunction (showStyle: ShowStyle, functionId: string, context: TemplateContextInner): TemplateGeneralFunction {
+	let fcn: null | TemplateGeneralFunction = null
 	let runtimeFunction = RuntimeFunctions.findOne({
 		showStyleId: showStyle._id,
 		active: true,
 		templateId: functionId
 	})
 	if (runtimeFunction && runtimeFunction.code) {
-
-		// Note: the functions will be without the preceeding "function () {" and the ending "}"
-		let functionStr = ((runtimeFunction.code + '').match(/function[\s\S]*}/) || [])[0]
-		// console.log('functionStr', functionStr)
 		try {
-			if (!functionStr) throw Error('Function empty!')
-			let runtimeFcn: TemplateGeneralFunction = saferEval(functionStr, {})
-			// console.log('runtimeFcn', runtimeFcn)
-			fcn = (...args: any[]) => {
-				let result = runtimeFcn.apply(context, [context].concat(injectContextIntoArguments(context, args)))
-				return result
-			}
+			fcn = convertCodeToFunction(context, runtimeFunction.code)
 		} catch (e) {
 			throw new Meteor.Error(402, 'Syntax error in runtime function "' + functionId + '": ' + e.toString())
 		}

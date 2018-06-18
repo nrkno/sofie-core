@@ -16,6 +16,7 @@ interface IMonacoProps {
 interface IMonacoState {
 	unsavedChanges: boolean
 	saving: boolean
+	message: string
 
 }
 class MonacoWrapper extends React.Component<IMonacoProps, IMonacoState> {
@@ -27,6 +28,7 @@ class MonacoWrapper extends React.Component<IMonacoProps, IMonacoState> {
 	_editor: monaco.editor.IStandaloneCodeEditor
 	_codeId: string
 	private _saveTimeout: any
+	private _testTimeout: any
 	private _currentCode: string
 
 	constructor (props) {
@@ -34,7 +36,8 @@ class MonacoWrapper extends React.Component<IMonacoProps, IMonacoState> {
 
 		this.state = {
 			unsavedChanges: false,
-			saving: false
+			saving: false,
+			message: ''
 		}
 	}
 
@@ -256,12 +259,39 @@ declare type Story = IMOSROFullStory
 			unsavedChanges: true
 		})
 		this._currentCode = newCode
-		if (this._saveTimeout) Meteor.clearTimeout(this._saveTimeout)
-		this._saveTimeout = Meteor.setTimeout(() => {
-			this.saveCode()
-		}, 30 * 1000)
+
+		// Auto-save in a while:
+		// if (this._saveTimeout) Meteor.clearTimeout(this._saveTimeout)
+		// this._saveTimeout = Meteor.setTimeout(() => {
+		// 	this.saveCode()
+		// }, 30 * 1000)
+
+		// Auto-test in a while:
+		if (this._testTimeout) Meteor.clearTimeout(this._testTimeout)
+		this._testTimeout = Meteor.setTimeout(() => {
+			this.testCode()
+		}, 3 * 1000)
 	}
 
+	testCode () {
+		console.log('testCode')
+		if (this._currentCode) {
+			console.log(this._currentCode)
+			Meteor.call(RuntimeFunctionsAPI.TESTCODE, this._currentCode, (e) => {
+				if (e) {
+					this.setState({
+						message: 'Error when testing code: ' + e.toString()
+					})
+					console.log('e')
+					console.log(e)
+				} else {
+					this.setState({
+						message: 'Test ok'
+					})
+				}
+			})
+		}
+	}
 	saveCode () {
 		this.setState({
 			saving: true
@@ -270,18 +300,23 @@ declare type Story = IMOSROFullStory
 		if (this._currentCode) {
 			Meteor.call(RuntimeFunctionsAPI.UPDATECODE, this.props.runtimeFunction._id, this._currentCode, (e) => {
 				if (e) {
+					this.setState({
+						message: e.toString()
+					})
 					console.log(e)
 				} else {
 					// console.log('saved')
 					this.setState({
 						unsavedChanges: false,
-						saving: false
+						saving: false,
+						message: 'Saved OK'
 					})
 				}
 			})
 		} else {
 			this.setState({
-				saving: false
+				saving: false,
+				message: 'Did not save, because template is empty'
 			})
 		}
 	}
@@ -292,13 +327,16 @@ declare type Story = IMOSROFullStory
 					<div>
 						{this.state.unsavedChanges ? (
 							<div>
-								<i>Unsaved changes</i>
+								<b>Unsaved changes</b>
 								<button className='action-btn' onClick={(e) => this.saveCode()}>
 									Save
 								</button>
 							</div>
 						) : null}
 						{this.state.saving ? ' Saving...' : ''}
+					</div>
+					<div>
+						<pre>{this.state.message }</pre>
 					</div>
 			   </div>
 	}
