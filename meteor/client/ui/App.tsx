@@ -10,6 +10,7 @@ import SystemStatus from './SystemStatus'
 import Settings from './Settings'
 import { RunningOrderList } from './RunningOrderList'
 import { RunningOrderView } from './RunningOrderView'
+import { ClockView } from './ClockView'
 import { ConnectionStatusNotification } from './ConnectionStatusNotification'
 import { NymansPlayground } from '../ui/NymansPlayground'
 import {
@@ -86,6 +87,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 					{/* Header switch - render the usual header for all pages but the running order view */}
 					<Switch>
 						<Route path='/ro/:runningOrderId' component={NullComponent} />
+						<Route path='/clock' component={NullComponent} />
 						<Route path='/' component={Header} />
 					</Switch>
 					{/* Main app switch */}
@@ -93,6 +95,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 						<Route exact path='/' component={Dashboard} />
 						<Route path='/runningOrders' component={RunningOrderList} />
 						<Route path='/ro/:runningOrderId' component={RunningOrderView} />
+						<Route path='/clock' component={ClockView} />
 						<Route path='/nymansPlayground' component={NymansPlayground} />
 						<Route path='/status' component={SystemStatus} />
 						<Route path='/settings' component={Settings} />

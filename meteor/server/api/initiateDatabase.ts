@@ -50,11 +50,12 @@ Meteor.methods({
 		console.log('initDB')
 		// Initiate database:
 		StudioInstallations.upsert('studio0', {$set: {
-			name: 'VR3',
+			name: 'DKSL',
 			outputLayers: [],
-
-			'config.nora_group': 'dksl',
-			'config.nora_apikey': 'sofie-dev-iufw83'
+			config: [
+				{_id: 'nora_group', value: 'dksl'},
+				{_id: 'nora_apikey', value: 'sofie-prod-wug52h'}
+			],
 		}})
 
 		// Create outputLayers:
@@ -264,37 +265,44 @@ Meteor.methods({
 			'lawo_source_automix': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channel: 1
+				channelName: 'Automiks',
+				path: [1, 1, 71, 3, 2]
 			}),
 			'lawo_source_clip': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channel: 2
+				channelName: 'Innslag',
+				path: [1, 1, 79, 3, 2]
 			}),
 			'lawo_source_effect': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channel: 3
+				channelName: 'Effekter',
+				path: [1, 1, 75, 3, 2]
 			}),
 			'lawo_source_preview': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channel: 4
+				channelName: 'Forlytt',
+				path: []
 			}),
 			'lawo_source_rm1': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channel: 5
+				channelName: 'RM 1',
+				path: [1, 1, 2, 3, 2]
 			}),
 			'lawo_source_rm2': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channel: 6
+				channelName: 'RM 2',
+				path: [1, 1, 8, 3, 2]
 			}),
 			'lawo_source_rm3': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channel: 7
+				channelName: 'RM 3',
+				path: [1, 1, 7, 3, 2]
 			})
 		}
 		StudioInstallations.update('studio0', {$set: {
@@ -314,21 +322,21 @@ Meteor.methods({
 				'settings.devices.casparcg0': ((pd['settings'] || {})['devices'] || {})['casparcg0'] || {
 					type: PlayoutDeviceType.CASPARCG,
 					options: {
-						host: '',
+						host: '160.68.32.30',
 						port: 5250
 					}
 				},
 				'settings.devices.atem0': ((pd['settings'] || {})['devices'] || {})['atem0'] || {
 					type: PlayoutDeviceType.ATEM,
 					options: {
-						host: '',
+						host: '10.182.132.140',
 						port: 9910
 					}
 				},
 				'settings.devices.lawo0': ((pd['settings'] || {})['devices'] || {})['lawo0'] || {
 					type: PlayoutDeviceType.LAWO,
 					options: {
-						host: '',
+						host: '10.182.132.203',
 						port: 9000
 					}
 				},
@@ -352,16 +360,16 @@ Meteor.methods({
 			type: PeripheralDeviceAPI.DeviceType.MOSDEVICE
 		}).forEach((pd) => {
 			PeripheralDevices.update(pd._id, {$set: {
-				'settings.mosId': 'SOFIE2.XPRO.MOS',
+				'settings.mosId': 'SOFIE1.DKSL.MOS',
 				'settings.devices.enps0': ((pd['settings'] || {})['devices'] || {})['enps0'] || {
 					primary: {
-						id: '2012R2ENPS8VM',
-						host: '10.0.1.244'
+						id: 'SLENPS01',
+						host: '160.68.132.15'
 					},
-					// secondary: {
-					// 	id: '2012R2ENPS8VM',
-					// 	host: '10.0.1.244'
-					// }
+					secondary: {
+						id: 'DRENPSSL01',
+						host: '160.67.149.94'
+					}
 				},
 			}})
 			// PeripheralDevices.update(pd._id, {$set: {

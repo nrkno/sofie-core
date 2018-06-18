@@ -83,6 +83,7 @@ interface ITimingDisplayState {
 enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_TAKE = 'f12',
 	RUNNING_ORDER_ACTIVATE = 'f2',
+	RUNNING_ORDER_ACTIVATE_REHEARSAL = 'mod+f2',
 	RUNNING_ORDER_DEACTIVATE = 'mod+shift+f2'
 }
 
@@ -174,10 +175,15 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	componentDidMount () {
 		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE, this.disableKey, 'keydown')
 		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE, this.keyTake, 'keyup')
+
 		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE, this.disableKey, 'keydown')
 		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE, this.keyActivate, 'keyup')
+
 		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE, this.disableKey, 'keydown')
 		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE, this.keyDeactivate, 'keyup')
+
+		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE_REHEARSAL, this.disableKey, 'keydown')
+		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE_REHEARSAL, this.keyActivateRehearsal, 'keyup')
 	}
 
 	componentWillUnmount () {
@@ -205,6 +211,9 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	keyActivate = (e: ExtendedKeyboardEvent) => {
 		this.activate()
 	}
+	keyActivateRehearsal = (e: ExtendedKeyboardEvent) => {
+		this.activateRehearsal()
+	}
 
 	keyDeactivate = (e: ExtendedKeyboardEvent) => {
 		this.deactivate()
@@ -217,7 +226,13 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 	activate = () => {
 		if (!this.props.runningOrder.active) {
-			Meteor.call('playout_activate', this.props.runningOrder._id)
+			Meteor.call('playout_activate', this.props.runningOrder._id, false)
+		}
+	}
+
+	activateRehearsal = () => {
+		if (!this.props.runningOrder.active) {
+			Meteor.call('playout_activate', this.props.runningOrder._id, true)
 		}
 	}
 
@@ -230,12 +245,19 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	reloadRunningOrder = () => {
 		Meteor.call('playout_reload_data', this.props.runningOrder._id)
 	}
+	getHeaderClassNames = () => {
+		return (
+			'header running-order' +
+			(this.props.runningOrder.active ? ' active' : '') +
+			(this.props.runningOrder.rehearsal ? ' rehearsal' : '')
+		)
+	}
 
 	render () {
 		const { t } = this.props
 		return (
-			<div className='header running-order'>
-				<div className='row super-dark'>
+			<div className={this.getHeaderClassNames()}>
+				<div className='row first-row super-dark'>
 					<div className='flex-col left horizontal-align-left'>
 						{/* !!! TODO: This is just a temporary solution !!! */}
 						<div className='badge mod'>
@@ -267,6 +289,9 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 								<React.Fragment>
 									<MenuItem onClick={(e) => this.activate()}>
 										{t('Activate')}
+									</MenuItem>
+									<MenuItem onClick={(e) => this.activateRehearsal()}>
+										{t('Activate (Rehearsal)')}
 									</MenuItem>
 								</React.Fragment>
 						}

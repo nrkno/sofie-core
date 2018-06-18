@@ -42,12 +42,13 @@ import {
 } from './templates'
 import {
 	TimelineObjCCGVideo,
-	TimelineObjLawoSource,
+	TimelineObjLawo,
 	TimelineObjCCGTemplate,
 	TimelineContentTypeOther,
 	TimelineContentTypeCasparCg,
 	TimelineContentTypeLawo,
 	TimelineContentTypeAtem,
+	EmberPlusValueType,
 	TimelineObj,
 	TimelineObjAbstract,
 	Atem_Enums,
@@ -231,62 +232,57 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 				// @todo. should this be a seperate segmentlineitem to make it clear it continues to the user?
 				vignetObj,
 
-				literal<TimelineObjLawoSource>({
+				literal<TimelineObjLawo>({
 					_id: IDs.lawo_effect, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 					priority: 1,
 					duration: 0,
 					LLayer: LLayers.lawo_source_effect,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
-						attributes: {
-							db: 0
+						type: TimelineContentTypeLawo.LAWO,
+						value: {
+							value: {
+								value: 0,
+								type: EmberPlusValueType.REAL
+							}
 						}
 					}
 				}),
 
 				// mic host hot
-				literal<TimelineObjLawoSource>({
+				literal<TimelineObjLawo>({
 					_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 					priority: 1,
 					duration: 0,
 					LLayer: LLayers.lawo_source_automix,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
-						transitions: {
-							inTransition: {
-								type: Transition.MIX,
-								duration: LawoFadeInDuration,
-								easing: Ease.LINEAR,
-								direction: Direction.LEFT
-							}
-						},
-						attributes: {
-							db: 0
+						type: TimelineContentTypeLawo.LAWO,
+						value: {
+							value: {
+								value: 0,
+								type: EmberPlusValueType.REAL
+							},
+							transitionDuration: LawoFadeInDuration,
 						}
 					}
 				}),
 
 				// audio STK/HEADS -inf
-				literal<TimelineObjLawoSource>({
+				literal<TimelineObjLawo>({
 					_id: IDs.lawo_clip, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
 					priority: 1,
 					duration: 0,
 					LLayer: LLayers.lawo_source_clip,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
-						transitions: {
-							inTransition: { // @todo should this have a transition?
-								type: Transition.MIX,
-								duration: LawoFadeInDuration,
-								easing: Ease.LINEAR,
-								direction: Direction.LEFT
-							}
-						},
-						attributes: {
-							db: -191
+						type: TimelineContentTypeLawo.LAWO,
+						value: {
+							value: {
+								value: -191,
+								type: EmberPlusValueType.REAL
+							},
+							transitionDuration: LawoFadeInDuration,
 						}
 					}
 				}),

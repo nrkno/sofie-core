@@ -10,11 +10,12 @@ import {
 	TemplateContextInner,
 } from './templates'
 import {
-	TimelineObjLawoSource,
 	TimelineContentTypeLawo,
 	TimelineContentTypeAtem,
 	Atem_Enums,
 	TimelineObjAtemME,
+	TimelineObjLawo,
+	EmberPlusValueType,
 } from '../../../lib/collections/Timeline'
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 
@@ -91,24 +92,20 @@ export const NrkDirTemplate = literal<TemplateFunctionOptional>((context: Templa
 				}),
 
 				// mic hot
-				literal<TimelineObjLawoSource>({
+				literal<TimelineObjLawo>({
 					_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 					priority: 1,
 					duration: 0,
 					LLayer: lawoLayer,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
-						transitions: {
-							inTransition: {
-								type: Transition.MIX,
-								duration: LawoFadeInDuration,
-								easing: Ease.LINEAR,
-								direction: Direction.LEFT
-							}
-						},
-						attributes: {
-							db: 0
+						type: TimelineContentTypeLawo.LAWO,
+						value: {
+							value: {
+								value: 0,
+								type: EmberPlusValueType.REAL
+							},
+							transitionDuration: LawoFadeInDuration,
 						}
 					}
 				}),

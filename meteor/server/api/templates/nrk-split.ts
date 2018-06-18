@@ -42,7 +42,7 @@ import {
 } from './templates'
 import {
 	TimelineObjCCGVideo,
-	TimelineObjLawoSource,
+	TimelineObjLawo,
 	TimelineObjCCGTemplate,
 	TimelineContentTypeCasparCg,
 	TimelineContentTypeLawo,
@@ -51,6 +51,7 @@ import {
 	TimelineObjAbstract,
 	Atem_Enums,
 	TimelineObjAtemME,
+	EmberPlusValueType,
 	TimelineObjAtemAUX,
 	TimelineObjAtemDSK,
 	TimelineObjAtemSsrc,
@@ -190,72 +191,60 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 
 				// automix mic hot
 				(lawoHost ?
-					literal<TimelineObjLawoSource>({
+					literal<TimelineObjLawo>({
 						_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
 						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.atemSSrc}.start + 0` },
 						priority: 1,
 						duration: 0,
 						LLayer: LLayers.lawo_source_automix,
 						content: {
-							type: TimelineContentTypeLawo.AUDIO_SOURCE,
-							transitions: {
-								inTransition: {
-									type: Transition.MIX,
-									duration: LawoFadeInDuration,
-									easing: Ease.LINEAR,
-									direction: Direction.LEFT
-								}
-							},
-							attributes: {
-								db: 0
+							type: TimelineContentTypeLawo.LAWO,
+							value: {
+								value: {
+									value: 0,
+									type: EmberPlusValueType.REAL
+								},
+								transitionDuration: LawoFadeInDuration,
 							}
 						}
 					}) : undefined),
 
 				// mic1 hot
 				(lawoLayer1 ?
-				literal<TimelineObjLawoSource>({
+				literal<TimelineObjLawo>({
 					_id: IDs.lawo_layer1, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.atemSSrc}.start + 0` },
 					priority: 1,
 					duration: 0,
 					LLayer: lawoLayer1,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
-						transitions: {
-							inTransition: {
-								type: Transition.MIX,
-								duration: LawoFadeInDuration,
-								easing: Ease.LINEAR,
-								direction: Direction.LEFT
-							}
-						},
-						attributes: {
-							db: -15
+						type: TimelineContentTypeLawo.LAWO,
+						value: {
+							value: {
+								value: -15,
+								type: EmberPlusValueType.REAL
+							},
+							transitionDuration: LawoFadeInDuration,
 						}
 					}
 				}) : undefined),
 
 				// mic2 hot
 				(lawoLayer2 ?
-				literal<TimelineObjLawoSource>({
+				literal<TimelineObjLawo>({
 					_id: IDs.lawo_layer2, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.atemSSrc}.start + 0` },
 					priority: 1,
 					duration: 0,
 					LLayer: lawoLayer2,
 					content: {
-						type: TimelineContentTypeLawo.AUDIO_SOURCE,
-						transitions: {
-							inTransition: {
-								type: Transition.MIX,
-								duration: LawoFadeInDuration,
-								easing: Ease.LINEAR,
-								direction: Direction.LEFT
-							}
-						},
-						attributes: {
-							db: -15
+						type: TimelineContentTypeLawo.LAWO,
+						value: {
+							value: {
+								value: -15,
+								type: EmberPlusValueType.REAL
+							},
+							transitionDuration: LawoFadeInDuration,
 						}
 					}
 				}) : undefined),

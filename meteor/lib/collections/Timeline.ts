@@ -33,7 +33,7 @@ export enum TimelineContentTypeCasparCg { //  CasparCG-state/TSR
 	RECORD = 'record'
 }
 export enum TimelineContentTypeLawo { // lawo-state
-	AUDIO_SOURCE = 'audio_source'
+	LAWO = 'lawo'
 }
 export enum TimelineContentTypeAtem { //  Atem-state
 	ME = 'me',
@@ -265,16 +265,42 @@ export interface TimelineObjCCGRecord extends TimelineObj {
 		}
 	}
 }
-export interface TimelineObjLawoSource extends TimelineObj {
+export enum EmberPlusValueType {
+	REAL 	= 'real',
+	INT 	= 'int',
+	BOOLEAN = 'boolean',
+	STRING 	= 'string'
+}
+export type EmberPlusValueBase = boolean | number | string
+export interface EmberPlusValue {
+	type: EmberPlusValueType,
+	value: EmberPlusValueBase
+}
+export interface EmberPlusValueReal extends EmberPlusValue {
+	type: EmberPlusValueType.REAL,
+	value: number
+}
+export interface EmberPlusValueInt extends EmberPlusValue {
+	type: EmberPlusValueType.INT,
+	value: number
+}
+export interface EmberPlusValueBoolean extends EmberPlusValue {
+	type: EmberPlusValueType.BOOLEAN,
+	value: boolean
+}
+export interface EmberPlusValueString extends EmberPlusValue {
+	type: EmberPlusValueType.STRING,
+	value: string
+}
+export type LawoStateNodeAttr = EmberPlusValue | LawoStateNodeAttrTransition
+export interface LawoStateNodeAttrTransition {
+	value: EmberPlusValue
+	transitionDuration?: number
+}
+export interface TimelineObjLawo extends TimelineObj {
 	content: {
-		keyframes?: Array<TimelineKeyframe>
-		type: TimelineContentTypeLawo.AUDIO_SOURCE
-		transitions?: {
-			inTransition?: TimelineTransition
-		}
-		attributes: {
-			db: number
-		}
+		type: TimelineContentTypeLawo,
+		value: LawoStateNodeAttr
 	}
 }
 export interface TimelineObjAtemME extends TimelineObj {
