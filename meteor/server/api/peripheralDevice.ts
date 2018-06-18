@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
+import { check, Match } from 'meteor/check'
 import * as _ from 'underscore'
 import {
 	MosString128,
