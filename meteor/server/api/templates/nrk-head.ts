@@ -42,7 +42,7 @@ import {
 } from './templates'
 import {
 	TimelineObjCCGVideo,
-	TimelineObjLawo,
+	TimelineObjLawoSource,
 	TimelineObjCCGTemplate,
 	TimelineContentTypeOther,
 	TimelineContentTypeCasparCg,
@@ -232,57 +232,54 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 				// @todo. should this be a seperate segmentlineitem to make it clear it continues to the user?
 				vignetObj,
 
-				literal<TimelineObjLawo>({
+				literal<TimelineObjLawoSource>({
 					_id: IDs.lawo_effect, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 					priority: 1,
 					duration: 0,
 					LLayer: LLayers.lawo_source_effect,
 					content: {
-						type: TimelineContentTypeLawo.LAWO,
-						value: {
-							value: {
-								value: 0,
-								type: EmberPlusValueType.REAL
+						type: TimelineContentTypeLawo.SOURCE,
+						attributes: {
+							db: {
+								value: 0
 							}
 						}
 					}
 				}),
 
 				// mic host hot
-				literal<TimelineObjLawo>({
+				literal<TimelineObjLawoSource>({
 					_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 					priority: 1,
 					duration: 0,
 					LLayer: LLayers.lawo_source_automix,
 					content: {
-						type: TimelineContentTypeLawo.LAWO,
-						value: {
-							value: {
+						type: TimelineContentTypeLawo.SOURCE,
+						attributes: {
+							db: {
 								value: 0,
-								type: EmberPlusValueType.REAL
-							},
-							transitionDuration: LawoFadeInDuration,
+								transitionDuration: LawoFadeInDuration,
+							}
 						}
 					}
 				}),
 
 				// audio STK/HEADS -inf
-				literal<TimelineObjLawo>({
+				literal<TimelineObjLawoSource>({
 					_id: IDs.lawo_clip, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
 					priority: 1,
 					duration: 0,
 					LLayer: LLayers.lawo_source_clip,
 					content: {
-						type: TimelineContentTypeLawo.LAWO,
-						value: {
-							value: {
+						type: TimelineContentTypeLawo.SOURCE,
+						attributes: {
+							db: {
 								value: -191,
-								type: EmberPlusValueType.REAL
-							},
-							transitionDuration: LawoFadeInDuration,
+								transitionDuration: LawoFadeInDuration,
+							}
 						}
 					}
 				}),

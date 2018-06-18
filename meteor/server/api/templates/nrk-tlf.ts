@@ -41,7 +41,7 @@ import {
 } from './templates'
 import {
 	TimelineObjCCGVideo,
-	TimelineObjLawo,
+	TimelineObjLawoSource,
 	TimelineObjCCGTemplate,
 	TimelineContentTypeCasparCg,
 	TimelineContentTypeLawo,
@@ -137,39 +137,37 @@ export const NrkTLFTemplate = literal<TemplateFunctionOptional>((context: Templa
 				}) : undefined),
 
 				// automix mic hot
-				literal<TimelineObjLawo>({
+				literal<TimelineObjLawoSource>({
 					_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 					priority: 1,
 					duration: 0,
 					LLayer: LLayers.lawo_source_automix,
 					content: {
-						type: TimelineContentTypeLawo.LAWO,
-						value: {
-							value: {
+						type: TimelineContentTypeLawo.SOURCE,
+						attributes: {
+							db: {
 								value: 0,
-								type: EmberPlusValueType.REAL
-							},
-							transitionDuration: LawoFadeInDuration,
+								transitionDuration: LawoFadeInDuration,
+							}
 						}
 					}
 				}),
 
 				(tlfSource ?
-				literal<TimelineObjLawo>({
+				literal<TimelineObjLawoSource>({
 					_id: IDs.lawo_tlf, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 					priority: 1,
 					duration: 0,
 					LLayer: tlfSource,
 					content: {
-						type: TimelineContentTypeLawo.LAWO,
-						value: {
-							value: {
+						type: TimelineContentTypeLawo.SOURCE,
+						attributes: {
+							db: {
 								value: 0,
-								type: EmberPlusValueType.REAL
-							},
-							transitionDuration: LawoFadeInDuration,
+								transitionDuration: LawoFadeInDuration,
+							}
 						}
 					}
 				}) : undefined),

@@ -14,7 +14,7 @@ import {
 	TimelineContentTypeAtem,
 	Atem_Enums,
 	TimelineObjAtemME,
-	TimelineObjLawo,
+	TimelineObjLawoSource,
 	EmberPlusValueType,
 } from '../../../lib/collections/Timeline'
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
@@ -92,20 +92,19 @@ export const NrkDirTemplate = literal<TemplateFunctionOptional>((context: Templa
 				}),
 
 				// mic hot
-				literal<TimelineObjLawo>({
+				literal<TimelineObjLawoSource>({
 					_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 					priority: 1,
 					duration: 0,
 					LLayer: lawoLayer,
 					content: {
-						type: TimelineContentTypeLawo.LAWO,
-						value: {
-							value: {
+						type: TimelineContentTypeLawo.SOURCE,
+						attributes: {
+							db: {
 								value: 0,
-								type: EmberPlusValueType.REAL
-							},
-							transitionDuration: LawoFadeInDuration,
+								transitionDuration: LawoFadeInDuration,
+							}
 						}
 					}
 				}),

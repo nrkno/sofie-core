@@ -42,7 +42,7 @@ import {
 } from './templates'
 import {
 	TimelineObjCCGVideo,
-	TimelineObjLawo,
+	TimelineObjLawoSource,
 	TimelineObjCCGTemplate,
 	TimelineContentTypeCasparCg,
 	TimelineContentTypeLawo,
@@ -191,60 +191,57 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 
 				// automix mic hot
 				(lawoHost ?
-					literal<TimelineObjLawo>({
+					literal<TimelineObjLawoSource>({
 						_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
 						trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.atemSSrc}.start + 0` },
 						priority: 1,
 						duration: 0,
 						LLayer: LLayers.lawo_source_automix,
 						content: {
-							type: TimelineContentTypeLawo.LAWO,
-							value: {
-								value: {
+							type: TimelineContentTypeLawo.SOURCE,
+							attributes: {
+								db: {
 									value: 0,
-									type: EmberPlusValueType.REAL
-								},
-								transitionDuration: LawoFadeInDuration,
+									transitionDuration: LawoFadeInDuration,
+								}
 							}
 						}
 					}) : undefined),
 
 				// mic1 hot
 				(lawoLayer1 ?
-				literal<TimelineObjLawo>({
+				literal<TimelineObjLawoSource>({
 					_id: IDs.lawo_layer1, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.atemSSrc}.start + 0` },
 					priority: 1,
 					duration: 0,
 					LLayer: lawoLayer1,
 					content: {
-						type: TimelineContentTypeLawo.LAWO,
-						value: {
-							value: {
+						type: TimelineContentTypeLawo.SOURCE,
+						attributes: {
+							db: {
 								value: -15,
-								type: EmberPlusValueType.REAL
-							},
-							transitionDuration: LawoFadeInDuration,
+								transitionDuration: LawoFadeInDuration,
+							}
 						}
 					}
 				}) : undefined),
 
 				// mic2 hot
 				(lawoLayer2 ?
-				literal<TimelineObjLawo>({
+				literal<TimelineObjLawoSource>({
 					_id: IDs.lawo_layer2, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.atemSSrc}.start + 0` },
 					priority: 1,
 					duration: 0,
 					LLayer: lawoLayer2,
 					content: {
-						type: TimelineContentTypeLawo.LAWO,
-						value: {
-							value: {
+						type: TimelineContentTypeLawo.SOURCE,
+						attributes: {
+							db: {
 								value: -15,
-								type: EmberPlusValueType.REAL
-							},
-							transitionDuration: LawoFadeInDuration,
+								transitionDuration: LawoFadeInDuration,
+							}
 						}
 					}
 				}) : undefined),

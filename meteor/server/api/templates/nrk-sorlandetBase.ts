@@ -44,7 +44,7 @@ import {
 } from './templates'
 import {
 	TimelineObjCCGVideo,
-	TimelineObjLawo,
+	TimelineObjLawoSource,
 	TimelineObjCCGHTMLPage,
 	TimelineContentTypeCasparCg,
 	TimelineContentTypeLawo,
@@ -127,20 +127,19 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 					}),
 
 					// mic host hot
-					literal<TimelineObjLawo>({
+					literal<TimelineObjLawoSource>({
 						_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
 						trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 						priority: 1,
 						duration: 0,
 						LLayer: LLayers.lawo_source_automix,
 						content: {
-							type: TimelineContentTypeLawo.LAWO,
-							value: {
-								value: {
+							type: TimelineContentTypeLawo.SOURCE,
+							attributes: {
+								db: {
 									value: 0,
-									type: EmberPlusValueType.REAL
-								},
-								transitionDuration: LawoFadeInDuration,
+									transitionDuration: LawoFadeInDuration,
+								}
 							}
 						}
 					}),
@@ -343,115 +342,108 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							}
 						}),
 
-						literal<TimelineObjLawo>({
+						literal<TimelineObjLawoSource>({
 							_id: '', deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.LOGICAL, value: '1' },
 							priority: 0, duration: 0,
 							LLayer: LLayers.lawo_source_automix,
 							content: {
-								type: TimelineContentTypeLawo.LAWO,
-								value: {
-									value: {
+								type: TimelineContentTypeLawo.SOURCE,
+								attributes: {
+									db: {
 										value: -191,
-										type: EmberPlusValueType.REAL
-									},
-									transitionDuration: LawoFadeInDuration,
+										transitionDuration: LawoFadeInDuration,
+									}
 								}
 							}
 						}),
-						literal<TimelineObjLawo>({
+						literal<TimelineObjLawoSource>({
 							_id: '', deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.LOGICAL, value: '1' },
 							priority: 0, duration: 0,
 							LLayer: LLayers.lawo_source_clip,
 							content: {
-								type: TimelineContentTypeLawo.LAWO,
-								value: {
-									value: {
+								type: TimelineContentTypeLawo.SOURCE,
+								attributes: {
+									db: {
 										value: -191,
-										type: EmberPlusValueType.REAL
-									},
-									transitionDuration: LawoFadeInDuration,
+										transitionDuration: LawoFadeInDuration,
+									}
 								}
 							}
 						}),
-						literal<TimelineObjLawo>({
+						literal<TimelineObjLawoSource>({
 							_id: '', deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.LOGICAL, value: '1' },
 							priority: 0, duration: 0,
 							LLayer: LLayers.lawo_source_effect,
 							content: {
-								type: TimelineContentTypeLawo.LAWO,
-								value: {
-									value: {
+								type: TimelineContentTypeLawo.SOURCE,
+								attributes: {
+									db: {
 										value: -191,
-										type: EmberPlusValueType.REAL
-									},
-									transitionDuration: LawoFadeInDuration,
+										transitionDuration: LawoFadeInDuration,
+									}
 								}
 							}
 						}),
-						literal<TimelineObjLawo>({
+						literal<TimelineObjLawoSource>({
 							_id: '', deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.LOGICAL, value: '1' },
 							priority: 0, duration: 0,
 							LLayer: LLayers.lawo_source_preview,
 							content: {
-								type: TimelineContentTypeLawo.LAWO,
-								value: {
-									value: {
+								type: TimelineContentTypeLawo.SOURCE,
+								attributes: {
+									db: {
 										value: 0,
-										type: EmberPlusValueType.REAL
-									},
-									transitionDuration: LawoFadeInDuration,
+										transitionDuration: LawoFadeInDuration,
+									}
 								}
 							}
 						}),
-						literal<TimelineObjLawo>({
+						literal<TimelineObjLawoSource>({
 							_id: '', deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.LOGICAL, value: '1' },
 							priority: 0, duration: 0,
 							LLayer: LLayers.lawo_source_rm1,
 							content: {
-								type: TimelineContentTypeLawo.LAWO,
-								value: {
-									value: {
-										value: -191,
-										type: EmberPlusValueType.REAL
-									},
-									transitionDuration: LawoFadeInDuration,
+								type: TimelineContentTypeLawo.SOURCE,
+								attributes: {
+									db: {
+										value:-191,
+										transitionDuration: LawoFadeInDuration,
+									}
 								}
 							}
 						}),
-						literal<TimelineObjLawo>({
+						literal<TimelineObjLawoSource>({
 							_id: '', deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.LOGICAL, value: '1' },
 							priority: 0, duration: 0,
 							LLayer: LLayers.lawo_source_rm2,
 							content: {
-								type: TimelineContentTypeLawo.LAWO,
-								value: {
-									value: {
+								type: TimelineContentTypeLawo.SOURCE,
+								attributes: {
+									db: {
 										value: -191,
-										type: EmberPlusValueType.REAL
-									},
-									transitionDuration: LawoFadeInDuration,
+										transitionDuration: LawoFadeInDuration,
+									}
 								}
 							}
 						}),
-						literal<TimelineObjLawo>({
+						literal<TimelineObjLawoSource>({
 							_id: '', deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.LOGICAL, value: '1' },
 							priority: 0, duration: 0,
 							LLayer: LLayers.lawo_source_rm3,
 							content: {
-								type: TimelineContentTypeLawo.LAWO,
-								value: {
-									value: {
+								type: TimelineContentTypeLawo.SOURCE,
+								attributes: {
+									db: {
 										value: -191,
-										type: EmberPlusValueType.REAL
-									},
-									transitionDuration: LawoFadeInDuration,
+										transitionDuration: LawoFadeInDuration,
+									}
 								}
 							}
 						}),

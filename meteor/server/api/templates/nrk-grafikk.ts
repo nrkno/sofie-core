@@ -2,7 +2,7 @@ import { TriggerType } from 'superfly-timeline';
 import * as _ from 'underscore';
 import { RundownAPI } from '../../../lib/api/rundown';
 import { DBSegmentLine } from '../../../lib/collections/SegmentLines';
-import { Atem_Enums, TimelineContentTypeAtem, TimelineContentTypeCasparCg, TimelineContentTypeHttp, TimelineContentTypeLawo, TimelineObjAtemME, TimelineObjCCGVideo, EmberPlusValueType, TimelineObjHTTPPost, TimelineObjLawo } from '../../../lib/collections/Timeline';
+import { Atem_Enums, TimelineContentTypeAtem, TimelineContentTypeCasparCg, TimelineContentTypeHttp, TimelineContentTypeLawo, TimelineObjAtemME, TimelineObjCCGVideo, EmberPlusValueType, TimelineObjHTTPPost, TimelineObjLawoSource } from '../../../lib/collections/Timeline';
 import { Direction, Ease, Transition } from '../../../lib/constants/casparcg';
 import { AtemSource, CasparOutputDelay, LawoFadeInDuration, NoraHostControlDefault } from './nrk-constants';
 import { LLayers, SourceLayers } from './nrk-layers';
@@ -103,39 +103,37 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 				}) : undefined),
 
 				// automix mic hot
-				literal<TimelineObjLawo>({
+				literal<TimelineObjLawoSource>({
 					_id: IDs.lawo_automix, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 					priority: 1,
 					duration: 0,
 					LLayer: LLayers.lawo_source_automix,
 					content: {
-						type: TimelineContentTypeLawo.LAWO,
-						value: {
-							value: {
+						type: TimelineContentTypeLawo.SOURCE,
+						attributes: {
+							db: {
 								value: 0,
-								type: EmberPlusValueType.REAL
-							},
-							transitionDuration: LawoFadeInDuration,
+								transitionDuration: LawoFadeInDuration,
+							}
 						}
 					}
 				}),
 
 				// audio bed
-				literal<TimelineObjLawo>({
+				literal<TimelineObjLawoSource>({
 					_id: IDs.lawo_bed, deviceId: [''], siId: '', roId: '',
 					trigger: { type: TriggerType.TIME_RELATIVE, value: `#${IDs.lawo_automix}.start + 0` },
 					priority: 1,
 					duration: 0,
 					LLayer: LLayers.lawo_source_clip,
 					content: {
-						type: TimelineContentTypeLawo.LAWO,
-						value: {
-							value: {
+						type: TimelineContentTypeLawo.SOURCE,
+						attributes: {
+							db: {
 								value: -15,
-								type: EmberPlusValueType.REAL
-							},
-							transitionDuration: LawoFadeInDuration,
+								transitionDuration: LawoFadeInDuration,
+							}
 						}
 					}
 				}),
