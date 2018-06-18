@@ -36,7 +36,7 @@ export interface MappingAtem extends Mapping {
 export interface MappingLawo extends Mapping {
 	device: PlayoutDeviceType.LAWO,
 	channelName: string,
-	path: Array<number>
+	path: string
 }
 
 /** A set of available layer groups in a given installation */
