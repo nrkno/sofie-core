@@ -134,6 +134,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											<Link to={'/settings/lineTemplate/' + item._id} >{item.templateId}</Link>
 										</td>
 										<td>
+											{item.isHelper ? t('Helper') : ''}
+										</td>
+										<td>
 											<button className='action-btn' onClick={(e) => this.onDeleteLineTemplate(item)}>
 												<FontAwesomeIcon icon={faTrash} />
 											</button>

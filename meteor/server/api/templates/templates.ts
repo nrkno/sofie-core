@@ -65,6 +65,7 @@ export interface TemplateContextInnerBase {
 	unhashId: (hash: string) => string
 	getConfigValue: (key: string, defaultValue?: any) => any
 	getValueByPath: (obj: object | undefined, path: string, defaultValue?: any) => any
+	getHelper: (functionId: string) => Function
 	error: (message: string) => void
 	warning: (message: string) => void
 	getSegmentLines (): Array<SegmentLine>
@@ -116,6 +117,24 @@ export function getContext (context: TemplateContext): TemplateContextInner {
 			)
 			if (_.isUndefined(value) && !_.isUndefined(defaultValue)) value = defaultValue
 			return value
+		},
+		getHelper (functionId: string): Function {
+			const ro = RunningOrders.findOne(context.runningOrderId)
+			if (!ro) throw new Meteor.Error(404, 'RunningOrder "' + context.runningOrderId + '" not found')
+
+			const func = RuntimeFunctions.findOne({
+				showStyleId: ro.showStyleId,
+				active: true,
+				templateId: functionId,
+				isHelper: true
+			})
+			if (!func) throw new Meteor.Error(404, 'RuntimeFunctions helper "' + functionId + '" not found')
+
+			try {
+				return convertCodeToGeneralFunction(func.code)
+			} catch (e) {
+				throw new Meteor.Error(402, 'Syntax error in runtime function helper "' + functionId + '": ' + e.toString())
+			}
 		},
 		getSegmentLines (): Array<SegmentLine> {
 			// return stories in segmentLine
@@ -181,13 +200,16 @@ export interface StoryWithContextBase {
 export interface StoryWithContext extends IMOSROFullStory, StoryWithContextBase {
 }
 
-export function convertCodeToFunction (context: TemplateContextInner, code: string): TemplateGeneralFunction {
-
+export function convertCodeToGeneralFunction (code: string): TemplateGeneralFunction {
 	// Just use the function () { .* } parts (omit whatevers before or after)
 	let functionStr = ((code + '').match(/function[\s\S]*}/) || [])[0]
 	// console.log('functionStr', functionStr)
 	if (!functionStr) throw Error('Function empty!')
 	let runtimeFcn: TemplateGeneralFunction = saferEval(functionStr, {})
+	return runtimeFcn
+}
+export function convertCodeToFunction (context: TemplateContextInner, code: string): TemplateGeneralFunction {
+	let runtimeFcn = convertCodeToGeneralFunction(code)
 	// console.log('runtimeFcn', runtimeFcn)
 	let fcn = (...args: any[]) => {
 		let result = runtimeFcn.apply(context, [context].concat(injectContextIntoArguments(context, args)))
@@ -200,7 +222,8 @@ function findFunction (showStyle: ShowStyle, functionId: string, context: Templa
 	let runtimeFunction = RuntimeFunctions.findOne({
 		showStyleId: showStyle._id,
 		active: true,
-		templateId: functionId
+		templateId: functionId,
+		isHelper: false
 	})
 	if (runtimeFunction && runtimeFunction.code) {
 		try {

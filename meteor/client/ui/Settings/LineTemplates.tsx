@@ -121,7 +121,7 @@ declare enum IMOSScope {
 	STORY = "STORY",
 	PLAYLIST = "PLAYLIST",
 }
-declare class MosExternalMetaData {
+declare interface MosExternalMetaData {
 	private _scope?;
 	private _schema;
 	private _payload;
@@ -171,6 +171,7 @@ declare interface Context {
 	unhashId: (hash: string) => string
 	getConfigValue: (key: string, defaultValue?: any) => any
 	getValueByPath: (sourceObject: object | undefined, pathToAttributeInObject: string, defaultValue?: any) => any
+	getHelper: (functionId: string) => Function
 	error: (messageToThrow: string) => void
 	warning: (messageToLog: string) => void
 	getSegmentLines (): Array<SegmentLine>
@@ -275,9 +276,9 @@ declare type Story = IMOSROFullStory
 
 	testCode () {
 		console.log('testCode')
-		if (this._currentCode) {
+		if (this._currentCode ) {
 			console.log(this._currentCode)
-			Meteor.call(RuntimeFunctionsAPI.TESTCODE, this._currentCode, (e) => {
+			Meteor.call(RuntimeFunctionsAPI.TESTCODE, this._currentCode, this.props.runtimeFunction.isHelper, (e) => {
 				if (e) {
 					this.setState({
 						message: 'Error when testing code: ' + e.toString()
@@ -327,7 +328,7 @@ declare type Story = IMOSROFullStory
 					<div>
 						{this.state.unsavedChanges ? (
 							<div>
-								<b>Unsaved changes</b>
+								<b>Unsaved changes </b>
 								<button className='action-btn' onClick={(e) => this.saveCode()}>
 									Save
 								</button>
@@ -369,10 +370,20 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			}
 		})
 	}
+	updateIsHelper (edit: EditAttributeBase, newValue: any) {
+		Meteor.call(RuntimeFunctionsAPI.UPDATEISHELPER, edit.props.obj._id, newValue, (err, res) => {
+			if (err) {
+				console.log(err)
+			} else {
+				// Nothing
+			}
+		})
+	}
 	renderEditForm () {
 		const { t } = this.props
 
 		if (this.props.lineTemplate) {
+			// @todo - disable editing of fields on getId template
 			return (
 				<div className='studio-edit mod mhl mvs'>
 					<div>
@@ -387,6 +398,21 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									collection={RuntimeFunctions}
 									className='mdinput'
 									updateFunction={this.updateTemplateId}
+								/>
+								<span className='mdfx'></span>
+							</div>
+						</label>
+						<label className='field'>
+							{t('Is Helper')}
+							<div className='mdi'>
+								<EditAttribute
+									modifiedClassName='bghl'
+									attribute='isHelper'
+									obj={this.props.lineTemplate}
+									type='checkbox'
+									collection={RuntimeFunctions}
+									className='mdinput'
+									updateFunction={this.updateIsHelper}
 								/>
 								<span className='mdfx'></span>
 							</div>
