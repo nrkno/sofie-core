@@ -154,7 +154,41 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
 							transition: Atem_Enums.TransitionStyle.CUT
 						}
 					}
-				})
+				}),
+				literal<TimelineObjAtemME>({ // @todo needs to extend into first head/kam
+					_id: '', deviceId: [''], siId: '', roId: '',
+					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+					priority: 1,
+					duration: 0,
+					LLayer: LLayers.atem_usk_effect_override,
+					content: {
+						type: TimelineContentTypeAtem.ME,
+						attributes: {
+							upstreamKeyers: [
+								{
+									upstreamKeyerId: 0,
+								},
+								{
+									upstreamKeyerId: 1,
+									onAir: true
+								}
+							]
+						}
+					}
+				}),
+				literal<TimelineObjAtemDSK>({
+					_id: '', deviceId: [''], siId: '', roId: '',
+					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
+					priority: 1,
+					duration: 0,
+					LLayer: LLayers.atem_dsk_effect,
+					content: {
+						type: TimelineContentTypeAtem.DSK,
+						attributes: {
+							onAir: false
+						}
+					}
+				}),
 			]
 		}
 	}

@@ -152,7 +152,7 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 					trigger: { type: TriggerType.TIME_ABSOLUTE, value: 0 },
 					priority: 1,
 					duration: 0,
-					LLayer: LLayers.atem_supersource,
+					LLayer: LLayers.atem_supersource_override,
 					content: {
 						type: TimelineContentTypeAtem.SSRC,
 						attributes: {

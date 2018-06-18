@@ -196,6 +196,35 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							_id: '', deviceId: [''], siId: '', roId: '',
 							trigger: { type: TriggerType.LOGICAL, value: '1' },
 							priority: 0, duration: 0,
+							LLayer: LLayers.atem_usk_effect_default,
+							content: {
+								type: TimelineContentTypeAtem.ME,
+								attributes: {
+									upstreamKeyers: [
+										{
+											upstreamKeyerId: 0,
+										},
+										{
+											upstreamKeyerId: 1,
+											onAir: false,
+											mixEffectKeyType: 0, // Luma
+											flyEnabled: false,
+											fillSource: AtemSource.DSK2F,
+											cutSource: AtemSource.DSK2K,
+											maskEnabled: false,
+
+											lumaSettings: {
+												preMultiplied: true
+											}
+										}
+									]
+								}
+							}
+						}),
+						literal<TimelineObjAtemME>({
+							_id: '', deviceId: [''], siId: '', roId: '',
+							trigger: { type: TriggerType.LOGICAL, value: '1' },
+							priority: 0, duration: 0,
 							LLayer: LLayers.atem_me_studiomonitor,
 							content: {
 								type: TimelineContentTypeAtem.ME,
@@ -281,7 +310,7 @@ export const NrkSorlandetBaseTemplate = literal<TemplateFunctionOptional>(functi
 							trigger: { type: TriggerType.LOGICAL, value: '1' },
 							priority: 0,
 							duration: 0,
-							LLayer: LLayers.atem_supersource,
+							LLayer: LLayers.atem_supersource_default,
 							content: {
 								type: TimelineContentTypeAtem.SSRC,
 								attributes: {

@@ -341,7 +341,33 @@ export interface TimelineObjAtemME extends TimelineObj {
 					reverseDirection?: boolean,
 					flipFlop?: boolean,
 				}
-			}
+			},
+
+			upstreamKeyers?: {
+				readonly upstreamKeyerId: number,
+				onAir?: boolean
+				mixEffectKeyType?: number,
+				flyEnabled?: boolean,
+				fillSource?: number,
+				cutSource?: number,
+				maskEnabled?: boolean,
+				maskTop?: number,
+				maskBottom?: number,
+				maskLeft?: number,
+				maskRight?: number,
+
+				// dveSettings: UpstreamKeyerDVESettings;
+				// chromaSettings: UpstreamKeyerChromaSettings;
+				// patternSettings: UpstreamKeyerPatternSettings;
+				// flyKeyframes: Array<UpstreamKeyerFlyKeyframe>;
+				// flyProperties: UpstreamKeyerFlySettings;
+				lumaSettings?: {
+					preMultiplied?: boolean,
+					clip?: number,
+					gain?: number,
+					invert?: boolean
+				},
+			}[]
 		}
 	}
 }
