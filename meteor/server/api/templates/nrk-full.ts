@@ -111,7 +111,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 					content: {
 						type: TimelineContentTypeLawo.SOURCE,
 						attributes: {
-							db: {
+							'Fader/Motor dB Value': {
 								value: -191,
 								transitionDuration: LawoFadeInDuration,
 							}
@@ -129,7 +129,7 @@ export const NrkFullTemplate = literal<TemplateFunctionOptional>(function (conte
 					content: {
 						type: TimelineContentTypeLawo.SOURCE,
 						attributes: {
-							db: {
+							'Fader/Motor dB Value': {
 								value: 0,
 								transitionDuration: LawoFadeInDuration,
 							}

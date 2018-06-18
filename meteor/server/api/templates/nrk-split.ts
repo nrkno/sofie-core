@@ -200,7 +200,7 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 						content: {
 							type: TimelineContentTypeLawo.SOURCE,
 							attributes: {
-								db: {
+								'Fader/Motor dB Value': {
 									value: 0,
 									transitionDuration: LawoFadeInDuration,
 								}
@@ -219,7 +219,7 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 					content: {
 						type: TimelineContentTypeLawo.SOURCE,
 						attributes: {
-							db: {
+							'Fader/Motor dB Value': {
 								value: -15,
 								transitionDuration: LawoFadeInDuration,
 							}
@@ -238,7 +238,7 @@ export const NrkSplitTemplate = literal<TemplateFunctionOptional>((context: Temp
 					content: {
 						type: TimelineContentTypeLawo.SOURCE,
 						attributes: {
-							db: {
+							'Fader/Motor dB Value': {
 								value: -15,
 								transitionDuration: LawoFadeInDuration,
 							}

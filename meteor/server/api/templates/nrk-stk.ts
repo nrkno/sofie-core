@@ -156,7 +156,7 @@ export const NrkSTKTemplate = literal<TemplateFunctionOptional>((context: Templa
 					content: {
 						type: TimelineContentTypeLawo.SOURCE,
 						attributes: {
-							db: {
+							'Fader/Motor dB Value': {
 								value: clipLevel,
 								transitionDuration: LawoFadeInDuration,
 							}
@@ -174,7 +174,7 @@ export const NrkSTKTemplate = literal<TemplateFunctionOptional>((context: Templa
 					content: {
 						type: TimelineContentTypeLawo.SOURCE,
 						attributes: {
-							db: {
+							'Fader/Motor dB Value': {
 								value: 0,
 								transitionDuration: LawoFadeInDuration,
 							}

@@ -241,7 +241,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 					content: {
 						type: TimelineContentTypeLawo.SOURCE,
 						attributes: {
-							db: {
+							'Fader/Motor dB Value': {
 								value: 0
 							}
 						}
@@ -258,7 +258,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 					content: {
 						type: TimelineContentTypeLawo.SOURCE,
 						attributes: {
-							db: {
+							'Fader/Motor dB Value': {
 								value: 0,
 								transitionDuration: LawoFadeInDuration,
 							}
@@ -276,7 +276,7 @@ export const NrkHeadTemplate = literal<TemplateFunctionOptional>(function (conte
 					content: {
 						type: TimelineContentTypeLawo.SOURCE,
 						attributes: {
-							db: {
+							'Fader/Motor dB Value': {
 								value: -191,
 								transitionDuration: LawoFadeInDuration,
 							}

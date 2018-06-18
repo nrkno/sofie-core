@@ -285,43 +285,43 @@ Meteor.methods({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				mappingType: MappingLawoType.Source,
-				identifier: 'AMix'
+				identifier: 'AMix',
 			}),
 			'lawo_source_clip': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				mappingType: MappingLawoType.Source,
-				identifier: 'Server'
+				identifier: 'Server',
 			}),
 			'lawo_source_effect': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				mappingType: MappingLawoType.Source,
-				identifier: 'Eff 1'
+				identifier: 'Eff 1',
 			}),
 			'lawo_source_effect2': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				mappingType: MappingLawoType.Source,
-				identifier: 'Eff 2'
+				identifier: 'Eff 2',
 			}),
 			'lawo_source_rm1': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				mappingType: MappingLawoType.Source,
-				identifier: 'Rut1'
+				identifier: 'Rut1',
 			}),
 			'lawo_source_rm2': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				mappingType: MappingLawoType.Source,
-				identifier: 'Rut2'
+				identifier: 'Rut2',
 			}),
 			'lawo_source_rm3': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				mappingType: MappingLawoType.Source,
-				identifier: 'Rut3'
+				identifier: 'Rut3',
 			})
 		}
 		StudioInstallations.update('studio0', {$set: {

@@ -122,7 +122,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 						content: {
 							type: TimelineContentTypeLawo.SOURCE,
 							attributes: {
-								db: {
+								'Fader/Motor dB Value': {
 									value: 0,
 								}
 							}
@@ -156,7 +156,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 						content: {
 							type: TimelineContentTypeLawo.SOURCE,
 							attributes: {
-								db: {
+								'Fader/Motor dB Value': {
 									value: -191,
 									transitionDuration: 1400,
 								}
@@ -270,7 +270,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 						content: {
 							type: TimelineContentTypeLawo.SOURCE,
 							attributes: {
-								db: {
+								'Fader/Motor dB Value': {
 									value: 0
 								}
 							}
@@ -330,7 +330,7 @@ export const NrkKamTemplate = literal<TemplateFunctionOptional>((context: Templa
 					content: {
 						type: TimelineContentTypeLawo.SOURCE,
 						attributes: {
-							db: {
+							'Fader/Motor dB Value': {
 								value: 0,
 								transitionDuration: LawoFadeInDuration,
 							}

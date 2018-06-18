@@ -115,7 +115,7 @@ export const NrkVignettTemplate = literal<TemplateFunctionOptional>(function (co
 					content: {
 						type: TimelineContentTypeLawo.SOURCE,
 						attributes: {
-							db: {
+							'Fader/Motor dB Value': {
 								value: 0
 							}
 						}

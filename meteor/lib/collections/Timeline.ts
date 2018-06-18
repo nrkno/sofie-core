@@ -305,7 +305,7 @@ export interface TimelineObjLawoSource extends TimelineObj {
 	content: {
 		type: TimelineContentTypeLawo,
 		attributes: {
-			db: {
+			'Fader/Motor dB Value': {
 				value: number,
 				transitionDuration?: number
 			}

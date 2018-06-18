@@ -112,7 +112,7 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 					content: {
 						type: TimelineContentTypeLawo.SOURCE,
 						attributes: {
-							db: {
+							'Fader/Motor dB Value': {
 								value: 0,
 								transitionDuration: LawoFadeInDuration,
 							}
@@ -130,7 +130,7 @@ export const NrkGrafikkTemplate = literal<TemplateFunctionOptional>((context: Te
 					content: {
 						type: TimelineContentTypeLawo.SOURCE,
 						attributes: {
-							db: {
+							'Fader/Motor dB Value': {
 								value: -15,
 								transitionDuration: LawoFadeInDuration,
 							}
