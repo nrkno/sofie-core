@@ -359,7 +359,7 @@ Meteor.methods({
 		ShowStyles.upsert('show0', {$set: {
 			name: 'Distriktsnyheter Sørlandet',
 			templateMappings: [],
-			baselineTemplate: 'sorlandetTemplate'
+			baselineTemplate: 'baseline'
 		}})
 
 		PeripheralDevices.find({
