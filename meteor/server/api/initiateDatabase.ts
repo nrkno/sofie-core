@@ -384,7 +384,10 @@ Meteor.methods({
 					type: PlayoutDeviceType.LAWO,
 					options: {
 						host: '10.182.132.203',
-						port: 9000
+						port: 9000,
+						sourcesPath: 'Ruby.Sources',
+						rampMotorFunctionPath: '1.5.2'
+						
 					}
 				},
 				'settings.devices.abstract0': ((pd['settings'] || {})['devices'] || {})['abstract0'] || {
