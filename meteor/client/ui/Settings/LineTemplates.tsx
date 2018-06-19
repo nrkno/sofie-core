@@ -408,7 +408,8 @@ export enum LineItemStatusCode {
 
 		this._editor = monaco.editor.create(document.getElementById('monaco-container')!, {
 			value: this.props.runtimeFunction.code,
-			language: 'javascript'
+			language: 'javascript',
+			automaticLayout: true,
 		})
 		this._editor.onDidChangeModelContent((e: monaco.editor.IModelContentChangedEvent) => {
 			this.triggerSave(this._editor.getModel().getValue())
