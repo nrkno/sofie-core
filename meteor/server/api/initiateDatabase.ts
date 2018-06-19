@@ -52,6 +52,7 @@ Meteor.methods({
 		// Initiate database:
 		StudioInstallations.upsert('studio0', {$set: {
 			name: 'DKSL',
+			studioInstallation: 'show0',
 			outputLayers: [],
 			config: [
 				{_id: 'nora_group', value: 'dksl'},

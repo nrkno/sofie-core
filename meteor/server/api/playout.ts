@@ -18,6 +18,7 @@ import { PlayoutTimelinePrefixes } from '../../lib/api/playout'
 import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { setStoryStatus } from './peripheralDevice'
+import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 
 Meteor.methods({
 	/**
@@ -42,6 +43,27 @@ Meteor.methods({
 		rehearsal = !!rehearsal
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+
+		let wasInactive = !runningOrder.active
+
+		let studioInstallation = runningOrder.getStudioInstallation()
+
+		let playoutDevices = PeripheralDevices.find({
+			studioInstallationId: studioInstallation._id,
+			type: PeripheralDeviceAPI.DeviceType.PLAYOUT
+		}).fetch()
+		// PeripheralDevices.find()
+
+		_.each(playoutDevices, (device: PeripheralDevice) => {
+			let okToDestoryStuff = wasInactive
+			PeripheralDeviceAPI.executeFunction(device._id, (err, res) => {
+				if (err) {
+					logger.error(err)
+				} else {
+					logger.info('devicesMakeReady OK')
+				}
+			}, 'devicesMakeReady', okToDestoryStuff)
+		})
 
 		let anyOtherActiveRunningOrders = RunningOrders.find({
 			studioInstallationId: runningOrder.studioInstallationId,

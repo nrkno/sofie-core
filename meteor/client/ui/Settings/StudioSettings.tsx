@@ -1331,7 +1331,23 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 								<span className='mdfx'></span>
 							</div>
 						</label>
+						<label className='field'>
+							{t('Default showStyle id')}
+							<div className='mdi'>
+								<EditAttribute
+									modifiedClassName='bghl'
+									attribute='defaultShowStyle'
+									obj={this.props.studioInstallation}
+									type='text'
+									collection={StudioInstallations}
+									className='mdinput'></EditAttribute>
+								<span className='mdfx'></span>
+							</div>
+						</label>
 					</div>
+					
+
+					
 
 					<div className='row'>
 						<div className='col c12 rl-c6'>
