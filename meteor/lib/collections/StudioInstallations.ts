@@ -49,6 +49,8 @@ export interface StudioInstallation {
 	sourceLayers: Array<ISourceLayer>
 	mappings: Mappings
 
+	defaultShowStyle: string
+
 	config: Array<IStudioConfigItem>
 }
 
