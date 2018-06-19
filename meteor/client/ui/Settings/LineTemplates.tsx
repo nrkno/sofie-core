@@ -121,7 +121,7 @@ declare enum IMOSScope {
 	STORY = "STORY",
 	PLAYLIST = "PLAYLIST",
 }
-declare class MosExternalMetaData {
+declare interface MosExternalMetaData {
 	private _scope?;
 	private _schema;
 	private _payload;
@@ -163,14 +163,21 @@ declare interface DBSegmentLine {
 	duration?: number
 }
 declare type SegmentLine = DBSegmentLine
+declare enum LayerType {
+	Source,
+	Output,
+	LLayer,
+}
 declare interface Context {
 	runningOrderId: string
 	segmentLine: SegmentLine
 
 	getHashId: (stringToBeHashed?: string | number) => string
 	unhashId: (hash: string) => string
+	getLayer: (type: LayerType, key: string) => string
 	getConfigValue: (key: string, defaultValue?: any) => any
 	getValueByPath: (sourceObject: object | undefined, pathToAttributeInObject: string, defaultValue?: any) => any
+	getHelper: (functionId: string) => Function
 	error: (messageToThrow: string) => void
 	warning: (messageToLog: string) => void
 	getSegmentLines (): Array<SegmentLine>
@@ -204,6 +211,198 @@ declare interface IMOSROFullStory extends IMOSStory {
     Body: Array<IMOSROFullStoryBodyItem>;
 }
 declare type Story = IMOSROFullStory
+
+declare enum TriggerType {
+    TIME_ABSOLUTE = 0,
+    TIME_RELATIVE = 1,
+    LOGICAL = 3
+}
+
+export type TimelineContentTypeAny =
+	TimelineContentTypeOther |
+	TimelineContentTypeCasparCg |
+	TimelineContentTypeLawo |
+	TimelineContentTypeAtem |
+	TimelineContentTypeHttp
+
+export enum TimelineContentTypeOther {
+	NOTHING = 'nothing',
+	GROUP = 'group',
+}
+export enum TimelineContentTypeCasparCg { //  CasparCG-state/TSR
+	VIDEO = 'video', // later to be deprecated & replaced by MEDIA
+	AUDIO = 'audio', // later to be deprecated & replaced by MEDIA
+	MEDIA = 'media',
+	IP = 'ip',
+	INPUT = 'input',
+	TEMPLATE = 'template',
+	HTMLPAGE = 'htmlpage',
+	ROUTE = 'route',
+	RECORD = 'record'
+}
+export enum TimelineContentTypeLawo { // lawo-state
+	LAWO = 'lawo'
+}
+export enum TimelineContentTypeAtem { //  Atem-state
+	ME = 'me',
+	DSK = 'dsk',
+	AUX = 'aux',
+	SSRC = 'ssrc',
+	MEDIAPLAYER = 'mp'
+}
+export enum TimelineContentTypeHttp {
+	POST = 'post'
+}
+export namespace Atem_Enums {
+	export enum TransitionStyle {
+		MIX = 0,
+		DIP = 1,
+		WIPE = 2,
+		DVE = 3,
+		STING = 4,
+		CUT = 5,
+	}
+
+	export enum SourceIndex {
+		Blk = 0,
+		Bars = 1000,
+		Col1 = 2001,
+		Col2 = 2002,
+		MP1 = 3010,
+		MP1K = 3011,
+		MP2 = 3020,
+		MP2K = 3021,
+		SSrc = 6000,
+		Cfd1 = 7001,
+		Cfd2 = 7002,
+		Aux1 = 8001,
+		Aux2 = 8002,
+		Aux3 = 8003,
+		Aux4 = 8004,
+		Aux5 = 8005,
+		Aux6 = 8006,
+		Prg1 = 10010,
+		Prv1 = 10011,
+		Prg2 = 10020,
+		Prv2 = 10021
+	}
+}
+export enum EmberPlusValueType {
+	REAL 	= 'real',
+	INT 	= 'int',
+	BOOLEAN = 'boolean',
+	STRING 	= 'string'
+}
+export enum Transition {
+	MIX = 'MIX',
+	CUT = 'CUT',
+	PUSH = 'PUSH',
+	WIPE = 'WIPE',
+	SLIDE = 'SLIDE'
+}
+
+export enum Ease {
+	LINEAR = 'LINEAR',
+	NONE = 'NONE',
+	EASEINBACK = 'EASEINBACK',
+	EASEINBOUNCE = 'EASEINBOUNCE',
+	EASEINCIRC = 'EASEINCIRC',
+	EASEINCUBIC = 'EASEINCUBIC',
+	EASEINELASTIC = 'EASEINELASTIC',
+	EASEINEXPO = 'EASEINEXPO',
+	EASEINOUTBACK = 'EASEINOUTBACK',
+	EASEINOUTBOUNCE = 'EASEINOUTBOUNCE',
+	EASEINOUTCIRC = 'EASEINOUTCIRC',
+	EASEINOUTCUBIC = 'EASEINOUTCUBIC',
+	EASEINOUTELASTIC = 'EASEINOUTELASTIC',
+	EASEINOUTEXPO = 'EASEINOUTEXPO',
+	EASEINOUTQUAD = 'EASEINOUTQUAD',
+	EASEINOUTQUART = 'EASEINOUTQUART',
+	EASEINOUTQUINT = 'EASEINOUTQUINT',
+	EASEINOUTSINE = 'EASEINOUTSINE',
+	EASEINQUAD = 'EASEINQUAD',
+	EASEINQUART = 'EASEINQUART',
+	EASEINQUINT = 'EASEINQUINT',
+	EASEINSINE = 'EASEINSINE',
+	EASELINEAR = 'EASELINEAR',
+	EASENONE = 'EASENONE',
+	EASEOUTBACK = 'EASEOUTBACK',
+	EASEOUTBOUNCE = 'EASEOUTBOUNCE',
+	EASEOUTCIRC = 'EASEOUTCIRC',
+	EASEOUTCUBIC = 'EASEOUTCUBIC',
+	EASEOUTELASTIC = 'EASEOUTELASTIC',
+	EASEOUTEXPO = 'EASEOUTEXPO',
+	EASEOUTINBACK = 'EASEOUTINBACK',
+	EASEOUTINBOUNCE = 'EASEOUTINBOUNCE',
+	EASEOUTINCIRC = 'EASEOUTINCIRC',
+	EASEOUTINCUBIC = 'EASEOUTINCUBIC',
+	EASEOUTINELASTIC = 'EASEOUTINELASTIC',
+	EASEOUTINEXPO = 'EASEOUTINEXPO',
+	EASEOUTINQUAD = 'EASEOUTINQUAD',
+	EASEOUTINQUART = 'EASEOUTINQUART',
+	EASEOUTINQUINT = 'EASEOUTINQUINT',
+	EASEOUTINSINE = 'EASEOUTINSINE',
+	EASEOUTQUAD = 'EASEOUTQUAD',
+	EASEOUTQUART = 'EASEOUTQUART',
+	EASEOUTQUINT = 'EASEOUTQUINT',
+	EASEOUTSINE = 'EASEOUTSINE',
+	IN_BACK = 'IN_BACK',
+	IN_BOUNCE = 'IN_BOUNCE',
+	IN_CIRC = 'IN_CIRC',
+	IN_CUBIC = 'IN_CUBIC',
+	IN_ELASTIC = 'IN_ELASTIC',
+	IN_EXPO = 'IN_EXPO',
+	IN_OUT_BACK = 'IN_OUT_BACK',
+	IN_OUT_BOUNCE = 'IN_OUT_BOUNCE',
+	IN_OUT_CIRC = 'IN_OUT_CIRC',
+	IN_OUT_CUBIC = 'IN_OUT_CUBIC',
+	IN_OUT_ELASTIC = 'IN_OUT_ELASTIC',
+	IN_OUT_EXPO = 'IN_OUT_EXPO',
+	IN_OUT_QUAD = 'IN_OUT_QUAD',
+	IN_OUT_QUART = 'IN_OUT_QUART',
+	IN_OUT_QUINT = 'IN_OUT_QUINT',
+	IN_OUT_SINE = 'IN_OUT_SINE',
+	IN_QUAD = 'IN_QUAD',
+	IN_QUART = 'IN_QUART',
+	IN_QUINT = 'IN_QUINT',
+	IN_SINE = 'IN_SINE',
+	OUT_BACK = 'OUT_BACK',
+	OUT_BOUNCE = 'OUT_BOUNCE',
+	OUT_CIRC = 'OUT_CIRC',
+	OUT_CUBIC = 'OUT_CUBIC',
+	OUT_ELASTIC = 'OUT_ELASTIC',
+	OUT_EXPO = 'OUT_EXPO',
+	OUT_IN_BACK = 'OUT_IN_BACK',
+	OUT_IN_BOUNCE = 'OUT_IN_BOUNCE',
+	OUT_IN_CIRC = 'OUT_IN_CIRC',
+	OUT_IN_CUBIC = 'OUT_IN_CUBIC',
+	OUT_IN_ELASTIC = 'OUT_IN_ELASTIC',
+	OUT_IN_EXPO = 'OUT_IN_EXPO',
+	OUT_IN_QUAD = 'OUT_IN_QUAD',
+	OUT_IN_QUART = 'OUT_IN_QUART',
+	OUT_IN_QUINT = 'OUT_IN_QUINT',
+	OUT_IN_SINE = 'OUT_IN_SINE',
+	OUT_QUAD = 'OUT_QUAD',
+	OUT_QUART = 'OUT_QUART',
+	OUT_QUINT = 'OUT_QUINT',
+}
+
+export enum Direction {
+	LEFT = 'LEFT',
+	RIGHT = 'RIGHT',
+}
+
+// RunDownAPI
+export enum LineItemStatusCode {
+	/** No status has been determined (yet) */
+	UNKNOWN = -1,
+	/** No fault with item, can be played */
+	OK = 0,
+	/** The source (file, live input) is missing and cannot be played, as it would result in BTA */
+	SOURCE_MISSING = 1,
+	/** The source is present, but should not be played due to a technical malfunction (file is broken, camera robotics failed, REMOTE input is just bars, etc.) */
+	SOURCE_BROKEN = 2
+}
 `, libName)
 		}
 
@@ -275,9 +474,9 @@ declare type Story = IMOSROFullStory
 
 	testCode () {
 		console.log('testCode')
-		if (this._currentCode) {
+		if (this._currentCode ) {
 			console.log(this._currentCode)
-			Meteor.call(RuntimeFunctionsAPI.TESTCODE, this._currentCode, (e) => {
+			Meteor.call(RuntimeFunctionsAPI.TESTCODE, this._currentCode, this.props.runtimeFunction.showStyleId, this.props.runtimeFunction.isHelper, (e) => {
 				if (e) {
 					this.setState({
 						message: 'Error when testing code: ' + e.toString()
@@ -327,7 +526,7 @@ declare type Story = IMOSROFullStory
 					<div>
 						{this.state.unsavedChanges ? (
 							<div>
-								<b>Unsaved changes</b>
+								<b>Unsaved changes </b>
 								<button className='action-btn' onClick={(e) => this.saveCode()}>
 									Save
 								</button>
@@ -369,10 +568,20 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			}
 		})
 	}
+	updateIsHelper (edit: EditAttributeBase, newValue: any) {
+		Meteor.call(RuntimeFunctionsAPI.UPDATEISHELPER, edit.props.obj._id, newValue, (err, res) => {
+			if (err) {
+				console.log(err)
+			} else {
+				// Nothing
+			}
+		})
+	}
 	renderEditForm () {
 		const { t } = this.props
 
 		if (this.props.lineTemplate) {
+			// @todo - disable editing of fields on getId template
 			return (
 				<div className='studio-edit mod mhl mvs'>
 					<div>
@@ -387,6 +596,21 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									collection={RuntimeFunctions}
 									className='mdinput'
 									updateFunction={this.updateTemplateId}
+								/>
+								<span className='mdfx'></span>
+							</div>
+						</label>
+						<label className='field'>
+							{t('Is Helper')}
+							<div className='mdi'>
+								<EditAttribute
+									modifiedClassName='bghl'
+									attribute='isHelper'
+									obj={this.props.lineTemplate}
+									type='checkbox'
+									collection={RuntimeFunctions}
+									className='mdinput'
+									updateFunction={this.updateIsHelper}
 								/>
 								<span className='mdfx'></span>
 							</div>

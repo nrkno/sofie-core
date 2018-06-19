@@ -5,6 +5,7 @@ export interface RuntimeFunction {
 	_id: string
 	showStyleId: string
 	templateId: string
+	isHelper: boolean
 	code: string
 	createdVersion: number
 	modified: number
