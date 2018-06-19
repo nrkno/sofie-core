@@ -19,12 +19,14 @@ interface IDeviceItemProps {
 }
 interface IDeviceItemState {
 	showDeleteDeviceConfirm: PeripheralDevice | null
+	showKillDeviceConfirm: PeripheralDevice | null
 }
 const DeviceItem = translate()(class extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
 	constructor (props: Translated<IDeviceItemProps>) {
 		super(props)
 		this.state = {
-			showDeleteDeviceConfirm: null
+			showDeleteDeviceConfirm: null,
+			showKillDeviceConfirm: null
 		}
 	}
 	statusCodeString () {
@@ -85,6 +87,35 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 	handleConfirmDeleteShowStyleCancel = (e) => {
 		this.setState({
 			showDeleteDeviceConfirm: null
+		})
+	}
+
+	onKillDevice (device: PeripheralDevice) {
+		this.setState({
+			showKillDeviceConfirm: device
+		})
+	}
+	handleConfirmKillAccept = (e) => {
+		if (this.state.showKillDeviceConfirm) {
+
+			PeripheralDeviceAPI.executeFunction(this.state.showKillDeviceConfirm._id, (err, result) => {
+				// console.log('reply', err, result)
+				if (err) {
+					console.log(err)
+				} else {
+					// resolve(result)
+				}
+			}, 'killProcess', 1)
+		}
+		// ShowStyles.remove(this.state.KillConfirmItem._id)
+		this.setState({
+			showKillDeviceConfirm: null
+		})
+	}
+
+	handleConfirmKillCancel = (e) => {
+		this.setState({
+			showKillDeviceConfirm: null
 		})
 	}
 
@@ -167,6 +198,20 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 						<button className='action-btn' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteDevice(this.props.device)}>
 							<FontAwesomeIcon icon={faTrash} />
 						</button>
+						{(
+							this.props.device.type !== PeripheralDeviceAPI.DeviceType.OTHER ? [
+								<ModalDialog title={t('Kill this device process?')} acceptText={t('Kill')}
+									secondaryText={t('Cancel')}
+									show={!!this.state.showKillDeviceConfirm}
+									onAccept={(e) => this.handleConfirmKillAccept(e)}
+									onSecondary={(e) => this.handleConfirmKillCancel(e)}>
+									<p>{t(`Are you sure you want to kill the process of this device?`)}</p>
+								</ModalDialog>,
+								<button className='action-btn' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onKillDevice(this.props.device)}>
+									Kill process
+								</button>
+							] : null
+						)}
 					</div>
 				</div>
 
@@ -292,7 +337,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 				)
 			}
 			return (
-				<div className='device-item-container'>
+				<div key={d.device._id + '_parent'} className='device-item-container'>
 					{content}
 				</div>
 			)
