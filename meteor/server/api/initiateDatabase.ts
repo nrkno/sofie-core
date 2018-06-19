@@ -150,7 +150,7 @@ Meteor.methods({
 					name: 'Kam',
 					type: RundownAPI.SourceLayerType.CAMERA,
 					onPGMClean: true,
-					activateKeyboardHotkeys: '1,2,3,4,5,6',
+					activateKeyboardHotkeys: 'f1,f2,f3,1,2,3,4,5,6',
 					assignHotkeysToGlobalAdlibs: true
 				},
 			],
@@ -309,19 +309,37 @@ Meteor.methods({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				mappingType: MappingLawoType.Source,
-				identifier: 'Rut1',
+				identifier: 'RM1',
 			}),
 			'lawo_source_rm2': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				mappingType: MappingLawoType.Source,
-				identifier: 'Rut2',
+				identifier: 'RM2',
 			}),
 			'lawo_source_rm3': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				mappingType: MappingLawoType.Source,
-				identifier: 'Rut3',
+				identifier: 'RM3',
+			}),
+			'lawo_source_rm4': literal<MappingLawo>({
+				device: PlayoutDeviceType.LAWO,
+				deviceId: 'lawo0',
+				mappingType: MappingLawoType.Source,
+				identifier: 'RM4',
+			}),
+			'lawo_source_rm5': literal<MappingLawo>({
+				device: PlayoutDeviceType.LAWO,
+				deviceId: 'lawo0',
+				mappingType: MappingLawoType.Source,
+				identifier: 'RM4',
+			}),
+			'lawo_source_rm6': literal<MappingLawo>({
+				device: PlayoutDeviceType.LAWO,
+				deviceId: 'lawo0',
+				mappingType: MappingLawoType.Source,
+				identifier: 'RM5',
 			})
 		}
 		StudioInstallations.update('studio0', {$set: {
