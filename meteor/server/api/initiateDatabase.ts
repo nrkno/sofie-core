@@ -247,13 +247,13 @@ Meteor.methods({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				mappingType: MappingAtemType.Auxilliary,
-				index: 1
+				index: 4
 			}),
 			'atem_aux_preview': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				mappingType: MappingAtemType.Auxilliary,
-				index: 2
+				index: 5
 			}),
 			'atem_dsk_graphics': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
@@ -294,61 +294,61 @@ Meteor.methods({
 			'lawo_source_automix': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				mappingType: MappingLawoType.Source,
+				mappingType: MappingLawoType.SOURCE,
 				identifier: 'AMix',
 			}),
 			'lawo_source_clip': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				mappingType: MappingLawoType.Source,
+				mappingType: MappingLawoType.SOURCE,
 				identifier: 'Server',
 			}),
 			'lawo_source_effect': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				mappingType: MappingLawoType.Source,
+				mappingType: MappingLawoType.SOURCE,
 				identifier: 'Eff 1',
 			}),
 			'lawo_source_effect2': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				mappingType: MappingLawoType.Source,
+				mappingType: MappingLawoType.SOURCE,
 				identifier: 'Eff 2',
 			}),
 			'lawo_source_rm1': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				mappingType: MappingLawoType.Source,
+				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM1',
 			}),
 			'lawo_source_rm2': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				mappingType: MappingLawoType.Source,
+				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM2',
 			}),
 			'lawo_source_rm3': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				mappingType: MappingLawoType.Source,
+				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM3',
 			}),
 			'lawo_source_rm4': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				mappingType: MappingLawoType.Source,
+				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM4',
 			}),
 			'lawo_source_rm5': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				mappingType: MappingLawoType.Source,
+				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM4',
 			}),
 			'lawo_source_rm6': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				mappingType: MappingLawoType.Source,
+				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM5',
 			})
 		}
@@ -359,7 +359,7 @@ Meteor.methods({
 		ShowStyles.upsert('show0', {$set: {
 			name: 'Distriktsnyheter Sørlandet',
 			templateMappings: [],
-			baselineTemplate: 'sorlandetTemplate'
+			baselineTemplate: 'baseline'
 		}})
 
 		PeripheralDevices.find({
@@ -384,7 +384,10 @@ Meteor.methods({
 					type: PlayoutDeviceType.LAWO,
 					options: {
 						host: '10.182.132.203',
-						port: 9000
+						port: 9000,
+						sourcesPath: 'Ruby.Sources',
+						rampMotorFunctionPath: '1.5.2'
+						
 					}
 				},
 				'settings.devices.abstract0': ((pd['settings'] || {})['devices'] || {})['abstract0'] || {

@@ -30,6 +30,8 @@ export interface DBSegmentLine {
 	overlapDuration?: number
 	/** Should we block a transition at the out of this SegmentLine */
 	disableOutTransition?: boolean
+	/** If true, the story status (yellow line) will be updated upon next:ing  */
+	updateStoryStatus?: boolean
 
 	metaData?: Array<IMOSExternalMetaData>
 	status?: IMOSObjectStatus
@@ -57,6 +59,7 @@ export class SegmentLine implements DBSegmentLine {
 	public duration?: number
 	public overlapDuration?: number
 	public disableOutTransition?: boolean
+	public updateStoryStatus?: boolean
 
 	constructor (document: DBSegmentLine) {
 		_.each(_.keys(document), (key) => {

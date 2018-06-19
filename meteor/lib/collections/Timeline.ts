@@ -296,18 +296,26 @@ export interface EmberPlusValueString extends EmberPlusValue {
 	type: EmberPlusValueType.STRING,
 	value: string
 }
-export type LawoStateNodeAttr = EmberPlusValue | LawoStateNodeAttrTransition
-export interface LawoStateNodeAttrTransition {
-	value: EmberPlusValue
-	transitionDuration?: number
+
+export interface TimelineObjLawo extends TimelineObj {
+	content: {
+		type: TimelineContentTypeLawo,
+		attributes: {
+			[key: string]: {
+				[attr: string]: any
+				triggerValue: string // only used for trigging new command sent
+			}
+		}
+	}
 }
-export interface TimelineObjLawoSource extends TimelineObj {
+export interface TimelineObjLawoSource extends TimelineObjLawo {
 	content: {
 		type: TimelineContentTypeLawo,
 		attributes: {
 			'Fader/Motor dB Value': {
 				value: number,
-				transitionDuration?: number
+				transitionDuration?: number,
+				triggerValue: string // only used for trigging new command sent
 			}
 		}
 	}
