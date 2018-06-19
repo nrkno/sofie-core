@@ -386,7 +386,7 @@ Meteor.methods({
 						host: '10.182.132.203',
 						port: 9000,
 						sourcesPath: 'Ruby.Sources',
-						rampMotorFunctionPath: 'Ruby.Functions.RampMotorFader'
+						rampMotorFunctionPath: '1.5.2'
 						
 					}
 				},
