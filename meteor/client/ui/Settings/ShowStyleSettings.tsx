@@ -118,6 +118,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								className='input text-input input-l'></EditAttribute>
 						</label>
 					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							<a href={`/backup/show/${(this.props.showStyle as any)._id}`} target='_new'>{t('Download backup')}</a>
+						</label>
+					</div>
 				</div>
 				<div>
 					<h2>{t('Templates')}</h2>
