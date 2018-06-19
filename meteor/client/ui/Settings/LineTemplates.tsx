@@ -251,7 +251,8 @@ export enum TimelineContentTypeAtem { //  Atem-state
 	MEDIAPLAYER = 'mp'
 }
 export enum TimelineContentTypeHttp {
-	POST = 'post'
+	POST = 'post',
+	PUT = 'put',
 }
 export namespace Atem_Enums {
 	export enum TransitionStyle {
