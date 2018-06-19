@@ -5,7 +5,7 @@ import { PlayoutDeviceType } from './PeripheralDevices'
 
 // Imports from TSR (TODO make into an import)
 export enum MappingLawoType {
-	Source
+	SOURCE = 'source'
 }
 export enum MappingAtemType {
 	MixEffect,

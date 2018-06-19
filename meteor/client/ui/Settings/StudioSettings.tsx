@@ -1345,9 +1345,6 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 							</div>
 						</label>
 					</div>
-					
-
-					
 
 					<div className='row'>
 						<div className='col c12 rl-c6'>
