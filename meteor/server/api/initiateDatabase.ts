@@ -115,22 +115,21 @@ Meteor.methods({
 				// 	type: RundownAPI.SourceLayerType.LOWER_THIRD,
 				// 	onPGMClean: false
 				// },
-				// {
-				// 	_id: 'studio0_split0',
-				// 	_rank: 15,
-				// 	name: 'Split',
-				// 	type: RundownAPI.SourceLayerType.SPLITS,
-				// 	onPGMClean: true,
-				// },
-				// {
-				// {
-				// 	_id: 'studio0_remote0',
-				// 	_rank: 60,
-				// 	name: 'RM1',
-				// 	type: RundownAPI.SourceLayerType.REMOTE,
-				// 	onPGMClean: true,
-				// 	isRemoteInput: true
-				// },
+				{
+					_id: 'studio0_split0',
+					_rank: 15,
+					name: 'Split',
+					type: RundownAPI.SourceLayerType.SPLITS,
+					onPGMClean: true,
+				},
+				{
+					_id: 'studio0_remote0',
+					_rank: 60,
+					name: 'RM1',
+					type: RundownAPI.SourceLayerType.REMOTE,
+					onPGMClean: true,
+					isRemoteInput: true
+				},
 				// {
 				// 	_id: 'studio0_vt0',
 				// 	_rank: 80,
