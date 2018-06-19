@@ -7,44 +7,97 @@
 
 	height: 100vh;
 	width: 100vw;
-
-	text-align: center;
 }
 
 .clocks-half {
 	height: 50vh;
+	position: fixed;
+	width: 100vw;
+}
+
+.clocks-top {
+	top: 0;
+}
+
+.clocks-bottom {
+	top: 50vh;
 }
 
 .clocks-top-bar {
 	border-top: solid 10px #454545;
 }
 
+.clocks-bottom-top {
+	height: 38.8vh;
+}
+
+.clocks-segment-icon {
+	width: 17.6vw;
+	// padding-top: 3.6vh;
+	padding: 2.3vh 1.7vw 0.83vh 2.7vw;
+	height: 19.4vh; // 18.3 + 3.6
+	float: left;
+}
+
+.clocks-current-segment-icon {
+	height: 21.9vh; // 18.3 + 3.6
+	padding-top: 4.6vh;
+}
+
 .clocks-segment-title {
-	font-size: 9rem;
+	// padding-left: 17.6vw;
+	height: 19.4vh;
+	font-size: 9.375rem;
+	padding-top: 1.1vh;
+	// float: left;
+
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	overflow: hidden;
+
+	font-weight: normal;
+	font-style: normal;
+	font-stretch: normal;
+	line-height: 19.4vh;
+	letter-spacing: normal;
 }
 
 .clocks-current-segment-title {
 	color: #ffff00;
+	padding-top: 3.6vh;
+	height: 21.9vh; // 18.3 + 3.6
+	line-height: 18.3vh;
 }
 
 .clocks-segment-countdown {
+	height: 24.4vh;
+	width: 100vw;
+	line-height: 24.4vh;
+	margin-top: -4vh;
+	margin-left: -17.6vw;
+	letter-spacing: -.5rem;
 	font-weight: 100;
-	font-size: 9rem;
+	font-size: 12.5rem;
+	text-align: center
 }
 
 .clocks-current-segment-countdown {
-	font-size: 18rem;
+	height: 36.6vh;
+	line-height: 36.6vh;
+	font-size: 18.75rem;
+	margin-top: -7.6vh;
 }
 
-.fontweight-normal {
+.fontweight-300 {
 	font-weight: 300;
 }
 
 .fontweight-light {
 	font-weight: 100;
+}
+
+.fontweight-normal {
+	font-weight: normal;
 }
 
 .clocks-rundown-title {
@@ -53,4 +106,22 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	overflow: hidden;
+	text-align: center;
+	padding: .25rem;
+}
+
+.clocks-segment-icon .stub-icon {
+	width: 100%;
+	height: 100%;
+	background: #00c800;
+
+	font-size: 9.375rem;
+	font-weight: 100;
+	font-style: normal;
+	font-stretch: normal;
+	line-height: normal;
+	letter-spacing: -3.5px;
+	text-align: center;
+	color: #ffffff;
+	text-shadow: 0 1px 4.5px rgba(0, 0, 0, 0.5);
 }

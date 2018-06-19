@@ -9,7 +9,7 @@ import { Segment, Segments } from '../../lib/collections/Segments'
 
 import { RunningOrderTimingProvider, withTiming, WithTiming } from './RunningOrderTiming'
 import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines'
-// import { SegmentLineUi } from './SegmentTimeline/SegmentTimelineContainer'
+import { SegmentLineUi } from './SegmentTimeline/SegmentTimelineContainer'
 
 import { RundownUtils } from '../lib/rundown'
 import * as TimecodeString from 'smpte-timecode'
@@ -36,6 +36,23 @@ interface RunningOrderOverviewTrackedProps {
 	segments: Array<SegmentUi>
 }
 
+const Timediff = class extends React.Component<{ time: number}> {
+	render () {
+		const time = this.props.time
+		const timeString = RundownUtils.formatDiffToTimecode(time)
+		const timeStringSegments = timeString.split(':')
+		const fontWeight = (no) => true
+		return (
+			<span>
+				{time < 0 ? <span>+</span> : <span>&ndash;</span>}
+				<span className={fontWeight(timeStringSegments[0]) ? 'fontweight-300' : ''}>{timeStringSegments[0]}</span>:
+				<span className={fontWeight(timeStringSegments[1]) ? 'fontweight-300' : ''}>{timeStringSegments[1]}</span>{timeStringSegments.length > 2 ? ':' +
+				<span className={fontWeight(timeStringSegments[2]) ? 'fontweight-300' : ''}>{timeStringSegments[2]}</span> : null}
+			</span>
+		)
+	}
+}
+
 const Timecode = class extends React.Component<{ time: number }> {
 	render () {
 		const time = this.props.time
@@ -52,10 +69,10 @@ const Timecode = class extends React.Component<{ time: number }> {
 
 		return (
 			<span>
-				{time >= 0 ? <span>+</span> : <span>\u2013</span>}
-				<span className={fontWeight(timecodeSegments[0]) ? 'fontweight-normal' : ''}>{timecodeSegments[0]}</span>:
-				<span className={fontWeight(timecodeSegments[1]) ? 'fontweight-normal' : ''}>{timecodeSegments[1]}</span>:
-				<span className={fontWeight(timecodeSegments[2]) ? 'fontweight-normal' : ''}>{timecodeSegments[2]}</span>:
+				{time < 0 ? <span>+</span> : <span></span>}
+				<span className={fontWeight(timecodeSegments[0]) ? 'fontweight-300' : ''}>{timecodeSegments[0]}</span>:
+				<span className={fontWeight(timecodeSegments[1]) ? 'fontweight-300' : ''}>{timecodeSegments[1]}</span>:
+				<span className={fontWeight(timecodeSegments[2]) ? 'fontweight-300' : ''}>{timecodeSegments[2]}</span>:
 				<span className={fontWeight(timecodeSegments[3]) ? 'fontweight-normal' : ''}>{timecodeSegments[3]}</span>
 			</span>
 		)
@@ -85,58 +102,69 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 			const { runningOrder, segments } = this.props
 
 			if (runningOrder && this.props.runningOrderId && this.props.segments) {
-				const currentSegment = this.props.segments.find((segment) =>
-						segment.items ? segment.items.find((item) =>
-							item._id === runningOrder.currentSegmentLineId
-						) : false
-					)
-				let currentSegmentDuration = 0
-				if (currentSegment) {
-					if (currentSegment.items) {
-						for (const item of currentSegment.items) {
-							currentSegmentDuration += item.expectedDuration || 0
-							currentSegmentDuration += -1 * (item.duration || 0)
-							if (!item.duration && item.startedPlayback) {
-								currentSegmentDuration += -1 * (getCurrentTime() - item.startedPlayback)
+				let currentSegmentLine
+				for (const segment of segments) {
+					if (segment.items) {
+						for (const item of segment.items) {
+							if (item._id === runningOrder.currentSegmentLineId) {
+								currentSegmentLine = item
 							}
 						}
 					}
 				}
+				let currentSegmentDuration = 0
+				if (currentSegmentLine) {
+					currentSegmentDuration += currentSegmentLine.expectedDuration || 0
+					currentSegmentDuration += -1 * (currentSegmentLine.duration || 0)
+					if (!currentSegmentLine.duration && currentSegmentLine.startedPlayback) {
+						currentSegmentDuration += -1 * (getCurrentTime() - currentSegmentLine.startedPlayback)
+					}
+				}
 
-				const nextSegment = this.props.segments.find((segment) =>
-						segment.items ? segment.items.find((item) =>
-							item._id === runningOrder.nextSegmentLineId
-						) : false
-					)
-				let nextSegmentDuration = 0
-				if (nextSegment) {
-					if (nextSegment.items) {
-						const durations = nextSegment.items.map((item) => this.props.timingDurations.segmentLineDurations ? this.props.timingDurations.segmentLineDurations[item._id] : 0)
-						for (const segmentLineDuration of durations) {
-							nextSegmentDuration += segmentLineDuration
+				let nextSegmentLine
+				for (const segment of segments) {
+					if (segment.items) {
+						for (const item of segment.items) {
+							if (item._id === runningOrder.nextSegmentLineId) {
+								nextSegmentLine = item
+							}
 						}
+					}
+				}
+				let nextSegmentDuration = 0
+				if (nextSegmentLine) {
+					nextSegmentDuration += nextSegmentLine.expectedDuration || 0
+					nextSegmentDuration += -1 * (nextSegmentLine.duration || 0)
+					if (!nextSegmentLine.duration && nextSegmentLine.startedPlayback) {
+						nextSegmentDuration += -1 * (getCurrentTime() - nextSegmentLine.startedPlayback)
 					}
 				}
 
 				return (
 					<div className='clocks-full-screen'>
-						<div className='clocks-half'>
+						<div className='clocks-half clocks-top'>
+							<div className='clocks-segment-icon'>
+								<div className='stub-icon'>K <span className='fontweight-normal'>3</span></div>
+							</div>
 							<div className='clocks-segment-title clocks-current-segment-title'>
-								{currentSegment ? currentSegment.name : '_'}
+								{currentSegmentLine ? currentSegmentLine.slug : '_'}
 							</div>
 							<div className='clocks-segment-countdown clocks-current-segment-countdown'>
-								<Timecode time={currentSegmentDuration} />
+								<Timediff time={currentSegmentDuration} />
 								{/* <span>–</span>
 								<span>00</span>:
 								<span>00</span>:
-								<span className='fontweight-normal'>12</span>:
-								<span className='fontweight-normal'>24</span> */}
+								<span className='fontweight-300'>12</span>:
+								<span className='fontweight-300'>24</span> */}
 							</div>
 						</div>
-						<div className='clocks-half clocks-top-bar'>
-							<div>
+						<div className='clocks-half clocks-bottom clocks-top-bar'>
+							<div className='clocks-segment-icon'>
+								<div className='stub-icon'>K <span className='fontweight-normal'>3</span></div>
+							</div>
+							<div className='clocks-bottom-top'>
 								<div className='clocks-segment-title'>
-									{nextSegment ? nextSegment.name : '_'}
+									{nextSegmentLine ? nextSegmentLine.slug : '_'}
 								</div>
 								<div className='clocks-segment-countdown'>
 									<Timecode time={nextSegmentDuration} />
