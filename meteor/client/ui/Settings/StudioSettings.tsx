@@ -13,7 +13,8 @@ import { IOutputLayer,
 	MappingCasparCG,
 	MappingAtem,
 	MappingLawo,
-	MappingAtemType
+	MappingAtemType,
+	MappingLawoType
 } from '../../../lib/collections/StudioInstallations'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
@@ -987,22 +988,24 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 			<React.Fragment>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('channel name')}
+						{t('mappingType')}
 						<EditAttribute
 							modifiedClassName='bghl'
-							attribute={'mappings.' + layerId + '.channelName'}
+							attribute={'mappings.' + layerId + '.mappingType'}
 							obj={this.props.studioInstallation}
-							type='text'
+							type='dropdown'
+							options={MappingLawoType}
+							optionsAreNumbers={true}
 							collection={StudioInstallations}
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('path')}
+						{t('Identifier')}
 						<EditAttribute
 							modifiedClassName='bghl'
-							attribute={'mappings.' + layerId + '.path'}
+							attribute={'mappings.' + layerId + '.identifier'}
 							obj={this.props.studioInstallation}
 							type='text'
 							collection={StudioInstallations}
@@ -1042,7 +1045,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.LAWO && (
-								<span>{ (mapping as MappingLawo).channelName }</span>
+								<span>{ (mapping as MappingLawo).identifier }</span>
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.HTTPSEND && (

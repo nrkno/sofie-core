@@ -87,7 +87,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							<span className='mdfx'></span>
 						</div>
 					</label>
-					<ModalDialog title={t('Restore this backup?')} acceptText={t('Restore')} secondaryText={t('Cancel')} show={this.state.showUploadConfirm} onAccept={(e) => this.handleConfirmUploadFileAccept(e)} onSecondary={(e) => this.handleConfirmUploadFileCancel(e)}>
+					<ModalDialog title={t('Restore this backup?')} acceptText={t('Restore')} secondaryText={t('Cancel')} show={this.state.showUploadConfirm} onAccept={() => this.handleConfirmUploadFileAccept()} onSecondary={() => this.handleConfirmUploadFileCancel()}>
 						<p>{t(`Are you sure you want to restore the backup file ${this.state.uploadFileName}?`)}</p>
 						<p>{t('This action is irreversible.')}</p>
 					</ModalDialog>

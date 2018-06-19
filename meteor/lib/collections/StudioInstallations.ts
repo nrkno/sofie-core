@@ -4,6 +4,9 @@ import { TransformedCollection } from '../typings/meteor'
 import { PlayoutDeviceType } from './PeripheralDevices'
 
 // Imports from TSR (TODO make into an import)
+export enum MappingLawoType {
+	Source
+}
 export enum MappingAtemType {
 	MixEffect,
 	DownStreamKeyer,
@@ -35,8 +38,8 @@ export interface MappingAtem extends Mapping {
 }
 export interface MappingLawo extends Mapping {
 	device: PlayoutDeviceType.LAWO,
-	channelName: string,
-	path: string
+	mappingType: MappingLawoType,
+	identifier: string
 }
 
 /** A set of available layer groups in a given installation */

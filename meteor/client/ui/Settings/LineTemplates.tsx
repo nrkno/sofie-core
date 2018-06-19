@@ -241,7 +241,7 @@ export enum TimelineContentTypeCasparCg { //  CasparCG-state/TSR
 	RECORD = 'record'
 }
 export enum TimelineContentTypeLawo { // lawo-state
-	LAWO = 'lawo'
+	SOURCE = 'lawosource'
 }
 export enum TimelineContentTypeAtem { //  Atem-state
 	ME = 'me',
