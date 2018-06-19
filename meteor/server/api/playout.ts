@@ -17,7 +17,7 @@ import { IMOSRunningOrder, IMOSObjectStatus, MosString128 } from 'mos-connection
 import { PlayoutTimelinePrefixes } from '../../lib/api/playout'
 import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
-import { setStoryStatus } from './peripheralDevice'
+import { sendStoryStatus } from './peripheralDevice'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 
 Meteor.methods({
@@ -102,7 +102,8 @@ Meteor.methods({
 			rehearsal: rehearsal,
 			previousSegmentLineId: null,
 			currentSegmentLineId: null,
-			nextSegmentLineId: segmentLines[0]._id // put the first on queue
+			nextSegmentLineId: segmentLines[0]._id, // put the first on queue
+			updateStoryStatus: null
 		}, $unset: {
 			startedPlayback: 0
 		}})
@@ -171,9 +172,7 @@ Meteor.methods({
 
 		updateTimeline(runningOrder.studioInstallationId)
 
-		if (previousSegmentLine) {
-			setStoryStatus(runningOrder.mosDeviceId, runningOrder, previousSegmentLine.mosId, IMOSObjectStatus.STOP)
-		}
+		sendStoryStatus(runningOrder, null)
 	},
 
 	'debug__printTime': () => {
@@ -219,10 +218,9 @@ Meteor.methods({
 
 		updateTimeline(runningOrder.studioInstallationId)
 
-		if (previousSegmentLine) {
-			setStoryStatus(runningOrder.mosDeviceId, runningOrder, previousSegmentLine.mosId, IMOSObjectStatus.STOP)
+		if (takeSegmentLine.updateStoryStatus) {
+			sendStoryStatus(runningOrder, takeSegmentLine)
 		}
-		setStoryStatus(runningOrder.mosDeviceId, runningOrder, takeSegmentLine.mosId, IMOSObjectStatus.PLAY)
 	},
 
 	'playout_setNext': (roId: string, nextSlId: string) => {

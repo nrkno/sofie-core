@@ -1116,8 +1116,28 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 
 	// return this.core.mosManipulate(P.methods.mosRoReadyToAir, story)
 }
+export function sendStoryStatus (ro: RunningOrder, takeSegmentLine: SegmentLine | null) {
 
-export function setStoryStatus (deviceId: string, ro: RunningOrder, storyId: string, status: IMOSObjectStatus): Promise<any> {
+	if (ro.currentPlayingStoryStatus) {
+		setStoryStatus(ro.mosDeviceId, ro, ro.currentPlayingStoryStatus, IMOSObjectStatus.STOP)
+		.catch(e => logger.error(e))
+	}
+	if (takeSegmentLine) {
+		setStoryStatus(ro.mosDeviceId, ro, takeSegmentLine.mosId, IMOSObjectStatus.PLAY)
+		.catch(e => logger.error(e))
+
+		RunningOrders.update(this._id, {$set: {
+			currentPlayingStoryStatus: takeSegmentLine.mosId
+		}})
+		ro.currentPlayingStoryStatus = takeSegmentLine.mosId
+	} else {
+		RunningOrders.update(this._id, {$unset: {
+			currentPlayingStoryStatus: 1
+		}})
+		delete ro.currentPlayingStoryStatus
+	}
+}
+function setStoryStatus (deviceId: string, ro: RunningOrder, storyId: string, status: IMOSObjectStatus): Promise<any> {
 	return new Promise((resolve, reject) => {
 		if (!ro.rehearsal) {
 			console.log('setStoryStatus', deviceId, ro.mosId, storyId, status)

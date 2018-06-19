@@ -48,6 +48,9 @@ export interface DBRunningOrder {
 
 	/** Actual time of playback starting */
 	startedPlayback?: Time
+
+	/** Last sent storyStatus to MOS */
+	currentPlayingStoryStatus?: string
 }
 export class RunningOrder implements DBRunningOrder {
 	public _id: string
@@ -69,6 +72,7 @@ export class RunningOrder implements DBRunningOrder {
 	public currentSegmentLineId: string | null
 	public nextSegmentLineId: string | null
 	public startedPlayback?: Time
+	public currentPlayingStoryStatus?: string
 
 	constructor (document: DBRunningOrder) {
 		_.each(_.keys(document), (key) => {
