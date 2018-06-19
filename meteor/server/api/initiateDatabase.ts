@@ -247,13 +247,13 @@ Meteor.methods({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				mappingType: MappingAtemType.Auxilliary,
-				index: 1
+				index: 4
 			}),
 			'atem_aux_preview': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				mappingType: MappingAtemType.Auxilliary,
-				index: 2
+				index: 5
 			}),
 			'atem_dsk_graphics': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
