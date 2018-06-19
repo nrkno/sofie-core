@@ -18,6 +18,7 @@ Meteor.methods({
 		StudioInstallations.insert({
 			_id: 'studio0',
 			name: 'Dummy studio',
+			defaultShowStyle: 'dummyShow0',
 			outputLayers: [
 				{
 					_id: 'studio0-pgm0',
