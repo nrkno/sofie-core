@@ -281,16 +281,21 @@ export namespace ServerPeripheralDeviceAPI {
 			ro.remove()
 		}
 	}
-	export function mosRoMetadata (id, token, metadata: IMOSRunningOrderBase) {
+	export function mosRoMetadata (id, token, roData: IMOSRunningOrderBase) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoMetadata')
 		// @ts-ignore
-		logger.debug(metadata)
-		let ro = getRO(metadata.ID)
-		if (metadata.MosExternalMetaData) {
-			RunningOrders.update(ro._id, {$set: {
-				metaData: metadata.MosExternalMetaData
-			}})
+		logger.debug(roData)
+		let ro = getRO(roData.ID)
+
+		let m = {}
+		if (roData.MosExternalMetaData) m['metaData'] = roData.MosExternalMetaData
+		if (roData.Slug) 				m['name'] = roData.Slug.toString()
+		if (roData.EditorialStart) 		m['expectedStart'] = formatTime(roData.EditorialStart)
+		if (roData.EditorialDuration) 	m['expectedDuration'] = formatDuration(roData.EditorialDuration)
+
+		if (!_.isEmpty(m)) {
+			RunningOrders.update(ro._id, {$set: m})
 		}
 	}
 	export function mosRoStatus (id, token, status: IMOSRunningOrderStatus) {
