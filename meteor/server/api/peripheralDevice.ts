@@ -161,6 +161,16 @@ export namespace ServerPeripheralDeviceAPI {
 
 		Meteor.call('playout_segmentLinePlaybackStart', r.roId, r.slId, r.time)
 	}
+	export function pingWithCommand (id: string, token: string, message: string) {
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
+
+		PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err, res) => {
+			if (err) {
+				logger.warn(err)
+			}
+		}, 'pingResponse', message)
+	}
 
 	// export {P.initialize}
 	// ----------------------------------------------------------------------------
@@ -1171,6 +1181,9 @@ methods[PeripheralDeviceAPI.methods.getPeripheralDevice ] = (deviceId, deviceTok
 }
 methods[PeripheralDeviceAPI.methods.segmentLinePlaybackStarted] = (deviceId, deviceToken, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) => {
 	return ServerPeripheralDeviceAPI.segmentLinePlaybackStarted(deviceId, deviceToken, r)
+}
+methods[PeripheralDeviceAPI.methods.pingWithCommand] = (deviceId, deviceToken, message: string) => {
+	return ServerPeripheralDeviceAPI.pingWithCommand(deviceId, deviceToken, message)
 }
 // ----------------------------------------------------------------------------
 // Mos-functions:

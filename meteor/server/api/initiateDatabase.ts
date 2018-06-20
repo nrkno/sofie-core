@@ -14,7 +14,7 @@ import { RundownAPI } from '../../lib/api/rundown'
 import { PeripheralDevices, PlayoutDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../../server/logging'
-import * as _ from 'underscore';
+import * as _ from 'underscore'
 
 // Imports from TSR (TODO make into an import)
 // export interface Mappings {
