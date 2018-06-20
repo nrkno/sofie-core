@@ -89,7 +89,7 @@ enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_ACTIVATE_REHEARSAL = 'mod+§',
 	RUNNING_ORDER_DEACTIVATE = 'mod+shift+§'
 }
-Mousetrap.addKeycodes({
+mousetrap.addKeycodes({
 	220: '§',
 	222: '\\',
 	223: '|'

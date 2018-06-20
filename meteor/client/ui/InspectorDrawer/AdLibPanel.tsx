@@ -303,11 +303,11 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 
 	let liveSegment: SegmentUi | undefined = undefined
 
-	const sourceLayerLookup: ISourceLayerLookup =
-	props.studioInstallation && props.studioInstallation.sourceLayers ?
+	const sourceLayerLookup: ISourceLayerLookup = (
+		props.studioInstallation && props.studioInstallation.sourceLayers ?
 		_.object(_.map(props.studioInstallation.sourceLayers, (item) => [item._id, item])) :
 		{}
-
+	)
 	// a hash to store various indices of the used hotkey lists
 	let sourceHotKeyUse = {}
 
@@ -319,8 +319,13 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 			// automatically assign hotkeys based on adLibItem index
 			const uiAdLib: SegmentLineAdLibItemUi = _.clone(item)
 			uiAdLib.isGlobal = true
-			if (item.sourceLayerId && sourceLayerLookup[item.sourceLayerId] && sourceLayerLookup[item.sourceLayerId].activateKeyboardHotkeys && sourceLayerLookup[item.sourceLayerId].assignHotkeysToGlobalAdlibs) {
-				let keyboardHotkeysList = sourceLayerLookup[uiAdLib.sourceLayerId].activateKeyboardHotkeys!.split(',')
+
+			let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
+			if (sourceLayer &&
+				sourceLayer.activateKeyboardHotkeys &&
+				sourceLayer.assignHotkeysToGlobalAdlibs
+			) {
+				let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
 				if ((sourceHotKeyUse[uiAdLib.sourceLayerId] || 0) < keyboardHotkeysList.length) {
 					uiAdLib.hotkey = keyboardHotkeysList[(sourceHotKeyUse[uiAdLib.sourceLayerId] || 0)]
 					// add one to the usage hash table
