@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import { PeripheralDeviceCommands } from '../collections/PeripheralDeviceCommands'
 import { MeteorPromiseCall, getCurrentTime } from '../lib'
-import { logger } from '../../server/logging'
+import { logger } from '../../lib/logging'
 
 namespace PeripheralDeviceAPI {
 

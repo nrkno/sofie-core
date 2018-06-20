@@ -83,7 +83,7 @@ if (logToFile) {
 		level: 'silly',
 		handleExceptions: true,
 		json: true,
-		stringify: (obj) => safeStringify
+		stringify: (obj) => safeStringify(obj)
 	})
 }
 
@@ -92,6 +92,12 @@ if (logToFile) {
 // 	// @ts-ignore
 // 	logger.debug(...args)
 // }
+
+Meteor.methods({
+	'logger': (type, ...args) => {
+		(logger[type] || logger.log)(...args)
+	}
+})
 
 logger.info('Starting up')
 
