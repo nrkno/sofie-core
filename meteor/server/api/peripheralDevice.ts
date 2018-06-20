@@ -1058,6 +1058,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 			overlapDuration: 		result.segmentLine.overlapDuration || 0,
 			autoNext: 				result.segmentLine.autoNext || false,
 			disableOutTransition: 	result.segmentLine.disableOutTransition || false,
+			updateStoryStatus:		result.segmentLine.updateStoryStatus || false,
 		}})
 	}
 	saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
