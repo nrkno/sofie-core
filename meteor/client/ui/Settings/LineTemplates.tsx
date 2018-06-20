@@ -178,6 +178,7 @@ declare interface Context {
 	getConfigValue: (key: string, defaultValue?: any) => any
 	getValueByPath: (sourceObject: object | undefined, pathToAttributeInObject: string, defaultValue?: any) => any
 	getHelper: (functionId: string) => Function
+	runHelper: (functionId: string, ...args: any[]) => any
 	error: (messageToThrow: string) => void
 	warning: (messageToLog: string) => void
 	getSegmentLines (): Array<SegmentLine>

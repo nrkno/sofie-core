@@ -86,6 +86,7 @@ export interface TemplateContextInnerBase {
 	getConfigValue: (key: string, defaultValue?: any) => any
 	getValueByPath: (obj: object | undefined, path: string, defaultValue?: any) => any
 	getHelper: (functionId: string) => Function
+	runHelper: (functionId: string, ...args: any[]) => any
 	error: (message: string) => void
 	warning: (message: string) => void
 	getSegmentLines (): Array<SegmentLine>
@@ -197,6 +198,10 @@ export function getContext (context: TemplateContext): TemplateContextInternal {
 			} catch (e) {
 				throw new Meteor.Error(402, 'Syntax error in runtime function helper "' + functionId + '": ' + e.toString())
 			}
+		},
+		runHelper (functionId: string, ...args: any[]): any {
+			const helper = this.getHelper(functionId)
+			return helper.apply(args)
 		},
 		getSegmentLines (): Array<SegmentLine> {
 			// return stories in segmentLine
