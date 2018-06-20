@@ -8,10 +8,11 @@ import { convertCodeToGeneralFunction, convertCodeToFunction, getContext, Templa
 import { DBSegmentLine, SegmentLine } from '../../lib/collections/SegmentLines'
 import { IMOSROFullStory, MosString128, IMOSItem } from 'mos-connection'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { logger } from '../../server/logging'
 
 export function runtimeFunctionTestCode (code: string, showStyleId: string, syntaxOnly: boolean) {
 	check(code, String)
-	console.log('runtimeFunctionTestCode')
+	logger.debug('runtimeFunctionTestCode')
 
 	if (syntaxOnly) {
 		try {

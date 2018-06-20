@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 
 import { RunningOrderSecurity } from '../security/runningOrders'
 import { RunningOrderDataCache } from '../../lib/collections/RunningOrderDataCache'
+import { logger } from '../logging'
 
 // Note: this publication is for dev purposes only (it should probably not be used in production at all)
 
@@ -12,7 +13,7 @@ Meteor.publish('runningOrderDataCache', function (selector, token) {
 			token: 0
 		}
 	}
-	console.log('pub RunningOrderDataCache')
+	logger.debug('pub RunningOrderDataCache')
 	if (RunningOrderSecurity.allowReadAccess(selector, token, this)) {
 		return RunningOrderDataCache.find(selector, modifier)
 	}
