@@ -150,6 +150,7 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 	}
 	export function segmentLinePlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) {
+		// This is called from the playout-gateway when an auto-next event occurs
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
