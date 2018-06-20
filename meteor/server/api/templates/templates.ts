@@ -1,6 +1,7 @@
 import * as _ from 'underscore'
 import * as saferEval from 'safer-eval'
 import * as objectPath from 'object-path'
+import * as moment from 'moment'
 import {
 	IMOSROFullStory,
 } from 'mos-connection'
@@ -265,6 +266,7 @@ export function convertCodeToGeneralFunction (code: string): TemplateGeneralFunc
 	if (!functionStr) throw Error('Function empty!')
 	let runtimeFcn: TemplateGeneralFunction = saferEval(functionStr, {
 		_,
+		moment,
 		LayerType,
 		TriggerType,
 		TimelineContentTypeOther,

@@ -221,6 +221,10 @@ Meteor.methods({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0'
 			}),
+			'casparcg_cg_klokke_ctrl': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0'
+			}),
 			'casparcg_cg_studiomonitor': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
