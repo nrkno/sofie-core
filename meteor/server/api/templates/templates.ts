@@ -1,6 +1,7 @@
 import * as _ from 'underscore'
 import * as saferEval from 'safer-eval'
 import * as objectPath from 'object-path'
+import * as moment from 'moment'
 import {
 	IMOSROFullStory,
 } from 'mos-connection'
@@ -85,6 +86,7 @@ export interface TemplateContextInnerBase {
 	getConfigValue: (key: string, defaultValue?: any) => any
 	getValueByPath: (obj: object | undefined, path: string, defaultValue?: any) => any
 	getHelper: (functionId: string) => Function
+	runHelper: (functionId: string, ...args: any[]) => any
 	error: (message: string) => void
 	warning: (message: string) => void
 	getSegmentLines (): Array<SegmentLine>
@@ -197,6 +199,10 @@ export function getContext (context: TemplateContext): TemplateContextInternal {
 				throw new Meteor.Error(402, 'Syntax error in runtime function helper "' + functionId + '": ' + e.toString())
 			}
 		},
+		runHelper (functionId: string, ...args: any[]): any {
+			const helper = this.getHelper(functionId)
+			return helper.apply(args)
+		},
 		getSegmentLines (): Array<SegmentLine> {
 			// return stories in segmentLine
 			const ro: RunningOrder = this.getRunningOrder()
@@ -265,6 +271,7 @@ export function convertCodeToGeneralFunction (code: string): TemplateGeneralFunc
 	if (!functionStr) throw Error('Function empty!')
 	let runtimeFcn: TemplateGeneralFunction = saferEval(functionStr, {
 		_,
+		moment,
 		LayerType,
 		TriggerType,
 		TimelineContentTypeOther,

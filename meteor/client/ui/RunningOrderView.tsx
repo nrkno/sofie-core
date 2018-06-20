@@ -191,10 +191,10 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		this.bindKeys = [
 			{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE,
-				down: this.keyTake
+				up: this.keyTake
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE2,
-				down: this.keyTake
+				up: this.keyTake
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE,
 				up: this.keyActivate
