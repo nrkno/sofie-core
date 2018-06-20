@@ -275,7 +275,7 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.info('mosRoDelete')
 		// @ts-ignore
 		// logger.debug(runningOrderId)
-		console.info('Removing RO ' + roId(runningOrderId))
+		logger.info('Removing RO ' + roId(runningOrderId))
 		let ro = RunningOrders.findOne(roId(runningOrderId))
 		if (ro) {
 			ro.remove()
