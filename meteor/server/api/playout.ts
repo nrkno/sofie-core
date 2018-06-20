@@ -5,7 +5,7 @@ import { SegmentLineItem, SegmentLineItems, ITimelineTrigger } from '../../lib/c
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItems, RunningOrderBaselineItem } from '../../lib/collections/RunningOrderBaselineItems'
 import { getCurrentTime, saveIntoDb, literal, Time } from '../../lib/lib'
-import { Timeline, TimelineObj, TimelineObjGroupSegmentLine, TimelineContentTypeOther, TimelineObjAbstract, TimelineObjGroup } from '../../lib/collections/Timeline'
+import { Timeline, TimelineObj, TimelineObjGroupSegmentLine, TimelineContentTypeOther, TimelineObjAbstract, TimelineObjGroup, TimelineContentTypeLawo, TimelineObjLawo } from '../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
 import { Segments } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
@@ -893,6 +893,8 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 			setNowToTimeInObjects(timelineObjs, forceNowToTime)
 		}
 
+		setLawoObjectsTriggerValue(timelineObjs, currentSegmentLine)
+
 		saveIntoDb<TimelineObj, TimelineObj>(Timeline, {
 			roId: activeRunningOrder._id
 		}, timelineObjs, {
@@ -924,6 +926,20 @@ function setNowToTimeInObjects (timelineObjs: Array<TimelineObj>, now: Time): vo
 		) {
 			o.trigger.value = now
 			o.trigger.setFromNow = true
+		}
+	})
+}
+
+function setLawoObjectsTriggerValue (timelineObjs: Array<TimelineObj>, currentSegmentLine: SegmentLine | undefined) {
+
+	_.each(timelineObjs, (obj) => {
+		if (obj.content.type === TimelineContentTypeLawo.SOURCE ) {
+			let lawoObj = obj as TimelineObjLawo
+
+			_.each(lawoObj.content.attributes, (val, key) => {
+				// set triggerValue to the current playing segment, thus triggering commands to be sent when nexting:
+				lawoObj.content.attributes[key].triggerValue = (currentSegmentLine || {_id: ''})._id
+			})
 		}
 	})
 }
