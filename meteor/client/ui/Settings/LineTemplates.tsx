@@ -218,18 +218,18 @@ declare enum TriggerType {
     LOGICAL = 3
 }
 
-export type TimelineContentTypeAny =
+declare type TimelineContentTypeAny =
 	TimelineContentTypeOther |
 	TimelineContentTypeCasparCg |
 	TimelineContentTypeLawo |
 	TimelineContentTypeAtem |
 	TimelineContentTypeHttp
 
-export enum TimelineContentTypeOther {
+declare enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
 	GROUP = 'group',
 }
-export enum TimelineContentTypeCasparCg { //  CasparCG-state/TSR
+declare enum TimelineContentTypeCasparCg { //  CasparCG-state/TSR
 	VIDEO = 'video', // later to be deprecated & replaced by MEDIA
 	AUDIO = 'audio', // later to be deprecated & replaced by MEDIA
 	MEDIA = 'media',
@@ -240,22 +240,22 @@ export enum TimelineContentTypeCasparCg { //  CasparCG-state/TSR
 	ROUTE = 'route',
 	RECORD = 'record'
 }
-export enum TimelineContentTypeLawo { // lawo-state
+declare enum TimelineContentTypeLawo { // lawo-state
 	SOURCE = 'lawosource'
 }
-export enum TimelineContentTypeAtem { //  Atem-state
+declare enum TimelineContentTypeAtem { //  Atem-state
 	ME = 'me',
 	DSK = 'dsk',
 	AUX = 'aux',
 	SSRC = 'ssrc',
 	MEDIAPLAYER = 'mp'
 }
-export enum TimelineContentTypeHttp {
+declare enum TimelineContentTypeHttp {
 	POST = 'post',
 	PUT = 'put',
 }
-export namespace Atem_Enums {
-	export enum TransitionStyle {
+declare namespace Atem_Enums {
+	declare enum TransitionStyle {
 		MIX = 0,
 		DIP = 1,
 		WIPE = 2,
@@ -264,7 +264,7 @@ export namespace Atem_Enums {
 		CUT = 5,
 	}
 
-	export enum SourceIndex {
+	declare enum SourceIndex {
 		Blk = 0,
 		Bars = 1000,
 		Col1 = 2001,
@@ -288,13 +288,13 @@ export namespace Atem_Enums {
 		Prv2 = 10021
 	}
 }
-export enum EmberPlusValueType {
+declare enum EmberPlusValueType {
 	REAL 	= 'real',
 	INT 	= 'int',
 	BOOLEAN = 'boolean',
 	STRING 	= 'string'
 }
-export enum Transition {
+declare enum Transition {
 	MIX = 'MIX',
 	CUT = 'CUT',
 	PUSH = 'PUSH',
@@ -302,7 +302,7 @@ export enum Transition {
 	SLIDE = 'SLIDE'
 }
 
-export enum Ease {
+declare enum Ease {
 	LINEAR = 'LINEAR',
 	NONE = 'NONE',
 	EASEINBACK = 'EASEINBACK',
@@ -388,13 +388,13 @@ export enum Ease {
 	OUT_QUINT = 'OUT_QUINT',
 }
 
-export enum Direction {
+declare enum Direction {
 	LEFT = 'LEFT',
 	RIGHT = 'RIGHT',
 }
 
 // RunDownAPI
-export enum LineItemStatusCode {
+declare enum LineItemStatusCode {
 	/** No status has been determined (yet) */
 	UNKNOWN = -1,
 	/** No fault with item, can be played */
