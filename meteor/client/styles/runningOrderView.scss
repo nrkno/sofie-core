@@ -180,9 +180,15 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		margin: 17px 20px 14px;
 	}
 }
-.header.running-order.active .first-row  {
-	background-color: #600
+.header.running-order.not-active .first-row  {
+	background-color: rgb(38, 137, 186);
 }
+.header.running-order.not-active .first-row span  {
+	color: #FFF !important;
+}
+// .header.running-order.active .first-row  {
+	// background-color: #600
+// }
 .header.running-order.active.rehearsal .first-row  {
 	background-color: #660
 }
