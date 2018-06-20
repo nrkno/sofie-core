@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
+import { logger } from '../logging'
 
 Meteor.publish('peripheralDevices', function (selector, token) {
 
@@ -13,7 +14,7 @@ Meteor.publish('peripheralDevices', function (selector, token) {
 		}
 	}
 
-	console.log('pub peripheralDevices')
+	logger.debug('pub peripheralDevices')
 
 	if (PeripheralDeviceSecurity.allowReadAccess(selector, token, this)) {
 

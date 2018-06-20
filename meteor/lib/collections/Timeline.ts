@@ -43,7 +43,8 @@ export enum TimelineContentTypeAtem { //  Atem-state
 	MEDIAPLAYER = 'mp'
 }
 export enum TimelineContentTypeHttp {
-	POST = 'post'
+	POST = 'post',
+	PUT = 'put',
 }
 export namespace Atem_Enums {
 	export enum TransitionStyle {
@@ -444,10 +445,10 @@ export interface TimelineObjAtemSsrc extends TimelineObj {
 		}
 	}
 }
-export interface TimelineObjHTTPPost extends TimelineObj {
+export interface TimelineObjHTTPRequest extends TimelineObj {
 	content: {
 		keyframes?: Array<TimelineKeyframe>
-		type: TimelineContentTypeHttp.POST
+		type: TimelineContentTypeHttp
 		url: string
 		params: {[key: string]: number | string}
 	}

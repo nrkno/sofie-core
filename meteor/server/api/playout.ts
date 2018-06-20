@@ -35,7 +35,7 @@ Meteor.methods({
 				logger.error(err)
 			} else {
 				// TODO: what to do with the result?
-				console.log('Recieved reply for triggerGetRunningOrder', ro)
+				logger.debug('Recieved reply for triggerGetRunningOrder', ro)
 			}
 		}, 'triggerGetRunningOrder', runningOrder.mosId)
 	},
@@ -177,7 +177,7 @@ Meteor.methods({
 
 	'debug__printTime': () => {
 		let now = getCurrentTime()
-		console.log(new Date(now))
+		logger.debug(new Date(now))
 		return now
 	},
 
@@ -239,6 +239,7 @@ Meteor.methods({
 	},
 
 	'playout_segmentLinePlaybackStart': (roId: string, slId: string, startedPlayback: Time) => {
+		// This method is called when an auto-next event occurs
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		let segLine = SegmentLines.findOne({
@@ -328,6 +329,10 @@ Meteor.methods({
 					startedPlayback
 				}})
 				updateTimeline(runningOrder.studioInstallationId, startedPlayback)
+
+				if (segLine.updateStoryStatus) {
+					sendStoryStatus(runningOrder, segLine)
+				}
 			}
 		} else {
 			throw new Meteor.Error(404, `Segment line "${slId}" in running order "${roId}" not found!`)
@@ -352,7 +357,7 @@ Meteor.methods({
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine)
 		SegmentLineItems.insert(newSegmentLineItem)
 
-		// console.log('adLibItemStart', newSegmentLineItem)
+		// logger.debug('adLibItemStart', newSegmentLineItem)
 
 		updateTimeline(runningOrder.studioInstallationId)
 	},
@@ -375,7 +380,7 @@ Meteor.methods({
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine)
 		SegmentLineItems.insert(newSegmentLineItem)
 
-		// console.log('adLibItemStart', newSegmentLineItem)
+		// logger.debug('adLibItemStart', newSegmentLineItem)
 
 		updateTimeline(runningOrder.studioInstallationId)
 	},
@@ -472,7 +477,7 @@ Meteor.methods({
 		if (!tObj) throw new Meteor.Error(404, `Timeline obj "${timelineObjId}" not found!`)
 
 		if (tObj.metadata && tObj.metadata.segmentLineItemId) {
-			console.log('Update segment line item: ', tObj.metadata.segmentLineItemId, (new Date(time)).toTimeString())
+			logger.debug('Update segment line item: ', tObj.metadata.segmentLineItemId, (new Date(time)).toTimeString())
 			SegmentLineItems.update({
 				_id: tObj.metadata.segmentLineItemId
 			}, {$set: {
@@ -700,7 +705,7 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 
 		// Default timelineobjects
 
-		console.log('Timeline update!')
+		logger.debug('Timeline update!')
 
 		const baselineItems = RunningOrderBaselineItems.find({
 			runningOrderId: activeRunningOrder._id
@@ -882,7 +887,7 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 			if (!shouldRunAgain || shouldNotRunAgain) break
 		}
 
-		// console.log('timelineObjs', timelineObjs)
+		// logger.debug('timelineObjs', timelineObjs)
 
 		if (forceNowToTime) { // used when autoNexting
 			setNowToTimeInObjects(timelineObjs, forceNowToTime)

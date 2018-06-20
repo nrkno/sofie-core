@@ -251,7 +251,8 @@ export enum TimelineContentTypeAtem { //  Atem-state
 	MEDIAPLAYER = 'mp'
 }
 export enum TimelineContentTypeHttp {
-	POST = 'post'
+	POST = 'post',
+	PUT = 'put',
 }
 export namespace Atem_Enums {
 	export enum TransitionStyle {
@@ -408,7 +409,8 @@ export enum LineItemStatusCode {
 
 		this._editor = monaco.editor.create(document.getElementById('monaco-container')!, {
 			value: this.props.runtimeFunction.code,
-			language: 'javascript'
+			language: 'javascript',
+			automaticLayout: true,
 		})
 		this._editor.onDidChangeModelContent((e: monaco.editor.IModelContentChangedEvent) => {
 			this.triggerSave(this._editor.getModel().getValue())

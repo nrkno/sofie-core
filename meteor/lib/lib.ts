@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { TransformedCollection, Selector } from './typings/meteor'
 import { PeripheralDeviceAPI } from './api/peripheralDevice'
+import { logger } from '../lib/logging'
 
 /**
  * Convenience method to convert a Meteor.call() into a Promise
@@ -41,14 +42,14 @@ if (Meteor.isServer) {
 		Meteor.call(PeripheralDeviceAPI.methods.getTimeDiff, (err, stat) => {
 			let replyTime = Date.now()
 			if (err) {
-				console.log(err)
+				logger.error(err)
 			} else {
-				console.log(stat)
+				logger.debug(stat)
 				let diffTime = ((sentTime + replyTime) / 2) - stat.currentTime
 
 				systemTime.diff = diffTime
 				systemTime.stdDev = Math.abs(sentTime - replyTime) / 2
-				console.log('time diff to server: ' + systemTime.diff + ' (stdDev: ' + systemTime.stdDev + ')')
+				logger.debug('time diff to server: ' + systemTime.diff + ' (stdDev: ' + systemTime.stdDev + ')')
 				if (!stat.good) {
 					Meteor.setTimeout(() => {
 						updateDiffTime()
