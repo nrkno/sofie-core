@@ -9,11 +9,12 @@ import { StudioInstallations,
 	Mapping,
 	MappingLawoType
 } from '../../lib/collections/StudioInstallations'
-import { literal } from '../../lib/lib'
+import { literal, getCurrentTime } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
-import { PeripheralDevices, PlayoutDeviceType } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PlayoutDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../../server/logging'
+import * as _ from 'underscore';
 
 // Imports from TSR (TODO make into an import)
 // export interface Mappings {
@@ -366,6 +367,19 @@ Meteor.methods({
 			baselineTemplate: 'baseline'
 		}})
 
+		PeripheralDevices.upsert('initDBPlayoutDeviceParent', {$set: literal<PeripheralDevice>({
+			_id: 'initDBPlayoutDeviceParent',
+			name: 'initDBPlayoutDeviceParent',
+			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			studioInstallationId: 'studio0',
+			created: getCurrentTime(),
+			status: {statusCode: PeripheralDeviceAPI.StatusCode.BAD},
+			lastSeen: getCurrentTime(),
+			connected: false,
+			connectionId: null,
+			token: ''
+		})})
+
 		PeripheralDevices.find({
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT
 		}).forEach((pd) => {
@@ -391,7 +405,6 @@ Meteor.methods({
 						port: 9000,
 						sourcesPath: 'Ruby.Sources',
 						rampMotorFunctionPath: '1.5.2'
-						
 					}
 				},
 				'settings.devices.abstract0': ((pd['settings'] || {})['devices'] || {})['abstract0'] || {
@@ -409,6 +422,34 @@ Meteor.methods({
 			// 	mappings: mappings
 			// }})
 		})
+		_.each(((PeripheralDevices.findOne('initDBPlayoutDeviceParent') || {})['settings'] || {}).devices, (device, key) => {
+			PeripheralDevices.upsert('initDBPlayoutDevice' + key, {$set: literal<PeripheralDevice>({
+				_id: 'initDBPlayoutDevice' + key,
+				name: 'initDBPlayoutDevice' + key,
+				type: PeripheralDeviceAPI.DeviceType.OTHER,
+				studioInstallationId: 'studio0',
+				parentDeviceId: 'initDBPlayoutDeviceParent',
+				created: getCurrentTime(),
+				status: {statusCode: PeripheralDeviceAPI.StatusCode.BAD},
+				lastSeen: getCurrentTime(),
+				connected: false,
+				connectionId: null,
+				token: ''
+			})})
+		})
+
+		PeripheralDevices.upsert('initDBMosDeviceParent', {$set: literal<PeripheralDevice>({
+			_id: 'initDBMosDeviceParent',
+			name: 'initDBMosDeviceParent',
+			type: PeripheralDeviceAPI.DeviceType.MOSDEVICE,
+			studioInstallationId: 'studio0',
+			created: getCurrentTime(),
+			status: {statusCode: PeripheralDeviceAPI.StatusCode.BAD},
+			lastSeen: getCurrentTime(),
+			connected: false,
+			connectionId: null,
+			token: ''
+		})})
 
 		PeripheralDevices.find({
 			type: PeripheralDeviceAPI.DeviceType.MOSDEVICE
