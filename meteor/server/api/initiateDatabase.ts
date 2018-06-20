@@ -126,7 +126,7 @@ Meteor.methods({
 				{
 					_id: 'studio0_remote0',
 					_rank: 60,
-					name: 'RM1',
+					name: 'DIR',
 					type: RundownAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
 					isRemoteInput: true
@@ -307,19 +307,13 @@ Meteor.methods({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				mappingType: MappingLawoType.SOURCE,
-				identifier: 'Server',
+				identifier: 'MP1',
 			}),
 			'lawo_source_effect': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				mappingType: MappingLawoType.SOURCE,
-				identifier: 'Eff 1',
-			}),
-			'lawo_source_effect2': literal<MappingLawo>({
-				device: PlayoutDeviceType.LAWO,
-				deviceId: 'lawo0',
-				mappingType: MappingLawoType.SOURCE,
-				identifier: 'Eff 2',
+				identifier: 'FX',
 			}),
 			'lawo_source_rm1': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
