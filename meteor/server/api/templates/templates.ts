@@ -261,7 +261,7 @@ export interface StoryWithContext extends IMOSROFullStory, StoryWithContextBase 
 export function convertCodeToGeneralFunction (code: string): TemplateGeneralFunction {
 	// Just use the function () { .* } parts (omit whatevers before or after)
 	let functionStr = ((code + '').match(/function[\s\S]*}/) || [])[0]
-	// console.log('functionStr', functionStr)
+	// logger.debug('functionStr', functionStr)
 	if (!functionStr) throw Error('Function empty!')
 	let runtimeFcn: TemplateGeneralFunction = saferEval(functionStr, {
 		_,
@@ -283,7 +283,7 @@ export function convertCodeToGeneralFunction (code: string): TemplateGeneralFunc
 }
 export function convertCodeToFunction (context: TemplateContextInner, code: string): TemplateGeneralFunction {
 	let runtimeFcn = convertCodeToGeneralFunction(code)
-	// console.log('runtimeFcn', runtimeFcn)
+	// logger.debug('runtimeFcn', runtimeFcn)
 	let fcn = (...args: any[]) => {
 		let result = runtimeFcn.apply(context, [context].concat(injectContextIntoArguments(context, args)))
 		return result
@@ -317,7 +317,7 @@ export function runNamedTemplate (showStyle: ShowStyle, templateId: string, cont
 	let fcn = findFunction(showStyle, templateId, innerContext)
 	let result: TemplateResult = fcn(story) as TemplateResult
 
-	// console.log('runNamedTemplate', templateId)
+	// logger.debug('runNamedTemplate', templateId)
 	// Post-process the result:
 	let i = 0
 	let segmentLinesUniqueIds: { [id: string]: true } = {}

@@ -13,6 +13,7 @@ import { literal } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
 import { PeripheralDevices, PlayoutDeviceType } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { logger } from '../../server/logging'
 
 // Imports from TSR (TODO make into an import)
 // export interface Mappings {
@@ -48,7 +49,7 @@ Meteor.methods({
 		if (!really) {
 			return 'Do you really want to do this? You chould only do it when initializing a new database. Confirm with initDB(true).'
 		}
-		console.log('initDB')
+		logger.info('initDB')
 		// Initiate database:
 		StudioInstallations.upsert('studio0', {$set: {
 			name: 'DKSL',

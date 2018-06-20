@@ -48,7 +48,7 @@ export namespace ServerPeripheralDeviceAPI {
 		check(options.parentDeviceId, Match.Optional(String))
 		check(options.versions, Match.Optional(Object))
 
-		console.log('initialize', options)
+		logger.debug('initialize', options)
 
 		let peripheralDevice
 		try {
@@ -105,7 +105,7 @@ export namespace ServerPeripheralDeviceAPI {
 		check(token, String)
 		check(status, Object)
 		check(status.statusCode, Number)
-		console.log('setStatus', status.statusCode)
+		logger.debug('setStatus', status.statusCode)
 
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
@@ -167,7 +167,7 @@ export namespace ServerPeripheralDeviceAPI {
 // Mos-functions:
 	export function mosRoCreate (id, token, ro: IMOSRunningOrder) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		// console.log('mosRoCreate', ro)
+		// logger.debug('mosRoCreate', ro)
 		logger.info('mosRoCreate')
 
 		logger.debug(ro)
@@ -230,9 +230,9 @@ export namespace ServerPeripheralDeviceAPI {
 
 			prevSlugParts = slugParts
 		})
-		// console.log('segmentLines', segmentLines)
-		// console.log('---------------')
-		// console.log(SegmentLines.find({runningOrderId: dbRo._id}).fetch())
+		// logger.debug('segmentLines', segmentLines)
+		// logger.debug('---------------')
+		// logger.debug(SegmentLines.find({runningOrderId: dbRo._id}).fetch())
 		saveIntoDb<SegmentLine, DBSegmentLine>(SegmentLines, {
 			runningOrderId: dbRo._id
 		}, segmentLines, {
@@ -243,7 +243,7 @@ export namespace ServerPeripheralDeviceAPI {
 				return o
 			},
 			afterInsert (segmentLine) {
-				// console.log('inserted segmentLine ' + segmentLine._id)
+				// logger.debug('inserted segmentLine ' + segmentLine._id)
 				// @todo: have something here?
 				// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 				// if (story) {
@@ -251,7 +251,7 @@ export namespace ServerPeripheralDeviceAPI {
 				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 			},
 			afterUpdate (segmentLine) {
-				// console.log('updated segmentLine ' + segmentLine._id)
+				// logger.debug('updated segmentLine ' + segmentLine._id)
 				// @todo: have something here?
 				// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 				// if (story) {
@@ -276,7 +276,7 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.info('mosRoDelete')
 		// @ts-ignore
 		// logger.debug(runningOrderId)
-		console.info('Removing RO ' + roId(runningOrderId))
+		logger.info('Removing RO ' + roId(runningOrderId))
 		let ro = RunningOrders.findOne(roId(runningOrderId))
 		if (ro) {
 			ro.remove()
@@ -603,7 +603,7 @@ export namespace ServerPeripheralDeviceAPI {
 	}
 // Media scanner functions:
 	export function getMediaObjectRevisions (id, token, collectionId: string) {
-		console.log('getMediaObjectRevisions')
+		logger.debug('getMediaObjectRevisions')
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 
 		if (peripheralDevice.studioInstallationId) {
@@ -621,7 +621,7 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 	}
 	export function updateMediaObject (id, token, collectionId: string, objId, doc: MediaObject | null) {
-		console.log('updateMediaObject')
+		logger.debug('updateMediaObject')
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 
 		let _id = collectionId + '_' + objId
@@ -634,7 +634,7 @@ export namespace ServerPeripheralDeviceAPI {
 				objId: objId,
 				_id: _id
 			})
-			// console.log(doc2)
+			// logger.debug(doc2)
 			MediaObjects.upsert(_id, {$set: doc2})
 		} else {
 			throw new Meteor.Error(400, 'missing doc argument')
@@ -642,7 +642,7 @@ export namespace ServerPeripheralDeviceAPI {
 	}
 }
 export function roId (roId: MosString128, original?: boolean): string {
-	// console.log('roId', roId)
+	// logger.debug('roId', roId)
 	let id = 'ro_' + (roId['_str'] || roId.toString())
 	return (original ? id : getHash(id))
 }
@@ -734,7 +734,7 @@ export function convertToSegment (segmentLine: SegmentLine, rank: number): DBSeg
 		number: 'N/A' // @todo: to be removed from data structure
 		// number: (story.Number ? story.Number.toString() : '')
 	}
-	// console.log('story.Number', story.Number)
+	// logger.debug('story.Number', story.Number)
 }
 /**
  * Converts an Item into a SegmentLine
@@ -962,8 +962,8 @@ function updateSegments (runningOrderId: string) {
 			segments.push(segment)
 		}
 		if (segmentLine.segmentId !== segment._id) {
-			console.log(segmentLine)
-			console.log(segmentLine._id + ' old segmentId: ' + segmentLine.segmentId + ', new: ' + segment._id )
+			logger.debug(segmentLine)
+			logger.debug(segmentLine._id + ' old segmentId: ' + segmentLine.segmentId + ', new: ' + segment._id )
 			segmentLineUpdates[segmentLine._id] = { segmentId: segment._id }
 		}
 
@@ -1032,7 +1032,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 						 durationMosMetaData.MosPayload.Estimated && parseFloat(durationMosMetaData.MosPayload.Estimated) ||
 						 durationMosMetaData.MosPayload.MediaTime && parseFloat(durationMosMetaData.MosPayload.MediaTime) || 0
 
-						 // console.log('updating segment line duration: ' + segmentLine._id + ' ' + duration)
+						 // logger.debug('updating segment line duration: ' + segmentLine._id + ' ' + duration)
 		segmentLine.expectedDuration = duration * 1000
 		SegmentLines.update(segmentLine._id, {$set: {
 			expectedDuration: segmentLine.expectedDuration
@@ -1066,8 +1066,8 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
 	}, result.segmentLineItems || [], {
 		afterInsert (segmentLineItem) {
-			console.log('inserted segmentLineItem ' + segmentLineItem._id)
-			console.log(segmentLineItem)
+			logger.debug('inserted segmentLineItem ' + segmentLineItem._id)
+			logger.debug(segmentLineItem)
 			// @todo: have something here?
 			// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 			// if (story) {
@@ -1075,7 +1075,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 			// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 		},
 		afterUpdate (segmentLineItem) {
-			console.log('updated segmentLineItem ' + segmentLineItem._id)
+			logger.debug('updated segmentLineItem ' + segmentLineItem._id)
 			// @todo: have something here?
 			// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 			// if (story) {
@@ -1083,7 +1083,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 			// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 		},
 		afterRemove (segmentLineItem) {
-			console.log('deleted segmentLineItem ' + segmentLineItem._id)
+			logger.debug('deleted segmentLineItem ' + segmentLineItem._id)
 			// @todo: handle this:
 			// afterRemoveSegmentLineItem(segmentLine._id)
 		}
@@ -1093,8 +1093,8 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 		segmentLineId: segmentLine._id
 	}, result.segmentLineAdLibItems || [], {
 		afterInsert (segmentLineAdLibItem) {
-			console.log('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
-			console.log(segmentLineAdLibItem)
+			logger.debug('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
+			logger.debug(segmentLineAdLibItem)
 			// @todo: have something here?
 			// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 			// if (story) {
@@ -1102,7 +1102,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 			// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 		},
 		afterUpdate (segmentLineAdLibItem) {
-			console.log('updated segmentLineItem ' + segmentLineAdLibItem._id)
+			logger.debug('updated segmentLineItem ' + segmentLineAdLibItem._id)
 			// @todo: have something here?
 			// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 			// if (story) {
@@ -1110,7 +1110,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 			// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 		},
 		afterRemove (segmentLineAdLibItem) {
-			console.log('deleted segmentLineItem ' + segmentLineAdLibItem._id)
+			logger.debug('deleted segmentLineItem ' + segmentLineAdLibItem._id)
 			// @todo: handle this:
 			// afterRemoveSegmentLineItem(segmentLine._id)
 		}
@@ -1142,9 +1142,9 @@ export function sendStoryStatus (ro: RunningOrder, takeSegmentLine: SegmentLine 
 function setStoryStatus (deviceId: string, ro: RunningOrder, storyId: string, status: IMOSObjectStatus): Promise<any> {
 	return new Promise((resolve, reject) => {
 		if (!ro.rehearsal) {
-			console.log('setStoryStatus', deviceId, ro.mosId, storyId, status)
+			logger.debug('setStoryStatus', deviceId, ro.mosId, storyId, status)
 			PeripheralDeviceAPI.executeFunction(deviceId, (err, result) => {
-				console.log('reply', err, result)
+				logger.debug('reply', err, result)
 				if (err) {
 					reject(err)
 				} else {
@@ -1243,7 +1243,7 @@ methods[PeripheralDeviceAPI.methods.updateMediaObject] = (deviceId, deviceToken,
 
 // --------------------
 methods[PeripheralDeviceAPI.methods.functionReply] = (deviceId, deviceToken, commandId, err: any, result: any) => {
-	console.log('functionReply', err, result)
+	logger.debug('functionReply', err, result)
 	PeripheralDeviceCommands.update(commandId, {
 		$set: {
 			hasReply: true,

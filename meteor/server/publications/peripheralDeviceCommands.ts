@@ -3,6 +3,7 @@ import { check } from 'meteor/check'
 
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
+import { logger } from '../logging'
 
 Meteor.publish('peripheralDeviceCommands', function (deviceId: string, token) {
 	if (!deviceId) throw new Meteor.Error(400,'deviceId argument missing')
@@ -14,10 +15,10 @@ Meteor.publish('peripheralDeviceCommands', function (deviceId: string, token) {
 		}
 	}
 
-	console.log('pub peripheralDeviceCommands')
+	logger.debug('pub peripheralDeviceCommands')
 
 	if (PeripheralDeviceSecurity.allowReadAccess({_id: deviceId}, token, this)) {
-		console.log('pub peripheralDeviceCommands OK ' + deviceId)
+		logger.debug('pub peripheralDeviceCommands OK ' + deviceId)
 		return PeripheralDeviceCommands.find({deviceId: deviceId}, modifier)
 
 	}
@@ -31,7 +32,7 @@ Meteor.publish('allPeripheralDeviceCommands', function () { // tmp: dev only, sh
 		}
 	}
 
-	console.log('pub peripheralDeviceCommands')
+	logger.debug('pub peripheralDeviceCommands')
 
 	return PeripheralDeviceCommands.find({}, modifier)
 

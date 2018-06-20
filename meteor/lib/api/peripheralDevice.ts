@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import { PeripheralDeviceCommands } from '../collections/PeripheralDeviceCommands'
 import { MeteorPromiseCall, getCurrentTime } from '../lib'
+import { logger } from '../../server/logging'
 
 namespace PeripheralDeviceAPI {
 
@@ -105,16 +106,16 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 	if (Meteor.isClient) {
 		subscription = Meteor.subscribe('peripheralDeviceCommands', deviceId )
 	}
-	console.log('command created')
+	logger.debug('command created')
 	// we've sent the command, let's just wait for the reply
 	let checkReply = () => {
 		let cmd = PeripheralDeviceCommands.findOne(commandId)
 		if (!cmd) throw new Meteor.Error('Command "' + commandId + '" not found')
-		console.log('checkReply')
+		logger.debug('checkReply')
 		if (cmd) {
 			if (cmd.hasReply) {
 				// We've got a reply!
-				console.log('got reply')
+				logger.debug('got reply')
 
 				if (cmd.replyError) {
 					cb(cmd.replyError, null)
@@ -125,14 +126,14 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 				PeripheralDeviceCommands.remove(cmd._id)
 				if (subscription) subscription.stop()
 			} else if (getCurrentTime() - (cmd.time || 0) > 3000) { // timeout
-				console.log('timeout')
+				logger.debug('timeout')
 				cb('Timeout', null)
 				cursor.stop()
 				PeripheralDeviceCommands.remove(cmd._id)
 				if (subscription) subscription.stop()
 			}
 		} else {
-			console.log('Command "' + commandId + '" not found when looking for reply')
+			logger.debug('Command "' + commandId + '" not found when looking for reply')
 		}
 	}
 

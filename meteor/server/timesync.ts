@@ -81,7 +81,7 @@ export function determineDiffTime (config: Config): Promise<{mean: number, stdDe
 		let results: Array<ServerTime> = []
 		let tryCount = 0
 		let pushTime = () => {
-			// console.log('a')
+			// logger.debug('a')
 			tryCount++
 			if (tryCount > maxTries) {
 				if (tryCount > minSampleCount) {
@@ -161,7 +161,7 @@ let updateServerTime = () => {
 	.then((result) => {
 		// if result.stdDev is less than one frame-time, it should be okay:
 		if (result.stdDev < 1000 / 50) {
-			console.log('Setting time-diff to ' + Math.round(result.mean) +
+			logger.info('Setting time-diff to ' + Math.round(result.mean) +
 				' (stdDev: ' + result.stdDev + ')')
 			systemTime.diff = result.mean
 			systemTime.stdDev = result.stdDev
@@ -182,7 +182,7 @@ let updateServerTime = () => {
 		}
 	})
 	.catch((err) => {
-		console.log('systemTime Error', err)
+		logger.info('systemTime Error', err)
 		setSystemStatus('systemTime', {statusCode: StatusCode.BAD, messages: [err.toString()]})
 
 		Meteor.setTimeout(() => {
@@ -205,6 +205,6 @@ Meteor.startup(() => {
 // 	maxAllowedDelay: 2000
 // })
 // .then((result) => {
-// 	console.log('result', result)
+// 	logger.debug('result', result)
 // 	// if result.stdDev is less than one frame-time, we should be okay
 // })

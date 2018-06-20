@@ -4,6 +4,7 @@ import { Picker } from 'meteor/meteorhacks:picker'
 import { ShowStyle, ShowStyles } from '../lib/collections/ShowStyles'
 import { RuntimeFunction, RuntimeFunctions } from '../lib/collections/RuntimeFunctions'
 import * as bodyParser from 'body-parser'
+import { logger } from './logging'
 
 export interface ShowStyleBackup {
 	type: 'showstyle'
@@ -89,7 +90,7 @@ postRoute.route('/backup/restore', (params, req: IncomingMessage, res: ServerRes
 	} catch (e) {
 		res.statusCode = 500
 		content = e + ''
-		console.log('Backup restore failed: ', e)
+		logger.debug('Backup restore failed: ', e)
 	}
 
 	res.end(content)
