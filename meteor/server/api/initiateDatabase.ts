@@ -151,7 +151,7 @@ Meteor.methods({
 					name: 'Kam',
 					type: RundownAPI.SourceLayerType.CAMERA,
 					onPGMClean: true,
-					activateKeyboardHotkeys: '1,2,3,4,5,6',
+					activateKeyboardHotkeys: 'f1,f2,f3,1,2,3',
 					assignHotkeysToGlobalAdlibs: true
 				},
 				{
