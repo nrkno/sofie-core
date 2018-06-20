@@ -19,6 +19,23 @@ import { Time } from '../../lib/lib'
 import { getCurrentTimeReactive } from '../lib/currentTimeReactive'
 import { EditAttribute } from '../lib/EditAttribute'
 
+let tableize = (o: any) => {
+	return (
+		<table><tbody>
+			{_.map(o, (val, key) => {
+				return (
+					<tr key={key}>
+						<td>{key}</td>
+						<td>{(
+							_.isObject(val) ? tableize(val) : val
+						)}</td>
+					</tr>
+				)
+			})}
+		</tbody></table>
+	)
+}
+
 interface IEditTasks {
 	tasks: Array<Task>
 }
@@ -199,9 +216,9 @@ class extends React.Component<IRunningOrders> {
 				<div>name: {ro.name}</div>
 				<div>created: {ro.created}</div>
 
-				<div>metaData: {ro.metaData}</div>
-				<div>status: {ro.status}</div>
-				<div>airStatus: {ro.airStatus}</div>
+				<div>metaData: {tableize(ro.metaData)}</div>
+				<div>status: {tableize(ro.status)}</div>
+				<div>airStatus: {tableize(ro.airStatus)}</div>
 
 				<div>currentSegmentLineId: {ro.currentSegmentLineId}</div>
 				<div>nextSegmentLineId: {ro.nextSegmentLineId}</div>
@@ -384,24 +401,6 @@ export const ComponentTimelineSimulate = withTracker(() => {
 })(
 class extends React.Component<ITimelineSimulate> {
 	renderTimelineState () {
-
-		let tableize = (o: any) => {
-			return (
-				<table><tbody>
-					{_.map(o, (val, key) => {
-						return (
-							<tr key={key}>
-								<td>{key}</td>
-								<td>{(
-									_.isObject(val) ? tableize(val) : val
-								)}</td>
-							</tr>
-						)
-					})}
-				</tbody></table>
-			)
-		}
-
 		return _.map(this.props.state.GLayers, (o, GLayerId) => (
 			<tr key={GLayerId}>
 				<td>{GLayerId}</td>
