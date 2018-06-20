@@ -82,10 +82,18 @@ interface ITimingDisplayState {
 
 enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_TAKE = 'f12',
-	RUNNING_ORDER_ACTIVATE = 'f2',
-	RUNNING_ORDER_ACTIVATE_REHEARSAL = 'mod+f2',
-	RUNNING_ORDER_DEACTIVATE = 'mod+shift+f2'
+	RUNNING_ORDER_TAKE2 = 'enter', // is only going to use the rightmost enter key for take
+	RUNNING_ORDER_ACTIVATE = '§',
+	RUNNING_ORDER_ACTIVATE2 = '\\',
+	RUNNING_ORDER_ACTIVATE3 = '|',
+	RUNNING_ORDER_ACTIVATE_REHEARSAL = 'mod+§',
+	RUNNING_ORDER_DEACTIVATE = 'mod+shift+§'
 }
+Mousetrap.addKeycodes({
+	220: '§',
+	222: '\\',
+	223: '|'
+})
 
 const TimingDisplay = translate()(withTiming<ITimingDisplayProps, ITimingDisplayState>()(
 class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>, ITimingDisplayState> {
@@ -172,42 +180,80 @@ interface IRunningOrderHeaderProps {
 }
 
 const RunningOrderHeader = translate()(class extends React.Component<Translated<IRunningOrderHeaderProps>> {
+	bindKeys: Array<{
+		key: string,
+		up?: (e: KeyboardEvent) => any
+		down?: (e: KeyboardEvent) => any
+	}> = []
+	constructor (props: Translated<IRunningOrderHeaderProps>) {
+		super(props)
+
+		this.bindKeys = [
+			{
+				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE,
+				down: this.keyTake
+			},{
+				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE2,
+				down: this.keyTake
+			},{
+				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE,
+				up: this.keyActivate
+			},{
+				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE2,
+				up: this.keyActivate
+			},{
+				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE3,
+				up: this.keyActivate
+			},{
+				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE,
+				up: this.keyDeactivate
+			},{
+				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE_REHEARSAL,
+				up: this.keyActivateRehearsal
+			},
+		]
+	}
 	componentDidMount () {
-		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE, this.disableKey, 'keydown')
-		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE, this.keyTake, 'keyup')
+		// $(document).on("keydown", function(e) {
+		// 	console.log(e)
+		// })
 
-		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE, this.disableKey, 'keydown')
-		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE, this.keyActivate, 'keyup')
-
-		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE, this.disableKey, 'keydown')
-		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE, this.keyDeactivate, 'keyup')
-
-		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE_REHEARSAL, this.disableKey, 'keydown')
-		mousetrap.bind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE_REHEARSAL, this.keyActivateRehearsal, 'keyup')
+		let preventDefault = (e) => {
+			e.preventDefault()
+			e.stopImmediatePropagation()
+			e.stopPropagation()
+		}
+		_.each(this.bindKeys, (k) => {
+			if (k.up) {
+				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+					preventDefault(e)
+					if (k.up) k.up(e)
+				}, 'keyup')
+			}
+			if (k.down) {
+				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+					preventDefault(e)
+					if (k.down) k.down(e)
+				}, 'keydown')
+			}
+		})
 	}
 
 	componentWillUnmount () {
-		mousetrap.unbind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE, 'keydown')
-		mousetrap.unbind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE, 'keyup')
-		mousetrap.unbind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE, 'keydown')
-		mousetrap.unbind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE, 'keyup')
-		mousetrap.unbind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE, 'keydown')
-		mousetrap.unbind(RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE, 'keyup')
+		_.each(this.bindKeys, (k) => {
+			if (k.up) {
+				mousetrap.unbind(k.key, 'keyup')
+			}
+			if (k.down) {
+				mousetrap.unbind(k.key, 'keydown')
+			}
+		})
 	}
-
-	disableKey = (e: ExtendedKeyboardEvent) => {
-		e.preventDefault()
-		e.stopImmediatePropagation()
-		e.stopPropagation()
-	}
-
 	keyTake = (e: ExtendedKeyboardEvent) => {
-		e.preventDefault()
-		e.stopImmediatePropagation()
-		e.stopPropagation()
-		this.take()
+		if (e.key !== 'Enter' || e.location === 3) { // only allow the rightmost enter key
+			this.take()
+		}
 	}
-
 	keyActivate = (e: ExtendedKeyboardEvent) => {
 		this.activate()
 	}
@@ -221,7 +267,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 	take = () => {
 		Meteor.call('playout_take', this.props.runningOrder._id)
-		console.log(new Date(getCurrentTime()))
+		// console.log(new Date(getCurrentTime()))
 	}
 
 	activate = () => {
@@ -248,7 +294,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	getHeaderClassNames = () => {
 		return (
 			'header running-order' +
-			(this.props.runningOrder.active ? ' active' : '') +
+			(this.props.runningOrder.active ? ' active' : ' not-active') +
 			(this.props.runningOrder.rehearsal ? ' rehearsal' : '')
 		)
 	}
