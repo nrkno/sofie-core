@@ -4,7 +4,6 @@ import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { StudioInstallationsSecurity } from '../security/studioInstallations'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { logger } from '../logging'
 
 Meteor.publish('studioInstallations', (selector, token) => {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -13,7 +12,6 @@ Meteor.publish('studioInstallations', (selector, token) => {
 			token: 0
 		}
 	}
-	logger.debug('pub studioInstallations')
 	if (StudioInstallationsSecurity.allowReadAccess(selector, token, this)) {
 		return StudioInstallations.find(selector, modifier)
 	}
@@ -35,7 +33,6 @@ Meteor.publish('studioInstallationOfDevice', (deviceId: string, token) => {
 		let selector = {
 			_id: peripheralDevice.studioInstallationId
 		}
-		logger.debug('pub studioInstallationOfDevice ' + deviceId + ': ' + peripheralDevice.studioInstallationId)
 		if (StudioInstallationsSecurity.allowReadAccess(selector, token, this)) {
 			return StudioInstallations.find(selector, modifier)
 		}
