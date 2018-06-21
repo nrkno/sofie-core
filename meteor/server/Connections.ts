@@ -1,4 +1,4 @@
-import { PeripheralDevices } from '../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { getCurrentTime } from '../lib/lib'
 
 Meteor.onConnection((conn) => {
@@ -24,5 +24,17 @@ Meteor.onConnection((conn) => {
 				}})
 			})
 		}
+	})
+})
+
+Meteor.startup(() => {
+	// Reset the connection status of the devices
+	PeripheralDevices.find({
+		connected: true,
+		lastSeen: {$lt: getCurrentTime() - 60 * 1000},
+	}).forEach((device: PeripheralDevice) => {
+		PeripheralDevices.update(device._id, {$set: {
+			connected: false
+		}})
 	})
 })

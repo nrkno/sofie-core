@@ -16,23 +16,27 @@ let getServerTime = (host?: string, port?: number, timeout?: number): Promise<Se
 		ntpClient.ntpReplyTimeout = timeout || 500
 
 		let sentTime = Date.now()
-		ntpClient.getNetworkTime(
-			host || '0.se.pool.ntp.org',
-			port || 123,
-			(err, date: Date, a, b) => {
-				if (err) {
-					reject(err)
-					return
-				} else {
-					let replyTime = Date.now()
-					resolve({
-						diff: ((sentTime + replyTime) / 2) - date.getTime(),
-						serverTime: date.getTime(),
-						responseTime: replyTime - sentTime
-					})
+		try {
+			ntpClient.getNetworkTime(
+				host || '0.se.pool.ntp.org',
+				port || 123,
+				(err, date: Date, a, b) => {
+					if (err) {
+						reject(err)
+						return
+					} else {
+						let replyTime = Date.now()
+						resolve({
+							diff: ((sentTime + replyTime) / 2) - date.getTime(),
+							serverTime: date.getTime(),
+							responseTime: replyTime - sentTime
+						})
+					}
 				}
-			}
-		)
+			)
+		} catch (e) {
+			reject(e)
+		}
 	})
 }
 let standardDeviation = (arr: Array<number>): {mean: number, stdDev: number} => {

@@ -2,7 +2,6 @@ import { Meteor } from 'meteor/meteor'
 
 import { RunningOrders } from '../../lib/collections/RunningOrders'
 import { RunningOrderSecurity } from '../security/runningOrders'
-import { logger } from '../logging'
 
 Meteor.publish('runningOrders', function (selector, token) {
 	if (!selector) throw new Meteor.Error(400,'selector argument missing')
@@ -11,7 +10,6 @@ Meteor.publish('runningOrders', function (selector, token) {
 			token: 0
 		}
 	}
-	logger.debug('pub runningOrders')
 	if (RunningOrderSecurity.allowReadAccess(selector, token, this)) {
 		return RunningOrders.find(selector, modifier)
 	}

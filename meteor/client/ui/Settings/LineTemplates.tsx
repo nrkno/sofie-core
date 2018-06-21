@@ -416,6 +416,9 @@ declare enum LineItemStatusCode {
 		this._editor.onDidChangeModelContent((e: monaco.editor.IModelContentChangedEvent) => {
 			this.triggerSave(this._editor.getModel().getValue())
 		})
+		this._editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, () => {
+			this.saveCode()
+		}, '')
 	}
 
 	componentDidUpdate () {

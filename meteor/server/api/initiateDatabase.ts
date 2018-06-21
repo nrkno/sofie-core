@@ -14,7 +14,7 @@ import { RundownAPI } from '../../lib/api/rundown'
 import { PeripheralDevices, PlayoutDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../../server/logging'
-import * as _ from 'underscore';
+import * as _ from 'underscore'
 
 // Imports from TSR (TODO make into an import)
 // export interface Mappings {
@@ -237,6 +237,16 @@ Meteor.methods({
 				deviceId: 'casparcg0',
 				channel: 7,
 				layer: 120
+			}),
+			'casparcg_cg_effects': literal<MappingCasparCG>({
+				device: PlayoutDeviceType.CASPARCG,
+				deviceId: 'casparcg0',
+				channel: 5,
+				layer: 120
+			}),
+			'casparcg_cg_effects_ctrl': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0'
 			}),
 			'casparcg_cg_studiomonitor_ctrl': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
