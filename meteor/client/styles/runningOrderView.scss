@@ -120,6 +120,15 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 				font-weight: 500;
 			}
 
+			&.playback-started {
+				display: inline-block;
+				width: 25%;
+			}
+
+			&.left {
+				text-align: left;
+			}
+
 			&.time-now {
 				position: absolute;
 				top: 0.05em;
@@ -151,6 +160,12 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 					right: 0;
 					left: auto;
 					text-align: right;
+				}
+
+				&.hide-overflow {
+					overflow: hidden;
+					text-overflow: ellipsis;
+					width: 100%;
 				}
 			}
 
