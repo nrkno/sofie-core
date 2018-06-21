@@ -238,6 +238,16 @@ Meteor.methods({
 				channel: 7,
 				layer: 120
 			}),
+			'casparcg_cg_effects': literal<MappingCasparCG>({
+				device: PlayoutDeviceType.CASPARCG,
+				deviceId: 'casparcg0',
+				channel: 5,
+				layer: 120
+			}),
+			'casparcg_cg_effects_ctrl': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0'
+			}),
 			'casparcg_cg_studiomonitor_ctrl': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0'
