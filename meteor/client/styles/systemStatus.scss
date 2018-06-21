@@ -36,42 +36,42 @@
 		}
 		.device-item__device-status {
 			&.device-item__device-status--good {
-				> p > .pill {
+				.pill {
 					background: $color-status-good;
 					border: $color-status-good;
 				}
 			}
 
 			&.device-item__device-status--minor-warning {
-				> p > .pill {
+				.pill {
 					background: $color-status-minor-warning;
 					border: $color-status-minor-warning;
 				}
 			}
 
 			&.device-item__device-status--warning {
-				> p > .pill {
+				.pill {
 					background: $color-status-warning;
 					border: $color-status-warning;
 				}
 			}
 
 			&.device-item__device-status--bad {
-				> p > .pill {
+				.pill {
 					background: $color-status-bad;
 					border: $color-status-bad;
 				}
 			}
 
 			&.device-item__device-status--fatal {
-				> p > .pill {
+				.pill {
 					background: $color-status-fatal;
 					border: $color-status-fatal;
 				}
 			}
 
 			&.device-item__device-status--unknown {
-				> p > .pill {
+				.pill {
 					background: $color-status-unknown;
 					border: $color-status-unknown;
 				}
