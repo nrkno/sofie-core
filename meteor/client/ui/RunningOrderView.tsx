@@ -117,7 +117,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>, ITimi
 				{ this.props.runningOrder.startedPlayback ?
 					this.props.runningOrder.expectedStart &&
 						<span className='timing-clock countdown playback-started left'>
-						<span className='timing-clock-label left hide-overflow' title={this.props.runningOrder.name}>{this.props.runningOrder.name}</span>
+							<span className='timing-clock-label left hide-overflow' title={this.props.runningOrder.name}>{this.props.runningOrder.name}</span>
 							{RundownUtils.formatDiffToTimecode(this.props.runningOrder.startedPlayback - this.props.runningOrder.expectedStart, true, true, true)}
 						</span>
 					:
@@ -125,6 +125,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>, ITimi
 						<span className={ClassNames('timing-clock countdown plan-start left', {
 							'heavy': getCurrentTime() > this.props.runningOrder.expectedStart
 						})}>
+							<span className='timing-clock-label left hide-overflow' title={this.props.runningOrder.name}>{this.props.runningOrder.name}</span>
 							{RundownUtils.formatDiffToTimecode(getCurrentTime() - this.props.runningOrder.expectedStart, true, true, true)}
 						</span>
 				}
