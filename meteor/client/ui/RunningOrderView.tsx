@@ -231,6 +231,9 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					preventDefault(e)
 					if (k.up) k.up(e)
 				}, 'keyup')
+				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+					preventDefault(e)
+				}, 'keydown')
 			}
 			if (k.down) {
 				mousetrap.bind(k.key, (e: KeyboardEvent) => {
@@ -245,6 +248,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {
 				mousetrap.unbind(k.key, 'keyup')
+				mousetrap.unbind(k.key, 'keydown')
 			}
 			if (k.down) {
 				mousetrap.unbind(k.key, 'keydown')
