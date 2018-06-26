@@ -171,6 +171,23 @@ export namespace ServerPeripheralDeviceAPI {
 			}
 		}, 'pingResponse', message)
 	}
+	export function killProcess (id: string, token: string, really: boolean) {
+		// This is used in integration tests only
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
+
+		// Make sure this never runs if this server isn't empty:
+		if (RunningOrders.find().count()) throw new Meteor.Error(400, 'Unable to run killProcess: RunningOrders not empty!')
+
+		if (really) {
+			this.logger.info('KillProcess command received from ' + peripheralDevice._id + ', shutting down in 1000ms!')
+			setTimeout(() => {
+				process.exit(0)
+			}, 1000)
+			return true
+		}
+		return false
+	}
 
 	// export {P.initialize}
 	// ----------------------------------------------------------------------------
@@ -1184,6 +1201,9 @@ methods[PeripheralDeviceAPI.methods.segmentLinePlaybackStarted] = (deviceId, dev
 }
 methods[PeripheralDeviceAPI.methods.pingWithCommand] = (deviceId, deviceToken, message: string) => {
 	return ServerPeripheralDeviceAPI.pingWithCommand(deviceId, deviceToken, message)
+}
+methods[PeripheralDeviceAPI.methods.killProcess] = (deviceId, deviceToken, really: boolean) => {
+	return ServerPeripheralDeviceAPI.killProcess(deviceId, deviceToken, really)
 }
 // ----------------------------------------------------------------------------
 // Mos-functions:

@@ -51,6 +51,7 @@ export enum methods {
 	'unInitialize' 		= 'peripheralDevice.unInitialize',
 	'getPeripheralDevice'= 'peripheralDevice.getPeripheralDevice',
 	'pingWithCommand' 	= 'peripheralDevice.pingWithCommand',
+	'killProcess' 		= 'peripheralDevice.killProcess',
 
 	'determineDiffTime'		= 'systemTime.determineDiffTime',
 	'getTimeDiff'			= 'systemTime.getTimeDiff',
@@ -92,7 +93,7 @@ export function setStatus (id: string, token: string, status: StatusObject): Pro
 	return MeteorPromiseCall(methods.setStatus, id, token, status)
 }
 
-export function executeFunction (deviceId: string, cb: (err, result) => void, functionName: string, ...args: any[],) {
+export function executeFunction (deviceId: string, cb: (err, result) => void, functionName: string, ...args: any[]) {
 
 	let commandId = Random.id()
 	PeripheralDeviceCommands.insert({

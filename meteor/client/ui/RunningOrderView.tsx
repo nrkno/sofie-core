@@ -117,7 +117,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>, ITimi
 				{ this.props.runningOrder.startedPlayback ?
 					this.props.runningOrder.expectedStart &&
 						<span className='timing-clock countdown playback-started left'>
-						<span className='timing-clock-label left hide-overflow' title={this.props.runningOrder.name}>{this.props.runningOrder.name}</span>
+							<span className='timing-clock-label left hide-overflow' title={this.props.runningOrder.name}>{this.props.runningOrder.name}</span>
 							{RundownUtils.formatDiffToTimecode(this.props.runningOrder.startedPlayback - this.props.runningOrder.expectedStart, true, true, true)}
 						</span>
 					:
@@ -125,6 +125,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>, ITimi
 						<span className={ClassNames('timing-clock countdown plan-start left', {
 							'heavy': getCurrentTime() > this.props.runningOrder.expectedStart
 						})}>
+							<span className='timing-clock-label left hide-overflow' title={this.props.runningOrder.name}>{this.props.runningOrder.name}</span>
 							{RundownUtils.formatDiffToTimecode(getCurrentTime() - this.props.runningOrder.expectedStart, true, true, true)}
 						</span>
 				}
@@ -230,6 +231,9 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					preventDefault(e)
 					if (k.up) k.up(e)
 				}, 'keyup')
+				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+					preventDefault(e)
+				}, 'keydown')
 			}
 			if (k.down) {
 				mousetrap.bind(k.key, (e: KeyboardEvent) => {
@@ -244,6 +248,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {
 				mousetrap.unbind(k.key, 'keyup')
+				mousetrap.unbind(k.key, 'keydown')
 			}
 			if (k.down) {
 				mousetrap.unbind(k.key, 'keydown')
