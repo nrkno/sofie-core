@@ -7,6 +7,7 @@ import { RuntimeFunctions, RuntimeFunction } from '../../../lib/collections/Runt
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
+import * as _ from 'underscore'
 import { Link } from 'react-router-dom'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { literal } from '../../../lib/lib'

@@ -1,6 +1,6 @@
 import { RuntimeFunctionsAPI } from '../../lib/api/runtimeFunctions'
 import { getCurrentTime, literal } from '../../lib/lib'
-import { RuntimeFunctions } from '../../lib/collections/RuntimeFunctions'
+import { RuntimeFunctions, RuntimeFunction } from '../../lib/collections/RuntimeFunctions'
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
@@ -10,13 +10,13 @@ import { IMOSROFullStory, MosString128, IMOSItem } from 'mos-connection'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { logger } from '../../server/logging'
 
-export function runtimeFunctionTestCode (code: string, showStyleId: string, syntaxOnly: boolean) {
-	check(code, String)
+export function runtimeFunctionTestCode (runtimeFunction: RuntimeFunction, showStyleId: string, syntaxOnly: boolean) {
+	check(runtimeFunction.code, String)
 	logger.debug('runtimeFunctionTestCode')
 
 	if (syntaxOnly) {
 		try {
-			convertCodeToGeneralFunction(code)
+			convertCodeToGeneralFunction(runtimeFunction, true)
 		} catch (e) {
 			throw new Meteor.Error(402, 'Syntax error in runtime function: ' + e.toString() + ' \n' + e.stack)
 		}
@@ -57,7 +57,7 @@ export function runtimeFunctionTestCode (code: string, showStyleId: string, synt
 		}
 		innerContext.getSegmentLines = () => []
 
-		fcn = convertCodeToFunction(innerContext, code)
+		fcn = convertCodeToFunction(innerContext, runtimeFunction, true)
 
 	} catch (e) {
 		throw new Meteor.Error(402, 'Syntax error in runtime function: ' + e.toString() + ' \n' + e.stack)
@@ -113,7 +113,10 @@ export function runtimeFunctionUpdateCode (runtimeFunctionId: string, code: stri
 
 	if (!oldRf) throw new Meteor.Error(404, 'RuntimeFunction "' + runtimeFunctionId + '" not found!')
 
-	runtimeFunctionTestCode(code, oldRf.showStyleId, oldRf.isHelper)
+	let tmpRf: RuntimeFunction = _.extend({}, oldRf, {
+		code: code
+	})
+	runtimeFunctionTestCode(tmpRf, oldRf.showStyleId, oldRf.isHelper)
 
 	if (
 		!oldRf.modified ||

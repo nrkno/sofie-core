@@ -65,12 +65,14 @@ practicalmeteor:mocha-core@1.0.1
 promise@0.10.2
 random@1.1.0
 react-meteor-data@0.2.16
+reactive-dict@1.2.0
 reactive-var@1.0.11
 reload@1.2.0
 retry@1.1.0
 routepolicy@1.0.13
 runisland:static-assets@0.1.5
 server-render@0.3.0
+session@1.1.7
 shell-server@0.3.1
 shim-common@0.1.0
 socket-stream-client@0.1.0

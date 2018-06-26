@@ -2,15 +2,16 @@ import * as _ from 'underscore'
 import * as saferEval from 'safer-eval'
 import * as objectPath from 'object-path'
 import * as moment from 'moment'
+import { Random } from 'meteor/random'
 import {
 	IMOSROFullStory,
 } from 'mos-connection'
-import { RuntimeFunctions } from '../../../lib/collections/RuntimeFunctions'
+import { RuntimeFunctions, RuntimeFunction } from '../../../lib/collections/RuntimeFunctions'
 import { SegmentLine, DBSegmentLine } from '../../../lib/collections/SegmentLines'
 import { SegmentLineItem } from '../../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItem } from '../../../lib/collections/RunningOrderBaselineItems'
-import { literal, Optional } from '../../../lib/lib'
+import { literal, Optional, getCurrentTime } from '../../../lib/lib'
 import * as crypto from 'crypto'
 import {
 	TimelineContentTypeCasparCg,
@@ -24,6 +25,12 @@ import {
 import { TriggerType } from 'superfly-timeline'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
+import { logger } from '../../logging'
+import { RunningOrders, RunningOrder } from '../../../lib/collections/RunningOrders'
+import { TimelineObj } from '../../../lib/collections/Timeline'
+import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { ShowStyle } from '../../../lib/collections/ShowStyles'
+import { RuntimeFunctionDebugData } from '../../../lib/collections/RuntimeFunctionDebugData'
 
 export function getHash (str: string): string {
 	const hash = crypto.createHash('sha1')
@@ -194,7 +201,7 @@ export function getContext (context: TemplateContext): TemplateContextInternal {
 			if (!func) throw new Meteor.Error(404, 'RuntimeFunctions helper "' + functionId + '" not found')
 
 			try {
-				return convertCodeToGeneralFunction(func.code)
+				return convertCodeToGeneralFunction(func)
 			} catch (e) {
 				throw new Meteor.Error(402, 'Syntax error in runtime function helper "' + functionId + '": ' + e.toString())
 			}
@@ -238,12 +245,6 @@ export interface TemplateResultAfterPost {
 	baselineItems: Array<RunningOrderBaselineItem> | null
 }
 
-import { logger } from '../../logging'
-import { RunningOrders, RunningOrder } from '../../../lib/collections/RunningOrders'
-import { TimelineObj } from '../../../lib/collections/Timeline'
-import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { ShowStyle } from '../../../lib/collections/ShowStyles'
-
 function injectContextIntoArguments (context: TemplateContextInner, args: any[]): Array<any> {
 	_.each(args, (arg: StoryWithContext) => {
 		if (_.isObject(arg)) {
@@ -264,9 +265,9 @@ export interface StoryWithContextBase {
 export interface StoryWithContext extends IMOSROFullStory, StoryWithContextBase {
 }
 
-export function convertCodeToGeneralFunction (code: string): TemplateGeneralFunction {
+export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, testOnly?: boolean): TemplateGeneralFunction {
 	// Just use the function () { .* } parts (omit whatevers before or after)
-	let functionStr = ((code + '').match(/function[\s\S]*}/) || [])[0]
+	let functionStr = ((runtimeFunction.code + '').match(/function[\s\S]*}/) || [])[0]
 	// logger.debug('functionStr', functionStr)
 	if (!functionStr) throw Error('Function empty!')
 	let runtimeFcn: TemplateGeneralFunction = saferEval(functionStr, {
@@ -286,16 +287,67 @@ export function convertCodeToGeneralFunction (code: string): TemplateGeneralFunc
 		Ease,
 		Direction,
 	})
-	return runtimeFcn
+	return (...args) => {
+		if (!testOnly) {
+			saveDebugData(runtimeFunction, ...args)
+		}
+		// @ts-ignore the function can be whatever, really
+		return runtimeFcn(...args)
+	}
 }
-export function convertCodeToFunction (context: TemplateContextInner, code: string): TemplateGeneralFunction {
-	let runtimeFcn = convertCodeToGeneralFunction(code)
+export function convertCodeToFunction (context: TemplateContextInner, runtimeFunction: RuntimeFunction, testOnly?: boolean): TemplateGeneralFunction {
+	let runtimeFcn = convertCodeToGeneralFunction(runtimeFunction, testOnly)
 	// logger.debug('runtimeFcn', runtimeFcn)
 	let fcn = (...args: any[]) => {
 		let result = runtimeFcn.apply(context, [context].concat(injectContextIntoArguments(context, args)))
 		return result
 	}
 	return fcn
+}
+function saveDebugData (runtimeFunction: RuntimeFunction, ...args) {
+	// Do this later, because this is low-prio:
+	Meteor.setTimeout(() => {
+		// Save a copy of the data, for debugging in the editor:
+		let code = runtimeFunction.code
+
+		let hash = getHash(args.join(','))
+
+		let rfdd = RuntimeFunctionDebugData.findOne({
+			showStyleId: runtimeFunction.showStyleId,
+			templateId: runtimeFunction.templateId,
+			dataHash: hash
+		}, {fields: {data: 0}})
+		if (rfdd) {
+			// console.log('updating')
+			RuntimeFunctionDebugData.update(rfdd._id, {$set: {
+				created: getCurrentTime()
+			}})
+		} else {
+			// console.log('inserting')
+			RuntimeFunctionDebugData.insert({
+				_id: Random.id(),
+				showStyleId: runtimeFunction.showStyleId,
+				templateId: runtimeFunction.templateId,
+				dataHash: hash,
+				created: getCurrentTime(),
+				data: args
+			})
+		}
+
+		// remove oldest if we have more than 3 versions:
+		let rfdds = RuntimeFunctionDebugData.find({
+			showStyleId: runtimeFunction.showStyleId,
+			templateId: runtimeFunction.templateId,
+		}, {fields: {data: 0}}).fetch()
+		if (rfdds.length > 3) {
+			_.each(rfdds.slice(3), (rfdd) => {
+				if (!rfdd.dontRemove) {
+					RuntimeFunctionDebugData.remove(rfdd._id)
+				}
+			})
+		}
+	}, 100)
+
 }
 function findFunction (showStyle: ShowStyle, functionId: string, context: TemplateContextInner): TemplateGeneralFunction {
 	let fcn: null | TemplateGeneralFunction = null
@@ -307,7 +359,7 @@ function findFunction (showStyle: ShowStyle, functionId: string, context: Templa
 	})
 	if (runtimeFunction && runtimeFunction.code) {
 		try {
-			fcn = convertCodeToFunction(context, runtimeFunction.code)
+			fcn = convertCodeToFunction(context, runtimeFunction)
 		} catch (e) {
 			throw new Meteor.Error(402, 'Syntax error in runtime function "' + functionId + '": ' + e.toString())
 		}
