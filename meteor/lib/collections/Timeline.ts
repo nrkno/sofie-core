@@ -457,3 +457,10 @@ export interface TimelineObjHTTPRequest extends TimelineObj {
 // export const Timeline = new Mongo.Collection<TimelineObj>('timeline')
 export const Timeline: TransformedCollection<TimelineObj, TimelineObj>
 	= new Mongo.Collection<TimelineObj>('timeline')
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		Timeline._ensureIndex({
+			siId: 1
+		})
+	}
+})

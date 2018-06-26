@@ -77,3 +77,11 @@ export interface PlayoutDeviceSettingsDeviceAtem extends PlayoutDeviceSettingsDe
 
 export const PeripheralDevices: TransformedCollection<PeripheralDevice, PeripheralDevice>
 	= new Mongo.Collection<PeripheralDevice>('peripheralDevices')
+
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		PeripheralDevices._ensureIndex({
+			studioInstallationId: 1
+		})
+	}
+})

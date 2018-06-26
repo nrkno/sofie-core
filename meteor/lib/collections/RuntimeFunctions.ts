@@ -14,3 +14,11 @@ export interface RuntimeFunction {
 
 export const RuntimeFunctions: TransformedCollection<RuntimeFunction, RuntimeFunction>
 	= new Mongo.Collection<RuntimeFunction>('runtimeFunctions')
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		RuntimeFunctions._ensureIndex({
+			showStyleId: 1,
+			templateId: 1
+		})
+	}
+})

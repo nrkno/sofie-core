@@ -103,3 +103,12 @@ export interface MediaStreamCodec {
 }
 export const MediaObjects: TransformedCollection<MediaObject, MediaObject>
 	= new Mongo.Collection<MediaObject>('mediaObjects')
+
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		MediaObjects._ensureIndex({
+			studioId: 1,
+			collectionId: 1
+		})
+	}
+})

@@ -9,3 +9,11 @@ export interface RunningOrderBaselineAdLibItem extends SegmentLineItemGeneric {
 
 export const RunningOrderBaselineAdLibItems: TransformedCollection<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>
 	= new Mongo.Collection<RunningOrderBaselineAdLibItem>('runningOrderBaselineAdLibItems')
+
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		RunningOrderBaselineAdLibItems._ensureIndex({
+			runningOrderId: 1
+		})
+	}
+})

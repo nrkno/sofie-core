@@ -21,3 +21,10 @@ export interface ShowStyle {
 
 export const ShowStyles: TransformedCollection<ShowStyle, ShowStyle>
 	= new Mongo.Collection<ShowStyle>('showStyles')
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		ShowStyles._ensureIndex({
+			name: 1,
+		})
+	}
+})

@@ -102,3 +102,10 @@ export class SegmentLine implements DBSegmentLine {
 
 export const SegmentLines: TransformedCollection<SegmentLine, DBSegmentLine>
 	= new Mongo.Collection<SegmentLine>('segmentLines', {transform: (doc) => applyClassToDocument(SegmentLine, doc) })
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		SegmentLines._ensureIndex({
+			runningOrderId: 1,
+		})
+	}
+})

@@ -9,3 +9,10 @@ export interface SegmentLineAdLibItem extends SegmentLineItemGeneric {
 
 export const SegmentLineAdLibItems: TransformedCollection<SegmentLineAdLibItem, SegmentLineAdLibItem>
 	= new Mongo.Collection<SegmentLineAdLibItem>('segmentLineAdLibItems')
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		SegmentLineAdLibItems._ensureIndex({
+			runningOrderId: 1,
+		})
+	}
+})

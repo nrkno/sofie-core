@@ -69,6 +69,13 @@ export interface SegmentLineItem extends SegmentLineItemGeneric {
 
 export const SegmentLineItems: TransformedCollection<SegmentLineItem, SegmentLineItem>
 	= new Mongo.Collection<SegmentLineItem>('segmentLineItems')
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		SegmentLineItems._ensureIndex({
+			runningOrderId: 1,
+		})
+	}
+})
 export interface MetadataElement {
 	_id: string,
 	key: string,
