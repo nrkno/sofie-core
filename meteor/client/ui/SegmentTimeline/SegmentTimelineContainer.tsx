@@ -192,7 +192,9 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				trigger: offsetTrigger(segmentLineItem.trigger, TIMELINE_TEMP_OFFSET),
 				duration: segmentLineItem.duration || segmentLineItem.expectedDuration || 0,
 				LLayer: segmentLineItem.outputLayerId,
-				content: segmentLineItem
+				content: {
+					id: segmentLineItem._id
+				}
 			})
 
 			segmentLineItem.outputLayer = outputLayers[segmentLineItem.outputLayerId]
@@ -242,11 +244,12 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		let slRTimeline = SuperTimeline.Resolver.getTimelineInWindow(slTimeline)
 		let furthestDuration = 0
 		slRTimeline.resolved.forEach((tlItem) => {
-			let segmentLineItem = tlItem.content as SegmentLineItemUi
+			let segmentLineItem = segmentLineItemsLookup[tlItem.content.id] // Timeline actually has copies of the content object, instead of the object itself
 			segmentLineItem.renderedDuration = tlItem.resolved.outerDuration
 
 			// if there is no renderedInPoint, use 0 as the starting time for the item
 			segmentLineItem.renderedInPoint = tlItem.resolved.startTime ? tlItem.resolved.startTime - TIMELINE_TEMP_OFFSET : 0
+			// console.log(segmentLineItem._id + ': ' + segmentLineItem.renderedInPoint)
 
 			if (Number.isFinite(segmentLineItem.renderedDuration || 0) && ((segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || 0) > furthestDuration)) {
 				furthestDuration = (segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || 0)

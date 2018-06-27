@@ -423,7 +423,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 					{
 						DEBUG_MODE && (
 							<div className='segment-timeline__debug-info'>
-								{RundownUtils.formatTimeToTimecode(this.props.segmentLineDuration).substr(-5)} / {this.props.segmentLineItem.renderedDuration ? RundownUtils.formatTimeToTimecode(this.props.segmentLineItem.renderedDuration).substr(-5) : 'X'} / {RundownUtils.formatTimeToTimecode(this.props.segmentLineItem.expectedDuration).substr(-5)}
+								{this.props.segmentLineItem.trigger.value} / {RundownUtils.formatTimeToTimecode(this.props.segmentLineDuration).substr(-5)} / {this.props.segmentLineItem.renderedDuration ? RundownUtils.formatTimeToTimecode(this.props.segmentLineItem.renderedDuration).substr(-5) : 'X'} / {RundownUtils.formatTimeToTimecode(this.props.segmentLineItem.expectedDuration).substr(-5)}
 							</div>
 						)
 					}
