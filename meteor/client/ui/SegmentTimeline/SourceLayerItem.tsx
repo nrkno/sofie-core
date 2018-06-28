@@ -43,7 +43,6 @@ export interface ISourceLayerItemProps {
 	liveLinePadding: number
 }
 interface ISourceLayerItemState {
-	itemState: number
 	showMiniInspector: boolean
 	elementPosition: JQueryCoordinates
 	cursorPosition: JQueryCoordinates
@@ -60,7 +59,6 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 	constructor (props) {
 		super(props)
 		this.state = {
-			itemState: 0,
 			showMiniInspector: false,
 			elementPosition: {
 				top: 0,
@@ -277,9 +275,6 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 	itemMouseUp = (e: any) => {
 		let eM = e as MouseEvent
 		if (eM.ctrlKey === true) {
-			this.setState({
-				itemState: (this.state.itemState + 1) % 4
-			})
 			eM.preventDefault()
 			eM.stopPropagation()
 		}
