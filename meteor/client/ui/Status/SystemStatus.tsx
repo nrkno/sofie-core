@@ -1,17 +1,17 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { PeripheralDevice,
-		PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+		PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
 import { translate } from 'react-i18next'
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime } from '../../../lib/lib'
 import { Link } from 'react-router-dom'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
-import { ModalDialog } from '../lib/ModalDialog'
+import { ModalDialog } from '../../lib/ModalDialog'
 
 interface IDeviceItemProps {
 	// key: string,

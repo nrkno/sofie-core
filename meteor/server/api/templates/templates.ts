@@ -4,7 +4,7 @@ import * as objectPath from 'object-path'
 import * as moment from 'moment'
 import { Random } from 'meteor/random'
 import {
-	IMOSROFullStory,
+	IMOSROFullStory, IMOSRunningOrder,
 } from 'mos-connection'
 import { RuntimeFunctions, RuntimeFunction } from '../../../lib/collections/RuntimeFunctions'
 import { SegmentLine, DBSegmentLine } from '../../../lib/collections/SegmentLines'
@@ -79,6 +79,7 @@ export interface TemplateContext {
 	runningOrderId: string
 	// segment: Segment
 	segmentLine: SegmentLine
+	templateId: string
 }
 
 export enum LayerType {
@@ -106,6 +107,8 @@ export interface TemplateContextInternalBase extends TemplateContextInnerBase {
 	getRunningOrder: () => RunningOrder
 	getShowStyleId: () => string
 	getStudioInstallation: () => StudioInstallation
+	getCachedStoryForSegmentLine: (segmentLine: SegmentLine) => IMOSROFullStory
+	getCachedStoryForRunningOrder: () => IMOSRunningOrder
 }
 export interface TemplateContextInternal extends TemplateContextInner, TemplateContextInternalBase {
 }
@@ -201,7 +204,7 @@ export function getContext (context: TemplateContext): TemplateContextInternal {
 			if (!func) throw new Meteor.Error(404, 'RuntimeFunctions helper "' + functionId + '" not found')
 
 			try {
-				return convertCodeToGeneralFunction(func)
+				return convertCodeToGeneralFunction(func, 'getHelper')
 			} catch (e) {
 				throw new Meteor.Error(402, 'Syntax error in runtime function helper "' + functionId + '": ' + e.toString())
 			}
@@ -217,6 +220,14 @@ export function getContext (context: TemplateContext): TemplateContextInternal {
 		},
 		getSegmentLineIndex (): number {
 			return this.getSegmentLines().findIndex((sl: SegmentLine) => sl._id === context.segmentLine._id)
+		},
+		getCachedStoryForRunningOrder (): IMOSRunningOrder {
+			let ro = this.getRunningOrder()
+			return ro.fetchCache('roCreate' + ro._id)
+		},
+		getCachedStoryForSegmentLine (segmentLine: SegmentLine): IMOSROFullStory {
+			let ro = this.getRunningOrder()
+			return ro.fetchCache('fullStory' + segmentLine._id)
 		},
 		error: (message: string) => {
 			logger.error('Error from template: ' + message)
@@ -265,7 +276,7 @@ export interface StoryWithContextBase {
 export interface StoryWithContext extends IMOSROFullStory, StoryWithContextBase {
 }
 
-export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, testOnly?: boolean): TemplateGeneralFunction {
+export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, reason: string): TemplateGeneralFunction {
 	// Just use the function () { .* } parts (omit whatevers before or after)
 	let functionStr = ((runtimeFunction.code + '').match(/function[\s\S]*}/) || [])[0]
 	// logger.debug('functionStr', functionStr)
@@ -288,15 +299,13 @@ export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, 
 		Direction,
 	})
 	return (...args) => {
-		if (!testOnly) {
-			saveDebugData(runtimeFunction, ...args)
-		}
+		saveDebugData(runtimeFunction, reason, ...args)
 		// @ts-ignore the function can be whatever, really
 		return runtimeFcn(...args)
 	}
 }
-export function convertCodeToFunction (context: TemplateContextInner, runtimeFunction: RuntimeFunction, testOnly?: boolean): TemplateGeneralFunction {
-	let runtimeFcn = convertCodeToGeneralFunction(runtimeFunction, testOnly)
+export function convertCodeToFunction (context: TemplateContextInner, runtimeFunction: RuntimeFunction, reason: string): TemplateGeneralFunction {
+	let runtimeFcn = convertCodeToGeneralFunction(runtimeFunction, reason)
 	// logger.debug('runtimeFcn', runtimeFcn)
 	let fcn = (...args: any[]) => {
 		let result = runtimeFcn.apply(context, [context].concat(injectContextIntoArguments(context, args)))
@@ -304,9 +313,10 @@ export function convertCodeToFunction (context: TemplateContextInner, runtimeFun
 	}
 	return fcn
 }
-function saveDebugData (runtimeFunction: RuntimeFunction, ...args) {
+let lastTimeout: number | null = null
+function saveDebugData (runtimeFunction: RuntimeFunction, reason: string, ...args) {
 	// Do this later, because this is low-prio:
-	Meteor.setTimeout(() => {
+	lastTimeout = Meteor.setTimeout(() => {
 		// Save a copy of the data, for debugging in the editor:
 		let code = runtimeFunction.code
 
@@ -315,6 +325,7 @@ function saveDebugData (runtimeFunction: RuntimeFunction, ...args) {
 		let rfdd = RuntimeFunctionDebugData.findOne({
 			showStyleId: runtimeFunction.showStyleId,
 			templateId: runtimeFunction.templateId,
+			reason: reason,
 			dataHash: hash
 		}, {fields: {data: 0}})
 		if (rfdd) {
@@ -328,6 +339,7 @@ function saveDebugData (runtimeFunction: RuntimeFunction, ...args) {
 				_id: Random.id(),
 				showStyleId: runtimeFunction.showStyleId,
 				templateId: runtimeFunction.templateId,
+				reason: reason,
 				dataHash: hash,
 				created: getCurrentTime(),
 				data: args
@@ -338,7 +350,10 @@ function saveDebugData (runtimeFunction: RuntimeFunction, ...args) {
 		let rfdds = RuntimeFunctionDebugData.find({
 			showStyleId: runtimeFunction.showStyleId,
 			templateId: runtimeFunction.templateId,
-		}, {fields: {data: 0}}).fetch()
+		}, {
+			fields: {data: 0},
+			sort: {created: -1}
+		}).fetch()
 		if (rfdds.length > 3) {
 			_.each(rfdds.slice(3), (rfdd) => {
 				if (!rfdd.dontRemove) {
@@ -347,9 +362,15 @@ function saveDebugData (runtimeFunction: RuntimeFunction, ...args) {
 			})
 		}
 	}, 100)
-
 }
-function findFunction (showStyle: ShowStyle, functionId: string, context: TemplateContextInner): TemplateGeneralFunction {
+export function preventSaveDebugData () {
+	// called by the client code to prevent the last saving of data
+	if (lastTimeout) {
+		Meteor.clearTimeout(lastTimeout)
+		lastTimeout = null
+	}
+}
+function findFunction (showStyle: ShowStyle, functionId: string, context: TemplateContextInner, reason: string): TemplateGeneralFunction {
 	let fcn: null | TemplateGeneralFunction = null
 	let runtimeFunction = RuntimeFunctions.findOne({
 		showStyleId: showStyle._id,
@@ -359,7 +380,7 @@ function findFunction (showStyle: ShowStyle, functionId: string, context: Templa
 	})
 	if (runtimeFunction && runtimeFunction.code) {
 		try {
-			fcn = convertCodeToFunction(context, runtimeFunction)
+			fcn = convertCodeToFunction(context, runtimeFunction, reason)
 		} catch (e) {
 			throw new Meteor.Error(402, 'Syntax error in runtime function "' + functionId + '": ' + e.toString())
 		}
@@ -371,9 +392,9 @@ function findFunction (showStyle: ShowStyle, functionId: string, context: Templa
 	}
 }
 
-export function runNamedTemplate (showStyle: ShowStyle, templateId: string, context: TemplateContext, story: IMOSROFullStory): TemplateResultAfterPost {
+export function runNamedTemplate (showStyle: ShowStyle, templateId: string, context: TemplateContext, story: IMOSROFullStory, reason: string): TemplateResultAfterPost {
 	let innerContext = getContext(context)
-	let fcn = findFunction(showStyle, templateId, innerContext)
+	let fcn = findFunction(showStyle, templateId, innerContext, reason)
 	let result: TemplateResult = fcn(story) as TemplateResult
 
 	// logger.debug('runNamedTemplate', templateId)
@@ -460,15 +481,26 @@ export function runNamedTemplate (showStyle: ShowStyle, templateId: string, cont
 	}
 	return resultAfterPost
 }
-
-export function runTemplate (showStyle: ShowStyle, context: TemplateContext, story: IMOSROFullStory): TemplateResultAfterPost {
+export interface RunTemplateResult {
+	templateId: string
+	result: TemplateResultAfterPost
+}
+export function runTemplate (showStyle: ShowStyle, context: TemplateContext, story: IMOSROFullStory, reason: string): RunTemplateResult {
 	let innerContext0 = getContext(context)
-	let getId = findFunction(showStyle, 'getId', innerContext0)
+	let getId = findFunction(showStyle, 'getId', innerContext0, reason)
 
 	let templateId: string = getId(story) as string
 
 	if (templateId) {
-		return runNamedTemplate(showStyle, templateId, context, story)
+		let context0 = _.extend({}, context, {
+			templateId: templateId
+		})
+		let result = runNamedTemplate(showStyle, templateId, context0, story, reason)
+
+		return {
+			templateId: templateId,
+			result: result
+		}
 	} else {
 		throw new Meteor.Error(500, 'No template id found for story "' + story.ID + '" ("' + story.Slug + '")')
 	}

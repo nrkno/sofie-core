@@ -17,6 +17,8 @@ export interface ShowStyle {
 	templateMappings: TemplateMappings | never[]
 	/** The name of the template to be run for the baseline state when the running order is activated */
 	baselineTemplate: string
+	/** The name of the template to be run to generate external messages upon TAKEs */
+	messageTemplate: string
 }
 
 export const ShowStyles: TransformedCollection<ShowStyle, ShowStyle>

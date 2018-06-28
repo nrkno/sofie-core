@@ -54,7 +54,7 @@ Meteor.methods({
 		// Initiate database:
 		StudioInstallations.upsert('studio0', {$set: {
 			name: 'DKSL',
-			studioInstallation: 'show0',
+			defaultShowStyle: 'show0',
 			outputLayers: [],
 			config: [
 				// {_id: 'nora_group', value: ''}, // Note: do not set to ensure that devs do not accidently use the live graphics channel
@@ -374,7 +374,8 @@ Meteor.methods({
 		ShowStyles.upsert('show0', {$set: {
 			name: 'Distriktsnyheter Sørlandet',
 			templateMappings: [],
-			baselineTemplate: 'baseline'
+			baselineTemplate: 'baseline',
+			messageTemplate: 'message'
 		}})
 
 		PeripheralDevices.upsert('initDBPlayoutDeviceParent', {$set: literal<PeripheralDevice>({

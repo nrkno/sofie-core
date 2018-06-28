@@ -18,23 +18,7 @@ import { transformTimeline } from '../../lib/timeline'
 import { Time } from '../../lib/lib'
 import { getCurrentTimeReactive } from '../lib/currentTimeReactive'
 import { EditAttribute } from '../lib/EditAttribute'
-
-let tableize = (o: any) => {
-	return (
-		<table><tbody>
-			{_.map(o, (val, key) => {
-				return (
-					<tr key={key}>
-						<td>{key}</td>
-						<td>{(
-							_.isObject(val) ? tableize(val) : val
-						)}</td>
-					</tr>
-				)
-			})}
-		</tbody></table>
-	)
-}
+import { makeTableOfObject } from '../lib/utilComponents'
 
 interface IEditTasks {
 	tasks: Array<Task>
@@ -216,9 +200,9 @@ class extends React.Component<IRunningOrders> {
 				<div>name: {ro.name}</div>
 				<div>created: {ro.created}</div>
 
-				<div>metaData: {tableize(ro.metaData)}</div>
-				<div>status: {tableize(ro.status)}</div>
-				<div>airStatus: {tableize(ro.airStatus)}</div>
+				<div>metaData: {makeTableOfObject(ro.metaData)}</div>
+				<div>status: {makeTableOfObject(ro.status)}</div>
+				<div>airStatus: {makeTableOfObject(ro.airStatus)}</div>
 
 				<div>currentSegmentLineId: {ro.currentSegmentLineId}</div>
 				<div>nextSegmentLineId: {ro.nextSegmentLineId}</div>
@@ -409,7 +393,7 @@ class extends React.Component<ITimelineSimulate> {
 				<td>{o.trigger.value}</td>
 				<td>{o.duration}</td>
 				<td>{o.content.type}</td>
-				<td>{tableize(o.content)}</td>
+				<td>{makeTableOfObject(o.content)}</td>
 			</tr>
 		))
 	}

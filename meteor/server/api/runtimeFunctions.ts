@@ -4,7 +4,7 @@ import { RuntimeFunctions, RuntimeFunction } from '../../lib/collections/Runtime
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
-import { convertCodeToGeneralFunction, convertCodeToFunction, getContext, TemplateContext, TemplateResult, TemplateGeneralFunction, TemplateContextInternalBase, LayerType } from './templates/templates'
+import { convertCodeToGeneralFunction, convertCodeToFunction, getContext, TemplateContext, TemplateResult, TemplateGeneralFunction, TemplateContextInternalBase, LayerType, preventSaveDebugData } from './templates/templates'
 import { DBSegmentLine, SegmentLine } from '../../lib/collections/SegmentLines'
 import { IMOSROFullStory, MosString128, IMOSItem } from 'mos-connection'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
@@ -16,7 +16,8 @@ export function runtimeFunctionTestCode (runtimeFunction: RuntimeFunction, showS
 
 	if (syntaxOnly) {
 		try {
-			convertCodeToGeneralFunction(runtimeFunction, true)
+			convertCodeToGeneralFunction(runtimeFunction, 'test')
+			preventSaveDebugData()
 		} catch (e) {
 			throw new Meteor.Error(402, 'Syntax error in runtime function: ' + e.toString() + ' \n' + e.stack)
 		}
@@ -44,7 +45,8 @@ export function runtimeFunctionTestCode (runtimeFunction: RuntimeFunction, showS
 		let tmpContext: TemplateContext = {
 			runningOrderId: 'myRunningOrder',
 			// segment: Segment
-			segmentLine: new SegmentLine(tmpSegmentLine)
+			segmentLine: new SegmentLine(tmpSegmentLine),
+			templateId: runtimeFunction._id
 		}
 
 		let innerContext = getContext(tmpContext)
@@ -57,7 +59,8 @@ export function runtimeFunctionTestCode (runtimeFunction: RuntimeFunction, showS
 		}
 		innerContext.getSegmentLines = () => []
 
-		fcn = convertCodeToFunction(innerContext, runtimeFunction, true)
+		fcn = convertCodeToFunction(innerContext, runtimeFunction, 'test')
+		preventSaveDebugData()
 
 	} catch (e) {
 		throw new Meteor.Error(402, 'Syntax error in runtime function: ' + e.toString() + ' \n' + e.stack)

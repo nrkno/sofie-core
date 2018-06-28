@@ -121,6 +121,18 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
+							{t('External-message template id')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='messageTemplate'
+								obj={this.props.showStyle}
+								type='text'
+								collection={ShowStyles}
+								className='input text-input input-l'></EditAttribute>
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
 							<a href={`/backup/show/${(this.props.showStyle as any)._id}`} target='_new'>{t('Download backup')}</a>
 						</label>
 					</div>
