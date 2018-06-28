@@ -35,6 +35,7 @@ interface IPropsHeader {
 	liveLineHistorySize: number
 	livePosition: number | null
 	liveLinePadding: number
+	lineStartsAt?: number
 	scrollLeft: number
 	scrollWidth: number
 }
