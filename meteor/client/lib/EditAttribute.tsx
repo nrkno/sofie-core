@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
-	type: string
+	type: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown'
 }
 export class EditAttribute extends React.Component<IEditAttribute> {
 	render () {
