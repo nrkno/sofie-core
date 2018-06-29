@@ -15,6 +15,7 @@ import { ModalDialog } from '../../lib/ModalDialog'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { makeTableOfObject } from '../../lib/utilComponents'
+import * as classNames from 'classnames'
 
 interface IExternalMessagesProps {
 }
@@ -40,16 +41,16 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 			sent: {$not: {$gt: 0}}
 		}, {
 			sort: {
-				created: 1,
-				lastTry: 1
+				created: -1,
+				lastTry: -1
 			}
 		}).fetch(),
 		sentMessages: ExternalMessageQueue.find({
 			sent: {$gt: 0}
 		}, {
 			sort: {
-				sent: 1,
-				lastTry: 1
+				sent: -1,
+				lastTry: -1
 			}
 		}).fetch()
 	}
@@ -65,49 +66,90 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 		return (
 			<thead>
 				<tr>
-					<th className='c1'>
+					<th className='c1'></th>
+					<th className='c2'>
 						{t('Id')}
 					</th>
-					<th className='c1'>
+					<th className='c2'>
 						{t('Created')}
 					</th>
-					<th className='c1'>
-						{t('Sent')}
+					<th className='c3'>
+						{t('Status')}
 					</th>
-					<th className='c1'>
-						{t('Try count')}
-					</th>
-					<th className='c1'>
-						{t('Error message')}
-					</th>
-					<th className='c1'>
+					<th className='c4'>
 						{t('Message')}
 					</th>
 				</tr>
 			</thead>
 		)
 	}
-	remove (msg: ExternalMessageQueueObj) {
+	removeMessage (msg: ExternalMessageQueueObj) {
 		Meteor.call('removeExternalMessageQueueObj', msg._id)
 	}
 	renderMessageRow (msg: ExternalMessageQueueObj) {
+
+		let classes: string[] = ['message-row']
+		let info: JSX.Element | null = null
+		if (msg.sent) {
+			classes.push('sent')
+			info = (
+				<div>
+					<b>Sent: </b>
+					<Moment fromNow unit='seconds'>{msg.sent}</Moment>
+				</div>
+			)
+		} else if ((getCurrentTime() - (msg.lastTry || 0)) < 10 * 1000) {
+			classes.push('sending')
+			info = (
+				<div>
+					<b>Sending...</b>
+				</div>
+			)
+		} else if (msg.errorFatal) {
+			classes.push('fatal')
+			info = (
+				<div>
+					<b>Fatal error: </b>
+					<i>{msg.errorMessage}</i>
+				</div>
+			)
+		} else if (msg.errorMessage) {
+			classes.push('error')
+			info = (
+				<div>
+					<b>Error: </b>
+					<i>{msg.errorMessage}</i>
+				</div>
+			)
+		} else {
+			classes.push('waiting')
+			if (msg.tryCount) {
+				info = (
+					<div>
+						<b>Tried {msg.tryCount} times</b>
+					</div>
+				)
+			}
+			if (msg.lastTry) {
+				info = (
+					<div>
+						<b>Last try: </b>
+						<Moment fromNow unit='seconds'>{msg.lastTry}</Moment>
+					</div>
+				)
+			}
+		}
 		return (
-			<tr key={msg._id}>
+			<tr key={msg._id} className={classNames(classes)}>
 				<td className='c1'>
-					<button className='action-btn' onClick={(e) => this.remove(msg)}>
+					<button className='action-btn' onClick={(e) => this.removeMessage(msg)}>
 						<FontAwesomeIcon icon={faTrash} />
 					</button>
 				</td>
-				<td className='c1'>{msg._id}</td>
-				<td className='c1'><Moment fromNow unit='seconds'>{msg.created}</Moment></td>
-				<td className='c1'>
-					{(msg.sent ?
-						<Moment fromNow unit='seconds'>{msg.sent}</Moment>
-					: null)}
-				</td>
-				<td className='c1'>{msg.tryCount}</td>
-				<td className='c1'>{msg.errorMessage}</td>
-				<td className='c1'>
+				<td className='c2'>{msg._id}</td>
+				<td className='c2'><Moment fromNow unit='seconds'>{msg.created}</Moment></td>
+				<td className='c3'>{info}</td>
+				<td className='c4 small'>
 					<div>
 						{makeTableOfObject(msg.receiver)}
 					</div>
@@ -136,44 +178,35 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 			</div>
 		)
 	}
+	renderSentMessages () {
+		const { t } = this.props
+		return (
+			<div>
+				<h2>{t('Sent messages')}</h2>
+				<table className='table system-status-table'>
+					{this.renderMessageHead()}
+
+					<tbody>
+						{_.map(this.props.sentMessages, (msg) => {
+							return this.renderMessageRow(msg)
+						})}
+					</tbody>
+				</table>
+			</div>
+		)
+	}
 
 	render () {
 		const { t } = this.props
 
 		return (
-			<div className='mtl gutter system-status'>
+			<div className='mtl gutter external-message-status'>
 				<header className='mvs'>
 					<h1>{t('Message queue')}</h1>
 				</header>
 				<div className='mod mvl'>
 					{this.renderQueuedMessages()}
-					{/* <table className='table system-status-table'>
-						<thead>
-							<tr>
-								<th className='c2'>
-									{t('ID')}
-								</th>
-								<th className='c3'>
-									{t('Name')}
-								</th>
-								<th className='c1'>
-									{t('Telemetry')}
-								</th>
-								<th className='c2'>
-									{t('Type')}
-								</th>
-								<th className='c2'>
-									{t('Status')}
-								</th>
-								<th className='c2'>
-									{t('Last seen')}
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{this.renderPeripheralDevices()}
-						</tbody>
-					</table> */}
+					{this.renderSentMessages()}
 				</div>
 			</div>
 		)

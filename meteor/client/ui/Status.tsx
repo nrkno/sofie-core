@@ -14,11 +14,6 @@ import {
 import SystemStatus from './Status/SystemStatus'
 import { ExternalMessages } from './Status/ExternalMessages'
 
-// import StudioSettings from './Settings/StudioSettings'
-// import DeviceSettings from './Settings/DeviceSettings'
-// import LineTemplates from './Settings/LineTemplates'
-// import ShowStyleSettings from './Settings/ShowStyleSettings'
-// import RestoreBackup from './Settings/RestoreBackup'
 class WelcomeToStatus extends React.Component {
 	render () {
 		return (<div></div>)
@@ -38,14 +33,14 @@ const StatusMenu = translate()(class StatusMenu extends React.Component<Translat
 			<div className='tight-xs htight-xs text-s'>
 				<NavLink
 					activeClassName='selectable-selected'
-					className='settings-menu__settings-menu-item selectable clickable'
+					className='status-menu__status-menu-item selectable clickable'
 					key='system-link'
 					to={'/status/system'}>
 					<h3>{t('System')}</h3>
 				</NavLink>
 				<NavLink
 					activeClassName='selectable-selected'
-					className='settings-menu__settings-menu-item selectable clickable'
+					className='status-menu__status-menu-item selectable clickable'
 					key='messages-link'
 					to={'/status/messages'}>
 					<h3>{t('Messages')}</h3>
@@ -83,10 +78,10 @@ class Status extends React.Component<Translated<IStatusProps>> {
 				</header>
 				<div className='mod mvl mhs'>
 					<div className='row'>
-						<div className='col c12 rm-c3 settings-menu'>
+						<div className='col c12 rm-c1 status-menu'>
 							<StatusMenu match={this.props.match} />
 						</div>
-						<div className='col c12 rm-c9 settings-dialog'>
+						<div className='col c12 rm-c11 status-dialog'>
 							<Switch>
 								{/* <Route path='/status' exact component={WelcomeToStatus} /> */}
 								<Route path='/status/messages' component={ExternalMessages} />

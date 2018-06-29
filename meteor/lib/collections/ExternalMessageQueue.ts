@@ -54,7 +54,7 @@ export interface ExternalMessageQueueObjSOAPMessageAttrFcn {
 			fcn: string
 			attrs: any[]
 		}
-		xmlHtmlEncode?: {
+		xmlEncode?: {
 			value: any
 		}
 	}

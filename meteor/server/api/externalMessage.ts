@@ -52,8 +52,8 @@ export function triggerExternalMessage (
 				// check the output:
 				if (!result) 			throw new Meteor.Error('Falsy result!')
 				if (!result.type) 		throw new Meteor.Error('attribute .type missing!')
-				if (!result.receiver) 	throw new Meteor.Error('attribute .raceiver missing!')
-				if (!result.message) 	throw new Meteor.Error('attribute .raceiver missing!')
+				if (!result.receiver) 	throw new Meteor.Error('attribute .receiver missing!')
+				if (!result.message) 	throw new Meteor.Error('attribute .message missing!')
 
 				// Save the output into the message queue, for later processing:
 				console.log('result', result)

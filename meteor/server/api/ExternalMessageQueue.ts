@@ -182,8 +182,25 @@ async function resolveSOAPFcnData (soapClient: soap.Client, valFcn: ExternalMess
 			} else {
 				reject(new Meteor.Error(401, 'SOAP method "' + fetchFrom.fcn + '" missing on endpoint!'))
 			}
-		} else if (valFcn._fcn.xmlHtmlEncode) {
-			let val = valFcn._fcn.xmlHtmlEncode.value
+		} else if (valFcn._fcn.xmlEncode) {
+			let val = valFcn._fcn.xmlEncode.value
+
+			// Convert into an object that parser.toXml can use:
+			if (_.isObject(val)) {
+				iterateDeeply(val, (val) => {
+					if (_.isObject(val)) {
+
+						if (val._t) {
+							val.$t = val._t
+							delete val._t
+							return val
+						} else {
+							return iterateDeeplyEnum.CONTINUE
+						}
+					}
+					return val
+				})
+			}
 			let xml = parser.toXml(val)
 			// resolve(entities.encode(xml))
 			resolve(xml)
