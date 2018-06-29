@@ -54,7 +54,7 @@ Meteor.methods({
 		// Initiate database:
 		StudioInstallations.upsert('studio0', {$set: {
 			name: 'DKSL',
-			studioInstallation: 'show0',
+			defaultShowStyle: 'show0',
 			outputLayers: [],
 			config: [
 				// {_id: 'nora_group', value: ''}, // Note: do not set to ensure that devs do not accidently use the live graphics channel
@@ -397,23 +397,23 @@ Meteor.methods({
 				'settings.devices.casparcg0': ((pd['settings'] || {})['devices'] || {})['casparcg0'] || {
 					type: PlayoutDeviceType.CASPARCG,
 					options: {
-						host: '160.68.32.30',
+						host: '160.67.87.50',
 						port: 5250
 					}
 				},
 				'settings.devices.atem0': ((pd['settings'] || {})['devices'] || {})['atem0'] || {
 					type: PlayoutDeviceType.ATEM,
 					options: {
-						host: '10.182.132.140',
+						host: '160.67.87.51',
 						port: 9910
 					}
 				},
 				'settings.devices.lawo0': ((pd['settings'] || {})['devices'] || {})['lawo0'] || {
 					type: PlayoutDeviceType.LAWO,
 					options: {
-						host: '10.182.132.203',
+						host: '160.67.96.51',
 						port: 9000,
-						sourcesPath: 'Ruby.Sources',
+						sourcesPath: 'Sapphire.Sources',
 						rampMotorFunctionPath: '1.5.2'
 					}
 				},
@@ -465,15 +465,15 @@ Meteor.methods({
 			type: PeripheralDeviceAPI.DeviceType.MOSDEVICE
 		}).forEach((pd) => {
 			PeripheralDevices.update(pd._id, {$set: {
-				'settings.mosId': 'SOFIE1.DKSL.MOS',
+				'settings.mosId': 'SOFIE1.XPRO.MOS',
 				'settings.devices.enps0': ((pd['settings'] || {})['devices'] || {})['enps0'] || {
 					primary: {
-						id: 'SLENPS01',
-						host: '160.68.132.15'
+						id: 'MAENPSTEST14',
+						host: '160.67.149.155'
 					},
 					secondary: {
-						id: 'DRENPSSL01',
-						host: '160.67.149.94'
+						id: 'MAENPSTEST15',
+						host: '160.67.149.156'
 					}
 				},
 			}})
