@@ -6,6 +6,9 @@ import { Timeline } from '../../../lib/collections/Timeline'
 import { SourceLayerItem } from './SourceLayerItem'
 import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 import { getCurrentTime } from '../../../lib/lib'
+import { VTContent, LiveSpeakContent } from '../../../lib/collections/SegmentLineItems'
+import { MediaObjects } from '../../../lib/collections/MediaObjects'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 
 import {
 	ISourceLayerUi,
@@ -78,10 +81,39 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 		let newStatus: RundownAPI.LineItemStatusCode = RundownAPI.LineItemStatusCode.UNKNOWN
 		switch (props.segmentLineItem.sourceLayer.type) {
 			case RundownAPI.SourceLayerType.VT:
-				newStatus = RundownAPI.LineItemStatusCode.SOURCE_MISSING
+				if (props.segmentLineItem.content && props.segmentLineItem.content.fileName) {
+					const content = props.segmentLineItem.content as VTContent
+					debugger
+					const mediaObject = MediaObjects.findOne({
+						objId: content.fileName.toUpperCase()
+					})
+					// If media object not found, then...
+					if (!mediaObject) {
+						newStatus = RundownAPI.LineItemStatusCode.SOURCE_MISSING
+					// All VT content should have at least two streams
+					} else if (mediaObject && mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2) {
+						newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
+					} else if (mediaObject) {
+						newStatus = RundownAPI.LineItemStatusCode.OK
+					}
+				}
 				break
 			case RundownAPI.SourceLayerType.LIVE_SPEAK:
-				newStatus = RundownAPI.LineItemStatusCode.SOURCE_MISSING
+				if (props.segmentLineItem.content && props.segmentLineItem.content.fileName) {
+					const content = props.segmentLineItem.content as LiveSpeakContent
+					const mediaObject = MediaObjects.findOne({
+						objId: content.fileName.toUpperCase()
+					})
+					// If media object not found, then...
+					if (!mediaObject) {
+						newStatus = RundownAPI.LineItemStatusCode.SOURCE_MISSING
+						// All VT content should have at least two streams
+					} else if (mediaObject && mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2) {
+						newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
+					} else if (mediaObject) {
+						newStatus = RundownAPI.LineItemStatusCode.OK
+					}
+				}
 				break
 		}
 		if (newStatus !== props.segmentLineItem.status) {
@@ -95,7 +127,25 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 
 	return overrides
 })(
-class extends React.Component<IPropsHeader> {
+class extends MeteorReactComponent<IPropsHeader> {
+	componentWillMount () {
+		this.autorun(() => {
+			if (this.props.segmentLineItem.sourceLayer) {
+				switch (this.props.segmentLineItem.sourceLayer.type) {
+					case RundownAPI.SourceLayerType.VT:
+						this.subscribe('mediaObjects', {
+							objId: (this.props.segmentLineItem.content as VTContent).fileName
+						})
+						break
+					case RundownAPI.SourceLayerType.LIVE_SPEAK:
+						this.subscribe('mediaObjects', {
+							objId: (this.props.segmentLineItem.content as LiveSpeakContent).fileName
+						})
+						break
+				}
+			}
+		})
+	}
 	render () {
 		return (
 			<SourceLayerItem {...this.props} />

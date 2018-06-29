@@ -2,7 +2,7 @@ import { Tracker } from 'meteor/tracker'
 import * as _ from 'underscore'
 import * as React from 'react'
 
-export class MeteorReactComponent<IProps, IState> extends React.Component<IProps, IState> {
+export class MeteorReactComponent<IProps, IState = {}> extends React.Component<IProps, IState> {
 
 	private _subscriptions: {[id: string]: Meteor.SubscriptionHandle} = {}
 	private _computations: Array<Tracker.Computation> = []
