@@ -14,6 +14,7 @@ import {
 	SegmentLineUi,
 	SegmentLineItemUi
 } from './SegmentTimelineContainer'
+import { RundownAPI } from '../../../lib/api/rundown'
 
 interface IPropsHeader {
 	layer: ISourceLayerUi
@@ -34,17 +35,23 @@ interface IPropsHeader {
 	liveLineHistorySize: number
 	livePosition: number | null
 	liveLinePadding: number
+	lineStartsAt?: number
 	scrollLeft: number
 	scrollWidth: number
 }
 /** This is a container component that allows ractivity with the Timeline collection */
 export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
+	let overrides: {
+		[key: string]: any
+	} = {}
+
+	// Override based on Timeline collection
 	if (props.isLiveLine) {
 		// Check in Timeline collection for any changes to the related object
 		let timelineObj = Timeline.findOne({ _id: PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + props.segmentLineItem._id })
 
 		if (timelineObj) {
-			let segmentCopy = (_.clone(props.segmentLineItem) as SegmentLineItemUi)
+			let segmentCopy = (_.clone(overrides.segmentLineItem || props.segmentLineItem) as SegmentLineItemUi)
 
 			segmentCopy.trigger = timelineObj.trigger
 			if (timelineObj.trigger.type === TriggerType.TIME_ABSOLUTE) {
@@ -62,17 +69,31 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 			}
 			segmentCopy.renderedDuration = timelineObj.duration !== 0 ? timelineObj.duration : undefined
 
-			return {
-				segmentLineItem: segmentCopy
-			}
-		} else {
-			// object not found in timeline, don't override any values
-			return {}
+			overrides.segmentLineItem = _.extend(overrides.segmentLineItem || {}, segmentCopy)
 		}
-	} else {
-		// Don't expect any changes
-		return {}
 	}
+
+	// Check item status
+	if (props.segmentLineItem.sourceLayer) {
+		let newStatus: RundownAPI.LineItemStatusCode = RundownAPI.LineItemStatusCode.UNKNOWN
+		switch (props.segmentLineItem.sourceLayer.type) {
+			case RundownAPI.SourceLayerType.VT:
+				newStatus = RundownAPI.LineItemStatusCode.SOURCE_MISSING
+				break
+			case RundownAPI.SourceLayerType.LIVE_SPEAK:
+				newStatus = RundownAPI.LineItemStatusCode.SOURCE_MISSING
+				break
+		}
+		if (newStatus !== props.segmentLineItem.status) {
+			let segmentCopy = (_.clone(overrides.segmentLineItem || props.segmentLineItem) as SegmentLineItemUi)
+
+			segmentCopy.status = newStatus
+
+			overrides.segmentLineItem = _.extend(overrides.segmentLineItem || {}, segmentCopy)
+		}
+	}
+
+	return overrides
 })(
 class extends React.Component<IPropsHeader> {
 	render () {
