@@ -57,8 +57,8 @@ Meteor.methods({
 			defaultShowStyle: 'show0',
 			outputLayers: [],
 			config: [
-				// {_id: 'nora_group', value: ''}, // Note: do not set to ensure that devs do not accidently use the live graphics channel
-				// {_id: 'nora_apikey', value: ''} // Note: must not be set as apikey must be kept private
+				{_id: 'nora_group', value: ''}, // Note: do not set to ensure that devs do not accidently use the live graphics channel
+				{_id: 'nora_apikey', value: ''} // Note: must not be set as apikey must be kept private
 			],
 		}})
 
