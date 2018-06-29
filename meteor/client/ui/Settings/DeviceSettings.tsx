@@ -103,7 +103,7 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 		}
 		let setObject = {}
 		setObject['settings.devices.' + newDeviceId + iter.toString()] = {
-			type: PlayoutDeviceType.CASPARCG,
+			type: PlayoutDeviceType.ABSTRACT,
 			options: {}
 		}
 
