@@ -120,7 +120,8 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 			_id: Random.hexString(5),
 			name: Random.hexString(5),
 			templateMappings: [],
-			baselineTemplate: ''
+			baselineTemplate: '',
+			messageTemplate: ''
 		}))
 	}
 

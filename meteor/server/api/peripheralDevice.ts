@@ -233,6 +233,8 @@ export namespace ServerPeripheralDeviceAPI {
 
 		let dbRo = RunningOrders.findOne(roId(ro.ID))
 		if (!dbRo) throw new Meteor.Error(500, 'Running order not found (it should have been)')
+		// cache the Data
+		dbRo.saveCache('roCreate' + roId(ro.ID), ro)
 
 		// Save Stories into database:
 		// Note: a number of X stories will result in (<=X) Segments and X SegmentLines
@@ -670,6 +672,7 @@ export namespace ServerPeripheralDeviceAPI {
 }
 export function roId (roId: MosString128, original?: boolean): string {
 	// logger.debug('roId', roId)
+	if (!roId) throw new Meteor.Error(401, 'parameter roId missing!')
 	let id = 'ro_' + (roId['_str'] || roId.toString())
 	return (original ? id : getHash(id))
 }
@@ -1075,24 +1078,28 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 	let context: TemplateContext = {
 		runningOrderId: ro._id,
 		// segment: Segment,
-		segmentLine: segmentLine
+		segmentLine: segmentLine,
+		templateId: 'N/A'
 	}
-	let result = runTemplate(showStyle, context, story)
+	let tr = runTemplate(showStyle, context, story, 'story ' + story.ID.toString())
 
-	if (result.segmentLine) {
+	if (tr.result.segmentLine) {
+		if (!tr.result.segmentLine.typeVariant) tr.result.segmentLine.typeVariant = tr.templateId
+
 		SegmentLines.update(segmentLine._id, {$set: {
-			expectedDuration:		result.segmentLine.expectedDuration || segmentLine.expectedDuration,
-			overlapDuration: 		result.segmentLine.overlapDuration || 0,
-			autoNext: 				result.segmentLine.autoNext || false,
-			disableOutTransition: 	result.segmentLine.disableOutTransition || false,
-			updateStoryStatus:		result.segmentLine.updateStoryStatus || false,
+			expectedDuration:		tr.result.segmentLine.expectedDuration || segmentLine.expectedDuration,
+			overlapDuration: 		tr.result.segmentLine.overlapDuration || 0,
+			autoNext: 				tr.result.segmentLine.autoNext || false,
+			disableOutTransition: 	tr.result.segmentLine.disableOutTransition || false,
+			updateStoryStatus:		tr.result.segmentLine.updateStoryStatus || false,
+			typeVariant:			tr.result.segmentLine.typeVariant || ''
 		}})
 	}
 	saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
 		runningOrderId: ro._id,
 		segmentLineId: segmentLine._id,
 		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
-	}, result.segmentLineItems || [], {
+	}, tr.result.segmentLineItems || [], {
 		afterInsert (segmentLineItem) {
 			logger.debug('inserted segmentLineItem ' + segmentLineItem._id)
 			logger.debug(segmentLineItem)
@@ -1119,7 +1126,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 	saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
 		runningOrderId: ro._id,
 		segmentLineId: segmentLine._id
-	}, result.segmentLineAdLibItems || [], {
+	}, tr.result.segmentLineAdLibItems || [], {
 		afterInsert (segmentLineAdLibItem) {
 			logger.debug('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
 			logger.debug(segmentLineAdLibItem)

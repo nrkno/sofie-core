@@ -1,5 +1,5 @@
 import { Mongo } from 'meteor/mongo'
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime, Time } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
 
 export interface PeripheralDeviceCommand {
@@ -14,7 +14,7 @@ export interface PeripheralDeviceCommand {
 	replyError?: any
 	replyTime?: number
 
-	time: number // time
+	time: Time // time
 }
 export const PeripheralDeviceCommands: TransformedCollection<PeripheralDeviceCommand, PeripheralDeviceCommand>
 	= new Mongo.Collection<PeripheralDeviceCommand>('peripheralDeviceCommands')

@@ -43,6 +43,9 @@ export interface DBSegmentLine {
 	startedPlayback?: number
 	/** The time the system played back this segment line, null if not yet finished playing, in milliseconds */
 	duration?: number
+
+	/** The type of the segmentLiene, could be the name of the template that created it */
+	typeVariant?: string
 }
 export class SegmentLine implements DBSegmentLine {
 	public _id: string
