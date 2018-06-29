@@ -188,26 +188,26 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 
 				<div className='actions-container'>
 					<div className='device-item__actions'>
-						<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')}
+						<ModalDialog key='modal-device' title={t('Delete this item?')} acceptText={t('Delete')}
 							secondaryText={t('Cancel')}
 							show={!!this.state.showDeleteDeviceConfirm}
 							onAccept={(e) => this.handleConfirmDeleteShowStyleAccept(e)}
 							onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
 							<p>{t(`Are you sure you want to delete this device?`)}</p>
 						</ModalDialog>
-						<button className='action-btn' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteDevice(this.props.device)}>
+						<button key='button-device' className='action-btn' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteDevice(this.props.device)}>
 							<FontAwesomeIcon icon={faTrash} />
 						</button>
 						{(
 							this.props.device.type !== PeripheralDeviceAPI.DeviceType.OTHER ? [
-								<ModalDialog title={t('Kill this device process?')} acceptText={t('Kill')}
+								<ModalDialog key='modal-process' title={t('Kill this device process?')} acceptText={t('Kill')}
 									secondaryText={t('Cancel')}
 									show={!!this.state.showKillDeviceConfirm}
 									onAccept={(e) => this.handleConfirmKillAccept(e)}
 									onSecondary={(e) => this.handleConfirmKillCancel(e)}>
 									<p>{t(`Are you sure you want to kill the process of this device?`)}</p>
 								</ModalDialog>,
-								<button className='action-btn' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onKillDevice(this.props.device)}>
+								<button key='button-process' className='action-btn' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onKillDevice(this.props.device)}>
 									Kill process
 								</button>
 							] : null
@@ -323,7 +323,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 
 		let getDeviceContent = (d: DeviceInHierarchy): JSX.Element => {
 			let content: JSX.Element[] = [
-				<DeviceItem device={d.device} />
+				<DeviceItem key={'device' + d.device._id } device={d.device} />
 			]
 			if (d.children.length) {
 				let children: JSX.Element[] = []
