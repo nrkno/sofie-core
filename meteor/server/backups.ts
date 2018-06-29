@@ -16,7 +16,9 @@ export function getShowBackup (showId: string): ShowStyleBackup {
 	const showStyle = ShowStyles.findOne(showId)
 	if (!showStyle) throw new Meteor.Error(404, 'Show style not found')
 
-	const templates = RuntimeFunctions.find({ showStyleId: showId }).fetch()
+	const templates = RuntimeFunctions.find({ showStyleId: showId },{
+		sort: {_id: 1}
+	}).fetch()
 
 	return {
 		type: 'showstyle',
