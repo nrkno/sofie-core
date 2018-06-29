@@ -358,13 +358,13 @@ Meteor.methods({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				mappingType: MappingLawoType.SOURCE,
-				identifier: 'RM4',
+				identifier: 'RM5',
 			}),
 			'lawo_source_rm6': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				mappingType: MappingLawoType.SOURCE,
-				identifier: 'RM5',
+				identifier: 'RM6',
 			})
 		}
 		StudioInstallations.update('studio0', {$set: {
