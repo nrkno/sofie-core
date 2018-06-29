@@ -6,7 +6,7 @@ import 'moment/min/locales'
 import { parse as queryStringParse } from 'query-string'
 import Header from './Header'
 import Dashboard from './Dashboard'
-import SystemStatus from './SystemStatus'
+import Status from './Status'
 import Settings from './Settings'
 import { RunningOrderList } from './RunningOrderList'
 import { RunningOrderView } from './RunningOrderView'
@@ -97,7 +97,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 						<Route path='/ro/:runningOrderId' component={RunningOrderView} />
 						<Route path='/clock' component={ClockView} />
 						<Route path='/nymansPlayground' component={NymansPlayground} />
-						<Route path='/status' component={SystemStatus} />
+						<Route path='/status' component={Status} />
 						<Route path='/settings' component={Settings} />
 						<Redirect to='/' />
 					</Switch>
