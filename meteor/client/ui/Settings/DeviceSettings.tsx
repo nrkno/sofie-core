@@ -103,7 +103,7 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 		}
 		let setObject = {}
 		setObject['settings.devices.' + newDeviceId + iter.toString()] = {
-			type: PlayoutDeviceType.CASPARCG,
+			type: PlayoutDeviceType.ABSTRACT,
 			options: {}
 		}
 
@@ -288,6 +288,30 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 													attribute={'settings.devices.' + deviceId + '.options.port'}
 													obj={this.props.device}
 													type='int'
+													collection={PeripheralDevices}
+													className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Sources Path')}
+												<EditAttribute
+													modifiedClassName='bghl'
+													attribute={'settings.devices.' + deviceId + '.options.sourcesPath'}
+													obj={this.props.device}
+													type='text'
+													collection={PeripheralDevices}
+													className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Ramp Function Path')}
+												<EditAttribute
+													modifiedClassName='bghl'
+													attribute={'settings.devices.' + deviceId + '.options.rampMotorFunctionPath'}
+													obj={this.props.device}
+													type='text'
 													collection={PeripheralDevices}
 													className='input text-input input-l'></EditAttribute>
 											</label>

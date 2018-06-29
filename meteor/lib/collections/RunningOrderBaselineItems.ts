@@ -18,3 +18,10 @@ export interface RunningOrderBaselineItem extends SegmentLineItemGeneric {
 
 export const RunningOrderBaselineItems: TransformedCollection<RunningOrderBaselineItem, RunningOrderBaselineItem>
 	= new Mongo.Collection<RunningOrderBaselineItem>('runningOrderBaselineItems')
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		RunningOrderBaselineItems._ensureIndex({
+			runningOrderId: 1
+		})
+	}
+})

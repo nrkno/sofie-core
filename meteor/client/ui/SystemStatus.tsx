@@ -19,12 +19,14 @@ interface IDeviceItemProps {
 }
 interface IDeviceItemState {
 	showDeleteDeviceConfirm: PeripheralDevice | null
+	showKillDeviceConfirm: PeripheralDevice | null
 }
 const DeviceItem = translate()(class extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
 	constructor (props: Translated<IDeviceItemProps>) {
 		super(props)
 		this.state = {
-			showDeleteDeviceConfirm: null
+			showDeleteDeviceConfirm: null,
+			showKillDeviceConfirm: null
 		}
 	}
 	statusCodeString () {
@@ -88,6 +90,35 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 		})
 	}
 
+	onKillDevice (device: PeripheralDevice) {
+		this.setState({
+			showKillDeviceConfirm: device
+		})
+	}
+	handleConfirmKillAccept = (e) => {
+		if (this.state.showKillDeviceConfirm) {
+
+			PeripheralDeviceAPI.executeFunction(this.state.showKillDeviceConfirm._id, (err, result) => {
+				// console.log('reply', err, result)
+				if (err) {
+					console.log(err)
+				} else {
+					// resolve(result)
+				}
+			}, 'killProcess', 1)
+		}
+		// ShowStyles.remove(this.state.KillConfirmItem._id)
+		this.setState({
+			showKillDeviceConfirm: null
+		})
+	}
+
+	handleConfirmKillCancel = (e) => {
+		this.setState({
+			showKillDeviceConfirm: null
+		})
+	}
+
 	render () {
 		const { t } = this.props
 		// let statusClassNames = ClassNames({
@@ -122,42 +153,69 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 		].join(' ')
 
 		return (
-			<div className='device-item'>
+			<div key={this.props.device._id} className='device-item'>
+				<div className='status-container'>
+					<div className='device-item__connected'>
+						<div className='value'>{this.connectedString()}</div>
+					</div>
+					<div className='device-item__last-seen'>
+						<label>Last seen:</label>
+						<div className='value'>
+							<Moment from={getCurrentTime()} date={this.props.device.lastSeen} />
+						</div>
+					</div>
+					<div className={statusClassNames}>
+						<div className='value'>
+							<span className='pill device-item__device-status__label'>
+								{this.statusCodeString()}
+							</span>
+						</div>
+						<div><i>{(((this.props.device || {}).status || {}).messages || []).join(', ')}</i></div>
+					</div>
+				</div>
 				<div className='device-item__id'>
-					ID: <p><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device._id}</Link></p>
+					<label>ID:</label>
+					<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device._id}</Link></div>
 				</div>
 				<div className='device-item__name'>
-					Name: <p>{this.props.device.name}</p>
-				</div>
-				<div className='device-item__connected'>
-					Connected: <p>{this.connectedString()}</p>
+					<label>Name:</label>
+					<div className='value'>{this.props.device.name}</div>
 				</div>
 				<div className='device-item__type'>
-					Type: <p>{this.deviceTypeString()}</p>
+					<label>Type:</label>
+					<div className='value'>{this.deviceTypeString()}</div>
 				</div>
-				<div className={statusClassNames}>
-					Status: <p>
-						<span className='pill device-item__device-status__label'>
-							{this.statusCodeString()}
-						</span>
-					</p>
-					<div><i>{(((this.props.device || {}).status || {}).messages || []).join(', ')}</i></div>
+
+				<div className='actions-container'>
+					<div className='device-item__actions'>
+						<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')}
+							secondaryText={t('Cancel')}
+							show={!!this.state.showDeleteDeviceConfirm}
+							onAccept={(e) => this.handleConfirmDeleteShowStyleAccept(e)}
+							onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
+							<p>{t(`Are you sure you want to delete this device?`)}</p>
+						</ModalDialog>
+						<button className='action-btn' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteDevice(this.props.device)}>
+							<FontAwesomeIcon icon={faTrash} />
+						</button>
+						{(
+							this.props.device.type !== PeripheralDeviceAPI.DeviceType.OTHER ? [
+								<ModalDialog title={t('Kill this device process?')} acceptText={t('Kill')}
+									secondaryText={t('Cancel')}
+									show={!!this.state.showKillDeviceConfirm}
+									onAccept={(e) => this.handleConfirmKillAccept(e)}
+									onSecondary={(e) => this.handleConfirmKillCancel(e)}>
+									<p>{t(`Are you sure you want to kill the process of this device?`)}</p>
+								</ModalDialog>,
+								<button className='action-btn' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onKillDevice(this.props.device)}>
+									Kill process
+								</button>
+							] : null
+						)}
+					</div>
 				</div>
-				<div className='device-item__last-seen'>
-					Last seen: <p><Moment from={getCurrentTime()} date={this.props.device.lastSeen} /></p>
-				</div>
-				<div className='device-item__actions'>
-					<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')}
-						secondaryText={t('Cancel')}
-						show={!!this.state.showDeleteDeviceConfirm}
-						onAccept={(e) => this.handleConfirmDeleteShowStyleAccept(e)}
-						onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
-						<p>{t(`Are you sure you want to delete this device?`)}</p>
-					</ModalDialog>
-					<button className='action-btn' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteDevice(this.props.device)}>
-						<FontAwesomeIcon icon={faTrash} />
-					</button>
-				</div>
+
+				<div className='clear'></div>
 			</div>
 			// <tr className='device-item'>
 			// 	<td className='device-item__id'>
@@ -273,13 +331,13 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 					children.push(getDeviceContent(child))
 				))
 				content.push(
-					<div className='children'>
+					<div key={d.device._id + '_children'} className='children'>
 						{children}
 					</div>
 				)
 			}
 			return (
-				<div className='device-item-container'>
+				<div key={d.device._id + '_parent'} className='device-item-container'>
 					{content}
 				</div>
 			)
@@ -291,7 +349,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 		const { t } = this.props
 
 		return (
-			<div className='mtl gutter'>
+			<div className='mtl gutter system-status'>
 				<header className='mvs'>
 					<h1>{t('System Status')}</h1>
 				</header>

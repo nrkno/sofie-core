@@ -13,7 +13,6 @@ Meteor.publish('mediaObjects', (studioId, selector, token) => {
 			token: 0
 		}
 	}
-	console.log('pub mediaObjects')
 	if (StudioInstallationsSecurity.allowReadAccess({_id: studioId}, token, this)) {
 		selector.studioId = studioId
 		return MediaObjects.find(selector, modifier)

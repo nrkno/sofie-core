@@ -33,7 +33,7 @@ export enum TimelineContentTypeCasparCg { //  CasparCG-state/TSR
 	RECORD = 'record'
 }
 export enum TimelineContentTypeLawo { // lawo-state
-	LAWO = 'lawo'
+	SOURCE = 'lawosource'
 }
 export enum TimelineContentTypeAtem { //  Atem-state
 	ME = 'me',
@@ -43,7 +43,8 @@ export enum TimelineContentTypeAtem { //  Atem-state
 	MEDIAPLAYER = 'mp'
 }
 export enum TimelineContentTypeHttp {
-	POST = 'post'
+	POST = 'post',
+	PUT = 'put',
 }
 export namespace Atem_Enums {
 	export enum TransitionStyle {
@@ -276,6 +277,10 @@ export interface EmberPlusValue {
 	type: EmberPlusValueType,
 	value: EmberPlusValueBase
 }
+export interface EmberPlusValuedB extends EmberPlusValue {
+	type: EmberPlusValueType.REAL,
+	dB: number
+}
 export interface EmberPlusValueReal extends EmberPlusValue {
 	type: EmberPlusValueType.REAL,
 	value: number
@@ -292,15 +297,28 @@ export interface EmberPlusValueString extends EmberPlusValue {
 	type: EmberPlusValueType.STRING,
 	value: string
 }
-export type LawoStateNodeAttr = EmberPlusValue | LawoStateNodeAttrTransition
-export interface LawoStateNodeAttrTransition {
-	value: EmberPlusValue
-	transitionDuration?: number
-}
+
 export interface TimelineObjLawo extends TimelineObj {
 	content: {
 		type: TimelineContentTypeLawo,
-		value: LawoStateNodeAttr
+		attributes: {
+			[key: string]: {
+				[attr: string]: any
+				triggerValue: string // only used for trigging new command sent
+			}
+		}
+	}
+}
+export interface TimelineObjLawoSource extends TimelineObjLawo {
+	content: {
+		type: TimelineContentTypeLawo,
+		attributes: {
+			'Fader/Motor dB Value': {
+				value: number,
+				transitionDuration?: number,
+				triggerValue: string // only used for trigging new command sent
+			}
+		}
 	}
 }
 export interface TimelineObjAtemME extends TimelineObj {
@@ -341,7 +359,33 @@ export interface TimelineObjAtemME extends TimelineObj {
 					reverseDirection?: boolean,
 					flipFlop?: boolean,
 				}
-			}
+			},
+
+			upstreamKeyers?: {
+				readonly upstreamKeyerId: number,
+				onAir?: boolean
+				mixEffectKeyType?: number,
+				flyEnabled?: boolean,
+				fillSource?: number,
+				cutSource?: number,
+				maskEnabled?: boolean,
+				maskTop?: number,
+				maskBottom?: number,
+				maskLeft?: number,
+				maskRight?: number,
+
+				// dveSettings: UpstreamKeyerDVESettings;
+				// chromaSettings: UpstreamKeyerChromaSettings;
+				// patternSettings: UpstreamKeyerPatternSettings;
+				// flyKeyframes: Array<UpstreamKeyerFlyKeyframe>;
+				// flyProperties: UpstreamKeyerFlySettings;
+				lumaSettings?: {
+					preMultiplied?: boolean,
+					clip?: number,
+					gain?: number,
+					invert?: boolean
+				},
+			}[]
 		}
 	}
 }
@@ -401,10 +445,10 @@ export interface TimelineObjAtemSsrc extends TimelineObj {
 		}
 	}
 }
-export interface TimelineObjHTTPPost extends TimelineObj {
+export interface TimelineObjHTTPRequest extends TimelineObj {
 	content: {
 		keyframes?: Array<TimelineKeyframe>
-		type: TimelineContentTypeHttp.POST
+		type: TimelineContentTypeHttp
 		url: string
 		params: {[key: string]: number | string}
 	}
@@ -413,3 +457,10 @@ export interface TimelineObjHTTPPost extends TimelineObj {
 // export const Timeline = new Mongo.Collection<TimelineObj>('timeline')
 export const Timeline: TransformedCollection<TimelineObj, TimelineObj>
 	= new Mongo.Collection<TimelineObj>('timeline')
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		Timeline._ensureIndex({
+			siId: 1
+		})
+	}
+})

@@ -33,4 +33,9 @@ Meteor.startup(() => {
 	Meteor.setInterval(() => {
 		removeOldCommands()
 	}, 5 * 60 * 1000)
+	if (Meteor.isServer) {
+		PeripheralDeviceCommands._ensureIndex({
+			deviceId: 1,
+		})
+	}
 })

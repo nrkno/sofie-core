@@ -12,7 +12,7 @@ let lowPrioFcn = (fcn: (...args) => any, ...args: any[]) => {
 
 Meteor.startup(() => {
 
-	setInterval(() => {
+	Meteor.setInterval(() => {
 		let d = new Date(getCurrentTime())
 		if (d.getHours() > 0 && d.getHours() < 5) { // Nighttime
 			// remove old Running orders:

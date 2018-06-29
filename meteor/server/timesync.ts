@@ -16,23 +16,27 @@ let getServerTime = (host?: string, port?: number, timeout?: number): Promise<Se
 		ntpClient.ntpReplyTimeout = timeout || 500
 
 		let sentTime = Date.now()
-		ntpClient.getNetworkTime(
-			host || '0.se.pool.ntp.org',
-			port || 123,
-			(err, date: Date, a, b) => {
-				if (err) {
-					reject(err)
-					return
-				} else {
-					let replyTime = Date.now()
-					resolve({
-						diff: ((sentTime + replyTime) / 2) - date.getTime(),
-						serverTime: date.getTime(),
-						responseTime: replyTime - sentTime
-					})
+		try {
+			ntpClient.getNetworkTime(
+				host || '0.se.pool.ntp.org',
+				port || 123,
+				(err, date: Date, a, b) => {
+					if (err) {
+						reject(err)
+						return
+					} else {
+						let replyTime = Date.now()
+						resolve({
+							diff: ((sentTime + replyTime) / 2) - date.getTime(),
+							serverTime: date.getTime(),
+							responseTime: replyTime - sentTime
+						})
+					}
 				}
-			}
-		)
+			)
+		} catch (e) {
+			reject(e)
+		}
 	})
 }
 let standardDeviation = (arr: Array<number>): {mean: number, stdDev: number} => {
@@ -81,7 +85,7 @@ export function determineDiffTime (config: Config): Promise<{mean: number, stdDe
 		let results: Array<ServerTime> = []
 		let tryCount = 0
 		let pushTime = () => {
-			// console.log('a')
+			// logger.debug('a')
 			tryCount++
 			if (tryCount > maxTries) {
 				if (tryCount > minSampleCount) {
@@ -144,11 +148,10 @@ Meteor.methods(methods)
 let updateServerTime = () => {
 	logger.info('Updating systemTime...')
 
-	let ntpServerStr: string = process.env.NTP_SERVERS + ''
-	// if (!ntpServerStr) {
-	// 	ntpServerStr = 'pool.ntp.org'
-	// }
-	ntpServerStr = '0.se.pool.ntp.org,1.se.pool.ntp.org,2.se.pool.ntp.org'
+	let ntpServerStr: string | undefined = process.env.NTP_SERVERS
+	if (!ntpServerStr) {
+		ntpServerStr = '0.se.pool.ntp.org,1.se.pool.ntp.org,2.se.pool.ntp.org'
+	}
 	let ntpServer = (ntpServerStr.split(',') || [])[0] || 'pool.ntp.org' // Just use the first one specified, for now
 	logger.info('Using ntp-server, ' + ntpServer)
 
@@ -161,7 +164,7 @@ let updateServerTime = () => {
 	.then((result) => {
 		// if result.stdDev is less than one frame-time, it should be okay:
 		if (result.stdDev < 1000 / 50) {
-			console.log('Setting time-diff to ' + Math.round(result.mean) +
+			logger.info('Setting time-diff to ' + Math.round(result.mean) +
 				' (stdDev: ' + result.stdDev + ')')
 			systemTime.diff = result.mean
 			systemTime.stdDev = result.stdDev
@@ -182,7 +185,7 @@ let updateServerTime = () => {
 		}
 	})
 	.catch((err) => {
-		console.log('systemTime Error', err)
+		logger.info('systemTime Error', err)
 		setSystemStatus('systemTime', {statusCode: StatusCode.BAD, messages: [err.toString()]})
 
 		Meteor.setTimeout(() => {
@@ -205,6 +208,6 @@ Meteor.startup(() => {
 // 	maxAllowedDelay: 2000
 // })
 // .then((result) => {
-// 	console.log('result', result)
+// 	logger.debug('result', result)
 // 	// if result.stdDev is less than one frame-time, we should be okay
 // })

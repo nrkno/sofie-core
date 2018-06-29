@@ -12,7 +12,6 @@ Meteor.publish('runningOrderDataCache', function (selector, token) {
 			token: 0
 		}
 	}
-	console.log('pub RunningOrderDataCache')
 	if (RunningOrderSecurity.allowReadAccess(selector, token, this)) {
 		return RunningOrderDataCache.find(selector, modifier)
 	}

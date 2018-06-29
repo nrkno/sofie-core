@@ -10,7 +10,6 @@ Meteor.publish('showStyles', (selector, token) => {
 			token: 0
 		}
 	}
-	console.log('pub showStyles')
 	if (ShowStylesSecurity.allowReadAccess(selector, token, this)) {
 		return ShowStyles.find(selector, modifier)
 	}

@@ -13,7 +13,6 @@ Meteor.publish('peripheralDevices', function (selector, token) {
 		}
 	}
 
-	console.log('pub peripheralDevices')
 
 	if (PeripheralDeviceSecurity.allowReadAccess(selector, token, this)) {
 

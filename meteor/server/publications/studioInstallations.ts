@@ -12,7 +12,6 @@ Meteor.publish('studioInstallations', (selector, token) => {
 			token: 0
 		}
 	}
-	console.log('pub studioInstallations')
 	if (StudioInstallationsSecurity.allowReadAccess(selector, token, this)) {
 		return StudioInstallations.find(selector, modifier)
 	}
@@ -34,7 +33,6 @@ Meteor.publish('studioInstallationOfDevice', (deviceId: string, token) => {
 		let selector = {
 			_id: peripheralDevice.studioInstallationId
 		}
-		console.log('pub studioInstallationOfDevice ' + deviceId + ': ' + peripheralDevice.studioInstallationId)
 		if (StudioInstallationsSecurity.allowReadAccess(selector, token, this)) {
 			return StudioInstallations.find(selector, modifier)
 		}

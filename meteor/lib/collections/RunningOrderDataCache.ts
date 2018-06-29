@@ -11,3 +11,10 @@ export interface RunningOrderDataCacheObj {
 
 export const RunningOrderDataCache: TransformedCollection<RunningOrderDataCacheObj, RunningOrderDataCacheObj>
 	= new Mongo.Collection<RunningOrderDataCacheObj>('runningorderdatacache')
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		RunningOrderDataCache._ensureIndex({
+			roId: 1
+		})
+	}
+})

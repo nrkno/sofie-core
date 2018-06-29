@@ -63,3 +63,10 @@ export class Segment implements DBSegment {
 // export const Segments = new Mongo.Collection<Segment>('segments', {transform: (doc) => applyClassToDocument(Segment, doc) })
 export const Segments: TransformedCollection<Segment, DBSegment>
 	= new Mongo.Collection<Segment>('segments', {transform: (doc) => applyClassToDocument(Segment, doc) })
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		Segments._ensureIndex({
+			runningOrderId: 1,
+		})
+	}
+})

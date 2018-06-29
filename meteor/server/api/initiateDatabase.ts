@@ -6,12 +6,15 @@ import { StudioInstallations,
 	MappingAtem,
 	MappingAtemType,
 	MappingLawo,
-	Mapping
+	Mapping,
+	MappingLawoType
 } from '../../lib/collections/StudioInstallations'
-import { literal } from '../../lib/lib'
+import { literal, getCurrentTime } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
-import { PeripheralDevices, PlayoutDeviceType } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PlayoutDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { logger } from '../../server/logging'
+import * as _ from 'underscore'
 
 // Imports from TSR (TODO make into an import)
 // export interface Mappings {
@@ -47,14 +50,15 @@ Meteor.methods({
 		if (!really) {
 			return 'Do you really want to do this? You chould only do it when initializing a new database. Confirm with initDB(true).'
 		}
-		console.log('initDB')
+		logger.info('initDB')
 		// Initiate database:
 		StudioInstallations.upsert('studio0', {$set: {
 			name: 'DKSL',
+			defaultShowStyle: 'show0',
 			outputLayers: [],
 			config: [
-				{_id: 'nora_group', value: 'dksl'},
-				{_id: 'nora_apikey', value: 'sofie-prod-wug52h'}
+				{_id: 'nora_group', value: ''}, // Note: do not set to ensure that devs do not accidently use the live graphics channel
+				{_id: 'nora_apikey', value: ''} // Note: must not be set as apikey must be kept private
 			],
 		}})
 
@@ -113,22 +117,21 @@ Meteor.methods({
 				// 	type: RundownAPI.SourceLayerType.LOWER_THIRD,
 				// 	onPGMClean: false
 				// },
-				// {
-				// 	_id: 'studio0_split0',
-				// 	_rank: 15,
-				// 	name: 'Split',
-				// 	type: RundownAPI.SourceLayerType.SPLITS,
-				// 	onPGMClean: true,
-				// },
-				// {
-				// {
-				// 	_id: 'studio0_remote0',
-				// 	_rank: 60,
-				// 	name: 'RM1',
-				// 	type: RundownAPI.SourceLayerType.REMOTE,
-				// 	onPGMClean: true,
-				// 	isRemoteInput: true
-				// },
+				{
+					_id: 'studio0_split0',
+					_rank: 15,
+					name: 'Split',
+					type: RundownAPI.SourceLayerType.SPLITS,
+					onPGMClean: true,
+				},
+				{
+					_id: 'studio0_remote0',
+					_rank: 60,
+					name: 'DIR',
+					type: RundownAPI.SourceLayerType.REMOTE,
+					onPGMClean: true,
+					isRemoteInput: true
+				},
 				// {
 				// 	_id: 'studio0_vt0',
 				// 	_rank: 80,
@@ -149,8 +152,17 @@ Meteor.methods({
 					name: 'Kam',
 					type: RundownAPI.SourceLayerType.CAMERA,
 					onPGMClean: true,
-					activateKeyboardHotkeys: '1,2,3,4,5,6',
+					activateKeyboardHotkeys: 'f1,f2,f3,1,2,3',
 					assignHotkeysToGlobalAdlibs: true
+				},
+				{
+					_id: 'studio0_live_transition0',
+					_rank: 100,
+					name: 'Transition',
+					type: RundownAPI.SourceLayerType.UNKNOWN,
+					onPGMClean: true,
+					activateKeyboardHotkeys: '',
+					assignHotkeysToGlobalAdlibs: false
 				},
 			],
 		}})
@@ -210,11 +222,31 @@ Meteor.methods({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0'
 			}),
+			'casparcg_cg_klokke_ctrl': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0'
+			}),
 			'casparcg_cg_studiomonitor': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				channel: 3,
 				layer: 120
+			}),
+			'casparcg_cg_clock': literal<MappingCasparCG>({
+				device: PlayoutDeviceType.CASPARCG,
+				deviceId: 'casparcg0',
+				channel: 7,
+				layer: 120
+			}),
+			'casparcg_cg_effects': literal<MappingCasparCG>({
+				device: PlayoutDeviceType.CASPARCG,
+				deviceId: 'casparcg0',
+				channel: 5,
+				layer: 120
+			}),
+			'casparcg_cg_effects_ctrl': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0'
 			}),
 			'casparcg_cg_studiomonitor_ctrl': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
@@ -236,13 +268,13 @@ Meteor.methods({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				mappingType: MappingAtemType.Auxilliary,
-				index: 1
+				index: 4
 			}),
 			'atem_aux_preview': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				mappingType: MappingAtemType.Auxilliary,
-				index: 2
+				index: 5
 			}),
 			'atem_dsk_graphics': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
@@ -256,53 +288,83 @@ Meteor.methods({
 				mappingType: MappingAtemType.DownStreamKeyer,
 				index: 1 // 1 = DSK2
 			}),
-			'atem_supersource': literal<MappingAtem>({
+			'atem_supersource_default': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				mappingType: MappingAtemType.SuperSourceBox,
 				index: 0 // 0 = SS
 			}),
+			'atem_supersource_override': literal<MappingAtem>({
+				device: PlayoutDeviceType.ATEM,
+				deviceId: 'atem0',
+				mappingType: MappingAtemType.SuperSourceBox,
+				index: 0 // 0 = SS
+			}),
+			'atem_usk_effect_default': literal<MappingAtem>({
+				device: PlayoutDeviceType.ATEM,
+				deviceId: 'atem0',
+				mappingType: MappingAtemType.MixEffect,
+				index: 0 // 0 = ME1
+			}),
+			'atem_usk_effect_override': literal<MappingAtem>({
+				device: PlayoutDeviceType.ATEM,
+				deviceId: 'atem0',
+				mappingType: MappingAtemType.MixEffect,
+				index: 0 // 0 = ME1
+			}),
 			'lawo_source_automix': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'Automiks',
-				path: [1, 1, 71, 3, 2]
+				mappingType: MappingLawoType.SOURCE,
+				identifier: 'AMix',
 			}),
 			'lawo_source_clip': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'Innslag',
-				path: [1, 1, 79, 3, 2]
+				mappingType: MappingLawoType.SOURCE,
+				identifier: 'MP1',
 			}),
 			'lawo_source_effect': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'Effekter',
-				path: [1, 1, 75, 3, 2]
-			}),
-			'lawo_source_preview': literal<MappingLawo>({
-				device: PlayoutDeviceType.LAWO,
-				deviceId: 'lawo0',
-				channelName: 'Forlytt',
-				path: []
+				mappingType: MappingLawoType.SOURCE,
+				identifier: 'FX',
 			}),
 			'lawo_source_rm1': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'RM 1',
-				path: [1, 1, 2, 3, 2]
+				mappingType: MappingLawoType.SOURCE,
+				identifier: 'RM1',
 			}),
 			'lawo_source_rm2': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'RM 2',
-				path: [1, 1, 8, 3, 2]
+				mappingType: MappingLawoType.SOURCE,
+				identifier: 'RM2',
 			}),
 			'lawo_source_rm3': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
-				channelName: 'RM 3',
-				path: [1, 1, 7, 3, 2]
+				mappingType: MappingLawoType.SOURCE,
+				identifier: 'RM3',
+			}),
+			'lawo_source_rm4': literal<MappingLawo>({
+				device: PlayoutDeviceType.LAWO,
+				deviceId: 'lawo0',
+				mappingType: MappingLawoType.SOURCE,
+				identifier: 'RM4',
+			}),
+			'lawo_source_rm5': literal<MappingLawo>({
+				device: PlayoutDeviceType.LAWO,
+				deviceId: 'lawo0',
+				mappingType: MappingLawoType.SOURCE,
+				identifier: 'RM5',
+			}),
+			'lawo_source_rm6': literal<MappingLawo>({
+				device: PlayoutDeviceType.LAWO,
+				deviceId: 'lawo0',
+				mappingType: MappingLawoType.SOURCE,
+				identifier: 'RM6',
 			})
 		}
 		StudioInstallations.update('studio0', {$set: {
@@ -312,8 +374,21 @@ Meteor.methods({
 		ShowStyles.upsert('show0', {$set: {
 			name: 'Distriktsnyheter Sørlandet',
 			templateMappings: [],
-			baselineTemplate: 'sorlandetTemplate'
+			baselineTemplate: 'baseline'
 		}})
+
+		PeripheralDevices.upsert('initDBPlayoutDeviceParent', {$set: literal<PeripheralDevice>({
+			_id: 'initDBPlayoutDeviceParent',
+			name: 'initDBPlayoutDeviceParent',
+			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			studioInstallationId: 'studio0',
+			created: getCurrentTime(),
+			status: {statusCode: PeripheralDeviceAPI.StatusCode.BAD},
+			lastSeen: getCurrentTime(),
+			connected: false,
+			connectionId: null,
+			token: ''
+		})})
 
 		PeripheralDevices.find({
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT
@@ -322,22 +397,24 @@ Meteor.methods({
 				'settings.devices.casparcg0': ((pd['settings'] || {})['devices'] || {})['casparcg0'] || {
 					type: PlayoutDeviceType.CASPARCG,
 					options: {
-						host: '160.68.32.30',
+						host: '160.67.87.50',
 						port: 5250
 					}
 				},
 				'settings.devices.atem0': ((pd['settings'] || {})['devices'] || {})['atem0'] || {
 					type: PlayoutDeviceType.ATEM,
 					options: {
-						host: '10.182.132.140',
+						host: '160.67.87.51',
 						port: 9910
 					}
 				},
 				'settings.devices.lawo0': ((pd['settings'] || {})['devices'] || {})['lawo0'] || {
 					type: PlayoutDeviceType.LAWO,
 					options: {
-						host: '10.182.132.203',
-						port: 9000
+						host: '160.67.96.51',
+						port: 9000,
+						sourcesPath: 'Sapphire.Sources',
+						rampMotorFunctionPath: '1.5.2'
 					}
 				},
 				'settings.devices.abstract0': ((pd['settings'] || {})['devices'] || {})['abstract0'] || {
@@ -355,20 +432,48 @@ Meteor.methods({
 			// 	mappings: mappings
 			// }})
 		})
+		_.each(((PeripheralDevices.findOne('initDBPlayoutDeviceParent') || {})['settings'] || {}).devices, (device, key) => {
+			PeripheralDevices.upsert('initDBPlayoutDevice' + key, {$set: literal<PeripheralDevice>({
+				_id: 'initDBPlayoutDevice' + key,
+				name: 'initDBPlayoutDevice' + key,
+				type: PeripheralDeviceAPI.DeviceType.OTHER,
+				studioInstallationId: 'studio0',
+				parentDeviceId: 'initDBPlayoutDeviceParent',
+				created: getCurrentTime(),
+				status: {statusCode: PeripheralDeviceAPI.StatusCode.BAD},
+				lastSeen: getCurrentTime(),
+				connected: false,
+				connectionId: null,
+				token: ''
+			})})
+		})
+
+		PeripheralDevices.upsert('initDBMosDeviceParent', {$set: literal<PeripheralDevice>({
+			_id: 'initDBMosDeviceParent',
+			name: 'initDBMosDeviceParent',
+			type: PeripheralDeviceAPI.DeviceType.MOSDEVICE,
+			studioInstallationId: 'studio0',
+			created: getCurrentTime(),
+			status: {statusCode: PeripheralDeviceAPI.StatusCode.BAD},
+			lastSeen: getCurrentTime(),
+			connected: false,
+			connectionId: null,
+			token: ''
+		})})
 
 		PeripheralDevices.find({
 			type: PeripheralDeviceAPI.DeviceType.MOSDEVICE
 		}).forEach((pd) => {
 			PeripheralDevices.update(pd._id, {$set: {
-				'settings.mosId': 'SOFIE1.DKSL.MOS',
+				'settings.mosId': 'SOFIE1.XPRO.MOS',
 				'settings.devices.enps0': ((pd['settings'] || {})['devices'] || {})['enps0'] || {
 					primary: {
-						id: 'SLENPS01',
-						host: '160.68.132.15'
+						id: 'MAENPSTEST14',
+						host: '160.67.149.155'
 					},
 					secondary: {
-						id: 'DRENPSSL01',
-						host: '160.67.149.94'
+						id: 'MAENPSTEST15',
+						host: '160.67.149.156'
 					}
 				},
 			}})

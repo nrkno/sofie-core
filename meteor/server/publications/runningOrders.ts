@@ -10,7 +10,6 @@ Meteor.publish('runningOrders', function (selector, token) {
 			token: 0
 		}
 	}
-	console.log('pub runningOrders')
 	if (RunningOrderSecurity.allowReadAccess(selector, token, this)) {
 		return RunningOrders.find(selector, modifier)
 	}

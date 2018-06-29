@@ -10,7 +10,6 @@ Meteor.publish('runningOrderBaselineAdLibItems', function (selector, token) {
 			token: 0
 		}
 	}
-	console.log('pub runningOrderBaselineAdLibItems')
 	if (RunningOrderSecurity.allowReadAccess(selector, token, this)) {
 		return RunningOrderBaselineAdLibItems.find(selector, modifier)
 	}

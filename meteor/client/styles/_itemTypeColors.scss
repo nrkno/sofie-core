@@ -63,19 +63,30 @@ $segment-layer-background-vt: #1769FF;
 }
 
 @mixin missing-overlay {
-	&.source-missing {
-		background-blend-mode: overlay; 
-		background-image: repeating-linear-gradient(
-		45deg,
-		transparent,
-		transparent 10px,
-		black 11px,
-		black 15px,
-		transparent 16px
-		);						
+	
+	&.source-broken, &.source-missing {
+		&::after {
+			content: ' ';
+			display: block;
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			mix-blend-mode: overlay; 
+			background-image: repeating-linear-gradient(
+			45deg,
+			transparent,
+			transparent 10px,
+			black 11px,
+			black 15px,
+			transparent 16px
+			);						
+		}
 	}
 
-	&.source-broken {
+	// Don't treat an unknown state as an issue
+	/*  {
 		background-blend-mode: overlay; 
 		background-image: repeating-linear-gradient(
 		45deg,
@@ -85,17 +96,5 @@ $segment-layer-background-vt: #1769FF;
 		black 15px,
 		transparent 16px
 		);
-	}
-
-	&.unknown-state {
-		background-blend-mode: overlay; 
-		background-image: repeating-linear-gradient(
-		45deg,
-		transparent,
-		transparent 10px,
-		black 11px,
-		black 15px,
-		transparent 16px
-		);
-	}
+	} */
 }

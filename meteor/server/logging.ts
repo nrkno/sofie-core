@@ -42,6 +42,13 @@ let leadingZeros = (num,length) => {
 let logToFile = false
 if (process.env.LOG_TO_FILE) logToFile = true
 
+function safeStringify (o): string {
+	try {
+		return JSON.stringify(o) // make single line
+	} catch (e) {
+		return 'ERROR in safeStringify: ' + (e || 'N/A').toString()
+	}
+}
 if (logToFile) {
 
 	// console.log(Meteor)
@@ -76,7 +83,7 @@ if (logToFile) {
 		level: 'silly',
 		handleExceptions: true,
 		json: true,
-		stringify: (obj) => JSON.stringify(obj) // make single line
+		stringify: (obj) => safeStringify(obj)
 	})
 }
 
@@ -85,6 +92,12 @@ if (logToFile) {
 // 	// @ts-ignore
 // 	logger.debug(...args)
 // }
+
+Meteor.methods({
+	'logger': (type, ...args) => {
+		(logger[type] || logger.log)(...args)
+	}
+})
 
 logger.info('Starting up')
 

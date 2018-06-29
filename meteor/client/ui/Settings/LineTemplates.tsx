@@ -6,12 +6,17 @@ import { Spinner } from '../../lib/Spinner'
 // import * as monaco from 'monaco-editor' // instead globally available through public folder
 // import MonacoEditor from 'react-monaco-editor'
 import '../../../lib/typings/monaco'
-import { getCurrentTime } from '../../../lib/lib'
 import * as _ from 'underscore'
+import { Session } from 'meteor/session'
 import { RuntimeFunctionsAPI } from '../../../lib/api/runtimeFunctions'
+import { RuntimeFunctionDebugDataObj, RuntimeFunctionDebugData } from '../../../lib/collections/RuntimeFunctionDebugData'
+import Moment from 'react-moment'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import * as ClassNames from 'classnames'
 
 interface IMonacoProps {
 	runtimeFunction: RuntimeFunction
+	functionTyping: any[] | null
 }
 interface IMonacoState {
 	unsavedChanges: boolean
@@ -38,6 +43,12 @@ class MonacoWrapper extends React.Component<IMonacoProps, IMonacoState> {
 			unsavedChanges: false,
 			saving: false,
 			message: ''
+		}
+	}
+
+	componentDidUpdate () {
+		if (this._editor) {
+			this.attachEditor()
 		}
 	}
 
@@ -121,7 +132,7 @@ declare enum IMOSScope {
 	STORY = "STORY",
 	PLAYLIST = "PLAYLIST",
 }
-declare class MosExternalMetaData {
+declare interface MosExternalMetaData {
 	private _scope?;
 	private _schema;
 	private _payload;
@@ -163,14 +174,22 @@ declare interface DBSegmentLine {
 	duration?: number
 }
 declare type SegmentLine = DBSegmentLine
+declare enum LayerType {
+	Source,
+	Output,
+	LLayer,
+}
 declare interface Context {
 	runningOrderId: string
 	segmentLine: SegmentLine
 
 	getHashId: (stringToBeHashed?: string | number) => string
 	unhashId: (hash: string) => string
+	getLayer: (type: LayerType, key: string) => string
 	getConfigValue: (key: string, defaultValue?: any) => any
 	getValueByPath: (sourceObject: object | undefined, pathToAttributeInObject: string, defaultValue?: any) => any
+	getHelper: (functionId: string) => Function
+	runHelper: (functionId: string, ...args: any[]) => any
 	error: (messageToThrow: string) => void
 	warning: (messageToLog: string) => void
 	getSegmentLines (): Array<SegmentLine>
@@ -204,29 +223,272 @@ declare interface IMOSROFullStory extends IMOSStory {
     Body: Array<IMOSROFullStoryBodyItem>;
 }
 declare type Story = IMOSROFullStory
-`, libName)
-		}
 
-		this._editor = monaco.editor.create(document.getElementById('monaco-container')!, {
-			value: this.props.runtimeFunction.code,
-			language: 'javascript'
-		})
-		this._editor.onDidChangeModelContent((e: monaco.editor.IModelContentChangedEvent) => {
-			this.triggerSave(this._editor.getModel().getValue())
-		})
+declare enum TriggerType {
+    TIME_ABSOLUTE = 0,
+    TIME_RELATIVE = 1,
+    LOGICAL = 3
+}
+
+declare type TimelineContentTypeAny =
+	TimelineContentTypeOther |
+	TimelineContentTypeCasparCg |
+	TimelineContentTypeLawo |
+	TimelineContentTypeAtem |
+	TimelineContentTypeHttp
+
+declare enum TimelineContentTypeOther {
+	NOTHING = 'nothing',
+	GROUP = 'group',
+}
+declare enum TimelineContentTypeCasparCg { //  CasparCG-state/TSR
+	VIDEO = 'video', // later to be deprecated & replaced by MEDIA
+	AUDIO = 'audio', // later to be deprecated & replaced by MEDIA
+	MEDIA = 'media',
+	IP = 'ip',
+	INPUT = 'input',
+	TEMPLATE = 'template',
+	HTMLPAGE = 'htmlpage',
+	ROUTE = 'route',
+	RECORD = 'record'
+}
+declare enum TimelineContentTypeLawo { // lawo-state
+	SOURCE = 'lawosource'
+}
+declare enum TimelineContentTypeAtem { //  Atem-state
+	ME = 'me',
+	DSK = 'dsk',
+	AUX = 'aux',
+	SSRC = 'ssrc',
+	MEDIAPLAYER = 'mp'
+}
+declare enum TimelineContentTypeHttp {
+	POST = 'post',
+	PUT = 'put',
+}
+declare namespace Atem_Enums {
+	declare enum TransitionStyle {
+		MIX = 0,
+		DIP = 1,
+		WIPE = 2,
+		DVE = 3,
+		STING = 4,
+		CUT = 5,
 	}
 
-	componentDidUpdate () {
-		// console.log('componentDidUpdate')
-		/*
-		if (this.props.runtimeFunction._id !== this._codeId) {
-			this._codeId = this.props.runtimeFunction._id
-			this._editor.setModel(monaco.editor.createModel(
-				this.props.runtimeFunction.code,
-				'javascript'
-			))
+	declare enum SourceIndex {
+		Blk = 0,
+		Bars = 1000,
+		Col1 = 2001,
+		Col2 = 2002,
+		MP1 = 3010,
+		MP1K = 3011,
+		MP2 = 3020,
+		MP2K = 3021,
+		SSrc = 6000,
+		Cfd1 = 7001,
+		Cfd2 = 7002,
+		Aux1 = 8001,
+		Aux2 = 8002,
+		Aux3 = 8003,
+		Aux4 = 8004,
+		Aux5 = 8005,
+		Aux6 = 8006,
+		Prg1 = 10010,
+		Prv1 = 10011,
+		Prg2 = 10020,
+		Prv2 = 10021
+	}
+}
+declare enum EmberPlusValueType {
+	REAL 	= 'real',
+	INT 	= 'int',
+	BOOLEAN = 'boolean',
+	STRING 	= 'string'
+}
+declare enum Transition {
+	MIX = 'MIX',
+	CUT = 'CUT',
+	PUSH = 'PUSH',
+	WIPE = 'WIPE',
+	SLIDE = 'SLIDE'
+}
+
+declare enum Ease {
+	LINEAR = 'LINEAR',
+	NONE = 'NONE',
+	EASEINBACK = 'EASEINBACK',
+	EASEINBOUNCE = 'EASEINBOUNCE',
+	EASEINCIRC = 'EASEINCIRC',
+	EASEINCUBIC = 'EASEINCUBIC',
+	EASEINELASTIC = 'EASEINELASTIC',
+	EASEINEXPO = 'EASEINEXPO',
+	EASEINOUTBACK = 'EASEINOUTBACK',
+	EASEINOUTBOUNCE = 'EASEINOUTBOUNCE',
+	EASEINOUTCIRC = 'EASEINOUTCIRC',
+	EASEINOUTCUBIC = 'EASEINOUTCUBIC',
+	EASEINOUTELASTIC = 'EASEINOUTELASTIC',
+	EASEINOUTEXPO = 'EASEINOUTEXPO',
+	EASEINOUTQUAD = 'EASEINOUTQUAD',
+	EASEINOUTQUART = 'EASEINOUTQUART',
+	EASEINOUTQUINT = 'EASEINOUTQUINT',
+	EASEINOUTSINE = 'EASEINOUTSINE',
+	EASEINQUAD = 'EASEINQUAD',
+	EASEINQUART = 'EASEINQUART',
+	EASEINQUINT = 'EASEINQUINT',
+	EASEINSINE = 'EASEINSINE',
+	EASELINEAR = 'EASELINEAR',
+	EASENONE = 'EASENONE',
+	EASEOUTBACK = 'EASEOUTBACK',
+	EASEOUTBOUNCE = 'EASEOUTBOUNCE',
+	EASEOUTCIRC = 'EASEOUTCIRC',
+	EASEOUTCUBIC = 'EASEOUTCUBIC',
+	EASEOUTELASTIC = 'EASEOUTELASTIC',
+	EASEOUTEXPO = 'EASEOUTEXPO',
+	EASEOUTINBACK = 'EASEOUTINBACK',
+	EASEOUTINBOUNCE = 'EASEOUTINBOUNCE',
+	EASEOUTINCIRC = 'EASEOUTINCIRC',
+	EASEOUTINCUBIC = 'EASEOUTINCUBIC',
+	EASEOUTINELASTIC = 'EASEOUTINELASTIC',
+	EASEOUTINEXPO = 'EASEOUTINEXPO',
+	EASEOUTINQUAD = 'EASEOUTINQUAD',
+	EASEOUTINQUART = 'EASEOUTINQUART',
+	EASEOUTINQUINT = 'EASEOUTINQUINT',
+	EASEOUTINSINE = 'EASEOUTINSINE',
+	EASEOUTQUAD = 'EASEOUTQUAD',
+	EASEOUTQUART = 'EASEOUTQUART',
+	EASEOUTQUINT = 'EASEOUTQUINT',
+	EASEOUTSINE = 'EASEOUTSINE',
+	IN_BACK = 'IN_BACK',
+	IN_BOUNCE = 'IN_BOUNCE',
+	IN_CIRC = 'IN_CIRC',
+	IN_CUBIC = 'IN_CUBIC',
+	IN_ELASTIC = 'IN_ELASTIC',
+	IN_EXPO = 'IN_EXPO',
+	IN_OUT_BACK = 'IN_OUT_BACK',
+	IN_OUT_BOUNCE = 'IN_OUT_BOUNCE',
+	IN_OUT_CIRC = 'IN_OUT_CIRC',
+	IN_OUT_CUBIC = 'IN_OUT_CUBIC',
+	IN_OUT_ELASTIC = 'IN_OUT_ELASTIC',
+	IN_OUT_EXPO = 'IN_OUT_EXPO',
+	IN_OUT_QUAD = 'IN_OUT_QUAD',
+	IN_OUT_QUART = 'IN_OUT_QUART',
+	IN_OUT_QUINT = 'IN_OUT_QUINT',
+	IN_OUT_SINE = 'IN_OUT_SINE',
+	IN_QUAD = 'IN_QUAD',
+	IN_QUART = 'IN_QUART',
+	IN_QUINT = 'IN_QUINT',
+	IN_SINE = 'IN_SINE',
+	OUT_BACK = 'OUT_BACK',
+	OUT_BOUNCE = 'OUT_BOUNCE',
+	OUT_CIRC = 'OUT_CIRC',
+	OUT_CUBIC = 'OUT_CUBIC',
+	OUT_ELASTIC = 'OUT_ELASTIC',
+	OUT_EXPO = 'OUT_EXPO',
+	OUT_IN_BACK = 'OUT_IN_BACK',
+	OUT_IN_BOUNCE = 'OUT_IN_BOUNCE',
+	OUT_IN_CIRC = 'OUT_IN_CIRC',
+	OUT_IN_CUBIC = 'OUT_IN_CUBIC',
+	OUT_IN_ELASTIC = 'OUT_IN_ELASTIC',
+	OUT_IN_EXPO = 'OUT_IN_EXPO',
+	OUT_IN_QUAD = 'OUT_IN_QUAD',
+	OUT_IN_QUART = 'OUT_IN_QUART',
+	OUT_IN_QUINT = 'OUT_IN_QUINT',
+	OUT_IN_SINE = 'OUT_IN_SINE',
+	OUT_QUAD = 'OUT_QUAD',
+	OUT_QUART = 'OUT_QUART',
+	OUT_QUINT = 'OUT_QUINT',
+}
+
+declare enum Direction {
+	LEFT = 'LEFT',
+	RIGHT = 'RIGHT',
+}
+
+// RunDownAPI
+declare enum LineItemStatusCode {
+	/** No status has been determined (yet) */
+	UNKNOWN = -1,
+	/** No fault with item, can be played */
+	OK = 0,
+	/** The source (file, live input) is missing and cannot be played, as it would result in BTA */
+	SOURCE_MISSING = 1,
+	/** The source is present, but should not be played due to a technical malfunction (file is broken, camera robotics failed, REMOTE input is just bars, etc.) */
+	SOURCE_BROKEN = 2
+}
+`, libName)
 		}
-		*/
+		if (this.props.functionTyping) {
+			// convert functionTyping to typings:
+			let typings = this.convertFunctionTyping(this.props.functionTyping)
+
+			delete monaco.languages.typescript.javascriptDefaults['_extraLibs']['functionTyping.d.ts']
+			monaco.languages.typescript.javascriptDefaults.addExtraLib(typings, 'functionTyping.d.ts')
+		}
+		if (!this._editor) {
+			this._editor = monaco.editor.create(document.getElementById('monaco-container')!, {
+				value: this.props.runtimeFunction.code,
+				language: 'javascript',
+				automaticLayout: true,
+			})
+			this._editor.onDidChangeModelContent((e: monaco.editor.IModelContentChangedEvent) => {
+				this.triggerSave(this._editor.getModel().getValue())
+			})
+			this._editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, () => {
+				this.saveCode()
+			}, '')
+		}
+	}
+	convertFunctionTyping (args: any[]): string {
+		// Converts an array of arguments to a typing declaration
+		let typings: Array<string> = []
+		let typingContentI = 0
+		let resolveTypingContent = (o, name?: string) => {
+			let str = ''
+			if (_.isArray(o)) {
+				name = name || ('Arr' + (typingContentI++))
+
+				str += 'declare type ' + name + ' = Array<'
+
+				let o2 = _.first(o)
+
+				let c = resolveTypingContent(o2)
+				str += c
+				str += '>\n'
+				typings.push(str)
+				return name
+			} else if (_.isObject(o)) {
+				name = name || ('Obj' + (typingContentI++))
+
+				str += 'declare interface ' + name + ' {\n'
+				_.each(o, (val, key) => {
+					let c = resolveTypingContent(val)
+					str += '  ' + key + ': ' + c + '\n'
+				})
+				str += '}\n'
+				typings.push(str)
+				return name
+			} else if (_.isString(o)) {
+				return '"' + o + '"'
+			} else {
+				return typeof o
+				// return typeof o
+			}
+		}
+		let argI = 0
+		_.each(args, (arg) => {
+			let name = 'Arg' + argI
+			if (_.isArray(arg)) {
+				resolveTypingContent(arg, name)
+			} else if (_.isObject(arg)) {
+				resolveTypingContent(arg, name)
+			} else {
+				typings.push('declare type ' + name + ' = ' + (typeof arg))
+			}
+			argI++
+		})
+
+		return typings.reverse().join('\n')
 	}
 
 	setRef = (el: HTMLDivElement) => {
@@ -274,10 +536,8 @@ declare type Story = IMOSROFullStory
 	}
 
 	testCode () {
-		console.log('testCode')
-		if (this._currentCode) {
-			console.log(this._currentCode)
-			Meteor.call(RuntimeFunctionsAPI.TESTCODE, this._currentCode, (e) => {
+		if (this._currentCode ) {
+			Meteor.call(RuntimeFunctionsAPI.TESTCODE, {code: this._currentCode}, this.props.runtimeFunction.showStyleId, this.props.runtimeFunction.isHelper, (e) => {
 				if (e) {
 					this.setState({
 						message: 'Error when testing code: ' + e.toString()
@@ -296,7 +556,6 @@ declare type Story = IMOSROFullStory
 		this.setState({
 			saving: true
 		})
-		// console.log('saving...')
 		if (this._currentCode) {
 			Meteor.call(RuntimeFunctionsAPI.UPDATECODE, this.props.runtimeFunction._id, this._currentCode, (e) => {
 				if (e) {
@@ -305,7 +564,6 @@ declare type Story = IMOSROFullStory
 					})
 					console.log(e)
 				} else {
-					// console.log('saved')
 					this.setState({
 						unsavedChanges: false,
 						saving: false,
@@ -327,7 +585,7 @@ declare type Story = IMOSROFullStory
 					<div>
 						{this.state.unsavedChanges ? (
 							<div>
-								<b>Unsaved changes</b>
+								<b>Unsaved changes </b>
 								<button className='action-btn' onClick={(e) => this.saveCode()}>
 									Save
 								</button>
@@ -354,12 +612,25 @@ interface IState {
 }
 interface ITrackedProps {
 	lineTemplate?: RuntimeFunction
+	runtimeFunctionDebugData?: RuntimeFunctionDebugDataObj
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
+
+	let rtfddId = Session.get('rtfdd_' + props.match.params.ltId)
 	return {
-		lineTemplate: RuntimeFunctions.findOne(props.match.params.ltId)
+		lineTemplate: RuntimeFunctions.findOne(props.match.params.ltId),
+		runtimeFunctionDebugData: RuntimeFunctionDebugData.findOne(rtfddId)
 	}
-})(class LineTemplates extends React.Component<Translated<IProps & ITrackedProps>, IState> {
+})(class LineTemplates extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	componentWillMount () {
+		this.autorun(() => {
+			if (this.props.lineTemplate) {
+				let rtfddId = Session.get('rtfdd_' + this.props.lineTemplate._id)
+
+				this.subscribe('runtimeFunctionDebugDataData', rtfddId)
+			}
+		})
+	}
 	updateTemplateId (edit: EditAttributeBase, newValue: any) {
 		Meteor.call(RuntimeFunctionsAPI.UPDATETEMPLATEID, edit.props.obj._id, newValue, (err, res) => {
 			if (err) {
@@ -369,10 +640,26 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			}
 		})
 	}
+	updateIsHelper (edit: EditAttributeBase, newValue: any) {
+		Meteor.call(RuntimeFunctionsAPI.UPDATEISHELPER, edit.props.obj._id, newValue, (err, res) => {
+			if (err) {
+				console.log(err)
+			} else {
+				// Nothing
+			}
+		})
+	}
+	getFunctionTyping (): any[] | null {
+		if (this.props.runtimeFunctionDebugData) {
+			return this.props.runtimeFunctionDebugData.data || null
+		}
+		return null
+	}
 	renderEditForm () {
 		const { t } = this.props
 
 		if (this.props.lineTemplate) {
+			// @todo - disable editing of fields on getId template
 			return (
 				<div className='studio-edit mod mhl mvs'>
 					<div>
@@ -391,14 +678,31 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								<span className='mdfx'></span>
 							</div>
 						</label>
+						<label className='field'>
+							{t('Is Helper')}
+							<div className='mdi'>
+								<EditAttribute
+									modifiedClassName='bghl'
+									attribute='isHelper'
+									obj={this.props.lineTemplate}
+									type='checkbox'
+									collection={RuntimeFunctions}
+									className='mdinput'
+									updateFunction={this.updateIsHelper}
+								/>
+								<span className='mdfx'></span>
+							</div>
+						</label>
 					</div>
-					<MonacoWrapper runtimeFunction={this.props.lineTemplate} />
+					<div>
+						<SelectRFDD lineTemplate={this.props.lineTemplate}/>
+					</div>
+					<MonacoWrapper runtimeFunction={this.props.lineTemplate} functionTyping={this.getFunctionTyping()} />
 				</div>
 			)
 		}
 		return null
 	}
-
 	render () {
 		const { t } = this.props
 
@@ -407,5 +711,63 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		} else {
 			return <Spinner />
 		}
+	}
+})
+
+interface SelectRFDDProps {
+	lineTemplate: RuntimeFunction
+}
+interface ISelectRFDDTrackedProps {
+	runtimeFunctionDebugData: Array<RuntimeFunctionDebugDataObj>
+	selectedRtfdd: string | undefined
+}
+let SelectRFDD = translateWithTracker<SelectRFDDProps, IState, ISelectRFDDTrackedProps>((props: SelectRFDDProps) => {
+	return {
+		runtimeFunctionDebugData: RuntimeFunctionDebugData.find({
+			showStyleId: props.lineTemplate.showStyleId,
+			templateId: props.lineTemplate.templateId
+		}).fetch(),
+		selectedRtfdd: Session.get('rtfdd_' + props.lineTemplate._id)
+	}
+})(class SelectRFDD extends MeteorReactComponent<Translated<SelectRFDDProps & ISelectRFDDTrackedProps>, IState> {
+	componentWillMount () {
+		// Subscribe to data:
+		this.subscribe('runtimeFunctionDebugData', {
+			showStyleId: this.props.lineTemplate.showStyleId,
+			templateId: this.props.lineTemplate.templateId
+		})
+	}
+	select (rtfdd) {
+		Session.set('rtfdd_' + this.props.lineTemplate._id, rtfdd._id)
+	}
+	isSelected (rtfdd): boolean {
+		return this.props.selectedRtfdd === rtfdd._id
+	}
+	render () {
+		const { t } = this.props
+
+		return (
+			this.props.runtimeFunctionDebugData.length ? (
+				<table>
+					<tr>
+						<th>Data timestamp</th>
+					</tr>
+					{_.map(this.props.runtimeFunctionDebugData, (rtfdd) => {
+						return (
+							<tr>
+								<td>
+									<Moment fromNow>{rtfdd.created}</Moment>
+								</td>
+								<td>
+									<button className={ClassNames('btn', this.isSelected(rtfdd) ? 'btn-default' : 'btn-primary')}
+										onClick={() => this.select(rtfdd)}>{t('Select this')}
+									</button>
+								</td>
+							</tr>
+						)
+					})}
+				</table>
+			) : null
+		)
 	}
 })

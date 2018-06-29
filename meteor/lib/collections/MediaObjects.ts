@@ -2,15 +2,22 @@ import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 
 export interface MediaObject0 {
+	// Media object file path relative to playout server
 	mediaPath: string
+	// Media object size in bytes
 	mediaSize: number
+	// Timestamp when the media object was last updated
 	mediaTime: number
 	mediainfo?: MediaInfo
 
+	// Thumbnail file size in bytes
 	thumbSize: number
+	// Thumbnail last updated timestamp
 	thumbTime: number
 
+	// Preview file size in bytes
 	previewSize?: number
+	// Thumbnail last updated timestamp
 	previewTime?: number
 
 	cinf: string // useless to us
@@ -24,7 +31,9 @@ export interface MediaObject0 {
 }
 export interface MediaObject extends MediaObject0 {
 	studioId: string,
+	// the Id of the MediaObject database this object has been imported from - essentially CasparCG Device Id this file is on
 	collectionId: string,
+	// the Id in the MediaObject in the source database
 	objId: string
 }
 
@@ -103,3 +112,12 @@ export interface MediaStreamCodec {
 }
 export const MediaObjects: TransformedCollection<MediaObject, MediaObject>
 	= new Mongo.Collection<MediaObject>('mediaObjects')
+
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		MediaObjects._ensureIndex({
+			studioId: 1,
+			collectionId: 1
+		})
+	}
+})

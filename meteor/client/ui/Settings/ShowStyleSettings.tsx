@@ -7,6 +7,7 @@ import { RuntimeFunctions, RuntimeFunction } from '../../../lib/collections/Runt
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
+import * as _ from 'underscore'
 import { Link } from 'react-router-dom'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { literal } from '../../../lib/lib'
@@ -118,6 +119,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								className='input text-input input-l'></EditAttribute>
 						</label>
 					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							<a href={`/backup/show/${(this.props.showStyle as any)._id}`} target='_new'>{t('Download backup')}</a>
+						</label>
+					</div>
 				</div>
 				<div>
 					<h2>{t('Templates')}</h2>
@@ -132,6 +138,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									<tr key={item._id}>
 										<td>
 											<Link to={'/settings/lineTemplate/' + item._id} >{item.templateId}</Link>
+										</td>
+										<td>
+											{item.isHelper ? t('Helper') : ''}
 										</td>
 										<td>
 											<button className='action-btn' onClick={(e) => this.onDeleteLineTemplate(item)}>

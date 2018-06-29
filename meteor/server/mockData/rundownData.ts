@@ -9,6 +9,7 @@ import { Segment, Segments } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { PlayoutDeviceType } from '../../lib/collections/PeripheralDevices'
+import { logger } from '../logging'
 
 // These are temporary method to fill the rundown database with some sample data
 // for development
@@ -18,6 +19,7 @@ Meteor.methods({
 		StudioInstallations.insert({
 			_id: 'studio0',
 			name: 'Dummy studio',
+			defaultShowStyle: 'dummyShow0',
 			outputLayers: [
 				{
 					_id: 'studio0-pgm0',
@@ -135,14 +137,14 @@ Meteor.methods({
 	},
 
 	'debug_emptyDatabase' () {
-		console.log('Clear the database')
+		logger.debug('Clear the database')
 
 		ShowStyles.remove({})
 		StudioInstallations.remove({})
 		Meteor.call('debug_removeAllRos')
 	},
 	'debug_removeAllRos' () {
-		console.log('Remove all runningOrders')
+		logger.debug('Remove all runningOrders')
 
 		// SegmentLineItems.remove({})
 		// SegmentLines.remove({})

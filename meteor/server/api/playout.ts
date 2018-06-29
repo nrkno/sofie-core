@@ -5,7 +5,7 @@ import { SegmentLineItem, SegmentLineItems, ITimelineTrigger } from '../../lib/c
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItems, RunningOrderBaselineItem } from '../../lib/collections/RunningOrderBaselineItems'
 import { getCurrentTime, saveIntoDb, literal, Time } from '../../lib/lib'
-import { Timeline, TimelineObj, TimelineObjGroupSegmentLine, TimelineContentTypeOther, TimelineObjAbstract, TimelineObjGroup } from '../../lib/collections/Timeline'
+import { Timeline, TimelineObj, TimelineObjGroupSegmentLine, TimelineContentTypeOther, TimelineObjAbstract, TimelineObjGroup, TimelineContentTypeLawo, TimelineObjLawo } from '../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
 import { Segments } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
@@ -17,7 +17,8 @@ import { IMOSRunningOrder, IMOSObjectStatus, MosString128 } from 'mos-connection
 import { PlayoutTimelinePrefixes } from '../../lib/api/playout'
 import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
-import { setStoryStatus } from './peripheralDevice'
+import { sendStoryStatus } from './peripheralDevice'
+import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 
 Meteor.methods({
 	/**
@@ -34,7 +35,7 @@ Meteor.methods({
 				logger.error(err)
 			} else {
 				// TODO: what to do with the result?
-				console.log('Recieved reply for triggerGetRunningOrder', ro)
+				logger.debug('Recieved reply for triggerGetRunningOrder', ro)
 			}
 		}, 'triggerGetRunningOrder', runningOrder.mosId)
 	},
@@ -42,6 +43,27 @@ Meteor.methods({
 		rehearsal = !!rehearsal
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+
+		let wasInactive = !runningOrder.active
+
+		let studioInstallation = runningOrder.getStudioInstallation()
+
+		let playoutDevices = PeripheralDevices.find({
+			studioInstallationId: studioInstallation._id,
+			type: PeripheralDeviceAPI.DeviceType.PLAYOUT
+		}).fetch()
+		// PeripheralDevices.find()
+
+		_.each(playoutDevices, (device: PeripheralDevice) => {
+			let okToDestoryStuff = wasInactive
+			PeripheralDeviceAPI.executeFunction(device._id, (err, res) => {
+				if (err) {
+					logger.error(err)
+				} else {
+					logger.info('devicesMakeReady OK')
+				}
+			}, 'devicesMakeReady', okToDestoryStuff)
+		})
 
 		let anyOtherActiveRunningOrders = RunningOrders.find({
 			studioInstallationId: runningOrder.studioInstallationId,
@@ -80,7 +102,8 @@ Meteor.methods({
 			rehearsal: rehearsal,
 			previousSegmentLineId: null,
 			currentSegmentLineId: null,
-			nextSegmentLineId: segmentLines[0]._id // put the first on queue
+			nextSegmentLineId: segmentLines[0]._id, // put the first on queue
+			updateStoryStatus: null
 		}, $unset: {
 			startedPlayback: 0
 		}})
@@ -89,11 +112,11 @@ Meteor.methods({
 
 		const showStyle = runningOrder.getShowStyle()
 		if (showStyle.baselineTemplate) {
-			const result: TemplateResultAfterPost = runNamedTemplate(showStyle.baselineTemplate, literal<TemplateContext>({
+			const result: TemplateResultAfterPost = runNamedTemplate(showStyle, showStyle.baselineTemplate, literal<TemplateContext>({
 				runningOrderId: runningOrder._id,
 				segmentLine: runningOrder.getSegmentLines()[0]
 			}), {
-				// Rummy object, not used in this template:
+				// Dummy object, not used in this template:
 				RunningOrderId: new MosString128(''),
 				Body: [],
 				ID: new MosString128(''),
@@ -149,14 +172,12 @@ Meteor.methods({
 
 		updateTimeline(runningOrder.studioInstallationId)
 
-		if (previousSegmentLine) {
-			setStoryStatus(runningOrder.mosDeviceId, runningOrder, previousSegmentLine.mosId, IMOSObjectStatus.STOP)
-		}
+		sendStoryStatus(runningOrder, null)
 	},
 
 	'debug__printTime': () => {
 		let now = getCurrentTime()
-		console.log(new Date(now))
+		logger.debug(new Date(now))
 		return now
 	},
 
@@ -197,10 +218,9 @@ Meteor.methods({
 
 		updateTimeline(runningOrder.studioInstallationId)
 
-		if (previousSegmentLine) {
-			setStoryStatus(runningOrder.mosDeviceId, runningOrder, previousSegmentLine.mosId, IMOSObjectStatus.STOP)
+		if (takeSegmentLine.updateStoryStatus) {
+			sendStoryStatus(runningOrder, takeSegmentLine)
 		}
-		setStoryStatus(runningOrder.mosDeviceId, runningOrder, takeSegmentLine.mosId, IMOSObjectStatus.PLAY)
 	},
 
 	'playout_setNext': (roId: string, nextSlId: string) => {
@@ -219,6 +239,7 @@ Meteor.methods({
 	},
 
 	'playout_segmentLinePlaybackStart': (roId: string, slId: string, startedPlayback: Time) => {
+		// This method is called when an auto-next event occurs
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		let segLine = SegmentLines.findOne({
@@ -308,6 +329,10 @@ Meteor.methods({
 					startedPlayback
 				}})
 				updateTimeline(runningOrder.studioInstallationId, startedPlayback)
+
+				if (segLine.updateStoryStatus) {
+					sendStoryStatus(runningOrder, segLine)
+				}
 			}
 		} else {
 			throw new Meteor.Error(404, `Segment line "${slId}" in running order "${roId}" not found!`)
@@ -332,7 +357,7 @@ Meteor.methods({
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine)
 		SegmentLineItems.insert(newSegmentLineItem)
 
-		// console.log('adLibItemStart', newSegmentLineItem)
+		// logger.debug('adLibItemStart', newSegmentLineItem)
 
 		updateTimeline(runningOrder.studioInstallationId)
 	},
@@ -355,7 +380,7 @@ Meteor.methods({
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine)
 		SegmentLineItems.insert(newSegmentLineItem)
 
-		// console.log('adLibItemStart', newSegmentLineItem)
+		// logger.debug('adLibItemStart', newSegmentLineItem)
 
 		updateTimeline(runningOrder.studioInstallationId)
 	},
@@ -452,7 +477,7 @@ Meteor.methods({
 		if (!tObj) throw new Meteor.Error(404, `Timeline obj "${timelineObjId}" not found!`)
 
 		if (tObj.metadata && tObj.metadata.segmentLineItemId) {
-			console.log('Update segment line item: ', tObj.metadata.segmentLineItemId, (new Date(time)).toTimeString())
+			logger.debug('Update segment line item: ', tObj.metadata.segmentLineItemId, (new Date(time)).toTimeString())
 			SegmentLineItems.update({
 				_id: tObj.metadata.segmentLineItemId
 			}, {$set: {
@@ -680,7 +705,7 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 
 		// Default timelineobjects
 
-		console.log('Timeline update!')
+		logger.debug('Timeline update!')
 
 		const baselineItems = RunningOrderBaselineItems.find({
 			runningOrderId: activeRunningOrder._id
@@ -862,11 +887,13 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 			if (!shouldRunAgain || shouldNotRunAgain) break
 		}
 
-		// console.log('timelineObjs', timelineObjs)
+		// logger.debug('timelineObjs', timelineObjs)
 
 		if (forceNowToTime) { // used when autoNexting
 			setNowToTimeInObjects(timelineObjs, forceNowToTime)
 		}
+
+		setLawoObjectsTriggerValue(timelineObjs, currentSegmentLine)
 
 		saveIntoDb<TimelineObj, TimelineObj>(Timeline, {
 			roId: activeRunningOrder._id
@@ -899,6 +926,20 @@ function setNowToTimeInObjects (timelineObjs: Array<TimelineObj>, now: Time): vo
 		) {
 			o.trigger.value = now
 			o.trigger.setFromNow = true
+		}
+	})
+}
+
+function setLawoObjectsTriggerValue (timelineObjs: Array<TimelineObj>, currentSegmentLine: SegmentLine | undefined) {
+
+	_.each(timelineObjs, (obj) => {
+		if (obj.content.type === TimelineContentTypeLawo.SOURCE ) {
+			let lawoObj = obj as TimelineObjLawo
+
+			_.each(lawoObj.content.attributes, (val, key) => {
+				// set triggerValue to the current playing segment, thus triggering commands to be sent when nexting:
+				lawoObj.content.attributes[key].triggerValue = (currentSegmentLine || {_id: ''})._id
+			})
 		}
 	})
 }

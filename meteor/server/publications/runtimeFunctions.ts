@@ -10,7 +10,6 @@ Meteor.publish('runtimeFunctions', function (selector, token) {
 			token: 0
 		}
 	}
-	console.log('pub runtimeFunctions')
 	if (RuntimeFunctionsSecurity.allowReadAccess(selector, token, this)) {
 		return RuntimeFunctions.find(selector, modifier)
 	}
