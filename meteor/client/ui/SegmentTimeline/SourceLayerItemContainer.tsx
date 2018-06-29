@@ -83,7 +83,6 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 			case RundownAPI.SourceLayerType.VT:
 				if (props.segmentLineItem.content && props.segmentLineItem.content.fileName) {
 					const content = props.segmentLineItem.content as VTContent
-					debugger
 					const mediaObject = MediaObjects.findOne({
 						objId: content.fileName.toUpperCase()
 					})

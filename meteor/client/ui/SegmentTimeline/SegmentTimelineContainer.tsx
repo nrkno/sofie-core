@@ -33,6 +33,7 @@ export interface SegmentLineUi extends SegmentLine {
 	items?: Array<SegmentLineItem>
 	renderedDuration?: number
 	startsAt?: number
+	willProbablyAutoNext?: boolean
 }
 export interface IOutputLayerUi extends IOutputLayer {
 	/** Is this output layer used in this segment */
@@ -156,6 +157,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			// next is only auto, if current has a duration
 			autoNextSegmentLine = ((previousSegmentLine || {}).autoNext || false) && ((previousSegmentLine || {}).expectedDuration !== 0)
 		}
+
+		segmentLine.willProbablyAutoNext = ((previousSegmentLine || {}).autoNext || false) && ((previousSegmentLine || {}).expectedDuration !== 0)
 
 		if (segmentLine.startedPlayback !== undefined) {
 			hasAlreadyPlayed = true

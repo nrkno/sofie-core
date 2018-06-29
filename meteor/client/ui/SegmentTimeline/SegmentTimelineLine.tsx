@@ -362,15 +362,19 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>({
 				})} data-mos-id={this.props.segmentLine._id}
 					style={this.getLayerStyle()}
 					>
-					<div className='segment-timeline__segment-line__nextline'>
+					<div className={ClassNames('segment-timeline__segment-line__nextline', {
+						'auto-next': this.props.segmentLine.willProbablyAutoNext
+					})}>
 						<div className='segment-timeline__segment-line__nextline__label'>
 							{
-								this.props.autoNextSegmentLine ?
-									<React.Fragment>
-										<FontAwesomeIcon icon={faFastForward} />
-										{t('Next')}
-									</React.Fragment> :
-									t('Next')
+								this.state.isNext && (
+									this.props.autoNextSegmentLine ?
+										<React.Fragment>
+											<FontAwesomeIcon icon={faFastForward} />
+											{t('Next')}
+										</React.Fragment> :
+										t('Next')
+								)
 							}
 						</div>
 					</div>
