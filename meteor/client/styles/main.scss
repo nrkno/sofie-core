@@ -23,6 +23,10 @@ a:visited {
 
 #render-target {
 	font-weight: 300;
+
+	h5, .h5, .text-s, .text-s p, .text-s .mod, .text-s .table, .text-s .action-btn, .switch, .pill, .pills .action-btn, .notification, .tooltip, .btn, .btn-tight {
+		font-weight: 300;
+	}
 }
 
 .origo-pulse {
