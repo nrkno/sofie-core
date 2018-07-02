@@ -18,6 +18,8 @@ export function triggerExternalMessage (
 	try {
 		let showStyle: ShowStyle | undefined = ShowStyles.findOne(runningOrder.showStyleId)
 		if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + runningOrder.showStyleId + '" not found!')
+		// if a showStyle does not have a message template assigned, then just exit
+		if (!showStyle.messageTemplate) return
 
 		let functionId = showStyle.messageTemplate
 
