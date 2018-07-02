@@ -25,6 +25,7 @@ interface ISourceLayerProps {
 	key: string
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
+	runningOrder: RunningOrder
 	segment: SegmentUi
 	segmentLine: SegmentLineUi
 	startsAt: number
@@ -112,6 +113,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 
 interface IOutputGroupProps {
 	layer: IOutputLayerUi
+	runningOrder: RunningOrder
 	segment: SegmentUi
 	segmentLine: SegmentLineUi
 	startsAt: number
@@ -139,6 +141,7 @@ class OutputGroup extends React.Component<IOutputGroupProps> {
 				return <SourceLayer key={sourceLayer._id}
 					{...this.props}
 					layer={sourceLayer}
+					runningOrder={this.props.runningOrder}
 					outputLayer={this.props.layer}
 					outputGroupCollapsed={this.props.collapsedOutputs[this.props.layer._id] === true}
 					segment={this.props.segment}
@@ -314,6 +317,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>({
 							layer={layer}
 							segment={this.props.segment}
 							segmentLine={segmentLine}
+							runningOrder={this.props.runningOrder}
 							startsAt={this.getSegmentLineStartsAt() || this.props.segmentLine.startsAt || 0}
 							duration={segmentLine.duration !== undefined ? segmentLine.duration : Math.max(
 								((this.props.timingDurations.segmentLineDurations && this.props.timingDurations.segmentLineDurations[segmentLine._id]) || 0),

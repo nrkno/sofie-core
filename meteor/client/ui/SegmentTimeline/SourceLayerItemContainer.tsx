@@ -6,6 +6,7 @@ import { Timeline } from '../../../lib/collections/Timeline'
 import { SourceLayerItem } from './SourceLayerItem'
 import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 import { getCurrentTime } from '../../../lib/lib'
+import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { VTContent, LiveSpeakContent } from '../../../lib/collections/SegmentLineItems'
 import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -27,6 +28,7 @@ interface IPropsHeader {
 	segmentLineStartsAt: number
 	segmentLineDuration: number
 	segmentLineItem: SegmentLineItemUi
+	runningOrder: RunningOrder
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
@@ -132,12 +134,12 @@ class extends MeteorReactComponent<IPropsHeader> {
 			if (this.props.segmentLineItem.sourceLayer) {
 				switch (this.props.segmentLineItem.sourceLayer.type) {
 					case RundownAPI.SourceLayerType.VT:
-						this.subscribe('mediaObjects', {
+						this.subscribe('mediaObjects', this.props.runningOrder.studioInstallationId, {
 							objId: (this.props.segmentLineItem.content as VTContent).fileName
 						})
 						break
 					case RundownAPI.SourceLayerType.LIVE_SPEAK:
-						this.subscribe('mediaObjects', {
+						this.subscribe('mediaObjects', this.props.runningOrder.studioInstallationId, {
 							objId: (this.props.segmentLineItem.content as LiveSpeakContent).fileName
 						})
 						break
