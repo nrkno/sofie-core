@@ -58,7 +58,11 @@ Meteor.methods({
 			outputLayers: [],
 			config: [
 				{_id: 'nora_group', value: ''}, // Note: do not set to ensure that devs do not accidently use the live graphics channel
-				{_id: 'nora_apikey', value: ''} // Note: must not be set as apikey must be kept private
+				{_id: 'nora_apikey', value: ''}, // Note: must not be set as apikey must be kept private
+				{_id: 'sources_kam_count', value: 3},
+				{_id: 'sources_rm_count', value: 6},
+				{_id: 'sources_kam_first_input', value: 1},
+				{_id: 'sources_rm_first_input', value: 4},
 			],
 		}})
 
@@ -130,6 +134,7 @@ Meteor.methods({
 					name: 'DIR',
 					type: RundownAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
+					activateKeyboardHotkeys: '1,2,3,4,5,6',
 					isRemoteInput: true
 				},
 				// {
@@ -152,7 +157,7 @@ Meteor.methods({
 					name: 'Kam',
 					type: RundownAPI.SourceLayerType.CAMERA,
 					onPGMClean: true,
-					activateKeyboardHotkeys: 'f1,f2,f3,1,2,3',
+					activateKeyboardHotkeys: 'f1,f2,f3',
 					assignHotkeysToGlobalAdlibs: true
 				},
 				{
