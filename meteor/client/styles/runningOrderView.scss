@@ -643,8 +643,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 					border-width: 6px 0 6px 12px;
 					border-color: transparent transparent transparent $segment-line-start-color;
 				}
+			}
 
-				&.auto-next {
+			&:not(.next) {
+				.segment-timeline__segment-line__nextline.auto-next {
 					&::before {
 						content: ' ';
 						display: block;
