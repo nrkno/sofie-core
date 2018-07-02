@@ -381,6 +381,7 @@ interface IState {
 	studioMode: boolean
 	contextMenuContext: any
 	bottomMargin: string
+	followLiveSegments: boolean
 }
 
 interface ITrackedProps {
@@ -414,7 +415,8 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 			timeScale: 0.05,
 			studioMode: localStorage.getItem('studioMode') === '1' ? true : false,
 			contextMenuContext: null,
-			bottomMargin: ''
+			bottomMargin: '',
+			followLiveSegments: true
 		}
 
 	}
@@ -447,9 +449,11 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 	}
 	componentDidMount () {
 		$(document.body).addClass('dark')
+		$(window).on('scroll', this.onWindowScroll)
 	}
 	componentWillUnmount () {
 		$(document.body).removeClass('dark')
+		$(window).off('scroll', this.onWindowScroll)
 
 		_.each(this._subscriptions, (sub ) => {
 			sub.stop()
@@ -462,6 +466,21 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 				timeScale: timeScaleVal
 			})
 		}
+	}
+
+	onWindowScroll = (e: JQuery.Event) => {
+		const isAutoScrolling = $(document.body).hasClass('auto-scrolling')
+		if (this.state.followLiveSegments && !isAutoScrolling) {
+			this.setState({
+				followLiveSegments: false
+			})
+		}
+	}
+
+	onGoToLiveSegment = () => {
+		this.setState({
+			followLiveSegments: true
+		})
 	}
 
 	totalRundownDuration () {
@@ -486,6 +505,7 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 				if (this.props.studioInstallation && this.props.runningOrder) {
 					return <SegmentTimelineContainer key={segment._id}
 											  studioInstallation={this.props.studioInstallation}
+											  followLiveSegments={this.state.followLiveSegments}
 											  segment={segment}
 											  runningOrder={this.props.runningOrder}
 											  liveLineHistorySize={100}
@@ -548,6 +568,9 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 							runningOrder={this.props.runningOrder}
 							onSetNext={this.onSetNext} />
 						{this.renderSegmentsList()}
+						{!this.state.followLiveSegments &&
+							<div className='running-order-view__go-to-onAir' onClick={this.onGoToLiveSegment}>ON AIR</div>
+						}
 						<InspectorDrawer
 							segments={this.props.segments}
 							runningOrder={this.props.runningOrder}

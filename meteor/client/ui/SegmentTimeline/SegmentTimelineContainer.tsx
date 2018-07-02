@@ -75,6 +75,7 @@ interface IProps {
 	liveLineHistorySize: number
 	onTimeScaleChange?: (timeScaleVal: number) => void
 	onContextMenu?: (contextMenuContext: any) => void
+	followLiveSegments: boolean
 }
 interface IState {
 	scrollLeft: number,
@@ -423,6 +424,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				isCollapsed={this.state.collapsed}
 				scrollLeft={this.state.scrollLeft}
 				runningOrder={this.props.runningOrder}
+				followLiveSegments={this.props.followLiveSegments}
 				isLiveSegment={this.props.isLiveSegment}
 				isNextSegment={this.props.isNextSegment}
 				hasRemoteItems={this.props.hasRemoteItems}

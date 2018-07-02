@@ -23,6 +23,7 @@ interface IProps {
 	key: string
 	segment: SegmentUi
 	runningOrder: RunningOrder,
+	followLiveSegments: boolean,
 	studioInstallation: StudioInstallation
 	segmentLines: Array<SegmentLineUi>
 	timeScale: number
@@ -202,23 +203,33 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	}
 
 	componentDidUpdate (prevProps: IProps) {
-		if (prevProps.isLiveSegment === false && this.props.isLiveSegment === true) {
+		if ((prevProps.isLiveSegment === false && this.props.isLiveSegment === true && this.props.followLiveSegments) ||
+			(prevProps.followLiveSegments === false && this.props.followLiveSegments === true && this.props.isLiveSegment === true)) {
 			const previousSegment = $(this.segmentBlock).prev()
 			const segmentPosition = $(this.segmentBlock).offset()
-			debugger
+			let scrollTop: number | null = null
+
 			if (previousSegment.length > 0) {
 				const segmentPosition = $(previousSegment).offset()
 				if (segmentPosition) {
-					$('html,body').animate({
-						scrollTop: Math.max(0, segmentPosition.top - 175)
-					})
+					scrollTop = segmentPosition.top
 				}
 			} else if (segmentPosition && (
 				(segmentPosition.top > ($('html,body').scrollTop() || 0) + window.innerHeight) ||
 				(segmentPosition.top < ($('html,body').scrollTop() || 0))
 			)) {
+				scrollTop = segmentPosition.top
+			}
+
+			if (scrollTop !== null) {
+				$(document.body).addClass('auto-scrolling')
 				$('html,body').animate({
-					scrollTop: Math.max(0, segmentPosition.top - 175)
+					scrollTop: Math.max(0, scrollTop - 175)
+				}, 400, () => {
+					// delay until next frame, so that the scroll handler can fire
+					setTimeout(function () {
+						$(document.body).removeClass('auto-scrolling')
+					})
 				})
 			}
 		}
