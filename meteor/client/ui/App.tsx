@@ -87,7 +87,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 					{/* Header switch - render the usual header for all pages but the running order view */}
 					<Switch>
 						<Route path='/ro/:runningOrderId' component={NullComponent} />
-						<Route path='/clock' component={NullComponent} />
+						<Route path='/countdowns/presenter' component={NullComponent} />
 						<Route path='/' component={Header} />
 					</Switch>
 					{/* Main app switch */}
@@ -95,7 +95,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 						<Route exact path='/' component={Dashboard} />
 						<Route path='/runningOrders' component={RunningOrderList} />
 						<Route path='/ro/:runningOrderId' component={RunningOrderView} />
-						<Route path='/clock' component={ClockView} />
+						<Route path='/countdowns/presenter' component={ClockView} />
 						<Route path='/nymansPlayground' component={NymansPlayground} />
 						<Route path='/status' component={Status} />
 						<Route path='/settings' component={Settings} />

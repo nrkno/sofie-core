@@ -62,6 +62,40 @@ $segment-layer-background-vt: #1769FF;
 	}
 }
 
+@mixin item-type-colors-svg {
+	&.camera {
+		fill: $segment-layer-background-camera;
+	}
+
+	&.graphics {
+		fill: $segment-layer-background-graphics;
+	}
+
+	&.lower-third {
+		bacfillkfillground: $segment-layer-background-lower-third;
+	}
+
+	&.live-speak {
+		fill: $segment-layer-background-live-speak;
+	}
+
+	&.vt {
+		fill: $segment-layer-background-vt;
+	}
+
+	&.remote {
+		fill: $segment-layer-background-remote;
+	}
+
+	&.script {
+		fill: $segment-layer-background-script;
+	}
+
+	&.mic {
+		fill: $segment-layer-background-mic;
+	}
+}
+
 @mixin missing-overlay {
 	
 	&.source-broken, &.source-missing {
