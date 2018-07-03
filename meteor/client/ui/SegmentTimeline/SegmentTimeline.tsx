@@ -18,6 +18,7 @@ import { SegmentDuration, SegmentLineCountdown, RunningOrderTiming } from './../
 
 import { RundownUtils } from '../../lib/rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { ErrorBoundary } from '../ErrorBoundary'
 
 interface IProps {
 	key: string
@@ -295,6 +296,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	}
 
 	renderTimeline () {
+		this.dupa.dupa = true
 		return this.props.segmentLines.map((segmentLine) => {
 			return (
 				<SegmentTimelineLine key={segmentLine._id}
@@ -394,14 +396,18 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 							  onResize={this.onTimelineResize} />
 				<div className='segment-timeline__timeline-container'>
 					<div className='segment-timeline__timeline' key={this.props.segment._id + '-timeline'} ref={this.setTimelineRef} style={this.timelineStyle()}>
-						{this.renderTimeline()}
+						<ErrorBoundary>
+							{this.renderTimeline()}
+						</ErrorBoundary>
 					</div>
 					{this.renderLiveLine()}
 				</div>
-				<SegmentTimelineZoom
-					onZoomDblClick={this.onZoomDblClick}
-					timelineWidth={this.state.timelineWidth}
-					{...this.props}/>
+				<ErrorBoundary>
+					<SegmentTimelineZoom
+						onZoomDblClick={this.onZoomDblClick}
+						timelineWidth={this.state.timelineWidth}
+						{...this.props}/>
+				</ErrorBoundary>
 			</div>
 		)
 	}

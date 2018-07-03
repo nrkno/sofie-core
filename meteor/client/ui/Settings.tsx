@@ -18,6 +18,7 @@ import { StudioInstallation, StudioInstallations } from '../../lib/collections/S
 import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { RuntimeFunction, RuntimeFunctions } from '../../lib/collections/RuntimeFunctions'
+import { ErrorBoundary } from './ErrorBoundary'
 
 import StudioSettings from './Settings/StudioSettings'
 import DeviceSettings from './Settings/DeviceSettings'
@@ -274,18 +275,22 @@ class Settings extends React.Component<Translated<ISettingsProps>> {
 				<div className='mod mvl mhs'>
 					<div className='row'>
 						<div className='col c12 rm-c3 settings-menu'>
-							<SettingsMenu match={this.props.match} />
+							<ErrorBoundary>
+								<SettingsMenu match={this.props.match} />
+							</ErrorBoundary>
 						</div>
 						<div className='col c12 rm-c9 settings-dialog'>
-							<Switch>
-								<Route path='/settings' exact component={WelcomeToSettings} />
-								<Route path='/settings/studio/:studioId' component={StudioSettings} />
-								<Route path='/settings/showStyle/:showStyleId' component={ShowStyleSettings} />
-								<Route path='/settings/peripheralDevice/:deviceId' component={DeviceSettings} />
-								<Route path='/settings/lineTemplate/:ltId' component={LineTemplates} />
-								<Route path='/settings/tools/restore' component={RestoreBackup} />
-								<Redirect to='/settings' />
-							</Switch>
+							<ErrorBoundary>
+								<Switch>
+									<Route path='/settings' exact component={WelcomeToSettings} />
+									<Route path='/settings/studio/:studioId' component={StudioSettings} />
+									<Route path='/settings/showStyle/:showStyleId' component={ShowStyleSettings} />
+									<Route path='/settings/peripheralDevice/:deviceId' component={DeviceSettings} />
+									<Route path='/settings/lineTemplate/:ltId' component={LineTemplates} />
+									<Route path='/settings/tools/restore' component={RestoreBackup} />
+									<Redirect to='/settings' />
+								</Switch>
+							</ErrorBoundary>
 						</div>
 					</div>
 				</div>

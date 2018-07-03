@@ -28,6 +28,7 @@ import { RundownUtils } from '../lib/rundown'
 
 import * as mousetrap from 'mousetrap'
 import * as _ from 'underscore'
+import { ErrorBoundary } from './ErrorBoundary'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -503,16 +504,18 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		if (this.props.segments) {
 			return this.props.segments.map((segment) => {
 				if (this.props.studioInstallation && this.props.runningOrder) {
-					return <SegmentTimelineContainer key={segment._id}
-											  studioInstallation={this.props.studioInstallation}
-											  followLiveSegments={this.state.followLiveSegments}
-											  segment={segment}
-											  runningOrder={this.props.runningOrder}
-											  liveLineHistorySize={100}
-											  timeScale={this.state.timeScale}
-											  onTimeScaleChange={this.onTimeScaleChange}
-											  onContextMenu={this.onContextMenu}
-											  />
+					return <ErrorBoundary>
+							<SegmentTimelineContainer key={segment._id}
+												studioInstallation={this.props.studioInstallation}
+												followLiveSegments={this.state.followLiveSegments}
+												segment={segment}
+												runningOrder={this.props.runningOrder}
+												liveLineHistorySize={100}
+												timeScale={this.state.timeScale}
+												onTimeScaleChange={this.onTimeScaleChange}
+												onContextMenu={this.onContextMenu}
+												/>
+						</ErrorBoundary>
 				}
 			})
 		} else {
@@ -560,22 +563,30 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 				<RunningOrderTimingProvider
 					runningOrder={this.props.runningOrder}>
 					<div className='running-order-view' style={this.getStyle()}>
-						<KeyboardFocusMarker />
-						<RunningOrderHeader
-							runningOrder={this.props.runningOrder} />
-						<SegmentContextMenu
-							contextMenuContext={this.state.contextMenuContext}
-							runningOrder={this.props.runningOrder}
-							onSetNext={this.onSetNext} />
+						<ErrorBoundary>
+							<KeyboardFocusMarker />
+						</ErrorBoundary>
+						<ErrorBoundary>
+							<RunningOrderHeader
+								runningOrder={this.props.runningOrder} />
+						</ErrorBoundary>
+						<ErrorBoundary>
+							<SegmentContextMenu
+								contextMenuContext={this.state.contextMenuContext}
+								runningOrder={this.props.runningOrder}
+								onSetNext={this.onSetNext} />
+						</ErrorBoundary>
 						{this.renderSegmentsList()}
 						{!this.state.followLiveSegments &&
 							<div className='running-order-view__go-to-onAir' onClick={this.onGoToLiveSegment}>ON AIR</div>
 						}
-						<InspectorDrawer
-							segments={this.props.segments}
-							runningOrder={this.props.runningOrder}
-							studioInstallation={this.props.studioInstallation}
-							onChangeBottomMargin={this.onChangeBottomMargin} />
+						<ErrorBoundary>
+							<InspectorDrawer
+								segments={this.props.segments}
+								runningOrder={this.props.runningOrder}
+								studioInstallation={this.props.studioInstallation}
+								onChangeBottomMargin={this.onChangeBottomMargin} />
+						</ErrorBoundary>
 					</div>
 				</RunningOrderTimingProvider>
 			)

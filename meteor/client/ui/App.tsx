@@ -20,6 +20,7 @@ import {
   Redirect
 } from 'react-router-dom'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { ErrorBoundary } from './ErrorBoundary'
 
 interface IAppState {
 	studioMode: boolean
@@ -85,22 +86,26 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 			<Router>
 				<div className='container-fluid'>
 					{/* Header switch - render the usual header for all pages but the running order view */}
-					<Switch>
-						<Route path='/ro/:runningOrderId' component={NullComponent} />
-						<Route path='/countdowns/presenter' component={NullComponent} />
-						<Route path='/' component={Header} />
-					</Switch>
+					<ErrorBoundary>
+						<Switch>
+							<Route path='/ro/:runningOrderId' component={NullComponent} />
+							<Route path='/countdowns/presenter' component={NullComponent} />
+							<Route path='/' component={Header} />
+						</Switch>
+					</ErrorBoundary>
 					{/* Main app switch */}
-					<Switch>
-						<Route exact path='/' component={Dashboard} />
-						<Route path='/runningOrders' component={RunningOrderList} />
-						<Route path='/ro/:runningOrderId' component={RunningOrderView} />
-						<Route path='/countdowns/presenter' component={ClockView} />
-						<Route path='/nymansPlayground' component={NymansPlayground} />
-						<Route path='/status' component={Status} />
-						<Route path='/settings' component={Settings} />
-						<Redirect to='/' />
-					</Switch>
+					<ErrorBoundary>
+						<Switch>
+							<Route exact path='/' component={Dashboard} />
+							<Route path='/runningOrders' component={RunningOrderList} />
+							<Route path='/ro/:runningOrderId' component={RunningOrderView} />
+							<Route path='/countdowns/presenter' component={ClockView} />
+							<Route path='/nymansPlayground' component={NymansPlayground} />
+							<Route path='/status' component={Status} />
+							<Route path='/settings' component={Settings} />
+							<Redirect to='/' />
+						</Switch>
+					</ErrorBoundary>
 					<ConnectionStatusNotification />
 				</div>
 			</Router>

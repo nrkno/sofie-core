@@ -6,6 +6,7 @@ import { getCurrentTime } from '../../lib/lib'
 import { SegmentLineUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { Segment } from '../../lib/collections/Segments'
 import { withTiming, WithTiming } from './RunningOrderTiming'
+import { ErrorBoundary } from './ErrorBoundary'
 
 interface SegmentUi extends Segment {
 	items?: Array<SegmentLineUi>
@@ -34,7 +35,7 @@ interface TimeMap {
 
 const SegmentLineOverview: React.SFC<ISegmentLinePropsHeader> = (props: ISegmentLinePropsHeader) => {
 	return (
-		<React.Fragment>
+		<ErrorBoundary>
 			<div className={ClassNames('running-order__overview__segment__segment-line', {
 				'live': props.isLive,
 				'next': props.isNext,
@@ -68,7 +69,7 @@ const SegmentLineOverview: React.SFC<ISegmentLinePropsHeader> = (props: ISegment
 					}}>
 				</div>
 			}
-		</React.Fragment>
+		</ErrorBoundary>
 	)
 }
 
@@ -125,7 +126,7 @@ class extends React.Component<WithTiming<RunningOrderOverviewProps & RunningOrde
 		if (this.props.runningOrder && this.props.runningOrderId && this.props.segments) {
 			const totalDuration = 1
 
-			return (
+			return (<ErrorBoundary>
 				<div className='running-order__overview'>
 				{
 					this.props.segments.map((item) => {
@@ -141,7 +142,7 @@ class extends React.Component<WithTiming<RunningOrderOverviewProps & RunningOrde
 					})
 				}
 				</div>
-			)
+			</ErrorBoundary>)
 		}
 		return null
 	}
