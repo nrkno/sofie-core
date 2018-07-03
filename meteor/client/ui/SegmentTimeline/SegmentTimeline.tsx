@@ -296,7 +296,6 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	}
 
 	renderTimeline () {
-		this.dupa.dupa = true
 		return this.props.segmentLines.map((segmentLine) => {
 			return (
 				<SegmentTimelineLine key={segmentLine._id}
