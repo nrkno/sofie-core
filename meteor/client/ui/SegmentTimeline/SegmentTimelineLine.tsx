@@ -384,7 +384,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>({
 					</div>
 					{ DEBUG_MODE &&
 						<div className='segment-timeline__debug-info'>
-							{this.props.livePosition} / {this.props.segmentLine.startsAt}
+							{this.props.livePosition} / {this.props.segmentLine.startsAt} / {this.props.segmentLine._rank}
 						</div>
 					}
 					{this.renderTimelineOutputGroups(this.props.segmentLine)}

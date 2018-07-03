@@ -36,6 +36,7 @@ import { StudioInstallations, StudioInstallation } from '../../lib/collections/S
 import { MediaObject, MediaObjects } from '../../lib/collections/MediaObjects'
 import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
 import { ShowStyles, ShowStyle } from '../../lib/collections/ShowStyles'
+import { ServerPlayoutAPI } from './playout'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -146,7 +147,8 @@ export namespace ServerPeripheralDeviceAPI {
 				multi: true
 			})
 
-			Meteor.call('playout_timelineTriggerTimeUpdate', o.id, o.time)
+			// Meteor.call('playout_timelineTriggerTimeUpdate', o.id, o.time)
+			ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(o.id, o.time)
 		})
 	}
 	export function segmentLinePlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) {
@@ -159,7 +161,8 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.slId, String)
 		logger.info('RunningOrder: Setting playback started ' + r.time + ' to id ' + r.slId)
 
-		Meteor.call('playout_segmentLinePlaybackStart', r.roId, r.slId, r.time)
+		// Meteor.call('playout_segmentLinePlaybackStart', r.roId, r.slId, r.time)
+		ServerPlayoutAPI.slPlaybackStartedCallback(r.roId, r.slId, r.time)
 	}
 	export function pingWithCommand (id: string, token: string, message: string) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -502,8 +505,40 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// Move Stories (aka SegmentLine ## TODO ##Lines) to before a story
 		let ro = getRO(Action.RunningOrderID)
+
+		let currentSegmentLine: SegmentLine | undefined = undefined
+		let onAirNextWindowWidth: number | undefined = undefined
+		let nextPosition: number | undefined = undefined
+		if (ro.currentSegmentLineId) {
+			let nextSegmentLine: SegmentLine | undefined = undefined
+			currentSegmentLine = SegmentLines.findOne(ro.currentSegmentLineId)
+			if (ro.nextSegmentLineId) nextSegmentLine = SegmentLines.findOne(ro.nextSegmentLineId)
+			if (currentSegmentLine) {
+				const segmentLines = ro.getSegmentLines({
+					_rank: _.extend({
+						$gte: currentSegmentLine._rank
+					}, nextSegmentLine ? {
+						$lte: nextSegmentLine._rank
+					} : {})
+				})
+				onAirNextWindowWidth = segmentLines.length
+			}
+		} else if (ro.nextSegmentLineId) {
+			let nextSegmentLine: SegmentLine | undefined = undefined
+			nextSegmentLine = SegmentLines.findOne(ro.nextSegmentLineId)
+			if (nextSegmentLine) {
+				const segmentLines = ro.getSegmentLines({
+					_rank: {
+						$lte: nextSegmentLine._rank
+					}
+				})
+				nextPosition = segmentLines.length
+			}
+		}
+
 		let segmentLineAfter = getSegmentLine(Action.RunningOrderID, Action.StoryID)
 		let segmentLineBefore = fetchBefore(SegmentLines, { runningOrderId: ro._id }, segmentLineAfter._rank)
+		// console.log('Inserting between: ' + (segmentLineBefore ? segmentLineBefore._rank : 'X') + ' - ' + segmentLineAfter._rank)
 
 		let affectedSegmentLineIds: Array<string> = []
 		affectedSegmentLineIds.push(segmentLineAfter._id)
@@ -517,6 +552,9 @@ export namespace ServerPeripheralDeviceAPI {
 
 		updateSegments(ro._id)
 		updateAffectedSegmentLines(ro, affectedSegmentLineIds)
+
+		// Meteor.call('playout_storiesMoved', ro._id, onAirNextWindowWidth, nextPosition)
+		ServerPlayoutAPI.roStoriesMoved(ro._id, onAirNextWindowWidth, nextPosition)
 	}
 	export function mosRoItemMove (id, token, Action: IMOSItemAction, Items: Array<MosString128>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
