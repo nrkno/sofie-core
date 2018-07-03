@@ -543,6 +543,18 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
+											{t('Source abbreviation')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + index + '.abbreviation'}
+												obj={this.props.studioInstallation}
+												type='text'
+												collection={StudioInstallations}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
 											{t('Internal ID')}
 											<EditAttribute
 												modifiedClassName='bghl'

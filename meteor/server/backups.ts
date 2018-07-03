@@ -5,6 +5,7 @@ import { ShowStyle, ShowStyles } from '../lib/collections/ShowStyles'
 import { RuntimeFunction, RuntimeFunctions } from '../lib/collections/RuntimeFunctions'
 import * as bodyParser from 'body-parser'
 import { logger } from './logging'
+import { Selector } from '../lib/typings/meteor'
 
 export interface ShowStyleBackup {
 	type: 'showstyle'
@@ -12,11 +13,16 @@ export interface ShowStyleBackup {
 	templates: RuntimeFunction[]
 }
 
-export function getShowBackup (showId: string): ShowStyleBackup {
+export function getShowBackup (showId: string, onlyActiveTemplates: boolean): ShowStyleBackup {
 	const showStyle = ShowStyles.findOne(showId)
 	if (!showStyle) throw new Meteor.Error(404, 'Show style not found')
 
-	const templates = RuntimeFunctions.find({ showStyleId: showId },{
+	const filter: Selector<RuntimeFunction> = { showStyleId: showId }
+	if (onlyActiveTemplates) {
+		filter.active = true
+	}
+
+	const templates = RuntimeFunctions.find(filter,{
 		sort: {
 			showStyleId: 1,
 			templateId: 1,
@@ -53,9 +59,8 @@ function restoreShowBackup (backup: ShowStyleBackup) {
 	}
 }
 
-// Server route
-Picker.route('/backup/show/:id', (params, req: IncomingMessage, res: ServerResponse, next) => {
-	let data: any = getShowBackup(params.id)
+function runBackup (params, req: IncomingMessage, res: ServerResponse, onlyActive: boolean){
+	let data: any = getShowBackup(params.id, onlyActive)
 	res.setHeader('Content-Type', 'application/json')
 
 	let content = ''
@@ -71,6 +76,14 @@ Picker.route('/backup/show/:id', (params, req: IncomingMessage, res: ServerRespo
 	}
 
 	res.end(content)
+}
+
+// Server route
+Picker.route('/backup/show/:id', (params, req: IncomingMessage, res: ServerResponse, next) => {
+	runBackup(params, req, res, false)
+})
+Picker.route('/backup/show/:id/active', (params, req: IncomingMessage, res: ServerResponse, next) => {
+	runBackup(params, req, res, true)
 })
 
 const postRoute = Picker.filter((req, res) => req.method === 'POST')

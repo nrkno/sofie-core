@@ -133,7 +133,12 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							<a href={`/backup/show/${(this.props.showStyle as any)._id}`} target='_new'>{t('Download backup')}</a>
+							<a href={`/backup/show/${(this.props.showStyle as any)._id}`} target='_new'>{t('Download full backup')}</a>
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							<a href={`/backup/show/${(this.props.showStyle as any)._id}/active`} target='_new'>{t('Download current state')}</a>
 						</label>
 					</div>
 				</div>

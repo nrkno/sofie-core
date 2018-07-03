@@ -58,7 +58,11 @@ Meteor.methods({
 			outputLayers: [],
 			config: [
 				{_id: 'nora_group', value: ''}, // Note: do not set to ensure that devs do not accidently use the live graphics channel
-				{_id: 'nora_apikey', value: ''} // Note: must not be set as apikey must be kept private
+				{_id: 'nora_apikey', value: ''}, // Note: must not be set as apikey must be kept private
+				{_id: 'sources_kam_count', value: 3},
+				{_id: 'sources_rm_count', value: 6},
+				{_id: 'sources_kam_first_input', value: 1},
+				{_id: 'sources_rm_first_input', value: 4},
 			],
 		}})
 
@@ -84,6 +88,7 @@ Meteor.methods({
 					_id: 'studio0_vignett',
 					_rank: 40,
 					name: 'Vignett',
+					abbreviation: 'Full',
 					type: RundownAPI.SourceLayerType.VT,
 					onPGMClean: true
 				},
@@ -91,6 +96,7 @@ Meteor.methods({
 					_id: 'studio0_vb',
 					_rank: 45,
 					name: 'VB',
+					abbreviation: 'Full',
 					type: RundownAPI.SourceLayerType.VT,
 					onPGMClean: true
 				},
@@ -98,6 +104,7 @@ Meteor.methods({
 					_id: 'studio0_live_speak0',
 					_rank: 50,
 					name: 'STK',
+					abbreviation: 'STK',
 					type: RundownAPI.SourceLayerType.LIVE_SPEAK,
 					onPGMClean: true
 				},
@@ -121,6 +128,7 @@ Meteor.methods({
 					_id: 'studio0_split0',
 					_rank: 15,
 					name: 'Split',
+					abbreviation: 'DVE',
 					type: RundownAPI.SourceLayerType.SPLITS,
 					onPGMClean: true,
 				},
@@ -128,8 +136,10 @@ Meteor.methods({
 					_id: 'studio0_remote0',
 					_rank: 60,
 					name: 'DIR',
+					abbreviation: 'DIR',
 					type: RundownAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
+					activateKeyboardHotkeys: '1,2,3,4,5,6',
 					isRemoteInput: true
 				},
 				// {
@@ -150,9 +160,10 @@ Meteor.methods({
 					_id: 'studio0_camera0',
 					_rank: 100,
 					name: 'Kam',
+					abbreviation: 'K ',
 					type: RundownAPI.SourceLayerType.CAMERA,
 					onPGMClean: true,
-					activateKeyboardHotkeys: 'f1,f2,f3,1,2,3',
+					activateKeyboardHotkeys: 'f1,f2,f3',
 					assignHotkeysToGlobalAdlibs: true
 				},
 				{
