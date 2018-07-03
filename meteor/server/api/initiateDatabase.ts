@@ -84,6 +84,7 @@ Meteor.methods({
 					_id: 'studio0_vignett',
 					_rank: 40,
 					name: 'Vignett',
+					abbreviation: 'Full',
 					type: RundownAPI.SourceLayerType.VT,
 					onPGMClean: true
 				},
@@ -91,6 +92,7 @@ Meteor.methods({
 					_id: 'studio0_vb',
 					_rank: 45,
 					name: 'VB',
+					abbreviation: 'Full',
 					type: RundownAPI.SourceLayerType.VT,
 					onPGMClean: true
 				},
@@ -98,6 +100,7 @@ Meteor.methods({
 					_id: 'studio0_live_speak0',
 					_rank: 50,
 					name: 'STK',
+					abbreviation: 'STK',
 					type: RundownAPI.SourceLayerType.LIVE_SPEAK,
 					onPGMClean: true
 				},
@@ -121,6 +124,7 @@ Meteor.methods({
 					_id: 'studio0_split0',
 					_rank: 15,
 					name: 'Split',
+					abbreviation: 'DVE',
 					type: RundownAPI.SourceLayerType.SPLITS,
 					onPGMClean: true,
 				},
@@ -128,6 +132,7 @@ Meteor.methods({
 					_id: 'studio0_remote0',
 					_rank: 60,
 					name: 'DIR',
+					abbreviation: 'DIR',
 					type: RundownAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
 					isRemoteInput: true
@@ -150,6 +155,7 @@ Meteor.methods({
 					_id: 'studio0_camera0',
 					_rank: 100,
 					name: 'Kam',
+					abbreviation: 'K ',
 					type: RundownAPI.SourceLayerType.CAMERA,
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'f1,f2,f3,1,2,3',

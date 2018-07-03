@@ -14,8 +14,9 @@ import { SegmentLineUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../lib/rundown'
 import * as TimecodeString from 'smpte-timecode'
 import { Settings } from '../../lib/Settings'
-import { duration } from 'moment';
-import { getCurrentTime } from '../../lib/lib';
+import { getCurrentTime } from '../../lib/lib'
+import { SegmentItemIconContainer } from './SegmentItemIcons/SegmentItemIcon'
+import CamInputICon from './SegmentItemIcons/Renderers/CamInput'
 
 interface SegmentUi extends Segment {
 	items?: Array<SegmentLineUi>
@@ -39,7 +40,7 @@ interface RunningOrderOverviewTrackedProps {
 const Timediff = class extends React.Component<{ time: number}> {
 	render () {
 		const time = this.props.time
-		const timeString = RundownUtils.formatDiffToTimecode(time)
+		const timeString = RundownUtils.formatDiffToTimecode(time) // @todo: something happened here with negative time
 		const timeStringSegments = timeString.split(':')
 		const fontWeight = (no) => true
 		return (
@@ -144,23 +145,22 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 					<div className='clocks-full-screen'>
 						<div className='clocks-half clocks-top'>
 							<div className='clocks-segment-icon'>
-								<div className='stub-icon'>K <span className='fontweight-normal'>3</span></div>
+								{currentSegmentLine ?
+									<SegmentItemIconContainer segmentItemId={currentSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} />
+								: ''}
 							</div>
 							<div className='clocks-segment-title clocks-current-segment-title'>
 								{currentSegmentLine ? currentSegmentLine.slug : '_'}
 							</div>
 							<div className='clocks-segment-countdown clocks-current-segment-countdown'>
 								<Timediff time={currentSegmentDuration} />
-								{/* <span>–</span>
-								<span>00</span>:
-								<span>00</span>:
-								<span className='fontweight-300'>12</span>:
-								<span className='fontweight-300'>24</span> */}
 							</div>
 						</div>
 						<div className='clocks-half clocks-bottom clocks-top-bar'>
 							<div className='clocks-segment-icon'>
-								<div className='stub-icon'>K <span className='fontweight-normal'>3</span></div>
+								{nextSegmentLine ?
+									<SegmentItemIconContainer segmentItemId={nextSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} />
+								: ''}
 							</div>
 							<div className='clocks-bottom-top'>
 								<div className='clocks-segment-title'>
