@@ -771,6 +771,11 @@ Meteor.methods({
 		// // @ts-ignore
 		// Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, {"ID": "MAENPSTEST14;P_SERVER14\\W\\R_07C8C71B-1835-493D-94E1678FD1425B71;EF1A29D9-EF4C-4965-893A4910B2212E66","Slug": "AVSLUTT;Slutt 18.59.00","MosExternalMetaData": [{"MosScope": "PLAYLIST","MosSchema": "http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload": {"Approved": 1,"Creator": "LINUXENPS","MediaTime": 0,"ModBy": "N12914","ModTime": "20180502T132213Z","MOSAbstracts": "TIDSMARKØR IKKE RØR","MOSObjSlugs": "Story status","MOSSlugs": "SAK 1;intro-3","Owner": "LINUXENPS","SourceMediaTime": 0,"SourceTextTime": 0,"TextTime": 0,"SystemApprovedBy": "N12914","mosartType": "BREAK","ReadTime": 0,"ENPSItemType": 3}}],"RunningOrderId": "MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71","Body": [{"Type": "storyItem","Content": {"mosID": "mosart.morten.mos","abstract": "TIDSMARKØR IKKE RØR","objID": "STORYSTATUS","objSlug": "Story status","itemID": 2,"itemSlug": "SAK 1;intro-3"}}],"level": "debug","message": "mosRoFullStory","timestamp": "2018-05-09T10:26:47.387Z"})
 	},
+	'debug_roMock1_remove' () {
+		let pd = getPD()
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, pd._id, pd.token,
+			new MosString128('MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5'))
+	},
 	'debug_roMock1' () {
 		let pd = getPD()
 		if (!pd) {
