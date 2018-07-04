@@ -7,6 +7,7 @@ import { RuntimeFunctions, RuntimeFunction } from '../../../lib/collections/Runt
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
+import * as _ from 'underscore'
 import { Link } from 'react-router-dom'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { literal } from '../../../lib/lib'
@@ -120,7 +121,24 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							<a href={`/backup/show/${(this.props.showStyle as any)._id}`} target='_new'>{t('Download backup')}</a>
+							{t('External-message template id')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='messageTemplate'
+								obj={this.props.showStyle}
+								type='text'
+								collection={ShowStyles}
+								className='input text-input input-l'></EditAttribute>
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							<a href={`/backup/show/${(this.props.showStyle as any)._id}`} target='_new'>{t('Download full backup')}</a>
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							<a href={`/backup/show/${(this.props.showStyle as any)._id}/active`} target='_new'>{t('Download current state')}</a>
 						</label>
 					</div>
 				</div>

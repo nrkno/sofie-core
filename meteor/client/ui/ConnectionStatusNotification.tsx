@@ -6,6 +6,7 @@ import * as CoreIcons from '@nrk/core-icons/jsx'
 import * as ClassNames from 'classnames'
 
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/react-meteor-data'
+import { ErrorBoundary } from './ErrorBoundary'
 
 interface IProps {
 }
@@ -78,7 +79,7 @@ export const ConnectionStatusNotification = translateWithTracker<IProps, IState,
 
 	render () {
 		// this.props.connected
-		return <VelocityReact.VelocityTransitionGroup enter={{ animation: {
+		return <ErrorBoundary><VelocityReact.VelocityTransitionGroup enter={{ animation: {
 			'translateY': [0, '200%'],
 			'translateX': ['-50%', '-50%'],
 			'opacity': [1, 0]
@@ -107,6 +108,6 @@ export const ConnectionStatusNotification = translateWithTracker<IProps, IState,
 						</p>
 					</div>
 				) : undefined }
-			</VelocityReact.VelocityTransitionGroup>
+			</VelocityReact.VelocityTransitionGroup></ErrorBoundary>
 	}
 })

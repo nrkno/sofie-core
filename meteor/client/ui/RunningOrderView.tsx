@@ -28,6 +28,7 @@ import { RundownUtils } from '../lib/rundown'
 
 import * as mousetrap from 'mousetrap'
 import * as _ from 'underscore'
+import { ErrorBoundary } from './ErrorBoundary'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -381,6 +382,7 @@ interface IState {
 	studioMode: boolean
 	contextMenuContext: any
 	bottomMargin: string
+	followLiveSegments: boolean
 }
 
 interface ITrackedProps {
@@ -414,7 +416,8 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 			timeScale: 0.05,
 			studioMode: localStorage.getItem('studioMode') === '1' ? true : false,
 			contextMenuContext: null,
-			bottomMargin: ''
+			bottomMargin: '',
+			followLiveSegments: true
 		}
 
 	}
@@ -447,9 +450,11 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 	}
 	componentDidMount () {
 		$(document.body).addClass('dark')
+		$(window).on('scroll', this.onWindowScroll)
 	}
 	componentWillUnmount () {
 		$(document.body).removeClass('dark')
+		$(window).off('scroll', this.onWindowScroll)
 
 		_.each(this._subscriptions, (sub ) => {
 			sub.stop()
@@ -462,6 +467,21 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 				timeScale: timeScaleVal
 			})
 		}
+	}
+
+	onWindowScroll = (e: JQuery.Event) => {
+		const isAutoScrolling = $(document.body).hasClass('auto-scrolling')
+		if (this.state.followLiveSegments && !isAutoScrolling) {
+			this.setState({
+				followLiveSegments: false
+			})
+		}
+	}
+
+	onGoToLiveSegment = () => {
+		this.setState({
+			followLiveSegments: true
+		})
 	}
 
 	totalRundownDuration () {
@@ -484,15 +504,18 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		if (this.props.segments) {
 			return this.props.segments.map((segment) => {
 				if (this.props.studioInstallation && this.props.runningOrder) {
-					return <SegmentTimelineContainer key={segment._id}
-											  studioInstallation={this.props.studioInstallation}
-											  segment={segment}
-											  runningOrder={this.props.runningOrder}
-											  liveLineHistorySize={100}
-											  timeScale={this.state.timeScale}
-											  onTimeScaleChange={this.onTimeScaleChange}
-											  onContextMenu={this.onContextMenu}
-											  />
+					return <ErrorBoundary>
+							<SegmentTimelineContainer key={segment._id}
+												studioInstallation={this.props.studioInstallation}
+												followLiveSegments={this.state.followLiveSegments}
+												segment={segment}
+												runningOrder={this.props.runningOrder}
+												liveLineHistorySize={100}
+												timeScale={this.state.timeScale}
+												onTimeScaleChange={this.onTimeScaleChange}
+												onContextMenu={this.onContextMenu}
+												/>
+						</ErrorBoundary>
 				}
 			})
 		} else {
@@ -540,19 +563,30 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 				<RunningOrderTimingProvider
 					runningOrder={this.props.runningOrder}>
 					<div className='running-order-view' style={this.getStyle()}>
-						<KeyboardFocusMarker />
-						<RunningOrderHeader
-							runningOrder={this.props.runningOrder} />
-						<SegmentContextMenu
-							contextMenuContext={this.state.contextMenuContext}
-							runningOrder={this.props.runningOrder}
-							onSetNext={this.onSetNext} />
+						<ErrorBoundary>
+							<KeyboardFocusMarker />
+						</ErrorBoundary>
+						<ErrorBoundary>
+							<RunningOrderHeader
+								runningOrder={this.props.runningOrder} />
+						</ErrorBoundary>
+						<ErrorBoundary>
+							<SegmentContextMenu
+								contextMenuContext={this.state.contextMenuContext}
+								runningOrder={this.props.runningOrder}
+								onSetNext={this.onSetNext} />
+						</ErrorBoundary>
 						{this.renderSegmentsList()}
-						<InspectorDrawer
-							segments={this.props.segments}
-							runningOrder={this.props.runningOrder}
-							studioInstallation={this.props.studioInstallation}
-							onChangeBottomMargin={this.onChangeBottomMargin} />
+						{!this.state.followLiveSegments &&
+							<div className='running-order-view__go-to-onAir' onClick={this.onGoToLiveSegment}>ON AIR</div>
+						}
+						<ErrorBoundary>
+							<InspectorDrawer
+								segments={this.props.segments}
+								runningOrder={this.props.runningOrder}
+								studioInstallation={this.props.studioInstallation}
+								onChangeBottomMargin={this.onChangeBottomMargin} />
+						</ErrorBoundary>
 					</div>
 				</RunningOrderTimingProvider>
 			)

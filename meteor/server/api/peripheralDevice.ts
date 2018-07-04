@@ -36,6 +36,7 @@ import { StudioInstallations, StudioInstallation } from '../../lib/collections/S
 import { MediaObject, MediaObjects } from '../../lib/collections/MediaObjects'
 import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
 import { ShowStyles, ShowStyle } from '../../lib/collections/ShowStyles'
+import { ServerPlayoutAPI } from './playout'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -146,7 +147,8 @@ export namespace ServerPeripheralDeviceAPI {
 				multi: true
 			})
 
-			Meteor.call('playout_timelineTriggerTimeUpdate', o.id, o.time)
+			// Meteor.call('playout_timelineTriggerTimeUpdate', o.id, o.time)
+			ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(o.id, o.time)
 		})
 	}
 	export function segmentLinePlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) {
@@ -159,7 +161,8 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.slId, String)
 		logger.info('RunningOrder: Setting playback started ' + r.time + ' to id ' + r.slId)
 
-		Meteor.call('playout_segmentLinePlaybackStart', r.roId, r.slId, r.time)
+		// Meteor.call('playout_segmentLinePlaybackStart', r.roId, r.slId, r.time)
+		ServerPlayoutAPI.slPlaybackStartedCallback(r.roId, r.slId, r.time)
 	}
 	export function pingWithCommand (id: string, token: string, message: string) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -233,6 +236,8 @@ export namespace ServerPeripheralDeviceAPI {
 
 		let dbRo = RunningOrders.findOne(roId(ro.ID))
 		if (!dbRo) throw new Meteor.Error(500, 'Running order not found (it should have been)')
+		// cache the Data
+		dbRo.saveCache('roCreate' + roId(ro.ID), ro)
 
 		// Save Stories into database:
 		// Note: a number of X stories will result in (<=X) Segments and X SegmentLines
@@ -500,8 +505,40 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// Move Stories (aka SegmentLine ## TODO ##Lines) to before a story
 		let ro = getRO(Action.RunningOrderID)
+
+		let currentSegmentLine: SegmentLine | undefined = undefined
+		let onAirNextWindowWidth: number | undefined = undefined
+		let nextPosition: number | undefined = undefined
+		if (ro.currentSegmentLineId) {
+			let nextSegmentLine: SegmentLine | undefined = undefined
+			currentSegmentLine = SegmentLines.findOne(ro.currentSegmentLineId)
+			if (ro.nextSegmentLineId) nextSegmentLine = SegmentLines.findOne(ro.nextSegmentLineId)
+			if (currentSegmentLine) {
+				const segmentLines = ro.getSegmentLines({
+					_rank: _.extend({
+						$gte: currentSegmentLine._rank
+					}, nextSegmentLine ? {
+						$lte: nextSegmentLine._rank
+					} : {})
+				})
+				onAirNextWindowWidth = segmentLines.length
+			}
+		} else if (ro.nextSegmentLineId) {
+			let nextSegmentLine: SegmentLine | undefined = undefined
+			nextSegmentLine = SegmentLines.findOne(ro.nextSegmentLineId)
+			if (nextSegmentLine) {
+				const segmentLines = ro.getSegmentLines({
+					_rank: {
+						$lte: nextSegmentLine._rank
+					}
+				})
+				nextPosition = segmentLines.length
+			}
+		}
+
 		let segmentLineAfter = getSegmentLine(Action.RunningOrderID, Action.StoryID)
 		let segmentLineBefore = fetchBefore(SegmentLines, { runningOrderId: ro._id }, segmentLineAfter._rank)
+		// console.log('Inserting between: ' + (segmentLineBefore ? segmentLineBefore._rank : 'X') + ' - ' + segmentLineAfter._rank)
 
 		let affectedSegmentLineIds: Array<string> = []
 		affectedSegmentLineIds.push(segmentLineAfter._id)
@@ -515,6 +552,9 @@ export namespace ServerPeripheralDeviceAPI {
 
 		updateSegments(ro._id)
 		updateAffectedSegmentLines(ro, affectedSegmentLineIds)
+
+		// Meteor.call('playout_storiesMoved', ro._id, onAirNextWindowWidth, nextPosition)
+		ServerPlayoutAPI.roStoriesMoved(ro._id, onAirNextWindowWidth, nextPosition)
 	}
 	export function mosRoItemMove (id, token, Action: IMOSItemAction, Items: Array<MosString128>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -670,6 +710,7 @@ export namespace ServerPeripheralDeviceAPI {
 }
 export function roId (roId: MosString128, original?: boolean): string {
 	// logger.debug('roId', roId)
+	if (!roId) throw new Meteor.Error(401, 'parameter roId missing!')
 	let id = 'ro_' + (roId['_str'] || roId.toString())
 	return (original ? id : getHash(id))
 }
@@ -1075,24 +1116,28 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 	let context: TemplateContext = {
 		runningOrderId: ro._id,
 		// segment: Segment,
-		segmentLine: segmentLine
+		segmentLine: segmentLine,
+		templateId: 'N/A'
 	}
-	let result = runTemplate(showStyle, context, story)
+	let tr = runTemplate(showStyle, context, story, 'story ' + story.ID.toString())
 
-	if (result.segmentLine) {
+	if (tr.result.segmentLine) {
+		if (!tr.result.segmentLine.typeVariant) tr.result.segmentLine.typeVariant = tr.templateId
+
 		SegmentLines.update(segmentLine._id, {$set: {
-			expectedDuration:		result.segmentLine.expectedDuration || segmentLine.expectedDuration,
-			overlapDuration: 		result.segmentLine.overlapDuration || 0,
-			autoNext: 				result.segmentLine.autoNext || false,
-			disableOutTransition: 	result.segmentLine.disableOutTransition || false,
-			updateStoryStatus:		result.segmentLine.updateStoryStatus || false,
+			expectedDuration:		tr.result.segmentLine.expectedDuration || segmentLine.expectedDuration,
+			overlapDuration: 		tr.result.segmentLine.overlapDuration || 0,
+			autoNext: 				tr.result.segmentLine.autoNext || false,
+			disableOutTransition: 	tr.result.segmentLine.disableOutTransition || false,
+			updateStoryStatus:		tr.result.segmentLine.updateStoryStatus || false,
+			typeVariant:			tr.result.segmentLine.typeVariant || ''
 		}})
 	}
 	saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
 		runningOrderId: ro._id,
 		segmentLineId: segmentLine._id,
 		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
-	}, result.segmentLineItems || [], {
+	}, tr.result.segmentLineItems || [], {
 		afterInsert (segmentLineItem) {
 			logger.debug('inserted segmentLineItem ' + segmentLineItem._id)
 			logger.debug(segmentLineItem)
@@ -1119,7 +1164,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 	saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
 		runningOrderId: ro._id,
 		segmentLineId: segmentLine._id
-	}, result.segmentLineAdLibItems || [], {
+	}, tr.result.segmentLineAdLibItems || [], {
 		afterInsert (segmentLineAdLibItem) {
 			logger.debug('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
 			logger.debug(segmentLineAdLibItem)

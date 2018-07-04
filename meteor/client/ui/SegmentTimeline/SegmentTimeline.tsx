@@ -4,6 +4,7 @@ import { translate } from 'react-i18next'
 
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
+import * as $ from 'jquery'
 import { ContextMenuTrigger } from 'react-contextmenu'
 
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
@@ -17,11 +18,13 @@ import { SegmentDuration, SegmentLineCountdown, RunningOrderTiming } from './../
 
 import { RundownUtils } from '../../lib/rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { ErrorBoundary } from '../ErrorBoundary'
 
 interface IProps {
 	key: string
 	segment: SegmentUi
 	runningOrder: RunningOrder,
+	followLiveSegments: boolean,
 	studioInstallation: StudioInstallation
 	segmentLines: Array<SegmentLineUi>
 	timeScale: number
@@ -171,12 +174,17 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 export const SegmentTimeline = translate()(
 class extends React.Component<Translated<IProps>, IStateHeader> {
 	timeline: HTMLDivElement
+	segmentBlock: HTMLDivElement
 
 	constructor (props: Translated<IProps>) {
 		super(props)
 		this.state = {
 			timelineWidth: 1
 		}
+	}
+
+	setSegmentRef = (el: HTMLDivElement) => {
+		this.segmentBlock = el
 	}
 
 	setTimelineRef = (el: HTMLDivElement) => {
@@ -192,6 +200,39 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	onZoomDblClick = (e) => {
 		if (this.props.onFollowLiveLine) {
 			this.props.onFollowLiveLine(true, e)
+		}
+	}
+
+	componentDidUpdate (prevProps: IProps) {
+		if ((prevProps.isLiveSegment === false && this.props.isLiveSegment === true && this.props.followLiveSegments) ||
+			(prevProps.followLiveSegments === false && this.props.followLiveSegments === true && this.props.isLiveSegment === true)) {
+			const previousSegment = $(this.segmentBlock).prev()
+			const segmentPosition = $(this.segmentBlock).offset()
+			let scrollTop: number | null = null
+
+			if (previousSegment.length > 0) {
+				const segmentPosition = $(previousSegment).offset()
+				if (segmentPosition) {
+					scrollTop = segmentPosition.top
+				}
+			} else if (segmentPosition && (
+				(segmentPosition.top > ($('html,body').scrollTop() || 0) + window.innerHeight) ||
+				(segmentPosition.top < ($('html,body').scrollTop() || 0))
+			)) {
+				scrollTop = segmentPosition.top
+			}
+
+			if (scrollTop !== null) {
+				$(document.body).addClass('auto-scrolling')
+				$('html,body').animate({
+					scrollTop: Math.max(0, scrollTop - 175)
+				}, 400, () => {
+					// delay until next frame, so that the scroll handler can fire
+					setTimeout(function () {
+						$(document.body).removeClass('auto-scrolling')
+					})
+				})
+			}
 		}
 	}
 
@@ -315,7 +356,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 					'has-played': this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment,
 					'has-remote-items': this.props.hasRemoteItems && !this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment
 				})}
-			data-mos-id={this.props.segment._id}>
+			data-mos-id={this.props.segment._id} ref={this.setSegmentRef}>
 				<ContextMenuTrigger id='segment-timeline-context-menu'
 					collect={this.getSegmentContext}
 					attributes={{
@@ -354,14 +395,18 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 							  onResize={this.onTimelineResize} />
 				<div className='segment-timeline__timeline-container'>
 					<div className='segment-timeline__timeline' key={this.props.segment._id + '-timeline'} ref={this.setTimelineRef} style={this.timelineStyle()}>
-						{this.renderTimeline()}
+						<ErrorBoundary>
+							{this.renderTimeline()}
+						</ErrorBoundary>
 					</div>
 					{this.renderLiveLine()}
 				</div>
-				<SegmentTimelineZoom
-					onZoomDblClick={this.onZoomDblClick}
-					timelineWidth={this.state.timelineWidth}
-					{...this.props}/>
+				<ErrorBoundary>
+					<SegmentTimelineZoom
+						onZoomDblClick={this.onZoomDblClick}
+						timelineWidth={this.state.timelineWidth}
+						{...this.props}/>
+				</ErrorBoundary>
 			</div>
 		)
 	}

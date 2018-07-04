@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import { RunningOrders } from '../../lib/collections/RunningOrders'
-import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
+import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders'
+import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems, ITimelineTrigger } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItems, RunningOrderBaselineItem } from '../../lib/collections/RunningOrderBaselineItems'
@@ -17,16 +17,13 @@ import { IMOSRunningOrder, IMOSObjectStatus, MosString128 } from 'mos-connection
 import { PlayoutTimelinePrefixes } from '../../lib/api/playout'
 import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
-import { sendStoryStatus } from './peripheralDevice'
+import { sendStoryStatus, roId } from './peripheralDevice'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { PlayoutAPI } from '../../lib/api/playout'
+import { triggerExternalMessage } from './externalMessage'
 
-Meteor.methods({
-	/**
-	 * Activates the RunningOrder:
-	 * TODO: Set up the Timeline
-	 * Set first item on Next queue
-	 */
-	'playout_reload_data': (roId: string) => {
+export namespace ServerPlayoutAPI {
+	export function reloadData (roId: string) {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
@@ -38,8 +35,8 @@ Meteor.methods({
 				logger.debug('Recieved reply for triggerGetRunningOrder', ro)
 			}
 		}, 'triggerGetRunningOrder', runningOrder.mosId)
-	},
-	'playout_activate': (roId: string, rehearsal: boolean) => {
+	}
+	export function roActivate (roId: string, rehearsal: boolean) {
 		rehearsal = !!rehearsal
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -71,16 +68,18 @@ Meteor.methods({
 		}).fetch()
 
 		if (anyOtherActiveRunningOrders.length) {
-			throw new Meteor.Error(400, 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders,'_id'))
+			throw new Meteor.Error(400, 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
 		}
 		logger.info('Activating RO ' + roId + (rehearsal ? ' (Rehearsal)' : ''))
 
 		let segmentLines = runningOrder.getSegmentLines()
 
-		SegmentLines.update({ runningOrderId: runningOrder._id }, { $unset: {
-			startedPlayback: 0,
-			duration: 0
-		}}, {
+		SegmentLines.update({ runningOrderId: runningOrder._id }, {
+			$unset: {
+				startedPlayback: 0,
+				duration: 0
+			}
+		}, {
 			multi: true
 		})
 
@@ -91,22 +90,26 @@ Meteor.methods({
 		})
 
 		// Remove duration on segmentLineItems, as this is set by the ad-lib playback editing
-		SegmentLineItems.update({ runningOrderId: runningOrder._id }, { $unset: {
-			duration: 0
-		}}, {
+		SegmentLineItems.update({ runningOrderId: runningOrder._id }, {
+			$unset: {
+				duration: 0
+			}
+		}, {
 			multi: true
 		})
 
-		RunningOrders.update(runningOrder._id, {$set: {
-			active: true,
-			rehearsal: rehearsal,
-			previousSegmentLineId: null,
-			currentSegmentLineId: null,
-			nextSegmentLineId: segmentLines[0]._id, // put the first on queue
-			updateStoryStatus: null
-		}, $unset: {
-			startedPlayback: 0
-		}})
+		RunningOrders.update(runningOrder._id, {
+			$set: {
+				active: true,
+				rehearsal: rehearsal,
+				previousSegmentLineId: null,
+				currentSegmentLineId: null,
+				nextSegmentLineId: segmentLines[0]._id, // put the first on queue
+				updateStoryStatus: null
+			}, $unset: {
+				startedPlayback: 0
+			}
+		})
 
 		logger.info('Building baseline items...')
 
@@ -114,14 +117,15 @@ Meteor.methods({
 		if (showStyle.baselineTemplate) {
 			const result: TemplateResultAfterPost = runNamedTemplate(showStyle, showStyle.baselineTemplate, literal<TemplateContext>({
 				runningOrderId: runningOrder._id,
-				segmentLine: runningOrder.getSegmentLines()[0]
+				segmentLine: runningOrder.getSegmentLines()[0],
+				templateId: showStyle.baselineTemplate
 			}), {
 				// Dummy object, not used in this template:
 				RunningOrderId: new MosString128(''),
 				Body: [],
 				ID: new MosString128(''),
 
-			})
+			}, 'baseline')
 
 			if (result.baselineItems) {
 				logger.info(`... got ${result.baselineItems.length} items from template.`)
@@ -139,27 +143,25 @@ Meteor.methods({
 		}
 
 		updateTimeline(runningOrder.studioInstallationId)
-	},
-	/**
-	 * Inactivates the RunningOrder
-	 * TODO: Clear the Timeline (?)
-	 */
-	'playout_inactivate': (roId: string) => {
+	}
+	export function roDeactivate (roId: string) {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
-		logger.info('Inactivating RO ' + roId )
+		logger.info('Inactivating RO ' + roId)
 
 		let previousSegmentLine = (runningOrder.currentSegmentLineId ?
 			SegmentLines.findOne(runningOrder.currentSegmentLineId)
 			: null
 		)
-		RunningOrders.update(runningOrder._id, {$set: {
-			active: false,
-			previousSegmentLineId: null,
-			currentSegmentLineId: null,
-			nextSegmentLineId: null
-		}})
+		RunningOrders.update(runningOrder._id, {
+			$set: {
+				active: false,
+				previousSegmentLineId: null,
+				currentSegmentLineId: null,
+				nextSegmentLineId: null
+			}
+		})
 
 		// clean up all runtime baseline items
 		RunningOrderBaselineItems.remove({
@@ -173,18 +175,8 @@ Meteor.methods({
 		updateTimeline(runningOrder.studioInstallationId)
 
 		sendStoryStatus(runningOrder, null)
-	},
-
-	'debug__printTime': () => {
-		let now = getCurrentTime()
-		logger.debug(new Date(now))
-		return now
-	},
-
-	/**
-	 * Perform the TAKE action, i.e start playing a segmentLineItem
-	 */
-	'playout_take': (roId: string) => {
+	}
+	export function roTake (roId: string) {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (!runningOrder.nextSegmentLineId) throw new Meteor.Error(500, 'nextSegmentLineId is not set!')
@@ -201,44 +193,71 @@ Meteor.methods({
 			_rank: {
 				$gt: takeSegmentLine._rank,
 			},
-			_id: {$ne: takeSegmentLine._id}
+			_id: { $ne: takeSegmentLine._id }
 		})
 
 		let nextSegmentLine: SegmentLine | null = segmentLinesAfter[0] || null
 
-		RunningOrders.update(runningOrder._id, {$set: {
-			previousSegmentLineId: runningOrder.currentSegmentLineId,
-			currentSegmentLineId: takeSegmentLine._id,
-			nextSegmentLineId: nextSegmentLine ? nextSegmentLine._id : null
-		}})
+		RunningOrders.update(runningOrder._id, {
+			$set: {
+				previousSegmentLineId: runningOrder.currentSegmentLineId,
+				currentSegmentLineId: takeSegmentLine._id,
+				nextSegmentLineId: nextSegmentLine ? nextSegmentLine._id : null
+			}
+		})
 
 		if (nextSegmentLine) {
 			clearNextLineStartedPlaybackAndDuration(roId, nextSegmentLine._id)
 		}
-
-		updateTimeline(runningOrder.studioInstallationId)
-
-		if (takeSegmentLine.updateStoryStatus) {
-			sendStoryStatus(runningOrder, takeSegmentLine)
-		}
-	},
-
-	'playout_setNext': (roId: string, nextSlId: string) => {
+		afterTake(runningOrder, takeSegmentLine, previousSegmentLine || null)
+	}
+	export function roSetNext (roId: string, nextSlId: string) {
 
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
-		RunningOrders.update(runningOrder._id, {$set: {
-			nextSegmentLineId: nextSlId
-		}})
+		RunningOrders.update(runningOrder._id, {
+			$set: {
+				nextSegmentLineId: nextSlId
+			}
+		})
 
 		clearNextLineStartedPlaybackAndDuration(roId, nextSlId)
 
 		// remove old auto-next from timeline, and add new one
 		updateTimeline(runningOrder.studioInstallationId)
-	},
+	}
+	export function roStoriesMoved (roId: string, onAirNextWindowWidth: number | undefined, nextPosition: number | undefined) {
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
-	'playout_segmentLinePlaybackStart': (roId: string, slId: string, startedPlayback: Time) => {
+		if (runningOrder.nextSegmentLineId) {
+			let currentSegmentLine: SegmentLine | undefined = undefined
+			let nextSegmentLine: SegmentLine | undefined = undefined
+			if (runningOrder.currentSegmentLineId) {
+				currentSegmentLine = SegmentLines.findOne(runningOrder.currentSegmentLineId)
+			}
+			if (runningOrder.nextSegmentLineId) {
+				nextSegmentLine = SegmentLines.findOne(runningOrder.nextSegmentLineId)
+			}
+			if (currentSegmentLine && onAirNextWindowWidth === 2) { // the next line was next to onAir line
+				const newNextLine = runningOrder.getSegmentLines({
+					_rank: {
+						$gt: currentSegmentLine._rank
+					}
+				}, {
+					limit: 1
+				})
+				Meteor.call('playout_setNext', roId, newNextLine.length > 0 ? newNextLine[0]._id : null)
+			} else if (!currentSegmentLine && nextSegmentLine && onAirNextWindowWidth === undefined && nextPosition !== undefined) {
+				const newNextLine = runningOrder.getSegmentLines({}, {
+					limit: nextPosition
+				})
+				Meteor.call('playout_setNext', roId, newNextLine.length > 0 ? newNextLine[newNextLine.length - 1]._id : null)
+			}
+		}
+	}
+	export function slPlaybackStartedCallback (roId: string, slId: string, startedPlayback: Time) {
 		// This method is called when an auto-next event occurs
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -246,6 +265,11 @@ Meteor.methods({
 			_id: slId,
 			runningOrderId: roId
 		})
+
+		let previousSegmentLine = (runningOrder.currentSegmentLineId ?
+			SegmentLines.findOne(runningOrder.currentSegmentLineId)
+			: null
+		)
 
 		if (segLine) {
 			// make sure we don't run multiple times, even if TSR calls us multiple times
@@ -269,13 +293,13 @@ Meteor.methods({
 				} else if (runningOrder.nextSegmentLineId === slId) {
 					// this is the next segment line, clearly an autoNext has taken place
 					if (runningOrder.currentSegmentLineId) {
-						let prevSegLine = SegmentLines.findOne(runningOrder.currentSegmentLineId)
+						// let previousSegmentLine = SegmentLines.findOne(runningOrder.currentSegmentLineId)
 
-						if (!prevSegLine) {
+						if (!previousSegmentLine) {
 							// We couldn't find the previous segment line: this is not a critical issue, but is clearly is a symptom of a larger issue
 							logger.error(`Previous segment line "${runningOrder.currentSegmentLineId}" on running order "${roId}" could not be found.`)
-						} else if (!prevSegLine.duration) {
-							setPreviousLinePlaybackDuration(roId, prevSegLine, startedPlayback)
+						} else if (!previousSegmentLine.duration) {
+							setPreviousLinePlaybackDuration(roId, previousSegmentLine, startedPlayback)
 						}
 					}
 
@@ -325,20 +349,19 @@ Meteor.methods({
 					logger.error(`Segment Line "${segLine._id}" has started playback by the TSR, but has not been selected for playback!`)
 				}
 
-				SegmentLines.update(segLine._id, {$set: {
-					startedPlayback
-				}})
-				updateTimeline(runningOrder.studioInstallationId, startedPlayback)
+				SegmentLines.update(segLine._id, {
+					$set: {
+						startedPlayback
+					}
+				})
 
-				if (segLine.updateStoryStatus) {
-					sendStoryStatus(runningOrder, segLine)
-				}
+				afterTake(runningOrder, segLine, previousSegmentLine || null)
 			}
 		} else {
 			throw new Meteor.Error(404, `Segment line "${slId}" in running order "${roId}" not found!`)
 		}
-	},
-	'playout_segmentAdLibLineItemStart': (roId: string, slId: string, slaiId: string) => {
+	}
+	export function salliPlaybackStart (roId: string, slId: string, slaiId: string) {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		let segLine = SegmentLines.findOne({
@@ -360,8 +383,8 @@ Meteor.methods({
 		// logger.debug('adLibItemStart', newSegmentLineItem)
 
 		updateTimeline(runningOrder.studioInstallationId)
-	},
-	'playout_runningOrderBaselineAdLibItemStart': (roId: string, slId: string, robaliId: string) => {
+	}
+	export function robaliPlaybackStart (roId: string, slId: string, robaliId: string) {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		let segLine = SegmentLines.findOne({
@@ -383,8 +406,8 @@ Meteor.methods({
 		// logger.debug('adLibItemStart', newSegmentLineItem)
 
 		updateTimeline(runningOrder.studioInstallationId)
-	},
-	'playout_segmentAdLibLineItemStop': (roId: string, slId: string, sliId: string) => {
+	}
+	export function salliStop (roId: string, slId: string, sliId: string) {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		let segLine = SegmentLines.findOne({
@@ -423,13 +446,15 @@ Meteor.methods({
 
 		SegmentLineItems.update({
 			_id: sliId
-		}, {$set: {
-			duration: newExpectedDuration
-		}})
+		}, {
+			$set: {
+				duration: newExpectedDuration
+			}
+		})
 
 		updateTimeline(runningOrder.studioInstallationId)
-	},
-	'playout_sourceLayerOnLineStop': (roId: string, slId: string, sourceLayerId: string) => {
+	}
+	export function sourceLayerOnLineStop (roId: string, slId: string, sourceLayerId: string) {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		let segLine = SegmentLines.findOne({
@@ -464,15 +489,17 @@ Meteor.methods({
 			if ((newExpectedDuration < item.expectedDuration) || (item.expectedDuration === 0)) {
 				SegmentLineItems.update({
 					_id: item._id
-				}, {$set: {
-					duration: newExpectedDuration
-				}})
+				}, {
+					$set: {
+						duration: newExpectedDuration
+					}
+				})
 			}
 		})
 
 		updateTimeline(runningOrder.studioInstallationId)
-	},
-	'playout_timelineTriggerTimeUpdate': (timelineObjId: string, time: number) => {
+	}
+	export function timelineTriggerTimeUpdateCallback (timelineObjId: string, time: number) {
 		let tObj = Timeline.findOne(timelineObjId)
 		if (!tObj) throw new Meteor.Error(404, `Timeline obj "${timelineObjId}" not found!`)
 
@@ -480,15 +507,121 @@ Meteor.methods({
 			logger.debug('Update segment line item: ', tObj.metadata.segmentLineItemId, (new Date(time)).toTimeString())
 			SegmentLineItems.update({
 				_id: tObj.metadata.segmentLineItemId
-			}, {$set: {
-				trigger: {
-					type: TriggerType.TIME_ABSOLUTE,
-					value: time
+			}, {
+				$set: {
+					trigger: {
+						type: TriggerType.TIME_ABSOLUTE,
+						value: time
+					}
 				}
-			}})
+			})
+		}
+	}
+}
+
+let methods = {}
+methods[PlayoutAPI.methods.reloadData] = (roId: string) => {
+	return ServerPlayoutAPI.reloadData(roId)
+}
+methods[PlayoutAPI.methods.roActivate] = (roId: string, rehersal: boolean) => {
+	return ServerPlayoutAPI.roActivate(roId, rehersal)
+}
+methods[PlayoutAPI.methods.roDeactivate] = (roId: string) => {
+	return ServerPlayoutAPI.roDeactivate(roId)
+}
+methods[PlayoutAPI.methods.roTake] = (roId: string) => {
+	return ServerPlayoutAPI.roTake(roId)
+}
+methods[PlayoutAPI.methods.roSetNext] = (roId: string, slId: string) => {
+	return ServerPlayoutAPI.roSetNext(roId, slId)
+}
+methods[PlayoutAPI.methods.roStoriesMoved] = (roId: string, onAirNextWindowWidth: number | undefined, nextPosition: number | undefined) => {
+	return ServerPlayoutAPI.roStoriesMoved(roId, onAirNextWindowWidth, nextPosition)
+}
+methods[PlayoutAPI.methods.segmentLinePlaybackStartedCallback] = (roId: string, slId: string, startedPlayback: number) => {
+	return ServerPlayoutAPI.slPlaybackStartedCallback(roId, slId, startedPlayback)
+}
+methods[PlayoutAPI.methods.segmentAdLibLineItemStart] = (roId: string, slId: string, salliId: string) => {
+	return ServerPlayoutAPI.salliPlaybackStart(roId, slId, salliId)
+}
+methods[PlayoutAPI.methods.runningOrderBaselineAdLibItemStart] = (roId: string, slId: string, robaliId: string) => {
+	return ServerPlayoutAPI.robaliPlaybackStart(roId, slId, robaliId)
+}
+methods[PlayoutAPI.methods.segmentAdLibLineItemStop] = (roId: string, slId: string, sliId: string) => {
+	return ServerPlayoutAPI.salliStop(roId, slId, sliId)
+}
+methods[PlayoutAPI.methods.sourceLayerOnLineStop] = (roId: string, slId: string, sourceLayerId: string) => {
+	return ServerPlayoutAPI.sourceLayerOnLineStop(roId, slId, sourceLayerId)
+}
+methods[PlayoutAPI.methods.timelineTriggerTimeUpdateCallback] = (timelineObjId: string, time: number) => {
+	return ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(timelineObjId, time)
+}
+
+_.each(methods, (fcn: Function, key) => {
+	methods[key] = (...args: any[]) => {
+		// logger.info('------- Method call -------')
+		// logger.info(key)
+		// logger.info(args)
+		// logger.info('---------------------------')
+		try {
+			return fcn.apply(null, args)
+		} catch (e) {
+			logger.error(e.message || e.reason || (e.toString ? e.toString() : null) || e)
+			throw e
 		}
 	}
 })
+
+// Apply methods:
+Meteor.methods(methods)
+
+// Meteor.methods({
+// 	/**
+// 	 * Activates the RunningOrder:
+// 	 * TODO: Set up the Timeline
+// 	 * Set first item on Next queue
+// 	 */
+// 	'playout_reload_data': ServerPlayoutAPI.reloadData,
+// 	'playout_activate': ServerPlayoutAPI.roActivate,
+// 	/**
+// 	 * Inactivates the RunningOrder
+// 	 * TODO: Clear the Timeline (?)
+// 	 */
+// 	'playout_inactivate': ServerPlayoutAPI.roDeactivate,
+
+// 	/**
+// 	 * Perform the TAKE action, i.e start playing a segmentLineItem
+// 	 */
+// 	'playout_take': ServerPlayoutAPI.roTake,
+// 	'playout_setNext': ServerPlayoutAPI.roSetNext,
+// 	'playout_storiesMoved': ServerPlayoutAPI.roStoriesMoved,
+// 	'playout_segmentLinePlaybackStart': ServerPlayoutAPI.slPlaybackStartedCallback,
+// 	'playout_segmentAdLibLineItemStart': ServerPlayoutAPI.salliPlaybackStart,
+// 	'playout_runningOrderBaselineAdLibItemStart': ServerPlayoutAPI.robaliPlaybackStart,
+// 	'playout_segmentAdLibLineItemStop': ServerPlayoutAPI.salliStop,
+// 	'playout_sourceLayerOnLineStop': ServerPlayoutAPI.sourceLayerOnLineStop,
+// 	'playout_timelineTriggerTimeUpdate': ServerPlayoutAPI.timelineTriggerTimeUpdateCallback
+// })
+
+// Temporary methods
+Meteor.methods({
+	'debug__printTime': () => {
+		let now = getCurrentTime()
+		logger.debug(new Date(now))
+		return now
+	},
+})
+
+function afterTake (runningOrder: RunningOrder, takeSegmentLine: SegmentLine, previousSegmentLine: SegmentLine | null) {
+	// This function should be called at the end of a "take" event (when the SegmentLines have been updated)
+	updateTimeline(runningOrder.studioInstallationId)
+
+	if (takeSegmentLine.updateStoryStatus) {
+		sendStoryStatus(runningOrder, takeSegmentLine)
+	}
+
+	triggerExternalMessage(runningOrder, takeSegmentLine, previousSegmentLine)
+}
 
 function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem, segmentLine: SegmentLine): SegmentLineItem {
 	const oldId = adLibItem._id

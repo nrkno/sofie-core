@@ -161,7 +161,8 @@ Meteor.methods({
 			_id: 'dummyShow0',
 			name: 'Dummy show style',
 			templateMappings: [],
-			baselineTemplate: ''
+			baselineTemplate: '',
+			messageTemplate: ''
 		})
 
 		RunningOrders.update({showStyleId: { $not: { $exists: true }}}, { $set: { showStyleId: 'dummyShow0' }})

@@ -3,7 +3,7 @@ import * as React from 'react'
 import { FloatingInspector } from '../../FloatingInspector'
 
 import * as ClassNames from 'classnames'
-import { CustomLayerItemRenderer } from './CustomLayerItemRenderer'
+import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
 
 import { RundownAPI } from '../../../../lib/api/rundown'
 import { literal } from '../../../../lib/lib'
@@ -23,6 +23,8 @@ interface SplitSubItem {
 
 export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 	subItems: Array<SplitSubItem>
+	leftLabel: HTMLSpanElement
+	rightLabel: HTMLSpanElement
 
 	constructor (props) {
 		super(props)
@@ -32,6 +34,31 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 
 	componentWillUpdate () {
 		this.subItems = this.rebuildSubItems()
+	}
+
+	setLeftLabelRef = (e: HTMLSpanElement) => {
+		this.leftLabel = e
+	}
+
+	setRightLabelRef = (e: HTMLSpanElement) => {
+		this.rightLabel = e
+	}
+
+	updateAnchoredElsWidths = () => {
+		let leftLabelWidth = $(this.leftLabel).width() || 0
+		let rightLabelWidth = $(this.rightLabel).width() || 0
+
+		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
+	}
+
+	componentDidUpdate (prevProps: Readonly<ISourceLayerItemProps>, prevState: Readonly<any>) {
+		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
+			super.componentDidUpdate(prevProps, prevState)
+		}
+
+		if (this.props.segmentLineItem.name !== prevProps.segmentLineItem.name) {
+			this.updateAnchoredElsWidths()
+		}
 	}
 
 	rebuildSubItems = () => {
@@ -135,6 +162,12 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 			<div className='segment-timeline__layer-item__preview' key={this.props.segmentLineItem._id + '-inside-layers'}>
 				{this.renderSubItems()}
 			</div>,
+			<span className='segment-timeline__layer-item__label first-words overflow-label' ref={this.setLeftLabelRef} key={this.props.segmentLineItem._id + '-start'} style={this.getItemLabelOffsetLeft()}>
+				{begin}
+			</span>,
+			<span className='segment-timeline__layer-item__label last-words' ref={this.setRightLabelRef} key={this.props.segmentLineItem._id + '-finish'} style={this.getItemLabelOffsetRight()}>
+				{end}
+			</span>,
 			<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 				<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
 					{this.renderSplitPreview()}

@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
-	type: string
+	type: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown'
 }
 export class EditAttribute extends React.Component<IEditAttribute> {
 	render () {
@@ -332,6 +332,20 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 		}
 
 		return options
+	}
+	componentDidMount () {
+		let availableOptions = this.getOptions()
+		let initialValue = this.getAttribute()
+		// set the value to the first one (default), if value not within available options
+		if (!availableOptions.find((item) => {
+			if (this.props.optionsAreNumbers) {
+				return (item.value === (initialValue + ''))
+			} else {
+				return (item.value === initialValue)
+			}
+		})) {
+			this.handleUpdate(this.props.optionsAreNumbers !== undefined ? parseInt(availableOptions[0].value, 10) : availableOptions[0].value)
+		}
 	}
 	// getAttributeOption () {
 	// }

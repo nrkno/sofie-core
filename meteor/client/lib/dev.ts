@@ -16,6 +16,9 @@ import { SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibIte
 import { RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { RunningOrderDataCache } from '../../lib/collections/RunningOrderDataCache'
 import { RunningOrderBaselineItems } from '../../lib/collections/RunningOrderBaselineItems'
+import { RuntimeFunctionDebugData } from '../../lib/collections/RuntimeFunctionDebugData'
+import { Session } from 'meteor/session'
+import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
 
 // Note: These things are convenience functions to be used during development
 
@@ -36,5 +39,8 @@ window['SegmentLineAdLibItems'] = SegmentLineAdLibItems
 window['RunningOrderBaselineAdLibItems'] = RunningOrderBaselineAdLibItems
 window['RunningOrderDataCache'] = RunningOrderDataCache
 window['RunningOrderBaselineItems'] = RunningOrderBaselineItems
+window['RuntimeFunctionDebugData'] = RuntimeFunctionDebugData
+window['ExternalMessageQueue'] = ExternalMessageQueue
 
 window['getCurrentTime'] = getCurrentTime
+window['Session'] = Session

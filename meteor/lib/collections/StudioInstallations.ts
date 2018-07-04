@@ -85,6 +85,8 @@ export interface ISourceLayer extends ISourceLayerBase {
 	_rank: number
 	/** User-presentable name for the source layer */
 	name: string
+	/** Abbreviation for display in the countdown screens */
+	abbreviation?: string
 	type: RundownAPI.SourceLayerType
 	/** If set to true, the layer can handle any number of simultaneus Line Items */
 	unlimited: boolean

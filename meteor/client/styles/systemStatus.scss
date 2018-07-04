@@ -3,18 +3,29 @@
 .system-status {
 
 	.device-item-container {
-		border: 1px solid #666;
+		background: #f0f0f0;
+    	border-top: 1px solid #ddd;
+    	padding: 9px 5px 8px 10px;
 		margin: 0.3em;
 
+		&:hover {
+			background: #fff;
+		}
+
 		.children {
+			margin-top: 0.3em;
 			padding-left: 0.5em;
 			padding-right: 0.5em;
+
+			> .device-item-container {
+				margin-bottom: 0;
+				margin-top: 0;
+			}
 		}
 	}
 	.device-item {
-
+		line-height: 1.5em;
 		clear: both;
-		padding-bottom: 0.5em;
 
 		.clear {
 			clear: both;
@@ -25,7 +36,10 @@
 			text-align: right;
 		}
 		.actions-container {
+			margin-top: 0.5em;
 			display: block;
+			text-align: right;
+			clear: both;
 		}
 
 		label {
@@ -35,6 +49,12 @@
 			display: inline-block
 		}
 		.device-item__device-status {
+			> .value {
+				> .pill {
+					margin-right: 0;
+				}
+			}
+
 			&.device-item__device-status--good {
 				.pill {
 					background: $color-status-good;
@@ -79,10 +99,13 @@
 		}
 
 		.device-item__actions {
-
 			> .action-btn {
 				vertical-align: top;
     			margin-top: 0.4em;
+			}
+
+			> .btn {
+				margin-left: 0.3em;
 			}
 		}
 	}

@@ -120,7 +120,11 @@ class StudioOutputSettings extends React.Component<Translated<IStudioOutputSetti
 	renderOutputs () {
 		const { t } = this.props
 		return (
-			this.props.studioInstallation.outputLayers.sort((a, b) => {
+			this.props.studioInstallation.outputLayers.map((item, index) => {
+				let newItem = _.clone(item) as (IOutputLayer & { index: number })
+				newItem.index = index
+				return newItem
+			}).sort((a, b) => {
 				return a._rank - b._rank
 			}).map((item, index) => {
 				return [
@@ -156,7 +160,7 @@ class StudioOutputSettings extends React.Component<Translated<IStudioOutputSetti
 											{t('Channel name')}
 												<EditAttribute
 													modifiedClassName='bghl'
-													attribute={'outputLayers.' + index + '.name'}
+													attribute={'outputLayers.' + item.index + '.name'}
 													obj={this.props.studioInstallation}
 													type='text'
 													collection={StudioInstallations}
@@ -168,7 +172,7 @@ class StudioOutputSettings extends React.Component<Translated<IStudioOutputSetti
 											{t('Internal ID')}
 											<EditAttribute
 												modifiedClassName='bghl'
-												attribute={'outputLayers.' + index + '._id'}
+												attribute={'outputLayers.' + item.index + '._id'}
 												obj={this.props.studioInstallation}
 												type='text'
 												collection={StudioInstallations}
@@ -180,7 +184,7 @@ class StudioOutputSettings extends React.Component<Translated<IStudioOutputSetti
 											{t('Is PGM output')}
 											<EditAttribute
 												modifiedClassName='bghl'
-												attribute={'outputLayers.' + index + '.isPGM'}
+												attribute={'outputLayers.' + item.index + '.isPGM'}
 												obj={this.props.studioInstallation}
 												type='checkbox'
 												collection={StudioInstallations}
@@ -192,7 +196,7 @@ class StudioOutputSettings extends React.Component<Translated<IStudioOutputSetti
 											{t('Display rank')}
 											<EditAttribute
 												modifiedClassName='bghl'
-												attribute={'outputLayers.' + index + '._rank'}
+												attribute={'outputLayers.' + item.index + '._rank'}
 												obj={this.props.studioInstallation}
 												type='int'
 												collection={StudioInstallations}
@@ -500,7 +504,11 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 		const { t } = this.props
 
 		return (
-			this.props.studioInstallation.sourceLayers.sort((a, b) => {
+			this.props.studioInstallation.sourceLayers.map((item, index) => {
+				let newItem = _.clone(item) as (ISourceLayer & {index: number})
+				newItem.index = index
+				return newItem
+			}).sort((a, b) => {
 				return a._rank - b._rank
 			}).map((item, index) => {
 				return [
@@ -534,7 +542,19 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 											{t('Source name')}
 											<EditAttribute
 												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + index + '.name'}
+												attribute={'sourceLayers.' + item.index + '.name'}
+												obj={this.props.studioInstallation}
+												type='text'
+												collection={StudioInstallations}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Source abbreviation')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + item.index + '.abbreviation'}
 												obj={this.props.studioInstallation}
 												type='text'
 												collection={StudioInstallations}
@@ -546,7 +566,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 											{t('Internal ID')}
 											<EditAttribute
 												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + index + '._id'}
+												attribute={'sourceLayers.' + item.index + '._id'}
 												obj={this.props.studioInstallation}
 												type='text'
 												collection={StudioInstallations}
@@ -559,7 +579,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 											<div className='select focusable'>
 												<EditAttribute
 													modifiedClassName='bghl'
-													attribute={'sourceLayers.' + index + '.type'}
+													attribute={'sourceLayers.' + item.index + '.type'}
 													obj={this.props.studioInstallation}
 													type='dropdown'
 													options={RundownAPI.SourceLayerType}
@@ -574,7 +594,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 											{t('Is unlimited')}
 											<EditAttribute
 												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + index + '.unlimited'}
+												attribute={'sourceLayers.' + item.index + '.unlimited'}
 												obj={this.props.studioInstallation}
 												type='checkbox'
 												collection={StudioInstallations}
@@ -586,7 +606,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 											{t('Is on clean PGM')}
 											<EditAttribute
 												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + index + '.onPGMClean'}
+												attribute={'sourceLayers.' + item.index + '.onPGMClean'}
 												obj={this.props.studioInstallation}
 												type='checkbox'
 												collection={StudioInstallations}
@@ -598,7 +618,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 											{t('Is a live remote input')}
 											<EditAttribute
 												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + index + '.isRemoteInput'}
+												attribute={'sourceLayers.' + item.index + '.isRemoteInput'}
 												obj={this.props.studioInstallation}
 												type='checkbox'
 												collection={StudioInstallations}
@@ -610,7 +630,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 											{t('Display rank')}
 											<EditAttribute
 												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + index + '._rank'}
+												attribute={'sourceLayers.' + item.index + '._rank'}
 												obj={this.props.studioInstallation}
 												type='int'
 												collection={StudioInstallations}
@@ -622,7 +642,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 											{t('AdLib activate shortcut list')}
 											<EditAttribute
 												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + index + '.activateKeyboardHotkeys'}
+												attribute={'sourceLayers.' + item.index + '.activateKeyboardHotkeys'}
 												obj={this.props.studioInstallation}
 												type='text'
 												collection={StudioInstallations}
@@ -634,7 +654,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 											{t('Clear shortcut')}
 											<EditAttribute
 												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + index + '.clearKeyboardHotkey'}
+												attribute={'sourceLayers.' + item.index + '.clearKeyboardHotkey'}
 												obj={this.props.studioInstallation}
 												type='text'
 												collection={StudioInstallations}
@@ -646,7 +666,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 											{t('Assign hotkeys to global adlibs')}
 											<EditAttribute
 												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + index + '.assignHotkeysToGlobalAdlibs'}
+												attribute={'sourceLayers.' + item.index + '.assignHotkeysToGlobalAdlibs'}
 												obj={this.props.studioInstallation}
 												type='checkbox'
 												collection={StudioInstallations}
