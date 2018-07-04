@@ -248,12 +248,12 @@ export namespace ServerPlayoutAPI {
 				}, {
 					limit: 1
 				})
-				Meteor.call('playout_setNext', roId, newNextLine.length > 0 ? newNextLine[0]._id : null)
+				Meteor.call(PlayoutAPI.methods.roSetNext, roId, newNextLine.length > 0 ? newNextLine[0]._id : null)
 			} else if (!currentSegmentLine && nextSegmentLine && onAirNextWindowWidth === undefined && nextPosition !== undefined) {
 				const newNextLine = runningOrder.getSegmentLines({}, {
 					limit: nextPosition
 				})
-				Meteor.call('playout_setNext', roId, newNextLine.length > 0 ? newNextLine[newNextLine.length - 1]._id : null)
+				Meteor.call(PlayoutAPI.methods.roSetNext, roId, newNextLine.length > 0 ? newNextLine[newNextLine.length - 1]._id : null)
 			}
 		}
 	}
@@ -911,6 +911,7 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 
 		// only add the next objects into the timeline if the next segment is autoNext
 		if (nextSegmentLine && currentSegmentLine && currentSegmentLine.autoNext) {
+			console.log('This segment line will autonext')
 			let nextSegmentLineGroup = createSegmentLineGroup(nextSegmentLine, 0)
 			if (currentSegmentLineGroup) {
 				nextSegmentLineGroup.trigger = literal<ITimelineTrigger>({
