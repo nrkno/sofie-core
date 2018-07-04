@@ -195,7 +195,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 							onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
 							<p>{t(`Are you sure you want to delete this device?`)}</p>
 						</ModalDialog>
-						<button key='button-device' className='action-btn' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteDevice(this.props.device)}>
+						<button key='button-device' className='btn btn-primary' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteDevice(this.props.device)}>
 							<FontAwesomeIcon icon={faTrash} />
 						</button>
 						{(
@@ -207,7 +207,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 									onSecondary={(e) => this.handleConfirmKillCancel(e)}>
 									<p>{t(`Are you sure you want to kill the process of this device?`)}</p>
 								</ModalDialog>,
-								<button key='button-process' className='action-btn' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onKillDevice(this.props.device)}>
+								<button key='button-process' className='btn btn-secondary' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onKillDevice(this.props.device)}>
 									Kill process
 								</button>
 							] : null
@@ -349,8 +349,8 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 		const { t } = this.props
 
 		return (
-			<div className='mtl gutter system-status'>
-				<header className='mvs'>
+			<div className='mhl gutter system-status'>
+				<header className='mbs'>
 					<h1>{t('System Status')}</h1>
 				</header>
 				<div className='mod mvl'>

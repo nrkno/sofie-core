@@ -73,9 +73,9 @@ class Status extends React.Component<Translated<IStatusProps>> {
 
 		return (
 			<div className='mtl gutter'>
-				<header className='mvs'>
+				{ /* <header className='mvs'>
 					<h1>{t('Status')}</h1>
-				</header>
+				</header> */ }
 				<div className='mod mvl mhs'>
 					<div className='row'>
 						<div className='col c12 rm-c1 status-menu'>
