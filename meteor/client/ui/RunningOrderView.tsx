@@ -504,8 +504,8 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		if (this.props.segments) {
 			return this.props.segments.map((segment) => {
 				if (this.props.studioInstallation && this.props.runningOrder) {
-					return <ErrorBoundary>
-							<SegmentTimelineContainer key={segment._id}
+					return <ErrorBoundary key={segment._id}>
+							<SegmentTimelineContainer
 												studioInstallation={this.props.studioInstallation}
 												followLiveSegments={this.state.followLiveSegments}
 												segment={segment}

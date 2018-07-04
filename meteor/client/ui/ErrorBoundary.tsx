@@ -9,8 +9,8 @@ interface IState {
 	expandedComponentStack?: boolean
 }
 
-export const ErrorBoundary = class extends React.Component<{}, IState> {
-	static const style = {
+export class ErrorBoundary extends React.Component<{}, IState> {
+	static style = {
 		box: {
 			display: 'block',
 			position: 'static',
@@ -19,7 +19,7 @@ export const ErrorBoundary = class extends React.Component<{}, IState> {
 			fontSize: '10px',
 			lineHeight: '1.2em',
 			fontFamily: 'Roboto, sans-serif',
-			fontWeight: '300',
+			fontWeight: 300,
 			width: '100%',
 			height: 'auto',
 			overflow: 'visible',
@@ -27,7 +27,7 @@ export const ErrorBoundary = class extends React.Component<{}, IState> {
 			textDecoration: 'none',
 			color: 'red',
 			border: '1px solid red'
-		},
+		} as React.CSSProperties,
 		header: {
 			display: 'block',
 			position: 'static',
@@ -36,7 +36,7 @@ export const ErrorBoundary = class extends React.Component<{}, IState> {
 			fontSize: '14px',
 			lineHeight: '1.2em',
 			fontFamily: 'Roboto, sans-serif',
-			fontWeight: '600',
+			fontWeight: 600,
 			width: '100%',
 			height: 'auto',
 			overflow: 'visible',
@@ -44,7 +44,7 @@ export const ErrorBoundary = class extends React.Component<{}, IState> {
 			textDecoration: 'none',
 			color: 'red',
 			border: 'none'
-		},
+		} as React.CSSProperties,
 		message: {
 			display: 'block',
 			position: 'static',
@@ -53,7 +53,7 @@ export const ErrorBoundary = class extends React.Component<{}, IState> {
 			fontSize: '10px',
 			lineHeight: '1.2em',
 			fontFamily: 'Roboto, sans-serif',
-			fontWeight: '300',
+			fontWeight: 300,
 			width: '100%',
 			height: 'auto',
 			overflow: 'visible',
@@ -61,7 +61,7 @@ export const ErrorBoundary = class extends React.Component<{}, IState> {
 			textDecoration: 'none',
 			color: 'red',
 			border: 'none'
-		},
+		} as React.CSSProperties,
 		stack: {
 			display: 'block',
 			position: 'static',
@@ -70,7 +70,7 @@ export const ErrorBoundary = class extends React.Component<{}, IState> {
 			fontSize: '10px',
 			lineHeight: '1.2em',
 			fontFamily: 'Roboto, sans-serif',
-			fontWeight: '300',
+			fontWeight: 300,
 			width: '100%',
 			height: 'auto',
 			overflow: 'hidden',
@@ -81,7 +81,7 @@ export const ErrorBoundary = class extends React.Component<{}, IState> {
 			border: 'none',
 			cursor: 'pointer',
 			whiteSpace: 'nowrap'
-		},
+		} as React.CSSProperties,
 		componentStack: {
 			display: 'block',
 			position: 'static',
@@ -90,7 +90,7 @@ export const ErrorBoundary = class extends React.Component<{}, IState> {
 			fontSize: '10px',
 			lineHeight: '1.2em',
 			fontFamily: 'Roboto, sans-serif',
-			fontWeight: '300',
+			fontWeight: 300,
 			width: '100%',
 			height: 'auto',
 			overflow: 'hidden',
@@ -101,10 +101,10 @@ export const ErrorBoundary = class extends React.Component<{}, IState> {
 			border: 'none',
 			cursor: 'pointer',
 			whiteSpace: 'nowrap'
-		},
+		} as React.CSSProperties,
 		expandedStack: {
 			whiteSpace: 'pre'
-		},
+		} as React.CSSProperties,
 		resetButton: {
 			display: 'block',
 			position: 'static',
@@ -113,7 +113,7 @@ export const ErrorBoundary = class extends React.Component<{}, IState> {
 			fontSize: '10px',
 			lineHeight: '1.2em',
 			fontFamily: 'Roboto, sans-serif',
-			fontWeight: '600',
+			fontWeight: 600,
 			width: '100%',
 			height: 'auto',
 			overflow: 'visible',
@@ -122,7 +122,7 @@ export const ErrorBoundary = class extends React.Component<{}, IState> {
 			color: 'red',
 			border: 'none',
 			cursor: 'pointer'
-		}
+		} as React.CSSProperties
 	}
 
 	constructor (props) {

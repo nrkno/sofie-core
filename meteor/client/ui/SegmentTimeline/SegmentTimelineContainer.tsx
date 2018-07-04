@@ -67,7 +67,6 @@ interface ISegmentLineItemUiDictionary {
 	[key: string]: SegmentLineItemUi
 }
 interface IProps {
-	key: string,
 	segment: Segment,
 	studioInstallation: StudioInstallation,
 	runningOrder: RunningOrder,
