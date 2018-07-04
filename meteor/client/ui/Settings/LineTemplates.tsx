@@ -420,6 +420,18 @@ declare enum LineItemStatusCode {
 	/** The source is present, but should not be played due to a technical malfunction (file is broken, camera robotics failed, REMOTE input is just bars, etc.) */
 	SOURCE_BROKEN = 2
 }
+
+declare enum SegmentLineItemLifespan {
+	Normal = 0,
+	OutOnNext = 1,
+	Infinite = 2,
+}
+declare enum PlayoutTimelinePrefixes {
+	SEGMENT_LINE_GROUP_PREFIX = 'sl_group_',
+	SEGMENT_LINE_GROUP_FIRST_ITEM_PREFIX = 'sl_group_firstobject_',
+	SEGMENT_LINE_ITEM_GROUP_PREFIX = 'sli_group_',
+	SEGMENT_LINE_ITEM_GROUP_FIRST_ITEM_PREFIX = 'sli_group_firstobject_',
+}
 `, libName)
 		}
 		let typings

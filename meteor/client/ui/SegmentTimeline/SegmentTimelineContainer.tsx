@@ -17,6 +17,7 @@ import { SegmentTimeline } from './SegmentTimeline'
 
 import { getCurrentTime } from '../../../lib/lib'
 import { RunningOrderTiming } from '../RunningOrderTiming'
+import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 
 export interface SegmentUi extends Segment {
 	/** Output layers available in the installation used by this segment */
@@ -191,7 +192,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 		_.forEach<SegmentLineItemUi>(segmentLine.items, (segmentLineItem) => {
 			slTimeline.push({
-				id: segmentLineItem._id,
+				id: PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + segmentLineItem._id,
 				trigger: offsetTrigger(segmentLineItem.trigger, TIMELINE_TEMP_OFFSET),
 				duration: segmentLineItem.duration || segmentLineItem.expectedDuration || 0,
 				LLayer: segmentLineItem.outputLayerId,

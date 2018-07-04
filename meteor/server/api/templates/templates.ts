@@ -8,7 +8,7 @@ import {
 } from 'mos-connection'
 import { RuntimeFunctions, RuntimeFunction } from '../../../lib/collections/RuntimeFunctions'
 import { SegmentLine, DBSegmentLine } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem } from '../../../lib/collections/SegmentLineItems'
+import { SegmentLineItem, SegmentLineItemLifespan } from '../../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItem } from '../../../lib/collections/RunningOrderBaselineItems'
 import { literal, Optional, getCurrentTime } from '../../../lib/lib'
@@ -24,6 +24,7 @@ import {
 } from '../../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { logger } from '../../logging'
 import { RunningOrders, RunningOrder } from '../../../lib/collections/RunningOrders'
@@ -297,6 +298,8 @@ export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, 
 		Transition,
 		Ease,
 		Direction,
+		SegmentLineItemLifespan,
+		PlayoutTimelinePrefixes,
 	})
 	return (...args) => {
 		saveDebugData(runtimeFunction, reason, ...args)

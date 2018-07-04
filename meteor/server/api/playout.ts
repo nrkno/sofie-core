@@ -1,11 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems, ITimelineTrigger } from '../../lib/collections/SegmentLineItems'
+import { SegmentLineItem, SegmentLineItems, ITimelineTrigger, SegmentLineItemLifespan } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItems, RunningOrderBaselineItem } from '../../lib/collections/RunningOrderBaselineItems'
 import { getCurrentTime, saveIntoDb, literal, Time } from '../../lib/lib'
-import { Timeline, TimelineObj, TimelineObjGroupSegmentLine, TimelineContentTypeOther, TimelineObjAbstract, TimelineObjGroup, TimelineContentTypeLawo, TimelineObjLawo } from '../../lib/collections/Timeline'
+import { Timeline, TimelineObj, TimelineObjGroupSegmentLine, TimelineContentTypeOther, TimelineObjSegmentLineAbstract, TimelineObjSegmentLineItemAbstract, TimelineObjGroup, TimelineContentTypeLawo, TimelineObjLawo } from '../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
 import { Segments } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
@@ -89,9 +89,13 @@ export namespace ServerPlayoutAPI {
 			dynamicallyInserted: true
 		})
 
+		// ensure that any removed infinites (caused by adlib) are restored
+		updateSourceLayerInfinitesAfterLine(runningOrder, true)
+
 		// Remove duration on segmentLineItems, as this is set by the ad-lib playback editing
 		SegmentLineItems.update({ runningOrderId: runningOrder._id }, {
 			$unset: {
+				startedPlayback: 0,
 				duration: 0
 			}
 		}, {
@@ -258,6 +262,59 @@ export namespace ServerPlayoutAPI {
 			}
 		}
 	}
+
+	export function sliPlaybackStartedCallback (roId: string, sliId: string, startedPlayback: Time) {
+		// This method is called when an auto-next event occurs
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		let segLineItem = SegmentLineItems.findOne({
+			_id: sliId,
+			runningOrderId: roId
+		})
+		if (!segLineItem) {
+			throw new Meteor.Error(404, `Segment line item "${sliId}" in running order "${roId}" not found!`)
+		}
+
+		let segLine = SegmentLines.findOne({
+			_id: segLineItem.segmentLineId,
+			runningOrderId: roId
+		})
+		if (!segLine) {
+			throw new Meteor.Error(404, `Segment line "${segLineItem._id}" in running order "${roId}" not found!`)
+		}
+
+		if (!segLineItem.startedPlayback) {
+			logger.info(`Playout reports segment line item "${sliId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
+
+			let itemsToStop = segLine.getSegmentLinesItems().filter(l => l.infiniteMode && !l.expectedDuration && segLineItem && l.sourceLayerId === segLineItem.sourceLayerId && segLineItem._id !== l._id)
+			itemsToStop.forEach(l => {
+				let duration = 1
+				if (l.startedPlayback) {
+					duration = startedPlayback - l.startedPlayback
+				}
+				if (duration === 0) {
+					duration = 1
+				}
+
+				logger.info('set duration of ' + l._id + ': ' + duration + ' (started: ' + l.startedPlayback + ')')
+
+				SegmentLineItems.update(l._id, {$set: {
+					duration
+				}})
+			})
+
+			// store new value
+			SegmentLineItems.update(segLineItem._id, {$set: {
+				startedPlayback
+			}})
+
+			// startedPlayback changes nothing, so only update if any durations were set
+			if (itemsToStop.length > 0) {
+				updateTimeline(runningOrder.studioInstallationId)
+			}
+		}
+	}
+
 	export function slPlaybackStartedCallback (roId: string, slId: string, startedPlayback: Time) {
 		// This method is called when an auto-next event occurs
 		let runningOrder = RunningOrders.findOne(roId)
@@ -385,6 +442,8 @@ export namespace ServerPlayoutAPI {
 
 		// logger.debug('adLibItemStart', newSegmentLineItem)
 
+		stopInfinitesRunningOnLayer(runningOrder, segLine, newSegmentLineItem.sourceLayerId)
+
 		updateTimeline(runningOrder.studioInstallationId)
 	}
 	export function robaliPlaybackStart (roId: string, slId: string, robaliId: string) {
@@ -407,6 +466,8 @@ export namespace ServerPlayoutAPI {
 		SegmentLineItems.insert(newSegmentLineItem)
 
 		// logger.debug('adLibItemStart', newSegmentLineItem)
+
+		stopInfinitesRunningOnLayer(runningOrder, segLine, newSegmentLineItem.sourceLayerId)
 
 		updateTimeline(runningOrder.studioInstallationId)
 	}
@@ -499,6 +560,8 @@ export namespace ServerPlayoutAPI {
 				})
 			}
 		})
+
+		updateSourceLayerInfinitesAfterLine(runningOrder, false, segLine)
 
 		updateTimeline(runningOrder.studioInstallationId)
 	}
@@ -626,6 +689,141 @@ function afterTake (runningOrder: RunningOrder, takeSegmentLine: SegmentLine, pr
 	triggerExternalMessage(runningOrder, takeSegmentLine, previousSegmentLine)
 }
 
+// TODO - execute this after importing rundown
+function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUntilEnd: boolean, previousLine?: SegmentLine) {
+	let activeLines: { [layer: string]: SegmentLineItem } = {}
+	let activeLinesSegments: { [layer: string]: string } = {}
+
+	if (previousLine) {
+		// figure out the baseline to set
+		let prevItems = previousLine.getSegmentLinesItems().filter(i => i.infiniteMode && !i.expectedDuration)
+		for (let item of prevItems) {
+			// this means it has been stopped, so dont continue it now
+			if (item.duration) {
+				continue
+			}
+
+			if (!item.infiniteId) {
+				// ensure infinite id is set
+				item.infiniteId = item._id
+				SegmentLineItems.update(item._id, { $set: { infiniteId: item.infiniteId } })
+			}
+
+			activeLines[item.sourceLayerId] = item
+			activeLinesSegments[item.sourceLayerId] = previousLine.segmentId
+		}
+	}
+
+	let linesToProcess = runningOrder.getSegmentLines()
+	if (previousLine) {
+		linesToProcess = linesToProcess.filter(l => l._rank > previousLine._rank)
+	}
+
+	for (let line of linesToProcess) {
+		// Drop any that relate only to previous segments
+		for (let k in activeLinesSegments) {
+			let s = activeLinesSegments[k]
+			let i = activeLines[k]
+			if (!i.infiniteMode || i.infiniteMode === SegmentLineItemLifespan.OutOnNext && s !== line.segmentId) {
+				delete activeLines[k]
+				delete activeLinesSegments[k]
+			}
+		}
+
+		// ensure any currently defined infinites are still wanted
+		let currentItems = line.getSegmentLinesItems()
+		let currentInfinites = currentItems.filter(i => i.infiniteMode && !i.expectedDuration && i.infiniteId && i.infiniteId !== i._id)
+		let removedInfinites: string[] = []
+		for (let item of currentInfinites) {
+			if (!activeLinesSegments[item.sourceLayerId]) {
+				// Previous item no longer enforces the existence of this one
+				SegmentLineItems.remove(item)
+				removedInfinites.push(item._id)
+			}
+			// TODO - should i check whether it has ended, as that could have happened if we are reevaluating??
+		}
+
+		// stop if not running to the end and there is/was nothing active
+		if (!runUntilEnd && Object.keys(activeLinesSegments).length === 0 && currentInfinites.length === 0) {
+			break
+		}
+
+		// figure out what infinites are to be extended
+		// TODO - these need sorting somehow so that we go through them sequentially. or at least sequentially within layers
+		currentItems = currentItems.filter(i => removedInfinites.indexOf(i._id) < 0)
+		for (let k in activeLines) {
+			let newItem = activeLines[k]
+
+			const exist = currentItems.filter(i => i.sourceLayerId === newItem.sourceLayerId)
+			if (exist && exist.length > 0) {
+				if (exist.find(e => !!e.infiniteId && e.infiniteId === newItem.infiniteId)) {
+					continue
+				}
+
+				delete activeLines[k] // It will be stopped by this line
+				delete activeLinesSegments[k] // It will be stopped by this line
+
+				// if we matched with an infinite, then make sure that infinite is kept going
+				if (exist[0].infiniteMode) {
+					activeLines[k] = exist[0]
+					activeLinesSegments[k] = line.segmentId
+				}
+
+				// Timings get handled when the replacement item starts playing.
+				// itll be too complicated to try and calculate in advance and it wouldnt account for any runtime latencies etc
+				if (exist[0].trigger.type === TriggerType.TIME_ABSOLUTE) {
+					if (exist[0].trigger.value === 0) {
+						// skip the infinite, as it will never show
+						continue
+					}
+				}
+			}
+
+			newItem.segmentLineId = line._id
+			newItem.continuesRefId = newItem._id
+			newItem.trigger = {
+				type: TriggerType.TIME_ABSOLUTE,
+				value: 0
+			}
+			newItem._id = newItem.infiniteId + '_' + line._id
+
+			SegmentLineItems.insert(newItem)
+		}
+
+		// find any new infinites exposed by this
+		let newInfinites = currentItems.filter(i => i.infiniteMode && !i.expectedDuration && (!i.infiniteId || i.infiniteId === i._id))
+		newInfinites.forEach(i => {
+			// Set the infinite id of this
+			if (!i.infiniteId) {
+				i.infiniteId = i._id
+				SegmentLineItems.update(i._id, {$set: {
+					infiniteId: i._id
+				}})
+			}
+
+			// can only be one infinite on a layer at a time
+			// TODO - if there are multiple in this set, make sure to pass on the last one
+			activeLines[i.sourceLayerId] = i
+			activeLinesSegments[i.sourceLayerId] = line.segmentId
+		})
+	}
+}
+
+function stopInfinitesRunningOnLayer (runningOrder: RunningOrder, segLine: SegmentLine, sourceLayer: string) {
+	let remainingLines = runningOrder.getSegmentLines().filter(l => l._rank > segLine._rank)
+	for (let line of remainingLines) {
+		let continuations = line.getSegmentLinesItems().filter(i => i.infiniteMode && i.infiniteId && i.infiniteId !== i._id && i.sourceLayerId === sourceLayer)
+		if (continuations.length === 0) {
+			break
+		}
+
+		continuations.forEach(i => SegmentLineItems.remove(i))
+	}
+
+	// ensure adlib is extended correctly if infinite
+	updateSourceLayerInfinitesAfterLine(runningOrder, false, segLine)
+}
+
 function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem, segmentLine: SegmentLine): SegmentLineItem {
 	const oldId = adLibItem._id
 	const newId = Random.id()
@@ -688,6 +886,11 @@ function clearNextLineStartedPlaybackAndDuration (roId: string, nextSlId: string
 			startedPlayback: 0
 		}
 	})
+	SegmentLineItems.update({segmentLineId: nextSlId}, {
+		$unset: {
+			startedPlayback: 0
+		}
+	})
 }
 
 function createSegmentLineGroup (segmentLine: SegmentLine, duration: Time): TimelineObj {
@@ -714,7 +917,7 @@ function createSegmentLineGroup (segmentLine: SegmentLine, duration: Time): Time
 	return slGrp
 }
 function createSegmentLineGroupFirstObject (segmentLine: SegmentLine, segmentLineGroup: TimelineObj): TimelineObj {
-	return literal<TimelineObjAbstract>({
+	return literal<TimelineObjSegmentLineAbstract>({
 		_id: PlayoutTimelinePrefixes.SEGMENT_LINE_GROUP_FIRST_ITEM_PREFIX + segmentLine._id,
 		siId: '', // added later
 		roId: '', // added later
@@ -731,6 +934,26 @@ function createSegmentLineGroupFirstObject (segmentLine: SegmentLine, segmentLin
 		// isGroup: true,
 		inGroup: segmentLineGroup._id,
 		slId: segmentLine._id
+	})
+}
+function createSegmentLineItemGroupFirstObject (segmentLineItem: SegmentLineItem, segmentLineItemGroup: TimelineObj): TimelineObj {
+	return literal<TimelineObjSegmentLineItemAbstract>({
+		_id: PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_FIRST_ITEM_PREFIX + segmentLineItem._id,
+		siId: '', // added later
+		roId: '', // added later
+		deviceId: [],
+		trigger: {
+			type: TriggerType.TIME_ABSOLUTE,
+			value: 0
+		},
+		duration: 0,
+		LLayer: segmentLineItem.sourceLayerId + '_2', // TODO - needs its own unique llayer...
+		content: {
+			type: TimelineContentTypeOther.NOTHING,
+		},
+		// isGroup: true,
+		inGroup: segmentLineItemGroup._id,
+		sliId: segmentLineItem._id,
 	})
 }
 
@@ -774,9 +997,8 @@ function transformBaselineItemsIntoTimeline (items: RunningOrderBaselineItem[]):
 	return timelineObjs
 }
 
-function transformSegmentLineIntoTimeline (segmentLine: SegmentLine, segmentLineGroup?: TimelineObj, allowTransition?: boolean): Array<TimelineObj> {
+function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLineGroup?: TimelineObj, allowTransition?: boolean): Array<TimelineObj> {
 	let timelineObjs: Array<TimelineObj> = []
-	let items = segmentLine.getSegmentLinesItems()
 
 	_.each(items, (item: SegmentLineItem) => {
 		if (!allowTransition && item.isTransition) {
@@ -790,9 +1012,10 @@ function transformSegmentLineIntoTimeline (segmentLine: SegmentLine, segmentLine
 			let tos = item.content.timelineObjects
 
 			// create a segmentLineItem group for the items and then place all of them there
-			let lineItemDuration = item.duration || item.expectedDuration || 0
+			let lineItemDuration = item.duration || 0
 			const segmentLineItemGroup = createSegmentLineItemGroup(item, lineItemDuration, segmentLineGroup)
 			timelineObjs.push(segmentLineItemGroup)
+			timelineObjs.push(createSegmentLineItemGroupFirstObject(item, segmentLineItemGroup))
 
 			_.each(tos, (o: TimelineObj) => {
 				if (segmentLineGroup) {
@@ -869,10 +1092,15 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 			currentSegmentLine = SegmentLines.findOne(activeRunningOrder.currentSegmentLineId)
 			if (!currentSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.currentSegmentLineId}" not found!`)
 
+			const currentSegmentLineItems = currentSegmentLine.getSegmentLinesItems()
+			const currentInfiniteItems = currentSegmentLineItems.filter(l => (l.infiniteMode && l.infiniteId && l.infiniteId !== l._id))
+			const currentNormalItems = currentSegmentLineItems.filter(l => !(l.infiniteMode && l.infiniteId && l.infiniteId !== l._id))
+
 			let allowTransition = false
 
+			let previousSegmentLine: SegmentLine | undefined
 			if (activeRunningOrder.previousSegmentLineId) {
-				let previousSegmentLine = SegmentLines.findOne(activeRunningOrder.previousSegmentLineId)
+				previousSegmentLine = SegmentLines.findOne(activeRunningOrder.previousSegmentLineId)
 				if (!previousSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.previousSegmentLineId}" not found!`)
 
 				allowTransition = !previousSegmentLine.disableOutTransition
@@ -888,9 +1116,13 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 							value: previousSegmentLine.startedPlayback
 						})
 
+						// If a SegmentLineItem is infinite, and continued in the new SegmentLine, then we want to add the SegmentLineItem only there to avoid id collisions
+						const skipIds = currentInfiniteItems.map(l => l.infiniteId || '')
+						const previousSegmentLineItems = previousSegmentLine.getSegmentLinesItems().filter(l => !l.infiniteId || skipIds.indexOf(l.infiniteId) < 0)
+
 						timelineObjs = timelineObjs.concat(
 							previousSegmentLineGroup,
-							transformSegmentLineIntoTimeline(previousSegmentLine, previousSegmentLineGroup, false))
+							transformSegmentLineIntoTimeline(previousSegmentLineItems, previousSegmentLineGroup, false))
 						timelineObjs.push(createSegmentLineGroupFirstObject(previousSegmentLine, previousSegmentLineGroup))
 					}
 				}
@@ -907,7 +1139,34 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 				})
 			}
 
-			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentSegmentLine, currentSegmentLineGroup, allowTransition))
+			// any continued infinite lines need to skip the group, as they need a different start trigger
+			for (let item of currentInfiniteItems) {
+				const infiniteGroup = createSegmentLineGroup(currentSegmentLine, 0)
+				infiniteGroup._id = PlayoutTimelinePrefixes.SEGMENT_LINE_GROUP_PREFIX + item._id + '_infinite'
+
+				if (item.infiniteId) {
+					let originalItem = SegmentLineItems.findOne(item.infiniteId)
+
+					if (originalItem && originalItem.startedPlayback) {
+						infiniteGroup.trigger = literal<ITimelineTrigger>({
+							type: TriggerType.TIME_ABSOLUTE,
+							value: originalItem.startedPlayback
+						})
+					}
+				}
+
+				const objs = transformSegmentLineIntoTimeline([item], infiniteGroup, false)
+				// @todo this is a hack that hopefully will not be needed once the duration of the infinite item is back to 0
+				if (objs[0].duration !== 0 && item.duration) {
+					objs[0].duration = item.duration || 0
+				}
+
+				timelineObjs = timelineObjs.concat(infiniteGroup, objs)
+			}
+
+			// @todo any infinite items that originate on this segment do not get stopped properly currently. because they are missing the duration hack as shown above, so this may not need any attention
+
+			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentNormalItems, currentSegmentLineGroup, allowTransition))
 
 			timelineObjs.push(createSegmentLineGroupFirstObject(currentSegmentLine, currentSegmentLineGroup))
 		}
@@ -924,7 +1183,7 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 			}
 			timelineObjs = timelineObjs.concat(
 				nextSegmentLineGroup,
-				transformSegmentLineIntoTimeline(nextSegmentLine, nextSegmentLineGroup, currentSegmentLine && !currentSegmentLine.disableOutTransition))
+				transformSegmentLineIntoTimeline(nextSegmentLine.getSegmentLinesItems(), nextSegmentLineGroup, currentSegmentLine && !currentSegmentLine.disableOutTransition))
 			timelineObjs.push(createSegmentLineGroupFirstObject(nextSegmentLine, nextSegmentLineGroup))
 		}
 
@@ -974,11 +1233,20 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 		// Add deviceIds to all children objects
 		let groupDeviceIds: {[groupId: string]: Array<string>} = {}
 		_.each(timelineObjs, (o) => {
-
 			o.roId = activeRunningOrder._id
 			o.siId = studioInstallation._id
 			if (!o.isGroup) {
-				let LLayerMapping = (studioInstallation.mappings || {})[o.LLayer + '']
+				const layerId = o.LLayer + ''
+				let LLayerMapping = (studioInstallation.mappings || {})[layerId]
+
+				if (!LLayerMapping) { // @todo this block properly
+					let targetId = layerId.substr(0, layerId.length - 2)
+					let sourceLayer = (studioInstallation.sourceLayers || []).find(l => l._id === targetId)
+					if (sourceLayer) {
+						LLayerMapping = (studioInstallation.mappings || {})['core_abstract']
+					}
+				}
+
 				if (LLayerMapping) {
 					let parentDevice = deviceParentDevice[LLayerMapping.deviceId]
 					if (!parentDevice) throw new Meteor.Error(404, 'No parent-device found for device "' + LLayerMapping.deviceId + '"')
@@ -1021,7 +1289,12 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 					}
 				}
 			})
-			if (!shouldRunAgain || shouldNotRunAgain) break
+			if (!shouldRunAgain && shouldNotRunAgain) break
+		}
+
+		const missingDev = groupObjs.filter(o => !o.deviceId || !o.deviceId[0]).map(o => o._id)
+		if (missingDev.length > 0) {
+			logger.warn('Found groups without any deviceId: ' + missingDev)
 		}
 
 		// logger.debug('timelineObjs', timelineObjs)
