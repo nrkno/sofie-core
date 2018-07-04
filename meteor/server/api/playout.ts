@@ -179,6 +179,7 @@ export namespace ServerPlayoutAPI {
 	export function roTake (roId: string) {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
 		if (!runningOrder.nextSegmentLineId) throw new Meteor.Error(500, 'nextSegmentLineId is not set!')
 
 		let previousSegmentLine = (runningOrder.currentSegmentLineId ?
@@ -212,9 +213,9 @@ export namespace ServerPlayoutAPI {
 		afterTake(runningOrder, takeSegmentLine, previousSegmentLine || null)
 	}
 	export function roSetNext (roId: string, nextSlId: string) {
-
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
 
 		RunningOrders.update(runningOrder._id, {
 			$set: {
@@ -261,6 +262,8 @@ export namespace ServerPlayoutAPI {
 		// This method is called when an auto-next event occurs
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
+
 		let segLine = SegmentLines.findOne({
 			_id: slId,
 			runningOrderId: roId
