@@ -645,7 +645,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 				}
 			}
 
-			&:not(.next) {
+			&:not(.next):not(.live) {
 				.segment-timeline__segment-line__nextline.auto-next {
 					&::before {
 						content: ' ';
