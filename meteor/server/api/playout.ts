@@ -607,6 +607,9 @@ methods[PlayoutAPI.methods.roStoriesMoved] = (roId: string, onAirNextWindowWidth
 methods[PlayoutAPI.methods.segmentLinePlaybackStartedCallback] = (roId: string, slId: string, startedPlayback: number) => {
 	return ServerPlayoutAPI.slPlaybackStartedCallback(roId, slId, startedPlayback)
 }
+methods[PlayoutAPI.methods.segmentLineItemPlaybackStartedCallback] = (roId: string, sliId: string, startedPlayback: number) => {
+	return ServerPlayoutAPI.sliPlaybackStartedCallback(roId, sliId, startedPlayback)
+}
 methods[PlayoutAPI.methods.segmentAdLibLineItemStart] = (roId: string, slId: string, salliId: string) => {
 	return ServerPlayoutAPI.salliPlaybackStart(roId, slId, salliId)
 }
@@ -691,8 +694,8 @@ function afterTake (runningOrder: RunningOrder, takeSegmentLine: SegmentLine, pr
 
 // TODO - execute this after importing rundown
 function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUntilEnd: boolean, previousLine?: SegmentLine) {
-	let activeLines: { [layer: string]: SegmentLineItem } = {}
-	let activeLinesSegments: { [layer: string]: string } = {}
+	let activeInfiniteItems: { [layer: string]: SegmentLineItem } = {}
+	let activeInfiniteItemsSegmentId: { [layer: string]: string } = {}
 
 	if (previousLine) {
 		// figure out the baseline to set
@@ -709,8 +712,8 @@ function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUnt
 				SegmentLineItems.update(item._id, { $set: { infiniteId: item.infiniteId } })
 			}
 
-			activeLines[item.sourceLayerId] = item
-			activeLinesSegments[item.sourceLayerId] = previousLine.segmentId
+			activeInfiniteItems[item.sourceLayerId] = item
+			activeInfiniteItemsSegmentId[item.sourceLayerId] = previousLine.segmentId
 		}
 	}
 
@@ -721,12 +724,12 @@ function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUnt
 
 	for (let line of linesToProcess) {
 		// Drop any that relate only to previous segments
-		for (let k in activeLinesSegments) {
-			let s = activeLinesSegments[k]
-			let i = activeLines[k]
+		for (let k in activeInfiniteItemsSegmentId) {
+			let s = activeInfiniteItemsSegmentId[k]
+			let i = activeInfiniteItems[k]
 			if (!i.infiniteMode || i.infiniteMode === SegmentLineItemLifespan.OutOnNext && s !== line.segmentId) {
-				delete activeLines[k]
-				delete activeLinesSegments[k]
+				delete activeInfiniteItems[k]
+				delete activeInfiniteItemsSegmentId[k]
 			}
 		}
 
@@ -735,24 +738,23 @@ function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUnt
 		let currentInfinites = currentItems.filter(i => i.infiniteMode && !i.expectedDuration && i.infiniteId && i.infiniteId !== i._id)
 		let removedInfinites: string[] = []
 		for (let item of currentInfinites) {
-			if (!activeLinesSegments[item.sourceLayerId]) {
+			if (!activeInfiniteItemsSegmentId[item.sourceLayerId]) {
 				// Previous item no longer enforces the existence of this one
 				SegmentLineItems.remove(item)
 				removedInfinites.push(item._id)
 			}
-			// TODO - should i check whether it has ended, as that could have happened if we are reevaluating??
 		}
 
 		// stop if not running to the end and there is/was nothing active
-		if (!runUntilEnd && Object.keys(activeLinesSegments).length === 0 && currentInfinites.length === 0) {
+		if (!runUntilEnd && Object.keys(activeInfiniteItemsSegmentId).length === 0 && currentInfinites.length === 0) {
 			break
 		}
 
 		// figure out what infinites are to be extended
 		// TODO - these need sorting somehow so that we go through them sequentially. or at least sequentially within layers
 		currentItems = currentItems.filter(i => removedInfinites.indexOf(i._id) < 0)
-		for (let k in activeLines) {
-			let newItem = activeLines[k]
+		for (let k in activeInfiniteItems) {
+			let newItem = activeInfiniteItems[k]
 
 			const exist = currentItems.filter(i => i.sourceLayerId === newItem.sourceLayerId)
 			if (exist && exist.length > 0) {
@@ -760,13 +762,13 @@ function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUnt
 					continue
 				}
 
-				delete activeLines[k] // It will be stopped by this line
-				delete activeLinesSegments[k] // It will be stopped by this line
+				delete activeInfiniteItems[k] // It will be stopped by this line
+				delete activeInfiniteItemsSegmentId[k] // It will be stopped by this line
 
 				// if we matched with an infinite, then make sure that infinite is kept going
-				if (exist[0].infiniteMode) {
-					activeLines[k] = exist[0]
-					activeLinesSegments[k] = line.segmentId
+				if (exist[exist.length - 1].infiniteMode) {
+					activeInfiniteItems[k] = exist[0]
+					activeInfiniteItemsSegmentId[k] = line.segmentId
 				}
 
 				// Timings get handled when the replacement item starts playing.
@@ -802,9 +804,9 @@ function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUnt
 			}
 
 			// can only be one infinite on a layer at a time
-			// TODO - if there are multiple in this set, make sure to pass on the last one
-			activeLines[i.sourceLayerId] = i
-			activeLinesSegments[i.sourceLayerId] = line.segmentId
+			// this is assuming that a new infinite item is the last thing on the sourcelayer
+			activeInfiniteItems[i.sourceLayerId] = i
+			activeInfiniteItemsSegmentId[i.sourceLayerId] = line.segmentId
 		})
 	}
 }
@@ -947,7 +949,7 @@ function createSegmentLineItemGroupFirstObject (segmentLineItem: SegmentLineItem
 			value: 0
 		},
 		duration: 0,
-		LLayer: segmentLineItem.sourceLayerId + '_2', // TODO - needs its own unique llayer...
+		LLayer: segmentLineItem.sourceLayerId + '_firstobject',
 		content: {
 			type: TimelineContentTypeOther.NOTHING,
 		},
@@ -1155,16 +1157,8 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 					}
 				}
 
-				const objs = transformSegmentLineIntoTimeline([item], infiniteGroup, false)
-				// @todo this is a hack that hopefully will not be needed once the duration of the infinite item is back to 0
-				if (objs[0].duration !== 0 && item.duration) {
-					objs[0].duration = item.duration || 0
-				}
-
-				timelineObjs = timelineObjs.concat(infiniteGroup, objs)
+				timelineObjs = timelineObjs.concat(infiniteGroup, transformSegmentLineIntoTimeline([item], infiniteGroup, false))
 			}
-
-			// @todo any infinite items that originate on this segment do not get stopped properly currently. because they are missing the duration hack as shown above, so this may not need any attention
 
 			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentNormalItems, currentSegmentLineGroup, allowTransition))
 
@@ -1239,12 +1233,8 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 				const layerId = o.LLayer + ''
 				let LLayerMapping = (studioInstallation.mappings || {})[layerId]
 
-				if (!LLayerMapping) { // @todo this block properly
-					let targetId = layerId.substr(0, layerId.length - 2)
-					let sourceLayer = (studioInstallation.sourceLayers || []).find(l => l._id === targetId)
-					if (sourceLayer) {
-						LLayerMapping = (studioInstallation.mappings || {})['core_abstract']
-					}
+				if (!LLayerMapping && layerId.substr(layerId.length - 12) === '_firstobject') { // @todo this block properly
+					LLayerMapping = (studioInstallation.mappings || {})['core_abstract']
 				}
 
 				if (LLayerMapping) {
