@@ -131,7 +131,7 @@ export namespace ServerPlayoutAPI {
 				Body: [],
 				ID: new MosString128(''),
 
-			}, 'baseline')
+			}, 'baseline_' + runningOrder._id)
 
 			if (result.baselineItems) {
 				logger.info(`... got ${result.baselineItems.length} items from template.`)
