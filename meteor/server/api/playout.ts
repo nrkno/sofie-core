@@ -932,6 +932,7 @@ function createSegmentLineGroupFirstObject (segmentLine: SegmentLine, segmentLin
 		},
 		duration: 0,
 		LLayer: 'core_abstract',
+		isAbstract: true,
 		content: {
 			type: TimelineContentTypeOther.NOTHING,
 		},
@@ -952,10 +953,10 @@ function createSegmentLineItemGroupFirstObject (segmentLineItem: SegmentLineItem
 		},
 		duration: 0,
 		LLayer: segmentLineItem.sourceLayerId + '_firstobject',
+		isAbstract: true,
 		content: {
 			type: TimelineContentTypeOther.NOTHING,
 		},
-		// isGroup: true,
 		inGroup: segmentLineItemGroup._id,
 		sliId: segmentLineItem._id,
 	})
@@ -1242,7 +1243,9 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 				const layerId = o.LLayer + ''
 				let LLayerMapping = (studioInstallation.mappings || {})[layerId]
 
-				if (!LLayerMapping && layerId.substr(layerId.length - 12) === '_firstobject') { // @todo this block properly
+				if (!LLayerMapping && o.isAbstract) {
+					// If the item is abstract, then use the core_abstract mapping, but leave it on the orignal LLayer
+					// We do this because the layer is only needed due to how we construct and run the timeline
 					LLayerMapping = (studioInstallation.mappings || {})['core_abstract']
 				}
 
