@@ -17,6 +17,7 @@ import { SegmentTimeline } from './SegmentTimeline'
 
 import { getCurrentTime } from '../../../lib/lib'
 import { RunningOrderTiming } from '../RunningOrderTiming'
+import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 
 export interface SegmentUi extends Segment {
 	/** Output layers available in the installation used by this segment */
@@ -67,7 +68,6 @@ interface ISegmentLineItemUiDictionary {
 	[key: string]: SegmentLineItemUi
 }
 interface IProps {
-	key: string,
 	segment: Segment,
 	studioInstallation: StudioInstallation,
 	runningOrder: RunningOrder,
@@ -156,7 +156,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		if (props.runningOrder.nextSegmentLineId === segmentLine._id) {
 			isNextSegment = true
 			// next is only auto, if current has a duration
-			autoNextSegmentLine = ((previousSegmentLine || {}).autoNext || false) && ((previousSegmentLine || {}).expectedDuration !== 0)
+			autoNextSegmentLine = (currentLiveSegmentLine ? currentLiveSegmentLine.autoNext || false : false) && ((currentLiveSegmentLine && currentLiveSegmentLine.expectedDuration !== undefined) ? currentLiveSegmentLine.expectedDuration !== 0 : false)
 		}
 
 		segmentLine.willProbablyAutoNext = ((previousSegmentLine || {}).autoNext || false) && ((previousSegmentLine || {}).expectedDuration !== 0)
@@ -192,7 +192,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 		_.forEach<SegmentLineItemUi>(segmentLine.items, (segmentLineItem) => {
 			slTimeline.push({
-				id: segmentLineItem._id,
+				id: PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + segmentLineItem._id,
 				trigger: offsetTrigger(segmentLineItem.trigger, TIMELINE_TEMP_OFFSET),
 				duration: segmentLineItem.duration || segmentLineItem.expectedDuration || 0,
 				LLayer: segmentLineItem.outputLayerId,

@@ -48,6 +48,12 @@
 		div.value {
 			display: inline-block
 		}
+		.device-item__id {
+			font-weight: bold;
+		}
+		.device-item__connected {
+			font-weight: bold;
+		}
 		.device-item__device-status {
 			> .value {
 				> .pill {

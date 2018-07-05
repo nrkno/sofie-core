@@ -147,8 +147,11 @@ export interface TimelineObjGroup extends TimelineObj {
 export interface TimelineObjGroupSegmentLine extends TimelineObjGroup {
 	isSegmentLineGroup: true
 }
-export interface TimelineObjAbstract extends TimelineObj { // used for sending callbacks
+export interface TimelineObjSegmentLineAbstract extends TimelineObj { // used for sending callbacks
 	slId?: string
+}
+export interface TimelineObjSegmentLineItemAbstract extends TimelineObj { // used for sending callbacks
+	sliId?: string
 }
 export interface TimelineObjCCGVideo extends TimelineObj {
 	content: {

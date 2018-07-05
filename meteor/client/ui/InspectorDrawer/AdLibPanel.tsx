@@ -3,6 +3,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import * as $ from 'jquery'
 
+import { PlayoutAPI } from '../../../lib/api/playout'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
@@ -468,9 +469,9 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	onToggleAdLib = (aSLine: SegmentLineAdLibItemUi) => {
 		console.log(aSLine)
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && !aSLine.isGlobal) {
-			Meteor.call('playout_segmentAdLibLineItemStart', this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
+			Meteor.call(PlayoutAPI.methods.segmentAdLibLineItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
 		} else if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && aSLine.isGlobal) {
-			Meteor.call('playout_runningOrderBaselineAdLibItemStart', this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
+			Meteor.call(PlayoutAPI.methods.runningOrderBaselineAdLibItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
 		}
 	}
 
@@ -478,7 +479,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		console.log(sourceLayer)
 
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
-			Meteor.call('playout_sourceLayerOnLineStop', this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id)
+			Meteor.call(PlayoutAPI.methods.sourceLayerOnLineStop, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id)
 		}
 	}
 

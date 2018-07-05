@@ -6,10 +6,12 @@ import * as CoreIcon from '@nrk/core-icons/jsx'
 import { Spinner } from '../lib/Spinner'
 import * as ClassNames from 'classnames'
 import * as $ from 'jquery'
+import * as _ from 'underscore'
 import Moment from 'react-moment'
 
 import { NavLink } from 'react-router-dom'
 
+import { PlayoutAPI } from '../../lib/api/playout'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
@@ -27,7 +29,6 @@ import { getCurrentTime } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
 
 import * as mousetrap from 'mousetrap'
-import * as _ from 'underscore'
 import { ErrorBoundary } from './ErrorBoundary'
 
 interface IKeyboardFocusMarkerState {
@@ -273,30 +274,30 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	take = () => {
-		Meteor.call('playout_take', this.props.runningOrder._id)
+		Meteor.call(PlayoutAPI.methods.roTake, this.props.runningOrder._id)
 		// console.log(new Date(getCurrentTime()))
 	}
 
 	activate = () => {
 		if (!this.props.runningOrder.active) {
-			Meteor.call('playout_activate', this.props.runningOrder._id, false)
+			Meteor.call(PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false)
 		}
 	}
 
 	activateRehearsal = () => {
 		if (!this.props.runningOrder.active) {
-			Meteor.call('playout_activate', this.props.runningOrder._id, true)
+			Meteor.call(PlayoutAPI.methods.roActivate, this.props.runningOrder._id, true)
 		}
 	}
 
 	deactivate = () => {
 		if (this.props.runningOrder.active) {
-			Meteor.call('playout_inactivate', this.props.runningOrder._id)
+			Meteor.call(PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
 		}
 	}
 
 	reloadRunningOrder = () => {
-		Meteor.call('playout_reload_data', this.props.runningOrder._id)
+		Meteor.call(PlayoutAPI.methods.reloadData, this.props.runningOrder._id)
 	}
 	getHeaderClassNames = () => {
 		return (
@@ -495,8 +496,8 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onSetNext = (segmentLine: SegmentLine) => {
-		if (segmentLine && segmentLine._id) {
-			Meteor.call('debug_setNextLine', segmentLine._id)
+		if (segmentLine && segmentLine._id && this.props.runningOrder) {
+			Meteor.call(PlayoutAPI.methods.roSetNext, this.props.runningOrder._id, segmentLine._id)
 		}
 	}
 
@@ -504,8 +505,8 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		if (this.props.segments) {
 			return this.props.segments.map((segment) => {
 				if (this.props.studioInstallation && this.props.runningOrder) {
-					return <ErrorBoundary>
-							<SegmentTimelineContainer key={segment._id}
+					return <ErrorBoundary key={segment._id}>
+							<SegmentTimelineContainer
 												studioInstallation={this.props.studioInstallation}
 												followLiveSegments={this.state.followLiveSegments}
 												segment={segment}

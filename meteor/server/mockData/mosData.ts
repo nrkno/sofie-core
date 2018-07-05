@@ -771,6 +771,11 @@ Meteor.methods({
 		// // @ts-ignore
 		// Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, {"ID": "MAENPSTEST14;P_SERVER14\\W\\R_07C8C71B-1835-493D-94E1678FD1425B71;EF1A29D9-EF4C-4965-893A4910B2212E66","Slug": "AVSLUTT;Slutt 18.59.00","MosExternalMetaData": [{"MosScope": "PLAYLIST","MosSchema": "http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload": {"Approved": 1,"Creator": "LINUXENPS","MediaTime": 0,"ModBy": "N12914","ModTime": "20180502T132213Z","MOSAbstracts": "TIDSMARKØR IKKE RØR","MOSObjSlugs": "Story status","MOSSlugs": "SAK 1;intro-3","Owner": "LINUXENPS","SourceMediaTime": 0,"SourceTextTime": 0,"TextTime": 0,"SystemApprovedBy": "N12914","mosartType": "BREAK","ReadTime": 0,"ENPSItemType": 3}}],"RunningOrderId": "MAENPSTEST14;P_SERVER14\\W;07C8C71B-1835-493D-94E1678FD1425B71","Body": [{"Type": "storyItem","Content": {"mosID": "mosart.morten.mos","abstract": "TIDSMARKØR IKKE RØR","objID": "STORYSTATUS","objSlug": "Story status","itemID": 2,"itemSlug": "SAK 1;intro-3"}}],"level": "debug","message": "mosRoFullStory","timestamp": "2018-05-09T10:26:47.387Z"})
 	},
+	'debug_roMock1_remove' () {
+		let pd = getPD()
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, pd._id, pd.token,
+			new MosString128('MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5'))
+	},
 	'debug_roMock1' () {
 		let pd = getPD()
 		if (!pd) {
@@ -779,6 +784,10 @@ Meteor.methods({
 		let id = pd._id
 		let token = pd.token
 		logger.info('debug_roMock1')
+
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, id, token,
+			new MosString128('MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5'))
+
 		// @ts-ignore
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, id, token,
 			{
@@ -1018,8 +1027,8 @@ Meteor.methods({
 						   "itemSlug":"ÅPNING;Head1-5",
 						   "objID": "3ebcbed9-b60f-49bb-a23e-a223c02aff37",
 						   "mosID": "GFX.NRK.MOS",
-						   "mosAbstract": "Navensuper: mnjk, tittel",
-						   "abstract": "Navensuper: mnjk, tittel",
+						   "mosAbstract": "headline: mnjk",
+						   "abstract": "headline: mnjk",
 						   "mosExternalMetadata":[{
 								"mosScope":"PLAYLIST",
 								"mosSchema": "schema.nrk.no/content",
@@ -1038,11 +1047,10 @@ Meteor.methods({
 									template:{
 										event: "",
 										layer: "super",
-										name: "navnesuper"
+										name: "52_headline"
 									},
 									content:{
-										navn: "mnjk",
-										tittel: "tittel"
+										headline: "mnjk",
 									}
 								}
 						   }, {
@@ -1050,55 +1058,9 @@ Meteor.methods({
 							"mosSchema": "schema.nrk.no/timing",
 							"mosPayload": {
 								in: "auto",
-								out: "auto",
+								out: "onnext",
 								timeIn: 400,
 								duration: 6000
-							}
-						   }]
-					   }
-				   },
-				   {
-					   "Type": "storyItem",
-					   "Content":{
-						   "itemID": 6,
-						   "itemSlug":"ÅPNING;Head1-6",
-						   "objID": "3ebcbed9-b60f-49bb-a23e-a223c02aff38",
-						   "mosID": "GFX.NRK.MOS",
-						   "mosAbstract": "Navensuper: mnjk, tittel",
-						   "abstract": "Navensuper: mnjk, tittel",
-						   "mosExternalMetadata":[{
-								"mosScope":"PLAYLIST",
-								"mosSchema": "schema.nrk.no/content",
-								"mosPayload": {
-									"uuid": "cb388abb-68b4-4183-882c-1b5261b07a05",
-									metaData: {
-										changedBy: "n23109",
-										changed: "xxx",
-										origin: "ENPS/CORE"
-									},
-									render:{
-										channel: "gfx1",
-										system: "",
-										group: ""
-									},
-									template:{
-										event: "",
-										layer: "super",
-										name: "navnesuper"
-									},
-									content:{
-										navn: "someone else",
-										tittel: "tittel"
-									}
-								}
-						   }, {
-							"mosScope":"PLAYLIST",
-							"mosSchema": "schema.nrk.no/timing",
-							"mosPayload": {
-								in: "manual",
-								out: "manual",
-								timeIn: 0,
-								duration: 0
 							}
 						   }]
 					   }
@@ -1108,8 +1070,111 @@ Meteor.methods({
 				"message":"",
 				"timestamp":"2018-05-31T08:19:38.378Z"
 			 }		),
-		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;70C18F6A-7713-4884-B4DBBD089254A693","Slug":"ÅPNING;Head2","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":42.36,"ModBy":"N12050","ModTime":"20180522T092307Z","MOSAbstracts":"nv-ungdom-israel-mgp-130518 PUBLISH_QUANTEL 00:00:42:09","MOSItemDurations":"42,36","MOSObjSlugs":"nv-ungdom-israel-mgp-130518","MOSSlugs":"VIGNETT;Head2-2","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":0,"mosartType":"STK","mosartVariant":"HEAD","ReadTime":42.36,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":2,"itemSlug":"VIGNETT;Head2-2","objID":"\\\\XPRO\\Omn\\A\\A\\41\\13","mosID":"OMNIBUS.XPRO.MOS","mosAbstract":"nv-ungdom-israel-mgp-130518 PUBLISH_QUANTEL 00:00:42:09","objDur":2118,"objTB":50,"objSlug":"nv-ungdom-israel-mgp-130518","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"OMNIBUS","mosPayload":{"title":"nv-ungdom-israel-mgp-130518","objectType":"CLIP","clipType":"PUBLISH_QUANTEL","objDur":2118,"objType":"VIDEO"}}}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:38.574Z"}),
-		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;F1641349-F6EA-4007-BD956A639BD8C85B","Slug":"ÅPNING;Velkommen","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180522T092754Z","MOSAbstracts":"Navnesuper: Ivar Johnsen, 22. mai 2018","MOSObjSlugs":"Navnesuper: Ivar Johnsen, 22. mai 2018","MOSSlugs":"VIGNETT;Velkommen-3","MOSTimes":"20180531T081903Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":0,"mosartType":"KAM","mosartVariant":"3ÅPNING","ReadTime":0,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":3,"itemSlug":"VIGNETT;Velkommen-3","objID":"a73f7bc7-258e-4bef-a364-84aab4ac02e2","mosID":"GFX.NRK.MOS","mosAbstract":"Navnesuper: Ivar Johnsen, 22. mai 2018","mosExternalMetadata":[{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/content","mosPayload":{"uuid":"f6103c96-c981-4716-bdbc-b0b654de3041","metaData":{"changedBy":"n23109","changed":"xxx","origin":"ENPS/CORE"},"render":{"channel":"gfx1","system":{},"group":{}},"template":{"event":{},"layer":"super","name":"navnesuper"},"content":{"navn":"Ivar Johnsen","tittel":"22. mai 2018"}}},{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/timing","mosPayload":{"in":"auto","out":"auto","timeIn":5000,"duration":4000}}]}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:38.770Z"})
+			Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, {
+				"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;70C18F6A-7713-4884-B4DBBD089254A693",
+				"Slug": "ÅPNING;Head2",
+				"MosExternalMetaData": [
+					{
+						"MosScope": "PLAYLIST",
+						"MosSchema": "http://MAENPSTEST14:10505/schema/enps.dtd",
+						"MosPayload": {
+							"Approved": 0,
+							"Creator": "N12050",
+							"MediaTime": 42.36,
+							"ModBy": "N12050",
+							"ModTime": "20180522T092307Z",
+							"MOSAbstracts": "nv-ungdom-israel-mgp-130518 PUBLISH_QUANTEL 00:00:42:09",
+							"MOSItemDurations": "42,36",
+							"MOSObjSlugs": "nv-ungdom-israel-mgp-130518",
+							"MOSSlugs": "VIGNETT;Head2-2",
+							"Owner": "N12050",
+							"SourceMediaTime": 0,
+							"SourceTextTime": 0,
+							"TextTime": 0,
+							"mosartType": "STK",
+							"mosartVariant": "HEAD",
+							"ReadTime": 42.36,
+							"ENPSItemType": 3
+						}
+					}
+				],
+				"RunningOrderId": "MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5",
+				"Body": [
+					{
+						"Type": "storyItem",
+						"Content": {
+							"itemID": 2,
+							"itemSlug": "VIGNETT;Head2-2",
+							"objID": "\\\\XPRO\\Omn\\A\\A\\41\\13",
+							"mosID": "OMNIBUS.XPRO.MOS",
+							"mosAbstract": "nv-ungdom-israel-mgp-130518 PUBLISH_QUANTEL 00:00:42:09",
+							"objDur": 2118,
+							"objTB": 50,
+							"objSlug": "nv-ungdom-israel-mgp-130518",
+							"mosExternalMetadata": {
+								"mosScope": "PLAYLIST",
+								"mosSchema": "OMNIBUS",
+								"mosPayload": {
+									"title": "nv-ungdom-israel-mgp-130518",
+									"objectType": "CLIP",
+									"clipType": "PUBLISH_QUANTEL",
+									"objDur": 2118,
+									"objType": "VIDEO"
+								}
+							}
+						}
+					},
+					{
+						"Type": "storyItem",
+						"Content": {
+							"itemID": 5,
+							"itemSlug": "ÅPNING;Head1-5",
+							"objID": "3ebcbed9-b60f-49bb-a23e-a223c02aff37",
+							"mosID": "GFX.NRK.MOS",
+							"mosAbstract": "headline: super2",
+							"abstract": "headline: super2",
+							"mosExternalMetadata": [{
+								"mosScope": "PLAYLIST",
+								"mosSchema": "schema.nrk.no/content",
+								"mosPayload": {
+									"uuid": "cb388abb-68b4-4183-882c-1b5261b07a05",
+									metaData: {
+										changedBy: "n23109",
+										changed: "xxx",
+										origin: "ENPS/CORE"
+									},
+									render: {
+										channel: "gfx1",
+										system: "",
+										group: ""
+									},
+									template: {
+										event: "",
+										layer: "super",
+										name: "52_headline"
+									},
+									content: {
+										headline: "super2",
+									}
+								}
+							}, {
+								"mosScope": "PLAYLIST",
+								"mosSchema": "schema.nrk.no/timing",
+								"mosPayload": {
+									in: "auto",
+									out: "onnext",
+									timeIn: 400,
+									duration: 6000
+								}
+							}]
+						}
+					}
+				],
+				"level": "debug",
+				"message": "",
+				"timestamp": "2018-05-31T08:19:38.574Z"
+			}),
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;F1641349-F6EA-4007-BD956A639BD8C85B","Slug":"ÅPNING;Velkommen","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180522T092754Z","MOSAbstracts":"Navnesuper: Ivar Johnsen, 22. mai 2018","MOSObjSlugs":"Navnesuper: Ivar Johnsen, 22. mai 2018","MOSSlugs":"VIGNETT;Velkommen-3","MOSTimes":"20180531T081903Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":0,"mosartType":"KAM","mosartVariant":"3ÅPNING","ReadTime":0,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":3,"itemSlug":"VIGNETT;Velkommen-3","objID":"a73f7bc7-258e-4bef-a364-84aab4ac02e2","mosID":"GFX.NRK.MOS","mosAbstract":"Navnesuper: Ivar Johnsen, 22. mai 2018","mosExternalMetadata":[{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/content","mosPayload":{"uuid":"f6103c96-c981-4716-bdbc-b0b654de3041","metaData":{"changedBy":"n23109","changed":"xxx","origin":"ENPS/CORE"},"render":{"channel":"gfx1","system":{},"group":{}},"template":{"event":{},"layer":"super","name":"navnesuper"},"content":{"navn":"Ivar Johnsen","tittel":"22. mai 2018"}}},{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/timing","mosPayload":{"in":"auto","out":"manual","timeIn":5000,"duration":0}}]}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:38.770Z"})
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;21D83E74-236C-482C-B1563BF10BF4A2BA","Slug":"SAK 1;Intro","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","ModBy":"N12050","ModTime":"20180322T133453Z","Owner":"N12050","mosartType":"KAM","mosartVariant":2,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:38.988Z"}),
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, {
 			"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;A253988F-FEF4-4D64-ACC2CCFE78EA7C8C",
@@ -1124,7 +1189,7 @@ Meteor.methods({
 					"ModBy": "N12050",
 					"ModTime": "20180522T092414Z",
 					"MOSAbstracts": "METADATA\n US-NJ-BEAR-20180501I IMPORT_QUANTEL 00:02:03:12 \nNavnesuper: Alf Hansen, allviter\nNavnesuper: Hans Hansen, reporter",
-					"MOSItemDurations": "123,48",
+					"MOSItemDurations": "13,48",
 					"MOSItemEdDurations": "",
 					"MOSObjSlugs": "M: \nUS-NJ-BEAR-20180501I\nNavnesuper: Alf Hansen, allviter\nNavnesuper: Hans Hansen, reporter",
 					"MOSSlugs": "Uten tittel\nSAK 1;SAK 1-3\nSAK 1;SAK 1-4\nSAK 1;SAK 1-5",
@@ -1135,7 +1200,7 @@ Meteor.methods({
 					"TextTime": 0,
 					"Bildebeskrivelse": "",
 					"mosartType": "FULL",
-					"ReadTime": 123.48,
+					"ReadTime": 13.48,
 					"Rettigheter": "Gult",
 					"ENPSItemType": 3
 				}

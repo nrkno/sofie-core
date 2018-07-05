@@ -140,7 +140,8 @@ Meteor.methods({
 					type: RundownAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
 					activateKeyboardHotkeys: '1,2,3,4,5,6',
-					isRemoteInput: true
+					isRemoteInput: true,
+					assignHotkeysToGlobalAdlibs: true
 				},
 				// {
 				// 	_id: 'studio0_vt0',

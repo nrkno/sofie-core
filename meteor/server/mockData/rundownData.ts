@@ -282,7 +282,7 @@ Meteor.methods({
 		}
 	},
 
-	'debug_setOnAirLine' (liveId) {
+	/* 'debug_setOnAirLine' (liveId) {
 		let segmentLine = SegmentLines.findOne(liveId || 'ro0-seg0-line0')
 
 		if (segmentLine) {
@@ -302,5 +302,5 @@ Meteor.methods({
 				$set: { nextSegmentLineId: segmentLine._id }
 			})
 		}
-	}
+	} */
 })

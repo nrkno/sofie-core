@@ -24,6 +24,14 @@ export function transformTimeline (timeline: Array<TimelineObj>): Array<Timeline
 			   slId: obj['slId']
 		   }
 	   }
+	   if (obj['sliId']) {
+		// Will cause a callback to be called, when the object starts to play:
+		   transformedObj.content.callBack = 'segmentLineItemPlaybackStarted'
+		   transformedObj.content.callBackData = {
+			   roId: obj.roId,
+			   sliId: obj['sliId']
+		   }
+	   }
 
 	   return transformedObj
 	}
