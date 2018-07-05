@@ -129,6 +129,7 @@ export interface TimelineObj {
 	classes?: Array<string>
 	disabled?: boolean
 	isGroup?: boolean
+	isAbstract?: boolean
 	inGroup?: string
 	repeating?: boolean
 	priority?: number
