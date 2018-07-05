@@ -223,6 +223,8 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 			}
 
 			if (scrollTop !== null) {
+				this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, {})
+
 				$(document.body).addClass('auto-scrolling')
 				$('html,body').animate({
 					scrollTop: Math.max(0, scrollTop - 175)

@@ -89,7 +89,8 @@ enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_ACTIVATE2 = '\\',
 	RUNNING_ORDER_ACTIVATE3 = '|',
 	RUNNING_ORDER_ACTIVATE_REHEARSAL = 'mod+§',
-	RUNNING_ORDER_DEACTIVATE = 'mod+shift+§'
+	RUNNING_ORDER_DEACTIVATE = 'mod+shift+§',
+	RUNNING_ORDER_GO_TO_LIVE = 'mod+home'
 }
 mousetrap.addKeycodes({
 	220: '§',
@@ -410,6 +411,12 @@ export const RunningOrderView = translateWithTracker<IProps, IState, ITrackedPro
 class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 
 	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
+	private bindKeys: Array<{
+		key: string,
+		up?: (e: KeyboardEvent) => any
+		down?: (e: KeyboardEvent) => any
+	}> = []
+
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 
@@ -421,6 +428,12 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 			followLiveSegments: true
 		}
 
+		this.bindKeys = [
+			{
+				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_GO_TO_LIVE,
+				up: this.onGoToLiveSegment
+			}
+		]
 	}
 
 	componentWillMount () {
@@ -452,6 +465,28 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 	componentDidMount () {
 		$(document.body).addClass('dark')
 		$(window).on('scroll', this.onWindowScroll)
+		let preventDefault = (e) => {
+			e.preventDefault()
+			e.stopImmediatePropagation()
+			e.stopPropagation()
+		}
+		_.each(this.bindKeys, (k) => {
+			if (k.up) {
+				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+					preventDefault(e)
+					if (k.up) k.up(e)
+				}, 'keyup')
+				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+					preventDefault(e)
+				}, 'keydown')
+			}
+			if (k.down) {
+				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+					preventDefault(e)
+					if (k.down) k.down(e)
+				}, 'keydown')
+			}
+		})
 	}
 	componentWillUnmount () {
 		$(document.body).removeClass('dark')
@@ -459,6 +494,16 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 
 		_.each(this._subscriptions, (sub ) => {
 			sub.stop()
+		})
+
+		_.each(this.bindKeys, (k) => {
+			if (k.up) {
+				mousetrap.unbind(k.key, 'keyup')
+				mousetrap.unbind(k.key, 'keydown')
+			}
+			if (k.down) {
+				mousetrap.unbind(k.key, 'keydown')
+			}
 		})
 	}
 
@@ -472,7 +517,7 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 
 	onWindowScroll = (e: JQuery.Event) => {
 		const isAutoScrolling = $(document.body).hasClass('auto-scrolling')
-		if (this.state.followLiveSegments && !isAutoScrolling) {
+		if (this.state.followLiveSegments && !isAutoScrolling && this.props.runningOrder && this.props.runningOrder.active) {
 			this.setState({
 				followLiveSegments: false
 			})
