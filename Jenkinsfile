@@ -10,6 +10,9 @@ pipeline {
       }
     }
     stage('Deploy') {
+      when {
+        branch 'develop'
+      }
       steps {
         coreDeploy()
       }
