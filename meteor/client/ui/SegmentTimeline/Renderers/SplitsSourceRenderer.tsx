@@ -5,6 +5,9 @@ import { FloatingInspector } from '../../FloatingInspector'
 import * as ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
 
+import { faPlay } from '@fortawesome/fontawesome-free-solid'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+
 import { RundownAPI } from '../../../../lib/api/rundown'
 import { literal } from '../../../../lib/lib'
 
@@ -166,7 +169,12 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 				{begin}
 			</span>,
 			<span className='segment-timeline__layer-item__label last-words' ref={this.setRightLabelRef} key={this.props.segmentLineItem._id + '-finish'} style={this.getItemLabelOffsetRight()}>
-				{end}
+				<span className='segment-timeline__layer-item__label'>{end}</span>
+				{(this.props.segmentLineItem.expectedDuration === 0) &&
+					(<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
+						<FontAwesomeIcon icon={faPlay} />
+					</div>)
+				}
 			</span>,
 			<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 				<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>

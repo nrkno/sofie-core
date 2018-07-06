@@ -1,13 +1,13 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import * as $ from 'jquery'
 
-import { ISourceLayerUi, IOutputLayerUi, SegmentUi, SegmentLineUi, SegmentLineItemUi } from '../SegmentTimelineContainer'
 import { ISourceLayerItemProps } from './../SourceLayerItem'
 
 import { FloatingInspector } from '../../FloatingInspector'
 
-import * as ClassNames from 'classnames'
+import { faPlay } from '@fortawesome/fontawesome-free-solid'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+
 import { CustomLayerItemRenderer } from './CustomLayerItemRenderer'
 
 export class MicSourceRenderer extends CustomLayerItemRenderer {
@@ -124,7 +124,12 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 				{begin}
 			</span>,
 			<span className='segment-timeline__layer-item__label last-words' ref={this.setRightLabelRef} key={this.props.segmentLineItem._id + '-finish'} style={this.getItemLabelOffsetRight()}>
-				{end}
+				<span className='segment-timeline__layer-item__label'>{end}</span>
+				{(this.props.segmentLineItem.expectedDuration === 0) &&
+					(<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
+						<FontAwesomeIcon icon={faPlay} />
+					</div>)
+				}
 			</span>,
 			<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'}
 				shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
