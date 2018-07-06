@@ -5,12 +5,19 @@ import { FloatingInspector } from '../../FloatingInspector'
 
 import * as ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
+import { faPlay } from '@fortawesome/fontawesome-free-solid'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 export class DefaultLayerItemRenderer extends CustomLayerItemRenderer {
 	leftLabel: HTMLSpanElement
+	rightLabel: HTMLSpanElement
 
-	setLabelRef = (e: HTMLSpanElement) => {
+	setLeftLabelRef = (e: HTMLSpanElement) => {
 		this.leftLabel = e
+	}
+
+	setRightLabelRef = (e: HTMLSpanElement) => {
+		this.rightLabel = e
 	}
 
 	componentDidMount () {
@@ -19,8 +26,9 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer {
 
 	updateAnchoredElsWidths = () => {
 		let leftLabelWidth = $(this.leftLabel).width() || 0
+		let rightLabelWidth = $(this.rightLabel).width() || 0
 
-		this.setAnchoredElsWidths(leftLabelWidth, 0)
+		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
 	componentDidUpdate (prevProps: Readonly<ISourceLayerItemProps>, prevState: Readonly<any>) {
@@ -34,8 +42,8 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer {
 	}
 
 	render () {
-		return [
-			<span key={this.props.segmentLineItem._id} className={
+		return <React.Fragment>
+			<span className={
 				ClassNames('segment-timeline__layer-item__label', {
 					'bold': this.props.itemState === 0,
 					'regular': this.props.itemState === 1,
@@ -43,14 +51,28 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer {
 					'light-file-missing': this.props.itemState === 3,
 				})
 			}
-				ref={this.setLabelRef}
+				ref={this.setLeftLabelRef}
 				style={this.getItemLabelOffsetLeft()}
-			>{this.props.segmentLineItem.name}</span>,
-			<FloatingInspector key={this.props.segmentLineItem._id + '-fi'} shown={this.props.showMiniInspector && this.props.itemElement !== null}>
+			>
+				<span className='segment-timeline__layer-item__label'>
+					{this.props.segmentLineItem.name}
+				</span>
+			</span>
+			<span className='segment-timeline__layer-item__label last-words'
+				ref={this.setRightLabelRef}
+				style={this.getItemLabelOffsetRight()}
+			>
+				{(this.props.segmentLineItem.expectedDuration === 0) &&
+					(<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
+						<FontAwesomeIcon icon={faPlay} />
+					</div>)
+				}
+			</span>
+			<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== null}>
 				<div className='segment-timeline__mini-inspector' style={this.getFloatingInspectorStyle()}>
 					Item properties
 				</div>
 			</FloatingInspector>
-		]
+		</React.Fragment>
 	}
 }

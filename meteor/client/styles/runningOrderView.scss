@@ -809,6 +809,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 								> .label-icon {
 									margin: 0 -10px 0 0;
 								}
+
+								> .label-icon.label-infinite-icon {
+									margin: 0 0 0 0;
+								}
 							}
 
 							&.file-name {

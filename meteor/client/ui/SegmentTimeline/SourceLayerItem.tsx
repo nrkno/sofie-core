@@ -88,7 +88,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		if (this.props.relative) {
 			return {}
 		} else {
-			if (this.props.segmentLine && this.props.segmentLineStartsAt !== undefined && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined) {
+			if (this.props.segmentLine && this.props.segmentLineStartsAt !== undefined) { //  && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined
 				let segmentLineItem = this.props.segmentLineItem
 
 				let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration : 0
@@ -154,7 +154,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		if (this.props.relative) {
 			return {}
 		} else {
-			if (this.props.segmentLine && this.props.segmentLine.startsAt !== undefined && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined) {
+			if (this.props.segmentLine && this.props.segmentLine.startsAt !== undefined) { //  && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined
 				let segmentLineItem = this.props.segmentLineItem
 
 				let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration : 0
@@ -343,6 +343,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
+			case RundownAPI.SourceLayerType.GRAPHICS:
 			case RundownAPI.SourceLayerType.LOWER_THIRD:
 				return <L3rdSourceRenderer key={this.props.segmentLineItem._id}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
