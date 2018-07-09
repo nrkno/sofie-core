@@ -208,7 +208,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						Math.min(segmentLineItem.expectedDuration, segmentLineItem.renderedDuration || 0),
 					)
 				)
-				: (segmentLineItem.expectedDuration === 0 ?
+				: (segmentLineItem.infiniteMode ?
 					this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)
 					: Math.min(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
 				)
@@ -404,7 +404,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 					'hide-overflow-labels': this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth),
 
-					'infinite': this.props.segmentLineItem.duration === undefined && this.props.segmentLineItem.expectedDuration === 0, // 0 is a special value
+					'infinite': (this.props.segmentLineItem.duration === undefined && this.props.segmentLineItem.infiniteMode) as boolean, // 0 is a special value
 
 					'source-missing': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING,
 					'source-broken': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN,

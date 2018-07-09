@@ -50,7 +50,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 						</span>
 					</span>
 					<span className='segment-timeline__layer-item__label last-words' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
-						{(this.props.segmentLineItem.expectedDuration === 0) &&
+						{(this.props.segmentLineItem.infiniteMode === 0) &&
 							(<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
 								◆
 							</div>)

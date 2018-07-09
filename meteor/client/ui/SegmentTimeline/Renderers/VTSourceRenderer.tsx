@@ -103,7 +103,7 @@ export class VTSourceRenderer extends CustomLayerItemRenderer {
 						<span className='segment-timeline__layer-item__label last-words'>
 							{this.end}
 						</span>
-						{(this.props.segmentLineItem.expectedDuration === 0) &&
+						{(this.props.segmentLineItem.infiniteMode) &&
 							(<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
 								◆
 							</div>)

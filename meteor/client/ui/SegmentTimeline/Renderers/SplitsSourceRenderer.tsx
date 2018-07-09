@@ -167,7 +167,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 			</span>,
 			<span className='segment-timeline__layer-item__label last-words' ref={this.setRightLabelRef} key={this.props.segmentLineItem._id + '-finish'} style={this.getItemLabelOffsetRight()}>
 				<span className='segment-timeline__layer-item__label'>{end}</span>
-				{(this.props.segmentLineItem.expectedDuration === 0) &&
+				{(this.props.segmentLineItem.infiniteMode) &&
 					(<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
 						◆
 					</div>)

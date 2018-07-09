@@ -60,7 +60,7 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer {
 				ref={this.setRightLabelRef}
 				style={this.getItemLabelOffsetRight()}
 			>
-				{(this.props.segmentLineItem.expectedDuration === 0) &&
+				{(this.props.segmentLineItem.infiniteMode) &&
 					(<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
 						◆
 					</div>)
