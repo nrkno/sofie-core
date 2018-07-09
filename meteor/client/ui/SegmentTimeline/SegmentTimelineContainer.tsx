@@ -76,6 +76,7 @@ interface IProps {
 	liveLineHistorySize: number
 	onTimeScaleChange?: (timeScaleVal: number) => void
 	onContextMenu?: (contextMenuContext: any) => void
+	onSegmentScroll?: () => void
 	followLiveSegments: boolean
 }
 interface IState {
@@ -404,6 +405,10 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				scrollLeft: 0
 			})
 		}
+
+		if (this.props.followLiveSegments && !prevProps.followLiveSegments) {
+			this.onFollowLiveLine(true, {})
+		}
 	}
 
 	componentWillUnmount () {
@@ -424,6 +429,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			scrollLeft: scrollLeft,
 			followLiveLine: false
 		})
+		if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 	}
 
 	onAirLineRefresh = () => {

@@ -518,6 +518,14 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
+	onSegmentScroll = () => {
+		if (this.state.followLiveSegments && this.props.runningOrder && this.props.runningOrder.active) {
+			this.setState({
+				followLiveSegments: false
+			})
+		}
+	}
+
 	onWindowScroll = (e: JQuery.Event) => {
 		const isAutoScrolling = $(document.body).hasClass('auto-scrolling')
 		if (this.state.followLiveSegments && !isAutoScrolling && this.props.runningOrder && this.props.runningOrder.active) {
@@ -569,6 +577,7 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 												timeScale={this.state.timeScale}
 												onTimeScaleChange={this.onTimeScaleChange}
 												onContextMenu={this.onContextMenu}
+												onSegmentScroll={this.onSegmentScroll}
 												/>
 						</ErrorBoundary>
 				}
