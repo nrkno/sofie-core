@@ -3,9 +3,6 @@ import * as $ from 'jquery'
 
 import { FloatingInspector } from '../../FloatingInspector'
 
-import { faPlay } from '@fortawesome/fontawesome-free-solid'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-
 import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
 
 export class L3rdSourceRenderer extends CustomLayerItemRenderer {
@@ -55,7 +52,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 					<span className='segment-timeline__layer-item__label last-words' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
 						{(this.props.segmentLineItem.expectedDuration === 0) &&
 							(<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
-								<FontAwesomeIcon icon={faPlay} />
+								◆
 							</div>)
 						}
 					</span>

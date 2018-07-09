@@ -9,8 +9,6 @@ import * as ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
 
 import Lottie from 'react-lottie'
-import { faPlay } from '@fortawesome/fontawesome-free-solid'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 // @ts-ignore Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
 
@@ -107,7 +105,7 @@ export class VTSourceRenderer extends CustomLayerItemRenderer {
 						</span>
 						{(this.props.segmentLineItem.expectedDuration === 0) &&
 							(<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
-								<FontAwesomeIcon icon={faPlay} />
+								◆
 							</div>)
 						}
 					</span>

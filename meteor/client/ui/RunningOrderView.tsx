@@ -181,7 +181,8 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>, ITimi
 	}
 }))
 interface IRunningOrderHeaderProps {
-	runningOrder: RunningOrder
+	runningOrder: RunningOrder,
+	onActivate?: (isRehearsal: boolean) => void
 }
 
 const RunningOrderHeader = translate()(class extends React.Component<Translated<IRunningOrderHeaderProps>> {
@@ -282,12 +283,14 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	activate = () => {
 		if (!this.props.runningOrder.active) {
 			Meteor.call(PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false)
+			if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 		}
 	}
 
 	activateRehearsal = () => {
 		if (!this.props.runningOrder.active) {
 			Meteor.call(PlayoutAPI.methods.roActivate, this.props.runningOrder._id, true)
+			if (typeof this.props.onActivate === 'function') this.props.onActivate(true)
 		}
 	}
 
@@ -530,6 +533,12 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		})
 	}
 
+	onActivate = (isRehearsal: boolean) => {
+		this.setState({
+			followLiveSegments: true
+		})
+	}
+
 	totalRundownDuration () {
 		return 0
 	}
@@ -614,7 +623,8 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<RunningOrderHeader
-								runningOrder={this.props.runningOrder} />
+								runningOrder={this.props.runningOrder}
+								onActivate={this.onActivate} />
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<SegmentContextMenu

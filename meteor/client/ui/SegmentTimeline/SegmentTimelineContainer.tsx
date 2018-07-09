@@ -47,6 +47,7 @@ export interface IOutputLayerUi extends IOutputLayer {
 export interface ISourceLayerUi extends ISourceLayer {
 	/** Segment line items present on this source layer */
 	items?: Array<SegmentLineItem>
+	followingItems?: Array<SegmentLineItem>
 }
 export interface SegmentLineItemUi extends SegmentLineItem {
 	/** Source layer that this segment line item belongs to */
@@ -95,6 +96,7 @@ interface ITrackedProps {
 	hasRemoteItems: boolean,
 	hasAlreadyPlayed: boolean,
 	autoNextSegmentLine: boolean
+	followingSegmentLine: SegmentLineUi | undefined
 }
 export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
@@ -112,6 +114,24 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	let segmentLines = SegmentLines.find({
 		segmentId: props.segment._id
 	}, { sort: { _rank: 1 } }).fetch()
+
+	// get the segment line immediately after the last segment
+	let followingSegmentLine: SegmentLineUi | undefined = undefined
+	let followingSLines = SegmentLines.find({
+		runningOrderId: segmentui.runningOrderId,
+		_rank: {
+			$gt: segmentLines[segmentLines.length - 1]._rank
+		}
+	}, { sort: { _rank: 1 }, limit: 1 }).fetch()
+	if (followingSLines.length > 0) {
+		console.log(segmentui.name + ': followed by line: ' + followingSLines[0]._id)
+		followingSegmentLine = followingSLines[0]
+
+		let segmentLineItems = SegmentLineItems.find({
+			segmentLineId: followingSegmentLine._id
+		}).fetch()
+		followingSegmentLine.items = segmentLineItems
+	}
 
 	// create local deep copies of the studioInstallation outputLayers and sourceLayers so that we can store
 	// items present on those layers inside and also figure out which layers are used when inside the rundown
@@ -284,6 +304,39 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		})
 	})
 
+	if (followingSegmentLine && followingSegmentLine.items) {
+		_.forEach<SegmentLineItemUi>(followingSegmentLine.items, (segmentLineItem) => {
+			// match output layers in following segment line, but do not mark as used
+			// we only care about output layers used in this segment.
+			segmentLineItem.outputLayer = outputLayers[segmentLineItem.outputLayerId]
+
+			// find matching layer in the output layer
+			let sourceLayer = outputLayers[segmentLineItem.outputLayerId].sourceLayers!.find((el) => {
+				return el._id === segmentLineItem.sourceLayerId
+			})
+
+			if (sourceLayer === undefined) {
+				sourceLayer = sourceLayers[segmentLineItem.sourceLayerId]
+				if (sourceLayer) {
+					sourceLayer = _.clone(sourceLayer)
+					let sl = sourceLayer as ISourceLayerUi
+					sl.items = []
+					outputLayers[segmentLineItem.outputLayerId].sourceLayers!.push(sl)
+				}
+			}
+
+			if (sourceLayer !== undefined) {
+				segmentLineItem.sourceLayer = sourceLayer
+				if (segmentLineItem.sourceLayer.followingItems === undefined) {
+					segmentLineItem.sourceLayer.followingItems = []
+				}
+				// attach the segmentLineItem to the sourceLayer in this segment
+				segmentLineItem.sourceLayer.followingItems.push(segmentLineItem)
+				console.log('Adding following segment line item: ', segmentLineItem)
+			}
+		})
+	}
+
 	segmentui.outputLayers = outputLayers
 	segmentui.sourceLayers = sourceLayers
 
@@ -295,7 +348,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		isNextSegment,
 		hasAlreadyPlayed,
 		hasRemoteItems,
-		autoNextSegmentLine
+		autoNextSegmentLine,
+		followingSegmentLine
 	}
 })(class extends React.Component<IProps & ITrackedProps, IState> {
 	static contextTypes = {
@@ -436,7 +490,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				onContextMenu={this.props.onContextMenu}
 				onFollowLiveLine={this.onFollowLiveLine}
 				onZoomChange={(newScale: number, e) => this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)}
-				onScroll={this.onScroll} />
+				onScroll={this.onScroll}
+				followingSegmentLine={this.props.followingSegmentLine} />
 		)
 	}
 }

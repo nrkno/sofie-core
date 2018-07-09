@@ -23,7 +23,7 @@ import { RundownAPI } from '../../../lib/api/rundown'
 interface IPropsHeader {
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
-	segment: SegmentUi
+	// segment: SegmentUi
 	segmentLine: SegmentLineUi
 	segmentLineStartsAt: number
 	segmentLineDuration: number

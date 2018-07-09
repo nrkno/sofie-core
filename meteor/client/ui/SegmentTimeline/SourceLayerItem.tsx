@@ -23,7 +23,7 @@ import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 export interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
-	segment: SegmentUi
+	// segment: SegmentUi
 	segmentLine: SegmentLineUi
 	segmentLineStartsAt: number
 	segmentLineDuration: number

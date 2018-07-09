@@ -5,8 +5,6 @@ import { FloatingInspector } from '../../FloatingInspector'
 
 import * as ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
-import { faPlay } from '@fortawesome/fontawesome-free-solid'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 export class DefaultLayerItemRenderer extends CustomLayerItemRenderer {
 	leftLabel: HTMLSpanElement
@@ -64,7 +62,7 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer {
 			>
 				{(this.props.segmentLineItem.expectedDuration === 0) &&
 					(<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
-						<FontAwesomeIcon icon={faPlay} />
+						◆
 					</div>)
 				}
 			</span>

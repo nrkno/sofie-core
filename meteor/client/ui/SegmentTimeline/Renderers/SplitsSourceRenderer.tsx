@@ -5,9 +5,6 @@ import { FloatingInspector } from '../../FloatingInspector'
 import * as ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
 
-import { faPlay } from '@fortawesome/fontawesome-free-solid'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-
 import { RundownAPI } from '../../../../lib/api/rundown'
 import { literal } from '../../../../lib/lib'
 
@@ -172,7 +169,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 				<span className='segment-timeline__layer-item__label'>{end}</span>
 				{(this.props.segmentLineItem.expectedDuration === 0) &&
 					(<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
-						<FontAwesomeIcon icon={faPlay} />
+						◆
 					</div>)
 				}
 			</span>,

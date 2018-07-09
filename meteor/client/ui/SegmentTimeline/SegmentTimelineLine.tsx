@@ -82,7 +82,6 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 							segmentLineItem={segmentLineItem}
 							layer={this.props.layer}
 							outputLayer={this.props.outputLayer}
-							segment={this.props.segment}
 							segmentLine={this.props.segmentLine}
 							segmentLineStartsAt={this.props.startsAt}
 							segmentLineDuration={this.props.duration}

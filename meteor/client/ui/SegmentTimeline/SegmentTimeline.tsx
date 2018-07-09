@@ -13,6 +13,7 @@ import { SegmentUi, SegmentLineUi, IOutputLayerUi } from './SegmentTimelineConta
 import { TimelineGrid } from './TimelineGrid'
 import { SegmentTimelineLine } from './SegmentTimelineLine'
 import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
+import { SegmentNextPreview } from './SegmentNextPreview'
 
 import { SegmentDuration, SegmentLineCountdown, RunningOrderTiming } from './../RunningOrderTiming'
 
@@ -47,6 +48,7 @@ interface IProps {
 	onZoomChange: (newScale: number, event: any) => void
 	onFollowLiveLine: (state: boolean, event: any) => void
 	onContextMenu?: (contextMenuContext: any) => void
+	followingSegmentLine: SegmentLineUi | undefined
 }
 interface IStateHeader {
 	timelineWidth: number
@@ -403,6 +405,15 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 					</div>
 					{this.renderLiveLine()}
 				</div>
+				<ErrorBoundary>
+					<SegmentNextPreview
+						runningOrder={this.props.runningOrder}
+						collapsedOutputs={this.props.collapsedOutputs}
+						isCollapsed={this.props.isCollapsed}
+						outputGroups={this.props.segment.outputLayers}
+						sourceLayers={this.props.segment.sourceLayers}
+						segmentLine={this.props.followingSegmentLine} />
+				</ErrorBoundary>
 				<ErrorBoundary>
 					<SegmentTimelineZoom
 						onZoomDblClick={this.onZoomDblClick}
