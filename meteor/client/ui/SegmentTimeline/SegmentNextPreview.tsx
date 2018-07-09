@@ -28,7 +28,6 @@ export const SegmentNextPreview = class extends React.Component<IProps> {
 	renderSourceLayers (outputLayer: IOutputLayerUi, layers: ISourceLayerUi[] | undefined) {
 		if (layers) {
 			return _.map(layers, (layer, id) => {
-				console.log(layer.followingItems)
 				return (
 					<div className='segment-timeline__layer' key={id}>
 						{layer.followingItems && layer.followingItems
