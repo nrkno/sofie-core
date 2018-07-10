@@ -109,6 +109,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	let isLiveSegment = false
 	let isNextSegment = false
 	let currentLiveSegmentLine: SegmentLineUi | undefined = undefined
+	let nextSegmentLine: SegmentLineUi | undefined = undefined
 	let hasAlreadyPlayed = false
 	let hasRemoteItems = false
 
@@ -178,6 +179,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			isNextSegment = true
 			// next is only auto, if current has a duration
 			autoNextSegmentLine = (currentLiveSegmentLine ? currentLiveSegmentLine.autoNext || false : false) && ((currentLiveSegmentLine && currentLiveSegmentLine.expectedDuration !== undefined) ? currentLiveSegmentLine.expectedDuration !== 0 : false)
+			nextSegmentLine = segmentLine
 		}
 
 		segmentLine.willProbablyAutoNext = ((previousSegmentLine || {}).autoNext || false) && ((previousSegmentLine || {}).expectedDuration !== 0)
@@ -339,6 +341,13 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	segmentui.outputLayers = outputLayers
 	segmentui.sourceLayers = sourceLayers
+
+	if (isNextSegment && !isLiveSegment && !autoNextSegmentLine && props.runningOrder.currentSegmentLineId) {
+		const currentOtherSegmentLine = SegmentLines.findOne(props.runningOrder.currentSegmentLineId)
+		if (currentOtherSegmentLine && currentOtherSegmentLine.expectedDuration && currentOtherSegmentLine.autoNext) {
+			autoNextSegmentLine = true
+		}
+	}
 
 	return {
 		segmentui,

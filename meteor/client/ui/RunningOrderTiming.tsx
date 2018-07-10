@@ -313,11 +313,11 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, ISegmentDuratio
 				{this.props.segmentLineIds &&
 					this.props.timingDurations &&
 					this.props.timingDurations.segmentLineDurations &&
-						RundownUtils.formatTimeToTimecode(this.props.segmentLineIds.reduce((memo, item) => {
+						RundownUtils.formatDiffToTimecode(this.props.segmentLineIds.reduce((memo, item) => {
 							return this.props.timingDurations!.segmentLineDurations![item] !== undefined ?
 								memo + this.props.timingDurations!.segmentLineDurations![item] :
 								memo
-						}, 0))}
+						}, 0), false, true, true)}
 			</span>
 		}
 	})

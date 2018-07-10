@@ -258,7 +258,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>({
 		this.setState({
 			isLive,
 			isNext,
-			liveDuration: (isLive && !nextProps.autoNextSegmentLine) ?
+			liveDuration: (isLive && !nextProps.autoNextSegmentLine && !nextProps.segmentLine.autoNext) ?
 				Math.max(
 				(
 					(startedPlayback && nextProps.timingDurations.segmentLineDurations &&
@@ -378,7 +378,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>({
 						</div>
 					}
 					{this.renderTimelineOutputGroups(this.props.segmentLine)}
-					{this.state.isLive && !this.props.relative && !this.props.autoNextSegmentLine &&
+					{this.state.isLive && !this.props.relative && !this.props.autoNextSegmentLine && !this.props.segmentLine.autoNext &&
 						<div className='segment-timeline__segment-line__future-shade' style={this.getFutureShadeStyle()}>
 						</div>
 					}

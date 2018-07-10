@@ -14,7 +14,7 @@ export namespace RundownUtils {
 		}, 0)
 	}
 
-	export function formatTimeToTimecode (milliseconds: number, showPlus?: boolean, enDashAsMinus?: boolean): string {
+	export function formatTimeToTimecode (milliseconds: number, showPlus?: boolean, enDashAsMinus?: boolean, hideFrames?: boolean): string {
 		let sign = ''
 		if (milliseconds < 0) {
 			milliseconds = milliseconds * -1
@@ -22,7 +22,8 @@ export namespace RundownUtils {
 		} else {
 			if (showPlus) sign = '+'
 		}
-		return sign + ((new Timecode(milliseconds * Settings['frameRate'] / 1000, Settings['frameRate'], false)).toString())
+		const timeCodeString: String = (new Timecode(milliseconds * Settings['frameRate'] / 1000, Settings['frameRate'], false)).toString()
+		return sign + (hideFrames ? timeCodeString.substr(0, timeCodeString.length - 3) : timeCodeString)
 	}
 
 	export function formatTimeToShortTime (milliseconds: number): string {
