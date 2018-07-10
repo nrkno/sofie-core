@@ -279,11 +279,13 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>({
 		if (this.props.relative) {
 			return {
 				width: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
+				// width: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || 3000) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
 				willChange: this.state.isLive ? 'width' : undefined
 			}
 		} else {
 			return {
 				minWidth: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0) * this.props.timeScale).toString() + 'px',
+				// minWidth: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || 3000) * this.props.timeScale).toString() + 'px',
 				willChange: this.state.isLive ? 'minWidth' : undefined
 			}
 		}
@@ -343,17 +345,6 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>({
 		}
 	}
 
-	getDifferenceStyle = () => {
-		return {
-			'width': Math.max(0, Math.min(this.props.segmentLine.renderedDuration || 0, (this.props.segmentLine.renderedDuration || 0) - (this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || 0)
-				- ((this.state.isLive || this.state.isNext) ?
-					((this.props.livePosition || 0) + this.getLiveLineTimePadding(this.props.timeScale) - (this.getSegmentLineStartsAt() || this.props.segmentLine.startsAt || 0)) :
-					0
-				)
-			) * this.props.timeScale) + 'px'
-		}
-	}
-
 	render () {
 		const { t } = this.props
 
@@ -389,10 +380,6 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>({
 					{this.renderTimelineOutputGroups(this.props.segmentLine)}
 					{this.state.isLive && !this.props.relative && !this.props.autoNextSegmentLine &&
 						<div className='segment-timeline__segment-line__future-shade' style={this.getFutureShadeStyle()}>
-						</div>
-					}
-					{!this.props.relative && !this.props.segmentLine.duration && (this.props.segmentLine.renderedDuration || 0) > (this.props.segmentLine.expectedDuration || 0) &&
-						<div className='segment-timeline__segment-line__difference' style={this.getDifferenceStyle()}>
 						</div>
 					}
 				</div>

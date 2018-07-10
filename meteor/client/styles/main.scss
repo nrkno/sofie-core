@@ -43,4 +43,9 @@ a:visited {
 
 a.selectable {
 	display: block;
+	text-decoration: inherit;
+
+	&:hover, &:active {
+		text-decoration: inherit;
+	}
 }

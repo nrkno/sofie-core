@@ -43,6 +43,7 @@ interface IProps {
 	followLiveLine: boolean,
 	liveLineHistorySize: number,
 	livePosition: number,
+	displayTimecode: number,
 	autoNextSegmentLine: boolean,
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
@@ -292,7 +293,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 						{t('On Air')}
 					</div>
 					<div className='segment-timeline__liveline__timecode'>
-						{RundownUtils.formatTimeToTimecode(this.props.livePosition)}
+						{RundownUtils.formatTimeToTimecode(this.props.displayTimecode || 0, true, false)}
 					</div>
 				</div>
 			]

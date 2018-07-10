@@ -86,7 +86,8 @@ interface IState {
 	},
 	collapsed: boolean,
 	followLiveLine: boolean,
-	livePosition: number
+	livePosition: number,
+	displayTimecode: number
 }
 interface ITrackedProps {
 	segmentui: SegmentUi,
@@ -281,7 +282,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			}
 		})
 
-		segmentLine.renderedDuration = furthestDuration
+		segmentLine.renderedDuration = segmentLine.expectedDuration || 3000 // furthestDuration
 		segmentLine.startsAt = startsAt
 		startsAt = segmentLine.startsAt + (segmentLine.renderedDuration || 0)
 
@@ -369,7 +370,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			collapsed: false,
 			scrollLeft: 0,
 			followLiveLine: false,
-			livePosition: 0
+			livePosition: 0,
+			displayTimecode: 0
 		}
 
 		this.isLiveSegment = props.isLiveSegment || false
@@ -445,6 +447,9 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 			this.setState(_.extend({
 				livePosition: newLivePosition,
+				displayTimecode: this.props.currentLiveSegmentLine.startedPlayback ?
+					(getCurrentTime() - (this.props.currentLiveSegmentLine.startedPlayback + (this.props.currentLiveSegmentLine.duration || this.props.currentLiveSegmentLine.expectedDuration || 0))) :
+					(this.props.currentLiveSegmentLine.duration || this.props.currentLiveSegmentLine.expectedDuration)
 			}, this.state.followLiveLine ? {
 				scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
 			} : null))
@@ -493,6 +498,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				followLiveLine={this.state.followLiveLine}
 				liveLineHistorySize={this.props.liveLineHistorySize}
 				livePosition={this.state.livePosition}
+				displayTimecode={this.state.displayTimecode}
 				onContextMenu={this.props.onContextMenu}
 				onFollowLiveLine={this.onFollowLiveLine}
 				onZoomChange={(newScale: number, e) => this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)}

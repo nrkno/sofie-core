@@ -152,7 +152,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>, ITimi
 								'light': (this.props.timingDurations.asPlayedRundownDuration || 0) < (this.props.runningOrder.expectedDuration || 0)
 							})}>
 								<span className='timing-clock-label right'>{t('Diff')}</span>
-								{RundownUtils.formatDiffToTimecode(this.props.runningOrder.expectedDuration - (this.props.timingDurations.asPlayedRundownDuration || 0), true, true, true)}
+							{RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - this.props.runningOrder.expectedDuration, true, true, true)}
 							</span>
 						}
 					</React.Fragment>) :
@@ -170,7 +170,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>, ITimi
 								'light': (this.props.timingDurations.asPlayedRundownDuration || 0) < (this.props.timingDurations.totalRundownDuration || 0)
 							})}>
 								<span className='timing-clock-label right'>{t('Diff')}</span>
-								{RundownUtils.formatDiffToTimecode((this.props.timingDurations.totalRundownDuration || 0) - (this.props.timingDurations.asPlayedRundownDuration || 0), true, true, true)}
+								{RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - (this.props.timingDurations.totalRundownDuration || 0), true, true, true)}
 							</span> :
 							null
 						}

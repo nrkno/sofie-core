@@ -10,6 +10,7 @@ import { ISourceLayerUi,
 import { RundownAPI } from './../../../lib/api/rundown'
 import { RundownUtils } from './../../lib/rundown'
 import { Transition } from '../../../lib/constants/casparcg'
+import { SegmentLineItemLifespan } from '../../../lib/collections/SegmentLineItems'
 import * as ClassNames from 'classnames'
 import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MicSourceRenderer } from './Renderers/MicSourceRenderer'
@@ -194,29 +195,35 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 		let liveLinePadding = this.props.autoNextSegmentLine ? 0 : (this.props.isLiveLine ? this.props.liveLinePadding : 0)
 
-		let itemDuration = segmentLineItem.duration !== undefined ?
-			Math.min(segmentLineItem.duration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)) :
-			(this.props.isLiveLine && this.props.livePosition !== null ?
-				((segmentLineItem.expectedDuration) === 0 ? // segmentLineItem.renderedDuration
-					(this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)) :
-					Math.max(
-						Math.min(
-							(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration || 0),
-							// this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) + liveLinePadding,
-							(this.props.livePosition - this.props.segmentLineStartsAt + liveLinePadding - (segmentLineItem.renderedInPoint || 0))
-						),
-						Math.min(segmentLineItem.expectedDuration, segmentLineItem.renderedDuration || 0),
-					)
-				)
-				: (segmentLineItem.infiniteMode ?
-					this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)
-					: Math.min(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
-				)
-			)
+		// let itemDuration = segmentLineItem.duration !== undefined ?
+		// 	Math.min(segmentLineItem.duration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)) :
+		// 	(this.props.isLiveLine && this.props.livePosition !== null ?
+		// 		((segmentLineItem.expectedDuration) === 0 ? // segmentLineItem.renderedDuration
+		// 			(this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)) :
+		// 			Math.max(
+		// 				Math.min(
+		// 					(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration || 0),
+		// 					// this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) + liveLinePadding,
+		// 					(this.props.livePosition - this.props.segmentLineStartsAt + liveLinePadding - (segmentLineItem.renderedInPoint || 0))
+		// 				),
+		// 				Math.min(segmentLineItem.expectedDuration, segmentLineItem.renderedDuration || 0),
+		// 			)
+		// 		)
+		// 		: (segmentLineItem.infiniteMode ?
+		// 			this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)
+		// 			: Math.min(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
+		// 		)
+		// 	)
 
-		if (itemDuration === 0 && segmentLineItem.renderedInPoint !== null && segmentLineItem.renderedInPoint !== undefined) {
-			itemDuration = this.props.segmentLineDuration - segmentLineItem.renderedInPoint
+		let itemDuration = Math.min(segmentLineItem.duration || segmentLineItem.expectedDuration || segmentLineItem.renderedDuration || 0, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
+		if (segmentLineItem.infiniteMode !== undefined && segmentLineItem.infiniteMode !== SegmentLineItemLifespan.Normal) {
+			itemDuration = this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)
+			console.log(segmentLineItem.infiniteMode + ', ' + segmentLineItem.infiniteId)
 		}
+
+		// if (itemDuration === 0 && segmentLineItem.renderedInPoint !== null && segmentLineItem.renderedInPoint !== undefined) {
+		// 	itemDuration = this.props.segmentLineDuration - segmentLineItem.renderedInPoint
+		// }
 
 		if (this.props.relative) {
 			return {

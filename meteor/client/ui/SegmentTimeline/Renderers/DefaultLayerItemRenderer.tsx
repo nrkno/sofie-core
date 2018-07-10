@@ -63,6 +63,10 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer {
 				{(this.props.segmentLineItem.infiniteMode) &&
 					(<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
 						◆
+					</div>)}
+				{(!this.props.segmentLineItem.duration && (this.props.segmentLineItem.renderedInPoint + this.props.segmentLineItem.renderedDuration) > this.props.segmentLineDuration) &&
+					(<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
+						{(this.props.segmentLineItem.renderedInPoint + this.props.segmentLineItem.renderedDuration - this.props.segmentLineDuration)}
 					</div>)
 				}
 			</span>
