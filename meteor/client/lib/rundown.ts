@@ -49,9 +49,6 @@ export namespace RundownUtils {
 	}
 
 	export function isInsideViewport (scrollLeft: number, scrollWidth: number, segmentLine: SegmentLineUi, segmentLineStartsAt: number | undefined, segmentLineDuration: number | undefined, segmentLineItem?: SegmentLineItemUi) {
-		if (segmentLineItem && segmentLineItem._id === 'LGBm6Flqj7oJHkuT8mK_99Vp3AA_') {
-			console.log(segmentLine.duration, segmentLineDuration, segmentLine.renderedDuration, segmentLine.expectedDuration, segmentLineItem.duration, segmentLineItem.expectedDuration, segmentLineItem.renderedDuration, segmentLineItem.infiniteMode)
-		}
 		if (scrollLeft + scrollWidth < (segmentLineStartsAt || segmentLine.startsAt || 0) + (segmentLineItem !== undefined ? (segmentLineItem.renderedInPoint || 0) : 0)) {
 			return false
 		} else if (scrollLeft > (segmentLineStartsAt || segmentLine.startsAt || 0) +

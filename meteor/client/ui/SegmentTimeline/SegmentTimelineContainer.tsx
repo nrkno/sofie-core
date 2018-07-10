@@ -126,7 +126,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 	}, { sort: { _rank: 1 }, limit: 1 }).fetch()
 	if (followingSLines.length > 0) {
-		console.log(segmentui.name + ': followed by line: ' + followingSLines[0]._id)
 		followingSegmentLine = followingSLines[0]
 
 		let segmentLineItems = SegmentLineItems.find({
@@ -334,7 +333,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				}
 				// attach the segmentLineItem to the sourceLayer in this segment
 				segmentLineItem.sourceLayer.followingItems.push(segmentLineItem)
-				console.log('Adding following segment line item: ', segmentLineItem)
 			}
 		})
 	}
