@@ -56,19 +56,12 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer {
 					{this.props.segmentLineItem.name}
 				</span>
 			</span>
-			<span className='segment-timeline__layer-item__label last-words'
+			<span className='segment-timeline__layer-item__label right-side'
 				ref={this.setRightLabelRef}
 				style={this.getItemLabelOffsetRight()}
 			>
-				{(this.props.segmentLineItem.infiniteMode) &&
-					(<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
-						◆
-					</div>)}
-				{(!this.props.segmentLineItem.duration && (this.props.segmentLineItem.renderedInPoint + this.props.segmentLineItem.renderedDuration) > this.props.segmentLineDuration) &&
-					(<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
-						{(this.props.segmentLineItem.renderedInPoint + this.props.segmentLineItem.renderedDuration - this.props.segmentLineDuration)}
-					</div>)
-				}
+				{this.renderInfiniteIcon()}
+				{this.renderOverflowTimeLabel()}
 			</span>
 			<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== null}>
 				<div className='segment-timeline__mini-inspector' style={this.getFloatingInspectorStyle()}>

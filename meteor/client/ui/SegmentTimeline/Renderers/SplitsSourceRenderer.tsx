@@ -165,13 +165,10 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 			<span className='segment-timeline__layer-item__label first-words overflow-label' ref={this.setLeftLabelRef} key={this.props.segmentLineItem._id + '-start'} style={this.getItemLabelOffsetLeft()}>
 				{begin}
 			</span>,
-			<span className='segment-timeline__layer-item__label last-words' ref={this.setRightLabelRef} key={this.props.segmentLineItem._id + '-finish'} style={this.getItemLabelOffsetRight()}>
-				<span className='segment-timeline__layer-item__label'>{end}</span>
-				{(this.props.segmentLineItem.infiniteMode) &&
-					(<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
-						◆
-					</div>)
-				}
+			<span className='segment-timeline__layer-item__label right-side' ref={this.setRightLabelRef} key={this.props.segmentLineItem._id + '-finish'} style={this.getItemLabelOffsetRight()}>
+				<span className='segment-timeline__layer-item__label last-words'>{end}</span>
+				{this.renderInfiniteIcon()}
+				{this.renderOverflowTimeLabel()}
 			</span>,
 			<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 				<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>

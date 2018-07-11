@@ -466,7 +466,7 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		}))
 	}
 	componentDidMount () {
-		$(document.body).addClass('dark')
+		$(document.body).addClass(['dark', 'vertical-overflow-only'])
 		$(window).on('scroll', this.onWindowScroll)
 		let preventDefault = (e) => {
 			e.preventDefault()
@@ -492,7 +492,7 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		})
 	}
 	componentWillUnmount () {
-		$(document.body).removeClass('dark')
+		$(document.body).removeClass(['dark', 'vertical-overflow-only'])
 		$(window).off('scroll', this.onWindowScroll)
 
 		_.each(this._subscriptions, (sub ) => {

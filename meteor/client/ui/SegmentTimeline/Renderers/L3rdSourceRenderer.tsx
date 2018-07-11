@@ -49,12 +49,9 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 							{begin}
 						</span>
 					</span>
-					<span className='segment-timeline__layer-item__label last-words' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
-						{(this.props.segmentLineItem.infiniteMode === 0) &&
-							(<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
-								◆
-							</div>)
-						}
+					<span className='segment-timeline__layer-item__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
+						{this.renderInfiniteIcon()}
+						{this.renderOverflowTimeLabel()}
 					</span>
 					<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 						<div className='segment-timeline__mini-inspector' style={this.getFloatingInspectorStyle()}>

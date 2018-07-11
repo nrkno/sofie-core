@@ -56,6 +56,11 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	padding-top: 150px;
 }
 
+body.vertical-overflow-only {
+	overflow-x: hidden;
+    overflow-y: auto;
+}
+
 .running-order-view__focus-lost-frame {
 	position: fixed;
 	top: 0;
@@ -816,11 +821,9 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 								}
 							}
 
-							&.last-words {
+							&.right-side {
 								position: absolute;
 								right: 0;
-								font-weight: 300;
-								font-style: italic;
 								
 								> * {
 									position: relative;
@@ -835,12 +838,21 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 								}
 							}
 
+							&.last-words {
+								font-weight: 300;
+								font-style: italic;
+							}
+
 							&.file-name {
 								font-weight: 200;
 							}
 
 							&.label-icon {
 								margin: 0;
+							}
+
+							&.label-overflow-time {
+								font-weight: 200;
 							}
 
 							> .segment-timeline__layer-item__label {

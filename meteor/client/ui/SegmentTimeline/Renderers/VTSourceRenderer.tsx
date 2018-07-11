@@ -94,20 +94,17 @@ export class VTSourceRenderer extends CustomLayerItemRenderer {
 							</div>)
 						}
 					</span>
-					<span className='segment-timeline__layer-item__label last-words' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
+					<span className='segment-timeline__layer-item__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
 						{(this.end && (this.props.segmentLineItem as SegmentLineItemUi).content && (this.props.segmentLineItem as SegmentLineItemUi).content!.loop) &&
 							(<div className='segment-timeline__layer-item__label label-icon'>
 								<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
 							</div>)
 						}
+						{this.renderInfiniteIcon()}
+						{this.renderOverflowTimeLabel()}
 						<span className='segment-timeline__layer-item__label last-words'>
 							{this.end}
 						</span>
-						{(this.props.segmentLineItem.infiniteMode) &&
-							(<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
-								◆
-							</div>)
-						}
 					</span>
 					<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 						<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
