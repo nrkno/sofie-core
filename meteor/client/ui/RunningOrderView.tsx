@@ -388,6 +388,7 @@ interface IState {
 	contextMenuContext: any
 	bottomMargin: string
 	followLiveSegments: boolean
+	manualSetAsNext: boolean
 }
 
 interface ITrackedProps {
@@ -428,7 +429,8 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 			studioMode: localStorage.getItem('studioMode') === '1' ? true : false,
 			contextMenuContext: null,
 			bottomMargin: '',
-			followLiveSegments: true
+			followLiveSegments: true,
+			manualSetAsNext: false
 		}
 
 		this.bindKeys = [
@@ -465,6 +467,7 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 			runningOrderId: runningOrderId
 		}))
 	}
+
 	componentDidMount () {
 		$(document.body).addClass(['dark', 'vertical-overflow-only'])
 		$(window).on('scroll', this.onWindowScroll)
@@ -491,6 +494,19 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 			}
 		})
 	}
+
+	componentDidUpdate (prevProps: IProps & ITrackedProps, prevState: IState) {
+		if (this.props.runningOrder &&
+			prevProps.runningOrder && prevProps.runningOrder.currentSegmentLineId !== this.props.runningOrder.currentSegmentLineId &&
+			this.state.manualSetAsNext) {
+
+			this.setState({
+				manualSetAsNext: false,
+				followLiveSegments: true
+			})
+		}
+	}
+
 	componentWillUnmount () {
 		$(document.body).removeClass(['dark', 'vertical-overflow-only'])
 		$(window).off('scroll', this.onWindowScroll)
@@ -560,6 +576,9 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 	onSetNext = (segmentLine: SegmentLine) => {
 		if (segmentLine && segmentLine._id && this.props.runningOrder) {
 			Meteor.call(PlayoutAPI.methods.roSetNext, this.props.runningOrder._id, segmentLine._id)
+			this.setState({
+				manualSetAsNext: true
+			})
 		}
 	}
 

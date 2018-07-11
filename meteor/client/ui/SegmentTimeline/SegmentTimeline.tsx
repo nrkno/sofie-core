@@ -206,38 +206,50 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 		}
 	}
 
+	componentDidMount () {
+		setTimeout((function () {
+			if (this.props.isLiveSegment === true && this.props.followLiveSegments === true) {
+				this.scrollToMe()
+			}
+		}).bind(this), 1000)
+	}
+
+	scrollToMe () {
+		const previousSegment = $(this.segmentBlock).prev()
+		const segmentPosition = $(this.segmentBlock).offset()
+		let scrollTop: number | null = null
+
+		if (previousSegment.length > 0) {
+			const segmentPosition = $(previousSegment).offset()
+			if (segmentPosition) {
+				scrollTop = segmentPosition.top
+			}
+		} else if (segmentPosition && (
+			(segmentPosition.top > ($('html,body').scrollTop() || 0) + window.innerHeight) ||
+			(segmentPosition.top < ($('html,body').scrollTop() || 0))
+		)) {
+			scrollTop = segmentPosition.top
+		}
+
+		if (scrollTop !== null) {
+			this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, {})
+
+			$(document.body).addClass('auto-scrolling')
+			$('html,body').animate({
+				scrollTop: Math.max(0, scrollTop - 175)
+			}, 400, () => {
+				// delay until next frame, so that the scroll handler can fire
+				setTimeout(function () {
+					$(document.body).removeClass('auto-scrolling')
+				})
+			})
+		}
+	}
+
 	componentDidUpdate (prevProps: IProps) {
 		if ((prevProps.isLiveSegment === false && this.props.isLiveSegment === true && this.props.followLiveSegments) ||
 			(prevProps.followLiveSegments === false && this.props.followLiveSegments === true && this.props.isLiveSegment === true)) {
-			const previousSegment = $(this.segmentBlock).prev()
-			const segmentPosition = $(this.segmentBlock).offset()
-			let scrollTop: number | null = null
-
-			if (previousSegment.length > 0) {
-				const segmentPosition = $(previousSegment).offset()
-				if (segmentPosition) {
-					scrollTop = segmentPosition.top
-				}
-			} else if (segmentPosition && (
-				(segmentPosition.top > ($('html,body').scrollTop() || 0) + window.innerHeight) ||
-				(segmentPosition.top < ($('html,body').scrollTop() || 0))
-			)) {
-				scrollTop = segmentPosition.top
-			}
-
-			if (scrollTop !== null) {
-				this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, {})
-
-				$(document.body).addClass('auto-scrolling')
-				$('html,body').animate({
-					scrollTop: Math.max(0, scrollTop - 175)
-				}, 400, () => {
-					// delay until next frame, so that the scroll handler can fire
-					setTimeout(function () {
-						$(document.body).removeClass('auto-scrolling')
-					})
-				})
-			}
+			this.scrollToMe()
 		}
 	}
 

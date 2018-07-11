@@ -73,7 +73,7 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 				}
 			}
 			segmentCopy.renderedDuration = timelineObj.duration !== 0 ? timelineObj.duration : (props.segmentLineDuration - (segmentCopy.renderedInPoint || 0))
-			console.log(segmentCopy.renderedDuration)
+			// console.log(segmentCopy.renderedDuration)
 
 			overrides.segmentLineItem = _.extend(overrides.segmentLineItem || {}, segmentCopy)
 		}
