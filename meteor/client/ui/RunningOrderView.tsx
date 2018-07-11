@@ -11,6 +11,7 @@ import Moment from 'react-moment'
 
 import { NavLink } from 'react-router-dom'
 
+import { ClientAPI } from '../../lib/api/client'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
@@ -276,32 +277,32 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	take = () => {
-		Meteor.call(PlayoutAPI.methods.roTake, this.props.runningOrder._id)
+		Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roTake, this.props.runningOrder._id)
 		// console.log(new Date(getCurrentTime()))
 	}
 
 	activate = () => {
 		if (!this.props.runningOrder.active) {
-			Meteor.call(PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false)
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false)
 			if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 		}
 	}
 
 	activateRehearsal = () => {
 		if (!this.props.runningOrder.active) {
-			Meteor.call(PlayoutAPI.methods.roActivate, this.props.runningOrder._id, true)
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, true)
 			if (typeof this.props.onActivate === 'function') this.props.onActivate(true)
 		}
 	}
 
 	deactivate = () => {
 		if (this.props.runningOrder.active) {
-			Meteor.call(PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
 		}
 	}
 
 	reloadRunningOrder = () => {
-		Meteor.call(PlayoutAPI.methods.reloadData, this.props.runningOrder._id)
+		Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.reloadData, this.props.runningOrder._id)
 	}
 	getHeaderClassNames = () => {
 		return (

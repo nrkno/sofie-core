@@ -3,6 +3,7 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { PeripheralDevice,
 		PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { ClientAPI } from '../../../lib/api/client'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
 import { translate } from 'react-i18next'
@@ -75,7 +76,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 	}
 	handleConfirmDeleteShowStyleAccept = (e) => {
 		if (this.state.showDeleteDeviceConfirm) {
-			Meteor.call('temporaryRemovePeripheralDevice', this.state.showDeleteDeviceConfirm._id)
+			Meteor.call(ClientAPI.methods.execMethod, 'temporaryRemovePeripheralDevice', this.state.showDeleteDeviceConfirm._id)
 			// PeripheralDevices.remove(this.state.showDeleteDeviceConfirm._id)
 		}
 		// ShowStyles.remove(this.state.deleteConfirmItem._id)

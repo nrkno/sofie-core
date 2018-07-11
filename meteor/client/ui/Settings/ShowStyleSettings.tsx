@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { literal } from '../../../lib/lib'
 import { Random } from 'meteor/random'
+import { ClientAPI } from '../../../lib/api/client'
 import { RuntimeFunctionsAPI } from '../../../lib/api/runtimeFunctions'
 
 interface IProps {
@@ -46,7 +47,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		}
 	}
 	onAddLineTemplate () {
-		Meteor.call(RuntimeFunctionsAPI.INSERT, this.props.match.params.showStyleId, (e) => {
+		Meteor.call(ClientAPI.methods.execMethod, RuntimeFunctionsAPI.INSERT, this.props.match.params.showStyleId, (e) => {
 			if (e) {
 				console.log(e)
 			} else {
@@ -68,7 +69,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	}
 	handleConfirmDeleteLineTemplateAccept = (e) => {
 		if (this.state.deleteConfirmItem) {
-			Meteor.call(RuntimeFunctionsAPI.REMOVE, this.state.deleteConfirmItem._id, true)
+			Meteor.call(ClientAPI.methods.execMethod, RuntimeFunctionsAPI.REMOVE, this.state.deleteConfirmItem._id, true)
 			// RuntimeFunctions.remove(this.state.deleteConfirmItem._id)
 		}
 		this.setState({

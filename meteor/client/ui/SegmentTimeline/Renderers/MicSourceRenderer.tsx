@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as $ from 'jquery'
 
-import { ISourceLayerItemProps } from './../SourceLayerItem'
+import { ISourceLayerItemProps } from '../SourceLayerItem'
 
 import { FloatingInspector } from '../../FloatingInspector'
 

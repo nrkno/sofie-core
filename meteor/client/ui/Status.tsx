@@ -13,6 +13,7 @@ import {
 } from 'react-router-dom'
 import SystemStatus from './Status/SystemStatus'
 import { ExternalMessages } from './Status/ExternalMessages'
+import { UserActivity } from './Status/UserActivity'
 
 class WelcomeToStatus extends React.Component {
 	render () {
@@ -34,16 +35,20 @@ const StatusMenu = translate()(class StatusMenu extends React.Component<Translat
 				<NavLink
 					activeClassName='selectable-selected'
 					className='status-menu__status-menu-item selectable clickable'
-					key='system-link'
 					to={'/status/system'}>
 					<h3>{t('System')}</h3>
 				</NavLink>
 				<NavLink
 					activeClassName='selectable-selected'
 					className='status-menu__status-menu-item selectable clickable'
-					key='messages-link'
 					to={'/status/messages'}>
 					<h3>{t('Messages')}</h3>
+				</NavLink>
+				<NavLink
+					activeClassName='selectable-selected'
+					className='status-menu__status-menu-item selectable clickable'
+					to={'/status/userLog'}>
+					<h3>{t('User log')}</h3>
 				</NavLink>
 			</div>
 		)
@@ -86,6 +91,7 @@ class Status extends React.Component<Translated<IStatusProps>> {
 								{/* <Route path='/status' exact component={WelcomeToStatus} /> */}
 								<Route path='/status/messages' component={ExternalMessages} />
 								<Route path='/status/system' component={SystemStatus} />
+								<Route path='/status/userLog' component={UserActivity} />
 								<Redirect to='/status/system' />
 							</Switch>
 						</div>

@@ -8,6 +8,7 @@ import { Spinner } from '../../lib/Spinner'
 import '../../../lib/typings/monaco'
 import * as _ from 'underscore'
 import { Session } from 'meteor/session'
+import { ClientAPI } from '../../../lib/api/client'
 import { RuntimeFunctionsAPI } from '../../../lib/api/runtimeFunctions'
 import { RuntimeFunctionDebugDataObj, RuntimeFunctionDebugData } from '../../../lib/collections/RuntimeFunctionDebugData'
 import Moment from 'react-moment'
@@ -561,7 +562,7 @@ declare enum PlayoutTimelinePrefixes {
 
 	testCode () {
 		if (this._currentCode ) {
-			Meteor.call(RuntimeFunctionsAPI.TESTCODE, {code: this._currentCode}, this.props.runtimeFunction.showStyleId, this.props.runtimeFunction.isHelper, (e) => {
+			Meteor.call(ClientAPI.methods.execMethod, RuntimeFunctionsAPI.TESTCODE, {code: this._currentCode}, this.props.runtimeFunction.showStyleId, this.props.runtimeFunction.isHelper, (e) => {
 				if (e) {
 					this.setState({
 						message: 'Error when testing code: ' + e.toString()
@@ -581,7 +582,7 @@ declare enum PlayoutTimelinePrefixes {
 			saving: true
 		})
 		if (this._currentCode) {
-			Meteor.call(RuntimeFunctionsAPI.UPDATECODE, this.props.runtimeFunction._id, this._currentCode, (e) => {
+			Meteor.call(ClientAPI.methods.execMethod, RuntimeFunctionsAPI.UPDATECODE, this.props.runtimeFunction._id, this._currentCode, (e) => {
 				if (e) {
 					this.setState({
 						message: e.toString()
@@ -656,7 +657,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		})
 	}
 	updateTemplateId (edit: EditAttributeBase, newValue: any) {
-		Meteor.call(RuntimeFunctionsAPI.UPDATETEMPLATEID, edit.props.obj._id, newValue, (err, res) => {
+		Meteor.call(ClientAPI.methods.execMethod, RuntimeFunctionsAPI.UPDATETEMPLATEID, edit.props.obj._id, newValue, (err, res) => {
 			if (err) {
 				console.log(err)
 			} else {
@@ -665,7 +666,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		})
 	}
 	updateIsHelper (edit: EditAttributeBase, newValue: any) {
-		Meteor.call(RuntimeFunctionsAPI.UPDATEISHELPER, edit.props.obj._id, newValue, (err, res) => {
+		Meteor.call(ClientAPI.methods.execMethod, RuntimeFunctionsAPI.UPDATEISHELPER, edit.props.obj._id, newValue, (err, res) => {
 			if (err) {
 				console.log(err)
 			} else {

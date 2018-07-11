@@ -1,6 +1,5 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
-import { RundownAPI } from '../../lib/api/rundown'
 import { Time, applyClassToDocument, getCurrentTime } from '../../lib/lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { SegmentLines, SegmentLine } from './SegmentLines'
