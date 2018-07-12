@@ -5,7 +5,7 @@ import * as _ from 'underscore'
 
 import { literal, getCurrentTime, MeteorPromiseCall } from '../../lib/lib'
 
-import { logger } from './../logging'
+import { logger } from '../logging'
 import { ClientAPI } from '../../lib/api/client'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 

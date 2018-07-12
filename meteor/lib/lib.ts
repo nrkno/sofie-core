@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { TransformedCollection, Selector } from './typings/meteor'
 import { PeripheralDeviceAPI } from './api/peripheralDevice'
-import { logger } from '../lib/logging'
+import { logger } from './logging'
 
 /**
  * Convenience method to convert a Meteor.call() into a Promise

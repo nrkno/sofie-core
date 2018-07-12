@@ -7,7 +7,7 @@ import { RunningOrder } from '../../../lib/collections/RunningOrders'
 
 import { SegmentLineUi, IOutputLayerUi, ISourceLayerUi, SegmentLineItemUi } from './SegmentTimelineContainer'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
-import { ErrorBoundary } from '../ErrorBoundary'
+import { ErrorBoundary } from '../../lib/ErrorBoundary'
 
 interface IProps {
 	runningOrder: RunningOrder

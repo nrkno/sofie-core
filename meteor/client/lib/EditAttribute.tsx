@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { withTracker } from './ReactMeteorData/react-meteor-data'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown'

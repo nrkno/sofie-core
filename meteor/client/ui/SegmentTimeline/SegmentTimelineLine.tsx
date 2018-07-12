@@ -205,8 +205,11 @@ interface IState {
 
 const LIVE_LINE_TIME_PADDING = 150
 
-export const SegmentTimelineLine = translate()(withTiming<IProps, IState>({
-	isHighResolution: false
+export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props: IProps) => {
+	return {
+		isHighResolution: false,
+		filter: ['segmentLineDurations', props.segmentLine._id]
+	}
 })(class extends React.Component<Translated<WithTiming<IProps>>, IState> {
 	_refreshTimer: number | undefined
 

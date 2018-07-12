@@ -2,6 +2,7 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { withRenderLimiter } from '../../lib/RenderLimiter'
 
 import { normalizeArray } from '../../lib/utils'
 
@@ -396,6 +397,10 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 	}
 
+	shouldComponentUpdate (np: IProps & ITrackedProps, ns: IState): boolean {
+		return true
+	}
+
 	componentDidUpdate (prevProps) {
 		this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
 		if (this.isLiveSegment === false && this.props.isLiveSegment === true) {
@@ -483,6 +488,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	render () {
+		// console.log('Rendering %cSegmentTimelineContainer%c: %s', 'font-weight: bold;', 'font-weight:normal;color:gray;', this.props.segmentui._id)
+
 		return (
 			<SegmentTimeline
 				key={this.props.segment._id}

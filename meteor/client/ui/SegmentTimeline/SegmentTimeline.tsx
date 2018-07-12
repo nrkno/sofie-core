@@ -19,7 +19,7 @@ import { SegmentDuration, SegmentLineCountdown, RunningOrderTiming } from '../Ru
 
 import { RundownUtils } from '../../lib/rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { ErrorBoundary } from '../ErrorBoundary'
+import { ErrorBoundary } from '../../lib/ErrorBoundary'
 
 interface IProps {
 	key: string
@@ -360,7 +360,6 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	}
 
 	render () {
-		// console.log(this.props.hasRemoteItems && !this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment)
 
 		return (
 			<div id={'running-order__segment__' + this.props.segment._id}

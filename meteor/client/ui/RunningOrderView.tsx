@@ -30,7 +30,7 @@ import { getCurrentTime } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
 
 import * as mousetrap from 'mousetrap'
-import { ErrorBoundary } from './ErrorBoundary'
+import { ErrorBoundary } from '../lib/ErrorBoundary'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean

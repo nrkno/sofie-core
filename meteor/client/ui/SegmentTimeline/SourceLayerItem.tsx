@@ -7,8 +7,8 @@ import { ISourceLayerUi,
 		 SegmentLineUi,
 		 SegmentLineItemUi } from './SegmentTimelineContainer'
 
-import { RundownAPI } from './../../../lib/api/rundown'
-import { RundownUtils } from './../../lib/rundown'
+import { RundownAPI } from '../../../lib/api/rundown'
+import { RundownUtils } from '../../lib/rundown'
 import { Transition } from '../../../lib/constants/casparcg'
 import { SegmentLineItemLifespan } from '../../../lib/collections/SegmentLineItems'
 import * as ClassNames from 'classnames'

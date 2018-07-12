@@ -13,7 +13,7 @@ import { literal, getCurrentTime } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
 import { PeripheralDevices, PlayoutDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { logger } from '../../server/logging'
+import { logger } from '../logging'
 import * as _ from 'underscore'
 
 // Imports from TSR (TODO make into an import)

@@ -228,16 +228,17 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 
 export interface WithTimingOptions {
 	isHighResolution?: boolean
+	filter?: string | any[]
 }
 export type WithTiming<T> = T & RunningOrderTiming.InjectedROTimingProps
 type IWrappedComponent<IProps, IState> = new (props: WithTiming<IProps>, state: IState) => React.Component<WithTiming<IProps>, IState>
 
-export function withTiming<IProps, IState> (options?: WithTimingOptions):
+export function withTiming<IProps, IState> (options?: WithTimingOptions | Function):
 	(WrappedComponent: IWrappedComponent<IProps, IState>) =>
 		new (props: IProps, context: any ) => React.Component<IProps, IState> {
 	let expandedOptions: WithTimingOptions = _.extend({
 		isHighResolution: false
-	}, options)
+	}, typeof options === 'function' ? {} : options)
 
 	return (WrappedComponent) => {
 		return class WithTimingHOCComponent extends React.Component<IProps, IState> {
@@ -245,8 +246,19 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions):
 				durations: PropTypes.object.isRequired
 			}
 
+			filterGetter: (o: any) => any
+			previousValue: any = null
+
 			constructor (props, context) {
 				super(props, context)
+
+				if (typeof options === 'function') {
+					expandedOptions = _.extend(expandedOptions, options(this.props))
+				}
+
+				if (expandedOptions.filter) {
+					this.filterGetter = _.property(expandedOptions.filter as string)
+				}
 			}
 
 			componentDidMount () {
@@ -266,7 +278,15 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions):
 			}
 
 			refreshComponent = () => {
-				this.forceUpdate()
+				if (!this.filterGetter) {
+					this.forceUpdate()
+				} else {
+					const buf = this.filterGetter(this.context.durations || {})
+					if (buf !== this.previousValue) {
+						this.previousValue = buf
+						this.forceUpdate()
+					}
+				}
 			}
 
 			render () {
