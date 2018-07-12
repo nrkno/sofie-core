@@ -758,6 +758,10 @@ function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUnt
 				SegmentLineItems.update(item._id, { $set: { infiniteId: item.infiniteId } })
 			}
 
+			if (item.infiniteMode === SegmentLineItemLifespan.OutOnNextSegmentLine) {
+				return
+			}
+
 			activeInfiniteItems[item.sourceLayerId] = item
 			activeInfiniteItemsSegmentId[item.sourceLayerId] = previousLine.segmentId
 		}
@@ -773,7 +777,7 @@ function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUnt
 		for (let k in activeInfiniteItemsSegmentId) {
 			let s = activeInfiniteItemsSegmentId[k]
 			let i = activeInfiniteItems[k]
-			if (!i.infiniteMode || i.infiniteMode === SegmentLineItemLifespan.OutOnNext && s !== line.segmentId) {
+			if (!i.infiniteMode || i.infiniteMode === SegmentLineItemLifespan.OutOnNextSegment && s !== line.segmentId) {
 				delete activeInfiniteItems[k]
 				delete activeInfiniteItemsSegmentId[k]
 			}
@@ -812,7 +816,7 @@ function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUnt
 				delete activeInfiniteItemsSegmentId[k] // It will be stopped by this line
 
 				// if we matched with an infinite, then make sure that infinite is kept going
-				if (exist[exist.length - 1].infiniteMode) {
+				if (exist[exist.length - 1].infiniteMode && exist[exist.length - 1].infiniteMode !== SegmentLineItemLifespan.OutOnNextSegmentLine) {
 					activeInfiniteItems[k] = exist[0]
 					activeInfiniteItemsSegmentId[k] = line.segmentId
 				}
@@ -847,6 +851,10 @@ function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUnt
 				SegmentLineItems.update(i._id, {$set: {
 					infiniteId: i._id
 				}})
+			}
+
+			if (i.infiniteMode === SegmentLineItemLifespan.OutOnNextSegmentLine) {
+				return
 			}
 
 			// can only be one infinite on a layer at a time

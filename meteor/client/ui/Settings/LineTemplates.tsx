@@ -424,8 +424,9 @@ declare enum LineItemStatusCode {
 
 declare enum SegmentLineItemLifespan {
 	Normal = 0,
-	OutOnNext = 1,
-	Infinite = 2,
+	OutOnNextSegmentLine = 1,
+	OutOnNextSegment = 2,
+	Infinite = 3,
 }
 declare enum PlayoutTimelinePrefixes {
 	SEGMENT_LINE_GROUP_PREFIX = 'sl_group_',

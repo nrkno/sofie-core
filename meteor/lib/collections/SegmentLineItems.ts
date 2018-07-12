@@ -59,8 +59,9 @@ export interface SegmentLineItemGeneric {
 
 export enum SegmentLineItemLifespan {
 	Normal = 0,
-	OutOnNext = 1,
-	Infinite = 2,
+	OutOnNextSegmentLine = 1,
+	OutOnNextSegment = 2,
+	Infinite = 3,
 }
 
 export interface SegmentLineItem extends SegmentLineItemGeneric {
