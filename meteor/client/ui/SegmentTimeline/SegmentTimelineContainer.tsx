@@ -11,7 +11,7 @@ import * as SuperTimeline from 'superfly-timeline'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Segment } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
+import { SegmentLineItem, SegmentLineItems, SegmentLineItemLifespan } from '../../../lib/collections/SegmentLineItems'
 import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
 
 import { SegmentTimeline } from './SegmentTimeline'
@@ -301,11 +301,34 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	_.forEach<SegmentLineUi>(segmentLines, (line) => {
-		line.items && _.forEach<SegmentLineItemUi>(line.items, (item) => {
-			if (item.continuedByRef) {
-				item.renderedDuration = resolveDuration(item)
-			}
-		})
+		if (line.items) {
+			_.forEach<SegmentLineItemUi>(line.items, (item) => {
+				if (item.continuedByRef) {
+					item.renderedDuration = resolveDuration(item)
+				}
+			})
+
+			const itemsByLayer = _.groupBy(line.items, (item) => {
+				return item.outputLayerId + '_' + item.sourceLayerId
+			})
+			_.forEach(itemsByLayer, (layerItems, outputSourceCombination) => {
+				const sortedItems = _.sortBy(layerItems, 'renderedInPoint')
+				for (let i = 1; i < sortedItems.length; i++) {
+					const currentItem = sortedItems[i] as SegmentLineItemUi
+					const previousItem = sortedItems[i - 1] as SegmentLineItemUi
+					if (previousItem.renderedInPoint !== null && currentItem.renderedInPoint !== null && previousItem.renderedDuration !== null && currentItem.renderedDuration !== null &&
+						previousItem.renderedInPoint !== undefined && currentItem.renderedInPoint !== undefined && previousItem.renderedDuration !== undefined && currentItem.renderedDuration !== undefined &&
+						((previousItem.renderedInPoint + previousItem.renderedDuration > currentItem.renderedInPoint) ||
+						 (previousItem.infiniteMode)
+						)) {
+						previousItem.renderedDuration = currentItem.renderedInPoint - previousItem.renderedInPoint
+						if (previousItem.infiniteMode) {
+							previousItem.infiniteMode = SegmentLineItemLifespan.Normal
+						}
+					}
+				}
+			})
+		}
 	})
 
 	if (followingSegmentLine && followingSegmentLine.items) {
