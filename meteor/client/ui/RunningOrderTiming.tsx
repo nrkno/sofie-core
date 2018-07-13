@@ -198,7 +198,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 			let localAccum = 0
 			for (let i = 0; i < linearSegLines.length; i++) {
 				if (i < nextAIndex) {
-					localAccum += linearSegLines[i][1] || 0
+					localAccum = linearSegLines[i][1] || 0
 					linearSegLines[i][1] = null
 				} else if (i === nextAIndex) {
 					// localAccum += linearSegLines[i][1] || 0

@@ -78,6 +78,9 @@ export interface SegmentLineItem extends SegmentLineItemGeneric {
 
 	adLibSourceId?: string // only set when generated from an adlib
 	dynamicallyInserted?: boolean // only set when generated from an adlib
+
+	/** This is set when the item isn't infinite, but should overflow it's duration onto the adjacent (not just next) segment line on take */
+	overflows?: boolean
 }
 
 export const SegmentLineItems: TransformedCollection<SegmentLineItem, SegmentLineItem>
