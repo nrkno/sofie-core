@@ -21,6 +21,8 @@ import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 
+const LEFT_RIGHT_ANCHOR_SPACER = 35
+
 export interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
@@ -152,29 +154,31 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 	}
 
 	getItemLabelOffsetRight = (): { [key: string]: string } => {
+		if (this.props.segmentLineItem && this.props.segmentLineItem._id === '191PKIpK73PpgUzLRiySRrsAjGY_') {
+			let a = '12345!@#$% debugger here'
+		}
+
 		if (this.props.relative) {
 			return {}
 		} else {
-			if (this.props.segmentLine && this.props.segmentLine.startsAt !== undefined) { //  && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined
+			if (this.props.segmentLine && this.props.segmentLineStartsAt !== undefined) { //  && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined
 				let segmentLineItem = this.props.segmentLineItem
 
 				let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration : 0
 				let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration : 0
 
 				const inPoint = segmentLineItem.renderedInPoint || 0
-				const duration = (Number.isFinite(segmentLineItem.renderedDuration || 0)) ?
-					segmentLineItem.renderedDuration || this.props.segmentLineDuration || this.props.segmentLine.renderedDuration || 0 :
-					this.props.segmentLineDuration || this.props.segmentLine.renderedDuration || 0
+				const duration = segmentLineItem.infiniteMode ? (this.props.segmentLineDuration - inPoint) : Math.min((segmentLineItem.renderedDuration || 0), this.props.segmentLineDuration - inPoint)
 				const outPoint = inPoint + duration
 
 				const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
 
-				if (this.props.scrollLeft + this.props.scrollWidth < (outPoint - outTransitionDuration + this.props.segmentLine.startsAt) &&
-					this.props.scrollLeft + this.props.scrollWidth > (inPoint + this.props.segmentLine.startsAt)) {
-					const targetPos = ((this.props.scrollLeft + this.props.scrollWidth) - outPoint - this.props.segmentLine.startsAt - outTransitionDuration) * this.props.timeScale
+				if (this.props.scrollLeft + this.props.scrollWidth < (outPoint - outTransitionDuration + this.props.segmentLineStartsAt) &&
+					this.props.scrollLeft + this.props.scrollWidth > (inPoint + this.props.segmentLineStartsAt)) {
+					const targetPos = Math.max(((this.props.scrollLeft + this.props.scrollWidth) - outPoint - this.props.segmentLineStartsAt - outTransitionDuration) * this.props.timeScale, (this.state.elementWidth - this.state.leftAnchoredWidth - LEFT_RIGHT_ANCHOR_SPACER) * -1)
 
 					return {
-						'transform': 'translate3d(' + (widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.max(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth) * -1)).toString() + 'px,  0, 0)',
+						'transform': 'translate3d(' + (targetPos).toString() + 'px,  0, 0)',
 						'willChange': 'transform'
 					}
 				}

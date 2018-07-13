@@ -87,7 +87,6 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 							segmentLineDuration={this.props.duration}
 							timeScale={this.props.timeScale}
 							relative={this.props.relative}
-							lineStartsAt={this.props.segmentLine.startsAt}
 							autoNextSegmentLine={this.props.autoNextSegmentLine}
 							liveLinePadding={this.props.liveLinePadding}
 							scrollLeft={this.props.scrollLeft}

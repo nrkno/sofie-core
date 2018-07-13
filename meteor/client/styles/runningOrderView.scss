@@ -829,6 +829,10 @@ body.vertical-overflow-only {
 									position: relative;
 								}
 
+								> .segment-timeline__layer-item__label {
+									margin-right: 0 !important;
+								}
+
 								> .label-icon {
 									margin: 0 -10px 0 0;
 								}
@@ -852,7 +856,7 @@ body.vertical-overflow-only {
 							}
 
 							&.label-overflow-time {
-								font-weight: 200;
+								font-weight: 300;
 							}
 
 							> .segment-timeline__layer-item__label {
