@@ -30,7 +30,7 @@ export namespace RundownUtils {
 		return formatDiffToTimecode(Math.max(milliseconds, 0), false)
 	}
 
-	export function formatDiffToTimecode (milliseconds: number, showPlus?: boolean, showHours?: boolean, enDashAsMinus?: boolean): string {
+	export function formatDiffToTimecode (milliseconds: number, showPlus?: boolean, showHours?: boolean, enDashAsMinus?: boolean, useSmartFloor?: boolean): string {
 
 		const isNegative = milliseconds < 0
 		if (isNegative) {
@@ -44,7 +44,9 @@ export namespace RundownUtils {
 			hours = Math.floor(minutes / 60)
 			minutes = minutes % 60
 		}
-		const secondsRest = Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000)
+		const secondsRest = useSmartFloor ?
+			(milliseconds < 100 ? 0 : Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000))
+			: Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000)
 
 		return (isNegative ? (enDashAsMinus ? '\u2013' : '-') : (showPlus && milliseconds > 0 ? '+' : '')) + (showHours ? padZero(hours) + ':' : '') + padZero(minutes) + ':' + padZero(secondsRest)
 	}
