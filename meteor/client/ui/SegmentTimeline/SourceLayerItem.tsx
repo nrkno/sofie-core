@@ -416,6 +416,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 					'hide-overflow-labels': this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth),
 
 					'infinite': (this.props.segmentLineItem.duration === undefined && this.props.segmentLineItem.infiniteMode) as boolean, // 0 is a special value
+					'next-is-touching': (this.props.segmentLineItem.cropped),
 
 					'source-missing': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING,
 					'source-broken': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN,

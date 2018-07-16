@@ -59,6 +59,8 @@ export interface SegmentLineItemUi extends SegmentLineItem {
 	renderedInPoint?: number | null
 	/** Duration in timeline */
 	renderedDuration?: number | null
+	/** If set, the item was cropped in runtime by another item following it */
+	cropped?: boolean
 	/** This item is being continued by another, linked, item in another SegmentLine */
 	continuedByRef?: SegmentLineItemUi
 	/** This item is continuing another, linked, item in another SegmentLine */
@@ -322,6 +324,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 						 (previousItem.infiniteMode)
 						)) {
 						previousItem.renderedDuration = currentItem.renderedInPoint - previousItem.renderedInPoint
+						previousItem.cropped = true
 						if (previousItem.infiniteMode) {
 							previousItem.infiniteMode = SegmentLineItemLifespan.Normal
 						}

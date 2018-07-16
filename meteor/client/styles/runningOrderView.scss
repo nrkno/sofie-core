@@ -223,6 +223,8 @@ body.vertical-overflow-only {
 	grid-template-rows: [header] $segment-header-height [main-view] auto [zoom-area] auto [end];
 	overflow: hidden;
 	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
 	
 	width: auto;
 	margin: 1.5em;
@@ -763,6 +765,14 @@ body.vertical-overflow-only {
 						}
 
 						@include item-type-colors();
+
+						&.next-is-touching {
+							border-right: 1px solid $segment-timeline-background-color; 
+						}
+
+						&.next-is-touching:hover {
+							border-right: none;
+						}
 
 						&.splits, &.live-speak {
 							.segment-timeline__layer-item__preview {

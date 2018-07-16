@@ -74,6 +74,17 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 							true
 					: false
 				})
+				.sort((a: SegmentLineItemUi, b: SegmentLineItemUi): number => {
+					if ((a.renderedInPoint !== undefined) && (b.renderedInPoint !== undefined)) {
+						return (a.renderedInPoint as number) - (b.renderedInPoint as number)
+					} else if (a.renderedInPoint !== undefined) {
+						return -1
+					} else if (b.renderedInPoint !== undefined) {
+						return 1
+					} else {
+						return 1
+					}
+				})
 				.map((segmentLineItem) => {
 					return (
 						<SourceLayerItemContainer key={segmentLineItem._id}

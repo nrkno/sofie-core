@@ -61,7 +61,6 @@ export const SegmentNextPreview = class extends React.Component<IProps> {
 										segmentLineDuration={1}
 										timeScale={1}
 										relative={true}
-										lineStartsAt={0}
 										autoNextSegmentLine={false}
 										liveLinePadding={0}
 										scrollLeft={0}

@@ -22,6 +22,7 @@ import { sendStoryStatus } from './peripheralDevice'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
+let clone = require('fast-clone')
 
 export namespace ServerPlayoutAPI {
 	export function reloadData (roId: string) {
@@ -211,9 +212,13 @@ export namespace ServerPlayoutAPI {
 				$gt: takeSegmentLine._rank,
 			},
 			_id: { $ne: takeSegmentLine._id }
+		}, {
+			limit: 1
 		})
 
 		let nextSegmentLine: SegmentLine | null = segmentLinesAfter[0] || null
+
+		beforeTake(runningOrder, previousSegmentLine || null, takeSegmentLine)
 
 		RunningOrders.update(runningOrder._id, {
 			$set: {
@@ -232,9 +237,13 @@ export namespace ServerPlayoutAPI {
 		check(roId, String)
 		check(nextSlId, String)
 
-		let runningOrder = RunningOrders.findOne(roId)
+		const runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
+
+		const nextSegmentLine = SegmentLines.findOne(nextSlId)
+		if (!nextSegmentLine) throw new Meteor.Error(404, `Segment Line "${nextSlId}" not found!`)
+		if (nextSegmentLine.runningOrderId !== runningOrder._id) throw new Meteor.Error(409, `Segment Line "${nextSlId}" not part of specified running order`)
 
 		RunningOrders.update(runningOrder._id, {
 			$set: {
@@ -690,34 +699,6 @@ _.each(methods, (fcn: Function, key) => {
 // Apply methods:
 Meteor.methods(methods)
 
-// Meteor.methods({
-// 	/**
-// 	 * Activates the RunningOrder:
-// 	 * TODO: Set up the Timeline
-// 	 * Set first item on Next queue
-// 	 */
-// 	'playout_reload_data': ServerPlayoutAPI.reloadData,
-// 	'playout_activate': ServerPlayoutAPI.roActivate,
-// 	/**
-// 	 * Inactivates the RunningOrder
-// 	 * TODO: Clear the Timeline (?)
-// 	 */
-// 	'playout_inactivate': ServerPlayoutAPI.roDeactivate,
-
-// 	/**
-// 	 * Perform the TAKE action, i.e start playing a segmentLineItem
-// 	 */
-// 	'playout_take': ServerPlayoutAPI.roTake,
-// 	'playout_setNext': ServerPlayoutAPI.roSetNext,
-// 	'playout_storiesMoved': ServerPlayoutAPI.roStoriesMoved,
-// 	'playout_segmentLinePlaybackStart': ServerPlayoutAPI.slPlaybackStartedCallback,
-// 	'playout_segmentAdLibLineItemStart': ServerPlayoutAPI.salliPlaybackStart,
-// 	'playout_runningOrderBaselineAdLibItemStart': ServerPlayoutAPI.robaliPlaybackStart,
-// 	'playout_segmentAdLibLineItemStop': ServerPlayoutAPI.salliStop,
-// 	'playout_sourceLayerOnLineStop': ServerPlayoutAPI.sourceLayerOnLineStop,
-// 	'playout_timelineTriggerTimeUpdate': ServerPlayoutAPI.timelineTriggerTimeUpdateCallback
-// })
-
 // Temporary methods
 Meteor.methods({
 	'debug__printTime': () => {
@@ -726,6 +707,34 @@ Meteor.methods({
 		return now
 	},
 })
+
+function beforeTake (runningOrder: RunningOrder, currentSegmentLine: SegmentLine | null, nextSegmentLine: SegmentLine) {
+	if (currentSegmentLine) {
+		const currentSLIs = currentSegmentLine.getSegmentLinesItems()
+		currentSLIs.forEach((item) => {
+			if (item.overflows && item.expectedDuration > 0 && item.duration === undefined) {
+				// Clone an overflowing segment line item
+				let overflowedItem = _.extend({
+					_id: Random.id(),
+					segmentLineId: nextSegmentLine._id,
+					trigger: {
+						type: TriggerType.TIME_ABSOLUTE,
+						value: 0
+					},
+					dynamicallyInserted: true,
+					continuesRefId: item._id,
+
+					// Subtract the amount played from the expected duration
+					expectedDuration: Math.max(0, item.expectedDuration - ((item.startedPlayback || currentSegmentLine.startedPlayback || getCurrentTime()) - getCurrentTime()))
+				}, _.omit(clone(item) as SegmentLineItem, 'startedPlayback', 'duration', 'overflows'))
+
+				if (overflowedItem.expectedDuration > 0) {
+					SegmentLineItems.insert(overflowedItem)
+				}
+			}
+		})
+	}
+}
 
 function afterTake (runningOrder: RunningOrder, takeSegmentLine: SegmentLine, previousSegmentLine: SegmentLine | null) {
 	// This function should be called at the end of a "take" event (when the SegmentLines have been updated)
