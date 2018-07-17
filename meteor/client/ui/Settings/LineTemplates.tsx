@@ -175,6 +175,8 @@ declare interface DBSegmentLine {
 	startedPlayback?: number
 	/** The time the system played back this segment line, null if not yet finished playing, in milliseconds */
 	duration?: number
+	/** If the item is overflowing, it's expectedDuration will overflow to the adjacent segment line */
+	overflows?: boolean
 }
 declare type SegmentLine = DBSegmentLine
 declare enum LayerType {
@@ -778,43 +780,47 @@ let SelectRFDD = translateWithTracker<SelectRFDDProps, IState, ISelectRFDDTracke
 		return (
 			this.props.runtimeFunctionDebugData.length ? (
 				<table>
-					<tr>
-						<th>Timestamp</th>
-						<th>Snapshot name</th>
-						<th>Keep</th>
-						<th>Select</th>
-						<th>Remove</th>
-					</tr>
-					{_.map(this.props.runtimeFunctionDebugData, (rtfdd) => {
-						return (
-							<tr>
-								<td>
-									<Moment fromNow>{rtfdd.created}</Moment>
-								</td>
-								<td>
-									{rtfdd.reason}
-								</td>
-								<td>
-									<EditAttribute
-										attribute='dontRemove'
-										obj={rtfdd}
-										type='checkbox'
-										collection={RuntimeFunctionDebugData}
-									/>
-								</td>
-								<td>
-									<button className={ClassNames('btn', this.isSelected(rtfdd) ? 'btn-default' : 'btn-primary')}
-										onClick={() => this.select(rtfdd)}>{t('Select this')}
-									</button>
-								</td>
-								<td>
-									<button className='action-btn' onClick={(e) => this.remove(rtfdd)}>
-										<FontAwesomeIcon icon={faTrash} />
-									</button>
-								</td>
-							</tr>
-						)
-					})}
+					<thead>
+						<tr>
+							<th>Timestamp</th>
+							<th>Snapshot name</th>
+							<th>Keep</th>
+							<th>Select</th>
+							<th>Remove</th>
+						</tr>
+					</thead>
+					<tbody>
+						{_.map(this.props.runtimeFunctionDebugData, (rtfdd) => {
+							return (
+								<tr key={rtfdd._id}>
+									<td>
+										<Moment fromNow>{rtfdd.created}</Moment>
+									</td>
+									<td>
+										{rtfdd.reason}
+									</td>
+									<td>
+										<EditAttribute
+											attribute='dontRemove'
+											obj={rtfdd}
+											type='checkbox'
+											collection={RuntimeFunctionDebugData}
+										/>
+									</td>
+									<td>
+										<button className={ClassNames('btn', this.isSelected(rtfdd) ? 'btn-default' : 'btn-primary')}
+											onClick={() => this.select(rtfdd)}>{t('Select this')}
+										</button>
+									</td>
+									<td>
+										<button className='action-btn' onClick={(e) => this.remove(rtfdd)}>
+											<FontAwesomeIcon icon={faTrash} />
+										</button>
+									</td>
+								</tr>
+							)
+						})}
+					</tbody>
 				</table>
 			) : null
 		)

@@ -710,6 +710,21 @@ Meteor.methods({
 
 function beforeTake (runningOrder: RunningOrder, currentSegmentLine: SegmentLine | null, nextSegmentLine: SegmentLine) {
 	if (currentSegmentLine) {
+		const adjacentSL = SegmentLines.find({
+			segmentId: currentSegmentLine.segmentId,
+			_rank: {
+				$gt: currentSegmentLine._rank
+			}
+		}, {
+			sort: {
+				_rank: 1
+			},
+			limit: 1
+		})
+		if (!adjacentSL || adjacentSL[0]._id !== nextSegmentLine._id) {
+			// adjacent Segment Line isn't the next segment line, do not overflow
+			return
+		}
 		const currentSLIs = currentSegmentLine.getSegmentLinesItems()
 		currentSLIs.forEach((item) => {
 			if (item.overflows && item.expectedDuration > 0 && item.duration === undefined) {
