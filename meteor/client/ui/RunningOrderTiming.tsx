@@ -305,19 +305,21 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions | Functi
 interface ISegmentLineCountdownProps {
 	segmentLineId?: string
 	timingDurations?: RunningOrderTiming.RunningOrderTimingContext
+	hideOnZero?: boolean
 }
 interface ISegmentLineCountdownState {
 }
 export const SegmentLineCountdown = withTiming<ISegmentLineCountdownProps, ISegmentLineCountdownState>()(
 class extends React.Component<WithTiming<ISegmentLineCountdownProps>, ISegmentLineCountdownState> {
 	render () {
-		return <span>
+		return (<span>
 			{this.props.segmentLineId &&
 				this.props.timingDurations &&
 				this.props.timingDurations.segmentLineCountdown &&
 				this.props.timingDurations.segmentLineCountdown[this.props.segmentLineId] !== undefined &&
+				(this.props.hideOnZero !== true || this.props.timingDurations.segmentLineCountdown[this.props.segmentLineId] > 0) &&
 					RundownUtils.formatTimeToShortTime(this.props.timingDurations.segmentLineCountdown[this.props.segmentLineId])}
-		</span>
+		</span>)
 	}
 })
 interface ISegmentDurationProps {
@@ -337,7 +339,7 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, ISegmentDuratio
 							return this.props.timingDurations!.segmentLineDurations![item] !== undefined ?
 								memo + this.props.timingDurations!.segmentLineDurations![item] :
 								memo
-						}, 0), false, true, true)}
+						}, 0), false, false, true, false, true)}
 			</span>
 		}
 	})

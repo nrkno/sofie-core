@@ -720,8 +720,8 @@ function beforeTake (runningOrder: RunningOrder, currentSegmentLine: SegmentLine
 				_rank: 1
 			},
 			limit: 1
-		})
-		if (!adjacentSL || adjacentSL[0]._id !== nextSegmentLine._id) {
+		}).fetch()
+		if (!adjacentSL || adjacentSL.length < 1 || adjacentSL[0]._id !== nextSegmentLine._id) {
 			// adjacent Segment Line isn't the next segment line, do not overflow
 			return
 		}

@@ -142,7 +142,7 @@ export class RunningOrderListItem extends React.Component<IRunningOrderListItemP
 					</td>
 					<td className='running-order-list-item__duration'>
 						{this.props.runningOrder.expectedDuration &&
-							RundownUtils.formatTimeToTimecode(this.props.runningOrder.expectedDuration)
+							RundownUtils.formatDiffToTimecode(this.props.runningOrder.expectedDuration, false, false, true, false, true)
 						}
 					</td>
 					<td className='running-order-list-item__status'>
