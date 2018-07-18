@@ -30,7 +30,7 @@ export namespace RundownUtils {
 		return formatDiffToTimecode(Math.max(milliseconds, 0), false)
 	}
 
-	export function formatDiffToTimecode (milliseconds: number, showPlus?: boolean, showHours?: boolean, enDashAsMinus?: boolean, useSmartFloor?: boolean, useSmartHours?: boolean): string {
+	export function formatDiffToTimecode (milliseconds: number, showPlus?: boolean, showHours?: boolean, enDashAsMinus?: boolean, useSmartFloor?: boolean, useSmartHours?: boolean, minusPrefix?: string): string {
 
 		const isNegative = milliseconds < 0
 		if (isNegative) {
@@ -48,7 +48,7 @@ export namespace RundownUtils {
 			(milliseconds < 100 ? 0 : Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000))
 			: Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000)
 
-		return (isNegative ? (enDashAsMinus ? '\u2013' : '-') : (showPlus && milliseconds > 0 ? '+' : '')) + ((showHours || (useSmartHours && hours > 0)) ? padZero(hours) + ':' : '') + padZero(minutes) + ':' + padZero(secondsRest)
+		return (isNegative ? (minusPrefix || (enDashAsMinus ? '\u2013' : '-')) : (showPlus && milliseconds > 0 ? '+' : '')) + ((showHours || (useSmartHours && hours > 0)) ? padZero(hours) + ':' : '') + padZero(minutes) + ':' + padZero(secondsRest)
 	}
 
 	export function isInsideViewport (scrollLeft: number, scrollWidth: number, segmentLine: SegmentLineUi, segmentLineStartsAt: number | undefined, segmentLineDuration: number | undefined, segmentLineItem?: SegmentLineItemUi) {

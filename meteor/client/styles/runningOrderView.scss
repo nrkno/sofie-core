@@ -309,6 +309,11 @@ body.vertical-overflow-only {
 		letter-spacing: 1px;
 
 		@include collapse-triangle();
+
+		> span.negative {
+			color: $general-late-color;
+			font-weight: 500;
+		}
 	}
 	.segment-timeline__timeUntil {
 		position: relative;
@@ -325,7 +330,6 @@ body.vertical-overflow-only {
 
 		font-size: 1.3em;
 		font-weight: 400;
-		color: #ff0000;
 		line-height: 2.0em;
 		padding-right: 0px;
 		margin-right: 0em;
@@ -619,6 +623,10 @@ body.vertical-overflow-only {
 			color: $liveline-timecode-color;
 			white-space: nowrap;
 			word-wrap: none;
+
+			&.overtime {
+				color: $general-late-color;
+			}
 		}
 	}
 

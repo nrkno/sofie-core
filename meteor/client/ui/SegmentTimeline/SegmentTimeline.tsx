@@ -304,7 +304,9 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 						 onClick={(e) => this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, e)}>
 						{t('On Air')}
 					</div>
-					<div className='segment-timeline__liveline__timecode'>
+					<div className={ClassNames('segment-timeline__liveline__timecode', {
+						'overtime': !!(this.props.displayTimecode > 0)
+					})}>
 						{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, true, true)}
 					</div>
 				</div>
@@ -383,7 +385,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 				</ContextMenuTrigger>
 				<div className='segment-timeline__duration' tabIndex={0}
 					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
-					{this.props.runningOrder && this.props.segmentLines && this.props.segmentLines.length > 0 &&
+					{this.props.runningOrder && this.props.segmentLines && this.props.segmentLines.length > 0 && (!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) &&
 						<SegmentDuration
 							segmentLineIds={this.props.segmentLines.map((item) => item._id)}
 						/>
@@ -395,9 +397,12 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 						<SegmentLineCountdown
 							segmentLineId={
 								(
-									this.props.isNextSegment ?
-									this.props.runningOrder.nextSegmentLineId :
-									this.props.segmentLines[0]._id
+									!this.props.isLiveSegment &&
+									(
+										this.props.isNextSegment ?
+										this.props.runningOrder.nextSegmentLineId :
+										this.props.segmentLines[0]._id
+									)
 								) || undefined }
 							hideOnZero={true}
 						/>
