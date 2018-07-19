@@ -302,20 +302,20 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	reloadRunningOrder = () => {
-		Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.reloadData, this.props.runningOrder._id)
-	}
-	getHeaderClassNames = () => {
-		return (
-			'header running-order' +
-			(this.props.runningOrder.active ? ' active' : ' not-active') +
-			(this.props.runningOrder.rehearsal ? ' rehearsal' : '')
-		)
+		Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.reloadData, this.props.runningOrder._id, (err, result) => {
+			$('html,body').scrollTop(0)
+		})
 	}
 
 	render () {
 		const { t } = this.props
 		return (
-			<div className={this.getHeaderClassNames()}>
+			<div className={ClassNames('header running-order', {
+				'active': this.props.runningOrder.active,
+				'not-active': !this.props.runningOrder.active,
+
+				'rehearsal': this.props.runningOrder.rehearsal
+			})}>
 				<div className='row first-row super-dark'>
 					<div className='flex-col left horizontal-align-left'>
 						{/* !!! TODO: This is just a temporary solution !!! */}
@@ -421,6 +421,7 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		up?: (e: KeyboardEvent) => any
 		down?: (e: KeyboardEvent) => any
 	}> = []
+	private _segments: _.Dictionary<React.ComponentClass<{}>> = {}
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)

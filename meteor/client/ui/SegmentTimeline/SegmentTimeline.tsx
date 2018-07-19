@@ -49,6 +49,7 @@ interface IProps {
 	onZoomChange: (newScale: number, event: any) => void
 	onFollowLiveLine: (state: boolean, event: any) => void
 	onContextMenu?: (contextMenuContext: any) => void
+	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	followingSegmentLine: SegmentLineUi | undefined
 }
 interface IStateHeader {
@@ -188,6 +189,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 
 	setSegmentRef = (el: HTMLDivElement) => {
 		this.segmentBlock = el
+		if (typeof this.props.segmentRef === 'function') this.props.segmentRef(this as any, this.props.segment._id)
 	}
 
 	setTimelineRef = (el: HTMLDivElement) => {

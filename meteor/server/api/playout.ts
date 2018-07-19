@@ -64,10 +64,8 @@ export namespace ServerPlayoutAPI {
 
 				// Reset the playout devices by deactivating and activating rundown and restore current/next segment line, if possible
 				if (runningOrder && runningOrder.active) {
-					const nextSegmentLineId = runningOrder.currentSegmentLineId || runningOrder.nextSegmentLineId
 					ServerPlayoutAPI.roDeactivate(roId)
 					ServerPlayoutAPI.roActivate(roId, runningOrder.rehearsal || false)
-					if (nextSegmentLineId) ServerPlayoutAPI.roSetNext(roId, nextSegmentLineId)
 				}
 			}
 		}, 'triggerGetRunningOrder', runningOrder.mosId)

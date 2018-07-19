@@ -81,6 +81,7 @@ interface IProps {
 	onContextMenu?: (contextMenuContext: any) => void
 	onSegmentScroll?: () => void
 	followLiveSegments: boolean
+	segmentRef?: (el: React.ComponentClass, sId: string) => void
 }
 interface IState {
 	scrollLeft: number,
@@ -518,6 +519,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 		return (
 			<SegmentTimeline
+				segmentRef={this.props.segmentRef}
 				key={this.props.segment._id}
 				segment={this.props.segmentui}
 				studioInstallation={this.props.studioInstallation}
