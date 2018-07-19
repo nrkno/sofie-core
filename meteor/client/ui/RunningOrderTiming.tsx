@@ -41,6 +41,7 @@ export namespace RunningOrderTiming {
 }
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60
+const LOW_RESOLUTION_TIMING_DECIMATOR = 15
 
 interface IRunningOrderTimingProviderProps {
 	runningOrder?: RunningOrder
@@ -90,7 +91,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 			this.refreshTimerInterval = TIMING_DEFAULT_REFRESH_INTERVAL
 		}
 
-		this.refreshDecimator = 15
+		this.refreshDecimator = 0
 	}
 
 	getChildContext (): IRunningOrderTimingProviderChildContext {
@@ -105,7 +106,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 		this.dispatchHREvent()
 
 		this.refreshDecimator++
-		if (this.refreshDecimator % 15 === 0) {
+		if (this.refreshDecimator % LOW_RESOLUTION_TIMING_DECIMATOR === 0) {
 			this.dispatchEvent()
 		}
 	}
