@@ -303,6 +303,11 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 	reloadRunningOrder = () => {
 		Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.reloadData, this.props.runningOrder._id, (err, result) => {
+			if (err) {
+				console.error(err)
+				return
+			}
+
 			$('html,body').scrollTop(0)
 		})
 	}
