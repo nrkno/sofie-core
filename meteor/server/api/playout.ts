@@ -32,11 +32,43 @@ export namespace ServerPlayoutAPI {
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
 		PeripheralDeviceAPI.executeFunction(runningOrder.mosDeviceId, (err: any, ro: IMOSRunningOrder) => {
+			console.log('Response!')
 			if (err) {
 				logger.error(err)
 			} else {
 				// TODO: what to do with the result?
 				logger.debug('Recieved reply for triggerGetRunningOrder', ro)
+
+				SegmentLineItems.remove({
+					runningOrderId: roId,
+					dynamicallyInserted: true
+				})
+
+				SegmentLines.update({
+					runningOrderId: roId
+				}, {
+					$unset: {
+						duration: 1,
+						startedPlayback: 1
+					}
+				})
+
+				SegmentLineItems.update({
+					runningOrderId: roId
+				}, {
+					$unset: {
+						duration: 1,
+						startedPlayback: 1
+					}
+				})
+
+				// Reset the playout devices by deactivating and activating rundown and restore current/next segment line, if possible
+				if (runningOrder && runningOrder.active) {
+					const nextSegmentLineId = runningOrder.currentSegmentLineId || runningOrder.nextSegmentLineId
+					ServerPlayoutAPI.roDeactivate(roId)
+					ServerPlayoutAPI.roActivate(roId, runningOrder.rehearsal || false)
+					if (nextSegmentLineId) ServerPlayoutAPI.roSetNext(roId, nextSegmentLineId)
+				}
 			}
 		}, 'triggerGetRunningOrder', runningOrder.mosId)
 	}

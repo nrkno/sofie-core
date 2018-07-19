@@ -40,8 +40,8 @@ export namespace RundownUtils {
 		let hours = 0
 
 		let minutes = Math.floor(milliseconds / (60 * 1000))
-		if (showHours) {
-			hours = Math.floor(minutes / 60)
+		hours = Math.floor(minutes / 60)
+		if (showHours || (useSmartHours && hours > 0)) {
 			minutes = minutes % 60
 		}
 		const secondsRest = useSmartFloor ?
