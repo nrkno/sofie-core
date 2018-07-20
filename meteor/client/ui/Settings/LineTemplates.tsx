@@ -15,6 +15,7 @@ import Moment from 'react-moment'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import * as ClassNames from 'classnames'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
+import * as faSave from '@fortawesome/fontawesome-free-solid/faSave'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 interface IMonacoProps {
@@ -609,20 +610,20 @@ declare enum PlayoutTimelinePrefixes {
 
 	render () {
 		return <div ref={this.setRef}>
-					<div id='monaco-container' className='runtime-function-edit__editor'></div>
-					<div>
+					<div className='runtime-function-edit__status'>
 						{this.state.unsavedChanges ? (
 							<div>
 								<b>Unsaved changes </b>
-								<button className='action-btn' onClick={(e) => this.saveCode()}>
-									Save
+								<button className='btn btn-primary' onClick={(e) => this.saveCode()}>
+									<FontAwesomeIcon icon={faSave} />
 								</button>
 							</div>
 						) : null}
 						{this.state.saving ? ' Saving...' : ''}
 					</div>
-					<div>
-						<pre>{this.state.message }</pre>
+					<div id='monaco-container' className='runtime-function-edit__editor'></div>
+					<div className='runtime-function-edit__message'>
+						<pre>{this.state.message}</pre>
 					</div>
 			   </div>
 	}

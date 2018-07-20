@@ -76,4 +76,18 @@
 		width: 100%;
 		height: 75vh;
 	}
+
+	.runtime-function-edit__status {
+		background: #eee;
+		height: 2em;
+		line-height: 2em;
+		padding-left: 0.5em;
+
+		> div {
+			> .btn.btn-primary {
+				vertical-align: top;
+				float: right;
+			}
+		}
+	}
 }
