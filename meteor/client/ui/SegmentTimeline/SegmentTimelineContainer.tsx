@@ -20,6 +20,8 @@ import { getCurrentTime } from '../../../lib/lib'
 import { RunningOrderTiming } from '../RunningOrderTiming'
 import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 
+export const DEFAULT_DISPLAY_DURATION = 3000
+
 export interface SegmentUi extends Segment {
 	/** Output layers available in the installation used by this segment */
 	outputLayers?: {
@@ -289,7 +291,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			}
 		})
 
-		segmentLine.renderedDuration = segmentLine.expectedDuration || 3000 // furthestDuration
+		segmentLine.renderedDuration = segmentLine.expectedDuration || DEFAULT_DISPLAY_DURATION // furthestDuration
 		segmentLine.startsAt = startsAt
 		startsAt = segmentLine.startsAt + (segmentLine.renderedDuration || 0)
 
@@ -479,8 +481,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		if (this.props.isLiveSegment && this.props.currentLiveSegmentLine) {
 			let speed = 1
 			const segmentLineOffset = this.context.durations &&
-									  this.context.durations.segmentLineStartsAt &&
-									  (this.context.durations.segmentLineStartsAt[this.props.currentLiveSegmentLine._id] - this.context.durations.segmentLineStartsAt[this.props.segmentLines[0]._id])
+									  this.context.durations.segmentLineDisplayStartsAt &&
+									  (this.context.durations.segmentLineDisplayStartsAt[this.props.currentLiveSegmentLine._id] - this.context.durations.segmentLineDisplayStartsAt[this.props.segmentLines[0]._id])
 									  || 0
 			let newLivePosition = this.props.currentLiveSegmentLine.startedPlayback ?
 				(getCurrentTime() - this.props.currentLiveSegmentLine.startedPlayback + segmentLineOffset) :

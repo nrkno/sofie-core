@@ -32,6 +32,8 @@ import { RundownUtils } from '../lib/rundown'
 import * as mousetrap from 'mousetrap'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 
+import { DEFAULT_DISPLAY_DURATION } from './SegmentTimeline/SegmentTimelineContainer'
+
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
 }
@@ -651,7 +653,8 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		if (this.props.runningOrder && this.props.studioInstallation) {
 			return (
 				<RunningOrderTimingProvider
-					runningOrder={this.props.runningOrder}>
+					runningOrder={this.props.runningOrder}
+					defaultDuration={DEFAULT_DISPLAY_DURATION}>
 					<div className='running-order-view' style={this.getStyle()}>
 						<ErrorBoundary>
 							<KeyboardFocusMarker />

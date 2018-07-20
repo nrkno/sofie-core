@@ -305,7 +305,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 	}
 
 	getSegmentLineStartsAt (): number {
-		return Math.max(0, (this.props.firstSegmentLineInSegment && this.props.timingDurations.segmentLineStartsAt && (this.props.timingDurations.segmentLineStartsAt[this.props.segmentLine._id] - this.props.timingDurations.segmentLineStartsAt[this.props.firstSegmentLineInSegment._id])) || 0)
+		return Math.max(0, (this.props.firstSegmentLineInSegment && this.props.timingDurations.segmentLineDisplayStartsAt && (this.props.timingDurations.segmentLineDisplayStartsAt[this.props.segmentLine._id] - this.props.timingDurations.segmentLineDisplayStartsAt[this.props.firstSegmentLineInSegment._id])) || 0)
 	}
 
 	isInsideViewport () {
@@ -387,7 +387,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					</div>
 					{ DEBUG_MODE &&
 						<div className='segment-timeline__debug-info'>
-							{this.props.livePosition} / {this.props.segmentLine.startsAt} / {this.props.segmentLine._rank}
+						{this.props.livePosition} / {this.props.segmentLine.startsAt} / {(this.props.timingDurations || {segmentLineStartsAt: {}}).segmentLineStartsAt![this.props.segmentLine._id]}
 						</div>
 					}
 					{this.renderTimelineOutputGroups(this.props.segmentLine)}

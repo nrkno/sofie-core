@@ -27,6 +27,9 @@ export namespace RunningOrderTiming {
 		segmentLineStartsAt?: {
 			[key: string]: number
 		}
+		segmentLineDisplayStartsAt?: {
+			[key: string]: number
+		}
 		segmentLinePlayed?: {
 			[key: string]: number
 		}
@@ -47,6 +50,7 @@ interface IRunningOrderTimingProviderProps {
 	runningOrder?: RunningOrder
 	// segmentLines: Array<SegmentLine>
 	refreshInterval?: number
+	defaultDuration?: number
 }
 interface IRunningOrderTimingProviderChildContext {
 	durations: RunningOrderTiming.RunningOrderTimingContext
@@ -145,6 +149,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 		let waitAccumulator = 0
 		let currentRemaining = 0
 		let startsAtAccumulator = 0
+		let displayStartsAtAccumulator = 0
 
 		const { runningOrder, segmentLines } = this.props
 		const linearSegLines: Array<[string, number | null]> = []
@@ -158,6 +163,9 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 			[key: string]: number
 		} = {}
 		const segLineStartsAt: {
+			[key: string]: number
+		} = {}
+		const segLineDisplayStartsAt: {
 			[key: string]: number
 		} = {}
 
@@ -197,7 +205,9 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 				}
 				segLineExpectedDurations[item._id] = item.expectedDuration || item.duration || 0
 				segLineStartsAt[item._id] = startsAtAccumulator
+				segLineDisplayStartsAt[item._id] = displayStartsAtAccumulator
 				startsAtAccumulator += segLineDurations[item._id]
+				displayStartsAtAccumulator += segLineDurations[item._id] || this.props.defaultDuration || 3000
 				// always add the full duration, in case by some manual intervention this segment should play twice
 				waitAccumulator += (item.duration || item.expectedDuration || 0)
 
@@ -235,6 +245,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 			segmentLineDurations: segLineDurations,
 			segmentLinePlayed: segLinePlayed,
 			segmentLineStartsAt: segLineStartsAt,
+			segmentLineDisplayStartsAt: segLineDisplayStartsAt,
 			segmentLineExpectedDurations: segLineExpectedDurations
 		})
 	}
