@@ -114,16 +114,16 @@ Meteor.methods({
 					name: 'Super',
 					type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: false,
-					activateKeyboardHotkeys: 'a,s,d,f,g,h',
-					clearKeyboardHotkey: 'l'
+					activateKeyboardHotkeys: 'q,w,e,r,t,y',
+					clearKeyboardHotkey: 'u'
 				},
-				// {
-				// 	_id: 'studio0_lower_third0',
-				// 	_rank: 10,
-				// 	name: 'Super',
-				// 	type: RundownAPI.SourceLayerType.LOWER_THIRD,
-				// 	onPGMClean: false
-				// },
+				{
+				 	_id: 'studio0_graphics1',
+				 	_rank: 55,
+				 	name: 'Grafikk',
+				 	type: RundownAPI.SourceLayerType.GRAPHICS,
+					onPGMClean: true
+				},
 				{
 					_id: 'studio0_split0',
 					_rank: 15,
@@ -139,7 +139,7 @@ Meteor.methods({
 					abbreviation: 'DIR',
 					type: RundownAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
-					activateKeyboardHotkeys: '1,2,3,4,5,6',
+					activateKeyboardHotkeys: '1,2,3',
 					isRemoteInput: true,
 					assignHotkeysToGlobalAdlibs: true
 				},

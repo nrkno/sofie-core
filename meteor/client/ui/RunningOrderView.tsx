@@ -93,7 +93,8 @@ enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_ACTIVATE3 = '|',
 	RUNNING_ORDER_ACTIVATE_REHEARSAL = 'mod+§',
 	RUNNING_ORDER_DEACTIVATE = 'mod+shift+§',
-	RUNNING_ORDER_GO_TO_LIVE = 'mod+home'
+	RUNNING_ORDER_GO_TO_LIVE = 'mod+home',
+	RUNNING_ORDER_RELOAD_RUNNING_ORDER = 'shift+f12'
 }
 mousetrap.addKeycodes({
 	220: '§',
@@ -219,7 +220,10 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE_REHEARSAL,
 				up: this.keyActivateRehearsal
-			},
+			}, {
+				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RELOAD_RUNNING_ORDER,
+				up: this.keyReloadRunningOrder
+			}
 		]
 	}
 	componentDidMount () {
@@ -276,6 +280,10 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 	keyDeactivate = (e: ExtendedKeyboardEvent) => {
 		this.deactivate()
+	}
+
+	keyReloadRunningOrder = (e: ExtendedKeyboardEvent) => {
+		this.reloadRunningOrder()
 	}
 
 	take = () => {
