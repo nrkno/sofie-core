@@ -152,11 +152,11 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>, ITimi
 						}
 						{this.props.runningOrder.expectedDuration &&
 							<span className={ClassNames('timing-clock heavy-light right', {
-								'heavy': (this.props.timingDurations.asPlayedRundownDuration || 0) > (this.props.runningOrder.expectedDuration || 0),
-								'light': (this.props.timingDurations.asPlayedRundownDuration || 0) < (this.props.runningOrder.expectedDuration || 0)
+								'heavy': (this.props.timingDurations.asPlayedRundownDuration || 0) < (this.props.runningOrder.expectedDuration || 0),
+								'light': (this.props.timingDurations.asPlayedRundownDuration || 0) > (this.props.runningOrder.expectedDuration || 0)
 							})}>
 								<span className='timing-clock-label right'>{t('Diff')}</span>
-							{RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - this.props.runningOrder.expectedDuration, true, false, true, true, true)}
+								{RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - this.props.runningOrder.expectedDuration, true, false, true, true, true, undefined, true)}
 							</span>
 						}
 					</React.Fragment>) :
@@ -170,11 +170,11 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>, ITimi
 						}
 						{this.props.timingDurations ?
 							<span className={ClassNames('timing-clock heavy-light right', {
-								'heavy': (this.props.timingDurations.asPlayedRundownDuration || 0) > (this.props.timingDurations.totalRundownDuration || 0),
-								'light': (this.props.timingDurations.asPlayedRundownDuration || 0) < (this.props.timingDurations.totalRundownDuration || 0)
+								'heavy': (this.props.timingDurations.asPlayedRundownDuration || 0) < (this.props.timingDurations.totalRundownDuration || 0),
+								'light': (this.props.timingDurations.asPlayedRundownDuration || 0) > (this.props.timingDurations.totalRundownDuration || 0)
 							})}>
 								<span className='timing-clock-label right'>{t('Diff')}</span>
-								{RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - (this.props.timingDurations.totalRundownDuration || 0), true, false, true, true, true)}
+								{RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - (this.props.timingDurations.totalRundownDuration || 0), true, false, true, true, true, undefined, true)}
 							</span> :
 							null
 						}
