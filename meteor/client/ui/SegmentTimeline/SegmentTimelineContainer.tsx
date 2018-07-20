@@ -449,6 +449,11 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			this.setState({
 				scrollLeft: 0
 			})
+		} else if (this.props.runningOrder && !this.props.runningOrder.active && prevProps.runningOrder && prevProps.runningOrder.active) {
+			this.setState({
+				livePosition: 0,
+				displayTimecode: 0
+			})
 		}
 
 		if (this.props.followLiveSegments && !prevProps.followLiveSegments) {
