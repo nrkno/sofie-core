@@ -97,9 +97,9 @@ enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_RELOAD_RUNNING_ORDER = 'shift+f12'
 }
 mousetrap.addKeycodes({
-	220: '§',
-	222: '\\',
-	223: '|'
+	220: '§', // on US-based (ANSI) keyboards (single-row, Enter key), this is the key above Enter, usually with a backslash and the vertical pipe character
+	222: '\\', // on ANSI-based keyboards, this is the key with single quote
+	223: '|' // this key is not present on ANSI-based keyboards
 })
 
 const TimingDisplay = translate()(withTiming<ITimingDisplayProps, ITimingDisplayState>()(
