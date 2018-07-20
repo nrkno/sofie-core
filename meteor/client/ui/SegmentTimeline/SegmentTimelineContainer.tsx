@@ -67,6 +67,8 @@ export interface SegmentLineItemUi extends SegmentLineItem {
 	continuesRef?: SegmentLineItemUi
 	/** This item has already been linked to the parent item of the spanning item group */
 	linked?: boolean
+	/** Metadata object */
+	metadata?: any
 }
 interface ISegmentLineItemUiDictionary {
 	[key: string]: SegmentLineItemUi

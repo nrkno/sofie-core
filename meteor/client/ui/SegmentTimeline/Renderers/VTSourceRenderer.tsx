@@ -7,8 +7,10 @@ import { FloatingInspector } from '../../FloatingInspector'
 
 import * as ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
+import { MediaObject } from '../../../../lib/collections/MediaObjects'
 
 import Lottie from 'react-lottie'
+import { Settings } from '../../../../lib/Settings'
 // @ts-ignore Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
 
@@ -67,6 +69,17 @@ export class VTSourceRenderer extends CustomLayerItemRenderer {
 		}
 	}
 
+	getPreviewUrl = (): string | undefined => {
+		if (this.props.segmentLineItem) {
+			const item = this.props.segmentLineItem as SegmentLineItemUi
+			const metadata = item.metadata as MediaObject
+			if (metadata && metadata.previewPath) {
+				return Settings['mediaPreviewService'] + metadata.collectionId + '/' + metadata.previewPath
+			}
+		}
+		return '/segment0_vt_preview.mp4' // TODO: should be undefined, but is a placeholder for time being
+	}
+
 	render () {
 		let labelItems = this.props.segmentLineItem.name.split('||')
 		this.begin = labelItems[0] || ''
@@ -108,7 +121,7 @@ export class VTSourceRenderer extends CustomLayerItemRenderer {
 					</span>
 					<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 						<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
-							<video src='/segment0_vt_preview.mp4' ref={this.setVideoRef} />
+							<video src={this.getPreviewUrl()} ref={this.setVideoRef} />
 						</div>
 					</FloatingInspector>
 				</React.Fragment>

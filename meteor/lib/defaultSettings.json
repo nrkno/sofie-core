@@ -1,3 +1,4 @@
 {
-	"frameRate": 25
+	"frameRate": 25,
+	"mediaPreviewService": "http://localhost:9010/mediaPreview/"
 }
