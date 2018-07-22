@@ -63,8 +63,26 @@
 		}
 	}
 
-	.settings-studio-source-table, .settings-studio-output-table, .settings-studio-device-table, .settings-studio-mappings-table, .settings-studio-custom-config-table {
+	.settings-studio-source-table, .settings-studio-output-table, .settings-studio-device-table,
+	.settings-studio-mappings-table, .settings-studio-custom-config-table, .settings-showStyle-lineTemplates,
+	.settings-line-templates-snapshots {
 		width: 100%;
+
+		> thead > tr {
+			> .actions {
+				text-align: right;
+			}
+		}
+
+		> tbody > tr {
+			> .actions {
+				text-align: right;
+	
+				> .action-btn {
+					padding: 0 0.4em;
+				}
+			}
+		}
 	}
 
 	.settings-studio-device-dropdown {

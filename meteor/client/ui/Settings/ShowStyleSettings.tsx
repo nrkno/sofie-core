@@ -160,7 +160,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										<td>
 											{item.isHelper ? t('Helper') : ''}
 										</td>
-										<td>
+										<td className='actions'>
 											<button className='action-btn' onClick={(e) => this.onDeleteLineTemplate(item)}>
 												<FontAwesomeIcon icon={faTrash} />
 											</button>

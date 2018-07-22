@@ -35,6 +35,7 @@ class MonacoWrapper extends React.Component<IMonacoProps, IMonacoState> {
 
 	_container: HTMLDivElement
 	_editor: monaco.editor.IStandaloneCodeEditor
+	_editorEventListeners: monaco.IDisposable[] = []
 	_codeId: string
 	private _saveTimeout: any
 	private _testTimeout: any
@@ -458,13 +459,18 @@ declare enum PlayoutTimelinePrefixes {
 				language: 'javascript',
 				automaticLayout: true,
 			})
-			this._editor.onDidChangeModelContent((e: monaco.editor.IModelContentChangedEvent) => {
+			this._editorEventListeners.push(this._editor.onDidChangeModelContent((e: monaco.editor.IModelContentChangedEvent) => {
 				this.triggerSave(this._editor.getModel().getValue())
-			})
+			}))
 			this._editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, () => {
 				this.saveCode()
 			}, '')
 		}
+	}
+	componentWillUnmount () {
+		this._editorEventListeners.forEach((listener) => {
+			listener.dispose()
+		})
 	}
 	convertFunctionTyping (args: any[]): string {
 		// Converts an array of arguments to a typing declaration
@@ -780,14 +786,14 @@ let SelectRFDD = translateWithTracker<SelectRFDDProps, IState, ISelectRFDDTracke
 
 		return (
 			this.props.runtimeFunctionDebugData.length ? (
-				<table>
+				<table className='settings-line-templates-snapshots'>
 					<thead>
 						<tr>
 							<th>Timestamp</th>
 							<th>Snapshot name</th>
 							<th>Keep</th>
 							<th>Select</th>
-							<th>Remove</th>
+							<th className='actions'>Remove</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -809,11 +815,11 @@ let SelectRFDD = translateWithTracker<SelectRFDDProps, IState, ISelectRFDDTracke
 										/>
 									</td>
 									<td>
-										<button className={ClassNames('btn', this.isSelected(rtfdd) ? 'btn-default' : 'btn-primary')}
+										<button className={ClassNames('btn-tight', this.isSelected(rtfdd) ? 'btn-default' : 'btn-primary')}
 											onClick={() => this.select(rtfdd)}>{t('Select this')}
 										</button>
 									</td>
-									<td>
+									<td className='actions'>
 										<button className='action-btn' onClick={(e) => this.remove(rtfdd)}>
 											<FontAwesomeIcon icon={faTrash} />
 										</button>
