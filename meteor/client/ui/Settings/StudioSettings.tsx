@@ -16,6 +16,7 @@ import { IOutputLayer,
 	MappingAtemType,
 	MappingLawoType
 } from '../../../lib/collections/StudioInstallations'
+import { ShowStyles } from '../../../lib/collections/ShowStyles'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -35,6 +36,10 @@ interface IProps {
 	studioInstallation: StudioInstallation
 	studioDevices: Array<PeripheralDevice>
 	availableDevices: Array<PeripheralDevice>
+	availableShowStyles: Array<{
+		name: string,
+		value: string
+	}>
 }
 
 interface IChildStudioInterfaceProps {
@@ -1192,6 +1197,12 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 		studioDevices: PeripheralDevices.find({
 			studioInstallationId: props.match.params.studioId
 		}).fetch(),
+		availableShowStyles: ShowStyles.find().fetch().map((item) => {
+			return {
+				name: `${item.name} (${item._id})`,
+				value: item._id
+			}
+		}),
 		availableDevices: PeripheralDevices.find({
 			studioInstallationId: {
 				$not: {
@@ -1352,13 +1363,14 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 							</div>
 						</label>
 						<label className='field'>
-							{t('Default showStyle id')}
+							{t('Default show style')}
 							<div className='mdi'>
 								<EditAttribute
 									modifiedClassName='bghl'
 									attribute='defaultShowStyle'
 									obj={this.props.studioInstallation}
-									type='text'
+									type='dropdown'
+									options={this.props.availableShowStyles}
 									collection={StudioInstallations}
 									className='mdinput'></EditAttribute>
 								<span className='mdfx'></span>
