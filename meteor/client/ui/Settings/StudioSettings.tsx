@@ -186,7 +186,6 @@ class StudioOutputSettings extends React.Component<Translated<IStudioOutputSetti
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Is PGM output')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'outputLayers.' + item.index + '.isPGM'}
@@ -194,6 +193,7 @@ class StudioOutputSettings extends React.Component<Translated<IStudioOutputSetti
 												type='checkbox'
 												collection={StudioInstallations}
 												className=''></EditAttribute>
+											{t('Is PGM output')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -596,7 +596,6 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Is unlimited')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'sourceLayers.' + item.index + '.unlimited'}
@@ -604,11 +603,11 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 												type='checkbox'
 												collection={StudioInstallations}
 												className=''></EditAttribute>
+											{t('Is unlimited')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Is on clean PGM')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'sourceLayers.' + item.index + '.onPGMClean'}
@@ -616,11 +615,11 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 												type='checkbox'
 												collection={StudioInstallations}
 												className=''></EditAttribute>
+											{t('Is on clean PGM')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Is a live remote input')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'sourceLayers.' + item.index + '.isRemoteInput'}
@@ -628,6 +627,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 												type='checkbox'
 												collection={StudioInstallations}
 												className=''></EditAttribute>
+											{t('Is a live remote input')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -668,7 +668,6 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Assign hotkeys to global adlibs')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'sourceLayers.' + item.index + '.assignHotkeysToGlobalAdlibs'}
@@ -676,6 +675,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 												type='checkbox'
 												collection={StudioInstallations}
 												className=''></EditAttribute>
+											{t('Assign hotkeys to global adlibs')}
 										</label>
 									</div>
 								</div>

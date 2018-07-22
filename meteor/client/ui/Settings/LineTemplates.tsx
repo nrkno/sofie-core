@@ -714,19 +714,16 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							</div>
 						</label>
 						<label className='field'>
-							{t('Is Helper')}
-							<div className='mdi'>
-								<EditAttribute
-									modifiedClassName='bghl'
-									attribute='isHelper'
-									obj={this.props.lineTemplate}
-									type='checkbox'
-									collection={RuntimeFunctions}
-									className='mdinput'
-									updateFunction={this.updateIsHelper}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='isHelper'
+								obj={this.props.lineTemplate}
+								type='checkbox'
+								collection={RuntimeFunctions}
+								className='mdinput'
+								updateFunction={this.updateIsHelper}
 								/>
-								<span className='mdfx'></span>
-							</div>
+							{t('Is Helper')}
 						</label>
 					</div>
 					<div>
