@@ -9,15 +9,21 @@ import * as _ from 'underscore'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { UserActionsLog, UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
+import * as faChevronRight from '@fortawesome/fontawesome-free-solid/faChevronRight'
+import * as faChevronLeft from '@fortawesome/fontawesome-free-solid/faChevronLeft'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as classNames from 'classnames'
 
 interface IUserActivityProps {
 }
 interface IUserActivityState {
+	offset: number
 }
 interface IUserActivityTrackedProps {
 	log: UserActionsLogItem[]
 }
+
+const PAGING_AMOUNT = 30
 
 const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState, IUserActivityTrackedProps>((props: IUserActivityProps) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
@@ -31,6 +37,14 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 		}).fetch()
 	}
 })(class ExternalMessages extends MeteorReactComponent<Translated<IUserActivityProps & IUserActivityTrackedProps>, IUserActivityState> {
+	constructor (props) {
+		super(props)
+
+		this.state = {
+			offset: 0
+		}
+	}
+
 	componentWillMount () {
 		// Subscribe to data:
 		this.subscribe('userActionsLog', {})
@@ -61,6 +75,18 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 		)
 	}
 
+	onClickPrevious = () => {
+		this.setState({
+			offset: Math.max(0, this.state.offset - PAGING_AMOUNT)
+		})
+	}
+
+	onClickNext = () => {
+		this.setState({
+			offset: this.state.offset + PAGING_AMOUNT
+		})
+	}
+
 	renderUserActivity () {
 		const { t } = this.props
 		return (
@@ -68,7 +94,7 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 				<table className='table user-action-log'>
 					{this.renderMessageHead()}
 					<tbody>
-						{_.map(this.props.log, (msg) => {
+						{_.map(this.props.log.slice(this.state.offset, this.state.offset + PAGING_AMOUNT), (msg) => {
 							return (
 								<tr key={msg._id}>
 									<td className='user-action-log__timestamp'><Moment format='YYYY/MM/DD HH:mm:ss'>{msg.timestamp}</Moment></td>
@@ -81,6 +107,10 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 						})}
 					</tbody>
 				</table>
+				<div className='paging alc'>
+					<button className='btn btn-secondary' onClick={this.onClickPrevious} disabled={this.state.offset < 1}><FontAwesomeIcon icon={faChevronLeft} /></button>
+					<button className='btn btn-secondary' onClick={this.onClickNext} disabled={this.state.offset > this.props.log.length}><FontAwesomeIcon icon={faChevronRight} /></button>
+				</div>
 			</div>
 		)
 	}
