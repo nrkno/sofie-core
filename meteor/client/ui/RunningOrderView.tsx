@@ -566,6 +566,11 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 				manualSetAsNext: false,
 				followLiveSegments: true
 			})
+		} else if (this.props.runningOrder &&
+			prevProps.runningOrder && prevProps.runningOrder.active && !this.props.runningOrder.active) {
+			this.setState({
+				followLiveSegments: true
+			})
 		}
 	}
 
