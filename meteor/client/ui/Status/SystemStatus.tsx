@@ -200,18 +200,18 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 							<FontAwesomeIcon icon={faTrash} />
 						</button>
 						{(
-							this.props.device.type !== PeripheralDeviceAPI.DeviceType.OTHER ? [
-								<ModalDialog key='modal-process' title={t('Kill this device process?')} acceptText={t('Kill')}
+							this.props.device.type !== PeripheralDeviceAPI.DeviceType.OTHER ? <React.Fragment>
+								<ModalDialog title={t('Kill this device process?')} acceptText={t('Kill')}
 									secondaryText={t('Cancel')}
 									show={!!this.state.showKillDeviceConfirm}
 									onAccept={(e) => this.handleConfirmKillAccept(e)}
 									onSecondary={(e) => this.handleConfirmKillCancel(e)}>
 									<p>{t(`Are you sure you want to kill the process of this device?`)}</p>
-								</ModalDialog>,
-								<button key='button-process' className='btn btn-secondary' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onKillDevice(this.props.device)}>
+								</ModalDialog>
+								<button className='btn btn-secondary' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onKillDevice(this.props.device)}>
 									Kill process
 								</button>
-							] : null
+							</React.Fragment> : null
 						)}
 					</div>
 				</div>

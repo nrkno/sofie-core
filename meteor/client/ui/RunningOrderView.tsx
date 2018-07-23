@@ -421,7 +421,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					</div>
 				</div>
 			</div>
-			<ModalDialog title={t('Error')} acceptText={t('OK')} show={this.state.isError} onAccept={this.discardError} onDiscard={this.discardError}>
+			<ModalDialog title={t('Error')} acceptText={t('OK')} show={!!this.state.isError} onAccept={this.discardError} onDiscard={this.discardError}>
 				<p>{this.state.errorMessage}</p>
 			</ModalDialog>
 		</React.Fragment>
