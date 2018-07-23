@@ -1314,4 +1314,34 @@ body.vertical-overflow-only {
 	}
 }
 
+.running-order-view--unpublished {
+	margin-top: 0;
+	
+	> .running-order-view__label {
+		position: absolute;
+		top: 50%;
+		left: 0;
+		right: 0;
+		text-align: center;
+		font-size: 3em;
+		transform: translateY(-50%);
+
+		> p {
+			margin: 20px auto;
+			max-width: 1200px;
+		}
+	}
+}
+
+.running-order-view--loading {
+	margin-top: 0;
+
+	> .mod.mhl.mvl.alc {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-150%, -50%);
+	}
+}
+
 @import "runningOrderOverview";

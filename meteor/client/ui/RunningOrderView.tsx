@@ -9,7 +9,7 @@ import * as $ from 'jquery'
 import * as _ from 'underscore'
 import Moment from 'react-moment'
 
-import { NavLink } from 'react-router-dom'
+import { NavLink, Route } from 'react-router-dom'
 
 import { ClientAPI } from '../../lib/api/client'
 import { PlayoutAPI } from '../../lib/api/playout'
@@ -430,6 +430,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 interface IProps {
 	key: string
+	isReady: boolean
 	match: {
 		params: {
 			runningOrderId: string
@@ -455,10 +456,15 @@ export const RunningOrderView = translateWithTracker<IProps, IState, ITrackedPro
 
 	let runningOrderId = decodeURIComponent(props.match.params.runningOrderId)
 
+	let runningOrderSubscription = Meteor.subscribe('runningOrders', {
+		_id: runningOrderId
+	})
+
 	let runningOrder = RunningOrders.findOne({ _id: runningOrderId })
 	// let roDurations = calculateDurations(runningOrder, segmentLines)
 	return {
 		runningOrder: runningOrder,
+		isReady: runningOrderSubscription.ready(),
 		segments: runningOrder ? Segments.find({ runningOrderId: runningOrder._id }, {
 			sort: {
 				'_rank': 1
@@ -697,7 +703,7 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 	render () {
 		const { t } = this.props
 
-		if (this.props.runningOrder && this.props.studioInstallation) {
+		if (this.props.isReady && this.props.runningOrder && this.props.studioInstallation) {
 			return (
 				<RunningOrderTimingProvider
 					runningOrder={this.props.runningOrder}
@@ -731,8 +737,29 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 					</div>
 				</RunningOrderTimingProvider>
 			)
+		} else if (this.props.isReady) {
+			return (
+				<div className='running-order-view running-order-view--unpublished'>
+					<div className='running-order-view__label'>
+						<p>
+							{t('This running order has been unpublished from Sofie.')}
+						</p>
+						<p>
+							<Route render={({history}) => (
+								<button className='btn btn-primary' onClick={() => { history.push('/runningOrders') }}>
+									Return to list
+								</button>
+							)} />
+						</p>
+					</div>
+				</div>
+			)
 		} else {
-			return null
+			return (
+				<div className='running-order-view running-order-view--loading'>
+					<Spinner />
+				</div>
+			)
 		}
 	}
 }
