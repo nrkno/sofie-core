@@ -31,6 +31,7 @@ import { RundownUtils } from '../lib/rundown'
 
 import * as mousetrap from 'mousetrap'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
+import { ModalDialog } from '../lib/ModalDialog'
 
 import { DEFAULT_DISPLAY_DURATION } from './SegmentTimeline/SegmentTimelineContainer'
 
@@ -189,7 +190,12 @@ interface IRunningOrderHeaderProps {
 	onActivate?: (isRehearsal: boolean) => void
 }
 
-const RunningOrderHeader = translate()(class extends React.Component<Translated<IRunningOrderHeaderProps>> {
+interface IRunningOrderHeaderState {
+	isError: boolean,
+	errorMessage?: string
+}
+
+const RunningOrderHeader = translate()(class extends React.Component<Translated<IRunningOrderHeaderProps>, IRunningOrderHeaderState> {
 	bindKeys: Array<{
 		key: string,
 		up?: (e: KeyboardEvent) => any
@@ -225,6 +231,10 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				up: this.keyReloadRunningOrder
 			}
 		]
+
+		this.state = {
+			isError: false
+		}
 	}
 	componentDidMount () {
 		// $(document).on("keydown", function(e) {
@@ -291,17 +301,43 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		// console.log(new Date(getCurrentTime()))
 	}
 
+	handleActivationError = (err) => {
+		const { t } = this.props
+		if (err.error === 400) {
+			this.setState({
+				isError: true,
+				errorMessage: t('Only a single running order can be active in a studio. Deactivate the other running order and try again.')
+			})
+		}
+	}
+
+	discardError = () => {
+		this.setState({
+			isError: false
+		})
+	}
+
 	activate = () => {
 		if (!this.props.runningOrder.active) {
-			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false)
-			if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false, (err, res) => {
+				if (err) {
+					this.handleActivationError(err)
+					return
+				}
+				if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
+			})
 		}
 	}
 
 	activateRehearsal = () => {
 		if (!this.props.runningOrder.active) {
-			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, true)
-			if (typeof this.props.onActivate === 'function') this.props.onActivate(true)
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, true, (err, res) => {
+				if (err) {
+					this.handleActivationError(err)
+					return
+				}
+				if (typeof this.props.onActivate === 'function') this.props.onActivate(true)
+			})
 		}
 	}
 
@@ -324,7 +360,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 	render () {
 		const { t } = this.props
-		return (
+		return <React.Fragment>
 			<div className={ClassNames('header running-order', {
 				'active': this.props.runningOrder.active,
 				'not-active': !this.props.runningOrder.active,
@@ -381,11 +417,14 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				</div>
 				<div className='row dark'>
 					<div className='col c12 running-order-overview'>
-						{this.props.runningOrder && <RunningOrderOverview runningOrderId={this.props.runningOrder._id} /> }
+						{ this.props.runningOrder && <RunningOrderOverview runningOrderId={this.props.runningOrder._id} /> }
 					</div>
 				</div>
 			</div>
-		)
+			<ModalDialog title={t('Error')} acceptText={t('OK')} show={this.state.isError} onAccept={this.discardError} onDiscard={this.discardError}>
+				<p>{this.state.errorMessage}</p>
+			</ModalDialog>
+		</React.Fragment>
 	}
 })
 

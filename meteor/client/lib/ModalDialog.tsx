@@ -3,6 +3,7 @@ import * as CoreIcons from '@nrk/core-icons/jsx'
 import * as Escape from 'react-escape'
 import * as ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
+import * as mousetrap from 'mousetrap'
 
 interface IModalDialogAttributes {
 	show?: boolean
@@ -14,25 +15,63 @@ interface IModalDialogAttributes {
 	onDiscard?: (e) => void
 }
 export class ModalDialog extends React.Component<IModalDialogAttributes> {
+	boundKeys: Array<string> = []
+
 	constructor (args) {
 		super(args)
+	}
 
-		this.componentDidMount = () => {
-			document.addEventListener('keydown', this.handleConfirmKey)
-		}
-		this.componentWillUnmount = () => {
-			document.removeEventListener('keydown', this.handleConfirmKey)
+	componentDidMount () {
+		this.bindKeys()
+	}
+
+	componentWillUnmount () {
+		this.unbindKeys()
+	}
+
+	componentDidUpdate () {
+		this.bindKeys()
+	}
+
+	bindKeys = () => {
+		if (this.props.show) {
+			if (this.boundKeys.indexOf('enter') < 0) {
+				mousetrap.bind('enter', this.handleConfirmKey, 'keydown')
+				this.boundKeys.push('enter')
+			}
+			if (this.boundKeys.indexOf('escape') < 0) {
+				mousetrap.bind('escape', this.handleConfirmKey, 'keydown')
+				this.boundKeys.push('escape')
+			}
+		} else {
+			this.boundKeys.forEach((key) => {
+				mousetrap.unbind(key)
+			})
+			this.boundKeys.length = 0
 		}
 	}
+
+	unbindKeys = () => {
+		this.boundKeys.forEach((key) => {
+			mousetrap.unbind(key)
+		})
+		this.boundKeys.length = 0
+	}
+
 	handleConfirmKey = (e) => {
 		if (this.props.show) {
 			if (e.keyCode === 13) { // Enter
 				this.handleAccept(e)
 			} else if (e.keyCode === 27) { // Escape
-				this.handleSecondary(e)
+				if (this.props.secondaryText) {
+					this.handleSecondary(e)
+				} else {
+					this.handleDiscard(e)
+				}
 			}
 		}
 	}
+
 	handleAccept = (e) => {
 		if (this.props.onAccept && typeof this.props.onAccept === 'function') {
 			this.props.onAccept(e)
