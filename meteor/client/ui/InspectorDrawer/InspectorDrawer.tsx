@@ -88,8 +88,6 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 	}
 
 	dropHandle = (e: MouseEvent) => {
-		console.log('Drop handle', e)
-
 		document.removeEventListener('mouseup', this.dropHandle)
 		document.removeEventListener('mouseleave', this.dropHandle)
 		document.removeEventListener('mousemove', this.dragHandle)
@@ -99,7 +97,6 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 			overrideHeight: undefined
 		}
 
-		console.log(Date.now() - this._mouseDown)
 		if (Date.now() - this._mouseDown > 350) {
 			if (this.state.overrideHeight && (window.innerHeight - this.state.overrideHeight > CLOSE_MARGIN)) {
 				stateChange = _.extend(stateChange, {
@@ -123,8 +120,6 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 	}
 
 	dragHandle = (e: MouseEvent) => {
-		console.log('Drag handle', e)
-
 		this.setState({
 			overrideHeight: e.clientY - this._mouseOffset.y
 		})
@@ -134,8 +129,6 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 		document.addEventListener('mouseup', this.dropHandle)
 		document.addEventListener('mouseleave', this.dropHandle)
 		document.addEventListener('mousemove', this.dragHandle)
-
-		console.log('Grab handle', e)
 
 		this._mouseStart.x = e.clientX
 		this._mouseStart.y = e.clientY
