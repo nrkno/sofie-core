@@ -59,7 +59,7 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 		this.state = {
 			expanded: false,
 			moving: false,
-			drawerHeight: '50vh',
+			drawerHeight: localStorage.getItem('runningOrderView.inspectorDrawer.drawerHeight') || '50vh',
 			overrideHeight: undefined,
 			selectedTab: InspectorPanelTabs.ADLIB
 		}
@@ -86,17 +86,6 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 			'transition': this.state.moving ? '' : '0.5s top ease-out'
 		}
 	}
-
-	/* toggleDrawer () {
-		console.log('Toggle drawer')
-
-		this.setState({
-			expanded: !this.state.expanded
-		})
-		if (this.props.onChangeBottomMargin && typeof this.props.onChangeBottomMargin === 'function') {
-			this.props.onChangeBottomMargin(this.getHeight(!this.state.expanded) || '0px')
-		}
-	} */
 
 	dropHandle = (e: MouseEvent) => {
 		console.log('Drop handle', e)
@@ -129,6 +118,8 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 		}
 
 		this.setState(stateChange)
+
+		localStorage.setItem('runningOrderView.inspectorDrawer.drawerHeight', this.state.drawerHeight)
 	}
 
 	dragHandle = (e: MouseEvent) => {
