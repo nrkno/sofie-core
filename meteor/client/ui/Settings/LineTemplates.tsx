@@ -162,8 +162,10 @@ declare interface DBSegmentLine {
 	slug: string
 	/** Should this item should progress to the next automatically */
 	autoNext?: boolean
-	/** The duration to run overlap with the previous SegmentLine */
-	overlapDuration?: number
+	/** How much to overlap on when doing autonext */
+	autoNextOverlap?: number
+	overlapUntil?: string
+	transitionDelay?: string
 	/** Should we block a transition at the out of this SegmentLine */
 	disableOutTransition?: boolean
 

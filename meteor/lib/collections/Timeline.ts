@@ -115,7 +115,7 @@ export interface TimelineObj {
 		value: number | string;
 		setFromNow?: boolean;
 	}
-	duration: number
+	duration: number | string
 	LLayer: string | number
 	content: {
 		// objects?: Array<TimelineObject>

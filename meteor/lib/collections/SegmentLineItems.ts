@@ -35,7 +35,7 @@ export interface SegmentLineItemGeneric {
   	/** Layer output this segment line item belongs to */
 	outputLayerId: string
 	/** Expected duration of the item as planned or as estimated by the system (in case of Script layers), in milliseconds. */
-	expectedDuration?: number
+	expectedDuration?: number | string
 	/** Actual duration of the item, as played-back, in milliseconds. This value will be updated during playback for some types of items. */
 	duration?: number
 	/** A flag to signal a given SegmentLineItem has been deactivated manually */
@@ -67,7 +67,7 @@ export enum SegmentLineItemLifespan {
 export interface SegmentLineItem extends SegmentLineItemGeneric {
 	trigger: ITimelineTrigger
 	segmentLineId: string
-	expectedDuration: number
+	expectedDuration: number | string
 	isTransition: boolean
 
 	/** This is set when the item is infinite, to deduplicate the contents on the timeline, while allowing out of order */
