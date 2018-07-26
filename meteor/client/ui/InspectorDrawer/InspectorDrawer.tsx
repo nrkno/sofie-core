@@ -4,6 +4,7 @@ import { translate } from 'react-i18next'
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
 import * as $ from 'jquery'
+import * as mousetrap from 'mousetrap'
 
 import * as faBars from '@fortawesome/fontawesome-free-solid/faBars'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
@@ -13,6 +14,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { RunningOrderViewKbdShortcuts } from '../RunningOrderView'
 
 enum InspectorPanelTabs {
 	ADLIB = 'adlib'
@@ -53,6 +55,12 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 	}
 	private _mouseDown: number
 
+	private bindKeys: Array<{
+		key: string,
+		up?: (e: KeyboardEvent) => any
+		down?: (e: KeyboardEvent) => any
+	}> = []
+
 	constructor (props: Translated<IProps>) {
 		super(props)
 
@@ -63,6 +71,50 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 			overrideHeight: undefined,
 			selectedTab: InspectorPanelTabs.ADLIB
 		}
+
+		this.bindKeys = [
+			{
+				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TOGGLE_DRAWER,
+				up: this.keyToggleDrawer
+			}
+		]
+	}
+
+	componentDidMount () {
+		let preventDefault = (e) => {
+			e.preventDefault()
+			e.stopImmediatePropagation()
+			e.stopPropagation()
+		}
+		_.each(this.bindKeys, (k) => {
+			if (k.up) {
+				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+					preventDefault(e)
+					if (k.up) k.up(e)
+				}, 'keyup')
+				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+					preventDefault(e)
+				}, 'keydown')
+			}
+			if (k.down) {
+				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+					preventDefault(e)
+					if (k.down) k.down(e)
+				}, 'keydown')
+			}
+		})
+	}
+
+	componentWillUnmount () {
+		_.each(this.bindKeys, (k) => {
+			if (k.up) {
+				mousetrap.unbind(k.key, 'keyup')
+				mousetrap.unbind(k.key, 'keydown')
+			}
+			if (k.down) {
+				mousetrap.unbind(k.key, 'keydown')
+			}
+		})
 	}
 
 	getHeight (newState?: boolean): string | undefined {
@@ -85,6 +137,16 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 			'top': this.getHeight(),
 			'transition': this.state.moving ? '' : '0.5s top ease-out'
 		}
+	}
+
+	keyToggleDrawer = () => {
+		this.toggleDrawer()
+	}
+
+	toggleDrawer = () => {
+		this.setState({
+			expanded: !this.state.expanded
+		})
 	}
 
 	dropHandle = (e: MouseEvent) => {

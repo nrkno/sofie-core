@@ -416,14 +416,23 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 
 	componentWillUnmount () {
 		mousetrap.unbind(this.usedHotkeys, 'keyup')
+		mousetrap.unbind(this.usedHotkeys, 'keydown')
 		this.usedHotkeys.length = 0
 	}
 
 	refreshKeyboardHotkeys () {
+		let preventDefault = (e) => {
+			e.preventDefault()
+			e.stopImmediatePropagation()
+			e.stopPropagation()
+		}
+
 		if (this.props.roAdLibs) {
 			this.props.roAdLibs.forEach((item) => {
 				if (item.hotkey) {
+					mousetrap.bind(item.hotkey, preventDefault, 'keydown')
 					mousetrap.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
+						preventDefault(e)
 						this.onToggleAdLib(item)
 					}, 'keyup')
 					this.usedHotkeys.push(item.hotkey)
@@ -434,7 +443,9 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		if (this.props.liveSegment && this.props.liveSegment.items) {
 			this.props.liveSegment.items.forEach((item) => {
 				if (item.hotkey) {
+					mousetrap.bind(item.hotkey, preventDefault, 'keydown')
 					mousetrap.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
+						preventDefault(e)
 						this.onToggleAdLib(item)
 					}, 'keyup')
 					this.usedHotkeys.push(item.hotkey)
@@ -445,7 +456,9 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		if (this.props.sourceLayerLookup) {
 			_.forEach(this.props.sourceLayerLookup, (item) => {
 				if (item.clearKeyboardHotkey) {
+					mousetrap.bind(item.clearKeyboardHotkey, preventDefault, 'keydown')
 					mousetrap.bind(item.clearKeyboardHotkey, (e: ExtendedKeyboardEvent) => {
+						preventDefault(e)
 						this.onClearAllSourceLayer(item)
 					}, 'keyup')
 					this.usedHotkeys.push(item.clearKeyboardHotkey)

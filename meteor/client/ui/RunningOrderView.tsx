@@ -86,7 +86,7 @@ interface ITimingDisplayProps {
 interface ITimingDisplayState {
 }
 
-enum RunningOrderViewKbdShortcuts {
+export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_TAKE = 'f12',
 	RUNNING_ORDER_TAKE2 = 'enter', // is only going to use the rightmost enter key for take
 	RUNNING_ORDER_ACTIVATE = '§',
@@ -95,7 +95,8 @@ enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_ACTIVATE_REHEARSAL = 'mod+§',
 	RUNNING_ORDER_DEACTIVATE = 'mod+shift+§',
 	RUNNING_ORDER_GO_TO_LIVE = 'mod+home',
-	RUNNING_ORDER_RELOAD_RUNNING_ORDER = 'shift+f12'
+	RUNNING_ORDER_RELOAD_RUNNING_ORDER = 'shift+f12',
+	RUNNING_ORDER_TOGGLE_DRAWER = 'tab'
 }
 mousetrap.addKeycodes({
 	220: '§', // on US-based (ANSI) keyboards (single-row, Enter key), this is the key above Enter, usually with a backslash and the vertical pipe character
