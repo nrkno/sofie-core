@@ -180,6 +180,13 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	timeline: HTMLDivElement
 	segmentBlock: HTMLDivElement
 
+	private _touchSize: number = 0
+	private _touchAttached: boolean = false
+	private _lastTouch: {
+		clientX: number
+		clientY: number
+	} | undefined = undefined
+
 	constructor (props: Translated<IProps>) {
 		super(props)
 		this.state = {
@@ -214,6 +221,53 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 				this.scrollToMe()
 			}
 		}).bind(this), 1000)
+	}
+
+	onTimelineTouchEnd = (e: React.TouchEvent<HTMLDivElement> & any) => {
+		if (e.touches.length === 0) {
+			console.log('Last touch lifted, deactivating')
+			$(document).off('touchmove', '', this.onTimelineTouchMove)
+			$(document).off('touchend', '', this.onTimelineTouchEnd)
+			this._touchAttached = false
+		}
+	}
+
+	onTimelineTouchMove = (e: React.TouchEvent<HTMLDivElement> & any) => {
+		if (e.touches.length === 2) {
+			let newSize = e.touches[1].clientX - e.touches[0].clientX
+			let prop = newSize / this._touchSize
+			this.props.onZoomChange(Math.min(500, this.props.timeScale * prop), e)
+			this._touchSize = newSize
+		} else if (e.touches.length === 1 && this._lastTouch) {
+			let scrollAmount = this._lastTouch.clientX - e.touches[0].clientX
+			this.props.onScroll(Math.max(0, this.props.scrollLeft + (scrollAmount / this.props.timeScale)), e)
+			this._lastTouch = {
+				clientX: e.touches[0].clientX,
+				clientY: e.touches[0].clientY
+			}
+		}
+	}
+
+	onTimelineTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+		console.log(e)
+		if (e.touches.length === 2) { // expect two touch points
+			if (!this._touchAttached) {
+				$(document).on('touchmove', this.onTimelineTouchMove)
+				$(document).on('touchend', this.onTimelineTouchEnd)
+				this._touchAttached = true
+			}
+			this._touchSize = e.touches[1].clientX - e.touches[0].clientX
+		} else if (e.touches.length === 1) {
+			if (!this._touchAttached) {
+				$(document).on('touchmove', this.onTimelineTouchMove)
+				$(document).on('touchend', this.onTimelineTouchEnd)
+				this._touchAttached = true
+			}
+			this._lastTouch = {
+				clientX: e.touches[0].clientX,
+				clientY: e.touches[0].clientY
+			}
+		}
 	}
 
 	scrollToMe () {
@@ -417,7 +471,8 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 				<div className='segment-timeline__timeline-background'/>
 				<TimelineGrid {...this.props}
 							  onResize={this.onTimelineResize} />
-				<div className='segment-timeline__timeline-container'>
+				<div className='segment-timeline__timeline-container'
+					onTouchStartCapture={this.onTimelineTouchStart}>
 					<div className='segment-timeline__timeline' key={this.props.segment._id + '-timeline'} ref={this.setTimelineRef} style={this.timelineStyle()}>
 						<ErrorBoundary>
 							{this.renderTimeline()}

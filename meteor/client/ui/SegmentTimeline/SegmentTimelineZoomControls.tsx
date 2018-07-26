@@ -29,6 +29,8 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 	clickOffsetX: number
 	clickOffsetY: number
 
+	_isTouch: boolean = false
+
 	const SMALL_WIDTH_BREAKPOINT = 25
 
 	constructor (props) {
@@ -74,14 +76,6 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		}
 	}
 
-	zoomAreaMove = (e: JQueryMouseEventObject & any) => {
-		let percent = Math.max(0, Math.min(1, (e.clientX - this.offsetX - this.clickOffsetX) / this.state.width))
-		// console.log(percent)
-		if (this.props.onScroll) {
-			this.props.onScroll(percent * this.props.segmentDuration, e)
-		}
-	}
-
 	onElementResize = () => {
 		this.setState({
 			width: $(this.parentElement).width() || 1
@@ -89,27 +83,74 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		this.checkSmallMode()
 	}
 
-	zoomAreaEndMove (e: React.SyntheticEvent<HTMLDivElement>) {
-		$(document).off('mousemove', '', this.zoomAreaMove)
+	zoomAreaMove = (e: JQueryMouseEventObject | TouchEvent & any) => {
+		let percent = 0
+
+		if (this._isTouch) {
+			const et = e as TouchEvent
+			if (et.touches.length === 1) {
+				percent = Math.max(0, Math.min(1, (et.touches[0].clientX - this.offsetX - this.clickOffsetX) / this.state.width))
+			} else {
+				this.zoomAreaEndMove(e) // cancel move if more touches than one
+				return
+			}
+		} else {
+			percent = Math.max(0, Math.min(1, (e.clientX - this.offsetX - this.clickOffsetX) / this.state.width))
+		}
+		// console.log(percent)
+		if (this.props.onScroll) {
+			this.props.onScroll(percent * this.props.segmentDuration, e)
+		}
+	}
+
+	zoomAreaEndMove (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
+		if (!this._isTouch) {
+			$(document).off('mousemove', '', this.zoomAreaMove)
+		} else {
+			$(document).off('touchmove', '', this.zoomAreaMove)
+		}
+
 		this.setState({
 			zoomAreaMoving: false
 		})
 		this.checkSmallMode()
 	}
 
-	zoomAreaBeginMove (e: React.SyntheticEvent<HTMLDivElement> & JQueryMouseEventObject | any) {
-		// console.log(e.clientX)
-		$(document).on('mousemove', this.zoomAreaMove)
-		$(document).one('mouseup', () => {
-			this.zoomAreaEndMove(e)
-		})
+	zoomAreaBeginMove (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, isTouch?: boolean) {
+		this._isTouch = !!isTouch
+		let clientX = 0
+		let clientY = 0
+
+		if (!this._isTouch) {
+			$(document).on('mousemove', this.zoomAreaMove)
+			$(document).one('mouseup', () => {
+				this.zoomAreaEndMove(e)
+			})
+
+			clientX = (e as React.MouseEvent<HTMLDivElement>).clientX
+			clientY = (e as React.MouseEvent<HTMLDivElement>).clientY
+		} else {
+			const et = e as React.TouchEvent<HTMLDivElement>
+			if (et.touches.length === 1) {
+				$(document).on('touchmove', this.zoomAreaMove)
+				$(document).on('touchend', () => {
+					this.zoomAreaEndMove(e)
+				})
+
+				clientX = et.touches[0].clientX
+				clientY = et.touches[0].clientY
+			} else {
+				return
+			}
+		}
+
 		let offset = $(this.parentElement).offset()
 		let selAreaOffset = $(this.selAreaElement).offset()
 		if (offset && selAreaOffset) {
 			this.offsetX = offset.left
 			this.offsetY = offset.top
-			this.clickOffsetX = e.clientX - selAreaOffset.left
-			this.clickOffsetY = e.clientY - selAreaOffset.top
+			this.clickOffsetX = clientX - selAreaOffset.left
+			this.clickOffsetY = clientY - selAreaOffset.top
 		}
 		this.setState({
 			zoomAreaMoving: true
@@ -237,6 +278,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 					}}
 					ref={this.setSelAreaRef}
 					onMouseDown={(e) => this.zoomAreaBeginMove(e)}
+					onTouchStart={(e) => this.zoomAreaBeginMove(e, true)}
 				>
 					<div className='segment-timeline__zoom-area__controls__selected-area__left-handle'
 						onMouseDown={(e) => this.zoomAreaLeftBeginMove(e)}>
