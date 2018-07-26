@@ -1174,6 +1174,12 @@ body.vertical-overflow-only {
 					&::after {
 						display: none;
 					}
+
+					&.auto-next {
+						&::before {
+							display: none;
+						}
+					}
 				}
 				.segment-timeline__output-group {
 					min-height: 0;

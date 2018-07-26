@@ -20,6 +20,8 @@ import { getCurrentTime } from '../../../lib/lib'
 import { RunningOrderTiming } from '../RunningOrderTiming'
 import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 
+import { CollapsedStateStorage } from '../../lib/CollapsedStateStorage'
+
 export const DEFAULT_DISPLAY_DURATION = 3000
 
 export interface SegmentUi extends Segment {
@@ -405,8 +407,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 		let that = this
 		this.state = {
-			collapsedOutputs: {},
-			collapsed: false,
+			collapsedOutputs: CollapsedStateStorage.getItemBooleanMap(`runningOrderView.segment.${props.segment._id}.outputs`, {}),
+			collapsed: CollapsedStateStorage.getItemBoolean(`runningOrderView.segment.${props.segment._id}`, false),
 			scrollLeft: 0,
 			followLiveLine: false,
 			livePosition: 0,
@@ -414,10 +416,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 
 		this.isLiveSegment = props.isLiveSegment || false
-
-		/* that.setState({
-			timeScale: that.state.timeScale * 1.1
-		}) */
 	}
 
 	componentDidMount () {
@@ -468,9 +466,11 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
 		let collapsedOutputs = {...this.state.collapsedOutputs}
 		collapsedOutputs[outputLayer._id] = collapsedOutputs[outputLayer._id] === true ? false : true
+		CollapsedStateStorage.setItem(`runningOrderView.segment.${this.props.segment._id}.outputs`, collapsedOutputs)
 		this.setState({ collapsedOutputs })
 	}
 	onCollapseSegmentToggle = () => {
+		CollapsedStateStorage.setItem(`runningOrderView.segment.${this.props.segment._id}`, !this.state.collapsed)
 		this.setState({ collapsed: !this.state.collapsed })
 	}
 	/** The user has scrolled scrollLeft seconds to the left in a child component */
