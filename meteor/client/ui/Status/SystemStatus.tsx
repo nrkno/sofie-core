@@ -33,20 +33,22 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 	statusCodeString () {
 		let t = this.props.t
 
-		switch (this.props.device.status.statusCode) {
-			case PeripheralDeviceAPI.StatusCode.UNKNOWN:
-				return t('Unknown')
-			case PeripheralDeviceAPI.StatusCode.GOOD:
-				return t('Good')
-			case PeripheralDeviceAPI.StatusCode.WARNING_MINOR:
-				return t('Minor Warning')
-			case PeripheralDeviceAPI.StatusCode.WARNING_MAJOR:
-				return t('Warning')
-			case PeripheralDeviceAPI.StatusCode.BAD:
-				return t('Bad')
-			case PeripheralDeviceAPI.StatusCode.FATAL:
-				return t('Fatal')
-		}
+		return (
+			this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN
+			|| !this.props.device.connected
+		) ?
+			t('Unknown') :
+		(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD) ?
+			t('Good') :
+		(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR) ?
+			t('Minor Warning') :
+		(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR) ?
+			t('Warning') :
+		(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD) ?
+			t('Bad') :
+		(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL) ?
+			t('Fatal') :
+			t('Unknown')
 	}
 	connectedString () {
 		let t = this.props.t
