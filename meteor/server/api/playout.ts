@@ -346,32 +346,12 @@ export namespace ServerPlayoutAPI {
 		if (!segLineItem.startedPlayback) {
 			logger.info(`Playout reports segment line item "${sliId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
 
-			let itemsToStop = segLine.getSegmentLinesItems().filter(l => l.infiniteMode && !l.expectedDuration && segLineItem && l.sourceLayerId === segLineItem.sourceLayerId && segLineItem._id !== l._id)
-			itemsToStop.forEach(l => {
-				let duration = 1
-				if (l.startedPlayback) {
-					duration = startedPlayback - l.startedPlayback
-				}
-				if (duration === 0) {
-					duration = 1
-				}
-
-				logger.info('set duration of ' + l._id + ': ' + duration + ' (started: ' + l.startedPlayback + ')')
-
-				// SegmentLineItems.update(l._id, {$set: {
-				// 	duration
-				// }})
-			})
-
 			// store new value
 			SegmentLineItems.update(segLineItem._id, {$set: {
 				startedPlayback
 			}})
 
-			// startedPlayback changes nothing, so only update if any durations were set
-			if (itemsToStop.length > 0) {
-				updateTimeline(runningOrder.studioInstallationId)
-			}
+			// We don't need to bother with an updateTimeline(), as this hasnt changed anything, but lets us accurately add started items when reevaluating
 		}
 	}
 
