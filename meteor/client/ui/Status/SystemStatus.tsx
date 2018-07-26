@@ -3,6 +3,7 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { PeripheralDevice,
 		PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import * as i18next from 'react-i18next'
 import { ClientAPI } from '../../../lib/api/client'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
@@ -22,6 +23,23 @@ interface IDeviceItemState {
 	showDeleteDeviceConfirm: PeripheralDevice | null
 	showKillDeviceConfirm: PeripheralDevice | null
 }
+
+export function statusCodeToString (t: i18next.TranslationFunction, statusCode: number) {
+	return (statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN) ?
+		t('Unknown') :
+	(statusCode === PeripheralDeviceAPI.StatusCode.GOOD) ?
+		t('Good') :
+	(statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR) ?
+		t('Minor Warning') :
+	(statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR) ?
+		t('Warning') :
+	(statusCode === PeripheralDeviceAPI.StatusCode.BAD) ?
+		t('Bad') :
+	(statusCode === PeripheralDeviceAPI.StatusCode.FATAL) ?
+		t('Fatal') :
+		t('Unknown')
+}
+
 const DeviceItem = translate()(class extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
 	constructor (props: Translated<IDeviceItemProps>) {
 		super(props)
@@ -33,22 +51,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 	statusCodeString () {
 		let t = this.props.t
 
-		return (
-			this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN
-			|| !this.props.device.connected
-		) ?
-			t('Unknown') :
-		(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD) ?
-			t('Good') :
-		(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR) ?
-			t('Minor Warning') :
-		(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR) ?
-			t('Warning') :
-		(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD) ?
-			t('Bad') :
-		(this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL) ?
-			t('Fatal') :
-			t('Unknown')
+		return this.props.device.connected ? t('Unknown') : statusCodeToString(t, this.props.device.status.statusCode)
 	}
 	connectedString () {
 		let t = this.props.t
