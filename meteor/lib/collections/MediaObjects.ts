@@ -19,6 +19,8 @@ export interface MediaObject0 {
 	previewSize?: number
 	// Thumbnail last updated timestamp
 	previewTime?: number
+	// Preview location
+	previewPath?: string
 
 	cinf: string // useless to us
 	tinf: string // useless to us

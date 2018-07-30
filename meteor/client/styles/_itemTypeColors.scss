@@ -43,23 +43,6 @@ $segment-layer-background-vt: #1769FF;
 	&.mic {
 		background: $segment-layer-background-mic;
 	}
-
-	&.infinite {
-		&::after {
-			position: absolute;
-			content: ' ';
-			display: block;
-			top: 0;
-			right: 0;
-			bottom: 0;
-			z-index: 0;
-
-			width: 20%;
-			max-width: 75px;
-
-			background: linear-gradient(to right, transparentize($segment-timeline-background-color, 1) 0%, transparentize($segment-timeline-background-color, 0.3) 100%);
-		}
-	}
 }
 
 @mixin item-type-colors-svg {

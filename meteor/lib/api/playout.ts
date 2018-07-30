@@ -7,25 +7,25 @@ export enum PlayoutTimelinePrefixes {
 
 export namespace PlayoutAPI {
 	export enum methods {
-		'reloadData' = 'playout_reload_data',
-		'roActivate' = 'playout_activate',
+		'reloadData' = 'playout.reloadData',
+		'roActivate' = 'playout.roActivate',
 		/**
 		 * Inactivates the RunningOrder
 		 * TODO: Clear the Timeline (?)
 		 */
-		'roDeactivate' = 'playout_inactivate',
+		'roDeactivate' = 'playout.roDeactivate',
 		/**
 		 * Perform the TAKE action, i.e start playing a segmentLineItem
 		 */
-		'roTake' = 'playout_take',
-		'roSetNext' = 'playout_setNext',
-		'roStoriesMoved' = 'playout_storiesMoved',
-		'segmentLinePlaybackStartedCallback' = 'playout_segmentLinePlaybackStart',
-		'segmentLineItemPlaybackStartedCallback' = 'playout_segmentLineItemPlaybackStart',
-		'segmentAdLibLineItemStart' = 'playout_segmentAdLibLineItemStart',
-		'runningOrderBaselineAdLibItemStart' = 'playout_runningOrderBaselineAdLibItemStart',
-		'segmentAdLibLineItemStop' = 'playout_segmentAdLibLineItemStop',
-		'sourceLayerOnLineStop' = 'playout_sourceLayerOnLineStop',
-		'timelineTriggerTimeUpdateCallback' = 'playout_timelineTriggerTimeUpdate'
+		'roTake' = 'playout.roTake',
+		'roSetNext' = 'playout.roSetNext',
+		'roStoriesMoved' = 'playout.roStoriesMoved',
+		'segmentLinePlaybackStartedCallback' = 'playout.segmentLinePlaybackStartedCallback',
+		'segmentLineItemPlaybackStartedCallback' = 'playout.segmentLineItemPlaybackStartedCallback',
+		'segmentAdLibLineItemStart' = 'playout.segmentAdLibLineItemStart',
+		'runningOrderBaselineAdLibItemStart' = 'playout.runningOrderBaselineAdLibItemStart',
+		'segmentAdLibLineItemStop' = 'playout.segmentAdLibLineItemStop',
+		'sourceLayerOnLineStop' = 'playout.sourceLayerOnLineStop',
+		'timelineTriggerTimeUpdateCallback' = 'playout.timelineTriggerTimeUpdateCallback'
 	}
 }

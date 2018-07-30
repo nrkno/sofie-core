@@ -8,12 +8,14 @@ import { Spinner } from '../../lib/Spinner'
 import '../../../lib/typings/monaco'
 import * as _ from 'underscore'
 import { Session } from 'meteor/session'
+import { ClientAPI } from '../../../lib/api/client'
 import { RuntimeFunctionsAPI } from '../../../lib/api/runtimeFunctions'
 import { RuntimeFunctionDebugDataObj, RuntimeFunctionDebugData } from '../../../lib/collections/RuntimeFunctionDebugData'
 import Moment from 'react-moment'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import * as ClassNames from 'classnames'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
+import * as faSave from '@fortawesome/fontawesome-free-solid/faSave'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 interface IMonacoProps {
@@ -33,6 +35,7 @@ class MonacoWrapper extends React.Component<IMonacoProps, IMonacoState> {
 
 	_container: HTMLDivElement
 	_editor: monaco.editor.IStandaloneCodeEditor
+	_editorEventListeners: monaco.IDisposable[] = []
 	_codeId: string
 	private _saveTimeout: any
 	private _testTimeout: any
@@ -174,6 +177,8 @@ declare interface DBSegmentLine {
 	startedPlayback?: number
 	/** The time the system played back this segment line, null if not yet finished playing, in milliseconds */
 	duration?: number
+	/** If the item is overflowing, it's expectedDuration will overflow to the adjacent segment line */
+	overflows?: boolean
 }
 declare type SegmentLine = DBSegmentLine
 declare enum LayerType {
@@ -423,8 +428,9 @@ declare enum LineItemStatusCode {
 
 declare enum SegmentLineItemLifespan {
 	Normal = 0,
-	OutOnNext = 1,
-	Infinite = 2,
+	OutOnNextSegmentLine = 1,
+	OutOnNextSegment = 2,
+	Infinite = 3,
 }
 declare enum PlayoutTimelinePrefixes {
 	SEGMENT_LINE_GROUP_PREFIX = 'sl_group_',
@@ -453,13 +459,18 @@ declare enum PlayoutTimelinePrefixes {
 				language: 'javascript',
 				automaticLayout: true,
 			})
-			this._editor.onDidChangeModelContent((e: monaco.editor.IModelContentChangedEvent) => {
+			this._editorEventListeners.push(this._editor.onDidChangeModelContent((e: monaco.editor.IModelContentChangedEvent) => {
 				this.triggerSave(this._editor.getModel().getValue())
-			})
+			}))
 			this._editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, () => {
 				this.saveCode()
 			}, '')
 		}
+	}
+	componentWillUnmount () {
+		this._editorEventListeners.forEach((listener) => {
+			listener.dispose()
+		})
 	}
 	convertFunctionTyping (args: any[]): string {
 		// Converts an array of arguments to a typing declaration
@@ -561,7 +572,7 @@ declare enum PlayoutTimelinePrefixes {
 
 	testCode () {
 		if (this._currentCode ) {
-			Meteor.call(RuntimeFunctionsAPI.TESTCODE, {code: this._currentCode}, this.props.runtimeFunction.showStyleId, this.props.runtimeFunction.isHelper, (e) => {
+			Meteor.call(ClientAPI.methods.execMethod, RuntimeFunctionsAPI.TESTCODE, {code: this._currentCode}, this.props.runtimeFunction.showStyleId, this.props.runtimeFunction.isHelper, (e) => {
 				if (e) {
 					this.setState({
 						message: 'Error when testing code: ' + e.toString()
@@ -581,7 +592,7 @@ declare enum PlayoutTimelinePrefixes {
 			saving: true
 		})
 		if (this._currentCode) {
-			Meteor.call(RuntimeFunctionsAPI.UPDATECODE, this.props.runtimeFunction._id, this._currentCode, (e) => {
+			Meteor.call(ClientAPI.methods.execMethod, RuntimeFunctionsAPI.UPDATECODE, this.props.runtimeFunction._id, this._currentCode, (e) => {
 				if (e) {
 					this.setState({
 						message: e.toString()
@@ -605,20 +616,20 @@ declare enum PlayoutTimelinePrefixes {
 
 	render () {
 		return <div ref={this.setRef}>
-					<div id='monaco-container' className='runtime-function-edit__editor'></div>
-					<div>
+					<div className='runtime-function-edit__status'>
 						{this.state.unsavedChanges ? (
 							<div>
 								<b>Unsaved changes </b>
-								<button className='action-btn' onClick={(e) => this.saveCode()}>
-									Save
+								<button className='btn btn-primary' onClick={(e) => this.saveCode()}>
+									<FontAwesomeIcon icon={faSave} />
 								</button>
 							</div>
 						) : null}
 						{this.state.saving ? ' Saving...' : ''}
 					</div>
-					<div>
-						<pre>{this.state.message }</pre>
+					<div id='monaco-container' className='runtime-function-edit__editor'></div>
+					<div className='runtime-function-edit__message'>
+						<pre>{this.state.message}</pre>
 					</div>
 			   </div>
 	}
@@ -656,7 +667,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		})
 	}
 	updateTemplateId (edit: EditAttributeBase, newValue: any) {
-		Meteor.call(RuntimeFunctionsAPI.UPDATETEMPLATEID, edit.props.obj._id, newValue, (err, res) => {
+		Meteor.call(ClientAPI.methods.execMethod, RuntimeFunctionsAPI.UPDATETEMPLATEID, edit.props.obj._id, newValue, (err, res) => {
 			if (err) {
 				console.log(err)
 			} else {
@@ -665,7 +676,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		})
 	}
 	updateIsHelper (edit: EditAttributeBase, newValue: any) {
-		Meteor.call(RuntimeFunctionsAPI.UPDATEISHELPER, edit.props.obj._id, newValue, (err, res) => {
+		Meteor.call(ClientAPI.methods.execMethod, RuntimeFunctionsAPI.UPDATEISHELPER, edit.props.obj._id, newValue, (err, res) => {
 			if (err) {
 				console.log(err)
 			} else {
@@ -703,19 +714,16 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							</div>
 						</label>
 						<label className='field'>
-							{t('Is Helper')}
-							<div className='mdi'>
-								<EditAttribute
-									modifiedClassName='bghl'
-									attribute='isHelper'
-									obj={this.props.lineTemplate}
-									type='checkbox'
-									collection={RuntimeFunctions}
-									className='mdinput'
-									updateFunction={this.updateIsHelper}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='isHelper'
+								obj={this.props.lineTemplate}
+								type='checkbox'
+								collection={RuntimeFunctions}
+								className='mdinput'
+								updateFunction={this.updateIsHelper}
 								/>
-								<span className='mdfx'></span>
-							</div>
+							{t('Is Helper')}
 						</label>
 					</div>
 					<div>
@@ -775,44 +783,48 @@ let SelectRFDD = translateWithTracker<SelectRFDDProps, IState, ISelectRFDDTracke
 
 		return (
 			this.props.runtimeFunctionDebugData.length ? (
-				<table>
-					<tr>
-						<th>Timestamp</th>
-						<th>Snapshot name</th>
-						<th>Keep</th>
-						<th>Select</th>
-						<th>Remove</th>
-					</tr>
-					{_.map(this.props.runtimeFunctionDebugData, (rtfdd) => {
-						return (
-							<tr>
-								<td>
-									<Moment fromNow>{rtfdd.created}</Moment>
-								</td>
-								<td>
-									{rtfdd.reason}
-								</td>
-								<td>
-									<EditAttribute
-										attribute='dontRemove'
-										obj={rtfdd}
-										type='checkbox'
-										collection={RuntimeFunctionDebugData}
-									/>
-								</td>
-								<td>
-									<button className={ClassNames('btn', this.isSelected(rtfdd) ? 'btn-default' : 'btn-primary')}
-										onClick={() => this.select(rtfdd)}>{t('Select this')}
-									</button>
-								</td>
-								<td>
-									<button className='action-btn' onClick={(e) => this.remove(rtfdd)}>
-										<FontAwesomeIcon icon={faTrash} />
-									</button>
-								</td>
-							</tr>
-						)
-					})}
+				<table className='settings-line-templates-snapshots'>
+					<thead>
+						<tr>
+							<th>Timestamp</th>
+							<th>Snapshot name</th>
+							<th>Keep</th>
+							<th>Select</th>
+							<th className='actions'>Remove</th>
+						</tr>
+					</thead>
+					<tbody>
+						{_.map(this.props.runtimeFunctionDebugData, (rtfdd) => {
+							return (
+								<tr key={rtfdd._id}>
+									<td>
+										<Moment fromNow>{rtfdd.created}</Moment>
+									</td>
+									<td>
+										{rtfdd.reason}
+									</td>
+									<td>
+										<EditAttribute
+											attribute='dontRemove'
+											obj={rtfdd}
+											type='checkbox'
+											collection={RuntimeFunctionDebugData}
+										/>
+									</td>
+									<td>
+										<button className={ClassNames('btn-tight', this.isSelected(rtfdd) ? 'btn-default' : 'btn-primary')}
+											onClick={() => this.select(rtfdd)}>{t('Select this')}
+										</button>
+									</td>
+									<td className='actions'>
+										<button className='action-btn' onClick={(e) => this.remove(rtfdd)}>
+											<FontAwesomeIcon icon={faTrash} />
+										</button>
+									</td>
+								</tr>
+							)
+						})}
+					</tbody>
 				</table>
 			) : null
 		)

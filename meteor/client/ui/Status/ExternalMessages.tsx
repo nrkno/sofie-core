@@ -7,6 +7,7 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
 import { translate } from 'react-i18next'
 import { getCurrentTime } from '../../../lib/lib'
+import { ClientAPI } from '../../../lib/api/client'
 import { Link } from 'react-router-dom'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
@@ -84,7 +85,7 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 		)
 	}
 	removeMessage (msg: ExternalMessageQueueObj) {
-		Meteor.call('removeExternalMessageQueueObj', msg._id)
+		Meteor.call(ClientAPI.methods.execMethod, 'removeExternalMessageQueueObj', msg._id)
 	}
 	renderMessageRow (msg: ExternalMessageQueueObj) {
 

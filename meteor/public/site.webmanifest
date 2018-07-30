@@ -3,12 +3,12 @@
     "short_name": "Sofie",
     "icons": [
         {
-            "src": "/android-chrome-192x192.png?v=XBz8mOdb78",
+            "src": "/icons/android-chrome-192x192.png?v=XBz8mOdb78",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "/android-chrome-512x512.png?v=XBz8mOdb78",
+            "src": "/icons/android-chrome-512x512.png?v=XBz8mOdb78",
             "sizes": "512x512",
             "type": "image/png"
         }

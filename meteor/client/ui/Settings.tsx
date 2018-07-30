@@ -18,7 +18,7 @@ import { StudioInstallation, StudioInstallations } from '../../lib/collections/S
 import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { RuntimeFunction, RuntimeFunctions } from '../../lib/collections/RuntimeFunctions'
-import { ErrorBoundary } from './ErrorBoundary'
+import { ErrorBoundary } from '../lib/ErrorBoundary'
 
 import StudioSettings from './Settings/StudioSettings'
 import DeviceSettings from './Settings/DeviceSettings'

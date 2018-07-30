@@ -23,7 +23,7 @@ import { RundownAPI } from '../../../lib/api/rundown'
 interface IPropsHeader {
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
-	segment: SegmentUi
+	// segment: SegmentUi
 	segmentLine: SegmentLineUi
 	segmentLineStartsAt: number
 	segmentLineDuration: number
@@ -40,7 +40,6 @@ interface IPropsHeader {
 	liveLineHistorySize: number
 	livePosition: number | null
 	liveLinePadding: number
-	lineStartsAt?: number
 	scrollLeft: number
 	scrollWidth: number
 }
@@ -73,7 +72,7 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 				}
 			}
 			segmentCopy.renderedDuration = timelineObj.duration !== 0 ? timelineObj.duration : (props.segmentLineDuration - (segmentCopy.renderedInPoint || 0))
-			console.log(segmentCopy.renderedDuration)
+			// console.log(segmentCopy.renderedDuration)
 
 			overrides.segmentLineItem = _.extend(overrides.segmentLineItem || {}, segmentCopy)
 		}
@@ -82,6 +81,7 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 	// Check item status
 	if (props.segmentLineItem.sourceLayer) {
 		let newStatus: RundownAPI.LineItemStatusCode = RundownAPI.LineItemStatusCode.UNKNOWN
+		let metadata: any = undefined
 		switch (props.segmentLineItem.sourceLayer.type) {
 			case RundownAPI.SourceLayerType.VT:
 				if (props.segmentLineItem.content && props.segmentLineItem.content.fileName) {
@@ -97,6 +97,10 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 						newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
 					} else if (mediaObject) {
 						newStatus = RundownAPI.LineItemStatusCode.OK
+					}
+
+					if (mediaObject) {
+						metadata = mediaObject
 					}
 				}
 				break
@@ -115,13 +119,18 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 					} else if (mediaObject) {
 						newStatus = RundownAPI.LineItemStatusCode.OK
 					}
+
+					if (mediaObject) {
+						metadata = mediaObject
+					}
 				}
 				break
 		}
-		if (newStatus !== props.segmentLineItem.status) {
+		if (newStatus !== props.segmentLineItem.status || metadata) {
 			let segmentCopy = (_.clone(overrides.segmentLineItem || props.segmentLineItem) as SegmentLineItemUi)
 
 			segmentCopy.status = newStatus
+			segmentCopy.metadata = metadata
 
 			overrides.segmentLineItem = _.extend(overrides.segmentLineItem || {}, segmentCopy)
 		}

@@ -14,20 +14,23 @@ export namespace RundownUtils {
 		}, 0)
 	}
 
-	export function formatTimeToTimecode (milliseconds: number): string {
-		let negativeSign = ''
+	export function formatTimeToTimecode (milliseconds: number, showPlus?: boolean, enDashAsMinus?: boolean, hideFrames?: boolean): string {
+		let sign = ''
 		if (milliseconds < 0) {
 			milliseconds = milliseconds * -1
-			negativeSign = '-'
+			sign = (enDashAsMinus ? '\u2013' : '-')
+		} else {
+			if (showPlus) sign = '+'
 		}
-		return negativeSign + ((new Timecode(milliseconds * Settings['frameRate'] / 1000, Settings['frameRate'], false)).toString())
+		const timeCodeString: String = (new Timecode(milliseconds * Settings['frameRate'] / 1000, Settings['frameRate'], false)).toString()
+		return sign + (hideFrames ? timeCodeString.substr(0, timeCodeString.length - 3) : timeCodeString)
 	}
 
 	export function formatTimeToShortTime (milliseconds: number): string {
 		return formatDiffToTimecode(Math.max(milliseconds, 0), false)
 	}
 
-	export function formatDiffToTimecode (milliseconds: number, showPlus?: boolean, showHours?: boolean, enDashAsMinus?: boolean): string {
+	export function formatDiffToTimecode (milliseconds: number, showPlus?: boolean, showHours?: boolean, enDashAsMinus?: boolean, useSmartFloor?: boolean, useSmartHours?: boolean, minusPrefix?: string, floorTime?: boolean): string {
 
 		const isNegative = milliseconds < 0
 		if (isNegative) {
@@ -37,13 +40,22 @@ export namespace RundownUtils {
 		let hours = 0
 
 		let minutes = Math.floor(milliseconds / (60 * 1000))
-		if (showHours) {
-			hours = Math.floor(minutes / 60)
+		hours = Math.floor(minutes / 60)
+		if (showHours || (useSmartHours && hours > 0)) {
 			minutes = minutes % 60
 		}
-		const secondsRest = Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000)
+		let secondsRest
+		if (floorTime) {
+			secondsRest = useSmartFloor ?
+				(milliseconds < 100 ? 0 : Math.floor(Math.floor(milliseconds % (60 * 1000)) / 1000))
+				: Math.floor(Math.floor(milliseconds % (60 * 1000)) / 1000)
+		} else {
+			secondsRest = useSmartFloor ?
+				(milliseconds < 100 ? 0 : Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000))
+				: Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000)
+		}
 
-		return (isNegative ? (enDashAsMinus ? '\u2013' : '-') : (showPlus && milliseconds > 0 ? '+' : '')) + (showHours ? padZero(hours) + ':' : '') + padZero(minutes) + ':' + padZero(secondsRest)
+		return (isNegative ? (minusPrefix || (enDashAsMinus ? '\u2013' : '-')) : (showPlus && milliseconds > 0 ? '+' : '')) + ((showHours || (useSmartHours && hours > 0)) ? padZero(hours) + ':' : '') + padZero(minutes) + ':' + padZero(secondsRest)
 	}
 
 	export function isInsideViewport (scrollLeft: number, scrollWidth: number, segmentLine: SegmentLineUi, segmentLineStartsAt: number | undefined, segmentLineDuration: number | undefined, segmentLineItem?: SegmentLineItemUi) {
@@ -51,10 +63,10 @@ export namespace RundownUtils {
 			return false
 		} else if (scrollLeft > (segmentLineStartsAt || segmentLine.startsAt || 0) +
 					(segmentLineItem !== undefined ?
-						(segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || (
+						(segmentLineItem.renderedInPoint || 0) + (segmentLineItem.expectedDuration || (
 							(segmentLine.duration !== undefined ?
 								segmentLine.duration :
-								(segmentLineDuration || segmentLine.renderedDuration || 0) - (segmentLineItem.renderedInPoint || 0))
+								(segmentLineDuration || segmentLine.renderedDuration || segmentLine.expectedDuration || 0) - (segmentLineItem.renderedInPoint || 0))
 							)
 						) :
 						(segmentLine.duration !== undefined ?

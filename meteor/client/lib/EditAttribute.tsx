@@ -1,9 +1,12 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { withTracker } from './ReactMeteorData/react-meteor-data'
+import * as faCheckSquare from '@fortawesome/fontawesome-free-solid/faCheckSquare'
+import * as faSquare from '@fortawesome/fontawesome-free-solid/faSquare'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
-	type: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown'
+	type: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch'
 }
 export class EditAttribute extends React.Component<IEditAttribute> {
 	render () {
@@ -23,6 +26,10 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 		} else if (this.props.type === 'checkbox') {
 			return (
 				<EditAttributeCheckbox {...this.props} />
+			)
+		} else if (this.props.type === 'switch') {
+			return (
+				<EditAttributeSwitch {...this.props} />
 			)
 		} else if (this.props.type === 'dropdown') {
 			return (
@@ -46,6 +53,7 @@ interface IEditAttributeBaseProps {
 	modifiedClassName?: string
 	updateFunction?: (edit: EditAttributeBase, newValue: any ) => void
 	overrideDisplayValue?: any
+	label?: string
 }
 interface IEditAttributeBaseState {
 	value: any,
@@ -261,12 +269,44 @@ const EditAttributeCheckbox = wrapEditAttribute(class extends EditAttributeBase 
 	}
 	render () {
 		return (
-			<input type='checkbox'
-				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+			<label>
+				<span className='checkbox'>
+					<input type='checkbox'
+						className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
 
-				checked={this.isChecked()}
-				onChange={this.handleChange}
-			/>
+						checked={this.isChecked()}
+						onChange={this.handleChange}
+					/>
+					<span className='checkbox-checked'><FontAwesomeIcon icon={faCheckSquare} /></span>
+					<span className='checkbox-unchecked'><FontAwesomeIcon icon={faSquare} /></span>
+				</span>
+			</label>
+		)
+	}
+})
+
+const EditAttributeSwitch = wrapEditAttribute(class extends EditAttributeBase {
+	constructor (props) {
+		super(props)
+	}
+	isChecked () {
+		return !!this.getEditAttribute()
+	}
+	handleChange = (event) => {
+		this.handleUpdate(!this.state.value)
+	}
+	handleClick = (event) => {
+		this.handleChange(event)
+	}
+	render () {
+		return (
+			<div
+				className={'switch ' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '') + ' ' + (this.isChecked() ? 'switch-active' : '')}
+
+				onClick={this.handleClick}
+			>
+				{this.props.label}
+			</div>
 		)
 	}
 })

@@ -164,7 +164,8 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 					this.ctx.fillText(
 						// RundownUtils.formatTimeToTimecode((i * step) / (this.props.timeScale * this.pixelRatio)),
-						RundownUtils.formatTimeToTimecode(Math.floor(t / fps)),
+						// RundownUtils.formatTimeToTimecode(Math.floor(t / fps), false, false, true),
+						RundownUtils.formatDiffToTimecode(Math.floor(t / fps), false, false, true, false, true),
 						// t.toString(),
 						// i + ':' + t,
 						xPosition, 18 * this.pixelRatio)

@@ -6,7 +6,7 @@ import * as CoreIcons from '@nrk/core-icons/jsx'
 import * as ClassNames from 'classnames'
 
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/react-meteor-data'
-import { ErrorBoundary } from './ErrorBoundary'
+import { ErrorBoundary } from '../lib/ErrorBoundary'
 
 interface IProps {
 }

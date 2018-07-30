@@ -59,9 +59,14 @@ function restoreShowBackup (backup: ShowStyleBackup) {
 	}
 }
 
-function runBackup (params, req: IncomingMessage, res: ServerResponse, onlyActive: boolean){
+function runBackup (params, req: IncomingMessage, res: ServerResponse, onlyActive: boolean) {
 	let data: any = getShowBackup(params.id, onlyActive)
+	let fileName = 'backup'
+	if (data && (data.showStyle as ShowStyle).name) {
+		fileName = (data.showStyle as ShowStyle).name
+	}
 	res.setHeader('Content-Type', 'application/json')
+	res.setHeader('Content-Disposition', 'attachment; filename="' + fileName + '.json"')
 
 	let content = ''
 	if (!data) {

@@ -7,9 +7,10 @@ import { ISourceLayerUi,
 		 SegmentLineUi,
 		 SegmentLineItemUi } from './SegmentTimelineContainer'
 
-import { RundownAPI } from './../../../lib/api/rundown'
-import { RundownUtils } from './../../lib/rundown'
+import { RundownAPI } from '../../../lib/api/rundown'
+import { RundownUtils } from '../../lib/rundown'
 import { Transition } from '../../../lib/constants/casparcg'
+import { SegmentLineItemLifespan } from '../../../lib/collections/SegmentLineItems'
 import * as ClassNames from 'classnames'
 import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MicSourceRenderer } from './Renderers/MicSourceRenderer'
@@ -20,10 +21,12 @@ import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 
+const LEFT_RIGHT_ANCHOR_SPACER = 35
+
 export interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
-	segment: SegmentUi
+	// segment: SegmentUi
 	segmentLine: SegmentLineUi
 	segmentLineStartsAt: number
 	segmentLineDuration: number
@@ -88,7 +91,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		if (this.props.relative) {
 			return {}
 		} else {
-			if (this.props.segmentLine && this.props.segmentLineStartsAt !== undefined && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined) {
+			if (this.props.segmentLine && this.props.segmentLineStartsAt !== undefined) { //  && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined
 				let segmentLineItem = this.props.segmentLineItem
 
 				let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration : 0
@@ -151,29 +154,31 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 	}
 
 	getItemLabelOffsetRight = (): { [key: string]: string } => {
+		if (this.props.segmentLineItem && this.props.segmentLineItem._id === '191PKIpK73PpgUzLRiySRrsAjGY_') {
+			let a = '12345!@#$% debugger here'
+		}
+
 		if (this.props.relative) {
 			return {}
 		} else {
-			if (this.props.segmentLine && this.props.segmentLine.startsAt !== undefined && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined) {
+			if (this.props.segmentLine && this.props.segmentLineStartsAt !== undefined) { //  && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined
 				let segmentLineItem = this.props.segmentLineItem
 
 				let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration : 0
 				let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration : 0
 
 				const inPoint = segmentLineItem.renderedInPoint || 0
-				const duration = (Number.isFinite(segmentLineItem.renderedDuration || 0)) ?
-					segmentLineItem.renderedDuration || this.props.segmentLineDuration || this.props.segmentLine.renderedDuration || 0 :
-					this.props.segmentLineDuration || this.props.segmentLine.renderedDuration || 0
+				const duration = segmentLineItem.infiniteMode ? (this.props.segmentLineDuration - inPoint) : Math.min((segmentLineItem.renderedDuration || 0), this.props.segmentLineDuration - inPoint)
 				const outPoint = inPoint + duration
 
 				const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
 
-				if (this.props.scrollLeft + this.props.scrollWidth < (outPoint - outTransitionDuration + this.props.segmentLine.startsAt) &&
-					this.props.scrollLeft + this.props.scrollWidth > (inPoint + this.props.segmentLine.startsAt)) {
-					const targetPos = ((this.props.scrollLeft + this.props.scrollWidth) - outPoint - this.props.segmentLine.startsAt - outTransitionDuration) * this.props.timeScale
+				if (this.props.scrollLeft + this.props.scrollWidth < (outPoint - outTransitionDuration + this.props.segmentLineStartsAt) &&
+					this.props.scrollLeft + this.props.scrollWidth > (inPoint + this.props.segmentLineStartsAt)) {
+					const targetPos = Math.max(((this.props.scrollLeft + this.props.scrollWidth) - outPoint - this.props.segmentLineStartsAt - outTransitionDuration) * this.props.timeScale, (this.state.elementWidth - this.state.leftAnchoredWidth - LEFT_RIGHT_ANCHOR_SPACER) * -1)
 
 					return {
-						'transform': 'translate3d(' + (widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.max(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth) * -1)).toString() + 'px,  0, 0)',
+						'transform': 'translate3d(' + (targetPos).toString() + 'px,  0, 0)',
 						'willChange': 'transform'
 					}
 				}
@@ -194,29 +199,35 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 		let liveLinePadding = this.props.autoNextSegmentLine ? 0 : (this.props.isLiveLine ? this.props.liveLinePadding : 0)
 
-		let itemDuration = segmentLineItem.duration !== undefined ?
-			Math.min(segmentLineItem.duration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)) :
-			(this.props.isLiveLine && this.props.livePosition !== null ?
-				((segmentLineItem.expectedDuration) === 0 ? // segmentLineItem.renderedDuration
-					(this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)) :
-					Math.max(
-						Math.min(
-							(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration || 0),
-							// this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) + liveLinePadding,
-							(this.props.livePosition - this.props.segmentLineStartsAt + liveLinePadding - (segmentLineItem.renderedInPoint || 0))
-						),
-						Math.min(segmentLineItem.expectedDuration, segmentLineItem.renderedDuration || 0),
-					)
-				)
-				: (segmentLineItem.expectedDuration === 0 ?
-					this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)
-					: Math.min(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
-				)
-			)
+		// let itemDuration = segmentLineItem.duration !== undefined ?
+		// 	Math.min(segmentLineItem.duration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)) :
+		// 	(this.props.isLiveLine && this.props.livePosition !== null ?
+		// 		((segmentLineItem.expectedDuration) === 0 ? // segmentLineItem.renderedDuration
+		// 			(this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)) :
+		// 			Math.max(
+		// 				Math.min(
+		// 					(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration || 0),
+		// 					// this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) + liveLinePadding,
+		// 					(this.props.livePosition - this.props.segmentLineStartsAt + liveLinePadding - (segmentLineItem.renderedInPoint || 0))
+		// 				),
+		// 				Math.min(segmentLineItem.expectedDuration, segmentLineItem.renderedDuration || 0),
+		// 			)
+		// 		)
+		// 		: (segmentLineItem.infiniteMode ?
+		// 			this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)
+		// 			: Math.min(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
+		// 		)
+		// 	)
 
-		if (itemDuration === 0 && segmentLineItem.renderedInPoint !== null && segmentLineItem.renderedInPoint !== undefined) {
-			itemDuration = this.props.segmentLineDuration - segmentLineItem.renderedInPoint
+		let itemDuration = Math.min(segmentLineItem.duration || segmentLineItem.expectedDuration || segmentLineItem.renderedDuration || 0, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
+		if (segmentLineItem.infiniteMode !== undefined && segmentLineItem.infiniteMode !== SegmentLineItemLifespan.Normal) {
+			itemDuration = this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)
+			// console.log(segmentLineItem.infiniteMode + ', ' + segmentLineItem.infiniteId)
 		}
+
+		// if (itemDuration === 0 && segmentLineItem.renderedInPoint !== null && segmentLineItem.renderedInPoint !== undefined) {
+		// 	itemDuration = this.props.segmentLineDuration - segmentLineItem.renderedInPoint
+		// }
 
 		if (this.props.relative) {
 			return {
@@ -343,6 +354,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
+			case RundownAPI.SourceLayerType.GRAPHICS:
 			case RundownAPI.SourceLayerType.LOWER_THIRD:
 				return <L3rdSourceRenderer key={this.props.segmentLineItem._id}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -403,7 +415,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 					'hide-overflow-labels': this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth),
 
-					'infinite': this.props.segmentLineItem.duration === undefined && this.props.segmentLineItem.expectedDuration === 0, // 0 is a special value
+					'infinite': (this.props.segmentLineItem.duration === undefined && this.props.segmentLineItem.infiniteMode) as boolean, // 0 is a special value
+					'next-is-touching': (this.props.segmentLineItem.cropped),
 
 					'source-missing': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING,
 					'source-broken': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN,

@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+import { check, Match } from 'meteor/check'
 import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems, ITimelineTrigger, SegmentLineItemLifespan } from '../../lib/collections/SegmentLineItems'
@@ -10,33 +11,69 @@ import { TriggerType } from 'superfly-timeline'
 import { Segments } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
-import { logger } from './../logging'
+import { logger } from '../logging'
 import { PeripheralDevice, PeripheralDevices, PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { IMOSRunningOrder, IMOSObjectStatus, MosString128 } from 'mos-connection'
 import { PlayoutTimelinePrefixes } from '../../lib/api/playout'
 import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
-import { sendStoryStatus, roId } from './peripheralDevice'
+import { sendStoryStatus } from './peripheralDevice'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
+let clone = require('fast-clone')
 
 export namespace ServerPlayoutAPI {
 	export function reloadData (roId: string) {
+		check(roId, String)
+
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
 		PeripheralDeviceAPI.executeFunction(runningOrder.mosDeviceId, (err: any, ro: IMOSRunningOrder) => {
+			console.log('Response!')
 			if (err) {
 				logger.error(err)
 			} else {
 				// TODO: what to do with the result?
 				logger.debug('Recieved reply for triggerGetRunningOrder', ro)
+
+				SegmentLineItems.remove({
+					runningOrderId: roId,
+					dynamicallyInserted: true
+				})
+
+				SegmentLines.update({
+					runningOrderId: roId
+				}, {
+					$unset: {
+						duration: 1,
+						startedPlayback: 1
+					}
+				})
+
+				SegmentLineItems.update({
+					runningOrderId: roId
+				}, {
+					$unset: {
+						duration: 1,
+						startedPlayback: 1
+					}
+				})
+
+				// Reset the playout devices by deactivating and activating rundown and restore current/next segment line, if possible
+				if (runningOrder && runningOrder.active) {
+					ServerPlayoutAPI.roDeactivate(roId)
+					ServerPlayoutAPI.roActivate(roId, runningOrder.rehearsal || false)
+				}
 			}
 		}, 'triggerGetRunningOrder', runningOrder.mosId)
 	}
 	export function roActivate (roId: string, rehearsal: boolean) {
+		check(roId, String)
+		check(rehearsal, Boolean)
+
 		rehearsal = !!rehearsal
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -131,7 +168,7 @@ export namespace ServerPlayoutAPI {
 				Body: [],
 				ID: new MosString128(''),
 
-			}, 'baseline_' + runningOrder._id)
+			}, 'baseline')
 
 			if (result.baselineItems) {
 				logger.info(`... got ${result.baselineItems.length} items from template.`)
@@ -151,6 +188,8 @@ export namespace ServerPlayoutAPI {
 		updateTimeline(runningOrder.studioInstallationId)
 	}
 	export function roDeactivate (roId: string) {
+		check(roId, String)
+
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
@@ -183,6 +222,8 @@ export namespace ServerPlayoutAPI {
 		sendStoryStatus(runningOrder, null)
 	}
 	export function roTake (roId: string) {
+		check(roId, String)
+
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
@@ -201,9 +242,13 @@ export namespace ServerPlayoutAPI {
 				$gt: takeSegmentLine._rank,
 			},
 			_id: { $ne: takeSegmentLine._id }
+		}, {
+			limit: 1
 		})
 
 		let nextSegmentLine: SegmentLine | null = segmentLinesAfter[0] || null
+
+		beforeTake(runningOrder, previousSegmentLine || null, takeSegmentLine)
 
 		RunningOrders.update(runningOrder._id, {
 			$set: {
@@ -219,9 +264,16 @@ export namespace ServerPlayoutAPI {
 		afterTake(runningOrder, takeSegmentLine, previousSegmentLine || null)
 	}
 	export function roSetNext (roId: string, nextSlId: string) {
-		let runningOrder = RunningOrders.findOne(roId)
+		check(roId, String)
+		check(nextSlId, String)
+
+		const runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
+
+		const nextSegmentLine = SegmentLines.findOne(nextSlId)
+		if (!nextSegmentLine) throw new Meteor.Error(404, `Segment Line "${nextSlId}" not found!`)
+		if (nextSegmentLine.runningOrderId !== runningOrder._id) throw new Meteor.Error(409, `Segment Line "${nextSlId}" not part of specified running order`)
 
 		RunningOrders.update(runningOrder._id, {
 			$set: {
@@ -235,6 +287,10 @@ export namespace ServerPlayoutAPI {
 		updateTimeline(runningOrder.studioInstallationId)
 	}
 	export function roStoriesMoved (roId: string, onAirNextWindowWidth: number | undefined, nextPosition: number | undefined) {
+		check(roId, String)
+		check(onAirNextWindowWidth, Match.Maybe(Number))
+		check(nextPosition, Match.Maybe(Number))
+
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
@@ -266,6 +322,10 @@ export namespace ServerPlayoutAPI {
 	}
 
 	export function sliPlaybackStartedCallback (roId: string, sliId: string, startedPlayback: Time) {
+		check(roId, String)
+		check(sliId, String)
+		check(startedPlayback, Number)
+
 		// This method is called when an auto-next event occurs
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -318,6 +378,10 @@ export namespace ServerPlayoutAPI {
 	}
 
 	export function slPlaybackStartedCallback (roId: string, slId: string, startedPlayback: Time) {
+		check(roId, String)
+		check(slId, String)
+		check(startedPlayback, Number)
+
 		// This method is called when an auto-next event occurs
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -424,6 +488,10 @@ export namespace ServerPlayoutAPI {
 		}
 	}
 	export function salliPlaybackStart (roId: string, slId: string, slaiId: string) {
+		check(roId, String)
+		check(slId, String)
+		check(slaiId, String)
+
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		let segLine = SegmentLines.findOne({
@@ -449,6 +517,10 @@ export namespace ServerPlayoutAPI {
 		updateTimeline(runningOrder.studioInstallationId)
 	}
 	export function robaliPlaybackStart (roId: string, slId: string, robaliId: string) {
+		check(roId, String)
+		check(slId, String)
+		check(robaliId, String)
+
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		let segLine = SegmentLines.findOne({
@@ -474,6 +546,10 @@ export namespace ServerPlayoutAPI {
 		updateTimeline(runningOrder.studioInstallationId)
 	}
 	export function salliStop (roId: string, slId: string, sliId: string) {
+		check(roId, String)
+		check(slId, String)
+		check(sliId, String)
+
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		let segLine = SegmentLines.findOne({
@@ -521,6 +597,10 @@ export namespace ServerPlayoutAPI {
 		updateTimeline(runningOrder.studioInstallationId)
 	}
 	export function sourceLayerOnLineStop (roId: string, slId: string, sourceLayerId: string) {
+		check(roId, String)
+		check(slId, String)
+		check(sourceLayerId, String)
+
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		let segLine = SegmentLines.findOne({
@@ -568,6 +648,9 @@ export namespace ServerPlayoutAPI {
 		updateTimeline(runningOrder.studioInstallationId)
 	}
 	export function timelineTriggerTimeUpdateCallback (timelineObjId: string, time: number) {
+		check(timelineObjId, String)
+		check(time, Number)
+
 		let tObj = Timeline.findOne(timelineObjId)
 		if (!tObj) throw new Meteor.Error(404, `Timeline obj "${timelineObjId}" not found!`)
 
@@ -629,13 +712,13 @@ methods[PlayoutAPI.methods.timelineTriggerTimeUpdateCallback] = (timelineObjId: 
 }
 
 _.each(methods, (fcn: Function, key) => {
-	methods[key] = (...args: any[]) => {
+	methods[key] = function (...args: any[]) {
 		// logger.info('------- Method call -------')
 		// logger.info(key)
 		// logger.info(args)
 		// logger.info('---------------------------')
 		try {
-			return fcn.apply(null, args)
+			return fcn.apply(this, args)
 		} catch (e) {
 			logger.error(e.message || e.reason || (e.toString ? e.toString() : null) || e)
 			throw e
@@ -646,34 +729,6 @@ _.each(methods, (fcn: Function, key) => {
 // Apply methods:
 Meteor.methods(methods)
 
-// Meteor.methods({
-// 	/**
-// 	 * Activates the RunningOrder:
-// 	 * TODO: Set up the Timeline
-// 	 * Set first item on Next queue
-// 	 */
-// 	'playout_reload_data': ServerPlayoutAPI.reloadData,
-// 	'playout_activate': ServerPlayoutAPI.roActivate,
-// 	/**
-// 	 * Inactivates the RunningOrder
-// 	 * TODO: Clear the Timeline (?)
-// 	 */
-// 	'playout_inactivate': ServerPlayoutAPI.roDeactivate,
-
-// 	/**
-// 	 * Perform the TAKE action, i.e start playing a segmentLineItem
-// 	 */
-// 	'playout_take': ServerPlayoutAPI.roTake,
-// 	'playout_setNext': ServerPlayoutAPI.roSetNext,
-// 	'playout_storiesMoved': ServerPlayoutAPI.roStoriesMoved,
-// 	'playout_segmentLinePlaybackStart': ServerPlayoutAPI.slPlaybackStartedCallback,
-// 	'playout_segmentAdLibLineItemStart': ServerPlayoutAPI.salliPlaybackStart,
-// 	'playout_runningOrderBaselineAdLibItemStart': ServerPlayoutAPI.robaliPlaybackStart,
-// 	'playout_segmentAdLibLineItemStop': ServerPlayoutAPI.salliStop,
-// 	'playout_sourceLayerOnLineStop': ServerPlayoutAPI.sourceLayerOnLineStop,
-// 	'playout_timelineTriggerTimeUpdate': ServerPlayoutAPI.timelineTriggerTimeUpdateCallback
-// })
-
 // Temporary methods
 Meteor.methods({
 	'debug__printTime': () => {
@@ -682,6 +737,49 @@ Meteor.methods({
 		return now
 	},
 })
+
+function beforeTake (runningOrder: RunningOrder, currentSegmentLine: SegmentLine | null, nextSegmentLine: SegmentLine) {
+	if (currentSegmentLine) {
+		const adjacentSL = SegmentLines.find({
+			segmentId: currentSegmentLine.segmentId,
+			_rank: {
+				$gt: currentSegmentLine._rank
+			}
+		}, {
+			sort: {
+				_rank: 1
+			},
+			limit: 1
+		}).fetch()
+		if (!adjacentSL || adjacentSL.length < 1 || adjacentSL[0]._id !== nextSegmentLine._id) {
+			// adjacent Segment Line isn't the next segment line, do not overflow
+			return
+		}
+		const currentSLIs = currentSegmentLine.getSegmentLinesItems()
+		currentSLIs.forEach((item) => {
+			if (item.overflows && item.expectedDuration > 0 && item.duration === undefined) {
+				// Clone an overflowing segment line item
+				let overflowedItem = _.extend({
+					_id: Random.id(),
+					segmentLineId: nextSegmentLine._id,
+					trigger: {
+						type: TriggerType.TIME_ABSOLUTE,
+						value: 0
+					},
+					dynamicallyInserted: true,
+					continuesRefId: item._id,
+
+					// Subtract the amount played from the expected duration
+					expectedDuration: Math.max(0, item.expectedDuration - ((item.startedPlayback || currentSegmentLine.startedPlayback || getCurrentTime()) - getCurrentTime()))
+				}, _.omit(clone(item) as SegmentLineItem, 'startedPlayback', 'duration', 'overflows'))
+
+				if (overflowedItem.expectedDuration > 0) {
+					SegmentLineItems.insert(overflowedItem)
+				}
+			}
+		})
+	}
+}
 
 function afterTake (runningOrder: RunningOrder, takeSegmentLine: SegmentLine, previousSegmentLine: SegmentLine | null) {
 	// This function should be called at the end of a "take" event (when the SegmentLines have been updated)
@@ -714,6 +812,10 @@ function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUnt
 				SegmentLineItems.update(item._id, { $set: { infiniteId: item.infiniteId } })
 			}
 
+			if (item.infiniteMode === SegmentLineItemLifespan.OutOnNextSegmentLine) {
+				return
+			}
+
 			activeInfiniteItems[item.sourceLayerId] = item
 			activeInfiniteItemsSegmentId[item.sourceLayerId] = previousLine.segmentId
 		}
@@ -729,7 +831,7 @@ function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUnt
 		for (let k in activeInfiniteItemsSegmentId) {
 			let s = activeInfiniteItemsSegmentId[k]
 			let i = activeInfiniteItems[k]
-			if (!i.infiniteMode || i.infiniteMode === SegmentLineItemLifespan.OutOnNext && s !== line.segmentId) {
+			if (!i.infiniteMode || i.infiniteMode === SegmentLineItemLifespan.OutOnNextSegment && s !== line.segmentId) {
 				delete activeInfiniteItems[k]
 				delete activeInfiniteItemsSegmentId[k]
 			}
@@ -768,7 +870,7 @@ function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUnt
 				delete activeInfiniteItemsSegmentId[k] // It will be stopped by this line
 
 				// if we matched with an infinite, then make sure that infinite is kept going
-				if (exist[exist.length - 1].infiniteMode) {
+				if (exist[exist.length - 1].infiniteMode && exist[exist.length - 1].infiniteMode !== SegmentLineItemLifespan.OutOnNextSegmentLine) {
 					activeInfiniteItems[k] = exist[0]
 					activeInfiniteItemsSegmentId[k] = line.segmentId
 				}
@@ -803,6 +905,10 @@ function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUnt
 				SegmentLineItems.update(i._id, {$set: {
 					infiniteId: i._id
 				}})
+			}
+
+			if (i.infiniteMode === SegmentLineItemLifespan.OutOnNextSegmentLine) {
+				return
 			}
 
 			// can only be one infinite on a layer at a time

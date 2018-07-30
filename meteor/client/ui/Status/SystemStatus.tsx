@@ -3,6 +3,8 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { PeripheralDevice,
 		PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import * as i18next from 'react-i18next'
+import { ClientAPI } from '../../../lib/api/client'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
 import { translate } from 'react-i18next'
@@ -21,6 +23,23 @@ interface IDeviceItemState {
 	showDeleteDeviceConfirm: PeripheralDevice | null
 	showKillDeviceConfirm: PeripheralDevice | null
 }
+
+export function statusCodeToString (t: i18next.TranslationFunction, statusCode: number) {
+	return (statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN) ?
+		t('Unknown') :
+	(statusCode === PeripheralDeviceAPI.StatusCode.GOOD) ?
+		t('Good') :
+	(statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR) ?
+		t('Minor Warning') :
+	(statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR) ?
+		t('Warning') :
+	(statusCode === PeripheralDeviceAPI.StatusCode.BAD) ?
+		t('Bad') :
+	(statusCode === PeripheralDeviceAPI.StatusCode.FATAL) ?
+		t('Fatal') :
+		t('Unknown')
+}
+
 const DeviceItem = translate()(class extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
 	constructor (props: Translated<IDeviceItemProps>) {
 		super(props)
@@ -32,20 +51,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 	statusCodeString () {
 		let t = this.props.t
 
-		switch (this.props.device.status.statusCode) {
-			case PeripheralDeviceAPI.StatusCode.UNKNOWN:
-				return t('Unknown')
-			case PeripheralDeviceAPI.StatusCode.GOOD:
-				return t('Good')
-			case PeripheralDeviceAPI.StatusCode.WARNING_MINOR:
-				return t('Minor Warning')
-			case PeripheralDeviceAPI.StatusCode.WARNING_MAJOR:
-				return t('Warning')
-			case PeripheralDeviceAPI.StatusCode.BAD:
-				return t('Bad')
-			case PeripheralDeviceAPI.StatusCode.FATAL:
-				return t('Fatal')
-		}
+		return this.props.device.connected ? t('Unknown') : statusCodeToString(t, this.props.device.status.statusCode)
 	}
 	connectedString () {
 		let t = this.props.t
@@ -75,7 +81,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 	}
 	handleConfirmDeleteShowStyleAccept = (e) => {
 		if (this.state.showDeleteDeviceConfirm) {
-			Meteor.call('temporaryRemovePeripheralDevice', this.state.showDeleteDeviceConfirm._id)
+			Meteor.call(ClientAPI.methods.execMethod, 'temporaryRemovePeripheralDevice', this.state.showDeleteDeviceConfirm._id)
 			// PeripheralDevices.remove(this.state.showDeleteDeviceConfirm._id)
 		}
 		// ShowStyles.remove(this.state.deleteConfirmItem._id)
@@ -199,18 +205,18 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 							<FontAwesomeIcon icon={faTrash} />
 						</button>
 						{(
-							this.props.device.type !== PeripheralDeviceAPI.DeviceType.OTHER ? [
-								<ModalDialog key='modal-process' title={t('Kill this device process?')} acceptText={t('Kill')}
+							this.props.device.type !== PeripheralDeviceAPI.DeviceType.OTHER ? <React.Fragment>
+								<ModalDialog title={t('Kill this device process?')} acceptText={t('Kill')}
 									secondaryText={t('Cancel')}
 									show={!!this.state.showKillDeviceConfirm}
 									onAccept={(e) => this.handleConfirmKillAccept(e)}
 									onSecondary={(e) => this.handleConfirmKillCancel(e)}>
 									<p>{t(`Are you sure you want to kill the process of this device?`)}</p>
-								</ModalDialog>,
-								<button key='button-process' className='btn btn-secondary' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onKillDevice(this.props.device)}>
+								</ModalDialog>
+								<button className='btn btn-secondary' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onKillDevice(this.props.device)}>
 									Kill process
 								</button>
-							] : null
+							</React.Fragment> : null
 						)}
 					</div>
 				</div>

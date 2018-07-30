@@ -219,7 +219,6 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 										</div>
 										<div className='mod mvs mhs'>
 											<label className='field'>
-												{t('Playout uses Timecode of Caspar')}
 												<EditAttribute
 													modifiedClassName='bghl'
 													attribute={'settings.devices.' + deviceId + '.options.syncTimecode' }
@@ -227,6 +226,7 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 													type='checkbox'
 													collection={PeripheralDevices}
 													className=''></EditAttribute>
+												{t('Playout uses Timecode of Caspar')}
 											</label>
 										</div>
 									</React.Fragment>
@@ -339,7 +339,6 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 		return (
 			<div>
 				<label className='field'>
-					{t('Initialize as clear')}
 					<EditAttribute
 						modifiedClassName='bghl'
 						attribute={'initializeAsClear'}
@@ -347,6 +346,7 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 						type='checkbox'
 						collection={PeripheralDevices}
 						className=''></EditAttribute>
+					{t('Initialize as clear')}
 				</label>
 
 				<ModalDialog title={t('Remove this device?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>

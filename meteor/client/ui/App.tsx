@@ -12,7 +12,7 @@ import { RunningOrderList } from './RunningOrderList'
 import { RunningOrderView } from './RunningOrderView'
 import { ClockView } from './ClockView'
 import { ConnectionStatusNotification } from './ConnectionStatusNotification'
-import { NymansPlayground } from '../ui/NymansPlayground'
+import { NymansPlayground } from './NymansPlayground'
 import {
   BrowserRouter as Router,
   Route,
@@ -20,7 +20,7 @@ import {
   Redirect
 } from 'react-router-dom'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { ErrorBoundary } from './ErrorBoundary'
+import { ErrorBoundary } from '../lib/ErrorBoundary'
 
 interface IAppState {
 	studioMode: boolean

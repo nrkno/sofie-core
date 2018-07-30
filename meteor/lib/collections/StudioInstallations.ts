@@ -1,5 +1,5 @@
 import { Mongo } from 'meteor/mongo'
-import { RundownAPI } from '../../lib/api/rundown'
+import { RundownAPI } from '../api/rundown'
 import { TransformedCollection } from '../typings/meteor'
 import { PlayoutDeviceType } from './PeripheralDevices'
 
