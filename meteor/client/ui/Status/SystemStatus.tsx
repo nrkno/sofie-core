@@ -24,20 +24,23 @@ interface IDeviceItemState {
 	showKillDeviceConfirm: PeripheralDevice | null
 }
 
-export function statusCodeToString (t: i18next.TranslationFunction, statusCode: number) {
-	return (statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN) ?
-		t('Unknown') :
-	(statusCode === PeripheralDeviceAPI.StatusCode.GOOD) ?
-		t('Good') :
-	(statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR) ?
-		t('Minor Warning') :
-	(statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR) ?
-		t('Warning') :
-	(statusCode === PeripheralDeviceAPI.StatusCode.BAD) ?
-		t('Bad') :
-	(statusCode === PeripheralDeviceAPI.StatusCode.FATAL) ?
-		t('Fatal') :
-		t('Unknown')
+export function statusCodeToString (t: i18next.TranslationFunction, statusCode: PeripheralDeviceAPI.StatusCode) {
+	console.log(statusCode)
+	return (
+		statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN ?
+			t('Unknown') :
+		statusCode === PeripheralDeviceAPI.StatusCode.GOOD ?
+			t('Good') :
+		statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR ?
+			t('Minor Warning') :
+		statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR ?
+			t('Warning') :
+		statusCode === PeripheralDeviceAPI.StatusCode.BAD ?
+			t('Bad') :
+		statusCode === PeripheralDeviceAPI.StatusCode.FATAL ?
+			t('Fatal') :
+			t('Unknown')
+	)
 }
 
 const DeviceItem = translate()(class extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
@@ -50,17 +53,15 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 	}
 	statusCodeString () {
 		let t = this.props.t
-
-		return this.props.device.connected ? t('Unknown') : statusCodeToString(t, this.props.device.status.statusCode)
+		return this.props.device.connected ? statusCodeToString(t, this.props.device.status.statusCode) : t('Not connected')
 	}
-	connectedString () {
-		let t = this.props.t
-
-		if (this.props.device.connected) {
-			return t('Connected')
-		} else {
-			return t('Disconnected')
-		}
+	statusMessages () {
+		let messages = ((this.props.device || {}).status || {}).messages || []
+		return (
+			messages.length ?
+			'"' + messages.join(', ') + '"' :
+			''
+		)
 	}
 	deviceTypeString () {
 		let t = this.props.t
@@ -161,22 +162,19 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 		return (
 			<div key={this.props.device._id} className='device-item'>
 				<div className='status-container'>
-					<div className='device-item__connected'>
-						<div className='value'>{this.connectedString()}</div>
-					</div>
-					<div className='device-item__last-seen'>
-						<label>Last seen:</label>
-						<div className='value'>
-							<Moment from={getCurrentTime()} date={this.props.device.lastSeen} />
-						</div>
-					</div>
 					<div className={statusClassNames}>
 						<div className='value'>
 							<span className='pill device-item__device-status__label'>
 								{this.statusCodeString()}
 							</span>
 						</div>
-						<div><i>{(((this.props.device || {}).status || {}).messages || []).join(', ')}</i></div>
+						<div><i>{this.statusMessages()}</i></div>
+					</div>
+					<div className='device-item__last-seen'>
+						<label>Last seen: </label>
+						<div className='value'>
+							<Moment from={getCurrentTime()} date={this.props.device.lastSeen} />
+						</div>
 					</div>
 				</div>
 				<div className='device-item__id'>
