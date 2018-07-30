@@ -2,6 +2,7 @@ import * as React from 'react'
 
 import { ISourceLayerUi, IOutputLayerUi, SegmentUi, SegmentLineUi, SegmentLineItemUi } from '../SegmentTimelineContainer'
 
+import { RundownUtils } from '../../../lib/rundown'
 import { FloatingInspector } from '../../FloatingInspector'
 
 import * as ClassNames from 'classnames'
@@ -59,6 +60,26 @@ export class CustomLayerItemRenderer<IProps = any, IState = any> extends React.C
 		if (this.props.setAnchoredElsWidths && typeof this.props.setAnchoredElsWidths === 'function') {
 			return this.props.setAnchoredElsWidths(leftAnchoredWidth, rightAnchoredWidth)
 		}
+	}
+
+	renderOverflowTimeLabel () {
+		if (!this.props.segmentLineItem.duration && (this.props.segmentLineItem.renderedInPoint! + this.props.segmentLineItem.renderedDuration!) > this.props.segmentLineDuration) {
+			let time = this.props.segmentLineItem.renderedInPoint! + this.props.segmentLineItem.renderedDuration! - ((this.props.segmentLineDuration || 0) as number)
+			// only display differences greater than 1 second
+			return (time > 1000) ? (
+				<div className='segment-timeline__layer-item__label label-overflow-time'>
+					{RundownUtils.formatDiffToTimecode(time, true, false, true)}
+				</div>
+			) : null
+		}
+	}
+
+	renderInfiniteIcon () {
+		return (this.props.segmentLineItem.infiniteMode) ?
+			<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
+				◆
+			</div>
+			: null
 	}
 
 	render () {

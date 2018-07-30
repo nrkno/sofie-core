@@ -27,6 +27,15 @@ export namespace RunningOrderTiming {
 		segmentLineStartsAt?: {
 			[key: string]: number
 		}
+		segmentLineDisplayStartsAt?: {
+			[key: string]: number
+		}
+		segmentLinePlayed?: {
+			[key: string]: number
+		}
+		segmentLineExpectedDurations?: {
+			[key: string]: number
+		}
 	}
 
 	export interface InjectedROTimingProps {
@@ -35,11 +44,13 @@ export namespace RunningOrderTiming {
 }
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60
+const LOW_RESOLUTION_TIMING_DECIMATOR = 15
 
 interface IRunningOrderTimingProviderProps {
 	runningOrder?: RunningOrder
 	// segmentLines: Array<SegmentLine>
 	refreshInterval?: number
+	defaultDuration?: number
 }
 interface IRunningOrderTimingProviderChildContext {
 	durations: RunningOrderTiming.RunningOrderTimingContext
@@ -84,7 +95,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 			this.refreshTimerInterval = TIMING_DEFAULT_REFRESH_INTERVAL
 		}
 
-		this.refreshDecimator = 15
+		this.refreshDecimator = 0
 	}
 
 	getChildContext (): IRunningOrderTimingProviderChildContext {
@@ -99,7 +110,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 		this.dispatchHREvent()
 
 		this.refreshDecimator++
-		if (this.refreshDecimator % 15 === 0) {
+		if (this.refreshDecimator % LOW_RESOLUTION_TIMING_DECIMATOR === 0) {
 			this.dispatchEvent()
 		}
 	}
@@ -138,13 +149,23 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 		let waitAccumulator = 0
 		let currentRemaining = 0
 		let startsAtAccumulator = 0
+		let displayStartsAtAccumulator = 0
 
 		const { runningOrder, segmentLines } = this.props
 		const linearSegLines: Array<[string, number | null]> = []
 		const segLineDurations: {
 			[key: string]: number
 		} = {}
+		const segLineExpectedDurations: {
+			[key: string]: number
+		} = {}
+		const segLinePlayed: {
+			[key: string]: number
+		} = {}
 		const segLineStartsAt: {
+			[key: string]: number
+		} = {}
+		const segLineDisplayStartsAt: {
 			[key: string]: number
 		} = {}
 
@@ -177,11 +198,16 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 				if (item.startedPlayback && !item.duration && runningOrder.currentSegmentLineId === item._id) {
 					currentRemaining = Math.max(0, (item.duration || item.expectedDuration || 0) - (now - item.startedPlayback))
 					segLineDurations[item._id] = Math.max((item.duration || item.expectedDuration || 0), (now - item.startedPlayback))
+					segLinePlayed[item._id] = (now - item.startedPlayback)
 				} else {
 					segLineDurations[item._id] = item.duration || item.expectedDuration || 0
+					segLinePlayed[item._id] = item.duration || 0
 				}
+				segLineExpectedDurations[item._id] = item.expectedDuration || item.duration || 0
 				segLineStartsAt[item._id] = startsAtAccumulator
+				segLineDisplayStartsAt[item._id] = displayStartsAtAccumulator
 				startsAtAccumulator += segLineDurations[item._id]
+				displayStartsAtAccumulator += segLineDurations[item._id] || this.props.defaultDuration || 3000
 				// always add the full duration, in case by some manual intervention this segment should play twice
 				waitAccumulator += (item.duration || item.expectedDuration || 0)
 
@@ -198,7 +224,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 			let localAccum = 0
 			for (let i = 0; i < linearSegLines.length; i++) {
 				if (i < nextAIndex) {
-					localAccum += linearSegLines[i][1] || 0
+					localAccum = linearSegLines[i][1] || 0
 					linearSegLines[i][1] = null
 				} else if (i === nextAIndex) {
 					// localAccum += linearSegLines[i][1] || 0
@@ -217,7 +243,10 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 			asPlayedRundownDuration,
 			segmentLineCountdown: _.object(linearSegLines),
 			segmentLineDurations: segLineDurations,
-			segmentLineStartsAt: segLineStartsAt
+			segmentLinePlayed: segLinePlayed,
+			segmentLineStartsAt: segLineStartsAt,
+			segmentLineDisplayStartsAt: segLineDisplayStartsAt,
+			segmentLineExpectedDurations: segLineExpectedDurations
 		})
 	}
 
@@ -228,16 +257,17 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 
 export interface WithTimingOptions {
 	isHighResolution?: boolean
+	filter?: string | any[]
 }
 export type WithTiming<T> = T & RunningOrderTiming.InjectedROTimingProps
 type IWrappedComponent<IProps, IState> = new (props: WithTiming<IProps>, state: IState) => React.Component<WithTiming<IProps>, IState>
 
-export function withTiming<IProps, IState> (options?: WithTimingOptions):
+export function withTiming<IProps, IState> (options?: WithTimingOptions | Function):
 	(WrappedComponent: IWrappedComponent<IProps, IState>) =>
 		new (props: IProps, context: any ) => React.Component<IProps, IState> {
 	let expandedOptions: WithTimingOptions = _.extend({
 		isHighResolution: false
-	}, options)
+	}, typeof options === 'function' ? {} : options)
 
 	return (WrappedComponent) => {
 		return class WithTimingHOCComponent extends React.Component<IProps, IState> {
@@ -245,8 +275,19 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions):
 				durations: PropTypes.object.isRequired
 			}
 
+			filterGetter: (o: any) => any
+			previousValue: any = null
+
 			constructor (props, context) {
 				super(props, context)
+
+				if (typeof options === 'function') {
+					expandedOptions = _.extend(expandedOptions, options(this.props))
+				}
+
+				if (expandedOptions.filter) {
+					this.filterGetter = _.property(expandedOptions.filter as string)
+				}
 			}
 
 			componentDidMount () {
@@ -266,7 +307,15 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions):
 			}
 
 			refreshComponent = () => {
-				this.forceUpdate()
+				if (!this.filterGetter) {
+					this.forceUpdate()
+				} else {
+					const buf = this.filterGetter(this.context.durations || {})
+					if (buf !== this.previousValue) {
+						this.previousValue = buf
+						this.forceUpdate()
+					}
+				}
 			}
 
 			render () {
@@ -285,39 +334,44 @@ export function withTiming<IProps, IState> (options?: WithTimingOptions):
 interface ISegmentLineCountdownProps {
 	segmentLineId?: string
 	timingDurations?: RunningOrderTiming.RunningOrderTimingContext
+	hideOnZero?: boolean
 }
 interface ISegmentLineCountdownState {
 }
 export const SegmentLineCountdown = withTiming<ISegmentLineCountdownProps, ISegmentLineCountdownState>()(
 class extends React.Component<WithTiming<ISegmentLineCountdownProps>, ISegmentLineCountdownState> {
 	render () {
-		return <span>
+		return (<span>
 			{this.props.segmentLineId &&
 				this.props.timingDurations &&
 				this.props.timingDurations.segmentLineCountdown &&
 				this.props.timingDurations.segmentLineCountdown[this.props.segmentLineId] !== undefined &&
+				(this.props.hideOnZero !== true || this.props.timingDurations.segmentLineCountdown[this.props.segmentLineId] > 0) &&
 					RundownUtils.formatTimeToShortTime(this.props.timingDurations.segmentLineCountdown[this.props.segmentLineId])}
-		</span>
+		</span>)
 	}
 })
 interface ISegmentDurationProps {
 	segmentLineIds: Array<string>
-	timingDurations?: RunningOrderTiming.RunningOrderTimingContext
 }
 interface ISegmentDurationState {
 }
 export const SegmentDuration = withTiming<ISegmentDurationProps, ISegmentDurationState>()(
 	class extends React.Component<WithTiming<ISegmentDurationProps>, ISegmentDurationState> {
 		render () {
-			return <span>
-				{this.props.segmentLineIds &&
-					this.props.timingDurations &&
-					this.props.timingDurations.segmentLineDurations &&
-						RundownUtils.formatTimeToTimecode(this.props.segmentLineIds.reduce((memo, item) => {
-							return this.props.timingDurations!.segmentLineDurations![item] !== undefined ?
-								memo + this.props.timingDurations!.segmentLineDurations![item] :
-								memo
-						}, 0))}
-			</span>
+			if (this.props.segmentLineIds &&
+				this.props.timingDurations &&
+				this.props.timingDurations.segmentLineExpectedDurations) {
+				const duration = this.props.segmentLineIds.reduce((memo, item) => {
+					return this.props.timingDurations!.segmentLineExpectedDurations![item] !== undefined ?
+						memo + this.props.timingDurations!.segmentLineExpectedDurations![item] - (this.props.timingDurations!.segmentLinePlayed![item] || 0) :
+						memo
+				}, 0)
+
+				return <span className={duration < 0 ? 'negative' : undefined}>
+					{RundownUtils.formatDiffToTimecode(duration, false, false, true, false, true, '+')}
+				</span>
+			}
+			return null
 		}
 	})

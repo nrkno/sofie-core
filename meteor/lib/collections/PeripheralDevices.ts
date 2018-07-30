@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { Time } from '../../lib/lib'
+import { PeripheralDeviceAPI } from '../api/peripheralDevice'
+import { Time } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
 
 export interface PeripheralDevice {

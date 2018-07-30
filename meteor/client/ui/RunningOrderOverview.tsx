@@ -6,7 +6,7 @@ import { getCurrentTime } from '../../lib/lib'
 import { SegmentLineUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { Segment } from '../../lib/collections/Segments'
 import { withTiming, WithTiming } from './RunningOrderTiming'
-import { ErrorBoundary } from './ErrorBoundary'
+import { ErrorBoundary } from '../lib/ErrorBoundary'
 
 interface SegmentUi extends Segment {
 	items?: Array<SegmentLineUi>

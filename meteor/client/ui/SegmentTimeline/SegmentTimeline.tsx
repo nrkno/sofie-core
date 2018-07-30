@@ -13,12 +13,13 @@ import { SegmentUi, SegmentLineUi, IOutputLayerUi } from './SegmentTimelineConta
 import { TimelineGrid } from './TimelineGrid'
 import { SegmentTimelineLine } from './SegmentTimelineLine'
 import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
+import { SegmentNextPreview } from './SegmentNextPreview'
 
-import { SegmentDuration, SegmentLineCountdown, RunningOrderTiming } from './../RunningOrderTiming'
+import { SegmentDuration, SegmentLineCountdown, RunningOrderTiming } from '../RunningOrderTiming'
 
 import { RundownUtils } from '../../lib/rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { ErrorBoundary } from '../ErrorBoundary'
+import { ErrorBoundary } from '../../lib/ErrorBoundary'
 
 interface IProps {
 	key: string
@@ -42,11 +43,14 @@ interface IProps {
 	followLiveLine: boolean,
 	liveLineHistorySize: number,
 	livePosition: number,
+	displayTimecode: number,
 	autoNextSegmentLine: boolean,
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
 	onFollowLiveLine: (state: boolean, event: any) => void
 	onContextMenu?: (contextMenuContext: any) => void
+	segmentRef?: (el: React.ComponentClass, sId: string) => void
+	followingSegmentLine: SegmentLineUi | undefined
 }
 interface IStateHeader {
 	timelineWidth: number
@@ -176,6 +180,13 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	timeline: HTMLDivElement
 	segmentBlock: HTMLDivElement
 
+	private _touchSize: number = 0
+	private _touchAttached: boolean = false
+	private _lastTouch: {
+		clientX: number
+		clientY: number
+	} | undefined = undefined
+
 	constructor (props: Translated<IProps>) {
 		super(props)
 		this.state = {
@@ -185,6 +196,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 
 	setSegmentRef = (el: HTMLDivElement) => {
 		this.segmentBlock = el
+		if (typeof this.props.segmentRef === 'function') this.props.segmentRef(this as any, this.props.segment._id)
 	}
 
 	setTimelineRef = (el: HTMLDivElement) => {
@@ -203,36 +215,97 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 		}
 	}
 
+	componentDidMount () {
+		setTimeout((function () {
+			if (this.props.isLiveSegment === true && this.props.followLiveSegments === true) {
+				this.scrollToMe()
+			}
+		}).bind(this), 1000)
+	}
+
+	onTimelineTouchEnd = (e: React.TouchEvent<HTMLDivElement> & any) => {
+		if (e.touches.length === 0) {
+			console.log('Last touch lifted, deactivating')
+			$(document).off('touchmove', '', this.onTimelineTouchMove)
+			$(document).off('touchend', '', this.onTimelineTouchEnd)
+			this._touchAttached = false
+		}
+	}
+
+	onTimelineTouchMove = (e: React.TouchEvent<HTMLDivElement> & any) => {
+		if (e.touches.length === 2) {
+			let newSize = e.touches[1].clientX - e.touches[0].clientX
+			let prop = newSize / this._touchSize
+			this.props.onZoomChange(Math.min(500, this.props.timeScale * prop), e)
+			this._touchSize = newSize
+		} else if (e.touches.length === 1 && this._lastTouch) {
+			let scrollAmount = this._lastTouch.clientX - e.touches[0].clientX
+			this.props.onScroll(Math.max(0, this.props.scrollLeft + (scrollAmount / this.props.timeScale)), e)
+			this._lastTouch = {
+				clientX: e.touches[0].clientX,
+				clientY: e.touches[0].clientY
+			}
+		}
+	}
+
+	onTimelineTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+		console.log(e)
+		if (e.touches.length === 2) { // expect two touch points
+			if (!this._touchAttached) {
+				$(document).on('touchmove', this.onTimelineTouchMove)
+				$(document).on('touchend', this.onTimelineTouchEnd)
+				this._touchAttached = true
+			}
+			this._touchSize = e.touches[1].clientX - e.touches[0].clientX
+		} else if (e.touches.length === 1) {
+			if (!this._touchAttached) {
+				$(document).on('touchmove', this.onTimelineTouchMove)
+				$(document).on('touchend', this.onTimelineTouchEnd)
+				this._touchAttached = true
+			}
+			this._lastTouch = {
+				clientX: e.touches[0].clientX,
+				clientY: e.touches[0].clientY
+			}
+		}
+	}
+
+	scrollToMe () {
+		const previousSegment = $(this.segmentBlock).prev()
+		const segmentPosition = $(this.segmentBlock).offset()
+		let scrollTop: number | null = null
+
+		if (previousSegment.length > 0) {
+			const segmentPosition = $(previousSegment).offset()
+			if (segmentPosition) {
+				scrollTop = segmentPosition.top
+			}
+		} else if (segmentPosition && (
+			(segmentPosition.top > ($('html,body').scrollTop() || 0) + window.innerHeight) ||
+			(segmentPosition.top < ($('html,body').scrollTop() || 0))
+		)) {
+			scrollTop = segmentPosition.top
+		}
+
+		if (scrollTop !== null) {
+			this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, {})
+
+			$(document.body).addClass('auto-scrolling')
+			$('html,body').animate({
+				scrollTop: Math.max(0, scrollTop - 175)
+			}, 400, () => {
+				// delay until next frame, so that the scroll handler can fire
+				setTimeout(function () {
+					$(document.body).removeClass('auto-scrolling')
+				})
+			})
+		}
+	}
+
 	componentDidUpdate (prevProps: IProps) {
 		if ((prevProps.isLiveSegment === false && this.props.isLiveSegment === true && this.props.followLiveSegments) ||
 			(prevProps.followLiveSegments === false && this.props.followLiveSegments === true && this.props.isLiveSegment === true)) {
-			const previousSegment = $(this.segmentBlock).prev()
-			const segmentPosition = $(this.segmentBlock).offset()
-			let scrollTop: number | null = null
-
-			if (previousSegment.length > 0) {
-				const segmentPosition = $(previousSegment).offset()
-				if (segmentPosition) {
-					scrollTop = segmentPosition.top
-				}
-			} else if (segmentPosition && (
-				(segmentPosition.top > ($('html,body').scrollTop() || 0) + window.innerHeight) ||
-				(segmentPosition.top < ($('html,body').scrollTop() || 0))
-			)) {
-				scrollTop = segmentPosition.top
-			}
-
-			if (scrollTop !== null) {
-				$(document.body).addClass('auto-scrolling')
-				$('html,body').animate({
-					scrollTop: Math.max(0, scrollTop - 175)
-				}, 400, () => {
-					// delay until next frame, so that the scroll handler can fire
-					setTimeout(function () {
-						$(document.body).removeClass('auto-scrolling')
-					})
-				})
-			}
+			this.scrollToMe()
 		}
 	}
 
@@ -287,8 +360,10 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 						 onClick={(e) => this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, e)}>
 						{t('On Air')}
 					</div>
-					<div className='segment-timeline__liveline__timecode'>
-						{RundownUtils.formatTimeToTimecode(this.props.livePosition)}
+					<div className={ClassNames('segment-timeline__liveline__timecode', {
+						'overtime': !!(this.props.displayTimecode > 0)
+					})}>
+						{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, true, true)}
 					</div>
 				</div>
 			]
@@ -343,7 +418,6 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	}
 
 	render () {
-		// console.log(this.props.hasRemoteItems && !this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment)
 
 		return (
 			<div id={'running-order__segment__' + this.props.segment._id}
@@ -367,7 +441,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 				</ContextMenuTrigger>
 				<div className='segment-timeline__duration' tabIndex={0}
 					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
-					{this.props.runningOrder && this.props.segmentLines && this.props.segmentLines.length > 0 &&
+					{this.props.runningOrder && this.props.segmentLines && this.props.segmentLines.length > 0 && (!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) &&
 						<SegmentDuration
 							segmentLineIds={this.props.segmentLines.map((item) => item._id)}
 						/>
@@ -379,10 +453,14 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 						<SegmentLineCountdown
 							segmentLineId={
 								(
-									this.props.isNextSegment ?
-									this.props.runningOrder.nextSegmentLineId :
-									this.props.segmentLines[0]._id
+									!this.props.isLiveSegment &&
+									(
+										this.props.isNextSegment ?
+										this.props.runningOrder.nextSegmentLineId :
+										this.props.segmentLines[0]._id
+									)
 								) || undefined }
+							hideOnZero={true}
 						/>
 					 }
 				</div>
@@ -393,7 +471,8 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 				<div className='segment-timeline__timeline-background'/>
 				<TimelineGrid {...this.props}
 							  onResize={this.onTimelineResize} />
-				<div className='segment-timeline__timeline-container'>
+				<div className='segment-timeline__timeline-container'
+					onTouchStartCapture={this.onTimelineTouchStart}>
 					<div className='segment-timeline__timeline' key={this.props.segment._id + '-timeline'} ref={this.setTimelineRef} style={this.timelineStyle()}>
 						<ErrorBoundary>
 							{this.renderTimeline()}
@@ -401,6 +480,15 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 					</div>
 					{this.renderLiveLine()}
 				</div>
+				<ErrorBoundary>
+					<SegmentNextPreview
+						runningOrder={this.props.runningOrder}
+						collapsedOutputs={this.props.collapsedOutputs}
+						isCollapsed={this.props.isCollapsed}
+						outputGroups={this.props.segment.outputLayers}
+						sourceLayers={this.props.segment.sourceLayers}
+						segmentLine={this.props.followingSegmentLine} />
+				</ErrorBoundary>
 				<ErrorBoundary>
 					<SegmentTimelineZoom
 						onZoomDblClick={this.onZoomDblClick}

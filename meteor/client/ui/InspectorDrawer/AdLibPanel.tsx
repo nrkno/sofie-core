@@ -3,6 +3,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import * as $ from 'jquery'
 
+import { ClientAPI } from '../../../lib/api/client'
 import { PlayoutAPI } from '../../../lib/api/playout'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
@@ -415,14 +416,23 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 
 	componentWillUnmount () {
 		mousetrap.unbind(this.usedHotkeys, 'keyup')
+		mousetrap.unbind(this.usedHotkeys, 'keydown')
 		this.usedHotkeys.length = 0
 	}
 
 	refreshKeyboardHotkeys () {
+		let preventDefault = (e) => {
+			e.preventDefault()
+			e.stopImmediatePropagation()
+			e.stopPropagation()
+		}
+
 		if (this.props.roAdLibs) {
 			this.props.roAdLibs.forEach((item) => {
 				if (item.hotkey) {
+					mousetrap.bind(item.hotkey, preventDefault, 'keydown')
 					mousetrap.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
+						preventDefault(e)
 						this.onToggleAdLib(item)
 					}, 'keyup')
 					this.usedHotkeys.push(item.hotkey)
@@ -433,7 +443,9 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		if (this.props.liveSegment && this.props.liveSegment.items) {
 			this.props.liveSegment.items.forEach((item) => {
 				if (item.hotkey) {
+					mousetrap.bind(item.hotkey, preventDefault, 'keydown')
 					mousetrap.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
+						preventDefault(e)
 						this.onToggleAdLib(item)
 					}, 'keyup')
 					this.usedHotkeys.push(item.hotkey)
@@ -444,7 +456,9 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		if (this.props.sourceLayerLookup) {
 			_.forEach(this.props.sourceLayerLookup, (item) => {
 				if (item.clearKeyboardHotkey) {
+					mousetrap.bind(item.clearKeyboardHotkey, preventDefault, 'keydown')
 					mousetrap.bind(item.clearKeyboardHotkey, (e: ExtendedKeyboardEvent) => {
+						preventDefault(e)
 						this.onClearAllSourceLayer(item)
 					}, 'keyup')
 					this.usedHotkeys.push(item.clearKeyboardHotkey)
@@ -469,9 +483,9 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	onToggleAdLib = (aSLine: SegmentLineAdLibItemUi) => {
 		console.log(aSLine)
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && !aSLine.isGlobal) {
-			Meteor.call(PlayoutAPI.methods.segmentAdLibLineItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.segmentAdLibLineItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
 		} else if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && aSLine.isGlobal) {
-			Meteor.call(PlayoutAPI.methods.runningOrderBaselineAdLibItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.runningOrderBaselineAdLibItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
 		}
 	}
 
@@ -479,7 +493,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		console.log(sourceLayer)
 
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
-			Meteor.call(PlayoutAPI.methods.sourceLayerOnLineStop, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id)
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.sourceLayerOnLineStop, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id)
 		}
 	}
 

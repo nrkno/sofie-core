@@ -74,6 +74,17 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 							true
 					: false
 				})
+				.sort((a: SegmentLineItemUi, b: SegmentLineItemUi): number => {
+					if ((a.renderedInPoint !== undefined) && (b.renderedInPoint !== undefined)) {
+						return (a.renderedInPoint as number) - (b.renderedInPoint as number)
+					} else if (a.renderedInPoint !== undefined) {
+						return -1
+					} else if (b.renderedInPoint !== undefined) {
+						return 1
+					} else {
+						return 1
+					}
+				})
 				.map((segmentLineItem) => {
 					return (
 						<SourceLayerItemContainer key={segmentLineItem._id}
@@ -82,13 +93,11 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 							segmentLineItem={segmentLineItem}
 							layer={this.props.layer}
 							outputLayer={this.props.outputLayer}
-							segment={this.props.segment}
 							segmentLine={this.props.segmentLine}
 							segmentLineStartsAt={this.props.startsAt}
 							segmentLineDuration={this.props.duration}
 							timeScale={this.props.timeScale}
 							relative={this.props.relative}
-							lineStartsAt={this.props.segmentLine.startsAt}
 							autoNextSegmentLine={this.props.autoNextSegmentLine}
 							liveLinePadding={this.props.liveLinePadding}
 							scrollLeft={this.props.scrollLeft}
@@ -206,8 +215,11 @@ interface IState {
 
 const LIVE_LINE_TIME_PADDING = 150
 
-export const SegmentTimelineLine = translate()(withTiming<IProps, IState>({
-	isHighResolution: false
+export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props: IProps) => {
+	return {
+		isHighResolution: false,
+		filter: ['segmentLineDurations', props.segmentLine._id]
+	}
 })(class extends React.Component<Translated<WithTiming<IProps>>, IState> {
 	_refreshTimer: number | undefined
 
@@ -259,7 +271,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>({
 		this.setState({
 			isLive,
 			isNext,
-			liveDuration: (isLive && !nextProps.autoNextSegmentLine) ?
+			liveDuration: (isLive && !nextProps.autoNextSegmentLine && !nextProps.segmentLine.autoNext) ?
 				Math.max(
 				(
 					(startedPlayback && nextProps.timingDurations.segmentLineDurations &&
@@ -280,18 +292,20 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>({
 		if (this.props.relative) {
 			return {
 				width: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
+				// width: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || 3000) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
 				willChange: this.state.isLive ? 'width' : undefined
 			}
 		} else {
 			return {
 				minWidth: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0) * this.props.timeScale).toString() + 'px',
+				// minWidth: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || 3000) * this.props.timeScale).toString() + 'px',
 				willChange: this.state.isLive ? 'minWidth' : undefined
 			}
 		}
 	}
 
 	getSegmentLineStartsAt (): number {
-		return Math.max(0, (this.props.firstSegmentLineInSegment && this.props.timingDurations.segmentLineStartsAt && (this.props.timingDurations.segmentLineStartsAt[this.props.segmentLine._id] - this.props.timingDurations.segmentLineStartsAt[this.props.firstSegmentLineInSegment._id])) || 0)
+		return Math.max(0, (this.props.firstSegmentLineInSegment && this.props.timingDurations.segmentLineDisplayStartsAt && (this.props.timingDurations.segmentLineDisplayStartsAt[this.props.segmentLine._id] - this.props.timingDurations.segmentLineDisplayStartsAt[this.props.firstSegmentLineInSegment._id])) || 0)
 	}
 
 	isInsideViewport () {
@@ -344,17 +358,6 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>({
 		}
 	}
 
-	getDifferenceStyle = () => {
-		return {
-			'width': Math.max(0, Math.min(this.props.segmentLine.renderedDuration || 0, (this.props.segmentLine.renderedDuration || 0) - (this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || 0)
-				- ((this.state.isLive || this.state.isNext) ?
-					((this.props.livePosition || 0) + this.getLiveLineTimePadding(this.props.timeScale) - (this.getSegmentLineStartsAt() || this.props.segmentLine.startsAt || 0)) :
-					0
-				)
-			) * this.props.timeScale) + 'px'
-		}
-	}
-
 	render () {
 		const { t } = this.props
 
@@ -384,16 +387,12 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>({
 					</div>
 					{ DEBUG_MODE &&
 						<div className='segment-timeline__debug-info'>
-							{this.props.livePosition} / {this.props.segmentLine.startsAt} / {this.props.segmentLine._rank}
+						{this.props.livePosition} / {this.props.segmentLine.startsAt} / {(this.props.timingDurations || {segmentLineStartsAt: {}}).segmentLineStartsAt![this.props.segmentLine._id]}
 						</div>
 					}
 					{this.renderTimelineOutputGroups(this.props.segmentLine)}
-					{this.state.isLive && !this.props.relative && !this.props.autoNextSegmentLine &&
+					{this.state.isLive && !this.props.relative && !this.props.autoNextSegmentLine && !this.props.segmentLine.autoNext &&
 						<div className='segment-timeline__segment-line__future-shade' style={this.getFutureShadeStyle()}>
-						</div>
-					}
-					{!this.props.relative && !this.props.segmentLine.duration && (this.props.segmentLine.renderedDuration || 0) > (this.props.segmentLine.expectedDuration || 0) &&
-						<div className='segment-timeline__segment-line__difference' style={this.getDifferenceStyle()}>
 						</div>
 					}
 				</div>

@@ -126,3 +126,35 @@
 		}
 	}
 }
+
+.table.user-action-log {
+	.user-action-log__timestamp {
+		min-width: 12em;
+	}
+	.user-action-log__userId {
+		min-width: 5em;
+	}
+	.user-action-log__clientAddress {
+		min-width: 7em;
+	}
+	.user-action-log__method {
+		min-width: 23em;
+	}
+	td.user-action-log__args {
+		position: relative;
+		font-family: 'Consolas', 'Courier New', Courier, monospace;
+		color: #555;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		font-size: 0.8em;
+		line-height: 1.7em;
+
+		&:hover {
+			white-space: normal;
+			overflow: visible;
+			text-overflow: unset;
+			word-break: break-all;
+		}
+	}
+}

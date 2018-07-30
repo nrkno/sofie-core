@@ -29,7 +29,7 @@ import { Segments, DBSegment } from '../../lib/collections/Segments'
 import { saveIntoDb, partialExceptId, getCurrentTime, literal } from '../../lib/lib'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
-import { logger } from './../logging'
+import { logger } from '../logging'
 import { runTemplate, TemplateContext, getHash } from './templates/templates'
 import { Timeline } from '../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
@@ -174,7 +174,8 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.sliId, String)
 		logger.info('RunningOrder: Setting playback started ' + r.time + ' to sli id ' + r.sliId)
 
-		Meteor.call('playout_segmentLineItemPlaybackStart', r.roId, r.sliId, r.time)
+		// Meteor.call('playout_segmentLineItemPlaybackStart', r.roId, r.sliId, r.time)
+		ServerPlayoutAPI.sliPlaybackStartedCallback(r.roId, r.sliId, r.time)
 	}
 	export function pingWithCommand (id: string, token: string, message: string) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)

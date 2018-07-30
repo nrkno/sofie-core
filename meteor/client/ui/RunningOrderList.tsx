@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
 import timer from 'react-timer-hoc'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import Moment from 'react-moment'
-import { RundownUtils } from './../lib/rundown'
+import { RundownUtils } from '../lib/rundown'
 import { getCurrentTime } from '../../lib/lib'
 
 interface IRunningOrdersListProps {
@@ -55,10 +55,10 @@ class extends React.Component<Translated<IRunningOrdersListProps>> {
 								<th className='c3'>
 									{t('Slug')}
 								</th>
-								<th className='c3'>
+								<th className='c2'>
 									{t('ID')}
 								</th>
-								<th className='c1'>
+								<th className='c2'>
 									{t('Created')}
 								</th>
 								<th className='c2'>
@@ -142,7 +142,7 @@ export class RunningOrderListItem extends React.Component<IRunningOrderListItemP
 					</td>
 					<td className='running-order-list-item__duration'>
 						{this.props.runningOrder.expectedDuration &&
-							RundownUtils.formatTimeToTimecode(this.props.runningOrder.expectedDuration)
+							RundownUtils.formatDiffToTimecode(this.props.runningOrder.expectedDuration, false, false, true, false, true)
 						}
 					</td>
 					<td className='running-order-list-item__status'>

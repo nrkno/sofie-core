@@ -1,4 +1,4 @@
-import { Time } from '../../lib/lib'
+import { Time } from '../lib'
 
 export namespace RundownAPI {
 	/** The type of the source layer, used to enable specific functions for special-type layers */

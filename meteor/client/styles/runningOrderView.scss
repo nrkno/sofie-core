@@ -7,6 +7,7 @@ $output-layer-group-collapse-animation-duration: 0.3s;
 $segment-header-height: 2.3em;
 $segment-background-color: #000;
 $segment-timeline-background-color: #1F1F1F;
+$segment-next-preview-background-color: #181818;
 $segment-title-background-color: #4B4B4B;
 $segment-title-background-color-next: $general-next-color;
 $segment-title-text-color-live: #4B4B4B;
@@ -53,6 +54,11 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 .running-order-view {
 	padding-top: 150px;
+}
+
+body.vertical-overflow-only {
+	overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .running-order-view__focus-lost-frame {
@@ -213,10 +219,12 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	display: grid;
 	grid-column-gap: 0;
 	grid-row-gap: 0;
-	grid-template-columns: [segment-name] 200px [segment-group-controls] 120px [timeline] auto [end];
+	grid-template-columns: [segment-name] 200px [segment-group-controls] 120px [timeline] auto [end] 120px [future-timeline-end];
 	grid-template-rows: [header] $segment-header-height [main-view] auto [zoom-area] auto [end];
 	overflow: hidden;
 	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
 	
 	width: auto;
 	margin: 1.5em;
@@ -301,6 +309,11 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		letter-spacing: 1px;
 
 		@include collapse-triangle();
+
+		> span.negative {
+			color: $general-late-color;
+			font-weight: 500;
+		}
 	}
 	.segment-timeline__timeUntil {
 		position: relative;
@@ -317,11 +330,28 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 		font-size: 1.3em;
 		font-weight: 400;
-		color: #ff0000;
 		line-height: 2.0em;
 		padding-right: 0px;
 		margin-right: 0em;
 		letter-spacing: 0px;
+	}
+	.segment-timeline__next-preview {
+		position: relative;
+		grid-column: end / future-timeline-end;
+		grid-row: header / zoom-area;
+		margin: $segment-header-height 0 0 1em;
+		overflow: hidden;
+		transition: $output-layer-group-collapse-animation-duration margin ease-in-out;
+	}
+	.segment-timeline__next-preview-background {
+		position: relative;
+		grid-column: end / future-timeline-end;
+		grid-row: header / zoom-area;
+		margin: $segment-header-height 0 1.5em 1em;
+		background: $segment-next-preview-background-color;
+		opacity: 1;
+		transition: $output-layer-group-collapse-animation-duration opacity ($output-layer-group-collapse-animation-duration * 1/2),
+					$output-layer-group-collapse-animation-duration margin ($output-layer-group-collapse-animation-duration * 1/2);
 	}
 
 	// The area controlling the zoom at the bottom of the segment
@@ -430,6 +460,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			bottom: 0;
 			left: 0;
 			right: 0;
+			overflow: hidden;
 
 			.segment-timeline__zoom-area__controls__left-mask {
 				position: absolute;
@@ -592,13 +623,17 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			color: $liveline-timecode-color;
 			white-space: nowrap;
 			word-wrap: none;
+
+			&.overtime {
+				color: $general-late-color;
+			}
 		}
 	}
 
 	/** This is a child element of the .segment-timeline__timeline-container.
 	    This is the parent of all segment items
 	*/
-	.segment-timeline__timeline {
+	.segment-timeline__timeline, .segment-timeline__next-preview {
 		overflow: visible;
 		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
 
@@ -739,6 +774,14 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 						@include item-type-colors();
 
+						&.next-is-touching {
+							border-right: 1px solid $segment-timeline-background-color; 
+						}
+
+						&.next-is-touching:hover {
+							border-right: none;
+						}
+
 						&.splits, &.live-speak {
 							.segment-timeline__layer-item__preview {
 								position: absolute;
@@ -796,19 +839,30 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 								}
 							}
 
-							&.last-words {
+							&.right-side {
 								position: absolute;
 								right: 0;
-								font-weight: 300;
-								font-style: italic;
 								
 								> * {
 									position: relative;
 								}
 
+								> .segment-timeline__layer-item__label {
+									margin-right: 0 !important;
+								}
+
 								> .label-icon {
 									margin: 0 -10px 0 0;
 								}
+
+								> .label-icon.label-infinite-icon {
+									margin: 0 0 0 0;
+								}
+							}
+
+							&.last-words {
+								font-weight: 300;
+								font-style: italic;
 							}
 
 							&.file-name {
@@ -817,6 +871,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 							&.label-icon {
 								margin: 0;
+							}
+
+							&.label-overflow-time {
+								font-weight: 300;
 							}
 
 							> .segment-timeline__layer-item__label {
@@ -1104,7 +1162,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			}
 		}
 
-		> .segment-timeline__timeline-container > .segment-timeline__timeline {
+		> .segment-timeline__timeline-container > .segment-timeline__timeline, > .segment-timeline__next-preview {
 			.segment-timeline__segment-line {
 				.segment-timeline__segment-line__nextline {
 					top: -1em;
@@ -1115,6 +1173,12 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 					&::after {
 						display: none;
+					}
+
+					&.auto-next {
+						&::before {
+							display: none;
+						}
 					}
 				}
 				.segment-timeline__output-group {
@@ -1145,6 +1209,18 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 					}
 				}
 			}
+		}
+
+		> .segment-timeline__next-preview {
+			margin: 0.2em 0 0 1em;
+			transition: $output-layer-group-collapse-animation-duration margin 0;
+		}
+
+		> .segment-timeline__next-preview-background {
+			margin: 0.2em 0 0 1em;
+			opacity: 0;
+			transition: $output-layer-group-collapse-animation-duration opacity 0,
+						$output-layer-group-collapse-animation-duration margin 0;
 		}
 	}
 }
@@ -1237,9 +1313,40 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
     border-radius: 3px;
     font-weight: 500;
 	box-shadow: 10px 5px 5px #000;
+	z-index: 100;
 	
 	&:hover {
 		opacity: 1;
+	}
+}
+
+.running-order-view--unpublished {
+	margin-top: 0;
+	
+	> .running-order-view__label {
+		position: absolute;
+		top: 50%;
+		left: 0;
+		right: 0;
+		text-align: center;
+		font-size: 3em;
+		transform: translateY(-50%);
+
+		> p {
+			margin: 20px auto;
+			max-width: 1200px;
+		}
+	}
+}
+
+.running-order-view--loading {
+	margin-top: 0;
+
+	> .mod.mhl.mvl.alc {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-150%, -50%);
 	}
 }
 

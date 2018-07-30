@@ -25,7 +25,7 @@ import {
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { literal } from '../../lib/lib'
-import { logger } from './../logging'
+import { logger } from '../logging'
 
 // These are temporary methods, used during development to put some data into the database
 function getPD (): PeripheralDevice {

@@ -1,5 +1,5 @@
 import { Mongo } from 'meteor/mongo'
-import { RundownAPI } from '../../lib/api/rundown'
+import { RundownAPI } from '../api/rundown'
 import { TriggerType } from 'superfly-timeline'
 import { TimelineTransition,
 	TimelineObjGroup,
@@ -59,8 +59,9 @@ export interface SegmentLineItemGeneric {
 
 export enum SegmentLineItemLifespan {
 	Normal = 0,
-	OutOnNext = 1,
-	Infinite = 2,
+	OutOnNextSegmentLine = 1,
+	OutOnNextSegment = 2,
+	Infinite = 3,
 }
 
 export interface SegmentLineItem extends SegmentLineItemGeneric {
@@ -77,6 +78,9 @@ export interface SegmentLineItem extends SegmentLineItemGeneric {
 
 	adLibSourceId?: string // only set when generated from an adlib
 	dynamicallyInserted?: boolean // only set when generated from an adlib
+
+	/** This is set when the item isn't infinite, but should overflow it's duration onto the adjacent (not just next) segment line on take */
+	overflows?: boolean
 }
 
 export const SegmentLineItems: TransformedCollection<SegmentLineItem, SegmentLineItem>
