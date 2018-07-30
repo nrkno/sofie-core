@@ -1,5 +1,7 @@
 import { RunningOrderDataCache } from '../lib/collections/RunningOrderDataCache'
 import { RunningOrders } from '../lib/collections/RunningOrders'
+import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
+import { PeripheralDevices } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
 import { getCurrentTime } from '../lib/lib'
 
@@ -29,6 +31,11 @@ Meteor.startup(() => {
 				roId: {$nin: roIds}
 			}).forEach((roc) => {
 				lowPrioFcn(RunningOrderDataCache.remove, roc._id)
+			})
+
+			// restart casparcg
+			PeripheralDevices.find({ type: PeripheralDeviceAPI.DeviceType.PLAYOUT }).forEach(device => {
+				PeripheralDeviceAPI.executeFunction(device._id, () => null, 'restartCasparCGProcess')
 			})
 		}
 
