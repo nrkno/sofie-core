@@ -15,7 +15,8 @@ function screamSnakeCase (input: string) {
 
 try {
 	_.keys(defaultSettings).forEach((setting) => {
-		localSettingsEnv[setting] = process.env[screamSnakeCase(setting)]
+		const envName = screamSnakeCase(setting)
+		if (process.env[envName] !== undefined) localSettingsEnv[setting] = process.env[envName]
 	})
 } catch (e) {
 	localSettingsEnv = {}
