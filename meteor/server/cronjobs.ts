@@ -41,11 +41,4 @@ Meteor.startup(() => {
 
 	}, 3 * 3600 * 1000)
 
-	// debugging:
-	setInterval(() => {
-		PeripheralDevices.find({ type: PeripheralDeviceAPI.DeviceType.PLAYOUT }).forEach(device => {
-			PeripheralDeviceAPI.executeFunction(device._id, () => null, 'restartCasparCGProcess')
-		})
-	}, 10000)
-
 })
