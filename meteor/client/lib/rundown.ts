@@ -63,7 +63,7 @@ export namespace RundownUtils {
 			return false
 		} else if (scrollLeft > (segmentLineStartsAt || segmentLine.startsAt || 0) +
 					(segmentLineItem !== undefined ?
-						(segmentLineItem.renderedInPoint || 0) + (segmentLineItem.expectedDuration || (
+						(segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || (
 							(segmentLine.duration !== undefined ?
 								segmentLine.duration :
 								(segmentLineDuration || segmentLine.renderedDuration || segmentLine.expectedDuration || 0) - (segmentLineItem.renderedInPoint || 0))

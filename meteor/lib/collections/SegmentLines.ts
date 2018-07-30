@@ -26,8 +26,10 @@ export interface DBSegmentLine {
 	slug: string
 	/** Should this item should progress to the next automatically */
 	autoNext?: boolean
-	/** The duration to run overlap with the previous SegmentLine */
-	overlapDuration?: number
+	/** How much to overlap on when doing autonext */
+	autoNextOverlap?: number
+	overlapUntil?: string
+	transitionDelay?: string
 	/** Should we block a transition at the out of this SegmentLine */
 	disableOutTransition?: boolean
 	/** If true, the story status (yellow line) will be updated upon next:ing  */
@@ -55,12 +57,14 @@ export class SegmentLine implements DBSegmentLine {
 	public runningOrderId: string
 	public slug: string
 	public autoNext?: boolean
+	public autoNextOverlap?: number
+	public overlapUntil?: string
+	public transitionDelay?: string
 	public metaData?: Array<IMOSExternalMetaData>
 	public status?: IMOSObjectStatus
 	public expectedDuration?: number
 	public startedPlayback?: number
 	public duration?: number
-	public overlapDuration?: number
 	public disableOutTransition?: boolean
 	public updateStoryStatus?: boolean
 
