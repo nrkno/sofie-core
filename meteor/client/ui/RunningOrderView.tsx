@@ -189,6 +189,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>, ITimi
 interface IRunningOrderHeaderProps {
 	runningOrder: RunningOrder,
 	onActivate?: (isRehearsal: boolean) => void
+	studioMode: boolean
 }
 
 interface IRunningOrderHeaderState {
@@ -298,7 +299,9 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	take = () => {
-		Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roTake, this.props.runningOrder._id)
+		if (this.props.studioMode) {
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roTake, this.props.runningOrder._id)
+		}
 		// console.log(new Date(getCurrentTime()))
 	}
 
@@ -319,7 +322,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	activate = () => {
-		if (!this.props.runningOrder.active) {
+		if (this.props.studioMode && !this.props.runningOrder.active) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false, (err, res) => {
 				if (err) {
 					this.handleActivationError(err)
@@ -331,7 +334,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	activateRehearsal = () => {
-		if (!this.props.runningOrder.active) {
+		if (this.props.studioMode && !this.props.runningOrder.active) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, true, (err, res) => {
 				if (err) {
 					this.handleActivationError(err)
@@ -343,7 +346,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	deactivate = () => {
-		if (this.props.runningOrder.active) {
+		if (this.props.studioMode && this.props.runningOrder.active) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
 		}
 	}
@@ -388,23 +391,25 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 							{this.props.runningOrder && this.props.runningOrder.name}
 						</div>
 						{
-							this.props.runningOrder && this.props.runningOrder.active ?
-								<React.Fragment>
-									<MenuItem onClick={(e) => this.deactivate()}>
-										{t('Deactivate')}
-									</MenuItem>
-									<MenuItem onClick={(e) => this.take()}>
-										{t('Take')}
-									</MenuItem>
-								</React.Fragment> :
-								<React.Fragment>
-									<MenuItem onClick={(e) => this.activate()}>
-										{t('Activate')}
-									</MenuItem>
-									<MenuItem onClick={(e) => this.activateRehearsal()}>
-										{t('Activate (Rehearsal)')}
-									</MenuItem>
-								</React.Fragment>
+							this.props.studioMode ?
+								this.props.runningOrder && this.props.runningOrder.active ?
+									<React.Fragment>
+										<MenuItem onClick={(e) => this.deactivate()}>
+											{t('Deactivate')}
+										</MenuItem>
+										<MenuItem onClick={(e) => this.take()}>
+											{t('Take')}
+										</MenuItem>
+									</React.Fragment> :
+									<React.Fragment>
+										<MenuItem onClick={(e) => this.activate()}>
+											{t('Activate')}
+										</MenuItem>
+										<MenuItem onClick={(e) => this.activateRehearsal()}>
+											{t('Activate (Rehearsal)')}
+										</MenuItem>
+									</React.Fragment> :
+								null
 						}
 						<MenuItem onClick={(e) => this.reloadRunningOrder()}>
 							{t('Reload running order')}
@@ -644,8 +649,8 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onSetNext = (segmentLine: SegmentLine) => {
-		if (segmentLine && segmentLine._id && this.props.runningOrder) {
-			Meteor.call(PlayoutAPI.methods.roSetNext, this.props.runningOrder._id, segmentLine._id)
+		if (this.state.studioMode && segmentLine && segmentLine._id && this.props.runningOrder) {
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roSetNext, this.props.runningOrder._id, segmentLine._id)
 			this.setState({
 				manualSetAsNext: true
 			})
@@ -723,13 +728,15 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 						<ErrorBoundary>
 							<RunningOrderHeader
 								runningOrder={this.props.runningOrder}
-								onActivate={this.onActivate} />
+								onActivate={this.onActivate}
+								studioMode={this.state.studioMode} />
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<SegmentContextMenu
 								contextMenuContext={this.state.contextMenuContext}
 								runningOrder={this.props.runningOrder}
-								onSetNext={this.onSetNext} />
+								onSetNext={this.onSetNext}
+								studioMode={this.state.studioMode} />
 						</ErrorBoundary>
 						{this.renderSegmentsList()}
 						{!this.state.followLiveSegments &&

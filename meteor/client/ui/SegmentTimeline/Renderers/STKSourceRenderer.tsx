@@ -127,7 +127,7 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 			,
 			<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 				<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
-					<video src={this.getPreviewUrl()} ref={this.setVideoRef} />
+					<video src={this.getPreviewUrl()} ref={this.setVideoRef} crossOrigin='anonymous' playsInline={true} muted={true}/>
 				</div>
 			</FloatingInspector>
 		]

@@ -8,6 +8,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 interface IProps {
 	onSetNext: (segmentLine: SegmentLine | undefined) => void
 	runningOrder?: RunningOrder
+	studioMode: boolean
 	contextMenuContext: any
 }
 interface IState {
@@ -31,7 +32,7 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 					{this.props.contextMenuContext && this.props.contextMenuContext.segment && this.props.contextMenuContext.segment.name || t('Unknown segment')}: {this.props.contextMenuContext && this.props.contextMenuContext.segmentLine && this.props.contextMenuContext.segmentLine._rank !== undefined && (t('Line') + ' ' + (this.props.contextMenuContext.segmentLine.slug || this.props.contextMenuContext.segmentLine._id)) || t('Unknown line')}
 				</div>
 				{
-					this.props.runningOrder && this.props.runningOrder.active ?
+					this.props.studioMode && this.props.runningOrder && this.props.runningOrder.active ?
 						<MenuItem onClick={(e) => this.props.onSetNext(this.getSegmentLineFromContext())}>
 							{t('Set as Next')}
 						</MenuItem>
