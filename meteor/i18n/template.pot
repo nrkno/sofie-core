@@ -5,10 +5,31 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2018-04-19T11:17:59.110Z\n"
-"PO-Revision-Date: 2018-04-19T11:17:59.110Z\n"
+"POT-Creation-Date: 2018-07-31T08:51:03.016Z\n"
+"PO-Revision-Date: 2018-07-31T08:51:03.016Z\n"
+
+msgid "Connecting to automation server..."
+msgstr ""
+
+msgid "Cannot connect to the automation server"
+msgstr ""
+
+msgid "Reconnecting to the automation server"
+msgstr ""
+
+msgid "Your machine is offline."
+msgstr ""
 
 msgid "Welcome to Sofie"
+msgstr ""
+
+msgid "Sofie Automation Core version"
+msgstr ""
+
+msgid "Core status"
+msgstr ""
+
+msgid "Test test"
 msgstr ""
 
 msgid "Home"
@@ -23,6 +44,39 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
+msgid "Settings"
+msgstr ""
+
+msgid "Key"
+msgstr ""
+
+msgid "Output"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Data"
+msgstr ""
+
+msgid "Resolution"
+msgstr ""
+
+msgid "FPS"
+msgstr ""
+
+msgid "Duration"
+msgstr ""
+
+msgid "TC Start"
+msgstr ""
+
+msgid "Search..."
+msgstr ""
+
+msgid "AdLib"
+msgstr ""
+
 msgid "Slug"
 msgstr ""
 
@@ -32,19 +86,72 @@ msgstr ""
 msgid "Created"
 msgstr ""
 
+msgid "Air Time"
+msgstr ""
+
 msgid "Air Status"
 msgstr ""
 
-msgid "Finish"
+msgid "Started"
 msgstr ""
 
-msgid "Now"
+msgid "Planned start"
 msgstr ""
 
-msgid "Loading..."
+msgid "Planned end"
+msgstr ""
+
+msgid "Diff"
+msgstr ""
+
+msgid "Expected end"
+msgstr ""
+
+msgid ""
+"Only a single running order can be active in a studio. Deactivate the other "
+"running order and try again."
+msgstr ""
+
+msgid "Deactivate"
+msgstr ""
+
+msgid "Take"
+msgstr ""
+
+msgid "Activate"
+msgstr ""
+
+msgid "Activate (Rehearsal)"
+msgstr ""
+
+msgid "Reload running order"
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
+msgid "OK"
+msgstr ""
+
+msgid "This running order has been unpublished from Sofie."
+msgstr ""
+
+msgid "Unknown segment"
+msgstr ""
+
+msgid "Line"
+msgstr ""
+
+msgid "Unknown line"
+msgstr ""
+
+msgid "Set as Next"
 msgstr ""
 
 msgid "On Air"
+msgstr ""
+
+msgid "Next"
 msgstr ""
 
 msgid "Unknown"
@@ -80,14 +187,345 @@ msgstr ""
 msgid "Unknown Device"
 msgstr ""
 
-msgid "System Status"
+msgid "Studios"
 msgstr ""
 
-msgid "Name"
+msgid "Source layers"
+msgstr ""
+
+msgid "Output channels"
+msgstr ""
+
+msgid "Show Styles"
+msgstr ""
+
+msgid "Delete this item?"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "This action is irreversible."
+msgstr ""
+
+msgid "Line Templates"
+msgstr ""
+
+msgid "Devices"
 msgstr ""
 
 msgid "Type"
 msgstr ""
 
+msgid "Tools"
+msgstr ""
+
+msgid "Restore backup"
+msgstr ""
+
+msgid "System Settings"
+msgstr ""
+
+msgid "Device ID"
+msgstr ""
+
+msgid "Device Type"
+msgstr ""
+
+msgid "Host"
+msgstr ""
+
+msgid "Port"
+msgstr ""
+
+msgid "Playout uses Timecode of Caspar"
+msgstr ""
+
+msgid "Sources Path"
+msgstr ""
+
+msgid "Ramp Function Path"
+msgstr ""
+
+msgid "Initialize as clear"
+msgstr ""
+
+msgid "Remove this device?"
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "Are you sure you want to remove device "
+msgstr ""
+
+msgid "Attached devices"
+msgstr ""
+
+msgid "Primary id (their mosId)"
+msgstr ""
+
+msgid "Primary host (ip or hostname)"
+msgstr ""
+
+msgid "Secondary id (their mosId)"
+msgstr ""
+
+msgid "Secondary host (ip or hostname)"
+msgstr ""
+
+msgid "MosId of gateway (our mosId)"
+msgstr ""
+
+msgid "Mos-devices"
+msgstr ""
+
+msgid "Generic properties"
+msgstr ""
+
+msgid "Device name"
+msgstr ""
+
+msgid "Template ID"
+msgstr ""
+
+msgid "Is Helper"
+msgstr ""
+
+msgid "Select this"
+msgstr ""
+
+msgid "Restore this backup?"
+msgstr ""
+
+msgid "Restore"
+msgstr ""
+
+msgid "Show Style name"
+msgstr ""
+
+msgid "Show Style id"
+msgstr ""
+
+msgid "Baseline template id"
+msgstr ""
+
+msgid "External-message template id"
+msgstr ""
+
+msgid "Download full backup"
+msgstr ""
+
+msgid "Download current state"
+msgstr ""
+
+msgid "Templates"
+msgstr ""
+
+msgid "Helper"
+msgstr ""
+
+msgid "Channel name"
+msgstr ""
+
+msgid "Internal ID"
+msgstr ""
+
+msgid "Is PGM output"
+msgstr ""
+
+msgid "Display rank"
+msgstr ""
+
+msgid "Are you sure you want to delete output channel "
+msgstr ""
+
+msgid "Value"
+msgstr ""
+
+msgid "Are you sure you want to delete this config item "
+msgstr ""
+
+msgid "Custom config"
+msgstr ""
+
+msgid "Camera"
+msgstr ""
+
+msgid "Graphics"
+msgstr ""
+
+msgid "LiveSpeak"
+msgstr ""
+
+msgid "Lower Third"
+msgstr ""
+
+msgid "Studio Microphone"
+msgstr ""
+
+msgid "Remote source"
+msgstr ""
+
+msgid "Generic script"
+msgstr ""
+
+msgid "Split screen"
+msgstr ""
+
+msgid "Clips"
+msgstr ""
+
+msgid "Metadata"
+msgstr ""
+
+msgid "Camera Movement"
+msgstr ""
+
+msgid "Unknown layer"
+msgstr ""
+
+msgid "Audio Mixing"
+msgstr ""
+
+msgid "Source name"
+msgstr ""
+
+msgid "Source abbreviation"
+msgstr ""
+
+msgid "Source type"
+msgstr ""
+
+msgid "Is unlimited"
+msgstr ""
+
+msgid "Is on clean PGM"
+msgstr ""
+
+msgid "Is a live remote input"
+msgstr ""
+
+msgid "AdLib activate shortcut list"
+msgstr ""
+
+msgid "Clear shortcut"
+msgstr ""
+
+msgid "Assign hotkeys to global adlibs"
+msgstr ""
+
+msgid "Are you sure you want to delete source layer "
+msgstr ""
+
+msgid "channel"
+msgstr ""
+
+msgid "layer"
+msgstr ""
+
+msgid "mappingType"
+msgstr ""
+
+msgid "index"
+msgstr ""
+
+msgid "Identifier"
+msgstr ""
+
+msgid "Layer ID"
+msgstr ""
+
+msgid "Device type"
+msgstr ""
+
+msgid "Device Id"
+msgstr ""
+
+msgid "Remove this mapping?"
+msgstr ""
+
+msgid "Are you sure you want to remove mapping for LLayer "
+msgstr ""
+
+msgid "Layer Mappings"
+msgstr ""
+
+msgid "New source"
+msgstr ""
+
+msgid "New output"
+msgstr ""
+
+msgid "Studio name"
+msgstr ""
+
+msgid "Default show style"
+msgstr ""
+
+msgid "System"
+msgstr ""
+
+msgid "Messages"
+msgstr ""
+
+msgid "User log"
+msgstr ""
+
+msgid "Id"
+msgstr ""
+
+msgid "Message"
+msgstr ""
+
+msgid "Queued messages"
+msgstr ""
+
+msgid "Sent messages"
+msgstr ""
+
+msgid "Message queue"
+msgstr ""
+
+msgid "Not connected"
+msgstr ""
+
+msgid "Kill this device process?"
+msgstr ""
+
+msgid "Kill"
+msgstr ""
+
+msgid "System Status"
+msgstr ""
+
+msgid "Telemetry"
+msgstr ""
+
 msgid "Last seen"
+msgstr ""
+
+msgid "Timestamp"
+msgstr ""
+
+msgid "User ID"
+msgstr ""
+
+msgid "Client IP"
+msgstr ""
+
+msgid "Action"
+msgstr ""
+
+msgid "Parameters"
+msgstr ""
+
+msgid "User activity log"
+msgstr ""
+
+msgctxt "item"
+msgid "new_config"
 msgstr ""
