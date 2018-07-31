@@ -90,8 +90,9 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 					<ErrorBoundary>
 						<Switch>
 							<Route path='/ro/:runningOrderId' component={NullComponent} />
+							<Route path='/countdowns/:studioId/presenter' component={NullComponent} />
 							<Route path='/countdowns/presenter' component={NullComponent} />
-							<Route path='/activeRo/:studioId' component={NullComponent} />
+							<Route path='/activeRo' component={NullComponent} />
 							<Route path='/' component={Header} />
 						</Switch>
 					</ErrorBoundary>
@@ -101,7 +102,9 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Route exact path='/' component={Dashboard} />
 							<Route path='/runningOrders' component={RunningOrderList} />
 							<Route path='/ro/:runningOrderId' component={RunningOrderView} />
+							<Route path='/activeRo' component={ActiveROView} />
 							<Route path='/activeRo/:studioId' component={ActiveROView} />
+							<Route path='/countdowns/:studioId/presenter' component={ClockView} />
 							<Route path='/countdowns/presenter' component={ClockView} />
 							<Route path='/nymansPlayground' component={NymansPlayground} />
 							<Route path='/status' component={Status} />

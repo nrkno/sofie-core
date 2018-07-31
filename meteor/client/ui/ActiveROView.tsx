@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as $ from 'jquery'
+import * as _ from 'underscore'
 import {
 	BrowserRouter as Router,
 	Route,
@@ -26,14 +27,15 @@ interface ITrackedProps {
 }
 export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
 
-	const runningOrderSubscription = Meteor.subscribe('runningOrders', {
+	const runningOrderSubscription = Meteor.subscribe('runningOrders', props.match && props.match.params && props.match.params.studioId ? {
 		studioInstallationId: props.match.params.studioId
-	})
+	} : {})
 
-	const runningOrder = RunningOrders.findOne({
-		studioInstallationId: props.match.params.studioId,
+	const runningOrder = RunningOrders.findOne(_.extend({
 		active: true
-	})
+	}, props.match && props.match.params && props.match.params.studioId ? {
+		studioInstallationId: props.match.params.studioId
+	} : {}))
 
 	return {
 		runningOrder,

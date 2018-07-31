@@ -41,6 +41,45 @@ In order for the system to work properly, it may be neccessary to set up several
 |`MEDIA_PREVIEW_SERVICE`|User-facing web service providing media file thumbnails and previews|`http://localhost:9010/mediaPreview/`|
 
 
+## Additional views
+
+For the purpose of running the system in a studio environment, there are additional endpoints, unavailable from the menu structure.
+
+|Path     |Function     |
+|---------|-------------|
+|`/countdowns/presenter`|Countdown clocks to be shown to the studio presenter|
+|`/countdowns/:studioId/presenter`|Countdown clocks for a given studio, to be shown to the studio presenter|
+|`/activeRo`|Redirects to the currently active running order|
+|`/activeRo/:studioId`|Redirects to the running order currently active in a given studio|
+
+## Translating Sofie
+
+For support of various languages in the User Interface, Sofie uses the i18next framework. It uses JSON-based translation files to store UI strings. In order to build a new translation file, first extract a PO template file from Sofie UI source code:
+
+```
+cd meteor
+npm run i18n-extract-pot
+```
+
+Find the created `template.pot` file in `meteor/i18n` folder. Create a new PO file based on that template using a PO editor of your choice. Save it in the `meteor/i18n` folder using your ISO 639-1 language code of choice as the filename.
+
+Next, modify the `package.json` scripts and create a new language compilations script:
+
+```
+"i18n-compile-json": "npm run i18n-compile-json-nb & npm run i18n-compile-json-sv & npm run i18n-compile-json-xx",
+"i18n-compile-json-xx": "i18next-conv -l nb -s i18n/xx.po -t public/locales/xx/translations.json",
+```
+
+Then, run the compillation script:
+
+```npm run i18n-compile-json```
+
+The UI will automatically detect user browser's default matching and select the best match, falling back to english. You can also force the UI language to any language by navigating to a page with `?lng=xx` query string, for example:
+
+```http://localhost:3000/?lng=xx```
+
+This choice is persisted in browser's Local Storage, and the same language will be used until a new forced language is chosen using this method.
+
 ---
 
 *The NRK logo is a registered trademark of Norsk rikskringkasting AS. The license does not grant any right to use, in any way, any trademarks, service marks or logos of Norsk rikskringkasting AS.*
