@@ -431,7 +431,6 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 interface IProps {
 	key: string
-	isReady: boolean
 	match: {
 		params: {
 			runningOrderId: string
@@ -452,6 +451,7 @@ interface ITrackedProps {
 	runningOrder?: RunningOrder
 	segments: Array<Segment>
 	studioInstallation?: StudioInstallation
+	isReady: boolean
 }
 export const RunningOrderView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state) => {
 
