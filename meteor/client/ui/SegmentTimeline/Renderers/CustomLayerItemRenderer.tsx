@@ -4,10 +4,12 @@ import { ISourceLayerUi, IOutputLayerUi, SegmentUi, SegmentLineUi, SegmentLineIt
 
 import { RundownUtils } from '../../../lib/rundown'
 import { FloatingInspector } from '../../FloatingInspector'
+import { StudioInstallation } from '../../../../lib/collections/StudioInstallations'
 
 import * as ClassNames from 'classnames'
 
 export interface ISourceLayerItemProps {
+	mediaPreviewUrl?: string
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
 	segment: SegmentUi

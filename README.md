@@ -38,7 +38,6 @@ In order for the system to work properly, it may be neccessary to set up several
 |----------------|----------------------------------------------------------|-------------------|
 |`NTP_SERVERS`   |Comma separated list of time servers to sync the system to|`0.se.pool.ntp.org`|
 |`FRAME_RATE`    |Framerate to be used when displaying time with frame accuracy|`25`            |
-|`MEDIA_PREVIEW_SERVICE`|User-facing web service providing media file thumbnails and previews|`http://localhost:9010/mediaPreview/`|
 
 
 ## Additional views

@@ -462,6 +462,8 @@ export const RunningOrderView = translateWithTracker<IProps, IState, ITrackedPro
 	})
 
 	let runningOrder = RunningOrders.findOne({ _id: runningOrderId })
+
+	let studioInstallation = runningOrder ? StudioInstallations.findOne({ _id: runningOrder.studioInstallationId }) : undefined
 	// let roDurations = calculateDurations(runningOrder, segmentLines)
 	return {
 		runningOrder: runningOrder,
@@ -471,7 +473,7 @@ export const RunningOrderView = translateWithTracker<IProps, IState, ITrackedPro
 				'_rank': 1
 			}
 		}).fetch() : [],
-		studioInstallation: runningOrder ? StudioInstallations.findOne({ _id: runningOrder.studioInstallationId }) : undefined,
+		studioInstallation: studioInstallation,
 	}
 })(
 class extends React.Component<Translated<IProps & ITrackedProps>, IState> {

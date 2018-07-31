@@ -63,6 +63,7 @@ Meteor.methods({
 				{_id: 'sources_rm_count', value: 6},
 				{_id: 'sources_kam_first_input', value: 1},
 				{_id: 'sources_rm_first_input', value: 4},
+				{_id: 'media_previews_url', value: 'http://160.67.87.50:8000/'}
 			],
 		}})
 

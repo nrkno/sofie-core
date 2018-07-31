@@ -73,8 +73,9 @@ export class VTSourceRenderer extends CustomLayerItemRenderer {
 		if (this.props.segmentLineItem) {
 			const item = this.props.segmentLineItem as SegmentLineItemUi
 			const metadata = item.metadata as MediaObject
-			if (metadata && metadata.previewPath) {
-				return Settings['mediaPreviewService'] + metadata.collectionId + '/' + metadata.previewPath
+			if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
+				// TODO: Remove _preview from the path in MediaObjects
+				return this.props.mediaPreviewUrl + 'media/preview/' + encodeURIComponent(metadata.objId)
 			}
 		}
 		return '/segment0_vt_preview.mp4' // TODO: should be undefined, but is a placeholder for time being

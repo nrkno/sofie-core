@@ -26,6 +26,7 @@ const LEFT_RIGHT_ANCHOR_SPACER = 35
 export interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
+	mediaPreviewUrl: string
 	// segment: SegmentUi
 	segmentLine: SegmentLineUi
 	segmentLineStartsAt: number
