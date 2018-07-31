@@ -753,7 +753,7 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 						<p>
 							<Route render={({history}) => (
 								<button className='btn btn-primary' onClick={() => { history.push('/runningOrders') }}>
-									Return to list
+									{t('Return to list')}
 								</button>
 							)} />
 						</p>

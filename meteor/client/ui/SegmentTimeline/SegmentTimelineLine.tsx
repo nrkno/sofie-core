@@ -205,6 +205,7 @@ interface IProps {
 	totalSegmentDuration?: number
 	firstSegmentLineInSegment?: SegmentLineUi
 	onContextMenu?: (contextMenuContext: any) => void
+	isLastInSegment: boolean
 }
 
 interface IState {
@@ -395,6 +396,23 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 						<div className='segment-timeline__segment-line__future-shade' style={this.getFutureShadeStyle()}>
 						</div>
 					}
+					{this.props.isLastInSegment && <div className={ClassNames('segment-timeline__segment-line__nextline', 'segment-timeline__segment-line__nextline--endline', {
+						'auto-next': this.props.autoNextSegmentLine,
+						'is-next': this.state.isLive
+					})}>
+						<div className='segment-timeline__segment-line__nextline__label'>
+							{
+								this.state.isLive && (
+									this.props.autoNextSegmentLine ?
+										<React.Fragment>
+											<FontAwesomeIcon icon={faFastForward} />
+											{t('Next')}
+										</React.Fragment> :
+										t('Next')
+								)
+							}
+						</div>
+					</div>}
 				</div>
 			)
 		} else { // render placeholders
