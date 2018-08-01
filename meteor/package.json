@@ -1,8 +1,7 @@
 {
   "name": "automation-core",
-  "version": "0.1.2",
+  "version": "0.1.0",
   "private": true,
-  "version": "0.0.0",
   "scripts": {
     "start": "meteor run",
     "debug": "meteor run --inspect",
