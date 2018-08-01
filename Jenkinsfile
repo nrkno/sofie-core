@@ -3,11 +3,11 @@
 pipeline {
   agent any
   stages {
-    stage ('Clean') {
-      deleteDir()
-    }
     stage ('Checkout') {
-      checkout scm 
+      steps {
+        deleteDir()
+        checkout scm
+      }
     }
     stage('Version') {
       when {
