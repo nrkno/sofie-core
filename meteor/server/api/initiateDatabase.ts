@@ -63,7 +63,7 @@ Meteor.methods({
 				{_id: 'sources_rm_count', value: 6},
 				{_id: 'sources_kam_first_input', value: 1},
 				{_id: 'sources_rm_first_input', value: 4},
-				{_id: 'media_previews_url', value: 'http://160.67.87.50:8000/'}
+				{_id: 'media_previews_url', value: 'http://localhost:8000/'}
 			],
 		}})
 
@@ -401,7 +401,19 @@ Meteor.methods({
 			lastSeen: getCurrentTime(),
 			connected: false,
 			connectionId: null,
-			token: ''
+			token: '',
+			settings: {
+				initializeAsClear: false,
+				devices: {},
+				mediaScanner: {
+					host: '',
+					port: 8000
+				},
+				casparcgLauncher: {
+					host: '',
+					port: 8005
+				}
+			}
 		})})
 
 		PeripheralDevices.find({
