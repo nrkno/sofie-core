@@ -37,11 +37,16 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		const params = queryStringParse(location.search)
 
 		this.state = {
-			studioMode: params['studio'] !== undefined ? true : false
+			studioMode: params['studio'] === '1' ?
+				true :
+				localStorage.getItem('studioMode') === '1' ?
+					true : false
 		}
 
-		if (this.state.studioMode) {
+		if (params['studio'] === '1') {
 			localStorage.setItem('studioMode', '1')
+		} else if (params['studio'] === '0') {
+			localStorage.setItem('studioMode', '0')
 		}
 	}
 
