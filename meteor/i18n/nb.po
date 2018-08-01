@@ -117,7 +117,7 @@ msgid ""
 "Only a single running order can be active in a studio. Deactivate the other "
 "running order and try again."
 msgstr ""
-"Bare én kjøreplan kan være aktiv pr. avviklingsenhet. Deaktiver den andre "
+"Bare én kjøreplan kan være aktiv i et studio. Deaktiver den andre "
 "kjøreplanen, og prøv på nytt."
 
 msgid "Deactivate"
@@ -254,7 +254,7 @@ msgid "Port"
 msgstr "Port"
 
 msgid "Playout uses Timecode of Caspar"
-msgstr "Playout bruker Sofies tidskode"
+msgstr "Playout bruker CasparCGs tidskode"
 
 #, fuzzy
 msgid "Sources Path"
@@ -265,7 +265,7 @@ msgid "Ramp Function Path"
 msgstr "Path for \"ramp\" funksjon"
 
 msgid "Initialize as clear"
-msgstr "Gjør klar"
+msgstr "Start helt tom"
 
 msgid "Remove this device?"
 msgstr "Fjern denne enheten?"
@@ -296,7 +296,7 @@ msgstr "Sekundær vert (IP-adresse eller vertsnavn)"
 
 #, fuzzy
 msgid "MosId of gateway (our mosId)"
-msgstr "MOS-ID fra gateway (vår MOS-ID)"
+msgstr "MOS-ID for gateway (vår MOS-ID)"
 
 msgid "Mos-devices"
 msgstr "MOS-enheter"
@@ -431,7 +431,7 @@ msgstr "Er en direktesendt ekstern kilde"
 
 #, fuzzy
 msgid "AdLib activate shortcut list"
-msgstr "Aktiver AdLib-hurtigtaster"
+msgstr "Hurtigtaster"
 
 msgid "Clear shortcut"
 msgstr "Hurtigtast for å fjerne"
