@@ -3,12 +3,6 @@
 pipeline {
   agent any
   stages {
-    stage ('Checkout') {
-      steps {
-        deleteDir()
-        checkout scm
-      }
-    }
     stage('Version') {
       when {
         branch 'master'
