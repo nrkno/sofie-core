@@ -51,6 +51,22 @@ For the purpose of running the system in a studio environment, there are additio
 |`/activeRo`|Redirects to the currently active running order|
 |`/activeRo/:studioId`|Redirects to the running order currently active in a given studio|
 
+## Studio mode
+
+In general, you will want to limit the amount of client stations that have full control of the studio (such as activating running orders, taking segment lines, ad-libbing, etc.). In order to mark a given client station (browser) as a Studio Control station, you should append `?studio=1` to any query string, for example:
+
+```http://localhost:3000/?studio=1```
+
+This setting is persisted in browser's Local Storage. To disable studio mode in a given client, append `?studio=0`.
+
+## Language selection
+
+The UI will automatically detect user browser's default matching and select the best match, falling back to english. You can also force the UI language to any language by navigating to a page with `?lng=xx` query string, for example:
+
+```http://localhost:3000/?lng=xx```
+
+This choice is persisted in browser's Local Storage, and the same language will be used until a new forced language is chosen using this method.
+
 ## Translating Sofie
 
 For support of various languages in the User Interface, Sofie uses the i18next framework. It uses JSON-based translation files to store UI strings. In order to build a new translation file, first extract a PO template file from Sofie UI source code:
@@ -73,11 +89,7 @@ Then, run the compillation script:
 
 ```npm run i18n-compile-json```
 
-The UI will automatically detect user browser's default matching and select the best match, falling back to english. You can also force the UI language to any language by navigating to a page with `?lng=xx` query string, for example:
-
-```http://localhost:3000/?lng=xx```
-
-This choice is persisted in browser's Local Storage, and the same language will be used until a new forced language is chosen using this method.
+The resulting JSON file will be placed in `meteor/public/locales/xx`, where it will be available to the Sofie UI for use and autodetection.
 
 ---
 
