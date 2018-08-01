@@ -348,6 +348,58 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 						className=''></EditAttribute>
 					{t('Initialize as clear')}
 				</label>
+				
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Media Scanner Host')}: 
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'settings.mediaScanner.host'}
+							obj={this.props.device}
+							type='text'
+							collection={PeripheralDevices}
+							className=''></EditAttribute>
+					</label>
+				</div>
+				
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Media Scanner Port')}: 
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'settings.mediaScanner.port'}
+							obj={this.props.device}
+							type='int'
+							collection={PeripheralDevices}
+							className=''></EditAttribute>
+					</label>
+				</div>
+				
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('CasparCG Launcher Host')}: 
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'settings.casparcgLauncher.host'}
+							obj={this.props.device}
+							type='text'
+							collection={PeripheralDevices}
+							className=''></EditAttribute>
+					</label>
+				</div>
+				
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('CasparCG Launcher Port')}: 
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'settings.casparcgLauncher.port'}
+							obj={this.props.device}
+							type='int'
+							collection={PeripheralDevices}
+							className=''></EditAttribute>
+					</label>
+				</div>
 
 				<ModalDialog title={t('Remove this device?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
 					<p>{t('Are you sure you want to remove device ') + (this.state.deleteConfirmDeviceId && this.state.deleteConfirmDeviceId) + '?'}</p>
