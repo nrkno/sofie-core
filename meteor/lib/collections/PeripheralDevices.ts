@@ -54,6 +54,14 @@ export interface PlayoutDeviceSettings {
 		[deviceId: string]: PlayoutDeviceSettingsDevice
 	}
 	initializeAsClear: boolean
+	mediaScanner: {
+		host: string
+		port: number
+	}
+	casparcgLauncher: {
+		host: string
+		port: number
+	}
 }
 export interface PlayoutDeviceSettingsDevice {
 	type: PlayoutDeviceType
