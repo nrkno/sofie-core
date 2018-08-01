@@ -1598,32 +1598,25 @@ Meteor.methods({
 				"MosPayload": {
 					"Approved": 0,
 					"Creator": "N12050",
-					"MediaTime": 98.72,
-					"ModBy": "N639194",
-					"ModTime": "20180504T084325Z",
-					"MOSAbstracts": "M: Du er dum (03-05-18 10:09)\ndu-er-dum-250418 PUBLISH_QUANTEL 00:01:38:18",
-					"MOSItemDurations": "98,72",
+					"MediaTime": 0,
+					"ModBy": "N12050",
+					"ModTime": "20180522T092538Z",
+					"MOSAbstracts": "Navnesuper: Alf Ivar Johnsen, baker\nNavnesuper: Hans Hansen, reporter",
+					"MOSItemDurations": "",
 					"MOSItemEdDurations": "",
-					"MOSObjSlugs": "M: Du er dum\ndu-er-dum-250418",
-					"MOSSlugs": "Uten tittel\nSTK Synk;STK-3",
-					"MOSTimes": "",
+					"MOSObjSlugs": "Navnesuper: Alf Ivar Johnsen, baker\nNavnesuper: Hans Hansen, reporter",
+					"MOSSlugs": "DIR;Split-2\nDIR;Split-3",
+					"MOSTimes": "20180531T081903Z\n20180531T081903Z",
 					"Owner": "N12050",
 					"SourceMediaTime": 0,
 					"SourceTextTime": 0,
-					"TextTime": 0,
-					"AndreMetadata": "{Fotograf};Helle Rossow;+{Redigerer};Helle Rossow;",
-					"Bildebeskrivelse": "beskrivelse",
-					"Fylke": "Hordaland",
-					"Innslagstittel": "Du er dum",
-					"Kommune": "Kvinnherad",
-					"mosartType": "STK",
-					"OpprLand": "Norge",
-					"ReadTime": 98.72,
-					"Rettigheter": "Grønt",
-					"Rettighetseier": "NRK",
-					"Sted": "Berhaug",
-					"Tags": "test",
-					"Team": "{Fotograf};Helle Rossow;+{Redigerer};Helle Rossow;",
+					"StoryLogPreview": "Hans Hansen, hva skjer der du er?\nSuper: Direkte, sted",
+					"TextTime": 4,
+					"mosartType": "DVE",
+					"mosartVariant": "2LIKE",
+					"ReadTime": 4,
+					"ip1": "K3",
+					"ip2": "RM2",
 					"ENPSItemType": 3
 				}
 			}],
@@ -1631,77 +1624,95 @@ Meteor.methods({
 			"Body": [{
 				"Type": "storyItem",
 				"Content": {
-					"itemID": 4,
-					"objID": "N12050_1525334993",
-					"mosID": "METADATA.NRK.MOS",
-					"mosAbstract": "M: Du er dum (03-05-18 10:09)",
-					"objSlug": "M: Du er dum",
-					"mosExternalMetadata": {
+					"itemID": 2,
+					"itemSlug": "DIR;Split-2",
+					"objID": "4f2b1698-7603-4093-b20d-0c5b04b37361",
+					"mosID": "GFX.NRK.MOS",
+					"mosAbstract": "Navnesuper: Alf Ivar Johnsen, baker",
+					"mosExternalMetadata": [{
 						"mosScope": "PLAYLIST",
-						"mosSchema": "http://mosA4.com/mos/supported_schemas/MOSAXML2.08",
+						"mosSchema": "schema.nrk.no/content",
 						"mosPayload": {
-							"nrk": {
-								"changetime": "2018-05-03T10:09:53 +02:00",
-								"changedBy": "N12050",
-								"type": "video",
-								"mdSource": "omnibus",
-								"title": "Du er dum",
-								"description": "beskrivelse",
-								"hbbtv": {
-									"link": ""
-								},
-								"staff": {
-									"userid": "n12050",
-									"roles": "Fotograf;Redigerer",
-									"@t": "Helle Rossow"
-								},
-								"location": {
-									"id": "1-2511926",
-									"region": "Kvinnherad, Hordaland",
-									"lat": 59.78068,
-									"lon": 5.81041,
-									"@t": "Berhaug"
-								},
-								"tag": {
-									"id": 6519,
-									"@t": "test"
-								},
-								"rights": {
-									"notes": "",
-									"owner": "NRK",
-									"@t": "Green"
-								}
+							"uuid": "f6103c96-c981-4716-bdbc-b0b654de3041",
+							"metaData": {
+								"changedBy": "n23109",
+								"changed": "xxx",
+								"origin": "ENPS/CORE"
+							},
+							"render": {
+								"channel": "gfx1",
+								"system": {},
+								"group": {}
+							},
+							"template": {
+								"event": {},
+								"layer": "super",
+								"name": "navnesuper"
+							},
+							"content": {
+								"navn": "Alf Ivar Johnsen",
+								"tittel": "baker"
 							}
 						}
-					},
-					"itemSlug": "Uten tittel"
+					}, {
+						"mosScope": "PLAYLIST",
+						"mosSchema": "schema.nrk.no/timing",
+						"mosPayload": {
+							"in": "auto",
+							"out": "auto",
+							"timeIn": 5000,
+							"duration": 4000
+						}
+					}]
 				}
 			}, {
 				"Type": "storyItem",
 				"Content": {
 					"itemID": 3,
-					"itemSlug": "STK Synk;STK-3",
-					"objID": "\\\\XPRO\\Omn\\A\\A\\40\\31",
-					"mosID": "OMNIBUS.XPRO.MOS",
-					"mosAbstract": "du-er-dum-250418 PUBLISH_QUANTEL 00:01:38:18",
-					"objDur": 4936,
-					"objTB": 50,
-					"objSlug": "du-er-dum-250418",
-					"mosExternalMetadata": {
+					"itemSlug": "DIR;Split-3",
+					"objID": "46256d10-f2a4-4230-a72f-96aaf5d08c64",
+					"mosID": "GFX.NRK.MOS",
+					"mosAbstract": "Navnesuper: Hans Hansen, reporter",
+					"mosExternalMetadata": [{
 						"mosScope": "PLAYLIST",
-						"mosSchema": "OMNIBUS",
+						"mosSchema": "schema.nrk.no/content",
 						"mosPayload": {
-							"title": "Du er dum",
-							"objectType": "CLIP",
-							"clipType": "PUBLISH_QUANTEL",
-							"objDur": 4936
+							"uuid": "f6103c96-c981-4716-bdbc-b0b654de3041",
+							"metaData": {
+								"changedBy": "n23109",
+								"changed": "xxx",
+								"origin": "ENPS/CORE"
+							},
+							"render": {
+								"channel": "gfx1",
+								"system": {},
+								"group": {}
+							},
+							"template": {
+								"event": {},
+								"layer": "super",
+								"name": "navnesuper"
+							},
+							"content": {
+								"navn": "Hans Hansen",
+								"tittel": "reporter"
+							}
 						}
-					}
+					}, {
+						"mosScope": "PLAYLIST",
+						"mosSchema": "schema.nrk.no/timing",
+						"mosPayload": {
+							"in": "auto",
+							"out": "auto",
+							"timeIn": 5000,
+							"duration": 4000
+						}
+					}]
 				}
 			}],
 			"level": "debug",
 			"message": "",
-			"timestamp": "2018-05-31T08:19:40.616Z"
+			"timestamp": "2018-05-31T08:19:39.997Z"
 		}),
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;C997A8EF-C221-4678-B31EB0419009628E","Slug":"STK Synk;Synk","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":158.32,"ModBy":"N12050","ModTime":"20180522T092658Z","MOSAbstracts":"M: Ny Avengers-film (03-05-18 10:10)\nAVENGERS-190418-DR19 NYHETER 00:02:38:08\nNavnesuper: Petter Hansen, slakter","MOSItemDurations":"158,32","MOSItemEdDurations":"","MOSObjSlugs":"M: Ny Avengers-film\nAVENGERS-190418-DR19\nNavnesuper: Petter Hansen, slakter","MOSSlugs":"Uten tittel\nSTK Synk;Synk-2\nSTK Synk;Synk-4","MOSTimes":"20180531T081903Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":1,"AndreMetadata":"{reporter};Christian Ingebrethsen;","Bildebeskrivelse":"","Fylke":"England","Innslagstittel":"Ny Avengers-film","Kommune":"Greater London","mosartTransition":"effect 2","mosartType":"FULL","OpprLand":"Storbritannia","ReadTime":159.32,"Rettigheter":"Grønt","Rettighetseier":"NRK","Sted":"London","Tags":"avengers; marvel; tegneserier","Team":"{reporter};Christian Ingebrethsen;","ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":3,"objID":"N12050_1525335039","mosID":"METADATA.NRK.MOS","mosAbstract":"M: Ny Avengers-film (03-05-18 10:10)","objSlug":"M: Ny Avengers-film","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"http://mosA4.com/mos/supported_schemas/MOSAXML2.08","mosPayload":{"nrk":{"changetime":"2018-05-03T10:10:39 +02:00","changedBy":"N12050","type":"video","mdSource":"omnibus","title":"Ny Avengers-film","description":{},"hbbtv":{"link":""},"staff":{"userid":"n22621","roles":"reporter","@t":"Christian Ingebrethsen"},"location":{"id":"2-2643743","region":"Greater London, England, Storbritannia","lat":51.50853,"lon":-0.12574,"@t":"London"},"tag":[{"id":95257,"@t":"avengers"},{"id":95258,"@t":"marvel"},{"id":95259,"@t":"tegneserier"}],"rights":{"notes":"","owner":"NRK","@t":"Green"}}}},"itemSlug":"Uten tittel"}},{"Type":"storyItem","Content":{"itemID":2,"itemSlug":"STK Synk;Synk-2","objID":"\\\\XPRO\\Omn\\A\\A\\40\\26","mosID":"OMNIBUS.XPRO.MOS","mosAbstract":"AVENGERS-190418-DR19 NYHETER 00:02:38:08","objDur":7916,"objTB":50,"objSlug":"AVENGERS-190418-DR19","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"OMNIBUS","mosPayload":{"title":"Ny Avengers-film","objectType":"CLIP","clipType":"NYHETER","objDur":7916}}}},{"Type":"storyItem","Content":{"itemID":4,"itemSlug":"STK Synk;Synk-4","objID":"5dac983a-ad64-4780-ab8e-241170b572be","mosID":"GFX.NRK.MOS","mosAbstract":"Navnesuper: Petter Hansen, slakter","mosExternalMetadata":[{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/content","mosPayload":{"uuid":"f6103c96-c981-4716-bdbc-b0b654de3041","metaData":{"changedBy":"n23109","changed":"xxx","origin":"ENPS/CORE"},"render":{"channel":"gfx1","system":{},"group":{}},"template":{"event":{},"layer":"super","name":"navnesuper"},"content":{"navn":"Petter Hansen","tittel":"slakter"}}},{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/timing","mosPayload":{"in":"auto","out":"auto","timeIn":5000,"duration":4000}}]}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:40.819Z"})
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;AC6784C9-5722-4286-A763BB64775CCB84","Slug":"Nettpromo;Tekst","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180503T081121Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"I dag kan vi lese om Trimp på våre nettsider","TextTime":3,"mosartType":"KAM","mosartVariant":1,"ReadTime":3,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:41.010Z"})

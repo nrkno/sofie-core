@@ -15,6 +15,7 @@ import { PeripheralDevices, PlayoutDeviceType, PeripheralDevice } from '../../li
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../logging'
 import * as _ from 'underscore'
+import { LookaheadMode } from '../../lib/api/playout';
 
 // Imports from TSR (TODO make into an import)
 // export interface Mappings {
@@ -184,198 +185,233 @@ Meteor.methods({
 			'core_abstract': literal<Mapping>({
 				device: PlayoutDeviceType.ABSTRACT,
 				deviceId: 'abstract0',
+				lookahead: LookaheadMode.None,
 			}),
 			'casparcg_player_wipe': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
+				lookahead: LookaheadMode.None,
 				channel: 5,
 				layer: 199
 			}),
 			'casparcg_player_vignett': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
+				lookahead: LookaheadMode.None,
 				channel: 5,
 				layer: 140
 			}),
 			'casparcg_player_soundeffect': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
+				lookahead: LookaheadMode.None,
 				channel: 5,
 				layer: 130
 			}),
 			'casparcg_player_clip': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
+				lookahead: LookaheadMode.Preload,
 				channel: 1,
 				layer: 110
 			}),
 			'casparcg_cg_graphics': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
+				lookahead: LookaheadMode.None,
 				channel: 4,
 				layer: 120
 			}),
 			'casparcg_cg_graphics_ctrl': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
-				deviceId: 'http0'
+				deviceId: 'http0',
+				lookahead: LookaheadMode.None,
 			}),
 			'casparcg_cg_countdown': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
+				lookahead: LookaheadMode.None,
 				channel: 7,
 				layer: 120
 			}),
 			'casparcg_cg_logo': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
+				lookahead: LookaheadMode.None,
 				channel: 4,
 				layer: 121
 			}),
 			'casparcg_cg_logo_ctrl': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
-				deviceId: 'http0'
+				deviceId: 'http0',
+				lookahead: LookaheadMode.None,
 			}),
 			'casparcg_cg_klokke_ctrl': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
-				deviceId: 'http0'
+				deviceId: 'http0',
+				lookahead: LookaheadMode.None,
 			}),
 			'casparcg_cg_studiomonitor': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
+				lookahead: LookaheadMode.None,
 				channel: 3,
 				layer: 120
 			}),
 			'casparcg_cg_clock': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
+				lookahead: LookaheadMode.None,
 				channel: 7,
 				layer: 120
 			}),
 			'casparcg_cg_effects': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
+				lookahead: LookaheadMode.None,
 				channel: 5,
 				layer: 120
 			}),
 			'casparcg_cg_effects_ctrl': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
-				deviceId: 'http0'
+				deviceId: 'http0',
+				lookahead: LookaheadMode.None,
 			}),
 			'casparcg_cg_studiomonitor_ctrl': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
-				deviceId: 'http0'
+				deviceId: 'http0',
+				lookahead: LookaheadMode.None,
 			}),
 			'atem_me_program': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
+				lookahead: LookaheadMode.None,
 				mappingType: MappingAtemType.MixEffect,
 				index: 0 // 0 = ME1
 			}),
 			'atem_me_studiomonitor': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
+				lookahead: LookaheadMode.None,
 				mappingType: MappingAtemType.MixEffect,
 				index: 1 // 1 = ME2
 			}),
 			'atem_aux_clean': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
+				lookahead: LookaheadMode.None,
 				mappingType: MappingAtemType.Auxilliary,
 				index: 4
 			}),
 			'atem_aux_preview': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
+				lookahead: LookaheadMode.None,
 				mappingType: MappingAtemType.Auxilliary,
 				index: 5
 			}),
 			'atem_dsk_graphics': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
+				lookahead: LookaheadMode.None,
 				mappingType: MappingAtemType.DownStreamKeyer,
 				index: 0 // 0 = DSK1
 			}),
 			'atem_dsk_effect': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
+				lookahead: LookaheadMode.None,
 				mappingType: MappingAtemType.DownStreamKeyer,
 				index: 1 // 1 = DSK2
 			}),
 			'atem_supersource_default': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
+				lookahead: LookaheadMode.None,
 				mappingType: MappingAtemType.SuperSourceBox,
 				index: 0 // 0 = SS
 			}),
 			'atem_supersource_override': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
+				lookahead: LookaheadMode.Retain,
 				mappingType: MappingAtemType.SuperSourceBox,
 				index: 0 // 0 = SS
 			}),
 			'atem_usk_effect_default': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
+				lookahead: LookaheadMode.None,
 				mappingType: MappingAtemType.MixEffect,
 				index: 0 // 0 = ME1
 			}),
 			'atem_usk_effect_override': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
+				lookahead: LookaheadMode.None,
 				mappingType: MappingAtemType.MixEffect,
 				index: 0 // 0 = ME1
 			}),
 			'lawo_source_automix': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
+				lookahead: LookaheadMode.None,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'AMix',
 			}),
 			'lawo_source_clip': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
+				lookahead: LookaheadMode.None,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'MP1',
 			}),
 			'lawo_source_effect': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
+				lookahead: LookaheadMode.None,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'FX',
 			}),
 			'lawo_source_rm1': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
+				lookahead: LookaheadMode.None,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM1',
 			}),
 			'lawo_source_rm2': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
+				lookahead: LookaheadMode.None,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM2',
 			}),
 			'lawo_source_rm3': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
+				lookahead: LookaheadMode.None,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM3',
 			}),
 			'lawo_source_rm4': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
+				lookahead: LookaheadMode.None,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM4',
 			}),
 			'lawo_source_rm5': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
+				lookahead: LookaheadMode.None,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM5',
 			}),
 			'lawo_source_rm6': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
+				lookahead: LookaheadMode.None,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM6',
 			})

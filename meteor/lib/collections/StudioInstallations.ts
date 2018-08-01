@@ -2,6 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { RundownAPI } from '../api/rundown'
 import { TransformedCollection } from '../typings/meteor'
 import { PlayoutDeviceType } from './PeripheralDevices'
+import { LookaheadMode } from '../api/playout'
 
 // Imports from TSR (TODO make into an import)
 export enum MappingLawoType {
@@ -19,6 +20,7 @@ export interface Mappings {
 }
 export interface Mapping {
 	device: PlayoutDeviceType,
+	lookahead: LookaheadMode,
 	deviceId: string
 	// [key: string]: any
 }

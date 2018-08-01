@@ -4,6 +4,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import Moment from 'react-moment'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { LookaheadMode } from '../../../lib/api/playout'
 import { IOutputLayer,
 	ISourceLayer,
 	IStudioConfigItem,
@@ -1130,6 +1131,20 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 											attribute={'mappings.' + layerId + '.deviceId'}
 											obj={this.props.studioInstallation}
 											type='text'
+											collection={StudioInstallations}
+											className='input text-input input-l'></EditAttribute>
+									</label>
+								</div>
+								<div className='mod mvs mhs'>
+									<label className='field'>
+										{t('Lookahead mode')}
+										<EditAttribute
+											modifiedClassName='bghl'
+											attribute={'mappings.' + layerId + '.lookahead'}
+											obj={this.props.studioInstallation}
+											type='dropdown'
+											options={LookaheadMode}
+											optionsAreNumbers={true}
 											collection={StudioInstallations}
 											className='input text-input input-l'></EditAttribute>
 									</label>

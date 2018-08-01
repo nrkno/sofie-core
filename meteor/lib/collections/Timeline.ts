@@ -117,6 +117,7 @@ export interface TimelineObj {
 	}
 	duration: number | string
 	LLayer: string | number
+	originalLLayer?: string | number
 	content: {
 		// objects?: Array<TimelineObject>
 		// keyframes?: Array<TimelineKeyframe>
@@ -130,6 +131,7 @@ export interface TimelineObj {
 	disabled?: boolean
 	isGroup?: boolean
 	isAbstract?: boolean
+	isBackground?: boolean
 	inGroup?: string
 	repeating?: boolean
 	priority?: number

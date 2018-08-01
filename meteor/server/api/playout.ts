@@ -15,11 +15,11 @@ import { logger } from '../logging'
 import { PeripheralDevice, PeripheralDevices, PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { IMOSRunningOrder, IMOSObjectStatus, MosString128 } from 'mos-connection'
-import { PlayoutTimelinePrefixes } from '../../lib/api/playout'
+import { PlayoutTimelinePrefixes, LookaheadMode } from '../../lib/api/playout'
 import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { sendStoryStatus } from './peripheralDevice'
-import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
 let clone = require('fast-clone')
@@ -1177,6 +1177,223 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLine
 	return timelineObjs
 }
 
+export function addLookeaheadObjectsToTimeline (activeRunningOrder: RunningOrder, studioInstallation: StudioInstallation, timelineObjs: TimelineObj[]) {
+	_.each(studioInstallation.mappings || {}, (m, l) => {
+		const res = findLookaheadForLLayer(activeRunningOrder, l, m.lookahead)
+		if (res.length === 0) {
+			return
+		}
+
+		for (let i = 0; i < res.length; i++) {
+			const r = clone(res[i].obj)
+
+			r._id = 'lookahead_' + r._id
+			r.duration = res[i].slId !== activeRunningOrder.currentSegmentLineId ? 0 : `#${res[i].obj._id}.start - #.start`
+			r.trigger = i === 0 ? {
+				type: TriggerType.LOGICAL,
+				value: '1'
+			} : { // Start with previous clip if possible
+				type: TriggerType.TIME_RELATIVE,
+				value: `#${res[i - 1].obj._id}.start + 0`
+			}
+			r.isBackground = true
+			r.originalLLayer = r.LLayer
+			r.LLayer += '_lookahead'
+
+			timelineObjs.push(r)
+		}
+	})
+}
+
+export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer: string, mode: LookaheadMode): {obj: TimelineObj, slId: string}[] {
+	if (mode === undefined || mode === LookaheadMode.None) {
+		return []
+	}
+
+	interface SegmentLineIdPair {
+		id: string
+		segmentId: string
+	}
+	// find all slis that touch the layer
+	const layerItems = SegmentLineItems.find({'content.timelineObjects': { $elemMatch: { LLayer: layer } }}).fetch()
+	if (layerItems.length === 0) {
+		return []
+	}
+
+	// If mode is retained, and only one use, we can take a shortcut
+	if (mode === LookaheadMode.Retain && layerItems.length === 1) {
+		const i = layerItems[0]
+		if (i.content && i.content.timelineObjects) {
+			const r = i.content.timelineObjects.find(o => o !== null && o.LLayer === layer)
+			return r ? [{ obj: r, slId: i.segmentLineId }] : []
+		}
+
+		return []
+	}
+
+	// have slis grouped by sl, so we can look based on rank to choose the correct one
+	const grouped: {[key: string]: SegmentLineItem[]} = {}
+	layerItems.forEach(i => {
+		if (!grouped[i.segmentLineId]) {
+			grouped[i.segmentLineId] = []
+		}
+
+		grouped[i.segmentLineId].push(i)
+	})
+
+	let segmentLineIds: SegmentLineIdPair[] | undefined
+	let currentPos = 0
+	let currentSegmentId: string | undefined
+
+	if (!segmentLineIds) {
+		// calculate ordered list of segmentlines, which can be cached for other llayers
+		const lines = SegmentLines.find().fetch().map(l => ({ id: l._id, rank: l._rank, segmentId: l.segmentId }))
+		lines.sort((a, b) => {
+			if (a.rank < b.rank) {
+				return -1
+			}
+			if (a.rank > b.rank) {
+				return 1
+			}
+			return 0
+		})
+
+		const currentIndex = lines.findIndex(l => l.id === activeRunningOrder.currentSegmentLineId)
+		let res: SegmentLineIdPair[] = []
+		if (currentIndex >= 0) {
+			res = res.concat(lines.slice(0, currentIndex + 1))
+			currentSegmentId = res[res.length - 1].segmentId
+			currentPos = currentIndex
+		}
+
+		const nextLine = activeRunningOrder.nextSegmentLineId
+			? lines.findIndex(l => l.id === activeRunningOrder.nextSegmentLineId)
+			: (currentIndex >= 0 ? currentIndex + 1 : -1)
+
+		if (nextLine >= 0) {
+			res = res.concat(...lines.slice(nextLine))
+		}
+
+		segmentLineIds = res.map(l => ({ id: l.id, segmentId: l.segmentId }))
+	}
+
+	if (segmentLineIds.length === 0) {
+		return []
+	}
+
+	interface GroupedSegmentLineItems {
+		slId: string
+		segmentId: string
+		items: SegmentLineItem[]
+		line: SegmentLine | undefined
+	}
+
+	const orderedGroups: GroupedSegmentLineItems[] = segmentLineIds.map(i => ({
+		slId: i.id,
+		segmentId: i.segmentId,
+		line: SegmentLines.findOne(i.id),
+		items: grouped[i.id] || []
+	}))
+
+	// Start by taking the value from the current (if any), or search forwards
+	let sliGroup: GroupedSegmentLineItems | undefined
+	for (let i = currentPos; i < orderedGroups.length; i++) {
+		const v = orderedGroups[i]
+		if (v.items.length > 0) {
+			sliGroup = v
+			break
+		}
+	}
+	// If set to retain, then look backwards
+	if (mode === LookaheadMode.Retain) {
+		for (let i = currentPos - 1; i >= 0; i--) {
+			const v = orderedGroups[i]
+
+			// abort if we have a sli potential match is for another segment
+			if (sliGroup && v.segmentId !== currentSegmentId) {
+				break
+			}
+
+			if (v.items.length > 0) {
+				sliGroup = v
+				break
+			}
+		}
+	}
+
+	if (!sliGroup) {
+		return []
+	}
+
+	let findObjectForSegmentLine = (sliGroup: GroupedSegmentLineItems, layer: string): TimelineObj[] => {
+		if (sliGroup.items.length === 0) {
+			return []
+		}
+
+		let rawObjs: (TimelineObj | null)[] = []
+		sliGroup.items.forEach(i => {
+			if (i.content && i.content.timelineObjects) {
+				rawObjs = rawObjs.concat(i.content.timelineObjects)
+			}
+		})
+		let allObjs = _.compact(rawObjs)
+
+		if (allObjs.length === 0) {
+			// Should never happen. suggests something got 'corrupt' during this process
+			return []
+		}
+		if (allObjs.length > 1) {
+			if (sliGroup.line) {
+				const orderedItems = getOrderedSegmentLineItem(sliGroup.line)
+
+				const res: TimelineObj[] = []
+				orderedItems.forEach(i => {
+					const item = sliGroup.items.find(l => l._id === i._id)
+					if (!item || !item.content || !item.content.timelineObjects) {
+						return
+					}
+
+					// Note: This is assuming that there is only one use of a layer in each sli.
+					const obj = item.content.timelineObjects.find(o => o !== null && o.LLayer === layer)
+					if (obj) {
+						res.push(obj)
+					}
+				})
+
+				return res
+			}
+		}
+
+		return allObjs
+	}
+
+	const res: {obj: TimelineObj, slId: string}[] = []
+
+	const slId = sliGroup.slId
+	const objs = findObjectForSegmentLine(sliGroup, layer)
+	objs.forEach(o => res.push({ obj: o, slId: slId }))
+
+	// this is the current one, so look ahead to next to find the next thing to preload too
+	if (sliGroup && sliGroup.slId === activeRunningOrder.currentSegmentLineId) {
+		sliGroup = undefined
+		for (let i = currentPos + 1; i < orderedGroups.length; i++) {
+			const v = orderedGroups[i]
+			if (v.items.length > 0) {
+				sliGroup = v
+				break
+			}
+		}
+
+		if (sliGroup) {
+			const slId2 = sliGroup.slId
+			const objs2 = findObjectForSegmentLine(sliGroup, layer)
+			objs2.forEach(o => res.push({ obj: o, slId: slId2 }))
+		}
+	}
+
+	return res
+}
+
 /**
  * Updates the Timeline to reflect the state in the RunningOrder, Segments, Segmentlines etc...
  * @param studioInstallationId id of the studioInstallation to update
@@ -1332,6 +1549,7 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 		}
 
 		// next (on pvw (or on pgm if first))
+		addLookeaheadObjectsToTimeline(activeRunningOrder, studioInstallation, timelineObjs)
 
 		// Pre-process the timelineObjects:
 
@@ -1382,6 +1600,9 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 					// If the item is abstract, then use the core_abstract mapping, but leave it on the orignal LLayer
 					// We do this because the layer is only needed due to how we construct and run the timeline
 					LLayerMapping = (studioInstallation.mappings || {})['core_abstract']
+				}
+				if (!LLayerMapping && o.originalLLayer) {
+					LLayerMapping = (studioInstallation.mappings || {})[o.originalLLayer]
 				}
 
 				if (LLayerMapping) {
