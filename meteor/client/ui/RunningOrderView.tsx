@@ -435,12 +435,12 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 })
 
 interface IProps {
-	key: string
-	match: {
+	match?: {
 		params: {
 			runningOrderId: string
 		}
 	}
+	runningOrderId?: string
 }
 
 interface IState {
@@ -453,6 +453,7 @@ interface IState {
 }
 
 interface ITrackedProps {
+	runningOrderId: string
 	runningOrder?: RunningOrder
 	segments: Array<Segment>
 	studioInstallation?: StudioInstallation
@@ -460,7 +461,12 @@ interface ITrackedProps {
 }
 export const RunningOrderView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state) => {
 
-	let runningOrderId = decodeURIComponent(props.match.params.runningOrderId)
+	let runningOrderId
+	if (props.match && props.match.params.runningOrderId) {
+		runningOrderId = decodeURIComponent(props.match.params.runningOrderId)
+	} else if (props.runningOrderId) {
+		runningOrderId = props.runningOrderId
+	}
 
 	let runningOrderSubscription = Meteor.subscribe('runningOrders', {
 		_id: runningOrderId
@@ -471,6 +477,7 @@ export const RunningOrderView = translateWithTracker<IProps, IState, ITrackedPro
 	let studioInstallation = runningOrder ? StudioInstallations.findOne({ _id: runningOrder.studioInstallationId }) : undefined
 	// let roDurations = calculateDurations(runningOrder, segmentLines)
 	return {
+		runningOrderId: runningOrderId,
 		runningOrder: runningOrder,
 		isReady: runningOrderSubscription.ready(),
 		segments: runningOrder ? Segments.find({ runningOrderId: runningOrder._id }, {
@@ -513,7 +520,7 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 
 	componentWillMount () {
 		// Subscribe to data:
-		let runningOrderId = this.props.match.params.runningOrderId
+		let runningOrderId = this.props.runningOrderId
 
 		this._subscriptions.push(Meteor.subscribe('runningOrders', {
 			_id: runningOrderId

@@ -107,8 +107,8 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Route exact path='/' component={Dashboard} />
 							<Route path='/runningOrders' component={RunningOrderList} />
 							<Route path='/ro/:runningOrderId' component={RunningOrderView} />
-							<Route path='/activeRo' component={ActiveROView} />
 							<Route path='/activeRo/:studioId' component={ActiveROView} />
+							<Route path='/activeRo' component={ActiveROView} />
 							<Route path='/countdowns/:studioId/presenter' component={ClockView} />
 							<Route path='/countdowns/presenter' component={ClockView} />
 							<Route path='/nymansPlayground' component={NymansPlayground} />

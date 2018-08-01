@@ -11,8 +11,10 @@ import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMe
 import { Meteor } from 'meteor/meteor'
 
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
+import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 
 import { Spinner } from '../lib/Spinner'
+import { RunningOrderView } from './RunningOrderView'
 
 interface IProps {
 	match: {
@@ -23,6 +25,7 @@ interface IProps {
 }
 interface ITrackedProps {
 	runningOrder?: RunningOrder
+	studioInstallation?: StudioInstallation
 	isReady: boolean
 }
 export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
@@ -31,15 +34,26 @@ export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 		studioInstallationId: props.match.params.studioId
 	} : {})
 
+
 	const runningOrder = RunningOrders.findOne(_.extend({
 		active: true
 	}, props.match && props.match.params && props.match.params.studioId ? {
 		studioInstallationId: props.match.params.studioId
 	} : {}))
 
+	let studioInstallationSubscription
+	let studioInstallation
+	if (props.match.params.studioId) {
+		studioInstallationSubscription = Meteor.subscribe('studioInstallations', props.match && props.match.params && props.match.params.studioId ? {
+			_id: props.match.params.studioId
+		} : {})
+		studioInstallation = StudioInstallations.findOne(props.match.params.studioId)
+	}
+
 	return {
 		runningOrder,
-		isReady: runningOrderSubscription.ready()
+		studioInstallation,
+		isReady: runningOrderSubscription.ready() && (studioInstallationSubscription ? studioInstallationSubscription.ready() : true)
 	}
 })(class extends React.Component<Translated<IProps & ITrackedProps>> {
 
@@ -54,13 +68,32 @@ export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 	render () {
 		const { t } = this.props
 		if (this.props.isReady && this.props.runningOrder) {
-			return <Redirect to={'/ro/' + this.props.runningOrder._id} />
-		} else if (this.props.isReady) {
+			return (
+				<RunningOrderView runningOrderId={this.props.runningOrder._id} />
+			)
+		} else if (this.props.isReady && this.props.studioInstallation) {
 			return (
 				<div className='running-order-view running-order-view--unpublished'>
 					<div className='running-order-view__label'>
 						<p>
 							{t('There is no running order active in this studio.')}
+						</p>
+						<p>
+							<Route render={({ history }) => (
+								<button className='btn btn-primary' onClick={() => { history.push('/runningOrders') }}>
+									{t('Return to list')}
+								</button>
+							)} />
+						</p>
+					</div>
+				</div>
+			)
+		} else if (this.props.isReady && !this.props.studioInstallation) {
+			return (
+				<div className='running-order-view running-order-view--unpublished'>
+					<div className='running-order-view__label'>
+						<p>
+							{t('This studio doesn\'t exist.')}
 						</p>
 						<p>
 							<Route render={({ history }) => (
