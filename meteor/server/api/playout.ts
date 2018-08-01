@@ -1149,20 +1149,16 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLine
 			let tos = item.content.timelineObjects
 
 			// create a segmentLineItem group for the items and then place all of them there
-			let lineItemDuration = item.duration || 0
-			const segmentLineItemGroup = createSegmentLineItemGroup(item, lineItemDuration, segmentLineGroup)
+			const segmentLineItemGroup = createSegmentLineItemGroup(item, item.duration || item.expectedDuration, segmentLineGroup)
 			timelineObjs.push(segmentLineItemGroup)
 			timelineObjs.push(createSegmentLineItemGroupFirstObject(item, segmentLineItemGroup))
 
 			_.each(tos, (o: TimelineObj) => {
 				if (segmentLineGroup) {
 					o.inGroup = segmentLineItemGroup._id
-					// if (o.duration > lineItemDuration && lineItemDuration !== 0) {
-					// 	lineItemDuration = o.duration
-					// }
 
 					// If timed absolute and there is a transition delay, then apply delay
-					if (!item.isTransition && allowTransition && triggerOffsetForTransition && o.trigger.type === TriggerType.TIME_ABSOLUTE) {
+					if (!item.isTransition && allowTransition && triggerOffsetForTransition && o.trigger.type === TriggerType.TIME_ABSOLUTE && !item.adLibSourceId) {
 						o.trigger.type = TriggerType.TIME_RELATIVE
 						o.trigger.value = `${triggerOffsetForTransition} + ${o.trigger.value}`
 					}
@@ -1170,8 +1166,6 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLine
 
 				timelineObjs.push(o)
 			})
-
-			segmentLineItemGroup.duration = lineItemDuration
 		}
 	})
 	return timelineObjs
