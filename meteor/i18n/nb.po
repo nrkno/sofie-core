@@ -68,13 +68,13 @@ msgid "Resolution"
 msgstr "Oppløsning"
 
 msgid "FPS"
-msgstr "Rammehastighet"
+msgstr "Bilder/s (FPS)"
 
 msgid "Duration"
 msgstr "Varighet"
 
 msgid "TC Start"
-msgstr "Tidskode inn"
+msgstr "TC inn"
 
 msgid "Search…"
 msgstr "Søk"
@@ -117,7 +117,7 @@ msgid ""
 "Only a single running order can be active in a studio. Deactivate the other "
 "running order and try again."
 msgstr ""
-"Bare én kjøreplan kan være aktiv i et studio. Deaktiver den andre "
+"Bare én kjøreplan kan være aktiv pr. avviklingsenhet. Deaktiver den andre "
 "kjøreplanen, og prøv på nytt."
 
 msgid "Deactivate"
@@ -130,7 +130,7 @@ msgid "Activate"
 msgstr "Aktiver"
 
 msgid "Activate (Rehearsal)"
-msgstr "Aktiver (øving)"
+msgstr "Aktiver øving"
 
 msgid "Reload running order"
 msgstr "Last inn kjøreplan på nytt"
@@ -154,7 +154,7 @@ msgid "Unknown line"
 msgstr "Ukjent linje"
 
 msgid "Set as Next"
-msgstr "Set som neste"
+msgstr "Sett som neste"
 
 msgid "On Air"
 msgstr "On Air"
@@ -234,7 +234,7 @@ msgid "Tools"
 msgstr "Verktøy"
 
 msgid "Restore backup"
-msgstr "Gjenopprett sikkerhetskopi"
+msgstr "Gjenopprett fra sikkerhetskopi"
 
 msgid "System Settings"
 msgstr "Systeminnstillinger"
@@ -254,7 +254,7 @@ msgid "Port"
 msgstr "Port"
 
 msgid "Playout uses Timecode of Caspar"
-msgstr "Playout bruker CasparCGs tidskode"
+msgstr "Playout bruker Sofies tidskode"
 
 #, fuzzy
 msgid "Sources Path"
@@ -265,10 +265,10 @@ msgid "Ramp Function Path"
 msgstr "Path for \"ramp\" funksjon"
 
 msgid "Initialize as clear"
-msgstr "Initialiser som klar"
+msgstr "Gjør klar"
 
 msgid "Remove this device?"
-msgstr "Fjerne denne enheten?"
+msgstr "Fjern denne enheten?"
 
 msgid "Remove"
 msgstr "Fjern"
@@ -296,7 +296,7 @@ msgstr "Sekundær vert (IP-adresse eller vertsnavn)"
 
 #, fuzzy
 msgid "MosId of gateway (our mosId)"
-msgstr "MOS-ID av gateway (vår MOS-ID)"
+msgstr "MOS-ID fra gateway (vår MOS-ID)"
 
 msgid "Mos-devices"
 msgstr "MOS-enheter"
@@ -318,7 +318,7 @@ msgid "Select this"
 msgstr "Velg"
 
 msgid "Restore this backup?"
-msgstr "Gjenopprett denne sikkerhetskopien?"
+msgstr "Gjenopprett fra denne sikkerhetskopien?"
 
 msgid "Restore"
 msgstr "Gjenopprett"
@@ -337,7 +337,7 @@ msgid "External-message template id"
 msgstr "ID for ekstern meldings-mal"
 
 msgid "Download full backup"
-msgstr "Gjenopprett sikkerhetskopi"
+msgstr "Gjenopprett fra sikkerhetskopi"
 
 msgid "Download current state"
 msgstr "Last ned nåværende tilstand"
@@ -361,7 +361,7 @@ msgid "Display rank"
 msgstr "Visningsrekkefølge"
 
 msgid "Are you sure you want to delete output channel "
-msgstr "Er du sikker på at du vil slette kanalen "
+msgstr "Er du sikker på at du vil slette utgangen "
 
 msgid "Value"
 msgstr "Verdi"
@@ -388,7 +388,7 @@ msgid "Studio Microphone"
 msgstr "Studiomikrofon"
 
 msgid "Remote source"
-msgstr "Rutbar kilde"
+msgstr "Valgbar kilde (RM)"
 
 msgid "Generic script"
 msgstr "Manus"
@@ -431,7 +431,7 @@ msgstr "Er en direktesendt ekstern kilde"
 
 #, fuzzy
 msgid "AdLib activate shortcut list"
-msgstr "Hurtigtaster"
+msgstr "Aktiver AdLib-hurtigtaster"
 
 msgid "Clear shortcut"
 msgstr "Hurtigtast for å fjerne"
@@ -468,7 +468,7 @@ msgid "Device Id"
 msgstr "MOS-enhets-ID"
 
 msgid "Remove this mapping?"
-msgstr "Fjerne denne koblingen?"
+msgstr "Fjern denne koblingen?"
 
 msgid "Are you sure you want to remove mapping for LLayer "
 msgstr "Er du sikker på at du vil fjerne koblingen for "
@@ -553,10 +553,10 @@ msgstr "Brukeraktivitet"
 #, fuzzy
 msgctxt "item"
 msgid "new_config"
-msgstr "new_config"
+msgstr "Ny konfigurasjon"
 
 #~ msgid "Finish"
-#~ msgstr "Slutt"
+#~ msgstr "Avslutt"
 
 #~ msgid "Now"
 #~ msgstr "Nå"
