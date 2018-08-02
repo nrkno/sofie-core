@@ -75,6 +75,14 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 				return t('Unknown Device')
 		}
 	}
+	deviceVersions () {
+		let versions = this.props.device.versions
+		if (versions) {
+			return _.map(versions, (version, packageName) => {
+				return packageName + ': ' + version
+			}).join('\n')
+		}
+	}
 	onDeleteDevice (device: PeripheralDevice) {
 		this.setState({
 			showDeleteDeviceConfirm: device
@@ -189,6 +197,16 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 					<label>Type:</label>
 					<div className='value'>{this.deviceTypeString()}</div>
 				</div>
+				{this.props.device.versions ?
+					<div className='device-item__version'>
+						<label>Version:</label>
+						<div className='value'>
+							<a title={this.deviceVersions()} href='#'>
+								{this.props.device.versions._process || 'N/A'}
+							</a>
+						</div>
+					</div>
+				: null}
 
 				<div className='actions-container'>
 					<div className='device-item__actions'>
