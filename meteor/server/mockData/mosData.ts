@@ -1174,7 +1174,170 @@ Meteor.methods({
 				"message": "",
 				"timestamp": "2018-05-31T08:19:38.574Z"
 			}),
-		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;F1641349-F6EA-4007-BD956A639BD8C85B","Slug":"ÅPNING;Velkommen","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180522T092754Z","MOSAbstracts":"Navnesuper: Ivar Johnsen, 22. mai 2018","MOSObjSlugs":"Navnesuper: Ivar Johnsen, 22. mai 2018","MOSSlugs":"VIGNETT;Velkommen-3","MOSTimes":"20180531T081903Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":0,"mosartType":"KAM","mosartVariant":"3ÅPNING","ReadTime":0,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":3,"itemSlug":"VIGNETT;Velkommen-3","objID":"a73f7bc7-258e-4bef-a364-84aab4ac02e2","mosID":"GFX.NRK.MOS","mosAbstract":"Navnesuper: Ivar Johnsen, 22. mai 2018","mosExternalMetadata":[{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/content","mosPayload":{"uuid":"f6103c96-c981-4716-bdbc-b0b654de3041","metaData":{"changedBy":"n23109","changed":"xxx","origin":"ENPS/CORE"},"render":{"channel":"gfx1","system":{},"group":{}},"template":{"event":{},"layer":"super","name":"navnesuper"},"content":{"navn":"Ivar Johnsen","tittel":"22. mai 2018"}}},{"mosScope":"PLAYLIST","mosSchema":"schema.nrk.no/timing","mosPayload":{"in":"auto","out":"manual","timeIn":5000,"duration":0}}]}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:38.770Z"})
+			Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, {
+				"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;F1641349-F6EA-4007-BD956A639BD8C85B",
+				"Slug": "ÅPNING;Velkommen",
+				"MosExternalMetaData": [{
+					"MosScope": "PLAYLIST",
+					"MosSchema": "http://MAENPSTEST14:10505/schema/enps.dtd",
+					"MosPayload": {
+						"Approved": 0,
+						"Creator": "N12050",
+						"MediaTime": 0,
+						"ModBy": "N12050",
+						"ModTime": "20180522T092754Z",
+						"MOSAbstracts": "Navnesuper: Ivar Johnsen, 22. mai 2018",
+						"MOSObjSlugs": "Navnesuper: Ivar Johnsen, 22. mai 2018",
+						"MOSSlugs": "VIGNETT;Velkommen-3",
+						"MOSTimes": "20180531T081903Z",
+						"Owner": "N12050",
+						"SourceMediaTime": 0,
+						"SourceTextTime": 0,
+						"TextTime": 0,
+						"mosartType": "KAM",
+						"mosartVariant": "3ÅPNING",
+						"ReadTime": 0,
+						"ENPSItemType": 3
+					}
+				}],
+				"RunningOrderId": "MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5",
+				"Body": [
+					{
+						"Type": "storyItem",
+						"Content": {
+							"itemID": 3,
+							"itemSlug": "VIGNETT;Velkommen-3",
+							"objID": "a73f7bc7-258e-4bef-a364-84aab4ac02e2",
+							"mosID": "GFX.NRK.MOS",
+							"mosAbstract": "Navnesuper: Ivar Johnsen, 22. mai 2018",
+							"mosExternalMetadata": [{
+								"mosScope": "PLAYLIST",
+								"mosSchema": "schema.nrk.no/content",
+								"mosPayload": {
+									"uuid": "f6103c96-c981-4716-bdbc-b0b654de3041",
+									"metaData": {
+										"changedBy": "n23109",
+										"changed": "xxx",
+										"origin": "ENPS/CORE"
+									},
+									"render": {
+										"channel": "gfx1",
+										"system": {},
+										"group": {}
+									},
+									"template": {
+										"event": {},
+										"layer": "super",
+										"name": "navnesuper"
+									},
+									"content": {
+										"navn": "Ivar Johnsen",
+										"tittel": "22. mai 2018"
+									}
+								}
+							}, {
+								"mosScope": "PLAYLIST",
+								"mosSchema": "schema.nrk.no/timing",
+								"mosPayload": {
+									"in": "auto",
+									"out": "manual",
+									"timeIn": 5000,
+									"duration": 0
+								}
+							}]
+						}
+					},
+					{
+						"Type": "storyItem",
+						"Content": {
+							"itemID": 9,
+							"itemSlug": "ÅPNING;klokke",
+							"objID": "3ebcbed9-b60f-49bb-a23e-a223c02aff37",
+							"mosID": "GFX.NRK.MOS",
+							"mosAbstract": "klokke",
+							"abstract": "klokke",
+							"mosExternalMetadata": [{
+								"mosScope": "PLAYLIST",
+								"mosSchema": "schema.nrk.no/content",
+								"mosPayload": {
+									"uuid": "cb388abb-68b4-4183-882c-1b5261b07a06",
+									metaData: {
+										changedBy: "n23109",
+										changed: "xxx",
+										origin: "ENPS/CORE"
+									},
+									render: {
+										channel: "gfx1",
+										system: "",
+										group: ""
+									},
+									template: {
+										event: "",
+										layer: "super",
+										name: "51_klokke"
+									},
+									content: {}
+								}
+							}, {
+								"mosScope": "PLAYLIST",
+								"mosSchema": "schema.nrk.no/timing",
+								"mosPayload": {
+									in: "auto",
+									out: "manual",
+									timeIn: 500,
+									duration: 0
+								}
+							}]
+						}
+					},
+					{
+						"Type": "storyItem",
+						"Content": {
+							"itemID": 10,
+							"itemSlug": "ÅPNING;logo",
+							"objID": "3ebcbed9-b60f-49bb-a23e-a223c02aff37",
+							"mosID": "GFX.NRK.MOS",
+							"mosAbstract": "logo",
+							"abstract": "logo",
+							"mosExternalMetadata": [{
+								"mosScope": "PLAYLIST",
+								"mosSchema": "schema.nrk.no/content",
+								"mosPayload": {
+									"uuid": "cb388abb-68b4-4183-882c-1b5261b07a06",
+									metaData: {
+										changedBy: "n23109",
+										changed: "xxx",
+										origin: "ENPS/CORE"
+									},
+									render: {
+										channel: "gfx1",
+										system: "",
+										group: ""
+									},
+									template: {
+										event: "",
+										layer: "super",
+										name: "50_logo"
+									},
+									content: {}
+								}
+							}, {
+								"mosScope": "PLAYLIST",
+								"mosSchema": "schema.nrk.no/timing",
+								"mosPayload": {
+									in: "auto",
+									out: "manual",
+									timeIn: 500,
+									duration: 0
+								}
+							}]
+						}
+					}
+				],
+				"level": "debug",
+				"message": "",
+				"timestamp": "2018-05-31T08:19:38.770Z"
+			})
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;21D83E74-236C-482C-B1563BF10BF4A2BA","Slug":"SAK 1;Intro","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","ModBy":"N12050","ModTime":"20180322T133453Z","Owner":"N12050","mosartType":"KAM","mosartVariant":2,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:38.988Z"}),
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, {
 			"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;A253988F-FEF4-4D64-ACC2CCFE78EA7C8C",
