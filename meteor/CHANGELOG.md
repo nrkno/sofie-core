@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.5.0"></a>
+# [0.5.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.4.3...v0.5.0) (2018-08-02)
+
+
+### Bug Fixes
+
+* added missing debug-logging setting ([8f616ca](https://github.com/nrkno/tv-automation-server-core/commit/8f616ca))
+* minor ui fix on status page ([97fc3c2](https://github.com/nrkno/tv-automation-server-core/commit/97fc3c2))
+* relative durations causing type warnings for ui code ([5249435](https://github.com/nrkno/tv-automation-server-core/commit/5249435))
+* update supertimeline ([28bccfe](https://github.com/nrkno/tv-automation-server-core/commit/28bccfe))
+
+
+### Features
+
+* added device version to status page ([ed0acda](https://github.com/nrkno/tv-automation-server-core/commit/ed0acda))
+* cron job for restarting casparcg ([19898d1](https://github.com/nrkno/tv-automation-server-core/commit/19898d1))
+* media scanner & casparcg launcher hostnames ([02ec8be](https://github.com/nrkno/tv-automation-server-core/commit/02ec8be))
+* refactor to use relative durations. affects infinite segmentlineitems, autonext, segmentline overlapduration property ([67c5444](https://github.com/nrkno/tv-automation-server-core/commit/67c5444))
+
+
+
 <a name="0.4.3"></a>
 ## [0.4.3](https://github.com/nrkno/tv-automation-server-core/compare/v0.4.1...v0.4.3) (2018-08-01)
 
