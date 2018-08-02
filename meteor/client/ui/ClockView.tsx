@@ -3,6 +3,7 @@ import * as React from 'react'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import * as $ from 'jquery'
+import * as _ from 'underscore'
 
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
@@ -186,12 +187,17 @@ interface IPropsHeader extends InjectedTranslateProps {
 	runningOrder: RunningOrder
 	segments: Array<Segment>
 	segmentLines: Array<SegmentLine>
+	match: {
+		params: {
+			studioId: string
+		}
+	}
 }
 
 interface IStateHeader {
 }
 
-export const ClockView = translate()(withTracker((props, state) => {
+export const ClockView = translate()(withTracker((props: IPropsHeader, state) => {
 	let subRunningOrders = Meteor.subscribe('runningOrders', {})
 	let subSegments = Meteor.subscribe('segments', {})
 	let subSegmentLines = Meteor.subscribe('segmentLines', {})
@@ -200,7 +206,7 @@ export const ClockView = translate()(withTracker((props, state) => {
 	let subShowStyles = Meteor.subscribe('showStyles', {})
 	let subSegmentLineAdLibItems = Meteor.subscribe('segmentLineAdLibItems', {})
 
-	let runningOrder = RunningOrders.findOne({ active: true })
+	let runningOrder = RunningOrders.findOne(_.extend({ active: true }, props.match && props.match.params && props.match.params.studioId ? { studioInstallationId: props.match.params.studioId } : {}))
 	let segments = runningOrder ? Segments.find({ runningOrderId: runningOrder._id }, {
 		sort: {
 			'_rank': 1

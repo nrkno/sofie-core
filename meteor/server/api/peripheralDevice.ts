@@ -1139,8 +1139,10 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 
 		SegmentLines.update(segmentLine._id, {$set: {
 			expectedDuration:		tr.result.segmentLine.expectedDuration || segmentLine.expectedDuration,
-			overlapDuration: 		tr.result.segmentLine.overlapDuration || 0,
 			autoNext: 				tr.result.segmentLine.autoNext || false,
+			autoNextOverlap: 		tr.result.segmentLine.autoNextOverlap || 0,
+			overlapUntil: 			tr.result.segmentLine.overlapUntil || '',
+			transitionDelay: 		tr.result.segmentLine.transitionDelay || '',
 			disableOutTransition: 	tr.result.segmentLine.disableOutTransition || false,
 			updateStoryStatus:		tr.result.segmentLine.updateStoryStatus || false,
 			typeVariant:			tr.result.segmentLine.typeVariant || ''

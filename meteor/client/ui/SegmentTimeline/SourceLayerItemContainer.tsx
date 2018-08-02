@@ -23,6 +23,7 @@ import { RundownAPI } from '../../../lib/api/rundown'
 interface IPropsHeader {
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
+	mediaPreviewUrl: string
 	// segment: SegmentUi
 	segmentLine: SegmentLineUi
 	segmentLineStartsAt: number
@@ -71,7 +72,7 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 					segmentCopy.renderedInPoint = 0
 				}
 			}
-			segmentCopy.renderedDuration = timelineObj.duration !== 0 ? timelineObj.duration : (props.segmentLineDuration - (segmentCopy.renderedInPoint || 0))
+			segmentCopy.renderedDuration = timelineObj.duration !== 0 && typeof timelineObj.duration !== 'string' ? timelineObj.duration : (props.segmentLineDuration - (segmentCopy.renderedInPoint || 0))
 			// console.log(segmentCopy.renderedDuration)
 
 			overrides.segmentLineItem = _.extend(overrides.segmentLineItem || {}, segmentCopy)

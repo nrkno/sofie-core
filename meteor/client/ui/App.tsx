@@ -10,6 +10,7 @@ import Status from './Status'
 import Settings from './Settings'
 import { RunningOrderList } from './RunningOrderList'
 import { RunningOrderView } from './RunningOrderView'
+import { ActiveROView } from './ActiveROView'
 import { ClockView } from './ClockView'
 import { ConnectionStatusNotification } from './ConnectionStatusNotification'
 import { NymansPlayground } from './NymansPlayground'
@@ -36,11 +37,16 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		const params = queryStringParse(location.search)
 
 		this.state = {
-			studioMode: params['studio'] !== undefined ? true : false
+			studioMode: params['studio'] === '1' ?
+				true :
+				localStorage.getItem('studioMode') === '1' ?
+					true : false
 		}
 
-		if (this.state.studioMode) {
+		if (params['studio'] === '1') {
 			localStorage.setItem('studioMode', '1')
+		} else if (params['studio'] === '0') {
+			localStorage.setItem('studioMode', '0')
 		}
 	}
 
@@ -89,7 +95,9 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 					<ErrorBoundary>
 						<Switch>
 							<Route path='/ro/:runningOrderId' component={NullComponent} />
+							<Route path='/countdowns/:studioId/presenter' component={NullComponent} />
 							<Route path='/countdowns/presenter' component={NullComponent} />
+							<Route path='/activeRo' component={NullComponent} />
 							<Route path='/' component={Header} />
 						</Switch>
 					</ErrorBoundary>
@@ -99,6 +107,9 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Route exact path='/' component={Dashboard} />
 							<Route path='/runningOrders' component={RunningOrderList} />
 							<Route path='/ro/:runningOrderId' component={RunningOrderView} />
+							<Route path='/activeRo/:studioId' component={ActiveROView} />
+							<Route path='/activeRo' component={ActiveROView} />
+							<Route path='/countdowns/:studioId/presenter' component={ClockView} />
 							<Route path='/countdowns/presenter' component={ClockView} />
 							<Route path='/nymansPlayground' component={NymansPlayground} />
 							<Route path='/status' component={Status} />

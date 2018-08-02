@@ -38,8 +38,58 @@ In order for the system to work properly, it may be neccessary to set up several
 |----------------|----------------------------------------------------------|-------------------|
 |`NTP_SERVERS`   |Comma separated list of time servers to sync the system to|`0.se.pool.ntp.org`|
 |`FRAME_RATE`    |Framerate to be used when displaying time with frame accuracy|`25`            |
-|`MEDIA_PREVIEW_SERVICE`|User-facing web service providing media file thumbnails and previews|`http://localhost:9010/mediaPreview/`|
 
+
+## Additional views
+
+For the purpose of running the system in a studio environment, there are additional endpoints, unavailable from the menu structure.
+
+|Path     |Function     |
+|---------|-------------|
+|`/countdowns/presenter`|Countdown clocks to be shown to the studio presenter|
+|`/countdowns/:studioId/presenter`|Countdown clocks for a given studio, to be shown to the studio presenter|
+|`/activeRo`|Redirects to the currently active running order|
+|`/activeRo/:studioId`|Redirects to the running order currently active in a given studio|
+
+## Studio mode
+
+In general, you will want to limit the amount of client stations that have full control of the studio (such as activating running orders, taking segment lines, ad-libbing, etc.). In order to mark a given client station (browser) as a Studio Control station, you should append `?studio=1` to any query string, for example:
+
+```http://localhost:3000/?studio=1```
+
+This setting is persisted in browser's Local Storage. To disable studio mode in a given client, append `?studio=0`.
+
+## Language selection
+
+The UI will automatically detect user browser's default matching and select the best match, falling back to english. You can also force the UI language to any language by navigating to a page with `?lng=xx` query string, for example:
+
+```http://localhost:3000/?lng=xx```
+
+This choice is persisted in browser's Local Storage, and the same language will be used until a new forced language is chosen using this method.
+
+## Translating Sofie
+
+For support of various languages in the User Interface, Sofie uses the i18next framework. It uses JSON-based translation files to store UI strings. In order to build a new translation file, first extract a PO template file from Sofie UI source code:
+
+```
+cd meteor
+npm run i18n-extract-pot
+```
+
+Find the created `template.pot` file in `meteor/i18n` folder. Create a new PO file based on that template using a PO editor of your choice. Save it in the `meteor/i18n` folder using your ISO 639-1 language code of choice as the filename.
+
+Next, modify the `package.json` scripts and create a new language compilations script:
+
+```
+"i18n-compile-json": "npm run i18n-compile-json-nb & npm run i18n-compile-json-sv & npm run i18n-compile-json-xx",
+"i18n-compile-json-xx": "i18next-conv -l nb -s i18n/xx.po -t public/locales/xx/translations.json",
+```
+
+Then, run the compillation script:
+
+```npm run i18n-compile-json```
+
+The resulting JSON file will be placed in `meteor/public/locales/xx`, where it will be available to the Sofie UI for use and autodetection.
 
 ---
 

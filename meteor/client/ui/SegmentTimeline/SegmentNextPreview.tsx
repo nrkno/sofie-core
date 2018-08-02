@@ -65,6 +65,7 @@ export const SegmentNextPreview = class extends React.Component<IProps> {
 										liveLinePadding={0}
 										scrollLeft={0}
 										scrollWidth={1}
+										mediaPreviewUrl=''
 									/>
 								)
 							})}

@@ -73,8 +73,8 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 		if (this.props.segmentLineItem) {
 			const item = this.props.segmentLineItem as SegmentLineItemUi
 			const metadata = item.metadata as MediaObject
-			if (metadata && metadata.previewPath) {
-				return Settings['mediaPreviewService'] + metadata.collectionId + '/' + metadata.previewPath
+			if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
+				return this.props.mediaPreviewUrl + 'media/preview/' + encodeURIComponent(metadata.objId)
 			}
 		}
 		return '/segment0_vt_preview.mp4' // TODO: should be undefined, but is a placeholder for time being
@@ -94,42 +94,41 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 			}
 		}
 
-		return [
-			<div className='segment-timeline__layer-item__preview' key={this.props.segmentLineItem._id + '-item'} >
-				<div className='segment-timeline__layer-item__preview__item mic'></div>
-				<div className='segment-timeline__layer-item__preview__item vt'>
-					<span className='segment-timeline__layer-item__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
-						<span className={ClassNames('segment-timeline__layer-item__label', {
-							'overflow-label': this.end !== ''
-						})} key={this.props.segmentLineItem._id + '-start'}>
-							{this.begin}
-						</span>
-						{(this.begin && this.end === '' && (this.props.segmentLineItem as SegmentLineItemUi).content && (this.props.segmentLineItem as SegmentLineItemUi).content!.loop) &&
-							(<div className='segment-timeline__layer-item__label label-icon'>
-								<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
-							</div>)
-						}
-					</span>
-					<span className='segment-timeline__layer-item__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
-						{(this.end && (this.props.segmentLineItem as SegmentLineItemUi).content && (this.props.segmentLineItem as SegmentLineItemUi).content!.loop) &&
-							(<div className='segment-timeline__layer-item__label label-icon'>
-								<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
-							</div>)
-						}
-						{this.renderInfiniteIcon()}
-						{this.renderOverflowTimeLabel()}
-						<span className='segment-timeline__layer-item__label last-words'>
-							{this.end}
-						</span>
-					</span>
-				</div>
-			</div>
-			,
-			<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
-				<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
-					<video src={this.getPreviewUrl()} ref={this.setVideoRef} />
-				</div>
-			</FloatingInspector>
-		]
+		return <React.Fragment>
+					<div className='segment-timeline__layer-item__preview'>
+						<div className='segment-timeline__layer-item__preview__item mic'></div>
+						<div className='segment-timeline__layer-item__preview__item vt'>
+							<span className='segment-timeline__layer-item__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
+								<span className={ClassNames('segment-timeline__layer-item__label', {
+									'overflow-label': this.end !== ''
+								})} key={this.props.segmentLineItem._id + '-start'}>
+									{this.begin}
+								</span>
+								{(this.begin && this.end === '' && (this.props.segmentLineItem as SegmentLineItemUi).content && (this.props.segmentLineItem as SegmentLineItemUi).content!.loop) &&
+									(<div className='segment-timeline__layer-item__label label-icon'>
+										<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
+									</div>)
+								}
+							</span>
+							<span className='segment-timeline__layer-item__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
+								{(this.end && (this.props.segmentLineItem as SegmentLineItemUi).content && (this.props.segmentLineItem as SegmentLineItemUi).content!.loop) &&
+									(<div className='segment-timeline__layer-item__label label-icon'>
+										<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
+									</div>)
+								}
+								{this.renderInfiniteIcon()}
+								{this.renderOverflowTimeLabel()}
+								<span className='segment-timeline__layer-item__label last-words'>
+									{this.end}
+								</span>
+							</span>
+						</div>
+					</div>
+					<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
+						<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
+							<video src={this.getPreviewUrl()} ref={this.setVideoRef} crossOrigin='anonymous' playsInline={true} muted={true}/>
+						</div>
+					</FloatingInspector>
+				</React.Fragment>
 	}
 }

@@ -136,7 +136,8 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 					followLiveLine={this.props.followLiveLine}
 					autoNextSegmentLine={this.props.autoNextSegmentLine}
 					liveLineHistorySize={this.props.liveLineHistorySize}
-					livePosition={this.props.segment._id === this.props.runningOrder.currentSegmentLineId && segmentLine.startedPlayback ? this.props.livePosition - segmentLine.startedPlayback : null} />
+					livePosition={this.props.segment._id === this.props.runningOrder.currentSegmentLineId && segmentLine.startedPlayback ? this.props.livePosition - segmentLine.startedPlayback : null}
+					isLastInSegment={false} />
 			)
 		})
 	}
@@ -225,7 +226,6 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 
 	onTimelineTouchEnd = (e: React.TouchEvent<HTMLDivElement> & any) => {
 		if (e.touches.length === 0) {
-			console.log('Last touch lifted, deactivating')
 			$(document).off('touchmove', '', this.onTimelineTouchMove)
 			$(document).off('touchend', '', this.onTimelineTouchEnd)
 			this._touchAttached = false
@@ -249,7 +249,6 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	}
 
 	onTimelineTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-		console.log(e)
 		if (e.touches.length === 2) { // expect two touch points
 			if (!this._touchAttached) {
 				$(document).on('touchmove', this.onTimelineTouchMove)
@@ -267,6 +266,16 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 				clientX: e.touches[0].clientX,
 				clientY: e.touches[0].clientY
 			}
+		}
+	}
+
+	onTimelineWheel = (e: React.WheelEventHandler<HTMLDivElement> & any) => {
+		if (e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) {
+			this.props.onZoomChange(Math.min(500, this.props.timeScale * (1 + 0.001 * (e.deltaY * -1))), e)
+			e.preventDefault()
+		} else if (!e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) {
+			this.props.onScroll(Math.max(0, this.props.scrollLeft + ((e.deltaY * -1) / this.props.timeScale)), e)
+			e.preventDefault()
 		}
 	}
 
@@ -371,15 +380,18 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	}
 
 	renderTimeline () {
-		return this.props.segmentLines.map((segmentLine) => {
-			return (
-				<SegmentTimelineLine key={segmentLine._id}
-									{...this.props}
-									scrollWidth={this.state.timelineWidth / this.props.timeScale}
-									firstSegmentLineInSegment={this.props.segmentLines[0]}
-									segmentLine={segmentLine} />
-			)
-		})
+		return <React.Fragment>
+			{this.props.segmentLines.map((segmentLine, index) => {
+				return (
+					<SegmentTimelineLine key={segmentLine._id}
+						{...this.props}
+						scrollWidth={this.state.timelineWidth / this.props.timeScale}
+						firstSegmentLineInSegment={this.props.segmentLines[0]}
+						isLastInSegment={index === (this.props.segmentLines.length - 1) ? true : false}
+						segmentLine={segmentLine} />
+				)
+			})}
+		</React.Fragment>
 	}
 
 	renderOutputLayerControls () {
@@ -472,7 +484,8 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 				<TimelineGrid {...this.props}
 							  onResize={this.onTimelineResize} />
 				<div className='segment-timeline__timeline-container'
-					onTouchStartCapture={this.onTimelineTouchStart}>
+					onTouchStartCapture={this.onTimelineTouchStart}
+					onWheelCapture={this.onTimelineWheel}>
 					<div className='segment-timeline__timeline' key={this.props.segment._id + '-timeline'} ref={this.setTimelineRef} style={this.timelineStyle()}>
 						<ErrorBoundary>
 							{this.renderTimeline()}

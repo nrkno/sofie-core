@@ -21,6 +21,8 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
+export const MEDIA_PREVIEWS_URL = 'media_previews_url'
+
 interface ISourceLayerProps {
 	key: string
 	layer: ISourceLayerUi
@@ -28,6 +30,7 @@ interface ISourceLayerProps {
 	runningOrder: RunningOrder
 	segment: SegmentUi
 	segmentLine: SegmentLineUi
+	mediaPreviewUrl: string
 	startsAt: number
 	duration: number
 	timeScale: number
@@ -90,6 +93,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 						<SourceLayerItemContainer key={segmentLineItem._id}
 							{...this.props}
 							// The following code is fine, just withTracker HOC messing with available props
+							mediaPreviewUrl={this.props.mediaPreviewUrl}
 							segmentLineItem={segmentLineItem}
 							layer={this.props.layer}
 							outputLayer={this.props.outputLayer}
@@ -125,6 +129,7 @@ interface IOutputGroupProps {
 	runningOrder: RunningOrder
 	segment: SegmentUi
 	segmentLine: SegmentLineUi
+	mediaPreviewUrl: string
 	startsAt: number
 	duration: number
 	timeScale: number
@@ -205,6 +210,7 @@ interface IProps {
 	totalSegmentDuration?: number
 	firstSegmentLineInSegment?: SegmentLineUi
 	onContextMenu?: (contextMenuContext: any) => void
+	isLastInSegment: boolean
 }
 
 interface IState {
@@ -221,7 +227,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 		filter: ['segmentLineDurations', props.segmentLine._id]
 	}
 })(class extends React.Component<Translated<WithTiming<IProps>>, IState> {
-	_refreshTimer: number | undefined
+	private _configValueMemo: { [key: string]: string } = {}
 
 	constructor (props: Translated<WithTiming<IProps>>) {
 		super(props)
@@ -328,6 +334,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					return (
 						<OutputGroup key={layer._id}
 							{...this.props}
+							mediaPreviewUrl={this.getConfigValue(MEDIA_PREVIEWS_URL) || ''}
 							layer={layer}
 							segment={this.props.segment}
 							segmentLine={segmentLine}
@@ -395,6 +402,23 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 						<div className='segment-timeline__segment-line__future-shade' style={this.getFutureShadeStyle()}>
 						</div>
 					}
+					{this.props.isLastInSegment && <div className={ClassNames('segment-timeline__segment-line__nextline', 'segment-timeline__segment-line__nextline--endline', {
+						'auto-next': this.props.autoNextSegmentLine,
+						'is-next': this.state.isLive
+					})}>
+						<div className='segment-timeline__segment-line__nextline__label'>
+							{
+								this.state.isLive && (
+									this.props.autoNextSegmentLine ?
+										<React.Fragment>
+											<FontAwesomeIcon icon={faFastForward} />
+											{t('Next')}
+										</React.Fragment> :
+										t('Next')
+								)
+							}
+						</div>
+					</div>}
 				</div>
 			)
 		} else { // render placeholders
@@ -410,5 +434,23 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 			)
 		}
 
+	}
+
+	private getConfigValue (name: string): string | null {
+		if (this.props.studioInstallation && this._configValueMemo[name] === undefined) {
+			const item = this.props.studioInstallation.config.find((item) => {
+				return (item._id === name)
+			})
+			if (item) {
+				this._configValueMemo[name] = item.value
+				return item.value
+			} else {
+				return null
+			}
+		} else if (this._configValueMemo[name] !== undefined) {
+			return this._configValueMemo[name]
+		} else {
+			return null
+		}
 	}
 }))

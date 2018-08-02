@@ -423,8 +423,6 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	refreshKeyboardHotkeys () {
 		let preventDefault = (e) => {
 			e.preventDefault()
-			e.stopImmediatePropagation()
-			e.stopPropagation()
 		}
 
 		if (this.props.roAdLibs) {

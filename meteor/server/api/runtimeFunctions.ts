@@ -39,7 +39,6 @@ export function runtimeFunctionTestCode (runtimeFunction: RuntimeFunction, showS
 			// expectedDuration?: number
 			// startedPlayback?: number
 			// duration?: number
-			// overlapDuration?: number
 			// disableOutTransition?: boolean
 		}
 		let tmpContext: TemplateContext = {
@@ -215,7 +214,6 @@ function template (context, story) {
 			runningOrderId: '',
 			slug: context.segmentLine._id,
 			autoNext: false,
-			overlapDuration: 0,
 		},
 		segmentLineItems: [],
 		segmentLineAdLibItems: []

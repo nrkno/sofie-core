@@ -26,6 +26,7 @@ const LEFT_RIGHT_ANCHOR_SPACER = 35
 export interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
+	mediaPreviewUrl: string
 	// segment: SegmentUi
 	segmentLine: SegmentLineUi
 	segmentLineStartsAt: number
@@ -219,7 +220,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		// 		)
 		// 	)
 
-		let itemDuration = Math.min(segmentLineItem.duration || segmentLineItem.expectedDuration || segmentLineItem.renderedDuration || 0, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
+		const expectedDurationNumber = (typeof segmentLineItem.expectedDuration === 'number' ? segmentLineItem.expectedDuration || 0 : 0)
+		let itemDuration = Math.min(segmentLineItem.duration || segmentLineItem.renderedDuration || expectedDurationNumber || 0, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
 		if (segmentLineItem.infiniteMode !== undefined && segmentLineItem.infiniteMode !== SegmentLineItemLifespan.Normal) {
 			itemDuration = this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)
 			// console.log(segmentLineItem.infiniteMode + ', ' + segmentLineItem.infiniteId)
@@ -434,7 +436,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 					{
 						DEBUG_MODE && (
 							<div className='segment-timeline__debug-info'>
-								{this.props.segmentLineItem.trigger.value} / {RundownUtils.formatTimeToTimecode(this.props.segmentLineDuration).substr(-5)} / {this.props.segmentLineItem.renderedDuration ? RundownUtils.formatTimeToTimecode(this.props.segmentLineItem.renderedDuration).substr(-5) : 'X'} / {RundownUtils.formatTimeToTimecode(this.props.segmentLineItem.expectedDuration).substr(-5)}
+								{this.props.segmentLineItem.trigger.value} / {RundownUtils.formatTimeToTimecode(this.props.segmentLineDuration).substr(-5)} / {this.props.segmentLineItem.renderedDuration ? RundownUtils.formatTimeToTimecode(this.props.segmentLineItem.renderedDuration).substr(-5) : 'X'} / {typeof this.props.segmentLineItem.expectedDuration === 'number' ? RundownUtils.formatTimeToTimecode(this.props.segmentLineItem.expectedDuration).substr(-5) : ''}
 							</div>
 						)
 					}
