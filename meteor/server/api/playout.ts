@@ -5,7 +5,7 @@ import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/
 import { SegmentLineItem, SegmentLineItems, ITimelineTrigger, SegmentLineItemLifespan } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItems, RunningOrderBaselineItem } from '../../lib/collections/RunningOrderBaselineItems'
-import { getCurrentTime, saveIntoDb, literal, Time } from '../../lib/lib'
+import { getCurrentTime, saveIntoDb, literal, Time, iterateDeeply, iterateDeeplyEnum } from '../../lib/lib'
 import { Timeline, TimelineObj, TimelineObjGroupSegmentLine, TimelineContentTypeOther, TimelineObjSegmentLineAbstract, TimelineObjSegmentLineItemAbstract, TimelineObjGroup, TimelineContentTypeLawo, TimelineObjLawo } from '../../lib/collections/Timeline'
 import { TriggerType, TimelineEvent, TimelineResolvedObject } from 'superfly-timeline'
 import { Segments } from '../../lib/collections/Segments'
@@ -19,9 +19,10 @@ import { PlayoutTimelinePrefixes } from '../../lib/api/playout'
 import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { sendStoryStatus } from './peripheralDevice'
-import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
+import { getHash } from '../lib'
 let clone = require('fast-clone')
 
 export namespace ServerPlayoutAPI {
@@ -1188,8 +1189,9 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 		active: true
 	})
 
+	let studioInstallation = StudioInstallations.findOne(studioInstallationId)
+	if (!studioInstallation) throw new Meteor.Error(404, 'studioInstallation "' + studioInstallationId + '" not found!')
 	if (activeRunningOrder) {
-		let studioInstallation = activeRunningOrder.getStudioInstallation()
 
 		// remove anything not related to active running order:
 		Timeline.remove({
@@ -1333,106 +1335,11 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 
 		// next (on pvw (or on pgm if first))
 
-		// Pre-process the timelineObjects:
-
-		// create a mapping of which playout parent processes that has which playoutdevices:
-		let deviceParentDevice: {[deviceId: string]: PeripheralDevice} = {}
-		let peripheralDevicesInStudio = PeripheralDevices.find({
-			studioInstallationId: studioInstallation._id,
-			type: PeripheralDeviceAPI.DeviceType.PLAYOUT
-		}).fetch()
-		_.each(peripheralDevicesInStudio, (pd) => {
-			if (pd.settings) {
-				let settings = pd.settings as PlayoutDeviceSettings
-				_.each(settings.devices, (device, deviceId) => {
-					deviceParentDevice[deviceId] = pd
-				})
-			}
-		})
-
-		// first, split out any grouped objects, to make the timeline shallow:
-		let fixObjectChildren = (o: TimelineObjGroup) => {
-			if (o.isGroup && o.content && o.content.objects && o.content.objects.length) {
-				// let o2 = o as TimelineObjGroup
-				_.each(o.content.objects, (child) => {
-					let childFixed: TimelineObj = _.extend(child, {
-						inGroup: o._id,
-						_id: child.id || child['_id']
-					})
-					delete childFixed['id']
-					timelineObjs.push(childFixed)
-					fixObjectChildren(childFixed as TimelineObjGroup)
-				})
-				delete o.content.objects
-			}
-		}
-		_.each(timelineObjs, (o: TimelineObj) => {
-			fixObjectChildren(o as TimelineObjGroup)
-		})
-		// Add deviceIds to all children objects
-		let groupDeviceIds: {[groupId: string]: Array<string>} = {}
 		_.each(timelineObjs, (o) => {
 			o.roId = activeRunningOrder._id
-			o.siId = studioInstallation._id
-			if (!o.isGroup) {
-				const layerId = o.LLayer + ''
-				let LLayerMapping = (studioInstallation.mappings || {})[layerId]
-
-				if (!LLayerMapping && o.isAbstract) {
-					// If the item is abstract, then use the core_abstract mapping, but leave it on the orignal LLayer
-					// We do this because the layer is only needed due to how we construct and run the timeline
-					LLayerMapping = (studioInstallation.mappings || {})['core_abstract']
-				}
-
-				if (LLayerMapping) {
-					let parentDevice = deviceParentDevice[LLayerMapping.deviceId]
-					if (!parentDevice) throw new Meteor.Error(404, 'No parent-device found for device "' + LLayerMapping.deviceId + '"')
-
-					o.deviceId = [parentDevice._id]
-
-					if (o.inGroup) {
-						if (!groupDeviceIds[o.inGroup]) groupDeviceIds[o.inGroup] = []
-						groupDeviceIds[o.inGroup].push(parentDevice._id)
-					}
-
-				} else logger.warn('TimelineObject "' + o._id + '" has an unknown LLayer: "' + o.LLayer + '"')
-			}
 		})
-		let groupObjs = _.compact(_.map(timelineObjs, (o) => {
-			if (o.isGroup) {
-				return o
-			}
-			return null
-		}))
 
-		// add the children's deviceIds to their parent groups:
-		let shouldNotRunAgain = true
-		let shouldRunAgain = true
-		for (let i = 0; i < 10; i++) {
-			shouldNotRunAgain = true
-			shouldRunAgain = false
-			_.each(groupObjs, (o) => {
-				if (o.inGroup) {
-					if (!groupDeviceIds[o.inGroup]) groupDeviceIds[o.inGroup] = []
-					groupDeviceIds[o.inGroup] = groupDeviceIds[o.inGroup].concat(o.deviceId)
-					shouldNotRunAgain = false
-				}
-				if (o.isGroup) {
-					let newDeviceId = _.uniq(groupDeviceIds[o._id] || [], false)
-
-					if (!_.isEqual(o.deviceId, newDeviceId)) {
-						shouldRunAgain = true
-						o.deviceId = newDeviceId
-					}
-				}
-			})
-			if (!shouldRunAgain && shouldNotRunAgain) break
-		}
-
-		const missingDev = groupObjs.filter(o => !o.deviceId || !o.deviceId[0]).map(o => o._id)
-		if (missingDev.length > 0) {
-			logger.warn('Found groups without any deviceId: ' + missingDev)
-		}
+		processTimelineObjects(studioInstallation, timelineObjs)
 
 		// logger.debug('timelineObjs', timelineObjs)
 
@@ -1457,10 +1364,170 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 	} else {
 		// remove everything:
 		Timeline.remove({
-			siId: studioInstallationId
+			siId: studioInstallationId,
+			statObject: {$ne: true}
 		})
 	}
+	afterUpdateTimeline(studioInstallation)
 }
+/**
+ * Fix the timeline objects, adds properties like deviceId and siId to the timeline objects
+ * @param studioInstallation
+ * @param timelineObjs Array of timeline objects
+ */
+function processTimelineObjects (studioInstallation: StudioInstallation, timelineObjs: Array<TimelineObj>): void {
+
+	// Pre-process the timelineObjects:
+
+	// first, split out any grouped objects, to make the timeline shallow:
+	let fixObjectChildren = (o: TimelineObjGroup) => {
+		if (o.isGroup && o.content && o.content.objects && o.content.objects.length) {
+			// let o2 = o as TimelineObjGroup
+			_.each(o.content.objects, (child) => {
+				let childFixed: TimelineObj = _.extend(child, {
+					inGroup: o._id,
+					_id: child.id || child['_id']
+				})
+				delete childFixed['id']
+				timelineObjs.push(childFixed)
+				fixObjectChildren(childFixed as TimelineObjGroup)
+			})
+			delete o.content.objects
+		}
+	}
+	_.each(timelineObjs, (o: TimelineObj) => {
+		fixObjectChildren(o as TimelineObjGroup)
+	})
+
+	// create a mapping of which playout parent processes that has which playoutdevices:
+	let deviceParentDevice: {[deviceId: string]: PeripheralDevice} = {}
+	let peripheralDevicesInStudio = PeripheralDevices.find({
+		studioInstallationId: studioInstallation._id,
+		type: PeripheralDeviceAPI.DeviceType.PLAYOUT
+	}).fetch()
+	_.each(peripheralDevicesInStudio, (pd) => {
+		if (pd.settings) {
+			let settings = pd.settings as PlayoutDeviceSettings
+			_.each(settings.devices, (device, deviceId) => {
+				deviceParentDevice[deviceId] = pd
+			})
+		}
+	})
+
+	// Add deviceIds to all children objects
+	let groupDeviceIds: {[groupId: string]: Array<string>} = {}
+	_.each(timelineObjs, (o) => {
+		o.siId = studioInstallation._id
+		if (!o.isGroup) {
+			const layerId = o.LLayer + ''
+			let LLayerMapping = (studioInstallation.mappings || {})[layerId]
+
+			if (!LLayerMapping && o.isAbstract) {
+				// If the item is abstract, then use the core_abstract mapping, but leave it on the orignal LLayer
+				// We do this because the layer is only needed due to how we construct and run the timeline
+				LLayerMapping = (studioInstallation.mappings || {})['core_abstract']
+			}
+
+			if (LLayerMapping) {
+				let parentDevice = deviceParentDevice[LLayerMapping.deviceId]
+				if (!parentDevice) throw new Meteor.Error(404, 'No parent-device found for device "' + LLayerMapping.deviceId + '"')
+
+				o.deviceId = [parentDevice._id]
+
+				if (o.inGroup) {
+					if (!groupDeviceIds[o.inGroup]) groupDeviceIds[o.inGroup] = []
+					groupDeviceIds[o.inGroup].push(parentDevice._id)
+				}
+
+			} else logger.warn('TimelineObject "' + o._id + '" has an unknown LLayer: "' + o.LLayer + '"')
+		}
+	})
+
+	let groupObjs = _.compact(_.map(timelineObjs, (o) => {
+		if (o.isGroup) {
+			return o
+		}
+		return null
+	}))
+
+	// add the children's deviceIds to their parent groups:
+	let shouldNotRunAgain = true
+	let shouldRunAgain = true
+	for (let i = 0; i < 10; i++) {
+		shouldNotRunAgain = true
+		shouldRunAgain = false
+		_.each(groupObjs, (o) => {
+			if (o.inGroup) {
+				if (!groupDeviceIds[o.inGroup]) groupDeviceIds[o.inGroup] = []
+				groupDeviceIds[o.inGroup] = groupDeviceIds[o.inGroup].concat(o.deviceId)
+				shouldNotRunAgain = false
+			}
+			if (o.isGroup) {
+				let newDeviceId = _.uniq(groupDeviceIds[o._id] || [], false)
+
+				if (!_.isEqual(o.deviceId, newDeviceId)) {
+					shouldRunAgain = true
+					o.deviceId = newDeviceId
+				}
+			}
+		})
+		if (!shouldRunAgain && shouldNotRunAgain) break
+	}
+
+	const missingDev = groupObjs.filter(o => !o.deviceId || !o.deviceId[0]).map(o => o._id)
+	if (missingDev.length > 0) {
+		logger.warn('Found groups without any deviceId: ' + missingDev)
+	}
+}
+/**
+ * To be called after an update to the timeline has been made, will add/update the "statObj" - an object
+ * containing the hash of the timeline, used to determine if the timeline should be updated in the gateways
+ * @param studioInstallationId id of the studioInstallation to update
+ */
+let afterUpdateTimelineTimeout: {[studioInstallationId: string]: number | null} = {}
+function afterUpdateTimeline (studioInstallation: StudioInstallation) {
+	let a = afterUpdateTimelineTimeout[studioInstallation._id]
+	if (a) Meteor.clearTimeout(a)
+	afterUpdateTimelineTimeout[studioInstallation._id] = Meteor.setTimeout(() => {
+
+		// collect statistics
+		let objs = Timeline.find({
+			siId: studioInstallation._id,
+			statObject: {$ne: true}
+		}).fetch()
+		// Number of objects
+		let objCount = objs.length
+		// Hash of all objects
+		let objHash = getHash(JSON.stringify(objs))
+
+		// save into "magic object":
+		let magicId = studioInstallation._id + '_statObj'
+		let statObj: TimelineObj = {
+			_id: magicId,
+			siId: studioInstallation._id,
+			statObject: true,
+			roId: '',
+			deviceId: [], // added in processTimelineObjects
+			content: {
+				type: TimelineContentTypeOther.NOTHING,
+				modified: getCurrentTime(),
+				objCount: objCount,
+				objHash: objHash
+			},
+			trigger: {
+				type: TriggerType.TIME_ABSOLUTE,
+				value: 0 // never
+			},
+			duration: 0,
+			LLayer: '__stat'
+		}
+
+		processTimelineObjects(studioInstallation, [statObj])
+
+		Timeline.upsert(magicId, {$set: statObj})
+	}, 1)
+}
+
 /**
  * goes through timelineObjs and forces the "now"-values to the absolute time specified
  * @param timelineObjs Array of (flat) timeline objects

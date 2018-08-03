@@ -125,6 +125,7 @@ export interface TimelineObj {
 		// 	inTransition?: TimelineTransition
 		// 	outTransition?: TimelineTransition
 		// }
+		[key: string]: any
 	}
 	classes?: Array<string>
 	disabled?: boolean
@@ -136,7 +137,9 @@ export interface TimelineObj {
 	externalFunction?: string
 	metadata?: {
 		[key: string]: any
-	}
+	},
+	/** Only set to true for the "magic" statistic objects, used to trigger playout */
+	statObject?: boolean
 }
 export interface TimelineObjGroup extends TimelineObj {
 	content: {

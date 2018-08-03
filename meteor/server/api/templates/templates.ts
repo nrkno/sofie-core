@@ -13,6 +13,7 @@ import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibI
 import { RunningOrderBaselineItem } from '../../../lib/collections/RunningOrderBaselineItems'
 import { literal, Optional, getCurrentTime } from '../../../lib/lib'
 import * as crypto from 'crypto'
+import { getHash } from '../../lib'
 import {
 	TimelineContentTypeCasparCg,
 	TimelineContentTypeLawo,
@@ -32,11 +33,6 @@ import { TimelineObj } from '../../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { ShowStyle } from '../../../lib/collections/ShowStyles'
 import { RuntimeFunctionDebugData } from '../../../lib/collections/RuntimeFunctionDebugData'
-
-export function getHash (str: string): string {
-	const hash = crypto.createHash('sha1')
-	return hash.update(str).digest('base64').replace(/[\+\/\=]/g, '_') // remove +/= from strings, because they cause troubles
-}
 
 export type TemplateGeneralFunction = (story: IMOSROFullStory) => TemplateResult | string
 export type TemplateFunction = (story: StoryWithContext) => Array<SegmentLineItem>
