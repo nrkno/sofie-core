@@ -127,6 +127,20 @@ Meteor.methods({
 					onPGMClean: true
 				},
 				{
+				 	_id: 'studio0_graphics_klokke',
+				 	_rank: 110,
+				 	name: 'Klokke',
+				 	type: RundownAPI.SourceLayerType.GRAPHICS,
+					onPGMClean: true
+				},
+				{
+				 	_id: 'studio0_graphics_logo',
+				 	_rank: 111,
+				 	name: 'Logo',
+				 	type: RundownAPI.SourceLayerType.GRAPHICS,
+					onPGMClean: true
+				},
+				{
 					_id: 'studio0_split0',
 					_rank: 15,
 					name: 'Split',
@@ -215,6 +229,13 @@ Meteor.methods({
 				channel: 1,
 				layer: 110
 			}),
+			'casparcg_player_clip_next': literal<MappingCasparCG>({
+				device: PlayoutDeviceType.CASPARCG,
+				deviceId: 'casparcg0',
+				lookahead: LookaheadMode.None,
+				channel: 2,
+				layer: 100
+			}),
 			'casparcg_cg_graphics': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
@@ -234,7 +255,7 @@ Meteor.methods({
 				channel: 7,
 				layer: 120
 			}),
-			'casparcg_cg_logo': literal<MappingCasparCG>({
+			'casparcg_cg_permanent': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.None,

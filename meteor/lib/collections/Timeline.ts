@@ -256,7 +256,8 @@ export interface TimelineObjCCGRoute extends TimelineObj {
 		attributes: {
 			channel?: number,
 			layer?; number,
-			LLayer?: string // uses mappings to route, overrides channel/layer parameters.
+			LLayer?: string, // uses mappings to route, overrides channel/layer parameters.
+			mode?: 'BACKGROUND' | 'NEXT',
 		}
 		mixer?: Mixer
 	}
@@ -265,7 +266,7 @@ export interface TimelineObjCCGRecord extends TimelineObj {
 	content: {
 		objects?: Array<TimelineObject>
 		keyframes?: Array<TimelineKeyframe>
-		type: TimelineContentTypeCasparCg.ROUTE
+		type: TimelineContentTypeCasparCg.RECORD
 		attributes: {
 			file?: string,
 			encoderOptions: string

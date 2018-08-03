@@ -787,8 +787,22 @@ function getOrderedSegmentLineItem (line: SegmentLine): SegmentLineItem[] {
 	})
 	const events = Resolver.getTimelineInWindow(transformTimeline(objs))
 
-	let eventMap = events.resolved.map(e => ({ start: e.resolved.startTime || 0, id: ((e as any || {}).metadata || {}).segmentLineItemId }))
-	events.unresolved.forEach(e => eventMap.push({ start: 0, id: ((e as any || {}).metadata || {}).segmentLineItemId }))
+	let eventMap = events.resolved.map(e => {
+		const id = ((e as any || {}).metadata || {}).segmentLineItemId
+		return {
+			start: e.resolved.startTime || 0,
+			id: id,
+			item: itemMap[id]
+		}
+	})
+	events.unresolved.forEach(e => {
+		const id = ((e as any || {}).metadata || {}).segmentLineItemId
+		eventMap.push({
+			start: 0,
+			id: id,
+			item: itemMap[id]
+		})
+	})
 	if (events.unresolved.length > 0) {
 		 logger.warn('got ' + events.unresolved.length + ' unresolved items for sli #' + line._id)
 	}
@@ -799,11 +813,17 @@ function getOrderedSegmentLineItem (line: SegmentLine): SegmentLineItem[] {
 		} else if (a.start > b.start) {
 			return 1
 		} else {
-			return 0
+			if (a.item.isTransition === b.item.isTransition) {
+				return 0
+			} else if (b.item.isTransition) {
+				return 1
+			} else {
+				return -1
+			}
 		}
 	})
 
-	return eventMap.map(e => itemMap[e.id])
+	return eventMap.map(e => e.item)
 }
 
 // TODO - execute this after importing rundown
@@ -1149,7 +1169,7 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLine
 			let tos = item.content.timelineObjects
 
 			// create a segmentLineItem group for the items and then place all of them there
-			const segmentLineItemGroup = createSegmentLineItemGroup(item, item.duration || item.expectedDuration, segmentLineGroup)
+			const segmentLineItemGroup = createSegmentLineItemGroup(item, item.duration || 0, segmentLineGroup)
 			timelineObjs.push(segmentLineItemGroup)
 			timelineObjs.push(createSegmentLineItemGroupFirstObject(item, segmentLineItemGroup))
 
@@ -1204,12 +1224,21 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 		return []
 	}
 
-	interface SegmentLineIdPair {
+	interface SegmentLineInfo {
 		id: string
 		segmentId: string
+		line: SegmentLine
 	}
 	// find all slis that touch the layer
-	const layerItems = SegmentLineItems.find({'content.timelineObjects': { $elemMatch: { LLayer: layer } }}).fetch()
+	const layerItems = SegmentLineItems.find({
+		runningOrderId: activeRunningOrder._id,
+		// @ts-ignore advanced selector
+		'content.timelineObjects': {
+			$elemMatch: {
+				LLayer: layer
+			}
+		}
+	}).fetch()
 	if (layerItems.length === 0) {
 		return []
 	}
@@ -1235,13 +1264,15 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 		grouped[i.segmentLineId].push(i)
 	})
 
-	let segmentLineIds: SegmentLineIdPair[] | undefined
+	let segmentLinesInfo: SegmentLineInfo[] | undefined
 	let currentPos = 0
 	let currentSegmentId: string | undefined
 
-	if (!segmentLineIds) {
+	if (!segmentLinesInfo) {
 		// calculate ordered list of segmentlines, which can be cached for other llayers
-		const lines = SegmentLines.find().fetch().map(l => ({ id: l._id, rank: l._rank, segmentId: l.segmentId }))
+		const lines = SegmentLines.find({
+			runningOrderId: activeRunningOrder._id,
+		}).fetch().map(l => ({ id: l._id, rank: l._rank, segmentId: l.segmentId, line: l }))
 		lines.sort((a, b) => {
 			if (a.rank < b.rank) {
 				return -1
@@ -1253,7 +1284,7 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 		})
 
 		const currentIndex = lines.findIndex(l => l.id === activeRunningOrder.currentSegmentLineId)
-		let res: SegmentLineIdPair[] = []
+		let res: SegmentLineInfo[] = []
 		if (currentIndex >= 0) {
 			res = res.concat(lines.slice(0, currentIndex + 1))
 			currentSegmentId = res[res.length - 1].segmentId
@@ -1268,10 +1299,10 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 			res = res.concat(...lines.slice(nextLine))
 		}
 
-		segmentLineIds = res.map(l => ({ id: l.id, segmentId: l.segmentId }))
+		segmentLinesInfo = res.map(l => ({ id: l.id, segmentId: l.segmentId, line: l.line }))
 	}
 
-	if (segmentLineIds.length === 0) {
+	if (segmentLinesInfo.length === 0) {
 		return []
 	}
 
@@ -1279,22 +1310,24 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 		slId: string
 		segmentId: string
 		items: SegmentLineItem[]
-		line: SegmentLine | undefined
+		line: SegmentLine
 	}
 
-	const orderedGroups: GroupedSegmentLineItems[] = segmentLineIds.map(i => ({
+	const orderedGroups: GroupedSegmentLineItems[] = segmentLinesInfo.map(i => ({
 		slId: i.id,
 		segmentId: i.segmentId,
-		line: SegmentLines.findOne(i.id),
+		line: i.line,
 		items: grouped[i.id] || []
 	}))
 
 	// Start by taking the value from the current (if any), or search forwards
 	let sliGroup: GroupedSegmentLineItems | undefined
+	let sliGroupIndex: number = -1
 	for (let i = currentPos; i < orderedGroups.length; i++) {
 		const v = orderedGroups[i]
 		if (v.items.length > 0) {
 			sliGroup = v
+			sliGroupIndex = i
 			break
 		}
 	}
@@ -1310,6 +1343,7 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 
 			if (v.items.length > 0) {
 				sliGroup = v
+				sliGroupIndex = i
 				break
 			}
 		}
@@ -1319,8 +1353,8 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 		return []
 	}
 
-	let findObjectForSegmentLine = (sliGroup: GroupedSegmentLineItems, layer: string): TimelineObj[] => {
-		if (sliGroup.items.length === 0) {
+	let findObjectForSegmentLine = (): TimelineObj[] => {
+		if (!sliGroup || sliGroup.items.length === 0) {
 			return []
 		}
 
@@ -1340,8 +1374,18 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 			if (sliGroup.line) {
 				const orderedItems = getOrderedSegmentLineItem(sliGroup.line)
 
+				let allowTransition = false
+				if (sliGroupIndex >= 1) {
+					const prevSliGroup = orderedGroups[sliGroupIndex - 1]
+					allowTransition = !prevSliGroup.line.disableOutTransition
+				}
+
 				const res: TimelineObj[] = []
 				orderedItems.forEach(i => {
+					if (!sliGroup || (!allowTransition && i.isTransition)) {
+						return
+					}
+
 					const item = sliGroup.items.find(l => l._id === i._id)
 					if (!item || !item.content || !item.content.timelineObjects) {
 						return
@@ -1364,7 +1408,7 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 	const res: {obj: TimelineObj, slId: string}[] = []
 
 	const slId = sliGroup.slId
-	const objs = findObjectForSegmentLine(sliGroup, layer)
+	const objs = findObjectForSegmentLine()
 	objs.forEach(o => res.push({ obj: o, slId: slId }))
 
 	// this is the current one, so look ahead to next to find the next thing to preload too
@@ -1374,13 +1418,14 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 			const v = orderedGroups[i]
 			if (v.items.length > 0) {
 				sliGroup = v
+				sliGroupIndex = i
 				break
 			}
 		}
 
 		if (sliGroup) {
 			const slId2 = sliGroup.slId
-			const objs2 = findObjectForSegmentLine(sliGroup, layer)
+			const objs2 = findObjectForSegmentLine()
 			objs2.forEach(o => res.push({ obj: o, slId: slId2 }))
 		}
 	}
