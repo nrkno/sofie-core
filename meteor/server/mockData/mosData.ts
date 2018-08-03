@@ -417,7 +417,6 @@ Meteor.methods({
 							   "$t":"http://160.68.33.159/thumbs/NYHETER/58000/Objects_NYHETER_00058473_v1_big.jpg"
 							},
 							"objMetadataPath":{
-			 
 							}
 						 },
 						 "itemChannel":"CG1",
@@ -434,7 +433,6 @@ Meteor.methods({
 								  "$t":"http://160.68.33.159/thumbs/NYHETER/58000/Objects_NYHETER_00058473_v1_big.jpg"
 							   },
 							   "objMetadataPath":{
-			 
 							   }
 							},
 							"mosExternalMetadata":{
@@ -546,7 +544,6 @@ Meteor.methods({
 								  "$t":"http://160.68.33.159/thumbs/NYHETER/58000/Objects_NYHETER_00058435_v1_big.jpg"
 							   },
 							   "objMetadataPath":{
-			 
 							   }
 							},
 							"mosExternalMetadata":{
@@ -619,7 +616,6 @@ Meteor.methods({
 							   "$t":"http://160.68.33.159/thumbs/NYHETER/16000/Objects_NYHETER_00016967_v1_big.jpg"
 							},
 							"objMetadataPath":{
-			 
 							}
 						 },
 						 "itemChannel":"CG1",
@@ -636,7 +632,6 @@ Meteor.methods({
 								  "$t":"http://160.68.33.159/thumbs/NYHETER/16000/Objects_NYHETER_00016967_v1_big.jpg"
 							   },
 							   "objMetadataPath":{
-			 
 							   }
 							},
 							"mosExternalMetadata":{
@@ -892,78 +887,78 @@ Meteor.methods({
 			}
 		)
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
-			{  
-			"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;D07C8E87-48ED-4F64-A609665CB8B470F4",
-			"Slug":"ÅPNING;VIGNETT",
-			"MosExternalMetaData":[  
-			   {  
-				  "MosScope":"PLAYLIST",
-				  "MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd",
-				  "MosPayload":{  
-					 "Approved":0,
-					 "Creator":"N12050",
-					 "MediaTime":0,
-					 "ModBy":"N12050",
-					 "ModTime":"20180323T074704Z",
-					 "MOSAbstracts":"M: Testsending (23-03-18 08:47)",
-					 "MOSObjSlugs":"M: Testsending",
-					 "MOSSlugs":"Uten tittel",
-					 "Owner":"N12050",
-					 "SourceMediaTime":0,
-					 "SourceTextTime":0,
-					 "TextTime":0,
-					 "Bildebeskrivelse":"",
-					 "Innslagstittel":"Testsending",
-					 "mosartType":"FULL",
-					 "mosartVariant":"VIGNETT",
-					 "ReadTime":0,
-					 "Rettigheter":"Gult",
-					 "ENPSItemType":3
-				  }
-			   }
-			],
-			"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5",
-			"Body":[  
-			   {  
-				  "Type":"storyItem",
-				  "Content":{  
-					 "itemID":2,
-					 "objID":"N12050_1521791220",
-					 "mosID":"METADATA.NRK.MOS",
-					 "mosAbstract":"M: Testsending (23-03-18 08:47)",
-					 "objSlug":"M: Testsending",
-					 "mosExternalMetadata":{  
-						"mosScope":"PLAYLIST",
-						"mosSchema":"http://mosA4.com/mos/supported_schemas/MOSAXML2.08",
-						"mosPayload":{  
-						   "nrk":{  
-							  "changetime":"2018-03-23T08:47:00 +01:00",
-							  "changedBy":"N12050",
-							  "type":"video",
-							  "mdSource":"ncs",
-							  "title":"Testsending",
-							  "description":{  
-		 
-							  },
-							  "hbbtv":{  
-								 "link":""
-							  },
-							  "rights":{  
-								 "notes":"",
-								 "owner":"",
-								 "@t":"Amber"
-							  }
-						   }
+			{
+				"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;D07C8E87-48ED-4F64-A609665CB8B470F4",
+				"Slug":"ÅPNING;VIGNETT",
+				"MosExternalMetaData":[  
+					{  
+						"MosScope":"PLAYLIST",
+						"MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd",
+						"MosPayload":{  
+							"Approved":0,
+							"Creator":"N12050",
+							"MediaTime":0,
+							"ModBy":"N12050",
+							"ModTime":"20180323T074704Z",
+							"MOSAbstracts":"M: Testsending (23-03-18 08:47)",
+							"MOSObjSlugs":"M: Testsending",
+							"MOSSlugs":"Uten tittel",
+							"Owner":"N12050",
+							"SourceMediaTime":0,
+							"SourceTextTime":0,
+							"TextTime":0,
+							"Bildebeskrivelse":"",
+							"Innslagstittel":"Testsending",
+							"mosartType":"FULL",
+							"mosartVariant":"VIGNETT",
+							"ReadTime":0,
+							"Rettigheter":"Gult",
+							"ENPSItemType":3
 						}
-					 },
-					 "itemSlug":"Uten tittel"
-				  }
-			   }
-			],
-			"level":"debug",
-			"message":"",
-			"timestamp":"2018-05-31T08:19:38.191Z"
-		 }
+					}
+				],
+				"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5",
+				"Body":[  
+					{  
+						"Type":"storyItem",
+						"Content":{  
+							"itemID":2,
+							"objID":"N12050_1521791220",
+							"mosID":"METADATA.NRK.MOS",
+							"mosAbstract":"M: Testsending (23-03-18 08:47)",
+							"objSlug":"M: Testsending",
+							"mosExternalMetadata":{  
+								"mosScope":"PLAYLIST",
+								"mosSchema":"http://mosA4.com/mos/supported_schemas/MOSAXML2.08",
+								"mosPayload":{  
+								"nrk":{  
+									"changetime":"2018-03-23T08:47:00 +01:00",
+									"changedBy":"N12050",
+									"type":"video",
+									"mdSource":"ncs",
+									"title":"Testsending",
+									"description":{  
+				
+									},
+									"hbbtv":{  
+										"link":""
+									},
+									"rights":{  
+										"notes":"",
+										"owner":"",
+										"@t":"Amber"
+									}
+								}
+								}
+							},
+							"itemSlug":"Uten tittel"
+						}
+					}
+				],
+				"level":"debug",
+				"message":"",
+				"timestamp":"2018-05-31T08:19:38.191Z"
+			}
 		),
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
 			{  
@@ -1950,7 +1945,4619 @@ Meteor.methods({
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;2E21CEBA-BE5E-483C-9A26F64B5AB51643","Slug":"Vær;Vær","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":600,"ModBy":"N12050","ModTime":"20180503T081321Z","MOSAbstracts":"M: Været (03-05-18 10:12)\n dk-været-to-1955-220318 SLETT_VSERV_Y_TIMER 00:10:00:00","MOSItemDurations":600,"MOSItemEdDurations":"","MOSObjSlugs":"M: Været\ndk-været-to-1955-220318","MOSSlugs":"Uten tittel\nVær;Vær-3","MOSTimes":"","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":4,"Bildebeskrivelse":"","Innslagstittel":"Været","mosartType":"FULL","ReadTime":604,"Rettigheter":"Grønt","Rettighetseier":"NRK","ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":2,"objID":"N12050_1525335158","mosID":"METADATA.NRK.MOS","mosAbstract":"M: Været (03-05-18 10:12)","objSlug":"M: Været","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"http://mosA4.com/mos/supported_schemas/MOSAXML2.08","mosPayload":{"nrk":{"changetime":"2018-05-03T10:12:37 +02:00","changedBy":"N12050","type":"video","mdSource":"ncs","title":"Været","description":{},"hbbtv":{"link":""},"rights":{"notes":"","owner":"NRK","@t":"Green"}}}},"itemSlug":"Uten tittel"}},{"Type":"storyItem","Content":{"itemID":3,"itemSlug":"Vær;Vær-3","objID":"\\\\XPRO\\Omn\\A\\A\\38\\60","mosID":"OMNIBUS.XPRO.MOS","mosAbstract":"dk-været-to-1955-220318 SLETT_VSERV_Y_TIMER 00:10:00:00","objDur":30000,"objTB":50,"objSlug":"dk-været-to-1955-220318","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"OMNIBUS","mosPayload":{"title":"dk-været-to-1955-220318","objectType":"CLIP","clipType":"SLETT_VSERV_Y_TIMER","objDur":30000,"objType":"VIDEO"}}}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:41.614Z"})
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;CA207AAF-9B8C-409B-854DE3CFC2AB8DCF","Slug":"Sluttvignett;Credits","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180503T081417Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"det var alt vi hadde for i dag, sees i morgen","TextTime":7,"mosartType":"KAM","mosartVariant":"3SLUTT","ReadTime":7,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:41.850Z"})
 
+	},
+	'debug_roMock2' () {
+		let pd = getPD()
+		if (!pd) {
+			throw new Meteor.Error(404, 'MOS Device not found to be used for mock running order!')
+		}
+		let id = pd._id
+		let token = pd.token
+		logger.info('debug_roMock1')
+
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, id, token,
+			new MosString128('MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446'))
+		//
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Slug" : "TEST Sofie Helle 1850", 
+				"EditorialStart" : "2018-07-04T10:18:00,000", 
+				"EditorialDuration" : "0:9:0", 
+				"MosExternalMetaData" : [
+					{
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enpsro.dtd", 
+						"MosPayload" : {
+							"EndTime" : "2018-07-06T11:27:48", 
+							"MOSROStatusTime" : "1800-01-01T00:00:00", 
+							"MOSroStorySend" : "SOFIE1.XPRO.MOS;SOFIE2.XPRO.MOS", 
+							"ProgramName" : "Testsending", 
+							"RundownDuration" : "09:00", 
+							"StartTime" : "2018-07-06T11:18:48", 
+							"Clipnames" : "Klipp 1;TEST1\\Klipp 2;\\Klipp 3;\\Klipp 4;", 
+							"Kanal" : "NRK1", 
+							"LocalStartTime" : "2018-07-06T11:18:48", 
+							"ENPSItemType" : 2, 
+							"roLayout" : "PageNum_450|RowStatus_150|Slug_1200|SegStatus_210|Segment_920|mosartType_1000|mosartVariant_1000|mosartTransition_1000|ip1_500|ip2_500|MOSObjSlugs_2000|Estimated_840|Actual_720|MOSItemDurations_1200|Stikkord_500|Float_600|Tekniske-opplysninger_500|FrontTime_1000|CumeTime_1000|Break_600"
+						}, 
+						"MosScope" : "PLAYLIST"
+					}
+				], 
+				"Stories" : [
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;9745AF3D-97B2-4D35-BB5AAFB69CF54579", 
+						"Slug" : "åpning;Head2", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;A24898DF-FBBE-42B8-82FC886FEF748411", 
+						"Slug" : "åpning;VIGNETT", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;6707E448-938D-42C7-96D4156F66B4B2AD", 
+						"Slug" : "åpning;Head11", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;6DBD519C-52F2-4665-8BE44677C67F7E6C", 
+						"Slug" : "SKRANTESJUKE;SKRANTESJUKE-140618-SL5", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;754BF344-6997-4936-8895B6F625B0EE0A", 
+						"Slug" : "åpning;Velkommen", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;9D31712F-7A2B-4349-800703E1991AFB30", 
+						"Slug" : "SKRANTESJUKE;intro", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;8F4EECF6-4B4B-48C4-89C2D895117D0EC4", 
+						"Slug" : "SAK 2;Intro", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;93301DA7-6A97-45CD-B868133DF6E63D5A", 
+						"Slug" : "SAK 2;SAK 2", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;9B0BDA28-3442-4F55-9AC44E8EC8DEFD5B", 
+						"Slug" : "STK Synk;Tekst", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;43147BA3-1294-46C3-B7088B394E9A3345", 
+						"Slug" : "STK Synk;STK", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;76AC6D1E-4381-42B5-966B8349AB5558E4", 
+						"Slug" : "STK Synk;Synk", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;5B84D8DF-5347-4D32-95847B2DDA78F630", 
+						"Slug" : "DIR 18.50;Split", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;A0CA386C-C169-42D5-86F152404585A653", 
+						"Slug" : "DIR 18.50;Direkte", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;012FCCB7-86A6-4883-BD000BD669D11DA2", 
+						"Slug" : "KOMMER 2055;tekst", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;C29581AD-D3B6-4018-AB88AFD0E605D8CC", 
+						"Slug" : "KOMMER 2055;SMS-VARSLING-150618S-SL", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;1B1E5519-3C2D-49FA-A51EFA3DA687EB0C", 
+						"Slug" : "KOMMER 2055;Full", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;89F9712B-B4D5-4D80-937BF7379C4700B7", 
+						"Slug" : "SEERBILDE;tekst", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;475341D0-FFFA-4753-B9785A35A07268E3", 
+						"Slug" : "SEERBILDE;SEERBILDE", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;DC3F3045-94EC-4699-87B55DE1FF4E66F5", 
+						"Slug" : "Nettpromo;Tekst", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;D4EC0230-B9D2-4985-878572A6C4C467A9", 
+						"Slug" : "Nettpromo;Grafikk", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;FA11F662-4A45-4F90-A95D09B74EB047D9", 
+						"Slug" : "Vær;Intro", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;F2D0440C-7E2E-48A5-B9D6FC338FD76E1F", 
+						"Slug" : "Vær;Vær", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;5C596E40-F75B-463F-A770E8735C60D104", 
+						"Slug" : "Takk for nå;tekst-takk for nå", 
+						"Items" : [
+			
+						]
+					}, 
+					{
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;43542D61-DC75-48A1-9B218CFD6E769C7A", 
+						"Slug" : "Sluttvignett;Credits", 
+						"Items" : [
+			
+						]
+					}
+				]
+			}
+		)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;9745AF3D-97B2-4D35-BB5AAFB69CF54579", 
+				"Slug" : "åpning;Head2", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"Actual" : 8, 
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 3, 
+							"MediaTime" : 42.36, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180627T104916Z", 
+							"MOSAbstracts" : "nv-ungdom-israel-mgp-130518 PUBLISH_QUANTEL 00:00:42:09 \r\n52 Headline (00:00=>00:05, Auto/OnNext): Head to\r\nTIDSMARKØR IKKE RØR", 
+							"MOSItemDurations" : "42,36", 
+							"MOSItemEdDurations" : "", 
+							"MOSObjSlugs" : "nv-ungdom-israel-mgp-130518\r\n52 Headline (00:00=>00:05, Auto/OnNext): Head to\r\nStory status", 
+							"MOSSlugs" : "VIGNETT;Head2-2\r\nåpning;Head2-6\r\nÅPNING;HEAD-1-17", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180802T154833145Z", 
+							"MOSTimes" : "20180803T055911Z", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"TextTime" : 0, 
+							"mosartType" : "STK", 
+							"mosartVariant" : "HEAD", 
+							"ReadTime" : 42.36, 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "2", 
+							"ObjectID" : "\\\\XPRO\\Omn\\A\\A\\41\\13", 
+							"MOSID" : "OMNIBUS.XPRO.MOS", 
+							"Slug" : "VIGNETT;Head2-2", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "OMNIBUS", 
+									"MosPayload" : {
+										"title" : "nv-ungdom-israel-mgp-130518", 
+										"objectType" : "CLIP", 
+										"clipType" : "PUBLISH_QUANTEL", 
+										"objDur" : 2118, 
+										"objType" : "VIDEO"
+									}
+								}
+							], 
+							"mosAbstract" : "nv-ungdom-israel-mgp-130518 PUBLISH_QUANTEL 00:00:42:09", 
+							"ObjectSlug" : "nv-ungdom-israel-mgp-130518"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "6", 
+							"ObjectID" : "9d73d195-c4cb-4231-bc4e-710878a67b30", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "åpning;Head2-6", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "9d73d195-c4cb-4231-bc4e-710878a67b30", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"52_headline"
+											], 
+											"displayName" : "52 Headline (00:00=>00:05, Auto/OnNext): Head to", 
+											"displayNameShort" : "52 Headline: Head to"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"52_headline" : {
+											"channel" : "gfx1", 
+											"layer" : "super", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"text" : "Head to", 
+											"headline" : "Head to"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"text" : 0, 
+										"timeIn" : 0, 
+										"duration" : 5000, 
+										"in" : "auto", 
+										"out" : "onNext"
+									}
+								}
+							], 
+							"mosAbstract" : "52 Headline (00:00=>00:05, Auto/OnNext): Head to"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "5", 
+							"ObjectID" : "STORYSTATUS", 
+							"MOSID" : "mosart.morten.mos", 
+							"Slug" : "ÅPNING;HEAD-1-17", 
+							"ObjectSlug" : "Story status"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+		)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;A24898DF-FBBE-42B8-82FC886FEF748411", 
+				"Slug" : "åpning;VIGNETT", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"Actual" : 3, 
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 0, 
+							"MediaTime" : 0, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180614T135317Z", 
+							"MOSAbstracts" : "M: Testsending (23-03-18 08:47)\r\nTIDSMARKØR IKKE RØR", 
+							"MOSItemDurations" : "", 
+							"MOSItemEdDurations" : "", 
+							"MOSObjSlugs" : "M: Testsending\r\nStory status", 
+							"MOSSlugs" : "Uten tittel\r\nÅPNING;HEAD-1-17", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180802T142124640Z", 
+							"MOSTimes" : "", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"TextTime" : 0, 
+							"Bildebeskrivelse" : "", 
+							"Innslagstittel" : "Testsending", 
+							"mosartType" : "FULL", 
+							"mosartVariant" : "VIGNETT", 
+							"ReadTime" : 0, 
+							"Rettigheter" : "Gult", 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "2", 
+							"ObjectID" : "N12050_1521791220", 
+							"MOSID" : "METADATA.NRK.MOS", 
+							"Slug" : "Uten tittel", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://mosA4.com/mos/supported_schemas/MOSAXML2.08", 
+									"MosPayload" : {
+										"nrk" : {
+											"attributes" : {
+												"changetime" : "2018-03-23T08:47:00 +01:00", 
+												"changedBy" : "N12050", 
+												"type" : "video", 
+												"mdSource" : "ncs"
+											}, 
+											"title" : "Testsending", 
+											"description" : "", 
+											"hbbtv" : {
+												"link" : ""
+											}, 
+											"rights" : {
+												"text" : "Amber", 
+												"notes" : "", 
+												"owner" : ""
+											}
+										}
+									}
+								}
+							], 
+							"mosAbstract" : "M: Testsending (23-03-18 08:47)", 
+							"ObjectSlug" : "M: Testsending"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "3", 
+							"ObjectID" : "STORYSTATUS", 
+							"MOSID" : "mosart.morten.mos", 
+							"Slug" : "ÅPNING;HEAD-1-17", 
+							"ObjectSlug" : "Story status"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;6707E448-938D-42C7-96D4156F66B4B2AD", 
+				"Slug" : "åpning;Head11", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"Actual" : 8, 
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 0, 
+							"MediaTime" : 16.28, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180705T140825Z", 
+							"MOSAbstracts" : "52 Headline (00:00=>00:05, Auto/OnNext): Head en\r\nmål-sverige-230618 NYHETER 00:00:16:07\r\nTIDSMARKØR IKKE RØR", 
+							"MOSItemDurations" : "16,28", 
+							"MOSItemEdDurations" : "", 
+							"MOSObjSlugs" : "52 Headline (00:00=>00:05, Auto/OnNext): Head en\r\nmål-sverige-230618\r\nStory status", 
+							"MOSSlugs" : "åpning;Head1-10\r\nVIGNETT;Head 1-8\r\nÅPNING;HEAD-1-17", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180802T142125541Z", 
+							"MOSTimes" : "20180803T055911Z", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"TextTime" : 0, 
+							"mosartType" : "STK", 
+							"mosartVariant" : "HEAD", 
+							"ReadTime" : 16.28, 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "10", 
+							"ObjectID" : "9d73d195-c4cb-4231-bc4e-710878a67b30", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "åpning;Head1-10", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "9d73d195-c4cb-4231-bc4e-710878a67b30", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"52_headline"
+											], 
+											"displayName" : "52 Headline (00:00=>00:05, Auto/OnNext): Head en", 
+											"displayNameShort" : "52 Headline: Head en"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"52_headline" : {
+											"channel" : "gfx1", 
+											"layer" : "super", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"text" : "Head en", 
+											"headline" : "Head en"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"text" : 0, 
+										"timeIn" : 0, 
+										"duration" : 5000, 
+										"in" : "auto", 
+										"out" : "onNext"
+									}
+								}
+							], 
+							"mosAbstract" : "52 Headline (00:00=>00:05, Auto/OnNext): Head en"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "8", 
+							"ObjectID" : "\\\\XPRO\\Omn\\A\\A\\43\\26", 
+							"MOSID" : "OMNIBUS.XPRO.MOS", 
+							"Slug" : "VIGNETT;Head 1-8", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "OMNIBUS", 
+									"MosPayload" : {
+										"title" : "mål-sverige-230618", 
+										"objectType" : "CLIP", 
+										"clipType" : "NYHETER", 
+										"objDur" : 814, 
+										"objType" : "VIDEO"
+									}
+								}
+							], 
+							"mosAbstract" : "mål-sverige-230618 NYHETER 00:00:16:07", 
+							"ObjectSlug" : "mål-sverige-230618"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "9", 
+							"ObjectID" : "STORYSTATUS", 
+							"MOSID" : "mosart.morten.mos", 
+							"Slug" : "ÅPNING;HEAD-1-17", 
+							"ObjectSlug" : "Story status"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;6DBD519C-52F2-4665-8BE44677C67F7E6C", 
+				"Slug" : "SKRANTESJUKE;SKRANTESJUKE-140618-SL5", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"Actual" : 100, 
+							"text" : 0, 
+							"Approved" : 0, 
+							"Break" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 0, 
+							"MediaTime" : 107.48, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180702T113235Z", 
+							"MOSAbstracts" : "M: Skrantesjuka truer hjortebestanden (13-06-18 12:23)\r\n BRANN-BERGEN-040618-HO NYHETER 00:01:47:12 \r\n01 Navn (00:02=>00:05, Auto/Auto): Hilde Skarvøy Gjestland, reporter\r\n01 Navn (00:18=>00:05, Auto/Auto): Tor Punsvik, viltforvalter, fylkesmannen Aust- og Vest Agder\r\n22 Sted/Arkiv (00:27=>00:05, Auto/Auto): Fra dokumentarfilmen \"Villreinens siste vinter\"\r\n22 Sted/Arkiv (00:52=>00:05, Auto/Auto): NRK arkiv\r\n01 Navn (01:22=>00:05, Auto/Auto): Jon Georg Dale, landbruks- og matminister (Frp)\r\n24 Foto/Redigering (01:35=>00:05, Auto/Auto): Foto:, Line Oftedal Pedersen/Asbjørn Odd Berge, Redigering:, Jan Jørg Tomstad\r\nTIDSMARKØR IKKE RØR", 
+							"MOSItemDurations" : "107,48", 
+							"MOSItemEdDurations" : "", 
+							"MOSObjSlugs" : "M: Skrantesjuka truer hjortebestanden\r\nBRANN-BERGEN-040618-HO\r\n01 Navn (00:02=>00:05, Auto/Auto): Hilde Skarvøy Gjestland, reporter\r\n01 Navn (00:18=>00:05, Auto/Auto): Tor Punsvik, viltforvalter, fylkesmannen Aust- og Vest Agder\r\n22 Sted/Arkiv (00:27=>00:05, Auto/Auto): Fra dokumentarfilmen \"Villreinens siste vinter\"\r\n22 Sted/Arkiv (00:52=>00:05, Auto/Auto): NRK arkiv\r\n01 Navn (01:22=>00:05, Auto/Auto): Jon Georg Dale, landbruks- og matminister (Frp)\r\n24 Foto/Redigering (01:35=>00:05, Auto/Auto): Foto:, Line Oftedal Pedersen/Asbjørn Odd Berge, Redigering:, Jan Jørg Tomstad\r\nStory status", 
+							"MOSSlugs" : "NYHETSSAK 1;SAK-14\r\nSKRANTESJUKE;SKRANTESJUKE-140618-SL-37\r\nSKRANTESJUKE;SKRANTESJUKE-140618-SL-31\r\nSKRANTESJUKE;SKRANTESJUKE-140618-SL-32\r\nSKRANTESJUKE;SKRANTESJUKE-140618-SL-34\r\nSKRANTESJUKE;SKRANTESJUKE-140618-SL-35\r\nSKRANTESJUKE;SKRANTESJUKE-140618-SL-33\r\nSKRANTESJUKE;SKRANTESJUKE-140618-SL-36\r\nNYHETSSAK 1;SAK-16", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180802T142126322Z", 
+							"MOSTimes" : "20180803T055911Z\r\n20180803T055911Z\r\n20180803T055911Z\r\n20180803T055911Z\r\n20180803T055911Z\r\n20180803T055911Z\r\n20180615T173428656Z", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 81, 
+							"StoryLogPreview" : 52, 
+							"TextTime" : 0, 
+							"Bemanning" : "N10145", 
+							"Bildebeskrivelse" : "Nærbilde av elg. Elg i innhengning. Viltforvalter går i skogen. Landbruksminister blir intervjuet.", 
+							"Fylke" : "Vest-Agder; Aust-Agder", 
+							"Innslagstittel" : "Skrantesjuka truer hjortebestanden", 
+							"Kommune" : "Kristiansand; Bygland", 
+							"mosartType" : "FULL", 
+							"OpprLand" : "Norge; Norge", 
+							"ReadTime" : 107.48, 
+							"Rettigheter" : "Grønt", 
+							"Rettighetseier" : "NRK", 
+							"Sted" : "Kristiansand; Byglandsfjord", 
+							"Tags" : "landbruks-og matminister; elg", 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "2", 
+							"ObjectID" : "N10145_1528885426", 
+							"MOSID" : "METADATA.NRK.MOS", 
+							"Slug" : "NYHETSSAK 1;SAK-14", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://mosA4.com/mos/supported_schemas/MOSAXML2.08", 
+									"MosPayload" : {
+										"nrk" : {
+											"attributes" : {
+												"changetime" : "2018-06-13T12:23:45 +02:00", 
+												"changedBy" : "N10145", 
+												"type" : "video", 
+												"mdSource" : "omnibus"
+											}, 
+											"title" : "Skrantesjuka truer hjortebestanden", 
+											"description" : "Nærbilde av elg. Elg i innhengning. Viltforvalter går i skogen. Landbruksminister blir intervjuet.", 
+											"hbbtv" : {
+												"type" : "element", 
+												"name" : "hbbtv", 
+												"link" : ""
+											}, 
+											"location" : [
+												{
+													"type" : "text", 
+													"name" : "location", 
+													"text" : "Kristiansand", 
+													"id" : "1-2376", 
+													"region" : "Vest-Agder", 
+													"lat" : "58.14615", 
+													"lon" : "7.99573"
+												}, 
+												{
+													"type" : "text", 
+													"name" : "location", 
+													"text" : "Byglandsfjord", 
+													"id" : "1-11874", 
+													"region" : "Bygland, Aust-Agder", 
+													"lat" : "58.66612", 
+													"lon" : "7.81311"
+												}
+											], 
+											"tag" : [
+												{
+													"type" : "text", 
+													"name" : "tag", 
+													"text" : "landbruks-og matminister", 
+													"id" : "99041"
+												}, 
+												{
+													"type" : "text", 
+													"name" : "tag", 
+													"text" : "elg", 
+													"id" : "1153"
+												}
+											], 
+											"rights" : {
+												"type" : "text", 
+												"name" : "rights", 
+												"text" : "Green", 
+												"notes" : "", 
+												"owner" : "NRK"
+											}
+										}
+									}
+								}
+							], 
+							"mosAbstract" : "M: Skrantesjuka truer hjortebestanden (13-06-18 12:23)", 
+							"ObjectSlug" : "M: Skrantesjuka truer hjortebestanden"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "37", 
+							"ObjectID" : "\\\\XPRO\\Omn\\A\\A\\42\\51", 
+							"MOSID" : "OMNIBUS.XPRO.MOS", 
+							"Slug" : "SKRANTESJUKE;SKRANTESJUKE-140618-SL-37", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "OMNIBUS", 
+									"MosPayload" : {
+										"title" : "Storbrann i Bergen.", 
+										"objectType" : "CLIP", 
+										"clipType" : "NYHETER", 
+										"objDur" : 5374, 
+										"objType" : "VIDEO"
+									}
+								}
+							], 
+							"mosAbstract" : "BRANN-BERGEN-040618-HO NYHETER 00:01:47:12", 
+							"ObjectSlug" : "BRANN-BERGEN-040618-HO"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "31", 
+							"ObjectID" : "dcf9225f-3970-4f5b-98c4-e145f333538c", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "SKRANTESJUKE;SKRANTESJUKE-140618-SL-31", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "dcf9225f-3970-4f5b-98c4-e145f333538c", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"01_navn"
+											], 
+											"displayName" : "01 Navn (00:02=>00:05, Auto/Auto): Hilde Skarvøy Gjestland, reporter", 
+											"displayNameShort" : "01 Navn: Hilde Skarvøy Gjestland, reporter"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"01_navn" : {
+											"channel" : "gfx1", 
+											"layer" : "super", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"navn" : "Hilde Skarvøy Gjestland", 
+											"tittel" : "reporter"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"timeIn" : 2000, 
+										"duration" : 5000, 
+										"in" : "auto", 
+										"out" : "auto"
+									}
+								}
+							], 
+							"mosAbstract" : "01 Navn (00:02=>00:05, Auto/Auto): Hilde Skarvøy Gjestland, reporter"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "32", 
+							"ObjectID" : "dcf9225f-3970-4f5b-98c4-e145f333538c", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "SKRANTESJUKE;SKRANTESJUKE-140618-SL-32", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "dcf9225f-3970-4f5b-98c4-e145f333538c", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"01_navn"
+											], 
+											"displayName" : "01 Navn (00:18=>00:05, Auto/Auto): Tor Punsvik, viltforvalter, fylkesmannen Aust- og Vest Agder", 
+											"displayNameShort" : "01 Navn: Tor Punsvik, viltforvalter, fylkesmannen Aust- og Vest Agder"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"01_navn" : {
+											"channel" : "gfx1", 
+											"layer" : "super", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"navn" : "Tor Punsvik", 
+											"tittel" : "viltforvalter, fylkesmannen Aust- og Vest Agder"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"timeIn" : 18000, 
+										"duration" : 5000, 
+										"in" : "auto", 
+										"out" : "auto"
+									}
+								}
+							], 
+							"mosAbstract" : "01 Navn (00:18=>00:05, Auto/Auto): Tor Punsvik, viltforvalter, fylkesmannen Aust- og Vest Agder"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : 52
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "34", 
+							"ObjectID" : "f3d3b8a6-eab2-4709-91d1-a13466bc56f0", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "SKRANTESJUKE;SKRANTESJUKE-140618-SL-34", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "f3d3b8a6-eab2-4709-91d1-a13466bc56f0", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"22_sted_arkiv"
+											], 
+											"displayName" : "22 Sted/Arkiv (00:27=>00:05, Auto/Auto): Fra dokumentarfilmen \"Villreinens siste vinter\"", 
+											"displayNameShort" : "22 Sted/Arkiv: Fra dokumentarfilmen \"Villreinens siste vinter\""
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"22_sted_arkiv" : {
+											"channel" : "gfx1", 
+											"layer" : "tagLeft", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"sted" : "", 
+											"arkiv" : "Fra dokumentarfilmen \"Villreinens siste vinter\""
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"timeIn" : 27000, 
+										"duration" : 5000, 
+										"in" : "auto", 
+										"out" : "auto"
+									}
+								}
+							], 
+							"mosAbstract" : "22 Sted/Arkiv (00:27=>00:05, Auto/Auto): Fra dokumentarfilmen \"Villreinens siste vinter\""
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "35", 
+							"ObjectID" : "f3d3b8a6-eab2-4709-91d1-a13466bc56f0", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "SKRANTESJUKE;SKRANTESJUKE-140618-SL-35", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "f3d3b8a6-eab2-4709-91d1-a13466bc56f0", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"22_sted_arkiv"
+											], 
+											"displayName" : "22 Sted/Arkiv (00:52=>00:05, Auto/Auto): NRK arkiv", 
+											"displayNameShort" : "22 Sted/Arkiv: NRK arkiv"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"22_sted_arkiv" : {
+											"channel" : "gfx1", 
+											"layer" : "tagLeft", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"sted" : "", 
+											"arkiv" : "NRK arkiv"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"timeIn" : 52000, 
+										"duration" : 5000, 
+										"in" : "auto", 
+										"out" : "auto"
+									}
+								}
+							], 
+							"mosAbstract" : "22 Sted/Arkiv (00:52=>00:05, Auto/Auto): NRK arkiv"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "33", 
+							"ObjectID" : "dcf9225f-3970-4f5b-98c4-e145f333538c", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "SKRANTESJUKE;SKRANTESJUKE-140618-SL-33", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "dcf9225f-3970-4f5b-98c4-e145f333538c", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"01_navn"
+											], 
+											"displayName" : "01 Navn (01:22=>00:05, Auto/Auto): Jon Georg Dale, landbruks- og matminister (Frp)", 
+											"displayNameShort" : "01 Navn: Jon Georg Dale, landbruks- og matminister (Frp)"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"01_navn" : {
+											"channel" : "gfx1", 
+											"layer" : "super", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"navn" : "Jon Georg Dale", 
+											"tittel" : "landbruks- og matminister (Frp)"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"timeIn" : 82000, 
+										"duration" : 5000, 
+										"in" : "auto", 
+										"out" : "auto"
+									}
+								}
+							], 
+							"mosAbstract" : "01 Navn (01:22=>00:05, Auto/Auto): Jon Georg Dale, landbruks- og matminister (Frp)"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "36", 
+							"ObjectID" : "ac725965-1f26-4f26-bc59-09c6920e9383", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "SKRANTESJUKE;SKRANTESJUKE-140618-SL-36", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "ac725965-1f26-4f26-bc59-09c6920e9383", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"24_foto_red"
+											], 
+											"displayName" : "24 Foto/Redigering (01:35=>00:05, Auto/Auto): Foto:, Line Oftedal Pedersen/Asbjørn Odd Berge, Redigering:, Jan Jørg Tomstad", 
+											"displayNameShort" : "24 Foto/Redigering: Foto:, Line Oftedal Pedersen/Asbjørn Odd Berge, Redigering:, Jan Jørg Tomstad"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"24_foto_red" : {
+											"channel" : "gfx1", 
+											"layer" : "super", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"funksjon1" : "Foto:", 
+											"navn1" : "Line Oftedal Pedersen/Asbjørn Odd Berge", 
+											"funksjon2" : "Redigering:", 
+											"navn2" : "Jan Jørg Tomstad"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"timeIn" : 95000, 
+										"duration" : 5000, 
+										"in" : "auto", 
+										"out" : "auto"
+									}
+								}
+							], 
+							"mosAbstract" : "24 Foto/Redigering (01:35=>00:05, Auto/Auto): Foto:, Line Oftedal Pedersen/Asbjørn Odd Berge, Redigering:, Jan Jørg Tomstad"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "9", 
+							"ObjectID" : "STORYSTATUS", 
+							"MOSID" : "mosart.morten.mos", 
+							"Slug" : "NYHETSSAK 1;SAK-16", 
+							"ObjectSlug" : "Story status"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;754BF344-6997-4936-8895B6F625B0EE0A", 
+				"Slug" : "åpning;Velkommen", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 1, 
+							"MediaTime" : 0, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180706T135354Z", 
+							"MOSAbstracts" : "01 Ett navn (00:00=>00:05, Auto/Auto): Ivar Johnsen, 27. juni\r\nTIDSMARKØR IKKE RØR", 
+							"MOSItemDurations" : "", 
+							"MOSItemEdDurations" : "", 
+							"MOSObjSlugs" : "01 Ett navn (00:00=>00:05, Auto/Auto): Ivar Johnsen, 27. juni\r\nStory status", 
+							"MOSSlugs" : "åpning;Velkommen-5\r\nÅPNING;HEAD-1-17", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180802T142127112Z", 
+							"MOSTimes" : "20180803T055911Z", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"StoryLogPreview" : "Hei og velkommen til denne testsendingen", 
+							"TextTime" : 3, 
+							"mosartType" : "KAM", 
+							"mosartVariant" : "3ÅPNING", 
+							"ReadTime" : 3, 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : "Hei og velkommen til denne testsendingen"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "5", 
+							"ObjectID" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "åpning;Velkommen-5", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"01_navn"
+											], 
+											"displayName" : "01 Ett navn (00:00=>00:05, Auto/Auto): Ivar Johnsen, 27. juni", 
+											"displayNameShort" : "01 Ett navn: Ivar Johnsen, 27. juni"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"01_navn" : {
+											"channel" : "gfx1", 
+											"layer" : "super", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"navn" : "Ivar Johnsen", 
+											"tittel" : "27. juni"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"text" : 0, 
+										"timeIn" : 0, 
+										"duration" : 5000, 
+										"in" : "auto", 
+										"out" : "auto"
+									}
+								}
+							], 
+							"mosAbstract" : "01 Ett navn (00:00=>00:05, Auto/Auto): Ivar Johnsen, 27. juni"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "2", 
+							"ObjectID" : "STORYSTATUS", 
+							"MOSID" : "mosart.morten.mos", 
+							"Slug" : "ÅPNING;HEAD-1-17", 
+							"ObjectSlug" : "Story status"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;9D31712F-7A2B-4349-800703E1991AFB30", 
+				"Slug" : "SKRANTESJUKE;intro", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"text" : 0, 
+							"Approved" : 0, 
+							"Break" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 0, 
+							"Estimated" : "00:00:12", 
+							"MediaTime" : 0, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180706T135310Z", 
+							"MOSAbstracts" : "SKRANTESJUKE;intro-4\r\nTIDSMARKØR IKKE RØR", 
+							"MOSItemDurations" : "", 
+							"MOSItemEdDurations" : "", 
+							"MOSObjSlugs" : "SKRANTESJUKE;intro-4\r\nStory status", 
+							"MOSSlugs" : "SKRANTESJUKE;intro-4\r\nNYHETSSAK 1;Studio med baksjkerm-7", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180802T142128180Z", 
+							"MOSTimes" : "20180803T055911Z\r\n20180615T173246220Z", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"StoryLogPreview" : "Alle hjortedyr i landet er truet dersom man ikke greier å STANSE den såkalte skrantesyken.  Det mener viltforvalteren hos fylkesmannen. I Norge er sykdommen nå påvist, og det er stor bekymring for måten norske myndigheter håndterer smitten på.", 
+							"TextTime" : 17, 
+							"mosartType" : "KAM", 
+							"mosartVariant" : 2, 
+							"ReadTime" : 17, 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : "Alle hjortedyr i landet er truet dersom man ikke greier å STANSE den såkalte skrantesyken.  Det mener viltforvalteren hos fylkesmannen. I Norge er sykdommen nå påvist, og det er stor bekymring for måten norske myndigheter håndterer smitten på."
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "4", 
+							"ObjectID" : "79274880-2212-491a-9994-23c7b96ee15a", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "SKRANTESJUKE;intro-4", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "79274880-2212-491a-9994-23c7b96ee15a", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"bakskjerm", 
+												"202_bilde"
+											], 
+											"displayName" : {
+												"type" : "element", 
+												"name" : "displayName"
+											}, 
+											"displayNameShort" : {
+												"type" : "element", 
+												"name" : "displayNameShort"
+											}
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"202_bilde" : {
+											"channel" : "gfx2", 
+											"layer" : "bakskjerm", 
+											"system" : "html"
+										}, 
+										"content" : ""
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"text" : 0, 
+										"timeIn" : 0, 
+										"duration" : 5000, 
+										"in" : "auto", 
+										"out" : "onNext"
+									}
+								}
+							], 
+							"mosAbstract" : "SKRANTESJUKE;intro-4"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "3", 
+							"ObjectID" : "STORYSTATUS", 
+							"MOSID" : "mosart.morten.mos", 
+							"Slug" : "NYHETSSAK 1;Studio med baksjkerm-7", 
+							"ObjectSlug" : "Story status"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;8F4EECF6-4B4B-48C4-89C2D895117D0EC4", 
+				"Slug" : "SAK 2;Intro", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 0, 
+							"MediaTime" : 0, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180702T120957Z", 
+							"MOSAbstracts" : "FILMHISTORIE-091217-DR19 NYHETER 00:03:39:14 \r\nTIDSMARKØR IKKE RØR", 
+							"MOSItemDurations" : "219,56", 
+							"MOSItemEdDurations" : "", 
+							"MOSObjSlugs" : "FILMHISTORIE-091217-DR19\r\nStory status", 
+							"MOSSlugs" : "SAK 2;Intro-3\r\nÅPNING;HEAD-1-17", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180802T142129055Z", 
+							"MOSTimes" : "", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"StoryLogPreview" : "Dette er intro sak 2 hvor vi møter kari som skal ut og gå\r\n<", 
+							"TextTime" : 4, 
+							"mosartType" : "KAM", 
+							"mosartVariant" : 2, 
+							"ReadTime" : 4, 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : "Dette er intro sak 2 hvor vi møter kari som skal ut og gå"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : "<"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : "<BAK><"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "3", 
+							"ObjectID" : "\\\\XPRO\\Omn\\A\\A\\19\\59", 
+							"MOSID" : "OMNIBUS.XPRO.MOS", 
+							"Slug" : "SAK 2;Intro-3", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "OMNIBUS", 
+									"MosPayload" : {
+										"title" : "FILMHISTORIE-091217-DR19", 
+										"objectType" : "CLIP", 
+										"clipType" : "NYHETER", 
+										"objDur" : 10978, 
+										"objType" : "VIDEO"
+									}
+								}
+							], 
+							"mosAbstract" : "FILMHISTORIE-091217-DR19 NYHETER 00:03:39:14", 
+							"ObjectSlug" : "FILMHISTORIE-091217-DR19"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : ">"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : ">"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "2", 
+							"ObjectID" : "STORYSTATUS", 
+							"MOSID" : "mosart.morten.mos", 
+							"Slug" : "ÅPNING;HEAD-1-17", 
+							"ObjectSlug" : "Story status"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;93301DA7-6A97-45CD-B868133DF6E63D5A", 
+				"Slug" : "SAK 2;SAK 2", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"Actual" : 105, 
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 0, 
+							"MediaTime" : 107.48, 
+							"ModBy" : "OMNIBUS.XPRO.MOS", 
+							"ModTime" : "20180702T075240Z", 
+							"MOSAbstracts" : "M: Dette er en øvelse (03-05-18 10:02)\r\nBRANN-BERGEN-040618-HO NYHETER 00:01:47:12\r\n01 Ett navn (00:30=>00:05, Auto/Auto): Hans Hansen, allviter\r\nTIDSMARKØR IKKE RØR", 
+							"MOSItemDurations" : "107,48", 
+							"MOSItemEdDurations" : "", 
+							"MOSObjSlugs" : "M: Dette er en øvelse\r\nBRANN-BERGEN-040618-HO\r\n01 Ett navn (00:30=>00:05, Auto/Auto): Hans Hansen, allviter\r\nStory status", 
+							"MOSSlugs" : "Uten tittel\r\nSAK 2;SAK 2-7\r\nSAK 2;SAK 2-9\r\nÅPNING;HEAD-1-17", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180802T142129884Z", 
+							"MOSTimes" : "20180803T055911Z", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"TextTime" : 0, 
+							"SystemApprovedBy" : "N639194", 
+							"Bildebeskrivelse" : "Her er beskrivelsen av bildene", 
+							"Fylke" : "Hordaland", 
+							"Innslagstittel" : "Dette er en øvelse", 
+							"Kommune" : "Bergen", 
+							"mosartType" : "FULL", 
+							"OpprLand" : "Norge", 
+							"ReadTime" : 107.48, 
+							"Rettigheter" : "Grønt", 
+							"Rettighetseier" : "NRK", 
+							"Sted" : "Bergen", 
+							"Tags" : "test", 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "3", 
+							"ObjectID" : "N12050_1525334564", 
+							"MOSID" : "METADATA.NRK.MOS", 
+							"Slug" : "Uten tittel", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://mosA4.com/mos/supported_schemas/MOSAXML2.08", 
+									"MosPayload" : {
+										"nrk" : {
+											"attributes" : {
+												"mdSource" : "omnibus", 
+												"type" : "video", 
+												"changedBy" : "N12050", 
+												"changetime" : "2018-05-03T10:02:44 +02:00"
+											}, 
+											"title" : "Dette er en øvelse", 
+											"description" : "Her er beskrivelsen av bildene", 
+											"hbbtv" : {
+												"link" : ""
+											}, 
+											"location" : {
+												"text" : "Bergen", 
+												"id" : "1-92416", 
+												"region" : "Hordaland", 
+												"lat" : "60.39826", 
+												"lon" : "5.32907"
+											}, 
+											"tag" : {
+												"text" : "test", 
+												"id" : "6519"
+											}, 
+											"rights" : {
+												"text" : "Green", 
+												"notes" : "", 
+												"owner" : "NRK"
+											}
+										}
+									}
+								}
+							], 
+							"mosAbstract" : "M: Dette er en øvelse (03-05-18 10:02)", 
+							"ObjectSlug" : "M: Dette er en øvelse"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "7", 
+							"ObjectID" : "\\\\XPRO\\Omn\\A\\A\\42\\51", 
+							"MOSID" : "OMNIBUS.XPRO.MOS", 
+							"Slug" : "SAK 2;SAK 2-7", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "OMNIBUS", 
+									"MosPayload" : {
+										"title" : "Storbrann i Bergen.", 
+										"objectType" : "CLIP", 
+										"clipType" : "NYHETER", 
+										"objDur" : 5374
+									}
+								}
+							], 
+							"mosAbstract" : "BRANN-BERGEN-040618-HO NYHETER 00:01:47:12", 
+							"ObjectSlug" : "BRANN-BERGEN-040618-HO"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "9", 
+							"ObjectID" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "SAK 2;SAK 2-9", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"01_navn"
+											], 
+											"displayName" : "01 Ett navn (00:30=>00:05, Auto/Auto): Hans Hansen, allviter", 
+											"displayNameShort" : "01 Ett navn: Hans Hansen, allviter"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"01_navn" : {
+											"channel" : "gfx1", 
+											"layer" : "super", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"navn" : "Hans Hansen", 
+											"tittel" : "allviter"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"timeIn" : 30000, 
+										"duration" : 5000, 
+										"in" : "auto", 
+										"out" : "auto"
+									}
+								}
+							], 
+							"mosAbstract" : "01 Ett navn (00:30=>00:05, Auto/Auto): Hans Hansen, allviter"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "6", 
+							"ObjectID" : "STORYSTATUS", 
+							"MOSID" : "mosart.morten.mos", 
+							"Slug" : "ÅPNING;HEAD-1-17", 
+							"ObjectSlug" : "Story status"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;9B0BDA28-3442-4F55-9AC44E8EC8DEFD5B", 
+				"Slug" : "STK Synk;Tekst", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 1, 
+							"Estimated" : 2, 
+							"MediaTime" : 0, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180614T135404Z", 
+							"MOSAbstracts" : "TIDSMARKØR IKKE RØR", 
+							"MOSObjSlugs" : "Story status", 
+							"MOSSlugs" : "ÅPNING;HEAD-1-17", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180802T142130751Z", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"StoryLogPreview" : "Dette er teksten som programleder skal lese når vi kjører VB", 
+							"TextTime" : 4, 
+							"mosartType" : "KAM", 
+							"mosartVariant" : 1, 
+							"ReadTime" : 4, 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+				{
+					"Type" : "p", 
+					"Content" : {
+						"type" : "text", 
+						"name" : "p", 
+						"text" : "Dette er teksten som programleder skal lese når vi kjører VB"
+					}
+				}, 
+				{
+					"Type" : "p", 
+					"Content" : {
+						"type" : "element", 
+						"name" : "p"
+					}
+				}, 
+				{
+					"Type" : "p", 
+					"Content" : {
+						"type" : "element", 
+						"name" : "p"
+					}
+				}, 
+				{
+					"Type" : "p", 
+					"Content" : {
+						"type" : "element", 
+						"name" : "p"
+					}
+				}, 
+				{
+					"Type" : "storyItem", 
+					"Content" : {
+						"ID" : "2", 
+						"ObjectID" : "STORYSTATUS", 
+						"MOSID" : "mosart.morten.mos", 
+						"Slug" : "ÅPNING;HEAD-1-17", 
+						"ObjectSlug" : "Story status"
+					}
+				}, 
+				{
+					"Type" : "p", 
+					"Content" : {
+						"type" : "element", 
+						"name" : "p"
+					}
+				}
+			]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;43147BA3-1294-46C3-B7088B394E9A3345", 
+				"Slug" : "STK Synk;STK", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 41, 
+							"MediaTime" : 0, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180702T121025Z", 
+							"MOSAbstracts" : "M: Avengers (27-06-18 13:42)\r\ndu-er-dum-250418 PUBLISH_QUANTEL 00:01:38:18", 
+							"MOSItemDurations" : "98,72", 
+							"MOSItemEdDurations" : "", 
+							"MOSObjSlugs" : "M: Avengers\r\ndu-er-dum-250418", 
+							"MOSSlugs" : "Uten tittel\r\nSTK Synk;STK-3", 
+							"MOSStoryStatus" : "STOP", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180615T125319411Z", 
+							"MOSTimes" : "", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"StoryLogPreview" : "<", 
+							"TextTime" : 0, 
+							"AndreMetadata" : "{Fotograf};Helle Rossow;+{Redigerer};Helle Rossow;", 
+							"Bildebeskrivelse" : "beskrivelse", 
+							"Fylke" : "Hordaland", 
+							"Innslagstittel" : "Avengers", 
+							"Kommune" : "Kvinnherad", 
+							"mosartType" : "STK", 
+							"OpprLand" : "Norge", 
+							"ReadTime" : 0, 
+							"Rettigheter" : "Grønt", 
+							"Rettighetseier" : "NRK", 
+							"Sted" : "Berhaug", 
+							"Tags" : "test", 
+							"Team" : "{Fotograf};Helle Rossow;+{Redigerer};Helle Rossow;", 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "4", 
+							"ObjectID" : "N12050_1530099732", 
+							"MOSID" : "METADATA.NRK.MOS", 
+							"Slug" : "Uten tittel", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://mosA4.com/mos/supported_schemas/MOSAXML2.08", 
+									"MosPayload" : {
+										"nrk" : {
+											"attributes" : {
+												"mdSource" : "omnibus", 
+												"type" : "video", 
+												"changedBy" : "N12050", 
+												"changetime" : "2018-06-27T13:42:11 +02:00"
+											}, 
+											"title" : "Avengers", 
+											"description" : "beskrivelse", 
+											"hbbtv" : {
+												"link" : ""
+											}, 
+											"staff" : {
+												"text" : "Helle Rossow", 
+												"userid" : "n12050", 
+												"roles" : "Fotograf;Redigerer"
+											}, 
+											"location" : {
+												"text" : "Berhaug", 
+												"id" : "1-2511926", 
+												"region" : "Kvinnherad, Hordaland", 
+												"lat" : "59.78068", 
+												"lon" : "5.81041", 
+												"posType" : ""
+											}, 
+											"tag" : {
+												"text" : "test", 
+												"id" : "6519"
+											}, 
+											"rights" : {
+												"text" : "Green", 
+												"notes" : "", 
+												"owner" : "NRK"
+											}
+										}
+									}
+								}
+							], 
+							"mosAbstract" : "M: Avengers (27-06-18 13:42)", 
+							"ObjectSlug" : "M: Avengers"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : "<"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "3", 
+							"ObjectID" : "\\\\XPRO\\Omn\\A\\A\\40\\31", 
+							"MOSID" : "OMNIBUS.XPRO.MOS", 
+							"Slug" : "STK Synk;STK-3", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "OMNIBUS", 
+									"MosPayload" : {
+										"title" : "Du er dum", 
+										"objectType" : "CLIP", 
+										"clipType" : "PUBLISH_QUANTEL", 
+										"objDur" : 4936
+									}
+								}
+							], 
+							"mosAbstract" : "du-er-dum-250418 PUBLISH_QUANTEL 00:01:38:18", 
+							"ObjectSlug" : "du-er-dum-250418"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : ">"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;76AC6D1E-4381-42B5-966B8349AB5558E4", 
+				"Slug" : "STK Synk;Synk", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"Actual" : 105, 
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 1, 
+							"MediaTime" : 107.48, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180702T121107Z", 
+							"MOSAbstracts" : "M: Ny Avengers-film (03-05-18 10:10)\r\nBRANN-BERGEN-040618-HO NYHETER 00:01:47:12\r\n01 Ett navn (00:10=>00:05, Auto/Auto): Petter Pettersen, slakter\r\nTIDSMARKØR IKKE RØR", 
+							"MOSItemDurations" : "107,48", 
+							"MOSItemEdDurations" : "", 
+							"MOSObjSlugs" : "M: Ny Avengers-film\r\nBRANN-BERGEN-040618-HO\r\n01 Ett navn (00:10=>00:05, Auto/Auto): Petter Pettersen, slakter\r\nStory status", 
+							"MOSSlugs" : "Uten tittel\r\nSTK Synk;Synk-6\r\nSTK Synk;Synk-7\r\nÅPNING;HEAD-1-17", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180802T142132480Z", 
+							"MOSTimes" : "20180803T055911Z", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"TextTime" : 0, 
+							"AndreMetadata" : "{reporter};Christian Ingebrethsen;", 
+							"Bildebeskrivelse" : "", 
+							"Fylke" : "England", 
+							"Innslagstittel" : "Ny Avengers-film", 
+							"Kommune" : "Greater London", 
+							"mosartType" : "FULL", 
+							"OpprLand" : "Storbritannia", 
+							"ReadTime" : 107.48, 
+							"Rettigheter" : "Grønt", 
+							"Rettighetseier" : "NRK", 
+							"Sted" : "London", 
+							"Tags" : "avengers; marvel; tegneserier", 
+							"Team" : "{reporter};Christian Ingebrethsen;", 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "3", 
+							"ObjectID" : "N12050_1525335039", 
+							"MOSID" : "METADATA.NRK.MOS", 
+							"Slug" : "Uten tittel", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://mosA4.com/mos/supported_schemas/MOSAXML2.08", 
+									"MosPayload" : {
+										"nrk" : {
+											"attributes" : {
+												"changetime" : "2018-05-03T10:10:39 +02:00", 
+												"changedBy" : "N12050", 
+												"type" : "video", 
+												"mdSource" : "omnibus"
+											}, 
+											"title" : "Ny Avengers-film", 
+											"description" : {
+												"type" : "element", 
+												"name" : "description"
+											}, 
+											"hbbtv" : {
+												"type" : "element", 
+												"name" : "hbbtv", 
+												"link" : ""
+											}, 
+											"staff" : {
+												"type" : "text", 
+												"name" : "staff", 
+												"text" : "Christian Ingebrethsen", 
+												"userid" : "n22621", 
+												"roles" : "reporter"
+											}, 
+											"location" : {
+												"type" : "text", 
+												"name" : "location", 
+												"text" : "London", 
+												"id" : "2-2643743", 
+												"region" : "Greater London, England, Storbritannia", 
+												"lat" : "51.50853", 
+												"lon" : "-0.12574"
+											}, 
+											"tag" : [
+												{
+													"type" : "text", 
+													"name" : "tag", 
+													"text" : "avengers", 
+													"id" : "95257"
+												}, 
+												{
+													"type" : "text", 
+													"name" : "tag", 
+													"text" : "marvel", 
+													"id" : "95258"
+												}, 
+												{
+													"type" : "text", 
+													"name" : "tag", 
+													"text" : "tegneserier", 
+													"id" : "95259"
+												}
+											], 
+											"rights" : {
+												"type" : "text", 
+												"name" : "rights", 
+												"text" : "Green", 
+												"notes" : "", 
+												"owner" : "NRK"
+											}
+										}
+									}
+								}
+							], 
+							"mosAbstract" : "M: Ny Avengers-film (03-05-18 10:10)", 
+							"ObjectSlug" : "M: Ny Avengers-film"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "6", 
+							"ObjectID" : "\\\\XPRO\\Omn\\A\\A\\42\\51", 
+							"MOSID" : "OMNIBUS.XPRO.MOS", 
+							"Slug" : "STK Synk;Synk-6", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "OMNIBUS", 
+									"MosPayload" : {
+										"title" : "Storbrann i Bergen.", 
+										"objectType" : "CLIP", 
+										"clipType" : "NYHETER", 
+										"objDur" : 5374
+									}
+								}
+							], 
+							"mosAbstract" : "BRANN-BERGEN-040618-HO NYHETER 00:01:47:12", 
+							"ObjectSlug" : "BRANN-BERGEN-040618-HO"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "7", 
+							"ObjectID" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "STK Synk;Synk-7", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"01_navn"
+											], 
+											"displayName" : "01 Ett navn (00:10=>00:05, Auto/Auto): Petter Pettersen, slakter", 
+											"displayNameShort" : "01 Ett navn: Petter Pettersen, slakter"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"01_navn" : {
+											"channel" : "gfx1", 
+											"layer" : "super", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"navn" : "Petter Pettersen", 
+											"tittel" : "slakter"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"timeIn" : 10000, 
+										"duration" : 5000, 
+										"in" : "auto", 
+										"out" : "auto"
+									}
+								}
+							], 
+							"mosAbstract" : "01 Ett navn (00:10=>00:05, Auto/Auto): Petter Pettersen, slakter"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "5", 
+							"ObjectID" : "STORYSTATUS", 
+							"MOSID" : "mosart.morten.mos", 
+							"Slug" : "ÅPNING;HEAD-1-17", 
+							"ObjectSlug" : "Story status"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;5B84D8DF-5347-4D32-95847B2DDA78F630", 
+				"Slug" : "DIR 18.50;Split", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"Actual" : 15, 
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 0, 
+							"MediaTime" : 0, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180705T140039Z", 
+							"MOSAbstracts" : "55 Direkte (00:30=>00:05, Auto/OnNext): Snåsa\r\n01 Ett navn (00:30=>00:05, Manual/Auto): Hans Hansen, allviter\r\nTIDSMARKØR IKKE RØR", 
+							"MOSItemDurations" : "", 
+							"MOSItemEdDurations" : "", 
+							"MOSObjSlugs" : "55 Direkte (00:30=>00:05, Auto/OnNext): Snåsa\r\n01 Ett navn (00:30=>00:05, Manual/Auto): Hans Hansen, allviter\r\nStory status", 
+							"MOSSlugs" : "DIR 18.50;Split-9\r\nDIR;Split-7\r\nÅPNING;HEAD-1-17", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180802T142133244Z", 
+							"MOSTimes" : "20180803T055911Z\r\n20180803T055911Z", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"StoryLogPreview" : "Hans Hansen, hva skjer der du er?", 
+							"TextTime" : 2, 
+							"mosartType" : "DVE", 
+							"mosartVariant" : "2LIKE", 
+							"ReadTime" : 2, 
+							"ip1" : "K1", 
+							"ip2" : "RM1", 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "9", 
+							"ObjectID" : "a5b9f44c-92c6-45cc-ab69-52ff16d6b585", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "DIR 18.50;Split-9", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "a5b9f44c-92c6-45cc-ab69-52ff16d6b585", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"55_direkte"
+											], 
+											"displayName" : "55 Direkte (00:30=>00:05, Auto/OnNext): Snåsa", 
+											"displayNameShort" : "55 Direkte: Snåsa"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"55_direkte" : {
+											"channel" : "gfx1", 
+											"layer" : "tagRight", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"sted" : "Snåsa", 
+											"tematekst" : "Sesongåpning i Ravnedalen", 
+											"infotekst" : "#nrknyheter"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"timeIn" : 30000, 
+										"duration" : 5000, 
+										"in" : "auto", 
+										"out" : "onNext"
+									}
+								}
+							], 
+							"mosAbstract" : "55 Direkte (00:30=>00:05, Auto/OnNext): Snåsa"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : "Hans Hansen, hva skjer der du er?"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "7", 
+							"ObjectID" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "DIR;Split-7", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"01_navn"
+											], 
+											"displayName" : "01 Ett navn (00:30=>00:05, Manual/Auto): Hans Hansen, allviter", 
+											"displayNameShort" : "01 Ett navn: Hans Hansen, allviter"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"01_navn" : {
+											"channel" : "gfx1", 
+											"layer" : "super", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"navn" : "Hans Hansen", 
+											"tittel" : "allviter", 
+											"sted" : "Snåsa"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"timeIn" : 30000, 
+										"duration" : 5000, 
+										"in" : "manual", 
+										"out" : "auto"
+									}
+								}
+							], 
+							"mosAbstract" : "01 Ett navn (00:30=>00:05, Manual/Auto): Hans Hansen, allviter"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "5", 
+							"ObjectID" : "STORYSTATUS", 
+							"MOSID" : "mosart.morten.mos", 
+							"Slug" : "ÅPNING;HEAD-1-17", 
+							"ObjectSlug" : "Story status"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;A0CA386C-C169-42D5-86F152404585A653", 
+				"Slug" : "DIR 18.50;Direkte", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"Actual" : 100, 
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 4635, 
+							"Estimated" : 120, 
+							"MediaTime" : 0, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180627T120255Z", 
+							"MOSAbstracts" : "M: Test av Sofie (03-05-18 10:06)\r\n01 Ett navn (00:30=>00:05, Manual/Auto): Nils Nilsen, reporter\r\n01 Ett navn (00:30=>00:05, Manual/Auto): Per Persen, baker\r\n24 Foto/Redigering (00:30=>00:05, Manual/Auto): Foto/teknikk:, Ole Olsen\r\nTIDSMARKØR IKKE RØR", 
+							"MOSItemDurations" : "", 
+							"MOSItemEdDurations" : "", 
+							"MOSObjSlugs" : "M: Test av Sofie\r\n01 Ett navn (00:30=>00:05, Manual/Auto): Nils Nilsen, reporter\r\n01 Ett navn (00:30=>00:05, Manual/Auto): Per Persen, baker\r\n24 Foto/Redigering (00:30=>00:05, Manual/Auto): Foto/teknikk:, Ole Olsen\r\nStory status", 
+							"MOSSlugs" : "Uten tittel\r\nDIR;Direkte-6\r\nDIR;Direkte-7\r\nDIR;Direkte-8\r\nÅPNING;HEAD-1-17", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180802T143117478Z", 
+							"MOSTimes" : "20180803T055911Z\r\n20180803T055911Z\r\n20180803T055911Z", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"TextTime" : 0, 
+							"Bildebeskrivelse" : "", 
+							"Fylke" : "Sogn og Fjordane", 
+							"Innslagstittel" : "Test av Sofie", 
+							"Kommune" : "Eid", 
+							"mosartType" : "DIR", 
+							"mosartVariant" : "RM1", 
+							"OpprLand" : "Norge", 
+							"ReadTime" : 0, 
+							"Rettigheter" : "Grønt", 
+							"Rettighetseier" : "NRK", 
+							"Sted" : "Os", 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "2", 
+							"ObjectID" : "N12050_1525334819", 
+							"MOSID" : "METADATA.NRK.MOS", 
+							"Slug" : "Uten tittel", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://mosA4.com/mos/supported_schemas/MOSAXML2.08", 
+									"MosPayload" : {
+										"nrk" : {
+											"attributes" : {
+												"changetime" : "2018-05-03T10:06:58 +02:00", 
+												"changedBy" : "N12050", 
+												"type" : "video", 
+												"mdSource" : "ncs"
+											}, 
+											"title" : "Test av Sofie", 
+											"description" : "", 
+											"hbbtv" : {
+												"link" : ""
+											}, 
+											"location" : {
+												"text" : "Os", 
+												"id" : "1-2608277", 
+												"region" : "Eid, Sogn og Fjordane", 
+												"lat" : "61.90197", 
+												"lon" : "5.98855"
+											}, 
+											"rights" : {
+												"text" : "Green", 
+												"notes" : "", 
+												"owner" : "NRK"
+											}
+										}
+									}
+								}
+							], 
+							"mosAbstract" : "M: Test av Sofie (03-05-18 10:06)", 
+							"ObjectSlug" : "M: Test av Sofie"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "6", 
+							"ObjectID" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "DIR;Direkte-6", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"01_navn"
+											], 
+											"displayName" : "01 Ett navn (00:30=>00:05, Manual/Auto): Nils Nilsen, reporter", 
+											"displayNameShort" : "01 Ett navn: Nils Nilsen, reporter"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"01_navn" : {
+											"channel" : "gfx1", 
+											"layer" : "super", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"navn" : "Nils Nilsen", 
+											"tittel" : "reporter", 
+											"sted" : "Snåsa"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"timeIn" : 30000, 
+										"duration" : 5000, 
+										"in" : "manual", 
+										"out" : "auto"
+									}
+								}
+							], 
+							"mosAbstract" : "01 Ett navn (00:30=>00:05, Manual/Auto): Nils Nilsen, reporter"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "7", 
+							"ObjectID" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "DIR;Direkte-7", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"01_navn"
+											], 
+											"displayName" : "01 Ett navn (00:30=>00:05, Manual/Auto): Per Persen, baker", 
+											"displayNameShort" : "01 Ett navn: Per Persen, baker"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"01_navn" : {
+											"channel" : "gfx1", 
+											"layer" : "super", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"navn" : "Per Persen", 
+											"tittel" : "baker", 
+											"sted" : "Snåsa"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"timeIn" : 30000, 
+										"duration" : 5000, 
+										"in" : "manual", 
+										"out" : "auto"
+									}
+								}
+							], 
+							"mosAbstract" : "01 Ett navn (00:30=>00:05, Manual/Auto): Per Persen, baker"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "8", 
+							"ObjectID" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "DIR;Direkte-8", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"24_foto_red"
+											], 
+											"displayName" : "24 Foto/Redigering (00:30=>00:05, Manual/Auto): Foto/teknikk:, Ole Olsen", 
+											"displayNameShort" : "24 Foto/Redigering: Foto/teknikk:, Ole Olsen"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"24_foto_red" : {
+											"channel" : "gfx1", 
+											"layer" : "super", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"funksjon1" : "Foto/teknikk:", 
+											"navn1" : "Ole Olsen", 
+											"funksjon2" : "", 
+											"navn2" : "", 
+											"navn" : "Per Persen", 
+											"tittel" : "baker", 
+											"sted" : "Snåsa"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"timeIn" : 30000, 
+										"duration" : 5000, 
+										"in" : "manual", 
+										"out" : "auto"
+									}
+								}
+							], 
+							"mosAbstract" : "24 Foto/Redigering (00:30=>00:05, Manual/Auto): Foto/teknikk:, Ole Olsen"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "3", 
+							"ObjectID" : "STORYSTATUS", 
+							"MOSID" : "mosart.morten.mos", 
+							"Slug" : "ÅPNING;HEAD-1-17", 
+							"ObjectSlug" : "Story status"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;012FCCB7-86A6-4883-BD000BD669D11DA2", 
+				"Slug" : "KOMMER 2055;tekst", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 7369, 
+							"MediaTime" : 0, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180702T121402Z", 
+							"MOSAbstracts" : "TIDSMARKØR IKKE RØR", 
+							"MOSObjSlugs" : "Story status", 
+							"MOSSlugs" : "ÅPNING;HEAD-1-17", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180730T091423607Z", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"StoryLogPreview" : "Varsling av skogbranner (VB) er viktig for befolkningen. I Arendal jobber de nå for å kunne sende SMS til befolkningen som er i et område hvor det er skogbrann. Hans Eriksen og hans team jobber også med å kunne varsle de som er i områder rundt skogbrannen, slik at de kan komme seg ut i tide.", 
+							"TextTime" : 19, 
+							"mosartType" : "KAM", 
+							"mosartVariant" : 2, 
+							"ReadTime" : 19, 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : "Varsling av skogbranner (VB) er viktig for befolkningen. I Arendal jobber de nå for å kunne sende SMS til befolkningen som er i et område hvor det er skogbrann. Hans Eriksen og hans team jobber også med å kunne varsle de som er i områder rundt skogbrannen, slik at de kan komme seg ut i tide."
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "2", 
+							"ObjectID" : "STORYSTATUS", 
+							"MOSID" : "mosart.morten.mos", 
+							"Slug" : "ÅPNING;HEAD-1-17", 
+							"ObjectSlug" : "Story status"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;C29581AD-D3B6-4018-AB88AFD0E605D8CC", 
+				"Slug" : "KOMMER 2055;SMS-VARSLING-150618S-SL", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 13, 
+							"MediaTime" : 0, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180702T111510Z", 
+							"MOSAbstracts" : "22 Sted/Arkiv (00:01=>00:05, Auto/Auto): Kristiansand juni 2017\r\nM: SMS-varsling (15-06-18 17:03)\r\n SKOGBRANNER-100618S-DR23 NYHETER 00:00:29:16 \r\n10 Tema (00:00=>00:05, Auto/OnNext): SMS ved kaotiske situasjoner i trafikken, #nrknyheter", 
+							"MOSItemDurations" : "29,64", 
+							"MOSItemEdDurations" : "", 
+							"MOSObjSlugs" : "22 Sted/Arkiv (00:01=>00:05, Auto/Auto): Kristiansand juni 2017\r\nM: SMS-varsling\r\nSKOGBRANNER-100618S-DR23\r\n10 Tema (00:00=>00:05, Auto/OnNext): SMS ved kaotiske situasjoner i trafikken, #nrknyheter", 
+							"MOSSlugs" : "SMS-VARSLING;SMS-VARSLING-150618S-SL-16\r\nSTK SYNK 1;STK-10\r\nSMS-VARSLING;SMS-VARSLING-150618S-SL-2\r\nSMS-VARSLING;SMS-VARSLING-150618S-SL-17", 
+							"MOSTimes" : "20180803T055911Z\r\n\r\n\r\n20180803T055911Z", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"StoryLogPreview" : "< legg klippet her >", 
+							"TextTime" : 0, 
+							"Bildebeskrivelse" : "", 
+							"Innslagstittel" : "SMS-varsling", 
+							"mosartType" : "STK", 
+							"ReadTime" : 0, 
+							"Rettigheter" : "Grønt", 
+							"Rettighetseier" : "NRK", 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "16", 
+							"ObjectID" : "1f987e3c-2db3-4954-8b10-bd70b7c5f210", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "SMS-VARSLING;SMS-VARSLING-150618S-SL-16", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "1f987e3c-2db3-4954-8b10-bd70b7c5f210", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"22_sted_arkiv"
+											], 
+											"displayName" : "22 Sted/Arkiv (00:01=>00:05, Auto/Auto): Kristiansand juni 2017", 
+											"displayNameShort" : "22 Sted/Arkiv: Kristiansand juni 2017"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"22_sted_arkiv" : {
+											"channel" : "gfx1", 
+											"layer" : "tagLeft", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"sted" : "", 
+											"arkiv" : "Kristiansand juni 2017"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"timeIn" : 1000, 
+										"duration" : 5000, 
+										"in" : "auto", 
+										"out" : "auto"
+									}
+								}
+							], 
+							"mosAbstract" : "22 Sted/Arkiv (00:01=>00:05, Auto/Auto): Kristiansand juni 2017"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "5", 
+							"ObjectID" : "N11859_1529074992", 
+							"MOSID" : "METADATA.NRK.MOS", 
+							"Slug" : "STK SYNK 1;STK-10", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://mosA4.com/mos/supported_schemas/MOSAXML2.08", 
+									"MosPayload" : {
+										"nrk" : {
+											"attributes" : {
+												"changetime" : "2018-06-15T17:03:12 +02:00", 
+												"changedBy" : "N11859", 
+												"type" : "video", 
+												"mdSource" : "omnibus"
+											}, 
+											"title" : "SMS-varsling", 
+											"description" : "", 
+											"hbbtv" : {
+												"link" : ""
+											}, 
+											"rights" : {
+												"text" : "Green", 
+												"notes" : "", 
+												"owner" : "NRK"
+											}
+										}
+									}
+								}
+							], 
+							"mosAbstract" : "M: SMS-varsling (15-06-18 17:03)", 
+							"ObjectSlug" : "M: SMS-varsling"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : "< legg klippet her"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "2", 
+							"ObjectID" : "\\\\XPRO\\Omn\\A\\A\\43\\12", 
+							"MOSID" : "OMNIBUS.XPRO.MOS", 
+							"Slug" : "SMS-VARSLING;SMS-VARSLING-150618S-SL-2", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "OMNIBUS", 
+									"MosPayload" : {
+										"title" : "Skogsbrann i Sverige", 
+										"objectType" : "CLIP", 
+										"clipType" : "NYHETER", 
+										"objDur" : 1482, 
+										"objType" : "VIDEO"
+									}
+								}
+							], 
+							"mosAbstract" : "SKOGBRANNER-100618S-DR23 NYHETER 00:00:29:16", 
+							"ObjectSlug" : "SKOGBRANNER-100618S-DR23"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : ">"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "17", 
+							"ObjectID" : "8e4c6854-f36d-44af-88d1-d14d23e1551d", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "SMS-VARSLING;SMS-VARSLING-150618S-SL-17", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "8e4c6854-f36d-44af-88d1-d14d23e1551d", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"10_tema"
+											], 
+											"displayName" : "10 Tema (00:00=>00:05, Auto/OnNext): SMS ved kaotiske situasjoner i trafikken, #nrknyheter", 
+											"displayNameShort" : "10 Tema: SMS ved kaotiske situasjoner i trafikken, #nrknyheter"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"10_tema" : {
+											"channel" : "gfx1", 
+											"layer" : "tema", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"tematekst" : "SMS ved kaotiske situasjoner i trafikken", 
+											"infotekst" : "#nrknyheter"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"text" : 0, 
+										"timeIn" : 0, 
+										"duration" : 5000, 
+										"in" : "auto", 
+										"out" : "onNext"
+									}
+								}
+							], 
+							"mosAbstract" : "10 Tema (00:00=>00:05, Auto/OnNext): SMS ved kaotiske situasjoner i trafikken, #nrknyheter"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;1B1E5519-3C2D-49FA-A51EFA3DA687EB0C", 
+				"Slug" : "KOMMER 2055;Full", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 2, 
+							"MediaTime" : 34.32, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180702T111523Z", 
+							"MOSAbstracts" : "ANBUD-070618F-TR NYHETER 00:00:34:08 \r\n01 Ett navn (00:01=>00:05, Auto/Auto): Hans Hansen, allviter\r\nTIDSMARKØR IKKE RØR", 
+							"MOSItemDurations" : "34,32", 
+							"MOSItemEdDurations" : "", 
+							"MOSObjSlugs" : "ANBUD-070618F-TR\r\n01 Ett navn (00:01=>00:05, Auto/Auto): Hans Hansen, allviter\r\nStory status", 
+							"MOSSlugs" : "SMS-VARSLING;Full-2\r\nSMS-VARSLING;Full-4\r\nNYHETSSAK 1;SAK-16", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180713T192738247Z", 
+							"MOSTimes" : "20180803T055911Z", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"TextTime" : 0, 
+							"mosartType" : "FULL", 
+							"ReadTime" : 34.32, 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "2", 
+							"ObjectID" : "\\\\XPRO\\Omn\\A\\A\\43\\03", 
+							"MOSID" : "OMNIBUS.XPRO.MOS", 
+							"Slug" : "SMS-VARSLING;Full-2", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "OMNIBUS", 
+									"MosPayload" : {
+										"title" : "ANBUD-070618F-TR.", 
+										"objectType" : "CLIP", 
+										"clipType" : "NYHETER", 
+										"objDur" : 1716, 
+										"objType" : "VIDEO"
+									}
+								}
+							], 
+							"mosAbstract" : "ANBUD-070618F-TR NYHETER 00:00:34:08", 
+							"ObjectSlug" : "ANBUD-070618F-TR"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "4", 
+							"ObjectID" : "85bac65d-7ceb-4f3c-a974-3f2bd2a06503", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "SMS-VARSLING;Full-4", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "85bac65d-7ceb-4f3c-a974-3f2bd2a06503", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"01_navn"
+											], 
+											"displayName" : "01 Ett navn (00:01=>00:05, Auto/Auto): Hans Hansen, allviter", 
+											"displayNameShort" : "01 Ett navn: Hans Hansen, allviter"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"01_navn" : {
+											"channel" : "gfx1", 
+											"layer" : "super", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"navn" : "Hans Hansen", 
+											"tittel" : "allviter"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"timeIn" : 1000, 
+										"duration" : 5000, 
+										"in" : "auto", 
+										"out" : "auto"
+									}
+								}
+							], 
+							"mosAbstract" : "01 Ett navn (00:01=>00:05, Auto/Auto): Hans Hansen, allviter"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "5", 
+							"ObjectID" : "STORYSTATUS", 
+							"MOSID" : "mosart.morten.mos", 
+							"Slug" : "NYHETSSAK 1;SAK-16", 
+							"ObjectSlug" : "Story status"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;89F9712B-B4D5-4D80-937BF7379C4700B7", 
+				"Slug" : "SEERBILDE;tekst", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 32, 
+							"MediaTime" : 0, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180702T121545Z", 
+							"MOSAbstracts" : "TIDSMARKØR IKKE RØR", 
+							"MOSObjSlugs" : "Story status", 
+							"MOSSlugs" : "SAK 4;intro --2", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180713T192740449Z", 
+							"MOSTimes" : 20171213175731804.0, 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"StoryLogPreview" : "Dagens bilde er sendt inn av Olga Olsen. Det viser en praktfull solnedgang over badende barn i Skippergada.", 
+							"TextTime" : 8, 
+							"mosartType" : "KAM", 
+							"mosartVariant" : 2, 
+							"ReadTime" : 8, 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : "Dagens bilde er sendt inn av Olga Olsen. Det viser en praktfull solnedgang over badende barn i Skippergada."
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "2", 
+							"ObjectID" : "STORYSTATUS", 
+							"MOSID" : "mosart.morten.mos", 
+							"Slug" : "SAK 4;intro --2", 
+							"ObjectSlug" : "Story status"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;475341D0-FFFA-4753-B9785A35A07268E3", 
+				"Slug" : "SEERBILDE;SEERBILDE", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"Estimated" : 15, 
+							"MediaTime" : 0, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180702T121614Z", 
+							"MOSAbstracts" : "M: Seerbilde (16-06-16 17:20)", 
+							"MOSObjSlugs" : "M: Seerbilde", 
+							"MOSSlugs" : "Uten tittel", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"TextTime" : 0, 
+							"Bildebeskrivelse" : "", 
+							"Innslagstittel" : "Seerbilde", 
+							"mosartType" : "GRAFIKK", 
+							"ReadTime" : 0, 
+							"Rettigheter" : "Grønt", 
+							"Rettighetseier" : "NRK", 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "5", 
+							"ObjectID" : "N12050_1466090430", 
+							"MOSID" : "METADATA.NRK.MOS", 
+							"Slug" : "Uten tittel", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://mosA4.com/mos/supported_schemas/MOSAXML2.08", 
+									"MosPayload" : {
+										"nrk" : {
+											"attributes" : {
+												"changetime" : "2016-06-16T17:20:29 +02:00", 
+												"changedBy" : "N12050", 
+												"type" : "video", 
+												"mdSource" : "ncs"
+											}, 
+											"title" : "Seerbilde", 
+											"description" : "", 
+											"hbbtv" : {
+												"link" : ""
+											}, 
+											"rights" : {
+												"text" : "Green", 
+												"notes" : "", 
+												"owner" : "NRK"
+											}
+										}
+									}
+								}
+							], 
+							"mosAbstract" : "M: Seerbilde (16-06-16 17:20)", 
+							"ObjectSlug" : "M: Seerbilde"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : "<Hvor ble det av sommeren? Foto Ann-Karin Gjertsen-Davidsen, Raet nasjonalpark>"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;DC3F3045-94EC-4699-87B55DE1FF4E66F5", 
+				"Slug" : "Nettpromo;Tekst", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"Actual" : 3, 
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 11, 
+							"MediaTime" : 0, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180702T121704Z", 
+							"MOSAbstracts" : "TIDSMARKØR IKKE RØR", 
+							"MOSObjSlugs" : "Story status", 
+							"MOSSlugs" : "ÅPNING;HEAD-1-17", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180713T192813046Z", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"StoryLogPreview" : "I dag kan vi lese om Trimp på våre nettsider, mer leser du på nrk.no/sorland", 
+							"TextTime" : 5, 
+							"mosartType" : "KAM", 
+							"mosartVariant" : 1, 
+							"ReadTime" : 5, 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : "I dag kan vi lese om Trimp på våre nettsider, mer leser du på nrk.no/sorland"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "2", 
+							"ObjectID" : "STORYSTATUS", 
+							"MOSID" : "mosart.morten.mos", 
+							"Slug" : "ÅPNING;HEAD-1-17", 
+							"ObjectSlug" : "Story status"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;D4EC0230-B9D2-4985-878572A6C4C467A9", 
+				"Slug" : "Nettpromo;Grafikk", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 64, 
+							"MediaTime" : 0, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180702T121715Z", 
+							"MOSAbstracts" : "M: Nettet nå (03-05-18 10:11)", 
+							"MOSObjSlugs" : "M: Nettet nå", 
+							"MOSSlugs" : "Uten tittel", 
+							"MOSStoryStatus" : "STOP", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180615T124858262Z", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"TextTime" : 0, 
+							"Bildebeskrivelse" : "", 
+							"Innslagstittel" : "Nettet nå", 
+							"mosartType" : "GRAFIKK", 
+							"ReadTime" : 0, 
+							"Rettigheter" : "Grønt", 
+							"Rettighetseier" : "NRK", 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "2", 
+							"ObjectID" : "N12050_1525335104", 
+							"MOSID" : "METADATA.NRK.MOS", 
+							"Slug" : "Uten tittel", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://mosA4.com/mos/supported_schemas/MOSAXML2.08", 
+									"MosPayload" : {
+										"nrk" : {
+											"attributes" : {
+												"changetime" : "2018-05-03T10:11:44 +02:00", 
+												"changedBy" : "N12050", 
+												"type" : "video", 
+												"mdSource" : "ncs"
+											}, 
+											"title" : "Nettet nå", 
+											"description" : "", 
+											"hbbtv" : {
+												"link" : ""
+											}, 
+											"rights" : {
+												"text" : "Green", 
+												"notes" : "", 
+												"owner" : "NRK"
+											}
+										}
+									}
+								}
+							], 
+							"mosAbstract" : "M: Nettet nå (03-05-18 10:11)", 
+							"ObjectSlug" : "M: Nettet nå"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;FA11F662-4A45-4F90-A95D09B74EB047D9", 
+				"Slug" : "Vær;Intro", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"Actual" : 4, 
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 4, 
+							"MediaTime" : 0, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180614T135536Z", 
+							"MOSAbstracts" : "TIDSMARKØR IKKE RØR", 
+							"MOSObjSlugs" : "Story status", 
+							"MOSSlugs" : "ÅPNING;HEAD-1-17", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180713T192825034Z", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"StoryLogPreview" : "Nå skal vi se hva slags vær vi får de neste tre dagene", 
+							"TextTime" : 4, 
+							"mosartType" : "KAM", 
+							"mosartVariant" : 1, 
+							"ReadTime" : 4, 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : "Nå skal vi se hva slags vær vi får de neste tre dagene"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "2", 
+							"ObjectID" : "STORYSTATUS", 
+							"MOSID" : "mosart.morten.mos", 
+							"Slug" : "ÅPNING;HEAD-1-17", 
+							"ObjectSlug" : "Story status"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;F2D0440C-7E2E-48A5-B9D6FC338FD76E1F", 
+				"Slug" : "Vær;Vær", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 5, 
+							"MediaTime" : 0, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180702T121856Z", 
+							"MOSAbstracts" : "M: Været (03-05-18 10:12)\r\n dk-været-to-1955-220318 SLETT_VSERV_Y_TIMER 00:10:00:00 \r\n01 Ett navn (00:02=>00:05, Auto/Auto): Bente Wahl, statsmeteorolog, Meteorologisk institutt\r\nTIDSMARKØR IKKE RØR", 
+							"MOSItemDurations" : 600, 
+							"MOSItemEdDurations" : "", 
+							"MOSObjSlugs" : "M: Været\r\ndk-været-to-1955-220318\r\n01 Ett navn (00:02=>00:05, Auto/Auto): Bente Wahl, statsmeteorolog, Meteorologisk institutt\r\nStory status", 
+							"MOSSlugs" : "Uten tittel\r\nVær;Vær-3\r\nVær;Vær-5\r\nÅPNING;HEAD-1-17", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180713T192829910Z", 
+							"MOSTimes" : "20180803T055911Z", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"StoryLogPreview" : "<\r\n>", 
+							"TextTime" : 0, 
+							"Bildebeskrivelse" : "", 
+							"Innslagstittel" : "Været", 
+							"mosartType" : "STK", 
+							"ReadTime" : 0, 
+							"Rettigheter" : "Grønt", 
+							"Rettighetseier" : "NRK", 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "2", 
+							"ObjectID" : "N12050_1525335158", 
+							"MOSID" : "METADATA.NRK.MOS", 
+							"Slug" : "Uten tittel", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://mosA4.com/mos/supported_schemas/MOSAXML2.08", 
+									"MosPayload" : {
+										"nrk" : {
+											"attributes" : {
+												"changetime" : "2018-05-03T10:12:37 +02:00", 
+												"changedBy" : "N12050", 
+												"type" : "video", 
+												"mdSource" : "ncs"
+											}, 
+											"title" : "Været", 
+											"description" : "", 
+											"hbbtv" : {
+												"link" : ""
+											}, 
+											"rights" : {
+												"text" : "Green", 
+												"notes" : "", 
+												"owner" : "NRK"
+											}
+										}
+									}
+								}
+							], 
+							"mosAbstract" : "M: Været (03-05-18 10:12)", 
+							"ObjectSlug" : "M: Været"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : "<"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "3", 
+							"ObjectID" : "\\\\XPRO\\Omn\\A\\A\\38\\60", 
+							"MOSID" : "OMNIBUS.XPRO.MOS", 
+							"Slug" : "Vær;Vær-3", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "OMNIBUS", 
+									"MosPayload" : {
+										"title" : "dk-været-to-1955-220318", 
+										"objectType" : "CLIP", 
+										"clipType" : "SLETT_VSERV_Y_TIMER", 
+										"objDur" : 30000, 
+										"objType" : "VIDEO"
+									}
+								}
+							], 
+							"mosAbstract" : "dk-været-to-1955-220318 SLETT_VSERV_Y_TIMER 00:10:00:00", 
+							"ObjectSlug" : "dk-været-to-1955-220318"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : ">"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "5", 
+							"ObjectID" : "85bac65d-7ceb-4f3c-a974-3f2bd2a06503", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "Vær;Vær-5", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "85bac65d-7ceb-4f3c-a974-3f2bd2a06503", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"01_navn"
+											], 
+											"displayName" : "01 Ett navn (00:02=>00:05, Auto/Auto): Bente Wahl, statsmeteorolog, Meteorologisk institutt", 
+											"displayNameShort" : "01 Ett navn: Bente Wahl, statsmeteorolog, Meteorologisk institutt"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"01_navn" : {
+											"channel" : "gfx1", 
+											"layer" : "super", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"navn" : "Bente Wahl", 
+											"tittel" : "statsmeteorolog, Meteorologisk institutt"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"timeIn" : 2000, 
+										"duration" : 5000, 
+										"in" : "auto", 
+										"out" : "auto"
+									}
+								}
+							], 
+							"mosAbstract" : "01 Ett navn (00:02=>00:05, Auto/Auto): Bente Wahl, statsmeteorolog, Meteorologisk institutt"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "4", 
+							"ObjectID" : "STORYSTATUS", 
+							"MOSID" : "mosart.morten.mos", 
+							"Slug" : "ÅPNING;HEAD-1-17", 
+							"ObjectSlug" : "Story status"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+	)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;5C596E40-F75B-463F-A770E8735C60D104", 
+				"Slug" : "Takk for nå;tekst-takk for nå", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180702T084907Z", 
+							"Owner" : "N12050", 
+							"mosartType" : "KAM", 
+							"mosartVariant" : 2, 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+			
+				]
+			}
+		)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;43542D61-DC75-48A1-9B218CFD6E769C7A", 
+				"Slug" : "Sluttvignett;Credits", 
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST", 
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd", 
+						"MosPayload" : {
+							"text" : 0, 
+							"Approved" : 0, 
+							"Creator" : "N12050", 
+							"ElapsedTime" : 0, 
+							"MediaTime" : 0, 
+							"ModBy" : "N12050", 
+							"ModTime" : "20180627T122101Z", 
+							"MOSAbstracts" : "68 Sluttkred (00:01=>00:05, Auto/OnNext): Regi:, Ole Olsen | Vaktsjef:, Hans Hansen | Redaktør:, Per persen | test.nrk.no\r\nTIDSMARKØR IKKE RØR", 
+							"MOSItemDurations" : "", 
+							"MOSItemEdDurations" : "", 
+							"MOSObjSlugs" : "68 Sluttkred (00:01=>00:05, Auto/OnNext): Regi:, Ole Olsen | Vaktsjef:, Hans Hansen | Redaktør:, Per persen | test.nrk.no\r\nStory status", 
+							"MOSSlugs" : "Sluttvignett;Credits-4\r\nÅPNING;HEAD-1-17", 
+							"MOSStoryStatus" : "PLAY", 
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS", 
+							"MOSStoryStatusTime" : "20180713T192835317Z", 
+							"MOSTimes" : "20180803T055911Z", 
+							"Owner" : "N12050", 
+							"SourceMediaTime" : 0, 
+							"SourceTextTime" : 0, 
+							"StoryLogPreview" : "det var alt vi hadde for i dag, sees i morgen", 
+							"TextTime" : 3, 
+							"mosartType" : "KAM", 
+							"mosartVariant" : "3SLUTT", 
+							"ReadTime" : 3, 
+							"ENPSItemType" : 3
+						}
+					}
+				], 
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446", 
+				"Body" : [
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "text", 
+							"name" : "p", 
+							"text" : "det var alt vi hadde for i dag, sees i morgen"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "4", 
+							"ObjectID" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24", 
+							"MOSID" : "GFX.NRK.MOS", 
+							"Slug" : "Sluttvignett;Credits-4", 
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content", 
+									"MosPayload" : {
+										"uuid" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24", 
+										"metadata" : {
+											"modul" : "nora.browser", 
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no", 
+												"super", 
+												"68_sluttkred_kort"
+											], 
+											"displayName" : "68 Sluttkred (00:01=>00:05, Auto/OnNext): Regi:, Ole Olsen | Vaktsjef:, Hans Hansen | Redaktør:, Per persen | test.nrk.no", 
+											"displayNameShort" : "68 Sluttkred: Regi:, Ole Olsen | Vaktsjef:, Hans Hansen | Redaktør:, Per persen | test.nrk.no"
+										}, 
+										"render" : {
+											"group" : ""
+										}, 
+										"68_sluttkred_kort" : {
+											"channel" : "gfx1", 
+											"layer" : "fullskjerm", 
+											"system" : "html"
+										}, 
+										"content" : {
+											"funksjon1" : "Regi:", 
+											"navn1" : "Ole Olsen", 
+											"funksjon2" : "Vaktsjef:", 
+											"navn2" : "Hans Hansen", 
+											"funksjon3" : "Redaktør:", 
+											"navn3" : "Per persen", 
+											"nettadresse" : "test.nrk.no", 
+											"navn" : "Per Persen", 
+											"tittel" : "baker", 
+											"sted" : "Snåsa"
+										}
+									}
+								}, 
+								{
+									"MosScope" : "PLAYLIST", 
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing", 
+									"MosPayload" : {
+										"timeIn" : 1000, 
+										"duration" : 5000, 
+										"in" : "auto", 
+										"out" : "onNext"
+									}
+								}
+							], 
+							"mosAbstract" : "68 Sluttkred (00:01=>00:05, Auto/OnNext): Regi:, Ole Olsen | Vaktsjef:, Hans Hansen | Redaktør:, Per persen | test.nrk.no"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}, 
+					{
+						"Type" : "storyItem", 
+						"Content" : {
+							"ID" : "2", 
+							"ObjectID" : "STORYSTATUS", 
+							"MOSID" : "mosart.morten.mos", 
+							"Slug" : "ÅPNING;HEAD-1-17", 
+							"ObjectSlug" : "Story status"
+						}
+					}, 
+					{
+						"Type" : "p", 
+						"Content" : {
+							"type" : "element", 
+							"name" : "p"
+						}
+					}
+				]
+			}
+		)
+			
 	}
+
 })
 
 // ----------------------------------------------------------------------------
