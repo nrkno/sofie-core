@@ -217,18 +217,6 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 													className='input text-input input-l'></EditAttribute>
 											</label>
 										</div>
-										<div className='mod mvs mhs'>
-											<label className='field'>
-												<EditAttribute
-													modifiedClassName='bghl'
-													attribute={'settings.devices.' + deviceId + '.options.syncTimecode' }
-													obj={this.props.device}
-													type='checkbox'
-													collection={PeripheralDevices}
-													className=''></EditAttribute>
-												{t('Playout uses Timecode of Caspar')}
-											</label>
-										</div>
 									</React.Fragment>
 									)
 								) ||
@@ -338,17 +326,6 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 
 		return (
 			<div>
-				<label className='field'>
-					<EditAttribute
-						modifiedClassName='bghl'
-						attribute={'initializeAsClear'}
-						obj={this.props.device}
-						type='checkbox'
-						collection={PeripheralDevices}
-						className=''></EditAttribute>
-					{t('Initialize as clear')}
-				</label>
-				
 				<div className='mod mvs mhs'>
 					<label className='field'>
 						{t('Media Scanner Host')}: 
