@@ -31,7 +31,7 @@ export namespace PlayoutAPI {
 }
 
 export enum LookaheadMode {
-	None,
-	Preload,
-	Retain
+	NONE = 0,
+	PRELOAD = 1,
+	RETAIN = 2
 }

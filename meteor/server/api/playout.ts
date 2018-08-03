@@ -1220,7 +1220,7 @@ export function addLookeaheadObjectsToTimeline (activeRunningOrder: RunningOrder
 }
 
 export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer: string, mode: LookaheadMode): {obj: TimelineObj, slId: string}[] {
-	if (mode === undefined || mode === LookaheadMode.None) {
+	if (mode === undefined || mode === LookaheadMode.NONE) {
 		return []
 	}
 
@@ -1244,7 +1244,7 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 	}
 
 	// If mode is retained, and only one use, we can take a shortcut
-	if (mode === LookaheadMode.Retain && layerItems.length === 1) {
+	if (mode === LookaheadMode.RETAIN && layerItems.length === 1) {
 		const i = layerItems[0]
 		if (i.content && i.content.timelineObjects) {
 			const r = i.content.timelineObjects.find(o => o !== null && o.LLayer === layer)
@@ -1332,7 +1332,7 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 		}
 	}
 	// If set to retain, then look backwards
-	if (mode === LookaheadMode.Retain) {
+	if (mode === LookaheadMode.RETAIN) {
 		for (let i = currentPos - 1; i >= 0; i--) {
 			const v = orderedGroups[i]
 
