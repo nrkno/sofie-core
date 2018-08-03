@@ -111,7 +111,7 @@ Meteor.methods({
 					onPGMClean: true
 				},
 				{
-					_id: 'studio0_graphics0',
+					_id: 'studio0_graphics_super',
 					_rank: 100,
 					name: 'Super',
 					type: RundownAPI.SourceLayerType.GRAPHICS,
@@ -120,7 +120,7 @@ Meteor.methods({
 					clearKeyboardHotkey: 'u'
 				},
 				{
-				 	_id: 'studio0_graphics1',
+				 	_id: 'studio0_graphics_fullskjerm',
 				 	_rank: 55,
 				 	name: 'Grafikk',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
@@ -137,6 +137,41 @@ Meteor.methods({
 				 	_id: 'studio0_graphics_logo',
 				 	_rank: 111,
 				 	name: 'Logo',
+				 	type: RundownAPI.SourceLayerType.GRAPHICS,
+					onPGMClean: true
+				},
+				{
+				 	_id: 'studio0_graphics_tag_left',
+				 	_rank: 112,
+				 	name: 'TagLeft',
+				 	type: RundownAPI.SourceLayerType.GRAPHICS,
+					onPGMClean: true
+				},
+				{
+				 	_id: 'studio0_graphics_tag_right',
+				 	_rank: 113,
+				 	name: 'TagRight',
+				 	type: RundownAPI.SourceLayerType.GRAPHICS,
+					onPGMClean: true
+				},
+				{
+				 	_id: 'studio0_graphics_tema',
+				 	_rank: 114,
+				 	name: 'Tema',
+				 	type: RundownAPI.SourceLayerType.GRAPHICS,
+					onPGMClean: true
+				},
+				{
+				 	_id: 'studio0_graphics_ticker',
+				 	_rank: 115,
+				 	name: 'Ticker',
+				 	type: RundownAPI.SourceLayerType.GRAPHICS,
+					onPGMClean: true
+				},
+				{
+				 	_id: 'studio0_graphics_bakskjerm',
+				 	_rank: 116,
+				 	name: 'Bakskjerm',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true
 				},
@@ -243,11 +278,6 @@ Meteor.methods({
 				channel: 4,
 				layer: 120
 			}),
-			'casparcg_cg_graphics_ctrl': literal<Mapping>({
-				device: PlayoutDeviceType.HTTPSEND,
-				deviceId: 'http0',
-				lookahead: LookaheadMode.NONE,
-			}),
 			'casparcg_cg_countdown': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
@@ -261,16 +291,6 @@ Meteor.methods({
 				lookahead: LookaheadMode.NONE,
 				channel: 4,
 				layer: 121
-			}),
-			'casparcg_cg_logo_ctrl': literal<Mapping>({
-				device: PlayoutDeviceType.HTTPSEND,
-				deviceId: 'http0',
-				lookahead: LookaheadMode.NONE,
-			}),
-			'casparcg_cg_klokke_ctrl': literal<Mapping>({
-				device: PlayoutDeviceType.HTTPSEND,
-				deviceId: 'http0',
-				lookahead: LookaheadMode.NONE,
 			}),
 			'casparcg_cg_studiomonitor': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
@@ -292,16 +312,6 @@ Meteor.methods({
 				lookahead: LookaheadMode.NONE,
 				channel: 5,
 				layer: 120
-			}),
-			'casparcg_cg_effects_ctrl': literal<Mapping>({
-				device: PlayoutDeviceType.HTTPSEND,
-				deviceId: 'http0',
-				lookahead: LookaheadMode.NONE,
-			}),
-			'casparcg_cg_studiomonitor_ctrl': literal<Mapping>({
-				device: PlayoutDeviceType.HTTPSEND,
-				deviceId: 'http0',
-				lookahead: LookaheadMode.NONE,
 			}),
 			'atem_me_program': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
@@ -435,7 +445,57 @@ Meteor.methods({
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM6',
-			})
+			}),
+			'nora_init': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0',
+				lookahead: LookaheadMode.NONE,
+			}),
+			'nora_primary_super': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0',
+				lookahead: LookaheadMode.NONE,
+			}),
+			'nora_primary_tag_left': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0',
+				lookahead: LookaheadMode.NONE,
+			}),
+			'nora_primary_tag_right': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0',
+				lookahead: LookaheadMode.NONE,
+			}),
+			'nora_primary_ticker': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0',
+				lookahead: LookaheadMode.NONE,
+			}),
+			'nora_primary_tema': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0',
+				lookahead: LookaheadMode.NONE,
+			}),
+			'nora_permanent_logo': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0',
+				lookahead: LookaheadMode.NONE,
+			}),
+			'nora_permanent_klokke': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0',
+				lookahead: LookaheadMode.NONE,
+			}),
+			'nora_effects_fullskjerm': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0',
+				lookahead: LookaheadMode.NONE,
+			}),
+			'nora_studio_bakskjerm': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0',
+				lookahead: LookaheadMode.NONE,
+			}),
 		}
 		StudioInstallations.update('studio0', {$set: {
 			mappings: mappings

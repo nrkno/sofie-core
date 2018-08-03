@@ -1267,7 +1267,7 @@ Meteor.methods({
 									},
 									template: {
 										event: "",
-										layer: "super",
+										layer: "klokke",
 										name: "51_klokke"
 									},
 									content: {}
@@ -1310,7 +1310,7 @@ Meteor.methods({
 									},
 									template: {
 										event: "",
-										layer: "super",
+										layer: "logo",
 										name: "50_logo"
 									},
 									content: {}
@@ -1942,7 +1942,96 @@ Meteor.methods({
 		}),
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;95EBAE5C-A888-478E-87234C566DCA3D55","Slug":"Vær;Intro","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180503T081217Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"Nå skal vi se hva slags vær vi får de neste tre dagene","TextTime":4,"mosartType":"KAM","mosartVariant":1,"ReadTime":4,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:41.411Z"})
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;2E21CEBA-BE5E-483C-9A26F64B5AB51643","Slug":"Vær;Vær","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":600,"ModBy":"N12050","ModTime":"20180503T081321Z","MOSAbstracts":"M: Været (03-05-18 10:12)\n dk-været-to-1955-220318 SLETT_VSERV_Y_TIMER 00:10:00:00","MOSItemDurations":600,"MOSItemEdDurations":"","MOSObjSlugs":"M: Været\ndk-været-to-1955-220318","MOSSlugs":"Uten tittel\nVær;Vær-3","MOSTimes":"","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"TextTime":4,"Bildebeskrivelse":"","Innslagstittel":"Været","mosartType":"FULL","ReadTime":604,"Rettigheter":"Grønt","Rettighetseier":"NRK","ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[{"Type":"storyItem","Content":{"itemID":2,"objID":"N12050_1525335158","mosID":"METADATA.NRK.MOS","mosAbstract":"M: Været (03-05-18 10:12)","objSlug":"M: Været","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"http://mosA4.com/mos/supported_schemas/MOSAXML2.08","mosPayload":{"nrk":{"changetime":"2018-05-03T10:12:37 +02:00","changedBy":"N12050","type":"video","mdSource":"ncs","title":"Været","description":{},"hbbtv":{"link":""},"rights":{"notes":"","owner":"NRK","@t":"Green"}}}},"itemSlug":"Uten tittel"}},{"Type":"storyItem","Content":{"itemID":3,"itemSlug":"Vær;Vær-3","objID":"\\\\XPRO\\Omn\\A\\A\\38\\60","mosID":"OMNIBUS.XPRO.MOS","mosAbstract":"dk-været-to-1955-220318 SLETT_VSERV_Y_TIMER 00:10:00:00","objDur":30000,"objTB":50,"objSlug":"dk-været-to-1955-220318","mosExternalMetadata":{"mosScope":"PLAYLIST","mosSchema":"OMNIBUS","mosPayload":{"title":"dk-været-to-1955-220318","objectType":"CLIP","clipType":"SLETT_VSERV_Y_TIMER","objDur":30000,"objType":"VIDEO"}}}}],"level":"debug","message":"","timestamp":"2018-05-31T08:19:41.614Z"})
-		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{"ID":"MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;CA207AAF-9B8C-409B-854DE3CFC2AB8DCF","Slug":"Sluttvignett;Credits","MosExternalMetaData":[{"MosScope":"PLAYLIST","MosSchema":"http://MAENPSTEST14:10505/schema/enps.dtd","MosPayload":{"Approved":0,"Creator":"N12050","MediaTime":0,"ModBy":"N12050","ModTime":"20180503T081417Z","Owner":"N12050","SourceMediaTime":0,"SourceTextTime":0,"StoryLogPreview":"det var alt vi hadde for i dag, sees i morgen","TextTime":7,"mosartType":"KAM","mosartVariant":"3SLUTT","ReadTime":7,"ENPSItemType":3}}],"RunningOrderId":"MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5","Body":[],"level":"debug","message":"","timestamp":"2018-05-31T08:19:41.850Z"})
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,{
+			"ID": "MAENPSTEST14;P_SERVER14\\W\\R_B39BEF9C-78A3-4A4E-A33BFDB09371EDF5;CA207AAF-9B8C-409B-854DE3CFC2AB8DCF",
+			"Slug": "Sluttvignett;Credits",
+			"MosExternalMetaData": [{
+			 "MosScope": "PLAYLIST",
+			 "MosSchema": "http://MAENPSTEST14:10505/schema/enps.dtd",
+			 "MosPayload": {
+			  "Approved": 0,
+			  "Creator": "N12050",
+			  "MediaTime": 0,
+			  "ModBy": "N12050",
+			  "ModTime": "20180503T081417Z",
+			  "Owner": "N12050",
+			  "SourceMediaTime": 0,
+			  "SourceTextTime": 0,
+			  "StoryLogPreview": "det var alt vi hadde for i dag, sees i morgen",
+			  "TextTime": 7,
+			  "mosartType": "KAM",
+			  "mosartVariant": "3SLUTT",
+			  "ReadTime": 7,
+			  "ENPSItemType": 3
+			 }
+			}],
+			"RunningOrderId": "MAENPSTEST14;P_SERVER14\\W;B39BEF9C-78A3-4A4E-A33BFDB09371EDF5",
+			"Body": [
+				{
+					"Type" : "storyItem",
+					"Content" : {
+						"ID" : "4",
+						"ObjectID" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24",
+						"mosID" : "GFX.NRK.MOS",
+						"Slug" : "Sluttvignett;Credits-4",
+						"mosExternalMetadata" : [
+							{
+								"mosScope" : "PLAYLIST",
+								"mosSchema" : "http://nora.core.mesosint.nrk.no/mos/content",
+								"mosPayload" : {
+									"uuid" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24",
+									"metadata" : {
+										"modul" : "nora.browser",
+										"selection" : [
+											"http://nora.render.nyheter.mesosint.nrk.no",
+											"super",
+											"68_sluttkred_kort"
+										],
+										"displayName" : "68 Sluttkred (00:01=>00:05, Auto/OnNext): Regi:, Ole Olsen | Vaktsjef:, Hans Hansen | Redaktør:, Per persen | test.nrk.no",
+										"displayNameShort" : "68 Sluttkred: Regi:, Ole Olsen | Vaktsjef:, Hans Hansen | Redaktør:, Per persen | test.nrk.no"
+									},
+									"render" : {
+										"group" : ""
+									},
+									"template" : {
+										"name": "68_sluttkred_kort",
+										"channel" : "gfx1",
+										"layer" : "fullskjerm",
+										"system" : "html"
+									},
+									"content" : {
+										"funksjon1" : "Regi:",
+										"navn1" : "Ole Olsen",
+										"funksjon2" : "Vaktsjef:",
+										"navn2" : "Hans Hansen",
+										"funksjon3" : "Redaktør:",
+										"navn3" : "Per persen",
+										"nettadresse" : "test.nrk.no",
+										"navn" : "Per Persen",
+										"tittel" : "baker",
+										"sted" : "Snåsa"
+									}
+								}
+							},
+							{
+								"mosScope" : "PLAYLIST",
+								"mosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing",
+								"mosPayload" : {
+									"timeIn" : 1000,
+									"duration" : 5000,
+									"in" : "auto",
+									"out" : "onNext"
+								}
+							}
+						],
+						"mosAbstract" : "68 Sluttkred (00:01=>00:05, Auto/OnNext): Regi:, Ole Olsen | Vaktsjef:, Hans Hansen | Redaktør:, Per persen | test.nrk.no"
+					}
+				},
+			],
+			"level": "debug",
+			"message": "",
+			"timestamp": "2018-05-31T08:19:41.850Z"
+		   })
 
 	},
 	'debug_roMock2' () {
