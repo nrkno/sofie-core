@@ -77,7 +77,7 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 				return this.props.mediaPreviewUrl + 'media/preview/' + encodeURIComponent(metadata.objId)
 			}
 		}
-		return '/segment0_vt_preview.mp4' // TODO: should be undefined, but is a placeholder for time being
+		return undefined // TODO: should be undefined, but is a placeholder for time being
 	}
 
 	render () {
@@ -125,9 +125,14 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 						</div>
 					</div>
 					<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
-						<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
-							<video src={this.getPreviewUrl()} ref={this.setVideoRef} crossOrigin='anonymous' playsInline={true} muted={true}/>
-						</div>
+						{this.getPreviewUrl() ?
+							<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
+								<video src={this.getPreviewUrl()} ref={this.setVideoRef} crossOrigin='anonymous' playsInline={true} muted={true} />
+							</div> :
+							<div className='segment-timeline__mini-inspector' style={this.getFloatingInspectorStyle()}>
+								<div>FileName: {this.props.segmentLineItem.content.fileName}</div>
+							</div>
+						}
 					</FloatingInspector>
 				</React.Fragment>
 	}
