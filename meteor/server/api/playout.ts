@@ -1230,7 +1230,15 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 		line: SegmentLine
 	}
 	// find all slis that touch the layer
-	const layerItems = SegmentLineItems.find({'content.timelineObjects': { $elemMatch: { LLayer: layer } }}).fetch()
+	const layerItems = SegmentLineItems.find({
+		runningOrderId: activeRunningOrder._id,
+		// @ts-ignore advanced selector
+		'content.timelineObjects': {
+			$elemMatch: {
+				LLayer: layer
+			}
+		}
+	}).fetch()
 	if (layerItems.length === 0) {
 		return []
 	}
@@ -1262,7 +1270,9 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 
 	if (!segmentLinesInfo) {
 		// calculate ordered list of segmentlines, which can be cached for other llayers
-		const lines = SegmentLines.find().fetch().map(l => ({ id: l._id, rank: l._rank, segmentId: l.segmentId, line: l }))
+		const lines = SegmentLines.find({
+			runningOrderId: activeRunningOrder._id,
+		}).fetch().map(l => ({ id: l._id, rank: l._rank, segmentId: l.segmentId, line: l }))
 		lines.sort((a, b) => {
 			if (a.rank < b.rank) {
 				return -1
