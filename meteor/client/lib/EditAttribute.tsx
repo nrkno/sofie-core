@@ -377,13 +377,14 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 		let availableOptions = this.getOptions()
 		let initialValue = this.getAttribute()
 		// set the value to the first one (default), if value not within available options
+		// and availableOptions has any items
 		if (!availableOptions.find((item) => {
 			if (this.props.optionsAreNumbers) {
 				return (item.value === (initialValue + ''))
 			} else {
 				return (item.value === initialValue)
 			}
-		})) {
+		}) && availableOptions.length > 0) {
 			this.handleUpdate(this.props.optionsAreNumbers !== undefined ? parseInt(availableOptions[0].value, 10) : availableOptions[0].value)
 		}
 	}
