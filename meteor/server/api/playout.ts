@@ -33,7 +33,7 @@ export namespace ServerPlayoutAPI {
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
 		PeripheralDeviceAPI.executeFunction(runningOrder.mosDeviceId, (err: any, ro: IMOSRunningOrder) => {
-			console.log('Response!')
+			// console.log('Response!')
 			if (err) {
 				logger.error(err)
 			} else {
@@ -1564,7 +1564,7 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 
 		// only add the next objects into the timeline if the next segment is autoNext
 		if (nextSegmentLine && currentSegmentLine && currentSegmentLine.autoNext) {
-			console.log('This segment line will autonext')
+			// console.log('This segment line will autonext')
 			let nextSegmentLineGroup = createSegmentLineGroup(nextSegmentLine, 0)
 			if (currentSegmentLineGroup) {
 				nextSegmentLineGroup.trigger = literal<ITimelineTrigger>({
@@ -1736,6 +1736,7 @@ function processTimelineObjects (studioInstallation: StudioInstallation, timelin
 		logger.warn('Found groups without any deviceId: ' + missingDev)
 	}
 }
+
 /**
  * To be called after an update to the timeline has been made, will add/update the "statObj" - an object
  * containing the hash of the timeline, used to determine if the timeline should be updated in the gateways
@@ -1743,6 +1744,7 @@ function processTimelineObjects (studioInstallation: StudioInstallation, timelin
  */
 let afterUpdateTimelineTimeout: {[studioInstallationId: string]: number | null} = {}
 function afterUpdateTimeline (studioInstallation: StudioInstallation) {
+	// console.log(afterUpdateTimeline)
 	let a = afterUpdateTimelineTimeout[studioInstallation._id]
 	if (a) Meteor.clearTimeout(a)
 	afterUpdateTimelineTimeout[studioInstallation._id] = Meteor.setTimeout(() => {
@@ -1755,7 +1757,12 @@ function afterUpdateTimeline (studioInstallation: StudioInstallation) {
 		// Number of objects
 		let objCount = objs.length
 		// Hash of all objects
-		let objHash = getHash(JSON.stringify(objs))
+		objs = objs.sort((a, b) => {
+			if (a._id < b._id) return 1
+			if (a._id > b._id) return -1
+			return 0
+		})
+		let objHash = getHash(stringifyObjects(objs))
 
 		// save into "magic object":
 		let magicId = studioInstallation._id + '_statObj'
@@ -1776,6 +1783,7 @@ function afterUpdateTimeline (studioInstallation: StudioInstallation) {
 				value: 0 // never
 			},
 			duration: 0,
+			isAbstract: true,
 			LLayer: '__stat'
 		}
 
@@ -1783,6 +1791,24 @@ function afterUpdateTimeline (studioInstallation: StudioInstallation) {
 
 		Timeline.upsert(magicId, {$set: statObj})
 	}, 1)
+}
+
+function stringifyObjects (objs) {
+	if (_.isArray(objs)) {
+		return _.map(objs, (obj) => {
+			return stringifyObjects(obj)
+		}).join(',')
+	} else if (_.isFunction(objs)) {
+		return ''
+	} else if (_.isObject(objs)) {
+		let keys = _.sortBy(_.keys(objs), (k) => k)
+
+		return _.map(keys, (key) => {
+			return key + '=' + stringifyObjects(objs[key])
+		}).join(',')
+	} else {
+		return objs + ''
+	}
 }
 
 /**
