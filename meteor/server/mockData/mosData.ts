@@ -2155,7 +2155,7 @@ Meteor.methods({
 							"MOSStoryStatus" : "PLAY",
 							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS",
 							"MOSStoryStatusTime" : "20180802T154833145Z",
-							"MOSTimes" : "20180803T093513Z",
+							"MOSTimes" : "20180803T121753Z",
 							"Owner" : "N12050",
 							"SourceMediaTime" : 0,
 							"SourceTextTime" : 0,
@@ -2172,8 +2172,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -2203,8 +2203,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -2228,12 +2228,14 @@ Meteor.methods({
 												"52_headline"
 											],
 											"displayName" : "52 Headline (00:00=>00:05, Auto/OnNext): Head to",
-											"displayNameShort" : "52 Headline: Head to"
+											"displayNameShort" : "52 Headline: Head to",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"52_headline" : {
+										"template" : {
+											"name" : "52_headline",
 											"channel" : "gfx1",
 											"layer" : "super",
 											"system" : "html"
@@ -2262,8 +2264,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -2279,8 +2281,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
@@ -2331,8 +2333,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -2375,8 +2377,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -2392,13 +2394,13 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
 			}
-	)
+		)
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
 			{
 				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;6707E448-938D-42C7-96D4156F66B4B2AD",
@@ -2424,7 +2426,7 @@ Meteor.methods({
 							"MOSStoryStatus" : "PLAY",
 							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS",
 							"MOSStoryStatusTime" : "20180802T142125541Z",
-							"MOSTimes" : "20180803T093513Z",
+							"MOSTimes" : "20180803T121753Z",
 							"Owner" : "N12050",
 							"SourceMediaTime" : 0,
 							"SourceTextTime" : 0,
@@ -2441,8 +2443,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -2466,12 +2468,14 @@ Meteor.methods({
 												"52_headline"
 											],
 											"displayName" : "52 Headline (00:00=>00:05, Auto/OnNext): Head en",
-											"displayNameShort" : "52 Headline: Head en"
+											"displayNameShort" : "52 Headline: Head en",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"52_headline" : {
+										"template" : {
+											"name" : "52_headline",
 											"channel" : "gfx1",
 											"layer" : "super",
 											"system" : "html"
@@ -2500,8 +2504,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -2531,8 +2535,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -2548,13 +2552,13 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
 			}
-	)
+		)
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
 			{
 				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;6DBD519C-52F2-4665-8BE44677C67F7E6C",
@@ -2581,7 +2585,7 @@ Meteor.methods({
 							"MOSStoryStatus" : "PLAY",
 							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS",
 							"MOSStoryStatusTime" : "20180802T142126322Z",
-							"MOSTimes" : "20180803T093513Z\r\n20180803T093513Z\r\n20180803T093513Z\r\n20180803T093513Z\r\n20180803T093513Z\r\n20180803T093513Z\r\n20180615T173428656Z",
+							"MOSTimes" : "20180803T121753Z\r\n20180803T121753Z\r\n20180803T121753Z\r\n20180803T121753Z\r\n20180803T121753Z\r\n20180803T121753Z\r\n20180615T173428656Z",
 							"Owner" : "N12050",
 							"SourceMediaTime" : 0,
 							"SourceTextTime" : 81,
@@ -2608,8 +2612,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -2634,50 +2638,50 @@ Meteor.methods({
 											"title" : "Skrantesjuka truer hjortebestanden",
 											"description" : "Nærbilde av elg. Elg i innhengning. Viltforvalter går i skogen. Landbruksminister blir intervjuet.",
 											"hbbtv" : {
-												"type" : "element",
-												"name" : "hbbtv",
-												"link" : ""
+												"link" : "",
+												"@name" : "hbbtv",
+												"@type" : "element"
 											},
 											"location" : [
 												{
-													"type" : "text",
-													"name" : "location",
 													"text" : "Kristiansand",
 													"id" : "1-2376",
 													"region" : "Vest-Agder",
 													"lat" : "58.14615",
-													"lon" : "7.99573"
+													"lon" : "7.99573",
+													"@name" : "location",
+													"@type" : "text"
 												},
 												{
-													"type" : "text",
-													"name" : "location",
 													"text" : "Byglandsfjord",
 													"id" : "1-11874",
 													"region" : "Bygland, Aust-Agder",
 													"lat" : "58.66612",
-													"lon" : "7.81311"
+													"lon" : "7.81311",
+													"@name" : "location",
+													"@type" : "text"
 												}
 											],
 											"tag" : [
 												{
-													"type" : "text",
-													"name" : "tag",
 													"text" : "landbruks-og matminister",
-													"id" : "99041"
+													"id" : "99041",
+													"@name" : "tag",
+													"@type" : "text"
 												},
 												{
-													"type" : "text",
-													"name" : "tag",
 													"text" : "elg",
-													"id" : "1153"
+													"id" : "1153",
+													"@name" : "tag",
+													"@type" : "text"
 												}
 											],
 											"rights" : {
-												"type" : "text",
-												"name" : "rights",
 												"text" : "Green",
 												"notes" : "",
-												"owner" : "NRK"
+												"owner" : "NRK",
+												"@name" : "rights",
+												"@type" : "text"
 											}
 										}
 									}
@@ -2690,8 +2694,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -2721,8 +2725,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -2746,12 +2750,14 @@ Meteor.methods({
 												"01_navn"
 											],
 											"displayName" : "01 Navn (00:02=>00:05, Auto/Auto): Hilde Skarvøy Gjestland, reporter",
-											"displayNameShort" : "01 Navn: Hilde Skarvøy Gjestland, reporter"
+											"displayNameShort" : "01 Navn: Hilde Skarvøy Gjestland, reporter",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"01_navn" : {
+										"template" : {
+											"name" : "01_navn",
 											"channel" : "gfx1",
 											"layer" : "super",
 											"system" : "html"
@@ -2779,8 +2785,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -2804,12 +2810,14 @@ Meteor.methods({
 												"01_navn"
 											],
 											"displayName" : "01 Navn (00:18=>00:05, Auto/Auto): Tor Punsvik, viltforvalter, fylkesmannen Aust- og Vest Agder",
-											"displayNameShort" : "01 Navn: Tor Punsvik, viltforvalter, fylkesmannen Aust- og Vest Agder"
+											"displayNameShort" : "01 Navn: Tor Punsvik, viltforvalter, fylkesmannen Aust- og Vest Agder",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"01_navn" : {
+										"template" : {
+											"name" : "01_navn",
 											"channel" : "gfx1",
 											"layer" : "super",
 											"system" : "html"
@@ -2837,9 +2845,9 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : 52
+							"text" : 52,
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
@@ -2863,12 +2871,14 @@ Meteor.methods({
 												"22_sted_arkiv"
 											],
 											"displayName" : "22 Sted/Arkiv (00:27=>00:05, Auto/Auto): Fra dokumentarfilmen \"Villreinens siste vinter\"",
-											"displayNameShort" : "22 Sted/Arkiv: Fra dokumentarfilmen \"Villreinens siste vinter\""
+											"displayNameShort" : "22 Sted/Arkiv: Fra dokumentarfilmen \"Villreinens siste vinter\"",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"22_sted_arkiv" : {
+										"template" : {
+											"name" : "22_sted_arkiv",
 											"channel" : "gfx1",
 											"layer" : "tagLeft",
 											"system" : "html"
@@ -2896,8 +2906,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -2921,12 +2931,14 @@ Meteor.methods({
 												"22_sted_arkiv"
 											],
 											"displayName" : "22 Sted/Arkiv (00:52=>00:05, Auto/Auto): NRK arkiv",
-											"displayNameShort" : "22 Sted/Arkiv: NRK arkiv"
+											"displayNameShort" : "22 Sted/Arkiv: NRK arkiv",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"22_sted_arkiv" : {
+										"template" : {
+											"name" : "22_sted_arkiv",
 											"channel" : "gfx1",
 											"layer" : "tagLeft",
 											"system" : "html"
@@ -2954,8 +2966,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -2979,12 +2991,14 @@ Meteor.methods({
 												"01_navn"
 											],
 											"displayName" : "01 Navn (01:22=>00:05, Auto/Auto): Jon Georg Dale, landbruks- og matminister (Frp)",
-											"displayNameShort" : "01 Navn: Jon Georg Dale, landbruks- og matminister (Frp)"
+											"displayNameShort" : "01 Navn: Jon Georg Dale, landbruks- og matminister (Frp)",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"01_navn" : {
+										"template" : {
+											"name" : "01_navn",
 											"channel" : "gfx1",
 											"layer" : "super",
 											"system" : "html"
@@ -3012,8 +3026,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -3037,12 +3051,14 @@ Meteor.methods({
 												"24_foto_red"
 											],
 											"displayName" : "24 Foto/Redigering (01:35=>00:05, Auto/Auto): Foto:, Line Oftedal Pedersen/Asbjørn Odd Berge, Redigering:, Jan Jørg Tomstad",
-											"displayNameShort" : "24 Foto/Redigering: Foto:, Line Oftedal Pedersen/Asbjørn Odd Berge, Redigering:, Jan Jørg Tomstad"
+											"displayNameShort" : "24 Foto/Redigering: Foto:, Line Oftedal Pedersen/Asbjørn Odd Berge, Redigering:, Jan Jørg Tomstad",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"24_foto_red" : {
+										"template" : {
+											"name" : "24_foto_red",
 											"channel" : "gfx1",
 											"layer" : "super",
 											"system" : "html"
@@ -3072,57 +3088,57 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -3138,13 +3154,13 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
 			}
-	)
+		)
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
 			{
 				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;754BF344-6997-4936-8895B6F625B0EE0A",
@@ -3169,7 +3185,7 @@ Meteor.methods({
 							"MOSStoryStatus" : "PLAY",
 							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS",
 							"MOSStoryStatusTime" : "20180802T142127112Z",
-							"MOSTimes" : "20180803T093513Z",
+							"MOSTimes" : "20180803T121753Z",
 							"Owner" : "N12050",
 							"SourceMediaTime" : 0,
 							"SourceTextTime" : 0,
@@ -3187,9 +3203,9 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : "Hei og velkommen til denne testsendingen"
+							"text" : "Hei og velkommen til denne testsendingen",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
@@ -3213,12 +3229,14 @@ Meteor.methods({
 												"01_navn"
 											],
 											"displayName" : "01 Ett navn (00:00=>00:05, Auto/Auto): Ivar Johnsen, 27. juni",
-											"displayNameShort" : "01 Ett navn: Ivar Johnsen, 27. juni"
+											"displayNameShort" : "01 Ett navn: Ivar Johnsen, 27. juni",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"01_navn" : {
+										"template" : {
+											"name" : "01_navn",
 											"channel" : "gfx1",
 											"layer" : "super",
 											"system" : "html"
@@ -3247,43 +3265,43 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -3299,13 +3317,13 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
 			}
-	)
+		)
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
 			{
 				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;9D31712F-7A2B-4349-800703E1991AFB30",
@@ -3332,7 +3350,7 @@ Meteor.methods({
 							"MOSStoryStatus" : "PLAY",
 							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS",
 							"MOSStoryStatusTime" : "20180802T142128180Z",
-							"MOSTimes" : "20180803T093513Z\r\n20180615T173246220Z",
+							"MOSTimes" : "20180803T121754Z\r\n20180615T173246220Z",
 							"Owner" : "N12050",
 							"SourceMediaTime" : 0,
 							"SourceTextTime" : 0,
@@ -3350,30 +3368,30 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : "Alle hjortedyr i landet er truet dersom man ikke greier å STANSE den såkalte skrantesyken.  Det mener viltforvalteren hos fylkesmannen. I Norge er sykdommen nå påvist, og det er stor bekymring for måten norske myndigheter håndterer smitten på."
+							"text" : "Alle hjortedyr i landet er truet dersom man ikke greier å STANSE den såkalte skrantesyken.  Det mener viltforvalteren hos fylkesmannen. I Norge er sykdommen nå påvist, og det er stor bekymring for måten norske myndigheter håndterer smitten på.",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -3397,18 +3415,20 @@ Meteor.methods({
 												"202_bilde"
 											],
 											"displayName" : {
-												"type" : "element",
-												"name" : "displayName"
+												"@name" : "displayName",
+												"@type" : "element"
 											},
 											"displayNameShort" : {
-												"type" : "element",
-												"name" : "displayNameShort"
-											}
+												"@name" : "displayNameShort",
+												"@type" : "element"
+											},
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"202_bilde" : {
+										"template" : {
+											"name" : "202_bilde",
 											"channel" : "gfx2",
 											"layer" : "bakskjerm",
 											"system" : "html"
@@ -3434,43 +3454,43 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -3486,13 +3506,13 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
 			}
-	)
+		)
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
 			{
 				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;8F4EECF6-4B4B-48C4-89C2D895117D0EC4",
@@ -3535,32 +3555,32 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : "Dette er intro sak 2 hvor vi møter kari som skal ut og gå"
+							"text" : "Dette er intro sak 2 hvor vi møter kari som skal ut og gå",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : "<"
+							"text" : "<",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : "<BAK><"
+							"text" : "<BAK><",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
@@ -3590,31 +3610,31 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : ">"
+							"text" : ">",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : ">"
+							"text" : ">",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -3630,13 +3650,13 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
 			}
-	)
+		)
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
 			{
 				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;93301DA7-6A97-45CD-B868133DF6E63D5A",
@@ -3662,7 +3682,7 @@ Meteor.methods({
 							"MOSStoryStatus" : "PLAY",
 							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS",
 							"MOSStoryStatusTime" : "20180802T142129884Z",
-							"MOSTimes" : "20180803T093513Z",
+							"MOSTimes" : "20180803T121754Z",
 							"Owner" : "N12050",
 							"SourceMediaTime" : 0,
 							"SourceTextTime" : 0,
@@ -3688,8 +3708,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -3743,43 +3763,43 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -3808,8 +3828,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -3833,12 +3853,14 @@ Meteor.methods({
 												"01_navn"
 											],
 											"displayName" : "01 Ett navn (00:30=>00:05, Auto/Auto): Hans Hansen, allviter",
-											"displayNameShort" : "01 Ett navn: Hans Hansen, allviter"
+											"displayNameShort" : "01 Ett navn: Hans Hansen, allviter",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"01_navn" : {
+										"template" : {
+											"name" : "01_navn",
 											"channel" : "gfx1",
 											"layer" : "super",
 											"system" : "html"
@@ -3866,8 +3888,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -3883,13 +3905,13 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
 			}
-	)
+		)
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
 			{
 				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;9B0BDA28-3442-4F55-9AC44E8EC8DEFD5B",
@@ -3930,30 +3952,30 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : "Dette er teksten som programleder skal lese når vi kjører VB"
+							"text" : "Dette er teksten som programleder skal lese når vi kjører VB",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -3969,13 +3991,13 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
 			}
-	)
+		)
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
 			{
 				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;43147BA3-1294-46C3-B7088B394E9A3345",
@@ -4028,8 +4050,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -4089,23 +4111,23 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : "<"
+							"text" : "<",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -4134,14 +4156,14 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : ">"
+							"text" : ">",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					}
 				]
 			}
-	)
+		)
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
 			{
 				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;76AC6D1E-4381-42B5-966B8349AB5558E4",
@@ -4167,7 +4189,7 @@ Meteor.methods({
 							"MOSStoryStatus" : "PLAY",
 							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS",
 							"MOSStoryStatusTime" : "20180802T142132480Z",
-							"MOSTimes" : "20180803T093513Z",
+							"MOSTimes" : "20180803T121754Z",
 							"Owner" : "N12050",
 							"SourceMediaTime" : 0,
 							"SourceTextTime" : 0,
@@ -4194,8 +4216,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -4219,56 +4241,56 @@ Meteor.methods({
 											},
 											"title" : "Ny Avengers-film",
 											"description" : {
-												"type" : "element",
-												"name" : "description"
+												"@name" : "description",
+												"@type" : "element"
 											},
 											"hbbtv" : {
-												"type" : "element",
-												"name" : "hbbtv",
-												"link" : ""
+												"link" : "",
+												"@name" : "hbbtv",
+												"@type" : "element"
 											},
 											"staff" : {
-												"type" : "text",
-												"name" : "staff",
 												"text" : "Christian Ingebrethsen",
 												"userid" : "n22621",
-												"roles" : "reporter"
+												"roles" : "reporter",
+												"@name" : "staff",
+												"@type" : "text"
 											},
 											"location" : {
-												"type" : "text",
-												"name" : "location",
 												"text" : "London",
 												"id" : "2-2643743",
 												"region" : "Greater London, England, Storbritannia",
 												"lat" : "51.50853",
-												"lon" : "-0.12574"
+												"lon" : "-0.12574",
+												"@name" : "location",
+												"@type" : "text"
 											},
 											"tag" : [
 												{
-													"type" : "text",
-													"name" : "tag",
 													"text" : "avengers",
-													"id" : "95257"
+													"id" : "95257",
+													"@name" : "tag",
+													"@type" : "text"
 												},
 												{
-													"type" : "text",
-													"name" : "tag",
 													"text" : "marvel",
-													"id" : "95258"
+													"id" : "95258",
+													"@name" : "tag",
+													"@type" : "text"
 												},
 												{
-													"type" : "text",
-													"name" : "tag",
 													"text" : "tegneserier",
-													"id" : "95259"
+													"id" : "95259",
+													"@name" : "tag",
+													"@type" : "text"
 												}
 											],
 											"rights" : {
-												"type" : "text",
-												"name" : "rights",
 												"text" : "Green",
 												"notes" : "",
-												"owner" : "NRK"
+												"owner" : "NRK",
+												"@name" : "rights",
+												"@type" : "text"
 											}
 										}
 									}
@@ -4281,29 +4303,29 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -4332,8 +4354,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -4357,12 +4379,14 @@ Meteor.methods({
 												"01_navn"
 											],
 											"displayName" : "01 Ett navn (00:10=>00:05, Auto/Auto): Petter Pettersen, slakter",
-											"displayNameShort" : "01 Ett navn: Petter Pettersen, slakter"
+											"displayNameShort" : "01 Ett navn: Petter Pettersen, slakter",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"01_navn" : {
+										"template" : {
+											"name" : "01_navn",
 											"channel" : "gfx1",
 											"layer" : "super",
 											"system" : "html"
@@ -4390,8 +4414,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -4407,13 +4431,13 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
 			}
-	)
+		)
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
 			{
 				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;5B84D8DF-5347-4D32-95847B2DDA78F630",
@@ -4439,7 +4463,7 @@ Meteor.methods({
 							"MOSStoryStatus" : "PLAY",
 							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS",
 							"MOSStoryStatusTime" : "20180802T142133244Z",
-							"MOSTimes" : "20180803T093513Z\r\n20180803T093513Z",
+							"MOSTimes" : "20180803T121754Z\r\n20180803T121754Z",
 							"Owner" : "N12050",
 							"SourceMediaTime" : 0,
 							"SourceTextTime" : 0,
@@ -4459,8 +4483,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -4484,12 +4508,14 @@ Meteor.methods({
 												"55_direkte"
 											],
 											"displayName" : "55 Direkte (00:30=>00:05, Auto/OnNext): Snåsa",
-											"displayNameShort" : "55 Direkte: Snåsa"
+											"displayNameShort" : "55 Direkte: Snåsa",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"55_direkte" : {
+										"template" : {
+											"name" : "55_direkte",
 											"channel" : "gfx1",
 											"layer" : "tagRight",
 											"system" : "html"
@@ -4518,16 +4544,16 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : "Hans Hansen, hva skjer der du er?"
+							"text" : "Hans Hansen, hva skjer der du er?",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -4551,12 +4577,14 @@ Meteor.methods({
 												"01_navn"
 											],
 											"displayName" : "01 Ett navn (00:30=>00:05, Manual/Auto): Hans Hansen, allviter",
-											"displayNameShort" : "01 Ett navn: Hans Hansen, allviter"
+											"displayNameShort" : "01 Ett navn: Hans Hansen, allviter",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"01_navn" : {
+										"template" : {
+											"name" : "01_navn",
 											"channel" : "gfx1",
 											"layer" : "super",
 											"system" : "html"
@@ -4585,15 +4613,15 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -4609,34 +4637,34 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
 			}
-	)
+		)
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
 			{
 				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;A0CA386C-C169-42D5-86F152404585A653",
@@ -4663,7 +4691,7 @@ Meteor.methods({
 							"MOSStoryStatus" : "PLAY",
 							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS",
 							"MOSStoryStatusTime" : "20180802T143117478Z",
-							"MOSTimes" : "20180803T093513Z\r\n20180803T093513Z\r\n20180803T093513Z",
+							"MOSTimes" : "20180803T121754Z\r\n20180803T121754Z\r\n20180803T121754Z",
 							"Owner" : "N12050",
 							"SourceMediaTime" : 0,
 							"SourceTextTime" : 0,
@@ -4688,8 +4716,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -4739,36 +4767,36 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -4792,12 +4820,14 @@ Meteor.methods({
 												"01_navn"
 											],
 											"displayName" : "01 Ett navn (00:30=>00:05, Manual/Auto): Nils Nilsen, reporter",
-											"displayNameShort" : "01 Ett navn: Nils Nilsen, reporter"
+											"displayNameShort" : "01 Ett navn: Nils Nilsen, reporter",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"01_navn" : {
+										"template" : {
+											"name" : "01_navn",
 											"channel" : "gfx1",
 											"layer" : "super",
 											"system" : "html"
@@ -4826,8 +4856,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -4851,12 +4881,14 @@ Meteor.methods({
 												"01_navn"
 											],
 											"displayName" : "01 Ett navn (00:30=>00:05, Manual/Auto): Per Persen, baker",
-											"displayNameShort" : "01 Ett navn: Per Persen, baker"
+											"displayNameShort" : "01 Ett navn: Per Persen, baker",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"01_navn" : {
+										"template" : {
+											"name" : "01_navn",
 											"channel" : "gfx1",
 											"layer" : "super",
 											"system" : "html"
@@ -4885,8 +4917,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -4910,12 +4942,14 @@ Meteor.methods({
 												"24_foto_red"
 											],
 											"displayName" : "24 Foto/Redigering (00:30=>00:05, Manual/Auto): Foto/teknikk:, Ole Olsen",
-											"displayNameShort" : "24 Foto/Redigering: Foto/teknikk:, Ole Olsen"
+											"displayNameShort" : "24 Foto/Redigering: Foto/teknikk:, Ole Olsen",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"24_foto_red" : {
+										"template" : {
+											"name" : "24_foto_red",
 											"channel" : "gfx1",
 											"layer" : "super",
 											"system" : "html"
@@ -4948,8 +4982,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -4965,8 +4999,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
@@ -5011,23 +5045,23 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : "Varsling av skogbranner (VB) er viktig for befolkningen. I Arendal jobber de nå for å kunne sende SMS til befolkningen som er i et område hvor det er skogbrann. Hans Eriksen og hans team jobber også med å kunne varsle de som er i områder rundt skogbrannen, slik at de kan komme seg ut i tide."
+							"text" : "Varsling av skogbranner (VB) er viktig for befolkningen. I Arendal jobber de nå for å kunne sende SMS til befolkningen som er i et område hvor det er skogbrann. Hans Eriksen og hans team jobber også med å kunne varsle de som er i områder rundt skogbrannen, slik at de kan komme seg ut i tide.",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -5043,8 +5077,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
@@ -5071,7 +5105,7 @@ Meteor.methods({
 							"MOSItemEdDurations" : "",
 							"MOSObjSlugs" : "22 Sted/Arkiv (00:01=>00:05, Auto/Auto): Kristiansand juni 2017\r\nM: SMS-varsling\r\nSKOGBRANNER-100618S-DR23\r\n10 Tema (00:00=>00:05, Auto/OnNext): SMS ved kaotiske situasjoner i trafikken, #nrknyheter",
 							"MOSSlugs" : "SMS-VARSLING;SMS-VARSLING-150618S-SL-16\r\nSTK SYNK 1;STK-10\r\nSMS-VARSLING;SMS-VARSLING-150618S-SL-2\r\nSMS-VARSLING;SMS-VARSLING-150618S-SL-17",
-							"MOSTimes" : "20180803T093513Z\r\n\r\n\r\n20180803T093513Z",
+							"MOSTimes" : "20180803T121754Z\r\n\r\n\r\n20180803T121754Z",
 							"Owner" : "N12050",
 							"SourceMediaTime" : 0,
 							"SourceTextTime" : 0,
@@ -5092,8 +5126,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -5117,12 +5151,14 @@ Meteor.methods({
 												"22_sted_arkiv"
 											],
 											"displayName" : "22 Sted/Arkiv (00:01=>00:05, Auto/Auto): Kristiansand juni 2017",
-											"displayNameShort" : "22 Sted/Arkiv: Kristiansand juni 2017"
+											"displayNameShort" : "22 Sted/Arkiv: Kristiansand juni 2017",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"22_sted_arkiv" : {
+										"template" : {
+											"name" : "22_sted_arkiv",
 											"channel" : "gfx1",
 											"layer" : "tagLeft",
 											"system" : "html"
@@ -5150,8 +5186,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -5194,16 +5230,16 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : "< legg klippet her"
+							"text" : "< legg klippet her",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
@@ -5233,23 +5269,23 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : ">"
+							"text" : ">",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -5273,12 +5309,14 @@ Meteor.methods({
 												"10_tema"
 											],
 											"displayName" : "10 Tema (00:00=>00:05, Auto/OnNext): SMS ved kaotiske situasjoner i trafikken, #nrknyheter",
-											"displayNameShort" : "10 Tema: SMS ved kaotiske situasjoner i trafikken, #nrknyheter"
+											"displayNameShort" : "10 Tema: SMS ved kaotiske situasjoner i trafikken, #nrknyheter",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"10_tema" : {
+										"template" : {
+											"name" : "10_tema",
 											"channel" : "gfx1",
 											"layer" : "tema",
 											"system" : "html"
@@ -5307,50 +5345,50 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
@@ -5380,7 +5418,7 @@ Meteor.methods({
 							"MOSStoryStatus" : "PLAY",
 							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS",
 							"MOSStoryStatusTime" : "20180713T192738247Z",
-							"MOSTimes" : "20180803T093513Z",
+							"MOSTimes" : "20180803T121754Z",
 							"Owner" : "N12050",
 							"SourceMediaTime" : 0,
 							"SourceTextTime" : 0,
@@ -5396,8 +5434,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -5427,8 +5465,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -5452,12 +5490,14 @@ Meteor.methods({
 												"01_navn"
 											],
 											"displayName" : "01 Ett navn (00:01=>00:05, Auto/Auto): Hans Hansen, allviter",
-											"displayNameShort" : "01 Ett navn: Hans Hansen, allviter"
+											"displayNameShort" : "01 Ett navn: Hans Hansen, allviter",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"01_navn" : {
+										"template" : {
+											"name" : "01_navn",
 											"channel" : "gfx1",
 											"layer" : "super",
 											"system" : "html"
@@ -5485,8 +5525,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -5502,8 +5542,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
@@ -5549,79 +5589,79 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : "Dagens bilde er sendt inn av Olga Olsen. Det viser en praktfull solnedgang over badende barn i Skippergada."
+							"text" : "Dagens bilde er sendt inn av Olga Olsen. Det viser en praktfull solnedgang over badende barn i Skippergada.",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -5637,8 +5677,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
@@ -5682,8 +5722,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -5726,93 +5766,93 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : "<Hvor ble det av sommeren? Foto Ann-Karin Gjertsen-Davidsen, Raet nasjonalpark>"
+							"text" : "<Hvor ble det av sommeren? Foto Ann-Karin Gjertsen-Davidsen, Raet nasjonalpark>",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
@@ -5858,30 +5898,30 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : "I dag kan vi lese om Trimp på våre nettsider, mer leser du på nrk.no/sorland"
+							"text" : "I dag kan vi lese om Trimp på våre nettsider, mer leser du på nrk.no/sorland",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -5897,8 +5937,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
@@ -5945,8 +5985,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -5989,29 +6029,29 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
@@ -6057,51 +6097,51 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : "Nå skal vi se hva slags vær vi får de neste tre dagene"
+							"text" : "Nå skal vi se hva slags vær vi får de neste tre dagene",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -6117,8 +6157,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
@@ -6148,7 +6188,7 @@ Meteor.methods({
 							"MOSStoryStatus" : "PLAY",
 							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS",
 							"MOSStoryStatusTime" : "20180713T192829910Z",
-							"MOSTimes" : "20180803T093513Z",
+							"MOSTimes" : "20180803T121754Z",
 							"Owner" : "N12050",
 							"SourceMediaTime" : 0,
 							"SourceTextTime" : 0,
@@ -6169,8 +6209,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -6213,9 +6253,9 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : "<"
+							"text" : "<",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
@@ -6245,30 +6285,30 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : ">"
+							"text" : ">",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -6292,12 +6332,14 @@ Meteor.methods({
 												"01_navn"
 											],
 											"displayName" : "01 Ett navn (00:02=>00:05, Auto/Auto): Bente Wahl, statsmeteorolog, Meteorologisk institutt",
-											"displayNameShort" : "01 Ett navn: Bente Wahl, statsmeteorolog, Meteorologisk institutt"
+											"displayNameShort" : "01 Ett navn: Bente Wahl, statsmeteorolog, Meteorologisk institutt",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"01_navn" : {
+										"template" : {
+											"name" : "01_navn",
 											"channel" : "gfx1",
 											"layer" : "super",
 											"system" : "html"
@@ -6325,8 +6367,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -6342,8 +6384,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
@@ -6399,7 +6441,7 @@ Meteor.methods({
 							"MOSStoryStatus" : "PLAY",
 							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS",
 							"MOSStoryStatusTime" : "20180713T192835317Z",
-							"MOSTimes" : "20180803T093513Z",
+							"MOSTimes" : "20180803T121754Z",
 							"Owner" : "N12050",
 							"SourceMediaTime" : 0,
 							"SourceTextTime" : 0,
@@ -6417,16 +6459,16 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "text",
-							"name" : "p",
-							"text" : "det var alt vi hadde for i dag, sees i morgen"
+							"text" : "det var alt vi hadde for i dag, sees i morgen",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -6450,12 +6492,14 @@ Meteor.methods({
 												"68_sluttkred_kort"
 											],
 											"displayName" : "68 Sluttkred (00:01=>00:05, Auto/OnNext): Regi:, Ole Olsen | Vaktsjef:, Hans Hansen | Redaktør:, Per persen | test.nrk.no",
-											"displayNameShort" : "68 Sluttkred: Regi:, Ole Olsen | Vaktsjef:, Hans Hansen | Redaktør:, Per persen | test.nrk.no"
+											"displayNameShort" : "68 Sluttkred: Regi:, Ole Olsen | Vaktsjef:, Hans Hansen | Redaktør:, Per persen | test.nrk.no",
+											"type" : "super"
 										},
 										"render" : {
 											"group" : ""
 										},
-										"68_sluttkred_kort" : {
+										"template" : {
+											"name" : "68_sluttkred_kort",
 											"channel" : "gfx1",
 											"layer" : "fullskjerm",
 											"system" : "html"
@@ -6491,22 +6535,22 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					},
 					{
@@ -6522,8 +6566,8 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
-							"type" : "element",
-							"name" : "p"
+							"@name" : "p",
+							"@type" : "element"
 						}
 					}
 				]
