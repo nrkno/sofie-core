@@ -460,7 +460,6 @@ Meteor.methods({
 			connectionId: null,
 			token: '',
 			settings: {
-				initializeAsClear: false,
 				devices: {},
 				mediaScanner: {
 					host: '',
