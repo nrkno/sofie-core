@@ -29,3 +29,9 @@ export namespace PlayoutAPI {
 		'timelineTriggerTimeUpdateCallback' = 'playout.timelineTriggerTimeUpdateCallback'
 	}
 }
+
+export enum LookaheadMode {
+	NONE = 0,
+	PRELOAD = 1,
+	RETAIN = 2
+}

@@ -10,6 +10,7 @@ import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { PlayoutDeviceType } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
+import { LookaheadMode } from '../../lib/api/playout';
 
 // These are temporary method to fill the rundown database with some sample data
 // for development
@@ -104,6 +105,7 @@ Meteor.methods({
 			mappings: {
 				'layer0': {
 					device: PlayoutDeviceType.CASPARCG,
+					lookahead: LookaheadMode.NONE,
 					deviceId: 'casparcg0'
 				}
 			},

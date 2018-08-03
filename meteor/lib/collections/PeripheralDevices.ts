@@ -53,7 +53,6 @@ export interface PlayoutDeviceSettings {
 	devices: {
 		[deviceId: string]: PlayoutDeviceSettingsDevice
 	}
-	initializeAsClear: boolean
 	mediaScanner: {
 		host: string
 		port: number
@@ -71,8 +70,7 @@ export interface PlayoutDeviceSettingsDeviceCasparCG extends PlayoutDeviceSettin
 	type: PlayoutDeviceType.CASPARCG
 	options: {
 		host: string,
-		port: number,
-		syncTimecode?: boolean
+		port: number
 	}
 }
 export interface PlayoutDeviceSettingsDeviceAtem extends PlayoutDeviceSettingsDevice {

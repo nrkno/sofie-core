@@ -63,10 +63,10 @@ function runBackup (params, req: IncomingMessage, res: ServerResponse, onlyActiv
 	let data: any = getShowBackup(params.id, onlyActive)
 	let fileName = 'backup'
 	if (data && (data.showStyle as ShowStyle).name) {
-		fileName = (data.showStyle as ShowStyle).name
+		fileName = ((data.showStyle as ShowStyle).name).replace(/\s/g, '-')
 	}
 	res.setHeader('Content-Type', 'application/json')
-	res.setHeader('Content-Disposition', 'attachment; filename="' + fileName + '.json"')
+	res.setHeader('Content-Disposition', `attachment; filename="${fileName}.json"`)
 
 	let content = ''
 	if (!data) {

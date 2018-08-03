@@ -39,7 +39,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 	}
 
 	render () {
-		let labelItems = this.props.segmentLineItem.name.split('||')
+		let labelItems = (this.props.segmentLineItem.name || '').split('||')
 		let begin = labelItems[0] || ''
 		let end = labelItems[1] || ''
 

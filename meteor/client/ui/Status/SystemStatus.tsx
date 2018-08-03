@@ -179,27 +179,27 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 						<div><i>{this.statusMessages()}</i></div>
 					</div>
 					<div className='device-item__last-seen'>
-						<label>Last seen: </label>
+						<label>{t('Last seen')}: </label>
 						<div className='value'>
 							<Moment from={getCurrentTime()} date={this.props.device.lastSeen} />
 						</div>
 					</div>
 				</div>
 				<div className='device-item__id'>
-					<label>ID:</label>
+					<label>{t('ID')}: </label>
 					<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device._id}</Link></div>
 				</div>
 				<div className='device-item__name'>
-					<label>Name:</label>
+					<label>{t('Name')}: </label>
 					<div className='value'>{this.props.device.name}</div>
 				</div>
 				<div className='device-item__type'>
-					<label>Type:</label>
+					<label>{t('Type')}: </label>
 					<div className='value'>{this.deviceTypeString()}</div>
 				</div>
 				{this.props.device.versions ?
 					<div className='device-item__version'>
-						<label>Version:</label>
+						<label>{t('Version')}: </label>
 						<div className='value'>
 							<a title={this.deviceVersions()} href='#'>
 								{this.props.device.versions._process || 'N/A'}
