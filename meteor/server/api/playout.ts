@@ -1214,7 +1214,7 @@ export function addLookeaheadObjectsToTimeline (activeRunningOrder: RunningOrder
 			r.isBackground = true
 			r.originalLLayer = r.LLayer
 			r.LLayer += '_lookahead'
-
+			r.isAbstract = true
 			timelineObjs.push(r)
 		}
 	})
