@@ -18,6 +18,9 @@ pipeline {
       }
     }
     stage('Deploy') {
+      when {		
+        branch 'stage'		
+      }
       steps {
         coreDeploy()
       }
