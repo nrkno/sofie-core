@@ -327,14 +327,28 @@ Meteor.methods({
 				mappingType: MappingAtemType.MixEffect,
 				index: 1 // 1 = ME2
 			}),
-			'atem_aux_clean': literal<MappingAtem>({
+			'atem_aux_ssrc': literal<MappingAtem>({
+				device: PlayoutDeviceType.ATEM,
+				deviceId: 'atem0',
+				lookahead: LookaheadMode.NONE,
+				mappingType: MappingAtemType.Auxilliary,
+				index: 2
+			}),
+			'atem_aux_mp1-next': literal<MappingAtem>({
+				device: PlayoutDeviceType.ATEM,
+				deviceId: 'atem0',
+				lookahead: LookaheadMode.NONE,
+				mappingType: MappingAtemType.Auxilliary,
+				index: 3
+			}),
+			'atem_aux_preview': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingAtemType.Auxilliary,
 				index: 4
 			}),
-			'atem_aux_preview': literal<MappingAtem>({
+			'atem_aux_clean': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				lookahead: LookaheadMode.NONE,
