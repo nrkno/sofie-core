@@ -42,7 +42,7 @@ export interface DBRunningOrder {
 	currentSegmentLineId: string | null
 	/** the id of the Next Segment Line - if empty, no segment will follow Live Segment Line */
 	nextSegmentLineId: string | null
-	/** the id of the Previous Segment Line - cleared once playback of the currentSegmentLine has been confirmed by TSR */
+	/** the id of the Previous Segment Line */
 	previousSegmentLineId: string | null
 
 	/** Actual time of playback starting */

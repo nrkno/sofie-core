@@ -421,6 +421,7 @@ export namespace ServerPlayoutAPI {
 
 					RunningOrders.update(runningOrder._id, {
 						$set: {
+							previousSegmentLineId: runningOrder.currentSegmentLineId,
 							currentSegmentLineId: segLine._id,
 							nextSegmentLineId: nextSegmentLine._id
 						}
@@ -1515,6 +1516,11 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 						type: TriggerType.TIME_ABSOLUTE,
 						value: previousSegmentLine.startedPlayback
 					})
+
+					// If autonext with an overlap, keep the previous line alive for the specified overlap
+					if (previousSegmentLine.autoNext && previousSegmentLine.autoNextOverlap) {
+						previousSegmentLineGroup.duration = `#${PlayoutTimelinePrefixes.SEGMENT_LINE_GROUP_PREFIX + currentSegmentLine._id}.start + ${previousSegmentLine.autoNextOverlap || 0} - #.start`
+					}
 
 					// If a SegmentLineItem is infinite, and continued in the new SegmentLine, then we want to add the SegmentLineItem only there to avoid id collisions
 					const skipIds = currentInfiniteItems.map(l => l.infiniteId || '')

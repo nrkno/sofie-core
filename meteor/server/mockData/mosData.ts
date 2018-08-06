@@ -2073,14 +2073,14 @@ Meteor.methods({
 				],
 				"Stories" : [
 					{
-						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;9745AF3D-97B2-4D35-BB5AAFB69CF54579",
-						"Slug" : "åpning;Head2",
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;A24898DF-FBBE-42B8-82FC886FEF748411",
+						"Slug" : "åpning;VIGNETT",
 						"Items" : [
 						]
 					},
 					{
-						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;A24898DF-FBBE-42B8-82FC886FEF748411",
-						"Slug" : "åpning;VIGNETT",
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;9745AF3D-97B2-4D35-BB5AAFB69CF54579",
+						"Slug" : "åpning;Head2",
 						"Items" : [
 						]
 					},
@@ -2091,14 +2091,14 @@ Meteor.methods({
 						]
 					},
 					{
-						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;6DBD519C-52F2-4665-8BE44677C67F7E6C",
-						"Slug" : "SKRANTESJUKE;SKRANTESJUKE-140618-SL5",
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;754BF344-6997-4936-8895B6F625B0EE0A",
+						"Slug" : "åpning;Velkommen",
 						"Items" : [
 						]
 					},
 					{
-						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;754BF344-6997-4936-8895B6F625B0EE0A",
-						"Slug" : "åpning;Velkommen",
+						"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;6DBD519C-52F2-4665-8BE44677C67F7E6C",
+						"Slug" : "SKRANTESJUKE;SKRANTESJUKE-140618-SL5",
 						"Items" : [
 						]
 					},
@@ -2215,6 +2215,119 @@ Meteor.methods({
 						"Slug" : "Sluttvignett;Credits",
 						"Items" : [
 						]
+					}
+				]
+			}
+		)
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
+			{
+				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;A24898DF-FBBE-42B8-82FC886FEF748411",
+				"Slug" : "åpning;VIGNETT",
+				"MosExternalMetaData" : [
+					{
+						"MosScope" : "PLAYLIST",
+						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd",
+						"MosPayload" : {
+							"Actual" : 3,
+							"text" : 0,
+							"Approved" : 0,
+							"Creator" : "N12050",
+							"ElapsedTime" : 0,
+							"MediaTime" : 0,
+							"ModBy" : "N12050",
+							"ModTime" : "20180614T135317Z",
+							"MOSAbstracts" : "M: Testsending (23-03-18 08:47)\r\nTIDSMARKØR IKKE RØR",
+							"MOSItemDurations" : "",
+							"MOSItemEdDurations" : "",
+							"MOSObjSlugs" : "M: Testsending\r\nStory status",
+							"MOSSlugs" : "Uten tittel\r\nÅPNING;HEAD-1-17",
+							"MOSStoryStatus" : "PLAY",
+							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS",
+							"MOSStoryStatusTime" : "20180802T142124640Z",
+							"MOSTimes" : "",
+							"Owner" : "N12050",
+							"SourceMediaTime" : 0,
+							"SourceTextTime" : 0,
+							"TextTime" : 0,
+							"Bildebeskrivelse" : "",
+							"Innslagstittel" : "Testsending",
+							"mosartType" : "FULL",
+							"mosartVariant" : "VIGNETT",
+							"ReadTime" : 0,
+							"Rettigheter" : "Gult",
+							"ENPSItemType" : 3
+						}
+					}
+				],
+				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446",
+				"Body" : [
+					{
+						"Type" : "p",
+						"Content" : {
+							"@name" : "p",
+							"@type" : "element"
+						}
+					},
+					{
+						"Type" : "storyItem",
+						"Content" : {
+							"ID" : "2",
+							"ObjectID" : "N12050_1521791220",
+							"MOSID" : "METADATA.NRK.MOS",
+							"Slug" : "Uten tittel",
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST",
+									"MosSchema" : "http://mosA4.com/mos/supported_schemas/MOSAXML2.08",
+									"MosPayload" : {
+										"nrk" : {
+											"attributes" : {
+												"changetime" : "2018-03-23T08:47:00 +01:00",
+												"changedBy" : "N12050",
+												"type" : "video",
+												"mdSource" : "ncs"
+											},
+											"title" : "Testsending",
+											"description" : "",
+											"hbbtv" : {
+												"link" : ""
+											},
+											"rights" : {
+												"text" : "Amber",
+												"notes" : "",
+												"owner" : ""
+											}
+										}
+									}
+								}
+							],
+							"mosAbstract" : "M: Testsending (23-03-18 08:47)",
+							"ObjectSlug" : "M: Testsending"
+						}
+					},
+					{
+						"Type" : "p",
+						"Content" : {
+							"@name" : "p",
+							"@type" : "element"
+						}
+					},
+					{
+						"Type" : "storyItem",
+						"Content" : {
+							"ID" : "3",
+							"ObjectID" : "STORYSTATUS",
+							"MOSID" : "mosart.morten.mos",
+							"Slug" : "ÅPNING;HEAD-1-17",
+							"ObjectSlug" : "Story status"
+						}
+					},
+					{
+						"Type" : "p",
+						"Content" : {
+							"@name" : "p",
+							"@type" : "element"
+						}
 					}
 				]
 			}
@@ -2361,119 +2474,6 @@ Meteor.methods({
 						"Type" : "storyItem",
 						"Content" : {
 							"ID" : "5",
-							"ObjectID" : "STORYSTATUS",
-							"MOSID" : "mosart.morten.mos",
-							"Slug" : "ÅPNING;HEAD-1-17",
-							"ObjectSlug" : "Story status"
-						}
-					},
-					{
-						"Type" : "p",
-						"Content" : {
-							"@name" : "p",
-							"@type" : "element"
-						}
-					}
-				]
-			}
-		)
-		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token,
-			{
-				"ID" : "MAENPSTEST14;P_SERVER14\\W\\R_35F60587-876E-4CF1-AE0946FA90C55446;A24898DF-FBBE-42B8-82FC886FEF748411",
-				"Slug" : "åpning;VIGNETT",
-				"MosExternalMetaData" : [
-					{
-						"MosScope" : "PLAYLIST",
-						"MosSchema" : "http://MAENPSTEST14:10505/schema/enps.dtd",
-						"MosPayload" : {
-							"Actual" : 3,
-							"text" : 0,
-							"Approved" : 0,
-							"Creator" : "N12050",
-							"ElapsedTime" : 0,
-							"MediaTime" : 0,
-							"ModBy" : "N12050",
-							"ModTime" : "20180614T135317Z",
-							"MOSAbstracts" : "M: Testsending (23-03-18 08:47)\r\nTIDSMARKØR IKKE RØR",
-							"MOSItemDurations" : "",
-							"MOSItemEdDurations" : "",
-							"MOSObjSlugs" : "M: Testsending\r\nStory status",
-							"MOSSlugs" : "Uten tittel\r\nÅPNING;HEAD-1-17",
-							"MOSStoryStatus" : "PLAY",
-							"MOSStoryStatusMOS" : "SOFIE1.XPRO.MOS",
-							"MOSStoryStatusTime" : "20180802T142124640Z",
-							"MOSTimes" : "",
-							"Owner" : "N12050",
-							"SourceMediaTime" : 0,
-							"SourceTextTime" : 0,
-							"TextTime" : 0,
-							"Bildebeskrivelse" : "",
-							"Innslagstittel" : "Testsending",
-							"mosartType" : "FULL",
-							"mosartVariant" : "VIGNETT",
-							"ReadTime" : 0,
-							"Rettigheter" : "Gult",
-							"ENPSItemType" : 3
-						}
-					}
-				],
-				"RunningOrderId" : "MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446",
-				"Body" : [
-					{
-						"Type" : "p",
-						"Content" : {
-							"@name" : "p",
-							"@type" : "element"
-						}
-					},
-					{
-						"Type" : "storyItem",
-						"Content" : {
-							"ID" : "2",
-							"ObjectID" : "N12050_1521791220",
-							"MOSID" : "METADATA.NRK.MOS",
-							"Slug" : "Uten tittel",
-							"MosExternalMetaData" : [
-								{
-									"MosScope" : "PLAYLIST",
-									"MosSchema" : "http://mosA4.com/mos/supported_schemas/MOSAXML2.08",
-									"MosPayload" : {
-										"nrk" : {
-											"attributes" : {
-												"changetime" : "2018-03-23T08:47:00 +01:00",
-												"changedBy" : "N12050",
-												"type" : "video",
-												"mdSource" : "ncs"
-											},
-											"title" : "Testsending",
-											"description" : "",
-											"hbbtv" : {
-												"link" : ""
-											},
-											"rights" : {
-												"text" : "Amber",
-												"notes" : "",
-												"owner" : ""
-											}
-										}
-									}
-								}
-							],
-							"mosAbstract" : "M: Testsending (23-03-18 08:47)",
-							"ObjectSlug" : "M: Testsending"
-						}
-					},
-					{
-						"Type" : "p",
-						"Content" : {
-							"@name" : "p",
-							"@type" : "element"
-						}
-					},
-					{
-						"Type" : "storyItem",
-						"Content" : {
-							"ID" : "3",
 							"ObjectID" : "STORYSTATUS",
 							"MOSID" : "mosart.morten.mos",
 							"Slug" : "ÅPNING;HEAD-1-17",
@@ -3344,7 +3344,7 @@ Meteor.methods({
 										"timeIn" : 0,
 										"duration" : 5000,
 										"in" : "auto",
-										"out" : "auto"
+										"out" : "manual"
 									}
 								}
 							],
