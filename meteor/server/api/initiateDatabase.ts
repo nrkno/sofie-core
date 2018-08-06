@@ -301,13 +301,6 @@ Meteor.methods({
 				channel: 3,
 				layer: 120
 			}),
-			'casparcg_cg_clock': literal<MappingCasparCG>({
-				device: PlayoutDeviceType.CASPARCG,
-				deviceId: 'casparcg0',
-				lookahead: LookaheadMode.NONE,
-				channel: 7,
-				layer: 120
-			}),
 			'casparcg_cg_effects': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
@@ -329,7 +322,7 @@ Meteor.methods({
 				mappingType: MappingAtemType.MixEffect,
 				index: 1 // 1 = ME2
 			}),
-			'atem_aux_clock': literal<MappingAtem>({
+			'atem_aux_countdown': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				lookahead: LookaheadMode.NONE,
