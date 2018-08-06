@@ -308,6 +308,13 @@ Meteor.methods({
 				channel: 5,
 				layer: 120
 			}),
+			'casparcg_cg_fullskjerm': literal<MappingCasparCG>({
+				device: PlayoutDeviceType.CASPARCG,
+				deviceId: 'casparcg0',
+				lookahead: LookaheadMode.NONE,
+				channel: 6,
+				layer: 110
+			}),
 			'atem_me_program': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
@@ -508,6 +515,11 @@ Meteor.methods({
 				lookahead: LookaheadMode.NONE,
 			}),
 			'nora_studio_bakskjerm': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0',
+				lookahead: LookaheadMode.NONE,
+			}),
+			'nora_fullskjerm_fullskjerm': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
