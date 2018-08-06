@@ -1106,7 +1106,6 @@ function createSegmentLineItemGroupFirstObject (segmentLineItem: SegmentLineItem
 		},
 		duration: 0,
 		LLayer: segmentLineItem.sourceLayerId + '_firstobject',
-		isAbstract: true,
 		content: {
 			type: TimelineContentTypeOther.NOTHING,
 		},
@@ -1676,7 +1675,7 @@ function processTimelineObjects (studioInstallation: StudioInstallation, timelin
 	_.each(timelineObjs, (o) => {
 		o.siId = studioInstallation._id
 		if (!o.isGroup) {
-			const layerId = o.LLayer + ''
+			const layerId = o.originalLLayer || o.LLayer + ''
 			let LLayerMapping = (studioInstallation.mappings || {})[layerId]
 
 			if (!LLayerMapping && o.isAbstract) {
