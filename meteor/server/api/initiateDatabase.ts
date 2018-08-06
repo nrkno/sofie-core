@@ -64,7 +64,9 @@ Meteor.methods({
 				{_id: 'sources_rm_count', value: 6},
 				{_id: 'sources_kam_first_input', value: 1},
 				{_id: 'sources_rm_first_input', value: 4},
-				{_id: 'media_previews_url', value: 'http://localhost:8000/'}
+				{_id: 'media_previews_url', value: 'http://localhost:8000/'},
+				{_id: 'sofie_url', value: 'http://sllxsofie01/'},
+				{_id: 'metadata_url', value: 'http://160.67.87.105/'},
 			],
 		}})
 
