@@ -1106,6 +1106,7 @@ function createSegmentLineItemGroupFirstObject (segmentLineItem: SegmentLineItem
 		},
 		duration: 0,
 		LLayer: segmentLineItem.sourceLayerId + '_firstobject',
+		isAbstract: true,
 		content: {
 			type: TimelineContentTypeOther.NOTHING,
 		},
@@ -1743,52 +1744,66 @@ function processTimelineObjects (studioInstallation: StudioInstallation, timelin
  */
 let afterUpdateTimelineTimeout: {[studioInstallationId: string]: number | null} = {}
 function afterUpdateTimeline (studioInstallation: StudioInstallation) {
-	// console.log(afterUpdateTimeline)
+	console.log('afterUpdateTimeline')
 	let a = afterUpdateTimelineTimeout[studioInstallation._id]
 	if (a) Meteor.clearTimeout(a)
 	afterUpdateTimelineTimeout[studioInstallation._id] = Meteor.setTimeout(() => {
 
-		// collect statistics
-		let objs = Timeline.find({
+		let timelineObjs = Timeline.find({
 			siId: studioInstallation._id,
 			statObject: {$ne: true}
 		}).fetch()
-		// Number of objects
-		let objCount = objs.length
-		// Hash of all objects
-		objs = objs.sort((a, b) => {
-			if (a._id < b._id) return 1
-			if (a._id > b._id) return -1
-			return 0
+
+		let deviceIdObjs: {[deviceId: string]: Array<TimelineObj>} = {}
+
+		_.each(timelineObjs, (o: TimelineObj) => {
+			_.each(o.deviceId || [], (deviceId: string) => {
+				if (!deviceIdObjs[deviceId]) deviceIdObjs[deviceId] = []
+				deviceIdObjs[deviceId].push(o)
+			})
 		})
-		let objHash = getHash(stringifyObjects(objs))
 
-		// save into "magic object":
-		let magicId = studioInstallation._id + '_statObj'
-		let statObj: TimelineObj = {
-			_id: magicId,
-			siId: studioInstallation._id,
-			statObject: true,
-			roId: '',
-			deviceId: [], // added in processTimelineObjects
-			content: {
-				type: TimelineContentTypeOther.NOTHING,
-				modified: getCurrentTime(),
-				objCount: objCount,
-				objHash: objHash
-			},
-			trigger: {
-				type: TriggerType.TIME_ABSOLUTE,
-				value: 0 // never
-			},
-			duration: 0,
-			isAbstract: true,
-			LLayer: '__stat'
-		}
 
-		processTimelineObjects(studioInstallation, [statObj])
+		// Collect statistics, per device
+		_.each(deviceIdObjs, (objs, deviceId) => {
+			console.log('deviceId', deviceId)
 
-		Timeline.upsert(magicId, {$set: statObj})
+			// Number of objects
+			let objCount = objs.length
+			// Hash of all objects
+			objs = objs.sort((a, b) => {
+				if (a._id < b._id) return 1
+				if (a._id > b._id) return -1
+				return 0
+			})
+			let objHash = getHash(stringifyObjects(objs))
+
+			// save into "magic object":
+			let magicId = studioInstallation._id + '_' + deviceId + '_statObj'
+			let statObj: TimelineObj = {
+				_id: magicId,
+				siId: studioInstallation._id,
+				statObject: true,
+				roId: '',
+				deviceId: [deviceId],
+				content: {
+					type: TimelineContentTypeOther.NOTHING,
+					modified: getCurrentTime(),
+					objCount: objCount,
+					objHash: objHash
+				},
+				trigger: {
+					type: TriggerType.TIME_ABSOLUTE,
+					value: 0 // never
+				},
+				duration: 0,
+				isAbstract: true,
+				LLayer: '__stat'
+			}
+			// processTimelineObjects(studioInstallation, [statObj])
+			
+			Timeline.upsert(magicId, {$set: statObj})
+		})
 	}, 1)
 }
 
