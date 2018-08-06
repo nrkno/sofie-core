@@ -1106,6 +1106,7 @@ function createSegmentLineItemGroupFirstObject (segmentLineItem: SegmentLineItem
 		},
 		duration: 0,
 		LLayer: segmentLineItem.sourceLayerId + '_firstobject',
+		isAbstract: true,
 		content: {
 			type: TimelineContentTypeOther.NOTHING,
 		},
