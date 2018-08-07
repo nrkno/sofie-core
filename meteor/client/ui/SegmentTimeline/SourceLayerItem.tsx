@@ -222,7 +222,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 		const expectedDurationNumber = (typeof segmentLineItem.expectedDuration === 'number' ? segmentLineItem.expectedDuration || 0 : 0)
 		let itemDuration = Math.min(segmentLineItem.duration || segmentLineItem.renderedDuration || expectedDurationNumber || 0, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
-		if (segmentLineItem.infiniteMode !== undefined && segmentLineItem.infiniteMode !== SegmentLineItemLifespan.Normal) {
+		if (segmentLineItem.infiniteMode !== undefined && segmentLineItem.infiniteMode !== SegmentLineItemLifespan.Normal && !segmentLineItem.cropped) {
 			itemDuration = this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)
 			// console.log(segmentLineItem.infiniteMode + ', ' + segmentLineItem.infiniteId)
 		}

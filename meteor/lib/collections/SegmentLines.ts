@@ -28,7 +28,9 @@ export interface DBSegmentLine {
 	autoNext?: boolean
 	/** How much to overlap on when doing autonext */
 	autoNextOverlap?: number
+	/** What point to extend the old sli until when doing a take */
 	overlapUntil?: string
+	/** What point to delay the new sli contents until during a transition. Note: this needs to be before overlapUntil */
 	transitionDelay?: string
 	/** Should we block a transition at the out of this SegmentLine */
 	disableOutTransition?: boolean

@@ -53,7 +53,7 @@ msgid "Settings"
 msgstr "Innstillinger"
 
 msgid "Key"
-msgstr "Knapp"
+msgstr "Tast"
 
 msgid "Output"
 msgstr "Utgang"
@@ -124,7 +124,7 @@ msgid "Deactivate"
 msgstr "Deaktiver"
 
 msgid "Take"
-msgstr "Ta"
+msgstr "Ta neste"
 
 msgid "Activate"
 msgstr "Aktiver"

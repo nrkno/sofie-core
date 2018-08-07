@@ -227,7 +227,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			slTimeline.push({
 				id: PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + segmentLineItem._id,
 				trigger: offsetTrigger(segmentLineItem.trigger, TIMELINE_TEMP_OFFSET),
-				duration: segmentLineItem.duration || segmentLineItem.renderedDuration || 0,
+				duration: segmentLineItem.duration || 0,
 				LLayer: segmentLineItem.outputLayerId,
 				content: {
 					id: segmentLineItem._id

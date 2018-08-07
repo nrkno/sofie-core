@@ -64,7 +64,9 @@ Meteor.methods({
 				{_id: 'sources_rm_count', value: 6},
 				{_id: 'sources_kam_first_input', value: 1},
 				{_id: 'sources_rm_first_input', value: 4},
-				{_id: 'media_previews_url', value: 'http://localhost:8000/'}
+				{_id: 'media_previews_url', value: 'http://localhost:8000/'},
+				{_id: 'sofie_url', value: 'http://sllxsofie01'},
+				{_id: 'metadata_url', value: 'http://160.67.87.105'},
 			],
 		}})
 
@@ -299,19 +301,19 @@ Meteor.methods({
 				channel: 3,
 				layer: 120
 			}),
-			'casparcg_cg_clock': literal<MappingCasparCG>({
-				device: PlayoutDeviceType.CASPARCG,
-				deviceId: 'casparcg0',
-				lookahead: LookaheadMode.NONE,
-				channel: 7,
-				layer: 120
-			}),
 			'casparcg_cg_effects': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
 				channel: 5,
 				layer: 120
+			}),
+			'casparcg_cg_fullskjerm': literal<MappingCasparCG>({
+				device: PlayoutDeviceType.CASPARCG,
+				deviceId: 'casparcg0',
+				lookahead: LookaheadMode.NONE,
+				channel: 6,
+				layer: 110
 			}),
 			'atem_me_program': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
@@ -327,7 +329,7 @@ Meteor.methods({
 				mappingType: MappingAtemType.MixEffect,
 				index: 1 // 1 = ME2
 			}),
-			'atem_aux_clock': literal<MappingAtem>({
+			'atem_aux_countdown': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				lookahead: LookaheadMode.NONE,
@@ -513,6 +515,11 @@ Meteor.methods({
 				lookahead: LookaheadMode.NONE,
 			}),
 			'nora_studio_bakskjerm': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0',
+				lookahead: LookaheadMode.NONE,
+			}),
+			'nora_fullskjerm_fullskjerm': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
