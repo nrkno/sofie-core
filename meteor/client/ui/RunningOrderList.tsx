@@ -8,6 +8,7 @@ import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders
 import Moment from 'react-moment'
 import { RundownUtils } from '../lib/rundown'
 import { getCurrentTime } from '../../lib/lib'
+import { MomentFromNow } from '../lib/Moment'
 
 interface IRunningOrdersListProps {
 	runningOrders: Array<RunningOrder>
@@ -133,7 +134,7 @@ export class RunningOrderListItem extends React.Component<IRunningOrderListItemP
 						{this.props.runningOrder._id}
 					</td>
 					<td className='running-order-list-item__created'>
-						<Moment fromNow>{this.props.runningOrder.created}</Moment>
+						<MomentFromNow>{this.props.runningOrder.created}</MomentFromNow>
 					</td>
 					<td className='running-order-list-item__airTime'>
 						{this.props.runningOrder.expectedStart &&

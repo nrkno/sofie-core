@@ -32,6 +32,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { PeripheralDevice, PeripheralDevices, PlayoutDeviceType } from '../../../lib/collections/PeripheralDevices'
 
 import { Link } from 'react-router-dom'
+import { MomentFromNow } from '../../lib/Moment'
 
 interface IProps {
 	studioInstallation: StudioInstallation
@@ -772,7 +773,7 @@ class StudioDevices extends React.Component<Translated<IStudioDevicesProps>, ISt
 								{device._id}
 							</td>
 							<td className='settings-studio-device__id c3'>
-								<Moment fromNow date={device.lastSeen} />
+								<MomentFromNow date={device.lastSeen} />
 							</td>
 							<td className='settings-studio-device__actions table-item-actions c3'>
 								<button className='action-btn' onClick={(e) => this.confirmRemove(device)}>
@@ -814,7 +815,7 @@ class StudioDevices extends React.Component<Translated<IStudioDevicesProps>, ISt
 									this.props.availableDevices.map((device) => {
 										return (
 											<div className='ctx-menu-item' key={device._id} onClick={(e) => this.props.onAddDevice && this.props.onAddDevice(device)}>
-												<b>{device.name}</b> <Moment fromNow date={device.lastSeen} /> ({device._id})
+												<b>{device.name}</b> <MomentFromNow date={device.lastSeen} /> ({device._id})
 											</div>
 										)
 									})

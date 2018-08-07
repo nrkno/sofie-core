@@ -17,6 +17,7 @@ import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/coll
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import * as classNames from 'classnames'
+import { MomentFromNow } from '../../lib/Moment'
 
 interface IExternalMessagesProps {
 }
@@ -96,7 +97,7 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 			info = (
 				<div>
 					<b>Sent: </b>
-					<Moment fromNow unit='seconds'>{msg.sent}</Moment>
+					<MomentFromNow unit='seconds'>{msg.sent}</MomentFromNow>
 				</div>
 			)
 		} else if ((getCurrentTime() - (msg.lastTry || 0)) < 10 * 1000) {
@@ -120,7 +121,9 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 				<div>
 					<b>Error: </b>
 					<i>{msg.errorMessage}</i>
-					<i><Moment fromNow>{msg.errorMessageTime}</Moment></i>
+					<div>
+						<MomentFromNow>{msg.errorMessageTime}</MomentFromNow>
+					</div>
 				</div>
 			)
 		} else {
@@ -136,7 +139,7 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 				info = (
 					<div>
 						<b>Last try: </b>
-						<Moment fromNow unit='seconds'>{msg.lastTry}</Moment>
+						<MomentFromNow unit='seconds'>{msg.lastTry}</MomentFromNow>
 					</div>
 				)
 			}
@@ -149,7 +152,7 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 					</button>
 				</td>
 				<td className='c2'>{msg._id}</td>
-				<td className='c2'><Moment fromNow unit='seconds'>{msg.created}</Moment></td>
+				<td className='c2'><MomentFromNow unit='seconds'>{msg.created}</MomentFromNow></td>
 				<td className='c3'>{info}</td>
 				<td className='c4 small'>
 					<div>

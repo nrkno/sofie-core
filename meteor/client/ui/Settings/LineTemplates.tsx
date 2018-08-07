@@ -17,6 +17,7 @@ import * as ClassNames from 'classnames'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faSave from '@fortawesome/fontawesome-free-solid/faSave'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { MomentFromNow } from '../../lib/Moment'
 
 interface IMonacoProps {
 	runtimeFunction: RuntimeFunction
@@ -800,7 +801,7 @@ let SelectRFDD = translateWithTracker<SelectRFDDProps, IState, ISelectRFDDTracke
 							return (
 								<tr key={rtfdd._id}>
 									<td>
-										<Moment fromNow>{rtfdd.created}</Moment>
+										<MomentFromNow>{rtfdd.created}</MomentFromNow>
 									</td>
 									<td>
 										{rtfdd.reason}

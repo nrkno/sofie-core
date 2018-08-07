@@ -7,6 +7,7 @@ import * as ClassNames from 'classnames'
 
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/react-meteor-data'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
+import { MomentFromNow } from '../lib/Moment';
 
 interface IProps {
 }
@@ -62,7 +63,7 @@ export const ConnectionStatusNotification = translateWithTracker<IProps, IState,
 			case 'failed':
 				return <span>{t('Cannot connect to the automation server') + ': ' + this.props.reason}</span>
 			case 'waiting':
-				return <span>{t('Reconnecting to the automation server')} <Moment fromNow unit='seconds'>{this.props.retryTime}</Moment></span>
+				return <span>{t('Reconnecting to the automation server')} <MomentFromNow unit='seconds'>{this.props.retryTime}</MomentFromNow></span>
 			case 'offline':
 				return <span>{t('Your machine is offline.')}</span>
 			case 'connected':
