@@ -8,7 +8,10 @@ export interface UserActionsLogItem {
 	clientAddress: string,
 	timestamp: Time,
 	method: string,
-	args: string
+	args: string,
+	success?: boolean,
+	doneTime?: Time,
+	errorMessage?: string
 }
 
 export const UserActionsLog: TransformedCollection<UserActionsLogItem, UserActionsLogItem>
