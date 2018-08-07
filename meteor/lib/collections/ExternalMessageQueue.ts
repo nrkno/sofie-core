@@ -18,6 +18,8 @@ export interface ExternalMessageQueueObj {
 	lastTry?: Time
 	/** If message send failed, last error message */
 	errorMessage?: string
+	/** If message send failed, last error message timestamp */
+	errorMessageTime?: number
 	/** Time of succeeded send: */
 	sent?: Time
 	/** Reply from receiver */

@@ -79,7 +79,8 @@ function logMessageError (msg: ExternalMessageQueueObj, e: any) {
 	try {
 		logger.warn(e)
 		ExternalMessageQueue.update(msg._id, {$set: {
-			errorMessage: (e['reason'] || e['message'] || e.toString())
+			errorMessage: (e['reason'] || e['message'] || e.toString()),
+			errorMessageTime: getCurrentTime()
 		}})
 	} catch (e) {
 		logger.error(e)

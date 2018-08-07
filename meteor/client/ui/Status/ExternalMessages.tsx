@@ -120,6 +120,7 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 				<div>
 					<b>Error: </b>
 					<i>{msg.errorMessage}</i>
+					<i><Moment fromNow>{msg.errorMessageTime}</Moment></i>
 				</div>
 			)
 		} else {
