@@ -83,7 +83,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					<label className='field'>
 						{t('Restore backup')}
 						<div className='mdi'>
-							<input type='file' onChange={this.onUploadFile.bind(this)} key={this.state.uploadFileKey} />
+							<input type='file' accept='.json' onChange={this.onUploadFile.bind(this)} key={this.state.uploadFileKey} />
 							<span className='mdfx'></span>
 						</div>
 					</label>
