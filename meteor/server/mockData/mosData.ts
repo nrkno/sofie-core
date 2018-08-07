@@ -5853,6 +5853,56 @@ Meteor.methods({
 						}
 					},
 					{
+						"Type" : "storyItem",
+						"Content" : {
+							"ID" : "94",
+							"ObjectID" : "85bac65d-7ceb-4f3c-a974-3f2bd2a06503",
+							"MOSID" : "GFX.NRK.MOS",
+							"Slug" : "SMS-VARSLING;Full-24",
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST",
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content",
+									"MosPayload" : {
+										"uuid" : "85bac65d-7ceb-4f3c-a974-3f2bd2a06503",
+										"metadata" : {
+											"modul" : "nora.browser",
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no",
+												"super",
+												"01_navn"
+											],
+											"displayName" : "01 Ett navn (00:01=>00:05, Auto/Auto): Hans Hansen, allviter",
+											"displayNameShort" : "01 Ett navn: Hans Hansen, allviter",
+											"type" : "super"
+										},
+										"render" : {
+											"group" : ""
+										},
+										"template" : {
+											"name" : "202_bilde",
+											"channel" : "gfx2",
+											"layer" : "fullskjerm",
+											"system" : "html"
+										},
+										"content" : ""
+									}
+								},
+								{
+									"MosScope" : "PLAYLIST",
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing",
+									"MosPayload" : {
+										"timeIn" : 1000,
+										"duration" : 5000,
+										"in" : "auto",
+										"out" : "auto"
+									}
+								}
+							],
+							"mosAbstract" : "01 Ett navn (00:01=>00:05, Auto/Auto): Hans Hansen, allviter"
+						}
+					},
+					{
 						"Type" : "p",
 						"Content" : {
 							"@name" : "p",
