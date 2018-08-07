@@ -133,8 +133,7 @@ export namespace ServerPlayoutAPI {
 		// Remove duration on segmentLineItems, as this is set by the ad-lib playback editing
 		SegmentLineItems.update({ runningOrderId: runningOrder._id }, {
 			$unset: {
-				startedPlayback: 0,
-				duration: 0
+				startedPlayback: 0
 			}
 		}, {
 			multi: true

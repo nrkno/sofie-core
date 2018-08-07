@@ -50,6 +50,10 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 		[key: string]: any
 	} = {}
 
+	// Disable timeline override, since it became too complicated to correctly override SLI properties
+	// with data from the Timeline
+	// ---
+
 	// Override based on Timeline collection
 	if (props.isLiveLine) {
 		// Check in Timeline collection for any changes to the related object
@@ -58,8 +62,8 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 		if (timelineObj) {
 			let segmentCopy = (_.clone(overrides.segmentLineItem || props.segmentLineItem) as SegmentLineItemUi)
 
-			segmentCopy.trigger = timelineObj.trigger
 			if (timelineObj.trigger.type === TriggerType.TIME_ABSOLUTE) {
+				segmentCopy.trigger = timelineObj.trigger
 				if (_.isNumber(timelineObj.trigger.value)) { // this is a normal absolute trigger value
 					segmentCopy.renderedInPoint = (timelineObj.trigger.value as number)
 				} else if (timelineObj.trigger.value === 'now') { // this is a special absolute trigger value
@@ -72,7 +76,10 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 					segmentCopy.renderedInPoint = 0
 				}
 			}
-			segmentCopy.renderedDuration = timelineObj.duration !== 0 && typeof timelineObj.duration !== 'string' ? timelineObj.duration : (props.segmentLineDuration - (segmentCopy.renderedInPoint || 0))
+
+			if (typeof timelineObj.duration !== 'string' && !segmentCopy.cropped) {
+				segmentCopy.renderedDuration = timelineObj.duration !== 0 ? timelineObj.duration : (props.segmentLineDuration - (segmentCopy.renderedInPoint || 0))
+			}
 			// console.log(segmentCopy.renderedDuration)
 
 			overrides.segmentLineItem = _.extend(overrides.segmentLineItem || {}, segmentCopy)
