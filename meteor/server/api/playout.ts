@@ -1202,7 +1202,7 @@ export function addLookeaheadObjectsToTimeline (activeRunningOrder: RunningOrder
 		for (let i = 0; i < res.length; i++) {
 			const r = clone(res[i].obj)
 
-			r._id = 'lookahead_' + r._id
+			r._id = r.id = 'lookahead_' + r._id
 			r.duration = res[i].slId !== activeRunningOrder.currentSegmentLineId ? 0 : `#${res[i].obj._id}.start - #.start`
 			r.trigger = i === 0 ? {
 				type: TriggerType.LOGICAL,
