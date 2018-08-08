@@ -175,10 +175,8 @@ export function getContext (context: TemplateContext): TemplateContextInternal {
 		getConfigValue (key: string, defaultValue?: any): any {
 			const studio: StudioInstallation = this.getStudioInstallation()
 
-			const item = studio.config.find(v => v._id === key)
-			if (item) {
-				return item.value
-			}
+			const value = studio.getConfigValue(key)
+			if (value !== null) return value
 
 			return defaultValue
 		},
