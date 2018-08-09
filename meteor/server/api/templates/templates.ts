@@ -301,7 +301,7 @@ export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, 
 			functionStr = functionStr.slice(0, a + 1) + preFunctionStr + functionStr.slice(a + 1)
 		}
 	}
-	let context: TemplateGeneralFunction = {
+	let context = {
 		_,
 		moment,
 		LayerType,
