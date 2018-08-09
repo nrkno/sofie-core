@@ -284,9 +284,24 @@ export interface StoryWithContext extends IMOSROFullStory, StoryWithContextBase 
 
 export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, reason: string): TemplateGeneralFunction {
 	// Just use the function () { .* } parts (omit whatevers before or after)
-	let functionStr = ((runtimeFunction.code + '').match(/function[\s\S]*}/) || [])[0]
+	// let functionStr = ((runtimeFunction.code + '').match(/function[\s\S]*}/) || [])[0]
+	let m = ((runtimeFunction.code + '').match(/([\s\S]*?)(function[\s\S]*})/) || [])
+	let preFunctionStr = (m[1] || '')
+	let functionStr = m[2]
+
 	// logger.debug('functionStr', functionStr)
 	if (!functionStr) throw Error('Function empty!')
+	if (preFunctionStr) { // Insert some blank lines, so that the line numbers add up
+		let lineCount = (preFunctionStr.match(/\n/g) || []).length
+		preFunctionStr = ''
+		for (let i = 0; i < lineCount; i++) {
+			preFunctionStr += '\r\n'
+		}
+		let a = functionStr.indexOf('\n')
+		if (a) {
+			functionStr = functionStr.slice(0, a + 1) + preFunctionStr + functionStr.slice(a + 1)
+		}
+	}
 	let runtimeFcn: TemplateGeneralFunction = saferEval(functionStr, {
 		_,
 		moment,
@@ -323,8 +338,10 @@ export function convertCodeToFunction (context: TemplateContextInner, runtimeFun
 }
 let lastTimeout: number | null = null
 function saveDebugData (runtimeFunction: RuntimeFunction, reason: string, ...args) {
+	// console.log('saveDebugData queue', reason)
 	// Do this later, because this is low-prio:
 	lastTimeout = Meteor.setTimeout(() => {
+		// console.log('saveDebugData', reason)
 		// Save a copy of the data, for debugging in the editor:
 		let code = runtimeFunction.code
 
@@ -337,13 +354,12 @@ function saveDebugData (runtimeFunction: RuntimeFunction, reason: string, ...arg
 			dataHash: hash
 		}, {fields: {data: 0}})
 		if (rfdd) {
-			// console.log('updating')
+			// console.log('updating ' + rfdd._id)
 			RuntimeFunctionDebugData.update(rfdd._id, {$set: {
 				created: getCurrentTime()
 			}})
 		} else {
-			// console.log('inserting')
-			RuntimeFunctionDebugData.insert({
+			let id = RuntimeFunctionDebugData.insert({
 				_id: Random.id(),
 				showStyleId: runtimeFunction.showStyleId,
 				templateId: runtimeFunction.templateId,
