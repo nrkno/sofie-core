@@ -4049,8 +4049,49 @@ Meteor.methods({
 					{
 						"Type" : "p",
 						"Content" : {
+							"text" : "<BAK>RM1",
 							"@name" : "p",
 							"@type" : "element"
+						}
+					},
+					{
+						"Type" : "p",
+						"Content" : {
+							"text" : "<BTS><",
+							"@name" : "p",
+							"@type" : "text"
+						}
+					},
+					{
+						"Type" : "storyItem",
+						"Content" : {
+							"ID" : "3",
+							"ObjectID" : "\\\\XPRO\\Omn\\A\\A\\19\\59",
+							"MOSID" : "OMNIBUS.XPRO.MOS",
+							"Slug" : "SAK 2;Intro-3",
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST",
+									"MosSchema" : "OMNIBUS",
+									"MosPayload" : {
+										"title" : "BTS-FILMHISTORIE-091217-DR19",
+										"objectType" : "CLIP",
+										"clipType" : "NYHETER",
+										"objDur" : 10978,
+										"objType" : "VIDEO"
+									}
+								}
+							],
+							"mosAbstract" : "FILMHISTORIE-091217-DR19 NYHETER 00:03:39:14",
+							"ObjectSlug" : "FILMHISTORIE-091217-DR19"
+						}
+					},
+					{
+						"Type" : "p",
+						"Content" : {
+							"text" : ">",
+							"@name" : "p",
+							"@type" : "text"
 						}
 					},
 					{
@@ -5169,6 +5210,76 @@ Meteor.methods({
 							"@name" : "p",
 							"@type" : "element"
 						}
+					},
+					{
+						"Type" : "p",
+						"Content" : {
+							"text" : "<BAK><",
+							"@name" : "p",
+							"@type" : "element"
+						}
+					},
+					{
+						"Type" : "storyItem",
+						"Content" : {
+							"ID" : "5",
+							"ObjectID" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24",
+							"MOSID" : "GFX.NRK.MOS",
+							"Slug" : "åpning;Velkommen-5",
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST",
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content",
+									"MosPayload" : {
+										"uuid" : "26cc0b6d-ac21-4146-b4a3-275fe4098b24",
+										"metadata" : {
+											"modul" : "nora.browser",
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no",
+												"super",
+												"01_navn"
+											],
+											"displayName" : "01 Ett navn (00:00=>00:05, Auto/Auto): Ivar Johnsen, 27. juni",
+											"displayNameShort" : "01 Ett navn: Ivar Johnsen, 27. juni",
+											"type" : "super"
+										},
+										"render" : {
+											"group" : ""
+										},
+										"template" : {
+											"name" : "01_navn",
+											"channel" : "gfx1",
+											"layer" : "bakskjerm",
+											"system" : "html"
+										},
+										"content" : {
+											"navn" : "Ivar Johnsen",
+											"tittel" : "27. juni"
+										}
+									}
+								},
+								{
+									"MosScope" : "PLAYLIST",
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing",
+									"MosPayload" : {
+										"text" : 0,
+										"timeIn" : 0,
+										"duration" : 5000,
+										"in" : "auto",
+										"out" : "auto"
+									}
+								}
+							],
+							"mosAbstract" : "01 Ett navn (00:00=>00:05, Auto/Auto): Ivar Johnsen, 27. juni"
+						}
+					},
+					{
+						"Type" : "p",
+						"Content" : {
+							"text" : ">",
+							"@name" : "p",
+							"@type" : "element"
+						}
 					}
 				]
 			}
@@ -5850,6 +5961,56 @@ Meteor.methods({
 							],
 							"mosAbstract" : "M: Seerbilde (16-06-16 17:20)",
 							"ObjectSlug" : "M: Seerbilde"
+						}
+					},
+					{
+						"Type" : "storyItem",
+						"Content" : {
+							"ID" : "94",
+							"ObjectID" : "85bac65d-7ceb-4f3c-a974-3f2bd2a06503",
+							"MOSID" : "GFX.NRK.MOS",
+							"Slug" : "SMS-VARSLING;Full-24",
+							"MosExternalMetaData" : [
+								{
+									"MosScope" : "PLAYLIST",
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/content",
+									"MosPayload" : {
+										"uuid" : "85bac65d-7ceb-4f3c-a974-3f2bd2a06503",
+										"metadata" : {
+											"modul" : "nora.browser",
+											"selection" : [
+												"http://nora.render.nyheter.mesosint.nrk.no",
+												"super",
+												"01_navn"
+											],
+											"displayName" : "01 Ett navn (00:01=>00:05, Auto/Auto): Hans Hansen, allviter",
+											"displayNameShort" : "01 Ett navn: Hans Hansen, allviter",
+											"type" : "super"
+										},
+										"render" : {
+											"group" : ""
+										},
+										"template" : {
+											"name" : "202_bilde",
+											"channel" : "gfx2",
+											"layer" : "fullskjerm",
+											"system" : "html"
+										},
+										"content" : ""
+									}
+								},
+								{
+									"MosScope" : "PLAYLIST",
+									"MosSchema" : "http://nora.core.mesosint.nrk.no/mos/timing",
+									"MosPayload" : {
+										"timeIn" : 1000,
+										"duration" : 5000,
+										"in" : "auto",
+										"out" : "auto"
+									}
+								}
+							],
+							"mosAbstract" : "01 Ett navn (00:01=>00:05, Auto/Auto): Hans Hansen, allviter"
 						}
 					},
 					{

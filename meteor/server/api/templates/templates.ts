@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import * as saferEval from 'safer-eval'
+import { SaferEval } from 'safer-eval'
 import * as objectPath from 'object-path'
 import * as moment from 'moment'
 import { Random } from 'meteor/random'
@@ -207,8 +207,7 @@ export function getContext (context: TemplateContext, extended?: boolean): Templ
 			}
 		},
 		runHelper (functionId: string, ...args: any[]): any {
-			const helper = this.getHelper(functionId)
-			return helper.apply(args)
+			return this.getHelper(functionId)(...args)
 		},
 		getSegmentLines (): Array<SegmentLine> {
 			// return stories in segmentLine
@@ -302,7 +301,7 @@ export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, 
 			functionStr = functionStr.slice(0, a + 1) + preFunctionStr + functionStr.slice(a + 1)
 		}
 	}
-	let runtimeFcn: TemplateGeneralFunction = saferEval(functionStr, {
+	let context: TemplateGeneralFunction = {
 		_,
 		moment,
 		LayerType,
@@ -320,7 +319,9 @@ export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, 
 		Direction,
 		SegmentLineItemLifespan,
 		PlayoutTimelinePrefixes,
-	})
+	}
+
+	let runtimeFcn: TemplateGeneralFunction = new SaferEval(context, { filename: runtimeFunction.templateId + '.js' }).runInContext(functionStr)
 	return (...args) => {
 		saveDebugData(runtimeFunction, reason, ...args)
 		// @ts-ignore the function can be whatever, really
