@@ -8,6 +8,7 @@ import { RuntimeFunctions } from '../../lib/collections/RuntimeFunctions'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
 import { getCurrentTime } from '../../lib/lib'
 import { triggerdoMessageQueue } from './ExternalMessageQueue'
+import * as _ from 'underscore'
 
 export function triggerExternalMessage (
 	runningOrder: RunningOrder,
@@ -36,7 +37,7 @@ export function triggerExternalMessage (
 			segmentLine: takeSegmentLine,
 			templateId: functionId
 		}
-		let innerContext = getContext(context)
+		let innerContext = getContext(context, true)
 		let fcn
 		try {
 			fcn = convertCodeToFunction(innerContext, runtimeFunction, 'take_' + takeSegmentLine.slug)
@@ -49,6 +50,8 @@ export function triggerExternalMessage (
 
 			if (result === null) {
 				preventSaveDebugData()
+			} else if (_.isObject(result) && _.isEmpty(result)) {
+				// do nothing
 			} else {
 
 				// check the output:

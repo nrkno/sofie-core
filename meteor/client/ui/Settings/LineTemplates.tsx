@@ -206,6 +206,7 @@ declare interface Context {
 	getSegmentLineIndex (): number
 	getCachedStoryForSegmentLine (segmentLine: SegmentLine): IMOSROFullStory
 	getCachedStoryForRunningOrder: () => IMOSRunningOrder
+	getAllSegmentLines (): Array<SegmentLine>
 }
 type MosString128 = string
 type Duration = number
@@ -575,7 +576,7 @@ declare enum PlayoutTimelinePrefixes {
 
 	testCode () {
 		if (this._currentCode ) {
-			Meteor.call(ClientAPI.methods.execMethod, RuntimeFunctionsAPI.TESTCODE, {code: this._currentCode}, this.props.runtimeFunction.showStyleId, this.props.runtimeFunction.isHelper, (e) => {
+			Meteor.call(RuntimeFunctionsAPI.TESTCODE, {code: this._currentCode}, this.props.runtimeFunction.showStyleId, this.props.runtimeFunction.isHelper, (e) => {
 				if (e) {
 					this.setState({
 						message: 'Error when testing code: ' + e.toString()

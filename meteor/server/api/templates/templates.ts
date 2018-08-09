@@ -96,6 +96,8 @@ export interface TemplateContextInnerBase {
 	warning: (message: string) => void
 	getSegmentLines (): Array<SegmentLine>
 	getSegmentLineIndex (): number
+	// extended:
+	getAllSegmentLines (): Array<SegmentLine>
 }
 
 export interface TemplateContextInner extends TemplateContext, TemplateContextInnerBase {
@@ -110,7 +112,7 @@ export interface TemplateContextInternalBase extends TemplateContextInnerBase {
 export interface TemplateContextInternal extends TemplateContextInner, TemplateContextInternalBase {
 }
 
-export function getContext (context: TemplateContext): TemplateContextInternal {
+export function getContext (context: TemplateContext, extended?: boolean): TemplateContextInternal {
 	let hashI = 0
 	let hashed: {[hash: string]: string} = {}
 	let c0 = literal<TemplateContextInternalBase>({
@@ -232,7 +234,16 @@ export function getContext (context: TemplateContext): TemplateContextInternal {
 			logger.warn('Warning from template: ' + message)
 			// @todo: save warnings, maybe to the RO somewhere?
 			// it should be displayed to the user in the UI
-		}
+		},
+
+		// ------------------
+		// extended functions, only allowed by "special" functions, such as externalMessage
+		getAllSegmentLines (): Array<SegmentLine> {
+			if (!extended) throw Error('getAllSegmentLines: not allowed to use this function')
+
+			const ro: RunningOrder = this.getRunningOrder()
+			return ro.getSegmentLines()
+		},
 	})
 	return _.extend(c0, context)
 }
@@ -341,6 +352,7 @@ function saveDebugData (runtimeFunction: RuntimeFunction, reason: string, ...arg
 				created: getCurrentTime(),
 				data: args
 			})
+			// console.log('inserting ' + id)
 		}
 
 		// remove oldest if we have more than 3 versions:
@@ -354,6 +366,7 @@ function saveDebugData (runtimeFunction: RuntimeFunction, reason: string, ...arg
 		if (rfdds.length > 3) {
 			_.each(rfdds.slice(3), (rfdd) => {
 				if (!rfdd.dontRemove) {
+					// console.log('removing ' + rfdd._id)
 					RuntimeFunctionDebugData.remove(rfdd._id)
 				}
 			})
@@ -363,6 +376,7 @@ function saveDebugData (runtimeFunction: RuntimeFunction, reason: string, ...arg
 export function preventSaveDebugData () {
 	// called by the client code to prevent the last saving of data
 	if (lastTimeout) {
+		console.log('prevent SaveDebugData')
 		Meteor.clearTimeout(lastTimeout)
 		lastTimeout = null
 	}
