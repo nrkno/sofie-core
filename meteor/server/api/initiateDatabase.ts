@@ -318,7 +318,7 @@ Meteor.methods({
 					abbreviation: 'DIR',
 					type: RundownAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
-					activateKeyboardHotkeys: '1,2,3',
+					activateKeyboardHotkeys: '1,2,3,4,5,6',
 					isRemoteInput: true,
 					assignHotkeysToGlobalAdlibs: true,
 					isSticky: true,
