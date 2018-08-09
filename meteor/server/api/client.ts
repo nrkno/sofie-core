@@ -10,7 +10,7 @@ import { ClientAPI } from '../../lib/api/client'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 
 export namespace ServerClientAPI {
-	export function execMethod (methodName, ...args: any[]): Promise<any> {
+	export function execMethod (methodName, ...args: any[]) {
 		check(methodName, String)
 		// this is essentially the same as MeteorPromiseCall, but rejects the promise on exception to
 		// allow handling it in the client code
@@ -25,62 +25,32 @@ export namespace ServerClientAPI {
 			args: JSON.stringify(args),
 			timestamp: getCurrentTime()
 		}))
-
-		let retPromise = new Promise((resolve, reject) => {
-			try {
-				Meteor.call(methodName, ...args, (err, res) => {
-					if (err) reject(err)
-					else resolve(res)
-				})
-				UserActionsLog.update(actionId, {$set: {
-					success: true,
-					doneTime: getCurrentTime()
-				}})
-			} catch (e) {
-				// allow the exception to be handled by the Client code
-				let errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
-				logger.error(errMsg)
-				UserActionsLog.update(actionId, {$set: {
-					success: false,
-					doneTime: getCurrentTime(),
-					errorMessage: errMsg
-				}})
-				reject(e)
-			}
-		})
-		return retPromise
-	}
-}
-
-let methods = {}
-methods[ClientAPI.methods.execMethod] = function (...args) {
-	let fcn = Meteor.wrapAsync((cb) => {
-		ServerClientAPI.execMethod.apply(this, args)
-		.then((result) => {
-			cb(null, result)
-		})
-		.catch((err) => {
-			cb(err, null)
-		})
-	})
-
-	return fcn()
-}
-
-_.each(methods, (fcn: Function, key) => {
-	methods[key] = function (...args: any[]) {
-		// logger.info('------- Method call -------')
-		// logger.info(key)
-		// logger.info(args)
-		// logger.info('---------------------------')
 		try {
-			return fcn.apply(this, args)
+			let result = Meteor.call(methodName, ...args)
+
+			UserActionsLog.update(actionId, {$set: {
+				success: true,
+				doneTime: getCurrentTime()
+			}})
+			return result
 		} catch (e) {
-			logger.error(e.message || e.reason || (e.toString ? e.toString() : null) || e)
+			// console.log('eeeeeeeeeeeeeee')
+			// allow the exception to be handled by the Client code
+			let errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
+			logger.error(errMsg)
+			UserActionsLog.update(actionId, {$set: {
+				success: false,
+				doneTime: getCurrentTime(),
+				errorMessage: errMsg
+			}})
 			throw e
 		}
 	}
-})
+}
+let methods = {}
+methods[ClientAPI.methods.execMethod] = function (...args) {
+	ServerClientAPI.execMethod.apply(this, args)
+}
 
 // Apply methods:
 Meteor.methods(methods)
