@@ -372,7 +372,7 @@ Meteor.methods({
 			'casparcg_player_vignett': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
-				lookahead: LookaheadMode.NONE,
+				lookahead: LookaheadMode.PRELOAD,
 				channel: 5,
 				layer: 140
 			}),
