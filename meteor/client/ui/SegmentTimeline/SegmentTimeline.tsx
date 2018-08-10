@@ -455,7 +455,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
 					{this.props.runningOrder && this.props.segmentLines && this.props.segmentLines.length > 0 && (!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) &&
 						<SegmentDuration
-							segmentLineIds={this.props.segmentLines.map((item) => item._id)}
+							segmentLineIds={this.props.segmentLines.filter(item => item.duration === undefined).map(item => item._id)}
 						/>
 					}
 				</div>
