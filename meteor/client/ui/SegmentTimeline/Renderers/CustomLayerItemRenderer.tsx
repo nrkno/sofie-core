@@ -7,6 +7,7 @@ import { FloatingInspector } from '../../FloatingInspector'
 import { StudioInstallation } from '../../../../lib/collections/StudioInstallations'
 
 import * as ClassNames from 'classnames'
+import { VTContent } from '../../../../lib/collections/SegmentLineItems';
 
 export interface ISourceLayerItemProps {
 	mediaPreviewUrl?: string
@@ -65,8 +66,9 @@ export class CustomLayerItemRenderer<IProps = any, IState = any> extends React.C
 	}
 
 	renderOverflowTimeLabel () {
-		if (!this.props.segmentLineItem.duration && (this.props.segmentLineItem.renderedInPoint! + this.props.segmentLineItem.renderedDuration!) > this.props.segmentLineDuration) {
-			let time = this.props.segmentLineItem.renderedInPoint! + this.props.segmentLineItem.renderedDuration! - ((this.props.segmentLineDuration || 0) as number)
+		const vtContent = this.props.segmentLineItem.content as VTContent
+		if (!this.props.segmentLineItem.duration && this.props.segmentLineItem.content && vtContent.sourceDuration && (this.props.segmentLineItem.renderedInPoint! + vtContent.sourceDuration) > this.props.segmentLineDuration) {
+			let time = this.props.segmentLineItem.renderedInPoint! + vtContent.sourceDuration - ((this.props.segmentLineDuration || 0) as number)
 			// only display differences greater than 1 second
 			return (time > 1000) ? (
 				<div className='segment-timeline__layer-item__label label-overflow-time'>
