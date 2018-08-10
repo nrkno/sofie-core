@@ -372,7 +372,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 					<div className={ClassNames('segment-timeline__liveline__timecode', {
 						'overtime': !!(this.props.displayTimecode > 0)
 					})}>
-						{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, true, true)}
+						{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, true, true, '')}
 					</div>
 				</div>
 			]
