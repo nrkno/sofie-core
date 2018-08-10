@@ -37,7 +37,7 @@ import { StudioInstallations, StudioInstallation } from '../../lib/collections/S
 import { MediaObject, MediaObjects } from '../../lib/collections/MediaObjects'
 import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
 import { ShowStyles, ShowStyle } from '../../lib/collections/ShowStyles'
-import { ServerPlayoutAPI } from './playout'
+import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -680,7 +680,10 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// cache the Data
 		ro.saveCache('fullStory' + segmentLine._id, story)
-		updateStory(ro, segmentLine, story)
+		const changed = updateStory(ro, segmentLine, story)
+		if (changed) {
+			updateTimelineFromMosData(segmentLine.runningOrderId, [ segmentLine._id ])
+		}
 	}
 // Media scanner functions:
 	export function getMediaObjectRevisions (id, token, collectionId: string) {
@@ -1083,27 +1086,36 @@ function updateAffectedSegmentLines (ro: RunningOrder, affectedSegmentLineIds: A
 			}).fetch(),
 		'segmentId')
 	)
+
+	let changed = false
 	_.each(affectedSegmentIds, (segmentId) => {
-		updateWithinSegment(ro, segmentId )
+		changed = changed || updateWithinSegment(ro, segmentId )
 	})
+
+	if (changed) {
+		updateTimelineFromMosData(ro._id, affectedSegmentLineIds)
+	}
 }
-function updateWithinSegment (ro: RunningOrder, segmentId: string) {
+function updateWithinSegment (ro: RunningOrder, segmentId: string): boolean {
 	let segment = Segments.findOne(segmentId)
 	if (!segment) throw new Meteor.Error(404, 'Segment "' + segmentId + '" not found!')
 
 	let segmentLines = ro.getSegmentLines({
 		segmentId: segment._id
 	})
+
+	let changed = false
 	_.each(segmentLines, (segmentLine) => {
 		let story = ro.fetchCache('fullStory' + segmentLine._id)
 		if (story) {
-			updateStory(ro, segmentLine, story)
+			changed = changed || updateStory(ro, segmentLine, story)
 		} else {
 			logger.warn('Unable to update segmentLine "' + segmentLine._id + '", story cache not found')
 		}
 	})
+	return changed
 }
-function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory) {
+function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory): boolean {
 
 	// TODO: Find good MosExternalMetaData for durations
 	const durationMosMetaData = findDurationInfoMOSExternalMetaData(story)
@@ -1149,7 +1161,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 			typeVariant:			tr.result.segmentLine.typeVariant || ''
 		}})
 	}
-	saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
+	const changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
 		runningOrderId: ro._id,
 		segmentLineId: segmentLine._id,
 		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
@@ -1205,6 +1217,8 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 		}
 	})
 
+	// if anything was changed
+	return (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
 	// return this.core.mosManipulate(P.methods.mosRoReadyToAir, story)
 }
 export function sendStoryStatus (ro: RunningOrder, takeSegmentLine: SegmentLine | null) {
