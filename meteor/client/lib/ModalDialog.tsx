@@ -36,24 +36,24 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	bindKeys = () => {
 		if (this.props.show) {
 			if (this.boundKeys.indexOf('enter') < 0) {
-				mousetrap.bind('enter', this.handleConfirmKey, 'keydown')
+				mousetrap.bind('enter', this.preventDefault, 'keydown')
+				mousetrap.bind('enter', this.handleConfirmKey, 'keyup')
 				this.boundKeys.push('enter')
 			}
 			if (this.boundKeys.indexOf('escape') < 0) {
-				mousetrap.bind('escape', this.handleConfirmKey, 'keydown')
+				mousetrap.bind('escape', this.preventDefault, 'keydown')
+				mousetrap.bind('escape', this.handleConfirmKey, 'keyup')
 				this.boundKeys.push('escape')
 			}
 		} else {
-			this.boundKeys.forEach((key) => {
-				mousetrap.unbind(key)
-			})
-			this.boundKeys.length = 0
+			this.unbindKeys()
 		}
 	}
 
 	unbindKeys = () => {
 		this.boundKeys.forEach((key) => {
-			mousetrap.unbind(key)
+			mousetrap.unbind(key, 'keydown')
+			mousetrap.unbind(key, 'keyup')
 		})
 		this.boundKeys.length = 0
 	}
@@ -138,5 +138,10 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 						</VelocityReact.VelocityTransitionGroup>
 					</Escape>
 				: null
+	}
+
+	private preventDefault (e: KeyboardEvent) {
+		e.preventDefault()
+		e.stopPropagation()
 	}
 }
