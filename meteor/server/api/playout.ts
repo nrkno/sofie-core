@@ -27,6 +27,7 @@ let clone = require('fast-clone')
 
 export namespace ServerPlayoutAPI {
 	export function reloadData (roId: string) {
+		// Resets the Running order
 		check(roId, String)
 
 		let runningOrder = RunningOrders.findOne(roId)
@@ -50,7 +51,8 @@ export namespace ServerPlayoutAPI {
 				}, {
 					$unset: {
 						duration: 1,
-						startedPlayback: 1
+						startedPlayback: 1,
+						timings: 1
 					}
 				})
 
@@ -59,7 +61,8 @@ export namespace ServerPlayoutAPI {
 				}, {
 					$unset: {
 						duration: 1,
-						startedPlayback: 1
+						startedPlayback: 1,
+
 					}
 				})
 
@@ -205,6 +208,13 @@ export namespace ServerPlayoutAPI {
 				nextSegmentLineId: null
 			}
 		})
+		if (runningOrder.currentSegmentLineId) {
+			SegmentLines.update(runningOrder.currentSegmentLineId, {
+				$push: {
+					'timings.takeOut': getCurrentTime()
+				}
+			})
+		}
 
 		// clean up all runtime baseline items
 		RunningOrderBaselineItems.remove({
@@ -222,6 +232,7 @@ export namespace ServerPlayoutAPI {
 	export function roTake (roId: string) {
 		check(roId, String)
 
+		let now = getCurrentTime()
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
@@ -248,13 +259,33 @@ export namespace ServerPlayoutAPI {
 
 		beforeTake(runningOrder, previousSegmentLine || null, takeSegmentLine)
 
+		let m = {
+			previousSegmentLineId: runningOrder.currentSegmentLineId,
+			currentSegmentLineId: takeSegmentLine._id,
+			nextSegmentLineId: nextSegmentLine ? nextSegmentLine._id : null
+		}
 		RunningOrders.update(runningOrder._id, {
-			$set: {
-				previousSegmentLineId: runningOrder.currentSegmentLineId,
-				currentSegmentLineId: takeSegmentLine._id,
-				nextSegmentLineId: nextSegmentLine ? nextSegmentLine._id : null
+			$set: m
+		})
+		SegmentLines.update(takeSegmentLine._id, {
+			$push: {
+				'timings.take': now
 			}
 		})
+		if (m.previousSegmentLineId) {
+			SegmentLines.update(m.previousSegmentLineId, {
+				$push: {
+					'timings.takeOut': now
+				}
+			})
+		}
+		if (m.nextSegmentLineId) {
+			SegmentLines.update(m.nextSegmentLineId, {
+				$push: {
+					'timings.next': now
+				}
+			})
+		}
 
 		if (nextSegmentLine) {
 			clearNextLineStartedPlaybackAndDuration(roId, nextSegmentLine._id)
@@ -457,6 +488,9 @@ export namespace ServerPlayoutAPI {
 				SegmentLines.update(segLine._id, {
 					$set: {
 						startedPlayback
+					},
+					$push: {
+						'timings.startedPlayback': startedPlayback
 					}
 				})
 

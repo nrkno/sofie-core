@@ -9,7 +9,7 @@ import { RunningOrders } from './RunningOrders'
 import { SegmentLineItem, SegmentLineItems } from './SegmentLineItems'
 import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
 import { Segments } from './Segments'
-import { applyClassToDocument } from '../lib'
+import { applyClassToDocument, Time } from '../lib'
 
 /** A "Line" in NRK Lingo. */
 export interface DBSegmentLine {
@@ -50,6 +50,20 @@ export interface DBSegmentLine {
 
 	/** The type of the segmentLiene, could be the name of the template that created it */
 	typeVariant?: string
+
+	/** Playout timings, in here we log times when playout happens */
+	timings?: SegmentLineTimings
+
+}
+export interface SegmentLineTimings {
+	/** Point in time the SegmentLine was taken, (ie the time of the user action) */
+	take: Array<Time>,
+	/** Point in time the SegmentLine started playing (ie the time of the playout) */
+	startedPlayback: Array<Time>,
+	/** Point in time the SegmentLine stopped playing (ie the time of the user action) */
+	takeOut: Array<Time>,
+	/** Point in time the SegmentLine was set as Next (ie the time of the user action) */
+	next: Array<Time>
 }
 export class SegmentLine implements DBSegmentLine {
 	public _id: string
@@ -69,6 +83,7 @@ export class SegmentLine implements DBSegmentLine {
 	public duration?: number
 	public disableOutTransition?: boolean
 	public updateStoryStatus?: boolean
+	public timings?: SegmentLineTimings
 
 	constructor (document: DBSegmentLine) {
 		_.each(_.keys(document), (key) => {
@@ -106,6 +121,32 @@ export class SegmentLine implements DBSegmentLine {
 				sort: { _rank: 1 }
 			}, options)
 		).fetch()
+	}
+	getTimings () {
+		// return a chronological list of timing events
+		let events: Array<{time: Time, type: string}> = []
+		_.each(['take', 'startedPlayback', 'takeOut', 'next'], (key) => {
+			if (this.timings) {
+				_.each(this.timings[key], (t: Time) => {
+					events.push({
+						time: t,
+						type: key
+					})
+				})
+			}
+		})
+		let prevEv: any = null
+		return _.map(
+			_.sortBy(events, e => e.time),
+			(ev) => {
+				if (prevEv) {
+					prevEv.duration = ev.time - prevEv.time
+				}
+				prevEv = ev
+				return ev
+			}
+		)
+
 	}
 }
 
