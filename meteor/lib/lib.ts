@@ -3,6 +3,8 @@ import * as _ from 'underscore'
 import { TransformedCollection, Selector } from './typings/meteor'
 import { PeripheralDeviceAPI } from './api/peripheralDevice'
 import { logger } from './logging'
+import * as Timecode from 'smpte-timecode'
+import { Settings } from './Settings'
 
 /**
  * Convenience method to convert a Meteor.call() into a Promise
@@ -293,4 +295,13 @@ export async function iterateDeeplyAsync (obj: any, iteratee: (val: any, key?: s
 }
 export enum iterateDeeplyEnum {
 	CONTINUE = '$continue'
+}
+export function formatDateAsTimecode (date: Date) {
+	return Timecode(date, Settings['frameRate'], false).toString()
+}
+/**
+ * @param duration time in milliseconds
+ */
+export function formatDurationAsTimecode (duration: Time) {
+	return Timecode(duration * Settings['frameRate'] / 1000, Settings['frameRate'], false).toString()
 }

@@ -29,7 +29,7 @@ Meteor.setTimeout(() => {
 	triggerdoMessageQueue()
 },5000)
 function doMessageQueue () {
-	console.log('doMessageQueue')
+	// console.log('doMessageQueue')
 	let tryInterval = 1 * 60 * 1000
 	try {
 		let now = getCurrentTime()
@@ -41,13 +41,13 @@ function doMessageQueue () {
 
 		_.each(messagesToSend, (msg) => {
 			try {
-				console.log('Trying to send message: ' + msg._id)
+				logger.debug('Trying to send message: ' + msg._id)
 				ExternalMessageQueue.update(msg._id, {$set: {
 					tryCount: (msg.tryCount || 0) + 1,
 					lastTry: now,
 				}})
 
-				let p
+				let p: Promise<any>
 				if (msg.type === 'soap') {
 					p = sendSOAPMessage(msg as ExternalMessageQueueObjSOAP)
 				} else {
@@ -59,7 +59,7 @@ function doMessageQueue () {
 						sent: getCurrentTime(),
 						sentReply: result
 					}})
-					console.log('Message sucessfully sent: ' + msg._id)
+					logger.debug('Message sucessfully sent: ' + msg._id)
 				})
 				.catch((e) => {
 					logMessageError(msg, e)
@@ -97,7 +97,7 @@ function throwFatalError (msg, e) {
 
 async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP) {
 
-	console.log('sendSOAPMessage')
+	logger.info('sendSOAPMessage ' + msg._id)
 	if (!msg.receiver) 		throwFatalError(msg, new Meteor.Error(401, 'attribute .receiver missing!'))
 	if (!msg.receiver.url) 	throwFatalError(msg, new Meteor.Error(401, 'attribute .receiver.url missing!'))
 	if (!msg.message) 		throwFatalError(msg, new Meteor.Error(401, 'attribute .message missing!'))
@@ -107,7 +107,7 @@ async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP) {
 
 	let url = msg.receiver.url
 
-	console.log('url', url)
+	// console.log('url', url)
 
 	let soapClient: soap.Client = await new Promise((resolve: (soapClient: soap.Client,) => any, reject) => {
 		soap.createClient(url, (err, client: soap.Client) => {
@@ -140,7 +140,7 @@ async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP) {
 
 			let args = _.omit(msg.message, ['fcn'])
 
-			console.log('SOAP', msg.message.fcn, args)
+			// console.log('SOAP', msg.message.fcn, args)
 
 			fcn(
 				args, (err: any, result: any, raw: any, soapHeader: any) => {
@@ -159,7 +159,7 @@ async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP) {
 }
 async function resolveSOAPFcnData (soapClient: soap.Client, valFcn: ExternalMessageQueueObjSOAPMessageAttrFcn ) {
 	return new Promise((resolve, reject) => {
-		console.log('resolveSOAPFcnData')
+		// console.log('resolveSOAPFcnData')
 
 		if (valFcn._fcn.soapFetchFrom) {
 			let fetchFrom = valFcn._fcn.soapFetchFrom
@@ -167,14 +167,14 @@ async function resolveSOAPFcnData (soapClient: soap.Client, valFcn: ExternalMess
 			if (fcn) {
 
 				let args = fetchFrom.attrs
-				console.log('SOAP', fetchFrom.fcn, args)
+				// console.log('SOAP', fetchFrom.fcn, args)
 
 				fcn(
 					args, (err: any, result: any, raw: any, soapHeader: any) => {
 						if (err) {
 							reject(err)
 						} else {
-							console.log('reply', result)
+							// console.log('reply', result)
 							let resultValue = result[fetchFrom.fcn + 'Result']
 							resolve(resultValue)
 						}

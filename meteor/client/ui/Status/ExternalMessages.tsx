@@ -62,29 +62,6 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 		// Subscribe to data:
 		this.subscribe('externalMessageQueue', {})
 	}
-
-	renderMessageHead () {
-		const { t } = this.props
-		return (
-			<thead>
-				<tr>
-					<th className='c1'></th>
-					<th className='c2'>
-						{t('Id')}
-					</th>
-					<th className='c2'>
-						{t('Created')}
-					</th>
-					<th className='c3'>
-						{t('Status')}
-					</th>
-					<th className='c4'>
-						{t('Message')}
-					</th>
-				</tr>
-			</thead>
-		)
-	}
 	removeMessage (msg: ExternalMessageQueueObj) {
 		Meteor.call(ClientAPI.methods.execMethod, 'removeExternalMessageQueueObj', msg._id)
 	}
@@ -100,7 +77,10 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 					<MomentFromNow unit='seconds'>{msg.sent}</MomentFromNow>
 				</div>
 			)
-		} else if ((getCurrentTime() - (msg.lastTry || 0)) < 10 * 1000) {
+		} else if (
+			(getCurrentTime() - (msg.lastTry || 0)) < 10 * 1000 &&
+			(msg.lastTry || 0) > (msg.errorMessageTime || 0)
+		) {
 			classes.push('sending')
 			info = (
 				<div>
@@ -146,20 +126,26 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 		}
 		return (
 			<tr key={msg._id} className={classNames(classes)}>
-				<td className='c1'>
+				<td className='c2'>
 					<button className='action-btn' onClick={(e) => this.removeMessage(msg)}>
 						<FontAwesomeIcon icon={faTrash} />
-					</button>
+					</button><br/>
+					ID: {msg._id}<br/>
+					Created: <MomentFromNow unit='seconds'>{msg.created}</MomentFromNow>
 				</td>
-				<td className='c2'>{msg._id}</td>
-				<td className='c2'><MomentFromNow unit='seconds'>{msg.created}</MomentFromNow></td>
-				<td className='c3'>{info}</td>
-				<td className='c4 small'>
+				<td className='c7 small'>
 					<div>
-						{makeTableOfObject(msg.receiver)}
+						{info}
 					</div>
 					<div>
-						{makeTableOfObject(msg.message)}
+						<div>
+							<strong>Receiver</strong><br />
+							{makeTableOfObject(msg.receiver)}
+						</div>
+						<div>
+							<strong>Message</strong><br />
+							{makeTableOfObject(msg.message)}
+						</div>
 					</div>
 				</td>
 			</tr>
@@ -172,7 +158,6 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 			<div>
 				<h2>{t('Queued messages')}</h2>
 				<table className='table system-status-table'>
-					{this.renderMessageHead()}
 
 					<tbody>
 						{_.map(this.props.queuedMessages, (msg) => {
@@ -189,7 +174,6 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 			<div>
 				<h2>{t('Sent messages')}</h2>
 				<table className='table system-status-table'>
-					{this.renderMessageHead()}
 
 					<tbody>
 						{_.map(this.props.sentMessages, (msg) => {
