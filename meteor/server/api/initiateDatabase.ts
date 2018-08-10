@@ -327,13 +327,13 @@ Meteor.methods({
 				// 	type: RundownAPI.SourceLayerType.VT,
 				// 	onPGMClean: true,
 				// },
-				// {
-				// 	_id: 'studio0_mic0',
-				// 	_rank: 90,
-				// 	name: 'Mic',
-				// 	type: RundownAPI.SourceLayerType.MIC,
-				// 	onPGMClean: true,
-				// },
+				{
+					_id: 'studio0_script',
+					_rank: 90,
+					name: 'Manus',
+					type: RundownAPI.SourceLayerType.SCRIPT,
+					onPGMClean: true,
+				},
 				{
 					_id: 'studio0_camera0',
 					_rank: 100,

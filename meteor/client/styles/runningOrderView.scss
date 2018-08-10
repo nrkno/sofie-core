@@ -1022,6 +1022,12 @@ body.vertical-overflow-only {
 		}
 	}
 
+	.segment-timeline__next-preview {
+		.segment-timeline__segment-line .segment-timeline__output-group .segment-timeline__layer .segment-timeline__layer-item .segment-timeline__layer-item__label {
+			max-width: calc(100% - 0.6em);
+		}
+	}
+
 	// This is the output layer controls section in the middle
 	.segment-timeline__output-layers {
 		grid-column: segment-group-controls / timeline;
