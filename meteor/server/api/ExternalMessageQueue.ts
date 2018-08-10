@@ -47,7 +47,7 @@ function doMessageQueue () {
 					lastTry: now,
 				}})
 
-				let p
+				let p: Promise<any>
 				if (msg.type === 'soap') {
 					p = sendSOAPMessage(msg as ExternalMessageQueueObjSOAP)
 				} else {
