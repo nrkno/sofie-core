@@ -297,12 +297,24 @@ interface ITrackedProps {
 }
 
 export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
-	let subSegments = Meteor.subscribe('segments', {})
-	let subSegmentLines = Meteor.subscribe('segmentLines', {})
-	let subSegmentLineItems = Meteor.subscribe('segmentLineAdLibItems', {})
-	let subRunningOrderAdLibItems = Meteor.subscribe('runningOrderBaselineAdLibItems', {})
-	let subStudioInstallations = Meteor.subscribe('studioInstallations', {})
-	let subShowStyles = Meteor.subscribe('showStyles', {})
+	Meteor.subscribe('segments', {
+		runningOrderId: props.runningOrder._id
+	})
+	Meteor.subscribe('segmentLines', {
+		runningOrderId: props.runningOrder._id
+	})
+	Meteor.subscribe('segmentLineAdLibItems', {
+		runningOrderId: props.runningOrder._id
+	})
+	Meteor.subscribe('runningOrderBaselineAdLibItems', {
+		runningOrderId: props.runningOrder._id
+	})
+	Meteor.subscribe('studioInstallations', {
+		_id: props.runningOrder.studioInstallationId
+	})
+	Meteor.subscribe('showStyles', {
+		_id: props.runningOrder.showStyleId
+	})
 
 	let liveSegment: SegmentUi | undefined = undefined
 
@@ -421,6 +433,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	componentWillUnmount () {
 		mousetrap.unbind(this.usedHotkeys, 'keyup')
 		mousetrap.unbind(this.usedHotkeys, 'keydown')
+
 		this.usedHotkeys.length = 0
 	}
 

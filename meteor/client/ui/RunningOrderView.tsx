@@ -645,10 +645,6 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		})
 	}
 
-	totalRundownDuration () {
-		return 0
-	}
-
 	onContextMenu = (contextMenuContext: any) => {
 		this.setState({
 			contextMenuContext
