@@ -320,8 +320,8 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 		const { t } = this.props
 		return (
 			(this.props.studioInstallation.config || []).map((item, index) => {
-				return <React.Fragment>
-					<tr key={item._id} className={ClassNames({
+				return <React.Fragment key={item._id}>
+					<tr className={ClassNames({
 						'hl': this.isItemEdited(item)
 					})}>
 						<th className='settings-studio-custom-config-table__name c2'>
@@ -340,7 +340,7 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 						</td>
 					</tr>
 					{this.isItemEdited(item) &&
-						<tr className='expando-details hl' key={item._id + '-details'}>
+						<tr className='expando-details hl'>
 							<td colSpan={4}>
 								<div>
 									<div className='mod mvs mhs'>
@@ -517,8 +517,8 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 			}).sort((a, b) => {
 				return a._rank - b._rank
 			}).map((item, index) => {
-				return <React.Fragment>
-					<tr key={item._id} className={ClassNames({
+				return <React.Fragment key={item._id}>
+					<tr className={ClassNames({
 						'hl': this.isItemEdited(item)
 					})}>
 						<th className='settings-studio-source-table__name c2'>
@@ -540,7 +540,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 						</td>
 					</tr>
 					{this.isItemEdited(item) &&
-						<tr className='expando-details hl' key={item._id + '-details'}>
+						<tr className='expando-details hl'>
 							<td colSpan={4}>
 								<div>
 									<div className='mod mvs mhs'>
@@ -1046,8 +1046,8 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 
 		return (
 			_.map(this.props.studioInstallation.mappings, (mapping: Mapping , layerId: string) => {
-				return <React.Fragment>
-					<tr key={layerId} className={ClassNames({
+				return <React.Fragment key={layerId}>
+					<tr className={ClassNames({
 						'hl': this.isItemEdited(layerId)
 					})}>
 						<th className='settings-studio-device__name c3'>
@@ -1093,7 +1093,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 						</td>
 					</tr>
 					{this.isItemEdited(layerId) &&
-						<tr className='expando-details hl' key={layerId + '-details'}>
+						<tr className='expando-details hl'>
 							<td colSpan={5}>
 								<div>
 									<div className='mod mvs mhs'>

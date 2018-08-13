@@ -23,6 +23,7 @@ import * as faTimes from '@fortawesome/fontawesome-free-solid/faTimes'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { Spinner } from '../../lib/Spinner'
+import { SegmentLineItem } from '../../../lib/collections/SegmentLineItems';
 
 interface IListViewPropsHeader {
 	uiSegments: Array<SegmentUi>
@@ -379,6 +380,9 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	}
 })(class AdLibPanel extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
+	stickyItemMap: {
+		[key: string]: SegmentLineAdLibItem
+	}
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -461,6 +465,17 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 					}, 'keyup')
 					this.usedHotkeys.push(item.clearKeyboardHotkey)
 				}
+
+				if (item.isSticky && item.activateStickyKeyboardHotkey) {
+					mousetrap.bind(item.activateStickyKeyboardHotkey, preventDefault, 'keydown')
+					mousetrap.bind(item.activateStickyKeyboardHotkey, (e: ExtendedKeyboardEvent) => {
+						preventDefault(e)
+						if (this.stickyItemMap[item._id]) {
+							this.onToggleAdLib(this.stickyItemMap[item._id])
+						}
+					}, 'keyup')
+					this.usedHotkeys.push(item.activateStickyKeyboardHotkey)
+				}
 			})
 		}
 	}
@@ -472,23 +487,27 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	}
 
 	onSelectAdLib = (aSLine: SegmentLineAdLibItemUi) => {
-		console.log(aSLine)
+		// console.log(aSLine)
 		this.setState({
 			selectedItem: aSLine
 		})
 	}
 
 	onToggleAdLib = (aSLine: SegmentLineAdLibItemUi) => {
-		console.log(aSLine)
+		// console.log(aSLine)
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && !aSLine.isGlobal) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.segmentAdLibLineItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
 		} else if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && aSLine.isGlobal) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.runningOrderBaselineAdLibItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
 		}
+
+		if (this.props.sourceLayerLookup[aSLine.sourceLayerId].isSticky) {
+			this.stickyItemMap[aSLine.sourceLayerId] = aSLine
+		}
 	}
 
 	onClearAllSourceLayer = (sourceLayer: ISourceLayer) => {
-		console.log(sourceLayer)
+		// console.log(sourceLayer)
 
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.sourceLayerOnLineStop, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id)
@@ -496,7 +515,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	}
 
 	onSelectSegment = (segment: SegmentUi) => {
-		console.log(segment)
+		// console.log(segment)
 		this.setState({
 			selectedSegment: segment,
 			followLive: (this.props.liveSegment ? segment._id === this.props.liveSegment._id : true)
