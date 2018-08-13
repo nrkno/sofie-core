@@ -334,7 +334,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					return (
 						<OutputGroup key={layer._id}
 							{...this.props}
-							mediaPreviewUrl={this.getConfigValue(MEDIA_PREVIEWS_URL) || ''}
+							mediaPreviewUrl={this.ensureHasTrailingSlash(this.getConfigValue(MEDIA_PREVIEWS_URL)) || ''}
 							layer={layer}
 							segment={this.props.segment}
 							segmentLine={segmentLine}
@@ -434,6 +434,14 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 			)
 		}
 
+	}
+
+	private ensureHasTrailingSlash (input: string | null): string | null {
+		if (input) {
+			return (input.substr(-1) === '/') ? input : input + '/'
+		} else {
+			return input
+		}
 	}
 
 	private getConfigValue (name: string): string | null {
