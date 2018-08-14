@@ -380,6 +380,8 @@ export namespace ServerPlayoutAPI {
 			// store new value
 			SegmentLineItems.update(segLineItem._id, {$set: {
 				startedPlayback
+			}, $push: {
+				'timings.startedPlayback': startedPlayback
 			}})
 
 			// We don't need to bother with an updateTimeline(), as this hasnt changed anything, but lets us accurately add started items when reevaluating
@@ -1105,7 +1107,10 @@ function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem, segmentLine: 
 			segmentLineId: segmentLine._id,
 			adLibSourceId: adLibItem._id,
 			dynamicallyInserted: true,
-			expectedDuration: adLibItem.expectedDuration || 0 // set duration to infinite if not set by AdLibItem
+			expectedDuration: adLibItem.expectedDuration || 0, // set duration to infinite if not set by AdLibItem
+			timings: {
+				take: [getCurrentTime()]
+			}
 		}
 	))
 

@@ -13,32 +13,44 @@ import { XmlEntities as Entities } from 'html-entities'
 const entities = new Entities()
 
 let runMessageQueue = true
+let errorOnLastRunCount: number = 0
 
 let triggerdoMessageQueueTimeout: number = 0
-export function triggerdoMessageQueue () {
+export function triggerdoMessageQueue (time?: number) {
+	if (!time) time = 1000
 	if (triggerdoMessageQueueTimeout) {
 		Meteor.clearTimeout(triggerdoMessageQueueTimeout)
 	}
 	if (runMessageQueue) {
 		triggerdoMessageQueueTimeout = Meteor.setTimeout(() => {
+			triggerdoMessageQueueTimeout = 0
 			doMessageQueue()
-		},1000)
+		}, time)
 	}
 }
-Meteor.setTimeout(() => {
-	triggerdoMessageQueue()
-},5000)
+Meteor.startup(() => {
+	triggerdoMessageQueue(5000)
+})
 function doMessageQueue () {
 	// console.log('doMessageQueue')
-	let tryInterval = 1 * 60 * 1000
+	let tryInterval = 1 * 60 * 1000 // 1 minute
+	let limit = ( errorOnLastRunCount === 0 ? 100 : 5 ) // if there were error on last send, don't 
+	let probablyHasMoreToSend = false
 	try {
 		let now = getCurrentTime()
 		let messagesToSend = ExternalMessageQueue.find({
 			expires: {$gt: now},
 			lastTry: {$not: {$gt: now - tryInterval}},
 			sent: {$not: {$gt: 0}}
+		}, {
+			limit: limit
 		}).fetch()
 
+		if (messagesToSend.length === limit) probablyHasMoreToSend = true
+
+		errorOnLastRunCount = 0
+
+		let ps: Array<Promise<any>> = []
 		_.each(messagesToSend, (msg) => {
 			try {
 				logger.debug('Trying to send message: ' + msg._id)
@@ -53,30 +65,40 @@ function doMessageQueue () {
 				} else {
 					throw new Meteor.Error(500, 'Unknown message type "' + msg.type + '"')
 				}
-				Promise.resolve(p)
-				.then((result) => {
-					ExternalMessageQueue.update(msg._id, {$set: {
-						sent: getCurrentTime(),
-						sentReply: result
-					}})
-					logger.debug('Message sucessfully sent: ' + msg._id)
-				})
-				.catch((e) => {
-					logMessageError(msg, e)
-				})
+				ps.push(
+					Promise.resolve(p)
+					.then((result) => {
+
+						ExternalMessageQueue.update(msg._id, {$set: {
+							sent: getCurrentTime(),
+							sentReply: result
+						}})
+						logger.debug('Message sucessfully sent: ' + msg._id)
+					})
+					.catch((e) => {
+						logMessageError(msg, e)
+					})
+				)
 			} catch (e) {
 				logMessageError(msg, e)
+			}
+		})
+		Promise.all(ps)
+		.then(() => {
+			// all messages have been sent
+			if (probablyHasMoreToSend && errorOnLastRunCount === 0) {
+				// override default timeout
+				triggerdoMessageQueue(1000)
 			}
 		})
 	} catch (e) {
 		logger.error(e)
 	}
-	Meteor.setTimeout(() => {
-		triggerdoMessageQueue()
-	}, tryInterval) // 5 minutes
+	triggerdoMessageQueue(tryInterval)
 }
 function logMessageError (msg: ExternalMessageQueueObj, e: any) {
 	try {
+		errorOnLastRunCount++
 		logger.warn(e)
 		ExternalMessageQueue.update(msg._id, {$set: {
 			errorMessage: (e['reason'] || e['message'] || e.toString()),
