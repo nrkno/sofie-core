@@ -304,6 +304,11 @@ export namespace ServerPlayoutAPI {
 		if (!nextSegmentLine) throw new Meteor.Error(404, `Segment Line "${nextSlId}" not found!`)
 		if (nextSegmentLine.runningOrderId !== runningOrder._id) throw new Meteor.Error(409, `Segment Line "${nextSlId}" not part of specified running order`)
 
+		const nextSegment = Segments.findOne(nextSegmentLine.segmentId)
+		if (nextSegment) {
+			resetSegment(nextSegment._id) // reset entire segment on manual set as next
+		}
+
 		RunningOrders.update(runningOrder._id, {
 			$set: {
 				nextSegmentLineId: nextSlId
@@ -906,6 +911,27 @@ function getOrderedSegmentLineItem (line: SegmentLine): SegmentLineItem[] {
 	})
 
 	return eventMap.map(e => e.item)
+}
+
+function resetSegment (segmentId: string) {
+	const segment = Segments.findOne(segmentId)
+	if (!segment) return
+
+	const segmentLines = SegmentLines.find({
+		segmentId: segmentId
+	}).fetch()
+
+	segmentLines.forEach((item) => {
+		SegmentLineItems.update({
+			runningOrderId: segment.runningOrderId,
+			segmentLineId: item._id
+		}, {
+			$unset: {
+				duration: 1,
+				startedPlayback: 1,
+			}
+		})
+	})
 }
 
 // TODO - execute this after importing rundown
