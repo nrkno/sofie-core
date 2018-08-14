@@ -502,7 +502,7 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		super(props)
 
 		this.state = {
-			timeScale: 0.05,
+			timeScale: 0.03,
 			studioMode: localStorage.getItem('studioMode') === '1' ? true : false,
 			contextMenuContext: null,
 			bottomMargin: '',

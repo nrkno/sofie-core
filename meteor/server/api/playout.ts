@@ -1801,7 +1801,6 @@ function afterUpdateTimeline (studioInstallation: StudioInstallation) {
 			})
 		})
 
-
 		// Collect statistics, per device
 		_.each(deviceIdObjs, (objs, deviceId) => {
 			console.log('deviceId', deviceId)
@@ -1839,7 +1838,7 @@ function afterUpdateTimeline (studioInstallation: StudioInstallation) {
 				LLayer: '__stat'
 			}
 			// processTimelineObjects(studioInstallation, [statObj])
-			
+
 			Timeline.upsert(magicId, {$set: statObj})
 		})
 	}, 1)
