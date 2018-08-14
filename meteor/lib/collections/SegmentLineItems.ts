@@ -8,6 +8,7 @@ import { TimelineTransition,
 } from './Timeline'
 import { TimelineObj } from './Timeline'
 import { TransformedCollection } from '../typings/meteor'
+import { SegmentLineTimings } from './SegmentLines'
 
 /** A trigger interface compatible with that of supertimeline */
 export interface ITimelineTrigger {
@@ -55,6 +56,10 @@ export interface SegmentLineItemGeneric {
 	adLibSourceId?: string
 	/** If this item has been insterted during run of RO (such as adLibs). Df set, this won't be affected by updates from MOS */
 	dynamicallyInserted?: boolean,
+	/** The time the system started playback of this segment line, null if not yet played back (milliseconds since epoch) */
+	startedPlayback?: number
+	/** Playout timings, in here we log times when playout happens */
+	timings?: SegmentLineTimings
 }
 
 export enum SegmentLineItemLifespan {
