@@ -413,7 +413,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 							</div>
 							{(
 								outputLayer.sourceLayers !== undefined &&
-								outputLayer.sourceLayers.sort((a, b) => {
+								outputLayer.sourceLayers.filter(i => !i.isHidden).sort((a, b) => {
 									return a._rank - b._rank
 								}).map((sourceLayer) => {
 									return (

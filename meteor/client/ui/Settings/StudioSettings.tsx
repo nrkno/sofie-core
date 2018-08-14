@@ -633,6 +633,18 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + item.index + '.isHidden'}
+												obj={this.props.studioInstallation}
+												type='checkbox'
+												collection={StudioInstallations}
+												className=''></EditAttribute>
+											{t('Is hidden')}
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
 											{t('Display rank')}
 											<EditAttribute
 												modifiedClassName='bghl'

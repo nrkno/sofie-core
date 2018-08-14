@@ -237,7 +237,9 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			segmentLineItem.outputLayer = outputLayers[segmentLineItem.outputLayerId]
 			// mark the output layer as used within this segment
 			// console.log(segmentLineItem)
-			outputLayers[segmentLineItem.outputLayerId].used = true
+			if (!sourceLayers[segmentLineItem.sourceLayerId].isHidden) {
+				outputLayers[segmentLineItem.outputLayerId].used = true
+			}
 			// attach the sourceLayer to the outputLayer, if it hasn't been already
 
 			// find matching layer in the output layer
