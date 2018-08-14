@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as $ from 'jquery'
 
 import { FloatingInspector } from '../../FloatingInspector'
 
@@ -42,6 +43,10 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 
 	setRightLabelRef = (e: HTMLSpanElement) => {
 		this.rightLabel = e
+	}
+
+	componentDidMount () {
+		this.updateAnchoredElsWidths()
 	}
 
 	updateAnchoredElsWidths = () => {
