@@ -10,6 +10,7 @@ import * as faBars from '@fortawesome/fontawesome-free-solid/faBars'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { AdLibPanel } from './AdLibPanel'
+import { GlobalAdLibPanel } from './GlobalAdLibPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
@@ -17,7 +18,8 @@ import { StudioInstallation } from '../../../lib/collections/StudioInstallations
 import { RunningOrderViewKbdShortcuts } from '../RunningOrderView'
 
 enum InspectorPanelTabs {
-	ADLIB = 'adlib'
+	ADLIB = 'adlib',
+	GLOBAL_ADLIB = 'global_adlib'
 }
 interface IProps {
 	segments: Array<SegmentUi>
@@ -225,9 +227,13 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 					<div className={ClassNames('running-order-view__inspector-drawer__tabs__tab', {
 						'selected': this.state.selectedTab === InspectorPanelTabs.ADLIB
 					})} onClick={(e) => this.switchTab(InspectorPanelTabs.ADLIB)} tabIndex={0}>{t('AdLib')}</div>
+					<div className={ClassNames('running-order-view__inspector-drawer__tabs__tab', {
+						'selected': this.state.selectedTab === InspectorPanelTabs.GLOBAL_ADLIB
+					})} onClick={(e) => this.switchTab(InspectorPanelTabs.GLOBAL_ADLIB)} tabIndex={0}>{t('Global AdLib')}</div>
 				</div>
 				<div className='running-order-view__inspector-drawer__panel super-dark'>
-					<AdLibPanel {...this.props}></AdLibPanel>
+					{this.state.selectedTab === InspectorPanelTabs.ADLIB && <AdLibPanel {...this.props}></AdLibPanel>}
+					{this.state.selectedTab === InspectorPanelTabs.GLOBAL_ADLIB && <GlobalAdLibPanel {...this.props}></GlobalAdLibPanel>}
 				</div>
 			</div>
 		)
