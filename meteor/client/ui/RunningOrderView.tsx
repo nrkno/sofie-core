@@ -95,7 +95,7 @@ export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_ACTIVATE_REHEARSAL = 'mod+§',
 	RUNNING_ORDER_DEACTIVATE = 'mod+shift+§',
 	RUNNING_ORDER_GO_TO_LIVE = 'mod+home',
-	RUNNING_ORDER_RELOAD_RUNNING_ORDER = 'shift+f12',
+	RUNNING_ORDER_RELOAD_RUNNING_ORDER = 'mod+shift+f12',
 	RUNNING_ORDER_TOGGLE_DRAWER = 'tab'
 }
 mousetrap.addKeycodes({
