@@ -308,6 +308,8 @@ Meteor.methods({
 					abbreviation: 'DVE',
 					type: RundownAPI.SourceLayerType.SPLITS,
 					onPGMClean: true,
+					isSticky: true,
+					activateStickyKeyboardHotkey: 'f6'
 				},
 				{
 					_id: 'studio0_remote0',
@@ -318,7 +320,9 @@ Meteor.methods({
 					onPGMClean: true,
 					activateKeyboardHotkeys: '1,2,3',
 					isRemoteInput: true,
-					assignHotkeysToGlobalAdlibs: true
+					assignHotkeysToGlobalAdlibs: true,
+					isSticky: true,
+					activateStickyKeyboardHotkey: 'f5'
 				},
 				// {
 				// 	_id: 'studio0_vt0',
