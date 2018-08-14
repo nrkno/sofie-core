@@ -390,9 +390,6 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	}
 })(class AdLibPanel extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
-	stickyItemMap: {
-		[key: string]: SegmentLineAdLibItem
-	}
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -481,9 +478,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 					mousetrap.bind(item.activateStickyKeyboardHotkey, preventDefault, 'keydown')
 					mousetrap.bind(item.activateStickyKeyboardHotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
-						if (this.stickyItemMap[item._id]) {
-							this.onToggleAdLib(this.stickyItemMap[item._id])
-						}
+						this.onToggleSticky(item._id)
 					}, 'keyup')
 					this.usedHotkeys.push(item.activateStickyKeyboardHotkey)
 				}
@@ -504,16 +499,18 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		})
 	}
 
+	onToggleSticky = (sourceLayerId: string) => {
+		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && this.props.runningOrder.active) {
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.sourceLayerStickyItemStart, this.props.runningOrder._id, sourceLayerId)
+		}
+	}
+
 	onToggleAdLib = (aSLine: SegmentLineAdLibItemUi) => {
 		// console.log(aSLine)
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && !aSLine.isGlobal) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.segmentAdLibLineItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
 		} else if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && aSLine.isGlobal) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.runningOrderBaselineAdLibItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
-		}
-
-		if (this.props.sourceLayerLookup[aSLine.sourceLayerId].isSticky) {
-			this.stickyItemMap[aSLine.sourceLayerId] = aSLine
 		}
 	}
 

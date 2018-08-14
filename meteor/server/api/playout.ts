@@ -609,6 +609,51 @@ export namespace ServerPlayoutAPI {
 
 		updateTimeline(runningOrder.studioInstallationId)
 	}
+	export function sourceLayerStickyItemStart (roId: string, sourceLayerId: string) {
+		check(roId, String)
+		check(sourceLayerId, String)
+
+		const runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		if (!runningOrder.active) throw new Meteor.Error(403, `Segment Line Items can be only manipulated in an active running order!`)
+		if (!runningOrder.currentSegmentLineId) throw new Meteor.Error(400, `A segment line needs to be active to place a sticky item`)
+
+		const studio = StudioInstallations.findOne(runningOrder.studioInstallationId)
+		if (!studio) throw new Meteor.Error(501, `Studio "${runningOrder.studioInstallationId}" not found!`)
+
+		const sourceLayer = studio.sourceLayers.find(i => i._id === sourceLayerId)
+		if (!sourceLayer) throw new Meteor.Error(404, `Source layer "${sourceLayerId}" not found!`)
+		if (!sourceLayer.isSticky) throw new Meteor.Error(400, `Only sticky layers can be restarted. "${sourceLayerId}" is not sticky.`)
+
+		const lastSegmentLineItems = SegmentLineItems.find({
+			runningOrderId: runningOrder._id,
+			sourceLayerId: sourceLayer._id,
+			startedPlayback: {
+				$exists: true
+			}
+		}, {
+			sort: {
+				startedPlayback: -1
+			},
+			limit: 1
+		}).fetch()
+
+		if (lastSegmentLineItems.length > 1) {
+			const currentSegmentLine = SegmentLines.findOne(runningOrder.currentSegmentLineId)
+			if (!currentSegmentLine) throw new Meteor.Error(501, `Current Segment Line "${runningOrder.currentSegmentLineId}" could not be found.`)
+
+			const lastItem = convertSLineToAdLibItem(lastSegmentLineItems[0])
+			const newAdLibSegmentLineItem = convertAdLibToSLineItem(lastItem, currentSegmentLine)
+
+			SegmentLineItems.insert(newAdLibSegmentLineItem)
+
+			// logger.debug('adLibItemStart', newSegmentLineItem)
+
+			stopInfinitesRunningOnLayer(runningOrder, currentSegmentLine, newAdLibSegmentLineItem.sourceLayerId)
+
+			updateTimeline(runningOrder.studioInstallationId)
+		}
+	}
 	export function sourceLayerOnLineStop (roId: string, slId: string, sourceLayerId: string) {
 		check(roId, String)
 		check(slId, String)
@@ -1013,6 +1058,37 @@ function stopInfinitesRunningOnLayer (runningOrder: RunningOrder, segLine: Segme
 
 	// ensure adlib is extended correctly if infinite
 	updateSourceLayerInfinitesAfterLine(runningOrder, false, segLine)
+}
+
+function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): SegmentLineAdLibItem {
+	const oldId = segmentLineItem._id
+	const newId = Random.id()
+	const newAdLibItem = literal<SegmentLineAdLibItem>(_.extend(
+		segmentLineItem,
+		{
+			_id: newId,
+			trigger: {
+				type: TriggerType.TIME_ABSOLUTE,
+				value: 'now'
+			},
+			dynamicallyInserted: true,
+			expectedDuration: segmentLineItem.expectedDuration || 0 // set duration to infinite if not set by AdLibItem
+		}
+	))
+	delete newAdLibItem.trigger
+
+	if (newAdLibItem.content && newAdLibItem.content.timelineObjects) {
+		let contentObjects = newAdLibItem.content.timelineObjects
+		newAdLibItem.content.timelineObjects = _.compact(contentObjects).map(
+			(item) => {
+				const itemCpy = _.extend(item, {
+					_id: newId + '_' + item!._id,
+				})
+				return itemCpy as TimelineObj
+			}
+		)
+	}
+	return newAdLibItem
 }
 
 function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem, segmentLine: SegmentLine): SegmentLineItem {
