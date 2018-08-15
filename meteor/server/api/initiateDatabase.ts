@@ -257,14 +257,16 @@ Meteor.methods({
 				 	_rank: 110,
 				 	name: 'Klokke',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
-					onPGMClean: true
+					onPGMClean: true,
+					isHidden: true
 				},
 				{
 				 	_id: 'studio0_graphics_logo',
 				 	_rank: 111,
 				 	name: 'Logo',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
-					onPGMClean: true
+					onPGMClean: true,
+					isHidden: true
 				},
 				{
 				 	_id: 'studio0_graphics_tag_left',
