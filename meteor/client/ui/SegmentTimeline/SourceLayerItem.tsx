@@ -21,7 +21,7 @@ import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 
-const LEFT_RIGHT_ANCHOR_SPACER = 35
+const LEFT_RIGHT_ANCHOR_SPACER = 15
 
 export interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
@@ -155,10 +155,6 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 	}
 
 	getItemLabelOffsetRight = (): { [key: string]: string } => {
-		if (this.props.segmentLineItem && this.props.segmentLineItem._id === '191PKIpK73PpgUzLRiySRrsAjGY_') {
-			let a = '12345!@#$% debugger here'
-		}
-
 		if (this.props.relative) {
 			return {}
 		} else {
@@ -176,7 +172,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 				if (this.props.scrollLeft + this.props.scrollWidth < (outPoint - outTransitionDuration + this.props.segmentLineStartsAt) &&
 					this.props.scrollLeft + this.props.scrollWidth > (inPoint + this.props.segmentLineStartsAt)) {
-					const targetPos = Math.max(((this.props.scrollLeft + this.props.scrollWidth) - outPoint - this.props.segmentLineStartsAt - outTransitionDuration) * this.props.timeScale, (this.state.elementWidth - this.state.leftAnchoredWidth - LEFT_RIGHT_ANCHOR_SPACER) * -1)
+					const targetPos = Math.max(((this.props.scrollLeft + this.props.scrollWidth) - outPoint - this.props.segmentLineStartsAt - outTransitionDuration) * this.props.timeScale, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth - LEFT_RIGHT_ANCHOR_SPACER) * -1)
 
 					return {
 						'transform': 'translate3d(' + (targetPos).toString() + 'px,  0, 0)',

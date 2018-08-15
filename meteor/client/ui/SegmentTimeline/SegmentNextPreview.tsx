@@ -27,7 +27,7 @@ interface IProps {
 export const SegmentNextPreview = class extends React.Component<IProps> {
 	renderSourceLayers (outputLayer: IOutputLayerUi, layers: ISourceLayerUi[] | undefined) {
 		if (layers) {
-			return _.map(layers, (layer, id) => {
+			return layers.filter(i => !i.isHidden).map((layer, id) => {
 				return (
 					<div className='segment-timeline__layer' key={id}>
 						{layer.followingItems && layer.followingItems

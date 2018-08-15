@@ -151,7 +151,7 @@ interface IOutputGroupProps {
 class OutputGroup extends React.Component<IOutputGroupProps> {
 	renderInside () {
 		if (this.props.layer.sourceLayers !== undefined) {
-			return this.props.layer.sourceLayers.map((sourceLayer) => {
+			return this.props.layer.sourceLayers.filter(i => !i.isHidden).map((sourceLayer) => {
 				return <SourceLayer key={sourceLayer._id}
 					{...this.props}
 					layer={sourceLayer}
@@ -334,7 +334,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					return (
 						<OutputGroup key={layer._id}
 							{...this.props}
-							mediaPreviewUrl={this.getConfigValue(MEDIA_PREVIEWS_URL) || ''}
+							mediaPreviewUrl={this.ensureHasTrailingSlash(this.getConfigValue(MEDIA_PREVIEWS_URL)) || ''}
 							layer={layer}
 							segment={this.props.segment}
 							segmentLine={segmentLine}
@@ -434,6 +434,14 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 			)
 		}
 
+	}
+
+	private ensureHasTrailingSlash (input: string | null): string | null {
+		if (input) {
+			return (input.substr(-1) === '/') ? input : input + '/'
+		} else {
+			return input
+		}
 	}
 
 	private getConfigValue (name: string): string | null {

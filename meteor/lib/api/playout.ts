@@ -26,6 +26,7 @@ export namespace PlayoutAPI {
 		'runningOrderBaselineAdLibItemStart' = 'playout.runningOrderBaselineAdLibItemStart',
 		'segmentAdLibLineItemStop' = 'playout.segmentAdLibLineItemStop',
 		'sourceLayerOnLineStop' = 'playout.sourceLayerOnLineStop',
+		'sourceLayerStickyItemStart' = 'playout.sourceLayerStickyItemStart',
 		'timelineTriggerTimeUpdateCallback' = 'playout.timelineTriggerTimeUpdateCallback'
 	}
 }

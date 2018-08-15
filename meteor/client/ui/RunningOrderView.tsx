@@ -95,7 +95,7 @@ export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_ACTIVATE_REHEARSAL = 'mod+§',
 	RUNNING_ORDER_DEACTIVATE = 'mod+shift+§',
 	RUNNING_ORDER_GO_TO_LIVE = 'mod+home',
-	RUNNING_ORDER_RELOAD_RUNNING_ORDER = 'shift+f12',
+	RUNNING_ORDER_RELOAD_RUNNING_ORDER = 'mod+shift+f12',
 	RUNNING_ORDER_TOGGLE_DRAWER = 'tab'
 }
 mousetrap.addKeycodes({
@@ -502,7 +502,7 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		super(props)
 
 		this.state = {
-			timeScale: 0.05,
+			timeScale: 0.03,
 			studioMode: localStorage.getItem('studioMode') === '1' ? true : false,
 			contextMenuContext: null,
 			bottomMargin: '',
@@ -643,10 +643,6 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		this.setState({
 			followLiveSegments: true
 		})
-	}
-
-	totalRundownDuration () {
-		return 0
 	}
 
 	onContextMenu = (contextMenuContext: any) => {

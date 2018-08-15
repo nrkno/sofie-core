@@ -11,7 +11,7 @@ import { SegmentLine, DBSegmentLine } from '../../../lib/collections/SegmentLine
 import { SegmentLineItem, SegmentLineItemLifespan } from '../../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItem } from '../../../lib/collections/RunningOrderBaselineItems'
-import { literal, Optional, getCurrentTime } from '../../../lib/lib'
+import { literal, Optional, getCurrentTime, formatDateAsTimecode, Time, formatDurationAsTimecode } from '../../../lib/lib'
 import * as crypto from 'crypto'
 import { getHash } from '../../lib'
 import {
@@ -94,10 +94,12 @@ export interface TemplateContextInnerBase {
 	runHelper: (functionId: string, ...args: any[]) => any
 	error: (message: string) => void
 	warning: (message: string) => void
-	getSegmentLines (): Array<SegmentLine>
-	getSegmentLineIndex (): number
+	getSegmentLines: () => Array<SegmentLine>
+	getSegmentLineIndex: () => number
+	formatDateAsTimecode: (date: Date) => string
+	formatDurationAsTimecode: (time: number) => string
 	// extended:
-	getAllSegmentLines (): Array<SegmentLine>
+	getAllSegmentLines: () => Array<SegmentLine>
 }
 
 export interface TemplateContextInner extends TemplateContext, TemplateContextInnerBase {
@@ -225,14 +227,25 @@ export function getContext (context: TemplateContext, extended?: boolean): Templ
 			let ro = this.getRunningOrder()
 			return ro.fetchCache('fullStory' + segmentLine._id)
 		},
-		error: (message: string) => {
+		error (message: string) {
 			logger.error('Error from template: ' + message)
 			throw new Meteor.Error(500, message)
 		},
-		warning: (message: string) => {
+		warning (message: string) {
 			logger.warn('Warning from template: ' + message)
 			// @todo: save warnings, maybe to the RO somewhere?
 			// it should be displayed to the user in the UI
+		},
+		formatDateAsTimecode (time: Date | number): string {
+			let date = (
+				_.isDate(time) ?
+				time :
+				new Date(time)
+			)
+			return formatDateAsTimecode(date)
+		},
+		formatDurationAsTimecode (time: number): string {
+			return formatDurationAsTimecode(time)
 		},
 
 		// ------------------
@@ -437,6 +450,7 @@ export function runNamedTemplate (showStyle: ShowStyle, templateId: string, cont
 			if (!item._id) item._id = innerContext.getHashId('postprocess_' + (i++))
 			if (!item.runningOrderId) item.runningOrderId = innerContext.runningOrderId
 			if (!item.segmentLineId) item.segmentLineId = innerContext.segmentLine._id
+			if (!item.mosId && !item.isTransition) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for all segmentLineItem! ("' + innerContext.unhashId(item._id) + '")')
 
 			if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLines must be unique! ("' + innerContext.unhashId(item._id) + '")')
 			segmentLinesUniqueIds[item._id] = true
@@ -462,6 +476,7 @@ export function runNamedTemplate (showStyle: ShowStyle, templateId: string, cont
 			if (!item._id) item._id = innerContext.getHashId('postprocess_' + (i++))
 			if (!item.runningOrderId) item.runningOrderId = innerContext.runningOrderId
 			if (!item.segmentLineId) item.segmentLineId = innerContext.segmentLine._id
+			if (!item.mosId) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for all segmentLineItem! ("' + innerContext.unhashId(item._id) + '")')
 
 			if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLines must be unique! ("' + innerContext.unhashId(item._id) + '")')
 			segmentLinesUniqueIds[item._id] = true

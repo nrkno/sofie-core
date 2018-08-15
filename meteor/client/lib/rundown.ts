@@ -55,7 +55,7 @@ export namespace RundownUtils {
 				: Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000)
 		}
 
-		return (isNegative ? (minusPrefix || (enDashAsMinus ? '\u2013' : '-')) : (showPlus && milliseconds > 0 ? '+' : '')) + ((showHours || (useSmartHours && hours > 0)) ? padZero(hours) + ':' : '') + padZero(minutes) + ':' + padZero(secondsRest)
+		return (isNegative ? (minusPrefix !== undefined ? minusPrefix : (enDashAsMinus ? '\u2013' : '-')) : (showPlus && milliseconds > 0 ? '+' : '')) + ((showHours || (useSmartHours && hours > 0)) ? padZero(hours) + ':' : '') + padZero(minutes) + ':' + padZero(secondsRest)
 	}
 
 	export function isInsideViewport (scrollLeft: number, scrollWidth: number, segmentLine: SegmentLineUi, segmentLineStartsAt: number | undefined, segmentLineDuration: number | undefined, segmentLineItem?: SegmentLineItemUi) {

@@ -320,8 +320,8 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 		const { t } = this.props
 		return (
 			(this.props.studioInstallation.config || []).map((item, index) => {
-				return [
-					<tr key={item._id} className={ClassNames({
+				return <React.Fragment key={item._id}>
+					<tr className={ClassNames({
 						'hl': this.isItemEdited(item)
 					})}>
 						<th className='settings-studio-custom-config-table__name c2'>
@@ -338,9 +338,9 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 								<FontAwesomeIcon icon={faTrash} />
 							</button>
 						</td>
-					</tr>,
-					this.isItemEdited(item) ?
-						<tr className='expando-details hl' key={item._id + '-details'}>
+					</tr>
+					{this.isItemEdited(item) &&
+						<tr className='expando-details hl'>
 							<td colSpan={4}>
 								<div>
 									<div className='mod mvs mhs'>
@@ -375,9 +375,8 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 								</div>
 							</td>
 						</tr>
-					:
-						null
-				]
+					}
+				</React.Fragment>
 			})
 		)
 	}
@@ -518,8 +517,8 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 			}).sort((a, b) => {
 				return a._rank - b._rank
 			}).map((item, index) => {
-				return [
-					<tr key={item._id} className={ClassNames({
+				return <React.Fragment key={item._id}>
+					<tr className={ClassNames({
 						'hl': this.isItemEdited(item)
 					})}>
 						<th className='settings-studio-source-table__name c2'>
@@ -539,9 +538,9 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 								<FontAwesomeIcon icon={faTrash} />
 							</button>
 						</td>
-					</tr>,
-					this.isItemEdited(item) ?
-						<tr className='expando-details hl' key={item._id + '-details'}>
+					</tr>
+					{this.isItemEdited(item) &&
+						<tr className='expando-details hl'>
 							<td colSpan={4}>
 								<div>
 									<div className='mod mvs mhs'>
@@ -634,6 +633,18 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + item.index + '.isHidden'}
+												obj={this.props.studioInstallation}
+												type='checkbox'
+												collection={StudioInstallations}
+												className=''></EditAttribute>
+											{t('Is hidden')}
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
 											{t('Display rank')}
 											<EditAttribute
 												modifiedClassName='bghl'
@@ -680,6 +691,30 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 											{t('Assign hotkeys to global adlibs')}
 										</label>
 									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + item.index + '.isSticky'}
+												obj={this.props.studioInstallation}
+												type='checkbox'
+												collection={StudioInstallations}
+												className=''></EditAttribute>
+											{t('Items on this layer are sticky')}
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Activate sticky item shortcut')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + item.index + '.activateStickyKeyboardHotkey'}
+												obj={this.props.studioInstallation}
+												type='text'
+												collection={StudioInstallations}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
 								</div>
 								<div className='mod alright'>
 									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>
@@ -688,9 +723,8 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 								</div>
 							</td>
 						</tr>
-						:
-						null
-				]
+					}
+				</React.Fragment>
 			})
 		)
 	}
@@ -1048,9 +1082,10 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 
 		return (
 			_.map(this.props.studioInstallation.mappings, (mapping: Mapping , layerId: string) => {
-				return (
-					!this.isItemEdited(layerId) ?
-					<tr key={layerId}>
+				return <React.Fragment key={layerId}>
+					<tr className={ClassNames({
+						'hl': this.isItemEdited(layerId)
+					})}>
 						<th className='settings-studio-device__name c3'>
 							{layerId}
 						</th>
@@ -1092,87 +1127,89 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 								<FontAwesomeIcon icon={faTrash} />
 							</button>
 						</td>
-					</tr> :
-					<tr className='expando-details hl' key={layerId + '-details'}>
-						<td colSpan={5}>
-							<div>
-								<div className='mod mvs mhs'>
-									<label className='field'>
-										{t('Layer ID')}
-										<EditAttribute
-											modifiedClassName='bghl'
-											attribute={'mappings' }
-											overrideDisplayValue={layerId }
-											obj={this.props.studioInstallation}
-											type='text'
-											collection={StudioInstallations}
-											updateFunction={this.updateLayerId}
-											className='input text-input input-l'></EditAttribute>
-									</label>
-								</div>
-								<div className='mod mvs mhs'>
-									<label className='field'>
-										{t('Device type')}
-										<EditAttribute
-											modifiedClassName='bghl'
-											attribute={'mappings.' + layerId + '.device'}
-											obj={this.props.studioInstallation}
-											type='dropdown'
-											options={PlayoutDeviceType}
-											optionsAreNumbers={true}
-											collection={StudioInstallations}
-											className='input text-input input-l'></EditAttribute>
-									</label>
-								</div>
-								<div className='mod mvs mhs'>
-									<label className='field'>
-										{t('Device Id')}
-										<EditAttribute
-											modifiedClassName='bghl'
-											attribute={'mappings.' + layerId + '.deviceId'}
-											obj={this.props.studioInstallation}
-											type='text'
-											collection={StudioInstallations}
-											className='input text-input input-l'></EditAttribute>
-									</label>
-								</div>
-								<div className='mod mvs mhs'>
-									<label className='field'>
-										{t('Lookahead mode')}
-										<EditAttribute
-											modifiedClassName='bghl'
-											attribute={'mappings.' + layerId + '.lookahead'}
-											obj={this.props.studioInstallation}
-											type='dropdown'
-											options={LookaheadMode}
-											optionsAreNumbers={true}
-											collection={StudioInstallations}
-											className='input text-input input-l'></EditAttribute>
-									</label>
-								</div>
-								{(
-									mapping.device === PlayoutDeviceType.CASPARCG && (
-										this.renderCaparCGMappingSettings(layerId)
-									) ||
-									(
-									mapping.device === PlayoutDeviceType.ATEM && (
-										this.renderAtemMappingSettings(layerId)
-									))
-									) ||
-									(
-									mapping.device === PlayoutDeviceType.LAWO && (
-										this.renderLawoMappingSettings(layerId)
-									))
-								}
-							</div>
-							<div className='mod alright'>
-								<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(layerId)}>
-									<FontAwesomeIcon icon={faCheck} />
-								</button>
-							</div>
-						</td>
 					</tr>
-				)
+					{this.isItemEdited(layerId) &&
+						<tr className='expando-details hl'>
+							<td colSpan={5}>
+								<div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Layer ID')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'mappings' }
+												overrideDisplayValue={layerId }
+												obj={this.props.studioInstallation}
+												type='text'
+												collection={StudioInstallations}
+												updateFunction={this.updateLayerId}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Device type')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'mappings.' + layerId + '.device'}
+												obj={this.props.studioInstallation}
+												type='dropdown'
+												options={PlayoutDeviceType}
+												optionsAreNumbers={true}
+												collection={StudioInstallations}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Device Id')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'mappings.' + layerId + '.deviceId'}
+												obj={this.props.studioInstallation}
+												type='text'
+												collection={StudioInstallations}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Lookahead mode')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'mappings.' + layerId + '.lookahead'}
+												obj={this.props.studioInstallation}
+												type='dropdown'
+												options={LookaheadMode}
+												optionsAreNumbers={true}
+												collection={StudioInstallations}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									{(
+										mapping.device === PlayoutDeviceType.CASPARCG && (
+											this.renderCaparCGMappingSettings(layerId)
+										) ||
+										(
+										mapping.device === PlayoutDeviceType.ATEM && (
+											this.renderAtemMappingSettings(layerId)
+										))
+										) ||
+										(
+										mapping.device === PlayoutDeviceType.LAWO && (
+											this.renderLawoMappingSettings(layerId)
+										))
+									}
+								</div>
+								<div className='mod alright'>
+									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(layerId)}>
+										<FontAwesomeIcon icon={faCheck} />
+									</button>
+								</div>
+							</td>
+						</tr>
+					}
+				</React.Fragment>
 			})
 		)
 	}

@@ -270,11 +270,12 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	}
 
 	onTimelineWheel = (e: React.WheelEventHandler<HTMLDivElement> & any) => {
-		if (e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) {
+		console.log(e)
+		if (!e.ctrlKey && !e.altKey && !e.metaKey && e.shiftKey) { // Shift + Scroll
 			this.props.onZoomChange(Math.min(500, this.props.timeScale * (1 + 0.001 * (e.deltaY * -1))), e)
 			e.preventDefault()
-		} else if (!e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) {
-			this.props.onScroll(Math.max(0, this.props.scrollLeft + ((e.deltaY * -1) / this.props.timeScale)), e)
+		} else if (!e.ctrlKey && e.altKey && !e.metaKey && !e.shiftKey) { // Alt + Scroll
+			this.props.onScroll(Math.max(0, this.props.scrollLeft + ((e.deltaY) / this.props.timeScale)), e)
 			e.preventDefault()
 		}
 	}
@@ -372,7 +373,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 					<div className={ClassNames('segment-timeline__liveline__timecode', {
 						'overtime': !!(this.props.displayTimecode > 0)
 					})}>
-						{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, true, true)}
+						{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, true, true, '')}
 					</div>
 				</div>
 			]
@@ -412,7 +413,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 							</div>
 							{(
 								outputLayer.sourceLayers !== undefined &&
-								outputLayer.sourceLayers.sort((a, b) => {
+								outputLayer.sourceLayers.filter(i => !i.isHidden).sort((a, b) => {
 									return a._rank - b._rank
 								}).map((sourceLayer) => {
 									return (
@@ -455,7 +456,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
 					{this.props.runningOrder && this.props.segmentLines && this.props.segmentLines.length > 0 && (!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) &&
 						<SegmentDuration
-							segmentLineIds={this.props.segmentLines.map((item) => item._id)}
+							segmentLineIds={this.props.segmentLines.filter(item => item.duration === undefined).map(item => item._id)}
 						/>
 					}
 				</div>

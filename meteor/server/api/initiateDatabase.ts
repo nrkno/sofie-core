@@ -308,6 +308,8 @@ Meteor.methods({
 					abbreviation: 'DVE',
 					type: RundownAPI.SourceLayerType.SPLITS,
 					onPGMClean: true,
+					isSticky: true,
+					activateStickyKeyboardHotkey: 'f6'
 				},
 				{
 					_id: 'studio0_remote0',
@@ -318,7 +320,9 @@ Meteor.methods({
 					onPGMClean: true,
 					activateKeyboardHotkeys: '1,2,3,4,5,6',
 					isRemoteInput: true,
-					assignHotkeysToGlobalAdlibs: true
+					assignHotkeysToGlobalAdlibs: true,
+					isSticky: true,
+					activateStickyKeyboardHotkey: 'f5'
 				},
 				// {
 				// 	_id: 'studio0_vt0',
@@ -327,13 +331,13 @@ Meteor.methods({
 				// 	type: RundownAPI.SourceLayerType.VT,
 				// 	onPGMClean: true,
 				// },
-				// {
-				// 	_id: 'studio0_mic0',
-				// 	_rank: 90,
-				// 	name: 'Mic',
-				// 	type: RundownAPI.SourceLayerType.MIC,
-				// 	onPGMClean: true,
-				// },
+				{
+					_id: 'studio0_script',
+					_rank: 90,
+					name: 'Manus',
+					type: RundownAPI.SourceLayerType.SCRIPT,
+					onPGMClean: true,
+				},
 				{
 					_id: 'studio0_camera0',
 					_rank: 100,

@@ -13,70 +13,92 @@ import { XmlEntities as Entities } from 'html-entities'
 const entities = new Entities()
 
 let runMessageQueue = true
+let errorOnLastRunCount: number = 0
 
 let triggerdoMessageQueueTimeout: number = 0
-export function triggerdoMessageQueue () {
+export function triggerdoMessageQueue (time?: number) {
+	if (!time) time = 1000
 	if (triggerdoMessageQueueTimeout) {
 		Meteor.clearTimeout(triggerdoMessageQueueTimeout)
 	}
 	if (runMessageQueue) {
 		triggerdoMessageQueueTimeout = Meteor.setTimeout(() => {
+			triggerdoMessageQueueTimeout = 0
 			doMessageQueue()
-		},1000)
+		}, time)
 	}
 }
-Meteor.setTimeout(() => {
-	triggerdoMessageQueue()
-},5000)
+Meteor.startup(() => {
+	triggerdoMessageQueue(5000)
+})
 function doMessageQueue () {
-	console.log('doMessageQueue')
-	let tryInterval = 1 * 60 * 1000
+	// console.log('doMessageQueue')
+	let tryInterval = 1 * 60 * 1000 // 1 minute
+	let limit = ( errorOnLastRunCount === 0 ? 100 : 5 ) // if there were error on last send, don't 
+	let probablyHasMoreToSend = false
 	try {
 		let now = getCurrentTime()
 		let messagesToSend = ExternalMessageQueue.find({
 			expires: {$gt: now},
 			lastTry: {$not: {$gt: now - tryInterval}},
 			sent: {$not: {$gt: 0}}
+		}, {
+			limit: limit
 		}).fetch()
 
+		if (messagesToSend.length === limit) probablyHasMoreToSend = true
+
+		errorOnLastRunCount = 0
+
+		let ps: Array<Promise<any>> = []
 		_.each(messagesToSend, (msg) => {
 			try {
-				console.log('Trying to send message: ' + msg._id)
+				logger.debug('Trying to send message: ' + msg._id)
 				ExternalMessageQueue.update(msg._id, {$set: {
 					tryCount: (msg.tryCount || 0) + 1,
 					lastTry: now,
 				}})
 
-				let p
+				let p: Promise<any>
 				if (msg.type === 'soap') {
 					p = sendSOAPMessage(msg as ExternalMessageQueueObjSOAP)
 				} else {
 					throw new Meteor.Error(500, 'Unknown message type "' + msg.type + '"')
 				}
-				Promise.resolve(p)
-				.then((result) => {
-					ExternalMessageQueue.update(msg._id, {$set: {
-						sent: getCurrentTime(),
-						sentReply: result
-					}})
-					console.log('Message sucessfully sent: ' + msg._id)
-				})
-				.catch((e) => {
-					logMessageError(msg, e)
-				})
+				ps.push(
+					Promise.resolve(p)
+					.then((result) => {
+
+						ExternalMessageQueue.update(msg._id, {$set: {
+							sent: getCurrentTime(),
+							sentReply: result
+						}})
+						logger.debug('Message sucessfully sent: ' + msg._id)
+					})
+					.catch((e) => {
+						logMessageError(msg, e)
+					})
+				)
 			} catch (e) {
 				logMessageError(msg, e)
+			}
+		})
+		Promise.all(ps)
+		.then(() => {
+			// all messages have been sent
+			if (probablyHasMoreToSend && errorOnLastRunCount === 0) {
+				// override default timeout
+				triggerdoMessageQueue(1000)
 			}
 		})
 	} catch (e) {
 		logger.error(e)
 	}
-	Meteor.setTimeout(() => {
-		triggerdoMessageQueue()
-	}, tryInterval) // 5 minutes
+	triggerdoMessageQueue(tryInterval)
 }
 function logMessageError (msg: ExternalMessageQueueObj, e: any) {
 	try {
+		errorOnLastRunCount++
 		logger.warn(e)
 		ExternalMessageQueue.update(msg._id, {$set: {
 			errorMessage: (e['reason'] || e['message'] || e.toString()),
@@ -97,7 +119,7 @@ function throwFatalError (msg, e) {
 
 async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP) {
 
-	console.log('sendSOAPMessage')
+	logger.info('sendSOAPMessage ' + msg._id)
 	if (!msg.receiver) 		throwFatalError(msg, new Meteor.Error(401, 'attribute .receiver missing!'))
 	if (!msg.receiver.url) 	throwFatalError(msg, new Meteor.Error(401, 'attribute .receiver.url missing!'))
 	if (!msg.message) 		throwFatalError(msg, new Meteor.Error(401, 'attribute .message missing!'))
@@ -107,7 +129,7 @@ async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP) {
 
 	let url = msg.receiver.url
 
-	console.log('url', url)
+	// console.log('url', url)
 
 	let soapClient: soap.Client = await new Promise((resolve: (soapClient: soap.Client,) => any, reject) => {
 		soap.createClient(url, (err, client: soap.Client) => {
@@ -140,7 +162,7 @@ async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP) {
 
 			let args = _.omit(msg.message, ['fcn'])
 
-			console.log('SOAP', msg.message.fcn, args)
+			// console.log('SOAP', msg.message.fcn, args)
 
 			fcn(
 				args, (err: any, result: any, raw: any, soapHeader: any) => {
@@ -159,7 +181,7 @@ async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP) {
 }
 async function resolveSOAPFcnData (soapClient: soap.Client, valFcn: ExternalMessageQueueObjSOAPMessageAttrFcn ) {
 	return new Promise((resolve, reject) => {
-		console.log('resolveSOAPFcnData')
+		// console.log('resolveSOAPFcnData')
 
 		if (valFcn._fcn.soapFetchFrom) {
 			let fetchFrom = valFcn._fcn.soapFetchFrom
@@ -167,14 +189,14 @@ async function resolveSOAPFcnData (soapClient: soap.Client, valFcn: ExternalMess
 			if (fcn) {
 
 				let args = fetchFrom.attrs
-				console.log('SOAP', fetchFrom.fcn, args)
+				// console.log('SOAP', fetchFrom.fcn, args)
 
 				fcn(
 					args, (err: any, result: any, raw: any, soapHeader: any) => {
 						if (err) {
 							reject(err)
 						} else {
-							console.log('reply', result)
+							// console.log('reply', result)
 							let resultValue = result[fetchFrom.fcn + 'Result']
 							resolve(resultValue)
 						}

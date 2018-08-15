@@ -75,6 +75,12 @@ export interface ISourceLayerBase {
 	clearKeyboardHotkey?: string
 	/** Do global objects get to be assigned hotkeys? */
 	assignHotkeysToGlobalAdlibs?: boolean
+	/** Last used sticky item on a layer is remembered and can be returned to using the sticky hotkey */
+	isSticky?: boolean
+	/** Keyboard shortcut to be used to reuse a sticky item on this layer */
+	activateStickyKeyboardHotkey?: string
+	/** If set to true, the layer will be hidden from the user in Running Order View */
+	isHidden?: boolean
 }
 
 export interface IStudioConfigItem {

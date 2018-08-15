@@ -71,6 +71,10 @@ $adlib-item-selected-color: #009DFF;
 		grid-column: list-view / end;
 		grid-row: tool-bar / list-view;
 
+		&--global {
+			grid-column: template-list / end;
+		}
+
 		display: flex;
 		padding: 10px 5px;
 
@@ -129,6 +133,10 @@ $adlib-item-selected-color: #009DFF;
 		position: relative;
 		overflow: hidden;
 		background: inherit;
+
+		&--global {
+			grid-column: template-list / end;
+		}
 
 		> .adlib-panel__list-view__list__table {
 			position: relative;
