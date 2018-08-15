@@ -893,6 +893,9 @@ function getOrderedSegmentLineItem (line: SegmentLine): SegmentLineItem[] {
 	if (events.unresolved.length > 0) {
 		 logger.warn('got ' + events.unresolved.length + ' unresolved items for sli #' + line._id)
 	}
+	if (items.length !== eventMap.length) {
+		logger.warn('got ' + eventMap.length + ' ordered items. expected ' + items.length + '. for sli #' + line._id)
+	}
 
 	eventMap.sort((a, b) => {
 		if (a.start < b.start) {
@@ -934,7 +937,6 @@ function resetSegment (segmentId: string) {
 	})
 }
 
-// TODO - execute this after importing rundown
 function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUntilEnd: boolean, previousLine?: SegmentLine) {
 	let activeInfiniteItems: { [layer: string]: SegmentLineItem } = {}
 	let activeInfiniteItemsSegmentId: { [layer: string]: string } = {}
@@ -1572,6 +1574,46 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 	}
 
 	return res
+}
+
+let updateTimelineFromMosDataTimeouts = {}
+export function updateTimelineFromMosData (roId: string, changedLines?: Array<string>) {
+	const runningOrder = RunningOrders.findOne(roId)
+	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+
+	// Lock behind a timeout, so it doesnt get executed loads when importing a rundown or there are large changes
+	let data = updateTimelineFromMosDataTimeouts[roId]
+	if (data) {
+		Meteor.clearTimeout(data.timeout)
+		if (data.changedLines) {
+			data.changedLines = changedLines ? data.changedLines.concat(changedLines) : undefined
+		}
+	} else {
+		data = {
+			changedLines: changedLines
+		}
+	}
+
+	data.timeout = Meteor.setTimeout(() => {
+		delete updateTimelineFromMosDataTimeouts[roId]
+
+		// infinite items only need to be recalculated for those after where the edit was made (including the edited line)
+		let prevLine: SegmentLine | undefined
+		if (data.changedLines) {
+			const firstLine = SegmentLines.findOne({ runningOrderId: roId, _id: { $in: data.changedLines } }, { sort: { _rank: 1 } })
+			if (firstLine) {
+				prevLine = SegmentLines.findOne({ runningOrderId: roId, _rank: { $lt: firstLine._rank } }, { sort: { _rank: -1 } })
+			}
+		}
+
+		updateSourceLayerInfinitesAfterLine(runningOrder, true, prevLine)
+
+		if (runningOrder.active) {
+			updateTimeline(runningOrder.studioInstallationId)
+		}
+	}, 1000)
+
+	updateTimelineFromMosDataTimeouts[roId] = data
 }
 
 /**
