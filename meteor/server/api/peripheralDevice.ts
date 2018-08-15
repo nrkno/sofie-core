@@ -121,6 +121,20 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 		return status
 	}
+	export function ping (id: string, token: string ): void {
+		check(id, String)
+		check(token, String)
+
+		// logger.debug('device ping', id)
+
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
+
+		// Update lastSeen
+		PeripheralDevices.update(id, {$set: {
+			lastSeen: getCurrentTime()
+		}})
+	}
 	export function getPeripheralDevice (id: string, token: string) {
 		return PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 	}
@@ -187,6 +201,8 @@ export namespace ServerPeripheralDeviceAPI {
 				logger.warn(err)
 			}
 		}, 'pingResponse', message)
+
+		ServerPeripheralDeviceAPI.ping(id, token)
 	}
 	export function killProcess (id: string, token: string, really: boolean) {
 		// This is used in integration tests only
@@ -1253,6 +1269,9 @@ methods[PeripheralDeviceAPI.methods.unInitialize] = (deviceId, deviceToken) => {
 }
 methods[PeripheralDeviceAPI.methods.setStatus] = (deviceId, deviceToken, status) => {
 	return ServerPeripheralDeviceAPI.setStatus(deviceId, deviceToken, status)
+}
+methods[PeripheralDeviceAPI.methods.ping] = (deviceId, deviceToken) => {
+	return ServerPeripheralDeviceAPI.ping(deviceId, deviceToken)
 }
 methods[PeripheralDeviceAPI.methods.getPeripheralDevice ] = (deviceId, deviceToken) => {
 	return ServerPeripheralDeviceAPI.getPeripheralDevice(deviceId, deviceToken)

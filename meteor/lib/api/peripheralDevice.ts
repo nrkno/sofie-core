@@ -52,6 +52,7 @@ export enum methods {
 	'functionReply' 	= 'peripheralDevice.functionReply',
 
 	'setStatus' 		= 'peripheralDevice.status',
+	'ping' 				= 'peripheralDevice.ping',
 	'initialize' 		= 'peripheralDevice.initialize',
 	'unInitialize' 		= 'peripheralDevice.unInitialize',
 	'getPeripheralDevice'= 'peripheralDevice.getPeripheralDevice',
