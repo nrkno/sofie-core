@@ -400,7 +400,7 @@ Meteor.methods({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 2,
+				channel: 6,
 				layer: 100
 			}),
 			'casparcg_cg_graphics': literal<MappingCasparCG>({
@@ -442,7 +442,7 @@ Meteor.methods({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 6,
+				channel: 2,
 				layer: 110
 			}),
 			'atem_me_program': literal<MappingAtem>({
