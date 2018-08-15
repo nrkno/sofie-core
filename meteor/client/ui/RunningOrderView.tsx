@@ -324,8 +324,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	activate = () => {
 		if (this.props.studioMode && !this.props.runningOrder.active) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false, (err, res) => {
-				if (err) {
-					this.handleActivationError(err)
+				if (err || (res && res.error)) {
+					this.handleActivationError(err || res)
 					return
 				}
 				if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
@@ -336,8 +336,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	activateRehearsal = () => {
 		if (this.props.studioMode && !this.props.runningOrder.active) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, true, (err, res) => {
-				if (err) {
-					this.handleActivationError(err)
+				if (err || (res & res.error)) {
+					this.handleActivationError(err || res)
 					return
 				}
 				if (typeof this.props.onActivate === 'function') this.props.onActivate(true)

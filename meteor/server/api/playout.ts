@@ -74,7 +74,7 @@ export namespace ServerPlayoutAPI {
 			}
 		}, 'triggerGetRunningOrder', runningOrder.mosId)
 	}
-	export function roActivate (roId: string, rehearsal: boolean) {
+	export function roActivate (roId: string, rehearsal: boolean): ClientAPI.ClientResponse {
 		check(roId, String)
 		check(rehearsal, Boolean)
 
@@ -109,7 +109,12 @@ export namespace ServerPlayoutAPI {
 		}).fetch()
 
 		if (anyOtherActiveRunningOrders.length) {
-			throw new Meteor.Error(400, 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
+			logger.warn('Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
+			const res = literal<ClientAPI.ClientResponse>({
+				error: 400,
+				message: 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id')
+			})
+			return res
 		}
 		logger.info('Activating RO ' + roId + (rehearsal ? ' (Rehearsal)' : ''))
 
@@ -187,6 +192,10 @@ export namespace ServerPlayoutAPI {
 		}
 
 		updateTimeline(runningOrder.studioInstallationId)
+
+		return literal<ClientAPI.ClientResponse>({
+			success: 200
+		});
 	}
 	export function roDeactivate (roId: string) {
 		check(roId, String)
@@ -859,6 +868,7 @@ function afterTake (runningOrder: RunningOrder, takeSegmentLine: SegmentLine, pr
 
 import { Resolver } from 'superfly-timeline'
 import { transformTimeline } from '../../lib/timeline'
+import { ClientAPI } from '../../lib/api/client'
 
 function getOrderedSegmentLineItem (line: SegmentLine): SegmentLineItem[] {
 	const items = line.getSegmentLinesItems()
