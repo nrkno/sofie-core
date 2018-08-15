@@ -866,7 +866,7 @@ function getOrderedSegmentLineItem (line: SegmentLine): SegmentLineItem[] {
 	const itemMap: { [key: string]: SegmentLineItem } = {}
 	items.forEach(i => itemMap[i._id] = i)
 
-	const objs = items.map(i => createSegmentLineItemGroup(i, i.duration || 0))
+	const objs = items.map(i => clone(createSegmentLineItemGroup(i, i.duration || 0)))
 	objs.forEach(o => {
 		if (o.trigger.type === TriggerType.TIME_ABSOLUTE && (o.trigger.value === 0 || o.trigger.value === 'now')) {
 			o.trigger.value = 100
@@ -1629,13 +1629,12 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 			if (!nextSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.nextSegmentLineId}" not found!`)
 		}
 
-		let currentInfiniteItems: SegmentLineItem[] = []
 		if (activeRunningOrder.currentSegmentLineId) {
 			currentSegmentLine = SegmentLines.findOne(activeRunningOrder.currentSegmentLineId)
 			if (!currentSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.currentSegmentLineId}" not found!`)
 
 			const currentSegmentLineItems = currentSegmentLine.getSegmentLinesItems()
-			currentInfiniteItems = currentSegmentLineItems.filter(l => (l.infiniteMode && l.infiniteId && l.infiniteId !== l._id))
+			const currentInfiniteItems = currentSegmentLineItems.filter(l => (l.infiniteMode && l.infiniteId && l.infiniteId !== l._id))
 			const currentNormalItems = currentSegmentLineItems.filter(l => !(l.infiniteMode && l.infiniteId && l.infiniteId !== l._id))
 
 			let allowTransition = false
@@ -1718,7 +1717,7 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 				})
 			}
 
-			let toSkipIds = currentInfiniteItems.filter(i => i.infiniteId).map(i => i.infiniteId)
+			let toSkipIds = currentSegmentLine.getSegmentLinesItems().filter(i => i.infiniteId).map(i => i.infiniteId)
 
 			let nextItems = nextSegmentLine.getSegmentLinesItems()
 			nextItems = nextItems.filter(i => !i.infiniteId || toSkipIds.indexOf(i.infiniteId) === -1)
