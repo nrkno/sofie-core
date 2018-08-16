@@ -307,7 +307,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 	handleActivationError = (err) => {
 		const { t } = this.props
-		if (err.error === 400) {
+		if (err.error === 409) {
 			this.setState({
 				isError: true,
 				errorMessage: t('Only a single running order can be active in a studio. Deactivate the other running order and try again.')

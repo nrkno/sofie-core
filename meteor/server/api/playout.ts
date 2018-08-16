@@ -111,7 +111,7 @@ export namespace ServerPlayoutAPI {
 		if (anyOtherActiveRunningOrders.length) {
 			logger.warn('Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
 			const res = literal<ClientAPI.ClientResponse>({
-				error: 400,
+				error: 409,
 				message: 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id')
 			})
 			return res
