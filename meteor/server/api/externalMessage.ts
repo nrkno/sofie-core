@@ -46,36 +46,40 @@ export function triggerExternalMessage (
 		}
 		try {
 			// @ts-ignore the message function doesn't follow the typing
-			let result: ExternalMessageQueueObj | null = fcn(runningOrder, takeSegmentLine, previousSegmentLine)
+			let resultMessages: Array<ExternalMessageQueueObj> | null = fcn(runningOrder, takeSegmentLine, previousSegmentLine)
 
-			if (result === null) {
+			if (resultMessages === null) {
 				preventSaveDebugData()
-			} else if (_.isObject(result) && _.isEmpty(result)) {
+			} else if (_.isObject(resultMessages) && _.isEmpty(resultMessages)) {
 				// do nothing
 			} else {
 
-				// check the output:
-				if (!result) 			throw new Meteor.Error('Falsy result!')
-				if (!result.type) 		throw new Meteor.Error('attribute .type missing!')
-				if (!result.receiver) 	throw new Meteor.Error('attribute .receiver missing!')
-				if (!result.message) 	throw new Meteor.Error('attribute .message missing!')
+				_.each(resultMessages, (message) => {
 
-				// Save the output into the message queue, for later processing:
-				let now = getCurrentTime()
-				result.created = now
-				result.studioId = runningOrder.studioInstallationId
-				result.tryCount = 0
-				if (!result.expires) result.expires = now + 35 * 24 * 3600 * 1000 // 35 days
+					// check the output:
+					if (!message) 			throw new Meteor.Error('Falsy result!')
+					if (!message.type) 		throw new Meteor.Error('attribute .type missing!')
+					if (!message.receiver) 	throw new Meteor.Error('attribute .receiver missing!')
+					if (!message.message) 	throw new Meteor.Error('attribute .message missing!')
 
-				result = removeNullyProperties(result)
+					// Save the output into the message queue, for later processing:
+					let now = getCurrentTime()
+					message.created = now
+					message.studioId = runningOrder.studioInstallationId
+					message.tryCount = 0
+					if (!message.expires) message.expires = now + 35 * 24 * 3600 * 1000 // 35 days
 
-				// console.log('result', result)
+					message = removeNullyProperties(message)
 
-				if (!runningOrder.rehearsal) { // Don't save the message when running rehearsals
-					ExternalMessageQueue.insert(result)
+					// console.log('result', result)
 
-					triggerdoMessageQueue() // trigger processing of the queue
-				}
+					if (!runningOrder.rehearsal) { // Don't save the message when running rehearsals
+						ExternalMessageQueue.insert(message)
+
+						triggerdoMessageQueue() // trigger processing of the queue
+					}
+				})
+
 			}
 		} catch (e) {
 			let str = e.toString() + ' ' + (e.stack || '')
