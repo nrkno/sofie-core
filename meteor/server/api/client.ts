@@ -49,7 +49,7 @@ export namespace ServerClientAPI {
 }
 let methods = {}
 methods[ClientAPI.methods.execMethod] = function (...args) {
-	ServerClientAPI.execMethod.apply(this, args)
+	return ServerClientAPI.execMethod.apply(this, args)
 }
 
 // Apply methods:

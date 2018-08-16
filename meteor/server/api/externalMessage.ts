@@ -6,7 +6,7 @@ import { logger } from '../logging'
 import { preventSaveDebugData, convertCodeToFunction, getContext, TemplateContext } from './templates/templates'
 import { RuntimeFunctions } from '../../lib/collections/RuntimeFunctions'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime, removeNullyProperties } from '../../lib/lib'
 import { triggerdoMessageQueue } from './ExternalMessageQueue'
 import * as _ from 'underscore'
 
@@ -61,13 +61,15 @@ export function triggerExternalMessage (
 				if (!result.message) 	throw new Meteor.Error('attribute .message missing!')
 
 				// Save the output into the message queue, for later processing:
-				console.log('result', result)
-
 				let now = getCurrentTime()
 				result.created = now
 				result.studioId = runningOrder.studioInstallationId
 				result.tryCount = 0
 				if (!result.expires) result.expires = now + 35 * 24 * 3600 * 1000 // 35 days
+
+				result = removeNullyProperties(result)
+
+				// console.log('result', result)
 
 				if (!runningOrder.rehearsal) { // Don't save the message when running rehearsals
 					ExternalMessageQueue.insert(result)
@@ -76,7 +78,8 @@ export function triggerExternalMessage (
 				}
 			}
 		} catch (e) {
-			throw new Meteor.Error(402, 'Error executing runtime function helper "' + functionId + '": ' + e.toString() + ' ' + (e.stack || ''))
+			let str = e.toString() + ' ' + (e.stack || '')
+			throw new Meteor.Error(402, 'Error executing runtime function helper "' + functionId + '": ' + str )
 		}
 	} catch (e) {
 		logger.error(e)
