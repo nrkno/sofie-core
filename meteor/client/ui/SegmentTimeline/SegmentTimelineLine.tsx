@@ -151,7 +151,8 @@ interface IOutputGroupProps {
 class OutputGroup extends React.Component<IOutputGroupProps> {
 	renderInside () {
 		if (this.props.layer.sourceLayers !== undefined) {
-			return this.props.layer.sourceLayers.filter(i => !i.isHidden).map((sourceLayer) => {
+			return this.props.layer.sourceLayers.filter(i => !i.isHidden).sort((a, b) => a._rank - b._rank)
+			.map((sourceLayer) => {
 				return <SourceLayer key={sourceLayer._id}
 					{...this.props}
 					layer={sourceLayer}
