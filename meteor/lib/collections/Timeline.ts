@@ -40,6 +40,7 @@ export enum TimelineContentTypeAtem { //  Atem-state
 	DSK = 'dsk',
 	AUX = 'aux',
 	SSRC = 'ssrc',
+	SSRCPROPS = 'ssrcProps',
 	MEDIAPLAYER = 'mp'
 }
 export enum TimelineContentTypeHttp {

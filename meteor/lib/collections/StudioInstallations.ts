@@ -15,7 +15,8 @@ export enum MappingAtemType {
 	DownStreamKeyer,
 	SuperSourceBox,
 	Auxilliary,
-	MediaPlayer
+	MediaPlayer,
+	SuperSourceProperties
 }
 export interface Mappings {
 	[layerName: string]: Mapping

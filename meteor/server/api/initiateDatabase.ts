@@ -515,6 +515,13 @@ Meteor.methods({
 				mappingType: MappingAtemType.DownStreamKeyer,
 				index: 1 // 1 = DSK2
 			}),
+			'atem_supersource_art': literal<MappingAtem>({
+				device: PlayoutDeviceType.ATEM,
+				deviceId: 'atem0',
+				lookahead: LookaheadMode.NONE,
+				mappingType: MappingAtemType.SuperSourceProperties,
+				index: 0 // 0 = SS
+			}),
 			'atem_supersource_default': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
