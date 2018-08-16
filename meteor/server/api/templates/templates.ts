@@ -450,7 +450,7 @@ export function runNamedTemplate (showStyle: ShowStyle, templateId: string, cont
 			if (!item._id) item._id = innerContext.getHashId('postprocess_' + (i++))
 			if (!item.runningOrderId) item.runningOrderId = innerContext.runningOrderId
 			if (!item.segmentLineId) item.segmentLineId = innerContext.segmentLine._id
-			if (!item.mosId && !item.isTransition) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for all segmentLineItem! ("' + innerContext.unhashId(item._id) + '")')
+			if (!item.mosId && !item.isTransition) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for segmentLineItem in ' + innerContext.segmentLine._id + '! ("' + innerContext.unhashId(item._id) + '")')
 
 			if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLines must be unique! ("' + innerContext.unhashId(item._id) + '")')
 			segmentLinesUniqueIds[item._id] = true
@@ -476,7 +476,7 @@ export function runNamedTemplate (showStyle: ShowStyle, templateId: string, cont
 			if (!item._id) item._id = innerContext.getHashId('postprocess_' + (i++))
 			if (!item.runningOrderId) item.runningOrderId = innerContext.runningOrderId
 			if (!item.segmentLineId) item.segmentLineId = innerContext.segmentLine._id
-			if (!item.mosId) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for all segmentLineItem! ("' + innerContext.unhashId(item._id) + '")')
+			if (!item.mosId) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for segmentLineItem in ' + innerContext.segmentLine._id + '! ("' + innerContext.unhashId(item._id) + '")')
 
 			if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLines must be unique! ("' + innerContext.unhashId(item._id) + '")')
 			segmentLinesUniqueIds[item._id] = true

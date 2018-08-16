@@ -876,7 +876,7 @@ function getOrderedSegmentLineItem (line: SegmentLine): SegmentLineItem[] {
 	const itemMap: { [key: string]: SegmentLineItem } = {}
 	items.forEach(i => itemMap[i._id] = i)
 
-	const objs = items.map(i => createSegmentLineItemGroup(i, i.duration || 0))
+	const objs = items.map(i => clone(createSegmentLineItemGroup(i, i.duration || 0)))
 	objs.forEach(o => {
 		if (o.trigger.type === TriggerType.TIME_ABSOLUTE && (o.trigger.value === 0 || o.trigger.value === 'now')) {
 			o.trigger.value = 100
@@ -902,6 +902,9 @@ function getOrderedSegmentLineItem (line: SegmentLine): SegmentLineItem[] {
 	})
 	if (events.unresolved.length > 0) {
 		 logger.warn('got ' + events.unresolved.length + ' unresolved items for sli #' + line._id)
+	}
+	if (items.length !== eventMap.length) {
+		logger.warn('got ' + eventMap.length + ' ordered items. expected ' + items.length + '. for sli #' + line._id)
 	}
 
 	eventMap.sort((a, b) => {
@@ -944,7 +947,6 @@ function resetSegment (segmentId: string) {
 	})
 }
 
-// TODO - execute this after importing rundown
 function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUntilEnd: boolean, previousLine?: SegmentLine) {
 	let activeInfiniteItems: { [layer: string]: SegmentLineItem } = {}
 	let activeInfiniteItemsSegmentId: { [layer: string]: string } = {}
@@ -1352,7 +1354,7 @@ export function addLookeaheadObjectsToTimeline (activeRunningOrder: RunningOrder
 		for (let i = 0; i < res.length; i++) {
 			const r = clone(res[i].obj)
 
-			r._id = 'lookahead_' + r._id
+			r._id = 'lookahead_' + i + '_' + r._id
 			r.duration = res[i].slId !== activeRunningOrder.currentSegmentLineId ? 0 : `#${res[i].obj._id}.start - #.start`
 			r.trigger = i === 0 ? {
 				type: TriggerType.LOGICAL,
@@ -1584,6 +1586,46 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 	return res
 }
 
+let updateTimelineFromMosDataTimeouts = {}
+export function updateTimelineFromMosData (roId: string, changedLines?: Array<string>) {
+	const runningOrder = RunningOrders.findOne(roId)
+	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+
+	// Lock behind a timeout, so it doesnt get executed loads when importing a rundown or there are large changes
+	let data = updateTimelineFromMosDataTimeouts[roId]
+	if (data) {
+		Meteor.clearTimeout(data.timeout)
+		if (data.changedLines) {
+			data.changedLines = changedLines ? data.changedLines.concat(changedLines) : undefined
+		}
+	} else {
+		data = {
+			changedLines: changedLines
+		}
+	}
+
+	data.timeout = Meteor.setTimeout(() => {
+		delete updateTimelineFromMosDataTimeouts[roId]
+
+		// infinite items only need to be recalculated for those after where the edit was made (including the edited line)
+		let prevLine: SegmentLine | undefined
+		if (data.changedLines) {
+			const firstLine = SegmentLines.findOne({ runningOrderId: roId, _id: { $in: data.changedLines } }, { sort: { _rank: 1 } })
+			if (firstLine) {
+				prevLine = SegmentLines.findOne({ runningOrderId: roId, _rank: { $lt: firstLine._rank } }, { sort: { _rank: -1 } })
+			}
+		}
+
+		updateSourceLayerInfinitesAfterLine(runningOrder, true, prevLine)
+
+		if (runningOrder.active) {
+			updateTimeline(runningOrder.studioInstallationId)
+		}
+	}, 1000)
+
+	updateTimelineFromMosDataTimeouts[roId] = data
+}
+
 /**
  * Updates the Timeline to reflect the state in the RunningOrder, Segments, Segmentlines etc...
  * @param studioInstallationId id of the studioInstallation to update
@@ -1639,13 +1681,12 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 			if (!nextSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.nextSegmentLineId}" not found!`)
 		}
 
-		let currentInfiniteItems: SegmentLineItem[] = []
 		if (activeRunningOrder.currentSegmentLineId) {
 			currentSegmentLine = SegmentLines.findOne(activeRunningOrder.currentSegmentLineId)
 			if (!currentSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.currentSegmentLineId}" not found!`)
 
 			const currentSegmentLineItems = currentSegmentLine.getSegmentLinesItems()
-			currentInfiniteItems = currentSegmentLineItems.filter(l => (l.infiniteMode && l.infiniteId && l.infiniteId !== l._id))
+			const currentInfiniteItems = currentSegmentLineItems.filter(l => (l.infiniteMode && l.infiniteId && l.infiniteId !== l._id))
 			const currentNormalItems = currentSegmentLineItems.filter(l => !(l.infiniteMode && l.infiniteId && l.infiniteId !== l._id))
 
 			let allowTransition = false
@@ -1728,7 +1769,7 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 				})
 			}
 
-			let toSkipIds = currentInfiniteItems.filter(i => i.infiniteId).map(i => i.infiniteId)
+			let toSkipIds = currentSegmentLine.getSegmentLinesItems().filter(i => i.infiniteId).map(i => i.infiniteId)
 
 			let nextItems = nextSegmentLine.getSegmentLinesItems()
 			nextItems = nextItems.filter(i => !i.infiniteId || toSkipIds.indexOf(i.infiniteId) === -1)

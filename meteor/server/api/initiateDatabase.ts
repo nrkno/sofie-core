@@ -257,14 +257,16 @@ Meteor.methods({
 				 	_rank: 110,
 				 	name: 'Klokke',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
-					onPGMClean: true
+					onPGMClean: true,
+					isHidden: true
 				},
 				{
 				 	_id: 'studio0_graphics_logo',
 				 	_rank: 111,
 				 	name: 'Logo',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
-					onPGMClean: true
+					onPGMClean: true,
+					isHidden: true
 				},
 				{
 				 	_id: 'studio0_graphics_tag_left',
@@ -318,7 +320,7 @@ Meteor.methods({
 					abbreviation: 'DIR',
 					type: RundownAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
-					activateKeyboardHotkeys: '1,2,3',
+					activateKeyboardHotkeys: '1,2,3,4,5,6',
 					isRemoteInput: true,
 					assignHotkeysToGlobalAdlibs: true,
 					isSticky: true,
@@ -376,7 +378,7 @@ Meteor.methods({
 			'casparcg_player_vignett': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
-				lookahead: LookaheadMode.NONE,
+				lookahead: LookaheadMode.PRELOAD,
 				channel: 5,
 				layer: 140
 			}),
