@@ -34,7 +34,7 @@ Meteor.startup(() => {
 function doMessageQueue () {
 	// console.log('doMessageQueue')
 	let tryInterval = 1 * 60 * 1000 // 1 minute
-	let limit = ( errorOnLastRunCount === 0 ? 100 : 5 ) // if there were error on last send, don't 
+	let limit = ( errorOnLastRunCount === 0 ? 100 : 5 ) // if there were errors on last send, don't run too many next time
 	let probablyHasMoreToSend = false
 	try {
 		let now = getCurrentTime()
@@ -235,5 +235,12 @@ async function resolveSOAPFcnData (soapClient: soap.Client, valFcn: ExternalMess
 Meteor.methods({
 	'removeExternalMessageQueueObj': (id) => {
 		ExternalMessageQueue.remove(id)
+	},
+	'setRunMessageQueue': (value) => {
+		logger.info('setRunMessageQueue: set to ' + value)
+		runMessageQueue = value
+		if (runMessageQueue) {
+			triggerdoMessageQueue(1000)
+		}
 	}
 })

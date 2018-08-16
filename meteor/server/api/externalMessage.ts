@@ -6,7 +6,7 @@ import { logger } from '../logging'
 import { preventSaveDebugData, convertCodeToFunction, getContext, TemplateContext } from './templates/templates'
 import { RuntimeFunctions } from '../../lib/collections/RuntimeFunctions'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime, removeNullyProperties } from '../../lib/lib'
 import { triggerdoMessageQueue } from './ExternalMessageQueue'
 import * as _ from 'underscore'
 
@@ -46,37 +46,44 @@ export function triggerExternalMessage (
 		}
 		try {
 			// @ts-ignore the message function doesn't follow the typing
-			let result: ExternalMessageQueueObj | null = fcn(runningOrder, takeSegmentLine, previousSegmentLine)
+			let resultMessages: Array<ExternalMessageQueueObj> | null = fcn(runningOrder, takeSegmentLine, previousSegmentLine)
 
-			if (result === null) {
+			if (resultMessages === null) {
 				preventSaveDebugData()
-			} else if (_.isObject(result) && _.isEmpty(result)) {
+			} else if (_.isObject(resultMessages) && _.isEmpty(resultMessages)) {
 				// do nothing
 			} else {
 
-				// check the output:
-				if (!result) 			throw new Meteor.Error('Falsy result!')
-				if (!result.type) 		throw new Meteor.Error('attribute .type missing!')
-				if (!result.receiver) 	throw new Meteor.Error('attribute .receiver missing!')
-				if (!result.message) 	throw new Meteor.Error('attribute .message missing!')
+				_.each(resultMessages, (message) => {
 
-				// Save the output into the message queue, for later processing:
-				console.log('result', result)
+					// check the output:
+					if (!message) 			throw new Meteor.Error('Falsy result!')
+					if (!message.type) 		throw new Meteor.Error('attribute .type missing!')
+					if (!message.receiver) 	throw new Meteor.Error('attribute .receiver missing!')
+					if (!message.message) 	throw new Meteor.Error('attribute .message missing!')
 
-				let now = getCurrentTime()
-				result.created = now
-				result.studioId = runningOrder.studioInstallationId
-				result.tryCount = 0
-				if (!result.expires) result.expires = now + 35 * 24 * 3600 * 1000 // 35 days
+					// Save the output into the message queue, for later processing:
+					let now = getCurrentTime()
+					message.created = now
+					message.studioId = runningOrder.studioInstallationId
+					message.tryCount = 0
+					if (!message.expires) message.expires = now + 35 * 24 * 3600 * 1000 // 35 days
 
-				if (!runningOrder.rehearsal) { // Don't save the message when running rehearsals
-					ExternalMessageQueue.insert(result)
+					message = removeNullyProperties(message)
 
-					triggerdoMessageQueue() // trigger processing of the queue
-				}
+					// console.log('result', result)
+
+					if (!runningOrder.rehearsal) { // Don't save the message when running rehearsals
+						ExternalMessageQueue.insert(message)
+
+						triggerdoMessageQueue() // trigger processing of the queue
+					}
+				})
+
 			}
 		} catch (e) {
-			throw new Meteor.Error(402, 'Error executing runtime function helper "' + functionId + '": ' + e.toString() + ' ' + (e.stack || ''))
+			let str = e.toString() + ' ' + (e.stack || '')
+			throw new Meteor.Error(402, 'Error executing runtime function helper "' + functionId + '": ' + str )
 		}
 	} catch (e) {
 		logger.error(e)

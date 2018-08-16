@@ -400,7 +400,7 @@ Meteor.methods({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 2,
+				channel: 6,
 				layer: 100
 			}),
 			'casparcg_cg_graphics': literal<MappingCasparCG>({
@@ -424,6 +424,13 @@ Meteor.methods({
 				channel: 4,
 				layer: 121
 			}),
+			'casparcg_player_studio': literal<MappingCasparCG>({
+				device: PlayoutDeviceType.CASPARCG,
+				deviceId: 'casparcg0',
+				lookahead: LookaheadMode.NONE,
+				channel: 3,
+				layer: 110
+			}),
 			'casparcg_cg_studiomonitor': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
@@ -442,7 +449,7 @@ Meteor.methods({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 6,
+				channel: 2,
 				layer: 110
 			}),
 			'atem_me_program': literal<MappingAtem>({

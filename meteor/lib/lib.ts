@@ -305,3 +305,24 @@ export function formatDateAsTimecode (date: Date) {
 export function formatDurationAsTimecode (duration: Time) {
 	return Timecode(duration * Settings['frameRate'] / 1000, Settings['frameRate'], false).toString()
 }
+/**
+ * Deeply iterates through the object and removes propertys whose value equals null
+ * @param obj
+ */
+export function removeNullyProperties<T> (obj: T): T {
+	iterateDeeply(obj, (val, key) => {
+		if (_.isArray(val)) {
+			return iterateDeeplyEnum.CONTINUE
+		} else if (_.isObject(val)) {
+			_.each(_.keys(val), (k) => {
+				if (_.isNull(val[k])) {
+					delete val[k]
+				}
+			})
+			return iterateDeeplyEnum.CONTINUE
+		} else {
+			return val
+		}
+	})
+	return obj
+}
