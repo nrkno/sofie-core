@@ -43,6 +43,9 @@ function doMessageQueue () {
 			lastTry: {$not: {$gt: now - tryInterval}},
 			sent: {$not: {$gt: 0}}
 		}, {
+			sort: {
+				lastTry: 1
+			},
 			limit: limit
 		}).fetch()
 
