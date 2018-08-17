@@ -7,7 +7,7 @@ import {
 	IMOSROFullStory, IMOSRunningOrder,
 } from 'mos-connection'
 import { RuntimeFunctions, RuntimeFunction } from '../../../lib/collections/RuntimeFunctions'
-import { SegmentLine, DBSegmentLine } from '../../../lib/collections/SegmentLines'
+import { SegmentLine, DBSegmentLine, SegmentLineHoldMode } from '../../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItemLifespan } from '../../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItem } from '../../../lib/collections/RunningOrderBaselineItems'
@@ -22,6 +22,7 @@ import {
 	TimelineContentTypeOther,
 	Atem_Enums,
 	EmberPlusValueType,
+	TimelineObjHoldMode,
 } from '../../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -332,6 +333,8 @@ export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, 
 		Direction,
 		SegmentLineItemLifespan,
 		PlayoutTimelinePrefixes,
+		SegmentLineHoldMode,
+		TimelineObjHoldMode,
 	}
 
 	let runtimeFcn: TemplateGeneralFunction = new SaferEval(context, { filename: runtimeFunction.templateId + '.js' }).runInContext(functionStr)
