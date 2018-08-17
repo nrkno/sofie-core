@@ -79,6 +79,9 @@ export interface SegmentLineItem extends SegmentLineItemGeneric {
 	infiniteMode?: SegmentLineItemLifespan
 	infiniteId?: string
 
+	/** Whether this line should be extended into the next segment line when HOLD is activated */
+	extendOnHold?: boolean
+
 	startedPlayback?: number
 
 	adLibSourceId?: string // only set when generated from an adlib

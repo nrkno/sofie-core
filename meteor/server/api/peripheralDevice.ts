@@ -23,7 +23,7 @@ import {
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { RunningOrder, RunningOrders, DBRunningOrder } from '../../lib/collections/RunningOrders'
-import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/SegmentLines'
+import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Segments, DBSegment } from '../../lib/collections/Segments'
 import { saveIntoDb, partialExceptId, getCurrentTime, literal } from '../../lib/lib'
@@ -359,6 +359,26 @@ export namespace ServerPeripheralDeviceAPI {
 
 		if (!_.isEmpty(m)) {
 			RunningOrders.update(ro._id, {$set: m})
+			// update data cache:
+			const cache = ro.fetchCache('roCreate' + roId(roData.ID),)
+			if (cache) {
+				if (!cache.MosExternalMetaData) {
+					cache.MosExternalMetaData = []
+				}
+				_.each(roData.MosExternalMetaData || [], (md, key) => {
+					if (!cache.MosExternalMetaData[key]) {
+						cache.MosExternalMetaData[key] = md
+					}
+					let md0 = cache.MosExternalMetaData[key]
+
+					md0.MosPayload = _.extend(
+						md0.MosPayload || {},
+						md.MosPayload
+					)
+				})
+			}
+
+			ro.saveCache('roCreate' + roId(roData.ID), cache)
 		}
 	}
 	export function mosRoStatus (id, token, status: IMOSRunningOrderStatus) {
@@ -501,7 +521,7 @@ export namespace ServerPeripheralDeviceAPI {
 			// ok, the segmentline to replace wasn't in the inserted segment lines
 			// remove it then:
 			affectedSegmentLineIds.push(segmentLineToReplace._id)
-			removeSegmentLine(segmentLineToReplace._id)
+			removeSegmentLine(ro._id, segmentLineToReplace._id)
 		}
 
 		updateAffectedSegmentLines(ro, affectedSegmentLineIds)
@@ -618,7 +638,7 @@ export namespace ServerPeripheralDeviceAPI {
 		_.each(Stories, (storyId: MosString128, i: number) => {
 			let slId = segmentLineId(ro._id, storyId, true)
 			affectedSegmentLineIds.push(slId)
-			removeSegmentLine(slId)
+			removeSegmentLine(ro._id, slId)
 		})
 		updateSegments(ro._id)
 		updateAffectedSegmentLines(ro, affectedSegmentLineIds)
@@ -926,7 +946,7 @@ export function afterRemoveSegment (segmentId: string, runningOrderId: string) {
 		segmentId: segmentId
 	},[],{
 		remove (segment) {
-			removeSegmentLine(segment._id)
+			removeSegmentLine(segment.runningOrderId, segment._id)
 		}
 	})
 }
@@ -943,9 +963,10 @@ export function upsertSegmentLine (story: IMOSStory, runningOrderId: string, ran
 	afterInsertUpdateSegmentLine(story, runningOrderId)
 	return sl
 }
-export function removeSegmentLine (segmentLineId: string) {
+export function removeSegmentLine (roId: string, segmentLineId: string) {
 	SegmentLines.remove(segmentLineId)
 	afterRemoveSegmentLine(segmentLineId)
+	updateTimelineFromMosData(roId)
 }
 export function afterInsertUpdateSegmentLine (story: IMOSStory, runningOrderId: string) {
 	// TODO: create segmentLineItems
@@ -1174,7 +1195,8 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 			transitionDelay: 		tr.result.segmentLine.transitionDelay || '',
 			disableOutTransition: 	tr.result.segmentLine.disableOutTransition || false,
 			updateStoryStatus:		tr.result.segmentLine.updateStoryStatus || false,
-			typeVariant:			tr.result.segmentLine.typeVariant || ''
+			typeVariant:			tr.result.segmentLine.typeVariant || '',
+			holdMode: 				tr.result.segmentLine.holdMode || SegmentLineHoldMode.NONE,
 		}})
 	}
 	const changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {

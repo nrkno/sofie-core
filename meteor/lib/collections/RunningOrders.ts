@@ -14,6 +14,13 @@ import { SegmentLineItems } from './SegmentLineItems'
 import { RunningOrderDataCache } from './RunningOrderDataCache'
 import { ShowStyle, ShowStyles } from './ShowStyles'
 
+export enum RunningOrderHoldState {
+	NONE = 0,
+	PENDING = 1,
+	ACTIVE = 2,
+	COMPLETE = 3,
+}
+
 /** This is a very uncomplete mock-up of the Rundown object */
 export interface DBRunningOrder {
 	_id: string
@@ -50,6 +57,8 @@ export interface DBRunningOrder {
 
 	/** Last sent storyStatus to MOS */
 	currentPlayingStoryStatus?: string
+
+	holdState?: RunningOrderHoldState
 }
 export class RunningOrder implements DBRunningOrder {
 	public _id: string
@@ -72,6 +81,7 @@ export class RunningOrder implements DBRunningOrder {
 	public nextSegmentLineId: string | null
 	public startedPlayback?: Time
 	public currentPlayingStoryStatus?: string
+	public holdState?: RunningOrderHoldState
 
 	constructor (document: DBRunningOrder) {
 		_.each(_.keys(document), (key) => {
