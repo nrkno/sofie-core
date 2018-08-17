@@ -94,7 +94,7 @@ export const ConnectionStatusNotification = translateWithTracker<IProps, IState,
 						}
 					)}
 					onClick={(e) => {
-						console.log('Reconnecting...')
+						// console.log('Reconnecting...')
 						this.tryReconnect()
 					}}>
 						<p className='right'>

@@ -404,6 +404,13 @@ Meteor.methods({
 				channel: 6,
 				layer: 100
 			}),
+			'casparcg_player_clip2': literal<MappingCasparCG>({
+				device: PlayoutDeviceType.CASPARCG,
+				deviceId: 'casparcg0',
+				lookahead: LookaheadMode.PRELOAD,
+				channel: 1,
+				layer: 111
+			}),
 			'casparcg_cg_graphics': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
@@ -620,6 +627,11 @@ Meteor.methods({
 				lookahead: LookaheadMode.NONE,
 			}),
 			'nora_primary_super': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0',
+				lookahead: LookaheadMode.NONE,
+			}),
+			'nora_primary_headline': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,

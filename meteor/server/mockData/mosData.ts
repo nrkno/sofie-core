@@ -4337,7 +4337,8 @@ Meteor.methods({
 							"Sted" : "London",
 							"Tags" : "avengers; marvel; tegneserier",
 							"Team" : "{reporter};Christian Ingebrethsen;",
-							"ENPSItemType" : 3
+							"ENPSItemType" : 3,
+							"mosartTransition": "effect 1"
 						}
 					}
 				],
