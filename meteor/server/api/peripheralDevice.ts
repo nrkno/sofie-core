@@ -359,6 +359,26 @@ export namespace ServerPeripheralDeviceAPI {
 
 		if (!_.isEmpty(m)) {
 			RunningOrders.update(ro._id, {$set: m})
+			// update data cache:
+			const cache = ro.fetchCache('roCreate' + roId(roData.ID),)
+			if (cache) {
+				if (!cache.MosExternalMetaData) {
+					cache.MosExternalMetaData = []
+				}
+				_.each(roData.MosExternalMetaData || [], (md, key) => {
+					if (!cache.MosExternalMetaData[key]) {
+						cache.MosExternalMetaData[key] = md
+					}
+					let md0 = cache.MosExternalMetaData[key]
+
+					md0.MosPayload = _.extend(
+						md0.MosPayload || {},
+						md.MosPayload
+					)
+				})
+			}
+
+			ro.saveCache('roCreate' + roId(roData.ID), cache)
 		}
 	}
 	export function mosRoStatus (id, token, status: IMOSRunningOrderStatus) {
