@@ -1976,7 +1976,7 @@ function processTimelineObjects (studioInstallation: StudioInstallation, timelin
  */
 let afterUpdateTimelineTimeout: {[studioInstallationId: string]: number | null} = {}
 function afterUpdateTimeline (studioInstallation: StudioInstallation) {
-	console.log('afterUpdateTimeline')
+	// console.log('afterUpdateTimeline')
 	let a = afterUpdateTimelineTimeout[studioInstallation._id]
 	if (a) Meteor.clearTimeout(a)
 	afterUpdateTimelineTimeout[studioInstallation._id] = Meteor.setTimeout(() => {
@@ -1997,7 +1997,7 @@ function afterUpdateTimeline (studioInstallation: StudioInstallation) {
 
 		// Collect statistics, per device
 		_.each(deviceIdObjs, (objs, deviceId) => {
-			console.log('deviceId', deviceId)
+			// console.log('deviceId', deviceId)
 
 			// Number of objects
 			let objCount = objs.length

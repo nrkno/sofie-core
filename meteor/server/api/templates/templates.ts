@@ -406,7 +406,7 @@ function saveDebugData (runtimeFunction: RuntimeFunction, reason: string, ...arg
 export function preventSaveDebugData () {
 	// called by the client code to prevent the last saving of data
 	if (lastTimeout) {
-		console.log('prevent SaveDebugData')
+		// console.log('prevent SaveDebugData')
 		Meteor.clearTimeout(lastTimeout)
 		lastTimeout = null
 	}

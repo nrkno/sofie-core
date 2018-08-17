@@ -584,8 +584,8 @@ declare enum PlayoutTimelinePrefixes {
 					this.setState({
 						message: 'Error when testing code: ' + e.toString()
 					})
-					console.log('e')
-					console.log(e)
+					// console.log('e')
+					// console.log(e)
 				} else {
 					this.setState({
 						message: 'Test ok'
@@ -604,7 +604,7 @@ declare enum PlayoutTimelinePrefixes {
 					this.setState({
 						message: e.toString()
 					})
-					console.log(e)
+					// console.log(e)
 				} else {
 					this.setState({
 						unsavedChanges: false,
