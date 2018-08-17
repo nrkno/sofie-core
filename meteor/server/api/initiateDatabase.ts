@@ -409,7 +409,7 @@ Meteor.methods({
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.PRELOAD,
 				channel: 1,
-				layer: 120
+				layer: 111
 			}),
 			'casparcg_cg_graphics': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
