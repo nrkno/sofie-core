@@ -784,6 +784,9 @@ methods[PlayoutAPI.methods.sourceLayerOnLineStop] = (roId: string, slId: string,
 methods[PlayoutAPI.methods.timelineTriggerTimeUpdateCallback] = (timelineObjId: string, time: number) => {
 	return ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(timelineObjId, time)
 }
+methods[PlayoutAPI.methods.sourceLayerStickyItemStart] = (roId: string, sourceLayerId: string) => {
+	return ServerPlayoutAPI.sourceLayerStickyItemStart(roId, sourceLayerId)
+}
 
 _.each(methods, (fcn: Function, key) => {
 	methods[key] = function (...args: any[]) {
