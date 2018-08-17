@@ -973,6 +973,13 @@ function resetSegment (segmentId: string) {
 		}, {
 			multi: true
 		})
+
+		// Remove all segment line items that have been dynamically created (such as adLib items)
+		SegmentLineItems.remove({
+			runningOrderId: segment.runningOrderId,
+			segmentLineId: item._id,
+			dynamicallyInserted: true
+		})
 	})
 }
 
