@@ -631,6 +631,11 @@ Meteor.methods({
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
 			}),
+			'nora_primary_headline': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0',
+				lookahead: LookaheadMode.NONE,
+			}),
 			'nora_primary_tag_left': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
