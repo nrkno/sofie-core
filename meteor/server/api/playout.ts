@@ -92,6 +92,9 @@ export namespace ServerPlayoutAPI {
 		}).fetch()
 		// PeripheralDevices.find()
 
+		const ssrcBg = studioInstallation.config.find((o) => o._id === 'atemSSrcBackground')
+		if (ssrcBg) logger.info(ssrcBg.value + ' should be loaded to atems')
+
 		_.each(playoutDevices, (device: PeripheralDevice) => {
 			let okToDestoryStuff = wasInactive
 			PeripheralDeviceAPI.executeFunction(device._id, (err, res) => {
@@ -101,6 +104,16 @@ export namespace ServerPlayoutAPI {
 					logger.info('devicesMakeReady OK')
 				}
 			}, 'devicesMakeReady', okToDestoryStuff)
+
+			if (ssrcBg) {
+				PeripheralDeviceAPI.executeFunction(device._id, (err) => {
+					if (err) {
+						logger.error(err)
+					} else {
+						logger.info('Added Super Source BG to Atem')
+					}
+				}, 'uploadFileToAtem', ssrcBg)
+			}
 		})
 
 		let anyOtherActiveRunningOrders = RunningOrders.find({
