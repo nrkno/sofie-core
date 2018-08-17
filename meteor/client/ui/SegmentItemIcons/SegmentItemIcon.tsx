@@ -26,15 +26,18 @@ export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 	let sourceLayers = studioInstallation ? normalizeArray<ISourceLayer>(studioInstallation.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
 	let sourceLayer: ISourceLayer | undefined
 	let segmentLineItem: SegmentLineItem | undefined
+	const supportedLayers = new Set([ RundownAPI.SourceLayerType.GRAPHICS, RundownAPI.SourceLayerType.LIVE_SPEAK, RundownAPI.SourceLayerType.REMOTE, RundownAPI.SourceLayerType.SPLITS, RundownAPI.SourceLayerType.VT, RundownAPI.SourceLayerType.CAMERA ])
 
 	for (const item of items) {
 		let layer = sourceLayers[item.sourceLayerId]
-		if (typeof sourceLayer !== 'undefined') {
-			if (sourceLayer._rank > layer._rank) {
+		if (typeof sourceLayer !== 'undefined' && typeof segmentLineItem !== 'undefined') {
+			if (sourceLayer._rank >= layer._rank && supportedLayers.has(layer.type)) {
 				sourceLayer = layer
-				segmentLineItem = item
+				if (segmentLineItem.trigger && item.trigger && item.trigger.value > segmentLineItem.trigger.value) {
+					segmentLineItem = item
+				}
 			}
-		} else {
+		} else if (supportedLayers.has(layer.type)) {
 			sourceLayer = layer
 			segmentLineItem = item
 		}
@@ -58,7 +61,7 @@ export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 					)
 				case RundownAPI.SourceLayerType.REMOTE :
 					return (
-						<RemoteInputIcon inputIndex={ ((this.props.segmentLineItem || {}).content || {}).inputIndex as number } abbreviation={this.props.sourceLayer.abbreviation} />
+						<RemoteInputIcon inputIndex={ parseInt((this.props.segmentLineItem || {}).name.split(' ').slice(-1)[0]) as number } abbreviation={this.props.sourceLayer.abbreviation} />
 					)
 				case RundownAPI.SourceLayerType.SPLITS :
 					return (
@@ -70,7 +73,7 @@ export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 					)
 				case RundownAPI.SourceLayerType.CAMERA :
 					return (
-						<CamInputIcon inputIndex={ ((this.props.segmentLineItem || {}).content || {}).inputIndex as number } abbreviation={this.props.sourceLayer.abbreviation} />
+						<CamInputIcon inputIndex={ parseInt((this.props.segmentLineItem || {}).name.split(' ').slice(-1)[0]) as number } abbreviation={this.props.sourceLayer.abbreviation} />
 					)
 			}
 		}
