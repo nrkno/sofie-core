@@ -950,15 +950,28 @@ function resetSegment (segmentId: string) {
 		segmentId: segmentId
 	}).fetch()
 
+	SegmentLines.update({
+		runningOrderId: segment.runningOrderId,
+		segmentId: segmentId
+	}, {
+		$unset: {
+			duration: 1,
+			startedPlayback: 1,
+		}
+	}, {
+		multi: true
+	})
+
 	segmentLines.forEach((item) => {
 		SegmentLineItems.update({
 			runningOrderId: segment.runningOrderId,
 			segmentLineId: item._id
 		}, {
 			$unset: {
-				duration: 1,
 				startedPlayback: 1,
 			}
+		}, {
+			multi: true
 		})
 	})
 }
