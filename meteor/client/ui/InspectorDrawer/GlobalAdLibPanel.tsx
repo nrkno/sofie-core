@@ -289,9 +289,6 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	}
 })(class AdLibPanel extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
-	stickyItemMap: {
-		[key: string]: SegmentLineAdLibItem
-	}
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -358,10 +355,6 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		// console.log(aSLine)
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && aSLine.isGlobal) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.runningOrderBaselineAdLibItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
-		}
-
-		if (this.props.sourceLayerLookup[aSLine.sourceLayerId].isSticky) {
-			this.stickyItemMap[aSLine.sourceLayerId] = aSLine
 		}
 	}
 

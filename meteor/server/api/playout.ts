@@ -667,7 +667,7 @@ export namespace ServerPlayoutAPI {
 			limit: 1
 		}).fetch()
 
-		if (lastSegmentLineItems.length > 1) {
+		if (lastSegmentLineItems.length > 0) {
 			const currentSegmentLine = SegmentLines.findOne(runningOrder.currentSegmentLineId)
 			if (!currentSegmentLine) throw new Meteor.Error(501, `Current Segment Line "${runningOrder.currentSegmentLineId}" could not be found.`)
 
