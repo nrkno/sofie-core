@@ -1472,7 +1472,7 @@ function transformBaselineItemsIntoTimeline (items: RunningOrderBaselineItem[]):
 	return timelineObjs
 }
 
-function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLineGroup?: TimelineObj, allowTransition?: boolean, triggerOffsetForTransition?: string, holdState?: RunningOrderHoldState): Array<TimelineObj> {
+function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLineGroup?: TimelineObj, allowTransition?: boolean, triggerOffsetForTransition?: string, holdState?: RunningOrderHoldState, showHoldExcept?: boolean): Array<TimelineObj> {
 	let timelineObjs: Array<TimelineObj> = []
 
 	const isHold = holdState === RunningOrderHoldState.ACTIVE
@@ -1495,7 +1495,7 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLine
 
 			_.each(tos, (o: TimelineObj) => {
 				if (o.holdMode) {
-					if (isHold && o.holdMode === TimelineObjHoldMode.EXCEPT) {
+					if (isHold && !showHoldExcept && o.holdMode === TimelineObjHoldMode.EXCEPT) {
 						return
 					}
 					if (!isHold && o.holdMode === TimelineObjHoldMode.ONLY) {
@@ -1932,7 +1932,9 @@ function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 					}
 				}
 
-				timelineObjs = timelineObjs.concat(infiniteGroup, transformSegmentLineIntoTimeline([item], infiniteGroup, undefined, undefined, activeRunningOrder.holdState))
+				// Still show objects flagged as 'HoldMode.EXCEPT' if this is a infinite continuation as they belong to the previous too
+				const showHoldExcept = item.infiniteId !== item._id
+				timelineObjs = timelineObjs.concat(infiniteGroup, transformSegmentLineIntoTimeline([item], infiniteGroup, undefined, undefined, activeRunningOrder.holdState, showHoldExcept))
 			}
 
 			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentNormalItems, currentSegmentLineGroup, allowTransition, currentSegmentLine.transitionDelay, activeRunningOrder.holdState))
