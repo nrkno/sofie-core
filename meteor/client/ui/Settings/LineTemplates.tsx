@@ -275,6 +275,7 @@ declare enum TimelineContentTypeAtem { //  Atem-state
 	DSK = 'dsk',
 	AUX = 'aux',
 	SSRC = 'ssrc',
+	SSRCPROPS = 'ssrcProps',
 	MEDIAPLAYER = 'mp'
 }
 declare enum TimelineContentTypeHttp {

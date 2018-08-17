@@ -191,6 +191,7 @@ Meteor.methods({
 				{_id: 'media_previews_url', value: 'http://localhost:8000/'},
 				{_id: 'sofie_url', value: 'http://sllxsofie01'},
 				{_id: 'metadata_url', value: 'http://160.67.87.105'},
+				{_id: 'atemSSrcBackground', value: ''} // @todo?
 			],
 		}})
 
@@ -514,6 +515,13 @@ Meteor.methods({
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingAtemType.DownStreamKeyer,
 				index: 1 // 1 = DSK2
+			}),
+			'atem_supersource_art': literal<MappingAtem>({
+				device: PlayoutDeviceType.ATEM,
+				deviceId: 'atem0',
+				lookahead: LookaheadMode.NONE,
+				mappingType: MappingAtemType.SuperSourceProperties,
+				index: 0 // 0 = SS
 			}),
 			'atem_supersource_default': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
