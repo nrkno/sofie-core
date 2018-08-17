@@ -5,7 +5,7 @@ import { translate } from 'react-i18next'
 import { NavLink } from 'react-router-dom'
 
 interface IPropsHeader {
-
+	adminMode?: boolean
 }
 
 class Header extends React.Component<Translated<IPropsHeader>> {
@@ -26,11 +26,11 @@ class Header extends React.Component<Translated<IPropsHeader>> {
 					<div className='fcol'>
 						<div className='frow ha-right'>
 							<nav className='links mod'>
-								<NavLink to='/?lng=nb' activeClassName='active'>{t('Home')}</NavLink>
-								<NavLink to='/runningOrders' activeClassName='active'>{t('Running Orders')}</NavLink>
-								<NavLink to='/nymansPlayground' activeClassName='active'>{t('Nyman\'s Playground')}</NavLink>
+								{ /* <NavLink to='/' activeClassName='active'>{t('Home')}</NavLink> */ }
+								<NavLink to='/?lng=nb' activeClassName='active'>{t('Running Orders')}</NavLink>
+								{ this.props.adminMode && <NavLink to='/nymansPlayground' activeClassName='active'>{t('Nyman\'s Playground')}</NavLink> }
 								<NavLink to='/status' activeClassName='active'>{t('Status')}</NavLink>
-								<NavLink to='/settings' activeClassName='active'>{t('Settings')}</NavLink>
+								{ this.props.adminMode && <NavLink to='/settings' activeClassName='active'>{t('Settings')}</NavLink> }
 							</nav>
 						</div>
 					</div>

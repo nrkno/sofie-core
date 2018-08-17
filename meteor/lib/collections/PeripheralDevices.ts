@@ -25,8 +25,16 @@ export interface PeripheralDevice {
 	token: string
 
 	settings?: MosDeviceSettings | PlayoutDeviceSettings
-
 }
+
+export interface MosDevice extends PeripheralDevice {
+	type: PeripheralDeviceAPI.DeviceType.MOSDEVICE,
+
+	settings?: MosDeviceSettings
+
+	lastDataReceived?: Time
+}
+
 export interface MosDeviceSettings {
 	mosId: string,
 	devices: {

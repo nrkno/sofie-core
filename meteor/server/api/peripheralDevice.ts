@@ -222,6 +222,14 @@ export namespace ServerPeripheralDeviceAPI {
 		return false
 	}
 
+	export function updateMosLastDataReceived (id) {
+		PeripheralDevices.update(id, {
+			$set: {
+				lastDataReceived: getCurrentTime()
+			}
+		})
+	}
+
 	// export {P.initialize}
 	// ----------------------------------------------------------------------------
 // Mos-functions:
@@ -231,6 +239,8 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.info('mosRoCreate')
 
 		logger.debug(ro)
+
+		updateMosLastDataReceived(id)
 
 		if (!peripheralDevice.studioInstallationId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no StudioInstallation')
 		let studioInstallation = StudioInstallations.findOne(peripheralDevice.studioInstallationId) as StudioInstallation
@@ -336,6 +346,8 @@ export namespace ServerPeripheralDeviceAPI {
 	export function mosRoDelete (id, token, runningOrderId: MosString128) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoDelete')
+
+		updateMosLastDataReceived(id)
 		// @ts-ignore
 		// logger.debug(runningOrderId)
 		logger.info('Removing RO ' + roId(runningOrderId))
@@ -347,6 +359,8 @@ export namespace ServerPeripheralDeviceAPI {
 	export function mosRoMetadata (id, token, roData: IMOSRunningOrderBase) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoMetadata')
+
+		updateMosLastDataReceived(id)
 		// @ts-ignore
 		logger.debug(roData)
 		let ro = getRO(roData.ID)
@@ -364,6 +378,8 @@ export namespace ServerPeripheralDeviceAPI {
 	export function mosRoStatus (id, token, status: IMOSRunningOrderStatus) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStatus')
+
+		updateMosLastDataReceived(id)
 		// @ts-ignore
 		logger.debug(status)
 		let ro = getRO(status.ID)
@@ -410,6 +426,8 @@ export namespace ServerPeripheralDeviceAPI {
 	export function mosRoStoryInsert (id, token, Action: IMOSStoryAction, Stories: Array<IMOSROStory>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStoryInsert')
+
+		updateMosLastDataReceived(id)
 
 		// @ts-ignore		logger.debug(
 		logger.debug(Action, Stories)
@@ -476,6 +494,8 @@ export namespace ServerPeripheralDeviceAPI {
 	export function mosRoStoryReplace (id, token, Action: IMOSStoryAction, Stories: Array<IMOSROStory>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStoryReplace')
+
+		updateMosLastDataReceived(id)
 		// @ts-ignore
 		logger.debug(Action, Stories)
 		// Replace a Story (aka a SegmentLine) with one or more Stories
@@ -530,6 +550,8 @@ export namespace ServerPeripheralDeviceAPI {
 	export function mosRoStoryMove (id, token, Action: IMOSStoryAction, Stories: Array<MosString128>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.warn ('mosRoStoryMove')
+
+		updateMosLastDataReceived(id)
 		// @ts-ignore
 		logger.debug(Action, Stories)
 
@@ -610,6 +632,8 @@ export namespace ServerPeripheralDeviceAPI {
 	export function mosRoStoryDelete (id, token, Action: IMOSROAction, Stories: Array<MosString128>) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStoryDelete')
+
+		updateMosLastDataReceived(id)
 		// @ts-ignore
 		logger.debug(Action, Stories)
 		// Delete Stories (aka SegmentLine)
@@ -639,6 +663,8 @@ export namespace ServerPeripheralDeviceAPI {
 	export function mosRoStorySwap (id, token, Action: IMOSROAction, StoryID0: MosString128, StoryID1: MosString128) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStorySwap')
+
+		updateMosLastDataReceived(id)
 		// @ts-ignore
 		logger.debug(Action, StoryID0, StoryID1)
 		// Swap Stories (aka SegmentLine)
@@ -685,6 +711,8 @@ export namespace ServerPeripheralDeviceAPI {
 	export function mosRoFullStory (id, token, story: IMOSROFullStory ) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoFullStory')
+
+		updateMosLastDataReceived(id)
 
 		fixIllegalObject(story)
 		// @ts-ignore
