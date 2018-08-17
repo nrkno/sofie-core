@@ -23,7 +23,7 @@ import {
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { RunningOrder, RunningOrders, DBRunningOrder } from '../../lib/collections/RunningOrders'
-import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/SegmentLines'
+import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Segments, DBSegment } from '../../lib/collections/Segments'
 import { saveIntoDb, partialExceptId, getCurrentTime, literal } from '../../lib/lib'
@@ -1174,7 +1174,8 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 			transitionDelay: 		tr.result.segmentLine.transitionDelay || '',
 			disableOutTransition: 	tr.result.segmentLine.disableOutTransition || false,
 			updateStoryStatus:		tr.result.segmentLine.updateStoryStatus || false,
-			typeVariant:			tr.result.segmentLine.typeVariant || ''
+			typeVariant:			tr.result.segmentLine.typeVariant || '',
+			holdMode: 				tr.result.segmentLine.holdMode || SegmentLineHoldMode.NONE,
 		}})
 	}
 	const changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {

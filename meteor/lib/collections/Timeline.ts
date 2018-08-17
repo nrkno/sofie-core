@@ -101,6 +101,12 @@ export type SuperSourceBox = {
 	cropRight?: number
 }
 
+export enum TimelineObjHoldMode {
+	NORMAL = 0,
+	ONLY = 1, // Only use when in HOLD
+	EXCEPT = 2, // Only use when not in HOLD
+}
+
 export interface TimelineObj {
 	_id: string
 	/** Studio installation Id */
@@ -142,6 +148,8 @@ export interface TimelineObj {
 	},
 	/** Only set to true for the "magic" statistic objects, used to trigger playout */
 	statObject?: boolean
+	/** Restrict object usage according to whether we are currently in a hold */
+	holdMode?: TimelineObjHoldMode
 }
 export interface TimelineObjGroup extends TimelineObj {
 	content: {

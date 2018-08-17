@@ -89,6 +89,7 @@ interface ITimingDisplayState {
 export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_TAKE = 'f12',
 	RUNNING_ORDER_TAKE2 = 'enter', // is only going to use the rightmost enter key for take
+	RUNNING_ORDER_HOLD = 'h',
 	RUNNING_ORDER_ACTIVATE = '§',
 	RUNNING_ORDER_ACTIVATE2 = '\\',
 	RUNNING_ORDER_ACTIVATE3 = '|',
@@ -214,6 +215,9 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE2,
 				up: this.keyTake
 			},{
+				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_HOLD,
+				up: this.keyHold
+			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE,
 				up: this.keyActivate
 			},{
@@ -283,6 +287,9 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			this.take()
 		}
 	}
+	keyHold = (e: ExtendedKeyboardEvent) => {
+		this.hold()
+	}
 	keyActivate = (e: ExtendedKeyboardEvent) => {
 		this.activate()
 	}
@@ -319,6 +326,19 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		this.setState({
 			isError: false
 		})
+	}
+
+	hold = () => {
+		if (this.props.studioMode && this.props.runningOrder.active) {
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivateHold, this.props.runningOrder._id, (err, res) => {
+				if (err) {
+					// TODO
+					// this.handleActivationError(err)
+					console.log(err)
+					return
+				}
+			})
+		}
 	}
 
 	activate = () => {

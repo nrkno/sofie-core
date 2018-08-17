@@ -182,6 +182,9 @@ declare interface DBSegmentLine {
 	duration?: number
 	/** If the item is overflowing, it's expectedDuration will overflow to the adjacent segment line */
 	overflows?: boolean
+
+	/** Whether this segment line supports being used in HOLD */
+	holdMode?: SegmentLineHoldMode
 }
 declare type SegmentLine = DBSegmentLine
 declare enum LayerType {
@@ -443,6 +446,11 @@ declare enum PlayoutTimelinePrefixes {
 	SEGMENT_LINE_GROUP_FIRST_ITEM_PREFIX = 'sl_group_firstobject_',
 	SEGMENT_LINE_ITEM_GROUP_PREFIX = 'sli_group_',
 	SEGMENT_LINE_ITEM_GROUP_FIRST_ITEM_PREFIX = 'sli_group_firstobject_',
+}
+declare enum SegmentLineHoldMode {
+	NONE = 0,
+	FROM = 1,
+	TO = 2,
 }
 `, libName)
 		}

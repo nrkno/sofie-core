@@ -54,6 +54,8 @@ export interface DBSegmentLine {
 	/** Playout timings, in here we log times when playout happens */
 	timings?: SegmentLineTimings
 
+	/** Whether this segment line supports being used in HOLD */
+	holdMode?: SegmentLineHoldMode
 }
 export interface SegmentLineTimings {
 	/** Point in time the SegmentLine was taken, (ie the time of the user action) */
@@ -65,6 +67,13 @@ export interface SegmentLineTimings {
 	/** Point in time the SegmentLine was set as Next (ie the time of the user action) */
 	next: Array<Time>
 }
+
+export enum SegmentLineHoldMode {
+	NONE = 0,
+	FROM = 1,
+	TO = 2,
+}
+
 export class SegmentLine implements DBSegmentLine {
 	public _id: string
 	public _rank: number
@@ -84,6 +93,7 @@ export class SegmentLine implements DBSegmentLine {
 	public disableOutTransition?: boolean
 	public updateStoryStatus?: boolean
 	public timings?: SegmentLineTimings
+	public holdMode?: SegmentLineHoldMode
 
 	constructor (document: DBSegmentLine) {
 		_.each(_.keys(document), (key) => {
