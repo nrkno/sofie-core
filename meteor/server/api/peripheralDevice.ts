@@ -521,7 +521,7 @@ export namespace ServerPeripheralDeviceAPI {
 			// ok, the segmentline to replace wasn't in the inserted segment lines
 			// remove it then:
 			affectedSegmentLineIds.push(segmentLineToReplace._id)
-			removeSegmentLine(segmentLineToReplace._id)
+			removeSegmentLine(ro._id, segmentLineToReplace._id)
 		}
 
 		updateAffectedSegmentLines(ro, affectedSegmentLineIds)
@@ -638,7 +638,7 @@ export namespace ServerPeripheralDeviceAPI {
 		_.each(Stories, (storyId: MosString128, i: number) => {
 			let slId = segmentLineId(ro._id, storyId, true)
 			affectedSegmentLineIds.push(slId)
-			removeSegmentLine(slId)
+			removeSegmentLine(ro._id, slId)
 		})
 		updateSegments(ro._id)
 		updateAffectedSegmentLines(ro, affectedSegmentLineIds)
@@ -946,7 +946,7 @@ export function afterRemoveSegment (segmentId: string, runningOrderId: string) {
 		segmentId: segmentId
 	},[],{
 		remove (segment) {
-			removeSegmentLine(segment._id)
+			removeSegmentLine(segment.runningOrderId, segment._id)
 		}
 	})
 }
@@ -963,9 +963,10 @@ export function upsertSegmentLine (story: IMOSStory, runningOrderId: string, ran
 	afterInsertUpdateSegmentLine(story, runningOrderId)
 	return sl
 }
-export function removeSegmentLine (segmentLineId: string) {
+export function removeSegmentLine (roId: string, segmentLineId: string) {
 	SegmentLines.remove(segmentLineId)
 	afterRemoveSegmentLine(segmentLineId)
+	updateTimelineFromMosData(roId)
 }
 export function afterInsertUpdateSegmentLine (story: IMOSStory, runningOrderId: string) {
 	// TODO: create segmentLineItems
