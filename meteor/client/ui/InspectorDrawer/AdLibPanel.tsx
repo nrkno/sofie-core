@@ -462,28 +462,6 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 				}
 			})
 		}
-
-		if (this.props.sourceLayerLookup) {
-			_.forEach(this.props.sourceLayerLookup, (item) => {
-				if (item.clearKeyboardHotkey) {
-					mousetrap.bind(item.clearKeyboardHotkey, preventDefault, 'keydown')
-					mousetrap.bind(item.clearKeyboardHotkey, (e: ExtendedKeyboardEvent) => {
-						preventDefault(e)
-						this.onClearAllSourceLayer(item)
-					}, 'keyup')
-					this.usedHotkeys.push(item.clearKeyboardHotkey)
-				}
-
-				if (item.isSticky && item.activateStickyKeyboardHotkey) {
-					mousetrap.bind(item.activateStickyKeyboardHotkey, preventDefault, 'keydown')
-					mousetrap.bind(item.activateStickyKeyboardHotkey, (e: ExtendedKeyboardEvent) => {
-						preventDefault(e)
-						this.onToggleSticky(item._id)
-					}, 'keyup')
-					this.usedHotkeys.push(item.activateStickyKeyboardHotkey)
-				}
-			})
-		}
 	}
 
 	onFilterChange = (filter: string) => {
@@ -497,12 +475,6 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.setState({
 			selectedItem: aSLine
 		})
-	}
-
-	onToggleSticky = (sourceLayerId: string) => {
-		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && this.props.runningOrder.active) {
-			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.sourceLayerStickyItemStart, this.props.runningOrder._id, sourceLayerId)
-		}
 	}
 
 	onToggleAdLib = (aSLine: SegmentLineAdLibItemUi) => {
