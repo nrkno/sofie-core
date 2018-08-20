@@ -5,8 +5,20 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2018-07-31T08:51:03.016Z\n"
-"PO-Revision-Date: 2018-07-31T08:51:03.016Z\n"
+"POT-Creation-Date: 2018-08-20T14:57:49.585Z\n"
+"PO-Revision-Date: 2018-08-20T14:57:49.585Z\n"
+
+msgid "Return to list"
+msgstr ""
+
+msgid "There is no running order active in this studio."
+msgstr ""
+
+msgid "This studio doesn't exist."
+msgstr ""
+
+msgid "There are no active running orders."
+msgstr ""
 
 msgid "Connecting to automation server..."
 msgstr ""
@@ -74,7 +86,13 @@ msgstr ""
 msgid "Search..."
 msgstr ""
 
+msgid "Last "
+msgstr ""
+
 msgid "AdLib"
+msgstr ""
+
+msgid "Global AdLib"
 msgstr ""
 
 msgid "Slug"
@@ -90,6 +108,33 @@ msgid "Air Time"
 msgstr ""
 
 msgid "Air Status"
+msgstr ""
+
+msgid "Just now"
+msgstr ""
+
+msgid "Less than a minute ago"
+msgstr ""
+
+msgid "Less than five minutes ago"
+msgstr ""
+
+msgid "Around 10 minutes ago"
+msgstr ""
+
+msgid "More than 10 minutes ago"
+msgstr ""
+
+msgid "More than 30 minutes ago"
+msgstr ""
+
+msgid "More than 2 hours ago"
+msgstr ""
+
+msgid "More than 5 hours ago"
+msgstr ""
+
+msgid "More than a day ago"
 msgstr ""
 
 msgid "Started"
@@ -116,6 +161,9 @@ msgid "Deactivate"
 msgstr ""
 
 msgid "Take"
+msgstr ""
+
+msgid "Hold"
 msgstr ""
 
 msgid "Activate"
@@ -184,6 +232,9 @@ msgstr ""
 msgid "Playout Device"
 msgstr ""
 
+msgid "Sub-Device"
+msgstr ""
+
 msgid "Unknown Device"
 msgstr ""
 
@@ -241,16 +292,22 @@ msgstr ""
 msgid "Port"
 msgstr ""
 
-msgid "Playout uses Timecode of Caspar"
-msgstr ""
-
 msgid "Sources Path"
 msgstr ""
 
 msgid "Ramp Function Path"
 msgstr ""
 
-msgid "Initialize as clear"
+msgid "Media Scanner Host"
+msgstr ""
+
+msgid "Media Scanner Port"
+msgstr ""
+
+msgid "CasparCG Launcher Host"
+msgstr ""
+
+msgid "CasparCG Launcher Port"
 msgstr ""
 
 msgid "Remove this device?"
@@ -278,6 +335,9 @@ msgid "Secondary host (ip or hostname)"
 msgstr ""
 
 msgid "MosId of gateway (our mosId)"
+msgstr ""
+
+msgid "Activate debug-logging"
 msgstr ""
 
 msgid "Mos-devices"
@@ -409,6 +469,9 @@ msgstr ""
 msgid "Is a live remote input"
 msgstr ""
 
+msgid "Is hidden"
+msgstr ""
+
 msgid "AdLib activate shortcut list"
 msgstr ""
 
@@ -416,6 +479,12 @@ msgid "Clear shortcut"
 msgstr ""
 
 msgid "Assign hotkeys to global adlibs"
+msgstr ""
+
+msgid "Items on this layer are sticky"
+msgstr ""
+
+msgid "Activate sticky item shortcut"
 msgstr ""
 
 msgid "Are you sure you want to delete source layer "
@@ -443,6 +512,9 @@ msgid "Device type"
 msgstr ""
 
 msgid "Device Id"
+msgstr ""
+
+msgid "Lookahead mode"
 msgstr ""
 
 msgid "Remove this mapping?"
@@ -475,12 +547,6 @@ msgstr ""
 msgid "User log"
 msgstr ""
 
-msgid "Id"
-msgstr ""
-
-msgid "Message"
-msgstr ""
-
 msgid "Queued messages"
 msgstr ""
 
@@ -493,6 +559,18 @@ msgstr ""
 msgid "Not connected"
 msgstr ""
 
+msgid "Last seen"
+msgstr ""
+
+msgid "Version"
+msgstr ""
+
+msgid "Restart this device process?"
+msgstr ""
+
+msgid "Restart"
+msgstr ""
+
 msgid "Kill this device process?"
 msgstr ""
 
@@ -503,9 +581,6 @@ msgid "System Status"
 msgstr ""
 
 msgid "Telemetry"
-msgstr ""
-
-msgid "Last seen"
 msgstr ""
 
 msgid "Timestamp"
