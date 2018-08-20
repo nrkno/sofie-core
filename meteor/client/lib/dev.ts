@@ -19,28 +19,47 @@ import { RunningOrderBaselineItems } from '../../lib/collections/RunningOrderBas
 import { RuntimeFunctionDebugData } from '../../lib/collections/RuntimeFunctionDebugData'
 import { Session } from 'meteor/session'
 import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
+import * as _ from 'underscore'
 
 // Note: These things are convenience functions to be used during development
 
-window['Tasks'] = Tasks
-window['PeripheralDevices'] = PeripheralDevices
-window['PeripheralDeviceCommands'] = PeripheralDeviceCommands
-window['executeFunction'] = PeripheralDeviceAPI.executeFunction
-window['RunningOrders'] = RunningOrders
-window['SegmentLineItems'] = SegmentLineItems
-window['SegmentLines'] = SegmentLines
-window['Segments'] = Segments
-window['ShowStyles'] = ShowStyles
-window['StudioInstallations'] = StudioInstallations
-window['RuntimeFunctions'] = RuntimeFunctions
-window['Timeline'] = Timeline
-window['MediaObjects'] = MediaObjects
-window['SegmentLineAdLibItems'] = SegmentLineAdLibItems
-window['RunningOrderBaselineAdLibItems'] = RunningOrderBaselineAdLibItems
-window['RunningOrderDataCache'] = RunningOrderDataCache
-window['RunningOrderBaselineItems'] = RunningOrderBaselineItems
-window['RuntimeFunctionDebugData'] = RuntimeFunctionDebugData
-window['ExternalMessageQueue'] = ExternalMessageQueue
+const Collections = {
+	Tasks,
+	PeripheralDevices,
+	PeripheralDeviceCommands,
+	RunningOrders,
+	SegmentLineItems,
+	SegmentLines,
+	Segments,
+	ShowStyles,
+	StudioInstallations,
+	RuntimeFunctions,
+	Timeline,
+	MediaObjects,
+	SegmentLineAdLibItems,
+	RunningOrderBaselineAdLibItems,
+	RunningOrderDataCache,
+	RunningOrderBaselineItems,
+	RuntimeFunctionDebugData,
+	ExternalMessageQueue
+}
 
+_.each(Collections, (val, key) => {
+	window[key] = val
+})
+
+window['executeFunction'] = PeripheralDeviceAPI.executeFunction,
 window['getCurrentTime'] = getCurrentTime
 window['Session'] = Session
+
+const debugData = false
+if (debugData) {
+	console.log('Debug: comment out this!')
+	Tracker.autorun(() => {
+		let stats: any = {}
+		_.each(Collections, (collection: any, name: string) => {
+			stats[name] = collection.find().count()
+		})
+		console.log(_.map(stats, (count: any, name: string) => { return name + ': ' + count }).join('\n'))
+	})
+}
