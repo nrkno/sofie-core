@@ -531,13 +531,22 @@ export interface RunTemplateResult {
 	templateId: string
 	result: TemplateResultAfterPost
 }
-export function runTemplate (showStyle: ShowStyle, context: TemplateContext, story: IMOSROFullStory, reason: string): RunTemplateResult {
+export function runTemplate (showStyle: ShowStyle, context: TemplateContext, story: IMOSROFullStory, reason: string): RunTemplateResult | undefined {
 	let innerContext0 = getContext(context)
 	let getId = findFunction(showStyle, 'getId', innerContext0, reason)
 
-	let templateId: string = getId(story) as string
+	let templateId: string | null = getId(story) as string | null
+	/*
+		The getId template can return the following things:
+		'templateName'		The name of the template to run
+		'' (empty string): 	"No template was found"
+		null: 				"Ignore silently"
+	*/
 
-	if (templateId) {
+	if (templateId === null) {
+		// the template is specifically telling us to ignore it
+		// Do nothing
+	} else if (templateId) {
 		let context0 = _.extend({}, context, {
 			templateId: templateId
 		})
