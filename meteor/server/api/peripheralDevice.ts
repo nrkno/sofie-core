@@ -30,7 +30,7 @@ import { saveIntoDb, partialExceptId, getCurrentTime, literal } from '../../lib/
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
-import { runTemplate, TemplateContext } from './templates/templates'
+import { runTemplate, TemplateContext, RunTemplateResult } from './templates/templates'
 import { getHash } from '../lib'
 import { Timeline } from '../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
@@ -1210,78 +1210,98 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 		segmentLine: segmentLine,
 		templateId: 'N/A'
 	}
-	let tr = runTemplate(showStyle, context, story, 'story ' + story.ID.toString())
-
-	if (tr.result.segmentLine) {
-		if (!tr.result.segmentLine.typeVariant) tr.result.segmentLine.typeVariant = tr.templateId
-
-		SegmentLines.update(segmentLine._id, {$set: {
-			expectedDuration:		tr.result.segmentLine.expectedDuration || segmentLine.expectedDuration,
-			autoNext: 				tr.result.segmentLine.autoNext || false,
-			autoNextOverlap: 		tr.result.segmentLine.autoNextOverlap || 0,
-			overlapUntil: 			tr.result.segmentLine.overlapUntil || '',
-			transitionDelay: 		tr.result.segmentLine.transitionDelay || '',
-			disableOutTransition: 	tr.result.segmentLine.disableOutTransition || false,
-			updateStoryStatus:		tr.result.segmentLine.updateStoryStatus || false,
-			typeVariant:			tr.result.segmentLine.typeVariant || '',
-			holdMode: 				tr.result.segmentLine.holdMode || SegmentLineHoldMode.NONE,
-		}})
+	let tr: RunTemplateResult | undefined
+	try {
+		tr = runTemplate(showStyle, context, story, 'story ' + story.ID.toString())
+	} catch (e) {
+		if (e.toString().match(/no template id found/i)) {
+			logger.warn(e.toString())
+		} else {
+			throw e
+		}
 	}
-	const changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
-		runningOrderId: ro._id,
-		segmentLineId: segmentLine._id,
-		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
-	}, tr.result.segmentLineItems || [], {
-		afterInsert (segmentLineItem) {
-			logger.debug('inserted segmentLineItem ' + segmentLineItem._id)
-			logger.debug(segmentLineItem)
-			// @todo: have something here?
-			// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
-			// if (story) {
+
+	let changedSli: {
+		added: number,
+		updated: number,
+		removed: number
+	} = {
+		added: 0,
+		updated: 0,
+		removed: 0
+	}
+	if (tr) {
+
+		if (tr.result.segmentLine) {
+			if (!tr.result.segmentLine.typeVariant) tr.result.segmentLine.typeVariant = tr.templateId
+			SegmentLines.update(segmentLine._id, {$set: {
+				expectedDuration:		tr.result.segmentLine.expectedDuration || segmentLine.expectedDuration,
+				autoNext: 				tr.result.segmentLine.autoNext || false,
+				autoNextOverlap: 		tr.result.segmentLine.autoNextOverlap || 0,
+				overlapUntil: 			tr.result.segmentLine.overlapUntil || '',
+				transitionDelay: 		tr.result.segmentLine.transitionDelay || '',
+				disableOutTransition: 	tr.result.segmentLine.disableOutTransition || false,
+				updateStoryStatus:		tr.result.segmentLine.updateStoryStatus || false,
+				typeVariant:			tr.result.segmentLine.typeVariant || '',
+				holdMode: 				tr.result.segmentLine.holdMode || SegmentLineHoldMode.NONE,
+			}})
+		}
+		changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
+			runningOrderId: ro._id,
+			segmentLineId: segmentLine._id,
+			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
+		}, tr.result.segmentLineItems || [], {
+			afterInsert (segmentLineItem) {
+				logger.debug('inserted segmentLineItem ' + segmentLineItem._id)
+				logger.debug(segmentLineItem)
+				// @todo: have something here?
+				// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+				// if (story) {
+					// afterInsertUpdateSegment (story, roId(ro.ID))
+				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
+			},
+			afterUpdate (segmentLineItem) {
+				logger.debug('updated segmentLineItem ' + segmentLineItem._id)
+				// @todo: have something here?
+				// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+				// if (story) {
+				// 	afterInsertUpdateSegment (story, roId(ro.ID))
+				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
+			},
+			afterRemove (segmentLineItem) {
+				logger.debug('deleted segmentLineItem ' + segmentLineItem._id)
+				// @todo: handle this:
+				// afterRemoveSegmentLineItem(segmentLine._id)
+			}
+		})
+		saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
+			runningOrderId: ro._id,
+			segmentLineId: segmentLine._id
+		}, tr.result.segmentLineAdLibItems || [], {
+			afterInsert (segmentLineAdLibItem) {
+				logger.debug('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
+				logger.debug(segmentLineAdLibItem)
+				// @todo: have something here?
+				// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+				// if (story) {
 				// afterInsertUpdateSegment (story, roId(ro.ID))
-			// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
-		},
-		afterUpdate (segmentLineItem) {
-			logger.debug('updated segmentLineItem ' + segmentLineItem._id)
-			// @todo: have something here?
-			// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
-			// if (story) {
-			// 	afterInsertUpdateSegment (story, roId(ro.ID))
-			// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
-		},
-		afterRemove (segmentLineItem) {
-			logger.debug('deleted segmentLineItem ' + segmentLineItem._id)
-			// @todo: handle this:
-			// afterRemoveSegmentLineItem(segmentLine._id)
-		}
-	})
-	saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
-		runningOrderId: ro._id,
-		segmentLineId: segmentLine._id
-	}, tr.result.segmentLineAdLibItems || [], {
-		afterInsert (segmentLineAdLibItem) {
-			logger.debug('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
-			logger.debug(segmentLineAdLibItem)
-			// @todo: have something here?
-			// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
-			// if (story) {
-			// afterInsertUpdateSegment (story, roId(ro.ID))
-			// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
-		},
-		afterUpdate (segmentLineAdLibItem) {
-			logger.debug('updated segmentLineItem ' + segmentLineAdLibItem._id)
-			// @todo: have something here?
-			// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
-			// if (story) {
-			// 	afterInsertUpdateSegment (story, roId(ro.ID))
-			// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
-		},
-		afterRemove (segmentLineAdLibItem) {
-			logger.debug('deleted segmentLineItem ' + segmentLineAdLibItem._id)
-			// @todo: handle this:
-			// afterRemoveSegmentLineItem(segmentLine._id)
-		}
-	})
+				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
+			},
+			afterUpdate (segmentLineAdLibItem) {
+				logger.debug('updated segmentLineItem ' + segmentLineAdLibItem._id)
+				// @todo: have something here?
+				// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+				// if (story) {
+				// 	afterInsertUpdateSegment (story, roId(ro.ID))
+				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
+			},
+			afterRemove (segmentLineAdLibItem) {
+				logger.debug('deleted segmentLineItem ' + segmentLineAdLibItem._id)
+				// @todo: handle this:
+				// afterRemoveSegmentLineItem(segmentLine._id)
+			}
+		})
+	}
 
 	// if anything was changed
 	return (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
