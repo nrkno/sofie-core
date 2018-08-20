@@ -23,8 +23,9 @@ import * as faTimes from '@fortawesome/fontawesome-free-solid/faTimes'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { Spinner } from '../../lib/Spinner'
-import { literal } from '../../../lib/lib';
-import { RundownAPI } from '../../../lib/api/rundown';
+import { literal } from '../../../lib/lib'
+import { RundownAPI } from '../../../lib/api/rundown'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (aSLine: SegmentLineAdLibItemUi) => void
@@ -326,7 +327,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		sourceLayerLookup,
 		roAdLibs
 	}
-})(class AdLibPanel extends React.Component<Translated<IProps & ITrackedProps>, IState> {
+})(class AdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
 	constructor (props: Translated<IProps & ITrackedProps>) {

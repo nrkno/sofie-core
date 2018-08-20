@@ -219,7 +219,7 @@ export namespace ServerPlayoutAPI {
 
 		return literal<ClientAPI.ClientResponse>({
 			success: 200
-		});
+		})
 	}
 	export function roDeactivate (roId: string) {
 		check(roId, String)

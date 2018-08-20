@@ -14,6 +14,7 @@ import { literal } from '../../../lib/lib'
 import { Random } from 'meteor/random'
 import { ClientAPI } from '../../../lib/api/client'
 import { RuntimeFunctionsAPI } from '../../../lib/api/runtimeFunctions'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 
 interface IProps {
 	match: {
@@ -38,7 +39,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			active: true
 		}).fetch()
 	}
-})( class ShowStyleSettings extends React.Component<Translated<IProps & ITrackedProps>, IState> {
+})( class ShowStyleSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {

@@ -35,6 +35,7 @@ import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog } from '../lib/ModalDialog'
 
 import { DEFAULT_DISPLAY_DURATION } from './SegmentTimeline/SegmentTimelineContainer'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -514,9 +515,8 @@ export const RunningOrderView = translateWithTracker<IProps, IState, ITrackedPro
 		studioInstallation: studioInstallation,
 	}
 })(
-class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
+class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
-	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
 	private bindKeys: Array<{
 		key: string,
 		up?: (e: KeyboardEvent) => any
@@ -548,27 +548,27 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		// Subscribe to data:
 		let runningOrderId = this.props.runningOrderId
 
-		this._subscriptions.push(Meteor.subscribe('runningOrders', {
+		this.subscribe('runningOrders', {
 			_id: runningOrderId
-		}))
-		this._subscriptions.push(Meteor.subscribe('segments', {
+		})
+		this.subscribe('segments', {
 			runningOrderId: runningOrderId
-		}))
-		this._subscriptions.push(Meteor.subscribe('segmentLines', {
+		})
+		this.subscribe('segmentLines', {
 			runningOrderId: runningOrderId
-		}))
-		this._subscriptions.push(Meteor.subscribe('segmentLineItems', {
+		})
+		this.subscribe('segmentLineItems', {
 			runningOrderId: runningOrderId
-		}))
-		this._subscriptions.push(Meteor.subscribe('studioInstallations', {
+		})
+		this.subscribe('studioInstallations', {
 			runningOrderId: runningOrderId
-		}))
-		this._subscriptions.push(Meteor.subscribe('showStyles', {
+		})
+		this.subscribe('showStyles', {
 			runningOrderId: runningOrderId
-		}))
-		this._subscriptions.push(Meteor.subscribe('segmentLineAdLibItems', {
+		})
+		this.subscribe('segmentLineAdLibItems', {
 			runningOrderId: runningOrderId
-		}))
+		})
 	}
 
 	componentDidMount () {
@@ -618,10 +618,6 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 	componentWillUnmount () {
 		$(document.body).removeClass(['dark', 'vertical-overflow-only'])
 		$(window).off('scroll', this.onWindowScroll)
-
-		_.each(this._subscriptions, (sub ) => {
-			sub.stop()
-		})
 
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {

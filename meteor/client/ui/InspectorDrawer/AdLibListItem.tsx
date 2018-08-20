@@ -9,6 +9,7 @@ import * as ClassNames from 'classnames'
 
 import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { SegmentLineAdLibItemUi } from './AdLibPanel'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 
 export interface IAdLibListItem {
 	_id: string,
@@ -26,7 +27,7 @@ interface IListViewItemProps {
 	onToggleAdLib: (aSLine: IAdLibListItem) => void
 }
 
-export const AdLibListItem = translate()(class extends React.Component<Translated<IListViewItemProps>> {
+export const AdLibListItem = translate()(class extends MeteorReactComponent<Translated<IListViewItemProps>> {
 	constructor (props: Translated<IListViewItemProps>) {
 		super(props)
 	}

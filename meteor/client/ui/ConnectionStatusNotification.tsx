@@ -7,7 +7,8 @@ import * as ClassNames from 'classnames'
 
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/react-meteor-data'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
-import { MomentFromNow } from '../lib/Moment';
+import { MomentFromNow } from '../lib/Moment'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 interface IProps {
 }
@@ -33,7 +34,7 @@ export const ConnectionStatusNotification = translateWithTracker<IProps, IState,
 		reason,
 		retryTime
 	}
-})(class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
+})(class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {

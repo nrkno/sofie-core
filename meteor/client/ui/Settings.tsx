@@ -29,6 +29,7 @@ import RestoreBackup from './Settings/RestoreBackup'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 class WelcomeToSettings extends React.Component {
 	render () {
@@ -64,7 +65,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}}).fetch(),
 		lineTemplates: RuntimeFunctions.find({}).fetch()
 	}
-})(class SettingsMenu extends React.Component<Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>, ISettingsMenuState> {
+})(class SettingsMenu extends MeteorReactComponent<Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>, ISettingsMenuState> {
 	constructor (props: Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>) {
 		super(props)
 		this.state = {

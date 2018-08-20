@@ -33,6 +33,7 @@ import { PeripheralDevice, PeripheralDevices, PlayoutDeviceType } from '../../..
 
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 
 interface IProps {
 	studioInstallation: StudioInstallation
@@ -528,7 +529,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 							{item._id}
 						</td>
 						<td className='settings-studio-source-table__type c3'>
-							{this.sourceLayerString(Number.parseInt(item.type.toString()) as RundownAPI.SourceLayerType)}
+							{this.sourceLayerString(Number.parseInt(item.type.toString(), 10) as RundownAPI.SourceLayerType)}
 						</td>
 						<td className='settings-studio-source-table__actions table-item-actions c3'>
 							<button className='action-btn' onClick={(e) => this.editItem(item)}>
@@ -1268,7 +1269,7 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 			}
 		}).fetch()
 	}
-})(class StudioSettings extends React.Component<Translated<IStudioSettingsProps>> {
+})(class StudioSettings extends MeteorReactComponent<Translated<IStudioSettingsProps>> {
 
 	static setProperty (studioInstallation: StudioInstallation, property: string, value: any) {
 		// console.log(property, value)

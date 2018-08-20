@@ -18,6 +18,7 @@ import { Settings } from '../../lib/Settings'
 import { getCurrentTime } from '../../lib/lib'
 import { SegmentItemIconContainer } from './SegmentItemIcons/SegmentItemIcon'
 import CamInputICon from './SegmentItemIcons/Renderers/CamInput'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 interface SegmentUi extends Segment {
 	items?: Array<SegmentLineUi>
@@ -82,7 +83,7 @@ const Timecode = class extends React.Component<{ time: number }> {
 }
 
 const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOverviewState>()(
-	withTracker<WithTiming<RunningOrderOverviewProps>, RunningOrderOverviewState, RunningOrderOverviewTrackedProps>((props: RunningOrderOverviewProps, state) => {
+	withTracker<WithTiming<RunningOrderOverviewProps>, RunningOrderOverviewState, RunningOrderOverviewTrackedProps>((props: RunningOrderOverviewProps) => {
 
 		let ro: RunningOrder | undefined
 		if (props.runningOrderId) ro = RunningOrders.findOne(props.runningOrderId)
@@ -99,7 +100,7 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 			runningOrder: ro
 		}
 	})(
-	class extends React.Component<WithTiming<RunningOrderOverviewProps & RunningOrderOverviewTrackedProps>, RunningOrderOverviewState> {
+	class extends MeteorReactComponent<WithTiming<RunningOrderOverviewProps & RunningOrderOverviewTrackedProps>, RunningOrderOverviewState> {
 		render () {
 			const { runningOrder, segments } = this.props
 
@@ -220,7 +221,7 @@ export const ClockView = translate()(withTracker((props: IPropsHeader, state) =>
 		segmentLines
 	}
 })(
-class extends React.Component<WithTiming<IPropsHeader>, IStateHeader> {
+class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 	componentDidMount () {
 		$(document.body).addClass('dark xdark')
 	}

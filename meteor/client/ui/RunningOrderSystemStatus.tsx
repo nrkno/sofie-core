@@ -9,6 +9,7 @@ import { StudioInstallation, StudioInstallations } from '../../lib/collections/S
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Time, getCurrentTime } from '../../lib/lib'
 import { translate, InjectedTranslateProps } from 'react-i18next'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
@@ -154,7 +155,7 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 		mosDevices: mosOnlineOffline,
 		playoutDevices: playoutOnlineOffline
 	}
-})(class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
+})(class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 

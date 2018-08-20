@@ -6,6 +6,7 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { translate, InjectedTranslateProps } from 'react-i18next'
+import { MeteorReactComponent } from '../MeteorReactComponent'
 
 // A class to keep the state and utility methods needed to manage
 // the Meteor data for a component.
@@ -178,8 +179,10 @@ export interface WithTrackerOptions<IProps, TrackedProps> {
 	// pure?: boolean
 }
 // @todo: add withTrackerPure()
-type IWrappedComponent<IProps, IState, TrackedProps> = new (props: IProps & TrackedProps, state: IState) => React.Component<IProps & TrackedProps, IState>
-export function withTracker<IProps, IState, TrackedProps> (autorunFunction: (props: IProps, state?: IState) => TrackedProps):
+type IWrappedComponent<IProps, IState, TrackedProps> = new (props: IProps & TrackedProps, state: IState) => MeteorReactComponent<IProps & TrackedProps, IState>
+export function withTracker<IProps, IState, TrackedProps> (
+	autorunFunction: (props: IProps) => TrackedProps
+	):
 	(WrappedComponent: IWrappedComponent<IProps, IState, TrackedProps>) =>
 		new (props: IProps ) => React.Component<IProps, IState> {
 

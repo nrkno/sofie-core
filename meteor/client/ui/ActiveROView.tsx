@@ -15,6 +15,7 @@ import { StudioInstallations, StudioInstallation } from '../../lib/collections/S
 
 import { Spinner } from '../lib/Spinner'
 import { RunningOrderView } from './RunningOrderView'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 interface IProps {
 	match?: {
@@ -36,13 +37,13 @@ export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 	let studioInstallation
 	if (props.match && props.match.params && props.match.params.studioId) {
 		studioId = props.match.params.studioId
-		studioInstallationSubscription = Meteor.subscribe('studioInstallations', props.match && props.match.params && props.match.params.studioId ? {
+		studioInstallationSubscription = this.subscribe('studioInstallations', props.match && props.match.params && props.match.params.studioId ? {
 			_id: props.match.params.studioId
 		} : {})
 		studioInstallation = StudioInstallations.findOne(props.match.params.studioId)
 	}
 
-	const runningOrderSubscription = Meteor.subscribe('runningOrders', props.match && props.match.params && props.match.params.studioId ? {
+	const runningOrderSubscription = this.subscribe('runningOrders', props.match && props.match.params && props.match.params.studioId ? {
 		studioInstallationId: props.match.params.studioId
 	} : {})
 
@@ -58,7 +59,7 @@ export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 		studioId,
 		isReady: runningOrderSubscription.ready() && (studioInstallationSubscription ? studioInstallationSubscription.ready() : true)
 	}
-})(class extends React.Component<Translated<IProps & ITrackedProps>> {
+})(class extends MeteorReactComponent<Translated<IProps & ITrackedProps>> {
 
 	componentDidMount () {
 		$(document.body).addClass(['dark', 'vertical-overflow-only'])

@@ -21,6 +21,7 @@ import { RunningOrderTiming } from '../RunningOrderTiming'
 import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 
 import { CollapsedStateStorage } from '../../lib/CollapsedStateStorage'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 
 export const DEFAULT_DISPLAY_DURATION = 3000
 
@@ -401,7 +402,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		autoNextSegmentLine,
 		followingSegmentLine
 	}
-})(class extends React.Component<IProps & ITrackedProps, IState> {
+})(class extends MeteorReactComponent<IProps & ITrackedProps, IState> {
 	static contextTypes = {
 		durations: PropTypes.object.isRequired
 	}
@@ -409,8 +410,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	isLiveSegment: boolean
 	roCurrentSegmentId: string | null
 
-	constructor (props: IProps & ITrackedProps, context) {
-		super(props, context)
+	constructor (props: IProps & ITrackedProps) {
+		super(props)
 
 		let that = this
 		this.state = {

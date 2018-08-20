@@ -10,6 +10,7 @@ import { RundownUtils } from '../lib/rundown'
 import { getCurrentTime } from '../../lib/lib'
 import { MomentFromNow } from '../lib/Moment'
 import { statusCodeToString } from './Status/SystemStatus'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 const PackageInfo = require('../../package.json')
 
@@ -29,8 +30,8 @@ export const RunningOrderList = translateWithTracker(() => {
 		runningOrders: RunningOrders.find({}, { sort: { created: -1 } }).fetch()
 	}
 })(
-class extends React.Component<Translated<IRunningOrdersListProps>, IRunningOrdersListState> {
-	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
+class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunningOrdersListState> {
+	// private _subscriptions: Array<Meteor.SubscriptionHandle> = []
 
 	constructor (props) {
 		super(props)
@@ -58,12 +59,7 @@ class extends React.Component<Translated<IRunningOrdersListProps>, IRunningOrder
 	}
 	componentWillMount () {
 		// Subscribe to data:
-		this._subscriptions.push(Meteor.subscribe('runningOrders', {
-		}))
-	}
-	componentWillUnmount () {
-		_.each(this._subscriptions, (sub ) => {
-			sub.stop()
+		this.subscribe('runningOrders', {
 		})
 	}
 

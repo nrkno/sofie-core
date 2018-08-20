@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { ModalDialog } from '../../lib/ModalDialog'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 
 interface IProps {
 	match: {
@@ -20,7 +21,7 @@ interface ITrackedProps {
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	return {
 	}
-})( class RestoreBackup extends React.Component<Translated<IProps & ITrackedProps>, IState> {
+})( class RestoreBackup extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {
