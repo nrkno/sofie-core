@@ -22,6 +22,7 @@ interface IDeviceItemProps {
 interface IDeviceItemState {
 	showDeleteDeviceConfirm: PeripheralDevice | null
 	showKillDeviceConfirm: PeripheralDevice | null
+	showRestartDeviceConfirm: PeripheralDevice | null
 }
 
 export function statusCodeToString (t: i18next.TranslationFunction, statusCode: PeripheralDeviceAPI.StatusCode) {
@@ -47,7 +48,8 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 		super(props)
 		this.state = {
 			showDeleteDeviceConfirm: null,
-			showKillDeviceConfirm: null
+			showKillDeviceConfirm: null,
+			showRestartDeviceConfirm: null
 		}
 	}
 	statusCodeString () {
@@ -135,6 +137,35 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 		})
 	}
 
+	onRestartDevice (device: PeripheralDevice) {
+		this.setState({
+			showRestartDeviceConfirm: device
+		})
+	}
+	handleConfirmRestartAccept = (e) => {
+		if (this.state.showRestartDeviceConfirm && this.state.showRestartDeviceConfirm.parentDeviceId) {
+
+			PeripheralDeviceAPI.executeFunction(this.state.showRestartDeviceConfirm.parentDeviceId, (err, result) => {
+				// console.log('reply', err, result)
+				if (err) {
+					console.log(err)
+				} else {
+					// resolve(result)
+				}
+			}, 'restartCasparCGProcess', 1)
+		}
+		// ShowStyles.remove(this.state.KillConfirmItem._id)
+		this.setState({
+			showRestartDeviceConfirm: null
+		})
+	}
+
+	handleConfirmRestartCancel = (e) => {
+		this.setState({
+			showRestartDeviceConfirm: null
+		})
+	}
+
 	render () {
 		const { t } = this.props
 		// let statusClassNames = ClassNames({
@@ -211,6 +242,22 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 
 				<div className='actions-container'>
 					<div className='device-item__actions'>
+						{(
+							// questionable check based on naming convention, but settings are not available.
+							this.props.device.type === PeripheralDeviceAPI.DeviceType.OTHER && this.props.device.name.substr(0, 17) === 'Playout: CasparCG' ? <React.Fragment>
+								<ModalDialog title={t('Restart this device process?')} acceptText={t('Restart')}
+									secondaryText={t('Cancel')}
+									show={!!this.state.showRestartDeviceConfirm}
+									onAccept={(e) => this.handleConfirmRestartAccept(e)}
+									onSecondary={(e) => this.handleConfirmRestartCancel(e)}>
+									<p>{t(`Are you sure you want to restart this device?`)}</p>
+								</ModalDialog>
+								<button className='btn btn-secondary' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onRestartDevice(this.props.device)}>
+									Restart
+									{ JSON.stringify(this.props.device.settings) }
+								</button>
+							</React.Fragment> : null
+						)}
 						<ModalDialog key='modal-device' title={t('Delete this item?')} acceptText={t('Delete')}
 							secondaryText={t('Cancel')}
 							show={!!this.state.showDeleteDeviceConfirm}
