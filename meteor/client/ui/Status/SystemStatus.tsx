@@ -25,7 +25,6 @@ interface IDeviceItemState {
 }
 
 export function statusCodeToString (t: i18next.TranslationFunction, statusCode: PeripheralDeviceAPI.StatusCode) {
-	console.log(statusCode)
 	return (
 		statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN ?
 			t('Unknown') :
@@ -71,6 +70,8 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 				return t('MOS Device')
 			case PeripheralDeviceAPI.DeviceType.PLAYOUT:
 				return t('Playout Device')
+			case PeripheralDeviceAPI.DeviceType.OTHER:
+				return t('Sub-Device')
 			default:
 				return t('Unknown Device')
 		}

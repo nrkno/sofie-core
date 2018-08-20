@@ -1,0 +1,90 @@
+@import "colorScheme";
+
+.running-order-system-status {
+	position: absolute;
+	font-size: 0.8em;
+	width: 350px;
+	height: 1em;
+	left: 50%;
+	top: 52px;
+	transform: translate(-50%, 0);
+	z-index: 2;
+
+	.running-order-system-status__indicators {
+		display: flex;
+		position: absolute;
+		top: 3px;
+		left: 50%;
+		transform: translate(-50%, 0);
+		width: 30px;
+		justify-content: space-evenly;
+
+		.indicator {
+			position: relative;
+			flex: none;
+			border-radius: 100%;
+			background: gray;
+			width: 7px;
+			height: 7px;
+
+			&.good {
+				background: $color-status-good;
+			}
+
+			&.minor {
+				background: $color-status-minor-warning;
+			}
+
+			&.major {
+				background: $color-status-warning;
+			}
+
+			&.bad {
+				background: $color-status-bad;
+			}
+
+			&.fatal {
+				background: $color-status-fatal;
+			}
+
+			> .indicator__tooltip {
+				position: absolute;
+				top: 10px;
+				border-radius: 3px;
+				background: #3e4041;
+				width: auto;
+				box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.25);
+				display: none;
+				padding: 0 10px;
+				transform: translate(-50%, 0);
+
+				> h4 {
+					margin: 10px 0;
+				}
+
+				> div {
+					& > h5, & > ul {
+						margin: 10px 0;
+					}
+
+					& > ul {
+						list-style: none;
+
+						> li {
+							margin-left: 0;
+							white-space: nowrap;
+							text-overflow: ellipsis;
+							overflow: hidden;
+						}
+					}
+				}
+			}
+
+			&:hover {
+				> .indicator__tooltip {
+					display: block;
+				}
+			}
+		}
+	}
+}

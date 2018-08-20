@@ -87,7 +87,7 @@ class MeteorDataManager {
 			})
 		))
 
-		if (Mongo) {
+		if (Mongo && data) {
 			Object.keys(data).forEach((key) => {
 				if (data[key] instanceof Mongo.Cursor) {
 					console.warn(

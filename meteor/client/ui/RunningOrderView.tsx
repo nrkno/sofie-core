@@ -25,6 +25,7 @@ import { SegmentTimelineContainer } from './SegmentTimeline/SegmentTimelineConta
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { InspectorDrawer } from './InspectorDrawer/InspectorDrawer'
 import { RunningOrderOverview } from './RunningOrderOverview'
+import { RunningOrderSystemStatus } from './RunningOrderSystemStatus'
 
 import { getCurrentTime } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
@@ -189,6 +190,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>, ITimi
 }))
 interface IRunningOrderHeaderProps {
 	runningOrder: RunningOrder,
+	studioInstallation: StudioInstallation,
 	onActivate?: (isRehearsal: boolean) => void
 	studioMode: boolean
 }
@@ -391,6 +393,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 				'rehearsal': this.props.runningOrder.rehearsal
 			})}>
+				<RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} />
 				<div className='row first-row super-dark'>
 					<div className='flex-col left horizontal-align-left'>
 						{/* !!! TODO: This is just a temporary solution !!! */}
@@ -419,6 +422,9 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 										</MenuItem>
 										<MenuItem onClick={(e) => this.take()}>
 											{t('Take')}
+										</MenuItem>
+										<MenuItem onClick={(e) => this.hold()}>
+											{t('Hold')}
 										</MenuItem>
 									</React.Fragment> :
 									<React.Fragment>
@@ -751,6 +757,7 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 						<ErrorBoundary>
 							<RunningOrderHeader
 								runningOrder={this.props.runningOrder}
+								studioInstallation={this.props.studioInstallation}
 								onActivate={this.onActivate}
 								studioMode={this.state.studioMode} />
 						</ErrorBoundary>
