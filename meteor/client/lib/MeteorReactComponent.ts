@@ -13,7 +13,7 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 	componentWillUnmount () {
 		this._cleanUp()
 	}
-	protected subscribe (name: string, ...args: any[]) {
+	protected subscribe (name: string, ...args: any[]): Meteor.SubscriptionHandle {
 
 		let id = name + '_' + JSON.stringify(args.join())
 
@@ -23,6 +23,7 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 		} else {
 			let sub = Meteor.subscribe(name, ...args)
 			this._subscriptions[id] = sub
+			return sub
 		}
 	}
 	protected _cleanUp () {
@@ -33,7 +34,9 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 			computation.stop()
 		})
 	}
-	protected autorun (cb: () => void, options?: any) {
-		this._computations.push(Tracker.autorun(cb, options))
+	protected autorun (cb: () => void, options?: any): Tracker.Computation {
+		let computation = Tracker.autorun(cb, options)
+		this._computations.push(computation)
+		return computation
 	}
 }
