@@ -59,6 +59,10 @@ In general, you will want to limit the amount of client stations that have full 
 
 This setting is persisted in browser's Local Storage. To disable studio mode in a given client, append `?studio=0`.
 
+## Configuration mode
+
+In the default mode, the Settings page will be unavailable from main navigation. If you want access to the Settings page on a given client station, append `?configure=1` to any query string.
+
 ## Language selection
 
 The UI will automatically detect user browser's default matching and select the best match, falling back to english. You can also force the UI language to any language by navigating to a page with `?lng=xx` query string, for example:

@@ -13,7 +13,7 @@ import { SegmentLine } from '../../../lib/collections/SegmentLines'
 import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
 import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
 import { RunningOrderBaselineAdLibItems } from '../../../lib/collections/RunningOrderBaselineAdLibItems'
-import { AdLibListItem } from './AdLibListItem'
+import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
 import * as mousetrap from 'mousetrap'
 
@@ -23,9 +23,12 @@ import * as faTimes from '@fortawesome/fontawesome-free-solid/faTimes'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { Spinner } from '../../lib/Spinner'
+import { literal } from '../../../lib/lib';
+import { RundownAPI } from '../../../lib/api/rundown';
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (aSLine: SegmentLineAdLibItemUi) => void
+	onToggleSticky: (item: IAdLibListItem) => void
 	onToggleAdLib: (aSLine: SegmentLineAdLibItemUi) => void
 	selectedItem: SegmentLineAdLibItemUi | undefined
 	filter: string | undefined
@@ -80,18 +83,54 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 	}
 
 	renderGlobalAdLibs () {
+		const { t } = this.props
+		const itemList: (IAdLibListItem &
+			{ isSticky?: boolean,
+			  layer?: ISourceLayer,
+			  sourceLayerId?: string,
+			  outputLayerId?: string })[] = []
+
 		return (
 			<tbody id={'adlib-panel__list-view__globals'} key='globals' className={ClassNames('adlib-panel__list-view__list__segment')}>
 			{
-					this.props.roAdLibs.map((item) => {
-						if (!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0) {
+				itemList.concat(this.props.roAdLibs).concat(this.props.studioInstallation.sourceLayers.filter(i => i.isSticky)
+					.map(layer => literal<IAdLibListItem & { layer: ISourceLayer, isSticky: boolean }>({
+						_id: layer._id,
+						hotkey: layer.activateStickyKeyboardHotkey,
+						name: t('Last ') + (layer.abbreviation || layer.name),
+						status: RundownAPI.LineItemStatusCode.UNKNOWN,
+						layer: layer,
+						isSticky: true
+					})))
+					.sort((a, b) => {
+						if (a.hotkey && b.hotkey) {
+							return a.hotkey > b.hotkey ? 1 : -1
+						} else if (a.hotkey) {
+							return -1
+						} else {
+							return 1
+						}
+					})
+					.map((item) => {
+						if (item.isSticky && (!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0)) {
 							return (
 								<AdLibListItem
 									key={item._id}
 									item={item}
 									selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
-									layer={this.state.sourceLayers[item.sourceLayerId]}
-									outputLayer={this.state.outputLayers[item.outputLayerId]}
+									layer={item.layer!}
+									onToggleAdLib={this.props.onToggleSticky}
+									onSelectAdLib={this.props.onSelectAdLib}
+								/>
+							)
+						} else if (!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0) {
+							return (
+								<AdLibListItem
+									key={item._id}
+									item={item}
+									selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
+									layer={this.state.sourceLayers[item.sourceLayerId!]}
+									outputLayer={this.state.outputLayers[item.outputLayerId!]}
 									onToggleAdLib={this.props.onToggleAdLib}
 									onSelectAdLib={this.props.onSelectAdLib}
 								/>
@@ -336,12 +375,44 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				}
 			})
 		}
+
+		if (this.props.sourceLayerLookup) {
+			_.forEach(this.props.sourceLayerLookup, (item) => {
+				if (item.clearKeyboardHotkey) {
+					mousetrap.bind(item.clearKeyboardHotkey, preventDefault, 'keydown')
+					mousetrap.bind(item.clearKeyboardHotkey, (e: ExtendedKeyboardEvent) => {
+						preventDefault(e)
+						this.onClearAllSourceLayer(item)
+					}, 'keyup')
+					this.usedHotkeys.push(item.clearKeyboardHotkey)
+				}
+
+				if (item.isSticky && item.activateStickyKeyboardHotkey) {
+					mousetrap.bind(item.activateStickyKeyboardHotkey, preventDefault, 'keydown')
+					mousetrap.bind(item.activateStickyKeyboardHotkey, (e: ExtendedKeyboardEvent) => {
+						preventDefault(e)
+						this.onToggleSticky(item._id)
+					}, 'keyup')
+					this.usedHotkeys.push(item.activateStickyKeyboardHotkey)
+				}
+			})
+		}
 	}
 
 	onFilterChange = (filter: string) => {
 		this.setState({
 			filter
 		})
+	}
+
+	onToggleStickyItem = (item: IAdLibListItem) => {
+		this.onToggleSticky(item._id)
+	}
+
+	onToggleSticky = (sourceLayerId: string) => {
+		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && this.props.runningOrder.active) {
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.sourceLayerStickyItemStart, this.props.runningOrder._id, sourceLayerId)
+		}
 	}
 
 	onSelectAdLib = (aSLine: SegmentLineAdLibItemUi) => {
@@ -378,6 +449,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				<AdLibListView
 					onSelectAdLib={this.onSelectAdLib}
 					onToggleAdLib={this.onToggleAdLib}
+					onToggleSticky={this.onToggleStickyItem}
 					selectedItem={this.state.selectedItem}
 					studioInstallation={this.props.studioInstallation}
 					roAdLibs={this.props.roAdLibs}

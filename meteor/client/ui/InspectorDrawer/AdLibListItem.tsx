@@ -10,13 +10,20 @@ import * as ClassNames from 'classnames'
 import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { SegmentLineAdLibItemUi } from './AdLibPanel'
 
+export interface IAdLibListItem {
+	_id: string,
+	name: string,
+	status?: RundownAPI.LineItemStatusCode
+	hotkey?: string
+}
+
 interface IListViewItemProps {
-	item: SegmentLineAdLibItemUi
+	item: IAdLibListItem
 	selected: boolean
 	layer: ISourceLayer
-	outputLayer: IOutputLayer
-	onSelectAdLib: (aSLine: SegmentLineAdLibItem) => void
-	onToggleAdLib: (aSLine: SegmentLineAdLibItem) => void
+	outputLayer?: IOutputLayer
+	onSelectAdLib: (aSLine: IAdLibListItem) => void
+	onToggleAdLib: (aSLine: IAdLibListItem) => void
 }
 
 export const AdLibListItem = translate()(class extends React.Component<Translated<IListViewItemProps>> {

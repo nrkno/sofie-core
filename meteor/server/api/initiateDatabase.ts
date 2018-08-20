@@ -11,11 +11,11 @@ import { StudioInstallations,
 } from '../../lib/collections/StudioInstallations'
 import { literal, getCurrentTime } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
+import { LookaheadMode } from '../../lib/api/playout'
 import { PeripheralDevices, PlayoutDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../logging'
 import * as _ from 'underscore'
-import { LookaheadMode } from '../../lib/api/playout';
 
 // Imports from TSR (TODO make into an import)
 // export interface Mappings {
@@ -409,7 +409,7 @@ Meteor.methods({
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.PRELOAD,
 				channel: 1,
-				layer: 120
+				layer: 111
 			}),
 			'casparcg_cg_graphics': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
@@ -627,6 +627,11 @@ Meteor.methods({
 				lookahead: LookaheadMode.NONE,
 			}),
 			'nora_primary_super': literal<Mapping>({
+				device: PlayoutDeviceType.HTTPSEND,
+				deviceId: 'http0',
+				lookahead: LookaheadMode.NONE,
+			}),
+			'nora_primary_headline': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,

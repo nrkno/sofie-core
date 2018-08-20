@@ -25,6 +25,7 @@ import { ErrorBoundary } from '../lib/ErrorBoundary'
 
 interface IAppState {
 	studioMode: boolean
+	adminMode: boolean
 }
 
 const NullComponent = () => null
@@ -36,18 +37,25 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 
 		const params = queryStringParse(location.search)
 
-		this.state = {
-			studioMode: params['studio'] === '1' ?
-				true :
-				localStorage.getItem('studioMode') === '1' ?
-					true : false
-		}
-
 		if (params['studio'] === '1') {
 			localStorage.setItem('studioMode', '1')
 		} else if (params['studio'] === '0') {
 			localStorage.setItem('studioMode', '0')
 		}
+
+		if (params['configure'] === '1') {
+			localStorage.setItem('adminMode', '1')
+		} else if (params['configure'] === '0') {
+			localStorage.setItem('adminMode', '0')
+		}
+
+		this.state = {
+			studioMode: localStorage.getItem('studioMode') === '1' ?
+				true : false,
+			adminMode: localStorage.getItem('adminMode') === '1' ?
+				true : false
+		}
+
 	}
 
 	render () {
@@ -98,13 +106,14 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Route path='/countdowns/:studioId/presenter' component={NullComponent} />
 							<Route path='/countdowns/presenter' component={NullComponent} />
 							<Route path='/activeRo' component={NullComponent} />
-							<Route path='/' component={Header} />
+							<Route path='/' render={(props) => <Header {...props} adminMode={this.state.adminMode} />} />
 						</Switch>
 					</ErrorBoundary>
 					{/* Main app switch */}
 					<ErrorBoundary>
 						<Switch>
-							<Route exact path='/' component={Dashboard} />
+							{/* <Route exact path='/' component={Dashboard} /> */}
+							<Route exact path='/' component={RunningOrderList} />
 							<Route path='/runningOrders' component={RunningOrderList} />
 							<Route path='/ro/:runningOrderId' component={RunningOrderView} />
 							<Route path='/activeRo/:studioId' component={ActiveROView} />

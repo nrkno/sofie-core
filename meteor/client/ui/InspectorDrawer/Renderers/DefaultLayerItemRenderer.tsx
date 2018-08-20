@@ -2,12 +2,13 @@ import * as React from 'react'
 
 import { SegmentLineAdLibItem } from '../../../../lib/collections/SegmentLineAdLibItems'
 import { ISourceLayer, IOutputLayer } from '../../../../lib/collections/StudioInstallations'
+import { IAdLibListItem } from '../AdLibListItem'
 
 interface IPropsHeader {
-	item: SegmentLineAdLibItem
+	item: IAdLibListItem
 	selected: boolean
 	layer: ISourceLayer
-	outputLayer: IOutputLayer
+	outputLayer?: IOutputLayer
 }
 
 export const DefaultListItemRenderer: React.SFC<IPropsHeader> = (props: IPropsHeader) => (

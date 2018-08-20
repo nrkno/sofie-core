@@ -34,6 +34,7 @@
 		word-wrap: none;
 		white-space: nowrap;
 		text-overflow: clip;
+		overflow: hidden;
 
 		&.live {
 			color: $segment-title-text-color-live;
@@ -76,8 +77,9 @@
 			left: 0;
 			right: 0;
 			bottom: 0;
-			line-height: 40px;
-			margin: 0 10px;
+			line-height: 20px;
+			margin: 5px 5px;
+			padding: 5px 5px;
 
 			word-wrap: none;
 			white-space: nowrap;
@@ -87,10 +89,14 @@
 		}
 
 		&:hover {
+			overflow: visible;
+
 			.running-order__overview__segment__segment-line__label {
 				right: auto;
 				width: auto;
 				z-index: 5;
+				background: #333;
+				pointer-events: none;
 			}
 		}
 	}

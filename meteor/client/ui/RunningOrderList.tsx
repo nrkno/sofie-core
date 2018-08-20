@@ -9,9 +9,16 @@ import Moment from 'react-moment'
 import { RundownUtils } from '../lib/rundown'
 import { getCurrentTime } from '../../lib/lib'
 import { MomentFromNow } from '../lib/Moment'
+import { statusCodeToString } from './Status/SystemStatus'
+
+const PackageInfo = require('../../package.json')
 
 interface IRunningOrdersListProps {
 	runningOrders: Array<RunningOrder>
+}
+
+interface IRunningOrdersListState {
+	systemStatus?: number
 }
 
 export const RunningOrderList = translateWithTracker(() => {
@@ -22,8 +29,27 @@ export const RunningOrderList = translateWithTracker(() => {
 		runningOrders: RunningOrders.find({}, { sort: { created: -1 } }).fetch()
 	}
 })(
-class extends React.Component<Translated<IRunningOrdersListProps>> {
+class extends React.Component<Translated<IRunningOrdersListProps>, IRunningOrdersListState> {
 	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
+
+	constructor (props) {
+		super(props)
+
+		this.state = {}
+	}
+
+	componentDidMount () {
+		Meteor.call('systemStatus.getSystemStatus', (err: any, res: any) => {
+			if (err) {
+				console.error(err)
+				return
+			}
+
+			this.setState({
+				systemStatus: res.statusCode
+			})
+		})
+	}
 
 	renderRunningOrders () {
 		return this.props.runningOrders.map((runningOrder) => (
@@ -44,7 +70,7 @@ class extends React.Component<Translated<IRunningOrdersListProps>> {
 	render () {
 		const { t } = this.props
 
-		return (
+		return <React.Fragment>
 			<div className='mtl gutter'>
 				<header className='mvs'>
 					<h1>{t('Running Orders')}</h1>
@@ -82,7 +108,10 @@ class extends React.Component<Translated<IRunningOrdersListProps>> {
 					</table>
 				</div>
 			</div>
-		)
+			<div className='mtl gutter version-info'>
+				<p>{t('Sofie Automation Core version')}: {PackageInfo.version || 'UNSTABLE'}, {t('Core status')}: {statusCodeToString(t, this.state.systemStatus || 0)}</p>
+			</div>
+		</React.Fragment>
 	}
 }
 )
