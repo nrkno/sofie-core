@@ -52,9 +52,7 @@ window['executeFunction'] = PeripheralDeviceAPI.executeFunction,
 window['getCurrentTime'] = getCurrentTime
 window['Session'] = Session
 
-const debugData = false
-if (debugData) {
-	console.log('Debug: comment out this!')
+function setDebugData () {
 	Tracker.autorun(() => {
 		let stats: any = {}
 		_.each(Collections, (collection: any, name: string) => {
@@ -62,4 +60,10 @@ if (debugData) {
 		})
 		console.log(_.map(stats, (count: any, name: string) => { return name + ': ' + count }).join('\n'))
 	})
+}
+window['setDebugData'] = setDebugData
+const debugData = false
+if (debugData) {
+	console.log('Debug: comment out this!')
+	setDebugData()
 }
