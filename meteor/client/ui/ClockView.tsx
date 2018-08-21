@@ -268,6 +268,7 @@ class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 	}
 
 	componentWillUnmount () {
+		this._cleanUp()
 		$(document.body).removeClass('dark xdark')
 	}
 

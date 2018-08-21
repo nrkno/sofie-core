@@ -351,6 +351,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	}
 
 	componentWillUnmount () {
+		this._cleanUp()
 		mousetrap.unbind(this.usedHotkeys, 'keyup')
 		mousetrap.unbind(this.usedHotkeys, 'keydown')
 

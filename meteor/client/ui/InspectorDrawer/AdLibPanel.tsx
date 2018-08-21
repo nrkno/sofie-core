@@ -434,6 +434,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	}
 
 	componentWillUnmount () {
+		this._cleanUp()
 		mousetrap.unbind(this.usedHotkeys, 'keyup')
 		mousetrap.unbind(this.usedHotkeys, 'keydown')
 

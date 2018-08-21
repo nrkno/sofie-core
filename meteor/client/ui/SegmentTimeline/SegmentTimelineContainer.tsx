@@ -519,6 +519,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	componentWillUnmount () {
+		this._cleanUp()
 		this.stopOnAirLine()
 	}
 

@@ -130,6 +130,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 	}
 
 	componentWillUnmount () {
+		this._cleanUp()
 		Meteor.clearInterval(this.refreshTimer)
 	}
 
