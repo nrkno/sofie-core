@@ -174,22 +174,25 @@ Object.assign(ReactMeteorComponentWrapper.prototype, ReactMeteorData)
 class ReactMeteorPureComponentWrapper<P, S> extends React.PureComponent<P, S> {}
 Object.assign(ReactMeteorPureComponentWrapper.prototype, ReactMeteorData)
 
-export interface WithTrackerOptions<IProps, TrackedProps> {
+export interface WithTrackerOptions<IProps, IState, TrackedProps> {
 	getMeteorData: (props: IProps) => TrackedProps
+	shouldComponentUpdate?: (data: any, props: IProps, nextProps: IProps, state?: IState, nextState?: IState) => boolean
 	// pure?: boolean
 }
 // @todo: add withTrackerPure()
 type IWrappedComponent<IProps, IState, TrackedProps> = new (props: IProps & TrackedProps, state: IState) => MeteorReactComponent<IProps & TrackedProps, IState>
 export function withTracker<IProps, IState, TrackedProps> (
-	autorunFunction: (props: IProps) => TrackedProps
+	autorunFunction: (props: IProps) => TrackedProps,
+	checkUpdate?: ((data: any, props: IProps, nextProps: IProps) => boolean) | ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean)
 	):
 	(WrappedComponent: IWrappedComponent<IProps, IState, TrackedProps>) =>
 		new (props: IProps ) => React.Component<IProps, IState> {
 
-	let expandedOptions: WithTrackerOptions<IProps, TrackedProps>
+	let expandedOptions: WithTrackerOptions<IProps, IState, TrackedProps>
 
 	expandedOptions = {
-		getMeteorData: autorunFunction
+		getMeteorData: autorunFunction,
+		shouldComponentUpdate: checkUpdate
 	}
 
 	return (WrappedComponent) => {
@@ -197,6 +200,15 @@ export function withTracker<IProps, IState, TrackedProps> (
 		return class extends ReactMeteorComponentWrapper<IProps, IState> {
 			getMeteorData () {
 				return expandedOptions.getMeteorData(this.props)
+			}
+			// This hook allows lower-level components to do smart optimization,
+			// without running a potentially heavy recomputation of the getMeteorData.
+			// This is potentially very dangerous, so use with caution.
+			shouldComponentUpdate (nextProps: IProps, nextState: IState): boolean {
+				if (typeof expandedOptions.shouldComponentUpdate === 'function') {
+					return expandedOptions.shouldComponentUpdate(this.data, this.props, nextProps, this.state, nextState)
+				}
+				return true
 			}
 			render () {
 				return <WrappedComponent {...this.props} {...this.data} />

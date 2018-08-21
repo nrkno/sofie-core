@@ -560,12 +560,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		this.subscribe('segmentLineItems', {
 			runningOrderId: runningOrderId
 		})
-		this.subscribe('studioInstallations', {
-			runningOrderId: runningOrderId
-		})
-		this.subscribe('showStyles', {
-			runningOrderId: runningOrderId
-		})
 		this.subscribe('segmentLineAdLibItems', {
 			runningOrderId: runningOrderId
 		})
@@ -599,6 +593,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	componentDidUpdate (prevProps: IProps & ITrackedProps, prevState: IState) {
+		this.subscribeToAncillary()
+
 		if (this.props.runningOrder &&
 			prevProps.runningOrder && prevProps.runningOrder.currentSegmentLineId !== this.props.runningOrder.currentSegmentLineId &&
 			this.state.manualSetAsNext) {
@@ -690,7 +686,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							<SegmentTimelineContainer
 												studioInstallation={this.props.studioInstallation}
 												followLiveSegments={this.state.followLiveSegments}
-												segment={segment}
+												segmentId={segment._id}
 												runningOrder={this.props.runningOrder}
 												liveLineHistorySize={100}
 												timeScale={this.state.timeScale}
@@ -801,6 +797,17 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					<Spinner />
 				</div>
 			)
+		}
+	}
+
+	private subscribeToAncillary () {
+		if (this.props.isReady && this.props.runningOrder) {
+			this.subscribe('studioInstallations', {
+				_id: this.props.runningOrder.studioInstallationId
+			})
+			this.subscribe('showStyles', {
+				_id: this.props.runningOrder.showStyleId
+			})
 		}
 	}
 }

@@ -16,7 +16,7 @@ import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/col
 
 import { SegmentTimeline } from './SegmentTimeline'
 
-import { getCurrentTime } from '../../../lib/lib'
+import { getCurrentTime, Time } from '../../../lib/lib'
 import { RunningOrderTiming } from '../RunningOrderTiming'
 import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 
@@ -79,7 +79,7 @@ interface ISegmentLineItemUiDictionary {
 	[key: string]: SegmentLineItemUi
 }
 interface IProps {
-	segment: Segment,
+	segmentId: string,
 	studioInstallation: StudioInstallation,
 	runningOrder: RunningOrder,
 	timeScale: number,
@@ -114,8 +114,9 @@ interface ITrackedProps {
 export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
+	const segmentui = Segments.findOne(props.segmentId) as SegmentUi
 
-	let segmentui = _.clone(props.segment) as SegmentUi
+	// let segmentui = _.clone(props.segment) as SegmentUi
 
 	let isLiveSegment = false
 	let isNextSegment = false
@@ -129,7 +130,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	// fetch all the segment lines for the segment
 	let segmentLines = SegmentLines.find({
-		segmentId: props.segment._id
+		segmentId: segmentui._id
 	}, { sort: { _rank: 1 } }).fetch()
 
 	if (segmentLines.length > 0) {
@@ -402,6 +403,50 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		autoNextSegmentLine,
 		followingSegmentLine
 	}
+}, (data: ITrackedProps, props: IProps, nextProps: IProps): boolean => {
+	// This is a potentailly very dangerous hook into the React component lifecycle. Re-use with caution.
+	// Check obvious primitive changes
+	if (
+		(props.followLiveSegments !== nextProps.followLiveSegments) ||
+		(props.liveLineHistorySize !== nextProps.liveLineHistorySize) ||
+		(props.onContextMenu !== nextProps.onContextMenu) ||
+		(props.onSegmentScroll !== nextProps.onSegmentScroll) ||
+		(props.onTimeScaleChange !== nextProps.onTimeScaleChange) ||
+		(props.segmentId !== nextProps.segmentId) ||
+		(props.segmentRef !== nextProps.segmentRef) ||
+		(props.timeScale !== nextProps.timeScale)
+	) {
+		return true
+	}
+	// Check running order changes that are important to the segment
+	if (
+		(typeof props.runningOrder !== typeof nextProps.runningOrder) ||
+		(
+			(
+				props.runningOrder.currentSegmentLineId !== nextProps.runningOrder.currentSegmentLineId ||
+				props.runningOrder.nextSegmentLineId !== nextProps.runningOrder.nextSegmentLineId
+			) && (
+				(data.segmentLines && (
+					data.segmentLines.find(i => (i._id === props.runningOrder.currentSegmentLineId) || (i._id === nextProps.runningOrder.currentSegmentLineId)) ||
+					data.segmentLines.find(i => (i._id === props.runningOrder.nextSegmentLineId) || (i._id === nextProps.runningOrder.nextSegmentLineId))
+					)
+				)
+			)
+		)
+	) {
+		return true
+	}
+	// Check studio installation changes that are important to the segment.
+	// We also could investigate just skipping this and requiring a full reload if the studio installation is changed
+	if (
+		(typeof props.studioInstallation !== typeof nextProps.studioInstallation) ||
+		!_.isEqual(props.studioInstallation.config, nextProps.studioInstallation.config) ||
+		!_.isEqual(props.studioInstallation.sourceLayers, nextProps.studioInstallation.sourceLayers) ||
+		!_.isEqual(props.studioInstallation.outputLayers, nextProps.studioInstallation.outputLayers)
+	) {
+		return true
+	}
+	return false
 })(class extends MeteorReactComponent<IProps & ITrackedProps, IState> {
 	static contextTypes = {
 		durations: PropTypes.object.isRequired
@@ -409,14 +454,15 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	isLiveSegment: boolean
 	roCurrentSegmentId: string | null
+	lastRender: JSX.Element
 
 	constructor (props: IProps & ITrackedProps) {
 		super(props)
 
 		let that = this
 		this.state = {
-			collapsedOutputs: CollapsedStateStorage.getItemBooleanMap(`runningOrderView.segment.${props.segment._id}.outputs`, {}),
-			collapsed: CollapsedStateStorage.getItemBoolean(`runningOrderView.segment.${props.segment._id}`, false),
+			collapsedOutputs: CollapsedStateStorage.getItemBooleanMap(`runningOrderView.segment.${props.segmentui._id}.outputs`, {}),
+			collapsed: CollapsedStateStorage.getItemBoolean(`runningOrderView.segment.${props.segmentui._id}`, false),
 			scrollLeft: 0,
 			followLiveLine: false,
 			livePosition: 0,
@@ -426,16 +472,21 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		this.isLiveSegment = props.isLiveSegment || false
 	}
 
+	componentWillMount () {
+		this.subscribe('Segment', {
+			_id: this.props.segmentId
+		})
+		this.subscribe('SegmentLines', {
+			segmentId: this.props.segmentId
+		})
+	}
+
 	componentDidMount () {
 		this.roCurrentSegmentId = this.props.runningOrder.currentSegmentLineId
 		if (this.isLiveSegment === true) {
 			this.onFollowLiveLine(true, {})
 			this.startOnAirLine()
 		}
-	}
-
-	shouldComponentUpdate (np: IProps & ITrackedProps, ns: IState): boolean {
-		return true
 	}
 
 	componentDidUpdate (prevProps) {
@@ -474,11 +525,11 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
 		let collapsedOutputs = {...this.state.collapsedOutputs}
 		collapsedOutputs[outputLayer._id] = collapsedOutputs[outputLayer._id] === true ? false : true
-		CollapsedStateStorage.setItem(`runningOrderView.segment.${this.props.segment._id}.outputs`, collapsedOutputs)
+		CollapsedStateStorage.setItem(`runningOrderView.segment.${this.props.segmentui._id}.outputs`, collapsedOutputs)
 		this.setState({ collapsedOutputs })
 	}
 	onCollapseSegmentToggle = () => {
-		CollapsedStateStorage.setItem(`runningOrderView.segment.${this.props.segment._id}`, !this.state.collapsed)
+		CollapsedStateStorage.setItem(`runningOrderView.segment.${this.props.segmentui._id}`, !this.state.collapsed)
 		this.setState({ collapsed: !this.state.collapsed })
 	}
 	/** The user has scrolled scrollLeft seconds to the left in a child component */
@@ -532,12 +583,10 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	render () {
-		// console.log('Rendering %cSegmentTimelineContainer%c: %s', 'font-weight: bold;', 'font-weight:normal;color:gray;', this.props.segmentui._id)
-
 		return (
 			<SegmentTimeline
 				segmentRef={this.props.segmentRef}
-				key={this.props.segment._id}
+				key={this.props.segmentui._id}
 				segment={this.props.segmentui}
 				studioInstallation={this.props.studioInstallation}
 				segmentLines={this.props.segmentLines}
