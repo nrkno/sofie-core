@@ -197,14 +197,18 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 								<MOSLastUpdateStatus lastUpdate={this.props.mosLastUpdate} />
 							</div>
 							<div>
-								<h5>Off-line devices</h5>
 								{
-									this.props.mosDevices.offLine.length > 0 &&
-									<ul>
-										{ this.props.mosDevices.offLine.map((dev) => {
-											return <li key={dev._id}>{dev.name}</li>
-										})}
-									</ul>
+									this.props.mosDevices.offLine.length > 0 ?
+										<React.Fragment>
+											<h5>Off-line devices</h5>
+											<ul>
+												{ this.props.mosDevices.offLine.map((dev) => {
+													return <li key={dev._id}>{dev.name}</li>
+												})}
+											</ul>
+										</React.Fragment>
+									:
+										<span>All connections working correctly</span>
 								}
 							</div>
 						</div>
@@ -219,14 +223,18 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 						<div className='indicator__tooltip'>
 							<h4>Playout</h4>
 							<div>
-								<h5>Off-line devices</h5>
 								{
-									this.props.playoutDevices.offLine.length > 0 &&
-									<ul>
-										{this.props.playoutDevices.offLine.map((dev) => {
-											return <li key={dev._id}>{dev.name}</li>
-										})}
-									</ul>
+									this.props.playoutDevices.offLine.length > 0 ?
+										<React.Fragment>
+											<h5>Off-line devices</h5>
+											<ul>
+												{this.props.playoutDevices.offLine.map((dev) => {
+													return <li key={dev._id}>{dev.name}</li>
+												})}
+											</ul>
+										</React.Fragment>
+									:
+										<span>All devices working correctly</span>
 								}
 							</div>
 						</div>
