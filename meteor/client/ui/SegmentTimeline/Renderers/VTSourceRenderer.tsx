@@ -82,6 +82,8 @@ export class VTSourceRenderer extends CustomLayerItemRenderer {
 	}
 
 	render () {
+		const {t} = this.props
+
 		let labelItems = this.props.segmentLineItem.name.split('||')
 		this.begin = labelItems[0] || ''
 		this.end = labelItems[1] || ''
@@ -126,7 +128,10 @@ export class VTSourceRenderer extends CustomLayerItemRenderer {
 								<video src={this.getPreviewUrl()} ref={this.setVideoRef} crossOrigin='anonymous' playsInline={true} muted={true}/>
 							</div> :
 							<div className='segment-timeline__mini-inspector' style={this.getFloatingInspectorStyle()}>
-								<div>FileName: {this.props.segmentLineItem.content.fileName}</div>
+								<div>
+									<span className='mini-inspector__label'>{t('File name')}: </span>
+									<span className='mini-inspector__value'>{this.props.segmentLineItem.content.fileName}</span>
+								</div>
 							</div>
 						}
 					</FloatingInspector>
