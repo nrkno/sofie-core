@@ -56,6 +56,12 @@ export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 	}
 })(class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
+	constructor (props) {
+		super(props)
+		this.state = {
+			subsReady: false
+		}
+	}
 	componentDidMount () {
 		$(document.body).addClass(['dark', 'vertical-overflow-only'])
 

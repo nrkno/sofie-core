@@ -749,7 +749,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	render () {
 		const { t } = this.props
-		if (this.state.subsReady && this.props.runningOrder && this.props.studioInstallation) {
+		if (this.props.runningOrder && this.props.studioInstallation) {
 			return (
 				<RunningOrderTimingProvider
 					runningOrder={this.props.runningOrder}
