@@ -1339,6 +1339,17 @@ body.vertical-overflow-only {
 			}
 		}
 	}
+
+	.mini-inspector__label {
+		font-weight: 100;
+	}
+	.mini-inspector__value {
+		font-weight: 400;
+	}
+	.mini-inspector__system {
+		font-weight: 300;
+		font-style: italic;
+	}
 }
 
 .running-order-view__go-to-onAir {
