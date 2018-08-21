@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2018-08-21T14:32:41.123Z\n"
-"PO-Revision-Date: 2018-08-21 17:03+0200\n"
+"POT-Creation-Date: 2018-08-21T15:38:25.646Z\n"
+"PO-Revision-Date: 2018-08-21 17:39+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -196,8 +196,14 @@ msgstr "OK"
 msgid "This running order has been unpublished from Sofie."
 msgstr "Denne kjøreplanen er ikke lenger tilgjengelig i Sofie."
 
-msgid "Item has no properties"
-msgstr "Elementet har ingen egenskaper"
+msgid "Until next take"
+msgstr "Til neste Take"
+
+msgid "Until next segment"
+msgstr "Til neste tittel"
+
+msgid "Infinite"
+msgstr "Manuell"
 
 msgid "Script"
 msgstr "Manus"
@@ -637,6 +643,9 @@ msgstr "Brukeraktivitet"
 msgctxt "item"
 msgid "new_config"
 msgstr "Ny konfigurasjon"
+
+#~ msgid "Item has no properties"
+#~ msgstr "Elementet har ingen egenskaper"
 
 #~ msgid "Playout uses Timecode of Caspar"
 #~ msgstr "Playout bruker CasparCGs tidskode"
