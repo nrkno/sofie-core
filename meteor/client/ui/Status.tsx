@@ -14,7 +14,7 @@ import {
 import SystemStatus from './Status/SystemStatus'
 import { ExternalMessages } from './Status/ExternalMessages'
 import { UserActivity } from './Status/UserActivity'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent';
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 class WelcomeToStatus extends React.Component {
 	render () {

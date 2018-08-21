@@ -52,10 +52,10 @@ interface ISettingsMenuTrackedProps {
 	lineTemplates: Array<RuntimeFunction>
 }
 const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps >(() => {
-	this.subscribe('studioInstallations', {})
-	this.subscribe('showStyles', {})
-	this.subscribe('peripheralDevices', {})
-	this.subscribe('runtimeFunctions', {})
+	Meteor.subscribe('studioInstallations', {})
+	Meteor.subscribe('showStyles', {})
+	Meteor.subscribe('peripheralDevices', {})
+	Meteor.subscribe('runtimeFunctions', {})
 
 	return {
 		studioInstallations: StudioInstallations.find({}).fetch(),
