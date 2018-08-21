@@ -796,7 +796,7 @@ body.vertical-overflow-only {
 						background: $segment-layer-background-unknown;
 						transition: box-shadow 0.5s ease-out;
 						box-shadow: 0 0 0 0 rgba(255,255,255,0.5);
-						cursor: pointer;
+						cursor: inherit;
 						z-index: 1;
 
 						// TODO: This is just temporary styling, to indicate that the layers are clickable
