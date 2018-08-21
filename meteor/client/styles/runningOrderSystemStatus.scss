@@ -29,22 +29,27 @@
 
 			&.good {
 				background: $color-status-good;
+				box-shadow: 0 0 15px 0px $color-status-good;
 			}
 
 			&.minor {
 				background: $color-status-minor-warning;
+				box-shadow: 0 0 15px 1px $color-status-minor-warning;
 			}
 
 			&.major {
 				background: $color-status-warning;
+				box-shadow: 0 0 15px 3px $color-status-warning;
 			}
 
 			&.bad {
 				background: $color-status-bad;
+				box-shadow: 0 0 15px 3px $color-status-bad;
 			}
 
 			&.fatal {
 				background: $color-status-fatal;
+				box-shadow: 0 0 15px 3px $color-status-fatal;
 			}
 
 			> .indicator__tooltip {
