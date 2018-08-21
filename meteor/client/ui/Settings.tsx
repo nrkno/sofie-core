@@ -52,10 +52,10 @@ interface ISettingsMenuTrackedProps {
 	lineTemplates: Array<RuntimeFunction>
 }
 const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps >(() => {
-	let subStudioInstallations = Meteor.subscribe('studioInstallations', {})
-	let subShowStyles = Meteor.subscribe('showStyles', {})
-	let subPeripheralDevices = Meteor.subscribe('peripheralDevices', {})
-	let subRuntimeFunctions = Meteor.subscribe('runtimeFunctions', {})
+	this.subscribe('studioInstallations', {})
+	this.subscribe('showStyles', {})
+	this.subscribe('peripheralDevices', {})
+	this.subscribe('runtimeFunctions', {})
 
 	return {
 		studioInstallations: StudioInstallations.find({}).fetch(),
@@ -252,20 +252,13 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 interface ISettingsProps {
 	match?: any
 }
-class Settings extends React.Component<Translated<ISettingsProps>> {
-	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
+class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 	componentWillMount () {
 		// Subscribe to data:
-
-		this._subscriptions.push(Meteor.subscribe('peripheralDevices', {}))
-		this._subscriptions.push(Meteor.subscribe('studioInstallations', {}))
-		this._subscriptions.push(Meteor.subscribe('showStyles', {}))
-		this._subscriptions.push(Meteor.subscribe('runtimeFunctions', {}))
-	}
-	componentWillUnmount () {
-		_.each(this._subscriptions, (sub ) => {
-			sub.stop()
-		})
+		this.subscribe('peripheralDevices', {})
+		this.subscribe('studioInstallations', {})
+		this.subscribe('showStyles', {})
+		this.subscribe('runtimeFunctions', {})
 	}
 	render () {
 		const { t } = this.props

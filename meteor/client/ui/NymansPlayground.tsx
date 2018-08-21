@@ -88,23 +88,20 @@ class extends MeteorReactComponent<IEditTasks> {
 	}
 })
 // ----------------------------------------------------------------------------
-export class NymansPlayground extends React.Component {
-	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
+interface INPProps {
+
+}
+export class NymansPlayground extends MeteorReactComponent<INPProps> {
 	componentWillMount () {
 		// Subscribe to data:
 
-		this._subscriptions.push(Meteor.subscribe('runningOrders', {}))
-		this._subscriptions.push(Meteor.subscribe('segments', {}))
-		this._subscriptions.push(Meteor.subscribe('segmentLines', {}))
-		this._subscriptions.push(Meteor.subscribe('segmentLineItems', {}))
-		this._subscriptions.push(Meteor.subscribe('studioInstallations', {}))
-		this._subscriptions.push(Meteor.subscribe('showStyles', {}))
-		this._subscriptions.push(Meteor.subscribe('segmentLineAdLibItems', {}))
-	}
-	componentWillUnmount () {
-		_.each(this._subscriptions, (sub ) => {
-			sub.stop()
-		})
+		this.subscribe('runningOrders', {})
+		this.subscribe('segments', {})
+		this.subscribe('segmentLines', {})
+		this.subscribe('segmentLineItems', {})
+		this.subscribe('studioInstallations', {})
+		this.subscribe('showStyles', {})
+		this.subscribe('segmentLineAdLibItems', {})
 	}
 	render () {
 		return (

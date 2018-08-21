@@ -59,8 +59,8 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 	}
 	componentWillMount () {
 		// Subscribe to data:
-		this.subscribe('runningOrders', {
-		})
+		// TODO: make something clever here, to not load ALL the runningOrders
+		this.subscribe('runningOrders', {})
 	}
 
 	render () {
