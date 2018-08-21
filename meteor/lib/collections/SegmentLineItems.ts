@@ -135,7 +135,7 @@ export interface CameraContent extends BaseContent {
 
 export interface RemoteContent extends BaseContent {
 	studioLabel: string
-	switcherInput: string | string
+	switcherInput: number | string
 	thumbnail?: string
 	timelineObjects: Array<SomeTimelineObject>
 }
@@ -158,7 +158,11 @@ export interface GraphicsContent extends BaseContent {
 export interface SplitsContent extends BaseContent {
 	dveConfiguration: any
 	/** Array of contents, 0 index is DVE art */
-	boxSourceConfiguration: Array<VTContent | CameraContent | RemoteContent | GraphicsContent>
+	boxSourceConfiguration: Array<(VTContent | CameraContent | RemoteContent | GraphicsContent) & {
+		type: RundownAPI.SourceLayerType
+		studioLabel: string
+		switcherInput: number | string
+	}>
 	timelineObjects: Array<SomeTimelineObject>
 }
 
