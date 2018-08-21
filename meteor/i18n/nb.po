@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2018-07-31T08:51:03.016Z\n"
-"PO-Revision-Date: 2018-07-31 13:27+0200\n"
+"POT-Creation-Date: 2018-08-20T14:57:49.585Z\n"
+"PO-Revision-Date: 2018-08-20 17:20+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -12,7 +12,21 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 2.1.1\n"
 
-msgid "Connecting to automation server…"
+msgid "Return to list"
+msgstr "Gå tilbake til listen"
+
+msgid "There is no running order active in this studio."
+msgstr "Fant ingen aktive kjøreplaner i dette studioet."
+
+msgid "This studio doesn't exist."
+msgstr "Dette studioet finnes ikke."
+
+msgid "There are no active running orders."
+msgstr "Fant ingen aktive kjøreplaner."
+
+#, fuzzy
+#| msgid "Connecting to automation server…"
+msgid "Connecting to automation server..."
 msgstr "Kobler til Sofie-serveren …"
 
 msgid "Cannot connect to the automation server"
@@ -76,11 +90,21 @@ msgstr "Varighet"
 msgid "TC Start"
 msgstr "TC inn"
 
-msgid "Search…"
+#, fuzzy
+#| msgid "Search…"
+msgid "Search..."
 msgstr "Søk"
 
+#, fuzzy
+#| msgid "Last seen"
+msgid "Last "
+msgstr "Sist sett"
+
 msgid "AdLib"
-msgstr "Ad-lib"
+msgstr "Hurtigtaster"
+
+msgid "Global AdLib"
+msgstr "Faste hurtigtaster"
 
 #, fuzzy
 msgid "Slug"
@@ -97,6 +121,33 @@ msgstr "Sendestart"
 
 msgid "Air Status"
 msgstr "Sendningsstatus"
+
+msgid "Just now"
+msgstr "Nå"
+
+msgid "Less than a minute ago"
+msgstr "Mindre enn et minutt siden"
+
+msgid "Less than five minutes ago"
+msgstr "Mindre enn fem minutter siden"
+
+msgid "Around 10 minutes ago"
+msgstr "Rundt 10 minutter siden"
+
+msgid "More than 10 minutes ago"
+msgstr "Mer enn 10 minutter siden"
+
+msgid "More than 30 minutes ago"
+msgstr "Mer enn 30 minutter siden"
+
+msgid "More than 2 hours ago"
+msgstr "Mer enn 2 timer siden"
+
+msgid "More than 5 hours ago"
+msgstr "Mer enn 5 timer siden"
+
+msgid "More than a day ago"
+msgstr "Mer enn en dag siden"
 
 msgid "Started"
 msgstr "Startet"
@@ -124,7 +175,10 @@ msgid "Deactivate"
 msgstr "Deaktiver"
 
 msgid "Take"
-msgstr "Ta neste"
+msgstr "Take"
+
+msgid "Hold"
+msgstr "Hold"
 
 msgid "Activate"
 msgstr "Aktiver"
@@ -192,6 +246,11 @@ msgstr "MOS-enhet"
 msgid "Playout Device"
 msgstr "Avspillingssenhet"
 
+#, fuzzy
+#| msgid "MOS Device"
+msgid "Sub-Device"
+msgstr "MOS-enhet"
+
 msgid "Unknown Device"
 msgstr "Ukjent enhet"
 
@@ -253,19 +312,23 @@ msgstr "Vert"
 msgid "Port"
 msgstr "Port"
 
-msgid "Playout uses Timecode of Caspar"
-msgstr "Playout bruker CasparCGs tidskode"
-
-#, fuzzy
 msgid "Sources Path"
-msgstr "Kildebane"
+msgstr "Sources Path"
 
-#, fuzzy
 msgid "Ramp Function Path"
-msgstr "Path for \"ramp\" funksjon"
+msgstr "Ramp Function Path"
 
-msgid "Initialize as clear"
-msgstr "Start helt tom"
+msgid "Media Scanner Host"
+msgstr "Media Scanner Host"
+
+msgid "Media Scanner Port"
+msgstr "Media Scanner Port"
+
+msgid "CasparCG Launcher Host"
+msgstr "CasparCG Launcher Host"
+
+msgid "CasparCG Launcher Port"
+msgstr "CasparCG Launcher Port"
 
 msgid "Remove this device?"
 msgstr "Fjern denne enheten?"
@@ -297,6 +360,9 @@ msgstr "Sekundær vert (IP-adresse eller vertsnavn)"
 #, fuzzy
 msgid "MosId of gateway (our mosId)"
 msgstr "MOS-ID for gateway (vår MOS-ID)"
+
+msgid "Activate debug-logging"
+msgstr "Aktivere debug-logging"
 
 msgid "Mos-devices"
 msgstr "MOS-enheter"
@@ -429,6 +495,9 @@ msgstr "Inngår i CLEAN"
 msgid "Is a live remote input"
 msgstr "Er en direktesendt ekstern kilde"
 
+msgid "Is hidden"
+msgstr "Er gjemt"
+
 #, fuzzy
 msgid "AdLib activate shortcut list"
 msgstr "Hurtigtaster"
@@ -439,6 +508,13 @@ msgstr "Hurtigtast for å fjerne"
 #, fuzzy
 msgid "Assign hotkeys to global adlibs"
 msgstr "Globale hurtigtaster"
+
+#, fuzzy
+msgid "Items on this layer are sticky"
+msgstr "Elementer på dette laget er klissete"
+
+msgid "Activate sticky item shortcut"
+msgstr "Aktivere snarvei for klissete element"
 
 msgid "Are you sure you want to delete source layer "
 msgstr "Er du sikker på at du vil slette kildelaget "
@@ -466,6 +542,9 @@ msgstr "Enhetstype"
 
 msgid "Device Id"
 msgstr "MOS-enhets-ID"
+
+msgid "Lookahead mode"
+msgstr "Lookahead mode"
 
 msgid "Remove this mapping?"
 msgstr "Fjern denne koblingen?"
@@ -499,12 +578,6 @@ msgstr "Meldinger"
 msgid "User log"
 msgstr "Brukerlogg"
 
-msgid "Id"
-msgstr "ID"
-
-msgid "Message"
-msgstr "Melding"
-
 msgid "Queued messages"
 msgstr "Meldinger i kø"
 
@@ -517,6 +590,22 @@ msgstr "Meldingskø"
 msgid "Not connected"
 msgstr "Ikke tilkoblet"
 
+msgid "Last seen"
+msgstr "Sist sett"
+
+msgid "Version"
+msgstr "Version"
+
+#, fuzzy
+#| msgid "Kill this device process?"
+msgid "Restart this device process?"
+msgstr "Avslutt prosessen?"
+
+#, fuzzy
+#| msgid "Restore"
+msgid "Restart"
+msgstr "Gjenopprett"
+
 msgid "Kill this device process?"
 msgstr "Avslutt prosessen?"
 
@@ -528,9 +617,6 @@ msgstr "Systemstatus"
 
 msgid "Telemetry"
 msgstr "Telemetri"
-
-msgid "Last seen"
-msgstr "Sist sett"
 
 msgid "Timestamp"
 msgstr "Tidspunkt"
@@ -554,6 +640,18 @@ msgstr "Brukeraktivitet"
 msgctxt "item"
 msgid "new_config"
 msgstr "Ny konfigurasjon"
+
+#~ msgid "Playout uses Timecode of Caspar"
+#~ msgstr "Playout bruker CasparCGs tidskode"
+
+#~ msgid "Initialize as clear"
+#~ msgstr "Start helt tom"
+
+#~ msgid "Id"
+#~ msgstr "ID"
+
+#~ msgid "Message"
+#~ msgstr "Melding"
 
 #~ msgid "Finish"
 #~ msgstr "Avslutt"
