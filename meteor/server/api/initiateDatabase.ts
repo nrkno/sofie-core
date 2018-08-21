@@ -272,14 +272,14 @@ Meteor.methods({
 				{
 				 	_id: 'studio0_graphics_tag_left',
 				 	_rank: 112,
-				 	name: 'TagLeft',
+				 	name: 'Arkiv',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true
 				},
 				{
 				 	_id: 'studio0_graphics_tag_right',
 				 	_rank: 113,
-				 	name: 'TagRight',
+				 	name: 'Direkte',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true
 				},
