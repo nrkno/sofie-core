@@ -337,7 +337,6 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		}).fetch()
 	}
 
-
 	const uiSegments = props.runningOrder ? (segments as Array<SegmentUi>).map((segSource) => {
 		const seg = _.clone(segSource)
 		seg.segLines = segSource.getSegmentLines()
@@ -548,7 +547,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	}
 
 	render () {
-		if (!this.props.segments || !this.props.runningOrder) {
+		if (!this.props.uiSegments || !this.props.runningOrder) {
 			return <Spinner />
 		} else {
 			return (
