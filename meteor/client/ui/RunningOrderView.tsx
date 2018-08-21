@@ -774,7 +774,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 						</ErrorBoundary>
 						{this.renderSegmentsList()}
 						{!this.state.followLiveSegments &&
-							<div className='running-order-view__go-to-onAir' onClick={this.onGoToLiveSegment}>ON AIR</div>
+							<div className='running-order-view__go-to-onAir' onClick={this.onGoToLiveSegment}>{t('ON AIR')}</div>
 						}
 						<ErrorBoundary>
 							<InspectorDrawer
