@@ -15,25 +15,28 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 		this._cleanUp()
 	}
 	subscribe (name: string, ...args: any[]): Meteor.SubscriptionHandle {
+		// @ts-ignore
+		return Tracker.nonreactive(() => {
+			// let id = name + '_' + JSON.stringify(args.join())
+			let id = name + '_' + stringifyObjects(args)
 
-		// let id = name + '_' + JSON.stringify(args.join())
-		let id = name + '_' + stringifyObjects(args)
+			if (Tracker.active) {
+				// if in a reactive context, Meteor will keep track of duplicates of subscriptions
 
-		if (Tracker.active) {
-			// if in a reactive context, Meteor will keep track of duplicates of subscriptions
-			let sub = Meteor.subscribe(name, ...args)
-			this._subscriptions[id] = sub
-			return sub
-		} else {
-			if (this._subscriptions[id]) {
-				// already subscribed to that
-				return this._subscriptions[id]
-			} else {
 				let sub = Meteor.subscribe(name, ...args)
 				this._subscriptions[id] = sub
 				return sub
+			} else {
+				if (this._subscriptions[id]) {
+					// already subscribed to that
+					return this._subscriptions[id]
+				} else {
+					let sub = Meteor.subscribe(name, ...args)
+					this._subscriptions[id] = sub
+					return sub
+				}
 			}
-		}
+		})
 	}
 	autorun (cb: () => void, options?: any): Tracker.Computation {
 		let computation = Tracker.autorun(cb, options)
@@ -56,10 +59,10 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 		_.each(this._subscriptions, (sub, key) => {
 			// Wait a little bit with unsubscribing, maybe the next view is going to subscribe to the same data as well?
 			// In that case, by unsubscribing directly, we'll get a flicker in the view because of the unloading+loading
-			Meteor.setTimeout(() => {
-				// console.log('stopping subscription: ' + key)
-				sub.stop()
-			}, 100)
+			console.log('stopping subscription: ' + key)
+			sub.stop()
+			// Meteor.setTimeout(() => {
+				// }, 100)
 		})
 		_.each(this._computations, (computation ) => {
 			computation.stop()
