@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2018-08-21T15:38:25.646Z\n"
-"PO-Revision-Date: 2018-08-21T15:38:25.646Z\n"
+"POT-Creation-Date: 2018-08-21T19:17:29.644Z\n"
+"PO-Revision-Date: 2018-08-21T19:17:29.644Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -181,6 +181,9 @@ msgstr ""
 msgid "OK"
 msgstr ""
 
+msgid "ON AIR"
+msgstr ""
+
 msgid "This running order has been unpublished from Sofie."
 msgstr ""
 
@@ -193,7 +196,7 @@ msgstr ""
 msgid "Infinite"
 msgstr ""
 
-msgid "Script"
+msgid "Script is empty"
 msgstr ""
 
 msgid "File name"
