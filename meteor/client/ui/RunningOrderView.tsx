@@ -567,6 +567,10 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				this.subscribe('showStyles', {
 					_id: runningOrder.showStyleId
 				})
+				this.subscribe('peripheralDevices', {
+					studioInstallationId: runningOrder.studioInstallationId
+				})
+				
 			}
 		})
 		this.autorun(() => {
