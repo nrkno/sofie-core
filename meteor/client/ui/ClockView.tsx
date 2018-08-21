@@ -101,6 +101,18 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 		}
 	})(
 	class extends MeteorReactComponent<WithTiming<RunningOrderOverviewProps & RunningOrderOverviewTrackedProps>, RunningOrderOverviewState> {
+		componentWillMount () {
+			this.subscribe('runningOrders', {
+				_id: this.props.runningOrderId
+			})
+			this.subscribe('segments', {
+				runningOrderId: this.props.runningOrderId
+			})
+			this.subscribe('segmentLines', {
+				runningOrderId: this.props.runningOrderId
+			})
+		}
+
 		render () {
 			const { runningOrder, segments } = this.props
 
@@ -148,7 +160,7 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 						<div className='clocks-half clocks-top'>
 							<div className='clocks-segment-icon'>
 								{currentSegmentLine ?
-									<SegmentItemIconContainer segmentItemId={currentSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} />
+									<SegmentItemIconContainer segmentItemId={currentSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
 								: ''}
 							</div>
 							<div className='clocks-segment-title clocks-current-segment-title'>
@@ -161,7 +173,7 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 						<div className='clocks-half clocks-bottom clocks-top-bar'>
 							<div className='clocks-segment-icon'>
 								{nextSegmentLine ?
-									<SegmentItemIconContainer segmentItemId={nextSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} />
+									<SegmentItemIconContainer segmentItemId={nextSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
 								: ''}
 							</div>
 							<div className='clocks-bottom-top'>

@@ -1,6 +1,9 @@
 import * as React from 'react'
 import * as $ from 'jquery'
 import * as _ from 'underscore'
+import { RundownUtils } from '../../../lib/rundown'
+
+import { SegmentLineItemLifespan } from '../../../../lib/collections/SegmentLineItems'
 
 import { FloatingInspector } from '../../FloatingInspector'
 
@@ -69,13 +72,29 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 						{this.renderOverflowTimeLabel()}
 					</span>
 					<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
-						<div className='segment-timeline__mini-inspector' style={this.getFloatingInspectorStyle()}>
-							{properties.length > 0 ? properties.map((item) => (
-								<div key={item.key}>
-									<span className='mini-inspector__label'>{item.key}: </span>
-									<span className='mini-inspector__value'>{item.value}</span>
-								</div>
-						)) : <div><span className='mini-inspector__system'>{t('Item has no properties')}</span></div>}
+						<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
+							<table>
+								{properties.map((item) => (
+									<tr key={item.key}>
+										<td className='mini-inspector__label'>{item.key}</td>
+										<td className='mini-inspector__value'>{item.value}</td>
+									</tr>
+								))}
+								<tr>
+									<td></td>
+									<td>
+										<span className='mini-inspector__in-point'>{RundownUtils.formatTimeToShortTime(this.props.segmentLineItem.renderedInPoint)}</span>
+										{this.props.segmentLineItem.infiniteMode ?
+											(
+												(this.props.segmentLineItem.infiniteMode === SegmentLineItemLifespan.OutOnNextSegmentLine && <span className='mini-inspector__duration'>{t('Until next take')}</span>) ||
+												(this.props.segmentLineItem.infiniteMode === SegmentLineItemLifespan.OutOnNextSegment && <span className='mini-inspector__duration'>{t('Until next segment')}</span>) ||
+												(this.props.segmentLineItem.infiniteMode === SegmentLineItemLifespan.Infinite && <span className='mini-inspector__duration'>{t('Infinite')}</span>)
+											)
+											: <span className='mini-inspector__duration'>{RundownUtils.formatTimeToShortTime(this.props.segmentLineItem.renderedDuration)}</span>
+										}
+									</td>
+								</tr>
+							</table>
 						</div>
 					</FloatingInspector>
 				</React.Fragment>

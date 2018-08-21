@@ -337,17 +337,19 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		})
 	}
 
-	renderInsideItem () {
+	renderInsideItem (typeClass: string) {
 		switch (this.props.layer.type) {
 			case RundownAPI.SourceLayerType.SCRIPT:
 			case RundownAPI.SourceLayerType.MIC:
 				return <MicSourceRenderer key={this.props.segmentLineItem._id}
+						typeClass={typeClass}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
 			case RundownAPI.SourceLayerType.VT:
 				return <VTSourceRenderer key={this.props.segmentLineItem._id}
+						typeClass={typeClass}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
@@ -355,24 +357,28 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			case RundownAPI.SourceLayerType.GRAPHICS:
 			case RundownAPI.SourceLayerType.LOWER_THIRD:
 				return <L3rdSourceRenderer key={this.props.segmentLineItem._id}
+						typeClass={typeClass}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
 			case RundownAPI.SourceLayerType.SPLITS:
 				return <SplitsSourceRenderer key={this.props.segmentLineItem._id}
+						typeClass={typeClass}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
 			case RundownAPI.SourceLayerType.LIVE_SPEAK:
 				return <STKSourceRenderer key={this.props.segmentLineItem._id}
+						typeClass={typeClass}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
 			default:
 				return <DefaultLayerItemRenderer key={this.props.segmentLineItem._id}
+						typeClass={typeClass}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
@@ -393,21 +399,23 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 			this._placeHolderElement = false
 
-			return (
-				<div className={ClassNames('segment-timeline__layer-item', {
-					'audio': this.props.layer.type === RundownAPI.SourceLayerType.AUDIO,
-					'camera': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA,
-					'camera-movement': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA_MOVEMENT,
-					'graphics': this.props.layer.type === RundownAPI.SourceLayerType.GRAPHICS,
-					'lower-third': this.props.layer.type === RundownAPI.SourceLayerType.LOWER_THIRD,
-					'live-speak': this.props.layer.type === RundownAPI.SourceLayerType.LIVE_SPEAK,
-					'mic': this.props.layer.type === RundownAPI.SourceLayerType.MIC,
-					'metadata': this.props.layer.type === RundownAPI.SourceLayerType.METADATA,
-					'remote': this.props.layer.type === RundownAPI.SourceLayerType.REMOTE,
-					'script': this.props.layer.type === RundownAPI.SourceLayerType.SCRIPT,
-					'splits': this.props.layer.type === RundownAPI.SourceLayerType.SPLITS,
-					'vt': this.props.layer.type === RundownAPI.SourceLayerType.VT,
+			const typeClass = ClassNames({
+				'audio': this.props.layer.type === RundownAPI.SourceLayerType.AUDIO,
+				'camera': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA,
+				'camera-movement': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA_MOVEMENT,
+				'graphics': this.props.layer.type === RundownAPI.SourceLayerType.GRAPHICS,
+				'lower-third': this.props.layer.type === RundownAPI.SourceLayerType.LOWER_THIRD,
+				'live-speak': this.props.layer.type === RundownAPI.SourceLayerType.LIVE_SPEAK,
+				'mic': this.props.layer.type === RundownAPI.SourceLayerType.MIC,
+				'metadata': this.props.layer.type === RundownAPI.SourceLayerType.METADATA,
+				'remote': this.props.layer.type === RundownAPI.SourceLayerType.REMOTE,
+				'script': this.props.layer.type === RundownAPI.SourceLayerType.SCRIPT,
+				'splits': this.props.layer.type === RundownAPI.SourceLayerType.SPLITS,
+				'vt': this.props.layer.type === RundownAPI.SourceLayerType.VT,
+			})
 
+			return (
+				<div className={ClassNames('segment-timeline__layer-item', typeClass, {
 					'with-in-transition': !this.props.relative && this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.inTransition && this.props.segmentLineItem.transitions.inTransition.duration > 0,
 					'with-out-transition': !this.props.relative && this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.outTransition && this.props.segmentLineItem.transitions.outTransition.duration > 0,
 
@@ -428,7 +436,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 					onMouseOver={(e) => !this.props.outputGroupCollapsed && this.toggleMiniInspector(e, true)}
 					onMouseLeave={(e) => this.toggleMiniInspector(e, false)}
 					style={this.getItemStyle()}>
-					{this.renderInsideItem()}
+					{this.renderInsideItem(typeClass)}
 					{
 						DEBUG_MODE && (
 							<div className='segment-timeline__debug-info'>

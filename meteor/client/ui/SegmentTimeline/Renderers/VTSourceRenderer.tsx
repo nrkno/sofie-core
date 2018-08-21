@@ -127,9 +127,9 @@ export class VTSourceRenderer extends CustomLayerItemRenderer {
 							<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
 								<video src={this.getPreviewUrl()} ref={this.setVideoRef} crossOrigin='anonymous' playsInline={true} muted={true}/>
 							</div> :
-							<div className='segment-timeline__mini-inspector' style={this.getFloatingInspectorStyle()}>
+							<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
 								<div>
-									<span className='mini-inspector__label'>{t('File name')}: </span>
+									<span className='mini-inspector__label'>{t('File name')}</span>
 									<span className='mini-inspector__value'>{this.props.segmentLineItem.content.fileName}</span>
 								</div>
 							</div>

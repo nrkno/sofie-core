@@ -130,7 +130,7 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 				{this.renderOverflowTimeLabel()}
 			</span>
 			<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
-				<div className='segment-timeline__mini-inspector' style={this.getFloatingInspectorStyle()}>
+				<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
 					<div>
 						<span className='mini-inspector__system'>{t('Script')}</span>
 					</div>
