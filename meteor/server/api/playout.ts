@@ -104,16 +104,6 @@ export namespace ServerPlayoutAPI {
 					logger.info('devicesMakeReady OK')
 				}
 			}, 'devicesMakeReady', okToDestoryStuff)
-
-			if (ssrcBg) {
-				PeripheralDeviceAPI.executeFunction(device._id, (err) => {
-					if (err) {
-						logger.error(err)
-					} else {
-						logger.info('Added Super Source BG to Atem')
-					}
-				}, 'uploadFileToAtem', ssrcBg)
-			}
 		})
 
 		let anyOtherActiveRunningOrders = RunningOrders.find({
