@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2018-08-21T15:38:25.646Z\n"
-"PO-Revision-Date: 2018-08-21 17:39+0200\n"
+"POT-Creation-Date: 2018-08-21T19:17:29.644Z\n"
+"PO-Revision-Date: 2018-08-21 21:19+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -193,6 +193,9 @@ msgstr "Feil"
 msgid "OK"
 msgstr "OK"
 
+msgid "ON AIR"
+msgstr "Hjem"
+
 msgid "This running order has been unpublished from Sofie."
 msgstr "Denne kjøreplanen er ikke lenger tilgjengelig i Sofie."
 
@@ -205,8 +208,8 @@ msgstr "Til neste tittel"
 msgid "Infinite"
 msgstr "Manuell"
 
-msgid "Script"
-msgstr "Manus"
+msgid "Script is empty"
+msgstr "Manus er tomt"
 
 msgid "File name"
 msgstr "Filnavn"
@@ -224,7 +227,7 @@ msgid "Set as Next"
 msgstr "Sett som neste"
 
 msgid "On Air"
-msgstr "Hjem"
+msgstr "On Air"
 
 msgid "Next"
 msgstr "Neste"
@@ -643,6 +646,9 @@ msgstr "Brukeraktivitet"
 msgctxt "item"
 msgid "new_config"
 msgstr "Ny konfigurasjon"
+
+#~ msgid "Script"
+#~ msgstr "Manus"
 
 #~ msgid "Item has no properties"
 #~ msgstr "Elementet har ingen egenskaper"
