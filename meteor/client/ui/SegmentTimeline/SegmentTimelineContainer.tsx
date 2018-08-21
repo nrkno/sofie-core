@@ -101,7 +101,7 @@ interface IState {
 	displayTimecode: number
 }
 interface ITrackedProps {
-	segmentui: SegmentUi,
+	segmentui: SegmentUi | undefined,
 	segmentLines: Array<SegmentLineUi>,
 	isLiveSegment: boolean,
 	isNextSegment: boolean,
@@ -114,7 +114,22 @@ interface ITrackedProps {
 export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
-	const segmentui = Segments.findOne(props.segmentId) as SegmentUi
+	const segmentui = Segments.findOne(props.segmentId) as SegmentUi | undefined
+
+	// We need the segment to do anything
+	if (segmentui === undefined) {
+		return {
+			segmentui: undefined,
+			segmentLines: [],
+			isLiveSegment: false,
+			isNextSegment: false,
+			currentLiveSegmentLine: undefined,
+			hasRemoteItems: false,
+			hasAlreadyPlayed: false,
+			autoNextSegmentLine: false,
+			followingSegmentLine: undefined
+		}
+	}
 
 	// let segmentui = _.clone(props.segment) as SegmentUi
 
@@ -461,8 +476,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 		let that = this
 		this.state = {
-			collapsedOutputs: CollapsedStateStorage.getItemBooleanMap(`runningOrderView.segment.${props.segmentui._id}.outputs`, {}),
-			collapsed: CollapsedStateStorage.getItemBoolean(`runningOrderView.segment.${props.segmentui._id}`, false),
+			collapsedOutputs: CollapsedStateStorage.getItemBooleanMap(`runningOrderView.segment.${props.segmentId}.outputs`, {}),
+			collapsed: CollapsedStateStorage.getItemBoolean(`runningOrderView.segment.${props.segmentId}`, false),
 			scrollLeft: 0,
 			followLiveLine: false,
 			livePosition: 0,
@@ -473,10 +488,10 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	componentWillMount () {
-		this.subscribe('Segment', {
+		this.subscribe('segment', {
 			_id: this.props.segmentId
 		})
-		this.subscribe('SegmentLines', {
+		this.subscribe('segmentLines', {
 			segmentId: this.props.segmentId
 		})
 	}
@@ -526,11 +541,11 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
 		let collapsedOutputs = {...this.state.collapsedOutputs}
 		collapsedOutputs[outputLayer._id] = collapsedOutputs[outputLayer._id] === true ? false : true
-		CollapsedStateStorage.setItem(`runningOrderView.segment.${this.props.segmentui._id}.outputs`, collapsedOutputs)
+		CollapsedStateStorage.setItem(`runningOrderView.segment.${this.props.segmentId}.outputs`, collapsedOutputs)
 		this.setState({ collapsedOutputs })
 	}
 	onCollapseSegmentToggle = () => {
-		CollapsedStateStorage.setItem(`runningOrderView.segment.${this.props.segmentui._id}`, !this.state.collapsed)
+		CollapsedStateStorage.setItem(`runningOrderView.segment.${this.props.segmentId}`, !this.state.collapsed)
 		this.setState({ collapsed: !this.state.collapsed })
 	}
 	/** The user has scrolled scrollLeft seconds to the left in a child component */
@@ -584,7 +599,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	render () {
-		return (
+		return this.props.segmentui && (
 			<SegmentTimeline
 				segmentRef={this.props.segmentRef}
 				key={this.props.segmentui._id}

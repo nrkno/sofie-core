@@ -62,26 +62,30 @@ export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 			subsReady: false
 		}
 	}
-	componentDidMount () {
-		$(document.body).addClass(['dark', 'vertical-overflow-only'])
 
-		let studioId = objectPathGet(this.props, 'match.params.studioId')
-		if (studioId) {
+	componentWillMount () {
+		this.subscribe('runningOrders', _.extend({
+			active: true
+		}, this.props.studioId ? {
+			studioInstallationId: this.props.studioId
+		} : {}))
+		if (this.props.studioId) {
 			this.subscribe('studioInstallations', {
-				_id: studioId
-			})
-			this.subscribe('runningOrders', {
-				studioInstallationId: studioId
-			})
-			this.autorun(() => {
-				let subsReady = this.subscriptionsReady()
-				if (subsReady !== this.state.subsReady) {
-					this.setState({
-						subsReady: subsReady
-					})
-				}
+				_id: this.props.studioId
 			})
 		}
+		this.autorun(() => {
+			let subsReady = this.subscriptionsReady()
+			if (subsReady !== this.state.subsReady) {
+				this.setState({
+					subsReady: subsReady
+				})
+			}
+		})
+	}
+
+	componentDidMount () {
+		$(document.body).addClass(['dark', 'vertical-overflow-only'])
 	}
 
 	componentWillUnmount () {
