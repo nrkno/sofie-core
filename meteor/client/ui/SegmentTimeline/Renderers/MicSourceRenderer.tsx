@@ -132,7 +132,10 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 			<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 				<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
 					<div>
-						<span className='mini-inspector__system'>{t('Script')}</span>
+						{this.props.segmentLineItem.content && this.props.segmentLineItem.content.fullScript ?
+							<span className='mini-inspector__full-text'>{this.props.segmentLineItem.content.fullScript}</span>
+							: <span className='mini-inspector__system'>{t('Script is empty')}</span>
+						}
 					</div>
 				</div>
 			</FloatingInspector>

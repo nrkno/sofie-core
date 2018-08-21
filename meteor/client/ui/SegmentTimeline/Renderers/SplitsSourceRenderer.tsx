@@ -8,6 +8,7 @@ import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerIte
 
 import { RundownAPI } from '../../../../lib/api/rundown'
 import { literal } from '../../../../lib/lib'
+import { SplitsContent } from '../../../../lib/collections/SegmentLineItems'
 
 export enum SplitRole {
 	ART = 0,
@@ -17,6 +18,7 @@ export enum SplitRole {
 interface SplitSubItem {
 	_id: string
 	type: RundownAPI.SourceLayerType
+	label: string
 	// TODO: To be replaced with the structure used by the Core
 	role: SplitRole
 	content?: any
@@ -67,37 +69,37 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 	}
 
 	rebuildSubItems = () => {
-		return [
-			literal<SplitSubItem>({
-				_id: 'subItem0',
-				type: RundownAPI.SourceLayerType.VT,
-				role: SplitRole.ART
-			}),
-			literal<SplitSubItem>({
-				_id: 'subItem1',
-				type: RundownAPI.SourceLayerType.CAMERA,
-				role: SplitRole.BOX,
-				content: {
-					x: 0.25,
-					y: 0.5,
-					scale: 0.5
-				}
-			}),
-			literal<SplitSubItem>({
-				_id: 'subItem2',
-				type: RundownAPI.SourceLayerType.REMOTE,
-				role: SplitRole.BOX,
-				content: {
-					x: 0.75,
-					y: 0.5,
-					scale: 0.5
-				}
-			}),
+		const positions = [
+			{
+				x: 0.25,
+				y: 0.5,
+				scale: 0.5
+			},
+			{
+				x: 0.75,
+				y: 0.5,
+				scale: 0.5
+			}
 		]
+
+		if (this.props.segmentLineItem.content) {
+			const splitContent = this.props.segmentLineItem.content as SplitsContent
+			return splitContent.boxSourceConfiguration.map((item, index) => {
+				return literal<SplitSubItem>({
+					_id: item.studioLabel + '_' + index,
+					type: item.type,
+					label: item.studioLabel,
+					role: SplitRole.BOX,
+					content: positions[index]
+				})
+			})
+		}
+
+		return []
 	}
 
 	renderSubItems () {
-		return this.subItems.map((item) => {
+		return this.subItems.filter(i => i.role !== SplitRole.ART).reverse().map((item) => {
 			return (
 				<div key={'item-' + item._id}
 					className={ClassNames('segment-timeline__layer-item__preview__item', {
@@ -149,7 +151,9 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 								'width': ((item.content && item.content.scale) * 100).toString() + '%',
 								'height': ((item.content && item.content.scale) * 100).toString() + '%'
 							}}>
-
+								{item.role === SplitRole.BOX && (
+									<div className='video-preview__label'>{item.label}</div>
+								)}
 							</div>
 						)
 					})
