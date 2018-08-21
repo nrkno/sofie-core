@@ -49,7 +49,6 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 				// console.log('sub not ready: ' + key)
 				return true
 			}
-			return false
 		})
 	}
 	subscriptions (): Array<Meteor.SubscriptionHandle> {
@@ -59,10 +58,9 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 		_.each(this._subscriptions, (sub, key) => {
 			// Wait a little bit with unsubscribing, maybe the next view is going to subscribe to the same data as well?
 			// In that case, by unsubscribing directly, we'll get a flicker in the view because of the unloading+loading
-			console.log('stopping subscription: ' + key)
-			sub.stop()
-			// Meteor.setTimeout(() => {
-				// }, 100)
+			Meteor.setTimeout(() => {
+				sub.stop()
+			}, 100)
 		})
 		_.each(this._computations, (computation ) => {
 			computation.stop()

@@ -89,8 +89,12 @@ export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 	}
 
 	componentWillUnmount () {
-		this._cleanUp()
+		super.componentWillUnmount()
 		$(document.body).removeClass(['dark', 'vertical-overflow-only'])
+	}
+
+	componentDidUpdate () {
+		$(document.body).addClass(['dark', 'vertical-overflow-only'])
 	}
 
 	renderMessage (message: string) {
