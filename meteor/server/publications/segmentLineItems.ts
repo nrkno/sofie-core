@@ -15,3 +15,18 @@ Meteor.publish('segmentLineItems', function (selector, token) {
 	}
 	return this.ready()
 })
+
+Meteor.publish('segmentLineItemsSimple', function (selector, token) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+	const modifier = {
+		fields: {
+			token: 0,
+			timings: 0,
+			content: 0,
+		}
+	}
+	if (RunningOrderSecurity.allowReadAccess(selector, token, this)) {
+		return SegmentLineItems.find(selector, modifier)
+	}
+	return this.ready()
+})

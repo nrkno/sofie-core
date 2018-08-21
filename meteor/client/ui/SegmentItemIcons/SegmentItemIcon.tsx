@@ -16,6 +16,7 @@ import GraphicsInputIcon from './Renderers/GraphicsInput'
 
 interface IPropsHeader {
 	segmentItemId: string
+	runningOrderId: string
 	studioInstallationId: string
 }
 
@@ -49,6 +50,17 @@ export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 		segmentLineItem
 	}
 })(class extends MeteorReactComponent<IPropsHeader & { sourceLayer: ISourceLayer, segmentLineItem: SegmentLineItem }> {
+	_segmentLineItemSubscription: Meteor.SubscriptionHandle
+
+	componentWillMount () {
+		this.subscribe('segmentLineItemsSimple', {
+			runningOrderId: this.props.runningOrderId
+		})
+		this.subscribe('studioInstallations', {
+			_id: this.props.studioInstallationId
+		})
+	}
+
 	render () {
 		if (this.props.sourceLayer) {
 			switch (this.props.sourceLayer.type) {
@@ -62,7 +74,7 @@ export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 					)
 				case RundownAPI.SourceLayerType.REMOTE :
 					return (
-						<RemoteInputIcon inputIndex={ parseInt((this.props.segmentLineItem || {}).name.split(' ').slice(-1)[0]) as number } abbreviation={this.props.sourceLayer.abbreviation} />
+						<RemoteInputIcon inputIndex={ parseInt((this.props.segmentLineItem || {}).name.split(' ').slice(-1)[0], 10) as number } abbreviation={this.props.sourceLayer.abbreviation} />
 					)
 				case RundownAPI.SourceLayerType.SPLITS :
 					return (
@@ -74,7 +86,7 @@ export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 					)
 				case RundownAPI.SourceLayerType.CAMERA :
 					return (
-						<CamInputIcon inputIndex={ parseInt((this.props.segmentLineItem || {}).name.split(' ').slice(-1)[0]) as number } abbreviation={this.props.sourceLayer.abbreviation} />
+						<CamInputIcon inputIndex={ parseInt((this.props.segmentLineItem || {}).name.split(' ').slice(-1)[0], 10) as number } abbreviation={this.props.sourceLayer.abbreviation} />
 					)
 			}
 		}
