@@ -130,7 +130,6 @@ class MeteorDataManager {
 		this.oldData = newData
 	}
 }
-console.log('MeteorReactComponent.prototype', MeteorReactComponent.prototype)
 export const ReactMeteorData = {
 	componentWillMount () {
 		this.data = {}
@@ -169,8 +168,6 @@ export const ReactMeteorData = {
 	autorun: MeteorReactComponent.prototype.autorun,
 	subscribe: MeteorReactComponent.prototype.subscribe
 }
-
-console.log('ReactMeteorData', ReactMeteorData)
 
 class ReactMeteorComponentWrapper<P, S> extends React.Component<P, S> {
 	data: any

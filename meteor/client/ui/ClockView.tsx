@@ -206,12 +206,9 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 			studioInstallationId: studioId
 		})
 	)
-	console.log('inWithTracker', this)
-	let aa = this.subscribe('studioInstallations', {
+	Meteor.subscribe('studioInstallations', {
 		_id: studioId
 	})
-
-	console.log(aa.ready())
 
 	// let dep = new Tracker.Dependency()
 	// dep.depend()
@@ -234,7 +231,6 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 })(
 class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 	componentDidMount () {
-		console.log('componentDidMount', this)
 		$(document.body).addClass('dark xdark')
 		let studioId = objectPathGet(this.props, 'match.params.studioId')
 		if (studioId) {

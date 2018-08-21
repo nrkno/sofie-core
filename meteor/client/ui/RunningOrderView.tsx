@@ -496,7 +496,6 @@ export const RunningOrderView = translateWithTracker<IProps, IState, ITrackedPro
 	}
 
 	let runningOrder = RunningOrders.findOne({ _id: runningOrderId })
-	console.log('a', runningOrderId, runningOrder)
 	let studioInstallation = runningOrder && StudioInstallations.findOne({ _id: runningOrder.studioInstallationId })
 	// let roDurations = calculateDurations(runningOrder, segmentLines)
 	return {
@@ -749,7 +748,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	render () {
 		const { t } = this.props
-		console.log('render', this.props)
 		if (this.state.subsReady && this.props.runningOrder && this.props.studioInstallation) {
 			return (
 				<RunningOrderTimingProvider
