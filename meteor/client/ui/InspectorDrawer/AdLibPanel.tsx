@@ -8,7 +8,7 @@ import { PlayoutAPI } from '../../../lib/api/playout'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
-import { Segment } from '../../../lib/collections/Segments'
+import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine } from '../../../lib/collections/SegmentLines'
 import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
 import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
@@ -276,7 +276,6 @@ interface ISourceLayerLookup {
 }
 
 interface IProps {
-	segments: Array<Segment>
 	// liveSegment: Segment | undefined
 	runningOrder: RunningOrder
 	studioInstallation: StudioInstallation
@@ -296,25 +295,6 @@ interface ITrackedProps {
 }
 
 export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
-	Meteor.subscribe('segments', {
-		runningOrderId: props.runningOrder._id
-	})
-	Meteor.subscribe('segmentLines', {
-		runningOrderId: props.runningOrder._id
-	})
-	Meteor.subscribe('segmentLineAdLibItems', {
-		runningOrderId: props.runningOrder._id
-	})
-	Meteor.subscribe('runningOrderBaselineAdLibItems', {
-		runningOrderId: props.runningOrder._id
-	})
-	Meteor.subscribe('studioInstallations', {
-		_id: props.runningOrder.studioInstallationId
-	})
-	Meteor.subscribe('showStyles', {
-		_id: props.runningOrder.showStyleId
-	})
-
 	let liveSegment: SegmentUi | undefined = undefined
 
 	const sourceLayerLookup: ISourceLayerLookup = (
@@ -326,6 +306,8 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	let sourceHotKeyUse = {}
 
 	let roAdLibs: Array<SegmentLineAdLibItemUi> = []
+
+	let segments: Array<Segment> = []
 
 	if (props.runningOrder) {
 		let roAdLibItems = RunningOrderBaselineAdLibItems.find({runningOrderId: props.runningOrder._id}).fetch()
@@ -349,9 +331,13 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 			// always add them to the list
 			roAdLibs.push(uiAdLib)
 		})
+
+		segments = Segments.find({
+			runningOrderId: props.runningOrder._id
+		}).fetch()
 	}
 
-	const uiSegments = props.runningOrder && props.segments ? (props.segments as Array<SegmentUi>).map((segSource) => {
+	const uiSegments = props.runningOrder ? (segments as Array<SegmentUi>).map((segSource) => {
 		const seg = _.clone(segSource)
 		seg.segLines = segSource.getSegmentLines()
 		let segmentAdLibItems: Array<SegmentLineAdLibItem> = []
@@ -401,6 +387,27 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 			filter: undefined,
 			followLive: true
 		}
+	}
+
+	componentWillMount () {
+		this.subscribe('segments', {
+			runningOrderId: this.props.runningOrder._id
+		})
+		this.subscribe('segmentLines', {
+			runningOrderId: this.props.runningOrder._id
+		})
+		this.subscribe('segmentLineAdLibItems', {
+			runningOrderId: this.props.runningOrder._id
+		})
+		this.subscribe('runningOrderBaselineAdLibItems', {
+			runningOrderId: this.props.runningOrder._id
+		})
+		Meteor.subscribe('studioInstallations', {
+			_id: this.props.runningOrder.studioInstallationId
+		})
+		Meteor.subscribe('showStyles', {
+			_id: this.props.runningOrder.showStyleId
+		})
 	}
 
 	componentDidMount () {
@@ -540,7 +547,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	}
 
 	render () {
-		if (!this.props.segments || !this.props.runningOrder) {
+		if (!this.props.uiSegments || !this.props.runningOrder) {
 			return <Spinner />
 		} else {
 			return (

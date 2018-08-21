@@ -7,9 +7,9 @@ import { ClientAPI } from '../../../lib/api/client'
 import { PlayoutAPI } from '../../../lib/api/playout'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
-import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Segment } from '../../../lib/collections/Segments'
 import { SegmentLine } from '../../../lib/collections/SegmentLines'
+import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
 import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
 import { RunningOrderBaselineAdLibItems } from '../../../lib/collections/RunningOrderBaselineAdLibItems'
@@ -261,8 +261,6 @@ interface ISourceLayerLookup {
 }
 
 interface IProps {
-	// segments: Array<Segment>
-	// liveSegment: Segment | undefined
 	runningOrder: RunningOrder
 	studioInstallation: StudioInstallation
 }

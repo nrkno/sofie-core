@@ -277,8 +277,9 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 			this.props.onScroll(Math.max(0, this.props.scrollLeft + ((e.deltaY) / this.props.timeScale)), e)
 			e.preventDefault()
 		} else if (!e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) { // no modifier
-			this.props.onScroll(Math.max(0, this.props.scrollLeft + ((e.deltaX) / this.props.timeScale)), e)
-			e.preventDefault()
+			if (e.deltaX !== 0) {
+				this.props.onScroll(Math.max(0, this.props.scrollLeft + ((e.deltaX) / this.props.timeScale)), e)
+			}
 		}
 	}
 

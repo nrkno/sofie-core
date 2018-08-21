@@ -699,7 +699,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							<SegmentTimelineContainer
 												studioInstallation={this.props.studioInstallation}
 												followLiveSegments={this.state.followLiveSegments}
-												segment={segment}
+												segmentId={segment._id}
 												runningOrder={this.props.runningOrder}
 												liveLineHistorySize={100}
 												timeScale={this.state.timeScale}
