@@ -63,11 +63,11 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer {
 				{this.renderInfiniteIcon()}
 				{this.renderOverflowTimeLabel()}
 			</span>
-			<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== null}>
+			{ /* <FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== null}>
 				<div className='segment-timeline__mini-inspector' style={this.getFloatingInspectorStyle()}>
 					Item properties
 				</div>
-			</FloatingInspector>
+			</FloatingInspector> */ }
 		</React.Fragment>
 	}
 }

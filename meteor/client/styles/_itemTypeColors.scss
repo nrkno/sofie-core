@@ -45,6 +45,40 @@ $segment-layer-background-vt: #1769FF;
 	}
 }
 
+@mixin item-type-borders {
+	&.camera {
+		border-color: $segment-layer-background-camera;
+	}
+
+	&.graphics {
+		border-color: $segment-layer-background-graphics;
+	}
+
+	&.lower-third {
+		border-color: $segment-layer-background-lower-third;
+	}
+
+	&.live-speak {
+		border-color: $segment-layer-background-live-speak;
+	}
+
+	&.vt {
+		border-color: $segment-layer-background-vt;
+	}
+
+	&.remote {
+		border-color: $segment-layer-background-remote;
+	}
+
+	&.script {
+		border-color: $segment-layer-background-script;
+	}
+
+	&.mic {
+		border-color: $segment-layer-background-mic;
+	}
+}
+
 @mixin item-type-colors-svg {
 	&.camera {
 		fill: $segment-layer-background-camera;
@@ -55,7 +89,7 @@ $segment-layer-background-vt: #1769FF;
 	}
 
 	&.lower-third {
-		bacfillkfillground: $segment-layer-background-lower-third;
+		fill: $segment-layer-background-lower-third;
 	}
 
 	&.live-speak {

@@ -11,6 +11,7 @@ import { VTContent } from '../../../../lib/collections/SegmentLineItems';
 
 export interface ISourceLayerItemProps {
 	mediaPreviewUrl?: string
+	typeClass?: string
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
 	segment: SegmentUi
