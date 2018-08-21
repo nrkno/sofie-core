@@ -69,32 +69,32 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		// Note: we should NOT call the subscription in this place, but instead move it into something handled by the router,
 		// so the subscriptions are set/stopped when navigating between pages, or something.
 		//
-		let sub = Meteor.subscribe('peripheralDevices', {}, { // subscribe to ALL peripherals
-			onReady () {
-					// called when ready
-			},
-			onStop () {
-					// called when stopped
-			}
-		})
+		// let sub = Meteor.subscribe('peripheralDevices', {}, { // subscribe to ALL peripherals
+		// 	onReady () {
+		// 			// called when ready
+		// 	},
+		// 	onStop () {
+		// 			// called when stopped
+		// 	}
+		// })
 		// Subscription status available at sub.ready()
 		// Stop subscription by calling sub.stop()
 		// TEMPORARY subscriptions:
-		let sub2 = Meteor.subscribe('runningOrders', {})
-		let sub3 = Meteor.subscribe('segments', {})
-		let sub4 = Meteor.subscribe('segmentLines', {})
-		let sub5 = Meteor.subscribe('segmentLineItems', {})
-		let sub6 = Meteor.subscribe('studioInstallations', {})
-		let sub7 = Meteor.subscribe('showStyles', {})
-		let sub8 = Meteor.subscribe('timeline', {})
+		// let sub2 = Meteor.subscribe('runningOrders', {})
+		// let sub3 = Meteor.subscribe('segments', {})
+		// let sub4 = Meteor.subscribe('segmentLines', {})
+		// let sub5 = Meteor.subscribe('segmentLineItems', {})
+		// let sub6 = Meteor.subscribe('studioInstallations', {})
+		// let sub7 = Meteor.subscribe('showStyles', {})
+		// let sub8 = Meteor.subscribe('timeline', {})
 
-		Tracker.autorun(() => {
-			// temporary implementation:
-			let studio = StudioInstallations.findOne()
-			if (studio) {
-				let sub9 = Meteor.subscribe('mediaObjects', studio._id, {})
-			}
-		})
+		// Tracker.autorun(() => {
+		// 	// temporary implementation:
+		// 	let studio = StudioInstallations.findOne()
+		// 	if (studio) {
+		// 		let sub9 = Meteor.subscribe('mediaObjects', studio._id, {})
+		// 	}
+		// })
 
 		return (
 			<Router>
@@ -117,9 +117,9 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Route path='/runningOrders' component={RunningOrderList} />
 							<Route path='/ro/:runningOrderId' component={RunningOrderView} />
 							<Route path='/activeRo/:studioId' component={ActiveROView} />
-							<Route path='/activeRo' component={ActiveROView} />
+							{/* <Route path='/activeRo' component={ActiveROView} /> */}
 							<Route path='/countdowns/:studioId/presenter' component={ClockView} />
-							<Route path='/countdowns/presenter' component={ClockView} />
+							{/* <Route path='/countdowns/presenter' component={ClockView} /> */}
 							<Route path='/nymansPlayground' component={NymansPlayground} />
 							<Route path='/status' component={Status} />
 							<Route path='/settings' component={Settings} />

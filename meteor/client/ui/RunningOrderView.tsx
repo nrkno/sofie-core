@@ -477,6 +477,7 @@ interface IState {
 	bottomMargin: string
 	followLiveSegments: boolean
 	manualSetAsNext: boolean
+	subsReady: boolean
 }
 
 interface ITrackedProps {
@@ -484,7 +485,6 @@ interface ITrackedProps {
 	runningOrder?: RunningOrder
 	segments: Array<Segment>
 	studioInstallation?: StudioInstallation
-	isReady: boolean
 }
 export const RunningOrderView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state) => {
 
@@ -495,18 +495,13 @@ export const RunningOrderView = translateWithTracker<IProps, IState, ITrackedPro
 		runningOrderId = props.runningOrderId
 	}
 
-	let runningOrderSubscription = Meteor.subscribe('runningOrders', {
-		_id: runningOrderId
-	})
-
 	let runningOrder = RunningOrders.findOne({ _id: runningOrderId })
-
-	let studioInstallation = runningOrder ? StudioInstallations.findOne({ _id: runningOrder.studioInstallationId }) : undefined
+	console.log('a', runningOrderId, runningOrder)
+	let studioInstallation = runningOrder && StudioInstallations.findOne({ _id: runningOrder.studioInstallationId })
 	// let roDurations = calculateDurations(runningOrder, segmentLines)
 	return {
 		runningOrderId: runningOrderId,
 		runningOrder: runningOrder,
-		isReady: runningOrderSubscription.ready(),
 		segments: runningOrder ? Segments.find({ runningOrderId: runningOrder._id }, {
 			sort: {
 				'_rank': 1
@@ -533,7 +528,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			contextMenuContext: null,
 			bottomMargin: '',
 			followLiveSegments: true,
-			manualSetAsNext: false
+			manualSetAsNext: false,
+			subsReady: false
 		}
 
 		this.bindKeys = [
@@ -560,14 +556,27 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		this.subscribe('segmentLineItems', {
 			runningOrderId: runningOrderId
 		})
-		this.subscribe('studioInstallations', {
-			runningOrderId: runningOrderId
-		})
-		this.subscribe('showStyles', {
-			runningOrderId: runningOrderId
-		})
 		this.subscribe('segmentLineAdLibItems', {
 			runningOrderId: runningOrderId
+		})
+		this.autorun(() => {
+			let runningOrder = RunningOrders.findOne(runningOrderId)
+			if (runningOrder) {
+				this.subscribe('studioInstallations', {
+					_id: runningOrder.studioInstallationId
+				})
+				this.subscribe('showStyles', {
+					_id: runningOrder.showStyleId
+				})
+			}
+		})
+		this.autorun(() => {
+			let subsReady = this.subscriptionsReady()
+			if (subsReady !== this.state.subsReady) {
+				this.setState({
+					subsReady: subsReady
+				})
+			}
 		})
 	}
 
@@ -740,8 +749,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	render () {
 		const { t } = this.props
-
-		if (this.props.isReady && this.props.runningOrder && this.props.studioInstallation) {
+		console.log('render', this.props)
+		if (this.state.subsReady && this.props.runningOrder && this.props.studioInstallation) {
 			return (
 				<RunningOrderTimingProvider
 					runningOrder={this.props.runningOrder}
@@ -778,7 +787,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					</div>
 				</RunningOrderTimingProvider>
 			)
-		} else if (this.props.isReady) {
+		} else if (this.state.subsReady) {
 			return (
 				<div className='running-order-view running-order-view--unpublished'>
 					<div className='running-order-view__label'>

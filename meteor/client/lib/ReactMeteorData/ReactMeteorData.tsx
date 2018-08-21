@@ -7,6 +7,7 @@ import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import { MeteorReactComponent } from '../MeteorReactComponent'
+import * as _ from 'underscore'
 
 // A class to keep the state and utility methods needed to manage
 // the Meteor data for a component.
@@ -129,9 +130,8 @@ class MeteorDataManager {
 		this.oldData = newData
 	}
 }
-
+console.log('MeteorReactComponent.prototype', MeteorReactComponent.prototype)
 export const ReactMeteorData = {
-
 	componentWillMount () {
 		this.data = {}
 		this._meteorDataManager = new MeteorDataManager(this)
@@ -164,11 +164,17 @@ export const ReactMeteorData = {
 
 	componentWillUnmount () {
 		this._meteorDataManager.dispose()
-	}
+	},
+	// pick the MeteorReactComponent member functions, so they will be available in withTracker(() => { >here< })
+	autorun: MeteorReactComponent.prototype.autorun,
+	subscribe: MeteorReactComponent.prototype.subscribe
 }
+
+console.log('ReactMeteorData', ReactMeteorData)
 
 class ReactMeteorComponentWrapper<P, S> extends React.Component<P, S> {
 	data: any
+	_renderedContent: any
 }
 Object.assign(ReactMeteorComponentWrapper.prototype, ReactMeteorData)
 class ReactMeteorPureComponentWrapper<P, S> extends React.PureComponent<P, S> {}
@@ -196,10 +202,12 @@ export function withTracker<IProps, IState, TrackedProps> (
 		// return ''
 		return class extends ReactMeteorComponentWrapper<IProps, IState> {
 			getMeteorData () {
-				return expandedOptions.getMeteorData(this.props)
+				return expandedOptions.getMeteorData.call(this, this.props)
 			}
 			render () {
-				return <WrappedComponent {...this.props} {...this.data} />
+				let content = <WrappedComponent {...this.props} {...this.data} />
+				this._renderedContent = content
+				return content
 			}
 		}
 	}

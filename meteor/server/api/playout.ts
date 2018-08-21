@@ -5,7 +5,7 @@ import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode } from '.
 import { SegmentLineItem, SegmentLineItems, ITimelineTrigger, SegmentLineItemLifespan } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItems, RunningOrderBaselineItem } from '../../lib/collections/RunningOrderBaselineItems'
-import { getCurrentTime, saveIntoDb, literal, Time, iterateDeeply, iterateDeeplyEnum } from '../../lib/lib'
+import { getCurrentTime, saveIntoDb, literal, Time, iterateDeeply, iterateDeeplyEnum, stringifyObjects } from '../../lib/lib'
 import { Timeline, TimelineObj, TimelineObjHoldMode, TimelineObjGroupSegmentLine, TimelineContentTypeOther, TimelineObjSegmentLineAbstract, TimelineObjSegmentLineItemAbstract, TimelineObjGroup, TimelineContentTypeLawo, TimelineObjLawo } from '../../lib/collections/Timeline'
 import { TriggerType, TimelineEvent, TimelineResolvedObject } from 'superfly-timeline'
 import { Segments } from '../../lib/collections/Segments'
@@ -2174,24 +2174,6 @@ function afterUpdateTimeline (studioInstallation: StudioInstallation) {
 			Timeline.upsert(magicId, {$set: statObj})
 		})
 	}, 1)
-}
-
-function stringifyObjects (objs) {
-	if (_.isArray(objs)) {
-		return _.map(objs, (obj) => {
-			return stringifyObjects(obj)
-		}).join(',')
-	} else if (_.isFunction(objs)) {
-		return ''
-	} else if (_.isObject(objs)) {
-		let keys = _.sortBy(_.keys(objs), (k) => k)
-
-		return _.map(keys, (key) => {
-			return key + '=' + stringifyObjects(objs[key])
-		}).join(',')
-	} else {
-		return objs + ''
-	}
 }
 
 /**

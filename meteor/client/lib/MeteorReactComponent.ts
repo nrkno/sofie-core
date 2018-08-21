@@ -1,6 +1,7 @@
 import { Tracker } from 'meteor/tracker'
 import * as _ from 'underscore'
 import * as React from 'react'
+import { stringifyObjects } from '../../lib/lib'
 
 export class MeteorReactComponent<IProps, IState = {}> extends React.Component<IProps, IState> {
 
@@ -13,9 +14,10 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 	componentWillUnmount () {
 		this._cleanUp()
 	}
-	protected subscribe (name: string, ...args: any[]): Meteor.SubscriptionHandle {
+	subscribe (name: string, ...args: any[]): Meteor.SubscriptionHandle {
 
-		let id = name + '_' + JSON.stringify(args.join())
+		// let id = name + '_' + JSON.stringify(args.join())
+		let id = name + '_' + stringifyObjects(args)
 
 		if (this._subscriptions[id]) {
 			// already subscribed to that
@@ -26,17 +28,26 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 			return sub
 		}
 	}
+	autorun (cb: () => void, options?: any): Tracker.Computation {
+		let computation = Tracker.autorun(cb, options)
+		this._computations.push(computation)
+		return computation
+	}
+	subscriptionsReady (): boolean {
+		return !_.find(this._subscriptions, (sub) => {
+			return !sub.ready()
+		})
+	}
 	protected _cleanUp () {
 		_.each(this._subscriptions, (sub ) => {
-			sub.stop()
+			// Wait a little bit with unsubscribing, maybe the next view is going to subscribe to the same data as well?
+			// In that case, by unsubscribing directly, we'll get a flicker in the view because of the unloading+loading
+			Meteor.setTimeout(() => {
+				sub.stop()
+			}, 100)
 		})
 		_.each(this._computations, (computation ) => {
 			computation.stop()
 		})
-	}
-	protected autorun (cb: () => void, options?: any): Tracker.Computation {
-		let computation = Tracker.autorun(cb, options)
-		this._computations.push(computation)
-		return computation
 	}
 }

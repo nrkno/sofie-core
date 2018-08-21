@@ -16,6 +16,7 @@ import { StudioInstallations, StudioInstallation } from '../../lib/collections/S
 import { Spinner } from '../lib/Spinner'
 import { RunningOrderView } from './RunningOrderView'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { objectPathGet } from '../../lib/lib'
 
 interface IProps {
 	match?: {
@@ -28,41 +29,53 @@ interface ITrackedProps {
 	runningOrder?: RunningOrder
 	studioInstallation?: StudioInstallation
 	studioId?: string
-	isReady: boolean
+	// isReady: boolean
+}
+interface IState {
+	subsReady: boolean
 }
 export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
 
-	let studioId
+	let studioId = objectPathGet(props, 'match.params.studioId')
 	let studioInstallationSubscription
 	let studioInstallation
-	if (props.match && props.match.params && props.match.params.studioId) {
-		studioId = props.match.params.studioId
-		studioInstallationSubscription = this.subscribe('studioInstallations', props.match && props.match.params && props.match.params.studioId ? {
-			_id: props.match.params.studioId
-		} : {})
-		studioInstallation = StudioInstallations.findOne(props.match.params.studioId)
+	if (studioId) {
+		studioInstallation = StudioInstallations.findOne(studioId)
 	}
-
-	const runningOrderSubscription = this.subscribe('runningOrders', props.match && props.match.params && props.match.params.studioId ? {
-		studioInstallationId: props.match.params.studioId
-	} : {})
-
 	const runningOrder = RunningOrders.findOne(_.extend({
 		active: true
-	}, props.match && props.match.params && props.match.params.studioId ? {
-		studioInstallationId: props.match.params.studioId
-	} : {}))
+	}, {
+		studioInstallationId: studioId
+	}))
 
 	return {
 		runningOrder,
 		studioInstallation,
 		studioId,
-		isReady: runningOrderSubscription.ready() && (studioInstallationSubscription ? studioInstallationSubscription.ready() : true)
+		// isReady: runningOrderSubscription.ready() && (studioInstallationSubscription ? studioInstallationSubscription.ready() : true)
 	}
-})(class extends MeteorReactComponent<Translated<IProps & ITrackedProps>> {
+})(class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	componentDidMount () {
 		$(document.body).addClass(['dark', 'vertical-overflow-only'])
+
+		let studioId = objectPathGet(this.props, 'match.params.studioId')
+		if (studioId) {
+			this.subscribe('studioInstallations', {
+				_id: studioId
+			})
+			this.subscribe('runningOrders', {
+				studioInstallationId: studioId
+			})
+			this.autorun(() => {
+				let subsReady = this.subscriptionsReady()
+				if (subsReady !== this.state.subsReady) {
+					this.setState({
+						subsReady: subsReady
+					})
+				}
+			})
+		}
 	}
 
 	componentWillUnmount () {
@@ -92,22 +105,22 @@ export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 
 	render () {
 		const { t } = this.props
-		if (this.props.isReady && this.props.runningOrder) {
-			return (
-				<RunningOrderView runningOrderId={this.props.runningOrder._id} />
-			)
-		} else if (this.props.isReady && this.props.studioInstallation) {
-			return this.renderMessage(t('There is no running order active in this studio.'))
-		} else if (this.props.isReady && !this.props.studioInstallation && this.props.studioId) {
-			return this.renderMessage(t('This studio doesn\'t exist.'))
-		} else if (this.props.isReady && !this.props.studioInstallation && !this.props.studioId) {
-			return this.renderMessage(t('There are no active running orders.'))
-		} else {
+		if (!this.state.subsReady) {
 			return (
 				<div className='running-order-view running-order-view--loading' >
 					<Spinner />
 				</div >
 			)
+		} else {
+			if (this.props.runningOrder) {
+				return <RunningOrderView runningOrderId={this.props.runningOrder._id} />
+			} else if (this.props.studioInstallation) {
+				return this.renderMessage(t('There is no running order active in this studio.'))
+			} else if (this.props.studioId) {
+				return this.renderMessage(t('This studio doesn\'t exist.'))
+			} else {
+				return this.renderMessage(t('There are no active running orders.'))
+			}
 		}
 	}
 })
