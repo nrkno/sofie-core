@@ -153,12 +153,12 @@ class extends MeteorReactComponent<IPropsHeader> {
 				switch (this.props.segmentLineItem.sourceLayer.type) {
 					case RundownAPI.SourceLayerType.VT:
 						this.subscribe('mediaObjects', this.props.runningOrder.studioInstallationId, {
-							objId: (this.props.segmentLineItem.content as VTContent).fileName
+							objId: (this.props.segmentLineItem.content as VTContent).fileName.toUpperCase()
 						})
 						break
 					case RundownAPI.SourceLayerType.LIVE_SPEAK:
 						this.subscribe('mediaObjects', this.props.runningOrder.studioInstallationId, {
-							objId: (this.props.segmentLineItem.content as LiveSpeakContent).fileName
+							objId: (this.props.segmentLineItem.content as LiveSpeakContent).fileName.toUpperCase()
 						})
 						break
 				}
