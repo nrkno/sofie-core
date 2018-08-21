@@ -1359,6 +1359,17 @@ body.vertical-overflow-only {
 			& > * {
 				@include item-type-colors();
 			}
+
+			.video-preview__label {
+				position: absolute;
+				top: auto;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				font-weight: 400;
+				text-shadow: 0 0 2px rgba(0, 0, 0, 0.75);
+				text-align: center;
+			}
 		}
 	}
 
@@ -1372,6 +1383,15 @@ body.vertical-overflow-only {
 	}
 	.mini-inspector__system {
 		font-weight: 300;
+		font-style: italic;
+	}
+	.mini-inspector__full-text {
+		font-weight: 300;
+		max-width: 250px;
+		display: inline-block;
+		white-space: normal;
+		width: auto;
+		min-width: 200px;
 		font-style: italic;
 	}
 	.mini-inspector__in-point {
