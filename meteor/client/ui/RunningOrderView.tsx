@@ -394,7 +394,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 				'rehearsal': this.props.runningOrder.rehearsal
 			})}>
-				<RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} />
+				{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} />}
 				<div className='row first-row super-dark'>
 					<div className='flex-col left horizontal-align-left'>
 						{/* !!! TODO: This is just a temporary solution !!! */}
@@ -567,10 +567,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				this.subscribe('showStyles', {
 					_id: runningOrder.showStyleId
 				})
-				this.subscribe('peripheralDevices', {
-					studioInstallationId: runningOrder.studioInstallationId
-				})
-				
 			}
 		})
 		this.autorun(() => {

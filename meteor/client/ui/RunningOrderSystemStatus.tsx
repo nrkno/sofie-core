@@ -52,7 +52,7 @@ export const MOSLastUpdateStatus = translate()(class extends React.Component<IMO
 })
 
 interface IProps {
-	studioInstallation?: StudioInstallation
+	studioInstallation: StudioInstallation
 }
 
 interface IState {
@@ -96,10 +96,6 @@ function diffOnLineOffLineList (prevList: OnLineOffLineList, list: OnLineOffLine
 export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
-	if (!props.studioInstallation) {
-		return {}
-	}
-
 	const attachedDevices = PeripheralDevices.find({
 		studioInstallationId: props.studioInstallation._id
 	}).fetch()
@@ -169,6 +165,12 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 				offLine: props.playoutDevices.offLine
 			}
 		}
+	}
+
+	componentWillMount () {
+		this.subscribe('peripheralDevices', {
+			studioInstallationId: this.props.studioInstallation._id
+		})
 	}
 
 	componentDidUpdate (prevProps: IProps & ITrackedProps) {
