@@ -115,25 +115,27 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 	}
 
 	render () {
+		const {t} = this.props
 		let labelItems = (this.props.segmentLineItem.name || '').split('||')
 		let begin = labelItems[0] || ''
 		let end = labelItems[1] || ''
 
-		return [
-			<span className='segment-timeline__layer-item__label first-words overflow-label' ref={this.setLeftLabelRef} key={this.props.segmentLineItem._id + '-start'} style={this.getItemLabelOffsetLeft()}>
+		return <React.Fragment>
+			<span className='segment-timeline__layer-item__label first-words overflow-label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				{begin}
-			</span>,
-			<span className='segment-timeline__layer-item__label right-side' ref={this.setRightLabelRef} key={this.props.segmentLineItem._id + '-finish'} style={this.getItemLabelOffsetRight()}>
+			</span>
+			<span className='segment-timeline__layer-item__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
 				<span className='segment-timeline__layer-item__label last-words'>{end}</span>
 				{this.renderInfiniteIcon()}
 				{this.renderOverflowTimeLabel()}
-			</span>,
-			<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'}
-				shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
+			</span>
+			<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 				<div className='segment-timeline__mini-inspector' style={this.getFloatingInspectorStyle()}>
-					Manus
+					<div>
+						<span className='mini-inspector__system'>{t('Script')}</span>
+					</div>
 				</div>
 			</FloatingInspector>
-		]
+		</React.Fragment>
 	}
 }

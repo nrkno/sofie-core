@@ -1,9 +1,12 @@
 import * as React from 'react'
 import * as $ from 'jquery'
+import * as _ from 'underscore'
 
 import { FloatingInspector } from '../../FloatingInspector'
 
 import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
+
+type KeyValue = { key: string, value: string }
 
 export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 	leftLabel: HTMLElement
@@ -39,14 +42,26 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 	}
 
 	render () {
-		let labelItems = (this.props.segmentLineItem.name || '').split('||')
-		let begin = labelItems[0] || ''
-		let end = labelItems[1] || ''
+		const { t } = this.props
+
+		let properties: Array<KeyValue> = []
+		if (this.props.segmentLineItem.content && this.props.segmentLineItem.content.payload && this.props.segmentLineItem.content.payload.content) {
+			// @ts-ignore
+			properties = _.map(this.props.segmentLineItem.content.payload.content, (value: string, key: string): {
+				key: string,
+				value: string
+			} => {
+				return {
+					key: key,
+					value: value
+				}
+			}) as Array<KeyValue>
+		}
 
 		return <React.Fragment>
 					<span className='segment-timeline__layer-item__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 						<span className='segment-timeline__layer-item__label'>
-							{begin}
+							{this.props.segmentLineItem.name}
 						</span>
 					</span>
 					<span className='segment-timeline__layer-item__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
@@ -55,8 +70,12 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 					</span>
 					<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 						<div className='segment-timeline__mini-inspector' style={this.getFloatingInspectorStyle()}>
-							<div>Name: {begin}</div>
-							<div>Title: {end}</div>
+							{properties.length > 0 ? properties.map((item) => (
+								<div>
+									<span className='mini-inspector__label'>{item.key}: </span>
+									<span className='mini-inspector__value'>{item.value}</span>
+								</div>
+						)) : <div><span className='mini-inspector__system'>{t('Item has no properties')}</span></div>}
 						</div>
 					</FloatingInspector>
 				</React.Fragment>

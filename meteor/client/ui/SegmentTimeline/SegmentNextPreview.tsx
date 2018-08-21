@@ -2,12 +2,14 @@ import * as React from 'react'
 
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
+import { translate } from 'react-i18next'
 
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 
 import { SegmentLineUi, IOutputLayerUi, ISourceLayerUi, SegmentLineItemUi } from './SegmentTimelineContainer'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
+import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
 interface IProps {
 	runningOrder: RunningOrder
@@ -24,7 +26,7 @@ interface IProps {
 	isCollapsed?: boolean
 }
 
-export const SegmentNextPreview = class extends React.Component<IProps> {
+export const SegmentNextPreview = translate()(class extends React.Component<Translated<IProps>> {
 	renderSourceLayers (outputLayer: IOutputLayerUi, layers: ISourceLayerUi[] | undefined) {
 		if (layers) {
 			return layers.filter(i => !i.isHidden).sort((a, b) => a._rank - b._rank).map((layer, id) => {
@@ -114,4 +116,4 @@ export const SegmentNextPreview = class extends React.Component<IProps> {
 			</div>
 		</React.Fragment>
 	}
-}
+})

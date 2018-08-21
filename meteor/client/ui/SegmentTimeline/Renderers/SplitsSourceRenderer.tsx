@@ -163,23 +163,23 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 		let begin = labelItems[0] || ''
 		let end = labelItems[1] || ''
 
-		return [
-			<div className='segment-timeline__layer-item__preview' key={this.props.segmentLineItem._id + '-inside-layers'}>
+		return <React.Fragment>
+			<div className='segment-timeline__layer-item__preview'>
 				{this.renderSubItems()}
-			</div>,
-			<span className='segment-timeline__layer-item__label first-words overflow-label' ref={this.setLeftLabelRef} key={this.props.segmentLineItem._id + '-start'} style={this.getItemLabelOffsetLeft()}>
+			</div>
+			<span className='segment-timeline__layer-item__label first-words overflow-label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				{begin}
-			</span>,
-			<span className='segment-timeline__layer-item__label right-side' ref={this.setRightLabelRef} key={this.props.segmentLineItem._id + '-finish'} style={this.getItemLabelOffsetRight()}>
+			</span>
+			<span className='segment-timeline__layer-item__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
 				<span className='segment-timeline__layer-item__label last-words'>{end}</span>
 				{this.renderInfiniteIcon()}
 				{this.renderOverflowTimeLabel()}
-			</span>,
-			<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
+			</span>
+			<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 				<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
 					{this.renderSplitPreview()}
 				</div>
 			</FloatingInspector>
-		]
+		</React.Fragment>
 	}
 }
