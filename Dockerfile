@@ -1,5 +1,5 @@
 # BUILD IMAGE
-FROM node:8.11.1 AS build
+FROM node:8.11.4 AS build
 RUN curl https://install.meteor.com/ | sh
 COPY meteor /opt/core/meteor
 WORKDIR /opt/core/meteor
@@ -14,7 +14,7 @@ WORKDIR /opt/bundle/programs/server/
 RUN npm install
 
 # DEPLOY IMAGE
-FROM node:8.11.1-slim
+FROM node:8.11.4-slim
 COPY --from=build /opt/bundle /opt/core
 WORKDIR /opt/core/
 CMD ["node", "main.js"]
