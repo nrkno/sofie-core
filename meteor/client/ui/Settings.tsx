@@ -29,6 +29,7 @@ import RestoreBackup from './Settings/RestoreBackup'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 class WelcomeToSettings extends React.Component {
 	render () {
@@ -51,10 +52,10 @@ interface ISettingsMenuTrackedProps {
 	lineTemplates: Array<RuntimeFunction>
 }
 const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps >(() => {
-	let subStudioInstallations = Meteor.subscribe('studioInstallations', {})
-	let subShowStyles = Meteor.subscribe('showStyles', {})
-	let subPeripheralDevices = Meteor.subscribe('peripheralDevices', {})
-	let subRuntimeFunctions = Meteor.subscribe('runtimeFunctions', {})
+	Meteor.subscribe('studioInstallations', {})
+	Meteor.subscribe('showStyles', {})
+	Meteor.subscribe('peripheralDevices', {})
+	Meteor.subscribe('runtimeFunctions', {})
 
 	return {
 		studioInstallations: StudioInstallations.find({}).fetch(),
@@ -64,7 +65,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}}).fetch(),
 		lineTemplates: RuntimeFunctions.find({}).fetch()
 	}
-})(class SettingsMenu extends React.Component<Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>, ISettingsMenuState> {
+})(class SettingsMenu extends MeteorReactComponent<Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>, ISettingsMenuState> {
 	constructor (props: Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>) {
 		super(props)
 		this.state = {
@@ -251,20 +252,13 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 interface ISettingsProps {
 	match?: any
 }
-class Settings extends React.Component<Translated<ISettingsProps>> {
-	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
+class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 	componentWillMount () {
 		// Subscribe to data:
-
-		this._subscriptions.push(Meteor.subscribe('peripheralDevices', {}))
-		this._subscriptions.push(Meteor.subscribe('studioInstallations', {}))
-		this._subscriptions.push(Meteor.subscribe('showStyles', {}))
-		this._subscriptions.push(Meteor.subscribe('runtimeFunctions', {}))
-	}
-	componentWillUnmount () {
-		_.each(this._subscriptions, (sub ) => {
-			sub.stop()
-		})
+		this.subscribe('peripheralDevices', {})
+		this.subscribe('studioInstallations', {})
+		this.subscribe('showStyles', {})
+		this.subscribe('runtimeFunctions', {})
 	}
 	render () {
 		const { t } = this.props

@@ -19,6 +19,7 @@ import { Time } from '../../lib/lib'
 import { getCurrentTimeReactive } from '../lib/currentTimeReactive'
 import { EditAttribute } from '../lib/EditAttribute'
 import { makeTableOfObject } from '../lib/utilComponents'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 interface IEditTasks {
 	tasks: Array<Task>
@@ -31,7 +32,7 @@ export const EditTasks = withTracker(() => {
 		tasks: Tasks.find({}, { sort: { createdAt: -1 } }).fetch()
 	}
 })(
-class extends React.Component<IEditTasks> {
+class extends MeteorReactComponent<IEditTasks> {
 	renderTasks () {
 
 		return this.props.tasks.map((task) => (
@@ -87,23 +88,20 @@ class extends React.Component<IEditTasks> {
 	}
 })
 // ----------------------------------------------------------------------------
-export class NymansPlayground extends React.Component {
-	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
+interface INPProps {
+
+}
+export class NymansPlayground extends MeteorReactComponent<INPProps> {
 	componentWillMount () {
 		// Subscribe to data:
 
-		this._subscriptions.push(Meteor.subscribe('runningOrders', {}))
-		this._subscriptions.push(Meteor.subscribe('segments', {}))
-		this._subscriptions.push(Meteor.subscribe('segmentLines', {}))
-		this._subscriptions.push(Meteor.subscribe('segmentLineItems', {}))
-		this._subscriptions.push(Meteor.subscribe('studioInstallations', {}))
-		this._subscriptions.push(Meteor.subscribe('showStyles', {}))
-		this._subscriptions.push(Meteor.subscribe('segmentLineAdLibItems', {}))
-	}
-	componentWillUnmount () {
-		_.each(this._subscriptions, (sub ) => {
-			sub.stop()
-		})
+		this.subscribe('runningOrders', {})
+		this.subscribe('segments', {})
+		this.subscribe('segmentLines', {})
+		this.subscribe('segmentLineItems', {})
+		this.subscribe('studioInstallations', {})
+		this.subscribe('showStyles', {})
+		this.subscribe('segmentLineAdLibItems', {})
 	}
 	render () {
 		return (
@@ -138,7 +136,7 @@ export const ComponentMediaObjects = withTracker(() => {
 
 	}
 })(
-class extends React.Component<IRunningOrders> {
+class extends MeteorReactComponent<IRunningOrders> {
 	renderMOs () {
 
 		return this.props.mediaObjects.map((mo) => (
@@ -186,7 +184,7 @@ export const ComponentRunningOrders = withTracker(() => {
 
 	}
 })(
-class extends React.Component<IRunningOrders> {
+class extends MeteorReactComponent<IRunningOrders> {
 	renderROs () {
 
 		return this.props.runningOrders.map((ro) => (
@@ -246,7 +244,7 @@ export const ComponentSegments = withTracker<ISegmentsProps, ISegmentsState, ISe
 		)
 	}
 })(
-class extends React.Component<ISegmentsProps & ISegmentsTrackedProps, ISegmentsState> {
+class extends MeteorReactComponent<ISegmentsProps & ISegmentsTrackedProps, ISegmentsState> {
 	renderROs () {
 
 		return this.props.segments.map((segment) => (
@@ -294,7 +292,7 @@ export const ComponentSegmentLines = withTracker<ISegmentLineProps, ISegmentLine
 		)
 	}
 })(
-class extends React.Component<ISegmentLineProps & ISegmentLineTrackedState, ISegmentLineState> {
+class extends MeteorReactComponent<ISegmentLineProps & ISegmentLineTrackedState, ISegmentLineState> {
 	renderROs () {
 
 		return this.props.segmentLines.map((segmentLine) => (
@@ -326,7 +324,7 @@ export const ComponentTimeline = withTracker(() => {
 		timeline: Timeline.find({}, { sort: { _id: 1 } }).fetch()
 	}
 })(
-class extends React.Component<ITimeline> {
+class extends MeteorReactComponent<ITimeline> {
 	renderTimeline () {
 		return this.props.timeline.map((timelineObj) => (
 			<div key={timelineObj._id}>
@@ -383,7 +381,7 @@ export const ComponentTimelineSimulate = withTracker(() => {
 		state: state
 	}
 })(
-class extends React.Component<ITimelineSimulate> {
+class extends MeteorReactComponent<ITimelineSimulate> {
 	renderTimelineState () {
 		return _.map(this.props.state.GLayers, (o, GLayerId) => (
 			<tr key={GLayerId}>

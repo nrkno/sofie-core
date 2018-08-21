@@ -5,6 +5,7 @@ import { PeripheralDeviceAPI } from './api/peripheralDevice'
 import { logger } from './logging'
 import * as Timecode from 'smpte-timecode'
 import { Settings } from './Settings'
+import * as objectPath from 'object-path'
 
 /**
  * Convenience method to convert a Meteor.call() into a Promise
@@ -325,4 +326,30 @@ export function removeNullyProperties<T> (obj: T): T {
 		}
 	})
 	return obj
+}
+export function objectPathGet (obj: any, path: string, defaultValue?: any) {
+	let v = objectPath.get(obj, path)
+	if (v === undefined && defaultValue !== undefined) return defaultValue
+	return v
+}
+/**
+ * Returns a string that can be used to compare objects for equality
+ * @param objs
+ */
+export function stringifyObjects (objs: any): string {
+	if (_.isArray(objs)) {
+		return _.map(objs, (obj) => {
+			return stringifyObjects(obj)
+		}).join(',')
+	} else if (_.isFunction(objs)) {
+		return ''
+	} else if (_.isObject(objs)) {
+		let keys = _.sortBy(_.keys(objs), (k) => k)
+
+		return _.map(keys, (key) => {
+			return key + '=' + stringifyObjects(objs[key])
+		}).join(',')
+	} else {
+		return objs + ''
+	}
 }

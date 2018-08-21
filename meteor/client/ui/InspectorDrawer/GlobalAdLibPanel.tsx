@@ -7,9 +7,9 @@ import { ClientAPI } from '../../../lib/api/client'
 import { PlayoutAPI } from '../../../lib/api/playout'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
-import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Segment } from '../../../lib/collections/Segments'
 import { SegmentLine } from '../../../lib/collections/SegmentLines'
+import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
 import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
 import { RunningOrderBaselineAdLibItems } from '../../../lib/collections/RunningOrderBaselineAdLibItems'
@@ -23,8 +23,9 @@ import * as faTimes from '@fortawesome/fontawesome-free-solid/faTimes'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { Spinner } from '../../lib/Spinner'
-import { literal } from '../../../lib/lib';
-import { RundownAPI } from '../../../lib/api/rundown';
+import { literal } from '../../../lib/lib'
+import { RundownAPI } from '../../../lib/api/rundown'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (aSLine: SegmentLineAdLibItemUi) => void
@@ -260,8 +261,6 @@ interface ISourceLayerLookup {
 }
 
 interface IProps {
-	// segments: Array<Segment>
-	// liveSegment: Segment | undefined
 	runningOrder: RunningOrder
 	studioInstallation: StudioInstallation
 }
@@ -326,7 +325,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		sourceLayerLookup,
 		roAdLibs
 	}
-})(class AdLibPanel extends React.Component<Translated<IProps & ITrackedProps>, IState> {
+})(class AdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
@@ -352,6 +351,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	}
 
 	componentWillUnmount () {
+		this._cleanUp()
 		mousetrap.unbind(this.usedHotkeys, 'keyup')
 		mousetrap.unbind(this.usedHotkeys, 'keydown')
 

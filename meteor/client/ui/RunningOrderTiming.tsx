@@ -7,6 +7,7 @@ import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 import { getCurrentTime } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 export namespace RunningOrderTiming {
 	export enum Events {
@@ -62,7 +63,7 @@ interface IRunningOrderTimingProviderTrackedProps {
 }
 
 export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProviderProps, IRunningOrderTimingProviderState, IRunningOrderTimingProviderTrackedProps>(
-(props, state) => {
+(props) => {
 	let segmentLines: Array<SegmentLine> = []
 	if (props.runningOrder) {
 		segmentLines = SegmentLines.find({
@@ -76,7 +77,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 	return {
 		segmentLines
 	}
-})(class extends React.Component<IRunningOrderTimingProviderProps & IRunningOrderTimingProviderTrackedProps, IRunningOrderTimingProviderState> implements React.ChildContextProvider<IRunningOrderTimingProviderChildContext> {
+})(class extends MeteorReactComponent<IRunningOrderTimingProviderProps & IRunningOrderTimingProviderTrackedProps, IRunningOrderTimingProviderState> implements React.ChildContextProvider<IRunningOrderTimingProviderChildContext> {
 	static childContextTypes = {
 		durations: PropTypes.object.isRequired
 	}
@@ -129,6 +130,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 	}
 
 	componentWillUnmount () {
+		this._cleanUp()
 		Meteor.clearInterval(this.refreshTimer)
 	}
 

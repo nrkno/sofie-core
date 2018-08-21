@@ -15,9 +15,10 @@ import { SegmentLineUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../lib/rundown'
 import * as TimecodeString from 'smpte-timecode'
 import { Settings } from '../../lib/Settings'
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime, objectPathGet } from '../../lib/lib'
 import { SegmentItemIconContainer } from './SegmentItemIcons/SegmentItemIcon'
 import CamInputICon from './SegmentItemIcons/Renderers/CamInput'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 interface SegmentUi extends Segment {
 	items?: Array<SegmentLineUi>
@@ -82,7 +83,7 @@ const Timecode = class extends React.Component<{ time: number }> {
 }
 
 const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOverviewState>()(
-	withTracker<WithTiming<RunningOrderOverviewProps>, RunningOrderOverviewState, RunningOrderOverviewTrackedProps>((props: RunningOrderOverviewProps, state) => {
+	withTracker<WithTiming<RunningOrderOverviewProps>, RunningOrderOverviewState, RunningOrderOverviewTrackedProps>((props: RunningOrderOverviewProps) => {
 
 		let ro: RunningOrder | undefined
 		if (props.runningOrderId) ro = RunningOrders.findOne(props.runningOrderId)
@@ -99,7 +100,7 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 			runningOrder: ro
 		}
 	})(
-	class extends React.Component<WithTiming<RunningOrderOverviewProps & RunningOrderOverviewTrackedProps>, RunningOrderOverviewState> {
+	class extends MeteorReactComponent<WithTiming<RunningOrderOverviewProps & RunningOrderOverviewTrackedProps>, RunningOrderOverviewState> {
 		render () {
 			const { runningOrder, segments } = this.props
 
@@ -197,16 +198,24 @@ interface IPropsHeader extends InjectedTranslateProps {
 interface IStateHeader {
 }
 
-export const ClockView = translate()(withTracker((props: IPropsHeader, state) => {
-	let subRunningOrders = Meteor.subscribe('runningOrders', {})
-	let subSegments = Meteor.subscribe('segments', {})
-	let subSegmentLines = Meteor.subscribe('segmentLines', {})
-	let subSegmentLineItems = Meteor.subscribe('segmentLineItems', {})
-	let subStudioInstallations = Meteor.subscribe('studioInstallations', {})
-	let subShowStyles = Meteor.subscribe('showStyles', {})
-	let subSegmentLineAdLibItems = Meteor.subscribe('segmentLineAdLibItems', {})
+export const ClockView = translate()(withTracker(function (props: IPropsHeader) {
+	let studioId = objectPathGet(props, 'match.params.studioId')
+	let runningOrder = (
+		RunningOrders.findOne({
+			active: true,
+			studioInstallationId: studioId
+		})
+	)
+	Meteor.subscribe('studioInstallations', {
+		_id: studioId
+	})
 
-	let runningOrder = RunningOrders.findOne(_.extend({ active: true }, props.match && props.match.params && props.match.params.studioId ? { studioInstallationId: props.match.params.studioId } : {}))
+	// let dep = new Tracker.Dependency()
+	// dep.depend()
+	// Meteor.setTimeout(() => {
+	// 	console.log('a')
+	// 	dep.changed()
+	// }, 3000)
 	let segments = runningOrder ? Segments.find({ runningOrderId: runningOrder._id }, {
 		sort: {
 			'_rank': 1
@@ -220,12 +229,46 @@ export const ClockView = translate()(withTracker((props: IPropsHeader, state) =>
 		segmentLines
 	}
 })(
-class extends React.Component<WithTiming<IPropsHeader>, IStateHeader> {
+class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 	componentDidMount () {
 		$(document.body).addClass('dark xdark')
+		let studioId = objectPathGet(this.props, 'match.params.studioId')
+		if (studioId) {
+			this.subscribe('studioInstallations', {
+				_id: studioId
+			})
+			this.subscribe('runningOrders', {
+				active: true,
+				studioInstallationId: studioId
+			})
+		}
+		let runningOrder = (
+			RunningOrders.findOne({
+				active: true,
+				studioInstallationId: studioId
+			})
+		)
+		if (runningOrder) {
+			this.subscribe('segments', {
+				runningOrderId: runningOrder._id
+			})
+			this.subscribe('segmentLines', {
+				runningOrderId: runningOrder._id
+			})
+			this.subscribe('segmentLineItems', {
+				runningOrderId: runningOrder._id
+			})
+			this.subscribe('showStyles', {
+				_id: runningOrder.showStyleId
+			})
+			this.subscribe('segmentLineAdLibItems', {
+				runningOrderId: runningOrder._id
+			})
+		}
 	}
 
 	componentWillUnmount () {
+		this._cleanUp()
 		$(document.body).removeClass('dark xdark')
 	}
 

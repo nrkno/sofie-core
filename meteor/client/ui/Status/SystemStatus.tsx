@@ -14,6 +14,7 @@ import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { ModalDialog } from '../../lib/ModalDialog'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -349,19 +350,11 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 	return {
 		devices: PeripheralDevices.find({}, { sort: { lastSeen: -1 } }).fetch()
 	}
-})(class SystemStatus extends React.Component<Translated<ISystemStatusProps & ISystemStatusTrackedProps>, ISystemStatusState> {
-	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
+})(class SystemStatus extends MeteorReactComponent<Translated<ISystemStatusProps & ISystemStatusTrackedProps>, ISystemStatusState> {
 	componentWillMount () {
 		// Subscribe to data:
-
-		this._subscriptions.push(Meteor.subscribe('peripheralDevices', {}))
+		this.subscribe('peripheralDevices', {})
 	}
-	componentWillUnmount () {
-		_.each(this._subscriptions, (sub ) => {
-			sub.stop()
-		})
-	}
-
 	renderPeripheralDevices () {
 
 		let devices: Array<DeviceInHierarchy> = []

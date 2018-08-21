@@ -1,6 +1,7 @@
 import { Tracker } from 'meteor/tracker'
 import * as _ from 'underscore'
 import * as React from 'react'
+import { stringifyObjects } from '../../lib/lib'
 
 export class MeteorReactComponent<IProps, IState = {}> extends React.Component<IProps, IState> {
 
@@ -13,27 +14,56 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 	componentWillUnmount () {
 		this._cleanUp()
 	}
-	protected subscribe (name: string, ...args: any[]) {
+	subscribe (name: string, ...args: any[]): Meteor.SubscriptionHandle {
+		// @ts-ignore
+		return Tracker.nonreactive(() => {
+			// let id = name + '_' + JSON.stringify(args.join())
+			let id = name + '_' + stringifyObjects(args)
 
-		let id = name + '_' + JSON.stringify(args.join())
+			if (Tracker.active) {
+				// if in a reactive context, Meteor will keep track of duplicates of subscriptions
 
-		if (this._subscriptions[id]) {
-			// already subscribed to that
-			return this._subscriptions[id]
-		} else {
-			let sub = Meteor.subscribe(name, ...args)
-			this._subscriptions[id] = sub
-		}
+				let sub = Meteor.subscribe(name, ...args)
+				this._subscriptions[id] = sub
+				return sub
+			} else {
+				if (this._subscriptions[id]) {
+					// already subscribed to that
+					return this._subscriptions[id]
+				} else {
+					let sub = Meteor.subscribe(name, ...args)
+					this._subscriptions[id] = sub
+					return sub
+				}
+			}
+		})
+	}
+	autorun (cb: () => void, options?: any): Tracker.Computation {
+		let computation = Tracker.autorun(cb, options)
+		this._computations.push(computation)
+		return computation
+	}
+	subscriptionsReady (): boolean {
+		return !_.find(this._subscriptions, (sub, key) => {
+			if (!sub.ready()) {
+				// console.log('sub not ready: ' + key)
+				return true
+			}
+		})
+	}
+	subscriptions (): Array<Meteor.SubscriptionHandle> {
+		return _.values(this._subscriptions)
 	}
 	protected _cleanUp () {
-		_.each(this._subscriptions, (sub ) => {
-			sub.stop()
+		_.each(this._subscriptions, (sub, key) => {
+			// Wait a little bit with unsubscribing, maybe the next view is going to subscribe to the same data as well?
+			// In that case, by unsubscribing directly, we'll get a flicker in the view because of the unloading+loading
+			Meteor.setTimeout(() => {
+				sub.stop()
+			}, 100)
 		})
 		_.each(this._computations, (computation ) => {
 			computation.stop()
 		})
-	}
-	protected autorun (cb: () => void, options?: any) {
-		this._computations.push(Tracker.autorun(cb, options))
 	}
 }

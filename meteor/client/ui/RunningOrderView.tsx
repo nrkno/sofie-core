@@ -35,6 +35,7 @@ import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog } from '../lib/ModalDialog'
 
 import { DEFAULT_DISPLAY_DURATION } from './SegmentTimeline/SegmentTimelineContainer'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -393,7 +394,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 				'rehearsal': this.props.runningOrder.rehearsal
 			})}>
-				<RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} />
+				{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} />}
 				<div className='row first-row super-dark'>
 					<div className='flex-col left horizontal-align-left'>
 						{/* !!! TODO: This is just a temporary solution !!! */}
@@ -476,6 +477,7 @@ interface IState {
 	bottomMargin: string
 	followLiveSegments: boolean
 	manualSetAsNext: boolean
+	subsReady: boolean
 }
 
 interface ITrackedProps {
@@ -483,7 +485,6 @@ interface ITrackedProps {
 	runningOrder?: RunningOrder
 	segments: Array<Segment>
 	studioInstallation?: StudioInstallation
-	isReady: boolean
 }
 export const RunningOrderView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state) => {
 
@@ -494,18 +495,12 @@ export const RunningOrderView = translateWithTracker<IProps, IState, ITrackedPro
 		runningOrderId = props.runningOrderId
 	}
 
-	let runningOrderSubscription = Meteor.subscribe('runningOrders', {
-		_id: runningOrderId
-	})
-
 	let runningOrder = RunningOrders.findOne({ _id: runningOrderId })
-
-	let studioInstallation = runningOrder ? StudioInstallations.findOne({ _id: runningOrder.studioInstallationId }) : undefined
+	let studioInstallation = runningOrder && StudioInstallations.findOne({ _id: runningOrder.studioInstallationId })
 	// let roDurations = calculateDurations(runningOrder, segmentLines)
 	return {
 		runningOrderId: runningOrderId,
 		runningOrder: runningOrder,
-		isReady: runningOrderSubscription.ready(),
 		segments: runningOrder ? Segments.find({ runningOrderId: runningOrder._id }, {
 			sort: {
 				'_rank': 1
@@ -514,9 +509,8 @@ export const RunningOrderView = translateWithTracker<IProps, IState, ITrackedPro
 		studioInstallation: studioInstallation,
 	}
 })(
-class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
+class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
-	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
 	private bindKeys: Array<{
 		key: string,
 		up?: (e: KeyboardEvent) => any
@@ -533,7 +527,8 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 			contextMenuContext: null,
 			bottomMargin: '',
 			followLiveSegments: true,
-			manualSetAsNext: false
+			manualSetAsNext: false,
+			subsReady: false
 		}
 
 		this.bindKeys = [
@@ -548,27 +543,40 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 		// Subscribe to data:
 		let runningOrderId = this.props.runningOrderId
 
-		this._subscriptions.push(Meteor.subscribe('runningOrders', {
+		this.subscribe('runningOrders', {
 			_id: runningOrderId
-		}))
-		this._subscriptions.push(Meteor.subscribe('segments', {
+		})
+		this.subscribe('segments', {
 			runningOrderId: runningOrderId
-		}))
-		this._subscriptions.push(Meteor.subscribe('segmentLines', {
+		})
+		this.subscribe('segmentLines', {
 			runningOrderId: runningOrderId
-		}))
-		this._subscriptions.push(Meteor.subscribe('segmentLineItems', {
+		})
+		this.subscribe('segmentLineItems', {
 			runningOrderId: runningOrderId
-		}))
-		this._subscriptions.push(Meteor.subscribe('studioInstallations', {
+		})
+		this.subscribe('segmentLineAdLibItems', {
 			runningOrderId: runningOrderId
-		}))
-		this._subscriptions.push(Meteor.subscribe('showStyles', {
-			runningOrderId: runningOrderId
-		}))
-		this._subscriptions.push(Meteor.subscribe('segmentLineAdLibItems', {
-			runningOrderId: runningOrderId
-		}))
+		})
+		this.autorun(() => {
+			let runningOrder = RunningOrders.findOne(runningOrderId)
+			if (runningOrder) {
+				this.subscribe('studioInstallations', {
+					_id: runningOrder.studioInstallationId
+				})
+				this.subscribe('showStyles', {
+					_id: runningOrder.showStyleId
+				})
+			}
+		})
+		this.autorun(() => {
+			let subsReady = this.subscriptionsReady()
+			if (subsReady !== this.state.subsReady) {
+				this.setState({
+					subsReady: subsReady
+				})
+			}
+		})
 	}
 
 	componentDidMount () {
@@ -616,12 +624,9 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	componentWillUnmount () {
+		this._cleanUp()
 		$(document.body).removeClass(['dark', 'vertical-overflow-only'])
 		$(window).off('scroll', this.onWindowScroll)
-
-		_.each(this._subscriptions, (sub ) => {
-			sub.stop()
-		})
 
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {
@@ -694,7 +699,7 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 							<SegmentTimelineContainer
 												studioInstallation={this.props.studioInstallation}
 												followLiveSegments={this.state.followLiveSegments}
-												segment={segment}
+												segmentId={segment._id}
 												runningOrder={this.props.runningOrder}
 												liveLineHistorySize={100}
 												timeScale={this.state.timeScale}
@@ -744,8 +749,7 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 
 	render () {
 		const { t } = this.props
-
-		if (this.props.isReady && this.props.runningOrder && this.props.studioInstallation) {
+		if (this.props.runningOrder && this.props.studioInstallation) {
 			return (
 				<RunningOrderTimingProvider
 					runningOrder={this.props.runningOrder}
@@ -782,7 +786,7 @@ class extends React.Component<Translated<IProps & ITrackedProps>, IState> {
 					</div>
 				</RunningOrderTimingProvider>
 			)
-		} else if (this.props.isReady) {
+		} else if (this.state.subsReady) {
 			return (
 				<div className='running-order-view running-order-view--unpublished'>
 					<div className='running-order-view__label'>

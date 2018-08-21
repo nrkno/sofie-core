@@ -1206,6 +1206,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 
 	let context: TemplateContext = {
 		runningOrderId: ro._id,
+		studioId: ro.studioInstallationId,
 		// segment: Segment,
 		segmentLine: segmentLine,
 		templateId: 'N/A'

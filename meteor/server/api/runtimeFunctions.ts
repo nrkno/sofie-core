@@ -43,6 +43,7 @@ export function runtimeFunctionTestCode (runtimeFunction: RuntimeFunction, showS
 		}
 		let tmpContext: TemplateContext = {
 			runningOrderId: 'myRunningOrder',
+			studioId: 'myStudio',
 			// segment: Segment
 			segmentLine: new SegmentLine(tmpSegmentLine),
 			templateId: runtimeFunction._id

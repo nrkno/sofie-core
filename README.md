@@ -46,9 +46,7 @@ For the purpose of running the system in a studio environment, there are additio
 
 |Path     |Function     |
 |---------|-------------|
-|`/countdowns/presenter`|Countdown clocks to be shown to the studio presenter|
 |`/countdowns/:studioId/presenter`|Countdown clocks for a given studio, to be shown to the studio presenter|
-|`/activeRo`|Redirects to the currently active running order|
 |`/activeRo/:studioId`|Redirects to the running order currently active in a given studio|
 
 ## Studio mode

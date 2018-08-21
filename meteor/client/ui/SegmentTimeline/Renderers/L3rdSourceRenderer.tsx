@@ -71,7 +71,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 					<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 						<div className='segment-timeline__mini-inspector' style={this.getFloatingInspectorStyle()}>
 							{properties.length > 0 ? properties.map((item) => (
-								<div>
+								<div key={item.key}>
 									<span className='mini-inspector__label'>{item.key}: </span>
 									<span className='mini-inspector__value'>{item.value}</span>
 								</div>

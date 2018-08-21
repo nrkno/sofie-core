@@ -7,6 +7,7 @@ import { SegmentLineUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { Segment } from '../../lib/collections/Segments'
 import { withTiming, WithTiming } from './RunningOrderTiming'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 interface SegmentUi extends Segment {
 	items?: Array<SegmentLineUi>
@@ -104,7 +105,7 @@ interface RunningOrderOverviewTrackedProps {
 }
 
 export const RunningOrderOverview = withTiming<RunningOrderOverviewProps, RunningOrderOverviewState>()(
-withTracker<WithTiming<RunningOrderOverviewProps>, RunningOrderOverviewState, RunningOrderOverviewTrackedProps>((props: RunningOrderOverviewProps, state) => {
+withTracker<WithTiming<RunningOrderOverviewProps>, RunningOrderOverviewState, RunningOrderOverviewTrackedProps>((props: RunningOrderOverviewProps) => {
 
 	let ro: RunningOrder | undefined
 	if (props.runningOrderId) ro = RunningOrders.findOne(props.runningOrderId)
@@ -121,7 +122,7 @@ withTracker<WithTiming<RunningOrderOverviewProps>, RunningOrderOverviewState, Ru
 		runningOrder: ro
 	}
 })(
-class extends React.Component<WithTiming<RunningOrderOverviewProps & RunningOrderOverviewTrackedProps>, RunningOrderOverviewState> {
+class extends MeteorReactComponent<WithTiming<RunningOrderOverviewProps & RunningOrderOverviewTrackedProps>, RunningOrderOverviewState> {
 	render () {
 		if (this.props.runningOrder && this.props.runningOrderId && this.props.segments) {
 			const totalDuration = 1

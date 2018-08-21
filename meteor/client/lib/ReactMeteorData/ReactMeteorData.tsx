@@ -6,6 +6,8 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { translate, InjectedTranslateProps } from 'react-i18next'
+import { MeteorReactComponent } from '../MeteorReactComponent'
+import * as _ from 'underscore'
 
 // A class to keep the state and utility methods needed to manage
 // the Meteor data for a component.
@@ -128,9 +130,7 @@ class MeteorDataManager {
 		this.oldData = newData
 	}
 }
-
 export const ReactMeteorData = {
-
 	componentWillMount () {
 		this.data = {}
 		this._meteorDataManager = new MeteorDataManager(this)
@@ -163,40 +163,60 @@ export const ReactMeteorData = {
 
 	componentWillUnmount () {
 		this._meteorDataManager.dispose()
-	}
+	},
+	// pick the MeteorReactComponent member functions, so they will be available in withTracker(() => { >here< })
+	autorun: MeteorReactComponent.prototype.autorun,
+	subscribe: MeteorReactComponent.prototype.subscribe
 }
 
 class ReactMeteorComponentWrapper<P, S> extends React.Component<P, S> {
 	data: any
+	_renderedContent: any
 }
 Object.assign(ReactMeteorComponentWrapper.prototype, ReactMeteorData)
 class ReactMeteorPureComponentWrapper<P, S> extends React.PureComponent<P, S> {}
 Object.assign(ReactMeteorPureComponentWrapper.prototype, ReactMeteorData)
 
-export interface WithTrackerOptions<IProps, TrackedProps> {
+export interface WithTrackerOptions<IProps, IState, TrackedProps> {
 	getMeteorData: (props: IProps) => TrackedProps
+	shouldComponentUpdate?: (data: any, props: IProps, nextProps: IProps, state?: IState, nextState?: IState) => boolean
 	// pure?: boolean
 }
 // @todo: add withTrackerPure()
-type IWrappedComponent<IProps, IState, TrackedProps> = new (props: IProps & TrackedProps, state: IState) => React.Component<IProps & TrackedProps, IState>
-export function withTracker<IProps, IState, TrackedProps> (autorunFunction: (props: IProps, state?: IState) => TrackedProps):
+type IWrappedComponent<IProps, IState, TrackedProps> = new (props: IProps & TrackedProps, state: IState) => MeteorReactComponent<IProps & TrackedProps, IState>
+export function withTracker<IProps, IState, TrackedProps> (
+	autorunFunction: (props: IProps) => TrackedProps,
+	checkUpdate?: ((data: any, props: IProps, nextProps: IProps) => boolean) | ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean)
+	):
 	(WrappedComponent: IWrappedComponent<IProps, IState, TrackedProps>) =>
 		new (props: IProps ) => React.Component<IProps, IState> {
 
-	let expandedOptions: WithTrackerOptions<IProps, TrackedProps>
+	let expandedOptions: WithTrackerOptions<IProps, IState, TrackedProps>
 
 	expandedOptions = {
-		getMeteorData: autorunFunction
+		getMeteorData: autorunFunction,
+		shouldComponentUpdate: checkUpdate
 	}
 
 	return (WrappedComponent) => {
 		// return ''
 		return class extends ReactMeteorComponentWrapper<IProps, IState> {
 			getMeteorData () {
-				return expandedOptions.getMeteorData(this.props)
+				return expandedOptions.getMeteorData.call(this, this.props)
+			}
+			// This hook allows lower-level components to do smart optimization,
+			// without running a potentially heavy recomputation of the getMeteorData.
+			// This is potentially very dangerous, so use with caution.
+			shouldComponentUpdate (nextProps: IProps, nextState: IState): boolean {
+				if (typeof expandedOptions.shouldComponentUpdate === 'function') {
+					return expandedOptions.shouldComponentUpdate(this.data, this.props, nextProps, this.state, nextState)
+				}
+				return true
 			}
 			render () {
-				return <WrappedComponent {...this.props} {...this.data} />
+				let content = <WrappedComponent {...this.props} {...this.data} />
+				this._renderedContent = content
+				return content
 			}
 		}
 	}

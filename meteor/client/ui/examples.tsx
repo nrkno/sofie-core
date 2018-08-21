@@ -4,6 +4,7 @@ import { withTiming, WithTiming } from './RunningOrderTiming'
 import { translate } from 'react-i18next'
 import { TransformedCollection } from '../../lib/typings/meteor'
 import { Mongo } from 'meteor/mongo'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 // These are examples of how to write different types of components
 
@@ -86,7 +87,7 @@ const ReactiveComponent = withTracker<ReactiveComponentProps, ReactiveComponentS
 		myReactiveProp0: Meteor.status()
 	}
 })(
-class ReactiveComponent extends React.Component<ReactiveComponentProps & ReactiveComponentTrackedProps, ReactiveComponentState> {
+class ReactiveComponent extends MeteorReactComponent<ReactiveComponentProps & ReactiveComponentTrackedProps, ReactiveComponentState> {
 	constructor (props: ReactiveComponentProps & ReactiveComponentTrackedProps) {
 		super(props)
 		this.state = {
@@ -126,7 +127,7 @@ const TranslatedReactiveComponent = translateWithTracker<TranslatedReactiveCompo
 		myReactiveProp0: Meteor.status()
 	}
 })(
-	class TranslatedReactiveComponent extends React.Component<Translated<TranslatedReactiveComponentProps & TranslatedReactiveComponentTrackedProps>, TranslatedReactiveComponentState> {
+	class TranslatedReactiveComponent extends MeteorReactComponent<Translated<TranslatedReactiveComponentProps & TranslatedReactiveComponentTrackedProps>, TranslatedReactiveComponentState> {
 		constructor (props: Translated<TranslatedReactiveComponentProps & TranslatedReactiveComponentTrackedProps>) {
 			super(props)
 			this.state = {

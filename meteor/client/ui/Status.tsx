@@ -14,6 +14,7 @@ import {
 import SystemStatus from './Status/SystemStatus'
 import { ExternalMessages } from './Status/ExternalMessages'
 import { UserActivity } from './Status/UserActivity'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 class WelcomeToStatus extends React.Component {
 	render () {
@@ -58,20 +59,14 @@ const StatusMenu = translate()(class StatusMenu extends React.Component<Translat
 interface IStatusProps {
 	match?: any
 }
-class Status extends React.Component<Translated<IStatusProps>> {
-	private _subscriptions: Array<Meteor.SubscriptionHandle> = []
+class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 	componentWillMount () {
 		// Subscribe to data:
 
-		this._subscriptions.push(Meteor.subscribe('peripheralDevices', {}))
-		this._subscriptions.push(Meteor.subscribe('studioInstallations', {}))
-		this._subscriptions.push(Meteor.subscribe('showStyles', {}))
-		this._subscriptions.push(Meteor.subscribe('runtimeFunctions', {}))
-	}
-	componentWillUnmount () {
-		_.each(this._subscriptions, (sub ) => {
-			sub.stop()
-		})
+		this.subscribe('peripheralDevices', {})
+		this.subscribe('studioInstallations', {})
+		this.subscribe('showStyles', {})
+		// this.subscribe('runtimeFunctions', {})
 	}
 	render () {
 		const { t } = this.props

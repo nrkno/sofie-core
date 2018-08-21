@@ -20,6 +20,7 @@ import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 
 interface IPlayoutDeviceSettingsComponentProps {
 	device: PeripheralDevice
@@ -328,7 +329,7 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 			<div>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('Media Scanner Host')}: 
+						{t('Media Scanner Host')}:
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'settings.mediaScanner.host'}
@@ -338,10 +339,9 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 							className=''></EditAttribute>
 					</label>
 				</div>
-				
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('Media Scanner Port')}: 
+						{t('Media Scanner Port')}:
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'settings.mediaScanner.port'}
@@ -351,10 +351,9 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 							className=''></EditAttribute>
 					</label>
 				</div>
-				
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('CasparCG Launcher Host')}: 
+						{t('CasparCG Launcher Host')}:
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'settings.casparcgLauncher.host'}
@@ -364,10 +363,9 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 							className=''></EditAttribute>
 					</label>
 				</div>
-				
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('CasparCG Launcher Port')}: 
+						{t('CasparCG Launcher Port')}:
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'settings.casparcgLauncher.port'}
@@ -709,7 +707,7 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 		device: PeripheralDevices.findOne(props.match.params.deviceId)
 	}
 })(
-class DeviceSettings extends React.Component<Translated<IDeviceSettingsProps & IDeviceSettingsTrackedProps>> {
+class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProps & IDeviceSettingsTrackedProps>> {
 
 	findHighestRank (array: Array<{ _rank: number }>): { _rank: number } | null {
 		let max: { _rank: number } | null = null
