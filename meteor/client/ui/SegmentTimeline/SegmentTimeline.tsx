@@ -417,10 +417,10 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 							{(
 								outputLayer.sourceLayers !== undefined &&
 								outputLayer.sourceLayers.filter(i => !i.isHidden).sort((a, b) => a._rank - b._rank)
-								.map((sourceLayer) => {
+								.map((sourceLayer, index, array) => {
 									return (
 										<div key={sourceLayer._id} className='segment-timeline__output-layer-control__layer' data-source-id={sourceLayer._id}>
-											{sourceLayer.name}
+											{array.length === 1 ? ' ' : sourceLayer.name}
 										</div>
 									)
 								})
