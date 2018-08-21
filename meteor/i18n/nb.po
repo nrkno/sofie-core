@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2018-08-20T14:57:49.585Z\n"
-"PO-Revision-Date: 2018-08-20 17:20+0200\n"
+"POT-Creation-Date: 2018-08-21T14:32:41.123Z\n"
+"PO-Revision-Date: 2018-08-21 17:03+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -90,10 +90,8 @@ msgstr "Varighet"
 msgid "TC Start"
 msgstr "TC inn"
 
-#, fuzzy
-#| msgid "Search…"
 msgid "Search..."
-msgstr "Søk"
+msgstr "Søk..."
 
 #, fuzzy
 #| msgid "Last seen"
@@ -198,6 +196,15 @@ msgstr "OK"
 msgid "This running order has been unpublished from Sofie."
 msgstr "Denne kjøreplanen er ikke lenger tilgjengelig i Sofie."
 
+msgid "Item has no properties"
+msgstr "Elementet har ingen egenskaper"
+
+msgid "Script"
+msgstr "Manus"
+
+msgid "File name"
+msgstr "Filnavn"
+
 msgid "Unknown segment"
 msgstr "Ukjent segment"
 
@@ -211,7 +218,7 @@ msgid "Set as Next"
 msgstr "Sett som neste"
 
 msgid "On Air"
-msgstr "On Air"
+msgstr "Hjem"
 
 msgid "Next"
 msgstr "Neste"
@@ -281,10 +288,8 @@ msgstr "Denne handlingen kan ikke angres."
 msgid "Line Templates"
 msgstr "Maler"
 
-#, fuzzy
-#| msgid "MOS Device"
 msgid "Devices"
-msgstr "MOS-enhet"
+msgstr "MOS-enheter"
 
 msgid "Type"
 msgstr "Type"
@@ -298,10 +303,8 @@ msgstr "Gjenopprett fra sikkerhetskopi"
 msgid "System Settings"
 msgstr "Systeminnstillinger"
 
-#, fuzzy
-#| msgid "MOS Device"
 msgid "Device ID"
-msgstr "MOS-enhet"
+msgstr "Enhets-ID"
 
 msgid "Device Type"
 msgstr "Enhetstype"
@@ -398,9 +401,8 @@ msgstr "Programtype ID"
 msgid "Baseline template id"
 msgstr "ID for grunnmal"
 
-#, fuzzy
 msgid "External-message template id"
-msgstr "ID for ekstern meldings-mal"
+msgstr "ID for ekstern meldings-template"
 
 msgid "Download full backup"
 msgstr "Gjenopprett fra sikkerhetskopi"
@@ -565,9 +567,8 @@ msgstr "Ny utgang"
 msgid "Studio name"
 msgstr "Studionavn"
 
-#, fuzzy
 msgid "Default show style"
-msgstr "Programtype"
+msgstr "Standardprogramtype"
 
 msgid "System"
 msgstr "System"
@@ -596,15 +597,11 @@ msgstr "Sist sett"
 msgid "Version"
 msgstr "Version"
 
-#, fuzzy
-#| msgid "Kill this device process?"
 msgid "Restart this device process?"
-msgstr "Avslutt prosessen?"
+msgstr "Starte denne enhetsprosessen på nytt?"
 
-#, fuzzy
-#| msgid "Restore"
 msgid "Restart"
-msgstr "Gjenopprett"
+msgstr "Restart"
 
 msgid "Kill this device process?"
 msgstr "Avslutt prosessen?"
