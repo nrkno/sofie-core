@@ -190,6 +190,7 @@ export namespace ServerPlayoutAPI {
 		if (showStyle.baselineTemplate) {
 			const result: TemplateResultAfterPost = runNamedTemplate(showStyle, showStyle.baselineTemplate, literal<TemplateContext>({
 				runningOrderId: runningOrder._id,
+				studioId: runningOrder.studioInstallationId,
 				segmentLine: runningOrder.getSegmentLines()[0],
 				templateId: showStyle.baselineTemplate
 			}), {

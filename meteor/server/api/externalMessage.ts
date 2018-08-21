@@ -34,6 +34,7 @@ export function triggerExternalMessage (
 
 		let context: TemplateContext = {
 			runningOrderId: runningOrder._id,
+			studioId: runningOrder.studioInstallationId,
 			segmentLine: takeSegmentLine,
 			templateId: functionId
 		}
