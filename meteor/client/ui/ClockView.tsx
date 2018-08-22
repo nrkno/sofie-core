@@ -49,8 +49,9 @@ const Timediff = class extends React.Component<{ time: number}> {
 			<span className={ time > 0 ? 'clocks-segment-countdown-red' : '' }>
 				{time > 0 ? <span className="fontweight-300">+</span> : null}
 				<span className={fontWeight(timeStringSegments[0]) ? 'fontweight-300' : 'fontweight-normal'}>{timeStringSegments[0]}</span>:
-				<span className={fontWeight(timeStringSegments[1]) ? 'fontweight-300' : 'fontweight-normal'}>{timeStringSegments[1]}</span>{timeStringSegments.length > 2 ? ':' +
-				<span className={fontWeight(timeStringSegments[2]) ? 'fontweight-300' : 'fontweight-normal'}>{timeStringSegments[2]}</span> : null}
+				<span className={fontWeight(timeStringSegments[1]) ? 'fontweight-300' : 'fontweight-normal'}>{timeStringSegments[1]}</span>
+				{timeStringSegments.length > 2 ? ':' : null}
+				{timeStringSegments.length > 2 ? <span className={fontWeight(timeStringSegments[2]) ? 'fontweight-300' : 'fontweight-normal'}>{timeStringSegments[2]}</span> : null}
 			</span>
 		)
 	}
