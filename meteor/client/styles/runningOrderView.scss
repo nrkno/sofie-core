@@ -1406,12 +1406,22 @@ body.vertical-overflow-only {
 		font-weight: 300;
   		text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 	}
+	.mini-inspector__changed {
+		font-size: 0.8em;
+	}
 	table {
 		> tbody {
 			> tr {
 				> td {
 					&.mini-inspector__row--timing {
 						padding-top: 0.5em;
+					}
+				}
+			}
+			> tr:first-child {
+				> td {
+					&.mini-inspector__row--timing {
+						padding-top: 0em;
 					}
 				}
 			}
