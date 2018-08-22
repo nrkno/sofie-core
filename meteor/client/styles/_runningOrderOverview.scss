@@ -39,10 +39,14 @@
 		&.live {
 			color: $segment-title-text-color-live;
 			background: $general-live-color;
+			font-weight: 500;
+			text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
 		}
 
 		&.next {
 			background: $general-next-color;
+			font-weight: 500;
+			text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
 		}
 
 		&.has-played {
@@ -56,7 +60,7 @@
 			right: auto;
 			bottom: -1.5em;
 			width: 2px;
-			background: $general-live-color;
+			background: #ff0000; //$general-live-color;
 			z-index: 4;
 		}
 
@@ -67,7 +71,7 @@
 			right: auto;
 			bottom: -5px;
 			width: 2px;
-			background: $general-next-color;
+			background: #00ff00; //$general-next-color;
 			z-index: 3;
 		}
 
