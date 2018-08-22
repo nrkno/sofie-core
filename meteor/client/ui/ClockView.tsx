@@ -41,16 +41,16 @@ interface RunningOrderOverviewTrackedProps {
 
 const Timediff = class extends React.Component<{ time: number}> {
 	render () {
-		const time = this.props.time
-		const timeString = RundownUtils.formatDiffToTimecode(time) // @todo: something happened here with negative time
+		const time = -this.props.time
+		const timeString = RundownUtils.formatDiffToTimecode(time, false, false, false, true, true, '') // @todo: something happened here with negative time
 		const timeStringSegments = timeString.split(':')
-		const fontWeight = (no) => true
+		const fontWeight = (no) => no === '00' || no === '+00' ? true : false
 		return (
-			<span>
-				{time < 0 ? <span>+</span> : <span>&ndash;</span>}
-				<span className={fontWeight(timeStringSegments[0]) ? 'fontweight-300' : ''}>{timeStringSegments[0]}</span>:
-				<span className={fontWeight(timeStringSegments[1]) ? 'fontweight-300' : ''}>{timeStringSegments[1]}</span>{timeStringSegments.length > 2 ? ':' +
-				<span className={fontWeight(timeStringSegments[2]) ? 'fontweight-300' : ''}>{timeStringSegments[2]}</span> : null}
+			<span className={ time > 0 ? 'clocks-segment-countdown-red' : '' }>
+				{time > 0 ? <span className="fontweight-300">+</span> : null}
+				<span className={fontWeight(timeStringSegments[0]) ? 'fontweight-300' : 'fontweight-normal'}>{timeStringSegments[0]}</span>:
+				<span className={fontWeight(timeStringSegments[1]) ? 'fontweight-300' : 'fontweight-normal'}>{timeStringSegments[1]}</span>{timeStringSegments.length > 2 ? ':' +
+				<span className={fontWeight(timeStringSegments[2]) ? 'fontweight-300' : 'fontweight-normal'}>{timeStringSegments[2]}</span> : null}
 			</span>
 		)
 	}
@@ -158,15 +158,18 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 				return (
 					<div className='clocks-full-screen'>
 						<div className='clocks-half clocks-top'>
-							<div className='clocks-segment-icon'>
+							<div className='clocks-segment-title clocks-current-segment-title'>
+								{currentSegmentLine ? currentSegmentLine.slug.split(';')[0] : '_'}
+							</div>
+							<div className='clocks-segmentline-title clocks-segment-title clocks-current-segment-title'>
+								{currentSegmentLine ? currentSegmentLine.slug.split(';')[1] : '_'}
+							</div>
+							<div className='clocks-segment-icon clocks-current-segment-icon'>
 								{currentSegmentLine ?
 									<SegmentItemIconContainer segmentItemId={currentSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
 								: ''}
 							</div>
-							<div className='clocks-segment-title clocks-current-segment-title'>
-								{currentSegmentLine ? currentSegmentLine.slug : '_'}
-							</div>
-							<div className='clocks-segment-countdown clocks-current-segment-countdown'>
+							<div className='clocks-current-segment-countdown clocks-segment-countdown'>
 								<Timediff time={currentSegmentDuration} />
 							</div>
 						</div>
@@ -178,10 +181,10 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 							</div>
 							<div className='clocks-bottom-top'>
 								<div className='clocks-segment-title'>
-									{nextSegmentLine ? nextSegmentLine.slug : '_'}
+									{nextSegmentLine ? nextSegmentLine.slug.split(';')[0] : '_'}
 								</div>
-								<div className='clocks-segment-countdown'>
-									<Timecode time={nextSegmentDuration} />
+								<div className='clocks-segment-title clocks-segmentline-title'>
+									{nextSegmentLine ? nextSegmentLine.slug.split(';')[1] : '_'}
 								</div>
 							</div>
 							<div className='clocks-rundown-title clocks-top-bar'>

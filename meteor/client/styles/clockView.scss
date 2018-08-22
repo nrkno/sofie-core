@@ -16,40 +16,40 @@
 }
 
 .clocks-top {
+	height: 57.1325vh;
 	top: 0;
 }
 
 .clocks-bottom {
-	top: 50vh;
+	top: 57.1325vh;
+	height: 42.4075vh;
 }
 
 .clocks-top-bar {
-	border-top: solid 10px #454545;
+	border-top: solid .9259vh #454545;
 }
 
 .clocks-bottom-top {
-	height: 38.8vh;
+	height: 33.43vh;
 }
 
 .clocks-segment-icon {
-	width: 17.6vw;
+	width: 16.09375vw;
 	// padding-top: 3.6vh;
-	padding: 2.3vh 1.7vw 0.83vh 2.7vw;
-	height: 19.4vh; // 18.3 + 3.6
+	// padding: 2.3vh 1.7vw 0.83vh 2.7vw;
+	margin-top: 5.08912vh;
+	height: 20.2777778vh; // 18.3 + 3.6
 	float: left;
 }
 
 .clocks-current-segment-icon {
-	height: 21.9vh; // 18.3 + 3.6
-	padding-top: 4.6vh;
+	margin: 0;
 }
 
 .clocks-segment-title {
-	// padding-left: 17.6vw;
-	height: 19.4vh;
-	font-size: 9.375rem;
-	padding-top: 1.1vh;
-	// float: left;
+	padding-left: 4.815vw;
+	height: 18.333vh;
+	font-size: 13.889vh;
 
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -58,15 +58,25 @@
 	font-weight: normal;
 	font-style: normal;
 	font-stretch: normal;
-	line-height: 19.4vh;
 	letter-spacing: normal;
+
+	padding-top: 2vh;
+}
+
+.clocks-segment-title.clocks-current-segment-title {
+	font-weight: bold;
+	padding: 0;
+}
+
+.clocks-segmentline-title {
+	margin-top: -2.778vh;
+	font-weight: 300!important;
+	padding-top: 1vh;
 }
 
 .clocks-current-segment-title {
 	color: #ffff00;
-	padding-top: 3.6vh;
-	height: 21.9vh; // 18.3 + 3.6
-	line-height: 18.3vh;
+	padding-left: 0;
 }
 
 .clocks-segment-countdown {
@@ -88,6 +98,10 @@
 	margin-top: -7.6vh;
 }
 
+.clocks-segment-countdown-red {
+	color: red;
+}
+
 .fontweight-300 {
 	font-weight: 300;
 }
@@ -101,13 +115,12 @@
 }
 
 .clocks-rundown-title {
-	font-size: 4.5rem;
+	font-size: 6.667vh;
 	color: #aaa;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	overflow: hidden;
 	text-align: center;
-	padding: .25rem;
 }
 
 .clocks-segment-icon .stub-icon {
