@@ -9,6 +9,7 @@ import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerIte
 import { RundownAPI } from '../../../../lib/api/rundown'
 import { literal } from '../../../../lib/lib'
 import { SplitsContent } from '../../../../lib/collections/SegmentLineItems'
+import * as _ from 'underscore'
 
 export enum SplitRole {
 	ART = 0,
@@ -84,7 +85,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 
 		if (this.props.segmentLineItem.content) {
 			const splitContent = this.props.segmentLineItem.content as SplitsContent
-			return splitContent.boxSourceConfiguration.map((item, index) => {
+			return _.map(splitContent.boxSourceConfiguration, (item, index) => {
 				return literal<SplitSubItem>({
 					_id: item.studioLabel + '_' + index,
 					type: item.type,
