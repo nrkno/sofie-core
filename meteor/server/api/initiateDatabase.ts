@@ -222,7 +222,7 @@ Meteor.methods({
 			sourceLayers: [
 				{
 					_id: 'studio0_vignett',
-					_rank: 40,
+					_rank: 7000,
 					name: 'Vignett',
 					abbreviation: 'Full',
 					type: RundownAPI.SourceLayerType.VT,
@@ -230,7 +230,7 @@ Meteor.methods({
 				},
 				{
 					_id: 'studio0_vb',
-					_rank: 45,
+					_rank: 8000,
 					name: 'VB',
 					abbreviation: 'Full',
 					type: RundownAPI.SourceLayerType.VT,
@@ -238,7 +238,7 @@ Meteor.methods({
 				},
 				{
 					_id: 'studio0_live_speak0',
-					_rank: 50,
+					_rank: 9000,
 					name: 'STK',
 					abbreviation: 'STK',
 					type: RundownAPI.SourceLayerType.LIVE_SPEAK,
@@ -246,7 +246,7 @@ Meteor.methods({
 				},
 				{
 					_id: 'studio0_graphics_super',
-					_rank: 100,
+					_rank: 1000,
 					name: 'Super',
 					type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: false,
@@ -255,14 +255,14 @@ Meteor.methods({
 				},
 				{
 				 	_id: 'studio0_graphics_fullskjerm',
-				 	_rank: 55,
+				 	_rank: 12000,
 				 	name: 'Grafikk',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true
 				},
 				{
 				 	_id: 'studio0_graphics_klokke',
-				 	_rank: 110,
+				 	_rank: 15000,
 				 	name: 'Klokke',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
@@ -270,7 +270,7 @@ Meteor.methods({
 				},
 				{
 				 	_id: 'studio0_graphics_logo',
-				 	_rank: 111,
+				 	_rank: 16000,
 				 	name: 'Logo',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
@@ -278,42 +278,42 @@ Meteor.methods({
 				},
 				{
 				 	_id: 'studio0_graphics_tag_left',
-				 	_rank: 112,
+				 	_rank: 2000,
 				 	name: 'Arkiv',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true
 				},
 				{
 				 	_id: 'studio0_graphics_tag_right',
-				 	_rank: 113,
+				 	_rank: 3000,
 				 	name: 'Direkte',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true
 				},
 				{
 				 	_id: 'studio0_graphics_tema',
-				 	_rank: 114,
+				 	_rank: 4000,
 				 	name: 'Tema',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true
 				},
 				{
 				 	_id: 'studio0_graphics_ticker',
-				 	_rank: 115,
+				 	_rank: 5000,
 				 	name: 'Ticker',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true
 				},
 				{
 				 	_id: 'studio0_graphics_bakskjerm',
-				 	_rank: 116,
+				 	_rank: 17000,
 				 	name: 'Bakskjerm',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true
 				},
 				{
 					_id: 'studio0_split0',
-					_rank: 15,
+					_rank: 11000,
 					name: 'Split',
 					abbreviation: 'DVE',
 					type: RundownAPI.SourceLayerType.SPLITS,
@@ -323,7 +323,7 @@ Meteor.methods({
 				},
 				{
 					_id: 'studio0_remote0',
-					_rank: 60,
+					_rank: 10000,
 					name: 'DIR',
 					abbreviation: 'DIR',
 					type: RundownAPI.SourceLayerType.REMOTE,
@@ -343,14 +343,14 @@ Meteor.methods({
 				// },
 				{
 					_id: 'studio0_script',
-					_rank: 90,
+					_rank: 14000,
 					name: 'Manus',
 					type: RundownAPI.SourceLayerType.SCRIPT,
 					onPGMClean: true,
 				},
 				{
 					_id: 'studio0_camera0',
-					_rank: 100,
+					_rank: 13000,
 					name: 'Kam',
 					abbreviation: 'K ',
 					type: RundownAPI.SourceLayerType.CAMERA,
@@ -360,7 +360,7 @@ Meteor.methods({
 				},
 				{
 					_id: 'studio0_live_transition0',
-					_rank: 100,
+					_rank: 6000,
 					name: 'Transition',
 					type: RundownAPI.SourceLayerType.UNKNOWN,
 					onPGMClean: true,
