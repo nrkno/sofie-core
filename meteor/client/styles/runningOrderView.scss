@@ -173,6 +173,12 @@ body.vertical-overflow-only {
 					text-overflow: ellipsis;
 					width: 100%;
 				}
+
+				&.rundown-name {
+					width: auto;
+					max-width: calc(30vw - 138px);
+					min-width: 100%;
+				}
 			}
 
 			&.heavy-light {
