@@ -89,6 +89,13 @@ Meteor.methods({
 						port: 5250
 					}
 				},
+				'settings.devices.casparcg1': ((pd['settings'] || {})['devices'] || {})['casparcg1'] || {
+					type: PlayoutDeviceType.CASPARCG,
+					options: {
+						host: '',
+						port: 5250
+					}
+				},
 				'settings.devices.atem0': ((pd['settings'] || {})['devices'] || {})['atem0'] || {
 					type: PlayoutDeviceType.ATEM,
 					options: {
@@ -272,14 +279,14 @@ Meteor.methods({
 				{
 				 	_id: 'studio0_graphics_tag_left',
 				 	_rank: 112,
-				 	name: 'TagLeft',
+				 	name: 'Arkiv',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true
 				},
 				{
 				 	_id: 'studio0_graphics_tag_right',
 				 	_rank: 113,
-				 	name: 'TagRight',
+				 	name: 'Direkte',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true
 				},
@@ -379,7 +386,7 @@ Meteor.methods({
 			'casparcg_player_vignett': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
-				lookahead: LookaheadMode.PRELOAD,
+				lookahead: LookaheadMode.NONE,
 				channel: 5,
 				layer: 140
 			}),
@@ -420,9 +427,9 @@ Meteor.methods({
 			}),
 			'casparcg_cg_countdown': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
-				deviceId: 'casparcg0',
+				deviceId: 'casparcg1',
 				lookahead: LookaheadMode.NONE,
-				channel: 7,
+				channel: 1,
 				layer: 120
 			}),
 			'casparcg_cg_permanent': literal<MappingCasparCG>({

@@ -7,9 +7,11 @@ import { SourceLayerItem } from './SourceLayerItem'
 import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 import { getCurrentTime } from '../../../lib/lib'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
-import { VTContent, LiveSpeakContent } from '../../../lib/collections/SegmentLineItems'
+import { VTContent, LiveSpeakContent, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
 import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+// @ts-ignore Meteor package not recognized by Typescript
+import { ComputedField } from 'meteor/peerlibrary:computed-field'
 
 import {
 	ISourceLayerUi,
@@ -148,20 +150,32 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 })(
 class extends MeteorReactComponent<IPropsHeader> {
 	componentWillMount () {
-		this.autorun(() => {
-			if (this.props.segmentLineItem.sourceLayer) {
-				switch (this.props.segmentLineItem.sourceLayer.type) {
-					case RundownAPI.SourceLayerType.VT:
-						this.subscribe('mediaObjects', this.props.runningOrder.studioInstallationId, {
-							objId: (this.props.segmentLineItem.content as VTContent).fileName.toUpperCase()
-						})
-						break
-					case RundownAPI.SourceLayerType.LIVE_SPEAK:
-						this.subscribe('mediaObjects', this.props.runningOrder.studioInstallationId, {
-							objId: (this.props.segmentLineItem.content as LiveSpeakContent).fileName.toUpperCase()
-						})
-						break
+		let objIdCF = new ComputedField(() => {
+			let sli = SegmentLineItems.findOne(this.props.segmentLineItem._id)
+			if (sli) {
+				if (this.props.segmentLineItem.sourceLayer) {
+					switch (this.props.segmentLineItem.sourceLayer.type) {
+						case RundownAPI.SourceLayerType.VT:
+							return (sli.content as VTContent).fileName.toUpperCase()
+						case RundownAPI.SourceLayerType.LIVE_SPEAK:
+							return (sli.content as LiveSpeakContent).fileName.toUpperCase()
+					}
 				}
+			}
+			return ''
+		})
+
+		let prevSub: Meteor.SubscriptionHandle
+
+		this.autorun(() => {
+			let objId = objIdCF()
+			if (objId) {
+				if (prevSub) {
+					prevSub.stop()
+				}
+				prevSub = this.subscribe('mediaObjects', this.props.runningOrder.studioInstallationId, {
+					objId: objId
+				})
 			}
 		})
 	}

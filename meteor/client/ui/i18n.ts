@@ -15,6 +15,12 @@ const instance = i18n
 		defaultNS: 'translations',
 
 		debug: false,
+		joinArrays: '\n',
+
+		keySeparator: '→',
+		nsSeparator: '⇒',
+		pluralSeparator: '⥤',
+		contextSeparator: '⥤',
 
 		interpolation: {
 			escapeValue: false, // not needed for react!!
