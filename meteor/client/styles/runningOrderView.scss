@@ -1406,6 +1406,17 @@ body.vertical-overflow-only {
 		font-weight: 300;
   		text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 	}
+	table {
+		> tbody {
+			> tr {
+				> td {
+					&.mini-inspector__row--timing {
+						padding-top: 0.5em;
+					}
+				}
+			}
+		}
+	}
 }
 
 .running-order-view__go-to-onAir {

@@ -9,6 +9,7 @@ import { TimelineTransition,
 import { TimelineObj } from './Timeline'
 import { TransformedCollection } from '../typings/meteor'
 import { SegmentLineTimings } from './SegmentLines'
+import { Time } from '../lib'
 
 /** A trigger interface compatible with that of supertimeline */
 export interface ITimelineTrigger {
@@ -152,6 +153,22 @@ export interface GraphicsContent extends BaseContent {
 	thumbnail?: string
 	templateData?: object
 	metadata?: Array<MetadataElement>
+	timelineObjects: Array<SomeTimelineObject>
+}
+
+export interface NoraPayload {
+	content: { [key: string]: string }
+	manifest: string
+	template: {
+		event: string
+		layer: string
+		name: string
+	}
+	changed?: Time
+}
+
+export interface NoraContent extends BaseContent {
+	payload: NoraPayload
 	timelineObjects: Array<SomeTimelineObject>
 }
 
