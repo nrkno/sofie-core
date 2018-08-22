@@ -1,9 +1,11 @@
 import * as React from 'react'
 import * as $ from 'jquery'
 import * as _ from 'underscore'
+import { Time } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
+import Moment from 'react-moment'
 
-import { SegmentLineItemLifespan } from '../../../../lib/collections/SegmentLineItems'
+import { SegmentLineItemLifespan, NoraContent } from '../../../../lib/collections/SegmentLineItems'
 
 import { FloatingInspector } from '../../FloatingInspector'
 
@@ -47,10 +49,12 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 	render () {
 		const { t } = this.props
 
+		const noraContent = this.props.segmentLineItem.content as NoraContent
+
 		let properties: Array<KeyValue> = []
-		if (this.props.segmentLineItem.content && this.props.segmentLineItem.content.payload && this.props.segmentLineItem.content.payload.content) {
+		if (noraContent && noraContent.payload && noraContent.payload.content) {
 			// @ts-ignore
-			properties = _.map(this.props.segmentLineItem.content.payload.content, (value: string, key: string): {
+			properties = _.map(noraContent.payload.content, (value: string, key: string): {
 				key: string,
 				value: string
 			} => {
@@ -59,6 +63,11 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 					value: value
 				}
 			}) as Array<KeyValue>
+		}
+
+		let changed: Time | undefined = undefined
+		if (noraContent && noraContent.payload && noraContent.payload.changed) {
+			changed = noraContent.payload.changed
 		}
 
 		return <React.Fragment>
@@ -82,8 +91,8 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 										</tr>
 									))}
 									<tr>
-										<td></td>
-										<td>
+										<td className='mini-inspector__row--timing'></td>
+										<td className='mini-inspector__row--timing'>
 											<span className='mini-inspector__in-point'>{RundownUtils.formatTimeToShortTime(this.props.segmentLineItem.renderedInPoint)}</span>
 											{this.props.segmentLineItem.infiniteMode ?
 												(
@@ -93,6 +102,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 												)
 												: <span className='mini-inspector__duration'>{RundownUtils.formatTimeToShortTime(this.props.segmentLineItem.renderedDuration)}</span>
 											}
+											{changed && <span className='mini-inspector__changed'><Moment date={changed} calendar={true} /></span>}
 										</td>
 									</tr>
 								</tbody>

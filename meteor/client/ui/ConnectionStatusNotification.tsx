@@ -68,7 +68,7 @@ export const ConnectionStatusNotification = translateWithTracker<IProps, IState,
 			case 'offline':
 				return <span>{t('Your machine is offline.')}</span>
 			case 'connected':
-				return <span>Connected to server.</span>
+				return <span>{t('Connected to server.')}</span>
 		}
 		return null
 	}

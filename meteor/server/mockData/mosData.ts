@@ -2902,6 +2902,9 @@ Meteor.methods({
 											"displayNameShort" : "01 Navn: Tor Punsvik, viltforvalter, fylkesmannen Aust- og Vest Agder",
 											"type" : "super"
 										},
+										"userContext": {
+											"changed": "2018-08-16-T16:40:56"
+										},
 										"render" : {
 											"group" : ""
 										},
