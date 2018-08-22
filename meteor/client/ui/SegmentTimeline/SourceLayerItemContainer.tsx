@@ -150,24 +150,30 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 })(
 class extends MeteorReactComponent<IPropsHeader> {
 	componentWillMount () {
-		this.autorun(() => {
-			let objIdCF = new ComputedField(() => {
-				let sli = SegmentLineItems.findOne(this.props.segmentLineItem._id)
-				if (sli) {
-					if (this.props.segmentLineItem.sourceLayer) {
-						switch (this.props.segmentLineItem.sourceLayer.type) {
-							case RundownAPI.SourceLayerType.VT:
-								return (sli.content as VTContent).fileName.toUpperCase()
-							case RundownAPI.SourceLayerType.LIVE_SPEAK:
-								return (sli.content as LiveSpeakContent).fileName.toUpperCase()
-						}
+		let objIdCF = new ComputedField(() => {
+			let sli = SegmentLineItems.findOne(this.props.segmentLineItem._id)
+			if (sli) {
+				if (this.props.segmentLineItem.sourceLayer) {
+					switch (this.props.segmentLineItem.sourceLayer.type) {
+						case RundownAPI.SourceLayerType.VT:
+							return (sli.content as VTContent).fileName.toUpperCase()
+						case RundownAPI.SourceLayerType.LIVE_SPEAK:
+							return (sli.content as LiveSpeakContent).fileName.toUpperCase()
 					}
 				}
-				return ''
-			})
+			}
+			return ''
+		})
+
+		let prevSub: Meteor.SubscriptionHandle
+
+		this.autorun(() => {
 			let objId = objIdCF()
 			if (objId) {
-				this.subscribe('mediaObjects', this.props.runningOrder.studioInstallationId, {
+				if (prevSub) {
+					prevSub.stop()
+				}
+				prevSub = this.subscribe('mediaObjects', this.props.runningOrder.studioInstallationId, {
 					objId: objId
 				})
 			}
