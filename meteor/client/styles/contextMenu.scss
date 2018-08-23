@@ -1,5 +1,5 @@
 nav.react-contextmenu {
-	background: #3e4041;
+	background: #f5f5f5;
 	font-size: 1.0875rem;
 	font-weight: 400;
 	line-height: 1.5;
@@ -7,14 +7,14 @@ nav.react-contextmenu {
 	z-index: 1000;
 	user-select: none;
 
-	border-radius: 3px;
+	border-radius: 4px;
 	overflow: hidden;
 	overflow-y: auto;
-	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.25);
+	box-shadow: 5px 16px 80px 10px rgba(0,0,0,.75);
 
 	.react-contextmenu-item, .react-contextmenu-label {
 		margin: 0;
-		padding: 10px;
+		padding: 4px 13px 7px 13px;
 		display: block;
 		border: none;
 		background: none;
@@ -23,17 +23,22 @@ nav.react-contextmenu {
 	}
 
 	.react-contextmenu-label {
-		color: #9F9F9F;
+		color: #49C0FB;
+		background: #3e4041;
 		cursor: default;
 	}
 
 	.react-contextmenu-item {
-		color: #C3C3C3;
+		color: #494949;
+		font-weight: 300;
+		padding-left: 25px;
+		padding-right: 25px;
 		cursor: pointer;
 
 		&.react-contextmenu-item--selected:not(.react-contextmenu-item--disabled) {
 			background: #313334;
 			color: #FFFFFF;
+			text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.3);
 		}
 
 		&.react-contextmenu-item--disabled {
