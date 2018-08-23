@@ -10,7 +10,7 @@ $segment-timeline-background-color: #1F1F1F;
 $segment-next-preview-background-color: #181818;
 $segment-title-background-color: #4B4B4B;
 $segment-title-background-color-next: $general-next-color;
-$segment-title-text-color-live: #4B4B4B;
+$segment-title-text-color-live: #ffffff;
 $segment-title-background-color-live: $general-live-color;
 $segment-title-background-color-remote: $general-live-remote-color;
 $segment-title-background-color-has-played: #2c2c2c;
@@ -19,7 +19,7 @@ $segment-line-start-color: #898989;
 $segment-nextline-shade-width: 30px;
 $segment-nextline-shade-fill: linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.5));
 
-$liveline-timecode-color:  $general-live-color;
+$liveline-timecode-color:  #ffff00; //$general-live-color;
 
 /** The top padding of the timeline has to be equal to the header-height, so that the
 	functional part of the timeline starts at the same level as the segment title
@@ -252,6 +252,7 @@ body.vertical-overflow-only {
 		padding: 0.3em;
 		line-height: 1.2em;
 		letter-spacing: 0px;
+		font-weight: 400;
 		
 		grid-column: segment-name / segment-group-controls;
 		grid-row: main-view / end;
@@ -268,12 +269,16 @@ body.vertical-overflow-only {
 	&.live {
 		.segment-timeline__title {
 			color: $segment-title-text-color-live;
+			font-weight: 500;
+			text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
 			background: $segment-title-background-color-live
 		}
 	}
 
 	&.next {
 		.segment-timeline__title {
+			font-weight: 500;
+			text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
 			background: $segment-title-background-color-next
 		}
 	}
@@ -286,6 +291,7 @@ body.vertical-overflow-only {
 
 	&.has-played {
 		.segment-timeline__title {
+			font-weight: 200;
 			background: $segment-title-background-color-has-played
 		}
 	}
