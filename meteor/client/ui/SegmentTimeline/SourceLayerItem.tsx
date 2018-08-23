@@ -165,7 +165,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration : 0
 
 				const inPoint = segmentLineItem.renderedInPoint || 0
-				const duration = segmentLineItem.infiniteMode ? (this.props.segmentLineDuration - inPoint) : Math.min((segmentLineItem.renderedDuration || 0), this.props.segmentLineDuration - inPoint)
+				const duration = (segmentLineItem.infiniteMode || segmentLineItem.renderedDuration === 0) ? (this.props.segmentLineDuration - inPoint) : Math.min((segmentLineItem.renderedDuration || 0), this.props.segmentLineDuration - inPoint)
 				const outPoint = inPoint + duration
 
 				const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
@@ -217,8 +217,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		// 	)
 
 		const expectedDurationNumber = (typeof segmentLineItem.expectedDuration === 'number' ? segmentLineItem.expectedDuration || 0 : 0)
-		let itemDuration = Math.min(segmentLineItem.duration || segmentLineItem.renderedDuration || expectedDurationNumber || 0, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
-		if (segmentLineItem.infiniteMode !== undefined && segmentLineItem.infiniteMode !== SegmentLineItemLifespan.Normal && !segmentLineItem.cropped) {
+		let itemDuration = Math.min(segmentLineItem.durationOverride || segmentLineItem.duration || segmentLineItem.renderedDuration || expectedDurationNumber || 0, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
+		if (segmentLineItem.infiniteMode !== undefined && segmentLineItem.infiniteMode !== SegmentLineItemLifespan.Normal && !segmentLineItem.cropped && !segmentLineItem.duration && !segmentLineItem.durationOverride) {
 			itemDuration = this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)
 			// console.log(segmentLineItem.infiniteMode + ', ' + segmentLineItem.infiniteId)
 		}
@@ -262,6 +262,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			(nextProps.segmentLineItem.renderedInPoint !== this.props.segmentLineItem.renderedInPoint) ||
 			(nextProps.segmentLineItem.renderedDuration !== this.props.segmentLineItem.renderedDuration) ||
 			(nextProps.segmentLineItem.duration !== this.props.segmentLineItem.duration) ||
+			(nextProps.segmentLineItem.durationOverride !== this.props.segmentLineItem.durationOverride) ||
 			(nextProps.segmentLineItem.expectedDuration !== this.props.segmentLineItem.expectedDuration) ||
 			(nextProps.segmentLineItem.trigger !== this.props.segmentLineItem.trigger) ||
 			(this.isInsideViewport() && this._placeHolderElement)) {
@@ -421,7 +422,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 					'hide-overflow-labels': this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth),
 
-					'infinite': (this.props.segmentLineItem.duration === undefined && this.props.segmentLineItem.infiniteMode) as boolean, // 0 is a special value
+					'infinite': (this.props.segmentLineItem.duration === undefined && this.props.segmentLineItem.durationOverride === undefined && this.props.segmentLineItem.infiniteMode) as boolean, // 0 is a special value
 					'next-is-touching': (this.props.segmentLineItem.cropped),
 
 					'source-missing': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING,

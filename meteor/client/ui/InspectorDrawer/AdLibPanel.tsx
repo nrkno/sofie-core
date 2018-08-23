@@ -245,7 +245,7 @@ const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Comp
 						</div>
 					}
 				</div>
-				<div className='adlib-panel__list-view__toolbar__buttons'>
+				<div className='adlib-panel__list-view__toolbar__buttons' style={{ 'display': 'none' }}>
 					<button className='action-btn'>
 						<FontAwesomeIcon icon={faList} />
 					</button>

@@ -245,7 +245,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				slTimeline.push({
 					id: PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + segmentLineItem._id,
 					trigger: offsetTrigger(segmentLineItem.trigger, TIMELINE_TEMP_OFFSET),
-					duration: segmentLineItem.duration || 0,
+					duration: segmentLineItem.durationOverride || segmentLineItem.duration || 0,
 					LLayer: segmentLineItem.outputLayerId,
 					content: {
 						id: segmentLineItem._id
@@ -327,7 +327,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				item.continuedByRef.linked = true
 			} */
 			const expectedDurationNumber = (typeof item.expectedDuration === 'number' ? item.expectedDuration || 0 : 0)
-			return (item.duration || item.renderedDuration || expectedDurationNumber) + childDuration
+			return (item.durationOverride || item.duration || item.renderedDuration || expectedDurationNumber) + childDuration
 		}
 
 		_.forEach<SegmentLineUi>(segmentLines, (line) => {
