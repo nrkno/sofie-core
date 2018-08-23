@@ -277,6 +277,7 @@ interface ISourceLayerLookup {
 
 interface IProps {
 	// liveSegment: Segment | undefined
+	visible: boolean
 	runningOrder: RunningOrder
 	studioInstallation: StudioInstallation
 }
@@ -548,17 +549,20 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	}
 
 	render () {
-		if (!this.props.uiSegments || !this.props.runningOrder) {
-			return <Spinner />
-		} else {
-			return (
-				<div className='adlib-panel super-dark'>
-					<ul className='adlib-panel__segments'>
-						{this.renderSegmentList()}
-					</ul>
-					{this.renderListView()}
-				</div>
-			)
+		if (this.props.visible) {
+			if (!this.props.uiSegments || !this.props.runningOrder) {
+				return <Spinner />
+			} else {
+				return (
+					<div className='adlib-panel super-dark'>
+						<ul className='adlib-panel__segments'>
+							{this.renderSegmentList()}
+						</ul>
+						{this.renderListView()}
+					</div>
+				)
+			}
 		}
+		return null
 	}
 })
