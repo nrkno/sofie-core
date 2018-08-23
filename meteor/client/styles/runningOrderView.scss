@@ -93,7 +93,6 @@ body.vertical-overflow-only {
     left: 0;
     right: 0;
 	z-index: 20;
-	cursor:	context-menu;
 	user-select: none;
 
 	.flex-col.col-timing {
@@ -207,6 +206,11 @@ body.vertical-overflow-only {
 		margin: 17px 20px 14px;
 	}
 }
+
+.first-row  {
+	cursor:	context-menu;
+}
+
 .header.running-order.not-active .first-row  {
 	background-color: rgb(38, 137, 186);
 }
