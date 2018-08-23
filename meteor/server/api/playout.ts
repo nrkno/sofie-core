@@ -164,7 +164,8 @@ export namespace ServerPlayoutAPI {
 		// Remove duration on segmentLineItems, as this is set by the ad-lib playback editing
 		SegmentLineItems.update({ runningOrderId: runningOrder._id }, {
 			$unset: {
-				startedPlayback: 0
+				startedPlayback: 0,
+				durationOverride: 0
 			}
 		}, {
 			multi: true
@@ -807,43 +808,40 @@ export namespace ServerPlayoutAPI {
 
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		if (!runningOrder.active) throw new Meteor.Error(403, `Segment Line Items can be only manipulated in an active running order!`)
 		let segLine = SegmentLines.findOne({
 			_id: slId,
 			runningOrderId: roId
 		})
 		if (!segLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
-		let slItems = SegmentLineItems.find({
-			runningOrderId: roId,
-			segmentLineId: slId,
-			sourceLayerId: sourceLayerId
-		}).fetch()
-		if (!runningOrder.active) throw new Meteor.Error(403, `Segment Line Items can be only manipulated in an active running order!`)
 		if (runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Items can be only manipulated in a current segment line!`)
-
-		let parentOffset = 0
-		if (segLine.startedPlayback) {
-			parentOffset = segLine.startedPlayback
-		}
+		if (!segLine.startedPlayback) throw new Meteor.Error(405, `Segment Line "${slId}" has yet to start playback!`)
 
 		const now = getCurrentTime()
-		slItems.forEach((item) => {
-			let newExpectedDuration = 1 // smallest, non-zero duration
-			if (item.trigger.type === TriggerType.TIME_ABSOLUTE && _.isNumber(item.trigger.value)) {
-				const actualStartTime = parentOffset + item.trigger.value
-				newExpectedDuration = now - actualStartTime
-			} else {
-				logger.warn(`"${item._id}" timeline object is not positioned absolutely or is still set to play now, assuming it's about to be played.`)
-			}
+		const relativeNow = now - segLine.startedPlayback
+		const orderedItems = getResolvedSegmentLineItems(segLine)
 
-			// Only update if the new duration is shorter than the old one, since we are supposed to cut stuff short
-			if ((newExpectedDuration < item.expectedDuration) || (item.expectedDuration === 0)) {
+		// console.log(JSON.stringify(orderedItems.filter(i => i.sourceLayerId === sourceLayerId).map(i => {
+		//  	return {
+		//  		startTime: i.trigger.value,
+		//  		duration: i.duration || 0,
+		//  		id: i._id
+		//  	}
+		// }), null, 2))
+
+		orderedItems.filter(i => i.sourceLayerId === sourceLayerId).forEach((i) => {
+			if (i.startedPlayback && !i.durationOverride && (i.trigger.value < relativeNow) && (((i.trigger.value as number) + (i.duration || 0) > relativeNow) || i.duration === 0)) {
+				const newExpectedDuration = now - i.startedPlayback
+
+				console.log(`Cropping item "${i._id}" at ${newExpectedDuration}`)
+
 				SegmentLineItems.update({
-					_id: item._id
-				}, {
-					$set: {
-						duration: newExpectedDuration
-					}
-				})
+		 			_id: i._id
+		 		}, {
+		 			$set: {
+		 				durationOverride: newExpectedDuration
+		 			}
+		 		})
 			}
 		})
 
@@ -967,7 +965,7 @@ function beforeTake (runningOrder: RunningOrder, currentSegmentLine: SegmentLine
 		}
 		const currentSLIs = currentSegmentLine.getSegmentLinesItems()
 		currentSLIs.forEach((item) => {
-			if (item.overflows && typeof item.expectedDuration === 'number' && item.expectedDuration > 0 && item.duration === undefined) {
+			if (item.overflows && typeof item.expectedDuration === 'number' && item.expectedDuration > 0 && item.duration === undefined && item.durationOverride === undefined) {
 				// Clone an overflowing segment line item
 				let overflowedItem = _.extend({
 					_id: Random.id(),
@@ -1006,13 +1004,91 @@ import { Resolver } from 'superfly-timeline'
 import { transformTimeline } from '../../lib/timeline'
 import { ClientAPI } from '../../lib/api/client'
 
+function getResolvedSegmentLineItems (line: SegmentLine): SegmentLineItem[] {
+	const items = line.getSegmentLinesItems()
+
+	const itemMap: { [key: string]: SegmentLineItem } = {}
+	items.forEach(i => itemMap[i._id] = i)
+
+	const objs = items.map(i => clone(createSegmentLineItemGroup(i, i.durationOverride || i.duration || 0)))
+	objs.forEach(o => {
+		if (o.trigger.type === TriggerType.TIME_ABSOLUTE && (o.trigger.value === 0 || o.trigger.value === 'now')) {
+			o.trigger.value = 1
+		}
+	})
+	const events = Resolver.getTimelineInWindow(transformTimeline(objs))
+
+	let eventMap = events.resolved.map(e => {
+		const id = ((e as any || {}).metadata || {}).segmentLineItemId
+		return {
+			start: e.resolved.startTime || 0,
+			end: e.resolved.endTime || 0,
+			id: id,
+			item: itemMap[id]
+		}
+	})
+	events.unresolved.forEach(e => {
+		const id = ((e as any || {}).metadata || {}).segmentLineItemId
+		eventMap.push({
+			start: 0,
+			end: 0,
+			id: id,
+			item: itemMap[id]
+		})
+	})
+	if (events.unresolved.length > 0) {
+		logger.warn('got ' + events.unresolved.length + ' unresolved items for sli #' + line._id)
+	}
+	if (items.length !== eventMap.length) {
+		logger.warn('got ' + eventMap.length + ' ordered items. expected ' + items.length + '. for sli #' + line._id)
+	}
+
+	eventMap.sort((a, b) => {
+		if (a.start < b.start) {
+			return -1
+		} else if (a.start > b.start) {
+			return 1
+		} else {
+			if (a.item.isTransition === b.item.isTransition) {
+				return 0
+			} else if (b.item.isTransition) {
+				return 1
+			} else {
+				return -1
+			}
+		}
+	})
+
+	const processedItems = eventMap.map(e => _.extend(e.item, {
+		trigger: {
+			type: TriggerType.TIME_ABSOLUTE,
+			value: Math.max(0, e.start - 1)
+		},
+		duration: Math.max(0, e.end - 1)
+	}) as SegmentLineItem)
+
+	// crop infinite items
+	processedItems.forEach((value, index, source) => {
+		if (value.infiniteMode) {
+			for (let i = index + 1; i < source.length; i++) {
+				const li = source[i]
+				if (value.sourceLayerId === li.sourceLayerId) {
+					value.duration = (li.trigger.value as number) - (value.trigger.value as number)
+					return
+				}
+			}
+		}
+	})
+
+	return processedItems
+}
 function getOrderedSegmentLineItem (line: SegmentLine): SegmentLineItem[] {
 	const items = line.getSegmentLinesItems()
 
 	const itemMap: { [key: string]: SegmentLineItem } = {}
 	items.forEach(i => itemMap[i._id] = i)
 
-	const objs = items.map(i => clone(createSegmentLineItemGroup(i, i.duration || 0)))
+	const objs = items.map(i => clone(createSegmentLineItemGroup(i, i.durationOverride || i.duration || 0)))
 	objs.forEach(o => {
 		if (o.trigger.type === TriggerType.TIME_ABSOLUTE && (o.trigger.value === 0 || o.trigger.value === 'now')) {
 			o.trigger.value = 100
@@ -1111,7 +1187,7 @@ function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUnt
 		// figure out the baseline to set
 		let prevItems = getOrderedSegmentLineItem(previousLine)
 		for (let item of prevItems) {
-			if (!item.infiniteMode || item.duration) {
+			if (!item.infiniteMode || item.duration || item.durationOverride) {
 				delete activeInfiniteItems[item.sourceLayerId]
 				delete activeInfiniteItemsSegmentId[item.sourceLayerId]
 				continue
@@ -1219,7 +1295,7 @@ function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUnt
 
 		// find any new infinites exposed by this
 		for (let item of currentItems) {
-			if (!item.infiniteMode || item.duration) {
+			if (!item.infiniteMode || item.duration || item.durationOverride) {
 				delete activeInfiniteItems[item.sourceLayerId]
 				delete activeInfiniteItemsSegmentId[item.sourceLayerId]
 				continue
@@ -1480,7 +1556,7 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLine
 			let tos = item.content.timelineObjects
 
 			// create a segmentLineItem group for the items and then place all of them there
-			const segmentLineItemGroup = createSegmentLineItemGroup(item, item.duration || 0, segmentLineGroup)
+			const segmentLineItemGroup = createSegmentLineItemGroup(item, item.durationOverride || item.duration || 0, segmentLineGroup)
 			timelineObjs.push(segmentLineItemGroup)
 			timelineObjs.push(createSegmentLineItemGroupFirstObject(item, segmentLineItemGroup))
 

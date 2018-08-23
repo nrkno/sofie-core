@@ -3,11 +3,11 @@ import * as React from 'react'
 import { ISourceLayerUi, IOutputLayerUi, SegmentUi, SegmentLineUi, SegmentLineItemUi } from '../SegmentTimelineContainer'
 
 import { RundownUtils } from '../../../lib/rundown'
+import { VTContent } from '../../../../lib/collections/SegmentLineItems'
 import { FloatingInspector } from '../../FloatingInspector'
 import { StudioInstallation } from '../../../../lib/collections/StudioInstallations'
 
 import * as ClassNames from 'classnames'
-import { VTContent } from '../../../../lib/collections/SegmentLineItems';
 
 export interface ISourceLayerItemProps {
 	mediaPreviewUrl?: string
@@ -80,11 +80,10 @@ export class CustomLayerItemRenderer<IProps = any, IState = any> extends React.C
 	}
 
 	renderInfiniteIcon () {
-		return (this.props.segmentLineItem.infiniteMode) ?
+		return (this.props.segmentLineItem.infiniteMode && !this.props.segmentLineItem.duration && !this.props.segmentLineItem.durationOverride) ?
 			<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
-				<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#000000" viewBox="0 0 8 8">
-  					<path d="M2 0c-1.31 0-2 1.01-2 2s.69 2 2 2c.79 0 1.42-.56 2-1.22.58.66 1.19 1.22 2 1.22 1.31 0 2-1.01 2-2s-.69-2-2-2c-.81 0-1.42.56-2 1.22-.58-.66-1.21-1.22-2-1.22zm0 1c.42 0 .88.47 1.34 1-.46.53-.92 1-1.34 1-.74 0-1-.54-1-1 0-.46.26-1 1-1zm4 0c.74 0 1 .54 1 1 0 .46-.26 1-1 1-.43 0-.89-.47-1.34-1 .46-.53.91-1 1.34-1z"
-  transform="translate(0 2)" />
+				<svg xmlns='http://www.w3.org/2000/svg' width='11' height='11' fill='#ffffff' viewBox='0 0 8 8'>
+  					<path d='M2 0c-1.31 0-2 1.01-2 2s.69 2 2 2c.79 0 1.42-.56 2-1.22.58.66 1.19 1.22 2 1.22 1.31 0 2-1.01 2-2s-.69-2-2-2c-.81 0-1.42.56-2 1.22-.58-.66-1.21-1.22-2-1.22zm0 1c.42 0 .88.47 1.34 1-.46.53-.92 1-1.34 1-.74 0-1-.54-1-1 0-.46.26-1 1-1zm4 0c.74 0 1 .54 1 1 0 .46-.26 1-1 1-.43 0-.89-.47-1.34-1 .46-.53.91-1 1.34-1z' transform='translate(0 2)' />
 				</svg>
 			</div>
 			: null

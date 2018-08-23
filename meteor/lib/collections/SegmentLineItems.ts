@@ -74,6 +74,8 @@ export interface SegmentLineItem extends SegmentLineItemGeneric {
 	trigger: ITimelineTrigger
 	segmentLineId: string
 	expectedDuration: number | string
+	/** This is set when an item's duration needs to be overriden */
+	durationOverride?: number
 	isTransition: boolean
 
 	/** This is set when the item is infinite, to deduplicate the contents on the timeline, while allowing out of order */
