@@ -309,21 +309,24 @@ Meteor.methods({
 				 	_rank: 17000,
 				 	name: 'Bakskjerm',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
-					onPGMClean: true
+					onPGMClean: true,
+					clearKeyboardHotkey: 'p'
 				},
 				{
 				 	_id: 'studio0_clip_bakskjerm',
 				 	_rank: 17000,
 				 	name: 'Bakskjerm',
 				 	type: RundownAPI.SourceLayerType.VT,
-					onPGMClean: true
+					onPGMClean: true,
+					clearKeyboardHotkey: 'p'
 				},
 				{
 				 	_id: 'studio0_cam_bakskjerm',
 				 	_rank: 17000,
 				 	name: 'Bakskjerm',
 				 	type: RundownAPI.SourceLayerType.CAMERA,
-					onPGMClean: true
+					onPGMClean: true,
+					clearKeyboardHotkey: 'p'
 				},
 				{
 					_id: 'studio0_split0',
