@@ -263,6 +263,7 @@ interface ISourceLayerLookup {
 interface IProps {
 	runningOrder: RunningOrder
 	studioInstallation: StudioInstallation
+	visible: boolean
 }
 
 interface IState {
@@ -459,14 +460,17 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	}
 
 	render () {
-		if (!this.props.runningOrder) {
-			return <Spinner />
-		} else {
-			return (
-				<div className='adlib-panel super-dark'>
-					{this.renderListView()}
-				</div>
-			)
+		if (this.props.visible) {
+			if (!this.props.runningOrder) {
+				return <Spinner />
+			} else {
+				return (
+					<div className='adlib-panel super-dark'>
+						{this.renderListView()}
+					</div>
+				)
+			}
 		}
+		return null
 	}
 })

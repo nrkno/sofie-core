@@ -173,6 +173,12 @@ body.vertical-overflow-only {
 					text-overflow: ellipsis;
 					width: 100%;
 				}
+
+				&.rundown-name {
+					width: auto;
+					max-width: calc(30vw - 138px);
+					min-width: 100%;
+				}
 			}
 
 			&.heavy-light {
@@ -1412,12 +1418,22 @@ body.vertical-overflow-only {
 		font-weight: 300;
   		text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 	}
+	.mini-inspector__changed {
+		font-size: 0.8em;
+	}
 	table {
 		> tbody {
 			> tr {
 				> td {
 					&.mini-inspector__row--timing {
 						padding-top: 0.5em;
+					}
+				}
+			}
+			> tr:first-child {
+				> td {
+					&.mini-inspector__row--timing {
+						padding-top: 0em;
 					}
 				}
 			}
