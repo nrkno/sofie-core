@@ -232,8 +232,8 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 					})} onClick={(e) => this.switchTab(InspectorPanelTabs.GLOBAL_ADLIB)} tabIndex={0}>{t('Global AdLib')}</div>
 				</div>
 				<div className='running-order-view__inspector-drawer__panel super-dark'>
-					{this.state.selectedTab === InspectorPanelTabs.ADLIB && <AdLibPanel {...this.props}></AdLibPanel>}
-					{this.state.selectedTab === InspectorPanelTabs.GLOBAL_ADLIB && <GlobalAdLibPanel {...this.props}></GlobalAdLibPanel>}
+					<AdLibPanel visible={this.state.selectedTab === InspectorPanelTabs.ADLIB} {...this.props}></AdLibPanel>
+					<GlobalAdLibPanel visible={this.state.selectedTab === InspectorPanelTabs.GLOBAL_ADLIB} {...this.props}></GlobalAdLibPanel>
 				</div>
 			</div>
 		)
