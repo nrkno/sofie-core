@@ -44,12 +44,12 @@ const Timediff = class extends React.Component<{ time: number}> {
 		const time = -this.props.time
 		const timeString = RundownUtils.formatDiffToTimecode(time, false, false, false, true, true, '') // @todo: something happened here with negative time
 		const timeStringSegments = timeString.split(':')
-		const fontWeight = (no) => no === '00' || no === '+00' ? true : false
+		const fontWeight = (no) => no === '00' || no === '+00'
 		return (
 			<span className={ time > 0 ? 'clocks-segment-countdown-red' : '' }>
 				{time > 0 ? <span className="clocks-counter-light">+</span> : null}
 				<span className={fontWeight(timeStringSegments[0]) ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[0]}</span>:
-				<span className={fontWeight(timeStringSegments[1]) ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[1]}</span>
+				<span className={timeStringSegments[1] ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[1]}</span>
 				{timeStringSegments.length > 2 ? ':' : null}
 				{timeStringSegments.length > 2 ? <span className={fontWeight(timeStringSegments[2]) ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[2]}</span> : null}
 			</span>
