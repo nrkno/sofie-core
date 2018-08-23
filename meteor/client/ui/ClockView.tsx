@@ -47,11 +47,11 @@ const Timediff = class extends React.Component<{ time: number}> {
 		const fontWeight = (no) => no === '00' || no === '+00' ? true : false
 		return (
 			<span className={ time > 0 ? 'clocks-segment-countdown-red' : '' }>
-				{time > 0 ? <span className="fontweight-300">+</span> : null}
-				<span className={fontWeight(timeStringSegments[0]) ? 'fontweight-300' : 'fontweight-normal'}>{timeStringSegments[0]}</span>:
-				<span className={fontWeight(timeStringSegments[1]) ? 'fontweight-300' : 'fontweight-normal'}>{timeStringSegments[1]}</span>
+				{time > 0 ? <span className="clocks-counter-light">+</span> : null}
+				<span className={fontWeight(timeStringSegments[0]) ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[0]}</span>:
+				<span className={fontWeight(timeStringSegments[1]) ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[1]}</span>
 				{timeStringSegments.length > 2 ? ':' : null}
-				{timeStringSegments.length > 2 ? <span className={fontWeight(timeStringSegments[2]) ? 'fontweight-300' : 'fontweight-normal'}>{timeStringSegments[2]}</span> : null}
+				{timeStringSegments.length > 2 ? <span className={fontWeight(timeStringSegments[2]) ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[2]}</span> : null}
 			</span>
 		)
 	}
@@ -74,10 +74,10 @@ const Timecode = class extends React.Component<{ time: number }> {
 		return (
 			<span>
 				{time < 0 ? <span>+</span> : <span></span>}
-				<span className={fontWeight(timecodeSegments[0]) ? 'fontweight-300' : ''}>{timecodeSegments[0]}</span>:
-				<span className={fontWeight(timecodeSegments[1]) ? 'fontweight-300' : ''}>{timecodeSegments[1]}</span>:
-				<span className={fontWeight(timecodeSegments[2]) ? 'fontweight-300' : ''}>{timecodeSegments[2]}</span>:
-				<span className={fontWeight(timecodeSegments[3]) ? 'fontweight-normal' : ''}>{timecodeSegments[3]}</span>
+				<span className={fontWeight(timecodeSegments[0]) ? 'clocks-counter-light' : ''}>{timecodeSegments[0]}</span>:
+				<span className={fontWeight(timecodeSegments[1]) ? 'clocks-counter-light' : ''}>{timecodeSegments[1]}</span>:
+				<span className={fontWeight(timecodeSegments[2]) ? 'clocks-counter-light' : ''}>{timecodeSegments[2]}</span>:
+				<span className={fontWeight(timecodeSegments[3]) ? 'clocks-counter-normal' : ''}>{timecodeSegments[3]}</span>
 			</span>
 		)
 	}
@@ -189,7 +189,7 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 								</div>
 							</div>
 							<div className='clocks-rundown-title clocks-top-bar'>
-								<span className='fontweight-light'>{('Rundown')}</span>: {runningOrder ? runningOrder.name : 'UNKNOWN'}
+								<span className='clocks-counter-thin'>{('Rundown')}</span>: {runningOrder ? runningOrder.name : 'UNKNOWN'}
 							</div>
 						</div>
 					</div>
@@ -298,7 +298,16 @@ class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 				</RunningOrderTimingProvider>
 			)
 		} else {
-			return null
+			//return null
+			return (
+				<div className='running-order-view running-order-view--unpublished'>
+					<div className='running-order-view__label'>
+						<p>
+							{t('There is no running order active in this studio.')}
+						</p>
+					</div>
+				</div>
+			)
 		}
 	}
 }

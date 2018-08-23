@@ -47,7 +47,7 @@
 }
 
 .clocks-segment-title {
-	padding-left: 4.815vw;
+	padding-left: 2.815vw;
 	height: 18.333vh;
 	font-size: 13.889vh;
 
@@ -64,19 +64,19 @@
 }
 
 .clocks-segment-title.clocks-current-segment-title {
-	font-weight: bold;
-	padding: 0;
+	font-weight: 500;
+	padding: 3px 0 0 0;
 }
 
 .clocks-segmentline-title {
 	margin-top: -2.778vh;
 	font-weight: 300!important;
 	padding-top: 1vh;
+	//margin-left: 35px;
 }
 
 .clocks-current-segment-title {
-	color: #ffff00;
-	padding-left: 0;
+	color: #ffffff;
 }
 
 .clocks-segment-countdown {
@@ -102,16 +102,16 @@
 	color: red;
 }
 
-.fontweight-300 {
-	font-weight: 300;
+.clocks-counter-light {
+	font-weight: 200;
 }
 
-.fontweight-light {
+.clocks-counter-thin {
 	font-weight: 100;
 }
 
-.fontweight-normal {
-	font-weight: normal;
+.clocks-counter-normal {
+	font-weight: 400;
 }
 
 .clocks-rundown-title {
