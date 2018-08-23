@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2018-08-22T07:56:23.657Z\n"
-"PO-Revision-Date: 2018-08-22T07:56:23.657Z\n"
+"POT-Creation-Date: 2018-08-23T07:31:01.494Z\n"
+"PO-Revision-Date: 2018-08-23T07:31:01.494Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -30,6 +30,9 @@ msgid "Reconnecting to the automation server"
 msgstr ""
 
 msgid "Your machine is offline."
+msgstr ""
+
+msgid "Connected to server."
 msgstr ""
 
 msgid "Welcome to Sofie"
