@@ -160,10 +160,10 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 					<div className='clocks-full-screen'>
 						<div className='clocks-half clocks-top'>
 							<div className='clocks-segment-title clocks-current-segment-title'>
-								{currentSegmentLine ? currentSegmentLine.slug.split(';')[0] : '_'}
+								{currentSegmentLine ? currentSegmentLine.slug.split(';')[0] : ''}
 							</div>
 							<div className='clocks-segmentline-title clocks-segment-title clocks-current-segment-title'>
-								{currentSegmentLine ? currentSegmentLine.slug.split(';')[1] : '_'}
+								{currentSegmentLine ? currentSegmentLine.slug.split(';')[1] : ''}
 							</div>
 							<div className='clocks-segment-icon clocks-current-segment-icon'>
 								{currentSegmentLine ?
