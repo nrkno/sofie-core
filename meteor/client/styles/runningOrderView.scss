@@ -93,7 +93,7 @@ body.vertical-overflow-only {
     left: 0;
     right: 0;
 	z-index: 20;
-
+	cursor:	context-menu;
 	user-select: none;
 
 	.flex-col.col-timing {
