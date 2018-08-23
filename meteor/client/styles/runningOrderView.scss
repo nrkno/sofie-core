@@ -93,7 +93,7 @@ body.vertical-overflow-only {
     left: 0;
     right: 0;
 	z-index: 20;
-
+	cursor:	context-menu;
 	user-select: none;
 
 	.flex-col.col-timing {
@@ -1447,7 +1447,7 @@ body.vertical-overflow-only {
 	cursor: pointer;
     bottom: 1.5em;
     right: 1.5em;
-    background: yellow;
+    background: $general-live-color;
     color: #000;
     padding: 0.7em 1em;
     border-radius: 3px;

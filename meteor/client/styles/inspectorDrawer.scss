@@ -25,7 +25,7 @@ $inspector-drawer-tabs-height: 2.3em;
 		clip-path: polygon(-20% -20%, 120% -20%, 120% 50%, -20% 50%);
 		-webkit-clip-path: polygon(-20% -20%, 120% -20%, 120% 50%, -20% 50%);
 		box-shadow: 0 0 20px #000;
-		cursor: pointer;
+		cursor: -webkit-grab;
 
 		text-align: center;
 		padding-top: 0.5em;
