@@ -312,6 +312,20 @@ Meteor.methods({
 					onPGMClean: true
 				},
 				{
+				 	_id: 'studio0_clip_bakskjerm',
+				 	_rank: 17000,
+				 	name: 'Bakskjerm',
+				 	type: RundownAPI.SourceLayerType.VT,
+					onPGMClean: true
+				},
+				{
+				 	_id: 'studio0_cam_bakskjerm',
+				 	_rank: 17000,
+				 	name: 'Bakskjerm',
+				 	type: RundownAPI.SourceLayerType.CAMERA,
+					onPGMClean: true
+				},
+				{
 					_id: 'studio0_split0',
 					_rank: 11000,
 					name: 'Split',
