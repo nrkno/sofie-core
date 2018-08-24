@@ -357,7 +357,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	activateRehearsal = () => {
-		if (this.props.studioMode && !this.props.runningOrder.active) {
+		if (this.props.studioMode && (!this.props.runningOrder.active || (this.props.runningOrder.active && !this.props.runningOrder.rehearsal))) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, true, (err, res) => {
 				if (err || (res & res.error)) {
 					this.handleActivationError(err || res)
@@ -427,13 +427,20 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 										<MenuItem onClick={(e) => this.hold()}>
 											{t('Hold')}
 										</MenuItem>
-										{this.props.runningOrder.rehearsal &&
+										{this.props.runningOrder.rehearsal ?
 											<React.Fragment>
 												<hr/>
 												<MenuItem onClick={(e) => this.activate()}>
 													{t('Activate')}
 												</MenuItem>
 												<hr/>
+											</React.Fragment> :
+											<React.Fragment>
+												<hr />
+												<MenuItem onClick={(e) => this.activateRehearsal()}>
+													{t('Activate (Rehearsal)')}
+												</MenuItem>
+												<hr />
 											</React.Fragment>
 										}
 									</React.Fragment> :
