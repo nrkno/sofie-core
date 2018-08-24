@@ -304,12 +304,18 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 			this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, {})
 
 			$(document.body).addClass('auto-scrolling')
+			const autoScrolling = parseInt($(document.body).data('auto-scrolling') || 0, 10) + 1
+			$(document.body).data('auto-scrolling', autoScrolling)
 			$('html,body').animate({
 				scrollTop: Math.max(0, scrollTop - 175)
-			}, 400, () => {
+			}, 400).promise().then(() => {
 				// delay until next frame, so that the scroll handler can fire
 				setTimeout(function () {
-					$(document.body).removeClass('auto-scrolling')
+					const autoScrolling = parseInt($(document.body).data('auto-scrolling') || 0, 10) - 1
+					$(document.body).data('auto-scrolling', autoScrolling)
+					if (autoScrolling <= 0) {
+						$(document.body).removeClass('auto-scrolling')
+					}
 				})
 			})
 		}

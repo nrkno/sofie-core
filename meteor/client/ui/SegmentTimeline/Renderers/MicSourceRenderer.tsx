@@ -2,6 +2,7 @@ import * as React from 'react'
 import * as $ from 'jquery'
 
 import { ISourceLayerItemProps } from '../SourceLayerItem'
+import { ScriptContent } from '../../../../lib/collections/SegmentLineItems'
 
 import { FloatingInspector } from '../../FloatingInspector'
 
@@ -20,6 +21,8 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
 
+	readTime: number
+
 	private _forceSizingRecheck: boolean
 
 	constructor (props) {
@@ -33,10 +36,17 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 	refreshLine = () => {
 		if (this.itemElement) {
 			this.itemPosition = $(this.itemElement).position().left || 0
-			this.itemWidth = $(this.itemElement).outerWidth() || 0
+			const content = this.props.segmentLineItem.content as ScriptContent
+			let scriptReadTime = 0
+			if (content && content.sourceDuration) {
+				scriptReadTime = content.sourceDuration * this.props.timeScale
+				this.readTime = content.sourceDuration
+			} else {
+				scriptReadTime = $(this.itemElement).width() || 0
+			}
 
-			if (this.itemPosition + this.itemWidth !== this.linePosition) {
-				this.linePosition = this.itemPosition + this.itemWidth
+			if (this.itemPosition + scriptReadTime !== this.linePosition) {
+				this.linePosition = Math.min(this.itemPosition + scriptReadTime, this.props.segmentLineDuration * this.props.timeScale)
 				this.repositionLine()
 			}
 		}
@@ -95,6 +105,11 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 			}
 			this.itemElement = this.props.itemElement
 			$(this.itemElement).parent().parent().append(this.lineItem)
+			this._forceSizingRecheck = true
+		}
+
+		const content = this.props.segmentLineItem.content as ScriptContent
+		if (content.sourceDuration && content.sourceDuration !== this.readTime) {
 			this._forceSizingRecheck = true
 		}
 		if (this._forceSizingRecheck) {

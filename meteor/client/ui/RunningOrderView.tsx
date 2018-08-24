@@ -235,7 +235,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE_REHEARSAL,
 				up: this.keyActivateRehearsal
-			}, {
+			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RELOAD_RUNNING_ORDER,
 				up: this.keyReloadRunningOrder
 			}
@@ -345,7 +345,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	activate = () => {
-		if (this.props.studioMode && !this.props.runningOrder.active) {
+		if (this.props.studioMode && (!this.props.runningOrder.active || (this.props.runningOrder.active && this.props.runningOrder.rehearsal))) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false, (err, res) => {
 				if (err || (res && res.error)) {
 					this.handleActivationError(err || res)
@@ -357,7 +357,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	activateRehearsal = () => {
-		if (this.props.studioMode && !this.props.runningOrder.active) {
+		if (this.props.studioMode && (!this.props.runningOrder.active || (this.props.runningOrder.active && !this.props.runningOrder.rehearsal))) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, true, (err, res) => {
 				if (err || (res & res.error)) {
 					this.handleActivationError(err || res)
@@ -427,6 +427,22 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 										<MenuItem onClick={(e) => this.hold()}>
 											{t('Hold')}
 										</MenuItem>
+										{this.props.runningOrder.rehearsal ?
+											<React.Fragment>
+												<hr/>
+												<MenuItem onClick={(e) => this.activate()}>
+													{t('Activate')}
+												</MenuItem>
+												<hr/>
+											</React.Fragment> :
+											<React.Fragment>
+												<hr />
+												<MenuItem onClick={(e) => this.activateRehearsal()}>
+													{t('Activate (Rehearsal)')}
+												</MenuItem>
+												<hr />
+											</React.Fragment>
+										}
 									</React.Fragment> :
 									<React.Fragment>
 										<MenuItem onClick={(e) => this.activate()}>
@@ -664,6 +680,14 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
+	onWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+		console.log(e)
+		if (!e.altKey && e.ctrlKey && !e.shiftKey && !e.metaKey && e.deltaY !== 0) {
+			this.onTimeScaleChange(Math.min(500, this.state.timeScale * (1 + 0.001 * (e.deltaY * -1))))
+			e.preventDefault()
+		}
+	}
+
 	onGoToLiveSegment = () => {
 		this.setState({
 			followLiveSegments: true
@@ -754,7 +778,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				<RunningOrderTimingProvider
 					runningOrder={this.props.runningOrder}
 					defaultDuration={DEFAULT_DISPLAY_DURATION}>
-					<div className='running-order-view' style={this.getStyle()}>
+					<div className='running-order-view' style={this.getStyle()} onWheelCapture={this.onWheel}>
 						<ErrorBoundary>
 							<KeyboardFocusMarker />
 						</ErrorBoundary>

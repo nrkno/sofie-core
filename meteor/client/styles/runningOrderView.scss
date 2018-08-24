@@ -847,6 +847,10 @@ body.vertical-overflow-only {
 									min-height: 0;
 
 									@include item-type-colors();
+
+									> .segment-timeline__layer-item__label.right-side {
+										margin-right: 0 !important;
+									}
 								}
 							}
 						}
@@ -899,6 +903,7 @@ body.vertical-overflow-only {
 
 								> .segment-timeline__layer-item__label {
 									margin-right: 0 !important;
+									margin-left: 5px !important;
 								}
 
 								> .label-icon {
