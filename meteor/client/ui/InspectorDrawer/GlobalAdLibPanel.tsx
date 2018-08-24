@@ -15,7 +15,7 @@ import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/col
 import { RunningOrderBaselineAdLibItems } from '../../../lib/collections/RunningOrderBaselineAdLibItems'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
-import * as mousetrap from 'mousetrap'
+import { mousetrapHelper } from '../../lib/moustrapHelper'
 
 import * as faTh from '@fortawesome/fontawesome-free-solid/faTh'
 import * as faList from '@fortawesome/fontawesome-free-solid/faList'
@@ -345,7 +345,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	}
 
 	componentDidUpdate (prevProps: IProps & ITrackedProps) {
-		mousetrap.unbind(this.usedHotkeys, 'keyup')
+		mousetrapHelper.unbind(this.usedHotkeys, 'keyup')
 		this.usedHotkeys.length = 0
 
 		this.refreshKeyboardHotkeys()
@@ -353,8 +353,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 	componentWillUnmount () {
 		this._cleanUp()
-		mousetrap.unbind(this.usedHotkeys, 'keyup')
-		mousetrap.unbind(this.usedHotkeys, 'keydown')
+		mousetrapHelper.unbind(this.usedHotkeys, 'keyup')
+		mousetrapHelper.unbind(this.usedHotkeys, 'keydown')
 
 		this.usedHotkeys.length = 0
 	}
@@ -367,8 +367,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		if (this.props.roAdLibs) {
 			this.props.roAdLibs.forEach((item) => {
 				if (item.hotkey) {
-					mousetrap.bind(item.hotkey, preventDefault, 'keydown')
-					mousetrap.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown')
+					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
 						this.onToggleAdLib(item)
 					}, 'keyup')
@@ -380,8 +380,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		if (this.props.sourceLayerLookup) {
 			_.forEach(this.props.sourceLayerLookup, (item) => {
 				if (item.clearKeyboardHotkey) {
-					mousetrap.bind(item.clearKeyboardHotkey, preventDefault, 'keydown')
-					mousetrap.bind(item.clearKeyboardHotkey, (e: ExtendedKeyboardEvent) => {
+					mousetrapHelper.bind(item.clearKeyboardHotkey, preventDefault, 'keydown')
+					mousetrapHelper.bind(item.clearKeyboardHotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
 						this.onClearAllSourceLayer(item)
 					}, 'keyup')
@@ -389,8 +389,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				}
 
 				if (item.isSticky && item.activateStickyKeyboardHotkey) {
-					mousetrap.bind(item.activateStickyKeyboardHotkey, preventDefault, 'keydown')
-					mousetrap.bind(item.activateStickyKeyboardHotkey, (e: ExtendedKeyboardEvent) => {
+					mousetrapHelper.bind(item.activateStickyKeyboardHotkey, preventDefault, 'keydown')
+					mousetrapHelper.bind(item.activateStickyKeyboardHotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
 						this.onToggleSticky(item._id)
 					}, 'keyup')

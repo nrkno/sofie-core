@@ -15,7 +15,7 @@ import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/col
 import { RunningOrderBaselineAdLibItems } from '../../../lib/collections/RunningOrderBaselineAdLibItems'
 import { AdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
-import * as mousetrap from 'mousetrap'
+import { mousetrapHelper } from '../../lib/moustrapHelper'
 
 import * as faTh from '@fortawesome/fontawesome-free-solid/faTh'
 import * as faList from '@fortawesome/fontawesome-free-solid/faList'
@@ -422,7 +422,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	}
 
 	componentDidUpdate (prevProps: IProps & ITrackedProps) {
-		mousetrap.unbind(this.usedHotkeys, 'keyup')
+		mousetrapHelper.unbind(this.usedHotkeys, 'keyup')
 		this.usedHotkeys.length = 0
 
 		if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
@@ -436,8 +436,8 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 
 	componentWillUnmount () {
 		this._cleanUp()
-		mousetrap.unbind(this.usedHotkeys, 'keyup')
-		mousetrap.unbind(this.usedHotkeys, 'keydown')
+		mousetrapHelper.unbind(this.usedHotkeys, 'keyup')
+		mousetrapHelper.unbind(this.usedHotkeys, 'keydown')
 
 		this.usedHotkeys.length = 0
 	}
@@ -450,8 +450,8 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		if (this.props.roAdLibs) {
 			this.props.roAdLibs.forEach((item) => {
 				if (item.hotkey) {
-					mousetrap.bind(item.hotkey, preventDefault, 'keydown')
-					mousetrap.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown')
+					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
 						this.onToggleAdLib(item)
 					}, 'keyup')
@@ -463,8 +463,8 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		if (this.props.liveSegment && this.props.liveSegment.items) {
 			this.props.liveSegment.items.forEach((item) => {
 				if (item.hotkey) {
-					mousetrap.bind(item.hotkey, preventDefault, 'keydown')
-					mousetrap.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown')
+					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
 						this.onToggleAdLib(item)
 					}, 'keyup')
