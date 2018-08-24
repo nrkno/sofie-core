@@ -96,7 +96,6 @@ export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_ACTIVATE2 = '\\',
 	RUNNING_ORDER_ACTIVATE3 = '|',
 	RUNNING_ORDER_ACTIVATE_REHEARSAL = 'mod+§',
-	RUNNING_ORDER_ACTIVATE_FROM_REHEARSAL = 'shift+§',
 	RUNNING_ORDER_DEACTIVATE = 'mod+shift+§',
 	RUNNING_ORDER_GO_TO_LIVE = 'mod+home',
 	RUNNING_ORDER_RELOAD_RUNNING_ORDER = 'mod+shift+f12',
@@ -237,9 +236,6 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE_REHEARSAL,
 				up: this.keyActivateRehearsal
 			},{
-				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE_FROM_REHEARSAL,
-				up: this.keyActivateFromRehearsal
-			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RELOAD_RUNNING_ORDER,
 				up: this.keyReloadRunningOrder
 			}
@@ -300,9 +296,6 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	keyActivate = (e: ExtendedKeyboardEvent) => {
 		this.activate()
 	}
-	keyActivateFromRehearsal = (e: ExtendedKeyboardEvent) => {
-		this.activateFromRehearsal()
-	}
 	keyActivateRehearsal = (e: ExtendedKeyboardEvent) => {
 		this.activateRehearsal()
 	}
@@ -352,19 +345,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	activate = () => {
-		if (this.props.studioMode && !this.props.runningOrder.active) {
-			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false, (err, res) => {
-				if (err || (res && res.error)) {
-					this.handleActivationError(err || res)
-					return
-				}
-				if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
-			})
-		}
-	}
-
-	activateFromRehearsal = () => {
-		if (this.props.studioMode && this.props.runningOrder.active && this.props.runningOrder.rehearsal) {
+		if (this.props.studioMode && (!this.props.runningOrder.active || (this.props.runningOrder.active && this.props.runningOrder.rehearsal))) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false, (err, res) => {
 				if (err || (res && res.error)) {
 					this.handleActivationError(err || res)
@@ -449,8 +430,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 										{this.props.runningOrder.rehearsal &&
 											<React.Fragment>
 												<hr/>
-												<MenuItem onClick={(e) => this.activateFromRehearsal()}>
-													{t('Activate for broadcast')}
+												<MenuItem onClick={(e) => this.activate()}>
+													{t('Activate')}
 												</MenuItem>
 												<hr/>
 											</React.Fragment>
