@@ -664,6 +664,14 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
+	onWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+		console.log(e)
+		if (!e.altKey && e.ctrlKey && !e.shiftKey && !e.metaKey && e.deltaY !== 0) {
+			this.onTimeScaleChange(Math.min(500, this.state.timeScale * (1 + 0.001 * (e.deltaY * -1))))
+			e.preventDefault()
+		}
+	}
+
 	onGoToLiveSegment = () => {
 		this.setState({
 			followLiveSegments: true
@@ -754,7 +762,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				<RunningOrderTimingProvider
 					runningOrder={this.props.runningOrder}
 					defaultDuration={DEFAULT_DISPLAY_DURATION}>
-					<div className='running-order-view' style={this.getStyle()}>
+					<div className='running-order-view' style={this.getStyle()} onWheelCapture={this.onWheel}>
 						<ErrorBoundary>
 							<KeyboardFocusMarker />
 						</ErrorBoundary>
