@@ -81,6 +81,7 @@ export namespace ServerPlayoutAPI {
 		rehearsal = !!rehearsal
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		if (runningOrder.active && !runningOrder.rehearsal) throw new Meteor.Error(403, `RunningOrder "${roId}" is active and not in rehersal, cannot reactivate!`)
 
 		let wasInactive = !runningOrder.active
 
@@ -108,7 +109,10 @@ export namespace ServerPlayoutAPI {
 
 		let anyOtherActiveRunningOrders = RunningOrders.find({
 			studioInstallationId: runningOrder.studioInstallationId,
-			active: true
+			active: true,
+			_id: {
+				$ne: roId
+			}
 		}).fetch()
 
 		if (anyOtherActiveRunningOrders.length) {

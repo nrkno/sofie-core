@@ -12,6 +12,10 @@ nav.react-contextmenu {
 	overflow-y: auto;
 	box-shadow: 5px 16px 80px 10px rgba(0,0,0,.75);
 
+	hr {
+		margin: 0;
+	}
+
 	.react-contextmenu-item, .react-contextmenu-label {
 		margin: 0;
 		padding: 4px 13px 7px 13px;
