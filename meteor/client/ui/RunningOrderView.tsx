@@ -189,10 +189,17 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>, ITimi
 		)
 	}
 }))
+
+interface HotkeyDefinition {
+	key: string
+	label: string
+}
+
 interface IRunningOrderHeaderProps {
 	runningOrder: RunningOrder,
 	studioInstallation: StudioInstallation,
-	onActivate?: (isRehearsal: boolean) => void
+	onActivate?: (isRehearsal: boolean) => void,
+	onRegisterHotkeys?: (hotkeys: Array<HotkeyDefinition>) => void
 	studioMode: boolean
 }
 
@@ -206,38 +213,50 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		key: string,
 		up?: (e: KeyboardEvent) => any
 		down?: (e: KeyboardEvent) => any
+		label: string
 	}> = []
 	constructor (props: Translated<IRunningOrderHeaderProps>) {
 		super(props)
 
+		const { t } = props
+
 		this.bindKeys = [
 			{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE,
-				up: this.keyTake
+				up: this.keyTake,
+				label: t('Take')
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE2,
-				up: this.keyTake
+				up: this.keyTake,
+				label: t('Take')
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_HOLD,
-				up: this.keyHold
+				up: this.keyHold,
+				label: t('Hold')
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE,
-				up: this.keyActivate
+				up: this.keyActivate,
+				label: t('Activate')
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE2,
-				up: this.keyActivate
+				up: this.keyActivate,
+				label: t('Activate')
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE3,
-				up: this.keyActivate
+				up: this.keyActivate,
+				label: t('Activate')
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE,
-				up: this.keyDeactivate
+				up: this.keyDeactivate,
+				label: t('Deactivate')
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE_REHEARSAL,
-				up: this.keyActivateRehearsal
+				up: this.keyActivateRehearsal,
+				label: t('Activate (rehearsal)')
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RELOAD_RUNNING_ORDER,
-				up: this.keyReloadRunningOrder
+				up: this.keyReloadRunningOrder,
+				label: t('Reload running order')
 			}
 		]
 
@@ -272,6 +291,10 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				}, 'keydown')
 			}
 		})
+
+		if (typeof this.props.onRegisterHotkeys === 'function') {
+			this.props.onRegisterHotkeys(this.bindKeys)
+		}
 	}
 
 	componentWillUnmount () {
@@ -494,6 +517,7 @@ interface IState {
 	followLiveSegments: boolean
 	manualSetAsNext: boolean
 	subsReady: boolean
+	usedHotkeys: Array<HotkeyDefinition>
 }
 
 interface ITrackedProps {
@@ -531,11 +555,22 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		key: string,
 		up?: (e: KeyboardEvent) => any
 		down?: (e: KeyboardEvent) => any
+		label: string
 	}> = []
 	private _segments: _.Dictionary<React.ComponentClass<{}>> = {}
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
+
+		const { t } = this.props
+
+		this.bindKeys = [
+			{
+				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_GO_TO_LIVE,
+				up: this.onGoToLiveSegment,
+				label: t('Go to On Air line')
+			}
+		]
 
 		this.state = {
 			timeScale: 0.03,
@@ -544,15 +579,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			bottomMargin: '',
 			followLiveSegments: true,
 			manualSetAsNext: false,
-			subsReady: false
+			subsReady: false,
+			usedHotkeys: _.clone(this.bindKeys)
 		}
-
-		this.bindKeys = [
-			{
-				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_GO_TO_LIVE,
-				up: this.onGoToLiveSegment
-			}
-		]
 	}
 
 	componentWillMount () {
@@ -765,6 +794,14 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 	}
 
+	onRegisterHotkeys = (hotkeys: Array<HotkeyDefinition>) => {
+		// @ts-ignore
+		this.state.usedHotkeys = this.state.usedHotkeys.concat(hotkeys) // we concat directly to the state object member, because we need to
+		this.setState({
+			usedHotkeys: this.state.usedHotkeys
+		})
+	}
+
 	getStyle () {
 		return {
 			'marginBottom': this.state.bottomMargin
@@ -787,7 +824,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								runningOrder={this.props.runningOrder}
 								studioInstallation={this.props.studioInstallation}
 								onActivate={this.onActivate}
-								studioMode={this.state.studioMode} />
+								studioMode={this.state.studioMode}
+								onRegisterHotkeys={this.onRegisterHotkeys} />
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<SegmentContextMenu
@@ -803,9 +841,11 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 						<ErrorBoundary>
 							<InspectorDrawer
 								segments={this.props.segments}
+								hotkeys={this.state.usedHotkeys}
 								runningOrder={this.props.runningOrder}
 								studioInstallation={this.props.studioInstallation}
-								onChangeBottomMargin={this.onChangeBottomMargin} />
+								onChangeBottomMargin={this.onChangeBottomMargin}
+								onRegisterHotkeys={this.onRegisterHotkeys} />
 						</ErrorBoundary>
 					</div>
 				</RunningOrderTimingProvider>

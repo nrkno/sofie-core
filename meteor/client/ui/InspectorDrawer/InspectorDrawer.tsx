@@ -16,17 +16,27 @@ import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { RunningOrderViewKbdShortcuts } from '../RunningOrderView'
+import { HotkeyHelpPanel } from './HotkeyHelpPanel';
 
 enum InspectorPanelTabs {
 	ADLIB = 'adlib',
-	GLOBAL_ADLIB = 'global_adlib'
+	GLOBAL_ADLIB = 'global_adlib',
+	SYSTEM_HOTKEYS = 'system_hotkeys'
 }
 interface IProps {
 	segments: Array<SegmentUi>
 	liveSegment?: SegmentUi
 	runningOrder: RunningOrder
 	studioInstallation: StudioInstallation
+	hotkeys: Array<{
+		key: string
+		label: string
+	}>
 
+	onRegisterHotkeys: (hotkeys: Array<{
+		key: string
+		label: string
+	}>) => void
 	onChangeBottomMargin?: (newBottomMargin: string) => void
 }
 
@@ -58,9 +68,10 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 	private _mouseDown: number
 
 	private bindKeys: Array<{
-		key: string,
+		key: string
 		up?: (e: KeyboardEvent) => any
 		down?: (e: KeyboardEvent) => any
+		label: string
 	}> = []
 
 	constructor (props: Translated<IProps>) {
@@ -74,10 +85,13 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 			selectedTab: InspectorPanelTabs.ADLIB
 		}
 
+		const { t } = props
+
 		this.bindKeys = [
 			{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TOGGLE_DRAWER,
-				up: this.keyToggleDrawer
+				up: this.keyToggleDrawer,
+				label: t('Toggle drawer')
 			}
 		]
 	}
@@ -105,6 +119,8 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 				}, 'keydown')
 			}
 		})
+
+		this.props.onRegisterHotkeys(this.bindKeys)
 	}
 
 	componentWillUnmount () {
@@ -230,10 +246,14 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 					<div className={ClassNames('running-order-view__inspector-drawer__tabs__tab', {
 						'selected': this.state.selectedTab === InspectorPanelTabs.GLOBAL_ADLIB
 					})} onClick={(e) => this.switchTab(InspectorPanelTabs.GLOBAL_ADLIB)} tabIndex={0}>{t('Global AdLib')}</div>
+					<div className={ClassNames('running-order-view__inspector-drawer__tabs__tab', {
+						'selected': this.state.selectedTab === InspectorPanelTabs.SYSTEM_HOTKEYS
+					})} onClick={(e) => this.switchTab(InspectorPanelTabs.SYSTEM_HOTKEYS)} tabIndex={0}>{t('Shortcuts')}</div>
 				</div>
 				<div className='running-order-view__inspector-drawer__panel super-dark'>
 					<AdLibPanel visible={this.state.selectedTab === InspectorPanelTabs.ADLIB} {...this.props}></AdLibPanel>
 					<GlobalAdLibPanel visible={this.state.selectedTab === InspectorPanelTabs.GLOBAL_ADLIB} {...this.props}></GlobalAdLibPanel>
+					<HotkeyHelpPanel visible={this.state.selectedTab === InspectorPanelTabs.SYSTEM_HOTKEYS} {...this.props}></HotkeyHelpPanel>
 				</div>
 			</div>
 		)

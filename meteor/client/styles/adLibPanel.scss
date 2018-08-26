@@ -298,4 +298,21 @@ $adlib-item-selected-color: #009DFF;
 			}
 		}
 	}
+
+	> .adlib-panel__hotkeys {
+		grid-column: template-list / end;
+    	grid-row: tool-bar / end;
+		column-count: 3;
+		padding: 2em;
+		
+		> .adlib-panel__hotkeys__hotkey {
+			display: flex;
+			line-height: 2em;
+
+			> .adlib-panel__hotkeys__hotkey__keys {
+				flex: 0;
+				min-width: 8em;
+			}
+		}
+	}
 }
