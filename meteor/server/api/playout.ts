@@ -421,7 +421,7 @@ export namespace ServerPlayoutAPI {
 
 		const nextSegment = Segments.findOne(nextSegmentLine.segmentId)
 		if (nextSegment) {
-			resetSegment(nextSegment._id) // reset entire segment on manual set as next
+			resetSegment(nextSegment._id, runningOrder.currentSegmentLineId) // reset entire segment on manual set as next
 		}
 
 		RunningOrders.update(runningOrder._id, {
@@ -1142,18 +1142,26 @@ function getOrderedSegmentLineItem (line: SegmentLine): SegmentLineItem[] {
 	return eventMap.map(e => e.item)
 }
 
-function resetSegment (segmentId: string) {
+function resetSegment (segmentId: string, currentSegmentLineId: string | undefined) {
 	const segment = Segments.findOne(segmentId)
 	if (!segment) return
 
-	const segmentLines = SegmentLines.find({
-		segmentId: segmentId
-	}).fetch()
+	const segmentLines = SegmentLines.find(_.extend({
+		segmentId: segmentId,
+	}, currentSegmentLineId ? {
+		_id: {
+			$ne: currentSegmentLineId
+		}
+	} : {})).fetch()
 
-	SegmentLines.update({
+	SegmentLines.update(_.extend({
 		runningOrderId: segment.runningOrderId,
 		segmentId: segmentId
-	}, {
+	}, currentSegmentLineId ? {
+		_id: {
+			$ne: currentSegmentLineId
+		}
+	} : {}), {
 		$unset: {
 			duration: 1,
 			startedPlayback: 1,
