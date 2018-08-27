@@ -875,6 +875,13 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 	}
 
+	onMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (e.button === 2) {
+			e.preventDefault()
+			e.stopPropagation()
+		}
+	}
+
 	getStyle () {
 		return {
 			'marginBottom': this.state.bottomMargin
@@ -888,7 +895,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				<RunningOrderTimingProvider
 					runningOrder={this.props.runningOrder}
 					defaultDuration={DEFAULT_DISPLAY_DURATION}>
-					<div className='running-order-view' style={this.getStyle()} onWheelCapture={this.onWheel}>
+					<div className='running-order-view' style={this.getStyle()} onWheelCapture={this.onWheel} onMouseUp={this.onMouseUp}>
 						<ErrorBoundary>
 							<KeyboardFocusMarker />
 						</ErrorBoundary>
