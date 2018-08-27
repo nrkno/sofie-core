@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
-import { Time } from '../lib'
+import { Time, registerCollection } from '../lib'
 
 export interface UserActionsLogItem {
 	_id: string,
@@ -16,3 +16,4 @@ export interface UserActionsLogItem {
 
 export const UserActionsLog: TransformedCollection<UserActionsLogItem, UserActionsLogItem>
 	= new Mongo.Collection<UserActionsLogItem>('userActionsLog')
+registerCollection('UserActionsLog', UserActionsLog)

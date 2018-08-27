@@ -1,6 +1,7 @@
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { ISourceLayerBase, IOutputLayerBase } from './StudioInstallations'
+import { registerCollection } from '../lib'
 
 export interface TemplateMappings {
 	[key: string]: string
@@ -23,6 +24,7 @@ export interface ShowStyle {
 
 export const ShowStyles: TransformedCollection<ShowStyle, ShowStyle>
 	= new Mongo.Collection<ShowStyle>('showStyles')
+registerCollection('ShowStyles', ShowStyles)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		ShowStyles._ensureIndex({

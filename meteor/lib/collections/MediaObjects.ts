@@ -1,5 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
+import { registerCollection } from '../lib'
 
 export interface MediaObject0 {
 	// Media object file path relative to playout server
@@ -114,7 +115,7 @@ export interface MediaStreamCodec {
 }
 export const MediaObjects: TransformedCollection<MediaObject, MediaObject>
 	= new Mongo.Collection<MediaObject>('mediaObjects')
-
+registerCollection('MediaObjects', MediaObjects)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		MediaObjects._ensureIndex({

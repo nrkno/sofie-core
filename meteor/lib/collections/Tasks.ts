@@ -1,5 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
+import { registerCollection } from '../lib'
 
 export interface Task {
 	_id: string
@@ -10,3 +11,4 @@ export interface Task {
 
 export const Tasks: TransformedCollection<Task, Task>
 	= new Mongo.Collection<Task>('tasks')
+registerCollection('Tasks', Tasks)

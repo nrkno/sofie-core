@@ -1,5 +1,5 @@
 import { Mongo } from 'meteor/mongo'
-import { getCurrentTime, Time } from '../lib'
+import { getCurrentTime, Time, registerCollection } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
 
 export interface PeripheralDeviceCommand {
@@ -18,7 +18,6 @@ export interface PeripheralDeviceCommand {
 }
 export const PeripheralDeviceCommands: TransformedCollection<PeripheralDeviceCommand, PeripheralDeviceCommand>
 	= new Mongo.Collection<PeripheralDeviceCommand>('peripheralDeviceCommands')
-
 // Monitor and remove old, lingering commands:
 let removeOldCommands = () => {
 	PeripheralDeviceCommands.find().forEach((cmd) => {
@@ -30,6 +29,7 @@ let removeOldCommands = () => {
 	})
 }
 Meteor.startup(() => {
+	registerCollection('PeripheralDeviceCommands', PeripheralDeviceCommands)
 	Meteor.setInterval(() => {
 		removeOldCommands()
 	}, 5 * 60 * 1000)

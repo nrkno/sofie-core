@@ -1,6 +1,7 @@
 import { Mongo } from 'meteor/mongo'
 import { SegmentLineItemGeneric } from './SegmentLineItems'
 import { TransformedCollection } from '../typings/meteor'
+import { registerCollection } from '../lib'
 
 export interface RunningOrderBaselineItem extends SegmentLineItemGeneric {
 	segmentLineId: undefined
@@ -18,6 +19,7 @@ export interface RunningOrderBaselineItem extends SegmentLineItemGeneric {
 
 export const RunningOrderBaselineItems: TransformedCollection<RunningOrderBaselineItem, RunningOrderBaselineItem>
 	= new Mongo.Collection<RunningOrderBaselineItem>('runningOrderBaselineItems')
+registerCollection('RunningOrderBaselineItems', RunningOrderBaselineItems)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		RunningOrderBaselineItems._ensureIndex({

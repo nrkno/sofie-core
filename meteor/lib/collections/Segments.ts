@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
-import { applyClassToDocument, Optional } from '../lib'
+import { applyClassToDocument, Optional, registerCollection } from '../lib'
 import { SegmentLines } from './SegmentLines'
 import {
 	IMOSExternalMetaData,
@@ -63,6 +63,7 @@ export class Segment implements DBSegment {
 // export const Segments = new Mongo.Collection<Segment>('segments', {transform: (doc) => applyClassToDocument(Segment, doc) })
 export const Segments: TransformedCollection<Segment, DBSegment>
 	= new Mongo.Collection<Segment>('segments', {transform: (doc) => applyClassToDocument(Segment, doc) })
+registerCollection('Segments', Segments)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Segments._ensureIndex({

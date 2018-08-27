@@ -1,5 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
+import { registerCollection } from '../lib'
 
 export interface RuntimeFunction {
 	_id: string
@@ -14,6 +15,7 @@ export interface RuntimeFunction {
 
 export const RuntimeFunctions: TransformedCollection<RuntimeFunction, RuntimeFunction>
 	= new Mongo.Collection<RuntimeFunction>('runtimeFunctions')
+registerCollection('RuntimeFunctions', RuntimeFunctions)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		RuntimeFunctions._ensureIndex({
