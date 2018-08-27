@@ -105,7 +105,8 @@ const WarningDisplay = translate()(timer(5000)(
 		}
 
 		componentDidUpdate (prevProps: ITimingWarningProps) {
-			if (this.props.runningOrder.active && !prevProps.runningOrder.active && this.props.runningOrder.rehearsal) {
+			if ((this.props.runningOrder.active && !prevProps.runningOrder.active && this.props.runningOrder.rehearsal) ||
+				(this.props.runningOrder.rehearsal !== prevProps.runningOrder.rehearsal)) {
 				this.setState({
 					plannedStartCloseShown: false
 				})
