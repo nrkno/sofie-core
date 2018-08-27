@@ -7,6 +7,8 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
 import { translate } from 'react-i18next'
 import { getCurrentTime } from '../../../lib/lib'
+import { MomentFromNow } from '../../lib/Moment'
+import { getAdminMode } from '../../lib/localStorage'
 import { ClientAPI } from '../../../lib/api/client'
 import { Link } from 'react-router-dom'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
@@ -17,7 +19,6 @@ import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/coll
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import * as classNames from 'classnames'
-import { MomentFromNow } from '../../lib/Moment'
 
 interface IExternalMessagesProps {
 }
@@ -127,9 +128,13 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 		return (
 			<tr key={msg._id} className={classNames(classes)}>
 				<td className='c2'>
-					<button className='action-btn' onClick={(e) => this.removeMessage(msg)}>
-						<FontAwesomeIcon icon={faTrash} />
-					</button><br/>
+					{
+						getAdminMode() ? [
+							<button className='action-btn' onClick={(e) => this.removeMessage(msg)}>
+								<FontAwesomeIcon icon={faTrash} />
+							</button>, <br/>
+						] : null
+					}
 					ID: {msg._id}<br/>
 					Created: <MomentFromNow unit='seconds'>{msg.created}</MomentFromNow>
 				</td>
