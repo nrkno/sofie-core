@@ -875,11 +875,10 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 	}
 
-	onMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
-		if (e.button === 2) {
-			e.preventDefault()
-			e.stopPropagation()
-		}
+	onContextMenuTop = (e: React.MouseEvent<HTMLDivElement>): boolean => {
+		e.preventDefault()
+		e.stopPropagation()
+		return false
 	}
 
 	getStyle () {
@@ -895,7 +894,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				<RunningOrderTimingProvider
 					runningOrder={this.props.runningOrder}
 					defaultDuration={DEFAULT_DISPLAY_DURATION}>
-					<div className='running-order-view' style={this.getStyle()} onWheelCapture={this.onWheel} onMouseUp={this.onMouseUp}>
+					<div className='running-order-view' style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
 						<ErrorBoundary>
 							<KeyboardFocusMarker />
 						</ErrorBoundary>
