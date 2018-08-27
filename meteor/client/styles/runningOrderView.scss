@@ -788,7 +788,15 @@ body.vertical-overflow-only {
 				}
 
 				&::after {
-					display: none;
+					content: ' ';
+					display: block;
+					position: absolute;
+					background: none;
+					top: 0;
+					left: 3px;
+					bottom: 0;
+					border: none;
+					border-right: 2px solid $general-next-color;
 				}
 			}
 			
