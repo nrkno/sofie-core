@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as $ from 'jquery'
+import { RundownUtils } from '../../../lib/rundown'
 
 import { SegmentLineItemUi } from '../SegmentTimelineContainer'
 
@@ -10,7 +11,6 @@ import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerIte
 import { MediaObject } from '../../../../lib/collections/MediaObjects'
 
 import Lottie from 'react-lottie'
-import { Settings } from '../../../../lib/Settings'
 // @ts-ignore Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
 
@@ -126,6 +126,7 @@ export class VTSourceRenderer extends CustomLayerItemRenderer {
 						{this.getPreviewUrl() ?
 							<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
 								<video src={this.getPreviewUrl()} ref={this.setVideoRef} crossOrigin='anonymous' playsInline={true} muted={true}/>
+								<span className='segment-timeline__mini-inspector__timecode'>{RundownUtils.formatDiffToTimecode(this.props.cursorTimePostion, false, false, false, false, true, undefined, true)}</span>
 							</div> :
 							<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
 								<div>
