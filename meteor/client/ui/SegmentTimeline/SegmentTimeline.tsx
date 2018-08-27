@@ -270,12 +270,18 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	}
 
 	onTimelineWheel = (e: React.WheelEventHandler<HTMLDivElement> & any) => {
-		if (e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) { // ctrl + Scroll
+		if (e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey &&
+			// @ts-ignore
+			!window.keyboardModifiers.altRight) { // ctrl + Scroll
 			this.props.onZoomChange(Math.min(500, this.props.timeScale * (1 + 0.001 * (e.deltaY * -1))), e)
 			e.preventDefault()
-		} else if (!e.ctrlKey && e.altKey && !e.metaKey && !e.shiftKey) { // Alt + Scroll
+			e.stopPropagation()
+		} else if ((!e.ctrlKey && e.altKey && !e.metaKey && !e.shiftKey)
+			// @ts-ignore
+			|| (e.ctrlKey && !e.metaKey && !e.shiftKey && window.keyboardModifiers.altRight)) { // Alt + Scroll
 			this.props.onScroll(Math.max(0, this.props.scrollLeft + ((e.deltaY) / this.props.timeScale)), e)
 			e.preventDefault()
+			e.stopPropagation()
 		} else if (!e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) { // no modifier
 			if (e.deltaX !== 0) {
 				this.props.onScroll(Math.max(0, this.props.scrollLeft + ((e.deltaX) / this.props.timeScale)), e)

@@ -86,6 +86,10 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		})
 	}
 
+	clearRound = (a: number) => {
+		return (Math.floor(a * 1000) / 1000)
+	}
+
 	repaint = () => {
 		if (this.ctx) {
 			this.ctx.lineCap = 'butt'
@@ -141,7 +145,13 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			// and then after getting the ceil of the value, multiply it back for all the inter-steps,
 			// beacuse we do the paint iteration for every line
 			let maxTicks = Math.ceil(this.width / (step * interStep)) * interStep + (interStep)
-			let idealWidth = Math.ceil(this.width / (step * interStep)) * (step * interStep)
+			const scrollLeftSec = (this.props.scrollLeft / 1000)
+			let base = Math.floor(scrollLeftSec / maxTicks) * maxTicks
+			const baseN = (Math.floor(scrollLeftSec / maxTicks) + 1) * maxTicks
+
+			// We store the x-position of the 0-th line to know if a particular section is N or N+1
+			// and switch between base and baseN
+			let breakX = 0
 
 			// Go up to (width / step) + 1, to allow for the grid line + text, dissapearing on the left
 			// in effect, we are rendering +1 grid lines than there should fit inside the area
@@ -150,24 +160,16 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				// we should offset the first step -1, as this is the one that will be dissaperaing as the
 				// timeline is moving
 				let xPosition = this.ring((i * step) - pixelOffset, maxTicks * step) - (step * interStep)
+				if (i === 0) breakX = xPosition
 
 				let isLabel = (i % interStep === 0)
 
 				if (isLabel === true) {
 					this.ctx.strokeStyle = LARGE_STEP_GRID_COLOR
-
-					// let t = i - interStep
-					// let t = (xPosition + this.props.scrollLeft * this.props.timeScale * this.pixelRatio) / (this.props.timeScale * this.pixelRatio)
-					let t = Math.max(Math.floor((Math.ceil(xPosition * fps) / (this.props.timeScale * this.pixelRatio)) + this.props.scrollLeft * fps), 0)
-					// let t = pixelOffset / tg
-					// let t = Math.floor((((i + 1) * step) - pixelOffset) / (this.width))
+					let t = ((xPosition > breakX) && (this.props.scrollLeft > 0) ? baseN : base) + this.ring((i - interStep), maxTicks)
 
 					this.ctx.fillText(
-						// RundownUtils.formatTimeToTimecode((i * step) / (this.props.timeScale * this.pixelRatio)),
-						// RundownUtils.formatTimeToTimecode(Math.floor(t / fps), false, false, true),
-						RundownUtils.formatDiffToTimecode(Math.floor(t / fps), false, false, true, false, true),
-						// t.toString(),
-						// i + ':' + t,
+						RundownUtils.formatDiffToTimecode(t * 1000, false, false, true, false, true),
 						xPosition, 18 * this.pixelRatio)
 				} else {
 					this.ctx.strokeStyle = INNER_STEP_GRID_COLOR
