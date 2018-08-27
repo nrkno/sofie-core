@@ -251,7 +251,7 @@ Meteor.methods({
 					type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: false,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
-					clearKeyboardHotkey: 'u'
+					clearKeyboardHotkey: 'u,alt+u'
 				},
 				{
 				 	_id: 'studio0_graphics_fullskjerm',
@@ -266,7 +266,8 @@ Meteor.methods({
 				 	name: 'Klokke',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
-					isHidden: true
+					isHidden: true,
+					clearKeyboardHotkey: 'alt+u'
 				},
 				{
 				 	_id: 'studio0_graphics_logo',
@@ -274,35 +275,40 @@ Meteor.methods({
 				 	name: 'Logo',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
-					isHidden: true
+					isHidden: true,
+					clearKeyboardHotkey: 'alt+u'
 				},
 				{
 				 	_id: 'studio0_graphics_tag_left',
 				 	_rank: 2000,
 				 	name: 'Arkiv',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
-					onPGMClean: true
+					onPGMClean: true,
+					clearKeyboardHotkey: 'alt+u'
 				},
 				{
 				 	_id: 'studio0_graphics_tag_right',
 				 	_rank: 3000,
 				 	name: 'Direkte',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
-					onPGMClean: true
+					onPGMClean: true,
+					clearKeyboardHotkey: 'alt+u'
 				},
 				{
 				 	_id: 'studio0_graphics_tema',
 				 	_rank: 4000,
 				 	name: 'Tema',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
-					onPGMClean: true
+					onPGMClean: true,
+					clearKeyboardHotkey: 'alt+u'
 				},
 				{
 				 	_id: 'studio0_graphics_ticker',
 				 	_rank: 5000,
 				 	name: 'Ticker',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
-					onPGMClean: true
+					onPGMClean: true,
+					clearKeyboardHotkey: 'alt+u'
 				},
 				{
 				 	_id: 'studio0_graphics_bakskjerm',
