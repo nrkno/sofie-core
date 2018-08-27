@@ -7,6 +7,7 @@ import { ChannelFormat, Transition, Ease, Direction } from '../constants/casparc
 import { StudioInstallations } from './StudioInstallations'
 import { FindOptions, Selector, TransformedCollection } from '../typings/meteor'
 import { Mixer } from '../typings/casparcg-state'
+import { registerCollection } from '../lib'
 
 // Note: The data structure is based on what works with the state libraries, such as
 
@@ -476,6 +477,7 @@ export interface TimelineObjHTTPRequest extends TimelineObj {
 // export const Timeline = new Mongo.Collection<TimelineObj>('timeline')
 export const Timeline: TransformedCollection<TimelineObj, TimelineObj>
 	= new Mongo.Collection<TimelineObj>('timeline')
+registerCollection('Timeline', Timeline)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Timeline._ensureIndex({

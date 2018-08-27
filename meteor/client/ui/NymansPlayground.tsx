@@ -6,7 +6,6 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 
-import { Task, Tasks } from '../../lib/collections/Tasks'
 import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders'
 import { Segments, Segment } from '../../lib/collections/Segments'
 import { Timeline, TimelineObj } from '../../lib/collections/Timeline'
@@ -21,72 +20,6 @@ import { EditAttribute } from '../lib/EditAttribute'
 import { makeTableOfObject } from '../lib/utilComponents'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
-interface IEditTasks {
-	tasks: Array<Task>
-}
-export const EditTasks = withTracker(() => {
-
-	// These properties will be exposed under this.props
-	// Note that these properties are reactively recalculated
-	return {
-		tasks: Tasks.find({}, { sort: { createdAt: -1 } }).fetch()
-	}
-})(
-class extends MeteorReactComponent<IEditTasks> {
-	renderTasks () {
-
-		return this.props.tasks.map((task) => (
-			<div key={task._id}>
-				Edit Task:
-				<div>
-					Text:
-					<EditAttribute
-						collection={Tasks}
-						obj={task}
-						type='text'
-						attribute='text'
-					/>
-				</div>
-				<div>
-					Text (updated on key):
-					<EditAttribute
-						collection={Tasks}
-						obj={task}
-						type='text'
-						attribute='text'
-						updateOnKey={true}
-					/>
-				</div>
-				<div>
-					Checkbox:
-					<EditAttribute
-						collection={Tasks}
-						obj={task}
-						type='checkbox'
-						attribute='checked'
-					/>
-					<EditAttribute
-						collection={Tasks}
-						obj={task}
-						type='checkbox'
-						attribute='checked'
-					/>
-				</div>
-
-			</div>
-		))
-	}
-	render () {
-		return (
-			<div>
-				EditTasks
-				<div>
-					{this.renderTasks()}
-				</div>
-			</div>
-		)
-	}
-})
 // ----------------------------------------------------------------------------
 interface INPProps {
 

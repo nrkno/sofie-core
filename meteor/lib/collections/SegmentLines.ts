@@ -9,7 +9,7 @@ import { RunningOrders } from './RunningOrders'
 import { SegmentLineItem, SegmentLineItems } from './SegmentLineItems'
 import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
 import { Segments } from './Segments'
-import { applyClassToDocument, Time } from '../lib'
+import { applyClassToDocument, Time, registerCollection } from '../lib'
 
 /** A "Line" in NRK Lingo. */
 export interface DBSegmentLine {
@@ -162,6 +162,7 @@ export class SegmentLine implements DBSegmentLine {
 
 export const SegmentLines: TransformedCollection<SegmentLine, DBSegmentLine>
 	= new Mongo.Collection<SegmentLine>('segmentLines', {transform: (doc) => applyClassToDocument(SegmentLine, doc) })
+registerCollection('SegmentLines', SegmentLines)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		SegmentLines._ensureIndex({

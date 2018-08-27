@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import { PeripheralDeviceAPI } from '../api/peripheralDevice'
-import { Time } from '../lib'
+import { Time, registerCollection } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
 
 export interface PeripheralDevice {
@@ -91,7 +91,7 @@ export interface PlayoutDeviceSettingsDeviceAtem extends PlayoutDeviceSettingsDe
 
 export const PeripheralDevices: TransformedCollection<PeripheralDevice, PeripheralDevice>
 	= new Mongo.Collection<PeripheralDevice>('peripheralDevices')
-
+registerCollection('PeripheralDevices', PeripheralDevices)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		PeripheralDevices._ensureIndex({

@@ -16,7 +16,7 @@ import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { RunningOrderViewKbdShortcuts } from '../RunningOrderView'
-import { HotkeyHelpPanel } from './HotkeyHelpPanel';
+import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 
 enum InspectorPanelTabs {
 	ADLIB = 'adlib',

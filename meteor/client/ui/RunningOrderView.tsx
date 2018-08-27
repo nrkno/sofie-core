@@ -37,6 +37,7 @@ import { ModalDialog } from '../lib/ModalDialog'
 
 import { DEFAULT_DISPLAY_DURATION } from './SegmentTimeline/SegmentTimelineContainer'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { getStudioMode } from '../lib/localStorage'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -645,7 +646,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 		this.state = {
 			timeScale: 0.03,
-			studioMode: localStorage.getItem('studioMode') === '1' ? true : false,
+			studioMode: getStudioMode(),
 			contextMenuContext: null,
 			bottomMargin: '',
 			followLiveSegments: true,

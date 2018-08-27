@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
-import { Time } from '../lib'
+import { Time, registerCollection } from '../lib'
 
 export interface RuntimeFunctionDebugDataObj {
 	_id: string
@@ -22,7 +22,7 @@ export interface RuntimeFunctionDebugDataObj {
 
 export const RuntimeFunctionDebugData: TransformedCollection<RuntimeFunctionDebugDataObj, RuntimeFunctionDebugDataObj>
 	= new Mongo.Collection<RuntimeFunctionDebugDataObj>('runtimeFunctionDebugData')
-
+registerCollection('RuntimeFunctionDebugData', RuntimeFunctionDebugData)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		RuntimeFunctionDebugData._ensureIndex({
