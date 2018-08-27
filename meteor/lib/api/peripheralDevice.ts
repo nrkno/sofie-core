@@ -115,11 +115,12 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 	if (Meteor.isClient) {
 		subscription = Meteor.subscribe('peripheralDeviceCommands', deviceId )
 	}
+	const timeoutTime = 3000
 	logger.debug('command created')
 	// we've sent the command, let's just wait for the reply
 	let checkReply = () => {
 		let cmd = PeripheralDeviceCommands.findOne(commandId)
-		if (!cmd) throw new Meteor.Error('Command "' + commandId + '" not found')
+		// if (!cmd) throw new Meteor.Error('Command "' + commandId + '" not found')
 		logger.debug('checkReply')
 		if (cmd) {
 			if (cmd.hasReply) {
@@ -134,7 +135,7 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 				cursor.stop()
 				PeripheralDeviceCommands.remove(cmd._id)
 				if (subscription) subscription.stop()
-			} else if (getCurrentTime() - (cmd.time || 0) > 3000) { // timeout
+			} else if (getCurrentTime() - (cmd.time || 0) >= timeoutTime) { // timeout
 				logger.debug('timeout')
 				cb('Timeout', null)
 				cursor.stop()
@@ -152,6 +153,7 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 		added: checkReply,
 		changed: checkReply,
 	})
+	Meteor.setTimeout(checkReply, timeoutTime)
 }
 
 }
