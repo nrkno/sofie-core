@@ -6,6 +6,23 @@ import { RuntimeFunction, RuntimeFunctions } from '../lib/collections/RuntimeFun
 import * as bodyParser from 'body-parser'
 import { logger } from './logging'
 import { Selector } from '../lib/typings/meteor'
+import { Collections, getCollectionIndexes, getCollectionStats, getCurrentTime } from '../lib/lib'
+import { Mongo } from 'meteor/mongo'
+import * as _ from 'underscore'
+import { Random } from 'meteor/random'
+import { Timeline } from '../lib/collections/Timeline'
+import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
+import { PeripheralDevices } from '../lib/collections/PeripheralDevices'
+import { ServerPeripheralDeviceAPI } from './api/peripheralDevice'
+import { StudioInstallations } from '../lib/collections/StudioInstallations'
+import { RunningOrders, RunningOrder } from '../lib/collections/RunningOrders'
+import { Segments } from '../lib/collections/Segments'
+import { SegmentLines } from '../lib/collections/SegmentLines'
+import { SegmentLineItems } from '../lib/collections/SegmentLineItems'
+import { UserActionsLog } from '../lib/collections/UserActionsLog'
+import { PeripheralDeviceCommands } from '../lib/collections/PeripheralDeviceCommands'
+import { SegmentLineAdLibItems } from '../lib/collections/SegmentLineAdLibItems'
+import { RunningOrderDataCache } from '../lib/collections/RunningOrderDataCache'
 
 export interface ShowStyleBackup {
 	type: 'showstyle'
@@ -120,3 +137,102 @@ postRoute.route('/backup/restore', (params, req: IncomingMessage, res: ServerRes
 
 	res.end(content)
 })
+Picker.route('/snapshot/:studioId', (params, req: IncomingMessage, res: ServerResponse, next) => {
+	let snapshot = getSystemSnapshot(params.studioId)
+
+	res.setHeader('Content-Type', 'application/json')
+	res.setHeader('Content-Disposition', `attachment; filename="${snapshot.snapshotId + '_' + snapshot.timestampStart}.json"`)
+
+	let content = JSON.stringify(snapshot, null, 4)
+	res.end(content)
+})
+
+function getSystemSnapshot (studioId: string) {
+	// produce a snapshot of all relevant parts of the system, for debugging purposes
+
+	let id = Random.id()
+
+	logger.info('Generating system snapshot "' + id + '"...')
+
+	let snapshot: any = {
+		snapshotId: id,
+		timestampStart: getCurrentTime(),
+		errors: [],
+		collections: {},
+		core: {},
+		devices: {},
+	}
+	function wrap (name: string, fcn: Function) {
+		try {
+			fcn()
+		} catch (e) {
+			snapshot.errors.push('Error ' + name + ': ' + e.toString())
+		}
+	}
+
+	wrap('collections', () => {
+		_.each(Collections, (collection: Mongo.Collection<any>, name: string) => {
+			let stat = {
+				objectCount: collection.find().count(),
+				indexes: getCollectionIndexes(collection),
+				stats: getCollectionStats(collection)
+			}
+			snapshot.collections[name] = stat
+		})
+	})
+
+	wrap('core', () => {
+		let studio = StudioInstallations.findOne(studioId)
+
+		snapshot.core.studio = studio
+		snapshot.core.timeline = Timeline.find().fetch()
+		snapshot.core.userActionLogLatest = UserActionsLog.find({timestamp: {$gt: getCurrentTime() - 3 * 3600 * 60}}).fetch() // latest 3 hours
+		snapshot.core.runtimeFunctions = RuntimeFunctions.find({active: true}).fetch()
+
+		if (studio) {
+			let activeROs = RunningOrders.find({
+				studioInstallationId: studio._id,
+				active: true,
+			}).fetch()
+			snapshot.core.activeROs = activeROs
+			if (activeROs.length === 1) {
+				let activeRO = activeROs[0]
+
+				snapshot.core.showStyle				= ShowStyles.findOne(activeRO.showStyleId)
+				snapshot.core.segments				= Segments.find({runningOrderId: activeRO._id}).fetch()
+				snapshot.core.segmentLines			= SegmentLines.find({runningOrderId: activeRO._id}).fetch()
+				snapshot.core.segmentLineItems		= SegmentLineItems.find({runningOrderId: activeRO._id}).fetch()
+				snapshot.core.segmentLineAdLibItems	= SegmentLineAdLibItems.find({runningOrderId: activeRO._id}).fetch()
+
+				snapshot.core.runningOrderDataCache	= RunningOrderDataCache.find({roId: activeRO._id}).fetch()
+			}
+		}
+	})
+
+	let devices = PeripheralDevices.find().fetch()
+	_.each(devices, (device) => {
+		wrap('device ' + device._id, () => {
+			// fetch info from device:
+			let d: any = {
+				device: device,
+				coreTimestamp: getCurrentTime()
+			}
+			devices[device._id] = d
+			if (device.connected) {
+				d = _.extend(d,
+					ServerPeripheralDeviceAPI.executeFunction(device._id,'getSnapshot')
+				)
+			}
+			d.commands = PeripheralDeviceCommands.find({ deviceId: device._id }).fetch()
+			// if (device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT) {
+			// // } else if (device.type === PeripheralDeviceAPI.DeviceType.MOSDEVICE) {
+			// }
+		})
+	})
+
+	snapshot.timestampEnd = getCurrentTime()
+	logger.info('System snapshot "' + id + '" generated')
+
+	return snapshot
+
+}
