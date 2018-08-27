@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.7.0"></a>
+# [0.7.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.6.0...v0.7.0) (2018-08-27)
+
+
+### Bug Fixes
+
+* **infinite items:** removes infinite icon from outOnNextSegment ([4a75d7d](https://github.com/nrkno/tv-automation-server-core/commit/4a75d7d))
+* bugfix: executeFunction didn't really time out ([acba08c](https://github.com/nrkno/tv-automation-server-core/commit/acba08c))
+* refactored/DRYd adminMode & studioMode, disabled trashbin-button for externalMessages when not in adminMode ([b29dae1](https://github.com/nrkno/tv-automation-server-core/commit/b29dae1))
+* snapshots ([182c221](https://github.com/nrkno/tv-automation-server-core/commit/182c221))
+
+
+### Features
+
+* place all collections in Collections object, for debugging purposes ([9682a89](https://github.com/nrkno/tv-automation-server-core/commit/9682a89))
+* System snapshot ([006027b](https://github.com/nrkno/tv-automation-server-core/commit/006027b))
+
+
+
 <a name="0.6.0"></a>
 # [0.6.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.5.3...v0.6.0) (2018-08-23)
 
