@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
-import { Time } from '../lib'
+import { Time, Collections, registerCollection } from '../lib'
 
 export interface ExternalMessageQueueObj {
 	_id: string
@@ -64,7 +64,7 @@ export interface ExternalMessageQueueObjSOAPMessageAttrFcn {
 
 export const ExternalMessageQueue: TransformedCollection<ExternalMessageQueueObj, ExternalMessageQueueObj>
 	= new Mongo.Collection<ExternalMessageQueueObj>('externalMessageQueue')
-
+registerCollection('ExternalMessageQueue', ExternalMessageQueue)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		ExternalMessageQueue._ensureIndex({

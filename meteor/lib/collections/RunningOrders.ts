@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
-import { Time, applyClassToDocument, getCurrentTime } from '../lib'
+import { Time, applyClassToDocument, getCurrentTime, registerCollection } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { SegmentLines, SegmentLine } from './SegmentLines'
 import {
@@ -174,7 +174,7 @@ export class RunningOrder implements DBRunningOrder {
 // export const RunningOrders = new Mongo.Collection<RunningOrder>('rundowns', {transform: (doc) => applyClassToDocument(RunningOrder, doc) })
 export const RunningOrders: TransformedCollection<RunningOrder, DBRunningOrder>
 	= new Mongo.Collection<RunningOrder>('rundowns', {transform: (doc) => applyClassToDocument(RunningOrder, doc) })
-
+registerCollection('RunningOrders', RunningOrders)
 let c = RunningOrders
 Meteor.startup(() => {
 	if (Meteor.isServer) {

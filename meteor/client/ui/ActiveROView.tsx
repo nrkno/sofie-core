@@ -128,7 +128,7 @@ export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 			)
 		} else {
 			if (this.props.runningOrder) {
-				return <RunningOrderView runningOrderId={this.props.runningOrder._id} />
+				return <RunningOrderView runningOrderId={this.props.runningOrder._id} inActiveROView={true} />
 			} else if (this.props.studioInstallation) {
 				return this.renderMessage(t('There is no running order active in this studio.'))
 			} else if (this.props.studioId) {

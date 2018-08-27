@@ -9,7 +9,7 @@ import { TimelineTransition,
 import { TimelineObj } from './Timeline'
 import { TransformedCollection } from '../typings/meteor'
 import { SegmentLineTimings } from './SegmentLines'
-import { Time } from '../lib'
+import { Time, registerCollection } from '../lib'
 
 /** A trigger interface compatible with that of supertimeline */
 export interface ITimelineTrigger {
@@ -96,6 +96,7 @@ export interface SegmentLineItem extends SegmentLineItemGeneric {
 
 export const SegmentLineItems: TransformedCollection<SegmentLineItem, SegmentLineItem>
 	= new Mongo.Collection<SegmentLineItem>('segmentLineItems')
+registerCollection('SegmentLineItems', SegmentLineItems)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		SegmentLineItems._ensureIndex({
@@ -147,6 +148,7 @@ export interface ScriptContent extends BaseContent {
 	firstWords: string
 	lastWords: string
 	fullScript?: any
+	sourceDuration?: number
 }
 
 export interface GraphicsContent extends BaseContent {

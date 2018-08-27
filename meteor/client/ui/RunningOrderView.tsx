@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
+import timer from 'react-timer-hoc'
 import * as CoreIcon from '@nrk/core-icons/jsx'
 import { Spinner } from '../lib/Spinner'
 import * as ClassNames from 'classnames'
@@ -36,6 +37,7 @@ import { ModalDialog } from '../lib/ModalDialog'
 
 import { DEFAULT_DISPLAY_DURATION } from './SegmentTimeline/SegmentTimelineContainer'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { getStudioMode } from '../lib/localStorage'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -82,10 +84,72 @@ class KeyboardFocusMarker extends React.Component<any, IKeyboardFocusMarkerState
 	}
 }
 
+interface ITimingWarningProps {
+	runningOrder: RunningOrder
+	inActiveROView?: boolean
+	onReloadAndActivate: () => void
+}
+
+interface ITimingWarningState {
+	plannedStartCloseShown?: boolean
+	plannedStartCloseShow?: boolean
+}
+
+const WarningDisplay = translate()(timer(5000)(
+	class extends React.Component<Translated<ITimingWarningProps>, ITimingWarningState> {
+		private REHEARSAL_MARGIN = 1 * 60 * 1000
+
+		constructor (props) {
+			super(props)
+
+			this.state = {}
+		}
+
+		componentDidUpdate (prevProps: ITimingWarningProps) {
+			if ((this.props.runningOrder.active && !prevProps.runningOrder.active && this.props.runningOrder.rehearsal) ||
+				(this.props.runningOrder.rehearsal !== prevProps.runningOrder.rehearsal)) {
+				this.setState({
+					plannedStartCloseShown: false
+				})
+			}
+
+			if (this.props.runningOrder.active && this.props.runningOrder.rehearsal && this.props.runningOrder.expectedStart && getCurrentTime() - this.REHEARSAL_MARGIN > this.props.runningOrder.expectedStart && !this.props.inActiveROView && !this.state.plannedStartCloseShown) {
+				this.setState({
+					plannedStartCloseShow: true,
+					plannedStartCloseShown: true
+				})
+			}
+		}
+
+		discard = () => {
+			this.setState({
+				plannedStartCloseShow: false
+			})
+		}
+
+		reloadRO = () => {
+			this.setState({
+				plannedStartCloseShow: false
+			})
+
+			this.props.onReloadAndActivate()
+		}
+
+		render () {
+			const { t } = this.props
+
+			if (!this.props.runningOrder) return null
+
+			return this.state.plannedStartCloseShow ?
+						<ModalDialog title={t('Start time is close')} acceptText={t('Yes')} secondaryText={t('No')} onAccept={this.reloadRO} onDiscard={this.discard} onSecondary={this.discard}>
+							<p>{t('You are in rehearsal mode, the broadcast starts in 1 minute. Do you want to reload the rundown and remove rehearsal mode?')}</p>
+						</ModalDialog> : null
+		}
+	}
+) as React.StatelessComponent<Translated<ITimingWarningProps>>)
+
 interface ITimingDisplayProps {
 	runningOrder: RunningOrder
-}
-interface ITimingDisplayState {
 }
 
 export enum RunningOrderViewKbdShortcuts {
@@ -107,8 +171,8 @@ mousetrap.addKeycodes({
 	223: '|' // this key is not present on ANSI-based keyboards
 })
 
-const TimingDisplay = translate()(withTiming<ITimingDisplayProps, ITimingDisplayState>()(
-class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>, ITimingDisplayState> {
+const TimingDisplay = translate()(withTiming<ITimingDisplayProps, {}>()(
+class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 	render () {
 		const { t } = this.props
 
@@ -189,11 +253,19 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>, ITimi
 		)
 	}
 }))
+
+interface HotkeyDefinition {
+	key: string
+	label: string
+}
+
 interface IRunningOrderHeaderProps {
 	runningOrder: RunningOrder,
 	studioInstallation: StudioInstallation,
-	onActivate?: (isRehearsal: boolean) => void
+	onActivate?: (isRehearsal: boolean) => void,
+	onRegisterHotkeys?: (hotkeys: Array<HotkeyDefinition>) => void
 	studioMode: boolean
+	inActiveROView?: boolean
 }
 
 interface IRunningOrderHeaderState {
@@ -206,38 +278,50 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		key: string,
 		up?: (e: KeyboardEvent) => any
 		down?: (e: KeyboardEvent) => any
+		label: string
 	}> = []
 	constructor (props: Translated<IRunningOrderHeaderProps>) {
 		super(props)
 
+		const { t } = props
+
 		this.bindKeys = [
 			{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE,
-				up: this.keyTake
+				up: this.keyTake,
+				label: t('Take')
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE2,
-				up: this.keyTake
+				up: this.keyTake,
+				label: t('Take')
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_HOLD,
-				up: this.keyHold
+				up: this.keyHold,
+				label: t('Hold')
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE,
-				up: this.keyActivate
+				up: this.keyActivate,
+				label: t('Activate')
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE2,
-				up: this.keyActivate
+				up: this.keyActivate,
+				label: t('Activate')
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE3,
-				up: this.keyActivate
+				up: this.keyActivate,
+				label: t('Activate')
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE,
-				up: this.keyDeactivate
+				up: this.keyDeactivate,
+				label: t('Deactivate')
 			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE_REHEARSAL,
-				up: this.keyActivateRehearsal
-			}, {
+				up: this.keyActivateRehearsal,
+				label: t('Activate (rehearsal)')
+			},{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RELOAD_RUNNING_ORDER,
-				up: this.keyReloadRunningOrder
+				up: this.keyReloadRunningOrder,
+				label: t('Reload running order')
 			}
 		]
 
@@ -272,6 +356,10 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				}, 'keydown')
 			}
 		})
+
+		if (typeof this.props.onRegisterHotkeys === 'function') {
+			this.props.onRegisterHotkeys(this.bindKeys)
+		}
 	}
 
 	componentWillUnmount () {
@@ -345,7 +433,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	activate = () => {
-		if (this.props.studioMode && !this.props.runningOrder.active) {
+		if (this.props.studioMode && (!this.props.runningOrder.active || (this.props.runningOrder.active && this.props.runningOrder.rehearsal))) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false, (err, res) => {
 				if (err || (res && res.error)) {
 					this.handleActivationError(err || res)
@@ -357,7 +445,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	activateRehearsal = () => {
-		if (this.props.studioMode && !this.props.runningOrder.active) {
+		if (this.props.studioMode && (!this.props.runningOrder.active || (this.props.runningOrder.active && !this.props.runningOrder.rehearsal))) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, true, (err, res) => {
 				if (err || (res & res.error)) {
 					this.handleActivationError(err || res)
@@ -385,6 +473,11 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		})
 	}
 
+	onReloadAndActivate = () => {
+		this.reloadRunningOrder()
+		this.activate()
+	}
+
 	render () {
 		const { t } = this.props
 		return <React.Fragment>
@@ -395,6 +488,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				'rehearsal': this.props.runningOrder.rehearsal
 			})}>
 				{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} />}
+				<WarningDisplay inActiveROView={this.props.inActiveROView} runningOrder={this.props.runningOrder} onReloadAndActivate={this.onReloadAndActivate} />
 				<div className='row first-row super-dark'>
 					<div className='flex-col left horizontal-align-left'>
 						{/* !!! TODO: This is just a temporary solution !!! */}
@@ -427,6 +521,22 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 										<MenuItem onClick={(e) => this.hold()}>
 											{t('Hold')}
 										</MenuItem>
+										{this.props.runningOrder.rehearsal ?
+											<React.Fragment>
+												<hr/>
+												<MenuItem onClick={(e) => this.activate()}>
+													{t('Activate')}
+												</MenuItem>
+												<hr/>
+											</React.Fragment> :
+											<React.Fragment>
+												<hr />
+												<MenuItem onClick={(e) => this.activateRehearsal()}>
+													{t('Activate (Rehearsal)')}
+												</MenuItem>
+												<hr />
+											</React.Fragment>
+										}
 									</React.Fragment> :
 									<React.Fragment>
 										<MenuItem onClick={(e) => this.activate()}>
@@ -468,6 +578,7 @@ interface IProps {
 		}
 	}
 	runningOrderId?: string
+	inActiveROView?: boolean
 }
 
 interface IState {
@@ -478,6 +589,7 @@ interface IState {
 	followLiveSegments: boolean
 	manualSetAsNext: boolean
 	subsReady: boolean
+	usedHotkeys: Array<HotkeyDefinition>
 }
 
 interface ITrackedProps {
@@ -515,28 +627,33 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		key: string,
 		up?: (e: KeyboardEvent) => any
 		down?: (e: KeyboardEvent) => any
+		label: string
 	}> = []
 	private _segments: _.Dictionary<React.ComponentClass<{}>> = {}
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 
-		this.state = {
-			timeScale: 0.03,
-			studioMode: localStorage.getItem('studioMode') === '1' ? true : false,
-			contextMenuContext: null,
-			bottomMargin: '',
-			followLiveSegments: true,
-			manualSetAsNext: false,
-			subsReady: false
-		}
+		const { t } = this.props
 
 		this.bindKeys = [
 			{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_GO_TO_LIVE,
-				up: this.onGoToLiveSegment
+				up: this.onGoToLiveSegment,
+				label: t('Go to On Air line')
 			}
 		]
+
+		this.state = {
+			timeScale: 0.03,
+			studioMode: getStudioMode(),
+			contextMenuContext: null,
+			bottomMargin: '',
+			followLiveSegments: true,
+			manualSetAsNext: false,
+			subsReady: false,
+			usedHotkeys: _.clone(this.bindKeys)
+		}
 	}
 
 	componentWillMount () {
@@ -664,6 +781,16 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
+	onWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+		if (!e.altKey && e.ctrlKey && !e.shiftKey && !e.metaKey &&
+			// @ts-ignore
+			!window.keyboardModifiers.altRight &&
+			e.deltaY !== 0) {
+			this.onTimeScaleChange(Math.min(500, this.state.timeScale * (1 + 0.001 * (e.deltaY * -1))))
+			e.preventDefault()
+		}
+	}
+
 	onGoToLiveSegment = () => {
 		this.setState({
 			followLiveSegments: true
@@ -741,6 +868,20 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 	}
 
+	onRegisterHotkeys = (hotkeys: Array<HotkeyDefinition>) => {
+		// @ts-ignore
+		this.state.usedHotkeys = this.state.usedHotkeys.concat(hotkeys) // we concat directly to the state object member, because we need to
+		this.setState({
+			usedHotkeys: this.state.usedHotkeys
+		})
+	}
+
+	onContextMenuTop = (e: React.MouseEvent<HTMLDivElement>): boolean => {
+		e.preventDefault()
+		e.stopPropagation()
+		return false
+	}
+
 	getStyle () {
 		return {
 			'marginBottom': this.state.bottomMargin
@@ -754,7 +895,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				<RunningOrderTimingProvider
 					runningOrder={this.props.runningOrder}
 					defaultDuration={DEFAULT_DISPLAY_DURATION}>
-					<div className='running-order-view' style={this.getStyle()}>
+					<div className='running-order-view' style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
 						<ErrorBoundary>
 							<KeyboardFocusMarker />
 						</ErrorBoundary>
@@ -763,7 +904,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								runningOrder={this.props.runningOrder}
 								studioInstallation={this.props.studioInstallation}
 								onActivate={this.onActivate}
-								studioMode={this.state.studioMode} />
+								studioMode={this.state.studioMode}
+								onRegisterHotkeys={this.onRegisterHotkeys}
+								inActiveROView={this.props.inActiveROView} />
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<SegmentContextMenu
@@ -779,9 +922,11 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 						<ErrorBoundary>
 							<InspectorDrawer
 								segments={this.props.segments}
+								hotkeys={this.state.usedHotkeys}
 								runningOrder={this.props.runningOrder}
 								studioInstallation={this.props.studioInstallation}
-								onChangeBottomMargin={this.onChangeBottomMargin} />
+								onChangeBottomMargin={this.onChangeBottomMargin}
+								onRegisterHotkeys={this.onRegisterHotkeys} />
 						</ErrorBoundary>
 					</div>
 				</RunningOrderTimingProvider>

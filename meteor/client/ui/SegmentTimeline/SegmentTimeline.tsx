@@ -270,12 +270,18 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	}
 
 	onTimelineWheel = (e: React.WheelEventHandler<HTMLDivElement> & any) => {
-		if (e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) { // ctrl + Scroll
+		if (e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey &&
+			// @ts-ignore
+			!window.keyboardModifiers.altRight) { // ctrl + Scroll
 			this.props.onZoomChange(Math.min(500, this.props.timeScale * (1 + 0.001 * (e.deltaY * -1))), e)
 			e.preventDefault()
-		} else if (!e.ctrlKey && e.altKey && !e.metaKey && !e.shiftKey) { // Alt + Scroll
+			e.stopPropagation()
+		} else if ((!e.ctrlKey && e.altKey && !e.metaKey && !e.shiftKey)
+			// @ts-ignore
+			|| (e.ctrlKey && !e.metaKey && !e.shiftKey && window.keyboardModifiers.altRight)) { // Alt + Scroll
 			this.props.onScroll(Math.max(0, this.props.scrollLeft + ((e.deltaY) / this.props.timeScale)), e)
 			e.preventDefault()
+			e.stopPropagation()
 		} else if (!e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) { // no modifier
 			if (e.deltaX !== 0) {
 				this.props.onScroll(Math.max(0, this.props.scrollLeft + ((e.deltaX) / this.props.timeScale)), e)
@@ -304,12 +310,18 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 			this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, {})
 
 			$(document.body).addClass('auto-scrolling')
+			const autoScrolling = parseInt($(document.body).data('auto-scrolling') || 0, 10) + 1
+			$(document.body).data('auto-scrolling', autoScrolling)
 			$('html,body').animate({
 				scrollTop: Math.max(0, scrollTop - 175)
-			}, 400, () => {
+			}, 400).promise().then(() => {
 				// delay until next frame, so that the scroll handler can fire
 				setTimeout(function () {
-					$(document.body).removeClass('auto-scrolling')
+					const autoScrolling = parseInt($(document.body).data('auto-scrolling') || 0, 10) - 1
+					$(document.body).data('auto-scrolling', autoScrolling)
+					if (autoScrolling <= 0) {
+						$(document.body).removeClass('auto-scrolling')
+					}
 				})
 			})
 		}

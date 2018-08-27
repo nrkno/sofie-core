@@ -6,6 +6,7 @@ import { logger } from './logging'
 import * as Timecode from 'smpte-timecode'
 import { Settings } from './Settings'
 import * as objectPath from 'object-path'
+import { Mongo } from 'meteor/mongo'
 
 /**
  * Convenience method to convert a Meteor.call() into a Promise
@@ -353,3 +354,19 @@ export function stringifyObjects (objs: any): string {
 		return objs + ''
 	}
 }
+export const Collections: {[name: string]: Mongo.Collection<any>} = {}
+export function registerCollection (name: string, collection: Mongo.Collection<any>) {
+	Collections[name] = collection
+}
+export const getCollectionIndexes: (collection: Mongo.Collection<any>) => Array<any> = Meteor.wrapAsync(
+	function getCollectionIndexes (collection: Mongo.Collection<any>, cb) {
+		let raw = collection.rawCollection()
+		raw.indexes(cb)
+	}
+)
+export const getCollectionStats: (collection: Mongo.Collection<any>) => Array<any> = Meteor.wrapAsync(
+	function getCollectionStats (collection: Mongo.Collection<any>, cb) {
+		let raw = collection.rawCollection()
+		raw.stats(cb)
+	}
+)

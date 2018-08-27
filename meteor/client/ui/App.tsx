@@ -5,6 +5,7 @@ import * as m from 'moment'
 import 'moment/min/locales'
 import { parse as queryStringParse } from 'query-string'
 import Header from './Header'
+import { setStudioMode, setAdminMode, getStudioMode, getAdminMode } from '../lib/localStorage'
 import Dashboard from './Dashboard'
 import Status from './Status'
 import Settings from './Settings'
@@ -37,23 +38,12 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 
 		const params = queryStringParse(location.search)
 
-		if (params['studio'] === '1') {
-			localStorage.setItem('studioMode', '1')
-		} else if (params['studio'] === '0') {
-			localStorage.setItem('studioMode', '0')
-		}
-
-		if (params['configure'] === '1') {
-			localStorage.setItem('adminMode', '1')
-		} else if (params['configure'] === '0') {
-			localStorage.setItem('adminMode', '0')
-		}
+		if (params['studio']) 	setStudioMode(params['studio'] === '1')
+		if (params['configure']) setAdminMode(params['configure'] === '1')
 
 		this.state = {
-			studioMode: localStorage.getItem('studioMode') === '1' ?
-				true : false,
-			adminMode: localStorage.getItem('adminMode') === '1' ?
-				true : false
+			studioMode: getStudioMode(),
+			adminMode: getAdminMode()
 		}
 
 	}

@@ -184,6 +184,20 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		}
 	}
 
+	getItemDuration = (): number => {
+		let segmentLineItem = this.props.segmentLineItem
+
+		const expectedDurationNumber = (typeof segmentLineItem.expectedDuration === 'number' ? segmentLineItem.expectedDuration || 0 : 0)
+		let itemDuration = Math.min(segmentLineItem.durationOverride || segmentLineItem.duration || segmentLineItem.renderedDuration || expectedDurationNumber || 0, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
+
+		if (segmentLineItem.infiniteMode !== undefined && segmentLineItem.infiniteMode !== SegmentLineItemLifespan.Normal && !segmentLineItem.cropped && !segmentLineItem.duration && !segmentLineItem.durationOverride) {
+			itemDuration = this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)
+			// console.log(segmentLineItem.infiniteMode + ', ' + segmentLineItem.infiniteId)
+		}
+
+		return itemDuration
+	}
+
 	getItemStyle (): { [key: string]: string } {
 		let segmentLineItem = this.props.segmentLineItem
 
@@ -194,38 +208,9 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		// If not, as-run segmentLine "duration" limits renderdDuration which takes priority over MOS-import
 		// expectedDuration (editorial duration)
 
-		let liveLinePadding = this.props.autoNextSegmentLine ? 0 : (this.props.isLiveLine ? this.props.liveLinePadding : 0)
+		// let liveLinePadding = this.props.autoNextSegmentLine ? 0 : (this.props.isLiveLine ? this.props.liveLinePadding : 0)
 
-		// let itemDuration = segmentLineItem.duration !== undefined ?
-		// 	Math.min(segmentLineItem.duration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)) :
-		// 	(this.props.isLiveLine && this.props.livePosition !== null ?
-		// 		((segmentLineItem.expectedDuration) === 0 ? // segmentLineItem.renderedDuration
-		// 			(this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)) :
-		// 			Math.max(
-		// 				Math.min(
-		// 					(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration || 0),
-		// 					// this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0) + liveLinePadding,
-		// 					(this.props.livePosition - this.props.segmentLineStartsAt + liveLinePadding - (segmentLineItem.renderedInPoint || 0))
-		// 				),
-		// 				Math.min(segmentLineItem.expectedDuration, segmentLineItem.renderedDuration || 0),
-		// 			)
-		// 		)
-		// 		: (segmentLineItem.infiniteMode ?
-		// 			this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)
-		// 			: Math.min(segmentLineItem.renderedDuration || segmentLineItem.expectedDuration, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
-		// 		)
-		// 	)
-
-		const expectedDurationNumber = (typeof segmentLineItem.expectedDuration === 'number' ? segmentLineItem.expectedDuration || 0 : 0)
-		let itemDuration = Math.min(segmentLineItem.durationOverride || segmentLineItem.duration || segmentLineItem.renderedDuration || expectedDurationNumber || 0, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
-		if (segmentLineItem.infiniteMode !== undefined && segmentLineItem.infiniteMode !== SegmentLineItemLifespan.Normal && !segmentLineItem.cropped && !segmentLineItem.duration && !segmentLineItem.durationOverride) {
-			itemDuration = this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)
-			// console.log(segmentLineItem.infiniteMode + ', ' + segmentLineItem.infiniteId)
-		}
-
-		// if (itemDuration === 0 && segmentLineItem.renderedInPoint !== null && segmentLineItem.renderedInPoint !== undefined) {
-		// 	itemDuration = this.props.segmentLineDuration - segmentLineItem.renderedInPoint
-		// }
+		const itemDuration = this.getItemDuration()
 
 		if (this.props.relative) {
 			return {
@@ -344,6 +329,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			case RundownAPI.SourceLayerType.MIC:
 				return <MicSourceRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
+						getItemDuration={this.getItemDuration}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
@@ -351,6 +337,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			case RundownAPI.SourceLayerType.VT:
 				return <VTSourceRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
+						getItemDuration={this.getItemDuration}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
@@ -359,6 +346,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			case RundownAPI.SourceLayerType.LOWER_THIRD:
 				return <L3rdSourceRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
+						getItemDuration={this.getItemDuration}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
@@ -366,6 +354,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			case RundownAPI.SourceLayerType.SPLITS:
 				return <SplitsSourceRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
+						getItemDuration={this.getItemDuration}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
@@ -373,6 +362,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			case RundownAPI.SourceLayerType.LIVE_SPEAK:
 				return <STKSourceRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
+						getItemDuration={this.getItemDuration}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
@@ -380,6 +370,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			default:
 				return <DefaultLayerItemRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
+						getItemDuration={this.getItemDuration}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}

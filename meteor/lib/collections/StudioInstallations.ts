@@ -3,7 +3,7 @@ import { RundownAPI } from '../api/rundown'
 import { TransformedCollection } from '../typings/meteor'
 import { PlayoutDeviceType } from './PeripheralDevices'
 import { LookaheadMode } from '../api/playout'
-import { applyClassToDocument } from '../lib'
+import { applyClassToDocument, registerCollection } from '../lib'
 import * as _ from 'underscore'
 
 // Imports from TSR (TODO make into an import)
@@ -153,3 +153,4 @@ export class StudioInstallation implements DBStudioInstallation {
 
 export const StudioInstallations: TransformedCollection<StudioInstallation, DBStudioInstallation>
 	= new Mongo.Collection<StudioInstallation>('studioInstallation', {transform: (doc) => applyClassToDocument(StudioInstallation, doc) })
+registerCollection('StudioInstallations', StudioInstallations)
