@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
+import timer from 'react-timer-hoc'
 import * as CoreIcon from '@nrk/core-icons/jsx'
 import { Spinner } from '../lib/Spinner'
 import * as ClassNames from 'classnames'
@@ -82,10 +83,71 @@ class KeyboardFocusMarker extends React.Component<any, IKeyboardFocusMarkerState
 	}
 }
 
+interface ITimingWarningProps {
+	runningOrder: RunningOrder
+	inActiveROView?: boolean
+	onReloadAndActivate: () => void
+}
+
+interface ITimingWarningState {
+	plannedStartCloseShown?: boolean
+	plannedStartCloseShow?: boolean
+}
+
+const WarningDisplay = translate()(timer(5000)(
+	class extends React.Component<Translated<ITimingWarningProps>, ITimingWarningState> {
+		private REHEARSAL_MARGIN = 1 * 60 * 1000
+
+		constructor (props) {
+			super(props)
+
+			this.state = {}
+		}
+
+		componentDidUpdate (prevProps: ITimingWarningProps) {
+			if (this.props.runningOrder.active && !prevProps.runningOrder.active && this.props.runningOrder.rehearsal) {
+				this.setState({
+					plannedStartCloseShown: false
+				})
+			}
+
+			if (this.props.runningOrder.active && this.props.runningOrder.rehearsal && this.props.runningOrder.expectedStart && getCurrentTime() - this.REHEARSAL_MARGIN > this.props.runningOrder.expectedStart && !this.props.inActiveROView && !this.state.plannedStartCloseShown) {
+				this.setState({
+					plannedStartCloseShow: true,
+					plannedStartCloseShown: true
+				})
+			}
+		}
+
+		discard = () => {
+			this.setState({
+				plannedStartCloseShow: false
+			})
+		}
+
+		reloadRO = () => {
+			this.setState({
+				plannedStartCloseShow: false
+			})
+
+			this.props.onReloadAndActivate()
+		}
+
+		render () {
+			const { t } = this.props
+
+			if (!this.props.runningOrder) return null
+
+			return this.state.plannedStartCloseShow ?
+						<ModalDialog title={t('Start time is close')} acceptText={t('Yes')} secondaryText={t('No')} onAccept={this.reloadRO} onDiscard={this.discard} onSecondary={this.discard}>
+							<p>{t('You are in rehearsal mode, the broadcast starts in 1 minute. Do you want to reload the rundown and remove rehearsal mode?')}</p>
+						</ModalDialog> : null
+		}
+	}
+) as React.StatelessComponent<Translated<ITimingWarningProps>>)
+
 interface ITimingDisplayProps {
 	runningOrder: RunningOrder
-}
-interface ITimingDisplayState {
 }
 
 export enum RunningOrderViewKbdShortcuts {
@@ -107,8 +169,8 @@ mousetrap.addKeycodes({
 	223: '|' // this key is not present on ANSI-based keyboards
 })
 
-const TimingDisplay = translate()(withTiming<ITimingDisplayProps, ITimingDisplayState>()(
-class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>, ITimingDisplayState> {
+const TimingDisplay = translate()(withTiming<ITimingDisplayProps, {}>()(
+class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 	render () {
 		const { t } = this.props
 
@@ -201,6 +263,7 @@ interface IRunningOrderHeaderProps {
 	onActivate?: (isRehearsal: boolean) => void,
 	onRegisterHotkeys?: (hotkeys: Array<HotkeyDefinition>) => void
 	studioMode: boolean
+	inActiveROView?: boolean
 }
 
 interface IRunningOrderHeaderState {
@@ -408,6 +471,11 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		})
 	}
 
+	onReloadAndActivate = () => {
+		this.reloadRunningOrder()
+		this.activate()
+	}
+
 	render () {
 		const { t } = this.props
 		return <React.Fragment>
@@ -418,6 +486,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				'rehearsal': this.props.runningOrder.rehearsal
 			})}>
 				{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} />}
+				<WarningDisplay inActiveROView={this.props.inActiveROView} runningOrder={this.props.runningOrder} onReloadAndActivate={this.onReloadAndActivate} />
 				<div className='row first-row super-dark'>
 					<div className='flex-col left horizontal-align-left'>
 						{/* !!! TODO: This is just a temporary solution !!! */}
@@ -507,6 +576,7 @@ interface IProps {
 		}
 	}
 	runningOrderId?: string
+	inActiveROView?: boolean
 }
 
 interface IState {
@@ -710,8 +780,10 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-		console.log(e)
-		if (!e.altKey && e.ctrlKey && !e.shiftKey && !e.metaKey && e.deltaY !== 0) {
+		if (!e.altKey && e.ctrlKey && !e.shiftKey && !e.metaKey &&
+			// @ts-ignore
+			!window.keyboardModifiers.altRight &&
+			e.deltaY !== 0) {
 			this.onTimeScaleChange(Math.min(500, this.state.timeScale * (1 + 0.001 * (e.deltaY * -1))))
 			e.preventDefault()
 		}
@@ -825,7 +897,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								studioInstallation={this.props.studioInstallation}
 								onActivate={this.onActivate}
 								studioMode={this.state.studioMode}
-								onRegisterHotkeys={this.onRegisterHotkeys} />
+								onRegisterHotkeys={this.onRegisterHotkeys}
+								inActiveROView={this.props.inActiveROView} />
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<SegmentContextMenu
