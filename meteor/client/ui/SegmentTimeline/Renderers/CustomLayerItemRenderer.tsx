@@ -31,6 +31,7 @@ export interface ISourceLayerItemProps {
 	cursorTimePostion: number
 	getItemLabelOffsetLeft?: () => {[key: string]: string}
 	getItemLabelOffsetRight?: () => { [key: string]: string }
+	getItemDuration?: () => number
 	setAnchoredElsWidths?: (rightAnchoredWidth: number, leftAnchoredWidth: number) => void
 }
 
@@ -58,6 +59,13 @@ export class CustomLayerItemRenderer<IProps = any, IState = any> extends React.C
 			'left': (this.props.elementPosition.left + this.props.cursorPosition.left).toString() + 'px',
 			'top': this.props.elementPosition.top + 'px'
 		}
+	}
+
+	getItemDuration (): number {
+		if (typeof this.props.getItemDuration === 'function') {
+			return this.props.getItemDuration()
+		}
+		return (this.props.segmentLineDuration! || 0)
 	}
 
 	setAnchoredElsWidths (leftAnchoredWidth: number, rightAnchoredWidth: number): void {

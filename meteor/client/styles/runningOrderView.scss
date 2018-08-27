@@ -855,6 +855,16 @@ body.vertical-overflow-only {
 							}
 						}
 
+						.segment-timeline__layer-item__scene-marker {
+							position: absolute;
+							display: block;
+							top: -2px;
+							width: 2px;
+							height: 4px;
+							background: linear-gradient(to bottom, #fff 0%, #fff 50%, #000 50.00001% , #000 100%);
+							overflow: hidden;
+						}
+
 						.segment-timeline__layer-item__label {
 							position: relative;
 							z-index: 10;

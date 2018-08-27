@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as $ from 'jquery'
+import * as _ from 'underscore'
 import { RundownUtils } from '../../../lib/rundown'
 
 import { SegmentLineItemUi } from '../SegmentTimelineContainer'
@@ -20,6 +21,7 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 	rightLabel: HTMLSpanElement
 	begin: string
 	end: string
+	scenes?: Array<number>
 
 	setVideoRef = (e: HTMLVideoElement) => {
 		this.vPreview = e
@@ -36,10 +38,12 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 	updateTime = () => {
 		if (this.vPreview) {
 			let targetTime = this.props.cursorTimePostion
-			const segmentLineItem = this.props.segmentLineItem
-			const itemDuration = (segmentLineItem.duration || segmentLineItem.renderedDuration || segmentLineItem.expectedDuration)
-			if (!Number.isFinite(itemDuration) && this.vPreview.duration > 0) {
+			const segmentLineItem = this.props.segmentLineItem as SegmentLineItemUi
+			const itemDuration = ((segmentLineItem.content ? segmentLineItem.content.sourceDuration as number : undefined) || segmentLineItem.duration || segmentLineItem.renderedDuration || 0)
+			if (segmentLineItem.content && segmentLineItem.content.loop && this.vPreview.duration > 0) {
 				targetTime = targetTime % (this.vPreview.duration * 1000)
+			} else if (itemDuration === 0 && segmentLineItem.infiniteMode) {
+				// noop
 			} else {
 				targetTime = Math.min(targetTime, itemDuration)
 			}
@@ -49,6 +53,8 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 
 	componentDidMount () {
 		this.updateAnchoredElsWidths()
+
+		this.scenes = this.getScenes()
 	}
 
 	updateAnchoredElsWidths = () => {
@@ -67,6 +73,8 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 		if (this.props.segmentLineItem.name !== prevProps.segmentLineItem.name) {
 			this.updateAnchoredElsWidths()
 		}
+
+		this.scenes = this.getScenes()
 	}
 
 	getPreviewUrl = (): string | undefined => {
@@ -80,12 +88,25 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 		return undefined // TODO: should be undefined, but is a placeholder for time being
 	}
 
+	getScenes = (): Array<number> | undefined => {
+		if (this.props.segmentLineItem) {
+			const itemDuration = this.getItemDuration()
+			const item = this.props.segmentLineItem as SegmentLineItemUi
+			const metadata = item.metadata as MediaObject
+			if (metadata && metadata.mediainfo && metadata.mediainfo.scenes) {
+				return metadata.mediainfo.scenes.map((i) => i * 1000) // convert into milliseconds
+			}
+		}
+	}
+
 	render () {
 		const {t} = this.props
 
 		let labelItems = this.props.segmentLineItem.name.split('||')
 		this.begin = labelItems[0] || ''
 		this.end = labelItems[1] || ''
+
+		const itemDuration = this.getItemDuration()
 
 		const defaultOptions = {
 			loop: true,
@@ -126,6 +147,7 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 							</span>
 						</div>
 					</div>
+					{this.scenes && this.scenes.map((i) => i < itemDuration && <span className='segment-timeline__layer-item__scene-marker' key={i} style={{ 'left': (i * this.props.timeScale).toString() + 'px' }}></span>)}
 					<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 						{this.getPreviewUrl() ?
 							<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
