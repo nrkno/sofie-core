@@ -215,15 +215,16 @@ function getSystemSnapshot (studioId: string) {
 			// fetch info from device:
 			let d: any = {
 				device: device,
-				coreTimestamp: getCurrentTime()
+				coreTimestamp: getCurrentTime(),
+				commands: PeripheralDeviceCommands.find({ deviceId: device._id }).fetch()
 			}
-			devices[device._id] = d
+			snapshot.devices[device._id] = d
 			if (device.connected) {
-				d = _.extend(d,
-					ServerPeripheralDeviceAPI.executeFunction(device._id,'getSnapshot')
-				)
+				let o = ServerPeripheralDeviceAPI.executeFunction(device._id,'getSnapshot')
+				d = _.extend(d,o)
+				logger.info('Got snapshot from device "' + device._id + '"')
+				// logger.info(o)
 			}
-			d.commands = PeripheralDeviceCommands.find({ deviceId: device._id }).fetch()
 			// if (device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT) {
 			// // } else if (device.type === PeripheralDeviceAPI.DeviceType.MOSDEVICE) {
 			// }
