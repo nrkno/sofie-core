@@ -14,10 +14,16 @@ let lowPrioFcn = (fcn: (...args) => any, ...args: any[]) => {
 }
 
 Meteor.startup(() => {
+	let lastNightlyCronjob = 0
 
-	Meteor.setInterval(() => {
+	function nightlyCronjob () {
 		let d = new Date(getCurrentTime())
-		if (d.getHours() > 0 && d.getHours() < 5) { // Nighttime
+		let timeSinceLast = getCurrentTime() - lastNightlyCronjob
+		if (
+			(d.getHours() >= 4 && d.getHours() < 5) && // It is nighttime
+			timeSinceLast > 20 * 3600 * 1000 // was last run yesterday
+		) {
+			lastNightlyCronjob = getCurrentTime()
 			logger.info('Starting nightly cronjob')
 
 			// remove old Running orders:
@@ -57,7 +63,8 @@ Meteor.startup(() => {
 			// last:
 			logger.info('Nightly cronjob done')
 		}
-
-	}, 3 * 3600 * 1000)
+	}
+	Meteor.setInterval(nightlyCronjob, 5 * 60 * 1000) // check every 5 minutes
+	nightlyCronjob()
 
 })
