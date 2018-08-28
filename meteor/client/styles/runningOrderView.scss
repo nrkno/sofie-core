@@ -741,6 +741,15 @@ body.vertical-overflow-only {
 			}
 
 			&.next {
+				.segment-timeline__segment-line__nextline {
+					.segment-timeline__segment-line__nextline__label {
+						> svg {
+							margin-left: 1px;
+							margin-right: 5px;
+						}
+					}
+				}
+
 				.segment-timeline__segment-line__nextline:not(.segment-timeline__segment-line__nextline--endline) {
 					border-left-color: $general-next-color;
 					color: $general-next-color;
@@ -759,7 +768,6 @@ body.vertical-overflow-only {
 
 					.segment-timeline__segment-line__nextline__label {
 						display: block;
-						margin-left: 0.5em;
 					}
 
 					&::after {
