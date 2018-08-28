@@ -163,7 +163,9 @@ export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_DEACTIVATE = 'mod+shift+§',
 	RUNNING_ORDER_GO_TO_LIVE = 'mod+home',
 	RUNNING_ORDER_RELOAD_RUNNING_ORDER = 'mod+shift+f12',
-	RUNNING_ORDER_TOGGLE_DRAWER = 'tab'
+	RUNNING_ORDER_TOGGLE_DRAWER = 'tab',
+
+	ADLIB_QUEUE_MODIFIER = 'shift'
 }
 mousetrap.addKeycodes({
 	220: '§', // on US-based (ANSI) keyboards (single-row, Enter key), this is the key above Enter, usually with a backslash and the vertical pipe character

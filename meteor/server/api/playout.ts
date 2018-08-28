@@ -646,10 +646,12 @@ export namespace ServerPlayoutAPI {
 			throw new Meteor.Error(404, `Segment line "${slId}" in running order "${roId}" not found!`)
 		}
 	}
-	export function salliPlaybackStart (roId: string, slId: string, slaiId: string) {
+	export function salliPlaybackStart (roId: string, slId: string, slaiId: string, queue: boolean) {
 		check(roId, String)
 		check(slId, String)
 		check(slaiId, String)
+
+		// TODO: Handle queue argument
 
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -675,10 +677,12 @@ export namespace ServerPlayoutAPI {
 
 		updateTimeline(runningOrder.studioInstallationId)
 	}
-	export function robaliPlaybackStart (roId: string, slId: string, robaliId: string) {
+	export function robaliPlaybackStart (roId: string, slId: string, robaliId: string, queue: boolean) {
 		check(roId, String)
 		check(slId, String)
 		check(robaliId, String)
+
+		// TODO: Handle queue argument
 
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)

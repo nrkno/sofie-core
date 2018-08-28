@@ -716,6 +716,18 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 												className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + item.index + '.isQueueable'}
+												obj={this.props.studioInstallation}
+												type='checkbox'
+												collection={StudioInstallations}
+												className=''></EditAttribute>
+											{t('Adlibs on this layer can be queued')}
+										</label>
+									</div>
 								</div>
 								<div className='mod alright'>
 									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>
