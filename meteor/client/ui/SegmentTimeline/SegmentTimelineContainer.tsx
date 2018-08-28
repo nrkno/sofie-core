@@ -202,14 +202,13 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			if (props.runningOrder.currentSegmentLineId === segmentLine._id) {
 				isLiveSegment = true
 				currentLiveSegmentLine = segmentLine
-				autoNextSegmentLine = (currentLiveSegmentLine.autoNext || false) && (currentLiveSegmentLine.expectedDuration !== undefined) && (currentLiveSegmentLine.expectedDuration !== 0)
 			}
 			if (props.runningOrder.nextSegmentLineId === segmentLine._id) {
 				isNextSegment = true
 				// next is only auto, if current has a duration
-				autoNextSegmentLine = (currentLiveSegmentLine ? currentLiveSegmentLine.autoNext || false : false) && ((currentLiveSegmentLine && currentLiveSegmentLine.expectedDuration !== undefined) ? currentLiveSegmentLine.expectedDuration !== 0 : false)
 				nextSegmentLine = segmentLine
 			}
+			autoNextSegmentLine = (currentLiveSegmentLine ? currentLiveSegmentLine.autoNext || false : false) && ((currentLiveSegmentLine && currentLiveSegmentLine.expectedDuration !== undefined) ? currentLiveSegmentLine.expectedDuration !== 0 : false)
 
 			segmentLine.willProbablyAutoNext = ((previousSegmentLine || {}).autoNext || false) && ((previousSegmentLine || {}).expectedDuration !== 0)
 

@@ -404,13 +404,13 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 						</div>
 					}
 					{this.props.isLastInSegment && <div className={ClassNames('segment-timeline__segment-line__nextline', 'segment-timeline__segment-line__nextline--endline', {
-						'auto-next': this.props.autoNextSegmentLine,
+						'auto-next': this.props.autoNextSegmentLine || this.props.segmentLine.autoNext,
 						'is-next': this.state.isLive
 					})}>
 						<div className='segment-timeline__segment-line__nextline__label'>
 							{
 								this.state.isLive && (
-									this.props.autoNextSegmentLine ?
+									(this.props.autoNextSegmentLine || this.props.segmentLine.autoNext) ?
 										<React.Fragment>
 											<FontAwesomeIcon icon={faFastForward} />
 											{t('Next')}
