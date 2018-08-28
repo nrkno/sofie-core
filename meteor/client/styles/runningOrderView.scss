@@ -907,6 +907,15 @@ body.vertical-overflow-only {
 							overflow: hidden;
 						}
 
+						.segment-timeline__layer-item__source-finished {
+							position: absolute;
+							top: 0;
+							right: 0;
+							bottom: 0;
+							background: repeating-linear-gradient(to right, $segment-timeline-background-color 0, $segment-timeline-background-color 5px, transparent 5.1px, transparent 10px);
+							z-index: 2;
+						}
+
 						.segment-timeline__layer-item__label {
 							position: relative;
 							z-index: 10;

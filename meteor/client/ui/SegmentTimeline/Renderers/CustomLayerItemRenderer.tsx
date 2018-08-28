@@ -87,6 +87,14 @@ export class CustomLayerItemRenderer<IProps = any, IState = any> extends React.C
 		}
 	}
 
+	renderInfiniteItemContentEnded () {
+		const content = this.props.segmentLineItem.content
+		if (this.props.segmentLineItem.infiniteMode && content && content.sourceDuration && (this.props.segmentLineItem.renderedInPoint || 0) + (content.sourceDuration as number) < this.props.segmentLineDuration) {
+			return <div className='segment-timeline__layer-item__source-finished' style={{'left': ((content.sourceDuration as number) * this.props.timeScale).toString() + 'px'}}></div>
+		}
+		return null
+	}
+
 	renderInfiniteIcon () {
 		return (this.props.segmentLineItem.infiniteMode && this.props.segmentLineItem.infiniteMode === SegmentLineItemLifespan.Infinite && !this.props.segmentLineItem.duration && !this.props.segmentLineItem.durationOverride) ?
 			<div className='segment-timeline__layer-item__label label-icon label-infinite-icon'>
