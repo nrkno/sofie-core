@@ -532,7 +532,6 @@ export namespace ServerPlayoutAPI {
 	}
 
 	export function slPlaybackStartedCallback (roId: string, slId: string, startedPlayback: Time) {
-		// This is called from the playout-gateway when an auto-next event occurs
 		check(roId, String)
 		check(slId, String)
 		check(startedPlayback, Number)
@@ -541,13 +540,6 @@ export namespace ServerPlayoutAPI {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
-
-		let timeSinceLastPlay = startedPlayback - (runningOrder.startedPlayback || 0)
-		if (timeSinceLastPlay < 1000) {
-			// If not enough time has passed, it was probably a take + autoTake situation
-			// where the user did a take just before an autotake took place
-			logger.warn('slPlaybackStartedCallback: Ignoring, due to last take was just ' + timeSinceLastPlay + ' ms ago')
-		}
 
 		let segLine = SegmentLines.findOne({
 			_id: slId,
