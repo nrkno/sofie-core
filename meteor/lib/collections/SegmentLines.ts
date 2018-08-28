@@ -56,6 +56,9 @@ export interface DBSegmentLine {
 
 	/** Whether this segment line supports being used in HOLD */
 	holdMode?: SegmentLineHoldMode
+
+	/** Holds notes (warnings / errors) thrown by the templates during creation */
+	notes?: Array<SegmentLineNote>
 }
 export interface SegmentLineTimings {
 	/** Point in time the SegmentLine was taken, (ie the time of the user action) */
@@ -72,6 +75,23 @@ export enum SegmentLineHoldMode {
 	NONE = 0,
 	FROM = 1,
 	TO = 2,
+}
+
+export enum SegmentLineNoteType {
+	WARNING = 1,
+	ERROR = 2
+}
+export interface SegmentLineNote {
+	type: SegmentLineNoteType,
+	origin: {
+		name: string,
+		roId?: string,
+		segmentId?: string,
+		segmentLineId?: string,
+		segmentLineItemId?: string,
+	},
+	message: string
+
 }
 
 export class SegmentLine implements DBSegmentLine {
@@ -94,6 +114,7 @@ export class SegmentLine implements DBSegmentLine {
 	public updateStoryStatus?: boolean
 	public timings?: SegmentLineTimings
 	public holdMode?: SegmentLineHoldMode
+	public notes?: Array<SegmentLineNote>
 
 	constructor (document: DBSegmentLine) {
 		_.each(_.keys(document), (key) => {
@@ -157,6 +178,18 @@ export class SegmentLine implements DBSegmentLine {
 			}
 		)
 
+	}
+	getNotes (runtimeNotes) {
+		let notes: Array<SegmentLineNote> = []
+		notes = notes.concat(this.notes || [])
+
+		if (runtimeNotes) {
+			// let items = this.getSegmentLinesItems()
+			// _.each(items, (item) => {
+				// TODO: check statuses (like media availability) here
+			// })
+		}
+		return notes
 	}
 }
 
