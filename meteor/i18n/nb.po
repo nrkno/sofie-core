@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2018-08-23T07:31:01.494Z\n"
-"PO-Revision-Date: 2018-08-23 09:36+0200\n"
+"POT-Creation-Date: 2018-08-28T15:54:46.339Z\n"
+"PO-Revision-Date: 2018-08-28 17:58+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -96,16 +96,20 @@ msgstr "TC inn"
 msgid "Search..."
 msgstr "Søk..."
 
-#, fuzzy
-#| msgid "Last seen"
 msgid "Last "
-msgstr "Sist sett"
+msgstr "Sist sett "
+
+msgid "Toggle drawer"
+msgstr "Skuff"
 
 msgid "AdLib"
 msgstr "Hurtigtaster"
 
 msgid "Global AdLib"
 msgstr "Faste hurtigtaster"
+
+msgid "Shortcuts"
+msgstr "Hurtigtaster"
 
 #, fuzzy
 msgid "Slug"
@@ -150,6 +154,22 @@ msgstr "Mer enn 5 timer siden"
 msgid "More than a day ago"
 msgstr "Mer enn en dag siden"
 
+msgid "Start time is close"
+msgstr "Start tidspunkt er nær"
+
+msgid "Yes"
+msgstr "Ja"
+
+msgid "No"
+msgstr "Nei"
+
+msgid ""
+"You are in rehearsal mode, the broadcast starts in 1 minute. Do you want to "
+"reload the rundown and remove rehearsal mode?"
+msgstr ""
+"Du er i testmodus, sendingen starter om ett minutt. Vil du gjøre klar til "
+"sending?"
+
 msgid "Started"
 msgstr "Startet"
 
@@ -165,16 +185,6 @@ msgstr "Forskjell"
 msgid "Expected end"
 msgstr "Forventet slutt"
 
-msgid ""
-"Only a single running order can be active in a studio. Deactivate the other "
-"running order and try again."
-msgstr ""
-"Bare én kjøreplan kan være aktiv i et studio. Deaktiver den andre "
-"kjøreplanen, og prøv på nytt."
-
-msgid "Deactivate"
-msgstr "Deaktiver"
-
 msgid "Take"
 msgstr "Take"
 
@@ -184,17 +194,33 @@ msgstr "Hold"
 msgid "Activate"
 msgstr "Aktiver"
 
-msgid "Activate (Rehearsal)"
-msgstr "Aktiver øving"
+msgid "Deactivate"
+msgstr "Deaktiver"
+
+msgid "Activate (rehearsal)"
+msgstr "Aktiver testmodus"
 
 msgid "Reload running order"
 msgstr "Last inn kjøreplan på nytt"
+
+msgid ""
+"Only a single running order can be active in a studio. Deactivate the other "
+"running order and try again."
+msgstr ""
+"Bare én kjøreplan kan være aktiv i et studio. Deaktiver den andre "
+"kjøreplanen, og prøv på nytt."
+
+msgid "Activate (Rehearsal)"
+msgstr "Aktiver testmodus"
 
 msgid "Error"
 msgstr "Feil"
 
 msgid "OK"
 msgstr "OK"
+
+msgid "Go to On Air line"
+msgstr "Gå til On Air-linje"
 
 msgid "ON AIR"
 msgstr "Hjem"
@@ -216,15 +242,6 @@ msgstr "Manus er tomt"
 
 msgid "File name"
 msgstr "Filnavn"
-
-msgid "Unknown segment"
-msgstr "Ukjent segment"
-
-msgid "Line"
-msgstr "Linje"
-
-msgid "Unknown line"
-msgstr "Ukjent linje"
 
 msgid "Set as Next"
 msgstr "Sett som Neste"
@@ -519,9 +536,8 @@ msgstr "Hurtigtaster"
 msgid "Clear shortcut"
 msgstr "Hurtigtast for å fjerne"
 
-#, fuzzy
 msgid "Assign hotkeys to global adlibs"
-msgstr "Globale hurtigtaster"
+msgstr "Anvise hurtigtaster til globale adlibs"
 
 #, fuzzy
 msgid "Items on this layer are sticky"
@@ -566,9 +582,8 @@ msgstr "Fjern denne koblingen?"
 msgid "Are you sure you want to remove mapping for LLayer "
 msgstr "Er du sikker på at du vil fjerne koblingen for "
 
-#, fuzzy
 msgid "Layer Mappings"
-msgstr "Lag-kobling"
+msgstr "Lag-koblinger"
 
 msgid "New source"
 msgstr "Ny kilde"
@@ -585,6 +600,9 @@ msgstr "Standardprogramtype"
 msgid "System"
 msgstr "System"
 
+msgid "Snapshot"
+msgstr "Snapshot"
+
 msgid "Messages"
 msgstr "Meldinger"
 
@@ -599,6 +617,12 @@ msgstr "Sendte meldinger"
 
 msgid "Message queue"
 msgstr "Meldingskø"
+
+msgid "Take snapshot"
+msgstr "Ta snapshot"
+
+msgid "Download system snapshot"
+msgstr "Last ned nåværende tilstand"
 
 msgid "Not connected"
 msgstr "Ikke tilkoblet"
@@ -650,6 +674,15 @@ msgctxt "item"
 msgid "new_config"
 msgstr "Ny konfigurasjon"
 
+#~ msgid "Unknown segment"
+#~ msgstr "Ukjent segment"
+
+#~ msgid "Line"
+#~ msgstr "Linje"
+
+#~ msgid "Unknown line"
+#~ msgstr "Ukjent linje"
+
 #~ msgid "Script"
 #~ msgstr "Manus"
 
@@ -670,9 +703,6 @@ msgstr "Ny konfigurasjon"
 
 #~ msgid "Finish"
 #~ msgstr "Avslutt"
-
-#~ msgid "Now"
-#~ msgstr "Nå"
 
 #~ msgid "Loading…"
 #~ msgstr "Laster …"

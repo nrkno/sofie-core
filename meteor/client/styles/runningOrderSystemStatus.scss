@@ -16,10 +16,12 @@
 		top: 3px;
 		left: 50%;
 		transform: translate(-50%, 0);
-		width: 30px;
-		justify-content: space-evenly;
+		width: 100%;
+		justify-content: center;
 
 		.indicator {
+			margin-left: 5px;
+			margin-right: 5px;
 			position: relative;
 			flex: none;
 			border-radius: 100%;
@@ -87,6 +89,61 @@
 
 			&:hover {
 				> .indicator__tooltip {
+					display: block;
+				}
+			}
+		}
+		.note-icon {
+			min-width: 2em;
+			margin-top: -0.5em;
+
+			margin-left: 5px;
+			margin-right: 5px;
+
+			color: #FFCC00;
+			font-weight: bold;
+
+			
+
+			.icon {
+				display: inline-block;
+				min-width: 1em;
+			}
+			.count {
+				display: inline-block;
+			}
+			.notes_tooltip {
+				position: absolute;
+				top: 10px;
+				border-radius: 3px;
+				background: #3e4041;
+				width: 500px;
+				box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.25);
+				display: none;
+				padding: 0 10px;
+				transform: translate(-50%, 0);
+				color: #FFF;
+
+				padding: 10px;
+
+				td {
+					padding-left: 0.5em;
+					padding-right: 0.5em;
+				}
+
+				&:hover {
+					display: block;
+				}
+
+			}
+			
+			&.display {
+				.notes_tooltip {
+					display: block;
+				}
+			}
+			&:hover {
+				> .notes_tooltip {
 					display: block;
 				}
 			}

@@ -18,7 +18,7 @@ import { IMOSRunningOrder, IMOSObjectStatus, MosString128 } from 'mos-connection
 import { PlayoutTimelinePrefixes, LookaheadMode } from '../../lib/api/playout'
 import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
-import { sendStoryStatus } from './peripheralDevice'
+import { sendStoryStatus, fetchAfter } from './peripheralDevice'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
@@ -87,6 +87,24 @@ export namespace ServerPlayoutAPI {
 
 		let studioInstallation = runningOrder.getStudioInstallation()
 
+		let anyOtherActiveRunningOrders = RunningOrders.find({
+			studioInstallationId: runningOrder.studioInstallationId,
+			active: true,
+			_id: {
+				$ne: roId
+			}
+		}).fetch()
+
+		if (anyOtherActiveRunningOrders.length) {
+			logger.warn('Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
+			const res = literal<ClientAPI.ClientResponse>({
+				error: 409,
+				message: 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id')
+			})
+			return res
+		}
+		logger.info('Activating RO ' + roId + (rehearsal ? ' (Rehearsal)' : ''))
+
 		let playoutDevices = PeripheralDevices.find({
 			studioInstallationId: studioInstallation._id,
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT
@@ -106,24 +124,6 @@ export namespace ServerPlayoutAPI {
 				}
 			}, 'devicesMakeReady', okToDestoryStuff)
 		})
-
-		let anyOtherActiveRunningOrders = RunningOrders.find({
-			studioInstallationId: runningOrder.studioInstallationId,
-			active: true,
-			_id: {
-				$ne: roId
-			}
-		}).fetch()
-
-		if (anyOtherActiveRunningOrders.length) {
-			logger.warn('Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
-			const res = literal<ClientAPI.ClientResponse>({
-				error: 409,
-				message: 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id')
-			})
-			return res
-		}
-		logger.info('Activating RO ' + roId + (rehearsal ? ' (Rehearsal)' : ''))
 
 		let segmentLines = runningOrder.getSegmentLines()
 
@@ -330,16 +330,11 @@ export namespace ServerPlayoutAPI {
 		if (!takeSegmentLine) throw new Meteor.Error(404, 'takeSegmentLine not found!')
 		let takeSegment = Segments.findOne(takeSegmentLine.segmentId)
 
-		let segmentLinesAfter = runningOrder.getSegmentLines({
-			_rank: {
-				$gt: takeSegmentLine._rank,
-			},
-			_id: { $ne: takeSegmentLine._id }
-		}, {
-			limit: 1
-		})
+		let segmentLineAfter = fetchAfter(SegmentLines, {
+			runningOrderId: runningOrder._id
+		}, takeSegmentLine._rank)
 
-		let nextSegmentLine: SegmentLine | null = segmentLinesAfter[0] || null
+		let nextSegmentLine: DBSegmentLine | null = segmentLineAfter || null
 
 		beforeTake(runningOrder, previousSegmentLine || null, takeSegmentLine)
 
@@ -421,7 +416,7 @@ export namespace ServerPlayoutAPI {
 
 		const nextSegment = Segments.findOne(nextSegmentLine.segmentId)
 		if (nextSegment) {
-			resetSegment(nextSegment._id) // reset entire segment on manual set as next
+			resetSegment(nextSegment._id, runningOrder.currentSegmentLineId) // reset entire segment on manual set as next
 		}
 
 		RunningOrders.update(runningOrder._id, {
@@ -1142,18 +1137,26 @@ function getOrderedSegmentLineItem (line: SegmentLine): SegmentLineItem[] {
 	return eventMap.map(e => e.item)
 }
 
-function resetSegment (segmentId: string) {
+function resetSegment (segmentId: string, currentSegmentLineId: string | null) {
 	const segment = Segments.findOne(segmentId)
 	if (!segment) return
 
-	const segmentLines = SegmentLines.find({
-		segmentId: segmentId
-	}).fetch()
+	const segmentLines = SegmentLines.find(_.extend({
+		segmentId: segmentId,
+	}, currentSegmentLineId ? {
+		_id: {
+			$ne: currentSegmentLineId
+		}
+	} : {})).fetch()
 
-	SegmentLines.update({
+	SegmentLines.update(_.extend({
 		runningOrderId: segment.runningOrderId,
 		segmentId: segmentId
-	}, {
+	}, currentSegmentLineId ? {
+		_id: {
+			$ne: currentSegmentLineId
+		}
+	} : {}), {
 		$unset: {
 			duration: 1,
 			startedPlayback: 1,
@@ -1884,7 +1887,7 @@ export function updateTimelineFromMosData (roId: string, changedLines?: Array<st
  * @param studioInstallationId id of the studioInstallation to update
  * @param forceNowToTime if set, instantly forces all "now"-objects to that time (used in autoNext)
  */
-function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
+export function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 	const activeRunningOrder = RunningOrders.findOne({
 		studioInstallationId: studioInstallationId,
 		active: true

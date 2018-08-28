@@ -253,10 +253,8 @@ body.vertical-overflow-only {
 	.segment-timeline__title {
 		display: block;
 		margin: 0;
-		padding: 0.3em;
-		line-height: 1.2em;
-		letter-spacing: 0px;
-		font-weight: 400;
+		padding: 0;
+		
 		
 		grid-column: segment-name / segment-group-controls;
 		grid-row: main-view / end;
@@ -267,6 +265,16 @@ body.vertical-overflow-only {
 		background: $segment-title-background-color;
 
 		word-break: break-word;
+		h2 {
+			margin: 0;
+			padding: 0.3em;
+			line-height: 1.2em;
+			letter-spacing: 0px;
+			font-weight: 400;
+		}
+		.segment-timeline__title__notes {
+			font-size: 75%;
+		}
 	}
 
 	// the live and next states are the states of the entire segment component
@@ -741,6 +749,15 @@ body.vertical-overflow-only {
 			}
 
 			&.next {
+				.segment-timeline__segment-line__nextline {
+					.segment-timeline__segment-line__nextline__label {
+						> svg {
+							margin-left: 1px;
+							margin-right: 5px;
+						}
+					}
+				}
+
 				.segment-timeline__segment-line__nextline:not(.segment-timeline__segment-line__nextline--endline) {
 					border-left-color: $general-next-color;
 					color: $general-next-color;
@@ -763,6 +780,21 @@ body.vertical-overflow-only {
 
 					&::after {
 						display: none;
+					}
+				}
+
+				.segment-timeline__segment-line__nextline.segment-timeline__segment-line__nextline--endline:not(.is-next).auto-next {
+					&::before {
+						content: ' ';
+						display: block;
+						position: absolute;
+						top: -3px;
+						left: 5px;
+						width: 0;
+						height: 0;
+						border-style: solid;
+						border-width: 6px 0 6px 12px;
+						border-color: transparent transparent transparent $segment-line-start-color;
 					}
 				}
 			}
@@ -793,7 +825,9 @@ body.vertical-overflow-only {
 					position: absolute;
 					background: none;
 					top: 0;
-					left: 3px;
+					left: 2px;
+					width: 0px;
+					height: auto;
 					bottom: 0;
 					border: none;
 					border-right: 2px solid $general-next-color;
@@ -868,9 +902,19 @@ body.vertical-overflow-only {
 							display: block;
 							top: -2px;
 							width: 2px;
-							height: 4px;
-							background: linear-gradient(to bottom, #fff 0%, #fff 50%, #000 50.00001% , #000 100%);
+							bottom: 0;
+							background: linear-gradient(to bottom, #fff 0, #fff 1.9px, #000 2px , #000 4px, rgba(0, 0, 0, 0.1) 4.1px);
 							overflow: hidden;
+							z-index: 3;
+						}
+
+						.segment-timeline__layer-item__source-finished {
+							position: absolute;
+							top: 0;
+							right: 0;
+							bottom: 0;
+							background: repeating-linear-gradient(to right, $segment-timeline-background-color 0, $segment-timeline-background-color 5px, transparent 5.1px, transparent 10px);
+							z-index: 2;
 						}
 
 						.segment-timeline__layer-item__label {
@@ -1485,7 +1529,7 @@ body.vertical-overflow-only {
 	opacity: 0.7;
 	position: fixed;
 	cursor: pointer;
-    bottom: 1.5em;
+    top: 160px;
     right: 1.5em;
     background: $general-live-color;
     color: #000;

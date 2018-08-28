@@ -122,6 +122,7 @@ export class VTSourceRenderer extends CustomLayerItemRenderer {
 		const itemDuration = this.getItemDuration()
 
 		return <React.Fragment>
+					{this.renderInfiniteItemContentEnded()}
 					<span className='segment-timeline__layer-item__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 						<span className={ClassNames('segment-timeline__layer-item__label', {
 							'overflow-label': this.end !== ''

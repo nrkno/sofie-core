@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2018-08-23T07:31:01.494Z\n"
-"PO-Revision-Date: 2018-08-23T07:31:01.494Z\n"
+"POT-Creation-Date: 2018-08-28T15:54:46.339Z\n"
+"PO-Revision-Date: 2018-08-28T15:54:46.339Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -92,10 +92,16 @@ msgstr ""
 msgid "Last "
 msgstr ""
 
+msgid "Toggle drawer"
+msgstr ""
+
 msgid "AdLib"
 msgstr ""
 
 msgid "Global AdLib"
+msgstr ""
+
+msgid "Shortcuts"
 msgstr ""
 
 msgid "Slug"
@@ -140,6 +146,20 @@ msgstr ""
 msgid "More than a day ago"
 msgstr ""
 
+msgid "Start time is close"
+msgstr ""
+
+msgid "Yes"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid ""
+"You are in rehearsal mode, the broadcast starts in 1 minute. Do you want to "
+"reload the rundown and remove rehearsal mode?"
+msgstr ""
+
 msgid "Started"
 msgstr ""
 
@@ -155,14 +175,6 @@ msgstr ""
 msgid "Expected end"
 msgstr ""
 
-msgid ""
-"Only a single running order can be active in a studio. Deactivate the other "
-"running order and try again."
-msgstr ""
-
-msgid "Deactivate"
-msgstr ""
-
 msgid "Take"
 msgstr ""
 
@@ -172,16 +184,30 @@ msgstr ""
 msgid "Activate"
 msgstr ""
 
-msgid "Activate (Rehearsal)"
+msgid "Deactivate"
+msgstr ""
+
+msgid "Activate (rehearsal)"
 msgstr ""
 
 msgid "Reload running order"
+msgstr ""
+
+msgid ""
+"Only a single running order can be active in a studio. Deactivate the other "
+"running order and try again."
+msgstr ""
+
+msgid "Activate (Rehearsal)"
 msgstr ""
 
 msgid "Error"
 msgstr ""
 
 msgid "OK"
+msgstr ""
+
+msgid "Go to On Air line"
 msgstr ""
 
 msgid "ON AIR"
@@ -203,15 +229,6 @@ msgid "Script is empty"
 msgstr ""
 
 msgid "File name"
-msgstr ""
-
-msgid "Unknown segment"
-msgstr ""
-
-msgid "Line"
-msgstr ""
-
-msgid "Unknown line"
 msgstr ""
 
 msgid "Set as Next"
@@ -562,6 +579,9 @@ msgstr ""
 msgid "System"
 msgstr ""
 
+msgid "Snapshot"
+msgstr ""
+
 msgid "Messages"
 msgstr ""
 
@@ -575,6 +595,12 @@ msgid "Sent messages"
 msgstr ""
 
 msgid "Message queue"
+msgstr ""
+
+msgid "Take snapshot"
+msgstr ""
+
+msgid "Download system snapshot"
 msgstr ""
 
 msgid "Not connected"

@@ -37,7 +37,7 @@ import { StudioInstallations, StudioInstallation } from '../../lib/collections/S
 import { MediaObject, MediaObjects } from '../../lib/collections/MediaObjects'
 import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
 import { ShowStyles, ShowStyle } from '../../lib/collections/ShowStyles'
-import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
+import { ServerPlayoutAPI, updateTimelineFromMosData, updateTimeline } from './playout'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -331,7 +331,7 @@ export namespace ServerPeripheralDeviceAPI {
 				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 			},
 			afterRemove (segmentLine) {
-				afterRemoveSegmentLine(segmentLine._id)
+				afterRemoveSegmentLine(segmentLine)
 			}
 		})
 		updateSegments(roId(ro.ID))
@@ -528,11 +528,13 @@ export namespace ServerPeripheralDeviceAPI {
 		let affectedSegmentLineIds: Array<string> = []
 
 		let insertedSegmentLineIds: {[id: string]: boolean} = {}
+		let firstInsertedSegmentLine: DBSegmentLine | undefined
 		_.each(Stories, (story: IMOSROStory, i: number) => {
 			let rank = getRank(segmentLineBefore, segmentLineAfter, i, Stories.length)
 			let sl = upsertSegmentLine(story, ro._id, rank)
 			insertedSegmentLineIds[sl._id] = true
 			affectedSegmentLineIds.push(sl._id)
+			if (!firstInsertedSegmentLine) firstInsertedSegmentLine = sl
 		})
 
 		updateSegments(ro._id)
@@ -541,7 +543,7 @@ export namespace ServerPeripheralDeviceAPI {
 			// ok, the segmentline to replace wasn't in the inserted segment lines
 			// remove it then:
 			affectedSegmentLineIds.push(segmentLineToReplace._id)
-			removeSegmentLine(ro._id, segmentLineToReplace._id)
+			removeSegmentLine(ro._id, segmentLineToReplace)
 		}
 
 		updateAffectedSegmentLines(ro, affectedSegmentLineIds)
@@ -978,8 +980,8 @@ export function afterRemoveSegment (segmentId: string, runningOrderId: string) {
 		runningOrderId: runningOrderId,
 		segmentId: segmentId
 	},[],{
-		remove (segment) {
-			removeSegmentLine(segment.runningOrderId, segment._id)
+		remove (segmentLine) {
+			removeSegmentLine(segmentLine.runningOrderId, segmentLine)
 		}
 	})
 }
@@ -996,10 +998,17 @@ export function upsertSegmentLine (story: IMOSStory, runningOrderId: string, ran
 	afterInsertUpdateSegmentLine(story, runningOrderId)
 	return sl
 }
-export function removeSegmentLine (roId: string, segmentLineId: string) {
-	SegmentLines.remove(segmentLineId)
-	afterRemoveSegmentLine(segmentLineId)
-	updateTimelineFromMosData(roId)
+export function removeSegmentLine (roId: string, segmentLineOrId: DBSegmentLine | string) {
+	let segmentLineToRemove: DBSegmentLine | undefined = (
+		_.isString(segmentLineOrId) ?
+			SegmentLines.findOne(segmentLineOrId) :
+			segmentLineOrId
+	)
+	if (segmentLineToRemove) {
+		SegmentLines.remove(segmentLineToRemove._id)
+		afterRemoveSegmentLine(segmentLineToRemove)
+		updateTimelineFromMosData(roId)
+	}
 }
 export function afterInsertUpdateSegmentLine (story: IMOSStory, runningOrderId: string) {
 	// TODO: create segmentLineItems
@@ -1007,10 +1016,38 @@ export function afterInsertUpdateSegmentLine (story: IMOSStory, runningOrderId: 
 	// use the Template-generator to generate the segmentLineItems
 	// and put them into the db
 }
-export function afterRemoveSegmentLine (segmentLineId: string) {
+export function afterRemoveSegmentLine (removedSegmentLine: DBSegmentLine) {
 	SegmentLineItems.remove({
-		segmentLineId: segmentLineId
+		segmentLineId: removedSegmentLine._id
 	})
+
+	let ro = RunningOrders.findOne(removedSegmentLine.runningOrderId)
+	if (ro) {
+		// If the replaced segment is next-to-be-played out,
+		// instead make the next-to-be-played-out item the one in it's place
+		if (
+			ro.active &&
+			ro.nextSegmentLineId === removedSegmentLine._id
+		) {
+			let segmentLineBefore = fetchBefore(SegmentLines, {
+				runningOrderId: removedSegmentLine.runningOrderId
+			}, removedSegmentLine._rank)
+
+			let nextSegmentLineInLine = fetchAfter(SegmentLines, {
+				runningOrderId: removedSegmentLine.runningOrderId,
+				_id: {$ne: removedSegmentLine._id}
+			}, segmentLineBefore ? segmentLineBefore._rank : null)
+
+			RunningOrders.update(ro._id, {$set: {
+				nextSegmentLineId: (
+					nextSegmentLineInLine ?
+					nextSegmentLineInLine._id :
+					null
+				)
+			}})
+			updateTimeline(ro.studioInstallationId)
+		}
+	}
 }
 export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: Mongo.Selector, rank: number | null): T {
 	if (_.isNull(rank)) rank = Number.POSITIVE_INFINITY
@@ -1241,6 +1278,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 		if (tr.result.segmentLine) {
 			if (!tr.result.segmentLine.typeVariant) tr.result.segmentLine.typeVariant = tr.templateId
 			SegmentLines.update(segmentLine._id, {$set: {
+				notes: 					tr.result.notes,
 				expectedDuration:		tr.result.segmentLine.expectedDuration || segmentLine.expectedDuration,
 				autoNext: 				tr.result.segmentLine.autoNext || false,
 				autoNextOverlap: 		tr.result.segmentLine.autoNextOverlap || 0,

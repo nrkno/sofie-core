@@ -127,6 +127,7 @@ $segment-layer-background-vt: #1769ff;
 			left: 0;
 			right: 0;
 			bottom: 0;
+			z-index: 1;
 			mix-blend-mode: overlay; 
 			background-image: repeating-linear-gradient(
 			45deg,

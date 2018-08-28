@@ -2,14 +2,18 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
+import * as $ from 'jquery'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { PeripheralDevice, PeripheralDevices, MosDevice } from '../../lib/collections/PeripheralDevices'
-import { RunningOrder } from '../../lib/collections/RunningOrders'
+import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Time, getCurrentTime } from '../../lib/lib'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { SegmentLineNote, SegmentLineNoteType, SegmentLines } from '../../lib/collections/SegmentLines'
+import { scrollToSegment } from '../lib/viewPort'
+import { SegmentTimelineElementId } from './SegmentTimeline/SegmentTimeline'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
@@ -53,11 +57,13 @@ export const MOSLastUpdateStatus = translate()(class extends React.Component<IMO
 
 interface IProps {
 	studioInstallation: StudioInstallation
+	runningOrder: RunningOrder
 }
 
 interface IState {
 	mosDiff: OnLineOffLineList
 	playoutDiff: OnLineOffLineList
+	displayNotes: boolean
 }
 
 interface OnLineOffLineList {
@@ -66,6 +72,7 @@ interface OnLineOffLineList {
 }
 
 interface ITrackedProps {
+	notes: Array<SegmentLineNote>
 	mosStatus: PeripheralDeviceAPI.StatusCode
 	mosLastUpdate: Time
 	mosDevices: OnLineOffLineList
@@ -144,7 +151,15 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 		offLine: playoutDevices.filter(i => !i.connected)
 	}
 
+	let segmentLines = props.runningOrder.getSegmentLines()
+
+	let notes: Array<SegmentLineNote> = []
+	_.each(segmentLines, (sl) => {
+		notes = notes.concat(sl.getNotes(true))
+	})
+
 	return {
+		notes,
 		mosStatus,
 		mosLastUpdate,
 		playoutStatus,
@@ -163,7 +178,8 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 			playoutDiff: {
 				onLine: [],
 				offLine: props.playoutDevices.offLine
-			}
+			},
+			displayNotes: false
 		}
 	}
 
@@ -181,11 +197,67 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 			})
 		}
 	}
+	clickNote (e, note: SegmentLineNote) {
+		e.preventDefault()
 
+		let segmentId = note.origin.segmentId
+
+		if (!segmentId) {
+			if (note.origin.segmentLineId) {
+				let segmentLine = SegmentLines.findOne(note.origin.segmentLineId)
+				if (segmentLine) {
+					segmentId = segmentLine.segmentId
+				}
+			}
+		}
+		if (segmentId) {
+			let segmentEl = $('#' + SegmentTimelineElementId + segmentId)
+			scrollToSegment(segmentEl)
+		}
+	}
+	clickNotes () {
+		this.setState({
+			displayNotes: !this.state.displayNotes
+		})
+	}
 	render () {
 		return (
 			<div className='running-order-system-status'>
 				<div className='running-order-system-status__indicators'>
+					{
+						this.props.notes.length > 0 ?
+						<div onClick={e => this.clickNotes()} className={ClassNames('note-icon', 'warning', this.state.displayNotes ? 'display' : '')}>
+							<img className='icon' src='/icons/Warning.svg' />
+							<div className='count'>
+								{this.props.notes.length}
+							</div>
+
+							<div className='notes_tooltip'>
+								<table>
+									<tbody>
+									{
+										_.map(this.props.notes, (note, key) => {
+											return (
+												<tr key={key}>
+													<td>
+													<img className='icon' src='/icons/Warning.svg' />
+													{(
+														note.type === SegmentLineNoteType.WARNING ? 'Warning' :
+														note.type === SegmentLineNoteType.ERROR ? 'Error' :
+														''
+													)}</td>
+													<td>{note.origin.name}</td>
+													<td>
+														<a href='#' onClick={e => this.clickNote(e, note)}>{note.message}</a></td>
+												</tr>
+											)
+										})
+									}
+									</tbody>
+								</table>
+							</div>
+						</div> : null
+					}
 					<div className={ClassNames('indicator', 'mos', {
 						'good': this.props.mosStatus === PeripheralDeviceAPI.StatusCode.GOOD,
 						'minor': this.props.mosStatus === PeripheralDeviceAPI.StatusCode.WARNING_MINOR,

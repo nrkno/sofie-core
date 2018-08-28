@@ -5,8 +5,10 @@ import * as _ from 'underscore'
 
 // Note: These things are convenience functions to be used during development:
 
-_.each(Collections, (val, key) => {
-	window[key] = val
+Meteor.startup(() => {
+	_.each(Collections, (val, key) => {
+		window[key] = val
+	})
 })
 
 window['Collections'] = Collections
