@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.8.0"></a>
+# [0.8.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.7.0...v0.8.0) (2018-08-28)
+
+
+### Bug Fixes
+
+* dev Collections bug, due to collections being filled in later ([43e8856](https://github.com/nrkno/tv-automation-server-core/commit/43e8856))
+* don't send devicesMakeReady until verified no other runningOrders are active ([953a1a7](https://github.com/nrkno/tv-automation-server-core/commit/953a1a7))
+* if the next:ed segment is removed, instead next the one in its place ([22597b3](https://github.com/nrkno/tv-automation-server-core/commit/22597b3))
+* NymansPlayground caused issues in Timeline ([83e772d](https://github.com/nrkno/tv-automation-server-core/commit/83e772d))
+* prevent take + autotake bug ([b3d9a4d](https://github.com/nrkno/tv-automation-server-core/commit/b3d9a4d))
+* type bug ([de43835](https://github.com/nrkno/tv-automation-server-core/commit/de43835))
+
+
+### Features
+
+* **shortcuts:** adds shortcuts to remove various graphic layers ([0d1a83d](https://github.com/nrkno/tv-automation-server-core/commit/0d1a83d))
+* added "develop=1" to url, which re-enables right-click, for dev ([b73522c](https://github.com/nrkno/tv-automation-server-core/commit/b73522c))
+* Implemented Notes into data structure & GUI ([735b8c5](https://github.com/nrkno/tv-automation-server-core/commit/735b8c5))
+* moved nightly cronjob to run after 4am ([8eb4e12](https://github.com/nrkno/tv-automation-server-core/commit/8eb4e12))
+
+
+
 <a name="0.7.0"></a>
 # [0.7.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.6.0...v0.7.0) (2018-08-27)
 
