@@ -774,6 +774,21 @@ body.vertical-overflow-only {
 						display: none;
 					}
 				}
+
+				.segment-timeline__segment-line__nextline.segment-timeline__segment-line__nextline--endline:not(.is-next).auto-next {
+					&::before {
+						content: ' ';
+						display: block;
+						position: absolute;
+						top: -3px;
+						left: 5px;
+						width: 0;
+						height: 0;
+						border-style: solid;
+						border-width: 6px 0 6px 12px;
+						border-color: transparent transparent transparent $segment-line-start-color;
+					}
+				}
 			}
 
 			.segment-timeline__segment-line__nextline--endline.is-next {
