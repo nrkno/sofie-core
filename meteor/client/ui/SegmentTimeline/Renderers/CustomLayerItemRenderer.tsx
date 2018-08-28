@@ -79,7 +79,7 @@ export class CustomLayerItemRenderer<IProps = any, IState = any> extends React.C
 		if (!this.props.segmentLineItem.duration && this.props.segmentLineItem.content && vtContent.sourceDuration && (this.props.segmentLineItem.renderedInPoint! + vtContent.sourceDuration) > this.props.segmentLineDuration) {
 			let time = this.props.segmentLineItem.renderedInPoint! + vtContent.sourceDuration - ((this.props.segmentLineDuration || 0) as number)
 			// only display differences greater than 1 second
-			return (time > 1000) ? (
+			return (time > 0) ? (
 				<div className='segment-timeline__layer-item__label label-overflow-time'>
 					{RundownUtils.formatDiffToTimecode(time, true, false, true)}
 				</div>
