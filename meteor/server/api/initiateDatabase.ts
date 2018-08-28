@@ -243,7 +243,7 @@ Meteor.methods({
 					abbreviation: 'STK',
 					type: RundownAPI.SourceLayerType.LIVE_SPEAK,
 					onPGMClean: true
-				},
+				}, 
 				{
 					_id: 'studio0_graphics_super',
 					_rank: 1000,
@@ -267,7 +267,7 @@ Meteor.methods({
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
 					isHidden: true,
-					clearKeyboardHotkey: 'alt+u'
+					clearKeyboardHotkey: 'alt+k,alt+u'
 				},
 				{
 				 	_id: 'studio0_graphics_logo',
@@ -276,7 +276,7 @@ Meteor.methods({
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
 					isHidden: true,
-					clearKeyboardHotkey: 'alt+u'
+					clearKeyboardHotkey: 'alt+k,alt+l,alt+u'
 				},
 				{
 				 	_id: 'studio0_graphics_tag_left',
@@ -292,7 +292,7 @@ Meteor.methods({
 				 	name: 'Direkte',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
-					clearKeyboardHotkey: 'alt+u'
+					clearKeyboardHotkey: 'alt+d,alt+u'
 				},
 				{
 				 	_id: 'studio0_graphics_tema',
@@ -300,7 +300,7 @@ Meteor.methods({
 				 	name: 'Tema',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
-					clearKeyboardHotkey: 'alt+u'
+					clearKeyboardHotkey: 'alt+i,alt+u'
 				},
 				{
 				 	_id: 'studio0_graphics_ticker',
@@ -308,7 +308,7 @@ Meteor.methods({
 				 	name: 'Ticker',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
-					clearKeyboardHotkey: 'alt+u'
+					clearKeyboardHotkey: 'alt+o,alt+u'
 				},
 				{
 				 	_id: 'studio0_graphics_bakskjerm',
