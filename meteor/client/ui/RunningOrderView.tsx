@@ -37,7 +37,7 @@ import { ModalDialog } from '../lib/ModalDialog'
 
 import { DEFAULT_DISPLAY_DURATION } from './SegmentTimeline/SegmentTimelineContainer'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { getStudioMode } from '../lib/localStorage'
+import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -487,7 +487,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 				'rehearsal': this.props.runningOrder.rehearsal
 			})}>
-				{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} />}
+				{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} runningOrder={this.props.runningOrder} />}
 				<WarningDisplay inActiveROView={this.props.inActiveROView} runningOrder={this.props.runningOrder} onReloadAndActivate={this.onReloadAndActivate} />
 				<div className='row first-row super-dark'>
 					<div className='flex-col left horizontal-align-left'>

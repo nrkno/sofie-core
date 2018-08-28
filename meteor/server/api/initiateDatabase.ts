@@ -243,7 +243,7 @@ Meteor.methods({
 					abbreviation: 'STK',
 					type: RundownAPI.SourceLayerType.LIVE_SPEAK,
 					onPGMClean: true
-				}, 
+				},
 				{
 					_id: 'studio0_graphics_super',
 					_rank: 1000,

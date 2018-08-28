@@ -253,10 +253,8 @@ body.vertical-overflow-only {
 	.segment-timeline__title {
 		display: block;
 		margin: 0;
-		padding: 0.3em;
-		line-height: 1.2em;
-		letter-spacing: 0px;
-		font-weight: 400;
+		padding: 0;
+		
 		
 		grid-column: segment-name / segment-group-controls;
 		grid-row: main-view / end;
@@ -267,6 +265,16 @@ body.vertical-overflow-only {
 		background: $segment-title-background-color;
 
 		word-break: break-word;
+		h2 {
+			margin: 0;
+			padding: 0.3em;
+			line-height: 1.2em;
+			letter-spacing: 0px;
+			font-weight: 400;
+		}
+		.segment-timeline__title__notes {
+			font-size: 75%;
+		}
 	}
 
 	// the live and next states are the states of the entire segment component

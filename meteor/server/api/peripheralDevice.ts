@@ -1278,6 +1278,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 		if (tr.result.segmentLine) {
 			if (!tr.result.segmentLine.typeVariant) tr.result.segmentLine.typeVariant = tr.templateId
 			SegmentLines.update(segmentLine._id, {$set: {
+				notes: 					tr.result.notes,
 				expectedDuration:		tr.result.segmentLine.expectedDuration || segmentLine.expectedDuration,
 				autoNext: 				tr.result.segmentLine.autoNext || false,
 				autoNextOverlap: 		tr.result.segmentLine.autoNextOverlap || 0,

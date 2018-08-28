@@ -209,6 +209,7 @@ declare interface Context {
 	getSegmentLineIndex: () => number
 	formatDateAsTimecode: (date: Date) => string
 	formatDurationAsTimecode: (time: number) => string
+	getNotes: () => Array<any>
 	getCachedStoryForSegmentLine (segmentLine: SegmentLine): IMOSROFullStory
 	getCachedStoryForRunningOrder: () => IMOSRunningOrder
 	getAllSegmentLines (): Array<SegmentLine>
