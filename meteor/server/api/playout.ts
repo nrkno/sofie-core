@@ -18,7 +18,7 @@ import { IMOSRunningOrder, IMOSObjectStatus, MosString128 } from 'mos-connection
 import { PlayoutTimelinePrefixes, LookaheadMode } from '../../lib/api/playout'
 import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
-import { sendStoryStatus } from './peripheralDevice'
+import { sendStoryStatus, fetchAfter } from './peripheralDevice'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
@@ -330,16 +330,11 @@ export namespace ServerPlayoutAPI {
 		if (!takeSegmentLine) throw new Meteor.Error(404, 'takeSegmentLine not found!')
 		let takeSegment = Segments.findOne(takeSegmentLine.segmentId)
 
-		let segmentLinesAfter = runningOrder.getSegmentLines({
-			_rank: {
-				$gt: takeSegmentLine._rank,
-			},
-			_id: { $ne: takeSegmentLine._id }
-		}, {
-			limit: 1
-		})
+		let segmentLineAfter = fetchAfter(SegmentLines, {
+			runningOrderId: runningOrder._id
+		}, takeSegmentLine._rank)
 
-		let nextSegmentLine: SegmentLine | null = segmentLinesAfter[0] || null
+		let nextSegmentLine: DBSegmentLine | null = segmentLineAfter || null
 
 		beforeTake(runningOrder, previousSegmentLine || null, takeSegmentLine)
 
@@ -1892,7 +1887,7 @@ export function updateTimelineFromMosData (roId: string, changedLines?: Array<st
  * @param studioInstallationId id of the studioInstallation to update
  * @param forceNowToTime if set, instantly forces all "now"-objects to that time (used in autoNext)
  */
-function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
+export function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 	const activeRunningOrder = RunningOrders.findOne({
 		studioInstallationId: studioInstallationId,
 		active: true
