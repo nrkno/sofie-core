@@ -877,8 +877,10 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onContextMenuTop = (e: React.MouseEvent<HTMLDivElement>): boolean => {
-		e.preventDefault()
-		e.stopPropagation()
+		if (!getDeveloperMode()) {
+			e.preventDefault()
+			e.stopPropagation()
+		}
 		return false
 	}
 

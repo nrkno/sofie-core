@@ -5,7 +5,7 @@ import * as m from 'moment'
 import 'moment/min/locales'
 import { parse as queryStringParse } from 'query-string'
 import Header from './Header'
-import { setStudioMode, setAdminMode, getStudioMode, getAdminMode } from '../lib/localStorage'
+import { setStudioMode, setAdminMode, getStudioMode, getAdminMode, setDeveloperMode } from '../lib/localStorage'
 import Dashboard from './Dashboard'
 import Status from './Status'
 import Settings from './Settings'
@@ -40,6 +40,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 
 		if (params['studio']) 	setStudioMode(params['studio'] === '1')
 		if (params['configure']) setAdminMode(params['configure'] === '1')
+		if (params['develop']) setDeveloperMode(params['develop'] === '1')
 
 		this.state = {
 			studioMode: getStudioMode(),
