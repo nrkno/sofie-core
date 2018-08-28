@@ -20,6 +20,8 @@ import { SegmentDuration, SegmentLineCountdown, RunningOrderTiming } from '../Ru
 import { RundownUtils } from '../../lib/rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
+import { scrollToSegment } from '../../lib/viewPort'
+import { SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
 
 interface IProps {
 	key: string
@@ -175,7 +177,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 		)
 	}
 }
-
+export const SegmentTimelineElementId = 'running-order__segment__'
 export const SegmentTimeline = translate()(
 class extends React.Component<Translated<IProps>, IStateHeader> {
 	timeline: HTMLDivElement
@@ -290,40 +292,8 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	}
 
 	scrollToMe () {
-		const previousSegment = $(this.segmentBlock).prev()
-		const segmentPosition = $(this.segmentBlock).offset()
-		let scrollTop: number | null = null
-
-		if (previousSegment.length > 0) {
-			const segmentPosition = $(previousSegment).offset()
-			if (segmentPosition) {
-				scrollTop = segmentPosition.top
-			}
-		} else if (segmentPosition && (
-			(segmentPosition.top > ($('html,body').scrollTop() || 0) + window.innerHeight) ||
-			(segmentPosition.top < ($('html,body').scrollTop() || 0))
-		)) {
-			scrollTop = segmentPosition.top
-		}
-
-		if (scrollTop !== null) {
+		if (scrollToSegment(this.segmentBlock)) {
 			this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, {})
-
-			$(document.body).addClass('auto-scrolling')
-			const autoScrolling = parseInt($(document.body).data('auto-scrolling') || 0, 10) + 1
-			$(document.body).data('auto-scrolling', autoScrolling)
-			$('html,body').animate({
-				scrollTop: Math.max(0, scrollTop - 175)
-			}, 400).promise().then(() => {
-				// delay until next frame, so that the scroll handler can fire
-				setTimeout(function () {
-					const autoScrolling = parseInt($(document.body).data('auto-scrolling') || 0, 10) - 1
-					$(document.body).data('auto-scrolling', autoScrolling)
-					if (autoScrolling <= 0) {
-						$(document.body).removeClass('auto-scrolling')
-					}
-				})
-			})
 		}
 	}
 
@@ -446,8 +416,15 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 
 	render () {
 
+		let notes: Array<SegmentLineNote> = []
+		_.each(this.props.segmentLines, (sl) => {
+			if (sl.notes && sl.notes.length) {
+				notes = notes.concat(sl.notes)
+			}
+		})
+
 		return (
-			<div id={'running-order__segment__' + this.props.segment._id}
+			<div id={SegmentTimelineElementId + this.props.segment._id}
 				className={ClassNames('segment-timeline', {
 					'collapsed': this.props.isCollapsed,
 
@@ -463,8 +440,34 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 					attributes={{
 						className: 'segment-timeline__title'
 					}}
-					renderTag='h2'>
-					{this.props.segment.name}
+					renderTag='div'>
+					<h2>
+						{this.props.segment.name}
+					</h2>
+					<div className='segment-timeline__title__notes'>
+						{
+							_.map(notes, (note, key) => {
+								return (
+									<div key={key}>
+										<div>
+											<b>
+												<img className='icon' src='/icons/Warning.svg' />
+												{(
+													note.type === SegmentLineNoteType.WARNING ? 'Warning' :
+													note.type === SegmentLineNoteType.ERROR ? 'Error' :
+													''
+												)}
+											</b>
+											{note.origin.name}
+										</div>
+										<div>
+											{note.message}
+										</div>
+									</div>
+								)
+							})
+						}
+					</div>
 				</ContextMenuTrigger>
 				<div className='segment-timeline__duration' tabIndex={0}
 					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
