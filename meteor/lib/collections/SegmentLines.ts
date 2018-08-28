@@ -179,6 +179,18 @@ export class SegmentLine implements DBSegmentLine {
 		)
 
 	}
+	getNotes (runtimeNotes) {
+		let notes: Array<SegmentLineNote> = []
+		notes = notes.concat(this.notes || [])
+
+		if (runtimeNotes) {
+			// let items = this.getSegmentLinesItems()
+			// _.each(items, (item) => {
+				// TODO: check statuses (like media availability) here
+			// })
+		}
+		return notes
+	}
 }
 
 export const SegmentLines: TransformedCollection<SegmentLine, DBSegmentLine>

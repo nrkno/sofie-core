@@ -155,9 +155,7 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 
 	let notes: Array<SegmentLineNote> = []
 	_.each(segmentLines, (sl) => {
-		if (sl.notes && sl.notes.length) {
-			notes = notes.concat(sl.notes)
-		}
+		notes = notes.concat(sl.getNotes(true))
 	})
 
 	return {

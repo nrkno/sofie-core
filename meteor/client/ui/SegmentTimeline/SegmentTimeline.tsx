@@ -418,9 +418,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 
 		let notes: Array<SegmentLineNote> = []
 		_.each(this.props.segmentLines, (sl) => {
-			if (sl.notes && sl.notes.length) {
-				notes = notes.concat(sl.notes)
-			}
+			notes = notes.concat(sl.getNotes(true))
 		})
 
 		return (
