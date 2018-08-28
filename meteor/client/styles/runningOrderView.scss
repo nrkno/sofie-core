@@ -902,9 +902,10 @@ body.vertical-overflow-only {
 							display: block;
 							top: -2px;
 							width: 2px;
-							height: 4px;
-							background: linear-gradient(to bottom, #fff 0%, #fff 50%, #000 50.00001% , #000 100%);
+							bottom: 0;
+							background: linear-gradient(to bottom, #fff 0, #fff 1.9px, #000 2px , #000 4px, rgba(0, 0, 0, 0.1) 4.1px);
 							overflow: hidden;
+							z-index: 3;
 						}
 
 						.segment-timeline__layer-item__source-finished {
