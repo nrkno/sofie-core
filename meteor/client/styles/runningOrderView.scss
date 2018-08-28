@@ -759,6 +759,7 @@ body.vertical-overflow-only {
 
 					.segment-timeline__segment-line__nextline__label {
 						display: block;
+						margin-left: 0.5em;
 					}
 
 					&::after {
@@ -785,6 +786,7 @@ body.vertical-overflow-only {
 
 				.segment-timeline__segment-line__nextline__label {
 					display: block;
+					margin-left: 0.5em;
 				}
 
 				&::after {
@@ -1485,7 +1487,7 @@ body.vertical-overflow-only {
 	opacity: 0.7;
 	position: fixed;
 	cursor: pointer;
-    bottom: 1.5em;
+    top: 160px;
     right: 1.5em;
     background: $general-live-color;
     color: #000;
