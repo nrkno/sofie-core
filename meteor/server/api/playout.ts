@@ -87,6 +87,24 @@ export namespace ServerPlayoutAPI {
 
 		let studioInstallation = runningOrder.getStudioInstallation()
 
+		let anyOtherActiveRunningOrders = RunningOrders.find({
+			studioInstallationId: runningOrder.studioInstallationId,
+			active: true,
+			_id: {
+				$ne: roId
+			}
+		}).fetch()
+
+		if (anyOtherActiveRunningOrders.length) {
+			logger.warn('Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
+			const res = literal<ClientAPI.ClientResponse>({
+				error: 409,
+				message: 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id')
+			})
+			return res
+		}
+		logger.info('Activating RO ' + roId + (rehearsal ? ' (Rehearsal)' : ''))
+
 		let playoutDevices = PeripheralDevices.find({
 			studioInstallationId: studioInstallation._id,
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT
@@ -106,24 +124,6 @@ export namespace ServerPlayoutAPI {
 				}
 			}, 'devicesMakeReady', okToDestoryStuff)
 		})
-
-		let anyOtherActiveRunningOrders = RunningOrders.find({
-			studioInstallationId: runningOrder.studioInstallationId,
-			active: true,
-			_id: {
-				$ne: roId
-			}
-		}).fetch()
-
-		if (anyOtherActiveRunningOrders.length) {
-			logger.warn('Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
-			const res = literal<ClientAPI.ClientResponse>({
-				error: 409,
-				message: 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id')
-			})
-			return res
-		}
-		logger.info('Activating RO ' + roId + (rehearsal ? ' (Rehearsal)' : ''))
 
 		let segmentLines = runningOrder.getSegmentLines()
 
