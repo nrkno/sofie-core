@@ -2198,7 +2198,7 @@ function processTimelineObjects (studioInstallation: StudioInstallation, timelin
  */
 let afterUpdateTimelineTimeout: {[studioInstallationId: string]: number | null} = {}
 function afterUpdateTimeline (studioInstallation: StudioInstallation) {
-	// console.log('afterUpdateTimeline')
+	// logger.info('afterUpdateTimeline')
 	let a = afterUpdateTimelineTimeout[studioInstallation._id]
 	if (a) Meteor.clearTimeout(a)
 	afterUpdateTimelineTimeout[studioInstallation._id] = Meteor.setTimeout(() => {
@@ -2210,12 +2210,26 @@ function afterUpdateTimeline (studioInstallation: StudioInstallation) {
 
 		let deviceIdObjs: {[deviceId: string]: Array<TimelineObj>} = {}
 
-		_.each(timelineObjs, (o: TimelineObj) => {
-			_.each(o.deviceId || [], (deviceId: string) => {
-				if (!deviceIdObjs[deviceId]) deviceIdObjs[deviceId] = []
-				deviceIdObjs[deviceId].push(o)
+		if (timelineObjs.length) {
+			_.each(timelineObjs, (o: TimelineObj) => {
+				_.each(o.deviceId || [], (deviceId: string) => {
+					if (!deviceIdObjs[deviceId]) deviceIdObjs[deviceId] = []
+					deviceIdObjs[deviceId].push(o)
+				})
 			})
-		})
+		} else {
+			// there are no objects, timeline is empty
+			// well, we still want to update out statobjs, use their deviceIds then:
+			let statObjs = Timeline.find({
+				siId: studioInstallation._id,
+				statObject: true
+			}).fetch()
+			_.each(statObjs, (o: TimelineObj) => {
+				_.each(o.deviceId || [], (deviceId: string) => {
+					if (!deviceIdObjs[deviceId]) deviceIdObjs[deviceId] = []
+				})
+			})
+		}
 
 		// Collect statistics, per device
 		_.each(deviceIdObjs, (objs, deviceId) => {
