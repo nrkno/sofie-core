@@ -202,6 +202,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			if (props.runningOrder.currentSegmentLineId === segmentLine._id) {
 				isLiveSegment = true
 				currentLiveSegmentLine = segmentLine
+				autoNextSegmentLine = (currentLiveSegmentLine.autoNext || false) && (currentLiveSegmentLine.expectedDuration !== undefined) && (currentLiveSegmentLine.expectedDuration !== 0)
 			}
 			if (props.runningOrder.nextSegmentLineId === segmentLine._id) {
 				isNextSegment = true
