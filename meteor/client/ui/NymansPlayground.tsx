@@ -27,14 +27,30 @@ interface INPProps {
 export class NymansPlayground extends MeteorReactComponent<INPProps> {
 	componentWillMount () {
 		// Subscribe to data:
+		this.autorun(() => {
+			this.subscribe('timeline', {})
 
-		this.subscribe('runningOrders', {})
-		this.subscribe('segments', {})
-		this.subscribe('segmentLines', {})
-		this.subscribe('segmentLineItems', {})
-		this.subscribe('studioInstallations', {})
-		this.subscribe('showStyles', {})
-		this.subscribe('segmentLineAdLibItems', {})
+			this.subscribe('runningOrders', {
+				active: true
+			})
+			this.subscribe('studioInstallations', {})
+			this.subscribe('showStyles', {})
+			let activeRO = RunningOrders.findOne({active: true})
+			if (activeRO) {
+				this.subscribe('segments', {
+					runningOrderId: activeRO._id
+				})
+				this.subscribe('segmentLines', {
+					runningOrderId: activeRO._id
+				})
+				this.subscribe('segmentLineItems', {
+					runningOrderId: activeRO._id
+				})
+				this.subscribe('segmentLineAdLibItems', {
+					runningOrderId: activeRO._id
+				})
+			}
+		})
 	}
 	render () {
 		return (
@@ -263,12 +279,19 @@ class extends MeteorReactComponent<ITimeline> {
 			<div key={timelineObj._id}>
 				<table><tbody>
 				<tr><td>ID:</td><td> <i>{timelineObj._id}</i></td></tr>
-				<tr><td>DeviceId:</td><td> <EditAttribute type='text' collection={Timeline}	obj={timelineObj} attribute='deviceId'/> </td></tr>
+				{/* <tr><td>DeviceId:</td><td> <EditAttribute type='text' collection={Timeline}	obj={timelineObj} attribute='deviceId'/> </td></tr>
 				<tr><td>trigger.type:</td><td> <EditAttribute type='dropdown' collection={Timeline}	obj={timelineObj} attribute='trigger.type' options={TriggerType} /></td></tr>
 				<tr><td>trigger.value:</td><td> <EditAttribute type='text' collection={Timeline}	obj={timelineObj} attribute='trigger.value'/></td></tr>
 				<tr><td>duration:</td><td> <EditAttribute type='text' collection={Timeline}	obj={timelineObj} attribute='duration'/></td></tr>
 				<tr><td>LLayer:</td><td> <EditAttribute type='text' collection={Timeline}	obj={timelineObj} attribute='LLayer'/></td></tr>
-				<tr><td>disabled:</td><td> <EditAttribute type='checkbox' collection={Timeline}	obj={timelineObj} attribute='disabled'/></td></tr>
+				<tr><td>disabled:</td><td> <EditAttribute type='checkbox' collection={Timeline}	obj={timelineObj} attribute='disabled'/></td></tr> */}
+
+				<tr><td>DeviceId:</td><td>{timelineObj.deviceId}</td></tr>
+				<tr><td>trigger.type:</td><td>{timelineObj.trigger.type}</td></tr>
+				<tr><td>trigger.value:</td><td>{timelineObj.trigger.value}</td></tr>
+				<tr><td>duration:</td><td>{timelineObj.duration} </td></tr>
+				<tr><td>LLayer:</td><td>{timelineObj.LLayer} </td></tr>
+				<tr><td>disabled:</td><td>{timelineObj.disabled} </td></tr>
 				<tr><td>
 					<strong>Content</strong>
 				</td></tr>
