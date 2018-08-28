@@ -1137,7 +1137,7 @@ function getOrderedSegmentLineItem (line: SegmentLine): SegmentLineItem[] {
 	return eventMap.map(e => e.item)
 }
 
-function resetSegment (segmentId: string, currentSegmentLineId: string | undefined) {
+function resetSegment (segmentId: string, currentSegmentLineId: string | null) {
 	const segment = Segments.findOne(segmentId)
 	if (!segment) return
 
