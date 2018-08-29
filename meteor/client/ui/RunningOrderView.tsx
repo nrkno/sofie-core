@@ -38,6 +38,7 @@ import { ModalDialog } from '../lib/ModalDialog'
 import { DEFAULT_DISPLAY_DURATION } from './SegmentTimeline/SegmentTimelineContainer'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
+import { scrollToSegmentLine } from '../lib/viewPort'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -163,7 +164,11 @@ export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_DEACTIVATE = 'mod+shift+§',
 	RUNNING_ORDER_GO_TO_LIVE = 'mod+home',
 	RUNNING_ORDER_RELOAD_RUNNING_ORDER = 'mod+shift+f12',
-	RUNNING_ORDER_TOGGLE_DRAWER = 'tab'
+	RUNNING_ORDER_TOGGLE_DRAWER = 'tab',
+	RUNNING_ORDER_NEXT_FORWARD = 'f9',
+	RUNNING_ORDER_NEXT_DOWN = 'f10',
+	RUNNING_ORDER_NEXT_BACK = 'shift+f9',
+	RUNNING_ORDER_NEXT_UP = 'shift+f10'
 }
 mousetrap.addKeycodes({
 	220: '§', // on US-based (ANSI) keyboards (single-row, Enter key), this is the key above Enter, usually with a backslash and the vertical pipe character
@@ -284,47 +289,68 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		super(props)
 
 		const { t } = props
-
-		this.bindKeys = [
-			{
-				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE,
-				up: this.keyTake,
-				label: t('Take')
-			},{
-				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE2,
-				up: this.keyTake,
-				label: t('Take')
-			},{
-				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_HOLD,
-				up: this.keyHold,
-				label: t('Hold')
-			},{
-				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE,
-				up: this.keyActivate,
-				label: t('Activate')
-			},{
-				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE2,
-				up: this.keyActivate,
-				label: t('Activate')
-			},{
-				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE3,
-				up: this.keyActivate,
-				label: t('Activate')
-			},{
-				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE,
-				up: this.keyDeactivate,
-				label: t('Deactivate')
-			},{
-				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE_REHEARSAL,
-				up: this.keyActivateRehearsal,
-				label: t('Activate (rehearsal)')
-			},{
-				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RELOAD_RUNNING_ORDER,
-				up: this.keyReloadRunningOrder,
-				label: t('Reload running order')
-			}
-		]
-
+		if (this.props.studioMode) {
+			this.bindKeys = [
+				{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE,
+					up: this.keyTake,
+					label: t('Take')
+				},{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE2,
+					up: this.keyTake,
+					label: t('Take')
+				},{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_HOLD,
+					up: this.keyHold,
+					label: t('Hold')
+				},{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE,
+					up: this.keyActivate,
+					label: t('Activate')
+				},{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE2,
+					up: this.keyActivate,
+					label: t('Activate')
+				},{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE3,
+					up: this.keyActivate,
+					label: t('Activate')
+				},{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE,
+					up: this.keyDeactivate,
+					label: t('Deactivate')
+				},{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE_REHEARSAL,
+					up: this.keyActivateRehearsal,
+					label: t('Activate (rehearsal)')
+				},{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RELOAD_RUNNING_ORDER,
+					up: this.keyReloadRunningOrder,
+					label: t('Reload running order')
+				},{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_FORWARD,
+					up: this.keyMoveNextForward,
+					label: t('Move next forward')
+				},
+				{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_DOWN,
+					up: this.keyMoveNextDown,
+					label: t('Move next forward')
+				},
+				{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_UP,
+					up: this.keyMoveNextUp,
+					label: t('Move next forward')
+				},
+				{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_BACK,
+					up: this.keyMoveNextBack,
+					label: t('Move next forward')
+				}
+			]
+		} else {
+			this.bindKeys = []
+		}
 		this.state = {
 			isError: false
 		}
@@ -395,10 +421,39 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	keyReloadRunningOrder = (e: ExtendedKeyboardEvent) => {
 		this.reloadRunningOrder()
 	}
+	keyMoveNextForward = (e: ExtendedKeyboardEvent) => {
+		// "forward" = to next SegmentLine
+		this.moveNext(1, 0)
+	}
+	keyMoveNextBack = (e: ExtendedKeyboardEvent) => {
+		// "down" = to next Segment
+		this.moveNext(-1, 0)
+	}
+	keyMoveNextDown = (e: ExtendedKeyboardEvent) => {
+		// "down" = to next Segment
+		this.moveNext(0, 1)
+	}
+	keyMoveNextUp = (e: ExtendedKeyboardEvent) => {
+		// "down" = to next Segment
+		this.moveNext(0, -1)
+	}
 
 	take = () => {
 		if (this.props.studioMode) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roTake, this.props.runningOrder._id)
+		}
+		// console.log(new Date(getCurrentTime()))
+	}
+	moveNext = (horisonalDelta: number, verticalDelta: number) => {
+		if (this.props.studioMode) {
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roMoveNext, this.props.runningOrder._id, horisonalDelta, verticalDelta, (err, segmentLineId) => {
+				if (err) {
+					// todo: notify the user
+					console.log(err)
+				} else {
+					scrollToSegmentLine(segmentLineId)
+				}
+			})
 		}
 		// console.log(new Date(getCurrentTime()))
 	}

@@ -54,13 +54,20 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 		let properties: Array<KeyValue> = []
 		if (noraContent && noraContent.payload && noraContent.payload.content) {
 			// @ts-ignore
-			properties = _.map(noraContent.payload.content, (value: string, key: string): {
+			properties = _.map(noraContent.payload.content, (value, key: string): {
 				key: string,
 				value: string
 			} => {
+				let str: string = 'N/A'
+				if (_.isObject(value)) {
+					// @ts-ignore
+					str = JSON.stringify(value, '', 2)
+				} else {
+					str = value + ''
+				}
 				return {
 					key: key,
-					value: value
+					value: str
 				}
 			}) as Array<KeyValue>
 		}

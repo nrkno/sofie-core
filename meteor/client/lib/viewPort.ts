@@ -1,6 +1,25 @@
 import * as $ from 'jquery'
+import * as _ from 'underscore'
+import { SegmentTimelineElementId } from '../ui/SegmentTimeline/SegmentTimeline'
+import { SegmentLines } from '../../lib/collections/SegmentLines'
 
-export function scrollToSegment (elementToScrollTo: HTMLElement | JQuery<HTMLElement>): boolean {
+export function scrollToSegmentLine (segmentLineId: string): boolean {
+	// TODO: do scrolling within segment as well?
+
+	let segmentLine = SegmentLines.findOne(segmentLineId)
+	if (segmentLine) {
+		return scrollToSegment(segmentLine.segmentId)
+	}
+	return false
+}
+export function scrollToSegment ( elementToScrollToOrSegmentId: HTMLElement | JQuery<HTMLElement> | string): boolean {
+
+	let elementToScrollTo: HTMLElement | JQuery<HTMLElement> = (
+		_.isString(elementToScrollToOrSegmentId) ?
+		$('#' + SegmentTimelineElementId + elementToScrollToOrSegmentId) :
+		elementToScrollToOrSegmentId
+	)
+
 	const previousElement = $(elementToScrollTo).prev()
 	const elementPosition = $(elementToScrollTo).offset()
 	let scrollTop: number | null = null
