@@ -28,6 +28,7 @@ interface IProps {
 	liveSegment?: SegmentUi
 	runningOrder: RunningOrder
 	studioInstallation: StudioInstallation
+	studioMode: boolean
 	hotkeys: Array<{
 		key: string
 		label: string
@@ -135,7 +136,21 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 		})
 	}
 
-	getHeight (newState?: boolean): string | undefined {
+	componentDidUpdate (prevProps, prevState: IState) {
+		if ((prevState.expanded !== this.state.expanded) || (prevState.drawerHeight !== this.state.drawerHeight)) {
+			if (this.props.onChangeBottomMargin && typeof this.props.onChangeBottomMargin === 'function') {
+				console.log(this.state.expanded, this.getHeight())
+				this.props.onChangeBottomMargin(this.getHeight() || '0px')
+			}
+		}
+	}
+
+	getHeight (): string {
+		const top = parseFloat(this.state.drawerHeight.substr(0, this.state.drawerHeight.length - 2))
+		return this.state.expanded ? (100 - top).toString() + 'vh' : '0px'
+	}
+
+	getTop (newState?: boolean): string | undefined {
 		return this.state.overrideHeight ?
 			((this.state.overrideHeight / window.innerHeight) * 100) + 'vh' :
 			((newState !== undefined ? newState : this.state.expanded) ?
@@ -147,12 +162,12 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 	getStyle () {
 		return this.state.expanded ?
 		{
-			'top': this.getHeight(),
+			'top': this.getTop(),
 			'transition': this.state.moving ? '' : '0.5s top ease-out'
 		}
 		:
 		{
-			'top': this.getHeight(),
+			'top': this.getTop(),
 			'transition': this.state.moving ? '' : '0.5s top ease-out'
 		}
 	}
