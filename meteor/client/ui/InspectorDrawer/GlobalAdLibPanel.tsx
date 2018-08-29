@@ -154,21 +154,6 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 
 		return (
 			<div className='adlib-panel__list-view__list adlib-panel__list-view__list--global'>
-				<table className='adlib-panel__list-view__list__table adlib-panel__list-view__list__table--header'>
-					<thead>
-						<tr>
-							<th className='adlib-panel__list-view__list__table__cell--icon'>&nbsp;</th>
-							<th className='adlib-panel__list-view__list__table__cell--shortcut'>{t('Key')}</th>
-							<th className='adlib-panel__list-view__list__table__cell--output'>{t('Output')}</th>
-							<th className='adlib-panel__list-view__list__table__cell--name'>{t('Name')}</th>
-							<th className='adlib-panel__list-view__list__table__cell--data'>{t('Data')}</th>
-							<th className='adlib-panel__list-view__list__table__cell--resolution'>{t('Resolution')}</th>
-							<th className='adlib-panel__list-view__list__table__cell--fps'>{t('FPS')}</th>
-							<th className='adlib-panel__list-view__list__table__cell--duration'>{t('Duration')}</th>
-							<th className='adlib-panel__list-view__list__table__cell--tc-start'>{t('TC Start')}</th>
-						</tr>
-					</thead>
-				</table>
 				<table className='adlib-panel__list-view__list__table' ref={this.setTableRef}>
 					{this.renderGlobalAdLibs()}
 				</table>
