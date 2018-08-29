@@ -12,7 +12,10 @@ export function scrollToSegmentLine (segmentLineId: string): boolean {
 	}
 	return false
 }
-export function scrollToSegment ( elementToScrollToOrSegmentId: HTMLElement | JQuery<HTMLElement> | string): boolean {
+
+const HEADER_HEIGHT = 175
+
+export function scrollToSegment ( elementToScrollToOrSegmentId: HTMLElement | JQuery<HTMLElement> | string, forceScroll?: boolean): boolean {
 
 	let elementToScrollTo: HTMLElement | JQuery<HTMLElement> = (
 		_.isString(elementToScrollToOrSegmentId) ?
@@ -20,19 +23,23 @@ export function scrollToSegment ( elementToScrollToOrSegmentId: HTMLElement | JQ
 		elementToScrollToOrSegmentId
 	)
 
-	const previousElement = $(elementToScrollTo).prev()
+	// const previousElement = $(elementToScrollTo).prev()
 	const elementPosition = $(elementToScrollTo).offset()
+	const elementHeight = $(elementToScrollTo).height() || 0
 	let scrollTop: number | null = null
 
-	if (previousElement.length > 0) {
-		const elementPosition = $(previousElement).offset()
-		if (elementPosition) {
-			scrollTop = elementPosition.top
-		}
-	} else if (elementPosition && (
-		(elementPosition.top > ($('html,body').scrollTop() || 0) + window.innerHeight) ||
+	// if (previousElement.length > 0) {
+	// 	const elementPosition = $(previousElement).offset()
+	// 	if (elementPosition) {
+	// 		scrollTop = elementPosition.top
+	// 	}
+	// } else
+
+	// check if the item is in viewport
+	if (elementPosition && ((
+		(elementPosition.top + elementHeight > ($('html,body').scrollTop() || 0) + window.innerHeight) ||
 		(elementPosition.top < ($('html,body').scrollTop() || 0))
-	)) {
+	) || forceScroll)) {
 		scrollTop = elementPosition.top
 	}
 
@@ -42,7 +49,7 @@ export function scrollToSegment ( elementToScrollToOrSegmentId: HTMLElement | JQ
 		const autoScrolling = parseInt($(document.body).data('auto-scrolling') || 0, 10) + 1
 		$(document.body).data('auto-scrolling', autoScrolling)
 		$('html,body').animate({
-			scrollTop: Math.max(0, scrollTop - 175)
+			scrollTop: Math.max(0, scrollTop - HEADER_HEIGHT)
 		}, 400).promise().then(() => {
 			// delay until next frame, so that the scroll handler can fire
 			setTimeout(function () {
