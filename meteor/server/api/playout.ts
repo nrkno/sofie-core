@@ -23,6 +23,7 @@ import { StudioInstallations, StudioInstallation } from '../../lib/collections/S
 import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
 import { getHash } from '../lib'
+import { syncFunction, syncFunctionIgnore } from '../codeControl'
 let clone = require('fast-clone')
 
 export namespace ServerPlayoutAPI {
@@ -712,7 +713,7 @@ export namespace ServerPlayoutAPI {
 			throw new Meteor.Error(404, `Segment line "${slId}" in running order "${roId}" not found!`)
 		}
 	}
-	export function salliPlaybackStart (roId: string, slId: string, slaiId: string) {
+	export const salliPlaybackStart = syncFunction(function salliPlaybackStart (roId: string, slId: string, slaiId: string) {
 		check(roId, String)
 		check(slId, String)
 		check(slaiId, String)
@@ -740,8 +741,8 @@ export namespace ServerPlayoutAPI {
 		stopInfinitesRunningOnLayer(runningOrder, segLine, newSegmentLineItem.sourceLayerId)
 
 		updateTimeline(runningOrder.studioInstallationId)
-	}
-	export function robaliPlaybackStart (roId: string, slId: string, robaliId: string) {
+	})
+	export const robaliPlaybackStart = syncFunction(function robaliPlaybackStart (roId: string, slId: string, robaliId: string) {
 		check(roId, String)
 		check(slId, String)
 		check(robaliId, String)
@@ -769,7 +770,7 @@ export namespace ServerPlayoutAPI {
 		stopInfinitesRunningOnLayer(runningOrder, segLine, newSegmentLineItem.sourceLayerId)
 
 		updateTimeline(runningOrder.studioInstallationId)
-	}
+	})
 	export function salliStop (roId: string, slId: string, sliId: string) {
 		check(roId, String)
 		check(slId, String)
@@ -821,7 +822,7 @@ export namespace ServerPlayoutAPI {
 
 		updateTimeline(runningOrder.studioInstallationId)
 	}
-	export function sourceLayerStickyItemStart (roId: string, sourceLayerId: string) {
+	export const sourceLayerStickyItemStart = syncFunction(function sourceLayerStickyItemStart (roId: string, sourceLayerId: string) {
 		check(roId, String)
 		check(sourceLayerId, String)
 
@@ -865,7 +866,7 @@ export namespace ServerPlayoutAPI {
 
 			updateTimeline(runningOrder.studioInstallationId)
 		}
-	}
+	})
 	export function sourceLayerOnLineStop (roId: string, slId: string, sourceLayerId: string) {
 		check(roId, String)
 		check(slId, String)
@@ -1255,7 +1256,8 @@ function resetSegment (segmentId: string, currentSegmentLineId: string | null) {
 	})
 }
 
-function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUntilEnd: boolean, previousLine?: SegmentLine) {
+const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, runUntilEnd: boolean, previousLine?: SegmentLine) => void
+ = syncFunctionIgnore(function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUntilEnd: boolean, previousLine?: SegmentLine) {
 	let activeInfiniteItems: { [layer: string]: SegmentLineItem } = {}
 	let activeInfiniteItemsSegmentId: { [layer: string]: string } = {}
 
@@ -1339,7 +1341,9 @@ function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUnt
 				const existInf = exist.findIndex(e => !!e.infiniteId && e.infiniteId === newItem.infiniteId)
 				if (existInf >= 0) {
 					if (existInf + 1 < exist.length) {
-						SegmentLineItems.update(exist[existInf]._id, { $set: { expectedDuration: `#${PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + exist[existInf + 1]._id}.start - #.start` } })
+						SegmentLineItems.update(exist[existInf]._id, { $set: {
+							expectedDuration: `#${PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + exist[existInf + 1]._id}.start - #.start`
+						}})
 					}
 					continue
 				}
@@ -1391,9 +1395,9 @@ function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUnt
 			activeInfiniteItemsSegmentId[item.sourceLayerId] = line.segmentId
 		}
 	}
-}
+})
 
-function stopInfinitesRunningOnLayer (runningOrder: RunningOrder, segLine: SegmentLine, sourceLayer: string) {
+const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOnLayer (runningOrder: RunningOrder, segLine: SegmentLine, sourceLayer: string) {
 	let remainingLines = runningOrder.getSegmentLines().filter(l => l._rank > segLine._rank)
 	for (let line of remainingLines) {
 		let continuations = line.getSegmentLinesItems().filter(i => i.infiniteMode && i.infiniteId && i.infiniteId !== i._id && i.sourceLayerId === sourceLayer)
@@ -1406,7 +1410,7 @@ function stopInfinitesRunningOnLayer (runningOrder: RunningOrder, segLine: Segme
 
 	// ensure adlib is extended correctly if infinite
 	updateSourceLayerInfinitesAfterLine(runningOrder, false, segLine)
-}
+})
 
 function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): SegmentLineAdLibItem {
 	const oldId = segmentLineItem._id
@@ -1956,7 +1960,8 @@ export function updateTimelineFromMosData (roId: string, changedLines?: Array<st
  * @param studioInstallationId id of the studioInstallation to update
  * @param forceNowToTime if set, instantly forces all "now"-objects to that time (used in autoNext)
  */
-export function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
+export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Time) => void
+= syncFunctionIgnore(function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 	const activeRunningOrder = RunningOrders.findOne({
 		studioInstallationId: studioInstallationId,
 		active: true
@@ -2156,7 +2161,7 @@ export function updateTimeline (studioInstallationId: string, forceNowToTime?: T
 		})
 	}
 	afterUpdateTimeline(studioInstallation)
-}
+})
 /**
  * Fix the timeline objects, adds properties like deviceId and siId to the timeline objects
  * @param studioInstallation
