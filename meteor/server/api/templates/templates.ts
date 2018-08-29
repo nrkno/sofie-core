@@ -3,6 +3,7 @@ import { SaferEval } from 'safer-eval'
 import * as objectPath from 'object-path'
 import * as moment from 'moment'
 import { Random } from 'meteor/random'
+import { iterateDeeply, iterateDeeplyEnum } from '../../../lib/lib'
 import {
 	IMOSROFullStory, IMOSRunningOrder,
 } from 'mos-connection'
@@ -92,6 +93,7 @@ export interface TemplateContextInnerBase {
 	getLayer: (type: LayerType, key: string) => string
 	getConfigValue: (key: string, defaultValue?: any) => any
 	getValueByPath: (obj: object | undefined, path: string, defaultValue?: any) => any
+	itearateDeeply: (obj: any, iteratee: (val: any, key?: string | number) => (any | iterateDeeplyEnum), key?: string | number) => any
 	getHelper: (functionId: string) => Function
 	runHelper: (functionId: string, ...args: any[]) => any
 	error: (message: string) => void
@@ -197,6 +199,7 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 			if (_.isUndefined(value) && !_.isUndefined(defaultValue)) value = defaultValue
 			return value
 		},
+		itearateDeeply: iterateDeeply,
 		getHelper (functionId: string): Function {
 			const func = RuntimeFunctions.findOne({
 				showStyleId: this.getShowStyleId(),
