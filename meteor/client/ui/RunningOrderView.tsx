@@ -549,7 +549,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 						{/* !!! TODO: This is just a temporary solution !!! */}
 						<div className='badge mod'>
 							<div className='media-elem mrs sofie-logo' />
-							<div className='bd mls'><span className='logo-text'>Sofie</span></div>
+							<div className='bd mls'><span className='logo-text'></span></div>
 						</div>
 					</div>
 					<div className='flex-col right horizontal-align-right'>
