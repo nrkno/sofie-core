@@ -26,7 +26,7 @@ import { RunningOrder, RunningOrders, DBRunningOrder } from '../../lib/collectio
 import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Segments, DBSegment } from '../../lib/collections/Segments'
-import { saveIntoDb, partialExceptId, getCurrentTime, literal } from '../../lib/lib'
+import { saveIntoDb, partialExceptId, getCurrentTime, literal, fetchBefore, getRank, fetchAfter } from '../../lib/lib'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
@@ -59,6 +59,7 @@ export namespace ServerPeripheralDeviceAPI {
 			PeripheralDevices.update(id, {
 				$set: {
 					lastSeen: getCurrentTime(),
+					lastConnected: getCurrentTime(),
 					connected: true,
 					connectionId: options.connectionId,
 					type: options.type,
@@ -79,6 +80,7 @@ export namespace ServerPeripheralDeviceAPI {
 					connected: true,
 					connectionId: options.connectionId,
 					lastSeen: getCurrentTime(),
+					lastConnected: getCurrentTime(),
 					token: token,
 					type: options.type,
 					name: options.name,
@@ -1049,56 +1051,6 @@ export function afterRemoveSegmentLine (removedSegmentLine: DBSegmentLine) {
 		}
 	}
 }
-export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: Mongo.Selector, rank: number | null): T {
-	if (_.isNull(rank)) rank = Number.POSITIVE_INFINITY
-	return collection.find(_.extend(selector, {
-		_rank: {$lt: rank}
-	}), {
-		sort: {
-			_rank: -1,
-			_id: -1
-		},
-		limit: 1
-	}).fetch()[0]
-}
-export function fetchAfter<T> (collection: Mongo.Collection<T>, selector: Mongo.Selector, rank: number | null): T {
-	if (_.isNull(rank)) rank = Number.NEGATIVE_INFINITY
-	return collection.find(_.extend(selector, {
-		_rank: {$gt: rank}
-	}), {
-		sort: {
-			_rank: 1,
-			_id: 1
-		},
-		limit: 1
-	}).fetch()[0]
-}
-export function getRank (beforeOrLast, after, i: number, count: number): number {
-	let newRankMax
-	let newRankMin
-
-	if (after) {
-		if (beforeOrLast) {
-			newRankMin = beforeOrLast._rank
-			newRankMax = after._rank
-		} else {
-			// First
-			newRankMin = after._rank - 1
-			newRankMax = after._rank
-		}
-	} else {
-		if (beforeOrLast) {
-			// Last
-			newRankMin = beforeOrLast._rank
-			newRankMax = beforeOrLast._rank + 1
-		} else {
-			// Empty list
-			newRankMin = 0
-			newRankMax = 1
-		}
-	}
-	return newRankMin + ( (i + 1) / (count + 1) ) * (newRankMax - newRankMin)
-}
 function formatDuration (duration: any): number | undefined {
 	try {
 		// first try and parse it as a MosDuration timecode string
@@ -1278,6 +1230,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 		if (tr.result.segmentLine) {
 			if (!tr.result.segmentLine.typeVariant) tr.result.segmentLine.typeVariant = tr.templateId
 			SegmentLines.update(segmentLine._id, {$set: {
+				notes: 					tr.result.notes,
 				expectedDuration:		tr.result.segmentLine.expectedDuration || segmentLine.expectedDuration,
 				autoNext: 				tr.result.segmentLine.autoNext || false,
 				autoNextOverlap: 		tr.result.segmentLine.autoNextOverlap || 0,

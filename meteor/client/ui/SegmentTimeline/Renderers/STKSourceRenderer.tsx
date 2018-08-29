@@ -37,7 +37,7 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 
 	updateTime = () => {
 		if (this.vPreview) {
-			let targetTime = this.props.cursorTimePostion
+			let targetTime = this.props.cursorTimePosition
 			const segmentLineItem = this.props.segmentLineItem as SegmentLineItemUi
 			const itemDuration = ((segmentLineItem.content ? segmentLineItem.content.sourceDuration as number : undefined) || segmentLineItem.duration || segmentLineItem.renderedDuration || 0)
 			if (segmentLineItem.content && segmentLineItem.content.loop && this.vPreview.duration > 0) {
@@ -121,6 +121,7 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 					<div className='segment-timeline__layer-item__preview'>
 						<div className='segment-timeline__layer-item__preview__item mic'></div>
 						<div className='segment-timeline__layer-item__preview__item vt'>
+							{this.renderInfiniteItemContentEnded()}
 							<span className='segment-timeline__layer-item__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 								<span className={ClassNames('segment-timeline__layer-item__label', {
 									'overflow-label': this.end !== ''
@@ -152,7 +153,7 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 						{this.getPreviewUrl() ?
 							<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
 								<video src={this.getPreviewUrl()} ref={this.setVideoRef} crossOrigin='anonymous' playsInline={true} muted={true} />
-								<span className='segment-timeline__mini-inspector__timecode'>{RundownUtils.formatDiffToTimecode(this.props.cursorTimePostion, false, false, false, false, true, undefined, true)}</span>
+								<span className='segment-timeline__mini-inspector__timecode'>{RundownUtils.formatDiffToTimecode(this.props.cursorTimePosition, false, false, false, false, true, undefined, true)}</span>
 							</div> :
 							<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
 								<div>

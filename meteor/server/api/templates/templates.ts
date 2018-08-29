@@ -3,11 +3,12 @@ import { SaferEval } from 'safer-eval'
 import * as objectPath from 'object-path'
 import * as moment from 'moment'
 import { Random } from 'meteor/random'
+import { iterateDeeply, iterateDeeplyEnum } from '../../../lib/lib'
 import {
 	IMOSROFullStory, IMOSRunningOrder,
 } from 'mos-connection'
 import { RuntimeFunctions, RuntimeFunction } from '../../../lib/collections/RuntimeFunctions'
-import { SegmentLine, DBSegmentLine, SegmentLineHoldMode } from '../../../lib/collections/SegmentLines'
+import { SegmentLine, DBSegmentLine, SegmentLineHoldMode, SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItemLifespan } from '../../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItem } from '../../../lib/collections/RunningOrderBaselineItems'
@@ -92,6 +93,7 @@ export interface TemplateContextInnerBase {
 	getLayer: (type: LayerType, key: string) => string
 	getConfigValue: (key: string, defaultValue?: any) => any
 	getValueByPath: (obj: object | undefined, path: string, defaultValue?: any) => any
+	iterateDeeply: (obj: any, iteratee: (val: any, key?: string | number) => (any | iterateDeeplyEnum), key?: string | number) => any
 	getHelper: (functionId: string) => Function
 	runHelper: (functionId: string, ...args: any[]) => any
 	error: (message: string) => void
@@ -100,6 +102,7 @@ export interface TemplateContextInnerBase {
 	getSegmentLineIndex: () => number
 	formatDateAsTimecode: (date: Date) => string
 	formatDurationAsTimecode: (time: number) => string
+	getNotes: () => Array<SegmentLineNote>
 	// extended:
 	getAllSegmentLines: () => Array<SegmentLine>
 }
@@ -116,9 +119,10 @@ export interface TemplateContextInternalBase extends TemplateContextInnerBase {
 export interface TemplateContextInternal extends TemplateContextInner, TemplateContextInternalBase {
 }
 
-export function getContext (context: TemplateContext, extended?: boolean): TemplateContextInternal {
+export function getContext (context: TemplateContext, extended?: boolean, story?: IMOSROFullStory): TemplateContextInternal {
 	let hashI = 0
 	let hashed: {[hash: string]: string} = {}
+	let savedNotes: Array<SegmentLineNote> = []
 	let c0 = literal<TemplateContextInternalBase>({
 		getRunningOrder (): RunningOrder {
 			const ro = RunningOrders.findOne(context.runningOrderId)
@@ -195,6 +199,7 @@ export function getContext (context: TemplateContext, extended?: boolean): Templ
 			if (_.isUndefined(value) && !_.isUndefined(defaultValue)) value = defaultValue
 			return value
 		},
+		iterateDeeply,
 		getHelper (functionId: string): Function {
 			const func = RuntimeFunctions.findOne({
 				showStyleId: this.getShowStyleId(),
@@ -231,12 +236,45 @@ export function getContext (context: TemplateContext, extended?: boolean): Templ
 		},
 		error (message: string) {
 			logger.error('Error from template: ' + message)
+
+			let name = context.segmentLine.mosId
+			if (story && story.Slug) {
+				name = story.Slug.toString()
+			}
+			savedNotes.push({
+				type: SegmentLineNoteType.ERROR,
+				origin: {
+					name: name,
+					roId: context.runningOrderId,
+					// segmentId: context.segment._id,
+					segmentLineId: context.segmentLine._id
+					// segmentLineItemId?: string,
+				},
+				message: message
+			})
+
 			throw new Meteor.Error(500, message)
 		},
 		warning (message: string) {
-			logger.warn('Warning from template: ' + message)
+			// logger.warn('Warning from template: ' + message)
 			// @todo: save warnings, maybe to the RO somewhere?
 			// it should be displayed to the user in the UI
+
+			let name = context.segmentLine.mosId
+			if (story && story.Slug) {
+				name = story.Slug.toString()
+			}
+			savedNotes.push({
+				type: SegmentLineNoteType.WARNING,
+				origin: {
+					name: name,
+					roId: context.runningOrderId,
+					// segmentId: context.segment._id,
+					segmentLineId: context.segmentLine._id,
+					// segmentLineItemId?: string,
+				},
+				message: message
+			})
 		},
 		formatDateAsTimecode (time: Date | number): string {
 			let date = (
@@ -248,6 +286,9 @@ export function getContext (context: TemplateContext, extended?: boolean): Templ
 		},
 		formatDurationAsTimecode (time: number): string {
 			return formatDurationAsTimecode(time)
+		},
+		getNotes () {
+			return savedNotes
 		},
 
 		// ------------------
@@ -270,6 +311,7 @@ export interface TemplateResult {
 }
 export interface TemplateResultAfterPost {
 	// segment: Segment,
+	notes: Array<SegmentLineNote>,
 	segmentLine: DBSegmentLine | null,
 	segmentLineItems: Array<SegmentLineItem> | null
 	segmentLineAdLibItems: Array<SegmentLineAdLibItem> | null
@@ -437,16 +479,25 @@ function findFunction (showStyle: ShowStyle, functionId: string, context: Templa
 	}
 }
 
-export function runNamedTemplate (showStyle: ShowStyle, templateId: string, context: TemplateContext, story: IMOSROFullStory, reason: string): TemplateResultAfterPost {
-	let innerContext = getContext(context)
+export function runNamedTemplate (
+	showStyle: ShowStyle,
+	templateId: string,
+	context: TemplateContext,
+	story: IMOSROFullStory,
+	reason: string,
+	notes: Array<SegmentLineNote> = []
+): TemplateResultAfterPost {
+	let innerContext = getContext(context, false, story)
 	let fcn = findFunction(showStyle, templateId, innerContext, reason)
 	let result: TemplateResult = fcn(story) as TemplateResult
+	notes = notes.concat(innerContext.getNotes()) // Add notes
 
 	// logger.debug('runNamedTemplate', templateId)
 	// Post-process the result:
 	let i = 0
 	let segmentLinesUniqueIds: { [id: string]: true } = {}
 	let resultAfterPost: TemplateResultAfterPost = {
+		notes: notes,
 		segmentLine: result.segmentLine,
 		segmentLineItems: _.map(_.compact(result.segmentLineItems), (itemOrg: SegmentLineItemOptional) => {
 			let item: SegmentLineItem = itemOrg as SegmentLineItem
@@ -533,10 +584,12 @@ export interface RunTemplateResult {
 	result: TemplateResultAfterPost
 }
 export function runTemplate (showStyle: ShowStyle, context: TemplateContext, story: IMOSROFullStory, reason: string): RunTemplateResult | undefined {
-	let innerContext0 = getContext(context)
+	let notes: Array<SegmentLineNote> = []
+	let innerContext0 = getContext(context, false, story)
 	let getId = findFunction(showStyle, 'getId', innerContext0, reason)
 
 	let templateId: string | null = getId(story) as string | null
+	notes = notes.concat(innerContext0.getNotes()) // Add notes
 	/*
 		The getId template can return the following things:
 		'templateName'		The name of the template to run
@@ -551,7 +604,7 @@ export function runTemplate (showStyle: ShowStyle, context: TemplateContext, sto
 		let context0 = _.extend({}, context, {
 			templateId: templateId
 		})
-		let result = runNamedTemplate(showStyle, templateId, context0, story, reason)
+		let result = runNamedTemplate(showStyle, templateId, context0, story, reason, notes)
 
 		return {
 			templateId: templateId,

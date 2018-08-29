@@ -53,7 +53,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 }
 
 .running-order-view {
-	padding-top: 150px;
+	padding-top: 125px;
 }
 
 body.vertical-overflow-only {
@@ -139,7 +139,7 @@ body.vertical-overflow-only {
 				top: 0.05em;
 				left: 50%;
 				transform: translateX(-50%);
-				margin-top: 6px;
+				margin-top: 0px;
 				margin-right: 0;
 				font-size: 2.3em;
 				font-weight: 100;
@@ -253,10 +253,8 @@ body.vertical-overflow-only {
 	.segment-timeline__title {
 		display: block;
 		margin: 0;
-		padding: 0.3em;
-		line-height: 1.2em;
-		letter-spacing: 0px;
-		font-weight: 400;
+		padding: 0;
+		
 		
 		grid-column: segment-name / segment-group-controls;
 		grid-row: main-view / end;
@@ -267,6 +265,16 @@ body.vertical-overflow-only {
 		background: $segment-title-background-color;
 
 		word-break: break-word;
+		h2 {
+			margin: 0;
+			padding: 0.3em;
+			line-height: 1.2em;
+			letter-spacing: 0px;
+			font-weight: 400;
+		}
+		.segment-timeline__title__notes {
+			font-size: 75%;
+		}
 	}
 
 	// the live and next states are the states of the entire segment component
@@ -774,6 +782,21 @@ body.vertical-overflow-only {
 						display: none;
 					}
 				}
+
+				.segment-timeline__segment-line__nextline.segment-timeline__segment-line__nextline--endline:not(.is-next).auto-next {
+					&::before {
+						content: ' ';
+						display: block;
+						position: absolute;
+						top: -3px;
+						left: 5px;
+						width: 0;
+						height: 0;
+						border-style: solid;
+						border-width: 6px 0 6px 12px;
+						border-color: transparent transparent transparent $segment-line-start-color;
+					}
+				}
 			}
 
 			.segment-timeline__segment-line__nextline--endline.is-next {
@@ -879,9 +902,19 @@ body.vertical-overflow-only {
 							display: block;
 							top: -2px;
 							width: 2px;
-							height: 4px;
-							background: linear-gradient(to bottom, #fff 0%, #fff 50%, #000 50.00001% , #000 100%);
+							bottom: 0;
+							background: linear-gradient(to bottom, #fff 0, #fff 1.9px, #000 2px , #000 4px, rgba(0, 0, 0, 0.1) 4.1px);
 							overflow: hidden;
+							z-index: 3;
+						}
+
+						.segment-timeline__layer-item__source-finished {
+							position: absolute;
+							top: 0;
+							right: 0;
+							bottom: 0;
+							background: repeating-linear-gradient(to right, $segment-timeline-background-color 0, $segment-timeline-background-color 5px, transparent 5.1px, transparent 10px);
+							z-index: 2;
 						}
 
 						.segment-timeline__layer-item__label {
@@ -894,6 +927,11 @@ body.vertical-overflow-only {
 							pointer-events: none;
 							display: inline-block;
 							white-space: nowrap;
+
+							&:not(.right-side) {
+								overflow: hidden;
+								text-overflow: ellipsis;
+							}
 
 							&.secondary {
 								font-weight: 300;
@@ -963,6 +1001,7 @@ body.vertical-overflow-only {
 
 							> .segment-timeline__layer-item__label {
 								margin: 0;
+								max-width: none;
 							}
 
 							> .segment-timeline__layer-item__label + .segment-timeline__layer-item__label {

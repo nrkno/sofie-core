@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2018-08-28T07:29:23.800Z\n"
-"PO-Revision-Date: 2018-08-28 10:05+0200\n"
+"POT-Creation-Date: 2018-08-28T15:54:46.339Z\n"
+"PO-Revision-Date: 2018-08-28 17:58+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -108,10 +108,8 @@ msgstr "Hurtigtaster"
 msgid "Global AdLib"
 msgstr "Faste hurtigtaster"
 
-#, fuzzy
-#| msgid "Clear shortcut"
 msgid "Shortcuts"
-msgstr "Hurtigtast for å fjerne"
+msgstr "Hurtigtaster"
 
 #, fuzzy
 msgid "Slug"
@@ -213,7 +211,7 @@ msgstr ""
 "kjøreplanen, og prøv på nytt."
 
 msgid "Activate (Rehearsal)"
-msgstr "Aktiver tekstmodus"
+msgstr "Aktiver testmodus"
 
 msgid "Error"
 msgstr "Feil"
@@ -538,9 +536,8 @@ msgstr "Hurtigtaster"
 msgid "Clear shortcut"
 msgstr "Hurtigtast for å fjerne"
 
-#, fuzzy
 msgid "Assign hotkeys to global adlibs"
-msgstr "Globale hurtigtaster"
+msgstr "Anvise hurtigtaster til globale adlibs"
 
 #, fuzzy
 msgid "Items on this layer are sticky"
@@ -585,9 +582,8 @@ msgstr "Fjern denne koblingen?"
 msgid "Are you sure you want to remove mapping for LLayer "
 msgstr "Er du sikker på at du vil fjerne koblingen for "
 
-#, fuzzy
 msgid "Layer Mappings"
-msgstr "Lag-kobling"
+msgstr "Lag-koblinger"
 
 msgid "New source"
 msgstr "Ny kilde"

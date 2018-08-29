@@ -12,3 +12,10 @@ export function setAdminMode (adminMode: boolean) {
 export function getAdminMode (): boolean {
 	return localStorage.getItem('adminMode') === '1'
 }
+
+export function setDeveloperMode (developerMode: boolean) {
+	localStorage.setItem('developerMode', (developerMode ? '1' : '0'))
+}
+export function getDeveloperMode (): boolean {
+	return localStorage.getItem('developerMode') === '1'
+}

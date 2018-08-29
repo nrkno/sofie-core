@@ -62,6 +62,7 @@ Meteor.methods({
 			created: getCurrentTime(),
 			status: {statusCode: PeripheralDeviceAPI.StatusCode.BAD},
 			lastSeen: getCurrentTime(),
+			lastConnected: getCurrentTime(),
 			connected: false,
 			connectionId: null,
 			token: '',
@@ -137,6 +138,7 @@ Meteor.methods({
 				created: getCurrentTime(),
 				status: {statusCode: PeripheralDeviceAPI.StatusCode.BAD},
 				lastSeen: getCurrentTime(),
+				lastConnected: getCurrentTime(),
 				connected: false,
 				connectionId: null,
 				token: ''
@@ -151,6 +153,7 @@ Meteor.methods({
 			created: getCurrentTime(),
 			status: {statusCode: PeripheralDeviceAPI.StatusCode.BAD},
 			lastSeen: getCurrentTime(),
+			lastConnected: getCurrentTime(),
 			connected: false,
 			connectionId: null,
 			token: ''
@@ -243,7 +246,7 @@ Meteor.methods({
 					abbreviation: 'STK',
 					type: RundownAPI.SourceLayerType.LIVE_SPEAK,
 					onPGMClean: true
-				}, 
+				},
 				{
 					_id: 'studio0_graphics_super',
 					_rank: 1000,
