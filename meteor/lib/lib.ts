@@ -370,3 +370,53 @@ export const getCollectionStats: (collection: Mongo.Collection<any>) => Array<an
 		raw.stats(cb)
 	}
 )
+export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: Mongo.Selector, rank: number | null): T {
+	if (_.isNull(rank)) rank = Number.POSITIVE_INFINITY
+	return collection.find(_.extend(selector, {
+		_rank: {$lt: rank}
+	}), {
+		sort: {
+			_rank: -1,
+			_id: -1
+		},
+		limit: 1
+	}).fetch()[0]
+}
+export function fetchAfter<T> (collection: Mongo.Collection<T>, selector: Mongo.Selector, rank: number | null): T {
+	if (_.isNull(rank)) rank = Number.NEGATIVE_INFINITY
+	return collection.find(_.extend(selector, {
+		_rank: {$gt: rank}
+	}), {
+		sort: {
+			_rank: 1,
+			_id: 1
+		},
+		limit: 1
+	}).fetch()[0]
+}
+export function getRank (beforeOrLast, after, i: number, count: number): number {
+	let newRankMax
+	let newRankMin
+
+	if (after) {
+		if (beforeOrLast) {
+			newRankMin = beforeOrLast._rank
+			newRankMax = after._rank
+		} else {
+			// First
+			newRankMin = after._rank - 1
+			newRankMax = after._rank
+		}
+	} else {
+		if (beforeOrLast) {
+			// Last
+			newRankMin = beforeOrLast._rank
+			newRankMax = beforeOrLast._rank + 1
+		} else {
+			// Empty list
+			newRankMin = 0
+			newRankMax = 1
+		}
+	}
+	return newRankMin + ( (i + 1) / (count + 1) ) * (newRankMax - newRankMin)
+}

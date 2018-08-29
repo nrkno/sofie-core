@@ -211,8 +211,7 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 			}
 		}
 		if (segmentId) {
-			let segmentEl = $('#' + SegmentTimelineElementId + segmentId)
-			scrollToSegment(segmentEl)
+			scrollToSegment(segmentId)
 		}
 	}
 	clickNotes () {
