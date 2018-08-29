@@ -28,7 +28,7 @@ export interface ISourceLayerItemProps {
 	itemElement: HTMLDivElement
 	elementPosition: JQueryCoordinates
 	cursorPosition: JQueryCoordinates
-	cursorTimePostion: number
+	cursorTimePosition: number
 	getItemLabelOffsetLeft?: () => {[key: string]: string}
 	getItemLabelOffsetRight?: () => { [key: string]: string }
 	getItemDuration?: () => number

@@ -928,6 +928,11 @@ body.vertical-overflow-only {
 							display: inline-block;
 							white-space: nowrap;
 
+							&:not(.right-side) {
+								overflow: hidden;
+								text-overflow: ellipsis;
+							}
+
 							&.secondary {
 								font-weight: 300;
 							}
@@ -996,6 +1001,7 @@ body.vertical-overflow-only {
 
 							> .segment-timeline__layer-item__label {
 								margin: 0;
+								max-width: none;
 							}
 
 							> .segment-timeline__layer-item__label + .segment-timeline__layer-item__label {
