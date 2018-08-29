@@ -11,4 +11,8 @@ Meteor.startup(() => {
 	mousetrap.bind('f3', (e: KeyboardEvent) => {
 		e.preventDefault()
 	}, 'keydown')
+
+	mousetrap.bind('space', (e: KeyboardEvent) => {
+		e.preventDefault()
+	})
 })
