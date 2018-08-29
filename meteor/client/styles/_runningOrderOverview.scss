@@ -8,7 +8,7 @@
 	display: block;
 	position: relative;
 	white-space: nowrap;
-	padding: 1.5em 0;
+	padding: 0.9em 0;
     background: $segment-timeline-background-color;
 	background-clip: content-box;
 	
@@ -17,7 +17,7 @@
 		top: 0;
 		left: -1.5em;
 		bottom: 0;
-		padding-left: 1.5em;
+		padding-left: 0.7em;
 		background: rgba(0,0,0,0.5);
 		box-sizing: content-box;
 		pointer-events: none;

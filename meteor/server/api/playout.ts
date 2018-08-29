@@ -1278,7 +1278,7 @@ const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, runUntil
 			}
 
 			if (item.infiniteMode === SegmentLineItemLifespan.OutOnNextSegmentLine) {
-				return
+				continue
 			}
 
 			activeInfiniteItems[item.sourceLayerId] = item

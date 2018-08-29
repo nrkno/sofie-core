@@ -53,7 +53,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 }
 
 .running-order-view {
-	padding-top: 150px;
+	padding-top: 125px;
 }
 
 body.vertical-overflow-only {
@@ -139,7 +139,7 @@ body.vertical-overflow-only {
 				top: 0.05em;
 				left: 50%;
 				transform: translateX(-50%);
-				margin-top: 6px;
+				margin-top: 0px;
 				margin-right: 0;
 				font-size: 2.3em;
 				font-weight: 100;
@@ -928,6 +928,11 @@ body.vertical-overflow-only {
 							display: inline-block;
 							white-space: nowrap;
 
+							&:not(.right-side) {
+								overflow: hidden;
+								text-overflow: ellipsis;
+							}
+
 							&.secondary {
 								font-weight: 300;
 							}
@@ -996,6 +1001,7 @@ body.vertical-overflow-only {
 
 							> .segment-timeline__layer-item__label {
 								margin: 0;
+								max-width: none;
 							}
 
 							> .segment-timeline__layer-item__label + .segment-timeline__layer-item__label {
