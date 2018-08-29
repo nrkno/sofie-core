@@ -1733,7 +1733,7 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 	}
 
 	// have slis grouped by sl, so we can look based on rank to choose the correct one
-	const grouped: {[key: string]: SegmentLineItem[]} = {}
+	const grouped: {[segmentLineId: string]: SegmentLineItem[]} = {}
 	layerItems.forEach(i => {
 		if (!grouped[i.segmentLineId]) {
 			grouped[i.segmentLineId] = []
