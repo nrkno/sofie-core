@@ -62,6 +62,7 @@ Meteor.methods({
 			created: getCurrentTime(),
 			status: {statusCode: PeripheralDeviceAPI.StatusCode.BAD},
 			lastSeen: getCurrentTime(),
+			lastConnected: getCurrentTime(),
 			connected: false,
 			connectionId: null,
 			token: '',
@@ -137,6 +138,7 @@ Meteor.methods({
 				created: getCurrentTime(),
 				status: {statusCode: PeripheralDeviceAPI.StatusCode.BAD},
 				lastSeen: getCurrentTime(),
+				lastConnected: getCurrentTime(),
 				connected: false,
 				connectionId: null,
 				token: ''
@@ -151,6 +153,7 @@ Meteor.methods({
 			created: getCurrentTime(),
 			status: {statusCode: PeripheralDeviceAPI.StatusCode.BAD},
 			lastSeen: getCurrentTime(),
+			lastConnected: getCurrentTime(),
 			connected: false,
 			connectionId: null,
 			token: ''
