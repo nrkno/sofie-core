@@ -59,6 +59,7 @@ export namespace ServerPeripheralDeviceAPI {
 			PeripheralDevices.update(id, {
 				$set: {
 					lastSeen: getCurrentTime(),
+					lastConnected: getCurrentTime(),
 					connected: true,
 					connectionId: options.connectionId,
 					type: options.type,
@@ -79,6 +80,7 @@ export namespace ServerPeripheralDeviceAPI {
 					connected: true,
 					connectionId: options.connectionId,
 					lastSeen: getCurrentTime(),
+					lastConnected: getCurrentTime(),
 					token: token,
 					type: options.type,
 					name: options.name,
