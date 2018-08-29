@@ -982,6 +982,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								hotkeys={this.state.usedHotkeys}
 								runningOrder={this.props.runningOrder}
 								studioInstallation={this.props.studioInstallation}
+								studioMode={this.state.studioMode}
 								onChangeBottomMargin={this.onChangeBottomMargin}
 								onRegisterHotkeys={this.onRegisterHotkeys} />
 						</ErrorBoundary>

@@ -249,6 +249,7 @@ interface IProps {
 	runningOrder: RunningOrder
 	studioInstallation: StudioInstallation
 	visible: boolean
+	studioMode: boolean
 }
 
 interface IState {
@@ -345,6 +346,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	}
 
 	refreshKeyboardHotkeys () {
+		if (!this.props.studioMode) return
+
 		let preventDefault = (e) => {
 			e.preventDefault()
 		}
