@@ -174,7 +174,7 @@ class extends MeteorReactComponent<IPropsHeader> {
 					prevSub.stop()
 				}
 				prevSub = this.subscribe('mediaObjects', this.props.runningOrder.studioInstallationId, {
-					objId: objId
+					mediaId: objId
 				})
 			}
 		})
