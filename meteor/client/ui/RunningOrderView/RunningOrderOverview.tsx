@@ -28,6 +28,7 @@ interface ISegmentLinePropsHeader {
 	segmentStartsAt?: TimeMap
 	isLive: boolean
 	isNext: boolean
+	label: string | undefined
 }
 
 interface TimeMap {
@@ -48,16 +49,19 @@ const SegmentLineOverview: React.SFC<ISegmentLinePropsHeader> = (props: ISegment
 				}}
 			>
 				{ props.isNext &&
-					<div className={'running-order__overview__segment__segment-line__next-line'}>
+					<div className='running-order__overview__segment__segment-line__next-line'>
 					</div>
 				}
 				{ props.isLive &&
-					<div className={'running-order__overview__segment__segment-line__live-line'}
+					<div className='running-order__overview__segment__segment-line__live-line'
 						style={{
 							'left': (((getCurrentTime() - (props.segmentLine.startedPlayback || 0)) /
 								(Math.max(props.segmentLiveDurations && props.segmentLiveDurations[props.segmentLine._id] || 0, props.segmentLine.duration || props.segmentLine.expectedDuration || 0))) * 100) + '%'
 						}}>
 					</div>
+				}
+				{ props.label && 
+					<div className='running-order__overview__segment__segment-line__label'>{props.label}</div>
 				}
 			</div>
 			{props.isLive && ((((getCurrentTime() - (props.segmentLine.startedPlayback || 0)) + ((props.segmentStartsAt && props.segmentStartsAt[props.segmentLine._id]) || 0)) / props.totalDuration * 100) > 0) &&
@@ -73,8 +77,11 @@ const SegmentLineOverview: React.SFC<ISegmentLinePropsHeader> = (props: ISegment
 
 const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHeader) => {
 	return props.segment.items && (
-		<React.Fragment>
-			{ props.segment.items.map((item) => {
+		<div className={ClassNames('running-order__overview__segment', {
+			'next': props.segment.items.find((i) => i._id === props.runningOrder.nextSegmentLineId) ? true : false,
+			'live': props.segment.items.find((i) => i._id === props.runningOrder.currentSegmentLineId) ? true : false
+		})}>
+			{ props.segment.items.map((item, index) => {
 				return (
 					<SegmentLineOverview segmentLine={item}
 						key={item._id}
@@ -83,10 +90,11 @@ const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHea
 						segmentStartsAt={props.segmentStartsAt}
 						isLive={props.runningOrder.currentSegmentLineId === item._id}
 						isNext={props.runningOrder.nextSegmentLineId === item._id}
+						label={index === 0 ? props.segment.name : undefined}
 						 />
 				)
 			}) }
-		</React.Fragment>
+		</div>
 	) || null
 }
 
