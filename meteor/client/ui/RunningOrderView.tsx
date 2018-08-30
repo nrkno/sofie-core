@@ -904,7 +904,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 		if (this.props.runningOrder) {
 			return (
-				<div>
+				<div className='segment-timeline-container'>
 					{this.renderSegments()}
 				</div>
 			)
