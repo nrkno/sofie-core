@@ -2024,7 +2024,14 @@ export function updateTimeline (studioInstallationId: string, forceNowToTime?: T
 				allowTransition = !previousSegmentLine.disableOutTransition
 
 				if (previousSegmentLine.startedPlayback) {
-					const endTrigger = currentSegmentLine.overlapUntil || `#${PlayoutTimelinePrefixes.SEGMENT_LINE_GROUP_PREFIX + currentSegmentLine._id}.start`
+					const transitionObjs = previousSegmentLine.getSegmentLinesItems().filter(i => i.isTransition)
+					const transitionDuration = (transitionObjs && transitionObjs.length > 0) ? transitionObjs[0].duration || 0 : 0
+
+					let endTrigger = allowTransition && currentSegmentLine.transitionDelay
+						? currentSegmentLine.transitionDelay + ` + ${transitionDuration}`
+						: `#${PlayoutTimelinePrefixes.SEGMENT_LINE_GROUP_PREFIX + currentSegmentLine._id}.start`
+					endTrigger += ` + ${currentSegmentLine.overlapDuration || 0}`
+
 					previousSegmentLineGroup = createSegmentLineGroup(previousSegmentLine, `${endTrigger} - #.start`)
 					previousSegmentLineGroup.priority = -1
 					previousSegmentLineGroup.trigger = literal<ITimelineTrigger>({

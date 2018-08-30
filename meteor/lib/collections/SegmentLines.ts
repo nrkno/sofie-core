@@ -29,8 +29,8 @@ export interface DBSegmentLine {
 	/** How much to overlap on when doing autonext */
 	autoNextOverlap?: number
 	/** What point to extend the old sli until when doing a take */
-	overlapUntil?: string
-	/** What point to delay the new sli contents until during a transition. Note: this needs to be before overlapUntil */
+	overlapDuration?: number
+	/** What point to delay the new sli contents until during a transition */
 	transitionDelay?: string
 	/** Should we block a transition at the out of this SegmentLine */
 	disableOutTransition?: boolean
@@ -103,7 +103,7 @@ export class SegmentLine implements DBSegmentLine {
 	public slug: string
 	public autoNext?: boolean
 	public autoNextOverlap?: number
-	public overlapUntil?: string
+	public overlapDuration?: number
 	public transitionDelay?: string
 	public metaData?: Array<IMOSExternalMetaData>
 	public status?: IMOSObjectStatus

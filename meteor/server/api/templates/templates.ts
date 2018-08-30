@@ -186,9 +186,13 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 			const studio: StudioInstallation = this.getStudioInstallation()
 
 			const value = studio.getConfigValue(key)
-			if (value !== null) return value
+			if (value === null) return defaultValue
 
-			return defaultValue
+			if (defaultValue && typeof defaultValue === 'number') {
+				return parseFloat(value)
+			}
+
+			return value
 		},
 		getValueByPath (obj: object | undefined, path: string, defaultValue?: any): any {
 			let value = (

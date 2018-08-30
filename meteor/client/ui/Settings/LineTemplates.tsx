@@ -165,7 +165,7 @@ declare interface DBSegmentLine {
 	autoNext?: boolean
 	/** How much to overlap on when doing autonext */
 	autoNextOverlap?: number
-	overlapUntil?: string
+	overlapDuration?: number
 	transitionDelay?: string
 	/** Should we block a transition at the out of this SegmentLine */
 	disableOutTransition?: boolean
