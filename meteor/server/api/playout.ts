@@ -415,6 +415,10 @@ export namespace ServerPlayoutAPI {
 		if (!nextSegmentLine) throw new Meteor.Error(404, `Segment Line "${nextSlId}" not found!`)
 		if (nextSegmentLine.runningOrderId !== runningOrder._id) throw new Meteor.Error(409, `Segment Line "${nextSlId}" not part of specified running order`)
 
+		if (nextSegmentLine._id === runningOrder.currentSegmentLineId) {
+			throw new Meteor.Error(402, 'Not allowed to Next the currently playing SegmentLine')
+		}
+
 		const nextSegment = Segments.findOne(nextSegmentLine.segmentId)
 		if (nextSegment) {
 			resetSegment(nextSegment._id, runningOrder.currentSegmentLineId) // reset entire segment on manual set as next
@@ -431,10 +435,12 @@ export namespace ServerPlayoutAPI {
 		// remove old auto-next from timeline, and add new one
 		updateTimeline(runningOrder.studioInstallationId)
 	}
-	export function roMoveNext (roId: string, horisonalDelta: number, verticalDelta: number) {
+	export function roMoveNext (roId: string, horisonalDelta: number, verticalDelta: number, currentNextSegmentLineId?: string) {
 		check(roId, String)
 		check(horisonalDelta, Number)
 		check(verticalDelta, Number)
+
+		if (!horisonalDelta && !verticalDelta) throw new Meteor.Error(402, `roMoveNext: invalid delta: (${horisonalDelta}, ${verticalDelta})`)
 
 		const runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -442,8 +448,13 @@ export namespace ServerPlayoutAPI {
 
 		if (runningOrder.holdState && runningOrder.holdState !== RunningOrderHoldState.COMPLETE) throw new Meteor.Error(501, `RunningOrder "${roId}" cannot change next during hold!`)
 
-		if (!runningOrder.nextSegmentLineId) throw new Meteor.Error(501, `RunningOrder "${roId}" has no next segmentLine!`)
-		const currentNextSegmentLine = SegmentLines.findOne(runningOrder.nextSegmentLineId)
+		let currentNextSegmentLine: SegmentLine
+		if (currentNextSegmentLineId) {
+			currentNextSegmentLine = SegmentLines.findOne(currentNextSegmentLineId) as SegmentLine
+		} else {
+			if (!runningOrder.nextSegmentLineId) throw new Meteor.Error(501, `RunningOrder "${roId}" has no next segmentLine!`)
+			currentNextSegmentLine = SegmentLines.findOne(runningOrder.nextSegmentLineId) as SegmentLine
+		}
 
 		if (!currentNextSegmentLine) throw new Meteor.Error(404, `SegmentLine "${runningOrder.nextSegmentLineId}" not found!`)
 
@@ -494,8 +505,15 @@ export namespace ServerPlayoutAPI {
 		let segmentLine = segmentLines[segmentLineIndex]
 		if (!segmentLine) throw new Meteor.Error(501, `SegmentLine index ${segmentLineIndex} not found in list of segmentLines!`)
 
-		ServerPlayoutAPI.roSetNext(runningOrder._id, segmentLine._id)
-		return segmentLine._id
+		if (segmentLine._id === runningOrder.currentSegmentLineId && !currentNextSegmentLineId) {
+			// Whoops, we're not allowed to next to that.
+			// Skip it, then (ie run the whole thing again)
+			return ServerPlayoutAPI.roMoveNext (roId, horisonalDelta, verticalDelta, segmentLine._id)
+		} else {
+			ServerPlayoutAPI.roSetNext(runningOrder._id, segmentLine._id)
+			return segmentLine._id
+		}
+
 	}
 	export function roActivateHold (roId: string) {
 		check(roId, String)
