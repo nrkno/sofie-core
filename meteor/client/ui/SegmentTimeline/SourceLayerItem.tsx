@@ -18,6 +18,7 @@ import { VTSourceRenderer } from './Renderers/VTSourceRenderer'
 import { STKSourceRenderer } from './Renderers/STKSourceRenderer'
 import { L3rdSourceRenderer } from './Renderers/L3rdSourceRenderer'
 import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
+import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 
@@ -380,6 +381,14 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
+			case RundownAPI.SourceLayerType.TRANSITION:
+				return <TransitionSourceRenderer key={this.props.segmentLineItem._id}
+						typeClass={typeClass}
+						getItemDuration={this.getItemDuration}
+						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+						setAnchoredElsWidths={this.setAnchoredElsWidths}
+						{...this.props} {...this.state} />
 			default:
 				return <DefaultLayerItemRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
@@ -417,6 +426,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				'script': this.props.layer.type === RundownAPI.SourceLayerType.SCRIPT,
 				'splits': this.props.layer.type === RundownAPI.SourceLayerType.SPLITS,
 				'vt': this.props.layer.type === RundownAPI.SourceLayerType.VT,
+				'transition': this.props.layer.type === RundownAPI.SourceLayerType.TRANSITION,
 			})
 
 			return (

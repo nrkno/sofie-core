@@ -212,3 +212,7 @@ export interface MicContent extends ScriptContent {
 	mixConfiguration: any
 	timelineObjects: any
 }
+
+export interface TransitionContent extends BaseContent {
+	icon?: string
+}
