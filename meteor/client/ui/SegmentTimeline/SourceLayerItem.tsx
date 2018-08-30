@@ -381,14 +381,16 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
-			case RundownAPI.SourceLayerType.TRANSITION:
-				return <TransitionSourceRenderer key={this.props.segmentLineItem._id}
-						typeClass={typeClass}
-						getItemDuration={this.getItemDuration}
-						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
-						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
-						setAnchoredElsWidths={this.setAnchoredElsWidths}
-						{...this.props} {...this.state} />
+
+			// Temporary removed, due to type error:
+			// case RundownAPI.SourceLayerType.TRANSITION:
+				// return <TransitionSourceRenderer key={this.props.segmentLineItem._id}
+				// 		typeClass={typeClass}
+				// 		getItemDuration={this.getItemDuration}
+				// 		getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+				// 		getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+				// 		setAnchoredElsWidths={this.setAnchoredElsWidths}
+				// 		{...this.props} {...this.state} />
 			default:
 				return <DefaultLayerItemRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
