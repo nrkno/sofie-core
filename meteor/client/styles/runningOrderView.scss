@@ -229,7 +229,7 @@ body.vertical-overflow-only {
 	display: grid;
 	grid-column-gap: 0;
 	grid-row-gap: 0;
-	grid-template-columns: [segment-name] 200px [segment-group-controls] 120px [timeline] auto [end] 120px [future-timeline-end];
+	grid-template-columns: [segment-name] 200px [segment-group-controls] 120px [timeline] auto [end]; // 120px [future-timeline-end]
 	grid-template-rows: [header] $segment-header-height [main-view] auto [zoom-area] auto [end];
 	overflow: hidden;
 	user-select: none;

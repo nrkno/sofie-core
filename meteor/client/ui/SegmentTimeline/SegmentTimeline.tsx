@@ -509,7 +509,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 					</div>
 					{this.renderLiveLine()}
 				</div>
-				<ErrorBoundary>
+				{/* <ErrorBoundary>
 					<SegmentNextPreview
 						runningOrder={this.props.runningOrder}
 						collapsedOutputs={this.props.collapsedOutputs}
@@ -517,7 +517,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 						outputGroups={this.props.segment.outputLayers}
 						sourceLayers={this.props.segment.sourceLayers}
 						segmentLine={this.props.followingSegmentLine} />
-				</ErrorBoundary>
+				</ErrorBoundary> */}
 				<ErrorBoundary>
 					<SegmentTimelineZoom
 						onZoomDblClick={this.onZoomDblClick}
