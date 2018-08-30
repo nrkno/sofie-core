@@ -14,7 +14,6 @@ export interface ISourceLayerItemProps {
 	typeClass?: string
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
-	segment: SegmentUi
 	segmentLine: SegmentLineUi
 	segmentLineDuration?: number
 	segmentLineItem: SegmentLineItemUi
@@ -25,7 +24,7 @@ export interface ISourceLayerItemProps {
 	liveLineHistorySize: number
 	livePosition: number | null
 	showMiniInspector: boolean
-	itemElement: HTMLDivElement
+	itemElement: HTMLDivElement | null
 	elementPosition: JQueryCoordinates
 	cursorPosition: JQueryCoordinates
 	cursorTimePosition: number

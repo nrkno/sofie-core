@@ -5,6 +5,7 @@ import * as _ from 'underscore'
 import { TransitionContent } from '../../../../lib/collections/SegmentLineItems'
 
 import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
+import { FloatingInspector } from '../../FloatingInspector';
 
 type KeyValue = { key: string, value: string }
 
@@ -34,6 +35,7 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<ISourceLay
 		this.updateAnchoredElsWidths()
 	}
 
+	// this will be triggered if the SVG icon for the transiton will 404.
 	iconFailed = () => {
 		this.setState({
 			iconFailed: true
@@ -59,6 +61,13 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<ISourceLay
 							<img src={'/transition-icons/' + content.icon + '.svg'} className='segment-timeline__layer-item__label__transition-icon' onError={this.iconFailed} />
 						}
 					</span>
+					<FloatingInspector shown={this.props.showMiniInspector && !this.state.iconFailed && this.props.itemElement !== null}>
+						{content && content.icon &&
+							<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
+								<img src={'/transition-icons/preview/' + content.icon + '.png'} className='thumbnail' />
+							</div>
+						}
+					</FloatingInspector>
 				</React.Fragment>
 	}
 }
