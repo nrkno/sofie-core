@@ -936,6 +936,10 @@ body.vertical-overflow-only {
 								text-overflow: ellipsis;
 							}
 
+							&.with-overflow {
+								overflow: visible !important;
+							}
+
 							&.secondary {
 								font-weight: 300;
 							}
@@ -1009,6 +1013,16 @@ body.vertical-overflow-only {
 
 							> .segment-timeline__layer-item__label + .segment-timeline__layer-item__label {
 								margin: 0 0.3em;
+							}
+
+							.segment-timeline__layer-item__label__transition-icon {
+								    max-width: 16px;
+									max-height: 1.4em;
+									vertical-align: top;
+									height: 1.4em;
+									object-fit: contain;
+									object-position: center center;
+									margin-left: 0.5em;
 							}
 						}
 

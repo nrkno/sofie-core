@@ -388,7 +388,7 @@ Meteor.methods({
 					_id: 'studio0_live_transition0',
 					_rank: 0,
 					name: 'Transition',
-					type: RundownAPI.SourceLayerType.UNKNOWN,
+					type: RundownAPI.SourceLayerType.TRANSITION,
 					onPGMClean: true,
 					activateKeyboardHotkeys: '',
 					assignHotkeysToGlobalAdlibs: false
