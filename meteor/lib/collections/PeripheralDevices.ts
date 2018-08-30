@@ -18,6 +18,7 @@ export interface PeripheralDevice {
 	created: Time
 	status: PeripheralDeviceAPI.StatusObject
 	lastSeen: Time
+	lastConnected: Time
 
 	connected: boolean
 	connectionId: string|null // Id of the current ddp-Connection
