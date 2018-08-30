@@ -2,12 +2,12 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
-import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { RunningOrder } from '../../lib/collections/RunningOrders'
-import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
-import { getCurrentTime } from '../../lib/lib'
-import { RundownUtils } from '../lib/rundown'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { RunningOrder } from '../../../lib/collections/RunningOrders'
+import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
+import { getCurrentTime } from '../../../lib/lib'
+import { RundownUtils } from '../../lib/rundown'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 
 export namespace RunningOrderTiming {
 	export enum Events {

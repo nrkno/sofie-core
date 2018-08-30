@@ -15,7 +15,7 @@ import { SegmentTimelineLine } from './SegmentTimelineLine'
 import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
 import { SegmentNextPreview } from './SegmentNextPreview'
 
-import { SegmentDuration, SegmentLineCountdown, RunningOrderTiming } from '../RunningOrderTiming'
+import { SegmentDuration, SegmentLineCountdown, RunningOrderTiming } from '../RunningOrderView/RunningOrderTiming'
 
 import { RundownUtils } from '../../lib/rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'

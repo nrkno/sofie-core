@@ -29,12 +29,12 @@
 		vertical-align: top;
 		height: 40px;
 		background: $segment-title-background-color;
-		outline: 1px solid black;
+		outline: 1px solid rgba(0,0,0,0.3);
 		// overflow: hidden;
 		word-wrap: none;
 		white-space: nowrap;
 		text-overflow: clip;
-		overflow: hidden;
+		overflow: visible;
 
 		&.live {
 			color: $segment-title-text-color-live;
@@ -93,8 +93,6 @@
 		}
 
 		&:hover {
-			overflow: visible;
-
 			.running-order__overview__segment__segment-line__label {
 				right: auto;
 				width: auto;

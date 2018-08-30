@@ -17,7 +17,7 @@ import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/col
 import { SegmentTimeline } from './SegmentTimeline'
 
 import { getCurrentTime, Time } from '../../../lib/lib'
-import { RunningOrderTiming } from '../RunningOrderTiming'
+import { RunningOrderTiming } from '../RunningOrderView/RunningOrderTiming'
 import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 
 import { CollapsedStateStorage } from '../../lib/CollapsedStateStorage'

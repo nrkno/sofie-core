@@ -21,12 +21,12 @@ import { SegmentLine } from '../../lib/collections/SegmentLines'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
-import { RunningOrderTimingProvider, withTiming, WithTiming } from './RunningOrderTiming'
+import { RunningOrderTimingProvider, withTiming, WithTiming } from './RunningOrderView/RunningOrderTiming'
 import { SegmentTimelineContainer } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { InspectorDrawer } from './InspectorDrawer/InspectorDrawer'
-import { RunningOrderOverview } from './RunningOrderOverview'
-import { RunningOrderSystemStatus } from './RunningOrderSystemStatus'
+import { RunningOrderOverview } from './RunningOrderView/RunningOrderOverview'
+import { RunningOrderSystemStatus } from './RunningOrderView/RunningOrderSystemStatus'
 
 import { getCurrentTime } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'

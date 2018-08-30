@@ -1,13 +1,13 @@
 import * as React from 'react'
-import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as ClassNames from 'classnames'
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-import { getCurrentTime } from '../../lib/lib'
-import { SegmentLineUi } from './SegmentTimeline/SegmentTimelineContainer'
-import { Segment } from '../../lib/collections/Segments'
+import { RunningOrder, RunningOrders } from '../../../lib/collections/RunningOrders'
+import { getCurrentTime } from '../../../lib/lib'
+import { SegmentLineUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { Segment } from '../../../lib/collections/Segments'
 import { withTiming, WithTiming } from './RunningOrderTiming'
-import { ErrorBoundary } from '../lib/ErrorBoundary'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { ErrorBoundary } from '../../lib/ErrorBoundary'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 
 interface SegmentUi extends Segment {
 	items?: Array<SegmentLineUi>
@@ -59,9 +59,6 @@ const SegmentLineOverview: React.SFC<ISegmentLinePropsHeader> = (props: ISegment
 						}}>
 					</div>
 				}
-				<div className='running-order__overview__segment__segment-line__label'>
-					{props.segmentLine.slug}
-				</div>
 			</div>
 			{props.isLive && ((((getCurrentTime() - (props.segmentLine.startedPlayback || 0)) + ((props.segmentStartsAt && props.segmentStartsAt[props.segmentLine._id]) || 0)) / props.totalDuration * 100) > 0) &&
 				<div className='running-order__overview__segment__segment-line__live-shade'

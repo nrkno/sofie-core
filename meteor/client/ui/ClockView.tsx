@@ -8,7 +8,7 @@ import * as _ from 'underscore'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
 
-import { RunningOrderTimingProvider, withTiming, WithTiming } from './RunningOrderTiming'
+import { RunningOrderTimingProvider, withTiming, WithTiming } from './RunningOrderView/RunningOrderTiming'
 import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines'
 import { SegmentLineUi } from './SegmentTimeline/SegmentTimelineContainer'
 
@@ -47,7 +47,7 @@ const Timediff = class extends React.Component<{ time: number}> {
 		const fontWeight = (no) => no === '00' || no === '+00'
 		return (
 			<span className={ time > 0 ? 'clocks-segment-countdown-red' : '' }>
-				{time > 0 ? <span className="clocks-counter-light">+</span> : null}
+				{time > 0 ? <span className='clocks-counter-light'>+</span> : null}
 				<span className={fontWeight(timeStringSegments[0]) ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[0]}</span>:
 				<span className={timeStringSegments[1] ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[1]}</span>
 				{timeStringSegments.length > 2 ? ':' : null}
