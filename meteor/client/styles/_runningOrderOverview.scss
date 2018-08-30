@@ -11,6 +11,7 @@
 	padding: 0.9em 0;
     background: $segment-timeline-background-color;
 	background-clip: content-box;
+	overflow: hidden;
 
 	.running-order__overview__segment {
 		display: inline;
@@ -33,7 +34,7 @@
 		vertical-align: top;
 		height: 40px;
 		background: $segment-title-background-color;
-		outline: 1px solid rgba(0,0,0,0.3);
+		outline: 1px solid rgba(0,0,0,0.1);
 		// overflow: hidden;
 		word-wrap: none;
 		white-space: nowrap;
@@ -120,6 +121,18 @@
 				z-index: 5;
 				background: rgba(0,0,0,0.3);
 				pointer-events: none;
+			}
+
+			&.next {
+				.running-order__overview__segment__segment-line__label {
+					background: #008500;
+				}
+			}
+
+			&.live {
+				.running-order__overview__segment__segment-line__label {
+					background: #850000;
+				}
 			}
 		}
 	}
