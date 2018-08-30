@@ -792,11 +792,7 @@ export namespace ServerPlayoutAPI {
 		if (!queue && runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Running Order Baseline Ad Lib Items can be only placed in a current segment line!`)
 
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine, queue)
-		let a = SegmentLineItems.insert(newSegmentLineItem)
-		logger.info('newSegmentLineItem', newSegmentLineItem)
-		logger.info('a', a)
-		logger.info('b', SegmentLineItems.findOne(a))
-
+		SegmentLineItems.insert(newSegmentLineItem)
 		// logger.debug('adLibItemStart', newSegmentLineItem)
 
 		if (queue) {
@@ -1523,7 +1519,7 @@ function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem, segmentLine: 
 			},
 			segmentLineId: segmentLine._id,
 			adLibSourceId: adLibItem._id,
-			dynamicallyInserted: true,
+			dynamicallyInserted: !queue,
 			expectedDuration: adLibItem.expectedDuration || 0, // set duration to infinite if not set by AdLibItem
 			timings: {
 				take: [getCurrentTime()]

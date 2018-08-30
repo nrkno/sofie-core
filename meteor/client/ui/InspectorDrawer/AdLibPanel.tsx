@@ -24,7 +24,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RunningOrderViewKbdShortcuts } from '../RunningOrderView';
+import { RunningOrderViewKbdShortcuts } from '../RunningOrderView'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<SegmentUi>

@@ -545,7 +545,7 @@ export namespace ServerPeripheralDeviceAPI {
 			// ok, the segmentline to replace wasn't in the inserted segment lines
 			// remove it then:
 			affectedSegmentLineIds.push(segmentLineToReplace._id)
-			removeSegmentLine(ro._id, segmentLineToReplace)
+			removeSegmentLine(ro._id, segmentLineToReplace, firstInsertedSegmentLine)
 		}
 
 		updateAffectedSegmentLines(ro, affectedSegmentLineIds)
@@ -1000,7 +1000,7 @@ export function upsertSegmentLine (story: IMOSStory, runningOrderId: string, ran
 	afterInsertUpdateSegmentLine(story, runningOrderId)
 	return sl
 }
-export function removeSegmentLine (roId: string, segmentLineOrId: DBSegmentLine | string) {
+export function removeSegmentLine (roId: string, segmentLineOrId: DBSegmentLine | string, replacedBySegmentLine?: DBSegmentLine) {
 	let segmentLineToRemove: DBSegmentLine | undefined = (
 		_.isString(segmentLineOrId) ?
 			SegmentLines.findOne(segmentLineOrId) :
@@ -1010,6 +1010,24 @@ export function removeSegmentLine (roId: string, segmentLineOrId: DBSegmentLine 
 		SegmentLines.remove(segmentLineToRemove._id)
 		afterRemoveSegmentLine(segmentLineToRemove)
 		updateTimelineFromMosData(roId)
+
+		if (replacedBySegmentLine) {
+			SegmentLines.update({
+				runningOrderId: segmentLineToRemove.runningOrderId,
+				afterSegmentLine: segmentLineToRemove._id
+			}, {
+				$set: {
+					afterSegmentLine: replacedBySegmentLine._id,
+				}
+			}, {
+				multi: true
+			})
+		} else {
+			SegmentLines.remove({
+				runningOrderId: segmentLineToRemove.runningOrderId,
+				afterSegmentLine: segmentLineToRemove._id
+			})
+		}
 	}
 }
 export function afterInsertUpdateSegmentLine (story: IMOSStory, runningOrderId: string) {
