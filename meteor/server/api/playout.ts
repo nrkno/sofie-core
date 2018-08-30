@@ -2048,13 +2048,15 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 				allowTransition = !previousSegmentLine.disableOutTransition
 
 				if (previousSegmentLine.startedPlayback) {
-					const transitionObjs = previousSegmentLine.getSegmentLinesItems().filter(i => i.isTransition)
-					const transitionDuration = (transitionObjs && transitionObjs.length > 0) ? transitionObjs[0].duration || 0 : 0
+					let transitionDuration = currentSegmentLine.transitionDuration || 0
+					if (!currentSegmentLine.transitionDuration && allowTransition) {
+						const transitionObjs = previousSegmentLine.getSegmentLinesItems().filter(i => i.isTransition)
+						transitionDuration = (transitionObjs && transitionObjs.length > 0) ? transitionObjs[0].duration || 0 : 0
+					}
 
 					let endTrigger = allowTransition && currentSegmentLine.transitionDelay
-						? currentSegmentLine.transitionDelay + ` + ${transitionDuration}`
-						: `#${PlayoutTimelinePrefixes.SEGMENT_LINE_GROUP_PREFIX + currentSegmentLine._id}.start`
-					endTrigger += ` + ${currentSegmentLine.overlapDuration || 0}`
+						? currentSegmentLine.transitionDelay + ` + ${Math.max(transitionDuration, currentSegmentLine.overlapDuration || 0)}`
+						: `#${PlayoutTimelinePrefixes.SEGMENT_LINE_GROUP_PREFIX + currentSegmentLine._id}.start + ${currentSegmentLine.overlapDuration || 0}`
 
 					previousSegmentLineGroup = createSegmentLineGroup(previousSegmentLine, `${endTrigger} - #.start`)
 					previousSegmentLineGroup.priority = -1

@@ -167,6 +167,7 @@ declare interface DBSegmentLine {
 	autoNextOverlap?: number
 	overlapDuration?: number
 	transitionDelay?: string
+	transitionDuration?: number
 	/** Should we block a transition at the out of this SegmentLine */
 	disableOutTransition?: boolean
 
