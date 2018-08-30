@@ -82,10 +82,10 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 			const item = this.props.segmentLineItem as SegmentLineItemUi
 			const metadata = item.metadata as MediaObject
 			if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
-				return this.props.mediaPreviewUrl + 'media/preview/' + encodeURIComponent(metadata.objId)
+				return this.props.mediaPreviewUrl + 'media/preview/' + encodeURIComponent(metadata.mediaId)
 			}
 		}
-		return undefined // TODO: should be undefined, but is a placeholder for time being
+		return undefined
 	}
 
 	getScenes = (): Array<number> | undefined => {
@@ -94,7 +94,12 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 			const item = this.props.segmentLineItem as SegmentLineItemUi
 			const metadata = item.metadata as MediaObject
 			if (metadata && metadata.mediainfo && metadata.mediainfo.scenes) {
-				return metadata.mediainfo.scenes.map((i) => i * 1000) // convert into milliseconds
+				return _.compact(metadata.mediainfo.scenes.map((i) => {
+					if (i < itemDuration) {
+						return i * 1000
+					}
+					return undefined
+				})) // convert into milliseconds
 			}
 		}
 	}
