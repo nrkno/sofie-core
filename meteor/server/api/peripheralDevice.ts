@@ -1234,7 +1234,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 				expectedDuration:		tr.result.segmentLine.expectedDuration || segmentLine.expectedDuration,
 				autoNext: 				tr.result.segmentLine.autoNext || false,
 				autoNextOverlap: 		tr.result.segmentLine.autoNextOverlap || 0,
-				overlapUntil: 			tr.result.segmentLine.overlapUntil || '',
+				overlapDuration: 		tr.result.segmentLine.overlapDuration || 0,
 				transitionDelay: 		tr.result.segmentLine.transitionDelay || '',
 				disableOutTransition: 	tr.result.segmentLine.disableOutTransition || false,
 				updateStoryStatus:		tr.result.segmentLine.updateStoryStatus || false,
