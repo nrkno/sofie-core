@@ -333,7 +333,7 @@ Meteor.methods({
 				 	_id: 'studio0_cam_bakskjerm',
 				 	_rank: 17000,
 				 	name: 'Bakskjerm',
-				 	type: RundownAPI.SourceLayerType.CAMERA,
+				 	type: RundownAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
 					clearKeyboardHotkey: 'p'
 				},
