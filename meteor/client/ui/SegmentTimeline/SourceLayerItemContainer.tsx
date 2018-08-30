@@ -97,7 +97,7 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 				if (props.segmentLineItem.content && props.segmentLineItem.content.fileName) {
 					const content = props.segmentLineItem.content as VTContent
 					const mediaObject = MediaObjects.findOne({
-						objId: content.fileName.toUpperCase()
+						mediaId: content.fileName.toUpperCase()
 					})
 					// If media object not found, then...
 					if (!mediaObject) {
@@ -118,7 +118,7 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 				if (props.segmentLineItem.content && props.segmentLineItem.content.fileName) {
 					const content = props.segmentLineItem.content as LiveSpeakContent
 					const mediaObject = MediaObjects.findOne({
-						objId: content.fileName.toUpperCase()
+						mediaId: content.fileName.toUpperCase()
 					})
 					// If media object not found, then...
 					if (!mediaObject) {
