@@ -386,7 +386,7 @@ Meteor.methods({
 				},
 				{
 					_id: 'studio0_live_transition0',
-					_rank: 500,
+					_rank: 0,
 					name: 'Transition',
 					type: RundownAPI.SourceLayerType.UNKNOWN,
 					onPGMClean: true,
