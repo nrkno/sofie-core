@@ -1265,7 +1265,7 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 			}
 		}, {
 			sort: {
-				lastSeen: -1
+				lastConnected: -1
 			}
 		}).fetch()
 	}

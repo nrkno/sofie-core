@@ -348,7 +348,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
 	return {
-		devices: PeripheralDevices.find({}, { sort: { lastSeen: -1 } }).fetch()
+		devices: PeripheralDevices.find({}, { sort: { lastConnected: -1 } }).fetch()
 	}
 })(class SystemStatus extends MeteorReactComponent<Translated<ISystemStatusProps & ISystemStatusTrackedProps>, ISystemStatusState> {
 	componentWillMount () {

@@ -292,7 +292,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	}
 
 	scrollToMe () {
-		if (scrollToSegment(this.segmentBlock)) {
+		if (scrollToSegment(this.segmentBlock, true)) {
 			this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, {})
 		}
 	}

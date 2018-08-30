@@ -17,7 +17,7 @@ export const DefaultListItemRenderer: React.SFC<IPropsHeader> = (props: IPropsHe
 			{props.item.name}
 		</td>
 		<td className='adlib-panel__list-view__list__table__cell--data'>
-			Byen na
+			&nbsp;
 		</td>
 		<td className='adlib-panel__list-view__list__table__cell--resolution'>
 			&nbsp;
