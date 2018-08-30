@@ -1089,9 +1089,65 @@ function findDurationInfoMOSExternalMetaData (story: IMOSROFullStory): any | und
 	return undefined
 }
 
+export function updateSegmentLines (runningOrderId: string) {
+	let segmentLines0 = SegmentLines.find({runningOrderId: runningOrderId}, {sort: {_rank: 1}}).fetch()
+
+	let segmentLines: Array<SegmentLine> = []
+	let segmentLinesToInsert: {[id: string]: Array<SegmentLine>} = {}
+
+	_.each(segmentLines0, (sl) => {
+		if (sl.afterSegmentLine) {
+			if (!segmentLinesToInsert[sl.afterSegmentLine]) segmentLinesToInsert[sl.afterSegmentLine] = []
+			segmentLinesToInsert[sl.afterSegmentLine].push(sl)
+		} else {
+			segmentLines.push(sl)
+		}
+	})
+
+	let hasAddedAnything = true
+	while (hasAddedAnything) {
+		hasAddedAnything = false
+
+		_.each(segmentLinesToInsert, (sls, slId) => {
+
+			let segmentLineBefore: SegmentLine | null = null
+			let segmentLineAfter: SegmentLine | null = null
+			let insertI = -1
+			_.each(segmentLines, (sl, i) => {
+				if (sl._id === slId) {
+					segmentLineBefore = sl
+					insertI = i + 1
+				} else if (segmentLineBefore && !segmentLineAfter) {
+					segmentLineAfter = sl
+				}
+			})
+
+			if (segmentLineBefore) {
+
+				if (insertI !== -1) {
+					_.each(sls, (sl, i) => {
+						let newRank = getRank(segmentLineBefore, segmentLineAfter, i, sls.length)
+
+						if (sl._rank !== newRank) {
+							sl._rank = newRank
+							SegmentLines.update(sl._id, {$set: {_rank: sl._rank}})
+						}
+						segmentLines.splice(insertI, 0, sl)
+						insertI++
+						hasAddedAnything = true
+					})
+				}
+				delete segmentLinesToInsert[slId]
+			}
+		})
+	}
+
+	return segmentLines
+}
 function updateSegments (runningOrderId: string) {
 	// using SegmentLines, determine which segments are to be created
-	let segmentLines = SegmentLines.find({runningOrderId: runningOrderId}, {sort: {_rank: 1}}).fetch()
+	// let segmentLines = SegmentLines.find({runningOrderId: runningOrderId}, {sort: {_rank: 1}}).fetch()
+	let segmentLines = updateSegmentLines(runningOrderId)
 
 	let prevSlugParts: string[] = []
 	let segment: DBSegment

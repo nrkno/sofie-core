@@ -8,6 +8,7 @@ export enum PlayoutTimelinePrefixes {
 export namespace PlayoutAPI {
 	export enum methods {
 		'reloadData' = 'playout.reloadData',
+		'roReset' = 'playout.roReset',
 		'roActivate' = 'playout.roActivate',
 		/**
 		 * Inactivates the RunningOrder
@@ -19,7 +20,7 @@ export namespace PlayoutAPI {
 		 */
 		'roTake' = 'playout.roTake',
 		'roSetNext' = 'playout.roSetNext',
-		'roMoveNext' = 'playout.toMoveNext',
+		'roMoveNext' = 'playout.roMoveNext',
 		'roActivateHold' = 'playout.roActivateHold',
 		'roStoriesMoved' = 'playout.roStoriesMoved',
 		'segmentLinePlaybackStartedCallback' = 'playout.segmentLinePlaybackStartedCallback',
