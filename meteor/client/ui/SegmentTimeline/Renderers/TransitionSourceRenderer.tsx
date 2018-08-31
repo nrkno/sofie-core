@@ -5,7 +5,7 @@ import * as _ from 'underscore'
 import { TransitionContent } from '../../../../lib/collections/SegmentLineItems'
 
 import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
-import { FloatingInspector } from '../../FloatingInspector';
+import { FloatingInspector } from '../../FloatingInspector'
 
 type KeyValue = { key: string, value: string }
 

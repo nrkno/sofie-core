@@ -1,4 +1,6 @@
 import * as React from 'react'
+import * as _ from 'underscore'
+
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as ClassNames from 'classnames'
 import { RunningOrder, RunningOrders } from '../../../lib/collections/RunningOrders'
@@ -8,7 +10,7 @@ import { Segment } from '../../../lib/collections/Segments'
 import { withTiming, WithTiming } from './RunningOrderTiming'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownUtils } from '../../lib/rundown';
+import { RundownUtils } from '../../lib/rundown'
 
 interface SegmentUi extends Segment {
 	items?: Array<SegmentLineUi>
@@ -62,7 +64,7 @@ const SegmentLineOverview: React.SFC<ISegmentLinePropsHeader> = (props: ISegment
 						}}>
 					</div>
 				}
-				{ props.label && 
+				{ props.label &&
 					<div className='running-order__overview__segment__segment-line__label' style={{
 						'maxWidth': props.segmentDuration ? (props.segmentDuration / ((Math.max(props.segmentLiveDurations && props.segmentLiveDurations[props.segmentLine._id] || 0, props.segmentLine.duration || props.segmentLine.expectedDuration || 0))) * 100) + '%' : 'none'
 					}}>
