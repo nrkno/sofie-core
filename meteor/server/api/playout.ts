@@ -1260,6 +1260,7 @@ function resetSegment (segmentId: string, currentSegmentLineId: string | null) {
 		}, {
 			$unset: {
 				startedPlayback: 1,
+				durationOverride: 1
 			}
 		}, {
 			multi: true
