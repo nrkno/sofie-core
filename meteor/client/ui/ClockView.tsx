@@ -42,12 +42,14 @@ interface RunningOrderOverviewTrackedProps {
 const Timediff = class extends React.Component<{ time: number}> {
 	render () {
 		const time = -this.props.time
-		const timeString = RundownUtils.formatDiffToTimecode(time, false, false, false, true, true, '') // @todo: something happened here with negative time
+		const isNegative = (Math.floor(time / 1000) > 0)
+		const timeString = RundownUtils.formatDiffToTimecode(time, false, false, true, false, true, '', false, true) // @todo: something happened here with negative time
+		// RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)
 		const timeStringSegments = timeString.split(':')
 		const fontWeight = (no) => no === '00' || no === '+00'
 		return (
-			<span className={ time > 0 ? 'clocks-segment-countdown-red' : '' }>
-				{time > 0 ? <span className='clocks-counter-light'>+</span> : null}
+			<span className={ isNegative ? 'clocks-segment-countdown-red' : '' }>
+				{isNegative ? <span className='clocks-counter-light'>+</span> : null}
 				<span className={fontWeight(timeStringSegments[0]) ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[0]}</span>:
 				<span className={timeStringSegments[1] ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[1]}</span>
 				{timeStringSegments.length > 2 ? ':' : null}

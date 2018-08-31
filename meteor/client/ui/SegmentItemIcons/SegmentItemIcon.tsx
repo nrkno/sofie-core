@@ -74,7 +74,7 @@ export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 					)
 				case RundownAPI.SourceLayerType.REMOTE :
 					return (
-						<RemoteInputIcon inputIndex={ parseInt((this.props.segmentLineItem || {}).name.split(' ').slice(-1)[0], 10) as number } abbreviation={this.props.sourceLayer.abbreviation} />
+						<RemoteInputIcon inputIndex={ parseInt(((this.props.segmentLineItem || {}).name.toString()).split(' ').slice(-1)[0], 10) as number } abbreviation={this.props.sourceLayer.abbreviation} />
 					)
 				case RundownAPI.SourceLayerType.SPLITS :
 					return (
@@ -86,7 +86,7 @@ export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 					)
 				case RundownAPI.SourceLayerType.CAMERA :
 					return (
-						<CamInputIcon inputIndex={ parseInt((this.props.segmentLineItem || {}).name.split(' ').slice(-1)[0], 10) as number } abbreviation={this.props.sourceLayer.abbreviation} />
+						<CamInputIcon inputIndex={ parseInt(((this.props.segmentLineItem || {}).name.toString()).split(' ').slice(-1)[0], 10) as number } abbreviation={this.props.sourceLayer.abbreviation} />
 					)
 			}
 		}

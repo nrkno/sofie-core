@@ -30,9 +30,9 @@ export namespace RundownUtils {
 		return formatDiffToTimecode(Math.max(milliseconds, 0), false)
 	}
 
-	export function formatDiffToTimecode (milliseconds: number, showPlus?: boolean, showHours?: boolean, enDashAsMinus?: boolean, useSmartFloor?: boolean, useSmartHours?: boolean, minusPrefix?: string, floorTime?: boolean): string {
+	export function formatDiffToTimecode (milliseconds: number, showPlus?: boolean, showHours?: boolean, enDashAsMinus?: boolean, useSmartFloor?: boolean, useSmartHours?: boolean, minusPrefix?: string, floorTime?: boolean, hardFloor?: boolean): string {
 
-		const isNegative = milliseconds < 0
+		let isNegative = milliseconds < 0
 		if (isNegative) {
 			milliseconds = milliseconds * -1
 		}
@@ -45,24 +45,52 @@ export namespace RundownUtils {
 			minutes = minutes % 60
 		}
 		let secondsRest
-		if (floorTime) {
-			secondsRest = useSmartFloor ?
-				(milliseconds < 100 ? 0 : Math.floor(Math.floor(milliseconds % (60 * 1000)) / 1000))
-				: Math.floor(Math.floor(milliseconds % (60 * 1000)) / 1000)
-		} else {
-			secondsRest = useSmartFloor ?
-				(milliseconds < 100 ? 0 : Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000))
-				: Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000)
+		if (!hardFloor) {
+			if (floorTime) {
+				secondsRest = useSmartFloor ?
+					(milliseconds < 100 ? 0 : Math.floor(Math.floor(milliseconds % (60 * 1000)) / 1000))
+					: Math.floor(Math.floor(milliseconds % (60 * 1000)) / 1000)
+			} else {
+				secondsRest = useSmartFloor ?
+					(milliseconds < 100 ? 0 : Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000))
+					: Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000)
 
-			// cascade the overflowing second
-			let overflow = secondsRest % 60
-			if (overflow !== secondsRest) {
-				secondsRest = overflow
-				overflow = ++minutes % 60
-				if (overflow !== minutes) {
-					minutes = overflow
-					hours++
+				// cascade the overflowing second
+				let overflow = secondsRest % 60
+				if (overflow !== secondsRest) {
+					secondsRest = overflow
+					overflow = ++minutes % 60
+					if (overflow !== minutes) {
+						minutes = overflow
+						hours++
+					}
 				}
+			}
+		} else {
+			if (!isNegative) {
+				secondsRest = useSmartFloor ?
+					(milliseconds < 100 ? 0 : Math.floor(Math.floor(milliseconds % (60 * 1000)) / 1000))
+					: Math.floor(Math.floor(milliseconds % (60 * 1000)) / 1000)
+			} else {
+				secondsRest = useSmartFloor ?
+					(milliseconds < 100 ? 0 : Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000))
+					: Math.ceil(Math.floor(milliseconds % (60 * 1000)) / 1000)
+
+				// cascade the overflowing second
+				let overflow = secondsRest % 60
+				if (overflow !== secondsRest) {
+					secondsRest = overflow
+					overflow = ++minutes % 60
+					if (overflow !== minutes) {
+						minutes = overflow
+						hours++
+					}
+				}
+			}
+
+			// a hack for very close to 0 to be negative
+			if (hours === 0 && minutes === 0 && secondsRest === 0) {
+				isNegative = true
 			}
 		}
 
