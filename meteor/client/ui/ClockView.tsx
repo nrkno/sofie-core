@@ -298,7 +298,6 @@ class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 				</RunningOrderTimingProvider>
 			)
 		} else {
-			//return null
 			return (
 				<div className='running-order-view running-order-view--unpublished'>
 					<div className='running-order-view__label'>

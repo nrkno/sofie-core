@@ -4,7 +4,7 @@ import * as React from 'react'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
 import { StudioInstallations, ISourceLayer } from '../../../lib/collections/StudioInstallations'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { normalizeArray } from '../../lib/utils'
+import { normalizeArray } from '../../../lib/lib'
 import * as _ from 'underscore'
 
 import CamInputIcon from './Renderers/CamInput'
