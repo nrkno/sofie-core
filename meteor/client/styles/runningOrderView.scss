@@ -1427,6 +1427,10 @@ body.vertical-overflow-only {
 		right: 7px;
 	}
 
+	&.segment-timeline__mini-inspector--pop-down {
+		transform: translate(-50%, 2em);
+	}
+
 	&.segment-timeline__mini-inspector--video {
 		padding: 0;
 		border: 1px solid #1f1f1f;
