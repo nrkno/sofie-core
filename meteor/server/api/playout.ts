@@ -112,8 +112,11 @@ export namespace ServerPlayoutAPI {
 		}).fetch()
 		// PeripheralDevices.find()
 
-		const ssrcBg = studioInstallation.config.find((o) => o._id === 'atemSSrcBackground')
-		if (ssrcBg) logger.info(ssrcBg.value + ' should be loaded to atems')
+		const ssrcBg = [ studioInstallation.config.find((o) => o._id === 'atemSSrcBackground') ]
+		const ssrcBg2 = studioInstallation.config.find((o) => o._id === 'atemSSrcBackground2')
+		if (ssrcBg2) ssrcBg.push(ssrcBg2)
+		if (ssrcBg.length > 1) logger.info(ssrcBg[0]!.value + ' and ' + ssrcBg[1]!.value + ' should be loaded to atems')
+		if (ssrcBg.length > 0) logger.info(ssrcBg[0]!.value + ' should be loaded to atems')
 
 		_.each(playoutDevices, (device: PeripheralDevice) => {
 			let okToDestoryStuff = wasInactive
@@ -124,6 +127,16 @@ export namespace ServerPlayoutAPI {
 					logger.info('devicesMakeReady OK')
 				}
 			}, 'devicesMakeReady', okToDestoryStuff)
+
+			if (ssrcBg.length > 0) {
+				PeripheralDeviceAPI.executeFunction(device._id, (err) => {
+					if (err) {
+						logger.error(err)
+					} else {
+						logger.info('Added Super Source BG to Atem')
+					}
+				}, 'uploadFileToAtem', ssrcBg)
+			}
 		})
 
 		let segmentLines = runningOrder.getSegmentLines()
