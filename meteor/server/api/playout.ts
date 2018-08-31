@@ -2149,7 +2149,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 
 				nextSegmentLineGroup.trigger = literal<ITimelineTrigger>({
 					type: TriggerType.TIME_RELATIVE,
-					value: `#${currentSegmentLineGroup._id}.end - ${overlapDuration}`
+					value: `#${currentSegmentLineGroup._id}.end - ${Math.max(overlapDuration, nextSegmentLine.overlapDuration || 0)}`
 				})
 			}
 
