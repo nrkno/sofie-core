@@ -660,6 +660,10 @@ interface IState {
 	usedHotkeys: Array<HotkeyDefinition>
 }
 
+export enum RunningOrderViewEvents {
+	'rewindsegments'	=	'sofie:roRewindSegments'
+}
+
 interface ITrackedProps {
 	runningOrderId: string
 	runningOrder?: RunningOrder
@@ -693,9 +697,10 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	private bindKeys: Array<{
 		key: string,
-		up?: (e: KeyboardEvent) => any
-		down?: (e: KeyboardEvent) => any
-		label: string
+		up?: (e: KeyboardEvent) => any,
+		down?: (e: KeyboardEvent) => any,
+		label?: string,
+		dontPreventDefault?: boolean
 	}> = []
 	private _segments: _.Dictionary<React.ComponentClass<{}>> = {}
 
@@ -709,6 +714,11 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_GO_TO_LIVE,
 				up: this.onGoToLiveSegment,
 				label: t('Go to On Air line')
+			},
+			{
+				key: 'home',
+				down: this.onHomeKey,
+				dontPreventDefault: true
 			}
 		]
 
@@ -720,7 +730,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			followLiveSegments: true,
 			manualSetAsNext: false,
 			subsReady: false,
-			usedHotkeys: _.clone(this.bindKeys)
+			usedHotkeys: _.clone(this.bindKeys).filter(i => !!i.label) as HotkeyDefinition[]
 		}
 	}
 
@@ -775,7 +785,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {
 				mousetrap.bind(k.key, (e: KeyboardEvent) => {
-					preventDefault(e)
+					if (!k.dontPreventDefault) preventDefault(e)
 					if (k.up) k.up(e)
 				}, 'keyup')
 				mousetrap.bind(k.key, (e: KeyboardEvent) => {
@@ -784,7 +794,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			}
 			if (k.down) {
 				mousetrap.bind(k.key, (e: KeyboardEvent) => {
-					preventDefault(e)
+					if (!k.dontPreventDefault) preventDefault(e)
 					if (k.down) k.down(e)
 				}, 'keydown')
 			}
@@ -822,6 +832,11 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				mousetrap.unbind(k.key, 'keydown')
 			}
 		})
+	}
+
+	onHomeKey = () => {
+		const event = new Event(RunningOrderViewEvents.rewindsegments)
+		window.dispatchEvent(event)
 	}
 
 	onTimeScaleChange = (timeScaleVal) => {
