@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
+import * as ClassNames from 'classnames'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import * as $ from 'jquery'
@@ -17,7 +18,6 @@ import * as TimecodeString from 'smpte-timecode'
 import { Settings } from '../../lib/Settings'
 import { getCurrentTime, objectPathGet } from '../../lib/lib'
 import { SegmentItemIconContainer } from './SegmentItemIcons/SegmentItemIcon'
-import CamInputICon from './SegmentItemIcons/Renderers/CamInput'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 interface SegmentUi extends Segment {
@@ -158,6 +158,10 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 					}
 				}
 
+				const overUnderClock = runningOrder.expectedDuration ?
+					(this.props.timingDurations.asPlayedRundownDuration || 0) - runningOrder.expectedDuration
+					: (this.props.timingDurations.asPlayedRundownDuration || 0) - (this.props.timingDurations.totalRundownDuration || 0)
+
 				return (
 					<div className='clocks-full-screen'>
 						<div className='clocks-half clocks-top'>
@@ -197,11 +201,10 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 								<div className='clocks-rundown-title'>
 									{runningOrder ? runningOrder.name : 'UNKNOWN'}
 								</div>
-								<div className='clocks-rundown-total'>
-								{ runningOrder.expectedDuration ? 
-									RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - runningOrder.expectedDuration, true, false, true, true, true, undefined, true) :
-									RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - (this.props.timingDurations.totalRundownDuration || 0), true, false, true, true, true, undefined, true)
-								}
+								<div className={ClassNames('clocks-rundown-total', {
+									'over': (Math.floor(overUnderClock / 1000) >= 0)
+								})}>
+									{ RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true) }
 								</div>
 							</div>
 						</div>
