@@ -85,8 +85,8 @@ const Timecode = class extends React.Component<{ time: number }> {
 	}
 }
 
-const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOverviewState>()(
-	withTracker<WithTiming<RunningOrderOverviewProps>, RunningOrderOverviewState, RunningOrderOverviewTrackedProps>((props: RunningOrderOverviewProps) => {
+const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, RunningOrderOverviewState>()(
+	withTracker<WithTiming<RunningOrderOverviewProps & InjectedTranslateProps>, RunningOrderOverviewState, RunningOrderOverviewTrackedProps>((props: RunningOrderOverviewProps) => {
 
 		let ro: RunningOrder | undefined
 		if (props.runningOrderId) ro = RunningOrders.findOne(props.runningOrderId)
@@ -103,7 +103,7 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 			runningOrder: ro
 		}
 	})(
-	class extends MeteorReactComponent<WithTiming<RunningOrderOverviewProps & RunningOrderOverviewTrackedProps>, RunningOrderOverviewState> {
+	class extends MeteorReactComponent<WithTiming<RunningOrderOverviewProps & RunningOrderOverviewTrackedProps & InjectedTranslateProps>, RunningOrderOverviewState> {
 		componentWillMount () {
 			this.subscribe('runningOrders', {
 				_id: this.props.runningOrderId
@@ -117,7 +117,7 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 		}
 
 		render () {
-			const { runningOrder, segments } = this.props
+			const { runningOrder, segments, t } = this.props
 
 			if (runningOrder && this.props.runningOrderId && this.props.segments) {
 				let currentSegmentLine
@@ -192,7 +192,7 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 							</div>
 							<div className='clocks-rundown-bottom-bar'>
 								<div className='clocks-rundown-bottom-bar-label'>
-									{('Rundown')}:
+									{t('Rundown')}:
 								</div>
 								<div className='clocks-rundown-title'>
 									{runningOrder ? runningOrder.name : 'UNKNOWN'}
@@ -210,7 +210,7 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 			}
 			return null
 		}
-	}))
+	})))
 
 interface IPropsHeader extends InjectedTranslateProps {
 	key: string
