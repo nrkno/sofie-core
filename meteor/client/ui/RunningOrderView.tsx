@@ -335,17 +335,17 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_DOWN,
 					up: this.keyMoveNextDown,
-					label: t('Move next forward')
+					label: t('Move next segment forward')
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_UP,
 					up: this.keyMoveNextUp,
-					label: t('Move next forward')
+					label: t('Move next segment back')
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_BACK,
 					up: this.keyMoveNextBack,
-					label: t('Move next forward')
+					label: t('Move next back')
 				}
 			]
 		} else {
