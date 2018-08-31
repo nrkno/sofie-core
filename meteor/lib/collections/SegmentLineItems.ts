@@ -168,6 +168,10 @@ export interface NoraPayload {
 		layer: string
 		name: string
 	}
+	metadata?: {
+		templateName: string | undefined
+		templateVariant: string | undefined
+	}
 	changed?: Time
 }
 

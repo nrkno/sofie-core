@@ -77,6 +77,20 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 			changed = noraContent.payload.changed
 		}
 
+		if (noraContent && noraContent.payload && noraContent.payload.metadata && noraContent.payload.metadata.templateName) {
+			properties.push({
+				key: t('Template name'),
+				value: noraContent.payload.metadata.templateName
+			})
+		}
+
+		if (noraContent && noraContent.payload && noraContent.payload.metadata && noraContent.payload.metadata.templateVariant) {
+			properties.push({
+				key: t('Template variant'),
+				value: noraContent.payload.metadata.templateVariant
+			})
+		}
+
 		return <React.Fragment>
 					<span className='segment-timeline__layer-item__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 						<span className='segment-timeline__layer-item__label'>
