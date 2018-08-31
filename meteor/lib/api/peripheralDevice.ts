@@ -136,7 +136,7 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 				PeripheralDeviceCommands.remove(cmd._id)
 				if (subscription) subscription.stop()
 			} else if (getCurrentTime() - (cmd.time || 0) >= timeoutTime) { // timeout
-				logger.debug('timeout')
+				logger.debug('timeout in PeripheralDevice.ExecuteFunction "' + cmd.functionName + '" on device "' + cmd.deviceId + '" ')
 				cb('Timeout', null)
 				cursor.stop()
 				PeripheralDeviceCommands.remove(cmd._id)

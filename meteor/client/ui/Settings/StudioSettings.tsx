@@ -477,6 +477,8 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 				return t('Unknown layer')
 			case RundownAPI.SourceLayerType.AUDIO:
 				return t('Audio Mixing')
+			case RundownAPI.SourceLayerType.TRANSITION:
+				return t('Transition')
 			default:
 				return RundownAPI.SourceLayerType[type]
 		}
@@ -1265,7 +1267,7 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 			}
 		}, {
 			sort: {
-				lastSeen: -1
+				lastConnected: -1
 			}
 		}).fetch()
 	}

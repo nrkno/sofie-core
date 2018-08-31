@@ -6,14 +6,14 @@
 	width: 350px;
 	height: 1em;
 	left: 50%;
-	top: 52px;
+	top: 42px;
 	transform: translate(-50%, 0);
 	z-index: 2;
 
 	.running-order-system-status__indicators {
 		display: flex;
 		position: absolute;
-		top: 3px;
+		top: 5px;
 		left: 50%;
 		transform: translate(-50%, 0);
 		width: 100%;
@@ -112,9 +112,9 @@
 			.count {
 				display: inline-block;
 			}
-			.notes_tooltip {
+			.notes-tooltip {
 				position: absolute;
-				top: 10px;
+				top: 12px;
 				border-radius: 3px;
 				background: #3e4041;
 				width: 500px;
@@ -123,13 +123,35 @@
 				padding: 0 10px;
 				transform: translate(-50%, 0);
 				color: #FFF;
+				font-weight: 300;
 
 				padding: 10px;
 
-				td {
-					padding-left: 0.5em;
-					padding-right: 0.5em;
+				> table {
+					table-layout: fixed;
+					line-height: 1.5em;
+
+					> tbody > tr {
+						th {
+							font-weight: 500;
+							white-space: nowrap;
+							width: 85px;
+
+							.icon {
+								min-width: auto;
+								max-height: 1.2em;
+								vertical-align: top;
+								margin-right: 0.5em;
+							}
+						}
+		
+						td {
+							padding-left: 0.5em;
+							padding-right: 0.5em;
+						}
+					}	
 				}
+
 
 				&:hover {
 					display: block;
@@ -138,12 +160,12 @@
 			}
 			
 			&.display {
-				.notes_tooltip {
+				.notes-tooltip {
 					display: block;
 				}
 			}
 			&:hover {
-				> .notes_tooltip {
+				> .notes-tooltip {
 					display: block;
 				}
 			}

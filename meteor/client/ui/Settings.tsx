@@ -61,7 +61,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		studioInstallations: StudioInstallations.find({}).fetch(),
 		showStyles: ShowStyles.find({}).fetch(),
 		peripheralDevices: PeripheralDevices.find({}, {sort: {
-			lastSeen: -1
+			lastConnected: -1
 		}}).fetch(),
 		lineTemplates: RuntimeFunctions.find({}).fetch()
 	}

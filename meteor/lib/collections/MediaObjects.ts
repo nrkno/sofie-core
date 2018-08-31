@@ -38,6 +38,8 @@ export interface MediaObject extends MediaObject0 {
 	collectionId: string,
 	// the Id in the MediaObject in the source database
 	objId: string
+	// the CasparCG clip name
+	mediaId: string
 }
 
 export interface MediaStream {

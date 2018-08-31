@@ -1,13 +1,16 @@
 import * as React from 'react'
-import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import * as _ from 'underscore'
+
+import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as ClassNames from 'classnames'
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-import { getCurrentTime } from '../../lib/lib'
-import { SegmentLineUi } from './SegmentTimeline/SegmentTimelineContainer'
-import { Segment } from '../../lib/collections/Segments'
+import { RunningOrder, RunningOrders } from '../../../lib/collections/RunningOrders'
+import { getCurrentTime } from '../../../lib/lib'
+import { SegmentLineUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { Segment } from '../../../lib/collections/Segments'
 import { withTiming, WithTiming } from './RunningOrderTiming'
-import { ErrorBoundary } from '../lib/ErrorBoundary'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { ErrorBoundary } from '../../lib/ErrorBoundary'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { RundownUtils } from '../../lib/rundown'
 
 interface SegmentUi extends Segment {
 	items?: Array<SegmentLineUi>
@@ -28,6 +31,8 @@ interface ISegmentLinePropsHeader {
 	segmentStartsAt?: TimeMap
 	isLive: boolean
 	isNext: boolean
+	label: string | undefined
+	segmentDuration: number | undefined
 }
 
 interface TimeMap {
@@ -48,36 +53,39 @@ const SegmentLineOverview: React.SFC<ISegmentLinePropsHeader> = (props: ISegment
 				}}
 			>
 				{ props.isNext &&
-					<div className={'running-order__overview__segment__segment-line__next-line'}>
+					<div className='running-order__overview__segment__segment-line__next-line'>
 					</div>
 				}
 				{ props.isLive &&
-					<div className={'running-order__overview__segment__segment-line__live-line'}
+					<div className='running-order__overview__segment__segment-line__live-line'
 						style={{
 							'left': (((getCurrentTime() - (props.segmentLine.startedPlayback || 0)) /
 								(Math.max(props.segmentLiveDurations && props.segmentLiveDurations[props.segmentLine._id] || 0, props.segmentLine.duration || props.segmentLine.expectedDuration || 0))) * 100) + '%'
 						}}>
 					</div>
 				}
-				<div className='running-order__overview__segment__segment-line__label'>
-					{props.segmentLine.slug}
-				</div>
-			</div>
-			{props.isLive && ((((getCurrentTime() - (props.segmentLine.startedPlayback || 0)) + ((props.segmentStartsAt && props.segmentStartsAt[props.segmentLine._id]) || 0)) / props.totalDuration * 100) > 0) &&
-				<div className='running-order__overview__segment__segment-line__live-shade'
-					style={{
-						'width': (((getCurrentTime() - (props.segmentLine.startedPlayback || 0)) + ((props.segmentStartsAt && props.segmentStartsAt[props.segmentLine._id]) || 0)) / props.totalDuration * 100) + '%'
+				{ props.label &&
+					<div className='running-order__overview__segment__segment-line__label' style={{
+						'maxWidth': props.segmentDuration ? (props.segmentDuration / ((Math.max(props.segmentLiveDurations && props.segmentLiveDurations[props.segmentLine._id] || 0, props.segmentLine.duration || props.segmentLine.expectedDuration || 0))) * 100) + '%' : 'none'
 					}}>
-				</div>
-			}
+						{props.label}
+						{ props.segmentDuration && _.isNumber(props.segmentDuration) &&
+							<span className='running-order__overview__segment__segment-line__label__duration'>{RundownUtils.formatDiffToTimecode(props.segmentDuration, false, false, false, false, true)}</span>
+						}
+					</div>
+				}
+			</div>
 		</ErrorBoundary>
 	)
 }
 
 const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHeader) => {
 	return props.segment.items && (
-		<React.Fragment>
-			{ props.segment.items.map((item) => {
+		<div className={ClassNames('running-order__overview__segment', {
+			'next': props.segment.items.find((i) => i._id === props.runningOrder.nextSegmentLineId) ? true : false,
+			'live': props.segment.items.find((i) => i._id === props.runningOrder.currentSegmentLineId) ? true : false
+		})}>
+			{ props.segment.items.map((item, index) => {
 				return (
 					<SegmentLineOverview segmentLine={item}
 						key={item._id}
@@ -86,10 +94,12 @@ const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHea
 						segmentStartsAt={props.segmentStartsAt}
 						isLive={props.runningOrder.currentSegmentLineId === item._id}
 						isNext={props.runningOrder.nextSegmentLineId === item._id}
+						label={index === 0 ? props.segment.name : undefined}
+						segmentDuration={index === 0 && props.segmentLiveDurations ? props.segment.items!.map((i) => props.segmentLiveDurations![i._id]).reduce((memo, item) => (memo || 0) + item) : undefined}
 						 />
 				)
 			}) }
-		</React.Fragment>
+		</div>
 	) || null
 }
 
@@ -136,7 +146,8 @@ class extends MeteorReactComponent<WithTiming<RunningOrderOverviewProps & Runnin
 								segment={item}
 								key={item._id}
 								totalDuration={Math.max((this.props.timingDurations && this.props.timingDurations.asPlayedRundownDuration) || 1, this.props.runningOrder.expectedDuration || 1)}
-								segmentLiveDurations={(this.props.timingDurations && this.props.timingDurations.segmentLineDurations) || {}} runningOrder={this.props.runningOrder}
+								segmentLiveDurations={(this.props.timingDurations && this.props.timingDurations.segmentLineDurations) || {}}
+								runningOrder={this.props.runningOrder}
 								segmentStartsAt={(this.props.timingDurations && this.props.timingDurations.segmentLineStartsAt) || {}}
 								/>
 						}

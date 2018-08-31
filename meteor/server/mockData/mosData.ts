@@ -2400,7 +2400,7 @@ Meteor.methods({
 							],
 							"mosAbstract" : "nv-ungdom-israel-mgp-130518 PUBLISH_QUANTEL 00:00:42:09",
 							"ObjectSlug" : "nv-ungdom-israel-mgp-130518",
-							"Duration" : "250",
+							"Duration" : "2500",
 							"TimeBase": "25"
 						}
 					},
@@ -2694,7 +2694,8 @@ Meteor.methods({
 							"Rettighetseier" : "NRK",
 							"Sted" : "Kristiansand; Byglandsfjord",
 							"Tags" : "landbruks-og matminister; elg",
-							"ENPSItemType" : 3
+							"ENPSItemType" : 3,
+							"mosartTransition": "mix 50"
 						}
 					}
 				],
@@ -3286,7 +3287,7 @@ Meteor.methods({
 							"StoryLogPreview" : "Hei og velkommen til denne testsendingen",
 							"TextTime" : 3,
 							"mosartType" : "KAM",
-							"mosartVariant" : "3ÅPNING",
+							"mosartVariant" : "2ÅPNING",
 							"ReadTime" : 3,
 							"ENPSItemType" : 3
 						}
@@ -3453,7 +3454,8 @@ Meteor.methods({
 							"mosartType" : "KAM",
 							"mosartVariant" : 2,
 							"ReadTime" : 17,
-							"ENPSItemType" : 3
+							"ENPSItemType" : 3,
+							"mosartTransition": "mix 50"
 						}
 					}
 				],
@@ -3640,7 +3642,8 @@ Meteor.methods({
 							"mosartType" : "KAM",
 							"mosartVariant" : 2,
 							"ReadTime" : 4,
-							"ENPSItemType" : 3
+							"ENPSItemType" : 3,
+							"mosartTransition": "mix 50"
 						}
 					}
 				],
@@ -3793,7 +3796,8 @@ Meteor.methods({
 							"Rettighetseier" : "NRK",
 							"Sted" : "Bergen",
 							"Tags" : "test",
-							"ENPSItemType" : 3
+							"ENPSItemType" : 3,
+							"mosartTransition": "mix 50"
 						}
 					}
 				],
@@ -4037,7 +4041,8 @@ Meteor.methods({
 							"mosartType" : "KAM",
 							"mosartVariant" : 1,
 							"ReadTime" : 4,
-							"ENPSItemType" : 3
+							"ENPSItemType" : 3,
+							"mosartTransition": "mix 50"
 						}
 					}
 				],
@@ -4176,7 +4181,8 @@ Meteor.methods({
 							"Sted" : "Berhaug",
 							"Tags" : "test",
 							"Team" : "{Fotograf};Helle Rossow;+{Redigerer};Helle Rossow;",
-							"ENPSItemType" : 3
+							"ENPSItemType" : 3,
+							"mosartTransition": "mix 50"
 						}
 					}
 				],
@@ -4343,7 +4349,7 @@ Meteor.methods({
 							"Tags" : "avengers; marvel; tegneserier",
 							"Team" : "{reporter};Christian Ingebrethsen;",
 							"ENPSItemType" : 3,
-							"mosartTransition": "effect 1"
+							"mosartTransition": "mix 50"
 						}
 					}
 				],

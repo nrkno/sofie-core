@@ -26,7 +26,7 @@ import { RunningOrder, RunningOrders, DBRunningOrder } from '../../lib/collectio
 import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Segments, DBSegment } from '../../lib/collections/Segments'
-import { saveIntoDb, partialExceptId, getCurrentTime, literal } from '../../lib/lib'
+import { saveIntoDb, partialExceptId, getCurrentTime, literal, fetchBefore, getRank, fetchAfter } from '../../lib/lib'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
@@ -59,6 +59,7 @@ export namespace ServerPeripheralDeviceAPI {
 			PeripheralDevices.update(id, {
 				$set: {
 					lastSeen: getCurrentTime(),
+					lastConnected: getCurrentTime(),
 					connected: true,
 					connectionId: options.connectionId,
 					type: options.type,
@@ -79,6 +80,7 @@ export namespace ServerPeripheralDeviceAPI {
 					connected: true,
 					connectionId: options.connectionId,
 					lastSeen: getCurrentTime(),
+					lastConnected: getCurrentTime(),
 					token: token,
 					type: options.type,
 					name: options.name,
@@ -1049,56 +1051,6 @@ export function afterRemoveSegmentLine (removedSegmentLine: DBSegmentLine) {
 		}
 	}
 }
-export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: Mongo.Selector, rank: number | null): T {
-	if (_.isNull(rank)) rank = Number.POSITIVE_INFINITY
-	return collection.find(_.extend(selector, {
-		_rank: {$lt: rank}
-	}), {
-		sort: {
-			_rank: -1,
-			_id: -1
-		},
-		limit: 1
-	}).fetch()[0]
-}
-export function fetchAfter<T> (collection: Mongo.Collection<T>, selector: Mongo.Selector, rank: number | null): T {
-	if (_.isNull(rank)) rank = Number.NEGATIVE_INFINITY
-	return collection.find(_.extend(selector, {
-		_rank: {$gt: rank}
-	}), {
-		sort: {
-			_rank: 1,
-			_id: 1
-		},
-		limit: 1
-	}).fetch()[0]
-}
-export function getRank (beforeOrLast, after, i: number, count: number): number {
-	let newRankMax
-	let newRankMin
-
-	if (after) {
-		if (beforeOrLast) {
-			newRankMin = beforeOrLast._rank
-			newRankMax = after._rank
-		} else {
-			// First
-			newRankMin = after._rank - 1
-			newRankMax = after._rank
-		}
-	} else {
-		if (beforeOrLast) {
-			// Last
-			newRankMin = beforeOrLast._rank
-			newRankMax = beforeOrLast._rank + 1
-		} else {
-			// Empty list
-			newRankMin = 0
-			newRankMax = 1
-		}
-	}
-	return newRankMin + ( (i + 1) / (count + 1) ) * (newRankMax - newRankMin)
-}
 function formatDuration (duration: any): number | undefined {
 	try {
 		// first try and parse it as a MosDuration timecode string
@@ -1224,22 +1176,21 @@ function updateWithinSegment (ro: RunningOrder, segmentId: string): boolean {
 }
 function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory): boolean {
 
-	// TODO: Find good MosExternalMetaData for durations
-	const durationMosMetaData = findDurationInfoMOSExternalMetaData(story)
-	if (durationMosMetaData && durationMosMetaData.MosPayload && (durationMosMetaData.MosPayload.Actual || durationMosMetaData.MosPayload.Estimated || durationMosMetaData.MosPayload.ReadTime)) {
+	const durationMosMetaData = findDurationInfoMOSExternalMetaData(story) || {}
 
-		const duration = durationMosMetaData.MosPayload.Actual && parseFloat(durationMosMetaData.MosPayload.Actual) ||
-						 durationMosMetaData.MosPayload.ReadTime && parseFloat(durationMosMetaData.MosPayload.ReadTime) ||
-						 durationMosMetaData.MosPayload.Estimated && parseFloat(durationMosMetaData.MosPayload.Estimated) ||
-						 durationMosMetaData.MosPayload.MediaTime && parseFloat(durationMosMetaData.MosPayload.MediaTime) || 0
+	if (!durationMosMetaData.MosPayload) durationMosMetaData.MosPayload = {}
 
-						 // logger.debug('updating segment line duration: ' + segmentLine._id + ' ' + duration)
+	const duration = durationMosMetaData.MosPayload.Actual && parseFloat(durationMosMetaData.MosPayload.Actual) ||
+		durationMosMetaData.MosPayload.ReadTime && parseFloat(durationMosMetaData.MosPayload.ReadTime) ||
+		durationMosMetaData.MosPayload.Estimated && parseFloat(durationMosMetaData.MosPayload.Estimated) ||
+		durationMosMetaData.MosPayload.MediaTime && parseFloat(durationMosMetaData.MosPayload.MediaTime) || 0
+
+	// Note: when no duration, it should look like 3000 in the GUI, but be counted as 0
+	if (segmentLine.expectedDuration !== duration * 1000) {
 		segmentLine.expectedDuration = duration * 1000
 		SegmentLines.update(segmentLine._id, {$set: {
 			expectedDuration: segmentLine.expectedDuration
 		}})
-	} else {
-		logger.warn('Could not find duration information for segment line: ' + segmentLine._id)
 	}
 
 	let showStyle = ShowStyles.findOne(ro.showStyleId)
@@ -1282,8 +1233,9 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 				expectedDuration:		tr.result.segmentLine.expectedDuration || segmentLine.expectedDuration,
 				autoNext: 				tr.result.segmentLine.autoNext || false,
 				autoNextOverlap: 		tr.result.segmentLine.autoNextOverlap || 0,
-				overlapUntil: 			tr.result.segmentLine.overlapUntil || '',
+				overlapDuration: 		tr.result.segmentLine.overlapDuration || 0,
 				transitionDelay: 		tr.result.segmentLine.transitionDelay || '',
+				transitionDuration: 	tr.result.segmentLine.transitionDuration || 0,
 				disableOutTransition: 	tr.result.segmentLine.disableOutTransition || false,
 				updateStoryStatus:		tr.result.segmentLine.updateStoryStatus || false,
 				typeVariant:			tr.result.segmentLine.typeVariant || '',

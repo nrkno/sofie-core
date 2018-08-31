@@ -7,13 +7,13 @@ import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { SegmentUi, SegmentLineUi, IOutputLayerUi, ISourceLayerUi, SegmentLineItemUi } from './SegmentTimelineContainer'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
-import { RunningOrderTiming, WithTiming } from '../RunningOrderTiming'
+import { RunningOrderTiming, WithTiming } from '../RunningOrderView/RunningOrderTiming'
 
 import { ContextMenuTrigger } from 'react-contextmenu'
 
 import { RundownUtils } from '../../lib/rundown'
 import { getCurrentTime } from '../../../lib/lib'
-import { withTiming } from '../RunningOrderTiming'
+import { withTiming } from '../RunningOrderView/RunningOrderTiming'
 
 import * as faFastForward from '@fortawesome/fontawesome-free-solid/faFastForward'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'

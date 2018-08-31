@@ -8,7 +8,7 @@ import * as _ from 'underscore'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
 
-import { RunningOrderTimingProvider, withTiming, WithTiming } from './RunningOrderTiming'
+import { RunningOrderTimingProvider, withTiming, WithTiming } from './RunningOrderView/RunningOrderTiming'
 import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines'
 import { SegmentLineUi } from './SegmentTimeline/SegmentTimelineContainer'
 
@@ -42,12 +42,14 @@ interface RunningOrderOverviewTrackedProps {
 const Timediff = class extends React.Component<{ time: number}> {
 	render () {
 		const time = -this.props.time
-		const timeString = RundownUtils.formatDiffToTimecode(time, false, false, false, true, true, '') // @todo: something happened here with negative time
+		const isNegative = (Math.floor(time / 1000) > 0)
+		const timeString = RundownUtils.formatDiffToTimecode(time, false, false, true, false, true, '', false, true) // @todo: something happened here with negative time
+		// RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)
 		const timeStringSegments = timeString.split(':')
 		const fontWeight = (no) => no === '00' || no === '+00'
 		return (
-			<span className={ time > 0 ? 'clocks-segment-countdown-red' : '' }>
-				{time > 0 ? <span className="clocks-counter-light">+</span> : null}
+			<span className={ isNegative ? 'clocks-segment-countdown-red' : '' }>
+				{isNegative ? <span className='clocks-counter-light'>+</span> : null}
 				<span className={fontWeight(timeStringSegments[0]) ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[0]}</span>:
 				<span className={timeStringSegments[1] ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[1]}</span>
 				{timeStringSegments.length > 2 ? ':' : null}
@@ -83,8 +85,8 @@ const Timecode = class extends React.Component<{ time: number }> {
 	}
 }
 
-const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOverviewState>()(
-	withTracker<WithTiming<RunningOrderOverviewProps>, RunningOrderOverviewState, RunningOrderOverviewTrackedProps>((props: RunningOrderOverviewProps) => {
+const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, RunningOrderOverviewState>()(
+	withTracker<WithTiming<RunningOrderOverviewProps & InjectedTranslateProps>, RunningOrderOverviewState, RunningOrderOverviewTrackedProps>((props: RunningOrderOverviewProps) => {
 
 		let ro: RunningOrder | undefined
 		if (props.runningOrderId) ro = RunningOrders.findOne(props.runningOrderId)
@@ -101,7 +103,7 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 			runningOrder: ro
 		}
 	})(
-	class extends MeteorReactComponent<WithTiming<RunningOrderOverviewProps & RunningOrderOverviewTrackedProps>, RunningOrderOverviewState> {
+	class extends MeteorReactComponent<WithTiming<RunningOrderOverviewProps & RunningOrderOverviewTrackedProps & InjectedTranslateProps>, RunningOrderOverviewState> {
 		componentWillMount () {
 			this.subscribe('runningOrders', {
 				_id: this.props.runningOrderId
@@ -115,7 +117,7 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 		}
 
 		render () {
-			const { runningOrder, segments } = this.props
+			const { runningOrder, segments, t } = this.props
 
 			if (runningOrder && this.props.runningOrderId && this.props.segments) {
 				let currentSegmentLine
@@ -159,16 +161,16 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 				return (
 					<div className='clocks-full-screen'>
 						<div className='clocks-half clocks-top'>
+							<div className='clocks-segment-icon clocks-current-segment-icon'>
+								{currentSegmentLine ?
+									<SegmentItemIconContainer segmentItemId={currentSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
+								: ''}
+							</div>
 							<div className='clocks-segment-title clocks-current-segment-title'>
 								{currentSegmentLine ? currentSegmentLine.slug.split(';')[0] : ''}
 							</div>
 							<div className='clocks-segmentline-title clocks-segment-title clocks-current-segment-title'>
 								{currentSegmentLine ? currentSegmentLine.slug.split(';')[1] : ''}
-							</div>
-							<div className='clocks-segment-icon clocks-current-segment-icon'>
-								{currentSegmentLine ?
-									<SegmentItemIconContainer segmentItemId={currentSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
-								: ''}
 							</div>
 							<div className='clocks-current-segment-countdown clocks-segment-countdown'>
 								<Timediff time={currentSegmentDuration} />
@@ -188,8 +190,19 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 									{nextSegmentLine ? nextSegmentLine.slug.split(';')[1] : '_'}
 								</div>
 							</div>
-							<div className='clocks-rundown-title clocks-top-bar'>
-								<span className='clocks-counter-thin'>{('Rundown')}</span>: {runningOrder ? runningOrder.name : 'UNKNOWN'}
+							<div className='clocks-rundown-bottom-bar'>
+								<div className='clocks-rundown-bottom-bar-label'>
+									{t('Rundown')}:
+								</div>
+								<div className='clocks-rundown-title'>
+									{runningOrder ? runningOrder.name : 'UNKNOWN'}
+								</div>
+								<div className='clocks-rundown-total'>
+								{ runningOrder.expectedDuration ? 
+									RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - runningOrder.expectedDuration, true, false, true, true, true, undefined, true) :
+									RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - (this.props.timingDurations.totalRundownDuration || 0), true, false, true, true, true, undefined, true)
+								}
+								</div>
 							</div>
 						</div>
 					</div>
@@ -197,7 +210,7 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 			}
 			return null
 		}
-	}))
+	})))
 
 interface IPropsHeader extends InjectedTranslateProps {
 	key: string

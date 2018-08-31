@@ -17,11 +17,12 @@ import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/col
 import { SegmentTimeline } from './SegmentTimeline'
 
 import { getCurrentTime, Time } from '../../../lib/lib'
-import { RunningOrderTiming } from '../RunningOrderTiming'
+import { RunningOrderTiming } from '../RunningOrderView/RunningOrderTiming'
 import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 
 import { CollapsedStateStorage } from '../../lib/CollapsedStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { RunningOrderViewEvents } from '../RunningOrderView'
 
 export const DEFAULT_DISPLAY_DURATION = 3000
 
@@ -502,6 +503,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			this.onFollowLiveLine(true, {})
 			this.startOnAirLine()
 		}
+		window.addEventListener(RunningOrderViewEvents.rewindsegments, this.onRewindSegment)
 	}
 
 	componentDidUpdate (prevProps) {
@@ -555,6 +557,14 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			followLiveLine: false
 		})
 		if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
+	}
+
+	onRewindSegment = () => {
+		if (!this.props.isLiveSegment) {
+			this.setState({
+				scrollLeft: 0
+			})
+		}
 	}
 
 	onAirLineRefresh = () => {

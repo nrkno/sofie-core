@@ -37,7 +37,7 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 
 	updateTime = () => {
 		if (this.vPreview) {
-			let targetTime = this.props.cursorTimePostion
+			let targetTime = this.props.cursorTimePosition
 			const segmentLineItem = this.props.segmentLineItem as SegmentLineItemUi
 			const itemDuration = ((segmentLineItem.content ? segmentLineItem.content.sourceDuration as number : undefined) || segmentLineItem.duration || segmentLineItem.renderedDuration || 0)
 			if (segmentLineItem.content && segmentLineItem.content.loop && this.vPreview.duration > 0) {
@@ -82,10 +82,10 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 			const item = this.props.segmentLineItem as SegmentLineItemUi
 			const metadata = item.metadata as MediaObject
 			if (metadata && metadata.previewPath && this.props.mediaPreviewUrl) {
-				return this.props.mediaPreviewUrl + 'media/preview/' + encodeURIComponent(metadata.objId)
+				return this.props.mediaPreviewUrl + 'media/preview/' + encodeURIComponent(metadata.mediaId)
 			}
 		}
-		return undefined // TODO: should be undefined, but is a placeholder for time being
+		return undefined
 	}
 
 	getScenes = (): Array<number> | undefined => {
@@ -94,7 +94,12 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 			const item = this.props.segmentLineItem as SegmentLineItemUi
 			const metadata = item.metadata as MediaObject
 			if (metadata && metadata.mediainfo && metadata.mediainfo.scenes) {
-				return metadata.mediainfo.scenes.map((i) => i * 1000) // convert into milliseconds
+				return _.compact(metadata.mediainfo.scenes.map((i) => {
+					if (i < itemDuration) {
+						return i * 1000
+					}
+					return undefined
+				})) // convert into milliseconds
 			}
 		}
 	}
@@ -153,7 +158,7 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 						{this.getPreviewUrl() ?
 							<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
 								<video src={this.getPreviewUrl()} ref={this.setVideoRef} crossOrigin='anonymous' playsInline={true} muted={true} />
-								<span className='segment-timeline__mini-inspector__timecode'>{RundownUtils.formatDiffToTimecode(this.props.cursorTimePostion, false, false, false, false, true, undefined, true)}</span>
+								<span className='segment-timeline__mini-inspector__timecode'>{RundownUtils.formatDiffToTimecode(this.props.cursorTimePosition, false, false, false, false, true, undefined, true)}</span>
 							</div> :
 							<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
 								<div>

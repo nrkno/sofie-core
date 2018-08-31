@@ -53,7 +53,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 }
 
 .running-order-view {
-	padding-top: 150px;
+	padding-top: 125px;
 }
 
 body.vertical-overflow-only {
@@ -139,7 +139,7 @@ body.vertical-overflow-only {
 				top: 0.05em;
 				left: 50%;
 				transform: translateX(-50%);
-				margin-top: 6px;
+				margin-top: 0px;
 				margin-right: 0;
 				font-size: 2.3em;
 				font-weight: 100;
@@ -224,12 +224,15 @@ body.vertical-overflow-only {
 	background-color: #660
 }
 
+.segment-timeline-container {
+	padding-bottom: 50vh;
+}
 // A component for displaying the segments (ENPS Stories/NKR Titles)
 .segment-timeline {
 	display: grid;
 	grid-column-gap: 0;
 	grid-row-gap: 0;
-	grid-template-columns: [segment-name] 200px [segment-group-controls] 120px [timeline] auto [end] 120px [future-timeline-end];
+	grid-template-columns: [segment-name] 200px [segment-group-controls] 120px [timeline] auto [end]; // 120px [future-timeline-end]
 	grid-template-rows: [header] $segment-header-height [main-view] auto [zoom-area] auto [end];
 	overflow: hidden;
 	user-select: none;
@@ -903,7 +906,7 @@ body.vertical-overflow-only {
 							top: -2px;
 							width: 2px;
 							bottom: 0;
-							background: linear-gradient(to bottom, #fff 0, #fff 1.9px, #000 2px , #000 4px, rgba(0, 0, 0, 0.1) 4.1px);
+							background: linear-gradient(to bottom, #0000ff 0, #fff 1.9px, #000 2px , #000 4px, rgba(0, 0, 0, 0.2) 4.1px);
 							overflow: hidden;
 							z-index: 3;
 						}
@@ -927,6 +930,15 @@ body.vertical-overflow-only {
 							pointer-events: none;
 							display: inline-block;
 							white-space: nowrap;
+
+							&:not(.right-side) {
+								overflow: hidden;
+								text-overflow: ellipsis;
+							}
+
+							&.with-overflow {
+								overflow: visible !important;
+							}
 
 							&.secondary {
 								font-weight: 300;
@@ -996,10 +1008,21 @@ body.vertical-overflow-only {
 
 							> .segment-timeline__layer-item__label {
 								margin: 0;
+								max-width: none;
 							}
 
 							> .segment-timeline__layer-item__label + .segment-timeline__layer-item__label {
 								margin: 0 0.3em;
+							}
+
+							.segment-timeline__layer-item__label__transition-icon {
+								    max-width: 16px;
+									max-height: 1.4em;
+									vertical-align: top;
+									height: 1.4em;
+									object-fit: contain;
+									object-position: center center;
+									margin-left: 0.5em;
 							}
 						}
 
@@ -1404,6 +1427,10 @@ body.vertical-overflow-only {
 		right: 7px;
 	}
 
+	&.segment-timeline__mini-inspector--pop-down {
+		transform: translate(-50%, 2em);
+	}
+
 	&.segment-timeline__mini-inspector--video {
 		padding: 0;
 		border: 1px solid #1f1f1f;
@@ -1415,7 +1442,7 @@ body.vertical-overflow-only {
 			display: none;
 		}
 
-		> video, > .video-preview {
+		> video, > .video-preview, > .thumbnail {
 			display: block;
 			width: 160px;
 			height: 90px;

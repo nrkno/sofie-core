@@ -10,7 +10,8 @@ import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { PlayoutDeviceType } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
-import { LookaheadMode } from '../../lib/api/playout';
+import { LookaheadMode } from '../../lib/api/playout'
+import { MediaObjects } from '../../lib/collections/MediaObjects'
 
 // These are temporary method to fill the rundown database with some sample data
 // for development
@@ -145,6 +146,11 @@ Meteor.methods({
 		StudioInstallations.remove({})
 		Meteor.call('debug_removeAllRos')
 	},
+
+	'debug_purgeMediaDB' () {
+		MediaObjects.remove({})
+	},
+
 	'debug_removeAllRos' () {
 		logger.debug('Remove all runningOrders')
 

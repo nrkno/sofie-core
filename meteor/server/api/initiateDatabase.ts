@@ -62,6 +62,7 @@ Meteor.methods({
 			created: getCurrentTime(),
 			status: {statusCode: PeripheralDeviceAPI.StatusCode.BAD},
 			lastSeen: getCurrentTime(),
+			lastConnected: getCurrentTime(),
 			connected: false,
 			connectionId: null,
 			token: '',
@@ -137,6 +138,7 @@ Meteor.methods({
 				created: getCurrentTime(),
 				status: {statusCode: PeripheralDeviceAPI.StatusCode.BAD},
 				lastSeen: getCurrentTime(),
+				lastConnected: getCurrentTime(),
 				connected: false,
 				connectionId: null,
 				token: ''
@@ -151,6 +153,7 @@ Meteor.methods({
 			created: getCurrentTime(),
 			status: {statusCode: PeripheralDeviceAPI.StatusCode.BAD},
 			lastSeen: getCurrentTime(),
+			lastConnected: getCurrentTime(),
 			connected: false,
 			connectionId: null,
 			token: ''
@@ -330,7 +333,7 @@ Meteor.methods({
 				 	_id: 'studio0_cam_bakskjerm',
 				 	_rank: 17000,
 				 	name: 'Bakskjerm',
-				 	type: RundownAPI.SourceLayerType.CAMERA,
+				 	type: RundownAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
 					clearKeyboardHotkey: 'p'
 				},
@@ -383,9 +386,9 @@ Meteor.methods({
 				},
 				{
 					_id: 'studio0_live_transition0',
-					_rank: 6000,
+					_rank: 0,
 					name: 'Transition',
-					type: RundownAPI.SourceLayerType.UNKNOWN,
+					type: RundownAPI.SourceLayerType.TRANSITION,
 					onPGMClean: true,
 					activateKeyboardHotkeys: '',
 					assignHotkeysToGlobalAdlibs: false
@@ -433,6 +436,13 @@ Meteor.methods({
 				lookahead: LookaheadMode.NONE,
 				channel: 6,
 				layer: 100
+			}),
+			'casparcg_player_clip_next_warning': literal<MappingCasparCG>({
+				device: PlayoutDeviceType.CASPARCG,
+				deviceId: 'casparcg0',
+				lookahead: LookaheadMode.NONE,
+				channel: 6,
+				layer: 99
 			}),
 			'casparcg_player_clip2': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,

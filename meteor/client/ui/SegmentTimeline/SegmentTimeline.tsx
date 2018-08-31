@@ -15,7 +15,7 @@ import { SegmentTimelineLine } from './SegmentTimelineLine'
 import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
 import { SegmentNextPreview } from './SegmentNextPreview'
 
-import { SegmentDuration, SegmentLineCountdown, RunningOrderTiming } from '../RunningOrderTiming'
+import { SegmentDuration, SegmentLineCountdown, RunningOrderTiming } from '../RunningOrderView/RunningOrderTiming'
 
 import { RundownUtils } from '../../lib/rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -292,7 +292,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	}
 
 	scrollToMe () {
-		if (scrollToSegment(this.segmentBlock)) {
+		if (scrollToSegment(this.segmentBlock, true)) {
 			this.props.onFollowLiveLine && this.props.onFollowLiveLine(true, {})
 		}
 	}
@@ -356,9 +356,9 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 						{t('On Air')}
 					</div>
 					<div className={ClassNames('segment-timeline__liveline__timecode', {
-						'overtime': !!(this.props.displayTimecode > 0)
+						'overtime': !!(Math.floor(this.props.displayTimecode / 1000) > 0)
 					})}>
-						{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, true, true, '')}
+						{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)}
 					</div>
 				</div>
 			]
@@ -509,7 +509,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 					</div>
 					{this.renderLiveLine()}
 				</div>
-				<ErrorBoundary>
+				{/* <ErrorBoundary>
 					<SegmentNextPreview
 						runningOrder={this.props.runningOrder}
 						collapsedOutputs={this.props.collapsedOutputs}
@@ -517,7 +517,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 						outputGroups={this.props.segment.outputLayers}
 						sourceLayers={this.props.segment.sourceLayers}
 						segmentLine={this.props.followingSegmentLine} />
-				</ErrorBoundary>
+				</ErrorBoundary> */}
 				<ErrorBoundary>
 					<SegmentTimelineZoom
 						onZoomDblClick={this.onZoomDblClick}

@@ -18,6 +18,7 @@ import { VTSourceRenderer } from './Renderers/VTSourceRenderer'
 import { STKSourceRenderer } from './Renderers/STKSourceRenderer'
 import { L3rdSourceRenderer } from './Renderers/L3rdSourceRenderer'
 import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
+import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 
@@ -50,7 +51,8 @@ interface ISourceLayerItemState {
 	showMiniInspector: boolean
 	elementPosition: JQueryCoordinates
 	cursorPosition: JQueryCoordinates
-	cursorTimePostion: number
+	scrollLeftOffset: number
+	cursorTimePosition: number
 	elementWidth: number
 	itemElement: HTMLDivElement | null
 	leftAnchoredWidth: number
@@ -72,7 +74,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				top: 0,
 				left: 0
 			},
-			cursorTimePostion: 0,
+			scrollLeftOffset: 0,
+			cursorTimePosition: 0,
 			elementWidth: 0,
 			itemElement: null,
 			leftAnchoredWidth: 0,
@@ -115,6 +118,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 						// || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0)
 						let styleObj = {
+							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' : 'none',
 							'transform': 'translate3d(' + (widthConstrictedMode ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
 								'translate3d(' + (liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
 								'translate3d(-100%, 0, 0)',
@@ -128,6 +132,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLineStartsAt - inTransitionDuration) * this.props.timeScale
 
 						let styleObj = {
+							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' : 'none',
 							'transform': 'translate3d(' + (Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
 								'translate3d(' + (liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
 								'translate3d(-100%, 0, 0)',
@@ -142,8 +147,15 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLineStartsAt - inTransitionDuration) * this.props.timeScale
 
 						let styleObj = {
+							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' : 'none',
 							'transform': 'translate3d(' + (widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth))).toString() + 'px,  0, 0)',
 							'willChange': 'transform'
+						}
+
+						return styleObj
+					} else {
+						let styleObj = {
+							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' : 'none'
 						}
 
 						return styleObj
@@ -256,7 +268,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 		if (nextProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
 			this.setState({
-				cursorTimePostion: this.state.cursorTimePostion + ((nextProps.scrollLeft - this.props.scrollLeft) - (nextProps.segmentLineStartsAt - this.props.segmentLineStartsAt))
+				scrollLeftOffset: this.state.scrollLeftOffset + (nextProps.scrollLeft - this.props.scrollLeft),
+				cursorTimePosition: this.state.cursorTimePosition + (nextProps.scrollLeft - this.props.scrollLeft),
 			})
 		}
 	}
@@ -294,12 +307,13 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			top: e.clientY - elementPos.top
 		}
 
-		const cursorTimePostion = Math.max(cursorPosition.left, 0) / this.props.timeScale
+		const cursorTimePosition = Math.max(cursorPosition.left, 0) / this.props.timeScale
 
 		this.setState({
+			scrollLeftOffset: 0,
 			elementPosition: elementPos,
 			cursorPosition,
-			cursorTimePostion
+			cursorTimePosition
 		})
 	}
 
@@ -308,11 +322,11 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			left: e.clientX - this.state.elementPosition.left,
 			top: e.clientY - this.state.elementPosition.top
 		}
-		const cursorTimePostion = Math.max(cursorPosition.left, 0) / this.props.timeScale
+		const cursorTimePosition = (Math.max(cursorPosition.left, 0) / this.props.timeScale) + this.state.scrollLeftOffset
 
 		this.setState({
 			cursorPosition: _.extend(this.state.cursorPosition, cursorPosition),
-			cursorTimePostion
+			cursorTimePosition
 		})
 	}
 
@@ -367,6 +381,15 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
+
+			case RundownAPI.SourceLayerType.TRANSITION:
+				return <TransitionSourceRenderer key={this.props.segmentLineItem._id}
+						typeClass={typeClass}
+						getItemDuration={this.getItemDuration}
+						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+						setAnchoredElsWidths={this.setAnchoredElsWidths}
+						{...this.props} {...this.state} />
 			default:
 				return <DefaultLayerItemRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
@@ -404,6 +427,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 				'script': this.props.layer.type === RundownAPI.SourceLayerType.SCRIPT,
 				'splits': this.props.layer.type === RundownAPI.SourceLayerType.SPLITS,
 				'vt': this.props.layer.type === RundownAPI.SourceLayerType.VT,
+				'transition': this.props.layer.type === RundownAPI.SourceLayerType.TRANSITION,
 			})
 
 			return (

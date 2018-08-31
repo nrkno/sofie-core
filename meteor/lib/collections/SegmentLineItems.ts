@@ -168,6 +168,10 @@ export interface NoraPayload {
 		layer: string
 		name: string
 	}
+	metadata?: {
+		templateName: string | undefined
+		templateVariant: string | undefined
+	}
 	changed?: Time
 }
 
@@ -211,4 +215,8 @@ export interface LiveSpeakContent extends VTContent {
 export interface MicContent extends ScriptContent {
 	mixConfiguration: any
 	timelineObjects: any
+}
+
+export interface TransitionContent extends BaseContent {
+	icon?: string
 }

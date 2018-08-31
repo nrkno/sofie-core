@@ -54,13 +54,20 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 		let properties: Array<KeyValue> = []
 		if (noraContent && noraContent.payload && noraContent.payload.content) {
 			// @ts-ignore
-			properties = _.map(noraContent.payload.content, (value: string, key: string): {
+			properties = _.map(noraContent.payload.content, (value, key: string): {
 				key: string,
 				value: string
 			} => {
+				let str: string = 'N/A'
+				if (_.isObject(value)) {
+					// @ts-ignore
+					str = JSON.stringify(value, '', 2)
+				} else {
+					str = value + ''
+				}
 				return {
 					key: key,
-					value: value
+					value: str
 				}
 			}) as Array<KeyValue>
 		}
@@ -68,6 +75,20 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 		let changed: Time | undefined = undefined
 		if (noraContent && noraContent.payload && noraContent.payload.changed) {
 			changed = noraContent.payload.changed
+		}
+
+		if (noraContent && noraContent.payload && noraContent.payload.metadata && noraContent.payload.metadata.templateName) {
+			properties.push({
+				key: t('Template name'),
+				value: noraContent.payload.metadata.templateName
+			})
+		}
+
+		if (noraContent && noraContent.payload && noraContent.payload.metadata && noraContent.payload.metadata.templateVariant) {
+			properties.push({
+				key: t('Template variant'),
+				value: noraContent.payload.metadata.templateVariant
+			})
 		}
 
 		return <React.Fragment>

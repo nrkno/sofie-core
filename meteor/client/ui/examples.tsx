@@ -1,6 +1,6 @@
 import { withTracker, translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import * as React from 'react'
-import { withTiming, WithTiming } from './RunningOrderTiming'
+import { withTiming, WithTiming } from './RunningOrderView/RunningOrderTiming'
 import { translate } from 'react-i18next'
 import { TransformedCollection } from '../../lib/typings/meteor'
 import { Mongo } from 'meteor/mongo'

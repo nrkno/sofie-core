@@ -129,11 +129,11 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 			<tr key={msg._id} className={classNames(classes)}>
 				<td className='c2'>
 					{
-						getAdminMode() ? [
+						getAdminMode() ? <React.Fragment>
 							<button className='action-btn' onClick={(e) => this.removeMessage(msg)}>
 								<FontAwesomeIcon icon={faTrash} />
-							</button>, <br/>
-						] : null
+							</button><br/>
+						</React.Fragment> : null
 					}
 					ID: {msg._id}<br/>
 					Created: <MomentFromNow unit='seconds'>{msg.created}</MomentFromNow>
