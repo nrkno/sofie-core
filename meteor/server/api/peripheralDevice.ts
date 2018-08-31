@@ -1176,22 +1176,21 @@ function updateWithinSegment (ro: RunningOrder, segmentId: string): boolean {
 }
 function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory): boolean {
 
-	// TODO: Find good MosExternalMetaData for durations
-	const durationMosMetaData = findDurationInfoMOSExternalMetaData(story)
-	if (durationMosMetaData && durationMosMetaData.MosPayload && (durationMosMetaData.MosPayload.Actual || durationMosMetaData.MosPayload.Estimated || durationMosMetaData.MosPayload.ReadTime)) {
+	const durationMosMetaData = findDurationInfoMOSExternalMetaData(story) || {}
 
-		const duration = durationMosMetaData.MosPayload.Actual && parseFloat(durationMosMetaData.MosPayload.Actual) ||
-						 durationMosMetaData.MosPayload.ReadTime && parseFloat(durationMosMetaData.MosPayload.ReadTime) ||
-						 durationMosMetaData.MosPayload.Estimated && parseFloat(durationMosMetaData.MosPayload.Estimated) ||
-						 durationMosMetaData.MosPayload.MediaTime && parseFloat(durationMosMetaData.MosPayload.MediaTime) || 0
+	if (!durationMosMetaData.MosPayload) durationMosMetaData.MosPayload = {}
 
-						 // logger.debug('updating segment line duration: ' + segmentLine._id + ' ' + duration)
+	const duration = durationMosMetaData.MosPayload.Actual && parseFloat(durationMosMetaData.MosPayload.Actual) ||
+		durationMosMetaData.MosPayload.ReadTime && parseFloat(durationMosMetaData.MosPayload.ReadTime) ||
+		durationMosMetaData.MosPayload.Estimated && parseFloat(durationMosMetaData.MosPayload.Estimated) ||
+		durationMosMetaData.MosPayload.MediaTime && parseFloat(durationMosMetaData.MosPayload.MediaTime) || 0
+
+	// Note: when no duration, it should look like 3000 in the GUI, but be counted as 0
+	if (segmentLine.expectedDuration !== duration * 1000) {
 		segmentLine.expectedDuration = duration * 1000
 		SegmentLines.update(segmentLine._id, {$set: {
 			expectedDuration: segmentLine.expectedDuration
 		}})
-	} else {
-		logger.warn('Could not find duration information for segment line: ' + segmentLine._id)
 	}
 
 	let showStyle = ShowStyles.findOne(ro.showStyleId)
