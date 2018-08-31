@@ -75,6 +75,8 @@ export interface SegmentLineItemUi extends SegmentLineItem {
 	linked?: boolean
 	/** Metadata object */
 	metadata?: any
+	/** Maximum width of a label so as not to appear underneath the following item */
+	maxLabelWidth?: number
 }
 interface ISegmentLineItemUiDictionary {
 	[key: string]: SegmentLineItemUi
@@ -348,15 +350,18 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 						const currentItem = sortedItems[i] as SegmentLineItemUi
 						const previousItem = sortedItems[i - 1] as SegmentLineItemUi
 						if (previousItem.renderedInPoint !== null && currentItem.renderedInPoint !== null && previousItem.renderedDuration !== null && currentItem.renderedDuration !== null &&
-							previousItem.renderedInPoint !== undefined && currentItem.renderedInPoint !== undefined && previousItem.renderedDuration !== undefined && currentItem.renderedDuration !== undefined &&
-							((previousItem.renderedInPoint + previousItem.renderedDuration > currentItem.renderedInPoint) ||
-							 (previousItem.infiniteMode)
-							)) {
-							previousItem.renderedDuration = currentItem.renderedInPoint - previousItem.renderedInPoint
-							previousItem.cropped = true
-							if (previousItem.infiniteMode) {
-								previousItem.infiniteMode = SegmentLineItemLifespan.Normal
+							previousItem.renderedInPoint !== undefined && currentItem.renderedInPoint !== undefined && previousItem.renderedDuration !== undefined && currentItem.renderedDuration !== undefined) {
+							if ((previousItem.renderedInPoint + previousItem.renderedDuration > currentItem.renderedInPoint) ||
+							 	(previousItem.infiniteMode)
+								) {
+								previousItem.renderedDuration = currentItem.renderedInPoint - previousItem.renderedInPoint
+								previousItem.cropped = true
+								if (previousItem.infiniteMode) {
+									previousItem.infiniteMode = SegmentLineItemLifespan.Normal
+								}
 							}
+
+							previousItem.maxLabelWidth = currentItem.renderedInPoint - previousItem.renderedInPoint
 						}
 					}
 				})
