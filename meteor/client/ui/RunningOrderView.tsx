@@ -163,6 +163,7 @@ export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_ACTIVATE_REHEARSAL = 'mod+§',
 	RUNNING_ORDER_DEACTIVATE = 'mod+shift+§',
 	RUNNING_ORDER_GO_TO_LIVE = 'mod+home',
+	RUNNING_ORDER_REWIND_SEGMENTS = 'shift+home',
 	RUNNING_ORDER_RELOAD_RUNNING_ORDER = 'mod+shift+f12',
 	RUNNING_ORDER_TOGGLE_DRAWER = 'tab',
 	RUNNING_ORDER_NEXT_FORWARD = 'f9',
@@ -699,8 +700,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		key: string,
 		up?: (e: KeyboardEvent) => any,
 		down?: (e: KeyboardEvent) => any,
-		label?: string,
-		dontPreventDefault?: boolean
+		label: string
 	}> = []
 	private _segments: _.Dictionary<React.ComponentClass<{}>> = {}
 
@@ -716,9 +716,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				label: t('Go to On Air line')
 			},
 			{
-				key: 'home',
-				down: this.onHomeKey,
-				dontPreventDefault: true
+				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_REWIND_SEGMENTS,
+				up: this.onRewindSegments,
+				label: t('Rewind segments to start')
 			}
 		]
 
@@ -730,7 +730,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			followLiveSegments: true,
 			manualSetAsNext: false,
 			subsReady: false,
-			usedHotkeys: _.clone(this.bindKeys).filter(i => !!i.label) as HotkeyDefinition[]
+			usedHotkeys: _.clone(this.bindKeys)
 		}
 	}
 
@@ -834,7 +834,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 	}
 
-	onHomeKey = () => {
+	onRewindSegments = () => {
 		const event = new Event(RunningOrderViewEvents.rewindsegments)
 		window.dispatchEvent(event)
 	}
