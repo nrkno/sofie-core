@@ -785,7 +785,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {
 				mousetrap.bind(k.key, (e: KeyboardEvent) => {
-					if (!k.dontPreventDefault) preventDefault(e)
 					if (k.up) k.up(e)
 				}, 'keyup')
 				mousetrap.bind(k.key, (e: KeyboardEvent) => {
@@ -794,7 +793,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			}
 			if (k.down) {
 				mousetrap.bind(k.key, (e: KeyboardEvent) => {
-					if (!k.dontPreventDefault) preventDefault(e)
 					if (k.down) k.down(e)
 				}, 'keydown')
 			}
