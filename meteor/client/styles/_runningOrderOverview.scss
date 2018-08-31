@@ -15,6 +15,12 @@
 
 	.running-order__overview__segment {
 		display: inline;
+
+		&:first-child {
+			.running-order__overview__segment__segment-line:first-child {
+				border-left: 1px solid rgba(0, 0, 0, 0.5);
+			}
+		}
 	}
 	
 	.running-order__overview__segment__segment-line__live-shade {
@@ -34,12 +40,18 @@
 		vertical-align: top;
 		height: 40px;
 		background: $segment-title-background-color;
-		outline: 1px solid rgba(0,0,0,0.1);
+		border-top: 1px solid rgba(0, 0, 0, 0.2);
+		border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+		border-right: 1px solid rgba(0, 0, 0, 0.1);
 		// overflow: hidden;
 		word-wrap: none;
 		white-space: nowrap;
 		text-overflow: clip;
 		overflow: visible;
+
+		&:last-child {
+			border-right: 1px solid rgba(0, 0, 0, 0.5);
+		}
 
 		&.live {
 			color: $segment-title-text-color-live;
@@ -89,12 +101,17 @@
 			line-height: 20px;
 			margin: 5px 5px;
 			padding: 5px 5px;
+			font-weight: 500;
 
-			word-wrap: none;
 			white-space: nowrap;
-			text-overflow: clip;
+			text-overflow: ellipsis;
 			overflow: hidden;
 			z-index: 1;
+
+			> .running-order__overview__segment__segment-line__label__duration {
+				font-weight: 200;
+				margin-left: 0.5em;
+			}
 		}
 	}
 
@@ -119,8 +136,8 @@
 		&:hover {
 			.running-order__overview__segment__segment-line__label {
 				z-index: 5;
-				background: rgba(0,0,0,0.3);
-				pointer-events: none;
+				background: #333;
+				max-width: none !important;
 			}
 
 			&.next {
