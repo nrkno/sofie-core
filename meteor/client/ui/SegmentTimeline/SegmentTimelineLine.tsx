@@ -255,11 +255,11 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 	}
 
 	getCurrentLiveLinePosition () {
-		if (this.props.segmentLine.startedPlayback) {
+		if (this.props.segmentLine.startedPlayback && this.props.segmentLine.getLastStartedPlayback()) {
 			if (this.props.segmentLine.duration) {
 				return this.props.segmentLine.duration
 			} else {
-				return getCurrentTime() - this.props.segmentLine.startedPlayback
+				return getCurrentTime() - (this.props.segmentLine.getLastStartedPlayback() || 0)
 			}
 		} else {
 			return 0

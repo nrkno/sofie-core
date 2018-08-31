@@ -46,7 +46,7 @@ const SegmentLineOverview: React.SFC<ISegmentLinePropsHeader> = (props: ISegment
 				'live': props.isLive,
 				'next': props.isNext,
 
-				'has-played': ((props.segmentLine.startedPlayback || 0) > 0 && (props.segmentLine.duration || 0) > 0)
+				'has-played': (props.segmentLine.startedPlayback && (props.segmentLine.getLastStartedPlayback() || 0) > 0 && (props.segmentLine.duration || 0) > 0)
 			})}
 				style={{
 					'width': (((Math.max(props.segmentLiveDurations && props.segmentLiveDurations[props.segmentLine._id] || 0, props.segmentLine.duration || props.segmentLine.expectedDuration || 0)) / props.totalDuration) * 100) + '%'
@@ -59,7 +59,7 @@ const SegmentLineOverview: React.SFC<ISegmentLinePropsHeader> = (props: ISegment
 				{ props.isLive &&
 					<div className='running-order__overview__segment__segment-line__live-line'
 						style={{
-							'left': (((getCurrentTime() - (props.segmentLine.startedPlayback || 0)) /
+							'left': (((getCurrentTime() - (props.segmentLine.getLastStartedPlayback() || 0)) /
 								(Math.max(props.segmentLiveDurations && props.segmentLiveDurations[props.segmentLine._id] || 0, props.segmentLine.duration || props.segmentLine.expectedDuration || 0))) * 100) + '%'
 						}}>
 					</div>
