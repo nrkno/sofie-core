@@ -97,7 +97,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 				itemList.concat(this.props.roAdLibs).concat(this.props.studioInstallation.sourceLayers.filter(i => i.isSticky)
 					.map(layer => literal<IAdLibListItem & { layer: ISourceLayer, isSticky: boolean }>({
 						_id: layer._id,
-						hotkey: layer.activateStickyKeyboardHotkey,
+						hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
 						name: t('Last ') + (layer.abbreviation || layer.name),
 						status: RundownAPI.LineItemStatusCode.UNKNOWN,
 						layer: layer,
@@ -368,21 +368,26 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		if (this.props.sourceLayerLookup) {
 			_.forEach(this.props.sourceLayerLookup, (item) => {
 				if (item.clearKeyboardHotkey) {
-					mousetrapHelper.bind(item.clearKeyboardHotkey, preventDefault, 'keydown')
-					mousetrapHelper.bind(item.clearKeyboardHotkey, (e: ExtendedKeyboardEvent) => {
-						preventDefault(e)
-						this.onClearAllSourceLayer(item)
-					}, 'keyup')
-					this.usedHotkeys.push(item.clearKeyboardHotkey)
+					item.clearKeyboardHotkey.split(',').forEach(element => {
+						mousetrapHelper.bind(element, preventDefault, 'keydown')
+						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
+							preventDefault(e)
+							this.onClearAllSourceLayer(item)
+						}, 'keyup')
+						this.usedHotkeys.push(element)
+					})
+
 				}
 
 				if (item.isSticky && item.activateStickyKeyboardHotkey) {
-					mousetrapHelper.bind(item.activateStickyKeyboardHotkey, preventDefault, 'keydown')
-					mousetrapHelper.bind(item.activateStickyKeyboardHotkey, (e: ExtendedKeyboardEvent) => {
-						preventDefault(e)
-						this.onToggleSticky(item._id)
-					}, 'keyup')
-					this.usedHotkeys.push(item.activateStickyKeyboardHotkey)
+					item.activateStickyKeyboardHotkey.split(',').forEach(element => {
+						mousetrapHelper.bind(element, preventDefault, 'keydown')
+						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
+							preventDefault(e)
+							this.onToggleSticky(item._id)
+						}, 'keyup')
+						this.usedHotkeys.push(element)
+					})
 				}
 			})
 		}
