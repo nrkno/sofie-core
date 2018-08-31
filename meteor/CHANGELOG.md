@@ -2,6 +2,41 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.9.0"></a>
+# [0.9.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.8.0...v0.9.0) (2018-08-31)
+
+
+### Bug Fixes
+
+* allow duration 0 of segmentLines ([11a18ae](https://github.com/nrkno/tv-automation-server-core/commit/11a18ae))
+* better debug message ([17e1b4e](https://github.com/nrkno/tv-automation-server-core/commit/17e1b4e))
+* bug in popup: nora payload can be deep objects, causing ui crash ([30bfca9](https://github.com/nrkno/tv-automation-server-core/commit/30bfca9))
+* Infinite segmentline bad guard when calculating the current infinites that caused the process to stop early ([2f9abeb](https://github.com/nrkno/tv-automation-server-core/commit/2f9abeb))
+* Mix transitions ([0ebf3e1](https://github.com/nrkno/tv-automation-server-core/commit/0ebf3e1))
+* Mix transitions ([5cf2314](https://github.com/nrkno/tv-automation-server-core/commit/5cf2314))
+* temporary fix of typing error ([73bf56d](https://github.com/nrkno/tv-automation-server-core/commit/73bf56d))
+* timeline dep ([b26eecb](https://github.com/nrkno/tv-automation-server-core/commit/b26eecb))
+* timeline statobj didn't update on inactivate (empty timeline) ([839b906](https://github.com/nrkno/tv-automation-server-core/commit/839b906))
+* **iterateDeeply:** typos ([c9198f1](https://github.com/nrkno/tv-automation-server-core/commit/c9198f1))
+* **transitions:** Ensure they are run with the correct overlap on autonext ([bbc6ca2](https://github.com/nrkno/tv-automation-server-core/commit/bbc6ca2))
+* **transitions:** Timed graphics being run wrong ([8b39960](https://github.com/nrkno/tv-automation-server-core/commit/8b39960))
+* typing ([7c21efe](https://github.com/nrkno/tv-automation-server-core/commit/7c21efe))
+* update design of presenter screen ([4f41195](https://github.com/nrkno/tv-automation-server-core/commit/4f41195))
+
+
+### Features
+
+* added peripheralDevice.lastConnected, to be used for sorting so they wont jump around in the UI ([08e97f7](https://github.com/nrkno/tv-automation-server-core/commit/08e97f7))
+* f9, f10 buttons step next forward & down (shift reverses direction) ([a3be0cf](https://github.com/nrkno/tv-automation-server-core/commit/a3be0cf))
+* force some function to run synchronously. experimental, WIP! ([55a064c](https://github.com/nrkno/tv-automation-server-core/commit/55a064c))
+* force some function to run synchronously. experimental, WIP! ([54d83dd](https://github.com/nrkno/tv-automation-server-core/commit/54d83dd))
+* prevent next:ing of currently playing segmentLine ([b9c9ea1](https://github.com/nrkno/tv-automation-server-core/commit/b9c9ea1))
+* **init:** bakskjerm type ([8ffe776](https://github.com/nrkno/tv-automation-server-core/commit/8ffe776))
+* **iterateDeeply:** exports iterateDeeply to template context ([42cc886](https://github.com/nrkno/tv-automation-server-core/commit/42cc886))
+* **Next:** Adds warning/fallback of not loaded clips ([e20bc2f](https://github.com/nrkno/tv-automation-server-core/commit/e20bc2f))
+
+
+
 <a name="0.8.0"></a>
 # [0.8.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.7.0...v0.8.0) (2018-08-28)
 
