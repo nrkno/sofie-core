@@ -2052,7 +2052,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 				if (previousSegmentLine.startedPlayback) {
 					let transitionDuration = currentSegmentLine.transitionDuration || 0
 					if (!currentSegmentLine.transitionDuration && allowTransition) {
-						const transitionObjs = previousSegmentLine.getSegmentLinesItems().filter(i => i.isTransition)
+						const transitionObjs = currentSegmentLine.getSegmentLinesItems().filter(i => i.isTransition)
 						transitionDuration = (transitionObjs && transitionObjs.length > 0) ? transitionObjs[0].duration || 0 : 0
 					}
 
@@ -2125,9 +2125,18 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 			// console.log('This segment line will autonext')
 			let nextSegmentLineGroup = createSegmentLineGroup(nextSegmentLine, 0)
 			if (currentSegmentLineGroup) {
+				const allowTransition = !currentSegmentLine.disableOutTransition
+				let overlapDuration = currentSegmentLine.transitionDuration || 0
+				if (!nextSegmentLine.transitionDuration && allowTransition) {
+					const transitionObjs = nextSegmentLine.getSegmentLinesItems().filter(i => i.isTransition)
+					overlapDuration = (transitionObjs && transitionObjs.length > 0) ? transitionObjs[0].duration || 0 : 0
+				} else if (!allowTransition) {
+					overlapDuration = currentSegmentLine.autoNextOverlap || 0
+				}
+
 				nextSegmentLineGroup.trigger = literal<ITimelineTrigger>({
 					type: TriggerType.TIME_RELATIVE,
-					value: `#${currentSegmentLineGroup._id}.end - ${currentSegmentLine.autoNextOverlap || 0}`
+					value: `#${currentSegmentLineGroup._id}.end - ${overlapDuration}`
 				})
 			}
 
