@@ -518,19 +518,23 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	reloadRunningOrder = () => {
-		Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.reloadData, this.props.runningOrder._id, (err, result) => {
-			if (err) {
-				console.error(err)
-				return
-			}
+		if (this.props.studioMode) {
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.reloadData, this.props.runningOrder._id, (err, result) => {
+				if (err) {
+					console.error(err)
+					return
+				}
 
-			$('html,body').scrollTop(0)
-		})
+				$('html,body').scrollTop(0)
+			})
+		}
 	}
 
 	onReloadAndActivate = () => {
-		this.reloadRunningOrder()
-		this.activate()
+		if (this.props.studioMode) {
+			this.reloadRunningOrder()
+			this.activate()
+		}
 	}
 
 	render () {
@@ -603,9 +607,18 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 									</React.Fragment> :
 								null
 						}
-						<MenuItem onClick={(e) => this.reloadRunningOrder()}>
-							{t('Reload running order')}
-						</MenuItem>
+						{
+							this.props.studioMode &&
+								<MenuItem onClick={(e) => this.reloadRunningOrder()}>
+									{t('Reload running order')}
+								</MenuItem>
+						}
+						{
+							!this.props.studioMode &&
+								<MenuItem>
+									{t('No actions available')}
+								</MenuItem>
+						}
 					</ContextMenu>
 					<ContextMenuTrigger id='running-order-context-menu' attributes={{
 						className: 'flex-col col-timing horizontal-align-center'
