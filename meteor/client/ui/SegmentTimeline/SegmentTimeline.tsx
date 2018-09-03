@@ -323,7 +323,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 
 	timelineStyle () {
 		return {
-			'transform': 'translate3d(-' + (this.props.scrollLeft * this.props.timeScale).toString() + 'px, 0, 0)'
+			'transform': 'translate3d(-' + Math.round(this.props.scrollLeft * this.props.timeScale).toString() + 'px, 0, 0)'
 		}
 	}
 
