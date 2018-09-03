@@ -28,7 +28,7 @@ $segment-layer-background-vt: #1769ff;
 	}
 
 	&.live-speak {
-		background: $segment-layer-background-live-speak;
+		background: linear-gradient(to bottom, $segment-layer-background-vt 50%, $segment-layer-background-camera 50.0001%);
 	}
 
 	&.vt {
