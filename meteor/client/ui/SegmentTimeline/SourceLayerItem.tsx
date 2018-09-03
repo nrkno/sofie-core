@@ -124,7 +124,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none',
 							'transform': 'translate3d(' + (widthConstrictedMode ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
 								'translate3d(' + (liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
-								'translate3d(-100%, 0, 0)',
+								'translate3d(-100%, 0, 5px)',
 							'willChange': 'transform'
 						}
 
@@ -139,7 +139,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none',
 							'transform': 'translate3d(' + (Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
 								'translate3d(' + (liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
-								'translate3d(-100%, 0, 0)',
+								'translate3d(-100%, 0, 5px)',
 							'willChange': 'transform'
 						}
 

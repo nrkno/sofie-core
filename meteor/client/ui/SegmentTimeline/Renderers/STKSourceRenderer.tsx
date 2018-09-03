@@ -124,9 +124,9 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 
 		return <React.Fragment>
 					<div className='segment-timeline__layer-item__preview'>
+						{this.renderInfiniteItemContentEnded()}
 						<div className='segment-timeline__layer-item__preview__item mic'></div>
 						<div className='segment-timeline__layer-item__preview__item vt'>
-							{this.renderInfiniteItemContentEnded()}
 							<span className='segment-timeline__layer-item__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 								<span className={ClassNames('segment-timeline__layer-item__label', {
 									'overflow-label': this.end !== ''
