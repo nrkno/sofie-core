@@ -1672,10 +1672,12 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLine
 				if (segmentLineGroup) {
 					o.inGroup = segmentLineItemGroup._id
 
-					// If timed absolute and there is a transition delay, then apply delay
-					if (!item.isTransition && allowTransition && triggerOffsetForTransition && o.trigger.type === TriggerType.TIME_ABSOLUTE && !item.adLibSourceId) {
-						o.trigger.type = TriggerType.TIME_RELATIVE
-						o.trigger.value = `${triggerOffsetForTransition} + ${o.trigger.value}`
+					if (item.trigger.type === TriggerType.TIME_ABSOLUTE && item.trigger.value === 0) {
+						// If timed absolute and there is a transition delay, then apply delay
+						if (!item.isTransition && allowTransition && triggerOffsetForTransition && o.trigger.type === TriggerType.TIME_ABSOLUTE && !item.adLibSourceId) {
+							o.trigger.type = TriggerType.TIME_RELATIVE
+							o.trigger.value = `${triggerOffsetForTransition} + ${o.trigger.value}`
+						}
 					}
 
 					// If we are leaving a HOLD, the transition was suppressed, so force it to run now
@@ -2048,13 +2050,15 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 				allowTransition = !previousSegmentLine.disableOutTransition
 
 				if (previousSegmentLine.startedPlayback) {
-					const transitionObjs = previousSegmentLine.getSegmentLinesItems().filter(i => i.isTransition)
-					const transitionDuration = (transitionObjs && transitionObjs.length > 0) ? transitionObjs[0].duration || 0 : 0
+					let transitionDuration = currentSegmentLine.transitionDuration || 0
+					if (!currentSegmentLine.transitionDuration && allowTransition) {
+						const transitionObjs = currentSegmentLine.getSegmentLinesItems().filter(i => i.isTransition)
+						transitionDuration = (transitionObjs && transitionObjs.length > 0) ? transitionObjs[0].duration || 0 : 0
+					}
 
 					let endTrigger = allowTransition && currentSegmentLine.transitionDelay
-						? currentSegmentLine.transitionDelay + ` + ${transitionDuration}`
-						: `#${PlayoutTimelinePrefixes.SEGMENT_LINE_GROUP_PREFIX + currentSegmentLine._id}.start`
-					endTrigger += ` + ${currentSegmentLine.overlapDuration || 0}`
+						? currentSegmentLine.transitionDelay + ` + ${Math.max(transitionDuration, currentSegmentLine.overlapDuration || 0)}`
+						: `#${PlayoutTimelinePrefixes.SEGMENT_LINE_GROUP_PREFIX + currentSegmentLine._id}.start + ${currentSegmentLine.overlapDuration || 0}`
 
 					previousSegmentLineGroup = createSegmentLineGroup(previousSegmentLine, `${endTrigger} - #.start`)
 					previousSegmentLineGroup.priority = -1
@@ -2121,9 +2125,18 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 			// console.log('This segment line will autonext')
 			let nextSegmentLineGroup = createSegmentLineGroup(nextSegmentLine, 0)
 			if (currentSegmentLineGroup) {
+				const allowTransition = !currentSegmentLine.disableOutTransition
+				let overlapDuration = currentSegmentLine.transitionDuration || 0
+				if (!nextSegmentLine.transitionDuration && allowTransition) {
+					const transitionObjs = nextSegmentLine.getSegmentLinesItems().filter(i => i.isTransition)
+					overlapDuration = (transitionObjs && transitionObjs.length > 0) ? transitionObjs[0].duration || 0 : 0
+				} else if (!allowTransition) {
+					overlapDuration = currentSegmentLine.autoNextOverlap || 0
+				}
+
 				nextSegmentLineGroup.trigger = literal<ITimelineTrigger>({
 					type: TriggerType.TIME_RELATIVE,
-					value: `#${currentSegmentLineGroup._id}.end - ${currentSegmentLine.autoNextOverlap || 0}`
+					value: `#${currentSegmentLineGroup._id}.end - ${overlapDuration}`
 				})
 			}
 

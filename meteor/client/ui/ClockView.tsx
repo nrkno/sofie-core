@@ -159,16 +159,16 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 				return (
 					<div className='clocks-full-screen'>
 						<div className='clocks-half clocks-top'>
+							<div className='clocks-segment-icon clocks-current-segment-icon'>
+								{currentSegmentLine ?
+									<SegmentItemIconContainer segmentItemId={currentSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
+								: ''}
+							</div>
 							<div className='clocks-segment-title clocks-current-segment-title'>
 								{currentSegmentLine ? currentSegmentLine.slug.split(';')[0] : ''}
 							</div>
 							<div className='clocks-segmentline-title clocks-segment-title clocks-current-segment-title'>
 								{currentSegmentLine ? currentSegmentLine.slug.split(';')[1] : ''}
-							</div>
-							<div className='clocks-segment-icon clocks-current-segment-icon'>
-								{currentSegmentLine ?
-									<SegmentItemIconContainer segmentItemId={currentSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
-								: ''}
 							</div>
 							<div className='clocks-current-segment-countdown clocks-segment-countdown'>
 								<Timediff time={currentSegmentDuration} />
@@ -188,8 +188,19 @@ const ClockComponent = withTiming<RunningOrderOverviewProps, RunningOrderOvervie
 									{nextSegmentLine ? nextSegmentLine.slug.split(';')[1] : '_'}
 								</div>
 							</div>
-							<div className='clocks-rundown-title clocks-top-bar'>
-								<span className='clocks-counter-thin'>{('Rundown')}</span>: {runningOrder ? runningOrder.name : 'UNKNOWN'}
+							<div className='clocks-rundown-bottom-bar'>
+								<div className='clocks-rundown-bottom-bar-label'>
+									{('Rundown')}:
+								</div>
+								<div className='clocks-rundown-title'>
+									{runningOrder ? runningOrder.name : 'UNKNOWN'}
+								</div>
+								<div className='clocks-rundown-total'>
+								{ runningOrder.expectedDuration ? 
+									RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - runningOrder.expectedDuration, true, false, true, true, true, undefined, true) :
+									RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - (this.props.timingDurations.totalRundownDuration || 0), true, false, true, true, true, undefined, true)
+								}
+								</div>
 							</div>
 						</div>
 					</div>

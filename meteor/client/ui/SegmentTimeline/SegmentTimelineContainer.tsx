@@ -27,8 +27,17 @@ import { getResolvedSegment,
 	SegmentExtended,
 	SegmentLineExtended
 } from '../../../lib/RunningOrder'
+import { RunningOrderViewEvents } from '../RunningOrderView'
 
-export interface SegmentUi extends SegmentExtended {
+export interface SegmentUi extends Segment {
+	/** Output layers available in the installation used by this segment */
+	outputLayers?: {
+		[key: string]: IOutputLayerUi
+	}
+	/** Source layers used by this segment */
+	sourceLayers?: {
+		[key: string]: ISourceLayerUi
+	}
 }
 export interface SegmentLineUi extends SegmentLineExtended {
 }
@@ -197,6 +206,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			this.onFollowLiveLine(true, {})
 			this.startOnAirLine()
 		}
+		window.addEventListener(RunningOrderViewEvents.rewindsegments, this.onRewindSegment)
 	}
 
 	componentDidUpdate (prevProps) {
@@ -250,6 +260,14 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			followLiveLine: false
 		})
 		if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
+	}
+
+	onRewindSegment = () => {
+		if (!this.props.isLiveSegment) {
+			this.setState({
+				scrollLeft: 0
+			})
+		}
 	}
 
 	onAirLineRefresh = () => {

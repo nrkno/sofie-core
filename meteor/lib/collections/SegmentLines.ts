@@ -32,6 +32,8 @@ export interface DBSegmentLine {
 	overlapDuration?: number
 	/** What point to delay the new sli contents until during a transition */
 	transitionDelay?: string
+	/** What point during the transition is it deemed over (so the previous line can be stopped) */
+	transitionDuration?: number
 	/** Should we block a transition at the out of this SegmentLine */
 	disableOutTransition?: boolean
 	/** If true, the story status (yellow line) will be updated upon next:ing  */
@@ -105,6 +107,7 @@ export class SegmentLine implements DBSegmentLine {
 	public autoNextOverlap?: number
 	public overlapDuration?: number
 	public transitionDelay?: string
+	public transitionDuration?: number
 	public metaData?: Array<IMOSExternalMetaData>
 	public status?: IMOSObjectStatus
 	public expectedDuration?: number
