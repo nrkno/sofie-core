@@ -19,7 +19,7 @@ import { PlayoutTimelinePrefixes, LookaheadMode } from '../../lib/api/playout'
 import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { sendStoryStatus } from './peripheralDevice'
-import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
+import { StudioInstallations, StudioInstallation, IStudioConfigItem } from '../../lib/collections/StudioInstallations'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
 import { getHash } from '../lib'
@@ -112,8 +112,13 @@ export namespace ServerPlayoutAPI {
 		}).fetch()
 		// PeripheralDevices.find()
 
-		const ssrcBg = studioInstallation.config.find((o) => o._id === 'atemSSrcBackground')
-		if (ssrcBg) logger.info(ssrcBg.value + ' should be loaded to atems')
+		const ssrcBg: Array<IStudioConfigItem> = []
+		const ssrcBg1 = studioInstallation.config.find((o) => o._id === 'atemSSrcBackground')
+		const ssrcBg2 = studioInstallation.config.find((o) => o._id === 'atemSSrcBackground2')
+		if (ssrcBg1) ssrcBg.push(ssrcBg1)
+		if (ssrcBg2) ssrcBg.push(ssrcBg2)
+		if (ssrcBg.length > 1) logger.info(ssrcBg[0]!.value + ' and ' + ssrcBg[1]!.value + ' should be loaded to atems')
+		if (ssrcBg.length > 0) logger.info(ssrcBg[0]!.value + ' should be loaded to atems')
 
 		_.each(playoutDevices, (device: PeripheralDevice) => {
 			let okToDestoryStuff = wasInactive
@@ -124,6 +129,16 @@ export namespace ServerPlayoutAPI {
 					logger.info('devicesMakeReady OK')
 				}
 			}, 'devicesMakeReady', okToDestoryStuff)
+
+			if (ssrcBg.length > 0) {
+				PeripheralDeviceAPI.executeFunction(device._id, (err) => {
+					if (err) {
+						logger.error(err)
+					} else {
+						logger.info('Added Super Source BG to Atem')
+					}
+				}, 'uploadFileToAtem', ssrcBg)
+			}
 		})
 
 		let segmentLines = runningOrder.getSegmentLines()
@@ -2136,7 +2151,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 
 				nextSegmentLineGroup.trigger = literal<ITimelineTrigger>({
 					type: TriggerType.TIME_RELATIVE,
-					value: `#${currentSegmentLineGroup._id}.end - ${overlapDuration}`
+					value: `#${currentSegmentLineGroup._id}.end - ${Math.max(overlapDuration, nextSegmentLine.overlapDuration || 0)}`
 				})
 			}
 

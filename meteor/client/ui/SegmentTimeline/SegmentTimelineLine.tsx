@@ -398,11 +398,11 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 						{this.props.livePosition} / {this.props.segmentLine.startsAt} / {(this.props.timingDurations || {segmentLineStartsAt: {}}).segmentLineStartsAt![this.props.segmentLine._id]}
 						</div>
 					}
-					{this.renderTimelineOutputGroups(this.props.segmentLine)}
 					{this.state.isLive && !this.props.relative && !this.props.autoNextSegmentLine && !this.props.segmentLine.autoNext &&
 						<div className='segment-timeline__segment-line__future-shade' style={this.getFutureShadeStyle()}>
 						</div>
 					}
+					{this.renderTimelineOutputGroups(this.props.segmentLine)}
 					{this.props.isLastInSegment && <div className={ClassNames('segment-timeline__segment-line__nextline', 'segment-timeline__segment-line__nextline--endline', {
 						'auto-next': (this.props.autoNextSegmentLine || this.props.segmentLine.autoNext),
 						'is-next': this.state.isLive

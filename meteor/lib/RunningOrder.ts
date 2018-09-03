@@ -56,6 +56,8 @@ export interface SegmentLineItemExtended extends SegmentLineItem {
 	continuedByRef?: SegmentLineItemExtended
 	/** This item is continuing another, linked, item in another SegmentLine */
 	continuesRef?: SegmentLineItemExtended
+	/** Maximum width of a label so as not to appear underneath the following item */
+	maxLabelWidth?: number
 }
 
 export function getResolvedSegment (studioInstallation: StudioInstallation, runningOrder: RunningOrder, segment: Segment): {
@@ -286,15 +288,18 @@ export function getResolvedSegment (studioInstallation: StudioInstallation, runn
 						const currentItem = sortedItems[i] as SegmentLineItemExtended
 						const previousItem = sortedItems[i - 1] as SegmentLineItemExtended
 						if (previousItem.renderedInPoint !== null && currentItem.renderedInPoint !== null && previousItem.renderedDuration !== null && currentItem.renderedDuration !== null &&
-							previousItem.renderedInPoint !== undefined && currentItem.renderedInPoint !== undefined && previousItem.renderedDuration !== undefined && currentItem.renderedDuration !== undefined &&
-							((previousItem.renderedInPoint + previousItem.renderedDuration > currentItem.renderedInPoint) ||
+							previousItem.renderedInPoint !== undefined && currentItem.renderedInPoint !== undefined && previousItem.renderedDuration !== undefined && currentItem.renderedDuration !== undefined) {
+							if ((previousItem.renderedInPoint + previousItem.renderedDuration > currentItem.renderedInPoint) ||
 							 (previousItem.infiniteMode)
-							)) {
+								) {
 							previousItem.renderedDuration = currentItem.renderedInPoint - previousItem.renderedInPoint
 							previousItem.cropped = true
 							if (previousItem.infiniteMode) {
 								previousItem.infiniteMode = SegmentLineItemLifespan.Normal
 							}
+						}
+
+							previousItem.maxLabelWidth = currentItem.renderedInPoint - previousItem.renderedInPoint
 						}
 					}
 				})

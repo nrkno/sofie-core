@@ -195,7 +195,7 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 		if (Date.now() - this._mouseDown > 350) {
 			if (this.state.overrideHeight && (window.innerHeight - this.state.overrideHeight > CLOSE_MARGIN)) {
 				stateChange = _.extend(stateChange, {
-					drawerHeight: ((this.state.overrideHeight / window.innerHeight) * 100) + 'vh',
+					drawerHeight: (Math.max(0.1, 0, this.state.overrideHeight / window.innerHeight) * 100) + 'vh',
 					expanded: true
 				})
 			} else {

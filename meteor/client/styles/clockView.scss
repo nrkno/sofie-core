@@ -1,3 +1,5 @@
+@import "colorScheme";
+
 .clocks-full-screen {
 	position: fixed;
 	top: 0;
@@ -128,6 +130,10 @@
 	color: #f8e71c;
 	font-weight: bold;
 	margin-top: -2vh;
+
+	&.over {
+		color: $general-late-color;
+	}
 }
 
 .clocks-rundown-title {

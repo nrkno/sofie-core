@@ -356,9 +356,9 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 						{t('On Air')}
 					</div>
 					<div className={ClassNames('segment-timeline__liveline__timecode', {
-						'overtime': !!(this.props.displayTimecode > 0)
+						'overtime': !!(Math.floor(this.props.displayTimecode / 1000) > 0)
 					})}>
-						{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, true, true, '')}
+						{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)}
 					</div>
 				</div>
 			]

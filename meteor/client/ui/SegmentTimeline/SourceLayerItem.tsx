@@ -95,6 +95,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		if (this.props.relative) {
 			return {}
 		} else {
+			const maxLabelWidth = this.props.segmentLineItem.maxLabelWidth
+
 			if (this.props.segmentLine && this.props.segmentLineStartsAt !== undefined) { //  && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined
 				let segmentLineItem = this.props.segmentLineItem
 
@@ -118,7 +120,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 						// || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0)
 						let styleObj = {
-							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' : 'none',
+							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
+								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none',
 							'transform': 'translate3d(' + (widthConstrictedMode ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
 								'translate3d(' + (liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
 								'translate3d(-100%, 0, 0)',
@@ -132,7 +135,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLineStartsAt - inTransitionDuration) * this.props.timeScale
 
 						let styleObj = {
-							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' : 'none',
+							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
+								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none',
 							'transform': 'translate3d(' + (Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
 								'translate3d(' + (liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
 								'translate3d(-100%, 0, 0)',
@@ -147,7 +151,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLineStartsAt - inTransitionDuration) * this.props.timeScale
 
 						let styleObj = {
-							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' : 'none',
+							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
+								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none',
 							'transform': 'translate3d(' + (widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth))).toString() + 'px,  0, 0)',
 							'willChange': 'transform'
 						}
@@ -155,7 +160,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						return styleObj
 					} else {
 						let styleObj = {
-							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' : 'none'
+							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
+								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none'
 						}
 
 						return styleObj
