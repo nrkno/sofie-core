@@ -1893,7 +1893,7 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 				const orderedItems = getOrderedSegmentLineItem(sliGroup.line)
 
 				let allowTransition = false
-				if (sliGroupIndex >= 1) {
+				if (sliGroupIndex >= 1 && activeRunningOrder.previousSegmentLineId) {
 					const prevSliGroup = orderedGroups[sliGroupIndex - 1]
 					allowTransition = !prevSliGroup.line.disableOutTransition
 				}
