@@ -1465,14 +1465,9 @@ function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): SegmentLine
 
 	if (newAdLibItem.content && newAdLibItem.content.timelineObjects) {
 		let contentObjects = newAdLibItem.content.timelineObjects
-		newAdLibItem.content.timelineObjects = _.compact(contentObjects).map(
-			(item) => {
-				const itemCpy = _.extend(item, {
-					_id: newId + '_' + item!._id,
-				})
-				return itemCpy as TimelineObj
-			}
-		)
+		const objs = _.compact(contentObjects)
+		prefixAllObjectIds(objs, newId + '_')
+		newAdLibItem.content.timelineObjects = objs
 	}
 	return newAdLibItem
 }
@@ -1500,14 +1495,9 @@ function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem, segmentLine: 
 
 	if (newSLineItem.content && newSLineItem.content.timelineObjects) {
 		let contentObjects = newSLineItem.content.timelineObjects
-		newSLineItem.content.timelineObjects = _.compact(contentObjects).map(
-			(item) => {
-				const itemCpy = _.extend(item, {
-					_id: newId + '_' + item!._id,
-				})
-				return itemCpy as TimelineObj
-			}
-		)
+		const objs = _.compact(contentObjects)
+		prefixAllObjectIds(objs, newId + '_')
+		newSLineItem.content.timelineObjects = objs
 	}
 	return newSLineItem
 }
