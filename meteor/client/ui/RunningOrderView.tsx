@@ -113,7 +113,13 @@ const WarningDisplay = translate()(timer(5000)(
 				})
 			}
 
-			if (this.props.runningOrder.active && this.props.runningOrder.rehearsal && this.props.runningOrder.expectedStart && getCurrentTime() - this.REHEARSAL_MARGIN > this.props.runningOrder.expectedStart && !this.props.inActiveROView && !this.state.plannedStartCloseShown) {
+			if (this.props.runningOrder.active && this.props.runningOrder.rehearsal && this.props.runningOrder.expectedStart &&
+				// the expectedStart is near
+				getCurrentTime() + this.REHEARSAL_MARGIN > this.props.runningOrder.expectedStart &&
+				// but it's not horribly in the past
+				getCurrentTime() < this.props.runningOrder.expectedStart + (this.props.runningOrder.expectedDuration || 60 * 60 * 1000) &&
+				!this.props.inActiveROView && !this.state.plannedStartCloseShown) {
+
 				this.setState({
 					plannedStartCloseShow: true,
 					plannedStartCloseShown: true
@@ -140,10 +146,9 @@ const WarningDisplay = translate()(timer(5000)(
 
 			if (!this.props.runningOrder) return null
 
-			return this.state.plannedStartCloseShow ?
-						<ModalDialog title={t('Start time is close')} acceptText={t('Yes')} secondaryText={t('No')} onAccept={this.reloadRO} onDiscard={this.discard} onSecondary={this.discard}>
-							<p>{t('You are in rehearsal mode, the broadcast starts in 1 minute. Do you want to reload the rundown and remove rehearsal mode?')}</p>
-						</ModalDialog> : null
+			return <ModalDialog title={t('Start time is close')} acceptText={t('Yes')} secondaryText={t('No')} onAccept={this.reloadRO} onDiscard={this.discard} onSecondary={this.discard} show={this.state.plannedStartCloseShow && !(this.props.runningOrder.active && !this.props.runningOrder.rehearsal) && this.props.runningOrder.active}>
+						<p>{t('You are in rehearsal mode, the broadcast starts in 1 minute. Do you want to reload the rundown and remove rehearsal mode?')}</p>
+					</ModalDialog>
 		}
 	}
 ) as React.StatelessComponent<Translated<ITimingWarningProps>>)
