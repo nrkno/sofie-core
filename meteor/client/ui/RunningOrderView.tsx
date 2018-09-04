@@ -456,7 +456,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					// todo: notify the user
 					console.log(err)
 				} else {
-					console.log('segmentLineItemId', segmentLineItemId)
+					// console.log('segmentLineItemId', segmentLineItemId)
 				}
 			})
 		}
@@ -468,7 +468,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					// todo: notify the user
 					console.log(err)
 				} else {
-					console.log('segmentLineItemId', segmentLineItemId)
+					// console.log('segmentLineItemId', segmentLineItemId)
 				}
 			})
 		}
