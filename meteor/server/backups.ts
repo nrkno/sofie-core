@@ -219,7 +219,7 @@ function getSystemSnapshot (studioId: string) {
 				commands: PeripheralDeviceCommands.find({ deviceId: device._id }).fetch()
 			}
 			snapshot.devices[device._id] = d
-			if (device.connected) {
+			if (device.connected && device.type !== PeripheralDeviceAPI.DeviceType.OTHER) {
 				let o = ServerPeripheralDeviceAPI.executeFunction(device._id,'getSnapshot')
 				d = _.extend(d,o)
 				logger.info('Got snapshot from device "' + device._id + '"')
