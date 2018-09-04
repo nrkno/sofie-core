@@ -82,6 +82,8 @@ export interface ISourceLayerBase {
 	activateStickyKeyboardHotkey?: string
 	/** If set to true, the layer will be hidden from the user in Running Order View */
 	isHidden?: boolean
+	/** If set to true, items in the layer can be disabled by the user (the "G"-shortcut) */
+	allowDisable?: boolean
 }
 
 export interface IStudioConfigItem {

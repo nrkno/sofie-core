@@ -24,6 +24,7 @@ import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
 import { getHash } from '../lib'
 import { syncFunction, syncFunctionIgnore } from '../codeControl'
+import { getResolvedSegment, ISourceLayerExtended, SegmentLineExtended } from '../../lib/RunningOrder'
 let clone = require('fast-clone')
 
 export namespace ServerPlayoutAPI {
@@ -592,6 +593,104 @@ export namespace ServerPlayoutAPI {
 			}
 		}
 	}
+	export function roDisableNextSegmentLineItem (roId: string, undo?: boolean): string | null {
+		check(roId, String)
+
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		if (!runningOrder.currentSegmentLineId) throw new Meteor.Error(401, `No current segmentLine!`)
+
+		let studio = runningOrder.getStudioInstallation()
+
+		let currentSementLine = SegmentLines.findOne(runningOrder.currentSegmentLineId)
+		if (!currentSementLine) throw new Meteor.Error(404, `SegmentLine "${runningOrder.currentSegmentLineId}" not found!`)
+
+		let currentSement = Segments.findOne(currentSementLine.segmentId)
+		if (!currentSement) throw new Meteor.Error(404, `Segment "${currentSementLine.segmentId}" not found!`)
+
+		let o = getResolvedSegment(studio, runningOrder, currentSement)
+
+		// @ts-ignore stringify
+		// logger.info(o)
+		// logger.info(JSON.stringify(o, '', 2))
+
+		let allowedSourceLayers: {[layerId: string]: ISourceLayerExtended} = {}
+		_.each(o.segmentExtended.sourceLayers, (sourceLayer: ISourceLayerExtended) => {
+			if (sourceLayer.allowDisable) allowedSourceLayers[sourceLayer._id] = sourceLayer
+		})
+
+		// logger.info('allowedSourceLayers', allowedSourceLayers)
+
+		// Find next segmentLineItem to disable
+		let segmentLineItems: Array<SegmentLineItemResolved> = getOrderedSegmentLineItem(currentSementLine)
+
+		let findLast: boolean = undo || false
+
+		let filteredSegmentLineItems = _.sortBy(
+			_.filter(segmentLineItems, (sli: SegmentLineItemResolved) => {
+				let sourceLayer = allowedSourceLayers[sli.sourceLayerId]
+				if (sourceLayer && sourceLayer.allowDisable) return true
+				return false
+			}),
+			(sli: SegmentLineItemResolved) => {
+				let sourceLayer = allowedSourceLayers[sli.sourceLayerId]
+				return sourceLayer._rank || -9999
+			}
+		)
+		if (findLast) filteredSegmentLineItems.reverse()
+
+		let nowInSegmentLine = 0
+		if (
+			currentSementLine.startedPlayback &&
+			currentSementLine.timings &&
+			currentSementLine.timings.startedPlayback
+		) {
+			let lastStartedPlayback = _.last(currentSementLine.timings.startedPlayback)
+
+			if (lastStartedPlayback) {
+				nowInSegmentLine = getCurrentTime() - lastStartedPlayback
+			}
+		}
+
+		logger.info('nowInSegmentLine', nowInSegmentLine)
+		logger.info('filteredSegmentLineItems', filteredSegmentLineItems)
+
+		let nextSegmentLine: SegmentLineItemResolved | undefined = _.find(filteredSegmentLineItems, (sli) => {
+			logger.info('sli.resolvedStart', sli.resolvedStart)
+			return (
+				sli.resolvedStart >= nowInSegmentLine &&
+				(
+					(
+						!undo &&
+						!sli.disabled
+					) || (
+						undo &&
+						sli.disabled
+					)
+				)
+			)
+		})
+
+		if (nextSegmentLine) {
+			if (!undo) {
+				logger.info('Disabling next segmentLineItem ' + nextSegmentLine._id)
+				SegmentLineItems.update(nextSegmentLine._id, {$set: {
+					disabled: true
+				}})
+				updateTimeline(studio._id)
+			} else {
+				logger.info('Enabling next segmentLineItem ' + nextSegmentLine._id)
+				SegmentLineItems.update(nextSegmentLine._id, {$set: {
+					disabled: false
+				}})
+				updateTimeline(studio._id)
+			}
+
+			return nextSegmentLine._id
+		} else {
+			return null
+		}
+	}
 
 	export function sliPlaybackStartedCallback (roId: string, sliId: string, startedPlayback: Time) {
 		check(roId, String)
@@ -999,6 +1098,9 @@ methods[PlayoutAPI.methods.roActivateHold] = (roId: string) => {
 }
 methods[PlayoutAPI.methods.roStoriesMoved] = (roId: string, onAirNextWindowWidth: number | undefined, nextPosition: number | undefined) => {
 	return ServerPlayoutAPI.roStoriesMoved(roId, onAirNextWindowWidth, nextPosition)
+}
+methods[PlayoutAPI.methods.roDisableNextSegmentLineItem] = (roId: string, undo?: boolean) => {
+	return ServerPlayoutAPI.roDisableNextSegmentLineItem(roId, undo)
 }
 methods[PlayoutAPI.methods.segmentLinePlaybackStartedCallback] = (roId: string, slId: string, startedPlayback: number) => {
 	return ServerPlayoutAPI.slPlaybackStartedCallback(roId, slId, startedPlayback)
@@ -1679,6 +1781,7 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLine
 	const isHold = holdState === RunningOrderHoldState.ACTIVE
 
 	_.each(items, (item: SegmentLineItem) => {
+		if (item.disabled) return
 		if (item.isTransition && (!allowTransition || isHold)) {
 			return
 		}
