@@ -1188,60 +1188,67 @@ function getResolvedSegmentLineItems (line: SegmentLine): SegmentLineItem[] {
 
 	return processedItems
 }
-function getOrderedSegmentLineItem (line: SegmentLine): SegmentLineItem[] {
+interface SegmentLineItemResolved extends SegmentLineItem {
+	/** Resolved start time of the segmentLineItem */
+	resolvedStart: number
+	/** Whether the segmentLineItem was successfully resolved */
+	resolved: boolean
+}
+function getOrderedSegmentLineItem (line: SegmentLine): Array<SegmentLineItemResolved> {
 	const items = line.getSegmentLinesItems()
 
 	const itemMap: { [key: string]: SegmentLineItem } = {}
 	items.forEach(i => itemMap[i._id] = i)
 
-	const objs = items.map(i => clone(createSegmentLineItemGroup(i, i.durationOverride || i.duration || i.expectedDuration || 0)))
+	const objs: Array<TimelineObj> = items.map(
+		i => clone(createSegmentLineItemGroup(i, i.durationOverride || i.duration || i.expectedDuration || 0))
+	)
 	objs.forEach(o => {
 		if (o.trigger.type === TriggerType.TIME_ABSOLUTE && (o.trigger.value === 0 || o.trigger.value === 'now')) {
 			o.trigger.value = 100
 		}
 	})
-	const events = Resolver.getTimelineInWindow(transformTimeline(objs))
+	const tlResolved = Resolver.getTimelineInWindow(transformTimeline(objs))
 
-	let eventMap = events.resolved.map(e => {
-		const id = ((e as any || {}).metadata || {}).segmentLineItemId
-		return {
-			start: e.resolved.startTime || 0,
-			id: id,
-			item: itemMap[id]
-		}
-	})
-	events.unresolved.forEach(e => {
-		const id = ((e as any || {}).metadata || {}).segmentLineItemId
-		eventMap.push({
-			start: 0,
-			id: id,
-			item: itemMap[id]
-		})
-	})
-	if (events.unresolved.length > 0) {
-		 logger.warn('got ' + events.unresolved.length + ' unresolved items for sli #' + line._id)
+	let resolvedItems: Array<SegmentLineItemResolved> = []
+	interface IEvent {
+		start: number,
+		id: string,
+		item: SegmentLineItemResolved
 	}
-	if (items.length !== eventMap.length) {
-		logger.warn('got ' + eventMap.length + ' ordered items. expected ' + items.length + '. for sli #' + line._id)
+	_.each(tlResolved.resolved, e => {
+		const id = ((e as any || {}).metadata || {}).segmentLineItemId
+		let item = _.clone(itemMap[id]) as SegmentLineItemResolved
+		item.resolvedStart = e.resolved.startTime || 0
+		item.resolved = true
+		resolvedItems.push(item)
+	})
+	_.each(tlResolved.unresolved, e => {
+		const id = ((e as any || {}).metadata || {}).segmentLineItemId
+
+		let item = _.clone(itemMap[id]) as SegmentLineItemResolved
+		item.resolvedStart = 0
+		item.resolved = false
+
+		resolvedItems.push(item)
+	})
+	if (tlResolved.unresolved.length > 0) {
+		 logger.warn('got ' + tlResolved.unresolved.length + ' unresolved items for sli #' + line._id)
+	}
+	if (items.length !== resolvedItems.length) {
+		logger.warn('got ' + resolvedItems.length + ' ordered items. expected ' + items.length + '. for sli #' + line._id)
 	}
 
-	eventMap.sort((a, b) => {
-		if (a.start < b.start) {
-			return -1
-		} else if (a.start > b.start) {
-			return 1
-		} else {
-			if (a.item.isTransition === b.item.isTransition) {
-				return 0
-			} else if (b.item.isTransition) {
-				return 1
-			} else {
-				return -1
-			}
-		}
+	resolvedItems.sort((a, b) => {
+		if (a.resolvedStart < b.resolvedStart) return -1
+		if (a.resolvedStart > b.resolvedStart) return 1
+
+		if (a.isTransition === b.isTransition) return 0
+		if (b.isTransition) return 1
+		return -1
 	})
 
-	return eventMap.map(e => e.item)
+	return resolvedItems
 }
 
 function resetSegment (segmentId: string, currentSegmentLineId: string | null) {
@@ -1622,7 +1629,11 @@ function createSegmentLineItemGroupFirstObject (segmentLineItem: SegmentLineItem
 	})
 }
 
-function createSegmentLineItemGroup (item: SegmentLineItem | RunningOrderBaselineItem, duration: number | string, segmentLineGroup?: TimelineObj): TimelineObj {
+function createSegmentLineItemGroup (
+	item: SegmentLineItem | RunningOrderBaselineItem,
+	duration: number | string,
+	segmentLineGroup?: TimelineObj
+): TimelineObj {
 	return literal<TimelineObjGroup>({
 		_id: PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + item._id,
 		content: {
