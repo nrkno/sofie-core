@@ -1,8 +1,8 @@
-# tv-automation-server-core
+# Sofie: The Modern TV News Studio Automation System (tv-automation-server-core)
 
 *Note: This is a work in progress!*
 
-This is the core application of the NRK News Automation system.
+This is the core application of the NRK "Sofie" News Studio Automation System.
 
 ## Local development
 First, install meteor:
