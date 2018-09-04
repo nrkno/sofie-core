@@ -277,14 +277,16 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 									  this.context.durations.segmentLineDisplayStartsAt &&
 									  (this.context.durations.segmentLineDisplayStartsAt[this.props.currentLiveSegmentLine._id] - this.context.durations.segmentLineDisplayStartsAt[this.props.segmentLines[0]._id])
 									  || 0
-			let newLivePosition = this.props.currentLiveSegmentLine.startedPlayback ?
-				(getCurrentTime() - this.props.currentLiveSegmentLine.startedPlayback + segmentLineOffset) :
+
+			const lastStartedPlayback = this.props.currentLiveSegmentLine.getLastStartedPlayback()
+			let newLivePosition = this.props.currentLiveSegmentLine.startedPlayback && lastStartedPlayback ?
+				(getCurrentTime() - lastStartedPlayback + segmentLineOffset) :
 				segmentLineOffset
 
 			this.setState(_.extend({
 				livePosition: newLivePosition,
-				displayTimecode: this.props.currentLiveSegmentLine.startedPlayback ?
-					(getCurrentTime() - (this.props.currentLiveSegmentLine.startedPlayback + (this.props.currentLiveSegmentLine.duration || this.props.currentLiveSegmentLine.expectedDuration || 0))) :
+				displayTimecode: this.props.currentLiveSegmentLine.startedPlayback && lastStartedPlayback ?
+					(getCurrentTime() - (lastStartedPlayback + (this.props.currentLiveSegmentLine.duration || this.props.currentLiveSegmentLine.expectedDuration || 0))) :
 					((this.props.currentLiveSegmentLine.duration || this.props.currentLiveSegmentLine.expectedDuration || 0) * -1)
 			}, this.state.followLiveLine ? {
 				scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)

@@ -69,8 +69,8 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 				if (_.isNumber(timelineObj.trigger.value)) { // this is a normal absolute trigger value
 					segmentCopy.renderedInPoint = (timelineObj.trigger.value as number)
 				} else if (timelineObj.trigger.value === 'now') { // this is a special absolute trigger value
-					if (props.segmentLine && props.segmentLine.startedPlayback) {
-						segmentCopy.renderedInPoint = getCurrentTime() - props.segmentLine.startedPlayback
+					if (props.segmentLine && props.segmentLine.startedPlayback && props.segmentLine.getLastStartedPlayback()) {
+						segmentCopy.renderedInPoint = getCurrentTime() - (props.segmentLine.getLastStartedPlayback() || 0)
 					} else {
 						segmentCopy.renderedInPoint = 0
 					}

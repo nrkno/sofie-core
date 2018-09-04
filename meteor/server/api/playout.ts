@@ -733,7 +733,7 @@ export namespace ServerPlayoutAPI {
 
 				SegmentLines.update(segLine._id, {
 					$set: {
-						startedPlayback
+						startedPlayback: true,
 					},
 					$push: {
 						'timings.startedPlayback': startedPlayback
@@ -769,6 +769,8 @@ export namespace ServerPlayoutAPI {
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine)
 		SegmentLineItems.insert(newSegmentLineItem)
 
+		cropInfinitesOnLayer(runningOrder, segLine, newSegmentLineItem)
+
 		// logger.debug('adLibItemStart', newSegmentLineItem)
 
 		stopInfinitesRunningOnLayer(runningOrder, segLine, newSegmentLineItem.sourceLayerId)
@@ -799,6 +801,8 @@ export namespace ServerPlayoutAPI {
 		SegmentLineItems.insert(newSegmentLineItem)
 
 		// logger.debug('adLibItemStart', newSegmentLineItem)
+
+		cropInfinitesOnLayer(runningOrder, segLine, newSegmentLineItem)
 
 		stopInfinitesRunningOnLayer(runningOrder, segLine, newSegmentLineItem.sourceLayerId)
 
@@ -834,7 +838,7 @@ export namespace ServerPlayoutAPI {
 
 		// The ad-lib item positioning will be relative to the startedPlayback of the segment line
 		if (segLine.startedPlayback) {
-			parentOffset = segLine.startedPlayback
+			parentOffset = segLine.getLastStartedPlayback() || parentOffset
 		}
 
 		let newExpectedDuration = 1 // smallest, non-zero duration
@@ -914,10 +918,10 @@ export namespace ServerPlayoutAPI {
 		})
 		if (!segLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
 		if (runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Items can be only manipulated in a current segment line!`)
-		if (!segLine.startedPlayback) throw new Meteor.Error(405, `Segment Line "${slId}" has yet to start playback!`)
+		if (!segLine.getLastStartedPlayback()) throw new Meteor.Error(405, `Segment Line "${slId}" has yet to start playback!`)
 
 		const now = getCurrentTime()
-		const relativeNow = now - segLine.startedPlayback
+		const relativeNow = now - (segLine.getLastStartedPlayback() || 0)
 		const orderedItems = getResolvedSegmentLineItems(segLine)
 
 		// console.log(JSON.stringify(orderedItems.filter(i => i.sourceLayerId === sourceLayerId).map(i => {
@@ -1080,7 +1084,7 @@ function beforeTake (runningOrder: RunningOrder, currentSegmentLine: SegmentLine
 					continuesRefId: item._id,
 
 					// Subtract the amount played from the expected duration
-					expectedDuration: Math.max(0, item.expectedDuration - ((item.startedPlayback || currentSegmentLine.startedPlayback || getCurrentTime()) - getCurrentTime()))
+					expectedDuration: Math.max(0, item.expectedDuration - ((item.startedPlayback || currentSegmentLine.getLastStartedPlayback() || getCurrentTime()) - getCurrentTime()))
 				}, _.omit(clone(item) as SegmentLineItem, 'startedPlayback', 'duration', 'overflows'))
 
 				if (overflowedItem.expectedDuration > 0) {
@@ -1112,7 +1116,7 @@ function getResolvedSegmentLineItems (line: SegmentLine): SegmentLineItem[] {
 	const itemMap: { [key: string]: SegmentLineItem } = {}
 	items.forEach(i => itemMap[i._id] = i)
 
-	const objs = items.map(i => clone(createSegmentLineItemGroup(i, i.durationOverride || i.duration || 0)))
+	const objs = items.map(i => clone(createSegmentLineItemGroup(i, i.durationOverride || i.duration || i.expectedDuration || 0)))
 	objs.forEach(o => {
 		if (o.trigger.type === TriggerType.TIME_ABSOLUTE && (o.trigger.value === 0 || o.trigger.value === 'now')) {
 			o.trigger.value = 1
@@ -1190,7 +1194,7 @@ function getOrderedSegmentLineItem (line: SegmentLine): SegmentLineItem[] {
 	const itemMap: { [key: string]: SegmentLineItem } = {}
 	items.forEach(i => itemMap[i._id] = i)
 
-	const objs = items.map(i => clone(createSegmentLineItemGroup(i, i.durationOverride || i.duration || 0)))
+	const objs = items.map(i => clone(createSegmentLineItemGroup(i, i.durationOverride || i.duration || i.expectedDuration || 0)))
 	objs.forEach(o => {
 		if (o.trigger.type === TriggerType.TIME_ABSOLUTE && (o.trigger.value === 0 || o.trigger.value === 'now')) {
 			o.trigger.value = 100
@@ -1431,6 +1435,20 @@ const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, runUntil
 	}
 })
 
+const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (runningOrder: RunningOrder, segLine: SegmentLine, newItem: SegmentLineItem) {
+	const items = getOrderedSegmentLineItem(segLine).filter(i => i.sourceLayerId === newItem.sourceLayerId && i._id !== newItem._id)
+
+	for (const i of items) {
+		if (i.infiniteMode && !i.expectedDuration && i.dynamicallyInserted) {
+			SegmentLineItems.update({
+				_id: i._id
+			}, { $set: {
+				expectedDuration: `#${PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + newItem._id}.start - #.start`
+			}})
+		}
+	}
+})
+
 const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOnLayer (runningOrder: RunningOrder, segLine: SegmentLine, sourceLayer: string) {
 	let remainingLines = runningOrder.getSegmentLines().filter(l => l._rank > segLine._rank)
 	for (let line of remainingLines) {
@@ -1465,14 +1483,9 @@ function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): SegmentLine
 
 	if (newAdLibItem.content && newAdLibItem.content.timelineObjects) {
 		let contentObjects = newAdLibItem.content.timelineObjects
-		newAdLibItem.content.timelineObjects = _.compact(contentObjects).map(
-			(item) => {
-				const itemCpy = _.extend(item, {
-					_id: newId + '_' + item!._id,
-				})
-				return itemCpy as TimelineObj
-			}
-		)
+		const objs = _.compact(contentObjects)
+		prefixAllObjectIds(objs, newId + '_')
+		newAdLibItem.content.timelineObjects = objs
 	}
 	return newAdLibItem
 }
@@ -1500,14 +1513,9 @@ function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem, segmentLine: 
 
 	if (newSLineItem.content && newSLineItem.content.timelineObjects) {
 		let contentObjects = newSLineItem.content.timelineObjects
-		newSLineItem.content.timelineObjects = _.compact(contentObjects).map(
-			(item) => {
-				const itemCpy = _.extend(item, {
-					_id: newId + '_' + item!._id,
-				})
-				return itemCpy as TimelineObj
-			}
-		)
+		const objs = _.compact(contentObjects)
+		prefixAllObjectIds(objs, newId + '_')
+		newSLineItem.content.timelineObjects = objs
 	}
 	return newSLineItem
 }
@@ -1523,10 +1531,11 @@ function setRunningOrderStartedPlayback (runningOrder, startedPlayback) {
 }
 
 function setPreviousLinePlaybackDuration (roId: string, prevSegLine: SegmentLine, lastChange: Time) {
-	if (prevSegLine.startedPlayback && prevSegLine.startedPlayback > 0) {
+	const lastStartedPlayback = prevSegLine.getLastStartedPlayback()
+	if (prevSegLine.startedPlayback && lastStartedPlayback && lastStartedPlayback > 0) {
 		SegmentLines.update(prevSegLine._id, {
 			$set: {
-				duration: lastChange - prevSegLine.startedPlayback
+				duration: lastChange - lastStartedPlayback
 			}
 		})
 	} else {
@@ -1670,7 +1679,7 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLine
 			let tos = item.content.timelineObjects
 
 			// create a segmentLineItem group for the items and then place all of them there
-			const segmentLineItemGroup = createSegmentLineItemGroup(item, item.durationOverride || item.duration || 0, segmentLineGroup)
+			const segmentLineItemGroup = createSegmentLineItemGroup(item, item.durationOverride || item.duration || item.expectedDuration || 0, segmentLineGroup)
 			timelineObjs.push(segmentLineItemGroup)
 			timelineObjs.push(createSegmentLineItemGroupFirstObject(item, segmentLineItemGroup))
 
@@ -1893,7 +1902,7 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 				const orderedItems = getOrderedSegmentLineItem(sliGroup.line)
 
 				let allowTransition = false
-				if (sliGroupIndex >= 1) {
+				if (sliGroupIndex >= 1 && activeRunningOrder.previousSegmentLineId) {
 					const prevSliGroup = orderedGroups[sliGroupIndex - 1]
 					allowTransition = !prevSliGroup.line.disableOutTransition
 				}
@@ -1991,6 +2000,32 @@ export function updateTimelineFromMosData (roId: string, changedLines?: Array<st
 	updateTimelineFromMosDataTimeouts[roId] = data
 }
 
+function prefixAllObjectIds (objList: TimelineObj[], prefix: string) {
+	const changedIds = objList.map(o => o._id)
+
+	let replaceIds = (str: string) => {
+		return str.replace(/#([a-zA-Z0-9_]+)\./g, (m) => {
+			const id = m.substr(1, m.length - 2)
+			return changedIds.indexOf(id) >= 0 ? '#' + prefix + id + '.' : m
+		})
+	}
+
+	objList.forEach(o => {
+		o._id = prefix + o._id
+
+		if (typeof o.duration === 'string') {
+			o.duration = replaceIds(o.duration)
+		}
+		if (typeof o.trigger.value === 'string') {
+			o.trigger.value = replaceIds(o.trigger.value)
+		}
+
+		if (typeof o.inGroup === 'string') {
+			o.inGroup = changedIds.indexOf(o.inGroup) === -1 ? o.inGroup : prefix + o.inGroup
+		}
+	})
+}
+
 /**
  * Updates the Timeline to reflect the state in the RunningOrder, Segments, Segmentlines etc...
  * @param studioInstallationId id of the studioInstallation to update
@@ -2064,7 +2099,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 
 				allowTransition = !previousSegmentLine.disableOutTransition
 
-				if (previousSegmentLine.startedPlayback) {
+				if (previousSegmentLine.getLastStartedPlayback()) {
 					let transitionDuration = currentSegmentLine.transitionDuration || 0
 					if (!currentSegmentLine.transitionDuration && allowTransition) {
 						const transitionObjs = currentSegmentLine.getSegmentLinesItems().filter(i => i.isTransition)
@@ -2079,22 +2114,25 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 					previousSegmentLineGroup.priority = -1
 					previousSegmentLineGroup.trigger = literal<ITimelineTrigger>({
 						type: TriggerType.TIME_ABSOLUTE,
-						value: previousSegmentLine.startedPlayback
+						value: previousSegmentLine.getLastStartedPlayback() || 0
 					})
+
+					// If a SegmentLineItem is infinite, and continued in the new SegmentLine, then we want to add the SegmentLineItem only there to avoid id collisions
+					const skipIds = currentInfiniteItems.map(l => l.infiniteId || '')
+					const previousSegmentLineItems = previousSegmentLine.getSegmentLinesItems().filter(l => !l.infiniteId || skipIds.indexOf(l.infiniteId) < 0)
+
+					let prevObjs = [previousSegmentLineGroup]
+					prevObjs = prevObjs.concat(
+						transformSegmentLineIntoTimeline(previousSegmentLineItems, previousSegmentLineGroup, undefined, undefined, activeRunningOrder.holdState))
+
+					prefixAllObjectIds(prevObjs, 'previous_')
 
 					// If autonext with an overlap, keep the previous line alive for the specified overlap
 					if (previousSegmentLine.autoNext && previousSegmentLine.autoNextOverlap) {
 						previousSegmentLineGroup.duration = `#${PlayoutTimelinePrefixes.SEGMENT_LINE_GROUP_PREFIX + currentSegmentLine._id}.start + ${previousSegmentLine.autoNextOverlap || 0} - #.start`
 					}
 
-					// If a SegmentLineItem is infinite, and continued in the new SegmentLine, then we want to add the SegmentLineItem only there to avoid id collisions
-					const skipIds = currentInfiniteItems.map(l => l.infiniteId || '')
-					const previousSegmentLineItems = previousSegmentLine.getSegmentLinesItems().filter(l => !l.infiniteId || skipIds.indexOf(l.infiniteId) < 0)
-
-					timelineObjs = timelineObjs.concat(
-						previousSegmentLineGroup,
-						transformSegmentLineIntoTimeline(previousSegmentLineItems, previousSegmentLineGroup, undefined, undefined, activeRunningOrder.holdState))
-					timelineObjs.push(createSegmentLineGroupFirstObject(previousSegmentLine, previousSegmentLineGroup))
+					timelineObjs = timelineObjs.concat(prevObjs)
 				}
 			}
 
@@ -2102,10 +2140,10 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 			// fetch the timelineobjs in items
 			const isFollowed = nextSegmentLine && currentSegmentLine.autoNext
 			currentSegmentLineGroup = createSegmentLineGroup(currentSegmentLine, (isFollowed ? (currentSegmentLine.expectedDuration || 0) : 0))
-			if (currentSegmentLine.startedPlayback) { // If we are recalculating the currentLine, then ensure it doesnt think it is starting now
+			if (currentSegmentLine.startedPlayback && currentSegmentLine.getLastStartedPlayback()) { // If we are recalculating the currentLine, then ensure it doesnt think it is starting now
 				currentSegmentLineGroup.trigger = literal<ITimelineTrigger>({
 					type: TriggerType.TIME_ABSOLUTE,
-					value: currentSegmentLine.startedPlayback
+					value: currentSegmentLine.getLastStartedPlayback() || 0
 				})
 			}
 
@@ -2177,6 +2215,8 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 		_.each(timelineObjs, (o) => {
 			o.roId = activeRunningOrder._id
 		})
+
+		// console.log(JSON.stringify(timelineObjs))
 
 		processTimelineObjects(studioInstallation, timelineObjs)
 
