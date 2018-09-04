@@ -769,6 +769,8 @@ export namespace ServerPlayoutAPI {
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine)
 		SegmentLineItems.insert(newSegmentLineItem)
 
+		cropInfinitesOnLayer(runningOrder, segLine, newSegmentLineItem)
+
 		// logger.debug('adLibItemStart', newSegmentLineItem)
 
 		stopInfinitesRunningOnLayer(runningOrder, segLine, newSegmentLineItem.sourceLayerId)
@@ -799,6 +801,8 @@ export namespace ServerPlayoutAPI {
 		SegmentLineItems.insert(newSegmentLineItem)
 
 		// logger.debug('adLibItemStart', newSegmentLineItem)
+
+		cropInfinitesOnLayer(runningOrder, segLine, newSegmentLineItem)
 
 		stopInfinitesRunningOnLayer(runningOrder, segLine, newSegmentLineItem.sourceLayerId)
 
@@ -1112,7 +1116,7 @@ function getResolvedSegmentLineItems (line: SegmentLine): SegmentLineItem[] {
 	const itemMap: { [key: string]: SegmentLineItem } = {}
 	items.forEach(i => itemMap[i._id] = i)
 
-	const objs = items.map(i => clone(createSegmentLineItemGroup(i, i.durationOverride || i.duration || 0)))
+	const objs = items.map(i => clone(createSegmentLineItemGroup(i, i.durationOverride || i.duration || i.expectedDuration || 0)))
 	objs.forEach(o => {
 		if (o.trigger.type === TriggerType.TIME_ABSOLUTE && (o.trigger.value === 0 || o.trigger.value === 'now')) {
 			o.trigger.value = 1
@@ -1190,7 +1194,7 @@ function getOrderedSegmentLineItem (line: SegmentLine): SegmentLineItem[] {
 	const itemMap: { [key: string]: SegmentLineItem } = {}
 	items.forEach(i => itemMap[i._id] = i)
 
-	const objs = items.map(i => clone(createSegmentLineItemGroup(i, i.durationOverride || i.duration || 0)))
+	const objs = items.map(i => clone(createSegmentLineItemGroup(i, i.durationOverride || i.duration || i.expectedDuration || 0)))
 	objs.forEach(o => {
 		if (o.trigger.type === TriggerType.TIME_ABSOLUTE && (o.trigger.value === 0 || o.trigger.value === 'now')) {
 			o.trigger.value = 100
@@ -1431,6 +1435,20 @@ const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, runUntil
 	}
 })
 
+const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (runningOrder: RunningOrder, segLine: SegmentLine, newItem: SegmentLineItem) {
+	const items = getOrderedSegmentLineItem(segLine).filter(i => i.sourceLayerId === newItem.sourceLayerId && i._id !== newItem._id)
+
+	for (const i of items) {
+		if (i.infiniteMode && !i.expectedDuration && i.dynamicallyInserted) {
+			SegmentLineItems.update({
+				_id: i._id
+			}, { $set: {
+				expectedDuration: `#${PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + newItem._id}.start - #.start`
+			}})
+		}
+	}
+})
+
 const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOnLayer (runningOrder: RunningOrder, segLine: SegmentLine, sourceLayer: string) {
 	let remainingLines = runningOrder.getSegmentLines().filter(l => l._rank > segLine._rank)
 	for (let line of remainingLines) {
@@ -1661,7 +1679,7 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLine
 			let tos = item.content.timelineObjects
 
 			// create a segmentLineItem group for the items and then place all of them there
-			const segmentLineItemGroup = createSegmentLineItemGroup(item, item.durationOverride || item.duration || 0, segmentLineGroup)
+			const segmentLineItemGroup = createSegmentLineItemGroup(item, item.durationOverride || item.duration || item.expectedDuration || 0, segmentLineGroup)
 			timelineObjs.push(segmentLineItemGroup)
 			timelineObjs.push(createSegmentLineItemGroupFirstObject(item, segmentLineItemGroup))
 
