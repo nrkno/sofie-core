@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
-import * as $ from 'jquery'
+import * as VelocityReact from 'velocity-react'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PeripheralDevice, PeripheralDevices, MosDevice } from '../../../lib/collections/PeripheralDevices'
 import { RunningOrder, RunningOrders } from '../../../lib/collections/RunningOrders'
@@ -64,6 +64,8 @@ interface IState {
 	mosDiff: OnLineOffLineList
 	playoutDiff: OnLineOffLineList
 	displayNotes: boolean
+	forceHideNotification: boolean
+	displayNotification: boolean
 }
 
 interface OnLineOffLineList {
@@ -167,6 +169,9 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 		playoutDevices: playoutOnlineOffline
 	}
 })(class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	private notificationTimeout: number
+	private STATE_CHANGE_NOTIFICATION_DURATION = 7000
+
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 
@@ -179,7 +184,9 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 				onLine: [],
 				offLine: props.playoutDevices.offLine
 			},
-			displayNotes: false
+			displayNotes: false,
+			forceHideNotification: false,
+			displayNotification: false
 		}
 	}
 
@@ -191,11 +198,22 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 
 	componentDidUpdate (prevProps: IProps & ITrackedProps) {
 		if (prevProps !== this.props) {
+			if (this.notificationTimeout) Meteor.clearTimeout(this.notificationTimeout)
+
 			this.setState({
 				mosDiff: diffOnLineOffLineList(prevProps.mosDevices, this.props.mosDevices),
-				playoutDiff: diffOnLineOffLineList(prevProps.playoutDevices, this.props.playoutDevices)
+				playoutDiff: diffOnLineOffLineList(prevProps.playoutDevices, this.props.playoutDevices),
+				forceHideNotification: false,
+				displayNotification: true
 			})
+
+			this.notificationTimeout = Meteor.setTimeout(() => {
+				this.setState({
+					displayNotification: false
+				})
+			}, this.STATE_CHANGE_NOTIFICATION_DURATION)
 		}
+
 	}
 	clickNote (e, note: SegmentLineNote) {
 		e.preventDefault()
@@ -217,6 +235,11 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 	clickNotes () {
 		this.setState({
 			displayNotes: !this.state.displayNotes
+		})
+	}
+	forceHideNotification = () => {
+		this.setState({
+			forceHideNotification: true
 		})
 	}
 	render () {
@@ -316,9 +339,13 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 						</div>
 					</div>
 				</div>
-				<div className='running-order-system-status__message'>
-					{this.makeNotification()}
-				</div>
+				<VelocityReact.VelocityTransitionGroup leave={{ animation: 'fadeOut', duration: 3000 }}>
+					{ this.state.displayNotification && !this.state.forceHideNotification &&
+						<div className='running-order-system-status__message' onClick={this.forceHideNotification}>
+							{this.makeNotification()}
+						</div>
+					}
+				</VelocityReact.VelocityTransitionGroup>
 			</div>
 		)
 	}

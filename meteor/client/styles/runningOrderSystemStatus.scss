@@ -10,6 +10,18 @@
 	transform: translate(-50%, 0);
 	z-index: 2;
 
+	.running-order-system-status__message {
+		position: absolute;
+		background: rgba(0,0,0,0.6);
+		padding: 0.5em;
+		border-radius: 0 0 3px 3px;
+		top: 22px;
+		width: 100%;
+		max-width: 500px;
+		right: auto;
+		z-index: 30;
+	}
+
 	.running-order-system-status__indicators {
 		display: flex;
 		position: absolute;
@@ -64,6 +76,7 @@
 				display: none;
 				padding: 0 10px;
 				transform: translate(-50%, 0);
+				z-index: 50;
 
 				> h4 {
 					margin: 10px 0;
@@ -124,6 +137,7 @@
 				transform: translate(-50%, 0);
 				color: #FFF;
 				font-weight: 300;
+				z-index: 50;
 
 				padding: 10px;
 

@@ -623,7 +623,6 @@ export namespace ServerPlayoutAPI {
 
 		// logger.info('allowedSourceLayers', allowedSourceLayers)
 
-
 		// logger.info('nowInSegmentLine', nowInSegmentLine)
 		// logger.info('filteredSegmentLineItems', filteredSegmentLineItems)
 		let getNextSegmentLineItem = (segmentLine: SegmentLine, undo?: boolean) => {
