@@ -2489,7 +2489,7 @@ function processTimelineObjects (studioInstallation: StudioInstallation, timelin
  * containing the hash of the timeline, used to determine if the timeline should be updated in the gateways
  * @param studioInstallationId id of the studioInstallation to update
  */
-function afterUpdateTimeline (studioInstallation: StudioInstallation) {
+export function afterUpdateTimeline (studioInstallation: StudioInstallation) {
 	// logger.info('afterUpdateTimeline')
 	let timelineObjs = Timeline.find({
 		siId: studioInstallation._id,
