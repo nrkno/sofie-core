@@ -185,26 +185,6 @@ Meteor.methods({
 		if (!really) {
 			return 'Do you really want to do this? You chould only do it when initializing a new database. Confirm with initDB(true).'
 		}
-		// initializes the stuff that's not place specific (so not setting things hat has ip adresses, etc)
-		// Initiate database:
-		StudioInstallations.upsert('studio0', {$set: {
-			name: 'DKSL',
-			defaultShowStyle: 'show0',
-			outputLayers: [],
-			config: [
-				{_id: 'nora_group', value: ''}, // Note: do not set to ensure that devs do not accidently use the live graphics channel
-				{_id: 'nora_apikey', value: ''}, // Note: must not be set as apikey must be kept private
-				{_id: 'sources_kam_count', value: 3},
-				{_id: 'sources_rm_count', value: 6},
-				{_id: 'sources_kam_first_input', value: 1},
-				{_id: 'sources_rm_first_input', value: 4},
-				{_id: 'media_previews_url', value: 'http://localhost:8000/'},
-				{_id: 'sofie_url', value: 'http://sllxsofie01'},
-				{_id: 'metadata_url', value: 'http://160.67.87.105'},
-				{_id: 'atemSSrcBackground', value: ''} // @todo?
-			],
-		}})
-
 		// Create outputLayers:
 		StudioInstallations.update('studio0', {$set: {
 			outputLayers: [
@@ -410,21 +390,21 @@ Meteor.methods({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 5,
+				channel: 3,
 				layer: 199
 			}),
 			'casparcg_player_vignett': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 5,
+				channel: 3,
 				layer: 140
 			}),
 			'casparcg_player_soundeffect': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 5,
+				channel: 3,
 				layer: 130
 			}),
 			'casparcg_player_clip': literal<MappingCasparCG>({
@@ -438,7 +418,7 @@ Meteor.methods({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 6,
+				channel: 4,
 				layer: 100
 			}),
 			'casparcg_player_clip_next_warning': literal<MappingCasparCG>({
@@ -457,9 +437,9 @@ Meteor.methods({
 			}),
 			'casparcg_cg_graphics': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
-				deviceId: 'casparcg0',
+				deviceId: 'casparcg1',
 				lookahead: LookaheadMode.NONE,
-				channel: 4,
+				channel: 2,
 				layer: 120
 			}),
 			'casparcg_cg_countdown': literal<MappingCasparCG>({
@@ -471,23 +451,23 @@ Meteor.methods({
 			}),
 			'casparcg_cg_permanent': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
-				deviceId: 'casparcg0',
+				deviceId: 'casparcg1',
 				lookahead: LookaheadMode.NONE,
-				channel: 4,
+				channel: 2,
 				layer: 121
 			}),
 			'casparcg_player_studio': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 3,
+				channel: 2,
 				layer: 110
 			}),
 			'casparcg_cg_studiomonitor': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 3,
+				channel: 2,
 				layer: 120
 			}),
 			'casparcg_cg_effects': literal<MappingCasparCG>({
@@ -499,9 +479,9 @@ Meteor.methods({
 			}),
 			'casparcg_cg_fullskjerm': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
-				deviceId: 'casparcg0',
+				deviceId: 'casparcg1',
 				lookahead: LookaheadMode.NONE,
-				channel: 2,
+				channel: 3,
 				layer: 110
 			}),
 			'atem_me_program': literal<MappingAtem>({
@@ -518,33 +498,12 @@ Meteor.methods({
 				mappingType: MappingAtemType.MixEffect,
 				index: 1 // 1 = ME2
 			}),
-			'atem_aux_countdown': literal<MappingAtem>({
-				device: PlayoutDeviceType.ATEM,
-				deviceId: 'atem0',
-				lookahead: LookaheadMode.NONE,
-				mappingType: MappingAtemType.Auxilliary,
-				index: 1
-			}),
 			'atem_aux_ssrc': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingAtemType.Auxilliary,
 				index: 2
-			}),
-			'atem_aux_mp1-next': literal<MappingAtem>({
-				device: PlayoutDeviceType.ATEM,
-				deviceId: 'atem0',
-				lookahead: LookaheadMode.NONE,
-				mappingType: MappingAtemType.Auxilliary,
-				index: 3
-			}),
-			'atem_aux_preview': literal<MappingAtem>({
-				device: PlayoutDeviceType.ATEM,
-				deviceId: 'atem0',
-				lookahead: LookaheadMode.NONE,
-				mappingType: MappingAtemType.Auxilliary,
-				index: 4
 			}),
 			'atem_aux_clean': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
@@ -735,6 +694,32 @@ Meteor.methods({
 			templateMappings: [],
 			baselineTemplate: 'baseline',
 			messageTemplate: 'message'
+		}})
+	},
+	'initDB_config': (really) => {
+
+		if (!really) {
+			return 'Do you really want to do this? You chould only do it when initializing a new database. Confirm with initDB(true).'
+		}
+		// initializes the stuff that's not place specific (so not setting things hat has ip adresses, etc)
+		// Initiate database:
+		StudioInstallations.upsert('studio0', {$set: {
+			name: 'DKSL',
+			defaultShowStyle: 'show0',
+			outputLayers: [],
+			config: [
+				{_id: 'nora_group', value: ''}, // Note: do not set to ensure that devs do not accidently use the live graphics channel
+				{_id: 'nora_apikey', value: ''}, // Note: must not be set as apikey must be kept private
+				{_id: 'sources_kam_count', value: 4},
+				{_id: 'sources_rm_count', value: 6},
+				{_id: 'sources_kam_first_input', value: 1},
+				{_id: 'sources_rm_first_input', value: 5},
+				{_id: 'media_previews_url', value: 'http://localhost:8000/'},
+				{_id: 'sofie_url', value: 'http://sllxsofie01'},
+				{_id: 'metadata_url', value: 'http://160.67.87.105'},
+				{_id: 'atemSSrcBackground', value: '/opt/playout-gateway/static/atem-mp/split_overlay.rgba'},
+				{_id: 'atemSSrcBackground2', value: '/opt/playout-gateway/static/atem-mp/et_oyeblikk.rgba'}
+			],
 		}})
 	}
 })
