@@ -113,29 +113,33 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 						}
 					})
 					.map((item) => {
-						if (item.isSticky && (!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0)) {
-							return (
-								<AdLibListItem
-									key={item._id}
-									item={item}
-									selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
-									layer={item.layer!}
-									onToggleAdLib={this.props.onToggleSticky}
-									onSelectAdLib={this.props.onSelectAdLib}
-								/>
-							)
-						} else if (!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0) {
-							return (
-								<AdLibListItem
-									key={item._id}
-									item={item}
-									selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
-									layer={this.state.sourceLayers[item.sourceLayerId!]}
-									outputLayer={this.state.outputLayers[item.outputLayerId!]}
-									onToggleAdLib={this.props.onToggleAdLib}
-									onSelectAdLib={this.props.onSelectAdLib}
-								/>
-							)
+						if (!item.isHidden) {
+							if (item.isSticky && (!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0)) {
+								return (
+									<AdLibListItem
+										key={item._id}
+										item={item}
+										selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
+										layer={item.layer!}
+										onToggleAdLib={this.props.onToggleSticky}
+										onSelectAdLib={this.props.onSelectAdLib}
+									/>
+								)
+							} else if (!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0) {
+								return (
+									<AdLibListItem
+										key={item._id}
+										item={item}
+										selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
+										layer={this.state.sourceLayers[item.sourceLayerId!]}
+										outputLayer={this.state.outputLayers[item.outputLayerId!]}
+										onToggleAdLib={this.props.onToggleAdLib}
+										onSelectAdLib={this.props.onSelectAdLib}
+									/>
+								)
+							} else {
+								return null
+							}
 						} else {
 							return null
 						}
@@ -231,6 +235,7 @@ const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Comp
 export interface SegmentLineAdLibItemUi extends SegmentLineAdLibItem {
 	hotkey?: string
 	isGlobal?: boolean
+	isHidden?: boolean
 }
 
 export interface SegmentUi extends Segment {
@@ -303,6 +308,11 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					sourceHotKeyUse[uiAdLib.sourceLayerId] = (sourceHotKeyUse[uiAdLib.sourceLayerId] || 0) + 1
 				}
 			}
+
+			if (sourceLayer && sourceLayer.isHidden) {
+				uiAdLib.isHidden = true
+			}
+
 			// always add them to the list
 			roAdLibs.push(uiAdLib)
 		})

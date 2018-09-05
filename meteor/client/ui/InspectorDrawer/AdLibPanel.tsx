@@ -100,7 +100,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 			<tbody id={'adlib-panel__list-view__globals'} key='globals' className={ClassNames('adlib-panel__list-view__list__segment')}>
 			{
 					this.props.roAdLibs.map((item) => {
-						if (!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0) {
+						if ((!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0) && !item.isHidden) {
 							return (
 								<AdLibListItem
 									key={item._id}
@@ -246,6 +246,7 @@ const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Comp
 export interface SegmentLineAdLibItemUi extends SegmentLineAdLibItem {
 	hotkey?: string
 	isGlobal?: boolean
+	isHidden?: boolean
 }
 
 export interface SegmentUi extends Segment {

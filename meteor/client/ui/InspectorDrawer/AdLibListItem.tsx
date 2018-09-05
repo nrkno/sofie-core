@@ -16,6 +16,7 @@ export interface IAdLibListItem {
 	name: string,
 	status?: RundownAPI.LineItemStatusCode
 	hotkey?: string
+	isHidden?: boolean
 }
 
 interface IListViewItemProps {

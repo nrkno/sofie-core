@@ -270,7 +270,9 @@ Meteor.methods({
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
 					isHidden: true,
-					clearKeyboardHotkey: 'alt+k,alt+u'
+					assignHotkeysToGlobalAdlibs: true,
+					activateKeyboardHotkeys: 'alt+k,alt+u',
+					clearKeyboardHotkey: 'k'
 				},
 				{
 				 	_id: 'studio0_graphics_logo',
@@ -279,7 +281,9 @@ Meteor.methods({
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
 					isHidden: true,
-					clearKeyboardHotkey: 'alt+k,alt+l,alt+u'
+					assignHotkeysToGlobalAdlibs: true,
+					activateKeyboardHotkeys: 'alt+l,alt+k,alt+u',
+					clearKeyboardHotkey: 'l'
 				},
 				{
 				 	_id: 'studio0_graphics_tag_left',
