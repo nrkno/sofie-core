@@ -173,7 +173,9 @@ export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_NEXT_FORWARD = 'f9',
 	RUNNING_ORDER_NEXT_DOWN = 'f10',
 	RUNNING_ORDER_NEXT_BACK = 'shift+f9',
-	RUNNING_ORDER_NEXT_UP = 'shift+f10'
+	RUNNING_ORDER_NEXT_UP = 'shift+f10',
+	RUNNING_ORDER_DISABLE_NEXT_ELEMENT = 'g',
+	RUNNING_ORDER_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g'
 }
 mousetrap.addKeycodes({
 	220: '§', // on US-based (ANSI) keyboards (single-row, Enter key), this is the key above Enter, usually with a backslash and the vertical pipe character
@@ -351,6 +353,16 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_BACK,
 					up: this.keyMoveNextBack,
 					label: t('Move next back')
+				},
+				{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_DISABLE_NEXT_ELEMENT,
+					up: this.keyDisableNextSegmentLineItem,
+					label: t('DisableNextElement')
+				},
+				{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_UNDO_DISABLE_NEXT_ELEMENT,
+					up: this.keyDisableNextSegmentLineItemUndo,
+					label: t('DisableNextElement')
 				}
 			]
 		} else {
@@ -441,6 +453,30 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	keyMoveNextUp = (e: ExtendedKeyboardEvent) => {
 		// "down" = to next Segment
 		this.moveNext(0, -1)
+	}
+	keyDisableNextSegmentLineItem = (e: ExtendedKeyboardEvent) => {
+		if (this.props.studioMode) {
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, false, (err, segmentLineItemId) => {
+				if (err) {
+					// todo: notify the user
+					console.log(err)
+				} else {
+					// console.log('segmentLineItemId', segmentLineItemId)
+				}
+			})
+		}
+	}
+	keyDisableNextSegmentLineItemUndo = (e: ExtendedKeyboardEvent) => {
+		if (this.props.studioMode) {
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, true, (err, segmentLineItemId) => {
+				if (err) {
+					// todo: notify the user
+					console.log(err)
+				} else {
+					// console.log('segmentLineItemId', segmentLineItemId)
+				}
+			})
+		}
 	}
 
 	take = () => {

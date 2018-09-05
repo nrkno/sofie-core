@@ -22,6 +22,7 @@ export namespace PlayoutAPI {
 		'roMoveNext' = 'playout.toMoveNext',
 		'roActivateHold' = 'playout.roActivateHold',
 		'roStoriesMoved' = 'playout.roStoriesMoved',
+		'roDisableNextSegmentLineItem' = 'playout.roDisableNextSegmentLineItem',
 		'segmentLinePlaybackStartedCallback' = 'playout.segmentLinePlaybackStartedCallback',
 		'segmentLineItemPlaybackStartedCallback' = 'playout.segmentLineItemPlaybackStartedCallback',
 		'segmentAdLibLineItemStart' = 'playout.segmentAdLibLineItemStart',

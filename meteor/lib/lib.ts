@@ -53,7 +53,7 @@ if (Meteor.isServer) {
 
 				systemTime.diff = diffTime
 				systemTime.stdDev = Math.abs(sentTime - replyTime) / 2
-				logger.debug('time diff to server: ' + systemTime.diff + ' (stdDev: ' + systemTime.stdDev + ')')
+				logger.debug('time diff to server: ' + systemTime.diff + 'ms (stdDev: ' + (Math.floor(systemTime.stdDev * 10) / 10) + 'ms)')
 				if (!stat.good) {
 					Meteor.setTimeout(() => {
 						updateDiffTime()

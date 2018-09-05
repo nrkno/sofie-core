@@ -12,11 +12,11 @@ export const DEFAULT_DISPLAY_DURATION = 3000
 
 export interface SegmentExtended extends Segment {
 	/** Output layers available in the installation used by this segment */
-	outputLayers?: {
+	outputLayers: {
 		[key: string]: IOutputLayerExtended
 	}
 	/** Source layers used by this segment */
-	sourceLayers?: {
+	sourceLayers: {
 		[key: string]: ISourceLayerExtended
 	}
 }
@@ -61,7 +61,7 @@ export interface SegmentLineItemExtended extends SegmentLineItem {
 }
 
 export function getResolvedSegment (studioInstallation: StudioInstallation, runningOrder: RunningOrder, segment: Segment): {
-	segmentExtended: SegmentExtended | undefined,
+	segmentExtended: SegmentExtended,
 	segmentLines: Array<SegmentLineExtended>,
 	isLiveSegment: boolean,
 	isNextSegment: boolean,
@@ -82,7 +82,9 @@ export function getResolvedSegment (studioInstallation: StudioInstallation, runn
 
 	let autoNextSegmentLine = false
 
-	let segmentExtended = segment as SegmentExtended
+	let segmentExtended = _.clone(segment) as SegmentExtended
+	segmentExtended.outputLayers = {}
+	segmentExtended.sourceLayers = {}
 
 	// fetch all the segment lines for the segment
 	let segmentLines = SegmentLines.find({
@@ -292,12 +294,12 @@ export function getResolvedSegment (studioInstallation: StudioInstallation, runn
 							if ((previousItem.renderedInPoint + previousItem.renderedDuration > currentItem.renderedInPoint) ||
 							 (previousItem.infiniteMode)
 								) {
-							previousItem.renderedDuration = currentItem.renderedInPoint - previousItem.renderedInPoint
-							previousItem.cropped = true
-							if (previousItem.infiniteMode) {
-								previousItem.infiniteMode = SegmentLineItemLifespan.Normal
+								previousItem.renderedDuration = currentItem.renderedInPoint - previousItem.renderedInPoint
+								previousItem.cropped = true
+								if (previousItem.infiniteMode) {
+									previousItem.infiniteMode = SegmentLineItemLifespan.Normal
+								}
 							}
-						}
 
 							previousItem.maxLabelWidth = currentItem.renderedInPoint - previousItem.renderedInPoint
 						}

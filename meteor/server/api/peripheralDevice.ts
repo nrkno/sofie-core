@@ -37,7 +37,8 @@ import { StudioInstallations, StudioInstallation } from '../../lib/collections/S
 import { MediaObject, MediaObjects } from '../../lib/collections/MediaObjects'
 import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
 import { ShowStyles, ShowStyle } from '../../lib/collections/ShowStyles'
-import { ServerPlayoutAPI, updateTimelineFromMosData, updateTimeline } from './playout'
+import { ServerPlayoutAPI, updateTimelineFromMosData, updateTimeline, afterUpdateTimeline } from './playout'
+import { syncFunction } from '../codeControl'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -50,7 +51,7 @@ export namespace ServerPeripheralDeviceAPI {
 		check(options.parentDeviceId, Match.Optional(String))
 		check(options.versions, Match.Optional(Object))
 
-		logger.debug('initialize', options)
+		logger.debug('Initialize device ' + id, options)
 
 		let peripheralDevice
 		try {
@@ -140,7 +141,7 @@ export namespace ServerPeripheralDeviceAPI {
 	export function getPeripheralDevice (id: string, token: string) {
 		return PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 	}
-	export function timelineTriggerTime (id: string, token: string, results: PeripheralDeviceAPI.TimelineTriggerTimeResult) {
+	export const timelineTriggerTime = syncFunction(function timelineTriggerTime (id: string, token: string, results: PeripheralDeviceAPI.TimelineTriggerTimeResult) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
 
@@ -151,23 +152,41 @@ export namespace ServerPeripheralDeviceAPI {
 			check(o.time, Number)
 		})
 
+		let studioIds: {[studioId: string]: true} = {}
+
 		_.each(results, (o) => {
-			// check(o.id, String)
+			check(o.id, String)
+
 			// check(o.time, Number)
 			logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
-			Timeline.update({
-				_id: o.id
-			}, {$set: {
-				'trigger.value': o.time,
-				'trigger.setFromNow': true
-			}},{
-				multi: true
-			})
+
+			let obj = Timeline.findOne(o.id)
+
+			if (obj) {
+				studioIds[obj.siId] = true
+
+				Timeline.update({
+					_id: o.id
+				}, {$set: {
+					'trigger.value': o.time,
+					'trigger.setFromNow': true
+				}},{
+					multi: true
+				})
+			}
 
 			// Meteor.call('playout_timelineTriggerTimeUpdate', o.id, o.time)
 			ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(o.id, o.time)
 		})
-	}
+
+		// After we've updated the timeline, we must call afterUpdateTimeline!
+		_.each(studioIds, (_val, studioId) => {
+			let studio = StudioInstallations.findOne(studioId)
+			if (studio) {
+				afterUpdateTimeline(studio)
+			}
+		})
+	}, 'timelineTriggerTime$0,$1')
 	export function segmentLinePlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) {
 		// This is called from the playout-gateway when an auto-next event occurs
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
