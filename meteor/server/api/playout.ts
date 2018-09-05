@@ -351,14 +351,14 @@ export namespace ServerPlayoutAPI {
 			runningOrderId: runningOrder._id
 		}, takeSegmentLine._rank)
 
-		let nextSegmentLineItem: DBSegmentLine | null = segmentLineAfter || null
+		let nextSegmentLine: DBSegmentLine | null = segmentLineAfter || null
 
 		beforeTake(runningOrder, previousSegmentLine || null, takeSegmentLine)
 
 		let m = {
 			previousSegmentLineId: runningOrder.currentSegmentLineId,
 			currentSegmentLineId: takeSegmentLine._id,
-			nextSegmentLineId: nextSegmentLineItem ? nextSegmentLineItem._id : null,
+			nextSegmentLineId: nextSegmentLine ? nextSegmentLine._id : null,
 			holdState: !runningOrder.holdState || runningOrder.holdState === RunningOrderHoldState.COMPLETE ? RunningOrderHoldState.NONE : runningOrder.holdState + 1,
 		}
 		RunningOrders.update(runningOrder._id, {
@@ -412,8 +412,8 @@ export namespace ServerPlayoutAPI {
 			})
 		}
 
-		if (nextSegmentLineItem) {
-			clearNextLineStartedPlaybackAndDuration(roId, nextSegmentLineItem._id)
+		if (nextSegmentLine) {
+			clearNextLineStartedPlaybackAndDuration(roId, nextSegmentLine._id)
 		}
 		afterTake(runningOrder, takeSegmentLine, previousSegmentLine || null)
 	}
@@ -427,15 +427,15 @@ export namespace ServerPlayoutAPI {
 
 		if (runningOrder.holdState && runningOrder.holdState !== RunningOrderHoldState.COMPLETE) throw new Meteor.Error(501, `RunningOrder "${roId}" cannot change next during hold!`)
 
-		const nextSegmentLineItem = SegmentLines.findOne(nextSlId)
-		if (!nextSegmentLineItem) throw new Meteor.Error(404, `Segment Line "${nextSlId}" not found!`)
-		if (nextSegmentLineItem.runningOrderId !== runningOrder._id) throw new Meteor.Error(409, `Segment Line "${nextSlId}" not part of specified running order`)
+		const nextSegmentLine = SegmentLines.findOne(nextSlId)
+		if (!nextSegmentLine) throw new Meteor.Error(404, `Segment Line "${nextSlId}" not found!`)
+		if (nextSegmentLine.runningOrderId !== runningOrder._id) throw new Meteor.Error(409, `Segment Line "${nextSlId}" not part of specified running order`)
 
-		if (nextSegmentLineItem._id === runningOrder.currentSegmentLineId) {
+		if (nextSegmentLine._id === runningOrder.currentSegmentLineId) {
 			throw new Meteor.Error(402, 'Not allowed to Next the currently playing SegmentLine')
 		}
 
-		const nextSegment = Segments.findOne(nextSegmentLineItem.segmentId)
+		const nextSegment = Segments.findOne(nextSegmentLine.segmentId)
 		if (nextSegment) {
 			resetSegment(nextSegment._id, runningOrder.currentSegmentLineId) // reset entire segment on manual set as next
 		}
@@ -1676,10 +1676,17 @@ function clearNextLineStartedPlaybackAndDuration (roId: string, nextSlId: string
 			startedPlayback: 0
 		}
 	})
+	SegmentLineItems.remove({
+		segmentLineId: nextSlId,
+		dynamicallyInserted: true
+	})
 	SegmentLineItems.update({segmentLineId: nextSlId}, {
 		$unset: {
-			startedPlayback: 0
+			startedPlayback: 0,
+			durationOverride: 0
 		}
+	}, {
+		multi: true
 	})
 }
 
