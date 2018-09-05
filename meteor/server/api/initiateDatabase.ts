@@ -498,6 +498,13 @@ Meteor.methods({
 				mappingType: MappingAtemType.MixEffect,
 				index: 1 // 1 = ME2
 			}),
+			'atem_aux_technical_error': literal<MappingAtem>({
+				device: PlayoutDeviceType.ATEM,
+				deviceId: 'atem0',
+				lookahead: LookaheadMode.NONE,
+				mappingType: MappingAtemType.Auxilliary,
+				index: 1
+			}),
 			'atem_aux_ssrc': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
