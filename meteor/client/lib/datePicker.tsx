@@ -26,34 +26,30 @@ export class DatePickerFromTo extends React.Component<IProps, IState> {
 			dateFrom: 	(props.from ? moment(props.from) : moment().subtract(1,'days').startOf('day')),
 			dateTo: 	(props.to 	? moment(props.to)	 : moment().startOf('day'))
 		}
-		this.handleChangeFrom 	= this.handleChangeFrom.bind(this)
-		this.handleChangeTo 	= this.handleChangeTo.bind(this)
-		this.onClickPrevious 	= this.onClickPrevious.bind(this)
-		this.onClickNext 		= this.onClickNext.bind(this)
 	}
-	triggerOnchange (state: IState) {
+	triggerOnchange = (state: IState) => {
 		this.props.onChange(
 			state.dateFrom.valueOf(),
 			state.dateTo.valueOf()
 		)
 	}
-	updateData (o) {
+	updateData = (o) => {
 		this.setState(o)
 
 		let newState: IState = _.extend(_.clone(this.state), o)
 		this.triggerOnchange(newState)
 	}
-	handleChangeFrom (date: moment.Moment) {
+	handleChangeFrom = (date: moment.Moment) => {
 		this.updateData({
 			dateFrom: date,
 		})
 	}
-	handleChangeTo (date: moment.Moment) {
+	handleChangeTo = (date: moment.Moment) => {
 		this.updateData({
 			dateTo: date,
 		})
 	}
-	onClickPrevious () {
+	onClickPrevious = () => {
 
 		let from 	= this.state.dateFrom.valueOf()
 		let to 		= this.state.dateTo.valueOf()
@@ -64,7 +60,7 @@ export class DatePickerFromTo extends React.Component<IProps, IState> {
 			dateTo: 	moment(to 	- range)
 		})
 	}
-	onClickNext () {
+	onClickNext = () => {
 
 		let from 	= this.state.dateFrom.valueOf()
 		let to 		= this.state.dateTo.valueOf()

@@ -25,8 +25,6 @@ interface IUserActivityTrackedProps {
 	log: UserActionsLogItem[]
 }
 
-const PAGING_AMOUNT = 30
-
 const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState, IUserActivityTrackedProps>((props: IUserActivityProps) => {
 
 	return {
@@ -43,8 +41,8 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 		super(props)
 
 		this.state = {
-			dateFrom: moment().subtract(1,'days').startOf('day').valueOf(),
-			dateTo: moment().startOf('day').valueOf()
+			dateFrom: moment().startOf('day').valueOf(),
+			dateTo: moment().add(1, 'days').startOf('day').valueOf()
 		}
 	}
 	componentWillMount () {

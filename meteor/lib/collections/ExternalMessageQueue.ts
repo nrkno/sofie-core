@@ -68,7 +68,8 @@ registerCollection('ExternalMessageQueue', ExternalMessageQueue)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		ExternalMessageQueue._ensureIndex({
-			studioId: 1
+			studioId: 1,
+			created: 1
 		})
 	}
 })
