@@ -17,7 +17,7 @@ import { RundownUtils } from '../lib/rundown'
 import * as TimecodeString from 'smpte-timecode'
 import { Settings } from '../../lib/Settings'
 import { getCurrentTime, objectPathGet } from '../../lib/lib'
-import { SegmentItemIconContainer } from './SegmentItemIcons/SegmentItemIcon'
+import { SegmentItemIconContainer, SegmentItemNameContainer } from './SegmentItemIcons/SegmentItemIcon'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 interface SegmentUi extends Segment {
@@ -147,7 +147,9 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 								{currentSegmentLine ? currentSegmentLine.slug.split(';')[0] : ''}
 							</div>
 							<div className='clocks-segmentline-title clocks-segment-title clocks-current-segment-title'>
-								{currentSegmentLine ? currentSegmentLine.slug.split(';')[1] : ''}
+								{currentSegmentLine ?
+									<SegmentItemNameContainer segmentLineSlug={currentSegmentLine.slug} segmentItemId={currentSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
+								: ''}
 							</div>
 							<div className='clocks-current-segment-countdown clocks-segment-countdown'>
 								<Timediff time={currentSegmentDuration} />
@@ -164,7 +166,9 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 									{nextSegmentLine ? nextSegmentLine.slug.split(';')[0] : '_'}
 								</div>
 								<div className='clocks-segment-title clocks-segmentline-title'>
-									{nextSegmentLine ? nextSegmentLine.slug.split(';')[1] : '_'}
+									{nextSegmentLine ?
+										<SegmentItemNameContainer segmentLineSlug={nextSegmentLine.slug} segmentItemId={nextSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
+									: '_'}
 								</div>
 							</div>
 							<div className='clocks-rundown-bottom-bar'>
