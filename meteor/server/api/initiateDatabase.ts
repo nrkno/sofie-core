@@ -234,7 +234,8 @@ Meteor.methods({
 					type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: false,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
-					clearKeyboardHotkey: 'u,alt+u'
+					clearKeyboardHotkey: 'u,alt+u',
+					allowDisable: true
 				},
 				{
 				 	_id: 'studio0_graphics_fullskjerm',
@@ -271,7 +272,8 @@ Meteor.methods({
 				 	name: 'Arkiv',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
-					clearKeyboardHotkey: 'alt+u'
+					clearKeyboardHotkey: 'alt+u',
+					allowDisable: true
 				},
 				{
 				 	_id: 'studio0_graphics_tag_right',
@@ -279,7 +281,8 @@ Meteor.methods({
 				 	name: 'Direkte',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
-					clearKeyboardHotkey: 'alt+d,alt+u'
+					clearKeyboardHotkey: 'alt+d,alt+u',
+					allowDisable: true
 				},
 				{
 				 	_id: 'studio0_graphics_tema',
@@ -287,7 +290,8 @@ Meteor.methods({
 				 	name: 'Tema',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
-					clearKeyboardHotkey: 'alt+i,alt+u'
+					clearKeyboardHotkey: 'i,alt+i,alt+u',
+					allowDisable: true
 				},
 				{
 				 	_id: 'studio0_graphics_ticker',
@@ -295,7 +299,8 @@ Meteor.methods({
 				 	name: 'Ticker',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
-					clearKeyboardHotkey: 'alt+o,alt+u'
+					clearKeyboardHotkey: 'alt+o,alt+u',
+					allowDisable: true
 				},
 				{
 				 	_id: 'studio0_graphics_bakskjerm',
@@ -339,18 +344,12 @@ Meteor.methods({
 					type: RundownAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
 					activateKeyboardHotkeys: '1,2,3,4,5,6',
+					clearKeyboardHotkey: 'ctrl+a',
 					isRemoteInput: true,
 					assignHotkeysToGlobalAdlibs: true,
 					isSticky: true,
 					activateStickyKeyboardHotkey: 'f5'
 				},
-				// {
-				// 	_id: 'studio0_vt0',
-				// 	_rank: 80,
-				// 	name: 'VB',
-				// 	type: RundownAPI.SourceLayerType.VT,
-				// 	onPGMClean: true,
-				// },
 				{
 					_id: 'studio0_script',
 					_rank: 14000,
@@ -365,7 +364,8 @@ Meteor.methods({
 					abbreviation: 'K ',
 					type: RundownAPI.SourceLayerType.CAMERA,
 					onPGMClean: true,
-					activateKeyboardHotkeys: 'f1,f2,f3',
+					activateKeyboardHotkeys: 'f1,f2,f3,f4',
+					clearKeyboardHotkey: 'ctrl+a',
 					assignHotkeysToGlobalAdlibs: true
 				},
 				{
