@@ -425,7 +425,7 @@ Meteor.methods({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 6,
+				channel: 4,
 				layer: 99
 			}),
 			'casparcg_player_clip2': literal<MappingCasparCG>({
@@ -474,7 +474,7 @@ Meteor.methods({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 5,
+				channel: 3,
 				layer: 120
 			}),
 			'casparcg_cg_fullskjerm': literal<MappingCasparCG>({
