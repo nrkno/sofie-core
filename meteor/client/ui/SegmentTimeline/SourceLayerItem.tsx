@@ -448,7 +448,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 					'source-missing': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING,
 					'source-broken': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN,
-					'unknown-state': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.UNKNOWN
+					'unknown-state': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.UNKNOWN,
+					'disabled': this.props.segmentLineItem.disabled
 				})}
 					data-mos-id={this.props.segmentLineItem._id}
 					ref={this.setRef}
