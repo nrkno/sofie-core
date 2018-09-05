@@ -165,7 +165,8 @@ let updateServerTime = () => {
 		// if result.stdDev is less than one frame-time, it should be okay:
 		if (result.stdDev < 1000 / 50) {
 			logger.info('Setting time-diff to ' + Math.round(result.mean) +
-				' (stdDev: ' + result.stdDev + ')')
+				'ms (stdDev: ' + (Math.floor(result.stdDev * 10) / 10) + 'ms)')
+
 			systemTime.diff = result.mean
 			systemTime.stdDev = result.stdDev
 			setSystemStatus('systemTime', {statusCode: StatusCode.GOOD})
