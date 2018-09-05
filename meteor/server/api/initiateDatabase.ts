@@ -725,7 +725,7 @@ Meteor.methods({
 				{_id: 'sofie_url', value: 'http://sllxsofie01'},
 				{_id: 'metadata_url', value: 'http://160.67.87.105'},
 				{_id: 'atemSSrcBackground', value: '/opt/playout-gateway/static/atem-mp/split_overlay.rgba'},
-				{_id: 'atemSSrcBackground2', value: '/opt/playout-gateway/static/atem-mp/et_oyeblikk.rgba'}
+				{_id: 'atemSSrcBackground2', value: '/opt/playout-gateway/static/atem-mp/teknisk_feil.rgba'}
 			],
 		}})
 	}
