@@ -623,23 +623,24 @@ export namespace ServerPlayoutAPI {
 
 		// logger.info('allowedSourceLayers', allowedSourceLayers)
 
-		let nowInSegmentLine = 0
-		if (
-			currentSegmentLine.startedPlayback &&
-			currentSegmentLine.timings &&
-			currentSegmentLine.timings.startedPlayback
-		) {
-			let lastStartedPlayback = _.last(currentSegmentLine.timings.startedPlayback)
-
-			if (lastStartedPlayback) {
-				nowInSegmentLine = getCurrentTime() - lastStartedPlayback
-			}
-		}
 
 		// logger.info('nowInSegmentLine', nowInSegmentLine)
 		// logger.info('filteredSegmentLineItems', filteredSegmentLineItems)
 		let getNextSegmentLineItem = (segmentLine: SegmentLine, undo?: boolean) => {
 			// Find next segmentLineItem to disable
+
+			let nowInSegmentLine = 0
+			if (
+				segmentLine.startedPlayback &&
+				segmentLine.timings &&
+				segmentLine.timings.startedPlayback
+			) {
+				let lastStartedPlayback = _.last(segmentLine.timings.startedPlayback)
+
+				if (lastStartedPlayback) {
+					nowInSegmentLine = getCurrentTime() - lastStartedPlayback
+				}
+			}
 
 			let segmentLineItems: Array<SegmentLineItemResolved> = getOrderedSegmentLineItem(segmentLine)
 
@@ -674,6 +675,11 @@ export namespace ServerPlayoutAPI {
 				)
 			})
 			return nextSegmentLineItem
+		}
+
+		if (nextSegmentLine) {
+			// pretend that the next segmentLine never has played (even if it has)
+			nextSegmentLine.startedPlayback = false
 		}
 
 		let sls = [
