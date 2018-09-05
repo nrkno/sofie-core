@@ -33,13 +33,13 @@ export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 		let layer = sourceLayers[item.sourceLayerId]
 		if (!layer) continue
 		if (typeof sourceLayer !== 'undefined' && typeof segmentLineItem !== 'undefined') {
-			if (sourceLayer._rank >= layer._rank && supportedLayers.has(layer.type)) {
+			if (layer.onPresenterScreen && sourceLayer._rank >= layer._rank && supportedLayers.has(layer.type)) {
 				sourceLayer = layer
 				if (segmentLineItem.trigger && item.trigger && item.trigger.value > segmentLineItem.trigger.value) {
 					segmentLineItem = item
 				}
 			}
-		} else if (supportedLayers.has(layer.type)) {
+		} else if (layer.onPresenterScreen && supportedLayers.has(layer.type)) {
 			sourceLayer = layer
 			segmentLineItem = item
 		}

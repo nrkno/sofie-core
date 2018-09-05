@@ -209,7 +209,8 @@ Meteor.methods({
 					name: 'Vignett',
 					abbreviation: 'Full',
 					type: RundownAPI.SourceLayerType.VT,
-					onPGMClean: true
+					onPGMClean: true,
+					onPresenterScreen: true
 				},
 				{
 					_id: 'studio0_vb',
@@ -217,7 +218,8 @@ Meteor.methods({
 					name: 'VB',
 					abbreviation: 'Full',
 					type: RundownAPI.SourceLayerType.VT,
-					onPGMClean: true
+					onPGMClean: true,
+					onPresenterScreen: true
 				},
 				{
 					_id: 'studio0_live_speak0',
@@ -225,7 +227,8 @@ Meteor.methods({
 					name: 'STK',
 					abbreviation: 'STK',
 					type: RundownAPI.SourceLayerType.LIVE_SPEAK,
-					onPGMClean: true
+					onPGMClean: true,
+					onPresenterScreen: true
 				},
 				{
 					_id: 'studio0_graphics_super',
@@ -242,7 +245,8 @@ Meteor.methods({
 				 	_rank: 12000,
 				 	name: 'Grafikk',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
-					onPGMClean: true
+					onPGMClean: true,
+					onPresenterScreen: true
 				},
 				{
 				 	_id: 'studio0_graphics_klokke',
@@ -334,7 +338,8 @@ Meteor.methods({
 					type: RundownAPI.SourceLayerType.SPLITS,
 					onPGMClean: true,
 					isSticky: true,
-					activateStickyKeyboardHotkey: 'f6'
+					activateStickyKeyboardHotkey: 'f6',
+					onPresenterScreen: true
 				},
 				{
 					_id: 'studio0_remote0',
@@ -348,7 +353,8 @@ Meteor.methods({
 					isRemoteInput: true,
 					assignHotkeysToGlobalAdlibs: true,
 					isSticky: true,
-					activateStickyKeyboardHotkey: 'f5'
+					activateStickyKeyboardHotkey: 'f5',
+					onPresenterScreen: true
 				},
 				{
 					_id: 'studio0_script',
@@ -366,7 +372,8 @@ Meteor.methods({
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'f1,f2,f3,f4',
 					clearKeyboardHotkey: 'ctrl+a',
-					assignHotkeysToGlobalAdlibs: true
+					assignHotkeysToGlobalAdlibs: true,
+					onPresenterScreen: true
 				},
 				{
 					_id: 'studio0_live_transition0',

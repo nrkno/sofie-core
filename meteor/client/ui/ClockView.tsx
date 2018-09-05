@@ -43,43 +43,16 @@ const Timediff = class extends React.Component<{ time: number}> {
 	render () {
 		const time = -this.props.time
 		const isNegative = (Math.floor(time / 1000) > 0)
-		const timeString = RundownUtils.formatDiffToTimecode(time, false, false, true, false, true, '', false, true) // @todo: something happened here with negative time
+		const timeString = RundownUtils.formatDiffToTimecode(time, true, false, true, false, true, '', false, true) // @todo: something happened here with negative time
 		// RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)
 		const timeStringSegments = timeString.split(':')
 		const fontWeight = (no) => no === '00' || no === '+00'
 		return (
-			<span className={ isNegative ? 'clocks-segment-countdown-red' : '' }>
-				{isNegative ? <span className='clocks-counter-light'>+</span> : null}
-				<span className={fontWeight(timeStringSegments[0]) ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[0]}</span>:
-				<span className={timeStringSegments[1] ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[1]}</span>
-				{timeStringSegments.length > 2 ? ':' : null}
-				{timeStringSegments.length > 2 ? <span className={fontWeight(timeStringSegments[2]) ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[2]}</span> : null}
-			</span>
-		)
-	}
-}
-
-const Timecode = class extends React.Component<{ time: number }> {
-	render () {
-		const time = this.props.time
-		const timecode = new TimecodeString(time * Settings['frameRate'] / 1000, Settings['frameRate'], false).toString() as string
-		const timecodeSegments = timecode.split(':')
-		let fontNormal = false
-
-		const fontWeight = (timecodeSegment) => {
-			if (timecodeSegment !== '00') {
-				fontNormal = true
-			}
-			return fontNormal
-		}
-
-		return (
-			<span>
-				{time < 0 ? <span>+</span> : <span></span>}
-				<span className={fontWeight(timecodeSegments[0]) ? 'clocks-counter-light' : ''}>{timecodeSegments[0]}</span>:
-				<span className={fontWeight(timecodeSegments[1]) ? 'clocks-counter-light' : ''}>{timecodeSegments[1]}</span>:
-				<span className={fontWeight(timecodeSegments[2]) ? 'clocks-counter-light' : ''}>{timecodeSegments[2]}</span>:
-				<span className={fontWeight(timecodeSegments[3]) ? 'clocks-counter-normal' : ''}>{timecodeSegments[3]}</span>
+			<span className={ClassNames({
+				'clocks-segment-countdown-red': isNegative,
+				'clocks-counter-heavy': (time / 1000) > -30
+			})}>
+				{timeString}
 			</span>
 		)
 	}
@@ -120,7 +93,7 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 			const { runningOrder, segments, t } = this.props
 
 			if (runningOrder && this.props.runningOrderId && this.props.segments) {
-				let currentSegmentLine
+				let currentSegmentLine: SegmentLine | undefined
 				for (const segment of segments) {
 					if (segment.items) {
 						for (const item of segment.items) {
@@ -135,7 +108,7 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 					currentSegmentDuration += currentSegmentLine.expectedDuration || 0
 					currentSegmentDuration += -1 * (currentSegmentLine.duration || 0)
 					if (!currentSegmentLine.duration && currentSegmentLine.startedPlayback) {
-						currentSegmentDuration += -1 * (getCurrentTime() - currentSegmentLine.startedPlayback)
+						currentSegmentDuration += -1 * (getCurrentTime() - (currentSegmentLine.getLastStartedPlayback() || 0))
 					}
 				}
 

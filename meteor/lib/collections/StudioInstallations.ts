@@ -84,6 +84,8 @@ export interface ISourceLayerBase {
 	isHidden?: boolean
 	/** If set to true, items in the layer can be disabled by the user (the "G"-shortcut) */
 	allowDisable?: boolean
+	/** If set to true, items in this layer will be used for presenters screen display */
+	onPresenterScreen?: boolean
 }
 
 export interface IStudioConfigItem {
