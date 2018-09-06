@@ -356,7 +356,7 @@ Meteor.methods({
 					type: RundownAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
 					activateKeyboardHotkeys: '1,2,3,4,5,6',
-					clearKeyboardHotkey: 'ctrl+a',
+					clearKeyboardHotkey: 'ctrl+a,ctrl+1',
 					isRemoteInput: true,
 					assignHotkeysToGlobalAdlibs: true,
 					isSticky: true,
@@ -378,7 +378,7 @@ Meteor.methods({
 					type: RundownAPI.SourceLayerType.CAMERA,
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'f1,f2,f3,f4',
-					clearKeyboardHotkey: 'ctrl+a',
+					clearKeyboardHotkey: 'ctrl+a,ctrl+f1',
 					assignHotkeysToGlobalAdlibs: true,
 					onPresenterScreen: true
 				},

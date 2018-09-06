@@ -532,6 +532,7 @@ const stories = [{
 								'layer' : 'headline'
 							},
 							'content' : {
+								'_valid' : true,
 								'tagtekst' : 'NRK Sørlandet',
 								'headline' : 'Frykter tap av millioner'
 							}
@@ -768,6 +769,7 @@ const stories = [{
 								'layer' : 'headline'
 							},
 							'content' : {
+								'_valid' : true,
 								'tagtekst' : 'NRK Sørlandet',
 								'headline' : 'Ny sykkelvei til 80 millioner'
 							}
@@ -926,6 +928,7 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
+								'_valid' : false,
 								'navn' : '',
 								'tittel' : ''
 							}
@@ -1000,7 +1003,9 @@ const stories = [{
 								'name' : '50_logo',
 								'layer' : 'logo'
 							},
-							'content' : ''
+							'content' : {
+								'_valid' : true,
+							}
 						}
 					},
 					{
@@ -1073,7 +1078,9 @@ const stories = [{
 								'name' : '51_klokke',
 								'layer' : 'klokke'
 							},
-							'content' : ''
+							'content' : {
+								'_valid' : true
+							}
 						}
 					},
 					{
@@ -1485,6 +1492,7 @@ const stories = [{
 								'layer' : 'bakskjerm'
 							},
 							'content' : {
+								'_valid' : true,
 								'bilde' : {
 									'creators' : 'Svein Sundsdal (billedmontasje: Pål Tegnander)',
 									'credit' : '',
@@ -1777,6 +1785,7 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
+								'_valid' : true,
 								'navn' : 'Anne Wirsching',
 								'tittel' : 'reporter'
 							}
@@ -1852,6 +1861,7 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
+								'_valid' : true,
 								'navn' : 'Mette Gundersen',
 								'tittel' : 'gruppeleder, Arbeiderpartiet, Kristiansand'
 							}
@@ -1927,6 +1937,7 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
+								'_valid' : true,
 								'navn' : 'Harald Furre',
 								'tittel' : 'ordfører Kristiansand (H)'
 							}
@@ -2002,6 +2013,7 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
+								'_valid' : true,
 								'funksjon' : 'Foto/redigering:',
 								'navn' : 'Anne Wirsching',
 								'funksjon2' : '',
@@ -2301,6 +2313,7 @@ const stories = [{
 								'layer' : 'bakskjerm'
 							},
 							'content' : {
+								'_valid' : true,
 								'bilde' : {
 									'creators' : 'Svein Sundsdal (billedmontasje: Pål Tegnander)',
 									'credit' : '',
@@ -2408,6 +2421,7 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
+								'_valid' : true,
 								'navn' : 'Nina Markenes',
 								'tittel' : 'ekspert'
 							}
@@ -2605,6 +2619,7 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
+								'_valid' : false,
 								'navn' : '',
 								'tittel' : ''
 							}
@@ -2829,6 +2844,7 @@ const stories = [{
 								'layer' : 'bakskjerm'
 							},
 							'content' : {
+								'_valid' : true,
 								'bilde' : {
 									'creators' : 'Thomas Sommerset',
 									'credit' : '',
@@ -2930,6 +2946,7 @@ const stories = [{
 								'layer' : 'bakskjerm'
 							},
 							'content' : {
+								'_valid' : true,
 								'bilde' : {
 									'creators' : 'Kai Stokkeland',
 									'credit' : '',
@@ -3229,6 +3246,7 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
+								'_valid' : true,
 								'navn' : 'Hans Erik Weiby',
 								'tittel' : 'reporter'
 							}
@@ -3304,6 +3322,7 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
+								'_valid' : true,
 								'navn' : 'Kirsten Falch',
 								'tittel' : ''
 							}
@@ -3379,6 +3398,7 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
+								'_valid' : true,
 								'navn' : 'Eva Høiby',
 								'tittel' : ''
 							}
@@ -3454,6 +3474,7 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
+								'_valid' : true,
 								'navn' : 'Jørgen Haugland Kristiansen',
 								'tittel' : 'varaordfører, Kristiansand (Krf)'
 							}
@@ -3529,6 +3550,7 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
+								'_valid' : true,
 								'navn' : 'Dagfinn Fløystad',
 								'tittel' : 'avdelingsdirektør, Statens Vegvesen'
 							}
@@ -3604,6 +3626,7 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
+								'_valid' : true,
 								'funksjon' : 'Foto/redigering:',
 								'navn' : 'Hans Erik Weiby',
 								'funksjon2' : '',
@@ -3974,7 +3997,9 @@ const stories = [{
 								'name' : '22_sted_arkiv',
 								'layer' : 'tagLeft'
 							},
-							'content' : ''
+							'content' : {
+								'_valid' : true
+							}
 						}
 					},
 					{
@@ -4048,6 +4073,7 @@ const stories = [{
 								'layer' : 'tema'
 							},
 							'content' : {
+								'_valid' : true,
 								'tagtekst' : '#nrknyheter',
 								'tematekst' : 'Har seilt hele Norskekysten',
 								'infotekst' : ''
@@ -4294,6 +4320,7 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
+								'_valid' : true,
 								'navn' : 'Elin Ellingsvik Vegestøl',
 								'tittel' : ''
 							}
@@ -4650,6 +4677,7 @@ const stories = [{
 								'layer' : 'tagLeft'
 							},
 							'content' : {
+								'_valid' : true,
 								'sted' : 'Kristiansand',
 								'arkiv' : ''
 							}
@@ -4726,6 +4754,7 @@ const stories = [{
 								'layer' : 'tema'
 							},
 							'content' : {
+								'_valid' : true,
 								'tagtekst' : '#nrknyheter',
 								'tematekst' : '',
 								'infotekst' : ''
@@ -4908,6 +4937,7 @@ const stories = [{
 								'layer' : 'tema'
 							},
 							'content' : {
+								'_valid' : true,
 								'tagtekst' : '#nrknyheter',
 								'tematekst' : '',
 								'infotekst' : ''
@@ -4985,6 +5015,7 @@ const stories = [{
 								'layer' : 'tagRight'
 							},
 							'content' : {
+								'_valid' : true,
 								'text' : 'Kristiansand',
 								'sted' : 'Kristiansand'
 							}
@@ -5226,6 +5257,7 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
+								'_valid' : true,
 								'navn' : 'Janne AAteigen',
 								'tittel' : 'reporter'
 							}
@@ -5302,6 +5334,7 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
+								'_valid' : true,
 								'navn' : 'Jan Bang',
 								'tittel' : 'kurator, Punktfestivalen'
 							}
@@ -5378,6 +5411,7 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
+								'_valid' : true,
 								'navn' : 'Erik Honoré',
 								'tittel' : 'kurator, Punktfestivalen'
 							}
@@ -5454,6 +5488,7 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
+								'_valid' : true,
 								'funksjon' : 'Foto/teknikk:',
 								'navn' : 'Odd Rømteland',
 								'funksjon2' : '',
@@ -5790,7 +5825,9 @@ const stories = [{
 								'name' : '22_sted_arkiv',
 								'layer' : 'tagLeft'
 							},
-							'content' : ''
+							'content' : {
+								'_valid' : false
+							}
 						}
 					},
 					{
@@ -5864,6 +5901,7 @@ const stories = [{
 								'layer' : 'tema'
 							},
 							'content' : {
+								'_valid' : true,
 								'tagtekst' : '#nrknyheter',
 								'tematekst' : '',
 								'infotekst' : ''
@@ -6449,6 +6487,7 @@ const stories = [{
 								'layer' : 'fullskjerm'
 							},
 							'content' : {
+								'_valid' : true,
 								'bilde' : {
 									'creators' : [
 										'Foto: Gunnar Olsen',
@@ -6843,6 +6882,7 @@ const stories = [{
 								'layer' : 'ticker'
 							},
 							'content' : {
+								'_valid' : true,
 								'text' : 'Værdata er levert av Meteorologisk institutt',
 								'infotekst' : 'Værdata er levert av Meteorologisk institutt'
 							}
@@ -7078,6 +7118,7 @@ const stories = [{
 								'layer' : 'ticker'
 							},
 							'content' : {
+								'_valid' : true,
 								'text' : 'Værdata er levert av Meteorologisk institutt',
 								'infotekst' : 'Værdata er levert av Meteorologisk institutt'
 							}
@@ -7228,6 +7269,7 @@ const stories = [{
 								'layer' : 'ticker'
 							},
 							'content' : {
+								'_valid' : true,
 								'text' : 'nrk.no/sorlandet',
 								'infotekst' : 'nrk.no/sorlandet'
 							}
@@ -7386,6 +7428,7 @@ const stories = [{
 								'layer' : 'fullskjerm'
 							},
 							'content' : {
+								'_valid' : true,
 								'funksjon' : 'Redaktør:',
 								'navn' : 'Morten Rød',
 								'funksjon2' : 'Regi:',
