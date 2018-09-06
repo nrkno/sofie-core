@@ -28,7 +28,7 @@ import { literal } from '../../lib/lib'
 import { logger } from '../logging'
 
 // These are temporary methods, used during development to put some data into the database
-function getPD (): PeripheralDevice {
+export function getPD (): PeripheralDevice {
 	return PeripheralDevices.findOne({
 		type: PeripheralDeviceAPI.DeviceType.MOSDEVICE
 	}) as PeripheralDevice
@@ -2041,7 +2041,7 @@ Meteor.methods({
 		}
 		let id = pd._id
 		let token = pd.token
-		logger.info('debug_roMock1')
+		logger.info('debug_roMock2')
 
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, id, token,
 			new MosString128('MAENPSTEST14;P_SERVER14\\W;35F60587-876E-4CF1-AE0946FA90C55446'))
