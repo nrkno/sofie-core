@@ -276,6 +276,7 @@ Meteor.methods({
 				 	name: 'Arkiv',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
+					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'alt+u',
 					allowDisable: true
 				},
@@ -285,6 +286,7 @@ Meteor.methods({
 				 	name: 'Direkte',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
+					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'alt+d,alt+u',
 					allowDisable: true
 				},
@@ -294,6 +296,7 @@ Meteor.methods({
 				 	name: 'Tema',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
+					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'i,alt+i,alt+u',
 					allowDisable: true
 				},
@@ -303,6 +306,7 @@ Meteor.methods({
 				 	name: 'Ticker',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
+					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'alt+o,alt+u',
 					allowDisable: true
 				},
