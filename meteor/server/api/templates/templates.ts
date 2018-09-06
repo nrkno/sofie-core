@@ -615,6 +615,31 @@ export function runTemplate (showStyle: ShowStyle, context: TemplateContext, sto
 			result: result
 		}
 	} else {
-		throw new Meteor.Error(500, 'No template id found for story "' + story.ID + '" ("' + story.Slug + '")')
+		let name = context.segmentLine.mosId
+		if (story && story.Slug) {
+			name = story.Slug.toString()
+		}
+		notes.push({
+			type: SegmentLineNoteType.ERROR,
+			origin: {
+				name: name,
+				roId: context.runningOrderId,
+				segmentId: context.segmentLine.segmentId,
+				segmentLineId: context.segmentLine._id,
+			},
+			message: 'No template id found for story "' + story.ID + '" ("' + story.Slug + '")'
+		})
+
+		return {
+			templateId: '',
+			result: {
+				notes: notes,
+				segmentLine: null, 			// DBSegmentLine | null,
+				segmentLineItems: [], 		// Array<SegmentLineItem> | null
+				segmentLineAdLibItems: [], 	// Array<SegmentLineAdLibItem> | null
+				baselineItems: [] 			// Array<RunningOrderBaselineItem> | null
+			}
+		}
+		// throw new Meteor.Error(500, 'No template id found for story "' + story.ID + '" ("' + story.Slug + '")')
 	}
 }

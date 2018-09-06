@@ -1513,13 +1513,24 @@ body.vertical-overflow-only {
 		}
 	}
 
+	.mini-inspector__header {
+		font-weight: 500;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+		margin-top: -6px;
+    	margin-bottom: 6px;
+
+		> .mini-inspector__sub-header {
+			margin-left: 0.5em;
+			font-weight: 300;
+		}
+	}
 	.mini-inspector__label {
-		font-weight: 100;
+		font-weight: 300;
 		text-transform: capitalize;
 		padding-right: 1em;
 	}
 	.mini-inspector__value {
-		font-weight: 400;
+		font-weight: 500;
 	}
 	.mini-inspector__system {
 		font-weight: 300;

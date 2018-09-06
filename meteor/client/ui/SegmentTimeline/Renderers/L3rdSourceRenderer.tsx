@@ -77,18 +77,15 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 			changed = noraContent.payload.changed
 		}
 
+		let templateName
+		let templateVariant
+
 		if (noraContent && noraContent.payload && noraContent.payload.metadata && noraContent.payload.metadata.templateName) {
-			properties.push({
-				key: t('Template name'),
-				value: noraContent.payload.metadata.templateName
-			})
+			templateName = noraContent.payload.metadata.templateName
 		}
 
 		if (noraContent && noraContent.payload && noraContent.payload.metadata && noraContent.payload.metadata.templateVariant) {
-			properties.push({
-				key: t('Template variant'),
-				value: noraContent.payload.metadata.templateVariant
-			})
+			templateVariant = noraContent.payload.metadata.templateVariant
 		}
 
 		return <React.Fragment>
@@ -103,6 +100,9 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 					</span>
 					<FloatingInspector key={this.props.segmentLineItem._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 						<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
+							{ templateName && <div className='mini-inspector__header'>{templateName}{
+								templateVariant && <span className='mini-inspector__sub-header'>{templateVariant}</span>
+							}</div>}
 							<table>
 								<tbody>
 									{properties.map((item) => (

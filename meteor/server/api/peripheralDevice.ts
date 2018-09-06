@@ -23,7 +23,7 @@ import {
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { RunningOrder, RunningOrders, DBRunningOrder } from '../../lib/collections/RunningOrders'
-import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode } from '../../lib/collections/SegmentLines'
+import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Segments, DBSegment } from '../../lib/collections/Segments'
 import { saveIntoDb, partialExceptId, getCurrentTime, literal, fetchBefore, getRank, fetchAfter } from '../../lib/lib'
@@ -1227,10 +1227,26 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 	try {
 		tr = runTemplate(showStyle, context, story, 'story ' + story.ID.toString())
 	} catch (e) {
-		if (e.toString().match(/no template id found/i)) {
-			logger.warn(e.toString())
-		} else {
-			throw e
+		logger.error(e.toString())
+		// throw e
+		tr = {
+			templateId: '',
+			result: {
+				notes: [{
+					type: SegmentLineNoteType.ERROR,
+					origin: {
+						name: '',
+						roId: context.runningOrderId,
+						segmentId: context.segmentLine.segmentId,
+						segmentLineId: context.segmentLine._id,
+					},
+					message: 'Internal Server Error'
+				}],
+				segmentLine: null, 			// DBSegmentLine | null,
+				segmentLineItems: [], 		// Array<SegmentLineItem> | null
+				segmentLineAdLibItems: [], 	// Array<SegmentLineAdLibItem> | null
+				baselineItems: [] 			// Array<RunningOrderBaselineItem> | null
+			}
 		}
 	}
 
@@ -1259,6 +1275,10 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 				updateStoryStatus:		tr.result.segmentLine.updateStoryStatus || false,
 				typeVariant:			tr.result.segmentLine.typeVariant || '',
 				holdMode: 				tr.result.segmentLine.holdMode || SegmentLineHoldMode.NONE,
+			}})
+		} else {
+			SegmentLines.update(segmentLine._id, {$set: {
+				notes: 					tr.result.notes,
 			}})
 		}
 		changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
