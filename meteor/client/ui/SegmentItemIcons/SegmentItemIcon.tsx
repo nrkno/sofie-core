@@ -135,7 +135,7 @@ export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 					)
 				case RundownAPI.SourceLayerType.SPLITS :
 					return (
-						<SplitInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
+						<SplitInputIcon abbreviation={this.props.sourceLayer.abbreviation} segmentLineItem={this.props.segmentLineItem} />
 					)
 				case RundownAPI.SourceLayerType.VT :
 					return (
