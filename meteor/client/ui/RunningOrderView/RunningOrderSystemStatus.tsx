@@ -195,16 +195,24 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 			studioInstallationId: this.props.studioInstallation._id
 		})
 	}
+	componentWillUnmount () {
+		super.componentWillUnmount()
+
+		if (this.notificationTimeout) Meteor.clearTimeout(this.notificationTimeout)
+	}
 
 	componentDidUpdate (prevProps: IProps & ITrackedProps) {
 		if (prevProps !== this.props) {
 			if (this.notificationTimeout) Meteor.clearTimeout(this.notificationTimeout)
 
+			const mosDiff = diffOnLineOffLineList(prevProps.mosDevices, this.props.mosDevices)
+			const playoutDiff = diffOnLineOffLineList(prevProps.playoutDevices, this.props.playoutDevices)
+
 			this.setState({
-				mosDiff: diffOnLineOffLineList(prevProps.mosDevices, this.props.mosDevices),
-				playoutDiff: diffOnLineOffLineList(prevProps.playoutDevices, this.props.playoutDevices),
+				mosDiff,
+				playoutDiff,
 				forceHideNotification: false,
-				displayNotification: true
+				displayNotification: mosDiff.offLine.length !== 0 || playoutDiff.offLine.length !== 0 || mosDiff.onLine.length !== 0 || playoutDiff.onLine.length !== 0
 			})
 
 			this.notificationTimeout = Meteor.setTimeout(() => {

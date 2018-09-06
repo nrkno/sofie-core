@@ -87,6 +87,7 @@ class KeyboardFocusMarker extends React.Component<any, IKeyboardFocusMarkerState
 interface ITimingWarningProps {
 	runningOrder: RunningOrder
 	inActiveROView?: boolean
+	studioMode: boolean
 	onReloadAndActivate: () => void
 }
 
@@ -146,7 +147,7 @@ const WarningDisplay = translate()(timer(5000)(
 
 			if (!this.props.runningOrder) return null
 
-			return <ModalDialog title={t('Start time is close')} acceptText={t('Yes')} secondaryText={t('No')} onAccept={this.reloadRO} onDiscard={this.discard} onSecondary={this.discard} show={this.state.plannedStartCloseShow && !(this.props.runningOrder.active && !this.props.runningOrder.rehearsal) && this.props.runningOrder.active}>
+			return <ModalDialog title={t('Start time is close')} acceptText={t('Yes')} secondaryText={t('No')} onAccept={this.reloadRO} onDiscard={this.discard} onSecondary={this.discard} show={this.props.studioMode && this.state.plannedStartCloseShow && !(this.props.runningOrder.active && !this.props.runningOrder.rehearsal) && this.props.runningOrder.active}>
 						<p>{t('You are in rehearsal mode, the broadcast starts in 1 minute. Do you want to reload the rundown and remove rehearsal mode?')}</p>
 					</ModalDialog>
 		}
@@ -588,7 +589,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				'rehearsal': this.props.runningOrder.rehearsal
 			})}>
 				{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} runningOrder={this.props.runningOrder} />}
-				<WarningDisplay inActiveROView={this.props.inActiveROView} runningOrder={this.props.runningOrder} onReloadAndActivate={this.onReloadAndActivate} />
+				<WarningDisplay studioMode={this.props.studioMode} inActiveROView={this.props.inActiveROView}
+					runningOrder={this.props.runningOrder} onReloadAndActivate={this.onReloadAndActivate} />
 				<div className='row first-row super-dark'>
 					<div className='flex-col left horizontal-align-left'>
 						{/* !!! TODO: This is just a temporary solution !!! */}
