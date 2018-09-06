@@ -1847,6 +1847,14 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLine
 		) {
 			let tos = item.content.timelineObjects
 
+			if (item.trigger.type === TriggerType.TIME_ABSOLUTE && item.trigger.value === 0) {
+				// If timed absolute and there is a transition delay, then apply delay
+				if (!item.isTransition && allowTransition && triggerOffsetForTransition && !item.adLibSourceId) {
+					item.trigger.type = TriggerType.TIME_RELATIVE
+					item.trigger.value = `${triggerOffsetForTransition} + ${item.trigger.value}`
+				}
+			}
+
 			// create a segmentLineItem group for the items and then place all of them there
 			const segmentLineItemGroup = createSegmentLineItemGroup(item, item.durationOverride || item.duration || item.expectedDuration || 0, segmentLineGroup)
 			timelineObjs.push(segmentLineItemGroup)
@@ -1864,14 +1872,6 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLine
 
 				if (segmentLineGroup) {
 					o.inGroup = segmentLineItemGroup._id
-
-					if (item.trigger.type === TriggerType.TIME_ABSOLUTE && item.trigger.value === 0) {
-						// If timed absolute and there is a transition delay, then apply delay
-						if (!item.isTransition && allowTransition && triggerOffsetForTransition && o.trigger.type === TriggerType.TIME_ABSOLUTE && !item.adLibSourceId) {
-							o.trigger.type = TriggerType.TIME_RELATIVE
-							o.trigger.value = `${triggerOffsetForTransition} + ${o.trigger.value}`
-						}
-					}
 
 					// If we are leaving a HOLD, the transition was suppressed, so force it to run now
 					if (item.isTransition && holdState === RunningOrderHoldState.COMPLETE) {
