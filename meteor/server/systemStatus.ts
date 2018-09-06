@@ -4,7 +4,7 @@ import { ServerResponse, IncomingMessage } from 'http'
 import { Picker } from 'meteor/meteorhacks:picker'
 import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { syncFunctionIgnore } from './codeControl'
-import { StudioInstallations } from '../lib/collections/StudioInstallations';
+import { StudioInstallations } from '../lib/collections/StudioInstallations'
 
 // This data structure is to be used to determine the system-wide status of the Core instance
 
