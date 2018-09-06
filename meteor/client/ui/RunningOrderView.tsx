@@ -176,7 +176,8 @@ export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_NEXT_BACK = 'shift+f9',
 	RUNNING_ORDER_NEXT_UP = 'shift+f10',
 	RUNNING_ORDER_DISABLE_NEXT_ELEMENT = 'g',
-	RUNNING_ORDER_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g'
+	RUNNING_ORDER_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
+	RUNNING_ORDER_RESET_FOCUS = 'esc'
 }
 mousetrap.addKeycodes({
 	220: '§', // on US-based (ANSI) keyboards (single-row, Enter key), this is the key above Enter, usually with a backslash and the vertical pipe character
@@ -292,6 +293,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		up?: (e: KeyboardEvent) => any
 		down?: (e: KeyboardEvent) => any
 		label: string
+		global?: boolean
 	}> = []
 	constructor (props: Translated<IRunningOrderHeaderProps>) {
 		super(props)
@@ -302,11 +304,13 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE,
 					up: this.keyTake,
-					label: t('Take')
+					label: t('Take'),
+					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE2,
 					up: this.keyTake,
-					label: t('Take')
+					label: t('Take'),
+					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_HOLD,
 					up: this.keyHold,
@@ -314,56 +318,68 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE,
 					up: this.keyActivate,
-					label: t('Activate')
+					label: t('Activate'),
+					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE2,
 					up: this.keyActivate,
-					label: t('Activate')
+					label: t('Activate'),
+					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE3,
 					up: this.keyActivate,
-					label: t('Activate')
+					label: t('Activate'),
+					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE,
 					up: this.keyDeactivate,
-					label: t('Deactivate')
+					label: t('Deactivate'),
+					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE_REHEARSAL,
 					up: this.keyActivateRehearsal,
-					label: t('Activate (rehearsal)')
+					label: t('Activate (rehearsal)'),
+					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RELOAD_RUNNING_ORDER,
 					up: this.keyReloadRunningOrder,
-					label: t('Reload running order')
+					label: t('Reload running order'),
+					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_FORWARD,
 					up: this.keyMoveNextForward,
-					label: t('Move next forward')
+					label: t('Move next forward'),
+					global: true
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_DOWN,
 					up: this.keyMoveNextDown,
-					label: t('Move next segment forward')
+					label: t('Move next segment forward'),
+					global: true
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_UP,
 					up: this.keyMoveNextUp,
-					label: t('Move next segment back')
+					label: t('Move next segment back'),
+					global: true
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_BACK,
 					up: this.keyMoveNextBack,
-					label: t('Move next back')
+					label: t('Move next back'),
+					global: true
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_DISABLE_NEXT_ELEMENT,
 					up: this.keyDisableNextSegmentLineItem,
-					label: t('DisableNextElement')
+					label: t('Disable next element'),
+					global: true
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_UNDO_DISABLE_NEXT_ELEMENT,
 					up: this.keyDisableNextSegmentLineItemUndo,
-					label: t('DisableNextElement')
+					label: t('Undo disable next element'),
+					global: true
 				}
 			]
 		} else {
@@ -384,17 +400,18 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			e.stopPropagation()
 		}
 		_.each(this.bindKeys, (k) => {
+			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
 			if (k.up) {
-				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+				method(k.key, (e: KeyboardEvent) => {
 					preventDefault(e)
 					if (k.up) k.up(e)
 				}, 'keyup')
-				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+				method(k.key, (e: KeyboardEvent) => {
 					preventDefault(e)
 				}, 'keydown')
 			}
 			if (k.down) {
-				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+				method(k.key, (e: KeyboardEvent) => {
 					preventDefault(e)
 					if (k.down) k.down(e)
 				}, 'keydown')
@@ -754,7 +771,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		key: string,
 		up?: (e: KeyboardEvent) => any,
 		down?: (e: KeyboardEvent) => any,
-		label: string
+		label: string,
+		global?: boolean
 	}> = []
 	private _segments: _.Dictionary<React.ComponentClass<{}>> = {}
 
@@ -767,12 +785,14 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_GO_TO_LIVE,
 				up: this.onGoToLiveSegment,
-				label: t('Go to On Air line')
+				label: t('Go to On Air line'),
+				global: true
 			},
 			{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_REWIND_SEGMENTS,
 				up: this.onRewindSegments,
-				label: t('Rewind segments to start')
+				label: t('Rewind segments to start'),
+				global: true
 			}
 		]
 
@@ -837,16 +857,17 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			e.stopPropagation()
 		}
 		_.each(this.bindKeys, (k) => {
+			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
 			if (k.up) {
-				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+				method(k.key, (e: KeyboardEvent) => {
 					if (k.up) k.up(e)
 				}, 'keyup')
-				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+				method(k.key, (e: KeyboardEvent) => {
 					preventDefault(e)
 				}, 'keydown')
 			}
 			if (k.down) {
-				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+				method(k.key, (e: KeyboardEvent) => {
 					if (k.down) k.down(e)
 				}, 'keydown')
 			}
