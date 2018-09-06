@@ -16,6 +16,7 @@ export interface IAdLibListItem {
 	name: string,
 	status?: RundownAPI.LineItemStatusCode
 	hotkey?: string
+	isHidden?: boolean
 }
 
 interface IListViewItemProps {
@@ -57,7 +58,7 @@ export const AdLibListItem = translate()(class extends MeteorReactComponent<Tran
 					'source-broken': this.props.item.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN,
 					'unknown-state': this.props.item.status === RundownAPI.LineItemStatusCode.UNKNOWN
 				})}>
-					{this.props.layer && this.props.layer.name}
+					{this.props.layer && (this.props.layer.abbreviation || this.props.layer.name)}
 				</td>
 				<td className='adlib-panel__list-view__list__table__cell--shortcut'>
 					{this.props.item.hotkey && this.props.item.hotkey.toUpperCase()}

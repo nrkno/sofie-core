@@ -22,7 +22,8 @@ Meteor.publish('segmentLineItemsSimple', function (selector, token) {
 		fields: {
 			token: 0,
 			timings: 0,
-			content: 0,
+			// we kind-of need to know the contents, unfortunately
+			// content: 0,
 		}
 	}
 	if (RunningOrderSecurity.allowReadAccess(selector, token, this)) {

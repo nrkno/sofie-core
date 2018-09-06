@@ -660,6 +660,18 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + item.index + '.onPresenterScreen'}
+												obj={this.props.studioInstallation}
+												type='checkbox'
+												collection={StudioInstallations}
+												className=''></EditAttribute>
+											{t('Display on presenter\'s screen')}
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
 											{t('AdLib activate shortcut list')}
 											<EditAttribute
 												modifiedClassName='bghl'
@@ -716,6 +728,18 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 												type='text'
 												collection={StudioInstallations}
 												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + item.index + '.allowDisable'}
+												obj={this.props.studioInstallation}
+												type='checkbox'
+												collection={StudioInstallations}
+												className=''></EditAttribute>
+											{t('Allow disabling of elements')}
 										</label>
 									</div>
 								</div>

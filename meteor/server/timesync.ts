@@ -145,7 +145,7 @@ methods[PeripheralDeviceAPI.methods.getTime] = () => {
 }
 Meteor.methods(methods)
 
-let updateServerTime = () => {
+let updateServerTime = (retries: number = 0) => {
 	logger.info('Updating systemTime...')
 
 	let ntpServerStr: string | undefined = process.env.NTP_SERVERS
@@ -165,7 +165,8 @@ let updateServerTime = () => {
 		// if result.stdDev is less than one frame-time, it should be okay:
 		if (result.stdDev < 1000 / 50) {
 			logger.info('Setting time-diff to ' + Math.round(result.mean) +
-				' (stdDev: ' + result.stdDev + ')')
+				'ms (stdDev: ' + (Math.floor(result.stdDev * 10) / 10) + 'ms)')
+
 			systemTime.diff = result.mean
 			systemTime.stdDev = result.stdDev
 			setSystemStatus('systemTime', {statusCode: StatusCode.GOOD})
@@ -185,12 +186,15 @@ let updateServerTime = () => {
 		}
 	})
 	.catch((err) => {
-		logger.info('systemTime Error', err)
-		setSystemStatus('systemTime', {statusCode: StatusCode.BAD, messages: [err.toString()]})
+		if (retries) {
+			Meteor.setTimeout(() => {
+				updateServerTime(retries - 1)
+			}, 1 * 1000)
+		} else {
 
-		Meteor.setTimeout(() => {
-			updateServerTime()
-		}, 20 * 1000)
+			logger.info('systemTime Error', err)
+			setSystemStatus('systemTime', {statusCode: StatusCode.BAD, messages: [err.toString()]})
+		}
 	})
 }
 setSystemStatus('systemTime', {statusCode: StatusCode.BAD, messages: ['Starting up...'] })
@@ -198,7 +202,7 @@ Meteor.startup(() => {
 	Meteor.setInterval(() => {
 		updateServerTime()
 	}, 3600 * 1000)
-	updateServerTime()
+	updateServerTime(5)
 })
 
 // Example usage:

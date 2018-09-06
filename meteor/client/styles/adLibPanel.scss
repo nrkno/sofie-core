@@ -142,7 +142,7 @@ $adlib-item-selected-color: #009DFF;
 			position: relative;
 			display: block;
 			width: 100%;
-			max-height: calc(100% - 1.3em);
+			max-height: 100%;
 			overflow-y: auto;
     		overflow-x: hidden;
 
@@ -177,6 +177,14 @@ $adlib-item-selected-color: #009DFF;
 
 				@include item-type-colors();
 				@include missing-overlay();
+
+				&.live-speak {
+					background: linear-gradient(to bottom, $segment-layer-background-vt 50%, $segment-layer-background-camera 50.0001%);
+				}
+
+				&.splits {
+					background: linear-gradient(to right, $segment-layer-background-camera 50%, $segment-layer-background-remote 50.0001%);
+				}
 			}
 			.adlib-panel__list-view__list__table__cell--shortcut {
 				width: 40px;

@@ -45,8 +45,9 @@ export interface DBSegmentLine {
 	/** Expected duration of the line, in milliseconds */
 	expectedDuration?: number
 
-	/** The time the system started playback of this segment line, null if not yet played back (milliseconds since epoch) */
-	startedPlayback?: number
+	/** Whether the sl has started playback, reset each time setAsNext is used */
+	startedPlayback?: boolean
+
 	/** The time the system played back this segment line, null if not yet finished playing, in milliseconds */
 	duration?: number
 
@@ -111,7 +112,7 @@ export class SegmentLine implements DBSegmentLine {
 	public metaData?: Array<IMOSExternalMetaData>
 	public status?: IMOSObjectStatus
 	public expectedDuration?: number
-	public startedPlayback?: number
+	public startedPlayback?: boolean
 	public duration?: number
 	public disableOutTransition?: boolean
 	public updateStoryStatus?: boolean
@@ -193,6 +194,13 @@ export class SegmentLine implements DBSegmentLine {
 			// })
 		}
 		return notes
+	}
+	getLastStartedPlayback () {
+		if (!this.timings) return undefined
+
+		if (!this.timings.startedPlayback || this.timings.startedPlayback.length === 0) return undefined
+
+		return this.timings.startedPlayback[this.timings.startedPlayback.length - 1]
 	}
 }
 

@@ -73,6 +73,7 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 		up?: (e: KeyboardEvent) => any
 		down?: (e: KeyboardEvent) => any
 		label: string
+		global?: boolean
 	}> = []
 
 	constructor (props: Translated<IProps>) {
@@ -93,6 +94,12 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TOGGLE_DRAWER,
 				up: this.keyToggleDrawer,
 				label: t('Toggle drawer')
+			},
+			{
+				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RESET_FOCUS,
+				up: this.keyBlurActiveElement,
+				label: t('Escape from filter search'),
+				global: true
 			}
 		]
 	}
@@ -104,17 +111,18 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 			e.stopPropagation()
 		}
 		_.each(this.bindKeys, (k) => {
+			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
 			if (k.up) {
-				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+				method(k.key, (e: KeyboardEvent) => {
 					preventDefault(e)
 					if (k.up) k.up(e)
 				}, 'keyup')
-				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+				method(k.key, (e: KeyboardEvent) => {
 					preventDefault(e)
 				}, 'keydown')
 			}
 			if (k.down) {
-				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+				method(k.key, (e: KeyboardEvent) => {
 					preventDefault(e)
 					if (k.down) k.down(e)
 				}, 'keydown')
@@ -172,11 +180,25 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 		}
 	}
 
+	keyBlurActiveElement = () => {
+		this.blurActiveElement()
+	}
+
 	keyToggleDrawer = () => {
 		this.toggleDrawer()
 	}
 
+	blurActiveElement = () => {
+		try {
+			// @ts-ignore
+			document.activeElement.blur()
+		} catch (e) {
+			// do nothing
+		}
+	}
+
 	toggleDrawer = () => {
+		this.blurActiveElement();
 		this.setState({
 			expanded: !this.state.expanded
 		})
@@ -195,7 +217,7 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 		if (Date.now() - this._mouseDown > 350) {
 			if (this.state.overrideHeight && (window.innerHeight - this.state.overrideHeight > CLOSE_MARGIN)) {
 				stateChange = _.extend(stateChange, {
-					drawerHeight: ((this.state.overrideHeight / window.innerHeight) * 100) + 'vh',
+					drawerHeight: (Math.max(0.1, 0, this.state.overrideHeight / window.innerHeight) * 100) + 'vh',
 					expanded: true
 				})
 			} else {
@@ -210,6 +232,7 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 		}
 
 		this.setState(stateChange)
+		this.blurActiveElement()
 
 		localStorage.setItem('runningOrderView.inspectorDrawer.drawerHeight', this.state.drawerHeight)
 	}

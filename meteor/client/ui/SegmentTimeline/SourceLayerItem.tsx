@@ -95,6 +95,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		if (this.props.relative) {
 			return {}
 		} else {
+			const maxLabelWidth = this.props.segmentLineItem.maxLabelWidth
+
 			if (this.props.segmentLine && this.props.segmentLineStartsAt !== undefined) { //  && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined
 				let segmentLineItem = this.props.segmentLineItem
 
@@ -118,10 +120,11 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 						// || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0)
 						let styleObj = {
-							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' : 'none',
-							'transform': 'translate3d(' + (widthConstrictedMode ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
-								'translate3d(' + (liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
-								'translate3d(-100%, 0, 0)',
+							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
+								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none',
+							'transform': 'translate3d(' + Math.round(widthConstrictedMode ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
+								'translate3d(' + Math.round(liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
+								'translate3d(-100%, 0, 5px)',
 							'willChange': 'transform'
 						}
 
@@ -132,10 +135,11 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLineStartsAt - inTransitionDuration) * this.props.timeScale
 
 						let styleObj = {
-							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' : 'none',
-							'transform': 'translate3d(' + (Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
-								'translate3d(' + (liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
-								'translate3d(-100%, 0, 0)',
+							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
+								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none',
+							'transform': 'translate3d(' + Math.round(Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
+								'translate3d(' + Math.round(liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
+								'translate3d(-100%, 0, 5px)',
 							'willChange': 'transform'
 						}
 
@@ -147,15 +151,17 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						const targetPos = (this.props.scrollLeft - inPoint - this.props.segmentLineStartsAt - inTransitionDuration) * this.props.timeScale
 
 						let styleObj = {
-							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' : 'none',
-							'transform': 'translate3d(' + (widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth))).toString() + 'px,  0, 0)',
+							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
+								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none',
+							'transform': 'translate3d(' + Math.round(widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth))).toString() + 'px,  0, 5px)',
 							'willChange': 'transform'
 						}
 
 						return styleObj
 					} else {
 						let styleObj = {
-							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' : 'none'
+							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
+								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none'
 						}
 
 						return styleObj
@@ -187,7 +193,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 					const targetPos = Math.max(((this.props.scrollLeft + this.props.scrollWidth) - outPoint - this.props.segmentLineStartsAt - outTransitionDuration) * this.props.timeScale, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth - LEFT_RIGHT_ANCHOR_SPACER) * -1)
 
 					return {
-						'transform': 'translate3d(' + (targetPos).toString() + 'px,  0, 0)',
+						'transform': 'translate3d(' + Math.round(targetPos).toString() + 'px,  0, 15px)',
 						'willChange': 'transform'
 					}
 				}
@@ -227,13 +233,13 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		if (this.props.relative) {
 			return {
 				// also: don't render transitions in relative mode
-				'left': (((segmentLineItem.renderedInPoint || 0)) / (this.props.segmentLineDuration || 1) * 100).toString() + '%',
-				'width': ((itemDuration) / (this.props.segmentLineDuration || 1) * 100).toString() + '%'
+				'left': Math.round(((segmentLineItem.renderedInPoint || 0)) / (this.props.segmentLineDuration || 1) * 100).toString() + '%',
+				'width': Math.round((itemDuration) / (this.props.segmentLineDuration || 1) * 100).toString() + '%'
 			}
 		} else {
 			return {
-				'left': (((segmentLineItem.renderedInPoint || 0) + inTransitionDuration) * this.props.timeScale).toString() + 'px',
-				'width': ((itemDuration - inTransitionDuration - outTransitionDuration) * this.props.timeScale).toString() + 'px'
+				'left': Math.round(((segmentLineItem.renderedInPoint || 0) + inTransitionDuration) * this.props.timeScale).toString() + 'px',
+				'width': Math.round((itemDuration - inTransitionDuration - outTransitionDuration) * this.props.timeScale).toString() + 'px'
 			}
 		}
 	}
@@ -442,7 +448,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 					'source-missing': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING,
 					'source-broken': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN,
-					'unknown-state': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.UNKNOWN
+					'unknown-state': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.UNKNOWN,
+					'disabled': this.props.segmentLineItem.disabled
 				})}
 					data-mos-id={this.props.segmentLineItem._id}
 					ref={this.setRef}

@@ -15,6 +15,8 @@ $segment-title-background-color-live: $general-live-color;
 $segment-title-background-color-remote: $general-live-remote-color;
 $segment-title-background-color-has-played: #2c2c2c;
 $segment-line-start-color: #898989;
+$segment-item-disabled-background: #898989;
+$segment-item-disabled-color: #c9c9c9;
 
 $segment-nextline-shade-width: 30px;
 $segment-nextline-shade-fill: linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.5));
@@ -672,6 +674,12 @@ body.vertical-overflow-only {
 		.segment-timeline__segment-line {
 			position: relative;
 			z-index: 1;
+			transform-style: preserve-3d;
+
+			* {
+				backface-visibility: hidden;
+				-webkit-backface-visibility: hidden;
+			}
 
 			.segment-timeline__segment-line__nextline {
 				display: block;
@@ -682,7 +690,7 @@ body.vertical-overflow-only {
 				flex: 0;
 				border-left: 2px solid $segment-line-start-color;
 				box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.7);
-				z-index: 10;
+				transform: translate3d(0,0,50px);
 
 				&.segment-timeline__segment-line__nextline--endline {
 					left: auto;
@@ -748,7 +756,7 @@ body.vertical-overflow-only {
 				bottom: 0;
 				right: 0;
 				background: linear-gradient(to left, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 50%);
-				z-index: 3;
+				transform: translate3d(0, 0, 10px)
 			}
 
 			&.next {
@@ -841,14 +849,16 @@ body.vertical-overflow-only {
 			.segment-timeline__output-group {
 				min-height: $segment-layer-height;
 				border-bottom: 0px solid $segment-layer-separator-color;
+				transform-style: preserve-3d;
 
 				transition: $output-layer-group-collapse-animation-duration border ease-in-out;
-				
+						
 				// The layer container for all segment-line-items
 				.segment-timeline__layer {
 					min-height: $segment-layer-height;
 					line-height: $segment-layer-height;
 					border-bottom: 2px solid $segment-layer-separator-color;
+					transform-style: preserve-3d;
 
 					transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
 								$output-layer-group-collapse-animation-duration border ease-in-out;
@@ -858,17 +868,21 @@ body.vertical-overflow-only {
 						transition: box-shadow 0.5s ease-out;
 						box-shadow: 0 0 0 0 rgba(255,255,255,0.5);
 						cursor: default;
-						z-index: 1;
+						transform-style: preserve-3d;
 
 						// TODO: This is just temporary styling, to indicate that the layers are clickable
 						&:hover {
 							transition: none;
 							box-shadow: 0 0 18px 1px rgb(0, 0, 0);
-							z-index: 10;
+							transform: translate3d(0, 0, 10px);
 						}
 
 						@include item-type-colors();
 
+						&.disabled {
+							background: $segment-item-disabled-background;
+							color: $segment-item-disabled-color;
+						}
 						&.next-is-touching {
 							border-right: 1px solid $segment-timeline-background-color; 
 						}
@@ -886,10 +900,12 @@ body.vertical-overflow-only {
 								bottom: 0;
 								display: flex;
 								flex-direction: column-reverse;
+								transform-style: preserve-3d;
 
 								.segment-timeline__layer-item__preview__item {
 									flex: 1 1;
 									min-height: 0;
+									transform-style: preserve-3d;
 
 									@include item-type-colors();
 
@@ -908,7 +924,7 @@ body.vertical-overflow-only {
 							bottom: 0;
 							background: linear-gradient(to bottom, #0000ff 0, #fff 1.9px, #000 2px , #000 4px, rgba(0, 0, 0, 0.2) 4.1px);
 							overflow: hidden;
-							z-index: 3;
+							transform: translate3d(0,0,2px)
 						}
 
 						.segment-timeline__layer-item__source-finished {
@@ -917,7 +933,7 @@ body.vertical-overflow-only {
 							right: 0;
 							bottom: 0;
 							background: repeating-linear-gradient(to right, $segment-timeline-background-color 0, $segment-timeline-background-color 5px, transparent 5.1px, transparent 10px);
-							z-index: 2;
+							transform: translate3d(0,0,1px)
 						}
 
 						.segment-timeline__layer-item__label {
@@ -970,6 +986,7 @@ body.vertical-overflow-only {
 							&.right-side {
 								position: absolute;
 								right: 0;
+								transform: translate3d(0, 0, 15px);
 								
 								> * {
 									position: relative;
@@ -1119,7 +1136,7 @@ body.vertical-overflow-only {
 			.segment-timeline__layer-item-appendage {
 				&.script-line {
 					width: 0;
-					z-index: 100;
+					transform: translate3d(0, 0, 30px);
 					border-left: 2px dotted $segment-layer-background-mic;
 					margin-left: -2px;
 					box-shadow: 0px 0px 1px 1px rgba(0, 30, 0, 0.18);
@@ -1496,13 +1513,24 @@ body.vertical-overflow-only {
 		}
 	}
 
+	.mini-inspector__header {
+		font-weight: 500;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+		margin-top: -6px;
+    	margin-bottom: 6px;
+
+		> .mini-inspector__sub-header {
+			margin-left: 0.5em;
+			font-weight: 300;
+		}
+	}
 	.mini-inspector__label {
-		font-weight: 100;
+		font-weight: 300;
 		text-transform: capitalize;
 		padding-right: 1em;
 	}
 	.mini-inspector__value {
-		font-weight: 400;
+		font-weight: 500;
 	}
 	.mini-inspector__system {
 		font-weight: 300;

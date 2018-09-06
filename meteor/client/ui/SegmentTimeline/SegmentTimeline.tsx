@@ -138,7 +138,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 					followLiveLine={this.props.followLiveLine}
 					autoNextSegmentLine={this.props.autoNextSegmentLine}
 					liveLineHistorySize={this.props.liveLineHistorySize}
-					livePosition={this.props.segment._id === this.props.runningOrder.currentSegmentLineId && segmentLine.startedPlayback ? this.props.livePosition - segmentLine.startedPlayback : null}
+					livePosition={this.props.segment._id === this.props.runningOrder.currentSegmentLineId && segmentLine.startedPlayback && segmentLine.getLastStartedPlayback() ? this.props.livePosition - (segmentLine.getLastStartedPlayback() || 0) : null}
 					isLastInSegment={false} />
 			)
 		})
@@ -323,7 +323,8 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 
 	timelineStyle () {
 		return {
-			'transform': 'translate3d(-' + (this.props.scrollLeft * this.props.timeScale).toString() + 'px, 0, 0)'
+			'transform': 'translate3d(-' + Math.round(this.props.scrollLeft * this.props.timeScale).toString() + 'px, 0, 0.1px)',
+			'willChange': 'transform'
 		}
 	}
 

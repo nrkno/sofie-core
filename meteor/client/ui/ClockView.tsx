@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
+import * as ClassNames from 'classnames'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import * as $ from 'jquery'
@@ -16,8 +17,7 @@ import { RundownUtils } from '../lib/rundown'
 import * as TimecodeString from 'smpte-timecode'
 import { Settings } from '../../lib/Settings'
 import { getCurrentTime, objectPathGet } from '../../lib/lib'
-import { SegmentItemIconContainer } from './SegmentItemIcons/SegmentItemIcon'
-import CamInputICon from './SegmentItemIcons/Renderers/CamInput'
+import { SegmentItemIconContainer, SegmentItemNameContainer } from './SegmentItemIcons/SegmentItemIcon'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 interface SegmentUi extends Segment {
@@ -43,43 +43,16 @@ const Timediff = class extends React.Component<{ time: number}> {
 	render () {
 		const time = -this.props.time
 		const isNegative = (Math.floor(time / 1000) > 0)
-		const timeString = RundownUtils.formatDiffToTimecode(time, false, false, true, false, true, '', false, true) // @todo: something happened here with negative time
+		const timeString = RundownUtils.formatDiffToTimecode(time, true, false, true, false, true, '', false, true) // @todo: something happened here with negative time
 		// RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)
 		const timeStringSegments = timeString.split(':')
 		const fontWeight = (no) => no === '00' || no === '+00'
 		return (
-			<span className={ isNegative ? 'clocks-segment-countdown-red' : '' }>
-				{isNegative ? <span className='clocks-counter-light'>+</span> : null}
-				<span className={fontWeight(timeStringSegments[0]) ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[0]}</span>:
-				<span className={timeStringSegments[1] ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[1]}</span>
-				{timeStringSegments.length > 2 ? ':' : null}
-				{timeStringSegments.length > 2 ? <span className={fontWeight(timeStringSegments[2]) ? 'clocks-counter-light' : 'clocks-counter-normal'}>{timeStringSegments[2]}</span> : null}
-			</span>
-		)
-	}
-}
-
-const Timecode = class extends React.Component<{ time: number }> {
-	render () {
-		const time = this.props.time
-		const timecode = new TimecodeString(time * Settings['frameRate'] / 1000, Settings['frameRate'], false).toString() as string
-		const timecodeSegments = timecode.split(':')
-		let fontNormal = false
-
-		const fontWeight = (timecodeSegment) => {
-			if (timecodeSegment !== '00') {
-				fontNormal = true
-			}
-			return fontNormal
-		}
-
-		return (
-			<span>
-				{time < 0 ? <span>+</span> : <span></span>}
-				<span className={fontWeight(timecodeSegments[0]) ? 'clocks-counter-light' : ''}>{timecodeSegments[0]}</span>:
-				<span className={fontWeight(timecodeSegments[1]) ? 'clocks-counter-light' : ''}>{timecodeSegments[1]}</span>:
-				<span className={fontWeight(timecodeSegments[2]) ? 'clocks-counter-light' : ''}>{timecodeSegments[2]}</span>:
-				<span className={fontWeight(timecodeSegments[3]) ? 'clocks-counter-normal' : ''}>{timecodeSegments[3]}</span>
+			<span className={ClassNames({
+				'clocks-segment-countdown-red': isNegative,
+				'clocks-counter-heavy': (time / 1000) > -30
+			})}>
+				{timeString}
 			</span>
 		)
 	}
@@ -120,7 +93,7 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 			const { runningOrder, segments, t } = this.props
 
 			if (runningOrder && this.props.runningOrderId && this.props.segments) {
-				let currentSegmentLine
+				let currentSegmentLine: SegmentLine | undefined
 				for (const segment of segments) {
 					if (segment.items) {
 						for (const item of segment.items) {
@@ -135,7 +108,7 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 					currentSegmentDuration += currentSegmentLine.expectedDuration || 0
 					currentSegmentDuration += -1 * (currentSegmentLine.duration || 0)
 					if (!currentSegmentLine.duration && currentSegmentLine.startedPlayback) {
-						currentSegmentDuration += -1 * (getCurrentTime() - currentSegmentLine.startedPlayback)
+						currentSegmentDuration += -1 * (getCurrentTime() - (currentSegmentLine.getLastStartedPlayback() || 0))
 					}
 				}
 
@@ -158,6 +131,10 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 					}
 				}
 
+				const overUnderClock = runningOrder.expectedDuration ?
+					(this.props.timingDurations.asPlayedRundownDuration || 0) - runningOrder.expectedDuration
+					: (this.props.timingDurations.asPlayedRundownDuration || 0) - (this.props.timingDurations.totalRundownDuration || 0)
+
 				return (
 					<div className='clocks-full-screen'>
 						<div className='clocks-half clocks-top'>
@@ -170,7 +147,9 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 								{currentSegmentLine ? currentSegmentLine.slug.split(';')[0] : ''}
 							</div>
 							<div className='clocks-segmentline-title clocks-segment-title clocks-current-segment-title'>
-								{currentSegmentLine ? currentSegmentLine.slug.split(';')[1] : ''}
+								{currentSegmentLine ?
+									<SegmentItemNameContainer segmentLineSlug={currentSegmentLine.slug} segmentItemId={currentSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
+								: ''}
 							</div>
 							<div className='clocks-current-segment-countdown clocks-segment-countdown'>
 								<Timediff time={currentSegmentDuration} />
@@ -187,7 +166,9 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 									{nextSegmentLine ? nextSegmentLine.slug.split(';')[0] : '_'}
 								</div>
 								<div className='clocks-segment-title clocks-segmentline-title'>
-									{nextSegmentLine ? nextSegmentLine.slug.split(';')[1] : '_'}
+									{nextSegmentLine ?
+										<SegmentItemNameContainer segmentLineSlug={nextSegmentLine.slug} segmentItemId={nextSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
+									: '_'}
 								</div>
 							</div>
 							<div className='clocks-rundown-bottom-bar'>
@@ -197,11 +178,10 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 								<div className='clocks-rundown-title'>
 									{runningOrder ? runningOrder.name : 'UNKNOWN'}
 								</div>
-								<div className='clocks-rundown-total'>
-								{ runningOrder.expectedDuration ? 
-									RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - runningOrder.expectedDuration, true, false, true, true, true, undefined, true) :
-									RundownUtils.formatDiffToTimecode((this.props.timingDurations.asPlayedRundownDuration || 0) - (this.props.timingDurations.totalRundownDuration || 0), true, false, true, true, true, undefined, true)
-								}
+								<div className={ClassNames('clocks-rundown-total', {
+									'over': (Math.floor(overUnderClock / 1000) >= 0)
+								})}>
+									{ RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true) }
 								</div>
 							</div>
 						</div>
@@ -311,7 +291,6 @@ class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 				</RunningOrderTimingProvider>
 			)
 		} else {
-			//return null
 			return (
 				<div className='running-order-view running-order-view--unpublished'>
 					<div className='running-order-view__label'>

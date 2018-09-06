@@ -185,26 +185,6 @@ Meteor.methods({
 		if (!really) {
 			return 'Do you really want to do this? You chould only do it when initializing a new database. Confirm with initDB(true).'
 		}
-		// initializes the stuff that's not place specific (so not setting things hat has ip adresses, etc)
-		// Initiate database:
-		StudioInstallations.upsert('studio0', {$set: {
-			name: 'DKSL',
-			defaultShowStyle: 'show0',
-			outputLayers: [],
-			config: [
-				{_id: 'nora_group', value: ''}, // Note: do not set to ensure that devs do not accidently use the live graphics channel
-				{_id: 'nora_apikey', value: ''}, // Note: must not be set as apikey must be kept private
-				{_id: 'sources_kam_count', value: 3},
-				{_id: 'sources_rm_count', value: 6},
-				{_id: 'sources_kam_first_input', value: 1},
-				{_id: 'sources_rm_first_input', value: 4},
-				{_id: 'media_previews_url', value: 'http://localhost:8000/'},
-				{_id: 'sofie_url', value: 'http://sllxsofie01'},
-				{_id: 'metadata_url', value: 'http://160.67.87.105'},
-				{_id: 'atemSSrcBackground', value: ''} // @todo?
-			],
-		}})
-
 		// Create outputLayers:
 		StudioInstallations.update('studio0', {$set: {
 			outputLayers: [
@@ -229,7 +209,8 @@ Meteor.methods({
 					name: 'Vignett',
 					abbreviation: 'Full',
 					type: RundownAPI.SourceLayerType.VT,
-					onPGMClean: true
+					onPGMClean: true,
+					onPresenterScreen: true
 				},
 				{
 					_id: 'studio0_vb',
@@ -237,7 +218,8 @@ Meteor.methods({
 					name: 'VB',
 					abbreviation: 'Full',
 					type: RundownAPI.SourceLayerType.VT,
-					onPGMClean: true
+					onPGMClean: true,
+					onPresenterScreen: true
 				},
 				{
 					_id: 'studio0_live_speak0',
@@ -245,7 +227,8 @@ Meteor.methods({
 					name: 'STK',
 					abbreviation: 'STK',
 					type: RundownAPI.SourceLayerType.LIVE_SPEAK,
-					onPGMClean: true
+					onPGMClean: true,
+					onPresenterScreen: true
 				},
 				{
 					_id: 'studio0_graphics_super',
@@ -254,14 +237,16 @@ Meteor.methods({
 					type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: false,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
-					clearKeyboardHotkey: 'u,alt+u'
+					clearKeyboardHotkey: 'u,alt+u',
+					allowDisable: true
 				},
 				{
 				 	_id: 'studio0_graphics_fullskjerm',
 				 	_rank: 12000,
 				 	name: 'Grafikk',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
-					onPGMClean: true
+					onPGMClean: true,
+					onPresenterScreen: true
 				},
 				{
 				 	_id: 'studio0_graphics_klokke',
@@ -270,7 +255,9 @@ Meteor.methods({
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
 					isHidden: true,
-					clearKeyboardHotkey: 'alt+k,alt+u'
+					assignHotkeysToGlobalAdlibs: true,
+					activateKeyboardHotkeys: 'alt+k,alt+u',
+					clearKeyboardHotkey: 'k'
 				},
 				{
 				 	_id: 'studio0_graphics_logo',
@@ -279,7 +266,9 @@ Meteor.methods({
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
 					isHidden: true,
-					clearKeyboardHotkey: 'alt+k,alt+l,alt+u'
+					assignHotkeysToGlobalAdlibs: true,
+					activateKeyboardHotkeys: 'alt+l,alt+k,alt+u',
+					clearKeyboardHotkey: 'l'
 				},
 				{
 				 	_id: 'studio0_graphics_tag_left',
@@ -287,7 +276,9 @@ Meteor.methods({
 				 	name: 'Arkiv',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
-					clearKeyboardHotkey: 'alt+u'
+					activateKeyboardHotkeys: 'q,w,e,r,t,y',
+					clearKeyboardHotkey: 'alt+u',
+					allowDisable: true
 				},
 				{
 				 	_id: 'studio0_graphics_tag_right',
@@ -295,7 +286,9 @@ Meteor.methods({
 				 	name: 'Direkte',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
-					clearKeyboardHotkey: 'alt+d,alt+u'
+					activateKeyboardHotkeys: 'q,w,e,r,t,y',
+					clearKeyboardHotkey: 'alt+d,alt+u',
+					allowDisable: true
 				},
 				{
 				 	_id: 'studio0_graphics_tema',
@@ -303,7 +296,9 @@ Meteor.methods({
 				 	name: 'Tema',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
-					clearKeyboardHotkey: 'alt+i,alt+u'
+					activateKeyboardHotkeys: 'q,w,e,r,t,y',
+					clearKeyboardHotkey: 'i,alt+i,alt+u',
+					allowDisable: true
 				},
 				{
 				 	_id: 'studio0_graphics_ticker',
@@ -311,7 +306,9 @@ Meteor.methods({
 				 	name: 'Ticker',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
-					clearKeyboardHotkey: 'alt+o,alt+u'
+					activateKeyboardHotkeys: 'q,w,e,r,t,y',
+					clearKeyboardHotkey: 'alt+o,alt+u',
+					allowDisable: true
 				},
 				{
 				 	_id: 'studio0_graphics_bakskjerm',
@@ -319,6 +316,7 @@ Meteor.methods({
 				 	name: 'Bakskjerm',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
+					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'p'
 				},
 				{
@@ -327,6 +325,7 @@ Meteor.methods({
 				 	name: 'Bakskjerm',
 				 	type: RundownAPI.SourceLayerType.VT,
 					onPGMClean: true,
+					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'p'
 				},
 				{
@@ -335,6 +334,7 @@ Meteor.methods({
 				 	name: 'Bakskjerm',
 				 	type: RundownAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
+					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'p'
 				},
 				{
@@ -345,7 +345,8 @@ Meteor.methods({
 					type: RundownAPI.SourceLayerType.SPLITS,
 					onPGMClean: true,
 					isSticky: true,
-					activateStickyKeyboardHotkey: 'f6'
+					activateStickyKeyboardHotkey: 'f6',
+					onPresenterScreen: true
 				},
 				{
 					_id: 'studio0_remote0',
@@ -355,18 +356,13 @@ Meteor.methods({
 					type: RundownAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
 					activateKeyboardHotkeys: '1,2,3,4,5,6',
+					clearKeyboardHotkey: 'ctrl+a,ctrl+1',
 					isRemoteInput: true,
 					assignHotkeysToGlobalAdlibs: true,
 					isSticky: true,
-					activateStickyKeyboardHotkey: 'f5'
+					activateStickyKeyboardHotkey: 'f5',
+					onPresenterScreen: true
 				},
-				// {
-				// 	_id: 'studio0_vt0',
-				// 	_rank: 80,
-				// 	name: 'VB',
-				// 	type: RundownAPI.SourceLayerType.VT,
-				// 	onPGMClean: true,
-				// },
 				{
 					_id: 'studio0_script',
 					_rank: 14000,
@@ -381,8 +377,10 @@ Meteor.methods({
 					abbreviation: 'K ',
 					type: RundownAPI.SourceLayerType.CAMERA,
 					onPGMClean: true,
-					activateKeyboardHotkeys: 'f1,f2,f3',
-					assignHotkeysToGlobalAdlibs: true
+					activateKeyboardHotkeys: 'f1,f2,f3,f4',
+					clearKeyboardHotkey: 'ctrl+a,ctrl+f1',
+					assignHotkeysToGlobalAdlibs: true,
+					onPresenterScreen: true
 				},
 				{
 					_id: 'studio0_live_transition0',
@@ -406,21 +404,21 @@ Meteor.methods({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 5,
+				channel: 3,
 				layer: 199
 			}),
 			'casparcg_player_vignett': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 5,
+				channel: 3,
 				layer: 140
 			}),
 			'casparcg_player_soundeffect': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 5,
+				channel: 3,
 				layer: 130
 			}),
 			'casparcg_player_clip': literal<MappingCasparCG>({
@@ -434,14 +432,14 @@ Meteor.methods({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 6,
+				channel: 4,
 				layer: 100
 			}),
 			'casparcg_player_clip_next_warning': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 6,
+				channel: 4,
 				layer: 99
 			}),
 			'casparcg_player_clip2': literal<MappingCasparCG>({
@@ -453,9 +451,9 @@ Meteor.methods({
 			}),
 			'casparcg_cg_graphics': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
-				deviceId: 'casparcg0',
+				deviceId: 'casparcg1',
 				lookahead: LookaheadMode.NONE,
-				channel: 4,
+				channel: 2,
 				layer: 120
 			}),
 			'casparcg_cg_countdown': literal<MappingCasparCG>({
@@ -467,37 +465,37 @@ Meteor.methods({
 			}),
 			'casparcg_cg_permanent': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
-				deviceId: 'casparcg0',
+				deviceId: 'casparcg1',
 				lookahead: LookaheadMode.NONE,
-				channel: 4,
+				channel: 2,
 				layer: 121
 			}),
 			'casparcg_player_studio': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 3,
+				channel: 2,
 				layer: 110
 			}),
 			'casparcg_cg_studiomonitor': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 3,
+				channel: 2,
 				layer: 120
 			}),
 			'casparcg_cg_effects': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
-				channel: 5,
+				channel: 3,
 				layer: 120
 			}),
 			'casparcg_cg_fullskjerm': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
-				deviceId: 'casparcg0',
+				deviceId: 'casparcg1',
 				lookahead: LookaheadMode.NONE,
-				channel: 2,
+				channel: 3,
 				layer: 110
 			}),
 			'atem_me_program': literal<MappingAtem>({
@@ -514,7 +512,7 @@ Meteor.methods({
 				mappingType: MappingAtemType.MixEffect,
 				index: 1 // 1 = ME2
 			}),
-			'atem_aux_countdown': literal<MappingAtem>({
+			'atem_aux_technical_error': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				lookahead: LookaheadMode.NONE,
@@ -527,20 +525,6 @@ Meteor.methods({
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingAtemType.Auxilliary,
 				index: 2
-			}),
-			'atem_aux_mp1-next': literal<MappingAtem>({
-				device: PlayoutDeviceType.ATEM,
-				deviceId: 'atem0',
-				lookahead: LookaheadMode.NONE,
-				mappingType: MappingAtemType.Auxilliary,
-				index: 3
-			}),
-			'atem_aux_preview': literal<MappingAtem>({
-				device: PlayoutDeviceType.ATEM,
-				deviceId: 'atem0',
-				lookahead: LookaheadMode.NONE,
-				mappingType: MappingAtemType.Auxilliary,
-				index: 4
 			}),
 			'atem_aux_clean': literal<MappingAtem>({
 				device: PlayoutDeviceType.ATEM,
@@ -731,6 +715,32 @@ Meteor.methods({
 			templateMappings: [],
 			baselineTemplate: 'baseline',
 			messageTemplate: 'message'
+		}})
+	},
+	'initDB_config': (really) => {
+
+		if (!really) {
+			return 'Do you really want to do this? You chould only do it when initializing a new database. Confirm with initDB(true).'
+		}
+		// initializes the stuff that's not place specific (so not setting things hat has ip adresses, etc)
+		// Initiate database:
+		StudioInstallations.upsert('studio0', {$set: {
+			name: 'DKSL',
+			defaultShowStyle: 'show0',
+			outputLayers: [],
+			config: [
+				{_id: 'nora_group', value: ''}, // Note: do not set to ensure that devs do not accidently use the live graphics channel
+				{_id: 'nora_apikey', value: ''}, // Note: must not be set as apikey must be kept private
+				{_id: 'sources_kam_count', value: 4},
+				{_id: 'sources_rm_count', value: 6},
+				{_id: 'sources_kam_first_input', value: 1},
+				{_id: 'sources_rm_first_input', value: 5},
+				{_id: 'media_previews_url', value: 'http://localhost:8000/'},
+				{_id: 'sofie_url', value: 'http://sllxsofie01'},
+				{_id: 'metadata_url', value: 'http://160.67.87.105'},
+				{_id: 'atemSSrcBackground', value: '/opt/playout-gateway/static/atem-mp/split_overlay.rgba'},
+				{_id: 'atemSSrcBackground2', value: '/opt/playout-gateway/static/atem-mp/teknisk_feil.rgba'}
+			],
 		}})
 	}
 })

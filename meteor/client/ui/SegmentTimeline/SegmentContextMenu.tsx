@@ -26,10 +26,12 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 	render () {
 		const { t } = this.props
 
+		const segLine = this.getSegmentLineFromContext() as SegmentLine || {}
+
 		return (
 			this.props.studioMode && this.props.runningOrder && this.props.runningOrder.active ?
 				<ContextMenu id='segment-timeline-context-menu'>
-					<MenuItem onClick={(e) => this.props.onSetNext(this.getSegmentLineFromContext())}>
+					<MenuItem onClick={(e) => this.props.onSetNext(segLine)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
 							{t('Set as Next')}
 					</MenuItem>
 				</ContextMenu>

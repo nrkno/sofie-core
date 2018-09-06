@@ -1,3 +1,5 @@
+@import "colorScheme";
+
 .clocks-full-screen {
 	position: fixed;
 	top: 0;
@@ -88,22 +90,19 @@
 	line-height: 36.6vh;
 	font-size: 27.7778vh;
 	margin-top: -7.6vh;
+	font-weight: 300;
 }
 
 .clocks-segment-countdown-red {
 	color: red;
 }
 
-.clocks-counter-light {
-	font-weight: 200;
-}
-
-.clocks-counter-thin {
-	font-weight: 100;
+.clocks-counter-heavy {
+	font-weight: 600;
 }
 
 .clocks-counter-normal {
-	font-weight: 400;
+	font-weight: 300;
 }
 
 .clocks-title-small {
@@ -128,6 +127,10 @@
 	color: #f8e71c;
 	font-weight: bold;
 	margin-top: -2vh;
+
+	&.over {
+		color: $general-late-color;
+	}
 }
 
 .clocks-rundown-title {

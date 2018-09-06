@@ -34,8 +34,7 @@ import { RundownUtils } from '../lib/rundown'
 import * as mousetrap from 'mousetrap'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog } from '../lib/ModalDialog'
-
-import { DEFAULT_DISPLAY_DURATION } from './SegmentTimeline/SegmentTimelineContainer'
+import { DEFAULT_DISPLAY_DURATION } from '../../lib/RunningOrder'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
 import { scrollToSegmentLine } from '../lib/viewPort'
@@ -88,6 +87,7 @@ class KeyboardFocusMarker extends React.Component<any, IKeyboardFocusMarkerState
 interface ITimingWarningProps {
 	runningOrder: RunningOrder
 	inActiveROView?: boolean
+	studioMode: boolean
 	onReloadAndActivate: () => void
 }
 
@@ -114,7 +114,13 @@ const WarningDisplay = translate()(timer(5000)(
 				})
 			}
 
-			if (this.props.runningOrder.active && this.props.runningOrder.rehearsal && this.props.runningOrder.expectedStart && getCurrentTime() - this.REHEARSAL_MARGIN > this.props.runningOrder.expectedStart && !this.props.inActiveROView && !this.state.plannedStartCloseShown) {
+			if (this.props.runningOrder.active && this.props.runningOrder.rehearsal && this.props.runningOrder.expectedStart &&
+				// the expectedStart is near
+				getCurrentTime() + this.REHEARSAL_MARGIN > this.props.runningOrder.expectedStart &&
+				// but it's not horribly in the past
+				getCurrentTime() < this.props.runningOrder.expectedStart + (this.props.runningOrder.expectedDuration || 60 * 60 * 1000) &&
+				!this.props.inActiveROView && !this.state.plannedStartCloseShown) {
+
 				this.setState({
 					plannedStartCloseShow: true,
 					plannedStartCloseShown: true
@@ -141,10 +147,9 @@ const WarningDisplay = translate()(timer(5000)(
 
 			if (!this.props.runningOrder) return null
 
-			return this.state.plannedStartCloseShow ?
-						<ModalDialog title={t('Start time is close')} acceptText={t('Yes')} secondaryText={t('No')} onAccept={this.reloadRO} onDiscard={this.discard} onSecondary={this.discard}>
-							<p>{t('You are in rehearsal mode, the broadcast starts in 1 minute. Do you want to reload the rundown and remove rehearsal mode?')}</p>
-						</ModalDialog> : null
+			return <ModalDialog title={t('Start time is close')} acceptText={t('Yes')} secondaryText={t('No')} onAccept={this.reloadRO} onDiscard={this.discard} onSecondary={this.discard} show={this.props.studioMode && this.state.plannedStartCloseShow && !(this.props.runningOrder.active && !this.props.runningOrder.rehearsal) && this.props.runningOrder.active}>
+						<p>{t('You are in rehearsal mode, the broadcast starts in 1 minute. Do you want to reload the rundown and remove rehearsal mode?')}</p>
+					</ModalDialog>
 		}
 	}
 ) as React.StatelessComponent<Translated<ITimingWarningProps>>)
@@ -169,7 +174,10 @@ export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_NEXT_FORWARD = 'f9',
 	RUNNING_ORDER_NEXT_DOWN = 'f10',
 	RUNNING_ORDER_NEXT_BACK = 'shift+f9',
-	RUNNING_ORDER_NEXT_UP = 'shift+f10'
+	RUNNING_ORDER_NEXT_UP = 'shift+f10',
+	RUNNING_ORDER_DISABLE_NEXT_ELEMENT = 'g',
+	RUNNING_ORDER_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
+	RUNNING_ORDER_RESET_FOCUS = 'esc'
 }
 mousetrap.addKeycodes({
 	220: '§', // on US-based (ANSI) keyboards (single-row, Enter key), this is the key above Enter, usually with a backslash and the vertical pipe character
@@ -285,6 +293,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		up?: (e: KeyboardEvent) => any
 		down?: (e: KeyboardEvent) => any
 		label: string
+		global?: boolean
 	}> = []
 	constructor (props: Translated<IRunningOrderHeaderProps>) {
 		super(props)
@@ -295,11 +304,13 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE,
 					up: this.keyTake,
-					label: t('Take')
+					label: t('Take'),
+					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TAKE2,
 					up: this.keyTake,
-					label: t('Take')
+					label: t('Take'),
+					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_HOLD,
 					up: this.keyHold,
@@ -307,46 +318,68 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE,
 					up: this.keyActivate,
-					label: t('Activate')
+					label: t('Activate'),
+					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE2,
 					up: this.keyActivate,
-					label: t('Activate')
+					label: t('Activate'),
+					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE3,
 					up: this.keyActivate,
-					label: t('Activate')
+					label: t('Activate'),
+					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_DEACTIVATE,
 					up: this.keyDeactivate,
-					label: t('Deactivate')
+					label: t('Deactivate'),
+					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE_REHEARSAL,
 					up: this.keyActivateRehearsal,
-					label: t('Activate (rehearsal)')
+					label: t('Activate (rehearsal)'),
+					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RELOAD_RUNNING_ORDER,
 					up: this.keyReloadRunningOrder,
-					label: t('Reload running order')
+					label: t('Reload running order'),
+					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_FORWARD,
 					up: this.keyMoveNextForward,
-					label: t('Move next forward')
+					label: t('Move next forward'),
+					global: true
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_DOWN,
 					up: this.keyMoveNextDown,
-					label: t('Move next segment forward')
+					label: t('Move next segment forward'),
+					global: true
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_UP,
 					up: this.keyMoveNextUp,
-					label: t('Move next segment back')
+					label: t('Move next segment back'),
+					global: true
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_BACK,
 					up: this.keyMoveNextBack,
-					label: t('Move next back')
+					label: t('Move next back'),
+					global: true
+				},
+				{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_DISABLE_NEXT_ELEMENT,
+					up: this.keyDisableNextSegmentLineItem,
+					label: t('Disable next element'),
+					global: true
+				},
+				{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_UNDO_DISABLE_NEXT_ELEMENT,
+					up: this.keyDisableNextSegmentLineItemUndo,
+					label: t('Undo disable next element'),
+					global: true
 				}
 			]
 		} else {
@@ -367,17 +400,18 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			e.stopPropagation()
 		}
 		_.each(this.bindKeys, (k) => {
+			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
 			if (k.up) {
-				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+				method(k.key, (e: KeyboardEvent) => {
 					preventDefault(e)
 					if (k.up) k.up(e)
 				}, 'keyup')
-				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+				method(k.key, (e: KeyboardEvent) => {
 					preventDefault(e)
 				}, 'keydown')
 			}
 			if (k.down) {
-				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+				method(k.key, (e: KeyboardEvent) => {
 					preventDefault(e)
 					if (k.down) k.down(e)
 				}, 'keydown')
@@ -437,6 +471,30 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	keyMoveNextUp = (e: ExtendedKeyboardEvent) => {
 		// "down" = to next Segment
 		this.moveNext(0, -1)
+	}
+	keyDisableNextSegmentLineItem = (e: ExtendedKeyboardEvent) => {
+		if (this.props.studioMode) {
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, false, (err, segmentLineItemId) => {
+				if (err) {
+					// todo: notify the user
+					console.log(err)
+				} else {
+					// console.log('segmentLineItemId', segmentLineItemId)
+				}
+			})
+		}
+	}
+	keyDisableNextSegmentLineItemUndo = (e: ExtendedKeyboardEvent) => {
+		if (this.props.studioMode) {
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, true, (err, segmentLineItemId) => {
+				if (err) {
+					// todo: notify the user
+					console.log(err)
+				} else {
+					// console.log('segmentLineItemId', segmentLineItemId)
+				}
+			})
+		}
 	}
 
 	take = () => {
@@ -519,22 +577,34 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	reloadRunningOrder = () => {
-		if (this.props.studioMode) {
-			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.reloadData, this.props.runningOrder._id, (err, result) => {
-				if (err) {
-					console.error(err)
-					return
-				}
+		const p = new Promise((resolve, reject) => {
+			if (this.props.studioMode) {
+				Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.reloadData, this.props.runningOrder._id, (err, result) => {
+					if (err) {
+						console.error(err)
+						reject(err)
+						return
+					}
 
-				$('html,body').scrollTop(0)
-			})
-		}
+					$('html,body').scrollTop(0)
+					resolve()
+				})
+			} else {
+				reject()
+			}
+		})
+
+		return p
 	}
 
 	onReloadAndActivate = () => {
 		if (this.props.studioMode) {
-			this.reloadRunningOrder()
-			this.activate()
+			this.deactivate()
+			this.reloadRunningOrder().then(() => {
+				this.activate()
+			}).catch((reason) => {
+				console.log('Not in studio mode or could not reload.', reason)
+			})
 		}
 	}
 
@@ -548,7 +618,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				'rehearsal': this.props.runningOrder.rehearsal
 			})}>
 				{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} runningOrder={this.props.runningOrder} />}
-				<WarningDisplay inActiveROView={this.props.inActiveROView} runningOrder={this.props.runningOrder} onReloadAndActivate={this.onReloadAndActivate} />
+				<WarningDisplay studioMode={this.props.studioMode} inActiveROView={this.props.inActiveROView}
+					runningOrder={this.props.runningOrder} onReloadAndActivate={this.onReloadAndActivate} />
 				<div className='row first-row super-dark'>
 					<div className='flex-col left horizontal-align-left'>
 						{/* !!! TODO: This is just a temporary solution !!! */}
@@ -700,7 +771,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		key: string,
 		up?: (e: KeyboardEvent) => any,
 		down?: (e: KeyboardEvent) => any,
-		label: string
+		label: string,
+		global?: boolean
 	}> = []
 	private _segments: _.Dictionary<React.ComponentClass<{}>> = {}
 
@@ -713,12 +785,14 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_GO_TO_LIVE,
 				up: this.onGoToLiveSegment,
-				label: t('Go to On Air line')
+				label: t('Go to On Air line'),
+				global: true
 			},
 			{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_REWIND_SEGMENTS,
 				up: this.onRewindSegments,
-				label: t('Rewind segments to start')
+				label: t('Rewind segments to start'),
+				global: true
 			}
 		]
 
@@ -783,18 +857,17 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			e.stopPropagation()
 		}
 		_.each(this.bindKeys, (k) => {
+			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
 			if (k.up) {
-				mousetrap.bind(k.key, (e: KeyboardEvent) => {
-					if (!k.dontPreventDefault) preventDefault(e)
+				method(k.key, (e: KeyboardEvent) => {
 					if (k.up) k.up(e)
 				}, 'keyup')
-				mousetrap.bind(k.key, (e: KeyboardEvent) => {
+				method(k.key, (e: KeyboardEvent) => {
 					preventDefault(e)
 				}, 'keydown')
 			}
 			if (k.down) {
-				mousetrap.bind(k.key, (e: KeyboardEvent) => {
-					if (!k.dontPreventDefault) preventDefault(e)
+				method(k.key, (e: KeyboardEvent) => {
 					if (k.down) k.down(e)
 				}, 'keydown')
 			}

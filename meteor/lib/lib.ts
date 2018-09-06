@@ -53,7 +53,7 @@ if (Meteor.isServer) {
 
 				systemTime.diff = diffTime
 				systemTime.stdDev = Math.abs(sentTime - replyTime) / 2
-				logger.debug('time diff to server: ' + systemTime.diff + ' (stdDev: ' + systemTime.stdDev + ')')
+				logger.debug('time diff to server: ' + systemTime.diff + 'ms (stdDev: ' + (Math.floor(systemTime.stdDev * 10) / 10) + 'ms)')
 				if (!stat.good) {
 					Meteor.setTimeout(() => {
 						updateDiffTime()
@@ -419,4 +419,12 @@ export function getRank (beforeOrLast, after, i: number, count: number): number 
 		}
 	}
 	return newRankMin + ( (i + 1) / (count + 1) ) * (newRankMax - newRankMin)
+}
+export function normalizeArray<T> (array: Array<T>, indexKey: keyof T) {
+	const normalizedObject: any = {}
+	for (let i = 0; i < array.length; i++) {
+		const key = array[i][indexKey]
+		normalizedObject[key] = array[i]
+	}
+	return normalizedObject as { [key: string]: T }
 }

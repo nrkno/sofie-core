@@ -255,11 +255,11 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 	}
 
 	getCurrentLiveLinePosition () {
-		if (this.props.segmentLine.startedPlayback) {
+		if (this.props.segmentLine.startedPlayback && this.props.segmentLine.getLastStartedPlayback()) {
 			if (this.props.segmentLine.duration) {
 				return this.props.segmentLine.duration
 			} else {
-				return getCurrentTime() - this.props.segmentLine.startedPlayback
+				return getCurrentTime() - (this.props.segmentLine.getLastStartedPlayback() || 0)
 			}
 		} else {
 			return 0
@@ -298,13 +298,13 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 		// this.props.segmentLine.expectedDuration ||
 		if (this.props.relative) {
 			return {
-				width: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
+				width: Math.round(Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
 				// width: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || 3000) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
 				willChange: this.state.isLive ? 'width' : undefined
 			}
 		} else {
 			return {
-				minWidth: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0) * this.props.timeScale).toString() + 'px',
+				minWidth: Math.round(Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0) * this.props.timeScale).toString() + 'px',
 				// minWidth: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || 3000) * this.props.timeScale).toString() + 'px',
 				willChange: this.state.isLive ? 'minWidth' : undefined
 			}
@@ -398,11 +398,11 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 						{this.props.livePosition} / {this.props.segmentLine.startsAt} / {(this.props.timingDurations || {segmentLineStartsAt: {}}).segmentLineStartsAt![this.props.segmentLine._id]}
 						</div>
 					}
-					{this.renderTimelineOutputGroups(this.props.segmentLine)}
 					{this.state.isLive && !this.props.relative && !this.props.autoNextSegmentLine && !this.props.segmentLine.autoNext &&
 						<div className='segment-timeline__segment-line__future-shade' style={this.getFutureShadeStyle()}>
 						</div>
 					}
+					{this.renderTimelineOutputGroups(this.props.segmentLine)}
 					{this.props.isLastInSegment && <div className={ClassNames('segment-timeline__segment-line__nextline', 'segment-timeline__segment-line__nextline--endline', {
 						'auto-next': (this.props.autoNextSegmentLine || this.props.segmentLine.autoNext),
 						'is-next': this.state.isLive

@@ -113,29 +113,33 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 						}
 					})
 					.map((item) => {
-						if (item.isSticky && (!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0)) {
-							return (
-								<AdLibListItem
-									key={item._id}
-									item={item}
-									selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
-									layer={item.layer!}
-									onToggleAdLib={this.props.onToggleSticky}
-									onSelectAdLib={this.props.onSelectAdLib}
-								/>
-							)
-						} else if (!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0) {
-							return (
-								<AdLibListItem
-									key={item._id}
-									item={item}
-									selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
-									layer={this.state.sourceLayers[item.sourceLayerId!]}
-									outputLayer={this.state.outputLayers[item.outputLayerId!]}
-									onToggleAdLib={this.props.onToggleAdLib}
-									onSelectAdLib={this.props.onSelectAdLib}
-								/>
-							)
+						if (!item.isHidden) {
+							if (item.isSticky && (!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0)) {
+								return (
+									<AdLibListItem
+										key={item._id}
+										item={item}
+										selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
+										layer={item.layer!}
+										onToggleAdLib={this.props.onToggleSticky}
+										onSelectAdLib={this.props.onSelectAdLib}
+									/>
+								)
+							} else if (!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0) {
+								return (
+									<AdLibListItem
+										key={item._id}
+										item={item}
+										selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
+										layer={this.state.sourceLayers[item.sourceLayerId!]}
+										outputLayer={this.state.outputLayers[item.outputLayerId!]}
+										onToggleAdLib={this.props.onToggleAdLib}
+										onSelectAdLib={this.props.onSelectAdLib}
+									/>
+								)
+							} else {
+								return null
+							}
 						} else {
 							return null
 						}
@@ -231,6 +235,7 @@ const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Comp
 export interface SegmentLineAdLibItemUi extends SegmentLineAdLibItem {
 	hotkey?: string
 	isGlobal?: boolean
+	isHidden?: boolean
 }
 
 export interface SegmentUi extends Segment {
@@ -284,6 +289,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 	let roAdLibs: Array<SegmentLineAdLibItemUi> = []
 
+	const sharedHotkeyList = _.groupBy(props.studioInstallation.sourceLayers, (item) => item.activateKeyboardHotkeys)
+
 	if (props.runningOrder) {
 		let roAdLibItems = RunningOrderBaselineAdLibItems.find({runningOrderId: props.runningOrder._id}).fetch()
 		roAdLibItems.forEach((item) => {
@@ -297,12 +304,18 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				sourceLayer.assignHotkeysToGlobalAdlibs
 			) {
 				let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
-				if ((sourceHotKeyUse[uiAdLib.sourceLayerId] || 0) < keyboardHotkeysList.length) {
-					uiAdLib.hotkey = keyboardHotkeysList[(sourceHotKeyUse[uiAdLib.sourceLayerId] || 0)]
+				const sourceHotKeyUseLayerId = (sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id) || item.sourceLayerId
+				if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
+					uiAdLib.hotkey = keyboardHotkeysList[(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0)]
 					// add one to the usage hash table
-					sourceHotKeyUse[uiAdLib.sourceLayerId] = (sourceHotKeyUse[uiAdLib.sourceLayerId] || 0) + 1
+					sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
 				}
 			}
+
+			if (sourceLayer && sourceLayer.isHidden) {
+				uiAdLib.isHidden = true
+			}
+
 			// always add them to the list
 			roAdLibs.push(uiAdLib)
 		})
