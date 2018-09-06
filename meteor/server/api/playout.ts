@@ -142,103 +142,120 @@ export namespace ServerPlayoutAPI {
 			}
 		})
 
-		let segmentLines = runningOrder.getSegmentLines()
+		if (wasInactive) {
+			let segmentLines = runningOrder.getSegmentLines()
 
-		SegmentLines.update({ runningOrderId: runningOrder._id }, {
-			$unset: {
-				startedPlayback: 0,
-				duration: 0
-			}
-		}, {
-			multi: true
-		})
+			SegmentLines.update({ runningOrderId: runningOrder._id }, {
+				$unset: {
+					startedPlayback: 0,
+					duration: 0
+				}
+			}, {
+				multi: true
+			})
 
-		// Remove all segment line items that have been dynamically created (such as adLib items)
-		SegmentLineItems.remove({
-			runningOrderId: runningOrder._id,
-			dynamicallyInserted: true
-		})
-
-		// Remove all segment line items that were added for holds
-		let holdItems = SegmentLineItems.find({
-			runningOrderId: runningOrder._id,
-			extendOnHold: true,
-			infiniteId: { $exists: true },
-		})
-		holdItems.forEach(i => {
-			if (!i.infiniteId || i.infiniteId === i._id) {
-				// Was the source, so clear infinite props
-				SegmentLineItems.update(i._id, {
-					$unset: {
-						infiniteId: 0,
-						infiniteMode: 0,
-					}
-				})
-			} else {
-				SegmentLineItems.remove(i)
-			}
-		})
-
-		// ensure that any removed infinites (caused by adlib) are restored
-		updateSourceLayerInfinitesAfterLine(runningOrder, true)
-
-		// Remove duration on segmentLineItems, as this is set by the ad-lib playback editing
-		SegmentLineItems.update({ runningOrderId: runningOrder._id }, {
-			$unset: {
-				startedPlayback: 0,
-				durationOverride: 0
-			}
-		}, {
-			multi: true
-		})
-
-		RunningOrders.update(runningOrder._id, {
-			$set: {
-				active: true,
-				rehearsal: rehearsal,
-				previousSegmentLineId: null,
-				currentSegmentLineId: null,
-				nextSegmentLineId: segmentLines[0]._id, // put the first on queue
-				updateStoryStatus: null,
-				holdState: RunningOrderHoldState.NONE,
-			}, $unset: {
-				startedPlayback: 0
-			}
-		})
-
-		logger.info('Building baseline items...')
-
-		const showStyle = runningOrder.getShowStyle()
-		if (showStyle.baselineTemplate) {
-			const result: TemplateResultAfterPost = runNamedTemplate(showStyle, showStyle.baselineTemplate, literal<TemplateContext>({
+			// Remove all segment line items that have been dynamically created (such as adLib items)
+			SegmentLineItems.remove({
 				runningOrderId: runningOrder._id,
-				studioId: runningOrder.studioInstallationId,
-				segmentLine: runningOrder.getSegmentLines()[0],
-				templateId: showStyle.baselineTemplate
-			}), {
-				// Dummy object, not used in this template:
-				RunningOrderId: new MosString128(''),
-				Body: [],
-				ID: new MosString128(''),
+				dynamicallyInserted: true
+			})
 
-			}, 'baseline')
+			// Remove all segment line items that were added for holds
+			let holdItems = SegmentLineItems.find({
+				runningOrderId: runningOrder._id,
+				extendOnHold: true,
+				infiniteId: { $exists: true },
+			})
+			holdItems.forEach(i => {
+				if (!i.infiniteId || i.infiniteId === i._id) {
+					// Was the source, so clear infinite props
+					SegmentLineItems.update(i._id, {
+						$unset: {
+							infiniteId: 0,
+							infiniteMode: 0,
+						}
+					})
+				} else {
+					SegmentLineItems.remove(i)
+				}
+			})
 
-			if (result.baselineItems) {
-				logger.info(`... got ${result.baselineItems.length} items from template.`)
-				saveIntoDb<RunningOrderBaselineItem, RunningOrderBaselineItem>(RunningOrderBaselineItems, {
-					runningOrderId: runningOrder._id
-				}, result.baselineItems)
+			// ensure that any removed infinites (caused by adlib) are restored
+			updateSourceLayerInfinitesAfterLine(runningOrder, true)
+
+			// Remove duration on segmentLineItems, as this is set by the ad-lib playback editing
+			SegmentLineItems.update({ runningOrderId: runningOrder._id }, {
+				$unset: {
+					startedPlayback: 0,
+					durationOverride: 0
+				}
+			}, {
+				multi: true
+			})
+
+			RunningOrders.update(runningOrder._id, {
+				$set: {
+					active: true,
+					rehearsal: rehearsal,
+					previousSegmentLineId: null,
+					currentSegmentLineId: null,
+					nextSegmentLineId: segmentLines[0]._id, // put the first on queue
+					updateStoryStatus: null,
+					holdState: RunningOrderHoldState.NONE,
+				}, $unset: {
+					startedPlayback: 0
+				}
+			})
+
+			logger.info('Building baseline items...')
+
+			const showStyle = runningOrder.getShowStyle()
+			if (showStyle.baselineTemplate) {
+				const result: TemplateResultAfterPost = runNamedTemplate(showStyle, showStyle.baselineTemplate, literal<TemplateContext>({
+					runningOrderId: runningOrder._id,
+					studioId: runningOrder.studioInstallationId,
+					segmentLine: runningOrder.getSegmentLines()[0],
+					templateId: showStyle.baselineTemplate
+				}), {
+					// Dummy object, not used in this template:
+					RunningOrderId: new MosString128(''),
+					Body: [],
+					ID: new MosString128(''),
+
+				}, 'baseline')
+
+				if (result.baselineItems) {
+					logger.info(`... got ${result.baselineItems.length} items from template.`)
+					saveIntoDb<RunningOrderBaselineItem, RunningOrderBaselineItem>(RunningOrderBaselineItems, {
+						runningOrderId: runningOrder._id
+					}, result.baselineItems)
+				}
+
+				if (result.segmentLineAdLibItems) {
+					logger.info(`... got ${result.segmentLineAdLibItems.length} adLib items from template.`)
+					saveIntoDb<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>(RunningOrderBaselineAdLibItems, {
+						runningOrderId: runningOrder._id
+					}, result.segmentLineAdLibItems)
+				}
 			}
 
-			if (result.segmentLineAdLibItems) {
-				logger.info(`... got ${result.segmentLineAdLibItems.length} adLib items from template.`)
-				saveIntoDb<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>(RunningOrderBaselineAdLibItems, {
-					runningOrderId: runningOrder._id
-				}, result.segmentLineAdLibItems)
-			}
+			updateTimeline(runningOrder.studioInstallationId)
+		} else {
+			logger.info(`Activating "${roId}" non-destructively...`)
+
+			RunningOrders.update(runningOrder._id, {
+				$set: {
+					active: true,
+					rehearsal: rehearsal,
+					// don't modify anything, we're already active
+					// previousSegmentLineId: null,
+					// currentSegmentLineId: null,
+					// nextSegmentLineId: segmentLines[0]._id, // put the first on queue
+					// updateStoryStatus: null,
+					// holdState: RunningOrderHoldState.NONE,
+				}
+			})
 		}
-
-		updateTimeline(runningOrder.studioInstallationId)
 
 		return literal<ClientAPI.ClientResponse>({
 			success: 200
