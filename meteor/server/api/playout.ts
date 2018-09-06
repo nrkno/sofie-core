@@ -121,26 +121,28 @@ export namespace ServerPlayoutAPI {
 		if (ssrcBg.length > 1) logger.info(ssrcBg[0]!.value + ' and ' + ssrcBg[1]!.value + ' should be loaded to atems')
 		if (ssrcBg.length > 0) logger.info(ssrcBg[0]!.value + ' should be loaded to atems')
 
-		_.each(playoutDevices, (device: PeripheralDevice) => {
-			let okToDestoryStuff = wasInactive
-			PeripheralDeviceAPI.executeFunction(device._id, (err, res) => {
-				if (err) {
-					logger.error(err)
-				} else {
-					logger.info('devicesMakeReady OK')
-				}
-			}, 'devicesMakeReady', okToDestoryStuff)
-
-			if (ssrcBg.length > 0) {
-				PeripheralDeviceAPI.executeFunction(device._id, (err) => {
+		if (wasInactive) {
+			_.each(playoutDevices, (device: PeripheralDevice) => {
+				let okToDestoryStuff = wasInactive
+				PeripheralDeviceAPI.executeFunction(device._id, (err, res) => {
 					if (err) {
 						logger.error(err)
 					} else {
-						logger.info('Added Super Source BG to Atem')
+						logger.info('devicesMakeReady OK')
 					}
-				}, 'uploadFileToAtem', ssrcBg)
-			}
-		})
+				}, 'devicesMakeReady', okToDestoryStuff)
+
+				if (ssrcBg.length > 0) {
+					PeripheralDeviceAPI.executeFunction(device._id, (err) => {
+						if (err) {
+							logger.error(err)
+						} else {
+							logger.info('Added Super Source BG to Atem')
+						}
+					}, 'uploadFileToAtem', ssrcBg)
+				}
+			})
+		}
 
 		if (wasInactive) {
 			let segmentLines = runningOrder.getSegmentLines()
@@ -2056,7 +2058,7 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 				const orderedItems = getOrderedSegmentLineItem(sliGroup.line)
 
 				let allowTransition = false
-				if (sliGroupIndex >= 1 && activeRunningOrder.previousSegmentLineId) {
+				if (sliGroupIndex >= 1 && activeRunningOrder.currentSegmentLineId) {
 					const prevSliGroup = orderedGroups[sliGroupIndex - 1]
 					allowTransition = !prevSliGroup.line.disableOutTransition
 				}
