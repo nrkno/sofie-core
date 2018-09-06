@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.10.0"></a>
+# [0.10.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.9.1...v0.10.0) (2018-09-06)
+
+
+### Bug Fixes
+
+* added _valid: true to mock-data ([6c2775b](https://github.com/nrkno/tv-automation-server-core/commit/6c2775b))
+* better handling of template-errors ([9f98100](https://github.com/nrkno/tv-automation-server-core/commit/9f98100))
+* bugfix: didn't correctly find the right segmentLineItem in next segmentLine ([0f9313f](https://github.com/nrkno/tv-automation-server-core/commit/0f9313f))
+* Ensure the sl overlapDuration is respected on autonext. ([8c3bf3e](https://github.com/nrkno/tv-automation-server-core/commit/8c3bf3e))
+* **cam/dir:** clear hotkeys ([2545de8](https://github.com/nrkno/tv-automation-server-core/commit/2545de8))
+* run afterUpdateTimeline after timelineTriggerTime ([98ece60](https://github.com/nrkno/tv-automation-server-core/commit/98ece60))
+* **init:** adds qwerty to bakskjerm ([a45de4d](https://github.com/nrkno/tv-automation-server-core/commit/a45de4d))
+* **init:** adds qwerty to bakskjerm ([7329976](https://github.com/nrkno/tv-automation-server-core/commit/7329976))
+* **init:** adds qwerty to bakskjerm ([78198c9](https://github.com/nrkno/tv-automation-server-core/commit/78198c9))
+* getSnapshot: don't ask devices of type OTHER ([ea874d4](https://github.com/nrkno/tv-automation-server-core/commit/ea874d4))
+* setAsNext on previous line no longer shows default state, but now instead stalls when attempting to take ([e441aaf](https://github.com/nrkno/tv-automation-server-core/commit/e441aaf))
+* since afterUpdateTimeline is called in from a syncFunctionIgnore-function, we can remove the timeout ([e7f8f25](https://github.com/nrkno/tv-automation-server-core/commit/e7f8f25))
+* timesync: better retry strategy on startup sync ([eda632a](https://github.com/nrkno/tv-automation-server-core/commit/eda632a))
+* updated timeline dep (bugfixes) ([ff29ce6](https://github.com/nrkno/tv-automation-server-core/commit/ff29ce6))
+* **init:** Splits init_layers and init_config. ([e056e5a](https://github.com/nrkno/tv-automation-server-core/commit/e056e5a))
+* **init:** updated channel orders after 2-caspar setup ([3404b9b](https://github.com/nrkno/tv-automation-server-core/commit/3404b9b))
+* **lookahead:** Ignore transition if this is the first sl and so no transition will be used ([3df2e1e](https://github.com/nrkno/tv-automation-server-core/commit/3df2e1e))
+* **lookahead:** Not using transition info when in a segmentline with no previous segmentline ([917b34e](https://github.com/nrkno/tv-automation-server-core/commit/917b34e))
+* **sticky:** Fix sticky items with objects using relative triggers or durations ([0c47cff](https://github.com/nrkno/tv-automation-server-core/commit/0c47cff))
+
+
+### Features
+
+* codeControl: create syncFunctions which finer grained execution control based on arguments ([f53607f](https://github.com/nrkno/tv-automation-server-core/commit/f53607f))
+* disable in next segmentLine & refactoring ([669166c](https://github.com/nrkno/tv-automation-server-core/commit/669166c))
+* implementation of disable-next-segmentLineItem ([a06d196](https://github.com/nrkno/tv-automation-server-core/commit/a06d196))
+* second upload to atem ([6697a80](https://github.com/nrkno/tv-automation-server-core/commit/6697a80))
+* **aux:** Adds tecnical error aux 2 ([34ce710](https://github.com/nrkno/tv-automation-server-core/commit/34ce710))
+* **init:** adds clear shortcuts + skippabloe ([f824ae5](https://github.com/nrkno/tv-automation-server-core/commit/f824ae5))
+* status endpoint /health updated to use device statuses ([2c4b7fa](https://github.com/nrkno/tv-automation-server-core/commit/2c4b7fa))
+
+
+
 <a name="0.9.1"></a>
 ## [0.9.1](https://github.com/nrkno/tv-automation-server-core/compare/v0.9.0...v0.9.1) (2018-09-04)
 
