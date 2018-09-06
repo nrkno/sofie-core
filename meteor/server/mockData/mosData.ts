@@ -2433,6 +2433,10 @@ Meteor.methods({
 											],
 											"displayName" : "52 Headline (00:00=>00:05, Auto/OnNext): Head to",
 											"displayNameShort" : "52 Headline: Head to",
+											"name": {
+												"templateName" : "Template Name",
+												"templateVariant" : "Template Variant",
+											},
 											"type" : "super"
 										},
 										"render" : {
