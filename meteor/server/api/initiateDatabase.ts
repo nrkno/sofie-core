@@ -316,6 +316,7 @@ Meteor.methods({
 				 	name: 'Bakskjerm',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
+					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'p'
 				},
 				{
@@ -324,6 +325,7 @@ Meteor.methods({
 				 	name: 'Bakskjerm',
 				 	type: RundownAPI.SourceLayerType.VT,
 					onPGMClean: true,
+					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'p'
 				},
 				{
@@ -332,6 +334,7 @@ Meteor.methods({
 				 	name: 'Bakskjerm',
 				 	type: RundownAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
+					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'p'
 				},
 				{
