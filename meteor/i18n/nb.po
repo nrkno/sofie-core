@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
 "POT-Creation-Date: 2018-08-28T15:54:46.339Z\n"
-"PO-Revision-Date: 2018-08-28 17:58+0200\n"
+"PO-Revision-Date: 2018-09-07 10:56+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -531,10 +531,11 @@ msgstr "Er gjemt"
 
 #, fuzzy
 msgid "AdLib activate shortcut list"
-msgstr "Hurtigtaster"
+msgstr "Aktiver AdLib-hurtigtastliste"
 
+#, fuzzy
 msgid "Clear shortcut"
-msgstr "Hurtigtast for å fjerne"
+msgstr "Clear-hurtigtast"
 
 msgid "Assign hotkeys to global adlibs"
 msgstr "Anvise hurtigtaster til globale adlibs"
@@ -556,7 +557,7 @@ msgid "layer"
 msgstr "lag"
 
 msgid "mappingType"
-msgstr "Koblingstype"
+msgstr "mappingType"
 
 msgid "index"
 msgstr "indeks"
@@ -669,10 +670,9 @@ msgstr "Parametere"
 msgid "User activity log"
 msgstr "Brukeraktivitet"
 
-#, fuzzy
 msgctxt "item"
 msgid "new_config"
-msgstr "Ny konfigurasjon"
+msgstr "new_config"
 
 #~ msgid "Unknown segment"
 #~ msgstr "Ukjent segment"
