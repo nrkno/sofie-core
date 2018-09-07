@@ -127,17 +127,19 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 
 	let newObjs2 = []
 
+	let ps: Array<Promise<any>> = []
+
 	let removeObjs: {[id: string]: DocClass} = {}
 	_.each(oldObjs,function (o: DocClass) {
 
 		if (removeObjs['' + o[identifier]]) {
 			// duplicate id:
-			collection.remove(o._id)
+			// collection.remove(o._id)
+			ps.push(asyncCollectionRemove(collection, o._id))
 			change.removed++
 		} else {
 			removeObjs['' + o[identifier]] = o
 		}
-
 	})
 
 	_.each(newData,function (o) {
@@ -155,18 +157,39 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 			let diff = compareObjs(oldObj,o2)
 
 			if (!diff) {
+				let p: Promise<any> | undefined
 				let oUpdate = ( options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o)
-				if (options.update) options.update(oldObj._id, oUpdate)
-				else collection.update(oldObj._id,{$set: oUpdate})
-				if (options.afterUpdate) options.afterUpdate(oUpdate)
+				if (options.update) {
+					options.update(oldObj._id, oUpdate)
+				} else {
+					p = asyncCollectionUpdate(collection, oldObj._id,{$set: oUpdate})
+				}
+				if (options.afterUpdate) {
+					p = Promise.resolve(p)
+					.then(() => {
+						if (options.afterUpdate) options.afterUpdate(oUpdate)
+					})
+				}
+
+				if (p) ps.push(p)
 				change.updated++
 			}
 		} else {
 			if (!_.isNull(oldObj)) {
+				let p: Promise<any> | undefined
 				let oInsert = ( options.beforeInsert ? options.beforeInsert(o) : o)
-				if (options.insert) options.insert(oInsert)
-				else collection.insert(oInsert)
-				if (options.afterInsert) options.afterInsert(oInsert)
+				if (options.insert) {
+					options.insert(oInsert)
+				} else {
+					p = asyncCollectionInsert(collection, oInsert)
+				}
+				if (options.afterInsert) {
+					p = Promise.resolve(p)
+					.then(() => {
+						if (options.afterInsert) options.afterInsert(oInsert)
+					})
+				}
+				if (p) ps.push(p)
 				change.added++
 			}
 		}
@@ -174,15 +197,26 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 	})
 	_.each(removeObjs, function (obj: DocClass, key) {
 		if (obj) {
-
+			let p: Promise<any> | undefined
 			let oRemove = ( options.beforeRemove ? options.beforeRemove(obj) : obj)
-			if (options.remove) options.remove(oRemove)
-			else collection.remove(oRemove._id)
-			if (options.afterRemove) options.afterRemove(oRemove)
+			if (options.remove) {
+				options.remove(oRemove)
+			} else {
+				p = asyncCollectionRemove(collection, oRemove)
+			}
+
+			if (options.afterRemove) {
+				p = Promise.resolve(p)
+				.then(() => {
+					if (options.afterRemove) options.afterRemove(oRemove)
+				})
+			}
 			change.removed++
 
 		}
 	})
+	waitForPromiseAll(ps)
+
 	return change
 }
 /**
@@ -570,7 +604,7 @@ export function asyncCollectionInsert<DocClass, DBInterface> (
 }
 export function asyncCollectionUpdate<DocClass, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: Selector<DBInterface>,
+	selector: Selector<DBInterface> | string,
 	modifier: Modifier<DBInterface>,
 	options?: UpdateOptions
 
@@ -584,7 +618,7 @@ export function asyncCollectionUpdate<DocClass, DBInterface> (
 }
 export function asyncCollectionRemove<DocClass, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: Selector<DBInterface>
+	selector: Selector<DBInterface> | string
 
 ): Promise<void> {
 	return new Promise((resolve, reject) => {
@@ -594,3 +628,12 @@ export function asyncCollectionRemove<DocClass, DBInterface> (
 		})
 	})
 }
+const waitForPromiseAll: (ps: Array<Promise<any>>) => void = Meteor.wrapAsync (function waitForPromises (ps: Array<Promise<any>>, cb: (err?: any) => void) {
+	Promise.all(ps)
+	.then(() => {
+		cb()
+	})
+	.catch((e) => {
+		cb(e)
+	})
+})
