@@ -1,3 +1,4 @@
+import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { ServerResponse, IncomingMessage } from 'http'
 // @ts-ignore Meteor package not recognized by Typescript
@@ -5,8 +6,12 @@ import { Picker } from 'meteor/meteorhacks:picker'
 import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { syncFunctionIgnore } from './codeControl'
 import { StudioInstallations } from '../lib/collections/StudioInstallations'
+import { getCurrentTime } from '../lib/lib'
+import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 
 // This data structure is to be used to determine the system-wide status of the Core instance
+
+const instanceId = Random.id()
 
 export enum StatusCode {
 
@@ -17,54 +22,141 @@ export enum StatusCode {
 	BAD = 4, 			// Operation affected, possible to recover
 	FATAL = 5			// Operation affected, not possible to recover without manual interference
 }
+
 export interface StatusObject {
 	studioId?: string,
 	statusCode: StatusCode,
-	messages?: Array<string>
+	messages?: Array<string>,
 }
+// export interface StatusObjectFull extends StatusObject {
+// 	checks: Array<CheckObj>
+// }
 let systemStatuses: {[key: string]: StatusObject} = {}
 
-export function getSystemStatus (studioId?: string): StatusObject {
-	let systemStatus = StatusCode.UNKNOWN
+export type ExternalStatus = 'OK' | 'FAIL' | 'WARNING' | 'UNDEFINED'
+export interface CheckObj {
+	description: string,
+	status: ExternalStatus,
+	errors: Array<string>
+}
+interface StatusResponse {
+	name: string,
+	status: ExternalStatus,
+	documentation: string,
+	instanceId?: string,
+	updated?: string,
+	appVersion?: string,
+	version?: '2', // version of healthcheck
+	utilises?: Array<string>,
+	consumers?: Array<string>,
+	checks?: Array<CheckObj>,
+	_internal: {
+		statusCode: StatusCode,
+		statusCodeString: string,
+		messages: Array<string>
+	},
+	components?: Array<StatusResponse>
+}
+
+export function getSystemStatus (studioId?: string): StatusResponse {
+
+	let checks: Array<CheckObj> = []
+
+	let systemStatus: StatusCode = StatusCode.UNKNOWN
 	let systemStatusMessages: Array<string> = []
 
-	let statusFound = false
-
 	_.each(systemStatuses, (status: StatusObject, key: string) => {
+		checks.push({
+			description: key,
+			status: status2ExternalStatus(status.statusCode),
+			errors: status.messages || []
+		})
 
-		if (studioId && status.studioId && status.studioId !== studioId) return
-
-		statusFound = true
-
-		if (status.statusCode > systemStatus) {
-			systemStatus = status.statusCode
-			systemStatusMessages = []
-			// systemStatusMessages = systemStatusMessages.concat(status.messages || [])
+		if (status.statusCode !== StatusCode.GOOD) {
+			systemStatusMessages.push(key + ': Status: ' + StatusCode[status.statusCode])
 		}
-		if (status.statusCode === systemStatus) {
-			if (status.statusCode !== StatusCode.GOOD) {
-				systemStatusMessages.push(key + ': Status: ' + StatusCode[status.statusCode])
+
+		_.each(status.messages || [], (message: string) => {
+			if (message) {
+				systemStatusMessages.push(key + ': ' + message)
 			}
-
-			_.each(status.messages || [], (message: string) => {
-				if (message) {
-					systemStatusMessages.push(key + ': ' + message)
-				}
-			})
-		}
+		})
 	})
 
-	if (!statusFound) {
-		systemStatus = StatusCode.UNKNOWN
-		systemStatusMessages.push('No system statuses found')
+	let statusObj: StatusResponse = {
+		name: 'Sofie Automation system',
+		instanceId: instanceId,
+		updated: new Date(getCurrentTime()).toISOString(),
+		status: 'UNDEFINED',
+		documentation: 'https://github.com/nrkno/tv-automation-server-core',
+		checks: checks,
+		_internal: {
+			statusCode: systemStatus,
+			statusCodeString: StatusCode[systemStatus],
+			messages: systemStatusMessages || []
+		}
 	}
 
-	let statusObj: StatusObject = {
-		statusCode: systemStatus,
-		messages: systemStatusMessages
-	}
-	if (studioId) statusObj.studioId = studioId
+	let devices = (
+		studioId ?
+		PeripheralDevices.find({ studioInstallationId: studioId }).fetch() :
+		PeripheralDevices.find({}).fetch()
+	)
+
+	_.each(devices, (device: PeripheralDevice) => {
+
+		let systemStatus: StatusCode = device.status.statusCode
+		let systemStatusMessages: Array<string> = device.status.messages || []
+
+		if (!device.connected) {
+			systemStatus = StatusCode.BAD
+			systemStatusMessages.push('Disconnected')
+		}
+
+		let so: StatusResponse = {
+			name: device.name,
+			instanceId: device._id,
+			status: 'UNDEFINED',
+			documentation: '',
+			_internal: {
+				statusCode: systemStatus,
+				statusCodeString: StatusCode[systemStatus],
+				messages: systemStatusMessages
+			}
+		}
+		if (device.type === PeripheralDeviceAPI.DeviceType.MOSDEVICE) {
+			so.documentation = 'https://github.com/nrkno/tv-automation-mos-gateway'
+		} else if (device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT) {
+			so.documentation = 'https://github.com/nrkno/tv-automation-playout-gateway'
+		}
+
+		if (!statusObj.components) statusObj.components = []
+		statusObj.components.push(so)
+
+	})
+
+	setStatus(statusObj)
+
 	return statusObj
+}
+function setStatus ( statusObj: StatusResponse): StatusCode {
+
+	let s: StatusCode = statusObj._internal.statusCode
+
+	if (statusObj.components) {
+		_.each(statusObj.components, (component: StatusResponse) => {
+
+			let s2: StatusCode = setStatus(component)
+
+			if (s2 > s) {
+				s = s2
+			}
+
+		})
+	}
+
+	statusObj.status = status2ExternalStatus(s)
+	return s
 }
 
 export function setSystemStatus (type: string, status: StatusObject) {
@@ -74,62 +166,22 @@ export function removeSystemStatus (type: string) {
 	delete systemStatuses[type]
 }
 
-function updatePeripheralDevicesStatus () {
-	StudioInstallations.find().forEach(studio => {
-		PeripheralDevices.find({studioInstallationId: studio._id}).forEach(device => {
-			updatePeripheralDeviceStatus(device)
-		})
-	})
-}
-function updatePeripheralDeviceStatus (deviceIdOrDevice: string | PeripheralDevice) {
-	let device: PeripheralDevice | undefined
-	let deviceId: string
-	if (_.isString(deviceIdOrDevice)) {
-		device = PeripheralDevices.findOne(deviceIdOrDevice)
-		deviceId = deviceIdOrDevice
-	} else {
-		device = deviceIdOrDevice
-		deviceId = device._id
+function status2ExternalStatus (statusCode: StatusCode): ExternalStatus {
+	if (statusCode === StatusCode.GOOD) {
+		return 'OK'
+	} else if (
+		statusCode === StatusCode.WARNING_MINOR ||
+		statusCode === StatusCode.WARNING_MAJOR
+	) {
+		return 'WARNING'
+	} else if (
+		statusCode === StatusCode.BAD ||
+		statusCode === StatusCode.FATAL
+	) {
+		return 'FAIL'
 	}
-	let id = 'device_' + deviceId
-
-	if (device && device.studioInstallationId) {
-
-		if (!device.connected) {
-			setSystemStatus(id, {
-				studioId: device.studioInstallationId,
-				statusCode: StatusCode.BAD,
-				messages: ['Disconnected'].concat(device.status.messages || [])
-			})
-		} else {
-			setSystemStatus(id, {
-				studioId: device.studioInstallationId,
-				statusCode: device.status.statusCode,
-				messages: device.status.messages
-			})
-		}
-	} else {
-		removeSystemStatus(id)
-	}
+	return 'UNDEFINED'
 }
-Meteor.startup(() => {
-	Meteor.setTimeout(() => {
-
-		PeripheralDevices.find().observe({
-			added (doc: any) {
-				updatePeripheralDeviceStatus(doc._id)
-			},
-			changed (doc: any) {
-				updatePeripheralDeviceStatus(doc._id)
-			},
-			removed (oldDoc: any) {
-				updatePeripheralDeviceStatus(oldDoc._id)
-			}
-		})
-
-		updatePeripheralDevicesStatus()
-	},2000)
-})
 
 Meteor.methods({
 	'systemStatus.getSystemStatus': () => {
@@ -146,23 +198,19 @@ Picker.route('/health/:studioId', (params, req: IncomingMessage, res: ServerResp
 	let status = getSystemStatus(params.studioId)
 	health(status, res)
 })
-function health (status: StatusObject, res: ServerResponse) {
+function health (status: StatusResponse, res: ServerResponse) {
 	res.setHeader('Content-Type', 'application/json')
 	let content = ''
-	if (
-		status.statusCode === StatusCode.GOOD ||
-		status.statusCode === StatusCode.WARNING_MINOR
-	) {
-		res.statusCode = 200
-		content = JSON.stringify({status: 'OK'})
-	} else {
-		res.statusCode = 500
-		content = JSON.stringify({
-			status: StatusCode[status.statusCode],
-			statusCode: status.statusCode,
-			messages: status.messages || []
-		})
-	}
 
+	res.statusCode = (
+			(
+			status.status === 'OK' ||
+			status.status === 'WARNING'
+		) ?
+		200 :
+		500
+	)
+
+	content = JSON.stringify(status)
 	res.end(content)
 }
