@@ -27,6 +27,8 @@ import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/Perip
 import { literal } from '../../lib/lib'
 import { logger } from '../logging'
 
+/* tslint:disable:no-irregular-whitespace quotemark whitespace no-consecutive-blank-lines */
+
 // These are temporary methods, used during development to put some data into the database
 export function getPD (): PeripheralDevice {
 	return PeripheralDevices.findOne({
