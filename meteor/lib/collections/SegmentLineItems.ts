@@ -147,7 +147,7 @@ export interface RemoteContent extends BaseContent {
 export interface ScriptContent extends BaseContent {
 	firstWords: string
 	lastWords: string
-	fullScript?: any
+	fullScript?: string
 	sourceDuration?: number
 }
 

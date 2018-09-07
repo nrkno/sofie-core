@@ -1,0 +1,47 @@
+
+.prompter {
+    font-size: 16vh;
+    background: #000;
+    line-height: 0.95;
+    text-align: center;
+
+    .prompter-segment {
+
+        font-size: 50%;
+        text-align: center;
+
+        margin-top: 0.5em;
+        border-top: 0.5em solid #999;
+        
+    }
+    .prompter-segmentLine {
+
+        text-align: center;
+
+        font-size: 33%;
+        
+    }
+
+
+    .prompter-segment,
+    .prompter-segmentLine {
+        border-bottom: 0.2em solid #000;
+
+        background: #bbb;
+        color: #000;
+        font-weight: bold;
+
+        &.current {
+            border-bottom: 0.2em solid #f55;
+        }
+        &.next {
+            border-bottom: 0.2em solid #5f5;
+        }
+    }
+
+    .prompter-line {
+        margin-bottom: 0.5em;
+    }
+
+    
+}
