@@ -116,7 +116,7 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 		subscription = Meteor.subscribe('peripheralDeviceCommands', deviceId )
 	}
 	const timeoutTime = 3000
-	logger.debug('command created')
+	logger.debug('command created: ' + functionName)
 	// we've sent the command, let's just wait for the reply
 	let checkReply = () => {
 		let cmd = PeripheralDeviceCommands.findOne(commandId)

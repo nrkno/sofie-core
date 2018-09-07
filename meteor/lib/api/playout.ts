@@ -8,6 +8,7 @@ export enum PlayoutTimelinePrefixes {
 export namespace PlayoutAPI {
 	export enum methods {
 		'reloadData' = 'playout.reloadData',
+		'roReset' = 'playout.roReset',
 		'roActivate' = 'playout.roActivate',
 		/**
 		 * Inactivates the RunningOrder
