@@ -14,6 +14,7 @@ export namespace ServerClientAPI {
 	export function execMethod (context: string, methodName: string, ...args: any[]) {
 		check(methodName, String)
 		check(context, String)
+		let startTime = Date.now()
 		// this is essentially the same as MeteorPromiseCall, but rejects the promise on exception to
 		// allow handling it in the client code
 
@@ -33,7 +34,8 @@ export namespace ServerClientAPI {
 
 			UserActionsLog.update(actionId, {$set: {
 				success: true,
-				doneTime: getCurrentTime()
+				doneTime: getCurrentTime(),
+				executionTime: Date.now() - startTime
 			}})
 			return result
 		} catch (e) {
