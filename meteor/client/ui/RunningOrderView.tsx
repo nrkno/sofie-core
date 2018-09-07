@@ -576,10 +576,10 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		}
 	}
 
-	reloadRunningOrder = () => {
+	reloadRunningOrder = (changeRehearsal?: boolean) => {
 		const p = new Promise((resolve, reject) => {
 			if (this.props.studioMode) {
-				Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.reloadData, this.props.runningOrder._id, (err, result) => {
+				Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.reloadData, this.props.runningOrder._id, changeRehearsal, (err, result) => {
 					if (err) {
 						console.error(err)
 						reject(err)
@@ -599,9 +599,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 	onReloadAndActivate = () => {
 		if (this.props.studioMode) {
-			this.deactivate()
 			this.reloadRunningOrder().then(() => {
-				this.activate()
+				console.log('Running order reloaded')
 			}).catch((reason) => {
 				console.log('Not in studio mode or could not reload.', reason)
 			})

@@ -28,9 +28,10 @@ import { getResolvedSegment, ISourceLayerExtended, SegmentLineExtended } from '.
 let clone = require('fast-clone')
 
 export namespace ServerPlayoutAPI {
-	export function reloadData (roId: string) {
+	export function reloadData (roId: string, changeRehearsal?: boolean | null) {
 		// Reload and reset the Running order
 		check(roId, String)
+		check(changeRehearsal, Match.Maybe(Boolean))
 
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -48,7 +49,7 @@ export namespace ServerPlayoutAPI {
 				// Reset the playout devices by deactivating and activating rundown and restore current/next segment line, if possible
 				if (runningOrder && runningOrder.active) {
 					ServerPlayoutAPI.roDeactivate(roId)
-					ServerPlayoutAPI.roActivate(roId, runningOrder.rehearsal || false)
+					ServerPlayoutAPI.roActivate(roId, _.isBoolean(changeRehearsal) ? changeRehearsal! : runningOrder.rehearsal || false)
 				}
 			}
 		}, 'triggerGetRunningOrder', runningOrder.mosId)
