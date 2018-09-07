@@ -10,6 +10,11 @@ export interface RunningOrderDataCacheObj {
 	data: any
 }
 
+export enum CachePrefix {
+	FULLSTORY = 'fullStory',
+	ROCREATE = 'roCreate'
+}
+
 export const RunningOrderDataCache: TransformedCollection<RunningOrderDataCacheObj, RunningOrderDataCacheObj>
 	= new Mongo.Collection<RunningOrderDataCacheObj>('runningorderdatacache')
 registerCollection('RunningOrderDataCache', RunningOrderDataCache)

@@ -39,6 +39,7 @@ import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../lib/collectio
 import { ShowStyles, ShowStyle } from '../../lib/collections/ShowStyles'
 import { ServerPlayoutAPI, updateTimelineFromMosData, updateTimeline, afterUpdateTimeline } from './playout'
 import { syncFunction } from '../codeControl'
+import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -298,7 +299,7 @@ export namespace ServerPeripheralDeviceAPI {
 		let dbRo = RunningOrders.findOne(roId(ro.ID))
 		if (!dbRo) throw new Meteor.Error(500, 'Running order not found (it should have been)')
 		// cache the Data
-		dbRo.saveCache('roCreate' + roId(ro.ID), ro)
+		dbRo.saveCache(CachePrefix.ROCREATE + roId(ro.ID), ro)
 
 		// Save Stories into database:
 		// Note: a number of X stories will result in (<=X) Segments and X SegmentLines
@@ -395,7 +396,7 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!_.isEmpty(m)) {
 			RunningOrders.update(ro._id, {$set: m})
 			// update data cache:
-			const cache = ro.fetchCache('roCreate' + roId(roData.ID),)
+			const cache = ro.fetchCache(CachePrefix.ROCREATE + roId(roData.ID),)
 			if (cache) {
 				if (!cache.MosExternalMetaData) {
 					cache.MosExternalMetaData = []
@@ -413,7 +414,7 @@ export namespace ServerPeripheralDeviceAPI {
 				})
 			}
 
-			ro.saveCache('roCreate' + roId(roData.ID), cache)
+			ro.saveCache(CachePrefix.ROCREATE + roId(roData.ID), cache)
 		}
 	}
 	export function mosRoStatus (id, token, status: IMOSRunningOrderStatus) {
@@ -766,7 +767,7 @@ export namespace ServerPeripheralDeviceAPI {
 		let segmentLine = getSegmentLine(story.RunningOrderId, story.ID)
 
 		// cache the Data
-		ro.saveCache('fullStory' + segmentLine._id, story)
+		ro.saveCache(CachePrefix.FULLSTORY + segmentLine._id, story)
 		const changed = updateStory(ro, segmentLine, story)
 		if (changed) {
 			updateTimelineFromMosData(segmentLine.runningOrderId, [ segmentLine._id ])
@@ -1184,7 +1185,7 @@ function updateWithinSegment (ro: RunningOrder, segmentId: string): boolean {
 
 	let changed = false
 	_.each(segmentLines, (segmentLine) => {
-		let story = ro.fetchCache('fullStory' + segmentLine._id)
+		let story = ro.fetchCache(CachePrefix.FULLSTORY + segmentLine._id)
 		if (story) {
 			changed = changed || updateStory(ro, segmentLine, story)
 		} else {
