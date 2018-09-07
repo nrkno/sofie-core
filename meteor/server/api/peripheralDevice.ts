@@ -1094,21 +1094,6 @@ function formatTime (time: any): number | undefined {
 	}
 }
 
-function findDurationInfoMOSExternalMetaData (story: IMOSROFullStory): any | undefined {
-	if (story.MosExternalMetaData) {
-		let matchingMetaData = story.MosExternalMetaData.find((metaData) => {
-			if (metaData.MosSchema.match(/http(s)?:\/\/[\d\w\.\:]+\/schema\/enps.dtd$/)) {
-				return true
-			}
-			return false
-		})
-		if (matchingMetaData) {
-			return matchingMetaData
-		}
-	}
-	return undefined
-}
-
 function updateSegments (runningOrderId: string) {
 	// using SegmentLines, determine which segments are to be created
 	let segmentLines = SegmentLines.find({runningOrderId: runningOrderId}, {sort: {_rank: 1}}).fetch()
@@ -1195,24 +1180,6 @@ function updateWithinSegment (ro: RunningOrder, segmentId: string): boolean {
 	return changed
 }
 function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory): boolean {
-
-	const durationMosMetaData = findDurationInfoMOSExternalMetaData(story) || {}
-
-	if (!durationMosMetaData.MosPayload) durationMosMetaData.MosPayload = {}
-
-	const duration = durationMosMetaData.MosPayload.Actual && parseFloat(durationMosMetaData.MosPayload.Actual) ||
-		durationMosMetaData.MosPayload.ReadTime && parseFloat(durationMosMetaData.MosPayload.ReadTime) ||
-		durationMosMetaData.MosPayload.Estimated && parseFloat(durationMosMetaData.MosPayload.Estimated) ||
-		durationMosMetaData.MosPayload.MediaTime && parseFloat(durationMosMetaData.MosPayload.MediaTime) || 0
-
-	// Note: when no duration, it should look like 3000 in the GUI, but be counted as 0
-	if (segmentLine.expectedDuration !== duration * 1000) {
-		segmentLine.expectedDuration = duration * 1000
-		SegmentLines.update(segmentLine._id, {$set: {
-			expectedDuration: segmentLine.expectedDuration
-		}})
-	}
-
 	let showStyle = ShowStyles.findOne(ro.showStyleId)
 
 	if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + ro.showStyleId + '" not found!')
@@ -1228,7 +1195,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 	try {
 		tr = runTemplate(showStyle, context, story, 'story ' + story.ID.toString())
 	} catch (e) {
-		logger.error(e.toString())
+		logger.error(e.stack ? e.stack : e.toString())
 		// throw e
 		tr = {
 			templateId: '',
@@ -1265,8 +1232,8 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 		if (tr.result.segmentLine) {
 			if (!tr.result.segmentLine.typeVariant) tr.result.segmentLine.typeVariant = tr.templateId
 			SegmentLines.update(segmentLine._id, {$set: {
+				expectedDuration:		tr.result.segmentLine.expectedDuration || 0,
 				notes: 					tr.result.notes,
-				expectedDuration:		tr.result.segmentLine.expectedDuration || segmentLine.expectedDuration,
 				autoNext: 				tr.result.segmentLine.autoNext || false,
 				autoNextOverlap: 		tr.result.segmentLine.autoNextOverlap || 0,
 				overlapDuration: 		tr.result.segmentLine.overlapDuration || 0,

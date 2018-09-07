@@ -2353,7 +2353,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 					const transitionObjs = nextSegmentLineItem.getSegmentLinesItems().filter(i => i.isTransition)
 					overlapDuration = (transitionObjs && transitionObjs.length > 0) ? transitionObjs[0].duration || 0 : 0
 				} else if (!allowTransition) {
-					overlapDuration = currentSegmentLine.autoNextOverlap || 0
+					overlapDuration = 0
 				}
 
 				nextSegmentLineItemGroup.trigger = literal<ITimelineTrigger>({
