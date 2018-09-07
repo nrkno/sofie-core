@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2018-08-28T15:54:46.339Z\n"
-"PO-Revision-Date: 2018-09-07 10:56+0200\n"
+"POT-Creation-Date: 2018-09-07T08:48:34.461Z\n"
+"PO-Revision-Date: 2018-09-07 11:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -23,6 +23,9 @@ msgstr "Dette studioet finnes ikke."
 
 msgid "There are no active running orders."
 msgstr "Fant ingen aktive kjøreplaner."
+
+msgid "Rundown"
+msgstr "Kjøreplan"
 
 #, fuzzy
 #| msgid "Connecting to automation server…"
@@ -69,30 +72,6 @@ msgstr "Status"
 msgid "Settings"
 msgstr "Innstillinger"
 
-msgid "Key"
-msgstr "Tast"
-
-msgid "Output"
-msgstr "Utgang"
-
-msgid "Name"
-msgstr "Navn"
-
-msgid "Data"
-msgstr "Data"
-
-msgid "Resolution"
-msgstr "Oppløsning"
-
-msgid "FPS"
-msgstr "Bilder/s (FPS)"
-
-msgid "Duration"
-msgstr "Varighet"
-
-msgid "TC Start"
-msgstr "TC inn"
-
 msgid "Search..."
 msgstr "Søk..."
 
@@ -101,6 +80,10 @@ msgstr "Sist sett "
 
 msgid "Toggle drawer"
 msgstr "Skuff"
+
+#, fuzzy
+msgid "Escape from filter search"
+msgstr "Gå ut fra filtersøk"
 
 msgid "AdLib"
 msgstr "Hurtigtaster"
@@ -124,35 +107,11 @@ msgstr "Opprettet"
 msgid "Air Time"
 msgstr "Sendestart"
 
+msgid "Duration"
+msgstr "Varighet"
+
 msgid "Air Status"
 msgstr "Sendningsstatus"
-
-msgid "Just now"
-msgstr "Nå"
-
-msgid "Less than a minute ago"
-msgstr "Mindre enn et minutt siden"
-
-msgid "Less than five minutes ago"
-msgstr "Mindre enn fem minutter siden"
-
-msgid "Around 10 minutes ago"
-msgstr "Rundt 10 minutter siden"
-
-msgid "More than 10 minutes ago"
-msgstr "Mer enn 10 minutter siden"
-
-msgid "More than 30 minutes ago"
-msgstr "Mer enn 30 minutter siden"
-
-msgid "More than 2 hours ago"
-msgstr "Mer enn 2 timer siden"
-
-msgid "More than 5 hours ago"
-msgstr "Mer enn 5 timer siden"
-
-msgid "More than a day ago"
-msgstr "Mer enn en dag siden"
 
 msgid "Start time is close"
 msgstr "Start tidspunkt er nær"
@@ -203,6 +162,24 @@ msgstr "Aktiver testmodus"
 msgid "Reload running order"
 msgstr "Last inn kjøreplan på nytt"
 
+msgid "Move next forward"
+msgstr "Flytte Neste fremover"
+
+msgid "Move next segment forward"
+msgstr "Flytt neste tittel fremover"
+
+msgid "Move next segment back"
+msgstr "Flytt neste tittel tilbake"
+
+msgid "Move next back"
+msgstr "Flytte Neste tilbake"
+
+msgid "Disable next element"
+msgstr "Deaktiver neste element"
+
+msgid "Undo disable next element"
+msgstr "Angre Deaktiver neste element"
+
 msgid ""
 "Only a single running order can be active in a studio. Deactivate the other "
 "running order and try again."
@@ -213,6 +190,9 @@ msgstr ""
 msgid "Activate (Rehearsal)"
 msgstr "Aktiver testmodus"
 
+msgid "No actions available"
+msgstr "Ingen handlinger er tilgjengelige"
+
 msgid "Error"
 msgstr "Feil"
 
@@ -222,11 +202,42 @@ msgstr "OK"
 msgid "Go to On Air line"
 msgstr "Gå til On Air-linje"
 
+#, fuzzy
+msgid "Rewind segments to start"
+msgstr "Spol tilbake tittler for å starte"
+
 msgid "ON AIR"
 msgstr "Hjem"
 
 msgid "This running order has been unpublished from Sofie."
 msgstr "Denne kjøreplanen er ikke lenger tilgjengelig i Sofie."
+
+msgid "Just now"
+msgstr "Nå"
+
+msgid "Less than a minute ago"
+msgstr "Mindre enn et minutt siden"
+
+msgid "Less than five minutes ago"
+msgstr "Mindre enn fem minutter siden"
+
+msgid "Around 10 minutes ago"
+msgstr "Rundt 10 minutter siden"
+
+msgid "More than 10 minutes ago"
+msgstr "Mer enn 10 minutter siden"
+
+msgid "More than 30 minutes ago"
+msgstr "Mer enn 30 minutter siden"
+
+msgid "More than 2 hours ago"
+msgstr "Mer enn 2 timer siden"
+
+msgid "More than 5 hours ago"
+msgstr "Mer enn 5 timer siden"
+
+msgid "More than a day ago"
+msgstr "Mer enn en dag siden"
 
 msgid "Until next take"
 msgstr "Til neste Take"
@@ -508,6 +519,11 @@ msgstr "Ukjent lag"
 msgid "Audio Mixing"
 msgstr "Lydmiksing"
 
+#, fuzzy
+#| msgid "Duration"
+msgid "Transition"
+msgstr "Varighet"
+
 msgid "Source name"
 msgstr "Kildenavn"
 
@@ -529,6 +545,9 @@ msgstr "Er en direktesendt ekstern kilde"
 msgid "Is hidden"
 msgstr "Er gjemt"
 
+msgid "Display on presenter's screen"
+msgstr "Vis på skjermen for programleder"
+
 #, fuzzy
 msgid "AdLib activate shortcut list"
 msgstr "Aktiver AdLib-hurtigtastliste"
@@ -546,6 +565,10 @@ msgstr "Elementer på dette laget er klissete"
 
 msgid "Activate sticky item shortcut"
 msgstr "Aktivere snarvei for klissete element"
+
+#, fuzzy
+msgid "Allow disabling of elements"
+msgstr "Tillat deaktivering av elementer"
 
 msgid "Are you sure you want to delete source layer "
 msgstr "Er du sikker på at du vil slette kildelaget "
@@ -631,6 +654,9 @@ msgstr "Ikke tilkoblet"
 msgid "Last seen"
 msgstr "Sist sett"
 
+msgid "Name"
+msgstr "Navn"
+
 msgid "Version"
 msgstr "Version"
 
@@ -673,6 +699,24 @@ msgstr "Brukeraktivitet"
 msgctxt "item"
 msgid "new_config"
 msgstr "new_config"
+
+#~ msgid "Key"
+#~ msgstr "Tast"
+
+#~ msgid "Output"
+#~ msgstr "Utgang"
+
+#~ msgid "Data"
+#~ msgstr "Data"
+
+#~ msgid "Resolution"
+#~ msgstr "Oppløsning"
+
+#~ msgid "FPS"
+#~ msgstr "Bilder/s (FPS)"
+
+#~ msgid "TC Start"
+#~ msgstr "TC inn"
 
 #~ msgid "Unknown segment"
 #~ msgstr "Ukjent segment"
