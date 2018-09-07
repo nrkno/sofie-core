@@ -547,3 +547,12 @@ export function escapeHtml (text: string): string {
 		return map[m]
 	})
 }
+export function tic (name: string = 'default') {
+	ticCache[name] = Date.now()
+}
+export function toc (name: string = 'default', logStr?: string) {
+	let t: number = Date.now() - ticCache[name]
+	if (logStr) logger.info('==== ' + logStr + ': ' + t)
+	return t
+}
+const ticCache = {}
