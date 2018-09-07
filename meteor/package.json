@@ -46,6 +46,7 @@
     "react": "^16.3.0",
     "react-bootstrap": "^0.32.1",
     "react-contextmenu": "^2.9.2",
+    "react-datepicker": "^1.6.0",
     "react-dom": "^16.3.0",
     "react-escape": "0.0.8",
     "react-hotkeys": "^0.10.0",

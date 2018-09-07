@@ -3,7 +3,7 @@ import * as React from 'react'
 import { Translated, translateWithTracker, ReactMeteorData } from '../../lib/ReactMeteorData/react-meteor-data'
 import Moment from 'react-moment'
 import { translate } from 'react-i18next'
-import { getCurrentTime } from '../../../lib/lib'
+import { getCurrentTime, Time } from '../../../lib/lib'
 import { ClientAPI } from '../../../lib/api/client'
 import * as _ from 'underscore'
 import { ModalDialog } from '../../lib/ModalDialog'
@@ -13,41 +13,68 @@ import * as faChevronRight from '@fortawesome/fontawesome-free-solid/faChevronRi
 import * as faChevronLeft from '@fortawesome/fontawesome-free-solid/faChevronLeft'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as classNames from 'classnames'
-
+import { DatePickerFromTo } from '../../lib/datePicker'
+import * as moment from 'moment'
 interface IUserActivityProps {
 }
 interface IUserActivityState {
-	offset: number
+	dateFrom: Time,
+	dateTo: Time
 }
 interface IUserActivityTrackedProps {
 	log: UserActionsLogItem[]
 }
 
-const PAGING_AMOUNT = 30
-
 const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState, IUserActivityTrackedProps>((props: IUserActivityProps) => {
-	// console.log('PeripheralDevices',PeripheralDevices);
-	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
 	return {
 		log: UserActionsLog.find({}, {
 			sort: {
-				timestamp: -1
+				timestamp: 1
 			}
 		}).fetch()
 	}
 })(class ExternalMessages extends MeteorReactComponent<Translated<IUserActivityProps & IUserActivityTrackedProps>, IUserActivityState> {
+	private _currentsub: string = ''
+	private _sub?: Meteor.SubscriptionHandle
 	constructor (props) {
 		super(props)
 
 		this.state = {
-			offset: 0
+			dateFrom: moment().startOf('day').valueOf(),
+			dateTo: moment().add(1, 'days').startOf('day').valueOf()
 		}
 	}
-
 	componentWillMount () {
 		// Subscribe to data:
-		this.subscribe('userActionsLog', {})
+		this.updateSubscription()
+	}
+	componentDidUpdate () {
+		this.updateSubscription()
+	}
+	updateSubscription () {
+
+		let h = this.state.dateFrom + '_' + this.state.dateTo
+		if (h !== this._currentsub) {
+			this._currentsub = h
+			if (this._sub) {
+				this._sub.stop()
+			}
+			this._sub = Meteor.subscribe('userActionsLog', {
+				timestamp: {
+					$gte: this.state.dateFrom,
+					$lt: this.state.dateTo,
+				}
+			})
+
+		}
+
+	}
+	componentWillUnmount () {
+		if (this._sub) {
+			this._sub.stop()
+		}
+		this._cleanUp()
 	}
 
 	renderMessageHead () {
@@ -74,16 +101,10 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 			</thead>
 		)
 	}
-
-	onClickPrevious = () => {
+	handleChangeDate = (from: Time, to: Time) => {
 		this.setState({
-			offset: Math.max(0, this.state.offset - PAGING_AMOUNT)
-		})
-	}
-
-	onClickNext = () => {
-		this.setState({
-			offset: this.state.offset + PAGING_AMOUNT
+			dateFrom: from,
+			dateTo: to
 		})
 	}
 
@@ -91,10 +112,18 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 		const { t } = this.props
 		return (
 			<div>
+				<div className='paging alc'>
+					<DatePickerFromTo from={this.state.dateFrom} to={this.state.dateTo} onChange={this.handleChangeDate} />
+				</div>
 				<table className='table user-action-log'>
 					{this.renderMessageHead()}
 					<tbody>
-						{_.map(this.props.log.slice(this.state.offset, this.state.offset + PAGING_AMOUNT), (msg) => {
+						{_.map(_.filter(this.props.log, (ua) => {
+							return (
+								ua.timestamp >= this.state.dateFrom &&
+								ua.timestamp < this.state.dateTo
+							)
+						}), (msg) => {
 							return (
 								<tr key={msg._id}>
 									<td className='user-action-log__timestamp'><Moment format='YYYY/MM/DD HH:mm:ss'>{msg.timestamp}</Moment></td>
@@ -107,17 +136,12 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 						})}
 					</tbody>
 				</table>
-				<div className='paging alc'>
-					<button className='btn btn-secondary' onClick={this.onClickPrevious} disabled={this.state.offset < 1}><FontAwesomeIcon icon={faChevronLeft} /></button>
-					<button className='btn btn-secondary' onClick={this.onClickNext} disabled={this.state.offset > this.props.log.length}><FontAwesomeIcon icon={faChevronRight} /></button>
-				</div>
 			</div>
 		)
 	}
 
 	render () {
 		const { t } = this.props
-
 		return (
 			<div className='mhl gutter external-message-status'>
 				<header className='mbs'>
