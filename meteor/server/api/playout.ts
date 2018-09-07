@@ -29,7 +29,7 @@ let clone = require('fast-clone')
 
 export namespace ServerPlayoutAPI {
 	export function reloadData (roId: string) {
-		// Resets the Running order
+		// Reload and reset the Running order
 		check(roId, String)
 
 		let runningOrder = RunningOrders.findOne(roId)
@@ -43,30 +43,7 @@ export namespace ServerPlayoutAPI {
 				// TODO: what to do with the result?
 				logger.debug('Recieved reply for triggerGetRunningOrder', ro)
 
-				SegmentLineItems.remove({
-					runningOrderId: roId,
-					dynamicallyInserted: true
-				})
-
-				SegmentLines.update({
-					runningOrderId: roId
-				}, {
-					$unset: {
-						duration: 1,
-						startedPlayback: 1,
-						timings: 1
-					}
-				})
-
-				SegmentLineItems.update({
-					runningOrderId: roId
-				}, {
-					$unset: {
-						duration: 1,
-						startedPlayback: 1,
-
-					}
-				})
+				ServerPlayoutAPI.roReset(roId)
 
 				// Reset the playout devices by deactivating and activating rundown and restore current/next segment line, if possible
 				if (runningOrder && runningOrder.active) {
@@ -75,6 +52,38 @@ export namespace ServerPlayoutAPI {
 				}
 			}
 		}, 'triggerGetRunningOrder', runningOrder.mosId)
+	}
+	export function roReset (roId: string) {
+		// Reset the Running order
+		check(roId, String)
+
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+
+		SegmentLineItems.remove({
+			runningOrderId: roId,
+			dynamicallyInserted: true
+		})
+
+		SegmentLines.update({
+			runningOrderId: roId
+		}, {
+			$unset: {
+				duration: 1,
+				startedPlayback: 1,
+				timings: 1
+			}
+		}, {multi: true})
+
+		SegmentLineItems.update({
+			runningOrderId: roId
+		}, {
+			$unset: {
+				duration: 1,
+				startedPlayback: 1,
+
+			}
+		}, {multi: true})
 	}
 	export function roActivate (roId: string, rehearsal: boolean): ClientAPI.ClientResponse {
 		check(roId, String)
@@ -1112,6 +1121,9 @@ export namespace ServerPlayoutAPI {
 let methods = {}
 methods[PlayoutAPI.methods.reloadData] = (roId: string) => {
 	return ServerPlayoutAPI.reloadData(roId)
+}
+methods[PlayoutAPI.methods.roReset] = (roId: string) => {
+	return ServerPlayoutAPI.roReset(roId)
 }
 methods[PlayoutAPI.methods.roActivate] = (roId: string, rehersal: boolean) => {
 	return ServerPlayoutAPI.roActivate(roId, rehersal)
