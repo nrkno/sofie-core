@@ -165,15 +165,15 @@
     "Is on clean PGM": "Inngår i CLEAN",
     "Is a live remote input": "Er en direktesendt ekstern kilde",
     "Is hidden": "Er gjemt",
-    "AdLib activate shortcut list": "Hurtigtaster",
-    "Clear shortcut": "Hurtigtast for å fjerne",
+    "AdLib activate shortcut list": "Aktiver AdLib-hurtigtastliste",
+    "Clear shortcut": "Clear-hurtigtast",
     "Assign hotkeys to global adlibs": "Anvise hurtigtaster til globale adlibs",
     "Items on this layer are sticky": "Elementer på dette laget er klissete",
     "Activate sticky item shortcut": "Aktivere snarvei for klissete element",
     "Are you sure you want to delete source layer ": "Er du sikker på at du vil slette kildelaget ",
     "channel": "kanal",
     "layer": "lag",
-    "mappingType": "Koblingstype",
+    "mappingType": "mappingType",
     "index": "indeks",
     "Identifier": "ID",
     "Layer ID": "Lag-ID",
@@ -211,5 +211,5 @@
     "Action": "Handling",
     "Parameters": "Parametere",
     "User activity log": "Brukeraktivitet",
-    "new_config_item": "Ny konfigurasjon"
+    "new_config_item": "new_config"
 }
