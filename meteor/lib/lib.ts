@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { TransformedCollection, Selector } from './typings/meteor'
+import { TransformedCollection, Selector, Modifier, UpdateOptions } from './typings/meteor'
 import { PeripheralDeviceAPI } from './api/peripheralDevice'
 import { logger } from './logging'
 import * as Timecode from 'smpte-timecode'
@@ -556,3 +556,41 @@ export function toc (name: string = 'default', logStr?: string) {
 	return t
 }
 const ticCache = {}
+
+export function asyncCollectionInsert<DocClass, DBInterface> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	doc: DBInterface,
+): Promise<string> {
+	return new Promise((resolve, reject) => {
+		collection.insert(doc, (err: any, idInserted) => {
+			if (err) reject(err)
+			else resolve(idInserted)
+		})
+	})
+}
+export function asyncCollectionUpdate<DocClass, DBInterface> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	selector: Selector<DBInterface>,
+	modifier: Modifier<DBInterface>,
+	options?: UpdateOptions
+
+): Promise<number> {
+	return new Promise((resolve, reject) => {
+		collection.update(selector, modifier, options, (err: any, affectedCount: number) => {
+			if (err) reject(err)
+			else resolve(affectedCount)
+		})
+	})
+}
+export function asyncCollectionRemove<DocClass, DBInterface> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	selector: Selector<DBInterface>
+
+): Promise<void> {
+	return new Promise((resolve, reject) => {
+		collection.remove(selector, (err: any) => {
+			if (err) reject(err)
+			else resolve()
+		})
+	})
+}
