@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.10.1"></a>
+## [0.10.1](https://github.com/nrkno/tv-automation-server-core/compare/v0.10.0...v0.10.1) (2018-09-07)
+
+
+### Bug Fixes
+
+* reworked systemStatus to use components instead ([cccfe3c](https://github.com/nrkno/tv-automation-server-core/commit/cccfe3c))
+* ro-reset does not reset properly ([6367658](https://github.com/nrkno/tv-automation-server-core/commit/6367658))
+* updated systemTime endpoint ([503d2c8](https://github.com/nrkno/tv-automation-server-core/commit/503d2c8))
+
+
+
 <a name="0.10.0"></a>
 # [0.10.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.9.1...v0.10.0) (2018-09-06)
 
