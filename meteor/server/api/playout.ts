@@ -1457,7 +1457,9 @@ function afterTake (runningOrder: RunningOrder, takeSegmentLine: SegmentLine, pr
 		sendStoryStatus(runningOrder, takeSegmentLine)
 	}
 
-	triggerExternalMessage(runningOrder, takeSegmentLine, previousSegmentLine)
+	Meteor.defer(() => {
+		triggerExternalMessage(runningOrder, takeSegmentLine, previousSegmentLine)
+	})
 }
 
 import { Resolver } from 'superfly-timeline'
