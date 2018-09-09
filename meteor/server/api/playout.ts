@@ -1409,6 +1409,7 @@ Meteor.methods({
 function beforeTake (runningOrder: RunningOrder, currentSegmentLine: SegmentLine | null, nextSegmentLineItem: SegmentLine) {
 	if (currentSegmentLine) {
 		const adjacentSL = SegmentLines.find({
+			runningOrderId: currentSegmentLine.runningOrderId,
 			segmentId: currentSegmentLine.segmentId,
 			_rank: {
 				$gt: currentSegmentLine._rank
@@ -2306,9 +2307,15 @@ export function updateTimelineFromMosData (roId: string, changedLines?: Array<st
 		// infinite items only need to be recalculated for those after where the edit was made (including the edited line)
 		let prevLine: SegmentLine | undefined
 		if (data.changedLines) {
-			const firstLine = SegmentLines.findOne({ runningOrderId: roId, _id: { $in: data.changedLines } }, { sort: { _rank: 1 } })
+			const firstLine = SegmentLines.findOne({
+				runningOrderId: roId,
+				_id: { $in: data.changedLines }
+			}, { sort: { _rank: 1 } })
 			if (firstLine) {
-				prevLine = SegmentLines.findOne({ runningOrderId: roId, _rank: { $lt: firstLine._rank } }, { sort: { _rank: -1 } })
+				prevLine = SegmentLines.findOne({
+					runningOrderId: roId,
+					_rank: { $lt: firstLine._rank }
+				}, { sort: { _rank: -1 } })
 			}
 		}
 

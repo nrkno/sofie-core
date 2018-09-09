@@ -87,9 +87,7 @@ export function getResolvedSegment (studioInstallation: StudioInstallation, runn
 	segmentExtended.sourceLayers = {}
 
 	// fetch all the segment lines for the segment
-	let segmentLines = SegmentLines.find({
-		segmentId: segment._id
-	}, { sort: { _rank: 1 } }).fetch()
+	let segmentLines = segment.getSegmentLines()
 
 	if (segmentLines.length > 0) {
 		let followingSLines = SegmentLines.find({
