@@ -1453,13 +1453,14 @@ function afterTake (runningOrder: RunningOrder, takeSegmentLine: SegmentLine, pr
 	// This function should be called at the end of a "take" event (when the SegmentLines have been updated)
 	updateTimeline(runningOrder.studioInstallationId)
 
-	if (takeSegmentLine.updateStoryStatus) {
-		sendStoryStatus(runningOrder, takeSegmentLine)
-	}
+	// defer these so that the playout gateway has the chance to learn about the changes
+	Meteor.setTimeout(() => {
+		if (takeSegmentLine.updateStoryStatus) {
+			sendStoryStatus(runningOrder, takeSegmentLine)
+		}
 
-	Meteor.defer(() => {
 		triggerExternalMessage(runningOrder, takeSegmentLine, previousSegmentLine)
-	})
+	}, 40)
 }
 
 import { Resolver } from 'superfly-timeline'
