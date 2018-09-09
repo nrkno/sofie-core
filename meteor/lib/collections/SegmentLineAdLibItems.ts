@@ -17,6 +17,8 @@ Meteor.startup(() => {
 	if (Meteor.isServer) {
 		SegmentLineAdLibItems._ensureIndex({
 			runningOrderId: 1,
+			segmentLineId: 1,
+			_rank: 1
 		})
 	}
 })
