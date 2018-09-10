@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2018-09-10T09:23:46.309Z\n"
-"PO-Revision-Date: 2018-09-10 11:25+0200\n"
+"POT-Creation-Date: 2018-09-10T12:39:57.165Z\n"
+"PO-Revision-Date: 2018-09-10 14:45+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -33,7 +33,6 @@ msgstr "Kan ikke koble til Sofie-serveren"
 msgid "Reconnecting to the Sofie Automation Server"
 msgstr "Kobler til Sofie-serveren på nytt"
 
-#, fuzzy
 msgid ""
 "Your machine is offline and cannot connect to the Sofie Automation Server."
 msgstr ""
@@ -48,8 +47,8 @@ msgstr "Velkommen til Sofie"
 msgid "Sofie Automation version"
 msgstr "Sofie Automasjon versjon"
 
-msgid "Sofie status"
-msgstr "Sofie-status"
+msgid "Status"
+msgstr "Status"
 
 #, fuzzy
 msgid "Test test"
@@ -63,9 +62,6 @@ msgstr "Kjøreplaner"
 
 msgid "Nyman's Playground"
 msgstr "Tester"
-
-msgid "Status"
-msgstr "Status"
 
 msgid "Settings"
 msgstr "Innstillinger"
@@ -280,497 +276,406 @@ msgid "Fatal"
 msgstr "Kritisk"
 
 msgid "Connected"
-msgstr "Tilkoblet"
+msgstr ""
 
 msgid "Disconnected"
-msgstr "Frakoblet"
+msgstr ""
 
 msgid "MOS Device"
-msgstr "MOS Device"
+msgstr ""
 
 msgid "Play-out Device"
-msgstr "Play-out Device"
+msgstr ""
 
 msgid "Sub-Device"
-msgstr "Sub-Device"
+msgstr ""
 
 msgid "Unknown Device"
-msgstr "Unknown Device"
+msgstr ""
 
 msgid "Studios"
-msgstr "Studio"
+msgstr ""
 
 msgid "Source layers"
-msgstr "Kilde-lag"
+msgstr ""
 
 msgid "Output channels"
-msgstr "Utganger"
+msgstr ""
 
 msgid "Show Styles"
-msgstr "Programtype"
+msgstr ""
 
 msgid "Delete this item?"
-msgstr "Slette elementet?"
+msgstr ""
 
 msgid "Delete"
-msgstr "Slett"
+msgstr ""
 
 msgid "Cancel"
-msgstr "Avbryt"
+msgstr ""
 
-msgid "This action is irreversible."
-msgstr "Denne handlingen kan ikke angres."
+msgid "Please note: This action is irreversible!"
+msgstr ""
 
 msgid "Line Templates"
-msgstr "Maler"
+msgstr ""
 
 msgid "Devices"
-msgstr "MOS-enheter"
+msgstr ""
 
 msgid "Type"
-msgstr "Type"
+msgstr ""
 
 msgid "Tools"
-msgstr "Verktøy"
+msgstr ""
 
-msgid "Restore backup"
-msgstr "Gjenopprett fra sikkerhetskopi"
+msgid "Restore from Backup"
+msgstr ""
 
 msgid "System Settings"
-msgstr "Systeminnstillinger"
+msgstr ""
 
 msgid "Device ID"
-msgstr "Enhets-ID"
+msgstr ""
 
 msgid "Device Type"
-msgstr "Enhetstype"
+msgstr ""
 
 msgid "Host"
-msgstr "Host"
+msgstr ""
 
 msgid "Port"
-msgstr "Port"
+msgstr ""
 
 msgid "Sources Path"
-msgstr "Sources Path"
+msgstr ""
 
 msgid "Ramp Function Path"
-msgstr "Ramp Function Path"
+msgstr ""
 
 msgid "Media Scanner Host"
-msgstr "Media Scanner Host"
+msgstr ""
 
 msgid "Media Scanner Port"
-msgstr "Media Scanner Port"
+msgstr ""
 
 msgid "CasparCG Launcher Host"
-msgstr "CasparCG Launcher Host"
+msgstr ""
 
 msgid "CasparCG Launcher Port"
-msgstr "CasparCG Launcher Port"
+msgstr ""
 
 msgid "Remove this device?"
-msgstr "Fjern denne enheten?"
+msgstr ""
 
 msgid "Remove"
-msgstr "Fjern"
+msgstr ""
 
-msgid "Are you sure you want to remove device "
-msgstr "Er du sikker på at du vil fjerne enheten "
+msgid "Are you sure you want to remove device"
+msgstr ""
 
-msgid "Attached devices"
-msgstr "Tilkoblede enhenter"
+msgid "Attached Devices"
+msgstr ""
 
-#, fuzzy
-msgid "Primary id (their mosId)"
-msgstr "Primær-ID (MOS-ID)"
+msgid "Primary ID (News Room System MOS ID)"
+msgstr ""
 
-#, fuzzy
-msgid "Primary host (ip or hostname)"
-msgstr "Primær vert (IP-adresse eller vertsnavn)"
+msgid "Primary Host (IP Address or Hostname)"
+msgstr ""
 
-msgid "Secondary id (their mosId)"
-msgstr "Sekundær-ID (MOS-ID)"
+msgid "Secondary ID (News Room System MOS ID)"
+msgstr ""
 
-#, fuzzy
-msgid "Secondary host (ip or hostname)"
-msgstr "Sekundær vert (IP-adresse eller vertsnavn)"
+msgid "Secondary Host (IP Address or Hostname)"
+msgstr ""
 
-#, fuzzy
-msgid "MosId of gateway (our mosId)"
-msgstr "MOS-ID for gateway (vår MOS-ID)"
+msgid "MOS ID of Gateway (Sofie MOS ID)"
+msgstr ""
 
-msgid "Activate debug-logging"
-msgstr "Aktivere debug-logging"
+msgid "Activate Debug Logging"
+msgstr ""
 
-msgid "Mos-devices"
-msgstr "MOS-enheter"
+msgid "MOS Devices"
+msgstr ""
 
-msgid "Generic properties"
-msgstr "Generelle egenskaper"
+msgid "Generic Properties"
+msgstr ""
 
-msgid "Device name"
-msgstr "Enhetsnavn"
+msgid "Device Name"
+msgstr ""
 
 msgid "Template ID"
-msgstr "Mal-ID"
+msgstr ""
 
-#, fuzzy
 msgid "Is Helper"
-msgstr "Hjelpemal"
+msgstr ""
 
 msgid "Select this"
-msgstr "Velg"
+msgstr ""
 
 msgid "Restore this backup?"
-msgstr "Gjenopprett fra denne sikkerhetskopien?"
+msgstr ""
 
 msgid "Restore"
-msgstr "Gjenopprett"
+msgstr ""
 
-msgid "Show Style name"
-msgstr "Programtype navn"
+msgid ""
+"Are you sure you want to restore the backup file ${this.state."
+"uploadFileName}?"
+msgstr ""
 
-msgid "Show Style id"
-msgstr "Programtype ID"
+msgid "Show Style Name"
+msgstr ""
 
-msgid "Baseline template id"
-msgstr "ID for grunnmal"
+msgid "Show Style ID"
+msgstr ""
 
-msgid "External-message template id"
-msgstr "ID for ekstern meldings-template"
+msgid "Baseline Template ID"
+msgstr ""
 
-msgid "Download full backup"
-msgstr "Gjenopprett fra sikkerhetskopi"
+msgid "External Message Template ID"
+msgstr ""
 
-msgid "Download current state"
-msgstr "Last ned nåværende tilstand"
+msgid "Download Full Backup"
+msgstr ""
+
+msgid "Download Current State"
+msgstr ""
 
 msgid "Templates"
-msgstr "Maler"
+msgstr ""
 
 msgid "Helper"
-msgstr "Hjelper"
+msgstr ""
 
-msgid "Channel name"
-msgstr "Kanalnavn"
+msgid "Channel Name"
+msgstr ""
 
 msgid "Internal ID"
-msgstr "Intern-ID"
+msgstr ""
 
-msgid "Is PGM output"
-msgstr "Programutgang"
+msgid "Is PGM Output"
+msgstr ""
 
-msgid "Display rank"
-msgstr "Visningsrekkefølge"
+msgid "Display Rank"
+msgstr ""
 
-msgid "Are you sure you want to delete output channel "
-msgstr "Er du sikker på at du vil slette utgangen "
+msgid "Are you sure you want to delete output channel"
+msgstr ""
+
+msgid "Output Channels"
+msgstr ""
 
 msgid "Value"
-msgstr "Verdi"
+msgstr ""
 
-msgid "Are you sure you want to delete this config item "
-msgstr "Er du sikker på at du vil slette instillingen "
+msgid "Are you sure you want to delete this config item"
+msgstr ""
 
-msgid "Custom config"
-msgstr "Egendefinerte instillinger"
+msgid "Custom Configuration"
+msgstr ""
 
 msgid "Camera"
-msgstr "Kamera"
+msgstr ""
 
 msgid "Graphics"
-msgstr "Grafikk"
+msgstr ""
 
 msgid "LiveSpeak"
-msgstr "STK"
+msgstr ""
 
 msgid "Lower Third"
-msgstr "Super"
+msgstr ""
 
 msgid "Studio Microphone"
-msgstr "Studiomikrofon"
+msgstr ""
 
-msgid "Remote source"
-msgstr "Valgbar kilde (RM)"
+msgid "Remote Source"
+msgstr ""
 
-msgid "Generic script"
-msgstr "Manus"
+msgid "Generic Script"
+msgstr ""
 
-msgid "Split screen"
-msgstr "Splitt"
+msgid "Split Screen"
+msgstr ""
 
 msgid "Clips"
-msgstr "Innslag"
+msgstr ""
 
 msgid "Metadata"
-msgstr "Metadata"
+msgstr ""
 
 msgid "Camera Movement"
-msgstr "Kamerakjøring"
+msgstr ""
 
-msgid "Unknown layer"
-msgstr "Ukjent lag"
+msgid "Unknown Layer"
+msgstr ""
 
 msgid "Audio Mixing"
-msgstr "Lydmiksing"
+msgstr ""
 
 msgid "Transition"
-msgstr "Effekt"
+msgstr "Transition (ENPS: \"Effekt\")"
 
-msgid "Source name"
-msgstr "Kildenavn"
+msgid "Source Name"
+msgstr ""
 
-msgid "Source abbreviation"
-msgstr "Forkortelse"
+msgid "Source Abbreviation"
+msgstr ""
 
 msgid "Source type"
-msgstr "Kildetype"
+msgstr ""
 
 msgid "Is unlimited"
-msgstr "Ubegrenset"
+msgstr ""
 
 msgid "Is on clean PGM"
-msgstr "Inngår i CLEAN"
+msgstr ""
 
-msgid "Is a live remote input"
-msgstr "Er en direktesendt ekstern kilde"
+msgid "Is a Live Remote input"
+msgstr ""
 
 msgid "Is hidden"
-msgstr "Er gjemt"
+msgstr ""
 
-msgid "Display on presenter's screen"
-msgstr "Vis på skjermen for programleder"
+msgid "Display on Presenter's Screen"
+msgstr ""
 
-#, fuzzy
-msgid "AdLib activate shortcut list"
-msgstr "Aktiver AdLib-hurtigtastliste"
+msgid "Shortcut List"
+msgstr ""
 
-#, fuzzy
-msgid "Clear shortcut"
-msgstr "Clear-hurtigtast"
+msgid "Clear Shortcut"
+msgstr ""
 
-msgid "Assign hotkeys to global adlibs"
-msgstr "Anvise hurtigtaster til globale adlibs"
+msgid "Assign hotkeys to Global AdLibs"
+msgstr ""
 
-#, fuzzy
 msgid "Items on this layer are sticky"
-msgstr "Elementer på dette laget er klissete"
+msgstr ""
 
 msgid "Activate sticky item shortcut"
-msgstr "Aktivere snarvei for klissete element"
+msgstr ""
 
-#, fuzzy
 msgid "Allow disabling of elements"
-msgstr "Tillat deaktivering av elementer"
+msgstr ""
 
-msgid "Are you sure you want to delete source layer "
-msgstr "Er du sikker på at du vil slette kildelaget "
+msgid "Are you sure you want to delete source layer"
+msgstr ""
 
 msgid "channel"
-msgstr "kanal"
+msgstr ""
 
 msgid "layer"
-msgstr "lag"
+msgstr ""
 
 msgid "mappingType"
-msgstr "mappingType"
+msgstr ""
 
 msgid "index"
-msgstr "indeks"
+msgstr ""
 
 msgid "Identifier"
-msgstr "ID"
+msgstr ""
 
 msgid "Layer ID"
-msgstr "Lag-ID"
+msgstr ""
 
-msgid "Device type"
-msgstr "Enhetstype"
-
-msgid "Device Id"
-msgstr "MOS-enhets-ID"
-
-msgid "Lookahead mode"
-msgstr "Lookahead mode"
+msgid "Lookahead Mode"
+msgstr ""
 
 msgid "Remove this mapping?"
-msgstr "Fjern denne koblingen?"
+msgstr ""
 
-msgid "Are you sure you want to remove mapping for LLayer "
-msgstr "Er du sikker på at du vil fjerne koblingen for "
+msgid "Are you sure you want to remove mapping for layer"
+msgstr ""
 
 msgid "Layer Mappings"
-msgstr "Lag-koblinger"
+msgstr ""
 
-msgid "New source"
-msgstr "Ny kilde"
+msgid "New Source"
+msgstr ""
 
-msgid "New output"
-msgstr "Ny utgang"
+msgid "New Output"
+msgstr ""
 
-msgid "Studio name"
-msgstr "Studionavn"
+msgid "Studio Name"
+msgstr ""
 
-msgid "Default show style"
-msgstr "Standardprogramtype"
+msgid "Default Show Style"
+msgstr ""
 
 msgid "System"
-msgstr "System"
-
-msgid "Snapshot"
-msgstr "Snapshot"
+msgstr ""
 
 msgid "Messages"
-msgstr "Meldinger"
+msgstr ""
 
-msgid "User log"
-msgstr "Brukerlogg"
+msgid "User Log"
+msgstr ""
 
-msgid "Queued messages"
-msgstr "Meldinger i kø"
+msgid "Queued Messages"
+msgstr ""
 
-msgid "Sent messages"
-msgstr "Sendte meldinger"
+msgid "Sent Messages"
+msgstr ""
 
-msgid "Message queue"
-msgstr "Meldingskø"
+msgid "Message Queue"
+msgstr ""
 
 msgid "Take snapshot"
-msgstr "Ta snapshot"
+msgstr ""
 
 msgid "Download system snapshot"
-msgstr "Last ned nåværende tilstand"
+msgstr ""
 
 msgid "Not connected"
-msgstr "Ikke tilkoblet"
+msgstr ""
 
 msgid "Last seen"
-msgstr "Sist sett"
+msgstr ""
 
 msgid "Name"
-msgstr "Navn"
+msgstr ""
 
 msgid "Version"
-msgstr "Version"
+msgstr ""
 
 msgid "Restart this device process?"
-msgstr "Starte denne prosessen på nytt?"
+msgstr ""
 
 msgid "Restart"
-msgstr "Restart"
+msgstr ""
 
 msgid "Kill this device process?"
-msgstr "Avslutt prosessen?"
+msgstr ""
 
 msgid "Kill"
-msgstr "Avslutt"
+msgstr ""
 
 msgid "System Status"
-msgstr "Systemstatus"
+msgstr ""
 
 msgid "Telemetry"
-msgstr "Telemetri"
+msgstr ""
 
 msgid "Timestamp"
-msgstr "Tidspunkt"
+msgstr ""
 
 msgid "User ID"
-msgstr "Bruker-ID"
+msgstr ""
 
 msgid "Client IP"
-msgstr "Klientens IP-adresse"
+msgstr ""
 
 msgid "Action"
-msgstr "Handling"
+msgstr ""
 
 msgid "Parameters"
-msgstr "Parametere"
+msgstr ""
 
-msgid "User activity log"
-msgstr "Brukeraktivitet"
+msgid "User Activity Log"
+msgstr ""
 
 msgctxt "item"
 msgid "new_config"
-msgstr "new_config"
-
-#~ msgid "Welcome to Sofie"
-#~ msgstr "Velkommen til Sofie"
-
-#~ msgid "Your machine is offline."
-#~ msgstr "Denne maskinen er frakoblet fra Sofie-serveren."
-
-#~ msgid "Move next segment forward"
-#~ msgstr ""
-#~ "Flytt neste tittel framover\n"
-#~ "Flytt neste tittel framover\n"
-#~ "Move Next to the following segment"
-
-#~ msgid "Move next segment back"
-#~ msgstr ""
-#~ "Flytt Neste tilbake\n"
-#~ "Move Next to the previous segment"
-
-#~ msgid "Connected to server."
-#~ msgstr "Koblet til Sofie-serveren."
-
-#, fuzzy
-#~ msgid "Slug"
-#~ msgstr "Tittel"
-
-#~ msgid "Activate (rehearsal)"
-#~ msgstr "Aktiver testmodus"
-
-#~ msgid "Rundown"
-#~ msgstr "Kjøreplan"
-
-#~ msgid "Key"
-#~ msgstr "Tast"
-
-#~ msgid "Output"
-#~ msgstr "Utgang"
-
-#~ msgid "Data"
-#~ msgstr "Data"
-
-#~ msgid "Resolution"
-#~ msgstr "Oppløsning"
-
-#~ msgid "FPS"
-#~ msgstr "Bilder/s (FPS)"
-
-#~ msgid "TC Start"
-#~ msgstr "TC inn"
-
-#~ msgid "Unknown segment"
-#~ msgstr "Ukjent segment"
-
-#~ msgid "Line"
-#~ msgstr "Linje"
-
-#~ msgid "Unknown line"
-#~ msgstr "Ukjent linje"
-
-#~ msgid "Script"
-#~ msgstr "Manus"
-
-#~ msgid "Item has no properties"
-#~ msgstr "Elementet har ingen egenskaper"
-
-#~ msgid "Playout uses Timecode of Caspar"
-#~ msgstr "Playout bruker CasparCGs tidskode"
-
-#~ msgid "Initialize as clear"
-#~ msgstr "Start helt tom"
-
-#~ msgid "Id"
-#~ msgstr "ID"
-
-#~ msgid "Message"
-#~ msgstr "Melding"
-
-#~ msgid "Finish"
-#~ msgstr "Avslutt"
-
-#~ msgid "Loading…"
-#~ msgstr "Laster …"
+msgstr ""

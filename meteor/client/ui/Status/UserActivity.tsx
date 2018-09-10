@@ -121,7 +121,7 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 		return (
 			<div className='mhl gutter external-message-status'>
 				<header className='mbs'>
-					<h1>{t('User activity log')}</h1>
+					<h1>{t('User Activity Log')}</h1>
 				</header>
 				<div className='mod mvl'>
 					{this.renderUserActivity()}
