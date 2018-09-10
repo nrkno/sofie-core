@@ -80,6 +80,8 @@ export interface ISourceLayerBase {
 	isSticky?: boolean
 	/** Keyboard shortcut to be used to reuse a sticky item on this layer */
 	activateStickyKeyboardHotkey?: string
+	/** Should adlibs on this source layer be queueable */
+	isQueueable?: boolean
 	/** If set to true, the layer will be hidden from the user in Running Order View */
 	isHidden?: boolean
 	/** If set to true, items in the layer can be disabled by the user (the "G"-shortcut) */

@@ -62,6 +62,10 @@ export interface DBSegmentLine {
 
 	/** Holds notes (warnings / errors) thrown by the templates during creation */
 	notes?: Array<SegmentLineNote>
+	/** if the segmentLine is inserted after another (for adlibbing) */
+	afterSegmentLine?: string
+	/** if the segmentLine was dunamically inserted (adlib) */
+	dynamicallyInserted?: boolean
 }
 export interface SegmentLineTimings {
 	/** Point in time the SegmentLine was taken, (ie the time of the user action) */
@@ -119,6 +123,7 @@ export class SegmentLine implements DBSegmentLine {
 	public timings?: SegmentLineTimings
 	public holdMode?: SegmentLineHoldMode
 	public notes?: Array<SegmentLineNote>
+	public afterSegmentLine?: string
 
 	constructor (document: DBSegmentLine) {
 		_.each(_.keys(document), (key) => {
