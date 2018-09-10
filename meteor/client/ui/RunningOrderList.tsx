@@ -19,7 +19,7 @@ interface IRunningOrdersListProps {
 }
 
 interface IRunningOrdersListState {
-	systemStatus?: number
+	systemStatus?: string
 }
 
 export const RunningOrderList = translateWithTracker(() => {
@@ -46,8 +46,10 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 				return
 			}
 
+			console.log(res)
+
 			this.setState({
-				systemStatus: res.statusCode
+				systemStatus: res.status
 			})
 		})
 	}
@@ -105,7 +107,7 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 				</div>
 			</div>
 			<div className='mtl gutter version-info'>
-				<p>{t('Sofie Automation Core version')}: {PackageInfo.version || 'UNSTABLE'}, {t('Core status')}: {statusCodeToString(t, this.state.systemStatus || 0)}</p>
+				<p>{t('Sofie Automation Core version')}: {PackageInfo.version || 'UNSTABLE'}, {t('Core status')}: {this.state.systemStatus}</p>
 			</div>
 		</React.Fragment>
 	}
