@@ -4621,7 +4621,7 @@ Meteor.methods({
 							"mosartVariant" : "2LIKE",
 							"ReadTime" : 2,
 							"ip1" : "K1",
-							"ip2" : "RM1",
+							"ip2" : "K2",
 							"ENPSItemType" : 3
 						}
 					}

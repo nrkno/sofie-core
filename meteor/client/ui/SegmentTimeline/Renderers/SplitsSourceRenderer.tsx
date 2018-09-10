@@ -117,7 +117,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 						'splits': item.type === RundownAPI.SourceLayerType.SPLITS,
 						'vt': item.type === RundownAPI.SourceLayerType.VT,
 
-						'second': array.length > 1 && item.type === array[index - 1].type
+						'second': array.length > 1 && index > 0 && item.type === array[index - 1].type
 					})}>
 				</div>
 			)
@@ -147,7 +147,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 								'splits': item.type === RundownAPI.SourceLayerType.SPLITS,
 								'vt': item.type === RundownAPI.SourceLayerType.VT,
 
-								'second': array.length > 1 && item.type === array[index - 1].type
+								'second': array.length > 1 && index > 0 && item.type === array[index - 1].type
 							})}
 							key={item._id + '-preview'}
 							style={{
