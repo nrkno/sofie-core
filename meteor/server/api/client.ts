@@ -8,7 +8,7 @@ import { literal, getCurrentTime, MeteorPromiseCall } from '../../lib/lib'
 import { logger } from '../logging'
 import { ClientAPI } from '../../lib/api/client'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice';
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 export namespace ServerClientAPI {
 	export function execMethod (context: string, methodName: string, ...args: any[]) {

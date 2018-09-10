@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { TransformedCollection, Selector, Modifier, UpdateOptions } from './typings/meteor'
+import { TransformedCollection, Selector, Modifier, UpdateOptions, UpsertOptions } from './typings/meteor'
 import { PeripheralDeviceAPI } from './api/peripheralDevice'
 import { logger } from './logging'
 import * as Timecode from 'smpte-timecode'
@@ -416,17 +416,24 @@ export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: Mongo
 		limit: 1
 	}).fetch()[0]
 }
-export function fetchAfter<T> (collection: Mongo.Collection<T>, selector: Mongo.Selector, rank: number | null): T {
+export function fetchAfter<T> (collection: Mongo.Collection<T> | Array<T>, selector: Mongo.Selector, rank: number | null): T | undefined {
 	if (_.isNull(rank)) rank = Number.NEGATIVE_INFINITY
-	return collection.find(_.extend(selector, {
+
+	selector = _.extend({}, selector, {
 		_rank: {$gt: rank}
-	}), {
-		sort: {
-			_rank: 1,
-			_id: 1
-		},
-		limit: 1
-	}).fetch()[0]
+	})
+
+	if (_.isArray(collection)) {
+		return _.find(collection, (o) => mongoWhere(o, selector))
+	} else {
+		return collection.find(selector, {
+			sort: {
+				_rank: 1,
+				_id: 1
+			},
+			limit: 1
+		}).fetch()[0]
+	}
 }
 export function getRank (beforeOrLast, after, i: number, count: number): number {
 	let newRankMax
@@ -454,7 +461,7 @@ export function getRank (beforeOrLast, after, i: number, count: number): number 
 	}
 	return newRankMin + ( (i + 1) / (count + 1) ) * (newRankMax - newRankMin)
 }
-export function normalizeArray<T> (array: Array<T>, indexKey: keyof T) {
+export function normalizeArray<T> (array: Array<T>, indexKey: keyof T): {[indexKey: string]: T} {
 	const normalizedObject: any = {}
 	for (let i = 0; i < array.length; i++) {
 		const key = array[i][indexKey]
@@ -591,6 +598,32 @@ export function toc (name: string = 'default', logStr?: string) {
 }
 const ticCache = {}
 
+export function asyncCollectionFindFetch<DocClass, DBInterface> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	selector: Selector<DBInterface> | string,
+	options?: {
+		sort?: Mongo.SortSpecifier
+		skip?: number
+		limit?: number
+		fields?: Mongo.FieldSpecifier
+		reactive?: boolean
+		transform?: Function
+	}
+): Promise<Array<DocClass>> {
+	return new Promise((resolve, reject) => {
+		let results = collection.find(selector, options).fetch()
+		resolve(results)
+	})
+}
+export function asyncCollectionFindOne<DocClass, DBInterface> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	selector: Selector<DBInterface> | string
+): Promise<DocClass> {
+	return asyncCollectionFindFetch(collection, selector)
+	.then((arr) => {
+		return arr[0]
+	})
+}
 export function asyncCollectionInsert<DocClass, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	doc: DBInterface,
@@ -616,6 +649,22 @@ export function asyncCollectionUpdate<DocClass, DBInterface> (
 		})
 	})
 }
+
+export function asyncCollectionUpsert<DocClass, DBInterface> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	selector: Selector<DBInterface> | string,
+	modifier: Modifier<DBInterface>,
+	options?: UpsertOptions
+
+): Promise<number> {
+	return new Promise((resolve, reject) => {
+		collection.upsert(selector, modifier, options, (err: any, affectedCount: number) => {
+			if (err) reject(err)
+			else resolve(affectedCount)
+		})
+	})
+}
+
 export function asyncCollectionRemove<DocClass, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: Selector<DBInterface> | string
@@ -628,12 +677,78 @@ export function asyncCollectionRemove<DocClass, DBInterface> (
 		})
 	})
 }
-const waitForPromiseAll: (ps: Array<Promise<any>>) => void = Meteor.wrapAsync (function waitForPromises (ps: Array<Promise<any>>, cb: (err?: any) => void) {
+/**
+ * Blocks the fiber until all the Promises have resolved
+ */
+export const waitForPromiseAll: <T>(ps: Array<Promise<T>>) => T = Meteor.wrapAsync (function waitForPromises<T> (ps: Array<Promise<T>>, cb: (err: any | null, result?: any) => T) {
 	Promise.all(ps)
-	.then(() => {
-		cb()
+	.then((result) => {
+		cb(null, result)
 	})
 	.catch((e) => {
 		cb(e)
 	})
 })
+export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync (function waitForPromises<T> (p: Promise<T>, cb: (err: any | null, result?: any) => T) {
+	Promise.resolve(p)
+	.then((result) => {
+		cb(null, result)
+	})
+	.catch((e) => {
+		cb(e)
+	})
+})
+export function mongoWhere (o: any, selector: Mongo.Selector): boolean {
+	let ok = true
+	_.each(selector, (s: any, key: string) => {
+		if (!ok) return
+
+		try {
+			let keyWords = key.split('.')
+			if (keyWords.length > 1) {
+				let oAttr = o[keyWords[0]]
+				if (oAttr && _.isObject(oAttr)) {
+					let innerSelector: any = {}
+					innerSelector[keyWords.slice(1).join('.')] = s
+					ok = mongoWhere(oAttr, innerSelector)
+				} else {
+					ok = false
+				}
+			} else {
+				let oAttr = o[key]
+
+				if (_.isObject(s)) {
+					if (_.has(s,'$gt')) {
+						ok = (oAttr > s.$gt)
+					} else if (_.has(s,'$gte')) {
+						ok = (oAttr >= s.$gte)
+					} else if (_.has(s,'$lt')) {
+						ok = (oAttr < s.$lt)
+					} else if (_.has(s,'$lte')) {
+						ok = (oAttr <= s.$lte)
+					} else if (_.has(s,'$eq')) {
+						ok = (oAttr === s.$eq)
+					} else if (_.has(s,'$in')) {
+						ok = (oAttr.indexOf(s.$in) !== -1)
+					} else if (_.has(s,'$nin')) {
+						ok = (oAttr.indexOf(s.$nin) === -1)
+					} else {
+						if (_.isObject(oAttr)) {
+							ok = mongoWhere(oAttr, s)
+						} else {
+							ok = false
+						}
+					}
+				} else {
+					let innerSelector: any = {}
+					innerSelector[key] = {$eq: s}
+					ok = mongoWhere(o, innerSelector)
+				}
+			}
+		} catch (e) {
+			logger.warn(e)
+			ok = false
+		}
+	})
+	return ok
+}
