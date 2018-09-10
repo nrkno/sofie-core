@@ -565,7 +565,7 @@ export namespace ServerPeripheralDeviceAPI {
 			// ok, the segmentline to replace wasn't in the inserted segment lines
 			// remove it then:
 			affectedSegmentLineIds.push(segmentLineToReplace._id)
-			removeSegmentLine(ro._id, segmentLineToReplace)
+			removeSegmentLine(ro._id, segmentLineToReplace, firstInsertedSegmentLine)
 		}
 
 		updateAffectedSegmentLines(ro, affectedSegmentLineIds)
@@ -1020,7 +1020,7 @@ export function upsertSegmentLine (story: IMOSStory, runningOrderId: string, ran
 	afterInsertUpdateSegmentLine(story, runningOrderId)
 	return sl
 }
-export function removeSegmentLine (roId: string, segmentLineOrId: DBSegmentLine | string) {
+export function removeSegmentLine (roId: string, segmentLineOrId: DBSegmentLine | string, replacedBySegmentLine?: DBSegmentLine) {
 	let segmentLineToRemove: DBSegmentLine | undefined = (
 		_.isString(segmentLineOrId) ?
 			SegmentLines.findOne(segmentLineOrId) :
@@ -1030,6 +1030,24 @@ export function removeSegmentLine (roId: string, segmentLineOrId: DBSegmentLine 
 		SegmentLines.remove(segmentLineToRemove._id)
 		afterRemoveSegmentLine(segmentLineToRemove)
 		updateTimelineFromMosData(roId)
+
+		if (replacedBySegmentLine) {
+			SegmentLines.update({
+				runningOrderId: segmentLineToRemove.runningOrderId,
+				afterSegmentLine: segmentLineToRemove._id
+			}, {
+				$set: {
+					afterSegmentLine: replacedBySegmentLine._id,
+				}
+			}, {
+				multi: true
+			})
+		} else {
+			SegmentLines.remove({
+				runningOrderId: segmentLineToRemove.runningOrderId,
+				afterSegmentLine: segmentLineToRemove._id
+			})
+		}
 	}
 }
 export function afterInsertUpdateSegmentLine (story: IMOSStory, runningOrderId: string) {
@@ -1094,9 +1112,80 @@ function formatTime (time: any): number | undefined {
 	}
 }
 
+function findDurationInfoMOSExternalMetaData (story: IMOSROFullStory): any | undefined {
+	if (story.MosExternalMetaData) {
+		let matchingMetaData = story.MosExternalMetaData.find((metaData) => {
+			if (metaData.MosSchema.match(/http(s)?:\/\/[\d\w\.\:]+\/schema\/enps.dtd$/)) {
+				return true
+			}
+			return false
+		})
+		if (matchingMetaData) {
+			return matchingMetaData
+		}
+	}
+	return undefined
+}
+
+export function updateSegmentLines (runningOrderId: string) {
+	let segmentLines0 = SegmentLines.find({runningOrderId: runningOrderId}, {sort: {_rank: 1}}).fetch()
+
+	let segmentLines: Array<SegmentLine> = []
+	let segmentLinesToInsert: {[id: string]: Array<SegmentLine>} = {}
+
+	_.each(segmentLines0, (sl) => {
+		if (sl.afterSegmentLine) {
+			if (!segmentLinesToInsert[sl.afterSegmentLine]) segmentLinesToInsert[sl.afterSegmentLine] = []
+			segmentLinesToInsert[sl.afterSegmentLine].push(sl)
+		} else {
+			segmentLines.push(sl)
+		}
+	})
+
+	let hasAddedAnything = true
+	while (hasAddedAnything) {
+		hasAddedAnything = false
+
+		_.each(segmentLinesToInsert, (sls, slId) => {
+
+			let segmentLineBefore: SegmentLine | null = null
+			let segmentLineAfter: SegmentLine | null = null
+			let insertI = -1
+			_.each(segmentLines, (sl, i) => {
+				if (sl._id === slId) {
+					segmentLineBefore = sl
+					insertI = i + 1
+				} else if (segmentLineBefore && !segmentLineAfter) {
+					segmentLineAfter = sl
+				}
+			})
+
+			if (segmentLineBefore) {
+
+				if (insertI !== -1) {
+					_.each(sls, (sl, i) => {
+						let newRank = getRank(segmentLineBefore, segmentLineAfter, i, sls.length)
+
+						if (sl._rank !== newRank) {
+							sl._rank = newRank
+							SegmentLines.update(sl._id, {$set: {_rank: sl._rank}})
+						}
+						segmentLines.splice(insertI, 0, sl)
+						insertI++
+						hasAddedAnything = true
+					})
+				}
+				delete segmentLinesToInsert[slId]
+			}
+		})
+	}
+
+	return segmentLines
+}
 function updateSegments (runningOrderId: string) {
 	// using SegmentLines, determine which segments are to be created
-	let segmentLines = SegmentLines.find({runningOrderId: runningOrderId}, {sort: {_rank: 1}}).fetch()
+	// let segmentLines = SegmentLines.find({runningOrderId: runningOrderId}, {sort: {_rank: 1}}).fetch()
+	let segmentLines = updateSegmentLines(runningOrderId)
 
 	let prevSlugParts: string[] = []
 	let segment: DBSegment

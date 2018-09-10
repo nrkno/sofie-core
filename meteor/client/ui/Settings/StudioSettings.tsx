@@ -738,8 +738,22 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 												obj={this.props.studioInstallation}
 												type='checkbox'
 												collection={StudioInstallations}
-												className=''></EditAttribute>
+												className=''
+											/>
 											{t('Allow disabling of elements')}
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + item.index + '.isQueueable'}
+												obj={this.props.studioInstallation}
+												type='checkbox'
+												collection={StudioInstallations}
+												className=''
+											/>
+											{t('Adlibs on this layer can be queued')}
 										</label>
 									</div>
 								</div>
