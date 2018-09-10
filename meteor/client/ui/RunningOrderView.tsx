@@ -194,7 +194,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 
 		return (
 			<div className='timing mod'>
-				{this.props.runningOrder.startedPlayback ?
+				{ this.props.runningOrder.startedPlayback && (this.props.runningOrder.active && !this.props.runningOrder.rehearsal) ?
 					<span className='timing-clock plan-start left'>
 						<span className='timing-clock-label left'>{t('Started')}</span>
 						<Moment interval={0} format='HH:mm:ss' date={this.props.runningOrder.startedPlayback} />
@@ -204,7 +204,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 						<Moment interval={0} format='HH:mm:ss' date={this.props.runningOrder.expectedStart} />
 					</span>
 				}
-				{ this.props.runningOrder.startedPlayback ?
+				{ this.props.runningOrder.startedPlayback && (this.props.runningOrder.active && !this.props.runningOrder.rehearsal) ?
 					this.props.runningOrder.expectedStart &&
 						<span className='timing-clock countdown playback-started left'>
 							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.runningOrder.name}>{this.props.runningOrder.name}</span>
