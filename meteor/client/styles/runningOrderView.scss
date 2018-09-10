@@ -283,12 +283,22 @@ body.vertical-overflow-only {
 	}
 
 	// the live and next states are the states of the entire segment component
+	&.has-remote-items {
+		.segment-timeline__title {
+			background: $segment-title-background-color-remote;
+
+			> h2 {
+				background: $segment-title-background-color-remote;
+			}
+		}
+	}
+
 	&.live {
 		.segment-timeline__title {
 			color: $segment-title-text-color-live;
 			font-weight: 500;
 			text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
-			background: $segment-title-background-color-live
+			background: $segment-title-background-color-live;
 		}
 	}
 
@@ -296,20 +306,15 @@ body.vertical-overflow-only {
 		.segment-timeline__title {
 			font-weight: 500;
 			text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
-			background: $segment-title-background-color-next
+			background: $segment-title-background-color-next;
 		}
 	}
 
-	&.has-remote-items {
-		.segment-timeline__title {
-			background: $segment-title-background-color-remote
-		}
-	}
 
 	&.has-played {
 		.segment-timeline__title {
 			font-weight: 200;
-			background: $segment-title-background-color-has-played
+			background: $segment-title-background-color-has-played;
 		}
 	}
 

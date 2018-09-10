@@ -427,11 +427,12 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 				className={ClassNames('segment-timeline', {
 					'collapsed': this.props.isCollapsed,
 
+					'has-remote-items': this.props.hasRemoteItems && (!this.props.hasAlreadyPlayed || this.props.isLiveSegment),
+
 					'live': this.props.isLiveSegment,
 					'next': !this.props.isLiveSegment && this.props.isNextSegment,
 
-					'has-played': this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment,
-					'has-remote-items': this.props.hasRemoteItems && !this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment
+					'has-played': this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment
 				})}
 			data-mos-id={this.props.segment._id} ref={this.setSegmentRef}>
 				<ContextMenuTrigger id='segment-timeline-context-menu'
