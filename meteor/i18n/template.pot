@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2018-09-07T08:57:40.130Z\n"
-"PO-Revision-Date: 2018-09-07T08:57:40.130Z\n"
+"POT-Creation-Date: 2018-09-10T13:05:26.517Z\n"
+"PO-Revision-Date: 2018-09-10T13:05:26.517Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -20,31 +20,28 @@ msgstr ""
 msgid "There are no active running orders."
 msgstr ""
 
-msgid "Rundown"
+msgid "Connecting to Sofie Automation Server..."
 msgstr ""
 
-msgid "Connecting to automation server..."
+msgid "Cannot connect to the Sofie Automation Server"
 msgstr ""
 
-msgid "Cannot connect to the automation server"
+msgid "Reconnecting to the Sofie Automation Server"
 msgstr ""
 
-msgid "Reconnecting to the automation server"
+msgid "Your machine is offline and cannot connect to the Sofie Automation Server."
 msgstr ""
 
-msgid "Your machine is offline."
+msgid "Connected to Sofie Automation Server."
 msgstr ""
 
-msgid "Connected to server."
+msgid "Welcome to the Sofie Automation system"
 msgstr ""
 
-msgid "Welcome to Sofie"
+msgid "Sofie Automation version"
 msgstr ""
 
-msgid "Sofie Automation Core version"
-msgstr ""
-
-msgid "Core status"
+msgid "Sofie status"
 msgstr ""
 
 msgid "Test test"
@@ -86,7 +83,7 @@ msgstr ""
 msgid "Shortcuts"
 msgstr ""
 
-msgid "Slug"
+msgid "Running Order"
 msgstr ""
 
 msgid "ID"
@@ -95,13 +92,19 @@ msgstr ""
 msgid "Created"
 msgstr ""
 
-msgid "Air Time"
+msgid "On Air Start Time"
 msgstr ""
 
 msgid "Duration"
 msgstr ""
 
 msgid "Air Status"
+msgstr ""
+
+msgid "Sofie Automation Core version"
+msgstr ""
+
+msgid "Core status"
 msgstr ""
 
 msgid "Start time is close"
@@ -145,36 +148,33 @@ msgstr ""
 msgid "Deactivate"
 msgstr ""
 
-msgid "Activate (rehearsal)"
+msgid "Activate (Rehearsal)"
 msgstr ""
 
 msgid "Reload running order"
 msgstr ""
 
-msgid "Move next forward"
+msgid "Move Next forwards"
 msgstr ""
 
-msgid "Move next segment forward"
+msgid "Move Next to the following segment"
 msgstr ""
 
-msgid "Move next segment back"
+msgid "Move Next to the previous segment"
 msgstr ""
 
-msgid "Move next back"
+msgid "Move Next backwards"
 msgstr ""
 
-msgid "Disable next element"
+msgid "Disable the next element"
 msgstr ""
 
-msgid "Undo disable next element"
+msgid "Undo Disable the next element"
 msgstr ""
 
 msgid ""
 "Only a single running order can be active in a studio. Deactivate the other "
 "running order and try again."
-msgstr ""
-
-msgid "Activate (Rehearsal)"
 msgstr ""
 
 msgid "No actions available"
@@ -276,7 +276,7 @@ msgstr ""
 msgid "MOS Device"
 msgstr ""
 
-msgid "Playout Device"
+msgid "Play-out Device"
 msgstr ""
 
 msgid "Sub-Device"
@@ -543,7 +543,7 @@ msgstr ""
 msgid "Allow disabling of elements"
 msgstr ""
 
-msgid "Are you sure you want to delete source layer "
+msgid "Are you sure you want to delete source layer"
 msgstr ""
 
 msgid "channel"
