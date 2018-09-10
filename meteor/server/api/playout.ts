@@ -160,22 +160,9 @@ export namespace ServerPlayoutAPI {
 		}
 
 		if (wasInactive) {
+			roReset(roId)
+
 			let segmentLines = runningOrder.getSegmentLines()
-
-			SegmentLines.update({ runningOrderId: runningOrder._id }, {
-				$unset: {
-					startedPlayback: 0,
-					duration: 0
-				}
-			}, {
-				multi: true
-			})
-
-			// Remove all segment line items that have been dynamically created (such as adLib items)
-			SegmentLineItems.remove({
-				runningOrderId: runningOrder._id,
-				dynamicallyInserted: true
-			})
 
 			// Remove all segment line items that were added for holds
 			let holdItems = SegmentLineItems.find({
@@ -199,16 +186,6 @@ export namespace ServerPlayoutAPI {
 
 			// ensure that any removed infinites (caused by adlib) are restored
 			updateSourceLayerInfinitesAfterLine(runningOrder, true)
-
-			// Remove duration on segmentLineItems, as this is set by the ad-lib playback editing
-			SegmentLineItems.update({ runningOrderId: runningOrder._id }, {
-				$unset: {
-					startedPlayback: 0,
-					durationOverride: 0
-				}
-			}, {
-				multi: true
-			})
 
 			RunningOrders.update(runningOrder._id, {
 				$set: {
