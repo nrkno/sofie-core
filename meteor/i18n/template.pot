@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2018-09-10T09:23:46.309Z\n"
-"PO-Revision-Date: 2018-09-10T09:23:46.309Z\n"
+"POT-Creation-Date: 2018-09-10T13:05:26.517Z\n"
+"PO-Revision-Date: 2018-09-10T13:05:26.517Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -92,7 +92,7 @@ msgstr ""
 msgid "Created"
 msgstr ""
 
-msgid "Air Time"
+msgid "On Air Start Time"
 msgstr ""
 
 msgid "Duration"
@@ -543,7 +543,7 @@ msgstr ""
 msgid "Allow disabling of elements"
 msgstr ""
 
-msgid "Are you sure you want to delete source layer "
+msgid "Are you sure you want to delete source layer"
 msgstr ""
 
 msgid "channel"
