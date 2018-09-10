@@ -33,6 +33,7 @@ class MonacoWrapper extends React.Component<IMonacoProps, IMonacoState> {
 	static _monacoRequire: any
 	static _requireBuffer: any
 	static _monacoRef: any
+	static _processPlatform: string
 
 	_container: HTMLDivElement
 	_editor: monaco.editor.IStandaloneCodeEditor
@@ -486,6 +487,13 @@ declare enum SegmentLineHoldMode {
 		}
 	}
 	componentWillUnmount () {
+		if (typeof process === 'object') {
+			// this is a workaround for broken platform (electron vs browser) detection in Microsoft Monaco
+			// this reverts the platform to proper value, in case anyone actually uses this
+			// @ts-ignore
+			process.platform = MonacoWrapper._processPlatform
+		}
+		delete process.platform
 		this._editorEventListeners.forEach((listener) => {
 			listener.dispose()
 		})
@@ -554,6 +562,7 @@ declare enum SegmentLineHoldMode {
 				// this is a workaround for broken platform (electron vs browser) detection in Microsoft Monaco
 				// @ts-ignore
 				if (typeof process === 'object' && typeof process.nextTick === 'function' && typeof process.platform === 'string' && process.platform === 'browser') {
+					MonacoWrapper._processPlatform = process.platform
 					delete process.platform
 				}
 				let newScript = document.createElement('script')
