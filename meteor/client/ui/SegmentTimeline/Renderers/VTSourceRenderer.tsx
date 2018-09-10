@@ -157,7 +157,7 @@ export class VTSourceRenderer extends CustomLayerItemRenderer {
 							</div> :
 							<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
 								<div>
-									<span className='mini-inspector__label'>{t('File Name')}</span>
+									<span className='mini-inspector__label'>{t('File name')}</span>
 									<span className='mini-inspector__value'>{this.props.segmentLineItem.content.fileName}</span>
 								</div>
 							</div>

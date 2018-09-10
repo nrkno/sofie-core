@@ -161,7 +161,7 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 		const { t } = this.props
 		return (
 			<div>
-				<h2>{t('Queued Messages')}</h2>
+				<h2>{t('Queued messages')}</h2>
 				<table className='table system-status-table'>
 
 					<tbody>
@@ -177,7 +177,7 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 		const { t } = this.props
 		return (
 			<div>
-				<h2>{t('Sent Messages')}</h2>
+				<h2>{t('Sent messages')}</h2>
 				<table className='table system-status-table'>
 
 					<tbody>
@@ -196,7 +196,7 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 		return (
 			<div className='mhl gutter external-message-status'>
 				<header className='mbs'>
-					<h1>{t('Message Queue')}</h1>
+					<h1>{t('Message queue')}</h1>
 				</header>
 				<div className='mod mvl'>
 					{this.renderQueuedMessages()}

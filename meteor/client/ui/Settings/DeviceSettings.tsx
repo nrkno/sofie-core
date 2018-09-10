@@ -120,7 +120,7 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 		let device = settings.devices[oldDeviceId]
 
 		if (settings[newDeviceId]) {
-			throw new Meteor.Error(400, 'Device "' + newDeviceId + '" already exists!')
+			throw new Meteor.Error(400, 'Device "' + newDeviceId + '" already exists')
 		}
 
 		let mSet = {}
@@ -377,13 +377,13 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 				</div>
 
 				<ModalDialog title={t('Remove this device?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
-					<p>{t('Are you sure you want to remove device') + ' ' + (this.state.deleteConfirmDeviceId && this.state.deleteConfirmDeviceId) + '?'}</p>
+					<p>{t('Are you sure you want to remove device ') + (this.state.deleteConfirmDeviceId && this.state.deleteConfirmDeviceId) + '?'}</p>
 				</ModalDialog>
 
 				{settings && settings.devices &&
 					(
 						<React.Fragment>
-							<h3>{t('Attached Devices')}</h3>
+							<h3>{t('Attached devices')}</h3>
 							<table className='expando settings-studio-device-table'>
 								<tbody>
 									{this.renderDevices()}
@@ -494,7 +494,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 		let device = settings.devices[oldDeviceId]
 
 		if (settings[newDeviceId]) {
-			throw new Meteor.Error(400, 'Device "' + newDeviceId + '" already exists!')
+			throw new Meteor.Error(400, 'Device "' + newDeviceId + '" already exists')
 		}
 
 		let mSet = {}
@@ -516,7 +516,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 
 		return ([
 			<tr className='hl' key={'header'}>
-				<th>Device ID</th>
+				<th>DeviceId</th>
 				<th>Primary ID</th>
 				<th>Host</th>
 				<th>Secondary ID</th>
@@ -571,7 +571,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 								</div>
 								<div className='mod mvs mhs'>
 									<label className='field'>
-										{t('Primary ID (News Room System MOS ID)')}
+										{t('Primary id (their mosId)')}
 										<EditAttribute
 											modifiedClassName='bghl'
 											attribute={'settings.devices.' + deviceId + '.primary.id' }
@@ -583,7 +583,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 								</div>
 								<div className='mod mvs mhs'>
 									<label className='field'>
-										{t('Primary Host (IP Address or Hostname)')}
+										{t('Primary host (ip or hostname)')}
 										<EditAttribute
 											modifiedClassName='bghl'
 											attribute={'settings.devices.' + deviceId + '.primary.host' }
@@ -595,7 +595,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 								</div>
 								<div className='mod mvs mhs'>
 									<label className='field'>
-										{t('Secondary ID (News Room System MOS ID)')}
+										{t('Secondary id (their mosId)')}
 										<EditAttribute
 											modifiedClassName='bghl'
 											attribute={'settings.devices.' + deviceId + '.secondary.id' }
@@ -607,7 +607,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 								</div>
 								<div className='mod mvs mhs'>
 									<label className='field'>
-										{t('Secondary Host (IP Address or Hostname)')}
+										{t('Secondary host (ip or hostname)')}
 										<EditAttribute
 											modifiedClassName='bghl'
 											attribute={'settings.devices.' + deviceId + '.secondary.host' }
@@ -638,7 +638,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 			<div>
 				<div>
 					<label className='field'>
-						{t('MOS ID of Gateway (Sofie MOS ID)')}
+						{t('MosId of gateway (our mosId)')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'settings.mosId'}
@@ -650,7 +650,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 				</div>
 				<div>
 					<label className='field'>
-						{t('Activate Debug Logging')}
+						{t('Activate debug-logging')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'settings.debugLogging'}
@@ -662,13 +662,13 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 				</div>
 
 				<ModalDialog title={t('Remove this device?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
-					<p>{t('Are you sure you want to remove device') + ' ' + (this.state.deleteConfirmDeviceId && this.state.deleteConfirmDeviceId) + '?'}</p>
+					<p>{t('Are you sure you want to remove device ') + (this.state.deleteConfirmDeviceId && this.state.deleteConfirmDeviceId) + '?'}</p>
 				</ModalDialog>
 
 				{settings && settings.devices &&
 					(
 						<React.Fragment>
-							<h3>{t('MOS Devices')}</h3>
+							<h3>{t('Mos-devices')}</h3>
 							<table className='expando settings-studio-device-table'>
 								<tbody>
 									{this.renderDevices()}
@@ -743,9 +743,9 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 		return (
 			<div className='studio-edit mod mhl mvs'>
 				<div>
-					<h3>{t('Generic Properties')}</h3>
+					<h3>{t('Generic properties')}</h3>
 					<label className='field'>
-						{t('Device Name')}
+						{t('Device name')}
 						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'

@@ -34,11 +34,11 @@ export interface MediaObject0 {
 }
 export interface MediaObject extends MediaObject0 {
 	studioId: string,
-	// the ID of the MediaObject database this object has been imported from - essentially the CasparCG Server Device ID this file is on
+	// the Id of the MediaObject database this object has been imported from - essentially CasparCG Device Id this file is on
 	collectionId: string,
-	// the ID in the MediaObject in the source database
+	// the Id in the MediaObject in the source database
 	objId: string
-	// the CasparCG Server clip name
+	// the CasparCG clip name
 	mediaId: string
 }
 

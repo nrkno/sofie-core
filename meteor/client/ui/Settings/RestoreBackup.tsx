@@ -65,7 +65,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					'content-type': 'application/json'
 				},
 			}).then(res => {
-				console.log('Backup restore success!')
+				console.log('Backup restore success')
 			}).catch(err => {
 				console.error('Backup restore failure: ', err)
 			})
@@ -82,15 +82,15 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			<div className='studio-edit mod mhl mvs'>
 				<div>
 					<label className='field'>
-						{t('Restore from Backup')}
+						{t('Restore backup')}
 						<div className='mdi'>
 							<input type='file' accept='.json' onChange={this.onUploadFile.bind(this)} key={this.state.uploadFileKey} />
 							<span className='mdfx'></span>
 						</div>
 					</label>
 					<ModalDialog title={t('Restore this backup?')} acceptText={t('Restore')} secondaryText={t('Cancel')} show={this.state.showUploadConfirm} onAccept={() => this.handleConfirmUploadFileAccept()} onSecondary={() => this.handleConfirmUploadFileCancel()}>
-						<p>{t('Are you sure you want to restore the backup file ${this.state.uploadFileName}?')}</p>
-						<p>{t('Please note: This action is irreversible!')}</p>
+						<p>{t(`Are you sure you want to restore the backup file ${this.state.uploadFileName}?`)}</p>
+						<p>{t('This action is irreversible.')}</p>
 					</ModalDialog>
 				</div>
 			</div>

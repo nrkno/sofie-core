@@ -165,7 +165,7 @@ class StudioOutputSettings extends React.Component<Translated<IStudioOutputSetti
 								<div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Channel Name')}
+											{t('Channel name')}
 												<EditAttribute
 													modifiedClassName='bghl'
 													attribute={'outputLayers.' + item.index + '.name'}
@@ -196,12 +196,12 @@ class StudioOutputSettings extends React.Component<Translated<IStudioOutputSetti
 												type='checkbox'
 												collection={StudioInstallations}
 												className=''></EditAttribute>
-											{t('Is PGM Output')}
+											{t('Is PGM output')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Display Rank')}
+											{t('Display rank')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'outputLayers.' + item.index + '._rank'}
@@ -231,10 +231,10 @@ class StudioOutputSettings extends React.Component<Translated<IStudioOutputSetti
 		return (
 			<div>
 				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
-					<p>{t('Are you sure you want to delete output channel') + ' ' + (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) + '?'}</p>
-					<p>{t('Please note: This action is irreversible!')}</p>
+					<p>{t('Are you sure you want to delete output channel ') + (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) + '?'}</p>
+					<p>{t('This action is irreversible.')}</p>
 				</ModalDialog>
-				<h3>{t('Output Channels')}</h3>
+				<h3>{t('Output channels')}</h3>
 				<table className='expando settings-studio-output-table'>
 					<tbody>
 						{this.renderOutputs()}
@@ -387,10 +387,10 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 		return (
 			<div>
 				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
-					<p>{t('Are you sure you want to delete this config item') + ' ' + (this.state.deleteConfirmItem && this.state.deleteConfirmItem._id) + '?'}</p>
-					<p>{t('Please note: This action is irreversible!')}</p>
+					<p>{t('Are you sure you want to delete this config item ') + (this.state.deleteConfirmItem && this.state.deleteConfirmItem._id) + '?'}</p>
+					<p>{t('This action is irreversible.')}</p>
 				</ModalDialog>
-				<h3>{t('Custom Configuration')}</h3>
+				<h3>{t('Custom config')}</h3>
 				<table className='expando settings-studio-custom-config-table'>
 					<tbody>
 						{this.renderItems()}
@@ -462,11 +462,11 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 			case RundownAPI.SourceLayerType.MIC:
 				return t('Studio Microphone')
 			case RundownAPI.SourceLayerType.REMOTE:
-				return t('Remote Source')
+				return t('Remote source')
 			case RundownAPI.SourceLayerType.SCRIPT:
-				return t('Generic Script')
+				return t('Generic script')
 			case RundownAPI.SourceLayerType.SPLITS:
-				return t('Split Screen')
+				return t('Split screen')
 			case RundownAPI.SourceLayerType.VT:
 				return t('Clips')
 			case RundownAPI.SourceLayerType.METADATA:
@@ -474,7 +474,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 			case RundownAPI.SourceLayerType.CAMERA_MOVEMENT:
 				return t('Camera Movement')
 			case RundownAPI.SourceLayerType.UNKNOWN:
-				return t('Unknown Layer')
+				return t('Unknown layer')
 			case RundownAPI.SourceLayerType.AUDIO:
 				return t('Audio Mixing')
 			case RundownAPI.SourceLayerType.TRANSITION:
@@ -548,7 +548,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 								<div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Source Name')}
+											{t('Source name')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'sourceLayers.' + item.index + '.name'}
@@ -560,7 +560,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Source Abbreviation')}
+											{t('Source abbreviation')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'sourceLayers.' + item.index + '.abbreviation'}
@@ -631,7 +631,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 												type='checkbox'
 												collection={StudioInstallations}
 												className=''></EditAttribute>
-											{t('Is a Live Remote input')}
+											{t('Is a live remote input')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -648,7 +648,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Display Rank')}
+											{t('Display rank')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'sourceLayers.' + item.index + '._rank'}
@@ -667,12 +667,12 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 												type='checkbox'
 												collection={StudioInstallations}
 												className=''></EditAttribute>
-											{t('Display on Presenter\'s Screen')}
+											{t('Display on presenter\'s screen')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Shortcut List')}
+											{t('AdLib activate shortcut list')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'sourceLayers.' + item.index + '.activateKeyboardHotkeys'}
@@ -684,7 +684,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Clear Shortcut')}
+											{t('Clear shortcut')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'sourceLayers.' + item.index + '.clearKeyboardHotkey'}
@@ -703,7 +703,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 												type='checkbox'
 												collection={StudioInstallations}
 												className=''></EditAttribute>
-											{t('Assign hotkeys to Global AdLibs')}
+											{t('Assign hotkeys to global adlibs')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -761,8 +761,8 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 		return (
 			<div>
 				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
-					<p>{t('Are you sure you want to delete source layer') + ' ' + (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) + '?'}</p>
-					<p>{t('Please note: This action is irreversible!')}</p>
+					<p>{t('Are you sure you want to delete source layer ') + (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) + '?'}</p>
+					<p>{t('This action is irreversible.')}</p>
 				</ModalDialog>
 				<h3>{t('Source layers')}</h3>
 				<table className='expando settings-studio-source-table'>
@@ -857,9 +857,9 @@ class StudioDevices extends React.Component<Translated<IStudioDevicesProps>, ISt
 		return (
 			<div>
 				<ModalDialog title={t('Remove this device?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
-					<p>{t('Are you sure you want to remove device') + ' ' + (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) + '?'}</p>
+					<p>{t('Are you sure you want to remove device ') + (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) + '?'}</p>
 				</ModalDialog>
-				<h3>{t('Attached Devices')}</h3>
+				<h3>{t('Attached devices')}</h3>
 				<table className='expando settings-studio-device-table'>
 					<tbody>
 						{this.renderDevices()}
@@ -988,7 +988,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 		let layer = this.props.studioInstallation.mappings[oldLayerId]
 
 		if (this.props.studioInstallation.mappings[newLayerId]) {
-			throw new Meteor.Error(400, 'Layer "' + newLayerId + '" already exists!')
+			throw new Meteor.Error(400, 'Layer "' + newLayerId + '" already exists')
 		}
 
 		let mSet = {}
@@ -1175,7 +1175,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Device Type')}
+											{t('Device type')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'mappings.' + layerId + '.device'}
@@ -1189,7 +1189,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Device ID')}
+											{t('Device Id')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'mappings.' + layerId + '.deviceId'}
@@ -1201,7 +1201,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Lookahead Mode')}
+											{t('Lookahead mode')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'mappings.' + layerId + '.lookahead'}
@@ -1246,7 +1246,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 		return (
 			<div>
 				<ModalDialog title={t('Remove this mapping?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
-					<p>{t('Are you sure you want to remove mapping for layer') + ' ' + (this.state.deleteConfirmLayerId && this.state.deleteConfirmLayerId) + '?'}</p>
+					<p>{t('Are you sure you want to remove mapping for LLayer ') + (this.state.deleteConfirmLayerId && this.state.deleteConfirmLayerId) + '?'}</p>
 				</ModalDialog>
 				<h3>{t('Layer Mappings')}</h3>
 				<table className='expando settings-studio-mappings-table'>
@@ -1364,7 +1364,7 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 		const newSource = literal<ISourceLayer>({
 			_id: this.props.studioInstallation._id + '-' + Random.id(5),
 			_rank: maxRank ? maxRank._rank + 10 : 0,
-			name: t('New Source'),
+			name: t('New source'),
 			type: RundownAPI.SourceLayerType.UNKNOWN,
 			unlimited: false,
 			onPGMClean: true
@@ -1384,7 +1384,7 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 		const newOutput = literal<IOutputLayer>({
 			_id: this.props.studioInstallation._id + '-' + Random.id(5),
 			_rank: maxRank ? maxRank._rank + 10 : 0,
-			name: t('New Output'),
+			name: t('New output'),
 			isPGM: false
 		})
 
@@ -1428,9 +1428,9 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 		return (
 				<div className='studio-edit mod mhl mvs'>
 					<div>
-						<h3>{t('Generic Properties')}</h3>
+						<h3>{t('Generic properties')}</h3>
 						<label className='field'>
-							{t('Studio Name')}
+							{t('Studio name')}
 							<div className='mdi'>
 								<EditAttribute
 									modifiedClassName='bghl'
@@ -1443,7 +1443,7 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 							</div>
 						</label>
 						<label className='field'>
-							{t('Default Show Style')}
+							{t('Default show style')}
 							<div className='mdi'>
 								<EditAttribute
 									modifiedClassName='bghl'
