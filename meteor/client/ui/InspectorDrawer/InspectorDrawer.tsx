@@ -95,12 +95,12 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 				up: this.keyToggleDrawer,
 				label: t('Toggle drawer')
 			},
-			{
-				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RESET_FOCUS,
-				up: this.keyBlurActiveElement,
-				label: t('Escape from filter search'),
-				global: true
-			}
+			// {
+			// 	key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RESET_FOCUS,
+			// 	up: this.keyBlurActiveElement,
+			// 	label: t('Escape from filter search'),
+			// 	global: true
+			// }
 		]
 	}
 
