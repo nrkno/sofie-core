@@ -66,7 +66,7 @@ const SegmentLineOverview: React.SFC<ISegmentLinePropsHeader> = (props: ISegment
 				}
 				{ props.label &&
 					<div className='running-order__overview__segment__segment-line__label' style={{
-						'maxWidth': props.segmentDuration ? (props.segmentDuration / ((Math.max(props.segmentLiveDurations && props.segmentLiveDurations[props.segmentLine._id] || 0, props.segmentLine.duration || props.segmentLine.expectedDuration || 0))) * 100) + '%' : 'none'
+						'maxWidth': _.isNumber(props.segmentDuration) ? ((props.segmentDuration / ((Math.max(props.segmentLiveDurations && props.segmentLiveDurations[props.segmentLine._id] || 0, props.segmentLine.duration || props.segmentLine.expectedDuration || 0))) * 100) || 0) + '%' : 'none'
 					}}>
 						{props.label}
 						{ props.segmentDuration && _.isNumber(props.segmentDuration) &&
@@ -95,7 +95,7 @@ const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHea
 						isLive={props.runningOrder.currentSegmentLineId === item._id}
 						isNext={props.runningOrder.nextSegmentLineId === item._id}
 						label={index === 0 ? props.segment.name : undefined}
-						segmentDuration={index === 0 && props.segmentLiveDurations ? props.segment.items!.map((i) => props.segmentLiveDurations![i._id]).reduce((memo, item) => (memo || 0) + item) : undefined}
+						segmentDuration={index === 0 && props.segmentLiveDurations ? props.segment.items!.map((i) => props.segmentLiveDurations![i._id]).reduce((memo, item) => (memo || 0) + (item || 0)) : undefined}
 						 />
 				)
 			}) }
