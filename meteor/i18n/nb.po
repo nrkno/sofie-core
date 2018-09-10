@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2018-09-10T12:39:57.165Z\n"
-"PO-Revision-Date: 2018-09-10 14:45+0200\n"
+"POT-Creation-Date: 2018-09-10T13:05:26.517Z\n"
+"PO-Revision-Date: 2018-09-10 15:07+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -50,9 +50,8 @@ msgstr "Sofie Automasjon versjon"
 msgid "Status"
 msgstr "Status"
 
-#, fuzzy
 msgid "Test test"
-msgstr "Test"
+msgstr "Test test"
 
 msgid "Home"
 msgstr "Hjem"
@@ -96,7 +95,7 @@ msgstr "ID"
 msgid "Created"
 msgstr "Opprettet"
 
-msgid "Air Time"
+msgid "On Air Start Time"
 msgstr "Sendestart"
 
 msgid "Duration"
@@ -245,7 +244,7 @@ msgstr "Manuell"
 msgid "Script is empty"
 msgstr "Manus er tomt"
 
-msgid "File name"
+msgid "File Name"
 msgstr "Filnavn"
 
 msgid "Set as Next"
@@ -276,406 +275,408 @@ msgid "Fatal"
 msgstr "Kritisk"
 
 msgid "Connected"
-msgstr ""
+msgstr "Connected"
 
 msgid "Disconnected"
-msgstr ""
+msgstr "Disconnected"
 
 msgid "MOS Device"
-msgstr ""
+msgstr "MOS Device"
 
 msgid "Play-out Device"
-msgstr ""
+msgstr "Play-out Device"
 
 msgid "Sub-Device"
-msgstr ""
+msgstr "Sub-Device"
 
 msgid "Unknown Device"
-msgstr ""
+msgstr "Unknown Device"
 
 msgid "Studios"
-msgstr ""
+msgstr "Studios"
 
-msgid "Source layers"
-msgstr ""
+msgid "Source Layers"
+msgstr "Source Layers"
 
-msgid "Output channels"
-msgstr ""
+msgid "Output Channels"
+msgstr "Output Channels"
 
 msgid "Show Styles"
-msgstr ""
+msgstr "Show Styles"
 
 msgid "Delete this item?"
-msgstr ""
+msgstr "Delete this item?"
 
 msgid "Delete"
-msgstr ""
+msgstr "Delete"
 
 msgid "Cancel"
-msgstr ""
+msgstr "Cancel"
 
 msgid "Please note: This action is irreversible!"
-msgstr ""
+msgstr "Please note: This action is irreversible!"
 
 msgid "Line Templates"
-msgstr ""
+msgstr "Line Templates"
 
 msgid "Devices"
-msgstr ""
+msgstr "Devices"
 
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 msgid "Tools"
-msgstr ""
+msgstr "Tools"
 
 msgid "Restore from Backup"
-msgstr ""
+msgstr "Restore from Backup"
 
 msgid "System Settings"
-msgstr ""
+msgstr "System Settings"
 
 msgid "Device ID"
-msgstr ""
+msgstr "Device ID"
 
 msgid "Device Type"
-msgstr ""
+msgstr "Device Type"
 
 msgid "Host"
-msgstr ""
+msgstr "Host"
 
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 msgid "Sources Path"
-msgstr ""
+msgstr "Sources Path"
 
 msgid "Ramp Function Path"
-msgstr ""
+msgstr "Ramp Function Path"
 
 msgid "Media Scanner Host"
-msgstr ""
+msgstr "Media Scanner Host"
 
 msgid "Media Scanner Port"
-msgstr ""
+msgstr "Media Scanner Port"
 
 msgid "CasparCG Launcher Host"
-msgstr ""
+msgstr "CasparCG Launcher Host"
 
 msgid "CasparCG Launcher Port"
-msgstr ""
+msgstr "CasparCG Launcher Port"
 
 msgid "Remove this device?"
-msgstr ""
+msgstr "Remove this device?"
 
 msgid "Remove"
-msgstr ""
+msgstr "Remove"
 
 msgid "Are you sure you want to remove device"
-msgstr ""
+msgstr "Are you sure you want to remove device"
 
 msgid "Attached Devices"
-msgstr ""
+msgstr "Attached Devices"
 
 msgid "Primary ID (News Room System MOS ID)"
-msgstr ""
+msgstr "Primary ID (News Room System MOS ID)"
 
 msgid "Primary Host (IP Address or Hostname)"
-msgstr ""
+msgstr "Primary Host (IP Address or Hostname)"
 
 msgid "Secondary ID (News Room System MOS ID)"
-msgstr ""
+msgstr "Secondary ID (News Room System MOS ID)"
 
 msgid "Secondary Host (IP Address or Hostname)"
-msgstr ""
+msgstr "Secondary Host (IP Address or Hostname)"
 
 msgid "MOS ID of Gateway (Sofie MOS ID)"
-msgstr ""
+msgstr "MOS ID of Gateway (Sofie MOS ID)"
 
 msgid "Activate Debug Logging"
-msgstr ""
+msgstr "Activate Debug Logging"
 
 msgid "MOS Devices"
-msgstr ""
+msgstr "MOS Devices"
 
 msgid "Generic Properties"
-msgstr ""
+msgstr "Generic Properties"
 
 msgid "Device Name"
-msgstr ""
+msgstr "Device Name"
 
 msgid "Template ID"
-msgstr ""
+msgstr "Template ID"
 
 msgid "Is Helper"
-msgstr ""
+msgstr "Is Helper"
 
 msgid "Select this"
-msgstr ""
+msgstr "Select this"
 
 msgid "Restore this backup?"
-msgstr ""
+msgstr "Restore this backup?"
 
 msgid "Restore"
-msgstr ""
+msgstr "Restore"
 
 msgid ""
 "Are you sure you want to restore the backup file ${this.state."
 "uploadFileName}?"
 msgstr ""
+"Are you sure you want to restore the backup file ${this.state."
+"uploadFileName}?"
 
 msgid "Show Style Name"
-msgstr ""
+msgstr "Show Style Name"
 
 msgid "Show Style ID"
-msgstr ""
+msgstr "Show Style ID"
 
 msgid "Baseline Template ID"
-msgstr ""
+msgstr "Baseline Template ID"
 
 msgid "External Message Template ID"
-msgstr ""
+msgstr "External Message Template ID"
 
 msgid "Download Full Backup"
-msgstr ""
+msgstr "Download Full Backup"
 
 msgid "Download Current State"
-msgstr ""
+msgstr "Download Current State"
 
 msgid "Templates"
-msgstr ""
+msgstr "Templates"
 
 msgid "Helper"
-msgstr ""
+msgstr "Helper"
 
 msgid "Channel Name"
-msgstr ""
+msgstr "Channel Name"
 
 msgid "Internal ID"
-msgstr ""
+msgstr "Internal ID"
 
 msgid "Is PGM Output"
-msgstr ""
+msgstr "Is PGM Output"
 
 msgid "Display Rank"
-msgstr ""
+msgstr "Display Rank"
 
 msgid "Are you sure you want to delete output channel"
-msgstr ""
-
-msgid "Output Channels"
-msgstr ""
+msgstr "Are you sure you want to delete output channel"
 
 msgid "Value"
-msgstr ""
+msgstr "Value"
 
 msgid "Are you sure you want to delete this config item"
-msgstr ""
+msgstr "Are you sure you want to delete this config item"
 
 msgid "Custom Configuration"
-msgstr ""
+msgstr "Custom Configuration"
 
 msgid "Camera"
-msgstr ""
+msgstr "Camera"
 
 msgid "Graphics"
-msgstr ""
+msgstr "Graphics"
 
 msgid "LiveSpeak"
-msgstr ""
+msgstr "LiveSpeak"
 
 msgid "Lower Third"
-msgstr ""
+msgstr "Lower Third"
 
 msgid "Studio Microphone"
-msgstr ""
+msgstr "Studio Microphone"
 
 msgid "Remote Source"
-msgstr ""
+msgstr "Remote Source"
 
 msgid "Generic Script"
-msgstr ""
+msgstr "Generic Script"
 
 msgid "Split Screen"
-msgstr ""
+msgstr "Split Screen"
 
 msgid "Clips"
-msgstr ""
+msgstr "Clips"
 
 msgid "Metadata"
-msgstr ""
+msgstr "Metadata"
 
 msgid "Camera Movement"
-msgstr ""
+msgstr "Camera Movement"
 
 msgid "Unknown Layer"
-msgstr ""
+msgstr "Unknown Layer"
 
 msgid "Audio Mixing"
-msgstr ""
+msgstr "Audio Mixing"
 
 msgid "Transition"
 msgstr "Transition (ENPS: \"Effekt\")"
 
 msgid "Source Name"
-msgstr ""
+msgstr "Source Name"
 
 msgid "Source Abbreviation"
-msgstr ""
+msgstr "Source Abbreviation"
 
 msgid "Source type"
-msgstr ""
+msgstr "Source type"
 
 msgid "Is unlimited"
-msgstr ""
+msgstr "Is unlimited"
 
 msgid "Is on clean PGM"
-msgstr ""
+msgstr "Is on clean PGM"
 
 msgid "Is a Live Remote input"
-msgstr ""
+msgstr "Is a Live Remote input"
 
 msgid "Is hidden"
-msgstr ""
+msgstr "Is hidden"
 
 msgid "Display on Presenter's Screen"
-msgstr ""
+msgstr "Display on Presenter's Screen"
 
 msgid "Shortcut List"
-msgstr ""
+msgstr "Shortcut List"
 
 msgid "Clear Shortcut"
-msgstr ""
+msgstr "Clear Shortcut"
 
 msgid "Assign hotkeys to Global AdLibs"
-msgstr ""
+msgstr "Assign hotkeys to Global AdLibs"
 
 msgid "Items on this layer are sticky"
-msgstr ""
+msgstr "Items on this layer are sticky"
 
 msgid "Activate sticky item shortcut"
-msgstr ""
+msgstr "Activate sticky item shortcut"
 
 msgid "Allow disabling of elements"
-msgstr ""
+msgstr "Allow disabling of elements"
 
 msgid "Are you sure you want to delete source layer"
-msgstr ""
+msgstr "Are you sure you want to delete source layer"
 
 msgid "channel"
-msgstr ""
+msgstr "channel"
 
 msgid "layer"
-msgstr ""
+msgstr "layer"
 
 msgid "mappingType"
-msgstr ""
+msgstr "mappingType"
 
 msgid "index"
-msgstr ""
+msgstr "index"
 
 msgid "Identifier"
-msgstr ""
+msgstr "Identifier"
 
 msgid "Layer ID"
-msgstr ""
+msgstr "Layer ID"
 
 msgid "Lookahead Mode"
-msgstr ""
+msgstr "Lookahead Mode"
 
 msgid "Remove this mapping?"
-msgstr ""
+msgstr "Remove this mapping?"
 
 msgid "Are you sure you want to remove mapping for layer"
-msgstr ""
+msgstr "Are you sure you want to remove mapping for layer"
 
 msgid "Layer Mappings"
-msgstr ""
+msgstr "Layer Mappings"
 
 msgid "New Source"
-msgstr ""
+msgstr "New Source"
 
 msgid "New Output"
-msgstr ""
+msgstr "New Output"
 
 msgid "Studio Name"
-msgstr ""
+msgstr "Studio Name"
 
 msgid "Default Show Style"
-msgstr ""
+msgstr "Default Show Style"
 
 msgid "System"
-msgstr ""
+msgstr "System"
 
 msgid "Messages"
-msgstr ""
+msgstr "Messages"
 
 msgid "User Log"
-msgstr ""
+msgstr "User Log"
 
 msgid "Queued Messages"
-msgstr ""
+msgstr "Queued Messages"
 
 msgid "Sent Messages"
-msgstr ""
+msgstr "Sent Messages"
 
 msgid "Message Queue"
-msgstr ""
+msgstr "Message Queue"
 
 msgid "Take snapshot"
-msgstr ""
+msgstr "Take snapshot"
 
 msgid "Download system snapshot"
-msgstr ""
+msgstr "Download system snapshot"
 
 msgid "Not connected"
-msgstr ""
+msgstr "Not connected"
 
 msgid "Last seen"
-msgstr ""
+msgstr "Last seen"
 
 msgid "Name"
-msgstr ""
+msgstr "Name"
 
 msgid "Version"
-msgstr ""
+msgstr "Version"
 
 msgid "Restart this device process?"
-msgstr ""
+msgstr "Restart this device process?"
 
 msgid "Restart"
-msgstr ""
+msgstr "Restart"
 
 msgid "Kill this device process?"
-msgstr ""
+msgstr "Kill this device process?"
 
 msgid "Kill"
-msgstr ""
+msgstr "Kill"
 
 msgid "System Status"
-msgstr ""
+msgstr "System Status"
 
 msgid "Telemetry"
-msgstr ""
+msgstr "Telemetry"
 
 msgid "Timestamp"
-msgstr ""
+msgstr "Timestamp"
 
 msgid "User ID"
-msgstr ""
+msgstr "User ID"
 
 msgid "Client IP"
-msgstr ""
+msgstr "Client IP"
 
 msgid "Action"
-msgstr ""
+msgstr "Action"
 
 msgid "Parameters"
-msgstr ""
+msgstr "Parameters"
 
 msgid "User Activity Log"
-msgstr ""
+msgstr "User Activity Log"
 
 msgctxt "item"
 msgid "new_config"
-msgstr ""
+msgstr "new_config"
+
+#~ msgid "Source layers"
+#~ msgstr "Source layers"

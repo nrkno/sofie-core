@@ -87,7 +87,7 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 									{t('Created')}
 								</th>
 								<th className='c2'>
-									{t('Air Time')}
+									{t('On Air Start Time')}
 								</th>
 								<th className='c1'>
 									{t('Duration')}
