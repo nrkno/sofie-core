@@ -180,9 +180,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							})}
 						</tbody>
 					</table>
-					<button className='action-btn right' onClick={(e) => this.onAddLineTemplate()}>
-						<FontAwesomeIcon icon={faPlus} />
-					</button>
+					<div className='mod mvm mhn'>
+						<button className='btn btn-primary right' onClick={(e) => this.onAddLineTemplate()}>
+							<FontAwesomeIcon icon={faPlus} />
+						</button>
+					</div>
 				</div>
 			</div>
 		)
