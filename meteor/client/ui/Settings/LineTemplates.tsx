@@ -551,6 +551,11 @@ declare enum SegmentLineHoldMode {
 				this._container = el
 				MonacoWrapper._requireBuffer = window['require']
 				window['require'] = undefined
+				// this is a workaround for broken platform (electron vs browser) detection in Microsoft Monaco
+				// @ts-ignore
+				if (typeof process === 'object' && typeof process.nextTick === 'function' && typeof process.platform === 'string' && process.platform === 'browser') {
+					delete process.platform
+				}
 				let newScript = document.createElement('script')
 				newScript.addEventListener('load', () => {
 					MonacoWrapper._monacoRequire = MonacoWrapper._monacoRequire || window['require']
