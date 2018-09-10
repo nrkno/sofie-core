@@ -645,11 +645,6 @@ Meteor.methods({
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM6',
 			}),
-			'nora_init': literal<Mapping>({
-				device: PlayoutDeviceType.HTTPSEND,
-				deviceId: 'http0',
-				lookahead: LookaheadMode.NONE,
-			}),
 			'nora_primary_super': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
