@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2018-09-07T08:48:34.461Z\n"
-"PO-Revision-Date: 2018-09-07 11:05+0200\n"
+"POT-Creation-Date: 2018-09-10T09:23:46.309Z\n"
+"PO-Revision-Date: 2018-09-10 11:25+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -24,33 +24,31 @@ msgstr "Dette studioet finnes ikke."
 msgid "There are no active running orders."
 msgstr "Fant ingen aktive kjøreplaner."
 
-msgid "Rundown"
-msgstr "Kjøreplan"
+msgid "Connecting to Sofie Automation Server..."
+msgstr "Kobler til Sofie-serveren..."
 
-#, fuzzy
-#| msgid "Connecting to automation server…"
-msgid "Connecting to automation server..."
-msgstr "Kobler til Sofie-serveren …"
-
-msgid "Cannot connect to the automation server"
+msgid "Cannot connect to the Sofie Automation Server"
 msgstr "Kan ikke koble til Sofie-serveren"
 
-msgid "Reconnecting to the automation server"
+msgid "Reconnecting to the Sofie Automation Server"
 msgstr "Kobler til Sofie-serveren på nytt"
 
-msgid "Your machine is offline."
-msgstr "Denne maskinen er frakoblet fra Sofie-serveren."
+#, fuzzy
+msgid ""
+"Your machine is offline and cannot connect to the Sofie Automation Server."
+msgstr ""
+"Din maskin er frakoblet og kan ikke koble til Sofie Automation-serveren."
 
-msgid "Connected to server."
+msgid "Connected to Sofie Automation Server."
 msgstr "Koblet til Sofie-serveren."
 
-msgid "Welcome to Sofie"
+msgid "Welcome to the Sofie Automation system"
 msgstr "Velkommen til Sofie"
 
-msgid "Sofie Automation Core version"
-msgstr "Sofie Automation Core versjon"
+msgid "Sofie Automation version"
+msgstr "Sofie Automasjon versjon"
 
-msgid "Core status"
+msgid "Sofie status"
 msgstr "Sofie-status"
 
 #, fuzzy
@@ -81,12 +79,11 @@ msgstr "Sist sett "
 msgid "Toggle drawer"
 msgstr "Skuff"
 
-#, fuzzy
 msgid "Escape from filter search"
 msgstr "Gå ut fra filtersøk"
 
 msgid "AdLib"
-msgstr "Hurtigtaster"
+msgstr "Manuelle hurtigtaster"
 
 msgid "Global AdLib"
 msgstr "Faste hurtigtaster"
@@ -94,9 +91,8 @@ msgstr "Faste hurtigtaster"
 msgid "Shortcuts"
 msgstr "Hurtigtaster"
 
-#, fuzzy
-msgid "Slug"
-msgstr "Tittel"
+msgid "Running Order"
+msgstr "Kjøreplan"
 
 msgid "ID"
 msgstr "ID"
@@ -113,6 +109,12 @@ msgstr "Varighet"
 msgid "Air Status"
 msgstr "Sendningsstatus"
 
+msgid "Sofie Automation Core version"
+msgstr "Sofie Automation Core versjon"
+
+msgid "Core status"
+msgstr "Sofie-status"
+
 msgid "Start time is close"
 msgstr "Start tidspunkt er nær"
 
@@ -126,8 +128,8 @@ msgid ""
 "You are in rehearsal mode, the broadcast starts in 1 minute. Do you want to "
 "reload the rundown and remove rehearsal mode?"
 msgstr ""
-"Du er i testmodus, sendingen starter om ett minutt. Vil du gjøre klar til "
-"sending?"
+"Du er i testmodus, sendingen starter om ett minutt. Vil du laste inn på nytt "
+"og gjøre klar til sending?"
 
 msgid "Started"
 msgstr "Startet"
@@ -156,29 +158,29 @@ msgstr "Aktiver"
 msgid "Deactivate"
 msgstr "Deaktiver"
 
-msgid "Activate (rehearsal)"
+msgid "Activate (Rehearsal)"
 msgstr "Aktiver testmodus"
 
 msgid "Reload running order"
 msgstr "Last inn kjøreplan på nytt"
 
-msgid "Move next forward"
-msgstr "Flytte Neste fremover"
+msgid "Move Next forwards"
+msgstr "Flytte Neste framover"
 
-msgid "Move next segment forward"
-msgstr "Flytt neste tittel fremover"
+msgid "Move Next to the following segment"
+msgstr "Flytt Neste till følgende segment"
 
-msgid "Move next segment back"
-msgstr "Flytt neste tittel tilbake"
+msgid "Move Next to the previous segment"
+msgstr "Flytt Neste till forrige segment"
 
-msgid "Move next back"
+msgid "Move Next backwards"
 msgstr "Flytte Neste tilbake"
 
-msgid "Disable next element"
-msgstr "Deaktiver neste element"
+msgid "Disable the next element"
+msgstr "Deaktiver følgende element"
 
-msgid "Undo disable next element"
-msgstr "Angre Deaktiver neste element"
+msgid "Undo Disable the next element"
+msgstr "Angre Deaktiver følgende element"
 
 msgid ""
 "Only a single running order can be active in a studio. Deactivate the other "
@@ -186,9 +188,6 @@ msgid ""
 msgstr ""
 "Bare én kjøreplan kan være aktiv i et studio. Deaktiver den andre "
 "kjøreplanen, og prøv på nytt."
-
-msgid "Activate (Rehearsal)"
-msgstr "Aktiver testmodus"
 
 msgid "No actions available"
 msgstr "Ingen handlinger er tilgjengelige"
@@ -202,9 +201,8 @@ msgstr "OK"
 msgid "Go to On Air line"
 msgstr "Gå til On Air-linje"
 
-#, fuzzy
 msgid "Rewind segments to start"
-msgstr "Spol tilbake tittler for å starte"
+msgstr "Spol tilbake tittler til start"
 
 msgid "ON AIR"
 msgstr "Hjem"
@@ -216,7 +214,7 @@ msgid "Just now"
 msgstr "Nå"
 
 msgid "Less than a minute ago"
-msgstr "Mindre enn et minutt siden"
+msgstr "Mindre enn ett minutt siden"
 
 msgid "Less than five minutes ago"
 msgstr "Mindre enn fem minutter siden"
@@ -288,18 +286,16 @@ msgid "Disconnected"
 msgstr "Frakoblet"
 
 msgid "MOS Device"
-msgstr "MOS-enhet"
+msgstr "MOS Device"
 
-msgid "Playout Device"
-msgstr "Avspillingssenhet"
+msgid "Play-out Device"
+msgstr "Play-out Device"
 
-#, fuzzy
-#| msgid "MOS Device"
 msgid "Sub-Device"
-msgstr "MOS-enhet"
+msgstr "Sub-Device"
 
 msgid "Unknown Device"
-msgstr "Ukjent enhet"
+msgstr "Unknown Device"
 
 msgid "Studios"
 msgstr "Studio"
@@ -502,7 +498,7 @@ msgid "Generic script"
 msgstr "Manus"
 
 msgid "Split screen"
-msgstr "Split"
+msgstr "Splitt"
 
 msgid "Clips"
 msgstr "Innslag"
@@ -519,10 +515,8 @@ msgstr "Ukjent lag"
 msgid "Audio Mixing"
 msgstr "Lydmiksing"
 
-#, fuzzy
-#| msgid "Duration"
 msgid "Transition"
-msgstr "Varighet"
+msgstr "Effekt"
 
 msgid "Source name"
 msgstr "Kildenavn"
@@ -661,7 +655,7 @@ msgid "Version"
 msgstr "Version"
 
 msgid "Restart this device process?"
-msgstr "Starte denne enhetsprosessen på nytt?"
+msgstr "Starte denne prosessen på nytt?"
 
 msgid "Restart"
 msgstr "Restart"
@@ -699,6 +693,36 @@ msgstr "Brukeraktivitet"
 msgctxt "item"
 msgid "new_config"
 msgstr "new_config"
+
+#~ msgid "Welcome to Sofie"
+#~ msgstr "Velkommen til Sofie"
+
+#~ msgid "Your machine is offline."
+#~ msgstr "Denne maskinen er frakoblet fra Sofie-serveren."
+
+#~ msgid "Move next segment forward"
+#~ msgstr ""
+#~ "Flytt neste tittel framover\n"
+#~ "Flytt neste tittel framover\n"
+#~ "Move Next to the following segment"
+
+#~ msgid "Move next segment back"
+#~ msgstr ""
+#~ "Flytt Neste tilbake\n"
+#~ "Move Next to the previous segment"
+
+#~ msgid "Connected to server."
+#~ msgstr "Koblet til Sofie-serveren."
+
+#, fuzzy
+#~ msgid "Slug"
+#~ msgstr "Tittel"
+
+#~ msgid "Activate (rehearsal)"
+#~ msgstr "Aktiver testmodus"
+
+#~ msgid "Rundown"
+#~ msgstr "Kjøreplan"
 
 #~ msgid "Key"
 #~ msgstr "Tast"

@@ -76,7 +76,7 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 						<thead>
 							<tr className='hl'>
 								<th className='c3'>
-									{t('Slug')}
+									{t('Running Order')}
 								</th>
 								<th className='c2'>
 									{t('ID')}

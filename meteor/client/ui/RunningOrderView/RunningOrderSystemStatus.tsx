@@ -328,7 +328,7 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 						'fatal': this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.FATAL,
 					})}>
 						<div className='indicator__tooltip'>
-							<h4>Playout</h4>
+							<h4>Play-out</h4>
 							<div>
 								{
 									this.props.playoutDevices.offLine.length > 0 ?
