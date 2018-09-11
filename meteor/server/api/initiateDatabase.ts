@@ -377,7 +377,7 @@ Meteor.methods({
 					abbreviation: 'K ',
 					type: RundownAPI.SourceLayerType.CAMERA,
 					onPGMClean: true,
-					activateKeyboardHotkeys: 'f1,f2,f3,f4',
+					activateKeyboardHotkeys: 'f1,f2,f3,f4,8,9',
 					clearKeyboardHotkey: 'ctrl+a,ctrl+f1',
 					assignHotkeysToGlobalAdlibs: true,
 					onPresenterScreen: true
@@ -731,15 +731,13 @@ Meteor.methods({
 			config: [
 				{_id: 'nora_group', value: ''}, // Note: do not set to ensure that devs do not accidently use the live graphics channel
 				{_id: 'nora_apikey', value: ''}, // Note: must not be set as apikey must be kept private
-				{_id: 'sources_kam_count', value: 4},
-				{_id: 'sources_rm_count', value: 6},
-				{_id: 'sources_kam_first_input', value: 1},
-				{_id: 'sources_rm_first_input', value: 5},
 				{_id: 'media_previews_url', value: 'http://localhost:8000/'},
 				{_id: 'sofie_url', value: 'http://sllxsofie01'},
 				{_id: 'metadata_url', value: 'http://160.67.87.105'},
 				{_id: 'atemSSrcBackground', value: '/opt/playout-gateway/static/atem-mp/split_overlay.rgba'},
-				{_id: 'atemSSrcBackground2', value: '/opt/playout-gateway/static/atem-mp/teknisk_feil.rgba'}
+				{_id: 'atemSSrcBackground2', value: '/opt/playout-gateway/static/atem-mp/teknisk_feil.rgba'},
+				{_id: 'sources_kam', value: '1:1,2:2,3:3,4:4,8:11,9:12'},
+				{_id: 'sources_rm', value: '	1:5,2:6,3:7,4:8,5:9,6:10'}
 			],
 		}})
 	}
