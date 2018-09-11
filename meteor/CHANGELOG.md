@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.12.0"></a>
+# [0.12.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.10.1...v0.12.0) (2018-09-11)
+
+
+### Bug Fixes
+
+* super.componentWillUnmount is required ([2342e48](https://github.com/nrkno/tv-automation-server-core/commit/2342e48))
+
+
+### Features
+
+* reworked externalMessages page ([3b87242](https://github.com/nrkno/tv-automation-server-core/commit/3b87242))
+* use date-picker for user-activity-log ([5e2c218](https://github.com/nrkno/tv-automation-server-core/commit/5e2c218))
+
+
+
 <a name="0.11.0"></a>
 # [0.11.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.4.2...v0.11.0) (2018-09-07)
 
