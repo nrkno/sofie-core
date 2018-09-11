@@ -1897,6 +1897,7 @@ export function addLookeaheadObjectsToTimeline (activeRunningOrder: RunningOrder
 			const r = clone(res[i].obj)
 
 			r._id = 'lookahead_' + i + '_' + r._id
+			r.priority = 0.1
 			r.duration = res[i].slId !== activeRunningOrder.currentSegmentLineId ? 0 : `#${res[i].obj._id}.start - #.start`
 			r.trigger = i === 0 ? {
 				type: TriggerType.LOGICAL,
@@ -1905,9 +1906,12 @@ export function addLookeaheadObjectsToTimeline (activeRunningOrder: RunningOrder
 				type: TriggerType.TIME_RELATIVE,
 				value: `#${res[i - 1].obj._id}.start + 0`
 			}
-			r.isBackground = true
-			r.originalLLayer = r.LLayer
-			r.LLayer += '_lookahead'
+
+			if (m.lookahead !== LookaheadMode.WHEN_CLEAR) {
+				r.isBackground = true
+				r.originalLLayer = r.LLayer
+				r.LLayer += '_lookahead'
+			}
 
 			timelineObjs.push(r)
 		}
