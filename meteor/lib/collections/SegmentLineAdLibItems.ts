@@ -4,6 +4,8 @@ import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 
 export interface SegmentLineAdLibItem extends SegmentLineItemGeneric {
+	_rank: number
+
 	trigger: undefined
 	disabled: false
 }
