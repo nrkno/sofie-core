@@ -31,7 +31,7 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 
 	_isTouch: boolean = false
 
-	const SMALL_WIDTH_BREAKPOINT = 25
+	SMALL_WIDTH_BREAKPOINT = 25
 
 	constructor (props) {
 		super(props)
