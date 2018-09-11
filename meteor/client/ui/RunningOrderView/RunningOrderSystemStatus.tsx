@@ -153,11 +153,11 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 		offLine: playoutDevices.filter(i => !i.connected)
 	}
 
-	let segmentLines = props.runningOrder.getSegmentLines()
+	let segments = props.runningOrder.getSegments()
 
 	let notes: Array<SegmentLineNote> = []
-	_.each(segmentLines, (sl) => {
-		notes = notes.concat(sl.getNotes(true))
+	_.each(segments, s => {
+		notes = notes.concat(s.getNotes(true, true))
 	})
 
 	return {

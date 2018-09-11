@@ -371,6 +371,13 @@ Meteor.methods({
 					onPGMClean: true,
 				},
 				{
+					_id: 'studio0_gjest_mic',
+					_rank: 15000,
+					name: 'Gjest',
+					type: RundownAPI.SourceLayerType.MIC,
+					onPGMClean: true,
+				},
+				{
 					_id: 'studio0_camera0',
 					_rank: 13000,
 					name: 'Kam',
@@ -588,6 +595,20 @@ Meteor.methods({
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'AMix',
+			}),
+			'lawo_source_wl2': literal<MappingLawo>({
+				device: PlayoutDeviceType.LAWO,
+				deviceId: 'lawo0',
+				lookahead: LookaheadMode.NONE,
+				mappingType: MappingLawoType.SOURCE,
+				identifier: 'WL2',
+			}),
+			'lawo_source_wl3': literal<MappingLawo>({
+				device: PlayoutDeviceType.LAWO,
+				deviceId: 'lawo0',
+				lookahead: LookaheadMode.NONE,
+				mappingType: MappingLawoType.SOURCE,
+				identifier: 'WL3',
 			}),
 			'lawo_source_clip': literal<MappingLawo>({
 				device: PlayoutDeviceType.LAWO,

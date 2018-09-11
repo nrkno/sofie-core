@@ -23,14 +23,14 @@ import {
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { RunningOrder, RunningOrders, DBRunningOrder } from '../../lib/collections/RunningOrders'
-import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
+import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode, SegmentLineNoteType, SegmentLineNote } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
-import { Segments, DBSegment } from '../../lib/collections/Segments'
+import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
 import { saveIntoDb, partialExceptId, getCurrentTime, literal, fetchBefore, getRank, fetchAfter } from '../../lib/lib'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
-import { runTemplate, TemplateContext, RunTemplateResult } from './templates/templates'
+import { runTemplate, runNamedTemplate, TemplateContext, RunTemplateResult, TemplateResultAfterPost } from './templates/templates'
 import { getHash } from '../lib'
 import { Timeline } from '../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
@@ -768,6 +768,13 @@ export namespace ServerPeripheralDeviceAPI {
 		// cache the Data
 		ro.saveCache('fullStory' + segmentLine._id, story)
 		const changed = updateStory(ro, segmentLine, story)
+
+		const segment = segmentLine.getSegment()
+		if (segment) {
+			// this could be run after the segment, if we were capable of limiting that
+			runPostProcessTemplate(ro, segment)
+		}
+
 		if (changed) {
 			updateTimelineFromMosData(segmentLine.runningOrderId, [ segmentLine._id ])
 		}
@@ -1191,8 +1198,118 @@ function updateWithinSegment (ro: RunningOrder, segmentId: string): boolean {
 			logger.warn('Unable to update segmentLine "' + segmentLine._id + '", story cache not found')
 		}
 	})
+
+	runPostProcessTemplate(ro, segment)
+
 	return changed
 }
+function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
+	let showStyle = ShowStyles.findOne(ro.showStyleId)
+	if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + ro.showStyleId + '" not found!')
+
+	const segmentLines = segment.getSegmentLines()
+	if (segmentLines.length === 0) {
+		return
+	}
+
+	const firstSegmentLine = segmentLines.sort((a, b) => b._rank = a._rank)[0]
+
+	let context: TemplateContext = {
+		runningOrderId: ro._id,
+		studioId: ro.studioInstallationId,
+		segmentLine: firstSegmentLine,
+		templateId: 'post-process'
+	}
+	let tr: TemplateResultAfterPost | undefined
+	try {
+		tr = runNamedTemplate(showStyle, context.templateId, context, null, 'post-process-' + segment._id)
+
+	} catch (e) {
+		logger.error(e.toString())
+		// throw e
+		tr = {
+			notes: [{
+				type: SegmentLineNoteType.ERROR,
+				origin: {
+					name: '',
+					roId: context.runningOrderId,
+					segmentId: context.segmentLine.segmentId,
+					segmentLineId: '',
+				},
+				message: 'Internal Server Error'
+			}],
+			segmentLine: null, 			// DBSegmentLine | null,
+			segmentLineItems: [], 		// Array<SegmentLineItem> | null
+			segmentLineAdLibItems: [], 	// Array<SegmentLineAdLibItem> | null
+			baselineItems: [] 			// Array<RunningOrderBaselineItem> | null
+		}
+	}
+
+	const slIds = segmentLines.map(sl => sl._id)
+
+	let changedSli: {
+		added: number,
+		updated: number,
+		removed: number
+	} = {
+		added: 0,
+		updated: 0,
+		removed: 0
+	}
+	if (tr) {
+		Segments.update(segment._id, {$set: {
+			notes: tr.notes,
+		}})
+
+		if (tr.segmentLineItems) {
+			tr.segmentLineItems.forEach(sli => {
+				sli.fromPostProcess = true
+			})
+		}
+		if (tr.segmentLineAdLibItems) {
+			tr.segmentLineAdLibItems.forEach(sli => {
+				sli.fromPostProcess = true
+			})
+		}
+
+		changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
+			runningOrderId: ro._id,
+			segmentLineId: { $in: slIds },
+			fromPostProcess: true,
+		}, tr.segmentLineItems || [], {
+			afterInsert (segmentLineItem) {
+				logger.debug('inserted segmentLineItem ' + segmentLineItem._id)
+				logger.debug(segmentLineItem)
+			},
+			afterUpdate (segmentLineItem) {
+				logger.debug('updated segmentLineItem ' + segmentLineItem._id)
+			},
+			afterRemove (segmentLineItem) {
+				logger.debug('deleted segmentLineItem ' + segmentLineItem._id)
+			}
+		})
+		saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
+			runningOrderId: ro._id,
+			segmentLineId: { $in: slIds },
+			fromPostProcess: true,
+		}, tr.segmentLineAdLibItems || [], {
+			afterInsert (segmentLineAdLibItem) {
+				logger.debug('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
+				logger.debug(segmentLineAdLibItem)
+			},
+			afterUpdate (segmentLineAdLibItem) {
+				logger.debug('updated segmentLineItem ' + segmentLineAdLibItem._id)
+			},
+			afterRemove (segmentLineAdLibItem) {
+				logger.debug('deleted segmentLineItem ' + segmentLineAdLibItem._id)
+			}
+		})
+	}
+
+	// if anything was changed
+	return (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
+}
+
 function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory): boolean {
 
 	const durationMosMetaData = findDurationInfoMOSExternalMetaData(story) || {}
@@ -1213,7 +1330,6 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 	}
 
 	let showStyle = ShowStyles.findOne(ro.showStyleId)
-
 	if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + ro.showStyleId + '" not found!')
 
 	let context: TemplateContext = {
@@ -1274,6 +1390,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 				disableOutTransition: 	tr.result.segmentLine.disableOutTransition || false,
 				updateStoryStatus:		tr.result.segmentLine.updateStoryStatus || false,
 				typeVariant:			tr.result.segmentLine.typeVariant || '',
+				subTypeVariant:			tr.result.segmentLine.subTypeVariant || '',
 				holdMode: 				tr.result.segmentLine.holdMode || SegmentLineHoldMode.NONE,
 			}})
 		} else {

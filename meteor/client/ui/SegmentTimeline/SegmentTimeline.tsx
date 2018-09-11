@@ -421,6 +421,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 		_.each(this.props.segmentLines, (sl) => {
 			notes = notes.concat(sl.getNotes(true))
 		})
+		notes = notes.concat(this.props.segment.notes || [])
 
 		return (
 			<div id={SegmentTimelineElementId + this.props.segment._id}
