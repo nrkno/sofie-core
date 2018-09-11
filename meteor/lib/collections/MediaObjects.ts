@@ -124,5 +124,9 @@ Meteor.startup(() => {
 			studioId: 1,
 			collectionId: 1
 		})
+		MediaObjects._ensureIndex({
+			studioId: 1,
+			mediaId: 1
+		})
 	}
 })
