@@ -172,9 +172,6 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 								</div>
 							</div>
 							<div className='clocks-rundown-bottom-bar'>
-								<div className='clocks-rundown-bottom-bar-label'>
-									{t('Rundown')}:
-								</div>
 								<div className='clocks-rundown-title'>
 									{runningOrder ? runningOrder.name : 'UNKNOWN'}
 								</div>

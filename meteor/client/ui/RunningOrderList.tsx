@@ -19,7 +19,7 @@ interface IRunningOrdersListProps {
 }
 
 interface IRunningOrdersListState {
-	systemStatus?: number
+	systemStatus?: string
 }
 
 export const RunningOrderList = translateWithTracker(() => {
@@ -46,8 +46,10 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 				return
 			}
 
+			console.log(res)
+
 			this.setState({
-				systemStatus: res.statusCode
+				systemStatus: res.status
 			})
 		})
 	}
@@ -76,7 +78,7 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 						<thead>
 							<tr className='hl'>
 								<th className='c3'>
-									{t('Slug')}
+									{t('Running Order')}
 								</th>
 								<th className='c2'>
 									{t('ID')}
@@ -85,7 +87,7 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 									{t('Created')}
 								</th>
 								<th className='c2'>
-									{t('Air Time')}
+									{t('On Air Start Time')}
 								</th>
 								<th className='c1'>
 									{t('Duration')}
@@ -105,7 +107,7 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 				</div>
 			</div>
 			<div className='mtl gutter version-info'>
-				<p>{t('Sofie Automation Core version')}: {PackageInfo.version || 'UNSTABLE'}, {t('Core status')}: {statusCodeToString(t, this.state.systemStatus || 0)}</p>
+				<p>{t('Sofie Automation')} {t('version')}: {PackageInfo.version || 'UNSTABLE'}, {t('status')}: {this.state.systemStatus}</p>
 			</div>
 		</React.Fragment>
 	}

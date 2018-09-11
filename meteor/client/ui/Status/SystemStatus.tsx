@@ -72,7 +72,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 			case PeripheralDeviceAPI.DeviceType.MOSDEVICE:
 				return t('MOS Device')
 			case PeripheralDeviceAPI.DeviceType.PLAYOUT:
-				return t('Playout Device')
+				return t('Play-out Device')
 			case PeripheralDeviceAPI.DeviceType.OTHER:
 				return t('Sub-Device')
 			default:

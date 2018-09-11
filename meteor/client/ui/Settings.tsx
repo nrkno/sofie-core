@@ -111,7 +111,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 			case PeripheralDeviceAPI.DeviceType.MOSDEVICE:
 				return t('MOS Device')
 			case PeripheralDeviceAPI.DeviceType.PLAYOUT:
-				return t('Playout Device')
+				return t('Play-out Device')
 			case PeripheralDeviceAPI.DeviceType.OTHER:
 				return t('Sub-Device')
 			default:
@@ -179,7 +179,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<hr className='vsubtle man' />
 				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteShowStyleConfirm} onAccept={(e) => this.handleConfirmDeleteShowStyleAccept(e)} onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
 					<p>{t(`Are you sure you want to delete show style ${this.state.deleteConfirmItem && this.state.deleteConfirmItem.name}?`)}</p>
-					<p>{t('This action is irreversible.')}</p>
+					<p>{t('Please note: This action is irreversible!')}</p>
 				</ModalDialog>
 				{
 					this.props.showStyles.map((item) => {
@@ -205,7 +205,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<hr className='vsubtle man' />
 				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteLineTemplateConfirm} onAccept={(e) => this.handleConfirmDeleteLineTemplateAccept(e)} onSecondary={(e) => this.handleConfirmDeleteLineTemplateCancel(e)}>
 					<p>{t(`Are you sure you want to delete line template ${this.state.deleteConfirmItem && this.state.deleteConfirmItem._id}?`)}</p>
-					<p>{t('This action is irreversible.')}</p>
+					<p>{t('Please note: This action is irreversible!')}</p>
 				</ModalDialog>
 				{
 					this.props.lineTemplates.map((item) => {
@@ -243,7 +243,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<h2 className='mhs'>{t('Tools')}</h2>
 				<hr className='vsubtle man' />
 				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/restore'>
-					<h3>{t('Restore backup')}</h3>
+					<h3>{t('Restore Backup')}</h3>
 				</NavLink>
 			</div>
 		)

@@ -50,7 +50,7 @@ class SnapshotView extends MeteorReactComponent<Translated<IProps & ITrackedProp
 		return (
 			<div className='mhl gutter external-message-status'>
 				<header className='mbs'>
-					<h1>{t('Take snapshot')}</h1>
+					<h1>{t('Take Snapshot')}</h1>
 				</header>
 				<div className='mod mvl'>
 					{
@@ -60,7 +60,7 @@ class SnapshotView extends MeteorReactComponent<Translated<IProps & ITrackedProp
 								<div>
 									<h2>{studio.name}</h2>
 									<div>
-										<a href={`/snapshot/${studio._id}`} target='_blank'>{t('Download system snapshot')}</a>
+										<a href={`/snapshot/${studio._id}`} target='_blank'>{t('Download System Snapshot')}</a>
 									</div>
 								</div>
 							)

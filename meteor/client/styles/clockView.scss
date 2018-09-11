@@ -32,7 +32,7 @@
 }
 
 .clocks-bottom-top {
-	height: 34.3741vh;
+	height: 34vh;
 }
 
 .clocks-segment-icon {
@@ -110,7 +110,6 @@
 }
 
 .clocks-rundown-bottom-bar {
-	background: #454545;
 	width: 100vw;
 	height: 8.0334vh;
 	display: flex;
@@ -135,12 +134,12 @@
 
 .clocks-rundown-title {
 	font-size: 6.667vh;
-	color: #aaa;
+	color: #888;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	overflow: hidden;
 	flex-grow: 1;
-	padding-left: 2.815vw;
+	padding-left: 0.2em;
 }
 
 .clocks-segment-icon .stub-icon {
