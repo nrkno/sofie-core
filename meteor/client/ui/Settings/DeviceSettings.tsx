@@ -377,13 +377,13 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 				</div>
 
 				<ModalDialog title={t('Remove this device?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
-					<p>{t('Are you sure you want to remove device ') + (this.state.deleteConfirmDeviceId && this.state.deleteConfirmDeviceId) + '?'}</p>
+					<p>{t('Are you sure you want to remove device') + ' ' + (this.state.deleteConfirmDeviceId && this.state.deleteConfirmDeviceId) + '?'}</p>
 				</ModalDialog>
 
 				{settings && settings.devices &&
 					(
 						<React.Fragment>
-							<h3>{t('Attached devices')}</h3>
+							<h3>{t('Attached Devices')}</h3>
 							<table className='expando settings-studio-device-table'>
 								<tbody>
 									{this.renderDevices()}
@@ -571,7 +571,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 								</div>
 								<div className='mod mvs mhs'>
 									<label className='field'>
-										{t('Primary id (their mosId)')}
+										{t('Primary ID (News Room System MOS ID)')}
 										<EditAttribute
 											modifiedClassName='bghl'
 											attribute={'settings.devices.' + deviceId + '.primary.id' }
@@ -583,7 +583,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 								</div>
 								<div className='mod mvs mhs'>
 									<label className='field'>
-										{t('Primary host (ip or hostname)')}
+										{t('Primary Host (IP or Hostname)')}
 										<EditAttribute
 											modifiedClassName='bghl'
 											attribute={'settings.devices.' + deviceId + '.primary.host' }
@@ -595,7 +595,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 								</div>
 								<div className='mod mvs mhs'>
 									<label className='field'>
-										{t('Secondary id (their mosId)')}
+										{t('Secondary ID (News Room System MOS ID)')}
 										<EditAttribute
 											modifiedClassName='bghl'
 											attribute={'settings.devices.' + deviceId + '.secondary.id' }
@@ -607,7 +607,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 								</div>
 								<div className='mod mvs mhs'>
 									<label className='field'>
-										{t('Secondary host (ip or hostname)')}
+										{t('Secondary Host (IP Address or Hostname)')}
 										<EditAttribute
 											modifiedClassName='bghl'
 											attribute={'settings.devices.' + deviceId + '.secondary.host' }
@@ -638,7 +638,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 			<div>
 				<div>
 					<label className='field'>
-						{t('MosId of gateway (our mosId)')}
+						{t('MOS ID of Gateway (Sofie MOS ID)')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'settings.mosId'}
@@ -650,7 +650,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 				</div>
 				<div>
 					<label className='field'>
-						{t('Activate debug-logging')}
+						{t('Activate Debug Logging')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'settings.debugLogging'}
@@ -662,13 +662,13 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 				</div>
 
 				<ModalDialog title={t('Remove this device?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
-					<p>{t('Are you sure you want to remove device ') + (this.state.deleteConfirmDeviceId && this.state.deleteConfirmDeviceId) + '?'}</p>
+					<p>{t('Are you sure you want to remove device') + ' ' + (this.state.deleteConfirmDeviceId && this.state.deleteConfirmDeviceId) + '?'}</p>
 				</ModalDialog>
 
 				{settings && settings.devices &&
 					(
 						<React.Fragment>
-							<h3>{t('Mos-devices')}</h3>
+							<h3>{t('Devices')}</h3>
 							<table className='expando settings-studio-device-table'>
 								<tbody>
 									{this.renderDevices()}
