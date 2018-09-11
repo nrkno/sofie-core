@@ -703,7 +703,7 @@ Meteor.methods({
 			'nora_fullskjerm_fullskjerm': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
-				lookahead: LookaheadMode.NONE,
+				lookahead: LookaheadMode.WHEN_CLEAR,
 			}),
 		}
 		StudioInstallations.update('studio0', {$set: {
