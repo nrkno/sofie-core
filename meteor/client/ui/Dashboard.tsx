@@ -39,10 +39,10 @@ export default translate()(class Dashboard extends React.Component<Translated<IP
 		return (
 			<div>
 				<div className='mtl gutter'>
-					<h1>{t('Welcome to Sofie')}</h1>
+					<h1>{t('Welcome to the Sofie Automation system')}</h1>
 				</div>
 				<div className='mtl gutter version-info'>
-					<p>{t('Sofie Automation Core version')}: {PackageInfo.version || 'UNSTABLE'}, {t('Core status')}: {statusCodeToString(t, this.state.systemStatus || 0)}</p>
+					<p>{t('Sofie Automation version')}: {PackageInfo.version || 'UNSTABLE'}, {t('Sofie status')}: {statusCodeToString(t, this.state.systemStatus || 0)}</p>
 				</div>
 			</div>
 		)

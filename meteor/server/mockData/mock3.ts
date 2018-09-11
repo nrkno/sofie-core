@@ -928,8 +928,8 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
-								'_valid' : false,
-								'navn' : '',
+								'_valid' : true,
+								'navn' : 'Some guy',
 								'tittel' : ''
 							}
 						}
@@ -4010,7 +4010,7 @@ const stories = [{
 							'timeIn' : 0,
 							'duration' : 5000,
 							'in' : 'auto',
-							'out' : 'auto'
+							'out' : 'manual'
 						}
 					}
 				],

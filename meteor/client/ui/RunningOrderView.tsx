@@ -171,6 +171,7 @@ export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_REWIND_SEGMENTS = 'shift+home',
 	RUNNING_ORDER_RELOAD_RUNNING_ORDER = 'mod+shift+f12',
 	RUNNING_ORDER_TOGGLE_DRAWER = 'tab',
+	ADLIB_QUEUE_MODIFIER = 'shift',
 	RUNNING_ORDER_NEXT_FORWARD = 'f9',
 	RUNNING_ORDER_NEXT_DOWN = 'f10',
 	RUNNING_ORDER_NEXT_BACK = 'shift+f9',
@@ -338,7 +339,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE_REHEARSAL,
 					up: this.keyActivateRehearsal,
-					label: t('Activate (rehearsal)'),
+					label: t('Activate (Rehearsal)'),
 					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RELOAD_RUNNING_ORDER,
@@ -348,37 +349,37 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_FORWARD,
 					up: this.keyMoveNextForward,
-					label: t('Move next forward'),
+					label: t('Move Next forwards'),
 					global: true
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_DOWN,
 					up: this.keyMoveNextDown,
-					label: t('Move next segment forward'),
+					label: t('Move Next to the following segment'),
 					global: true
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_UP,
 					up: this.keyMoveNextUp,
-					label: t('Move next segment back'),
+					label: t('Move Next to the previous segment'),
 					global: true
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_BACK,
 					up: this.keyMoveNextBack,
-					label: t('Move next back'),
+					label: t('Move Next backwards'),
 					global: true
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_DISABLE_NEXT_ELEMENT,
 					up: this.keyDisableNextSegmentLineItem,
-					label: t('Disable next element'),
+					label: t('Disable the next element'),
 					global: true
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_UNDO_DISABLE_NEXT_ELEMENT,
 					up: this.keyDisableNextSegmentLineItemUndo,
-					label: t('Undo disable next element'),
+					label: t('Undo Disable the next element'),
 					global: true
 				}
 			]
@@ -612,7 +613,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			this.reloadRunningOrder().then(() => {
 				console.log('Running order reloaded')
 			}).catch((reason) => {
-				console.log('Not in studio mode or could not reload.', reason)
+				console.log('Not in Studio mode or Could not reload.', reason)
 			})
 		}
 	}

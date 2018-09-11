@@ -15,12 +15,210 @@ import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
+import { Random } from 'meteor/random'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { TimelineContentTypeHttp } from '../../../lib/collections/Timeline'
+
+interface IHttpSendDeviceSettingsComponentProps {
+	parentDevice: PeripheralDevice
+	deviceId: string
+	device: PlayoutDeviceSettingsDevice
+}
+
+interface IHttpSendDeviceSettingsComponentState {
+	deleteConfirmMakeReadyId: string | undefined
+	showDeleteConfirmMakeReady: boolean
+	editedMakeReady: Array<string>
+}
+
+const HttpSendDeviceSettingsComponent = translate()(
+class HttpSendDeviceSettingsComponent extends React.Component<Translated<IHttpSendDeviceSettingsComponentProps>, IHttpSendDeviceSettingsComponentState> {
+	constructor (props: Translated<IHttpSendDeviceSettingsComponentProps>) {
+		super(props)
+
+		this.state = {
+			deleteConfirmMakeReadyId: undefined,
+			showDeleteConfirmMakeReady: false,
+			editedMakeReady: []
+		}
+	}
+
+	isItemEdited = (rowId: string) => {
+		return this.state.editedMakeReady.indexOf(rowId) >= 0
+	}
+
+	finishEditItem = (rowId: string) => {
+		let index = this.state.editedMakeReady.indexOf(rowId)
+		if (index >= 0) {
+			this.state.editedMakeReady.splice(index, 1)
+			this.setState({
+				editedMakeReady: this.state.editedMakeReady
+			})
+		}
+	}
+
+	editItem = (rowId: string) => {
+		if (this.state.editedMakeReady.indexOf(rowId) < 0) {
+			this.state.editedMakeReady.push(rowId)
+			this.setState({
+				editedMakeReady: this.state.editedMakeReady
+			})
+		}
+	}
+	handleConfirmRemoveCancel = (e) => {
+		this.setState({
+			showDeleteConfirmMakeReady: false,
+			deleteConfirmMakeReadyId: undefined
+		})
+	}
+
+	handleConfirmRemoveAccept = (e) => {
+		this.state.deleteConfirmMakeReadyId && this.removeMakeReady(this.state.deleteConfirmMakeReadyId)
+		this.setState({
+			showDeleteConfirmMakeReady: false,
+			deleteConfirmMakeReadyId: undefined
+		})
+	}
+
+	confirmRemove = (rowId: string) => {
+		this.setState({
+			showDeleteConfirmMakeReady: true,
+			deleteConfirmMakeReadyId: rowId
+		})
+	}
+
+	removeMakeReady = (rowId: string) => {
+		// TODO this
+		let unsetObject = {}
+		unsetObject['settings.devices.' + this.props.deviceId + '.options.makeReadyCommands'] = { id: rowId }
+		PeripheralDevices.update(this.props.parentDevice._id, {
+			$pull: unsetObject
+		})
+	}
+
+	addNewHttpSendCommand () {
+		const { deviceId } = this.props
+
+		let setObject = {}
+		setObject['settings.devices.' + deviceId + '.options.makeReadyCommands'] = {
+			id: Random.hexString(5),
+			type: TimelineContentTypeHttp.POST,
+			url: 'http://',
+			params: {}
+		}
+
+		PeripheralDevices.update(this.props.parentDevice._id, {
+			$push: setObject
+		})
+	}
+
+	renderHttpSendCommands () {
+		const { t, device, deviceId } = this.props
+
+		const commands = (device.options as any || {}).makeReadyCommands || []
+		return _.map(commands, (cmd: any, i) => {
+			return (
+				!this.isItemEdited(cmd.id) ?
+				<tr key={i}>
+					<th className='settings-studio-device-httpsend__url c5'>
+						{cmd.url}
+					</th>
+					<td className='settings-studio-device-httpsend__type c4'>
+						{cmd.type}
+					</td>
+					<td className='settings-studio-device-httpsend__actions table-item-actions c3'>
+						<button className='action-btn' onClick={(e) => this.editItem(cmd.id)}>
+							<FontAwesomeIcon icon={faPencilAlt} />
+						</button>
+						<button className='action-btn' onClick={(e) => this.confirmRemove(cmd.id)}>
+							<FontAwesomeIcon icon={faTrash} />
+						</button>
+					</td>
+				</tr> :
+				<tr className='expando-details hl' key={cmd.id + '-details'}>
+					<td colSpan={5}>
+						<div>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Url')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={'settings.devices.' + deviceId + '.options.makeReadyCommands.' + i + '.url'}
+										obj={this.props.parentDevice}
+										type='text'
+										collection={PeripheralDevices}
+										className='input text-input input-l'></EditAttribute>
+								</label>
+							</div>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Type')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={'settings.devices.' + deviceId + '.options.makeReadyCommands.' + i + '.type'}
+										obj={this.props.parentDevice}
+										type='dropdown'
+										options={TimelineContentTypeHttp}
+										collection={PeripheralDevices}
+										className='input text-input input-l'></EditAttribute>
+								</label>
+							</div>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Params')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={'settings.devices.' + deviceId + '.options.makeReadyCommands.' + i + '.params'}
+										mutateDisplayValue={v => JSON.stringify(v, undefined, 2)}
+										mutateUpdateValue={v => JSON.parse(v)}
+										obj={this.props.parentDevice}
+										type='multiline'
+										collection={PeripheralDevices}
+										className='input text-input input-l'></EditAttribute>
+								</label>
+							</div>
+						</div>
+						<div className='mod alright'>
+							<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(cmd.id)}>
+								<FontAwesomeIcon icon={faCheck} />
+							</button>
+						</div>
+					</td>
+				</tr>
+			)
+		})
+	}
+
+	render () {
+		const { t } = this.props
+
+		return (
+			<React.Fragment>
+				<h3>{t('Make ready commands')}</h3>
+				<table className='expando settings-studio-device-httpsend-table'>
+					<tbody>
+						{this.renderHttpSendCommands()}
+					</tbody>
+				</table>
+
+				<ModalDialog title={t('Remove this command?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirmMakeReady} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
+					<p>{t('Are you sure you want to remove this command') + '?'}</p>
+				</ModalDialog>
+
+				<div className='mod mhs'>
+					<button className='btn btn-primary' onClick={(e) => this.addNewHttpSendCommand()}>
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
+				</div>
+			</React.Fragment>
+		)
+	}
+})
 
 interface IPlayoutDeviceSettingsComponentProps {
 	device: PeripheralDevice
@@ -305,6 +503,14 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 													className='input text-input input-l'></EditAttribute>
 											</label>
 										</div>
+									</React.Fragment>
+									)
+								)) ||
+								(
+								device.type === PlayoutDeviceType.HTTPSEND && (
+									(
+									<React.Fragment>
+										<HttpSendDeviceSettingsComponent parentDevice={this.props.device} device={device} deviceId={deviceId} />
 									</React.Fragment>
 									)
 								))

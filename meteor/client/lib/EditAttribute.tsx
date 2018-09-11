@@ -54,9 +54,12 @@ interface IEditAttributeBaseProps {
 	updateFunction?: (edit: EditAttributeBase, newValue: any ) => void
 	overrideDisplayValue?: any
 	label?: string
+	mutateDisplayValue?: any
+	mutateUpdateValue?: any
 }
 interface IEditAttributeBaseState {
 	value: any,
+	valueError: boolean,
 	editing: boolean
 }
 export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, IEditAttributeBaseState> {
@@ -65,6 +68,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 
 		this.state = {
 			value: this.getAttribute(),
+			valueError: false,
 			editing: false
 		}
 
@@ -92,6 +96,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		})
 	}
 	handleDiscard () {
+		console.log('discard')
 		this.setState({
 			value: this.getAttribute(),
 			editing: false
@@ -121,8 +126,13 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		return f(obj, attr)
 	}
 	getAttribute () {
-		if (this.props.overrideDisplayValue) return this.props.overrideDisplayValue
-		return this.deepAttribute(this.props.myObject, this.props.attribute)
+		let v = null
+		if (this.props.overrideDisplayValue) {
+			v = this.props.overrideDisplayValue
+		} else {
+			v = this.deepAttribute(this.props.myObject, this.props.attribute)
+		}
+		return this.props.mutateDisplayValue ? this.props.mutateDisplayValue(v) : v
 	}
 	getAttributeText () {
 		return this.getAttribute()
@@ -131,6 +141,21 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		return (this.state.editing ? this.state.value : this.getAttribute())
 	}
 	updateValue (newValue) {
+		if (this.props.mutateUpdateValue) {
+			try {
+				newValue = this.props.mutateUpdateValue(newValue)
+				this.setState({
+					valueError: false
+				})
+			} catch (e) {
+				this.setState({
+					valueError: true,
+					editing: true
+				})
+				return
+			}
+		}
+
 		if (this.props.updateFunction && typeof this.props.updateFunction === 'function') {
 			this.props.updateFunction(this, newValue)
 		} else {
@@ -174,7 +199,7 @@ const EditAttributeText = wrapEditAttribute(class extends EditAttributeBase {
 	render () {
 		return (
 			<input type='text'
-				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+				className={'form-control' + ' ' + (this.state.valueError ? 'error ' : '') + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
 
 				value={this.getEditAttribute() || ''}
 				onChange={this.handleChange}
@@ -207,7 +232,7 @@ const EditAttributeMultilineText = wrapEditAttribute(class extends EditAttribute
 	render () {
 		return (
 			<textarea
-				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+				className={'form-control' + ' ' + (this.state.valueError ? 'error ' : '') + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
 
 				value={this.getEditAttribute() || ''}
 				onChange={this.handleChange}

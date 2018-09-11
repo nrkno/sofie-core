@@ -738,8 +738,22 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 												obj={this.props.studioInstallation}
 												type='checkbox'
 												collection={StudioInstallations}
-												className=''></EditAttribute>
+												className=''
+											/>
 											{t('Allow disabling of elements')}
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + item.index + '.isQueueable'}
+												obj={this.props.studioInstallation}
+												type='checkbox'
+												collection={StudioInstallations}
+												className=''
+											/>
+											{t('Adlibs on this layer can be queued')}
 										</label>
 									</div>
 								</div>
@@ -764,7 +778,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 					<p>{t('Are you sure you want to delete source layer ') + (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) + '?'}</p>
 					<p>{t('This action is irreversible.')}</p>
 				</ModalDialog>
-				<h3>{t('Source layers')}</h3>
+				<h3>{t('Source Layers')}</h3>
 				<table className='expando settings-studio-source-table'>
 					<tbody>
 						{this.renderInputSources()}

@@ -1,0 +1,13 @@
+.datepicker-from-to {
+    display: flex;
+    flex-wrap: nowrap;
+
+    justify-content: center;
+
+    .picker {
+        >div {
+            display: inline-block;
+        }
+    }
+
+}
