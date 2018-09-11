@@ -149,8 +149,10 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 	return overrides
 })(
 class extends MeteorReactComponent<IPropsHeader> {
+	private objIdCF: any
+
 	componentWillMount () {
-		let objIdCF = new ComputedField(() => {
+		this.objIdCF = new ComputedField(() => {
 			let sli = SegmentLineItems.findOne(this.props.segmentLineItem._id)
 			if (sli) {
 				if (this.props.segmentLineItem.sourceLayer) {
@@ -165,20 +167,20 @@ class extends MeteorReactComponent<IPropsHeader> {
 			return ''
 		})
 
-		let prevSub: Meteor.SubscriptionHandle
-
 		this.autorun(() => {
-			let objId = objIdCF()
+			let objId = this.objIdCF()
 			if (objId) {
-				if (prevSub) {
-					prevSub.stop()
-				}
-				prevSub = this.subscribe('mediaObjects', this.props.runningOrder.studioInstallationId, {
+				this.subscribe('mediaObjects', this.props.runningOrder.studioInstallationId, {
 					mediaId: objId
 				})
 			}
 		})
 	}
+
+	componentWillUnmount () {
+		this.objIdCF.stop()
+	}
+
 	render () {
 		return (
 			<SourceLayerItem {...this.props} />
