@@ -178,6 +178,7 @@ class extends MeteorReactComponent<IPropsHeader> {
 	}
 
 	componentWillUnmount () {
+		super.componentWillUnmount()
 		this.objIdCF.stop()
 	}
 
