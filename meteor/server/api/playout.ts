@@ -1646,13 +1646,12 @@ const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (running
 	)
 
 	for (const i of items) {
-		console.log(i.sourceLayerId)
-
 		if (i.infiniteMode && !i.expectedDuration && i.dynamicallyInserted) {
 			SegmentLineItems.update({
 				_id: i._id
 			}, { $set: {
-				expectedDuration: `#${PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + newItem._id}.start - #.start`
+				expectedDuration: `#${PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + newItem._id}.start - #.start`,
+				infiniteMode: SegmentLineItemLifespan.Normal
 			}})
 		}
 	}
