@@ -267,7 +267,7 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 		const { t } = this.props
 		return (
 			<div>
-				<h2>{t('Queued messages')}</h2>
+				<h2>{t('Queued Messages')}</h2>
 				<table className='table system-status-table'>
 
 					<tbody>
@@ -283,7 +283,7 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 		const { t } = this.props
 		return (
 			<div>
-				<h2>{t('Sent messages')}</h2>
+				<h2>{t('Sent Messages')}</h2>
 				<table className='table system-status-table'>
 
 					<tbody>

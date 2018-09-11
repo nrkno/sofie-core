@@ -56,7 +56,7 @@ const StatusMenu = translate()(class StatusMenu extends React.Component<Translat
 					activeClassName='selectable-selected'
 					className='status-menu__status-menu-item selectable clickable'
 					to={'/status/userLog'}>
-					<h3>{t('User log')}</h3>
+					<h3>{t('User Log')}</h3>
 				</NavLink>
 			</div>
 		)

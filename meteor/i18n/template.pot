@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2018-09-10T13:05:26.517Z\n"
-"PO-Revision-Date: 2018-09-10T13:05:26.517Z\n"
+"POT-Creation-Date: 2018-09-11T09:14:29.710Z\n"
+"PO-Revision-Date: 2018-09-11T09:14:29.710Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -20,19 +20,25 @@ msgstr ""
 msgid "There are no active running orders."
 msgstr ""
 
-msgid "Connecting to Sofie Automation Server..."
+msgid "Connecting to the"
 msgstr ""
 
-msgid "Cannot connect to the Sofie Automation Server"
+msgid "Sofie Automation"
 msgstr ""
 
-msgid "Reconnecting to the Sofie Automation Server"
+msgid "Server"
 msgstr ""
 
-msgid "Your machine is offline and cannot connect to the Sofie Automation Server."
+msgid "Cannot connect to the"
 msgstr ""
 
-msgid "Connected to Sofie Automation Server."
+msgid "Reconnecting to the"
+msgstr ""
+
+msgid "Your machine is offline and cannot connect to the"
+msgstr ""
+
+msgid "Connected to the"
 msgstr ""
 
 msgid "Welcome to the Sofie Automation system"
@@ -101,10 +107,10 @@ msgstr ""
 msgid "Air Status"
 msgstr ""
 
-msgid "Sofie Automation Core version"
+msgid "version"
 msgstr ""
 
-msgid "Core status"
+msgid "status"
 msgstr ""
 
 msgid "Start time is close"
@@ -306,7 +312,7 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-msgid "This action is irreversible."
+msgid "Please note: This action is irreversible!"
 msgstr ""
 
 msgid "Line Templates"
@@ -321,7 +327,7 @@ msgstr ""
 msgid "Tools"
 msgstr ""
 
-msgid "Restore backup"
+msgid "Restore Backup"
 msgstr ""
 
 msgid "System Settings"
@@ -363,31 +369,28 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
-msgid "Are you sure you want to remove device "
+msgid "Are you sure you want to remove device"
 msgstr ""
 
-msgid "Attached devices"
+msgid "Attached Devices"
 msgstr ""
 
-msgid "Primary id (their mosId)"
+msgid "Primary ID (News Room System MOS ID)"
 msgstr ""
 
-msgid "Primary host (ip or hostname)"
+msgid "Primary Host (IP or Hostname)"
 msgstr ""
 
-msgid "Secondary id (their mosId)"
+msgid "Secondary ID (News Room System MOS ID)"
 msgstr ""
 
-msgid "Secondary host (ip or hostname)"
+msgid "Secondary Host (IP Address or Hostname)"
 msgstr ""
 
-msgid "MosId of gateway (our mosId)"
+msgid "MOS ID of Gateway (Sofie MOS ID)"
 msgstr ""
 
-msgid "Activate debug-logging"
-msgstr ""
-
-msgid "Mos-devices"
+msgid "Activate Debug Logging"
 msgstr ""
 
 msgid "Generic properties"
@@ -411,22 +414,22 @@ msgstr ""
 msgid "Restore"
 msgstr ""
 
-msgid "Show Style name"
+msgid "Show Style Name"
 msgstr ""
 
-msgid "Show Style id"
+msgid "Show Style ID"
 msgstr ""
 
-msgid "Baseline template id"
+msgid "Baseline Template ID"
 msgstr ""
 
-msgid "External-message template id"
+msgid "External Message Template ID"
 msgstr ""
 
-msgid "Download full backup"
+msgid "Download Full Backup"
 msgstr ""
 
-msgid "Download current state"
+msgid "Download Current State"
 msgstr ""
 
 msgid "Templates"
@@ -435,28 +438,28 @@ msgstr ""
 msgid "Helper"
 msgstr ""
 
-msgid "Channel name"
+msgid "Channel Name"
 msgstr ""
 
 msgid "Internal ID"
 msgstr ""
 
-msgid "Is PGM output"
+msgid "Is PGM Output"
 msgstr ""
 
-msgid "Display rank"
+msgid "Display Rank"
 msgstr ""
 
-msgid "Are you sure you want to delete output channel "
+msgid "Are you sure you want to delete output channel"
 msgstr ""
 
 msgid "Value"
 msgstr ""
 
-msgid "Are you sure you want to delete this config item "
+msgid "Are you sure you want to delete this config item"
 msgstr ""
 
-msgid "Custom config"
+msgid "Custom Configuration"
 msgstr ""
 
 msgid "Camera"
@@ -465,7 +468,7 @@ msgstr ""
 msgid "Graphics"
 msgstr ""
 
-msgid "LiveSpeak"
+msgid "Live Speak"
 msgstr ""
 
 msgid "Lower Third"
@@ -474,13 +477,13 @@ msgstr ""
 msgid "Studio Microphone"
 msgstr ""
 
-msgid "Remote source"
+msgid "Remote Source"
 msgstr ""
 
-msgid "Generic script"
+msgid "Generic Script"
 msgstr ""
 
-msgid "Split screen"
+msgid "Split Screen"
 msgstr ""
 
 msgid "Clips"
@@ -492,7 +495,7 @@ msgstr ""
 msgid "Camera Movement"
 msgstr ""
 
-msgid "Unknown layer"
+msgid "Unknown Layer"
 msgstr ""
 
 msgid "Audio Mixing"
@@ -501,13 +504,13 @@ msgstr ""
 msgid "Transition"
 msgstr ""
 
-msgid "Source name"
+msgid "Source Name"
 msgstr ""
 
-msgid "Source abbreviation"
+msgid "Source Abbreviation"
 msgstr ""
 
-msgid "Source type"
+msgid "Source Type"
 msgstr ""
 
 msgid "Is unlimited"
@@ -516,34 +519,37 @@ msgstr ""
 msgid "Is on clean PGM"
 msgstr ""
 
-msgid "Is a live remote input"
+msgid "Is a Live Remote Input"
 msgstr ""
 
 msgid "Is hidden"
 msgstr ""
 
-msgid "Display on presenter's screen"
+msgid "Display on Presenter's Screen"
 msgstr ""
 
-msgid "AdLib activate shortcut list"
+msgid "Shortcut List"
 msgstr ""
 
-msgid "Clear shortcut"
+msgid "Clear Shortcut"
 msgstr ""
 
-msgid "Assign hotkeys to global adlibs"
+msgid "Assign Hotkeys to Global AdLibs"
 msgstr ""
 
 msgid "Items on this layer are sticky"
 msgstr ""
 
-msgid "Activate sticky item shortcut"
+msgid "Activate Sticky Item Shortcut"
 msgstr ""
 
 msgid "Allow disabling of elements"
 msgstr ""
 
 msgid "Are you sure you want to delete source layer"
+msgstr ""
+
+msgid "Source Layers"
 msgstr ""
 
 msgid "channel"
@@ -564,34 +570,31 @@ msgstr ""
 msgid "Layer ID"
 msgstr ""
 
-msgid "Device type"
-msgstr ""
-
-msgid "Device Id"
-msgstr ""
-
-msgid "Lookahead mode"
+msgid "Lookahead Mode"
 msgstr ""
 
 msgid "Remove this mapping?"
 msgstr ""
 
-msgid "Are you sure you want to remove mapping for LLayer "
+msgid "Are you sure you want to remove mapping for layer"
 msgstr ""
 
 msgid "Layer Mappings"
 msgstr ""
 
-msgid "New source"
+msgid "New Source"
 msgstr ""
 
-msgid "New output"
+msgid "New Output"
 msgstr ""
 
-msgid "Studio name"
+msgid "Generic Properties"
 msgstr ""
 
-msgid "Default show style"
+msgid "Studio Name"
+msgstr ""
+
+msgid "Default Show Style"
 msgstr ""
 
 msgid "System"
@@ -603,22 +606,22 @@ msgstr ""
 msgid "Messages"
 msgstr ""
 
-msgid "User log"
+msgid "User Log"
 msgstr ""
 
-msgid "Queued messages"
+msgid "Queued Messages"
 msgstr ""
 
-msgid "Sent messages"
+msgid "Sent Messages"
 msgstr ""
 
-msgid "Message queue"
+msgid "Message Queue"
 msgstr ""
 
-msgid "Take snapshot"
+msgid "Take Snapshot"
 msgstr ""
 
-msgid "Download system snapshot"
+msgid "Download System Snapshot"
 msgstr ""
 
 msgid "Not connected"
@@ -666,7 +669,7 @@ msgstr ""
 msgid "Parameters"
 msgstr ""
 
-msgid "User activity log"
+msgid "User Activity Log"
 msgstr ""
 
 msgctxt "item"
