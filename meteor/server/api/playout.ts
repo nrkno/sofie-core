@@ -91,6 +91,17 @@ export namespace ServerPlayoutAPI {
 			}
 		}, {multi: true})
 	}
+	export function roFastReset (roId: string) {
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+
+		const rehearsal = runningOrder.rehearsal
+		const active = runningOrder.active
+
+		if (active) ServerPlayoutAPI.roDeactivate(runningOrder._id)
+		ServerPlayoutAPI.roActivate(runningOrder._id, rehearsal || false)
+		if (!active) ServerPlayoutAPI.roDeactivate(runningOrder._id)
+	}
 	export function roActivate (roId: string, rehearsal: boolean): ClientAPI.ClientResponse {
 		check(roId, String)
 		check(rehearsal, Boolean)
@@ -744,7 +755,7 @@ export namespace ServerPlayoutAPI {
 		}
 
 		if (!segLineItem.startedPlayback) {
-			logger.info(`Playout reports segment line item "${sliId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
+			logger.info(`Play-out reports segment line item "${sliId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
 
 			// store new value
 			SegmentLineItems.update(segLineItem._id, {$set: {
@@ -780,7 +791,7 @@ export namespace ServerPlayoutAPI {
 		if (segLine) {
 			// make sure we don't run multiple times, even if TSR calls us multiple times
 			if (!segLine.startedPlayback) {
-				logger.info(`Playout reports segment line "${slId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
+				logger.info(`Play-out reports segment line "${slId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
 
 				if (runningOrder.currentSegmentLineId === slId) {
 					// this is the current segment line, it has just started playback
@@ -896,9 +907,7 @@ export namespace ServerPlayoutAPI {
 			runningOrderId: roId
 		})
 		if (!segLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
-
 		if (!queue && runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in a current segment line!`)
-
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine, queue)
 		SegmentLineItems.insert(newSegmentLineItem)
 
@@ -949,7 +958,6 @@ export namespace ServerPlayoutAPI {
 			stopInfinitesRunningOnLayer(runningOrder, segLine, newSegmentLineItem.sourceLayerId)
 			updateTimeline(runningOrder.studioInstallationId)
 		}
-
 	})
 	export function adlibQueueInsertSegmentLine (ro: RunningOrder, slId: string, sladli: SegmentLineAdLibItem) {
 
@@ -1156,6 +1164,9 @@ methods[PlayoutAPI.methods.reloadData] = (roId: string) => {
 }
 methods[PlayoutAPI.methods.roReset] = (roId: string) => {
 	return ServerPlayoutAPI.roReset(roId)
+}
+methods[PlayoutAPI.methods.roFastReset] = (roId: string) => {
+	return ServerPlayoutAPI.roFastReset(roId)
 }
 methods[PlayoutAPI.methods.roActivate] = (roId: string, rehersal: boolean) => {
 	return ServerPlayoutAPI.roActivate(roId, rehersal)

@@ -339,7 +339,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_ACTIVATE_REHEARSAL,
 					up: this.keyActivateRehearsal,
-					label: t('Activate (rehearsal)'),
+					label: t('Activate (Rehearsal)'),
 					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RELOAD_RUNNING_ORDER,
@@ -349,37 +349,37 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_FORWARD,
 					up: this.keyMoveNextForward,
-					label: t('Move next forward'),
+					label: t('Move Next forwards'),
 					global: true
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_DOWN,
 					up: this.keyMoveNextDown,
-					label: t('Move next segment forward'),
+					label: t('Move Next to the following segment'),
 					global: true
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_UP,
 					up: this.keyMoveNextUp,
-					label: t('Move next segment back'),
+					label: t('Move Next to the previous segment'),
 					global: true
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_BACK,
 					up: this.keyMoveNextBack,
-					label: t('Move next back'),
+					label: t('Move Next backwards'),
 					global: true
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_DISABLE_NEXT_ELEMENT,
 					up: this.keyDisableNextSegmentLineItem,
-					label: t('Disable next element'),
+					label: t('Disable the next element'),
 					global: true
 				},
 				{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_UNDO_DISABLE_NEXT_ELEMENT,
 					up: this.keyDisableNextSegmentLineItemUndo,
-					label: t('Undo disable next element'),
+					label: t('Undo Disable the next element'),
 					global: true
 				}
 			]
@@ -478,7 +478,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, false, (err, segmentLineItemId) => {
 				if (err) {
 					// todo: notify the user
-					console.log(err)
+					console.error(err)
 				} else {
 					// console.log('segmentLineItemId', segmentLineItemId)
 				}
@@ -490,7 +490,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, true, (err, segmentLineItemId) => {
 				if (err) {
 					// todo: notify the user
-					console.log(err)
+					console.error(err)
 				} else {
 					// console.log('segmentLineItemId', segmentLineItemId)
 				}
@@ -509,7 +509,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roMoveNext, this.props.runningOrder._id, horisonalDelta, verticalDelta, (err, segmentLineId) => {
 				if (err) {
 					// todo: notify the user
-					console.log(err)
+					console.error(err)
 				} else {
 					scrollToSegmentLine(segmentLineId)
 				}
@@ -540,7 +540,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				if (err) {
 					// TODO
 					// this.handleActivationError(err)
-					console.log(err)
+					console.error(err)
 					return
 				}
 			})
@@ -577,6 +577,19 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		}
 	}
 
+	resetRunningOrder = () => {
+		Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roFastReset, this.props.runningOrder._id, (err) => {
+			if (err) {
+				// TODO: notify user
+				console.error(err)
+				return
+			}
+
+			const event = new Event(RunningOrderViewEvents.rewindsegments)
+			window.dispatchEvent(event)
+		})
+	}
+
 	reloadRunningOrder = (changeRehearsal?: boolean) => {
 		const p = new Promise((resolve, reject) => {
 			if (this.props.studioMode) {
@@ -587,7 +600,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 						return
 					}
 
-					$('html,body').scrollTop(0)
+					if (this.props.runningOrder && this.props.runningOrder.nextSegmentLineId) scrollToSegmentLine(this.props.runningOrder.nextSegmentLineId)
 					resolve()
 				})
 			} else {
@@ -603,7 +616,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			this.reloadRunningOrder().then(() => {
 				console.log('Running order reloaded')
 			}).catch((reason) => {
-				console.log('Not in studio mode or could not reload.', reason)
+				console.log('Not in Studio mode or Could not reload.', reason)
 			})
 		}
 	}
@@ -676,14 +689,20 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 										<MenuItem onClick={(e) => this.activateRehearsal()}>
 											{t('Activate (Rehearsal)')}
 										</MenuItem>
+										<hr />
 									</React.Fragment> :
 								null
 						}
 						{
 							this.props.studioMode &&
-								<MenuItem onClick={(e) => this.reloadRunningOrder()}>
-									{t('Reload running order')}
-								</MenuItem>
+								<React.Fragment>
+									<MenuItem onClick={(e) => this.reloadRunningOrder()}>
+										{t('Reload running order')}
+									</MenuItem>
+									<MenuItem onClick={(e) => this.resetRunningOrder()}>
+										{t('Reset running order')}
+									</MenuItem>
+								</React.Fragment>
 						}
 						{
 							!this.props.studioMode &&
@@ -888,6 +907,10 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			this.setState({
 				followLiveSegments: true
 			})
+		} else if (this.props.runningOrder &&
+			prevProps.runningOrder && !prevProps.runningOrder.active && this.props.runningOrder.active &&
+			this.props.runningOrder.nextSegmentLineId) {
+			scrollToSegmentLine(this.props.runningOrder.nextSegmentLineId)
 		}
 	}
 
@@ -948,9 +971,23 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onGoToLiveSegment = () => {
-		this.setState({
-			followLiveSegments: true
-		})
+		if (this.props.runningOrder && this.props.runningOrder.active && !this.props.runningOrder.currentSegmentLineId &&
+			this.props.runningOrder.nextSegmentLineId) {
+			this.setState({
+				followLiveSegments: true
+			})
+			scrollToSegmentLine(this.props.runningOrder.nextSegmentLineId)
+			// allow for the scroll to finish
+			Meteor.setTimeout(() => {
+				this.setState({
+					followLiveSegments: true
+				})
+			}, 400)
+		} else {
+			this.setState({
+				followLiveSegments: true
+			})
+		}
 	}
 
 	onActivate = (isRehearsal: boolean) => {

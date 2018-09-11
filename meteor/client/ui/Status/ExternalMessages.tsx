@@ -6,7 +6,7 @@ import { PeripheralDevice,
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
 import { translate } from 'react-i18next'
-import { getCurrentTime } from '../../../lib/lib'
+import { getCurrentTime, Time } from '../../../lib/lib'
 import { MomentFromNow } from '../../lib/Moment'
 import { getAdminMode } from '../../lib/localStorage'
 import { ClientAPI } from '../../../lib/api/client'
@@ -19,13 +19,82 @@ import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/coll
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import * as classNames from 'classnames'
+import { DatePickerFromTo } from '../../lib/datePicker'
+import * as moment from 'moment'
+import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
 
 interface IExternalMessagesProps {
 }
 interface IExternalMessagesState {
-	// devices: Array<PeripheralDevice>
+	studioId: string
 }
 interface IExternalMessagesTrackedProps {
+	studios: Array<StudioInstallation>
+}
+
+const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalMessagesState, IExternalMessagesTrackedProps>((props: IExternalMessagesProps) => {
+	return {
+		studios: StudioInstallations.find({}).fetch()
+	}
+})(class ExternalMessages extends MeteorReactComponent<Translated<IExternalMessagesProps & IExternalMessagesTrackedProps>, IExternalMessagesState> {
+	constructor (props) {
+		super(props)
+		this.state = {
+			studioId: '',
+		}
+	}
+	componentWillMount () {
+		this.subscribe('studioInstallations', {})
+	}
+	onClickStudio = (studio) => {
+		this.setState({
+			studioId: studio._id
+		})
+	}
+	render () {
+		const { t } = this.props
+
+		return (
+			<div className='mhl gutter external-message-status'>
+				<header className='mbs'>
+					<h1>{t('Message queue')}</h1>
+				</header>
+				<div className='mod mvl'>
+					<strong>Studio</strong>
+					<ul>
+
+						{
+							_.map(this.props.studios, (studio) => {
+								return (
+									<li key={studio._id}>
+										<a href='#' onClick={() => this.onClickStudio(studio)}>{studio.name}</a>
+									</li>
+								)
+							})
+						}
+					</ul>
+				</div>
+				<div>
+					{
+						this.state.studioId ?
+						<ExternalMessagesInStudio studioId={this.state.studioId} />
+						: null
+					}
+				</div>
+			</div>
+		)
+	}
+})
+
+interface IExternalMessagesInStudioProps {
+	studioId: string
+}
+interface IExternalMessagesInStudioState {
+	// devices: Array<PeripheralDevice>
+	dateFrom: Time,
+	dateTo: Time
+}
+interface IExternalMessagesInStudioTrackedProps {
 	queuedMessages: Array<ExternalMessageQueueObj>
 	sentMessages: Array<ExternalMessageQueueObj>
 }
@@ -35,12 +104,11 @@ interface DeviceInHierarchy {
 	children: Array<DeviceInHierarchy>
 }
 
-const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalMessagesState, IExternalMessagesTrackedProps>((props: IExternalMessagesProps) => {
-	// console.log('PeripheralDevices',PeripheralDevices);
-	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
+const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioProps, IExternalMessagesInStudioState, IExternalMessagesInStudioTrackedProps>((props: IExternalMessagesInStudioProps) => {
 
 	return {
 		queuedMessages: ExternalMessageQueue.find({
+			studioId: props.studioId,
 			sent: {$not: {$gt: 0}}
 		}, {
 			sort: {
@@ -49,6 +117,7 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 			}
 		}).fetch(),
 		sentMessages: ExternalMessageQueue.find({
+			studioId: props.studioId,
 			sent: {$gt: 0}
 		}, {
 			sort: {
@@ -57,11 +126,48 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 			}
 		}).fetch()
 	}
-})(class ExternalMessages extends MeteorReactComponent<Translated<IExternalMessagesProps & IExternalMessagesTrackedProps>, IExternalMessagesState> {
+})(class ExternalMessagesInStudio extends MeteorReactComponent<Translated<IExternalMessagesInStudioProps & IExternalMessagesInStudioTrackedProps>, IExternalMessagesInStudioState> {
+	private _currentsub: string = ''
+	private _sub?: Meteor.SubscriptionHandle
+
+	constructor (props) {
+		super(props)
+
+		this.state = {
+			dateFrom: moment().startOf('day').valueOf(),
+			dateTo: moment().add(1, 'days').startOf('day').valueOf()
+		}
+	}
 
 	componentWillMount () {
 		// Subscribe to data:
-		this.subscribe('externalMessageQueue', {})
+		this.updateSubscription()
+	}
+	componentDidUpdate () {
+		this.updateSubscription()
+	}
+	updateSubscription () {
+
+		let h = this.state.dateFrom + '_' + this.state.dateTo
+		if (h !== this._currentsub) {
+			this._currentsub = h
+			if (this._sub) {
+				this._sub.stop()
+			}
+			this._sub = Meteor.subscribe('externalMessageQueue', {
+				studioId: this.props.studioId,
+				created: {
+					$gte: this.state.dateFrom,
+					$lt: this.state.dateTo,
+				}
+			})
+		}
+	}
+	componentWillUnmount () {
+		if (this._sub) {
+			this._sub.stop()
+		}
+		this._cleanUp()
 	}
 	removeMessage (msg: ExternalMessageQueueObj) {
 		Meteor.call(ClientAPI.methods.execMethod, 'removeExternalMessageQueueObj', msg._id)
@@ -189,15 +295,21 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 			</div>
 		)
 	}
+	handleChangeDate = (from: Time, to: Time) => {
+		this.setState({
+			dateFrom: from,
+			dateTo: to
+		})
+	}
 
 	render () {
 		const { t } = this.props
 
 		return (
 			<div className='mhl gutter external-message-status'>
-				<header className='mbs'>
-					<h1>{t('Message queue')}</h1>
-				</header>
+				<div className='paging alc'>
+					<DatePickerFromTo from={this.state.dateFrom} to={this.state.dateTo} onChange={this.handleChangeDate} />
+				</div>
 				<div className='mod mvl'>
 					{this.renderQueuedMessages()}
 					{this.renderSentMessages()}
@@ -206,4 +318,5 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 		)
 	}
 })
+
 export { ExternalMessages }
