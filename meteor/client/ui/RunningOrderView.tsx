@@ -477,7 +477,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, false, (err, segmentLineItemId) => {
 				if (err) {
 					// todo: notify the user
-					console.log(err)
+					console.error(err)
 				} else {
 					// console.log('segmentLineItemId', segmentLineItemId)
 				}
@@ -489,7 +489,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, true, (err, segmentLineItemId) => {
 				if (err) {
 					// todo: notify the user
-					console.log(err)
+					console.error(err)
 				} else {
 					// console.log('segmentLineItemId', segmentLineItemId)
 				}
@@ -508,7 +508,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roMoveNext, this.props.runningOrder._id, horisonalDelta, verticalDelta, (err, segmentLineId) => {
 				if (err) {
 					// todo: notify the user
-					console.log(err)
+					console.error(err)
 				} else {
 					scrollToSegmentLine(segmentLineId)
 				}
@@ -539,7 +539,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				if (err) {
 					// TODO
 					// this.handleActivationError(err)
-					console.log(err)
+					console.error(err)
 					return
 				}
 			})
@@ -574,6 +574,16 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		if (this.props.studioMode && this.props.runningOrder.active) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
 		}
+	}
+
+	resetRunningOrder = () => {
+		Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roFastReset, this.props.runningOrder._id, (err) => {
+			if (err) {
+				// TODO: notify user
+				console.error(err)
+				return
+			}
+		})
 	}
 
 	reloadRunningOrder = (changeRehearsal?: boolean) => {
@@ -675,14 +685,20 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 										<MenuItem onClick={(e) => this.activateRehearsal()}>
 											{t('Activate (Rehearsal)')}
 										</MenuItem>
+										<hr />
 									</React.Fragment> :
 								null
 						}
 						{
 							this.props.studioMode &&
-								<MenuItem onClick={(e) => this.reloadRunningOrder()}>
-									{t('Reload running order')}
-								</MenuItem>
+								<React.Fragment>
+									<MenuItem onClick={(e) => this.reloadRunningOrder()}>
+										{t('Reload running order')}
+									</MenuItem>
+									<MenuItem onClick={(e) => this.resetRunningOrder()}>
+										{t('Reset running order')}
+									</MenuItem>
+								</React.Fragment>
 						}
 						{
 							!this.props.studioMode &&

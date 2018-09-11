@@ -86,6 +86,17 @@ export namespace ServerPlayoutAPI {
 			}
 		}, {multi: true})
 	}
+	export function roFastReset (roId: string) {
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+
+		const rehearsal = runningOrder.rehearsal
+		const active = runningOrder.active
+
+		if (active) ServerPlayoutAPI.roDeactivate(runningOrder._id)
+		ServerPlayoutAPI.roActivate(runningOrder._id, rehearsal || false)
+		if (!active) ServerPlayoutAPI.roDeactivate(runningOrder._id)
+	}
 	export function roActivate (roId: string, rehearsal: boolean): ClientAPI.ClientResponse {
 		check(roId, String)
 		check(rehearsal, Boolean)
@@ -1126,6 +1137,9 @@ methods[PlayoutAPI.methods.reloadData] = (roId: string) => {
 methods[PlayoutAPI.methods.roReset] = (roId: string) => {
 	return ServerPlayoutAPI.roReset(roId)
 }
+methods[PlayoutAPI.methods.roFastReset] = (roId: string) => {
+	return ServerPlayoutAPI.roFastReset(roId)
+}
 methods[PlayoutAPI.methods.roActivate] = (roId: string, rehersal: boolean) => {
 	return ServerPlayoutAPI.roActivate(roId, rehersal)
 }
@@ -1259,6 +1273,7 @@ function afterTake (runningOrder: RunningOrder, takeSegmentLine: SegmentLine, pr
 import { Resolver } from 'superfly-timeline'
 import { transformTimeline } from '../../lib/timeline'
 import { ClientAPI } from '../../lib/api/client'
+import { Server } from 'net';
 
 function getResolvedSegmentLineItems (line: SegmentLine): SegmentLineItem[] {
 	const items = line.getSegmentLinesItems()
