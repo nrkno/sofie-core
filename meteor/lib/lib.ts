@@ -428,3 +428,15 @@ export function normalizeArray<T> (array: Array<T>, indexKey: keyof T) {
 	}
 	return normalizedObject as { [key: string]: T }
 }
+export function escapeHtml (text: string): string {
+	let map = {
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&#039;'
+	}
+	return text.replace(/[&<>"']/g, (m) => {
+		return map[m]
+	})
+}
