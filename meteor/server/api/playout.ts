@@ -6,7 +6,15 @@ import { SegmentLineItem, SegmentLineItems, ITimelineTrigger, SegmentLineItemLif
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItems, RunningOrderBaselineItem } from '../../lib/collections/RunningOrderBaselineItems'
 import { getCurrentTime, saveIntoDb, literal, Time, iterateDeeply, iterateDeeplyEnum, stringifyObjects, fetchAfter } from '../../lib/lib'
-import { Timeline, TimelineObj, TimelineObjHoldMode, TimelineObjGroupSegmentLine, TimelineContentTypeOther, TimelineObjSegmentLineAbstract, TimelineObjSegmentLineItemAbstract, TimelineObjGroup, TimelineContentTypeLawo, TimelineObjLawo } from '../../lib/collections/Timeline'
+import {
+	Timeline,
+	TimelineObj, TimelineObjHoldMode,
+	TimelineContentTypeOther,
+	TimelineObjSegmentLineAbstract, TimelineObjSegmentLineItemAbstract,
+	TimelineObjGroup, TimelineObjGroupSegmentLine,
+	TimelineContentTypeLawo, TimelineObjLawo,
+	TimelineContentTypeHttp, TimelineObjHTTPRequest,
+} from '../../lib/collections/Timeline'
 import { TriggerType, TimelineEvent, TimelineResolvedObject } from 'superfly-timeline'
 import { Segments, Segment } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
@@ -1906,9 +1914,9 @@ export function addLookeaheadObjectsToTimeline (activeRunningOrder: RunningOrder
 				type: TriggerType.TIME_RELATIVE,
 				value: `#${res[i - 1].obj._id}.start + 0`
 			}
+			r.isBackground = true
 
 			if (m.lookahead !== LookaheadMode.WHEN_CLEAR) {
-				r.isBackground = true
 				r.originalLLayer = r.LLayer
 				r.LLayer += '_lookahead'
 			}
@@ -2400,6 +2408,8 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 
 		setLawoObjectsTriggerValue(timelineObjs, currentSegmentLine)
 
+		timelineObjs = validateNoraPreload(timelineObjs)
+
 		saveIntoDb<TimelineObj, TimelineObj>(Timeline, {
 			roId: activeRunningOrder._id
 		}, timelineObjs, {
@@ -2637,4 +2647,29 @@ function setLawoObjectsTriggerValue (timelineObjs: Array<TimelineObj>, currentSe
 			})
 		}
 	})
+}
+
+function validateNoraPreload (timelineObjs: Array<TimelineObj>) {
+	const toRemoveIds: Array<string> = []
+	_.each(timelineObjs, obj => {
+		// ignore normal objects
+		if (obj.content.type !== TimelineContentTypeHttp.POST) return
+		if (!obj.isBackground && !obj.originalLLayer) return
+
+		// remove anything which is half configured for lookahead
+		if (!obj.isBackground || !obj.originalLLayer) {
+			toRemoveIds.push(obj._id)
+			return
+		}
+
+		const obj2 = obj as TimelineObjHTTPRequest
+		if (obj2.content.params && obj2.content.params.template && (obj2.content.params.template as any).event === 'take') {
+			(obj2.content.params.template as any).event = 'cue'
+		} else {
+			// something we don't understand, so dont lookahead on it
+			toRemoveIds.push(obj._id)
+		}
+	})
+
+	return timelineObjs.filter(o => toRemoveIds.indexOf(o._id) === -1)
 }
