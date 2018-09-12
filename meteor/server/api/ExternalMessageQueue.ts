@@ -5,7 +5,7 @@ import {
 	ExternalMessageQueueObjSOAP,
 	ExternalMessageQueueObjSOAPMessageAttrFcn
 } from '../../lib/collections/ExternalMessageQueue'
-import { getCurrentTime, iterateDeeply, iterateDeeplyAsync, iterateDeeplyEnum } from '../../lib/lib'
+import { getCurrentTime, iterateDeeply, iterateDeeplyAsync, iterateDeeplyEnum, escapeHtml } from '../../lib/lib'
 import * as _ from 'underscore'
 import * as soap from 'soap'
 import * as parser from 'xml2json'
@@ -145,13 +145,20 @@ async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP) {
 
 	// Prepare data, resolve the special {_fcn: {}} - functions:
 	let iteratee = async (val) => {
-		if (_.isObject(val) && val['_fcn']) {
-			let valFcn = val as ExternalMessageQueueObjSOAPMessageAttrFcn
-			let result = await resolveSOAPFcnData(soapClient, valFcn)
+		if (_.isObject(val)) {
+			if (val['_fcn']) {
+				let valFcn = val as ExternalMessageQueueObjSOAPMessageAttrFcn
+				let result = await resolveSOAPFcnData(soapClient, valFcn)
 
-			return result
+				return result
+			} else {
+				return iterateDeeplyEnum.CONTINUE
+			}
+		} else if (_.isString(val)) {
+			// Escape strings, so they are XML-compatible:
+			return escapeHtml(val)
 		} else {
-			return iterateDeeplyEnum.CONTINUE
+			return val
 		}
 	}
 	msg.message.clip_key = 	await iterateDeeplyAsync(msg.message.clip_key, 	iteratee)
