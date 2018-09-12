@@ -57,7 +57,7 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 		return (
 			<div className='mhl gutter external-message-status'>
 				<header className='mbs'>
-					<h1>{t('Message queue')}</h1>
+					<h1>{t('Message Queue')}</h1>
 				</header>
 				<div className='mod mvl'>
 					<strong>Studio</strong>

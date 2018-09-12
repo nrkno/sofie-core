@@ -60,15 +60,15 @@ export const ConnectionStatusNotification = translateWithTracker<IProps, IState,
 		const { t } = this.props
 		switch (this.props.status) {
 			case 'connecting':
-				return <span>{t('Connecting to the')} {t('Sofie Automation')} {t('Server')}.</span>
+				return <span>{t('Connecting to the')} {t('Sofie Automation Server')}.</span>
 			case 'failed':
-				return <span>{t('Cannot connect to the')} {t('Sofie Automation')} {t('Server')}) + ': ' + this.props.reason}</span>
+				return <span>{t('Cannot connect to the')} {t('Sofie Automation Server:')}) + this.props.reason}</span>
 			case 'waiting':
-				return <span>{t('Reconnecting to the')} {t('Sofie Automation')} {t('Server')} <MomentFromNow unit='seconds'>{this.props.retryTime}</MomentFromNow></span>
+				return <span>{t('Reconnecting to the')} {t('Sofie Automation Server')} <MomentFromNow unit='seconds'>{this.props.retryTime}</MomentFromNow></span>
 			case 'offline':
-				return <span>{t('Your machine is offline and cannot connect to the')} {t('Sofie Automation')} {t('Server')}.</span>
+				return <span>{t('Your machine is offline and cannot connect to the')} {t('Sofie Automation Server')}.</span>
 			case 'connected':
-				return <span>{t('Connected to the')} {t('Sofie Automation')} {t('Server')}.</span>
+				return <span>{t('Connected to the')} {t('Sofie Automation Server')}.</span>
 		}
 		return null
 	}
