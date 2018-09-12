@@ -561,7 +561,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	activateRehearsal = () => {
 		if (this.props.studioMode && (!this.props.runningOrder.active || (this.props.runningOrder.active && !this.props.runningOrder.rehearsal))) {
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, true, (err, res) => {
-				if (err || (res & res.error)) {
+				if (err || (res && res.error)) {
 					this.handleActivationError(err || res)
 					return
 				}

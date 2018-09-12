@@ -15,7 +15,8 @@ export function triggerExternalMessage (
 	takeSegmentLine: SegmentLine,
 	previousSegmentLine: SegmentLine | null
 ) {
-	console.log('triggerExternalMessage')
+	// console.log('triggerExternalMessage')
+	logger.debug('triggerExternalMessage')
 	try {
 		let showStyle: ShowStyle | undefined = ShowStyles.findOne(runningOrder.showStyleId)
 		if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + runningOrder.showStyleId + '" not found!')
