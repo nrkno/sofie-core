@@ -44,7 +44,7 @@ export namespace ServerPlayoutAPI {
 				// TODO: what to do with the result?
 				logger.debug('Recieved reply for triggerGetRunningOrder', ro)
 
-				ServerPlayoutAPI.roReset(roId)
+				ServerPlayoutAPI.roReset(roId, true)
 
 				// Reset the playout devices by deactivating and activating rundown and restore current/next segment line, if possible
 				if (runningOrder && runningOrder.active) {
@@ -54,7 +54,7 @@ export namespace ServerPlayoutAPI {
 			}
 		}, 'triggerGetRunningOrder', runningOrder.mosId)
 	}
-	export function roReset (roId: string) {
+	export function roReset (roId: string, resetTimings?: boolean) {
 		// Reset the Running order
 		check(roId, String)
 
@@ -69,12 +69,36 @@ export namespace ServerPlayoutAPI {
 		SegmentLines.update({
 			runningOrderId: roId
 		}, {
-			$unset: {
+			$unset: _.extend({
 				duration: 1,
-				startedPlayback: 1,
+				startedPlayback: 1
+			}, resetTimings ? {
 				timings: 1
-			}
+			} : {})
 		}, {multi: true})
+
+		// Remove all segment line items that were added for holds
+		let holdItems = SegmentLineItems.find({
+			runningOrderId: runningOrder._id,
+			extendOnHold: true,
+			infiniteId: { $exists: true },
+		})
+		holdItems.forEach(i => {
+			if (!i.infiniteId || i.infiniteId === i._id) {
+				// Was the source, so clear infinite props
+				SegmentLineItems.update(i._id, {
+					$unset: {
+						infiniteId: 0,
+						infiniteMode: 0,
+					}
+				})
+			} else {
+				SegmentLineItems.remove(i)
+			}
+		})
+
+		// ensure that any removed infinites (caused by adlib) are restored
+		updateSourceLayerInfinitesAfterLine(runningOrder, true)
 
 		SegmentLineItems.update({
 			runningOrderId: roId
@@ -82,7 +106,7 @@ export namespace ServerPlayoutAPI {
 			$unset: {
 				duration: 1,
 				startedPlayback: 1,
-
+				durationOverride: 1
 			}
 		}, {multi: true})
 	}
@@ -94,10 +118,10 @@ export namespace ServerPlayoutAPI {
 		const active = runningOrder.active
 
 		if (active) ServerPlayoutAPI.roDeactivate(runningOrder._id)
-		ServerPlayoutAPI.roActivate(runningOrder._id, rehearsal || false)
+		ServerPlayoutAPI.roActivate(runningOrder._id, rehearsal || false, true)
 		if (!active) ServerPlayoutAPI.roDeactivate(runningOrder._id)
 	}
-	export function roActivate (roId: string, rehearsal: boolean): ClientAPI.ClientResponse {
+	export function roActivate (roId: string, rehearsal: boolean, fullReset?: boolean): ClientAPI.ClientResponse {
 		check(roId, String)
 		check(rehearsal, Boolean)
 
@@ -168,53 +192,7 @@ export namespace ServerPlayoutAPI {
 		if (wasInactive) {
 			let segmentLines = runningOrder.getSegmentLines()
 
-			SegmentLines.update({ runningOrderId: runningOrder._id }, {
-				$unset: {
-					startedPlayback: 0,
-					duration: 0
-				}
-			}, {
-				multi: true
-			})
-
-			// Remove all segment line items that have been dynamically created (such as adLib items)
-			SegmentLineItems.remove({
-				runningOrderId: runningOrder._id,
-				dynamicallyInserted: true
-			})
-
-			// Remove all segment line items that were added for holds
-			let holdItems = SegmentLineItems.find({
-				runningOrderId: runningOrder._id,
-				extendOnHold: true,
-				infiniteId: { $exists: true },
-			})
-			holdItems.forEach(i => {
-				if (!i.infiniteId || i.infiniteId === i._id) {
-					// Was the source, so clear infinite props
-					SegmentLineItems.update(i._id, {
-						$unset: {
-							infiniteId: 0,
-							infiniteMode: 0,
-						}
-					})
-				} else {
-					SegmentLineItems.remove(i)
-				}
-			})
-
-			// ensure that any removed infinites (caused by adlib) are restored
-			updateSourceLayerInfinitesAfterLine(runningOrder, true)
-
-			// Remove duration on segmentLineItems, as this is set by the ad-lib playback editing
-			SegmentLineItems.update({ runningOrderId: runningOrder._id }, {
-				$unset: {
-					startedPlayback: 0,
-					durationOverride: 0
-				}
-			}, {
-				multi: true
-			})
+			roReset(runningOrder._id, fullReset || false)
 
 			RunningOrders.update(runningOrder._id, {
 				$set: {
