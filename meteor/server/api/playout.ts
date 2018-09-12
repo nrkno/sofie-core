@@ -1503,7 +1503,7 @@ const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, runUntil
 		// figure out the baseline to set
 		let prevItems = getOrderedSegmentLineItem(previousLine)
 		for (let item of prevItems) {
-			if (!item.infiniteMode || item.duration || item.durationOverride) {
+			if (!item.infiniteMode || item.duration || item.durationOverride || item.expectedDuration) {
 				delete activeInfiniteItems[item.sourceLayerId]
 				delete activeInfiniteItemsSegmentId[item.sourceLayerId]
 				continue
@@ -1542,7 +1542,7 @@ const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, runUntil
 
 		// ensure any currently defined infinites are still wanted
 		let currentItems = getOrderedSegmentLineItem(line)
-		let currentInfinites = currentItems.filter(i => i.infiniteMode && !i.expectedDuration && i.infiniteId && i.infiniteId !== i._id)
+		let currentInfinites = currentItems.filter(i => i.infiniteId && i.infiniteId !== i._id)
 		let removedInfinites: string[] = []
 		for (let item of currentInfinites) {
 			const active = activeInfiniteItems[item.sourceLayerId]
@@ -1554,7 +1554,8 @@ const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, runUntil
 		}
 
 		// stop if not running to the end and there is/was nothing active
-		if (!runUntilEnd && Object.keys(activeInfiniteItemsSegmentId).length === 0 && currentInfinites.length === 0) {
+		const midInfinites = currentInfinites.filter(i => !i.expectedDuration && i.infiniteMode)
+		if (!runUntilEnd && Object.keys(activeInfiniteItemsSegmentId).length === 0 && midInfinites.length === 0) {
 			break
 		}
 
@@ -1566,32 +1567,32 @@ const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, runUntil
 			// If something exists on the layer, the infinite must be stopped and potentially replaced
 			const exist = currentItems.filter(i => i.sourceLayerId === newItem.sourceLayerId)
 			if (exist && exist.length > 0) {
-				// It will be stopped by this line
-				delete activeInfiniteItems[k]
-				delete activeInfiniteItemsSegmentId[k]
-
-				// if we matched with an infinite, then make sure that infinite is kept going
-				if (exist[exist.length - 1].infiniteMode && exist[exist.length - 1].infiniteMode !== SegmentLineItemLifespan.OutOnNextSegmentLine) {
-					activeInfiniteItems[k] = exist[0]
-					activeInfiniteItemsSegmentId[k] = line.segmentId
-				}
-
+				// remove the existing, as we need to update its contents
 				const existInf = exist.findIndex(e => !!e.infiniteId && e.infiniteId === newItem.infiniteId)
 				if (existInf >= 0) {
-					if (existInf + 1 < exist.length) {
-						SegmentLineItems.update(exist[existInf]._id, { $set: {
-							expectedDuration: `#${PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + exist[existInf + 1]._id}.start - #.start`
-						}})
-					}
-					continue
+					SegmentLineItems.remove(exist[existInf]._id)
+					removedInfinites.push(exist[existInf]._id)
+					exist.splice(existInf, 1)
 				}
 
-				// If something starts at the beginning, then dont bother adding this infinite.
-				// Otherwise we should add the infinite but set it to end at the start of the first item
-				if (exist[0].trigger.type === TriggerType.TIME_ABSOLUTE) {
-					if (exist[0].trigger.value === 0) {
-						// skip the infinite, as it will never show
-						continue
+				if (exist.length > 0) {
+					// It will be stopped by this line
+					delete activeInfiniteItems[k]
+					delete activeInfiniteItemsSegmentId[k]
+
+					// if we matched with an infinite, then make sure that infinite is kept going
+					if (exist[exist.length - 1].infiniteMode && exist[exist.length - 1].infiniteMode !== SegmentLineItemLifespan.OutOnNextSegmentLine) {
+						activeInfiniteItems[k] = exist[0]
+						activeInfiniteItemsSegmentId[k] = line.segmentId
+					}
+
+					// If something starts at the beginning, then dont bother adding this infinite.
+					// Otherwise we should add the infinite but set it to end at the start of the first item
+					if (exist[0].trigger.type === TriggerType.TIME_ABSOLUTE) {
+						if (exist[0].trigger.value === 0) {
+							// skip the infinite, as it will never show
+							continue
+						}
 					}
 				}
 			}
@@ -1606,14 +1607,15 @@ const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, runUntil
 
 			if (exist && exist.length) {
 				newItem.expectedDuration = `#${PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + exist[0]._id}.start - #.start`
+				newItem.infiniteMode = SegmentLineItemLifespan.Normal // it is no longer infinite, and the ui needs this to draw properly
 			}
 
 			SegmentLineItems.insert(newItem)
 		}
 
 		// find any new infinites exposed by this
-		for (let item of currentItems) {
-			if (!item.infiniteMode || item.duration || item.durationOverride) {
+		for (let item of currentItems.filter(i => removedInfinites.indexOf(i._id) < 0)) {
+			if (!item.infiniteMode || item.duration || item.durationOverride || item.expectedDuration) {
 				delete activeInfiniteItems[item.sourceLayerId]
 				delete activeInfiniteItemsSegmentId[item.sourceLayerId]
 				continue
@@ -1784,6 +1786,7 @@ function createSegmentLineGroup (segmentLine: SegmentLine, duration: number | st
 			value: 'now'
 		},
 		duration: duration,
+		priority: 5,
 		LLayer: 'core_abstract',
 		content: {
 			type: TimelineContentTypeOther.GROUP,
@@ -2376,6 +2379,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 			for (let item of currentInfiniteItems) {
 				const infiniteGroup = createSegmentLineGroup(currentSegmentLine, item.expectedDuration || 0)
 				infiniteGroup._id = PlayoutTimelinePrefixes.SEGMENT_LINE_GROUP_PREFIX + item._id + '_infinite'
+				infiniteGroup.priority = 1
 
 				if (item.infiniteId) {
 					let originalItem = SegmentLineItems.findOne(item.infiniteId)
