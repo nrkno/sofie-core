@@ -5,7 +5,7 @@ import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode } from '.
 import { SegmentLineItem, SegmentLineItems, ITimelineTrigger, SegmentLineItemLifespan } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItems, RunningOrderBaselineItem } from '../../lib/collections/RunningOrderBaselineItems'
-import { getCurrentTime, saveIntoDb, literal, Time, iterateDeeply, iterateDeeplyEnum, stringifyObjects, fetchAfter, getRank } from '../../lib/lib'
+import { getCurrentTime, saveIntoDb, literal, Time, iterateDeeply, iterateDeeplyEnum, stringifyObjects, fetchAfter, getRank, normalizeArray } from '../../lib/lib'
 import { Timeline, TimelineObj, TimelineObjHoldMode, TimelineObjGroupSegmentLine, TimelineContentTypeOther, TimelineObjSegmentLineAbstract, TimelineObjSegmentLineItemAbstract, TimelineObjGroup, TimelineContentTypeLawo, TimelineObjLawo } from '../../lib/collections/Timeline'
 import { TriggerType, TimelineEvent, TimelineResolvedObject } from 'superfly-timeline'
 import { Segments, Segment } from '../../lib/collections/Segments'
@@ -60,6 +60,11 @@ export namespace ServerPlayoutAPI {
 
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+
+		SegmentLines.remove({
+			runningOrderId: roId,
+			dynamicallyInserted: true
+		})
 
 		SegmentLineItems.remove({
 			runningOrderId: roId,
@@ -907,7 +912,6 @@ export namespace ServerPlayoutAPI {
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine, queue)
 		SegmentLineItems.insert(newSegmentLineItem)
 
-
 		// logger.debug('adLibItemStart', newSegmentLineItem)
 		if (queue) {
 			ServerPlayoutAPI.roSetNext(runningOrder._id, slId)
@@ -947,7 +951,6 @@ export namespace ServerPlayoutAPI {
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine, queue)
 		SegmentLineItems.insert(newSegmentLineItem)
 		// logger.debug('adLibItemStart', newSegmentLineItem)
-
 
 		if (queue) {
 			ServerPlayoutAPI.roSetNext(runningOrder._id, slId)
@@ -1079,6 +1082,7 @@ export namespace ServerPlayoutAPI {
 
 			// logger.debug('adLibItemStart', newSegmentLineItem)
 
+			cropInfinitesOnLayer(runningOrder, currentSegmentLine, newAdLibSegmentLineItem)
 			stopInfinitesRunningOnLayer(runningOrder, currentSegmentLine, newAdLibSegmentLineItem.sourceLayerId)
 
 			updateTimeline(runningOrder.studioInstallationId)
@@ -1298,7 +1302,6 @@ function afterTake (runningOrder: RunningOrder, takeSegmentLine: SegmentLine, pr
 import { Resolver } from 'superfly-timeline'
 import { transformTimeline } from '../../lib/timeline'
 import { ClientAPI } from '../../lib/api/client'
-import { Server } from 'net';
 
 function getResolvedSegmentLineItems (line: SegmentLine): SegmentLineItem[] {
 	const items = line.getSegmentLinesItems()
@@ -1633,14 +1636,23 @@ const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, runUntil
 })
 
 const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (runningOrder: RunningOrder, segLine: SegmentLine, newItem: SegmentLineItem) {
-	const items = getOrderedSegmentLineItem(segLine).filter(i => i.sourceLayerId === newItem.sourceLayerId && i._id !== newItem._id)
+	const studio: StudioInstallation = runningOrder.getStudioInstallation()
+	const sourceLayerLookup = normalizeArray(studio.sourceLayers, '_id')
+	const newItemExclusivityGroup = sourceLayerLookup[newItem.sourceLayerId].exclusiveGroup
+
+	const items = getOrderedSegmentLineItem(segLine).filter(i =>
+		(i.sourceLayerId === newItem.sourceLayerId
+			|| (newItemExclusivityGroup && sourceLayerLookup[i.sourceLayerId] && sourceLayerLookup[i.sourceLayerId].exclusiveGroup === newItemExclusivityGroup)
+		) && i._id !== newItem._id
+	)
 
 	for (const i of items) {
 		if (i.infiniteMode && !i.expectedDuration && i.dynamicallyInserted) {
 			SegmentLineItems.update({
 				_id: i._id
 			}, { $set: {
-				expectedDuration: `#${PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + newItem._id}.start - #.start`
+				expectedDuration: `#${PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + newItem._id}.start - #.start`,
+				infiniteMode: SegmentLineItemLifespan.Normal
 			}})
 		}
 	}

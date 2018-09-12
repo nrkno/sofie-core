@@ -109,6 +109,8 @@ export interface ISourceLayer extends ISourceLayerBase {
 	unlimited: boolean
 	/** If set to true, the layer will be shown in PGM Clean */
 	onPGMClean: boolean
+	/** Source layer exclusivity group. When adLibbing, only a single SLI can exist whitin an exclusivity group */
+	exclusiveGroup?: string
 }
 
 export interface IOutputLayerBase {

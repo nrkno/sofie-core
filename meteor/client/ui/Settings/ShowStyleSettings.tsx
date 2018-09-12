@@ -85,7 +85,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			<div className='studio-edit mod mhl mvs'>
 				<div>
 					<label className='field'>
-						{t('Show Style name')}
+						{t('Show Style Name')}
 						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'
@@ -99,7 +99,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</label>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							{t('Show Style id')}
+							{t('Show Style ID')}
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute='_id'
@@ -111,7 +111,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							{t('Baseline template id')}
+							{t('Baseline Template ID')}
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute='baselineTemplate'
@@ -123,7 +123,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							{t('External-message template id')}
+							{t('External Message Template ID')}
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute='messageTemplate'
@@ -135,12 +135,12 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							<a href={`/backup/show/${(this.props.showStyle as any)._id}`} target='_new'>{t('Download full backup')}</a>
+							<a href={`/backup/show/${(this.props.showStyle as any)._id}`} target='_new'>{t('Download Full Backup')}</a>
 						</label>
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							<a href={`/backup/show/${(this.props.showStyle as any)._id}/active`} target='_new'>{t('Download current state')}</a>
+							<a href={`/backup/show/${(this.props.showStyle as any)._id}/active`} target='_new'>{t('Download Current State')}</a>
 						</label>
 					</div>
 				</div>
@@ -148,7 +148,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					<h2>{t('Templates')}</h2>
 					<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteLineTemplateConfirm} onAccept={(e) => this.handleConfirmDeleteLineTemplateAccept(e)} onSecondary={(e) => this.handleConfirmDeleteLineTemplateCancel(e)}>
 						<p>{t(`Are you sure you want to delete line template ${this.state.deleteConfirmItem && this.state.deleteConfirmItem._id}?`)}</p>
-						<p>{t('This action is irreversible.')}</p>
+						<p>{t('Please note: This action is irreversible!')}</p>
 					</ModalDialog>
 					<table className='expando settings-showStyle-lineTemplates'>
 						<tbody>
@@ -180,9 +180,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							})}
 						</tbody>
 					</table>
-					<button className='action-btn right' onClick={(e) => this.onAddLineTemplate()}>
-						<FontAwesomeIcon icon={faPlus} />
-					</button>
+					<div className='mod mvm mhn'>
+						<button className='btn btn-primary right' onClick={(e) => this.onAddLineTemplate()}>
+							<FontAwesomeIcon icon={faPlus} />
+						</button>
+					</div>
 				</div>
 			</div>
 		)

@@ -188,7 +188,7 @@ export function getResolvedSegment (studioInstallation: StudioInstallation, runn
 				slTimeline.push({
 					id: PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + segmentLineItem._id,
 					trigger: offsetTrigger(segmentLineItem.trigger, TIMELINE_TEMP_OFFSET),
-					duration: segmentLineItem.durationOverride || segmentLineItem.duration || 0,
+					duration: segmentLineItem.durationOverride || _.isString(segmentLineItem.expectedDuration) ? segmentLineItem.expectedDuration : false || segmentLineItem.duration || 0,
 					LLayer: segmentLineItem.outputLayerId,
 					content: {
 						id: segmentLineItem._id
