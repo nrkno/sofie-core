@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.13.0"></a>
+# [0.13.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.12.0...v0.13.0) (2018-09-12)
+
+
+### Bug Fixes
+
+* issue with rehearsal double-activation warning ([17b4e95](https://github.com/nrkno/tv-automation-server-core/commit/17b4e95))
+* **externalMessage:** encode proper html-entities in strings ([243995c](https://github.com/nrkno/tv-automation-server-core/commit/243995c))
+
+
+### Features
+
+* Grafikk lookahead/preload ([78828fe](https://github.com/nrkno/tv-automation-server-core/commit/78828fe))
+* support preload lookahead mode for nora, which swaps out take commands for cue ([4cfd4fe](https://github.com/nrkno/tv-automation-server-core/commit/4cfd4fe))
+
+
+
 <a name="0.12.0"></a>
 # [0.12.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.10.1...v0.12.0) (2018-09-11)
 
