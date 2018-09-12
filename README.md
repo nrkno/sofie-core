@@ -2,7 +2,7 @@
 
 *Note: This is a work in progress!*
 
-This is the core application of the NRK "Sofie" News Studio Automation System.
+This is the core application of the [Sofie News Studio Automation System](https://github.com/nrkno/Sofie-TV-automation/).
 
 ## Local development
 First, install meteor:
