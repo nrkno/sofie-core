@@ -381,16 +381,8 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 						'auto-next': this.props.segmentLine.willProbablyAutoNext
 					})}>
 						<div className='segment-timeline__segment-line__nextline__label'>
-							{
-								this.state.isNext && (
-									this.props.autoNextSegmentLine ?
-										<React.Fragment>
-											<FontAwesomeIcon icon={faFastForward} />
-											{t('Next')}
-										</React.Fragment> :
-										t('Next')
-								)
-							}
+							{ this.props.autoNextSegmentLine && t('Auto') + ' '}
+							{ this.state.isNext && t('Next') }
 						</div>
 					</div>
 					{ DEBUG_MODE &&
@@ -408,16 +400,8 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 						'is-next': this.state.isLive
 					})}>
 						<div className='segment-timeline__segment-line__nextline__label'>
-							{
-								this.state.isLive && (
-									(this.props.autoNextSegmentLine || this.props.segmentLine.autoNext) ?
-										<React.Fragment>
-											<FontAwesomeIcon icon={faFastForward} />
-											{t('Next')}
-										</React.Fragment> :
-										t('Next')
-								)
-							}
+							{ this.props.segmentLine.autoNext && t('Auto') + ' ' }
+							{ this.state.isLive && t('Next') }
 						</div>
 					</div>}
 				</div>

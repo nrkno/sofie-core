@@ -207,7 +207,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 		})
 		if (this.shouldDataTrackerUpdate(prevProps)) {
 			// console.log('Invalidating computation!', this.statusComp.stopped, this.statusComp.invalidated)
-			this.statusComp.invalidate()
+			if (this.statusComp) this.statusComp.invalidate()
 		}
 	}
 

@@ -689,7 +689,7 @@ body.vertical-overflow-only {
 			.segment-timeline__segment-line__nextline {
 				display: block;
 				position: absolute;
-				top: -11px;
+				top: -13px;
 				left: 0;
 				bottom: -2em;
 				flex: 0;
@@ -706,51 +706,76 @@ body.vertical-overflow-only {
 					display: none;
 					text-transform: uppercase;
 					position: absolute;
-					top: -1em;
-					left: -3px;
+					top: -2px;
+    				left: 2px;
 					text-transform: uppercase;
 					font-weight: bold;
 					line-height: 1em;
 					white-space: nowrap;
 					word-wrap: none;
+					color: $segment-line-start-color;
 				}
 
 				&::after {
 					content: ' ';
 					display: block;
 					position: absolute;
-					top: -3px;
-    				left: -2px;
+					top: 0px;
+    				left: -10px;
 					width: 0;
 					height: 0;
 					border-style: solid;
-					border-width: 6px 0 6px 12px;
+					border-width: 5px 0 5px 9px;
+					border-color: transparent transparent transparent $segment-line-start-color;
+				}
+
+				&::before {
+					content: ' ';
+					display: block;
+					position: absolute;
+					bottom: 8px;
+    				left: -10px;
+					width: 0;
+					height: 0;
+					border-style: solid;
+					border-width: 5px 0 5px 9px;
 					border-color: transparent transparent transparent $segment-line-start-color;
 				}
 			}
 
-			&:not(.next):not(.live) {
-				.segment-timeline__segment-line__nextline.auto-next {
-					&::before {
-						content: ' ';
+			&:not(.live) {
+				.segment-timeline__segment-line__nextline.auto-next:not(.segment-timeline__segment-line__nextline--endline) {
+					border-left-width: 1px;
+
+					&::before, &::after {
+						left: 0
+					}
+
+					.segment-timeline__segment-line__nextline__label {
 						display: block;
-						position: absolute;
-						top: -3px;
-						left: 5px;
-						width: 0;
-						height: 0;
-						border-style: solid;
-						border-width: 6px 0 6px 12px;
-						border-color: transparent transparent transparent $segment-line-start-color;
+						left: 10px;
 					}
 				}
 			}
 
 			&.live {
-				.segment-timeline__segment-line__nextline {
-					&::after {
+				.segment-timeline__segment-line__nextline:not(.segment-timeline__segment-line__nextline--endline) {
+					&::after, &::before {
 						display: none;
 					}
+				}
+			}
+
+			.segment-timeline__segment-line__nextline.auto-next.segment-timeline__segment-line__nextline--endline {
+				border-left-width: 1px;
+
+				&::before, &::after {
+					left: 0
+				}
+
+				.segment-timeline__segment-line__nextline__label {
+					display: block;
+					left: 10px;
 				}
 			}
 
@@ -777,40 +802,14 @@ body.vertical-overflow-only {
 				.segment-timeline__segment-line__nextline:not(.segment-timeline__segment-line__nextline--endline) {
 					border-left-color: $general-next-color;
 					color: $general-next-color;
-					top: 0;
 
-					&::before {
-						display: block;
-						content: ' ';
-						top: 0;
-						left: ($segment-nextline-shade-width * -1) - 2px;
-						width: $segment-nextline-shade-width;
-						bottom: -2em;
-						position: absolute;
-						background: $segment-nextline-shade-fill;
+					&::before, &::after {
+						border-color: transparent transparent transparent $general-next-color;
 					}
 
 					.segment-timeline__segment-line__nextline__label {
+						color: $general-next-color;
 						display: block;
-					}
-
-					&::after {
-						display: none;
-					}
-				}
-
-				.segment-timeline__segment-line__nextline.segment-timeline__segment-line__nextline--endline:not(.is-next).auto-next {
-					&::before {
-						content: ' ';
-						display: block;
-						position: absolute;
-						top: -3px;
-						left: 5px;
-						width: 0;
-						height: 0;
-						border-style: solid;
-						border-width: 6px 0 6px 12px;
-						border-color: transparent transparent transparent $segment-line-start-color;
 					}
 				}
 			}
@@ -818,35 +817,14 @@ body.vertical-overflow-only {
 			.segment-timeline__segment-line__nextline--endline.is-next {
 				border-left-color: $general-next-color;
 				color: $general-next-color;
-				top: 0;
 
-				&::before {
-					display: block;
-					content: ' ';
-					top: 0;
-					left: ($segment-nextline-shade-width * -1) - 2px;
-					width: $segment-nextline-shade-width;
-					bottom: -2em;
-					position: absolute;
-					background: $segment-nextline-shade-fill;
+				&::before, &::after {
+					border-color: transparent transparent transparent $general-next-color;
 				}
 
 				.segment-timeline__segment-line__nextline__label {
+					color: $general-next-color;
 					display: block;
-				}
-
-				&::after {
-					content: ' ';
-					display: block;
-					position: absolute;
-					background: none;
-					top: 0;
-					left: 2px;
-					width: 0px;
-					height: auto;
-					bottom: 0;
-					border: none;
-					border-right: 2px solid $general-next-color;
 				}
 			}
 			
@@ -1339,14 +1317,8 @@ body.vertical-overflow-only {
 						display: none;
 					}
 
-					&::after {
+					&::after, &::before {
 						display: none;
-					}
-
-					&.auto-next {
-						&::before {
-							display: none;
-						}
 					}
 				}
 				.segment-timeline__output-group {
