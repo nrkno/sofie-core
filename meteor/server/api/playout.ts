@@ -228,6 +228,10 @@ export namespace ServerPlayoutAPI {
 		rehearsal = !!rehearsal
 		// if (runningOrder.active && !runningOrder.rehearsal) throw new Meteor.Error(403, `RunningOrder "${runningOrder._id}" is active and not in rehersal, cannot reactivate!`)
 
+		let newRunningOrder = RunningOrders.findOne(runningOrder._id) // fetch new from db, to make sure its up to date
+		if (!newRunningOrder) throw new Meteor.Error(404, `RunningOrder "${runningOrder._id}" not found!`)
+		runningOrder = newRunningOrder
+
 		let studioInstallation = runningOrder.getStudioInstallation()
 
 		let anyOtherActiveRunningOrders = RunningOrders.find({
@@ -249,11 +253,17 @@ export namespace ServerPlayoutAPI {
 
 		let wasInactive = !runningOrder.active
 
+
+		let m = {
+			active: true,
+			rehearsal: rehearsal,
+		}
+		if (!runningOrder.nextSegmentLineId) {
+			let segmentLines = runningOrder.getSegmentLines()
+			m['nextSegmentLineId'] = segmentLines[0]._id // put the first on queue
+		}
 		RunningOrders.update(runningOrder._id, {
-			$set: {
-				active: true,
-				rehearsal: rehearsal,
-			}
+			$set: m
 		})
 
 		if (wasInactive) {
