@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.13.1"></a>
+## [0.13.1](https://github.com/nrkno/tv-automation-server-core/compare/v0.13.0...v0.13.1) (2018-09-13)
+
+
+### Bug Fixes
+
+* **transition:** Using wrong overlap when combined with autonext ([4c56102](https://github.com/nrkno/tv-automation-server-core/commit/4c56102))
+* update timeline dependency ([b83f6be](https://github.com/nrkno/tv-automation-server-core/commit/b83f6be))
+
+
+
 <a name="0.13.0"></a>
 # [0.13.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.12.0...v0.13.0) (2018-09-12)
 
