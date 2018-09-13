@@ -38,6 +38,7 @@ import { DEFAULT_DISPLAY_DURATION } from '../../lib/RunningOrder'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
 import { scrollToSegmentLine } from '../lib/viewPort'
+import { AfterBroadcastForm } from './AfterBroadcastForm'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -403,15 +404,18 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
 			if (k.up) {
 				method(k.key, (e: KeyboardEvent) => {
+					if (disableInInputFields(e)) return
 					preventDefault(e)
 					if (k.up) k.up(e)
 				}, 'keyup')
 				method(k.key, (e: KeyboardEvent) => {
+					if (disableInInputFields(e)) return
 					preventDefault(e)
 				}, 'keydown')
 			}
 			if (k.down) {
 				method(k.key, (e: KeyboardEvent) => {
+					if (disableInInputFields(e)) return
 					preventDefault(e)
 					if (k.down) k.down(e)
 				}, 'keydown')
@@ -860,14 +864,17 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
 			if (k.up) {
 				method(k.key, (e: KeyboardEvent) => {
+					if (disableInInputFields(e)) return
 					if (k.up) k.up(e)
 				}, 'keyup')
 				method(k.key, (e: KeyboardEvent) => {
+					if (disableInInputFields(e)) return
 					preventDefault(e)
 				}, 'keydown')
 			}
 			if (k.down) {
 				method(k.key, (e: KeyboardEvent) => {
+					if (disableInInputFields(e)) return
 					if (k.down) k.down(e)
 				}, 'keydown')
 			}
@@ -1078,6 +1085,11 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							<div className='running-order-view__go-to-onAir' onClick={this.onGoToLiveSegment}>{t('ON AIR')}</div>
 						}
 						<ErrorBoundary>
+							<AfterBroadcastForm
+								runningOrder={this.props.runningOrder}
+							/>
+						</ErrorBoundary>
+						<ErrorBoundary>
 							<InspectorDrawer
 								segments={this.props.segments}
 								hotkeys={this.state.usedHotkeys}
@@ -1117,3 +1129,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 }
 )
+
+function disableInInputFields (e: KeyboardEvent) {
+	// @ts-ignore localName
+	return (e && e.target && ['textarea', 'input'].indexOf(e.target.localName + '') !== -1 )
+}

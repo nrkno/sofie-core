@@ -4010,7 +4010,7 @@ const stories = [{
 							'timeIn' : 0,
 							'duration' : 5000,
 							'in' : 'auto',
-							'out' : 'auto'
+							'out' : 'manual' // 'auto'
 						}
 					}
 				],

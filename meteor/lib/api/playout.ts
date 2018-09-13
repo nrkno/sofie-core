@@ -31,7 +31,8 @@ export namespace PlayoutAPI {
 		'segmentAdLibLineItemStop' = 'playout.segmentAdLibLineItemStop',
 		'sourceLayerOnLineStop' = 'playout.sourceLayerOnLineStop',
 		'sourceLayerStickyItemStart' = 'playout.sourceLayerStickyItemStart',
-		'timelineTriggerTimeUpdateCallback' = 'playout.timelineTriggerTimeUpdateCallback'
+		'timelineTriggerTimeUpdateCallback' = 'playout.timelineTriggerTimeUpdateCallback',
+		'saveEvaluation' = 'playout.saveEvaluation'
 	}
 }
 
