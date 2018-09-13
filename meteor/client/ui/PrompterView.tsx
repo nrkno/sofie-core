@@ -108,7 +108,7 @@ export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 	}
 
 	componentDidUpdate () {
-		$(document.body).addClass(['dark', 'vertical-overflow-only'])
+		$(document.body).addClass(['dark', 'xdark', 'vertical-overflow-only'])
 
 		let roId = this.props.runningOrder && this.props.runningOrder._id
 		let runningOrder = RunningOrders.findOne(roId || '')

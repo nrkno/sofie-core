@@ -48,6 +48,7 @@ For the purpose of running the system in a studio environment, there are additio
 |---------|-------------|
 |`/countdowns/:studioId/presenter`|Countdown clocks for a given studio, to be shown to the studio presenter|
 |`/activeRo/:studioId`|Redirects to the running order currently active in a given studio|
+|`/prompter/:studioId`|A simple prompter for the studio presenter|
 
 ## Studio mode
 
@@ -76,6 +77,10 @@ The UI will automatically detect user browser's default matching and select the 
 ```http://localhost:3000/?lng=xx```
 
 This choice is persisted in browser's Local Storage, and the same language will be used until a new forced language is chosen using this method.
+
+## Operating the prompter screen
+
+The prompter can be operated using pressing & holding keyboard arrow keys: `Up` & `Down`. Press `Home` to enable auto-scroll mode. `Shift+Up` and `Shift+Down` scrolls in 3x speed.
 
 ## Translating Sofie
 
