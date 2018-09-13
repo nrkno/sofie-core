@@ -2272,6 +2272,19 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 			if (!nextSegmentLineItem) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.nextSegmentLineId}" not found!`)
 		}
 
+		let calcOverlapDuration = (fromSl: SegmentLine, toSl: SegmentLine): number => {
+			const allowTransition = !fromSl.disableOutTransition
+			let overlapDuration = toSl.transitionDuration || 0
+			if (!toSl.transitionDuration && allowTransition) {
+				const transitionObjs = toSl.getSegmentLinesItems().filter(i => i.isTransition)
+				overlapDuration = (transitionObjs && transitionObjs.length > 0) ? transitionObjs[0].duration || 0 : 0
+			} else if (!allowTransition) {
+				overlapDuration = fromSl.autoNextOverlap || 0
+			}
+
+			return Math.max(overlapDuration, toSl.overlapDuration || 0)
+		}
+
 		if (activeRunningOrder.currentSegmentLineId) {
 			currentSegmentLine = SegmentLines.findOne(activeRunningOrder.currentSegmentLineId)
 			if (!currentSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.currentSegmentLineId}" not found!`)
@@ -2290,17 +2303,9 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 				allowTransition = !previousSegmentLine.disableOutTransition
 
 				if (previousSegmentLine.getLastStartedPlayback()) {
-					let transitionDuration = currentSegmentLine.transitionDuration || 0
-					if (!currentSegmentLine.transitionDuration && allowTransition) {
-						const transitionObjs = currentSegmentLine.getSegmentLinesItems().filter(i => i.isTransition)
-						transitionDuration = (transitionObjs && transitionObjs.length > 0) ? transitionObjs[0].duration || 0 : 0
-					}
+					const overlapDuration = calcOverlapDuration(previousSegmentLine, currentSegmentLine)
 
-					let endTrigger = allowTransition && currentSegmentLine.transitionDelay
-						? currentSegmentLine.transitionDelay + ` + ${Math.max(transitionDuration, currentSegmentLine.overlapDuration || 0)}`
-						: `#${PlayoutTimelinePrefixes.SEGMENT_LINE_GROUP_PREFIX + currentSegmentLine._id}.start + ${currentSegmentLine.overlapDuration || 0}`
-
-					previousSegmentLineGroup = createSegmentLineGroup(previousSegmentLine, `${endTrigger} - #.start`)
+					previousSegmentLineGroup = createSegmentLineGroup(previousSegmentLine, `#${PlayoutTimelinePrefixes.SEGMENT_LINE_GROUP_PREFIX + currentSegmentLine._id}.start + ${overlapDuration} - #.start`)
 					previousSegmentLineGroup.priority = -1
 					previousSegmentLineGroup.trigger = literal<ITimelineTrigger>({
 						type: TriggerType.TIME_ABSOLUTE,
@@ -2368,18 +2373,11 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 			// console.log('This segment line will autonext')
 			let nextSegmentLineItemGroup = createSegmentLineGroup(nextSegmentLineItem, 0)
 			if (currentSegmentLineGroup) {
-				const allowTransition = !currentSegmentLine.disableOutTransition
-				let overlapDuration = nextSegmentLineItem.transitionDuration || 0
-				if (!nextSegmentLineItem.transitionDuration && allowTransition) {
-					const transitionObjs = nextSegmentLineItem.getSegmentLinesItems().filter(i => i.isTransition)
-					overlapDuration = (transitionObjs && transitionObjs.length > 0) ? transitionObjs[0].duration || 0 : 0
-				} else if (!allowTransition) {
-					overlapDuration = currentSegmentLine.autoNextOverlap || 0
-				}
+				const overlapDuration = calcOverlapDuration(currentSegmentLine, nextSegmentLineItem)
 
 				nextSegmentLineItemGroup.trigger = literal<ITimelineTrigger>({
 					type: TriggerType.TIME_RELATIVE,
-					value: `#${currentSegmentLineGroup._id}.end - ${Math.max(overlapDuration, nextSegmentLineItem.overlapDuration || 0)}`
+					value: `#${currentSegmentLineGroup._id}.end - ${overlapDuration}`
 				})
 			}
 
