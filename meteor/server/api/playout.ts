@@ -2367,8 +2367,6 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 					overlapDuration = currentSegmentLine.autoNextOverlap || 0
 				}
 
-				console.log('OVER: ', allowTransition, overlapDuration, )
-
 				nextSegmentLineItemGroup.trigger = literal<ITimelineTrigger>({
 					type: TriggerType.TIME_RELATIVE,
 					value: `#${currentSegmentLineGroup._id}.end - ${Math.max(overlapDuration, nextSegmentLineItem.overlapDuration || 0)}`
