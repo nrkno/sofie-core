@@ -748,7 +748,7 @@ body.vertical-overflow-only {
 					border-left-width: 1px;
 
 					&::before, &::after {
-						left: 0
+						left: -1px;
 					}
 
 					.segment-timeline__segment-line__nextline__label {
@@ -770,7 +770,7 @@ body.vertical-overflow-only {
 				border-left-width: 1px;
 
 				&::before, &::after {
-					left: 0
+					left: -1px;
 				}
 
 				.segment-timeline__segment-line__nextline__label {

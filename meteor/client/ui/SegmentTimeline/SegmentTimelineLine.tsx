@@ -396,7 +396,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					}
 					{this.renderTimelineOutputGroups(this.props.segmentLine)}
 					{this.props.isLastInSegment && <div className={ClassNames('segment-timeline__segment-line__nextline', 'segment-timeline__segment-line__nextline--endline', {
-						'auto-next': (this.props.autoNextSegmentLine || this.props.segmentLine.autoNext),
+						'auto-next': this.props.segmentLine.autoNext,
 						'is-next': this.state.isLive
 					})}>
 						<div className='segment-timeline__segment-line__nextline__label'>
