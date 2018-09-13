@@ -1,24 +1,22 @@
 import * as React from 'react'
 import * as $ from 'jquery'
 import * as _ from 'underscore'
+import * as ClassNames from 'classnames'
 import {
 	BrowserRouter as Router,
-	Route,
-	Switch,
-	Redirect
+	Route
 } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { Meteor } from 'meteor/meteor'
 
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
+import { parse as queryStringParse } from 'query-string'
 
 import { Spinner } from '../lib/Spinner'
-import { RunningOrderView } from './RunningOrderView'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { objectPathGet, rateLimitIgnore } from '../../lib/lib'
+import { objectPathGet } from '../../lib/lib'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { PrompterMethods, PrompterData, PrompterAPI } from '../../lib/api/prompter'
 import * as classNames from 'classnames'
 import { Segment, Segments } from '../../lib/collections/Segments'
@@ -301,6 +299,7 @@ interface IPrompterTrackedProps {
 }
 interface IPrompterState {
 	subsReady: boolean
+	isMirror: boolean
 	// currentSegmentLineId: string,
 	// nextSegmentLineId: string,
 	// prompterData: PrompterData
@@ -323,9 +322,12 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 })(class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, IPrompterState> {
 
 	constructor (props) {
+		const params = queryStringParse(location.search)
+
 		super(props)
 		this.state = {
 			subsReady: false,
+			isMirror: params['mirror'] === '1' ? true : false
 			// prompterData: null,
 			// currentSegmentLineId: null,
 			// nextSegmentLineId: null
@@ -342,6 +344,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		this.subscribe('segmentLineItems', 	{runningOrderId: 	this.props.runningOrderId})
 
 	}
+
 	renderPrompterData (prompterData: PrompterData) {
 
 		let divs: any[] = []
@@ -416,7 +419,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 		if (this.props.prompterData) {
 			return (
-				<div className='prompter' >
+				<div className={ClassNames('prompter', this.state.isMirror ? 'mirror' : undefined)}>
 					{this.renderPrompterData(this.props.prompterData)}
 				</div >
 			)

@@ -5,6 +5,10 @@
     line-height: 0.95;
     text-align: center;
 
+    &.mirror {
+        transform: scaleX(-1);
+    }
+
     .prompter-segment {
 
         font-size: 50%;
