@@ -28,58 +28,111 @@ import { getResolvedSegment, ISourceLayerExtended, SegmentLineExtended } from '.
 let clone = require('fast-clone')
 
 export namespace ServerPlayoutAPI {
-	export function reloadData (roId: string, changeRehearsal?: boolean | null) {
+	/**
+	 * Prepare the broadcast for transmission
+	 * To be triggered well before the broadcast because it may take time
+	 */
+	export function roPrepareForBroadcast (roId: string) {
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		if (runningOrder.active) throw new Meteor.Error(404, `roPrepareForBroadcast cannot be run on an active runningOrder!`)
+
+		resetRunningOrder(runningOrder)
+		prepareStudioForBroadcast(runningOrder.getStudioInstallation())
+
+		activateRunningOrder(runningOrder, true) // Activate runningOrder (rehearsal)
+	}
+	/**
+	 * Reset the broadcast, to be used during testing.
+	 * The User might have run through the running order and wants to start over and try again
+	 */
+	export function roResetRunningOrder (roId: string) {
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		if (runningOrder.active && !runningOrder.rehearsal) throw new Meteor.Error(401, `roResetBroadcast can only be run in rehearsal!`)
+
+		resetRunningOrder(runningOrder)
+	}
+	/**
+	 * Activate the runningOrder, final preparations before going on air
+	 * To be triggered by the User a short while before going on air
+	 */
+	export function roResetAndActivate (roId: string) {
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		if (!runningOrder.rehearsal) throw new Meteor.Error(402, `roResetAndActivate can only be run in rehearsal!`)
+
+		resetRunningOrder(runningOrder)
+
+		activateRunningOrder(runningOrder, false) // Activate runningOrder
+	}
+	/**
+	 * Only activate the runningOrder, don't reset anything
+	 */
+	export function roActivate (roId: string, rehearsal: boolean) {
+		check(rehearsal, Boolean)
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+
+		activateRunningOrder(runningOrder, rehearsal)
+	}
+	/**
+	 * Deactivate the runningOrder
+	 */
+	export function roDeactivate (roId: string, rehearsal: boolean) {
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+
+		deactivateRunningOrder(runningOrder)
+	}
+	/**
+	 * Trigger a reload of data of the runningOrder
+	 */
+	export function reloadData (roId: string) {
 		// Reload and reset the Running order
 		check(roId, String)
-		check(changeRehearsal, Match.Maybe(Boolean))
-
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
-		PeripheralDeviceAPI.executeFunction(runningOrder.mosDeviceId, (err: any, ro: IMOSRunningOrder) => {
-			// console.log('Response!')
-			if (err) {
-				logger.error(err)
-			} else {
-				// TODO: what to do with the result?
-				logger.debug('Recieved reply for triggerGetRunningOrder', ro)
-
-				ServerPlayoutAPI.roReset(roId, true)
-
-				// Reset the playout devices by deactivating and activating rundown and restore current/next segment line, if possible
-				if (runningOrder && runningOrder.active) {
-					ServerPlayoutAPI.roDeactivate(roId)
-					ServerPlayoutAPI.roActivate(roId, _.isBoolean(changeRehearsal) ? changeRehearsal! : runningOrder.rehearsal || false)
-				}
-			}
-		}, 'triggerGetRunningOrder', runningOrder.mosId)
+		reloadRunningOrderData(runningOrder)
 	}
-	export function roReset (roId: string, resetTimings?: boolean) {
-		// Reset the Running order
-		check(roId, String)
 
-		let runningOrder = RunningOrders.findOne(roId)
-		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+	// export function roReset (roId: string, resetTimings?: boolean) {
+	// 	// Reset the Running order
+	// 	check(roId, String)
 
-		SegmentLines.remove({
-			runningOrderId: roId,
-			dynamicallyInserted: true
-		})
+	// 	let runningOrder = RunningOrders.findOne(roId)
+	// 	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
+	// 	resetRunningOrder(runningOrder)
+	// }
+	// export function roFastReset (roId: string) {
+	// 	let runningOrder = RunningOrders.findOne(roId)
+	// 	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+
+	// 	const rehearsal = runningOrder.rehearsal
+	// 	const active = runningOrder.active
+
+	// 	if (active) ServerPlayoutAPI.roDeactivate(runningOrder._id)
+	// 	ServerPlayoutAPI.roActivate(runningOrder._id, rehearsal || false, true)
+	// 	if (!active) ServerPlayoutAPI.roDeactivate(runningOrder._id)
+	// }
+	function resetRunningOrder (runningOrder: RunningOrder) {
+		logger.info('resetRunningOrder ' + runningOrder._id)
+		// Remove all dunamically inserted items (adlibs etc)
 		SegmentLineItems.remove({
-			runningOrderId: roId,
+			runningOrderId: runningOrder._id,
 			dynamicallyInserted: true
 		})
 
 		SegmentLines.update({
-			runningOrderId: roId
+			runningOrderId: runningOrder._id
 		}, {
-			$unset: _.extend({
+			$unset: {
 				duration: 1,
-				startedPlayback: 1
-			}, resetTimings ? {
+				startedPlayback: 1,
 				timings: 1
-			} : {})
+			}
 		}, {multi: true})
 
 		// Remove all segment line items that were added for holds
@@ -106,7 +159,7 @@ export namespace ServerPlayoutAPI {
 		updateSourceLayerInfinitesAfterLine(runningOrder, true)
 
 		SegmentLineItems.update({
-			runningOrderId: roId
+			runningOrderId: runningOrder._id
 		}, {
 			$unset: {
 				duration: 1,
@@ -114,28 +167,66 @@ export namespace ServerPlayoutAPI {
 				durationOverride: 1
 			}
 		}, {multi: true})
-	}
-	export function roFastReset (roId: string) {
-		let runningOrder = RunningOrders.findOne(roId)
-		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
-		const rehearsal = runningOrder.rehearsal
-		const active = runningOrder.active
-
-		if (active) ServerPlayoutAPI.roDeactivate(runningOrder._id)
-		ServerPlayoutAPI.roActivate(runningOrder._id, rehearsal || false, true)
-		if (!active) ServerPlayoutAPI.roDeactivate(runningOrder._id)
+		resetRunningOrderPlayhead(runningOrder)
 	}
-	export function roActivate (roId: string, rehearsal: boolean, fullReset?: boolean): ClientAPI.ClientResponse {
-		check(roId, String)
-		check(rehearsal, Boolean)
+	function resetRunningOrderPlayhead (runningOrder: RunningOrder) {
+		logger.info('resetRunningOrderPlayhead ' + runningOrder._id)
+		let segmentLines = runningOrder.getSegmentLines()
+
+		RunningOrders.update(runningOrder._id, {
+			$set: {
+				previousSegmentLineId: null,
+				currentSegmentLineId: null,
+				nextSegmentLineId: segmentLines[0]._id, // put the first on queue
+				updateStoryStatus: null,
+				holdState: RunningOrderHoldState.NONE,
+			}, $unset: {
+				startedPlayback: 1
+			}
+		})
+	}
+	function prepareStudioForBroadcast (studio: StudioInstallation) {
+		logger.info('prepareStudioForBroadcast ' + studio._id)
+
+		const ssrcBgs: Array<IStudioConfigItem> = _.compact([
+			studio.config.find((o) => o._id === 'atemSSrcBackground'),
+			studio.config.find((o) => o._id === 'atemSSrcBackground2')
+		])
+		if (ssrcBgs.length > 1) logger.info(ssrcBgs[0]!.value + ' and ' + ssrcBgs[1]!.value + ' will be loaded to atems')
+		if (ssrcBgs.length > 0) logger.info(ssrcBgs[0]!.value + ' will be loaded to atems')
+
+		let playoutDevices = PeripheralDevices.find({
+			studioInstallationId: studio._id,
+			type: PeripheralDeviceAPI.DeviceType.PLAYOUT
+		}).fetch()
+
+		_.each(playoutDevices, (device: PeripheralDevice) => {
+			let okToDestoryStuff = true
+			PeripheralDeviceAPI.executeFunction(device._id, (err, res) => {
+				if (err) {
+					logger.error(err)
+				} else {
+					logger.info('devicesMakeReady OK')
+				}
+			}, 'devicesMakeReady', okToDestoryStuff)
+
+			if (ssrcBgs.length > 0) {
+				PeripheralDeviceAPI.executeFunction(device._id, (err) => {
+					if (err) {
+						logger.error(err)
+					} else {
+						logger.info('Added Super Source BG to Atem')
+					}
+				}, 'uploadFileToAtem', ssrcBgs)
+			}
+		})
+	}
+	function activateRunningOrder (runningOrder: RunningOrder, rehearsal: boolean) {
+		logger.info('Activating RO ' + runningOrder._id + (rehearsal ? ' (Rehearsal)' : ''))
 
 		rehearsal = !!rehearsal
-		let runningOrder = RunningOrders.findOne(roId)
-		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
-		// if (runningOrder.active && !runningOrder.rehearsal) throw new Meteor.Error(403, `RunningOrder "${roId}" is active and not in rehersal, cannot reactivate!`)
-
-		let wasInactive = !runningOrder.active
+		// if (runningOrder.active && !runningOrder.rehearsal) throw new Meteor.Error(403, `RunningOrder "${runningOrder._id}" is active and not in rehersal, cannot reactivate!`)
 
 		let studioInstallation = runningOrder.getStudioInstallation()
 
@@ -143,7 +234,7 @@ export namespace ServerPlayoutAPI {
 			studioInstallationId: runningOrder.studioInstallationId,
 			active: true,
 			_id: {
-				$ne: roId
+				$ne: runningOrder._id
 			}
 		}).fetch()
 
@@ -155,63 +246,17 @@ export namespace ServerPlayoutAPI {
 			})
 			return res
 		}
-		logger.info('Activating RO ' + roId + (rehearsal ? ' (Rehearsal)' : ''))
 
-		let playoutDevices = PeripheralDevices.find({
-			studioInstallationId: studioInstallation._id,
-			type: PeripheralDeviceAPI.DeviceType.PLAYOUT
-		}).fetch()
-		// PeripheralDevices.find()
+		let wasInactive = !runningOrder.active
 
-		const ssrcBg: Array<IStudioConfigItem> = []
-		const ssrcBg1 = studioInstallation.config.find((o) => o._id === 'atemSSrcBackground')
-		const ssrcBg2 = studioInstallation.config.find((o) => o._id === 'atemSSrcBackground2')
-		if (ssrcBg1) ssrcBg.push(ssrcBg1)
-		if (ssrcBg2) ssrcBg.push(ssrcBg2)
-		if (ssrcBg.length > 1) logger.info(ssrcBg[0]!.value + ' and ' + ssrcBg[1]!.value + ' should be loaded to atems')
-		if (ssrcBg.length > 0) logger.info(ssrcBg[0]!.value + ' should be loaded to atems')
+		RunningOrders.update(runningOrder._id, {
+			$set: {
+				active: true,
+				rehearsal: rehearsal,
+			}
+		})
 
 		if (wasInactive) {
-			_.each(playoutDevices, (device: PeripheralDevice) => {
-				let okToDestoryStuff = wasInactive
-				PeripheralDeviceAPI.executeFunction(device._id, (err, res) => {
-					if (err) {
-						logger.error(err)
-					} else {
-						logger.info('devicesMakeReady OK')
-					}
-				}, 'devicesMakeReady', okToDestoryStuff)
-
-				if (ssrcBg.length > 0) {
-					PeripheralDeviceAPI.executeFunction(device._id, (err) => {
-						if (err) {
-							logger.error(err)
-						} else {
-							logger.info('Added Super Source BG to Atem')
-						}
-					}, 'uploadFileToAtem', ssrcBg)
-				}
-			})
-		}
-
-		if (wasInactive) {
-			let segmentLines = runningOrder.getSegmentLines()
-
-			roReset(runningOrder._id, fullReset || false)
-
-			RunningOrders.update(runningOrder._id, {
-				$set: {
-					active: true,
-					rehearsal: rehearsal,
-					previousSegmentLineId: null,
-					currentSegmentLineId: null,
-					nextSegmentLineId: segmentLines[0]._id, // put the first on queue
-					updateStoryStatus: null,
-					holdState: RunningOrderHoldState.NONE,
-				}, $unset: {
-					startedPlayback: 0
-				}
-			})
 
 			logger.info('Building baseline items...')
 
@@ -246,34 +291,14 @@ export namespace ServerPlayoutAPI {
 			}
 
 			updateTimeline(runningOrder.studioInstallationId)
-		} else {
-			logger.info(`Activating "${roId}" non-destructively...`)
-
-			RunningOrders.update(runningOrder._id, {
-				$set: {
-					active: true,
-					rehearsal: rehearsal,
-					// don't modify anything, we're already active
-					// previousSegmentLineId: null,
-					// currentSegmentLineId: null,
-					// nextSegmentLineId: segmentLines[0]._id, // put the first on queue
-					// updateStoryStatus: null,
-					// holdState: RunningOrderHoldState.NONE,
-				}
-			})
 		}
 
 		return literal<ClientAPI.ClientResponse>({
 			success: 200
 		})
 	}
-	export function roDeactivate (roId: string) {
-		check(roId, String)
-
-		let runningOrder = RunningOrders.findOne(roId)
-		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
-
-		logger.info('Inactivating RO ' + roId)
+	function deactivateRunningOrder (runningOrder: RunningOrder) {
+		logger.info('Deactivating RO ' + runningOrder._id)
 
 		let previousSegmentLine = (runningOrder.currentSegmentLineId ?
 			SegmentLines.findOne(runningOrder.currentSegmentLineId)
@@ -309,6 +334,166 @@ export namespace ServerPlayoutAPI {
 
 		sendStoryStatus(runningOrder, null)
 	}
+
+	const reloadRunningOrderData: (runningOrder: RunningOrder) => void = Meteor.wrapAsync(
+		function reloadRunningOrderData (runningOrder: RunningOrder, cb: (err) => void) {
+			logger.info('reloadRunningOrderData ' + runningOrder._id)
+
+			PeripheralDeviceAPI.executeFunction(runningOrder.mosDeviceId, (err: any, ro: IMOSRunningOrder) => {
+				// console.log('Response!')
+				if (err) {
+					logger.error(err)
+					cb(err)
+				} else {
+					// TODO: what to do with the result?
+					logger.debug('Recieved reply for triggerGetRunningOrder', ro)
+					cb(null)
+				}
+			}, 'triggerGetRunningOrder', runningOrder.mosId)
+		}
+	)
+	/*
+	export function roActivateOld (roId: string, rehearsal: boolean, fullReset?: boolean): ClientAPI.ClientResponse {
+		check(roId, String)
+		check(rehearsal, Boolean)
+
+		rehearsal = !!rehearsal
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		// if (runningOrder.active && !runningOrder.rehearsal) throw new Meteor.Error(403, `RunningOrder "${roId}" is active and not in rehersal, cannot reactivate!`)
+
+		let wasInactive = !runningOrder.active
+
+		let studioInstallation = runningOrder.getStudioInstallation()
+
+		let anyOtherActiveRunningOrders = RunningOrders.find({
+			studioInstallationId: runningOrder.studioInstallationId,
+			active: true,
+			_id: {
+				$ne: roId
+			}
+		}).fetch()
+
+		if (anyOtherActiveRunningOrders.length) {
+			logger.warn('Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
+			const res = literal<ClientAPI.ClientResponse>({
+				error: 409,
+				message: 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id')
+			})
+			return res
+		}
+		logger.info('Activating RO ' + roId + (rehearsal ? ' (Rehearsal)' : ''))
+
+		// let playoutDevices = PeripheralDevices.find({
+		// 	studioInstallationId: studioInstallation._id,
+		// 	type: PeripheralDeviceAPI.DeviceType.PLAYOUT
+		// }).fetch()
+		// PeripheralDevices.find()
+
+		// const ssrcBgs: Array<IStudioConfigItem> = []
+		// const ssrcBg1 = studioInstallation.config.find((o) => o._id === 'atemSSrcBackground')
+		// const ssrcBg2 = studioInstallation.config.find((o) => o._id === 'atemSSrcBackground2')
+		// if (ssrcBg1) ssrcBgs.push(ssrcBg1)
+		// if (ssrcBg2) ssrcBgs.push(ssrcBg2)
+		// if (ssrcBgs.length > 1) logger.info(ssrcBgs[0]!.value + ' and ' + ssrcBgs[1]!.value + ' should be loaded to atems')
+		// if (ssrcBgs.length > 0) logger.info(ssrcBgs[0]!.value + ' should be loaded to atems')
+
+		// if (wasInactive) {
+		// 	_.each(playoutDevices, (device: PeripheralDevice) => {
+		// 		let okToDestoryStuff = wasInactive
+		// 		PeripheralDeviceAPI.executeFunction(device._id, (err, res) => {
+		// 			if (err) {
+		// 				logger.error(err)
+		// 			} else {
+		// 				logger.info('devicesMakeReady OK')
+		// 			}
+		// 		}, 'devicesMakeReady', okToDestoryStuff)
+
+		// 		if (ssrcBgs.length > 0) {
+		// 			PeripheralDeviceAPI.executeFunction(device._id, (err) => {
+		// 				if (err) {
+		// 					logger.error(err)
+		// 				} else {
+		// 					logger.info('Added Super Source BG to Atem')
+		// 				}
+		// 			}, 'uploadFileToAtem', ssrcBgs)
+		// 		}
+		// 	})
+		// }
+		RunningOrders.update(runningOrder._id, {
+			$set: {
+				active: true,
+				rehearsal: rehearsal,
+			}
+		})
+
+		if (wasInactive) {
+			// let segmentLines = runningOrder.getSegmentLines()
+
+			// roReset(runningOrder._id, fullReset || false)
+
+			logger.info('Building baseline items...')
+
+			const showStyle = runningOrder.getShowStyle()
+			if (showStyle.baselineTemplate) {
+				const result: TemplateResultAfterPost = runNamedTemplate(showStyle, showStyle.baselineTemplate, literal<TemplateContext>({
+					runningOrderId: runningOrder._id,
+					studioId: runningOrder.studioInstallationId,
+					segmentLine: runningOrder.getSegmentLines()[0],
+					templateId: showStyle.baselineTemplate
+				}), {
+					// Dummy object, not used in this template:
+					RunningOrderId: new MosString128(''),
+					Body: [],
+					ID: new MosString128(''),
+
+				}, 'baseline')
+
+				if (result.baselineItems) {
+					logger.info(`... got ${result.baselineItems.length} items from template.`)
+					saveIntoDb<RunningOrderBaselineItem, RunningOrderBaselineItem>(RunningOrderBaselineItems, {
+						runningOrderId: runningOrder._id
+					}, result.baselineItems)
+				}
+
+				if (result.segmentLineAdLibItems) {
+					logger.info(`... got ${result.segmentLineAdLibItems.length} adLib items from template.`)
+					saveIntoDb<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>(RunningOrderBaselineAdLibItems, {
+						runningOrderId: runningOrder._id
+					}, result.segmentLineAdLibItems)
+				}
+			}
+
+			updateTimeline(runningOrder.studioInstallationId)
+		} else {
+			// logger.info(`Activating "${roId}" non-destructively...`)
+
+			// RunningOrders.update(runningOrder._id, {
+			// 	$set: {
+			// 		active: true,
+			// 		rehearsal: rehearsal,
+			// 		// don't modify anything, we're already active
+			// 		// previousSegmentLineId: null,
+			// 		// currentSegmentLineId: null,
+			// 		// nextSegmentLineId: segmentLines[0]._id, // put the first on queue
+			// 		// updateStoryStatus: null,
+			// 		// holdState: RunningOrderHoldState.NONE,
+			// 	}
+			// })
+		}
+
+		return literal<ClientAPI.ClientResponse>({
+			success: 200
+		})
+	}
+	export function roDeactivateOld (roId: string) {
+		check(roId, String)
+
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+
+	}
+	*/
 	export function roTake (roId: string) {
 		check(roId, String)
 
@@ -1163,18 +1348,25 @@ let methods = {}
 methods[PlayoutAPI.methods.reloadData] = (roId: string) => {
 	return ServerPlayoutAPI.reloadData(roId)
 }
-methods[PlayoutAPI.methods.roReset] = (roId: string) => {
-	return ServerPlayoutAPI.roReset(roId)
+methods[PlayoutAPI.methods.roPrepareForBroadcast] = (roId: string) => {
+	return ServerPlayoutAPI.roPrepareForBroadcast(roId)
 }
-methods[PlayoutAPI.methods.roFastReset] = (roId: string) => {
-	return ServerPlayoutAPI.roFastReset(roId)
+methods[PlayoutAPI.methods.roResetRunningOrder] = (roId: string) => {
+	return ServerPlayoutAPI.roResetRunningOrder(roId)
 }
-methods[PlayoutAPI.methods.roActivate] = (roId: string, rehersal: boolean) => {
-	return ServerPlayoutAPI.roActivate(roId, rehersal)
+methods[PlayoutAPI.methods.roResetAndActivate] = (roId: string) => {
+	return ServerPlayoutAPI.roResetAndActivate(roId)
 }
-methods[PlayoutAPI.methods.roDeactivate] = (roId: string) => {
-	return ServerPlayoutAPI.roDeactivate(roId)
+methods[PlayoutAPI.methods.roActivate] = (roId: string, rehearsal: boolean) => {
+	return ServerPlayoutAPI.roActivate(roId, rehearsal)
 }
+methods[PlayoutAPI.methods.roDeactivate] = (roId: string, rehearsal: boolean) => {
+	return ServerPlayoutAPI.roDeactivate(roId, rehearsal)
+}
+methods[PlayoutAPI.methods.reloadData] = (roId: string) => {
+	return ServerPlayoutAPI.reloadData(roId)
+}
+
 methods[PlayoutAPI.methods.roTake] = (roId: string) => {
 	return ServerPlayoutAPI.roTake(roId)
 }

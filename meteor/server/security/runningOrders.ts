@@ -17,6 +17,7 @@ RunningOrders.allow({
 		return false // Not allowed client-side
 	},
 	update (userId, doc, fields, modifier) {
+		return true // tmp!
 		return false // Not allowed client-side
 	},
 	remove (userId, doc) {

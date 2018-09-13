@@ -24,6 +24,7 @@ import {
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './PrompterView'
+import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
 
 interface IAppState {
 	studioMode: boolean
@@ -121,6 +122,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 						</Switch>
 					</ErrorBoundary>
 					<ConnectionStatusNotification />
+					<ModalDialogGlobalContainer />
 				</div>
 			</Router>
 		)

@@ -24,8 +24,9 @@ import {
 
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { literal } from '../../lib/lib'
+import { literal, getCurrentTime } from '../../lib/lib'
 import { logger } from '../logging'
+import { RunningOrders } from '../../lib/collections/RunningOrders'
 
 /* tslint:disable:no-irregular-whitespace quotemark whitespace no-consecutive-blank-lines */
 
@@ -6841,7 +6842,20 @@ Meteor.methods({
 				]
 			}
 		)
-	}
+	},
+	'debug_roSetStarttimeSoon' () {
+		let pd = getPD()
+
+		let ro = RunningOrders.findOne({
+			active: true
+		})
+		if (ro) {
+			RunningOrders.update(ro._id, {$set: {
+				expectedStart: getCurrentTime() + 70 * 1000
+			}})
+		}
+
+	},
 
 })
 
