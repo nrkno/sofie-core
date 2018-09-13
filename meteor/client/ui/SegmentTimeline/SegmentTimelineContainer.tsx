@@ -241,6 +241,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	componentWillUnmount () {
 		this._cleanUp()
 		this.stopOnAirLine()
+		window.removeEventListener(RunningOrderViewEvents.rewindsegments, this.onRewindSegment)
 	}
 
 	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {

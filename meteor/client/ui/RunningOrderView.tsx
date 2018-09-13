@@ -154,7 +154,15 @@ const WarningDisplay = translate()(timer(5000)(
 				onAccept={this.oneMinuteBeforeAction}
 				onDiscard={this.discard}
 				onSecondary={this.discard}
-				show={this.props.studioMode && this.state.plannedStartCloseShow && !(this.props.runningOrder.active && !this.props.runningOrder.rehearsal) && this.props.runningOrder.active}
+				show={
+					this.props.studioMode &&
+					this.state.plannedStartCloseShow &&
+					!(
+						this.props.runningOrder.active &&
+						!this.props.runningOrder.rehearsal
+					) &&
+					this.props.runningOrder.active
+				}
 			>
 				<p>{t('You are in rehearsal mode, the broadcast starts in less than 1 minute. Do you want to reset the rundown and go into playout mode?')}</p>
 			</ModalDialog>
@@ -177,7 +185,7 @@ export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_DEACTIVATE = 'mod+shift+§',
 	RUNNING_ORDER_GO_TO_LIVE = 'mod+home',
 	RUNNING_ORDER_REWIND_SEGMENTS = 'shift+home',
-	RUNNING_ORDER_RELOAD_RUNNING_ORDER = 'mod+shift+f12',
+	RUNNING_ORDER_RESET_RUNNING_ORDER = 'mod+shift+f12',
 	RUNNING_ORDER_TOGGLE_DRAWER = 'tab',
 	ADLIB_QUEUE_MODIFIER = 'shift',
 	RUNNING_ORDER_NEXT_FORWARD = 'f9',
@@ -350,8 +358,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					label: t('Activate (Rehearsal)'),
 					global: true
 				},{
-					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RELOAD_RUNNING_ORDER,
-					up: this.keyReloadRunningOrder,
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RESET_RUNNING_ORDER,
+					up: this.keyResetRunningOrder,
 					label: t('Reload running order'),
 					global: true
 				},{
@@ -461,7 +469,9 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	keyDeactivate = (e: ExtendedKeyboardEvent) => {
 		this.deactivate()
 	}
-
+	keyResetRunningOrder = (e: ExtendedKeyboardEvent) => {
+		this.resetRunningOrder()
+	}
 	keyReloadRunningOrder = (e: ExtendedKeyboardEvent) => {
 		this.reloadRunningOrder()
 	}
@@ -704,16 +714,28 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 	resetRunningOrder = () => {
 		const { t } = this.props
-
 		let doReset = () => {
+
+			// Do a rewind right away
+			window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
+
 			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roResetRunningOrder, this.props.runningOrder._id, (err) => {
+				// Do another rewind later, when the UI has updated
+				Meteor.defer(() => {
+					Tracker.flush()
+					Meteor.setTimeout(() => {
+						const event = new Event(RunningOrderViewEvents.rewindsegments)
+						window.dispatchEvent(event)
+
+						window.dispatchEvent(new Event(RunningOrderViewEvents.goToLiveSegment))
+					}, 500)
+				})
+
 				if (err) {
 					// TODO: notify user
 					console.error(err)
 					return
 				}
-				const event = new Event(RunningOrderViewEvents.rewindsegments)
-				window.dispatchEvent(event)
 			})
 		}
 		if ((this.props.runningOrder.active && !this.props.runningOrder.rehearsal)) {
@@ -898,7 +920,8 @@ interface IState {
 }
 
 export enum RunningOrderViewEvents {
-	'rewindsegments'	=	'sofie:roRewindSegments'
+	'rewindsegments'	=	'sofie:roRewindSegments',
+	'goToLiveSegment'	=	'sofie:goToLiveSegment'
 }
 
 interface ITrackedProps {
@@ -1037,6 +1060,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				}, 'keydown')
 			}
 		})
+
+		window.addEventListener(RunningOrderViewEvents.goToLiveSegment, this.onGoToLiveSegment)
 	}
 
 	componentDidUpdate (prevProps: IProps & ITrackedProps, prevState: IState) {
@@ -1074,6 +1099,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				mousetrap.unbind(k.key, 'keydown')
 			}
 		})
+
+		window.removeEventListener(RunningOrderViewEvents.goToLiveSegment, this.onGoToLiveSegment)
 	}
 
 	onRewindSegments = () => {
