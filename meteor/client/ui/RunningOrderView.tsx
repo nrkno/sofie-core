@@ -1186,7 +1186,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	renderSegments () {
 		if (this.props.segments) {
-			return this.props.segments.map((segment) => {
+			return this.props.segments.map((segment, index, array) => {
 				if (this.props.studioInstallation && this.props.runningOrder) {
 					return <ErrorBoundary key={segment._id}>
 							<SegmentTimelineContainer
@@ -1199,6 +1199,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 												onTimeScaleChange={this.onTimeScaleChange}
 												onContextMenu={this.onContextMenu}
 												onSegmentScroll={this.onSegmentScroll}
+												isLastSegment={index === array.length - 1}
 												/>
 						</ErrorBoundary>
 				}

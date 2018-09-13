@@ -779,6 +779,25 @@ body.vertical-overflow-only {
 				}
 			}
 
+			.segment-timeline__segment-list__show-end {
+				position: absolute;
+				top: -13px;
+				left: 100%;
+				white-space: nowrap;
+				bottom: -2em;
+				border-left: 2px solid $segment-line-start-color;
+				margin-left: 2px;
+				padding-left: 0.5em;
+				text-transform: uppercase;
+				font-size: 0.9em;
+
+				.segment-timeline__segment-list__show-end__label {
+					position: absolute;
+					top: 50%;
+					transform: translateY(calc(-50% - 6px));
+				}
+			}
+
 			.segment-timeline__segment-line__future-shade {
 				display: block;
 				position: absolute;
@@ -811,6 +830,12 @@ body.vertical-overflow-only {
 						color: $general-next-color;
 						display: block;
 					}
+				}
+			}
+
+			.segment-timeline__segment-line__nextline--endline.show-end {
+				&::before, &::after {
+					display: none;
 				}
 			}
 

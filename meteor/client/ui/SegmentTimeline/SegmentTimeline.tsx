@@ -53,6 +53,7 @@ interface IProps {
 	onContextMenu?: (contextMenuContext: any) => void
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	followingSegmentLine: SegmentLineUi | undefined
+	isLastSegment: boolean
 }
 interface IStateHeader {
 	timelineWidth: number
@@ -121,7 +122,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 	}
 
 	renderZoomTimeline () {
-		return this.props.segmentLines.map((segmentLine) => {
+		return this.props.segmentLines.map((segmentLine, index, array) => {
 			return (
 				<SegmentTimelineLine key={segmentLine._id}
 					segment={this.props.segment}
@@ -139,7 +140,8 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 					autoNextSegmentLine={this.props.autoNextSegmentLine}
 					liveLineHistorySize={this.props.liveLineHistorySize}
 					livePosition={this.props.segment._id === this.props.runningOrder.currentSegmentLineId && segmentLine.startedPlayback && segmentLine.getLastStartedPlayback() ? this.props.livePosition - (segmentLine.getLastStartedPlayback() || 0) : null}
-					isLastInSegment={false} />
+					isLastInSegment={false}
+					isLastSegment={false} />
 			)
 		})
 	}
@@ -374,7 +376,8 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 						{...this.props}
 						scrollWidth={this.state.timelineWidth / this.props.timeScale}
 						firstSegmentLineInSegment={this.props.segmentLines[0]}
-						isLastInSegment={index === (this.props.segmentLines.length - 1) ? true : false}
+						isLastSegment={this.props.isLastSegment}
+						isLastInSegment={index === (this.props.segmentLines.length - 1)}
 						segmentLine={segmentLine} />
 				)
 			})}
