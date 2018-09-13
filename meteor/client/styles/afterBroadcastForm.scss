@@ -1,0 +1,23 @@
+.afterbroadcastform-container {
+    text-align: center;
+
+    .afterbroadcastform {
+        text-align: left;
+        margin-right: auto;
+        margin-left: auto;
+        display: inline-block;
+        
+        p {
+            margin: 0.3em;
+        }
+        .question {
+            margin: 0 0.5em 0 0;
+            textarea {
+                width: 30em;
+            }
+        }
+        button {
+            margin-top: 0.5em;
+        }
+    }
+}

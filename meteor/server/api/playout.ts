@@ -1124,6 +1124,12 @@ export namespace ServerPlayoutAPI {
 			})
 		}
 	}
+	export function saveEvaluation (evaluation: EvaluationBase): string {
+		return Evaluations.insert(_.extend(evaluation, {
+			userId: this.userId,
+			timestamp: getCurrentTime(),
+		}))
+	}
 }
 
 let methods = {}
@@ -1180,6 +1186,9 @@ methods[PlayoutAPI.methods.timelineTriggerTimeUpdateCallback] = (timelineObjId: 
 }
 methods[PlayoutAPI.methods.sourceLayerStickyItemStart] = (roId: string, sourceLayerId: string) => {
 	return ServerPlayoutAPI.sourceLayerStickyItemStart(roId, sourceLayerId)
+}
+methods[PlayoutAPI.methods.saveEvaluation] = (evaluation: EvaluationBase) => {
+	return ServerPlayoutAPI.saveEvaluation(evaluation)
 }
 
 _.each(methods, (fcn: Function, key) => {
@@ -1266,6 +1275,7 @@ function afterTake (runningOrder: RunningOrder, takeSegmentLine: SegmentLine, pr
 import { Resolver } from 'superfly-timeline'
 import { transformTimeline } from '../../lib/timeline'
 import { ClientAPI } from '../../lib/api/client'
+import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
 
 function getResolvedSegmentLineItems (line: SegmentLine): SegmentLineItem[] {
 	const items = line.getSegmentLinesItems()

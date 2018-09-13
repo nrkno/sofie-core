@@ -996,10 +996,12 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 		mSet['mappings.' + newLayerId] = layer
 		mUnset['mappings.' + oldLayerId] = 1
 
-		edit.props.collection.update(this.props.studioInstallation._id, {
-			$set: mSet,
-			$unset: mUnset
-		})
+		if (edit.props.collection) {
+			edit.props.collection.update(this.props.studioInstallation._id, {
+				$set: mSet,
+				$unset: mUnset
+			})
+		}
 
 		this.finishEditItem(oldLayerId)
 		this.editItem(newLayerId)

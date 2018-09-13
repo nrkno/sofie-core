@@ -198,7 +198,7 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 	}
 
 	toggleDrawer = () => {
-		this.blurActiveElement();
+		this.blurActiveElement()
 		this.setState({
 			expanded: !this.state.expanded
 		})

@@ -43,8 +43,8 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 
 interface IEditAttributeBaseProps {
 	updateOnKey?: boolean,
-	attribute: string,
-	collection: Mongo.Collection<any>,
+	attribute?: string,
+	collection?: Mongo.Collection<any>,
 	myObject?: any,
 	obj?: any
 	options?: any
@@ -118,7 +118,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 				return obj
 			}
 		}
-		return f(obj, attr)
+		return f(obj, attr || '')
 	}
 	getAttribute () {
 		if (this.props.overrideDisplayValue) return this.props.overrideDisplayValue
@@ -134,9 +134,11 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		if (this.props.updateFunction && typeof this.props.updateFunction === 'function') {
 			this.props.updateFunction(this, newValue)
 		} else {
-			let m = {}
-			m[this.props.attribute] = newValue
-			this.props.collection.update(this.props.obj._id, { $set: m })
+			if (this.props.collection && this.props.attribute) {
+				let m = {}
+				m[this.props.attribute] = newValue
+				this.props.collection.update(this.props.obj._id, { $set: m })
+			}
 		}
 
 	}
@@ -146,7 +148,7 @@ function wrapEditAttribute (newClass) {
 		// These properties will be exposed under this.props
 		// Note that these properties are reactively recalculated
 		return {
-			myObject: props.collection.findOne(props.obj._id)
+			myObject: props.collection ? props.collection.findOne(props.obj._id) : (props.obj || {})
 		}
 	})(newClass)
 }
