@@ -239,7 +239,7 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 			>
 				{
 					_.isString(onQueue.message) ?
-					<p>{this.renderString(onQueue.message)}</p> :
+					this.renderString(onQueue.message) :
 					onQueue.message
 				}
 			</ModalDialog>)
