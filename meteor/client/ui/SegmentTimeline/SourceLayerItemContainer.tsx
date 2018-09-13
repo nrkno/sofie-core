@@ -144,42 +144,56 @@ export const SourceLayerItemContainer = withTracker((props: IPropsHeader) => {
 
 			overrides.segmentLineItem = _.extend(overrides.segmentLineItem || {}, segmentCopy)
 		}
+	} else {
+		console.error(`SegmentLineItem "${props.segmentLineItem._id}" has no sourceLayer:`, props.segmentLineItem)
 	}
 
 	return overrides
 })(
 class extends MeteorReactComponent<IPropsHeader> {
-	private objIdCF: any
+	private mediaObjectSub: Meteor.SubscriptionHandle
+	private objId: string
+
+	updateMediaObjectSubscription () {
+		if (this.props.segmentLineItem && this.props.segmentLineItem.sourceLayer) {
+			const sli = this.props.segmentLineItem
+			let objId: string | undefined = undefined
+
+			switch (this.props.segmentLineItem.sourceLayer.type) {
+				case RundownAPI.SourceLayerType.VT:
+					objId = (sli.content as VTContent).fileName.toUpperCase()
+					break
+				case RundownAPI.SourceLayerType.LIVE_SPEAK:
+					objId = (sli.content as LiveSpeakContent).fileName.toUpperCase()
+					break
+			}
+
+			if (objId && objId !== this.objId) {
+				if (this.mediaObjectSub) {
+					this.mediaObjectSub.stop()
+				}
+				this.objId = objId
+				this.subscribe('mediaObjects', this.props.runningOrder.studioInstallationId, {
+					mediaId: this.objId
+				})
+				console.log(`${this.props.segmentLineItem._id}: subscribing to mediaId: "${this.objId}"`)
+			}
+		} else {
+			console.error('One of the SegmentLineItem\'s is invalid:', this.props.segmentLineItem)
+		}
+	}
 
 	componentWillMount () {
-		this.objIdCF = new ComputedField(() => {
-			let sli = SegmentLineItems.findOne(this.props.segmentLineItem._id)
-			if (sli) {
-				if (this.props.segmentLineItem.sourceLayer) {
-					switch (this.props.segmentLineItem.sourceLayer.type) {
-						case RundownAPI.SourceLayerType.VT:
-							return (sli.content as VTContent).fileName.toUpperCase()
-						case RundownAPI.SourceLayerType.LIVE_SPEAK:
-							return (sli.content as LiveSpeakContent).fileName.toUpperCase()
-					}
-				}
-			}
-			return ''
-		})
+		this.updateMediaObjectSubscription()
+	}
 
-		this.autorun(() => {
-			let objId = this.objIdCF()
-			if (objId) {
-				this.subscribe('mediaObjects', this.props.runningOrder.studioInstallationId, {
-					mediaId: objId
-				})
-			}
-		})
+	componentDidUpdate () {
+		this.updateMediaObjectSubscription()
 	}
 
 	componentWillUnmount () {
 		super.componentWillUnmount()
-		this.objIdCF.stop()
+		if (this.mediaObjectSub) this.mediaObjectSub.stop()
 	}
 
 	render () {

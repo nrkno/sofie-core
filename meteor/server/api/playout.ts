@@ -2359,7 +2359,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 			let nextSegmentLineItemGroup = createSegmentLineGroup(nextSegmentLineItem, 0)
 			if (currentSegmentLineGroup) {
 				const allowTransition = !currentSegmentLine.disableOutTransition
-				let overlapDuration = currentSegmentLine.transitionDuration || 0
+				let overlapDuration = nextSegmentLineItem.transitionDuration || 0
 				if (!nextSegmentLineItem.transitionDuration && allowTransition) {
 					const transitionObjs = nextSegmentLineItem.getSegmentLinesItems().filter(i => i.isTransition)
 					overlapDuration = (transitionObjs && transitionObjs.length > 0) ? transitionObjs[0].duration || 0 : 0
