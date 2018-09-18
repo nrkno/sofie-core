@@ -666,6 +666,52 @@ body.vertical-overflow-only {
 				color: $general-late-color;
 			}
 		}
+
+		.segment-timeline__liveline__icon {
+			display: inline-block;
+			margin-left: 0.5em;
+
+			&.segment-timeline__liveline__icon--next {
+				position: relative;
+				width: 0;
+				height: 0;
+				top: 1px;
+				border-width: 5px 0 5px 9px;
+				border-style: solid;
+				border-color: transparent transparent transparent $general-next-color;
+
+				&::after {
+					content: ' ';
+					position: absolute;
+					top: -5px;
+					right: -1px;
+					height: 10px;
+					width: 0;
+					border-left: 2px solid $general-next-color;
+				}
+			}
+
+			&.segment-timeline__liveline__icon--auto-next {
+				position: relative;
+				width: 0;
+				height: 0;
+				top: 1px;
+				left: 4px;
+				border-width: 5px 0 5px 9px;
+				border-style: solid;
+				border-color: transparent transparent transparent $general-next-color;
+
+				&::after {
+					content: ' ';
+					position: absolute;
+					top: -5px;
+					left: -13px;
+					height: 10px;
+					width: 0;
+					border-left: 2px solid $general-next-color;
+				}
+			}
+		}
 	}
 
 	/** This is a child element of the .segment-timeline__timeline-container.

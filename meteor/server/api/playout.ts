@@ -186,7 +186,7 @@ export namespace ServerPlayoutAPI {
 			$set: {
 				previousSegmentLineId: null,
 				currentSegmentLineId: null,
-				nextSegmentLineId: segmentLines[0]._id, // put the first on queue
+				nextSegmentLineId: runningOrder.active ? segmentLines[0]._id : null, // put the first on queue
 				updateStoryStatus: null,
 				holdState: RunningOrderHoldState.NONE,
 			}, $unset: {

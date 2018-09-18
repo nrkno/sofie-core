@@ -361,7 +361,9 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 					<div className={ClassNames('segment-timeline__liveline__timecode', {
 						'overtime': !!(Math.floor(this.props.displayTimecode / 1000) > 0)
 					})}>
-						{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)}
+						<span>{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)}</span>
+						{!this.props.autoNextSegmentLine && <div className='segment-timeline__liveline__icon segment-timeline__liveline__icon--next'></div>}
+						{this.props.autoNextSegmentLine && <div className='segment-timeline__liveline__icon segment-timeline__liveline__icon--auto-next'></div>}
 					</div>
 				</div>
 			]
