@@ -1,6 +1,7 @@
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { translate } from 'react-i18next'
 import * as React from 'react'
+import { mousetrapHelper } from '../../lib/moustrapHelper'
 
 interface IProps {
 	visible?: boolean
@@ -28,7 +29,7 @@ export const HotkeyHelpPanel = translate()(class BaseHotkeyHelpPanel extends Rea
 						{this.props.hotkeys.map((hotkey) =>
 							<div className='adlib-panel__hotkeys__hotkey' key={hotkey.key}>
 								<div className='adlib-panel__hotkeys__hotkey__keys'>
-									{this.shortcutProcessor(hotkey.key)}
+									{mousetrapHelper.shortcutLabel(hotkey.key)}
 								</div>
 								<div className='adlib-panel__hotkeys__hotkey__action'>
 									{hotkey.label}
@@ -41,19 +42,5 @@ export const HotkeyHelpPanel = translate()(class BaseHotkeyHelpPanel extends Rea
 		} else {
 			return null
 		}
-	}
-
-	private shortcutProcessor (hotkey: string): string {
-		if (this._isMacLike) {
-			hotkey = hotkey.replace(/mod/i, '\u2318')
-		} else {
-			hotkey = hotkey.replace(/mod/i, 'Ctrl')
-		}
-		// capitalize first letter of each combo key
-		hotkey = hotkey.replace(/(\w)\w*/ig, (substring: string) => {
-			return substring.substr(0, 1).toUpperCase() + substring.substr(1)
-		})
-
-		return hotkey
 	}
 })

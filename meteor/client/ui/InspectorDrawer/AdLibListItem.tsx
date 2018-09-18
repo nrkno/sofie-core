@@ -10,6 +10,7 @@ import * as ClassNames from 'classnames'
 import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { SegmentLineAdLibItemUi } from './AdLibPanel'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { mousetrapHelper } from '../../lib/moustrapHelper'
 
 export interface IAdLibListItem {
 	_id: string,
@@ -61,7 +62,7 @@ export const AdLibListItem = translate()(class extends MeteorReactComponent<Tran
 					{this.props.layer && (this.props.layer.abbreviation || this.props.layer.name)}
 				</td>
 				<td className='adlib-panel__list-view__list__table__cell--shortcut'>
-					{this.props.item.hotkey && this.props.item.hotkey.toUpperCase()}
+					{this.props.item.hotkey && mousetrapHelper.shortcutLabel(this.props.item.hotkey)}
 				</td>
 				<td className='adlib-panel__list-view__list__table__cell--output'>
 					{this.props.outputLayer && this.props.outputLayer.name}

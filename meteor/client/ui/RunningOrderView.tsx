@@ -196,11 +196,6 @@ export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
 	RUNNING_ORDER_RESET_FOCUS = 'esc'
 }
-mousetrap.addKeycodes({
-	220: '§', // on US-based (ANSI) keyboards (single-row, Enter key), this is the key above Enter, usually with a backslash and the vertical pipe character
-	222: '\\', // on ANSI-based keyboards, this is the key with single quote
-	223: '|' // this key is not present on ANSI-based keyboards
-})
 
 const TimingDisplay = translate()(withTiming<ITimingDisplayProps, {}>()(
 class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
