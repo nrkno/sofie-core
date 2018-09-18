@@ -399,14 +399,14 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					{this.props.isLastInSegment && <div className={ClassNames('segment-timeline__segment-line__nextline', 'segment-timeline__segment-line__nextline--endline', {
 						'auto-next': this.props.segmentLine.autoNext,
 						'is-next': this.state.isLive && (!this.props.isLastSegment && !this.props.isLastInSegment || !!this.props.runningOrder.nextSegmentLineId),
-						'show-end': this.props.isLastSegment && this.props.isLastInSegment && !this.props.runningOrder.nextSegmentLineId
+						'show-end': this.props.isLastSegment && this.props.isLastInSegment && (!this.state.isLive || (this.state.isLive && !this.props.runningOrder.nextSegmentLineId))
 					})}>
 						<div className='segment-timeline__segment-line__nextline__label'>
 							{ this.props.segmentLine.autoNext && t('Auto') + ' ' }
 							{ this.state.isLive && t('Next') }
 						</div>
 					</div>}
-					{this.props.isLastSegment && this.props.isLastInSegment && !this.props.runningOrder.nextSegmentLineId && <div className='segment-timeline__segment-list__show-end'>
+					{this.props.isLastSegment && this.props.isLastInSegment && (!this.state.isLive || (this.state.isLive && !this.props.runningOrder.nextSegmentLineId)) && <div className='segment-timeline__segment-list__show-end'>
 						<div className='segment-timeline__segment-list__show-end__label'>
 							{t('Show End')}
 						</div>
