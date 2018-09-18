@@ -534,3 +534,16 @@ function cleanUprateLimitIgnore () {
 		}
 	}
 }
+
+export function escapeHtml (text: string): string {
+	let map = {
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&#039;'
+	}
+	return text.replace(/[&<>"']/g, (m) => {
+		return map[m]
+	})
+}

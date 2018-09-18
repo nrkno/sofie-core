@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2018-09-11T09:14:29.710Z\n"
-"PO-Revision-Date: 2018-09-11T09:14:29.710Z\n"
+"POT-Creation-Date: 2018-09-12T10:16:38.964Z\n"
+"PO-Revision-Date: 2018-09-12T10:16:38.964Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -23,13 +23,13 @@ msgstr ""
 msgid "Connecting to the"
 msgstr ""
 
-msgid "Sofie Automation"
-msgstr ""
-
-msgid "Server"
+msgid "Sofie Automation Server"
 msgstr ""
 
 msgid "Cannot connect to the"
+msgstr ""
+
+msgid "Sofie Automation Server:"
 msgstr ""
 
 msgid "Reconnecting to the"
@@ -105,6 +105,9 @@ msgid "Duration"
 msgstr ""
 
 msgid "Air Status"
+msgstr ""
+
+msgid "Sofie Automation"
 msgstr ""
 
 msgid "version"
@@ -609,13 +612,13 @@ msgstr ""
 msgid "User Log"
 msgstr ""
 
+msgid "Message Queue"
+msgstr ""
+
 msgid "Queued Messages"
 msgstr ""
 
 msgid "Sent Messages"
-msgstr ""
-
-msgid "Message Queue"
 msgstr ""
 
 msgid "Take Snapshot"

@@ -864,7 +864,7 @@ export function getRO (roID: MosString128): RunningOrder {
 	if (ro) {
 		ro.touch()
 		return ro
-	} else throw new Meteor.Error(404, 'RunningOrder ' + id + ' not found')
+	} else throw new Meteor.Error(404, 'RunningOrder ' + id + ' not found (ro: ' + roID + ')')
 }
 /**
  * Returns a Segment (aka a Story), throws error if not found
@@ -894,7 +894,7 @@ export function getSegmentLine (roID: MosString128, storyID: MosString128): Segm
 	})
 	if (segmentLine) {
 		return segmentLine
-	} else throw new Meteor.Error(404, 'SegmentLine ' + id + ' not found')
+	} else throw new Meteor.Error(404, 'SegmentLine ' + id + ' not found (ro: ' + roID + ', story: ' + storyID + ')')
 }
 /**
  * Converts a Story into a Segment
