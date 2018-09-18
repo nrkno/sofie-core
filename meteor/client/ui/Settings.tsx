@@ -178,7 +178,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					</h2>
 				<hr className='vsubtle man' />
 				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteShowStyleConfirm} onAccept={(e) => this.handleConfirmDeleteShowStyleAccept(e)} onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
-					<p>{t(`Are you sure you want to delete show style ${this.state.deleteConfirmItem && this.state.deleteConfirmItem.name}?`)}</p>
+					<p>{t('Are you sure you want to delete show style "{{showStyleId}}"?', { showStyleId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.name })}</p>
 					<p>{t('Please note: This action is irreversible!')}</p>
 				</ModalDialog>
 				{

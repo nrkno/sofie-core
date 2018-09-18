@@ -731,7 +731,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				<div className='studio-edit mod mhl mvs'>
 					<div>
 						<label className='field'>
-							{t('Template ID')}
+							{t('Blueprint ID')}
 							<div className='mdi'>
 								<EditAttribute
 									modifiedClassName='bghl'

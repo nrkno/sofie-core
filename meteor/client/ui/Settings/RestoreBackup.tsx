@@ -89,7 +89,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						</div>
 					</label>
 					<ModalDialog title={t('Restore this backup?')} acceptText={t('Restore')} secondaryText={t('Cancel')} show={this.state.showUploadConfirm} onAccept={() => this.handleConfirmUploadFileAccept()} onSecondary={() => this.handleConfirmUploadFileCancel()}>
-						<p>{t(`Are you sure you want to restore the backup file ${this.state.uploadFileName}?`)}</p>
+						<p>{t('Are you sure you want to restore the backup file "{{fileName}}"?', { fileName: this.state.uploadFileName })}</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</ModalDialog>
 				</div>

@@ -251,7 +251,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 									show={!!this.state.showRestartDeviceConfirm}
 									onAccept={(e) => this.handleConfirmRestartAccept(e)}
 									onSecondary={(e) => this.handleConfirmRestartCancel(e)}>
-									<p>{t(`Are you sure you want to restart this device?`)}</p>
+									<p>{t('Are you sure you want to restart this device?')}</p>
 								</ModalDialog>
 								<button className='btn btn-secondary' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onRestartDevice(this.props.device)}>
 									Restart
@@ -264,7 +264,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 							show={!!this.state.showDeleteDeviceConfirm}
 							onAccept={(e) => this.handleConfirmDeleteShowStyleAccept(e)}
 							onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
-							<p>{t(`Are you sure you want to delete this device?`)}</p>
+							<p>{t('Are you sure you want to delete this device?')}</p>
 						</ModalDialog>
 						<button key='button-device' className='btn btn-primary' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteDevice(this.props.device)}>
 							<FontAwesomeIcon icon={faTrash} />
@@ -276,7 +276,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 									show={!!this.state.showKillDeviceConfirm}
 									onAccept={(e) => this.handleConfirmKillAccept(e)}
 									onSecondary={(e) => this.handleConfirmKillCancel(e)}>
-									<p>{t(`Are you sure you want to kill the process of this device?`)}</p>
+									<p>{t('Are you sure you want to kill the process of this device?')}</p>
 								</ModalDialog>
 								<button className='btn btn-secondary' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onKillDevice(this.props.device)}>
 									Kill process

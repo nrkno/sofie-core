@@ -111,7 +111,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							{t('Baseline Template ID')}
+							{t('Baseline Blueprint ID')}
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute='baselineTemplate'
@@ -123,7 +123,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							{t('External Message Template ID')}
+							{t('External Message Blueprint ID')}
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute='messageTemplate'
@@ -145,9 +145,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 				</div>
 				<div>
-					<h2>{t('Templates')}</h2>
+					<h2>{t('Blueprints logic')}</h2>
 					<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteLineTemplateConfirm} onAccept={(e) => this.handleConfirmDeleteLineTemplateAccept(e)} onSecondary={(e) => this.handleConfirmDeleteLineTemplateCancel(e)}>
-						<p>{t(`Are you sure you want to delete line template ${this.state.deleteConfirmItem && this.state.deleteConfirmItem._id}?`)}</p>
+						<p>{t('Are you sure you want to delete line blueprint logic "{{itemId}}"?', {itemId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.templateId})}</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</ModalDialog>
 					<table className='expando settings-showStyle-lineTemplates'>

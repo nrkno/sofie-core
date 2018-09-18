@@ -535,7 +535,7 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 			<div>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('Media Scanner Host')}:
+						{t('Media Scanner Host')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'settings.mediaScanner.host'}
@@ -547,7 +547,7 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 				</div>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('Media Scanner Port')}:
+						{t('Media Scanner Port')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'settings.mediaScanner.port'}
@@ -559,7 +559,7 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 				</div>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('CasparCG Launcher Host')}:
+						{t('CasparCG Launcher Host')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'settings.casparcgLauncher.host'}
@@ -571,7 +571,7 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 				</div>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('CasparCG Launcher Port')}:
+						{t('CasparCG Launcher Port')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'settings.casparcgLauncher.port'}
@@ -583,7 +583,7 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 				</div>
 
 				<ModalDialog title={t('Remove this device?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
-					<p>{t('Are you sure you want to remove device') + ' ' + (this.state.deleteConfirmDeviceId && this.state.deleteConfirmDeviceId) + '?'}</p>
+					<p>{t('Are you sure you want to remove device "{{deviceId}}"?', { deviceId: (this.state.deleteConfirmDeviceId && this.state.deleteConfirmDeviceId) })}</p>
 				</ModalDialog>
 
 				{settings && settings.devices &&
