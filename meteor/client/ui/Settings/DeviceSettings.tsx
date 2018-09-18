@@ -207,7 +207,7 @@ class HttpSendDeviceSettingsComponent extends React.Component<Translated<IHttpSe
 				</table>
 
 				<ModalDialog title={t('Remove this command?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirmMakeReady} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
-					<p>{t('Are you sure you want to remove this command') + '?'}</p>
+					<p>{t('Are you sure you want to remove this command?')}</p>
 				</ModalDialog>
 
 				<div className='mod mhs'>
@@ -868,7 +868,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 				</div>
 
 				<ModalDialog title={t('Remove this device?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
-					<p>{t('Are you sure you want to remove device') + ' ' + (this.state.deleteConfirmDeviceId && this.state.deleteConfirmDeviceId) + '?'}</p>
+					<p>{t('Are you sure you want to remove device "{{deviceId}}"?', { deviceId: (this.state.deleteConfirmDeviceId && this.state.deleteConfirmDeviceId) })}</p>
 				</ModalDialog>
 
 				{settings && settings.devices &&
