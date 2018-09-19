@@ -760,6 +760,19 @@ body.vertical-overflow-only {
 					white-space: nowrap;
 					word-wrap: none;
 					color: $segment-line-start-color;
+
+					.segment-timeline__segment-line__nextline__label__carriage-return {
+						width: 20px;
+						height: 15px;
+						position: relative;
+						top: 12px;
+    					right: 11px;
+						display: inline-block;
+
+						> svg {
+							fill: $segment-line-start-color;
+						}
+					}
 				}
 
 				&::after {
@@ -825,7 +838,7 @@ body.vertical-overflow-only {
 				}
 			}
 
-			.segment-timeline__segment-list__show-end {
+			.segment-timeline__segment-line__show-end {
 				position: absolute;
 				top: -13px;
 				left: 100%;
@@ -837,7 +850,7 @@ body.vertical-overflow-only {
 				text-transform: uppercase;
 				font-size: 0.9em;
 
-				.segment-timeline__segment-list__show-end__label {
+				.segment-timeline__segment-line__show-end__label {
 					position: absolute;
 					top: 50%;
 					transform: translateY(calc(-50% - 6px));
@@ -875,6 +888,12 @@ body.vertical-overflow-only {
 					.segment-timeline__segment-line__nextline__label {
 						color: $general-next-color;
 						display: block;
+
+						.segment-timeline__segment-line__nextline__label__carriage-return {
+							> svg {
+								fill: $general-next-color;
+							}
+						}
 					}
 				}
 			}
@@ -896,6 +915,12 @@ body.vertical-overflow-only {
 				.segment-timeline__segment-line__nextline__label {
 					color: $general-next-color;
 					display: block;
+
+					.segment-timeline__segment-line__nextline__label__carriage-return {
+						> svg {
+							fill: $general-next-color;
+						}
+					}
 				}
 			}
 			

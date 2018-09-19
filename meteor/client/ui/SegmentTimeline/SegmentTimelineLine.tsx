@@ -370,6 +370,8 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 	render () {
 		const { t } = this.props
 
+		const isEndOfShow = this.props.isLastSegment && this.props.isLastInSegment && (!this.state.isLive || (this.state.isLive && !this.props.runningOrder.nextSegmentLineId))
+
 		if (this.isInsideViewport()) {
 			return (
 				<div className={ClassNames('segment-timeline__segment-line', {
@@ -382,7 +384,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 						'auto-next': this.props.segmentLine.willProbablyAutoNext
 					})}>
 						<div className='segment-timeline__segment-line__nextline__label'>
-							{ this.props.autoNextSegmentLine && t('Auto') + ' '}
+							{ (this.props.autoNextSegmentLine || this.props.segmentLine.willProbablyAutoNext) && t('Auto') + ' '}
 							{ this.state.isNext && t('Next') }
 						</div>
 					</div>
@@ -399,15 +401,24 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					{this.props.isLastInSegment && <div className={ClassNames('segment-timeline__segment-line__nextline', 'segment-timeline__segment-line__nextline--endline', {
 						'auto-next': this.props.segmentLine.autoNext,
 						'is-next': this.state.isLive && (!this.props.isLastSegment && !this.props.isLastInSegment || !!this.props.runningOrder.nextSegmentLineId),
-						'show-end': this.props.isLastSegment && this.props.isLastInSegment && (!this.state.isLive || (this.state.isLive && !this.props.runningOrder.nextSegmentLineId))
+						'show-end': isEndOfShow
 					})}>
 						<div className='segment-timeline__segment-line__nextline__label'>
 							{ this.props.segmentLine.autoNext && t('Auto') + ' ' }
 							{ this.state.isLive && t('Next') }
+							{!isEndOfShow && <div className='segment-timeline__segment-line__nextline__label__carriage-return'>
+								<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11.36 7.92'>
+									<g id='Layer_2'>
+										<g id='Layer_1-2'>
+											<path d='M10.36,0V2.2A3.06,3.06,0,0,1,7.3,5.25H3.81V3.51L0,5.71,3.81,7.92V6.25H7.3a4.06,4.06,0,0,0,4.06-4V0Z' />
+										</g>
+									</g>
+								</svg>
+							</div>}
 						</div>
 					</div>}
-					{this.props.isLastSegment && this.props.isLastInSegment && (!this.state.isLive || (this.state.isLive && !this.props.runningOrder.nextSegmentLineId)) && <div className='segment-timeline__segment-list__show-end'>
-						<div className='segment-timeline__segment-list__show-end__label'>
+					{isEndOfShow && <div className='segment-timeline__segment-line__show-end'>
+						<div className='segment-timeline__segment-line__show-end__label'>
 							{t('Show End')}
 						</div>
 					</div>}
