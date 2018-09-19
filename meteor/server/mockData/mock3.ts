@@ -1371,7 +1371,7 @@ const stories = [{
 				'mosartType' : 'KAM',
 				'mosartVariant' : 2,
 				'ReadTime' : 14,
-				'ENPSItemType' : 3
+				'ENPSItemType' : 3,
 			}
 		}
 	],
@@ -1601,13 +1601,14 @@ const stories = [{
 				'Kommune' : 'Kristiansand',
 				'mosartType' : 'FULL',
 				'OpprLand' : 'Norge',
-				'ReadTime' : 108.56,
+				'ReadTime' : 8.56,
 				'Rettigheter' : 'Grønt',
 				'Rettighetseier' : 'NRK',
 				'Sted' : 'Kristiansand',
 				'Tags' : 'bompenger; bompengepakke; bomstasjoner',
 				'Team' : '{reporter};Anne Wirsching;+{Redigerer};Anne Wirsching;',
-				'ENPSItemType' : 3
+				'ENPSItemType' : 3,
+				'AUDIOGAIN': -2,
 			}
 		}
 	],
@@ -2114,7 +2115,8 @@ const stories = [{
 				'mosartType' : 'KAM',
 				'mosartVariant' : 1,
 				'ReadTime' : 0,
-				'ENPSItemType' : 3
+				'ENPSItemType' : 3,
+				'mosartTransition' : 'effect 3'
 			}
 		}
 	],
@@ -2195,7 +2197,7 @@ const stories = [{
 				'TextTime' : 0,
 				'Bildebeskrivelse' : '',
 				'mosartType' : 'KAM',
-				'mosartVariant' : 3,
+				'mosartVariant' : 'gjesT3',
 				'ReadTime' : 0,
 				'Rettigheter' : 'Grønt',
 				'Rettighetseier' : 'NRK',
@@ -5997,7 +5999,8 @@ const stories = [{
 				'TextTime' : 0,
 				'mosartType' : 'FULL',
 				'ReadTime' : 0,
-				'ENPSItemType' : 3
+				'ENPSItemType' : 3,
+				'AUDIOGAIN': 3,
 			}
 		}
 	],
