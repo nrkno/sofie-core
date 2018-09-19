@@ -13,6 +13,8 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 // @ts-ignore Meteor package not recognized by Typescript
 import { ComputedField } from 'meteor/peerlibrary:computed-field'
 
+import { checkSLIContentStatus } from '../../../lib/mediaObjects'
+
 import {
 	ISourceLayerUi,
 	IOutputLayerUi,
@@ -126,56 +128,59 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 
 			// Check item status
 			if (props.segmentLineItem.sourceLayer) {
-				let newStatus: RundownAPI.LineItemStatusCode = RundownAPI.LineItemStatusCode.UNKNOWN
-				let metadata: any = undefined
-				switch (props.segmentLineItem.sourceLayer.type) {
-					case RundownAPI.SourceLayerType.VT:
-						if (props.segmentLineItem.content && props.segmentLineItem.content.fileName) {
-							const content = props.segmentLineItem.content as VTContent
-							const mediaObject = MediaObjects.findOne({
-								mediaId: content.fileName.toUpperCase()
-							})
-							// If media object not found, then...
-							if (!mediaObject) {
-								newStatus = RundownAPI.LineItemStatusCode.SOURCE_MISSING
-								// All VT content should have at least two streams
-							} else if (mediaObject && mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2) {
-								newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
-							} else if (mediaObject) {
-								newStatus = RundownAPI.LineItemStatusCode.OK
-							}
+				// let newStatus: RundownAPI.LineItemStatusCode = RundownAPI.LineItemStatusCode.UNKNOWN
+				// let metadata: any = undefined
 
-							if (mediaObject) {
-								metadata = mediaObject
-							}
-						}
-						break
-					case RundownAPI.SourceLayerType.LIVE_SPEAK:
-						if (props.segmentLineItem.content && props.segmentLineItem.content.fileName) {
-							const content = props.segmentLineItem.content as LiveSpeakContent
-							const mediaObject = MediaObjects.findOne({
-								mediaId: content.fileName.toUpperCase()
-							})
-							// If media object not found, then...
-							if (!mediaObject) {
-								newStatus = RundownAPI.LineItemStatusCode.SOURCE_MISSING
-								// All VT content should have at least two streams
-							} else if (mediaObject && mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2) {
-								newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
-							} else if (mediaObject) {
-								newStatus = RundownAPI.LineItemStatusCode.OK
-							}
+				const { metadata, status } = checkSLIContentStatus(props.segmentLineItem, props.segmentLineItem.sourceLayer)
 
-							if (mediaObject) {
-								metadata = mediaObject
-							}
-						}
-						break
-				}
-				if (newStatus !== props.segmentLineItem.status || metadata) {
+				// switch (props.segmentLineItem.sourceLayer.type) {
+				// 	case RundownAPI.SourceLayerType.VT:
+				// 		if (props.segmentLineItem.content && props.segmentLineItem.content.fileName) {
+				// 			const content = props.segmentLineItem.content as VTContent
+				// 			const mediaObject = MediaObjects.findOne({
+				// 				mediaId: content.fileName.toUpperCase()
+				// 			})
+				// 			// If media object not found, then...
+				// 			if (!mediaObject) {
+				// 				newStatus = RundownAPI.LineItemStatusCode.SOURCE_MISSING
+				// 				// All VT content should have at least two streams
+				// 			} else if (mediaObject && mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2) {
+				// 				newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
+				// 			} else if (mediaObject) {
+				// 				newStatus = RundownAPI.LineItemStatusCode.OK
+				// 			}
+
+				// 			if (mediaObject) {
+				// 				metadata = mediaObject
+				// 			}
+				// 		}
+				// 		break
+				// 	case RundownAPI.SourceLayerType.LIVE_SPEAK:
+				// 		if (props.segmentLineItem.content && props.segmentLineItem.content.fileName) {
+				// 			const content = props.segmentLineItem.content as LiveSpeakContent
+				// 			const mediaObject = MediaObjects.findOne({
+				// 				mediaId: content.fileName.toUpperCase()
+				// 			})
+				// 			// If media object not found, then...
+				// 			if (!mediaObject) {
+				// 				newStatus = RundownAPI.LineItemStatusCode.SOURCE_MISSING
+				// 				// All VT content should have at least two streams
+				// 			} else if (mediaObject && mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2) {
+				// 				newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
+				// 			} else if (mediaObject) {
+				// 				newStatus = RundownAPI.LineItemStatusCode.OK
+				// 			}
+
+				// 			if (mediaObject) {
+				// 				metadata = mediaObject
+				// 			}
+				// 		}
+				// 		break
+				// }
+				if (status !== props.segmentLineItem.status || metadata) {
 					let segmentCopy = (_.clone(overrides.segmentLineItem || props.segmentLineItem) as SegmentLineItemUi)
 
-					segmentCopy.status = newStatus
+					segmentCopy.status = status
 					segmentCopy.metadata = metadata
 
 					overrides.segmentLineItem = _.extend(overrides.segmentLineItem || {}, segmentCopy)
