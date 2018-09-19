@@ -928,8 +928,8 @@ const stories = [{
 								'layer' : 'super'
 							},
 							'content' : {
-								'_valid' : false,
-								'navn' : '',
+								'_valid' : true,
+								'navn' : 'Some guy',
 								'tittel' : ''
 							}
 						}

@@ -18,7 +18,7 @@ es5-shim@4.7.0                		# ECMAScript 5 compatibility for older browsers
 ecmascript@0.10.6              		# Enable ECMAScript2015+ syntax in app code
 shell-server@0.3.1            		# Server-side component of the `meteor shell` command
 
-session
+session@1.1.7
 barbatus:typescript
 meteortesting:mocha
 react-meteor-data
@@ -28,7 +28,8 @@ fourseven:scss
 hwillson:stub-collections
 nerdmed:catiline
 runisland:static-assets
-dynamic-import@0.3.0
+dynamic-import@0.3.1
 peerlibrary:computed-field
 meteorhacks:picker
 ostrio:meteor-root
+underscore

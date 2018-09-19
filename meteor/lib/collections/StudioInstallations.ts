@@ -80,6 +80,8 @@ export interface ISourceLayerBase {
 	isSticky?: boolean
 	/** Keyboard shortcut to be used to reuse a sticky item on this layer */
 	activateStickyKeyboardHotkey?: string
+	/** Should adlibs on this source layer be queueable */
+	isQueueable?: boolean
 	/** If set to true, the layer will be hidden from the user in Running Order View */
 	isHidden?: boolean
 	/** If set to true, items in the layer can be disabled by the user (the "G"-shortcut) */
@@ -107,6 +109,8 @@ export interface ISourceLayer extends ISourceLayerBase {
 	unlimited: boolean
 	/** If set to true, the layer will be shown in PGM Clean */
 	onPGMClean: boolean
+	/** Source layer exclusivity group. When adLibbing, only a single SLI can exist whitin an exclusivity group */
+	exclusiveGroup?: string
 }
 
 export interface IOutputLayerBase {

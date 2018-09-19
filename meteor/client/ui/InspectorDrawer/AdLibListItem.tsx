@@ -10,6 +10,7 @@ import * as ClassNames from 'classnames'
 import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { SegmentLineAdLibItemUi } from './AdLibPanel'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { mousetrapHelper } from '../../lib/moustrapHelper'
 
 export interface IAdLibListItem {
 	_id: string,
@@ -25,7 +26,7 @@ interface IListViewItemProps {
 	layer: ISourceLayer
 	outputLayer?: IOutputLayer
 	onSelectAdLib: (aSLine: IAdLibListItem) => void
-	onToggleAdLib: (aSLine: IAdLibListItem) => void
+	onToggleAdLib: (aSLine: IAdLibListItem, queue?: boolean) => void
 }
 
 export const AdLibListItem = translate()(class extends MeteorReactComponent<Translated<IListViewItemProps>> {
@@ -39,7 +40,7 @@ export const AdLibListItem = translate()(class extends MeteorReactComponent<Tran
 				'selected': this.props.selected
 			})} key={this.props.item._id}
 				onClick={(e) => this.props.onSelectAdLib(this.props.item)}
-				onDoubleClick={(e) => this.props.onToggleAdLib(this.props.item)}>
+				onDoubleClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey)}>
 				<td className={ClassNames('adlib-panel__list-view__list__table__cell--icon', this.props.layer && {
 					'audio': this.props.layer.type === RundownAPI.SourceLayerType.AUDIO,
 					'camera': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA,
@@ -61,7 +62,7 @@ export const AdLibListItem = translate()(class extends MeteorReactComponent<Tran
 					{this.props.layer && (this.props.layer.abbreviation || this.props.layer.name)}
 				</td>
 				<td className='adlib-panel__list-view__list__table__cell--shortcut'>
-					{this.props.item.hotkey && this.props.item.hotkey.toUpperCase()}
+					{this.props.item.hotkey && mousetrapHelper.shortcutLabel(this.props.item.hotkey)}
 				</td>
 				<td className='adlib-panel__list-view__list__table__cell--output'>
 					{this.props.outputLayer && this.props.outputLayer.name}

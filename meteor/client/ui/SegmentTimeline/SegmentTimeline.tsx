@@ -53,6 +53,7 @@ interface IProps {
 	onContextMenu?: (contextMenuContext: any) => void
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	followingSegmentLine: SegmentLineUi | undefined
+	isLastSegment: boolean
 }
 interface IStateHeader {
 	timelineWidth: number
@@ -121,7 +122,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 	}
 
 	renderZoomTimeline () {
-		return this.props.segmentLines.map((segmentLine) => {
+		return this.props.segmentLines.map((segmentLine, index, array) => {
 			return (
 				<SegmentTimelineLine key={segmentLine._id}
 					segment={this.props.segment}
@@ -139,7 +140,8 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 					autoNextSegmentLine={this.props.autoNextSegmentLine}
 					liveLineHistorySize={this.props.liveLineHistorySize}
 					livePosition={this.props.segment._id === this.props.runningOrder.currentSegmentLineId && segmentLine.startedPlayback && segmentLine.getLastStartedPlayback() ? this.props.livePosition - (segmentLine.getLastStartedPlayback() || 0) : null}
-					isLastInSegment={false} />
+					isLastInSegment={false}
+					isLastSegment={false} />
 			)
 		})
 	}
@@ -359,7 +361,9 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 					<div className={ClassNames('segment-timeline__liveline__timecode', {
 						'overtime': !!(Math.floor(this.props.displayTimecode / 1000) > 0)
 					})}>
-						{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)}
+						<span>{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)}</span>
+						{!this.props.autoNextSegmentLine && <div className='segment-timeline__liveline__icon segment-timeline__liveline__icon--next'></div>}
+						{this.props.autoNextSegmentLine && <div className='segment-timeline__liveline__icon segment-timeline__liveline__icon--auto-next'></div>}
 					</div>
 				</div>
 			]
@@ -374,7 +378,8 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 						{...this.props}
 						scrollWidth={this.state.timelineWidth / this.props.timeScale}
 						firstSegmentLineInSegment={this.props.segmentLines[0]}
-						isLastInSegment={index === (this.props.segmentLines.length - 1) ? true : false}
+						isLastSegment={this.props.isLastSegment}
+						isLastInSegment={index === (this.props.segmentLines.length - 1)}
 						segmentLine={segmentLine} />
 				)
 			})}
@@ -427,11 +432,12 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 				className={ClassNames('segment-timeline', {
 					'collapsed': this.props.isCollapsed,
 
+					'has-remote-items': this.props.hasRemoteItems && (!this.props.hasAlreadyPlayed || this.props.isLiveSegment),
+
 					'live': this.props.isLiveSegment,
 					'next': !this.props.isLiveSegment && this.props.isNextSegment,
 
-					'has-played': this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment,
-					'has-remote-items': this.props.hasRemoteItems && !this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment
+					'has-played': this.props.hasAlreadyPlayed && !this.props.isLiveSegment && !this.props.isNextSegment
 				})}
 			data-mos-id={this.props.segment._id} ref={this.setSegmentRef}>
 				<ContextMenuTrigger id='segment-timeline-context-menu'

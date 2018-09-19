@@ -283,12 +283,22 @@ body.vertical-overflow-only {
 	}
 
 	// the live and next states are the states of the entire segment component
+	&.has-remote-items {
+		.segment-timeline__title {
+			background: $segment-title-background-color-remote;
+
+			> h2 {
+				background: $segment-title-background-color-remote;
+			}
+		}
+	}
+
 	&.live {
 		.segment-timeline__title {
 			color: $segment-title-text-color-live;
 			font-weight: 500;
 			text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
-			background: $segment-title-background-color-live
+			background: $segment-title-background-color-live;
 		}
 	}
 
@@ -296,20 +306,15 @@ body.vertical-overflow-only {
 		.segment-timeline__title {
 			font-weight: 500;
 			text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
-			background: $segment-title-background-color-next
+			background: $segment-title-background-color-next;
 		}
 	}
 
-	&.has-remote-items {
-		.segment-timeline__title {
-			background: $segment-title-background-color-remote
-		}
-	}
 
 	&.has-played {
 		.segment-timeline__title {
 			font-weight: 200;
-			background: $segment-title-background-color-has-played
+			background: $segment-title-background-color-has-played;
 		}
 	}
 
@@ -661,6 +666,52 @@ body.vertical-overflow-only {
 				color: $general-late-color;
 			}
 		}
+
+		.segment-timeline__liveline__icon {
+			display: inline-block;
+			margin-left: 0.5em;
+
+			&.segment-timeline__liveline__icon--next {
+				position: relative;
+				width: 0;
+				height: 0;
+				top: 1px;
+				border-width: 5px 0 5px 9px;
+				border-style: solid;
+				border-color: transparent transparent transparent $general-next-color;
+
+				&::after {
+					content: ' ';
+					position: absolute;
+					top: -5px;
+					right: -1px;
+					height: 10px;
+					width: 0;
+					border-left: 2px solid $general-next-color;
+				}
+			}
+
+			&.segment-timeline__liveline__icon--auto-next {
+				position: relative;
+				width: 0;
+				height: 0;
+				top: 1px;
+				left: 4px;
+				border-width: 5px 0 5px 9px;
+				border-style: solid;
+				border-color: transparent transparent transparent $general-next-color;
+
+				&::after {
+					content: ' ';
+					position: absolute;
+					top: -5px;
+					left: -13px;
+					height: 10px;
+					width: 0;
+					border-left: 2px solid $general-next-color;
+				}
+			}
+		}
 	}
 
 	/** This is a child element of the .segment-timeline__timeline-container.
@@ -684,7 +735,7 @@ body.vertical-overflow-only {
 			.segment-timeline__segment-line__nextline {
 				display: block;
 				position: absolute;
-				top: -11px;
+				top: -13px;
 				left: 0;
 				bottom: -2em;
 				flex: 0;
@@ -701,51 +752,108 @@ body.vertical-overflow-only {
 					display: none;
 					text-transform: uppercase;
 					position: absolute;
-					top: -1em;
-					left: -3px;
+					top: -2px;
+    				left: 2px;
 					text-transform: uppercase;
 					font-weight: bold;
 					line-height: 1em;
 					white-space: nowrap;
 					word-wrap: none;
+					color: $segment-line-start-color;
+
+					.segment-timeline__segment-line__nextline__label__carriage-return {
+						width: 20px;
+						height: 15px;
+						position: relative;
+						top: 12px;
+    					right: 11px;
+						display: inline-block;
+
+						> svg {
+							fill: $segment-line-start-color;
+						}
+					}
 				}
 
 				&::after {
 					content: ' ';
 					display: block;
 					position: absolute;
-					top: -3px;
-    				left: -2px;
+					top: 0px;
+    				left: -10px;
 					width: 0;
 					height: 0;
 					border-style: solid;
-					border-width: 6px 0 6px 12px;
+					border-width: 5px 0 5px 9px;
+					border-color: transparent transparent transparent $segment-line-start-color;
+				}
+
+				&::before {
+					content: ' ';
+					display: block;
+					position: absolute;
+					bottom: 8px;
+    				left: -10px;
+					width: 0;
+					height: 0;
+					border-style: solid;
+					border-width: 5px 0 5px 9px;
 					border-color: transparent transparent transparent $segment-line-start-color;
 				}
 			}
 
-			&:not(.next):not(.live) {
-				.segment-timeline__segment-line__nextline.auto-next {
-					&::before {
-						content: ' ';
+			&:not(.live) {
+				.segment-timeline__segment-line__nextline.auto-next:not(.segment-timeline__segment-line__nextline--endline) {
+					border-left-width: 1px;
+
+					&::before, &::after {
+						left: -1px;
+					}
+
+					.segment-timeline__segment-line__nextline__label {
 						display: block;
-						position: absolute;
-						top: -3px;
-						left: 5px;
-						width: 0;
-						height: 0;
-						border-style: solid;
-						border-width: 6px 0 6px 12px;
-						border-color: transparent transparent transparent $segment-line-start-color;
+						left: 10px;
 					}
 				}
 			}
 
 			&.live {
-				.segment-timeline__segment-line__nextline {
-					&::after {
+				.segment-timeline__segment-line__nextline:not(.segment-timeline__segment-line__nextline--endline) {
+					&::after, &::before {
 						display: none;
 					}
+				}
+			}
+
+			.segment-timeline__segment-line__nextline.auto-next.segment-timeline__segment-line__nextline--endline {
+				border-left-width: 1px;
+
+				&::before, &::after {
+					left: -1px;
+				}
+
+				.segment-timeline__segment-line__nextline__label {
+					display: block;
+					left: 10px;
+				}
+			}
+
+			.segment-timeline__segment-line__show-end {
+				position: absolute;
+				top: -13px;
+				left: 100%;
+				white-space: nowrap;
+				bottom: -2em;
+				border-left: 2px solid $segment-line-start-color;
+				margin-left: 2px;
+				padding-left: 0.5em;
+				text-transform: uppercase;
+				font-size: 0.9em;
+
+				.segment-timeline__segment-line__show-end__label {
+					position: absolute;
+					top: 50%;
+					transform: translateY(calc(-50% - 6px));
 				}
 			}
 
@@ -772,76 +880,47 @@ body.vertical-overflow-only {
 				.segment-timeline__segment-line__nextline:not(.segment-timeline__segment-line__nextline--endline) {
 					border-left-color: $general-next-color;
 					color: $general-next-color;
-					top: 0;
 
-					&::before {
-						display: block;
-						content: ' ';
-						top: 0;
-						left: ($segment-nextline-shade-width * -1) - 2px;
-						width: $segment-nextline-shade-width;
-						bottom: -2em;
-						position: absolute;
-						background: $segment-nextline-shade-fill;
+					&::before, &::after {
+						border-color: transparent transparent transparent $general-next-color;
 					}
 
 					.segment-timeline__segment-line__nextline__label {
+						color: $general-next-color;
 						display: block;
-					}
 
-					&::after {
-						display: none;
+						.segment-timeline__segment-line__nextline__label__carriage-return {
+							> svg {
+								fill: $general-next-color;
+							}
+						}
 					}
 				}
+			}
 
-				.segment-timeline__segment-line__nextline.segment-timeline__segment-line__nextline--endline:not(.is-next).auto-next {
-					&::before {
-						content: ' ';
-						display: block;
-						position: absolute;
-						top: -3px;
-						left: 5px;
-						width: 0;
-						height: 0;
-						border-style: solid;
-						border-width: 6px 0 6px 12px;
-						border-color: transparent transparent transparent $segment-line-start-color;
-					}
+			.segment-timeline__segment-line__nextline--endline.show-end {
+				&::before, &::after {
+					display: none;
 				}
 			}
 
 			.segment-timeline__segment-line__nextline--endline.is-next {
 				border-left-color: $general-next-color;
 				color: $general-next-color;
-				top: 0;
 
-				&::before {
-					display: block;
-					content: ' ';
-					top: 0;
-					left: ($segment-nextline-shade-width * -1) - 2px;
-					width: $segment-nextline-shade-width;
-					bottom: -2em;
-					position: absolute;
-					background: $segment-nextline-shade-fill;
+				&::before, &::after {
+					border-color: transparent transparent transparent $general-next-color;
 				}
 
 				.segment-timeline__segment-line__nextline__label {
+					color: $general-next-color;
 					display: block;
-				}
 
-				&::after {
-					content: ' ';
-					display: block;
-					position: absolute;
-					background: none;
-					top: 0;
-					left: 2px;
-					width: 0px;
-					height: auto;
-					bottom: 0;
-					border: none;
-					border-right: 2px solid $general-next-color;
+					.segment-timeline__segment-line__nextline__label__carriage-return {
+						> svg {
+							fill: $general-next-color;
+						}
+					}
 				}
 			}
 			
@@ -1334,14 +1413,8 @@ body.vertical-overflow-only {
 						display: none;
 					}
 
-					&::after {
+					&::after, &::before {
 						display: none;
-					}
-
-					&.auto-next {
-						&::before {
-							display: none;
-						}
 					}
 				}
 				.segment-timeline__output-group {

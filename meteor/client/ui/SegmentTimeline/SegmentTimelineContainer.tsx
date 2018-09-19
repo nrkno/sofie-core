@@ -67,6 +67,7 @@ interface IProps {
 	onSegmentScroll?: () => void
 	followLiveSegments: boolean
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
+	isLastSegment: boolean
 }
 interface IState {
 	scrollLeft: number,
@@ -241,6 +242,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	componentWillUnmount () {
 		this._cleanUp()
 		this.stopOnAirLine()
+		window.removeEventListener(RunningOrderViewEvents.rewindsegments, this.onRewindSegment)
 	}
 
 	onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
@@ -342,7 +344,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				onFollowLiveLine={this.onFollowLiveLine}
 				onZoomChange={(newScale: number, e) => this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)}
 				onScroll={this.onScroll}
-				followingSegmentLine={this.props.followingSegmentLine} />
+				followingSegmentLine={this.props.followingSegmentLine}
+				isLastSegment={this.props.isLastSegment} />
 		)
 	}
 }

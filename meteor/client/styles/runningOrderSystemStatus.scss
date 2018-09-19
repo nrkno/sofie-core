@@ -97,6 +97,12 @@
 							overflow: hidden;
 						}
 					}
+
+					> span {
+						display: inline-block;
+						white-space: nowrap;
+						margin: 10px 0;
+					}
 				}
 			}
 

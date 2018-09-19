@@ -42,4 +42,41 @@ export namespace mousetrapHelper {
 			mousetrap.unbind(keys, action)
 		}
 	}
+
+	export function shortcutLabel (hotkey: string): string {
+		if (this._isMacLike) {
+			hotkey = hotkey.replace(/mod/i, '\u2318')
+		} else {
+			hotkey = hotkey.replace(/mod/i, 'Ctrl')
+		}
+		// capitalize first letter of each combo key
+		hotkey = hotkey.replace(/(\w)\w*/ig, (substring: string) => {
+			return substring.substr(0, 1).toUpperCase() + substring.substr(1)
+		})
+
+		return hotkey
+	}
 }
+
+// Add mousetrap keycodes for special keys
+mousetrap.addKeycodes({
+	220: '§', // on US-based (ANSI) keyboards (single-row, Enter key), this is the key above Enter, usually with a backslash and the vertical pipe character
+	222: '\\', // on ANSI-based keyboards, this is the key with single quote
+	223: '|', // this key is not present on ANSI-based keyboards
+
+	96: 'num0',
+	97: 'num1',
+	98: 'num2',
+	99: 'num3',
+	100: 'num4',
+	101: 'num5',
+	102: 'num6',
+	103: 'num7',
+	104: 'num8',
+	105: 'num9',
+	106: 'numMul',
+	107: 'numAdd',
+	109: 'numSub',
+	110: 'numDot',
+	111: 'numDiv'
+})

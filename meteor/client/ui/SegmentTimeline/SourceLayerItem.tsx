@@ -233,8 +233,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		if (this.props.relative) {
 			return {
 				// also: don't render transitions in relative mode
-				'left': Math.round(((segmentLineItem.renderedInPoint || 0)) / (this.props.segmentLineDuration || 1) * 100).toString() + '%',
-				'width': Math.round((itemDuration) / (this.props.segmentLineDuration || 1) * 100).toString() + '%'
+				'left': (((segmentLineItem.renderedInPoint || 0)) / (this.props.segmentLineDuration || 1) * 100).toString() + '%',
+				'width': ((itemDuration) / (this.props.segmentLineDuration || 1) * 100).toString() + '%'
 			}
 		} else {
 			return {
@@ -444,7 +444,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 					'hide-overflow-labels': this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth),
 
 					'infinite': (this.props.segmentLineItem.duration === undefined && this.props.segmentLineItem.durationOverride === undefined && this.props.segmentLineItem.infiniteMode) as boolean, // 0 is a special value
-					'next-is-touching': (this.props.segmentLineItem.cropped),
+					'next-is-touching': !!(this.props.segmentLineItem.cropped || (this.props.segmentLineItem.expectedDuration && _.isString(this.props.segmentLineItem.expectedDuration))),
 
 					'source-missing': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING,
 					'source-broken': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN,

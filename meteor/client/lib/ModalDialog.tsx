@@ -4,6 +4,10 @@ import * as Escape from 'react-escape'
 import * as ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
 import * as mousetrap from 'mousetrap'
+import { logger } from '../../lib/logging'
+import * as _ from 'underscore'
+import { translate } from 'react-i18next'
+import { Translated } from './ReactMeteorData/ReactMeteorData'
 
 interface IModalDialogAttributes {
 	show?: boolean
@@ -143,5 +147,116 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	private preventDefault (e: KeyboardEvent) {
 		e.preventDefault()
 		e.stopPropagation()
+	}
+}
+
+interface ModalDialogQueueItem {
+	title: string
+	message: string | JSX.Element
+	yes?: string
+	no?: string
+	onAccept: () => void
+	onDiscard?: () => void
+	onSecondary?: () => void
+}
+interface IModalDialogGlobalContainerProps {
+}
+interface IModalDialogGlobalContainerState {
+	queue: Array<ModalDialogQueueItem>
+}
+
+class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialogGlobalContainerProps>, IModalDialogGlobalContainerState> {
+	constructor (props) {
+		super(props)
+		if (modalDialogGlobalContainerSingleton) {
+			logger.warning('modalDialogGlobalContainerSingleton called more than once!')
+		}
+		modalDialogGlobalContainerSingleton = this
+		this.state = {
+			queue: []
+		}
+	}
+	public addQueue (q: ModalDialogQueueItem) {
+		let queue = this.state.queue
+		queue.push(q)
+		this.setState({
+			queue
+		})
+	}
+	onAccept = () => {
+		let queue = this.state.queue
+		let onQueue = queue.pop()
+		if (onQueue) {
+			this.setState({queue})
+			onQueue.onAccept()
+		}
+	}
+	onDiscard = () => {
+		let queue = this.state.queue
+		let onQueue = queue.pop()
+		if (onQueue) {
+			this.setState({queue})
+			if (onQueue.onDiscard) {
+				onQueue.onDiscard()
+			}
+		}
+	}
+	onSecondary = () => {
+
+		let queue = this.state.queue
+		let onQueue = queue.pop()
+		if (onQueue) {
+			this.setState({queue})
+			if (onQueue.onSecondary) {
+				onQueue.onSecondary()
+			}
+		}
+	}
+	renderString = (str: string) => {
+		let lines = (str || '').split('\n')
+
+		return _.map(lines, (str: string, i) => {
+			return (
+				<p key={i}>
+					{str.trim()}
+				</p>
+			)
+		})
+	}
+	render () {
+		const { t } = this.props
+		let onQueue = _.first(this.state.queue)
+
+		if (onQueue) {
+			return (
+			<ModalDialog title	= {onQueue.title}
+				acceptText		= {onQueue.yes || t('Yes')}
+				secondaryText	= {onQueue.no || t('No')}
+				onAccept		= {this.onAccept}
+				onDiscard		= {this.onDiscard}
+				onSecondary		= {this.onSecondary}
+				show			= {true}
+			>
+				{
+					_.isString(onQueue.message) ?
+					this.renderString(onQueue.message) :
+					onQueue.message
+				}
+			</ModalDialog>)
+
+		} else return null
+	}
+}
+export const ModalDialogGlobalContainer = translate()(ModalDialogGlobalContainer0)
+let modalDialogGlobalContainerSingleton: ModalDialogGlobalContainer0
+/**
+ * Display a ModalDialog, callback on user input
+ * @param q ModalDialogQueueItem
+ */
+export function doModalDialog (q: ModalDialogQueueItem) {
+	if (modalDialogGlobalContainerSingleton) {
+		modalDialogGlobalContainerSingleton.addQueue(q)
+	} else {
+		logger.error('modalDialogGlobalContainerSingleton not set!')
 	}
 }

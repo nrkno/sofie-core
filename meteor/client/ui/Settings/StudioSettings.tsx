@@ -231,7 +231,7 @@ class StudioOutputSettings extends React.Component<Translated<IStudioOutputSetti
 		return (
 			<div>
 				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
-					<p>{t('Are you sure you want to delete output channel') + ' ' + (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) + '?'}</p>
+					<p>{t('Are you sure you want to delete output channel "{{channelId}}"?', { channelId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.name })}</p>
 					<p>{t('Please note: This action is irreversible!')}</p>
 				</ModalDialog>
 				<h3>{t('Output channels')}</h3>
@@ -387,7 +387,7 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 		return (
 			<div>
 				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
-					<p>{t('Are you sure you want to delete this config item') + ' ' + (this.state.deleteConfirmItem && this.state.deleteConfirmItem._id) + '?'}</p>
+					<p>{t('Are you sure you want to delete this config item "{{configId}}"?', { configId: (this.state.deleteConfirmItem && this.state.deleteConfirmItem._id) })}</p>
 					<p>{t('Please note: This action is irreversible!')}</p>
 				</ModalDialog>
 				<h3>{t('Custom Configuration')}</h3>
@@ -738,8 +738,33 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 												obj={this.props.studioInstallation}
 												type='checkbox'
 												collection={StudioInstallations}
-												className=''></EditAttribute>
+												className=''
+											/>
 											{t('Allow disabling of elements')}
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + item.index + '.isQueueable'}
+												obj={this.props.studioInstallation}
+												type='checkbox'
+												collection={StudioInstallations}
+												className=''></EditAttribute>
+											{t('Adlibs on this layer can be queued')}
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Exclusivity group')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + item.index + '.exclusiveGroup'}
+												obj={this.props.studioInstallation}
+												type='text'
+												collection={StudioInstallations}
+												className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
 								</div>
@@ -761,7 +786,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 		return (
 			<div>
 				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
-					<p>{t('Are you sure you want to delete source layer') + ' ' + (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) + '?'}</p>
+					<p>{t('Are you sure you want to delete source layer "{{sourceLayerId}}"?', { sourceLayerId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.name })}</p>
 					<p>{t('Please note: This action is irreversible!')}</p>
 				</ModalDialog>
 				<h3>{t('Source Layers')}</h3>
@@ -857,7 +882,7 @@ class StudioDevices extends React.Component<Translated<IStudioDevicesProps>, ISt
 		return (
 			<div>
 				<ModalDialog title={t('Remove this device?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
-					<p>{t('Are you sure you want to remove device') + ' ' + (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) + '?'}</p>
+					<p>{t('Are you sure you want to remove device "{{devideId}}"?', { deviceId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.name })}</p>
 				</ModalDialog>
 				<h3>{t('Attached Devices')}</h3>
 				<table className='expando settings-studio-device-table'>
@@ -1248,7 +1273,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 		return (
 			<div>
 				<ModalDialog title={t('Remove this mapping?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
-					<p>{t('Are you sure you want to remove mapping for layer') + ' ' + (this.state.deleteConfirmLayerId && this.state.deleteConfirmLayerId) + '?'}</p>
+					<p>{t('Are you sure you want to remove mapping for layer "{{layerId}}"?', { layerId: this.state.deleteConfirmLayerId && this.state.deleteConfirmLayerId })}</p>
 				</ModalDialog>
 				<h3>{t('Layer Mappings')}</h3>
 				<table className='expando settings-studio-mappings-table'>

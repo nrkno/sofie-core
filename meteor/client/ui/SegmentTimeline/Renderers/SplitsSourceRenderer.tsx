@@ -100,7 +100,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 	}
 
 	renderSubItems () {
-		return this.subItems.filter(i => i.role !== SplitRole.ART).reverse().map((item) => {
+		return this.subItems.filter(i => i.role !== SplitRole.ART).reverse().map((item, index, array) => {
 			return (
 				<div key={'item-' + item._id}
 					className={ClassNames('segment-timeline__layer-item__preview__item', {
@@ -116,6 +116,8 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 						'script': item.type === RundownAPI.SourceLayerType.SCRIPT,
 						'splits': item.type === RundownAPI.SourceLayerType.SPLITS,
 						'vt': item.type === RundownAPI.SourceLayerType.VT,
+
+						'second': array.length > 1 && index > 0 && item.type === array[index - 1].type
 					})}>
 				</div>
 			)
@@ -126,7 +128,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 		return (
 			<div className='video-preview'>
 				{
-					this.subItems.map((item) => {
+					this.subItems.map((item, index, array) => {
 						return (
 							<div className={ClassNames('video-preview', {
 								'background': item.role === SplitRole.ART,
@@ -144,6 +146,8 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 								'script': item.type === RundownAPI.SourceLayerType.SCRIPT,
 								'splits': item.type === RundownAPI.SourceLayerType.SPLITS,
 								'vt': item.type === RundownAPI.SourceLayerType.VT,
+
+								'second': array.length > 1 && index > 0 && item.type === array[index - 1].type
 							})}
 							key={item._id + '-preview'}
 							style={{

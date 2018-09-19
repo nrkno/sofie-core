@@ -17,14 +17,26 @@ $segment-layer-background-vt: #1769ff;
 @mixin item-type-colors {
 	&.camera {
 		background: $segment-layer-background-camera;
+
+		&.second {
+			background: darken($segment-layer-background-camera, 5%);
+		}
 	}
 
 	&.graphics {
 		background: $segment-layer-background-graphics;
+
+		&.second {
+			background: darken($segment-layer-background-graphics, 5%);
+		}
 	}
 
 	&.lower-third {
 		background: $segment-layer-background-lower-third;
+
+		&.second {
+			background: darken($segment-layer-background-lower-third, 5%);
+		}
 	}
 
 	&.live-speak {
@@ -33,10 +45,18 @@ $segment-layer-background-vt: #1769ff;
 
 	&.vt {
 		background: $segment-layer-background-vt;
+
+		&.second {
+			background: darken($segment-layer-background-vt, 5%);
+		}
 	}
 
 	&.remote {
 		background: $segment-layer-background-remote;
+
+		&.second {
+			background: darken($segment-layer-background-remote, 5%);
+		}
 	}
 
 	&.script {
@@ -85,10 +105,18 @@ $segment-layer-background-vt: #1769ff;
 @mixin item-type-colors-svg {
 	&.camera {
 		fill: $segment-layer-background-camera;
+
+		&.second {
+			fill: darken($segment-layer-background-camera, 5%);
+		}
 	}
 
 	&.graphics {
 		fill: $segment-layer-background-graphics;
+
+		&.second {
+			fill: darken($segment-layer-background-graphics, 5%);
+		}
 	}
 
 	&.lower-third {
@@ -101,10 +129,18 @@ $segment-layer-background-vt: #1769ff;
 
 	&.vt {
 		fill: $segment-layer-background-vt;
+
+		&.second {
+			fill: darken($segment-layer-background-vt, 5%);
+		}
 	}
 
 	&.remote {
 		fill: $segment-layer-background-remote;
+
+		&.second {
+			fill: darken($segment-layer-background-remote, 5%);
+		}
 	}
 
 	&.script {

@@ -24,16 +24,16 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { RunningOrderViewKbdShortcuts } from '../RunningOrderView'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<SegmentUi>
 	onSelectAdLib: (aSLine: SegmentLineAdLibItemUi) => void
-	onToggleAdLib: (aSLine: SegmentLineAdLibItemUi) => void
+	onToggleAdLib: (aSLine: SegmentLineAdLibItemUi, queue?: boolean) => void
 	selectedItem: SegmentLineAdLibItemUi | undefined
 	selectedSegment: SegmentUi | undefined
 	filter: string | undefined
 	studioInstallation: StudioInstallation
-	// roAdLibs: Array<SegmentLineAdLibItemUi>
 }
 
 interface IListViewStateHeader {
@@ -94,32 +94,6 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 			}
 		}
 	}
-
-	// renderGlobalAdLibs () {
-	// 	return (
-	// 		<tbody id={'adlib-panel__list-view__globals'} key='globals' className={ClassNames('adlib-panel__list-view__list__segment')}>
-	// 		{
-	// 				this.props.roAdLibs.map((item) => {
-	// 					if ((!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0) && !item.isHidden) {
-	// 						return (
-	// 							<AdLibListItem
-	// 								key={item._id}
-	// 								item={item}
-	// 								selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
-	// 								layer={this.state.sourceLayers[item.sourceLayerId]}
-	// 								outputLayer={this.state.outputLayers[item.outputLayerId]}
-	// 								onToggleAdLib={this.props.onToggleAdLib}
-	// 								onSelectAdLib={this.props.onSelectAdLib}
-	// 							/>
-	// 						)
-	// 					} else {
-	// 						return null
-	// 					}
-	// 				})
-	// 		}
-	// 		</tbody>
-	// 	)
-	// }
 
 	renderSegments () {
 		return this.props.uiSegments.map((seg) => {
@@ -279,7 +253,6 @@ interface ITrackedProps {
 	uiSegments: Array<SegmentUi>
 	liveSegment: SegmentUi | undefined
 	sourceLayerLookup: ISourceLayerLookup
-	// roAdLibs: Array<SegmentLineAdLibItemUi>
 }
 
 export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
@@ -293,40 +266,8 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	// a hash to store various indices of the used hotkey lists
 	let sourceHotKeyUse = {}
 
-	let roAdLibs: Array<SegmentLineAdLibItemUi> = []
-
-	let segments: Array<Segment> = []
-
 	const sharedHotkeyList = _.groupBy(props.studioInstallation.sourceLayers, (item) => item.activateKeyboardHotkeys)
-
-	if (props.runningOrder) {
-		// let roAdLibItems = RunningOrderBaselineAdLibItems.find({runningOrderId: props.runningOrder._id}).fetch()
-		// roAdLibItems.forEach((item) => {
-		// 	// automatically assign hotkeys based on adLibItem index
-		// 	const uiAdLib: SegmentLineAdLibItemUi = _.clone(item)
-		// 	uiAdLib.isGlobal = true
-
-		// 	let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
-		// 	if (sourceLayer &&
-		// 		sourceLayer.activateKeyboardHotkeys &&
-		// 		sourceLayer.assignHotkeysToGlobalAdlibs
-		// 	) {
-		// 		let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
-		// 		const sourceHotKeyUseLayerId = (sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id) || item.sourceLayerId
-		// 		if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
-		// 			uiAdLib.hotkey = keyboardHotkeysList[(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0)]
-		// 			// add one to the usage hash table
-		// 			sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
-		// 		}
-		// 	}
-		// 	// always add them to the list
-		// 	roAdLibs.push(uiAdLib)
-		// })
-
-		segments = Segments.find({
-			runningOrderId: props.runningOrder._id
-		}).fetch()
-	}
+	let segments: Array<Segment> = props.runningOrder.getSegments()
 
 	const uiSegments = props.runningOrder ? (segments as Array<SegmentUi>).map((segSource) => {
 		const seg = _.clone(segSource)
@@ -367,7 +308,6 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		uiSegments,
 		liveSegment,
 		sourceLayerLookup,
-		// roAdLibs
 	}
 })(class AdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
@@ -442,19 +382,6 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 			e.preventDefault()
 		}
 
-		/* if (this.props.roAdLibs) {
-			this.props.roAdLibs.forEach((item) => {
-				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown')
-					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
-						preventDefault(e)
-						this.onToggleAdLib(item)
-					}, 'keyup')
-					this.usedHotkeys.push(item.hotkey)
-				}
-			})
-		} */
-
 		if (this.props.liveSegment && this.props.liveSegment.items) {
 			this.props.liveSegment.items.forEach((item) => {
 				if (item.hotkey) {
@@ -464,6 +391,17 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 						this.onToggleAdLib(item)
 					}, 'keyup')
 					this.usedHotkeys.push(item.hotkey)
+
+					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
+					if (sourceLayer && sourceLayer.isQueueable) {
+						const queueHotkey = [RunningOrderViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
+						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown')
+						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
+							preventDefault(e)
+							this.onToggleAdLib(item, true)
+						}, 'keyup')
+						this.usedHotkeys.push(queueHotkey)
+					}
 				}
 			})
 		}
@@ -482,12 +420,17 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		})
 	}
 
-	onToggleAdLib = (aSLine: SegmentLineAdLibItemUi) => {
+	onToggleAdLib = (aSLine: SegmentLineAdLibItemUi, queue?: boolean) => {
 		// console.log(aSLine)
-		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && !aSLine.isGlobal) {
-			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.segmentAdLibLineItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
-		} else if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && aSLine.isGlobal) {
-			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.runningOrderBaselineAdLibItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
+
+		if (queue && this.props.sourceLayerLookup && this.props.sourceLayerLookup[aSLine.sourceLayerId] &&
+			!this.props.sourceLayerLookup[aSLine.sourceLayerId].isQueueable) {
+			console.log(`Item "${aSLine._id}" is on sourceLayer "${aSLine.sourceLayerId}" that is not queueable.`)
+			return
+		}
+
+		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.segmentAdLibLineItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id, queue || false)
 		}
 	}
 

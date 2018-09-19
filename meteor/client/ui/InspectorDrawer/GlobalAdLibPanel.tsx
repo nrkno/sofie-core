@@ -22,6 +22,8 @@ import * as faList from '@fortawesome/fontawesome-free-solid/faList'
 import * as faTimes from '@fortawesome/fontawesome-free-solid/faTimes'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
+import { RunningOrderViewKbdShortcuts } from '../RunningOrderView'
+
 import { Spinner } from '../../lib/Spinner'
 import { literal } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -30,7 +32,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 interface IListViewPropsHeader {
 	onSelectAdLib: (aSLine: SegmentLineAdLibItemUi) => void
 	onToggleSticky: (item: IAdLibListItem) => void
-	onToggleAdLib: (aSLine: SegmentLineAdLibItemUi) => void
+	onToggleAdLib: (aSLine: SegmentLineAdLibItemUi, queue?: boolean) => void
 	selectedItem: SegmentLineAdLibItemUi | undefined
 	filter: string | undefined
 	studioInstallation: StudioInstallation
@@ -374,6 +376,17 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 						this.onToggleAdLib(item)
 					}, 'keyup')
 					this.usedHotkeys.push(item.hotkey)
+
+					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
+					if (sourceLayer && sourceLayer.isQueueable) {
+						const queueHotkey = [RunningOrderViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
+						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown')
+						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
+							preventDefault(e)
+							this.onToggleAdLib(item, true)
+						}, 'keyup')
+						this.usedHotkeys.push(queueHotkey)
+					}
 				}
 			})
 		}
@@ -429,10 +442,15 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		})
 	}
 
-	onToggleAdLib = (aSLine: SegmentLineAdLibItemUi) => {
-		// console.log(aSLine)
+	onToggleAdLib = (aSLine: SegmentLineAdLibItemUi, queue?: boolean) => {
+		if (queue && this.props.sourceLayerLookup && this.props.sourceLayerLookup[aSLine.sourceLayerId] &&
+			!this.props.sourceLayerLookup[aSLine.sourceLayerId].isQueueable) {
+			console.log(`Item "${aSLine._id}" is on sourceLayer "${aSLine.sourceLayerId}" that is not queueable.`)
+			return
+		}
+
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && aSLine.isGlobal) {
-			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.runningOrderBaselineAdLibItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id)
+			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.runningOrderBaselineAdLibItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id, queue || false)
 		}
 	}
 

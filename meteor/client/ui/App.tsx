@@ -23,6 +23,8 @@ import {
 } from 'react-router-dom'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
+import { PrompterView } from './PrompterView'
+import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
 
 interface IAppState {
 	studioMode: boolean
@@ -97,6 +99,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Route path='/countdowns/:studioId/presenter' component={NullComponent} />
 							<Route path='/countdowns/presenter' component={NullComponent} />
 							<Route path='/activeRo' component={NullComponent} />
+							<Route path='/prompter/:studioId' component={NullComponent} />
 							<Route path='/' render={(props) => <Header {...props} adminMode={this.state.adminMode} />} />
 						</Switch>
 					</ErrorBoundary>
@@ -108,6 +111,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Route path='/runningOrders' component={RunningOrderList} />
 							<Route path='/ro/:runningOrderId' component={RunningOrderView} />
 							<Route path='/activeRo/:studioId' component={ActiveROView} />
+							<Route path='/prompter/:studioId' component={PrompterView} />
 							{/* <Route path='/activeRo' component={ActiveROView} /> */}
 							<Route path='/countdowns/:studioId/presenter' component={ClockView} />
 							{/* <Route path='/countdowns/presenter' component={ClockView} /> */}
@@ -118,6 +122,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 						</Switch>
 					</ErrorBoundary>
 					<ConnectionStatusNotification />
+					<ModalDialogGlobalContainer />
 				</div>
 			</Router>
 		)

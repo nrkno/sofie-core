@@ -24,8 +24,11 @@ import {
 
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { literal } from '../../lib/lib'
+import { literal, getCurrentTime } from '../../lib/lib'
 import { logger } from '../logging'
+import { RunningOrders } from '../../lib/collections/RunningOrders'
+
+/* tslint:disable:no-irregular-whitespace quotemark whitespace no-consecutive-blank-lines */
 
 // These are temporary methods, used during development to put some data into the database
 export function getPD (): PeripheralDevice {
@@ -4619,7 +4622,7 @@ Meteor.methods({
 							"mosartVariant" : "2LIKE",
 							"ReadTime" : 2,
 							"ip1" : "K1",
-							"ip2" : "RM1",
+							"ip2" : "K2",
 							"ENPSItemType" : 3
 						}
 					}
@@ -6839,7 +6842,20 @@ Meteor.methods({
 				]
 			}
 		)
-	}
+	},
+	'debug_roSetStarttimeSoon' () {
+		let pd = getPD()
+
+		let ro = RunningOrders.findOne({
+			active: true
+		})
+		if (ro) {
+			RunningOrders.update(ro._id, {$set: {
+				expectedStart: getCurrentTime() + 70 * 1000
+			}})
+		}
+
+	},
 
 })
 
