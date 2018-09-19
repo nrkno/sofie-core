@@ -9,7 +9,9 @@ import { RunningOrders } from './RunningOrders'
 import { SegmentLineItem, SegmentLineItems } from './SegmentLineItems'
 import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
 import { Segments } from './Segments'
-import { applyClassToDocument, Time, registerCollection } from '../lib'
+import { applyClassToDocument, Time, registerCollection, normalizeArray } from '../lib'
+import { RundownAPI } from '../api/rundown';
+import { checkSLIContentStatus } from '../mediaObjects';
 
 /** A "Line" in NRK Lingo. */
 export interface DBSegmentLine {
@@ -194,12 +196,31 @@ export class SegmentLine implements DBSegmentLine {
 		let notes: Array<SegmentLineNote> = []
 		notes = notes.concat(this.notes || [])
 
-		if (runtimeNotes) {
-			// let items = this.getSegmentLinesItems()
-			// _.each(items, (item) => {
+		/* if (runtimeNotes) {
+			const items = this.getSegmentLinesItems()
+			const ro = this.getRunningOrder()
+			const si = ro && ro.getStudioInstallation()
+			const slLookup = si && normalizeArray(si.sourceLayers, '_id')
+			_.each(items, (item) => {
 				// TODO: check statuses (like media availability) here
-			// })
-		}
+
+				if (slLookup && item.sourceLayerId && slLookup[item.sourceLayerId]) {
+					const sl = slLookup[item.sourceLayerId]
+					const st = checkSLIContentStatus(item, sl)
+					if (st.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING || st.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN) {
+						notes.push({
+							type: SegmentLineNoteType.ERROR,
+							origin: {
+								name: 'Media Check',
+								segmentLineId: this._id,
+								segmentLineItemId: item._id
+							},
+							message: st.message || ''
+						})
+					}
+				}
+			})
+		} */
 		return notes
 	}
 	getLastStartedPlayback () {
