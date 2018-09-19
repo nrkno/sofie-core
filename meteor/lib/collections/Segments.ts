@@ -1,7 +1,7 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { applyClassToDocument, Optional, registerCollection } from '../lib'
-import { SegmentLines } from './SegmentLines'
+import { SegmentLines, SegmentLineNote } from './SegmentLines'
 import {
 	IMOSExternalMetaData,
 	IMOSObjectStatus
@@ -25,6 +25,9 @@ export interface DBSegment {
 	metaData?: Array<IMOSExternalMetaData>
 	status?: IMOSObjectStatus
 	expanded?: boolean
+
+	/** Holds notes (warnings / errors) thrown by the templates during creation */
+	notes?: Array<SegmentLineNote>
 }
 export class Segment implements DBSegment {
 	public _id: string
@@ -36,6 +39,7 @@ export class Segment implements DBSegment {
 	public metaData?: Array<IMOSExternalMetaData>
 	public status?: IMOSObjectStatus
 	public expanded?: boolean
+	public notes?: Array<SegmentLineNote>
 
 	constructor (document: DBSegment) {
 		_.each(_.keys(document), (key) => {
@@ -57,6 +61,19 @@ export class Segment implements DBSegment {
 				sort: {_rank: 1}
 			}, options)
 		).fetch()
+	}
+	getNotes (includeSegmentLines?: boolean, runtimeNotes?: boolean) {
+		let notes: Array<SegmentLineNote> = []
+
+		if (includeSegmentLines) {
+			const lines = this.getSegmentLines()
+			_.each(lines, l => {
+				notes = notes.concat(l.getNotes(runtimeNotes))
+			})
+		}
+
+		notes = notes.concat(this.notes || [])
+		return notes
 	}
 }
 

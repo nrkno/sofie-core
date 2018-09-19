@@ -36,8 +36,7 @@ import { StudioInstallations, StudioInstallation } from '../../../lib/collection
 import { ShowStyle } from '../../../lib/collections/ShowStyles'
 import { RuntimeFunctionDebugData } from '../../../lib/collections/RuntimeFunctionDebugData'
 
-export type TemplateGeneralFunction = (story: IMOSROFullStory) => TemplateResult | string
-export type TemplateFunction = (story: StoryWithContext) => Array<SegmentLineItem>
+export type TemplateGeneralFunction = (story: IMOSROFullStory | null) => TemplateResult | string
 export type TemplateFunctionOptional = (context: TemplateContextInner, story: StoryWithContext) => TemplateResult | string
 
 /*
@@ -244,14 +243,17 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 			let name = context.segmentLine.mosId
 			if (story && story.Slug) {
 				name = story.Slug.toString()
+			} else if (!story) {
+				name = ''
 			}
+
 			savedNotes.push({
 				type: SegmentLineNoteType.ERROR,
 				origin: {
 					name: name,
 					roId: context.runningOrderId,
-					// segmentId: context.segment._id,
-					segmentLineId: context.segmentLine._id
+					segmentId: story ? undefined : context.segmentLine.segmentId,
+					segmentLineId: story ? context.segmentLine._id : undefined
 					// segmentLineItemId?: string,
 				},
 				message: message
@@ -267,14 +269,17 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 			let name = context.segmentLine.mosId
 			if (story && story.Slug) {
 				name = story.Slug.toString()
+			} else if (!story) {
+				name = ''
 			}
+
 			savedNotes.push({
 				type: SegmentLineNoteType.WARNING,
 				origin: {
 					name: name,
 					roId: context.runningOrderId,
-					// segmentId: context.segment._id,
-					segmentLineId: context.segmentLine._id,
+					segmentId: story ? undefined : context.segmentLine.segmentId,
+					segmentLineId: story ? context.segmentLine._id : undefined
 					// segmentLineItemId?: string,
 				},
 				message: message
@@ -487,11 +492,11 @@ export function runNamedTemplate (
 	showStyle: ShowStyle,
 	templateId: string,
 	context: TemplateContext,
-	story: IMOSROFullStory,
+	story: IMOSROFullStory | null,
 	reason: string,
 	notes: Array<SegmentLineNote> = []
 ): TemplateResultAfterPost {
-	let innerContext = getContext(context, false, story)
+	let innerContext = getContext(context, false, story || undefined)
 	let fcn = findFunction(showStyle, templateId, innerContext, reason)
 	let result: TemplateResult = fcn(story) as TemplateResult
 	notes = notes.concat(innerContext.getNotes()) // Add notes

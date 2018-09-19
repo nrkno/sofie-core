@@ -53,6 +53,8 @@ export interface DBSegmentLine {
 
 	/** The type of the segmentLiene, could be the name of the template that created it */
 	typeVariant?: string
+	/** The subtype fo the segmentLine */
+	subTypeVariant?: string
 
 	/** Playout timings, in here we log times when playout happens */
 	timings?: SegmentLineTimings
@@ -188,7 +190,7 @@ export class SegmentLine implements DBSegmentLine {
 		)
 
 	}
-	getNotes (runtimeNotes) {
+	getNotes (runtimeNotes?: boolean) {
 		let notes: Array<SegmentLineNote> = []
 		notes = notes.concat(this.notes || [])
 
