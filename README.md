@@ -1,8 +1,7 @@
 # Sofie: The Modern TV News Studio Automation System (tv-automation-server-core)
 
-*Note: This is a work in progress!*
+This is the core application of the [**Sofie** TV News Studio Automation System](https://github.com/nrkno/Sofie-TV-automation/).
 
-This is the core application of the [Sofie News Studio Automation System](https://github.com/nrkno/Sofie-TV-automation/).
 
 ## Local development
 First, install meteor:
