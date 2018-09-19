@@ -408,10 +408,8 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 							{ this.state.isLive && t('Next') }
 							{!isEndOfShow && <div className='segment-timeline__segment-line__nextline__label__carriage-return'>
 								<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11.36 7.92'>
-									<g id='Layer_2'>
-										<g id='Layer_1-2'>
-											<path d='M10.36,0V2.2A3.06,3.06,0,0,1,7.3,5.25H3.81V3.51L0,5.71,3.81,7.92V6.25H7.3a4.06,4.06,0,0,0,4.06-4V0Z' />
-										</g>
+									<g>
+										<path d='M10.36,0V2.2A3.06,3.06,0,0,1,7.3,5.25H3.81V3.51L0,5.71,3.81,7.92V6.25H7.3a4.06,4.06,0,0,0,4.06-4V0Z' />
 									</g>
 								</svg>
 							</div>}
