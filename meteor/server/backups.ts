@@ -93,7 +93,11 @@ function runBackup (params, req: IncomingMessage, res: ServerResponse, onlyActiv
 		res.statusCode = 200
 
 		// Split on line breaks to an array to make it diff better
-		data.templates.forEach(t => t.code = t.code.split('\n'))
+		data.templates.forEach(t => {
+			t.code = t.code.split('\n')
+			t.createdVersion = undefined
+			t.modified = undefined
+		})
 		content = JSON.stringify(data, null, 4)
 	}
 
