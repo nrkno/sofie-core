@@ -12,8 +12,8 @@ export function eventContextForLog (e: any): string {
 
 export function keyboardEventToShortcut (e: ExtendedKeyboardEvent): string {
 	const combo = _.compact([
-		e.shiftKey ? 'shift' : undefined,
 		e.ctrlKey ? 'ctrl' : undefined,
+		e.shiftKey ? 'shift' : undefined,
 		e.altKey ? 'alt' : undefined,
 		e.metaKey ? 'meta' : undefined,
 		e.key
