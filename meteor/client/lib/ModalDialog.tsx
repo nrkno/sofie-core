@@ -155,9 +155,9 @@ interface ModalDialogQueueItem {
 	message: string | JSX.Element
 	yes?: string
 	no?: string
-	onAccept: () => void
-	onDiscard?: () => void
-	onSecondary?: () => void
+	onAccept: (e: any) => void
+	onDiscard?: (e: any) => void
+	onSecondary?: (e: any) => void
 }
 interface IModalDialogGlobalContainerProps {
 }
@@ -183,32 +183,32 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 			queue
 		})
 	}
-	onAccept = () => {
+	onAccept = (e: any) => {
 		let queue = this.state.queue
 		let onQueue = queue.pop()
 		if (onQueue) {
 			this.setState({queue})
-			onQueue.onAccept()
+			onQueue.onAccept(e)
 		}
 	}
-	onDiscard = () => {
+	onDiscard = (e: any) => {
 		let queue = this.state.queue
 		let onQueue = queue.pop()
 		if (onQueue) {
 			this.setState({queue})
 			if (onQueue.onDiscard) {
-				onQueue.onDiscard()
+				onQueue.onDiscard(e)
 			}
 		}
 	}
-	onSecondary = () => {
+	onSecondary = (e: any) => {
 
 		let queue = this.state.queue
 		let onQueue = queue.pop()
 		if (onQueue) {
 			this.setState({queue})
 			if (onQueue.onSecondary) {
-				onQueue.onSecondary()
+				onQueue.onSecondary(e)
 			}
 		}
 	}

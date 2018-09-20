@@ -18,6 +18,7 @@ import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faSave from '@fortawesome/fontawesome-free-solid/faSave'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MomentFromNow } from '../../lib/Moment'
+import { eventContextForLog } from '../../lib/eventTargetLogHelper';
 
 interface IMonacoProps {
 	runtimeFunction: RuntimeFunction
@@ -481,8 +482,8 @@ declare enum SegmentLineHoldMode {
 			this._editorEventListeners.push(this._editor.onDidChangeModelContent((e: monaco.editor.IModelContentChangedEvent) => {
 				this.triggerSave(this._editor.getModel().getValue())
 			}))
-			this._editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, () => {
-				this.saveCode()
+			this._editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, (e: any) => {
+				this.saveCode(e)
 			}, '')
 		}
 	}
@@ -619,12 +620,12 @@ declare enum SegmentLineHoldMode {
 			})
 		}
 	}
-	saveCode () {
+	saveCode (e) {
 		this.setState({
 			saving: true
 		})
 		if (this._currentCode) {
-			Meteor.call(ClientAPI.methods.execMethod, RuntimeFunctionsAPI.UPDATECODE, this.props.runtimeFunction._id, this._currentCode, (e) => {
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), RuntimeFunctionsAPI.UPDATECODE, this.props.runtimeFunction._id, this._currentCode, (e) => {
 				if (e) {
 					this.setState({
 						message: e.toString()
@@ -652,7 +653,7 @@ declare enum SegmentLineHoldMode {
 						{this.state.unsavedChanges ? (
 							<div>
 								<b>Unsaved changes </b>
-								<button className='btn btn-primary' onClick={(e) => this.saveCode()}>
+								<button className='btn btn-primary' onClick={(e) => this.saveCode(e)}>
 									<FontAwesomeIcon icon={faSave} />
 								</button>
 							</div>
@@ -699,7 +700,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		})
 	}
 	updateTemplateId (edit: EditAttributeBase, newValue: any) {
-		Meteor.call(ClientAPI.methods.execMethod, RuntimeFunctionsAPI.UPDATETEMPLATEID, edit.props.obj._id, newValue, (err, res) => {
+		Meteor.call(ClientAPI.methods.execMethod, '', RuntimeFunctionsAPI.UPDATETEMPLATEID, edit.props.obj._id, newValue, (err, res) => {
 			if (err) {
 				console.log(err)
 			} else {
@@ -708,7 +709,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		})
 	}
 	updateIsHelper (edit: EditAttributeBase, newValue: any) {
-		Meteor.call(ClientAPI.methods.execMethod, RuntimeFunctionsAPI.UPDATEISHELPER, edit.props.obj._id, newValue, (err, res) => {
+		Meteor.call(ClientAPI.methods.execMethod, '', RuntimeFunctionsAPI.UPDATEISHELPER, edit.props.obj._id, newValue, (err, res) => {
 			if (err) {
 				console.log(err)
 			} else {

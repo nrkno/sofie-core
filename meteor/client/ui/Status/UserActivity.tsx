@@ -94,6 +94,9 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 					<th className='c3 user-action-log__method'>
 						{t('Action')}
 					</th>
+					<th className='c3 user-action-log__method'>
+						{t('Method')}
+					</th>
 					<th className='c1 user-action-log__args'>
 						{t('Parameters')}
 					</th>
@@ -129,6 +132,7 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 									<td className='user-action-log__timestamp'><Moment format='YYYY/MM/DD HH:mm:ss'>{msg.timestamp}</Moment></td>
 									<td className='user-action-log__userId'>{msg.userId}</td>
 									<td className='user-action-log__clientAddress'>{msg.clientAddress}</td>
+									<td className='user-action-log__context'>{msg.context}</td>
 									<td className='user-action-log__method'>{msg.method}</td>
 									<td className='user-action-log__args'>{msg.args}</td>
 								</tr>

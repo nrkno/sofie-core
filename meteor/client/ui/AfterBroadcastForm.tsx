@@ -22,6 +22,7 @@ import { EditAttribute } from '../lib/EditAttribute'
 import { ClientAPI } from '../../lib/api/client'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
+import { eventContextForLog } from '../lib/eventTargetLogHelper'
 
 interface IProps {
 	runningOrder: RunningOrder
@@ -42,7 +43,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 			q2: '',
 		}
 	}
-	saveForm = () => {
+	saveForm = (e: React.MouseEvent<HTMLElement>) => {
 
 		let answers = this.state
 
@@ -52,9 +53,9 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 			answers: answers
 		}
 
-		Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.saveEvaluation, evaluation)
+		Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.saveEvaluation, evaluation)
 
-		Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
+		Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
 
 		this.setState({
 			q0: '',

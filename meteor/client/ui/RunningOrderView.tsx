@@ -39,6 +39,7 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
 import { scrollToSegmentLine } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
+import { eventContextForLog } from '../lib/eventTargetLogHelper'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -89,7 +90,7 @@ interface ITimingWarningProps {
 	runningOrder: RunningOrder
 	inActiveROView?: boolean
 	studioMode: boolean
-	oneMinuteBeforeAction: () => void
+	oneMinuteBeforeAction: (e) => void
 }
 
 interface ITimingWarningState {
@@ -135,12 +136,12 @@ const WarningDisplay = translate()(timer(5000)(
 			})
 		}
 
-		oneMinuteBeforeAction = () => {
+		oneMinuteBeforeAction = (e: any) => {
 			this.setState({
 				plannedStartCloseShow: false
 			})
 
-			this.props.oneMinuteBeforeAction()
+			this.props.oneMinuteBeforeAction(e)
 		}
 
 		render () {
@@ -452,47 +453,47 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 	keyTake = (e: ExtendedKeyboardEvent) => {
 		if (e.key !== 'Enter' || e.location === 3) { // only allow the rightmost enter key
-			this.take()
+			this.take(e)
 		}
 	}
 	keyHold = (e: ExtendedKeyboardEvent) => {
-		this.hold()
+		this.hold(e)
 	}
 	keyActivate = (e: ExtendedKeyboardEvent) => {
-		this.activate()
+		this.activate(e)
 	}
 	keyActivateRehearsal = (e: ExtendedKeyboardEvent) => {
-		this.activateRehearsal()
+		this.activateRehearsal(e)
 	}
 
 	keyDeactivate = (e: ExtendedKeyboardEvent) => {
-		this.deactivate()
+		this.deactivate(e)
 	}
 	keyResetRunningOrder = (e: ExtendedKeyboardEvent) => {
-		this.resetRunningOrder()
+		this.resetRunningOrder(e)
 	}
 	keyReloadRunningOrder = (e: ExtendedKeyboardEvent) => {
-		this.reloadRunningOrder()
+		this.reloadRunningOrder(e)
 	}
 	keyMoveNextForward = (e: ExtendedKeyboardEvent) => {
 		// "forward" = to next SegmentLine
-		this.moveNext(1, 0)
+		this.moveNext(e, 1, 0)
 	}
 	keyMoveNextBack = (e: ExtendedKeyboardEvent) => {
 		// "down" = to next Segment
-		this.moveNext(-1, 0)
+		this.moveNext(e, -1, 0)
 	}
 	keyMoveNextDown = (e: ExtendedKeyboardEvent) => {
 		// "down" = to next Segment
-		this.moveNext(0, 1)
+		this.moveNext(e, 0, 1)
 	}
 	keyMoveNextUp = (e: ExtendedKeyboardEvent) => {
 		// "down" = to next Segment
-		this.moveNext(0, -1)
+		this.moveNext(e, 0, -1)
 	}
-	keyDisableNextSegmentLineItem = (e: ExtendedKeyboardEvent) => {
+	keyDisableNextSegmentLineItem = (e: any) => {
 		if (this.props.studioMode) {
-			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, false, (err, segmentLineItemId) => {
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, false, (err, segmentLineItemId) => {
 				if (err) {
 					// todo: notify the user
 					console.error(err)
@@ -502,9 +503,9 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			})
 		}
 	}
-	keyDisableNextSegmentLineItemUndo = (e: ExtendedKeyboardEvent) => {
+	keyDisableNextSegmentLineItemUndo = (e: any) => {
 		if (this.props.studioMode) {
-			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, true, (err, segmentLineItemId) => {
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, true, (err, segmentLineItemId) => {
 				if (err) {
 					// todo: notify the user
 					console.error(err)
@@ -515,18 +516,18 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		}
 	}
 
-	take = () => {
+	take = (e: any) => {
 		if (this.props.studioMode) {
 			if (this.props.runningOrder.active) {
-				Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roTake, this.props.runningOrder._id)
+				Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roTake, this.props.runningOrder._id)
 			}
 		}
 		// console.log(new Date(getCurrentTime()))
 	}
-	moveNext = (horisonalDelta: number, verticalDelta: number) => {
+	moveNext = (e: any, horizonalDelta: number, verticalDelta: number) => {
 		if (this.props.studioMode) {
 			if (this.props.runningOrder.active) {
-				Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roMoveNext, this.props.runningOrder._id, horisonalDelta, verticalDelta, (err, segmentLineId) => {
+				Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roMoveNext, this.props.runningOrder._id, horizonalDelta, verticalDelta, (err, segmentLineId) => {
 					if (err) {
 						// todo: notify the user
 						console.error(err)
@@ -555,9 +556,9 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		})
 	}
 
-	hold = () => {
+	hold = (e: any) => {
 		if (this.props.studioMode && this.props.runningOrder.active) {
-			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivateHold, this.props.runningOrder._id, (err, res) => {
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roActivateHold, this.props.runningOrder._id, (err, res) => {
 				if (err) {
 					// TODO
 					// this.handleActivationError(err)
@@ -574,7 +575,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		return getCurrentTime() > (this.props.runningOrder.expectedStart || 0) + (this.props.runningOrder.expectedDuration || 0)
 	}
 
-	activate = () => {
+	activate = (e: any) => {
 		const { t } = this.props
 		if (
 			this.props.studioMode &&
@@ -587,7 +588,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			)
 		) {
 			let doActivate = () => {
-				Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false, (err, res) => {
+				Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false, (err, res) => {
 					if (err || (res && res.error)) {
 						this.handleActivationError(err || res)
 						return
@@ -600,8 +601,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				doModalDialog({
 					title: this.props.runningOrder.name,
 					message: t('Do you want to activate this Running Order?'),
-					onAccept: () => {
-						Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roResetAndActivate, this.props.runningOrder._id, (err, res) => {
+					onAccept: (e: any) => {
+						Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roResetAndActivate, this.props.runningOrder._id, (err, res) => {
 							if (err || (res && res.error)) {
 								this.handleActivationError(err || res)
 								return
@@ -625,7 +626,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			}
 		}
 	}
-	activateRehearsal = () => {
+	activateRehearsal = (e: any) => {
 		const { t } = this.props
 
 		if (
@@ -639,7 +640,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			)
 		) {
 			let doActivateRehersal = () => {
-				Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, true, (err, res) => {
+				Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roActivate, this.props.runningOrder._id, true, (err, res) => {
 					if (err || (res && res.error)) {
 						this.handleActivationError(err || res)
 						return
@@ -651,7 +652,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				// The broadcast hasn't started yet
 				if (!this.props.runningOrder.active) {
 					// inactive, do the full preparation:
-					Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roPrepareForBroadcast, this.props.runningOrder._id, (err, res) => {
+					Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roPrepareForBroadcast, this.props.runningOrder._id, (err, res) => {
 						if (err || (res && res.error)) {
 							this.handleActivationError(err || res)
 							return
@@ -688,37 +689,37 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			}
 		}
 	}
-	deactivate = () => {
+	deactivate = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode && this.props.runningOrder.active) {
 			if (this.runningOrderShouldHaveStarted()) {
 				if (this.props.runningOrder.rehearsal) {
 					// We're in rehearsal mode
-					Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
+					Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
 				} else {
 					doModalDialog({
 						title: this.props.runningOrder.name,
 						message: t('Are you sure you want to deactivate this Running Order?\n(This will clear the outputs)'),
 						onAccept: () => {
-							Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
+							Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
 						}
 					})
 				}
 			} else {
 				// Do it right away
-				Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
+				Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
 			}
 		}
 	}
 
-	resetRunningOrder = () => {
+	resetRunningOrder = (e: any) => {
 		const { t } = this.props
 		let doReset = () => {
 
 			// Do a rewind right away
 			window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
 
-			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roResetRunningOrder, this.props.runningOrder._id, (err) => {
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roResetRunningOrder, this.props.runningOrder._id, (err) => {
 				// Do another rewind later, when the UI has updated
 				Meteor.defer(() => {
 					Tracker.flush()
@@ -751,10 +752,10 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		}
 	}
 
-	reloadRunningOrder = (changeRehearsal?: boolean) => {
+	reloadRunningOrder = (e: any, changeRehearsal?: boolean) => {
 		const p = new Promise((resolve, reject) => {
 			if (this.props.studioMode) {
-				Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.reloadData, this.props.runningOrder._id, changeRehearsal, (err, result) => {
+				Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.reloadData, this.props.runningOrder._id, changeRehearsal, (err, result) => {
 					if (err) {
 						console.error(err)
 						reject(err)
@@ -772,10 +773,10 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		return p
 	}
 
-	resetAndActivateRunningOrder = () => {
+	resetAndActivateRunningOrder = (e: any) => {
 		// Called from the ModalDialog, 1 minute before broadcast starts
 		if (this.props.studioMode) {
-			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roResetAndActivate, this.props.runningOrder._id, (err, res) => {
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roResetAndActivate, this.props.runningOrder._id, (err, res) => {
 				if (err || (res && res.error)) {
 					this.handleActivationError(err || res)
 					return
@@ -827,47 +828,47 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 									!(this.props.runningOrder.active && this.props.runningOrder.rehearsal) ?
 									(
 										!this.runningOrderShouldHaveStarted() && !this.props.runningOrder.active ?
-										<MenuItem onClick={(e) => this.activateRehearsal()}>
+										<MenuItem onClick={(e) => this.activateRehearsal(e)}>
 											{t('Prepare studio and Activate (Rehearsal)')}
 										</MenuItem> :
-										<MenuItem onClick={(e) => this.activateRehearsal()}>
+										<MenuItem onClick={(e) => this.activateRehearsal(e)}>
 											{t('Activate (Rehearsal)')}
 										</MenuItem>
 									) : (
-										<MenuItem onClick={(e) => this.activate()}>
+										<MenuItem onClick={(e) => this.activate(e)}>
 											{t('Activate')}
 										</MenuItem>
 									)
 								}
 								{
 									this.props.runningOrder.active ?
-									<MenuItem onClick={(e) => this.deactivate()}>
+									<MenuItem onClick={(e) => this.deactivate(e)}>
 										{t('Deactivate')}
 									</MenuItem> :
 									null
 								}
 								{
 									this.props.runningOrder.active ?
-										<MenuItem onClick={(e) => this.take()}>
+										<MenuItem onClick={(e) => this.take(e)}>
 											{t('Take')}
 										</MenuItem> :
 										null
 								}
 								{
 									this.props.runningOrder.active ?
-										<MenuItem onClick={(e) => this.hold()}>
+										<MenuItem onClick={(e) => this.hold(e)}>
 											{t('Hold')}
 										</MenuItem> :
 										null
 								}
 								{
 									!(this.props.runningOrder.active && !this.props.runningOrder.rehearsal) ?
-									<MenuItem onClick={(e) => this.resetRunningOrder()}>
+									<MenuItem onClick={(e) => this.resetRunningOrder(e)}>
 										{t('Reset Running Order')}
 									</MenuItem> :
 									null
 								}
-								<MenuItem onClick={(e) => this.reloadRunningOrder()}>
+								<MenuItem onClick={(e) => this.reloadRunningOrder(e)}>
 									{t('Reload ENPS data')}
 								</MenuItem>
 							</React.Fragment> :
@@ -1177,9 +1178,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 	}
 
-	onSetNext = (segmentLine: SegmentLine) => {
+	onSetNext = (segmentLine: SegmentLine, e: any) => {
 		if (this.state.studioMode && segmentLine && segmentLine._id && this.props.runningOrder) {
-			Meteor.call(ClientAPI.methods.execMethod, PlayoutAPI.methods.roSetNext, this.props.runningOrder._id, segmentLine._id)
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roSetNext, this.props.runningOrder._id, segmentLine._id)
 			this.setState({
 				manualSetAsNext: true
 			})

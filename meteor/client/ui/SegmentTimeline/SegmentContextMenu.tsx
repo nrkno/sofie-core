@@ -6,7 +6,7 @@ import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
 interface IProps {
-	onSetNext: (segmentLine: SegmentLine | undefined) => void
+	onSetNext: (segmentLine: SegmentLine | undefined, e: any) => void
 	runningOrder?: RunningOrder
 	studioMode: boolean
 	contextMenuContext: any
@@ -31,7 +31,7 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 		return (
 			this.props.studioMode && this.props.runningOrder && this.props.runningOrder.active ?
 				<ContextMenu id='segment-timeline-context-menu'>
-					<MenuItem onClick={(e) => this.props.onSetNext(segLine)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
+					<MenuItem onClick={(e) => this.props.onSetNext(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
 							{t('Set as Next')}
 					</MenuItem>
 				</ContextMenu>

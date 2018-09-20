@@ -9,6 +9,7 @@ export interface UserActionsLogItem {
 	timestamp: Time,
 	method: string,
 	args: string,
+	context: string,
 	success?: boolean,
 	doneTime?: Time,
 	errorMessage?: string

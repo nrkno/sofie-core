@@ -10,8 +10,9 @@ import { ClientAPI } from '../../lib/api/client'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 
 export namespace ServerClientAPI {
-	export function execMethod (methodName, ...args: any[]) {
+	export function execMethod (context, methodName, ...args: any[]) {
 		check(methodName, String)
+		check(context, String)
 		// this is essentially the same as MeteorPromiseCall, but rejects the promise on exception to
 		// allow handling it in the client code
 
@@ -21,6 +22,7 @@ export namespace ServerClientAPI {
 			_id: actionId,
 			clientAddress: this.connection.clientAddress,
 			userId: this.userId,
+			context: context,
 			method: methodName,
 			args: JSON.stringify(args),
 			timestamp: getCurrentTime()

@@ -94,7 +94,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 	}
 	handleConfirmDeleteShowStyleAccept = (e) => {
 		if (this.state.showDeleteDeviceConfirm) {
-			Meteor.call(ClientAPI.methods.execMethod, 'temporaryRemovePeripheralDevice', this.state.showDeleteDeviceConfirm._id)
+			Meteor.call(ClientAPI.methods.execMethod, '', 'temporaryRemovePeripheralDevice', this.state.showDeleteDeviceConfirm._id)
 			// PeripheralDevices.remove(this.state.showDeleteDeviceConfirm._id)
 		}
 		// ShowStyles.remove(this.state.deleteConfirmItem._id)
