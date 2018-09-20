@@ -162,9 +162,11 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 						return [
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/studio/' + item._id}>
 								<h3>{item.name}</h3>
-								<p>
-									{t('Source layers')}: {item.sourceLayers.length.toString()} {t('Output channels')}: {item.outputLayers.length.toString()}
-								</p>
+								{ item.sourceLayers && item.outputLayers &&
+									<p>
+										{t('Source layers')}: {item.sourceLayers.length.toString()} {t('Output channels')}: {item.outputLayers.length.toString()}
+									</p>
+								}
 							</NavLink>,
 							<hr className='vsubtle man' key={item._id + '-hr'} />
 						]
