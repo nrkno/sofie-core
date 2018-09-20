@@ -461,10 +461,10 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 									<div key={key}>
 										<div>
 											<b>
-												<img className='icon' src='/icons/Warning.svg' />
+												<img className='icon' src='/icons/warning.svg'/>
 												{(
-													note.type === SegmentLineNoteType.WARNING ? 'Warning' :
-													note.type === SegmentLineNoteType.ERROR ? 'Error' :
+													note.type === SegmentLineNoteType.WARNING ? '' :
+													note.type === SegmentLineNoteType.ERROR ? 'Error:&nbsp;' :
 													''
 												)}
 											</b>

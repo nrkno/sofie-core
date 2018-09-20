@@ -257,7 +257,7 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 					{
 						this.props.notes.length > 0 ?
 						<div onClick={e => this.clickNotes()} className={ClassNames('note-icon', 'warning', this.state.displayNotes ? 'display' : '')}>
-							<img className='icon' src='/icons/Warning.svg' />
+							<img className='icon' src='/icons/warning.svg' />
 							<div className='count'>
 								{this.props.notes.length}
 							</div>
@@ -270,10 +270,10 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 											return (
 												<tr key={key}>
 													<th className='notes-tooltip__header'>
-														<img className='icon' src='/icons/Warning.svg' />
+														<img className='icon' src='/icons/warning.svg' />
 														{(
-															note.type === SegmentLineNoteType.WARNING ? 'Warning' :
-															note.type === SegmentLineNoteType.ERROR ? 'Error' :
+															note.type === SegmentLineNoteType.WARNING ? 'Warning: ' :
+															note.type === SegmentLineNoteType.ERROR ? 'Error: ' :
 															''
 														)}
 													</th>

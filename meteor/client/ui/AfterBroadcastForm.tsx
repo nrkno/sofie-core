@@ -83,7 +83,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 
 					<h2>{t('Evaluation')}</h2>
 
-					<p>{t('Please take a minute to fill in this form')}</p>
+					<p><em>{t('Please take a minute to fill in this form.')}</em></p>
 
 					<div className='form'>
 						<div className='question'>
@@ -99,7 +99,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 							</div>
 						</div>
 						<div className='question q1'>
-							<p>{t('Please explain the problems you experienced (what happened and when, what should have happened, etcetera...)')}</p>
+							<p>{t('Please explain the problems you experienced (what happened and when, what should have happened, what could have triggered the problems, etcetera...)')}</p>
 							<div className='input'>
 								<EditAttribute
 									obj={obj}
@@ -110,7 +110,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 							</div>
 						</div>
 						<div className='question q2'>
-							<p>{t('Please enter your name')}</p>
+							<p>{t('Your name')}</p>
 							<div className='input'>
 								<EditAttribute
 									obj={obj}

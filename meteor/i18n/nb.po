@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2018-09-20T10:40:54.110Z\n"
-"PO-Revision-Date: 2018-09-20 12:55+0200\n"
+"POT-Creation-Date: 2018-09-20T14:54:55.364Z\n"
+"PO-Revision-Date: 2018-09-20 17:06+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -27,21 +27,21 @@ msgstr "Fant ingen aktive kjøreplaner."
 msgid "Evaluation"
 msgstr "Evaluering"
 
-msgid "Please take a minute to fill in this form"
-msgstr "Vennligst ta et minutt å fylle ut dette skjemaet"
+msgid "Please take a minute to fill in this form."
+msgstr "Vennligst ta et minutt å fylle ut dette skjemaet."
 
 msgid "Did you have any problems with the broadcast?"
 msgstr "Hadde du noen problemer med sendingen?"
 
 msgid ""
 "Please explain the problems you experienced (what happened and when, what "
-"should have happened, etcetera...)"
+"should have happened, what could have triggered the problems, etcetera...)"
 msgstr ""
 "Vennligst forklar problemene du opplevde (hva som skjedde og når, hva som "
-"skulle ha skjedd, etcetera...)"
+"skulle ha skjedd, hva som kunne ha utløst problemene, etcetera...)"
 
-msgid "Please enter your name"
-msgstr "Vennligst legg til ditt navn"
+msgid "Your name"
+msgstr "Ditt navn"
 
 msgid "Save message and Deactivate Rundown"
 msgstr "Lagre melding og Deaktiver kjøreplan"
@@ -273,7 +273,7 @@ msgid "Rewind segments to start"
 msgstr "Spol tilbake tittler til start"
 
 msgid "ON AIR"
-msgstr "ON OIR"
+msgstr "ON AIR"
 
 msgid "This running order has been unpublished from Sofie."
 msgstr "Denne kjøreplanen er ikke lenger tilgjengelig i Sofie."
@@ -392,7 +392,6 @@ msgstr "Delete"
 msgid "Cancel"
 msgstr "Cancel"
 
-#| msgid "Are you sure you want to delete source layer"
 msgid "Are you sure you want to delete show style \"{{showStyleId}}\"?"
 msgstr "Are you sure you want to delete show style \"{{showStyleId}}\"?"
 
@@ -420,21 +419,18 @@ msgstr "System Settings"
 msgid "Url"
 msgstr "Url"
 
-#| msgid "Parameters"
 msgid "Params"
 msgstr "Params"
 
 msgid "Make ready commands"
 msgstr "Make ready commands"
 
-#| msgid "Remove this mapping?"
 msgid "Remove this command?"
 msgstr "Remove this command?"
 
 msgid "Remove"
 msgstr "Remove"
 
-#| msgid "Are you sure you want to remove device"
 msgid "Are you sure you want to remove this command?"
 msgstr "Are you sure you want to remove this command?"
 
@@ -471,7 +467,6 @@ msgstr "CasparCG Launcher Port"
 msgid "Remove this device?"
 msgstr "Remove this device?"
 
-#| msgid "Are you sure you want to remove device"
 msgid "Are you sure you want to remove device \"{{deviceId}}\"?"
 msgstr "Are you sure you want to remove device \"{{deviceId}}\"?"
 
@@ -517,9 +512,6 @@ msgstr "Restore this backup?"
 msgid "Restore"
 msgstr "Restore"
 
-#| msgid ""
-#| "Are you sure you want to restore the backup file ${this.state."
-#| "uploadFileName}?"
 msgid "Are you sure you want to restore the backup file \"{{fileName}}\"?"
 msgstr "Are you sure you want to restore the backup file \"{{fileName}}\"?"
 
@@ -529,11 +521,9 @@ msgstr "Show Style Name"
 msgid "Show Style ID"
 msgstr "Show Style ID"
 
-#| msgid "Baseline Template ID"
 msgid "Baseline Blueprint ID"
 msgstr "Baseline Blueprint ID"
 
-#| msgid "External Message Template ID"
 msgid "External Message Blueprint ID"
 msgstr "External Message Blueprint ID"
 
@@ -546,7 +536,6 @@ msgstr "Download Current State"
 msgid "Blueprints' logic"
 msgstr "Blueprints' logic"
 
-#| msgid "Are you sure you want to delete this config item"
 msgid "Are you sure you want to delete line blueprint logic \"{{itemId}}\"?"
 msgstr "Are you sure you want to delete line blueprint logic \"{{itemId}}\"?"
 
@@ -565,14 +554,12 @@ msgstr "Is PGM Output"
 msgid "Display Rank"
 msgstr "Display Rank"
 
-#| msgid "Are you sure you want to delete output channel"
 msgid "Are you sure you want to delete output channel \"{{channelId}}\"?"
 msgstr "Are you sure you want to delete output channel \"{{channelId}}\"?"
 
 msgid "Value"
 msgstr "Value"
 
-#| msgid "Are you sure you want to delete this config item"
 msgid "Are you sure you want to delete this config item \"{{configId}}\"?"
 msgstr "Are you sure you want to delete this config item \"{{configId}}\"?"
 
@@ -669,14 +656,12 @@ msgstr "Adlibs on this layer can be queued"
 msgid "Exclusivity group"
 msgstr "Exclusivity group"
 
-#| msgid "Are you sure you want to delete source layer"
 msgid "Are you sure you want to delete source layer \"{{sourceLayerId}}\"?"
 msgstr "Are you sure you want to delete source layer \"{{sourceLayerId}}\"?"
 
 msgid "Source Layers"
 msgstr "Source Layers"
 
-#| msgid "Are you sure you want to remove device"
 msgid "Are you sure you want to remove device \"{{devideId}}\"?"
 msgstr "Are you sure you want to remove device \"{{devideId}}\"?"
 
@@ -704,7 +689,6 @@ msgstr "Lookahead Mode"
 msgid "Remove this mapping?"
 msgstr "Remove this mapping?"
 
-#| msgid "Are you sure you want to remove mapping for layer"
 msgid "Are you sure you want to remove mapping for layer \"{{layerId}}\"?"
 msgstr "Are you sure you want to remove mapping for layer \"{{layerId}}\"?"
 
@@ -783,11 +767,9 @@ msgstr "Restart this device process?"
 msgid "Restart"
 msgstr "Restart"
 
-#| msgid "Are you sure you want to remove device"
 msgid "Are you sure you want to restart this device?"
 msgstr "Are you sure you want to restart this device?"
 
-#| msgid "Are you sure you want to delete this config item"
 msgid "Are you sure you want to delete this device?"
 msgstr "Are you sure you want to delete this device?"
 
@@ -797,7 +779,6 @@ msgstr "Kill this device process?"
 msgid "Kill"
 msgstr "Kill"
 
-#| msgid "Are you sure you want to remove device"
 msgid "Are you sure you want to kill the process of this device?"
 msgstr "Are you sure you want to kill the process of this device?"
 
@@ -822,6 +803,9 @@ msgstr "User Activity Log"
 msgctxt "item"
 msgid "new_config"
 msgstr "new_config"
+
+#~ msgid "Please enter your name"
+#~ msgstr "Vennligst legg til ditt navn"
 
 #~ msgid "Template ID"
 #~ msgstr "Template ID"
