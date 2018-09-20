@@ -1,5 +1,6 @@
 import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { getCurrentTime } from '../lib/lib'
+import { Meteor } from 'meteor/meteor'
 
 Meteor.onConnection((conn) => {
 

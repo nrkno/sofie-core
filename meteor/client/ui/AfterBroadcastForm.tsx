@@ -76,7 +76,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 		const { t } = this.props
 
 		let obj = this.state
-		console.log('obj', obj)
+		// console.log('obj', obj)
 		return (
 			<div className='afterbroadcastform-container'>
 				<div className='afterbroadcastform'>

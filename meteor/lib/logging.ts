@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor'
 
 export interface LoggerInstanceFixed {
 	error: LeveledLogMethodFixed

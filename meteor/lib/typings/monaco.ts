@@ -11,7 +11,8 @@
 declare namespace monaco {
 
 	interface KeyboardEvent {} // when evaluating it server-side
-	interface HTMLElement {} // when evaluating it server-side
+	interface Element {} // when evaluating it server-side
+	interface HTMLElement extends Element {} // when evaluating it server-side
 	interface MouseEvent {} // when evaluating it server-side
 
 	export type Thenable<T> = PromiseLike<T>
