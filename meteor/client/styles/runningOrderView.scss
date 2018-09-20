@@ -732,6 +732,14 @@ body.vertical-overflow-only {
 				-webkit-backface-visibility: hidden;
 			}
 
+			&.segment-timeline__segment-line--end-of-segment {
+				background: $segment-background-color;
+				height: 100%;
+				top: 0;
+				min-width: 200%;
+				z-index: 0;
+			}
+
 			.segment-timeline__segment-line__nextline {
 				display: block;
 				position: absolute;

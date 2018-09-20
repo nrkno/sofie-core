@@ -386,6 +386,10 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 		</React.Fragment>
 	}
 
+	renderEndOfSegment () {
+		return <div className='segment-timeline__segment-line segment-timeline__segment-line--end-of-segment'></div>
+	}
+
 	renderOutputLayerControls () {
 		if (this.props.segment.outputLayers !== undefined) {
 			return _.map(_.values(this.props.segment.outputLayers!).sort((a, b) => {
@@ -513,6 +517,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 					<div className='segment-timeline__timeline' key={this.props.segment._id + '-timeline'} ref={this.setTimelineRef} style={this.timelineStyle()}>
 						<ErrorBoundary>
 							{this.renderTimeline()}
+							{this.renderEndOfSegment()}
 						</ErrorBoundary>
 					</div>
 					{this.renderLiveLine()}
