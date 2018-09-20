@@ -99,7 +99,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 							</div>
 						</div>
 						<div className='question q1'>
-							<p>{t('Please explain any problems you had. (what happened and when, what should have happened etc...)')}</p>
+							<p>{t('Please explain the problems you experienced (what happened and when, what should have happened, etcetera...)')}</p>
 							<div className='input'>
 								<EditAttribute
 									obj={obj}
@@ -122,7 +122,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 						</div>
 
 						<button className='btn btn-primary' onClick={this.saveForm}>
-							{t('Save message and Deactivate rundown')}
+							{t('Save message and Deactivate Rundown')}
 						</button>
 					</div>
 				</div>
