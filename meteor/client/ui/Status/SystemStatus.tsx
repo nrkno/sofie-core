@@ -15,7 +15,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { eventContextForLog } from '../../lib/eventTargetLogHelper';
+import { eventContextForLog } from '../../lib/eventTargetLogHelper'
 
 interface IDeviceItemProps {
 	// key: string,
