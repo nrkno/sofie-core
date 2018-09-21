@@ -26,7 +26,7 @@ interface IListViewItemProps {
 	layer: ISourceLayer
 	outputLayer?: IOutputLayer
 	onSelectAdLib: (aSLine: IAdLibListItem) => void
-	onToggleAdLib: (aSLine: IAdLibListItem, queue?: boolean) => void
+	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
 }
 
 export const AdLibListItem = translate()(class extends MeteorReactComponent<Translated<IListViewItemProps>> {
@@ -40,7 +40,7 @@ export const AdLibListItem = translate()(class extends MeteorReactComponent<Tran
 				'selected': this.props.selected
 			})} key={this.props.item._id}
 				onClick={(e) => this.props.onSelectAdLib(this.props.item)}
-				onDoubleClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey)}>
+				onDoubleClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey, e)}>
 				<td className={ClassNames('adlib-panel__list-view__list__table__cell--icon', this.props.layer && {
 					'audio': this.props.layer.type === RundownAPI.SourceLayerType.AUDIO,
 					'camera': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA,

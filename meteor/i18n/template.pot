@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2018-09-20T10:40:54.110Z\n"
-"PO-Revision-Date: 2018-09-20T10:40:54.110Z\n"
+"POT-Creation-Date: 2018-09-20T14:54:55.364Z\n"
+"PO-Revision-Date: 2018-09-20T14:54:55.364Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -23,7 +23,7 @@ msgstr ""
 msgid "Evaluation"
 msgstr ""
 
-msgid "Please take a minute to fill in this form"
+msgid "Please take a minute to fill in this form."
 msgstr ""
 
 msgid "Did you have any problems with the broadcast?"
@@ -31,10 +31,10 @@ msgstr ""
 
 msgid ""
 "Please explain the problems you experienced (what happened and when, what "
-"should have happened, etcetera...)"
+"should have happened, what could have triggered the problems, etcetera...)"
 msgstr ""
 
-msgid "Please enter your name"
+msgid "Your name"
 msgstr ""
 
 msgid "Save message and Deactivate Rundown"

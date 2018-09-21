@@ -46,8 +46,6 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 				return
 			}
 
-			console.log(res)
-
 			this.setState({
 				systemStatus: res.status
 			})

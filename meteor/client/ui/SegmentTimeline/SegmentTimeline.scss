@@ -54,6 +54,10 @@ $timeline-layer-height: 1em;
     flex: 0 0;
     pointer-events: none;
 
+    &.segment-timeline__segment-line--end-of-segment {
+        // this is end of segment
+    }
+
     .segment-timeline__output-group {
         display: flex;
         flex-flow: column nowrap;

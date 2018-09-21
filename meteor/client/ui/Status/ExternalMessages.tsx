@@ -170,7 +170,7 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 		this._cleanUp()
 	}
 	removeMessage (msg: ExternalMessageQueueObj) {
-		Meteor.call(ClientAPI.methods.execMethod, 'removeExternalMessageQueueObj', msg._id)
+		Meteor.call(ClientAPI.methods.execMethod, '', 'removeExternalMessageQueueObj', msg._id)
 	}
 	renderMessageRow (msg: ExternalMessageQueueObj) {
 

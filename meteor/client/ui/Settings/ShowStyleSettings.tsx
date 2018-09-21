@@ -48,7 +48,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		}
 	}
 	onAddLineTemplate () {
-		Meteor.call(ClientAPI.methods.execMethod, RuntimeFunctionsAPI.INSERT, this.props.match.params.showStyleId, (e) => {
+		Meteor.call(ClientAPI.methods.execMethod, '', RuntimeFunctionsAPI.INSERT, this.props.match.params.showStyleId, (e) => {
 			if (e) {
 				console.log(e)
 			} else {
@@ -70,7 +70,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	}
 	handleConfirmDeleteLineTemplateAccept = (e) => {
 		if (this.state.deleteConfirmItem) {
-			Meteor.call(ClientAPI.methods.execMethod, RuntimeFunctionsAPI.REMOVE, this.state.deleteConfirmItem._id, true)
+			Meteor.call(ClientAPI.methods.execMethod, '', RuntimeFunctionsAPI.REMOVE, this.state.deleteConfirmItem._id, true)
 			// RuntimeFunctions.remove(this.state.deleteConfirmItem._id)
 		}
 		this.setState({
