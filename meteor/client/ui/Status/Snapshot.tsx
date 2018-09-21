@@ -57,7 +57,7 @@ class SnapshotView extends MeteorReactComponent<Translated<IProps & ITrackedProp
 						_.map(this.props.studios, (studio) => {
 
 							return (
-								<div>
+								<div key={studio._id}>
 									<h2>{studio.name}</h2>
 									<div>
 										<a href={`/snapshot/${studio._id}`} target='_blank'>{t('Download System Snapshot')}</a>

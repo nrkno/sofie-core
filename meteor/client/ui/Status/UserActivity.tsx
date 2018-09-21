@@ -91,7 +91,7 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 					<th className='c2 user-action-log__clientAddress'>
 						{t('Client IP')}
 					</th>
-					<th className='c3 user-action-log__method'>
+					<th className='c3 user-action-log__context'>
 						{t('Action')}
 					</th>
 					<th className='c3 user-action-log__method'>
@@ -115,7 +115,7 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 		const { t } = this.props
 		return (
 			<div>
-				<div className='paging alc'>
+				<div className='paging'>
 					<DatePickerFromTo from={this.state.dateFrom} to={this.state.dateTo} onChange={this.handleChangeDate} />
 				</div>
 				<table className='table user-action-log'>

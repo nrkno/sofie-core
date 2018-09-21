@@ -1,5 +1,9 @@
 @import "_colorScheme";
 
+.status-dialog {
+	overflow: visible !important;
+}
+
 .system-status {
 
 	.device-item-container {
@@ -136,6 +140,9 @@
 	}
 	.user-action-log__clientAddress {
 		min-width: 7em;
+	}
+	.user-action-log__context {
+		min-width: 10em;
 	}
 	.user-action-log__method {
 		min-width: 23em;

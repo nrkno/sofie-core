@@ -74,19 +74,22 @@ export class DatePickerFromTo extends React.Component<IProps, IState> {
 	render () {
 		return (
 			<div className='datepicker-from-to'>
-
-				<button className='btn btn-secondary' onClick={this.onClickPrevious}>
+				<button className='action-btn mod mhm' onClick={this.onClickPrevious}>
 					<FontAwesomeIcon icon={faChevronLeft} />
 				</button>
-				<div className='picker'>
+				<label className='mod mhs mvn'>
 					From:
-					<DatePicker dateFormat='YYYY-MM-DD' selected={this.state.dateFrom} onChange={this.handleChangeFrom} />
-				</div>
-				<div className='picker'>
-					To:
-					<DatePicker dateFormat='YYYY-MM-DD' selected={this.state.dateTo} onChange={this.handleChangeTo} />
-				</div>
-				<button className='btn btn-secondary' onClick={this.onClickNext}>
+					<div className='picker expco'>
+						<DatePicker dateFormat='YYYY-MM-DD' selected={this.state.dateFrom} onChange={this.handleChangeFrom} className='expco-title' />
+					</div>
+				</label>
+				<label className='mod mhs mvn'>
+					Through:
+					<div className='picker expco'>
+						<DatePicker dateFormat='YYYY-MM-DD' selected={this.state.dateTo} onChange={this.handleChangeTo} className='expco-title' />
+					</div>
+				</label>
+				<button className='action-btn mod mhm' onClick={this.onClickNext}>
 					<FontAwesomeIcon icon={faChevronRight} />
 				</button>
 			</div>

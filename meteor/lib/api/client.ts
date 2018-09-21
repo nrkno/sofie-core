@@ -1,6 +1,7 @@
 export namespace ClientAPI {
 	export enum methods {
-		'execMethod' = 'client.execMethod'
+		'execMethod' = 'client.execMethod',
+		'callPeripheralDeviceFunction' = 'client.callPeripheralDeviceFunction'
 	}
 
 	export interface ClientResponse {

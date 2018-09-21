@@ -15,6 +15,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { eventContextForLog } from '../../lib/eventTargetLogHelper';
 
 interface IDeviceItemProps {
 	// key: string,
@@ -94,7 +95,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 	}
 	handleConfirmDeleteShowStyleAccept = (e) => {
 		if (this.state.showDeleteDeviceConfirm) {
-			Meteor.call(ClientAPI.methods.execMethod, '', 'temporaryRemovePeripheralDevice', this.state.showDeleteDeviceConfirm._id)
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), 'temporaryRemovePeripheralDevice', this.state.showDeleteDeviceConfirm._id)
 			// PeripheralDevices.remove(this.state.showDeleteDeviceConfirm._id)
 		}
 		// ShowStyles.remove(this.state.deleteConfirmItem._id)
@@ -116,15 +117,14 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 	}
 	handleConfirmKillAccept = (e) => {
 		if (this.state.showKillDeviceConfirm) {
-
-			PeripheralDeviceAPI.executeFunction(this.state.showKillDeviceConfirm._id, (err, result) => {
+			Meteor.call(ClientAPI.methods.callPeripheralDeviceFunction, eventContextForLog(e), this.state.showKillDeviceConfirm._id, 'killProcess', 1, (err, result) => {
 				// console.log('reply', err, result)
 				if (err) {
-					console.log(err)
+					console.error(err)
 				} else {
-					// resolve(result)
+					console.log(result)
 				}
-			}, 'killProcess', 1)
+			})
 		}
 		// ShowStyles.remove(this.state.KillConfirmItem._id)
 		this.setState({
@@ -145,15 +145,15 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 	}
 	handleConfirmRestartAccept = (e) => {
 		if (this.state.showRestartDeviceConfirm && this.state.showRestartDeviceConfirm.parentDeviceId) {
-
-			PeripheralDeviceAPI.executeFunction(this.state.showRestartDeviceConfirm.parentDeviceId, (err, result) => {
+			Meteor.call(ClientAPI.methods.callPeripheralDeviceFunction, eventContextForLog(e), this.state.showRestartDeviceConfirm.parentDeviceId, 'restartCasparCGProcess', 1, (err, result) => {
 				// console.log('reply', err, result)
 				if (err) {
-					console.log(err)
+					console.error(err)
 				} else {
+					console.log(result)
 					// resolve(result)
 				}
-			}, 'restartCasparCGProcess', 1)
+			})
 		}
 		// ShowStyles.remove(this.state.KillConfirmItem._id)
 		this.setState({
