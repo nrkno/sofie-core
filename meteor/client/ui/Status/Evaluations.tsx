@@ -110,7 +110,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 		const { t } = this.props
 		return (
 			<div>
-				<div className='paging alc'>
+				<div className='paging'>
 					<DatePickerFromTo from={this.state.dateFrom} to={this.state.dateTo} onChange={this.handleChangeDate} />
 				</div>
 				<table className='table user-action-log'>
