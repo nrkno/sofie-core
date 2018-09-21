@@ -326,10 +326,13 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 		mSet['settings.devices.' + newDeviceId] = device
 		mUnset['settings.devices.' + oldDeviceId] = 1
 
-		edit.props.collection.update(this.props.device._id, {
-			$set: mSet,
-			$unset: mUnset
-		})
+		if (edit.props.collection) {
+			edit.props.collection.update(this.props.device._id, {
+				$set: mSet,
+				$unset: mUnset
+			})
+		} else throw new Meteor.Error(500, 'EditAttribute.props.collection is not set (it should be)!')
+
 		this.finishEditItem(oldDeviceId)
 		this.editItem(newDeviceId)
 	}
@@ -410,6 +413,30 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 												<EditAttribute
 													modifiedClassName='bghl'
 													attribute={'settings.devices.' + deviceId + '.options.port' }
+													obj={this.props.device}
+													type='int'
+													collection={PeripheralDevices}
+													className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('CasparCG Launcher Host')}
+												<EditAttribute
+													modifiedClassName='bghl'
+													attribute={'settings.devices.' + deviceId + '.options.launcherHost' }
+													obj={this.props.device}
+													type='text'
+													collection={PeripheralDevices}
+													className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('CasparCG Launcher Port')}
+												<EditAttribute
+													modifiedClassName='bghl'
+													attribute={'settings.devices.' + deviceId + '.options.launcherPort' }
 													obj={this.props.device}
 													type='int'
 													collection={PeripheralDevices}
@@ -557,30 +584,6 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 							className=''></EditAttribute>
 					</label>
 				</div>
-				<div className='mod mvs mhs'>
-					<label className='field'>
-						{t('CasparCG Launcher Host')}
-						<EditAttribute
-							modifiedClassName='bghl'
-							attribute={'settings.casparcgLauncher.host'}
-							obj={this.props.device}
-							type='text'
-							collection={PeripheralDevices}
-							className=''></EditAttribute>
-					</label>
-				</div>
-				<div className='mod mvs mhs'>
-					<label className='field'>
-						{t('CasparCG Launcher Port')}
-						<EditAttribute
-							modifiedClassName='bghl'
-							attribute={'settings.casparcgLauncher.port'}
-							obj={this.props.device}
-							type='int'
-							collection={PeripheralDevices}
-							className=''></EditAttribute>
-					</label>
-				</div>
 
 				<ModalDialog title={t('Remove this device?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
 					<p>{t('Are you sure you want to remove device "{{deviceId}}"?', { deviceId: (this.state.deleteConfirmDeviceId && this.state.deleteConfirmDeviceId) })}</p>
@@ -708,10 +711,13 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 		mSet['settings.devices.' + newDeviceId] = device
 		mUnset['settings.devices.' + oldDeviceId] = 1
 
-		edit.props.collection.update(this.props.device._id, {
-			$set: mSet,
-			$unset: mUnset
-		})
+		if (edit.props.collection) {
+			edit.props.collection.update(this.props.device._id, {
+				$set: mSet,
+				$unset: mUnset
+			})
+		} else throw new Meteor.Error(500, 'EditAttribute.props.collection is not set (it should be)!')
+
 		this.finishEditItem(oldDeviceId)
 		this.editItem(newDeviceId)
 	}

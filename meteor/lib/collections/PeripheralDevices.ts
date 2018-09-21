@@ -66,10 +66,6 @@ export interface PlayoutDeviceSettings {
 		host: string
 		port: number
 	}
-	casparcgLauncher: {
-		host: string
-		port: number
-	}
 }
 export interface PlayoutDeviceSettingsDevice {
 	type: PlayoutDeviceType
@@ -79,7 +75,10 @@ export interface PlayoutDeviceSettingsDeviceCasparCG extends PlayoutDeviceSettin
 	type: PlayoutDeviceType.CASPARCG
 	options: {
 		host: string,
-		port: number
+		port: number,
+		useScheduling?: boolean, // whether to use the CasparCG-SCHEDULE command to run future commands, or the internal (backwards-compatible) command queue
+		launcherHost: string,
+		launcherPort: string
 	}
 }
 export interface PlayoutDeviceSettingsDeviceAtem extends PlayoutDeviceSettingsDevice {

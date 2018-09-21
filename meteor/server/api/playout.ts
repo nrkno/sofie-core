@@ -31,7 +31,6 @@ import { StudioInstallations, StudioInstallation, IStudioConfigItem } from '../.
 import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
 import { getHash } from '../lib'
-import { getRank } from '../../lib/lib'
 import { syncFunction, syncFunctionIgnore } from '../codeControl'
 import { getResolvedSegment, ISourceLayerExtended, SegmentLineExtended } from '../../lib/RunningOrder'
 let clone = require('fast-clone')

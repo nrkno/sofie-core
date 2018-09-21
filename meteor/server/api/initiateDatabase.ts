@@ -71,10 +71,6 @@ Meteor.methods({
 				mediaScanner: {
 					host: '',
 					port: 8000
-				},
-				casparcgLauncher: {
-					host: '',
-					port: 8005
 				}
 			}
 		})})
@@ -87,14 +83,18 @@ Meteor.methods({
 					type: PlayoutDeviceType.CASPARCG,
 					options: {
 						host: '160.67.87.50',
-						port: 5250
+						port: 5250,
+						launcherHost: '160.67.87.50',
+						launcherPort: 8005
 					}
 				},
 				'settings.devices.casparcg1': ((pd['settings'] || {})['devices'] || {})['casparcg1'] || {
 					type: PlayoutDeviceType.CASPARCG,
 					options: {
 						host: '',
-						port: 5250
+						port: 5250,
+						launcherHost: '',
+						launcherPort: 8005
 					}
 				},
 				'settings.devices.atem0': ((pd['settings'] || {})['devices'] || {})['atem0'] || {
