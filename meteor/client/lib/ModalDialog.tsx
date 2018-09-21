@@ -252,6 +252,14 @@ let modalDialogGlobalContainerSingleton: ModalDialogGlobalContainer0
 /**
  * Display a ModalDialog, callback on user input
  * @param q ModalDialogQueueItem
+ * Example:
+ * 	doModalDialog({
+ * 		title: t('Order 66?'),
+ * 		message: t('Do you want to do this?'),
+ * 		onAccept: (event: any) => {
+ * 		// Execute order 66
+ * 		},
+ * 	})
  */
 export function doModalDialog (q: ModalDialogQueueItem) {
 	if (modalDialogGlobalContainerSingleton) {
