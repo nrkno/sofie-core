@@ -125,7 +125,7 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 		if (cmd) {
 			if (cmd.hasReply) {
 				// We've got a reply!
-				logger.debug('got reply')
+				logger.debug('got reply ' + commandId)
 
 				if (cmd.replyError) {
 					cb(cmd.replyError, null)
@@ -135,6 +135,10 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 				cursor.stop()
 				PeripheralDeviceCommands.remove(cmd._id)
 				if (subscription) subscription.stop()
+				if (timeoutCheck) {
+					Meteor.clearTimeout(timeoutCheck)
+					timeoutCheck = 0
+				}
 			} else if (getCurrentTime() - (cmd.time || 0) >= timeoutTime) { // timeout
 				logger.debug('timeout in PeripheralDevice.ExecuteFunction "' + cmd.functionName + '" on device "' + cmd.deviceId + '" ')
 				cb('Timeout', null)
@@ -153,7 +157,7 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 		added: checkReply,
 		changed: checkReply,
 	})
-	Meteor.setTimeout(checkReply, timeoutTime)
+	let timeoutCheck: number = Meteor.setTimeout(checkReply, timeoutTime)
 }
 
 }
