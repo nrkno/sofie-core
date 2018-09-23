@@ -404,7 +404,8 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 							<div className='segment-timeline__output-layer-control__label'
 								 data-output-id={outputLayer._id}
 								 tabIndex={0}
-								 onClick={(e) => this.props.onCollapseOutputToggle && this.props.onCollapseOutputToggle(outputLayer, e)}>{outputLayer.name}
+								 onClick={(e) => this.props.onCollapseOutputToggle && this.props.onCollapseOutputToggle(outputLayer, e)}>
+								 {outputLayer.name}
 							</div>
 							{(
 								outputLayer.sourceLayers !== undefined &&
@@ -412,7 +413,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 								.map((sourceLayer, index, array) => {
 									return (
 										<div key={sourceLayer._id} className='segment-timeline__output-layer-control__layer' data-source-id={sourceLayer._id}>
-											{array.length === 1 ? ' ' : sourceLayer.name}
+											{(array.length === 1 || sourceLayer.name === outputLayer.name) ? ' ' : sourceLayer.name}
 										</div>
 									)
 								})
