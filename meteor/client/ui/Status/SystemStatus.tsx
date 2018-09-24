@@ -140,8 +140,8 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 		const { t } = this.props
 
 		doModalDialog({
-			title: t('Restart CasparCG'),
-			message: t('Do you want to restart CasparCG?'),
+			title: t('Restart CasparCG Server'),
+			message: t('Do you want to restart CasparCG Server?'),
 			onAccept: (event: any) => {
 
 				Meteor.call(ClientAPI.methods.callPeripheralDeviceFunction, eventContextForLog(event), device._id, 'restartCasparCG', (err, result) => {
