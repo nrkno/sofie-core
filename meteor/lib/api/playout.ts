@@ -34,6 +34,7 @@ export namespace PlayoutAPI {
 		'roDisableNextSegmentLineItem' = 'playout.roDisableNextSegmentLineItem',
 		'segmentLinePlaybackStartedCallback' = 'playout.segmentLinePlaybackStartedCallback',
 		'segmentLineItemPlaybackStartedCallback' = 'playout.segmentLineItemPlaybackStartedCallback',
+		'segmentLineItemTakeNow' = 'playout.segmentLineItemTakeNow',
 		'segmentAdLibLineItemStart' = 'playout.segmentAdLibLineItemStart',
 		'runningOrderBaselineAdLibItemStart' = 'playout.runningOrderBaselineAdLibItemStart',
 		'segmentAdLibLineItemStop' = 'playout.segmentAdLibLineItemStop',

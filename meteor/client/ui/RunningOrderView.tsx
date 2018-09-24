@@ -1188,7 +1188,10 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onSLItemDoubleClick = (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => {
-		console.log(item, e)
+		if (this.state.studioMode && item && item._id && this.props.runningOrder && this.props.runningOrder.active && this.props.runningOrder.currentSegmentLineId) {
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.segmentLineItemTakeNow, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, item._id)
+			console.log(item, e)
+		}
 	}
 
 	renderSegments () {

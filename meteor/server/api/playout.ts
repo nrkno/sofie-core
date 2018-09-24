@@ -194,7 +194,8 @@ export namespace ServerPlayoutAPI {
 				duration: 1,
 				startedPlayback: 1,
 				durationOverride: 1,
-				disabled: 1
+				disabled: 1,
+				hidden: 1
 			}
 		}, {multi: true})
 
@@ -468,7 +469,8 @@ export namespace ServerPlayoutAPI {
 			$unset: {
 				startedPlayback: 1,
 				durationOverride: 1,
-				disabled: 1
+				disabled: 1,
+				hidden: 1
 			}
 		}, {
 			multi: true
@@ -663,12 +665,12 @@ export namespace ServerPlayoutAPI {
 		// remove old auto-next from timeline, and add new one
 		updateTimeline(runningOrder.studioInstallationId)
 	}
-	export function roMoveNext (roId: string, horisonalDelta: number, verticalDelta: number, currentNextSegmentLineItemId?: string) {
+	export function roMoveNext (roId: string, horisontalDelta: number, verticalDelta: number, currentNextSegmentLineItemId?: string) {
 		check(roId, String)
-		check(horisonalDelta, Number)
+		check(horisontalDelta, Number)
 		check(verticalDelta, Number)
 
-		if (!horisonalDelta && !verticalDelta) throw new Meteor.Error(402, `roMoveNext: invalid delta: (${horisonalDelta}, ${verticalDelta})`)
+		if (!horisontalDelta && !verticalDelta) throw new Meteor.Error(402, `roMoveNext: invalid delta: (${horisontalDelta}, ${verticalDelta})`)
 
 		const runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -728,7 +730,7 @@ export namespace ServerPlayoutAPI {
 			if (segmentLineIndex === -1) throw new Meteor.Error(404, `SegmentLine (from segment) not found in list of segmentLines!`)
 		}
 
-		segmentLineIndex += horisonalDelta
+		segmentLineIndex += horisontalDelta
 
 		let segmentLine = segmentLines[segmentLineIndex]
 		if (!segmentLine) throw new Meteor.Error(501, `SegmentLine index ${segmentLineIndex} not found in list of segmentLines!`)
@@ -736,7 +738,7 @@ export namespace ServerPlayoutAPI {
 		if (segmentLine._id === runningOrder.currentSegmentLineId && !currentNextSegmentLineItemId) {
 			// Whoops, we're not allowed to next to that.
 			// Skip it, then (ie run the whole thing again)
-			return ServerPlayoutAPI.roMoveNext (roId, horisonalDelta, verticalDelta, segmentLine._id)
+			return ServerPlayoutAPI.roMoveNext (roId, horisontalDelta, verticalDelta, segmentLine._id)
 		} else {
 			ServerPlayoutAPI.roSetNext(runningOrder._id, segmentLine._id)
 			return segmentLine._id
@@ -1074,6 +1076,46 @@ export namespace ServerPlayoutAPI {
 			throw new Meteor.Error(404, `Segment line "${slId}" in running order "${roId}" not found!`)
 		}
 	}
+	export const sliTakeNow = function sliTakeNow (roId: string, slId: string, sliId: string) {
+		check(roId, String)
+		check(slId, String)
+		check(sliId, String)
+
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		if (!runningOrder.active) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in an active running order!`)
+
+		let slItem = SegmentLineItems.findOne({
+			_id: sliId,
+			runningOrderId: roId
+		})
+		if (!slItem) throw new Meteor.Error(404, `Segment Line Item "${sliId}" not found!`)
+
+		let segLine = SegmentLines.findOne({
+			_id: slId,
+			runningOrderId: roId
+		})
+		if (!segLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
+		if (runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in a current segment line!`)
+
+		let newSegmentLineItem = convertAdLibToSLineItem(slItem, segLine, false)
+		if (newSegmentLineItem.content && newSegmentLineItem.content.timelineObjects) {
+			prefixAllObjectIds(_.compact(newSegmentLineItem.content.timelineObjects), newSegmentLineItem._id)
+		}
+
+		// disable the original SLI if from the same SL
+		if (slItem.segmentLineId === segLine._id) {
+			const updated = SegmentLineItems.update(sliId, {$set: {
+				disabled: true,
+				hidden: true
+			}})
+		}
+		SegmentLineItems.insert(newSegmentLineItem)
+
+		cropInfinitesOnLayer(runningOrder, segLine, newSegmentLineItem)
+		stopInfinitesRunningOnLayer(runningOrder, segLine, newSegmentLineItem.sourceLayerId)
+		updateTimeline(runningOrder.studioInstallationId)
+	}
 	export const salliPlaybackStart = syncFunction(function salliPlaybackStart (roId: string, slId: string, slaiId: string, queue: boolean) {
 		check(roId, String)
 		check(slId, String)
@@ -1377,15 +1419,17 @@ methods[PlayoutAPI.methods.roDeactivate] = (roId: string, rehearsal: boolean) =>
 methods[PlayoutAPI.methods.reloadData] = (roId: string) => {
 	return ServerPlayoutAPI.reloadData(roId)
 }
-
+methods[PlayoutAPI.methods.segmentLineItemTakeNow] = (roId: string, slId: string, sliId: string) => {
+	return ServerPlayoutAPI.sliTakeNow(roId, slId, sliId)
+}
 methods[PlayoutAPI.methods.roTake] = (roId: string) => {
 	return ServerPlayoutAPI.roTake(roId)
 }
 methods[PlayoutAPI.methods.roSetNext] = (roId: string, slId: string) => {
 	return ServerPlayoutAPI.roSetNext(roId, slId)
 }
-methods[PlayoutAPI.methods.roMoveNext] = (roId: string, horisonalDelta: number, verticalDelta: number) => {
-	return ServerPlayoutAPI.roMoveNext(roId, horisonalDelta, verticalDelta)
+methods[PlayoutAPI.methods.roMoveNext] = (roId: string, horisontalDelta: number, verticalDelta: number) => {
+	return ServerPlayoutAPI.roMoveNext(roId, horisontalDelta, verticalDelta)
 }
 methods[PlayoutAPI.methods.roActivateHold] = (roId: string) => {
 	return ServerPlayoutAPI.roActivateHold(roId)
@@ -1859,7 +1903,7 @@ function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): SegmentLine
 	return newAdLibItem
 }
 
-function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem, segmentLine: SegmentLine, queue: boolean): SegmentLineItem {
+function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem | SegmentLineItem, segmentLine: SegmentLine, queue: boolean): SegmentLineItem {
 	const oldId = adLibItem._id
 	const newId = Random.id()
 	const newSLineItem = literal<SegmentLineItem>(_.extend(
