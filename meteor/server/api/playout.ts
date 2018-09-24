@@ -193,7 +193,8 @@ export namespace ServerPlayoutAPI {
 			$unset: {
 				duration: 1,
 				startedPlayback: 1,
-				durationOverride: 1
+				durationOverride: 1,
+				disabled: 1
 			}
 		}, {multi: true})
 
@@ -466,7 +467,8 @@ export namespace ServerPlayoutAPI {
 		}, {
 			$unset: {
 				startedPlayback: 1,
-				durationOverride: 1
+				durationOverride: 1,
+				disabled: 1
 			}
 		}, {
 			multi: true
