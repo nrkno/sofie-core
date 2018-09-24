@@ -85,6 +85,9 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 					<th className='c3 user-action-log__timestamp'>
 						{t('Timestamp')}
 					</th>
+					<th className='c3 user-action-log__executionTime'>
+						{t('Execution time')}
+					</th>
 					<th className='c1 user-action-log__userId'>
 						{t('User ID')}
 					</th>

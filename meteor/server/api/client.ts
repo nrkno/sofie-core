@@ -46,6 +46,7 @@ export namespace ServerClientAPI {
 			UserActionsLog.update(actionId, {$set: {
 				success: false,
 				doneTime: getCurrentTime(),
+				executionTime: Date.now() - startTime,
 				errorMessage: errMsg
 			}})
 			throw e
@@ -58,6 +59,7 @@ export namespace ServerClientAPI {
 		check(context, String)
 
 		let actionId = Random.id()
+		let startTime = Date.now()
 
 		return new Promise((resolve, reject) => {
 			UserActionsLog.insert(literal<UserActionsLogItem>({
@@ -78,6 +80,7 @@ export namespace ServerClientAPI {
 							$set: {
 								success: false,
 								doneTime: getCurrentTime(),
+								executionTime: Date.now() - startTime,
 								errorMessage: errMsg
 							}
 						})
@@ -89,7 +92,8 @@ export namespace ServerClientAPI {
 					UserActionsLog.update(actionId, {
 						$set: {
 							success: true,
-							doneTime: getCurrentTime()
+							doneTime: getCurrentTime(),
+							executionTime: Date.now() - startTime
 						}
 					})
 
@@ -105,6 +109,7 @@ export namespace ServerClientAPI {
 					$set: {
 						success: false,
 						doneTime: getCurrentTime(),
+						executionTime: Date.now() - startTime,
 						errorMessage: errMsg
 					}
 				})
