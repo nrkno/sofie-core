@@ -3,7 +3,8 @@ import { RuntimeFunction, RuntimeFunctions } from '../../../lib/collections/Runt
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-import * as monaco from 'monaco-editor'
+// import * as monaco from 'monaco-editor'
+
 // import MonacoEditor from 'react-monaco-editor'
 import '../../../lib/typings/monaco'
 import * as _ from 'underscore'
