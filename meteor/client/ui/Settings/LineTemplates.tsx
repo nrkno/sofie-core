@@ -18,7 +18,8 @@ import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faSave from '@fortawesome/fontawesome-free-solid/faSave'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MomentFromNow } from '../../lib/Moment'
-import { eventContextForLog } from '../../lib/eventTargetLogHelper';
+import { eventContextForLog } from '../../lib/eventTargetLogHelper'
+import { Meteor } from 'meteor/meteor'
 
 interface IMonacoProps {
 	runtimeFunction: RuntimeFunction

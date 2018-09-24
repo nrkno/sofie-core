@@ -12,6 +12,7 @@ import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 // @ts-ignore Meteor package not recognized by Typescript
 import { ComputedField } from 'meteor/peerlibrary:computed-field'
+import { Meteor } from 'meteor/meteor'
 
 import { checkSLIContentStatus } from '../../../lib/mediaObjects'
 

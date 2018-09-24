@@ -9,6 +9,7 @@ import { DBSegmentLine, SegmentLine } from '../../lib/collections/SegmentLines'
 import { IMOSROFullStory, MosString128, IMOSItem } from 'mos-connection'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { logger } from '../logging'
+import { Meteor } from 'meteor/meteor'
 
 export function runtimeFunctionTestCode (runtimeFunction: RuntimeFunction, showStyleId: string, syntaxOnly: boolean) {
 	check(runtimeFunction.code, String)

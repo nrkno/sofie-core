@@ -4,6 +4,7 @@ import { getCurrentTime, systemTime } from '../lib/lib'
 import { StatusCode, setSystemStatus } from './systemStatus'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { logger } from './logging'
+import { Meteor } from 'meteor/meteor'
 
 interface ServerTime {
 	diff: number

@@ -1,6 +1,7 @@
 import { Mongo } from 'meteor/mongo'
 import { getCurrentTime, Time, registerCollection } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
+import { Meteor } from 'meteor/meteor'
 
 export interface PeripheralDeviceCommand {
 	_id: string

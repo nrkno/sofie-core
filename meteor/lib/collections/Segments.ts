@@ -8,6 +8,7 @@ import {
 } from 'mos-connection'
 import { RunningOrders } from './RunningOrders'
 import { FindOptions, Selector, TransformedCollection } from '../typings/meteor'
+import { Meteor } from 'meteor/meteor'
 
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
 export interface DBSegment {

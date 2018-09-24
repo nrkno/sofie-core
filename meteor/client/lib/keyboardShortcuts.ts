@@ -1,4 +1,5 @@
 import * as mousetrap from 'mousetrap'
+import { Meteor } from 'meteor/meteor'
 
 Meteor.startup(() => {
 

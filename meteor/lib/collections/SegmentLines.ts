@@ -10,8 +10,9 @@ import { SegmentLineItem, SegmentLineItems } from './SegmentLineItems'
 import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
 import { Segments } from './Segments'
 import { applyClassToDocument, Time, registerCollection, normalizeArray } from '../lib'
-import { RundownAPI } from '../api/rundown';
-import { checkSLIContentStatus } from '../mediaObjects';
+import { RundownAPI } from '../api/rundown'
+import { checkSLIContentStatus } from '../mediaObjects'
+import { Meteor } from 'meteor/meteor'
 
 /** A "Line" in NRK Lingo. */
 export interface DBSegmentLine {

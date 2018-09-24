@@ -8,6 +8,7 @@ import { StudioInstallations } from './StudioInstallations'
 import { FindOptions, Selector, TransformedCollection } from '../typings/meteor'
 import { Mixer } from '../typings/casparcg-state'
 import { registerCollection } from '../lib'
+import { Meteor } from 'meteor/meteor'
 
 // Note: The data structure is based on what works with the state libraries, such as
 

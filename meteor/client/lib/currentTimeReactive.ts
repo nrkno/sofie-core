@@ -1,4 +1,5 @@
 import { getCurrentTime, Time } from '../../lib/lib'
+import { Meteor } from 'meteor/meteor'
 
 let getCurrentTimeReactiveDep = new Tracker.Dependency()
 export function getCurrentTimeReactive (): Time {

@@ -23,6 +23,7 @@ import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { PeripheralDeviceCommands } from '../lib/collections/PeripheralDeviceCommands'
 import { SegmentLineAdLibItems } from '../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderDataCache } from '../lib/collections/RunningOrderDataCache'
+import { Meteor } from 'meteor/meteor'
 
 export interface ShowStyleBackup {
 	type: 'showstyle'

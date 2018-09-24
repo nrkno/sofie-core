@@ -5,6 +5,7 @@ import { PeripheralDevices } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
 import { getCurrentTime } from '../lib/lib'
 import { logger } from './logging'
+import { Meteor } from 'meteor/meteor'
 
 let lowPrioFcn = (fcn: (...args) => any, ...args: any[]) => {
 	// Do it at a random time in the future:
