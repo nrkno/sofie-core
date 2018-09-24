@@ -586,7 +586,7 @@ export function tic (name: string = 'default') {
 }
 export function toc (name: string = 'default', logStr?: string) {
 	let t: number = Date.now() - ticCache[name]
-	if (logStr) logger.info('==== ' + logStr + ': ' + t)
+	if (logStr) logger.info('toc: ' + logStr + ': ' + t)
 	return t
 }
 const ticCache = {}
