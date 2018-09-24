@@ -481,7 +481,8 @@ registerCollection('Timeline', Timeline)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Timeline._ensureIndex({
-			siId: 1
+			siId: 1,
+			roId: 1,
 		})
 	}
 })

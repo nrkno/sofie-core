@@ -71,5 +71,9 @@ Meteor.startup(() => {
 			studioId: 1,
 			created: 1
 		})
+		ExternalMessageQueue._ensureIndex({
+			sent: 1,
+			lastTry: 1
+		})
 	}
 })

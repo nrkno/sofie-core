@@ -8,12 +8,13 @@ import { literal, getCurrentTime, MeteorPromiseCall } from '../../lib/lib'
 import { logger } from '../logging'
 import { ClientAPI } from '../../lib/api/client'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice';
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 export namespace ServerClientAPI {
 	export function execMethod (context: string, methodName: string, ...args: any[]) {
 		check(methodName, String)
 		check(context, String)
+		let startTime = Date.now()
 		// this is essentially the same as MeteorPromiseCall, but rejects the promise on exception to
 		// allow handling it in the client code
 
@@ -33,7 +34,8 @@ export namespace ServerClientAPI {
 
 			UserActionsLog.update(actionId, {$set: {
 				success: true,
-				doneTime: getCurrentTime()
+				doneTime: getCurrentTime(),
+				executionTime: Date.now() - startTime
 			}})
 			return result
 		} catch (e) {
@@ -44,6 +46,7 @@ export namespace ServerClientAPI {
 			UserActionsLog.update(actionId, {$set: {
 				success: false,
 				doneTime: getCurrentTime(),
+				executionTime: Date.now() - startTime,
 				errorMessage: errMsg
 			}})
 			throw e
@@ -56,6 +59,7 @@ export namespace ServerClientAPI {
 		check(context, String)
 
 		let actionId = Random.id()
+		let startTime = Date.now()
 
 		return new Promise((resolve, reject) => {
 			UserActionsLog.insert(literal<UserActionsLogItem>({
@@ -76,6 +80,7 @@ export namespace ServerClientAPI {
 							$set: {
 								success: false,
 								doneTime: getCurrentTime(),
+								executionTime: Date.now() - startTime,
 								errorMessage: errMsg
 							}
 						})
@@ -87,7 +92,8 @@ export namespace ServerClientAPI {
 					UserActionsLog.update(actionId, {
 						$set: {
 							success: true,
-							doneTime: getCurrentTime()
+							doneTime: getCurrentTime(),
+							executionTime: Date.now() - startTime
 						}
 					})
 
@@ -103,6 +109,7 @@ export namespace ServerClientAPI {
 					$set: {
 						success: false,
 						doneTime: getCurrentTime(),
+						executionTime: Date.now() - startTime,
 						errorMessage: errMsg
 					}
 				})

@@ -85,6 +85,7 @@ Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Segments._ensureIndex({
 			runningOrderId: 1,
+			_rank: 1
 		})
 	}
 })

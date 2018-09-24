@@ -122,7 +122,9 @@ Meteor.startup(() => {
 	if (Meteor.isServer) {
 		MediaObjects._ensureIndex({
 			studioId: 1,
-			collectionId: 1
+			collectionId: 1,
+			objId: 1,
+			mediaId: 1
 		})
 		MediaObjects._ensureIndex({
 			studioId: 1,

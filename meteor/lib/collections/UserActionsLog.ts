@@ -12,6 +12,7 @@ export interface UserActionsLogItem {
 	context: string,
 	success?: boolean,
 	doneTime?: Time,
+	executionTime?: Time,
 	errorMessage?: string
 }
 
