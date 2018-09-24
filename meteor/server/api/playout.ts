@@ -2273,6 +2273,8 @@ export function findLookaheadForLLayer (roData: RoData, layer: string, mode: Loo
 					allowTransition = !prevSliGroup.line.disableOutTransition
 				}
 
+				const hasTransition = allowTransition && orderedItems.find(i => i.isTransition) !== undefined
+
 				const res: TimelineObj[] = []
 				orderedItems.forEach(i => {
 					if (!sliGroup || (!allowTransition && i.isTransition)) {
@@ -2281,6 +2283,11 @@ export function findLookaheadForLLayer (roData: RoData, layer: string, mode: Loo
 
 					const item = sliGroup.items.find(l => l._id === i._id)
 					if (!item || !item.content || !item.content.timelineObjects) {
+						return
+					}
+
+					// If there is a transition and this item is abs0, it is assumed to be the primary sli and so does not need lookahead
+					if (hasTransition && item.trigger.type === TriggerType.TIME_ABSOLUTE && item.trigger.value === 0) {
 						return
 					}
 
@@ -2866,13 +2873,7 @@ function validateNoraPreload (timelineObjs: Array<TimelineObj>) {
 	_.each(timelineObjs, obj => {
 		// ignore normal objects
 		if (obj.content.type !== TimelineContentTypeHttp.POST) return
-		if (!obj.isBackground && !obj.originalLLayer) return
-
-		// remove anything which is half configured for lookahead
-		if (!obj.isBackground || !obj.originalLLayer) {
-			toRemoveIds.push(obj._id)
-			return
-		}
+		if (!obj.isBackground) return
 
 		const obj2 = obj as TimelineObjHTTPRequest
 		if (obj2.content.params && obj2.content.params.template && (obj2.content.params.template as any).event === 'take') {
