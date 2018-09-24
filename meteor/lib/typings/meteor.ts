@@ -61,7 +61,13 @@ export type SelectorValue<T, Selector> =
 export type Selector<DBInterface> = {
 	[K in keyof DBInterface]?: SelectorValue<DBInterface[K], Selector<DBInterface>>
 }
-
+export interface UpdateOptions {
+	multi?: boolean
+	upsert?: boolean
+}
+export interface UpsertOptions {
+	multi?: boolean
+}
 // export interface TransformedCollection<Class, DBInterface> extends Mongo.Collection<Class> {
 export interface TransformedCollection<Class, DBInterface> {
 	allow (options: {
@@ -97,13 +103,8 @@ export interface TransformedCollection<Class, DBInterface> {
 	rawCollection (): any
 	rawDatabase (): any
 	remove (selector: Selector<DBInterface> | Mongo.ObjectID | string, callback?: Function): number
-	update (selector: Selector<DBInterface> | Mongo.ObjectID | string, modifier: Modifier<DBInterface>, options?: {
-		multi?: boolean
-		upsert?: boolean
-	}, callback?: Function): number
-	upsert (selector: Selector<DBInterface> | Mongo.ObjectID | string, modifier: Modifier<DBInterface>, options?: {
-		multi?: boolean
-	}, callback?: Function): {
+	update (selector: Selector<DBInterface> | Mongo.ObjectID | string, modifier: Modifier<DBInterface>, options?: UpdateOptions, callback?: Function): number
+	upsert (selector: Selector<DBInterface> | Mongo.ObjectID | string, modifier: Modifier<DBInterface>, options?: UpsertOptions, callback?: Function): {
 		numberAffected?: number; insertedId?: string
 	}
 	insert (doc: DBInterface, callback?: Function): string
