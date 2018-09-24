@@ -3,7 +3,7 @@ import { RuntimeFunction, RuntimeFunctions } from '../../../lib/collections/Runt
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-// import * as monaco from 'monaco-editor' // instead globally available through public folder
+import * as monaco from 'monaco-editor'
 // import MonacoEditor from 'react-monaco-editor'
 import '../../../lib/typings/monaco'
 import * as _ from 'underscore'
@@ -18,7 +18,8 @@ import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faSave from '@fortawesome/fontawesome-free-solid/faSave'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MomentFromNow } from '../../lib/Moment'
-import { eventContextForLog } from '../../lib/eventTargetLogHelper';
+import { eventContextForLog } from '../../lib/eventTargetLogHelper'
+import { Meteor } from 'meteor/meteor'
 
 interface IMonacoProps {
 	runtimeFunction: RuntimeFunction

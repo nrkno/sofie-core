@@ -1,7 +1,7 @@
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { Time, registerCollection } from '../lib'
-
+import { Meteor } from 'meteor/meteor'
 export interface Evaluation extends EvaluationBase {
 	_id: string,
 	userId: string,

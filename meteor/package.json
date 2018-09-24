@@ -17,7 +17,7 @@
     "i18n-compile-json-sv": "i18next-conv -l sv -s i18n/sv.po -t public/locales/sv/translations.json"
   },
   "dependencies": {
-    "@babel/runtime": "^7.0.0-beta.48",
+    "@babel/runtime": "7.0.0-beta.48",
     "@fortawesome/fontawesome": "^1.1.7",
     "@fortawesome/fontawesome-free-solid": "^5.0.13",
     "@fortawesome/react-fontawesome": "0.0.19",

@@ -2,7 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { PeripheralDeviceAPI } from '../api/peripheralDevice'
 import { Time, registerCollection } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
-
+import { Meteor } from 'meteor/meteor'
 export interface PeripheralDevice {
 	_id: string
 

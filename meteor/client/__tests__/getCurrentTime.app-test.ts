@@ -1,5 +1,6 @@
 import * as chai from 'chai'
 import { } from 'mocha'
+import { Meteor } from 'meteor/meteor'
 
 import { getCurrentTime } from '../../lib/lib'
 

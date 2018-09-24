@@ -192,11 +192,13 @@ Meteor.methods({
 					_id: 'pgm0',
 					name: 'PGM',
 					isPGM: true,
+					_rank: 0
 				},
 				{
 					_id: 'monitor0',
 					name: 'Bakskjerm',
 					isPGM: false,
+					_rank: 1
 				}
 			],
 		}})
@@ -210,7 +212,8 @@ Meteor.methods({
 					abbreviation: 'Full',
 					type: RundownAPI.SourceLayerType.VT,
 					onPGMClean: true,
-					onPresenterScreen: true
+					onPresenterScreen: true,
+					unlimited: false
 				},
 				{
 					_id: 'studio0_vb',
@@ -219,7 +222,8 @@ Meteor.methods({
 					abbreviation: 'Full',
 					type: RundownAPI.SourceLayerType.VT,
 					onPGMClean: true,
-					onPresenterScreen: true
+					onPresenterScreen: true,
+					unlimited: false
 				},
 				{
 					_id: 'studio0_live_speak0',
@@ -228,7 +232,8 @@ Meteor.methods({
 					abbreviation: 'STK',
 					type: RundownAPI.SourceLayerType.LIVE_SPEAK,
 					onPGMClean: true,
-					onPresenterScreen: true
+					onPresenterScreen: true,
+					unlimited: false
 				},
 				{
 					_id: 'studio0_graphics_super',
@@ -238,7 +243,8 @@ Meteor.methods({
 					onPGMClean: false,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'u,alt+u',
-					allowDisable: true
+					allowDisable: true,
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_graphics_fullskjerm',
@@ -246,7 +252,8 @@ Meteor.methods({
 				 	name: 'Grafikk',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
-					onPresenterScreen: true
+					onPresenterScreen: true,
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_graphics_klokke',
@@ -257,7 +264,8 @@ Meteor.methods({
 					isHidden: true,
 					assignHotkeysToGlobalAdlibs: true,
 					activateKeyboardHotkeys: 'alt+k,alt+u',
-					clearKeyboardHotkey: 'k'
+					clearKeyboardHotkey: 'k',
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_graphics_logo',
@@ -268,7 +276,8 @@ Meteor.methods({
 					isHidden: true,
 					assignHotkeysToGlobalAdlibs: true,
 					activateKeyboardHotkeys: 'alt+l,alt+k,alt+u',
-					clearKeyboardHotkey: 'l'
+					clearKeyboardHotkey: 'l',
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_graphics_tag_left',
@@ -278,7 +287,8 @@ Meteor.methods({
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'alt+u',
-					allowDisable: true
+					allowDisable: true,
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_graphics_tag_right',
@@ -288,7 +298,8 @@ Meteor.methods({
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'alt+d,alt+u',
-					allowDisable: true
+					allowDisable: true,
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_graphics_tema',
@@ -298,7 +309,8 @@ Meteor.methods({
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'i,alt+i,alt+u',
-					allowDisable: true
+					allowDisable: true,
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_graphics_ticker',
@@ -308,7 +320,8 @@ Meteor.methods({
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'alt+o,alt+u',
-					allowDisable: true
+					allowDisable: true,
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_graphics_bakskjerm',
@@ -317,7 +330,8 @@ Meteor.methods({
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
-					clearKeyboardHotkey: 'p'
+					clearKeyboardHotkey: 'p',
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_clip_bakskjerm',
@@ -326,7 +340,8 @@ Meteor.methods({
 				 	type: RundownAPI.SourceLayerType.VT,
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
-					clearKeyboardHotkey: 'p'
+					clearKeyboardHotkey: 'p',
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_cam_bakskjerm',
@@ -335,7 +350,8 @@ Meteor.methods({
 				 	type: RundownAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
-					clearKeyboardHotkey: 'p'
+					clearKeyboardHotkey: 'p',
+					unlimited: false
 				},
 				{
 					_id: 'studio0_split0',
@@ -346,7 +362,8 @@ Meteor.methods({
 					onPGMClean: true,
 					isSticky: true,
 					activateStickyKeyboardHotkey: 'f6',
-					onPresenterScreen: true
+					onPresenterScreen: true,
+					unlimited: false
 				},
 				{
 					_id: 'studio0_remote0',
@@ -361,7 +378,8 @@ Meteor.methods({
 					assignHotkeysToGlobalAdlibs: true,
 					isSticky: true,
 					activateStickyKeyboardHotkey: 'f5',
-					onPresenterScreen: true
+					onPresenterScreen: true,
+					unlimited: false
 				},
 				{
 					_id: 'studio0_script',
@@ -369,6 +387,7 @@ Meteor.methods({
 					name: 'Manus',
 					type: RundownAPI.SourceLayerType.SCRIPT,
 					onPGMClean: true,
+					unlimited: false
 				},
 				{
 					_id: 'studio0_gjest_mic',
@@ -376,6 +395,7 @@ Meteor.methods({
 					name: 'Gjest',
 					type: RundownAPI.SourceLayerType.MIC,
 					onPGMClean: true,
+					unlimited: false
 				},
 				{
 					_id: 'studio0_camera0',
@@ -387,7 +407,8 @@ Meteor.methods({
 					activateKeyboardHotkeys: 'f1,f2,f3,f4,8,9',
 					clearKeyboardHotkey: 'ctrl+a,ctrl+f1',
 					assignHotkeysToGlobalAdlibs: true,
-					onPresenterScreen: true
+					onPresenterScreen: true,
+					unlimited: false
 				},
 				{
 					_id: 'studio0_live_transition0',
@@ -396,7 +417,8 @@ Meteor.methods({
 					type: RundownAPI.SourceLayerType.TRANSITION,
 					onPGMClean: true,
 					activateKeyboardHotkeys: '',
-					assignHotkeysToGlobalAdlibs: false
+					assignHotkeysToGlobalAdlibs: false,
+					unlimited: false
 				},
 			],
 		}})

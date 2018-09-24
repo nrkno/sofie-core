@@ -198,11 +198,11 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 	_.each(removeObjs, function (obj: DocClass, key) {
 		if (obj) {
 			let p: Promise<any> | undefined
-			let oRemove = ( options.beforeRemove ? options.beforeRemove(obj) : obj)
+			let oRemove: DBInterface = ( options.beforeRemove ? options.beforeRemove(obj) : obj)
 			if (options.remove) {
 				options.remove(oRemove)
 			} else {
-				p = asyncCollectionRemove(collection, oRemove)
+				p = asyncCollectionRemove(collection, oRemove._id)
 			}
 
 			if (options.afterRemove) {
@@ -404,7 +404,7 @@ export const getCollectionStats: (collection: Mongo.Collection<any>) => Array<an
 		raw.stats(cb)
 	}
 )
-export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: Mongo.Selector, rank: number | null): T {
+export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: Mongo.Selector<T>, rank: number | null): T {
 	if (_.isNull(rank)) rank = Number.POSITIVE_INFINITY
 	return collection.find(_.extend(selector, {
 		_rank: {$lt: rank}
@@ -416,7 +416,7 @@ export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: Mongo
 		limit: 1
 	}).fetch()[0]
 }
-export function fetchAfter<T> (collection: Mongo.Collection<T> | Array<T>, selector: Mongo.Selector, rank: number | null): T | undefined {
+export function fetchAfter<T> (collection: Mongo.Collection<T> | Array<T>, selector: Mongo.Selector<T>, rank: number | null): T | undefined {
 	if (_.isNull(rank)) rank = Number.NEGATIVE_INFINITY
 
 	selector = _.extend({}, selector, {
@@ -698,7 +698,7 @@ export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync (functio
 		cb(e)
 	})
 })
-export function mongoWhere (o: any, selector: Mongo.Selector): boolean {
+export function mongoWhere<T> (o: any, selector: Mongo.Selector<T>): boolean {
 	let ok = true
 	_.each(selector, (s: any, key: string) => {
 		if (!ok) return

@@ -10,6 +10,7 @@ import * as _ from 'underscore'
 import * as soap from 'soap'
 import * as parser from 'xml2json'
 import { XmlEntities as Entities } from 'html-entities'
+import { Meteor } from 'meteor/meteor'
 const entities = new Entities()
 
 let runMessageQueue = true

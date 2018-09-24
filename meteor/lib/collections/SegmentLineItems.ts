@@ -10,6 +10,7 @@ import { TimelineObj } from './Timeline'
 import { TransformedCollection } from '../typings/meteor'
 import { SegmentLineTimings } from './SegmentLines'
 import { Time, registerCollection } from '../lib'
+import { Meteor } from 'meteor/meteor'
 
 /** A trigger interface compatible with that of supertimeline */
 export interface ITimelineTrigger {

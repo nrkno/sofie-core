@@ -40,6 +40,7 @@ import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
 import { scrollToSegmentLine } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { eventContextForLog } from '../lib/eventTargetLogHelper'
+import { Tracker } from 'meteor/tracker'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
