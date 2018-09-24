@@ -62,6 +62,7 @@ interface IProps {
 	runningOrder: RunningOrder,
 	timeScale: number,
 	liveLineHistorySize: number
+	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onTimeScaleChange?: (timeScaleVal: number) => void
 	onContextMenu?: (contextMenuContext: any) => void
 	onSegmentScroll?: () => void
@@ -324,6 +325,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				studioInstallation={this.props.studioInstallation}
 				segmentLines={this.props.segmentLines}
 				timeScale={this.props.timeScale}
+				onItemDoubleClick={this.props.onItemDoubleClick}
 				onCollapseOutputToggle={this.onCollapseOutputToggle}
 				collapsedOutputs={this.state.collapsedOutputs}
 				onCollapseSegmentToggle={this.onCollapseSegmentToggle}

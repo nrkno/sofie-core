@@ -22,7 +22,7 @@ import { SegmentLine } from '../../lib/collections/SegmentLines'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
 import { RunningOrderTimingProvider, withTiming, WithTiming } from './RunningOrderView/RunningOrderTiming'
-import { SegmentTimelineContainer } from './SegmentTimeline/SegmentTimelineContainer'
+import { SegmentTimelineContainer, SegmentLineItemUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { InspectorDrawer } from './InspectorDrawer/InspectorDrawer'
 import { RunningOrderOverview } from './RunningOrderView/RunningOrderOverview'
@@ -1187,6 +1187,10 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
+	onSLItemDoubleClick = (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => {
+		console.log(item, e)
+	}
+
 	renderSegments () {
 		if (this.props.segments) {
 			return this.props.segments.map((segment, index, array) => {
@@ -1203,6 +1207,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 												onContextMenu={this.onContextMenu}
 												onSegmentScroll={this.onSegmentScroll}
 												isLastSegment={index === array.length - 1}
+												onItemDoubleClick={this.onSLItemDoubleClick}
 												/>
 						</ErrorBoundary>
 				}

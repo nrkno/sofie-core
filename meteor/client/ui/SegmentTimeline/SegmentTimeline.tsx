@@ -9,7 +9,7 @@ import { ContextMenuTrigger } from 'react-contextmenu'
 
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { SegmentUi, SegmentLineUi, IOutputLayerUi } from './SegmentTimelineContainer'
+import { SegmentUi, SegmentLineUi, IOutputLayerUi, SegmentLineItemUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
 import { SegmentTimelineLine } from './SegmentTimelineLine'
 import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
@@ -51,6 +51,7 @@ interface IProps {
 	onZoomChange: (newScale: number, event: any) => void
 	onFollowLiveLine: (state: boolean, event: any) => void
 	onContextMenu?: (contextMenuContext: any) => void
+	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	followingSegmentLine: SegmentLineUi | undefined
 	isLastSegment: boolean
@@ -376,6 +377,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 				return (
 					<SegmentTimelineLine key={segmentLine._id}
 						{...this.props}
+						onItemDoubleClick={this.props.onItemDoubleClick}
 						scrollWidth={this.state.timelineWidth / this.props.timeScale}
 						firstSegmentLineInSegment={this.props.segmentLines[0]}
 						isLastSegment={this.props.isLastSegment}

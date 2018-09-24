@@ -42,6 +42,8 @@ export interface SegmentLineItemGeneric {
 	duration?: number
 	/** A flag to signal a given SegmentLineItem has been deactivated manually */
 	disabled?: boolean
+	/** A flag to signal that a given SegmentLineItem should be hidden from the UI */
+	hidden?: boolean
 	/** The transition used by this segment line item to transition to and from the item */
 	transitions?: {
 		/** In transition for the item */
