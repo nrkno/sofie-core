@@ -2,6 +2,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { getCurrentTime, Collections } from '../../lib/lib'
 import { Session } from 'meteor/session'
 import { Meteor } from 'meteor/meteor'
+import { Tracker } from 'meteor/tracker'
 import * as _ from 'underscore'
 
 // Note: These things are convenience functions to be used during development:

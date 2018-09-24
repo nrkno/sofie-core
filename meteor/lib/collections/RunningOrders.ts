@@ -13,6 +13,7 @@ import { StudioInstallations, StudioInstallation } from './StudioInstallations'
 import { SegmentLineItems, SegmentLineItem } from './SegmentLineItems'
 import { RunningOrderDataCache } from './RunningOrderDataCache'
 import { ShowStyle, ShowStyles } from './ShowStyles'
+import { Meteor } from 'meteor/meteor'
 
 export enum RunningOrderHoldState {
 	NONE = 0,

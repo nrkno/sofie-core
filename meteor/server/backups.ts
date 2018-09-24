@@ -60,7 +60,7 @@ function restoreShowBackup (backup: ShowStyleBackup) {
 	if (!newShow) throw new Meteor.Error(500, 'ShowStyle missing from restore data')
 
 	const showStyle = ShowStyles.findOne(newShow._id)
-	if (showStyle) ShowStyles.remove(showStyle)
+	if (showStyle) ShowStyles.remove(showStyle._id)
 	ShowStyles.insert(newShow)
 
 	RuntimeFunctions.remove({ showStyleId: newShow._id })
