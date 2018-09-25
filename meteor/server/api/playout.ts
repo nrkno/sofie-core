@@ -955,7 +955,7 @@ export namespace ServerPlayoutAPI {
 		}
 
 		if (!segLineItem.startedPlayback) {
-			logger.info(`Play-out reports segment line item "${sliId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
+			logger.info(`Playout reports segmentLineItem "${sliId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
 
 			// store new value
 			SegmentLineItems.update(segLineItem._id, {$set: {
@@ -991,7 +991,7 @@ export namespace ServerPlayoutAPI {
 		if (playingSegmentLine) {
 			// make sure we don't run multiple times, even if TSR calls us multiple times
 			if (!playingSegmentLine.startedPlayback) {
-				logger.info(`Play-out reports segment line "${slId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
+				logger.info(`Playout reports segmentLine "${slId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
 
 				if (runningOrder.currentSegmentLineId === slId) {
 					// this is the current segment line, it has just started playback
