@@ -192,6 +192,7 @@ declare interface DBSegmentLine {
 	holdMode?: SegmentLineHoldMode
 }
 declare type SegmentLine = DBSegmentLine
+declare type RunningOrder = DBRunningOrder
 declare enum LayerType {
 	Source,
 	Output,
@@ -199,6 +200,7 @@ declare enum LayerType {
 }
 declare interface Context {
 	runningOrderId: string
+	runningOrder: RunningOrder
 	segmentLine: SegmentLine
 
 	getHashId: (stringToBeHashed?: string | number) => string
@@ -485,7 +487,7 @@ declare enum SegmentLineHoldMode {
 				this.triggerSave(this._editor.getModel().getValue())
 			}))
 			this._editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, (e: any) => {
-				this.saveCode(e)
+				this.saveCode({type: 'Monaco save'})
 			}, '')
 		}
 	}

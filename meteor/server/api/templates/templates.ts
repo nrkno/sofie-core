@@ -76,6 +76,7 @@ export interface TemplateSet {
 }
 export interface TemplateContext {
 	runningOrderId: string
+	runningOrder: RunningOrder
 	studioId: string
 	// segment: Segment
 	segmentLine: SegmentLine

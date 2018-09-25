@@ -1294,6 +1294,7 @@ function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 
 	let context: TemplateContext = {
 		runningOrderId: ro._id,
+		runningOrder: ro,
 		studioId: ro.studioInstallationId,
 		segmentLine: firstSegmentLine,
 		templateId: 'post-process'
@@ -1394,6 +1395,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 
 	let context: TemplateContext = {
 		runningOrderId: ro._id,
+		runningOrder: ro,
 		studioId: ro.studioInstallationId,
 		// segment: Segment,
 		segmentLine: segmentLine,
