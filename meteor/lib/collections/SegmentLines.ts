@@ -79,6 +79,8 @@ export interface SegmentLineTimings {
 	startedPlayback: Array<Time>,
 	/** Point in time the SegmentLine stopped playing (ie the time of the user action) */
 	takeOut: Array<Time>,
+	/** Point in time the SegmentLine stopped playing (ie the time of the playout) */
+	stoppedPlayback: Array<Time>,
 	/** Point in time the SegmentLine was set as Next (ie the time of the user action) */
 	next: Array<Time>
 }
