@@ -233,8 +233,8 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 				<div className='actions-container'>
 					<div className='device-item__actions'>
 						{(
-							// questionable check based on naming convention, but settings are not available.
-							this.props.device.type === PeripheralDeviceAPI.DeviceType.OTHER && this.props.device.name.substr(0, 17) === 'Playout: CasparCG' ? <React.Fragment>
+							// TODO: implement better way to determine what device it is
+							this.props.device.type === PeripheralDeviceAPI.DeviceType.OTHER && this.props.device.name.match(/CasparCG/i) ? <React.Fragment>
 								<button className='btn btn-secondary' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onRestartCasparCG(this.props.device)}>
 									Restart
 									{ JSON.stringify(this.props.device.settings) }
