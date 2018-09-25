@@ -1282,7 +1282,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							<KeyboardFocusMarker />
 						</ErrorBoundary>
 						<ErrorBoundary>
-							{ (getStudioMode() ? !this.props.runningOrder.active || this.props.runningOrder.rehearsal : !getDeveloperMode()) && <RunningOrderFullscreenMarker /> }
+							{(getDeveloperMode() ? false : (getStudioMode() ? !this.props.runningOrder.active || this.props.runningOrder.rehearsal : true)) && <RunningOrderFullscreenMarker /> }
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<RunningOrderHeader
