@@ -41,6 +41,7 @@ import { scrollToSegmentLine } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { eventContextForLog } from '../lib/eventTargetLogHelper'
 import { Tracker } from 'meteor/tracker'
+import { RunningOrderFullscreenMarker } from './RunningOrderView/RunningOrderFullscreenMarker'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -1271,6 +1272,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					<div className='running-order-view' style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
 						<ErrorBoundary>
 							<KeyboardFocusMarker />
+						</ErrorBoundary>
+						<ErrorBoundary>
+							{ (getStudioMode() ? !this.props.runningOrder.active || this.props.runningOrder.rehearsal : true) && <RunningOrderFullscreenMarker /> }
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<RunningOrderHeader
