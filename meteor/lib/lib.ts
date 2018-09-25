@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { TransformedCollection, Selector, Modifier, UpdateOptions, UpsertOptions } from './typings/meteor'
+import { TransformedCollection, MongoSelector, MongoModifier, UpdateOptions, UpsertOptions } from './typings/meteor'
 import { PeripheralDeviceAPI } from './api/peripheralDevice'
 import { logger } from './logging'
 import * as Timecode from 'smpte-timecode'
@@ -110,7 +110,7 @@ interface SaveIntoDbOptions<DocClass, DBInterface> {
  */
 export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	filter: Selector<DBInterface>,
+	filter: MongoSelector<DBInterface>,
 	newData: Array<DBInterface>,
 	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
 ) {
@@ -404,7 +404,7 @@ export const getCollectionStats: (collection: Mongo.Collection<any>) => Array<an
 		raw.stats(cb)
 	}
 )
-export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: Mongo.Selector<T>, rank: number | null): T {
+export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: MongoSelector<T>, rank: number | null): T {
 	if (_.isNull(rank)) rank = Number.POSITIVE_INFINITY
 	return collection.find(_.extend(selector, {
 		_rank: {$lt: rank}
@@ -416,7 +416,7 @@ export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: Mongo
 		limit: 1
 	}).fetch()[0]
 }
-export function fetchAfter<T> (collection: Mongo.Collection<T> | Array<T>, selector: Mongo.Selector<T>, rank: number | null): T | undefined {
+export function fetchAfter<T> (collection: Mongo.Collection<T> | Array<T>, selector: MongoSelector<T>, rank: number | null): T | undefined {
 	if (_.isNull(rank)) rank = Number.NEGATIVE_INFINITY
 
 	selector = _.extend({}, selector, {
@@ -600,7 +600,7 @@ const ticCache = {}
 
 export function asyncCollectionFindFetch<DocClass, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: Selector<DBInterface> | string,
+	selector: MongoSelector<DBInterface> | string,
 	options?: {
 		sort?: Mongo.SortSpecifier
 		skip?: number
@@ -617,7 +617,7 @@ export function asyncCollectionFindFetch<DocClass, DBInterface> (
 }
 export function asyncCollectionFindOne<DocClass, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: Selector<DBInterface> | string
+	selector: MongoSelector<DBInterface> | string
 ): Promise<DocClass> {
 	return asyncCollectionFindFetch(collection, selector)
 	.then((arr) => {
@@ -637,8 +637,8 @@ export function asyncCollectionInsert<DocClass, DBInterface> (
 }
 export function asyncCollectionUpdate<DocClass, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: Selector<DBInterface> | string,
-	modifier: Modifier<DBInterface>,
+	selector: MongoSelector<DBInterface> | string,
+	modifier: MongoModifier<DBInterface>,
 	options?: UpdateOptions
 
 ): Promise<number> {
@@ -652,8 +652,8 @@ export function asyncCollectionUpdate<DocClass, DBInterface> (
 
 export function asyncCollectionUpsert<DocClass, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: Selector<DBInterface> | string,
-	modifier: Modifier<DBInterface>,
+	selector: MongoSelector<DBInterface> | string,
+	modifier: MongoModifier<DBInterface>,
 	options?: UpsertOptions
 
 ): Promise<number> {
@@ -667,7 +667,7 @@ export function asyncCollectionUpsert<DocClass, DBInterface> (
 
 export function asyncCollectionRemove<DocClass, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: Selector<DBInterface> | string
+	selector: MongoSelector<DBInterface> | string
 
 ): Promise<void> {
 	return new Promise((resolve, reject) => {
@@ -698,7 +698,7 @@ export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync (functio
 		cb(e)
 	})
 })
-export function mongoWhere<T> (o: any, selector: Mongo.Selector<T>): boolean {
+export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 	let ok = true
 	_.each(selector, (s: any, key: string) => {
 		if (!ok) return

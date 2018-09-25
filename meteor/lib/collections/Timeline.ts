@@ -5,7 +5,7 @@ import { TimelineObject, ObjectId, TriggerType, TimelineKeyframe } from 'superfl
 
 import { ChannelFormat, Transition, Ease, Direction } from '../constants/casparcg'
 import { StudioInstallations } from './StudioInstallations'
-import { FindOptions, Selector, TransformedCollection } from '../typings/meteor'
+import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { Mixer } from '../typings/casparcg-state'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'

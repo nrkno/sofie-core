@@ -8,7 +8,7 @@ import {
 	IMOSObjectStatus,
 	IMOSObjectAirStatus
 } from 'mos-connection'
-import { FindOptions, Selector, TransformedCollection } from '../typings/meteor'
+import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { StudioInstallations, StudioInstallation } from './StudioInstallations'
 import { SegmentLineItems, SegmentLineItem } from './SegmentLineItems'
 import { RunningOrderDataCache } from './RunningOrderDataCache'
@@ -103,7 +103,7 @@ export class RunningOrder implements DBRunningOrder {
 			return si
 		} else throw new Meteor.Error(404, 'StudioInstallation "' + this.studioInstallationId + '" not found!')
 	}
-	getSegments (selector?: Selector<DBSegment>, options?: FindOptions) {
+	getSegments (selector?: MongoSelector<DBSegment>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
 		return Segments.find(
@@ -115,7 +115,7 @@ export class RunningOrder implements DBRunningOrder {
 			}, options)
 		).fetch()
 	}
-	getSegmentLines (selector?: Selector<SegmentLine>, options?: FindOptions) {
+	getSegmentLines (selector?: MongoSelector<SegmentLine>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
 		return SegmentLines.find(
@@ -228,7 +228,7 @@ export class RunningOrder implements DBRunningOrder {
 
 		segmentLines = _.map(segmentLines, (sl) => {
 			// Override member function to use cached data instead:
-			sl.getSegmentLinesItems = (selector?: Selector<SegmentLineItem>, options?: FindOptions) => {
+			sl.getSegmentLinesItems = (selector?: MongoSelector<SegmentLineItem>, options?: FindOptions) => {
 				return _.map(_.filter(segmentLineItems, (sli) => {
 					return (
 						sli.segmentLineId === sl._id

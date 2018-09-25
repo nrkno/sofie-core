@@ -4,7 +4,7 @@ import {
 	IMOSExternalMetaData,
 	IMOSObjectStatus
 } from 'mos-connection'
-import { TransformedCollection, FindOptions, Selector } from '../typings/meteor'
+import { TransformedCollection, FindOptions, MongoSelector } from '../typings/meteor'
 import { RunningOrders } from './RunningOrders'
 import { SegmentLineItem, SegmentLineItems } from './SegmentLineItems'
 import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
@@ -145,7 +145,7 @@ export class SegmentLine implements DBSegmentLine {
 	getSegment () {
 		return Segments.findOne(this.segmentId)
 	}
-	getSegmentLinesItems (selector?: Selector<SegmentLineItem>, options?: FindOptions) {
+	getSegmentLinesItems (selector?: MongoSelector<SegmentLineItem>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
 		return SegmentLineItems.find(
@@ -158,7 +158,7 @@ export class SegmentLine implements DBSegmentLine {
 			}, options)
 		).fetch()
 	}
-	getSegmentLinesAdLibItems (selector?: Selector<SegmentLineItem>, options?: FindOptions) {
+	getSegmentLinesAdLibItems (selector?: MongoSelector<SegmentLineItem>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
 		return SegmentLineAdLibItems.find(

@@ -5,7 +5,7 @@ import { ShowStyle, ShowStyles } from '../lib/collections/ShowStyles'
 import { RuntimeFunction, RuntimeFunctions } from '../lib/collections/RuntimeFunctions'
 import * as bodyParser from 'body-parser'
 import { logger } from './logging'
-import { Selector } from '../lib/typings/meteor'
+import { MongoSelector } from '../lib/typings/meteor'
 import { Collections, getCollectionIndexes, getCollectionStats, getCurrentTime } from '../lib/lib'
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
@@ -35,7 +35,7 @@ export function getShowBackup (showId: string, onlyActiveTemplates: boolean): Sh
 	const showStyle = ShowStyles.findOne(showId)
 	if (!showStyle) throw new Meteor.Error(404, 'Show style not found')
 
-	const filter: Selector<RuntimeFunction> = { showStyleId: showId }
+	const filter: MongoSelector<RuntimeFunction> = { showStyleId: showId }
 	if (onlyActiveTemplates) {
 		filter.active = true
 	}
