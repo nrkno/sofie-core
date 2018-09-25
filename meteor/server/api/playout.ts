@@ -738,6 +738,8 @@ export namespace ServerPlayoutAPI {
 
 		segmentLineIndex += horisonalDelta
 
+		segmentLineIndex = Math.max(0, Math.min(segmentLines.length - 1, segmentLineIndex))
+
 		let segmentLine = segmentLines[segmentLineIndex]
 		if (!segmentLine) throw new Meteor.Error(501, `SegmentLine index ${segmentLineIndex} not found in list of segmentLines!`)
 
