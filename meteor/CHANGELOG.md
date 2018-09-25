@@ -8,31 +8,31 @@ All notable changes to this project will be documented in this file. See [standa
 ### Features
 
 * **New implementation of how user actions are logged (now including the origin of the action (like key pressed, or button clicked))**
-  Peripheral Device user action logging ([2250798](https://github.com/nrkno/tv-automation-server-core/commit/2250798))
-  user log: add action context (trigger event summary) ([ad176f2](https://github.com/nrkno/tv-automation-server-core/commit/ad176f2))
+  <br> Peripheral Device user action logging ([2250798](https://github.com/nrkno/tv-automation-server-core/commit/2250798))
+  <br> user log: add action context (trigger event summary) ([ad176f2](https://github.com/nrkno/tv-automation-server-core/commit/ad176f2))
 * **Add typeSubVariant field to SegmentLine. (#46) ([4af88d3](https://github.com/nrkno/tv-automation-server-core/commit/4af88d3)), closes [#46]**
-  Add typeSubVariant field to SegmentLine. (#46) ([82bd4bd](https://github.com/nrkno/tv-automation-server-core/commit/82bd4bd)), closes [#46]
+  <br> Add typeSubVariant field to SegmentLine. (#46) ([82bd4bd](https://github.com/nrkno/tv-automation-server-core/commit/82bd4bd)), closes [#46]
 * **New implementation of how CasparCG-devices are restarted, now supporting multiple devices**
-  changed restart CasparCG functionality ([dd567c2](https://github.com/nrkno/tv-automation-server-core/commit/dd567c2))
+  <br> changed restart CasparCG functionality ([dd567c2](https://github.com/nrkno/tv-automation-server-core/commit/dd567c2))
 * **Added support for lookahead/preloadvmode "When Clear", used for graphics**
-  Grafikk lookahead/preload ([30a6b03](https://github.com/nrkno/tv-automation-server-core/commit/30a6b03))
+  <br> Grafikk lookahead/preload ([30a6b03](https://github.com/nrkno/tv-automation-server-core/commit/30a6b03))
 * **Handle received Running Order data when having added (adlibbed) segmentLines**
-  handle mos updates with dynamicallyInserted segmentLines ([1d292c0](https://github.com/nrkno/tv-automation-server-core/commit/1d292c0))
+  <br> handle mos updates with dynamicallyInserted segmentLines ([1d292c0](https://github.com/nrkno/tv-automation-server-core/commit/1d292c0))
 * Move SegmentLine duration calculation into blueprints ([315eb42](https://github.com/nrkno/tv-automation-server-core/commit/315eb42))
 * **Added experimental prompter view (at "/prompter/studio0")**
-  prompter-view ([f45a923](https://github.com/nrkno/tv-automation-server-core/commit/f45a923))
-  implement a simple mirror mode ([8d0be4e](https://github.com/nrkno/tv-automation-server-core/commit/8d0be4e))
-  prompter background to black, update documentation ([387ad28](https://github.com/nrkno/tv-automation-server-core/commit/387ad28))
+  <br> prompter-view ([f45a923](https://github.com/nrkno/tv-automation-server-core/commit/f45a923))
+  <br> implement a simple mirror mode ([8d0be4e](https://github.com/nrkno/tv-automation-server-core/commit/8d0be4e))
+  <br> prompter background to black, update documentation ([387ad28](https://github.com/nrkno/tv-automation-server-core/commit/387ad28))
 * **Major rework of how Running Order Activation, Deactication, Reset, Reload etc, are done. Adding GUI prompts if user tries to do an action he/she might/should not.**
-  reworked the whole activate/deacticate/reset/reload logic ([1fea56e](https://github.com/nrkno/tv-automation-server-core/commit/1fea56e))
+  <br> reworked the whole activate/deacticate/reset/reload logic ([1fea56e](https://github.com/nrkno/tv-automation-server-core/commit/1fea56e))
 * **"Queueability", ie be able to add Adlibs as "next segmentLine" rather than insert into current segmentLine.**
-  server side implementation of queueabilified adlibs ([0527b3b](https://github.com/nrkno/tv-automation-server-core/commit/0527b3b))
-  queueability feature - GUI ([dcfa4a0](https://github.com/nrkno/tv-automation-server-core/commit/dcfa4a0))
+  <br> server side implementation of queueabilified adlibs ([0527b3b](https://github.com/nrkno/tv-automation-server-core/commit/0527b3b))
+  <br> queueability feature - GUI ([dcfa4a0](https://github.com/nrkno/tv-automation-server-core/commit/dcfa4a0))
 * **Prevent infinite items on same layer to interfere with eachother**
-  source layer exclusivity groups (wip) ([7dedc85](https://github.com/nrkno/tv-automation-server-core/commit/7dedc85))
-  sourceLayer exclusivity groups ([c32f0e1](https://github.com/nrkno/tv-automation-server-core/commit/c32f0e1))
+  <br> source layer exclusivity groups (wip) ([7dedc85](https://github.com/nrkno/tv-automation-server-core/commit/7dedc85))
+  <br> sourceLayer exclusivity groups ([c32f0e1](https://github.com/nrkno/tv-automation-server-core/commit/c32f0e1))
 * **Check status of SegmentLineItem content (for things like "Source missing" or "Source Broken")**
-  mediaObjects.checkSLIContentStatus ([66d4427](https://github.com/nrkno/tv-automation-server-core/commit/66d4427))
+  <br> mediaObjects.checkSLIContentStatus ([66d4427](https://github.com/nrkno/tv-automation-server-core/commit/66d4427))
 * **HTTPSend-device: Custom make-ready commands for httpsend device ([410a2ef](https://github.com/nrkno/tv-automation-server-core/commit/410a2ef))**
 
 
@@ -41,11 +41,11 @@ All notable changes to this project will be documented in this file. See [standa
 * RO view: Retain the special segment color even when On Air/Next ([2596a8e](https://github.com/nrkno/tv-automation-server-core/commit/2596a8e))
 * two-tone Split layers with more than one input of the same type ([60c238c](https://github.com/nrkno/tv-automation-server-core/commit/60c238c))
 * **UI: Show next take style icon next to timecode**
-  show next take style icon next to timecode ([8d090e8](https://github.com/nrkno/tv-automation-server-core/commit/8d090e8))
+  <br>show next take style icon next to timecode ([8d090e8](https://github.com/nrkno/tv-automation-server-core/commit/8d090e8))
 * new style of segmentLine markers (WIP) ([a3569ce](https://github.com/nrkno/tv-automation-server-core/commit/a3569ce))
 * add support for two-tone splits with the same source type ([ba70dfa](https://github.com/nrkno/tv-automation-server-core/commit/ba70dfa))
 * **GUI improvement of SourceLayerItemContainer**
-  a better implementation of SourceLayerItemContainer ([38380e1](https://github.com/nrkno/tv-automation-server-core/commit/38380e1))
+  <br>a better implementation of SourceLayerItemContainer ([38380e1](https://github.com/nrkno/tv-automation-server-core/commit/38380e1))
 * new style of segmentLine markers (WIP) ([a3569ce](https://github.com/nrkno/tv-automation-server-core/commit/a3569ce))
 * Timeline-display: Add next segment return arrow at end of segment ([54900a8](https://github.com/nrkno/tv-automation-server-core/commit/54900a8))
 * Timeline-display: end of segment overlay ([41e78ec](https://github.com/nrkno/tv-automation-server-core/commit/41e78ec))
