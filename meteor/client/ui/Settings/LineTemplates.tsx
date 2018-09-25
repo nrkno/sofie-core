@@ -6,7 +6,7 @@ import { Spinner } from '../../lib/Spinner'
 // import * as monaco from 'monaco-editor'
 
 // import MonacoEditor from 'react-monaco-editor'
-import '../../../lib/typings/monaco'
+import { monaco } from '../../../lib/typings/monaco'
 import * as _ from 'underscore'
 import { Session } from 'meteor/session'
 import { ClientAPI } from '../../../lib/api/client'

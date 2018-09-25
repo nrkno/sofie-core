@@ -5539,3 +5539,5 @@ declare namespace monaco {
 		export let razorDefaults: LanguageServiceDefaults
 	}
 }
+
+export { monaco }
