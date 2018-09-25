@@ -645,6 +645,13 @@ export namespace ServerPlayoutAPI {
 		}
 		waitForPromiseAll(ps)
 		afterTake(runningOrder, takeSegmentLine, previousSegmentLine || null)
+
+		// last:
+		SegmentLines.update(takeSegmentLine._id, {
+			$push: {
+				'timings.takeDone': getCurrentTime()
+			}
+		})
 	}
 	export function roSetNext (roId: string, nextSlId: string) {
 		check(roId, String)
@@ -1068,6 +1075,7 @@ export namespace ServerPlayoutAPI {
 				if (!playingSegmentLine.timings) {
 					playingSegmentLine.timings = {
 						take: [],
+						takeDone: [],
 						startedPlayback: [],
 						takeOut: [],
 						stoppedPlayback: [],
@@ -1924,6 +1932,7 @@ function segmentLineStoppedPlaying (roId: string, segmentLine: SegmentLine, stop
 		if (!segmentLine.timings) {
 			segmentLine.timings = {
 				take: [],
+				takeDone: [],
 				startedPlayback: [],
 				takeOut: [],
 				stoppedPlayback: [],

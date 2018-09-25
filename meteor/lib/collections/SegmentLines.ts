@@ -75,6 +75,8 @@ export interface DBSegmentLine {
 export interface SegmentLineTimings {
 	/** Point in time the SegmentLine was taken, (ie the time of the user action) */
 	take: Array<Time>,
+	/** Point in time the "take" action has finished executing */
+	takeDone: Array<Time>,
 	/** Point in time the SegmentLine started playing (ie the time of the playout) */
 	startedPlayback: Array<Time>,
 	/** Point in time the SegmentLine stopped playing (ie the time of the user action) */
