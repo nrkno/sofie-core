@@ -2,6 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { ISourceLayerBase, IOutputLayerBase } from './StudioInstallations'
 import { registerCollection } from '../lib'
+import { Meteor } from 'meteor/meteor'
 
 export interface TemplateMappings {
 	[key: string]: string

@@ -3,9 +3,10 @@ import { RuntimeFunction, RuntimeFunctions } from '../../../lib/collections/Runt
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-// import * as monaco from 'monaco-editor' // instead globally available through public folder
+// import * as monaco from 'monaco-editor'
+
 // import MonacoEditor from 'react-monaco-editor'
-import '../../../lib/typings/monaco'
+import { monaco as monacoNS } from '../../../lib/typings/monaco'
 import * as _ from 'underscore'
 import { Session } from 'meteor/session'
 import { ClientAPI } from '../../../lib/api/client'
@@ -18,8 +19,14 @@ import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faSave from '@fortawesome/fontawesome-free-solid/faSave'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MomentFromNow } from '../../lib/Moment'
-import { eventContextForLog } from '../../lib/eventTargetLogHelper';
+import { eventContextForLog } from '../../lib/eventTargetLogHelper'
+import { Meteor } from 'meteor/meteor'
 
+let monaco = monacoNS
+function setRuntimeMonaco () {
+	// In runtime in the client, monaco is loaded dynamically
+	monaco = window['monaco']
+}
 interface IMonacoProps {
 	runtimeFunction: RuntimeFunction
 	functionTyping: any[] | null
@@ -37,8 +44,8 @@ class MonacoWrapper extends React.Component<IMonacoProps, IMonacoState> {
 	static _processPlatform: string
 
 	_container: HTMLDivElement
-	_editor: monaco.editor.IStandaloneCodeEditor
-	_editorEventListeners: monaco.IDisposable[] = []
+	_editor: monacoNS.editor.IStandaloneCodeEditor
+	_editorEventListeners: monacoNS.IDisposable[] = []
 	_codeId: string
 	private _saveTimeout: any
 	private _testTimeout: any
@@ -190,6 +197,7 @@ declare interface DBSegmentLine {
 	holdMode?: SegmentLineHoldMode
 }
 declare type SegmentLine = DBSegmentLine
+declare type RunningOrder = DBRunningOrder
 declare enum LayerType {
 	Source,
 	Output,
@@ -197,6 +205,7 @@ declare enum LayerType {
 }
 declare interface Context {
 	runningOrderId: string
+	runningOrder: RunningOrder
 	segmentLine: SegmentLine
 
 	getHashId: (stringToBeHashed?: string | number) => string
@@ -474,16 +483,17 @@ declare enum SegmentLineHoldMode {
 		delete monaco.languages.typescript.javascriptDefaults['_extraLibs']['functionTyping.d.ts']
 		monaco.languages.typescript.javascriptDefaults.addExtraLib(typings, 'functionTyping.d.ts')
 		if (!this._editor) {
+			// @ts-ignore
 			this._editor = monaco.editor.create(document.getElementById('monaco-container')!, {
 				value: this.props.runtimeFunction.code,
 				language: 'javascript',
 				automaticLayout: true,
 			})
-			this._editorEventListeners.push(this._editor.onDidChangeModelContent((e: monaco.editor.IModelContentChangedEvent) => {
+			this._editorEventListeners.push(this._editor.onDidChangeModelContent((e: monacoNS.editor.IModelContentChangedEvent) => {
 				this.triggerSave(this._editor.getModel().getValue())
 			}))
 			this._editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, (e: any) => {
-				this.saveCode(e)
+				this.saveCode({type: 'Monaco save'})
 			}, '')
 		}
 	}
@@ -573,6 +583,7 @@ declare enum SegmentLineHoldMode {
 					MonacoWrapper._monacoRequire.config({ paths: { 'vs': '/monaco-editor/min/vs' } })
 					MonacoWrapper._monacoRequire(['vs/editor/editor.main'], () => {
 						MonacoWrapper._monacoRef = monaco
+						setRuntimeMonaco()
 						this.attachEditor()
 					})
 				})
@@ -648,6 +659,7 @@ declare enum SegmentLineHoldMode {
 	}
 
 	render () {
+
 		return <div ref={this.setRef}>
 					<div className='runtime-function-edit__status'>
 						{this.state.unsavedChanges ? (

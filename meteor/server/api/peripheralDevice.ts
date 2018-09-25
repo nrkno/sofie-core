@@ -196,7 +196,6 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.time, Number)
 		check(r.roId, String)
 		check(r.slId, String)
-		logger.info('RunningOrder: Setting playback started ' + r.time + ' to id ' + r.slId)
 
 		// Meteor.call('playout_segmentLinePlaybackStart', r.roId, r.slId, r.time)
 		ServerPlayoutAPI.slPlaybackStartedCallback(r.roId, r.slId, r.time)
@@ -209,7 +208,6 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.time, Number)
 		check(r.roId, String)
 		check(r.sliId, String)
-		logger.info('RunningOrder: Setting playback started ' + r.time + ' to sli id ' + r.sliId)
 
 		// Meteor.call('playout_segmentLineItemPlaybackStart', r.roId, r.sliId, r.time)
 		ServerPlayoutAPI.sliPlaybackStartedCallback(r.roId, r.sliId, r.time)
@@ -1294,6 +1292,7 @@ function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 
 	let context: TemplateContext = {
 		runningOrderId: ro._id,
+		runningOrder: ro,
 		studioId: ro.studioInstallationId,
 		segmentLine: firstSegmentLine,
 		templateId: 'post-process'
@@ -1394,6 +1393,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 
 	let context: TemplateContext = {
 		runningOrderId: ro._id,
+		runningOrder: ro,
 		studioId: ro.studioInstallationId,
 		// segment: Segment,
 		segmentLine: segmentLine,

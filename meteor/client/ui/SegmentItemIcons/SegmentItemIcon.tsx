@@ -13,6 +13,7 @@ import SplitInputIcon from './Renderers/SplitInput'
 import RemoteInputIcon from './Renderers/RemoteInput'
 import LiveSpeakInputIcon from './Renderers/LiveSpeakInput'
 import GraphicsInputIcon from './Renderers/GraphicsInput'
+import { Meteor } from 'meteor/meteor'
 
 interface IPropsHeader {
 	segmentItemId: string

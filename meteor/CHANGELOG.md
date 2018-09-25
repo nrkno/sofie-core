@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.14.0"></a>
+# [0.14.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.13.1...v0.14.0) (2018-09-13)
+
+
+### Bug Fixes
+
+* ensure the same overlap is used for autonext and the previous sl ([efb39e6](https://github.com/nrkno/tv-automation-server-core/commit/efb39e6))
+* **timeline:** Infinite sli do not update properly on new mos data. Fix detection of the end of the chain, and ensure the last is set to not infinite ([61b2930](https://github.com/nrkno/tv-automation-server-core/commit/61b2930))
+
+
+### Features
+
+* added afterBroadcast form ([e98b59e](https://github.com/nrkno/tv-automation-server-core/commit/e98b59e))
+
+
+
+<a name="0.13.1"></a>
+## [0.13.1](https://github.com/nrkno/tv-automation-server-core/compare/v0.13.0...v0.13.1) (2018-09-13)
+
+
+### Bug Fixes
+
+* **transition:** Using wrong overlap when combined with autonext ([4c56102](https://github.com/nrkno/tv-automation-server-core/commit/4c56102))
+* update timeline dependency ([b83f6be](https://github.com/nrkno/tv-automation-server-core/commit/b83f6be))
+
+
+
 <a name="0.13.0"></a>
 # [0.13.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.12.0...v0.13.0) (2018-09-12)
 

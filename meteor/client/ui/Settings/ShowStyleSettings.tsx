@@ -16,6 +16,7 @@ import { ClientAPI } from '../../../lib/api/client'
 import { RuntimeFunctionsAPI } from '../../../lib/api/runtimeFunctions'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { eventContextForLog } from '../../lib/eventTargetLogHelper'
+import { Meteor } from 'meteor/meteor'
 
 interface IProps {
 	match: {

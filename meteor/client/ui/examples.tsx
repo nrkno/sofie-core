@@ -5,6 +5,7 @@ import { translate } from 'react-i18next'
 import { TransformedCollection } from '../../lib/typings/meteor'
 import { Mongo } from 'meteor/mongo'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { Meteor } from 'meteor/meteor'
 
 // These are examples of how to write different types of components
 

@@ -23,6 +23,7 @@ import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { TimelineContentTypeHttp } from '../../../lib/collections/Timeline'
+import { Meteor } from 'meteor/meteor'
 
 interface IHttpSendDeviceSettingsComponentProps {
 	parentDevice: PeripheralDevice

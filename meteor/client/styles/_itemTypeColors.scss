@@ -1,18 +1,15 @@
 $segment-timeline-background-color: #1F1F1F;
 
 $segment-layer-background-unknown: #4b4b4b;
-//$segment-layer-background-camera: #00b800;
 $segment-layer-background-camera:#18791c;
 $segment-layer-background-lower-third: #ff6f00;
 $segment-layer-background-graphics: #ef6800;
 $segment-layer-background-live-speak: #00c800;
-//$segment-layer-background-remote: #ff0059;
 $segment-layer-background-remote: #e80064;
-//$segment-layer-background-script: #1c721f;
-$segment-layer-background-script: #1e6820;
-//$segment-layer-background-mic:#1c721f;
+$segment-layer-background-script: #005a25;
 $segment-layer-background-mic:#1e6820;
 $segment-layer-background-vt: #1769ff;
+$segment-layer-background-guest: #008a92;
 
 @mixin item-type-colors {
 	&.camera {

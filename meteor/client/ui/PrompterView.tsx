@@ -23,6 +23,7 @@ import { Segment, Segments } from '../../lib/collections/Segments'
 import { mousetrapHelper } from '../lib/moustrapHelper'
 // @ts-ignore Meteor package not recognized by Typescript
 import { ComputedField } from 'meteor/peerlibrary:computed-field'
+import { Tracker } from 'meteor/tracker'
 
 interface IProps {
 	match?: {

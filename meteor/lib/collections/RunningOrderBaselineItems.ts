@@ -2,6 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { SegmentLineItemGeneric } from './SegmentLineItems'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
+import { Meteor } from 'meteor/meteor'
 
 export interface RunningOrderBaselineItem extends SegmentLineItemGeneric {
 	segmentLineId: undefined

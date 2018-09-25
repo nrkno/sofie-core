@@ -314,6 +314,7 @@ export namespace ServerPlayoutAPI {
 			if (showStyle.baselineTemplate) {
 				const result: TemplateResultAfterPost = runNamedTemplate(showStyle, showStyle.baselineTemplate, literal<TemplateContext>({
 					runningOrderId: runningOrder._id,
+					runningOrder: runningOrder,
 					studioId: runningOrder.studioInstallationId,
 					segmentLine: runningOrder.getSegmentLines()[0],
 					templateId: showStyle.baselineTemplate
@@ -605,7 +606,7 @@ export namespace ServerPlayoutAPI {
 		if (m.previousSegmentLineId) {
 			ps.push(asyncCollectionUpdate(SegmentLines, m.previousSegmentLineId, {
 				$push: {
-					'timings.takeOut': now
+					'timings.takeOut': now,
 				}
 			}))
 		}
@@ -646,6 +647,13 @@ export namespace ServerPlayoutAPI {
 		}
 		waitForPromiseAll(ps)
 		afterTake(runningOrder, takeSegmentLine, previousSegmentLine || null)
+
+		// last:
+		SegmentLines.update(takeSegmentLine._id, {
+			$push: {
+				'timings.takeDone': getCurrentTime()
+			}
+		})
 	}
 	export function roSetNext (roId: string, nextSlId: string) {
 		check(roId, String)
@@ -731,6 +739,8 @@ export namespace ServerPlayoutAPI {
 		}
 
 		segmentLineIndex += horisontalDelta
+
+		segmentLineIndex = Math.max(0, Math.min(segmentLines.length - 1, segmentLineIndex))
 
 		let segmentLine = segmentLines[segmentLineIndex]
 		if (!segmentLine) throw new Meteor.Error(501, `SegmentLine index ${segmentLineIndex} not found in list of segmentLines!`)
@@ -947,7 +957,7 @@ export namespace ServerPlayoutAPI {
 		}
 
 		if (!segLineItem.startedPlayback) {
-			logger.info(`Play-out reports segment line item "${sliId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
+			logger.info(`Playout reports segmentLineItem "${sliId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
 
 			// store new value
 			SegmentLineItems.update(segLineItem._id, {$set: {
@@ -970,20 +980,20 @@ export namespace ServerPlayoutAPI {
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
 
-		let segLine = SegmentLines.findOne({
+		let playingSegmentLine = SegmentLines.findOne({
 			_id: slId,
 			runningOrderId: roId
 		})
 
-		let previousSegmentLine = (runningOrder.currentSegmentLineId ?
+		let currentSegmentLine = (runningOrder.currentSegmentLineId ?
 			SegmentLines.findOne(runningOrder.currentSegmentLineId)
 			: null
 		)
 
-		if (segLine) {
+		if (playingSegmentLine) {
 			// make sure we don't run multiple times, even if TSR calls us multiple times
-			if (!segLine.startedPlayback) {
-				logger.info(`Play-out reports segment line "${slId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
+			if (!playingSegmentLine.startedPlayback) {
+				logger.info(`Playout reports segmentLine "${slId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
 
 				if (runningOrder.currentSegmentLineId === slId) {
 					// this is the current segment line, it has just started playback
@@ -994,7 +1004,7 @@ export namespace ServerPlayoutAPI {
 							// We couldn't find the previous segment line: this is not a critical issue, but is clearly is a symptom of a larger issue
 							logger.error(`Previous segment line "${runningOrder.previousSegmentLineId}" on running order "${roId}" could not be found.`)
 						} else if (!prevSegLine.duration) {
-							setPreviousLinePlaybackDuration(roId, prevSegLine, startedPlayback)
+							segmentLineStoppedPlaying(roId, prevSegLine, startedPlayback)
 						}
 					}
 
@@ -1002,13 +1012,13 @@ export namespace ServerPlayoutAPI {
 				} else if (runningOrder.nextSegmentLineId === slId) {
 					// this is the next segment line, clearly an autoNext has taken place
 					if (runningOrder.currentSegmentLineId) {
-						// let previousSegmentLine = SegmentLines.findOne(runningOrder.currentSegmentLineId)
+						// let currentSegmentLine = SegmentLines.findOne(runningOrder.currentSegmentLineId)
 
-						if (!previousSegmentLine) {
+						if (!currentSegmentLine) {
 							// We couldn't find the previous segment line: this is not a critical issue, but is clearly is a symptom of a larger issue
 							logger.error(`Previous segment line "${runningOrder.currentSegmentLineId}" on running order "${roId}" could not be found.`)
-						} else if (!previousSegmentLine.duration) {
-							setPreviousLinePlaybackDuration(roId, previousSegmentLine, startedPlayback)
+						} else if (!currentSegmentLine.duration) {
+							segmentLineStoppedPlaying(roId, currentSegmentLine, startedPlayback)
 						}
 					}
 
@@ -1016,9 +1026,9 @@ export namespace ServerPlayoutAPI {
 
 					let segmentLinesAfter = runningOrder.getSegmentLines({
 						_rank: {
-							$gt: segLine._rank,
+							$gt: playingSegmentLine._rank,
 						},
-						_id: { $ne: segLine._id }
+						_id: { $ne: playingSegmentLine._id }
 					})
 
 					let nextSegmentLine: SegmentLine | null = _.first(segmentLinesAfter) || null
@@ -1026,7 +1036,7 @@ export namespace ServerPlayoutAPI {
 					RunningOrders.update(runningOrder._id, {
 						$set: {
 							previousSegmentLineId: runningOrder.currentSegmentLineId,
-							currentSegmentLineId: segLine._id,
+							currentSegmentLineId: playingSegmentLine._id,
 							holdState: RunningOrderHoldState.NONE,
 						}
 					})
@@ -1037,9 +1047,9 @@ export namespace ServerPlayoutAPI {
 					// show must go on, so find next segmentLine and update the RunningOrder, but log an error
 					let segmentLinesAfter = runningOrder.getSegmentLines({
 						_rank: {
-							$gt: segLine._rank,
+							$gt: playingSegmentLine._rank,
 						},
-						_id: { $ne: segLine._id }
+						_id: { $ne: playingSegmentLine._id }
 					})
 
 					let nextSegmentLine: SegmentLine | null = segmentLinesAfter[0] || null
@@ -1049,15 +1059,15 @@ export namespace ServerPlayoutAPI {
 					RunningOrders.update(runningOrder._id, {
 						$set: {
 							previousSegmentLineId: null,
-							currentSegmentLineId: segLine._id,
+							currentSegmentLineId: playingSegmentLine._id,
 						}
 					})
 					setNextSegmentLine(runningOrder, nextSegmentLine)
 
-					logger.error(`Segment Line "${segLine._id}" has started playback by the TSR, but has not been selected for playback!`)
+					logger.error(`Segment Line "${playingSegmentLine._id}" has started playback by the playout gateway, but has not been selected for playback!`)
 				}
 
-				SegmentLines.update(segLine._id, {
+				SegmentLines.update(playingSegmentLine._id, {
 					$set: {
 						startedPlayback: true,
 					},
@@ -1066,11 +1076,20 @@ export namespace ServerPlayoutAPI {
 					}
 				})
 				// also update local object:
-				if (!segLine.timings) segLine.timings = {take: [], startedPlayback: [], takeOut: [], next: []}
-				segLine.startedPlayback = true
-				segLine.timings.startedPlayback.push(startedPlayback)
+				if (!playingSegmentLine.timings) {
+					playingSegmentLine.timings = {
+						take: [],
+						takeDone: [],
+						startedPlayback: [],
+						takeOut: [],
+						stoppedPlayback: [],
+						next: []
+					}
+				}
+				playingSegmentLine.startedPlayback = true
+				playingSegmentLine.timings.startedPlayback.push(startedPlayback)
 
-				afterTake(runningOrder, segLine, previousSegmentLine || null)
+				afterTake(runningOrder, playingSegmentLine, currentSegmentLine || null)
 			}
 		} else {
 			throw new Meteor.Error(404, `Segment line "${slId}" in running order "${roId}" not found!`)
@@ -1933,26 +1952,42 @@ function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem | SegmentLineI
 	return newSLineItem
 }
 
-function setRunningOrderStartedPlayback (runningOrder, startedPlayback) {
+function setRunningOrderStartedPlayback (runningOrder: RunningOrder, startedPlayback: Time) {
 	if (!runningOrder.startedPlayback) { // Set startedPlayback on the running order if this is the first item to be played
 		RunningOrders.update(runningOrder._id, {
 			$set: {
 				startedPlayback
 			}
 		})
+		runningOrder.startedPlayback = startedPlayback // update local
 	}
 }
 
-function setPreviousLinePlaybackDuration (roId: string, prevSegLine: SegmentLine, lastChange: Time) {
-	const lastStartedPlayback = prevSegLine.getLastStartedPlayback()
-	if (prevSegLine.startedPlayback && lastStartedPlayback && lastStartedPlayback > 0) {
-		SegmentLines.update(prevSegLine._id, {
+function segmentLineStoppedPlaying (roId: string, segmentLine: SegmentLine, stoppedPlayingTime: Time) {
+	const lastStartedPlayback = segmentLine.getLastStartedPlayback()
+	if (segmentLine.startedPlayback && lastStartedPlayback && lastStartedPlayback > 0) {
+		SegmentLines.update(segmentLine._id, {
 			$set: {
-				duration: lastChange - lastStartedPlayback
+				duration: stoppedPlayingTime - lastStartedPlayback
+			},
+			$push: {
+				'timings.stoppedPlayback': stoppedPlayingTime
 			}
 		})
+
+		if (!segmentLine.timings) {
+			segmentLine.timings = {
+				take: [],
+				takeDone: [],
+				startedPlayback: [],
+				takeOut: [],
+				stoppedPlayback: [],
+				next: []
+			}
+		}
+		segmentLine.timings.stoppedPlayback.push(stoppedPlayingTime)
 	} else {
-		logger.error(`Previous segment line "${prevSegLine._id}" has never started playback on running order "${roId}".`)
+		logger.error(`Previous segment line "${segmentLine._id}" has never started playback on running order "${roId}".`)
 	}
 }
 
@@ -2317,6 +2352,8 @@ export function findLookaheadForLLayer (roData: RoData, layer: string, mode: Loo
 					allowTransition = !prevSliGroup.line.disableOutTransition
 				}
 
+				const hasTransition = allowTransition && orderedItems.find(i => i.isTransition) !== undefined
+
 				const res: TimelineObj[] = []
 				orderedItems.forEach(i => {
 					if (!sliGroup || (!allowTransition && i.isTransition)) {
@@ -2325,6 +2362,11 @@ export function findLookaheadForLLayer (roData: RoData, layer: string, mode: Loo
 
 					const item = sliGroup.items.find(l => l._id === i._id)
 					if (!item || !item.content || !item.content.timelineObjects) {
+						return
+					}
+
+					// If there is a transition and this item is abs0, it is assumed to be the primary sli and so does not need lookahead
+					if (hasTransition && item.trigger.type === TriggerType.TIME_ABSOLUTE && item.trigger.value === 0) {
 						return
 					}
 
@@ -2910,13 +2952,7 @@ function validateNoraPreload (timelineObjs: Array<TimelineObj>) {
 	_.each(timelineObjs, obj => {
 		// ignore normal objects
 		if (obj.content.type !== TimelineContentTypeHttp.POST) return
-		if (!obj.isBackground && !obj.originalLLayer) return
-
-		// remove anything which is half configured for lookahead
-		if (!obj.isBackground || !obj.originalLLayer) {
-			toRemoveIds.push(obj._id)
-			return
-		}
+		if (!obj.isBackground) return
 
 		const obj2 = obj as TimelineObjHTTPRequest
 		if (obj2.content.params && obj2.content.params.template && (obj2.content.params.template as any).event === 'take') {

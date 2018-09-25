@@ -4,14 +4,15 @@ import {
 	IMOSExternalMetaData,
 	IMOSObjectStatus
 } from 'mos-connection'
-import { TransformedCollection, FindOptions, Selector } from '../typings/meteor'
+import { TransformedCollection, FindOptions, MongoSelector } from '../typings/meteor'
 import { RunningOrders } from './RunningOrders'
 import { SegmentLineItem, SegmentLineItems } from './SegmentLineItems'
 import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
 import { Segments } from './Segments'
 import { applyClassToDocument, Time, registerCollection, normalizeArray } from '../lib'
-import { RundownAPI } from '../api/rundown';
-import { checkSLIContentStatus } from '../mediaObjects';
+import { RundownAPI } from '../api/rundown'
+import { checkSLIContentStatus } from '../mediaObjects'
+import { Meteor } from 'meteor/meteor'
 
 /** A "Line" in NRK Lingo. */
 export interface DBSegmentLine {
@@ -74,10 +75,14 @@ export interface DBSegmentLine {
 export interface SegmentLineTimings {
 	/** Point in time the SegmentLine was taken, (ie the time of the user action) */
 	take: Array<Time>,
+	/** Point in time the "take" action has finished executing */
+	takeDone: Array<Time>,
 	/** Point in time the SegmentLine started playing (ie the time of the playout) */
 	startedPlayback: Array<Time>,
 	/** Point in time the SegmentLine stopped playing (ie the time of the user action) */
 	takeOut: Array<Time>,
+	/** Point in time the SegmentLine stopped playing (ie the time of the playout) */
+	stoppedPlayback: Array<Time>,
 	/** Point in time the SegmentLine was set as Next (ie the time of the user action) */
 	next: Array<Time>
 }
@@ -140,7 +145,7 @@ export class SegmentLine implements DBSegmentLine {
 	getSegment () {
 		return Segments.findOne(this.segmentId)
 	}
-	getSegmentLinesItems (selector?: Selector<SegmentLineItem>, options?: FindOptions) {
+	getSegmentLinesItems (selector?: MongoSelector<SegmentLineItem>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
 		return SegmentLineItems.find(
@@ -153,7 +158,7 @@ export class SegmentLine implements DBSegmentLine {
 			}, options)
 		).fetch()
 	}
-	getSegmentLinesAdLibItems (selector?: Selector<SegmentLineItem>, options?: FindOptions) {
+	getSegmentLinesAdLibItems (selector?: MongoSelector<SegmentLineItem>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
 		return SegmentLineAdLibItems.find(
@@ -168,13 +173,14 @@ export class SegmentLine implements DBSegmentLine {
 	}
 	getTimings () {
 		// return a chronological list of timing events
-		let events: Array<{time: Time, type: string}> = []
-		_.each(['take', 'startedPlayback', 'takeOut', 'next'], (key) => {
+		let events: Array<{time: Time, type: string, elapsed: Time}> = []
+		_.each(['take', 'takeDone', 'startedPlayback', 'takeOut', 'stoppedPlayback', 'next'], (key) => {
 			if (this.timings) {
 				_.each(this.timings[key], (t: Time) => {
 					events.push({
 						time: t,
-						type: key
+						type: key,
+						elapsed: 0
 					})
 				})
 			}
@@ -184,7 +190,7 @@ export class SegmentLine implements DBSegmentLine {
 			_.sortBy(events, e => e.time),
 			(ev) => {
 				if (prevEv) {
-					prevEv.duration = ev.time - prevEv.time
+					ev.elapsed = ev.time - prevEv.time
 				}
 				prevEv = ev
 				return ev

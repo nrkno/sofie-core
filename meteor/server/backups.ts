@@ -5,7 +5,7 @@ import { ShowStyle, ShowStyles } from '../lib/collections/ShowStyles'
 import { RuntimeFunction, RuntimeFunctions } from '../lib/collections/RuntimeFunctions'
 import * as bodyParser from 'body-parser'
 import { logger } from './logging'
-import { Selector } from '../lib/typings/meteor'
+import { MongoSelector } from '../lib/typings/meteor'
 import { Collections, getCollectionIndexes, getCollectionStats, getCurrentTime } from '../lib/lib'
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
@@ -23,6 +23,7 @@ import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { PeripheralDeviceCommands } from '../lib/collections/PeripheralDeviceCommands'
 import { SegmentLineAdLibItems } from '../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderDataCache } from '../lib/collections/RunningOrderDataCache'
+import { Meteor } from 'meteor/meteor'
 
 export interface ShowStyleBackup {
 	type: 'showstyle'
@@ -34,7 +35,7 @@ export function getShowBackup (showId: string, onlyActiveTemplates: boolean): Sh
 	const showStyle = ShowStyles.findOne(showId)
 	if (!showStyle) throw new Meteor.Error(404, 'Show style not found')
 
-	const filter: Selector<RuntimeFunction> = { showStyleId: showId }
+	const filter: MongoSelector<RuntimeFunction> = { showStyleId: showId }
 	if (onlyActiveTemplates) {
 		filter.active = true
 	}
@@ -59,7 +60,7 @@ function restoreShowBackup (backup: ShowStyleBackup) {
 	if (!newShow) throw new Meteor.Error(500, 'ShowStyle missing from restore data')
 
 	const showStyle = ShowStyles.findOne(newShow._id)
-	if (showStyle) ShowStyles.remove(showStyle)
+	if (showStyle) ShowStyles.remove(showStyle._id)
 	ShowStyles.insert(newShow)
 
 	RuntimeFunctions.remove({ showStyleId: newShow._id })

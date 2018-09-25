@@ -35,6 +35,7 @@ import { TimelineObj } from '../../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { ShowStyle } from '../../../lib/collections/ShowStyles'
 import { RuntimeFunctionDebugData } from '../../../lib/collections/RuntimeFunctionDebugData'
+import { Meteor } from 'meteor/meteor'
 
 export type TemplateGeneralFunction = (story: IMOSROFullStory | null) => TemplateResult | string
 export type TemplateFunctionOptional = (context: TemplateContextInner, story: StoryWithContext) => TemplateResult | string
@@ -75,6 +76,7 @@ export interface TemplateSet {
 }
 export interface TemplateContext {
 	runningOrderId: string
+	runningOrder: RunningOrder
 	studioId: string
 	// segment: Segment
 	segmentLine: SegmentLine

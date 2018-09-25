@@ -8,11 +8,12 @@ import {
 	IMOSObjectStatus,
 	IMOSObjectAirStatus
 } from 'mos-connection'
-import { FindOptions, Selector, TransformedCollection } from '../typings/meteor'
+import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { StudioInstallations, StudioInstallation } from './StudioInstallations'
 import { SegmentLineItems, SegmentLineItem } from './SegmentLineItems'
 import { RunningOrderDataCache } from './RunningOrderDataCache'
 import { ShowStyle, ShowStyles } from './ShowStyles'
+import { Meteor } from 'meteor/meteor'
 
 export enum RunningOrderHoldState {
 	NONE = 0,
@@ -102,7 +103,7 @@ export class RunningOrder implements DBRunningOrder {
 			return si
 		} else throw new Meteor.Error(404, 'StudioInstallation "' + this.studioInstallationId + '" not found!')
 	}
-	getSegments (selector?: Selector<DBSegment>, options?: FindOptions) {
+	getSegments (selector?: MongoSelector<DBSegment>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
 		return Segments.find(
@@ -114,7 +115,7 @@ export class RunningOrder implements DBRunningOrder {
 			}, options)
 		).fetch()
 	}
-	getSegmentLines (selector?: Selector<SegmentLine>, options?: FindOptions) {
+	getSegmentLines (selector?: MongoSelector<SegmentLine>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
 		return SegmentLines.find(
@@ -173,13 +174,15 @@ export class RunningOrder implements DBRunningOrder {
 		let timings: Array<{
 			time: Time,
 			type: string,
-			segmentLine: string
+			segmentLine: string,
+			elapsed: Time
 		}> = []
 		_.each(this.getSegmentLines(), (sl: SegmentLine) => {
 			_.each(sl.getTimings(), (t) => {
 
 				timings.push({
 					time: t.time,
+					elapsed: t.elapsed,
 					type: t.type,
 					segmentLine: sl._id
 				})
@@ -227,7 +230,7 @@ export class RunningOrder implements DBRunningOrder {
 
 		segmentLines = _.map(segmentLines, (sl) => {
 			// Override member function to use cached data instead:
-			sl.getSegmentLinesItems = (selector?: Selector<SegmentLineItem>, options?: FindOptions) => {
+			sl.getSegmentLinesItems = (selector?: MongoSelector<SegmentLineItem>, options?: FindOptions) => {
 				return _.map(_.filter(segmentLineItems, (sli) => {
 					return (
 						sli.segmentLineId === sl._id

@@ -1,7 +1,7 @@
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { Time, Collections, registerCollection } from '../lib'
-
+import { Meteor } from 'meteor/meteor'
 export interface ExternalMessageQueueObj {
 	_id: string
 	/** Id of the studio this message originates from */
