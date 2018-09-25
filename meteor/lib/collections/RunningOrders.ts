@@ -174,13 +174,15 @@ export class RunningOrder implements DBRunningOrder {
 		let timings: Array<{
 			time: Time,
 			type: string,
-			segmentLine: string
+			segmentLine: string,
+			elapsed: Time
 		}> = []
 		_.each(this.getSegmentLines(), (sl: SegmentLine) => {
 			_.each(sl.getTimings(), (t) => {
 
 				timings.push({
 					time: t.time,
+					elapsed: t.elapsed,
 					type: t.type,
 					segmentLine: sl._id
 				})

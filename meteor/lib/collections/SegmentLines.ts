@@ -173,13 +173,14 @@ export class SegmentLine implements DBSegmentLine {
 	}
 	getTimings () {
 		// return a chronological list of timing events
-		let events: Array<{time: Time, type: string}> = []
-		_.each(['take', 'startedPlayback', 'takeOut', 'next'], (key) => {
+		let events: Array<{time: Time, type: string, elapsed: Time}> = []
+		_.each(['take', 'takeDone', 'startedPlayback', 'takeOut', 'stoppedPlayback', 'next'], (key) => {
 			if (this.timings) {
 				_.each(this.timings[key], (t: Time) => {
 					events.push({
 						time: t,
-						type: key
+						type: key,
+						elapsed: 0
 					})
 				})
 			}
@@ -189,7 +190,7 @@ export class SegmentLine implements DBSegmentLine {
 			_.sortBy(events, e => e.time),
 			(ev) => {
 				if (prevEv) {
-					prevEv.duration = ev.time - prevEv.time
+					ev.elapsed = ev.time - prevEv.time
 				}
 				prevEv = ev
 				return ev
