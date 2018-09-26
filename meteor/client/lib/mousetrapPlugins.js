@@ -1,3 +1,5 @@
+import { mousetrapHelper } from './mousetrapHelper'
+
 (function (Mousetrap) {
 	var _globalCallbacks = {};
 	var _originalStopCallback = Mousetrap.prototype.stopCallback;
@@ -75,9 +77,12 @@
 		_isEscapePressed = true;
 
 		if (!e.repeat) {
-			_shouldAbortNextCombo = true;
+			_shouldAbortNextCombo = (_downKeys.length > 1);
 			_comboTriggered = false;
 		}
+
+		e.preventDefault();
+		e.stopPropagation();
 	};
 
 	const escUp = function (e) {
@@ -90,6 +95,6 @@
 
 	Mousetrap.init();
 
-	Mousetrap.bind('esc', escDown, 'keydown');
-	Mousetrap.bind('esc', escUp, 'keyup');
+	mousetrapHelper.bind('esc', escDown, 'keydown');
+	mousetrapHelper.bind('esc', escUp, 'keyup');
 })(Mousetrap);

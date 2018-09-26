@@ -15,7 +15,7 @@ import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/col
 import { RunningOrderBaselineAdLibItems } from '../../../lib/collections/RunningOrderBaselineAdLibItems'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
-import { mousetrapHelper } from '../../lib/moustrapHelper'
+import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
 import * as faTh from '@fortawesome/fontawesome-free-solid/faTh'
 import * as faList from '@fortawesome/fontawesome-free-solid/faList'
@@ -338,7 +338,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	}
 
 	componentDidUpdate (prevProps: IProps & ITrackedProps) {
-		mousetrapHelper.unbind(this.usedHotkeys, 'keyup')
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
 		this.usedHotkeys.length = 0
 
 		this.refreshKeyboardHotkeys()
@@ -346,8 +346,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 	componentWillUnmount () {
 		this._cleanUp()
-		mousetrapHelper.unbind(this.usedHotkeys, 'keyup')
-		mousetrapHelper.unbind(this.usedHotkeys, 'keydown')
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown')
 
 		this.usedHotkeys.length = 0
 	}
