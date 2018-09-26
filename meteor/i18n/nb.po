@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2018-09-24T13:04:36.618Z\n"
-"PO-Revision-Date: 2018-09-24 15:05+0200\n"
+"POT-Creation-Date: 2018-09-26T11:56:37.184Z\n"
+"PO-Revision-Date: 2018-09-26 13:56+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -277,6 +277,9 @@ msgstr "ON AIR"
 
 msgid "This running order has been unpublished from Sofie."
 msgstr "Denne kjøreplanen er ikke lenger tilgjengelig i Sofie."
+
+msgid "Click Anywhere to go Fullscreen..."
+msgstr "Klikk hvor som helst for gå til fullskjerm..."
 
 msgid "Just now"
 msgstr "Nå"
@@ -755,7 +758,6 @@ msgstr "Not connected"
 msgid "Restart CasparCG Server"
 msgstr "Restart CasparCG Server"
 
-#| msgid "Are you sure you want to restart this device?"
 msgid "Do you want to restart CasparCG Server?"
 msgstr "Do you want to restart CasparCG Server?"
 

@@ -125,7 +125,7 @@ export const RunningOrderFullscreenMarker = translate()(class RunningOrderFullsc
 							<Lottie options={stage1Options} isStopped={false} isPaused={false} /> }
 						<div className='running-order__fullscreen-marker__label'>
 							<p>
-								{ t('Enter Fullscreen mode') }
+								{ t('Click Anywhere to go Fullscreen...') }
 							</p>
 						</div>
 					</div>
