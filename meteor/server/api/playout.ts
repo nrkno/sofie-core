@@ -69,7 +69,7 @@ export namespace ServerPlayoutAPI {
 		resetRunningOrder(runningOrder)
 		prepareStudioForBroadcast(runningOrder.getStudioInstallation())
 
-		activateRunningOrder(runningOrder, true) // Activate runningOrder (rehearsal)
+		return activateRunningOrder(runningOrder, true) // Activate runningOrder (rehearsal)
 	}
 	/**
 	 * Reset the broadcast, to be used during testing.
@@ -80,7 +80,7 @@ export namespace ServerPlayoutAPI {
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (runningOrder.active && !runningOrder.rehearsal) throw new Meteor.Error(401, `roResetBroadcast can only be run in rehearsal!`)
 
-		resetRunningOrder(runningOrder)
+		return resetRunningOrder(runningOrder)
 	}
 	/**
 	 * Activate the runningOrder, final preparations before going on air
@@ -93,7 +93,7 @@ export namespace ServerPlayoutAPI {
 
 		resetRunningOrder(runningOrder)
 
-		activateRunningOrder(runningOrder, false) // Activate runningOrder
+		return activateRunningOrder(runningOrder, false) // Activate runningOrder
 	}
 	/**
 	 * Only activate the runningOrder, don't reset anything
@@ -103,7 +103,7 @@ export namespace ServerPlayoutAPI {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
-		activateRunningOrder(runningOrder, rehearsal)
+		return activateRunningOrder(runningOrder, rehearsal)
 	}
 	/**
 	 * Deactivate the runningOrder
@@ -112,7 +112,7 @@ export namespace ServerPlayoutAPI {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
-		deactivateRunningOrder(runningOrder)
+		return deactivateRunningOrder(runningOrder)
 	}
 	/**
 	 * Trigger a reload of data of the runningOrder
@@ -123,7 +123,7 @@ export namespace ServerPlayoutAPI {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
-		reloadRunningOrderData(runningOrder)
+		return reloadRunningOrderData(runningOrder)
 	}
 
 	// export function roReset (roId: string, resetTimings?: boolean) {
@@ -1124,16 +1124,49 @@ export namespace ServerPlayoutAPI {
 
 		// disable the original SLI if from the same SL
 		if (slItem.segmentLineId === segLine._id) {
-			const updated = SegmentLineItems.update(sliId, {$set: {
+			const segmentLineItems = getResolvedSegmentLineItems(segLine)
+			const resSlItem = segmentLineItems.find(item => item._id === slItem!._id)
+
+			if (slItem.startedPlayback && slItem.startedPlayback <= getCurrentTime()) {
+				if (resSlItem && resSlItem.duration !== undefined && (slItem.infiniteMode || slItem.startedPlayback + resSlItem.duration >= getCurrentTime())) {
+					logger.debug(`Segment Line Item "${slItem._id}" is currently live and cannot be used as an ad-lib`)
+					return literal<ClientAPI.ClientResponse>({
+						error: 409,
+						message: `Segment Line Item "${slItem._id}" is currently live and cannot be used as an ad-lib`
+					})
+				}
+			}
+
+			SegmentLineItems.update(slItem._id, {$set: {
 				disabled: true,
 				hidden: true
 			}})
+		} else {
+			const sourceSL = SegmentLines.findOne(slItem.segmentLineId)
+			if (sourceSL) {
+				const segmentLineItems = getResolvedSegmentLineItems(sourceSL)
+				const resSlItem = segmentLineItems.find(item => item._id === slItem!._id)
+
+				if (resSlItem && resSlItem.trigger.type === TriggerType.TIME_ABSOLUTE && resSlItem.trigger.value === 0) {
+					logger.debug(`Segment Line Item "${slItem._id}" is starting at the begining of it's Segment Line and cannot be used as an ad-lib`)
+					return literal<ClientAPI.ClientResponse>({
+						error: 409,
+						message: `Segment Line Item "${slItem._id}" is starting at the begining of it's Segment Line and cannot be used as an ad-lib`
+					})
+				}
+			} else {
+				throw new Meteor.Error(404, `Source Segment Line "${slItem.segmentLineId}" not found!`)
+			}
 		}
 		SegmentLineItems.insert(newSegmentLineItem)
 
 		cropInfinitesOnLayer(runningOrder, segLine, newSegmentLineItem)
 		stopInfinitesRunningOnLayer(runningOrder, segLine, newSegmentLineItem.sourceLayerId)
 		updateTimeline(runningOrder.studioInstallationId)
+
+		return literal<ClientAPI.ClientResponse>({
+			success: 200
+		})
 	}
 	export const salliPlaybackStart = syncFunction(function salliPlaybackStart (roId: string, slId: string, slaiId: string, queue: boolean) {
 		check(roId, String)
@@ -1926,7 +1959,7 @@ function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem | SegmentLineI
 	const oldId = adLibItem._id
 	const newId = Random.id()
 	const newSLineItem = literal<SegmentLineItem>(_.extend(
-		adLibItem,
+		_.clone(adLibItem),
 		{
 			_id: newId,
 			trigger: {
