@@ -3,7 +3,7 @@ import * as CoreIcons from '@nrk/core-icons/jsx'
 import * as Escape from 'react-escape'
 import * as ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
-import * as mousetrap from 'mousetrap'
+import { mousetrapHelper } from './mousetrapHelper'
 import { logger } from '../../lib/logging'
 import * as _ from 'underscore'
 import { translate } from 'react-i18next'
@@ -40,14 +40,14 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	bindKeys = () => {
 		if (this.props.show) {
 			if (this.boundKeys.indexOf('enter') < 0) {
-				mousetrap.bind('enter', this.preventDefault, 'keydown')
-				mousetrap.bind('enter', this.handleConfirmKey, 'keyup')
+				mousetrapHelper.bind('enter', this.preventDefault, 'keydown')
+				mousetrapHelper.bind('enter', this.handleKey, 'keyup')
 				this.boundKeys.push('enter')
 			}
-			if (this.boundKeys.indexOf('escape') < 0) {
-				mousetrap.bind('escape', this.preventDefault, 'keydown')
-				mousetrap.bind('escape', this.handleConfirmKey, 'keyup')
-				this.boundKeys.push('escape')
+			if (this.boundKeys.indexOf('esc') < 0) {
+				mousetrapHelper.bind('esc', this.preventDefault, 'keydown')
+				mousetrapHelper.bind('esc', this.handleKey, 'keyup')
+				this.boundKeys.push('esc')
 			}
 		} else {
 			this.unbindKeys()
@@ -56,13 +56,13 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 
 	unbindKeys = () => {
 		this.boundKeys.forEach((key) => {
-			mousetrap.unbind(key, 'keydown')
-			mousetrap.unbind(key, 'keyup')
+			mousetrapHelper.unbind(key, this.preventDefault, 'keydown')
+			mousetrapHelper.unbind(key, this.handleKey, 'keyup')
 		})
 		this.boundKeys.length = 0
 	}
 
-	handleConfirmKey = (e) => {
+	handleKey = (e) => {
 		if (this.props.show) {
 			if (e.keyCode === 13) { // Enter
 				this.handleAccept(e)

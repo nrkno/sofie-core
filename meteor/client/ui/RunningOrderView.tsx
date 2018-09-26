@@ -42,6 +42,7 @@ import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { eventContextForLog } from '../lib/eventTargetLogHelper'
 import { Tracker } from 'meteor/tracker'
 import { RunningOrderFullscreenMarker } from './RunningOrderView/RunningOrderFullscreenMarker'
+import { mousetrapHelper } from '../lib/mousetrapHelper'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -198,7 +199,6 @@ export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_NEXT_UP = 'shift+f10',
 	RUNNING_ORDER_DISABLE_NEXT_ELEMENT = 'g',
 	RUNNING_ORDER_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
-	RUNNING_ORDER_RESET_FOCUS = 'esc'
 }
 
 const TimingDisplay = translate()(withTiming<ITimingDisplayProps, {}>()(
@@ -416,24 +416,24 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			e.stopPropagation()
 		}
 		_.each(this.bindKeys, (k) => {
-			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
+			const method = k.global ? mousetrapHelper.bindGlobal : mousetrapHelper.bind
 			if (k.up) {
 				method(k.key, (e: KeyboardEvent) => {
 					if (disableInInputFields(e)) return
 					preventDefault(e)
 					if (k.up) k.up(e)
-				}, 'keyup')
+				}, 'keyup', 'RunningOrderHeader')
 				method(k.key, (e: KeyboardEvent) => {
 					if (disableInInputFields(e)) return
 					preventDefault(e)
-				}, 'keydown')
+				}, 'keydown', 'RunningOrderHeader')
 			}
 			if (k.down) {
 				method(k.key, (e: KeyboardEvent) => {
 					if (disableInInputFields(e)) return
 					preventDefault(e)
 					if (k.down) k.down(e)
-				}, 'keydown')
+				}, 'keydown', 'RunningOrderHeader')
 			}
 		})
 
@@ -445,11 +445,11 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	componentWillUnmount () {
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {
-				mousetrap.unbind(k.key, 'keyup')
-				mousetrap.unbind(k.key, 'keydown')
+				mousetrapHelper.unbind(k.key, 'RunningOrderHeader', 'keyup')
+				mousetrapHelper.unbind(k.key, 'RunningOrderHeader', 'keydown')
 			}
 			if (k.down) {
-				mousetrap.unbind(k.key, 'keydown')
+				mousetrapHelper.unbind(k.key, 'RunningOrderHeader', 'keydown')
 			}
 		})
 	}

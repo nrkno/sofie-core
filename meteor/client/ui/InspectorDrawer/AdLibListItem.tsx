@@ -10,7 +10,7 @@ import * as ClassNames from 'classnames'
 import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { SegmentLineAdLibItemUi } from './AdLibPanel'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { mousetrapHelper } from '../../lib/moustrapHelper'
+import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
 export interface IAdLibListItem {
 	_id: string,
