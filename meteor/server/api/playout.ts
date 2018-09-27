@@ -20,7 +20,8 @@ import { getCurrentTime,
 	asyncCollectionUpsert,
 	asyncCollectionFindFetch,
 	waitForPromise,
-	asyncCollectionFindOne
+	asyncCollectionFindOne,
+	pushOntoPath
 } from '../../lib/lib'
 import {
 	Timeline,
@@ -1076,18 +1077,8 @@ export namespace ServerPlayoutAPI {
 					}
 				})
 				// also update local object:
-				if (!playingSegmentLine.timings) {
-					playingSegmentLine.timings = {
-						take: [],
-						takeDone: [],
-						startedPlayback: [],
-						takeOut: [],
-						stoppedPlayback: [],
-						next: []
-					}
-				}
 				playingSegmentLine.startedPlayback = true
-				playingSegmentLine.timings.startedPlayback.push(startedPlayback)
+				pushOntoPath(playingSegmentLine, 'timings.startedPlayback', startedPlayback)
 
 				afterTake(runningOrder, playingSegmentLine, currentSegmentLine || null)
 			}
@@ -2007,18 +1998,8 @@ function segmentLineStoppedPlaying (roId: string, segmentLine: SegmentLine, stop
 				'timings.stoppedPlayback': stoppedPlayingTime
 			}
 		})
-
-		if (!segmentLine.timings) {
-			segmentLine.timings = {
-				take: [],
-				takeDone: [],
-				startedPlayback: [],
-				takeOut: [],
-				stoppedPlayback: [],
-				next: []
-			}
-		}
-		segmentLine.timings.stoppedPlayback.push(stoppedPlayingTime)
+		segmentLine.duration = stoppedPlayingTime - lastStartedPlayback
+		pushOntoPath(segmentLine, 'timings.stoppedPlayback', stoppedPlayingTime)
 	} else {
 		logger.error(`Previous segment line "${segmentLine._id}" has never started playback on running order "${roId}".`)
 	}
