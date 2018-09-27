@@ -90,7 +90,7 @@ export namespace ServerPlayoutAPI {
 	export function roResetAndActivate (roId: string) {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
-		if (!runningOrder.rehearsal) throw new Meteor.Error(402, `roResetAndActivate can only be run in rehearsal!`)
+		if (runningOrder.active && !runningOrder.rehearsal) throw new Meteor.Error(402, `roResetAndActivate cannot be run when active!`)
 
 		resetRunningOrder(runningOrder)
 
