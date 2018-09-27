@@ -17,7 +17,8 @@ export type TimelineContentTypeAny =
 	TimelineContentTypeCasparCg |
 	TimelineContentTypeLawo |
 	TimelineContentTypeAtem |
-	TimelineContentTypeHttp
+	TimelineContentTypeHttp |
+	TimelineContentTypePanasonicPtz
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -48,6 +49,10 @@ export enum TimelineContentTypeAtem { //  Atem-state
 export enum TimelineContentTypeHttp {
 	POST = 'post',
 	PUT = 'put',
+}
+export enum TimelineContentTypePanasonicPtz {
+	PRESET = 'presetMem',
+	SPEED = 'presetSpeed'
 }
 export namespace Atem_Enums {
 	export enum TransitionStyle {
@@ -472,6 +477,24 @@ export interface TimelineObjHTTPRequest extends TimelineObj {
 		type: TimelineContentTypeHttp
 		url: string
 		params: {[key: string]: number | string}
+	}
+}
+
+export interface TimelineObjPanasonicPTZPresetSpeed extends TimelineObj {
+	content: {
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentTypePanasonicPtz.SPEED
+		identifier: string
+		speed: number
+	}
+}
+
+export interface TimelineObjPanasonicPTZPreset extends TimelineObj {
+	content: {
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentTypePanasonicPtz.PRESET
+		identifier: string
+		preset: number
 	}
 }
 

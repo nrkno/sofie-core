@@ -90,11 +90,15 @@ export interface PlayoutDeviceSettingsDeviceAtem extends PlayoutDeviceSettingsDe
 	}
 }
 
+export interface PanasonicDeviceSettings {
+	identifier: string
+	url: string
+}
+
 export interface PlayoutDeviceSettingsDevicePanasonicPTZ extends PlayoutDeviceSettings {
 	type: PlayoutDeviceType.PANASONIC_PTZ
 	options: {
-		host: string
-		port?: number
+		cameraDevices: Array<PanasonicDeviceSettings>
 	}
 }
 

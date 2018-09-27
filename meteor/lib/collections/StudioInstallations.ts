@@ -10,6 +10,9 @@ import * as _ from 'underscore'
 export enum MappingLawoType {
 	SOURCE = 'source'
 }
+export enum MappingPanasonicPtzType {
+	IDENTIFIER = 'identifier'
+}
 export enum MappingAtemType {
 	MixEffect,
 	DownStreamKeyer,
@@ -44,6 +47,12 @@ export interface MappingAtem extends Mapping {
 export interface MappingLawo extends Mapping {
 	device: PlayoutDeviceType.LAWO,
 	mappingType: MappingLawoType,
+	identifier: string
+}
+
+export interface MappingPanasonicPtz extends Mapping {
+	device: PlayoutDeviceType.PANASONIC_PTZ,
+	mappingType: MappingPanasonicPtzType,
 	identifier: string
 }
 
