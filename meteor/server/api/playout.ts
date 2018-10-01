@@ -646,7 +646,7 @@ export namespace ServerPlayoutAPI {
 				sli._id = sli._id + '_hold'
 
 				// This gets deleted once the nextsegment line is activated, so it doesnt linger for long
-				ps.push(asyncCollectionInsert(SegmentLineItems, sli))
+				ps.push(asyncCollectionUpsert(SegmentLineItems, sli._id, sli))
 				roData.segmentLineItems.push(sli) // update the local collection
 
 			})
@@ -2371,7 +2371,9 @@ export function findLookaheadForLLayer (roData: RoData, layer: string, mode: Loo
 					allowTransition = !prevSliGroup.line.disableOutTransition
 				}
 
-				const hasTransition = allowTransition && orderedItems.find(i => i.isTransition) !== undefined
+				const transObj = orderedItems.find(i => i.isTransition)
+				const transObj2 = transObj ? sliGroup.items.find(l => l._id === transObj._id) : undefined
+				const hasTransition = allowTransition && transObj2 && transObj2.content && transObj2.content.timelineObjects && transObj2.content.timelineObjects.find(o => o != null && o.LLayer === layer)
 
 				const res: TimelineObj[] = []
 				orderedItems.forEach(i => {
