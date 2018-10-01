@@ -2575,11 +2575,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 
 			let allowTransition = false
 
-			let previousSegmentLine: SegmentLine | undefined
 			if (previousSegmentLine) {
-				// previousSegmentLine = SegmentLines.findOne(activeRunningOrder.previousSegmentLineId)
-				// if (!previousSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.previousSegmentLineId}" not found!`)
-
 				allowTransition = !previousSegmentLine.disableOutTransition
 
 				if (previousSegmentLine.getLastStartedPlayback()) {
