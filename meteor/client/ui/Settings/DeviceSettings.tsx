@@ -9,8 +9,10 @@ import { PeripheralDevice,
 	PlayoutDeviceSettings,
 	PlayoutDeviceSettingsDevice,
 	MosDeviceSettings,
-	MosDeviceSettingsDevice
+	MosDeviceSettingsDevice,
+	PanasonicDeviceSettings
 } from '../../../lib/collections/PeripheralDevices'
+import { literal } from '../../../lib/lib'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -213,6 +215,185 @@ class HttpSendDeviceSettingsComponent extends React.Component<Translated<IHttpSe
 
 				<div className='mod mhs'>
 					<button className='btn btn-primary' onClick={(e) => this.addNewHttpSendCommand()}>
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
+				</div>
+			</React.Fragment>
+		)
+	}
+})
+
+interface IPanasonicPTZDeviceSettingsComponentProps {
+	parentDevice: PeripheralDevice
+	deviceId: string
+	device: PlayoutDeviceSettingsDevice
+}
+
+interface IPanasonicPTZDeviceSettingsComponentState {
+	deleteConfirmDeviceId: string | undefined
+	showDeleteConfirmDevice: boolean
+	editedDevice: Array<number>
+}
+
+const PanasonicPTZDeviceSettingsComponent = translate()(
+class PanasonicPTZDeviceSettingsComponent extends React.Component<Translated<IPanasonicPTZDeviceSettingsComponentProps>, IPanasonicPTZDeviceSettingsComponentState> {
+	constructor(props: Translated<IPanasonicPTZDeviceSettingsComponentProps>) {
+		super(props)
+
+		this.state = {
+			deleteConfirmDeviceId: undefined,
+			showDeleteConfirmDevice: false,
+			editedDevice: []
+		}
+	}
+
+	isItemEdited = (rowId: number) => {
+		return this.state.editedDevice.indexOf(rowId) >= 0
+	}
+
+	finishEditItem = (rowId: number) => {
+		let index = this.state.editedDevice.indexOf(rowId)
+		if (index >= 0) {
+			this.state.editedDevice.splice(index, 1)
+			this.setState({
+				editedDevice: this.state.editedDevice
+			})
+		}
+	}
+
+	editItem = (rowId: number) => {
+		if (this.state.editedDevice.indexOf(rowId) < 0) {
+			this.state.editedDevice.push(rowId)
+			this.setState({
+				editedDevice: this.state.editedDevice
+			})
+		}
+	}
+	handleConfirmRemoveCancel = (e) => {
+		this.setState({
+			showDeleteConfirmDevice: false,
+			deleteConfirmDeviceId: undefined
+		})
+	}
+
+	handleConfirmRemoveAccept = (e) => {
+		this.state.deleteConfirmDeviceId && this.removeDevice(this.state.deleteConfirmDeviceId)
+		this.setState({
+			showDeleteConfirmDevice: false,
+			deleteConfirmDeviceId: undefined
+		})
+	}
+
+	confirmRemove = (rowId: string) => {
+		this.setState({
+			showDeleteConfirmDevice: true,
+			deleteConfirmDeviceId: rowId
+		})
+	}
+
+	removeDevice = (rowId: string) => {
+		// TODO this
+		let unsetObject = {}
+		unsetObject['settings.devices.' + this.props.deviceId + '.options.cameraDevices'] = { identifier: rowId }
+		PeripheralDevices.update(this.props.parentDevice._id, {
+			$pull: unsetObject
+		})
+	}
+
+	addNewDevice () {
+		const { deviceId } = this.props
+
+		let setObject = {}
+		setObject['settings.devices.' + deviceId + '.options.cameraDevices'] = literal<PanasonicDeviceSettings>({
+			identifier: 'K' + Random.hexString(2),
+			url: ''
+		})
+
+		PeripheralDevices.update(this.props.parentDevice._id, {
+			$push: setObject
+		})
+	}
+
+	renderDevices () {
+		const { t, device, deviceId } = this.props
+
+		const commands = (device.options as any || {}).cameraDevices || []
+		return _.map(commands, (cam: any, i) => {
+			return (
+				!this.isItemEdited(i) ?
+					<tr key={i}>
+						<th className='settings-studio-device-httpsend__url c5'>
+							{cam.identifier}
+						</th>
+						<td className='settings-studio-device-httpsend__type c4'>
+							{cam.url}
+						</td>
+						<td className='settings-studio-device-httpsend__actions table-item-actions c3'>
+							<button className='action-btn' onClick={(e) => this.editItem(i)}>
+								<FontAwesomeIcon icon={faPencilAlt} />
+							</button>
+							<button className='action-btn' onClick={(e) => this.confirmRemove(cam.identifier)}>
+								<FontAwesomeIcon icon={faTrash} />
+							</button>
+						</td>
+					</tr> :
+					<tr className='expando-details hl' key={i + '-details'}>
+						<td colSpan={5}>
+							<div>
+								<div className='mod mvs mhs'>
+									<label className='field'>
+										{t('Identifier')}
+										<EditAttribute
+											modifiedClassName='bghl'
+											attribute={'settings.devices.' + deviceId + '.options.cameraDevices.' + i + '.identifier'}
+											obj={this.props.parentDevice}
+											type='text'
+											collection={PeripheralDevices}
+											className='input text-input input-l'></EditAttribute>
+									</label>
+								</div>
+								<div className='mod mvs mhs'>
+									<label className='field'>
+										{t('Url')}
+										<EditAttribute
+											modifiedClassName='bghl'
+											attribute={'settings.devices.' + deviceId + '.options.cameraDevices.' + i + '.url'}
+											obj={this.props.parentDevice}
+											type='text'
+											collection={PeripheralDevices}
+											className='input text-input input-l'></EditAttribute>
+									</label>
+								</div>
+							</div>
+							<div className='mod alright'>
+								<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(i)}>
+									<FontAwesomeIcon icon={faCheck} />
+								</button>
+							</div>
+						</td>
+					</tr>
+			)
+		})
+	}
+
+	render () {
+		const { t } = this.props
+
+		return (
+			<React.Fragment>
+				<h3>{t('Attached PTZ Cameras')}</h3>
+				<table className='expando settings-studio-device-httpsend-table'>
+					<tbody>
+						{this.renderDevices()}
+					</tbody>
+				</table>
+
+				<ModalDialog title={t('Remove this camera?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirmDevice} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
+					<p>{t('Are you sure you want to remove this camera?')}</p>
+				</ModalDialog>
+
+				<div className='mod mhs'>
+					<button className='btn btn-primary' onClick={(e) => this.addNewDevice()}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 				</div>
@@ -537,9 +718,13 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 								(
 								device.type === PlayoutDeviceType.HTTPSEND && (
 									(
-									<React.Fragment>
-										<HttpSendDeviceSettingsComponent parentDevice={this.props.device} device={device} deviceId={deviceId} />
-									</React.Fragment>
+									<HttpSendDeviceSettingsComponent parentDevice={this.props.device} device={device} deviceId={deviceId} />
+									)
+								)) ||
+								(
+								device.type === PlayoutDeviceType.PANASONIC_PTZ && (
+									(
+									<PanasonicPTZDeviceSettingsComponent parentDevice={this.props.device} device={device} deviceId={deviceId} />
 									)
 								))
 							}

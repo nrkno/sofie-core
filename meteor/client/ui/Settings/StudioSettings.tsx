@@ -15,7 +15,9 @@ import { IOutputLayer,
 	MappingAtem,
 	MappingLawo,
 	MappingAtemType,
-	MappingLawoType
+	MappingLawoType,
+	MappingPanasonicPtzType,
+	MappingPanasonicPtz
 } from '../../../lib/collections/StudioInstallations'
 import { ShowStyles } from '../../../lib/collections/ShowStyles'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
@@ -1130,6 +1132,39 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 			</React.Fragment>
 		)
 	}
+	renderPanasonicPTZSettings (layerId: string) {
+		const { t } = this.props
+		return (
+			<React.Fragment>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('mappingType')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.mappingType'}
+							obj={this.props.studioInstallation}
+							type='dropdown'
+							options={MappingPanasonicPtzType}
+							optionsAreNumbers={false}
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Identifier')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.identifier'}
+							obj={this.props.studioInstallation}
+							type='text'
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+			</React.Fragment>
+		)
+	}
 
 	renderMappings () {
 		const { t } = this.props
@@ -1162,6 +1197,14 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 							(
 								mapping.device === PlayoutDeviceType.LAWO && (
 								<span>{ (mapping as MappingLawo).identifier }</span>
+							)) ||
+							(
+								mapping.device === PlayoutDeviceType.PANASONIC_PTZ && (
+									<span>{ (mapping as MappingPanasonicPtz).identifier } - {
+										(mapping as MappingPanasonicPtz).mappingType === MappingPanasonicPtzType.PRESET ? t('Preset') :
+										(mapping as MappingPanasonicPtz).mappingType === MappingPanasonicPtzType.PRESET_SPEED ? t('Preset transition speed') :
+										t('Unknown mapping')
+									}</span>
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.HTTPSEND && (
@@ -1252,6 +1295,10 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 										(
 										mapping.device === PlayoutDeviceType.LAWO && (
 											this.renderLawoMappingSettings(layerId)
+										)) ||
+										(
+										mapping.device === PlayoutDeviceType.PANASONIC_PTZ && (
+											this.renderPanasonicPTZSettings(layerId)
 										))
 									}
 								</div>

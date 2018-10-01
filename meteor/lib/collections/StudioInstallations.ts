@@ -11,7 +11,8 @@ export enum MappingLawoType {
 	SOURCE = 'source'
 }
 export enum MappingPanasonicPtzType {
-	IDENTIFIER = 'identifier'
+	PRESET_SPEED = 0,
+	PRESET = 1
 }
 export enum MappingAtemType {
 	MixEffect,
