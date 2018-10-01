@@ -5,6 +5,7 @@ import { PlayoutDeviceType } from './PeripheralDevices'
 import { LookaheadMode } from '../api/playout'
 import { applyClassToDocument, registerCollection } from '../lib'
 import * as _ from 'underscore'
+import { logger } from '../logging';
 
 // Imports from TSR (TODO make into an import)
 export enum MappingLawoType {
@@ -154,6 +155,7 @@ export class StudioInstallation implements DBStudioInstallation {
 		if (item) {
 			return item.value
 		} else {
+			logger.warn(`Studio "${this._id}": Config "${name}" not set`)
 			return null
 		}
 	}
