@@ -24,6 +24,7 @@
     "@fortawesome/fontawesome-free-solid": "^5.0.13",
     "@fortawesome/react-fontawesome": "0.0.19",
     "@nrk/core-icons": "^3.2.0",
+    "@slack/client": "^4.6.0",
     "@types/body-parser": "^1.17.0",
     "body-parser": "^1.18.3",
     "chai": "^4.1.2",

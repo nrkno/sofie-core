@@ -119,6 +119,10 @@ Meteor.methods({
 				{
 					_id: 'nora_apikey',
 					value: ''
+				},
+				{
+					_id: 'slack_evaluation',
+					value: ''
 				}
 			]
 		})
