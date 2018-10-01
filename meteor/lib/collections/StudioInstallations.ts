@@ -53,8 +53,7 @@ export interface MappingLawo extends Mapping {
 
 export interface MappingPanasonicPtz extends Mapping {
 	device: PlayoutDeviceType.PANASONIC_PTZ,
-	mappingType: MappingPanasonicPtzType,
-	identifier: string
+	mappingType: MappingPanasonicPtzType
 }
 
 /** A set of available layer groups in a given installation */

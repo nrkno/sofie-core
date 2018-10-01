@@ -1150,18 +1150,6 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
-				<div className='mod mvs mhs'>
-					<label className='field'>
-						{t('Identifier')}
-						<EditAttribute
-							modifiedClassName='bghl'
-							attribute={'mappings.' + layerId + '.identifier'}
-							obj={this.props.studioInstallation}
-							type='text'
-							collection={StudioInstallations}
-							className='input text-input input-l'></EditAttribute>
-					</label>
-				</div>
 			</React.Fragment>
 		)
 	}
@@ -1200,7 +1188,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.PANASONIC_PTZ && (
-									<span>{ (mapping as MappingPanasonicPtz).identifier } - {
+									<span>{ 
 										(mapping as MappingPanasonicPtz).mappingType === MappingPanasonicPtzType.PRESET ? t('Preset') :
 										(mapping as MappingPanasonicPtz).mappingType === MappingPanasonicPtzType.PRESET_SPEED ? t('Preset transition speed') :
 										t('Unknown mapping')
