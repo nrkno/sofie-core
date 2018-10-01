@@ -483,6 +483,13 @@ export namespace ServerPlayoutAPI {
 			segmentLineId: segmentLine._id,
 			dynamicallyInserted: true
 		}))
+		ps.push(asyncCollectionRemove(SegmentLineItems, {
+			runningOrderId: segmentLine.runningOrderId,
+			segmentLineId: segmentLine._id,
+			extendOnHold: true,
+			infiniteId: { $exists: true },
+		}))
+
 		return Promise.all(ps)
 		.then(() => {
 			// do nothing
@@ -546,7 +553,7 @@ export namespace ServerPlayoutAPI {
 				if (!currentSegmentLine) throw new Meteor.Error(404, 'currentSegmentLine not found!')
 
 				// Remove the current extension line
-				const items = currentSegmentLine.getSegmentLinesItems().filter(i => i.extendOnHold && i.infiniteId && i.infiniteId !== i._id)
+				const items = currentSegmentLine.getAllSegmentLineItems().filter(i => i.extendOnHold && i.infiniteId && i.infiniteId !== i._id)
 				SegmentLineItems.remove({
 					_id: {$in: _.pluck(items, '_id')}
 				})
@@ -556,7 +563,7 @@ export namespace ServerPlayoutAPI {
 				if (!previousSegmentLine) throw new Meteor.Error(404, 'previousSegmentLine not found!')
 
 				// Clear the extended mark on the original
-				const items = previousSegmentLine.getSegmentLinesItems().filter(i => i.extendOnHold && i.infiniteId && i.infiniteId === i._id)
+				const items = previousSegmentLine.getAllSegmentLineItems().filter(i => i.extendOnHold && i.infiniteId && i.infiniteId === i._id)
 
 				SegmentLineItems.update({
 					_id: {$in: _.pluck(items, '_id')}
@@ -621,9 +628,7 @@ export namespace ServerPlayoutAPI {
 			if (!previousSegmentLine) throw new Meteor.Error(404, 'previousSegmentLine not found!')
 
 			// Make a copy of any item which is flagged as an 'infinite' extension
-			const itemsToCopy = previousSegmentLine.getSegmentLinesItems({
-				extendOnHold: true
-			})
+			const itemsToCopy = previousSegmentLine.getAllSegmentLineItems().filter(i => i.extendOnHold)
 			itemsToCopy.forEach(sli => {
 				// mark current one as infinite
 				SegmentLineItems.update(sli._id, {
@@ -1551,7 +1556,7 @@ function beforeTake (roData: RoData, currentSegmentLine: SegmentLine | null, nex
 			return
 		}
 		let ps: Array<Promise<any>> = []
-		const currentSLIs = currentSegmentLine.getSegmentLinesItems()
+		const currentSLIs = currentSegmentLine.getAllSegmentLineItems()
 		currentSLIs.forEach((item) => {
 			if (item.overflows && typeof item.expectedDuration === 'number' && item.expectedDuration > 0 && item.duration === undefined && item.durationOverride === undefined) {
 				// Clone an overflowing segment line item
@@ -1599,7 +1604,7 @@ import { ClientAPI } from '../../lib/api/client'
 import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
 
 function getResolvedSegmentLineItems (line: SegmentLine): SegmentLineItem[] {
-	const items = line.getSegmentLinesItems()
+	const items = line.getAllSegmentLineItems()
 
 	const itemMap: { [key: string]: SegmentLineItem } = {}
 	items.forEach(i => itemMap[i._id] = i)
@@ -1683,7 +1688,7 @@ interface SegmentLineItemResolved extends SegmentLineItem {
 	resolved: boolean
 }
 function getOrderedSegmentLineItem (line: SegmentLine): Array<SegmentLineItemResolved> {
-	const items = line.getSegmentLinesItems()
+	const items = line.getAllSegmentLineItems()
 
 	const itemMap: { [key: string]: SegmentLineItem } = {}
 	items.forEach(i => itemMap[i._id] = i)
@@ -1908,7 +1913,7 @@ const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (running
 const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOnLayer (runningOrder: RunningOrder, segLine: SegmentLine, sourceLayer: string) {
 	let remainingLines = runningOrder.getSegmentLines().filter(l => l._rank > segLine._rank)
 	for (let line of remainingLines) {
-		let continuations = line.getSegmentLinesItems().filter(i => i.infiniteMode && i.infiniteId && i.infiniteId !== i._id && i.sourceLayerId === sourceLayer)
+		let continuations = line.getAllSegmentLineItems().filter(i => i.infiniteMode && i.infiniteId && i.infiniteId !== i._id && i.sourceLayerId === sourceLayer)
 		if (continuations.length === 0) {
 			break
 		}
@@ -2569,7 +2574,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 		// Currently playing:
 		if (currentSegmentLine) {
 
-			const currentSegmentLineItems = currentSegmentLine.getSegmentLinesItems()
+			const currentSegmentLineItems = currentSegmentLine.getAllSegmentLineItems()
 			const currentInfiniteItems = currentSegmentLineItems.filter(l => (l.infiniteMode && l.infiniteId && l.infiniteId !== l._id))
 			const currentNormalItems = currentSegmentLineItems.filter(l => !(l.infiniteMode && l.infiniteId && l.infiniteId !== l._id))
 
@@ -2590,7 +2595,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 
 					// If a SegmentLineItem is infinite, and continued in the new SegmentLine, then we want to add the SegmentLineItem only there to avoid id collisions
 					const skipIds = currentInfiniteItems.map(l => l.infiniteId || '')
-					const previousSegmentLineItems = previousSegmentLine.getSegmentLinesItems().filter(l => !l.infiniteId || skipIds.indexOf(l.infiniteId) < 0)
+					const previousSegmentLineItems = previousSegmentLine.getAllSegmentLineItems().filter(l => !l.infiniteId || skipIds.indexOf(l.infiniteId) < 0)
 
 					let prevObjs = [previousSegmentLineGroup]
 					prevObjs = prevObjs.concat(
@@ -2649,7 +2654,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 				// console.log('This segment line will autonext')
 				let nextSegmentLineItemGroup = createSegmentLineGroup(nextSegmentLine, 0)
 				if (currentSegmentLineGroup) {
-					const nextSegmentLineItems = nextSegmentLine.getSegmentLinesItems()
+					const nextSegmentLineItems = nextSegmentLine.getAllSegmentLineItems()
 					const overlapDuration = calcOverlapDuration(currentSegmentLine, nextSegmentLine, nextSegmentLineItems)
 
 					nextSegmentLineItemGroup.trigger = literal<ITimelineTrigger>({
@@ -2658,10 +2663,9 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 					})
 				}
 
-				// let toSkipIds = currentSegmentLine.getSegmentLinesItems().filter(i => i.infiniteId).map(i => i.infiniteId)
 				let toSkipIds = currentSegmentLineItems.filter(i => i.infiniteId).map(i => i.infiniteId)
 
-				let nextItems = nextSegmentLine.getSegmentLinesItems()
+				let nextItems = nextSegmentLine.getAllSegmentLineItems()
 				nextItems = nextItems.filter(i => !i.infiniteId || toSkipIds.indexOf(i.infiniteId) === -1)
 
 				timelineObjs = timelineObjs.concat(
@@ -2724,7 +2728,7 @@ function calcOverlapDuration (fromSl: SegmentLine, toSl: SegmentLine, toSLItems:
 	const allowTransition: boolean = !fromSl.disableOutTransition
 	let overlapDuration: number = toSl.transitionDuration || 0
 	if (!toSl.transitionDuration && allowTransition) {
-		if (!toSLItems) toSLItems = toSl.getSegmentLinesItems()
+		if (!toSLItems) toSLItems = toSl.getAllSegmentLineItems()
 		const transitionObjs = toSLItems.filter(i => i.isTransition)
 		overlapDuration = (transitionObjs && transitionObjs.length > 0) ? transitionObjs[0].duration || 0 : 0
 	} else if (!allowTransition) {

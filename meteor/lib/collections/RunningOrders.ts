@@ -230,7 +230,7 @@ export class RunningOrder implements DBRunningOrder {
 
 		segmentLines = _.map(segmentLines, (sl) => {
 			// Override member function to use cached data instead:
-			sl.getSegmentLinesItems = (selector?: MongoSelector<SegmentLineItem>, options?: FindOptions) => {
+			sl.getAllSegmentLineItems = () => {
 				return _.map(_.filter(segmentLineItems, (sli) => {
 					return (
 						sli.segmentLineId === sl._id
