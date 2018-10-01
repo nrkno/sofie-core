@@ -1433,10 +1433,36 @@ export namespace ServerPlayoutAPI {
 		}
 	}
 	export function saveEvaluation (evaluation: EvaluationBase): string {
-		return Evaluations.insert(_.extend(evaluation, {
+		let id = Evaluations.insert(_.extend(evaluation, {
 			userId: this.userId,
 			timestamp: getCurrentTime(),
 		}))
+		Meteor.defer(() => {
+
+			let studio = StudioInstallations.findOne(evaluation.studioId)
+			if (!studio) throw new Meteor.Error(500, `Studio ${evaluation.studioId} not found!`)
+
+			let webhookUrl = studio.getConfigValue('slack_evaluation')
+
+			if (webhookUrl) {
+				// Only send notes if not everything is OK
+				let q0 = _.find(evaluation.answers, (_answer, key) => {
+					return key === 'q0'
+				})
+
+				if (q0 !== 'nothing') {
+
+					let ro = RunningOrders.findOne(evaluation.runningOrderId)
+
+					let message = 'Uh-oh, message from RunningOrder "' + (ro ? ro.name : 'N/A' ) + '": \r\n' +
+						_.values(evaluation.answers).join(', ')
+
+					sendSlackMessageToWebhook(message, webhookUrl)
+				}
+
+			}
+		})
+		return id
 	}
 }
 
@@ -1597,6 +1623,7 @@ import { Resolver } from 'superfly-timeline'
 import { transformTimeline } from '../../lib/timeline'
 import { ClientAPI } from '../../lib/api/client'
 import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
+import { sendSlackMessageToWebhook } from './slack';
 
 function getResolvedSegmentLineItems (line: SegmentLine): SegmentLineItem[] {
 	const items = line.getSegmentLinesItems()
