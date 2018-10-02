@@ -395,7 +395,8 @@ Meteor.methods({
 					name: 'Gjest',
 					type: RundownAPI.SourceLayerType.MIC,
 					onPGMClean: true,
-					unlimited: false
+					unlimited: false,
+					isGuestInput: true
 				},
 				{
 					_id: 'studio0_camera0',

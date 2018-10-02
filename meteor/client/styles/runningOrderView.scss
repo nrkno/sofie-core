@@ -13,6 +13,7 @@ $segment-title-background-color-next: $general-next-color;
 $segment-title-text-color-live: #ffffff;
 $segment-title-background-color-live: $general-live-color;
 $segment-title-background-color-remote: $general-live-remote-color;
+$segment-title-background-color-guest: $general-live-guest-color;
 $segment-title-background-color-has-played: #2c2c2c;
 $segment-line-start-color: #a5a5a5;
 $segment-item-disabled-background: #898989;
@@ -282,6 +283,16 @@ body.vertical-overflow-only {
 			padding: 0.5em;
 			line-height: 1.4em;
 			font-size: 75%;
+		}
+	}
+
+	&.has-guest-items {
+		.segment-timeline__title {
+			background: $segment-title-background-color-guest;
+
+			> h2 {
+				background: $segment-title-background-color-guest;
+			}
 		}
 	}
 

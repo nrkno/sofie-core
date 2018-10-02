@@ -39,6 +39,7 @@ interface IProps {
 	isCollapsed?: boolean,
 	scrollLeft: number,
 	hasAlreadyPlayed: boolean,
+	hasGuestItems: boolean,
 	hasRemoteItems: boolean,
 	isLiveSegment: boolean,
 	isNextSegment: boolean,
@@ -440,6 +441,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 				className={ClassNames('segment-timeline', {
 					'collapsed': this.props.isCollapsed,
 
+					'has-guest-items': this.props.hasGuestItems && (!this.props.hasAlreadyPlayed || this.props.isLiveSegment),
 					'has-remote-items': this.props.hasRemoteItems && (!this.props.hasAlreadyPlayed || this.props.isLiveSegment),
 
 					'live': this.props.isLiveSegment,
