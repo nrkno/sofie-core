@@ -696,6 +696,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 	deactivate = (e: any) => {
 		const { t } = this.props
+		e.persist()
+
 		if (this.props.studioMode && this.props.runningOrder.active) {
 			if (this.runningOrderShouldHaveStarted()) {
 				if (this.props.runningOrder.rehearsal) {
@@ -719,6 +721,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 	resetRunningOrder = (e: any) => {
 		const { t } = this.props
+		e.persist()
+
 		let doReset = () => {
 
 			// Do a rewind right away
