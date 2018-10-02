@@ -2,9 +2,11 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { translate } from 'react-i18next'
 import * as React from 'react'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
+import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 
 interface IProps {
 	visible?: boolean
+	studioInstallation: StudioInstallation
 
 	hotkeys: Array<{
 		key: string
@@ -26,7 +28,7 @@ export const HotkeyHelpPanel = translate()(class BaseHotkeyHelpPanel extends Rea
 			return (
 				<div className='adlib-panel super-dark'>
 					<div className='adlib-panel__hotkeys'>
-						{this.props.hotkeys.map((hotkey) =>
+						{this.props.hotkeys.concat(this.props.studioInstallation.hotkeyLegend || []).map((hotkey) =>
 							<div className='adlib-panel__hotkeys__hotkey' key={hotkey.key}>
 								<div className='adlib-panel__hotkeys__hotkey__keys'>
 									{mousetrapHelper.shortcutLabel(hotkey.key)}

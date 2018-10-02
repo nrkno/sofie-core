@@ -48,6 +48,12 @@ export interface MappingLawo extends Mapping {
 	identifier: string
 }
 
+export interface HotkeyDefinition {
+	_id: string
+	key: string
+	label: string
+}
+
 /** A set of available layer groups in a given installation */
 export interface DBStudioInstallation {
 	_id: string
@@ -61,6 +67,8 @@ export interface DBStudioInstallation {
 	defaultShowStyle: string
 
 	config: Array<IStudioConfigItem>
+
+	hotkeyLegend?: Array<HotkeyDefinition>
 }
 
 export interface ISourceLayerBase {
@@ -145,6 +153,8 @@ export class StudioInstallation implements DBStudioInstallation {
 	public mappings: Mappings
 	public defaultShowStyle: string
 	public config: Array<IStudioConfigItem>
+	public hotkeyLegend?: Array<HotkeyDefinition>
+
 	constructor (document: DBStudioInstallation) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]

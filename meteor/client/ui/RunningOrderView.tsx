@@ -1001,7 +1001,17 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			followLiveSegments: true,
 			manualSetAsNext: false,
 			subsReady: false,
-			usedHotkeys: _.clone(this.bindKeys)
+			usedHotkeys: _.clone(this.bindKeys).concat([
+				// Register additional hotkeys or legend entries
+				{
+					key: 'Esc',
+					label: t('Cancel currently pressed hotkey')
+				},
+				{
+					key: 'F11',
+					label: t('Change to fullscreen mode')
+				}
+			])
 		}
 	}
 
