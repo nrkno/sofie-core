@@ -70,6 +70,8 @@ export interface ISourceLayerBase {
 	name?: string
 	/** Use special treatment for remote inputs */
 	isRemoteInput?: boolean
+	/** Use special treatment for guest inputs */
+	isGuestInput?: boolean
 	/** Available shortcuts to be used for ad-lib items assigned to this sourceLayer - comma separated list allowing for chords (keyboard sequences) */
 	activateKeyboardHotkeys?: string
 	/** Single 'clear all from this sourceLayer' keyboard shortcut */

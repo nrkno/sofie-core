@@ -7,6 +7,7 @@ import { normalizeArray } from './lib'
 import { Segment } from './collections/Segments'
 import { SegmentLine, SegmentLines } from './collections/SegmentLines'
 import { RunningOrder } from './collections/RunningOrders'
+import { RundownAPI } from './api/rundown';
 
 export const DEFAULT_DISPLAY_DURATION = 3000
 
@@ -67,6 +68,7 @@ export function getResolvedSegment (studioInstallation: StudioInstallation, runn
 	isNextSegment: boolean,
 	currentLiveSegmentLine: SegmentLineExtended | undefined,
 	hasRemoteItems: boolean,
+	hasGuestItems: boolean,
 	hasAlreadyPlayed: boolean,
 	autoNextSegmentLine: boolean
 	followingSegmentLine: SegmentLineExtended | undefined
@@ -78,6 +80,7 @@ export function getResolvedSegment (studioInstallation: StudioInstallation, runn
 	let nextSegmentLine: SegmentLineExtended | undefined = undefined
 	let hasAlreadyPlayed = false
 	let hasRemoteItems = false
+	let hasGuestItems = false
 	let followingSegmentLine: SegmentLineExtended | undefined = undefined
 
 	let autoNextSegmentLine = false
@@ -230,6 +233,10 @@ export function getResolvedSegment (studioInstallation: StudioInstallation, runn
 					if (segmentLineItem.sourceLayer.isRemoteInput) {
 						hasRemoteItems = true
 					}
+
+					if (segmentLineItem.sourceLayer.isGuestInput) {
+						hasGuestItems = true
+					}
 				}
 
 				segmentLineItemsLookup[segmentLineItem._id] = segmentLineItem
@@ -360,6 +367,7 @@ export function getResolvedSegment (studioInstallation: StudioInstallation, runn
 		currentLiveSegmentLine,
 		isNextSegment,
 		hasAlreadyPlayed,
+		hasGuestItems,
 		hasRemoteItems,
 		autoNextSegmentLine,
 		followingSegmentLine

@@ -10,8 +10,9 @@ $segment-layer-background-live-speak: #00c800;
 $segment-layer-background-remote: #e80064;
 //$segment-layer-background-script: #1c721f;
 $segment-layer-background-script: #1e6820;
-//$segment-layer-background-mic:#1c721f;
+$segment-layer-background-gu:#1c721f;
 $segment-layer-background-mic:#1e6820;
+$segment-layer-background-guest: #008a92;
 $segment-layer-background-vt: #1769ff;
 
 @mixin item-type-colors {
@@ -64,7 +65,7 @@ $segment-layer-background-vt: #1769ff;
 	}
 
 	&.mic {
-		background: $segment-layer-background-mic;
+		background: $segment-layer-background-guest;
 	}
 }
 
