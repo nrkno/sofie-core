@@ -383,7 +383,9 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					<div className={ClassNames('segment-timeline__segment-line__nextline', {
 						'auto-next': this.props.segmentLine.willProbablyAutoNext
 					})}>
-						<div className='segment-timeline__segment-line__nextline__label'>
+						<div className={ClassNames('segment-timeline__segment-line__nextline__label', {
+							'segment-timeline__segment-line__nextline__label--thin': (this.props.autoNextSegmentLine || this.props.segmentLine.willProbablyAutoNext) && !this.state.isNext
+						})}>
 							{ (this.props.autoNextSegmentLine || this.props.segmentLine.willProbablyAutoNext) && t('Auto') + ' '}
 							{ this.state.isNext && t('Next') }
 						</div>
@@ -403,7 +405,9 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 						'is-next': this.state.isLive && (!this.props.isLastSegment && !this.props.isLastInSegment || !!this.props.runningOrder.nextSegmentLineId),
 						'show-end': isEndOfShow
 					})}>
-						<div className='segment-timeline__segment-line__nextline__label'>
+						<div className={ClassNames('segment-timeline__segment-line__nextline__label', {
+							'segment-timeline__segment-line__nextline__label--thin': (this.props.segmentLine.autoNext) && !this.state.isLive
+						})}>
 							{ this.props.segmentLine.autoNext && t('Auto') + ' ' }
 							{ this.state.isLive && t('Next') }
 							{!isEndOfShow && <div className='segment-timeline__segment-line__nextline__label__carriage-return'>

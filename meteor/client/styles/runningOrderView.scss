@@ -772,6 +772,10 @@ body.vertical-overflow-only {
 					word-wrap: none;
 					color: $segment-line-start-color;
 
+					&.segment-timeline__segment-line__nextline__label--thin {
+						font-weight: 400;
+					}
+
 					.segment-timeline__segment-line__nextline__label__carriage-return {
 						width: 20px;
 						height: 15px;
