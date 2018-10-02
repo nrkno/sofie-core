@@ -2226,7 +2226,9 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 					allowTransition = !prevSliGroup.line.disableOutTransition
 				}
 
-				const hasTransition = allowTransition && orderedItems.find(i => i.isTransition) !== undefined
+				const transObj = orderedItems.find(i => i.isTransition)
+				const transObj2 = transObj ? sliGroup.items.find(l => l._id === transObj._id) : undefined
+				const hasTransition = allowTransition && transObj2 && transObj2.content && transObj2.content.timelineObjects && transObj2.content.timelineObjects.find(o => o != null && o.LLayer === layer)
 
 				const res: TimelineObj[] = []
 				orderedItems.forEach(i => {
@@ -2240,7 +2242,7 @@ export function findLookaheadForLLayer (activeRunningOrder: RunningOrder, layer:
 					}
 
 					// If there is a transition and this item is abs0, it is assumed to be the primary sli and so does not need lookahead
-					if (hasTransition && item.trigger.type === TriggerType.TIME_ABSOLUTE && item.trigger.value === 0) {
+					if (hasTransition && !i.isTransition && item.trigger.type === TriggerType.TIME_ABSOLUTE && item.trigger.value === 0) {
 						return
 					}
 
