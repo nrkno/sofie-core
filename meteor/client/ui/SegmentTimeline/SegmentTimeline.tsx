@@ -461,7 +461,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 									<div key={key}>
 										<div>
 											<b>
-												<img className='icon' src='/icons/warning.svg'/>
+												<img className='icon' src='/icons/warning_icon.svg'/>
 												{(
 													note.type === SegmentLineNoteType.WARNING ? '' :
 													note.type === SegmentLineNoteType.ERROR ? 'Error:&nbsp;' :
