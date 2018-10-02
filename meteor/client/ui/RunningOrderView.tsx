@@ -579,6 +579,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 	activate = (e: any) => {
 		const { t } = this.props
+		e.persist()
+
 		if (
 			this.props.studioMode &&
 			(
@@ -589,7 +591,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				)
 			)
 		) {
-			let doActivate = () => {
+			let doActivate = (le: any) => {
 				Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false, (err, res) => {
 					if (err || (res && res.error)) {
 						this.handleActivationError(err || res)
@@ -603,7 +605,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				doModalDialog({
 					title: this.props.runningOrder.name,
 					message: t('Do you want to activate this Running Order?'),
-					onAccept: (e: any) => {
+					onAccept: (le: any) => {
 						Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roResetAndActivate, this.props.runningOrder._id, (err, res) => {
 							if (err || (res && res.error)) {
 								this.handleActivationError(err || res)
@@ -615,14 +617,14 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				})
 			} else if (!this.runningOrderShouldHaveEnded() ) {
 				// The broadcast has started
-				doActivate()
+				doActivate(e)
 			} else {
 				// The broadcast has ended, going into active mode is probably not what you want to do
 				doModalDialog({
 					title: this.props.runningOrder.name,
 					message: t('The planned end time has passed, are you sure you want to activate this Running Order?'),
-					onAccept: () => {
-						doActivate()
+					onAccept: (le: any) => {
+						doActivate(e)
 					}
 				})
 			}
@@ -630,6 +632,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 	activateRehearsal = (e: any) => {
 		const { t } = this.props
+		e.persist()
 
 		if (
 			this.props.studioMode &&
