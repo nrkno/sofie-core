@@ -2387,7 +2387,7 @@ export function findLookaheadForLLayer (roData: RoData, layer: string, mode: Loo
 					}
 
 					// If there is a transition and this item is abs0, it is assumed to be the primary sli and so does not need lookahead
-					if (hasTransition && item.trigger.type === TriggerType.TIME_ABSOLUTE && item.trigger.value === 0) {
+					if (hasTransition && !i.isTransition && item.trigger.type === TriggerType.TIME_ABSOLUTE && item.trigger.value === 0) {
 						return
 					}
 
