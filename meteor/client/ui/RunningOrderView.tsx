@@ -733,9 +733,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				Meteor.defer(() => {
 					Tracker.flush()
 					Meteor.setTimeout(() => {
-						const event = new Event(RunningOrderViewEvents.rewindsegments)
-						window.dispatchEvent(event)
-
+						window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
 						window.dispatchEvent(new Event(RunningOrderViewEvents.goToLiveSegment))
 					}, 500)
 				})
@@ -1126,8 +1124,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onRewindSegments = () => {
-		const event = new Event(RunningOrderViewEvents.rewindsegments)
-		window.dispatchEvent(event)
+		window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
 	}
 
 	onTimeScaleChange = (timeScaleVal) => {
