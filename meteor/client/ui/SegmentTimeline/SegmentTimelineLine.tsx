@@ -219,6 +219,7 @@ interface IProps {
 interface IState {
 	isLive: boolean
 	isNext: boolean
+	isDurationSettling: boolean
 	liveDuration: number
 }
 
@@ -242,6 +243,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 		this.state = {
 			isLive,
 			isNext,
+			isDurationSettling: false,
 			liveDuration: isLive ?
 				Math.max(
 				(
@@ -276,10 +278,13 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 		const isLive = (nextProps.runningOrder.currentSegmentLineId === nextProps.segmentLine._id)
 		const isNext = (nextProps.runningOrder.nextSegmentLineId === nextProps.segmentLine._id)
 
+		const isDurationSettling = (!!this.props.segmentLine.startedPlayback && !this.props.segmentLine.duration)
+
 		const startedPlayback = nextProps.segmentLine.startedPlayback
 		this.setState({
 			isLive,
 			isNext,
+			isDurationSettling,
 			liveDuration: (isLive && !nextProps.autoNextSegmentLine && !nextProps.segmentLine.autoNext) ?
 				Math.max(
 				(
@@ -292,7 +297,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 						nextProps.timingDurations.segmentLineDurations[nextProps.segmentLine._id] :
 						0
 				)
-				: 0
+				: this.state.liveDuration
 		})
 	}
 
@@ -300,13 +305,29 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 		// this.props.segmentLine.expectedDuration ||
 		if (this.props.relative) {
 			return {
-				width: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
+				width: (
+					this.state.isLive || this.state.isDurationSettling ?
+						Math.max(
+							this.state.liveDuration,
+							this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0
+						) / (this.props.totalSegmentDuration || 1) * 100
+					: (this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0) / (this.props.totalSegmentDuration || 1)
+				).toString() + '%',
 				// width: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || 3000) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
 				willChange: this.state.isLive ? 'width' : undefined
 			}
 		} else {
 			return {
-				minWidth: Math.round(Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0) * this.props.timeScale).toString() + 'px',
+				minWidth: (
+					Math.round(
+						this.state.isLive || this.state.isDurationSettling ?
+							Math.max(
+								this.state.liveDuration,
+								this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0
+							) * this.props.timeScale
+						: (this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0) * this.props.timeScale
+					).toString() + 'px'
+				),
 				// minWidth: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || 3000) * this.props.timeScale).toString() + 'px',
 				willChange: this.state.isLive ? 'minWidth' : undefined
 			}
