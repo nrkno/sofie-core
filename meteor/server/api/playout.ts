@@ -81,7 +81,9 @@ export namespace ServerPlayoutAPI {
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (runningOrder.active && !runningOrder.rehearsal) throw new Meteor.Error(401, `roResetBroadcast can only be run in rehearsal!`)
 
-		return resetRunningOrder(runningOrder)
+		resetRunningOrder(runningOrder)
+
+		updateTimeline(runningOrder.studioInstallationId)
 	}
 	/**
 	 * Activate the runningOrder, final preparations before going on air
