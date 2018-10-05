@@ -1443,7 +1443,6 @@ export namespace ServerPlayoutAPI {
 			timestamp: getCurrentTime(),
 		}))
 		Meteor.defer(() => {
-
 			let studio = StudioInstallations.findOne(evaluation.studioId)
 			if (!studio) throw new Meteor.Error(500, `Studio ${evaluation.studioId} not found!`)
 
@@ -1459,8 +1458,13 @@ export namespace ServerPlayoutAPI {
 
 					let ro = RunningOrders.findOne(evaluation.runningOrderId)
 
-					let message = 'Uh-oh, message from RunningOrder "' + (ro ? ro.name : 'N/A' ) + '": \r\n' +
+					let message = 'Uh-oh, message from RunningOrder "' + (ro ? ro.name : 'N/A' ) + '": \n' +
 						_.values(evaluation.answers).join(', ')
+
+					let hostUrl = studio.getConfigValue('sofie_url')
+					if (hostUrl && ro) {
+						message += '\n<' + hostUrl + '/ro/' + ro._id + '|' + ro.name + '>'
+					}
 
 					sendSlackMessageToWebhook(message, webhookUrl)
 				}
@@ -1628,7 +1632,7 @@ import { Resolver } from 'superfly-timeline'
 import { transformTimeline } from '../../lib/timeline'
 import { ClientAPI } from '../../lib/api/client'
 import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
-import { sendSlackMessageToWebhook } from './slack';
+import { sendSlackMessageToWebhook } from './slack'
 
 function getResolvedSegmentLineItems (line: SegmentLine): SegmentLineItem[] {
 	const items = line.getAllSegmentLineItems()
