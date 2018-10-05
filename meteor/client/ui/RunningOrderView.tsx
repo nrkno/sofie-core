@@ -521,7 +521,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	take = (e: any) => {
 		if (this.props.studioMode) {
 			if (this.props.runningOrder.active) {
-				Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roTake, this.props.runningOrder._id)
+				Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.userRoTake, this.props.runningOrder._id)
 			}
 		}
 		// console.log(new Date(getCurrentTime()))

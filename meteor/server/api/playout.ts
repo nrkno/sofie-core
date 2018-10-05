@@ -525,11 +525,29 @@ export namespace ServerPlayoutAPI {
 		}
 		waitForPromiseAll(ps)
 	}
-	export function roTake (roId: string) {
-		check(roId, String)
+	export function userRoTake (roId: string) {
+		// Called by the user. Wont throw as nasty errors
+
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		if (!runningOrder.active) {
+			logger.warn(`RunningOrder "${roId}" is not active!`)
+			return
+		}
+		if (!runningOrder.nextSegmentLineId) {
+			logger.warn('nextSegmentLineId is not set!')
+			return
+		}
+		return roTake(runningOrder)
+	}
+	export function roTake (roId: string | RunningOrder ) {
 
 		let now = getCurrentTime()
-		let runningOrder = RunningOrders.findOne(roId)
+		let runningOrder: RunningOrder | undefined = (
+			_.isObject(roId) ? roId as RunningOrder :
+			_.isString(roId) ? RunningOrders.findOne(roId) :
+			undefined
+		)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
 		if (!runningOrder.nextSegmentLineId) throw new Meteor.Error(500, 'nextSegmentLineId is not set!')
@@ -1503,6 +1521,9 @@ methods[PlayoutAPI.methods.segmentLineItemTakeNow] = (roId: string, slId: string
 methods[PlayoutAPI.methods.roTake] = (roId: string) => {
 	return ServerPlayoutAPI.roTake(roId)
 }
+methods[PlayoutAPI.methods.userRoTake] = (roId: string) => {
+	return ServerPlayoutAPI.userRoTake(roId)
+}
 methods[PlayoutAPI.methods.roSetNext] = (roId: string, slId: string) => {
 	return ServerPlayoutAPI.roSetNext(roId, slId)
 }
@@ -2037,7 +2058,7 @@ function segmentLineStoppedPlaying (roId: string, segmentLine: SegmentLine, stop
 		segmentLine.duration = stoppedPlayingTime - lastStartedPlayback
 		pushOntoPath(segmentLine, 'timings.stoppedPlayback', stoppedPlayingTime)
 	} else {
-		logger.error(`Previous segment line "${segmentLine._id}" has never started playback on running order "${roId}".`)
+		// logger.warn(`Segment line "${segmentLine._id}" has never started playback on running order "${roId}".`)
 	}
 }
 
