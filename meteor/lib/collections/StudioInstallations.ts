@@ -5,7 +5,7 @@ import { PlayoutDeviceType } from './PeripheralDevices'
 import { LookaheadMode } from '../api/playout'
 import { applyClassToDocument, registerCollection } from '../lib'
 import * as _ from 'underscore'
-import { logger } from '../logging';
+import { logger } from '../logging'
 
 // Imports from TSR (TODO make into an import)
 export enum MappingLawoType {
