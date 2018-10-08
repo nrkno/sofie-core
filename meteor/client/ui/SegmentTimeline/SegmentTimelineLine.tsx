@@ -219,6 +219,7 @@ interface IProps {
 interface IState {
 	isLive: boolean
 	isNext: boolean
+	durationSettling: boolean
 	liveDuration: number
 }
 
@@ -242,6 +243,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 		this.state = {
 			isLive,
 			isNext,
+			durationSettling: false,
 			liveDuration: isLive ?
 				Math.max(
 				(
@@ -277,22 +279,33 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 		const isNext = (nextProps.runningOrder.nextSegmentLineId === nextProps.segmentLine._id)
 
 		const startedPlayback = nextProps.segmentLine.startedPlayback
-		this.setState({
-			isLive,
-			isNext,
-			liveDuration: (isLive && !nextProps.autoNextSegmentLine && !nextProps.segmentLine.autoNext) ?
+
+		const durationSettling = !!nextProps.runningOrder.active && !isLive && !!startedPlayback && !nextProps.segmentLine.duration
+
+		const liveDuration =
+			((isLive || durationSettling) && !nextProps.autoNextSegmentLine && !nextProps.segmentLine.autoNext) ?
 				Math.max(
-				(
-					(startedPlayback && nextProps.timingDurations.segmentLineDurations &&
+					(
+						(startedPlayback && nextProps.timingDurations.segmentLineDurations &&
 							(nextProps.relative ?
-							this.getCurrentLiveLinePosition() :
-							this.getCurrentLiveLinePosition() + this.getLiveLineTimePadding(nextProps.timeScale))
-					) || 0),
+								this.getCurrentLiveLinePosition() :
+								this.getCurrentLiveLinePosition() + this.getLiveLineTimePadding(nextProps.timeScale))
+						) || 0),
 					nextProps.timingDurations.segmentLineDurations ?
 						nextProps.timingDurations.segmentLineDurations[nextProps.segmentLine._id] :
 						0
 				)
 				: 0
+
+		if ((isLive || durationSettling) && !this.props.relative) {
+			console.log(nextProps.segmentLine._id, isLive, !!startedPlayback, durationSettling, liveDuration)
+		}
+
+		this.setState({
+			isLive,
+			isNext,
+			durationSettling,
+			liveDuration
 		})
 	}
 
@@ -311,6 +324,16 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 				willChange: this.state.isLive ? 'minWidth' : undefined
 			}
 		}
+	}
+
+	getLineDuration (): number {
+		const segmentLine = this.props.segmentLine
+
+		return Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0)
+
+		/* return segmentLine.duration !== undefined ? segmentLine.duration : Math.max(
+			((this.props.timingDurations.segmentLineDurations && this.props.timingDurations.segmentLineDurations[segmentLine._id]) || 0),
+			this.props.segmentLine.renderedDuration || 0, this.state.liveDuration, 0) */
 	}
 
 	getSegmentLineStartsAt (): number {
@@ -343,9 +366,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 							segmentLine={segmentLine}
 							runningOrder={this.props.runningOrder}
 							startsAt={this.getSegmentLineStartsAt() || this.props.segmentLine.startsAt || 0}
-							duration={segmentLine.duration !== undefined ? segmentLine.duration : Math.max(
-								((this.props.timingDurations.segmentLineDurations && this.props.timingDurations.segmentLineDurations[segmentLine._id]) || 0),
-								this.props.segmentLine.renderedDuration || 0, this.state.liveDuration, 0)}
+							duration={this.getLineDuration()}
 							isLiveLine={this.props.runningOrder.currentSegmentLineId === segmentLine._id ? true : false}
 							isNextLine={this.props.runningOrder.nextSegmentLineId === segmentLine._id ? true : false}
 							timeScale={this.props.timeScale}
@@ -377,7 +398,9 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 			return (
 				<div className={ClassNames('segment-timeline__segment-line', {
 					'live': this.state.isLive,
-					'next': this.state.isNext
+					'next': this.state.isNext,
+
+					'duration-settling': this.state.durationSettling
 				})} data-mos-id={this.props.segmentLine._id}
 					style={this.getLayerStyle()}
 					>
