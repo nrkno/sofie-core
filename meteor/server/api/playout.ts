@@ -358,6 +358,9 @@ export namespace ServerPlayoutAPI {
 			SegmentLines.findOne(runningOrder.currentSegmentLineId)
 			: null
 		)
+
+		if (previousSegmentLine) segmentLineStoppedPlaying(runningOrder._id, previousSegmentLine, getCurrentTime())
+
 		RunningOrders.update(runningOrder._id, {
 			$set: {
 				active: false,

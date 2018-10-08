@@ -741,10 +741,6 @@ body.vertical-overflow-only {
 			z-index: 1;
 			transform-style: preserve-3d;
 
-			&.duration-settling {
-				// background: red;
-			}
-
 			* {
 				backface-visibility: hidden;
 				-webkit-backface-visibility: hidden;
