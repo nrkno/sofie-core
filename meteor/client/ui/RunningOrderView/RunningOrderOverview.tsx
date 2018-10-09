@@ -69,7 +69,7 @@ const SegmentLineOverview: React.SFC<ISegmentLinePropsHeader> = (props: ISegment
 }
 
 const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHeader) => {
-	const segmentDuration = props.segmentLiveDurations ? props.segment.items!.map((i) => props.segmentLiveDurations![i._id]).reduce((memo, item) => (memo || 0) + (item || 0)) : undefined
+	const segmentDuration = props.segmentLiveDurations ? props.segment.items!.map((i) => props.segmentLiveDurations![i._id]).reduce((memo, item) => (memo || 0) + (item || 0), 0) : undefined
 
 	return props.segment.items && (
 		<div className={ClassNames('running-order__overview__segment', {
