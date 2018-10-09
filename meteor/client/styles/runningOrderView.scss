@@ -1635,6 +1635,11 @@ body.vertical-overflow-only {
 			font-weight: 300;
 		}
 	}
+	.mini-inspector__footer {
+		margin-top: 3px;
+
+		text-align: right;
+	}
 	.mini-inspector__label {
 		font-weight: 300;
 		text-transform: capitalize;
