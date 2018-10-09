@@ -1092,6 +1092,10 @@ body.vertical-overflow-only {
 								position: absolute;
 								right: 0;
 								transform: translate3d(0, 0, 15px);
+								text-align: right;
+								max-width: calc(100% - 10px);
+								overflow: hidden;
+								text-overflow: clip;
 								
 								> * {
 									position: relative;
@@ -1100,6 +1104,8 @@ body.vertical-overflow-only {
 								> .segment-timeline__layer-item__label {
 									margin-right: 0 !important;
 									margin-left: 5px !important;
+									overflow: initial;
+									max-width: none;
 								}
 
 								> .label-icon {
@@ -1109,11 +1115,17 @@ body.vertical-overflow-only {
 								> .label-icon.label-infinite-icon {
 									margin: 0 0 0 0;
 								}
+
+								> .last-words {
+									float: right;
+								}
 							}
 
 							&.last-words {
 								font-weight: 300;
 								font-style: italic;
+
+								display: block;
 							}
 
 							&.file-name {

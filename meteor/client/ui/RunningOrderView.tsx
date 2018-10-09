@@ -802,7 +802,6 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 				'rehearsal': this.props.runningOrder.rehearsal
 			})}>
-				{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} runningOrder={this.props.runningOrder} />}
 				<WarningDisplay
 					studioMode={this.props.studioMode}
 					inActiveROView={this.props.inActiveROView}
@@ -890,6 +889,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 						className: 'flex-col col-timing horizontal-align-center'
 					}}>
 						<TimingDisplay {...this.props} />
+						{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} runningOrder={this.props.runningOrder} />}
 					</ContextMenuTrigger>
 				</div>
 				<div className='row dark'>

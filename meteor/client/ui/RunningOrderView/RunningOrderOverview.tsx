@@ -31,7 +31,6 @@ interface ISegmentLinePropsHeader {
 	segmentStartsAt?: TimeMap
 	isLive: boolean
 	isNext: boolean
-	label: string | undefined
 	segmentDuration: number | undefined
 }
 
@@ -64,7 +63,6 @@ const SegmentLineOverview: React.SFC<ISegmentLinePropsHeader> = (props: ISegment
 						}}>
 					</div>
 				}
-
 			</div>
 		</ErrorBoundary>
 	)
