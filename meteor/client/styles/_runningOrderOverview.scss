@@ -14,12 +14,11 @@
 	overflow: hidden;
 
 	.running-order__overview__segment {
-		display: inline;
+		position: relative;
+		display: inline-block;
 
-		&:first-child {
-			.running-order__overview__segment__segment-line:first-child {
-				border-left: 1px solid rgba(0, 0, 0, 0.5);
-			}
+		.running-order__overview__segment__segment-line:first-child {
+			border-left: 1px solid rgba(0, 0, 0, 0.5);
 		}
 	}
 	
@@ -91,7 +90,9 @@
 			background: #00ff00; //$general-next-color;
 			z-index: 3;
 		}
+	}
 
+	.running-order__overview__segment {
 		.running-order__overview__segment__segment-line__label {
 			position: absolute;
 			top: 0;
@@ -108,14 +109,12 @@
 			overflow: hidden;
 			z-index: 1;
 
-			> .running-order__overview__segment__segment-line__label__duration {
+			>.running-order__overview__segment__segment-line__label__duration {
 				font-weight: 200;
 				margin-left: 0.5em;
 			}
 		}
-	}
 
-	.running-order__overview__segment {
 		&.next {
 			.running-order__overview__segment__segment-line {
 				background: $general-next-color;
