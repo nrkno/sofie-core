@@ -583,8 +583,8 @@ declare enum SegmentLineHoldMode {
 					window['require'] = MonacoWrapper._requireBuffer
 					MonacoWrapper._monacoRequire.config({ paths: { 'vs': '/monaco-editor/min/vs' } })
 					MonacoWrapper._monacoRequire(['vs/editor/editor.main'], () => {
-						MonacoWrapper._monacoRef = monaco
 						setRuntimeMonaco()
+						MonacoWrapper._monacoRef = monaco
 						this.attachEditor()
 					})
 				})
