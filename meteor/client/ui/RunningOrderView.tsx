@@ -521,7 +521,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	take = (e: any) => {
 		if (this.props.studioMode) {
 			if (this.props.runningOrder.active) {
-				Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roTake, this.props.runningOrder._id)
+				Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.userRoTake, this.props.runningOrder._id)
 			}
 		}
 		// console.log(new Date(getCurrentTime()))
@@ -579,6 +579,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 	activate = (e: any) => {
 		const { t } = this.props
+		if (e.persist) e.persist()
+
 		if (
 			this.props.studioMode &&
 			(
@@ -589,7 +591,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				)
 			)
 		) {
-			let doActivate = () => {
+			let doActivate = (le: any) => {
 				Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false, (err, res) => {
 					if (err || (res && res.error)) {
 						this.handleActivationError(err || res)
@@ -603,7 +605,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				doModalDialog({
 					title: this.props.runningOrder.name,
 					message: t('Do you want to activate this Running Order?'),
-					onAccept: (e: any) => {
+					onAccept: (le: any) => {
 						Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roResetAndActivate, this.props.runningOrder._id, (err, res) => {
 							if (err || (res && res.error)) {
 								this.handleActivationError(err || res)
@@ -615,14 +617,14 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				})
 			} else if (!this.runningOrderShouldHaveEnded() ) {
 				// The broadcast has started
-				doActivate()
+				doActivate(e)
 			} else {
 				// The broadcast has ended, going into active mode is probably not what you want to do
 				doModalDialog({
 					title: this.props.runningOrder.name,
 					message: t('The planned end time has passed, are you sure you want to activate this Running Order?'),
-					onAccept: () => {
-						doActivate()
+					onAccept: (le: any) => {
+						doActivate(e)
 					}
 				})
 			}
@@ -630,6 +632,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 	activateRehearsal = (e: any) => {
 		const { t } = this.props
+		if (e.persist) e.persist()
 
 		if (
 			this.props.studioMode &&
@@ -693,6 +696,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 	deactivate = (e: any) => {
 		const { t } = this.props
+		if (e.persist) e.persist()
+
 		if (this.props.studioMode && this.props.runningOrder.active) {
 			if (this.runningOrderShouldHaveStarted()) {
 				if (this.props.runningOrder.rehearsal) {
@@ -716,6 +721,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 	resetRunningOrder = (e: any) => {
 		const { t } = this.props
+		if (e.persist) e.persist()
+
 		let doReset = () => {
 
 			// Do a rewind right away
@@ -726,9 +733,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				Meteor.defer(() => {
 					Tracker.flush()
 					Meteor.setTimeout(() => {
-						const event = new Event(RunningOrderViewEvents.rewindsegments)
-						window.dispatchEvent(event)
-
+						window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
 						window.dispatchEvent(new Event(RunningOrderViewEvents.goToLiveSegment))
 					}, 500)
 				})
@@ -797,7 +802,6 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 				'rehearsal': this.props.runningOrder.rehearsal
 			})}>
-				{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} runningOrder={this.props.runningOrder} />}
 				<WarningDisplay
 					studioMode={this.props.studioMode}
 					inActiveROView={this.props.inActiveROView}
@@ -885,6 +889,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 						className: 'flex-col col-timing horizontal-align-center'
 					}}>
 						<TimingDisplay {...this.props} />
+						{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} runningOrder={this.props.runningOrder} />}
 					</ContextMenuTrigger>
 				</div>
 				<div className='row dark'>
@@ -994,7 +999,17 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			followLiveSegments: true,
 			manualSetAsNext: false,
 			subsReady: false,
-			usedHotkeys: _.clone(this.bindKeys)
+			usedHotkeys: _.clone(this.bindKeys).concat([
+				// Register additional hotkeys or legend entries
+				{
+					key: 'Esc',
+					label: t('Cancel currently pressed hotkey')
+				},
+				{
+					key: 'F11',
+					label: t('Change to fullscreen mode')
+				}
+			])
 		}
 	}
 
@@ -1109,8 +1124,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onRewindSegments = () => {
-		const event = new Event(RunningOrderViewEvents.rewindsegments)
-		window.dispatchEvent(event)
+		window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
 	}
 
 	onTimeScaleChange = (timeScaleVal) => {

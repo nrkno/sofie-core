@@ -41,7 +41,9 @@ export namespace PlayoutAPI {
 		'sourceLayerOnLineStop' = 'playout.sourceLayerOnLineStop',
 		'sourceLayerStickyItemStart' = 'playout.sourceLayerStickyItemStart',
 		'timelineTriggerTimeUpdateCallback' = 'playout.timelineTriggerTimeUpdateCallback',
-		'saveEvaluation' = 'playout.saveEvaluation'
+		'saveEvaluation' = 'playout.saveEvaluation',
+
+		'userRoTake' = 'playout.userRoTake',
 	}
 }
 

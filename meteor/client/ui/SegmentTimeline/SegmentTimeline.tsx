@@ -39,6 +39,7 @@ interface IProps {
 	isCollapsed?: boolean,
 	scrollLeft: number,
 	hasAlreadyPlayed: boolean,
+	hasGuestItems: boolean,
 	hasRemoteItems: boolean,
 	isLiveSegment: boolean,
 	isNextSegment: boolean,
@@ -440,6 +441,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 				className={ClassNames('segment-timeline', {
 					'collapsed': this.props.isCollapsed,
 
+					'has-guest-items': this.props.hasGuestItems && (!this.props.hasAlreadyPlayed || this.props.isLiveSegment),
 					'has-remote-items': this.props.hasRemoteItems && (!this.props.hasAlreadyPlayed || this.props.isLiveSegment),
 
 					'live': this.props.isLiveSegment,
@@ -464,10 +466,10 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 									<div key={key}>
 										<div>
 											<b>
-												<img className='icon' src='/icons/warning.svg'/>
+												<img className='icon' src='/icons/warning_icon.svg'/>
 												{(
 													note.type === SegmentLineNoteType.WARNING ? '' :
-													note.type === SegmentLineNoteType.ERROR ? 'Error:&nbsp;' :
+													note.type === SegmentLineNoteType.ERROR ? 'Error:\u00A0' :
 													''
 												)}
 											</b>

@@ -13,6 +13,7 @@ $segment-title-background-color-next: $general-next-color;
 $segment-title-text-color-live: #ffffff;
 $segment-title-background-color-live: $general-live-color;
 $segment-title-background-color-remote: $general-live-remote-color;
+$segment-title-background-color-guest: $general-live-guest-color;
 $segment-title-background-color-has-played: #2c2c2c;
 $segment-line-start-color: #a5a5a5;
 $segment-item-disabled-background: #898989;
@@ -282,6 +283,16 @@ body.vertical-overflow-only {
 			padding: 0.5em;
 			line-height: 1.4em;
 			font-size: 75%;
+		}
+	}
+
+	&.has-guest-items {
+		.segment-timeline__title {
+			background: $segment-title-background-color-guest;
+
+			> h2 {
+				background: $segment-title-background-color-guest;
+			}
 		}
 	}
 
@@ -772,6 +783,10 @@ body.vertical-overflow-only {
 					word-wrap: none;
 					color: $segment-line-start-color;
 
+					&.segment-timeline__segment-line__nextline__label--thin {
+						font-weight: 400;
+					}
+
 					.segment-timeline__segment-line__nextline__label__carriage-return {
 						width: 20px;
 						height: 15px;
@@ -1077,6 +1092,10 @@ body.vertical-overflow-only {
 								position: absolute;
 								right: 0;
 								transform: translate3d(0, 0, 15px);
+								text-align: right;
+								max-width: calc(100% - 10px);
+								overflow: hidden;
+								text-overflow: clip;
 								
 								> * {
 									position: relative;
@@ -1085,6 +1104,8 @@ body.vertical-overflow-only {
 								> .segment-timeline__layer-item__label {
 									margin-right: 0 !important;
 									margin-left: 5px !important;
+									overflow: initial;
+									max-width: none;
 								}
 
 								> .label-icon {
@@ -1094,11 +1115,17 @@ body.vertical-overflow-only {
 								> .label-icon.label-infinite-icon {
 									margin: 0 0 0 0;
 								}
+
+								> .last-words {
+									float: right;
+								}
 							}
 
 							&.last-words {
 								font-weight: 300;
 								font-style: italic;
+
+								display: block;
 							}
 
 							&.file-name {
@@ -1608,6 +1635,11 @@ body.vertical-overflow-only {
 			font-weight: 300;
 		}
 	}
+	.mini-inspector__footer {
+		margin-top: 3px;
+
+		text-align: right;
+	}
 	.mini-inspector__label {
 		font-weight: 300;
 		text-transform: capitalize;
@@ -1622,12 +1654,18 @@ body.vertical-overflow-only {
 	}
 	.mini-inspector__full-text {
 		font-weight: 300;
-		max-width: 250px;
+		max-width: 400px;
 		display: inline-block;
 		white-space: normal;
 		width: auto;
 		min-width: 200px;
 		font-style: italic;
+		text-align: left;
+
+		&.text-end {
+			margin-top: 6px;
+			text-align: right;
+		}
 	}
 	.mini-inspector__in-point {
 		margin-right: 1em;

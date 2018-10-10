@@ -5,6 +5,7 @@ import { PlayoutDeviceType } from './PeripheralDevices'
 import { LookaheadMode } from '../api/playout'
 import { applyClassToDocument, registerCollection } from '../lib'
 import * as _ from 'underscore'
+import { logger } from '../logging'
 
 // Imports from TSR (TODO make into an import)
 export enum MappingLawoType {
@@ -56,6 +57,12 @@ export interface MappingPanasonicPtz extends Mapping {
 	mappingType: MappingPanasonicPtzType
 }
 
+export interface HotkeyDefinition {
+	_id: string
+	key: string
+	label: string
+}
+
 /** A set of available layer groups in a given installation */
 export interface DBStudioInstallation {
 	_id: string
@@ -69,6 +76,8 @@ export interface DBStudioInstallation {
 	defaultShowStyle: string
 
 	config: Array<IStudioConfigItem>
+
+	hotkeyLegend?: Array<HotkeyDefinition>
 }
 
 export interface ISourceLayerBase {
@@ -79,6 +88,8 @@ export interface ISourceLayerBase {
 	name?: string
 	/** Use special treatment for remote inputs */
 	isRemoteInput?: boolean
+	/** Use special treatment for guest inputs */
+	isGuestInput?: boolean
 	/** Available shortcuts to be used for ad-lib items assigned to this sourceLayer - comma separated list allowing for chords (keyboard sequences) */
 	activateKeyboardHotkeys?: string
 	/** Single 'clear all from this sourceLayer' keyboard shortcut */
@@ -151,6 +162,8 @@ export class StudioInstallation implements DBStudioInstallation {
 	public mappings: Mappings
 	public defaultShowStyle: string
 	public config: Array<IStudioConfigItem>
+	public hotkeyLegend?: Array<HotkeyDefinition>
+
 	constructor (document: DBStudioInstallation) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
@@ -163,6 +176,7 @@ export class StudioInstallation implements DBStudioInstallation {
 		if (item) {
 			return item.value
 		} else {
+			logger.warn(`Studio "${this._id}": Config "${name}" not set`)
 			return null
 		}
 	}

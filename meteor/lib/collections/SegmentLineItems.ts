@@ -157,6 +157,7 @@ export interface ScriptContent extends BaseContent {
 	lastWords: string
 	fullScript?: string
 	sourceDuration?: number
+	lastModified?: Time | null
 }
 
 export interface GraphicsContent extends BaseContent {

@@ -80,7 +80,6 @@ export namespace mousetrapHelper {
 			callback = _callbackTags[index + '_' + tag]
 			if (callback === undefined) {
 				throw new Error(`No callback found for ${tag} and keys ${keys}`)
-				return
 			}
 		}
 

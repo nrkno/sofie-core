@@ -67,7 +67,7 @@ In the default mode, the Settings page will be unavailable from main navigation.
 
 In developer mode, right click is not disabled
 
-```http://localhost:3000/?dvelop=1```
+```http://localhost:3000/?develop=1```
 
 ## Language selection
 

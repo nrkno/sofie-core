@@ -193,13 +193,13 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 
 				// asPlayed is the actual duration so far and expected durations in unplayed lines
 				// item is onAir right now, and it's already taking longer than rendered/expectedDuration
-				if (item.startedPlayback && lastStartedPlayback && !item.duration && runningOrder.currentSegmentLineId === item._id && lastStartedPlayback + (item.expectedDuration || 0) < now) {
+				if (item.startedPlayback && lastStartedPlayback && !item.duration && lastStartedPlayback + (item.expectedDuration || 0) < now) {
 					asPlayedRundownDuration += (now - lastStartedPlayback)
 				} else {
 					asPlayedRundownDuration += (item.duration || item.expectedDuration || 0)
 				}
 
-				if (item.startedPlayback && lastStartedPlayback && !item.duration && runningOrder.currentSegmentLineId === item._id) {
+				if (item.startedPlayback && lastStartedPlayback && !item.duration) {
 					currentRemaining = Math.max(0, (item.duration || item.expectedDuration || 0) - (now - lastStartedPlayback))
 					segLineDurations[item._id] = Math.max((item.duration || item.expectedDuration || 0), (now - lastStartedPlayback))
 					segLinePlayed[item._id] = (now - lastStartedPlayback)

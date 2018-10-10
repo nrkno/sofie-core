@@ -37,7 +37,7 @@ export namespace PrompterAPI {
 
 		_.each(segmentLines, (sl: SegmentLine) => {
 
-			_.each(sl.getSegmentLinesItems(), (sli) => {
+			_.each(sl.getAllSegmentLineItems(), (sli) => {
 				if (
 					sli.content &&
 					sli.content.fullScript

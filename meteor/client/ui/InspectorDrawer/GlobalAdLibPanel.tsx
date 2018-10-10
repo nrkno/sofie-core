@@ -106,15 +106,6 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 						layer: layer,
 						isSticky: true
 					})))
-					.sort((a, b) => {
-						if (a.hotkey && b.hotkey) {
-							return a.hotkey > b.hotkey ? 1 : -1
-						} else if (a.hotkey) {
-							return -1
-						} else {
-							return 1
-						}
-					})
 					.map((item) => {
 						if (!item.isHidden) {
 							if (item.isSticky && (!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0)) {
@@ -295,7 +286,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	const sharedHotkeyList = _.groupBy(props.studioInstallation.sourceLayers, (item) => item.activateKeyboardHotkeys)
 
 	if (props.runningOrder) {
-		let roAdLibItems = RunningOrderBaselineAdLibItems.find({runningOrderId: props.runningOrder._id}).fetch()
+		let roAdLibItems = RunningOrderBaselineAdLibItems.find({ runningOrderId: props.runningOrder._id }, { sort: { sourceLayerId: 1, _rank: 1 } }).fetch()
 		roAdLibItems.forEach((item) => {
 			// automatically assign hotkeys based on adLibItem index
 			const uiAdLib: SegmentLineAdLibItemUi = _.clone(item)

@@ -110,7 +110,7 @@ export namespace RundownUtils {
 						) :
 						(segmentLine.duration !== undefined ?
 							segmentLine.duration :
-							(segmentLine.renderedDuration || 0)
+							(segmentLineDuration || segmentLine.renderedDuration || 0)
 						)
 					)
 				) {

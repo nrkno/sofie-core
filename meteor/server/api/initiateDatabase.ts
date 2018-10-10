@@ -395,7 +395,8 @@ Meteor.methods({
 					name: 'Gjest',
 					type: RundownAPI.SourceLayerType.MIC,
 					onPGMClean: true,
-					unlimited: false
+					unlimited: false,
+					isGuestInput: true
 				},
 				{
 					_id: 'studio0_camera0',
@@ -777,6 +778,9 @@ Meteor.methods({
 				{_id: 'sources_kam', value: '1:1,2:2,3:3,4:4,8:11,9:12'},
 				{_id: 'sources_rm', value: '1:5,2:6,3:7,4:8,5:9,6:10'}
 			],
+			hotkeyLegend: [
+				{_id: 'ctrlA', key: 'ctrl+a', label: 'Gå tilbake til linje standard'}
+			]
 		}})
 	}
 })

@@ -67,6 +67,7 @@ export function getResolvedSegment (studioInstallation: StudioInstallation, runn
 	isNextSegment: boolean,
 	currentLiveSegmentLine: SegmentLineExtended | undefined,
 	hasRemoteItems: boolean,
+	hasGuestItems: boolean,
 	hasAlreadyPlayed: boolean,
 	autoNextSegmentLine: boolean
 	followingSegmentLine: SegmentLineExtended | undefined
@@ -78,6 +79,7 @@ export function getResolvedSegment (studioInstallation: StudioInstallation, runn
 	let nextSegmentLine: SegmentLineExtended | undefined = undefined
 	let hasAlreadyPlayed = false
 	let hasRemoteItems = false
+	let hasGuestItems = false
 	let followingSegmentLine: SegmentLineExtended | undefined = undefined
 
 	let autoNextSegmentLine = false
@@ -186,7 +188,7 @@ export function getResolvedSegment (studioInstallation: StudioInstallation, runn
 				slTimeline.push({
 					id: PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + segmentLineItem._id,
 					trigger: offsetTrigger(segmentLineItem.trigger, TIMELINE_TEMP_OFFSET),
-					duration: segmentLineItem.durationOverride || _.isString(segmentLineItem.expectedDuration) ? segmentLineItem.expectedDuration : false || segmentLineItem.duration || 0,
+					duration: segmentLineItem.durationOverride || segmentLineItem.duration || segmentLineItem.expectedDuration || 0,
 					LLayer: segmentLineItem.outputLayerId,
 					content: {
 						id: segmentLineItem._id
@@ -227,6 +229,10 @@ export function getResolvedSegment (studioInstallation: StudioInstallation, runn
 					// check if the segment should be in a special state for segments with remote input
 					if (segmentLineItem.sourceLayer.isRemoteInput) {
 						hasRemoteItems = true
+					}
+
+					if (segmentLineItem.sourceLayer.isGuestInput) {
+						hasGuestItems = true
 					}
 				}
 
@@ -358,6 +364,7 @@ export function getResolvedSegment (studioInstallation: StudioInstallation, runn
 		currentLiveSegmentLine,
 		isNextSegment,
 		hasAlreadyPlayed,
+		hasGuestItems,
 		hasRemoteItems,
 		autoNextSegmentLine,
 		followingSegmentLine

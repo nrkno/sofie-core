@@ -158,6 +158,10 @@ export class SegmentLine implements DBSegmentLine {
 			}, options)
 		).fetch()
 	}
+	getAllSegmentLineItems () {
+		return this.getSegmentLinesItems()
+	}
+
 	getSegmentLinesAdLibItems (selector?: MongoSelector<SegmentLineItem>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}

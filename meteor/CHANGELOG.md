@@ -2,6 +2,110 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.15.0-0"></a>
+## 0.15.0-0 (2018-09-25)
+
+### Features
+
+* **New implementation of how user actions are logged (now including the origin of the action (like key pressed, or button clicked))**
+  <br> Peripheral Device user action logging ([2250798](https://github.com/nrkno/tv-automation-server-core/commit/2250798))
+  <br> user log: add action context (trigger event summary) ([ad176f2](https://github.com/nrkno/tv-automation-server-core/commit/ad176f2))
+* **Add typeSubVariant field to SegmentLine. (#46) ([4af88d3](https://github.com/nrkno/tv-automation-server-core/commit/4af88d3)), closes [#46]**
+  <br> Add typeSubVariant field to SegmentLine. (#46) ([82bd4bd](https://github.com/nrkno/tv-automation-server-core/commit/82bd4bd)), closes [#46]
+* **New implementation of how CasparCG-devices are restarted, now supporting multiple devices**
+  <br> changed restart CasparCG functionality ([dd567c2](https://github.com/nrkno/tv-automation-server-core/commit/dd567c2))
+* **Added support for lookahead/preloadvmode "When Clear", used for graphics**
+  <br> Grafikk lookahead/preload ([30a6b03](https://github.com/nrkno/tv-automation-server-core/commit/30a6b03))
+* **Handle received Running Order data when having added (adlibbed) segmentLines**
+  <br> handle mos updates with dynamicallyInserted segmentLines ([1d292c0](https://github.com/nrkno/tv-automation-server-core/commit/1d292c0))
+* Move SegmentLine duration calculation into blueprints ([315eb42](https://github.com/nrkno/tv-automation-server-core/commit/315eb42))
+* **Added experimental prompter view (at "/prompter/studio0")**
+  <br> prompter-view ([f45a923](https://github.com/nrkno/tv-automation-server-core/commit/f45a923))
+  <br> implement a simple mirror mode ([8d0be4e](https://github.com/nrkno/tv-automation-server-core/commit/8d0be4e))
+  <br> prompter background to black, update documentation ([387ad28](https://github.com/nrkno/tv-automation-server-core/commit/387ad28))
+* **Major rework of how Running Order Activation, Deactication, Reset, Reload etc, are done. Adding GUI prompts if user tries to do an action he/she might/should not.**
+  <br> reworked the whole activate/deacticate/reset/reload logic ([1fea56e](https://github.com/nrkno/tv-automation-server-core/commit/1fea56e))
+* **"Queueability", ie be able to add Adlibs as "next segmentLine" rather than insert into current segmentLine.**
+  <br> server side implementation of queueabilified adlibs ([0527b3b](https://github.com/nrkno/tv-automation-server-core/commit/0527b3b))
+  <br> queueability feature - GUI ([dcfa4a0](https://github.com/nrkno/tv-automation-server-core/commit/dcfa4a0))
+* **Prevent infinite items on same layer to interfere with eachother**
+  <br> source layer exclusivity groups (wip) ([7dedc85](https://github.com/nrkno/tv-automation-server-core/commit/7dedc85))
+  <br> sourceLayer exclusivity groups ([c32f0e1](https://github.com/nrkno/tv-automation-server-core/commit/c32f0e1))
+* **Check status of SegmentLineItem content (for things like "Source missing" or "Source Broken")**
+  <br> mediaObjects.checkSLIContentStatus ([66d4427](https://github.com/nrkno/tv-automation-server-core/commit/66d4427))
+* **HTTPSend-device: Custom make-ready commands for httpsend device ([410a2ef](https://github.com/nrkno/tv-automation-server-core/commit/410a2ef))**
+
+
+#### GUI
+* Shortcuts: standarize shortcut label display, support numpad ([4c5ba74](https://github.com/nrkno/tv-automation-server-core/commit/4c5ba74))
+* RO view: Retain the special segment color even when On Air/Next ([2596a8e](https://github.com/nrkno/tv-automation-server-core/commit/2596a8e))
+* two-tone Split layers with more than one input of the same type ([60c238c](https://github.com/nrkno/tv-automation-server-core/commit/60c238c))
+* **UI: Show next take style icon next to timecode**
+  <br>show next take style icon next to timecode ([8d090e8](https://github.com/nrkno/tv-automation-server-core/commit/8d090e8))
+* new style of segmentLine markers (WIP) ([a3569ce](https://github.com/nrkno/tv-automation-server-core/commit/a3569ce))
+* add support for two-tone splits with the same source type ([ba70dfa](https://github.com/nrkno/tv-automation-server-core/commit/ba70dfa))
+* **GUI improvement of SourceLayerItemContainer**
+  <br>a better implementation of SourceLayerItemContainer ([38380e1](https://github.com/nrkno/tv-automation-server-core/commit/38380e1))
+* new style of segmentLine markers (WIP) ([a3569ce](https://github.com/nrkno/tv-automation-server-core/commit/a3569ce))
+* Timeline-display: Add next segment return arrow at end of segment ([54900a8](https://github.com/nrkno/tv-automation-server-core/commit/54900a8))
+* Timeline-display: end of segment overlay ([41e78ec](https://github.com/nrkno/tv-automation-server-core/commit/41e78ec))
+* Timeline-display: more work on new marker style ([570e408](https://github.com/nrkno/tv-automation-server-core/commit/570e408))
+* Timeline-display: End of Show marker ([01aefb5](https://github.com/nrkno/tv-automation-server-core/commit/01aefb5))
+
+### Bug Fixes
+
+* don't throw in SettingsMenu if sourceLayers are undefined ([3afd7f6](https://github.com/nrkno/tv-automation-server-core/commit/3afd7f6))
+* imports in various places ([7d352a8](https://github.com/nrkno/tv-automation-server-core/commit/7d352a8))
+* origo-ize datePicker ([db0f4ff](https://github.com/nrkno/tv-automation-server-core/commit/db0f4ff))
+* Settings translation strings were broken in many dialog boxes ([b6ac1fc](https://github.com/nrkno/tv-automation-server-core/commit/b6ac1fc))
+* Settings translation strings were broken in many dialog boxesSettings are not translated yet, so ([7053f2c](https://github.com/nrkno/tv-automation-server-core/commit/7053f2c))
+* show end marker ([2bd874a](https://github.com/nrkno/tv-automation-server-core/commit/2bd874a))
+* Status page styling ([69c4697](https://github.com/nrkno/tv-automation-server-core/commit/69c4697))
+* translate datePicker ([ca00c04](https://github.com/nrkno/tv-automation-server-core/commit/ca00c04))
+* Add missing _rank field to SegmentLineAdLibItem ([9cd15fa](https://github.com/nrkno/tv-automation-server-core/commit/9cd15fa))
+* added missing getRank import ([9d37eb8](https://github.com/nrkno/tv-automation-server-core/commit/9d37eb8))
+* lock down package.json & update package-lock, to get release2 to build ([472f8ab](https://github.com/nrkno/tv-automation-server-core/commit/472f8ab))
+* proper dispose of executeFunction checkReply after execution is done ([523ec99](https://github.com/nrkno/tv-automation-server-core/commit/523ec99))
+* refactored reset-segmentLine further ([0523eb6](https://github.com/nrkno/tv-automation-server-core/commit/0523eb6))
+* Remove timestamps from blueprint backups ([74fa1b3](https://github.com/nrkno/tv-automation-server-core/commit/74fa1b3))
+* resetRunningOrder functionality in GUI ([4eb096a](https://github.com/nrkno/tv-automation-server-core/commit/4eb096a))
+* resolve merge issue ([0cbc75a](https://github.com/nrkno/tv-automation-server-core/commit/0cbc75a))
+* roReset should reset holdItems and infinites ([bdf8385](https://github.com/nrkno/tv-automation-server-core/commit/bdf8385))
+* Tweaked styling of evaluation form, warning messages, color of the next lines, translations, ca ([50d2753](https://github.com/nrkno/tv-automation-server-core/commit/50d2753))
+* updated nightly cronjob: restart casparcg devices, to work with new restartCasparCG function im ([edbc186](https://github.com/nrkno/tv-automation-server-core/commit/edbc186))
+* when activating, set Next if not set ([c9f71a1](https://github.com/nrkno/tv-automation-server-core/commit/c9f71a1))
+* a workaround for Monaco Ctrl+V shortcut issue. ([aead169](https://github.com/nrkno/tv-automation-server-core/commit/aead169))
+* a workaround for Monaco Ctrl+V shortcut issue. ([41389ee](https://github.com/nrkno/tv-automation-server-core/commit/41389ee))
+* Display OK status in RO View with nowrap ([0763c3a](https://github.com/nrkno/tv-automation-server-core/commit/0763c3a))
+* rewindsegments on resetRunningOrder ([57c1c53](https://github.com/nrkno/tv-automation-server-core/commit/57c1c53))
+* smarter reloadRunningOrder ([33c11ba](https://github.com/nrkno/tv-automation-server-core/commit/33c11ba))
+* styling fix in ShowStyleSettings ([681163a](https://github.com/nrkno/tv-automation-server-core/commit/681163a))
+* transition: Delay sli not contents, to ensure relative triggers against the sli are correct (fi ([856da4b](https://github.com/nrkno/tv-automation-server-core/commit/856da4b))(https://github.com/nrkno/tv-automation-server-core/issues/46)(https://github.com/nrkno/tv-automation-server-core/issues/46)
+* Timeline-display: don't round items in relative mode ([2938819](https://github.com/nrkno/tv-automation-server-core/commit/2938819))
+* Timeline-display: Infinite sli do not update properly on new mos data. Fix detection of the end of the  ([16d9715](https://github.com/nrkno/tv-automation-server-core/commit/16d9715))
+* RO overview:fix label lengths ([41dea0b](https://github.com/nrkno/tv-automation-server-core/commit/41dea0b))
+* ModalDialog: Don't wrap p elements in a p element ([fa4dcf9](https://github.com/nrkno/tv-automation-server-core/commit/fa4dcf9))
+
+### Other
+
+* fix tslint warnings in mockData/mosData, since that's just mock ([ac054a7](https://github.com/nrkno/tv-automation-server-core/commit/ac054a7))
+* update meteor to 1.6.1.4 ([49a4ae6](https://github.com/nrkno/tv-automation-server-core/commit/49a4ae6))
+* Update README.md ([7063988](https://github.com/nrkno/tv-automation-server-core/commit/7063988))
+* Updated Norwegian translations and language tweaks to the broadcast evaluation form. ([b5ee879](https://github.com/nrkno/tv-automation-server-core/commit/b5ee879))
+* Add default values for new kam and rm input maps ([9ebafe1](https://github.com/nrkno/tv-automation-server-core/commit/9ebafe1))
+* added release script ([ef41771](https://github.com/nrkno/tv-automation-server-core/commit/ef41771))
+* better logging of mos actions ([38341cc](https://github.com/nrkno/tv-automation-server-core/commit/38341cc))
+* clean up SVG markup ([25f6342](https://github.com/nrkno/tv-automation-server-core/commit/25f6342))
+* convenience functions for rateLimiting ([0471c87](https://github.com/nrkno/tv-automation-server-core/commit/0471c87))
+* modalDialog example doc ([99ffaaf](https://github.com/nrkno/tv-automation-server-core/commit/99ffaaf))
+* moved cache prefixes into enum ([24dead4](https://github.com/nrkno/tv-automation-server-core/commit/24dead4))
+* Remove unused nora_init layer from initDB ([9ef8426](https://github.com/nrkno/tv-automation-server-core/commit/9ef8426))
+* Update grafikk lookahead mode ([844decd](https://github.com/nrkno/tv-automation-server-core/commit/844decd))
+* Update mock3 to have a valid super in apning kam ([a52863d](https://github.com/nrkno/tv-automation-server-core/commit/a52863d))
+* reorganize modifiers in keyboardEventToShortcut ([ac939ce](https://github.com/nrkno/tv-automation-server-core/commit/ac939ce))
+
+
+
 <a name="0.14.0"></a>
 # [0.14.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.13.1...v0.14.0) (2018-09-13)
 

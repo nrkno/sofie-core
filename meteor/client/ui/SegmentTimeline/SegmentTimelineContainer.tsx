@@ -87,6 +87,7 @@ interface ITrackedProps {
 	isNextSegment: boolean,
 	currentLiveSegmentLine: SegmentLineUi | undefined,
 	hasRemoteItems: boolean,
+	hasGuestItems: boolean,
 	hasAlreadyPlayed: boolean,
 	autoNextSegmentLine: boolean
 	followingSegmentLine: SegmentLineUi | undefined
@@ -105,6 +106,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			isNextSegment: false,
 			currentLiveSegmentLine: undefined,
 			hasRemoteItems: false,
+			hasGuestItems: false,
 			hasAlreadyPlayed: false,
 			autoNextSegmentLine: false,
 			followingSegmentLine: undefined
@@ -121,6 +123,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		isNextSegment: o.isNextSegment,
 		hasAlreadyPlayed: o.hasAlreadyPlayed,
 		hasRemoteItems: o.hasRemoteItems,
+		hasGuestItems: o.hasGuestItems,
 		autoNextSegmentLine: o.autoNextSegmentLine,
 		followingSegmentLine: o.followingSegmentLine
 	}
@@ -336,6 +339,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				isLiveSegment={this.props.isLiveSegment}
 				isNextSegment={this.props.isNextSegment}
 				hasRemoteItems={this.props.hasRemoteItems}
+				hasGuestItems={this.props.hasGuestItems}
 				autoNextSegmentLine={this.props.autoNextSegmentLine}
 				hasAlreadyPlayed={this.props.hasAlreadyPlayed}
 				followLiveLine={this.state.followLiveLine}

@@ -105,6 +105,7 @@ export interface TemplateContextInnerBase {
 	formatDateAsTimecode: (date: Date) => string
 	formatDurationAsTimecode: (time: number) => string
 	getNotes: () => Array<SegmentLineNote>
+	parseDateTime: (dateTime: string) => Time | null
 	// extended:
 	getAllSegmentLines: () => Array<SegmentLine>
 }
@@ -301,6 +302,36 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 		},
 		getNotes () {
 			return savedNotes
+		},
+		parseDateTime (dateTime: string): Time | null {
+			const dtMatch = dateTime.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z|(\+|\-)(\d{2}):(\d{2}))?$/i)
+			if (dtMatch) {
+				const year = parseInt(dtMatch[1], 10)
+				const month = parseInt(dtMatch[2], 10)
+				const day = parseInt(dtMatch[3], 10)
+				let hours = parseInt(dtMatch[4], 10)
+				let minutes = parseInt(dtMatch[5], 10)
+				const seconds = parseInt(dtMatch[6], 10)
+				const tz = dtMatch[7]
+				const tzSign = dtMatch[8]
+				const tzHours = parseInt(dtMatch[9], 10)
+				const tzMinutes = parseInt(dtMatch[10], 10)
+
+				if (tz && tz !== 'Z') {
+					const sign = tzSign === '+' ? -1 : 1
+					hours = hours + (sign * tzHours)
+					minutes = minutes + (sign * tzMinutes)
+				}
+
+				const time = new Date()
+				time.setUTCFullYear(year, month - 1, day)
+				time.setUTCHours(hours)
+				time.setUTCMinutes(minutes)
+				time.setUTCSeconds(seconds)
+
+				return time.getTime()
+			}
+			return null
 		},
 
 		// ------------------

@@ -1,6 +1,6 @@
 {
   "name": "automation-core",
-  "version": "0.14.0",
+  "version": "0.15.0-0",
   "private": true,
   "scripts": {
     "start": "meteor run",
@@ -16,7 +16,7 @@
     "i18n-compile-json-nb": "i18next-conv -l nb -s i18n/nb.po -t public/locales/nb/translations.json",
     "i18n-compile-json-sv": "i18next-conv -l sv -s i18n/sv.po -t public/locales/sv/translations.json",
     "release": "standard-version",
-    "prerelease": "standard-version --prerelease"
+    "prepareChangelog": "standard-version --prerelease"
   },
   "dependencies": {
     "@babel/runtime": "7.0.0-beta.48",
@@ -24,6 +24,7 @@
     "@fortawesome/fontawesome-free-solid": "^5.0.13",
     "@fortawesome/react-fontawesome": "0.0.19",
     "@nrk/core-icons": "^3.2.0",
+    "@slack/client": "^4.6.0",
     "@types/body-parser": "^1.17.0",
     "body-parser": "^1.18.3",
     "chai": "^4.1.2",
@@ -68,8 +69,8 @@
     "winston": "^2.4.2"
   },
   "devDependencies": {
-    "@types/chai": "^4.1.2",
-    "@types/classnames": "^2.2.3",
+    "@types/chai": "4.1.2",
+    "@types/classnames": "2.2.3",
     "@types/css-font-loading-module": "0.0.1",
     "@types/jquery": "^3.3.1",
     "@types/meteor": "^1.4.13",

@@ -752,3 +752,39 @@ export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 	})
 	return ok
 }
+/**
+ * Push a value into a object, and ensure the array exists
+ * @param obj Object
+ * @param path Path to array in object
+ * @param valueToPush Value to push onto array
+ */
+export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T): Array<T> {
+	if (!path) throw new Meteor.Error(500, 'parameter path missing')
+
+	let attrs = path.split('.')
+
+	let lastAttr = _.last(attrs)
+	let attrsExceptLast = attrs.slice(0, -1)
+
+	let o = obj
+	_.each(attrsExceptLast, (attr) => {
+
+		if (!_.has(o,attr)) {
+			o[attr] = {}
+		} else {
+			if (!_.isObject(o[attr])) throw new Meteor.Error(500, 'Object propery "' + attr + '" is not an object ("' + o[attr] + '") (in path "' + path + '")')
+		}
+		o = o[attr]
+	})
+	if (!lastAttr) throw new Meteor.Error(500, 'Bad lastAttr')
+
+	if (!_.has(o,lastAttr)) {
+		o[lastAttr] = []
+	} else {
+		if (!_.isArray(o[lastAttr])) throw new Meteor.Error(500, 'Object propery "' + lastAttr + '" is not an array ("' + o[lastAttr] + '") (in path "' + path + '")')
+	}
+	let arr = o[lastAttr]
+
+	arr.push(valueToPush)
+	return arr
+}
