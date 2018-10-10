@@ -12,6 +12,9 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { CustomLayerItemRenderer } from './CustomLayerItemRenderer'
 
+
+const BREAK_SCRIPT_BREAKPOINT = 620
+const SCRIPT_PART_LENGTH = 250
 export class MicSourceRenderer extends CustomLayerItemRenderer {
 
 	itemPosition: number
@@ -136,7 +139,14 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 		let begin = labelItems[0] || ''
 		let end = labelItems[1] || ''
 
+		function shorten (str: string, maxLen: number, separator: string = ' ') {
+			if (str.length <= maxLen) return str
+			return str.substr(0, str.lastIndexOf(separator, maxLen))
+		}
+
 		const content = this.props.segmentLineItem.content as ScriptContent
+
+		const breakScript = !!(content && content.fullScript && content.fullScript.length > BREAK_SCRIPT_BREAKPOINT)
 
 		return <React.Fragment>
 			<span className='segment-timeline__layer-item__label first-words overflow-label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
@@ -151,7 +161,12 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 				<div className={'segment-timeline__mini-inspector ' + this.props.typeClass + ' segment-timeline__mini-inspector--pop-down'} style={this.getFloatingInspectorStyle()}>
 					<div>
 						{content && content.fullScript ?
-							<span className='mini-inspector__full-text'>{content.fullScript}</span>
+							breakScript ?
+								<React.Fragment>
+									<span className='mini-inspector__full-text'>{shorten(content.fullScript, SCRIPT_PART_LENGTH) + '\u2026'}</span>
+									<span className='mini-inspector__full-text text-end'>{shorten(content.fullScript, SCRIPT_PART_LENGTH) + '\u2026'}</span>
+								</React.Fragment>
+								: <span className='mini-inspector__full-text'>{content.fullScript}</span>
 							: <span className='mini-inspector__system'>{t('Script is empty')}</span>
 						}
 					</div>

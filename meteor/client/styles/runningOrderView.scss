@@ -1654,12 +1654,18 @@ body.vertical-overflow-only {
 	}
 	.mini-inspector__full-text {
 		font-weight: 300;
-		max-width: 250px;
+		max-width: 400px;
 		display: inline-block;
 		white-space: normal;
 		width: auto;
 		min-width: 200px;
 		font-style: italic;
+		text-align: left;
+
+		&.text-end {
+			margin-top: 6px;
+			text-align: right;
+		}
 	}
 	.mini-inspector__in-point {
 		margin-right: 1em;
