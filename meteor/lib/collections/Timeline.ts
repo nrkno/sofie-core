@@ -17,7 +17,8 @@ export type TimelineContentTypeAny =
 	TimelineContentTypeCasparCg |
 	TimelineContentTypeLawo |
 	TimelineContentTypeAtem |
-	TimelineContentTypeHttp
+	TimelineContentTypeHttp |
+	TimelineContentTypeHyperdeck
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -49,6 +50,10 @@ export enum TimelineContentTypeHttp {
 	POST = 'post',
 	PUT = 'put',
 }
+export enum TimelineContentTypeHyperdeck { // tsr
+	TRANSPORT = 'transport'
+}
+
 export namespace Atem_Enums {
 	export enum TransitionStyle {
 		MIX = 0,

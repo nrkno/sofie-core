@@ -6,8 +6,10 @@ import { StudioInstallations,
 	MappingAtem,
 	MappingAtemType,
 	MappingLawo,
+	MappingHyperdeck,
+	MappingHyperdeckType,
 	Mapping,
-	MappingLawoType
+	MappingLawoType,
 } from '../../lib/collections/StudioInstallations'
 import { literal, getCurrentTime } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
@@ -122,7 +124,14 @@ Meteor.methods({
 					type: PlayoutDeviceType.HTTPSEND,
 					options: {
 					}
-				}
+				},
+				'settings.devices.hyperdeck0': ((pd['settings'] || {})['devices'] || {})['hyperdeck0'] || {
+					type: PlayoutDeviceType.HYPERDECK,
+					options: {
+						host: '160.67.87.53',
+						port: 9993
+					}
+				},
 			}})
 			// PeripheralDevices.update(pd._id, {$set: {
 			// 	mappings: mappings
@@ -420,6 +429,17 @@ Meteor.methods({
 					activateKeyboardHotkeys: '',
 					assignHotkeysToGlobalAdlibs: false,
 					unlimited: false
+				},
+				{
+					_id: 'studio0_hyperdeck0',
+					_rank: 0,
+					name: 'Hyperdeck',
+					type: RundownAPI.SourceLayerType.UNKNOWN,
+					onPGMClean: true,
+					activateKeyboardHotkeys: '',
+					assignHotkeysToGlobalAdlibs: false,
+					unlimited: false,
+					isHidden: true
 				},
 			],
 		}})
@@ -744,6 +764,12 @@ Meteor.methods({
 				deviceId: 'http0',
 				lookahead: LookaheadMode.PRELOAD,
 			}),
+			'hyperdeck0_transport': literal<MappingHyperdeck>({
+				device: PlayoutDeviceType.HYPERDECK,
+				deviceId: 'hyperdeck0',
+				mappingType: MappingHyperdeckType.TRANSPORT,
+				lookahead: LookaheadMode.NONE,
+			})
 		}
 		StudioInstallations.update('studio0', {$set: {
 			mappings: mappings
