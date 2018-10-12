@@ -484,7 +484,6 @@ export interface TimelineObjPanasonicPTZPresetSpeed extends TimelineObj {
 	content: {
 		keyframes?: Array<TimelineKeyframe>
 		type: TimelineContentTypePanasonicPtz.SPEED
-		identifier: string
 		speed: number
 	}
 }
@@ -493,7 +492,6 @@ export interface TimelineObjPanasonicPTZPreset extends TimelineObj {
 	content: {
 		keyframes?: Array<TimelineKeyframe>
 		type: TimelineContentTypePanasonicPtz.PRESET
-		identifier: string
 		preset: number
 	}
 }

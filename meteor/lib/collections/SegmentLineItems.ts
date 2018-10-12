@@ -4,7 +4,10 @@ import { TriggerType } from 'superfly-timeline'
 import { TimelineTransition,
 	TimelineObjGroup,
 	TimelineObjCCGVideo,
-	TimelineObjLawoSource
+	TimelineObjLawoSource,
+	TimelineObjAtemME,
+	TimelineObjPanasonicPTZPreset,
+	TimelineObjPanasonicPTZPresetSpeed
 } from './Timeline'
 import { TimelineObj } from './Timeline'
 import { TransformedCollection } from '../typings/meteor'
@@ -124,7 +127,7 @@ export interface BaseContent {
 	timelineObjects?: Array<TimelineObj | null>
 }
 
-export type SomeTimelineObject = TimelineObj | TimelineObjGroup | TimelineObjCCGVideo | TimelineObjLawoSource
+export type SomeTimelineObject = TimelineObj | TimelineObjGroup | TimelineObjCCGVideo | TimelineObjLawoSource | TimelineObj
 export interface VTContent extends BaseContent {
 	fileName: string
 	path: string
