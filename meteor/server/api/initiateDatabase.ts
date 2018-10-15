@@ -219,7 +219,8 @@ Meteor.methods({
 					abbreviation: 'Full',
 					type: RundownAPI.SourceLayerType.VT,
 					onPGMClean: true,
-					onPresenterScreen: true
+					onPresenterScreen: true,
+					exclusiveGroup: 'fullscreen_pgm'
 				},
 				{
 					_id: 'studio0_live_speak0',
@@ -228,7 +229,8 @@ Meteor.methods({
 					abbreviation: 'STK',
 					type: RundownAPI.SourceLayerType.LIVE_SPEAK,
 					onPGMClean: true,
-					onPresenterScreen: true
+					onPresenterScreen: true,
+					exclusiveGroup: 'fullscreen_pgm'
 				},
 				{
 					_id: 'studio0_graphics_super',
@@ -246,7 +248,8 @@ Meteor.methods({
 				 	name: 'Grafikk',
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
-					onPresenterScreen: true
+					onPresenterScreen: true,
+					exclusiveGroup: 'fullscreen_pgm'
 				},
 				{
 				 	_id: 'studio0_graphics_klokke',
@@ -346,7 +349,8 @@ Meteor.methods({
 					onPGMClean: true,
 					isSticky: true,
 					activateStickyKeyboardHotkey: 'f6',
-					onPresenterScreen: true
+					onPresenterScreen: true,
+					exclusiveGroup: 'fullscreen_pgm'
 				},
 				{
 					_id: 'studio0_remote0',
@@ -361,7 +365,8 @@ Meteor.methods({
 					assignHotkeysToGlobalAdlibs: true,
 					isSticky: true,
 					activateStickyKeyboardHotkey: 'f5',
-					onPresenterScreen: true
+					onPresenterScreen: true,
+					exclusiveGroup: 'fullscreen_pgm'
 				},
 				{
 					_id: 'studio0_script',
@@ -387,7 +392,8 @@ Meteor.methods({
 					activateKeyboardHotkeys: 'f1,f2,f3,f4,8,9',
 					clearKeyboardHotkey: 'ctrl+a,ctrl+f1',
 					assignHotkeysToGlobalAdlibs: true,
-					onPresenterScreen: true
+					onPresenterScreen: true,
+					exclusiveGroup: 'fullscreen_pgm'
 				},
 				{
 					_id: 'studio0_live_transition0',
