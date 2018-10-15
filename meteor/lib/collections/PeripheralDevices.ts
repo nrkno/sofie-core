@@ -56,7 +56,8 @@ export enum PlayoutDeviceType { // to match DeviceType in TSR
 	ATEM = 2,
 	LAWO = 3,
 	HTTPSEND = 4,
-	PANASONIC_PTZ = 5
+	PANASONIC_PTZ = 5,
+	HYPERDECK = 7
 }
 
 export interface PlayoutDeviceSettings {
@@ -94,6 +95,14 @@ export interface PlayoutDeviceSettingsDevicePanasonicPTZ extends PlayoutDeviceSe
 	type: PlayoutDeviceType.PANASONIC_PTZ
 	options: {
 		host: string
+		port?: number
+	}
+}
+
+export interface PlayoutDeviceSettingsDeviceHyperdeck extends PlayoutDeviceSettingsDevice {
+	type: PlayoutDeviceType.HYPERDECK
+	options: {
+		host: string,
 		port?: number
 	}
 }
