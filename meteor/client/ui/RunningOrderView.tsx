@@ -41,7 +41,7 @@ import { scrollToSegmentLine } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { eventContextForLog } from '../lib/eventTargetLogHelper'
 import { Tracker } from 'meteor/tracker'
-import { RunningOrderFullscreenMarker } from './RunningOrderView/RunningOrderFullscreenMarker'
+import { RunningOrderFullscreenControls } from './RunningOrderView/RunningOrderFullscreenControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 
 interface IKeyboardFocusMarkerState {
@@ -1296,7 +1296,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							<KeyboardFocusMarker />
 						</ErrorBoundary>
 						<ErrorBoundary>
-							{(getDeveloperMode() ? false : (getStudioMode() ? !this.props.runningOrder.active || this.props.runningOrder.rehearsal : true)) && <RunningOrderFullscreenMarker /> }
+							<RunningOrderFullscreenControls isFollowingOnAir={this.state.followLiveSegments} onFollowOnAir={this.onGoToLiveSegment} />
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<RunningOrderHeader
@@ -1315,9 +1315,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								studioMode={this.state.studioMode} />
 						</ErrorBoundary>
 						{this.renderSegmentsList()}
-						{!this.state.followLiveSegments &&
-							<div className='running-order-view__go-to-onAir' onClick={this.onGoToLiveSegment}>{t('ON AIR')}</div>
-						}
 						<ErrorBoundary>
 							{ this.props.segments && this.props.segments.length > 0 && <AfterBroadcastForm
 								runningOrder={this.props.runningOrder}
