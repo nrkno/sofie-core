@@ -346,7 +346,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 	renderInsideItem (typeClass: string) {
 		switch (this.props.layer.type) {
 			case RundownAPI.SourceLayerType.SCRIPT:
-			case RundownAPI.SourceLayerType.MIC:
+			// case RundownAPI.SourceLayerType.MIC:
 				return <MicSourceRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
