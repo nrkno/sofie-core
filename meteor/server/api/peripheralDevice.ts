@@ -241,6 +241,23 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 		return false
 	}
+	export function testMethod (id: string, token: string, returnValue: string, throwError?: boolean): string {
+		// used for integration tests with core-connection
+		check(id, String)
+		check(token, String)
+		check(returnValue, String)
+
+		// logger.debug('device ping', id)
+
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
+
+		if (throwError) {
+			throw new Meteor.Error(418, 'Error thrown, as requested')
+		} else {
+			return returnValue
+		}
+	}
 
 	export function updateMosLastDataReceived (id) {
 		PeripheralDevices.update(id, {
@@ -1583,6 +1600,9 @@ methods[PeripheralDeviceAPI.methods.pingWithCommand] = (deviceId, deviceToken, m
 }
 methods[PeripheralDeviceAPI.methods.killProcess] = (deviceId, deviceToken, really: boolean) => {
 	return ServerPeripheralDeviceAPI.killProcess(deviceId, deviceToken, really)
+}
+methods[PeripheralDeviceAPI.methods.testMethod] = (deviceId, deviceToken, returnValue, throwError ) => {
+	return ServerPeripheralDeviceAPI.testMethod(deviceId, deviceToken, returnValue, throwError)
 }
 // ----------------------------------------------------------------------------
 // Mos-functions:

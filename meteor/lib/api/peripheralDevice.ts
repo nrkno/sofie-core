@@ -51,6 +51,7 @@ export interface SegmentLineItemPlaybackStartedResult {
 export enum methods {
 	'functionReply' 	= 'peripheralDevice.functionReply',
 
+	'testMethod' 		= 'peripheralDevice.testMethod',
 	'setStatus' 		= 'peripheralDevice.status',
 	'ping' 				= 'peripheralDevice.ping',
 	'initialize' 		= 'peripheralDevice.initialize',
