@@ -44,11 +44,20 @@ export namespace ServerPlayoutAPI {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (runningOrder.active) throw new Meteor.Error(404, `roPrepareForBroadcast cannot be run on an active runningOrder!`)
+		const anyOtherActiveRunningOrders = areThereActiveROsInStudio(runningOrder.studioInstallationId, runningOrder._id)
+		if (anyOtherActiveRunningOrders) {
+			logger.warn('Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
+			const res = literal<ClientAPI.ClientResponse>({
+				error: 409,
+				message: 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id')
+			})
+			return res
+		}
 
 		resetRunningOrder(runningOrder)
 		prepareStudioForBroadcast(runningOrder.getStudioInstallation())
 
-		activateRunningOrder(runningOrder, true) // Activate runningOrder (rehearsal)
+		return activateRunningOrder(runningOrder, true) // Activate runningOrder (rehearsal)
 	}
 	/**
 	 * Reset the broadcast, to be used during testing.
@@ -74,7 +83,7 @@ export namespace ServerPlayoutAPI {
 
 		resetRunningOrder(runningOrder)
 
-		activateRunningOrder(runningOrder, false) // Activate runningOrder
+		return activateRunningOrder(runningOrder, false) // Activate runningOrder
 	}
 	/**
 	 * Only activate the runningOrder, don't reset anything
@@ -84,7 +93,7 @@ export namespace ServerPlayoutAPI {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
-		activateRunningOrder(runningOrder, rehearsal)
+		return activateRunningOrder(runningOrder, rehearsal)
 	}
 	/**
 	 * Deactivate the runningOrder
@@ -93,7 +102,7 @@ export namespace ServerPlayoutAPI {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
-		deactivateRunningOrder(runningOrder)
+		return deactivateRunningOrder(runningOrder)
 	}
 	/**
 	 * Trigger a reload of data of the runningOrder
@@ -237,6 +246,20 @@ export namespace ServerPlayoutAPI {
 				}, 'uploadFileToAtem', ssrcBgs)
 			}
 		})
+	}
+	function areThereActiveROsInStudio (studioInstallationId: string, excludeROId?: string): RunningOrder[] {
+		let anyOtherActiveRunningOrders = RunningOrders.find(excludeROId ? {
+			studioInstallationId: studioInstallationId,
+			active: true,
+			_id: {
+				$ne: excludeROId
+			}
+		} : {
+			studioInstallationId: studioInstallationId,
+			active: true
+		}).fetch()
+
+		return anyOtherActiveRunningOrders
 	}
 	function activateRunningOrder (runningOrder: RunningOrder, rehearsal: boolean) {
 		logger.info('Activating RO ' + runningOrder._id + (rehearsal ? ' (Rehearsal)' : ''))
