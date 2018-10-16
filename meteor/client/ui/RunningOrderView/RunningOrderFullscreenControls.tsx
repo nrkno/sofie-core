@@ -184,8 +184,6 @@ export class RunningOrderFullscreenControls extends React.Component<IProps, ISta
 	}
 
 	render () {
-		const { t } = this.props
-
 		return (
 			<div className='running-order__fullscreen-controls'>
 				<div className='running-order__fullscreen-controls__button' onMouseEnter={this.onFullscreenMouseEnter} onMouseLeave={this.onFullscreenMouseLeave} onClick={this.onFullscreenClick} tabIndex={0}>
