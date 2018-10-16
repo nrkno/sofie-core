@@ -232,7 +232,8 @@ Meteor.methods({
 					type: RundownAPI.SourceLayerType.VT,
 					onPGMClean: true,
 					onPresenterScreen: true,
-					unlimited: false
+					unlimited: false,
+					exclusiveGroup: 'fullscreen_pgm'
 				},
 				{
 					_id: 'studio0_live_speak0',
@@ -242,7 +243,8 @@ Meteor.methods({
 					type: RundownAPI.SourceLayerType.LIVE_SPEAK,
 					onPGMClean: true,
 					onPresenterScreen: true,
-					unlimited: false
+					unlimited: false,
+					exclusiveGroup: 'fullscreen_pgm'
 				},
 				{
 					_id: 'studio0_graphics_super',
@@ -262,7 +264,8 @@ Meteor.methods({
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
 					onPresenterScreen: true,
-					unlimited: false
+					unlimited: false,
+					exclusiveGroup: 'fullscreen_pgm'
 				},
 				{
 				 	_id: 'studio0_graphics_klokke',
@@ -372,7 +375,8 @@ Meteor.methods({
 					isSticky: true,
 					activateStickyKeyboardHotkey: 'f6',
 					onPresenterScreen: true,
-					unlimited: false
+					unlimited: false,
+					exclusiveGroup: 'fullscreen_pgm'
 				},
 				{
 					_id: 'studio0_remote0',
@@ -388,7 +392,8 @@ Meteor.methods({
 					isSticky: true,
 					activateStickyKeyboardHotkey: 'f5',
 					onPresenterScreen: true,
-					unlimited: false
+					unlimited: false,
+					exclusiveGroup: 'fullscreen_pgm'
 				},
 				{
 					_id: 'studio0_script',
@@ -418,7 +423,8 @@ Meteor.methods({
 					clearKeyboardHotkey: 'ctrl+a,ctrl+f1',
 					assignHotkeysToGlobalAdlibs: true,
 					onPresenterScreen: true,
-					unlimited: false
+					unlimited: false,
+					exclusiveGroup: 'fullscreen_pgm'
 				},
 				{
 					_id: 'studio0_live_transition0',

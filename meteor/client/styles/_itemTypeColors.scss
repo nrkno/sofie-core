@@ -16,7 +16,7 @@ $segment-layer-background-guest: #008a92;
 		background: $segment-layer-background-camera;
 
 		&.second {
-			background: darken($segment-layer-background-camera, 5%);
+			background: darken($segment-layer-background-camera, 10%);
 		}
 	}
 
@@ -24,7 +24,7 @@ $segment-layer-background-guest: #008a92;
 		background: $segment-layer-background-graphics;
 
 		&.second {
-			background: darken($segment-layer-background-graphics, 5%);
+			background: darken($segment-layer-background-graphics, 10%);
 		}
 	}
 
@@ -32,7 +32,7 @@ $segment-layer-background-guest: #008a92;
 		background: $segment-layer-background-lower-third;
 
 		&.second {
-			background: darken($segment-layer-background-lower-third, 5%);
+			background: darken($segment-layer-background-lower-third, 10%);
 		}
 	}
 
@@ -44,7 +44,7 @@ $segment-layer-background-guest: #008a92;
 		background: $segment-layer-background-vt;
 
 		&.second {
-			background: darken($segment-layer-background-vt, 5%);
+			background: darken($segment-layer-background-vt, 10%);
 		}
 	}
 
@@ -52,7 +52,7 @@ $segment-layer-background-guest: #008a92;
 		background: $segment-layer-background-remote;
 
 		&.second {
-			background: darken($segment-layer-background-remote, 5%);
+			background: darken($segment-layer-background-remote, 10%);
 		}
 	}
 
@@ -104,7 +104,7 @@ $segment-layer-background-guest: #008a92;
 		fill: $segment-layer-background-camera;
 
 		&.second {
-			fill: darken($segment-layer-background-camera, 5%);
+			fill: darken($segment-layer-background-camera, 10%);
 		}
 	}
 
@@ -112,7 +112,7 @@ $segment-layer-background-guest: #008a92;
 		fill: $segment-layer-background-graphics;
 
 		&.second {
-			fill: darken($segment-layer-background-graphics, 5%);
+			fill: darken($segment-layer-background-graphics, 10%);
 		}
 	}
 
@@ -128,7 +128,7 @@ $segment-layer-background-guest: #008a92;
 		fill: $segment-layer-background-vt;
 
 		&.second {
-			fill: darken($segment-layer-background-vt, 5%);
+			fill: darken($segment-layer-background-vt, 10%);
 		}
 	}
 
@@ -136,7 +136,7 @@ $segment-layer-background-guest: #008a92;
 		fill: $segment-layer-background-remote;
 
 		&.second {
-			fill: darken($segment-layer-background-remote, 5%);
+			fill: darken($segment-layer-background-remote, 10%);
 		}
 	}
 
