@@ -23,6 +23,9 @@ export enum MappingAtemType {
 	MediaPlayer,
 	SuperSourceProperties
 }
+export enum MappingHyperdeckType {
+	TRANSPORT = 'transport'
+}
 export interface Mappings {
 	[layerName: string]: Mapping
 }
@@ -50,6 +53,10 @@ export interface MappingLawo extends Mapping {
 	device: PlayoutDeviceType.LAWO,
 	mappingType: MappingLawoType,
 	identifier: string
+}
+export interface MappingHyperdeck extends Mapping {
+	device: PlayoutDeviceType.HYPERDECK,
+	mappingType: MappingHyperdeckType
 }
 
 export interface MappingPanasonicPtz extends Mapping {

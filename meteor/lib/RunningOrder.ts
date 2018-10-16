@@ -7,6 +7,7 @@ import { normalizeArray } from './lib'
 import { Segment } from './collections/Segments'
 import { SegmentLine, SegmentLines } from './collections/SegmentLines'
 import { RunningOrder } from './collections/RunningOrders'
+import { RundownAPI } from './api/rundown';
 
 export const DEFAULT_DISPLAY_DURATION = 3000
 

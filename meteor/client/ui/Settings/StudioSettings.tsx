@@ -14,10 +14,12 @@ import { IOutputLayer,
 	MappingCasparCG,
 	MappingAtem,
 	MappingLawo,
+	MappingHyperdeck,
 	MappingAtemType,
 	MappingLawoType,
 	MappingPanasonicPtzType,
 	MappingPanasonicPtz,
+	MappingHyperdeckType,
 	HotkeyDefinition
 } from '../../../lib/collections/StudioInstallations'
 import { ShowStyles } from '../../../lib/collections/ShowStyles'
@@ -1169,6 +1171,28 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 		)
 	}
 
+	renderHyperdeckMappingSettings (layerId: string) {
+		const { t } = this.props
+		return (
+			<React.Fragment>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('mappingType')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.mappingType'}
+							obj={this.props.studioInstallation}
+							type='dropdown'
+							options={MappingPanasonicPtzType}
+							optionsAreNumbers={false}
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+			</React.Fragment>
+		)
+	}
+
 	renderMappings () {
 		const { t } = this.props
 
@@ -1212,6 +1236,10 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 							(
 								mapping.device === PlayoutDeviceType.HTTPSEND && (
 								<span></span>
+							)) ||
+							(
+								mapping.device === PlayoutDeviceType.HYPERDECK && (
+								<span>{ (mapping as MappingHyperdeck).mappingType }</span>
 							)) ||
 							(
 								<span>Unknown device type: {PlayoutDeviceType[mapping.device] } </span>
@@ -1302,6 +1330,10 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 										(
 										mapping.device === PlayoutDeviceType.PANASONIC_PTZ && (
 											this.renderPanasonicPTZSettings(layerId)
+										)) ||
+										(
+										mapping.device === PlayoutDeviceType.HYPERDECK && (
+											this.renderHyperdeckMappingSettings(layerId)
 										))
 									}
 								</div>

@@ -18,7 +18,8 @@ export type TimelineContentTypeAny =
 	TimelineContentTypeLawo |
 	TimelineContentTypeAtem |
 	TimelineContentTypeHttp |
-	TimelineContentTypePanasonicPtz
+	TimelineContentTypePanasonicPtz |
+	TimelineContentTypeHyperdeck
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -54,6 +55,10 @@ export enum TimelineContentTypePanasonicPtz {
 	PRESET = 'presetMem',
 	SPEED = 'presetSpeed'
 }
+export enum TimelineContentTypeHyperdeck { // tsr
+	TRANSPORT = 'transport'
+}
+
 export namespace Atem_Enums {
 	export enum TransitionStyle {
 		MIX = 0,
