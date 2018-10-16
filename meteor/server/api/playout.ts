@@ -925,7 +925,7 @@ export namespace ServerPlayoutAPI {
 			let filteredSegmentLineItems = _.sortBy(
 				_.filter(segmentLineItems, (sli: SegmentLineItemResolved) => {
 					let sourceLayer = allowedSourceLayers[sli.sourceLayerId]
-					if (sourceLayer && sourceLayer.allowDisable) return true
+					if (sourceLayer && sourceLayer.allowDisable && !sli.virtual) return true
 					return false
 				}),
 				(sli: SegmentLineItemResolved) => {
@@ -2235,28 +2235,30 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLine
 			timelineObjs.push(segmentLineItemGroup)
 			timelineObjs.push(createSegmentLineItemGroupFirstObject(item, segmentLineItemGroup))
 
-			_.each(tos, (o: TimelineObj) => {
-				if (o.holdMode) {
-					if (isHold && !showHoldExcept && o.holdMode === TimelineObjHoldMode.EXCEPT) {
-						return
+			if (!item.virtual) {
+				_.each(tos, (o: TimelineObj) => {
+					if (o.holdMode) {
+						if (isHold && !showHoldExcept && o.holdMode === TimelineObjHoldMode.EXCEPT) {
+							return
+						}
+						if (!isHold && o.holdMode === TimelineObjHoldMode.ONLY) {
+							return
+						}
 					}
-					if (!isHold && o.holdMode === TimelineObjHoldMode.ONLY) {
-						return
+
+					if (segmentLineGroup) {
+						o.inGroup = segmentLineItemGroup._id
+
+						// If we are leaving a HOLD, the transition was suppressed, so force it to run now
+						if (item.isTransition && holdState === RunningOrderHoldState.COMPLETE) {
+							o.trigger.value = TriggerType.TIME_ABSOLUTE
+							o.trigger.value = 'now'
+						}
 					}
-				}
 
-				if (segmentLineGroup) {
-					o.inGroup = segmentLineItemGroup._id
-
-					// If we are leaving a HOLD, the transition was suppressed, so force it to run now
-					if (item.isTransition && holdState === RunningOrderHoldState.COMPLETE) {
-						o.trigger.value = TriggerType.TIME_ABSOLUTE
-						o.trigger.value = 'now'
-					}
-				}
-
-				timelineObjs.push(o)
-			})
+					timelineObjs.push(o)
+				})
+			}
 		}
 	})
 	return timelineObjs

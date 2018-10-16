@@ -72,7 +72,8 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 					// filter only segment line items belonging to this segment line
 					return (segmentLineItem.segmentLineId === this.props.segmentLine._id) ?
 						// filter only segment line items, that have not been hidden from the UI
-						((segmentLineItem as SegmentLineItemUi).hidden !== true)
+						(segmentLineItem.hidden !== true) &&
+						(segmentLineItem.virtual !== true)
 					: false
 				})
 				.sort((a: SegmentLineItemUi, b: SegmentLineItemUi): number => {
