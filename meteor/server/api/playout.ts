@@ -598,6 +598,7 @@ export namespace ServerPlayoutAPI {
 				}
 			})
 		}
+		runningOrder = _.extend(runningOrder, m) as RunningOrder
 		setNextSegmentLine(runningOrder, nextSegmentLine)
 
 		// Setup the items for the HOLD we are starting
@@ -1005,13 +1006,16 @@ export namespace ServerPlayoutAPI {
 
 					let nextSegmentLine: SegmentLine | null = _.first(segmentLinesAfter) || null
 
+					const roChange = {
+						previousSegmentLineId: runningOrder.currentSegmentLineId,
+						currentSegmentLineId: segLine._id,
+						holdState: RunningOrderHoldState.NONE,
+					}
+
 					RunningOrders.update(runningOrder._id, {
-						$set: {
-							previousSegmentLineId: runningOrder.currentSegmentLineId,
-							currentSegmentLineId: segLine._id,
-							holdState: RunningOrderHoldState.NONE,
-						}
+						$set: roChange
 					})
+					runningOrder = _.extend(runningOrder, roChange) as RunningOrder
 
 					setNextSegmentLine(runningOrder, nextSegmentLine)
 				} else {
@@ -1028,12 +1032,15 @@ export namespace ServerPlayoutAPI {
 
 					setRunningOrderStartedPlayback(runningOrder, startedPlayback) // Set startedPlayback on the running order if this is the first item to be played
 
+					const roChange = {
+						previousSegmentLineId: null,
+						currentSegmentLineId: segLine._id,
+					}
+
 					RunningOrders.update(runningOrder._id, {
-						$set: {
-							previousSegmentLineId: null,
-							currentSegmentLineId: segLine._id,
-						}
+						$set: roChange
 					})
+					runningOrder = _.extend(runningOrder, roChange) as RunningOrder
 					setNextSegmentLine(runningOrder, nextSegmentLine)
 
 					logger.error(`Segment Line "${segLine._id}" has started playback by the TSR, but has not been selected for playback!`)
@@ -1831,8 +1838,7 @@ function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): SegmentLine
 
 	if (newAdLibItem.content && newAdLibItem.content.timelineObjects) {
 		let contentObjects = newAdLibItem.content.timelineObjects
-		const objs = _.compact(contentObjects)
-		prefixAllObjectIds(objs, newId + '_')
+		const objs = prefixAllObjectIds(_.compact(contentObjects), newId + '_')
 		newAdLibItem.content.timelineObjects = objs
 	}
 	return newAdLibItem
@@ -1861,8 +1867,7 @@ function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem, segmentLine: 
 
 	if (newSLineItem.content && newSLineItem.content.timelineObjects) {
 		let contentObjects = newSLineItem.content.timelineObjects
-		const objs = _.compact(contentObjects)
-		prefixAllObjectIds(objs, newId + '_')
+		const objs = prefixAllObjectIds(_.compact(contentObjects), newId + '_')
 		newSLineItem.content.timelineObjects = objs
 	}
 	return newSLineItem
@@ -2363,7 +2368,9 @@ function prefixAllObjectIds (objList: TimelineObj[], prefix: string) {
 		})
 	}
 
-	objList.forEach(o => {
+	return objList.map(i => {
+		const o = clone(i)
+
 		o._id = prefix + o._id
 
 		if (typeof o.duration === 'string') {
@@ -2376,6 +2383,8 @@ function prefixAllObjectIds (objList: TimelineObj[], prefix: string) {
 		if (typeof o.inGroup === 'string') {
 			o.inGroup = changedIds.indexOf(o.inGroup) === -1 ? o.inGroup : prefix + o.inGroup
 		}
+
+		return o
 	})
 }
 
@@ -2483,7 +2492,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 					prevObjs = prevObjs.concat(
 						transformSegmentLineIntoTimeline(previousSegmentLineItems, previousSegmentLineGroup, undefined, undefined, activeRunningOrder.holdState))
 
-					prefixAllObjectIds(prevObjs, 'previous_')
+					prevObjs = prefixAllObjectIds(prevObjs, 'previous_')
 
 					// If autonext with an overlap, keep the previous line alive for the specified overlap
 					if (previousSegmentLine.autoNext && previousSegmentLine.autoNextOverlap) {
@@ -2581,6 +2590,8 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 		setLawoObjectsTriggerValue(timelineObjs, currentSegmentLine)
 
 		timelineObjs = validateNoraPreload(timelineObjs)
+
+		// console.log('full', JSON.stringify(timelineObjs, undefined, 4))
 
 		saveIntoDb<TimelineObj, TimelineObj>(Timeline, {
 			roId: activeRunningOrder._id
