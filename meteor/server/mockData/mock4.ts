@@ -21,12 +21,12 @@ Meteor.methods({
 		logger.info('debug_roMock3')
 
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, id, token,
-			new MosString128('SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-BE80889DAE999E83'))
+			new MosString128('SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-BE80889DAE999E84'))
 		//
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, id, token,
 			{
-				'ID' : 'SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-BE80889DAE999E83',
-				'Slug' : 'Julian',
+				'ID' : 'SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-BE80889DAE999E84',
+				'Slug' : 'PTZ Test Harness',
 				'EditorialStart' : '2018-09-07T07:00:00,000Z',
 				'EditorialDuration' : '0:9:0',
 				'MosExternalMetaData' : [
@@ -58,7 +58,13 @@ Meteor.methods({
 				],
 				'Stories' : [
 					{
-						'ID' : 'SLENPS01;P_NDSL\\W\\R_68E40DE6-2D08-487D-BE80889DAE999E83;0E405892-E8E0-418A-A57DA3FE0A48FE45',
+						'ID': 'SLENPS01;P_NDSL\\W\\R_68E40DE6-2D08-487D-BE80889DAE999E84;28C8BD26-1616-4E04-A6B9442280AF352A',
+						'Slug': 'GJEST;Intro',
+						'Items': [
+						]
+					},
+					{
+						'ID' : 'SLENPS01;P_NDSL\\W\\R_68E40DE6-2D08-487D-BE80889DAE999E84;0E405892-E8E0-418A-A57DA3FE0A48FE45',
 						'Slug' : 'GJEST;GJEST-',
 						'Items' : [
 						]
@@ -74,7 +80,7 @@ Meteor.methods({
 
 const stories = [{
 
-	'ID' : 'SLENPS01;P_NDSL\\W\\R_68E40DE6-2D08-487D-BE80889DAE999E83;28C8BD26-1616-4E04-A6B9442280AF352A',
+	'ID' : 'SLENPS01;P_NDSL\\W\\R_68E40DE6-2D08-487D-BE80889DAE999E84;28C8BD26-1616-4E04-A6B9442280AF352A',
 	'Slug' : 'GJEST;Intro',
 	'MosExternalMetaData' : [
 		{
@@ -95,15 +101,15 @@ const stories = [{
 				'SourceTextTime' : 0,
 				'TextTime' : 0,
 				'mosartType' : 'KAM',
-				'mosartVariant' : 1,
-				'PTZ' : 0,
+				'mosartVariant': '1',
+				'PTZ' : 1,
 				'ReadTime' : 0,
 				'ENPSItemType' : 3,
 				'mosartTransition' : 'effect 3'
 			}
 		}
 	],
-	'RunningOrderId' : 'SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-BE80889DAE999E83',
+	'RunningOrderId' : 'SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-BE80889DAE999E84',
 	'Body' : [
 		{
 			'Type' : 'p',
@@ -154,7 +160,7 @@ const stories = [{
 	]
 },{
 
-	'ID' : 'SLENPS01;P_NDSL\\W\\R_68E40DE6-2D08-487D-BE80889DAE999E83;0E405892-E8E0-418A-A57DA3FE0A48FE45',
+	'ID' : 'SLENPS01;P_NDSL\\W\\R_68E40DE6-2D08-487D-BE80889DAE999E84;0E405892-E8E0-418A-A57DA3FE0A48FE45',
 	'Slug' : 'GJEST;GJEST-',
 	'MosExternalMetaData' : [
 		{
@@ -180,8 +186,8 @@ const stories = [{
 				'TextTime' : 0,
 				'Bildebeskrivelse' : '',
 				'mosartType' : 'KAM',
-				'mosartVariant' : 1,
-				'PTZ' : 1,
+				'mosartVariant' : '1',
+				'PTZ' : 2,
 				'ReadTime' : 0,
 				'Rettigheter' : 'Grønt',
 				'Rettighetseier' : 'NRK',
@@ -189,7 +195,7 @@ const stories = [{
 			}
 		}
 	],
-	'RunningOrderId' : 'SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-BE80889DAE999E83',
+	'RunningOrderId' : 'SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-BE80889DAE999E84',
 	'Body' : [
 		{
 			'Type' : 'p',
