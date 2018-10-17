@@ -22,7 +22,7 @@ Meteor.startup(() => {
 		let d = new Date(getCurrentTime())
 		let timeSinceLast = getCurrentTime() - lastNightlyCronjob
 		if (
-			// (d.getHours() >= 4 && d.getHours() < 5) && // It is nighttime
+			(d.getHours() >= 4 && d.getHours() < 5) && // It is nighttime
 			timeSinceLast > 20 * 3600 * 1000 // was last run yesterday
 		) {
 			let previousLastNightlyCronjob = lastNightlyCronjob
