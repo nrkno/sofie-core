@@ -48,7 +48,6 @@ if (Meteor.isServer) {
 			if (err) {
 				logger.error(err)
 			} else {
-				logger.debug(stat)
 				let diffTime = ((sentTime + replyTime) / 2) - stat.currentTime
 
 				systemTime.diff = diffTime

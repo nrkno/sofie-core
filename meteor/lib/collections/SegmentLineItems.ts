@@ -48,6 +48,8 @@ export interface SegmentLineItemGeneric {
 	disabled?: boolean
 	/** A flag to signal that a given SegmentLineItem should be hidden from the UI */
 	hidden?: boolean
+	/** A flag to signal that a given SegmentLineItem has no content, and exists only as a marker on the timeline */
+	virtual?: boolean
 	/** The transition used by this segment line item to transition to and from the item */
 	transitions?: {
 		/** In transition for the item */

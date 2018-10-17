@@ -97,7 +97,6 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		})
 	}
 	handleDiscard () {
-		console.log('discard')
 		this.setState({
 			value: this.getAttribute(),
 			editing: false
@@ -345,9 +344,16 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 		this.handleChange = this.handleChange.bind(this)
 	}
 	handleChange (event) {
-		this.handleUpdate(this.props.optionsAreNumbers !== undefined ? parseInt(event.target.value, 10) : event.target.value)
+		// because event.target.value is always a string, use the original value instead
+		let option = _.find(this.getOptions(), (o) => {
+			return o.value + '' === event.target.value + ''
+		})
+
+		let value = option ? option.value : event.target.value
+
+		this.handleUpdate(this.props.optionsAreNumbers !== undefined ? parseInt(value, 10) : value)
 	}
-	getOptions () {
+	getOptions (addOptionForCurrentValue?: boolean) {
 		let options: Array<{ value: any, name: string, i?: number }> = []
 
 		if (Array.isArray(this.props.options)) {
@@ -374,11 +380,12 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 			if ((this.props.options[first] + '') === (keys[0] + '')) {
 				// is an enum, only pick
 				for (let key in this.props.options) {
-					if ( !_.isNaN(parseInt(key, 10)) ) {
-						let val = this.props.options[key]
+					if ( !_.isNaN(parseInt(key, 10)) ) { // key is a number (the key)
+						let enumValue = this.props.options[key]
+						let enumKey = this.props.options[enumValue]
 						options.push({
-							name: val,
-							value: key
+							name: enumValue,
+							value: enumKey
 						})
 					}
 				}
@@ -395,29 +402,26 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 
 		}
 
+		if (addOptionForCurrentValue) {
+			let currentValue = this.getAttribute()
+			let currentOption = _.find(options, (o) => {
+				return o.value === currentValue
+			})
+			if (!currentOption) {
+				// if currentOption not found, then add it to the list:
+				options.push({
+					name: 'Value: ' + currentValue,
+					value: currentValue
+				})
+			}
+		}
+
 		for (let i = 0; i < options.length; i++) {
 			options[i].i = i
 		}
 
 		return options
 	}
-	componentDidMount () {
-		let availableOptions = this.getOptions()
-		let initialValue = this.getAttribute()
-		// set the value to the first one (default), if value not within available options
-		// and availableOptions has any items
-		if (!availableOptions.find((item) => {
-			if (this.props.optionsAreNumbers) {
-				return (item.value === (initialValue + ''))
-			} else {
-				return (item.value === initialValue)
-			}
-		}) && availableOptions.length > 0) {
-			this.handleUpdate(this.props.optionsAreNumbers !== undefined ? parseInt(availableOptions[0].value, 10) : availableOptions[0].value)
-		}
-	}
-	// getAttributeOption () {
-	// }
 	render () {
 		return (
 			<select
@@ -426,7 +430,7 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 				value={this.getAttribute()}
 				onChange={this.handleChange}
 			>
-				{this.getOptions().map((o) => (
+				{this.getOptions(true).map((o) => (
 					<option key={o.i} value={o.value}>{o.name}</option>
 				))}
 			</select>
