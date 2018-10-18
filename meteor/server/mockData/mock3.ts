@@ -2114,6 +2114,7 @@ const stories = [{
 				'TextTime' : 0,
 				'mosartType' : 'KAM',
 				'mosartVariant' : 1,
+				'PTZ' : 0,
 				'ReadTime' : 0,
 				'ENPSItemType' : 3,
 				'mosartTransition' : 'effect 3'
@@ -2197,7 +2198,8 @@ const stories = [{
 				'TextTime' : 0,
 				'Bildebeskrivelse' : '',
 				'mosartType' : 'KAM',
-				'mosartVariant' : 'gjesT3',
+				'mosartVariant' : 1,
+				'PTZ' : 1,
 				'ReadTime' : 0,
 				'Rettigheter' : 'Grønt',
 				'Rettighetseier' : 'NRK',

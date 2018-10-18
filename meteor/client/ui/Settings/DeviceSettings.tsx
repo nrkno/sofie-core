@@ -9,8 +9,10 @@ import { PeripheralDevice,
 	PlayoutDeviceSettings,
 	PlayoutDeviceSettingsDevice,
 	MosDeviceSettings,
-	MosDeviceSettingsDevice
+	MosDeviceSettingsDevice,
+	PanasonicDeviceSettings
 } from '../../../lib/collections/PeripheralDevices'
+import { literal } from '../../../lib/lib'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -537,11 +539,39 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 								(
 								device.type === PlayoutDeviceType.HTTPSEND && (
 									(
-									<React.Fragment>
-										<HttpSendDeviceSettingsComponent parentDevice={this.props.device} device={device} deviceId={deviceId} />
-									</React.Fragment>
+									<HttpSendDeviceSettingsComponent parentDevice={this.props.device} device={device} deviceId={deviceId} />
 									)
 								)) ||
+								(
+								device.type === PlayoutDeviceType.PANASONIC_PTZ && (
+									<React.Fragment>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Host')}
+												<EditAttribute
+													modifiedClassName='bghl'
+													attribute={'settings.devices.' + deviceId + '.options.host'}
+													obj={this.props.device}
+													type='text'
+													collection={PeripheralDevices}
+													className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Port')}
+												<EditAttribute
+													modifiedClassName='bghl'
+													attribute={'settings.devices.' + deviceId + '.options.port'}
+													obj={this.props.device}
+													type='text'
+													collection={PeripheralDevices}
+													className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+									</React.Fragment>
+									)
+								) ||
 								(
 								device.type === PlayoutDeviceType.HYPERDECK && (
 									(

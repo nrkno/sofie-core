@@ -18,6 +18,7 @@ export type TimelineContentTypeAny =
 	TimelineContentTypeLawo |
 	TimelineContentTypeAtem |
 	TimelineContentTypeHttp |
+	TimelineContentTypePanasonicPtz |
 	TimelineContentTypeHyperdeck
 
 export enum TimelineContentTypeOther {
@@ -49,6 +50,10 @@ export enum TimelineContentTypeAtem { //  Atem-state
 export enum TimelineContentTypeHttp {
 	POST = 'post',
 	PUT = 'put',
+}
+export enum TimelineContentTypePanasonicPtz {
+	PRESET = 'presetMem',
+	SPEED = 'presetSpeed'
 }
 export enum TimelineContentTypeHyperdeck { // tsr
 	TRANSPORT = 'transport'
@@ -477,6 +482,22 @@ export interface TimelineObjHTTPRequest extends TimelineObj {
 		type: TimelineContentTypeHttp
 		url: string
 		params: {[key: string]: number | string}
+	}
+}
+
+export interface TimelineObjPanasonicPTZPresetSpeed extends TimelineObj {
+	content: {
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentTypePanasonicPtz.SPEED
+		speed: number
+	}
+}
+
+export interface TimelineObjPanasonicPTZPreset extends TimelineObj {
+	content: {
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentTypePanasonicPtz.PRESET
+		preset: number
 	}
 }
 

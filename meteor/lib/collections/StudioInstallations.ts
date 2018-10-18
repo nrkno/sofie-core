@@ -11,6 +11,10 @@ import { logger } from '../logging'
 export enum MappingLawoType {
 	SOURCE = 'source'
 }
+export enum MappingPanasonicPtzType {
+	PRESET_SPEED = 0,
+	PRESET = 1
+}
 export enum MappingAtemType {
 	MixEffect,
 	DownStreamKeyer,
@@ -53,6 +57,11 @@ export interface MappingLawo extends Mapping {
 export interface MappingHyperdeck extends Mapping {
 	device: PlayoutDeviceType.HYPERDECK,
 	mappingType: MappingHyperdeckType
+}
+
+export interface MappingPanasonicPtz extends Mapping {
+	device: PlayoutDeviceType.PANASONIC_PTZ,
+	mappingType: MappingPanasonicPtzType
 }
 
 export interface HotkeyDefinition {

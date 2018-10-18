@@ -268,7 +268,8 @@ declare type TimelineContentTypeAny =
 	TimelineContentTypeCasparCg |
 	TimelineContentTypeLawo |
 	TimelineContentTypeAtem |
-	TimelineContentTypeHttp
+	TimelineContentTypeHttp |
+	TimelineContentTypePanasonicPtz
 
 declare enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -299,6 +300,10 @@ declare enum TimelineContentTypeAtem { //  Atem-state
 declare enum TimelineContentTypeHttp {
 	POST = 'post',
 	PUT = 'put',
+}
+declare enum TimelineContentTypePanasonicPtz {
+	PRESET = 'presetMem',
+	SPEED = 'presetSpeed'
 }
 declare namespace Atem_Enums {
 	declare enum TransitionStyle {
