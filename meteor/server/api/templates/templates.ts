@@ -381,54 +381,80 @@ export interface StoryWithContextBase {
 export interface StoryWithContext extends IMOSROFullStory, StoryWithContextBase {
 }
 
+const functionCache: {[id: string]: {
+	modified: number,
+	fcn: TemplateGeneralFunction
+}} = {}
 export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, reason: string): TemplateGeneralFunction {
-	// Just use the function () { .* } parts (omit whatevers before or after)
-	// let functionStr = ((runtimeFunction.code + '').match(/function[\s\S]*}/) || [])[0]
-	let m = ((runtimeFunction.code + '').match(/([\s\S]*?)(function[\s\S]*})/) || [])
-	let preFunctionStr = (m[1] || '')
-	let functionStr = m[2]
 
-	// logger.debug('functionStr', functionStr)
-	if (!functionStr) throw Error('Function empty!')
-	if (preFunctionStr) { // Insert some blank lines, so that the line numbers add up
-		let lineCount = (preFunctionStr.match(/\n/g) || []).length
-		preFunctionStr = ''
-		for (let i = 0; i < lineCount; i++) {
-			preFunctionStr += '\r\n'
-		}
-		let a = functionStr.indexOf('\n')
-		if (a) {
-			functionStr = functionStr.slice(0, a + 1) + preFunctionStr + functionStr.slice(a + 1)
-		}
-	}
-	let context = {
-		_,
-		moment,
-		LayerType,
-		TriggerType,
-		TimelineContentTypeOther,
-		TimelineContentTypeCasparCg,
-		TimelineContentTypeLawo,
-		TimelineContentTypeAtem,
-		TimelineContentTypeHttp,
-		TimelineContentTypeHyperdeck,
-		Atem_Enums,
-		LineItemStatusCode: RundownAPI.LineItemStatusCode,
-		EmberPlusValueType,
-		Transition,
-		Ease,
-		Direction,
-		SegmentLineItemLifespan,
-		PlayoutTimelinePrefixes,
-		SegmentLineHoldMode,
-		TimelineObjHoldMode,
+	// First, check if we've got the function cached:
+
+	let cached = functionCache[runtimeFunction._id] ? functionCache[runtimeFunction._id] : null
+	if (cached && cached.modified !== runtimeFunction.modified) {
+		// the function has been updated, invalidate it then:
+		cached = null
 	}
 
-	let runtimeFcn: TemplateGeneralFunction = new SaferEval(context, { filename: runtimeFunction.templateId + '.js' }).runInContext(functionStr)
-	return (...args) => {
-		saveDebugData(runtimeFunction, reason, ...args)
-		// @ts-ignore the function can be whatever, really
-		return runtimeFcn(...args)
+	if (cached) {
+		return cached.fcn
+	} else {
+
+		// Just use the function () { .* } parts (omit whatevers before or after)
+		// let functionStr = ((runtimeFunction.code + '').match(/function[\s\S]*}/) || [])[0]
+		let m = ((runtimeFunction.code + '').match(/([\s\S]*?)(function[\s\S]*})/) || [])
+		let preFunctionStr = (m[1] || '')
+		let functionStr = m[2]
+
+		// logger.debug('functionStr', functionStr)
+		if (!functionStr) throw Error('Function empty!')
+		if (preFunctionStr) { // Insert some blank lines, so that the line numbers add up
+			let lineCount = (preFunctionStr.match(/\n/g) || []).length
+			preFunctionStr = ''
+			for (let i = 0; i < lineCount; i++) {
+				preFunctionStr += '\r\n'
+			}
+			let a = functionStr.indexOf('\n')
+			if (a) {
+				functionStr = functionStr.slice(0, a + 1) + preFunctionStr + functionStr.slice(a + 1)
+			}
+		}
+		let context = {
+			_,
+			moment,
+			LayerType,
+			TriggerType,
+			TimelineContentTypeOther,
+			TimelineContentTypeCasparCg,
+			TimelineContentTypeLawo,
+			TimelineContentTypeAtem,
+			TimelineContentTypeHttp,
+			TimelineContentTypeHyperdeck,
+			Atem_Enums,
+			LineItemStatusCode: RundownAPI.LineItemStatusCode,
+			EmberPlusValueType,
+			Transition,
+			Ease,
+			Direction,
+			SegmentLineItemLifespan,
+			PlayoutTimelinePrefixes,
+			SegmentLineHoldMode,
+			TimelineObjHoldMode,
+		}
+
+		let runtimeFcn: TemplateGeneralFunction = new SaferEval(context, { filename: runtimeFunction.templateId + '.js' }).runInContext(functionStr)
+		let fcn = (...args) => {
+			saveDebugData(runtimeFunction, reason, ...args)
+			// @ts-ignore the function can be whatever, really
+			return runtimeFcn(...args)
+		}
+
+		// Save to cache:
+		functionCache[runtimeFunction._id] = {
+			modified: runtimeFunction.modified,
+			fcn: fcn
+		}
+
+		return fcn
 	}
 }
 export function convertCodeToFunction (context: TemplateContextInner, runtimeFunction: RuntimeFunction, reason: string): TemplateGeneralFunction {
