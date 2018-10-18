@@ -10,6 +10,8 @@ import { StudioInstallations,
 	MappingHyperdeckType,
 	Mapping,
 	MappingLawoType,
+	MappingPanasonicPtz,
+	MappingPanasonicPtzType,
 } from '../../lib/collections/StudioInstallations'
 import { literal, getCurrentTime } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
@@ -447,6 +449,15 @@ Meteor.methods({
 					unlimited: false,
 					isHidden: true
 				},
+				{
+					_id: 'studio0_ptz',
+					_rank: 13000,
+					name: 'KamPos',
+					abbreviation: 'K ',
+					type: RundownAPI.SourceLayerType.CAMERA_MOVEMENT,
+					onPGMClean: true,
+					unlimited: true
+				}
 			],
 		}})
 		// Create Timeline mappings:
@@ -775,6 +786,18 @@ Meteor.methods({
 				deviceId: 'hyperdeck0',
 				mappingType: MappingHyperdeckType.TRANSPORT,
 				lookahead: LookaheadMode.NONE,
+			}),
+			'ptz0_preset': literal<MappingPanasonicPtz>({
+				device: PlayoutDeviceType.PANASONIC_PTZ,
+				deviceId: 'ptz0',
+				mappingType: MappingPanasonicPtzType.PRESET,
+				lookahead: LookaheadMode.WHEN_CLEAR
+			}),
+			'ptz0_speed': literal<MappingPanasonicPtz>({
+				device: PlayoutDeviceType.PANASONIC_PTZ,
+				deviceId: 'ptz0',
+				mappingType: MappingPanasonicPtzType.PRESET_SPEED,
+				lookahead: LookaheadMode.WHEN_CLEAR
 			})
 		}
 		StudioInstallations.update('studio0', {$set: {
@@ -808,7 +831,7 @@ Meteor.methods({
 				{_id: 'atemSSrcBackground', value: '/opt/playout-gateway/static/atem-mp/split_overlay.rgba'},
 				{_id: 'atemSSrcBackground2', value: '/opt/playout-gateway/static/atem-mp/teknisk_feil.rgba'},
 				{_id: 'sources_kam', value: '1:1,2:2,3:3,4:4,8:11,9:12'},
-				{_id: 'sources_kam_ptz', value: '1:panasonic_ptz0'},
+				{_id: 'sources_kam_ptz', value: '1:ptz0'},
 				{_id: 'sources_rm', value: '1:5,2:6,3:7,4:8,5:9,6:10'}
 			],
 			hotkeyLegend: [
