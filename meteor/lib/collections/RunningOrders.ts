@@ -50,6 +50,8 @@ export interface DBRunningOrder {
 	currentSegmentLineId: string | null
 	/** the id of the Next Segment Line - if empty, no segment will follow Live Segment Line */
 	nextSegmentLineId: string | null
+	/** if nextSegmentLineId was set manually (ie from a user action) */
+	nextSegmentLineManual?: boolean
 	/** the id of the Previous Segment Line */
 	previousSegmentLineId: string | null
 
@@ -78,6 +80,7 @@ export class RunningOrder implements DBRunningOrder {
 	public active?: boolean
 	public rehearsal?: boolean
 	public previousSegmentLineId: string | null
+	public nextSegmentLineManual?: boolean
 	public currentSegmentLineId: string | null
 	public nextSegmentLineId: string | null
 	public startedPlayback?: Time

@@ -523,8 +523,9 @@ export namespace ServerPlayoutAPI {
 			// do nothing
 		})
 	}
-	function setNextSegmentLine (runningOrder: RunningOrder, nextSegmentLine: DBSegmentLine | null ) {
+	function setNextSegmentLine (runningOrder: RunningOrder, nextSegmentLine: DBSegmentLine | null, setManually?: boolean) {
 		let ps: Array<Promise<any>> = []
+
 		if (nextSegmentLine) {
 
 			if (nextSegmentLine.runningOrderId !== runningOrder._id) throw new Meteor.Error(409, `SegmentLine "${nextSegmentLine._id}" not part of running order "${runningOrder._id}"`)
@@ -536,7 +537,8 @@ export namespace ServerPlayoutAPI {
 
 			ps.push(asyncCollectionUpdate(RunningOrders, runningOrder._id, {
 				$set: {
-					nextSegmentLineId: nextSegmentLine._id
+					nextSegmentLineId: nextSegmentLine._id,
+					nextSegmentLineManual: !!setManually
 				}
 			}))
 			ps.push(asyncCollectionUpdate(SegmentLines, nextSegmentLine._id, {
@@ -547,7 +549,8 @@ export namespace ServerPlayoutAPI {
 		} else {
 			ps.push(asyncCollectionUpdate(RunningOrders, runningOrder._id, {
 				$set: {
-					nextSegmentLineId: null
+					nextSegmentLineId: null,
+					nextSegmentLineManual: !!setManually
 				}
 			}))
 		}
@@ -708,9 +711,9 @@ export namespace ServerPlayoutAPI {
 			}
 		})
 	}
-	export function roSetNext (roId: string, nextSlId: string) {
+	export function roSetNext (roId: string, nextSlId: string | null, setManually?: boolean) {
 		check(roId, String)
-		check(nextSlId, String)
+		if (nextSlId) check(nextSlId, String)
 
 		const runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -718,15 +721,18 @@ export namespace ServerPlayoutAPI {
 
 		if (runningOrder.holdState && runningOrder.holdState !== RunningOrderHoldState.COMPLETE) throw new Meteor.Error(501, `RunningOrder "${roId}" cannot change next during hold!`)
 
-		const nextSegmentLine = SegmentLines.findOne(nextSlId)
-		if (!nextSegmentLine) throw new Meteor.Error(404, `Segment Line "${nextSlId}" not found!`)
+		let nextSegmentLine: SegmentLine | null = null
+		if (nextSlId) {
+			nextSegmentLine = SegmentLines.findOne(nextSlId) || null
+			if (!nextSegmentLine) throw new Meteor.Error(404, `Segment Line "${nextSlId}" not found!`)
+		}
 
-		setNextSegmentLine(runningOrder, nextSegmentLine)
+		setNextSegmentLine(runningOrder, nextSegmentLine, setManually)
 
 		// remove old auto-next from timeline, and add new one
 		updateTimeline(runningOrder.studioInstallationId)
 	}
-	export function roMoveNext (roId: string, horisontalDelta: number, verticalDelta: number, currentNextSegmentLineItemId?: string) {
+	export function roMoveNext (roId: string, horisontalDelta: number, verticalDelta: number, setManually: boolean, currentNextSegmentLineItemId?: string) {
 		check(roId, String)
 		check(horisontalDelta, Number)
 		check(verticalDelta, Number)
@@ -801,9 +807,9 @@ export namespace ServerPlayoutAPI {
 		if (segmentLine._id === runningOrder.currentSegmentLineId && !currentNextSegmentLineItemId) {
 			// Whoops, we're not allowed to next to that.
 			// Skip it, then (ie run the whole thing again)
-			return ServerPlayoutAPI.roMoveNext (roId, horisontalDelta, verticalDelta, segmentLine._id)
+			return ServerPlayoutAPI.roMoveNext (roId, horisontalDelta, verticalDelta, setManually, segmentLine._id)
 		} else {
-			ServerPlayoutAPI.roSetNext(runningOrder._id, segmentLine._id)
+			ServerPlayoutAPI.roSetNext(runningOrder._id, segmentLine._id, setManually)
 			return segmentLine._id
 		}
 
@@ -860,13 +866,14 @@ export namespace ServerPlayoutAPI {
 					}
 				}, {
 					limit: 1
-				})
-				Meteor.call(PlayoutAPI.methods.roSetNext, roId, newNextLine.length > 0 ? newNextLine[0]._id : null)
+				})[0]
+				setNextSegmentLine(runningOrder, newNextLine || null)
 			} else if (!currentSegmentLine && nextSegmentLine && onAirNextWindowWidth === undefined && nextPosition !== undefined) {
 				const newNextLine = runningOrder.getSegmentLines({}, {
 					limit: nextPosition
-				})
-				Meteor.call(PlayoutAPI.methods.roSetNext, roId, newNextLine.length > 0 ? newNextLine[newNextLine.length - 1]._id : null)
+				})[0]
+				setNextSegmentLine(runningOrder, newNextLine || null)
+
 			}
 		}
 	}
@@ -1560,10 +1567,10 @@ methods[PlayoutAPI.methods.userRoTake] = (roId: string) => {
 	return ServerPlayoutAPI.userRoTake(roId)
 }
 methods[PlayoutAPI.methods.roSetNext] = (roId: string, slId: string) => {
-	return ServerPlayoutAPI.roSetNext(roId, slId)
+	return ServerPlayoutAPI.roSetNext(roId, slId, true)
 }
 methods[PlayoutAPI.methods.roMoveNext] = (roId: string, horisontalDelta: number, verticalDelta: number) => {
-	return ServerPlayoutAPI.roMoveNext(roId, horisontalDelta, verticalDelta)
+	return ServerPlayoutAPI.roMoveNext(roId, horisontalDelta, verticalDelta, true)
 }
 methods[PlayoutAPI.methods.roActivateHold] = (roId: string) => {
 	return ServerPlayoutAPI.roActivateHold(roId)

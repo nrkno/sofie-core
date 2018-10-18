@@ -292,27 +292,5 @@ Meteor.methods({
 				}
 			}
 		}
-	},
-
-	/* 'debug_setOnAirLine' (liveId) {
-		let segmentLine = SegmentLines.findOne(liveId || 'ro0-seg0-line0')
-
-		if (segmentLine) {
-			let runningOrder = RunningOrders.findOne(segmentLine.runningOrderId) as RunningOrder
-			RunningOrders.update({_id: runningOrder._id}, {
-				$set: { currentSegmentLineId: segmentLine._id }
-			})
-		}
-	},
-
-	'debug_setNextLine' (nextId) {
-		let segmentLine = SegmentLines.findOne(nextId || 'ro0-seg1-line0')
-
-		if (segmentLine) {
-			let runningOrder = RunningOrders.findOne(segmentLine.runningOrderId) as RunningOrder
-			RunningOrders.update({ _id: runningOrder._id }, {
-				$set: { nextSegmentLineId: segmentLine._id }
-			})
-		}
-	} */
+	}
 })
