@@ -1503,6 +1503,7 @@ export namespace ServerPlayoutAPI {
 			timestamp: getCurrentTime(),
 		}))
 		Meteor.defer(() => {
+
 			let studio = StudioInstallations.findOne(evaluation.studioId)
 			if (!studio) throw new Meteor.Error(500, `Studio ${evaluation.studioId} not found!`)
 
