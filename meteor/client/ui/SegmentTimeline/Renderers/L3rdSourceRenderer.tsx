@@ -59,7 +59,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 				value: string
 			} | undefined => {
 				let str: string
-				if (key.startsWith('_')) {
+				if (key.startsWith('_') || value === '') {
 					return
 				} else {
 					if (_.isObject(value)) {
