@@ -133,7 +133,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 
 <a name="0.15.0"></a>
-## 0.15.0-0 (2018-10-16)
+## 0.15.0 (2018-10-16)
 
 ### Features
 
