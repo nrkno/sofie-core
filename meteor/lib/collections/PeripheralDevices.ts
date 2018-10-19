@@ -96,7 +96,7 @@ export interface PanasonicDeviceSettings {
 	url: string
 }
 
-export interface PlayoutDeviceSettingsDevicePanasonicPTZ extends PlayoutDeviceSettings {
+export interface PlayoutDeviceSettingsDevicePanasonicPTZ extends PlayoutDeviceSettingsDevice {
 	type: PlayoutDeviceType.PANASONIC_PTZ
 	options: {
 		cameraDevices: Array<PanasonicDeviceSettings>
