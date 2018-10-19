@@ -723,22 +723,18 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		const { t } = this.props
 		if (e.persist) e.persist()
 
-		let rewindAndScrollToLive = () => {
-			window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
-			window.dispatchEvent(new Event(RunningOrderViewEvents.goToLiveSegment))
-		}
-
 		let doReset = () => {
 
 			// Do a rewind right away
-			rewindAndScrollToLive()
+			window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
 
 			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roResetRunningOrder, this.props.runningOrder._id, (err) => {
 				// Do another rewind later, when the UI has updated
 				Meteor.defer(() => {
 					Tracker.flush()
 					Meteor.setTimeout(() => {
-						rewindAndScrollToLive()
+						window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
+						window.dispatchEvent(new Event(RunningOrderViewEvents.goToLiveSegment))
 					}, 500)
 				})
 
@@ -1297,7 +1293,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					defaultDuration={DEFAULT_DISPLAY_DURATION}>
 					<div className='running-order-view' style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
 						<ErrorBoundary>
-							<KeyboardFocusMarker />
+							{ this.state.studioMode && <KeyboardFocusMarker /> }
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<RunningOrderFullscreenControls isFollowingOnAir={this.state.followLiveSegments} onFollowOnAir={this.onGoToLiveSegment} />
