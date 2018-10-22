@@ -530,13 +530,6 @@ Meteor.methods({
 				channel: 1,
 				layer: 120
 			}),
-			'casparcg_cg_permanent': literal<MappingCasparCG>({
-				device: PlayoutDeviceType.CASPARCG,
-				deviceId: 'casparcg1',
-				lookahead: LookaheadMode.NONE,
-				channel: 2,
-				layer: 121
-			}),
 			'casparcg_player_studio': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
@@ -756,12 +749,12 @@ Meteor.methods({
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
 			}),
-			'nora_permanent_logo': literal<Mapping>({
+			'nora_primary_logo': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
 			}),
-			'nora_permanent_klokke': literal<Mapping>({
+			'nora_primary_klokke': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
