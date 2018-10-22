@@ -138,22 +138,25 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 				return (
 					<div className='clocks-full-screen'>
 						<div className='clocks-half clocks-top'>
-							<div className='clocks-segment-icon clocks-current-segment-icon'>
-								{currentSegmentLine ?
-									<SegmentItemIconContainer segmentItemId={currentSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
-								: ''}
-							</div>
-							<div className='clocks-segment-title clocks-current-segment-title'>
-								{currentSegmentLine ? currentSegmentLine.slug.split(';')[0] : ''}
-							</div>
-							<div className='clocks-segmentline-title clocks-segment-title clocks-current-segment-title'>
-								{currentSegmentLine ?
-									<SegmentItemNameContainer segmentLineSlug={currentSegmentLine.slug} segmentItemId={currentSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
-								: ''}
-							</div>
-							<div className='clocks-current-segment-countdown clocks-segment-countdown'>
-								<Timediff time={currentSegmentDuration} />
-							</div>
+							{currentSegmentLine ?
+								<React.Fragment>
+									<div className='clocks-segment-icon clocks-current-segment-icon'>
+										<SegmentItemIconContainer segmentItemId={currentSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
+									</div>
+									<div className='clocks-segment-title clocks-current-segment-title'>
+										{currentSegmentLine.slug.split(';')[0]}
+									</div>
+									<div className='clocks-segmentline-title clocks-segment-title clocks-current-segment-title'>
+										<SegmentItemNameContainer segmentLineSlug={currentSegmentLine.slug} segmentItemId={currentSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
+									</div>
+									<div className='clocks-current-segment-countdown clocks-segment-countdown'>
+										<Timediff time={currentSegmentDuration} />
+									</div>
+								</React.Fragment> :
+								<div className='clocks-current-segment-countdown clocks-segment-countdown'>
+									Countdown to live
+								</div>
+							}
 						</div>
 						<div className='clocks-half clocks-bottom clocks-top-bar'>
 							<div className='clocks-segment-icon'>
