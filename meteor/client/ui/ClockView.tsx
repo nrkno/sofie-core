@@ -153,8 +153,8 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 										<Timediff time={currentSegmentDuration} />
 									</div>
 								</React.Fragment> :
-								<div className='clocks-current-segment-countdown clocks-segment-countdown'>
-									Countdown to live
+								runningOrder.expectedStart && <div className='clocks-ro-countdown clocks-segment-countdown'>
+									<Timediff time={runningOrder.expectedStart - getCurrentTime()} />
 								</div>
 							}
 						</div>
