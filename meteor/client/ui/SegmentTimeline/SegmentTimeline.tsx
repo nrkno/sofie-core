@@ -366,8 +366,9 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 						<span>{RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)}</span>
 						{!this.props.autoNextSegmentLine && <div className='segment-timeline__liveline__icon segment-timeline__liveline__icon--next'></div>}
 						{this.props.autoNextSegmentLine && <div className='segment-timeline__liveline__icon segment-timeline__liveline__icon--auto-next'></div>}
-						{this.props.runningOrder.holdState && this.props.runningOrder.holdState !== RunningOrderHoldState.COMPLETE &&
+						{this.props.runningOrder.holdState && this.props.runningOrder.holdState !== RunningOrderHoldState.COMPLETE ?
 							<div className='segment-timeline__liveline__status segment-timeline__liveline__status--hold'>{t('Hold')}</div>
+							: null
 						}
 					</div>
 				</div>
