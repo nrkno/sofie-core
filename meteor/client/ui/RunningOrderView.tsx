@@ -237,8 +237,9 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 				}
 				<span className='timing-clock time-now'>
 					<Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} />
-					{this.props.runningOrder.holdState && this.props.runningOrder.holdState !== RunningOrderHoldState.COMPLETE &&
+					{this.props.runningOrder.holdState && this.props.runningOrder.holdState !== RunningOrderHoldState.COMPLETE ?
 						<div className='running-order__header-status running-order__header-status--hold'>{t('Hold')}</div>
+						: null
 					}
 				</span>
 				{ this.props.runningOrder.expectedDuration ?
