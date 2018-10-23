@@ -1183,7 +1183,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 							attribute={'mappings.' + layerId + '.mappingType'}
 							obj={this.props.studioInstallation}
 							type='dropdown'
-							options={MappingPanasonicPtzType}
+							options={MappingHyperdeckType}
 							optionsAreNumbers={false}
 							collection={StudioInstallations}
 							className='input text-input input-l'></EditAttribute>

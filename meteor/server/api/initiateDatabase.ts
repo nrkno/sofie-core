@@ -774,7 +774,7 @@ Meteor.methods({
 				deviceId: 'http0',
 				lookahead: LookaheadMode.PRELOAD,
 			}),
-			'hyperdeck0_transport': literal<MappingHyperdeck>({
+			'hyperdeck0': literal<MappingHyperdeck>({
 				device: PlayoutDeviceType.HYPERDECK,
 				deviceId: 'hyperdeck0',
 				mappingType: MappingHyperdeckType.TRANSPORT,
