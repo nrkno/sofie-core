@@ -2296,7 +2296,7 @@ export function addLookeaheadObjectsToTimeline (roData: RoData, studioInstallati
 				value: `#${res[i - 1].obj._id}.start + 0`
 			}
 			r.isBackground = true
-			r.inGroup = '' // force it to be cleared
+			delete r.inGroup // force it to be cleared
 
 			if (m.lookahead !== LookaheadMode.WHEN_CLEAR) {
 				r.originalLLayer = r.LLayer
