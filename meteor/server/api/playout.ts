@@ -2218,7 +2218,7 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLine
 
 	const isHold = holdState === RunningOrderHoldState.ACTIVE
 
-	_.each(items, (item: SegmentLineItem) => {
+	_.each(clone(items), (item: SegmentLineItem) => {
 		if (item.disabled) return
 		if (item.isTransition && (!allowTransition || isHold)) {
 			return
