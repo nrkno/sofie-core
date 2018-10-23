@@ -19,7 +19,8 @@ export type TimelineContentTypeAny =
 	TimelineContentTypeAtem |
 	TimelineContentTypeHttp |
 	TimelineContentTypePanasonicPtz |
-	TimelineContentTypeHyperdeck
+	TimelineContentTypeHyperdeck |
+	TimelineContentTypePharos
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -57,6 +58,10 @@ export enum TimelineContentTypePanasonicPtz {
 }
 export enum TimelineContentTypeHyperdeck { // tsr
 	TRANSPORT = 'transport'
+}
+export enum TimelineContentTypePharos {
+	SCENE = 'scene',
+	TIMELINE = 'timeline'
 }
 
 export namespace Atem_Enums {
@@ -492,12 +497,38 @@ export interface TimelineObjPanasonicPTZPresetSpeed extends TimelineObj {
 		speed: number
 	}
 }
-
 export interface TimelineObjPanasonicPTZPreset extends TimelineObj {
 	content: {
 		keyframes?: Array<TimelineKeyframe>
 		type: TimelineContentTypePanasonicPtz.PRESET
 		preset: number
+	}
+}
+
+export interface TimelineObjPharosScene extends TimelineObj {
+	content: {
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentTypePharos.SCENE
+		attributes: {
+			scene: number,
+			fade?: number,
+			stopped?: boolean,
+			noRelease?: true
+		}
+	}
+}
+export interface TimelineObjPharosTimeline extends TimelineObj {
+	content: {
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentTypePharos.TIMELINE
+		attributes: {
+			timeline: number,
+			pause?: boolean,
+			rate?: boolean,
+			fade?: number,
+			stopped?: boolean,
+			noRelease?: true
+		}
 	}
 }
 

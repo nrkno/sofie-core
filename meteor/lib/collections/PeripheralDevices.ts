@@ -57,7 +57,9 @@ export enum PlayoutDeviceType { // to match DeviceType in TSR
 	LAWO = 3,
 	HTTPSEND = 4,
 	PANASONIC_PTZ = 5,
-	HYPERDECK = 7
+	// TCPSEND = 6, // to be implemented
+	HYPERDECK = 7,
+	PHAROS = 8
 }
 
 export interface PlayoutDeviceSettings {

@@ -193,7 +193,7 @@ let updateServerTime = (retries: number = 0) => {
 			}, 1 * 1000)
 		} else {
 
-			logger.info('systemTime Error', err)
+			logger.info('Unable to set system time (' + (err.reason || err) + ')')
 			setSystemStatus('systemTime', {statusCode: StatusCode.BAD, messages: [err.toString()]})
 		}
 	})

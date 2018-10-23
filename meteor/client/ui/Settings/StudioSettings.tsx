@@ -1192,6 +1192,14 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 			</React.Fragment>
 		)
 	}
+	renderPharosMappingSettings (layerId: string) {
+		const { t } = this.props
+		return (
+			<React.Fragment>
+				<div></div>
+			</React.Fragment>
+		)
+	}
 
 	renderMappings () {
 		const { t } = this.props
@@ -1206,7 +1214,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 							{layerId}
 						</th>
 						<td className='settings-studio-device__id c2'>
-							{mapping.device}
+							{PlayoutDeviceType[mapping.device]}
 						</td>
 						<td className='settings-studio-device__id c2'>
 							{mapping.deviceId}
@@ -1214,12 +1222,16 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 						<td className='settings-studio-device__id c4'>
 						{
 							(
+								mapping.device === PlayoutDeviceType.ABSTRACT && (
+								<span>-</span>
+							)) ||
+							(
 								mapping.device === PlayoutDeviceType.CASPARCG && (
 								<span>{ (mapping as MappingCasparCG).channel } - { (mapping as MappingCasparCG).layer }</span>
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.ATEM && (
-								<span>{ (mapping as MappingAtem).mappingType } - { (mapping as MappingAtem).index }</span>
+								<span>{ MappingAtemType[(mapping as MappingAtem).mappingType] } { (mapping as MappingAtem).index }</span>
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.LAWO && (
@@ -1227,7 +1239,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.PANASONIC_PTZ && (
-									<span>{ 
+									<span>{
 										(mapping as MappingPanasonicPtz).mappingType === MappingPanasonicPtzType.PRESET ? t('Preset') :
 										(mapping as MappingPanasonicPtz).mappingType === MappingPanasonicPtzType.PRESET_SPEED ? t('Preset transition speed') :
 										t('Unknown mapping')
@@ -1235,11 +1247,15 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.HTTPSEND && (
-								<span></span>
+								<span>-</span>
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.HYPERDECK && (
 								<span>{ (mapping as MappingHyperdeck).mappingType }</span>
+							)) ||
+							(
+								mapping.device === PlayoutDeviceType.PHAROS && (
+								<span>-</span>
 							)) ||
 							(
 								<span>Unknown device type: {PlayoutDeviceType[mapping.device] } </span>
@@ -1334,6 +1350,10 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 										(
 										mapping.device === PlayoutDeviceType.HYPERDECK && (
 											this.renderHyperdeckMappingSettings(layerId)
+										)) ||
+										(
+										mapping.device === PlayoutDeviceType.PHAROS && (
+											this.renderPharosMappingSettings(layerId)
 										))
 									}
 								</div>
@@ -1374,7 +1394,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 }
 
 class HotkeyLegendSettings extends React.Component<Translated<IStudioKeyValueSettingsProps>, IStudioKeyValueSettingsState> {
-	constructor(props: Translated<IStudioKeyValueSettingsProps>) {
+	constructor (props: Translated<IStudioKeyValueSettingsProps>) {
 		super(props)
 
 		this.state = {

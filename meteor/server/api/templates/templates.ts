@@ -26,6 +26,7 @@ import {
 	Atem_Enums,
 	EmberPlusValueType,
 	TimelineObjHoldMode,
+	TimelineContentTypePharos,
 } from '../../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -431,6 +432,7 @@ export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, 
 			TimelineContentTypeHttp,
 			TimelineContentTypePanasonicPtz,
 			TimelineContentTypeHyperdeck,
+			TimelineContentTypePharos,
 			Atem_Enums,
 			LineItemStatusCode: RundownAPI.LineItemStatusCode,
 			EmberPlusValueType,
