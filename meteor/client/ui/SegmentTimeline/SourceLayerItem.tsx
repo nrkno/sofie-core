@@ -432,21 +432,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 			this._placeHolderElement = false
 
-			const typeClass = ClassNames({
-				'audio': this.props.layer.type === RundownAPI.SourceLayerType.AUDIO,
-				'camera': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA,
-				'camera-movement': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA_MOVEMENT,
-				'graphics': this.props.layer.type === RundownAPI.SourceLayerType.GRAPHICS,
-				'lower-third': this.props.layer.type === RundownAPI.SourceLayerType.LOWER_THIRD,
-				'live-speak': this.props.layer.type === RundownAPI.SourceLayerType.LIVE_SPEAK,
-				'mic': this.props.layer.type === RundownAPI.SourceLayerType.MIC,
-				'metadata': this.props.layer.type === RundownAPI.SourceLayerType.METADATA,
-				'remote': this.props.layer.type === RundownAPI.SourceLayerType.REMOTE,
-				'script': this.props.layer.type === RundownAPI.SourceLayerType.SCRIPT,
-				'splits': this.props.layer.type === RundownAPI.SourceLayerType.SPLITS,
-				'vt': this.props.layer.type === RundownAPI.SourceLayerType.VT,
-				'transition': this.props.layer.type === RundownAPI.SourceLayerType.TRANSITION,
-			})
+			const typeClass = RundownUtils.getSourceLayerClassName(this.props.layer.type)
 
 			return (
 				<div className={ClassNames('segment-timeline__layer-item', typeClass, {

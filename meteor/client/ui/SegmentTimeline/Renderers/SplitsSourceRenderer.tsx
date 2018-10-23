@@ -10,6 +10,7 @@ import { RundownAPI } from '../../../../lib/api/rundown'
 import { literal } from '../../../../lib/lib'
 import { SplitsContent } from '../../../../lib/collections/SegmentLineItems'
 import * as _ from 'underscore'
+import { RundownUtils } from '../../../lib/rundown';
 
 export enum SplitRole {
 	ART = 0,
@@ -103,22 +104,13 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 		return this.subItems.filter(i => i.role !== SplitRole.ART).reverse().map((item, index, array) => {
 			return (
 				<div key={'item-' + item._id}
-					className={ClassNames('segment-timeline__layer-item__preview__item', {
-						'audio': item.type === RundownAPI.SourceLayerType.AUDIO,
-						'camera': item.type === RundownAPI.SourceLayerType.CAMERA,
-						'camera-movement': item.type === RundownAPI.SourceLayerType.CAMERA_MOVEMENT,
-						'graphics': item.type === RundownAPI.SourceLayerType.GRAPHICS,
-						'lower-third': item.type === RundownAPI.SourceLayerType.LOWER_THIRD,
-						'live-speak': item.type === RundownAPI.SourceLayerType.LIVE_SPEAK,
-						'mic': item.type === RundownAPI.SourceLayerType.MIC,
-						'metadata': item.type === RundownAPI.SourceLayerType.METADATA,
-						'remote': item.type === RundownAPI.SourceLayerType.REMOTE,
-						'script': item.type === RundownAPI.SourceLayerType.SCRIPT,
-						'splits': item.type === RundownAPI.SourceLayerType.SPLITS,
-						'vt': item.type === RundownAPI.SourceLayerType.VT,
-
-						'second': array.length > 1 && index > 0 && item.type === array[index - 1].type
-					})}>
+					className={ClassNames(
+						'segment-timeline__layer-item__preview__item',
+						RundownUtils.getSourceLayerClassName(item.type),
+						{
+							'second': array.length > 1 && index > 0 && item.type === array[index - 1].type
+						}
+					)}>
 				</div>
 			)
 		})
@@ -130,25 +122,16 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 				{
 					this.subItems.map((item, index, array) => {
 						return (
-							<div className={ClassNames('video-preview', {
-								'background': item.role === SplitRole.ART,
-								'box': item.role === SplitRole.BOX
-							}, {
-								'audio': item.type === RundownAPI.SourceLayerType.AUDIO,
-								'camera': item.type === RundownAPI.SourceLayerType.CAMERA,
-								'camera-movement': item.type === RundownAPI.SourceLayerType.CAMERA_MOVEMENT,
-								'graphics': item.type === RundownAPI.SourceLayerType.GRAPHICS,
-								'lower-third': item.type === RundownAPI.SourceLayerType.LOWER_THIRD,
-								'live-speak': item.type === RundownAPI.SourceLayerType.LIVE_SPEAK,
-								'mic': item.type === RundownAPI.SourceLayerType.MIC,
-								'metadata': item.type === RundownAPI.SourceLayerType.METADATA,
-								'remote': item.type === RundownAPI.SourceLayerType.REMOTE,
-								'script': item.type === RundownAPI.SourceLayerType.SCRIPT,
-								'splits': item.type === RundownAPI.SourceLayerType.SPLITS,
-								'vt': item.type === RundownAPI.SourceLayerType.VT,
-
-								'second': array.length > 1 && index > 0 && item.type === array[index - 1].type
-							})}
+							<div className={ClassNames(
+								'video-preview',
+								RundownUtils.getSourceLayerClassName(item.type),
+								{
+									'background': item.role === SplitRole.ART,
+									'box': item.role === SplitRole.BOX
+								}, {
+									'second': array.length > 1 && index > 0 && item.type === array[index - 1].type
+								}
+							)}
 							key={item._id + '-preview'}
 							style={{
 								'left': ((item.content && item.content.x) * 100).toString() + '%',
