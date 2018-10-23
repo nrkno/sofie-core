@@ -2283,7 +2283,7 @@ export function addLookeaheadObjectsToTimeline (roData: RoData, studioInstallati
 		}
 
 		for (let i = 0; i < res.length; i++) {
-			const r = clone(res[i].obj)
+			const r = clone(res[i].obj) as TimelineObj
 
 			r._id = 'lookahead_' + i + '_' + r._id
 			r.priority = 0.1
@@ -2296,6 +2296,7 @@ export function addLookeaheadObjectsToTimeline (roData: RoData, studioInstallati
 				value: `#${res[i - 1].obj._id}.start + 0`
 			}
 			r.isBackground = true
+			r.inGroup = '' // force it to be cleared
 
 			if (m.lookahead !== LookaheadMode.WHEN_CLEAR) {
 				r.originalLLayer = r.LLayer
@@ -3004,6 +3005,15 @@ export function afterUpdateTimeline (studioInstallation: StudioInstallation, tim
 			return 0
 		})
 		let objHash = getHash(stringifyObjects(objs))
+
+		// const hashes = {}
+		// for (let o of objs) {
+		// 	hashes[o._id] = getHash(stringifyObjects([o]))
+		// 	if (o._id === 'lookahead_0_7C8oNgssOd2yG0ynN9C1vquc8yc_') {
+		// 		console.log('OBJ: ' + stringifyObjects(o))
+		// 	}
+		// }
+		// console.log('obj hashes: ' + JSON.stringify(hashes))
 
 		// save into "magic object":
 		let magicId = studioInstallation._id + '_' + deviceId + '_statObj'
