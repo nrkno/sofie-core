@@ -63,6 +63,9 @@ export interface MappingPanasonicPtz extends Mapping {
 	device: PlayoutDeviceType.PANASONIC_PTZ,
 	mappingType: MappingPanasonicPtzType
 }
+export interface MappingPharos extends Mapping {
+	device: PlayoutDeviceType.PHAROS,
+}
 
 export interface HotkeyDefinition {
 	_id: string

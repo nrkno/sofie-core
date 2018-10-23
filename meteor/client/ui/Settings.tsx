@@ -188,7 +188,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 						return (
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/showStyle/' + item._id}>
 								<div className='selectable clickable'>
-									<button className='action-btn right' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteShowStyle(item)}>
+									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteShowStyle(item) }}>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
 									<h3>{item.name}</h3>
