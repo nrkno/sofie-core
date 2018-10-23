@@ -2,8 +2,138 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-<a name="0.15.0-0"></a>
-## 0.15.0-0 (2018-09-25)
+<a name="0.16.0-0"></a>
+## 0.16.0-0 (2018-10-19) (pre-release)
+
+### Features
+* **Added support for Panasonic PTZ cameras**
+  <br> feat: implement Panasonic PTZ device ([42d8534](https://github.com/nrkno/tv-automation-server-core/commit/42d8534))
+  <br> feat: implement Panasonic PTZ settings ([f7840da](https://github.com/nrkno/tv-automation-server-core/commit/f7840da))
+  <br> feat: implement camera number-device mapping for PTZ ([374568d](https://github.com/nrkno/tv-automation-server-core/commit/374568d))
+  <br> fix: fix PTZ Testing harness ([97bccc7](https://github.com/nrkno/tv-automation-server-core/commit/97bccc7))
+  <br> fix: initiateDB update for PTZ ([e529782](https://github.com/nrkno/tv-automation-server-core/commit/e529782))
+  <br> chore: Create a mock RO with PTZ items ([986c3f7](https://github.com/nrkno/tv-automation-server-core/commit/986c3f7))
+* **Added support for recording using a Hyperdeck device**
+  <br> feat: hyperdeck device (#49) ([c706628](https://github.com/nrkno/tv-automation-server-core/commit/c706628)), closes [#49](https://github.com/nrkno/tv-automation-server-core/issues/49)
+* **Send Slack messages after evaluation form**
+  <br> Merge remote-tracking branch 'origin/feature/sendSlack' into develop ([10c97a5](https://github.com/nrkno/tv-automation-server-core/commit/10c97a5))
+  <br> feat: send evaluation message to slack. WIP ([3dcbe3a](https://github.com/nrkno/tv-automation-server-core/commit/3dcbe3a))
+  <br> feat: send evaluation message to slack. WIP ([96e8b81](https://github.com/nrkno/tv-automation-server-core/commit/96e8b81))
+  <br> chore: added link to slack messages ([c322d83](https://github.com/nrkno/tv-automation-server-core/commit/c322d83))
+* **Core optimizations: lowering latencies during playout**
+  <br> Merge branch 'feature/optimize2' into develop ([d8e16c4](https://github.com/nrkno/tv-automation-server-core/commit/d8e16c4))
+  <br> fix: BIG optimization in roTake and affected functions, made database fetches async & parallel where ([aa6f4bd](https://github.com/nrkno/tv-automation-server-core/commit/aa6f4bd))
+  <br> feat: added async database functions ([a754a24](https://github.com/nrkno/tv-automation-server-core/commit/a754a24))
+  <br> fix: optimize saveIntoDB ([65c189e](https://github.com/nrkno/tv-automation-server-core/commit/65c189e))
+  <br> fix: also defer sendStoryStatus, as that's not critical for playback ([9417862](https://github.com/nrkno/tv-automation-server-core/commit/9417862))
+  <br> fix: improved queries & added index ([159f6d5](https://github.com/nrkno/tv-automation-server-core/commit/159f6d5))
+  <br> fix: defer triggerExternalMessage so as not to block timelineUpdate's ([ba7383f](https://github.com/nrkno/tv-automation-server-core/commit/ba7383f))
+  <br> feat: optimization: add cache of blueprints, to avoid having to parse text-functions all the time ([1e469d9](https://github.com/nrkno/tv-automation-server-core/commit/1e469d9))
+  <br> Fix: fix issues with SegmentLine indexes ([0f5b30e](https://github.com/nrkno/tv-automation-server-core/commit/0f5b30e))
+  <br> Chore: add more indexes in collections for quicker queries and sorts ([f64b161](https://github.com/nrkno/tv-automation-server-core/commit/f64b161))
+
+* **"Guest-feature", highlight the segment when a guest (or other live source) is somewhere within a segment**
+  <br> feat(Guest input): use isGuestInput like isRemoteInput ([2d40e87](https://github.com/nrkno/tv-automation-server-core/commit/2d40e87))
+  <br> chore: Added guest segment item color. ([a105b90](https://github.com/nrkno/tv-automation-server-core/commit/a105b90))
+* **Added various internal timing logging**
+  <br> feat: added executionTime to userAction ([1ca92c1](https://github.com/nrkno/tv-automation-server-core/commit/1ca92c1))
+  <br> feat: added SegmentLine.timings.stoppedPlayback property ([2121245](https://github.com/nrkno/tv-automation-server-core/commit/2121245))
+  <br> feat: added SegmentLine.timings.takeDone property ([d18d539](https://github.com/nrkno/tv-automation-server-core/commit/d18d539))
+  <br> feat: added tictac for troubleshooting timings ([df91cea](https://github.com/nrkno/tv-automation-server-core/commit/df91cea))
+* **Better handling of Next point, when story is update/inserted/removed**
+  <br> fix: handle when nexting before start or after end ([506bb8a](https://github.com/nrkno/tv-automation-server-core/commit/506bb8a))
+  <br> fix: update Next-line when inserting story just before it, also added property to track if the next  ([d82dbc6](https://github.com/nrkno/tv-automation-server-core/commit/d82dbc6))
+  <br> Merge branch 'fix/insertStoryBeforeNext' into develop ([5d1766e](https://github.com/nrkno/tv-automation-server-core/commit/5d1766e))
+
+#### Other
+* feat: added context.runningOrder, for blueprints to use ([855f6d4](https://github.com/nrkno/tv-automation-server-core/commit/855f6d4))
+* feat: log warning message when trying to access a studio.config value that hasn't been set. ([7e706c6](https://github.com/nrkno/tv-automation-server-core/commit/7e706c6))
+* feat: only log logger.debug() when in developer mode ([8ed8e71](https://github.com/nrkno/tv-automation-server-core/commit/8ed8e71))
+* feat: playout device debugLogging (wip) ([7ab4ec6](https://github.com/nrkno/tv-automation-server-core/commit/7ab4ec6))
+* feat: update meteor typings ([49b6969](https://github.com/nrkno/tv-automation-server-core/commit/49b6969))
+
+#### GUI improvements
+* **Button for making window fullscreen**
+  <br> feat: reimplement fullscreen/on air button ([4b8658d](https://github.com/nrkno/tv-automation-server-core/commit/4b8658d))
+  <br> feat: running order full-screen marker ([03010ec](https://github.com/nrkno/tv-automation-server-core/commit/03010ec))
+  <br> fix: disable fullscreen overlay in developer mode ([7cc2e43](https://github.com/nrkno/tv-automation-server-core/commit/7cc2e43))
+  <br> fix: fix developer mode switch for fullscreen overlay ([88972a7](https://github.com/nrkno/tv-automation-server-core/commit/88972a7))
+  <br> fix: full screen marker position ([3e0b973](https://github.com/nrkno/tv-automation-server-core/commit/3e0b973))
+  <br> chore: Changed the wording for the Fullscreen Mode in both English and Norwegian. ([a69ee03](https://github.com/nrkno/tv-automation-server-core/commit/a69ee03))
+* **Click-to-take**
+  <br> feat(click-to-take): initial WIP ([8e63808](https://github.com/nrkno/tv-automation-server-core/commit/8e63808))
+  <br> feat(click-to-take): more work in progress ([e3549e0](https://github.com/nrkno/tv-automation-server-core/commit/e3549e0))
+  <br> feat: implement click-to-adlib completely ([577dcac](https://github.com/nrkno/tv-automation-server-core/commit/577dcac))
+* feat: Allow StudioInstallation to define entries in the hotkey legend ([74c1c1c](https://github.com/nrkno/tv-automation-server-core/commit/74c1c1c))
+* feat: show changed timestamp on script items ([f2955e1](https://github.com/nrkno/tv-automation-server-core/commit/f2955e1))
+* feat: skip source layer labels if layer label is the same as output group label ([92f8bd1](https://github.com/nrkno/tv-automation-server-core/commit/92f8bd1))
+* feat: implement splitting long scripts into beginning and end in popup ([9fa8006](https://github.com/nrkno/tv-automation-server-core/commit/9fa8006))
+* feat: Switch to single-device design ([a268c40](https://github.com/nrkno/tv-automation-server-core/commit/a268c40))
+* feat: Treat sli marked as virtual solely as markers for the timeline. They are hidden from the ui an ([25e0f42](https://github.com/nrkno/tv-automation-server-core/commit/25e0f42))
+* chore: Tweaked camera segment item color to differentiate it more clearly when compared to the 'scrip ([1cbba0b](https://github.com/nrkno/tv-automation-server-core/commit/1cbba0b))
+
+### Bug Fixes
+* fix: &amp;nbps; in a string instead of A0 ([299ba28](https://github.com/nrkno/tv-automation-server-core/commit/299ba28))
+* fix: add parseDateTime code hints to template editor ([c38b2f7](https://github.com/nrkno/tv-automation-server-core/commit/c38b2f7))
+* fix: better implementation of push update to local objects ([d692c96](https://github.com/nrkno/tv-automation-server-core/commit/d692c96))
+* fix: bugfix: update local object when updating database ([9d3b05b](https://github.com/nrkno/tv-automation-server-core/commit/9d3b05b))
+* fix: duration settling ([0648f57](https://github.com/nrkno/tv-automation-server-core/commit/0648f57))
+* fix: EditAttribute: dropdown options was always strings ([814cdf7](https://github.com/nrkno/tv-automation-server-core/commit/814cdf7))
+* fix: getting monaco to work runtime while still having typings ([5db8218](https://github.com/nrkno/tv-automation-server-core/commit/5db8218))
+* fix: remount monaco ([4ce1566](https://github.com/nrkno/tv-automation-server-core/commit/4ce1566))
+* fix: re-added monaco typings and disabled import, so it works client-side ([1226763](https://github.com/nrkno/tv-automation-server-core/commit/1226763))
+* chore: Updated monaco typings ([7950c9e](https://github.com/nrkno/tv-automation-server-core/commit/7950c9e))
+* fix: typing fix: cannot find name 'monaco' ([3ad88ce](https://github.com/nrkno/tv-automation-server-core/commit/3ad88ce))
+* fix: has played styling shouldn't be applied to Guest and Remote segments ([18bdc82](https://github.com/nrkno/tv-automation-server-core/commit/18bdc82))
+* fix: locked @babel/runtime version & updated package-lock ([8e62d2f](https://github.com/nrkno/tv-automation-server-core/commit/8e62d2f))
+* fix: onAir line jumping around on takes ([8330112](https://github.com/nrkno/tv-automation-server-core/commit/8330112))
+* fix: remove debug line in nightly cronjob ([dda3017](https://github.com/nrkno/tv-automation-server-core/commit/dda3017))
+* fix: remove unused translation helper ([e545a9e](https://github.com/nrkno/tv-automation-server-core/commit/e545a9e))
+* fix: resetting running order rewind ([a122f2c](https://github.com/nrkno/tv-automation-server-core/commit/a122f2c))
+* fix: retry strategy for restart casparcg cronjob ([b54f0f6](https://github.com/nrkno/tv-automation-server-core/commit/b54f0f6))
+* fix: RO overview crashed during rebuild of RO ([d2c62a1](https://github.com/nrkno/tv-automation-server-core/commit/d2c62a1))
+* fix: take action should not throw as nasty errors when called by user. ([6791d50](https://github.com/nrkno/tv-automation-server-core/commit/6791d50))
+* fix: Timeline always being built without previous segmentline ([a077805](https://github.com/nrkno/tv-automation-server-core/commit/a077805))
+* fix: toc trace message ([c53124f](https://github.com/nrkno/tv-automation-server-core/commit/c53124f))
+* fix: too long script out-words could overlap with previous items ([8f8a9a2](https://github.com/nrkno/tv-automation-server-core/commit/8f8a9a2))
+* fix: top RO overview labels clipped in wrong places ([5e5c228](https://github.com/nrkno/tv-automation-server-core/commit/5e5c228))
+* fix: typing fixes, to work with updated packages ([b4362f7](https://github.com/nrkno/tv-automation-server-core/commit/b4362f7))
+* fix: upd meteor typings ([53f17d2](https://github.com/nrkno/tv-automation-server-core/commit/53f17d2))
+* fix: updated nightly cronjob: restart casparcg devices, to work with new restartCasparCG function im ([3f9344d](https://github.com/nrkno/tv-automation-server-core/commit/3f9344d))
+* fix: updated package-lock.json ([bf0cfde](https://github.com/nrkno/tv-automation-server-core/commit/bf0cfde))
+* fix: userActivity executionTime logging ([a3e763e](https://github.com/nrkno/tv-automation-server-core/commit/a3e763e))
+* fix: bug with escape/enter key not working every time ([0a49c90](https://github.com/nrkno/tv-automation-server-core/commit/0a49c90))
+* fix: reset disabled flag on SL and RO reset ([8f69f67](https://github.com/nrkno/tv-automation-server-core/commit/8f69f67))
+* fix(hold): Too many sli being extended for hold mode ([f644e32](https://github.com/nrkno/tv-automation-server-core/commit/f644e32))
+* fix(lookahead): Fix lookahead when transition does not define clip. Fix duplicate key exception when ([a1bb026](https://github.com/nrkno/tv-automation-server-core/commit/a1bb026))
+* fix(RO view): Always persist original event in user-action methods ([6ba7df8](https://github.com/nrkno/tv-automation-server-core/commit/6ba7df8))
+### Other
+* chore:Updated translations. ([63291f0](https://github.com/nrkno/tv-automation-server-core/commit/63291f0))
+* chore: add client log trace for when eventContextForLog is unable to return a context ([883012d](https://github.com/nrkno/tv-automation-server-core/commit/883012d))
+* chore: add getTimings().elapsed ([db96295](https://github.com/nrkno/tv-automation-server-core/commit/db96295))
+* chore: added "testMethod" method, to use in integration tests in core-connection lib ([acf7cdd](https://github.com/nrkno/tv-automation-server-core/commit/acf7cdd))
+* chore: added Meteor import ([dc9e5de](https://github.com/nrkno/tv-automation-server-core/commit/dc9e5de))
+* chore: added release script ([2af41a4](https://github.com/nrkno/tv-automation-server-core/commit/2af41a4))
+* chore: changelog formatting ([0d2fdd4](https://github.com/nrkno/tv-automation-server-core/commit/0d2fdd4))
+* chore: changelog formatting ([e208266](https://github.com/nrkno/tv-automation-server-core/commit/e208266))
+* chore: delete _delete this file.foo ([b1d9252](https://github.com/nrkno/tv-automation-server-core/commit/b1d9252))
+* chore: humanified the release notes ([aa83ba8](https://github.com/nrkno/tv-automation-server-core/commit/aa83ba8))
+* chore: lint ([c09ac39](https://github.com/nrkno/tv-automation-server-core/commit/c09ac39))
+* chore: mark develop branch as "develop"-version ([c00259a](https://github.com/nrkno/tv-automation-server-core/commit/c00259a))
+* chore: merge changes from release2 ([8b77267](https://github.com/nrkno/tv-automation-server-core/commit/8b77267))
+* chore: merge develop ([a822654](https://github.com/nrkno/tv-automation-server-core/commit/a822654))
+* chore: merge hotfixes from release2 ([fb74abe](https://github.com/nrkno/tv-automation-server-core/commit/fb74abe))
+* chore: merge latest develop ([1738871](https://github.com/nrkno/tv-automation-server-core/commit/1738871))
+* chore: minor tidying of logging ([31d59d2](https://github.com/nrkno/tv-automation-server-core/commit/31d59d2))
+* chore: removed unneccessary logging ([d6a4b07](https://github.com/nrkno/tv-automation-server-core/commit/d6a4b07))
+* chore: renamed Selector & Modifier to MongoSelector & MongoModifier due to naming collision ([081e365](https://github.com/nrkno/tv-automation-server-core/commit/081e365))
+* chore: standarize dispatching events ([f4d206a](https://github.com/nrkno/tv-automation-server-core/commit/f4d206a))
+* chore: clean up mousetrapHelper ([46221cc](https://github.com/nrkno/tv-automation-server-core/commit/46221cc))
+* chore: Fixed 'dvelop' typo in readme. ([43b0f89](https://github.com/nrkno/tv-automation-server-core/commit/43b0f89))
+
+
+<a name="0.15.0"></a>
+## 0.15.0 (2018-10-16)
 
 ### Features
 
@@ -104,7 +234,28 @@ All notable changes to this project will be documented in this file. See [standa
 * Update mock3 to have a valid super in apning kam ([a52863d](https://github.com/nrkno/tv-automation-server-core/commit/a52863d))
 * reorganize modifiers in keyboardEventToShortcut ([ac939ce](https://github.com/nrkno/tv-automation-server-core/commit/ac939ce))
 
-
+#### Other during pre-release:
+* feat: use default renderer for MIC sourceLayerType ([ce845d4](https://github.com/nrkno/tv-automation-server-core/commit/ce845d4))
+* fix: merge in mouseTraphelper fix for broken enter-shortcut from develop into release 2 ([80b841e](https://github.com/nrkno/tv-automation-server-core/commit/80b841e))
+* fix: setAsNext on previous ([6ced09b](https://github.com/nrkno/tv-automation-server-core/commit/6ced09b))
+* fix: issue with roPrepareForBroadcast ([c3ad30c](https://github.com/nrkno/tv-automation-server-core/commit/c3ad30c))
+* fix: Add default exclusivity groups to InitDB ([dfd1782](https://github.com/nrkno/tv-automation-server-core/commit/dfd1782))
+* fix: hot fix for rehearsal activation when an RO is already active ([648c02d](https://github.com/nrkno/tv-automation-server-core/commit/648c02d))
+* fix: disable client-side RO updates ([72ba831](https://github.com/nrkno/tv-automation-server-core/commit/72ba831))
+* fix: broken GUI SegmentLineItems resolution, when simulating timeline output ([60fb843](https://github.com/nrkno/tv-automation-server-core/commit/60fb843))
+* fix: global ad-lib order was wrong, basline blueprint did not set _rank ([ffbacc8](https://github.com/nrkno/tv-automation-server-core/commit/ffbacc8))
+* fix: resetRunningorder should update timeline ([0d01e6a](https://github.com/nrkno/tv-automation-server-core/commit/0d01e6a))
+* fix: broken activation keyboard shortcuts ([cbb8353](https://github.com/nrkno/tv-automation-server-core/commit/cbb8353))
+* fix: Use thin styling for a solo 'AUTO' label ([74b5f15](https://github.com/nrkno/tv-automation-server-core/commit/74b5f15))
+* fix: Renamed warning icon file and references. ([081797c](https://github.com/nrkno/tv-automation-server-core/commit/081797c))
+* fix: activate past ROs ([4b128a5](https://github.com/nrkno/tv-automation-server-core/commit/4b128a5))
+* fix: be able to reset & activate inactivated RO ([e7d52da](https://github.com/nrkno/tv-automation-server-core/commit/e7d52da))
+* fix(lookahead): Fix lookahead when transition object starts at abs0 ([bd3edbd](https://github.com/nrkno/tv-automation-server-core/commit/bd3edbd))
+* fix(lookahead): Dont run lookahead on abs0 sli if there is an active transition. ([191df09](https://github.com/nrkno/tv-automation-server-core/commit/191df09))
+* chore: additional fix for numpad enter ([5d44383](https://github.com/nrkno/tv-automation-server-core/commit/5d44383))
+* chore: Increase contrast on secondary items ([87a1f17](https://github.com/nrkno/tv-automation-server-core/commit/87a1f17))
+* chore: guest segments feature ([3772e90](https://github.com/nrkno/tv-automation-server-core/commit/3772e90))
+* chore: change prerelease script name so its not picked up automatically by jenkins ([0baa588](https://github.com/nrkno/tv-automation-server-core/commit/0baa588))
 
 <a name="0.14.0"></a>
 # [0.14.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.13.1...v0.14.0) (2018-09-13)
