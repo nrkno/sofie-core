@@ -87,7 +87,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 						{t('Timestamp')}
 					</th>
 					<th className='c1 user-action-log__userId'>
-						{t('User ID')}
+						{t('User name')}
 					</th>
 					<th>
 						{t('Running Order')}
@@ -124,7 +124,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 						}), (e) => {
 							let tds = [
 								<td key='c0' className='user-action-log__timestamp'><Moment format='YYYY/MM/DD HH:mm:ss'>{e.timestamp}</Moment></td>,
-								<td key='c1' className='user-action-log__userId'>{e.userId}</td>,
+								<td key='c1' className='user-action-log__userId'>{e.answers && e.answers.q2}</td>,
 								<td key='c2' className='user-action-log__runningOrder'>{e.runningOrderId}</td>
 							]
 							tds = tds.concat(_.map(e.answers, (answer, key) => {
