@@ -14,7 +14,7 @@ import { NavLink, Route } from 'react-router-dom'
 
 import { ClientAPI } from '../../lib/api/client'
 import { PlayoutAPI } from '../../lib/api/playout'
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
+import { RunningOrder, RunningOrders, RunningOrderHoldState } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { SegmentLine } from '../../lib/collections/SegmentLines'
@@ -235,7 +235,12 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 							{RundownUtils.formatDiffToTimecode(getCurrentTime() - this.props.runningOrder.expectedStart, true, false, true, true, true)}
 						</span>
 				}
-				<span className='timing-clock time-now'><Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} /></span>
+				<span className='timing-clock time-now'>
+					<Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} />
+					{this.props.runningOrder.holdState && this.props.runningOrder.holdState !== RunningOrderHoldState.COMPLETE &&
+						<div className='running-order__header-status running-order__header-status--hold'>{t('Hold')}</div>
+					}
+				</span>
 				{ this.props.runningOrder.expectedDuration ?
 					(<React.Fragment>
 						{this.props.runningOrder.expectedStart && this.props.runningOrder.expectedDuration &&
