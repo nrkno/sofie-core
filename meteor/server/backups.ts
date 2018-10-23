@@ -72,6 +72,8 @@ function restoreShowBackup (backup: ShowStyleBackup) {
 				tmp.code = tmp.code.join('\n')
 			}
 
+			t.modified = getCurrentTime()
+
 			RuntimeFunctions.insert(t)
 		})
 	}

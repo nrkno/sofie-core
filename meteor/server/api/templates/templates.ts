@@ -391,7 +391,7 @@ export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, 
 	// First, check if we've got the function cached:
 
 	let cached = functionCache[runtimeFunction._id] ? functionCache[runtimeFunction._id] : null
-	if (cached && cached.modified !== runtimeFunction.modified) {
+	if (cached && (!cached.modified || cached.modified !== runtimeFunction.modified)) {
 		// the function has been updated, invalidate it then:
 		cached = null
 	}
