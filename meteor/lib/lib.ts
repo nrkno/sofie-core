@@ -161,7 +161,7 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 				if (options.update) {
 					options.update(oldObj._id, oUpdate)
 				} else {
-					p = asyncCollectionUpdate(collection, oldObj._id,{$set: oUpdate})
+					p = asyncCollectionUpdate(collection, oldObj._id, oUpdate)
 				}
 				if (options.afterUpdate) {
 					p = Promise.resolve(p)
