@@ -128,6 +128,7 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 	let hashI = 0
 	let hashed: {[hash: string]: string} = {}
 	let savedNotes: Array<SegmentLineNote> = []
+	let blueprintConfig: any = null
 	let c0 = literal<TemplateContextInternalBase>({
 		getRunningOrder (): RunningOrder {
 			const ro = RunningOrders.findOne(context.runningOrderId)
@@ -187,17 +188,31 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 
 			throw new Meteor.Error(404, 'Missing layer "' + name + '" of type LayerType."' + type + '"')
 		},
-		getConfigValue (key: string, defaultValue?: any): any {
-			const studio: StudioInstallation = this.getStudioInstallation()
+		getConfigValue (key: string): any {
+			if (blueprintConfig === null) {
+				const studio: StudioInstallation = this.getStudioInstallation()
 
-			const value = studio.getConfigValue(key)
-			if (value === null) return defaultValue
+				blueprintConfig = this.runHelper('defaultConfig')
 
-			if (defaultValue && typeof defaultValue === 'number') {
-				return parseFloat(value)
+				_.each(studio.config, ci => {
+					let newVal: any = ci.value
+					const defaultVal = objectPath.get(blueprintConfig, ci._id)
+					if (!_.isUndefined(defaultVal)) {
+						// Match the type
+						if (typeof defaultVal === 'number') {
+							newVal = parseFloat(newVal)
+						} else if (typeof defaultVal === 'boolean') {
+							newVal = newVal === 'true'
+						}
+					}
+					objectPath.set(blueprintConfig, ci._id, newVal)
+				})
 			}
 
-			return value
+			const val = objectPath.get(blueprintConfig, key)
+			if (_.isUndefined(val)) this.warning('Config value "' + key + '" is not defined')
+
+			return val
 		},
 		getValueByPath (obj: object | undefined, path: string, defaultValue?: any): any {
 			let value = (
