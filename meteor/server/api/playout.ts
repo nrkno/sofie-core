@@ -56,6 +56,12 @@ import { getHash } from '../lib'
 import { syncFunction, syncFunctionIgnore } from '../codeControl'
 import { getResolvedSegment, ISourceLayerExtended } from '../../lib/RunningOrder'
 let clone = require('fast-clone')
+import { Resolver } from 'superfly-timeline'
+import { transformTimeline } from '../../lib/timeline'
+import { ClientAPI } from '../../lib/api/client'
+import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
+import { sendSlackMessageToWebhook } from './slack'
+import { setMeteorMethods } from '../methods'
 
 export namespace ServerPlayoutAPI {
 	/**
@@ -1616,10 +1622,10 @@ _.each(methods, (fcn: Function, key) => {
 })
 
 // Apply methods:
-Meteor.methods(methods)
+setMeteorMethods(methods)
 
 // Temporary methods
-Meteor.methods({
+setMeteorMethods({
 	'debug__printTime': () => {
 		let now = getCurrentTime()
 		logger.debug(new Date(now))
@@ -1681,12 +1687,6 @@ function afterTake (runningOrder: RunningOrder, takeSegmentLine: SegmentLine, pr
 		triggerExternalMessage(runningOrder, takeSegmentLine, previousSegmentLine)
 	}, 40)
 }
-
-import { Resolver } from 'superfly-timeline'
-import { transformTimeline } from '../../lib/timeline'
-import { ClientAPI } from '../../lib/api/client'
-import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
-import { sendSlackMessageToWebhook } from './slack'
 
 function getResolvedSegmentLineItems (line: SegmentLine): SegmentLineItem[] {
 	const items = line.getAllSegmentLineItems()

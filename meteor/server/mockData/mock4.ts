@@ -9,8 +9,9 @@ import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/Perip
 import { literal } from '../../lib/lib'
 import { logger } from '../logging'
 import * as _ from 'underscore'
+import { setMeteorMethods } from '../methods'
 
-Meteor.methods({
+setMeteorMethods({
 	'debug_roMock4' () {
 		let pd = getPD()
 		if (!pd) {

@@ -12,11 +12,12 @@ import { PlayoutDeviceType } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
 import { LookaheadMode } from '../../lib/api/playout'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
+import { setMeteorMethods } from '../methods'
 
 // These are temporary method to fill the rundown database with some sample data
 // for development
 
-Meteor.methods({
+setMeteorMethods({
 	'debug_sampleSetup' () {
 		StudioInstallations.insert({
 			_id: 'studio0',
