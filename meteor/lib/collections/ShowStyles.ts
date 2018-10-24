@@ -21,6 +21,10 @@ export interface ShowStyle {
 	baselineTemplate: string
 	/** The name of the template to be run to generate external messages upon TAKEs */
 	messageTemplate: string
+	/** The name of the blueprint which is used to determine which other blueprint is used to create the sl&sli for a story */
+	routerBlueprint: string
+	/** The name of the blueprint which provides the default config for the blueprints  */
+	defaultConfigBlueprint: string
 }
 
 export const ShowStyles: TransformedCollection<ShowStyle, ShowStyle>

@@ -36,7 +36,7 @@ import { logger } from '../../logging'
 import { RunningOrders, RunningOrder } from '../../../lib/collections/RunningOrders'
 import { TimelineObj } from '../../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { ShowStyle } from '../../../lib/collections/ShowStyles'
+import { ShowStyle, ShowStyles } from '../../../lib/collections/ShowStyles'
 import { RuntimeFunctionDebugData } from '../../../lib/collections/RuntimeFunctionDebugData'
 import { Meteor } from 'meteor/meteor'
 
@@ -192,7 +192,10 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 			if (blueprintConfig === null) {
 				const studio: StudioInstallation = this.getStudioInstallation()
 
-				blueprintConfig = this.runHelper('defaultConfig')
+				const showStyle = ShowStyles.findOne(this.getShowStyleId())
+				if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + this.getShowStyleId() + '" not found')
+
+				blueprintConfig = this.runHelper(showStyle.defaultConfigBlueprint)
 
 				_.each(studio.config, ci => {
 					let newVal: any = ci.value
@@ -552,7 +555,7 @@ function findFunction (showStyle: ShowStyle, functionId: string, context: Templa
 		showStyleId: showStyle._id,
 		active: true,
 		templateId: functionId,
-		isHelper: functionId === 'getId'
+		isHelper: functionId === showStyle.routerBlueprint
 	})
 	if (runtimeFunction && runtimeFunction.code) {
 		try {
@@ -675,7 +678,7 @@ export interface RunTemplateResult {
 export function runTemplate (showStyle: ShowStyle, context: TemplateContext, story: IMOSROFullStory, reason: string): RunTemplateResult | undefined {
 	let notes: Array<SegmentLineNote> = []
 	let innerContext0 = getContext(context, false, story)
-	let getId = findFunction(showStyle, 'getId', innerContext0, reason)
+	let getId = findFunction(showStyle, showStyle.routerBlueprint, innerContext0, reason)
 
 	let templateId: string | null = getId(story) as string | null
 	notes = notes.concat(innerContext0.getNotes()) // Add notes

@@ -802,7 +802,10 @@ setMeteorMethods({
 			name: 'Distriktsnyheter Sørlandet',
 			templateMappings: [],
 			baselineTemplate: 'baseline',
-			messageTemplate: 'message'
+			messageTemplate: 'message',
+			routerBlueprint: 'getId',
+			defaultConfigBlueprint: 'defaultConfig',
+			postProcessBlueprint: 'post-process'
 		}})
 	},
 	'initDB_config': (really) => {

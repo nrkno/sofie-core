@@ -113,10 +113,46 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
+							{t('Router Blueprint ID')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='routerBlueprint'
+								obj={this.props.showStyle}
+								type='text'
+								collection={ShowStyles}
+								className='input text-input input-l'></EditAttribute>
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Default Config Blueprint ID')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='defaultConfigBlueprint'
+								obj={this.props.showStyle}
+								type='text'
+								collection={ShowStyles}
+								className='input text-input input-l'></EditAttribute>
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
 							{t('Baseline Blueprint ID')}
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute='baselineTemplate'
+								obj={this.props.showStyle}
+								type='text'
+								collection={ShowStyles}
+								className='input text-input input-l'></EditAttribute>
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Post Process Blueprint ID')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='postProcessBlueprint'
 								obj={this.props.showStyle}
 								type='text'
 								collection={ShowStyles}

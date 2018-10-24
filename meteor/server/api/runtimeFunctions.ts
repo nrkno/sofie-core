@@ -173,7 +173,6 @@ export function runtimeFunctionUpdateIsHelper (runtimeFunctionId: string, isHelp
 	let oldRf = RuntimeFunctions.findOne(runtimeFunctionId)
 
 	if (!oldRf) throw new Meteor.Error(404, 'RuntimeFunction "' + runtimeFunctionId + '" not found!')
-	if (oldRf.templateId === 'getId') throw new Meteor.Error(500, 'RuntimeFunction "' + oldRf.templateId + '" have helper status changed!')
 
 	// Update the current version
 	RuntimeFunctions.update(oldRf._id, {$set: {
@@ -187,7 +186,6 @@ export function runtimeFunctionUpdateTemplateId (runtimeFunctionId: string, temp
 
 	let oldRf = RuntimeFunctions.findOne(runtimeFunctionId)
 	if (!oldRf) throw new Meteor.Error(404, 'RuntimeFunction "' + runtimeFunctionId + '" not found!')
-	if (oldRf.templateId === 'getId') throw new Meteor.Error(500, 'RuntimeFunction "' + oldRf.templateId + '" cannot be renamed!')
 
 	let anyExisting = RuntimeFunctions.find({
 		templateId: 	templateId,
@@ -247,7 +245,6 @@ export function runtimeFunctionRemove (runtimeFunctionId: string, confirm: boole
 	let oldRf = RuntimeFunctions.findOne(runtimeFunctionId)
 
 	if (!oldRf) throw new Meteor.Error(404, 'RuntimeFunction "' + runtimeFunctionId + '" not found!')
-	if (oldRf.templateId === 'getId') throw new Meteor.Error(500, 'RuntimeFunction "' + oldRf.templateId + '" cannot be removed!')
 
 	RuntimeFunctions.remove({
 		templateId: oldRf.templateId

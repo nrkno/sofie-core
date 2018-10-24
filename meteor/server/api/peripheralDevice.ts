@@ -1327,7 +1327,7 @@ function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 		runningOrder: ro,
 		studioId: ro.studioInstallationId,
 		segmentLine: firstSegmentLine,
-		templateId: 'post-process'
+		templateId: showStyle.postProcessBlueprint
 	}
 	let tr: TemplateResultAfterPost | undefined
 	try {
