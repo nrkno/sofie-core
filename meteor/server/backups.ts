@@ -12,7 +12,7 @@ import * as _ from 'underscore'
 import { Random } from 'meteor/random'
 import { Timeline } from '../lib/collections/Timeline'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
-import { PeripheralDevices } from '../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { ServerPeripheralDeviceAPI } from './api/peripheralDevice'
 import { StudioInstallations } from '../lib/collections/StudioInstallations'
 import { RunningOrders, RunningOrder } from '../lib/collections/RunningOrders'
@@ -24,6 +24,7 @@ import { PeripheralDeviceCommands } from '../lib/collections/PeripheralDeviceCom
 import { SegmentLineAdLibItems } from '../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderDataCache } from '../lib/collections/RunningOrderDataCache'
 import { Meteor } from 'meteor/meteor'
+import { MosString128 } from 'mos-connection'
 
 export interface ShowStyleBackup {
 	type: 'showstyle'
@@ -107,6 +108,45 @@ function runBackup (params, req: IncomingMessage, res: ServerResponse, onlyActiv
 	res.end(content)
 }
 
+export interface RunningOrderCacheBackup {
+	type: 'runningOrderCache'
+	data: {
+		type: 'roCreate' | 'fullStory'
+		data: any
+	}[]
+}
+function restoreRunningOrder (backup: RunningOrderCacheBackup) {
+	const roCreates = backup.data.filter(d => d.type === 'roCreate')
+	const stories = backup.data.filter(d => d.type === 'fullStory')
+	if (roCreates.length !== 1) {
+		throw new Meteor.Error(500, 'bad number of roCreate entries')
+	}
+	if (stories.length !== roCreates[0].data.Stories.length) {
+		throw new Meteor.Error(500, 'bad number of fullStory entries')
+	}
+
+	// TODO - this should choose one in a better way
+	let pd = PeripheralDevices.findOne({
+		type: PeripheralDeviceAPI.DeviceType.MOSDEVICE
+	}) as PeripheralDevice
+	if (!pd) {
+		throw new Meteor.Error(404, 'MOS Device not found to be used for mock running order!')
+	}
+	let id = pd._id
+	let token = pd.token
+
+	// Delete the existing copy, to ensure this is a clean import
+	Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, id, token, new MosString128(roCreates[0].data.ID))
+
+	// Create the RO
+	Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, id, token, roCreates[0].data)
+
+	// Import each story
+	_.each(stories, (story) => {
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, story.data)
+	})
+}
+
 // Server route
 Picker.route('/backup/show/:id', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	runBackup(params, req, res, false)
@@ -130,6 +170,9 @@ postRoute.route('/backup/restore', (params, req: IncomingMessage, res: ServerRes
 		switch (body.type) {
 			case 'showstyle':
 				restoreShowBackup(body as ShowStyleBackup)
+				break
+			case 'runningOrderCache':
+				restoreRunningOrder(body as RunningOrderCacheBackup)
 				break
 			default:
 				throw new Meteor.Error(500, 'Unknown type "' + body.type + '" in request body')
