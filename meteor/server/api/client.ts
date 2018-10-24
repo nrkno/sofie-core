@@ -9,6 +9,7 @@ import { logger } from '../logging'
 import { ClientAPI } from '../../lib/api/client'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { setMeteorMethods } from '../methods'
 
 export namespace ServerClientAPI {
 	export function execMethod (context: string, methodName: string, ...args: any[]) {
@@ -128,4 +129,4 @@ methods[ClientAPI.methods.callPeripheralDeviceFunction] = function (...args) {
 }
 
 // Apply methods:
-Meteor.methods(methods)
+setMeteorMethods(methods)

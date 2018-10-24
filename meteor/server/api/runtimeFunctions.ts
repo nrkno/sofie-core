@@ -11,6 +11,7 @@ import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'
 import { RunningOrder, DBRunningOrder } from '../../lib/collections/RunningOrders'
+import { setMeteorMethods } from '../methods'
 
 export function runtimeFunctionTestCode (runtimeFunction: RuntimeFunction, showStyleId: string, syntaxOnly: boolean) {
 	check(runtimeFunction.code, String)
@@ -260,4 +261,4 @@ methods[RuntimeFunctionsAPI.UPDATETEMPLATEID] = runtimeFunctionUpdateTemplateId
 methods[RuntimeFunctionsAPI.UPDATEISHELPER] = runtimeFunctionUpdateIsHelper
 methods[RuntimeFunctionsAPI.INSERT] = runtimeFunctionInsert
 methods[RuntimeFunctionsAPI.REMOVE] = runtimeFunctionRemove
-Meteor.methods(methods)
+setMeteorMethods(methods)

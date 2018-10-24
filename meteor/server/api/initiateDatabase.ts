@@ -20,6 +20,7 @@ import { PeripheralDevices, PlayoutDeviceType, PeripheralDevice } from '../../li
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../logging'
 import * as _ from 'underscore'
+import { setMeteorMethods } from '../methods'
 
 // Imports from TSR (TODO make into an import)
 // export interface Mappings {
@@ -49,7 +50,7 @@ import * as _ from 'underscore'
 // }
 // const literal = <T>(o: T) => o
 
-Meteor.methods({
+setMeteorMethods({
 	'initDB': (really) => {
 
 		if (!really) {

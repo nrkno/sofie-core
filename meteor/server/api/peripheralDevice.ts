@@ -40,6 +40,7 @@ import { ShowStyles, ShowStyle } from '../../lib/collections/ShowStyles'
 import { ServerPlayoutAPI, updateTimelineFromMosData, updateTimeline, afterUpdateTimeline } from './playout'
 import { syncFunction } from '../codeControl'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
+import { setMeteorMethods } from '../methods'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -1718,10 +1719,10 @@ _.each(methods, (fcn: Function, key) => {
 })
 
 // Apply methods:
-Meteor.methods(methods)
+setMeteorMethods(methods)
 
 // temporary functions:
-Meteor.methods({
+setMeteorMethods({
 	'temporaryRemovePeripheralDevice' (id: string) {
 		// TODO: Replace this function with an authorized one
 		PeripheralDevices.remove(id)

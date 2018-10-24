@@ -1,7 +1,7 @@
-
 import { Meteor } from 'meteor/meteor'
 import * as Winston from 'winston'
 import * as fs from 'fs'
+import { setMeteorMethods } from './methods'
 
 // @todo: remove this and do a PR to https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/winston
 // because there's an error in the typings logging.debug() takes any, not only string
@@ -93,7 +93,7 @@ if (logToFile) {
 // 	logger.debug(...args)
 // }
 
-Meteor.methods({
+setMeteorMethods({
 	'logger': (type, ...args) => {
 		(logger[type] || logger.log)(...args)
 	}

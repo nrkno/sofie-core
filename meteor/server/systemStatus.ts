@@ -9,6 +9,7 @@ import { StudioInstallations } from '../lib/collections/StudioInstallations'
 import { getCurrentTime } from '../lib/lib'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { Meteor } from 'meteor/meteor'
+import { setMeteorMethods } from './methods'
 
 // This data structure is to be used to determine the system-wide status of the Core instance
 
@@ -184,7 +185,7 @@ function status2ExternalStatus (statusCode: StatusCode): ExternalStatus {
 	return 'UNDEFINED'
 }
 
-Meteor.methods({
+setMeteorMethods({
 	'systemStatus.getSystemStatus': () => {
 		return getSystemStatus()
 	}
