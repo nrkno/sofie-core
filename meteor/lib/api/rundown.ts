@@ -1,5 +1,3 @@
-import { Time } from '../lib'
-
 export namespace RundownAPI {
 	/** The type of the source layer, used to enable specific functions for special-type layers */
 	export enum SourceLayerType {
@@ -16,7 +14,8 @@ export namespace RundownAPI {
 		LOWER_THIRD		= 10,
 		LIVE_SPEAK		= 11,
 		MIC				= 12,
-		TRANSITION		= 13
+		TRANSITION		= 13,
+		LIGHTS			= 14
 	}
 
 	/** A generic list of playback availability statuses for a source layer/line item */

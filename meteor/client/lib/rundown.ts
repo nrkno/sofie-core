@@ -121,7 +121,7 @@ export namespace RundownUtils {
 	}
 
 	export function getSourceLayerClassName (slType: RundownAPI.SourceLayerType): string {
-		// CAMERA_MOVEMENT -> camera-movement
+		// CAMERA_MOVEMENT -> "camera-movement"
 		return (
 			((RundownAPI.SourceLayerType[slType] || 'unknown-sourceLayer-' + slType) + '')
 			.toLowerCase()
