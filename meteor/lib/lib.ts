@@ -576,6 +576,8 @@ function cleanUprateLimitIgnore () {
 }
 
 export function escapeHtml (text: string): string {
+	// Escape strings, so they are XML-compatible:
+
 	let map = {
 		'&': '&amp;',
 		'<': '&lt;',
@@ -583,9 +585,20 @@ export function escapeHtml (text: string): string {
 		'"': '&quot;',
 		"'": '&#039;'
 	}
-	return text.replace(/[&<>"']/g, (m) => {
-		return map[m]
-	})
+	let nbsp = String.fromCharCode(160) // non-breaking space (160)
+	map[nbsp] = ' ' // regular space
+
+	const textLength = text.length
+	let outText = ''
+	for (let i = 0; i < textLength; i++) {
+		let c = text[i]
+		if (map[c]) {
+			outText += map[c]
+		} else {
+			outText += c
+		}
+	}
+	return outText
 }
 export function tic (name: string = 'default') {
 	ticCache[name] = Date.now()

@@ -178,6 +178,7 @@ async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP) {
 			fcn(
 				args, (err: any, result: any, raw: any, soapHeader: any) => {
 					if (err) {
+						logger.debug('Sent SOAP message', args)
 						reject(err)
 					} else {
 						let resultValue = result[msg.message.fcn + 'Result']
@@ -223,19 +224,23 @@ async function resolveSOAPFcnData (soapClient: soap.Client, valFcn: ExternalMess
 			if (_.isObject(val)) {
 				iterateDeeply(val, (val) => {
 					if (_.isObject(val)) {
-
 						if (val._t) {
 							val.$t = val._t
 							delete val._t
+							if (_.isString(val.$t)) val.$t = escapeHtml(val.$t)
 							return val
 						} else {
 							return iterateDeeplyEnum.CONTINUE
 						}
+					} else if (_.isString(val)) {
+						// Escape strings, so they are XML-compatible:
+						return escapeHtml(val)
+					} else {
+						return val
 					}
-					return val
 				})
 			}
-			let xml = parser.toXml(val)
+			let xml: string = parser.toXml(val)
 			// resolve(entities.encode(xml))
 			resolve(xml)
 		} else {
