@@ -175,7 +175,10 @@ setMeteorMethods({
 			name: 'Dummy show style',
 			templateMappings: [],
 			baselineTemplate: '',
-			messageTemplate: ''
+			messageTemplate: '',
+			routerBlueprint: '',
+			defaultConfigBlueprint: '',
+			postProcessBlueprint: ''
 		})
 
 		RunningOrders.update({showStyleId: { $not: { $exists: true }}}, { $set: { showStyleId: 'dummyShow0' }})

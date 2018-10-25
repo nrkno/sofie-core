@@ -25,6 +25,8 @@ export interface ShowStyle {
 	routerBlueprint: string
 	/** The name of the blueprint which provides the default config for the blueprints  */
 	defaultConfigBlueprint: string
+	/** The name of the blueprint which is the post-process step to run on a segment after any sl has changed */
+	postProcessBlueprint: string
 }
 
 export const ShowStyles: TransformedCollection<ShowStyle, ShowStyle>
