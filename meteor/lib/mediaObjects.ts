@@ -1,9 +1,9 @@
 import { SegmentLineItem, VTContent, LiveSpeakContent } from './collections/SegmentLineItems'
 import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject } from './collections/MediaObjects'
-import { ISourceLayer } from './collections/StudioInstallations'
+import { ISourceLayer, IStudioConfigItem } from './collections/StudioInstallations'
 
-export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourceLayer) {
+export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourceLayer, config: Array<IStudioConfigItem>) {
 	let newStatus: RundownAPI.LineItemStatusCode = RundownAPI.LineItemStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
 	let message: string | null = null
@@ -25,6 +25,21 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 					message = 'Source doesn\'t have audio & video: ' + content.fileName
 				} else if (mediaObject) {
 					newStatus = RundownAPI.LineItemStatusCode.OK
+
+					// if resolution is lesser than HD => CasparCG will play wrong speed
+					if (mediaObject.mediainfo) {
+						const resolutionsConfigField = config.find((item) => item._id === 'mediaResolutions')
+						const resolutionsString = resolutionsConfigField && resolutionsConfigField.value !== '' ? resolutionsConfigField.value : '1920x1080'
+						const resolutions = resolutionsString.split(', ').map(res => res.split('x').map(s => Number(s)))
+						for (const stream of mediaObject.mediainfo.streams) {
+							if (stream.width && stream.height) {
+								if (!resolutions.find((res) => stream.width === res[0] && stream.height === res[1])) {
+									newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
+									message = `Source is not in accepted resolution: ${stream.width || 0}x${stream.height || 0}`
+								}
+							}
+						}
+					}
 				}
 
 				if (mediaObject) {
@@ -48,6 +63,21 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 					message = 'Source doesn\'t have audio & video: ' + content.fileName
 				} else if (mediaObject) {
 					newStatus = RundownAPI.LineItemStatusCode.OK
+
+					// if resolution is lesser than HD => CasparCG will play wrong speed
+					if (mediaObject.mediainfo) {
+						const resolutionsConfigField = config.find((item) => item._id === 'mediaResolutions')
+						const resolutionsString = resolutionsConfigField && resolutionsConfigField.value !== '' ? resolutionsConfigField.value : '1920x1080'
+						const resolutions = resolutionsString.split(', ').map(res => res.split('x').map(s => Number(s)))
+						for (const stream of mediaObject.mediainfo.streams) {
+							if (stream.width && stream.height) {
+								if (!resolutions.find((res) => stream.width === res[0] && stream.height === res[1])) {
+									newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
+									message = `Source is not in accepted resolution: ${stream.width || 0}x${stream.height || 0}`
+								}
+							}
+						}
+					}
 				}
 
 				if (mediaObject) {

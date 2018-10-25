@@ -216,7 +216,7 @@ export class SegmentLine implements DBSegmentLine {
 
 				if (slLookup && item.sourceLayerId && slLookup[item.sourceLayerId]) {
 					const sl = slLookup[item.sourceLayerId]
-					const st = checkSLIContentStatus(item, sl)
+					const st = checkSLIContentStatus(item, sl, si!.config)
 					if (st.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING || st.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN) {
 						notes.push({
 							type: SegmentLineNoteType.ERROR,
