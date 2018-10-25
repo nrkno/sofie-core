@@ -458,6 +458,17 @@ setMeteorMethods({
 					type: RundownAPI.SourceLayerType.CAMERA_MOVEMENT,
 					onPGMClean: true,
 					unlimited: true
+				},
+				{
+					_id: 'studio0_audio_bed',
+					_rank: 0,
+					name: 'Bed',
+					type: RundownAPI.SourceLayerType.AUDIO,
+					onPGMClean: true,
+					activateKeyboardHotkeys: '',
+					assignHotkeysToGlobalAdlibs: false,
+					unlimited: false,
+					isHidden: true
 				}
 			],
 		}})
