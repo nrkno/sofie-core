@@ -28,6 +28,7 @@ import { getResolvedSegment,
 	SegmentLineExtended
 } from '../../../lib/RunningOrder'
 import { RunningOrderViewEvents } from '../RunningOrderView'
+import { SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
 
 export interface SegmentUi extends Segment {
 	/** Output layers available in the installation used by this segment */
@@ -52,6 +53,7 @@ export interface SegmentLineItemUi extends SegmentLineItemExtended {
 	linked?: boolean
 	/** Metadata object */
 	metadata?: any
+	message?: string | null
 }
 interface ISegmentLineItemUiDictionary {
 	[key: string]: SegmentLineItemUi
@@ -83,6 +85,7 @@ interface IState {
 interface ITrackedProps {
 	segmentui: SegmentUi | undefined,
 	segmentLines: Array<SegmentLineUi>,
+	segmentNotes: Array<SegmentLineNote>,
 	isLiveSegment: boolean,
 	isNextSegment: boolean,
 	currentLiveSegmentLine: SegmentLineUi | undefined,
@@ -114,10 +117,15 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	let o = getResolvedSegment(props.studioInstallation, props.runningOrder, segment)
+	let notes: Array<SegmentLineNote> = []
+	_.each(o.segmentLines, (sl) => {
+		notes = notes.concat(sl.getNotes(true))
+	})
 
 	return {
 		segmentui: o.segmentExtended,
 		segmentLines: o.segmentLines,
+		segmentNotes: notes,
 		isLiveSegment: o.isLiveSegment,
 		currentLiveSegmentLine: o.currentLiveSegmentLine,
 		isNextSegment: o.isNextSegment,
@@ -327,6 +335,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				segment={this.props.segmentui}
 				studioInstallation={this.props.studioInstallation}
 				segmentLines={this.props.segmentLines}
+				segmentNotes={this.props.segmentNotes}
 				timeScale={this.props.timeScale}
 				onItemDoubleClick={this.props.onItemDoubleClick}
 				onCollapseOutputToggle={this.onCollapseOutputToggle}

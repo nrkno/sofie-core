@@ -206,7 +206,7 @@ export class SegmentLine implements DBSegmentLine {
 		let notes: Array<SegmentLineNote> = []
 		notes = notes.concat(this.notes || [])
 
-		/* if (runtimeNotes) {
+		if (runtimeNotes) {
 			const items = this.getSegmentLinesItems()
 			const ro = this.getRunningOrder()
 			const si = ro && ro.getStudioInstallation()
@@ -230,7 +230,7 @@ export class SegmentLine implements DBSegmentLine {
 					}
 				}
 			})
-		} */
+		}
 		return notes
 	}
 	getLastStartedPlayback () {

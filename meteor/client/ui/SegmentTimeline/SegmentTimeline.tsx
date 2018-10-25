@@ -30,6 +30,7 @@ interface IProps {
 	followLiveSegments: boolean,
 	studioInstallation: StudioInstallation
 	segmentLines: Array<SegmentLineUi>
+	segmentNotes: Array<SegmentLineNote>
 	timeScale: number
 	onCollapseOutputToggle?: (layer: IOutputLayerUi, event: any) => void
 	collapsedOutputs: {
@@ -434,11 +435,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 
 	render () {
 
-		let notes: Array<SegmentLineNote> = []
-		_.each(this.props.segmentLines, (sl) => {
-			notes = notes.concat(sl.getNotes(true))
-		})
-		notes = notes.concat(this.props.segment.notes || [])
+		let notes: Array<SegmentLineNote> = this.props.segmentNotes
 
 		return (
 			<div id={SegmentTimelineElementId + this.props.segment._id}
