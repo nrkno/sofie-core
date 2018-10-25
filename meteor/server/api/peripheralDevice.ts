@@ -1691,7 +1691,7 @@ methods[PeripheralDeviceAPI.methods.updateMediaObject] = (deviceId, deviceToken,
 
 // --------------------
 methods[PeripheralDeviceAPI.methods.functionReply] = (deviceId, deviceToken, commandId, err: any, result: any) => {
-	logger.debug('functionReply', err, result)
+	// logger.debug('functionReply', err, result)
 	PeripheralDeviceCommands.update(commandId, {
 		$set: {
 			hasReply: true,

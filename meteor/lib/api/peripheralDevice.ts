@@ -126,7 +126,7 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 		if (cmd) {
 			if (cmd.hasReply) {
 				// We've got a reply!
-				logger.debug('got reply ' + commandId)
+				// logger.debug('got reply ' + commandId)
 
 				if (cmd.replyError) {
 					cb(cmd.replyError, null)
