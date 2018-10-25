@@ -382,18 +382,23 @@ export interface StoryWithContextBase {
 export interface StoryWithContext extends IMOSROFullStory, StoryWithContextBase {
 }
 
-const functionCache: {[id: string]: {
+const functionCache: {[id: string]: Cache} = {}
+interface Cache {
 	modified: number,
 	fcn: TemplateGeneralFunction
-}} = {}
+}
 export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, reason: string): TemplateGeneralFunction {
 
-	// First, check if we've got the function cached:
+	let noCache: boolean = !runtimeFunction._id
 
-	let cached = functionCache[runtimeFunction._id] ? functionCache[runtimeFunction._id] : null
-	if (cached && (!cached.modified || cached.modified !== runtimeFunction.modified)) {
-		// the function has been updated, invalidate it then:
-		cached = null
+	let cached: Cache | null = null
+	if (!noCache) {
+		// First, check if we've got the function cached:
+		cached = functionCache[runtimeFunction._id] ? functionCache[runtimeFunction._id] : null
+		if (cached && (!cached.modified || cached.modified !== runtimeFunction.modified)) {
+			// the function has been updated, invalidate it then:
+			cached = null
+		}
 	}
 
 	if (cached) {
@@ -450,10 +455,12 @@ export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, 
 			return runtimeFcn(...args)
 		}
 
-		// Save to cache:
-		functionCache[runtimeFunction._id] = {
-			modified: runtimeFunction.modified,
-			fcn: fcn
+		if (!noCache) {
+			// Save to cache:
+			functionCache[runtimeFunction._id] = {
+				modified: runtimeFunction.modified,
+				fcn: fcn
+			}
 		}
 
 		return fcn
