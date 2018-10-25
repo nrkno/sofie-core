@@ -132,7 +132,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 				// let newStatus: RundownAPI.LineItemStatusCode = RundownAPI.LineItemStatusCode.UNKNOWN
 				// let metadata: any = undefined
 
-				const { metadata, status } = checkSLIContentStatus(props.segmentLineItem, props.segmentLineItem.sourceLayer)
+				const { metadata, status } = checkSLIContentStatus(props.segmentLineItem, props.segmentLineItem.sourceLayer, props.runningOrder.getStudioInstallation().config)
 
 				// switch (props.segmentLineItem.sourceLayer.type) {
 				// 	case RundownAPI.SourceLayerType.VT:
