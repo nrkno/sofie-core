@@ -313,6 +313,14 @@ body.vertical-overflow-only {
 				background: $segment-title-background-color-guest;
 			}
 		}
+
+		&.live, &.next {
+			.segment-timeline__title {
+				> h2 {
+					border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+				}
+			}
+		}
 	}
 
 	// the live and next states are the states of the entire segment component
@@ -322,6 +330,14 @@ body.vertical-overflow-only {
 
 			> h2 {
 				background: $segment-title-background-color-remote;
+			}
+		}
+
+		&.live, &.next {
+			.segment-timeline__title {
+				> h2 {
+					border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+				}
 			}
 		}
 	}
