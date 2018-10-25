@@ -17,6 +17,8 @@ export function runtimeFunctionTestCode (runtimeFunction: RuntimeFunction, showS
 	check(runtimeFunction.code, String)
 	logger.debug('runtimeFunctionTestCode')
 
+	delete runtimeFunction._id
+
 	if (syntaxOnly) {
 		try {
 			convertCodeToGeneralFunction(runtimeFunction, 'test')
