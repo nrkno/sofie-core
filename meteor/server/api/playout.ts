@@ -2763,6 +2763,9 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 						type: TriggerType.TIME_RELATIVE,
 						value: `#${currentSegmentLineGroup._id}.end - ${overlapDuration}`
 					})
+					if (typeof currentSegmentLineGroup.duration === 'number') {
+						currentSegmentLineGroup.duration += currentSegmentLine.autoNextOverlap || 0
+					}
 				}
 
 				let toSkipIds = currentSegmentLineItems.filter(i => i.infiniteId).map(i => i.infiniteId)
