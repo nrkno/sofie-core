@@ -41,6 +41,7 @@ import { ServerPlayoutAPI, updateTimelineFromMosData, updateTimeline, afterUpdat
 import { syncFunction } from '../codeControl'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 import { setMeteorMethods } from '../methods'
+import { ServerRundownAPI } from './rundown'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -286,6 +287,12 @@ export namespace ServerPeripheralDeviceAPI {
 
 		let showStyle = ShowStyles.findOne(studioInstallation.defaultShowStyle) as ShowStyle || {}
 
+		let existingDbRo = RunningOrders.findOne(roId(ro.ID))
+		if (existingDbRo && existingDbRo.unsynced) {
+			logger.info(`RunningOrder "${existingDbRo._id}" has been unsynced and needs to be synced before it can be updated.`)
+			return
+		}
+
 		// Save RO into database:
 		saveIntoDb(RunningOrders, {
 			_id: roId(ro.ID)
@@ -298,9 +305,10 @@ export namespace ServerPeripheralDeviceAPI {
 				showStyleId: showStyle._id,
 				name: ro.Slug.toString(),
 				expectedStart: formatTime(ro.EditorialStart),
-				expectedDuration: formatDuration(ro.EditorialDuration)
+				expectedDuration: formatDuration(ro.EditorialDuration),
+				unsynced: false
 			})
-		}), {
+	 	}), {
 			beforeInsert: (o) => {
 				o.created = getCurrentTime()
 				o.modified = getCurrentTime()
@@ -381,7 +389,7 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.debug(ro)
 		return mosRoCreate(id, token, ro) // it's the same
 	}
-	export function mosRoDelete (id, token, runningOrderId: MosString128) {
+	export function mosRoDelete (id, token, runningOrderId: MosString128, force?: boolean) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoDelete ' + runningOrderId)
 
@@ -391,7 +399,13 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.info('Removing RO ' + roId(runningOrderId))
 		let ro = RunningOrders.findOne(roId(runningOrderId))
 		if (ro) {
-			ro.remove()
+			if (force === true) {
+				return ServerRundownAPI.roDelete(ro._id)
+			}
+
+			RunningOrders.update(ro._id, {$set: {
+				unsynced: true
+			}})
 		}
 	}
 	export function mosRoMetadata (id, token, roData: IMOSRunningOrderBase) {
@@ -491,6 +505,10 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.debug(Action, Stories)
 		// insert a story (aka SegmentLine) before another story:
 		let ro = getRO(Action.RunningOrderID)
+		if (ro && ro.unsynced) {
+			logger.info(`RunningOrder "${ro._id}" has been unsynced and needs to be synced before it can be updated.`)
+			return
+		}
 		let segmentLineAfter = (Action.StoryID ? getSegmentLine(Action.RunningOrderID, Action.StoryID) : null)
 
 		let segmentBeforeOrLast
@@ -567,6 +585,10 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.debug(Action, Stories)
 		// Replace a Story (aka a SegmentLine) with one or more Stories
 		let ro = getRO(Action.RunningOrderID)
+		if (ro && ro.unsynced) {
+			logger.info(`RunningOrder "${ro._id}" has been unsynced and needs to be synced before it can be updated.`)
+			return
+		}
 		let segmentLineToReplace = getSegmentLine(Action.RunningOrderID, Action.StoryID)
 
 		let segmentLineBefore = fetchBefore(SegmentLines, { runningOrderId: ro._id }, segmentLineToReplace._rank)
@@ -627,6 +649,10 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// Move Stories (aka SegmentLine ## TODO ##Lines) to before a story
 		let ro = getRO(Action.RunningOrderID)
+		if (ro && ro.unsynced) {
+			logger.info(`RunningOrder "${ro._id}" has been unsynced and needs to be synced before it can be updated.`)
+			return
+		}
 
 		let currentSegmentLine: SegmentLine | undefined = undefined
 		let onAirNextWindowWidth: number | undefined = undefined
@@ -708,6 +734,11 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.debug(Action, Stories)
 		// Delete Stories (aka SegmentLine)
 		let ro = getRO(Action.RunningOrderID)
+		if (ro && ro.unsynced) {
+			logger.info(`RunningOrder "${ro._id}" has been unsynced and needs to be synced before it can be updated.`)
+			return
+		}
+
 		let affectedSegmentLineIds: Array<string> = []
 		_.each(Stories, (storyId: MosString128, i: number) => {
 			logger.debug('remove story ' + storyId)
@@ -740,6 +771,10 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.debug(Action, StoryID0, StoryID1)
 		// Swap Stories (aka SegmentLine)
 		let ro = getRO(Action.RunningOrderID)
+		if (ro && ro.unsynced) {
+			logger.info(`RunningOrder "${ro._id}" has been unsynced and needs to be synced before it can be updated.`)
+			return
+		}
 
 		let segmentLine0 = getSegmentLine(Action.RunningOrderID, StoryID0)
 		let segmentLine1 = getSegmentLine(Action.RunningOrderID, StoryID1)
@@ -781,6 +816,10 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.debug(Action)
 		// Set the ready to air status of a Running Order
 		let ro = getRO(Action.ID)
+		if (ro && ro.unsynced) {
+			logger.info(`RunningOrder "${ro._id}" has been unsynced and needs to be synced before it can be updated.`)
+			return
+		}
 
 		RunningOrders.update(ro._id, {$set: {
 			airStatus: Action.Status
@@ -798,6 +837,11 @@ export namespace ServerPeripheralDeviceAPI {
 		// logger.debug(story)
 		// Update db with the full story:
 		let ro = getRO(story.RunningOrderId)
+		if (ro && ro.unsynced) {
+			logger.info(`RunningOrder "${ro._id}" has been unsynced and needs to be synced before it can be updated.`)
+			return
+		}
+
 		// let segment = getSegment(story.RunningOrderId, story.ID)
 		let segmentLine = getSegmentLine(story.RunningOrderId, story.ID)
 

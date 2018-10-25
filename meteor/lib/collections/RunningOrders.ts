@@ -58,6 +58,9 @@ export interface DBRunningOrder {
 	/** Actual time of playback starting */
 	startedPlayback?: Time
 
+	/** Is the running order in an unsynced (has been unpublished from ENPS) state? */
+	unsynced?: boolean
+
 	/** Last sent storyStatus to MOS */
 	currentPlayingStoryStatus?: string
 
@@ -79,6 +82,7 @@ export class RunningOrder implements DBRunningOrder {
 	public airStatus?: IMOSObjectAirStatus
 	public active?: boolean
 	public rehearsal?: boolean
+	public unsynced?: boolean
 	public previousSegmentLineId: string | null
 	public nextSegmentLineManual?: boolean
 	public currentSegmentLineId: string | null
