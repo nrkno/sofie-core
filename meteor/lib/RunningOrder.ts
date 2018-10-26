@@ -197,43 +197,46 @@ export function getResolvedSegment (studioInstallation: StudioInstallation, runn
 				})
 
 				segmentLineItem.outputLayer = outputLayers[segmentLineItem.outputLayerId]
-				// mark the output layer as used within this segment
-				// console.log(segmentLineItem)
-				if (sourceLayers[segmentLineItem.sourceLayerId] && !sourceLayers[segmentLineItem.sourceLayerId].isHidden) {
-					outputLayers[segmentLineItem.outputLayerId].used = true
-				}
-				// attach the sourceLayer to the outputLayer, if it hasn't been already
 
-				// find matching layer in the output layer
-				let sourceLayer = outputLayers[segmentLineItem.outputLayerId].sourceLayers!.find((el) => {
-					return el._id === segmentLineItem.sourceLayerId
-				})
-
-				if (sourceLayer === undefined) {
-					sourceLayer = sourceLayers[segmentLineItem.sourceLayerId]
-					if (sourceLayer) {
-						sourceLayer = _.clone(sourceLayer)
-						let sl = sourceLayer as ISourceLayerExtended
-						sl.items = []
-						outputLayers[segmentLineItem.outputLayerId].sourceLayers!.push(sl)
+				if (!segmentLineItem.virtual) {
+					// mark the output layer as used within this segment
+					// console.log(segmentLineItem)
+					if (sourceLayers[segmentLineItem.sourceLayerId] && !sourceLayers[segmentLineItem.sourceLayerId].isHidden) {
+						outputLayers[segmentLineItem.outputLayerId].used = true
 					}
-				}
+					// attach the sourceLayer to the outputLayer, if it hasn't been already
 
-				if (sourceLayer !== undefined) {
-					segmentLineItem.sourceLayer = sourceLayer
-					if (segmentLineItem.sourceLayer.items === undefined) {
-						segmentLineItem.sourceLayer.items = []
-					}
-					// attach the segmentLineItem to the sourceLayer in this segment
-					segmentLineItem.sourceLayer.items.push(segmentLineItem)
+					// find matching layer in the output layer
+					let sourceLayer = outputLayers[segmentLineItem.outputLayerId].sourceLayers!.find((el) => {
+						return el._id === segmentLineItem.sourceLayerId
+					})
 
-					// check if the segment should be in a special state for segments with remote input
-					if (segmentLineItem.sourceLayer.isRemoteInput) {
-						hasRemoteItems = true
+					if (sourceLayer === undefined) {
+						sourceLayer = sourceLayers[segmentLineItem.sourceLayerId]
+						if (sourceLayer) {
+							sourceLayer = _.clone(sourceLayer)
+							let sl = sourceLayer as ISourceLayerExtended
+							sl.items = []
+							outputLayers[segmentLineItem.outputLayerId].sourceLayers!.push(sl)
+						}
 					}
 
-					if (segmentLineItem.sourceLayer.isGuestInput) {
-						hasGuestItems = true
+					if (sourceLayer !== undefined) {
+						segmentLineItem.sourceLayer = sourceLayer
+						if (segmentLineItem.sourceLayer.items === undefined) {
+							segmentLineItem.sourceLayer.items = []
+						}
+						// attach the segmentLineItem to the sourceLayer in this segment
+						segmentLineItem.sourceLayer.items.push(segmentLineItem)
+
+						// check if the segment should be in a special state for segments with remote input
+						if (segmentLineItem.sourceLayer.isRemoteInput) {
+							hasRemoteItems = true
+						}
+
+						if (segmentLineItem.sourceLayer.isGuestInput) {
+							hasGuestItems = true
+						}
 					}
 				}
 
