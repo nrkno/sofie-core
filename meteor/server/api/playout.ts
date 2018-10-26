@@ -1764,7 +1764,7 @@ function getResolvedSegmentLineItems (line: SegmentLine): SegmentLineItem[] {
 			type: TriggerType.TIME_ABSOLUTE,
 			value: Math.max(0, e.start - 1)
 		},
-		duration: Math.max(0, e.end - 1)
+		duration: Math.max(0, e.end - e.start)
 	}) as SegmentLineItem)
 
 	// crop infinite items
