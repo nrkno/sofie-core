@@ -96,8 +96,9 @@ export interface TemplateContextInnerBase {
 	getHashId: (str?: any) => string
 	unhashId: (hash: string) => string
 	getLayer: (type: LayerType, key: string) => string
-	getConfigValue: (key: string, defaultValue?: any) => any
+	getConfig: () => any
 	getValueByPath: (obj: object | undefined, path: string, defaultValue?: any) => any
+	setValueByPath: (obj: object | undefined, path: string, value: any) => void
 	iterateDeeply: (obj: any, iteratee: (val: any, key?: string | number) => (any | iterateDeeplyEnum), key?: string | number) => any
 	getHelper: (functionId: string) => Function
 	runHelper: (functionId: string, ...args: any[]) => any
@@ -189,34 +190,9 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 
 			throw new Meteor.Error(404, 'Missing layer "' + name + '" of type LayerType."' + type + '"')
 		},
-		getConfigValue (key: string): any {
-			if (blueprintConfig === null) {
-				const studio: StudioInstallation = this.getStudioInstallation()
-
-				const showStyle = ShowStyles.findOne(this.getShowStyleId())
-				if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + this.getShowStyleId() + '" not found')
-
-				blueprintConfig = this.runHelper(showStyle.defaultConfigBlueprint)
-
-				_.each(studio.config, ci => {
-					let newVal: any = ci.value
-					const defaultVal = objectPath.get(blueprintConfig, ci._id)
-					if (!_.isUndefined(defaultVal)) {
-						// Match the type
-						if (typeof defaultVal === 'number') {
-							newVal = parseFloat(newVal)
-						} else if (typeof defaultVal === 'boolean') {
-							newVal = newVal === 'true'
-						}
-					}
-					objectPath.set(blueprintConfig, ci._id, newVal)
-				})
-			}
-
-			const val = objectPath.get(blueprintConfig, key)
-			if (_.isUndefined(val)) this.warning('Config value "' + key + '" is not defined')
-
-			return val
+		getConfig (): any {
+			const studio: StudioInstallation = this.getStudioInstallation()
+			return studio.config
 		},
 		getValueByPath (obj: object | undefined, path: string, defaultValue?: any): any {
 			let value = (
@@ -226,6 +202,9 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 			)
 			if (_.isUndefined(value) && !_.isUndefined(defaultValue)) value = defaultValue
 			return value
+		},
+		setValueByPath (obj: object | undefined, path: string, value: any) {
+			if (!_.isUndefined(obj)) objectPath.set(obj, path, value)
 		},
 		iterateDeeply,
 		getHelper (functionId: string): Function {

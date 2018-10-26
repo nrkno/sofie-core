@@ -848,7 +848,6 @@ setMeteorMethods({
 			baselineTemplate: 'baseline',
 			messageTemplate: 'message',
 			routerBlueprint: 'getId',
-			defaultConfigBlueprint: 'defaultConfig',
 			postProcessBlueprint: 'post-process'
 		}})
 	},

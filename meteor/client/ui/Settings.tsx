@@ -127,7 +127,6 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 			baselineTemplate: '',
 			messageTemplate: '',
 			routerBlueprint: '',
-			defaultConfigBlueprint: '',
 			postProcessBlueprint: ''
 		}))
 	}

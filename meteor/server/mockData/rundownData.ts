@@ -177,7 +177,6 @@ setMeteorMethods({
 			baselineTemplate: '',
 			messageTemplate: '',
 			routerBlueprint: '',
-			defaultConfigBlueprint: '',
 			postProcessBlueprint: ''
 		})
 

@@ -211,8 +211,9 @@ declare interface Context {
 	getHashId: (stringToBeHashed?: string | number) => string
 	unhashId: (hash: string) => string
 	getLayer: (type: LayerType, key: string) => string
-	getConfigValue: (key: string, defaultValue?: any) => any
-	getValueByPath: (sourceObject: object | undefined, pathToAttributeInObject: string, defaultValue?: any) => any
+	getConfig: () => any
+	getValueByPath: (obj: object | undefined, path: string, defaultValue?: any) => any
+	setValueByPath: (obj: object | undefined, path: string, value: any) => void
 	iterateDeeply: (obj: any, iteratee: (val: any, key?: string | number) => (any | iterateDeeplyEnum), key?: string | number) => any
 	getHelper: (functionId: string) => Function
 	runHelper: (functionId: string, ...args: any[]) => any

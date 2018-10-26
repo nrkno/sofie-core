@@ -23,8 +23,6 @@ export interface ShowStyle {
 	messageTemplate: string
 	/** The name of the blueprint which is used to determine which other blueprint is used to create the sl&sli for a story */
 	routerBlueprint: string
-	/** The name of the blueprint which provides the default config for the blueprints  */
-	defaultConfigBlueprint: string
 	/** The name of the blueprint which is the post-process step to run on a segment after any sl has changed */
 	postProcessBlueprint: string
 }
