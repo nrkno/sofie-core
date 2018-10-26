@@ -35,7 +35,8 @@ import {
 	SegmentLines,
 	DBSegmentLine,
 	SegmentLineHoldMode,
-	SegmentLineNoteType
+	SegmentLineNoteType,
+	SegmentLineNote
 } from '../../../lib/collections/SegmentLines'
 import {
 	SegmentLineItem,
@@ -50,7 +51,7 @@ import {
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
-import { getContext, loadBlueprints, postProcessResult } from '../templates/templates'
+import { getContext, loadBlueprints, StoryResult, postProcessSegmentLineAdLibItems, postProcessSegmentLineItems } from '../templates/templates'
 import { getHash } from '../../lib'
 import {
 	StudioInstallations,
@@ -152,7 +153,8 @@ export function convertToSegmentLine (story: IMOSStory, runningOrderId: string, 
 		segmentId: '', // to be coupled later
 		_rank: rank,
 		mosId: story.ID.toString(),
-		slug: (story.Slug || '').toString()
+		slug: (story.Slug || '').toString(),
+		typeVariant: ''
 		// expectedDuration: item.EditorialDuration,
 		// autoNext: item.Trigger === ??
 	}
@@ -247,32 +249,33 @@ const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFul
 		templateId: 'N/A',
 		runtimeArguments: segmentLine.runtimeArguments || {}
 	}, false, story)
-	let tr: { result: any } | undefined
+
+	let result: StoryResult | null = null
+	let notes: SegmentLineNote[] = []
 	try {
 		const blueprints = loadBlueprints(showStyle)
-		tr = { result: postProcessResult(context, blueprints.RunStory(context, story), '???') }
+		result = blueprints.RunStory(context, story)
+
+ 		if (result) {
+			result.AdLibItems = postProcessSegmentLineAdLibItems(context, result.AdLibItems, result.SegmentLine.typeVariant)
+			result.SegmentLineItems = postProcessSegmentLineItems(context, result.SegmentLineItems, result.SegmentLine.typeVariant)
+		}
+
+ 		notes = context.getNotes()
 	} catch (e) {
 		logger.error(e.stack ? e.stack : e.toString())
 		// throw e
-		tr = {
-			// templateId: '',
-			result: {
-				notes: [{
-					type: SegmentLineNoteType.ERROR,
-					origin: {
-						name: '',
-						roId: context.runningOrderId,
-						segmentId: context.segmentLine.segmentId,
-						segmentLineId: context.segmentLine._id,
-					},
-					message: 'Internal Server Error'
-				}],
-				segmentLine: null, 			// DBSegmentLine | null,
-				segmentLineItems: [], 		// Array<SegmentLineItem> | null
-				segmentLineAdLibItems: [], 	// Array<SegmentLineAdLibItem> | null
-				baselineItems: [] 			// Array<RunningOrderBaselineItem> | null
-			}
-		}
+		notes = [{
+			type: SegmentLineNoteType.ERROR,
+			origin: {
+				name: '',
+				roId: context.runningOrderId,
+				segmentId: context.segmentLine.segmentId,
+				segmentLineId: context.segmentLine._id,
+			},
+			message: 'Internal Server Error'
+		}],
+		result = null
 	}
 
 	let changedSli: {
@@ -284,34 +287,34 @@ const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFul
 		updated: 0,
 		removed: 0
 	}
-	if (tr) {
+	if (result) {
 
-		if (tr.result.segmentLine) {
-			// if (!tr.result.segmentLine.typeVariant) tr.result.segmentLine.typeVariant = tr.templateId
+		if (result.SegmentLine) {
+			// if (!result.SegmentLine.typeVariant) result.SegmentLine.typeVariant = tr.templateId
 			SegmentLines.update(segmentLine._id, {$set: {
-				expectedDuration:		tr.result.segmentLine.expectedDuration || 0,
-				notes: 					tr.result.notes,
-				autoNext: 				tr.result.segmentLine.autoNext || false,
-				autoNextOverlap: 		tr.result.segmentLine.autoNextOverlap || 0,
-				overlapDuration: 		tr.result.segmentLine.overlapDuration || 0,
-				transitionDelay: 		tr.result.segmentLine.transitionDelay || '',
-				transitionDuration: 	tr.result.segmentLine.transitionDuration || 0,
-				disableOutTransition: 	tr.result.segmentLine.disableOutTransition || false,
-				updateStoryStatus:		tr.result.segmentLine.updateStoryStatus || false,
-				typeVariant:			tr.result.segmentLine.typeVariant || '',
-				subTypeVariant:			tr.result.segmentLine.subTypeVariant || '',
-				holdMode: 				tr.result.segmentLine.holdMode || SegmentLineHoldMode.NONE,
+				expectedDuration:		result.SegmentLine.expectedDuration || 0,
+				notes: 					notes,
+				autoNext: 				result.SegmentLine.autoNext || false,
+				autoNextOverlap: 		result.SegmentLine.autoNextOverlap || 0,
+				overlapDuration: 		result.SegmentLine.overlapDuration || 0,
+				transitionDelay: 		result.SegmentLine.transitionDelay || '',
+				transitionDuration: 	result.SegmentLine.transitionDuration || 0,
+				disableOutTransition: 	result.SegmentLine.disableOutTransition || false,
+				updateStoryStatus:		result.SegmentLine.updateStoryStatus || false,
+				typeVariant:			result.SegmentLine.typeVariant || '',
+				subTypeVariant:			result.SegmentLine.subTypeVariant || '',
+				holdMode: 				result.SegmentLine.holdMode || SegmentLineHoldMode.NONE,
 			}})
 		} else {
 			SegmentLines.update(segmentLine._id, {$set: {
-				notes: 					tr.result.notes,
+				notes: notes,
 			}})
 		}
 		changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
 			runningOrderId: ro._id,
 			segmentLineId: segmentLine._id,
 			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
-		}, tr.result.segmentLineItems || [], {
+		}, (result.SegmentLineItems || []) as SegmentLineItem[], {
 			afterInsert (segmentLineItem) {
 				logger.debug('inserted segmentLineItem ' + segmentLineItem._id)
 				logger.debug(segmentLineItem)
@@ -339,7 +342,7 @@ const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFul
 			runningOrderId: ro._id,
 			segmentLineId: segmentLine._id,
 			fromPostProcess: { $ne: true }, // do not affect postProcess items
-		}, tr.result.segmentLineAdLibItems || [], {
+		}, result.AdLibItems || [], {
 			afterInsert (segmentLineAdLibItem) {
 				logger.debug('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
 				logger.debug(segmentLineAdLibItem)

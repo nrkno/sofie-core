@@ -46,7 +46,7 @@ import { PeripheralDevice,PeripheralDevices,PlayoutDeviceSettings } from '../../
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { IMOSROFullStory } from 'mos-connection'
 import { PlayoutTimelinePrefixes, LookaheadMode } from '../../lib/api/playout'
-import { TemplateContext, loadBlueprints, getContext, postProcessResult } from './templates/templates'
+import { TemplateContext, loadBlueprints, getContext, postProcessSegmentLineAdLibItems, postProcessSegmentLineBaselineItems } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { StudioInstallations, StudioInstallation, IStudioConfigItem } from '../../lib/collections/StudioInstallations'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
@@ -359,20 +359,25 @@ export namespace ServerPlayoutAPI {
 					templateId: showStyle.baselineTemplate,
 					runtimeArguments: {}
 				}), false, undefined)
-				const result = postProcessResult(ctx, blueprint.Baseline(ctx), 'baseline')
 
-				if (result.baselineItems) {
-					logger.info(`... got ${result.baselineItems.length} items from template.`)
+				const res = blueprint.Baseline(ctx)
+				const baselineItems = postProcessSegmentLineBaselineItems(ctx, res.baselineItems, 'baseline')
+				const adlibItems = postProcessSegmentLineAdLibItems(ctx, res.adLibItems, 'baseline')
+
+				// TODO - should any notes be logged as a warning, or is that done already?
+
+				if (baselineItems) {
+					logger.info(`... got ${baselineItems.length} items from template.`)
 					saveIntoDb<RunningOrderBaselineItem, RunningOrderBaselineItem>(RunningOrderBaselineItems, {
 						runningOrderId: runningOrder._id
-					}, result.baselineItems)
+					}, baselineItems)
 				}
 
-				if (result.segmentLineAdLibItems) {
-					logger.info(`... got ${result.segmentLineAdLibItems.length} adLib items from template.`)
+				if (adlibItems) {
+					logger.info(`... got ${adlibItems.length} adLib items from template.`)
 					saveIntoDb<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>(RunningOrderBaselineAdLibItems, {
 						runningOrderId: runningOrder._id
-					}, result.segmentLineAdLibItems)
+					}, adlibItems)
 				}
 			}
 
@@ -1282,7 +1287,8 @@ export namespace ServerPlayoutAPI {
 			runningOrderId: ro._id,
 			slug: sladli.name,
 			dynamicallyInserted: true,
-			afterSegmentLine: segmentLine._id
+			afterSegmentLine: segmentLine._id,
+			typeVariant: 'adlib'
 		})
 
 		updateSegmentLines(ro._id) // place in order

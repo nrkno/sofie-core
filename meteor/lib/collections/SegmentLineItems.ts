@@ -71,6 +71,9 @@ export interface SegmentLineItemGeneric {
 	timings?: SegmentLineTimings
 	/** If this item has been inserted by the post-process template step */
 	fromPostProcess?: boolean
+
+	isTransition?: boolean
+	infiniteMode?: SegmentLineItemLifespan
 }
 
 export enum SegmentLineItemLifespan {

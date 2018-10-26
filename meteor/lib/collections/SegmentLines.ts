@@ -57,7 +57,7 @@ export interface DBSegmentLine {
 	duration?: number
 
 	/** The type of the segmentLiene, could be the name of the template that created it */
-	typeVariant?: string
+	typeVariant: string
 	/** The subtype fo the segmentLine */
 	subTypeVariant?: string
 
@@ -143,6 +143,7 @@ export class SegmentLine implements DBSegmentLine {
 	public dirty?: boolean
 
 	public runtimeArguments?: TemplateRuntimeArguments
+	public typeVariant: string
 
 	constructor (document: DBSegmentLine) {
 		_.each(_.keys(document), (key) => {
