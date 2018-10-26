@@ -40,10 +40,11 @@ $fullscreen-controls__button--min-radius: 15px;
 
 		.svg-inline--fa {
 			position: relative;
-			width: 1.5rem;
-			height: 1.5rem;
-			top: 1.35rem;
-			left: 1.3rem;
+			width: 35%;
+			height: auto;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
 		}
 
 		.running-order__fullscreen-controls__button__label {
