@@ -27,7 +27,7 @@ $fullscreen-controls__button--min-radius: 15px;
 
 		cursor: pointer;
 
-		.running-order__fullscreen-controls__button--inactive {
+		&.running-order__fullscreen-controls__button--inactive {
 			cursor: default;
 		}
 
@@ -36,6 +36,14 @@ $fullscreen-controls__button--min-radius: 15px;
 				background: $ui-button-primary;
 				transition: 0s background;
 			}
+		}
+
+		.svg-inline--fa {
+			position: relative;
+			width: 1.5rem;
+			height: 1.5rem;
+			top: 1.35rem;
+			left: 1.3rem;
 		}
 
 		.running-order__fullscreen-controls__button__label {

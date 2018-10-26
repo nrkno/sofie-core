@@ -3,6 +3,9 @@ import * as React from 'react'
 import * as $ from 'jquery'
 import * as VelocityReact from 'velocity-react'
 
+import * as faFastBackward from '@fortawesome/fontawesome-free-solid/faFastBackward'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+
 import Lottie from 'react-lottie'
 
 // @ts-ignore Not recognized by Typescript
@@ -20,16 +23,18 @@ import * as On_Air_MouseOver from './On_Air_MouseOver.json'
 
 interface IProps {
 	isFollowingOnAir: boolean
-	onFollowOnAir: () => void
+	onFollowOnAir?: () => void
+	onRewindSegments?: () => void
 }
 
 interface IState {
 	isFullscreen: boolean
 	fullScreenHover: boolean
 	onAirHover: boolean
+	rewindHover: boolean
 }
 
-export class RunningOrderUtilityControls extends React.Component<IProps, IState> {
+export class RunningOrderFullscreenControls extends React.Component<IProps, IState> {
 
 	throttledRefreshFullScreenState: () => void
 
@@ -55,7 +60,8 @@ export class RunningOrderUtilityControls extends React.Component<IProps, IState>
 		this.state = {
 			isFullscreen: this.checkFullScreen(),
 			fullScreenHover: false,
-			onAirHover: false
+			onAirHover: false,
+			rewindHover: false
 		}
 
 		this.fullscreenOut = _.extend(_.clone(this.animationTemplate), {
@@ -78,6 +84,19 @@ export class RunningOrderUtilityControls extends React.Component<IProps, IState>
 		})
 
 		this.throttledRefreshFullScreenState = _.throttle(this.refreshFullScreenState, 500)
+	}
+
+	componentDidUpdate (prevProps: IProps, prevState: IState) {
+		if (this.props.isFollowingOnAir && this.state.onAirHover) {
+			this.setState({
+				onAirHover: false
+			})
+		}
+		if (this.state.isFullscreen && this.state.fullScreenHover) {
+			this.setState({
+				fullScreenHover: false
+			})
+		}
 	}
 
 	componentDidMount () {
@@ -133,12 +152,33 @@ export class RunningOrderUtilityControls extends React.Component<IProps, IState>
 		})
 	}
 
+	onRewindEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.setState({
+			rewindHover: true
+		})
+	}
+
+	onRewindLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.setState({
+			rewindHover: false
+		})
+	}
+
+	onRewindClick = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (typeof this.props.onRewindSegments === 'function') {
+			this.props.onRewindSegments()
+		}
+	}
+
 	render () {
 		return (
 			<div className='running-order__fullscreen-controls'>
 				<VelocityReact.VelocityTransitionGroup
 					enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
 					leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}>
+					<div className='running-order__fullscreen-controls__button' onMouseEnter={this.onRewindEnter} onMouseLeave={this.onRewindLeave} onClick={this.onRewindClick} tabIndex={0}>
+						<FontAwesomeIcon icon={faFastBackward} />
+					</div>
 					{!this.props.isFollowingOnAir &&
 						<div className='running-order__fullscreen-controls__button' onMouseEnter={this.onOnAirMouseEnter} onMouseLeave={this.onOnAirMouseLeave} onClick={this.onOnAirClick} tabIndex={0}>
 							{this.state.onAirHover ?
