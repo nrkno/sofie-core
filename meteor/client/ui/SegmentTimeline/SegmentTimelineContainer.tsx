@@ -105,6 +105,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		return {
 			segmentui: undefined,
 			segmentLines: [],
+			segmentNotes: [],
 			isLiveSegment: false,
 			isNextSegment: false,
 			currentLiveSegmentLine: undefined,
