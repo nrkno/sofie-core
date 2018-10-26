@@ -62,6 +62,7 @@ import { ClientAPI } from '../../lib/api/client'
 import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
 import { sendSlackMessageToWebhook } from './slack'
 import { setMeteorMethods } from '../methods'
+import { RundownAPI } from '../../lib/api/rundown'
 
 export namespace ServerPlayoutAPI {
 	/**
@@ -1179,6 +1180,10 @@ export namespace ServerPlayoutAPI {
 		if (!segLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
 		if (runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in a current segment line!`)
 
+		const si = runningOrder.getStudioInstallation()
+		const sourceL = si.sourceLayers.find(i => i._id === slItem!.sourceLayerId)
+		if (sourceL && sourceL.type !== RundownAPI.SourceLayerType.GRAPHICS) throw new Meteor.Error(403, `Segment Line "${slId}" is not a GRAPHICS item!`)
+
 		let newSegmentLineItem = convertAdLibToSLineItem(slItem, segLine, false)
 		if (newSegmentLineItem.content && newSegmentLineItem.content.timelineObjects) {
 			newSegmentLineItem.content.timelineObjects = prefixAllObjectIds(_.compact(newSegmentLineItem.content.timelineObjects), newSegmentLineItem._id)
@@ -1203,7 +1208,8 @@ export namespace ServerPlayoutAPI {
 				disabled: true,
 				hidden: true
 			}})
-		} else {
+		}
+		/* else {
 			const sourceSL = SegmentLines.findOne(slItem.segmentLineId)
 			if (sourceSL) {
 				const segmentLineItems = getResolvedSegmentLineItems(sourceSL)
@@ -1219,7 +1225,7 @@ export namespace ServerPlayoutAPI {
 			} else {
 				throw new Meteor.Error(404, `Source Segment Line "${slItem.segmentLineId}" not found!`)
 			}
-		}
+		} */
 		SegmentLineItems.insert(newSegmentLineItem)
 
 		cropInfinitesOnLayer(runningOrder, segLine, newSegmentLineItem)
