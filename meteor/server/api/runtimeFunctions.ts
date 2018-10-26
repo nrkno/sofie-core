@@ -4,133 +4,15 @@ import { RuntimeFunctions, RuntimeFunction } from '../../lib/collections/Runtime
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
-import { convertCodeToGeneralFunction, convertCodeToFunction, getContext, TemplateContext, TemplateResult, TemplateGeneralFunction, preventSaveDebugData } from './templates/templates'
-import { DBSegmentLine, SegmentLine } from '../../lib/collections/SegmentLines'
-import { IMOSROFullStory, MosString128, IMOSItem } from 'mos-connection'
-import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'
-import { RunningOrder, DBRunningOrder } from '../../lib/collections/RunningOrders'
 import { setMeteorMethods } from '../methods'
 
 export function runtimeFunctionTestCode (runtimeFunction: RuntimeFunction, showStyleId: string, syntaxOnly: boolean) {
 	check(runtimeFunction.code, String)
 	logger.debug('runtimeFunctionTestCode')
 
-	delete runtimeFunction._id
-
-	if (syntaxOnly) {
-		try {
-			convertCodeToGeneralFunction(runtimeFunction, 'test', true)
-			preventSaveDebugData()
-		} catch (e) {
-			throw new Meteor.Error(402, 'Syntax error in runtime function: ' + e.toString() + ' \n' + e.stack)
-		}
-		return true
-	}
-
-	let fcn: TemplateGeneralFunction
-	try {
-		let tmpSegmentLine: DBSegmentLine = {
-			_id: 'ROID',
-			_rank: 0,
-			mosId: '',
-			segmentId: '',
-			runningOrderId: '',
-			slug: '',
-			// autoNext?: boolean
-			// metaData?: Array<IMOSExternalMetaData>
-			// status?: IMOSObjectStatus
-			// expectedDuration?: number
-			// startedPlayback?: number
-			// duration?: number
-			// disableOutTransition?: boolean
-		}
-		let tmpRunningOrder: DBRunningOrder = {
-			_id: 'myRunningOrder',
-			mosId: '',
-			studioInstallationId: '',
-			showStyleId: '',
-			mosDeviceId: '',
-			name: '',
-			created: 1234,
-			modified: 1235,
-			currentSegmentLineId: null,
-			nextSegmentLineId: null,
-			previousSegmentLineId: null,
-			dataSource: 'testCore'
-
-		}
-		let tmpContext: TemplateContext = {
-			noCache: true,
-			runningOrderId: 'myRunningOrder',
-			runningOrder: new RunningOrder(tmpRunningOrder),
-			studioId: 'myStudio',
-			// segment: Segment
-			segmentLine: new SegmentLine(tmpSegmentLine),
-			templateId: runtimeFunction._id,
-			runtimeArguments: {}
-		}
-
-		let innerContext = getContext(tmpContext)
-		innerContext.getRunningOrder = () => { throw new Meteor.Error(404, 'Not done yet') }
-		innerContext.getShowStyleId = () => showStyleId
-		innerContext.getStudioInstallation = () => {
-			const studio = StudioInstallations.findOne()
-			if (!studio) throw new Meteor.Error(404, 'No StudioInstallation found')
-			return studio
-		}
-		innerContext.getSegmentLines = () => []
-
-		fcn = convertCodeToFunction(innerContext, runtimeFunction, 'test')
-		preventSaveDebugData()
-
-	} catch (e) {
-		throw new Meteor.Error(402, 'Syntax error in runtime function: ' + e.toString() + ' \n' + e.stack)
-	}
-
-	// Test the result:
-
-	let tmpStory: IMOSROFullStory = {
-		ID: new MosString128('asdf'),
-		// Slug?: new MosString128(''),
-		// Number?: new MosString128(''),
-		// MosExternalMetaData?: Array<IMOSExternalMetaData>
-		RunningOrderId: new MosString128('ROID'),
-		Body: [{
-			Type: 'myTmpType',
-			Content: literal<IMOSItem>({ // IMOSItem
-				ID: new MosString128('asdf'),
-				// Slug?: new MosString128('')
-				ObjectID: new MosString128('asdf'),
-				MOSID: 'myMosItemId'
-				// mosAbstract?: string
-				// Paths?: Array<IMOSObjectPath>
-				// Channel?: new MosString128('')
-				// EditorialStart?: number
-				// EditorialDuration?: number
-				// UserTimingDuration?: number
-				// Trigger?: any
-				// MacroIn?: new MosString128('')
-				// MacroOut?: new MosString128('')
-				// MosExternalMetaData?: Array<IMOSExternalMetaData>
-				// MosObjects?: Array<IMOSObject>
-			})
-		}]
-	}
-	let result: TemplateResult| undefined
-	try {
-		result = fcn(tmpStory) as TemplateResult
-	} catch (e) {
-		throw new Meteor.Error(402, 'Runtime error in runtime function: ' + e.toString() + ' \n' + e.stack)
-	}
-
-	if (!result) throw new Meteor.Error(400, 'Unknown error in function result')
-	if (result.segmentLine === undefined) throw new Meteor.Error(400, 'Error in function result: .segmentLine not found') // : DBSegmentLine | null,
-	if (result.segmentLineItems === undefined) throw new Meteor.Error(400, 'Error in function result: .segmentLineItems not found') // : Array<SegmentLineItemOptional> | null
-	if (result.segmentLineAdLibItems === undefined) throw new Meteor.Error(400, 'Error in function result: .segmentLineAdLibItems not found') // : Array<SegmentLineAdLibItemOptional> | null
-
-	return true
+	throw new Meteor.Error(402, 'Unsupported api call')
 }
 export function runtimeFunctionUpdateCode (runtimeFunctionId: string, code: string) {
 	check(runtimeFunctionId, String)

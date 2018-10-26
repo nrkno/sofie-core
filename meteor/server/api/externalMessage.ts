@@ -3,7 +3,7 @@ import { SegmentLine } from '../../lib/collections/SegmentLines'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { ShowStyles, ShowStyle } from '../../lib/collections/ShowStyles'
 import { logger } from '../logging'
-import { preventSaveDebugData, convertCodeToFunction, getContext, TemplateContext } from './templates/templates'
+import { getContext, TemplateContext, loadBlueprints } from './templates/templates'
 import { RuntimeFunctions } from '../../lib/collections/RuntimeFunctions'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
 import { getCurrentTime, removeNullyProperties } from '../../lib/lib'
@@ -43,18 +43,14 @@ export function triggerExternalMessage (
 			runtimeArguments: {}
 		}
 		let innerContext = getContext(context, true)
-		let fcn
 		try {
-			fcn = convertCodeToFunction(innerContext, runtimeFunction, 'take_' + takeSegmentLine.slug)
-		} catch (e) {
-			throw new Meteor.Error(402, 'Syntax error in runtime function helper "' + functionId + '": ' + e.toString())
-		}
-		try {
+			const blueprints = loadBlueprints(showStyle)
+
 			// @ts-ignore the message function doesn't follow the typing
-			let resultMessages: Array<ExternalMessageQueueObj> | null = fcn(runningOrder, takeSegmentLine, previousSegmentLine)
+			let resultMessages: Array<ExternalMessageQueueObj> | null = blueprints.Message(innerContext, runningOrder, takeSegmentLine, previousSegmentLine)
 
 			if (resultMessages === null) {
-				preventSaveDebugData()
+				// do nothing
 			} else if (_.isObject(resultMessages) && _.isEmpty(resultMessages)) {
 				// do nothing
 			} else {

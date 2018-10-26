@@ -1,73 +1,24 @@
 import * as _ from 'underscore'
 import { SaferEval } from 'safer-eval'
 import * as objectPath from 'object-path'
-import * as moment from 'moment'
-import { Random } from 'meteor/random'
 import { iterateDeeply, iterateDeeplyEnum } from '../../../lib/lib'
 import {
 	IMOSROFullStory, IMOSRunningOrder, IMOSStory
 } from 'mos-connection'
-import { RuntimeFunctions, RuntimeFunction } from '../../../lib/collections/RuntimeFunctions'
-import { SegmentLine, DBSegmentLine, SegmentLineHoldMode, SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItemLifespan } from '../../../lib/collections/SegmentLineItems'
+import { SegmentLine, DBSegmentLine, SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
+import { SegmentLineItem } from '../../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItem } from '../../../lib/collections/RunningOrderBaselineItems'
-import { literal, Optional, getCurrentTime, formatDateAsTimecode, Time, formatDurationAsTimecode } from '../../../lib/lib'
-import * as crypto from 'crypto'
+import { literal, Optional, formatDateAsTimecode, Time, formatDurationAsTimecode } from '../../../lib/lib'
 import { getHash } from '../../lib'
-import {
-	TimelineContentTypeCasparCg,
-	TimelineContentTypeLawo,
-	TimelineContentTypeAtem,
-	TimelineContentTypeHttp,
-	TimelineContentTypePanasonicPtz,
-	TimelineContentTypeOther,
-	TimelineContentTypeHyperdeck,
-	Atem_Enums,
-	EmberPlusValueType,
-	TimelineObjHoldMode,
-	TimelineContentTypePharos,
-} from '../../../lib/collections/Timeline'
-import { TriggerType } from 'superfly-timeline'
-import { RunningOrderAPI } from '../../../lib/api/runningOrder'
-import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
-import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { logger } from '../../logging'
 import { RunningOrders, RunningOrder } from '../../../lib/collections/RunningOrders'
 import { TimelineObj } from '../../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { ShowStyle, ShowStyles } from '../../../lib/collections/ShowStyles'
-import { RuntimeFunctionDebugData } from '../../../lib/collections/RuntimeFunctionDebugData'
+import { ShowStyle } from '../../../lib/collections/ShowStyles'
 import { Meteor } from 'meteor/meteor'
 import { ShowBlueprints, ShowBlueprint } from '../../../lib/collections/ShowBlueprints'
 
-export type TemplateGeneralFunction = (story: IMOSROFullStory | null) => TemplateResult | string
-export type TemplateFunctionOptional = (context: TemplateContextInner, story: StoryWithContext) => TemplateResult | string
-
-/*
-// Note: This syntax requires Typescript 2.8, and we're on 2.5 for the time being..
-type Fix<T> = {
-	[K in keyof T]: K extends '_id' ? T[K] | undefined :
-		K extends 'segmentLineId' ? T[K] | undefined :
-		K extends 'runningOrderId' ? T[K] | undefined :
-	T[K]
-}
-export type SegmentLineItemOptional = Fix<SegmentLineItem>
-*/
-// type Optional<T> = {
-// 	[K in keyof T]?: T[K]
-// }
-
-// type Test<T> = {
-// 	[K in keyof T]: T[K]
-// }
-
-// export interface SegmentLineItemOptional extends Optional<SegmentLineItem> {
-// 	content?: {
-// 		[key: string]: Array<SomeTimelineObject> | number | string | boolean | object | undefined | null
-// 		timelineObjects?: Array<SomeTimelineObject | null>
-// 	}
-// }
 export type SegmentLineItemOptional = Optional<SegmentLineItem>
 export type SegmentLineAdLibItemOptional = Optional<SegmentLineAdLibItem>
 export type RunningOrderBaselineItemOptional = Optional<RunningOrderBaselineItem>
@@ -100,8 +51,6 @@ export interface TemplateContextInnerBase {
 	getValueByPath: (obj: object | undefined, path: string, defaultValue?: any) => any
 	setValueByPath: (obj: object | undefined, path: string, value: any) => void
 	iterateDeeply: (obj: any, iteratee: (val: any, key?: string | number) => (any | iterateDeeplyEnum), key?: string | number) => any
-	getHelper: (functionId: string) => Function
-	runHelper: (functionId: string, ...args: any[]) => any
 	error: (message: string) => void
 	warning: (message: string) => void
 	getSegmentLines: () => Array<SegmentLine>
@@ -130,7 +79,6 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 	let hashI = 0
 	let hashed: {[hash: string]: string} = {}
 	let savedNotes: Array<SegmentLineNote> = []
-	let blueprintConfig: any = null
 	let c0 = literal<TemplateContextInternalBase>({
 		getRunningOrder (): RunningOrder {
 			const ro = RunningOrders.findOne(context.runningOrderId)
@@ -207,24 +155,6 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 			if (!_.isUndefined(obj)) objectPath.set(obj, path, value)
 		},
 		iterateDeeply,
-		getHelper (functionId: string): Function {
-			const func = RuntimeFunctions.findOne({
-				showStyleId: this.getShowStyleId(),
-				active: true,
-				templateId: functionId,
-				isHelper: true
-			})
-			if (!func) throw new Meteor.Error(404, 'RuntimeFunctions helper "' + functionId + '" not found')
-
-			try {
-				return convertCodeToGeneralFunction(func, 'getHelper', this.noCache)
-			} catch (e) {
-				throw new Meteor.Error(402, 'Syntax error in runtime function helper "' + functionId + '": ' + e.toString())
-			}
-		},
-		runHelper (functionId: string, ...args: any[]): any {
-			return this.getHelper(functionId)(...args)
-		},
 		getSegmentLines (): Array<SegmentLine> {
 			// return stories in segmentLine
 			const ro: RunningOrder = this.getRunningOrder()
@@ -361,103 +291,10 @@ export interface TemplateResultAfterPost {
 	baselineItems: Array<RunningOrderBaselineItem> | null
 }
 
-function injectContextIntoArguments (context: TemplateContextInner, args: any[]): Array<any> {
-	_.each(args, (arg: StoryWithContext) => {
-		if (_.isObject(arg)) {
-			// inject functions
-			let c0 = literal<StoryWithContextBase>({
-				getValueByPath (path: string, defaultValue?: any) {
-					return context.getValueByPath(arg, path, defaultValue)
-				}
-			})
-			_.extend(arg, c0)
-		}
-	})
-	return args
-}
-export interface StoryWithContextBase {
-	getValueByPath: (path: string, defaultValue?: any) => any
-}
-export interface StoryWithContext extends IMOSROFullStory, StoryWithContextBase {
-}
-
 const blueprintCache: {[id: string]: Cache} = {}
 interface Cache {
 	modified: number,
 	fcn: BlueprintCollection
-}
-export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, reason: string, noCache: boolean): TemplateGeneralFunction {
-	throw new Meteor.Error(500, 'Removed function')
-}
-export function convertCodeToFunction (context: TemplateContextInner, runtimeFunction: RuntimeFunction, reason: string): TemplateGeneralFunction {
-	let runtimeFcn = convertCodeToGeneralFunction(runtimeFunction, reason, context.noCache)
-	// logger.debug('runtimeFcn', runtimeFcn)
-	let fcn = (...args: any[]) => {
-		let result = runtimeFcn.apply(context, [context].concat(injectContextIntoArguments(context, args)))
-		return result
-	}
-	return fcn
-}
-let lastTimeout: number | null = null
-function saveDebugData (runtimeFunction: RuntimeFunction, reason: string, ...args) {
-	// console.log('saveDebugData queue', reason)
-	// Do this later, because this is low-prio:
-	lastTimeout = Meteor.setTimeout(() => {
-		// console.log('saveDebugData', reason)
-		// Save a copy of the data, for debugging in the editor:
-		let code = runtimeFunction.code
-
-		let hash = getHash(args.join(','))
-
-		let rfdd = RuntimeFunctionDebugData.findOne({
-			showStyleId: runtimeFunction.showStyleId,
-			templateId: runtimeFunction.templateId,
-			reason: reason,
-			dataHash: hash
-		}, {fields: {data: 0}})
-		if (rfdd) {
-			// console.log('updating ' + rfdd._id)
-			RuntimeFunctionDebugData.update(rfdd._id, {$set: {
-				created: getCurrentTime()
-			}})
-		} else {
-			let id = RuntimeFunctionDebugData.insert({
-				_id: Random.id(),
-				showStyleId: runtimeFunction.showStyleId,
-				templateId: runtimeFunction.templateId,
-				reason: reason,
-				dataHash: hash,
-				created: getCurrentTime(),
-				data: args
-			})
-			// console.log('inserting ' + id)
-		}
-
-		// remove oldest if we have more than 3 versions:
-		let rfdds = RuntimeFunctionDebugData.find({
-			showStyleId: runtimeFunction.showStyleId,
-			templateId: runtimeFunction.templateId,
-		}, {
-			fields: {data: 0},
-			sort: {created: -1}
-		}).fetch()
-		if (rfdds.length > 3) {
-			_.each(rfdds.slice(3), (rfdd) => {
-				if (!rfdd.dontRemove) {
-					// console.log('removing ' + rfdd._id)
-					RuntimeFunctionDebugData.remove(rfdd._id)
-				}
-			})
-		}
-	}, 100)
-}
-export function preventSaveDebugData () {
-	// called by the client code to prevent the last saving of data
-	if (lastTimeout) {
-		// console.log('prevent SaveDebugData')
-		Meteor.clearTimeout(lastTimeout)
-		lastTimeout = null
-	}
 }
 
 export interface BlueprintCollection {
@@ -466,6 +303,7 @@ export interface BlueprintCollection {
 	Baseline: (context: TemplateContext) => any
 	RunStory: (context: TemplateContext, story: IMOSStory) => TemplateResult
 	PostProcess: (context: TemplateContext) => TemplateResult
+	Message: (context: TemplateContext, runningOrder: RunningOrder, takeSegmentLine: SegmentLine, previousSegmentLine: SegmentLine) => any
 }
 export function loadBlueprints (showStyle: ShowStyle): BlueprintCollection {
 	let blueprintDoc = ShowBlueprints.findOne({
@@ -501,20 +339,6 @@ function evalBlueprints (blueprintDoc: ShowBlueprint, showStyleName: string, noC
 		}
 
 		const entry = new SaferEval(context, { filename: showStyleName + '.js' }).runInContext(blueprintDoc.code)
-		// let fcn = (...args) => {
-		// 	saveDebugData(runtimeFunction, reason, ...args)
-		// 	// @ts-ignore the function can be whatever, really
-		// 	return runtimeFcn(...args)
-		// }
-
-		// if (!noCache) {
-		// 	// Save to cache:
-		// 	functionCache[runtimeFunction._id] = {
-		// 		modified: runtimeFunction.modified,
-		// 		fcn: fcn
-		// 	}
-		// }
-
 		return entry.default
 	}
 }
