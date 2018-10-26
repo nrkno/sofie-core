@@ -20,7 +20,7 @@ export function runtimeFunctionTestCode (runtimeFunction: RuntimeFunction, showS
 
 	if (syntaxOnly) {
 		try {
-			convertCodeToGeneralFunction(runtimeFunction, 'test')
+			convertCodeToGeneralFunction(runtimeFunction, 'test', true)
 			preventSaveDebugData()
 		} catch (e) {
 			throw new Meteor.Error(402, 'Syntax error in runtime function: ' + e.toString() + ' \n' + e.stack)
@@ -60,6 +60,7 @@ export function runtimeFunctionTestCode (runtimeFunction: RuntimeFunction, showS
 
 		}
 		let tmpContext: TemplateContext = {
+			noCache: true,
 			runningOrderId: 'myRunningOrder',
 			runningOrder: new RunningOrder(tmpRunningOrder),
 			studioId: 'myStudio',

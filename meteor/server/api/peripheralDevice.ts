@@ -1322,6 +1322,7 @@ function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 	const firstSegmentLine = segmentLines.sort((a, b) => b._rank = a._rank)[0]
 
 	let context: TemplateContext = {
+		noCache: false,
 		runningOrderId: ro._id,
 		runningOrder: ro,
 		studioId: ro.studioInstallationId,
@@ -1423,6 +1424,7 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 	if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + ro.showStyleId + '" not found!')
 
 	let context: TemplateContext = {
+		noCache: false,
 		runningOrderId: ro._id,
 		runningOrder: ro,
 		studioId: ro.studioInstallationId,
