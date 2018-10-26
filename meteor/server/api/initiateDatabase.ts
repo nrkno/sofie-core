@@ -12,6 +12,8 @@ import { StudioInstallations,
 	MappingLawoType,
 	MappingPanasonicPtz,
 	MappingPanasonicPtzType,
+	MappingPharos,
+	MappingAbstract,
 } from '../../lib/collections/StudioInstallations'
 import { literal, getCurrentTime } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
@@ -469,12 +471,23 @@ setMeteorMethods({
 					assignHotkeysToGlobalAdlibs: false,
 					unlimited: false,
 					isHidden: true
+				},
+				{
+					_id: 'studio0_host_light',
+					_rank: 0,
+					name: 'HostLight',
+					type: RundownAPI.SourceLayerType.LIGHTS,
+					onPGMClean: false,
+					activateKeyboardHotkeys: '',
+					assignHotkeysToGlobalAdlibs: false,
+					unlimited: false,
+					isHidden: true
 				}
 			],
 		}})
 		// Create Timeline mappings:
 		const mappings: Mappings = { // Logical layers and their mappings
-			'core_abstract': literal<Mapping>({
+			'core_abstract': literal<MappingAbstract>({
 				device: PlayoutDeviceType.ABSTRACT,
 				deviceId: 'abstract0',
 				lookahead: LookaheadMode.NONE,
@@ -803,7 +816,27 @@ setMeteorMethods({
 				deviceId: 'ptz0',
 				mappingType: MappingPanasonicPtzType.PRESET_SPEED,
 				lookahead: LookaheadMode.WHEN_CLEAR
-			})
+			}),
+			'pharos_lights': literal<MappingPharos>({
+				device: PlayoutDeviceType.PHAROS,
+				deviceId: 'pharos0',
+				lookahead: LookaheadMode.NONE
+			}),
+			'lights_host': literal<MappingAbstract>({
+				device: PlayoutDeviceType.ABSTRACT,
+				deviceId: 'abstract0',
+				lookahead: LookaheadMode.NONE
+			}),
+			'lights_guest': literal<MappingAbstract>({
+				device: PlayoutDeviceType.ABSTRACT,
+				deviceId: 'abstract0',
+				lookahead: LookaheadMode.NONE
+			}),
+			'lights_studio': literal<MappingAbstract>({
+				device: PlayoutDeviceType.ABSTRACT,
+				deviceId: 'abstract0',
+				lookahead: LookaheadMode.NONE
+			}),
 		}
 		StudioInstallations.update('studio0', {$set: {
 			mappings: mappings
