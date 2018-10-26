@@ -122,6 +122,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	_.each(o.segmentLines, (sl) => {
 		notes = notes.concat(sl.getNotes(true))
 	})
+	notes = notes.concat(segment.notes || [])
 
 	return {
 		segmentui: o.segmentExtended,

@@ -50,11 +50,7 @@ import {
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
-import {
-	runTemplate,
-	TemplateContext,
-	RunTemplateResult
-} from '../templates/templates'
+import { getContext, loadBlueprints, postProcessResult } from '../templates/templates'
 import { getHash } from '../../lib'
 import {
 	StudioInstallations,
@@ -86,6 +82,7 @@ import {
 	runPostProcessTemplate,
 	ServerRunningOrderAPI
 } from '../runningOrder'
+import { syncFunction } from '../../codeControl'
 
 export function roId (roId: MosString128, original?: boolean): string {
 	// logger.debug('roId', roId)
@@ -235,11 +232,12 @@ function formatTime (time: any): number | undefined {
 		return undefined
 	}
 }
-export function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory): boolean {
+const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory) => boolean
+= syncFunction(function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory): boolean {
 	let showStyle = ShowStyles.findOne(ro.showStyleId)
 	if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + ro.showStyleId + '" not found!')
 
-	let context: TemplateContext = {
+	let context = getContext({
 		noCache: false,
 		runningOrderId: ro._id,
 		runningOrder: ro,
@@ -248,15 +246,16 @@ export function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: 
 		segmentLine: segmentLine,
 		templateId: 'N/A',
 		runtimeArguments: segmentLine.runtimeArguments || {}
-	}
-	let tr: RunTemplateResult | undefined
+	}, false, story)
+	let tr: { result: any } | undefined
 	try {
-		tr = runTemplate(showStyle, context, story, 'story ' + story.ID.toString())
+		const blueprints = loadBlueprints(showStyle)
+		tr = { result: postProcessResult(context, blueprints.RunStory(context, story), '???') }
 	} catch (e) {
 		logger.error(e.stack ? e.stack : e.toString())
 		// throw e
 		tr = {
-			templateId: '',
+			// templateId: '',
 			result: {
 				notes: [{
 					type: SegmentLineNoteType.ERROR,
@@ -288,7 +287,7 @@ export function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: 
 	if (tr) {
 
 		if (tr.result.segmentLine) {
-			if (!tr.result.segmentLine.typeVariant) tr.result.segmentLine.typeVariant = tr.templateId
+			// if (!tr.result.segmentLine.typeVariant) tr.result.segmentLine.typeVariant = tr.templateId
 			SegmentLines.update(segmentLine._id, {$set: {
 				expectedDuration:		tr.result.segmentLine.expectedDuration || 0,
 				notes: 					tr.result.notes,
@@ -369,7 +368,8 @@ export function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: 
 	// if anything was changed
 	return (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
 	// return this.core.mosManipulate(P.methods.mosRoReadyToAir, story)
-}
+})
+
 export function sendStoryStatus (ro: RunningOrder, takeSegmentLine: SegmentLine | null) {
 
 	if (ro.currentPlayingStoryStatus) {

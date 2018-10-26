@@ -7,7 +7,7 @@ import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/Segment
 import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
 import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime } from '../../lib/lib'
 import { logger } from '../logging'
-import { runNamedTemplate, TemplateContext, TemplateResultAfterPost } from './templates/templates'
+import { getContext, TemplateResultAfterPost, loadBlueprints, postProcessResult } from './templates/templates'
 import { getHash } from '../lib'
 import { ShowStyles } from '../../lib/collections/ShowStyles'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
@@ -282,7 +282,7 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 
 	const firstSegmentLine = segmentLines.sort((a, b) => b._rank = a._rank)[0]
 
-	let context: TemplateContext = {
+	let context = getContext({
 		noCache: false,
 		runningOrderId: ro._id,
 		runningOrder: ro,
@@ -290,11 +290,11 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 		segmentLine: firstSegmentLine,
 		templateId: showStyle.postProcessBlueprint,
 		runtimeArguments: {}
-	}
-	let tr: TemplateResultAfterPost | undefined
+	}, false, undefined)
+	let tr: TemplateResultAfterPost
 	try {
-		tr = runNamedTemplate(showStyle, context.templateId, context, null, 'post-process-' + segment._id)
-
+		const blueprints = loadBlueprints(showStyle)
+		tr = postProcessResult(context, blueprints.PostProcess(context), 'post-process')
 	} catch (e) {
 		logger.error(e.toString())
 		// throw e

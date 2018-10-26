@@ -5,7 +5,7 @@ import * as moment from 'moment'
 import { Random } from 'meteor/random'
 import { iterateDeeply, iterateDeeplyEnum } from '../../../lib/lib'
 import {
-	IMOSROFullStory, IMOSRunningOrder,
+	IMOSROFullStory, IMOSRunningOrder, IMOSStory
 } from 'mos-connection'
 import { RuntimeFunctions, RuntimeFunction } from '../../../lib/collections/RuntimeFunctions'
 import { SegmentLine, DBSegmentLine, SegmentLineHoldMode, SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
@@ -76,12 +76,6 @@ export interface TemplateRuntimeArguments {
 	[key: string]: string
 }
 
-export interface TemplateSet {
-	getId: (context: TemplateContextInner, story: IMOSROFullStory) => string
-	templates: {
-		[key: string]: TemplateFunctionOptional
-	}
-}
 export interface TemplateContext {
 	noCache: boolean
 	runningOrderId: string
@@ -387,88 +381,13 @@ export interface StoryWithContextBase {
 export interface StoryWithContext extends IMOSROFullStory, StoryWithContextBase {
 }
 
-const functionCache: {[id: string]: Cache} = {}
+const blueprintCache: {[id: string]: Cache} = {}
 interface Cache {
 	modified: number,
-	fcn: TemplateGeneralFunction
+	fcn: BlueprintCollection
 }
 export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, reason: string, noCache: boolean): TemplateGeneralFunction {
-
-	let cached: Cache | null = null
-	if (!noCache) {
-		// First, check if we've got the function cached:
-		cached = functionCache[runtimeFunction._id] ? functionCache[runtimeFunction._id] : null
-		if (cached && (!cached.modified || cached.modified !== runtimeFunction.modified)) {
-			// the function has been updated, invalidate it then:
-			cached = null
-		}
-	}
-
-	if (cached) {
-		return cached.fcn
-	} else {
-
-		// Just use the function () { .* } parts (omit whatevers before or after)
-		// let functionStr = ((runtimeFunction.code + '').match(/function[\s\S]*}/) || [])[0]
-		let m = ((runtimeFunction.code + '').match(/([\s\S]*?)(function[\s\S]*})/) || [])
-		let preFunctionStr = (m[1] || '')
-		let functionStr = m[2]
-
-		// logger.debug('functionStr', functionStr)
-		if (!functionStr) throw Error('Function empty!')
-		if (preFunctionStr) { // Insert some blank lines, so that the line numbers add up
-			let lineCount = (preFunctionStr.match(/\n/g) || []).length
-			preFunctionStr = ''
-			for (let i = 0; i < lineCount; i++) {
-				preFunctionStr += '\r\n'
-			}
-			let a = functionStr.indexOf('\n')
-			if (a) {
-				functionStr = functionStr.slice(0, a + 1) + preFunctionStr + functionStr.slice(a + 1)
-			}
-		}
-		let context = {
-			_,
-			moment,
-			LayerType,
-			TriggerType,
-			TimelineContentTypeOther,
-			TimelineContentTypeCasparCg,
-			TimelineContentTypeLawo,
-			TimelineContentTypeAtem,
-			TimelineContentTypeHttp,
-			TimelineContentTypePanasonicPtz,
-			TimelineContentTypeHyperdeck,
-			TimelineContentTypePharos,
-			Atem_Enums,
-			LineItemStatusCode: RunningOrderAPI.LineItemStatusCode,
-			EmberPlusValueType,
-			Transition,
-			Ease,
-			Direction,
-			SegmentLineItemLifespan,
-			PlayoutTimelinePrefixes,
-			SegmentLineHoldMode,
-			TimelineObjHoldMode,
-		}
-
-		let runtimeFcn: TemplateGeneralFunction = new SaferEval(context, { filename: runtimeFunction.templateId + '.js' }).runInContext(functionStr)
-		let fcn = (...args) => {
-			saveDebugData(runtimeFunction, reason, ...args)
-			// @ts-ignore the function can be whatever, really
-			return runtimeFcn(...args)
-		}
-
-		if (!noCache) {
-			// Save to cache:
-			functionCache[runtimeFunction._id] = {
-				modified: runtimeFunction.modified,
-				fcn: fcn
-			}
-		}
-
-		return fcn
-	}
+	throw new Meteor.Error(500, 'Removed function')
 }
 export function convertCodeToFunction (context: TemplateContextInner, runtimeFunction: RuntimeFunction, reason: string): TemplateGeneralFunction {
 	let runtimeFcn = convertCodeToGeneralFunction(runtimeFunction, reason, context.noCache)
@@ -540,29 +459,15 @@ export function preventSaveDebugData () {
 		lastTimeout = null
 	}
 }
-function findFunction (showStyle: ShowStyle, functionId: string, context: TemplateContextInner, reason: string): TemplateGeneralFunction {
-	let fcn: null | TemplateGeneralFunction = null
-	let runtimeFunction = RuntimeFunctions.findOne({
-		showStyleId: showStyle._id,
-		active: true,
-		templateId: functionId,
-		isHelper: functionId === showStyle.routerBlueprint
-	})
-	if (runtimeFunction && runtimeFunction.code) {
-		try {
-			fcn = convertCodeToFunction(context, runtimeFunction, reason)
-		} catch (e) {
-			throw new Meteor.Error(402, 'Syntax error in runtime function "' + functionId + '": ' + e.toString())
-		}
-	}
-	if (fcn) {
-		return fcn
-	} else {
-		throw new Meteor.Error(404, 'Function "' + functionId + '" not found!')
-	}
-}
 
-function loadBlueprints (showStyle: ShowStyle): BlueprintEntry {
+export interface BlueprintCollection {
+	// TODO - change return types.
+	// TODO - change context types
+	Baseline: (context: TemplateContext) => any
+	RunStory: (context: TemplateContext, story: IMOSStory) => TemplateResult
+	PostProcess: (context: TemplateContext) => TemplateResult
+}
+export function loadBlueprints (showStyle: ShowStyle): BlueprintCollection {
 	let blueprintDoc = ShowBlueprints.findOne({
 		showStyleId: showStyle._id
 	})
@@ -577,75 +482,48 @@ function loadBlueprints (showStyle: ShowStyle): BlueprintEntry {
 
 	throw new Meteor.Error(404, 'Function for ShowStyle "' + showStyle.name + '" not found!')
 }
-export interface BlueprintEntry {
-	Baseline: (context: TemplateContextInner) => any
-}
-export function evalBlueprints (blueprintDoc: ShowBlueprint, showStyleName: string, noCache: boolean): BlueprintEntry {
-
+function evalBlueprints (blueprintDoc: ShowBlueprint, showStyleName: string, noCache: boolean): BlueprintCollection {
 	let cached: Cache | null = null
 	if (!noCache) {
 		// First, check if we've got the function cached:
-		cached = functionCache[blueprintDoc._id] ? functionCache[blueprintDoc._id] : null
+		cached = blueprintCache[blueprintDoc._id] ? blueprintCache[blueprintDoc._id] : null
 		if (cached && (!cached.modified || cached.modified !== blueprintDoc.modified)) {
 			// the function has been updated, invalidate it then:
 			cached = null
 		}
 	}
 
-	// if (cached) {
-	// 	return cached.fcn
-	// } else {
-	const context = {
-		_,
+	if (cached) {
+		return cached.fcn
+	} else {
+		const context = {
+			_,
+		}
+
+		const entry = new SaferEval(context, { filename: showStyleName + '.js' }).runInContext(blueprintDoc.code)
+		// let fcn = (...args) => {
+		// 	saveDebugData(runtimeFunction, reason, ...args)
+		// 	// @ts-ignore the function can be whatever, really
+		// 	return runtimeFcn(...args)
+		// }
+
+		// if (!noCache) {
+		// 	// Save to cache:
+		// 	functionCache[runtimeFunction._id] = {
+		// 		modified: runtimeFunction.modified,
+		// 		fcn: fcn
+		// 	}
+		// }
+
+		return entry.default
 	}
-
-	const entry = new SaferEval(context, { filename: showStyleName + '.js' }).runInContext(blueprintDoc.code)
-	// let fcn = (...args) => {
-	// 	saveDebugData(runtimeFunction, reason, ...args)
-	// 	// @ts-ignore the function can be whatever, really
-	// 	return runtimeFcn(...args)
-	// }
-
-	// if (!noCache) {
-	// 	// Save to cache:
-	// 	functionCache[runtimeFunction._id] = {
-	// 		modified: runtimeFunction.modified,
-	// 		fcn: fcn
-	// 	}
-	// }
-
-	return entry.default
-	// }
 }
 
-export function runNamedTemplate (
-	showStyle: ShowStyle,
-	templateId: string,
-	context: TemplateContext,
-	story: IMOSROFullStory | null,
-	reason: string,
-	notes: Array<SegmentLineNote> = []
-): TemplateResultAfterPost {
-	let innerContext = getContext(context, false, story || undefined)
-	let fcn = findFunction(showStyle, templateId, innerContext, reason)
-	let result: TemplateResult
-
-	if (templateId === 'baseline') {
-		let blueprint = loadBlueprints(showStyle)
-
-		result = blueprint.Baseline(innerContext) as TemplateResult
-	} else {
-		result = fcn(story) as TemplateResult
-	}
-
-	notes = notes.concat(innerContext.getNotes()) // Add notes
-
-	// logger.debug('runNamedTemplate', templateId)
-	// Post-process the result:
+export function postProcessResult (innerContext: TemplateContextInner, result: TemplateResult, templateId: string): TemplateResultAfterPost {
 	let i = 0
 	let segmentLinesUniqueIds: { [id: string]: true } = {}
 	let resultAfterPost: TemplateResultAfterPost = {
-		notes: notes,
+		notes: innerContext.getNotes(),
 		segmentLine: result.segmentLine,
 		segmentLineItems: _.map(_.compact(result.segmentLineItems), (itemOrg: SegmentLineItemOptional) => {
 			let item: SegmentLineItem = itemOrg as SegmentLineItem
@@ -726,64 +604,4 @@ export function runNamedTemplate (
 		}) : null
 	}
 	return resultAfterPost
-}
-export interface RunTemplateResult {
-	templateId: string
-	result: TemplateResultAfterPost
-}
-export function runTemplate (showStyle: ShowStyle, context: TemplateContext, story: IMOSROFullStory, reason: string): RunTemplateResult | undefined {
-	let notes: Array<SegmentLineNote> = []
-	let innerContext0 = getContext(context, false, story)
-	let getId = findFunction(showStyle, showStyle.routerBlueprint, innerContext0, reason)
-
-	let templateId: string | null = getId(story) as string | null
-	notes = notes.concat(innerContext0.getNotes()) // Add notes
-	/*
-		The getId template can return the following things:
-		'templateName'		The name of the template to run
-		'' (empty string): 	"No template was found"
-		null: 				"Ignore silently"
-	*/
-
-	if (templateId === null) {
-		// the template is specifically telling us to ignore it
-		// Do nothing
-	} else if (templateId) {
-		let context0 = _.extend({}, context, {
-			templateId: templateId
-		})
-		let result = runNamedTemplate(showStyle, templateId, context0, story, reason, notes)
-
-		return {
-			templateId: templateId,
-			result: result
-		}
-	} else {
-		let name = context.segmentLine.mosId
-		if (story && story.Slug) {
-			name = story.Slug.toString()
-		}
-		notes.push({
-			type: SegmentLineNoteType.ERROR,
-			origin: {
-				name: name,
-				roId: context.runningOrderId,
-				segmentId: context.segmentLine.segmentId,
-				segmentLineId: context.segmentLine._id,
-			},
-			message: 'No template id found for story "' + story.ID + '" ("' + story.Slug + '")'
-		})
-
-		return {
-			templateId: '',
-			result: {
-				notes: notes,
-				segmentLine: null, 			// DBSegmentLine | null,
-				segmentLineItems: [], 		// Array<SegmentLineItem> | null
-				segmentLineAdLibItems: [], 	// Array<SegmentLineAdLibItem> | null
-				baselineItems: [] 			// Array<RunningOrderBaselineItem> | null
-			}
-		}
-		// throw new Meteor.Error(500, 'No template id found for story "' + story.ID + '" ("' + story.Slug + '")')
-	}
 }

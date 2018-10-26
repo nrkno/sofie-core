@@ -44,9 +44,9 @@ import * as _ from 'underscore'
 import { logger } from '../logging'
 import { PeripheralDevice,PeripheralDevices,PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { IMOSRunningOrder, MosString128, IMOSROFullStory } from 'mos-connection'
+import { IMOSROFullStory } from 'mos-connection'
 import { PlayoutTimelinePrefixes, LookaheadMode } from '../../lib/api/playout'
-import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
+import { TemplateContext, loadBlueprints, getContext, postProcessResult } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { StudioInstallations, StudioInstallation, IStudioConfigItem } from '../../lib/collections/StudioInstallations'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
@@ -344,7 +344,13 @@ export namespace ServerPlayoutAPI {
 
 			const showStyle = runningOrder.getShowStyle()
 			if (showStyle.baselineTemplate) {
-				const result: TemplateResultAfterPost = runNamedTemplate(showStyle, showStyle.baselineTemplate, literal<TemplateContext>({
+				let blueprint = loadBlueprints(showStyle)
+				if (!blueprint || !blueprint.Baseline) {
+					logger.error('Failed to load baseline blueprint')
+				}
+
+				// TODO - tidy up this new block to make less error prone
+				const ctx = getContext(literal<TemplateContext>({
 					noCache: false,
 					runningOrderId: runningOrder._id,
 					runningOrder: runningOrder,
@@ -352,13 +358,8 @@ export namespace ServerPlayoutAPI {
 					segmentLine: runningOrder.getSegmentLines()[0],
 					templateId: showStyle.baselineTemplate,
 					runtimeArguments: {}
-				}), {
-					// Dummy object, not used in this template:
-					RunningOrderId: new MosString128(''),
-					Body: [],
-					ID: new MosString128(''),
-
-				}, 'baseline')
+				}), false, undefined)
+				const result = postProcessResult(ctx, blueprint.Baseline(ctx), 'baseline')
 
 				if (result.baselineItems) {
 					logger.info(`... got ${result.baselineItems.length} items from template.`)
