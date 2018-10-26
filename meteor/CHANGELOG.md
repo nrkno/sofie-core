@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.16.0"></a>
+## 0.16.0 (2018-10-26)
+
+* Merge branch 'release3' ([b9a8c1a](https://github.com/nrkno/tv-automation-server-core/commit/b9a8c1a))
+* fix: always rewind GUI on roReset, roResetAndActivate ([11744c9](https://github.com/nrkno/tv-automation-server-core/commit/11744c9))
+* fix: bugfix: When updating collection, documents with removed properties didn't get their properties ([93dd81e](https://github.com/nrkno/tv-automation-server-core/commit/93dd81e))
+* fix: disable runtimeFunction caching during code-test & save ([74d6d34](https://github.com/nrkno/tv-automation-server-core/commit/74d6d34))
+* fix: force lookahead inGroup field to be emptied. Fixes mismatched statobj ([c76209c](https://github.com/nrkno/tv-automation-server-core/commit/c76209c))
+* fix: holdState = 0 displayed a status ([49c7ead](https://github.com/nrkno/tv-automation-server-core/commit/49c7ead))
+* fix: modified timestamp on imported blueprints was not being set, causing the cache to not be cleare ([2f3fd17](https://github.com/nrkno/tv-automation-server-core/commit/2f3fd17))
+* fix: new implementation of runtime caching ([92e09be](https://github.com/nrkno/tv-automation-server-core/commit/92e09be))
+* fix: SOAP message encoding ([63d8634](https://github.com/nrkno/tv-automation-server-core/commit/63d8634))
+* fix(hold): Ensure the original stk does not get picked up as a dynamic object when setting the sl as ([b10f48d](https://github.com/nrkno/tv-automation-server-core/commit/b10f48d))
+* fix(lookahead): clear inGroup in a better fashion ([60541cc](https://github.com/nrkno/tv-automation-server-core/commit/60541cc))
+* fix(lookahead): Resolving an object for both transition clip and main clip causing an extra loadbg ([739b5e4](https://github.com/nrkno/tv-automation-server-core/commit/739b5e4))
+* feat: add a subtle line underneath segment title when has-remote-items and has-guest-items ([a02b50d](https://github.com/nrkno/tv-automation-server-core/commit/a02b50d))
+* feat: Add backup restore method to import mock rundowns similar to the embedded mocks ([251555b](https://github.com/nrkno/tv-automation-server-core/commit/251555b))
+* feat: Hold state UI ([c7a17c7](https://github.com/nrkno/tv-automation-server-core/commit/c7a17c7))
+* chore: changelog typo ([fd4b420](https://github.com/nrkno/tv-automation-server-core/commit/fd4b420))
+* chore: edit & categorize changelog ([fbe999a](https://github.com/nrkno/tv-automation-server-core/commit/fbe999a))
+* chore: remove unneccessary log tracing ([a6a8aa2](https://github.com/nrkno/tv-automation-server-core/commit/a6a8aa2))
+* chore: updated changelog with commits during pre-release for 0.15.0 ([f005d1b](https://github.com/nrkno/tv-automation-server-core/commit/f005d1b))
+
+
+
+<a name="0.15.0"></a>
+## 0.15.0 (2018-10-16)
+
+* chore(release): 0.15.0 ([4907654](https://github.com/nrkno/tv-automation-server-core/commit/4907654))
+
+
+
 <a name="0.16.0-0"></a>
 ## 0.16.0-0 (2018-10-19) (pre-release)
 
