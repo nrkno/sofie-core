@@ -1719,7 +1719,7 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 							</div>
 						</label>
 						<label className='field'>
-							{t('Default Show Style')}
+							{t('Default Blueprint')}
 							<div className='mdi'>
 								<EditAttribute
 									modifiedClassName='bghl'
