@@ -178,7 +178,7 @@ let monitorPerformance = () => {
 		let delayTime = timeSinceLast - checkTime
 
 		if (delayTime > acceptDelay) {
-			logger.warning('Main thread was blocked for ' + delayTime + ' ms')
+			logger.warn('Main thread was blocked for ' + delayTime + ' ms')
 			let trace: string[] = []
 			let runningMethods = getRunningMethods()
 			if (!_.isEmpty(runningMethods)) {
