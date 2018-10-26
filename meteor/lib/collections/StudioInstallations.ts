@@ -5,10 +5,15 @@ import { PlayoutDeviceType } from './PeripheralDevices'
 import { LookaheadMode } from '../api/playout'
 import { applyClassToDocument, registerCollection } from '../lib'
 import * as _ from 'underscore'
+import { logger } from '../logging'
 
 // Imports from TSR (TODO make into an import)
 export enum MappingLawoType {
 	SOURCE = 'source'
+}
+export enum MappingPanasonicPtzType {
+	PRESET_SPEED = 0,
+	PRESET = 1
 }
 export enum MappingAtemType {
 	MixEffect,
@@ -17,6 +22,9 @@ export enum MappingAtemType {
 	Auxilliary,
 	MediaPlayer,
 	SuperSourceProperties
+}
+export enum MappingHyperdeckType {
+	TRANSPORT = 'transport'
 }
 export interface Mappings {
 	[layerName: string]: Mapping
@@ -46,6 +54,21 @@ export interface MappingLawo extends Mapping {
 	mappingType: MappingLawoType,
 	identifier: string
 }
+export interface MappingHyperdeck extends Mapping {
+	device: PlayoutDeviceType.HYPERDECK,
+	mappingType: MappingHyperdeckType
+}
+
+export interface MappingPanasonicPtz extends Mapping {
+	device: PlayoutDeviceType.PANASONIC_PTZ,
+	mappingType: MappingPanasonicPtzType
+}
+
+export interface HotkeyDefinition {
+	_id: string
+	key: string
+	label: string
+}
 
 /** A set of available layer groups in a given installation */
 export interface DBStudioInstallation {
@@ -60,6 +83,8 @@ export interface DBStudioInstallation {
 	defaultShowStyle: string
 
 	config: Array<IStudioConfigItem>
+
+	hotkeyLegend?: Array<HotkeyDefinition>
 }
 
 export interface ISourceLayerBase {
@@ -144,6 +169,8 @@ export class StudioInstallation implements DBStudioInstallation {
 	public mappings: Mappings
 	public defaultShowStyle: string
 	public config: Array<IStudioConfigItem>
+	public hotkeyLegend?: Array<HotkeyDefinition>
+
 	constructor (document: DBStudioInstallation) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
@@ -156,6 +183,7 @@ export class StudioInstallation implements DBStudioInstallation {
 		if (item) {
 			return item.value
 		} else {
+			logger.warn(`Studio "${this._id}": Config "${name}" not set`)
 			return null
 		}
 	}

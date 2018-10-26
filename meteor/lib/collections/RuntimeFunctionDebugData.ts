@@ -1,6 +1,7 @@
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { Time, registerCollection } from '../lib'
+import { Meteor } from 'meteor/meteor'
 
 export interface RuntimeFunctionDebugDataObj {
 	_id: string

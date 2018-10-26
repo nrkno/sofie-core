@@ -7,7 +7,8 @@ import {
 	IMOSObjectStatus
 } from 'mos-connection'
 import { RunningOrders } from './RunningOrders'
-import { FindOptions, Selector, TransformedCollection } from '../typings/meteor'
+import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
+import { Meteor } from 'meteor/meteor'
 
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
 export interface DBSegment {
@@ -49,7 +50,7 @@ export class Segment implements DBSegment {
 	getRunningOrder () {
 		return RunningOrders.findOne(this.runningOrderId)
 	}
-	getSegmentLines (selector?: Selector<DBSegment>, options?: FindOptions) {
+	getSegmentLines (selector?: MongoSelector<DBSegment>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
 		return SegmentLines.find(
@@ -85,6 +86,7 @@ Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Segments._ensureIndex({
 			runningOrderId: 1,
+			_rank: 1
 		})
 	}
 })

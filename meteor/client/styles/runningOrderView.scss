@@ -23,11 +23,12 @@ $segment-nextline-shade-width: 30px;
 $segment-nextline-shade-fill: linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.5));
 
 $liveline-timecode-color:  #ffff00; //$general-live-color;
+$hold-status-color: $liveline-timecode-color;
 
 /** The top padding of the timeline has to be equal to the header-height, so that the
 	functional part of the timeline starts at the same level as the segment title
 */
-$segment-timeline-padding: $segment-header-height 0 1.5em;
+$segment-timeline-padding: $segment-header-height 0 2.5em;
 
 $segment-layer-height: 1.5em;
 $segment-layer-separator-color: transparentize(#000, 0.5);
@@ -200,6 +201,24 @@ body.vertical-overflow-only {
 			}
 		}
 
+		.running-order__header-status {
+			position: absolute;
+			font-size: 0.7rem;
+			text-transform: uppercase;
+			background: #fff;
+			border-radius: 1rem;
+			font-weight: 700;
+			color: #000;
+			top: 13px;
+			right: -5px;
+			transform: translateX(100%);
+			padding: 2px 5px 1px;
+
+			&.running-order__header-status--hold {
+				background: $hold-status-color;
+			}
+		}
+
 		.timing-clock-header-label {
 			font-weight: 100px;
 
@@ -294,6 +313,14 @@ body.vertical-overflow-only {
 				background: $segment-title-background-color-guest;
 			}
 		}
+
+		&.live, &.next {
+			.segment-timeline__title {
+				> h2 {
+					border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+				}
+			}
+		}
 	}
 
 	// the live and next states are the states of the entire segment component
@@ -303,6 +330,14 @@ body.vertical-overflow-only {
 
 			> h2 {
 				background: $segment-title-background-color-remote;
+			}
+		}
+
+		&.live, &.next {
+			.segment-timeline__title {
+				> h2 {
+					border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+				}
 			}
 		}
 	}
@@ -408,7 +443,7 @@ body.vertical-overflow-only {
 		grid-column: timeline / end;
 		grid-row: zoom-area / end;
 		max-height: 4em;
-		margin: 1.5em 0.2em 0em 0;
+		margin: 0.2em 0.2em 0em 0;
 		padding: 1px 0;
 
 		transition: $output-layer-group-collapse-animation-duration max-height ease-in-out,
@@ -612,7 +647,7 @@ body.vertical-overflow-only {
 		background: $segment-timeline-background-color;
 		opacity: 1;
 		transition: $output-layer-group-collapse-animation-duration opacity ($output-layer-group-collapse-animation-duration * 1/2), $output-layer-group-collapse-animation-duration margin-bottom ($output-layer-group-collapse-animation-duration * 1/2);
-		margin-bottom: 1.5em;
+		margin-bottom: 2.5em;
 	}
 
 	.segment-timeline__timeline-grid {
@@ -620,6 +655,7 @@ body.vertical-overflow-only {
 		grid-row: header / zoom-area;
 		min-width: 0;
 		overflow: hidden;
+		margin-bottom: 1.15em;
 
 		opacity: 1;
 		visibility: visible;
@@ -651,7 +687,8 @@ body.vertical-overflow-only {
 		width: 2px;
 		background: $general-live-color;
 		box-shadow: -3px 0 20px rgba(0,0,0,1);
-		transition: $output-layer-group-collapse-animation-duration top ease-in-out;
+		transition: $output-layer-group-collapse-animation-duration top ease-in-out,
+					$output-layer-group-collapse-animation-duration bottom ease-in-out;
 
 		.segment-timeline__liveline__label {
 			position: absolute;
@@ -675,6 +712,9 @@ body.vertical-overflow-only {
 			color: $liveline-timecode-color;
 			white-space: nowrap;
 			word-wrap: none;
+			opacity: 1;
+
+			transition: $output-layer-group-collapse-animation-duration opacity ease-in-out $output-layer-group-collapse-animation-duration;
 
 			&.overtime {
 				color: $general-late-color;
@@ -726,6 +766,25 @@ body.vertical-overflow-only {
 				}
 			}
 		}
+
+		.segment-timeline__liveline__status {
+			position: absolute;
+			border-radius: 2em;
+			text-transform: uppercase;
+			font-size: 0.7rem;
+			padding: 2px 5px 1px;
+			line-height: 1.2em;
+			margin-top: 2px;
+			font-weight: 700;
+			color: #000;
+			background-color: #fff;
+			opacity: 1;
+			transition: 0.3s opacity;
+
+			&.segment-timeline__liveline__status--hold {
+				background-color: $hold-status-color;
+			}
+		}
 	}
 
 	/** This is a child element of the .segment-timeline__timeline-container.
@@ -759,7 +818,7 @@ body.vertical-overflow-only {
 				position: absolute;
 				top: -13px;
 				left: 0;
-				bottom: -2em;
+				bottom: -1.3em;
 				flex: 0;
 				border-left: 2px solid $segment-line-start-color;
 				box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.7);
@@ -818,7 +877,7 @@ body.vertical-overflow-only {
 					content: ' ';
 					display: block;
 					position: absolute;
-					bottom: 8px;
+					bottom: 4px;
     				left: -10px;
 					width: 0;
 					height: 0;
@@ -1092,6 +1151,10 @@ body.vertical-overflow-only {
 								position: absolute;
 								right: 0;
 								transform: translate3d(0, 0, 15px);
+								text-align: right;
+								max-width: calc(100% - 10px);
+								overflow: hidden;
+								text-overflow: clip;
 								
 								> * {
 									position: relative;
@@ -1100,6 +1163,8 @@ body.vertical-overflow-only {
 								> .segment-timeline__layer-item__label {
 									margin-right: 0 !important;
 									margin-left: 5px !important;
+									overflow: initial;
+									max-width: none;
 								}
 
 								> .label-icon {
@@ -1109,11 +1174,17 @@ body.vertical-overflow-only {
 								> .label-icon.label-infinite-icon {
 									margin: 0 0 0 0;
 								}
+
+								> .last-words {
+									float: right;
+								}
 							}
 
 							&.last-words {
 								font-weight: 300;
 								font-style: italic;
+
+								display: block;
 							}
 
 							&.file-name {
@@ -1360,7 +1431,7 @@ body.vertical-overflow-only {
 		}
 
 		.segment-timeline__zoom-area {
-			margin: 0.5em 0 0 0;
+			margin: 0.2em 0 0 0;
 
 			.segment-timeline__timeline {
 				padding: 0;
@@ -1384,6 +1455,15 @@ body.vertical-overflow-only {
 
 		.segment-timeline__liveline {
 			top: 0;
+			bottom: 0;
+
+			.segment-timeline__liveline__timecode {
+				opacity: 0;
+				visibility: hidden;
+
+				transition: $output-layer-group-collapse-animation-duration opacity,
+							0s visibility $output-layer-group-collapse-animation-duration;
+			}
 		}
 
 		.segment-timeline__liveline-shade {
@@ -1623,6 +1703,11 @@ body.vertical-overflow-only {
 			font-weight: 300;
 		}
 	}
+	.mini-inspector__footer {
+		margin-top: 3px;
+
+		text-align: right;
+	}
 	.mini-inspector__label {
 		font-weight: 300;
 		text-transform: capitalize;
@@ -1637,12 +1722,18 @@ body.vertical-overflow-only {
 	}
 	.mini-inspector__full-text {
 		font-weight: 300;
-		max-width: 250px;
+		max-width: 400px;
 		display: inline-block;
 		white-space: normal;
 		width: auto;
 		min-width: 200px;
 		font-style: italic;
+		text-align: left;
+
+		&.text-end {
+			margin-top: 6px;
+			text-align: right;
+		}
 	}
 	.mini-inspector__in-point {
 		margin-right: 1em;

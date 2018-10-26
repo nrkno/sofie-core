@@ -4,12 +4,16 @@ import { TriggerType } from 'superfly-timeline'
 import { TimelineTransition,
 	TimelineObjGroup,
 	TimelineObjCCGVideo,
-	TimelineObjLawoSource
+	TimelineObjLawoSource,
+	TimelineObjAtemME,
+	TimelineObjPanasonicPTZPreset,
+	TimelineObjPanasonicPTZPresetSpeed
 } from './Timeline'
 import { TimelineObj } from './Timeline'
 import { TransformedCollection } from '../typings/meteor'
 import { SegmentLineTimings } from './SegmentLines'
 import { Time, registerCollection } from '../lib'
+import { Meteor } from 'meteor/meteor'
 
 /** A trigger interface compatible with that of supertimeline */
 export interface ITimelineTrigger {
@@ -42,6 +46,10 @@ export interface SegmentLineItemGeneric {
 	duration?: number
 	/** A flag to signal a given SegmentLineItem has been deactivated manually */
 	disabled?: boolean
+	/** A flag to signal that a given SegmentLineItem should be hidden from the UI */
+	hidden?: boolean
+	/** A flag to signal that a given SegmentLineItem has no content, and exists only as a marker on the timeline */
+	virtual?: boolean
 	/** The transition used by this segment line item to transition to and from the item */
 	transitions?: {
 		/** In transition for the item */
@@ -105,6 +113,7 @@ Meteor.startup(() => {
 	if (Meteor.isServer) {
 		SegmentLineItems._ensureIndex({
 			runningOrderId: 1,
+			segmentLineId: 1
 		})
 	}
 })
@@ -120,7 +129,7 @@ export interface BaseContent {
 	timelineObjects?: Array<TimelineObj | null>
 }
 
-export type SomeTimelineObject = TimelineObj | TimelineObjGroup | TimelineObjCCGVideo | TimelineObjLawoSource
+export type SomeTimelineObject = TimelineObj | TimelineObjGroup | TimelineObjCCGVideo | TimelineObjLawoSource | TimelineObj
 export interface VTContent extends BaseContent {
 	fileName: string
 	path: string
@@ -153,6 +162,7 @@ export interface ScriptContent extends BaseContent {
 	lastWords: string
 	fullScript?: string
 	sourceDuration?: number
+	lastModified?: Time | null
 }
 
 export interface GraphicsContent extends BaseContent {

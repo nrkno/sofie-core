@@ -38,6 +38,7 @@ interface ISourceLayerProps {
 	isNextLine: boolean
 	outputGroupCollapsed: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	relative?: boolean
 	totalSegmentDuration?: number
 	followLiveLine: boolean
@@ -70,11 +71,9 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 				.filter((segmentLineItem) => {
 					// filter only segment line items belonging to this segment line
 					return (segmentLineItem.segmentLineId === this.props.segmentLine._id) ?
-						// filter only segment line items, that have not yet been linked to parent items
-						((segmentLineItem as SegmentLineItemUi).linked !== true) ?
-							true :
-							// (this.props.scrollLeft >= ((this.props.segmentLine.startsAt || 0) + ((segmentLineItem as SegmentLineItemUi).renderedInPoint || 0)))
-							true
+						// filter only segment line items, that have not been hidden from the UI
+						(segmentLineItem.hidden !== true) &&
+						(segmentLineItem.virtual !== true)
 					: false
 				})
 				.sort((a: SegmentLineItemUi, b: SegmentLineItemUi): number => {
@@ -93,6 +92,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 						<SourceLayerItemContainer key={segmentLineItem._id}
 							{...this.props}
 							// The following code is fine, just withTracker HOC messing with available props
+							onDoubleClick={this.props.onItemDoubleClick}
 							mediaPreviewUrl={this.props.mediaPreviewUrl}
 							segmentLineItem={segmentLineItem}
 							layer={this.props.layer}
@@ -139,6 +139,7 @@ interface IOutputGroupProps {
 	isLiveLine: boolean
 	isNextLine: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	followLiveLine: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
@@ -203,6 +204,7 @@ interface IProps {
 	scrollWidth: number
 	onScroll?: (scrollLeft: number, event: any) => void
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	followLiveLine: boolean
 	autoNextSegmentLine: boolean
 	liveLineHistorySize: number
@@ -218,6 +220,7 @@ interface IProps {
 interface IState {
 	isLive: boolean
 	isNext: boolean
+	isDurationSettling: boolean
 	liveDuration: number
 }
 
@@ -241,6 +244,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 		this.state = {
 			isLive,
 			isNext,
+			isDurationSettling: false,
 			liveDuration: isLive ?
 				Math.max(
 				(
@@ -276,22 +280,29 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 		const isNext = (nextProps.runningOrder.nextSegmentLineId === nextProps.segmentLine._id)
 
 		const startedPlayback = nextProps.segmentLine.startedPlayback
-		this.setState({
-			isLive,
-			isNext,
-			liveDuration: (isLive && !nextProps.autoNextSegmentLine && !nextProps.segmentLine.autoNext) ?
+
+		const isDurationSettling = !!nextProps.runningOrder.active && !isLive && !!startedPlayback && !nextProps.segmentLine.duration
+
+		const liveDuration =
+			((isLive || isDurationSettling) && !nextProps.autoNextSegmentLine && !nextProps.segmentLine.autoNext) ?
 				Math.max(
-				(
-					(startedPlayback && nextProps.timingDurations.segmentLineDurations &&
+					(
+						(startedPlayback && nextProps.timingDurations.segmentLineDurations &&
 							(nextProps.relative ?
-							this.getCurrentLiveLinePosition() :
-							this.getCurrentLiveLinePosition() + this.getLiveLineTimePadding(nextProps.timeScale))
-					) || 0),
+								this.getCurrentLiveLinePosition() :
+								this.getCurrentLiveLinePosition() + this.getLiveLineTimePadding(nextProps.timeScale))
+						) || 0),
 					nextProps.timingDurations.segmentLineDurations ?
 						nextProps.timingDurations.segmentLineDurations[nextProps.segmentLine._id] :
 						0
 				)
 				: 0
+
+		this.setState({
+			isLive,
+			isNext,
+			isDurationSettling,
+			liveDuration
 		})
 	}
 
@@ -299,17 +310,28 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 		// this.props.segmentLine.expectedDuration ||
 		if (this.props.relative) {
 			return {
-				width: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
+				width: (this.getLineDuration() / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
 				// width: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || 3000) / (this.props.totalSegmentDuration || 1) * 100).toString() + '%',
 				willChange: this.state.isLive ? 'width' : undefined
 			}
 		} else {
 			return {
-				minWidth: Math.round(Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0) * this.props.timeScale).toString() + 'px',
+				minWidth: Math.round(this.getLineDuration() * this.props.timeScale).toString() + 'px',
 				// minWidth: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || 3000) * this.props.timeScale).toString() + 'px',
 				willChange: this.state.isLive ? 'minWidth' : undefined
 			}
 		}
+	}
+
+	getLineDuration (): number {
+		const segmentLine = this.props.segmentLine
+
+		return Math.max(this.state.liveDuration,
+			this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0)
+
+		/* return segmentLine.duration !== undefined ? segmentLine.duration : Math.max(
+			((this.props.timingDurations.segmentLineDurations && this.props.timingDurations.segmentLineDurations[segmentLine._id]) || 0),
+			this.props.segmentLine.renderedDuration || 0, this.state.liveDuration, 0) */
 	}
 
 	getSegmentLineStartsAt (): number {
@@ -320,7 +342,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 		if (this.props.relative || this.state.isLive) {
 			return true
 		} else {
-			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine, this.getSegmentLineStartsAt(), Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || this.props.segmentLine.renderedDuration || 0))
+			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine, this.getSegmentLineStartsAt(), this.getLineDuration())
 		}
 	}
 
@@ -342,9 +364,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 							segmentLine={segmentLine}
 							runningOrder={this.props.runningOrder}
 							startsAt={this.getSegmentLineStartsAt() || this.props.segmentLine.startsAt || 0}
-							duration={segmentLine.duration !== undefined ? segmentLine.duration : Math.max(
-								((this.props.timingDurations.segmentLineDurations && this.props.timingDurations.segmentLineDurations[segmentLine._id]) || 0),
-								this.props.segmentLine.renderedDuration || 0, this.state.liveDuration, 0)}
+							duration={this.getLineDuration()}
 							isLiveLine={this.props.runningOrder.currentSegmentLineId === segmentLine._id ? true : false}
 							isNextLine={this.props.runningOrder.nextSegmentLineId === segmentLine._id ? true : false}
 							timeScale={this.props.timeScale}
@@ -376,7 +396,9 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 			return (
 				<div className={ClassNames('segment-timeline__segment-line', {
 					'live': this.state.isLive,
-					'next': this.state.isNext
+					'next': this.state.isNext,
+
+					'duration-settling': this.state.isDurationSettling
 				})} data-mos-id={this.props.segmentLine._id}
 					style={this.getLayerStyle()}
 					>

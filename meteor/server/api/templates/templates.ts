@@ -20,7 +20,9 @@ import {
 	TimelineContentTypeLawo,
 	TimelineContentTypeAtem,
 	TimelineContentTypeHttp,
+	TimelineContentTypePanasonicPtz,
 	TimelineContentTypeOther,
+	TimelineContentTypeHyperdeck,
 	Atem_Enums,
 	EmberPlusValueType,
 	TimelineObjHoldMode,
@@ -35,6 +37,7 @@ import { TimelineObj } from '../../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { ShowStyle } from '../../../lib/collections/ShowStyles'
 import { RuntimeFunctionDebugData } from '../../../lib/collections/RuntimeFunctionDebugData'
+import { Meteor } from 'meteor/meteor'
 
 export type TemplateGeneralFunction = (story: IMOSROFullStory | null) => TemplateResult | string
 export type TemplateFunctionOptional = (context: TemplateContextInner, story: StoryWithContext) => TemplateResult | string
@@ -74,7 +77,9 @@ export interface TemplateSet {
 	}
 }
 export interface TemplateContext {
+	noCache: boolean
 	runningOrderId: string
+	runningOrder: RunningOrder
 	studioId: string
 	// segment: Segment
 	segmentLine: SegmentLine
@@ -102,6 +107,7 @@ export interface TemplateContextInnerBase {
 	formatDateAsTimecode: (date: Date) => string
 	formatDurationAsTimecode: (time: number) => string
 	getNotes: () => Array<SegmentLineNote>
+	parseDateTime: (dateTime: string) => Time | null
 	// extended:
 	getAllSegmentLines: () => Array<SegmentLine>
 }
@@ -213,7 +219,7 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 			if (!func) throw new Meteor.Error(404, 'RuntimeFunctions helper "' + functionId + '" not found')
 
 			try {
-				return convertCodeToGeneralFunction(func, 'getHelper')
+				return convertCodeToGeneralFunction(func, 'getHelper', this.noCache)
 			} catch (e) {
 				throw new Meteor.Error(402, 'Syntax error in runtime function helper "' + functionId + '": ' + e.toString())
 			}
@@ -299,6 +305,36 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 		getNotes () {
 			return savedNotes
 		},
+		parseDateTime (dateTime: string): Time | null {
+			const dtMatch = dateTime.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z|(\+|\-)(\d{2}):(\d{2}))?$/i)
+			if (dtMatch) {
+				const year = parseInt(dtMatch[1], 10)
+				const month = parseInt(dtMatch[2], 10)
+				const day = parseInt(dtMatch[3], 10)
+				let hours = parseInt(dtMatch[4], 10)
+				let minutes = parseInt(dtMatch[5], 10)
+				const seconds = parseInt(dtMatch[6], 10)
+				const tz = dtMatch[7]
+				const tzSign = dtMatch[8]
+				const tzHours = parseInt(dtMatch[9], 10)
+				const tzMinutes = parseInt(dtMatch[10], 10)
+
+				if (tz && tz !== 'Z') {
+					const sign = tzSign === '+' ? -1 : 1
+					hours = hours + (sign * tzHours)
+					minutes = minutes + (sign * tzMinutes)
+				}
+
+				const time = new Date()
+				time.setUTCFullYear(year, month - 1, day)
+				time.setUTCHours(hours)
+				time.setUTCMinutes(minutes)
+				time.setUTCSeconds(seconds)
+
+				return time.getTime()
+			}
+			return null
+		},
 
 		// ------------------
 		// extended functions, only allowed by "special" functions, such as externalMessage
@@ -347,57 +383,90 @@ export interface StoryWithContextBase {
 export interface StoryWithContext extends IMOSROFullStory, StoryWithContextBase {
 }
 
-export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, reason: string): TemplateGeneralFunction {
-	// Just use the function () { .* } parts (omit whatevers before or after)
-	// let functionStr = ((runtimeFunction.code + '').match(/function[\s\S]*}/) || [])[0]
-	let m = ((runtimeFunction.code + '').match(/([\s\S]*?)(function[\s\S]*})/) || [])
-	let preFunctionStr = (m[1] || '')
-	let functionStr = m[2]
+const functionCache: {[id: string]: Cache} = {}
+interface Cache {
+	modified: number,
+	fcn: TemplateGeneralFunction
+}
+export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, reason: string, noCache: boolean): TemplateGeneralFunction {
 
-	// logger.debug('functionStr', functionStr)
-	if (!functionStr) throw Error('Function empty!')
-	if (preFunctionStr) { // Insert some blank lines, so that the line numbers add up
-		let lineCount = (preFunctionStr.match(/\n/g) || []).length
-		preFunctionStr = ''
-		for (let i = 0; i < lineCount; i++) {
-			preFunctionStr += '\r\n'
-		}
-		let a = functionStr.indexOf('\n')
-		if (a) {
-			functionStr = functionStr.slice(0, a + 1) + preFunctionStr + functionStr.slice(a + 1)
+	let cached: Cache | null = null
+	if (!noCache) {
+		// First, check if we've got the function cached:
+		cached = functionCache[runtimeFunction._id] ? functionCache[runtimeFunction._id] : null
+		if (cached && (!cached.modified || cached.modified !== runtimeFunction.modified)) {
+			// the function has been updated, invalidate it then:
+			cached = null
 		}
 	}
-	let context = {
-		_,
-		moment,
-		LayerType,
-		TriggerType,
-		TimelineContentTypeOther,
-		TimelineContentTypeCasparCg,
-		TimelineContentTypeLawo,
-		TimelineContentTypeAtem,
-		TimelineContentTypeHttp,
-		Atem_Enums,
-		LineItemStatusCode: RundownAPI.LineItemStatusCode,
-		EmberPlusValueType,
-		Transition,
-		Ease,
-		Direction,
-		SegmentLineItemLifespan,
-		PlayoutTimelinePrefixes,
-		SegmentLineHoldMode,
-		TimelineObjHoldMode,
-	}
 
-	let runtimeFcn: TemplateGeneralFunction = new SaferEval(context, { filename: runtimeFunction.templateId + '.js' }).runInContext(functionStr)
-	return (...args) => {
-		saveDebugData(runtimeFunction, reason, ...args)
-		// @ts-ignore the function can be whatever, really
-		return runtimeFcn(...args)
+	if (cached) {
+		return cached.fcn
+	} else {
+
+		// Just use the function () { .* } parts (omit whatevers before or after)
+		// let functionStr = ((runtimeFunction.code + '').match(/function[\s\S]*}/) || [])[0]
+		let m = ((runtimeFunction.code + '').match(/([\s\S]*?)(function[\s\S]*})/) || [])
+		let preFunctionStr = (m[1] || '')
+		let functionStr = m[2]
+
+		// logger.debug('functionStr', functionStr)
+		if (!functionStr) throw Error('Function empty!')
+		if (preFunctionStr) { // Insert some blank lines, so that the line numbers add up
+			let lineCount = (preFunctionStr.match(/\n/g) || []).length
+			preFunctionStr = ''
+			for (let i = 0; i < lineCount; i++) {
+				preFunctionStr += '\r\n'
+			}
+			let a = functionStr.indexOf('\n')
+			if (a) {
+				functionStr = functionStr.slice(0, a + 1) + preFunctionStr + functionStr.slice(a + 1)
+			}
+		}
+		let context = {
+			_,
+			moment,
+			LayerType,
+			TriggerType,
+			TimelineContentTypeOther,
+			TimelineContentTypeCasparCg,
+			TimelineContentTypeLawo,
+			TimelineContentTypeAtem,
+			TimelineContentTypeHttp,
+			TimelineContentTypePanasonicPtz,
+			TimelineContentTypeHyperdeck,
+			Atem_Enums,
+			LineItemStatusCode: RundownAPI.LineItemStatusCode,
+			EmberPlusValueType,
+			Transition,
+			Ease,
+			Direction,
+			SegmentLineItemLifespan,
+			PlayoutTimelinePrefixes,
+			SegmentLineHoldMode,
+			TimelineObjHoldMode,
+		}
+
+		let runtimeFcn: TemplateGeneralFunction = new SaferEval(context, { filename: runtimeFunction.templateId + '.js' }).runInContext(functionStr)
+		let fcn = (...args) => {
+			saveDebugData(runtimeFunction, reason, ...args)
+			// @ts-ignore the function can be whatever, really
+			return runtimeFcn(...args)
+		}
+
+		if (!noCache) {
+			// Save to cache:
+			functionCache[runtimeFunction._id] = {
+				modified: runtimeFunction.modified,
+				fcn: fcn
+			}
+		}
+
+		return fcn
 	}
 }
 export function convertCodeToFunction (context: TemplateContextInner, runtimeFunction: RuntimeFunction, reason: string): TemplateGeneralFunction {
-	let runtimeFcn = convertCodeToGeneralFunction(runtimeFunction, reason)
+	let runtimeFcn = convertCodeToGeneralFunction(runtimeFunction, reason, context.noCache)
 	// logger.debug('runtimeFcn', runtimeFcn)
 	let fcn = (...args: any[]) => {
 		let result = runtimeFcn.apply(context, [context].concat(injectContextIntoArguments(context, args)))

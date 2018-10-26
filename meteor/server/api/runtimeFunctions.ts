@@ -9,14 +9,18 @@ import { DBSegmentLine, SegmentLine } from '../../lib/collections/SegmentLines'
 import { IMOSROFullStory, MosString128, IMOSItem } from 'mos-connection'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { logger } from '../logging'
+import { Meteor } from 'meteor/meteor'
+import { RunningOrder, DBRunningOrder } from '../../lib/collections/RunningOrders'
 
 export function runtimeFunctionTestCode (runtimeFunction: RuntimeFunction, showStyleId: string, syntaxOnly: boolean) {
 	check(runtimeFunction.code, String)
 	logger.debug('runtimeFunctionTestCode')
 
+	delete runtimeFunction._id
+
 	if (syntaxOnly) {
 		try {
-			convertCodeToGeneralFunction(runtimeFunction, 'test')
+			convertCodeToGeneralFunction(runtimeFunction, 'test', true)
 			preventSaveDebugData()
 		} catch (e) {
 			throw new Meteor.Error(402, 'Syntax error in runtime function: ' + e.toString() + ' \n' + e.stack)
@@ -41,8 +45,24 @@ export function runtimeFunctionTestCode (runtimeFunction: RuntimeFunction, showS
 			// duration?: number
 			// disableOutTransition?: boolean
 		}
+		let tmpRunningOrder: DBRunningOrder = {
+			_id: 'myRunningOrder',
+			mosId: '',
+			studioInstallationId: '',
+			showStyleId: '',
+			mosDeviceId: '',
+			name: '',
+			created: 1234,
+			modified: 1235,
+			currentSegmentLineId: null,
+			nextSegmentLineId: null,
+			previousSegmentLineId: null
+
+		}
 		let tmpContext: TemplateContext = {
+			noCache: true,
 			runningOrderId: 'myRunningOrder',
+			runningOrder: new RunningOrder(tmpRunningOrder),
 			studioId: 'myStudio',
 			// segment: Segment
 			segmentLine: new SegmentLine(tmpSegmentLine),

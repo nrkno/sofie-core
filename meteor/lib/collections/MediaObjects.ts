@@ -1,7 +1,7 @@
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
-
+import { Meteor } from 'meteor/meteor'
 export interface MediaObject0 {
 	// Media object file path relative to playout server
 	mediaPath: string
@@ -122,7 +122,9 @@ Meteor.startup(() => {
 	if (Meteor.isServer) {
 		MediaObjects._ensureIndex({
 			studioId: 1,
-			collectionId: 1
+			collectionId: 1,
+			objId: 1,
+			mediaId: 1
 		})
 		MediaObjects._ensureIndex({
 			studioId: 1,

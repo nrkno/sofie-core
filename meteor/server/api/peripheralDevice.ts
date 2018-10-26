@@ -196,7 +196,6 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.time, Number)
 		check(r.roId, String)
 		check(r.slId, String)
-		logger.info('RunningOrder: Setting playback started ' + r.time + ' to id ' + r.slId)
 
 		// Meteor.call('playout_segmentLinePlaybackStart', r.roId, r.slId, r.time)
 		ServerPlayoutAPI.slPlaybackStartedCallback(r.roId, r.slId, r.time)
@@ -209,7 +208,6 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.time, Number)
 		check(r.roId, String)
 		check(r.sliId, String)
-		logger.info('RunningOrder: Setting playback started ' + r.time + ' to sli id ' + r.sliId)
 
 		// Meteor.call('playout_segmentLineItemPlaybackStart', r.roId, r.sliId, r.time)
 		ServerPlayoutAPI.sliPlaybackStartedCallback(r.roId, r.sliId, r.time)
@@ -242,6 +240,23 @@ export namespace ServerPeripheralDeviceAPI {
 			return true
 		}
 		return false
+	}
+	export function testMethod (id: string, token: string, returnValue: string, throwError?: boolean): string {
+		// used for integration tests with core-connection
+		check(id, String)
+		check(token, String)
+		check(returnValue, String)
+
+		// logger.debug('device ping', id)
+
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
+
+		if (throwError) {
+			throw new Meteor.Error(418, 'Error thrown, as requested')
+		} else {
+			return returnValue
+		}
 	}
 
 	export function updateMosLastDataReceived (id) {
@@ -492,12 +507,20 @@ export namespace ServerPeripheralDeviceAPI {
 			)
 		}
 		let affectedSegmentLineIds: Array<string> = []
+		let firstInsertedSegmentLine: DBSegmentLine | undefined
 		_.each(Stories, (story: IMOSROStory, i: number) => {
 			logger.info('insert story ' + story.ID)
 			let rank = getRank(segmentBeforeOrLast, segmentLineAfter, i, Stories.length)
 			// let rank = newRankMin + ( i / Stories.length ) * (newRankMax - newRankMin)
-			affectedSegmentLineIds.push(upsertSegmentLine(story, ro._id, rank)._id)
+			let segmentLine = upsertSegmentLine(story, ro._id, rank)
+			affectedSegmentLineIds.push(segmentLine._id)
+			if (!firstInsertedSegmentLine) firstInsertedSegmentLine = segmentLine
 		})
+
+		if (segmentLineAfter && ro.nextSegmentLineId === segmentLineAfter._id && firstInsertedSegmentLine && !ro.nextSegmentLineManual) {
+			// Move up next-point to the first inserted segmentLine
+			ServerPlayoutAPI.roSetNext(ro._id, firstInsertedSegmentLine._id)
+		}
 
 		updateSegments(ro._id)
 		updateAffectedSegmentLines(ro, affectedSegmentLineIds)
@@ -722,6 +745,14 @@ export namespace ServerPeripheralDeviceAPI {
 
 		SegmentLines.update(segmentLine0._id, {$set: {_rank: segmentLine1._rank}})
 		SegmentLines.update(segmentLine1._id, {$set: {_rank: segmentLine0._rank}})
+
+		if (ro.nextSegmentLineId === segmentLine0._id) {
+			// Change nexted segmentLine
+			ServerPlayoutAPI.roSetNext(ro._id, segmentLine1._id)
+		} else if (ro.nextSegmentLineId === segmentLine1._id) {
+			// Change nexted segmentLine
+			ServerPlayoutAPI.roSetNext(ro._id, segmentLine0._id)
+		}
 
 		updateSegments(ro._id)
 		updateAffectedSegmentLines(ro, [segmentLine0._id, segmentLine1._id])
@@ -1038,7 +1069,7 @@ export function removeSegmentLine (roId: string, segmentLineOrId: DBSegmentLine 
 	)
 	if (segmentLineToRemove) {
 		SegmentLines.remove(segmentLineToRemove._id)
-		afterRemoveSegmentLine(segmentLineToRemove)
+		afterRemoveSegmentLine(segmentLineToRemove, replacedBySegmentLine)
 		updateTimelineFromMosData(roId)
 
 		if (replacedBySegmentLine) {
@@ -1066,7 +1097,7 @@ export function afterInsertUpdateSegmentLine (story: IMOSStory, runningOrderId: 
 	// use the Template-generator to generate the segmentLineItems
 	// and put them into the db
 }
-export function afterRemoveSegmentLine (removedSegmentLine: DBSegmentLine) {
+export function afterRemoveSegmentLine (removedSegmentLine: DBSegmentLine, replacedBySegmentLine?: DBSegmentLine) {
 	SegmentLineItems.remove({
 		segmentLineId: removedSegmentLine._id
 	})
@@ -1079,23 +1110,21 @@ export function afterRemoveSegmentLine (removedSegmentLine: DBSegmentLine) {
 			ro.active &&
 			ro.nextSegmentLineId === removedSegmentLine._id
 		) {
-			let segmentLineBefore = fetchBefore(SegmentLines, {
-				runningOrderId: removedSegmentLine.runningOrderId
-			}, removedSegmentLine._rank)
+			if (!replacedBySegmentLine) {
+				let segmentLineBefore = fetchBefore(SegmentLines, {
+					runningOrderId: removedSegmentLine.runningOrderId
+				}, removedSegmentLine._rank)
 
-			let nextSegmentLineInLine = fetchAfter(SegmentLines, {
-				runningOrderId: removedSegmentLine.runningOrderId,
-				_id: {$ne: removedSegmentLine._id}
-			}, segmentLineBefore ? segmentLineBefore._rank : null)
+				let nextSegmentLineInLine = fetchAfter(SegmentLines, {
+					runningOrderId: removedSegmentLine.runningOrderId,
+					_id: {$ne: removedSegmentLine._id}
+				}, segmentLineBefore ? segmentLineBefore._rank : null)
 
-			RunningOrders.update(ro._id, {$set: {
-				nextSegmentLineId: (
-					nextSegmentLineInLine ?
-					nextSegmentLineInLine._id :
-					null
-				)
-			}})
-			updateTimeline(ro.studioInstallationId)
+				if (nextSegmentLineInLine) {
+					replacedBySegmentLine = nextSegmentLineInLine
+				}
+			}
+			ServerPlayoutAPI.roSetNext(ro._id, replacedBySegmentLine ? replacedBySegmentLine._id : null)
 		}
 	}
 }
@@ -1293,7 +1322,9 @@ function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 	const firstSegmentLine = segmentLines.sort((a, b) => b._rank = a._rank)[0]
 
 	let context: TemplateContext = {
+		noCache: false,
 		runningOrderId: ro._id,
+		runningOrder: ro,
 		studioId: ro.studioInstallationId,
 		segmentLine: firstSegmentLine,
 		templateId: 'post-process'
@@ -1393,7 +1424,9 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 	if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + ro.showStyleId + '" not found!')
 
 	let context: TemplateContext = {
+		noCache: false,
 		runningOrderId: ro._id,
+		runningOrder: ro,
 		studioId: ro.studioInstallationId,
 		// segment: Segment,
 		segmentLine: segmentLine,
@@ -1584,6 +1617,9 @@ methods[PeripheralDeviceAPI.methods.pingWithCommand] = (deviceId, deviceToken, m
 methods[PeripheralDeviceAPI.methods.killProcess] = (deviceId, deviceToken, really: boolean) => {
 	return ServerPeripheralDeviceAPI.killProcess(deviceId, deviceToken, really)
 }
+methods[PeripheralDeviceAPI.methods.testMethod] = (deviceId, deviceToken, returnValue, throwError ) => {
+	return ServerPeripheralDeviceAPI.testMethod(deviceId, deviceToken, returnValue, throwError)
+}
 // ----------------------------------------------------------------------------
 // Mos-functions:
 methods[PeripheralDeviceAPI.methods.mosRoCreate] = (deviceId, deviceToken, ro: IMOSRunningOrder) => {
@@ -1656,7 +1692,7 @@ methods[PeripheralDeviceAPI.methods.updateMediaObject] = (deviceId, deviceToken,
 
 // --------------------
 methods[PeripheralDeviceAPI.methods.functionReply] = (deviceId, deviceToken, commandId, err: any, result: any) => {
-	logger.debug('functionReply', err, result)
+	// logger.debug('functionReply', err, result)
 	PeripheralDeviceCommands.update(commandId, {
 		$set: {
 			hasReply: true,

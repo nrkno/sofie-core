@@ -37,6 +37,7 @@ export interface ISourceLayerItemProps {
 	isLiveLine: boolean
 	isNextLine: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	onDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	relative?: boolean
 	followLiveLine: boolean
 	autoNextSegmentLine: boolean
@@ -285,8 +286,19 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		this.checkElementWidth()
 	}
 
-	itemClick = (e: any) => {
-		this.props.onFollowLiveLine && this.props.onFollowLiveLine(false, e)
+	itemClick = (e: React.MouseEvent<HTMLDivElement>) => {
+		// this.props.onFollowLiveLine && this.props.onFollowLiveLine(false, e)
+		e.preventDefault()
+		e.stopPropagation()
+	}
+
+	itemDblClick = (e: React.MouseEvent<HTMLDivElement>) => {
+		e.preventDefault()
+		e.stopPropagation()
+
+		if (typeof this.props.onDoubleClick === 'function') {
+			this.props.onDoubleClick(this.props.segmentLineItem, e)
+		}
 	}
 
 	itemMouseUp = (e: any) => {
@@ -454,6 +466,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 					data-mos-id={this.props.segmentLineItem._id}
 					ref={this.setRef}
 					onClick={this.itemClick}
+					onDoubleClick={this.itemDblClick}
 					onMouseUp={this.itemMouseUp}
 					onMouseMove={(e) => this.moveMiniInspector(e)}
 					onMouseOver={(e) => !this.props.outputGroupCollapsed && this.toggleMiniInspector(e, true)}

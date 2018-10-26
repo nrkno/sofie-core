@@ -8,6 +8,7 @@ import { syncFunctionIgnore } from './codeControl'
 import { StudioInstallations } from '../lib/collections/StudioInstallations'
 import { getCurrentTime } from '../lib/lib'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
+import { Meteor } from 'meteor/meteor'
 
 // This data structure is to be used to determine the system-wide status of the Core instance
 

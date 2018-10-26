@@ -5,6 +5,7 @@ import { PeripheralDevices } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
 import { getCurrentTime } from '../lib/lib'
 import { logger } from './logging'
+import { Meteor } from 'meteor/meteor'
 
 let lowPrioFcn = (fcn: (...args) => any, ...args: any[]) => {
 	// Do it at a random time in the future:
@@ -15,6 +16,7 @@ let lowPrioFcn = (fcn: (...args) => any, ...args: any[]) => {
 
 Meteor.startup(() => {
 	let lastNightlyCronjob = 0
+	let failedRetries = 0
 
 	function nightlyCronjob () {
 		let d = new Date(getCurrentTime())
@@ -23,6 +25,7 @@ Meteor.startup(() => {
 			(d.getHours() >= 4 && d.getHours() < 5) && // It is nighttime
 			timeSinceLast > 20 * 3600 * 1000 // was last run yesterday
 		) {
+			let previousLastNightlyCronjob = lastNightlyCronjob
 			lastNightlyCronjob = getCurrentTime()
 			logger.info('Nightly cronjob: starting...')
 
@@ -48,6 +51,7 @@ Meteor.startup(() => {
 			})
 			if (roCacheCount) logger.info('Cronjob: Will remove cached data from ' + roCacheCount + ' running orders')
 
+			let ps: Array<Promise<any>> = []
 			// restart casparcg
 			PeripheralDevices.find({
 				type: PeripheralDeviceAPI.DeviceType.PLAYOUT
@@ -62,15 +66,36 @@ Meteor.startup(() => {
 					) {
 						logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')
 
-						PeripheralDeviceAPI.executeFunction(subDevice._id, (err) => {
-							if (err) {
-								logger.error('Cronjob: "' + subDevice._id + '": CasparCG restart error', err)
-							} else {
-								logger.info('Cronjob: "' + subDevice._id + '": CasparCG restart done')
-							}
-						}, 'restartCasparCG')
+						ps.push(new Promise((resolve, reject) => {
+
+							PeripheralDeviceAPI.executeFunction(subDevice._id, (err) => {
+								if (err) {
+									logger.error('Cronjob: "' + subDevice._id + '": CasparCG restart error', err)
+									if ((err + '').match(/timeout/i)) {
+										// If it was a timeout, maybe we could try again later?
+										if (failedRetries < 5) {
+											failedRetries++
+											lastNightlyCronjob = previousLastNightlyCronjob // try again later
+										}
+										resolve()
+									} else {
+										reject(err)
+									}
+								} else {
+									logger.info('Cronjob: "' + subDevice._id + '": CasparCG restart done')
+									resolve()
+								}
+							}, 'restartCasparCG')
+						}))
 					}
 				})
+			})
+			Promise.all(ps)
+			.then(() => {
+				failedRetries = 0
+			})
+			.catch((err) => {
+				logger.error(err)
 			})
 
 			// last:

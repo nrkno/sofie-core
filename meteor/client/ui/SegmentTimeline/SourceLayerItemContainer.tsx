@@ -12,9 +12,8 @@ import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 // @ts-ignore Meteor package not recognized by Typescript
 import { ComputedField } from 'meteor/peerlibrary:computed-field'
-
+import { Meteor } from 'meteor/meteor'
 import { checkSLIContentStatus } from '../../../lib/mediaObjects'
-
 import {
 	ISourceLayerUi,
 	IOutputLayerUi,
@@ -23,6 +22,7 @@ import {
 	SegmentLineItemUi
 } from './SegmentTimelineContainer'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { Tracker } from 'meteor/tracker'
 
 interface IPropsHeader {
 	layer: ISourceLayerUi
@@ -38,6 +38,7 @@ interface IPropsHeader {
 	isLiveLine: boolean
 	isNextLine: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	onDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	relative?: boolean
 	outputGroupCollapsed: boolean
 	followLiveLine: boolean

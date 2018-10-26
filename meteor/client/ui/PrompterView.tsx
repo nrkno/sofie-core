@@ -20,9 +20,10 @@ import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 import { PrompterMethods, PrompterData, PrompterAPI } from '../../lib/api/prompter'
 import * as classNames from 'classnames'
 import { Segment, Segments } from '../../lib/collections/Segments'
-import { mousetrapHelper } from '../lib/moustrapHelper'
+import { mousetrapHelper } from '../lib/mousetrapHelper'
 // @ts-ignore Meteor package not recognized by Typescript
 import { ComputedField } from 'meteor/peerlibrary:computed-field'
+import { Tracker } from 'meteor/tracker'
 
 interface IProps {
 	match?: {
@@ -235,8 +236,8 @@ export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 		this.isMounted0 = false
 		$(document.body).removeClass(['dark', 'vertical-overflow-only'])
 
-		mousetrapHelper.unbind(this.usedHotkeys, 'keyup')
-		mousetrapHelper.unbind(this.usedHotkeys, 'keydown')
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown')
 	}
 
 	renderMessage (message: string) {

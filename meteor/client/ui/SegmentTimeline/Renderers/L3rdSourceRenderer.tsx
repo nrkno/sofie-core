@@ -125,7 +125,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 													(this.props.segmentLineItem.infiniteMode === SegmentLineItemLifespan.OutOnNextSegment && <span className='mini-inspector__duration'>{t('Until next segment')}</span>) ||
 													(this.props.segmentLineItem.infiniteMode === SegmentLineItemLifespan.Infinite && <span className='mini-inspector__duration'>{t('Infinite')}</span>)
 												)
-												: <span className='mini-inspector__duration'>{RundownUtils.formatTimeToShortTime(this.props.segmentLineItem.renderedDuration)}</span>
+												: <span className='mini-inspector__duration'>{RundownUtils.formatTimeToShortTime(this.props.segmentLineItem.renderedDuration || this.props.segmentLineItem.expectedDuration)}</span>
 											}
 											{changed && <span className='mini-inspector__changed'><Moment date={changed} calendar={true} /></span>}
 										</td>

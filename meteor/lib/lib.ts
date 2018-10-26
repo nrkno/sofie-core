@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { TransformedCollection, Selector } from './typings/meteor'
+import { TransformedCollection, MongoSelector, MongoModifier, UpdateOptions, UpsertOptions } from './typings/meteor'
 import { PeripheralDeviceAPI } from './api/peripheralDevice'
 import { logger } from './logging'
 import * as Timecode from 'smpte-timecode'
@@ -48,7 +48,6 @@ if (Meteor.isServer) {
 			if (err) {
 				logger.error(err)
 			} else {
-				logger.debug(stat)
 				let diffTime = ((sentTime + replyTime) / 2) - stat.currentTime
 
 				systemTime.diff = diffTime
@@ -110,7 +109,7 @@ interface SaveIntoDbOptions<DocClass, DBInterface> {
  */
 export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	filter: Selector<DBInterface>,
+	filter: MongoSelector<DBInterface>,
 	newData: Array<DBInterface>,
 	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
 ) {
@@ -127,17 +126,19 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 
 	let newObjs2 = []
 
+	let ps: Array<Promise<any>> = []
+
 	let removeObjs: {[id: string]: DocClass} = {}
 	_.each(oldObjs,function (o: DocClass) {
 
 		if (removeObjs['' + o[identifier]]) {
 			// duplicate id:
-			collection.remove(o._id)
+			// collection.remove(o._id)
+			ps.push(asyncCollectionRemove(collection, o._id))
 			change.removed++
 		} else {
 			removeObjs['' + o[identifier]] = o
 		}
-
 	})
 
 	_.each(newData,function (o) {
@@ -155,18 +156,39 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 			let diff = compareObjs(oldObj,o2)
 
 			if (!diff) {
+				let p: Promise<any> | undefined
 				let oUpdate = ( options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o)
-				if (options.update) options.update(oldObj._id, oUpdate)
-				else collection.update(oldObj._id,{$set: oUpdate})
-				if (options.afterUpdate) options.afterUpdate(oUpdate)
+				if (options.update) {
+					options.update(oldObj._id, oUpdate)
+				} else {
+					p = asyncCollectionUpdate(collection, oldObj._id, oUpdate)
+				}
+				if (options.afterUpdate) {
+					p = Promise.resolve(p)
+					.then(() => {
+						if (options.afterUpdate) options.afterUpdate(oUpdate)
+					})
+				}
+
+				if (p) ps.push(p)
 				change.updated++
 			}
 		} else {
 			if (!_.isNull(oldObj)) {
+				let p: Promise<any> | undefined
 				let oInsert = ( options.beforeInsert ? options.beforeInsert(o) : o)
-				if (options.insert) options.insert(oInsert)
-				else collection.insert(oInsert)
-				if (options.afterInsert) options.afterInsert(oInsert)
+				if (options.insert) {
+					options.insert(oInsert)
+				} else {
+					p = asyncCollectionInsert(collection, oInsert)
+				}
+				if (options.afterInsert) {
+					p = Promise.resolve(p)
+					.then(() => {
+						if (options.afterInsert) options.afterInsert(oInsert)
+					})
+				}
+				if (p) ps.push(p)
 				change.added++
 			}
 		}
@@ -174,15 +196,26 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 	})
 	_.each(removeObjs, function (obj: DocClass, key) {
 		if (obj) {
+			let p: Promise<any> | undefined
+			let oRemove: DBInterface = ( options.beforeRemove ? options.beforeRemove(obj) : obj)
+			if (options.remove) {
+				options.remove(oRemove)
+			} else {
+				p = asyncCollectionRemove(collection, oRemove._id)
+			}
 
-			let oRemove = ( options.beforeRemove ? options.beforeRemove(obj) : obj)
-			if (options.remove) options.remove(oRemove)
-			else collection.remove(oRemove._id)
-			if (options.afterRemove) options.afterRemove(oRemove)
+			if (options.afterRemove) {
+				p = Promise.resolve(p)
+				.then(() => {
+					if (options.afterRemove) options.afterRemove(oRemove)
+				})
+			}
 			change.removed++
 
 		}
 	})
+	waitForPromiseAll(ps)
+
 	return change
 }
 /**
@@ -370,7 +403,7 @@ export const getCollectionStats: (collection: Mongo.Collection<any>) => Array<an
 		raw.stats(cb)
 	}
 )
-export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: Mongo.Selector, rank: number | null): T {
+export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: MongoSelector<T>, rank: number | null): T {
 	if (_.isNull(rank)) rank = Number.POSITIVE_INFINITY
 	return collection.find(_.extend(selector, {
 		_rank: {$lt: rank}
@@ -382,17 +415,24 @@ export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: Mongo
 		limit: 1
 	}).fetch()[0]
 }
-export function fetchAfter<T> (collection: Mongo.Collection<T>, selector: Mongo.Selector, rank: number | null): T {
+export function fetchAfter<T> (collection: Mongo.Collection<T> | Array<T>, selector: MongoSelector<T>, rank: number | null): T | undefined {
 	if (_.isNull(rank)) rank = Number.NEGATIVE_INFINITY
-	return collection.find(_.extend(selector, {
+
+	selector = _.extend({}, selector, {
 		_rank: {$gt: rank}
-	}), {
-		sort: {
-			_rank: 1,
-			_id: 1
-		},
-		limit: 1
-	}).fetch()[0]
+	})
+
+	if (_.isArray(collection)) {
+		return _.find(collection, (o) => mongoWhere(o, selector))
+	} else {
+		return collection.find(selector, {
+			sort: {
+				_rank: 1,
+				_id: 1
+			},
+			limit: 1
+		}).fetch()[0]
+	}
 }
 export function getRank (beforeOrLast, after, i: number, count: number): number {
 	let newRankMax
@@ -420,7 +460,7 @@ export function getRank (beforeOrLast, after, i: number, count: number): number 
 	}
 	return newRankMin + ( (i + 1) / (count + 1) ) * (newRankMax - newRankMin)
 }
-export function normalizeArray<T> (array: Array<T>, indexKey: keyof T) {
+export function normalizeArray<T> (array: Array<T>, indexKey: keyof T): {[indexKey: string]: T} {
 	const normalizedObject: any = {}
 	for (let i = 0; i < array.length; i++) {
 		const key = array[i][indexKey]
@@ -536,6 +576,8 @@ function cleanUprateLimitIgnore () {
 }
 
 export function escapeHtml (text: string): string {
+	// Escape strings, so they are XML-compatible:
+
 	let map = {
 		'&': '&amp;',
 		'<': '&lt;',
@@ -543,7 +585,218 @@ export function escapeHtml (text: string): string {
 		'"': '&quot;',
 		"'": '&#039;'
 	}
-	return text.replace(/[&<>"']/g, (m) => {
-		return map[m]
+	let nbsp = String.fromCharCode(160) // non-breaking space (160)
+	map[nbsp] = ' ' // regular space
+
+	const textLength = text.length
+	let outText = ''
+	for (let i = 0; i < textLength; i++) {
+		let c = text[i]
+		if (map[c]) {
+			outText += map[c]
+		} else {
+			outText += c
+		}
+	}
+	return outText
+}
+export function tic (name: string = 'default') {
+	ticCache[name] = Date.now()
+}
+export function toc (name: string = 'default', logStr?: string) {
+	let t: number = Date.now() - ticCache[name]
+	if (logStr) logger.info('toc: ' + logStr + ': ' + t)
+	return t
+}
+const ticCache = {}
+
+export function asyncCollectionFindFetch<DocClass, DBInterface> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	selector: MongoSelector<DBInterface> | string,
+	options?: {
+		sort?: Mongo.SortSpecifier
+		skip?: number
+		limit?: number
+		fields?: Mongo.FieldSpecifier
+		reactive?: boolean
+		transform?: Function
+	}
+): Promise<Array<DocClass>> {
+	return new Promise((resolve, reject) => {
+		let results = collection.find(selector, options).fetch()
+		resolve(results)
 	})
+}
+export function asyncCollectionFindOne<DocClass, DBInterface> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	selector: MongoSelector<DBInterface> | string
+): Promise<DocClass> {
+	return asyncCollectionFindFetch(collection, selector)
+	.then((arr) => {
+		return arr[0]
+	})
+}
+export function asyncCollectionInsert<DocClass, DBInterface> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	doc: DBInterface,
+): Promise<string> {
+	return new Promise((resolve, reject) => {
+		collection.insert(doc, (err: any, idInserted) => {
+			if (err) reject(err)
+			else resolve(idInserted)
+		})
+	})
+}
+export function asyncCollectionUpdate<DocClass, DBInterface> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	selector: MongoSelector<DBInterface> | string,
+	modifier: MongoModifier<DBInterface>,
+	options?: UpdateOptions
+
+): Promise<number> {
+	return new Promise((resolve, reject) => {
+		collection.update(selector, modifier, options, (err: any, affectedCount: number) => {
+			if (err) reject(err)
+			else resolve(affectedCount)
+		})
+	})
+}
+
+export function asyncCollectionUpsert<DocClass, DBInterface> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	selector: MongoSelector<DBInterface> | string,
+	modifier: MongoModifier<DBInterface>,
+	options?: UpsertOptions
+
+): Promise<number> {
+	return new Promise((resolve, reject) => {
+		collection.upsert(selector, modifier, options, (err: any, affectedCount: number) => {
+			if (err) reject(err)
+			else resolve(affectedCount)
+		})
+	})
+}
+
+export function asyncCollectionRemove<DocClass, DBInterface> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	selector: MongoSelector<DBInterface> | string
+
+): Promise<void> {
+	return new Promise((resolve, reject) => {
+		collection.remove(selector, (err: any) => {
+			if (err) reject(err)
+			else resolve()
+		})
+	})
+}
+/**
+ * Blocks the fiber until all the Promises have resolved
+ */
+export const waitForPromiseAll: <T>(ps: Array<Promise<T>>) => T = Meteor.wrapAsync (function waitForPromises<T> (ps: Array<Promise<T>>, cb: (err: any | null, result?: any) => T) {
+	Promise.all(ps)
+	.then((result) => {
+		cb(null, result)
+	})
+	.catch((e) => {
+		cb(e)
+	})
+})
+export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync (function waitForPromises<T> (p: Promise<T>, cb: (err: any | null, result?: any) => T) {
+	Promise.resolve(p)
+	.then((result) => {
+		cb(null, result)
+	})
+	.catch((e) => {
+		cb(e)
+	})
+})
+export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
+	let ok = true
+	_.each(selector, (s: any, key: string) => {
+		if (!ok) return
+
+		try {
+			let keyWords = key.split('.')
+			if (keyWords.length > 1) {
+				let oAttr = o[keyWords[0]]
+				if (oAttr && _.isObject(oAttr)) {
+					let innerSelector: any = {}
+					innerSelector[keyWords.slice(1).join('.')] = s
+					ok = mongoWhere(oAttr, innerSelector)
+				} else {
+					ok = false
+				}
+			} else {
+				let oAttr = o[key]
+
+				if (_.isObject(s)) {
+					if (_.has(s,'$gt')) {
+						ok = (oAttr > s.$gt)
+					} else if (_.has(s,'$gte')) {
+						ok = (oAttr >= s.$gte)
+					} else if (_.has(s,'$lt')) {
+						ok = (oAttr < s.$lt)
+					} else if (_.has(s,'$lte')) {
+						ok = (oAttr <= s.$lte)
+					} else if (_.has(s,'$eq')) {
+						ok = (oAttr === s.$eq)
+					} else if (_.has(s,'$in')) {
+						ok = (oAttr.indexOf(s.$in) !== -1)
+					} else if (_.has(s,'$nin')) {
+						ok = (oAttr.indexOf(s.$nin) === -1)
+					} else {
+						if (_.isObject(oAttr)) {
+							ok = mongoWhere(oAttr, s)
+						} else {
+							ok = false
+						}
+					}
+				} else {
+					let innerSelector: any = {}
+					innerSelector[key] = {$eq: s}
+					ok = mongoWhere(o, innerSelector)
+				}
+			}
+		} catch (e) {
+			logger.warn(e)
+			ok = false
+		}
+	})
+	return ok
+}
+/**
+ * Push a value into a object, and ensure the array exists
+ * @param obj Object
+ * @param path Path to array in object
+ * @param valueToPush Value to push onto array
+ */
+export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T): Array<T> {
+	if (!path) throw new Meteor.Error(500, 'parameter path missing')
+
+	let attrs = path.split('.')
+
+	let lastAttr = _.last(attrs)
+	let attrsExceptLast = attrs.slice(0, -1)
+
+	let o = obj
+	_.each(attrsExceptLast, (attr) => {
+
+		if (!_.has(o,attr)) {
+			o[attr] = {}
+		} else {
+			if (!_.isObject(o[attr])) throw new Meteor.Error(500, 'Object propery "' + attr + '" is not an object ("' + o[attr] + '") (in path "' + path + '")')
+		}
+		o = o[attr]
+	})
+	if (!lastAttr) throw new Meteor.Error(500, 'Bad lastAttr')
+
+	if (!_.has(o,lastAttr)) {
+		o[lastAttr] = []
+	} else {
+		if (!_.isArray(o[lastAttr])) throw new Meteor.Error(500, 'Object propery "' + lastAttr + '" is not an array ("' + o[lastAttr] + '") (in path "' + path + '")')
+	}
+	let arr = o[lastAttr]
+
+	arr.push(valueToPush)
+	return arr
 }

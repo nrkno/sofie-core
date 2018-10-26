@@ -14,8 +14,13 @@ import { IOutputLayer,
 	MappingCasparCG,
 	MappingAtem,
 	MappingLawo,
+	MappingHyperdeck,
 	MappingAtemType,
-	MappingLawoType
+	MappingLawoType,
+	MappingPanasonicPtzType,
+	MappingPanasonicPtz,
+	MappingHyperdeckType,
+	HotkeyDefinition
 } from '../../../lib/collections/StudioInstallations'
 import { ShowStyles } from '../../../lib/collections/ShowStyles'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
@@ -51,10 +56,12 @@ interface IChildStudioInterfaceProps {
 	onRemoveDevice?: (item: PeripheralDevice) => void
 	onRemoveMapping?: (layerId: string) => void
 	onDeleteConfigItem?: (item: IStudioConfigItem) => void
+	onDeleteHotkeyLegend?: (item: HotkeyDefinition) => void
 	onAddSource?: () => void
 	onAddOutput?: () => void
 	onAddDevice?: (item: PeripheralDevice) => void
 	onAddMapping?: () => void
+	onAddHotkeyLegend?: () => void
 	onAddConfigItem?: () => void
 }
 
@@ -1142,6 +1149,49 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 			</React.Fragment>
 		)
 	}
+	renderPanasonicPTZSettings (layerId: string) {
+		const { t } = this.props
+		return (
+			<React.Fragment>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('mappingType')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.mappingType'}
+							obj={this.props.studioInstallation}
+							type='dropdown'
+							options={MappingPanasonicPtzType}
+							optionsAreNumbers={false}
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+			</React.Fragment>
+		)
+	}
+
+	renderHyperdeckMappingSettings (layerId: string) {
+		const { t } = this.props
+		return (
+			<React.Fragment>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('mappingType')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'mappings.' + layerId + '.mappingType'}
+							obj={this.props.studioInstallation}
+							type='dropdown'
+							options={MappingHyperdeckType}
+							optionsAreNumbers={false}
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+			</React.Fragment>
+		)
+	}
 
 	renderMappings () {
 		const { t } = this.props
@@ -1176,8 +1226,20 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 								<span>{ (mapping as MappingLawo).identifier }</span>
 							)) ||
 							(
+								mapping.device === PlayoutDeviceType.PANASONIC_PTZ && (
+									<span>{ 
+										(mapping as MappingPanasonicPtz).mappingType === MappingPanasonicPtzType.PRESET ? t('Preset') :
+										(mapping as MappingPanasonicPtz).mappingType === MappingPanasonicPtzType.PRESET_SPEED ? t('Preset transition speed') :
+										t('Unknown mapping')
+									}</span>
+							)) ||
+							(
 								mapping.device === PlayoutDeviceType.HTTPSEND && (
 								<span></span>
+							)) ||
+							(
+								mapping.device === PlayoutDeviceType.HYPERDECK && (
+								<span>{ (mapping as MappingHyperdeck).mappingType }</span>
 							)) ||
 							(
 								<span>Unknown device type: {PlayoutDeviceType[mapping.device] } </span>
@@ -1264,6 +1326,14 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 										(
 										mapping.device === PlayoutDeviceType.LAWO && (
 											this.renderLawoMappingSettings(layerId)
+										)) ||
+										(
+										mapping.device === PlayoutDeviceType.PANASONIC_PTZ && (
+											this.renderPanasonicPTZSettings(layerId)
+										)) ||
+										(
+										mapping.device === PlayoutDeviceType.HYPERDECK && (
+											this.renderHyperdeckMappingSettings(layerId)
 										))
 									}
 								</div>
@@ -1295,6 +1365,125 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 				</table>
 				<div className='mod mhs'>
 					<button className='btn btn-primary' onClick={(e) => this.addNewLayer()}>
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
+				</div>
+			</div>
+		)
+	}
+}
+
+class HotkeyLegendSettings extends React.Component<Translated<IStudioKeyValueSettingsProps>, IStudioKeyValueSettingsState> {
+	constructor(props: Translated<IStudioKeyValueSettingsProps>) {
+		super(props)
+
+		this.state = {
+			showDeleteConfirm: false,
+			deleteConfirmItem: undefined,
+			editedItems: []
+		}
+	}
+
+	isItemEdited = (item: HotkeyDefinition) => {
+		return this.state.editedItems.indexOf(item._id) >= 0
+	}
+
+	finishEditItem = (item: HotkeyDefinition) => {
+		let index = this.state.editedItems.indexOf(item._id)
+		if (index >= 0) {
+			this.state.editedItems.splice(index, 1)
+			this.setState({
+				editedItems: this.state.editedItems
+			})
+		}
+	}
+
+	editItem = (item: HotkeyDefinition) => {
+		if (this.state.editedItems.indexOf(item._id) < 0) {
+			this.state.editedItems.push(item._id)
+			this.setState({
+				editedItems: this.state.editedItems
+			})
+		}
+	}
+
+	renderItems () {
+		const { t } = this.props
+		return (
+			(this.props.studioInstallation.hotkeyLegend || []).map((item, index) => {
+				return <React.Fragment key={item.key}>
+					<tr className={ClassNames({
+						'hl': this.isItemEdited(item)
+					})}>
+						<th className='settings-studio-custom-config-table__name c2'>
+							{item.key}
+						</th>
+						<td className='settings-studio-custom-config-table__value c3'>
+							{item.label}
+						</td>
+						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
+							<button className='action-btn' onClick={(e) => this.editItem(item)}>
+								<FontAwesomeIcon icon={faPencilAlt} />
+							</button>
+							<button className='action-btn' onClick={(e) => this.props.onDeleteHotkeyLegend && this.props.onDeleteHotkeyLegend(item)}>
+								<FontAwesomeIcon icon={faTrash} />
+							</button>
+						</td>
+					</tr>
+					{this.isItemEdited(item) &&
+						<tr className='expando-details hl'>
+							<td colSpan={4}>
+								<div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Key')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'hotkeyLegend.' + index + '.key'}
+												obj={this.props.studioInstallation}
+												type='text'
+												collection={StudioInstallations}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Value')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'hotkeyLegend.' + index + '.label'}
+												obj={this.props.studioInstallation}
+												type='text'
+												collection={StudioInstallations}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+								</div>
+								<div className='mod alright'>
+									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>
+										<FontAwesomeIcon icon={faCheck} />
+									</button>
+								</div>
+							</td>
+						</tr>
+					}
+				</React.Fragment>
+			})
+		)
+	}
+
+	render () {
+		const { t } = this.props
+		return (
+			<div>
+				<h3>{t('Custom Hotkey Labels')}</h3>
+				<table className='expando settings-studio-custom-config-table'>
+					<tbody>
+						{this.renderItems()}
+					</tbody>
+				</table>
+				<div className='mod mhs'>
+					<button className='btn btn-primary' onClick={this.props.onAddHotkeyLegend}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 				</div>
@@ -1396,6 +1585,18 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 		}
 	}
 
+	onDeleteHotkeyLegend = (item: HotkeyDefinition) => {
+		if (this.props.studioInstallation) {
+			StudioInstallations.update(this.props.studioInstallation._id, {
+				$pull: {
+					hotkeyLegend: {
+						_id: item._id
+					}
+				}
+			})
+		}
+	}
+
 	onAddSource = () => {
 		const maxRank = StudioSettings.findHighestRank(this.props.studioInstallation.sourceLayers)
 		const { t } = this.props
@@ -1445,6 +1646,22 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 		StudioInstallations.update(this.props.studioInstallation._id, {
 			$push: {
 				config: newItem
+			}
+		})
+	}
+
+	onAddHotkeyLegend = () => {
+		const { t } = this.props
+
+		const newItem = literal<HotkeyDefinition>({
+			_id: Random.id(),
+			key: '',
+			label: 'New hotkey'
+		})
+
+		StudioInstallations.update(this.props.studioInstallation._id, {
+			$push: {
+				hotkeyLegend: newItem
 			}
 		})
 	}
@@ -1518,6 +1735,11 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 					<div className='row'>
 						<div className='col c12 r1-c12'>
 							<StudioKeyValueSettings {...this.props} onAddConfigItem={this.onAddConfigItem} onDeleteConfigItem={this.onDeleteConfigItem} />
+						</div>
+					</div>
+					<div className='row'>
+						<div className='col c12 r1-c12'>
+							<HotkeyLegendSettings {...this.props} onAddHotkeyLegend={this.onAddHotkeyLegend} onDeleteHotkeyLegend={this.onDeleteHotkeyLegend} />
 						</div>
 					</div>
 				</div>

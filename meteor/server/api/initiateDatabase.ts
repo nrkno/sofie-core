@@ -6,8 +6,12 @@ import { StudioInstallations,
 	MappingAtem,
 	MappingAtemType,
 	MappingLawo,
+	MappingHyperdeck,
+	MappingHyperdeckType,
 	Mapping,
-	MappingLawoType
+	MappingLawoType,
+	MappingPanasonicPtz,
+	MappingPanasonicPtzType,
 } from '../../lib/collections/StudioInstallations'
 import { literal, getCurrentTime } from '../../lib/lib'
 import { RundownAPI } from '../../lib/api/rundown'
@@ -122,7 +126,14 @@ Meteor.methods({
 					type: PlayoutDeviceType.HTTPSEND,
 					options: {
 					}
-				}
+				},
+				'settings.devices.hyperdeck0': ((pd['settings'] || {})['devices'] || {})['hyperdeck0'] || {
+					type: PlayoutDeviceType.HYPERDECK,
+					options: {
+						host: '160.67.87.53',
+						port: 9993
+					}
+				},
 			}})
 			// PeripheralDevices.update(pd._id, {$set: {
 			// 	mappings: mappings
@@ -192,11 +203,13 @@ Meteor.methods({
 					_id: 'pgm0',
 					name: 'PGM',
 					isPGM: true,
+					_rank: 0
 				},
 				{
 					_id: 'monitor0',
 					name: 'Bakskjerm',
 					isPGM: false,
+					_rank: 1
 				}
 			],
 		}})
@@ -210,7 +223,8 @@ Meteor.methods({
 					abbreviation: 'Full',
 					type: RundownAPI.SourceLayerType.VT,
 					onPGMClean: true,
-					onPresenterScreen: true
+					onPresenterScreen: true,
+					unlimited: false
 				},
 				{
 					_id: 'studio0_vb',
@@ -220,6 +234,7 @@ Meteor.methods({
 					type: RundownAPI.SourceLayerType.VT,
 					onPGMClean: true,
 					onPresenterScreen: true,
+					unlimited: false,
 					exclusiveGroup: 'fullscreen_pgm'
 				},
 				{
@@ -230,6 +245,7 @@ Meteor.methods({
 					type: RundownAPI.SourceLayerType.LIVE_SPEAK,
 					onPGMClean: true,
 					onPresenterScreen: true,
+					unlimited: false,
 					exclusiveGroup: 'fullscreen_pgm'
 				},
 				{
@@ -240,7 +256,8 @@ Meteor.methods({
 					onPGMClean: false,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'u,alt+u',
-					allowDisable: true
+					allowDisable: true,
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_graphics_fullskjerm',
@@ -249,6 +266,7 @@ Meteor.methods({
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
 					onPresenterScreen: true,
+					unlimited: false,
 					exclusiveGroup: 'fullscreen_pgm'
 				},
 				{
@@ -260,7 +278,8 @@ Meteor.methods({
 					isHidden: true,
 					assignHotkeysToGlobalAdlibs: true,
 					activateKeyboardHotkeys: 'alt+k,alt+u',
-					clearKeyboardHotkey: 'k'
+					clearKeyboardHotkey: 'k',
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_graphics_logo',
@@ -271,7 +290,8 @@ Meteor.methods({
 					isHidden: true,
 					assignHotkeysToGlobalAdlibs: true,
 					activateKeyboardHotkeys: 'alt+l,alt+k,alt+u',
-					clearKeyboardHotkey: 'l'
+					clearKeyboardHotkey: 'l',
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_graphics_tag_left',
@@ -281,7 +301,8 @@ Meteor.methods({
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'alt+u',
-					allowDisable: true
+					allowDisable: true,
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_graphics_tag_right',
@@ -291,7 +312,8 @@ Meteor.methods({
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'alt+d,alt+u',
-					allowDisable: true
+					allowDisable: true,
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_graphics_tema',
@@ -301,7 +323,8 @@ Meteor.methods({
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'i,alt+i,alt+u',
-					allowDisable: true
+					allowDisable: true,
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_graphics_ticker',
@@ -311,7 +334,8 @@ Meteor.methods({
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'alt+o,alt+u',
-					allowDisable: true
+					allowDisable: true,
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_graphics_bakskjerm',
@@ -320,7 +344,8 @@ Meteor.methods({
 				 	type: RundownAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
-					clearKeyboardHotkey: 'p'
+					clearKeyboardHotkey: 'p',
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_clip_bakskjerm',
@@ -329,7 +354,8 @@ Meteor.methods({
 				 	type: RundownAPI.SourceLayerType.VT,
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
-					clearKeyboardHotkey: 'p'
+					clearKeyboardHotkey: 'p',
+					unlimited: false
 				},
 				{
 				 	_id: 'studio0_cam_bakskjerm',
@@ -338,7 +364,8 @@ Meteor.methods({
 				 	type: RundownAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
-					clearKeyboardHotkey: 'p'
+					clearKeyboardHotkey: 'p',
+					unlimited: false
 				},
 				{
 					_id: 'studio0_split0',
@@ -350,6 +377,7 @@ Meteor.methods({
 					isSticky: true,
 					activateStickyKeyboardHotkey: 'f6',
 					onPresenterScreen: true,
+					unlimited: false,
 					exclusiveGroup: 'fullscreen_pgm'
 				},
 				{
@@ -366,6 +394,7 @@ Meteor.methods({
 					isSticky: true,
 					activateStickyKeyboardHotkey: 'f5',
 					onPresenterScreen: true,
+					unlimited: false,
 					exclusiveGroup: 'fullscreen_pgm'
 				},
 				{
@@ -374,6 +403,7 @@ Meteor.methods({
 					name: 'Manus',
 					type: RundownAPI.SourceLayerType.SCRIPT,
 					onPGMClean: true,
+					unlimited: false
 				},
 				{
 					_id: 'studio0_gjest_mic',
@@ -395,6 +425,7 @@ Meteor.methods({
 					clearKeyboardHotkey: 'ctrl+a,ctrl+f1',
 					assignHotkeysToGlobalAdlibs: true,
 					onPresenterScreen: true,
+					unlimited: false,
 					exclusiveGroup: 'fullscreen_pgm'
 				},
 				{
@@ -404,8 +435,29 @@ Meteor.methods({
 					type: RundownAPI.SourceLayerType.TRANSITION,
 					onPGMClean: true,
 					activateKeyboardHotkeys: '',
-					assignHotkeysToGlobalAdlibs: false
+					assignHotkeysToGlobalAdlibs: false,
+					unlimited: false
 				},
+				{
+					_id: 'studio0_hyperdeck0',
+					_rank: 0,
+					name: 'Hyperdeck',
+					type: RundownAPI.SourceLayerType.UNKNOWN,
+					onPGMClean: true,
+					activateKeyboardHotkeys: '',
+					assignHotkeysToGlobalAdlibs: false,
+					unlimited: false,
+					isHidden: true
+				},
+				{
+					_id: 'studio0_ptz',
+					_rank: 13000,
+					name: 'KamPos',
+					abbreviation: 'K ',
+					type: RundownAPI.SourceLayerType.CAMERA_MOVEMENT,
+					onPGMClean: true,
+					unlimited: true
+				}
 			],
 		}})
 		// Create Timeline mappings:
@@ -729,6 +781,24 @@ Meteor.methods({
 				deviceId: 'http0',
 				lookahead: LookaheadMode.PRELOAD,
 			}),
+			'hyperdeck0': literal<MappingHyperdeck>({
+				device: PlayoutDeviceType.HYPERDECK,
+				deviceId: 'hyperdeck0',
+				mappingType: MappingHyperdeckType.TRANSPORT,
+				lookahead: LookaheadMode.NONE,
+			}),
+			'ptz0_preset': literal<MappingPanasonicPtz>({
+				device: PlayoutDeviceType.PANASONIC_PTZ,
+				deviceId: 'ptz0',
+				mappingType: MappingPanasonicPtzType.PRESET,
+				lookahead: LookaheadMode.WHEN_CLEAR
+			}),
+			'ptz0_speed': literal<MappingPanasonicPtz>({
+				device: PlayoutDeviceType.PANASONIC_PTZ,
+				deviceId: 'ptz0',
+				mappingType: MappingPanasonicPtzType.PRESET_SPEED,
+				lookahead: LookaheadMode.WHEN_CLEAR
+			})
 		}
 		StudioInstallations.update('studio0', {$set: {
 			mappings: mappings
@@ -761,8 +831,12 @@ Meteor.methods({
 				{_id: 'atemSSrcBackground', value: '/opt/playout-gateway/static/atem-mp/split_overlay.rgba'},
 				{_id: 'atemSSrcBackground2', value: '/opt/playout-gateway/static/atem-mp/teknisk_feil.rgba'},
 				{_id: 'sources_kam', value: '1:1,2:2,3:3,4:4,8:11,9:12'},
+				{_id: 'sources_kam_ptz', value: '1:ptz0'},
 				{_id: 'sources_rm', value: '1:5,2:6,3:7,4:8,5:9,6:10'}
 			],
+			hotkeyLegend: [
+				{_id: 'ctrlA', key: 'ctrl+a', label: 'Gå tilbake til linje standard'}
+			]
 		}})
 	}
 })

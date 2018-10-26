@@ -9,8 +9,10 @@ import { PeripheralDevice,
 	PlayoutDeviceSettings,
 	PlayoutDeviceSettingsDevice,
 	MosDeviceSettings,
-	MosDeviceSettingsDevice
+	MosDeviceSettingsDevice,
+	PanasonicDeviceSettings
 } from '../../../lib/collections/PeripheralDevices'
+import { literal } from '../../../lib/lib'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -23,6 +25,7 @@ import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { TimelineContentTypeHttp } from '../../../lib/collections/Timeline'
+import { Meteor } from 'meteor/meteor'
 
 interface IHttpSendDeviceSettingsComponentProps {
 	parentDevice: PeripheralDevice
@@ -536,8 +539,67 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 								(
 								device.type === PlayoutDeviceType.HTTPSEND && (
 									(
+									<HttpSendDeviceSettingsComponent parentDevice={this.props.device} device={device} deviceId={deviceId} />
+									)
+								)) ||
+								(
+								device.type === PlayoutDeviceType.PANASONIC_PTZ && (
 									<React.Fragment>
-										<HttpSendDeviceSettingsComponent parentDevice={this.props.device} device={device} deviceId={deviceId} />
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Host')}
+												<EditAttribute
+													modifiedClassName='bghl'
+													attribute={'settings.devices.' + deviceId + '.options.host'}
+													obj={this.props.device}
+													type='text'
+													collection={PeripheralDevices}
+													className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Port')}
+												<EditAttribute
+													modifiedClassName='bghl'
+													attribute={'settings.devices.' + deviceId + '.options.port'}
+													obj={this.props.device}
+													type='text'
+													collection={PeripheralDevices}
+													className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+									</React.Fragment>
+									)
+								) ||
+								(
+								device.type === PlayoutDeviceType.HYPERDECK && (
+									(
+									<React.Fragment>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Host')}
+												<EditAttribute
+													modifiedClassName='bghl'
+													attribute={'settings.devices.' + deviceId + '.options.host'}
+													obj={this.props.device}
+													type='text'
+													collection={PeripheralDevices}
+													className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
+										<div className='mod mvs mhs'>
+											<label className='field'>
+												{t('Port')}
+												<EditAttribute
+													modifiedClassName='bghl'
+													attribute={'settings.devices.' + deviceId + '.options.port'}
+													obj={this.props.device}
+													type='int'
+													collection={PeripheralDevices}
+													className='input text-input input-l'></EditAttribute>
+											</label>
+										</div>
 									</React.Fragment>
 									)
 								))
@@ -580,6 +642,18 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 							attribute={'settings.mediaScanner.port'}
 							obj={this.props.device}
 							type='int'
+							collection={PeripheralDevices}
+							className=''></EditAttribute>
+					</label>
+				</div>
+				<div>
+					<label className='field'>
+						{t('Activate Debug Logging')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'settings.debugLogging'}
+							obj={this.props.device}
+							type='checkbox'
 							collection={PeripheralDevices}
 							className=''></EditAttribute>
 					</label>

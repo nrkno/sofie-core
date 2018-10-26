@@ -60,6 +60,12 @@ if (Meteor.isServer) {
 			return logger
 		}
 	}
+
+	let noop = (type) => {
+		// do nothing
+		return logger
+	}
+
 	logger = {
 		error: getLogMethod('error'),
 		warn: getLogMethod('warn'),
@@ -77,6 +83,12 @@ if (Meteor.isServer) {
 		crit: getLogMethod('crit'),
 		warning: getLogMethod('warning'),
 		notice: getLogMethod('notice')
+	}
+	// @ts-ignore localStorage
+	if (localStorage && localStorage.getItem('developerMode') !== '1') {
+		// not in developerMode, don't log everything then:
+		logger.debug = noop
+		logger.silly = noop
 	}
 }
 

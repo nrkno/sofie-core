@@ -5,9 +5,10 @@ import { TimelineObject, ObjectId, TriggerType, TimelineKeyframe } from 'superfl
 
 import { ChannelFormat, Transition, Ease, Direction } from '../constants/casparcg'
 import { StudioInstallations } from './StudioInstallations'
-import { FindOptions, Selector, TransformedCollection } from '../typings/meteor'
+import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { Mixer } from '../typings/casparcg-state'
 import { registerCollection } from '../lib'
+import { Meteor } from 'meteor/meteor'
 
 // Note: The data structure is based on what works with the state libraries, such as
 
@@ -16,7 +17,9 @@ export type TimelineContentTypeAny =
 	TimelineContentTypeCasparCg |
 	TimelineContentTypeLawo |
 	TimelineContentTypeAtem |
-	TimelineContentTypeHttp
+	TimelineContentTypeHttp |
+	TimelineContentTypePanasonicPtz |
+	TimelineContentTypeHyperdeck
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -48,6 +51,14 @@ export enum TimelineContentTypeHttp {
 	POST = 'post',
 	PUT = 'put',
 }
+export enum TimelineContentTypePanasonicPtz {
+	PRESET = 'presetMem',
+	SPEED = 'presetSpeed'
+}
+export enum TimelineContentTypeHyperdeck { // tsr
+	TRANSPORT = 'transport'
+}
+
 export namespace Atem_Enums {
 	export enum TransitionStyle {
 		MIX = 0,
@@ -474,6 +485,22 @@ export interface TimelineObjHTTPRequest extends TimelineObj {
 	}
 }
 
+export interface TimelineObjPanasonicPTZPresetSpeed extends TimelineObj {
+	content: {
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentTypePanasonicPtz.SPEED
+		speed: number
+	}
+}
+
+export interface TimelineObjPanasonicPTZPreset extends TimelineObj {
+	content: {
+		keyframes?: Array<TimelineKeyframe>
+		type: TimelineContentTypePanasonicPtz.PRESET
+		preset: number
+	}
+}
+
 // export const Timeline = new Mongo.Collection<TimelineObj>('timeline')
 export const Timeline: TransformedCollection<TimelineObj, TimelineObj>
 	= new Mongo.Collection<TimelineObj>('timeline')
@@ -481,7 +508,8 @@ registerCollection('Timeline', Timeline)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Timeline._ensureIndex({
-			siId: 1
+			siId: 1,
+			roId: 1,
 		})
 	}
 })

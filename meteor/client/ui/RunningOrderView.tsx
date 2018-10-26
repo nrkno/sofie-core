@@ -14,7 +14,7 @@ import { NavLink, Route } from 'react-router-dom'
 
 import { ClientAPI } from '../../lib/api/client'
 import { PlayoutAPI } from '../../lib/api/playout'
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
+import { RunningOrder, RunningOrders, RunningOrderHoldState } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { SegmentLine } from '../../lib/collections/SegmentLines'
@@ -22,7 +22,7 @@ import { SegmentLine } from '../../lib/collections/SegmentLines'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
 import { RunningOrderTimingProvider, withTiming, WithTiming } from './RunningOrderView/RunningOrderTiming'
-import { SegmentTimelineContainer } from './SegmentTimeline/SegmentTimelineContainer'
+import { SegmentTimelineContainer, SegmentLineItemUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { InspectorDrawer } from './InspectorDrawer/InspectorDrawer'
 import { RunningOrderOverview } from './RunningOrderView/RunningOrderOverview'
@@ -40,6 +40,9 @@ import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
 import { scrollToSegmentLine } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { eventContextForLog } from '../lib/eventTargetLogHelper'
+import { Tracker } from 'meteor/tracker'
+import { RunningOrderFullscreenControls } from './RunningOrderView/RunningOrderFullscreenControls'
+import { mousetrapHelper } from '../lib/mousetrapHelper'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -196,7 +199,6 @@ export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_NEXT_UP = 'shift+f10',
 	RUNNING_ORDER_DISABLE_NEXT_ELEMENT = 'g',
 	RUNNING_ORDER_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
-	RUNNING_ORDER_RESET_FOCUS = 'esc'
 }
 
 const TimingDisplay = translate()(withTiming<ITimingDisplayProps, {}>()(
@@ -233,7 +235,13 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 							{RundownUtils.formatDiffToTimecode(getCurrentTime() - this.props.runningOrder.expectedStart, true, false, true, true, true)}
 						</span>
 				}
-				<span className='timing-clock time-now'><Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} /></span>
+				<span className='timing-clock time-now'>
+					<Moment interval={0} format='HH:mm:ss' date={getCurrentTime()} />
+					{this.props.runningOrder.holdState && this.props.runningOrder.holdState !== RunningOrderHoldState.COMPLETE ?
+						<div className='running-order__header-status running-order__header-status--hold'>{t('Hold')}</div>
+						: null
+					}
+				</span>
 				{ this.props.runningOrder.expectedDuration ?
 					(<React.Fragment>
 						{this.props.runningOrder.expectedStart && this.props.runningOrder.expectedDuration &&
@@ -414,24 +422,24 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			e.stopPropagation()
 		}
 		_.each(this.bindKeys, (k) => {
-			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
+			const method = k.global ? mousetrapHelper.bindGlobal : mousetrapHelper.bind
 			if (k.up) {
 				method(k.key, (e: KeyboardEvent) => {
 					if (disableInInputFields(e)) return
 					preventDefault(e)
 					if (k.up) k.up(e)
-				}, 'keyup')
+				}, 'keyup', 'RunningOrderHeader')
 				method(k.key, (e: KeyboardEvent) => {
 					if (disableInInputFields(e)) return
 					preventDefault(e)
-				}, 'keydown')
+				}, 'keydown', 'RunningOrderHeader')
 			}
 			if (k.down) {
 				method(k.key, (e: KeyboardEvent) => {
 					if (disableInInputFields(e)) return
 					preventDefault(e)
 					if (k.down) k.down(e)
-				}, 'keydown')
+				}, 'keydown', 'RunningOrderHeader')
 			}
 		})
 
@@ -443,11 +451,11 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	componentWillUnmount () {
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {
-				mousetrap.unbind(k.key, 'keyup')
-				mousetrap.unbind(k.key, 'keydown')
+				mousetrapHelper.unbind(k.key, 'RunningOrderHeader', 'keyup')
+				mousetrapHelper.unbind(k.key, 'RunningOrderHeader', 'keydown')
 			}
 			if (k.down) {
-				mousetrap.unbind(k.key, 'keydown')
+				mousetrapHelper.unbind(k.key, 'RunningOrderHeader', 'keydown')
 			}
 		})
 	}
@@ -519,7 +527,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	take = (e: any) => {
 		if (this.props.studioMode) {
 			if (this.props.runningOrder.active) {
-				Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roTake, this.props.runningOrder._id)
+				Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.userRoTake, this.props.runningOrder._id)
 			}
 		}
 		// console.log(new Date(getCurrentTime()))
@@ -604,11 +612,14 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					title: this.props.runningOrder.name,
 					message: t('Do you want to activate this Running Order?'),
 					onAccept: (le: any) => {
+						this.rewindSegments()
 						Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roResetAndActivate, this.props.runningOrder._id, (err, res) => {
 							if (err || (res && res.error)) {
 								this.handleActivationError(err || res)
 								return
 							}
+							this.deferFlushAndRewindSegments()
+
 							if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 						})
 					}
@@ -723,26 +734,15 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 		let doReset = () => {
 
-			// Do a rewind right away
-			window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
+			this.rewindSegments() // Do a rewind right away
 
 			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roResetRunningOrder, this.props.runningOrder._id, (err) => {
-				// Do another rewind later, when the UI has updated
-				Meteor.defer(() => {
-					Tracker.flush()
-					Meteor.setTimeout(() => {
-						const event = new Event(RunningOrderViewEvents.rewindsegments)
-						window.dispatchEvent(event)
-
-						window.dispatchEvent(new Event(RunningOrderViewEvents.goToLiveSegment))
-					}, 500)
-				})
-
 				if (err) {
 					// TODO: notify user
 					console.error(err)
 					return
 				}
+				this.deferFlushAndRewindSegments()
 			})
 		}
 		if ((this.props.runningOrder.active && !this.props.runningOrder.rehearsal)) {
@@ -783,14 +783,30 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	resetAndActivateRunningOrder = (e: any) => {
 		// Called from the ModalDialog, 1 minute before broadcast starts
 		if (this.props.studioMode) {
+			this.rewindSegments() // Do a rewind right away
 			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roResetAndActivate, this.props.runningOrder._id, (err, res) => {
 				if (err || (res && res.error)) {
 					this.handleActivationError(err || res)
 					return
 				}
+				this.deferFlushAndRewindSegments()
 				if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 			})
 		}
+	}
+
+	rewindSegments () {
+		window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
+	}
+	deferFlushAndRewindSegments () {
+		// Do a rewind later, when the UI has updated
+		Meteor.defer(() => {
+			Tracker.flush()
+			Meteor.setTimeout(() => {
+				window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
+				window.dispatchEvent(new Event(RunningOrderViewEvents.goToLiveSegment))
+			}, 500)
+		})
 	}
 
 	render () {
@@ -802,7 +818,6 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 				'rehearsal': this.props.runningOrder.rehearsal
 			})}>
-				{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} runningOrder={this.props.runningOrder} />}
 				<WarningDisplay
 					studioMode={this.props.studioMode}
 					inActiveROView={this.props.inActiveROView}
@@ -890,6 +905,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 						className: 'flex-col col-timing horizontal-align-center'
 					}}>
 						<TimingDisplay {...this.props} />
+						{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} runningOrder={this.props.runningOrder} />}
 					</ContextMenuTrigger>
 				</div>
 				<div className='row dark'>
@@ -999,7 +1015,17 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			followLiveSegments: true,
 			manualSetAsNext: false,
 			subsReady: false,
-			usedHotkeys: _.clone(this.bindKeys)
+			usedHotkeys: _.clone(this.bindKeys).concat([
+				// Register additional hotkeys or legend entries
+				{
+					key: 'Esc',
+					label: t('Cancel currently pressed hotkey')
+				},
+				{
+					key: 'F11',
+					label: t('Change to fullscreen mode')
+				}
+			])
 		}
 	}
 
@@ -1114,8 +1140,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onRewindSegments = () => {
-		const event = new Event(RunningOrderViewEvents.rewindsegments)
-		window.dispatchEvent(event)
+		window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
 	}
 
 	onTimeScaleChange = (timeScaleVal) => {
@@ -1194,6 +1219,13 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
+	onSLItemDoubleClick = (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => {
+		if (this.state.studioMode && item && item._id && this.props.runningOrder && this.props.runningOrder.active && this.props.runningOrder.currentSegmentLineId) {
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.segmentLineItemTakeNow, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, item._id)
+			console.log(item, e)
+		}
+	}
+
 	renderSegments () {
 		if (this.props.segments) {
 			return this.props.segments.map((segment, index, array) => {
@@ -1210,6 +1242,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 												onContextMenu={this.onContextMenu}
 												onSegmentScroll={this.onSegmentScroll}
 												isLastSegment={index === array.length - 1}
+												onItemDoubleClick={this.onSLItemDoubleClick}
 												/>
 						</ErrorBoundary>
 				}
@@ -1279,6 +1312,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							<KeyboardFocusMarker />
 						</ErrorBoundary>
 						<ErrorBoundary>
+							<RunningOrderFullscreenControls isFollowingOnAir={this.state.followLiveSegments} onFollowOnAir={this.onGoToLiveSegment} />
+						</ErrorBoundary>
+						<ErrorBoundary>
 							<RunningOrderHeader
 								runningOrder={this.props.runningOrder}
 								studioInstallation={this.props.studioInstallation}
@@ -1295,9 +1331,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								studioMode={this.state.studioMode} />
 						</ErrorBoundary>
 						{this.renderSegmentsList()}
-						{!this.state.followLiveSegments &&
-							<div className='running-order-view__go-to-onAir' onClick={this.onGoToLiveSegment}>{t('ON AIR')}</div>
-						}
 						<ErrorBoundary>
 							{ this.props.segments && this.props.segments.length > 0 && <AfterBroadcastForm
 								runningOrder={this.props.runningOrder}

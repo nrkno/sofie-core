@@ -5,14 +5,14 @@ import { ShowStyle, ShowStyles } from '../lib/collections/ShowStyles'
 import { RuntimeFunction, RuntimeFunctions } from '../lib/collections/RuntimeFunctions'
 import * as bodyParser from 'body-parser'
 import { logger } from './logging'
-import { Selector } from '../lib/typings/meteor'
+import { MongoSelector } from '../lib/typings/meteor'
 import { Collections, getCollectionIndexes, getCollectionStats, getCurrentTime } from '../lib/lib'
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { Random } from 'meteor/random'
 import { Timeline } from '../lib/collections/Timeline'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
-import { PeripheralDevices } from '../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { ServerPeripheralDeviceAPI } from './api/peripheralDevice'
 import { StudioInstallations } from '../lib/collections/StudioInstallations'
 import { RunningOrders, RunningOrder } from '../lib/collections/RunningOrders'
@@ -23,6 +23,8 @@ import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { PeripheralDeviceCommands } from '../lib/collections/PeripheralDeviceCommands'
 import { SegmentLineAdLibItems } from '../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderDataCache } from '../lib/collections/RunningOrderDataCache'
+import { Meteor } from 'meteor/meteor'
+import { MosString128 } from 'mos-connection'
 
 export interface ShowStyleBackup {
 	type: 'showstyle'
@@ -34,7 +36,7 @@ export function getShowBackup (showId: string, onlyActiveTemplates: boolean): Sh
 	const showStyle = ShowStyles.findOne(showId)
 	if (!showStyle) throw new Meteor.Error(404, 'Show style not found')
 
-	const filter: Selector<RuntimeFunction> = { showStyleId: showId }
+	const filter: MongoSelector<RuntimeFunction> = { showStyleId: showId }
 	if (onlyActiveTemplates) {
 		filter.active = true
 	}
@@ -59,7 +61,7 @@ function restoreShowBackup (backup: ShowStyleBackup) {
 	if (!newShow) throw new Meteor.Error(500, 'ShowStyle missing from restore data')
 
 	const showStyle = ShowStyles.findOne(newShow._id)
-	if (showStyle) ShowStyles.remove(showStyle)
+	if (showStyle) ShowStyles.remove(showStyle._id)
 	ShowStyles.insert(newShow)
 
 	RuntimeFunctions.remove({ showStyleId: newShow._id })
@@ -70,6 +72,8 @@ function restoreShowBackup (backup: ShowStyleBackup) {
 			if (typeof tmp.code === 'object') {
 				tmp.code = tmp.code.join('\n')
 			}
+
+			t.modified = getCurrentTime()
 
 			RuntimeFunctions.insert(t)
 		})
@@ -104,6 +108,45 @@ function runBackup (params, req: IncomingMessage, res: ServerResponse, onlyActiv
 	res.end(content)
 }
 
+export interface RunningOrderCacheBackup {
+	type: 'runningOrderCache'
+	data: {
+		type: 'roCreate' | 'fullStory'
+		data: any
+	}[]
+}
+function restoreRunningOrder (backup: RunningOrderCacheBackup) {
+	const roCreates = backup.data.filter(d => d.type === 'roCreate')
+	const stories = backup.data.filter(d => d.type === 'fullStory')
+	if (roCreates.length !== 1) {
+		throw new Meteor.Error(500, 'bad number of roCreate entries')
+	}
+	if (stories.length !== roCreates[0].data.Stories.length) {
+		throw new Meteor.Error(500, 'bad number of fullStory entries')
+	}
+
+	// TODO - this should choose one in a better way
+	let pd = PeripheralDevices.findOne({
+		type: PeripheralDeviceAPI.DeviceType.MOSDEVICE
+	}) as PeripheralDevice
+	if (!pd) {
+		throw new Meteor.Error(404, 'MOS Device not found to be used for mock running order!')
+	}
+	let id = pd._id
+	let token = pd.token
+
+	// Delete the existing copy, to ensure this is a clean import
+	Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, id, token, new MosString128(roCreates[0].data.ID))
+
+	// Create the RO
+	Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, id, token, roCreates[0].data)
+
+	// Import each story
+	_.each(stories, (story) => {
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, story.data)
+	})
+}
+
 // Server route
 Picker.route('/backup/show/:id', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	runBackup(params, req, res, false)
@@ -127,6 +170,9 @@ postRoute.route('/backup/restore', (params, req: IncomingMessage, res: ServerRes
 		switch (body.type) {
 			case 'showstyle':
 				restoreShowBackup(body as ShowStyleBackup)
+				break
+			case 'runningOrderCache':
+				restoreRunningOrder(body as RunningOrderCacheBackup)
 				break
 			default:
 				throw new Meteor.Error(500, 'Unknown type "' + body.type + '" in request body')
