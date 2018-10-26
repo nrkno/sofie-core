@@ -29,7 +29,7 @@ interface IState {
 	onAirHover: boolean
 }
 
-export class RunningOrderFullscreenControls extends React.Component<IProps, IState> {
+export class RunningOrderUtilityControls extends React.Component<IProps, IState> {
 
 	throttledRefreshFullScreenState: () => void
 
@@ -103,56 +103,6 @@ export class RunningOrderFullscreenControls extends React.Component<IProps, ISta
 		}
 	}
 
-	requestFullscreen () {
-		const docElm = document.documentElement
-		if (docElm) {
-			if (docElm.requestFullscreen) {
-				return docElm.requestFullscreen()
-				// @ts-ignore TS doesn't understand Gecko vendor prefixes
-			} else if (docElm.mozRequestFullScreen) {
-				// @ts-ignore TS doesn't understand Gecko vendor prefixes
-				return docElm.mozRequestFullScreen()
-				// @ts-ignore TS doesn't understand Gecko vendor prefixes
-			} else if (docElm.webkitRequestFullScreen) {
-				// @ts-ignore TS doesn't understand Webkit special/old ALLOW_KEYBOARD_INPUT
-				return docElm.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT)
-			}
-		}
-	}
-
-	exitFullscreen () {
-		if (document.exitFullscreen) {
-			return document.exitFullscreen()
-			// @ts-ignore TS doesn't understand Gecko vendor prefixes
-		} else if (document.mozExitFullscreen) {
-			// @ts-ignore TS doesn't understand Gecko vendor prefixes
-			return document.mozExitFullscreen()
-			// @ts-ignore TS doesn't understand Webkit vendor prefixes
-		} else if (document.webkitExitFullscreen) {
-			// @ts-ignore TS doesn't understand Webkit vendor prefixes
-			return document.webkitExitFullscreen()
-		}
-	}
-
-	onFullscreenClick = (e: React.MouseEvent<HTMLDivElement>) => {
-		// @ts-ignore TS doesn't have requestFullscreen promise
-		if (!this.state.isFullscreen) {
-			const promise = this.requestFullscreen()
-			setTimeout(() => {
-				this.setState({
-					isFullscreen: this.checkFullScreen()
-				})
-			}, 150)
-		} else {
-			const promise = this.exitFullscreen()
-			setTimeout(() => {
-				this.setState({
-					isFullscreen: this.checkFullScreen()
-				})
-			}, 150)
-		}
-	}
-
 	onFullscreenMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
 		this.setState({
 			fullScreenHover: true
@@ -186,24 +136,25 @@ export class RunningOrderFullscreenControls extends React.Component<IProps, ISta
 	render () {
 		return (
 			<div className='running-order__fullscreen-controls'>
-				<div className='running-order__fullscreen-controls__button' onMouseEnter={this.onFullscreenMouseEnter} onMouseLeave={this.onFullscreenMouseLeave} onClick={this.onFullscreenClick} tabIndex={0}>
-					{ !this.state.isFullscreen ? (this.state.fullScreenHover ?
-						<Lottie options={this.windowedOver} isStopped={false} isPaused={false} /> :
-						<Lottie options={this.windowedOut} isStopped={false} isPaused={false} />
-					) : (this.state.fullScreenHover ?
-						<Lottie options={this.fullscreenOver} isStopped={false} isPaused={false} /> :
-						<Lottie options={this.fullscreenOut} isStopped={false} isPaused={false} />) }
-				</div>
 				<VelocityReact.VelocityTransitionGroup
 					enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
 					leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}>
-				{ !this.props.isFollowingOnAir &&
-					<div className='running-order__fullscreen-controls__button' onMouseEnter={this.onOnAirMouseEnter} onMouseLeave={this.onOnAirMouseLeave} onClick={this.onOnAirClick} tabIndex={0}>
-						{this.state.onAirHover ?
-							<Lottie options={this.onAirOver} isStopped={false} isPaused={false} /> :
-							<Lottie options={this.onAirOut} isStopped={false} isPaused={false} />}
-					</div>
-				}
+					{!this.props.isFollowingOnAir &&
+						<div className='running-order__fullscreen-controls__button' onMouseEnter={this.onOnAirMouseEnter} onMouseLeave={this.onOnAirMouseLeave} onClick={this.onOnAirClick} tabIndex={0}>
+							{this.state.onAirHover ?
+								<Lottie options={this.onAirOver} isStopped={false} isPaused={false} /> :
+								<Lottie options={this.onAirOut} isStopped={false} isPaused={false} />}
+						</div>
+					}
+					{!this.state.isFullscreen &&
+						<div className='running-order__fullscreen-controls__button running-order__fullscreen-controls__button--inactive' onMouseEnter={this.onFullscreenMouseEnter} onMouseLeave={this.onFullscreenMouseLeave} tabIndex={0}>
+							{ this.state.fullScreenHover ?
+								<Lottie options={this.windowedOver} isStopped={false} isPaused={false} /> :
+								<Lottie options={this.windowedOut} isStopped={false} isPaused={false} />
+							}
+							<div className='running-order__fullscreen-controls__button__label'><span className='keyboard_key'>F11</span> Fullscreen</div>
+						</div>
+					}
 				</VelocityReact.VelocityTransitionGroup>
 			</div>
 		)

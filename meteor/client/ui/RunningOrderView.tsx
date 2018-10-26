@@ -41,7 +41,7 @@ import { scrollToSegmentLine } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { eventContextForLog } from '../lib/eventTargetLogHelper'
 import { Tracker } from 'meteor/tracker'
-import { RunningOrderFullscreenControls } from './RunningOrderView/RunningOrderFullscreenControls'
+import { RunningOrderUtilityControls } from './RunningOrderView/RunningOrderFullscreenControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 
 interface IKeyboardFocusMarkerState {
@@ -1310,7 +1310,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							{ this.state.studioMode && <KeyboardFocusMarker /> }
 						</ErrorBoundary>
 						<ErrorBoundary>
-							<RunningOrderFullscreenControls isFollowingOnAir={this.state.followLiveSegments} onFollowOnAir={this.onGoToLiveSegment} />
+							<RunningOrderUtilityControls isFollowingOnAir={this.state.followLiveSegments} onFollowOnAir={this.onGoToLiveSegment} />
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<RunningOrderHeader
