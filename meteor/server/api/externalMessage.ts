@@ -34,6 +34,7 @@ export function triggerExternalMessage (
 		if (!runtimeFunction) throw new Meteor.Error(404, 'RuntimeFunctions helper "' + functionId + '" not found')
 
 		let context: TemplateContext = {
+			noCache: false,
 			runningOrderId: runningOrder._id,
 			runningOrder: runningOrder,
 			studioId: runningOrder.studioInstallationId,

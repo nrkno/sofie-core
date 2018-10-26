@@ -78,6 +78,7 @@ export interface TemplateSet {
 	}
 }
 export interface TemplateContext {
+	noCache: boolean
 	runningOrderId: string
 	runningOrder: RunningOrder
 	studioId: string
@@ -237,7 +238,7 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 			if (!func) throw new Meteor.Error(404, 'RuntimeFunctions helper "' + functionId + '" not found')
 
 			try {
-				return convertCodeToGeneralFunction(func, 'getHelper')
+				return convertCodeToGeneralFunction(func, 'getHelper', this.noCache)
 			} catch (e) {
 				throw new Meteor.Error(402, 'Syntax error in runtime function helper "' + functionId + '": ' + e.toString())
 			}
@@ -406,9 +407,7 @@ interface Cache {
 	modified: number,
 	fcn: TemplateGeneralFunction
 }
-export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, reason: string): TemplateGeneralFunction {
-
-	let noCache: boolean = !runtimeFunction._id
+export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, reason: string, noCache: boolean): TemplateGeneralFunction {
 
 	let cached: Cache | null = null
 	if (!noCache) {
@@ -487,7 +486,7 @@ export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, 
 	}
 }
 export function convertCodeToFunction (context: TemplateContextInner, runtimeFunction: RuntimeFunction, reason: string): TemplateGeneralFunction {
-	let runtimeFcn = convertCodeToGeneralFunction(runtimeFunction, reason)
+	let runtimeFcn = convertCodeToGeneralFunction(runtimeFunction, reason, context.noCache)
 	// logger.debug('runtimeFcn', runtimeFcn)
 	let fcn = (...args: any[]) => {
 		let result = runtimeFcn.apply(context, [context].concat(injectContextIntoArguments(context, args)))

@@ -346,6 +346,7 @@ export namespace ServerPlayoutAPI {
 			const showStyle = runningOrder.getShowStyle()
 			if (showStyle.baselineTemplate) {
 				const result: TemplateResultAfterPost = runNamedTemplate(showStyle, showStyle.baselineTemplate, literal<TemplateContext>({
+					noCache: false,
 					runningOrderId: runningOrder._id,
 					runningOrder: runningOrder,
 					studioId: runningOrder.studioInstallationId,
