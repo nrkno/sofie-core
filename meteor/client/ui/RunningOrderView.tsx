@@ -612,11 +612,14 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					title: this.props.runningOrder.name,
 					message: t('Do you want to activate this Running Order?'),
 					onAccept: (le: any) => {
+						this.rewindSegments()
 						Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roResetAndActivate, this.props.runningOrder._id, (err, res) => {
 							if (err || (res && res.error)) {
 								this.handleActivationError(err || res)
 								return
 							}
+							this.deferFlushAndRewindSegments()
+
 							if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 						})
 					}
@@ -730,25 +733,14 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		if (e.persist) e.persist()
 
 		let doReset = () => {
-
-			// Do a rewind right away
-			window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
-
+			this.rewindSegments() // Do a rewind right away
 			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roResetRunningOrder, this.props.runningOrder._id, (err) => {
-				// Do another rewind later, when the UI has updated
-				Meteor.defer(() => {
-					Tracker.flush()
-					Meteor.setTimeout(() => {
-						window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
-						window.dispatchEvent(new Event(RunningOrderViewEvents.goToLiveSegment))
-					}, 500)
-				})
-
 				if (err) {
 					// TODO: notify user
 					console.error(err)
 					return
 				}
+				this.deferFlushAndRewindSegments()
 			})
 		}
 		if ((this.props.runningOrder.active && !this.props.runningOrder.rehearsal)) {
@@ -789,14 +781,30 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	resetAndActivateRunningOrder = (e: any) => {
 		// Called from the ModalDialog, 1 minute before broadcast starts
 		if (this.props.studioMode) {
+			this.rewindSegments() // Do a rewind right away
 			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roResetAndActivate, this.props.runningOrder._id, (err, res) => {
 				if (err || (res && res.error)) {
 					this.handleActivationError(err || res)
 					return
 				}
+				this.deferFlushAndRewindSegments()
 				if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 			})
 		}
+	}
+
+	rewindSegments () {
+		window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
+	}
+	deferFlushAndRewindSegments () {
+		// Do a rewind later, when the UI has updated
+		Meteor.defer(() => {
+			Tracker.flush()
+			Meteor.setTimeout(() => {
+				window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
+				window.dispatchEvent(new Event(RunningOrderViewEvents.goToLiveSegment))
+			}, 500)
+		})
 	}
 
 	render () {
