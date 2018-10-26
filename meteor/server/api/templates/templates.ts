@@ -39,6 +39,7 @@ import { StudioInstallations, StudioInstallation } from '../../../lib/collection
 import { ShowStyle, ShowStyles } from '../../../lib/collections/ShowStyles'
 import { RuntimeFunctionDebugData } from '../../../lib/collections/RuntimeFunctionDebugData'
 import { Meteor } from 'meteor/meteor'
+import { ShowBlueprints, ShowBlueprint } from '../../../lib/collections/ShowBlueprints'
 
 export type TemplateGeneralFunction = (story: IMOSROFullStory | null) => TemplateResult | string
 export type TemplateFunctionOptional = (context: TemplateContextInner, story: StoryWithContext) => TemplateResult | string
@@ -561,6 +562,62 @@ function findFunction (showStyle: ShowStyle, functionId: string, context: Templa
 	}
 }
 
+function loadBlueprints (showStyle: ShowStyle): BlueprintEntry {
+	let blueprintDoc = ShowBlueprints.findOne({
+		showStyleId: showStyle._id
+	})
+
+	if (blueprintDoc && blueprintDoc.code) {
+		try {
+			return evalBlueprints(blueprintDoc, showStyle.name, false)
+		} catch (e) {
+			throw new Meteor.Error(402, 'Syntax error in runtime function "' + showStyle.name + '": ' + e.toString())
+		}
+	}
+
+	throw new Meteor.Error(404, 'Function for ShowStyle "' + showStyle.name + '" not found!')
+}
+export interface BlueprintEntry {
+	Baseline: (context: TemplateContextInner) => any
+}
+export function evalBlueprints (blueprintDoc: ShowBlueprint, showStyleName: string, noCache: boolean): BlueprintEntry {
+
+	let cached: Cache | null = null
+	if (!noCache) {
+		// First, check if we've got the function cached:
+		cached = functionCache[blueprintDoc._id] ? functionCache[blueprintDoc._id] : null
+		if (cached && (!cached.modified || cached.modified !== blueprintDoc.modified)) {
+			// the function has been updated, invalidate it then:
+			cached = null
+		}
+	}
+
+	// if (cached) {
+	// 	return cached.fcn
+	// } else {
+	const context = {
+		_,
+	}
+
+	const entry = new SaferEval(context, { filename: showStyleName + '.js' }).runInContext(blueprintDoc.code)
+	// let fcn = (...args) => {
+	// 	saveDebugData(runtimeFunction, reason, ...args)
+	// 	// @ts-ignore the function can be whatever, really
+	// 	return runtimeFcn(...args)
+	// }
+
+	// if (!noCache) {
+	// 	// Save to cache:
+	// 	functionCache[runtimeFunction._id] = {
+	// 		modified: runtimeFunction.modified,
+	// 		fcn: fcn
+	// 	}
+	// }
+
+	return entry.default
+	// }
+}
+
 export function runNamedTemplate (
 	showStyle: ShowStyle,
 	templateId: string,
@@ -571,7 +628,16 @@ export function runNamedTemplate (
 ): TemplateResultAfterPost {
 	let innerContext = getContext(context, false, story || undefined)
 	let fcn = findFunction(showStyle, templateId, innerContext, reason)
-	let result: TemplateResult = fcn(story) as TemplateResult
+	let result: TemplateResult
+
+	if (templateId === 'baseline') {
+		let blueprint = loadBlueprints(showStyle)
+
+		result = blueprint.Baseline(innerContext) as TemplateResult
+	} else {
+		result = fcn(story) as TemplateResult
+	}
+
 	notes = notes.concat(innerContext.getNotes()) // Add notes
 
 	// logger.debug('runNamedTemplate', templateId)

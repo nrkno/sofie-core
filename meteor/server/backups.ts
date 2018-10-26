@@ -3,6 +3,9 @@ import { ServerResponse, IncomingMessage } from 'http'
 import { Picker } from 'meteor/meteorhacks:picker'
 import { ShowStyle, ShowStyles } from '../lib/collections/ShowStyles'
 import { RuntimeFunction, RuntimeFunctions } from '../lib/collections/RuntimeFunctions'
+import { ShowBlueprints } from '../lib/collections/ShowBlueprints'
+import * as bodyParser from 'body-parser'
+import { logger } from './logging'
 import { MongoSelector } from '../lib/typings/meteor'
 import { getCurrentTime } from '../lib/lib'
 import * as _ from 'underscore'
@@ -10,6 +13,7 @@ import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { Meteor } from 'meteor/meteor'
 import { MosString128 } from 'mos-connection'
+import { Random } from 'meteor/random'
 
 export interface ShowStyleBackup {
 	type: 'showstyle'
@@ -138,4 +142,38 @@ Picker.route('/backup/show/:id', (params, req: IncomingMessage, res: ServerRespo
 })
 Picker.route('/backup/show/:id/active', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	runBackup(params, req, res, true)
+})
+
+const postRoute3 = Picker.filter((req, res) => req.method === 'POST')
+postRoute3.middleware(bodyParser.text({
+	type: 'text/javascript'
+}))
+postRoute3.route('/backup/restore/blueprints', (params, req: IncomingMessage, res: ServerResponse, next) => {
+	res.setHeader('Content-Type', 'text/plain')
+
+	let content = ''
+	try {
+		const body = (req as any).body
+		if (!body) throw new Meteor.Error(500, 'Missing request body')
+
+		const showStyle = ShowStyles.findOne('show0') // TODO - dynamuc
+		if (!showStyle) throw new Meteor.Error(404, 'ShowStyle missing from db')
+
+		ShowBlueprints.remove({ showStyleId: showStyle._id })
+		ShowBlueprints.insert({
+			_id: Random.id(7),
+			showStyleId: showStyle._id,
+			code: body as string,
+			createdVersion: Date.now(),
+			modified: Date.now()
+		})
+
+		res.statusCode = 200
+	} catch (e) {
+		res.statusCode = 500
+		content = e + ''
+		logger.debug('Blueprint restore failed: ', e)
+	}
+
+	res.end(content)
 })
