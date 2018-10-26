@@ -132,7 +132,7 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 						}), (msg) => {
 							return (
 								<tr key={msg._id}>
-									<td className='user-action-log__timestamp'><Moment format='YYYY/MM/DD HH:mm:ss'>{msg.timestamp}</Moment></td>
+									<td className='user-action-log__timestamp'><Moment format='YYYY/MM/DD HH:mm:ss.SSS'>{msg.timestamp}</Moment></td>
 									<td className='user-action-log__args'>{msg.executionTime ? msg.executionTime + 'ms' : ''}</td>
 									<td className='user-action-log__userId'>{msg.userId}</td>
 									<td className='user-action-log__clientAddress'>{msg.clientAddress}</td>
