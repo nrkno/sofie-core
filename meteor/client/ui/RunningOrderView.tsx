@@ -808,56 +808,35 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 				'rehearsal': this.props.runningOrder.rehearsal
 			})}>
-				<WarningDisplay
-					studioMode={this.props.studioMode}
-					inActiveROView={this.props.inActiveROView}
-					runningOrder={this.props.runningOrder}
-					oneMinuteBeforeAction={this.resetAndActivateRunningOrder}
-				/>
-				<div className='row first-row super-dark'>
-					<div className='flex-col left horizontal-align-left'>
-						{/* !!! TODO: This is just a temporary solution !!! */}
-						<div className='badge mod'>
-							<div className='media-elem mrs sofie-logo' />
-							<div className='bd mls'><span className='logo-text'></span></div>
-						</div>
+				<ContextMenu id='running-order-context-menu'>
+					<div className='react-contextmenu-label'>
+						{this.props.runningOrder && this.props.runningOrder.name}
 					</div>
-					<div className='flex-col right horizontal-align-right'>
-						<div className='links mod close'>
-							<NavLink to='/runningOrders'>
-								<CoreIcon id='nrk-close' />
-							</NavLink>
-						</div>
-					</div>
-					<ContextMenu id='running-order-context-menu'>
-						<div className='react-contextmenu-label'>
-							{this.props.runningOrder && this.props.runningOrder.name}
-						</div>
-						{
-							this.props.studioMode ?
+					{
+						this.props.studioMode ?
 							<React.Fragment>
 								{
 									!(this.props.runningOrder.active && this.props.runningOrder.rehearsal) ?
-									(
-										!this.runningOrderShouldHaveStarted() && !this.props.runningOrder.active ?
-										<MenuItem onClick={(e) => this.activateRehearsal(e)}>
-											{t('Prepare studio and Activate (Rehearsal)')}
-										</MenuItem> :
-										<MenuItem onClick={(e) => this.activateRehearsal(e)}>
-											{t('Activate (Rehearsal)')}
-										</MenuItem>
-									) : (
-										<MenuItem onClick={(e) => this.activate(e)}>
-											{t('Activate')}
-										</MenuItem>
-									)
+										(
+											!this.runningOrderShouldHaveStarted() && !this.props.runningOrder.active ?
+												<MenuItem onClick={(e) => this.activateRehearsal(e)}>
+													{t('Prepare studio and Activate (Rehearsal)')}
+												</MenuItem> :
+												<MenuItem onClick={(e) => this.activateRehearsal(e)}>
+													{t('Activate (Rehearsal)')}
+												</MenuItem>
+										) : (
+											<MenuItem onClick={(e) => this.activate(e)}>
+												{t('Activate')}
+											</MenuItem>
+										)
 								}
 								{
 									this.props.runningOrder.active ?
-									<MenuItem onClick={(e) => this.deactivate(e)}>
-										{t('Deactivate')}
-									</MenuItem> :
-									null
+										<MenuItem onClick={(e) => this.deactivate(e)}>
+											{t('Deactivate')}
+										</MenuItem> :
+										null
 								}
 								{
 									this.props.runningOrder.active ?
@@ -875,10 +854,10 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 								}
 								{
 									!(this.props.runningOrder.active && !this.props.runningOrder.rehearsal) ?
-									<MenuItem onClick={(e) => this.resetRunningOrder(e)}>
-										{t('Reset Running Order')}
-									</MenuItem> :
-									null
+										<MenuItem onClick={(e) => this.resetRunningOrder(e)}>
+											{t('Reset Running Order')}
+										</MenuItem> :
+										null
 								}
 								<MenuItem onClick={(e) => this.reloadRunningOrder(e)}>
 									{t('Reload ENPS data')}
@@ -889,20 +868,41 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 									{t('No actions available')}
 								</MenuItem>
 							</React.Fragment>
-						}
-					</ContextMenu>
-					<ContextMenuTrigger id='running-order-context-menu' attributes={{
-						className: 'flex-col col-timing horizontal-align-center'
-					}}>
+					}
+				</ContextMenu>
+				<ContextMenuTrigger id='running-order-context-menu' attributes={{
+					className: 'flex-col col-timing horizontal-align-center'
+				}}>
+					<WarningDisplay
+						studioMode={this.props.studioMode}
+						inActiveROView={this.props.inActiveROView}
+						runningOrder={this.props.runningOrder}
+						oneMinuteBeforeAction={this.resetAndActivateRunningOrder}
+					/>
+					<div className='row first-row super-dark'>
+						<div className='flex-col left horizontal-align-left'>
+							{/* !!! TODO: This is just a temporary solution !!! */}
+							<div className='badge mod'>
+								<div className='media-elem mrs sofie-logo' />
+								<div className='bd mls'><span className='logo-text'></span></div>
+							</div>
+						</div>
+						<div className='flex-col right horizontal-align-right'>
+							<div className='links mod close'>
+								<NavLink to='/runningOrders'>
+									<CoreIcon id='nrk-close' />
+								</NavLink>
+							</div>
+						</div>
 						<TimingDisplay {...this.props} />
 						{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} runningOrder={this.props.runningOrder} />}
-					</ContextMenuTrigger>
-				</div>
-				<div className='row dark'>
-					<div className='col c12 running-order-overview'>
-						{ this.props.runningOrder && <RunningOrderOverview runningOrderId={this.props.runningOrder._id} /> }
 					</div>
-				</div>
+					<div className='row dark'>
+						<div className='col c12 running-order-overview'>
+							{ this.props.runningOrder && <RunningOrderOverview runningOrderId={this.props.runningOrder._id} /> }
+						</div>
+					</div>
+				</ContextMenuTrigger>
 			</div>
 			<ModalDialog title={t('Error')} acceptText={t('OK')} show={!!this.state.isError} onAccept={this.discardError} onDiscard={this.discardError}>
 				<p>{this.state.errorMessage}</p>

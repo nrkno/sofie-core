@@ -100,6 +100,10 @@ body.vertical-overflow-only {
 	z-index: 20;
 	user-select: none;
 
+	.row {
+		width: 100%;
+	}
+
 	.flex-col.col-timing {
 		flex: 1 1;
 	}
