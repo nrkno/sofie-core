@@ -74,6 +74,7 @@ export interface SegmentLineItemGeneric {
 
 	isTransition?: boolean
 	infiniteMode?: SegmentLineItemLifespan
+	extendOnHold?: boolean
 }
 
 export enum SegmentLineItemLifespan {

@@ -366,6 +366,10 @@ const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFul
 				// afterRemoveSegmentLineItem(segmentLine._id)
 			}
 		})
+	} else {
+		SegmentLines.update(segmentLine._id, {$set: {
+			notes: notes,
+		}})
 	}
 
 	// if anything was changed

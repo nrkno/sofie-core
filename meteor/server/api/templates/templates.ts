@@ -1,4 +1,5 @@
 import * as _ from 'underscore'
+import * as moment from 'moment'
 import { SaferEval } from 'safer-eval'
 import * as objectPath from 'object-path'
 import { iterateDeeply, iterateDeeplyEnum } from '../../../lib/lib'
@@ -275,21 +276,6 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 	})
 	return _.extend(c0, context)
 }
-export interface TemplateResult {
-	// segment: Segment,
-	segmentLine: DBSegmentLine | null,
-	segmentLineItems: Array<SegmentLineItemOptional> | null
-	segmentLineAdLibItems: Array<SegmentLineAdLibItemOptional> | null
-	baselineItems?: Array<RunningOrderBaselineItemOptional> | null
-}
-export interface TemplateResultAfterPost {
-	// segment: Segment,
-	notes: Array<SegmentLineNote>,
-	segmentLine: DBSegmentLine | null,
-	segmentLineItems: Array<SegmentLineItem> | null
-	segmentLineAdLibItems: Array<SegmentLineAdLibItem> | null
-	baselineItems: Array<RunningOrderBaselineItem> | null
-}
 
 const blueprintCache: {[id: string]: Cache} = {}
 interface Cache {
@@ -302,7 +288,7 @@ export interface BlueprintCollection {
 	// TODO - change context types
 	Baseline: (context: TemplateContext) => BaselineResult
 	RunStory: (context: TemplateContext, story: IMOSROFullStory) => StoryResult | null
-	PostProcess: (context: TemplateContext) => TemplateResult
+	PostProcess: (context: TemplateContext) => PostProcessResult
 	Message: (context: TemplateContext, runningOrder: RunningOrder, takeSegmentLine: SegmentLine, previousSegmentLine: SegmentLine) => any
 }
 export interface BaselineResult {
@@ -311,6 +297,10 @@ export interface BaselineResult {
 }
 export interface StoryResult {
 	SegmentLine: DBSegmentLine
+	SegmentLineItems: SegmentLineItemGeneric[]
+	AdLibItems: SegmentLineAdLibItem[]
+}
+export interface PostProcessResult {
 	SegmentLineItems: SegmentLineItemGeneric[]
 	AdLibItems: SegmentLineAdLibItem[]
 }
@@ -346,6 +336,7 @@ function evalBlueprints (blueprintDoc: ShowBlueprint, showStyleName: string, noC
 	} else {
 		const context = {
 			_,
+			moment,
 		}
 
 		const entry = new SaferEval(context, { filename: showStyleName + '.js' }).runInContext(blueprintDoc.code)
@@ -439,92 +430,4 @@ export function postProcessSegmentLineBaselineItems (innerContext: TemplateConte
 
 		return item
 	})
-}
-
-// TODO - remove and replace uses with the above
-export function postProcessResult (innerContext: TemplateContextInner, result: TemplateResult, templateId: string): TemplateResultAfterPost {
-	let i = 0
-	let segmentLinesUniqueIds: { [id: string]: true } = {}
-	let resultAfterPost: TemplateResultAfterPost = {
-		notes: innerContext.getNotes(),
-		segmentLine: result.segmentLine,
-		segmentLineItems: _.map(_.compact(result.segmentLineItems), (itemOrg: SegmentLineItemOptional) => {
-			let item: SegmentLineItem = itemOrg as SegmentLineItem
-
-			if (!item._id) item._id = innerContext.getHashId('postprocess_' + templateId + '_' + (i++))
-			if (!item.runningOrderId) item.runningOrderId = innerContext.runningOrderId
-			if (!item.segmentLineId) item.segmentLineId = innerContext.segmentLine._id
-			if (!item.mosId && !item.isTransition) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for segmentLineItem in ' + innerContext.segmentLine._id + '! ("' + innerContext.unhashId(item._id) + '")')
-
-			if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
-			segmentLinesUniqueIds[item._id] = true
-
-			if (item.content && item.content.timelineObjects) {
-				item.content.timelineObjects = _.compact(item.content.timelineObjects)
-
-				let timelineUniqueIds: { [id: string]: true } = {}
-				_.each(item.content.timelineObjects, (o: TimelineObj) => {
-
-					if (!o._id) o._id = innerContext.getHashId('postprocess_' + templateId + '_' + (i++))
-
-					if (timelineUniqueIds[o._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(o._id) + '")')
-					timelineUniqueIds[o._id] = true
-				})
-			}
-
-			return item
-		}),
-		segmentLineAdLibItems: result.segmentLineAdLibItems ? _.map(_.compact(result.segmentLineAdLibItems), (itemOrg: SegmentLineAdLibItemOptional) => {
-			let item: SegmentLineAdLibItem = itemOrg as SegmentLineAdLibItem
-
-			if (!item._id) item._id = innerContext.getHashId('postprocess_' + templateId + '_' + (i++))
-			if (!item.runningOrderId) item.runningOrderId = innerContext.runningOrderId
-			if (!item.segmentLineId) item.segmentLineId = innerContext.segmentLine._id
-			if (!item.mosId) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for segmentLineItem in ' + innerContext.segmentLine._id + '! ("' + innerContext.unhashId(item._id) + '")')
-
-			if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
-			segmentLinesUniqueIds[item._id] = true
-
-			if (item.content && item.content.timelineObjects) {
-				item.content.timelineObjects = _.compact(item.content.timelineObjects)
-
-				let timelineUniqueIds: { [id: string]: true } = {}
-				_.each(item.content.timelineObjects, (o: TimelineObj) => {
-
-					if (!o._id) o._id = innerContext.getHashId('postprocess_' + templateId + '_' + (i++))
-
-					if (timelineUniqueIds[o._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(o._id) + '")')
-					timelineUniqueIds[o._id] = true
-				})
-			}
-
-			return item
-		}) : null,
-		baselineItems: result.baselineItems ? _.map(_.compact(result.baselineItems), (itemOrg: RunningOrderBaselineItemOptional) => {
-			let item: RunningOrderBaselineItem = itemOrg as RunningOrderBaselineItem
-
-			if (!item._id) item._id = innerContext.getHashId('postprocess_' + templateId + '_' + (i++))
-			if (!item.runningOrderId) item.runningOrderId = innerContext.runningOrderId
-			item.segmentLineId = undefined
-
-			if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
-			segmentLinesUniqueIds[item._id] = true
-
-			if (item.content && item.content.timelineObjects) {
-				item.content.timelineObjects = _.compact(item.content.timelineObjects)
-
-				let timelineUniqueIds: { [id: string]: true } = {}
-				_.each(item.content.timelineObjects, (o: TimelineObj) => {
-
-					if (!o._id) o._id = innerContext.getHashId('postprocess_' + templateId + '_' + (i++))
-
-					if (timelineUniqueIds[o._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(o._id) + '")')
-					timelineUniqueIds[o._id] = true
-				})
-			}
-
-			return item
-		}) : null
-	}
-	return resultAfterPost
 }

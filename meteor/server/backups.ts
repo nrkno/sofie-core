@@ -146,7 +146,8 @@ Picker.route('/backup/show/:id/active', (params, req: IncomingMessage, res: Serv
 
 const postRoute3 = Picker.filter((req, res) => req.method === 'POST')
 postRoute3.middleware(bodyParser.text({
-	type: 'text/javascript'
+	type: 'text/javascript',
+	limit: '1mb'
 }))
 postRoute3.route('/backup/restore/blueprints', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
@@ -155,6 +156,10 @@ postRoute3.route('/backup/restore/blueprints', (params, req: IncomingMessage, re
 	try {
 		const body = (req as any).body
 		if (!body) throw new Meteor.Error(500, 'Missing request body')
+
+		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(500, 'Invalid request body')
+
+		logger.info('Got new blueprint. ' + body.length + ' bytes')
 
 		const showStyle = ShowStyles.findOne('show0') // TODO - dynamuc
 		if (!showStyle) throw new Meteor.Error(404, 'ShowStyle missing from db')

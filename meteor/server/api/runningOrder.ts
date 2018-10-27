@@ -2,12 +2,12 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
+import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineNoteType, SegmentLineNote } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
 import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime } from '../../lib/lib'
 import { logger } from '../logging'
-import { getContext, TemplateResultAfterPost, loadBlueprints, postProcessResult } from './templates/templates'
+import { getContext, TemplateResultAfterPost, loadBlueprints, postProcessResult, PostProcessResult, postProcessSegmentLineAdLibItems, postProcessSegmentLineItems } from './templates/templates'
 import { getHash } from '../lib'
 import { ShowStyles } from '../../lib/collections/ShowStyles'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
@@ -291,29 +291,29 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 		templateId: showStyle.postProcessBlueprint,
 		runtimeArguments: {}
 	}, false, undefined)
-	let tr: TemplateResultAfterPost
+
+	let result: PostProcessResult | undefined = undefined
+	let notes: SegmentLineNote[] = []
 	try {
 		const blueprints = loadBlueprints(showStyle)
-		tr = postProcessResult(context, blueprints.PostProcess(context), 'post-process')
+		result = blueprints.PostProcess(context)
+		result.SegmentLineItems = postProcessSegmentLineItems(context, result.SegmentLineItems, 'post-process')
+		result.AdLibItems = postProcessSegmentLineAdLibItems(context, result.AdLibItems, 'post-process')
+		notes = context.getNotes()
 	} catch (e) {
 		logger.error(e.toString())
 		// throw e
-		tr = {
-			notes: [{
-				type: SegmentLineNoteType.ERROR,
-				origin: {
-					name: '',
-					roId: context.runningOrderId,
-					segmentId: context.segmentLine.segmentId,
-					segmentLineId: '',
-				},
-				message: 'Internal Server Error'
-			}],
-			segmentLine: null, 			// DBSegmentLine | null,
-			segmentLineItems: [], 		// Array<SegmentLineItem> | null
-			segmentLineAdLibItems: [], 	// Array<SegmentLineAdLibItem> | null
-			baselineItems: [] 			// Array<RunningOrderBaselineItem> | null
-		}
+		notes = [{
+			type: SegmentLineNoteType.ERROR,
+			origin: {
+				name: '',
+				roId: context.runningOrderId,
+				segmentId: context.segmentLine.segmentId,
+				segmentLineId: '',
+			},
+			message: 'Internal Server Error'
+		}]
+		result = undefined
 	}
 
 	const slIds = segmentLines.map(sl => sl._id)
@@ -327,18 +327,20 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 		updated: 0,
 		removed: 0
 	}
-	if (tr) {
+	if (notes) {
 		Segments.update(segment._id, {$set: {
-			notes: tr.notes,
+			notes: notes,
 		}})
+	}
+	if (result) {
 
-		if (tr.segmentLineItems) {
-			tr.segmentLineItems.forEach(sli => {
+		if (result.SegmentLineItems) {
+			result.SegmentLineItems.forEach(sli => {
 				sli.fromPostProcess = true
 			})
 		}
-		if (tr.segmentLineAdLibItems) {
-			tr.segmentLineAdLibItems.forEach(sli => {
+		if (result.AdLibItems) {
+			result.AdLibItems.forEach(sli => {
 				sli.fromPostProcess = true
 			})
 		}
@@ -347,7 +349,7 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 			runningOrderId: ro._id,
 			segmentLineId: { $in: slIds },
 			fromPostProcess: true,
-		}, tr.segmentLineItems || [], {
+		}, (result.SegmentLineItems || []) as SegmentLineItem[], {
 			afterInsert (segmentLineItem) {
 				logger.debug('PostProcess: inserted segmentLineItem ' + segmentLineItem._id)
 				logger.debug(segmentLineItem)
@@ -363,7 +365,7 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 			runningOrderId: ro._id,
 			segmentLineId: { $in: slIds },
 			fromPostProcess: true,
-		}, tr.segmentLineAdLibItems || [], {
+		}, result.AdLibItems || [], {
 			afterInsert (segmentLineAdLibItem) {
 				logger.debug('PostProcess: inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
 				logger.debug(segmentLineAdLibItem)
