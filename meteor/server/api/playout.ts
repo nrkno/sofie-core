@@ -352,20 +352,27 @@ export namespace ServerPlayoutAPI {
 				const ctx = getBaselineContext(runningOrder)
 
 				const res = blueprint.Baseline(ctx)
-				const baselineItems = postProcessSegmentLineBaselineItems(ctx, res.baselineItems, 'baseline')
-				const adlibItems = postProcessSegmentLineAdLibItems(ctx, res.adLibItems, 'baseline')
+				const baselineItems = postProcessSegmentLineBaselineItems(ctx, res.BaselineItems)
+				const adlibItems = postProcessSegmentLineAdLibItems(ctx, res.AdLibItems, 'baseline')
 
 				// TODO - should any notes be logged as a warning, or is that done already?
 
 				if (baselineItems) {
-					logger.info(`... got ${baselineItems.length} items from template.`)
+					logger.info(`... got ${baselineItems.length} items from blueprint.`)
+
+					const baselineItem: RunningOrderBaselineItem = {
+						_id: Random.id(7),
+						runningOrderId: runningOrder._id,
+						objects: baselineItems
+					}
+
 					saveIntoDb<RunningOrderBaselineItem, RunningOrderBaselineItem>(RunningOrderBaselineItems, {
 						runningOrderId: runningOrder._id
-					}, baselineItems)
+					}, [baselineItem])
 				}
 
 				if (adlibItems) {
-					logger.info(`... got ${adlibItems.length} adLib items from template.`)
+					logger.info(`... got ${adlibItems.length} adLib items from blueprint.`)
 					saveIntoDb<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>(RunningOrderBaselineAdLibItems, {
 						runningOrderId: runningOrder._id
 					}, adlibItems)
@@ -2163,7 +2170,7 @@ function createSegmentLineItemGroupFirstObject (segmentLineItem: SegmentLineItem
 }
 
 function createSegmentLineItemGroup (
-	item: SegmentLineItem | RunningOrderBaselineItem,
+	item: SegmentLineItem,
 	duration: number | string,
 	segmentLineGroup?: TimelineObj
 ): TimelineObj {
@@ -2190,18 +2197,11 @@ function createSegmentLineItemGroup (
 function transformBaselineItemsIntoTimeline (items: RunningOrderBaselineItem[]): Array<TimelineObj> {
 	let timelineObjs: Array<TimelineObj> = []
 	_.each(items, (item: RunningOrderBaselineItem) => {
-		if (
-			item.content &&
-			item.content.timelineObjects
-		) {
-			let tos = item.content.timelineObjects
-
-			// the baseline items are layed out without any grouping
-			_.each(tos, (o: TimelineObj) => {
-				// do some transforms maybe?
-				timelineObjs.push(o)
-			})
-		}
+		// the baseline items are layed out without any grouping
+		_.each(item.objects, (o: TimelineObj) => {
+			// do some transforms maybe?
+			timelineObjs.push(o)
+		})
 	})
 	return timelineObjs
 }
