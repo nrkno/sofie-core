@@ -46,7 +46,7 @@ import { PeripheralDevice,PeripheralDevices,PlayoutDeviceSettings } from '../../
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { IMOSROFullStory } from 'mos-connection'
 import { PlayoutTimelinePrefixes, LookaheadMode } from '../../lib/api/playout'
-import { TemplateContext, loadBlueprints, getContext, postProcessSegmentLineAdLibItems, postProcessSegmentLineBaselineItems } from './templates/templates'
+import { loadBlueprints, getBaselineContext, postProcessSegmentLineAdLibItems, postProcessSegmentLineBaselineItems } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { StudioInstallations, StudioInstallation, IStudioConfigItem } from '../../lib/collections/StudioInstallations'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
@@ -349,16 +349,7 @@ export namespace ServerPlayoutAPI {
 					logger.error('Failed to load baseline blueprint')
 				}
 
-				// TODO - tidy up this new block to make less error prone
-				const ctx = getContext(literal<TemplateContext>({
-					noCache: false,
-					runningOrderId: runningOrder._id,
-					runningOrder: runningOrder,
-					studioId: runningOrder.studioInstallationId,
-					segmentLine: runningOrder.getSegmentLines()[0],
-					templateId: showStyle.baselineTemplate,
-					runtimeArguments: {}
-				}), false, undefined)
+				const ctx = getBaselineContext(runningOrder)
 
 				const res = blueprint.Baseline(ctx)
 				const baselineItems = postProcessSegmentLineBaselineItems(ctx, res.baselineItems, 'baseline')

@@ -3,7 +3,7 @@ import { SegmentLine } from '../../lib/collections/SegmentLines'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { ShowStyles, ShowStyle } from '../../lib/collections/ShowStyles'
 import { logger } from '../logging'
-import { getContext, TemplateContext, loadBlueprints } from './templates/templates'
+import { loadBlueprints, getMessageContext } from './templates/templates'
 import { RuntimeFunctions } from '../../lib/collections/RuntimeFunctions'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
 import { getCurrentTime, removeNullyProperties } from '../../lib/lib'
@@ -33,16 +33,7 @@ export function triggerExternalMessage (
 		})
 		if (!runtimeFunction) throw new Meteor.Error(404, 'RuntimeFunctions helper "' + functionId + '" not found')
 
-		let context: TemplateContext = {
-			noCache: false,
-			runningOrderId: runningOrder._id,
-			runningOrder: runningOrder,
-			studioId: runningOrder.studioInstallationId,
-			segmentLine: takeSegmentLine,
-			templateId: functionId,
-			runtimeArguments: {}
-		}
-		let innerContext = getContext(context, true)
+		const innerContext = getMessageContext(runningOrder)
 		try {
 			const blueprints = loadBlueprints(showStyle)
 

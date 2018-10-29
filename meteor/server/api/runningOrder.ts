@@ -7,13 +7,12 @@ import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/Segment
 import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
 import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime } from '../../lib/lib'
 import { logger } from '../logging'
-import { getContext, TemplateResultAfterPost, loadBlueprints, postProcessResult, PostProcessResult, postProcessSegmentLineAdLibItems, postProcessSegmentLineItems } from './templates/templates'
+import { loadBlueprints, PostProcessResult, postProcessSegmentLineItems, getPostProcessContext } from './templates/templates'
 import { getHash } from '../lib'
 import { ShowStyles } from '../../lib/collections/ShowStyles'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
 import { CachePrefix, RunningOrderDataCache } from '../../lib/collections/RunningOrderDataCache'
 import { updateStory, reloadRunningOrder } from './integration/mos'
-import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
@@ -282,23 +281,14 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 
 	const firstSegmentLine = segmentLines.sort((a, b) => b._rank = a._rank)[0]
 
-	let context = getContext({
-		noCache: false,
-		runningOrderId: ro._id,
-		runningOrder: ro,
-		studioId: ro.studioInstallationId,
-		segmentLine: firstSegmentLine,
-		templateId: showStyle.postProcessBlueprint,
-		runtimeArguments: {}
-	}, false, undefined)
+	const context = getPostProcessContext(ro, firstSegmentLine)
 
 	let result: PostProcessResult | undefined = undefined
 	let notes: SegmentLineNote[] = []
 	try {
 		const blueprints = loadBlueprints(showStyle)
 		result = blueprints.PostProcess(context)
-		result.SegmentLineItems = postProcessSegmentLineItems(context, result.SegmentLineItems, 'post-process')
-		result.AdLibItems = postProcessSegmentLineAdLibItems(context, result.AdLibItems, 'post-process')
+		result.SegmentLineItems = postProcessSegmentLineItems(context, result.SegmentLineItems, 'post-process', firstSegmentLine._id)
 		notes = context.getNotes()
 	} catch (e) {
 		logger.error(e.toString())
@@ -308,7 +298,7 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 			origin: {
 				name: '',
 				roId: context.runningOrderId,
-				segmentId: context.segmentLine.segmentId,
+				segmentId: firstSegmentLine.segmentId,
 				segmentLineId: '',
 			},
 			message: 'Internal Server Error'
@@ -339,11 +329,6 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 				sli.fromPostProcess = true
 			})
 		}
-		if (result.AdLibItems) {
-			result.AdLibItems.forEach(sli => {
-				sli.fromPostProcess = true
-			})
-		}
 
 		changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
 			runningOrderId: ro._id,
@@ -359,22 +344,6 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 			},
 			afterRemove (segmentLineItem) {
 				logger.debug('PostProcess: deleted segmentLineItem ' + segmentLineItem._id)
-			}
-		})
-		saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
-			runningOrderId: ro._id,
-			segmentLineId: { $in: slIds },
-			fromPostProcess: true,
-		}, result.AdLibItems || [], {
-			afterInsert (segmentLineAdLibItem) {
-				logger.debug('PostProcess: inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
-				logger.debug(segmentLineAdLibItem)
-			},
-			afterUpdate (segmentLineAdLibItem) {
-				logger.debug('PostProcess: updated segmentLineAdLibItem ' + segmentLineAdLibItem._id)
-			},
-			afterRemove (segmentLineAdLibItem) {
-				logger.debug('PostProcess: deleted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
 			}
 		})
 	}

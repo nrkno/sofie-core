@@ -51,7 +51,7 @@ import {
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
-import { getContext, loadBlueprints, StoryResult, postProcessSegmentLineAdLibItems, postProcessSegmentLineItems } from '../templates/templates'
+import { loadBlueprints, StoryResult, postProcessSegmentLineAdLibItems, postProcessSegmentLineItems, getRunStoryContext } from '../templates/templates'
 import { getHash } from '../../lib'
 import {
 	StudioInstallations,
@@ -234,21 +234,12 @@ function formatTime (time: any): number | undefined {
 		return undefined
 	}
 }
-const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory) => boolean
+export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory) => boolean
 = syncFunction(function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory): boolean {
 	let showStyle = ShowStyles.findOne(ro.showStyleId)
 	if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + ro.showStyleId + '" not found!')
 
-	let context = getContext({
-		noCache: false,
-		runningOrderId: ro._id,
-		runningOrder: ro,
-		studioId: ro.studioInstallationId,
-		// segment: Segment,
-		segmentLine: segmentLine,
-		templateId: 'N/A',
-		runtimeArguments: segmentLine.runtimeArguments || {}
-	}, false, story)
+	const context = getRunStoryContext(ro, segmentLine, story)
 
 	let result: StoryResult | null = null
 	let notes: SegmentLineNote[] = []
@@ -257,8 +248,8 @@ const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFul
 		result = blueprints.RunStory(context, story)
 
  		if (result) {
-			result.AdLibItems = postProcessSegmentLineAdLibItems(context, result.AdLibItems, result.SegmentLine.typeVariant)
-			result.SegmentLineItems = postProcessSegmentLineItems(context, result.SegmentLineItems, result.SegmentLine.typeVariant)
+			result.AdLibItems = postProcessSegmentLineAdLibItems(context, result.AdLibItems, result.SegmentLine.typeVariant, segmentLine._id)
+			result.SegmentLineItems = postProcessSegmentLineItems(context, result.SegmentLineItems, result.SegmentLine.typeVariant, segmentLine._id)
 		}
 
  		notes = context.getNotes()
