@@ -58,7 +58,7 @@ export interface SegmentLineItemGeneric {
 		outTransition?: TimelineTransition
 	}
 	/** The object describing the item in detail */
-	content?: BaseContent
+	content?: BaseContent // TODO can this change to SomeContent? (So restrict to a set of known types?)
 	/** The id of the item this item is a continuation of. If it is a continuation, the inTranstion must not be set, and trigger must be 0 */
 	continuesRefId?: string
 	/** If this item has been created play-time using an AdLibItem, this should be set to it's source item */

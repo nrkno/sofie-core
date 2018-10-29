@@ -4,7 +4,6 @@ import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { ShowStyles, ShowStyle } from '../../lib/collections/ShowStyles'
 import { logger } from '../logging'
 import { loadBlueprints, getMessageContext } from './blueprints'
-import { RuntimeFunctions } from '../../lib/collections/RuntimeFunctions'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
 import { getCurrentTime, removeNullyProperties } from '../../lib/lib'
 import { triggerdoMessageQueue } from './ExternalMessageQueue'
@@ -20,18 +19,6 @@ export function triggerExternalMessage (
 	try {
 		let showStyle: ShowStyle | undefined = ShowStyles.findOne(runningOrder.showStyleId)
 		if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + runningOrder.showStyleId + '" not found!')
-		// if a showStyle does not have a message template assigned, then just exit
-		if (!showStyle.messageTemplate) return
-
-		let functionId = showStyle.messageTemplate
-
-		const runtimeFunction = RuntimeFunctions.findOne({
-			showStyleId: showStyle._id,
-			active: true,
-			templateId: functionId,
-			isHelper: true
-		})
-		if (!runtimeFunction) throw new Meteor.Error(404, 'RuntimeFunctions helper "' + functionId + '" not found')
 
 		const innerContext = getMessageContext(runningOrder)
 		try {
@@ -75,7 +62,7 @@ export function triggerExternalMessage (
 			}
 		} catch (e) {
 			let str = e.toString() + ' ' + (e.stack || '')
-			throw new Meteor.Error(402, 'Error executing runtime function helper "' + functionId + '": ' + str )
+			throw new Meteor.Error(402, 'Error executing blueprint message helper: ' + str )
 		}
 	} catch (e) {
 		logger.error(e)
