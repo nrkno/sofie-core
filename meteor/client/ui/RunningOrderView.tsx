@@ -10,7 +10,7 @@ import * as $ from 'jquery'
 import * as _ from 'underscore'
 import Moment from 'react-moment'
 
-import { NavLink, Route } from 'react-router-dom'
+import { NavLink, Route, Prompt } from 'react-router-dom'
 
 import { ClientAPI } from '../../lib/api/client'
 import { PlayoutAPI } from '../../lib/api/playout'
@@ -1117,6 +1117,17 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			this.props.runningOrder.nextSegmentLineId) {
 			scrollToSegmentLine(this.props.runningOrder.nextSegmentLineId)
 		}
+
+		if (typeof this.props.runningOrder !== typeof this.props.runningOrder ||
+			(this.props.runningOrder || {_id: ''})._id !== (prevProps.runningOrder || {_id: ''})._id ||
+			(this.props.runningOrder || {active: false}).active !== (prevProps.runningOrder || {active: false}).active ||
+			this.state.studioMode !== prevState.studioMode) {
+			if (this.props.runningOrder && this.props.runningOrder.active && this.state.studioMode && !getDeveloperMode()) {
+				$(window).on('beforeunload', this.onBeforeUnload)
+			} else {
+				$(window).off('beforeunload', this.onBeforeUnload)
+			}
+		}
 	}
 
 	componentWillUnmount () {
@@ -1135,6 +1146,15 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 
 		window.removeEventListener(RunningOrderViewEvents.goToLiveSegment, this.onGoToLiveSegment)
+	}
+
+	onBeforeUnload = (e: any) => {
+		const {t} = this.props
+		
+		e.preventDefault()
+		e.returnValue = t('This running order is now active. Are you sure you want to exit this screen?')
+
+		return t('This running order is now active. Are you sure you want to exit this screen?')
 	}
 
 	onRewindSegments = () => {
@@ -1311,6 +1331,11 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<RunningOrderFullscreenControls isFollowingOnAir={this.state.followLiveSegments} onFollowOnAir={this.onGoToLiveSegment} onRewindSegments={this.onRewindSegments} />
+						</ErrorBoundary>
+						<ErrorBoundary>
+							{ this.state.studioMode && 
+								<Prompt when={this.props.runningOrder.active} message={t('This running order is now active. Are you sure you want to exit this screen?')} />
+							}
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<RunningOrderHeader
