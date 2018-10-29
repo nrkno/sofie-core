@@ -286,7 +286,7 @@ export interface TimelineObjCCGRoute extends TimelineObj {
 		}
 		attributes: {
 			channel?: number,
-			layer?; number,
+			layer?: number,
 			LLayer?: string, // uses mappings to route, overrides channel/layer parameters.
 			mode?: 'BACKGROUND' | 'NEXT',
 		}
@@ -342,7 +342,7 @@ export interface TimelineObjLawo extends TimelineObj {
 		attributes: {
 			[key: string]: {
 				[attr: string]: any
-				triggerValue: string // only used for trigging new command sent
+				triggerValue?: string // only used for trigging new command sent
 			}
 		}
 	}
@@ -354,7 +354,7 @@ export interface TimelineObjLawoSource extends TimelineObjLawo {
 			'Fader/Motor dB Value': {
 				value: number,
 				transitionDuration?: number,
-				triggerValue: string // only used for trigging new command sent
+				triggerValue?: string // only used for trigging new command sent
 			}
 		}
 	}
