@@ -24,7 +24,6 @@ export function triggerExternalMessage (
 		try {
 			const blueprints = loadBlueprints(showStyle)
 
-			// @ts-ignore the message function doesn't follow the typing
 			let resultMessages: Array<ExternalMessageQueueObj> | null = blueprints.Message(innerContext, runningOrder, takeSegmentLine, previousSegmentLine)
 
 			if (resultMessages === null) {

@@ -8,7 +8,7 @@ import {
 import { SegmentLine, DBSegmentLine, SegmentLineNote, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItemGeneric } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
-import { RunningOrderBaselineItem } from '../../lib/collections/RunningOrderBaselineItems'
+import { ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
 import { formatDateAsTimecode, formatDurationAsTimecode } from '../../lib/lib'
 import { getHash } from '../lib'
 import { logger } from '../logging'
@@ -231,7 +231,7 @@ export interface BlueprintCollection {
 	Baseline: (context: BaselineContext) => BaselineResult
 	RunStory: (context: RunStoryContext, story: IMOSROFullStory) => StoryResult | null
 	PostProcess: (context: PostProcessContext) => PostProcessResult
-	Message: (context: MessageContext, runningOrder: RunningOrder, takeSegmentLine: SegmentLine, previousSegmentLine: SegmentLine) => any
+	Message: (context: MessageContext, runningOrder: RunningOrder, takeSegmentLine: SegmentLine, previousSegmentLine: SegmentLine | null) => ExternalMessageQueueObj[] | null
 	Version: string // TODO - pull into a db field at upload time (will also verify script parses), and show in the ui
 }
 export interface BaselineResult {
@@ -284,7 +284,7 @@ export interface MessageContext extends ICommonContext {
 	getCachedStoryForSegmentLine: (segmentLine: DBSegmentLine) => IMOSROFullStory
 	getCachedStoryForRunningOrder: () => IMOSRunningOrder
 	getAllSegmentLines: () => Array<DBSegmentLine>
-	formatDateAsTimecode: (date: Date) => string
+	formatDateAsTimecode: (time: number) => string
 	formatDurationAsTimecode: (time: number) => string
 }
 
