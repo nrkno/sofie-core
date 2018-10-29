@@ -579,7 +579,7 @@ export function runNamedTemplate (
 		segmentLineItems: _.map(_.compact(result.segmentLineItems), (itemOrg: SegmentLineItemOptional) => {
 			let item: SegmentLineItem = itemOrg as SegmentLineItem
 
-			if (!item._id) item._id = innerContext.getHashId('postprocess_' + (i++))
+			if (!item._id) item._id = innerContext.getHashId('postprocess_' + templateId + '_' + (i++))
 			if (!item.runningOrderId) item.runningOrderId = innerContext.runningOrderId
 			if (!item.segmentLineId) item.segmentLineId = innerContext.segmentLine._id
 			if (!item.mosId && !item.isTransition) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for segmentLineItem in ' + innerContext.segmentLine._id + '! ("' + innerContext.unhashId(item._id) + '")')
@@ -593,7 +593,7 @@ export function runNamedTemplate (
 				let timelineUniqueIds: { [id: string]: true } = {}
 				_.each(item.content.timelineObjects, (o: TimelineObj) => {
 
-					if (!o._id) o._id = innerContext.getHashId('postprocess_' + (i++))
+					if (!o._id) o._id = innerContext.getHashId('postprocess_' + templateId + '_' + (i++))
 
 					if (timelineUniqueIds[o._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(o._id) + '")')
 					timelineUniqueIds[o._id] = true
@@ -605,7 +605,7 @@ export function runNamedTemplate (
 		segmentLineAdLibItems: result.segmentLineAdLibItems ? _.map(_.compact(result.segmentLineAdLibItems), (itemOrg: SegmentLineAdLibItemOptional) => {
 			let item: SegmentLineAdLibItem = itemOrg as SegmentLineAdLibItem
 
-			if (!item._id) item._id = innerContext.getHashId('postprocess_' + (i++))
+			if (!item._id) item._id = innerContext.getHashId('postprocess_' + templateId + '_' + (i++))
 			if (!item.runningOrderId) item.runningOrderId = innerContext.runningOrderId
 			if (!item.segmentLineId) item.segmentLineId = innerContext.segmentLine._id
 			if (!item.mosId) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for segmentLineItem in ' + innerContext.segmentLine._id + '! ("' + innerContext.unhashId(item._id) + '")')
@@ -619,7 +619,7 @@ export function runNamedTemplate (
 				let timelineUniqueIds: { [id: string]: true } = {}
 				_.each(item.content.timelineObjects, (o: TimelineObj) => {
 
-					if (!o._id) o._id = innerContext.getHashId('postprocess_' + (i++))
+					if (!o._id) o._id = innerContext.getHashId('postprocess_' + templateId + '_' + (i++))
 
 					if (timelineUniqueIds[o._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(o._id) + '")')
 					timelineUniqueIds[o._id] = true
@@ -631,7 +631,7 @@ export function runNamedTemplate (
 		baselineItems: result.baselineItems ? _.map(_.compact(result.baselineItems), (itemOrg: RunningOrderBaselineItemOptional) => {
 			let item: RunningOrderBaselineItem = itemOrg as RunningOrderBaselineItem
 
-			if (!item._id) item._id = innerContext.getHashId('postprocess_' + (i++))
+			if (!item._id) item._id = innerContext.getHashId('postprocess_' + templateId + '_' + (i++))
 			if (!item.runningOrderId) item.runningOrderId = innerContext.runningOrderId
 			item.segmentLineId = undefined
 
@@ -644,7 +644,7 @@ export function runNamedTemplate (
 				let timelineUniqueIds: { [id: string]: true } = {}
 				_.each(item.content.timelineObjects, (o: TimelineObj) => {
 
-					if (!o._id) o._id = innerContext.getHashId('postprocess_' + (i++))
+					if (!o._id) o._id = innerContext.getHashId('postprocess_' + templateId + '_' + (i++))
 
 					if (timelineUniqueIds[o._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(o._id) + '")')
 					timelineUniqueIds[o._id] = true
