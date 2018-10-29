@@ -51,7 +51,7 @@ import {
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
-import { loadBlueprints, StoryResult, postProcessSegmentLineAdLibItems, postProcessSegmentLineItems, getRunStoryContext } from '../templates/templates'
+import { loadBlueprints, StoryResult, postProcessSegmentLineAdLibItems, postProcessSegmentLineItems, getRunStoryContext } from '../blueprints'
 import { getHash } from '../../lib'
 import {
 	StudioInstallations,

@@ -1,28 +1,23 @@
 import * as _ from 'underscore'
 import * as moment from 'moment'
 import { SaferEval } from 'safer-eval'
-import * as objectPath from 'object-path'
-import { iterateDeeply, iterateDeeplyEnum } from '../../../lib/lib'
+import { iterateDeeply, iterateDeeplyEnum } from '../../lib/lib'
 import {
 	IMOSROFullStory, IMOSRunningOrder, IMOSStory
 } from 'mos-connection'
-import { SegmentLine, DBSegmentLine, SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItemGeneric } from '../../../lib/collections/SegmentLineItems'
-import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
-import { RunningOrderBaselineItem } from '../../../lib/collections/RunningOrderBaselineItems'
-import { literal, Optional, formatDateAsTimecode, Time, formatDurationAsTimecode } from '../../../lib/lib'
-import { getHash } from '../../lib'
-import { logger } from '../../logging'
-import { RunningOrders, RunningOrder } from '../../../lib/collections/RunningOrders'
-import { TimelineObj } from '../../../lib/collections/Timeline'
-import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { ShowStyle } from '../../../lib/collections/ShowStyles'
+import { SegmentLine, DBSegmentLine, SegmentLineNote, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
+import { SegmentLineItem, SegmentLineItemGeneric } from '../../lib/collections/SegmentLineItems'
+import { SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
+import { RunningOrderBaselineItem } from '../../lib/collections/RunningOrderBaselineItems'
+import { formatDateAsTimecode, formatDurationAsTimecode } from '../../lib/lib'
+import { getHash } from '../lib'
+import { logger } from '../logging'
+import { RunningOrder } from '../../lib/collections/RunningOrders'
+import { TimelineObj } from '../../lib/collections/Timeline'
+import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
+import { ShowStyle } from '../../lib/collections/ShowStyles'
 import { Meteor } from 'meteor/meteor'
-import { ShowBlueprints, ShowBlueprint } from '../../../lib/collections/ShowBlueprints'
-
-export type SegmentLineItemOptional = Optional<SegmentLineItem>
-export type SegmentLineAdLibItemOptional = Optional<SegmentLineAdLibItem>
-export type RunningOrderBaselineItemOptional = Optional<RunningOrderBaselineItem>
+import { ShowBlueprints, ShowBlueprint } from '../../lib/collections/ShowBlueprints'
 
 export enum LayerType {
 	Source,
@@ -233,8 +228,6 @@ interface Cache {
 }
 
 export interface BlueprintCollection {
-	// TODO - change return types.
-	// TODO - change context types
 	Baseline: (context: BaselineContext) => BaselineResult
 	RunStory: (context: RunStoryContext, story: IMOSROFullStory) => StoryResult | null
 	PostProcess: (context: PostProcessContext) => PostProcessResult

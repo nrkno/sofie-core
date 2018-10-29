@@ -7,7 +7,7 @@ import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/Segment
 import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
 import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime } from '../../lib/lib'
 import { logger } from '../logging'
-import { loadBlueprints, PostProcessResult, postProcessSegmentLineItems, getPostProcessContext } from './templates/templates'
+import { loadBlueprints, PostProcessResult, postProcessSegmentLineItems, getPostProcessContext } from './blueprints'
 import { getHash } from '../lib'
 import { ShowStyles } from '../../lib/collections/ShowStyles'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
