@@ -64,6 +64,8 @@ import { sendSlackMessageToWebhook } from './slack'
 import { setMeteorMethods } from '../methods'
 import { RundownAPI } from '../../lib/api/rundown'
 
+const MINIMUM_TAKE_SPAN = 1000
+
 export namespace ServerPlayoutAPI {
 	/**
 	 * Prepare the broadcast for transmission
@@ -576,6 +578,20 @@ export namespace ServerPlayoutAPI {
 		if (!runningOrder.nextSegmentLineId) {
 			logger.warn('nextSegmentLineId is not set!')
 			return
+		}
+		if (runningOrder.currentSegmentLineId) {
+			const currentSegmentLine = SegmentLines.findOne(runningOrder.currentSegmentLineId)
+			if (currentSegmentLine && currentSegmentLine.timings) {
+				const lastStartedPlayback = currentSegmentLine.timings.startedPlayback ? currentSegmentLine.timings.startedPlayback[currentSegmentLine.timings.startedPlayback.length - 1] : 0
+				const lastTake = currentSegmentLine.timings.take ? currentSegmentLine.timings.take[currentSegmentLine.timings.take.length - 1] : 0
+				const lastChange = Math.max(lastTake, lastStartedPlayback)
+				if (getCurrentTime() - lastChange < MINIMUM_TAKE_SPAN) {
+					logger.warn(`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${currentSegmentLine._id}: ${getCurrentTime() - lastStartedPlayback}`)
+					return
+				}
+			} else {
+				throw new Meteor.Error(404, `SegmentLine "${runningOrder.currentSegmentLineId}", set as currentSegmentLine in "${roId}", not found!`)
+			}
 		}
 		return roTake(runningOrder)
 	}
