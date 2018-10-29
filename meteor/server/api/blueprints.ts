@@ -232,6 +232,7 @@ export interface BlueprintCollection {
 	RunStory: (context: RunStoryContext, story: IMOSROFullStory) => StoryResult | null
 	PostProcess: (context: PostProcessContext) => PostProcessResult
 	Message: (context: MessageContext, runningOrder: RunningOrder, takeSegmentLine: SegmentLine, previousSegmentLine: SegmentLine) => any
+	Version: string // TODO - pull into a db field at upload time (will also verify script parses), and show in the ui
 }
 export interface BaselineResult {
 	adLibItems: SegmentLineAdLibItem[]
