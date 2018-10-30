@@ -2171,7 +2171,7 @@ function createSegmentLineGroupFirstObject (segmentLine: SegmentLine, segmentLin
 		slId: segmentLine._id
 	})
 }
-function createSegmentLineItemGroupFirstObject (segmentLineItem: SegmentLineItem, segmentLineItemGroup: TimelineObj): TimelineObj {
+function createSegmentLineItemGroupFirstObject (segmentLineItem: SegmentLineItem, segmentLineItemGroup: TimelineObj, firstObjClasses?: string[]): TimelineObj {
 	return literal<TimelineObjSegmentLineItemAbstract>({
 		_id: PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_FIRST_ITEM_PREFIX + segmentLineItem._id,
 		siId: '', // added later
@@ -2187,6 +2187,7 @@ function createSegmentLineItemGroupFirstObject (segmentLineItem: SegmentLineItem
 		content: {
 			type: TimelineContentTypeOther.NOTHING,
 		},
+		classes: firstObjClasses,
 		inGroup: segmentLineItemGroup._id,
 		sliId: segmentLineItem._id,
 	})
@@ -2236,7 +2237,7 @@ function transformBaselineItemsIntoTimeline (items: RunningOrderBaselineItem[]):
 	return timelineObjs
 }
 
-function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLineGroup?: TimelineObj, allowTransition?: boolean, triggerOffsetForTransition?: string, holdState?: RunningOrderHoldState, showHoldExcept?: boolean): Array<TimelineObj> {
+function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLineGroup?: TimelineObj, allowTransition?: boolean, triggerOffsetForTransition?: string, holdState?: RunningOrderHoldState, showHoldExcept?: boolean, firstObjClasses?: string[]): Array<TimelineObj> {
 	let timelineObjs: Array<TimelineObj> = []
 
 	const isHold = holdState === RunningOrderHoldState.ACTIVE
@@ -2264,7 +2265,7 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLine
 			// create a segmentLineItem group for the items and then place all of them there
 			const segmentLineItemGroup = createSegmentLineItemGroup(item, item.durationOverride || item.duration || item.expectedDuration || 0, segmentLineGroup)
 			timelineObjs.push(segmentLineItemGroup)
-			timelineObjs.push(createSegmentLineItemGroupFirstObject(item, segmentLineItemGroup))
+			timelineObjs.push(createSegmentLineItemGroupFirstObject(item, segmentLineItemGroup, firstObjClasses))
 
 			if (!item.virtual) {
 				_.each(tos, (o: TimelineObj) => {
@@ -2754,6 +2755,12 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 				infiniteGroup._id = PlayoutTimelinePrefixes.SEGMENT_LINE_GROUP_PREFIX + item._id + '_infinite'
 				infiniteGroup.priority = 1
 
+				const groupClasses: string[] = []
+				// If the previousSegmentLine also contains another segment of this infinite sli, then we label our new one as such
+				if (previousSegmentLine && previousSegmentLine.getAllSegmentLineItems().filter(i => i.infiniteId && i.infiniteId === item.infiniteId)) {
+					groupClasses.push('continues_infinite')
+				}
+
 				if (item.infiniteId) {
 					const originalItem = _.find(roData.segmentLineItems, (sli => sli._id === item.infiniteId))
 
@@ -2767,7 +2774,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 
 				// Still show objects flagged as 'HoldMode.EXCEPT' if this is a infinite continuation as they belong to the previous too
 				const showHoldExcept = item.infiniteId !== item._id
-				timelineObjs = timelineObjs.concat(infiniteGroup, transformSegmentLineIntoTimeline([item], infiniteGroup, undefined, undefined, activeRunningOrder.holdState, showHoldExcept))
+				timelineObjs = timelineObjs.concat(infiniteGroup, transformSegmentLineIntoTimeline([item], infiniteGroup, undefined, undefined, activeRunningOrder.holdState, showHoldExcept, groupClasses))
 			}
 
 			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentNormalItems, currentSegmentLineGroup, allowTransition, currentSegmentLine.transitionDelay, activeRunningOrder.holdState))
