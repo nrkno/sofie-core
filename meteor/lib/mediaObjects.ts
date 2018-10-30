@@ -1,7 +1,74 @@
 import { SegmentLineItem, VTContent, LiveSpeakContent } from './collections/SegmentLineItems'
 import { RundownAPI } from './api/rundown'
-import { MediaObjects, MediaInfo, MediaObject } from './collections/MediaObjects'
+import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream } from './collections/MediaObjects'
 import { ISourceLayer, IStudioConfigItem } from './collections/StudioInstallations'
+
+/**
+ * Take properties from the mediainfo / medistream and transform into a
+ * formatted string
+ */
+export function buildFormatString (mediainfo: MediaInfo, stream: MediaStream): string {
+	let format = `${stream.width || 0}x${stream.height || 0}`
+	switch (mediainfo.field_order) {
+		case FieldOrder.Progressive :
+			format += 'p'
+			break
+		case FieldOrder.Unknown :
+			format += '?'
+			break
+		default :
+			format += 'i'
+			break
+	}
+	if (stream.codec.time_base) {
+		const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec.time_base) as RegExpExecArray
+		let fps = Number(formattedTimebase[2])
+		fps = Math.floor(fps * 100)
+		if (format.substr(-1) === 'i') fps *= 2
+		format += fps
+	}
+
+	return format
+}
+
+/**
+ * Checks if a source format is an accepted format by doing:
+ * For every accepted format, check every parameter (w, h, p/i, fps) against the
+ * parameter in the source format. If any of them are not the same: fail for that
+ * accepted resolution and move to the next accepted resolution.
+ */
+export function acceptFormat (format: string, formats: Array<Array<string>>): boolean {
+	const mediaFormat = /((\d+)x(\d+))?((i|p)(\d+))?/.exec(format)!
+		.filter((o, i) => new Set([2, 3, 5, 6]).has(i))
+	for (const format of formats) {
+		let failed = false
+		for (const param in format) {
+			if (format[param] && format[param] !== mediaFormat[param]) {
+				failed = true
+				break
+			}
+		}
+		if (!failed) return true
+	}
+	return false
+}
+
+/**
+ * Convert config field "1920x1080i5000, 1280x720, i5000" into:
+ * [
+ * 	[1920, 1080, i, 5000],
+ * 	[1280, 720, undefined, undefined],
+ * 	[undefined, undefined, i, 5000]
+ * ]
+ */
+export function getAcceptedFormats (config: Array<IStudioConfigItem>): Array<Array<string>> {
+	const formatsConfigField = config.find((item) => item._id === 'mediaResolutions')
+	const formatsString = formatsConfigField && formatsConfigField.value !== '' ? formatsConfigField.value : '1920x1080i5000'
+	return formatsString
+		.split(', ')
+		.map(res => /((\d+)x(\d+))?((i|p)(\d+))?/.exec(res)!
+			.filter((o, i) => new Set([2, 3, 5, 6]).has(i)))
+}
 
 export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourceLayer, config: Array<IStudioConfigItem>) {
 	let newStatus: RundownAPI.LineItemStatusCode = RundownAPI.LineItemStatusCode.UNKNOWN
@@ -26,16 +93,17 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 				} else if (mediaObject) {
 					newStatus = RundownAPI.LineItemStatusCode.OK
 
-					// if resolution is lesser than HD => CasparCG will play wrong speed
+					// Do a format check:
 					if (mediaObject.mediainfo) {
-						const resolutionsConfigField = config.find((item) => item._id === 'mediaResolutions')
-						const resolutionsString = resolutionsConfigField && resolutionsConfigField.value !== '' ? resolutionsConfigField.value : '1920x1080'
-						const resolutions = resolutionsString.split(', ').map(res => res.split('x').map(s => Number(s)))
+						const formats = getAcceptedFormats(config)
+						
+						// check the streams for resolution info
 						for (const stream of mediaObject.mediainfo.streams) {
 							if (stream.width && stream.height) {
-								if (!resolutions.find((res) => stream.width === res[0] && stream.height === res[1])) {
+								const format = buildFormatString(mediaObject.mediainfo, stream)
+								if (!acceptFormat(format, formats)) {
 									newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
-									message = `Source is not in accepted resolution: ${stream.width || 0}x${stream.height || 0}`
+									message = `Source format (${format}) is not in accepted formats`
 								}
 							}
 						}
@@ -64,16 +132,15 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 				} else if (mediaObject) {
 					newStatus = RundownAPI.LineItemStatusCode.OK
 
-					// if resolution is lesser than HD => CasparCG will play wrong speed
+					// not being in the right format can cause issue with CasparCG
 					if (mediaObject.mediainfo) {
-						const resolutionsConfigField = config.find((item) => item._id === 'mediaResolutions')
-						const resolutionsString = resolutionsConfigField && resolutionsConfigField.value !== '' ? resolutionsConfigField.value : '1920x1080'
-						const resolutions = resolutionsString.split(', ').map(res => res.split('x').map(s => Number(s)))
+						const formats = getAcceptedFormats(config)
 						for (const stream of mediaObject.mediainfo.streams) {
 							if (stream.width && stream.height) {
-								if (!resolutions.find((res) => stream.width === res[0] && stream.height === res[1])) {
+								const format = buildFormatString(mediaObject.mediainfo, stream)
+								if (!acceptFormat(format, formats)) {
 									newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
-									message = `Source is not in accepted resolution: ${stream.width || 0}x${stream.height || 0}`
+									message = `Source format (${format}) is not in accepted formats`
 								}
 							}
 						}
