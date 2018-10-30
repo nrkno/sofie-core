@@ -38,7 +38,7 @@ export function buildFormatString (mediainfo: MediaInfo, stream: MediaStream): s
  * accepted resolution and move to the next accepted resolution.
  */
 export function acceptFormat (format: string, formats: Array<Array<string>>): boolean {
-	const mediaFormat = /((\d+)x(\d+))?((i|p)(\d+))?/.exec(format)!
+	const mediaFormat = /((\d+)x(\d+))?((i|p|\?)(\d+))?/.exec(format)!
 		.filter((o, i) => new Set([2, 3, 5, 6]).has(i))
 	for (const format of formats) {
 		let failed = false
@@ -66,7 +66,7 @@ export function getAcceptedFormats (config: Array<IStudioConfigItem>): Array<Arr
 	const formatsString = formatsConfigField && formatsConfigField.value !== '' ? formatsConfigField.value : '1920x1080i5000'
 	return formatsString
 		.split(', ')
-		.map(res => /((\d+)x(\d+))?((i|p)(\d+))?/.exec(res)!
+		.map(res => /((\d+)x(\d+))?((i|p|\?)(\d+))?/.exec(res)!
 			.filter((o, i) => new Set([2, 3, 5, 6]).has(i)))
 }
 
