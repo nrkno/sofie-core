@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as $ from 'jquery'
 
 import { ISourceLayerItemProps } from '../SourceLayerItem'
-import { ScriptContent } from '../../../../lib/collections/SegmentLineItems'
+import { ScriptContent } from 'tv-automation-sofie-blueprints-integration/dist/content'
 
 import { FloatingInspector } from '../../FloatingInspector'
 import Moment from 'react-moment'
@@ -11,7 +11,6 @@ import { faPlay } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { CustomLayerItemRenderer } from './CustomLayerItemRenderer'
-
 
 const BREAK_SCRIPT_BREAKPOINT = 620
 const SCRIPT_PART_LENGTH = 250

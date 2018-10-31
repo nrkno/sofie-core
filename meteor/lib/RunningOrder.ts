@@ -1,12 +1,13 @@
 import * as _ from 'underscore'
 import * as SuperTimeline from 'superfly-timeline'
-import { SegmentLineItems, SegmentLineItem, SegmentLineItemLifespan } from './collections/SegmentLineItems'
+import { SegmentLineItems, SegmentLineItem } from './collections/SegmentLineItems'
 import { PlayoutTimelinePrefixes } from './api/playout'
 import { IOutputLayer, ISourceLayer, StudioInstallation } from './collections/StudioInstallations'
 import { normalizeArray } from './lib'
 import { Segment } from './collections/Segments'
 import { SegmentLine, SegmentLines } from './collections/SegmentLines'
 import { RunningOrder } from './collections/RunningOrders'
+import { SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
 
 export const DEFAULT_DISPLAY_DURATION = 3000
 

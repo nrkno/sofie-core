@@ -13,11 +13,12 @@ import { applyClassToDocument, Time, registerCollection, normalizeArray } from '
 import { RunningOrderAPI } from '../api/runningOrder'
 import { checkSLIContentStatus } from '../mediaObjects'
 import { Meteor } from 'meteor/meteor'
+import { IBlueprintSegmentLine } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
 
 import { TemplateRuntimeArguments } from '../../server/api/templates/templates'
 
 /** A "Line" in NRK Lingo. */
-export interface DBSegmentLine {
+export interface DBSegmentLine extends IBlueprintSegmentLine {
 	_id: string
   /** Position inside the segment */
 	_rank: number

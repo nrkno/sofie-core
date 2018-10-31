@@ -1,25 +1,14 @@
 import { Mongo } from 'meteor/mongo'
 import { RunningOrderAPI } from '../api/runningOrder'
-import { TriggerType } from 'superfly-timeline'
-import { TimelineTransition,
-	TimelineObjGroup,
-	TimelineObjCCGVideo,
-	TimelineObjLawoSource,
-	TimelineObjAtemME,
-	TimelineObjPanasonicPTZPreset,
-	TimelineObjPanasonicPTZPresetSpeed
-} from './Timeline'
-import { TimelineObj } from './Timeline'
+import { TimelineTransition } from './Timeline'
 import { TransformedCollection } from '../typings/meteor'
 import { SegmentLineTimings } from './SegmentLines'
-import { Time, registerCollection } from '../lib'
+import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 
-/** A trigger interface compatible with that of supertimeline */
-export interface ITimelineTrigger {
-	type: TriggerType
-	value: number|string
-}
+import { IBlueprintSegmentLineItem, SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
+import { TimelineTrigger } from 'tv-automation-sofie-blueprints-integration/dist/timeline'
+import { SomeContent } from 'tv-automation-sofie-blueprints-integration/dist/content'
 
 /** A Single item in a "line": script, VT, cameras */
 export interface SegmentLineItemGeneric {
@@ -33,7 +22,7 @@ export interface SegmentLineItemGeneric {
 	/** User-presentable name for the timeline item */
 	name: string
 	/** Timeline item trigger. Possibly, most of these will be manually triggered as next, but maybe some will be automatic. */
-	trigger?: ITimelineTrigger
+	trigger?: TimelineTrigger
 	/** Playback availability status */
 	status: RunningOrderAPI.LineItemStatusCode
 	/** Source layer the timeline item belongs to */
@@ -58,7 +47,7 @@ export interface SegmentLineItemGeneric {
 		outTransition?: TimelineTransition
 	}
 	/** The object describing the item in detail */
-	content?: BaseContent // TODO can this change to SomeContent? (So restrict to a set of known types?)
+	content?: SomeContent
 	/** The id of the item this item is a continuation of. If it is a continuation, the inTranstion must not be set, and trigger must be 0 */
 	continuesRefId?: string
 	/** If this item has been created play-time using an AdLibItem, this should be set to it's source item */
@@ -77,15 +66,8 @@ export interface SegmentLineItemGeneric {
 	extendOnHold?: boolean
 }
 
-export enum SegmentLineItemLifespan {
-	Normal = 0,
-	OutOnNextSegmentLine = 1,
-	OutOnNextSegment = 2,
-	Infinite = 3,
-}
-
-export interface SegmentLineItem extends SegmentLineItemGeneric {
-	trigger: ITimelineTrigger
+export interface SegmentLineItem extends SegmentLineItemGeneric, IBlueprintSegmentLineItem {
+	trigger: TimelineTrigger
 	segmentLineId: string
 	expectedDuration: number | string
 	/** This is set when an item's duration needs to be overriden */
@@ -121,120 +103,3 @@ Meteor.startup(() => {
 		})
 	}
 })
-export interface MetadataElement {
-	_id: string,
-	key: string,
-	value: string,
-	source: string
-}
-
-export interface BaseContent {
-	[key: string]: Array<SomeTimelineObject> | number | string | boolean | object | undefined | null
-	timelineObjects?: Array<TimelineObj | null>
-}
-
-export type SomeTimelineObject = TimelineObj | TimelineObjGroup | TimelineObjCCGVideo | TimelineObjLawoSource | TimelineObj
-export interface VTContent extends BaseContent {
-	fileName: string
-	path: string
-	firstWords: string
-	lastWords: string
-	proxyPath?: string
-	thumbnail?: string
-	loop?: boolean
-	sourceDuration: number
-	metadata?: Array<MetadataElement>
-	timelineObjects: Array<SomeTimelineObject>
-}
-
-export interface CameraContent extends BaseContent {
-	studioLabel: string
-	switcherInput: number | string
-	thumbnail?: string
-	timelineObjects: Array<SomeTimelineObject>
-}
-
-export interface RemoteContent extends BaseContent {
-	studioLabel: string
-	switcherInput: number | string
-	thumbnail?: string
-	timelineObjects: Array<SomeTimelineObject>
-}
-
-export interface ScriptContent extends BaseContent {
-	firstWords: string
-	lastWords: string
-	fullScript?: string
-	sourceDuration?: number
-	lastModified?: Time | null
-}
-
-export interface GraphicsContent extends BaseContent {
-	fileName: string
-	path: string
-	thumbnail?: string
-	templateData?: object
-	metadata?: Array<MetadataElement>
-	timelineObjects: Array<SomeTimelineObject>
-}
-
-export interface NoraPayload {
-	content: { [key: string]: string | number | Object }
-	manifest: string
-	template: {
-		event: string
-		layer: string
-		name: string
-	}
-	metadata?: {
-		templateName: string | undefined
-		templateVariant: string | undefined
-	}
-	changed?: Time
-}
-
-export interface NoraContent extends BaseContent {
-	payload: NoraPayload
-	timelineObjects: Array<SomeTimelineObject>
-}
-
-export interface SplitsContent extends BaseContent {
-	dveConfiguration: any
-	/** Array of contents, 0 index is DVE art */
-	boxSourceConfiguration: Array<(VTContent | CameraContent | RemoteContent | GraphicsContent) & {
-		type: RunningOrderAPI.SourceLayerType
-		studioLabel: string
-		switcherInput: number | string
-	}>
-	timelineObjects: Array<SomeTimelineObject>
-}
-
-export interface AudioContent extends BaseContent {
-	fileName: string
-	path: string
-	proxyPath?: string
-	loop?: boolean
-	sourceDuration: number
-	metadata?: Array<MetadataElement>
-	timelineObjects: Array<SomeTimelineObject>
-}
-
-export interface CameraMovementContent extends BaseContent {
-	cameraConfiguration: any
-	timelineObjects: Array<SomeTimelineObject>
-}
-
-export interface LowerThirdContent extends GraphicsContent {
-}
-
-export interface LiveSpeakContent extends VTContent {
-}
-
-export interface MicContent extends ScriptContent {
-	mixConfiguration: any
-	timelineObjects: any
-}
-
-export interface TransitionContent extends BaseContent {
-	icon?: string
-}

@@ -9,7 +9,7 @@ import * as SuperTimeline from 'superfly-timeline'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems, SegmentLineItemLifespan } from '../../../lib/collections/SegmentLineItems'
+import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
 import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
 
 import { SegmentTimeline } from './SegmentTimeline'

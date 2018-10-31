@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { SegmentLineItem, SplitsContent } from '../../../../lib/collections/SegmentLineItems'
+import { SegmentLineItem } from '../../../../lib/collections/SegmentLineItems'
+import { SplitsContent } from 'tv-automation-sofie-blueprints-integration/dist/content'
 import { RunningOrderAPI } from '../../../../lib/api/runningOrder'
 
 // @todo: use colours from the scss

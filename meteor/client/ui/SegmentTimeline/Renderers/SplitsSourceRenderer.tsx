@@ -8,7 +8,7 @@ import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerIte
 
 import { RunningOrderAPI } from '../../../../lib/api/runningOrder'
 import { literal } from '../../../../lib/lib'
-import { SplitsContent } from '../../../../lib/collections/SegmentLineItems'
+import { SplitsContent } from 'tv-automation-sofie-blueprints-integration/dist/content'
 import * as _ from 'underscore'
 import { RundownUtils } from '../../../lib/rundown'
 

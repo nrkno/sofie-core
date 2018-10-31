@@ -2,7 +2,9 @@ import { Meteor } from 'meteor/meteor'
 import { check, Match } from 'meteor/check'
 import { RunningOrders, RunningOrder, RunningOrderHoldState, RoData, DBRunningOrder } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode } from '../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems, ITimelineTrigger, SegmentLineItemLifespan } from '../../lib/collections/SegmentLineItems'
+import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
+import { SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
+import { TimelineTrigger } from 'tv-automation-sofie-blueprints-integration/dist/timeline'
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItems, RunningOrderBaselineItem } from '../../lib/collections/RunningOrderBaselineItems'
 import { getCurrentTime,
@@ -2318,7 +2320,7 @@ export function findLookaheadForLLayer (roData: RoData, layer: string, mode: Loo
 		return !!(
 			sli.content &&
 			sli.content.timelineObjects &&
-			_.find(sli.content.timelineObjects, (o) => (o && o.LLayer === layer))
+			_.find(sli.content.timelineObjects as TimelineObj[], (o) => (o && o.LLayer === layer))
 		)
 	})
 	if (layerItems.length === 0) {
@@ -2683,7 +2685,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 
 					previousSegmentLineGroup = createSegmentLineGroup(previousSegmentLine, `#${PlayoutTimelinePrefixes.SEGMENT_LINE_GROUP_PREFIX + currentSegmentLine._id}.start + ${overlapDuration} - #.start`)
 					previousSegmentLineGroup.priority = -1
-					previousSegmentLineGroup.trigger = literal<ITimelineTrigger>({
+					previousSegmentLineGroup.trigger = literal<TimelineTrigger>({
 						type: TriggerType.TIME_ABSOLUTE,
 						value: previousSegmentLine.getLastStartedPlayback() || 0
 					})
@@ -2713,7 +2715,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 			const isFollowed = nextSegmentLine && currentSegmentLine.autoNext
 			currentSegmentLineGroup = createSegmentLineGroup(currentSegmentLine, (isFollowed ? (currentSegmentLine.expectedDuration || 0) : 0))
 			if (currentSegmentLine.startedPlayback && currentSegmentLine.getLastStartedPlayback()) { // If we are recalculating the currentLine, then ensure it doesnt think it is starting now
-				currentSegmentLineGroup.trigger = literal<ITimelineTrigger>({
+				currentSegmentLineGroup.trigger = literal<TimelineTrigger>({
 					type: TriggerType.TIME_ABSOLUTE,
 					value: currentSegmentLine.getLastStartedPlayback() || 0
 				})
@@ -2735,7 +2737,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 					const originalItem = _.find(roData.segmentLineItems, (sli => sli._id === item.infiniteId))
 
 					if (originalItem && originalItem.startedPlayback) {
-						infiniteGroup.trigger = literal<ITimelineTrigger>({
+						infiniteGroup.trigger = literal<TimelineTrigger>({
 							type: TriggerType.TIME_ABSOLUTE,
 							value: originalItem.startedPlayback
 						})
@@ -2760,7 +2762,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 					const nextSegmentLineItems = nextSegmentLine.getAllSegmentLineItems()
 					const overlapDuration = calcOverlapDuration(currentSegmentLine, nextSegmentLine, nextSegmentLineItems)
 
-					nextSegmentLineItemGroup.trigger = literal<ITimelineTrigger>({
+					nextSegmentLineItemGroup.trigger = literal<TimelineTrigger>({
 						type: TriggerType.TIME_RELATIVE,
 						value: `#${currentSegmentLineGroup._id}.end - ${overlapDuration}`
 					})

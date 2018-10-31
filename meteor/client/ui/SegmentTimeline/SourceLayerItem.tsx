@@ -10,7 +10,7 @@ import { ISourceLayerUi,
 import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 import { RundownUtils } from '../../lib/rundown'
 import { Transition } from '../../../lib/constants/casparcg'
-import { SegmentLineItemLifespan } from '../../../lib/collections/SegmentLineItems'
+import { SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
 import * as ClassNames from 'classnames'
 import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MicSourceRenderer } from './Renderers/MicSourceRenderer'

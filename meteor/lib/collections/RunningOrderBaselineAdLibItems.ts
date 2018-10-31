@@ -1,14 +1,10 @@
 import { Mongo } from 'meteor/mongo'
-import { SegmentLineItemGeneric } from './SegmentLineItems'
+import { SegmentLineAdLibItem } from './SegmentLineAdLibItems'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 
-export interface RunningOrderBaselineAdLibItem extends SegmentLineItemGeneric {
-	_rank: number
-
-	trigger: undefined
-	disabled: false
+export interface RunningOrderBaselineAdLibItem extends SegmentLineAdLibItem {
 }
 
 export const RunningOrderBaselineAdLibItems: TransformedCollection<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>

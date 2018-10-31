@@ -1,4 +1,5 @@
-import { SegmentLineItem, VTContent, LiveSpeakContent } from './collections/SegmentLineItems'
+import { SegmentLineItem } from './collections/SegmentLineItems'
+import { VTContent, LiveSpeakContent } from 'tv-automation-sofie-blueprints-integration/dist/content'
 import { RunningOrderAPI } from './api/runningOrder'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream } from './collections/MediaObjects'
 import { ISourceLayer, IStudioConfigItem } from './collections/StudioInstallations'
