@@ -2237,7 +2237,7 @@ function transformBaselineItemsIntoTimeline (items: RunningOrderBaselineItem[]):
 	return timelineObjs
 }
 
-function transformSegmentLineIntoTimeline (items: SegmentLineItem[], segmentLineGroup?: TimelineObj, allowTransition?: boolean, triggerOffsetForTransition?: string, holdState?: RunningOrderHoldState, showHoldExcept?: boolean, firstObjClasses?: string[]): Array<TimelineObj> {
+function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjClasses: string[], segmentLineGroup?: TimelineObj, allowTransition?: boolean, triggerOffsetForTransition?: string, holdState?: RunningOrderHoldState, showHoldExcept?: boolean): Array<TimelineObj> {
 	let timelineObjs: Array<TimelineObj> = []
 
 	const isHold = holdState === RunningOrderHoldState.ACTIVE
@@ -2723,9 +2723,10 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 					const skipIds = currentInfiniteItems.map(l => l.infiniteId || '')
 					const previousSegmentLineItems = previousSegmentLine.getAllSegmentLineItems().filter(l => !l.infiniteId || skipIds.indexOf(l.infiniteId) < 0)
 
+					const groupClasses: string[] = ['previous_sl']
 					let prevObjs = [previousSegmentLineGroup]
 					prevObjs = prevObjs.concat(
-						transformSegmentLineIntoTimeline(previousSegmentLineItems, previousSegmentLineGroup, undefined, undefined, activeRunningOrder.holdState))
+						transformSegmentLineIntoTimeline(previousSegmentLineItems, groupClasses, previousSegmentLineGroup, undefined, undefined, activeRunningOrder.holdState, undefined))
 
 					prevObjs = prefixAllObjectIds(prevObjs, 'previous_')
 
@@ -2755,7 +2756,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 				infiniteGroup._id = PlayoutTimelinePrefixes.SEGMENT_LINE_GROUP_PREFIX + item._id + '_infinite'
 				infiniteGroup.priority = 1
 
-				const groupClasses: string[] = []
+				const groupClasses: string[] = ['current_sl']
 				// If the previousSegmentLine also contains another segment of this infinite sli, then we label our new one as such
 				if (previousSegmentLine && previousSegmentLine.getAllSegmentLineItems().filter(i => i.infiniteId && i.infiniteId === item.infiniteId)) {
 					groupClasses.push('continues_infinite')
@@ -2774,10 +2775,11 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 
 				// Still show objects flagged as 'HoldMode.EXCEPT' if this is a infinite continuation as they belong to the previous too
 				const showHoldExcept = item.infiniteId !== item._id
-				timelineObjs = timelineObjs.concat(infiniteGroup, transformSegmentLineIntoTimeline([item], infiniteGroup, undefined, undefined, activeRunningOrder.holdState, showHoldExcept, groupClasses))
+				timelineObjs = timelineObjs.concat(infiniteGroup, transformSegmentLineIntoTimeline([item], groupClasses, infiniteGroup, undefined, undefined, activeRunningOrder.holdState, showHoldExcept))
 			}
 
-			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentNormalItems, currentSegmentLineGroup, allowTransition, currentSegmentLine.transitionDelay, activeRunningOrder.holdState))
+			const groupClasses: string[] = ['current_sl']
+			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentNormalItems, groupClasses, currentSegmentLineGroup, allowTransition, currentSegmentLine.transitionDelay, activeRunningOrder.holdState, undefined))
 
 			timelineObjs.push(createSegmentLineGroupFirstObject(currentSegmentLine, currentSegmentLineGroup))
 
@@ -2803,9 +2805,10 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 				let nextItems = nextSegmentLine.getAllSegmentLineItems()
 				nextItems = nextItems.filter(i => !i.infiniteId || toSkipIds.indexOf(i.infiniteId) === -1)
 
+				const groupClasses: string[] = ['next_sl']
 				timelineObjs = timelineObjs.concat(
 					nextSegmentLineItemGroup,
-					transformSegmentLineIntoTimeline(nextItems, nextSegmentLineItemGroup, currentSegmentLine && !currentSegmentLine.disableOutTransition, nextSegmentLine.transitionDelay))
+					transformSegmentLineIntoTimeline(nextItems, groupClasses, nextSegmentLineItemGroup, currentSegmentLine && !currentSegmentLine.disableOutTransition, nextSegmentLine.transitionDelay))
 				timelineObjs.push(createSegmentLineGroupFirstObject(nextSegmentLine, nextSegmentLineItemGroup))
 			}
 		}
