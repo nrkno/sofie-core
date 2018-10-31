@@ -27,6 +27,16 @@ export function buildFormatString (mediainfo: MediaInfo, stream: MediaStream): s
 		if (format.substr(-1) === 'i') fps *= 2
 		format += fps
 	}
+	switch (mediainfo.field_order) {
+		case FieldOrder.BFF :
+			format += 'bff'
+			break
+		case FieldOrder.TFF :
+			format += 'tff'
+			break
+		default :
+			break
+	}
 
 	return format
 }
@@ -38,8 +48,8 @@ export function buildFormatString (mediainfo: MediaInfo, stream: MediaStream): s
  * accepted resolution and move to the next accepted resolution.
  */
 export function acceptFormat (format: string, formats: Array<Array<string>>): boolean {
-	const mediaFormat = /((\d+)x(\d+))?((i|p|\?)(\d+))?/.exec(format)!
-		.filter((o, i) => new Set([2, 3, 5, 6]).has(i))
+	const mediaFormat = /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(format)!
+		.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i))
 	for (const format of formats) {
 		let failed = false
 		for (const param in format) {
@@ -54,11 +64,12 @@ export function acceptFormat (format: string, formats: Array<Array<string>>): bo
 }
 
 /**
- * Convert config field "1920x1080i5000, 1280x720, i5000" into:
+ * Convert config field "1920x1080i5000, 1280x720, i5000, i5000tff" into:
  * [
- * 	[1920, 1080, i, 5000],
- * 	[1280, 720, undefined, undefined],
- * 	[undefined, undefined, i, 5000]
+ * 	[1920, 1080, i, 5000, undefined],
+ * 	[1280, 720, undefined, undefined, undefined],
+ * 	[undefined, undefined, i, 5000, undefined],
+ * 	[undefined, undefined, i, 5000, tff]
  * ]
  */
 export function getAcceptedFormats (config: Array<IStudioConfigItem>): Array<Array<string>> {
@@ -66,8 +77,8 @@ export function getAcceptedFormats (config: Array<IStudioConfigItem>): Array<Arr
 	const formatsString = formatsConfigField && formatsConfigField.value !== '' ? formatsConfigField.value : '1920x1080i5000'
 	return formatsString
 		.split(', ')
-		.map(res => /((\d+)x(\d+))?((i|p|\?)(\d+))?/.exec(res)!
-			.filter((o, i) => new Set([2, 3, 5, 6]).has(i)))
+		.map(res => /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(res)!
+			.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i)))
 }
 
 export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourceLayer, config: Array<IStudioConfigItem>) {
