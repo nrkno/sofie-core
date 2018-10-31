@@ -48,7 +48,7 @@ export function syncFunction<T extends Function> (fcn: T, id0?: string, timeout:
 			getId(id0, args) :
 			getHash(id1 + JSON.stringify(args.join()))
 		)
-		logger.info('id ' + id)
+		logger.info('id ' + id + ' ' + (fcn.name || 'Anonymous function'))
 
 		syncFunctionFcns.push({
 			id: id,
@@ -112,7 +112,7 @@ function isFunctionQueued (id: string): boolean {
 	return !!queued
 }
 /**
- * like syncFunction, but ignores subsequent calls
+ * like syncFunction, but ignores subsequent, if there is a function queued to be executed already
  * @param fcn
  * @param timeout
  */
@@ -130,6 +130,7 @@ export function syncFunctionIgnore<T extends Function> (fcn: T, id0?: string, ti
 		if (isFunctionQueued(id)) {
 			// If it's queued, its going to be run some time in the future
 			// Do nothing then...
+			logger.debug('Function ' + (fcn.name || 'Anonymous') + ' is already queued to execute, ignoring call.')
 		} else {
 			syncFcn(...args)
 		}
