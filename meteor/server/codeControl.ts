@@ -1,6 +1,6 @@
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
-import { getHash } from '../server/lib'
+import { getHash } from 'tv-automation-sofie-blueprints-integration/dist/util'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 

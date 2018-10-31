@@ -1,7 +1,6 @@
 import * as _ from 'underscore'
 import * as moment from 'moment'
 import { SaferEval } from 'safer-eval'
-import { iterateDeeply, iterateDeeplyEnum } from '../../lib/lib'
 import {
 	IMOSROFullStory, IMOSRunningOrder, IMOSStory
 } from 'mos-connection'
@@ -10,7 +9,7 @@ import { SegmentLineItem, SegmentLineItemGeneric } from '../../lib/collections/S
 import { SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
 import { formatDateAsTimecode, formatDurationAsTimecode } from '../../lib/lib'
-import { getHash } from '../lib'
+import { getHash } from 'tv-automation-sofie-blueprints-integration/dist/util'
 import { logger } from '../logging'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { TimelineObj } from '../../lib/collections/Timeline'
@@ -29,8 +28,6 @@ class CommonContext implements ICommonContext {
 	runningOrder: RunningOrder
 	segmentLine: SegmentLine | undefined
 
-	iterateDeeply: (obj: any, iteratee: (val: any, key?: string | number) => (any | iterateDeeplyEnum), key?: string | number) => any
-
 	private hashI = 0
 	private hashed: {[hash: string]: string} = {}
 	private savedNotes: Array<SegmentLineNote> = []
@@ -42,8 +39,6 @@ class CommonContext implements ICommonContext {
 		this.runningOrder = runningOrder
 		this.segmentLine = segmentLine
 		this.story = story
-
-		this.iterateDeeply = iterateDeeply
 	}
 
 	getStudioInstallation (): StudioInstallation {
@@ -255,7 +250,6 @@ export interface ICommonContext {
 	unhashId: (hash: string) => string
 	getLayer: (type: LayerType, key: string) => string // TODO - remove
 	getConfig: () => any
-	iterateDeeply: (obj: any, iteratee: (val: any, key?: string | number) => (any | iterateDeeplyEnum), key?: string | number) => any
 	error: (message: string) => void
 	warning: (message: string) => void
 	getNotes: () => Array<any>
