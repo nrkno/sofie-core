@@ -183,7 +183,7 @@ export class StudioInstallation implements DBStudioInstallation {
 		if (item) {
 			return item.value
 		} else {
-			logger.warn(`Studio "${this._id}": Config "${name}" not set`)
+			// logger.warn(`Studio "${this._id}": Config "${name}" not set`) // temporary disabled (in Release 3 only)
 			return null
 		}
 	}
