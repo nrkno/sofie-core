@@ -353,7 +353,7 @@ export namespace ServerPeripheralDeviceAPI {
 				return o
 			},
 			afterInsert (segmentLine) {
-				// logger.debug('inserted segmentLine ' + segmentLine._id)
+				logger.debug('inserted segmentLine ' + segmentLine._id)
 				// @todo: have something here?
 				// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 				// if (story) {
@@ -926,14 +926,15 @@ export function getRO (roID: MosString128): RunningOrder {
  * @param segmentLineId
  */
 export function getSegmentLine (roID: MosString128, storyID: MosString128): SegmentLine {
-	let id = segmentLineId(roId(roID), storyID, true)
+	let runningOrderId = roId(roID)
+	let id = segmentLineId(runningOrderId, storyID, true)
 	let segmentLine = SegmentLines.findOne({
-		runningOrderId: roId( roID ),
+		runningOrderId: runningOrderId,
 		_id: id
 	})
 	if (segmentLine) {
 		return segmentLine
-	} else throw new Meteor.Error(404, 'SegmentLine ' + id + ' not found (ro: ' + roID + ', story: ' + storyID + ')')
+	} else throw new Meteor.Error(404, 'SegmentLine ' + id + ' not found (roId: ' + runningOrderId + ', ro: ' + roID + ', story: ' + storyID + ')')
 }
 /**
  * Converts a Story into a Segment
@@ -1099,6 +1100,8 @@ export function afterInsertUpdateSegmentLine (story: IMOSStory, runningOrderId: 
 	// and put them into the db
 }
 export function afterRemoveSegmentLine (removedSegmentLine: DBSegmentLine, replacedBySegmentLine?: DBSegmentLine) {
+	logger.debug('removed segmentLine ' + removedSegmentLine._id)
+
 	SegmentLineItems.remove({
 		segmentLineId: removedSegmentLine._id
 	})
@@ -1250,7 +1253,7 @@ function updateSegments (runningOrderId: string) {
 
 	// Update SegmentLines:
 	_.each(segmentLineUpdates, (modifier, id) => {
-		logger.info('added SegmentLine to segment ' + modifier['segmentId'])
+		logger.info('added SegmentLine ' + id + ' to segment ' + modifier['segmentId'])
 		SegmentLines.update(id, {$set: modifier})
 	})
 	// Update Segments:
