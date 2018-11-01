@@ -354,7 +354,7 @@ export namespace ServerPlayoutAPI {
 				const ctx = getBaselineContext(runningOrder)
 
 				const res = blueprint.Baseline(ctx)
-				const baselineItems = postProcessSegmentLineBaselineItems(ctx, res.BaselineItems)
+				const baselineItems = postProcessSegmentLineBaselineItems(ctx, res.BaselineItems as any as TimelineObj[]) // TODO - types used here
 				const adlibItems = postProcessSegmentLineAdLibItems(ctx, res.AdLibItems, 'baseline')
 
 				// TODO - should any notes be logged as a warning, or is that done already?
@@ -2462,7 +2462,7 @@ export function findLookaheadForLLayer (roData: RoData, layer: string, mode: Loo
 					allowTransition = !prevSliGroup.line.disableOutTransition
 				}
 
-				const transObj = orderedItems.find(i => i.isTransition)
+				const transObj = orderedItems.find(i => !!i.isTransition)
 				const transObj2 = transObj ? sliGroup.items.find(l => l._id === transObj._id) : undefined
 				const hasTransition = allowTransition && transObj2 && transObj2.content && transObj2.content.timelineObjects && transObj2.content.timelineObjects.find(o => o != null && o.LLayer === layer)
 

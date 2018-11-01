@@ -17,12 +17,19 @@ import { StudioInstallations, StudioInstallation } from '../../lib/collections/S
 import { ShowStyle } from '../../lib/collections/ShowStyles'
 import { Meteor } from 'meteor/meteor'
 import { ShowBlueprints, ShowBlueprint } from '../../lib/collections/ShowBlueprints'
+import {
+	BlueprintCollection,
+	ICommonContext,
+	RunStoryContext,
+	BlueprintRuntimeArguments,
+	BaselineContext,
+	PostProcessContext,
+	MessageContext,
+	LayerType
+} from 'tv-automation-sofie-blueprints-integration/dist/api'
+import { IBlueprintSegmentLineItem, IBlueprintSegmentLineAdLibItem } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
+import { RundownAPI } from '../../lib/api/rundown'
 
-export enum LayerType {
-	Source,
-	Output,
-	LLayer,
-}
 class CommonContext implements ICommonContext {
 	runningOrderId: string
 	runningOrder: RunningOrder
@@ -149,7 +156,7 @@ export function getRunStoryContext (runningOrder: RunningOrder, segmentLine: Seg
 	class RunStoryContextImpl extends CommonContext implements RunStoryContext {
 		segmentLine: SegmentLine
 
-		getRuntimeArguments (): TemplateRuntimeArguments {
+		getRuntimeArguments (): BlueprintRuntimeArguments {
 			return segmentLine.runtimeArguments || {}
 		}
 
@@ -222,66 +229,6 @@ interface Cache {
 	fcn: BlueprintCollection
 }
 
-export interface BlueprintCollection {
-	Baseline: (context: BaselineContext) => BaselineResult
-	RunStory: (context: RunStoryContext, story: IMOSROFullStory) => StoryResult | null
-	PostProcess: (context: PostProcessContext) => PostProcessResult
-	Message: (context: MessageContext, runningOrder: RunningOrder, takeSegmentLine: SegmentLine, previousSegmentLine: SegmentLine | null) => ExternalMessageQueueObj[] | null
-	Version: string // TODO - pull into a db field at upload time (will also verify script parses), and show in the ui
-}
-export interface BaselineResult {
-	AdLibItems: SegmentLineAdLibItem[]
-	BaselineItems: TimelineObj[]
-}
-export interface StoryResult {
-	SegmentLine: DBSegmentLine
-	SegmentLineItems: SegmentLineItemGeneric[]
-	AdLibItems: SegmentLineAdLibItem[]
-}
-export interface PostProcessResult {
-	SegmentLineItems: SegmentLineItemGeneric[]
-}
-
-export interface ICommonContext {
-	runningOrderId: string
-	runningOrder: RunningOrder
-
-	getHashId: (stringToBeHashed?: string | number) => string
-	unhashId: (hash: string) => string
-	getLayer: (type: LayerType, key: string) => string // TODO - remove
-	getConfig: () => any
-	error: (message: string) => void
-	warning: (message: string) => void
-	getNotes: () => Array<any>
-}
-
-export interface BaselineContext extends ICommonContext {
-}
-
-export interface TemplateRuntimeArguments {
-	[key: string]: string
-}
-
-export interface RunStoryContext extends ICommonContext {
-	segmentLine: DBSegmentLine
-
-	getRuntimeArguments: () => TemplateRuntimeArguments
-
-	// TODO - remove these getSegmentLine* as it could cause problems when moving a sl
-	getSegmentLines: () => Array<DBSegmentLine>
-	getSegmentLineIndex: () => number
-}
-export interface PostProcessContext extends ICommonContext {
-	getSegmentLines: () => Array<DBSegmentLine>
-}
-export interface MessageContext extends ICommonContext {
-	getCachedStoryForSegmentLine: (segmentLine: DBSegmentLine) => IMOSROFullStory
-	getCachedStoryForRunningOrder: () => IMOSRunningOrder
-	getAllSegmentLines: () => Array<DBSegmentLine>
-	formatDateAsTimecode: (time: number) => string
-	formatDurationAsTimecode: (time: number) => string
-}
-
 export function loadBlueprints (showStyle: ShowStyle): BlueprintCollection {
 	let blueprintDoc = ShowBlueprints.findOne({
 		showStyleId: showStyle._id
@@ -321,15 +268,18 @@ function evalBlueprints (blueprintDoc: ShowBlueprint, showStyleName: string, noC
 	}
 }
 
-export function postProcessSegmentLineItems (innerContext: ICommonContext, segmentLineItems: SegmentLineItemGeneric[], templateId: string, segmentLineId: string): SegmentLineItem[] {
+export function postProcessSegmentLineItems (innerContext: ICommonContext, segmentLineItems: IBlueprintSegmentLineItem[], templateId: string, segmentLineId: string): SegmentLineItem[] {
 	let i = 0
 	let segmentLinesUniqueIds: { [id: string]: true } = {}
-	return _.map(_.compact(segmentLineItems), (itemOrg: SegmentLineItemGeneric) => {
-		let item: SegmentLineItem = itemOrg as SegmentLineItem
+	return _.map(_.compact(segmentLineItems), (itemOrig: IBlueprintSegmentLineItem) => {
+		let item: SegmentLineItem = {
+			runningOrderId: innerContext.runningOrder._id,
+			segmentLineId: segmentLineId,
+			status: RundownAPI.LineItemStatusCode.UNKNOWN,
+			...itemOrig
+		}
 
 		if (!item._id) item._id = innerContext.getHashId('postprocess_sli_' + (i++))
-		if (!item.runningOrderId) item.runningOrderId = innerContext.runningOrderId
-		if (!item.segmentLineId) item.segmentLineId = segmentLineId
 		if (!item.mosId && !item.isTransition) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for segmentLineItem in ' + segmentLineId + '! ("' + innerContext.unhashId(item._id) + '")')
 
 		if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
@@ -340,6 +290,7 @@ export function postProcessSegmentLineItems (innerContext: ICommonContext, segme
 
 			let timelineUniqueIds: { [id: string]: true } = {}
 			_.each(item.content.timelineObjects, (o: TimelineObj) => {
+				// TODO - translate id?
 
 				if (!o._id) o._id = innerContext.getHashId('postprocess_' + (i++))
 
@@ -352,13 +303,20 @@ export function postProcessSegmentLineItems (innerContext: ICommonContext, segme
 	})
 }
 
-export function postProcessSegmentLineAdLibItems (innerContext: ICommonContext, segmentLineAdLibItems: SegmentLineAdLibItem[], templateId: string, segmentLineId?: string): SegmentLineAdLibItem[] {
+export function postProcessSegmentLineAdLibItems (innerContext: ICommonContext, segmentLineAdLibItems: IBlueprintSegmentLineAdLibItem[], templateId: string, segmentLineId?: string): SegmentLineAdLibItem[] {
 	let i = 0
 	let segmentLinesUniqueIds: { [id: string]: true } = {}
-	return _.map(_.compact(segmentLineAdLibItems), (item: SegmentLineAdLibItem) => {
-		if (!item._id) item._id = innerContext.getHashId('postprocess_adlib_' + (i++))
-		if (!item.runningOrderId) item.runningOrderId = innerContext.runningOrderId
-		if (!item.segmentLineId && segmentLineId) item.segmentLineId = segmentLineId
+	return _.map(_.compact(segmentLineAdLibItems), (itemOrig: IBlueprintSegmentLineAdLibItem) => {
+		let item: SegmentLineAdLibItem = {
+			_id: innerContext.getHashId('postprocess_adlib_' + (i++)),
+			runningOrderId: innerContext.runningOrder._id,
+			segmentLineId: segmentLineId,
+			status: RundownAPI.LineItemStatusCode.UNKNOWN,
+			trigger: undefined,
+			disabled: false,
+			...itemOrig
+		}
+
 		if (!item.mosId) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for segmentLineItem in ' + segmentLineId + '! ("' + innerContext.unhashId(item._id) + '")')
 
 		if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + templateId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
@@ -369,6 +327,7 @@ export function postProcessSegmentLineAdLibItems (innerContext: ICommonContext, 
 
 			let timelineUniqueIds: { [id: string]: true } = {}
 			_.each(item.content.timelineObjects, (o: TimelineObj) => {
+				// TODO - translate id?
 
 				if (!o._id) o._id = innerContext.getHashId('postprocess_' + (i++))
 
@@ -385,6 +344,8 @@ export function postProcessSegmentLineBaselineItems (innerContext: BaselineConte
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(baselineItems), (item: TimelineObj) => {
+		// TODO - translate id?
+
 		if (!item._id) item._id = innerContext.getHashId('baseline_' + (i++))
 
 		if (timelineUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in baseline blueprint: ids of timelineObjs must be unique! ("' + innerContext.unhashId(item._id) + '")')

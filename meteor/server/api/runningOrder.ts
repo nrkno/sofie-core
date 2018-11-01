@@ -7,7 +7,7 @@ import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/Segment
 import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
 import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime } from '../../lib/lib'
 import { logger } from '../logging'
-import { loadBlueprints, PostProcessResult, postProcessSegmentLineItems, getPostProcessContext } from './blueprints'
+import { loadBlueprints, postProcessSegmentLineItems, getPostProcessContext } from './blueprints'
 import { getHash } from '../lib'
 import { ShowStyles } from '../../lib/collections/ShowStyles'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
@@ -283,12 +283,12 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 
 	const context = getPostProcessContext(ro, firstSegmentLine)
 
-	let result: PostProcessResult | undefined = undefined
+	let resultSli: SegmentLineItem[] | undefined = undefined
 	let notes: SegmentLineNote[] = []
 	try {
 		const blueprints = loadBlueprints(showStyle)
-		result = blueprints.PostProcess(context)
-		result.SegmentLineItems = postProcessSegmentLineItems(context, result.SegmentLineItems, 'post-process', firstSegmentLine._id)
+		let result = blueprints.PostProcess(context)
+		resultSli = postProcessSegmentLineItems(context, result.SegmentLineItems, 'post-process', firstSegmentLine._id)
 		notes = context.getNotes()
 	} catch (e) {
 		logger.error(e.toString())
@@ -297,13 +297,13 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 			type: SegmentLineNoteType.ERROR,
 			origin: {
 				name: '',
-				roId: context.runningOrderId,
+				roId: context.runningOrder._id,
 				segmentId: firstSegmentLine.segmentId,
 				segmentLineId: '',
 			},
 			message: 'Internal Server Error'
 		}]
-		result = undefined
+		resultSli = undefined
 	}
 
 	const slIds = segmentLines.map(sl => sl._id)
@@ -322,10 +322,10 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 			notes: notes,
 		}})
 	}
-	if (result) {
+	if (resultSli) {
 
-		if (result.SegmentLineItems) {
-			result.SegmentLineItems.forEach(sli => {
+		if (resultSli) {
+			resultSli.forEach(sli => {
 				sli.fromPostProcess = true
 			})
 		}
@@ -334,7 +334,7 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 			runningOrderId: ro._id,
 			segmentLineId: { $in: slIds },
 			fromPostProcess: true,
-		}, (result.SegmentLineItems || []) as SegmentLineItem[], {
+		}, resultSli || [], {
 			afterInsert (segmentLineItem) {
 				logger.debug('PostProcess: inserted segmentLineItem ' + segmentLineItem._id)
 				logger.debug(segmentLineItem)

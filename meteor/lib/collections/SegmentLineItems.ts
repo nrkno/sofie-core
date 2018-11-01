@@ -72,7 +72,7 @@ export interface SegmentLineItem extends SegmentLineItemGeneric, IBlueprintSegme
 	expectedDuration: number | string
 	/** This is set when an item's duration needs to be overriden */
 	durationOverride?: number
-	isTransition: boolean
+	isTransition?: boolean
 
 	/** This is set when the item is infinite, to deduplicate the contents on the timeline, while allowing out of order */
 	infiniteMode?: SegmentLineItemLifespan
