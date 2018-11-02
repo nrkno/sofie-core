@@ -10,6 +10,7 @@ import { MomentFromNow } from '../../lib/Moment'
 import { eventContextForLog } from '../../lib/eventTargetLogHelper'
 import { TestToolsAPI } from '../../../lib/api/testTools'
 import { ClientAPI } from '../../../lib/api/client'
+import { EditAttribute } from '../../lib/EditAttribute'
 
 interface IRecordingListProps {
 	match?: {
@@ -19,6 +20,7 @@ interface IRecordingListProps {
 	}
 }
 interface IRecordingListState {
+	filename: string
 }
 interface IRecordingListTrackedProps {
 	files: RecordedFile[]
@@ -29,6 +31,25 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 		files: RecordedFiles.find({}, { sort: { startedAt: -1 } }).fetch()
 	}
 })(class RecordedFilesList extends MeteorReactComponent<Translated<IRecordingListProps & IRecordingListTrackedProps>, IRecordingListState> {
+
+	constructor (props: Translated<IRecordingListProps & IRecordingListTrackedProps>) {
+		super(props)
+
+		this.state = {
+			filename: ''
+		}
+	}
+
+	onUpdateValue = (edit: any, newValue: any) => {
+		console.log('edit', edit, newValue)
+		let attr = edit.props.attribute
+
+		if (attr) {
+			let m = {}
+			m[attr] = newValue
+			this.setState(m)
+		}
+	}
 
 	renderRunningOrders () {
 		return this.props.files.map((file) => (
@@ -57,12 +78,15 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 	}
 	startRecording (e) {
 		if (this.props.match && this.props.match.params) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), TestToolsAPI.methods.recordStart, this.props.match.params.studioId, 'TODO filename', (err, res) => {
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), TestToolsAPI.methods.recordStart, this.props.match.params.studioId, this.state.filename, (err, res) => {
 				if (err || (res && res.error)) {
 					console.error(err || res)
 					// this.handleActivationError(err || res)
 					return
 				}
+			})
+			this.setState({
+				filename: ''
 			})
 		}
 	}
@@ -72,6 +96,8 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 
 		const active = this.props.files.find(f => !f.stoppedAt)
 
+		let obj = this.state
+		// console.log('obj', obj)
 		return <React.Fragment>
 			<div className='mtl gutter'>
 				<header className='mvs'>
@@ -79,13 +105,18 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 				</header>
 				<div className='mod mvl'>
 					<p>Status: {active ? t('Active') : t('Ready')}</p>
-					<p>Name: {active ? active.name : '-'}</p>
+					<p>Name: {active ? active.name : <EditAttribute
+						obj={obj}
+						updateFunction={this.onUpdateValue}
+						attribute='filename'
+						type='text'
+					/>}</p>
 					<p>Started: {active ? <MomentFromNow>{active.startedAt}</MomentFromNow> : '-'}</p>
 					<p>
 						{
 							active
-							? <button onClick={e => this.stopRecording(e)}>{t('Stop')}</button>
-							: <button onClick={e => this.startRecording(e)}>{t('Start')}</button>
+								? <button onClick={e => this.stopRecording(e)}>{t('Stop')}</button>
+								: <button onClick={e => this.startRecording(e)}>{t('Start')}</button>
 						}
 					</p>
 				</div>
@@ -133,7 +164,7 @@ export class RecordedFilesListItem extends React.Component<IRecordedFilesListIte
 						<MomentFromNow>{this.props.file.startedAt}</MomentFromNow>
 					</td>
 					<td className='recorded-file-list-item__stopped'>
-					{ this.props.file.stoppedAt && <MomentFromNow>{this.props.file.stoppedAt}</MomentFromNow> }
+						{this.props.file.stoppedAt && <MomentFromNow>{this.props.file.stoppedAt}</MomentFromNow>}
 					</td>
 				</tr>
 			</React.Fragment>

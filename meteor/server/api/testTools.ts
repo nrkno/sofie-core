@@ -7,6 +7,7 @@ import { TestToolsAPI } from '../../lib/api/testTools'
 import { setMeteorMethods } from '../methods'
 import { logger } from '../logging'
 import { updateTimeline } from './playout'
+import moment = require('moment');
 
 export namespace ServerTestToolsAPI {
 	/**
@@ -35,6 +36,8 @@ export namespace ServerTestToolsAPI {
 			stoppedAt: {$exists: false}
 		})
 		if (active) throw new Meteor.Error(404, `An active recording for "${studioId}" was found!`)
+
+		if (name === '') name = moment(getCurrentTime()).format()
 
 		const id = Random.id(7)
 		RecordedFiles.insert({
