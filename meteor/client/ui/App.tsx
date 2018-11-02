@@ -51,11 +51,13 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 
 	}
 
-	render () {
+	componentDidMount () {
 		const { i18n } = this.props
 
 		m.locale(i18n.language)
+	}
 
+	render () {
 		// EXAMPLE IMPLEMENTATION of subscription
 		//
 		// Subscribe to data
