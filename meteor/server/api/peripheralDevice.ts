@@ -399,13 +399,13 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.info('Removing RO ' + roId(runningOrderId))
 		let ro = RunningOrders.findOne(roId(runningOrderId))
 		if (ro) {
-			if (force === true) {
+			if (!ro.active || force === true) {
 				return ServerRundownAPI.roDelete(ro._id)
+			} else {
+				RunningOrders.update(ro._id, {$set: {
+					unsynced: true
+				}})
 			}
-
-			RunningOrders.update(ro._id, {$set: {
-				unsynced: true
-			}})
 		}
 	}
 	export function mosRoMetadata (id, token, roData: IMOSRunningOrderBase) {
