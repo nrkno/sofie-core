@@ -61,7 +61,7 @@ import { ClientAPI } from '../../lib/api/client'
 import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
 import { sendSlackMessageToWebhook } from './slack'
 import { setMeteorMethods } from '../methods'
-import { RundownAPI } from '../../lib/api/rundown'
+import { RunningOrderAPI } from '../../lib/api/runningOrder'
 import { sendStoryStatus } from './integration/mos'
 import { updateSegmentLines, reloadRunningOrderData } from './runningOrder'
 
@@ -1162,7 +1162,7 @@ export namespace ServerPlayoutAPI {
 
 		const si = runningOrder.getStudioInstallation()
 		const sourceL = si.sourceLayers.find(i => i._id === slItem!.sourceLayerId)
-		if (sourceL && sourceL.type !== RundownAPI.SourceLayerType.GRAPHICS) throw new Meteor.Error(403, `Segment Line "${slId}" is not a GRAPHICS item!`)
+		if (sourceL && sourceL.type !== RunningOrderAPI.SourceLayerType.GRAPHICS) throw new Meteor.Error(403, `Segment Line "${slId}" is not a GRAPHICS item!`)
 
 		let newSegmentLineItem = convertAdLibToSLineItem(slItem, segLine, false)
 		if (newSegmentLineItem.content && newSegmentLineItem.content.timelineObjects) {

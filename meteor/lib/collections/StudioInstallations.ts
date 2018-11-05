@@ -1,5 +1,5 @@
 import { Mongo } from 'meteor/mongo'
-import { RundownAPI } from '../api/rundown'
+import { RunningOrderAPI } from '../api/runningOrder'
 import { TransformedCollection } from '../typings/meteor'
 import { PlayoutDeviceType } from './PeripheralDevices'
 import { LookaheadMode } from '../api/playout'
@@ -135,7 +135,7 @@ export interface ISourceLayer extends ISourceLayerBase {
 	name: string
 	/** Abbreviation for display in the countdown screens */
 	abbreviation?: string
-	type: RundownAPI.SourceLayerType
+	type: RunningOrderAPI.SourceLayerType
 	/** If set to true, the layer can handle any number of simultaneus Line Items */
 	unlimited: boolean
 	/** If set to true, the layer will be shown in PGM Clean */

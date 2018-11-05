@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 import { IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
-import { RundownAPI } from '../../../lib/api/rundown'
+import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 import * as ClassNames from 'classnames'
 
 import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
@@ -13,7 +13,7 @@ import { RundownUtils } from '../../lib/rundown'
 export interface IAdLibListItem {
 	_id: string,
 	name: string,
-	status?: RundownAPI.LineItemStatusCode
+	status?: RunningOrderAPI.LineItemStatusCode
 	hotkey?: string
 	isHidden?: boolean
 }
@@ -43,9 +43,9 @@ export const AdLibListItem = translate()(class extends MeteorReactComponent<Tran
 					'adlib-panel__list-view__list__table__cell--icon',
 					RundownUtils.getSourceLayerClassName(this.props.layer.type),
 					{
-						'source-missing': this.props.item.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING,
-						'source-broken': this.props.item.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN,
-						'unknown-state': this.props.item.status === RundownAPI.LineItemStatusCode.UNKNOWN
+						'source-missing': this.props.item.status === RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING,
+						'source-broken': this.props.item.status === RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN,
+						'unknown-state': this.props.item.status === RunningOrderAPI.LineItemStatusCode.UNKNOWN
 					}
 				)}>
 					{this.props.layer && (this.props.layer.abbreviation || this.props.layer.name)}

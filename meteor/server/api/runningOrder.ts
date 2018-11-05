@@ -16,7 +16,7 @@ import { updateStory, reloadRunningOrder } from './integration/mos'
 import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
-import { RundownAPI } from '../../lib/api/rundown'
+import { RunningOrderAPI } from '../../lib/api/runningOrder'
 
 /**
  * After a Segment has beed removed, handle its contents
@@ -393,7 +393,7 @@ export function removeSegment (segmentId: string, runningOrderId: string) {
 	afterRemoveSegment(segmentId, runningOrderId)
 }
 
-export namespace RunningOrderAPI {
+export namespace ServerRunningOrderAPI {
 	export function removeRunningOrder (runningOrderId: string) {
 		check(runningOrderId, String)
 		logger.info('removeRunningOrder ' + runningOrderId)
@@ -426,11 +426,11 @@ export namespace RunningOrderAPI {
 }
 
 let methods: Methods = {}
-methods[RundownAPI.methods.removeRunningOrder] = (roId: string) => {
-	return RunningOrderAPI.removeRunningOrder(roId)
+methods[RunningOrderAPI.methods.removeRunningOrder] = (roId: string) => {
+	return ServerRunningOrderAPI.removeRunningOrder(roId)
 }
-methods[RundownAPI.methods.resyncRunningOrder] = (roId: string) => {
-	return RunningOrderAPI.resyncRunningOrder(roId)
+methods[RunningOrderAPI.methods.resyncRunningOrder] = (roId: string) => {
+	return ServerRunningOrderAPI.resyncRunningOrder(roId)
 }
 // Apply methods:
 setMeteorMethods(wrapMethods(methods))

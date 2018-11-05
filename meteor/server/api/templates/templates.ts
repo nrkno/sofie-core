@@ -29,7 +29,7 @@ import {
 	TimelineContentTypePharos,
 } from '../../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
-import { RundownAPI } from '../../../lib/api/rundown'
+import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { logger } from '../../logging'
@@ -435,7 +435,7 @@ export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, 
 			TimelineContentTypeHyperdeck,
 			TimelineContentTypePharos,
 			Atem_Enums,
-			LineItemStatusCode: RundownAPI.LineItemStatusCode,
+			LineItemStatusCode: RunningOrderAPI.LineItemStatusCode,
 			EmberPlusValueType,
 			Transition,
 			Ease,

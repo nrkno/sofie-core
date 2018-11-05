@@ -21,7 +21,7 @@ import {
 	SegmentLineUi,
 	SegmentLineItemUi
 } from './SegmentTimelineContainer'
-import { RundownAPI } from '../../../lib/api/rundown'
+import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 import { Tracker } from 'meteor/tracker'
 
 interface IPropsHeader {
@@ -62,10 +62,10 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			let objId: string | undefined = undefined
 
 			switch (this.props.segmentLineItem.sourceLayer.type) {
-				case RundownAPI.SourceLayerType.VT:
+				case RunningOrderAPI.SourceLayerType.VT:
 					objId = (sli.content as VTContent).fileName.toUpperCase()
 					break
-				case RundownAPI.SourceLayerType.LIVE_SPEAK:
+				case RunningOrderAPI.SourceLayerType.LIVE_SPEAK:
 					objId = (sli.content as LiveSpeakContent).fileName.toUpperCase()
 					break
 			}
@@ -129,13 +129,13 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 
 			// Check item status
 			if (props.segmentLineItem.sourceLayer) {
-				// let newStatus: RundownAPI.LineItemStatusCode = RundownAPI.LineItemStatusCode.UNKNOWN
+				// let newStatus: RunningOrderAPI.LineItemStatusCode = RunningOrderAPI.LineItemStatusCode.UNKNOWN
 				// let metadata: any = undefined
 
 				const { metadata, status } = checkSLIContentStatus(props.segmentLineItem, props.segmentLineItem.sourceLayer, props.runningOrder.getStudioInstallation().config)
 
 				// switch (props.segmentLineItem.sourceLayer.type) {
-				// 	case RundownAPI.SourceLayerType.VT:
+				// 	case RunningOrderAPI.SourceLayerType.VT:
 				// 		if (props.segmentLineItem.content && props.segmentLineItem.content.fileName) {
 				// 			const content = props.segmentLineItem.content as VTContent
 				// 			const mediaObject = MediaObjects.findOne({
@@ -143,12 +143,12 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 				// 			})
 				// 			// If media object not found, then...
 				// 			if (!mediaObject) {
-				// 				newStatus = RundownAPI.LineItemStatusCode.SOURCE_MISSING
+				// 				newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING
 				// 				// All VT content should have at least two streams
 				// 			} else if (mediaObject && mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2) {
-				// 				newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
+				// 				newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
 				// 			} else if (mediaObject) {
-				// 				newStatus = RundownAPI.LineItemStatusCode.OK
+				// 				newStatus = RunningOrderAPI.LineItemStatusCode.OK
 				// 			}
 
 				// 			if (mediaObject) {
@@ -156,7 +156,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 				// 			}
 				// 		}
 				// 		break
-				// 	case RundownAPI.SourceLayerType.LIVE_SPEAK:
+				// 	case RunningOrderAPI.SourceLayerType.LIVE_SPEAK:
 				// 		if (props.segmentLineItem.content && props.segmentLineItem.content.fileName) {
 				// 			const content = props.segmentLineItem.content as LiveSpeakContent
 				// 			const mediaObject = MediaObjects.findOne({
@@ -164,12 +164,12 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 				// 			})
 				// 			// If media object not found, then...
 				// 			if (!mediaObject) {
-				// 				newStatus = RundownAPI.LineItemStatusCode.SOURCE_MISSING
+				// 				newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING
 				// 				// All VT content should have at least two streams
 				// 			} else if (mediaObject && mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2) {
-				// 				newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
+				// 				newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
 				// 			} else if (mediaObject) {
-				// 				newStatus = RundownAPI.LineItemStatusCode.OK
+				// 				newStatus = RunningOrderAPI.LineItemStatusCode.OK
 				// 			}
 
 				// 			if (mediaObject) {

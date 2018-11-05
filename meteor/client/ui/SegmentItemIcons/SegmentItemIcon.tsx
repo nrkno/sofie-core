@@ -3,7 +3,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import * as React from 'react'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
 import { StudioInstallations, ISourceLayer } from '../../../lib/collections/StudioInstallations'
-import { RundownAPI } from '../../../lib/api/rundown'
+import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 import { normalizeArray } from '../../../lib/lib'
 import * as _ from 'underscore'
 
@@ -31,7 +31,7 @@ export const SegmentItemNameContainer = withTracker((props: INamePropsHeader) =>
 	let sourceLayers = studioInstallation ? normalizeArray<ISourceLayer>(studioInstallation.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
 	let sourceLayer: ISourceLayer | undefined
 	let segmentLineItem: SegmentLineItem | undefined
-	const supportedLayers = new Set([RundownAPI.SourceLayerType.GRAPHICS, RundownAPI.SourceLayerType.LIVE_SPEAK, RundownAPI.SourceLayerType.VT ])
+	const supportedLayers = new Set([RunningOrderAPI.SourceLayerType.GRAPHICS, RunningOrderAPI.SourceLayerType.LIVE_SPEAK, RunningOrderAPI.SourceLayerType.VT ])
 
 	for (const item of items) {
 		let layer = sourceLayers[item.sourceLayerId]
@@ -68,9 +68,9 @@ export const SegmentItemNameContainer = withTracker((props: INamePropsHeader) =>
 	render () {
 		if (this.props.sourceLayer) {
 			switch (this.props.sourceLayer.type) {
-				case RundownAPI.SourceLayerType.GRAPHICS:
-				case RundownAPI.SourceLayerType.LIVE_SPEAK:
-				case RundownAPI.SourceLayerType.VT:
+				case RunningOrderAPI.SourceLayerType.GRAPHICS:
+				case RunningOrderAPI.SourceLayerType.LIVE_SPEAK:
+				case RunningOrderAPI.SourceLayerType.VT:
 					return this.props.segmentLineItem.name
 			}
 		}
@@ -85,7 +85,7 @@ export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 	let sourceLayers = studioInstallation ? normalizeArray<ISourceLayer>(studioInstallation.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
 	let sourceLayer: ISourceLayer | undefined
 	let segmentLineItem: SegmentLineItem | undefined
-	const supportedLayers = new Set([ RundownAPI.SourceLayerType.GRAPHICS, RundownAPI.SourceLayerType.LIVE_SPEAK, RundownAPI.SourceLayerType.REMOTE, RundownAPI.SourceLayerType.SPLITS, RundownAPI.SourceLayerType.VT, RundownAPI.SourceLayerType.CAMERA ])
+	const supportedLayers = new Set([ RunningOrderAPI.SourceLayerType.GRAPHICS, RunningOrderAPI.SourceLayerType.LIVE_SPEAK, RunningOrderAPI.SourceLayerType.REMOTE, RunningOrderAPI.SourceLayerType.SPLITS, RunningOrderAPI.SourceLayerType.VT, RunningOrderAPI.SourceLayerType.CAMERA ])
 
 	for (const item of items) {
 		let layer = sourceLayers[item.sourceLayerId]
@@ -122,27 +122,27 @@ export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 	render () {
 		if (this.props.sourceLayer) {
 			switch (this.props.sourceLayer.type) {
-				case RundownAPI.SourceLayerType.GRAPHICS :
+				case RunningOrderAPI.SourceLayerType.GRAPHICS :
 					return (
 						<GraphicsInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
 					)
-				case RundownAPI.SourceLayerType.LIVE_SPEAK :
+				case RunningOrderAPI.SourceLayerType.LIVE_SPEAK :
 					return (
 						<LiveSpeakInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
 					)
-				case RundownAPI.SourceLayerType.REMOTE :
+				case RunningOrderAPI.SourceLayerType.REMOTE :
 					return (
 						<RemoteInputIcon inputIndex={ parseInt(((this.props.segmentLineItem || {}).name.toString()).split(' ').slice(-1)[0], 10) as number } abbreviation={this.props.sourceLayer.abbreviation} />
 					)
-				case RundownAPI.SourceLayerType.SPLITS :
+				case RunningOrderAPI.SourceLayerType.SPLITS :
 					return (
 						<SplitInputIcon abbreviation={this.props.sourceLayer.abbreviation} segmentLineItem={this.props.segmentLineItem} />
 					)
-				case RundownAPI.SourceLayerType.VT :
+				case RunningOrderAPI.SourceLayerType.VT :
 					return (
 						<VTInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
 					)
-				case RundownAPI.SourceLayerType.CAMERA :
+				case RunningOrderAPI.SourceLayerType.CAMERA :
 					return (
 						<CamInputIcon inputIndex={ parseInt(((this.props.segmentLineItem || {}).name.toString()).split(' ').slice(-1)[0], 10) as number } abbreviation={this.props.sourceLayer.abbreviation} />
 					)
