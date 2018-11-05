@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+import { check } from 'meteor/check'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
@@ -13,6 +14,9 @@ import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 import { updateStory, reloadRunningOrder } from './integration/mos'
 import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
+import { PlayoutAPI } from '../../lib/api/playout'
+import { Methods, setMeteorMethods, wrapMethods } from '../methods'
+import { RundownAPI } from '../../lib/api/rundown'
 
 /**
  * After a Segment has beed removed, handle its contents
@@ -388,3 +392,45 @@ export function removeSegment (segmentId: string, runningOrderId: string) {
 	Segments.remove(segmentId)
 	afterRemoveSegment(segmentId, runningOrderId)
 }
+
+export namespace RunningOrderAPI {
+	export function removeRunningOrder (runningOrderId: string) {
+		check(runningOrderId, String)
+		logger.info('removeRunningOrder ' + runningOrderId)
+
+		let ro = RunningOrders.findOne(runningOrderId)
+		if (ro) {
+			ro.remove()
+		}
+	}
+	export function resyncRunningOrder (runningOrderId: string) {
+		check(runningOrderId, String)
+		logger.info('resyncRunningOrder ' + runningOrderId)
+
+		let ro = RunningOrders.findOne(runningOrderId)
+		if (ro) {
+			RunningOrders.update(ro._id, {
+				$set: {
+					unsynced: false
+				}
+			})
+
+			Meteor.call(PlayoutAPI.methods.reloadData, runningOrderId, false, (err, result) => {
+				if (err) {
+					console.error(err)
+					return
+				}
+			})
+		}
+	}
+}
+
+let methods: Methods = {}
+methods[RundownAPI.methods.removeRunningOrder] = (roId: string) => {
+	return RunningOrderAPI.removeRunningOrder(roId)
+}
+methods[RundownAPI.methods.resyncRunningOrder] = (roId: string) => {
+	return RunningOrderAPI.resyncRunningOrder(roId)
+}
+// Apply methods:
+setMeteorMethods(wrapMethods(methods))

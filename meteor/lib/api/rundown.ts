@@ -29,4 +29,9 @@ export namespace RundownAPI {
 		/** The source is present, but should not be played due to a technical malfunction (file is broken, camera robotics failed, REMOTE input is just bars, etc.) */
 		SOURCE_BROKEN = 2
 	}
+
+	export enum methods {
+		'removeRunningOrder' = 'rundown.removeRunningOrder',
+		'resyncRunningOrder' = 'rundown.resyncRunningOrder'
+	}
 }

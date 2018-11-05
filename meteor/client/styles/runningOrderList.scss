@@ -1,0 +1,9 @@
+.running-order-list-item {
+	.running-order-list-item__actions {
+		min-width: 4em;
+
+		> .action-btn {
+			width: 1.5em;
+		}
+	}
+}

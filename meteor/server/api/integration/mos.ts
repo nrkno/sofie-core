@@ -41,7 +41,7 @@ import { ServerPlayoutAPI, updateTimelineFromMosData, updateTimeline, afterUpdat
 import { syncFunction } from '../../codeControl'
 import { CachePrefix } from '../../../lib/collections/RunningOrderDataCache'
 import { setMeteorMethods, wrapMethods, Methods } from '../../methods'
-import { afterRemoveSegmentLine, updateSegments, updateAffectedSegmentLines, removeSegmentLine, runPostProcessTemplate } from '../runningOrder'
+import { afterRemoveSegmentLine, updateSegments, updateAffectedSegmentLines, removeSegmentLine, runPostProcessTemplate, RunningOrderAPI } from '../runningOrder'
 
 export function roId (roId: MosString128, original?: boolean): string {
 	// logger.debug('roId', roId)
@@ -394,7 +394,11 @@ export const reloadRunningOrder: (runningOrder: RunningOrder) => void = Meteor.w
 function handleRunningOrderData (ro: IMOSRunningOrder, peripheralDevice: PeripheralDevice, dataSource: string) {
 	// Create or update a runningorder (ie from roCreate or roList)
 
-	MosIntegration.updateMosLastDataReceived(peripheralDevice._id)
+	let existingDbRo = getRO(ro.ID)
+	if (!isAvailableForMOS(existingDbRo)) return
+	updateMosLastDataReceived(peripheralDevice._id)
+	logger.info((existingDbRo ? 'Updating' : 'Adding') + ' RO ' + roId(ro.ID))
+
 	if (!peripheralDevice.studioInstallationId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no StudioInstallation')
 
 	let studioInstallation = StudioInstallations.findOne(peripheralDevice.studioInstallationId) as StudioInstallation
@@ -415,7 +419,8 @@ function handleRunningOrderData (ro: IMOSRunningOrder, peripheralDevice: Periphe
 			name: ro.Slug.toString(),
 			expectedStart: formatTime(ro.EditorialStart),
 			expectedDuration: formatDuration(ro.EditorialDuration),
-			dataSource: dataSource
+			dataSource: dataSource,
+			unsynced: false
 		})
 	}), {
 		beforeInsert: (o) => {
@@ -491,6 +496,20 @@ function handleRunningOrderData (ro: IMOSRunningOrder, peripheralDevice: Periphe
 	})
 	updateSegments(roId(ro.ID))
 }
+function isAvailableForMOS (ro: RunningOrder | undefined): boolean {
+	if (ro && ro.unsynced) {
+		logger.info(`RunningOrder "${ro._id}" has been unsynced and needs to be synced before it can be updated.`)
+		return false
+	}
+	return true
+}
+function updateMosLastDataReceived (deviceId: string) {
+	PeripheralDevices.update(deviceId, {
+		$set: {
+			lastDataReceived: getCurrentTime()
+		}
+	})
+}
 
 export namespace MosIntegration {
 	export function mosRoCreate (id, token, ro: IMOSRunningOrder) {
@@ -502,33 +521,41 @@ export namespace MosIntegration {
 		handleRunningOrderData(ro, peripheralDevice, 'roCreate')
 	}
 	export function mosRoReplace (id, token, ro: IMOSRunningOrder) {
-		// let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoReplace ' + ro.ID)
 		// @ts-ignore
 		logger.debug(ro)
-		return mosRoCreate(id, token, ro) // it's the same
+		handleRunningOrderData(ro, peripheralDevice, 'roReplace')
 	}
-	export function mosRoDelete (id, token, runningOrderId: MosString128) {
+	export function mosRoDelete (id, token, runningOrderId: MosString128, force?: boolean) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoDelete ' + runningOrderId)
 
+		let ro = getRO(runningOrderId)
+		if (!isAvailableForMOS(ro)) return
 		updateMosLastDataReceived(peripheralDevice._id)
-		// @ts-ignore
-		// logger.debug(runningOrderId)
 		logger.info('Removing RO ' + roId(runningOrderId))
-		let ro = RunningOrders.findOne(roId(runningOrderId))
+
 		if (ro) {
-			ro.remove()
+			if (!ro.active || force === true) {
+				return RunningOrderAPI.removeRunningOrder(ro._id)
+			} else {
+				RunningOrders.update(ro._id, {$set: {
+					unsynced: true
+				}})
+			}
+
 		}
 	}
 	export function mosRoMetadata (id, token, roData: IMOSRunningOrderBase) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoMetadata ' + roData.ID)
 
-		updateMosLastDataReceived(peripheralDevice._id)
 		// @ts-ignore
 		logger.debug(roData)
 		let ro = getRO(roData.ID)
+		if (!isAvailableForMOS(ro)) return
+		updateMosLastDataReceived(peripheralDevice._id)
 
 		let m = {}
 		if (roData.MosExternalMetaData) m['metaData'] = roData.MosExternalMetaData
@@ -564,10 +591,11 @@ export namespace MosIntegration {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStatus ' + status.ID)
 
+		let ro = getRO(status.ID)
+		if (!isAvailableForMOS(ro)) return
 		updateMosLastDataReceived(peripheralDevice._id)
 		// @ts-ignore
 		logger.debug(status)
-		let ro = getRO(status.ID)
 		RunningOrders.update(ro._id, {$set: {
 			status: status.Status
 		}})
@@ -575,12 +603,17 @@ export namespace MosIntegration {
 	export function mosRoStoryStatus (id, token, status: IMOSStoryStatus) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStoryStatus ' + status.ID)
+
+		let ro = getRO(status.RunningOrderId)
+		if (!isAvailableForMOS(ro)) return
+		updateMosLastDataReceived(peripheralDevice._id)
+
 		// @ts-ignore
 		logger.debug(status)
 		// Save Stories (aka SegmentLine ) status into database:
 		let segmentLine = SegmentLines.findOne({
 			_id: 			segmentLineId(roId(status.RunningOrderId), status.ID),
-			runningOrderId: roId(status.RunningOrderId)
+			runningOrderId: ro._id
 		})
 		if (segmentLine) {
 			SegmentLines.update(segmentLine._id, {$set: {
@@ -612,12 +645,13 @@ export namespace MosIntegration {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStoryInsert after ' + Action.StoryID)
 
+		let ro = getRO(Action.RunningOrderID)
+		if (!isAvailableForMOS(ro)) return
 		updateMosLastDataReceived(peripheralDevice._id)
 
 		// @ts-ignore		logger.debug(
 		logger.debug(Action, Stories)
 		// insert a story (aka SegmentLine) before another story:
-		let ro = getRO(Action.RunningOrderID)
 		let segmentLineAfter = (Action.StoryID ? getSegmentLine(Action.RunningOrderID, Action.StoryID) : null)
 
 		let segmentBeforeOrLast
@@ -689,11 +723,12 @@ export namespace MosIntegration {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStoryReplace ' + Action.StoryID)
 
+		let ro = getRO(Action.RunningOrderID)
+		if (!isAvailableForMOS(ro)) return
 		updateMosLastDataReceived(peripheralDevice._id)
 		// @ts-ignore
 		logger.debug(Action, Stories)
 		// Replace a Story (aka a SegmentLine) with one or more Stories
-		let ro = getRO(Action.RunningOrderID)
 		let segmentLineToReplace = getSegmentLine(Action.RunningOrderID, Action.StoryID)
 
 		let segmentLineBefore = fetchBefore(SegmentLines, { runningOrderId: ro._id }, segmentLineToReplace._rank)
@@ -748,12 +783,13 @@ export namespace MosIntegration {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.warn ('mosRoStoryMove ' + Action.StoryID)
 
+		let ro = getRO(Action.RunningOrderID)
+		if (!isAvailableForMOS(ro)) return
 		updateMosLastDataReceived(peripheralDevice._id)
 		// @ts-ignore
 		logger.debug(Action, Stories)
 
 		// Move Stories (aka SegmentLine ## TODO ##Lines) to before a story
-		let ro = getRO(Action.RunningOrderID)
 
 		let currentSegmentLine: SegmentLine | undefined = undefined
 		let onAirNextWindowWidth: number | undefined = undefined
@@ -830,11 +866,12 @@ export namespace MosIntegration {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStoryDelete ' + Action.RunningOrderID)
 
+		let ro = getRO(Action.RunningOrderID)
+		if (!isAvailableForMOS(ro)) return
 		updateMosLastDataReceived(peripheralDevice._id)
 		// @ts-ignore
 		logger.debug(Action, Stories)
 		// Delete Stories (aka SegmentLine)
-		let ro = getRO(Action.RunningOrderID)
 		let affectedSegmentLineIds: Array<string> = []
 		_.each(Stories, (storyId: MosString128, i: number) => {
 			logger.debug('remove story ' + storyId)
@@ -862,11 +899,12 @@ export namespace MosIntegration {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoStorySwap ' + StoryID0 + ', ' + StoryID1)
 
+		let ro = getRO(Action.RunningOrderID)
+		if (!isAvailableForMOS(ro)) return
 		updateMosLastDataReceived(peripheralDevice._id)
 		// @ts-ignore
 		logger.debug(Action, StoryID0, StoryID1)
 		// Swap Stories (aka SegmentLine)
-		let ro = getRO(Action.RunningOrderID)
 
 		let segmentLine0 = getSegmentLine(Action.RunningOrderID, StoryID0)
 		let segmentLine1 = getSegmentLine(Action.RunningOrderID, StoryID1)
@@ -904,10 +942,13 @@ export namespace MosIntegration {
 	export function mosRoReadyToAir (id, token, Action: IMOSROReadyToAir) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoReadyToAir ' + Action.ID)
+
+		let ro = getRO(Action.ID)
+		if (!isAvailableForMOS(ro)) return
+		updateMosLastDataReceived(peripheralDevice._id)
 		// @ts-ignore
 		logger.debug(Action)
 		// Set the ready to air status of a Running Order
-		let ro = getRO(Action.ID)
 
 		RunningOrders.update(ro._id, {$set: {
 			airStatus: Action.Status
@@ -918,13 +959,14 @@ export namespace MosIntegration {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		logger.info('mosRoFullStory ' + story.ID)
 
+		let ro = getRO(story.RunningOrderId)
+		if (!isAvailableForMOS(ro)) return
 		updateMosLastDataReceived(peripheralDevice._id)
 
 		fixIllegalObject(story)
 		// @ts-ignore
 		// logger.debug(story)
 		// Update db with the full story:
-		let ro = getRO(story.RunningOrderId)
 		// let segment = getSegment(story.RunningOrderId, story.ID)
 		let segmentLine = getSegmentLine(story.RunningOrderId, story.ID)
 
@@ -941,13 +983,6 @@ export namespace MosIntegration {
 		if (changed) {
 			updateTimelineFromMosData(segmentLine.runningOrderId, [ segmentLine._id ])
 		}
-	}
-	export function updateMosLastDataReceived (deviceId: string) {
-		PeripheralDevices.update(deviceId, {
-			$set: {
-				lastDataReceived: getCurrentTime()
-			}
-		})
 	}
 }
 

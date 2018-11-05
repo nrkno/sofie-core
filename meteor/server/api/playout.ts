@@ -147,27 +147,6 @@ export namespace ServerPlayoutAPI {
 
 		return reloadRunningOrderData(runningOrder)
 	}
-
-	// export function roReset (roId: string, resetTimings?: boolean) {
-	// 	// Reset the Running order
-	// 	check(roId, String)
-
-	// 	let runningOrder = RunningOrders.findOne(roId)
-	// 	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
-
-	// 	resetRunningOrder(runningOrder)
-	// }
-	// export function roFastReset (roId: string) {
-	// 	let runningOrder = RunningOrders.findOne(roId)
-	// 	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
-
-	// 	const rehearsal = runningOrder.rehearsal
-	// 	const active = runningOrder.active
-
-	// 	if (active) ServerPlayoutAPI.roDeactivate(runningOrder._id)
-	// 	ServerPlayoutAPI.roActivate(runningOrder._id, rehearsal || false, true)
-	// 	if (!active) ServerPlayoutAPI.roDeactivate(runningOrder._id)
-	// }
 	function resetRunningOrder (runningOrder: RunningOrder) {
 		logger.info('resetRunningOrder ' + runningOrder._id)
 		// Remove all dunamically inserted items (adlibs etc)
