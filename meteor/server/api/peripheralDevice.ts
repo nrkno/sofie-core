@@ -231,6 +231,11 @@ export namespace ServerPeripheralDeviceAPI {
 			return returnValue
 		}
 	}
+	export const executeFunction: (deviceId: string, functionName: string, ...args: any[]) => any = Meteor.wrapAsync((deviceId: string, functionName: string, ...args: any[]) => {
+		let args0 = args.slice(0, -1)
+		let cb = args.slice(-1)[0] // the last argument in ...args
+		PeripheralDeviceAPI.executeFunction(deviceId, cb, functionName, ...args0)
+	})
 }
 
 /**

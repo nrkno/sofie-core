@@ -107,7 +107,7 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 					// Do a format check:
 					if (mediaObject.mediainfo) {
 						const formats = getAcceptedFormats(config)
-						
+
 						// check the streams for resolution info
 						for (const stream of mediaObject.mediainfo.streams) {
 							if (stream.width && stream.height) {

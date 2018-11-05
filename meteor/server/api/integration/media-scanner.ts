@@ -45,11 +45,6 @@ export namespace MediaScannerIntegration {
 			throw new Meteor.Error(400, 'missing doc argument')
 		}
 	}
-	export const executeFunction: (deviceId: string, functionName: string, ...args: any[]) => any = Meteor.wrapAsync((deviceId: string, functionName: string, ...args: any[]) => {
-		let args0 = args.slice(0, -1)
-		let cb = args.slice(-1)[0] // the last argument in ...args
-		PeripheralDeviceAPI.executeFunction(deviceId, cb, functionName, ...args0)
-	})
 }
 
 let methods: Methods = {}
