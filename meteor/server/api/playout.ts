@@ -48,7 +48,7 @@ import { IMOSRunningOrder, MosString128 } from 'mos-connection'
 import { PlayoutTimelinePrefixes, LookaheadMode } from '../../lib/api/playout'
 import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
-import { sendStoryStatus, updateSegmentLines } from './peripheralDevice'
+import { sendStoryStatus, updateSegmentLines, handleMosRoData } from './peripheralDevice'
 import { StudioInstallations, StudioInstallation, IStudioConfigItem } from '../../lib/collections/StudioInstallations'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
@@ -429,15 +429,26 @@ export namespace ServerPlayoutAPI {
 		function reloadRunningOrderData (runningOrder: RunningOrder, cb: (err) => void) {
 			logger.info('reloadRunningOrderData ' + runningOrder._id)
 
-			PeripheralDeviceAPI.executeFunction(runningOrder.mosDeviceId, (err: any, ro: IMOSRunningOrder) => {
+			let peripheralDevice = PeripheralDevices.findOne(runningOrder.mosDeviceId) as PeripheralDevice
+			if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice ' + peripheralDevice + ' not found')
+
+			PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err: any, ro: IMOSRunningOrder) => {
 				// console.log('Response!')
 				if (err) {
 					logger.error(err)
 					cb(err)
 				} else {
-					// TODO: what to do with the result?
-					logger.debug('Recieved reply for triggerGetRunningOrder', ro)
-					cb(null)
+					// logger.debug('mosRoCreate', ro)
+					try {
+						logger.info('mosRoCreate ' + ro.ID)
+						logger.debug(ro)
+						logger.debug('Recieved reply for triggerGetRunningOrder', ro)
+
+						handleMosRoData (peripheralDevice, ro)
+						cb(null)
+					} catch (err) {
+						cb(err)
+					}
 				}
 			}, 'triggerGetRunningOrder', runningOrder.mosId)
 		}
