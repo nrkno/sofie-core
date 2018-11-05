@@ -173,8 +173,9 @@ export interface ITestToolsConfig {
 		deviceId?: string
 		channelIndex?: number
 		channelFormat: ChannelFormat
-		prefix?: string
 		decklinkDevice?: number
+		filePrefix?: string
+		urlPrefix?: string
 	}
 }
 

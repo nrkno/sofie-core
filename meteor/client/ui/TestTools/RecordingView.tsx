@@ -3,8 +3,10 @@ import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RecordedFile, RecordedFiles } from '../../../lib/collections/RecordedFiles'
+import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import * as objectPath from 'object-path'
 
-interface IEvaluationProps {
+interface IRecordingViewProps {
 	match?: {
 		params?: {
 			studioId: string
@@ -12,17 +14,19 @@ interface IEvaluationProps {
 		}
 	}
 }
-interface IEvaluationState {
+interface IRecordingViewState {
 }
-interface IEvaluationTrackedProps {
+interface IRecordingViewTrackedProps {
+	studio: StudioInstallation | undefined
 	file: RecordedFile | undefined
 }
 
-const RecordingView = translateWithTracker<IEvaluationProps, IEvaluationState, IEvaluationTrackedProps>((props: IEvaluationProps) => {
+const RecordingView = translateWithTracker<IRecordingViewProps, IRecordingViewState, IRecordingViewTrackedProps>((props: IRecordingViewProps) => {
 	return {
+		studio: StudioInstallations.findOne(),
 		file: RecordedFiles.findOne({}, { sort: { startedAt: -1 } })
 	}
-})(class RecordingView extends MeteorReactComponent<Translated<IEvaluationProps & IEvaluationTrackedProps>, IEvaluationState> {
+})(class RecordingView extends MeteorReactComponent<Translated<IRecordingViewProps & IRecordingViewTrackedProps>, IRecordingViewState> {
 
 	componentWillMount () {
 		if (this.props.match && this.props.match.params) {
@@ -31,20 +35,37 @@ const RecordingView = translateWithTracker<IEvaluationProps, IEvaluationState, I
 				studioId: this.props.match.params.studioId,
 				_id: this.props.match.params.recordingId
 			})
+			this.subscribe('studioInstallations', {
+				_id: this.props.match.params.studioId
+			})
 		}
 	}
 
 	renderRecordingView () {
-		const { t, file } = this.props
+		const { t, file, studio } = this.props
 
 		if (!file) return <React.Fragment></React.Fragment>
+
+		let urlPrefix = ''
+		if (studio) urlPrefix = objectPath.get(studio, 'testToolsConfig.recordings.urlPrefix', '')
+		if (urlPrefix === '') {
+			return <React.Fragment>
+				<p>{t('A required setting is not configured')}</p>
+			</React.Fragment>
+		}
 
 		return <React.Fragment>
 			<header className='mvs'>
 					<h1>{file.name}</h1>
 				</header>
 				<div className='mod mvl'>
-					<p>TODO</p>
+					{ file.stoppedAt
+						? <video width='960' height='540' controls>
+							<source src={`${urlPrefix}${file.path}`} type='video/mp4' />
+							{t('Your browser does not support video playback')}
+						</video>
+						: t('Recording still in progress')
+					}
 				</div>
 		</React.Fragment>
 	}

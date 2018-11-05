@@ -1551,7 +1551,19 @@ class TestToolsRecordingsSettings extends React.Component<Translated<IProps>, IT
 						{t('Path prefix')}
 						<EditAttribute
 							modifiedClassName='bghl'
-							attribute='testToolsConfig.recordings.prefix'
+							attribute='testToolsConfig.recordings.filePrefix'
+							obj={this.props.studioInstallation}
+							type='text'
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('URL prefix')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute='testToolsConfig.recordings.urlPrefix'
 							obj={this.props.studioInstallation}
 							type='text'
 							collection={StudioInstallations}

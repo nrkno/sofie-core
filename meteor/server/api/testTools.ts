@@ -21,16 +21,19 @@ const LLayerInput = '_internal_ccg_record_input'
 
 const defaultConfig = {
 	channelFormat: ChannelFormat.HD_1080I5000,
-	prefix: 'test-recordings/'
+	prefix: ''
+}
+function getStudioConfig (studio: StudioInstallation): ITestToolsConfig {
+	const config: ITestToolsConfig = studio.testToolsConfig || { recordings: defaultConfig }
+	if (!config.recordings) config.recordings = defaultConfig
+	return config
 }
 
 export function generateTimelineObjs (studio: StudioInstallation, recording: RecordedFile): TimelineObj[] {
 	if (!studio) throw new Meteor.Error(404, `Studio was not defined!`)
 	if (!recording) throw new Meteor.Error(404, `Recording was not defined!`)
 
-	const config: ITestToolsConfig = studio.testToolsConfig || { recordings: defaultConfig }
-	if (!config.recordings) config.recordings = defaultConfig
-
+	const config = getStudioConfig(studio)
 	if (!config.recordings.decklinkDevice) throw new Meteor.Error(500, `Recording decklink for Studio "${studio._id}" not defined!`)
 
 	if (!studio.mappings[LLayerInput] || !studio.mappings[LLayerRecord]) {
@@ -119,14 +122,13 @@ export namespace ServerTestToolsAPI {
 		})
 		if (active) throw new Meteor.Error(404, `An active recording for "${studioId}" was found!`)
 
-		if (name === '') name = moment(getCurrentTime()).format()
+		if (name === '') name = moment(getCurrentTime()).format('YYYY-MM-DD HH:mm:ss')
 
-		const config: ITestToolsConfig = studio.testToolsConfig || { recordings: defaultConfig }
-		if (!config.recordings) config.recordings = defaultConfig
-
+		const config = getStudioConfig(studio)
 		if (!config.recordings.channelIndex) throw new Meteor.Error(500, `Recording channel for Studio "${studio._id}" not defined!`)
 		if (!config.recordings.deviceId) throw new Meteor.Error(500, `Recording device for Studio "${studio._id}" not defined!`)
 		if (!config.recordings.decklinkDevice) throw new Meteor.Error(500, `Recording decklink for Studio "${studio._id}" not defined!`)
+		if (!config.recordings.channelIndex) throw new Meteor.Error(500, `Recording channel for Studio "${studio._id}" not defined!`)
 
 		// Ensure the layer mappings in the db are correct
 		const setter = {}
@@ -148,10 +150,8 @@ export namespace ServerTestToolsAPI {
 		})
 		StudioInstallations.update(studio._id, { $set: setter })
 
-		if (!config.recordings.channelIndex) throw new Meteor.Error(500, `Recording channel for Studio "${studio._id}" not defined!`)
-
 		const id = Random.id(7)
-		const path = (config.recordings.prefix || defaultConfig.prefix) + id + '.mp4'
+		const path = (config.recordings.filePrefix || defaultConfig.prefix) + id + '.mp4'
 
 		RecordedFiles.insert({
 			_id: id,

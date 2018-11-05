@@ -11,6 +11,7 @@ import { eventContextForLog } from '../../lib/eventTargetLogHelper'
 import { TestToolsAPI } from '../../../lib/api/testTools'
 import { ClientAPI } from '../../../lib/api/client'
 import { EditAttribute } from '../../lib/EditAttribute'
+import * as objectPath from 'object-path'
 
 interface IRecordingListProps {
 	match?: {
@@ -96,9 +97,22 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 		}
 	}
 
+	isStudioConfigured () {
+		const { studio } = this.props
+		if (!studio) return false
+
+		const config = objectPath.get(studio, 'testToolsConfig.recordings')
+		if (!config) return false
+
+		if (!config.channelIndex || !config.decklinkDevice || !config.deviceId) return false
+
+		return true
+	}
+
 	renderControlPanel () {
-		const { t, studio } = this.props
-		if (!studio || !studio.testToolsConfig || !studio.testToolsConfig.recordings || !studio.testToolsConfig.recordings.channelIndex || !studio.testToolsConfig.recordings.decklinkDevice || !studio.testToolsConfig.recordings.deviceId) {
+		const { t } = this.props
+
+		if (!this.isStudioConfigured()) {
 			return <React.Fragment>
 				<p>{t('A required setting is not configured')}</p>
 			</React.Fragment>
