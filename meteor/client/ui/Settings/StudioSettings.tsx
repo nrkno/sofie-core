@@ -1207,6 +1207,9 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 
 		return (
 			_.map(this.props.studioInstallation.mappings, (mapping: Mapping , layerId: string) => {
+				// If an internal mapping, then hide it
+				if (mapping.internal) return <React.Fragment key={layerId}></React.Fragment>
+
 				return <React.Fragment key={layerId}>
 					<tr className={ClassNames({
 						'hl': this.isItemEdited(layerId)
