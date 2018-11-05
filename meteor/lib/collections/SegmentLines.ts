@@ -14,6 +14,8 @@ import { RundownAPI } from '../api/rundown'
 import { checkSLIContentStatus } from '../mediaObjects'
 import { Meteor } from 'meteor/meteor'
 
+import { TemplateRuntimeArguments } from '../../server/api/templates/templates'
+
 /** A "Line" in NRK Lingo. */
 export interface DBSegmentLine {
 	_id: string
@@ -133,6 +135,8 @@ export class SegmentLine implements DBSegmentLine {
 	public holdMode?: SegmentLineHoldMode
 	public notes?: Array<SegmentLineNote>
 	public afterSegmentLine?: string
+
+	public runtimeArguments?: TemplateRuntimeArguments
 
 	constructor (document: DBSegmentLine) {
 		_.each(_.keys(document), (key) => {

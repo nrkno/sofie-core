@@ -90,6 +90,8 @@ export interface DBStudioInstallation {
 	config: Array<IStudioConfigItem>
 
 	hotkeyLegend?: Array<HotkeyDefinition>
+
+	roArguments?: Array<IStudioROArgumentsItem>
 }
 
 export interface ISourceLayerBase {
@@ -120,6 +122,12 @@ export interface ISourceLayerBase {
 	allowDisable?: boolean
 	/** If set to true, items in this layer will be used for presenters screen display */
 	onPresenterScreen?: boolean
+}
+
+export interface IStudioROArgumentsItem {
+	hotkeys: string
+	property: string
+	value: string
 }
 
 export interface IStudioConfigItem {
@@ -175,6 +183,7 @@ export class StudioInstallation implements DBStudioInstallation {
 	public defaultShowStyle: string
 	public config: Array<IStudioConfigItem>
 	public hotkeyLegend?: Array<HotkeyDefinition>
+	public roArguments: Array<IStudioROArgumentsItem>
 
 	constructor (document: DBStudioInstallation) {
 		_.each(_.keys(document), (key) => {

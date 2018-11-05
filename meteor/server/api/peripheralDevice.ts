@@ -1311,7 +1311,7 @@ function updateWithinSegment (ro: RunningOrder, segmentId: string): boolean {
 
 	return changed
 }
-function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
+export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 	let showStyle = ShowStyles.findOne(ro.showStyleId)
 	if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + ro.showStyleId + '" not found!')
 
@@ -1328,7 +1328,8 @@ function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 		runningOrder: ro,
 		studioId: ro.studioInstallationId,
 		segmentLine: firstSegmentLine,
-		templateId: showStyle.postProcessBlueprint
+		templateId: showStyle.postProcessBlueprint,
+		runtimeArguments: {}
 	}
 	let tr: TemplateResultAfterPost | undefined
 	try {
@@ -1420,7 +1421,7 @@ function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 	return (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
 }
 
-function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory): boolean {
+export function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory): boolean {
 	let showStyle = ShowStyles.findOne(ro.showStyleId)
 	if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + ro.showStyleId + '" not found!')
 
@@ -1431,7 +1432,8 @@ function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROF
 		studioId: ro.studioInstallationId,
 		// segment: Segment,
 		segmentLine: segmentLine,
-		templateId: 'N/A'
+		templateId: 'N/A',
+		runtimeArguments: segmentLine.runtimeArguments || {}
 	}
 	let tr: RunTemplateResult | undefined
 	try {

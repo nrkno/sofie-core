@@ -44,11 +44,11 @@ import * as _ from 'underscore'
 import { logger } from '../logging'
 import { PeripheralDevice,PeripheralDevices,PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { IMOSRunningOrder, MosString128 } from 'mos-connection'
+import { IMOSRunningOrder, MosString128, IMOSROFullStory } from 'mos-connection'
 import { PlayoutTimelinePrefixes, LookaheadMode } from '../../lib/api/playout'
 import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
-import { sendStoryStatus, updateSegmentLines } from './peripheralDevice'
+import { sendStoryStatus, updateSegmentLines, updateStory, runPostProcessTemplate } from './peripheralDevice'
 import { StudioInstallations, StudioInstallation, IStudioConfigItem } from '../../lib/collections/StudioInstallations'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
@@ -63,6 +63,7 @@ import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
 import { sendSlackMessageToWebhook } from './slack'
 import { setMeteorMethods } from '../methods'
 import { RundownAPI } from '../../lib/api/rundown'
+import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 
 const MINIMUM_TAKE_SPAN = 1000
 
@@ -353,7 +354,8 @@ export namespace ServerPlayoutAPI {
 					runningOrder: runningOrder,
 					studioId: runningOrder.studioInstallationId,
 					segmentLine: runningOrder.getSegmentLines()[0],
-					templateId: showStyle.baselineTemplate
+					templateId: showStyle.baselineTemplate,
+					runtimeArguments: {}
 				}), {
 					// Dummy object, not used in this template:
 					RunningOrderId: new MosString128(''),
@@ -1505,6 +1507,43 @@ export namespace ServerPlayoutAPI {
 
 		updateTimeline(runningOrder.studioInstallationId)
 	}
+	export const roToggleSegmentLineArgument = syncFunction(function roToggleSegmentLineArgument (roId: string, slId: string, property: string, value: string) {
+		check(roId, String)
+		check(slId, String)
+
+		const runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `Running order "${roId}" not found!`)
+
+		const segmentLine = SegmentLines.findOne(slId)
+		if (!segmentLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
+
+		const rArguments = segmentLine.runtimeArguments || {}
+
+		if (rArguments[property] === value) {
+			// unset property
+			const mUnset = {}
+			mUnset['runtimeArguments.' + property] = 1
+			SegmentLines.update(segmentLine._id, {$unset: mUnset})
+		} else {
+			// set property
+			const mSet = {}
+			mSet['runtimeArguments.' + property] = value
+			SegmentLines.update(segmentLine._id, {$set: mSet})
+		}
+
+		const story = runningOrder.fetchCache(CachePrefix.FULLSTORY + segmentLine._id) as IMOSROFullStory
+		const changed = updateStory(runningOrder, segmentLine, story)
+
+		const segment = segmentLine.getSegment()
+		if (segment) {
+			// this could be run after the segment, if we were capable of limiting that
+			runPostProcessTemplate(runningOrder, segment)
+		}
+
+		updateSourceLayerInfinitesAfterLine(runningOrder, false, segmentLine)
+
+		updateTimeline(runningOrder.studioInstallationId)
+	})
 	export function timelineTriggerTimeUpdateCallback (timelineObjId: string, time: number) {
 		check(timelineObjId, String)
 		check(time, Number)

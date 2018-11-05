@@ -20,7 +20,8 @@ import { IOutputLayer,
 	MappingPanasonicPtzType,
 	MappingPanasonicPtz,
 	MappingHyperdeckType,
-	HotkeyDefinition
+	HotkeyDefinition,
+	IStudioROArgumentsItem
 } from '../../../lib/collections/StudioInstallations'
 import { ShowStyles } from '../../../lib/collections/ShowStyles'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
@@ -57,12 +58,14 @@ interface IChildStudioInterfaceProps {
 	onRemoveMapping?: (layerId: string) => void
 	onDeleteConfigItem?: (item: IStudioConfigItem) => void
 	onDeleteHotkeyLegend?: (item: HotkeyDefinition) => void
+	onDeleteROArgument?: (item: IStudioROArgumentsItem) => void
 	onAddSource?: () => void
 	onAddOutput?: () => void
 	onAddDevice?: (item: PeripheralDevice) => void
 	onAddMapping?: () => void
 	onAddHotkeyLegend?: () => void
 	onAddConfigItem?: () => void
+	onAddROArgument?: () => void
 }
 
 interface IStudioOutputSettingsProps extends IProps, IChildStudioInterfaceProps {
@@ -405,6 +408,177 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 				</table>
 				<div className='mod mhs'>
 					<button className='btn btn-primary' onClick={this.props.onAddConfigItem}>
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
+				</div>
+			</div>
+		)
+	}
+}
+
+interface IStudioROArgumentsSettingsProps extends IProps, IChildStudioInterfaceProps {
+}
+interface IStudioROArgumentsSettingsState {
+	showDeleteConfirm: boolean
+	deleteConfirmItem: IStudioROArgumentsItem | undefined
+	editedItems: Array<Number>
+}
+
+class StudioROArgumentsSettings extends React.Component<Translated<IStudioROArgumentsSettingsProps>, IStudioROArgumentsSettingsState> {
+	constructor (props: Translated<IStudioROArgumentsSettingsProps>) {
+		super(props)
+
+		this.state = {
+			showDeleteConfirm: false,
+			deleteConfirmItem: undefined,
+			editedItems: []
+		}
+	}
+
+	isItemEdited = (index: Number) => {
+		return this.state.editedItems.indexOf(index) >= 0
+	}
+
+	finishEditItem = (index: Number) => {
+		let i = this.state.editedItems.indexOf(index)
+		if (i >= 0) {
+			this.state.editedItems.splice(i, 1)
+			this.setState({
+				editedItems: this.state.editedItems
+			})
+		}
+	}
+
+	editItem = (index: Number) => {
+		if (this.state.editedItems.indexOf(index) < 0) {
+			this.state.editedItems.push(index)
+			this.setState({
+				editedItems: this.state.editedItems
+			})
+		}
+	}
+
+	confirmDelete = (item: IStudioROArgumentsItem) => {
+		this.setState({
+			showDeleteConfirm: true,
+			deleteConfirmItem: item
+		})
+	}
+
+	handleConfirmDeleteCancel = (e) => {
+		this.setState({
+			deleteConfirmItem: undefined,
+			showDeleteConfirm: false
+		})
+	}
+
+	handleConfirmDeleteAccept = (e) => {
+		if (this.props.onDeleteROArgument && typeof this.props.onDeleteROArgument === 'function' && this.state.deleteConfirmItem) {
+			this.props.onDeleteROArgument(this.state.deleteConfirmItem)
+		}
+
+		this.setState({
+			deleteConfirmItem: undefined,
+			showDeleteConfirm: false
+		})
+	}
+
+	renderItems () {
+		const { t } = this.props
+		return (
+			(this.props.studioInstallation.roArguments || []).map((item, index) => {
+				return <React.Fragment key={index + '_' + item.property}>
+					<tr className={ClassNames({
+						'hl': this.isItemEdited(index)
+					})}>
+						<th className='settings-studio-custom-config-table__name c2'>
+							{item.hotkeys}
+						</th>
+						<td className='settings-studio-custom-config-table__value c3'>
+							{item.property}
+						</td>
+						<td className='settings-studio-custom-config-table__value c3'>
+							{item.value}
+						</td>
+						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
+							<button className='action-btn' onClick={(e) => this.editItem(index)}>
+								<FontAwesomeIcon icon={faPencilAlt} />
+							</button>
+							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
+								<FontAwesomeIcon icon={faTrash} />
+							</button>
+						</td>
+					</tr>
+					{this.isItemEdited(index) &&
+						<tr className='expando-details hl'>
+							<td colSpan={4}>
+								<div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Hotkeys')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'roArguments.' + index + '.hotkeys'}
+												obj={this.props.studioInstallation}
+												type='text'
+												collection={StudioInstallations}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Property')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'roArguments.' + index + '.property'}
+												obj={this.props.studioInstallation}
+												type='text'
+												collection={StudioInstallations}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Value')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'roArguments.' + index + '.value'}
+												obj={this.props.studioInstallation}
+												type='text'
+												collection={StudioInstallations}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+								</div>
+								<div className='mod alright'>
+									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(index)}>
+										<FontAwesomeIcon icon={faCheck} />
+									</button>
+								</div>
+							</td>
+						</tr>
+					}
+				</React.Fragment>
+			})
+		)
+	}
+
+	render () {
+		const { t } = this.props
+		return (
+			<div>
+				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
+					<p>{t('Are you sure you want to delete this running order argument "{{property}}: {{value}}"?', { property: (this.state.deleteConfirmItem && this.state.deleteConfirmItem.property), value: (this.state.deleteConfirmItem && this.state.deleteConfirmItem.value) })}</p>
+					<p>{t('Please note: This action is irreversible!')}</p>
+				</ModalDialog>
+				<h3>{t('Running Order Arguments')}</h3>
+				<table className='expando settings-studio-custom-config-table'>
+					<tbody>
+						{this.renderItems()}
+					</tbody>
+				</table>
+				<div className='mod mhs'>
+					<button className='btn btn-primary' onClick={this.props.onAddROArgument}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 				</div>
@@ -1617,6 +1791,16 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 		}
 	}
 
+	onDeleteROArgument = (item: IStudioROArgumentsItem) => {
+		if (this.props.studioInstallation) {
+			StudioInstallations.update(this.props.studioInstallation._id, {
+				$pull: {
+					roArguments: item
+				}
+			})
+		}
+	}
+
 	onAddSource = () => {
 		const maxRank = StudioSettings.findHighestRank(this.props.studioInstallation.sourceLayers)
 		const { t } = this.props
@@ -1668,6 +1852,24 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 				config: newItem
 			}
 		})
+	}
+
+	onAddROArgument = () => {
+		const { t } = this.props
+
+		const newItem = literal<IStudioROArgumentsItem>({
+			property: 'new-property',
+			value: '1',
+			hotkeys: 'mod+shift+z'
+		})
+
+		StudioInstallations.update(this.props.studioInstallation._id, {
+			$push: {
+				roArguments: newItem
+			}
+		})
+
+		debugger
 	}
 
 	onAddHotkeyLegend = () => {
@@ -1740,6 +1942,11 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 						</div>
 						<div className='col c12 rl-c6'>
 							<StudioOutputSettings {...this.props} onDeleteOutput={this.onDeleteOutput} onAddOutput={this.onAddOutput} />
+						</div>
+					</div>
+					<div className='row'>
+						<div className='col c12 r1-c12'>
+							<StudioROArgumentsSettings {...this.props} onAddROArgument={this.onAddROArgument} onDeleteROArgument={this.onDeleteROArgument} />
 						</div>
 					</div>
 					<div className='row'>

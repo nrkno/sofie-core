@@ -70,6 +70,9 @@ export type SegmentLineItemOptional = Fix<SegmentLineItem>
 export type SegmentLineItemOptional = Optional<SegmentLineItem>
 export type SegmentLineAdLibItemOptional = Optional<SegmentLineAdLibItem>
 export type RunningOrderBaselineItemOptional = Optional<RunningOrderBaselineItem>
+export type TemplateRuntimeArguments = {
+	[key: string]: string
+}
 
 export interface TemplateSet {
 	getId: (context: TemplateContextInner, story: IMOSROFullStory) => string
@@ -85,6 +88,7 @@ export interface TemplateContext {
 	// segment: Segment
 	segmentLine: SegmentLine
 	templateId: string
+	runtimeArguments: TemplateRuntimeArguments
 }
 
 export enum LayerType {
