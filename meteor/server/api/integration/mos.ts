@@ -174,20 +174,6 @@ function formatTime (time: any): number | undefined {
 		return undefined
 	}
 }
-function findDurationInfoMOSExternalMetaData (story: IMOSROFullStory): any | undefined {
-	if (story.MosExternalMetaData) {
-		let matchingMetaData = story.MosExternalMetaData.find((metaData) => {
-			if (metaData.MosSchema.match(/http(s)?:\/\/[\d\w\.\:]+\/schema\/enps.dtd$/)) {
-				return true
-			}
-			return false
-		})
-		if (matchingMetaData) {
-			return matchingMetaData
-		}
-	}
-	return undefined
-}
 export function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory): boolean {
 	let showStyle = ShowStyles.findOne(ro.showStyleId)
 	if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + ro.showStyleId + '" not found!')
@@ -386,7 +372,6 @@ export const reloadRunningOrder: (runningOrder: RunningOrder) => void = Meteor.w
 		}, 'triggerGetRunningOrder', runningOrder.mosId)
 	}
 )
-
 function handleRunningOrderData (ro: IMOSRunningOrder, peripheralDevice: PeripheralDevice, dataSource: string) {
 	// Create or update a runningorder (ie from roCreate or roList)
 
@@ -506,7 +491,6 @@ function updateMosLastDataReceived (deviceId: string) {
 		}
 	})
 }
-
 export namespace MosIntegration {
 	export function mosRoCreate (id, token, ro: IMOSRunningOrder) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
