@@ -993,8 +993,8 @@ methods[PeripheralDeviceAPI.methods.mosRoCreate] = (deviceId, deviceToken, ro: I
 methods[PeripheralDeviceAPI.methods.mosRoReplace] = (deviceId, deviceToken, ro: IMOSRunningOrder) => {
 	return MosIntegration.mosRoReplace(deviceId, deviceToken, ro)
 }
-methods[PeripheralDeviceAPI.methods.mosRoDelete] = (deviceId, deviceToken, runningOrderId: MosString128) => {
-	return MosIntegration.mosRoDelete(deviceId, deviceToken, runningOrderId)
+methods[PeripheralDeviceAPI.methods.mosRoDelete] = (deviceId, deviceToken, runningOrderId: MosString128, force?: boolean) => {
+	return MosIntegration.mosRoDelete(deviceId, deviceToken, runningOrderId, force)
 }
 methods[PeripheralDeviceAPI.methods.mosRoMetadata] = (deviceId, deviceToken, metadata: IMOSRunningOrderBase) => {
 	return MosIntegration.mosRoMetadata(deviceId, deviceToken, metadata)
