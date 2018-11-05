@@ -8,8 +8,8 @@ import { SegmentLine, DBSegmentLine, SegmentLineNote, SegmentLineNoteType } from
 import { SegmentLineItem, SegmentLineItemGeneric } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
-import { formatDateAsTimecode, formatDurationAsTimecode } from '../../lib/lib'
-import { getHash } from 'tv-automation-sofie-blueprints-integration/dist/util'
+import { formatDateAsTimecode, formatDurationAsTimecode, literal } from '../../lib/lib'
+import { getHash } from '../lib'
 import { logger } from '../logging'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { TimelineObj } from '../../lib/collections/Timeline'
@@ -28,7 +28,7 @@ import {
 	LayerType
 } from 'tv-automation-sofie-blueprints-integration/dist/api'
 import { IBlueprintSegmentLineItem, IBlueprintSegmentLineAdLibItem } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
-import { RundownAPI } from '../../lib/api/rundown'
+import { RunningOrderAPI } from '../../lib/api/runningOrder'
 
 class CommonContext implements ICommonContext {
 	runningOrderId: string
@@ -275,7 +275,7 @@ export function postProcessSegmentLineItems (innerContext: ICommonContext, segme
 		let item: SegmentLineItem = {
 			runningOrderId: innerContext.runningOrder._id,
 			segmentLineId: segmentLineId,
-			status: RundownAPI.LineItemStatusCode.UNKNOWN,
+			status: RunningOrderAPI.LineItemStatusCode.UNKNOWN,
 			...itemOrig
 		}
 
@@ -290,7 +290,8 @@ export function postProcessSegmentLineItems (innerContext: ICommonContext, segme
 
 			let timelineUniqueIds: { [id: string]: true } = {}
 			_.each(item.content.timelineObjects, (o: TimelineObj) => {
-				// TODO - translate id?
+				o._id = o['id']
+				delete o['id']
 
 				if (!o._id) o._id = innerContext.getHashId('postprocess_' + (i++))
 
@@ -311,7 +312,7 @@ export function postProcessSegmentLineAdLibItems (innerContext: ICommonContext, 
 			_id: innerContext.getHashId('postprocess_adlib_' + (i++)),
 			runningOrderId: innerContext.runningOrder._id,
 			segmentLineId: segmentLineId,
-			status: RundownAPI.LineItemStatusCode.UNKNOWN,
+			status: RunningOrderAPI.LineItemStatusCode.UNKNOWN,
 			trigger: undefined,
 			disabled: false,
 			...itemOrig
@@ -327,7 +328,8 @@ export function postProcessSegmentLineAdLibItems (innerContext: ICommonContext, 
 
 			let timelineUniqueIds: { [id: string]: true } = {}
 			_.each(item.content.timelineObjects, (o: TimelineObj) => {
-				// TODO - translate id?
+				o._id = o['id']
+				delete o['id']
 
 				if (!o._id) o._id = innerContext.getHashId('postprocess_' + (i++))
 
@@ -344,7 +346,8 @@ export function postProcessSegmentLineBaselineItems (innerContext: BaselineConte
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(baselineItems), (item: TimelineObj) => {
-		// TODO - translate id?
+		item._id = item['id']
+		delete item['id']
 
 		if (!item._id) item._id = innerContext.getHashId('baseline_' + (i++))
 

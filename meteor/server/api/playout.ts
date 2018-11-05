@@ -54,7 +54,7 @@ import { StudioInstallations, StudioInstallation, IStudioConfigItem } from '../.
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
-import { getHash } from 'tv-automation-sofie-blueprints-integration/dist/util'
+import { getHash } from '../lib'
 import { syncFunction, syncFunctionIgnore } from '../codeControl'
 import { getResolvedSegment, ISourceLayerExtended } from '../../lib/RunningOrder'
 let clone = require('fast-clone')
