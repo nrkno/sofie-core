@@ -23,11 +23,13 @@ interface IRecordingListState {
 	filename: string
 }
 interface IRecordingListTrackedProps {
+	studio?: StudioInstallation
 	files: RecordedFile[]
 }
 
 const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListState, IRecordingListTrackedProps>((props: IRecordingListProps) => {
 	return {
+		studio: StudioInstallations.findOne(),
 		files: RecordedFiles.find({}, { sort: { startedAt: -1 } }).fetch()
 	}
 })(class RecordedFilesList extends MeteorReactComponent<Translated<IRecordingListProps & IRecordingListTrackedProps>, IRecordingListState> {
@@ -62,6 +64,9 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 			this.subscribe('recordedFiles', {
 				studioId: this.props.match.params.studioId
 			})
+			this.subscribe('studioInstallations', {
+				_id: this.props.match.params.studioId
+			})
 		}
 	}
 
@@ -91,12 +96,39 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 		}
 	}
 
-	render () {
-		const { t } = this.props
+	renderControlPanel () {
+		const { t, studio } = this.props
+		if (!studio || !studio.testToolsConfig || !studio.testToolsConfig.recordings || !studio.testToolsConfig.recordings.channelIndex || !studio.testToolsConfig.recordings.decklinkDevice || !studio.testToolsConfig.recordings.deviceId) {
+			return <React.Fragment>
+				<p>{t('A required setting is not configured')}</p>
+			</React.Fragment>
+		}
 
 		const active = this.props.files.find(f => !f.stoppedAt)
 
 		let obj = this.state
+		return <React.Fragment>
+			<p>Status: {active ? t('Active') : t('Ready')}</p>
+			<p>Name: {active ? active.name : <EditAttribute
+				obj={obj}
+				updateFunction={this.onUpdateValue}
+				attribute='filename'
+				type='text'
+			/>}</p>
+			<p>Started: {active ? <MomentFromNow>{active.startedAt}</MomentFromNow> : '-'}</p>
+			<p>
+				{
+					active
+						? <button onClick={e => this.stopRecording(e)}>{t('Stop')}</button>
+						: <button onClick={e => this.startRecording(e)}>{t('Start')}</button>
+				}
+			</p>
+		</React.Fragment>
+	}
+
+	render () {
+		const { t } = this.props
+
 		// console.log('obj', obj)
 		return <React.Fragment>
 			<div className='mtl gutter'>
@@ -104,21 +136,7 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 					<h1>{t('Recordings')}</h1>
 				</header>
 				<div className='mod mvl'>
-					<p>Status: {active ? t('Active') : t('Ready')}</p>
-					<p>Name: {active ? active.name : <EditAttribute
-						obj={obj}
-						updateFunction={this.onUpdateValue}
-						attribute='filename'
-						type='text'
-					/>}</p>
-					<p>Started: {active ? <MomentFromNow>{active.startedAt}</MomentFromNow> : '-'}</p>
-					<p>
-						{
-							active
-								? <button onClick={e => this.stopRecording(e)}>{t('Stop')}</button>
-								: <button onClick={e => this.startRecording(e)}>{t('Start')}</button>
-						}
-					</p>
+					{this.renderControlPanel()}
 				</div>
 				<div className='mod mvl'>
 					<table className='table system-status-table expando expando-tight'>
