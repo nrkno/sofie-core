@@ -2,7 +2,9 @@ import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { Time, Collections, registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
-export interface ExternalMessageQueueObj {
+import { IBlueprintExternalMessageQueueObj } from 'tv-automation-sofie-blueprints-integration/dist/message'
+
+export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueObj {
 	_id: string
 	/** Id of the studio this message originates from */
 	studioId: string
@@ -33,33 +35,6 @@ export interface ExternalMessageQueueObj {
 	receiver: any
 	/** Messate details */
 	message: any
-}
-
-export interface ExternalMessageQueueObjSOAP extends ExternalMessageQueueObj {
-	type: 'soap'
-	receiver: {
-		url: string
-	}
-	message: {
-		fcn: string, // soap function to execute
-		clip_key: ExternalMessageQueueObjSOAPMessageAttrOrFcn
-		clip: ExternalMessageQueueObjSOAPMessageAttrOrFcn
-	}
-}
-export type ExternalMessageQueueObjSOAPMessageAttrOrFcn = ExternalMessageQueueObjSOAPMessageAttrFcn | any
-export interface ExternalMessageQueueObjSOAPMessageAttr {
-	[attr: string]: ExternalMessageQueueObjSOAPMessageAttrOrFcn
-}
-export interface ExternalMessageQueueObjSOAPMessageAttrFcn {
-	_fcn: {
-		soapFetchFrom?: {
-			fcn: string
-			attrs: any[]
-		}
-		xmlEncode?: {
-			value: any
-		}
-	}
 }
 
 export const ExternalMessageQueue: TransformedCollection<ExternalMessageQueueObj, ExternalMessageQueueObj>

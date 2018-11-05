@@ -13,12 +13,12 @@ import { applyClassToDocument, Time, registerCollection, normalizeArray } from '
 import { RunningOrderAPI } from '../api/runningOrder'
 import { checkSLIContentStatus } from '../mediaObjects'
 import { Meteor } from 'meteor/meteor'
-import { IBlueprintSegmentLine } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
+import { IMessageBlueprintSegmentLine, IMessageBlueprintSegmentLineTimings, SegmentLineHoldMode } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
 
 import { TemplateRuntimeArguments } from '../../server/api/templates/templates'
 
 /** A "Line" in NRK Lingo. */
-export interface DBSegmentLine extends IBlueprintSegmentLine {
+export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
 	_id: string
   /** Position inside the segment */
 	_rank: number
@@ -80,7 +80,7 @@ export interface DBSegmentLine extends IBlueprintSegmentLine {
 	/** An SL should be marked as `dirty` if the SL blueprint has been injected with runtimeArguments */
 	dirty?: boolean
 }
-export interface SegmentLineTimings {
+export interface SegmentLineTimings extends IMessageBlueprintSegmentLineTimings {
 	/** Point in time the SegmentLine was taken, (ie the time of the user action) */
 	take: Array<Time>,
 	/** Point in time the "take" action has finished executing */
@@ -93,12 +93,6 @@ export interface SegmentLineTimings {
 	stoppedPlayback: Array<Time>,
 	/** Point in time the SegmentLine was set as Next (ie the time of the user action) */
 	next: Array<Time>
-}
-
-export enum SegmentLineHoldMode {
-	NONE = 0,
-	FROM = 1,
-	TO = 2,
 }
 
 export enum SegmentLineNoteType {

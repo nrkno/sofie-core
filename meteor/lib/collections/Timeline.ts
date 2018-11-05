@@ -9,6 +9,7 @@ import { FindOptions, MongoSelector, TransformedCollection } from '../typings/me
 import { Mixer } from '../typings/casparcg-state'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { TimelineObjHoldMode } from 'tv-automation-sofie-blueprints-integration/dist/timeline'
 
 // Note: The data structure is based on what works with the state libraries, such as
 
@@ -117,12 +118,6 @@ export type SuperSourceBox = {
 	cropBottom?: number,
 	cropLeft?: number,
 	cropRight?: number
-}
-
-export enum TimelineObjHoldMode {
-	NORMAL = 0,
-	ONLY = 1, // Only use when in HOLD
-	EXCEPT = 2, // Only use when not in HOLD
 }
 
 export interface TimelineObj {

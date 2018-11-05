@@ -1,5 +1,5 @@
 import { Mongo } from 'meteor/mongo'
-import { RunningOrderAPI } from '../api/runningOrder'
+import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration/dist/content'
 import { TransformedCollection } from '../typings/meteor'
 import { PlayoutDeviceType } from './PeripheralDevices'
 import { LookaheadMode } from '../api/playout'
@@ -147,7 +147,7 @@ export interface ISourceLayer extends ISourceLayerBase {
 	name: string
 	/** Abbreviation for display in the countdown screens */
 	abbreviation?: string
-	type: RunningOrderAPI.SourceLayerType
+	type: SourceLayerType
 	/** If set to true, the layer can handle any number of simultaneus Line Items */
 	unlimited: boolean
 	/** If set to true, the layer will be shown in PGM Clean */

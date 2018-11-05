@@ -1,10 +1,12 @@
 import { logger } from '../logging'
 import {
 	ExternalMessageQueue,
-	ExternalMessageQueueObj,
+	ExternalMessageQueueObj
+} from '../../lib/collections/ExternalMessageQueue'
+import {
 	ExternalMessageQueueObjSOAP,
 	ExternalMessageQueueObjSOAPMessageAttrFcn
-} from '../../lib/collections/ExternalMessageQueue'
+} from 'tv-automation-sofie-blueprints-integration/dist/message'
 import { getCurrentTime, escapeHtml } from '../../lib/lib'
 import { iterateDeeply, iterateDeeplyAsync, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration/dist/util'
 import * as _ from 'underscore'
@@ -67,7 +69,7 @@ function doMessageQueue () {
 
 				let p: Promise<any>
 				if (msg.type === 'soap') {
-					p = sendSOAPMessage(msg as ExternalMessageQueueObjSOAP)
+					p = sendSOAPMessage(msg as ExternalMessageQueueObjSOAP & ExternalMessageQueueObj)
 				} else {
 					throw new Meteor.Error(500, 'Unknown message type "' + msg.type + '"')
 				}
@@ -123,7 +125,7 @@ function throwFatalError (msg, e) {
 	throw e
 }
 
-async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP) {
+async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP & ExternalMessageQueueObj) {
 
 	logger.info('sendSOAPMessage ' + msg._id)
 	if (!msg.receiver) 		throwFatalError(msg, new Meteor.Error(401, 'attribute .receiver missing!'))

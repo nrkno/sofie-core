@@ -1,13 +1,12 @@
 import * as React from 'react'
 import { SegmentLineItem } from '../../../../lib/collections/SegmentLineItems'
-import { SplitsContent } from 'tv-automation-sofie-blueprints-integration/dist/content'
-import { RunningOrderAPI } from '../../../../lib/api/runningOrder'
+import { SplitsContent, SourceLayerType } from 'tv-automation-sofie-blueprints-integration/dist/content'
 
 // @todo: use colours from the scss
 // @todo: split can use any source (rather than cam + live)
 export default class SplitInputIcon extends React.Component<{ abbreviation?: string, segmentLineItem?: SegmentLineItem }> {
 	getCameraLabel (c: SplitsContent) {
-		const camera = c.boxSourceConfiguration.find(i => i.type === RunningOrderAPI.SourceLayerType.CAMERA)
+		const camera = c.boxSourceConfiguration.find(i => i.type === SourceLayerType.CAMERA)
 		if (camera) {
 			const label = camera.studioLabel.match(/([a-zA-Z]+)?(\d+)/)
 			return <React.Fragment>
@@ -19,25 +18,25 @@ export default class SplitInputIcon extends React.Component<{ abbreviation?: str
 		}
 	}
 
-	getSourceType (type: RunningOrderAPI.SourceLayerType): string {
+	getSourceType (type: SourceLayerType): string {
 		switch (type) {
-			case RunningOrderAPI.SourceLayerType.CAMERA:
+			case SourceLayerType.CAMERA:
 				return 'camera'
-			case RunningOrderAPI.SourceLayerType.REMOTE:
+			case SourceLayerType.REMOTE:
 				return 'remote'
-			case RunningOrderAPI.SourceLayerType.VT:
+			case SourceLayerType.VT:
 				return 'vt'
 		}
 		return ''
 	}
 
 	getLeftSourceType (c: SplitsContent): string {
-		const left = (c.boxSourceConfiguration[0] || {}).type || RunningOrderAPI.SourceLayerType.CAMERA
+		const left = (c.boxSourceConfiguration[0] || {}).type || SourceLayerType.CAMERA
 		return this.getSourceType(left)
 	}
 
 	getRightSourceType (c: SplitsContent): string {
-		const right = (c.boxSourceConfiguration[1] || {}).type || RunningOrderAPI.SourceLayerType.REMOTE
+		const right = (c.boxSourceConfiguration[1] || {}).type || SourceLayerType.REMOTE
 		return this.getSourceType(right) + (this.getLeftSourceType(c) === this.getSourceType(right) ? ' second' : '')
 	}
 

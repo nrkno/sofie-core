@@ -16,7 +16,6 @@ import { SegmentTimeline } from './SegmentTimeline'
 
 import { getCurrentTime, Time } from '../../../lib/lib'
 import { RunningOrderTiming } from '../RunningOrderView/RunningOrderTiming'
-import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 
 import { CollapsedStateStorage } from '../../lib/CollapsedStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'

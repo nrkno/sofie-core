@@ -8,6 +8,7 @@ import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collect
 import { getCurrentTime, removeNullyProperties } from '../../lib/lib'
 import { triggerdoMessageQueue } from './ExternalMessageQueue'
 import * as _ from 'underscore'
+import { IBlueprintExternalMessageQueueObj } from 'tv-automation-sofie-blueprints-integration/dist/message'
 
 export function triggerExternalMessage (
 	runningOrder: RunningOrder,
@@ -24,7 +25,7 @@ export function triggerExternalMessage (
 		try {
 			const blueprints = loadBlueprints(showStyle)
 
-			let resultMessages: Array<ExternalMessageQueueObj> | null = blueprints.Message(innerContext, runningOrder, takeSegmentLine, previousSegmentLine)
+			let resultMessages: Array<IBlueprintExternalMessageQueueObj> | null = blueprints.Message(innerContext, runningOrder, takeSegmentLine, previousSegmentLine)
 
 			if (resultMessages === null) {
 				// do nothing
@@ -42,17 +43,21 @@ export function triggerExternalMessage (
 
 					// Save the output into the message queue, for later processing:
 					let now = getCurrentTime()
-					message.created = now
-					message.studioId = runningOrder.studioInstallationId
-					message.tryCount = 0
-					if (!message.expires) message.expires = now + 35 * 24 * 3600 * 1000 // 35 days
+					let message2: ExternalMessageQueueObj = {
+						_id: '',
+						studioId: runningOrder.studioInstallationId,
+						created: now,
+						tryCount: 0,
+						expires: now + 35 * 24 * 3600 * 1000, // 35 days
+						...message
+					}
 
 					message = removeNullyProperties(message)
 
 					// console.log('result', result)
 
 					if (!runningOrder.rehearsal) { // Don't save the message when running rehearsals
-						ExternalMessageQueue.insert(message)
+						ExternalMessageQueue.insert(message2)
 
 						triggerdoMessageQueue() // trigger processing of the queue
 					}

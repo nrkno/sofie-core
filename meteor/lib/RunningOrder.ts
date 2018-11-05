@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import * as SuperTimeline from 'superfly-timeline'
 import { SegmentLineItems, SegmentLineItem } from './collections/SegmentLineItems'
-import { PlayoutTimelinePrefixes } from './api/playout'
+import { getSliGroupId } from 'tv-automation-sofie-blueprints-integration/dist/timeline'
 import { IOutputLayer, ISourceLayer, StudioInstallation } from './collections/StudioInstallations'
 import { normalizeArray } from './lib'
 import { Segment } from './collections/Segments'
@@ -187,7 +187,7 @@ export function getResolvedSegment (studioInstallation: StudioInstallation, runn
 
 			_.forEach<SegmentLineItemExtended>(segmentLine.items, (segmentLineItem) => {
 				slTimeline.push({
-					id: PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + segmentLineItem._id,
+					id: getSliGroupId(segmentLineItem),
 					trigger: offsetTrigger(segmentLineItem.trigger, TIMELINE_TEMP_OFFSET),
 					duration: segmentLineItem.durationOverride || segmentLineItem.duration || segmentLineItem.expectedDuration || 0,
 					LLayer: segmentLineItem.outputLayerId,

@@ -1,7 +1,7 @@
 import { SegmentLineItemUi, SegmentLineUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
 import * as Timecode from 'smpte-timecode'
 import { Settings } from '../../lib/Settings'
-import { RunningOrderAPI } from '../../lib/api/runningOrder'
+import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration/dist/content'
 
 export namespace RundownUtils {
 	function padZero (input: number, places?: number): string {
@@ -120,10 +120,10 @@ export namespace RundownUtils {
 		return true
 	}
 
-	export function getSourceLayerClassName (slType: RunningOrderAPI.SourceLayerType): string {
+	export function getSourceLayerClassName (slType: SourceLayerType): string {
 		// CAMERA_MOVEMENT -> "camera-movement"
 		return (
-			((RunningOrderAPI.SourceLayerType[slType] || 'unknown-sourceLayer-' + slType) + '')
+			((SourceLayerType[slType] || 'unknown-sourceLayer-' + slType) + '')
 			.toLowerCase()
 			.replace(/_/g,'-')
 		)

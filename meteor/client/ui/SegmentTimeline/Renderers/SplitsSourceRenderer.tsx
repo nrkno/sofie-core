@@ -6,7 +6,7 @@ import { FloatingInspector } from '../../FloatingInspector'
 import * as ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
 
-import { RunningOrderAPI } from '../../../../lib/api/runningOrder'
+import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration/dist/content'
 import { literal } from '../../../../lib/lib'
 import { SplitsContent } from 'tv-automation-sofie-blueprints-integration/dist/content'
 import * as _ from 'underscore'
@@ -19,7 +19,7 @@ export enum SplitRole {
 
 interface SplitSubItem {
 	_id: string
-	type: RunningOrderAPI.SourceLayerType
+	type: SourceLayerType
 	label: string
 	// TODO: To be replaced with the structure used by the Core
 	role: SplitRole

@@ -8,6 +8,7 @@ import { ISourceLayerUi,
 		 SegmentLineItemUi } from './SegmentTimelineContainer'
 
 import { RunningOrderAPI } from '../../../lib/api/runningOrder'
+import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration/dist/content'
 import { RundownUtils } from '../../lib/rundown'
 import { Transition } from '../../../lib/constants/casparcg'
 import { SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
@@ -357,8 +358,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 	renderInsideItem (typeClass: string) {
 		switch (this.props.layer.type) {
-			case RunningOrderAPI.SourceLayerType.SCRIPT:
-			// case RunningOrderAPI.SourceLayerType.MIC:
+			case SourceLayerType.SCRIPT:
+			// case SourceLayerType.MIC:
 				return <MicSourceRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
@@ -366,7 +367,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
-			case RunningOrderAPI.SourceLayerType.VT:
+			case SourceLayerType.VT:
 				return <VTSourceRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
@@ -374,8 +375,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
-			case RunningOrderAPI.SourceLayerType.GRAPHICS:
-			case RunningOrderAPI.SourceLayerType.LOWER_THIRD:
+			case SourceLayerType.GRAPHICS:
+			case SourceLayerType.LOWER_THIRD:
 				return <L3rdSourceRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
@@ -383,7 +384,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
-			case RunningOrderAPI.SourceLayerType.SPLITS:
+			case SourceLayerType.SPLITS:
 				return <SplitsSourceRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
@@ -391,7 +392,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
-			case RunningOrderAPI.SourceLayerType.LIVE_SPEAK:
+			case SourceLayerType.LIVE_SPEAK:
 				return <STKSourceRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
@@ -400,7 +401,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
 
-			case RunningOrderAPI.SourceLayerType.TRANSITION:
+			case SourceLayerType.TRANSITION:
 				return <TransitionSourceRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}

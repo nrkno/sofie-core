@@ -3,7 +3,7 @@ import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import Moment from 'react-moment'
-import { RunningOrderAPI } from '../../../lib/api/runningOrder'
+import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration/dist/content'
 import { LookaheadMode } from '../../../lib/api/playout'
 import { IOutputLayer,
 	ISourceLayer,
@@ -631,39 +631,39 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 		}
 	}
 
-	sourceLayerString (type: RunningOrderAPI.SourceLayerType) {
+	sourceLayerString (type: SourceLayerType) {
 		const { t } = this.props
 		switch (type) {
-			case RunningOrderAPI.SourceLayerType.CAMERA:
+			case SourceLayerType.CAMERA:
 				return t('Camera')
-			case RunningOrderAPI.SourceLayerType.GRAPHICS:
+			case SourceLayerType.GRAPHICS:
 				return t('Graphics')
-			case RunningOrderAPI.SourceLayerType.LIVE_SPEAK:
+			case SourceLayerType.LIVE_SPEAK:
 				return t('Live Speak')
-			case RunningOrderAPI.SourceLayerType.LOWER_THIRD:
+			case SourceLayerType.LOWER_THIRD:
 				return t('Lower Third')
-			case RunningOrderAPI.SourceLayerType.MIC:
+			case SourceLayerType.MIC:
 				return t('Studio Microphone')
-			case RunningOrderAPI.SourceLayerType.REMOTE:
+			case SourceLayerType.REMOTE:
 				return t('Remote Source')
-			case RunningOrderAPI.SourceLayerType.SCRIPT:
+			case SourceLayerType.SCRIPT:
 				return t('Generic Script')
-			case RunningOrderAPI.SourceLayerType.SPLITS:
+			case SourceLayerType.SPLITS:
 				return t('Split Screen')
-			case RunningOrderAPI.SourceLayerType.VT:
+			case SourceLayerType.VT:
 				return t('Clips')
-			case RunningOrderAPI.SourceLayerType.METADATA:
+			case SourceLayerType.METADATA:
 				return t('Metadata')
-			case RunningOrderAPI.SourceLayerType.CAMERA_MOVEMENT:
+			case SourceLayerType.CAMERA_MOVEMENT:
 				return t('Camera Movement')
-			case RunningOrderAPI.SourceLayerType.UNKNOWN:
+			case SourceLayerType.UNKNOWN:
 				return t('Unknown Layer')
-			case RunningOrderAPI.SourceLayerType.AUDIO:
+			case SourceLayerType.AUDIO:
 				return t('Audio Mixing')
-			case RunningOrderAPI.SourceLayerType.TRANSITION:
+			case SourceLayerType.TRANSITION:
 				return t('Transition')
 			default:
-				return RunningOrderAPI.SourceLayerType[type]
+				return SourceLayerType[type]
 		}
 	}
 
@@ -714,7 +714,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 							{item._id}
 						</td>
 						<td className='settings-studio-source-table__type c3'>
-							{this.sourceLayerString(Number.parseInt(item.type.toString(), 10) as RunningOrderAPI.SourceLayerType)}
+							{this.sourceLayerString(Number.parseInt(item.type.toString(), 10) as SourceLayerType)}
 						</td>
 						<td className='settings-studio-source-table__actions table-item-actions c3'>
 							<button className='action-btn' onClick={(e) => this.editItem(item)}>
@@ -774,7 +774,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 													attribute={'sourceLayers.' + item.index + '.type'}
 													obj={this.props.studioInstallation}
 													type='dropdown'
-													options={RunningOrderAPI.SourceLayerType}
+													options={SourceLayerType}
 													optionsAreNumbers
 													collection={StudioInstallations}
 													className='focusable-main input-l'></EditAttribute>
@@ -1901,7 +1901,7 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 			_id: this.props.studioInstallation._id + '-' + Random.id(5),
 			_rank: maxRank ? maxRank._rank + 10 : 0,
 			name: t('New Source'),
-			type: RunningOrderAPI.SourceLayerType.UNKNOWN,
+			type: SourceLayerType.UNKNOWN,
 			unlimited: false,
 			onPGMClean: true
 		})
