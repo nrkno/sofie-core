@@ -63,7 +63,7 @@ import { sendSlackMessageToWebhook } from './slack'
 import { setMeteorMethods } from '../methods'
 import { RundownAPI } from '../../lib/api/rundown'
 import { sendStoryStatus } from './integration/mos'
-import { updateSegmentLines } from './rundown'
+import { updateSegmentLines, reloadRunningOrderData } from './runningOrder'
 
 const MINIMUM_TAKE_SPAN = 1000
 
@@ -425,23 +425,6 @@ export namespace ServerPlayoutAPI {
 
 		sendStoryStatus(runningOrder, null)
 	}
-	const reloadRunningOrderData: (runningOrder: RunningOrder) => void = Meteor.wrapAsync(
-		function reloadRunningOrderData (runningOrder: RunningOrder, cb: (err) => void) {
-			logger.info('reloadRunningOrderData ' + runningOrder._id)
-
-			PeripheralDeviceAPI.executeFunction(runningOrder.mosDeviceId, (err: any, ro: IMOSRunningOrder) => {
-				// console.log('Response!')
-				if (err) {
-					logger.error(err)
-					cb(err)
-				} else {
-					// TODO: what to do with the result?
-					logger.debug('Recieved reply for triggerGetRunningOrder', ro)
-					cb(null)
-				}
-			}, 'triggerGetRunningOrder', runningOrder.mosId)
-		}
-	)
 	// function resetSegment (segmentId: string, skipSegmentLineId: string | null) {
 	// 	const segment = Segments.findOne(segmentId)
 	// 	if (!segment) return
@@ -1567,9 +1550,6 @@ export namespace ServerPlayoutAPI {
 }
 
 let methods = {}
-methods[PlayoutAPI.methods.reloadData] = (roId: string) => {
-	return ServerPlayoutAPI.reloadData(roId)
-}
 methods[PlayoutAPI.methods.roPrepareForBroadcast] = (roId: string) => {
 	return ServerPlayoutAPI.roPrepareForBroadcast(roId)
 }

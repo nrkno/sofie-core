@@ -62,6 +62,8 @@ export interface DBRunningOrder {
 	currentPlayingStoryStatus?: string
 
 	holdState?: RunningOrderHoldState
+	/** What the source of the data was */
+	dataSource: string
 }
 export class RunningOrder implements DBRunningOrder {
 	public _id: string
@@ -86,6 +88,7 @@ export class RunningOrder implements DBRunningOrder {
 	public startedPlayback?: Time
 	public currentPlayingStoryStatus?: string
 	public holdState?: RunningOrderHoldState
+	public dataSource: string
 
 	constructor (document: DBRunningOrder) {
 		_.each(_.keys(document), (key) => {

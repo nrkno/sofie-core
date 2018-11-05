@@ -3,28 +3,16 @@ import { check, Match } from 'meteor/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { RunningOrder, RunningOrders, DBRunningOrder } from '../../lib/collections/RunningOrders'
-import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode, SegmentLineNoteType, SegmentLineNote } from '../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
-import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
-import { saveIntoDb, partialExceptId, getCurrentTime, literal, fetchBefore, getRank, fetchAfter } from '../../lib/lib'
+import { RunningOrders } from '../../lib/collections/RunningOrders'
+import { getCurrentTime } from '../../lib/lib'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
-import { runTemplate, runNamedTemplate, TemplateContext, RunTemplateResult, TemplateResultAfterPost } from './templates/templates'
-import { getHash } from '../lib'
 import { Timeline } from '../../lib/collections/Timeline'
-import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
-import { MediaObject, MediaObjects } from '../../lib/collections/MediaObjects'
-import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
-import { ShowStyles, ShowStyle } from '../../lib/collections/ShowStyles'
-import { ServerPlayoutAPI, updateTimelineFromMosData, updateTimeline, afterUpdateTimeline } from './playout'
+import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { ServerPlayoutAPI, afterUpdateTimeline } from './playout'
 import { syncFunction } from '../codeControl'
-import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 import { setMeteorMethods, wrapMethods, Methods } from '../methods'
-import {
-	afterRemoveSegment
-} from './rundown'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -256,16 +244,6 @@ export namespace ServerPeripheralDeviceAPI {
 // 	Segments.upsert(segment._id, {$set: _.omit(segment,['_id']) })
 // 	afterInsertUpdateSegment(story, runningOrderId)
 // }
-/**
- * Removes a Segment from the database
- * @param story The story to be inserted
- * @param runningOrderId The Running order id to insert into
- * @param rank The rank (position) to insert at
- */
-export function removeSegment (segmentId: string, runningOrderId: string) {
-	Segments.remove(segmentId)
-	afterRemoveSegment(segmentId, runningOrderId)
-}
 /**
  * After a Story (aka a Segment) has been inserted / updated, handle its contents
  * @param story The Story that was inserted / updated

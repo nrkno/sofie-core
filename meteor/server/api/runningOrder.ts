@@ -1,28 +1,18 @@
 import { Meteor } from 'meteor/meteor'
-import { check, Match } from 'meteor/check'
 import * as _ from 'underscore'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { RunningOrder, RunningOrders, DBRunningOrder } from '../../lib/collections/RunningOrders'
-import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode, SegmentLineNoteType, SegmentLineNote } from '../../lib/collections/SegmentLines'
+import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
+import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
-import { saveIntoDb, partialExceptId, getCurrentTime, literal, fetchBefore, getRank, fetchAfter } from '../../lib/lib'
-import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
-import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
+import { saveIntoDb, fetchBefore, getRank, fetchAfter } from '../../lib/lib'
 import { logger } from '../logging'
-import { runTemplate, runNamedTemplate, TemplateContext, RunTemplateResult, TemplateResultAfterPost } from './templates/templates'
+import { runNamedTemplate, TemplateContext, TemplateResultAfterPost } from './templates/templates'
 import { getHash } from '../lib'
-import { Timeline } from '../../lib/collections/Timeline'
-import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
-import { MediaObject, MediaObjects } from '../../lib/collections/MediaObjects'
-import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
-import { ShowStyles, ShowStyle } from '../../lib/collections/ShowStyles'
-import { ServerPlayoutAPI, updateTimelineFromMosData, updateTimeline, afterUpdateTimeline } from './playout'
-import { syncFunction } from '../codeControl'
+import { ShowStyles } from '../../lib/collections/ShowStyles'
+import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
-import { setMeteorMethods } from '../methods'
-import { updateStory } from './integration/mos'
+import { updateStory, reloadRunningOrder } from './integration/mos'
+import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
 
 /**
  * After a Segment has beed removed, handle its contents
@@ -177,10 +167,10 @@ export function convertToSegment (segmentLine: SegmentLine, rank: number): DBSeg
 	}
 	// logger.debug('story.Number', story.Number)
 }
-export function segmentId (roId: string, storySlug: string, rank: number, original?: boolean): string {
+export function segmentId (roId: string, storySlug: string, rank: number): string {
 	let slugParts = storySlug.split(';')
 	let id = roId + '_' + slugParts[0] + '_' + rank
-	return (original ? id : getHash(id))
+	return getHash(id)
 }
 export function updateSegments (runningOrderId: string) {
 	// using SegmentLines, determine which segments are to be created
@@ -383,4 +373,18 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 
 	// if anything was changed
 	return (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
+}
+export function reloadRunningOrderData (runningOrder: RunningOrder) {
+	// TODO: determine that the runningOrder is Mos-driven, then call the function
+	return reloadRunningOrder(runningOrder)
+}
+/**
+ * Removes a Segment from the database
+ * @param story The story to be inserted
+ * @param runningOrderId The Running order id to insert into
+ * @param rank The rank (position) to insert at
+ */
+export function removeSegment (segmentId: string, runningOrderId: string) {
+	Segments.remove(segmentId)
+	afterRemoveSegment(segmentId, runningOrderId)
 }

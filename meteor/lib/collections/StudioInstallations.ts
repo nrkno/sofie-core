@@ -43,8 +43,7 @@ export interface MappingCasparCG extends Mapping {
 	layer: number
 }
 export interface MappingAbstract extends Mapping {
-	device: PlayoutDeviceType.ABSTRACT,
-	abstractPipe: number
+	device: PlayoutDeviceType.ABSTRACT
 }
 export interface MappingAtem extends Mapping {
 	device: PlayoutDeviceType.ATEM,
