@@ -15,6 +15,10 @@ import { ChannelFormat } from '../../lib/constants/casparcg'
 import { getHash } from '../lib'
 import { PlayoutDeviceType } from '../../lib/collections/PeripheralDevices'
 import { LookaheadMode } from '../../lib/api/playout'
+import * as request from 'request'
+import { promisify } from 'util'
+
+const deleteRequest = promisify(request.delete)
 
 const LLayerRecord = '_internal_ccg_record_consumer'
 const LLayerInput = '_internal_ccg_record_input'
@@ -166,6 +170,28 @@ export namespace ServerTestToolsAPI {
 
 		return true
 	}
+
+	export function recordDelete (id: string) {
+		const file = RecordedFiles.findOne(id)
+		if (!file) throw new Meteor.Error(404, `Recording "${id}" was not found!`)
+
+		const studio = StudioInstallations.findOne(file.studioId)
+		if (!studio) throw new Meteor.Error(404, `Studio "${file.studioId}" was not found!`)
+
+		const config = getStudioConfig(studio)
+		if (!config.recordings.urlPrefix) throw new Meteor.Error(500, `URL prefix for Studio "${studio._id}" not defined!`)
+
+		deleteRequest({ uri: config.recordings.urlPrefix + file.path }).then(res => {
+			// 404 is ok, as it means file already doesnt exist. 200 is also good
+			if (res.statusCode !== 404 && res.statusCode !== 200) {
+				throw new Meteor.Error(500, `Failed to delete recording "${id}"!`)
+			}
+
+			RecordedFiles.remove(id)
+
+			return true
+		})
+	}
 }
 
 let methods = {}
@@ -174,6 +200,9 @@ methods[TestToolsAPI.methods.recordStop] = (studioId) => {
 }
 methods[TestToolsAPI.methods.recordStart] = (studioId, name) => {
 	return ServerTestToolsAPI.recordStart(studioId, name)
+}
+methods[TestToolsAPI.methods.recordDelete] = (id) => {
+	return ServerTestToolsAPI.recordDelete(id)
 }
 
 // Transform methods:

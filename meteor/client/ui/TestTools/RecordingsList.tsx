@@ -7,11 +7,15 @@ import { StudioInstallation, StudioInstallations } from '../../../lib/collection
 import { RecordedFile, RecordedFiles } from '../../../lib/collections/RecordedFiles'
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
+import Moment from 'react-moment'
 import { eventContextForLog } from '../../lib/eventTargetLogHelper'
 import { TestToolsAPI } from '../../../lib/api/testTools'
 import { ClientAPI } from '../../../lib/api/client'
 import { EditAttribute } from '../../lib/EditAttribute'
 import * as objectPath from 'object-path'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faTrash } from '@fortawesome/fontawesome-free-solid'
+import { ModalDialog } from '../../lib/ModalDialog'
 
 interface IRecordingListProps {
 	match?: {
@@ -22,6 +26,9 @@ interface IRecordingListProps {
 }
 interface IRecordingListState {
 	filename: string
+
+	showDeleteConfirm: boolean
+	deleteConfirmItem?: RecordedFile
 }
 interface IRecordingListTrackedProps {
 	studio?: StudioInstallation
@@ -39,7 +46,8 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 		super(props)
 
 		this.state = {
-			filename: ''
+			filename: '',
+			showDeleteConfirm: false
 		}
 	}
 
@@ -54,11 +62,6 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 		}
 	}
 
-	renderRunningOrders () {
-		return this.props.files.map((file) => (
-			<RecordedFilesListItem key={file._id} file={file} />
-		))
-	}
 	componentWillMount () {
 		if (this.props.match && this.props.match.params) {
 			// Subscribe to data:
@@ -95,6 +98,27 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 				filename: ''
 			})
 		}
+	}
+
+	handleConfirmDeleteCancel = (e) => {
+		this.setState({
+			deleteConfirmItem: undefined,
+			showDeleteConfirm: false
+		})
+	}
+	onDelete (item: RecordedFile) {
+		this.setState({
+			deleteConfirmItem: item,
+			showDeleteConfirm: true
+		})
+	}
+	handleConfirmDeleteAccept = (e) => {
+		if (this.state.deleteConfirmItem) {
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), TestToolsAPI.methods.recordDelete, this.state.deleteConfirmItem._id)
+		}
+		this.setState({
+			showDeleteConfirm: false
+		})
 	}
 
 	isStudioConfigured () {
@@ -139,6 +163,11 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 			</p>
 		</React.Fragment>
 	}
+	renderRecordingList () {
+		return this.props.files.map((file) => (
+			<RecordedFilesListItem key={file._id} file={file} onDeleteRecording={i => this.onDelete(i)} />
+		))
+	}
 
 	render () {
 		const { t } = this.props
@@ -152,6 +181,10 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 				<div className='mod mvl'>
 					{this.renderControlPanel()}
 				</div>
+				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
+					<p>{t('Are you sure you want to delete recording "{{name}}"?', { name: this.state.deleteConfirmItem && this.state.deleteConfirmItem.name })}</p>
+					<p>{t('Please note: This action is irreversible!')}</p>
+				</ModalDialog>
 				<div className='mod mvl'>
 					<table className='table system-status-table expando expando-tight'>
 						<thead>
@@ -170,7 +203,7 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 							</tr>
 						</thead>
 						<tbody>
-							{this.renderRunningOrders()}
+							{this.renderRecordingList()}
 						</tbody>
 					</table>
 				</div>
@@ -180,8 +213,9 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 })
 
 interface IRecordedFilesListItemProps {
-	key: string,
+	key: string
 	file: RecordedFile
+	onDeleteRecording: (file: RecordedFile) => void
 }
 
 export class RecordedFilesListItem extends React.Component<IRecordedFilesListItemProps> {
@@ -193,10 +227,15 @@ export class RecordedFilesListItem extends React.Component<IRecordedFilesListIte
 						<Link to={`${this.props.file.studioId}/${this.props.file._id}`}>{this.props.file.name}</Link>
 					</td>
 					<td className='recorded-file-list-item__started'>
-						<MomentFromNow>{this.props.file.startedAt}</MomentFromNow>
+						<Moment format='YYYY/MM/DD HH:mm:ss'>{this.props.file.startedAt}</Moment>
 					</td>
 					<td className='recorded-file-list-item__stopped'>
-						{this.props.file.stoppedAt && <MomentFromNow>{this.props.file.stoppedAt}</MomentFromNow>}
+						{this.props.file.stoppedAt && <Moment format='YYYY/MM/DD HH:mm:ss'>{this.props.file.stoppedAt}</Moment>}
+					</td>
+					<td className='actions'>
+						<button className='action-btn' onClick={(e) => this.props.onDeleteRecording(this.props.file)}>
+							<FontAwesomeIcon icon={faTrash} />
+						</button>
 					</td>
 				</tr>
 			</React.Fragment>

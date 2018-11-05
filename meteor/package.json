@@ -26,6 +26,7 @@
     "@nrk/core-icons": "^3.2.0",
     "@slack/client": "^4.6.0",
     "@types/body-parser": "^1.17.0",
+    "@types/request": "^2.48.1",
     "body-parser": "^1.18.3",
     "chai": "^4.1.2",
     "classnames": "^2.2.5",
