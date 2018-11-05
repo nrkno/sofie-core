@@ -60,6 +60,8 @@ export interface DBRunningOrder {
 
 	/** Is the running order in an unsynced (has been unpublished from ENPS) state? */
 	unsynced?: boolean
+	/** Timestamp of when RO was unsynced */
+	unsyncedTime?: Time
 
 	/** Last sent storyStatus to MOS */
 	currentPlayingStoryStatus?: string

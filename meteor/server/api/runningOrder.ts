@@ -417,7 +417,7 @@ export namespace ServerRunningOrderAPI {
 
 			Meteor.call(PlayoutAPI.methods.reloadData, runningOrderId, false, (err, result) => {
 				if (err) {
-					console.error(err)
+					logger.error(err)
 					return
 				}
 			})

@@ -534,11 +534,14 @@ export namespace MosIntegration {
 
 		if (ro) {
 			if (!ro.active || force === true) {
-				return ServerRunningOrderAPI.removeRunningOrder(ro._id)
+				ServerRunningOrderAPI.removeRunningOrder(ro._id)
 			} else {
-				RunningOrders.update(ro._id, {$set: {
-					unsynced: true
-				}})
+				if (!ro.unsynced) {
+					RunningOrders.update(ro._id, {$set: {
+						unsynced: true,
+						unsyncedTime: getCurrentTime()
+					}})
+				}
 			}
 
 		}
