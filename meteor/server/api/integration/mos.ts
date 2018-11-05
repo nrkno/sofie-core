@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { check, Match } from 'meteor/check'
+import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import {
 	MosString128,
@@ -23,25 +23,21 @@ import {
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { RunningOrder, RunningOrders, DBRunningOrder } from '../../../lib/collections/RunningOrders'
-import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode, SegmentLineNoteType, SegmentLineNote } from '../../../lib/collections/SegmentLines'
+import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
-import { Segments, DBSegment, Segment } from '../../../lib/collections/Segments'
+import { DBSegment } from '../../../lib/collections/Segments'
 import { saveIntoDb, partialExceptId, getCurrentTime, literal, fetchBefore, getRank, fetchAfter } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
-import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../../logging'
-import { runTemplate, runNamedTemplate, TemplateContext, RunTemplateResult, TemplateResultAfterPost } from '../templates/templates'
+import { runTemplate, TemplateContext, RunTemplateResult, TemplateResultAfterPost } from '../templates/templates'
 import { getHash } from '../../lib'
-import { Timeline } from '../../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
 import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
 import { ShowStyles, ShowStyle } from '../../../lib/collections/ShowStyles'
-import { ServerPlayoutAPI, updateTimelineFromMosData, updateTimeline, afterUpdateTimeline } from '../playout'
-import { syncFunction } from '../../codeControl'
+import { ServerPlayoutAPI, updateTimelineFromMosData } from '../playout'
 import { CachePrefix } from '../../../lib/collections/RunningOrderDataCache'
 import { setMeteorMethods, wrapMethods, Methods } from '../../methods'
-import { afterRemoveSegmentLine, updateSegments, updateAffectedSegmentLines, removeSegmentLine, runPostProcessTemplate, RunningOrderAPI } from '../runningOrder'
+import { afterRemoveSegmentLine, updateSegments, updateAffectedSegmentLines, removeSegmentLine, runPostProcessTemplate, ServerRunningOrderAPI } from '../runningOrder'
 
 export function roId (roId: MosString128, original?: boolean): string {
 	// logger.debug('roId', roId)
@@ -538,7 +534,7 @@ export namespace MosIntegration {
 
 		if (ro) {
 			if (!ro.active || force === true) {
-				return RunningOrderAPI.removeRunningOrder(ro._id)
+				return ServerRunningOrderAPI.removeRunningOrder(ro._id)
 			} else {
 				RunningOrders.update(ro._id, {$set: {
 					unsynced: true

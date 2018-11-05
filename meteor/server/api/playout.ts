@@ -404,55 +404,6 @@ export namespace ServerPlayoutAPI {
 
 		sendStoryStatus(runningOrder, null)
 	}
-	// function resetSegment (segmentId: string, skipSegmentLineId: string | null) {
-	// 	const segment = Segments.findOne(segmentId)
-	// 	if (!segment) return
-
-	// 	const segmentLines = SegmentLines.find(_.extend({
-	// 		segmentId: segmentId,
-	// 	}, skipSegmentLineId ? {
-	// 		_id: {
-	// 			$ne: skipSegmentLineId
-	// 		}
-	// 	} : {})).fetch()
-
-	// 	SegmentLines.update(_.extend({
-	// 		runningOrderId: segment.runningOrderId,
-	// 		segmentId: segmentId
-	// 	}, skipSegmentLineId ? {
-	// 		_id: {
-	// 			$ne: skipSegmentLineId
-	// 		}
-	// 	} : {}), {
-	// 		$unset: {
-	// 			duration: 1,
-	// 			startedPlayback: 1,
-	// 		}
-	// 	}, {
-	// 		multi: true
-	// 	})
-	// 	SegmentLineItems.update({
-	// 		runningOrderId: segment.runningOrderId,
-	// 		segmentLineId: {
-	// 			$in: _.pluck(segmentLines, '_id')
-	// 		},
-	// 	}, {
-	// 		$unset: {
-	// 			startedPlayback: 1,
-	// 			durationOverride: 1
-	// 		}
-	// 	}, {
-	// 		multi: true
-	// 	})
-	// 	// Remove all segment line items that have been dynamically created (such as adLib items)
-	// 	SegmentLineItems.remove({
-	// 		runningOrderId: segment.runningOrderId,
-	// 		segmentLineId: {
-	// 			$in: _.pluck(segmentLines, '_id')
-	// 		},
-	// 		dynamicallyInserted: true
-	// 	})
-	// }
 	function resetSegmentLine (segmentLine: DBSegmentLine): Promise<void> {
 		let ps: Array<Promise<any>> = []
 
@@ -1189,23 +1140,6 @@ export namespace ServerPlayoutAPI {
 				hidden: true
 			}})
 		}
-		/* else {
-			const sourceSL = SegmentLines.findOne(slItem.segmentLineId)
-			if (sourceSL) {
-				const segmentLineItems = getResolvedSegmentLineItems(sourceSL)
-				const resSlItem = segmentLineItems.find(item => item._id === slItem!._id)
-
-				if (resSlItem && resSlItem.trigger.type === TriggerType.TIME_ABSOLUTE && resSlItem.trigger.value === 0) {
-					logger.debug(`Segment Line Item "${slItem._id}" is starting at the begining of it's Segment Line and cannot be used as an ad-lib`)
-					return literal<ClientAPI.ClientResponse>({
-						error: 409,
-						message: `Segment Line Item "${slItem._id}" is starting at the begining of it's Segment Line and cannot be used as an ad-lib`
-					})
-				}
-			} else {
-				throw new Meteor.Error(404, `Source Segment Line "${slItem.segmentLineId}" not found!`)
-			}
-		} */
 		SegmentLineItems.insert(newSegmentLineItem)
 
 		cropInfinitesOnLayer(runningOrder, segLine, newSegmentLineItem)
