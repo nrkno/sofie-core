@@ -505,8 +505,7 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.debug(Action, Stories)
 		// insert a story (aka SegmentLine) before another story:
 		let ro = getRO(Action.RunningOrderID)
-		if (ro && ro.unsynced) {
-			logger.info(`RunningOrder "${ro._id}" has been unsynced and needs to be synced before it can be updated.`)
+		if (!isAvailableForMOS(ro)) {
 			return
 		}
 		let segmentLineAfter = (Action.StoryID ? getSegmentLine(Action.RunningOrderID, Action.StoryID) : null)
@@ -585,8 +584,7 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.debug(Action, Stories)
 		// Replace a Story (aka a SegmentLine) with one or more Stories
 		let ro = getRO(Action.RunningOrderID)
-		if (ro && ro.unsynced) {
-			logger.info(`RunningOrder "${ro._id}" has been unsynced and needs to be synced before it can be updated.`)
+		if (!isAvailableForMOS(ro)) {
 			return
 		}
 		let segmentLineToReplace = getSegmentLine(Action.RunningOrderID, Action.StoryID)
@@ -649,8 +647,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// Move Stories (aka SegmentLine ## TODO ##Lines) to before a story
 		let ro = getRO(Action.RunningOrderID)
-		if (ro && ro.unsynced) {
-			logger.info(`RunningOrder "${ro._id}" has been unsynced and needs to be synced before it can be updated.`)
+		if (!isAvailableForMOS(ro)) {
 			return
 		}
 
@@ -734,8 +731,7 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.debug(Action, Stories)
 		// Delete Stories (aka SegmentLine)
 		let ro = getRO(Action.RunningOrderID)
-		if (ro && ro.unsynced) {
-			logger.info(`RunningOrder "${ro._id}" has been unsynced and needs to be synced before it can be updated.`)
+		if (!isAvailableForMOS(ro)) {
 			return
 		}
 
@@ -771,8 +767,7 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.debug(Action, StoryID0, StoryID1)
 		// Swap Stories (aka SegmentLine)
 		let ro = getRO(Action.RunningOrderID)
-		if (ro && ro.unsynced) {
-			logger.info(`RunningOrder "${ro._id}" has been unsynced and needs to be synced before it can be updated.`)
+		if (!isAvailableForMOS(ro)) {
 			return
 		}
 
@@ -816,8 +811,7 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.debug(Action)
 		// Set the ready to air status of a Running Order
 		let ro = getRO(Action.ID)
-		if (ro && ro.unsynced) {
-			logger.info(`RunningOrder "${ro._id}" has been unsynced and needs to be synced before it can be updated.`)
+		if (!isAvailableForMOS(ro)) {
 			return
 		}
 
@@ -837,8 +831,7 @@ export namespace ServerPeripheralDeviceAPI {
 		// logger.debug(story)
 		// Update db with the full story:
 		let ro = getRO(story.RunningOrderId)
-		if (ro && ro.unsynced) {
-			logger.info(`RunningOrder "${ro._id}" has been unsynced and needs to be synced before it can be updated.`)
+		if (!isAvailableForMOS(ro)) {
 			return
 		}
 
@@ -1630,6 +1623,13 @@ function setStoryStatus (deviceId: string, ro: RunningOrder, storyId: string, st
 			}, 'setStoryStatus', ro.mosId, storyId, status)
 		}
 	})
+}
+function isAvailableForMOS (ro: RunningOrder | undefined): boolean {
+	if (ro && ro.unsynced) {
+		logger.info(`RunningOrder "${ro._id}" has been unsynced and needs to be synced before it can be updated.`)
+		return false
+	}
+	return true
 }
 
 let methods = {}
