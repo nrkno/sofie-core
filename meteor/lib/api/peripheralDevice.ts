@@ -71,6 +71,7 @@ export enum methods {
 	'mosRoCreate' 		= 'peripheralDevice.mos.roCreate',
 	'mosRoReplace' 		= 'peripheralDevice.mos.roReplace',
 	'mosRoDelete' 		= 'peripheralDevice.mos.roDelete',
+	'mosRoDeleteForce'	= 'peripheralDevice.mos.roDeleteForce',
 	'mosRoMetadata' 	= 'peripheralDevice.mos.roMetadata',
 	'mosRoStatus' 		= 'peripheralDevice.mos.roStatus',
 	'mosRoStoryStatus' 	= 'peripheralDevice.mos.roStoryStatus',
@@ -87,6 +88,8 @@ export enum methods {
 	'mosRoItemSwap' 	= 'peripheralDevice.mos.RoItemSwap',
 	'mosRoReadyToAir' 	= 'peripheralDevice.mos.RoReadyToAir',
 	'mosRoFullStory' 	= 'peripheralDevice.mos.RoFullStory',
+
+	'resyncRo'			= 'peripheralDevice.mos.roResync',
 
 	'getMediaObjectRevisions' 	= 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
 	'updateMediaObject' 		= 'peripheralDevice.mediaScanner.updateMediaObject'
