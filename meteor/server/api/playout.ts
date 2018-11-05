@@ -48,7 +48,6 @@ import { IMOSRunningOrder, MosString128 } from 'mos-connection'
 import { PlayoutTimelinePrefixes, LookaheadMode } from '../../lib/api/playout'
 import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
-import { sendStoryStatus, updateSegmentLines } from './peripheralDevice'
 import { StudioInstallations, StudioInstallation, IStudioConfigItem } from '../../lib/collections/StudioInstallations'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
@@ -63,6 +62,8 @@ import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
 import { sendSlackMessageToWebhook } from './slack'
 import { setMeteorMethods } from '../methods'
 import { RundownAPI } from '../../lib/api/rundown'
+import { sendStoryStatus } from './integration/mos'
+import { updateSegmentLines } from './rundown'
 
 const MINIMUM_TAKE_SPAN = 1000
 
