@@ -67,7 +67,8 @@ export function runtimeFunctionTestCode (runtimeFunction: RuntimeFunction, showS
 			studioId: 'myStudio',
 			// segment: Segment
 			segmentLine: new SegmentLine(tmpSegmentLine),
-			templateId: runtimeFunction._id
+			templateId: runtimeFunction._id,
+			runtimeArguments: {}
 		}
 
 		let innerContext = getContext(tmpContext)

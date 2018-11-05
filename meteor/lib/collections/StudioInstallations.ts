@@ -125,6 +125,7 @@ export interface ISourceLayerBase {
 }
 
 export interface IStudioROArgumentsItem {
+	label?: string
 	hotkeys: string
 	property: string
 	value: string

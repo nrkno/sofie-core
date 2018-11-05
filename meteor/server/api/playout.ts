@@ -1635,6 +1635,9 @@ methods[PlayoutAPI.methods.roTake] = (roId: string) => {
 methods[PlayoutAPI.methods.userRoTake] = (roId: string) => {
 	return ServerPlayoutAPI.userRoTake(roId)
 }
+methods[PlayoutAPI.methods.roToggleSegmentLineArgument] = (roId: string, slId: string, property: string, value: string) => {
+	return ServerPlayoutAPI.roToggleSegmentLineArgument(roId, slId, property, value)
+}
 methods[PlayoutAPI.methods.roSetNext] = (roId: string, slId: string) => {
 	return ServerPlayoutAPI.roSetNext(roId, slId, true)
 }
