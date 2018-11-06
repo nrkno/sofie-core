@@ -809,6 +809,8 @@ export function handleMosRoData (peripheralDevice: PeripheralDevice, ro: IMOSRun
 	dbRo.saveCache(CachePrefix.ROCREATE + dbRo._id, ro)
 
 	// Save Stories into database:
+	let existingSegmentLines = dbRo.getSegmentLines()
+
 	// Note: a number of X stories will result in (<=X) Segments and X SegmentLines
 	let segments: DBSegment[] = []
 	let segmentLines: DBSegmentLine[] = []
@@ -825,7 +827,13 @@ export function handleMosRoData (peripheralDevice: PeripheralDevice, ro: IMOSRun
 			// segments.push(segment)
 		// }
 		if (dbRo) {
+			// join new data with old:
 			let segmentLine = convertToSegmentLine(story, dbRo._id, rankSegmentLine++)
+			let existingSegmentLine = _.find(existingSegmentLines, (sl) => {
+				return sl._id === segmentLine._id
+			})
+			segmentLine = mergeSegmentLine(segmentLine, existingSegmentLine)
+
 			segmentLines.push(segmentLine)
 		} else throw new Meteor.Error(500, 'Running order not found (it should have been)')
 
@@ -983,6 +991,22 @@ export function convertToSegmentLine (story: IMOSStory, runningOrderId: string, 
 		// autoNext: item.Trigger === ??
 	}
 }
+/**
+ * Merge an old segmentLine with a new one (to be used together with (after) convertToSegmentLine )
+ * @param newSegmentLine
+ * @param existingSegmentLine
+ */
+export function mergeSegmentLine (newSegmentLine: DBSegmentLine, existingSegmentLine?: DBSegmentLine): DBSegmentLine {
+	if (existingSegmentLine) {
+		if (existingSegmentLine._id !== newSegmentLine._id) {
+			throw new Meteor.Error(500, `mergeSegmentLine: ids differ: ${newSegmentLine._id}, ${existingSegmentLine._id}`)
+		}
+
+		newSegmentLine = _.extend({}, existingSegmentLine, _.omit(newSegmentLine, ['segmentId']))
+	}
+	return newSegmentLine
+}
+
 /**
  * Insert a Story (aka a Segment) into the database
  * @param story The story to be inserted
