@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import { RunningOrderAPI } from '../api/runningOrder'
-import { TimelineTransition } from './Timeline'
+import { TimelineTransition } from 'timeline-state-resolver-types'
 import { TransformedCollection } from '../typings/meteor'
 import { SegmentLineTimings } from './SegmentLines'
 import { registerCollection } from '../lib'

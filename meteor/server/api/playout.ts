@@ -33,11 +33,13 @@ import {
 	TimelineObjSegmentLineItemAbstract,
 	TimelineObjGroup,
 	TimelineObjGroupSegmentLine,
+} from '../../lib/collections/Timeline'
+import {
 	TimelineContentTypeLawo,
 	TimelineObjLawo,
 	TimelineContentTypeHttp,
 	TimelineObjHTTPRequest
-} from '../../lib/collections/Timeline'
+} from 'timeline-state-resolver-types'
 import { TriggerType } from 'superfly-timeline'
 import { Segments,Segment } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
@@ -2106,6 +2108,7 @@ function segmentLineStoppedPlaying (roId: string, segmentLine: SegmentLine, stop
 function createSegmentLineGroup (segmentLine: SegmentLine, duration: number | string): TimelineObj {
 	let slGrp = literal<TimelineObjGroupSegmentLine>({
 		_id: getSlGroupId(segmentLine),
+		id: '',
 		siId: '', // added later
 		roId: '', // added later
 		deviceId: [],
@@ -2130,6 +2133,7 @@ function createSegmentLineGroup (segmentLine: SegmentLine, duration: number | st
 function createSegmentLineGroupFirstObject (segmentLine: SegmentLine, segmentLineGroup: TimelineObj): TimelineObj {
 	return literal<TimelineObjSegmentLineAbstract>({
 		_id: getSlFirstObjectId(segmentLine),
+		id: '',
 		siId: '', // added later
 		roId: '', // added later
 		deviceId: [],
@@ -2151,6 +2155,7 @@ function createSegmentLineGroupFirstObject (segmentLine: SegmentLine, segmentLin
 function createSegmentLineItemGroupFirstObject (segmentLineItem: SegmentLineItem, segmentLineItemGroup: TimelineObj, firstObjClasses?: string[]): TimelineObj {
 	return literal<TimelineObjSegmentLineItemAbstract>({
 		_id: getSliFirstObjectId(segmentLineItem),
+		id: '',
 		siId: '', // added later
 		roId: '', // added later
 		deviceId: [],
@@ -2177,6 +2182,7 @@ function createSegmentLineItemGroup (
 ): TimelineObj {
 	return literal<TimelineObjGroup>({
 		_id: getSliGroupId(item),
+		id: '',
 		content: {
 			type: TimelineContentTypeOther.GROUP,
 			objects: []
@@ -3061,6 +3067,7 @@ export function afterUpdateTimeline (studioInstallation: StudioInstallation, tim
 		let magicId = studioInstallation._id + '_' + deviceId + '_statObj'
 		let statObj: TimelineObj = {
 			_id: magicId,
+			id: '',
 			siId: studioInstallation._id,
 			statObject: true,
 			roId: '',
@@ -3106,7 +3113,7 @@ function setLawoObjectsTriggerValue (timelineObjs: Array<TimelineObj>, currentSe
 
 	_.each(timelineObjs, (obj) => {
 		if (obj.content.type === TimelineContentTypeLawo.SOURCE ) {
-			let lawoObj = obj as TimelineObjLawo
+			let lawoObj = obj as TimelineObjLawo & TimelineObj
 
 			_.each(lawoObj.content.attributes, (val, key) => {
 				// set triggerValue to the current playing segment, thus triggering commands to be sent when nexting:
@@ -3123,7 +3130,7 @@ function validateNoraPreload (timelineObjs: Array<TimelineObj>) {
 		if (obj.content.type !== TimelineContentTypeHttp.POST) return
 		if (!obj.isBackground) return
 
-		const obj2 = obj as TimelineObjHTTPRequest
+		const obj2 = obj as TimelineObjHTTPRequest & TimelineObj
 		if (obj2.content.params && obj2.content.params.template && (obj2.content.params.template as any).event === 'take') {
 			(obj2.content.params.template as any).event = 'cue'
 		} else {

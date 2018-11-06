@@ -10,7 +10,7 @@ import { PeripheralDevice,
 	MosDeviceSettings,
 	MosDeviceSettingsDevice
 } from '../../../lib/collections/PeripheralDevices'
-import { DeviceType as PlayoutDeviceType } from 'timeline-state-resolver-types'
+import { DeviceType as PlayoutDeviceType, TimelineContentTypeHttp } from 'timeline-state-resolver-types'
 import { literal } from '../../../lib/lib'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
@@ -23,7 +23,6 @@ import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { TimelineContentTypeHttp } from '../../../lib/collections/Timeline'
 import { Meteor } from 'meteor/meteor'
 
 interface IHttpSendDeviceSettingsComponentProps {
