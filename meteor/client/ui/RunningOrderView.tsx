@@ -1167,15 +1167,15 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		this.usedArgumentKeys.length = 0
 
 		if (this.props.studioInstallation) {
-			this.props.studioInstallation.roArguments.forEach((i) => {
+			_.each(this.props.studioInstallation.roArguments, (i) => {
 				const combos = i.hotkeys.split(',')
-				combos.forEach((combo) => {
+				_.each(combos, (combo) => {
 					const handler = (e: KeyboardEvent) => {
 						if (disableInInputFields(e)) return
 
-						if (this.props.runningOrder && this.props.runningOrder.active && this.props.runningOrder.currentSegmentLineId) {
+						if (this.props.runningOrder && this.props.runningOrder.active && this.props.runningOrder.nextSegmentLineId) {
 							Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roToggleSegmentLineArgument,
-								this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, i.property, i.value,
+								this.props.runningOrder._id, this.props.runningOrder.nextSegmentLineId, i.property, i.value,
 							(err) => {
 								if (err) {
 									// TODO: notify user
@@ -1202,6 +1202,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		this._cleanUp()
 		$(document.body).removeClass(['dark', 'vertical-overflow-only'])
 		$(window).off('scroll', this.onWindowScroll)
+		$(window).off('beforeunload', this.onBeforeUnload)
 
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {
@@ -1213,12 +1214,22 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			}
 		})
 
+		_.each(this.usedArgumentKeys, (k) => {
+			if (k.up) {
+				mousetrapHelper.unbind(k.key, 'ROArguments', 'keyup')
+				mousetrapHelper.unbind(k.key, 'ROArguments', 'keydown')
+			}
+			if (k.down) {
+				mousetrapHelper.unbind(k.key, 'ROArguments', 'keydown')
+			}
+		})
+
 		window.removeEventListener(RunningOrderViewEvents.goToLiveSegment, this.onGoToLiveSegment)
 	}
 
 	onBeforeUnload = (e: any) => {
 		const {t} = this.props
-		
+
 		e.preventDefault()
 		e.returnValue = t('This running order is now active. Are you sure you want to exit this screen?')
 
@@ -1401,7 +1412,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							<RunningOrderFullscreenControls isFollowingOnAir={this.state.followLiveSegments} onFollowOnAir={this.onGoToLiveSegment} onRewindSegments={this.onRewindSegments} />
 						</ErrorBoundary>
 						<ErrorBoundary>
-							{ this.state.studioMode && 
+							{ this.state.studioMode &&
 								<Prompt when={this.props.runningOrder.active} message={t('This running order is now active. Are you sure you want to exit this screen?')} />
 							}
 						</ErrorBoundary>

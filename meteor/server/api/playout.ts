@@ -182,7 +182,8 @@ export namespace ServerPlayoutAPI {
 			$unset: {
 				duration: 1,
 				startedPlayback: 1,
-				timings: 1
+				timings: 1,
+				runtimeArguments: 1
 			}
 		}, {multi: true})
 
@@ -502,6 +503,7 @@ export namespace ServerPlayoutAPI {
 			$unset: {
 				duration: 1,
 				startedPlayback: 1,
+				runtimeArguments: 1
 			}
 		}))
 		ps.push(asyncCollectionUpdate(SegmentLineItems, {
@@ -1514,7 +1516,7 @@ export namespace ServerPlayoutAPI {
 		const runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `Running order "${roId}" not found!`)
 
-		const segmentLine = SegmentLines.findOne(slId)
+		let segmentLine = SegmentLines.findOne(slId)
 		if (!segmentLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
 
 		const rArguments = segmentLine.runtimeArguments || {}
@@ -1530,6 +1532,10 @@ export namespace ServerPlayoutAPI {
 			mSet['runtimeArguments.' + property] = value
 			SegmentLines.update(segmentLine._id, {$set: mSet})
 		}
+
+		segmentLine = SegmentLines.findOne(slId)
+
+		if (!segmentLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
 
 		const story = runningOrder.fetchCache(CachePrefix.FULLSTORY + segmentLine._id) as IMOSROFullStory
 		const changed = updateStory(runningOrder, segmentLine, story)
