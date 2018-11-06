@@ -570,7 +570,7 @@ describe('peripheralDevice: MOS API methods', function () {
 			Status: IMOSObjectStatus.UPDATED,
 			Time: new MosTime('2009-04-11T14:13:53')
 		}
-		let segmentID = segmentId(roId(r'', o.ID), story.ID)
+		let segmentID = segmentId(roId(ro.ID), story.ID)
 		// first create the ro:
 		ServerPeripheralDeviceAPI.mosRoCreate(ro)
 		// Set status:
@@ -628,7 +628,7 @@ describe('peripheralDevice: MOS API methods', function () {
 			Status: IMOSObjectStatus.BUSY,
 			Time: new MosTime('2009-04-11T14:13:53')
 		}
-		let segmentID = segmentId(roId(r'', o.ID), story.ID)
+		let segmentID = segmentId(roId(ro.ID), story.ID)
 		let segmentLineID = segmentLineId(segmentID, item.ID)
 		// first create the ro:
 		ServerPeripheralDeviceAPI.mosRoCreate(ro)
@@ -694,7 +694,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		// first create the ro:
 		ServerPeripheralDeviceAPI.mosRoCreate(ro)
 		let dbRo = RunningOrders.findOne(roId(ro.ID))
-		let dbSegment0 = Segments.findOne( segmentId(roId(r'', o.ID), story.ID))
+		let dbSegment0 = Segments.findOne( segmentId(roId(ro.ID), story.ID))
 		let dbSegmentLines0 = SegmentLines.find({ runningOrderId: dbRo._id, segmentId: dbSegment0._id }).fetch()
 
 		// Insert item:
@@ -748,7 +748,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		// first create the ro:
 		ServerPeripheralDeviceAPI.mosRoCreate(ro)
 		let dbRo = RunningOrders.findOne(roId(ro.ID))
-		let dbSegment0 = Segments.findOne( segmentId(roId(r'', o.ID), story.ID))
+		let dbSegment0 = Segments.findOne( segmentId(roId(ro.ID), story.ID))
 		let dbSegmentLines0 = SegmentLines.find({ runningOrderId: dbRo._id, segmentId: dbSegment0._id }).fetch()
 
 		// Replace item:
@@ -802,7 +802,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		ServerPeripheralDeviceAPI.mosRoItemInsert(action0, items0)
 
 		let dbRo = RunningOrders.findOne(roId(ro.ID))
-		let dbSegment0 = Segments.findOne( segmentId(roId(r'', o.ID), story.ID))
+		let dbSegment0 = Segments.findOne( segmentId(roId(ro.ID), story.ID))
 		let dbSegmentLines0 = SegmentLines.find({ runningOrderId: dbRo._id, segmentId: dbSegment0._id }).fetch()
 
 		// Move item:
@@ -856,7 +856,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		ServerPeripheralDeviceAPI.mosRoItemInsert(action0, items0)
 
 		let dbRo = RunningOrders.findOne(roId(ro.ID))
-		let dbSegment0 = Segments.findOne( segmentId(roId(r'', o.ID), story.ID))
+		let dbSegment0 = Segments.findOne( segmentId(roId(ro.ID), story.ID))
 		let dbSegmentLines0 = SegmentLines.find({ runningOrderId: dbRo._id, segmentId: dbSegment0._id }).fetch()
 
 		// Delete item:
@@ -912,7 +912,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		ServerPeripheralDeviceAPI.mosRoItemInsert(action0, items0)
 
 		let dbRo = RunningOrders.findOne(roId(ro.ID))
-		let dbSegment0 = Segments.findOne( segmentId(roId(r'', o.ID), story.ID))
+		let dbSegment0 = Segments.findOne( segmentId(roId(ro.ID), story.ID))
 		let dbSegmentLines0 = SegmentLines.find({ runningOrderId: dbRo._id, segmentId: dbSegment0._id }).fetch()
 
 		// Swap items:
