@@ -51,6 +51,7 @@ interface ISettingsMenuTrackedProps {
 const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps >(() => {
 	Meteor.subscribe('studioInstallations', {})
 	Meteor.subscribe('showStyles', {})
+	Meteor.subscribe('showBlueprints', {})
 	Meteor.subscribe('peripheralDevices', {})
 
 	return {
@@ -234,6 +235,7 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 		this.subscribe('peripheralDevices', {})
 		this.subscribe('studioInstallations', {})
 		this.subscribe('showStyles', {})
+		this.subscribe('showBlueprints', {})
 	}
 	render () {
 		const { t } = this.props

@@ -244,7 +244,7 @@ export function loadBlueprints (showStyle: ShowStyle): BlueprintCollection {
 
 	throw new Meteor.Error(404, 'Function for ShowStyle "' + showStyle.name + '" not found!')
 }
-function evalBlueprints (blueprintDoc: ShowBlueprint, showStyleName: string, noCache: boolean): BlueprintCollection {
+export function evalBlueprints (blueprintDoc: ShowBlueprint, showStyleName: string, noCache: boolean): BlueprintCollection {
 	let cached: Cache | null = null
 	if (!noCache) {
 		// First, check if we've got the function cached:

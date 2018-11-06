@@ -10,7 +10,7 @@ import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { Meteor } from 'meteor/meteor'
 import { MosString128 } from 'mos-connection'
-import { Random } from 'meteor/random'
+import { evalBlueprints } from './api/blueprints'
 
 export interface RunningOrderCacheBackup {
 	type: 'runningOrderCache'
@@ -51,12 +51,42 @@ export function restoreRunningOrder (backup: RunningOrderCacheBackup) {
 	})
 }
 
-const postRoute3 = Picker.filter((req, res) => req.method === 'POST')
-postRoute3.middleware(bodyParser.text({
+const postJSONRoute = Picker.filter((req, res) => req.method === 'POST')
+postJSONRoute.middleware(bodyParser.json({
+	limit: '1mb' // Arbitrary limit
+}))
+postJSONRoute.route('/backup/restore', (params, req: IncomingMessage, res: ServerResponse, next) => {
+	res.setHeader('Content-Type', 'text/plain')
+
+	let content = ''
+	try {
+		const body = (req as any).body
+		if (!body || !body.type) throw new Meteor.Error(500, 'Missing type in request body')
+
+		switch (body.type) {
+			case 'runningOrderCache':
+				restoreRunningOrder(body as RunningOrderCacheBackup)
+				break
+			default:
+				throw new Meteor.Error(500, 'Unknown type "' + body.type + '" in request body')
+		}
+
+		res.statusCode = 200
+	} catch (e) {
+		res.statusCode = 500
+		content = e + ''
+		logger.debug('Backup restore failed: ', e)
+	}
+
+	res.end(content)
+})
+
+const postJsRoute = Picker.filter((req, res) => req.method === 'POST')
+postJsRoute.middleware(bodyParser.text({
 	type: 'text/javascript',
 	limit: '1mb'
 }))
-postRoute3.route('/backup/restore/blueprints', (params, req: IncomingMessage, res: ServerResponse, next) => {
+postJsRoute.route('/blueprints/restore/:showStyleId', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	let content = ''
@@ -68,24 +98,28 @@ postRoute3.route('/backup/restore/blueprints', (params, req: IncomingMessage, re
 
 		logger.info('Got new blueprint. ' + body.length + ' bytes')
 
-		const showStyle = ShowStyles.findOne('show0') // TODO - dynamuc
+		const showStyle = ShowStyles.findOne(params.showStyleId)
 		if (!showStyle) throw new Meteor.Error(404, 'ShowStyle missing from db')
 
-		ShowBlueprints.remove({ showStyleId: showStyle._id })
-		ShowBlueprints.insert({
+		const newBlueprint: ShowBlueprint = {
 			_id: Random.id(7),
 			showStyleId: showStyle._id,
 			code: body as string,
-			createdVersion: Date.now(),
-			modified: Date.now()
-		})
-		// TODO - pull the version into a field, and show in the ui
+			modified: Date.now(),
+			version: ''
+		}
+
+		const blueprintCollection = evalBlueprints(newBlueprint, showStyle.name, false)
+		newBlueprint.version = blueprintCollection.Version
+
+		ShowBlueprints.remove({ showStyleId: showStyle._id })
+		ShowBlueprints.insert(newBlueprint)
 
 		res.statusCode = 200
 	} catch (e) {
 		res.statusCode = 500
 		content = e + ''
-		logger.debug('Blueprint restore failed: ', e)
+		logger.debug('Blueprint restore failed: ' + e)
 	}
 
 	res.end(content)

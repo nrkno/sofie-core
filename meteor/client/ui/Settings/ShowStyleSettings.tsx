@@ -15,6 +15,7 @@ import { ClientAPI } from '../../../lib/api/client'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { eventContextForLog } from '../../lib/eventTargetLogHelper'
 import { Meteor } from 'meteor/meteor'
+import { ShowBlueprint, ShowBlueprints } from '../../../lib/collections/ShowBlueprints'
 
 interface IProps {
 	match: {
@@ -24,20 +25,74 @@ interface IProps {
 	}
 }
 interface IState {
+	uploadFileKey: number // Used to force clear the input after use
+	showUploadConfirm: boolean
+	uploadFileName?: string
+	uploadFileContents?: string
 }
 interface ITrackedProps {
 	showStyle?: ShowStyle
+	showBlueprint?: ShowBlueprint
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	return {
-		showStyle: ShowStyles.findOne(props.match.params.showStyleId)
+		showStyle: ShowStyles.findOne(props.match.params.showStyleId),
+		showBlueprint: ShowBlueprints.findOne({ showStyleId: props.match.params.showStyleId})
 	}
 })( class ShowStyleSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {
+			uploadFileKey: Date.now(),
+			showUploadConfirm: false,
 		}
 	}
+
+	onUploadFile (e) {
+		const file = e.target.files[0]
+		if (!file) {
+			return
+		}
+
+		const reader = new FileReader()
+		reader.onload = (e2) => {
+			this.setState({
+				uploadFileKey: Date.now(),
+				showUploadConfirm: true,
+				uploadFileName: file.name,
+				uploadFileContents: (e2.target as any).result
+			})
+		}
+
+		reader.readAsText(file)
+	}
+	handleConfirmUploadFileCancel = () => {
+		this.setState({
+			uploadFileKey: Date.now(),
+			uploadFileName: undefined,
+			uploadFileContents: undefined,
+			showUploadConfirm: false
+		})
+	}
+	handleConfirmUploadFileAccept = () => {
+		if (this.state.uploadFileContents && this.props.showStyle) {
+			fetch('/blueprints/restore/' + this.props.showStyle._id, {
+				method: 'POST',
+				body: this.state.uploadFileContents,
+				headers: {
+					'content-type': 'text/javascript'
+				},
+			}).then(res => {
+				console.log('Blueprint restore success')
+			}).catch(err => {
+				console.error('Blueprint restore failure: ', err)
+			})
+		}
+		this.setState({
+			showUploadConfirm: false
+		})
+	}
+
 
 	renderEditForm () {
 		const { t } = this.props
@@ -71,10 +126,20 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						</label>
 					</div>
 					<div className='mod mvs mhs'>
-						<p>TODO: Version string</p>
+						<p>{t('Version')}: {this.props.showBlueprint ? this.props.showBlueprint.version : t('Unknown')}</p>
 					</div>
+					<ModalDialog title={t('Update blueprints?')} acceptText={t('Update')} secondaryText={t('Cancel')} show={this.state.showUploadConfirm} onAccept={() => this.handleConfirmUploadFileAccept()} onSecondary={() => this.handleConfirmUploadFileCancel()}>
+						<p>{t('Are you sure you want to update the bluerpints from the file "{{fileName}}"?', { fileName: this.state.uploadFileName })}</p>
+						<p>{t('Please note: This action is irreversible!')}</p>
+					</ModalDialog>
 					<div className='mod mvs mhs'>
-						<p>TODO: Upload new version</p>
+					<label className='field'>
+						{t('Upload Blueprints')}
+						<div className='mdi'>
+							<input type='file' accept='.js' onChange={this.onUploadFile.bind(this)} key={this.state.uploadFileKey} />
+							<span className='mdfx'></span>
+						</div>
+					</label>
 					</div>
 					<div className='mod mvs mhs'>
 						<p>TODO: Manual edit (with warnings)</p>

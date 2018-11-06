@@ -7,9 +7,8 @@ export interface ShowBlueprint {
 	_id: string
 	showStyleId: string
 	code: string
-	createdVersion: number
 	modified: number
-	// active: true
+	version: string
 }
 
 export const ShowBlueprints: TransformedCollection<ShowBlueprint, ShowBlueprint>
