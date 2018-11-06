@@ -21,23 +21,71 @@ import {
 	IMOSObjectStatus
 } from 'mos-connection'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
-import { RunningOrder, RunningOrders, DBRunningOrder } from '../../../lib/collections/RunningOrders'
-import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
+import {
+	PeripheralDevices,
+	PeripheralDevice
+} from '../../../lib/collections/PeripheralDevices'
+import {
+	RunningOrder,
+	RunningOrders,
+	DBRunningOrder
+} from '../../../lib/collections/RunningOrders'
+import {
+	SegmentLine,
+	SegmentLines,
+	DBSegmentLine,
+	SegmentLineHoldMode,
+	SegmentLineNoteType
+} from '../../../lib/collections/SegmentLines'
+import {
+	SegmentLineItem,
+	SegmentLineItems
+} from '../../../lib/collections/SegmentLineItems'
 import { DBSegment } from '../../../lib/collections/Segments'
-import { saveIntoDb, partialExceptId, getCurrentTime, literal, fetchBefore, getRank, fetchAfter } from '../../../lib/lib'
+import {
+	saveIntoDb,
+	getCurrentTime,fetchBefore,
+	getRank,
+	fetchAfter
+} from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
-import { runTemplate, TemplateContext, RunTemplateResult, TemplateResultAfterPost } from '../templates/templates'
+import {
+	runTemplate,
+	TemplateContext,
+	RunTemplateResult
+} from '../templates/templates'
 import { getHash } from '../../lib'
-import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
-import { ShowStyles, ShowStyle } from '../../../lib/collections/ShowStyles'
-import { ServerPlayoutAPI, updateTimelineFromMosData } from '../playout'
+import {
+	StudioInstallations,
+	StudioInstallation
+} from '../../../lib/collections/StudioInstallations'
+import {
+	SegmentLineAdLibItem,
+	SegmentLineAdLibItems
+} from '../../../lib/collections/SegmentLineAdLibItems'
+import {
+	ShowStyles,
+	ShowStyle
+} from '../../../lib/collections/ShowStyles'
+import {
+	ServerPlayoutAPI,
+	updateTimelineFromMosData
+} from '../playout'
 import { CachePrefix } from '../../../lib/collections/RunningOrderDataCache'
-import { setMeteorMethods, wrapMethods, Methods } from '../../methods'
-import { afterRemoveSegmentLine, updateSegments, updateAffectedSegmentLines, removeSegmentLine, runPostProcessTemplate, ServerRunningOrderAPI } from '../runningOrder'
+import {
+	setMeteorMethods,
+	wrapMethods,
+	Methods
+} from '../../methods'
+import {
+	afterRemoveSegmentLine,
+	updateSegments,
+	updateAffectedSegmentLines,
+	removeSegmentLine,
+	runPostProcessTemplate,
+	ServerRunningOrderAPI
+} from '../runningOrder'
 
 export function roId (roId: MosString128, original?: boolean): string {
 	// logger.debug('roId', roId)

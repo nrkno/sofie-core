@@ -204,6 +204,7 @@ export function updateSegments (runningOrderId: string) {
 
 	// Update SegmentLines:
 	_.each(segmentLineUpdates, (modifier, id) => {
+
 		logger.info('added SegmentLine to segment ' + modifier['segmentId'])
 		SegmentLines.update(id, {$set: modifier})
 	})
@@ -347,14 +348,14 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 			fromPostProcess: true,
 		}, tr.segmentLineItems || [], {
 			afterInsert (segmentLineItem) {
-				logger.debug('inserted segmentLineItem ' + segmentLineItem._id)
+				logger.debug('PostProcess: inserted segmentLineItem ' + segmentLineItem._id)
 				logger.debug(segmentLineItem)
 			},
 			afterUpdate (segmentLineItem) {
-				logger.debug('updated segmentLineItem ' + segmentLineItem._id)
+				logger.debug('PostProcess: updated segmentLineItem ' + segmentLineItem._id)
 			},
 			afterRemove (segmentLineItem) {
-				logger.debug('deleted segmentLineItem ' + segmentLineItem._id)
+				logger.debug('PostProcess: deleted segmentLineItem ' + segmentLineItem._id)
 			}
 		})
 		saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
@@ -363,14 +364,14 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 			fromPostProcess: true,
 		}, tr.segmentLineAdLibItems || [], {
 			afterInsert (segmentLineAdLibItem) {
-				logger.debug('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
+				logger.debug('PostProcess: inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
 				logger.debug(segmentLineAdLibItem)
 			},
 			afterUpdate (segmentLineAdLibItem) {
-				logger.debug('updated segmentLineItem ' + segmentLineAdLibItem._id)
+				logger.debug('PostProcess: updated segmentLineAdLibItem ' + segmentLineAdLibItem._id)
 			},
 			afterRemove (segmentLineAdLibItem) {
-				logger.debug('deleted segmentLineItem ' + segmentLineAdLibItem._id)
+				logger.debug('PostProcess: deleted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
 			}
 		})
 	}
