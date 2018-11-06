@@ -843,12 +843,7 @@ setMeteorMethods({
 		}})
 
 		ShowStyles.upsert('show0', {$set: {
-			name: 'Distriktsnyheter Sørlandet',
-			templateMappings: [],
-			baselineTemplate: 'baseline',
-			messageTemplate: 'message',
-			routerBlueprint: 'getId',
-			postProcessBlueprint: 'post-process'
+			name: 'Distriktsnyheter Sørlandet'
 		}})
 	},
 	'initDB_config': (really) => {

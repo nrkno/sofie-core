@@ -172,12 +172,7 @@ setMeteorMethods({
 	'debug_sampleShowStyle' () {
 		ShowStyles.insert({
 			_id: 'dummyShow0',
-			name: 'Dummy show style',
-			templateMappings: [],
-			baselineTemplate: '',
-			messageTemplate: '',
-			routerBlueprint: '',
-			postProcessBlueprint: ''
+			name: 'Dummy show style'
 		})
 
 		RunningOrders.update({showStyleId: { $not: { $exists: true }}}, { $set: { showStyleId: 'dummyShow0' }})

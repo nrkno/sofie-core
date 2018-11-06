@@ -17,12 +17,10 @@ import {
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { RuntimeFunction, RuntimeFunctions } from '../../lib/collections/RuntimeFunctions'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 
 import StudioSettings from './Settings/StudioSettings'
 import DeviceSettings from './Settings/DeviceSettings'
-import LineTemplates from './Settings/LineTemplates'
 import ShowStyleSettings from './Settings/ShowStyleSettings'
 import RestoreBackup from './Settings/RestoreBackup'
 
@@ -43,20 +41,17 @@ interface ISettingsMenuProps {
 }
 interface ISettingsMenuState {
 	deleteConfirmItem: any
-	showDeleteLineTemplateConfirm: boolean
 	showDeleteShowStyleConfirm: boolean
 }
 interface ISettingsMenuTrackedProps {
 	studioInstallations: Array<StudioInstallation>
 	showStyles: Array<ShowStyle>
 	peripheralDevices: Array<PeripheralDevice>
-	lineTemplates: Array<RuntimeFunction>
 }
 const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps >(() => {
 	Meteor.subscribe('studioInstallations', {})
 	Meteor.subscribe('showStyles', {})
 	Meteor.subscribe('peripheralDevices', {})
-	Meteor.subscribe('runtimeFunctions', {})
 
 	return {
 		studioInstallations: StudioInstallations.find({}).fetch(),
@@ -64,14 +59,12 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		peripheralDevices: PeripheralDevices.find({}, {sort: {
 			lastConnected: -1
 		}}).fetch(),
-		lineTemplates: RuntimeFunctions.find({}).fetch()
 	}
 })(class SettingsMenu extends MeteorReactComponent<Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>, ISettingsMenuState> {
 	constructor (props: Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>) {
 		super(props)
 		this.state = {
 			deleteConfirmItem: undefined,
-			showDeleteLineTemplateConfirm: false,
 			showDeleteShowStyleConfirm: false
 		}
 	}
@@ -123,12 +116,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 	onAddShowStyle () {
 		ShowStyles.insert(literal<ShowStyle>({
 			_id: Random.hexString(5),
-			name: Random.hexString(5),
-			templateMappings: [],
-			baselineTemplate: '',
-			messageTemplate: '',
-			routerBlueprint: '',
-			postProcessBlueprint: ''
+			name: Random.hexString(5)
 		}))
 	}
 
@@ -201,32 +189,6 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 						)
 					})
 				}
-				{/* <h2 className='mhs'>
-					<button className='action-btn right' onClick={(e) => this.onAddLineTemplate()}>
-						<FontAwesomeIcon icon={faPlus} />
-					</button>
-					{t('Line Templates')}
-				</h2>
-				<hr className='vsubtle man' />
-				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteLineTemplateConfirm} onAccept={(e) => this.handleConfirmDeleteLineTemplateAccept(e)} onSecondary={(e) => this.handleConfirmDeleteLineTemplateCancel(e)}>
-					<p>{t(`Are you sure you want to delete line template ${this.state.deleteConfirmItem && this.state.deleteConfirmItem._id}?`)}</p>
-					<p>{t('Please note: This action is irreversible!')}</p>
-				</ModalDialog>
-				{
-					this.props.lineTemplates.map((item) => {
-						return (
-							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/lineTemplate/' + item._id}>
-								<div className='selectable clickable'>
-									<button className='action-btn right' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteLineTemplate(item)}>
-										<FontAwesomeIcon icon={faTrash} />
-									</button>
-									<h3>{item._id}</h3>
-								</div>
-								<hr className='vsubtle man' />
-							</NavLink>
-						)
-					})
-				} */}
 				<h2 className='mhs'>{t('Devices')}</h2>
 				<hr className='vsubtle man' />
 				{
@@ -272,7 +234,6 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 		this.subscribe('peripheralDevices', {})
 		this.subscribe('studioInstallations', {})
 		this.subscribe('showStyles', {})
-		this.subscribe('runtimeFunctions', {})
 	}
 	render () {
 		const { t } = this.props
@@ -296,7 +257,6 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 									<Route path='/settings/studio/:studioId' component={StudioSettings} />
 									<Route path='/settings/showStyle/:showStyleId' component={ShowStyleSettings} />
 									<Route path='/settings/peripheralDevice/:deviceId' component={DeviceSettings} />
-									<Route path='/settings/lineTemplate/:ltId' component={LineTemplates} />
 									<Route path='/settings/tools/restore' component={RestoreBackup} />
 									<Route path='/settings/migration' component={MigrationView} />
 									<Redirect to='/settings' />

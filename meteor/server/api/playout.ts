@@ -346,12 +346,10 @@ export namespace ServerPlayoutAPI {
 			logger.info('Building baseline items...')
 
 			const showStyle = runningOrder.getShowStyle()
-			if (showStyle.baselineTemplate) {
-				let blueprint = loadBlueprints(showStyle)
-				if (!blueprint || !blueprint.Baseline) {
-					logger.error('Failed to load baseline blueprint')
-				}
-
+			let blueprint = loadBlueprints(showStyle)
+			if (!blueprint || !blueprint.Baseline) {
+				logger.error('Failed to load baseline blueprint')
+			} else {
 				const ctx = getBaselineContext(runningOrder)
 
 				const res = blueprint.Baseline(ctx)
