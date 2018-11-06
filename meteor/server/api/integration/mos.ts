@@ -101,8 +101,6 @@ export function getSegmentLine (roID: MosString128, storyID: MosString128): Segm
  * @param rank Rank of the story
  */
 export function convertToSegmentLine (story: IMOSStory, runningOrderId: string, rank: number): DBSegmentLine {
-
-// item: IMOSItem, runningOrderId: string, segmentId: string, rank: number): SegmentLine {
 	return {
 		_id: segmentLineId(runningOrderId, story.ID),
 		runningOrderId: runningOrderId,
@@ -113,6 +111,21 @@ export function convertToSegmentLine (story: IMOSStory, runningOrderId: string, 
 		// expectedDuration: item.EditorialDuration,
 		// autoNext: item.Trigger === ??
 	}
+}
+/**
+ * Merge an old segmentLine with a new one (to be used together with (after) convertToSegmentLine )
+ * @param newSegmentLine
+ * @param existingSegmentLine
+ */
+export function mergeSegmentLine (newSegmentLine: DBSegmentLine, existingSegmentLine?: DBSegmentLine): DBSegmentLine {
+	if (existingSegmentLine) {
+		if (existingSegmentLine._id !== newSegmentLine._id) {
+			throw new Meteor.Error(500, `mergeSegmentLine: ids differ: ${newSegmentLine._id}, ${existingSegmentLine._id}`)
+		}
+
+		newSegmentLine = _.extend({}, existingSegmentLine, _.omit(newSegmentLine, ['segmentId']))
+	}
+	return newSegmentLine
 }
 /**
  * Insert a new SegmentLine (aka an Item)
@@ -276,7 +289,8 @@ export function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: 
 		})
 		saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
 			runningOrderId: ro._id,
-			segmentLineId: segmentLine._id
+			segmentLineId: segmentLine._id,
+			fromPostProcess: { $ne: true }, // do not affect postProcess items
 		}, tr.result.segmentLineAdLibItems || [], {
 			afterInsert (segmentLineAdLibItem) {
 				logger.debug('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
@@ -375,7 +389,7 @@ export const reloadRunningOrder: (runningOrder: RunningOrder) => void = Meteor.w
 function handleRunningOrderData (ro: IMOSRunningOrder, peripheralDevice: PeripheralDevice, dataSource: string) {
 	// Create or update a runningorder (ie from roCreate or roList)
 
-	let existingDbRo = getRO(ro.ID)
+	let existingDbRo = RunningOrders.findOne(roId(ro.ID))
 	if (!isAvailableForMOS(existingDbRo)) return
 	updateMosLastDataReceived(peripheralDevice._id)
 	logger.info((existingDbRo ? 'Updating' : 'Adding') + ' RO ' + roId(ro.ID))
@@ -387,11 +401,8 @@ function handleRunningOrderData (ro: IMOSRunningOrder, peripheralDevice: Periphe
 
 	let showStyle = ShowStyles.findOne(studioInstallation.defaultShowStyle) as ShowStyle || {}
 
-	// Save RO into database:
-	saveIntoDb(RunningOrders, {
-		_id: roId(ro.ID)
-	}, _.map([ro], (ro) => {
-		return partialExceptId<DBRunningOrder>({
+	let dbROData: DBRunningOrder = _.extend(existingDbRo || {},
+		{
 			_id: roId(ro.ID),
 			mosId: ro.ID.toString(),
 			studioInstallationId: studioInstallation._id,
@@ -402,8 +413,12 @@ function handleRunningOrderData (ro: IMOSRunningOrder, peripheralDevice: Periphe
 			expectedDuration: formatDuration(ro.EditorialDuration),
 			dataSource: dataSource,
 			unsynced: false
-		})
-	}), {
+		} as DBRunningOrder
+	)
+	// Save RO into database:
+	saveIntoDb(RunningOrders, {
+		_id: dbROData._id
+	}, [dbROData], {
 		beforeInsert: (o) => {
 			o.created = getCurrentTime()
 			o.modified = getCurrentTime()
@@ -415,12 +430,15 @@ function handleRunningOrderData (ro: IMOSRunningOrder, peripheralDevice: Periphe
 		}
 	})
 
-	let dbRo = RunningOrders.findOne(roId(ro.ID))
+	let dbRo = RunningOrders.findOne(dbROData._id)
 	if (!dbRo) throw new Meteor.Error(500, 'Running order not found (it should have been)')
 	// cache the Data
-	dbRo.saveCache(CachePrefix.ROCREATE + roId(ro.ID), ro)
+	dbRo.saveCache(CachePrefix.ROCREATE + dbRo._id, ro)
 
 	// Save Stories into database:
+
+	let existingSegmentLines = dbRo.getSegmentLines()
+
 	// Note: a number of X stories will result in (<=X) Segments and X SegmentLines
 	let segments: DBSegment[] = []
 	let segmentLines: DBSegmentLine[] = []
@@ -437,7 +455,13 @@ function handleRunningOrderData (ro: IMOSRunningOrder, peripheralDevice: Periphe
 			// segments.push(segment)
 		// }
 		if (dbRo) {
+			// join new data with old:
 			let segmentLine = convertToSegmentLine(story, dbRo._id, rankSegmentLine++)
+			let existingSegmentLine = _.find(existingSegmentLines, (sl) => {
+				return sl._id === segmentLine._id
+			})
+			segmentLine = mergeSegmentLine(segmentLine, existingSegmentLine)
+
 			segmentLines.push(segmentLine)
 		} else throw new Meteor.Error(500, 'Running order not found (it should have been)')
 
