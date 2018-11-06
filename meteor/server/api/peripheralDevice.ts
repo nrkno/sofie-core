@@ -775,11 +775,9 @@ export function handleMosRoData (peripheralDevice: PeripheralDevice, ro: IMOSRun
 
 	let showStyle = ShowStyles.findOne(studioInstallation.defaultShowStyle) as ShowStyle || {}
 
-	// Save RO into database:
-	saveIntoDb(RunningOrders, {
-		_id: roId(ro.ID)
-	}, _.map([ro], (ro) => {
-		return partialExceptId<DBRunningOrder>({
+	let dbRoData: DBRunningOrder = _.extend(
+		RunningOrders.findOne(roId(ro.ID)) || {},
+		{
 			_id: roId(ro.ID),
 			mosId: ro.ID.toString(),
 			studioInstallationId: studioInstallation._id,
@@ -788,8 +786,12 @@ export function handleMosRoData (peripheralDevice: PeripheralDevice, ro: IMOSRun
 			name: ro.Slug.toString(),
 			expectedStart: formatTime(ro.EditorialStart),
 			expectedDuration: formatDuration(ro.EditorialDuration)
-		})
-	}), {
+		} as DBRunningOrder
+	)
+	// Save RO into database:
+	saveIntoDb(RunningOrders, {
+		_id: dbRoData._id
+	}, [dbRoData], {
 		beforeInsert: (o) => {
 			o.created = getCurrentTime()
 			o.modified = getCurrentTime()
@@ -801,10 +803,10 @@ export function handleMosRoData (peripheralDevice: PeripheralDevice, ro: IMOSRun
 		}
 	})
 
-	let dbRo = RunningOrders.findOne(roId(ro.ID))
+	let dbRo = RunningOrders.findOne(dbRoData._id)
 	if (!dbRo) throw new Meteor.Error(500, 'Running order not found (it should have been)')
 	// cache the Data
-	dbRo.saveCache(CachePrefix.ROCREATE + roId(ro.ID), ro)
+	dbRo.saveCache(CachePrefix.ROCREATE + dbRo._id, ro)
 
 	// Save Stories into database:
 	// Note: a number of X stories will result in (<=X) Segments and X SegmentLines
