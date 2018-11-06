@@ -93,7 +93,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		})
 	}
 
-
 	renderEditForm () {
 		const { t } = this.props
 

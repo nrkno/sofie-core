@@ -1,73 +1,17 @@
 import { Mongo } from 'meteor/mongo'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration/dist/content'
 import { TransformedCollection } from '../typings/meteor'
-import { PlayoutDeviceType } from './PeripheralDevices'
-import { LookaheadMode } from '../api/playout'
 import { applyClassToDocument, registerCollection } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
-import { ChannelFormat } from '../../lib/constants/casparcg'
+import { Mappings, Mapping } from 'timeline-state-resolver-types'
+import { LookaheadMode } from '../../lib/api/playout'
 
-// Imports from TSR (TODO make into an import)
-export enum MappingLawoType {
-	SOURCE = 'source'
+export interface MappingsExt extends Mappings {
+	[layerName: string]: MappingExt
 }
-export enum MappingPanasonicPtzType {
-	PRESET_SPEED = 0,
-	PRESET = 1,
-	ZOOM = 2,
-	ZOOM_SPEED = 3
-}
-export enum MappingAtemType {
-	MixEffect,
-	DownStreamKeyer,
-	SuperSourceBox,
-	Auxilliary,
-	MediaPlayer,
-	SuperSourceProperties
-}
-export enum MappingHyperdeckType {
-	TRANSPORT = 'transport'
-}
-export interface Mappings {
-	[layerName: string]: Mapping
-}
-export interface Mapping {
-	device: PlayoutDeviceType,
-	lookahead: LookaheadMode,
-	deviceId: string
-	internal?: boolean
-	// [key: string]: any
-}
-export interface MappingCasparCG extends Mapping {
-	device: PlayoutDeviceType.CASPARCG,
-	channel: number,
-	layer: number
-}
-export interface MappingAbstract extends Mapping {
-	device: PlayoutDeviceType.ABSTRACT
-}
-export interface MappingAtem extends Mapping {
-	device: PlayoutDeviceType.ATEM,
-	mappingType: MappingAtemType
-	index?: number
-}
-export interface MappingLawo extends Mapping {
-	device: PlayoutDeviceType.LAWO,
-	mappingType: MappingLawoType,
-	identifier: string
-}
-export interface MappingHyperdeck extends Mapping {
-	device: PlayoutDeviceType.HYPERDECK,
-	mappingType: MappingHyperdeckType
-}
-
-export interface MappingPanasonicPtz extends Mapping {
-	device: PlayoutDeviceType.PANASONIC_PTZ,
-	mappingType: MappingPanasonicPtzType
-}
-export interface MappingPharos extends Mapping {
-	device: PlayoutDeviceType.PHAROS,
+export interface MappingExt extends Mapping {
+	lookahead: LookaheadMode
 }
 
 export interface HotkeyDefinition {
@@ -84,7 +28,7 @@ export interface DBStudioInstallation {
 	/** All available layer groups in a given installation */
 	outputLayers: Array<IOutputLayer>
 	sourceLayers: Array<ISourceLayer>
-	mappings: Mappings
+	mappings: MappingsExt
 
 	defaultShowStyle: string
 
@@ -193,7 +137,7 @@ export class StudioInstallation implements DBStudioInstallation {
 	public name: string
 	public outputLayers: Array<IOutputLayer>
 	public sourceLayers: Array<ISourceLayer>
-	public mappings: Mappings
+	public mappings: MappingsExt
 	public defaultShowStyle: string
 	public config: Array<IStudioConfigItem>
 	public testToolsConfig?: ITestToolsConfig

@@ -3,6 +3,8 @@ import { PeripheralDeviceAPI } from '../api/peripheralDevice'
 import { Time, registerCollection } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
+import { DeviceType as PlayoutDeviceType} from 'timeline-state-resolver-types'
+
 export interface PeripheralDevice {
 	_id: string
 
@@ -54,17 +56,6 @@ export interface MosDeviceSettingsDevice {
 export interface MosDeviceSettingsDeviceOptions {
 	id: string
 	host: string
-}
-export enum PlayoutDeviceType { // to match DeviceType in TSR
-	ABSTRACT = 0,
-	CASPARCG = 1,
-	ATEM = 2,
-	LAWO = 3,
-	HTTPSEND = 4,
-	PANASONIC_PTZ = 5,
-	// TCPSEND = 6, // to be implemented
-	HYPERDECK = 7,
-	PHAROS = 8
 }
 
 export interface PlayoutDeviceSettings {

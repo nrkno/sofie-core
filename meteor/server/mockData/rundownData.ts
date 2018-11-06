@@ -8,7 +8,7 @@ import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration/dist
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
-import { PlayoutDeviceType } from '../../lib/collections/PeripheralDevices'
+import { DeviceType as PlayoutDeviceType } from 'timeline-state-resolver-types'
 import { logger } from '../logging'
 import { LookaheadMode } from '../../lib/api/playout'
 import { MediaObjects } from '../../lib/collections/MediaObjects'

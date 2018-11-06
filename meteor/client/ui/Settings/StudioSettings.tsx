@@ -10,6 +10,10 @@ import { IOutputLayer,
 	IStudioConfigItem,
 	StudioInstallation,
 	StudioInstallations,
+	HotkeyDefinition,
+	IStudioRuntimeArgumentsItem
+} from '../../../lib/collections/StudioInstallations'
+import {
 	Mapping,
 	MappingCasparCG,
 	MappingAtem,
@@ -20,9 +24,8 @@ import { IOutputLayer,
 	MappingPanasonicPtzType,
 	MappingPanasonicPtz,
 	MappingHyperdeckType,
-	HotkeyDefinition,
-	IStudioRuntimeArgumentsItem
-} from '../../../lib/collections/StudioInstallations'
+	DeviceType as PlayoutDeviceType
+} from 'timeline-state-resolver-types'
 import { ShowStyles } from '../../../lib/collections/ShowStyles'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
@@ -35,7 +38,7 @@ import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { PeripheralDevice, PeripheralDevices, PlayoutDeviceType } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'

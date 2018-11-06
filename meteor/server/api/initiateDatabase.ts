@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { ShowStyles } from '../../lib/collections/ShowStyles'
-import { StudioInstallations,
-	Mappings,
+import { StudioInstallations, MappingExt, MappingsExt } from '../../lib/collections/StudioInstallations'
+import {
 	MappingCasparCG,
 	MappingAtem,
 	MappingAtemType,
@@ -14,11 +14,12 @@ import { StudioInstallations,
 	MappingPanasonicPtzType,
 	MappingPharos,
 	MappingAbstract,
-} from '../../lib/collections/StudioInstallations'
+	DeviceType as PlayoutDeviceType
+} from 'timeline-state-resolver-types'
 import { literal, getCurrentTime } from '../../lib/lib'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration/dist/content'
 import { LookaheadMode } from '../../lib/api/playout'
-import { PeripheralDevices, PlayoutDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../logging'
 import * as _ from 'underscore'
@@ -486,353 +487,353 @@ setMeteorMethods({
 			],
 		}})
 		// Create Timeline mappings:
-		const mappings: Mappings = { // Logical layers and their mappings
-			'core_abstract': literal<MappingAbstract>({
+		const mappings: MappingsExt = { // Logical layers and their mappings
+			'core_abstract': literal<MappingAbstract & MappingExt>({
 				device: PlayoutDeviceType.ABSTRACT,
 				deviceId: 'abstract0',
 				lookahead: LookaheadMode.NONE,
 			}),
-			'casparcg_player_wipe': literal<MappingCasparCG>({
+			'casparcg_player_wipe': literal<MappingCasparCG & MappingExt>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
 				channel: 3,
 				layer: 199
 			}),
-			'casparcg_player_vignett': literal<MappingCasparCG>({
+			'casparcg_player_vignett': literal<MappingCasparCG & MappingExt>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
 				channel: 3,
 				layer: 140
 			}),
-			'casparcg_player_soundeffect': literal<MappingCasparCG>({
+			'casparcg_player_soundeffect': literal<MappingCasparCG & MappingExt>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
 				channel: 3,
 				layer: 130
 			}),
-			'casparcg_player_clip': literal<MappingCasparCG>({
+			'casparcg_player_clip': literal<MappingCasparCG & MappingExt>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.PRELOAD,
 				channel: 1,
 				layer: 110
 			}),
-			'casparcg_player_clip_next': literal<MappingCasparCG>({
+			'casparcg_player_clip_next': literal<MappingCasparCG & MappingExt>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
 				channel: 4,
 				layer: 100
 			}),
-			'casparcg_player_clip_next_warning': literal<MappingCasparCG>({
+			'casparcg_player_clip_next_warning': literal<MappingCasparCG & MappingExt>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
 				channel: 4,
 				layer: 99
 			}),
-			'casparcg_player_clip2': literal<MappingCasparCG>({
+			'casparcg_player_clip2': literal<MappingCasparCG & MappingExt>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.PRELOAD,
 				channel: 1,
 				layer: 111
 			}),
-			'casparcg_cg_graphics': literal<MappingCasparCG>({
+			'casparcg_cg_graphics': literal<MappingCasparCG & MappingExt>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg1',
 				lookahead: LookaheadMode.NONE,
 				channel: 2,
 				layer: 120
 			}),
-			'casparcg_cg_countdown': literal<MappingCasparCG>({
+			'casparcg_cg_countdown': literal<MappingCasparCG & MappingExt>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg1',
 				lookahead: LookaheadMode.NONE,
 				channel: 1,
 				layer: 120
 			}),
-			'casparcg_player_studio': literal<MappingCasparCG>({
+			'casparcg_player_studio': literal<MappingCasparCG & MappingExt>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
 				channel: 2,
 				layer: 110
 			}),
-			'casparcg_cg_studiomonitor': literal<MappingCasparCG>({
+			'casparcg_cg_studiomonitor': literal<MappingCasparCG & MappingExt>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
 				channel: 2,
 				layer: 120
 			}),
-			'casparcg_cg_effects': literal<MappingCasparCG>({
+			'casparcg_cg_effects': literal<MappingCasparCG & MappingExt>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg0',
 				lookahead: LookaheadMode.NONE,
 				channel: 3,
 				layer: 120
 			}),
-			'casparcg_cg_fullskjerm': literal<MappingCasparCG>({
+			'casparcg_cg_fullskjerm': literal<MappingCasparCG & MappingExt>({
 				device: PlayoutDeviceType.CASPARCG,
 				deviceId: 'casparcg1',
 				lookahead: LookaheadMode.NONE,
 				channel: 3,
 				layer: 110
 			}),
-			'atem_me_program': literal<MappingAtem>({
+			'atem_me_program': literal<MappingAtem & MappingExt>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingAtemType.MixEffect,
 				index: 0 // 0 = ME1
 			}),
-			'atem_me_studiomonitor': literal<MappingAtem>({
+			'atem_me_studiomonitor': literal<MappingAtem & MappingExt>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingAtemType.MixEffect,
 				index: 1 // 1 = ME2
 			}),
-			'atem_aux_technical_error': literal<MappingAtem>({
+			'atem_aux_technical_error': literal<MappingAtem & MappingExt>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingAtemType.Auxilliary,
 				index: 1
 			}),
-			'atem_aux_ssrc': literal<MappingAtem>({
+			'atem_aux_ssrc': literal<MappingAtem & MappingExt>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingAtemType.Auxilliary,
 				index: 2
 			}),
-			'atem_aux_clean': literal<MappingAtem>({
+			'atem_aux_clean': literal<MappingAtem & MappingExt>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingAtemType.Auxilliary,
 				index: 5
 			}),
-			'atem_dsk_graphics': literal<MappingAtem>({
+			'atem_dsk_graphics': literal<MappingAtem & MappingExt>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingAtemType.DownStreamKeyer,
 				index: 0 // 0 = DSK1
 			}),
-			'atem_dsk_effect': literal<MappingAtem>({
+			'atem_dsk_effect': literal<MappingAtem & MappingExt>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingAtemType.DownStreamKeyer,
 				index: 1 // 1 = DSK2
 			}),
-			'atem_supersource_art': literal<MappingAtem>({
+			'atem_supersource_art': literal<MappingAtem & MappingExt>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingAtemType.SuperSourceProperties,
 				index: 0 // 0 = SS
 			}),
-			'atem_supersource_default': literal<MappingAtem>({
+			'atem_supersource_default': literal<MappingAtem & MappingExt>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingAtemType.SuperSourceBox,
 				index: 0 // 0 = SS
 			}),
-			'atem_supersource_override': literal<MappingAtem>({
+			'atem_supersource_override': literal<MappingAtem & MappingExt>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				lookahead: LookaheadMode.RETAIN,
 				mappingType: MappingAtemType.SuperSourceBox,
 				index: 0 // 0 = SS
 			}),
-			'atem_usk_effect_default': literal<MappingAtem>({
+			'atem_usk_effect_default': literal<MappingAtem & MappingExt>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingAtemType.MixEffect,
 				index: 0 // 0 = ME1
 			}),
-			'atem_usk_effect_override': literal<MappingAtem>({
+			'atem_usk_effect_override': literal<MappingAtem & MappingExt>({
 				device: PlayoutDeviceType.ATEM,
 				deviceId: 'atem0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingAtemType.MixEffect,
 				index: 0 // 0 = ME1
 			}),
-			'lawo_source_automix': literal<MappingLawo>({
+			'lawo_source_automix': literal<MappingLawo & MappingExt>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'AMix',
 			}),
-			'lawo_source_wl2': literal<MappingLawo>({
+			'lawo_source_wl2': literal<MappingLawo & MappingExt>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'WL2',
 			}),
-			'lawo_source_wl3': literal<MappingLawo>({
+			'lawo_source_wl3': literal<MappingLawo & MappingExt>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'WL3',
 			}),
-			'lawo_source_clip': literal<MappingLawo>({
+			'lawo_source_clip': literal<MappingLawo & MappingExt>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'MP1',
 			}),
-			'lawo_source_effect': literal<MappingLawo>({
+			'lawo_source_effect': literal<MappingLawo & MappingExt>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'FX',
 			}),
-			'lawo_source_rm1': literal<MappingLawo>({
+			'lawo_source_rm1': literal<MappingLawo & MappingExt>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM1',
 			}),
-			'lawo_source_rm2': literal<MappingLawo>({
+			'lawo_source_rm2': literal<MappingLawo & MappingExt>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM2',
 			}),
-			'lawo_source_rm3': literal<MappingLawo>({
+			'lawo_source_rm3': literal<MappingLawo & MappingExt>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM3',
 			}),
-			'lawo_source_rm4': literal<MappingLawo>({
+			'lawo_source_rm4': literal<MappingLawo & MappingExt>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM4',
 			}),
-			'lawo_source_rm5': literal<MappingLawo>({
+			'lawo_source_rm5': literal<MappingLawo & MappingExt>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM5',
 			}),
-			'lawo_source_rm6': literal<MappingLawo>({
+			'lawo_source_rm6': literal<MappingLawo & MappingExt>({
 				device: PlayoutDeviceType.LAWO,
 				deviceId: 'lawo0',
 				lookahead: LookaheadMode.NONE,
 				mappingType: MappingLawoType.SOURCE,
 				identifier: 'RM6',
 			}),
-			'nora_primary_super': literal<Mapping>({
+			'nora_primary_super': literal<Mapping & MappingExt>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
 			}),
-			'nora_primary_headline': literal<Mapping>({
+			'nora_primary_headline': literal<Mapping & MappingExt>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
 			}),
-			'nora_primary_tag_left': literal<Mapping>({
+			'nora_primary_tag_left': literal<Mapping & MappingExt>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
 			}),
-			'nora_primary_tag_right': literal<Mapping>({
+			'nora_primary_tag_right': literal<Mapping & MappingExt>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
 			}),
-			'nora_primary_ticker': literal<Mapping>({
+			'nora_primary_ticker': literal<Mapping & MappingExt>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
 			}),
-			'nora_primary_tema': literal<Mapping>({
+			'nora_primary_tema': literal<Mapping & MappingExt>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
 			}),
-			'nora_primary_logo': literal<Mapping>({
+			'nora_primary_logo': literal<Mapping & MappingExt>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
 			}),
-			'nora_primary_klokke': literal<Mapping>({
+			'nora_primary_klokke': literal<Mapping & MappingExt>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
 			}),
-			'nora_effects_fullskjerm': literal<Mapping>({
+			'nora_effects_fullskjerm': literal<Mapping & MappingExt>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
 			}),
-			'nora_studio_bakskjerm': literal<Mapping>({
+			'nora_studio_bakskjerm': literal<Mapping & MappingExt>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
 			}),
-			'nora_fullskjerm_fullskjerm': literal<Mapping>({
+			'nora_fullskjerm_fullskjerm': literal<Mapping & MappingExt>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.PRELOAD,
 			}),
-			'hyperdeck0': literal<MappingHyperdeck>({
+			'hyperdeck0': literal<MappingHyperdeck & MappingExt>({
 				device: PlayoutDeviceType.HYPERDECK,
 				deviceId: 'hyperdeck0',
 				mappingType: MappingHyperdeckType.TRANSPORT,
 				lookahead: LookaheadMode.NONE,
 			}),
-			'ptz0_preset': literal<MappingPanasonicPtz>({
+			'ptz0_preset': literal<MappingPanasonicPtz & MappingExt>({
 				device: PlayoutDeviceType.PANASONIC_PTZ,
 				deviceId: 'ptz0',
 				mappingType: MappingPanasonicPtzType.PRESET,
 				lookahead: LookaheadMode.WHEN_CLEAR
 			}),
-			'ptz0_speed': literal<MappingPanasonicPtz>({
+			'ptz0_speed': literal<MappingPanasonicPtz & MappingExt>({
 				device: PlayoutDeviceType.PANASONIC_PTZ,
 				deviceId: 'ptz0',
 				mappingType: MappingPanasonicPtzType.PRESET_SPEED,
 				lookahead: LookaheadMode.WHEN_CLEAR
 			}),
-			'pharos_lights': literal<MappingPharos>({
+			'pharos_lights': literal<MappingPharos & MappingExt>({
 				device: PlayoutDeviceType.PHAROS,
 				deviceId: 'pharos0',
 				lookahead: LookaheadMode.NONE
 			}),
-			'lights_host': literal<MappingAbstract>({
+			'lights_host': literal<MappingAbstract & MappingExt>({
 				device: PlayoutDeviceType.ABSTRACT,
 				deviceId: 'abstract0',
 				lookahead: LookaheadMode.NONE
 			}),
-			'lights_guest': literal<MappingAbstract>({
+			'lights_guest': literal<MappingAbstract & MappingExt>({
 				device: PlayoutDeviceType.ABSTRACT,
 				deviceId: 'abstract0',
 				lookahead: LookaheadMode.NONE
 			}),
-			'lights_studio': literal<MappingAbstract>({
+			'lights_studio': literal<MappingAbstract & MappingExt>({
 				device: PlayoutDeviceType.ABSTRACT,
 				deviceId: 'abstract0',
 				lookahead: LookaheadMode.NONE

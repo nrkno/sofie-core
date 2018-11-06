@@ -5,13 +5,12 @@ import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevice,
 	PeripheralDevices,
-	PlayoutDeviceType,
 	PlayoutDeviceSettings,
 	PlayoutDeviceSettingsDevice,
 	MosDeviceSettings,
-	MosDeviceSettingsDevice,
-	PanasonicDeviceSettings
+	MosDeviceSettingsDevice
 } from '../../../lib/collections/PeripheralDevices'
+import { DeviceType as PlayoutDeviceType } from 'timeline-state-resolver-types'
 import { literal } from '../../../lib/lib'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
