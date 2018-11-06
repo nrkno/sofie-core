@@ -33,7 +33,7 @@ function getStudioConfig (studio: StudioInstallation): ITestToolsConfig {
 	return config
 }
 
-export function generateTimelineObjs (studio: StudioInstallation, recording: RecordedFile): TimelineObj[] {
+export function generateRecordingTimelineObjs (studio: StudioInstallation, recording: RecordedFile): TimelineObj[] {
 	if (!studio) throw new Meteor.Error(404, `Studio was not defined!`)
 	if (!recording) throw new Meteor.Error(404, `Recording was not defined!`)
 

@@ -65,7 +65,7 @@ import { RunningOrderAPI } from '../../lib/api/runningOrder'
 import { sendStoryStatus } from './integration/mos'
 import { updateSegmentLines, reloadRunningOrderData } from './runningOrder'
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
-import { generateTimelineObjs } from './testTools'
+import { generateRecordingTimelineObjs } from './testTools'
 
 const MINIMUM_TAKE_SPAN = 1000
 
@@ -2767,7 +2767,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 		}
 	})
 	if (activeRecording) {
-		const recordingTimelineObjs = generateTimelineObjs(studioInstallation, activeRecording)
+		const recordingTimelineObjs = generateRecordingTimelineObjs(studioInstallation, activeRecording)
 
 		processTimelineObjects(studioInstallation, undefined, recordingTimelineObjs)
 		timelineObjs = timelineObjs.concat(recordingTimelineObjs)
