@@ -564,12 +564,12 @@ export namespace ServerPeripheralDeviceAPI {
 			}
 		}
 
-		let segmentLineAfter = getSegmentLine(Action.RunningOrderID, Action.StoryID)
-		let segmentLineBefore = fetchBefore(SegmentLines, { runningOrderId: ro._id }, segmentLineAfter._rank)
+		let segmentLineAfter = (Action.StoryID ? getSegmentLine(Action.RunningOrderID, Action.StoryID) : null)
+		let segmentLineBefore = fetchBefore(SegmentLines, { runningOrderId: ro._id }, (segmentLineAfter ? segmentLineAfter._rank : null))
 		// console.log('Inserting between: ' + (segmentLineBefore ? segmentLineBefore._rank : 'X') + ' - ' + segmentLineAfter._rank)
 
 		let affectedSegmentLineIds: Array<string> = []
-		affectedSegmentLineIds.push(segmentLineAfter._id)
+		if (segmentLineAfter) affectedSegmentLineIds.push(segmentLineAfter._id)
 		if (segmentLineBefore) affectedSegmentLineIds.push(segmentLineBefore._id)
 		_.each(Stories, (storyId: MosString128, i: number) => {
 			let rank = getRank(segmentLineBefore, segmentLineAfter, i, Stories.length)
