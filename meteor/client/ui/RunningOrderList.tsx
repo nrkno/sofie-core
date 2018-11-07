@@ -10,7 +10,6 @@ import Moment from 'react-moment'
 import { RundownUtils } from '../lib/rundown'
 import { getCurrentTime } from '../../lib/lib'
 import { MomentFromNow } from '../lib/Moment'
-import { statusCodeToString } from './Status/SystemStatus'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faSync from '@fortawesome/fontawesome-free-solid/faSync'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
@@ -18,9 +17,7 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
 import { ClientAPI } from '../../lib/api/client'
 import { eventContextForLog } from '../lib/eventTargetLogHelper'
-import { PlayoutAPI } from '../../lib/api/playout';
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice';
-import { RundownAPI } from '../../lib/api/rundown';
+import { RunningOrderAPI } from '../../lib/api/runningOrder'
 
 const PackageInfo = require('../../package.json')
 
@@ -66,7 +63,7 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 		const { t } = this.props
 
 		if (!ro.active) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), RundownAPI.methods.roDelete, ro._id, (err, res) => {
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), RunningOrderAPI.methods.removeRunningOrder, ro._id, (err, res) => {
 				if (err) {
 					// todo: notify the user
 					console.error(err)
@@ -90,7 +87,7 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 		const { t } = this.props
 
 		if (!ro.active) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), RundownAPI.methods.roResync, ro._id, (err, res) => {
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), RunningOrderAPI.methods.resyncRunningOrder, ro._id, (err, res) => {
 				if (err) {
 					// todo: notify the user
 					console.error(err)

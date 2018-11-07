@@ -1,5 +1,5 @@
 import { Mongo } from 'meteor/mongo'
-import { RundownAPI } from '../api/rundown'
+import { RunningOrderAPI } from '../api/runningOrder'
 import { TriggerType } from 'superfly-timeline'
 import { TimelineTransition,
 	TimelineObjGroup,
@@ -35,7 +35,7 @@ export interface SegmentLineItemGeneric {
 	/** Timeline item trigger. Possibly, most of these will be manually triggered as next, but maybe some will be automatic. */
 	trigger?: ITimelineTrigger
 	/** Playback availability status */
-	status: RundownAPI.LineItemStatusCode
+	status: RunningOrderAPI.LineItemStatusCode
 	/** Source layer the timeline item belongs to */
 	sourceLayerId: string
   	/** Layer output this segment line item belongs to */
@@ -198,7 +198,7 @@ export interface SplitsContent extends BaseContent {
 	dveConfiguration: any
 	/** Array of contents, 0 index is DVE art */
 	boxSourceConfiguration: Array<(VTContent | CameraContent | RemoteContent | GraphicsContent) & {
-		type: RundownAPI.SourceLayerType
+		type: RunningOrderAPI.SourceLayerType
 		studioLabel: string
 		switcherInput: number | string
 	}>

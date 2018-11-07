@@ -1,5 +1,5 @@
 import { SegmentLineItem, VTContent, LiveSpeakContent } from './collections/SegmentLineItems'
-import { RundownAPI } from './api/rundown'
+import { RunningOrderAPI } from './api/runningOrder'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream } from './collections/MediaObjects'
 import { ISourceLayer, IStudioConfigItem } from './collections/StudioInstallations'
 
@@ -82,12 +82,12 @@ export function getAcceptedFormats (config: Array<IStudioConfigItem>): Array<Arr
 }
 
 export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourceLayer, config: Array<IStudioConfigItem>) {
-	let newStatus: RundownAPI.LineItemStatusCode = RundownAPI.LineItemStatusCode.UNKNOWN
+	let newStatus: RunningOrderAPI.LineItemStatusCode = RunningOrderAPI.LineItemStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
 	let message: string | null = null
 
 	switch (sourceLayer.type) {
-		case RundownAPI.SourceLayerType.VT:
+		case RunningOrderAPI.SourceLayerType.VT:
 			if (sli.content && sli.content.fileName) {
 				const content = sli.content as VTContent
 				const mediaObject = MediaObjects.findOne({
@@ -95,25 +95,25 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 				})
 				// If media object not found, then...
 				if (!mediaObject) {
-					newStatus = RundownAPI.LineItemStatusCode.SOURCE_MISSING
+					newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING
 					message = 'Source is missing: ' + content.fileName
 					// All VT content should have at least two streams
 				} else if (mediaObject && mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2) {
-					newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
+					newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
 					message = 'Source doesn\'t have audio & video: ' + content.fileName
 				} else if (mediaObject) {
-					newStatus = RundownAPI.LineItemStatusCode.OK
+					newStatus = RunningOrderAPI.LineItemStatusCode.OK
 
 					// Do a format check:
 					if (mediaObject.mediainfo) {
 						const formats = getAcceptedFormats(config)
-						
+
 						// check the streams for resolution info
 						for (const stream of mediaObject.mediainfo.streams) {
 							if (stream.width && stream.height) {
 								const format = buildFormatString(mediaObject.mediainfo, stream)
 								if (!acceptFormat(format, formats)) {
-									newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
+									newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
 									message = `Source format (${format}) is not in accepted formats`
 								}
 							}
@@ -126,7 +126,7 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 				}
 			}
 			break
-		case RundownAPI.SourceLayerType.LIVE_SPEAK:
+		case RunningOrderAPI.SourceLayerType.LIVE_SPEAK:
 			if (sli.content && sli.content.fileName) {
 				const content = sli.content as LiveSpeakContent
 				const mediaObject = MediaObjects.findOne({
@@ -134,14 +134,14 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 				})
 				// If media object not found, then...
 				if (!mediaObject) {
-					newStatus = RundownAPI.LineItemStatusCode.SOURCE_MISSING
+					newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING
 					message = 'Source is missing: ' + content.fileName
 					// All VT content should have at least two streams
 				} else if (mediaObject && mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2) {
-					newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
+					newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
 					message = 'Source doesn\'t have audio & video: ' + content.fileName
 				} else if (mediaObject) {
-					newStatus = RundownAPI.LineItemStatusCode.OK
+					newStatus = RunningOrderAPI.LineItemStatusCode.OK
 
 					// not being in the right format can cause issue with CasparCG
 					if (mediaObject.mediainfo) {
@@ -150,7 +150,7 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 							if (stream.width && stream.height) {
 								const format = buildFormatString(mediaObject.mediainfo, stream)
 								if (!acceptFormat(format, formats)) {
-									newStatus = RundownAPI.LineItemStatusCode.SOURCE_BROKEN
+									newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
 									message = `Source format (${format}) is not in accepted formats`
 								}
 							}

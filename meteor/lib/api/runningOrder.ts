@@ -1,4 +1,5 @@
-export namespace RundownAPI {
+
+export namespace RunningOrderAPI {
 	/** The type of the source layer, used to enable specific functions for special-type layers */
 	export enum SourceLayerType {
 		UNKNOWN 		= 0,
@@ -31,7 +32,7 @@ export namespace RundownAPI {
 	}
 
 	export enum methods {
-		'roDelete' = 'rundown.roDelete',
-		'roResync' = 'rundown.roResync'
+		'removeRunningOrder' = 'rundown.removeRunningOrder',
+		'resyncRunningOrder' = 'rundown.resyncRunningOrder'
 	}
 }

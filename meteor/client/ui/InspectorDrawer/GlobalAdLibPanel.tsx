@@ -26,7 +26,7 @@ import { RunningOrderViewKbdShortcuts } from '../RunningOrderView'
 
 import { Spinner } from '../../lib/Spinner'
 import { literal } from '../../../lib/lib'
-import { RundownAPI } from '../../../lib/api/rundown'
+import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { eventContextForLog } from '../../lib/eventTargetLogHelper'
 
@@ -102,7 +102,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 						_id: layer._id,
 						hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
 						name: t('Last ') + (layer.abbreviation || layer.name),
-						status: RundownAPI.LineItemStatusCode.UNKNOWN,
+						status: RunningOrderAPI.LineItemStatusCode.UNKNOWN,
 						layer: layer,
 						isSticky: true
 					})))

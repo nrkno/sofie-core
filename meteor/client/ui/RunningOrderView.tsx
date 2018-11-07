@@ -1150,7 +1150,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	onBeforeUnload = (e: any) => {
 		const {t} = this.props
-		
+
 		e.preventDefault()
 		e.returnValue = t('This running order is now active. Are you sure you want to exit this screen?')
 
@@ -1333,7 +1333,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							<RunningOrderFullscreenControls isFollowingOnAir={this.state.followLiveSegments} onFollowOnAir={this.onGoToLiveSegment} onRewindSegments={this.onRewindSegments} />
 						</ErrorBoundary>
 						<ErrorBoundary>
-							{ this.state.studioMode && 
+							{ this.state.studioMode &&
 								<Prompt when={this.props.runningOrder.active} message={t('This running order is now active. Are you sure you want to exit this screen?')} />
 							}
 						</ErrorBoundary>
