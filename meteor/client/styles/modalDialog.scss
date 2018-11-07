@@ -1,5 +1,12 @@
 .glass-pane {
 	.border-box {
+		display: block;
+		padding: 0;
+		border: none;
 		pointer-events: auto;
 	}
+}
+
+.dark .border-box {
+	color: #fff;
 }
