@@ -106,7 +106,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 										translateY: [0, 100],
 										opacity: [1, 0]
 									}, easing: 'spring', duration: 250 }} runOnMount={true}>
-										<div className='border-box overlay-m'>
+										<dialog open={true} className='border-box overlay-m'>
 											<div className='flex-row info vertical-align-stretch tight-s'>
 												<div className='flex-col c12'>
 													<h2>
@@ -135,7 +135,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 													'right': this.props.secondaryText !== undefined
 												})} onClick={this.handleAccept}>{this.props.acceptText}</button>
 											</div>
-										</div>
+										</dialog>
 									</VelocityReact.VelocityTransitionGroup>
 								</div>
 							</div>
