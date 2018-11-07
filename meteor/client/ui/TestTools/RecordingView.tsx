@@ -44,42 +44,38 @@ const RecordingView = translateWithTracker<IRecordingViewProps, IRecordingViewSt
 	renderRecordingView () {
 		const { t, file, studio } = this.props
 
-		if (!file) return <React.Fragment></React.Fragment>
+		if (!file) return null
 
 		let urlPrefix = ''
 		if (studio) urlPrefix = objectPath.get(studio, 'testToolsConfig.recordings.urlPrefix', '')
 		if (urlPrefix === '') {
-			return <React.Fragment>
-				<p>{t('A required setting is not configured')}</p>
-			</React.Fragment>
+			return <p>{t('A required setting is not configured')}</p>
 		}
 
 		return <React.Fragment>
 			<header className='mvs'>
-					<h1>{file.name}</h1>
-				</header>
-				<div className='mod mvl'>
-					{ file.stoppedAt
-						? <video width='960' height='540' controls>
-							<source src={`${urlPrefix}${file.path}`} type='video/mp4' />
-							{t('Your browser does not support video playback')}
-						</video>
-						: t('Recording still in progress')
-					}
-				</div>
+				<h1>{file.name}</h1>
+			</header>
+			<div className='mod mvl'>
+				{ file.stoppedAt
+					? <video width='960' height='540' controls>
+						<source src={`${urlPrefix}${file.path}`} type='video/mp4' />
+						{t('Your browser does not support video playback')}
+					</video>
+					: t('Recording still in progress')
+				}
+			</div>
 		</React.Fragment>
 	}
 
 	render () {
 		const { t, file } = this.props
 
-		return <React.Fragment>
-			<div className='mtl gutter'>
-				{ file ? this.renderRecordingView() : (
-					<p>File not found</p>
-				)}
-			</div>
-		</React.Fragment>
+		return <div className='mtl gutter'>
+			{ file ? this.renderRecordingView() : (
+				<p>File not found</p>
+			)}
+		</div>
 	}
 })
 

@@ -137,9 +137,7 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 		const { t } = this.props
 
 		if (!this.isStudioConfigured()) {
-			return <React.Fragment>
-				<p>{t('A required setting is not configured')}</p>
-			</React.Fragment>
+			return <p>{t('A required setting is not configured')}</p>
 		}
 
 		const active = this.props.files.find(f => !f.stoppedAt)
@@ -173,7 +171,7 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 		const { t } = this.props
 
 		// console.log('obj', obj)
-		return <React.Fragment>
+		return (
 			<div className='mtl gutter'>
 				<header className='mvs'>
 					<h1>{t('Recordings')}</h1>
@@ -208,7 +206,7 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 					</table>
 				</div>
 			</div>
-		</React.Fragment>
+		)
 	}
 })
 
@@ -221,24 +219,22 @@ interface IRecordedFilesListItemProps {
 export class RecordedFilesListItem extends React.Component<IRecordedFilesListItemProps> {
 	render () {
 		return (
-			<React.Fragment>
-				<tr className='recorded-file-list-item'>
-					<td className='recorded-file-list-item__name'>
-						<Link to={`${this.props.file.studioId}/${this.props.file._id}`}>{this.props.file.name}</Link>
-					</td>
-					<td className='recorded-file-list-item__started'>
-						<Moment format='YYYY/MM/DD HH:mm:ss'>{this.props.file.startedAt}</Moment>
-					</td>
-					<td className='recorded-file-list-item__stopped'>
-						{this.props.file.stoppedAt && <Moment format='YYYY/MM/DD HH:mm:ss'>{this.props.file.stoppedAt}</Moment>}
-					</td>
-					<td className='actions'>
-						<button className='action-btn' onClick={(e) => this.props.onDeleteRecording(this.props.file)}>
-							<FontAwesomeIcon icon={faTrash} />
-						</button>
-					</td>
-				</tr>
-			</React.Fragment>
+			<tr className='recorded-file-list-item'>
+				<td className='recorded-file-list-item__name'>
+					<Link to={`${this.props.file.studioId}/${this.props.file._id}`}>{this.props.file.name}</Link>
+				</td>
+				<td className='recorded-file-list-item__started'>
+					<Moment format='YYYY/MM/DD HH:mm:ss'>{this.props.file.startedAt}</Moment>
+				</td>
+				<td className='recorded-file-list-item__stopped'>
+					{this.props.file.stoppedAt && <Moment format='YYYY/MM/DD HH:mm:ss'>{this.props.file.stoppedAt}</Moment>}
+				</td>
+				<td className='actions'>
+					<button className='action-btn' onClick={(e) => this.props.onDeleteRecording(this.props.file)}>
+						<FontAwesomeIcon icon={faTrash} />
+					</button>
+				</td>
+			</tr>
 		)
 	}
 }
