@@ -1134,6 +1134,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		this._cleanUp()
 		$(document.body).removeClass(['dark', 'vertical-overflow-only'])
 		$(window).off('scroll', this.onWindowScroll)
+		$(window).off('beforeunload', this.onBeforeUnload)
 
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {
