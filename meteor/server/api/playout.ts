@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from 'meteor/check'
-import { RunningOrders, RunningOrder, RunningOrderHoldState, RoData } from '../../lib/collections/RunningOrders'
+import { RunningOrders, RunningOrder, RunningOrderHoldState, RoData, DBRunningOrder } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems, ITimelineTrigger, SegmentLineItemLifespan } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
@@ -186,6 +186,17 @@ export namespace ServerPlayoutAPI {
 				runtimeArguments: 1
 			}
 		}, {multi: true})
+
+		const dirtySegmentLines = SegmentLines.find({
+			runningOrderId: runningOrder._id,
+			dirty: true
+		}).fetch()
+		dirtySegmentLines.forEach(sl => {
+			refreshSegmentLine(runningOrder, sl)
+			SegmentLines.update(sl._id, {$unset: {
+				dirty: 1
+			}})
+		})
 
 		// Remove all segment line items that were added for holds
 		let holdItems = SegmentLineItems.find({
@@ -496,6 +507,8 @@ export namespace ServerPlayoutAPI {
 	function resetSegmentLine (segmentLine: DBSegmentLine): Promise<void> {
 		let ps: Array<Promise<any>> = []
 
+		let isDirty = segmentLine.dirty || false
+
 		ps.push(asyncCollectionUpdate(SegmentLines, {
 			runningOrderId: segmentLine.runningOrderId,
 			_id: segmentLine._id
@@ -503,7 +516,8 @@ export namespace ServerPlayoutAPI {
 			$unset: {
 				duration: 1,
 				startedPlayback: 1,
-				runtimeArguments: 1
+				runtimeArguments: 1,
+				dirty: 1
 			}
 		}))
 		ps.push(asyncCollectionUpdate(SegmentLineItems, {
@@ -532,10 +546,35 @@ export namespace ServerPlayoutAPI {
 			infiniteId: { $exists: true },
 		}))
 
-		return Promise.all(ps)
-		.then(() => {
-			// do nothing
-		})
+		if (isDirty) {
+			return new Promise((resolve, reject) => {
+				Promise.all(ps).then(() => {
+					const ro = RunningOrders.findOne(segmentLine.runningOrderId)
+					if (!ro) throw new Meteor.Error(404, `Running Order "${segmentLine.runningOrderId}" not found!`)
+					refreshSegmentLine(ro, segmentLine)
+					resolve()
+				}).catch((e) => reject())
+			})
+		} else {
+			return Promise.all(ps)
+			.then(() => {
+				// do nothing
+			})
+		}
+	}
+	function refreshSegmentLine (runningOrder: DBRunningOrder, segmentLine: DBSegmentLine) {
+		const ro = new RunningOrder(runningOrder)
+		const story = ro.fetchCache(CachePrefix.FULLSTORY + segmentLine._id) as IMOSROFullStory
+		const sl = new SegmentLine(segmentLine)
+		const changed = updateStory(ro, sl, story)
+
+		const segment = sl.getSegment()
+		if (segment) {
+			// this could be run after the segment, if we were capable of limiting that
+			runPostProcessTemplate(ro, segment)
+		}
+
+		updateSourceLayerInfinitesAfterLine(ro, false, sl)
 	}
 	function setNextSegmentLine (runningOrder: RunningOrder, nextSegmentLine: DBSegmentLine | null, setManually?: boolean) {
 		let ps: Array<Promise<any>> = []
@@ -1525,11 +1564,14 @@ export namespace ServerPlayoutAPI {
 			// unset property
 			const mUnset = {}
 			mUnset['runtimeArguments.' + property] = 1
-			SegmentLines.update(segmentLine._id, {$unset: mUnset})
+			SegmentLines.update(segmentLine._id, {$unset: mUnset, $set: {
+				dirty: true
+			}})
 		} else {
 			// set property
-			const mSet = {}
+			const mSet: any = {}
 			mSet['runtimeArguments.' + property] = value
+			mSet.dirty = true
 			SegmentLines.update(segmentLine._id, {$set: mSet})
 		}
 
@@ -1537,18 +1579,21 @@ export namespace ServerPlayoutAPI {
 
 		if (!segmentLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
 
-		const story = runningOrder.fetchCache(CachePrefix.FULLSTORY + segmentLine._id) as IMOSROFullStory
-		const changed = updateStory(runningOrder, segmentLine, story)
+		refreshSegmentLine(runningOrder, segmentLine)
 
-		const segment = segmentLine.getSegment()
-		if (segment) {
-			// this could be run after the segment, if we were capable of limiting that
-			runPostProcessTemplate(runningOrder, segment)
+		// Only take time to update the timeline if there's a point to do it
+		if (runningOrder.active) {
+			// If this SL is RO's next, check if current SL has autoNext
+			if ((runningOrder.nextSegmentLineId === segmentLine._id) && runningOrder.currentSegmentLineId) {
+				const currentSegmentLine = SegmentLines.findOne(runningOrder.currentSegmentLineId)
+				if (currentSegmentLine && currentSegmentLine.autoNext) {
+					updateTimeline(runningOrder.studioInstallationId)
+				}
+			// If this is RO's current SL, update immediately
+			} else if (runningOrder.currentSegmentLineId === segmentLine._id) {
+				updateTimeline(runningOrder.studioInstallationId)
+			}
 		}
-
-		updateSourceLayerInfinitesAfterLine(runningOrder, false, segmentLine)
-
-		updateTimeline(runningOrder.studioInstallationId)
 	})
 	export function timelineTriggerTimeUpdateCallback (timelineObjId: string, time: number) {
 		check(timelineObjId, String)
