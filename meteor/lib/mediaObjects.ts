@@ -24,7 +24,6 @@ export function buildFormatString (mediainfo: MediaInfo, stream: MediaStream): s
 		const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec.time_base) as RegExpExecArray
 		let fps = Number(formattedTimebase[2])
 		fps = Math.floor(fps * 100)
-		if (format.substr(-1) === 'i') fps *= 2
 		format += fps
 	}
 	switch (mediainfo.field_order) {
