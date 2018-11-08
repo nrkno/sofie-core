@@ -14,6 +14,9 @@ import { SegmentLineItems, SegmentLineItem } from './SegmentLineItems'
 import { RunningOrderDataCache } from './RunningOrderDataCache'
 import { ShowStyle, ShowStyles } from './ShowStyles'
 import { Meteor } from 'meteor/meteor'
+import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
+import { RunningOrderBaselineItems } from './RunningOrderBaselineItems'
+import { RunningOrderBaselineAdLibItems } from './RunningOrderBaselineAdLibItems'
 
 export enum RunningOrderHoldState {
 	NONE = 0,
@@ -144,6 +147,9 @@ export class RunningOrder implements DBRunningOrder {
 		Segments.remove({runningOrderId: this._id})
 		SegmentLines.remove({runningOrderId: this._id})
 		SegmentLineItems.remove({ runningOrderId: this._id})
+		SegmentLineAdLibItems.remove({ runningOrderId: this._id})
+		RunningOrderBaselineItems.remove({ runningOrderId: this._id})
+		RunningOrderBaselineAdLibItems.remove({ runningOrderId: this._id})
 		this.removeCache()
 	}
 	touch () {
