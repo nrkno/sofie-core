@@ -21,7 +21,7 @@ import { IOutputLayer,
 	MappingPanasonicPtz,
 	MappingHyperdeckType,
 	HotkeyDefinition,
-	IStudioROArgumentsItem
+	IStudioRuntimeArgumentsItem
 } from '../../../lib/collections/StudioInstallations'
 import { ShowStyles } from '../../../lib/collections/ShowStyles'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
@@ -40,6 +40,7 @@ import { PeripheralDevice, PeripheralDevices, PlayoutDeviceType } from '../../..
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
 interface IProps {
 	studioInstallation: StudioInstallation
@@ -58,7 +59,7 @@ interface IChildStudioInterfaceProps {
 	onRemoveMapping?: (layerId: string) => void
 	onDeleteConfigItem?: (item: IStudioConfigItem) => void
 	onDeleteHotkeyLegend?: (item: HotkeyDefinition) => void
-	onDeleteROArgument?: (item: IStudioROArgumentsItem) => void
+	onDeleteROArgument?: (item: IStudioRuntimeArgumentsItem) => void
 	onAddSource?: () => void
 	onAddOutput?: () => void
 	onAddDevice?: (item: PeripheralDevice) => void
@@ -416,16 +417,16 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 	}
 }
 
-interface IStudioROArgumentsSettingsProps extends IProps, IChildStudioInterfaceProps {
+interface IStudioRuntimeArgumentsSettingsProps extends IProps, IChildStudioInterfaceProps {
 }
-interface IStudioROArgumentsSettingsState {
+interface IStudioRuntimeArgumentsSettingsState {
 	showDeleteConfirm: boolean
-	deleteConfirmItem: IStudioROArgumentsItem | undefined
+	deleteConfirmItem: IStudioRuntimeArgumentsItem | undefined
 	editedItems: Array<Number>
 }
 
-class StudioROArgumentsSettings extends React.Component<Translated<IStudioROArgumentsSettingsProps>, IStudioROArgumentsSettingsState> {
-	constructor (props: Translated<IStudioROArgumentsSettingsProps>) {
+class StudioRuntimeArgumentsSettings extends React.Component<Translated<IStudioRuntimeArgumentsSettingsProps>, IStudioRuntimeArgumentsSettingsState> {
+	constructor (props: Translated<IStudioRuntimeArgumentsSettingsProps>) {
 		super(props)
 
 		this.state = {
@@ -458,7 +459,7 @@ class StudioROArgumentsSettings extends React.Component<Translated<IStudioROArgu
 		}
 	}
 
-	confirmDelete = (item: IStudioROArgumentsItem) => {
+	confirmDelete = (item: IStudioRuntimeArgumentsItem) => {
 		this.setState({
 			showDeleteConfirm: true,
 			deleteConfirmItem: item
@@ -486,13 +487,13 @@ class StudioROArgumentsSettings extends React.Component<Translated<IStudioROArgu
 	renderItems () {
 		const { t } = this.props
 		return (
-			(this.props.studioInstallation.roArguments || []).map((item, index) => {
+			(this.props.studioInstallation.runtimeArguments || []).map((item, index) => {
 				return <React.Fragment key={index + '_' + item.property}>
 					<tr className={ClassNames({
 						'hl': this.isItemEdited(index)
 					})}>
 						<th className='settings-studio-custom-config-table__name c2'>
-							{item.hotkeys}
+							{mousetrapHelper.shortcutLabel(item.hotkeys)}
 						</th>
 						<td className='settings-studio-custom-config-table__value c3'>
 							{item.property}
@@ -518,7 +519,7 @@ class StudioROArgumentsSettings extends React.Component<Translated<IStudioROArgu
 											{t('Hotkeys')}
 											<EditAttribute
 												modifiedClassName='bghl'
-												attribute={'roArguments.' + index + '.hotkeys'}
+												attribute={'runtimeArguments.' + index + '.hotkeys'}
 												obj={this.props.studioInstallation}
 												type='text'
 												collection={StudioInstallations}
@@ -530,7 +531,7 @@ class StudioROArgumentsSettings extends React.Component<Translated<IStudioROArgu
 											{t('Property')}
 											<EditAttribute
 												modifiedClassName='bghl'
-												attribute={'roArguments.' + index + '.property'}
+												attribute={'runtimeArguments.' + index + '.property'}
 												obj={this.props.studioInstallation}
 												type='text'
 												collection={StudioInstallations}
@@ -542,7 +543,7 @@ class StudioROArgumentsSettings extends React.Component<Translated<IStudioROArgu
 											{t('Value')}
 											<EditAttribute
 												modifiedClassName='bghl'
-												attribute={'roArguments.' + index + '.value'}
+												attribute={'runtimeArguments.' + index + '.value'}
 												obj={this.props.studioInstallation}
 												type='text'
 												collection={StudioInstallations}
@@ -568,10 +569,10 @@ class StudioROArgumentsSettings extends React.Component<Translated<IStudioROArgu
 		return (
 			<div>
 				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
-					<p>{t('Are you sure you want to delete this running order argument "{{property}}: {{value}}"?', { property: (this.state.deleteConfirmItem && this.state.deleteConfirmItem.property), value: (this.state.deleteConfirmItem && this.state.deleteConfirmItem.value) })}</p>
+					<p>{t('Are you sure you want to delete this runtime argument "{{property}}: {{value}}"?', { property: (this.state.deleteConfirmItem && this.state.deleteConfirmItem.property), value: (this.state.deleteConfirmItem && this.state.deleteConfirmItem.value) })}</p>
 					<p>{t('Please note: This action is irreversible!')}</p>
 				</ModalDialog>
-				<h3>{t('Running Order Arguments')}</h3>
+				<h3>{t('Runtime Arguments for Blueprints')}</h3>
 				<table className='expando settings-studio-custom-config-table'>
 					<tbody>
 						{this.renderItems()}
@@ -1610,7 +1611,7 @@ class HotkeyLegendSettings extends React.Component<Translated<IStudioKeyValueSet
 						'hl': this.isItemEdited(item)
 					})}>
 						<th className='settings-studio-custom-config-table__name c2'>
-							{item.key}
+							{mousetrapHelper.shortcutLabel(item.key)}
 						</th>
 						<td className='settings-studio-custom-config-table__value c3'>
 							{item.label}
@@ -1791,11 +1792,11 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 		}
 	}
 
-	onDeleteROArgument = (item: IStudioROArgumentsItem) => {
+	onDeleteROArgument = (item: IStudioRuntimeArgumentsItem) => {
 		if (this.props.studioInstallation) {
 			StudioInstallations.update(this.props.studioInstallation._id, {
 				$pull: {
-					roArguments: item
+					runtimeArguments: item
 				}
 			})
 		}
@@ -1857,7 +1858,7 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 	onAddROArgument = () => {
 		const { t } = this.props
 
-		const newItem = literal<IStudioROArgumentsItem>({
+		const newItem = literal<IStudioRuntimeArgumentsItem>({
 			property: 'new-property',
 			value: '1',
 			hotkeys: 'mod+shift+z'
@@ -1865,11 +1866,9 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 
 		StudioInstallations.update(this.props.studioInstallation._id, {
 			$push: {
-				roArguments: newItem
+				runtimeArguments: newItem
 			}
 		})
-
-		debugger
 	}
 
 	onAddHotkeyLegend = () => {
@@ -1946,7 +1945,7 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 					</div>
 					<div className='row'>
 						<div className='col c12 r1-c12'>
-							<StudioROArgumentsSettings {...this.props} onAddROArgument={this.onAddROArgument} onDeleteROArgument={this.onDeleteROArgument} />
+							<StudioRuntimeArgumentsSettings {...this.props} onAddROArgument={this.onAddROArgument} onDeleteROArgument={this.onDeleteROArgument} />
 						</div>
 					</div>
 					<div className='row'>

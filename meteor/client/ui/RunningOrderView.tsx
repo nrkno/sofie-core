@@ -1139,7 +1139,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 
 		if (typeof this.props.studioInstallation !== typeof prevProps.studioInstallation ||
-			this.props.studioInstallation && this.props.studioInstallation.roArguments) {
+			this.props.studioInstallation && this.props.studioInstallation.runtimeArguments) {
 			this.refreshHotkeys()
 		}
 	}
@@ -1157,17 +1157,17 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 		this.usedArgumentKeys.forEach((k) => {
 			if (k.up) {
-				mousetrapHelper.unbind(k.key, 'ROArguments', 'keyup')
-				mousetrapHelper.unbind(k.key, 'ROArguments', 'keydown')
+				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keyup')
+				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
 			}
 			if (k.down) {
-				mousetrapHelper.unbind(k.key, 'ROArguments', 'keydown')
+				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
 			}
 		})
 		this.usedArgumentKeys.length = 0
 
 		if (this.props.studioInstallation) {
-			_.each(this.props.studioInstallation.roArguments, (i) => {
+			_.each(this.props.studioInstallation.runtimeArguments, (i) => {
 				const combos = i.hotkeys.split(',')
 				_.each(combos, (combo) => {
 					const handler = (e: KeyboardEvent) => {
@@ -1191,8 +1191,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 						key: combo,
 						label: i.label || ''
 					})
-					mousetrapHelper.bind(combo, handler, 'keyup', 'ROArguments')
-					mousetrapHelper.bind(combo, noOp, 'keydown', 'ROArguments')
+					mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
+					mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
 				})
 			})
 		}
@@ -1216,11 +1216,11 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 		_.each(this.usedArgumentKeys, (k) => {
 			if (k.up) {
-				mousetrapHelper.unbind(k.key, 'ROArguments', 'keyup')
-				mousetrapHelper.unbind(k.key, 'ROArguments', 'keydown')
+				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keyup')
+				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
 			}
 			if (k.down) {
-				mousetrapHelper.unbind(k.key, 'ROArguments', 'keydown')
+				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
 			}
 		})
 

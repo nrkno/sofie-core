@@ -91,7 +91,7 @@ export interface DBStudioInstallation {
 
 	hotkeyLegend?: Array<HotkeyDefinition>
 
-	roArguments?: Array<IStudioROArgumentsItem>
+	runtimeArguments?: Array<IStudioRuntimeArgumentsItem>
 }
 
 export interface ISourceLayerBase {
@@ -124,7 +124,7 @@ export interface ISourceLayerBase {
 	onPresenterScreen?: boolean
 }
 
-export interface IStudioROArgumentsItem {
+export interface IStudioRuntimeArgumentsItem {
 	label?: string
 	hotkeys: string
 	property: string
@@ -184,7 +184,7 @@ export class StudioInstallation implements DBStudioInstallation {
 	public defaultShowStyle: string
 	public config: Array<IStudioConfigItem>
 	public hotkeyLegend?: Array<HotkeyDefinition>
-	public roArguments: Array<IStudioROArgumentsItem>
+	public runtimeArguments: Array<IStudioRuntimeArgumentsItem>
 
 	constructor (document: DBStudioInstallation) {
 		_.each(_.keys(document), (key) => {
