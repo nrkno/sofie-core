@@ -70,7 +70,8 @@ export type SegmentLineItemOptional = Fix<SegmentLineItem>
 export type SegmentLineItemOptional = Optional<SegmentLineItem>
 export type SegmentLineAdLibItemOptional = Optional<SegmentLineAdLibItem>
 export type RunningOrderBaselineItemOptional = Optional<RunningOrderBaselineItem>
-export type TemplateRuntimeArguments = {
+
+export interface TemplateRuntimeArguments {
 	[key: string]: string
 }
 
