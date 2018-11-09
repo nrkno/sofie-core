@@ -19,3 +19,10 @@ export function setDeveloperMode (developerMode: boolean) {
 export function getDeveloperMode (): boolean {
 	return localStorage.getItem('developerMode') === '1'
 }
+
+export function setTestingMode (testingMode: boolean) {
+	localStorage.setItem('testingMode', (testingMode ? '1' : '0'))
+}
+export function getTestingMode (): boolean {
+	return localStorage.getItem('testingMode') === '1'
+}

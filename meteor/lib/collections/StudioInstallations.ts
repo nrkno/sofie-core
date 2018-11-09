@@ -6,6 +6,7 @@ import { LookaheadMode } from '../api/playout'
 import { applyClassToDocument, registerCollection } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
+import { ChannelFormat } from '../../lib/constants/casparcg'
 
 // Imports from TSR (TODO make into an import)
 export enum MappingLawoType {
@@ -35,6 +36,7 @@ export interface Mapping {
 	device: PlayoutDeviceType,
 	lookahead: LookaheadMode,
 	deviceId: string
+	internal?: boolean
 	// [key: string]: any
 }
 export interface MappingCasparCG extends Mapping {
@@ -87,6 +89,7 @@ export interface DBStudioInstallation {
 	defaultShowStyle: string
 
 	config: Array<IStudioConfigItem>
+	testToolsConfig?: ITestToolsConfig
 
 	hotkeyLegend?: Array<HotkeyDefinition>
 }
@@ -165,6 +168,17 @@ export interface IOutputLayer extends IOutputLayerBase {
 	isPGM: boolean
 }
 
+export interface ITestToolsConfig {
+	recordings: {
+		deviceId?: string
+		channelIndex?: number
+		channelFormat: ChannelFormat
+		decklinkDevice?: number
+		filePrefix?: string
+		urlPrefix?: string
+	}
+}
+
 export class StudioInstallation implements DBStudioInstallation {
 	public _id: string
 	public name: string
@@ -173,6 +187,7 @@ export class StudioInstallation implements DBStudioInstallation {
 	public mappings: Mappings
 	public defaultShowStyle: string
 	public config: Array<IStudioConfigItem>
+	public testToolsConfig?: ITestToolsConfig
 	public hotkeyLegend?: Array<HotkeyDefinition>
 
 	constructor (document: DBStudioInstallation) {

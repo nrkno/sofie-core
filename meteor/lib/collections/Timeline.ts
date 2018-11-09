@@ -166,6 +166,8 @@ export interface TimelineObj {
 	},
 	/** Only set to true for the "magic" statistic objects, used to trigger playout */
 	statObject?: boolean
+	/** Only set to true for the test recording objects, to persist outside of a rundown */
+	recordingObject?: boolean
 	/** Restrict object usage according to whether we are currently in a hold */
 	holdMode?: TimelineObjHoldMode
 }
