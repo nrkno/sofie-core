@@ -260,7 +260,7 @@ export function runMigration (
 				// Something's not right
 				let msg = `Step "${step.id}": Something went wrong, validation didn't approve of the changes. The changes have been applied, but might need to be confirmed.`
 				if (validateMessage !== true && _.isString(validateMessage)) {
-					msg += ` Info: ${validateMessage}`
+					msg += ` (Validation error: ${validateMessage})`
 				}
 				warningMessages.push(msg)
 			}

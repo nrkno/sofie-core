@@ -246,33 +246,6 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 						<div>
 							<h2>Migrate database, from {this.state.migration.baseVersion} to {this.state.migration.targetVersion}</h2>
 
-							{this.state.warnings.length ?
-								<div>
-									<h3>Warnings</h3>
-									<ul>
-										{_.map(this.state.warnings, (warning, key) => {
-											return (<li key={key}>
-												{warning}
-											</li>)
-										})}
-									</ul>
-								</div>
-							: null}
-
-							{this.state.haveRunMigration && !this.state.migrationCompleted ?
-								<div>
-									<div>
-										<div>
-											{t('Please check the database related to the warnings above. If neccessary, you can')}
-										</div>
-										<button className='btn-secondary' onClick={() => { this.forceMigration() }}>
-											<FontAwesomeIcon icon={faDatabase} />
-											{t('Force migration (unsafe)')}
-										</button>
-									</div>
-								</div>
-							: null}
-
 							<div>
 								{t(`This migration consists of ${this.state.migration.automaticStepCount} automatic steps and  ${this.state.migration.manualStepCount} manual steps (${this.state.migration.ignoredStepCount} steps are ignored).`)}
 							</div>
@@ -308,6 +281,42 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 								</button>
 							</div>
 							}
+
+							{this.state.warnings.length ?
+								<div>
+									<h3>{t('Warnings during migration')}</h3>
+									<ul>
+										{_.map(this.state.warnings, (warning, key) => {
+											return (<li key={key}>
+												{warning}
+											</li>)
+										})}
+									</ul>
+								</div>
+							: null}
+
+							{this.state.haveRunMigration && !this.state.migrationCompleted ?
+								<div>
+									<div>
+										<div>
+											{t('Please check the database related to the warnings above. If neccessary, you can')}
+										</div>
+										<button className='btn-secondary' onClick={() => {
+											doModalDialog({
+												title: t('Force migration'),
+												message: t('Are you sure you want to force the migration? This will bypass the migration checks, so be sure to verify that the values in the settings are correct!'),
+												onAccept: () => {
+													this.forceMigration()
+												}
+											})
+										}}>
+											<FontAwesomeIcon icon={faDatabase} />
+											{t('Force migration (unsafe)')}
+										</button>
+									</div>
+								</div>
+							: null}
+
 						</div>
 					: null}
 
