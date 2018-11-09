@@ -35,7 +35,7 @@ import {
 	TimelineContentTypeLawo,
 	TimelineObjLawo,
 	TimelineContentTypeHttp,
-	TimelineObjHTTPRequest,
+	TimelineObjHTTPRequest
 } from '../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
 import { Segments,Segment } from '../../lib/collections/Segments'
@@ -66,6 +66,8 @@ import { RunningOrderAPI } from '../../lib/api/runningOrder'
 import { sendStoryStatus, updateStory } from './integration/mos'
 import { updateSegmentLines, reloadRunningOrderData } from './runningOrder'
 import { runPostProcessTemplate } from '../../server/api/runningOrder'
+import { RecordedFiles } from '../../lib/collections/RecordedFiles'
+import { generateRecordingTimelineObjs } from './testTools'
 
 const MINIMUM_TAKE_SPAN = 1000
 
@@ -2845,9 +2847,45 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 		// remove everything:
 		Timeline.remove({
 			siId: studioInstallationId,
-			statObject: {$ne: true}
+			statObject: {$ne: true},
+			recordingObject: {$ne: true}
 		})
 	}
+
+	// Ensure recording is running
+	const activeRecording = RecordedFiles.findOne({
+		stoppedAt: {$exists: false}
+	}, {
+		sort: {
+			startedAt: 1 // TODO - is order correct?
+		}
+	})
+	if (activeRecording) {
+		const recordingTimelineObjs = generateRecordingTimelineObjs(studioInstallation, activeRecording)
+
+		processTimelineObjects(studioInstallation, undefined, recordingTimelineObjs)
+		timelineObjs = timelineObjs.concat(recordingTimelineObjs)
+
+		saveIntoDb<TimelineObj, TimelineObj>(Timeline, {
+			siId: studioInstallationId,
+			recordingObject: true
+		}, recordingTimelineObjs, {
+			beforeUpdate: (o: TimelineObj, oldO: TimelineObj): TimelineObj => {
+				// do not overwrite trigger when the trigger has been denowified
+				if (o.trigger.value === 'now' && oldO.trigger.setFromNow) {
+					o.trigger.type = oldO.trigger.type
+					o.trigger.value = oldO.trigger.value
+				}
+				return o
+			}
+		})
+	} else {
+		Timeline.remove({
+			siId: studioInstallationId,
+			recordingObject: true
+		})
+	}
+
 	// afterUpdateTimeline(studioInstallation)
 	afterUpdateTimeline(studioInstallation, timelineObjs)
 	logger.debug('updateTimeline done!')
@@ -2870,7 +2908,7 @@ function calcOverlapDuration (fromSl: SegmentLine, toSl: SegmentLine, toSLItems:
  * @param studioInstallation
  * @param timelineObjs Array of timeline objects
  */
-function processTimelineObjects (studioInstallation: StudioInstallation, parentRunningOrder: RunningOrder, timelineObjs: Array<TimelineObj>): void {
+function processTimelineObjects (studioInstallation: StudioInstallation, parentRunningOrder: RunningOrder | undefined, timelineObjs: Array<TimelineObj>): void {
 	// Pre-process the timelineObjects:
 
 	// first, split out any grouped objects, to make the timeline shallow:
@@ -2891,7 +2929,7 @@ function processTimelineObjects (studioInstallation: StudioInstallation, parentR
 		}
 	}
 	_.each(timelineObjs, (o: TimelineObj) => {
-		o.roId = parentRunningOrder._id
+		if (parentRunningOrder) o.roId = parentRunningOrder._id
 		fixObjectChildren(o as TimelineObjGroup)
 	})
 

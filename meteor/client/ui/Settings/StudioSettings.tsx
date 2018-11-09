@@ -41,6 +41,7 @@ import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
+import { ChannelFormat } from '../../../lib/constants/casparcg'
 
 interface IProps {
 	studioInstallation: StudioInstallation
@@ -1381,6 +1382,9 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 
 		return (
 			_.map(this.props.studioInstallation.mappings, (mapping: Mapping , layerId: string) => {
+				// If an internal mapping, then hide it
+				if (mapping.internal) return <React.Fragment key={layerId}></React.Fragment>
+
 				return <React.Fragment key={layerId}>
 					<tr className={ClassNames({
 						'hl': this.isItemEdited(layerId)
@@ -1687,6 +1691,93 @@ class HotkeyLegendSettings extends React.Component<Translated<IStudioKeyValueSet
 	}
 }
 
+interface ITestToolsRecordingsSettingsState {
+}
+
+class TestToolsRecordingsSettings extends React.Component<Translated<IProps>, ITestToolsRecordingsSettingsState> {
+	render () {
+		const { t } = this.props
+		return (
+			<div>
+				<h3>{t('Test Tools - Recordings')}</h3>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Device ID')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute='testToolsConfig.recordings.deviceId'
+							obj={this.props.studioInstallation}
+							type='text'
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('CasparCG Channel')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute='testToolsConfig.recordings.channelIndex'
+							obj={this.props.studioInstallation}
+							type='int'
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Path prefix')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute='testToolsConfig.recordings.filePrefix'
+							obj={this.props.studioInstallation}
+							type='text'
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('URL prefix')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute='testToolsConfig.recordings.urlPrefix'
+							obj={this.props.studioInstallation}
+							type='text'
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Decklink input index')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute='testToolsConfig.recordings.decklinkDevice'
+							obj={this.props.studioInstallation}
+							type='int'
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Decklink input format')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute='testToolsConfig.recordings.channelFormat'
+							obj={this.props.studioInstallation}
+							type='dropdown'
+							options={ChannelFormat}
+							collection={StudioInstallations}
+							className='input text-input input-l '></EditAttribute>
+					</label>
+				</div>
+			</div>
+		)
+	}
+}
+
 interface IStudioSettingsProps extends IProps, IChildStudioInterfaceProps {
 	match: {
 		params: {
@@ -1966,6 +2057,11 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 					<div className='row'>
 						<div className='col c12 r1-c12'>
 							<HotkeyLegendSettings {...this.props} onAddHotkeyLegend={this.onAddHotkeyLegend} onDeleteHotkeyLegend={this.onDeleteHotkeyLegend} />
+						</div>
+					</div>
+					<div className='row'>
+						<div className='col c12 r1-c12'>
+							<TestToolsRecordingsSettings {...this.props} />
 						</div>
 					</div>
 				</div>
