@@ -1,13 +1,13 @@
 import { getCoreSystem, CoreSystem, SYSTEM_ID, getCoreSystemCursor, parseVersion } from '../lib/collections/CoreSystem'
 import { getCurrentTime } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
-import { CURRENT_DATABASE_VERSION } from './databaseMigration'
+import { CURRENT_SYSTEM_VERSION } from './databaseMigration'
 import { setSystemStatus, StatusCode, StatusObject } from './systemStatus'
 
 function initializeCoreSystem () {
 	let system = getCoreSystem()
 	if (!system) {
-		let version = parseVersion(CURRENT_DATABASE_VERSION)
+		let version = parseVersion(CURRENT_SYSTEM_VERSION)
 		CoreSystem.insert({
 			_id: SYSTEM_ID,
 			created: getCurrentTime(),
@@ -34,7 +34,7 @@ function checkDatabaseVersion () {
 
 		if (databaseSystem.version) {
 			let dbVersion = parseVersion(databaseSystem.version)
-			let currentVersion = parseVersion(CURRENT_DATABASE_VERSION)
+			let currentVersion = parseVersion(CURRENT_SYSTEM_VERSION)
 
 			if (dbVersion.major !== currentVersion.major) {
 

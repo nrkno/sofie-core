@@ -28,6 +28,21 @@ export function getCoreSystem () {
 export function getCoreSystemCursor () {
 	return CoreSystem.find(SYSTEM_ID)
 }
+export function setCoreSystemVersion (versionStr: string): string {
+	let system = getCoreSystem()
+	if (!system) throw new Meteor.Error(500, 'CoreSystem not found')
+
+	let version = parseVersion(versionStr)
+
+	if (version.toString() === versionStr) {
+		CoreSystem.update(system._id, {$set: {
+			version: versionStr
+		}})
+		return versionStr
+	} else {
+		throw new Meteor.Error(500, `Unable to set version. Parsed version differ from expected: "${versionStr}", "${version.toString()}"`)
+	}
+}
 export interface Version {
 	toString: () => string
 	major: number
@@ -62,4 +77,23 @@ export function parseVersion (v: string): Version {
 		}
 	}
 	throw new Meteor.Error(500, `Invalid version: "${v}"`)
+}
+/**
+ * Compares versions, returns 1 if larger, -1 if smaller, 0 if equal.
+ * (Excluding version label)
+ * @param v0
+ * @param v1
+ */
+export function compareVersions (v0: Version, v1: Version): number {
+
+	if (v0.major > v1.major) return 1
+	if (v0.major < v1.major) return -1
+
+	if (v0.minor > v1.minor) return 1
+	if (v0.minor < v1.minor) return -1
+
+	if (v0.patch > v1.patch) return 1
+	if (v0.patch < v1.patch) return -1
+
+	return 0
 }
