@@ -32,7 +32,7 @@ export interface MigrationStepInput {
 	label: string
 	description?: string
 	inputType: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch' | null // EditAttribute types, null = dont display edit field
-	attribute: string
+	attribute: string | null
 	defaultValue?: any
 }
 export interface MigrationStepInputResult {

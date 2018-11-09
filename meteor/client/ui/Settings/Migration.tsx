@@ -68,6 +68,15 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 	componentDidMount () {
 		this.updateVersions()
 	}
+	clickRefresh () {
+		this.setState({
+			warnings: [],
+			migrationCompleted: false,
+			haveRunMigration: false,
+		})
+
+		this.updateVersions()
+	}
 	updateVersions () {
 		this.setState({
 			systemVersion: '-',
@@ -101,16 +110,30 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 
 		let inputResults: Array<MigrationStepInputResult> = []
 
-		_.each(this.state.inputValues, (iv, stepId: string) => {
-			_.each(iv, (value: any, attribute: string) => {
-				inputResults.push({
-					stepId: stepId,
-					attribute: attribute,
-					value: value
-				})
-			})
-		})
+		// _.each(this.state.inputValues, (iv, stepId: string) => {
+		// 	_.each(iv, (value: any, attribute: string) => {
+		// 		inputResults.push({
+		// 			stepId: stepId,
+		// 			attribute: attribute,
+		// 			value: value
+		// 		})
+		// 	})
+		// })
 		if (this.state.migration) {
+			_.each(this.state.migration.manualInputs, (manualInput ) => {
+				if (manualInput.stepId && manualInput.attribute) {
+					let value: any
+					let step = this.state.inputValues[manualInput.stepId]
+					if (step) {
+						value = step[manualInput.attribute]
+					}
+					inputResults.push({
+						stepId: manualInput.stepId,
+						attribute: manualInput.attribute,
+						value: value
+					})
+				}
+			})
 			Meteor.call(MigrationMethods.runMigration,
 				this.state.migration.baseVersion, // baseVersionStr
 				this.state.migration.targetVersion, // targetVersionStr
@@ -160,27 +183,31 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 
 				if (manualInput.stepId) {
 					let stepId = manualInput.stepId
-					let value = (this.state.inputValues[stepId] || {})[manualInput.attribute]
-					if (_.isUndefined(value)) {
-						value = manualInput.defaultValue
+					let value
+					if (manualInput.attribute) {
+						value = (this.state.inputValues[stepId] || {})[manualInput.attribute]
+						if (_.isUndefined(value)) {
+							value = manualInput.defaultValue
+						}
 					}
 					return (<div key={rank++}>
 						<h3>{manualInput.label}</h3>
 						<div>{manualInput.description}</div>
 						<div>{
-							manualInput.inputType ?
+							manualInput.inputType && manualInput.attribute ?
 							<EditAttribute
 								type={manualInput.inputType}
 								overrideDisplayValue={value}
 								updateFunction={(edit: EditAttributeBase, newValue: any ) => {
-									let inputValues = this.state.inputValues
+									if (manualInput.attribute) {
+										let inputValues = this.state.inputValues
+										if (!inputValues[stepId]) inputValues[stepId] = {}
+										inputValues[stepId][manualInput.attribute] = newValue
 
-									if (!inputValues[stepId]) inputValues[stepId] = {}
-									inputValues[stepId][manualInput.attribute] = newValue
-
-									this.setState({
-										inputValues: inputValues
-									})
+										this.setState({
+											inputValues: inputValues
+										})
+									}
 
 								}}
 							/>
@@ -209,7 +236,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 							{t('Database version')}: {this.state.databaseVersion}
 						</div>
 						<div>
-							<button className='btn mod mhm' onClick={() => { this.updateVersions() }}>
+							<button className='btn mod mhm' onClick={() => { this.clickRefresh() }}>
 								<FontAwesomeIcon icon={faBinoculars} />
 								{t('Refresh')}
 							</button>
@@ -292,8 +319,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 
 					{!this.state.migrationNeeded ?
 						<div>
-							{t('All is well, go get a')}
-							&nbsp;<FontAwesomeIcon icon={faCoffee} />
+							{t('All is well, go get a')}&nbsp;<FontAwesomeIcon icon={faCoffee} />
 						</div>
 					: null}
 				</div>

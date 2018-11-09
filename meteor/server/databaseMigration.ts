@@ -45,9 +45,10 @@ export interface MigrationStepBase {
 	canBeRunAutomatically: boolean
 	/** The migration script. This is the script that performs the updates.
 	 * Input to the function is the result from the user prompt (for manual steps)
+	 * The miggration script is optional, and may be omitted if the user is expected to perform the update manually
 	 * @param result Input from the user query
 	 */
-	migrate: (input: MigrationStepInputFilteredResult) => void
+	migrate?: (input: MigrationStepInputFilteredResult) => void
 	/** Query user for input, used in manual steps */
 	input?: Array<MigrationStepInput> | (() => Array<MigrationStepInput>)
 }
@@ -57,7 +58,8 @@ export interface MigrationStep extends MigrationStepBase {
 }
 interface MigrationStepInternal extends MigrationStep {
 	_rank: number,
-	_version: Version
+	_version: Version,
+	_validateResult: string | boolean
 }
 
 const systemMigrationSteps: Array<MigrationStep> = []
@@ -134,7 +136,9 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 			// Step is in play
 
 			// Check if the step can be applied:
-			if (step.validate(false)) {
+			step._validateResult = step.validate(false)
+			if (step._validateResult) {
+
 				if (step.overrideSteps) {
 					// Override / delete other steps
 					_.each(step.overrideSteps, (overrideId: string) => {
@@ -166,12 +170,22 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 			if (step.input) {
 				let input: Array<MigrationStepInput> = []
 				if (_.isArray(step.input)) {
-					input = step.input
+					input = []
+					_.each(step.input, (i) => {
+						input.push(_.clone(i))
+					})
 				} else if (_.isFunction(step.input)) {
 					input = step.input()
 				}
 				if (input.length) {
 					_.each(input, (i) => {
+
+						if (i.label && _.isString(step._validateResult)) {
+							i.label = (i.label + '').replace(/\$validation/g, step._validateResult)
+						}
+						if (i.description && _.isString(step._validateResult)) {
+							i.description = (i.description + '').replace(/\$validation/g, step._validateResult)
+						}
 						manualInputs.push(_.extend({}, i, {
 							stepId: step.id
 						}))
@@ -211,8 +225,11 @@ export function runMigration (
 	// Verify the input:
 	let migration = prepareMigration(targetVersionStr, baseVersionStr)
 
+	let manualInputsWithUserPrompt = _.filter(migration.manualInputs, (manualInput) => {
+		return !!(manualInput.stepId && manualInput.attribute)
+	})
 	if (migration.hash !== hash) throw new Meteor.Error(500, `Migration input hash differ from expected: "${hash}", "${migration.hash}"`)
-	if (migration.manualInputs.length !== inputResults.length ) throw new Meteor.Error(500, `Migration manualInput lengths differ from expected: "${inputResults.length}", "${migration.manualInputs.length}"`)
+	if (manualInputsWithUserPrompt.length !== inputResults.length ) throw new Meteor.Error(500, `Migration manualInput lengths differ from expected: "${inputResults.length}", "${migration.manualInputs.length}"`)
 
 	logger.info(`Migration: ${migration.automaticStepCount} automatic and ${migration.manualStepCount} steps (${migration.ignoredStepCount} ignored).`)
 
@@ -222,27 +239,34 @@ export function runMigration (
 
 	_.each(migration.steps, (step: MigrationStep) => {
 
-		// Prepare input from user
-		let stepInput: MigrationStepInputFilteredResult = {}
-		_.each(inputResults, (ir) => {
-			if (ir.stepId === step.id) {
-				stepInput[ir.attribute] = ir.value
-			}
-		})
+		try {
+			// Prepare input from user
+			let stepInput: MigrationStepInputFilteredResult = {}
+			_.each(inputResults, (ir) => {
+				if (ir.stepId === step.id) {
+					stepInput[ir.attribute] = ir.value
+				}
+			})
 
-		// Run the migration script
-		step.migrate(stepInput)
-
-		// After migration, run the validation again
-		// Since the migration should be done by now, the validate should return true
-		let validateMessage: string | boolean = step.validate(true)
-		if (validateMessage) {
-			// Something's not right
-			let msg = `Step "${step.id}": Something went wrong, validation didn't approve of the changes. The changes have been applied, but might need to be confirmed.`
-			if (validateMessage !== true && _.isString(validateMessage)) {
-				msg += ` Info: ${validateMessage}`
+			// Run the migration script
+			if (step.migrate) {
+				step.migrate(stepInput)
 			}
-			warningMessages.push(msg)
+
+			// After migration, run the validation again
+			// Since the migration should be done by now, the validate should return true
+			let validateMessage: string | boolean = step.validate(true)
+			if (validateMessage) {
+				// Something's not right
+				let msg = `Step "${step.id}": Something went wrong, validation didn't approve of the changes. The changes have been applied, but might need to be confirmed.`
+				if (validateMessage !== true && _.isString(validateMessage)) {
+					msg += ` Info: ${validateMessage}`
+				}
+				warningMessages.push(msg)
+			}
+		} catch (e) {
+			logger.error(`Error in Migration step ${step.id}: ${e}`)
+			warningMessages.push(`Internal server error in step ${step.id}`)
 		}
 	})
 
