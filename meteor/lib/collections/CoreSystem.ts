@@ -3,6 +3,7 @@ import { TransformedCollection } from '../typings/meteor'
 import { Time, registerCollection, getCurrentTime } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+import { logger } from '../logging'
 
 export const SYSTEM_ID = 'core'
 export interface ICoreSystem {
@@ -32,9 +33,14 @@ export function setCoreSystemVersion (versionStr: string): string {
 	let system = getCoreSystem()
 	if (!system) throw new Meteor.Error(500, 'CoreSystem not found')
 
+	if (!Meteor.isServer) throw new Meteor.Error(500, 'This function can only be run server-side')
+
 	let version = parseVersion(versionStr)
 
 	if (version.toString() === versionStr) {
+
+		logger.info(`Updating database version, from "${system.version}" to "${version.toString()}".`)
+
 		CoreSystem.update(system._id, {$set: {
 			version: versionStr
 		}})

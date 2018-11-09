@@ -7,11 +7,22 @@ import {
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { getHash } from './lib'
+import {
+	MigrationMethods,
+	MigrationStepInputFilteredResult,
+	MigrationStepInput,
+	MigrationStepInputResult,
+	GetMigrationStatusResultNoNeed,
+	GetMigrationStatusResultMigrationNeeded,
+	RunMigrationResult
+} from '../lib/api/migration'
+import { setMeteorMethods } from './methods'
+import { logger } from '../lib/logging';
 
 /** The current database version, x.y.z */
 export const CURRENT_SYSTEM_VERSION = '1.1.1'
 
-export interface MigrationStep {
+interface MigrationStep {
 	/** Unique id for this step */
 	id: string
 	/** The version this Step applies to */
@@ -35,23 +46,8 @@ export interface MigrationStep {
 	/** For manual steps */
 	input?: Array<MigrationStepInput>
 }
-export interface MigrationStepInput {
-	stepId?: string // automatically filled in later
-	label: string
-	description?: string
-	inputType: string // enum
-	attribute: string
-}
-export interface MigrationStepInputResult {
-	stepId: string
-	attribute: string
-	value: any
-}
-export interface MigrationStepInputFilteredResult {
-	[attribute: string]: any
-}
 
-export function fetchMigrationSteps (targetVersionStr?: string, baseVersionStr?: string) {
+export function prepareMigration (targetVersionStr?: string, baseVersionStr?: string) {
 
 	let databaseSystem = getCoreSystem()
 	if (!databaseSystem) throw new Meteor.Error(500, 'System version not set up')
@@ -140,15 +136,19 @@ export function runMigration (
 	targetVersionStr: string,
 	hash: string,
 	inputResults: Array<MigrationStepInputResult>
-) {
+): RunMigrationResult {
 	let baseVersion = parseVersion(baseVersionStr)
 	let targetVersion = parseVersion(targetVersionStr)
 
 	// Verify the input:
-	let migration = fetchMigrationSteps(targetVersionStr, baseVersionStr)
+	let migration = prepareMigration(targetVersionStr, baseVersionStr)
 
 	if (migration.hash !== hash) throw new Meteor.Error(500, `Migration input hash differ from expected: "${hash}", "${migration.hash}"`)
 	if (migration.manualInputs.length !== inputResults.length ) throw new Meteor.Error(500, `Migration manualInput lengths differ from expected: "${inputResults.length}", "${migration.manualInputs.length}"`)
+
+	logger.info(`Starting migration, from "${baseVersion.toString()}" to "${targetVersion.toString()}". ${migration.automaticStepCount} automatic and ${migration.manualStepCount} steps.`)
+
+	logger.debug(inputResults)
 
 	let warningMessages: Array<string> = []
 
@@ -173,23 +173,81 @@ export function runMigration (
 		}
 	})
 
-	let migrationDone: boolean = false
+	let migrationCompleted: boolean = false
 
 	if (!warningMessages.length) {
 		// if there are no warning messages, we can complete the migration right away
 		updateDatabaseVersion(targetVersionStr)
-		migrationDone = true
+		migrationCompleted = true
 	}
 
+	_.each(warningMessages, (str) => {
+		logger.warn(`Migration: ${str}`)
+	})
+	logger.info(`Migration end`)
 	return {
-		migrationDone: migrationDone,
+		migrationCompleted: migrationCompleted,
 		warnings: warningMessages
 	}
 }
 export function updateDatabaseVersion (targetVersionStr: string) {
 	let targetVersion = parseVersion(targetVersionStr)
+	setCoreSystemVersion(targetVersion.toString())
 }
 
 export function updateDatabaseVersionToSystem () {
 	updateDatabaseVersion(CURRENT_SYSTEM_VERSION)
 }
+
+function getMigrationStatus (): GetMigrationStatusResultMigrationNeeded | GetMigrationStatusResultNoNeed {
+	let system = getCoreSystem()
+	if (!system) throw new Meteor.Error(500, 'CoreSystem not found')
+
+	let databaseVersion = parseVersion(system.version)
+	let systemVersion = parseVersion(CURRENT_SYSTEM_VERSION)
+
+	let versionDifference: boolean = false
+
+	if (compareVersions(databaseVersion, systemVersion) !== 0) {
+		versionDifference = true
+
+		let migration = prepareMigration()
+
+		return {
+			databaseVersion:	 		databaseVersion.toString(),
+			systemVersion:		 		systemVersion.toString(),
+			migrationNeeded:	 		true,
+
+			migration: {
+				canDoAutomaticMigration:	migration.manualStepCount === 0,
+
+				manualInputs:				migration.manualInputs,
+				hash:						migration.hash,
+				baseVersion: 				migration.baseVersion,
+				targetVersion: 				migration.targetVersion,
+
+				automaticStepCount: 		migration.automaticStepCount,
+				manualStepCount: 			migration.manualStepCount
+			}
+		}
+	} else {
+
+		return {
+			databaseVersion: databaseVersion.toString(),
+			systemVersion: systemVersion.toString(),
+			migrationNeeded: false
+		}
+	}
+
+}
+function forceMigration (targetVersionStr: string) {
+	logger.info(`Force migration to "${targetVersionStr}"`)
+	return updateDatabaseVersion (targetVersionStr)
+}
+
+let methods = {}
+methods[MigrationMethods.getMigrationStatus] = getMigrationStatus
+methods[MigrationMethods.runMigration] = runMigration
+methods[MigrationMethods.forceMigration] = forceMigration
+
+setMeteorMethods(methods)
