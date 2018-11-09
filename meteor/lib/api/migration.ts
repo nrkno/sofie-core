@@ -1,8 +1,8 @@
 
 export enum MigrationMethods {
-	'getMigrationStatus' 	= 'coreSystem.getMigrationStatus',
-	'runMigration' 			= 'coreSystem.runMigration',
-	'forceMigration' 		= 'coreSystem.forceMigration'
+	'getMigrationStatus' 	= 'migration.getMigrationStatus',
+	'runMigration' 			= 'migration.runMigration',
+	'forceMigration' 		= 'migration.forceMigration'
 }
 export interface GetMigrationStatusResult {
 	databaseVersion: string
@@ -23,6 +23,7 @@ export interface GetMigrationStatusResultMigrationNeeded extends GetMigrationSta
 		targetVersion: string
 		automaticStepCount: number
 		manualStepCount: number
+		ignoredStepCount: number
 	}
 }
 
@@ -30,8 +31,9 @@ export interface MigrationStepInput {
 	stepId?: string // automatically filled in later
 	label: string
 	description?: string
-	inputType: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch' // EditAttribute types
+	inputType: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch' | null // EditAttribute types, null = dont display edit field
 	attribute: string
+	defaultValue?: any
 }
 export interface MigrationStepInputResult {
 	stepId: string

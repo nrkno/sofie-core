@@ -2,7 +2,8 @@ import {
 	parseVersion,
 	getCoreSystem,
 	compareVersions,
-	setCoreSystemVersion
+	setCoreSystemVersion,
+	Version
 } from '../lib/collections/CoreSystem'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
@@ -17,34 +18,68 @@ import {
 	RunMigrationResult
 } from '../lib/api/migration'
 import { setMeteorMethods } from './methods'
-import { logger } from '../lib/logging';
+import { logger } from '../lib/logging'
+import { Optional } from '../lib/lib'
 
 /** The current database version, x.y.z */
-export const CURRENT_SYSTEM_VERSION = '1.1.1'
+export const CURRENT_SYSTEM_VERSION = '1.0.0'
+/** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.
+ * And Sofie said: The version of the database is to be GENESIS_SYSTEM_VERSION so that the migration scripts will run.
+ */
+export const GENESIS_SYSTEM_VERSION = '0.0.0'
 
-interface MigrationStep {
+export interface MigrationStepBase {
 	/** Unique id for this step */
 	id: string
-	/** The version this Step applies to */
-	version: string
 	/** If this step overrides another step. Note: It's only possible to override steps in previous versions */
-	overrideSteps: Array<string>
+	overrideSteps?: Array<string>
 
 	/** The validate function determines whether the step is to be applied
 	 * (it can for example check that some value in the database is present)
-	 * The function should return true if step is applicable
+	 * The function should return falsy if step is fullfilled (ie truthy if migrate function should be applied, return value could then be a string describing why)
 	 * The function is also run after the migration-script has been applied (and should therefore return false if all is good)
 	 */
-	validate: (afterMigration: boolean) => boolean
+	validate: (afterMigration: boolean) => boolean | string
 
-	/** If true, the step can be run automatically, without prompting for user input */
+	/** If true, this step can be run automatically, without prompting for user input */
 	canBeRunAutomatically: boolean
-	/** The migration script. (This is the script that performs the updates)
+	/** The migration script. This is the script that performs the updates.
 	 * Input to the function is the result from the user prompt (for manual steps)
+	 * @param result Input from the user query
 	 */
-	migrate: (result: MigrationStepInputFilteredResult) => void
-	/** For manual steps */
-	input?: Array<MigrationStepInput>
+	migrate: (input: MigrationStepInputFilteredResult) => void
+	/** Query user for input, used in manual steps */
+	input?: Array<MigrationStepInput> | (() => Array<MigrationStepInput>)
+}
+export interface MigrationStep extends MigrationStepBase {
+	/** The version this Step applies to */
+	version: string
+}
+interface MigrationStepInternal extends MigrationStep {
+	_rank: number,
+	_version: Version
+}
+
+const systemMigrationSteps: Array<MigrationStep> = []
+
+/**
+ * Add new system Migration step
+ * @param step
+ */
+export function addMigrationStep (step: MigrationStep) {
+	systemMigrationSteps.push(step)
+}
+/**
+ * Convenience method to add multiple steps of the same version
+ * @param version
+ * @param steps
+ */
+export function addMigrationSteps (version: string, steps: Array<MigrationStepBase>) {
+	_.each(steps, (step) => {
+		addMigrationStep(_.extend(step, {
+			version: version
+		}))
+	})
 }
 
 export function prepareMigration (targetVersionStr?: string, baseVersionStr?: string) {
@@ -56,24 +91,42 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 	let targetVersion = parseVersion(targetVersionStr || CURRENT_SYSTEM_VERSION)
 
 	// Discover applcable migration steps:
-	let allMigrationSteps: Array<MigrationStep> = []
+	let allMigrationSteps: Array<MigrationStepInternal> = []
+	let rank: number = 0
 
-	// TODO: fetch migrationSteps here
+	_.each(systemMigrationSteps, (step) => {
+		allMigrationSteps.push(_.extend(step, {
+			_rank: rank++,
+			_version: parseVersion(step.version)
+		}))
+	})
+	// TODO: add steps generated from blueprint here
 
 	// Sort, smallest version first:
 	allMigrationSteps.sort((a, b) => {
-		return compareVersions(parseVersion(a.version), parseVersion(a.version))
+		let i = compareVersions(a._version, b._version)
+		if (i !== 0) return i
+		// Keep ranking within version:
+		if (a._rank > b._rank) return 1
+		if (a._rank < b._rank) return -1
+		return 0
 	})
+
+	// console.log('allMigrationSteps', allMigrationSteps)
+
+	let automaticStepCount: number = 0
+	let manualStepCount: number = 0
+	let ignoredStepCount: number = 0
 
 	// Filter steps:
 	let overrideIds: {[id: string]: true} = {}
-	let migrationSteps: {[id: string]: MigrationStep} = {}
-	_.each(allMigrationSteps, (step: MigrationStep) => {
+	let migrationSteps: {[id: string]: MigrationStepInternal} = {}
+	_.each(allMigrationSteps, (step: MigrationStepInternal) => {
 
 		if (migrationSteps[step.id]) throw new Meteor.Error(500, `Error: MigrationStep.id must be unique: "${step.id}"`)
-		if (!step.canBeRunAutomatically && (!step.input || !step.input.length)) throw new Meteor.Error(500, `MigrationStep "${step.id}" is manual, but no input is provided`)
+		if (!step.canBeRunAutomatically && (!step.input || (_.isArray(step.input) && !step.input.length))) throw new Meteor.Error(500, `MigrationStep "${step.id}" is manual, but no input is provided`)
 
-		let stepVersion = parseVersion(step.version)
+		let stepVersion = step._version
 		if (
 			compareVersions(stepVersion, baseVersion) > 0 && // step version is larger than database version
 			compareVersions(stepVersion, targetVersion) <= 0 // // step version is less than (or equal) to system version
@@ -89,30 +142,42 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 					})
 				}
 				migrationSteps[step.id] = step
+			} else {
+				// No need to run step
+				ignoredStepCount++
 			}
 		} else {
-			// Step is not applicable, do nothing
+			// Step is not applicable
 		}
 	})
 
+	// console.log('migrationSteps', migrationSteps)
+
 	// check if there are any manual steps:
 	// (this makes an automatic migration impossible)
-	let automaticStepCount: number = 0
-	let manualStepCount: number = 0
 
 	let manualInputs: Array<MigrationStepInput> = []
 	let stepsHash: Array<string> = []
-	_.each(migrationSteps, (step: MigrationStep, id: string) => {
+	_.each(migrationSteps, (step: MigrationStepInternal, id: string) => {
 		stepsHash.push(step.id)
-		if (step.input && step.input.length) {
-			_.each(step.input, (i) => {
-				manualInputs.push(_.extend({}, i, {
-					stepId: step.id
-				}))
-			})
-		}
 		if (!step.canBeRunAutomatically) {
 			manualStepCount++
+
+			if (step.input) {
+				let input: Array<MigrationStepInput> = []
+				if (_.isArray(step.input)) {
+					input = step.input
+				} else if (_.isFunction(step.input)) {
+					input = step.input()
+				}
+				if (input.length) {
+					_.each(input, (i) => {
+						manualInputs.push(_.extend({}, i, {
+							stepId: step.id
+						}))
+					})
+				}
+			}
 		} else {
 			automaticStepCount++
 		}
@@ -127,6 +192,7 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 		steps: 				_.values(migrationSteps),
 		automaticStepCount: automaticStepCount,
 		manualStepCount: 	manualStepCount,
+		ignoredStepCount: 	ignoredStepCount,
 		manualInputs: 		manualInputs
 	}
 }
@@ -140,13 +206,15 @@ export function runMigration (
 	let baseVersion = parseVersion(baseVersionStr)
 	let targetVersion = parseVersion(targetVersionStr)
 
+	logger.info(`Migration: Starting, from "${baseVersion.toString()}" to "${targetVersion.toString()}".`)
+
 	// Verify the input:
 	let migration = prepareMigration(targetVersionStr, baseVersionStr)
 
 	if (migration.hash !== hash) throw new Meteor.Error(500, `Migration input hash differ from expected: "${hash}", "${migration.hash}"`)
 	if (migration.manualInputs.length !== inputResults.length ) throw new Meteor.Error(500, `Migration manualInput lengths differ from expected: "${inputResults.length}", "${migration.manualInputs.length}"`)
 
-	logger.info(`Starting migration, from "${baseVersion.toString()}" to "${targetVersion.toString()}". ${migration.automaticStepCount} automatic and ${migration.manualStepCount} steps.`)
+	logger.info(`Migration: ${migration.automaticStepCount} automatic and ${migration.manualStepCount} steps (${migration.ignoredStepCount} ignored).`)
 
 	logger.debug(inputResults)
 
@@ -166,10 +234,15 @@ export function runMigration (
 		step.migrate(stepInput)
 
 		// After migration, run the validation again
-		// Since the migration should be done by now, the validate should return false
-		if (step.validate(true)) {
+		// Since the migration should be done by now, the validate should return true
+		let validateMessage: string | boolean = step.validate(true)
+		if (validateMessage) {
 			// Something's not right
-			warningMessages.push(`Step "${step.id}": Something went wrong, validation didn't approve of the changes. The changes have been applied, but might need to be confirmed.`)
+			let msg = `Step "${step.id}": Something went wrong, validation didn't approve of the changes. The changes have been applied, but might need to be confirmed.`
+			if (validateMessage !== true && _.isString(validateMessage)) {
+				msg += ` Info: ${validateMessage}`
+			}
+			warningMessages.push(msg)
 		}
 	})
 
@@ -184,7 +257,7 @@ export function runMigration (
 	_.each(warningMessages, (str) => {
 		logger.warn(`Migration: ${str}`)
 	})
-	logger.info(`Migration end`)
+	logger.info(`Migration: end`)
 	return {
 		migrationCompleted: migrationCompleted,
 		warnings: warningMessages
@@ -227,11 +300,11 @@ function getMigrationStatus (): GetMigrationStatusResultMigrationNeeded | GetMig
 				targetVersion: 				migration.targetVersion,
 
 				automaticStepCount: 		migration.automaticStepCount,
-				manualStepCount: 			migration.manualStepCount
+				manualStepCount: 			migration.manualStepCount,
+				ignoredStepCount: 			migration.ignoredStepCount
 			}
 		}
 	} else {
-
 		return {
 			databaseVersion: databaseVersion.toString(),
 			systemVersion: systemVersion.toString(),
@@ -249,5 +322,8 @@ let methods = {}
 methods[MigrationMethods.getMigrationStatus] = getMigrationStatus
 methods[MigrationMethods.runMigration] = runMigration
 methods[MigrationMethods.forceMigration] = forceMigration
+methods['debug_setVersion'] = (version: string) => {
+	return updateDatabaseVersion (version)
+}
 
 setMeteorMethods(methods)
