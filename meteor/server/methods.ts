@@ -1,5 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+import { logger } from './logging'
+
+export interface Methods {
+	[method: string]: Function
+}
 
 let runningMethods: {[methodId: string]: {
 	method: string,
@@ -11,7 +16,7 @@ let runningMethodsI: number = 0
  * Wrapper for Meteor.methods(), keeps track of which methods are currently running
  * @param orgMethods
  */
-export function setMeteorMethods (orgMethods: {[method: string]: Function}): void {
+export function setMeteorMethods (orgMethods: Methods): void {
 
 	// Wrap methods
 	let methods: any = {}
@@ -51,6 +56,24 @@ export function setMeteorMethods (orgMethods: {[method: string]: Function}): voi
 		}
 	})
 	Meteor.methods(methods)
+}
+export function wrapMethods (methods: Methods): Methods {
+	let methodsOut: Methods = {}
+	_.each(methods, (fcn: Function, key) => {
+		methodsOut[key] = (...args: any[]) => {
+			// logger.info('------- Method call -------')
+			// logger.info(key)
+			// logger.info(args)
+			// logger.info('---------------------------')
+			try {
+				return fcn.apply(null, args)
+			} catch (e) {
+				logger.error(e.message || e.reason || (e.toString ? e.toString() : null) || e)
+				throw e
+			}
+		}
+	})
+	return methodsOut
 }
 export function getRunningMethods () {
 	return runningMethods

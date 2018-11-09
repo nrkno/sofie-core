@@ -4,7 +4,7 @@ import { RuntimeFunctions, RuntimeFunction } from '../../lib/collections/Runtime
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
-import { convertCodeToGeneralFunction, convertCodeToFunction, getContext, TemplateContext, TemplateResult, TemplateGeneralFunction, TemplateContextInternalBase, LayerType, preventSaveDebugData } from './templates/templates'
+import { convertCodeToGeneralFunction, convertCodeToFunction, getContext, TemplateContext, TemplateResult, TemplateGeneralFunction, preventSaveDebugData } from './templates/templates'
 import { DBSegmentLine, SegmentLine } from '../../lib/collections/SegmentLines'
 import { IMOSROFullStory, MosString128, IMOSItem } from 'mos-connection'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
@@ -57,7 +57,8 @@ export function runtimeFunctionTestCode (runtimeFunction: RuntimeFunction, showS
 			modified: 1235,
 			currentSegmentLineId: null,
 			nextSegmentLineId: null,
-			previousSegmentLineId: null
+			previousSegmentLineId: null,
+			dataSource: 'testCore'
 
 		}
 		let tmpContext: TemplateContext = {

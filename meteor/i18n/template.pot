@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2018-09-26T11:56:37.184Z\n"
-"PO-Revision-Date: 2018-09-26T11:56:37.184Z\n"
+"POT-Creation-Date: 2018-11-08T10:06:08.458Z\n"
+"PO-Revision-Date: 2018-11-08T10:06:08.458Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -118,6 +118,9 @@ msgstr ""
 msgid "Shortcuts"
 msgstr ""
 
+msgid "Running Order is active"
+msgstr ""
+
 msgid "Running Order"
 msgstr ""
 
@@ -145,6 +148,35 @@ msgstr ""
 msgid "status"
 msgstr ""
 
+msgid "Delete this item?"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Are you sure you want to delete running order \"{{runningOrderSlug}}\"?"
+msgstr ""
+
+msgid "Please note: This action is irreversible!"
+msgstr ""
+
+msgid "Re-Sync this running order?"
+msgstr ""
+
+msgid "Re-Sync"
+msgstr ""
+
+msgid ""
+"Are you sure you want to re-sync running order \"{{runningOrderSlug}}\" "
+"with MOS script?"
+msgstr ""
+
+msgid "Re-sync with MOS"
+msgstr ""
+
 msgid "Start time is close"
 msgstr ""
 
@@ -165,6 +197,9 @@ msgstr ""
 msgid "Planned start"
 msgstr ""
 
+msgid "Hold"
+msgstr ""
+
 msgid "Planned end"
 msgstr ""
 
@@ -175,9 +210,6 @@ msgid "Expected end"
 msgstr ""
 
 msgid "Take"
-msgstr ""
-
-msgid "Hold"
 msgstr ""
 
 msgid "Activate"
@@ -258,13 +290,16 @@ msgstr ""
 msgid "Rewind segments to start"
 msgstr ""
 
-msgid "ON AIR"
+msgid "Cancel currently pressed hotkey"
+msgstr ""
+
+msgid "Change to fullscreen mode"
+msgstr ""
+
+msgid "This running order is now active. Are you sure you want to exit this screen?"
 msgstr ""
 
 msgid "This running order has been unpublished from Sofie."
-msgstr ""
-
-msgid "Click Anywhere to go Fullscreen..."
 msgstr ""
 
 msgid "Just now"
@@ -369,22 +404,10 @@ msgstr ""
 msgid "Output channels"
 msgstr ""
 
-msgid "Show Styles"
+msgid "Blueprints"
 msgstr ""
 
-msgid "Delete this item?"
-msgstr ""
-
-msgid "Delete"
-msgstr ""
-
-msgid "Cancel"
-msgstr ""
-
-msgid "Are you sure you want to delete show style \"{{showStyleId}}\"?"
-msgstr ""
-
-msgid "Please note: This action is irreversible!"
+msgid "Are you sure you want to delete blueprint \"{{showStyleId}}\"?"
 msgstr ""
 
 msgid "Line Templates"
@@ -405,7 +428,7 @@ msgstr ""
 msgid "System Settings"
 msgstr ""
 
-msgid "Url"
+msgid "URL"
 msgstr ""
 
 msgid "Params"
@@ -447,10 +470,16 @@ msgstr ""
 msgid "Ramp Function Path"
 msgstr ""
 
+msgid "Enable SSL"
+msgstr ""
+
 msgid "Media Scanner Host"
 msgstr ""
 
 msgid "Media Scanner Port"
+msgstr ""
+
+msgid "Activate Debug Logging"
 msgstr ""
 
 msgid "Remove this device?"
@@ -477,16 +506,13 @@ msgstr ""
 msgid "MOS ID of Gateway (Sofie MOS ID)"
 msgstr ""
 
-msgid "Activate Debug Logging"
+msgid "Generic Properties"
 msgstr ""
 
-msgid "Generic properties"
+msgid "Device Name"
 msgstr ""
 
-msgid "Device name"
-msgstr ""
-
-msgid "Blueprint ID"
+msgid "Blueprint logic ID"
 msgstr ""
 
 msgid "Is Helper"
@@ -504,16 +530,22 @@ msgstr ""
 msgid "Are you sure you want to restore the backup file \"{{fileName}}\"?"
 msgstr ""
 
-msgid "Show Style Name"
+msgid "Blueprint Name"
 msgstr ""
 
-msgid "Show Style ID"
+msgid "Blueprint ID"
 msgstr ""
 
-msgid "Baseline Blueprint ID"
+msgid "Router logic ID"
 msgstr ""
 
-msgid "External Message Blueprint ID"
+msgid "Baseline logic ID"
+msgstr ""
+
+msgid "Post Process logic ID"
+msgstr ""
+
+msgid "External Message logic ID"
 msgstr ""
 
 msgid "Download Full Backup"
@@ -525,7 +557,7 @@ msgstr ""
 msgid "Blueprints' logic"
 msgstr ""
 
-msgid "Are you sure you want to delete line blueprint logic \"{{itemId}}\"?"
+msgid "Are you sure you want to delete blueprint logic \"{{itemId}}\"?"
 msgstr ""
 
 msgid "Helper"
@@ -615,6 +647,9 @@ msgstr ""
 msgid "Is a Live Remote Input"
 msgstr ""
 
+msgid "Is a Guest Input"
+msgstr ""
+
 msgid "Is hidden"
 msgstr ""
 
@@ -669,6 +704,15 @@ msgstr ""
 msgid "Identifier"
 msgstr ""
 
+msgid "Preset"
+msgstr ""
+
+msgid "Preset transition speed"
+msgstr ""
+
+msgid "Unknown mapping"
+msgstr ""
+
 msgid "Layer ID"
 msgstr ""
 
@@ -684,19 +728,22 @@ msgstr ""
 msgid "Layer Mappings"
 msgstr ""
 
+msgid "Key"
+msgstr ""
+
+msgid "Custom Hotkey Labels"
+msgstr ""
+
 msgid "New Source"
 msgstr ""
 
 msgid "New Output"
 msgstr ""
 
-msgid "Generic Properties"
-msgstr ""
-
 msgid "Studio Name"
 msgstr ""
 
-msgid "Default Show Style"
+msgid "Default Blueprint"
 msgstr ""
 
 msgid "System"
@@ -717,7 +764,7 @@ msgstr ""
 msgid "Timestamp"
 msgstr ""
 
-msgid "User ID"
+msgid "User name"
 msgstr ""
 
 msgid "Answers"
@@ -775,6 +822,9 @@ msgid "Telemetry"
 msgstr ""
 
 msgid "Execution time"
+msgstr ""
+
+msgid "User ID"
 msgstr ""
 
 msgid "Client IP"

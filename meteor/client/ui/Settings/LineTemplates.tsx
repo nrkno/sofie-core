@@ -445,7 +445,7 @@ declare enum Direction {
 	RIGHT = 'RIGHT',
 }
 
-// RunDownAPI
+// RunningOrderAPI
 declare enum LineItemStatusCode {
 	/** No status has been determined (yet) */
 	UNKNOWN = -1,

@@ -1,7 +1,7 @@
 import { SegmentLineItemUi, SegmentLineUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
 import * as Timecode from 'smpte-timecode'
 import { Settings } from '../../lib/Settings'
-import { RundownAPI } from '../../lib/api/rundown'
+import { RunningOrderAPI } from '../../lib/api/runningOrder'
 
 export namespace RundownUtils {
 	function padZero (input: number, places?: number): string {
@@ -120,10 +120,10 @@ export namespace RundownUtils {
 		return true
 	}
 
-	export function getSourceLayerClassName (slType: RundownAPI.SourceLayerType): string {
+	export function getSourceLayerClassName (slType: RunningOrderAPI.SourceLayerType): string {
 		// CAMERA_MOVEMENT -> "camera-movement"
 		return (
-			((RundownAPI.SourceLayerType[slType] || 'unknown-sourceLayer-' + slType) + '')
+			((RunningOrderAPI.SourceLayerType[slType] || 'unknown-sourceLayer-' + slType) + '')
 			.toLowerCase()
 			.replace(/_/g,'-')
 		)

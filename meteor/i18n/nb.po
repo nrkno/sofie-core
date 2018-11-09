@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2018-09-26T11:56:37.184Z\n"
-"PO-Revision-Date: 2018-09-26 13:56+0200\n"
+"POT-Creation-Date: 2018-11-08T10:06:08.458Z\n"
+"PO-Revision-Date: 2018-11-08 11:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.1.1\n"
+"X-Generator: Poedit 2.2\n"
 
 msgid "Return to list"
 msgstr "Gå tilbake til listen"
@@ -124,6 +124,9 @@ msgstr "Faste hurtigtaster"
 msgid "Shortcuts"
 msgstr "Hurtigtaster"
 
+msgid "Running Order is active"
+msgstr "Kjøreplanen er aktiv"
+
 msgid "Running Order"
 msgstr "Kjøreplan"
 
@@ -151,6 +154,37 @@ msgstr "version"
 msgid "status"
 msgstr "status"
 
+msgid "Delete this item?"
+msgstr "Delete this item?"
+
+msgid "Delete"
+msgstr "Delete"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Are you sure you want to delete running order \"{{runningOrderSlug}}\"?"
+msgstr "Er du sikker på at du vil slette kjøreplan {{runningOrderSlug}}?"
+
+msgid "Please note: This action is irreversible!"
+msgstr "Please note: This action is irreversible!"
+
+msgid "Re-Sync this running order?"
+msgstr "Last inn kjøreplan på nytt?"
+
+msgid "Re-Sync"
+msgstr "Re-Sync"
+
+msgid ""
+"Are you sure you want to re-sync running order \"{{runningOrderSlug}}\" with "
+"MOS script?"
+msgstr ""
+"Er du sikker på at du vil synkronisere den aktive kjørenplan på nytt "
+"\"{{runningOrderSlug}}\" med MOS script?"
+
+msgid "Re-sync with MOS"
+msgstr "Re-sync med MOS"
+
 msgid "Start time is close"
 msgstr "Start tidspunkt er nær"
 
@@ -173,6 +207,9 @@ msgstr "Startet"
 msgid "Planned start"
 msgstr "Planlagt start"
 
+msgid "Hold"
+msgstr "Hold"
+
 msgid "Planned end"
 msgstr "Planlagt slutt"
 
@@ -184,9 +221,6 @@ msgstr "Forventet slutt"
 
 msgid "Take"
 msgstr "Take"
-
-msgid "Hold"
-msgstr "Hold"
 
 msgid "Activate"
 msgstr "Aktiver"
@@ -272,14 +306,18 @@ msgstr "Gå til On Air-linje"
 msgid "Rewind segments to start"
 msgstr "Spol tilbake tittler til start"
 
-msgid "ON AIR"
-msgstr "ON AIR"
+msgid "Cancel currently pressed hotkey"
+msgstr "Avbryt den trykte tasten"
+
+msgid "Change to fullscreen mode"
+msgstr "Fullskjermmodus"
+
+msgid ""
+"This running order is now active. Are you sure you want to exit this screen?"
+msgstr "Denne kjøreplan er aktiv. Er du sikker på at du vil avslutte?"
 
 msgid "This running order has been unpublished from Sofie."
 msgstr "Denne kjøreplanen er ikke lenger tilgjengelig i Sofie."
-
-msgid "Click Anywhere to go Fullscreen..."
-msgstr "Klikk hvor som helst for gå til fullskjerm..."
 
 msgid "Just now"
 msgstr "Nå"
@@ -383,23 +421,11 @@ msgstr "Source layers"
 msgid "Output channels"
 msgstr "Output channels"
 
-msgid "Show Styles"
-msgstr "Show Styles"
+msgid "Blueprints"
+msgstr "Blueprints"
 
-msgid "Delete this item?"
-msgstr "Delete this item?"
-
-msgid "Delete"
-msgstr "Delete"
-
-msgid "Cancel"
-msgstr "Cancel"
-
-msgid "Are you sure you want to delete show style \"{{showStyleId}}\"?"
-msgstr "Are you sure you want to delete show style \"{{showStyleId}}\"?"
-
-msgid "Please note: This action is irreversible!"
-msgstr "Please note: This action is irreversible!"
+msgid "Are you sure you want to delete blueprint \"{{showStyleId}}\"?"
+msgstr "Are you sure you want to delete blueprint \"{{showStyleId}}\"?"
 
 msgid "Line Templates"
 msgstr "Line Templates"
@@ -419,8 +445,8 @@ msgstr "Restore Backup"
 msgid "System Settings"
 msgstr "System Settings"
 
-msgid "Url"
-msgstr "Url"
+msgid "URL"
+msgstr "URL"
 
 msgid "Params"
 msgstr "Params"
@@ -461,11 +487,17 @@ msgstr "Sources Path"
 msgid "Ramp Function Path"
 msgstr "Ramp Function Path"
 
+msgid "Enable SSL"
+msgstr "Enable SSL"
+
 msgid "Media Scanner Host"
 msgstr "Media Scanner Host"
 
 msgid "Media Scanner Port"
 msgstr "Media Scanner Port"
+
+msgid "Activate Debug Logging"
+msgstr "Activate Debug Logging"
 
 msgid "Remove this device?"
 msgstr "Remove this device?"
@@ -491,17 +523,14 @@ msgstr "Secondary Host (IP Address or Hostname)"
 msgid "MOS ID of Gateway (Sofie MOS ID)"
 msgstr "MOS ID of Gateway (Sofie MOS ID)"
 
-msgid "Activate Debug Logging"
-msgstr "Activate Debug Logging"
-
-msgid "Generic properties"
+msgid "Generic Properties"
 msgstr "Generic Properties"
 
-msgid "Device name"
+msgid "Device Name"
 msgstr "Device Name"
 
-msgid "Blueprint ID"
-msgstr "Blueprint ID"
+msgid "Blueprint logic ID"
+msgstr "Blueprint logic ID"
 
 msgid "Is Helper"
 msgstr "Is Helper"
@@ -518,17 +547,23 @@ msgstr "Restore"
 msgid "Are you sure you want to restore the backup file \"{{fileName}}\"?"
 msgstr "Are you sure you want to restore the backup file \"{{fileName}}\"?"
 
-msgid "Show Style Name"
-msgstr "Show Style Name"
+msgid "Blueprint Name"
+msgstr "Blueprint Name"
 
-msgid "Show Style ID"
-msgstr "Show Style ID"
+msgid "Blueprint ID"
+msgstr "Blueprint ID"
 
-msgid "Baseline Blueprint ID"
-msgstr "Baseline Blueprint ID"
+msgid "Router logic ID"
+msgstr "Router logic ID"
 
-msgid "External Message Blueprint ID"
-msgstr "External Message Blueprint ID"
+msgid "Baseline logic ID"
+msgstr "Baseline logic ID"
+
+msgid "Post Process logic ID"
+msgstr "Post Process logic ID"
+
+msgid "External Message logic ID"
+msgstr "External Message logic ID"
 
 msgid "Download Full Backup"
 msgstr "Download Full Backup"
@@ -539,8 +574,8 @@ msgstr "Download Current State"
 msgid "Blueprints' logic"
 msgstr "Blueprints' logic"
 
-msgid "Are you sure you want to delete line blueprint logic \"{{itemId}}\"?"
-msgstr "Are you sure you want to delete line blueprint logic \"{{itemId}}\"?"
+msgid "Are you sure you want to delete blueprint logic \"{{itemId}}\"?"
+msgstr "Are you sure you want to delete blueprint logic \"{{itemId}}\"?"
 
 msgid "Helper"
 msgstr "Helper"
@@ -629,6 +664,9 @@ msgstr "Is on clean PGM"
 msgid "Is a Live Remote Input"
 msgstr "Is a Live Remote Input"
 
+msgid "Is a Guest Input"
+msgstr "Is a Guest Input"
+
 msgid "Is hidden"
 msgstr "Is hidden"
 
@@ -683,6 +721,15 @@ msgstr "index"
 msgid "Identifier"
 msgstr "Identifier"
 
+msgid "Preset"
+msgstr "Preset"
+
+msgid "Preset transition speed"
+msgstr "Preset transition speed"
+
+msgid "Unknown mapping"
+msgstr "Unknown mapping"
+
 msgid "Layer ID"
 msgstr "Layer ID"
 
@@ -698,20 +745,23 @@ msgstr "Are you sure you want to remove mapping for layer \"{{layerId}}\"?"
 msgid "Layer Mappings"
 msgstr "Layer Mappings"
 
+msgid "Key"
+msgstr "Key"
+
+msgid "Custom Hotkey Labels"
+msgstr "Custom Hotkey Labels"
+
 msgid "New Source"
 msgstr "New Source"
 
 msgid "New Output"
 msgstr "New Output"
 
-msgid "Generic Properties"
-msgstr "Generic Properties"
-
 msgid "Studio Name"
 msgstr "Studio Name"
 
-msgid "Default Show Style"
-msgstr "Default Show Style"
+msgid "Default Blueprint"
+msgstr "Default Blueprint"
 
 msgid "System"
 msgstr "System"
@@ -731,8 +781,8 @@ msgstr "Evalueringer"
 msgid "Timestamp"
 msgstr "Timestamp"
 
-msgid "User ID"
-msgstr "User ID"
+msgid "User name"
+msgstr "User name"
 
 msgid "Answers"
 msgstr "Answers"
@@ -791,6 +841,9 @@ msgstr "Telemetry"
 msgid "Execution time"
 msgstr "Execution time"
 
+msgid "User ID"
+msgstr "User ID"
+
 msgid "Client IP"
 msgstr "Client IP"
 
@@ -809,6 +862,30 @@ msgstr "User Activity Log"
 msgctxt "item"
 msgid "new_config"
 msgstr "new_config"
+
+#~ msgid "Url"
+#~ msgstr "Url"
+
+#~ msgid "Generic properties"
+#~ msgstr "Generic Properties"
+
+#~ msgid "ON AIR"
+#~ msgstr "ON AIR"
+
+#~ msgid "Click Anywhere to go Fullscreen..."
+#~ msgstr "Klikk hvor som helst for gå til fullskjerm..."
+
+#~ msgid "Show Styles"
+#~ msgstr "Show Styles"
+
+#~ msgid "Show Style Name"
+#~ msgstr "Show Style Name"
+
+#~ msgid "Show Style ID"
+#~ msgstr "Show Style ID"
+
+#~ msgid "Default Show Style"
+#~ msgstr "Default Show Style"
 
 #~ msgid "Restart this device process?"
 #~ msgstr "Restart this device process?"

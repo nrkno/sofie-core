@@ -48,8 +48,8 @@ import { IMOSRunningOrder, MosString128, IMOSROFullStory } from 'mos-connection'
 import { PlayoutTimelinePrefixes, LookaheadMode } from '../../lib/api/playout'
 import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
-import { sendStoryStatus, updateSegmentLines, updateStory, runPostProcessTemplate } from './peripheralDevice'
 import { StudioInstallations, StudioInstallation, IStudioConfigItem } from '../../lib/collections/StudioInstallations'
+import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
 import { getHash } from '../lib'
@@ -62,8 +62,10 @@ import { ClientAPI } from '../../lib/api/client'
 import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
 import { sendSlackMessageToWebhook } from './slack'
 import { setMeteorMethods } from '../methods'
-import { RundownAPI } from '../../lib/api/rundown'
-import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
+import { RunningOrderAPI } from '../../lib/api/runningOrder'
+import { sendStoryStatus, updateStory } from './integration/mos'
+import { updateSegmentLines, reloadRunningOrderData } from './runningOrder'
+import { runPostProcessTemplate } from '../../server/api/runningOrder'
 
 const MINIMUM_TAKE_SPAN = 1000
 
@@ -147,27 +149,6 @@ export namespace ServerPlayoutAPI {
 
 		return reloadRunningOrderData(runningOrder)
 	}
-
-	// export function roReset (roId: string, resetTimings?: boolean) {
-	// 	// Reset the Running order
-	// 	check(roId, String)
-
-	// 	let runningOrder = RunningOrders.findOne(roId)
-	// 	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
-
-	// 	resetRunningOrder(runningOrder)
-	// }
-	// export function roFastReset (roId: string) {
-	// 	let runningOrder = RunningOrders.findOne(roId)
-	// 	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
-
-	// 	const rehearsal = runningOrder.rehearsal
-	// 	const active = runningOrder.active
-
-	// 	if (active) ServerPlayoutAPI.roDeactivate(runningOrder._id)
-	// 	ServerPlayoutAPI.roActivate(runningOrder._id, rehearsal || false, true)
-	// 	if (!active) ServerPlayoutAPI.roDeactivate(runningOrder._id)
-	// }
 	function resetRunningOrder (runningOrder: RunningOrder) {
 		logger.info('resetRunningOrder ' + runningOrder._id)
 		// Remove all dunamically inserted items (adlibs etc)
@@ -438,72 +419,6 @@ export namespace ServerPlayoutAPI {
 
 		sendStoryStatus(runningOrder, null)
 	}
-	const reloadRunningOrderData: (runningOrder: RunningOrder) => void = Meteor.wrapAsync(
-		function reloadRunningOrderData (runningOrder: RunningOrder, cb: (err) => void) {
-			logger.info('reloadRunningOrderData ' + runningOrder._id)
-
-			PeripheralDeviceAPI.executeFunction(runningOrder.mosDeviceId, (err: any, ro: IMOSRunningOrder) => {
-				// console.log('Response!')
-				if (err) {
-					logger.error(err)
-					cb(err)
-				} else {
-					// TODO: what to do with the result?
-					logger.debug('Recieved reply for triggerGetRunningOrder', ro)
-					cb(null)
-				}
-			}, 'triggerGetRunningOrder', runningOrder.mosId)
-		}
-	)
-	// function resetSegment (segmentId: string, skipSegmentLineId: string | null) {
-	// 	const segment = Segments.findOne(segmentId)
-	// 	if (!segment) return
-
-	// 	const segmentLines = SegmentLines.find(_.extend({
-	// 		segmentId: segmentId,
-	// 	}, skipSegmentLineId ? {
-	// 		_id: {
-	// 			$ne: skipSegmentLineId
-	// 		}
-	// 	} : {})).fetch()
-
-	// 	SegmentLines.update(_.extend({
-	// 		runningOrderId: segment.runningOrderId,
-	// 		segmentId: segmentId
-	// 	}, skipSegmentLineId ? {
-	// 		_id: {
-	// 			$ne: skipSegmentLineId
-	// 		}
-	// 	} : {}), {
-	// 		$unset: {
-	// 			duration: 1,
-	// 			startedPlayback: 1,
-	// 		}
-	// 	}, {
-	// 		multi: true
-	// 	})
-	// 	SegmentLineItems.update({
-	// 		runningOrderId: segment.runningOrderId,
-	// 		segmentLineId: {
-	// 			$in: _.pluck(segmentLines, '_id')
-	// 		},
-	// 	}, {
-	// 		$unset: {
-	// 			startedPlayback: 1,
-	// 			durationOverride: 1
-	// 		}
-	// 	}, {
-	// 		multi: true
-	// 	})
-	// 	// Remove all segment line items that have been dynamically created (such as adLib items)
-	// 	SegmentLineItems.remove({
-	// 		runningOrderId: segment.runningOrderId,
-	// 		segmentLineId: {
-	// 			$in: _.pluck(segmentLines, '_id')
-	// 		},
-	// 		dynamicallyInserted: true
-	// 	})
-	// }
 	function resetSegmentLine (segmentLine: DBSegmentLine): Promise<void> {
 		let ps: Array<Promise<any>> = []
 
@@ -1242,7 +1157,7 @@ export namespace ServerPlayoutAPI {
 
 		const si = runningOrder.getStudioInstallation()
 		const sourceL = si.sourceLayers.find(i => i._id === slItem!.sourceLayerId)
-		if (sourceL && sourceL.type !== RundownAPI.SourceLayerType.GRAPHICS) throw new Meteor.Error(403, `Segment Line "${slId}" is not a GRAPHICS item!`)
+		if (sourceL && sourceL.type !== RunningOrderAPI.SourceLayerType.GRAPHICS) throw new Meteor.Error(403, `Segment Line "${slId}" is not a GRAPHICS item!`)
 
 		let newSegmentLineItem = convertAdLibToSLineItem(slItem, segLine, false)
 		if (newSegmentLineItem.content && newSegmentLineItem.content.timelineObjects) {
@@ -1269,23 +1184,6 @@ export namespace ServerPlayoutAPI {
 				hidden: true
 			}})
 		}
-		/* else {
-			const sourceSL = SegmentLines.findOne(slItem.segmentLineId)
-			if (sourceSL) {
-				const segmentLineItems = getResolvedSegmentLineItems(sourceSL)
-				const resSlItem = segmentLineItems.find(item => item._id === slItem!._id)
-
-				if (resSlItem && resSlItem.trigger.type === TriggerType.TIME_ABSOLUTE && resSlItem.trigger.value === 0) {
-					logger.debug(`Segment Line Item "${slItem._id}" is starting at the begining of it's Segment Line and cannot be used as an ad-lib`)
-					return literal<ClientAPI.ClientResponse>({
-						error: 409,
-						message: `Segment Line Item "${slItem._id}" is starting at the begining of it's Segment Line and cannot be used as an ad-lib`
-					})
-				}
-			} else {
-				throw new Meteor.Error(404, `Source Segment Line "${slItem.segmentLineId}" not found!`)
-			}
-		} */
 		SegmentLineItems.insert(newSegmentLineItem)
 
 		cropInfinitesOnLayer(runningOrder, segLine, newSegmentLineItem)
@@ -1656,9 +1554,6 @@ export namespace ServerPlayoutAPI {
 }
 
 let methods = {}
-methods[PlayoutAPI.methods.reloadData] = (roId: string) => {
-	return ServerPlayoutAPI.reloadData(roId)
-}
 methods[PlayoutAPI.methods.roPrepareForBroadcast] = (roId: string) => {
 	return ServerPlayoutAPI.roPrepareForBroadcast(roId)
 }

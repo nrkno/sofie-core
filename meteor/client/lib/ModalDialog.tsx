@@ -155,6 +155,7 @@ interface ModalDialogQueueItem {
 	message: string | JSX.Element
 	yes?: string
 	no?: string
+	acceptOnly?: boolean
 	onAccept: (e: any) => void
 	onDiscard?: (e: any) => void
 	onSecondary?: (e: any) => void
@@ -231,7 +232,7 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 			return (
 			<ModalDialog title	= {onQueue.title}
 				acceptText		= {onQueue.yes || t('Yes')}
-				secondaryText	= {onQueue.no || t('No')}
+				secondaryText	= {onQueue.no || (!onQueue.acceptOnly ? t('No') : undefined)}
 				onAccept		= {this.onAccept}
 				onDiscard		= {this.onDiscard}
 				onSecondary		= {this.onSecondary}
