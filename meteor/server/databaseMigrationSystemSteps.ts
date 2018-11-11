@@ -10,6 +10,8 @@ import { RunningOrderAPI } from '../lib/api/runningOrder'
 import { PlayoutDeviceType, PeripheralDevices, PlayoutDeviceSettings, PlayoutDeviceSettingsDevice, PlayoutDeviceSettingsDeviceCasparCG, PlayoutDeviceSettingsDeviceAtem, PlayoutDeviceSettingsDeviceHyperdeck, PlayoutDeviceSettingsDevicePanasonicPTZ } from '../lib/collections/PeripheralDevices'
 import { LookaheadMode } from '../lib/api/playout'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
+import { compareVersions, parseVersion } from '../lib/collections/CoreSystem'
+import { logger } from './logging'
 
 /**
  * This file contains all system specific migration steps.
@@ -77,19 +79,113 @@ function ensureCollectionProperty<T = any> (
 			if (value) {
 				let objects = collection.find(selector).fetch()
 				_.each(objects, (obj: any) => {
-					let m = {}
-					m[property] = value
-					collection.update(obj._id,{$set: m })
+					if (obj && objectPathGet(obj, property) !== value) {
+						let m = {}
+						m[property] = value
+						logger.info(`Migration: Setting ${collectionName} object "${obj._id}".${property} to ${value}`)
+						collection.update(obj._id,{$set: m })
+					}
 				})
 			} else {
 				_.each(input, (value, objectId: string) => {
 					if (!_.isUndefined(value)) {
-						let m = {}
-						m[property] = value
-						collection.update(objectId,{$set: m })
+						let obj = collection.findOne(objectId)
+						if (obj && objectPathGet(obj, property) !== value) {
+							let m = {}
+							m[property] = value
+							logger.info(`Migration: Setting ${collectionName} object "${objectId}".${property} to ${value}`)
+							collection.update(objectId,{$set: m })
+						}
 					}
 				})
 			}
+		}
+	}
+}
+function ensureStudioConfig (
+	configName: string,
+	value: any | null, // null if manual
+	inputType?: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch', // EditAttribute types
+	label?: string,
+	description?: string,
+	defaultValue?: any
+): MigrationStepBase {
+
+	return {
+		id: `studioConfig.${configName}`,
+		canBeRunAutomatically: (_.isNull(value) ? false : true),
+		validate: () => {
+			let studios = StudioInstallations.find().fetch()
+			let configMissing: string | boolean = false
+			_.each(studios, (studio: StudioInstallation) => {
+				let config = _.find(studio.config, (c) => {
+					return c._id === configName
+				})
+				if (!config) {
+					configMissing = `${configName} is missing on ${studio._id}`
+				}
+			})
+
+			return configMissing
+		},
+		input: () => {
+			let studios = StudioInstallations.find().fetch()
+
+			let inputs: Array<MigrationStepInput> = []
+			_.each(studios, (studio: StudioInstallation) => {
+				let config = _.find(studio.config, (c) => {
+					return c._id === configName
+				})
+
+				let localLabel = (label + '').replace(/\$id/g, studio._id)
+				let localDescription = (description + '').replace(/\$id/g, studio._id)
+				if (inputType && !studio[configName]) {
+					inputs.push({
+						label: localLabel,
+						description: localDescription,
+						inputType: inputType,
+						attribute: studio._id,
+						defaultValue: config && config.value ? config.value : defaultValue
+					})
+				}
+			})
+			return inputs
+		},
+		migrate: (input: MigrationStepInputFilteredResult) => {
+
+			let studios = StudioInstallations.find().fetch()
+			_.each(studios, (studio: StudioInstallation) => {
+				let value2: any = undefined
+				if (!_.isNull(value)) {
+					value2 = value
+				} else {
+					value2 = input[studio._id]
+				}
+				if (!_.isUndefined(value2)) {
+					let config = _.find(studio.config, (c) => {
+						return c._id === configName
+					})
+					let doUpdate: boolean = false
+					if (config) {
+						if (config.value !== value2) {
+							doUpdate = true
+							config.value = value2
+						}
+					} else {
+						doUpdate = true
+						studio.config.push({
+							_id: configName,
+							value: value2
+						})
+					}
+					if (doUpdate) {
+						logger.info(`Migration: Setting Studio config "${configName}" to ${value2}`)
+						StudioInstallations.update(studio._id,{$set: {
+							config: studio.config
+						}})
+					}
+				}
+			})
 		}
 	}
 }
@@ -118,6 +214,7 @@ function ensureSourceLayer (sourceLayer: ISourceLayer): MigrationStepBase {
 			})
 
 			if (!sl) {
+				logger.info(`Migration: Adding Studio sourceLayer "${sourceLayer._id}" to ${studio._id}`)
 				StudioInstallations.update(studio._id, {$push: {
 					'sourceLayers': sourceLayer
 				}})
@@ -149,6 +246,7 @@ function ensureOutputLayer (outputLayer: IOutputLayer): MigrationStepBase {
 			})
 
 			if (!sl) {
+				logger.info(`Migration: Adding Studio outputLayer "${outputLayer._id}" to ${studio._id}`)
 				StudioInstallations.update(studio._id, {$push: {
 					'outputLayers': outputLayer
 				}})
@@ -164,22 +262,67 @@ function ensureMapping (mappingId: string, mapping: Mapping): MigrationStepBase 
 			let studio = StudioInstallations.findOne()
 			if (!studio) return 'Studio not found'
 
-			let m = studio.mappings[mappingId]
+			let dbMapping = studio.mappings[mappingId]
 
-			if (!m) return `Mapping ${mappingId} missing`
+			if (!dbMapping) return `Mapping ${mappingId} missing`
+
 			return false
 		},
 		migrate: () => {
 			let studio = StudioInstallations.findOne()
 			if (!studio) return 'Studio not found'
 
-			let m = studio.mappings[mappingId]
+			let dbMapping = studio.mappings[mappingId]
 
-			if (!m) {
+			if (!dbMapping) { // only add if the mapping does not exist
 				let m = {}
 				m['mappings.' + mappingId] = mapping
+				logger.info(`Migration: Adding Studio mapping "${mappingId}" to ${studio._id}`)
 				StudioInstallations.update(studio._id, {$set: m})
 			}
+		}
+	}
+}
+function ensureDeviceVersion (id, deviceType: PeripheralDeviceAPI.DeviceType, libraryName: string, versionStr: string ): MigrationStepBase {
+	return {
+		id: id,
+		canBeRunAutomatically: true,
+		validate: () => {
+			let devices = PeripheralDevices.find({type: deviceType}).fetch()
+
+			for (let i in devices) {
+				let device = devices[i]
+				if (!device.expectedVersions) device.expectedVersions = {}
+
+				let expectedVersion = device.expectedVersions[libraryName]
+
+				if (expectedVersion) {
+					try {
+						if (compareVersions(parseVersion(expectedVersion), parseVersion(versionStr)) < 0) {
+							return `Expected version ${libraryName}: ${expectedVersion} should be at least ${versionStr}`
+						}
+					} catch (e) {
+						return 'Error: ' + e.toString()
+					}
+				} else return `Expected version ${libraryName}: not set`
+			}
+			return false
+		},
+		migrate: () => {
+			let devices = PeripheralDevices.find({type: deviceType}).fetch()
+
+			_.each(devices, (device) => {
+				if (!device.expectedVersions) device.expectedVersions = {}
+
+				let version = parseVersion(versionStr)
+				let expectedVersion = device.expectedVersions[libraryName]
+				if (!expectedVersion || compareVersions(parseVersion(expectedVersion), version) < 0) {
+					let m = {}
+					m['expectedVersions.' + libraryName] = version.toString()
+					logger.info(`Migration: Updating expectedVersion ${libraryName} of device ${device._id} from "${expectedVersion}" to "${version.toString()}"`)
+					PeripheralDevices.update(device._id, {$set: m})
+				}
+			})
 		}
 	}
 }
@@ -196,6 +339,7 @@ addMigrationSteps( '0.1.0', [
 		},
 		migrate: () => {
 			// create default studio
+			logger.info(`Migration: Add default studio`)
 			StudioInstallations.insert({
 				_id: 'studio0',
 				name: 'Default studio',
@@ -324,6 +468,7 @@ addMigrationSteps( '0.1.0', [
 		},
 		migrate: () => {
 			// create default ShowStyle:
+			logger.info(`Migration: Add default showStyle`)
 			ShowStyles.insert({
 				_id: 'show0',
 				name: 'Default showstyle',
@@ -343,9 +488,9 @@ addMigrationSteps( '0.1.0', [
 	// ensureCollectionProperty('ShowStyles', {}, 'postProcessBlueprint', ''),
 
 	// Studio configs:
-	ensureCollectionProperty('StudioInstallations', {}, 'config.media_previews_url', null, 'text', 'Studio $id config: media_previews_url',
+	ensureStudioConfig('media_previews_url', null, 'text', 'Studio $id config: media_previews_url',
 		'Enter the url to the Media-previews endpoint (exposed by the CasparCG-Launcher), example: "http://192.168.0.1:8000/"', 'http://IP-ADDRESS:8000/'),
-	ensureCollectionProperty('StudioInstallations', {}, 'config.sofie_url', null, 'text', 'Studio $id config: sofie_url',
+	ensureStudioConfig('sofie_url', null, 'text', 'Studio $id config: sofie_url',
 		'Enter the url to this Sofie-application (it\'s the url in your browser), example: "http://sofie01"', 'http://URL-TO-SOFIE'),
 
 	{
@@ -357,6 +502,7 @@ addMigrationSteps( '0.1.0', [
 			})) return 'No Playout-device found'
 			return false
 		},
+		// Note: No migrate() function, user must fix this him/herself
 		input: [{
 			label: 'Sofie needs at least one playout-device',
 			description: 'Start up and connect with at least one Playout-gateway',
@@ -369,19 +515,19 @@ addMigrationSteps( '0.1.0', [
 	// To be moved into Blueprints:
 	// ---------------------------------------------------------------
 	// ---------------------------------------------------------------
-	ensureCollectionProperty('StudioInstallations', {}, 'config.atemSSrcBackground', null, 'text', 'Studio $id config: atemSSrcBackground',
+	ensureStudioConfig('atemSSrcBackground', null, 'text', 'Studio $id config: atemSSrcBackground',
 		'Enter the file path to ATEM SuperSource Background, example: "/opt/playout-gateway/static/atem-mp/split_overlay.rgba"'),
-	ensureCollectionProperty('StudioInstallations', {}, 'config.atemSSrcBackground2', null, 'text', 'Studio $id config: atemSSrcBackground2',
+	ensureStudioConfig('atemSSrcBackground2', null, 'text', 'Studio $id config: atemSSrcBackground2',
 		'Enter the file path to ATEM SuperSource Background 2, example: "/opt/playout-gateway/static/atem-mp/teknisk_feil.rgba"'),
-	ensureCollectionProperty('StudioInstallations', {}, 'config.nora_group', null, 'text', 'Studio $id config: nora_group',
+	ensureStudioConfig('nora_group', null, 'text', 'Studio $id config: nora_group',
 		'Enter the nora_group paramter, example: "dksl"'),
-	ensureCollectionProperty('StudioInstallations', {}, 'config.nora_apikey', null, 'text', 'Studio $id config: nora_apikey',
+	ensureStudioConfig('nora_apikey', null, 'text', 'Studio $id config: nora_apikey',
 		'Enter the nora_apikey parameter'),
-	ensureCollectionProperty('StudioInstallations', {}, 'config.metadata_url', null, 'text', 'Studio $id config: metadata_url',
+	ensureStudioConfig('metadata_url', null, 'text', 'Studio $id config: metadata_url',
 		'Enter the URL to the send metadata to'),
-	ensureCollectionProperty('StudioInstallations', {}, 'config.sources_kam', null, 'text', 'Studio $id config: sources_kam',
+	ensureStudioConfig('sources_kam', null, 'text', 'Studio $id config: sources_kam',
 		'Enter the sources_kam parameter (example: "1:1,2:2,3:3,4:4,8:11,9:12"'),
-	ensureCollectionProperty('StudioInstallations', {}, 'config.sources_rm', null, 'text', 'Studio $id config: sources_rm',
+	ensureStudioConfig('sources_rm', null, 'text', 'Studio $id config: sources_rm',
 		'Enter the sources_rm parameter (example: "1:5,2:6,3:7,4:8,5:9,6:10"'),
 	{
 		id: 'Playout-gateway exists',
@@ -390,6 +536,7 @@ addMigrationSteps( '0.1.0', [
 			if (!PeripheralDevices.findOne({type: PeripheralDeviceAPI.DeviceType.PLAYOUT})) return 'Playout-gateway not found'
 			return false
 		},
+		// Note: No migrate() function, user must fix this him/herself
 		input: [{
 			label: 'Playout-device 0 not set up',
 			description: 'Start up the Playout-gateway and make sure it\'s connected to Sofie',
@@ -404,6 +551,7 @@ addMigrationSteps( '0.1.0', [
 			if (!PeripheralDevices.findOne({type: PeripheralDeviceAPI.DeviceType.MOSDEVICE})) return 'Mos-gateway not found'
 			return false
 		},
+		// Note: No migrate() function, user must fix this him/herself
 		input: [{
 			label: 'Mos-device 0 not set up',
 			description: 'Start up the Mos-gateway and make sure it\'s connected to Sofie',
@@ -431,6 +579,7 @@ addMigrationSteps( '0.1.0', [
 				// Set some default values:
 				let abstract0 = device.settings && device.settings.devices['abstract0']
 				if (!abstract0) {
+					logger.info(`Migration: Add PeripheralDevice.settings to ${device._id}: abstract0`)
 					PeripheralDevices.update(device._id, {$set: {
 						'settings.devices.abstract0': {
 							type: PlayoutDeviceType.ABSTRACT,
@@ -472,6 +621,7 @@ addMigrationSteps( '0.1.0', [
 				// Set some default values:
 				let casparcg0 = device.settings && device.settings.devices['casparcg0']
 				if (!casparcg0) {
+					logger.info(`Migration: Add PeripheralDevice.settings to ${device._id}: casparcg0`)
 					PeripheralDevices.update(device._id, {$set: {
 						'settings.devices.casparcg0': {
 							type: PlayoutDeviceType.CASPARCG,
@@ -518,6 +668,7 @@ addMigrationSteps( '0.1.0', [
 				// Set some default values:
 				let casparcg1 = device.settings && device.settings.devices['casparcg1']
 				if (!casparcg1) {
+					logger.info(`Migration: Add PeripheralDevice.settings to ${device._id}: casparcg1`)
 					PeripheralDevices.update(device._id, {$set: {
 						'settings.devices.casparcg1': {
 							type: PlayoutDeviceType.CASPARCG,
@@ -561,6 +712,7 @@ addMigrationSteps( '0.1.0', [
 				// Set some default values:
 				let atem0 = device.settings && device.settings.devices['atem0']
 				if (!atem0) {
+					logger.info(`Migration: Add PeripheralDevice.settings to ${device._id}: atem0`)
 					PeripheralDevices.update(device._id, {$set: {
 						'settings.devices.atem0': {
 							type: PlayoutDeviceType.ATEM,
@@ -600,6 +752,7 @@ addMigrationSteps( '0.1.0', [
 				// Set some default values:
 				let http0 = device.settings && device.settings.devices['http0']
 				if (!http0) {
+					logger.info(`Migration: Add PeripheralDevice.settings to ${device._id}: http0`)
 					PeripheralDevices.update(device._id, {$set: {
 						'settings.devices.http0': {
 							type: PlayoutDeviceType.HTTPSEND,
@@ -639,6 +792,7 @@ addMigrationSteps( '0.1.0', [
 				// Set some default values:
 				let lawo0 = device.settings && device.settings.devices['lawo0']
 				if (!lawo0) {
+					logger.info(`Migration: Add PeripheralDevice.settings to ${device._id}: lawo0`)
 					PeripheralDevices.update(device._id, {$set: {
 						'settings.devices.lawo0': {
 							type: PlayoutDeviceType.LAWO,
@@ -666,7 +820,7 @@ addMigrationSteps( '0.16.0', [
 	// Todo: Playout-gateway version
 	// Todo: Blueprints version
 
-	ensureCollectionProperty('StudioInstallations', {}, 'config.slack_evaluation', null, 'text', 'Studio $id config: slack_evaluation',
+	ensureStudioConfig('slack_evaluation', null, 'text', 'Studio $id config: slack_evaluation',
 		'Enter the URL to the Slack webhook (example: "https://hooks.slack.com/services/WEBHOOKURL"'),
 
 	// To be moved to blueprints:
@@ -694,6 +848,7 @@ addMigrationSteps( '0.16.0', [
 				// Set some default values:
 				let hyperdeck0 = device.settings && device.settings.devices['hyperdeck0']
 				if (!hyperdeck0) {
+					logger.info(`Migration: Add PeripheralDevice.settings to ${device._id}: hyperdeck0`)
 					PeripheralDevices.update(device._id, {$set: {
 						'settings.devices.hyperdeck0': {
 							type: PlayoutDeviceType.HYPERDECK,
@@ -736,6 +891,7 @@ addMigrationSteps( '0.16.0', [
 				// Set some default values:
 				let ptz0 = device.settings && device.settings.devices['ptz0']
 				if (!ptz0) {
+					logger.info(`Migration: Add PeripheralDevice.settings to ${device._id}: ptz0`)
 					PeripheralDevices.update(device._id, {$set: {
 						'settings.devices.ptz0': {
 							type: PlayoutDeviceType.PANASONIC_PTZ,
@@ -793,7 +949,8 @@ addMigrationSteps( '0.16.0', [
 		mappingType: MappingPanasonicPtzType.PRESET_SPEED,
 		lookahead: LookaheadMode.NONE,
 	})),
-	ensureCollectionProperty('StudioInstallations', {}, 'config.sources_kam_ptz', '1:ptz0'),
+	ensureStudioConfig('sources_kam_ptz', '1:ptz0'),
+	ensureDeviceVersion('ensureVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.1.1')
 ])
 /*
 
