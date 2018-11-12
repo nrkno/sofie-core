@@ -102,8 +102,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			if (this.props.segmentLine && this.props.segmentLineStartsAt !== undefined) { //  && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined
 				let segmentLineItem = this.props.segmentLineItem
 
-				let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration : 0
-				let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration : 0
+				let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration || 0 : 0
+				let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration || 0 : 0
 
 				const inPoint = segmentLineItem.renderedInPoint || 0
 				const duration = (Number.isFinite(segmentLineItem.renderedDuration || 0)) ?
@@ -181,8 +181,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			if (this.props.segmentLine && this.props.segmentLineStartsAt !== undefined) { //  && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined
 				let segmentLineItem = this.props.segmentLineItem
 
-				let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration : 0
-				let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration : 0
+				let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration || 0 : 0
+				let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration || 0 : 0
 
 				const inPoint = segmentLineItem.renderedInPoint || 0
 				const duration = (segmentLineItem.infiniteMode || segmentLineItem.renderedDuration === 0) ? (this.props.segmentLineDuration - inPoint) : Math.min((segmentLineItem.renderedDuration || 0), this.props.segmentLineDuration - inPoint)
@@ -221,8 +221,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 	getItemStyle (): { [key: string]: string } {
 		let segmentLineItem = this.props.segmentLineItem
 
-		let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration : 0
-		let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration : 0
+		let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration || 0 : 0
+		let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration || 0 : 0
 
 		// If this is a live line, take duration verbatim from SegmentLayerItemContainer with a fallback on expectedDuration.
 		// If not, as-run segmentLine "duration" limits renderdDuration which takes priority over MOS-import
@@ -437,8 +437,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 			return (
 				<div className={ClassNames('segment-timeline__layer-item', typeClass, {
-					'with-in-transition': !this.props.relative && this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.inTransition && this.props.segmentLineItem.transitions.inTransition.duration > 0,
-					'with-out-transition': !this.props.relative && this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.outTransition && this.props.segmentLineItem.transitions.outTransition.duration > 0,
+					'with-in-transition': !this.props.relative && this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.inTransition && (this.props.segmentLineItem.transitions.inTransition.duration || 0) > 0,
+					'with-out-transition': !this.props.relative && this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.outTransition && (this.props.segmentLineItem.transitions.outTransition.duration || 0) > 0,
 
 					'hide-overflow-labels': this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth),
 
@@ -468,24 +468,24 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						)
 					}
 					{
-						this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.inTransition && this.props.segmentLineItem.transitions.inTransition.duration > 0 ? (
+						this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.inTransition && (this.props.segmentLineItem.transitions.inTransition.duration || 0) > 0 ? (
 							<div className={ClassNames('segment-timeline__layer-item__transition', 'in', {
 								'mix': this.props.segmentLineItem.transitions.inTransition.type === Transition.MIX,
 								'wipe': this.props.segmentLineItem.transitions.inTransition.type === Transition.WIPE
 							})}
 								style={{
-									'width': (this.props.segmentLineItem.transitions.inTransition.duration * this.props.timeScale).toString() + 'px'
+									'width': ((this.props.segmentLineItem.transitions.inTransition.duration || 0) * this.props.timeScale).toString() + 'px'
 								}} />
 						) : null
 					}
 					{
-						this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.outTransition && this.props.segmentLineItem.transitions.outTransition.duration > 0 ? (
+						this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.outTransition && (this.props.segmentLineItem.transitions.outTransition.duration || 0) > 0 ? (
 							<div className={ClassNames('segment-timeline__layer-item__transition', 'out', {
 								'mix': this.props.segmentLineItem.transitions.outTransition.type === Transition.MIX,
 								'wipe': this.props.segmentLineItem.transitions.outTransition.type === Transition.WIPE
 							})}
 								style={{
-									'width': (this.props.segmentLineItem.transitions.outTransition.duration * this.props.timeScale).toString() + 'px'
+									'width': ((this.props.segmentLineItem.transitions.outTransition.duration || 0) * this.props.timeScale).toString() + 'px'
 								}} />
 						) : null
 					}

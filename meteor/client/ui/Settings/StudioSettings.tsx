@@ -11,10 +11,10 @@ import { IOutputLayer,
 	StudioInstallation,
 	StudioInstallations,
 	HotkeyDefinition,
-	IStudioRuntimeArgumentsItem
+	IStudioRuntimeArgumentsItem,
+	MappingExt
 } from '../../../lib/collections/StudioInstallations'
 import {
-	Mapping,
 	MappingCasparCG,
 	MappingAtem,
 	MappingLawo,
@@ -24,7 +24,8 @@ import {
 	MappingPanasonicPtzType,
 	MappingPanasonicPtz,
 	MappingHyperdeckType,
-	DeviceType as PlayoutDeviceType
+	DeviceType as PlayoutDeviceType,
+	ChannelFormat
 } from 'timeline-state-resolver-types'
 import { ShowStyles } from '../../../lib/collections/ShowStyles'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
@@ -44,7 +45,6 @@ import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
-import { ChannelFormat } from '../../../lib/constants/casparcg'
 
 interface IProps {
 	studioInstallation: StudioInstallation
@@ -1384,7 +1384,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 		const { t } = this.props
 
 		return (
-			_.map(this.props.studioInstallation.mappings, (mapping: Mapping , layerId: string) => {
+			_.map(this.props.studioInstallation.mappings, (mapping: MappingExt , layerId: string) => {
 				// If an internal mapping, then hide it
 				if (mapping.internal) return <React.Fragment key={layerId}></React.Fragment>
 
@@ -1413,17 +1413,17 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.ATEM && (
-								<span>{ MappingAtemType[(mapping as MappingAtem).mappingType] } { (mapping as MappingAtem).index }</span>
+								<span>{ MappingAtemType[(mapping as MappingAtem & MappingExt).mappingType] } { (mapping as MappingAtem & MappingExt).index }</span>
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.LAWO && (
-								<span>{ (mapping as MappingLawo).identifier }</span>
+								<span>{ (mapping as MappingLawo & MappingExt).identifier }</span>
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.PANASONIC_PTZ && (
 									<span>{
-										(mapping as MappingPanasonicPtz).mappingType === MappingPanasonicPtzType.PRESET ? t('Preset') :
-										(mapping as MappingPanasonicPtz).mappingType === MappingPanasonicPtzType.PRESET_SPEED ? t('Preset transition speed') :
+										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.PRESET ? t('Preset') :
+										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.PRESET_SPEED ? t('Preset transition speed') :
 										t('Unknown mapping')
 									}</span>
 							)) ||
@@ -1433,7 +1433,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.HYPERDECK && (
-								<span>{ (mapping as MappingHyperdeck).mappingType }</span>
+								<span>{ (mapping as MappingHyperdeck & MappingExt).mappingType }</span>
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.PHAROS && (

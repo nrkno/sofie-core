@@ -4,7 +4,7 @@ import { TransformedCollection } from '../typings/meteor'
 import { applyClassToDocument, registerCollection } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
-import { Mappings, Mapping } from 'timeline-state-resolver-types'
+import { Mappings, Mapping, ChannelFormat } from 'timeline-state-resolver-types'
 import { LookaheadMode } from '../../lib/api/playout'
 
 export interface MappingsExt extends Mappings {
@@ -12,6 +12,7 @@ export interface MappingsExt extends Mappings {
 }
 export interface MappingExt extends Mapping {
 	lookahead: LookaheadMode
+	internal?: boolean
 }
 
 export interface HotkeyDefinition {
