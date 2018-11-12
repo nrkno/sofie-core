@@ -11,7 +11,7 @@ export function transformTimeline (timeline: Array<TimelineObj>): Array<Timeline
 		let transformedObj = clone(_.extend({
 		   id: obj['_id'],
 		   roId: obj['roId']
-	   }, _.omit(obj, ['_id', 'deviceId', 'siId'])))
+	   }, _.omit(obj, ['_id', 'id', 'deviceId', 'siId'])))
 
 	   if (!transformedObj.content) transformedObj.content = {}
 	   if (!transformedObj.content.objects) transformedObj.content.objects = []

@@ -360,7 +360,7 @@ export namespace ServerPlayoutAPI {
 				// TODO - should any notes be logged as a warning, or is that done already?
 
 				if (baselineItems) {
-					logger.info(`... got ${baselineItems.length} items from blueprint.`)
+					logger.info(`... got ${baselineItems.length} items from baseline.`)
 
 					const baselineItem: RunningOrderBaselineItem = {
 						_id: Random.id(7),
@@ -374,7 +374,7 @@ export namespace ServerPlayoutAPI {
 				}
 
 				if (adlibItems) {
-					logger.info(`... got ${adlibItems.length} adLib items from blueprint.`)
+					logger.info(`... got ${adlibItems.length} adLib items from baseline.`)
 					saveIntoDb<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>(RunningOrderBaselineAdLibItems, {
 						runningOrderId: runningOrder._id
 					}, adlibItems)
@@ -1805,11 +1805,6 @@ function getOrderedSegmentLineItem (line: SegmentLine): Array<SegmentLineItemRes
 	const tlResolved = Resolver.getTimelineInWindow(transformTimeline(objs))
 
 	let resolvedItems: Array<SegmentLineItemResolved> = []
-	interface IEvent {
-		start: number,
-		id: string,
-		item: SegmentLineItemResolved
-	}
 	_.each(tlResolved.resolved, e => {
 		const id = ((e as any || {}).metadata || {}).segmentLineItemId
 		let item = _.clone(itemMap[id]) as SegmentLineItemResolved
@@ -2914,6 +2909,8 @@ function processTimelineObjects (studioInstallation: StudioInstallation, parentR
 		}
 	}
 	_.each(timelineObjs, (o: TimelineObj) => {
+		delete o.id
+
 		if (parentRunningOrder) o.roId = parentRunningOrder._id
 		fixObjectChildren(o as TimelineObjGroup)
 	})

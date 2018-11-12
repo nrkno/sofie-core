@@ -95,9 +95,15 @@ class CommonContext implements ICommonContext {
 
 		throw new Meteor.Error(404, 'Missing layer "' + name + '" of type LayerType."' + type + '"')
 	}
-	getConfig (): any {
+	getConfig (): {[key: string]: string} {
 		const studio: StudioInstallation = this.getStudioInstallation()
-		return studio.config
+
+		const res: {[key: string]: string} = {}
+		for (let c of studio.config) {
+			res[c._id] = c.value
+		}
+
+		return res
 	}
 
 	getLoggerName () {
