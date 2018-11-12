@@ -11,12 +11,14 @@ import { runNamedTemplate, TemplateContext, TemplateResultAfterPost } from './te
 import { getHash } from '../lib'
 import { ShowStyles } from '../../lib/collections/ShowStyles'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
-import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
+import { CachePrefix, RunningOrderDataCache } from '../../lib/collections/RunningOrderDataCache'
 import { updateStory, reloadRunningOrder } from './integration/mos'
 import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
+import { UserActionsLog } from '../../lib/collections/UserActionsLog';
+import { MediaObjects } from '../../lib/collections/MediaObjects';
 
 /**
  * After a Segment has beed removed, handle its contents
@@ -394,6 +396,34 @@ export function removeSegment (segmentId: string, runningOrderId: string) {
 	afterRemoveSegment(segmentId, runningOrderId)
 }
 
+export function createROSnapshot (runningOrderId: string) {
+	const runningOrder = RunningOrders.findOne(runningOrderId)
+	const mosData = RunningOrderDataCache.find({ roId: runningOrderId }, { sort: { modified: -1 } }).fetch() // @todo: check sorting order
+	const userActions = UserActionsLog.find({ args: { $regex: `.*"${runningOrderId}".*` } }).fetch()
+
+	const segments = Segments.find({ runningOrderId }).fetch()
+	const segmentLineItems = SegmentLineItems.find({ runningOrderId }).fetch()
+	const segmentLineAdLibItems = SegmentLineAdLibItems.find({ runningOrderId }).fetch()
+	const mediaObjectIds: Array<string> = [
+		...segmentLineItems.filter(item => item.content && item.content.fileName).map((item) => (item.content!.fileName! as string)),
+		...segmentLineAdLibItems.filter(item => item.content && item.content.fileName).map((item) => (item.content!.fileName! as string))
+	]
+	const mediaObjects = MediaObjects.find({ mediaId: { $in: mediaObjectIds } }).fetch()
+
+	return {
+		snapshot: {
+			created: Date.now()
+		},
+		runningOrder,
+		mosData,
+		userActions,
+		segments,
+		segmentLineItems,
+		segmentLineAdLibItems,
+		mediaObjects
+	}
+}
+
 export namespace ServerRunningOrderAPI {
 	export function removeRunningOrder (runningOrderId: string) {
 		check(runningOrderId, String)
@@ -432,6 +462,10 @@ methods[RunningOrderAPI.methods.removeRunningOrder] = (roId: string) => {
 }
 methods[RunningOrderAPI.methods.resyncRunningOrder] = (roId: string) => {
 	return ServerRunningOrderAPI.resyncRunningOrder(roId)
+}
+// debugging only!:
+methods['debug_roSnapshot'] = (roId: string) => {
+	return createROSnapshot(roId)
 }
 // Apply methods:
 setMeteorMethods(wrapMethods(methods))
