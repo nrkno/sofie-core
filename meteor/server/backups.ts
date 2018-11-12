@@ -40,12 +40,16 @@ export function restoreRunningOrder (backup: RunningOrderCacheBackup) {
 	let token = pd.token
 
 	// Delete the existing copy, to ensure this is a clean import
-	Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, id, token, new MosString128(roCreates[0].data.ID))
+	try {
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, id, token, new MosString128(roCreates[0].data.ID))
+	} catch (e) {
+		// Ignore. likely doesnt exist
+	}
 
 	// Create the RO
 	Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, id, token, roCreates[0].data)
 
-	// Import each story
+	// // Import each story
 	_.each(stories, (story) => {
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, story.data)
 	})
