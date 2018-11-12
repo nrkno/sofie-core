@@ -291,7 +291,7 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 		resultSli = postProcessSegmentLineItems(context, result.SegmentLineItems, 'post-process', firstSegmentLine._id)
 		notes = context.getNotes()
 	} catch (e) {
-		logger.error(e.toString())
+		logger.error(e.stack ? e.stack : e.toString())
 		// throw e
 		notes = [{
 			type: SegmentLineNoteType.ERROR,
