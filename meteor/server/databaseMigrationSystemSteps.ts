@@ -10,7 +10,7 @@ import { RunningOrderAPI } from '../lib/api/runningOrder'
 import { PlayoutDeviceType, PeripheralDevices, PlayoutDeviceSettings, PlayoutDeviceSettingsDevice, PlayoutDeviceSettingsDeviceCasparCG, PlayoutDeviceSettingsDeviceAtem, PlayoutDeviceSettingsDeviceHyperdeck, PlayoutDeviceSettingsDevicePanasonicPTZ } from '../lib/collections/PeripheralDevices'
 import { LookaheadMode } from '../lib/api/playout'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
-import { compareVersions, parseVersion } from '../lib/collections/CoreSystem'
+import { compareVersions, parseVersion, getCoreSystem, setCoreSystemStorePath } from '../lib/collections/CoreSystem'
 import { logger } from './logging'
 
 /**
@@ -822,6 +822,28 @@ addMigrationSteps( '0.16.0', [
 
 	ensureStudioConfig('slack_evaluation', null, 'text', 'Studio $id config: slack_evaluation',
 		'Enter the URL to the Slack webhook (example: "https://hooks.slack.com/services/WEBHOOKURL"'),
+
+	{
+		id: 'CoreSystem.storePath',
+		canBeRunAutomatically: false,
+		validate: () => {
+			let system = getCoreSystem()
+			if (!system) return 'CoreSystem not found!'
+			if (!system.storePath) return 'CoreSystem.storePath not set!'
+			if (!_.isString(system.storePath)) return 'CoreSystem.storePath must be a string!'
+			if (system.storePath.slice(-1) !== '/') return 'CoreSystem.storePath must not end with "/"!'
+			return false
+		},
+		migrate: (input) => {
+			setCoreSystemStorePath(input.storePath)
+		},
+		input: [{
+			label: 'File path for persistant storage',
+			description: 'Enter the file path for the persistant storage (example "/mnt/drive/sofie")',
+			inputType: 'text',
+			attribute: 'storePath'
+		}]
+	},
 
 	// To be moved to blueprints:
 	{

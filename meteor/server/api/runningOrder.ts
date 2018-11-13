@@ -17,8 +17,6 @@ import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../lib/collectio
 import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
-import { UserActionsLog } from '../../lib/collections/UserActionsLog';
-import { MediaObjects } from '../../lib/collections/MediaObjects';
 
 /**
  * After a Segment has beed removed, handle its contents
@@ -434,10 +432,6 @@ methods[RunningOrderAPI.methods.removeRunningOrder] = (roId: string) => {
 }
 methods[RunningOrderAPI.methods.resyncRunningOrder] = (roId: string) => {
 	return ServerRunningOrderAPI.resyncRunningOrder(roId)
-}
-// debugging only!:
-methods['debug_roSnapshot'] = (roId: string) => {
-	return createROSnapshot(roId)
 }
 // Apply methods:
 setMeteorMethods(wrapMethods(methods))

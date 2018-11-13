@@ -5,25 +5,38 @@ import { Meteor } from 'meteor/meteor'
 
 export enum SnapshotType {
 	RUNNING_ORDER = 'runningorder',
-	SYSTEM = 'system'
-}
-export interface Snapshot {
-	type: SnapshotType,
-	created: Time
-	description?: string
+	SYSTEM = 'system',
+	DEBUG = 'debug'
 }
 
-export interface SnapshotRunningOrder extends Snapshot {
+export interface SnapshotBase {
+	_id: string
+	type: SnapshotType
+	created: Time
+	name: string
+	description?: string
+	/** Version of the system that took the snapshot */
+	version: string
+}
+
+export interface SnapshotItem extends SnapshotBase {
+	fileName: string
+}
+
+export interface SnapshotRunningOrder extends SnapshotBase {
 	type: SnapshotType.RUNNING_ORDER
-	studioId: string,
+	studioId: string
 	runningOrderId: string
 }
-export interface SnapshotSystem extends Snapshot {
+export interface SnapshotSystem extends SnapshotBase {
 	type: SnapshotType.SYSTEM
 }
+export interface SnapshotDebug extends SnapshotBase {
+	type: SnapshotType.DEBUG
+}
 
-export const Snapshots: TransformedCollection<Snapshot, Snapshot>
-	= new Mongo.Collection<Snapshot>('snapshots')
+export const Snapshots: TransformedCollection<SnapshotItem, SnapshotItem>
+	= new Mongo.Collection<SnapshotItem>('snapshots')
 registerCollection('Snapshots', Snapshots)
 
 Meteor.startup(() => {
