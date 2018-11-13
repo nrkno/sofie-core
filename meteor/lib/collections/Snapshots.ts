@@ -9,8 +9,8 @@ export interface Snapshot {
 }
 
 export const Snapshots: TransformedCollection<Snapshot, Snapshot>
-	= new Mongo.Collection<Snapshot>('evaluations')
-registerCollection('Evaluations', Snapshots)
+	= new Mongo.Collection<Snapshot>('snapshots')
+registerCollection('Snapshots', Snapshots)
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
