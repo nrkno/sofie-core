@@ -57,7 +57,7 @@ export function setCoreSystemStorePath (storePath: string): void {
 	if (!system) throw new Meteor.Error(500, 'CoreSystem not found')
 	if (!Meteor.isServer) throw new Meteor.Error(500, 'This function can only be run server-side')
 
-	storePath = storePath.trim().replace(/(.*)[\/\\]$/, '$1') // remove last "/" or "\"
+	storePath = (storePath + '').trim().replace(/(.*)[\/\\]$/, '$1') // remove last "/" or "\"
 
 	CoreSystem.update(system._id, {$set: {
 		storePath: storePath
