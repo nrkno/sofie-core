@@ -230,7 +230,11 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<h2 className='mhs'>{t('Devices')}</h2>
 				<hr className='vsubtle man' />
 				{
-					this.props.peripheralDevices.map((item) => {
+					this.props.peripheralDevices
+					.filter((device) => {
+						return device.type !== PeripheralDeviceAPI.DeviceType.OTHER
+					})
+					.map((item) => {
 						return [
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/peripheralDevice/' + item._id}>
 								<h3>{item.name}</h3>
