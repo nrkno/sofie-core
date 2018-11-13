@@ -396,34 +396,6 @@ export function removeSegment (segmentId: string, runningOrderId: string) {
 	afterRemoveSegment(segmentId, runningOrderId)
 }
 
-export function createROSnapshot (runningOrderId: string) {
-	const runningOrder = RunningOrders.findOne(runningOrderId)
-	const mosData = RunningOrderDataCache.find({ roId: runningOrderId }, { sort: { modified: -1 } }).fetch() // @todo: check sorting order
-	const userActions = UserActionsLog.find({ args: { $regex: `.*"${runningOrderId}".*` } }).fetch()
-
-	const segments = Segments.find({ runningOrderId }).fetch()
-	const segmentLineItems = SegmentLineItems.find({ runningOrderId }).fetch()
-	const segmentLineAdLibItems = SegmentLineAdLibItems.find({ runningOrderId }).fetch()
-	const mediaObjectIds: Array<string> = [
-		...segmentLineItems.filter(item => item.content && item.content.fileName).map((item) => (item.content!.fileName! as string)),
-		...segmentLineAdLibItems.filter(item => item.content && item.content.fileName).map((item) => (item.content!.fileName! as string))
-	]
-	const mediaObjects = MediaObjects.find({ mediaId: { $in: mediaObjectIds } }).fetch()
-
-	return {
-		snapshot: {
-			created: Date.now()
-		},
-		runningOrder,
-		mosData,
-		userActions,
-		segments,
-		segmentLineItems,
-		segmentLineAdLibItems,
-		mediaObjects
-	}
-}
-
 export namespace ServerRunningOrderAPI {
 	export function removeRunningOrder (runningOrderId: string) {
 		check(runningOrderId, String)
