@@ -296,6 +296,17 @@ function restoreFromRunningOrderSnapshot (snapshot: RunningOrderSnapshot) {
 	logger.info(`Restoring from runningOrder snapshot "${snapshot.snapshot.name}"`)
 	let runningOrderId = snapshot.runningOrderId
 
+	if (runningOrderId !== snapshot.runningOrder._id) throw new Meteor.Error(500, `Restore snapshot: runningOrderIds don\'t match, "${runningOrderId}", "${snapshot.runningOrder._id}!"`)
+
+	let dbRunningOrder = RunningOrders.findOne(runningOrderId)
+
+	if (dbRunningOrder && !dbRunningOrder.unsynced) throw new Meteor.Error(500, `Not allowed to restore into synked RunningOrder!`)
+
+	if (!snapshot.runningOrder.unsynced) {
+		snapshot.runningOrder.unsynced = true
+		snapshot.runningOrder.unsyncedTime = getCurrentTime()
+	}
+
 	saveIntoDb(RunningOrders, {_id: runningOrderId}, [snapshot.runningOrder])
 	saveIntoDb(RunningOrderDataCache, {roId: runningOrderId}, snapshot.mosData)
 	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)

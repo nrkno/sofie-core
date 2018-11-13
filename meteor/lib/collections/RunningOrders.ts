@@ -90,6 +90,7 @@ export class RunningOrder implements DBRunningOrder {
 	public active?: boolean
 	public rehearsal?: boolean
 	public unsynced?: boolean
+	public unsyncedTime?: Time
 	public previousSegmentLineId: string | null
 	public nextSegmentLineManual?: boolean
 	public currentSegmentLineId: string | null

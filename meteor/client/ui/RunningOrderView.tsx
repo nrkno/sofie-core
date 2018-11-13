@@ -43,6 +43,7 @@ import { eventContextForLog } from '../lib/eventTargetLogHelper'
 import { Tracker } from 'meteor/tracker'
 import { RunningOrderFullscreenControls } from './RunningOrderView/RunningOrderFullscreenControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
+import { SnapshotFunctionsAPI } from '../../lib/api/shapshot';
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -778,6 +779,28 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		return p
 	}
 
+	takeRunningOrderSnapshot = (e) => {
+		const p = new Promise((resolve, reject) => {
+			if (this.props.studioMode) {
+				Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT, this.props.runningOrder._id, 'Taken by user', (err, result) => {
+					if (err) {
+						console.error(err)
+						reject(err)
+						return
+					} else {
+						// todo: notify user of success, just a little nudge
+						resolve()
+					}
+				})
+			} else {
+				reject()
+			}
+		})
+
+		return p
+
+	}
+
 	resetAndActivateRunningOrder = (e: any) => {
 		// Called from the ModalDialog, 1 minute before broadcast starts
 		if (this.props.studioMode) {
@@ -869,6 +892,9 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 								}
 								<MenuItem onClick={(e) => this.reloadRunningOrder(e)}>
 									{t('Reload ENPS data')}
+								</MenuItem>
+								<MenuItem onClick={(e) => this.takeRunningOrderSnapshot(e)}>
+									{t('Take snapshot')}
 								</MenuItem>
 							</React.Fragment> :
 							<React.Fragment>

@@ -113,6 +113,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						if (err) {
 							// todo: notify user
 							logger.error(err)
+							doModalDialog({
+								title: 'Restore Snapshot',
+								message: `Error: ${err.toString()}`,
+								acceptOnly: true,
+								onAccept: () => {
+									// nothing
+								}
+							})
 						} else {
 							// todo: replace this with something else
 							doModalDialog({
@@ -134,6 +142,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			if (err) {
 				// todo: notify user
 				logger.error(err)
+				doModalDialog({
+					title: 'Restore Snapshot',
+					message: `Error: ${err.toString()}`,
+					acceptOnly: true,
+					onAccept: () => {
+						// nothing
+					}
+				})
 			}
 		})
 	}
@@ -142,6 +158,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			if (err) {
 				// todo: notify user
 				logger.error(err)
+				doModalDialog({
+					title: 'Restore Snapshot',
+					message: `Error: ${err.toString()}`,
+					acceptOnly: true,
+					onAccept: () => {
+						// nothing
+					}
+				})
 			}
 		})
 	}
@@ -191,49 +215,51 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					<h3>{t('Restore from stored snapshots')}</h3>
 					<div>
 						<table className='table'>
-							<tr>
-								<th></th>
-								<th>Type</th>
-								<th>Name</th>
-								<th>Comment</th>
-							</tr>
-							{_.map(this.props.snapshots, (snapshot) => {
-								return (
-									<tr key={snapshot._id}>
-										<td>
-											<button className='btn mod mhm' onClick={() => { this.restoreStoredSnapshot(snapshot._id) }}>{t('Restore')}</button>
-										</td>
-										<td>
-											{snapshot.type}
-										</td>
-										<td>
-											<a href={`/snapshot/retrieve/${snapshot._id}`} target='_blank'>
-												{snapshot.name}
-											</a>
-										</td>
-										<td>
-											{
-												this.state.editSnapshotId === snapshot._id ?
-													[
-														<EditAttribute
-															collection={Snapshots}
-															obj={snapshot}
-															attribute='comment'
-															type='multiline'
-														/>,
-														<button className='action-btn' onClick={() => this.editSnapshot(snapshot._id)}>
-															<FontAwesomeIcon icon={faWindowClose} />
-														</button>
-													]
-												:
-												<i onClick={() => { this.editSnapshot(snapshot._id) }}>
-													{snapshot.comment}
-												</i>
-											}
-										</td>
-									</tr>
-								)
-							})}
+							<tbody>
+								<tr>
+									<th></th>
+									<th>Type</th>
+									<th>Name</th>
+									<th>Comment</th>
+								</tr>
+								{_.map(this.props.snapshots, (snapshot) => {
+									return (
+										<tr key={snapshot._id}>
+											<td>
+												<button className='btn mod mhm' onClick={() => { this.restoreStoredSnapshot(snapshot._id) }}>{t('Restore')}</button>
+											</td>
+											<td>
+												{snapshot.type}
+											</td>
+											<td>
+												<a href={`/snapshot/retrieve/${snapshot._id}`} target='_blank'>
+													{snapshot.name}
+												</a>
+											</td>
+											<td>
+												{
+													this.state.editSnapshotId === snapshot._id ?
+														[
+															<EditAttribute
+																collection={Snapshots}
+																obj={snapshot}
+																attribute='comment'
+																type='multiline'
+															/>,
+															<button className='action-btn' onClick={() => this.editSnapshot(snapshot._id)}>
+																<FontAwesomeIcon icon={faWindowClose} />
+															</button>
+														]
+													:
+													<i onClick={() => { this.editSnapshot(snapshot._id) }}>
+														{snapshot.comment}
+													</i>
+												}
+											</td>
+										</tr>
+									)
+								})}
+							</tbody>
 						</table>
 					</div>
 				</div>
