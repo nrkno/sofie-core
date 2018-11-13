@@ -7,6 +7,7 @@ Snapshots.allow({
 		return false
 	},
 	update (userId, doc, fields, modifier) {
+		if (fields.length === 1 && fields[0] === 'comment') return true
 		return false
 	},
 	remove (userId, doc) {

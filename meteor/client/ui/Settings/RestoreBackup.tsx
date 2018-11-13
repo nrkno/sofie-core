@@ -8,6 +8,9 @@ import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { SnapshotFunctionsAPI } from '../../../lib/api/shapshot'
 import { logger } from '../../../lib/logging'
+import { EditAttribute } from '../../lib/EditAttribute'
+import { faWindowClose } from '@fortawesome/fontawesome-free-solid'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 interface IProps {
 	match: {
@@ -21,6 +24,7 @@ interface IState {
 	showUploadConfirm: boolean
 	uploadFileName?: string
 	uploadFileContents?: string
+	editSnapshotId: string | null
 }
 interface ITrackedProps {
 	snapshots: Array<SnapshotItem>
@@ -40,6 +44,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		this.state = {
 			uploadFileKey: Date.now(),
 			showUploadConfirm: false,
+			editSnapshotId: null
 		}
 	}
 	componentWillMount () {
@@ -140,6 +145,17 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			}
 		})
 	}
+	editSnapshot = (snapshotId) => {
+		if (this.state.editSnapshotId === snapshotId) {
+			this.setState({
+				editSnapshotId: null
+			})
+		} else {
+			this.setState({
+				editSnapshotId: snapshotId
+			})
+		}
+	}
 	render () {
 		const { t } = this.props
 
@@ -196,9 +212,24 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											</a>
 										</td>
 										<td>
-											<i>
-												{snapshot.comment}
-											</i>
+											{
+												this.state.editSnapshotId === snapshot._id ?
+													[
+														<EditAttribute
+															collection={Snapshots}
+															obj={snapshot}
+															attribute='comment'
+															type='multiline'
+														/>,
+														<button className='action-btn' onClick={() => this.editSnapshot(snapshot._id)}>
+															<FontAwesomeIcon icon={faWindowClose} />
+														</button>
+													]
+												:
+												<i onClick={() => { this.editSnapshot(snapshot._id) }}>
+													{snapshot.comment}
+												</i>
+											}
 										</td>
 									</tr>
 								)
