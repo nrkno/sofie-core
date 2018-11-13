@@ -30,6 +30,7 @@ import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { MigrationView } from './Settings/Migration'
 
 class WelcomeToSettings extends React.Component {
 	render () {
@@ -249,6 +250,11 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/restore'>
 					<h3>{t('Restore Backup')}</h3>
 				</NavLink>
+
+				<h2 className='mhs'>{t('Migration')}</h2>
+				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/migration'>
+					<h3>{t('Upgrade database')}</h3>
+				</NavLink>
 			</div>
 		)
 	}
@@ -288,6 +294,7 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 									<Route path='/settings/peripheralDevice/:deviceId' component={DeviceSettings} />
 									<Route path='/settings/lineTemplate/:ltId' component={LineTemplates} />
 									<Route path='/settings/tools/restore' component={RestoreBackup} />
+									<Route path='/settings/migration' component={MigrationView} />
 									<Redirect to='/settings' />
 								</Switch>
 							</ErrorBoundary>

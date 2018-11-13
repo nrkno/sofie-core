@@ -11,7 +11,12 @@ export interface PeripheralDevice {
 
 	studioInstallationId: string
 	parentDeviceId?: string
+	/** Versions reported from the device */
 	versions?: {
+		[libraryName: string]: string
+	}
+	/** Expected versions (at least this) */
+	expectedVersions?: {
 		[libraryName: string]: string
 	}
 

@@ -366,6 +366,10 @@ export function objectPathGet (obj: any, path: string, defaultValue?: any) {
 	if (v === undefined && defaultValue !== undefined) return defaultValue
 	return v
 }
+export function objectPathSet (obj: any, path: string, value: any) {
+	objectPath.set(obj, path, value)
+	return obj
+}
 /**
  * Returns a string that can be used to compare objects for equality
  * @param objs
