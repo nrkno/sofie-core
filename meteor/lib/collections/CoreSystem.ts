@@ -14,6 +14,9 @@ export interface ICoreSystem {
 	modified: number
 	/** Database version, on the form x.y.z */
 	version: string
+
+	/** File path to store persistant data (like snapshots, etc) */
+	storePath: string
 }
 
 // The CoreSystem collection will contain one (exactly 1) object.
@@ -48,6 +51,17 @@ export function setCoreSystemVersion (versionStr: string): string {
 	} else {
 		throw new Meteor.Error(500, `Unable to set version. Parsed version differ from expected: "${versionStr}", "${version.toString()}"`)
 	}
+}
+export function setCoreSystemStorePath (storePath: string): void {
+	let system = getCoreSystem()
+	if (!system) throw new Meteor.Error(500, 'CoreSystem not found')
+	if (!Meteor.isServer) throw new Meteor.Error(500, 'This function can only be run server-side')
+
+	storePath = storePath.trim().replace(/(.*)[\/\\]$/, '$1') // remove last "/" or "\"
+
+	CoreSystem.update(system._id, {$set: {
+		storePath: storePath
+	}})
 }
 export interface Version {
 	toString: () => string

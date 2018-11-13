@@ -57,6 +57,10 @@ export function setMeteorMethods (orgMethods: Methods): void {
 	})
 	Meteor.methods(methods)
 }
+/**
+ * Wraps the methods so the thrown errors are formatted nicely
+ * @param methods
+ */
 export function wrapMethods (methods: Methods): Methods {
 	let methodsOut: Methods = {}
 	_.each(methods, (fcn: Function, key) => {

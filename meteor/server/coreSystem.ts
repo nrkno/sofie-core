@@ -12,7 +12,8 @@ function initializeCoreSystem () {
 			_id: SYSTEM_ID,
 			created: getCurrentTime(),
 			modified: getCurrentTime(),
-			version: version.toString()
+			version: version.toString(),
+			storePath: '' // to be filled in later
 		})
 	}
 

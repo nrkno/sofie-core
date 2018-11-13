@@ -52,6 +52,11 @@ class SnapshotView extends MeteorReactComponent<Translated<IProps & ITrackedProp
 				<header className='mbs'>
 					<h1>{t('Take Snapshot')}</h1>
 				</header>
+				<div >
+					<div>
+						<a href={`/snapshot/debug/`} target='_blank'>{t('Download Debug-Snapshot (all studios)')}</a>
+					</div>
+				</div>
 				<div className='mod mvl'>
 					{
 						_.map(this.props.studios, (studio) => {
@@ -60,7 +65,8 @@ class SnapshotView extends MeteorReactComponent<Translated<IProps & ITrackedProp
 								<div key={studio._id}>
 									<h2>{studio.name}</h2>
 									<div>
-										<a href={`/snapshot/${studio._id}`} target='_blank'>{t('Download System Snapshot')}</a>
+										<a href={`/snapshot/system/${studio._id}`} target='_blank'>{t('Download System Snapshot for the studio') + ' ' + studio.name}</a><br/>
+										<a href={`/snapshot/debug/${studio._id}`} target='_blank'>{t('Download Debug-Snapshot for the studio') + ' ' + studio.name}</a>
 									</div>
 								</div>
 							)
