@@ -232,7 +232,7 @@ function handleResponse (response: ServerResponse, snapshotFcn: (() => {snapshot
 		}
 	}
 }
-function storeSnaphot (snapshot: {snapshot: SnapshotBase}) {
+function storeSnaphot (snapshot: {snapshot: SnapshotBase}): string {
 	let system = getCoreSystem()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
@@ -313,6 +313,19 @@ function restoreFromSystemSnapshot (snapshot: SystemSnapshot) {
 	logger.info(`Restore done`)
 }
 
+export function storeSystemSnapshot (studioId?: string) {
+	let s = createSystemSnapshot(studioId)
+	return storeSnaphot(s)
+}
+export function storeRunningOrderSnapshot (runningOrderId: string) {
+	let s = createRunningOrderSnapshot(runningOrderId)
+	return storeSnaphot(s)
+}
+export function storeDebugSnapshot (studioId: string) {
+	let s = createDebugSnapshot(studioId)
+	return storeSnaphot(s)
+}
+
 Picker.route('/snapshot/system/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {
 	return handleResponse(response, () => {
 		check(params.studioId, Match.Optional(String))
@@ -366,17 +379,14 @@ Picker.route('/snapshot/retrieve/:snapshotId', (params, req: IncomingMessage, re
 
 // Setup methods:
 let methods: Methods = {}
-methods[SnapshotFunctionsAPI.CREATE_SYSTEM_SNAPSHOT] = (studioId?: string) => {
-	let s = createSystemSnapshot(studioId)
-	storeSnaphot(s)
+methods[SnapshotFunctionsAPI.STORE_SYSTEM_SNAPSHOT] = (studioId?: string) => {
+	return storeSystemSnapshot(studioId)
 }
-methods[SnapshotFunctionsAPI.CREATE_RUNNING_ORDER_SNAPSHOT] = (runningOrderId: string) => {
-	let s = createRunningOrderSnapshot(runningOrderId)
-	storeSnaphot(s)
+methods[SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT] = (runningOrderId: string) => {
+	return storeRunningOrderSnapshot(runningOrderId)
 }
-methods[SnapshotFunctionsAPI.CREATE_DEBUG_SNAPSHOT] = (studioId: string) => {
-	let s = createDebugSnapshot(studioId)
-	storeSnaphot(s)
+methods[SnapshotFunctionsAPI.STORE_DEBUG_SNAPSHOT] = (studioId: string) => {
+	return storeDebugSnapshot(studioId)
 }
 // Apply methods:
 setMeteorMethods(wrapMethods(methods))
