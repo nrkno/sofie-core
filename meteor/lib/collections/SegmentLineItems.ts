@@ -14,6 +14,9 @@ import { TransformedCollection } from '../typings/meteor'
 import { SegmentLineTimings } from './SegmentLines'
 import { Time, registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { ReactiveDataHelper } from '../reactive/ReactiveDataHelper'
+import { ReactiveVar } from 'meteor/reactive-var'
+import { Tracker } from 'meteor/tracker';
 
 /** A trigger interface compatible with that of supertimeline */
 export interface ITimelineTrigger {
@@ -105,6 +108,20 @@ export interface SegmentLineItem extends SegmentLineItemGeneric {
 	/** This is set when the item isn't infinite, but should overflow it's duration onto the adjacent (not just next) segment line on take */
 	overflows?: boolean
 }
+
+export const getRSegmentLineItems = ReactiveDataHelper.memoizeRVar<SegmentLineItem[]>(function getRSegmentLineItems (roId: string): ReactiveVar<SegmentLineItem[]> {
+	const rVar = new ReactiveVar<SegmentLineItem[]>([], (oldVal: SegmentLineItem[], newVal: SegmentLineItem[]) => {
+		return !((oldVal !== newVal) || (oldVal.length !== newVal.length))
+	})
+
+	Tracker.autorun(() => {
+		const slis = SegmentLineItems.find({
+			runningOrderId: roId
+		}).fetch()
+		rVar.set(slis)
+	})
+	return rVar
+})
 
 export const SegmentLineItems: TransformedCollection<SegmentLineItem, SegmentLineItem>
 	= new Mongo.Collection<SegmentLineItem>('segmentLineItems')

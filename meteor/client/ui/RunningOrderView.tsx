@@ -14,7 +14,7 @@ import { NavLink, Route, Prompt } from 'react-router-dom'
 
 import { ClientAPI } from '../../lib/api/client'
 import { PlayoutAPI } from '../../lib/api/playout'
-import { RunningOrder, RunningOrders, RunningOrderHoldState } from '../../lib/collections/RunningOrders'
+import { RunningOrder, RunningOrders, RunningOrderHoldState, getRRunningOrderId, getRRunningOrderStudioId } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { SegmentLine } from '../../lib/collections/SegmentLines'
@@ -43,6 +43,12 @@ import { eventContextForLog } from '../lib/eventTargetLogHelper'
 import { Tracker } from 'meteor/tracker'
 import { RunningOrderFullscreenControls } from './RunningOrderView/RunningOrderFullscreenControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
+
+import { NotificationCenter, NotificationList } from '../lib/notifications/notifications'
+import { getRSegmentLineItems, VTContent } from '../../lib/collections/SegmentLineItems'
+import { RunningOrderAPI } from '../../lib/api/runningOrder'
+import { ReactiveDataHelper } from '../../lib/reactive/ReactiveDataHelper'
+import { checkSLIContentStatus } from '../../lib/mediaObjects'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -984,6 +990,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		global?: boolean
 	}> = []
 	private _segments: _.Dictionary<React.ComponentClass<{}>> = {}
+	private _notificationList: NotificationList
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -1025,6 +1032,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				}
 			])
 		}
+
+		this._notificationList = new NotificationList()
 	}
 
 	componentWillMount () {
@@ -1065,6 +1074,42 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				})
 			}
 		})
+
+		NotificationCenter.registerNotifier((): NotificationList => {
+			return this._notificationList
+		})
+		ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus', Tracker.autorun(() => {
+			const runningOrder = getRRunningOrderId(runningOrderId)
+			if (runningOrder) {
+				const studioInstallationId = getRRunningOrderStudioId(runningOrder)
+				ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus.StudioInstallation', Tracker.autorun(() => {
+					const studioInstallation = StudioInstallations.findOne(studioInstallationId)
+					if (studioInstallation) {
+						ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus.SegmentLineItems', Tracker.autorun(() => {
+							const items = getRSegmentLineItems(runningOrder)
+							this._notificationList.clear()
+							items.get().forEach((item) => {
+								const sourceLayer = studioInstallation.getRSourceLayer(item.sourceLayerId).get()
+								if (sourceLayer && sourceLayer.type === RunningOrderAPI.SourceLayerType.VT) {
+									if (item.content) {
+										const content = item.content as VTContent
+										ReactiveDataHelper.registerComputation(`RunningOrderView.MediaObjectStatus.SegmentLineItems.${item._id}`, Tracker.autorun(() => {
+											const {metadata, status} = checkSLIContentStatus(item, sourceLayer, studioInstallation.config)
+										}))
+									} else {
+										ReactiveDataHelper.stopComputation(`RunningOrderView.MediaObjectStatus.SegmentLineItems.${item._id}`)
+									}
+								} else {
+									ReactiveDataHelper.stopComputation(`RunningOrderView.MediaObjectStatus.SegmentLineItems.${item._id}`)
+								}
+							})
+						}))
+					}
+					ReactiveDataHelper.stopComputation('RunningOrderView.MediaObjectStatus.SegmentLineItems')
+				}))
+			}
+			ReactiveDataHelper.stopComputation('RunningOrderView.MediaObjectStatus.StudioInstallation')
+		}))
 	}
 
 	componentDidMount () {
@@ -1135,6 +1180,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		$(document.body).removeClass(['dark', 'vertical-overflow-only'])
 		$(window).off('scroll', this.onWindowScroll)
 		$(window).off('beforeunload', this.onBeforeUnload)
+
+		ReactiveDataHelper.stopComputation('RunningOrderView.MediaObjectStatus')
 
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {

@@ -33,3 +33,5 @@ peerlibrary:computed-field
 meteorhacks:picker
 ostrio:meteor-root
 underscore
+manuel:reactivearray
+reactive-dict
