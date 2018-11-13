@@ -2,6 +2,9 @@ import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { ReactiveVar } from 'meteor/reactive-var';
+import { ReactiveDataHelper } from '../reactive/ReactiveDataHelper';
+import { Tracker } from 'meteor/tracker';
 export interface MediaObject0 {
 	// Media object file path relative to playout server
 	mediaPath: string
@@ -131,4 +134,14 @@ Meteor.startup(() => {
 			mediaId: 1
 		})
 	}
+})
+
+export const getRMediaObject = ReactiveDataHelper.memoizeRVar<MediaObject | undefined>(function getRMediaObject (mediaId: string): ReactiveVar<MediaObject | undefined> {
+	const rVar = new ReactiveVar<MediaObject | undefined>(undefined, ReactiveDataHelper.simpleObjCompare)
+	Tracker.autorun(() => {
+		const mediaObj = MediaObjects.findOne({ mediaId })
+		rVar.set(mediaObj)
+	})
+
+	return rVar
 })
