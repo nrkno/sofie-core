@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from 'meteor/check'
-import { RunningOrders, RunningOrder, RunningOrderHoldState, RoData } from '../../lib/collections/RunningOrders'
+import { RunningOrders, RunningOrder, RunningOrderHoldState, RoData, DBRunningOrder } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems, ITimelineTrigger, SegmentLineItemLifespan } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
@@ -44,11 +44,12 @@ import * as _ from 'underscore'
 import { logger } from '../logging'
 import { PeripheralDevice,PeripheralDevices,PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { IMOSRunningOrder, MosString128 } from 'mos-connection'
+import { IMOSRunningOrder, MosString128, IMOSROFullStory } from 'mos-connection'
 import { PlayoutTimelinePrefixes, LookaheadMode } from '../../lib/api/playout'
 import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { StudioInstallations, StudioInstallation, IStudioConfigItem } from '../../lib/collections/StudioInstallations'
+import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
 import { getHash } from '../lib'
@@ -62,8 +63,9 @@ import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
 import { sendSlackMessageToWebhook } from './slack'
 import { setMeteorMethods } from '../methods'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
-import { sendStoryStatus } from './integration/mos'
+import { sendStoryStatus, updateStory } from './integration/mos'
 import { updateSegmentLines, reloadRunningOrderData } from './runningOrder'
+import { runPostProcessTemplate } from '../../server/api/runningOrder'
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { generateRecordingTimelineObjs } from './testTools'
 
@@ -163,9 +165,21 @@ export namespace ServerPlayoutAPI {
 			$unset: {
 				duration: 1,
 				startedPlayback: 1,
-				timings: 1
+				timings: 1,
+				runtimeArguments: 1
 			}
 		}, {multi: true})
+
+		const dirtySegmentLines = SegmentLines.find({
+			runningOrderId: runningOrder._id,
+			dirty: true
+		}).fetch()
+		dirtySegmentLines.forEach(sl => {
+			refreshSegmentLine(runningOrder, sl)
+			SegmentLines.update(sl._id, {$unset: {
+				dirty: 1
+			}})
+		})
 
 		// Remove all segment line items that were added for holds
 		let holdItems = SegmentLineItems.find({
@@ -335,7 +349,8 @@ export namespace ServerPlayoutAPI {
 					runningOrder: runningOrder,
 					studioId: runningOrder.studioInstallationId,
 					segmentLine: runningOrder.getSegmentLines()[0],
-					templateId: showStyle.baselineTemplate
+					templateId: showStyle.baselineTemplate,
+					runtimeArguments: {}
 				}), {
 					// Dummy object, not used in this template:
 					RunningOrderId: new MosString128(''),
@@ -409,6 +424,8 @@ export namespace ServerPlayoutAPI {
 	function resetSegmentLine (segmentLine: DBSegmentLine): Promise<void> {
 		let ps: Array<Promise<any>> = []
 
+		let isDirty = segmentLine.dirty || false
+
 		ps.push(asyncCollectionUpdate(SegmentLines, {
 			runningOrderId: segmentLine.runningOrderId,
 			_id: segmentLine._id
@@ -416,6 +433,8 @@ export namespace ServerPlayoutAPI {
 			$unset: {
 				duration: 1,
 				startedPlayback: 1,
+				runtimeArguments: 1,
+				dirty: 1
 			}
 		}))
 		ps.push(asyncCollectionUpdate(SegmentLineItems, {
@@ -444,10 +463,35 @@ export namespace ServerPlayoutAPI {
 			infiniteId: { $exists: true },
 		}))
 
-		return Promise.all(ps)
-		.then(() => {
-			// do nothing
-		})
+		if (isDirty) {
+			return new Promise((resolve, reject) => {
+				Promise.all(ps).then(() => {
+					const ro = RunningOrders.findOne(segmentLine.runningOrderId)
+					if (!ro) throw new Meteor.Error(404, `Running Order "${segmentLine.runningOrderId}" not found!`)
+					refreshSegmentLine(ro, segmentLine)
+					resolve()
+				}).catch((e) => reject())
+			})
+		} else {
+			return Promise.all(ps)
+			.then(() => {
+				// do nothing
+			})
+		}
+	}
+	function refreshSegmentLine (runningOrder: DBRunningOrder, segmentLine: DBSegmentLine) {
+		const ro = new RunningOrder(runningOrder)
+		const story = ro.fetchCache(CachePrefix.FULLSTORY + segmentLine._id) as IMOSROFullStory
+		const sl = new SegmentLine(segmentLine)
+		const changed = updateStory(ro, sl, story)
+
+		const segment = sl.getSegment()
+		if (segment) {
+			// this could be run after the segment, if we were capable of limiting that
+			runPostProcessTemplate(ro, segment)
+		}
+
+		updateSourceLayerInfinitesAfterLine(ro, false, sl)
 	}
 	function setNextSegmentLine (runningOrder: RunningOrder, nextSegmentLine: DBSegmentLine | null, setManually?: boolean) {
 		let ps: Array<Promise<any>> = []
@@ -1404,6 +1448,53 @@ export namespace ServerPlayoutAPI {
 
 		updateTimeline(runningOrder.studioInstallationId)
 	}
+	export const roToggleSegmentLineArgument = syncFunction(function roToggleSegmentLineArgument (roId: string, slId: string, property: string, value: string) {
+		check(roId, String)
+		check(slId, String)
+
+		const runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `Running order "${roId}" not found!`)
+
+		let segmentLine = SegmentLines.findOne(slId)
+		if (!segmentLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
+
+		const rArguments = segmentLine.runtimeArguments || {}
+
+		if (rArguments[property] === value) {
+			// unset property
+			const mUnset = {}
+			mUnset['runtimeArguments.' + property] = 1
+			SegmentLines.update(segmentLine._id, {$unset: mUnset, $set: {
+				dirty: true
+			}})
+		} else {
+			// set property
+			const mSet: any = {}
+			mSet['runtimeArguments.' + property] = value
+			mSet.dirty = true
+			SegmentLines.update(segmentLine._id, {$set: mSet})
+		}
+
+		segmentLine = SegmentLines.findOne(slId)
+
+		if (!segmentLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
+
+		refreshSegmentLine(runningOrder, segmentLine)
+
+		// Only take time to update the timeline if there's a point to do it
+		if (runningOrder.active) {
+			// If this SL is RO's next, check if current SL has autoNext
+			if ((runningOrder.nextSegmentLineId === segmentLine._id) && runningOrder.currentSegmentLineId) {
+				const currentSegmentLine = SegmentLines.findOne(runningOrder.currentSegmentLineId)
+				if (currentSegmentLine && currentSegmentLine.autoNext) {
+					updateTimeline(runningOrder.studioInstallationId)
+				}
+			// If this is RO's current SL, update immediately
+			} else if (runningOrder.currentSegmentLineId === segmentLine._id) {
+				updateTimeline(runningOrder.studioInstallationId)
+			}
+		}
+	})
 	export function timelineTriggerTimeUpdateCallback (timelineObjId: string, time: number) {
 		check(timelineObjId, String)
 		check(time, Number)
@@ -1491,6 +1582,9 @@ methods[PlayoutAPI.methods.roTake] = (roId: string) => {
 }
 methods[PlayoutAPI.methods.userRoTake] = (roId: string) => {
 	return ServerPlayoutAPI.userRoTake(roId)
+}
+methods[PlayoutAPI.methods.roToggleSegmentLineArgument] = (roId: string, slId: string, property: string, value: string) => {
+	return ServerPlayoutAPI.roToggleSegmentLineArgument(roId, slId, property, value)
 }
 methods[PlayoutAPI.methods.roSetNext] = (roId: string, slId: string) => {
 	return ServerPlayoutAPI.roSetNext(roId, slId, true)

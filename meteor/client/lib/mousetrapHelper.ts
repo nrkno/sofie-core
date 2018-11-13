@@ -106,7 +106,9 @@ export namespace mousetrapHelper {
 		}
 		// capitalize first letter of each combo key
 		hotkey = hotkey.replace(/(\w)\w*/ig, (substring: string) => {
-			return substring.substr(0, 1).toUpperCase() + substring.substr(1)
+			return substring.substr(0, 1).toUpperCase() + substring.substr(1).toLowerCase()
+		}).replace(/(\s*,\s*)/g, (separator: string) => {
+			return ', '
 		})
 
 		return hotkey

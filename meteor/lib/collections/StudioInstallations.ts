@@ -92,6 +92,8 @@ export interface DBStudioInstallation {
 	testToolsConfig?: ITestToolsConfig
 
 	hotkeyLegend?: Array<HotkeyDefinition>
+
+	runtimeArguments?: Array<IStudioRuntimeArgumentsItem>
 }
 
 export interface ISourceLayerBase {
@@ -122,6 +124,13 @@ export interface ISourceLayerBase {
 	allowDisable?: boolean
 	/** If set to true, items in this layer will be used for presenters screen display */
 	onPresenterScreen?: boolean
+}
+
+export interface IStudioRuntimeArgumentsItem {
+	label?: string
+	hotkeys: string
+	property: string
+	value: string
 }
 
 export interface IStudioConfigItem {
@@ -189,6 +198,7 @@ export class StudioInstallation implements DBStudioInstallation {
 	public config: Array<IStudioConfigItem>
 	public testToolsConfig?: ITestToolsConfig
 	public hotkeyLegend?: Array<HotkeyDefinition>
+	public runtimeArguments: Array<IStudioRuntimeArgumentsItem>
 
 	constructor (document: DBStudioInstallation) {
 		_.each(_.keys(document), (key) => {

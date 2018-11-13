@@ -362,7 +362,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				onScroll={this.onScroll}
 				followingSegmentLine={this.props.followingSegmentLine}
 				isLastSegment={this.props.isLastSegment} />
-		)
+		) || null
 	}
 }
 )

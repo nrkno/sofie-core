@@ -983,6 +983,13 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		label: string,
 		global?: boolean
 	}> = []
+	private usedArgumentKeys: Array<{
+		key: string,
+		up?: (e: KeyboardEvent) => any,
+		down?: (e: KeyboardEvent) => any,
+		label: string,
+		global?: boolean
+	}> = []
 	private _segments: _.Dictionary<React.ComponentClass<{}>> = {}
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
@@ -1004,6 +1011,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				global: true
 			}
 		]
+
+		this.usedArgumentKeys = []
 
 		this.state = {
 			timeScale: 0.03,
@@ -1128,6 +1137,65 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				$(window).off('beforeunload', this.onBeforeUnload)
 			}
 		}
+
+		if (typeof this.props.studioInstallation !== typeof prevProps.studioInstallation ||
+			this.props.studioInstallation && this.props.studioInstallation.runtimeArguments) {
+			this.refreshHotkeys()
+		}
+	}
+
+	refreshHotkeys = () => {
+		let preventDefault = (e) => {
+			e.preventDefault()
+			e.stopImmediatePropagation()
+			e.stopPropagation()
+		}
+		const noOp = (e) => {
+			if (disableInInputFields(e)) return
+			preventDefault(e)
+		}
+
+		this.usedArgumentKeys.forEach((k) => {
+			if (k.up) {
+				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keyup')
+				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+			}
+			if (k.down) {
+				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+			}
+		})
+		this.usedArgumentKeys.length = 0
+
+		if (this.props.studioInstallation) {
+			_.each(this.props.studioInstallation.runtimeArguments, (i) => {
+				const combos = i.hotkeys.split(',')
+				_.each(combos, (combo) => {
+					const handler = (e: KeyboardEvent) => {
+						if (disableInInputFields(e)) return
+
+						if (this.props.runningOrder && this.props.runningOrder.active && this.props.runningOrder.nextSegmentLineId) {
+							Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roToggleSegmentLineArgument,
+								this.props.runningOrder._id, this.props.runningOrder.nextSegmentLineId, i.property, i.value,
+							(err) => {
+								if (err) {
+									// TODO: notify user
+									console.error(err)
+									return
+								}
+								console.log(`${combo} : ${i.property} ${i.value}`)
+							})
+						}
+					}
+					this.usedArgumentKeys.push({
+						up: handler,
+						key: combo,
+						label: i.label || ''
+					})
+					mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
+					mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
+				})
+			})
+		}
 	}
 
 	componentWillUnmount () {
@@ -1143,6 +1211,16 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			}
 			if (k.down) {
 				mousetrap.unbind(k.key, 'keydown')
+			}
+		})
+
+		_.each(this.usedArgumentKeys, (k) => {
+			if (k.up) {
+				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keyup')
+				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+			}
+			if (k.down) {
+				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
 			}
 		})
 

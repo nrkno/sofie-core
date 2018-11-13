@@ -246,7 +246,8 @@ export function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: 
 		studioId: ro.studioInstallationId,
 		// segment: Segment,
 		segmentLine: segmentLine,
-		templateId: 'N/A'
+		templateId: 'N/A',
+		runtimeArguments: segmentLine.runtimeArguments || {}
 	}
 	let tr: RunTemplateResult | undefined
 	try {

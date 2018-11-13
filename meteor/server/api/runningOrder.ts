@@ -288,7 +288,8 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 		runningOrder: ro,
 		studioId: ro.studioInstallationId,
 		segmentLine: firstSegmentLine,
-		templateId: showStyle.postProcessBlueprint
+		templateId: showStyle.postProcessBlueprint,
+		runtimeArguments: {}
 	}
 	let tr: TemplateResultAfterPost | undefined
 	try {
