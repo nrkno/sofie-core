@@ -831,7 +831,7 @@ addMigrationSteps( '0.16.0', [
 			if (!system) return 'CoreSystem not found!'
 			if (!system.storePath) return 'CoreSystem.storePath not set!'
 			if (!_.isString(system.storePath)) return 'CoreSystem.storePath must be a string!'
-			if (system.storePath.slice(-1) !== '/') return 'CoreSystem.storePath must not end with "/"!'
+			if (system.storePath.slice(-1) === '/') return 'CoreSystem.storePath must not end with "/"!'
 			return false
 		},
 		migrate: (input) => {
