@@ -26,7 +26,7 @@ export const CoreSystem: TransformedCollection<ICoreSystem, ICoreSystem>
 	= new Mongo.Collection<ICoreSystem>('coreSystem')
 registerCollection('CoreSystem', CoreSystem)
 
-export function getCoreSystem () {
+export function getCoreSystem (): ICoreSystem | undefined {
 	return CoreSystem.findOne(SYSTEM_ID)
 }
 export function getCoreSystemCursor () {

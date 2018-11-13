@@ -239,7 +239,7 @@ export function runMigration (
 	let snapshotId: string = ''
 	if (system && system.storePath) {
 		try {
-			snapshotId = storeSystemSnapshot()
+			snapshotId = storeSystemSnapshot(null, `Automatic, taken before migration from "${baseVersion.toString()}" to "${targetVersion.toString()}"`)
 		} catch (e) {
 			warningMessages.push(`Error when taking snapshot:${e.toString()}`)
 			logger.error(e)

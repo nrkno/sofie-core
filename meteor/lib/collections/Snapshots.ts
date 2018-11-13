@@ -21,6 +21,7 @@ export interface SnapshotBase {
 
 export interface SnapshotItem extends SnapshotBase {
 	fileName: string
+	comment: string
 }
 
 export interface SnapshotRunningOrder extends SnapshotBase {

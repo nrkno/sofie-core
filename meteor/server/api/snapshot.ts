@@ -26,7 +26,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { ServerPeripheralDeviceAPI } from './peripheralDevice'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
-import { getCoreSystem } from '../../lib/collections/CoreSystem'
+import { getCoreSystem, ICoreSystem, CoreSystem } from '../../lib/collections/CoreSystem'
 import { fsWriteFile, fsReadFile } from '../lib'
 import { CURRENT_SYSTEM_VERSION } from '../databaseMigration'
 interface RunningOrderSnapshot {
@@ -41,12 +41,13 @@ interface RunningOrderSnapshot {
 	mediaObjects: Array<MediaObject>
 }
 interface SystemSnapshot {
-	studioId?: string
+	studioId: string | null
 	snapshot: SnapshotSystem
 	studios: Array<StudioInstallation>
 	showStyles: Array<ShowStyle>
 	devices: Array<PeripheralDevice>
 	deviceCommands: Array<PeripheralDeviceCommand>
+	coreSystem: ICoreSystem
 }
 interface DebugSnapshot {
 	studioId?: string
@@ -114,10 +115,12 @@ function createRunningOrderSnapshot (runningOrderId: string): RunningOrderSnapsh
  * that means all studios, showstyles, peripheralDevices etc
  * @param studioId (Optional) Only generate for a certain studio
  */
-function createSystemSnapshot (studioId?: string): SystemSnapshot {
+function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 	let snapshotId = Random.id()
 	logger.info(`Generating System snapshot "${snapshotId}"` + (studioId ? `for studio "${studioId}"` : ''))
 
+	const coreSystem 	= getCoreSystem()
+	if (!coreSystem) throw new Meteor.Error(500, `coreSystem not set up`)
 	const studios 		= StudioInstallations.find((studioId ? {_id: studioId} : {})).fetch()
 	const showStyles 	= ShowStyles.find().fetch()
 	const devices 		= PeripheralDevices.find((studioId ? {studioInstallationId: studioId} : {})).fetch()
@@ -139,7 +142,8 @@ function createSystemSnapshot (studioId?: string): SystemSnapshot {
 		studios,
 		showStyles,
 		devices,
-		deviceCommands: deviceCommands
+		coreSystem,
+		deviceCommands: deviceCommands,
 	}
 }
 
@@ -232,7 +236,7 @@ function handleResponse (response: ServerResponse, snapshotFcn: (() => {snapshot
 		}
 	}
 }
-function storeSnaphot (snapshot: {snapshot: SnapshotBase}): string {
+function storeSnaphot (snapshot: {snapshot: SnapshotBase}, comment: string): string {
 	let system = getCoreSystem()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
@@ -252,12 +256,13 @@ function storeSnaphot (snapshot: {snapshot: SnapshotBase}): string {
 		created: snapshot.snapshot.created,
 		name: snapshot.snapshot.name,
 		description: snapshot.snapshot.description,
-		version: CURRENT_SYSTEM_VERSION
+		version: CURRENT_SYSTEM_VERSION,
+		comment: comment
 	})
 
 	return id
 }
-function retreiveSnapshot (snapshotId: string): any {
+function retreiveSnapshot (snapshotId: string): AnySnapshot {
 	let snapshot = Snapshots.findOne(snapshotId)
 	if (!snapshot) throw new Meteor.Error(404, `Snapshot not found!`)
 
@@ -308,22 +313,31 @@ function restoreFromSystemSnapshot (snapshot: SystemSnapshot) {
 	saveIntoDb(StudioInstallations, (studioId ? {_id: studioId} : {}), snapshot.studios)
 	saveIntoDb(ShowStyles, {}, snapshot.showStyles)
 	saveIntoDb(PeripheralDevices, (studioId ? {studioInstallationId: studioId} : {}), snapshot.devices)
+	saveIntoDb(CoreSystem, {}, [snapshot.coreSystem])
 	// saveIntoDb(PeripheralDeviceCommands, {}, snapshot.deviceCommands) // ignored
 
 	logger.info(`Restore done`)
 }
 
-export function storeSystemSnapshot (studioId?: string) {
+export function storeSystemSnapshot (studioId: string | null, reason: string) {
+	if (!_.isNull(studioId)) check(studioId, String)
 	let s = createSystemSnapshot(studioId)
-	return storeSnaphot(s)
+	return storeSnaphot(s, reason)
 }
-export function storeRunningOrderSnapshot (runningOrderId: string) {
+export function storeRunningOrderSnapshot (runningOrderId: string, reason: string) {
+	check(runningOrderId, String)
 	let s = createRunningOrderSnapshot(runningOrderId)
-	return storeSnaphot(s)
+	return storeSnaphot(s, reason)
 }
-export function storeDebugSnapshot (studioId: string) {
+export function storeDebugSnapshot (studioId: string, reason: string) {
+	check(studioId, String)
 	let s = createDebugSnapshot(studioId)
-	return storeSnaphot(s)
+	return storeSnaphot(s, reason)
+}
+export function restoreSnapshot (snapshotId: string) {
+	check(snapshotId, String)
+	let snapshot = retreiveSnapshot(snapshotId)
+	return restoreFromSnapshot(snapshot)
 }
 
 Picker.route('/snapshot/system/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {
@@ -379,14 +393,17 @@ Picker.route('/snapshot/retrieve/:snapshotId', (params, req: IncomingMessage, re
 
 // Setup methods:
 let methods: Methods = {}
-methods[SnapshotFunctionsAPI.STORE_SYSTEM_SNAPSHOT] = (studioId?: string) => {
-	return storeSystemSnapshot(studioId)
+methods[SnapshotFunctionsAPI.STORE_SYSTEM_SNAPSHOT] = (studioId: string | null, reason: string) => {
+	return storeSystemSnapshot(studioId, reason)
 }
-methods[SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT] = (runningOrderId: string) => {
-	return storeRunningOrderSnapshot(runningOrderId)
+methods[SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT] = (runningOrderId: string, reason: string) => {
+	return storeRunningOrderSnapshot(runningOrderId, reason)
 }
-methods[SnapshotFunctionsAPI.STORE_DEBUG_SNAPSHOT] = (studioId: string) => {
-	return storeDebugSnapshot(studioId)
+methods[SnapshotFunctionsAPI.STORE_DEBUG_SNAPSHOT] = (studioId: string, reason: string) => {
+	return storeDebugSnapshot(studioId, reason)
+}
+methods[SnapshotFunctionsAPI.RESTORE_SNAPSHOT] = (snapshotId: string) => {
+	return restoreSnapshot(snapshotId)
 }
 // Apply methods:
 setMeteorMethods(wrapMethods(methods))
