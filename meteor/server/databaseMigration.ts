@@ -20,6 +20,7 @@ import {
 import { setMeteorMethods } from './methods'
 import { logger } from '../lib/logging'
 import { Optional } from '../lib/lib'
+import { storeSystemSnapshot } from './api/snapshot';
 
 /** The current database version, x.y.z */
 export const CURRENT_SYSTEM_VERSION = '1.0.0'
@@ -231,6 +232,9 @@ export function runMigration (
 	if (migration.hash !== hash) throw new Meteor.Error(500, `Migration input hash differ from expected: "${hash}", "${migration.hash}"`)
 	if (manualInputsWithUserPrompt.length !== inputResults.length ) throw new Meteor.Error(500, `Migration manualInput lengths differ from expected: "${inputResults.length}", "${migration.manualInputs.length}"`)
 
+	// First, take a system snapshot:
+	let snapshotId = storeSystemSnapshot()
+
 	logger.info(`Migration: ${migration.automaticStepCount} automatic and ${migration.manualStepCount} steps (${migration.ignoredStepCount} ignored).`)
 
 	logger.debug(inputResults)
@@ -284,7 +288,8 @@ export function runMigration (
 	logger.info(`Migration: end`)
 	return {
 		migrationCompleted: migrationCompleted,
-		warnings: warningMessages
+		warnings: warningMessages,
+		snapshot: snapshotId
 	}
 }
 export function updateDatabaseVersion (targetVersionStr: string) {

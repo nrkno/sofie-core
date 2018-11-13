@@ -46,5 +46,6 @@ export interface MigrationStepInputFilteredResult {
 
 export interface RunMigrationResult {
 	migrationCompleted: boolean,
-	warnings: Array<string>
+	warnings: Array<string>,
+	snapshot: string
 }
