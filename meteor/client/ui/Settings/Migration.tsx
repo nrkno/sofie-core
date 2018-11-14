@@ -20,6 +20,7 @@ import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 interface IProps {
 }
 interface IState {
+	errorMessage?: string
 	systemVersion: string
 	databaseVersion: string
 	migrationNeeded: boolean
@@ -79,18 +80,24 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 
 		this.updateVersions()
 	}
+	setErrorMessage (err) {
+		this.setState({
+			errorMessage: _.isString(err) ? err : err.reason || err.toString() || (err + '')
+		})
+	}
 	updateVersions () {
 		this.setState({
+			errorMessage: '',
 			systemVersion: '',
 			databaseVersion: '',
 			databasePreviousVersion: '',
 			migrationNeeded: false
 		})
-
 		Meteor.call(MigrationMethods.getMigrationStatus, (err, r: GetMigrationStatusResult) => {
 			if (err) {
 				logger.error(err)
 				// todo: notify user
+				this.setErrorMessage(err)
 			} else {
 				this.setState({
 					systemVersion: r.systemVersion,
@@ -138,6 +145,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 					})
 				}
 			})
+			this.setErrorMessage('')
 			Meteor.call(MigrationMethods.runMigration,
 				this.state.migration.baseVersion, // baseVersionStr
 				this.state.migration.targetVersion, // targetVersionStr
@@ -147,6 +155,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				if (err) {
 					logger.error(err)
 					// todo: notify user
+					this.setErrorMessage(err)
 				} else {
 					this.setState({
 						warnings: r.warnings,
@@ -160,7 +169,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 		}
 	}
 	forceMigration () {
-
+		this.setErrorMessage('')
 		if (this.state.migration) {
 			Meteor.call(MigrationMethods.forceMigration,
 				this.state.migration.targetVersion, // targetVersionStr
@@ -168,6 +177,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				if (err) {
 					logger.error(err)
 					// todo: notify user
+					this.setErrorMessage(err)
 				} else {
 					this.setState({
 						migrationCompleted: true,
@@ -182,7 +192,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 	}
 	setDatabaseVersion (version: string) {
 		const { t } = this.props
-
+		this.setErrorMessage('')
 		doModalDialog({
 			title: t('Set database version'),
 			message: t('Are you sure you want to set the database version to') + ` ${version}?`,
@@ -193,6 +203,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 					if (err) {
 						logger.error(err)
 						// todo: notify user
+						this.setErrorMessage(err)
 					} else {
 						this.updateVersions()
 					}
@@ -258,6 +269,9 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 						</div>
 						<div>
 							{t('Database version')}: {this.state.databaseVersion || '-'}
+						</div>
+						<div>
+							{this.state.errorMessage}
 						</div>
 						<div>
 							<button className='btn mod mhm' onClick={() => { this.clickRefresh() }}>
