@@ -93,9 +93,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					'content-type': 'application/json'
 				},
 			}).then(res => {
-				console.log('Backup restore success')
+				console.log('Snapshot restore success')
 			}).catch(err => {
-				console.error('Backup restore failure: ', err)
+				console.error('Snapshot restore failure: ', err)
 			})
 		}
 		this.setState({
@@ -107,7 +107,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		if (snapshot) {
 			doModalDialog({
 				title: 'Restore Snapshot',
-				message: `Do you really want to restore the snapshot ${snapshot.name}?`,
+				message: `Do you really want to restore the Snapshot ${snapshot.name}?`,
 				onAccept: () => {
 					Meteor.call(SnapshotFunctionsAPI.RESTORE_SNAPSHOT, snapshotId, (err) => {
 						if (err) {
@@ -187,32 +187,32 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			<div className='studio-edit mod mhl mvs'>
 				<div>
 					<div>
-						<h3>{t('Take snapshot')}</h3>
+						<h3>{t('Take a Snapshot')}</h3>
 							<div>
-								<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot() }}>{t('Take system snapshot')}</button>
+								<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot() }}>{t('Take a System Snapshot')}</button>
 								<i>
-									{t('A system snapshot contains all settings of the system (studio, showstyles, devices etc)')}
+									{t('A System Snapshot contains all system settings (studio, showstyles, devices, etc.)')}
 								</i>
 							</div>
 							{/* <div>
 								<button className='btn btn-primary' onClick={() => { this.takeDebugSnapshot() }}>{t('Take debug snapshot')}</button>
 								<i>
-									{t('A debug snapshot contains info about the system and the active running order(s)')}
+									{t('A Debug Snapshot contains info about the system and the active running order(s)')}
 								</i>
 							</div> */}
 					</div>
-					<h3>{t('Restore from File')}</h3>
+					<h3>{t('Restore from Snapshot File')}</h3>
 					<label className='field'>
 						<div className='mdi'>
 							<input type='file' accept='.json' onChange={this.onUploadFile.bind(this)} key={this.state.uploadFileKey} />
 							<span className='mdfx'></span>
 						</div>
 					</label>
-					<ModalDialog title={t('Restore this backup?')} acceptText={t('Restore')} secondaryText={t('Cancel')} show={this.state.showUploadConfirm} onAccept={() => this.handleConfirmUploadFileAccept()} onSecondary={() => this.handleConfirmUploadFileCancel()}>
-						<p>{t('Are you sure you want to restore the backup file "{{fileName}}"?', { fileName: this.state.uploadFileName })}</p>
+					<ModalDialog title={t('Restore from this Snapshot File?')} acceptText={t('Restore')} secondaryText={t('Cancel')} show={this.state.showUploadConfirm} onAccept={() => this.handleConfirmUploadFileAccept()} onSecondary={() => this.handleConfirmUploadFileCancel()}>
+						<p>{t('Are you sure you want to restore the system from the Snapshot file "{{fileName}}"?', { fileName: this.state.uploadFileName })}</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</ModalDialog>
-					<h3>{t('Restore from stored snapshots')}</h3>
+					<h3>{t('Restore from Stored Snapshots')}</h3>
 					<div>
 						<table className='table'>
 							<tbody>

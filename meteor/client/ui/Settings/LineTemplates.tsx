@@ -839,7 +839,7 @@ let SelectRFDD = translateWithTracker<SelectRFDDProps, IState, ISelectRFDDTracke
 					<thead>
 						<tr>
 							<th>Timestamp</th>
-							<th>Snapshot name</th>
+							<th>Snapshot Name</th>
 							<th>Keep</th>
 							<th>Select</th>
 							<th className='actions'>Remove</th>

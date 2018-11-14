@@ -366,7 +366,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RESET_RUNNING_ORDER,
 					up: this.keyResetRunningOrder,
-					label: t('Reload running order'),
+					label: t('Reload Running Order'),
 					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_FORWARD,
@@ -554,7 +554,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		if (err.error === 409) {
 			this.setState({
 				isError: true,
-				errorMessage: t('Only a single running order can be active in a studio. Deactivate the other running order and try again.')
+				errorMessage: t('Only a single Running Order can be active in a studio at the same time. Please deactivate the other Running Order and try again.')
 			})
 		}
 	}
@@ -678,7 +678,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					// Active, and not in rehearsal
 					doModalDialog({
 						title: this.props.runningOrder.name,
-						message: t('Are you sure you want to go into rehearsal mode?'),
+						message: t('Are you sure you want to activate Rehearsal Mode?'),
 						onAccept: () => {
 							doActivateRehersal()
 						}
@@ -692,7 +692,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					// We are in the broadcast
 					doModalDialog({
 						title: this.props.runningOrder.name,
-						message: t('Are you sure you want to go into rehearsal mode?'),
+						message: t('Are you sure you want to activate Rehearsal Mode?'),
 						onAccept: () => {
 							doActivateRehersal()
 						}
@@ -748,7 +748,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			// The running order is active and not in rehersal
 			doModalDialog({
 				title: this.props.runningOrder.name,
-				message: t('Are you sure you want to reset this running order?'),
+				message: t('Are you sure you want to reset this Running Order?'),
 				onAccept: () => {
 					doReset()
 				}
@@ -851,7 +851,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 										(
 											!this.runningOrderShouldHaveStarted() && !this.props.runningOrder.active ?
 												<MenuItem onClick={(e) => this.activateRehearsal(e)}>
-													{t('Prepare studio and Activate (Rehearsal)')}
+													{t('Prepare Studio and Activate (Rehearsal)')}
 												</MenuItem> :
 												<MenuItem onClick={(e) => this.activateRehearsal(e)}>
 													{t('Activate (Rehearsal)')}
@@ -891,10 +891,10 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 										null
 								}
 								<MenuItem onClick={(e) => this.reloadRunningOrder(e)}>
-									{t('Reload ENPS data')}
+									{t('Reload ENPS Data')}
 								</MenuItem>
 								<MenuItem onClick={(e) => this.takeRunningOrderSnapshot(e)}>
-									{t('Take snapshot')}
+									{t('Store Snapshot')}
 								</MenuItem>
 							</React.Fragment> :
 							<React.Fragment>

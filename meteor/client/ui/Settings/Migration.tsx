@@ -269,7 +269,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 								</div>
 								<button className='btn-primary' onClick={() => {
 									doModalDialog({
-										title: t('Double check values'),
+										title: t('Double-check Values'),
 										message: t('Are you sure the values you have entered are correct?'),
 										onAccept: () => {
 											this.runMigration()
@@ -277,7 +277,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 									})
 								}}>
 									<FontAwesomeIcon icon={faBinoculars} />
-									{t('Run migration procedure')}
+									{t('Run Migration Procedure')}
 								</button>
 							</div>
 							}
