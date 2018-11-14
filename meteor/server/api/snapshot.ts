@@ -29,7 +29,7 @@ import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
 import { getCoreSystem, ICoreSystem, CoreSystem } from '../../lib/collections/CoreSystem'
 import { fsWriteFile, fsReadFile } from '../lib'
 import { CURRENT_SYSTEM_VERSION } from '../databaseMigration'
-import { restoreShowBackup, restoreRunningOrder } from '../backups'
+import { restoreRunningOrder } from '../backups'
 interface RunningOrderSnapshot {
 	runningOrderId: string
 	snapshot: SnapshotRunningOrder
@@ -381,10 +381,7 @@ postRoute.route('/backup/restore', (params, req: IncomingMessage, response: Serv
 	try {
 		const snapshot = (req as any).body
 
-		if (snapshot.type === 'showstyle' && snapshot.showStyle) {
-			// special case (to be deprecated): showstyle with blueprints
-			restoreShowBackup(snapshot)
-		} else if (snapshot.type === 'runningOrderCache' && snapshot.data) {
+		if (snapshot.type === 'runningOrderCache' && snapshot.data) {
 			// special case (to be deprecated): runningOrder cached data
 			restoreRunningOrder(snapshot)
 

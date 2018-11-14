@@ -2,7 +2,7 @@ import { ServerResponse, IncomingMessage } from 'http'
 // @ts-ignore Meteor package not recognized by Typescript
 import { Picker } from 'meteor/meteorhacks:picker'
 import { ShowStyle, ShowStyles } from '../lib/collections/ShowStyles'
-import { ShowBlueprints } from '../lib/collections/ShowBlueprints'
+import { ShowBlueprints, ShowBlueprint } from '../lib/collections/ShowBlueprints'
 import * as bodyParser from 'body-parser'
 import { logger } from './logging'
 import * as _ from 'underscore'
@@ -11,6 +11,7 @@ import { PeripheralDevices, PeripheralDevice } from '../lib/collections/Peripher
 import { Meteor } from 'meteor/meteor'
 import { MosString128 } from 'mos-connection'
 import { evalBlueprints } from './api/blueprints'
+import { Random } from 'meteor/random'
 
 export interface RunningOrderCacheBackup {
 	type: 'runningOrderCache'

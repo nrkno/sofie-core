@@ -5,9 +5,8 @@ import {
 	IMOSROFullStory, IMOSRunningOrder, IMOSStory
 } from 'mos-connection'
 import { SegmentLine, DBSegmentLine, SegmentLineNote, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItemGeneric } from '../../lib/collections/SegmentLineItems'
+import { SegmentLineItem } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
-import { ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
 import { formatDateAsTimecode, formatDurationAsTimecode, literal } from '../../lib/lib'
 import { getHash } from '../lib'
 import { logger } from '../logging'
@@ -21,13 +20,12 @@ import {
 	BlueprintCollection,
 	ICommonContext,
 	RunStoryContext,
-	BlueprintRuntimeArguments,
 	BaselineContext,
 	PostProcessContext,
 	MessageContext,
 	LayerType
 } from 'tv-automation-sofie-blueprints-integration/dist/api'
-import { IBlueprintSegmentLineItem, IBlueprintSegmentLineAdLibItem } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
+import { IBlueprintSegmentLineItem, IBlueprintSegmentLineAdLibItem, BlueprintRuntimeArguments, IBlueprintSegmentLine } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
 
 class CommonContext implements ICommonContext {
@@ -205,7 +203,7 @@ export function getMessageContext (runningOrder: RunningOrder): MessageContext {
 		getCachedStoryForRunningOrder (): IMOSRunningOrder {
 			return this.runningOrder.fetchCache('roCreate' + this.runningOrder._id)
 		}
-		getCachedStoryForSegmentLine (segmentLine: SegmentLine): IMOSROFullStory {
+		getCachedStoryForSegmentLine (segmentLine: IBlueprintSegmentLine): IMOSROFullStory {
 			return this.runningOrder.fetchCache('fullStory' + segmentLine._id)
 		}
 

@@ -13,9 +13,7 @@ import { applyClassToDocument, Time, registerCollection, normalizeArray } from '
 import { RunningOrderAPI } from '../api/runningOrder'
 import { checkSLIContentStatus } from '../mediaObjects'
 import { Meteor } from 'meteor/meteor'
-import { IMessageBlueprintSegmentLine, IMessageBlueprintSegmentLineTimings, SegmentLineHoldMode } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
-
-import { TemplateRuntimeArguments } from '../../server/api/templates/templates'
+import { IMessageBlueprintSegmentLine, IMessageBlueprintSegmentLineTimings, SegmentLineHoldMode, BlueprintRuntimeArguments } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
 
 /** A "Line" in NRK Lingo. */
 export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
@@ -76,7 +74,7 @@ export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
 	dynamicallyInserted?: boolean
 
 	/** Runtime blueprint arguments allows Sofie-side data to be injected into the blueprint for an SL */
-	runtimeArguments?: TemplateRuntimeArguments
+	runtimeArguments?: BlueprintRuntimeArguments
 	/** An SL should be marked as `dirty` if the SL blueprint has been injected with runtimeArguments */
 	dirty?: boolean
 }
@@ -137,7 +135,7 @@ export class SegmentLine implements DBSegmentLine {
 	public afterSegmentLine?: string
 	public dirty?: boolean
 
-	public runtimeArguments?: TemplateRuntimeArguments
+	public runtimeArguments?: BlueprintRuntimeArguments
 	public typeVariant: string
 
 	constructor (document: DBSegmentLine) {
