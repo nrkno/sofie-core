@@ -76,12 +76,14 @@ export function addMigrationStep (step: MigrationStep) {
  * @param version
  * @param steps
  */
-export function addMigrationSteps (version: string, steps: Array<MigrationStepBase>) {
+export function addMigrationSteps (version: string, steps: Array<MigrationStepBase | null>) {
 	_.each(steps, (step) => {
-		addMigrationStep(_.extend(step, {
-			id: version + step.id,
-			version: version
-		}))
+		if (step) {
+			addMigrationStep(_.extend(step, {
+				id: version + step.id,
+				version: version
+			}))
+		}
 	})
 }
 
