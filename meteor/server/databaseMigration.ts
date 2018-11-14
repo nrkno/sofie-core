@@ -22,8 +22,12 @@ import { logger } from '../lib/logging'
 import { Optional } from '../lib/lib'
 import { storeSystemSnapshot } from './api/snapshot'
 
-/** The current database version, x.y.z */
-export const CURRENT_SYSTEM_VERSION = '1.0.0'
+/** The current database version, x.y.z
+ * 0.16.0: Release 3 (2018-10-26)
+ * 0.17.0: Release 4 (2018-11-14)
+ */
+export const CURRENT_SYSTEM_VERSION = '0.17.0'
+
 /** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.
  * And Sofie said: The version of the database is to be GENESIS_SYSTEM_VERSION so that the migration scripts will run.
  */
