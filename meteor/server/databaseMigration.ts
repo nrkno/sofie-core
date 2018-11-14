@@ -128,9 +128,9 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 	// Filter steps:
 	let overrideIds: {[id: string]: true} = {}
 	let migrationSteps: {[id: string]: MigrationStepInternal} = {}
+	let ignoredSteps: {[id: string]: true} = {}
 	_.each(allMigrationSteps, (step: MigrationStepInternal) => {
-
-		if (migrationSteps[step.id]) throw new Meteor.Error(500, `Error: MigrationStep.id must be unique: "${step.id}"`)
+		console.log('step ' + step.id)
 		if (!step.canBeRunAutomatically && (!step.input || (_.isArray(step.input) && !step.input.length))) throw new Meteor.Error(500, `MigrationStep "${step.id}" is manual, but no input is provided`)
 
 		let stepVersion = step._version
@@ -140,19 +140,27 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 		) {
 			// Step is in play
 
+			if (step.overrideSteps) {
+				// Override / delete other steps
+				_.each(step.overrideSteps, (overrideId: string) => {
+					console.log('override ' + overrideId)
+					delete migrationSteps[overrideId]
+					if (ignoredSteps[overrideId]) {
+						delete ignoredSteps[overrideId]
+						ignoredStepCount--
+					}
+				})
+			}
+
+			if (migrationSteps[step.id] || ignoredSteps[step.id]) throw new Meteor.Error(500, `Error: MigrationStep.id must be unique: "${step.id}"`)
+
 			// Check if the step can be applied:
 			step._validateResult = step.validate(false)
 			if (step._validateResult) {
-
-				if (step.overrideSteps) {
-					// Override / delete other steps
-					_.each(step.overrideSteps, (overrideId: string) => {
-						delete migrationSteps[overrideId]
-					})
-				}
 				migrationSteps[step.id] = step
 			} else {
 				// No need to run step
+				ignoredSteps[step.id] = true
 				ignoredStepCount++
 			}
 		} else {

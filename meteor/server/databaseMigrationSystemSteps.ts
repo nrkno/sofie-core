@@ -351,7 +351,8 @@ function ensureDeviceVersion (id, deviceType: PeripheralDeviceAPI.DeviceType, li
 					PeripheralDevices.update(device._id, {$set: m})
 				}
 			})
-		}
+		},
+		overrideSteps: [id]
 	}
 }
 
