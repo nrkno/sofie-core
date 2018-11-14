@@ -34,8 +34,8 @@ export interface Mappings {
 export interface Mapping {
 	device: PlayoutDeviceType,
 	lookahead: LookaheadMode,
-	deviceId: string
-	// [key: string]: any
+	deviceId: string,
+	[key: string]: any
 }
 export interface MappingCasparCG extends Mapping {
 	device: PlayoutDeviceType.CASPARCG,
