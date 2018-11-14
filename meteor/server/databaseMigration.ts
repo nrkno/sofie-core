@@ -331,6 +331,7 @@ function getMigrationStatus (): GetMigrationStatusResultMigrationNeeded | GetMig
 
 		return {
 			databaseVersion:	 		databaseVersion.toString(),
+			databasePreviousVersion:	system.previousVersion,
 			systemVersion:		 		systemVersion.toString(),
 			migrationNeeded:	 		true,
 
@@ -349,9 +350,10 @@ function getMigrationStatus (): GetMigrationStatusResultMigrationNeeded | GetMig
 		}
 	} else {
 		return {
-			databaseVersion: databaseVersion.toString(),
-			systemVersion: systemVersion.toString(),
-			migrationNeeded: false
+			databaseVersion: 			databaseVersion.toString(),
+			databasePreviousVersion:	system.previousVersion,
+			systemVersion: 				systemVersion.toString(),
+			migrationNeeded: 			false
 		}
 	}
 

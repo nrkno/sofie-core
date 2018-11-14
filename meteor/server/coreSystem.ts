@@ -13,6 +13,7 @@ function initializeCoreSystem () {
 			created: getCurrentTime(),
 			modified: getCurrentTime(),
 			version: version.toString(),
+			previousVersion: null,
 			storePath: '' // to be filled in later
 		})
 	}

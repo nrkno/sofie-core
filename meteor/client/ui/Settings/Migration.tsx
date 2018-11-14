@@ -23,6 +23,7 @@ interface IState {
 	systemVersion: string
 	databaseVersion: string
 	migrationNeeded: boolean
+	databasePreviousVersion: string | null
 
 	migration?: {
 		canDoAutomaticMigration: boolean
@@ -55,8 +56,9 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {
-			systemVersion: '-',
-			databaseVersion: '-',
+			systemVersion: '',
+			databaseVersion: '',
+			databasePreviousVersion: null,
 			migrationNeeded: false,
 			warnings: [],
 			migrationCompleted: false,
@@ -79,8 +81,9 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 	}
 	updateVersions () {
 		this.setState({
-			systemVersion: '-',
-			databaseVersion: '-',
+			systemVersion: '',
+			databaseVersion: '',
+			databasePreviousVersion: '',
 			migrationNeeded: false
 		})
 
@@ -92,6 +95,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				this.setState({
 					systemVersion: r.systemVersion,
 					databaseVersion: r.databaseVersion,
+					databasePreviousVersion: r.databasePreviousVersion,
 					migrationNeeded: r.migrationNeeded
 				})
 				if (r.migrationNeeded) {
@@ -176,6 +180,26 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 		}
 
 	}
+	setDatabaseVersion (version: string) {
+		const { t } = this.props
+
+		doModalDialog({
+			title: t('Set database version'),
+			message: t('Are you sure you want to set the database version to') + ` ${version}?`,
+			onAccept: () => {
+				Meteor.call(MigrationMethods.forceMigration,
+					version, // targetVersionStr
+				(err) => {
+					if (err) {
+						logger.error(err)
+						// todo: notify user
+					} else {
+						this.updateVersions()
+					}
+				})
+			}
+		})
+	}
 	renderManualSteps () {
 		if (this.state.migration) {
 			let rank = 0
@@ -230,16 +254,40 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 
 					<div>
 						<div>
-							{t('System version')}: {this.state.systemVersion}
+							{t('System version')}: {this.state.systemVersion || '-'}
 						</div>
 						<div>
-							{t('Database version')}: {this.state.databaseVersion}
+							{t('Database version')}: {this.state.databaseVersion || '-'}
 						</div>
 						<div>
 							<button className='btn mod mhm' onClick={() => { this.clickRefresh() }}>
 								<FontAwesomeIcon icon={faBinoculars} />
 								{t('Refresh')}
 							</button>
+
+							{
+								this.state.databaseVersion &&
+								this.state.databasePreviousVersion &&
+								this.state.databasePreviousVersion !== '0.0.0' &&
+								this.state.databaseVersion !== this.state.databasePreviousVersion ?
+									<button className='btn mod mhm' onClick={() => {
+										if (this.state.databasePreviousVersion) {
+											this.setDatabaseVersion(this.state.databasePreviousVersion)
+										}
+									}}>
+										<FontAwesomeIcon icon={faDatabase} />
+										{t('Reset version to') + ` ${this.state.databasePreviousVersion}`}
+									</button>
+								: null
+							}
+							{
+								this.state.databaseVersion && this.state.databaseVersion !== '0.0.0' ?
+								<button className='btn mod mhm' onClick={() => { this.setDatabaseVersion('0.0.0') }}>
+									<FontAwesomeIcon icon={faDatabase} />
+									{t('Reset version to') + ` 0.0.0`}
+								</button>
+								: null
+							}
 						</div>
 					</div>
 					{this.state.migrationNeeded && this.state.migration ?

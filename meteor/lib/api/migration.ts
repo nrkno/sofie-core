@@ -6,6 +6,7 @@ export enum MigrationMethods {
 }
 export interface GetMigrationStatusResult {
 	databaseVersion: string
+	databasePreviousVersion: string | null
 	systemVersion: string
 	migrationNeeded: boolean
 }

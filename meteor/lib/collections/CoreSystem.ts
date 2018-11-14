@@ -14,6 +14,8 @@ export interface ICoreSystem {
 	modified: number
 	/** Database version, on the form x.y.z */
 	version: string
+	/** Previous version, on the form x.y.z */
+	previousVersion: string | null
 
 	/** File path to store persistant data (like snapshots, etc) */
 	storePath: string
@@ -44,8 +46,15 @@ export function setCoreSystemVersion (versionStr: string): string {
 
 		logger.info(`Updating database version, from "${system.version}" to "${version.toString()}".`)
 
+		let previousVersion: string | null = null
+
+		if (system.version && compareVersions(version, parseVersion(system.version)) > 0) { // the new version is higher than previous version
+			previousVersion = system.version
+		}
+
 		CoreSystem.update(system._id, {$set: {
-			version: versionStr
+			version: versionStr,
+			previousVersion: previousVersion
 		}})
 		return versionStr
 	} else {
