@@ -1,7 +1,6 @@
-/// <reference path="reactivearray.d.ts" />
+/// <reference path="./reactivearray.d.ts" />
 
 import { ReactiveVar } from 'meteor/reactive-var'
-import { ReactiveDict, ReactiveArray } from './reactivearray'
 import { StatusCode } from '../../../server/systemStatus'
 import { Dictionary } from 'underscore'
 import * as _ from 'underscore'
@@ -10,6 +9,38 @@ import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import { EventEmitter } from 'events'
 import { faThumbsDown } from '@fortawesome/fontawesome-free-solid'
+import { Time } from '../../../lib/lib'
+
+declare class ReactiveArray<T> extends Array<T> {
+	constructor (source?: Array<T>)
+
+	/**
+	 * Return all elements as a plain Javascript array.
+	 */
+	array (): Array<T>
+
+	/**
+	 * Returns a reactive source of the array.
+	 */
+	list (): Array<T>
+
+	/**
+	 * An alias of list().
+	 */
+	depend (): Array<T>
+
+	/**
+	 * Remove all elements of the array.
+	 */
+	clear (): void
+}
+
+declare class ReactiveDict<T> {
+	constructor (id?: string)
+	set (key: string, value: T): void
+	get (key: string): T
+	equals (key: string, compareValue: T): boolean
+}
 
 export enum NoticeLevel {
 	CRITICAL,
@@ -20,26 +51,46 @@ export enum NoticeLevel {
 
 export interface NotificationAction {
 	label: string
-	id: string
+	type: string
 	icon?: any
 }
 
 export class Notification extends EventEmitter {
+	id: string | undefined
 	status: NoticeLevel
 	message: string
 	source: string
 	persistent?: boolean
 	snoozed?: boolean
 	actions?: Array<NotificationAction>
+	created: Time
 
-	constructor (status: NoticeLevel, message: string, source: string, persistent?: boolean, actions?: Array<NotificationAction>) {
+	constructor (id: string | undefined, status: NoticeLevel, message: string, source: string, created?: Time, persistent?: boolean, actions?: Array<NotificationAction>) {
 		super()
 
+		this.id = id
 		this.status = status
 		this.message = message
 		this.source = source
 		this.persistent = persistent || false
 		this.actions = actions || undefined
+		this.created = created || Date.now()
+	}
+
+	snooze () {
+		this.snoozed = true
+		notificationsDep.changed()
+		this.emit('snoozed', this)
+	}
+
+	drop () {
+		if (this.id) {
+			NotificationCenter.drop(this.id)
+		}
+	}
+
+	action (type: string, event: any) {
+		this.emit('action', this, type, event)
 	}
 }
 
@@ -48,53 +99,55 @@ interface NotificationHandle {
 	stop: () => void
 }
 
-export class NotificationList extends ReactiveArray<Notification> {
+export class NotificationList extends ReactiveVar<Notification[]> {
 
 }
 
 export type Notifier = () => NotificationList
 
-interface NotifierObject {
+const notifiers: Dictionary<NotifierObject> = {}
+
+const notifications: Dictionary<Notification> = {}
+const notificationsDep: Tracker.Dependency = new Tracker.Dependency()
+
+export class NotifierObject {
+	id: string
+	source: Notifier
 	handle: Tracker.Computation
-	result: Array<Notification>
-	stop (): void
+	result: Array<Notification> = []
+
+	constructor (notifierId: string, source: Notifier) {
+		this.id = notifierId
+		this.source = source
+		this.handle = Tracker.autorun(() => {
+			this.result = source().get()
+			notificationsDep.changed()
+		})
+
+		notifiers[notifierId] = this
+	}
+
+	stop (): void {
+		this.handle.stop()
+
+		delete notifiers[this.id]
+
+		notificationsDep.changed()
+	}
 }
 
 class NotificationCenter0 {
-	private notifiers: Dictionary<NotifierObject>
-
-	private notifications: Dictionary<Notification>
-	private notificationsDep: Tracker.Dependency
-
-	constructor () {
-		this.notifications = {}
-		this.notificationsDep = new Tracker.Dependency()
-		this.notifiers = {}
-	}
-
-	registerNotifier (source: Notifier): string {
+	registerNotifier (source: Notifier): NotifierObject {
 		const notifierId = Random.id()
 
-		const notifierObj: NotifierObject = {
-			handle: Tracker.autorun(() => {
-				notifierObj.result = source().list()
-				this.notificationsDep.changed()
-			}),
-			result: [],
-			stop () {
-				notifierObj.handle.stop()
-			}
-		}
-
-		this.notifiers[notifierId] = notifierObj
-
-		return notifierId
+		return new NotifierObject(notifierId, source)
 	}
 
 	push (notice: Notification): NotificationHandle {
-		const id = Random.id()
-		this.notifications[id] = notice
-		this.notificationsDep.changed()
+		const id = notice.id || Random.id()
+		notifications[id] = notice
+		notice.id = id
+		notificationsDep.changed()
 
 		return {
 			id,
@@ -105,20 +158,27 @@ class NotificationCenter0 {
 	}
 
 	drop (id: string): void {
-		if (this.notifications[id]) {
-			this.notifications[id].emit('removed')
-			delete this.notifications[id]
-			this.notificationsDep.changed()
+		if (notifications[id]) {
+			notifications[id].emit('dropped')
+			delete notifications[id]
+			notificationsDep.changed()
 		} else {
 			throw new Meteor.Error(404, `Notification "${id}" could not be found in the Notification Center`)
 		}
 	}
 
 	getNotifications (): Array<Notification> {
-		this.notificationsDep.depend()
-		return _.flatten(_.map(this.notifiers, (item, key) => item.result)
-						 .concat(_.map(this.notifications, (item, key) => item)))
+		notificationsDep.depend()
+
+		return _.flatten(_.map(notifiers, (item, key) => item.result)
+						 .concat(_.map(notifications, (item, key) => item)))
 	}
 }
 
 export const NotificationCenter = new NotificationCenter0()
+
+window['NotificationCenter'] = NotificationCenter
+window['notifiers'] = notifiers
+window['testNotify'] = function () {
+	NotificationCenter.push(new Notification(Random.id(), NoticeLevel.CRITICAL, 'Raz dwa trzy', 'Test', Date.now(), false))
+}

@@ -17,9 +17,6 @@ import { Meteor } from 'meteor/meteor'
 import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
 import { RunningOrderBaselineItems } from './RunningOrderBaselineItems'
 import { RunningOrderBaselineAdLibItems } from './RunningOrderBaselineAdLibItems'
-import { ReactiveDataHelper } from '../reactive/ReactiveDataHelper'
-import { ReactiveVar } from 'meteor/reactive-var'
-import { Tracker } from 'meteor/tracker'
 
 export enum RunningOrderHoldState {
 	NONE = 0,
@@ -298,32 +295,4 @@ Meteor.startup(() => {
 			active: 1
 		})
 	}
-})
-
-export const getRRunningOrderId = ReactiveDataHelper.memoizeRVar<string | undefined>(function getRRunningOrderId (roId: string): ReactiveVar<string | undefined> {
-	const rVar = new ReactiveVar<string | undefined>(undefined)
-	Tracker.autorun(() => {
-		const rObj = RunningOrders.findOne(roId)
-		if (rObj) {
-			rVar.set(rObj._id)
-		} else {
-			rVar.set(undefined)
-		}
-	})
-
-	return rVar
-})
-
-export const getRRunningOrderStudioId = ReactiveDataHelper.memoizeRVar<string | undefined>(function getRRunningOrderStudioId (roId: string): ReactiveVar<string | undefined> {
-	const rVar = new ReactiveVar<string | undefined>(undefined)
-	Tracker.autorun(() => {
-		const rObj = RunningOrders.findOne(roId)
-		if (rObj) {
-			rVar.set(rObj.studioInstallationId)
-		} else {
-			rVar.set(undefined)
-		}
-	})
-
-	return rVar
 })

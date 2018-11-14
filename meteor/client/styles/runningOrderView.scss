@@ -59,6 +59,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 .running-order-view {
 	padding-top: 125px;
 	padding-bottom: 50vh;
+
+	.notification-pop-ups {
+		top: 65px;
+	}
 }
 
 body.vertical-overflow-only {

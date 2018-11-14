@@ -1,11 +1,6 @@
 import * as _ from 'underscore'
 import { ReactiveVar } from 'meteor/reactive-var'
-import { RunningOrders, RunningOrder, DBRunningOrder } from '../collections/RunningOrders'
 import { Tracker } from 'meteor/tracker'
-import { Segment, Segments } from '../collections/Segments'
-import { SegmentLine, SegmentLines } from '../collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems } from '../collections/SegmentLineItems'
-import { StudioInstallation, StudioInstallations, ISourceLayer } from '../collections/StudioInstallations'
 
 export namespace ReactiveDataHelper {
 	const rVarCache: _.Dictionary<ReactiveVar<any>> = {}
@@ -39,7 +34,7 @@ export namespace ReactiveDataHelper {
 	}
 
 	export function registerComputation (id: string, comp: Tracker.Computation) {
-		if (trackers[id]) {
+		if (trackers[id] && !trackers[id].stopped) {
 			trackers[id].stop()
 		}
 
