@@ -23,6 +23,8 @@ export interface AsRunLogEvent extends AsRunLogEventBase {
 	_id: string,
 	/** Timestamp of the event */
 	timestamp: Time
+	/** If the event was done in rehersal */
+	rehersal: boolean,
 }
 
 export const AsRunLog: TransformedCollection<AsRunLogEvent, AsRunLogEvent>

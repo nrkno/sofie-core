@@ -66,6 +66,7 @@ import { sendStoryStatus } from './integration/mos'
 import { updateSegmentLines, reloadRunningOrderData } from './runningOrder'
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { generateRecordingTimelineObjs } from './testTools'
+import { reportRunningOrderHasStarted, reportSegmentLineHasStarted, reportSegmentLineItemHasStarted } from './asRunLog'
 
 const MINIMUM_TAKE_SPAN = 1000
 
@@ -959,12 +960,7 @@ export namespace ServerPlayoutAPI {
 		if (!segLineItem.startedPlayback) {
 			logger.info(`Playout reports segmentLineItem "${sliId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
 
-			// store new value
-			SegmentLineItems.update(segLineItem._id, {$set: {
-				startedPlayback
-			}, $push: {
-				'timings.startedPlayback': startedPlayback
-			}})
+			reportSegmentLineItemHasStarted(segLineItem, startedPlayback)
 
 			// We don't need to bother with an updateTimeline(), as this hasnt changed anything, but lets us accurately add started items when reevaluating
 		}
@@ -1073,17 +1069,7 @@ export namespace ServerPlayoutAPI {
 					logger.error(`Segment Line "${playingSegmentLine._id}" has started playback by the playout gateway, but has not been selected for playback!`)
 				}
 
-				SegmentLines.update(playingSegmentLine._id, {
-					$set: {
-						startedPlayback: true,
-					},
-					$push: {
-						'timings.startedPlayback': startedPlayback
-					}
-				})
-				// also update local object:
-				playingSegmentLine.startedPlayback = true
-				pushOntoPath(playingSegmentLine, 'timings.startedPlayback', startedPlayback)
+				reportSegmentLineHasStarted(playingSegmentLine, startedPlayback)
 
 				afterTake(runningOrder, playingSegmentLine, currentSegmentLine || null)
 			}
@@ -1995,12 +1981,7 @@ function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem | SegmentLineI
 
 function setRunningOrderStartedPlayback (runningOrder: RunningOrder, startedPlayback: Time) {
 	if (!runningOrder.startedPlayback) { // Set startedPlayback on the running order if this is the first item to be played
-		RunningOrders.update(runningOrder._id, {
-			$set: {
-				startedPlayback
-			}
-		})
-		runningOrder.startedPlayback = startedPlayback // update local
+		reportRunningOrderHasStarted(runningOrder, startedPlayback)
 	}
 }
 
