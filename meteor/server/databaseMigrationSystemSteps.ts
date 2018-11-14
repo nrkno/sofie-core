@@ -1081,5 +1081,16 @@ addMigrationSteps( '0.17.0', [
 	ensureStudioConfig('SluttCameraZoomSpeed', -0.1),
 	ensureStudioConfig('SluttCameraZoomDuration', 3000),
 	ensureDeviceVersion('ensureVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '0.13.0'),
-	ensureDeviceVersion('ensureVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.4.2')
+	ensureDeviceVersion('ensureVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.4.2'),
+	ensureSourceLayer({
+		_id: 'studio0_audio_bed',
+		_rank: 0,
+		name: 'Bed',
+		type: RunningOrderAPI.SourceLayerType.AUDIO,
+		onPGMClean: true,
+		activateKeyboardHotkeys: '',
+		assignHotkeysToGlobalAdlibs: false,
+		unlimited: false,
+		isHidden: true
+	})
 ])
