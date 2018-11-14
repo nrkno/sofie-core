@@ -41,7 +41,7 @@ export function getShowBackup (showId: string, onlyActiveTemplates: boolean): Sh
 		templates: templates,
 	}
 }
-function restoreShowBackup (backup: ShowStyleBackup) {
+export function restoreShowBackup (backup: ShowStyleBackup) {
 	const newShow = backup.showStyle
 	if (!newShow) throw new Meteor.Error(500, 'ShowStyle missing from restore data')
 
@@ -100,7 +100,7 @@ export interface RunningOrderCacheBackup {
 		data: any
 	}[]
 }
-function restoreRunningOrder (backup: RunningOrderCacheBackup) {
+export function restoreRunningOrder (backup: RunningOrderCacheBackup) {
 	const roCreates = backup.data.filter(d => d.type === 'roCreate')
 	const stories = backup.data.filter(d => d.type === 'fullStory')
 	if (roCreates.length !== 1) {
