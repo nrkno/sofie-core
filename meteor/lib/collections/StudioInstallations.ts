@@ -16,6 +16,12 @@ export interface MappingExt extends Mapping {
 	internal?: boolean
 }
 
+export interface IStudioInstallationSettings {
+	/** URL to endpoint where media preview are exposed */
+	mediaPreviewsUrl: string // (former media_previews_url in config)
+	/** URL to Sofie Core endpoint */
+	sofieUrl: string // (former sofie_url in config)
+}
 /** A set of available layer groups in a given installation */
 export interface DBStudioInstallation {
 	_id: string
@@ -33,6 +39,8 @@ export interface DBStudioInstallation {
 	/** Config values are used by the Blueprints */
 	config: Array<IConfigItem>
 	testToolsConfig?: ITestToolsConfig
+
+	settings: IStudioInstallationSettings
 
 	runtimeArguments?: Array<IStudioRuntimeArgumentsItem>
 }
@@ -68,6 +76,7 @@ export class StudioInstallation implements DBStudioInstallation {
 	public defaultShowStyleVariant: string
 	public supportedShowStyleBase: Array<string>
 	public config: Array<IConfigItem>
+	public settings: IStudioInstallationSettings
 	public testToolsConfig?: ITestToolsConfig
 	public runtimeArguments: Array<IStudioRuntimeArgumentsItem>
 
@@ -83,7 +92,7 @@ export class StudioInstallation implements DBStudioInstallation {
 		if (item) {
 			return item.value
 		} else {
-			logger.warn(`Studio "${this._id}": Config "${name}" not set`)
+			// logger.warn(`Studio "${this._id}": Config "${name}" not set`)
 			return null
 		}
 	}

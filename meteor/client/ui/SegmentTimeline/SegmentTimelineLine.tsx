@@ -21,8 +21,6 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
-export const MEDIA_PREVIEWS_URL = 'media_previews_url'
-
 interface ISourceLayerProps {
 	key: string
 	layer: ISourceLayerUi
@@ -358,7 +356,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					return (
 						<OutputGroup key={layer._id}
 							{...this.props}
-							mediaPreviewUrl={this.ensureHasTrailingSlash(this.getConfigValue(MEDIA_PREVIEWS_URL)) || ''}
+							mediaPreviewUrl={this.ensureHasTrailingSlash(this.props.studioInstallation.settings.mediaPreviewsUrl) || ''}
 							layer={layer}
 							segment={this.props.segment}
 							segmentLine={segmentLine}

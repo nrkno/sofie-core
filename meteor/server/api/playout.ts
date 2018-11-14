@@ -1535,7 +1535,7 @@ export namespace ServerPlayoutAPI {
 					let message = 'Uh-oh, message from RunningOrder "' + (ro ? ro.name : 'N/A' ) + '": \n' +
 						_.values(evaluation.answers).join(', ')
 
-					let hostUrl = studio.getConfigValue('sofie_url')
+					let hostUrl = studio.settings.sofieUrl
 					if (hostUrl && ro) {
 						message += '\n<' + hostUrl + '/ro/' + ro._id + '|' + ro.name + '>'
 					}

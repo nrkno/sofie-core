@@ -1144,6 +1144,32 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 							<span className='mdfx'></span>
 						</div>
 					</label>
+					<label className='field'>
+						{t('Media-previews URL')}
+						<div className='mdi'>
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='settings.mediaPreviewsUrl'
+								obj={this.props.studioInstallation}
+								type='text'
+								collection={StudioInstallations}
+								className='mdinput'></EditAttribute>
+							<span className='mdfx'></span>
+						</div>
+					</label>
+					<label className='field'>
+						{t('Sofie host URL')}
+						<div className='mdi'>
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='settings.sofieUrl'
+								obj={this.props.studioInstallation}
+								type='text'
+								collection={StudioInstallations}
+								className='mdinput'></EditAttribute>
+							<span className='mdfx'></span>
+						</div>
+					</label>
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
