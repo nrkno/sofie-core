@@ -137,6 +137,8 @@ export class NotifierObject {
 }
 
 class NotificationCenter0 {
+	NOTIFICATION_TIMEOUT = 5000
+
 	registerNotifier (source: Notifier): NotifierObject {
 		const notifierId = Random.id()
 
@@ -149,12 +151,27 @@ class NotificationCenter0 {
 		notice.id = id
 		notificationsDep.changed()
 
+		if (!notice.persistent) {
+			this.timeout(notice)
+		}
+
 		return {
 			id,
 			stop: () => {
 				this.drop(id)
 			}
 		}
+	}
+
+	timeout (notice: Notification): void {
+		Meteor.setTimeout(() => {
+			if (notice) {
+				const id = notice.id
+				if (id && notifications[id]) {
+					this.drop(id)
+				}
+			}
+		}, this.NOTIFICATION_TIMEOUT)
 	}
 
 	drop (id: string): void {
