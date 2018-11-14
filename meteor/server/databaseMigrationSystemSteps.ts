@@ -7,8 +7,8 @@ import { Collections, objectPathGet, literal } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyles } from '../lib/collections/ShowStyles'
 import { RunningOrderAPI } from '../lib/api/runningOrder'
-import { PlayoutDeviceType, PeripheralDevices, PlayoutDeviceSettings, PlayoutDeviceSettingsDevice, PlayoutDeviceSettingsDeviceCasparCG, PlayoutDeviceSettingsDeviceAtem, PlayoutDeviceSettingsDeviceHyperdeck, PlayoutDeviceSettingsDevicePanasonicPTZ } from '../lib/collections/PeripheralDevices'
-import { LookaheadMode } from '../lib/api/playout'
+import { PlayoutDeviceType, PeripheralDevices, PlayoutDeviceSettings, PlayoutDeviceSettingsDevice, PlayoutDeviceSettingsDeviceCasparCG, PlayoutDeviceSettingsDeviceAtem, PlayoutDeviceSettingsDeviceHyperdeck, PlayoutDeviceSettingsDevicePanasonicPTZ, PeripheralDevice } from '../lib/collections/PeripheralDevices'
+import { LookaheadMode, PlayoutAPI } from '../lib/api/playout'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { compareVersions, parseVersion } from '../lib/collections/CoreSystem'
 import { logger } from './logging'
@@ -99,6 +99,84 @@ function ensureCollectionProperty<T = any> (
 					}
 				})
 			}
+		}
+	}
+}
+/**
+ * Convenience function to generate basic test
+ * øparam type
+ */
+function ensurePlayoutDevicesHost (
+	deviceType: PlayoutDeviceType = -1
+): MigrationStepBase {
+	let collection: Mongo.Collection<any> = Collections['peripheralDevices']
+	if (!collection) throw new Meteor.Error(404, `Collection peripheralDevices not found`)
+
+	// iterate over playout gateways
+	collection.find({'type': PeripheralDeviceAPI.DeviceType.PLAYOUT}).fetch().forEach((playoutGw) => {
+		console.log(playoutGw)
+	})
+
+
+
+	return {
+		id: 'foo',
+		canBeRunAutomatically: false,
+		validate: () => {
+			// let objects = collection.find(selector).fetch()
+			// let propertyMissing: string | boolean = false
+			// _.each(objects, (obj: any) => {
+			// 	if (!objectPathGet(obj, property)) propertyMissing = `${property} is missing on ${obj._id}`
+			// })
+
+			return false
+		},
+		input: () => {
+			// let objects = collection.find(selector).fetch()
+
+			// let inputs: Array<MigrationStepInput> = []
+			// _.each(objects, (obj: any) => {
+
+			// 	let localLabel = (label + '').replace(/\$id/g, obj._id)
+			// 	let localDescription = (description + '').replace(/\$id/g, obj._id)
+			// 	if (inputType && !obj[property]) {
+			// 		inputs.push({
+			// 			label: localLabel,
+			// 			description: localDescription,
+			// 			inputType: inputType,
+			// 			attribute: obj._id,
+			// 			defaultValue: defaultValue
+			// 		})
+			// 	}
+			// })
+			// return inputs
+			return []
+		},
+		migrate: (input: MigrationStepInputFilteredResult) => {
+
+			// if (value) {
+			// 	let objects = collection.find(selector).fetch()
+			// 	_.each(objects, (obj: any) => {
+			// 		if (obj && objectPathGet(obj, property) !== value) {
+			// 			let m = {}
+			// 			m[property] = value
+			// 			logger.info(`Migration: Setting ${collectionName} object "${obj._id}".${property} to ${value}`)
+			// 			collection.update(obj._id,{$set: m })
+			// 		}
+			// 	})
+			// } else {
+			// 	_.each(input, (value, objectId: string) => {
+			// 		if (!_.isUndefined(value)) {
+			// 			let obj = collection.findOne(objectId)
+			// 			if (obj && objectPathGet(obj, property) !== value) {
+			// 				let m = {}
+			// 				m[property] = value
+			// 				logger.info(`Migration: Setting ${collectionName} object "${objectId}".${property} to ${value}`)
+			// 				collection.update(objectId,{$set: m })
+			// 			}
+			// 		}
+			// 	})
+			// }
 		}
 	}
 }
@@ -256,7 +334,7 @@ function ensureOutputLayer (outputLayer: IOutputLayer): MigrationStepBase {
 }
 function ensureMapping (mappingId: string, mapping: Mapping): MigrationStepBase {
 	return {
-		id: `mapping.${mappingId}`,
+		id: `ensureMapping.${mappingId}`,
 		canBeRunAutomatically: true,
 		validate: () => {
 			let studio = StudioInstallations.findOne()
@@ -279,6 +357,34 @@ function ensureMapping (mappingId: string, mapping: Mapping): MigrationStepBase 
 				m['mappings.' + mappingId] = mapping
 				logger.info(`Migration: Adding Studio mapping "${mappingId}" to ${studio._id}`)
 				StudioInstallations.update(studio._id, {$set: m})
+			}
+		}
+	}
+}
+function removeMapping (mappingId: string): MigrationStepBase {
+	return {
+		id: `removeMapping.${mappingId}`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			let studio = StudioInstallations.findOne()
+			if (!studio) return 'Studio not found'
+
+			let dbMapping = studio.mappings[mappingId]
+			if (dbMapping) return `Mapping ${mappingId} exists`
+
+			return false
+		},
+		migrate: () => {
+			let studio = StudioInstallations.findOne()
+			if (!studio) return 'Studio not found'
+
+			let dbMapping = studio.mappings[mappingId]
+
+			if (dbMapping) { // only remove if the mapping does exist
+				let m = {}
+				m['mappings.' + mappingId] = 1
+				logger.info(`Migration: Removing Studio mapping "${mappingId}" from ${studio._id}`)
+				StudioInstallations.update(studio._id, {$unset: m})
 			}
 		}
 	}
@@ -327,9 +433,9 @@ function ensureDeviceVersion (id, deviceType: PeripheralDeviceAPI.DeviceType, li
 	}
 }
 
-// 0.1.0: These are the "default" migration steps
-
-addMigrationSteps( '0.1.0', [
+// 0.16.0: These are the "default" migration steps, based around where migrations were first introduced
+addMigrationSteps( '0.16.0', [
+	// create studio
 	{
 		id: 'studio exists',
 		canBeRunAutomatically: true,
@@ -342,123 +448,17 @@ addMigrationSteps( '0.1.0', [
 			logger.info(`Migration: Add default studio`)
 			StudioInstallations.insert({
 				_id: 'studio0',
-				name: 'Default studio',
+				name: '',
 				defaultShowStyle: 'show0',
-				outputLayers: [
-					{
-						_id: 'studio0-pgm0',
-						_rank: 0,
-						name: 'PGM',
-						isPGM: true,
-					},
-					{
-						_id: 'studio0-monitor0',
-						_rank: 1,
-						name: 'Skjerm',
-						isPGM: false,
-					}
-				],
-				sourceLayers: [
-					{
-						_id: 'studio0-lower-third0',
-						_rank: 10,
-						name: 'Super',
-						type: RunningOrderAPI.SourceLayerType.LOWER_THIRD,
-						unlimited: true,
-						onPGMClean: false
-					},
-					{
-						_id: 'studio0-split0',
-						_rank: 15,
-						name: 'Split',
-						type: RunningOrderAPI.SourceLayerType.SPLITS,
-						unlimited: false,
-						onPGMClean: true,
-					},
-					{
-						_id: 'studio0-graphics0',
-						_rank: 20,
-						name: 'GFX',
-						type: RunningOrderAPI.SourceLayerType.GRAPHICS,
-						unlimited: true,
-						onPGMClean: false
-					},
-					{
-						_id: 'studio0-live-speak0',
-						_rank: 50,
-						name: 'STK',
-						type: RunningOrderAPI.SourceLayerType.LIVE_SPEAK,
-						unlimited: true,
-						onPGMClean: false
-					},
-					{
-						_id: 'studio0-remote0',
-						_rank: 60,
-						name: 'RM1',
-						type: RunningOrderAPI.SourceLayerType.REMOTE,
-						unlimited: false,
-						onPGMClean: true,
-						isRemoteInput: true
-					},
-					{
-						_id: 'studio0-vt0',
-						_rank: 80,
-						name: 'VB',
-						type: RunningOrderAPI.SourceLayerType.VT,
-						unlimited: true,
-						onPGMClean: true,
-					},
-					{
-						_id: 'studio0-mic0',
-						_rank: 90,
-						name: 'Mic',
-						type: RunningOrderAPI.SourceLayerType.MIC,
-						unlimited: false,
-						onPGMClean: true,
-					},
-					{
-						_id: 'studio0-camera0',
-						_rank: 100,
-						name: 'Kam',
-						type: RunningOrderAPI.SourceLayerType.CAMERA,
-						unlimited: false,
-						onPGMClean: true,
-					},
-				],
-				mappings: {
-					'layer0': {
-						device: PlayoutDeviceType.CASPARCG,
-						lookahead: LookaheadMode.NONE,
-						deviceId: 'casparcg0'
-					}
-				},
-
-				config: [
-					{
-						_id: 'nora_group',
-						value: 'dksl'
-					},
-					{
-						_id: 'nora_apikey',
-						value: ''
-					},
-					{
-						_id: 'slack_evaluation',
-						value: ''
-					}
-				]
+				outputLayers: [],
+				sourceLayers: [],
+				mappings: {},
+				config: []
 			})
 		}
 	},
-	ensureCollectionProperty('StudioInstallations', {}, 'name', null, 'text', 'Studio $id: Name',
-		'Enter the Name of the Studio "$id"'),
-	ensureCollectionProperty('StudioInstallations', {}, 'defaultShowStyle', null, 'text', 'Studio $id: Default ShowStyle',
-		'Enter the Default show style id for this Studio'),
-	ensureCollectionProperty('StudioInstallations', {}, 'outputLayers', []),
-	ensureCollectionProperty('StudioInstallations', {}, 'sourceLayers', []),
-	ensureCollectionProperty('StudioInstallations', {}, 'mappings', {}),
-	ensureCollectionProperty('StudioInstallations', {}, 'config', []),
 
+	// create showstyle
 	{
 		id: 'showStyle exists',
 		canBeRunAutomatically: true,
@@ -471,66 +471,161 @@ addMigrationSteps( '0.1.0', [
 			logger.info(`Migration: Add default showStyle`)
 			ShowStyles.insert({
 				_id: 'show0',
-				name: 'Default showstyle',
-				templateMappings: {},
-				baselineTemplate: '',
-				messageTemplate: '',
+				name: '',
+				templateMappings: [],
+				baselineTemplate: 'baseline',
+				messageTemplate: 'message',
 				routerBlueprint: '',
 				postProcessBlueprint: ''
 			})
 		}
 	},
-	ensureCollectionProperty('ShowStyles', {}, 'name', null, 'text', 'ShowStyle $id: Name', 'Enter the Name of the ShowStyles "$id"'),
+
+	// ensure showstyle settings
+	ensureCollectionProperty('ShowStyles', {}, '_id', null, 'text', 'ShowStyle _id', 'Enter the _id of the ShowStyles', 'show0'),
+	ensureCollectionProperty('ShowStyles', {}, 'name', null, 'text', 'ShowStyle "$id" Name', 'Enter the Name of the ShowStyles ""$id""'),
 	ensureCollectionProperty('ShowStyles', {}, 'templateMappings', []),
-	// ensureCollectionProperty('ShowStyles', {}, 'baselineTemplate', ''),
-	// ensureCollectionProperty('ShowStyles', {}, 'messageTemplate', ''),
-	// ensureCollectionProperty('ShowStyles', {}, 'routerBlueprint', ''),
-	// ensureCollectionProperty('ShowStyles', {}, 'postProcessBlueprint', ''),
+	ensureCollectionProperty('ShowStyles', {}, 'baselineTemplate', '', 'text', 'Showstyle "$id" baseline blueprint:', '', 'baseline'),
+	ensureCollectionProperty('ShowStyles', {}, 'messageTemplate', '', 'text', 'Showstyle "$id" message blueprint:', '', 'message'),
+
+	// ensure studio database structure
+	ensureCollectionProperty('StudioInstallations', {}, 'outputLayers', []),
+	ensureCollectionProperty('StudioInstallations', {}, 'sourceLayers', []),
+	ensureCollectionProperty('StudioInstallations', {}, 'mappings', {}),
+	ensureCollectionProperty('StudioInstallations', {}, 'config', []),
+
+	// sets studio properties
+	ensureCollectionProperty('StudioInstallations', {}, 'name', null, 'text', 'Studio "$id" Name',
+	'Enter the Name of the Studio ""$id""'),
+	ensureCollectionProperty('StudioInstallations', {}, 'defaultShowStyle', null, 'text', 'Studio "$id" Default ShowStyle',
+	'Enter the Default show style id for this Studio', 'show0'),
+
+	// sets studio outputs
+	ensureOutputLayer({_id: 'studio0-pgm0', _rank: 0, name: 'PGM', isPGM: true}),
+	ensureOutputLayer({_id: 'studio0-monitor0', _rank: 1, name: 'Skjerm', isPGM: false}),
+
+	// sets studio source layers
+	ensureSourceLayer({'_id':'studio0_live_transition0', '_rank':0, 'name':'Transition', 'type':13, 'onPGMClean':true, 'activateKeyboardHotkeys':'', 'assignHotkeysToGlobalAdlibs':false, 'allowDisable':false, unlimited: false}),
+	ensureSourceLayer({'_id':'studio0_graphics_super', '_rank':1000, 'name':'Super', 'type':5, 'onPGMClean':false, 'activateKeyboardHotkeys':'q, w, e, r, t, y', 'clearKeyboardHotkey':'u, alt+u', 'allowDisable':true, 'isHidden':false, 'abbreviation':'', unlimited: false}),
+	ensureSourceLayer({'_id':'studio0_graphics_tag_left', '_rank':2000, 'name':'Arkiv', 'type':5, 'onPGMClean':true, 'clearKeyboardHotkey':'alt+u', 'isHidden':false, 'allowDisable':true, 'activateKeyboardHotkeys':'q, w, e, r, t, y', unlimited: false}),
+	ensureSourceLayer({'_id':'studio0_graphics_tag_right', '_rank':3000, 'name':'Direkte', 'type':5, 'onPGMClean':true, 'clearKeyboardHotkey':'alt+d, alt+u', 'allowDisable':true, 'activateKeyboardHotkeys':'q, w, e, r, t, y', 'assignHotkeysToGlobalAdlibs':false, unlimited: false}),
+	ensureSourceLayer({'_id':'studio0_graphics_tema', '_rank':4000, 'name':'Tema', 'type':5, 'onPGMClean':true, 'clearKeyboardHotkey':'i, alt+i, alt+u', 'allowDisable':true, 'activateKeyboardHotkeys':'q, w, e, r, t, y', unlimited: false}),
+	ensureSourceLayer({'_id':'studio0_graphics_ticker', '_rank':5000, 'name':'Ticker', 'type':5, 'onPGMClean':true, 'clearKeyboardHotkey':'alt+u, alt+o', 'allowDisable':true, unlimited: false}),
+	ensureSourceLayer({'_id':'studio0_vignett', '_rank':7000, 'name':'Vignett', 'abbreviation':'Full', 'type':2, 'onPGMClean':true, 'onPresenterScreen':true, 'exclusiveGroup':'fullscreen_pgm', unlimited: false}),
+	ensureSourceLayer({'_id':'studio0_vb', '_rank':8000, 'name':'VB', 'abbreviation':'Full', 'type':2, 'onPGMClean':true, 'allowDisable':false, 'onPresenterScreen':true, 'exclusiveGroup':'fullscreen_pgm', unlimited: false}),
+	ensureSourceLayer({'_id':'studio0_live_speak0', '_rank':9000, 'name':'STK', 'abbreviation':'STK', 'type':11, 'onPGMClean':true, 'onPresenterScreen':true, 'exclusiveGroup':'fullscreen_pgm', unlimited: false}),
+	ensureSourceLayer({'_id':'studio0_remote0', '_rank':10000, 'name':'DIR', 'abbreviation':'DIR', 'type':3, 'onPGMClean':true, 'activateKeyboardHotkeys':'1, 2, 3, 4, 5, 6', 'isRemoteInput':true, 'assignHotkeysToGlobalAdlibs':true, 'isSticky':true, 'activateStickyKeyboardHotkey':'f5', 'clearKeyboardHotkey':'ctrl+a, ctrl+1', 'onPresenterScreen':true, 'exclusiveGroup':'fullscreen_pgm', unlimited: false}),
+	ensureSourceLayer({'_id':'studio0_split0', '_rank':11000, 'name':'Split', 'abbreviation':'DVE', 'type':6, 'onPGMClean':true, 'isSticky':true, 'activateStickyKeyboardHotkey':'f6', 'onPresenterScreen':true, 'exclusiveGroup':'fullscreen_pgm', unlimited: false}),
+	ensureSourceLayer({'_id':'studio0_graphics_fullskjerm', '_rank':12000, 'name':'Grafikk', 'type':5, 'onPGMClean':true, 'activateKeyboardHotkeys':'', 'clearKeyboardHotkey':'', 'onPresenterScreen':true, 'exclusiveGroup':'fullscreen_pgm', 'assignHotkeysToGlobalAdlibs':false, unlimited: false}),
+	ensureSourceLayer({'_id':'studio0_camera0', '_rank':13000, 'name':'Kam', 'abbreviation':'K', 'type':1, 'onPGMClean':true, 'activateKeyboardHotkeys':'f1, f2, f3, f4, 8, 9', 'assignHotkeysToGlobalAdlibs':true, 'clearKeyboardHotkey':'ctrl+a, ctrl+f1', 'onPresenterScreen':true, 'exclusiveGroup':'fullscreen_pgm', unlimited: false}),
+	ensureSourceLayer({'_id':'studio0_gjest_mic', '_rank':13500, 'name':'Gjest', 'type':12, 'unlimited':false, 'onPGMClean':true, 'isGuestInput':true}),
+	ensureSourceLayer({'_id':'studio0_script', '_rank':14000, 'name':'Manus', 'type':4, 'onPGMClean':true, unlimited: false}),
+	ensureSourceLayer({'_id':'studio0_graphics_klokke', '_rank':15000, 'name':'Klokke', 'type':5, 'onPGMClean':true, 'isHidden':true, 'clearKeyboardHotkey':'alt+k, alt+u', unlimited: false}),
+	ensureSourceLayer({'_id':'studio0_graphics_logo', '_rank':16000, 'name':'Logo', 'type':5, 'onPGMClean':true, 'isHidden':true, 'clearKeyboardHotkey':'alt+l, alt+k, alt+u', 'activateKeyboardHotkeys':'', unlimited: false}),
+	ensureSourceLayer({'_id':'studio0_clip_bakskjerm', '_rank':17000, 'name':'Bakskjerm', 'type':2, 'unlimited':false, 'onPGMClean':true, 'clearKeyboardHotkey':'p', 'activateKeyboardHotkeys':'q, w, e, r, t, y'}),
+	ensureSourceLayer({'_id':'studio0_cam_bakskjerm', '_rank':17000, 'name':'Bakskjerm', 'type':3, 'unlimited':false, 'onPGMClean':true, 'clearKeyboardHotkey':'p', 'activateKeyboardHotkeys':'q, w, e, r, t, y', 'abbreviation':''}),
+	ensureSourceLayer({'_id':'studio0_hyperdeck0', '_rank':20000, 'name':'Hyperdeck', 'type':0, 'unlimited':false, 'onPGMClean':true, 'isHidden':true}),
+	ensureSourceLayer({'_id':'studio0_ptz', '_rank':20010, 'name':'PTZ', 'type':8, 'unlimited':true, 'onPGMClean':true, 'abbreviation':''}),
+	ensureSourceLayer({'_id':'studio0_graphics_bakskjerm', '_rank':1000, 'name':'Bakskjerm', 'type':5, 'onPGMClean':true, 'clearKeyboardHotkey':'p', 'activateKeyboardHotkeys':'q, w, e, r, t, y', unlimited: false}),
+
+	// sets studio mappings
+	// @todo: rename caspar devices
+	// @todo: offer the caspar IDs or assign automatically
+	// @todo: OR: add a name attribute to caspar devices
+	ensureMapping('core_abstract', {'device':0, 'deviceId':'abstract0', 'lookahead':0}),
+	ensureMapping('casparcg_player_wipe', {'device':1, 'deviceId':'caspar01', 'lookahead':0, 'channel':3, 'layer':199}),
+	ensureMapping('casparcg_player_vignett', {'device':1, 'deviceId':'caspar01', 'lookahead':1, 'channel':3, 'layer':140}),
+	ensureMapping('casparcg_player_soundeffect', {'device':1, 'deviceId':'caspar01', 'lookahead':0, 'channel':3, 'layer':130}),
+	ensureMapping('casparcg_player_clip', {'device':1, 'deviceId':'caspar01', 'lookahead':1, 'channel':1, 'layer':110}),
+	ensureMapping('casparcg_player_clip_next', {'device':1, 'deviceId':'caspar01', 'lookahead':0, 'channel':4, 'layer':100}),
+	ensureMapping('casparcg_player_clip2', {'device':1, 'deviceId':'caspar01', 'lookahead':1, 'channel':1, 'layer':111}),
+	ensureMapping('casparcg_cg_graphics', {'device':1, 'deviceId':'caspar02', 'lookahead':0, 'channel':2, 'layer':120}),
+	ensureMapping('casparcg_cg_countdown', {'device':1, 'deviceId':'caspar02', 'lookahead':0, 'channel':1, 'layer':120}),
+	ensureMapping('casparcg_cg_permanent', {'device':1, 'deviceId':'caspar02', 'lookahead':0, 'channel':2, 'layer':121}),
+	ensureMapping('casparcg_player_studio', {'device':1, 'deviceId':'caspar01', 'lookahead':0, 'channel':2, 'layer':121}),
+	ensureMapping('casparcg_cg_studiomonitor', {'device':1, 'deviceId':'caspar01', 'lookahead':0, 'channel':2, 'layer':120}),
+	ensureMapping('casparcg_cg_effects', {'device':1, 'deviceId':'caspar01', 'lookahead':0, 'channel':3, 'layer':120}),
+	ensureMapping('casparcg_cg_fullskjerm', {'device':1, 'deviceId':'caspar02', 'lookahead':0, 'channel':3, 'layer':110}),
+	ensureMapping('casparcg_player_clip_next_warning', {'device':1, 'deviceId':'caspar01', 'lookahead':0, 'channel':4, 'layer':99}),
+	ensureMapping('atem_me_program', {'device':2, 'deviceId':'atem0', 'lookahead':0, 'mappingType':0, 'index':0}),
+	ensureMapping('atem_me_studiomonitor', {'device':2, 'deviceId':'atem0', 'lookahead':0, 'mappingType':0, 'index':1}),
+	ensureMapping('atem_aux_ssrc', {'device':2, 'deviceId':'atem0', 'lookahead':0, 'mappingType':3, 'index':2}),
+	ensureMapping('atem_aux_clean', {'device':2, 'deviceId':'atem0', 'lookahead':0, 'mappingType':3, 'index':5}),
+	ensureMapping('atem_dsk_graphics', {'device':2, 'deviceId':'atem0', 'lookahead':0, 'mappingType':1, 'index':0}),
+	ensureMapping('atem_dsk_effect', {'device':2, 'deviceId':'atem0', 'lookahead':0, 'mappingType':1, 'index':1}),
+	ensureMapping('atem_supersource_art', {'device':2, 'deviceId':'atem0', 'lookahead':0, 'mappingType':5, 'index':0}),
+	ensureMapping('atem_supersource_default', {'device':2, 'deviceId':'atem0', 'lookahead':0, 'mappingType':2, 'index':0}),
+	ensureMapping('atem_supersource_override', {'device':2, 'deviceId':'atem0', 'lookahead':2, 'mappingType':2, 'index':0}),
+	ensureMapping('atem_usk_effect_default', {'device': 2, 'deviceId':'atem0', 'lookahead':0, 'mappingType':0, 'index':0}),
+	ensureMapping('atem_usk_effect_override', {'device':2, 'deviceId':'atem0', 'lookahead':0, 'mappingType':0, 'index':0}),
+	ensureMapping('lawo_source_automix', {'device':3, 'deviceId':'lawo0', 'lookahead':0, 'mappingType':'source', 'identifier':'AMix'}),
+	ensureMapping('lawo_source_clip', {'device':3, 'deviceId':'lawo0', 'lookahead':0, 'mappingType':'source', 'identifier':'MP1'}),
+	ensureMapping('lawo_source_effect', {'device':3, 'deviceId':'lawo0', 'lookahead':0, 'mappingType':'source', 'identifier':'FX'}),
+	ensureMapping('lawo_source_rm1', {'device':3, 'deviceId':'lawo0', 'lookahead':0, 'mappingType':'source', 'identifier':'RM1'}),
+	ensureMapping('lawo_source_rm2', {'device':3, 'deviceId':'lawo0', 'lookahead':0, 'mappingType':'source', 'identifier':'RM2'}),
+	ensureMapping('lawo_source_rm3', {'device':3, 'deviceId':'lawo0', 'lookahead':0, 'mappingType':'source', 'identifier':'RM3'}),
+	ensureMapping('lawo_source_rm4', {'device':3, 'deviceId':'lawo0', 'lookahead':0, 'mappingType':'source', 'identifier':'RM4'}),
+	ensureMapping('lawo_source_rm5', {'device':3, 'deviceId':'lawo0', 'lookahead':0, 'mappingType':'source', 'identifier':'RM5'}),
+	ensureMapping('lawo_source_rm6', {'device':3, 'deviceId':'lawo0', 'lookahead':0, 'mappingType':'source', 'identifier':'RM6'}),
+	ensureMapping('lawo_source_wl2', {'device':3, 'deviceId':'lawo0', 'lookahead':0, 'mappingType':'source', 'identifier':'WL2'}),
+	ensureMapping('lawo_source_wl3', {'device':3, 'deviceId':'lawo0', 'lookahead':0, 'mappingType':'source', 'identifier':'WL3'}),
+	ensureMapping('nora_init', {'device':4, 'deviceId':'http0', 'lookahead':0}),
+	ensureMapping('nora_primary_super', {'device':4, 'deviceId':'http0', 'lookahead':0}),
+	ensureMapping('nora_primary_headline', {'device':4, 'deviceId':'http0', 'lookahead':0}),
+	ensureMapping('nora_primary_tag_left', {'device':4, 'deviceId':'http0', 'lookahead':0}),
+	ensureMapping('nora_primary_tag_right', {'device':4, 'deviceId':'http0', 'lookahead':0}),
+	ensureMapping('nora_primary_ticker', {'device':4, 'deviceId':'http0', 'lookahead':0}),
+	ensureMapping('nora_primary_tema', {'device':4, 'deviceId':'http0', 'lookahead':0}),
+	ensureMapping('nora_permanent_logo', {'device':4, 'deviceId':'http0', 'lookahead':0}),
+	ensureMapping('nora_permanent_klokke', {'device':4, 'deviceId':'http0', 'lookahead':0}),
+	ensureMapping('nora_effects_fullskjerm', {'device':4, 'deviceId':'http0', 'lookahead':0}),
+	ensureMapping('nora_studio_bakskjerm', {'device':4, 'deviceId':'http0', 'lookahead':0}),
+	ensureMapping('nora_fullskjerm_fullskjerm', {'device':4, 'deviceId':'http0', 'lookahead':3}),
+	ensureMapping('atem_aux_technical_error', {'device':2, 'deviceId':'atem0', 'lookahead':0, 'mappingType':3, 'index':0}),
+	ensureMapping('ptz0_preset', {'device':5, 'deviceId':'ptz0', 'lookahead':3, 'mappingType':1}),
+	ensureMapping('ptz0_speed', {'device':5, 'deviceId':'ptz0', 'mappingType':0, 'lookahead': 0}),
+	ensureMapping('hyperdeck0', {'device':7, 'deviceId':'hyperdeck0', 'mappingType':'transport', 'lookahead': 0}),
 
 	// Studio configs:
-	ensureStudioConfig('media_previews_url', null, 'text', 'Studio $id config: media_previews_url',
+	ensureStudioConfig('media_previews_url', null, 'text', 'Studio "$id" config: media_previews_url',
 		'Enter the url to the Media-previews endpoint (exposed by the CasparCG-Launcher), example: "http://192.168.0.1:8000/"', 'http://IP-ADDRESS:8000/'),
-	ensureStudioConfig('sofie_url', null, 'text', 'Studio $id config: sofie_url',
+	ensureStudioConfig('sofie_url', null, 'text', 'Studio "$id" config: sofie_url',
 		'Enter the url to this Sofie-application (it\'s the url in your browser), example: "http://sofie01"', 'http://URL-TO-SOFIE'),
-
-	{
-		id: 'playoutDevice exists',
-		canBeRunAutomatically: true,
-		validate: () => {
-			if (!PeripheralDevices.findOne({
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT
-			})) return 'No Playout-device found'
-			return false
-		},
-		// Note: No migrate() function, user must fix this him/herself
-		input: [{
-			label: 'Sofie needs at least one playout-device',
-			description: 'Start up and connect with at least one Playout-gateway',
-			inputType: null,
-			attribute: null
-		}]
-	},
-	// ---------------------------------------------------------------
-	// ---------------------------------------------------------------
-	// To be moved into Blueprints:
-	// ---------------------------------------------------------------
-	// ---------------------------------------------------------------
-	ensureStudioConfig('atemSSrcBackground', null, 'text', 'Studio $id config: atemSSrcBackground',
+	ensureStudioConfig('atemSSrcBackground', null, 'text', 'Studio "$id" config: atemSSrcBackground',
 		'Enter the file path to ATEM SuperSource Background, example: "/opt/playout-gateway/static/atem-mp/split_overlay.rgba"'),
-	ensureStudioConfig('atemSSrcBackground2', null, 'text', 'Studio $id config: atemSSrcBackground2',
+	ensureStudioConfig('atemSSrcBackground2', null, 'text', 'Studio "$id" config: atemSSrcBackground2',
 		'Enter the file path to ATEM SuperSource Background 2, example: "/opt/playout-gateway/static/atem-mp/teknisk_feil.rgba"'),
-	ensureStudioConfig('nora_group', null, 'text', 'Studio $id config: nora_group',
+	ensureStudioConfig('nora_group', null, 'text', 'Studio "$id" config: nora_group',
 		'Enter the nora_group paramter, example: "dksl"'),
-	ensureStudioConfig('nora_apikey', null, 'text', 'Studio $id config: nora_apikey',
+	ensureStudioConfig('nora_apikey', null, 'text', 'Studio "$id" config: nora_apikey',
 		'Enter the nora_apikey parameter'),
-	ensureStudioConfig('metadata_url', null, 'text', 'Studio $id config: metadata_url',
+	ensureStudioConfig('metadata_url', null, 'text', 'Studio "$id" config: metadata_url',
 		'Enter the URL to the send metadata to'),
-	ensureStudioConfig('sources_kam', null, 'text', 'Studio $id config: sources_kam',
+	ensureStudioConfig('sources_kam', null, 'text', 'Studio "$id" config: sources_kam',
 		'Enter the sources_kam parameter (example: "1:1,2:2,3:3,4:4,8:11,9:12"'),
-	ensureStudioConfig('sources_rm', null, 'text', 'Studio $id config: sources_rm',
+	ensureStudioConfig('sources_rm', null, 'text', 'Studio "$id" config: sources_rm',
 		'Enter the sources_rm parameter (example: "1:5,2:6,3:7,4:8,5:9,6:10"'),
+	ensureStudioConfig('sources_kam_ptz', '1:ptz0'),
+	ensureStudioConfig('slack_evaluation', null, 'text', 'Studio "$id" config: slack_evaluation', 'Enter the URL to the Slack webhook (example: "https://hooks.slack.com/services/WEBHOOKURL"'),
+
+
+		// @todo: agfafaf
+		// "hotkeyLegend" : [
+		// 	{
+		// 		"_id" : "rqyu5M7ocRexnBJgn", 
+		// 		"key" : "ctrl+a", 
+		// 		"label" : "Fjern adlibs"
+		// 	}
+		// ]
+
+
+
+		// @todo: add devices to studio installation (attaching)
+		// @TODO: lappene
+
+	// devices
 	{
-		id: 'Playout-gateway exists',
+		id: 'playout-gateway exists',
 		canBeRunAutomatically: false,
 		validate: () => {
 			if (!PeripheralDevices.findOne({type: PeripheralDeviceAPI.DeviceType.PLAYOUT})) return 'Playout-gateway not found'
@@ -545,7 +640,7 @@ addMigrationSteps( '0.1.0', [
 		}]
 	},
 	{
-		id: 'Mos-gateway exists',
+		id: 'mos-gateway exists',
 		canBeRunAutomatically: false,
 		validate: () => {
 			if (!PeripheralDevices.findOne({type: PeripheralDeviceAPI.DeviceType.MOSDEVICE})) return 'Mos-gateway not found'
@@ -560,8 +655,8 @@ addMigrationSteps( '0.1.0', [
 		}]
 	},
 	{
-		id: 'Playout-gateway.abstract0',
-		canBeRunAutomatically: false,
+		id: 'playout-gateway.abstract0',
+		canBeRunAutomatically: true,
 		validate: () => {
 			let device = PeripheralDevices.findOne({type: PeripheralDeviceAPI.DeviceType.PLAYOUT})
 			if (!device) return 'Playout-gateway not found'
@@ -597,21 +692,21 @@ addMigrationSteps( '0.1.0', [
 		}]
 	},
 	{
-		id: 'Playout-gateway.casparcg0',
-		canBeRunAutomatically: false,
+		id: 'playout-gateway.caspar01',
+		canBeRunAutomatically: true,
 		validate: () => {
 			let device = PeripheralDevices.findOne({type: PeripheralDeviceAPI.DeviceType.PLAYOUT})
 			if (!device) return 'Playout-gateway not found'
 			let settings = device.settings || {devices: {}} as PlayoutDeviceSettings
 
-			let casparcg0 = settings.devices['casparcg0'] as PlayoutDeviceSettingsDeviceCasparCG
-			if (!casparcg0) return '"casparcg0" missing'
+			let caspar01 = settings.devices['caspar01'] as PlayoutDeviceSettingsDeviceCasparCG
+			if (!caspar01) return '"caspar01" missing'
 
 			// @ts-ignore
-			if (!casparcg0.options) casparcg0.options = {}
-			if (casparcg0.type !== PlayoutDeviceType.CASPARCG) return 'Type is not "CASPARCG"'
-			if (!casparcg0.options.host) return 'Host is not set'
-			if (!casparcg0.options.launcherHost) return 'Launcher host is not set'
+			if (!caspar01.options) caspar01.options = {}
+			if (caspar01.type !== PlayoutDeviceType.CASPARCG) return 'Type is not "CASPARCG"'
+			if (!caspar01.options.host) return 'Host is not set'
+			if (!caspar01.options.launcherHost) return 'Launcher host is not set'
 
 			return false
 		},
@@ -619,17 +714,17 @@ addMigrationSteps( '0.1.0', [
 			let device = PeripheralDevices.findOne({type: PeripheralDeviceAPI.DeviceType.PLAYOUT})
 			if (device) {
 				// Set some default values:
-				let casparcg0 = device.settings && device.settings.devices['casparcg0']
-				if (!casparcg0) {
-					logger.info(`Migration: Add PeripheralDevice.settings to ${device._id}: casparcg0`)
+				let caspar01 = device.settings && device.settings.devices['caspar01']
+				if (!caspar01) {
+					logger.info(`Migration: Add PeripheralDevice.settings to ${device._id}: caspar01`)
 					PeripheralDevices.update(device._id, {$set: {
-						'settings.devices.casparcg0': {
+						'settings.devices.caspar01': {
 							type: PlayoutDeviceType.CASPARCG,
 							options: {
-								host: '127.0.0.1',
-								port: 5250,
-								launcherHost: '127.0.0.1',
-								launcherPort: 8010, // todo: change this
+								host: '',
+								port: 0,
+								launcherHost: '',
+								launcherPort: 0, 
 							}
 						}
 					}})
@@ -637,28 +732,28 @@ addMigrationSteps( '0.1.0', [
 			}
 		},
 		input: [{
-			label: 'Playout-gateway: device "casparcg0" not set up',
-			description: 'Go into the settings of the Playout-gateway and setup the device "casparcg0". ($validation)',
+			label: 'Playout-gateway: device "caspar01" not set up',
+			description: 'Go into the settings of the Playout-gateway and setup the device "caspar01". ($validation)',
 			inputType: null,
 			attribute: null
 		}]
 	},
 	{
-		id: 'Playout-gateway.casparcg1',
-		canBeRunAutomatically: false,
+		id: 'playout-gateway.caspar02',
+		canBeRunAutomatically: true,
 		validate: () => {
 			let device = PeripheralDevices.findOne({type: PeripheralDeviceAPI.DeviceType.PLAYOUT})
 			if (!device) return 'Playout-gateway not found'
 			let settings = device.settings || {devices: {}} as PlayoutDeviceSettings
 
-			let casparcg1 = settings.devices['casparcg1'] as PlayoutDeviceSettingsDeviceCasparCG
-			if (!casparcg1) return '"casparcg1" missing'
+			let caspar02 = settings.devices['caspar02'] as PlayoutDeviceSettingsDeviceCasparCG
+			if (!caspar02) return '"caspar02" missing'
 
 			// @ts-ignore
-			if (!casparcg1.options) casparcg1.options = {}
-			if (casparcg1.type !== PlayoutDeviceType.CASPARCG) return 'Type is not "CASPARCG"'
-			if (!casparcg1.options.host) return 'Host is not set'
-			if (!casparcg1.options.launcherHost) return 'Launcher host is not set'
+			if (!caspar02.options) caspar02.options = {}
+			if (caspar02.type !== PlayoutDeviceType.CASPARCG) return 'Type is not "CASPARCG"'
+			if (!caspar02.options.host) return 'Host is not set'
+			if (!caspar02.options.launcherHost) return 'Launcher host is not set'
 
 			return false
 		},
@@ -666,17 +761,17 @@ addMigrationSteps( '0.1.0', [
 			let device = PeripheralDevices.findOne({type: PeripheralDeviceAPI.DeviceType.PLAYOUT})
 			if (device) {
 				// Set some default values:
-				let casparcg1 = device.settings && device.settings.devices['casparcg1']
-				if (!casparcg1) {
-					logger.info(`Migration: Add PeripheralDevice.settings to ${device._id}: casparcg1`)
+				let caspar02 = device.settings && device.settings.devices['caspar02']
+				if (!caspar02) {
+					logger.info(`Migration: Add PeripheralDevice.settings to ${device._id}: caspar02`)
 					PeripheralDevices.update(device._id, {$set: {
-						'settings.devices.casparcg1': {
+						'settings.devices.caspar02': {
 							type: PlayoutDeviceType.CASPARCG,
 							options: {
-								host: '127.0.0.1',
-								port: 5250,
-								launcherHost: '127.0.0.1',
-								launcherPort: 8010, // todo: change this
+								host: '',
+								port: 0,
+								launcherHost: '',
+								launcherPort: 0,
 							}
 						}
 					}})
@@ -684,15 +779,15 @@ addMigrationSteps( '0.1.0', [
 			}
 		},
 		input: [{
-			label: 'Playout-gateway: device "casparcg1" not set up',
-			description: 'Go into the settings of the Playout-gateway and setup the device "casparcg1". ($validation)',
+			label: 'Playout-gateway: device "caspar02" not set up',
+			description: 'Go into the settings of the Playout-gateway and setup the device "caspar02". ($validation)',
 			inputType: null,
 			attribute: null
 		}]
 	},
 	{
-		id: 'Playout-gateway.atem0',
-		canBeRunAutomatically: false,
+		id: 'playout-gateway.atem0',
+		canBeRunAutomatically: true,
 		validate: () => {
 			let device = PeripheralDevices.findOne({type: PeripheralDeviceAPI.DeviceType.PLAYOUT})
 			if (!device) return 'Playout-gateway not found'
@@ -718,7 +813,7 @@ addMigrationSteps( '0.1.0', [
 							type: PlayoutDeviceType.ATEM,
 							options: {
 								host: '',
-								port: 9910,
+								port: 0,
 							}
 						}
 					}})
@@ -733,8 +828,8 @@ addMigrationSteps( '0.1.0', [
 		}]
 	},
 	{
-		id: 'Playout-gateway.http0',
-		canBeRunAutomatically: false,
+		id: 'playout-gateway.http0',
+		canBeRunAutomatically: true,
 		validate: () => {
 			let device = PeripheralDevices.findOne({type: PeripheralDeviceAPI.DeviceType.PLAYOUT})
 			if (!device) return 'Playout-gateway not found'
@@ -756,10 +851,6 @@ addMigrationSteps( '0.1.0', [
 					PeripheralDevices.update(device._id, {$set: {
 						'settings.devices.http0': {
 							type: PlayoutDeviceType.HTTPSEND,
-							options: {
-								host: '',
-								port: 9910,
-							}
 						}
 					}})
 				}
@@ -773,8 +864,8 @@ addMigrationSteps( '0.1.0', [
 		}]
 	},
 	{
-		id: 'Playout-gateway.lawo0',
-		canBeRunAutomatically: false,
+		id: 'playout-gateway.lawo0',
+		canBeRunAutomatically: true,
 		validate: () => {
 			let device = PeripheralDevices.findOne({type: PeripheralDeviceAPI.DeviceType.PLAYOUT})
 			if (!device) return 'Playout-gateway not found'
@@ -798,7 +889,7 @@ addMigrationSteps( '0.1.0', [
 							type: PlayoutDeviceType.LAWO,
 							options: {
 								host: '',
-								port: 9910,
+								port: 0,
 							}
 						}
 					}})
@@ -812,21 +903,10 @@ addMigrationSteps( '0.1.0', [
 			attribute: null
 		}]
 	},
-])
 
-// Release 3:
-addMigrationSteps( '0.16.0', [
-	// Todo: Mos-gateway version
-	// Todo: Playout-gateway version
-	// Todo: Blueprints version
-
-	ensureStudioConfig('slack_evaluation', null, 'text', 'Studio $id config: slack_evaluation',
-		'Enter the URL to the Slack webhook (example: "https://hooks.slack.com/services/WEBHOOKURL"'),
-
-	// To be moved to blueprints:
 	{
-		id: 'Playout-gateway.hyperdeck0',
-		canBeRunAutomatically: false,
+		id: 'playout-gateway.hyperdeck0',
+		canBeRunAutomatically: true,
 		validate: () => {
 			let device = PeripheralDevices.findOne({type: PeripheralDeviceAPI.DeviceType.PLAYOUT})
 			if (!device) return 'Playout-gateway not found'
@@ -854,7 +934,7 @@ addMigrationSteps( '0.16.0', [
 							type: PlayoutDeviceType.HYPERDECK,
 							options: {
 								host: '',
-								port: 9993,
+								port: 0,
 							}
 						}
 					}})
@@ -869,8 +949,8 @@ addMigrationSteps( '0.16.0', [
 		}]
 	},
 	{
-		id: 'Playout-gateway.ptz0',
-		canBeRunAutomatically: false,
+		id: 'playout-gateway.ptz0',
+		canBeRunAutomatically: true,
 		validate: () => {
 			let device = PeripheralDevices.findOne({type: PeripheralDeviceAPI.DeviceType.PLAYOUT})
 			if (!device) return 'Playout-gateway not found'
@@ -896,7 +976,7 @@ addMigrationSteps( '0.16.0', [
 						'settings.devices.ptz0': {
 							type: PlayoutDeviceType.PANASONIC_PTZ,
 							options: {
-								cameraDevices: []
+								host: ''
 							}
 						}
 					}})
@@ -910,48 +990,96 @@ addMigrationSteps( '0.16.0', [
 			attribute: null
 		}]
 	},
-	ensureSourceLayer({
-		_id: 'studio0_hyperdeck0',
-		_rank: 0,
-		name: 'Hyperdeck',
-		type: RunningOrderAPI.SourceLayerType.UNKNOWN,
-		onPGMClean: true,
-		activateKeyboardHotkeys: '',
-		assignHotkeysToGlobalAdlibs: false,
-		unlimited: false,
-		isHidden: true
-	}),
-	ensureSourceLayer({
-		_id: 'studio0_ptz',
-		_rank: 0,
-		name: 'Robotics',
-		type: RunningOrderAPI.SourceLayerType.CAMERA_MOVEMENT,
-		onPGMClean: true,
-		activateKeyboardHotkeys: '',
-		assignHotkeysToGlobalAdlibs: false,
-		unlimited: true
-	}),
-	ensureMapping('hyperdeck0', literal<MappingHyperdeck>({
-		device: PlayoutDeviceType.HYPERDECK,
-		deviceId: 'hyperdeck0',
-		mappingType: MappingHyperdeckType.TRANSPORT,
-		lookahead: LookaheadMode.NONE,
-	})),
-	ensureMapping('ptz0_preset', literal<MappingPanasonicPtz>({
-		device: PlayoutDeviceType.PANASONIC_PTZ,
-		deviceId: 'ptz0',
-		mappingType: MappingPanasonicPtzType.PRESET,
-		lookahead: LookaheadMode.WHEN_CLEAR,
-	})),
-	ensureMapping('ptz0_speed', literal<MappingPanasonicPtz>({
-		device: PlayoutDeviceType.PANASONIC_PTZ,
-		deviceId: 'ptz0',
-		mappingType: MappingPanasonicPtzType.PRESET_SPEED,
-		lookahead: LookaheadMode.NONE,
-	})),
-	ensureStudioConfig('sources_kam_ptz', '1:ptz0'),
-	ensureDeviceVersion('ensureVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.1.1')
+
+	// ensures all playoutdevices have hosts
+	ensurePlayoutDevicesHost(),
+
+	// parent process scanner host
+	// parent process scanner port (8000)
+	// caspar01 host
+	// caspar01 port
+	// caspar01 launcher (8005)
+	// caspar02 host
+	// caspar02 port
+	// caspar02 launcher (8005)
+	// atem host
+	// atem port
+	// lawo host
+	// lawo port
+	// hyperdeck host
+	// hyperdeck port
+	// ptz host
+
+	// Todo: Mos-gateway version
+	// Todo: Playout-gateway version
+	// Todo: Blueprints version
+	ensureDeviceVersion('ensureVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.1.1'),
+	// ensureDeviceVersion('ensureVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.1.1'),
+	// ensureDeviceVersion('ensureVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.1.1'),
+	// ensureDeviceVersion('ensureVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.1.1'),
+	// ensureDeviceVersion('ensureVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.1.1')
+
+
+
+	// @todo
+	// add devices to studio!!!
 ])
+
+addMigrationSteps( '0.17.0', [
+	// ensure showstyle settings
+	ensureCollectionProperty('ShowStyles', {}, 'routerBlueprint', '', 'text', 'Showstyle "$id" rouer blueprint:', '', 'getId'),
+	ensureCollectionProperty('ShowStyles', {}, 'postProcessBlueprint', '', 'text', 'Showstyle "$id" post-process blueprint:', '', 'post-process'),
+
+	// sets config
+	ensureStudioConfig('acceptedResolutions', '1920x1080i5000tff'),
+
+	// clean up mappings
+	removeMapping('nora_permanent_klokke'),
+	removeMapping('nora_permanent_logo'),
+	ensureMapping('nora_primary_klokke', literal<Mapping>({
+		device: PlayoutDeviceType.HTTPSEND,
+		deviceId: 'http0',
+		lookahead: LookaheadMode.NONE,
+	})),
+	ensureMapping('nora_primary_logo', literal<Mapping>({
+		device: PlayoutDeviceType.HTTPSEND,
+		deviceId: 'http0',
+		lookahead: LookaheadMode.NONE,
+	})),
+	removeMapping('casparcg_cg_permanent'),
+
+	// change mappings
+	{
+		id: 'mapping.casparcg_player_wipe.lookahead',
+		canBeRunAutomatically: true,
+		validate: () => {
+			let studio = StudioInstallations.findOne()
+			if (!studio) return 'Studio not found'
+
+			let dbMapping = studio.mappings['casparcg_player_wipe']
+			if (!dbMapping) return false
+
+			if (dbMapping.lookahead !== LookaheadMode.PRELOAD) return `Mapping "casparcg_player_wipe" wrong lookahead mode`
+
+			return false
+		},
+		migrate: () => {
+			let studio = StudioInstallations.findOne()
+			if (!studio) return 'Studio not found'
+
+			let dbMapping = studio.mappings['casparcg_player_wipe']
+
+			if (dbMapping) { // only update if the mapping does exist
+				let m = {}
+				m['mappings.casparcg_player_wipe.lookahead'] = LookaheadMode.PRELOAD
+				logger.info(`Migration: Updating Studio mapping "casparcg_player_wipe" in ${studio._id}`)
+				StudioInstallations.update(studio._id, {$set: m})
+			}
+		}
+	}
+])
+
+
 /*
 
 Epic for tracking whats going to be released in Release3.

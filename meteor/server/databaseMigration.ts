@@ -22,7 +22,7 @@ import { logger } from '../lib/logging'
 import { Optional } from '../lib/lib'
 
 /** The current database version, x.y.z */
-export const CURRENT_SYSTEM_VERSION = '1.0.0'
+export const CURRENT_SYSTEM_VERSION = '0.16.0'
 /** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.
  * And Sofie said: The version of the database is to be GENESIS_SYSTEM_VERSION so that the migration scripts will run.
  */
