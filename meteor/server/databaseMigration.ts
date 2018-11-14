@@ -279,6 +279,7 @@ export function runMigration (
 			}
 		} catch (e) {
 			logger.error(`Error in Migration step ${step.id}: ${e}`)
+			logger.error(e.stack ? e.stack : e.toString())
 			warningMessages.push(`Internal server error in step ${step.id}`)
 		}
 	})

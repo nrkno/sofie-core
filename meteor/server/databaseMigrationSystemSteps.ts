@@ -283,6 +283,34 @@ function ensureMapping (mappingId: string, mapping: Mapping): MigrationStepBase 
 		}
 	}
 }
+function removeMapping (mappingId: string): MigrationStepBase {
+	return {
+		id: `mapping.${mappingId}`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			let studio = StudioInstallations.findOne()
+			if (!studio) return 'Studio not found'
+
+			let dbMapping = studio.mappings[mappingId]
+			if (dbMapping) return `Mapping ${mappingId} exists`
+
+			return false
+		},
+		migrate: () => {
+			let studio = StudioInstallations.findOne()
+			if (!studio) return 'Studio not found'
+
+			let dbMapping = studio.mappings[mappingId]
+
+			if (dbMapping) { // only remove if the mapping does exist
+				let m = {}
+				m['mappings.' + mappingId] = 1
+				logger.info(`Migration: Removing Studio mapping "${mappingId}" from ${studio._id}`)
+				StudioInstallations.update(studio._id, {$unset: m})
+			}
+		}
+	}
+}
 function ensureDeviceVersion (id, deviceType: PeripheralDeviceAPI.DeviceType, libraryName: string, versionStr: string ): MigrationStepBase {
 	return {
 		id: id,
@@ -702,7 +730,6 @@ addMigrationSteps( '0.1.0', [
 			if (!atem0) return '"atem0" missing'
 			if (atem0.type !== PlayoutDeviceType.ATEM) return 'Type is not "ATEM"'
 			if (!atem0.options.host) return 'Host is not set'
-			if (!atem0.options.port) return 'Port is not set'
 
 			return false
 		},
@@ -973,6 +1000,51 @@ addMigrationSteps( '0.16.0', [
 	})),
 	ensureStudioConfig('sources_kam_ptz', '1:ptz0'),
 	ensureDeviceVersion('ensureVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.1.1')
+])
+
+// Release 4:
+addMigrationSteps( '0.17.0', [
+	removeMapping('nora_permanent_klokke'),
+	removeMapping('nora_permanent_logo'),
+	ensureMapping('nora_primary_klokke', literal<Mapping>({
+		device: PlayoutDeviceType.HTTPSEND,
+		deviceId: 'http0',
+		lookahead: LookaheadMode.NONE,
+	})),
+	ensureMapping('nora_primary_logo', literal<Mapping>({
+		device: PlayoutDeviceType.HTTPSEND,
+		deviceId: 'http0',
+		lookahead: LookaheadMode.NONE,
+	})),
+	removeMapping('casparcg_cg_permanent'),
+	{
+		id: 'mapping.casparcg_player_wipe.lookahead',
+		canBeRunAutomatically: true,
+		validate: () => {
+			let studio = StudioInstallations.findOne()
+			if (!studio) return 'Studio not found'
+
+			let dbMapping = studio.mappings['casparcg_player_wipe']
+			if (!dbMapping) return false
+
+			if (dbMapping.lookahead !== LookaheadMode.PRELOAD) return `Mapping "casparcg_player_wipe" wrong lookahead mode`
+
+			return false
+		},
+		migrate: () => {
+			let studio = StudioInstallations.findOne()
+			if (!studio) return 'Studio not found'
+
+			let dbMapping = studio.mappings['casparcg_player_wipe']
+
+			if (dbMapping) { // only update if the mapping does exist
+				let m = {}
+				m['mappings.casparcg_player_wipe.lookahead'] = LookaheadMode.PRELOAD
+				logger.info(`Migration: Updating Studio mapping "casparcg_player_wipe" in ${studio._id}`)
+				StudioInstallations.update(studio._id, {$set: m})
+			}
+		}
+	}
 ])
 /*
 
