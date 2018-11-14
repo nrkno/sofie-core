@@ -1061,6 +1061,24 @@ addMigrationSteps( '0.17.0', [
 		deviceId: 'pharos0',
 		lookahead: LookaheadMode.NONE,
 	})),
+	ensureMapping('ptz0_zoom', literal<MappingPanasonicPtz>({
+		device: PlayoutDeviceType.PANASONIC_PTZ,
+		deviceId: 'ptz0',
+		mappingType: MappingPanasonicPtzType.ZOOM,
+		lookahead: LookaheadMode.NONE,
+	})),
+	ensureMapping('ptz0_zoom_speed', literal<MappingPanasonicPtz>({
+		device: PlayoutDeviceType.PANASONIC_PTZ,
+		deviceId: 'ptz0',
+		mappingType: MappingPanasonicPtzType.ZOOM_SPEED,
+		lookahead: LookaheadMode.NONE,
+	})),
+	ensureStudioConfig('ApningCameraInitialZoom', 0),
+	ensureStudioConfig('ApningCameraZoomSpeed', 0.1),
+	ensureStudioConfig('ApningCameraZoomDuration', 3000),
+	ensureStudioConfig('SluttCameraInitialZoom', 1),
+	ensureStudioConfig('SluttCameraZoomSpeed', -0.1),
+	ensureStudioConfig('SluttCameraZoomDuration', 3000),
 	ensureDeviceVersion('ensureVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '0.13.0')
 ])
 /*
