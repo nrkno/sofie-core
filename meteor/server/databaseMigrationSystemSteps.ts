@@ -292,7 +292,7 @@ function removeMapping (mappingId: string): MigrationStepBase {
 			if (!studio) return 'Studio not found'
 
 			let dbMapping = studio.mappings[mappingId]
-			if (dbMapping) return `Mapping ${mappingId} exists`
+			if (dbMapping) return `Mapping ${mappingId} exists, but should be removed`
 
 			return false
 		},
@@ -841,7 +841,7 @@ addMigrationSteps( '0.1.0', [
 	},
 ])
 
-// Release 3:
+// 0.16.0: Release 3
 addMigrationSteps( '0.16.0', [
 	// Todo: Mos-gateway version
 	// Todo: Playout-gateway version
@@ -1002,7 +1002,7 @@ addMigrationSteps( '0.16.0', [
 	ensureDeviceVersion('ensureVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.1.1')
 ])
 
-// Release 4:
+//// 0.17.0: Release 3
 addMigrationSteps( '0.17.0', [
 	removeMapping('nora_permanent_klokke'),
 	removeMapping('nora_permanent_logo'),
@@ -1044,7 +1044,38 @@ addMigrationSteps( '0.17.0', [
 				StudioInstallations.update(studio._id, {$set: m})
 			}
 		}
-	}
+	},
+	ensureSourceLayer({
+		_id: 'studio0_host_light',
+		_rank: 0,
+		name: 'HostLight',
+		type: RunningOrderAPI.SourceLayerType.LIGHTS,
+		onPGMClean: false,
+		activateKeyboardHotkeys: '',
+		assignHotkeysToGlobalAdlibs: false,
+		unlimited: false,
+		isHidden: true // or should it be?
+	}),
+	ensureMapping('pharos_lights', literal<Mapping>({
+		device: PlayoutDeviceType.PHAROS,
+		deviceId: 'pharos0',
+		lookahead: LookaheadMode.NONE,
+	})),
+	ensureMapping('lights_host', literal<Mapping>({
+		device: PlayoutDeviceType.ABSTRACT,
+		deviceId: 'abstract0',
+		lookahead: LookaheadMode.NONE,
+	})),
+	ensureMapping('lights_guest', literal<Mapping>({
+		device: PlayoutDeviceType.ABSTRACT,
+		deviceId: 'abstract0',
+		lookahead: LookaheadMode.NONE,
+	})),
+	ensureMapping('lights_studio', literal<Mapping>({
+		device: PlayoutDeviceType.ABSTRACT,
+		deviceId: 'abstract0',
+		lookahead: LookaheadMode.NONE,
+	})),
 ])
 /*
 
