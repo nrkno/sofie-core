@@ -5,6 +5,7 @@ import { RunningOrders } from '../../../lib/collections/RunningOrders'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
 import { ISourceLayer, StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
+import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices';
 
 export namespace reactiveData {
 	export const getRRunningOrderId = ReactiveDataHelper.memoizeRVar<string | undefined>(function getRRunningOrderId (roId: string): ReactiveVar<string | undefined> {
@@ -79,6 +80,19 @@ export namespace reactiveData {
 		Tracker.autorun(() => {
 			const mediaObj = MediaObjects.findOne({ mediaId })
 			rVar.set(mediaObj)
+		})
+
+		return rVar
+	})
+
+	export const getRPeripheralDevices = ReactiveDataHelper.memoizeRVar<PeripheralDevice[]>(function getRPeripheralDevices (studioId: string): ReactiveVar<PeripheralDevice[]> {
+		const rVar = new ReactiveVar<PeripheralDevice[]>([])
+
+		Tracker.autorun(() => {
+			const peripheralDevices = PeripheralDevices.find({
+				studioInstallationId: studioId
+			}).fetch()
+			rVar.set(peripheralDevices)
 		})
 
 		return rVar

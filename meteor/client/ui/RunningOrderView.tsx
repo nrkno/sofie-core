@@ -1333,6 +1333,10 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							})
 							oldItemIds = newItemIds
 						}))
+
+						ReactiveDataHelper.registerComputation('RunningOrderView.PeripheralDevices', this.autorun(() => {
+							const devices = reactiveData.getRPeripheralDevices(studioInstallation).get()
+						}))
 					} else {
 						ReactiveDataHelper.stopComputation('RunningOrderView.MediaObjectStatus.SegmentLineItems')
 						cleanUpMediaStatus()
