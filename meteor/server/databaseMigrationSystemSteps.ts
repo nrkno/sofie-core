@@ -1076,6 +1076,7 @@ addMigrationSteps( '0.17.0', [
 		deviceId: 'abstract0',
 		lookahead: LookaheadMode.NONE,
 	})),
+	ensureDeviceVersion('ensureVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '0.13.0')
 ])
 /*
 
