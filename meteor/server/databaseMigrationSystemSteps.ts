@@ -3,7 +3,7 @@ import { StudioInstallation, StudioInstallations, DBStudioInstallation, ISourceL
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { MigrationStepInput, MigrationStepInputFilteredResult } from '../lib/api/migration'
-import { Collections, objectPathGet, literal } from '../lib/lib'
+import { Collections, objectPathGet, objectPathSet, literal } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyles } from '../lib/collections/ShowStyles'
 import { RunningOrderAPI } from '../lib/api/runningOrder'
@@ -108,75 +108,83 @@ function ensureCollectionProperty<T = any> (
  */
 function ensurePlayoutDevicesHost (
 	deviceType: PlayoutDeviceType = -1
-): MigrationStepBase {
-	let collection: Mongo.Collection<any> = Collections['peripheralDevices']
-	if (!collection) throw new Meteor.Error(404, `Collection peripheralDevices not found`)
+): MigrationStepBase | null {
+	let collection: Mongo.Collection<any> = Collections.PeripheralDevices
+	if (!collection) throw new Meteor.Error(404, `Collection PeripheralDevices not found`)
+
+	let allDevices = {}
 
 	// iterate over playout gateways
 	collection.find({'type': PeripheralDeviceAPI.DeviceType.PLAYOUT}).fetch().forEach((playoutGw) => {
-		console.log(playoutGw)
+		let devices: PlayoutDeviceSettings = objectPathGet(playoutGw, 'settings.devices', {})
+		// filter on device-type unless devicetype === -1
+		if (deviceType > -1) {
+			devices = _.pick(devices, (device) => device.type === deviceType)
+		}
+		allDevices[playoutGw._id] = devices
 	})
 
+	// iterate over devices for gateways
+	_.each(allDevices, (devices, key) => {
+		allDevices[key] = _.pick(devices, (device) => {
+			// let foundHostProp = objectPathGet(device, 'options.host', null) // @ TODOD: switch this in instead of that under
+			let foundHostProp = objectPathGet(device, 'options.host', '')
+			if (typeof foundHostProp === 'string') {
+				// if host is string but length is 0, then add to mossingHostDevices
+				return foundHostProp.trim().length === 0
+			}
 
+			// shouldn't have host, ignore
+			return false
+		})
+	})	
 
+	// create migrationsteps for all affected devices
 	return {
-		id: 'foo',
+		id: `ensureHostOnDevicesOfType${deviceType > -1 ? deviceType : 'All'}`,
 		canBeRunAutomatically: false,
 		validate: () => {
-			// let objects = collection.find(selector).fetch()
-			// let propertyMissing: string | boolean = false
-			// _.each(objects, (obj: any) => {
-			// 	if (!objectPathGet(obj, property)) propertyMissing = `${property} is missing on ${obj._id}`
-			// })
-
-			return false
+			for (let key in allDevices) {
+				if (!_.isEmpty(allDevices[key])) {
+					return 'Some playout devices are missing host'
+				}
+			}
+			return true
 		},
 		input: () => {
 			// let objects = collection.find(selector).fetch()
-
-			// let inputs: Array<MigrationStepInput> = []
-			// _.each(objects, (obj: any) => {
-
-			// 	let localLabel = (label + '').replace(/\$id/g, obj._id)
-			// 	let localDescription = (description + '').replace(/\$id/g, obj._id)
-			// 	if (inputType && !obj[property]) {
-			// 		inputs.push({
-			// 			label: localLabel,
-			// 			description: localDescription,
-			// 			inputType: inputType,
-			// 			attribute: obj._id,
-			// 			defaultValue: defaultValue
-			// 		})
-			// 	}
-			// })
-			// return inputs
-			return []
+			let inputs: Array<MigrationStepInput> = []
+			
+			_.each(allDevices, (devices: {[key:string]: PlayoutDeviceSettingsDevice}, gatewayId: string) => {
+				_.each(devices, (device: PlayoutDeviceSettingsDevice, deviceId: string) => {
+					inputs.push({
+						label: `Playout device "${deviceId}" on gateway "${gatewayId}" is missing host`,
+						description: `Host for device "${deviceId}"`,
+						inputType: 'text',
+						attribute: `${gatewayId}.${deviceId}`,
+						defaultValue: null
+					})
+				})			
+			})			
+			return inputs
 		},
 		migrate: (input: MigrationStepInputFilteredResult) => {
+			_.each(input, (devices, objectId: string) => {
+				let gateway = collection.findOne(objectId)
+				
+				let newHosts = _.pick(devices, newHost => newHost !== undefined)
+				let oldDevices = objectPathGet(gateway, 'settings.devices', {})
+				_.each(newHosts, (host, device) => {
+					objectPathSet(oldDevices, `${device}.options.host`, host)
+				})
 
-			// if (value) {
-			// 	let objects = collection.find(selector).fetch()
-			// 	_.each(objects, (obj: any) => {
-			// 		if (obj && objectPathGet(obj, property) !== value) {
-			// 			let m = {}
-			// 			m[property] = value
-			// 			logger.info(`Migration: Setting ${collectionName} object "${obj._id}".${property} to ${value}`)
-			// 			collection.update(obj._id,{$set: m })
-			// 		}
-			// 	})
-			// } else {
-			// 	_.each(input, (value, objectId: string) => {
-			// 		if (!_.isUndefined(value)) {
-			// 			let obj = collection.findOne(objectId)
-			// 			if (obj && objectPathGet(obj, property) !== value) {
-			// 				let m = {}
-			// 				m[property] = value
-			// 				logger.info(`Migration: Setting ${collectionName} object "${objectId}".${property} to ${value}`)
-			// 				collection.update(objectId,{$set: m })
-			// 			}
-			// 		}
-			// 	})
-			// }
+				logger.info(`Migration: Setting hosts on devices for gateway ${objectId}`)
+					collection.update(objectId,{$set: {
+						settings: {
+							devices: oldDevices
+						}
+					}})
+			})
 		}
 	}
 }

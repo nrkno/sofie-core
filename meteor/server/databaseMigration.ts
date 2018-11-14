@@ -15,11 +15,11 @@ import {
 	MigrationStepInputResult,
 	GetMigrationStatusResultNoNeed,
 	GetMigrationStatusResultMigrationNeeded,
-	RunMigrationResult
+	RunMigrationResult,
 } from '../lib/api/migration'
 import { setMeteorMethods } from './methods'
 import { logger } from '../lib/logging'
-import { Optional } from '../lib/lib'
+import { Optional, objectPathSet } from '../lib/lib'
 
 /** The current database version, x.y.z */
 export const CURRENT_SYSTEM_VERSION = '0.16.0'
@@ -247,7 +247,7 @@ export function runMigration (
 			let stepInput: MigrationStepInputFilteredResult = {}
 			_.each(inputResults, (ir) => {
 				if (ir.stepId === step.id) {
-					stepInput[ir.attribute] = ir.value
+					objectPathSet(stepInput, ir.attribute, ir.value)
 				}
 			})
 
