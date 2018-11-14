@@ -1061,21 +1061,6 @@ addMigrationSteps( '0.17.0', [
 		deviceId: 'pharos0',
 		lookahead: LookaheadMode.NONE,
 	})),
-	ensureMapping('lights_host', literal<Mapping>({
-		device: PlayoutDeviceType.ABSTRACT,
-		deviceId: 'abstract0',
-		lookahead: LookaheadMode.NONE,
-	})),
-	ensureMapping('lights_guest', literal<Mapping>({
-		device: PlayoutDeviceType.ABSTRACT,
-		deviceId: 'abstract0',
-		lookahead: LookaheadMode.NONE,
-	})),
-	ensureMapping('lights_studio', literal<Mapping>({
-		device: PlayoutDeviceType.ABSTRACT,
-		deviceId: 'abstract0',
-		lookahead: LookaheadMode.NONE,
-	})),
 	ensureDeviceVersion('ensureVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '0.13.0')
 ])
 /*
