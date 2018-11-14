@@ -9,8 +9,9 @@ import { StudioInstallations } from '../lib/collections/StudioInstallations'
 import { getCurrentTime } from '../lib/lib'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { Meteor } from 'meteor/meteor'
-import { setMeteorMethods } from './methods'
+import { setMeteorMethods, Methods } from './methods'
 import { parseVersion, compareVersions } from '../lib/collections/CoreSystem'
+import { StatusResponse, CheckObj, SystemStatusAPI, ExternalStatus } from '../lib/api/systemStatus'
 
 // This data structure is to be used to determine the system-wide status of the Core instance
 
@@ -35,33 +36,6 @@ export interface StatusObject {
 // 	checks: Array<CheckObj>
 // }
 let systemStatuses: {[key: string]: StatusObject} = {}
-
-export type ExternalStatus = 'OK' | 'FAIL' | 'WARNING' | 'UNDEFINED'
-export interface CheckObj {
-	description: string,
-	status: ExternalStatus,
-	_status: StatusCode,
-	errors: Array<string>
-}
-interface StatusResponse {
-	name: string,
-	status: ExternalStatus,
-	_status: StatusCode,
-	documentation: string,
-	instanceId?: string,
-	updated?: string,
-	appVersion?: string,
-	version?: '2', // version of healthcheck
-	utilises?: Array<string>,
-	consumers?: Array<string>,
-	checks?: Array<CheckObj>,
-	_internal: {
-		// statusCode: StatusCode,
-		statusCodeString: string,
-		messages: Array<string>
-	},
-	components?: Array<StatusResponse>
-}
 
 export function getSystemStatus (studioId?: string): StatusResponse {
 
@@ -265,11 +239,12 @@ function status2ExternalStatus (statusCode: StatusCode): ExternalStatus {
 	return 'UNDEFINED'
 }
 
-setMeteorMethods({
-	'systemStatus.getSystemStatus': () => {
-		return getSystemStatus()
-	}
-})
+let methods: Methods = {}
+
+methods[SystemStatusAPI.getSystemStatus] = () => {
+	return getSystemStatus()
+}
+setMeteorMethods(methods)
 // Server route
 // according to spec at https://github.com/nrkno/blaabok-mu/blob/master/Standarder/RFC-MU-2-Helsesjekk.md
 Picker.route('/health', (params, req: IncomingMessage, res: ServerResponse, next) => {

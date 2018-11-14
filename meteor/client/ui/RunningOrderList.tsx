@@ -18,6 +18,7 @@ import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
 import { ClientAPI } from '../../lib/api/client'
 import { eventContextForLog } from '../lib/eventTargetLogHelper'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
+import { SystemStatusAPI, StatusResponse } from '../../lib/api/systemStatus'
 
 const PackageInfo = require('../../package.json')
 
@@ -26,7 +27,7 @@ interface IRunningOrdersListProps {
 }
 
 interface IRunningOrdersListState {
-	systemStatus?: string
+	systemStatus?: StatusResponse
 }
 
 export const RunningOrderList = translateWithTracker(() => {
@@ -47,14 +48,14 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 	}
 
 	componentDidMount () {
-		Meteor.call('systemStatus.getSystemStatus', (err: any, res: any) => {
+		Meteor.call(SystemStatusAPI.getSystemStatus, (err: any, systemStatus: StatusResponse) => {
 			if (err) {
 				console.error(err)
 				return
 			}
 
 			this.setState({
-				systemStatus: res.status
+				systemStatus: systemStatus
 			})
 		})
 	}
@@ -163,7 +164,36 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 				</div>
 			</div>
 			<div className='mtl gutter version-info'>
-				<p>{t('Sofie Automation')} {t('version')}: {PackageInfo.version || 'UNSTABLE'}, {t('status')}: {this.state.systemStatus}</p>
+				<p>
+					{t('Sofie Automation')} {t('version')}: {PackageInfo.version || 'UNSTABLE'}
+				</p>
+				<div>
+					{
+						this.state.systemStatus ? [
+							<p>
+								{t('status')}: {this.state.systemStatus.status} / {this.state.systemStatus._internal.statusCodeString}
+							</p>,
+							<p>
+								{
+									this.state.systemStatus._internal.messages.length ?
+										<p>
+											{t('Status messages:')}
+											<ul>
+												{_.map(this.state.systemStatus._internal.messages, (message, i) => {
+													return (
+														<li key={i}>
+															{message}
+														</li>
+													)
+												})}
+											</ul>
+										</p> :
+									null
+								}
+							</p>
+						] : null
+					}
+				</div>
 			</div>
 		</React.Fragment>
 	}
