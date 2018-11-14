@@ -14,7 +14,7 @@ import { NavLink, Route, Prompt } from 'react-router-dom'
 
 import { ClientAPI } from '../../lib/api/client'
 import { PlayoutAPI } from '../../lib/api/playout'
-import { RunningOrder, RunningOrders, RunningOrderHoldState, getRRunningOrderId, getRRunningOrderStudioId } from '../../lib/collections/RunningOrders'
+import { RunningOrder, RunningOrders, RunningOrderHoldState } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { SegmentLine } from '../../lib/collections/SegmentLines'
@@ -28,7 +28,7 @@ import { InspectorDrawer } from './InspectorDrawer/InspectorDrawer'
 import { RunningOrderOverview } from './RunningOrderView/RunningOrderOverview'
 import { RunningOrderSystemStatus } from './RunningOrderView/RunningOrderSystemStatus'
 
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime, Time } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
 
 import * as mousetrap from 'mousetrap'
@@ -44,11 +44,13 @@ import { Tracker } from 'meteor/tracker'
 import { RunningOrderFullscreenControls } from './RunningOrderView/RunningOrderFullscreenControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 
-import { NotificationCenter, NotificationList } from '../lib/notifications/notifications'
-import { getRSegmentLineItems, VTContent } from '../../lib/collections/SegmentLineItems'
+import { NotificationCenter, NotificationList, NotifierObject, Notification, NoticeLevel } from '../lib/notifications/notifications'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
-import { ReactiveDataHelper } from '../../lib/reactive/ReactiveDataHelper'
+
+import { ReactiveDataHelper } from '../lib/reactiveData/reactiveDataHelper'
+import { reactiveData } from '../lib/reactiveData/reactiveData'
 import { checkSLIContentStatus } from '../../lib/mediaObjects'
+import { NotificationCenterPopUps } from '../lib/notifications/NotificationCenterPanel'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -822,6 +824,9 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 				'rehearsal': this.props.runningOrder.rehearsal
 			})}>
+				<ErrorBoundary>
+					<NotificationCenterPopUps />
+				</ErrorBoundary>
 				<ContextMenu id='running-order-context-menu'>
 					<div className='react-contextmenu-label'>
 						{this.props.runningOrder && this.props.runningOrder.name}
@@ -991,6 +996,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}> = []
 	private _segments: _.Dictionary<React.ComponentClass<{}>> = {}
 	private _notificationList: NotificationList
+	private _notifier: NotifierObject
+	private _mediaStatus: _.Dictionary<Notification | undefined> = {}
+	private _mediaStatusDep: Tracker.Dependency
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -1033,7 +1041,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			])
 		}
 
-		this._notificationList = new NotificationList()
+		this._notificationList = new NotificationList([])
+		this._mediaStatusDep = new Tracker.Dependency()
 	}
 
 	componentWillMount () {
@@ -1075,41 +1084,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			}
 		})
 
-		NotificationCenter.registerNotifier((): NotificationList => {
-			return this._notificationList
-		})
-		ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus', Tracker.autorun(() => {
-			const runningOrder = getRRunningOrderId(runningOrderId)
-			if (runningOrder) {
-				const studioInstallationId = getRRunningOrderStudioId(runningOrder)
-				ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus.StudioInstallation', Tracker.autorun(() => {
-					const studioInstallation = StudioInstallations.findOne(studioInstallationId)
-					if (studioInstallation) {
-						ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus.SegmentLineItems', Tracker.autorun(() => {
-							const items = getRSegmentLineItems(runningOrder)
-							this._notificationList.clear()
-							items.get().forEach((item) => {
-								const sourceLayer = studioInstallation.getRSourceLayer(item.sourceLayerId).get()
-								if (sourceLayer && sourceLayer.type === RunningOrderAPI.SourceLayerType.VT) {
-									if (item.content) {
-										const content = item.content as VTContent
-										ReactiveDataHelper.registerComputation(`RunningOrderView.MediaObjectStatus.SegmentLineItems.${item._id}`, Tracker.autorun(() => {
-											const {metadata, status} = checkSLIContentStatus(item, sourceLayer, studioInstallation.config)
-										}))
-									} else {
-										ReactiveDataHelper.stopComputation(`RunningOrderView.MediaObjectStatus.SegmentLineItems.${item._id}`)
-									}
-								} else {
-									ReactiveDataHelper.stopComputation(`RunningOrderView.MediaObjectStatus.SegmentLineItems.${item._id}`)
-								}
-							})
-						}))
-					}
-					ReactiveDataHelper.stopComputation('RunningOrderView.MediaObjectStatus.SegmentLineItems')
-				}))
-			}
-			ReactiveDataHelper.stopComputation('RunningOrderView.MediaObjectStatus.StudioInstallation')
-		}))
+		this.setupNotifier()
 	}
 
 	componentDidMount () {
@@ -1182,6 +1157,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		$(window).off('beforeunload', this.onBeforeUnload)
 
 		ReactiveDataHelper.stopComputation('RunningOrderView.MediaObjectStatus')
+		this._notifier.stop()
 
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {
@@ -1194,6 +1170,81 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 
 		window.removeEventListener(RunningOrderViewEvents.goToLiveSegment, this.onGoToLiveSegment)
+	}
+
+	setupNotifier () {
+		let runningOrderId = this.props.runningOrderId
+
+		const cleanUpMediaStatus = () => {
+			this._mediaStatus = {}
+			this._mediaStatusDep.changed()
+		}
+
+		this._notifier = NotificationCenter.registerNotifier((): NotificationList => {
+			return this._notificationList
+		})
+		ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus', this.autorun(() => {
+			const runningOrder = reactiveData.getRRunningOrderId(runningOrderId).get()
+
+			if (runningOrder) {
+				const studioInstallationId = reactiveData.getRRunningOrderStudioId(runningOrder).get()
+				ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus.StudioInstallation', this.autorun(() => {
+					const studioInstallation = StudioInstallations.findOne(studioInstallationId)
+					if (studioInstallation) {
+						let oldItemIds: Array<string> = []
+						ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus.SegmentLineItems', this.autorun((comp: Tracker.Computation) => {
+							const items = reactiveData.getRSegmentLineItems(runningOrder).get()
+							const newItemIds = items.map(item => item._id)
+							items.forEach((item) => {
+								const sourceLayer = reactiveData.getRSourceLayer(studioInstallation, item.sourceLayerId).get()
+								if (sourceLayer) {
+									ReactiveDataHelper.registerComputation(`RunningOrderView.MediaObjectStatus.SegmentLineItems.${item._id}`, this.autorun(() => {
+										const { metadata, status, message } = checkSLIContentStatus(item, sourceLayer, studioInstallation.config)
+										let newNotification: Notification | undefined = undefined
+										if ((status !== RunningOrderAPI.LineItemStatusCode.OK) && (status !== RunningOrderAPI.LineItemStatusCode.UNKNOWN)) {
+											newNotification = new Notification(item._id, NoticeLevel.WARNING, message || 'Media is broken', 'Media', Date.now(), true)
+										}
+										if (newNotification && this._mediaStatus[item._id] !== newNotification && (
+												((this._mediaStatus[item._id] || { message: null }).message !== newNotification.message) ||
+												((this._mediaStatus[item._id] || { status: null }).status !== newNotification.status)
+											)) {
+											this._mediaStatus[item._id] = newNotification
+											this._mediaStatusDep.changed()
+										} else if (!newNotification && this._mediaStatus[item._id]) {
+											delete this._mediaStatus[item._id]
+											this._mediaStatusDep.changed()
+										}
+									}))
+								} else {
+									ReactiveDataHelper.stopComputation(`RunningOrderView.MediaObjectStatus.SegmentLineItems.${item._id}`)
+
+									delete this._mediaStatus[item._id]
+									this._mediaStatusDep.changed()
+								}
+							})
+
+							_.difference(oldItemIds, newItemIds).forEach((item) => {
+								delete this._mediaStatus[item]
+								this._mediaStatusDep.changed()
+							})
+							oldItemIds = newItemIds
+						}))
+					} else {
+						ReactiveDataHelper.stopComputation('RunningOrderView.MediaObjectStatus.SegmentLineItems')
+						cleanUpMediaStatus()
+					}
+				}))
+			} else {
+				ReactiveDataHelper.stopComputation('RunningOrderView.MediaObjectStatus.StudioInstallation')
+				cleanUpMediaStatus()
+			}
+		}))
+
+		this.autorun((comp) => {
+			this._mediaStatusDep.depend()
+
+			this._notificationList.set(_.compact(_.values(this._mediaStatus)))
+		})
 	}
 
 	onBeforeUnload = (e: any) => {

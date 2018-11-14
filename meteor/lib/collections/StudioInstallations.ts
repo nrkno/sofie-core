@@ -7,9 +7,6 @@ import { applyClassToDocument, registerCollection } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import { ChannelFormat } from '../../lib/constants/casparcg'
-import { ReactiveDataHelper } from '../reactive/ReactiveDataHelper'
-import { ReactiveVar } from 'meteor/reactive-var'
-import { Tracker } from 'meteor/tracker'
 
 // Imports from TSR (TODO make into an import)
 export enum MappingLawoType {
@@ -193,27 +190,10 @@ export class StudioInstallation implements DBStudioInstallation {
 	public testToolsConfig?: ITestToolsConfig
 	public hotkeyLegend?: Array<HotkeyDefinition>
 
-	public getRSourceLayer: (sourceLayerId: string) => ReactiveVar<ISourceLayer | undefined>
-
 	constructor (document: DBStudioInstallation) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
-
-		this.getRSourceLayer = ReactiveDataHelper.memoizeRVar<ISourceLayer | undefined>(function getSISourceLayer(sourceLayerId: string): ReactiveVar<ISourceLayer | undefined> {
-			const rVar = new ReactiveVar<ISourceLayer | undefined>(undefined, ReactiveDataHelper.simpleObjCompare)
-			Tracker.autorun(() => {
-				const si = StudioInstallations.findOne(this._id)
-				if (si) {
-					const sourceLayer = this.sourceLayers.find((item) => item._id === sourceLayerId)
-					rVar.set(sourceLayer)
-				} else {
-					rVar.set(undefined)
-				}
-			})
-
-			return rVar
-		}, this._id)
 	}
 	public getConfigValue (name: string): string | null {
 		const item = this.config.find((item) => {
@@ -227,16 +207,6 @@ export class StudioInstallation implements DBStudioInstallation {
 		}
 	}
 }
-
-export const getRStudioInstallation = ReactiveDataHelper.memoizeRVar<StudioInstallation | undefined>(function getRStudioInstallation (siId: string): ReactiveVar<StudioInstallation | undefined> {
-	const rVar = new ReactiveVar<StudioInstallation | undefined>(undefined, ReactiveDataHelper.simpleObjCompare)
-	Tracker.autorun(() => {
-		const si = StudioInstallations.findOne(siId)
-		rVar.set(si)
-	})
-
-	return rVar
-})
 
 export const StudioInstallations: TransformedCollection<StudioInstallation, DBStudioInstallation>
 	= new Mongo.Collection<StudioInstallation>('studioInstallation', {transform: (doc) => applyClassToDocument(StudioInstallation, doc) })
