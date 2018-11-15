@@ -111,11 +111,15 @@ postJsRoute.route('/blueprints/restore/:showStyleId', (params, req: IncomingMess
 			showStyleId: showStyle._id,
 			code: body as string,
 			modified: Date.now(),
+			studioConfigManifest: [],
+			showStyleConfigManifest: [],
 			version: ''
 		}
 
 		const blueprintCollection = evalBlueprints(newBlueprint, showStyle.name, false)
 		newBlueprint.version = blueprintCollection.Version
+		newBlueprint.studioConfigManifest = blueprintCollection.StudioConfigManifest
+		newBlueprint.showStyleConfigManifest = blueprintCollection.ShowStyleConfigManifest
 
 		ShowBlueprints.remove({ showStyleId: showStyle._id })
 		ShowBlueprints.insert(newBlueprint)

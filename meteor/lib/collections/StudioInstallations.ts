@@ -81,7 +81,7 @@ export interface IStudioRuntimeArgumentsItem {
 export interface IStudioConfigItem {
 	_id: string
 	/** Value */
-	value: string
+	value: any
 }
 
 /** A single source layer, f.g Cameras, VT, Graphics, Remotes */

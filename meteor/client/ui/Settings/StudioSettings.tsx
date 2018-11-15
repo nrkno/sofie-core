@@ -40,11 +40,13 @@ import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { ShowBlueprint, ShowBlueprints } from '../../../lib/collections/ShowBlueprints'
 
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
+import { ConfigManifestSettings } from './ConfigManifestSettings'
 
 interface IProps {
 	studioInstallation: StudioInstallation
@@ -54,6 +56,7 @@ interface IProps {
 		name: string,
 		value: string
 	}>
+	defaultBlueprint: ShowBlueprint | undefined
 }
 
 interface IChildStudioInterfaceProps {
@@ -334,8 +337,13 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 
 	renderItems () {
 		const { t } = this.props
+
+		const excludeIds = this.props.defaultBlueprint ? this.props.defaultBlueprint.studioConfigManifest.map(c => c.id) : []
 		return (
 			(this.props.studioInstallation.config || []).map((item, index) => {
+				// Don't show if part of the config manifest
+				if (excludeIds.indexOf(item._id) !== -1) return null
+
 				return <React.Fragment key={item._id}>
 					<tr className={ClassNames({
 						'hl': this.isItemEdited(item)
@@ -1789,8 +1797,9 @@ interface IStudioSettingsProps extends IProps, IChildStudioInterfaceProps {
 	}
 }
 export default translateWithTracker((props: IStudioSettingsProps, state) => {
+	const studio = StudioInstallations.findOne(props.match.params.studioId)
 	return {
-		studioInstallation: StudioInstallations.findOne(props.match.params.studioId),
+		studioInstallation: studio,
 		studioDevices: PeripheralDevices.find({
 			studioInstallationId: props.match.params.studioId
 		}).fetch(),
@@ -1800,6 +1809,7 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 				value: item._id
 			}
 		}),
+		defaultBlueprint: studio ? ShowBlueprints.findOne({ showStyleId: studio.defaultShowStyle }) : undefined,
 		availableDevices: PeripheralDevices.find({
 			studioInstallationId: {
 				$not: {
@@ -2050,6 +2060,11 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 					<div className='row'>
 						<div className='col c12 r1-c12'>
 							<StudioMappings {...this.props} />
+						</div>
+					</div>
+					<div className='row'>
+						<div className='col c12 r1-c12'>
+							{ this.props.defaultBlueprint ? <ConfigManifestSettings t={this.props.t} blueprint={this.props.defaultBlueprint} studioInstallation={this.props.studioInstallation} /> : null }
 						</div>
 					</div>
 					<div className='row'>
