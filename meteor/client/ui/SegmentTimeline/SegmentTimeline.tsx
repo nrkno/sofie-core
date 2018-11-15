@@ -464,17 +464,17 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 						{
 							_.map(notes, (note, key) => {
 								return (
-									<div key={key}>
+									<div className='segment-timeline__title__notes__note' key={key}>
+										<img className='icon' src='/icons/warning_icon.svg' />
 										<div>
 											<b>
-												<img className='icon' src='/icons/warning_icon.svg'/>
 												{(
 													note.type === SegmentLineNoteType.WARNING ? '' :
 													note.type === SegmentLineNoteType.ERROR ? 'Error:\u00A0' :
 													''
 												)}
+												{note.origin.name.replace(this.props.segment.name + ';', '')}
 											</b>
-											{note.origin.name}
 										</div>
 										<div>
 											{note.message}
