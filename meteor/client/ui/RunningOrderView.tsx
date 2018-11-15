@@ -11,6 +11,7 @@ import * as _ from 'underscore'
 import Moment from 'react-moment'
 
 import { NavLink, Route, Prompt } from 'react-router-dom'
+import * as VelocityReact from 'velocity-react'
 
 import { ClientAPI } from '../../lib/api/client'
 import { PlayoutAPI } from '../../lib/api/playout'
@@ -45,13 +46,8 @@ import { RunningOrderFullscreenControls } from './RunningOrderView/RunningOrderF
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { SnapshotFunctionsAPI } from '../../lib/api/shapshot';
 
-import { NotificationCenter, NotificationList, NotifierObject, Notification, NoticeLevel } from '../lib/notifications/notifications'
-import { RunningOrderAPI } from '../../lib/api/runningOrder'
-
-import { ReactiveDataHelper } from '../lib/reactiveData/reactiveDataHelper'
-import { reactiveData } from '../lib/reactiveData/reactiveData'
-import { checkSLIContentStatus } from '../../lib/mediaObjects'
-import { NotificationCenterPopUps } from '../lib/notifications/NotificationCenterPanel'
+import { RunningOrderViewNotifier } from './RunningOrderView/RunningOrderNotifier'
+import { NotificationCenterPopUps, NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -975,6 +971,7 @@ interface IState {
 	manualSetAsNext: boolean
 	subsReady: boolean
 	usedHotkeys: Array<HotkeyDefinition>
+	showNotifications: boolean
 }
 
 export enum RunningOrderViewEvents {
@@ -1028,10 +1025,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		global?: boolean
 	}> = []
 	private _segments: _.Dictionary<React.ComponentClass<{}>> = {}
-	private _notificationList: NotificationList
-	private _notifier: NotifierObject
-	private _mediaStatus: _.Dictionary<Notification | undefined> = {}
-	private _mediaStatusDep: Tracker.Dependency
+	private _notifier: RunningOrderViewNotifier
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -1073,11 +1067,11 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					key: 'F11',
 					label: t('Change to fullscreen mode')
 				}
-			])
+			]),
+			showNotifications: false
 		}
 
-		this._notificationList = new NotificationList([])
-		this._mediaStatusDep = new Tracker.Dependency()
+		this._notifier = new RunningOrderViewNotifier(this.props.runningOrderId)
 	}
 
 	componentWillMount () {
@@ -1118,8 +1112,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				})
 			}
 		})
-
-		this.setupNotifier()
 	}
 
 	componentDidMount () {
@@ -1250,9 +1242,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		$(window).off('scroll', this.onWindowScroll)
 		$(window).off('beforeunload', this.onBeforeUnload)
 
-		ReactiveDataHelper.stopComputation('RunningOrderView.MediaObjectStatus')
-		this._notifier.stop()
-
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {
 				mousetrap.unbind(k.key, 'keyup')
@@ -1274,85 +1263,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 
 		window.removeEventListener(RunningOrderViewEvents.goToLiveSegment, this.onGoToLiveSegment)
-	}
 
-	setupNotifier () {
-		let runningOrderId = this.props.runningOrderId
-
-		const cleanUpMediaStatus = () => {
-			this._mediaStatus = {}
-			this._mediaStatusDep.changed()
-		}
-
-		this._notifier = NotificationCenter.registerNotifier((): NotificationList => {
-			return this._notificationList
-		})
-		ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus', this.autorun(() => {
-			const runningOrder = reactiveData.getRRunningOrderId(runningOrderId).get()
-
-			if (runningOrder) {
-				const studioInstallationId = reactiveData.getRRunningOrderStudioId(runningOrder).get()
-				ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus.StudioInstallation', this.autorun(() => {
-					const studioInstallation = StudioInstallations.findOne(studioInstallationId)
-					if (studioInstallation) {
-						let oldItemIds: Array<string> = []
-						ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus.SegmentLineItems', this.autorun((comp: Tracker.Computation) => {
-							const items = reactiveData.getRSegmentLineItems(runningOrder).get()
-							const newItemIds = items.map(item => item._id)
-							items.forEach((item) => {
-								const sourceLayer = reactiveData.getRSourceLayer(studioInstallation, item.sourceLayerId).get()
-								if (sourceLayer) {
-									ReactiveDataHelper.registerComputation(`RunningOrderView.MediaObjectStatus.SegmentLineItems.${item._id}`, this.autorun(() => {
-										const { metadata, status, message } = checkSLIContentStatus(item, sourceLayer, studioInstallation.config)
-										let newNotification: Notification | undefined = undefined
-										if ((status !== RunningOrderAPI.LineItemStatusCode.OK) && (status !== RunningOrderAPI.LineItemStatusCode.UNKNOWN)) {
-											newNotification = new Notification(item._id, NoticeLevel.WARNING, message || 'Media is broken', 'Media', Date.now(), true)
-										}
-										if (newNotification && this._mediaStatus[item._id] !== newNotification && (
-												((this._mediaStatus[item._id] || { message: null }).message !== newNotification.message) ||
-												((this._mediaStatus[item._id] || { status: null }).status !== newNotification.status)
-											)) {
-											this._mediaStatus[item._id] = newNotification
-											this._mediaStatusDep.changed()
-										} else if (!newNotification && this._mediaStatus[item._id]) {
-											delete this._mediaStatus[item._id]
-											this._mediaStatusDep.changed()
-										}
-									}))
-								} else {
-									ReactiveDataHelper.stopComputation(`RunningOrderView.MediaObjectStatus.SegmentLineItems.${item._id}`)
-
-									delete this._mediaStatus[item._id]
-									this._mediaStatusDep.changed()
-								}
-							})
-
-							_.difference(oldItemIds, newItemIds).forEach((item) => {
-								delete this._mediaStatus[item]
-								this._mediaStatusDep.changed()
-							})
-							oldItemIds = newItemIds
-						}))
-
-						ReactiveDataHelper.registerComputation('RunningOrderView.PeripheralDevices', this.autorun(() => {
-							const devices = reactiveData.getRPeripheralDevices(studioInstallation).get()
-						}))
-					} else {
-						ReactiveDataHelper.stopComputation('RunningOrderView.MediaObjectStatus.SegmentLineItems')
-						cleanUpMediaStatus()
-					}
-				}))
-			} else {
-				ReactiveDataHelper.stopComputation('RunningOrderView.MediaObjectStatus.StudioInstallation')
-				cleanUpMediaStatus()
-			}
-		}))
-
-		this.autorun((comp) => {
-			this._mediaStatusDep.depend()
-
-			this._notificationList.set(_.compact(_.values(this._mediaStatus)))
-		})
+		this._notifier.stop()
 	}
 
 	onBeforeUnload = (e: any) => {
@@ -1519,6 +1431,12 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		return false
 	}
 
+	onToggleNotifications = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.setState({
+			showNotifications: !this.state.showNotifications
+		})
+	}
+
 	getStyle () {
 		return {
 			'marginBottom': this.state.bottomMargin
@@ -1538,6 +1456,22 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<RunningOrderFullscreenControls isFollowingOnAir={this.state.followLiveSegments} onFollowOnAir={this.onGoToLiveSegment} onRewindSegments={this.onRewindSegments} />
+						</ErrorBoundary>
+						<ErrorBoundary>
+							<VelocityReact.VelocityTransitionGroup enter={{
+								animation: {
+									translateX: ['0%', '100%']
+								}, easing: 'ease-out', duration: 300
+							}} leave={{
+								animation: {
+									translateX: ['100%', '0%']
+								}, easing: 'ease-in', duration: 500
+							}}>
+								{ this.state.showNotifications && <NotificationCenterPanel /> }
+							</VelocityReact.VelocityTransitionGroup>
+						</ErrorBoundary>
+						<ErrorBoundary>
+							<NotificationCenterPanelToggle onClick={this.onToggleNotifications} isOpen={this.state.showNotifications} />
 						</ErrorBoundary>
 						<ErrorBoundary>
 							{ this.state.studioMode &&
