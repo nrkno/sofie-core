@@ -23,6 +23,7 @@ import { ClientAPI } from '../../lib/api/client'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
 import { eventContextForLog } from '../lib/eventTargetLogHelper'
+import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
 
 interface IProps {
 	runningOrder: RunningOrder
@@ -38,7 +39,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 	constructor (props: Translated<IProps>) {
 		super(props)
 		this.state = {
-			q0: '',
+			q0: 'nothing',
 			q1: '',
 			q2: '',
 		}
@@ -51,6 +52,10 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 			studioId: this.props.runningOrder.studioInstallationId,
 			runningOrderId: this.props.runningOrder._id,
 			answers: answers
+		}
+
+		if (evaluation.answers.q0 !== 'nothing') {
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT, this.props.runningOrder._id, 'Evaluation form')
 		}
 
 		Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.saveEvaluation, evaluation)
