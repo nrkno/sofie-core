@@ -279,12 +279,12 @@ export function postProcessSegmentLineItems (innerContext: ICommonContext, segme
 	return _.map(_.compact(segmentLineItems), (itemOrig: IBlueprintSegmentLineItem) => {
 		let item: SegmentLineItem = {
 			runningOrderId: innerContext.runningOrder._id,
-			segmentLineId: segmentLineId,
+			segmentLineId: itemOrig.segmentLineId || segmentLineId,
 			status: RunningOrderAPI.LineItemStatusCode.UNKNOWN,
 			...itemOrig
 		}
 
-		if (!item._id) item._id = innerContext.getHashId('postprocess_sli_' + (i++))
+		if (!item._id) item._id = innerContext.getHashId(templateId + '_sli_' + (i++))
 		if (!item.mosId && !item.isTransition) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for segmentLineItem in ' + segmentLineId + '! ("' + innerContext.unhashId(item._id) + '")')
 
 		if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
@@ -295,7 +295,7 @@ export function postProcessSegmentLineItems (innerContext: ICommonContext, segme
 			item.content.timelineObjects = _.map(_.compact(item.content.timelineObjects), (o: TimelineObjectCoreExt) => {
 				const item = convertTimelineObject(o)
 
-				if (!item._id) item._id = innerContext.getHashId('postprocess_' + (i++))
+				if (!item._id) item._id = innerContext.getHashId(templateId + '_' + (i++))
 
 				if (timelineUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(item._id) + '")')
 				timelineUniqueIds[item._id] = true
@@ -313,7 +313,7 @@ export function postProcessSegmentLineAdLibItems (innerContext: ICommonContext, 
 	let segmentLinesUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(segmentLineAdLibItems), (itemOrig: IBlueprintSegmentLineAdLibItem) => {
 		let item: SegmentLineAdLibItem = {
-			_id: innerContext.getHashId('postprocess_adlib_' + (i++)),
+			_id: innerContext.getHashId(templateId + '_adlib_sli_' + (i++)),
 			runningOrderId: innerContext.runningOrder._id,
 			segmentLineId: segmentLineId,
 			status: RunningOrderAPI.LineItemStatusCode.UNKNOWN,
@@ -332,7 +332,7 @@ export function postProcessSegmentLineAdLibItems (innerContext: ICommonContext, 
 			item.content.timelineObjects = _.map(_.compact(item.content.timelineObjects), (o: TimelineObjectCoreExt) => {
 				const item = convertTimelineObject(o)
 
-				if (!item._id) item._id = innerContext.getHashId('postprocess_' + (i++))
+				if (!item._id) item._id = innerContext.getHashId(templateId + '_adlib_' + (i++))
 
 				if (timelineUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(item._id) + '")')
 				timelineUniqueIds[item._id] = true
