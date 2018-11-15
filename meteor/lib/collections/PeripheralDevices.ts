@@ -64,7 +64,17 @@ export enum PlayoutDeviceType { // to match DeviceType in TSR
 	PANASONIC_PTZ = 5,
 	// TCPSEND = 6, // to be implemented
 	HYPERDECK = 7,
-	PHAROS = 8
+	PHAROS = 8,
+	SCANNER = 9,
+	LAUNCHER = 10
+}
+export const DefaultPlayoutDevicePort = {
+	1: 5250,	// CASPARCG
+	2: 9910,	// ATEM
+	3: 9000,	// LAWO
+	4: 9993,	// HYPERDECK
+	9: 8000,	// SCANNER
+	10: 8005	// LAUNCHER
 }
 
 export interface PlayoutDeviceSettings {

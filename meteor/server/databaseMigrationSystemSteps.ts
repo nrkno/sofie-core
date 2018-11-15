@@ -7,7 +7,7 @@ import { Collections, objectPathGet, objectPathSet, literal } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyles } from '../lib/collections/ShowStyles'
 import { RunningOrderAPI } from '../lib/api/runningOrder'
-import { PlayoutDeviceType, PeripheralDevices, PlayoutDeviceSettings, PlayoutDeviceSettingsDevice, PlayoutDeviceSettingsDeviceCasparCG, PlayoutDeviceSettingsDeviceAtem, PlayoutDeviceSettingsDeviceHyperdeck, PlayoutDeviceSettingsDevicePanasonicPTZ, PeripheralDevice } from '../lib/collections/PeripheralDevices'
+import { PlayoutDeviceType, PeripheralDevices, PlayoutDeviceSettings, PlayoutDeviceSettingsDevice, PlayoutDeviceSettingsDeviceCasparCG, PlayoutDeviceSettingsDeviceAtem, PlayoutDeviceSettingsDeviceHyperdeck, PlayoutDeviceSettingsDevicePanasonicPTZ, DefaultPlayoutDevicePort, PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { LookaheadMode, PlayoutAPI } from '../lib/api/playout'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { compareVersions, parseVersion } from '../lib/collections/CoreSystem'
@@ -106,7 +106,7 @@ function ensureCollectionProperty<T = any> (
  * Convenience function to generate basic test
  * øparam type
  */
-function ensurePlayoutDevicesHost (
+function ensurePlayoutDevicesHostAndPort (
 	deviceType: PlayoutDeviceType = -1
 ): MigrationStepBase | null {
 	let collection: Mongo.Collection<any> = Collections.PeripheralDevices
@@ -127,26 +127,34 @@ function ensurePlayoutDevicesHost (
 	// iterate over devices for gateways
 	_.each(allDevices, (devices, key) => {
 		allDevices[key] = _.pick(devices, (device) => {
-			// let foundHostProp = objectPathGet(device, 'options.host', null) // @ TODOD: switch this in instead of that under
-			let foundHostProp = objectPathGet(device, 'options.host', '')
-			if (typeof foundHostProp === 'string') {
+			let needsMoreData = false
+			let foundHostProp = objectPathGet(device, 'options.host', undefined) 
+			let foundPortProp = objectPathGet(device, 'options.port', undefined) 
+			// let foundHostProp = objectPathGet(device, 'options.host', '') // @ TODOD: discuss if host should be required to be initiated as empty string
+			if (foundHostProp !== undefined && typeof foundHostProp === 'string') {
 				// if host is string but length is 0, then add to mossingHostDevices
-				return foundHostProp.trim().length === 0
+				if(foundHostProp.trim().length === 0){
+					needsMoreData = true
+				}
 			}
 
-			// shouldn't have host, ignore
-			return false
+			// port not number or <= 0
+			if(foundPortProp !== undefined && (isNaN(foundPortProp) || foundPortProp <= 0)) {
+				needsMoreData = true
+			}
+			
+			return needsMoreData
 		})
 	})	
 
 	// create migrationsteps for all affected devices
 	return {
-		id: `ensureHostOnDevicesOfType${deviceType > -1 ? deviceType : 'All'}`,
+		id: `ensureHostPortOnDevicesOfType${deviceType > -1 ? deviceType : 'All'}`,
 		canBeRunAutomatically: false,
 		validate: () => {
 			for (let key in allDevices) {
 				if (!_.isEmpty(allDevices[key])) {
-					return 'Some playout devices are missing host'
+					return 'Some playout devices are missing host or port'
 				}
 			}
 			return true
@@ -157,31 +165,58 @@ function ensurePlayoutDevicesHost (
 			
 			_.each(allDevices, (devices: {[key:string]: PlayoutDeviceSettingsDevice}, gatewayId: string) => {
 				_.each(devices, (device: PlayoutDeviceSettingsDevice, deviceId: string) => {
-					inputs.push({
-						label: `Playout device "${deviceId}" on gateway "${gatewayId}" is missing host`,
-						description: `Host for device "${deviceId}"`,
-						inputType: 'text',
-						attribute: `${gatewayId}.${deviceId}`,
-						defaultValue: null
-					})
+
+					// should have host added
+					let foundHostProp = objectPathGet(device, 'options.host', undefined) 
+					// let foundHostProp = objectPathGet(device, 'options.host', '') // @ TODOD: discuss if host should be required to be initiated as empty string
+					if (foundHostProp !== undefined && typeof foundHostProp === 'string') {
+						// if host is string but length is 0, then add to mossingHostDevices
+						if(foundHostProp.trim().length === 0){
+							inputs.push({
+								label: `Playout device "${deviceId}" on gateway "${gatewayId}" is missing host`,
+								description: `Host for device "${deviceId}"`,
+								inputType: 'text',
+								attribute: `${gatewayId}.${deviceId}.options.host`,
+								defaultValue: null
+							})
+						}
+					}
+					
+					// should have port added
+					let foundPortProp = objectPathGet(device, 'options.port', undefined) 
+					// port not number or <= 0
+					if(foundPortProp !== undefined && (isNaN(foundPortProp) || foundPortProp <= 0)) {
+						inputs.push({
+							label: `Playout device "${deviceId}" on gateway "${gatewayId}" is missing port`,
+							description: `Port for device "${deviceId}"`,
+							inputType: 'int',
+							attribute: `${gatewayId}.${deviceId}.options.port`,
+							defaultValue: DefaultPlayoutDevicePort[device.type] || 0
+						})
+					}
+
+					
 				})			
 			})			
 			return inputs
 		},
 		migrate: (input: MigrationStepInputFilteredResult) => {
-			_.each(input, (devices, objectId: string) => {
+			_.each(input, (newDevices, objectId: string) => {
 				let gateway = collection.findOne(objectId)
 				
-				let newHosts = _.pick(devices, newHost => newHost !== undefined)
-				let oldDevices = objectPathGet(gateway, 'settings.devices', {})
-				_.each(newHosts, (host, device) => {
-					objectPathSet(oldDevices, `${device}.options.host`, host)
+				let newOptions = _.pick(newDevices, newSettings => !_.isEmpty(newSettings))
+
+				
+				let devices = objectPathGet(gateway, 'settings.devices', {})
+				_.each(newOptions, (options, deviceId) => {
+					let mergedDevice = _.extend(devices[deviceId], options)
+					devices[deviceId] = mergedDevice
 				})
 
 				logger.info(`Migration: Setting hosts on devices for gateway ${objectId}`)
 					collection.update(objectId,{$set: {
 						settings: {
-							devices: oldDevices
+							devices: devices
 						}
 					}})
 			})
@@ -999,24 +1034,10 @@ addMigrationSteps( '0.16.0', [
 		}]
 	},
 
-	// ensures all playoutdevices have hosts
-	ensurePlayoutDevicesHost(),
+	// ensures all playoutdevices have hosts and ports
+	// @todo: add launcher and scanner host and port checks
+	ensurePlayoutDevicesHostAndPort(),
 
-	// parent process scanner host
-	// parent process scanner port (8000)
-	// caspar01 host
-	// caspar01 port
-	// caspar01 launcher (8005)
-	// caspar02 host
-	// caspar02 port
-	// caspar02 launcher (8005)
-	// atem host
-	// atem port
-	// lawo host
-	// lawo port
-	// hyperdeck host
-	// hyperdeck port
-	// ptz host
 
 	// Todo: Mos-gateway version
 	// Todo: Playout-gateway version
