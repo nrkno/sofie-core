@@ -5,7 +5,7 @@ import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders
 import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
-import { saveIntoDb, fetchBefore, getRank, fetchAfter } from '../../lib/lib'
+import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime } from '../../lib/lib'
 import { logger } from '../logging'
 import { runNamedTemplate, TemplateContext, TemplateResultAfterPost } from './templates/templates'
 import { getHash } from '../lib'
@@ -425,6 +425,18 @@ export namespace ServerRunningOrderAPI {
 			})
 		}
 	}
+	export function unsyncRunningOrder (runningOrderId: string) {
+		check(runningOrderId, String)
+		logger.info('unsyncRunningOrder ' + runningOrderId)
+
+		let ro = RunningOrders.findOne(runningOrderId)
+		if (ro) {
+			RunningOrders.update(ro._id, {$set: {
+				unsynced: true,
+				unsyncedTime: getCurrentTime()
+			}})
+		} else throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found`)
+	}
 }
 
 let methods: Methods = {}
@@ -433,6 +445,9 @@ methods[RunningOrderAPI.methods.removeRunningOrder] = (roId: string) => {
 }
 methods[RunningOrderAPI.methods.resyncRunningOrder] = (roId: string) => {
 	return ServerRunningOrderAPI.resyncRunningOrder(roId)
+}
+methods[RunningOrderAPI.methods.unsyncRunningOrder] = (roId: string) => {
+	return ServerRunningOrderAPI.unsyncRunningOrder(roId)
 }
 // Apply methods:
 setMeteorMethods(wrapMethods(methods))

@@ -33,6 +33,7 @@ export namespace RunningOrderAPI {
 
 	export enum methods {
 		'removeRunningOrder' = 'rundown.removeRunningOrder',
-		'resyncRunningOrder' = 'rundown.resyncRunningOrder'
+		'resyncRunningOrder' = 'rundown.resyncRunningOrder',
+		'unsyncRunningOrder' = 'rundown.unsyncRunningOrder'
 	}
 }

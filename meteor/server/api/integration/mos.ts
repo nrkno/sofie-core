@@ -594,10 +594,7 @@ export namespace MosIntegration {
 				ServerRunningOrderAPI.removeRunningOrder(ro._id)
 			} else {
 				if (!ro.unsynced) {
-					RunningOrders.update(ro._id, {$set: {
-						unsynced: true,
-						unsyncedTime: getCurrentTime()
-					}})
+					ServerRunningOrderAPI.unsyncRunningOrder(ro._id)
 				}
 			}
 
