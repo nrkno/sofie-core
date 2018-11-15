@@ -1003,8 +1003,8 @@ addMigrationSteps( '0.16.0', [
 	ensureDeviceVersion('ensureVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.1.1')
 ])
 
-//// 0.17.0: Release 3
-addMigrationSteps( '0.17.0', [
+// 0.18.0: Release 4
+addMigrationSteps( '0.18.0', [
 	removeMapping('nora_permanent_klokke'),
 	removeMapping('nora_permanent_logo'),
 	ensureMapping('nora_primary_klokke', literal<Mapping>({
