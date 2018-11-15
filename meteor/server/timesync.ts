@@ -5,6 +5,7 @@ import { StatusCode, setSystemStatus } from './systemStatus'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
+import { setMeteorMethods } from './methods'
 
 interface ServerTime {
 	diff: number
@@ -144,7 +145,7 @@ methods[PeripheralDeviceAPI.methods.getTimeDiff] = () => {
 methods[PeripheralDeviceAPI.methods.getTime] = () => {
 	return getCurrentTime()
 }
-Meteor.methods(methods)
+setMeteorMethods(methods)
 
 let updateServerTime = (retries: number = 0) => {
 	logger.info('Updating systemTime...')

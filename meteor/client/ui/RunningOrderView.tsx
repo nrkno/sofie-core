@@ -1312,7 +1312,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							<KeyboardFocusMarker />
 						</ErrorBoundary>
 						<ErrorBoundary>
-							<RunningOrderFullscreenControls isFollowingOnAir={this.state.followLiveSegments} onFollowOnAir={this.onGoToLiveSegment} />
+							<RunningOrderFullscreenControls isFollowingOnAir={this.state.followLiveSegments} onFollowOnAir={this.onGoToLiveSegment} onRewindSegments={this.onRewindSegments} />
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<RunningOrderHeader

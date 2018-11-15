@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2018-09-26T11:56:37.184Z\n"
-"PO-Revision-Date: 2018-09-26T11:56:37.184Z\n"
+"POT-Creation-Date: 2018-11-08T10:35:10.801Z\n"
+"PO-Revision-Date: 2018-11-08T10:35:10.801Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -165,6 +165,9 @@ msgstr ""
 msgid "Planned start"
 msgstr ""
 
+msgid "Hold"
+msgstr ""
+
 msgid "Planned end"
 msgstr ""
 
@@ -175,9 +178,6 @@ msgid "Expected end"
 msgstr ""
 
 msgid "Take"
-msgstr ""
-
-msgid "Hold"
 msgstr ""
 
 msgid "Activate"
@@ -258,13 +258,13 @@ msgstr ""
 msgid "Rewind segments to start"
 msgstr ""
 
-msgid "ON AIR"
+msgid "Cancel currently pressed hotkey"
+msgstr ""
+
+msgid "Change to fullscreen mode"
 msgstr ""
 
 msgid "This running order has been unpublished from Sofie."
-msgstr ""
-
-msgid "Click Anywhere to go Fullscreen..."
 msgstr ""
 
 msgid "Just now"
@@ -453,6 +453,9 @@ msgstr ""
 msgid "Media Scanner Port"
 msgstr ""
 
+msgid "Activate Debug Logging"
+msgstr ""
+
 msgid "Remove this device?"
 msgstr ""
 
@@ -475,9 +478,6 @@ msgid "Secondary Host (IP Address or Hostname)"
 msgstr ""
 
 msgid "MOS ID of Gateway (Sofie MOS ID)"
-msgstr ""
-
-msgid "Activate Debug Logging"
 msgstr ""
 
 msgid "Generic properties"
@@ -615,6 +615,9 @@ msgstr ""
 msgid "Is a Live Remote Input"
 msgstr ""
 
+msgid "Is a Guest Input"
+msgstr ""
+
 msgid "Is hidden"
 msgstr ""
 
@@ -669,6 +672,15 @@ msgstr ""
 msgid "Identifier"
 msgstr ""
 
+msgid "Preset"
+msgstr ""
+
+msgid "Preset transition speed"
+msgstr ""
+
+msgid "Unknown mapping"
+msgstr ""
+
 msgid "Layer ID"
 msgstr ""
 
@@ -682,6 +694,12 @@ msgid "Are you sure you want to remove mapping for layer \"{{layerId}}\"?"
 msgstr ""
 
 msgid "Layer Mappings"
+msgstr ""
+
+msgid "Key"
+msgstr ""
+
+msgid "Custom Hotkey Labels"
 msgstr ""
 
 msgid "New Source"

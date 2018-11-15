@@ -27,6 +27,7 @@ import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/Perip
 import { literal, getCurrentTime } from '../../lib/lib'
 import { logger } from '../logging'
 import { RunningOrders } from '../../lib/collections/RunningOrders'
+import { setMeteorMethods } from '../methods'
 
 /* tslint:disable:no-irregular-whitespace quotemark whitespace no-consecutive-blank-lines */
 
@@ -36,7 +37,7 @@ export function getPD (): PeripheralDevice {
 		type: PeripheralDeviceAPI.DeviceType.MOSDEVICE
 	}) as PeripheralDevice
 }
-Meteor.methods({
+setMeteorMethods({
 	'debug_roCreate' () {
 		let pd = getPD()
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, pd._id, pd.token, xmlApiData.roCreate)

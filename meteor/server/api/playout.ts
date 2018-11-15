@@ -48,7 +48,7 @@ import { IMOSRunningOrder, MosString128 } from 'mos-connection'
 import { PlayoutTimelinePrefixes, LookaheadMode } from '../../lib/api/playout'
 import { TemplateContext, TemplateResultAfterPost, runNamedTemplate } from './templates/templates'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
-import { sendStoryStatus, updateSegmentLines } from './peripheralDevice'
+import { sendStoryStatus, updateSegmentLines, handleMosRoData } from './peripheralDevice'
 import { StudioInstallations, StudioInstallation, IStudioConfigItem } from '../../lib/collections/StudioInstallations'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
@@ -56,6 +56,12 @@ import { getHash } from '../lib'
 import { syncFunction, syncFunctionIgnore } from '../codeControl'
 import { getResolvedSegment, ISourceLayerExtended } from '../../lib/RunningOrder'
 let clone = require('fast-clone')
+import { Resolver } from 'superfly-timeline'
+import { transformTimeline } from '../../lib/timeline'
+import { ClientAPI } from '../../lib/api/client'
+import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
+import { sendSlackMessageToWebhook } from './slack'
+import { setMeteorMethods } from '../methods'
 
 export namespace ServerPlayoutAPI {
 	/**
@@ -63,6 +69,8 @@ export namespace ServerPlayoutAPI {
 	 * To be triggered well before the broadcast because it may take time
 	 */
 	export function roPrepareForBroadcast (roId: string) {
+		logger.debug(`roPrepareForBroadcast "${roId}"`)
+
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (runningOrder.active) throw new Meteor.Error(404, `roPrepareForBroadcast cannot be run on an active runningOrder!`)
@@ -86,6 +94,8 @@ export namespace ServerPlayoutAPI {
 	 * The User might have run through the running order and wants to start over and try again
 	 */
 	export function roResetRunningOrder (roId: string) {
+		logger.debug(`roResetRunningOrder "${roId}"`)
+
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (runningOrder.active && !runningOrder.rehearsal) throw new Meteor.Error(401, `roResetBroadcast can only be run in rehearsal!`)
@@ -99,6 +109,8 @@ export namespace ServerPlayoutAPI {
 	 * To be triggered by the User a short while before going on air
 	 */
 	export function roResetAndActivate (roId: string) {
+		logger.debug(`roResetAndActivate "${roId}"`)
+
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (runningOrder.active && !runningOrder.rehearsal) throw new Meteor.Error(402, `roResetAndActivate cannot be run when active!`)
@@ -111,6 +123,8 @@ export namespace ServerPlayoutAPI {
 	 * Only activate the runningOrder, don't reset anything
 	 */
 	export function roActivate (roId: string, rehearsal: boolean) {
+		logger.debug(`roResetAndActivate "${roId}", rehearsal ${rehearsal}`)
+
 		check(rehearsal, Boolean)
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -121,6 +135,8 @@ export namespace ServerPlayoutAPI {
 	 * Deactivate the runningOrder
 	 */
 	export function roDeactivate (roId: string, rehearsal: boolean) {
+		logger.debug(`roResetAndActivate "${roId}", rehearsal ${rehearsal}`)
+
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
@@ -130,6 +146,8 @@ export namespace ServerPlayoutAPI {
 	 * Trigger a reload of data of the runningOrder
 	 */
 	export function reloadData (roId: string) {
+		logger.debug(`reloadData "${roId}"`)
+
 		// Reload and reset the Running order
 		check(roId, String)
 		let runningOrder = RunningOrders.findOne(roId)
@@ -411,15 +429,26 @@ export namespace ServerPlayoutAPI {
 		function reloadRunningOrderData (runningOrder: RunningOrder, cb: (err) => void) {
 			logger.info('reloadRunningOrderData ' + runningOrder._id)
 
-			PeripheralDeviceAPI.executeFunction(runningOrder.mosDeviceId, (err: any, ro: IMOSRunningOrder) => {
+			let peripheralDevice = PeripheralDevices.findOne(runningOrder.mosDeviceId) as PeripheralDevice
+			if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice ' + peripheralDevice + ' not found')
+
+			PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err: any, ro: IMOSRunningOrder) => {
 				// console.log('Response!')
 				if (err) {
 					logger.error(err)
 					cb(err)
 				} else {
-					// TODO: what to do with the result?
-					logger.debug('Recieved reply for triggerGetRunningOrder', ro)
-					cb(null)
+					// logger.debug('mosRoCreate', ro)
+					try {
+						logger.info('mosRoCreate ' + ro.ID)
+						logger.debug(ro)
+						logger.debug('Recieved reply for triggerGetRunningOrder', ro)
+
+						handleMosRoData (peripheralDevice, ro)
+						cb(null)
+					} catch (err) {
+						cb(err)
+					}
 				}
 			}, 'triggerGetRunningOrder', runningOrder.mosId)
 		}
@@ -545,6 +574,8 @@ export namespace ServerPlayoutAPI {
 	}
 	export function userRoTake (roId: string) {
 		// Called by the user. Wont throw as nasty errors
+
+		logger.debug(`userRoTake "${roId}"`)
 
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -702,6 +733,8 @@ export namespace ServerPlayoutAPI {
 		})
 	}
 	export function roSetNext (roId: string, nextSlId: string | null, setManually?: boolean) {
+		logger.debug(`roSetNext "${roId}", nextSlId: "${nextSlId}", setManually: "${setManually}"`)
+
 		check(roId, String)
 		if (nextSlId) check(nextSlId, String)
 
@@ -723,6 +756,8 @@ export namespace ServerPlayoutAPI {
 		updateTimeline(runningOrder.studioInstallationId)
 	}
 	export function roMoveNext (roId: string, horisontalDelta: number, verticalDelta: number, setManually: boolean, currentNextSegmentLineItemId?: string) {
+		logger.debug(`roMoveNext "${roId}", xDelta: ${horisontalDelta}, yDelta: ${verticalDelta}, setManually: "${setManually}", currentNextSegmentLineId: "${currentNextSegmentLineItemId}"`)
+
 		check(roId, String)
 		check(horisontalDelta, Number)
 		check(verticalDelta, Number)
@@ -805,8 +840,8 @@ export namespace ServerPlayoutAPI {
 
 	}
 	export function roActivateHold (roId: string) {
+		logger.debug(`roActivateHold "${roId}"`)
 		check(roId, String)
-		console.log('roActivateHold')
 
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -833,6 +868,7 @@ export namespace ServerPlayoutAPI {
 
 	}
 	export function roStoriesMoved (roId: string, onAirNextWindowWidth: number | undefined, nextPosition: number | undefined) {
+		logger.debug(`roStoriesMoved ${roId}, onAirNextWindowWidth: ${onAirNextWindowWidth}, nextPosition: ${nextPosition}`)
 		check(roId, String)
 		check(onAirNextWindowWidth, Match.Maybe(Number))
 		check(nextPosition, Match.Maybe(Number))
@@ -868,6 +904,7 @@ export namespace ServerPlayoutAPI {
 		}
 	}
 	export function roDisableNextSegmentLineItem (roId: string, undo?: boolean): string | null {
+		logger.debug(`roDisableNextSegmentLineItem "${roId}", undo: "${undo}"`)
 		check(roId, String)
 
 		let runningOrder = RunningOrders.findOne(roId)
@@ -983,6 +1020,7 @@ export namespace ServerPlayoutAPI {
 	}
 
 	export function sliPlaybackStartedCallback (roId: string, sliId: string, startedPlayback: Time) {
+		logger.debug(`sliPlaybackStartedCallback "${roId}", slId: "${sliId}", startedPlayback: ${startedPlayback}`)
 		check(roId, String)
 		check(sliId, String)
 		check(startedPlayback, Number)
@@ -1021,6 +1059,7 @@ export namespace ServerPlayoutAPI {
 	}
 
 	export function slPlaybackStartedCallback (roId: string, slId: string, startedPlayback: Time) {
+		logger.debug(`slPlaybackStartedCallback "${roId}", slId: "${slId}", startedPlayback: ${startedPlayback}`)
 		check(roId, String)
 		check(slId, String)
 		check(startedPlayback, Number)
@@ -1142,6 +1181,7 @@ export namespace ServerPlayoutAPI {
 		}
 	}
 	export const sliTakeNow = function sliTakeNow (roId: string, slId: string, sliId: string) {
+		logger.debug(`sliTakeNow "${roId}", slId: "${slId}", sliId: "${sliId}"`)
 		check(roId, String)
 		check(slId, String)
 		check(sliId, String)
@@ -1215,6 +1255,7 @@ export namespace ServerPlayoutAPI {
 		})
 	}
 	export const salliPlaybackStart = syncFunction(function salliPlaybackStart (roId: string, slId: string, slaiId: string, queue: boolean) {
+		logger.debug(`salliPlaybackStart "${roId}", slId: "${slId}", slaiId: "${slaiId}", queue: "${queue}"`)
 		check(roId, String)
 		check(slId, String)
 		check(slaiId, String)
@@ -1252,6 +1293,7 @@ export namespace ServerPlayoutAPI {
 		}
 	})
 	export const robaliPlaybackStart = syncFunction(function robaliPlaybackStart (roId: string, slId: string, robaliId: string, queue: boolean) {
+		logger.debug(`robaliPlaybackStart "${roId}", slId: "${slId}", robaliId: "${robaliId}", queue: "${queue}"`)
 		check(roId, String)
 		check(slId, String)
 		check(robaliId, String)
@@ -1291,9 +1333,8 @@ export namespace ServerPlayoutAPI {
 		}
 	})
 	export function adlibQueueInsertSegmentLine (ro: RunningOrder, slId: string, sladli: SegmentLineAdLibItem) {
-
+		logger.debug(`adlibQueueInsertSegmentLine "${ro._id}", slId: "${slId}", sladli: "${sladli._id}"`)
 		// let segmentLines = ro.getSegmentLines()
-		logger.info('adlibQueueInsertSegmentLine')
 
 		let segmentLine = SegmentLines.findOne(slId)
 		if (!segmentLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
@@ -1322,6 +1363,7 @@ export namespace ServerPlayoutAPI {
 
 	}
 	export function salliStop (roId: string, slId: string, sliId: string) {
+		logger.debug(`salliStop "${roId}", slId: "${slId}", sliId: "${sliId}"`)
 		check(roId, String)
 		check(slId, String)
 		check(sliId, String)
@@ -1373,6 +1415,7 @@ export namespace ServerPlayoutAPI {
 		updateTimeline(runningOrder.studioInstallationId)
 	}
 	export const sourceLayerStickyItemStart = syncFunction(function sourceLayerStickyItemStart (roId: string, sourceLayerId: string) {
+		logger.debug(`sourceLayerStickyItemStart "${roId}", sourceLayerId: "${sourceLayerId}"`)
 		check(roId, String)
 		check(sourceLayerId, String)
 
@@ -1419,6 +1462,7 @@ export namespace ServerPlayoutAPI {
 		}
 	})
 	export function sourceLayerOnLineStop (roId: string, slId: string, sourceLayerId: string) {
+		logger.debug(`sourceLayerOnLineStop "${roId}", slId: "${sourceLayerId}", sourceLayerId: "${sourceLayerId}"`)
 		check(roId, String)
 		check(slId, String)
 		check(sourceLayerId, String)
@@ -1616,10 +1660,10 @@ _.each(methods, (fcn: Function, key) => {
 })
 
 // Apply methods:
-Meteor.methods(methods)
+setMeteorMethods(methods)
 
 // Temporary methods
-Meteor.methods({
+setMeteorMethods({
 	'debug__printTime': () => {
 		let now = getCurrentTime()
 		logger.debug(new Date(now))
@@ -1681,12 +1725,6 @@ function afterTake (runningOrder: RunningOrder, takeSegmentLine: SegmentLine, pr
 		triggerExternalMessage(runningOrder, takeSegmentLine, previousSegmentLine)
 	}, 40)
 }
-
-import { Resolver } from 'superfly-timeline'
-import { transformTimeline } from '../../lib/timeline'
-import { ClientAPI } from '../../lib/api/client'
-import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
-import { sendSlackMessageToWebhook } from './slack'
 
 function getResolvedSegmentLineItems (line: SegmentLine): SegmentLineItem[] {
 	const items = line.getAllSegmentLineItems()

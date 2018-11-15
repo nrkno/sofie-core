@@ -11,6 +11,7 @@ import * as soap from 'soap'
 import * as parser from 'xml2json'
 import { XmlEntities as Entities } from 'html-entities'
 import { Meteor } from 'meteor/meteor'
+import { setMeteorMethods } from '../methods'
 const entities = new Entities()
 
 let runMessageQueue = true
@@ -248,7 +249,7 @@ async function resolveSOAPFcnData (soapClient: soap.Client, valFcn: ExternalMess
 		}
 	})
 }
-Meteor.methods({
+setMeteorMethods({
 	'removeExternalMessageQueueObj': (id) => {
 		ExternalMessageQueue.remove(id)
 	},

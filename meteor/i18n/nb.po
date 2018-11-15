@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2018-09-26T11:56:37.184Z\n"
-"PO-Revision-Date: 2018-09-26 13:56+0200\n"
+"POT-Creation-Date: 2018-11-08T10:35:10.801Z\n"
+"PO-Revision-Date: 2018-11-08 12:29+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.1.1\n"
+"X-Generator: Poedit 2.2\n"
 
 msgid "Return to list"
 msgstr "Gå tilbake til listen"
@@ -173,6 +173,9 @@ msgstr "Startet"
 msgid "Planned start"
 msgstr "Planlagt start"
 
+msgid "Hold"
+msgstr "Hold"
+
 msgid "Planned end"
 msgstr "Planlagt slutt"
 
@@ -184,9 +187,6 @@ msgstr "Forventet slutt"
 
 msgid "Take"
 msgstr "Take"
-
-msgid "Hold"
-msgstr "Hold"
 
 msgid "Activate"
 msgstr "Aktiver"
@@ -272,14 +272,15 @@ msgstr "Gå til On Air-linje"
 msgid "Rewind segments to start"
 msgstr "Spol tilbake tittler til start"
 
-msgid "ON AIR"
-msgstr "ON AIR"
+#, fuzzy
+msgid "Cancel currently pressed hotkey"
+msgstr "Avbryt den trykte tasten"
+
+msgid "Change to fullscreen mode"
+msgstr "Fullskjerm"
 
 msgid "This running order has been unpublished from Sofie."
 msgstr "Denne kjøreplanen er ikke lenger tilgjengelig i Sofie."
-
-msgid "Click Anywhere to go Fullscreen..."
-msgstr "Klikk hvor som helst for gå til fullskjerm..."
 
 msgid "Just now"
 msgstr "Nå"
@@ -467,6 +468,9 @@ msgstr "Media Scanner Host"
 msgid "Media Scanner Port"
 msgstr "Media Scanner Port"
 
+msgid "Activate Debug Logging"
+msgstr "Activate Debug Logging"
+
 msgid "Remove this device?"
 msgstr "Remove this device?"
 
@@ -490,9 +494,6 @@ msgstr "Secondary Host (IP Address or Hostname)"
 
 msgid "MOS ID of Gateway (Sofie MOS ID)"
 msgstr "MOS ID of Gateway (Sofie MOS ID)"
-
-msgid "Activate Debug Logging"
-msgstr "Activate Debug Logging"
 
 msgid "Generic properties"
 msgstr "Generic Properties"
@@ -629,6 +630,11 @@ msgstr "Is on clean PGM"
 msgid "Is a Live Remote Input"
 msgstr "Is a Live Remote Input"
 
+#, fuzzy
+#| msgid "Is a Live Remote Input"
+msgid "Is a Guest Input"
+msgstr "Is a Guest Input"
+
 msgid "Is hidden"
 msgstr "Is hidden"
 
@@ -683,6 +689,19 @@ msgstr "index"
 msgid "Identifier"
 msgstr "Identifier"
 
+#, fuzzy
+msgid "Preset"
+msgstr "Preset"
+
+#, fuzzy
+msgid "Preset transition speed"
+msgstr "Preset transition speed"
+
+#, fuzzy
+#| msgid "Unknown Layer"
+msgid "Unknown mapping"
+msgstr "Unknown mapping"
+
 msgid "Layer ID"
 msgstr "Layer ID"
 
@@ -697,6 +716,14 @@ msgstr "Are you sure you want to remove mapping for layer \"{{layerId}}\"?"
 
 msgid "Layer Mappings"
 msgstr "Layer Mappings"
+
+#, fuzzy
+msgid "Key"
+msgstr "Key"
+
+#, fuzzy
+msgid "Custom Hotkey Labels"
+msgstr "Custom Hotkey Labels"
 
 msgid "New Source"
 msgstr "New Source"
@@ -809,6 +836,12 @@ msgstr "User Activity Log"
 msgctxt "item"
 msgid "new_config"
 msgstr "new_config"
+
+#~ msgid "ON AIR"
+#~ msgstr "ON AIR"
+
+#~ msgid "Click Anywhere to go Fullscreen..."
+#~ msgstr "Klikk hvor som helst for gå til fullskjerm..."
 
 #~ msgid "Restart this device process?"
 #~ msgstr "Restart this device process?"

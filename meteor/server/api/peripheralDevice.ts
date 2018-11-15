@@ -21,7 +21,7 @@ import {
 	IMOSObjectStatus
 } from 'mos-connection'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { RunningOrder, RunningOrders, DBRunningOrder } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineHoldMode, SegmentLineNoteType, SegmentLineNote } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
@@ -40,6 +40,7 @@ import { ShowStyles, ShowStyle } from '../../lib/collections/ShowStyles'
 import { ServerPlayoutAPI, updateTimelineFromMosData, updateTimeline, afterUpdateTimeline } from './playout'
 import { syncFunction } from '../codeControl'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
+import { setMeteorMethods } from '../methods'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -277,101 +278,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 		logger.debug(ro)
 
-		updateMosLastDataReceived(id)
-
-		if (!peripheralDevice.studioInstallationId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no StudioInstallation')
-		let studioInstallation = StudioInstallations.findOne(peripheralDevice.studioInstallationId) as StudioInstallation
-		if (!studioInstallation) throw new Meteor.Error(404, 'StudioInstallation "' + peripheralDevice.studioInstallationId + '" not found')
-
-		let showStyle = ShowStyles.findOne(studioInstallation.defaultShowStyle) as ShowStyle || {}
-
-		// Save RO into database:
-		saveIntoDb(RunningOrders, {
-			_id: roId(ro.ID)
-		}, _.map([ro], (ro) => {
-			return partialExceptId<DBRunningOrder>({
-				_id: roId(ro.ID),
-				mosId: ro.ID.toString(),
-				studioInstallationId: studioInstallation._id,
-				mosDeviceId: id,
-				showStyleId: showStyle._id,
-				name: ro.Slug.toString(),
-				expectedStart: formatTime(ro.EditorialStart),
-				expectedDuration: formatDuration(ro.EditorialDuration)
-			})
-		}), {
-			beforeInsert: (o) => {
-				o.created = getCurrentTime()
-				o.modified = getCurrentTime()
-				return o
-			},
-			beforeUpdate: (o) => {
-				o.modified = getCurrentTime()
-				return o
-			}
-		})
-
-		let dbRo = RunningOrders.findOne(roId(ro.ID))
-		if (!dbRo) throw new Meteor.Error(500, 'Running order not found (it should have been)')
-		// cache the Data
-		dbRo.saveCache(CachePrefix.ROCREATE + roId(ro.ID), ro)
-
-		// Save Stories into database:
-		// Note: a number of X stories will result in (<=X) Segments and X SegmentLines
-		let segments: DBSegment[] = []
-		let segmentLines: DBSegmentLine[] = []
-		let rankSegment = 0
-		let rankSegmentLine = 0
-		let prevSlugParts: string[] = []
-		let segment: DBSegment
-		_.each(ro.Stories, (story: IMOSStory) => {
-			// divide into
-			let slugParts = (story.Slug || '').toString().split(';')
-
-			// if (slugParts[0] !== prevSlugParts[0]) {
-				// segment = convertToSegment(story, roId(ro.ID), rankSegment++)
-				// segments.push(segment)
-			// }
-			if (dbRo) {
-				let segmentLine = convertToSegmentLine(story, dbRo._id, rankSegmentLine++)
-				segmentLines.push(segmentLine)
-			} else throw new Meteor.Error(500, 'Running order not found (it should have been)')
-
-			prevSlugParts = slugParts
-		})
-		// logger.debug('segmentLines', segmentLines)
-		// logger.debug('---------------')
-		// logger.debug(SegmentLines.find({runningOrderId: dbRo._id}).fetch())
-		saveIntoDb<SegmentLine, DBSegmentLine>(SegmentLines, {
-			runningOrderId: dbRo._id
-		}, segmentLines, {
-			beforeDiff (obj, oldObj) {
-				let o = _.extend({}, obj, {
-					segmentId: oldObj.segmentId
-				})
-				return o
-			},
-			afterInsert (segmentLine) {
-				// logger.debug('inserted segmentLine ' + segmentLine._id)
-				// @todo: have something here?
-				// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
-				// if (story) {
-					// afterInsertUpdateSegment (story, roId(ro.ID))
-				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
-			},
-			afterUpdate (segmentLine) {
-				// logger.debug('updated segmentLine ' + segmentLine._id)
-				// @todo: have something here?
-				// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
-				// if (story) {
-				// 	afterInsertUpdateSegment (story, roId(ro.ID))
-				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
-			},
-			afterRemove (segmentLine) {
-				afterRemoveSegmentLine(segmentLine)
-			}
-		})
-		updateSegments(roId(ro.ID))
+		handleMosRoData (peripheralDevice, ro)
 	}
 	export function mosRoReplace (id, token, ro: IMOSRunningOrder) {
 		// let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -657,12 +564,12 @@ export namespace ServerPeripheralDeviceAPI {
 			}
 		}
 
-		let segmentLineAfter = getSegmentLine(Action.RunningOrderID, Action.StoryID)
-		let segmentLineBefore = fetchBefore(SegmentLines, { runningOrderId: ro._id }, segmentLineAfter._rank)
+		let segmentLineAfter = (Action.StoryID ? getSegmentLine(Action.RunningOrderID, Action.StoryID) : null)
+		let segmentLineBefore = fetchBefore(SegmentLines, { runningOrderId: ro._id }, (segmentLineAfter ? segmentLineAfter._rank : null))
 		// console.log('Inserting between: ' + (segmentLineBefore ? segmentLineBefore._rank : 'X') + ' - ' + segmentLineAfter._rank)
 
 		let affectedSegmentLineIds: Array<string> = []
-		affectedSegmentLineIds.push(segmentLineAfter._id)
+		if (segmentLineAfter) affectedSegmentLineIds.push(segmentLineAfter._id)
 		if (segmentLineBefore) affectedSegmentLineIds.push(segmentLineBefore._id)
 		_.each(Stories, (storyId: MosString128, i: number) => {
 			let rank = getRank(segmentLineBefore, segmentLineAfter, i, Stories.length)
@@ -859,6 +766,113 @@ export namespace ServerPeripheralDeviceAPI {
 		PeripheralDeviceAPI.executeFunction(deviceId, cb, functionName, ...args0)
 	})
 }
+export function handleMosRoData (peripheralDevice: PeripheralDevice, ro: IMOSRunningOrder) {
+	ServerPeripheralDeviceAPI.updateMosLastDataReceived(peripheralDevice._id)
+
+	if (!peripheralDevice.studioInstallationId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no StudioInstallation')
+	let studioInstallation = StudioInstallations.findOne(peripheralDevice.studioInstallationId) as StudioInstallation
+	if (!studioInstallation) throw new Meteor.Error(404, 'StudioInstallation "' + peripheralDevice.studioInstallationId + '" not found')
+
+	let showStyle = ShowStyles.findOne(studioInstallation.defaultShowStyle) as ShowStyle || {}
+
+	let dbRoData: DBRunningOrder = _.extend(
+		RunningOrders.findOne(roId(ro.ID)) || {},
+		{
+			_id: roId(ro.ID),
+			mosId: ro.ID.toString(),
+			studioInstallationId: studioInstallation._id,
+			mosDeviceId: peripheralDevice._id,
+			showStyleId: showStyle._id,
+			name: ro.Slug.toString(),
+			expectedStart: formatTime(ro.EditorialStart),
+			expectedDuration: formatDuration(ro.EditorialDuration)
+		} as DBRunningOrder
+	)
+	// Save RO into database:
+	saveIntoDb(RunningOrders, {
+		_id: dbRoData._id
+	}, [dbRoData], {
+		beforeInsert: (o) => {
+			o.created = getCurrentTime()
+			o.modified = getCurrentTime()
+			return o
+		},
+		beforeUpdate: (o) => {
+			o.modified = getCurrentTime()
+			return o
+		}
+	})
+
+	let dbRo = RunningOrders.findOne(dbRoData._id)
+	if (!dbRo) throw new Meteor.Error(500, 'Running order not found (it should have been)')
+	// cache the Data
+	dbRo.saveCache(CachePrefix.ROCREATE + dbRo._id, ro)
+
+	// Save Stories into database:
+	let existingSegmentLines = dbRo.getSegmentLines()
+
+	// Note: a number of X stories will result in (<=X) Segments and X SegmentLines
+	let segments: DBSegment[] = []
+	let segmentLines: DBSegmentLine[] = []
+	let rankSegment = 0
+	let rankSegmentLine = 0
+	let prevSlugParts: string[] = []
+	let segment: DBSegment
+	_.each(ro.Stories, (story: IMOSStory) => {
+		// divide into
+		let slugParts = (story.Slug || '').toString().split(';')
+
+		// if (slugParts[0] !== prevSlugParts[0]) {
+			// segment = convertToSegment(story, roId(ro.ID), rankSegment++)
+			// segments.push(segment)
+		// }
+		if (dbRo) {
+			// join new data with old:
+			let segmentLine = convertToSegmentLine(story, dbRo._id, rankSegmentLine++)
+			let existingSegmentLine = _.find(existingSegmentLines, (sl) => {
+				return sl._id === segmentLine._id
+			})
+			segmentLine = mergeSegmentLine(segmentLine, existingSegmentLine)
+
+			segmentLines.push(segmentLine)
+		} else throw new Meteor.Error(500, 'Running order not found (it should have been)')
+
+		prevSlugParts = slugParts
+	})
+	// logger.debug('segmentLines', segmentLines)
+	// logger.debug('---------------')
+	// logger.debug(SegmentLines.find({runningOrderId: dbRo._id}).fetch())
+	saveIntoDb<SegmentLine, DBSegmentLine>(SegmentLines, {
+		runningOrderId: dbRo._id
+	}, segmentLines, {
+		beforeDiff (obj, oldObj) {
+			let o = _.extend({}, obj, {
+				segmentId: oldObj.segmentId
+			})
+			return o
+		},
+		afterInsert (segmentLine) {
+			logger.debug('inserted segmentLine ' + segmentLine._id)
+			// @todo: have something here?
+			// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+			// if (story) {
+				// afterInsertUpdateSegment (story, roId(ro.ID))
+			// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
+		},
+		afterUpdate (segmentLine) {
+			// logger.debug('updated segmentLine ' + segmentLine._id)
+			// @todo: have something here?
+			// let story: IMOSROStory | undefined = _.find(ro.Stories, (s) => { return s.ID.toString() === segment.mosId } )
+			// if (story) {
+			// 	afterInsertUpdateSegment (story, roId(ro.ID))
+			// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
+		},
+		afterRemove (segmentLine) {
+			afterRemoveSegmentLine(segmentLine)
+		}
+	})
+	updateSegments(roId(ro.ID))
+}
 export function roId (roId: MosString128, original?: boolean): string {
 	// logger.debug('roId', roId)
 	if (!roId) throw new Meteor.Error(401, 'parameter roId missing!')
@@ -925,14 +939,15 @@ export function getRO (roID: MosString128): RunningOrder {
  * @param segmentLineId
  */
 export function getSegmentLine (roID: MosString128, storyID: MosString128): SegmentLine {
-	let id = segmentLineId(roId(roID), storyID, true)
+	let runningOrderId = roId(roID)
+	let id = segmentLineId(runningOrderId, storyID, true)
 	let segmentLine = SegmentLines.findOne({
-		runningOrderId: roId( roID ),
+		runningOrderId: runningOrderId,
 		_id: id
 	})
 	if (segmentLine) {
 		return segmentLine
-	} else throw new Meteor.Error(404, 'SegmentLine ' + id + ' not found (ro: ' + roID + ', story: ' + storyID + ')')
+	} else throw new Meteor.Error(404, 'SegmentLine ' + id + ' not found (roId: ' + runningOrderId + ', ro: ' + roID + ', story: ' + storyID + ')')
 }
 /**
  * Converts a Story into a Segment
@@ -976,6 +991,22 @@ export function convertToSegmentLine (story: IMOSStory, runningOrderId: string, 
 		// autoNext: item.Trigger === ??
 	}
 }
+/**
+ * Merge an old segmentLine with a new one (to be used together with (after) convertToSegmentLine )
+ * @param newSegmentLine
+ * @param existingSegmentLine
+ */
+export function mergeSegmentLine (newSegmentLine: DBSegmentLine, existingSegmentLine?: DBSegmentLine): DBSegmentLine {
+	if (existingSegmentLine) {
+		if (existingSegmentLine._id !== newSegmentLine._id) {
+			throw new Meteor.Error(500, `mergeSegmentLine: ids differ: ${newSegmentLine._id}, ${existingSegmentLine._id}`)
+		}
+
+		newSegmentLine = _.extend({}, existingSegmentLine, _.omit(newSegmentLine, ['segmentId']))
+	}
+	return newSegmentLine
+}
+
 /**
  * Insert a Story (aka a Segment) into the database
  * @param story The story to be inserted
@@ -1098,6 +1129,8 @@ export function afterInsertUpdateSegmentLine (story: IMOSStory, runningOrderId: 
 	// and put them into the db
 }
 export function afterRemoveSegmentLine (removedSegmentLine: DBSegmentLine, replacedBySegmentLine?: DBSegmentLine) {
+	logger.debug('removed segmentLine ' + removedSegmentLine._id)
+
 	SegmentLineItems.remove({
 		segmentLineId: removedSegmentLine._id
 	})
@@ -1249,7 +1282,7 @@ function updateSegments (runningOrderId: string) {
 
 	// Update SegmentLines:
 	_.each(segmentLineUpdates, (modifier, id) => {
-		logger.info('added SegmentLine to segment ' + modifier['segmentId'])
+		logger.info('added SegmentLine ' + id + ' to segment ' + modifier['segmentId'])
 		SegmentLines.update(id, {$set: modifier})
 	})
 	// Update Segments:
@@ -1720,10 +1753,10 @@ _.each(methods, (fcn: Function, key) => {
 })
 
 // Apply methods:
-Meteor.methods(methods)
+setMeteorMethods(methods)
 
 // temporary functions:
-Meteor.methods({
+setMeteorMethods({
 	'temporaryRemovePeripheralDevice' (id: string) {
 		// TODO: Replace this function with an authorized one
 		PeripheralDevices.remove(id)
