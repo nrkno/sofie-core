@@ -310,6 +310,19 @@ body.vertical-overflow-only {
 			padding: 0.5em;
 			line-height: 1.4em;
 			font-size: 75%;
+
+			> .segment-timeline__title__notes__note {
+				position: relative;
+				padding-left: 20px;
+
+				> .icon {
+					position: absolute;
+					left: 0;
+					top: 1px;
+					height: auto;
+					width: 16px;
+				}
+			}
 		}
 	}
 

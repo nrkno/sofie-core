@@ -910,7 +910,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 							</div>
 						</div>
 						<TimingDisplay {...this.props} />
-						{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} runningOrder={this.props.runningOrder} />}
+						{ this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} runningOrder={this.props.runningOrder} /> }
 					</div>
 					<div className='row dark'>
 						<div className='col c12 running-order-overview'>
