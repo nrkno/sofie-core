@@ -6,6 +6,8 @@ import * as VelocityReact from 'velocity-react'
 import { translateWithTracker, Translated } from '../ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from './notifications'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faChevronLeft } from '@fortawesome/fontawesome-free-solid'
 
 interface IPopUpProps {
 	item: Notification
@@ -36,7 +38,8 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 }
 
 interface IProps {
-
+	showEmptyListLabel?: boolean
+	showSnoozed?: boolean
 }
 
 interface IState {
@@ -61,6 +64,11 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 	}
 
 	render () {
+		const { t } = this.props
+		const displayList = this.props.notifications.filter(i => this.props.showSnoozed || !i.snoozed).sort((a, b) => (b.created - a.created)).map(item => (
+			<NotificationPopUp key={item.created + item.message + (item.id || '')} item={item} onDismiss={() => this.dismissNotification(item)} />
+		))
+
 		return (
 			<div className='notification-pop-ups'>
 				<VelocityReact.VelocityTransitionGroup enter={{
@@ -68,11 +76,39 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 				}} leave={{
 					animation: 'fadeOut', easing: 'ease-in', duration: 500, display: 'flex'
 				}}>
-					{this.props.notifications.filter(i => !i.snoozed).sort((a, b) => (b.created - a.created)).map(item => (
-						<NotificationPopUp key={item.created + item.message + (item.id || '')} item={item} onDismiss={() => this.dismissNotification(item)} />
-					))}
+					{displayList}
+					{this.props.showEmptyListLabel && displayList.length === 0 &&
+						<span className='notification-pop-ups__empty-list'>{t('No notifications')}</span>
+					}
 				</VelocityReact.VelocityTransitionGroup>
 			</div>
 		)
 	}
 })
+
+export class NotificationCenterPanel extends React.Component {
+	render () {
+		return (
+			<div className='notification-center-panel'>
+				<NotificationCenterPopUps showEmptyListLabel={true} showSnoozed={true} />
+			</div>
+		)
+	}
+}
+
+interface IToggleProps {
+	onClick?: (e: React.MouseEvent<HTMLDivElement>) => void
+	isOpen?: boolean
+}
+
+export class NotificationCenterPanelToggle extends React.Component<IToggleProps> {
+	render () {
+		return (
+			<div className={ClassNames('notifications__toggle-button', {
+				'open': this.props.isOpen
+			})} role='button' onClick={this.props.onClick} tabIndex={0}>
+				<FontAwesomeIcon icon={faChevronLeft} />
+			</div>
+		)
+	}
+}
