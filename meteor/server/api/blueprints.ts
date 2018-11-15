@@ -27,6 +27,7 @@ import {
 } from 'tv-automation-sofie-blueprints-integration/dist/api'
 import { IBlueprintSegmentLineItem, IBlueprintSegmentLineAdLibItem, BlueprintRuntimeArguments, IBlueprintSegmentLine } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
+import { TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration/dist/timeline';
 
 class CommonContext implements ICommonContext {
 	runningOrderId: string
@@ -290,17 +291,16 @@ export function postProcessSegmentLineItems (innerContext: ICommonContext, segme
 		segmentLinesUniqueIds[item._id] = true
 
 		if (item.content && item.content.timelineObjects) {
-			item.content.timelineObjects = _.compact(item.content.timelineObjects)
-
 			let timelineUniqueIds: { [id: string]: true } = {}
-			_.each(item.content.timelineObjects, (o: TimelineObj) => {
-				o._id = o['id']
-				delete o['id']
+			item.content.timelineObjects = _.map(_.compact(item.content.timelineObjects), (o: TimelineObjectCoreExt) => {
+				const item = convertTimelineObject(o)
 
-				if (!o._id) o._id = innerContext.getHashId('postprocess_' + (i++))
+				if (!item._id) item._id = innerContext.getHashId('postprocess_' + (i++))
 
-				if (timelineUniqueIds[o._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(o._id) + '")')
-				timelineUniqueIds[o._id] = true
+				if (timelineUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(item._id) + '")')
+				timelineUniqueIds[item._id] = true
+
+				return item
 			})
 		}
 
@@ -328,17 +328,16 @@ export function postProcessSegmentLineAdLibItems (innerContext: ICommonContext, 
 		segmentLinesUniqueIds[item._id] = true
 
 		if (item.content && item.content.timelineObjects) {
-			item.content.timelineObjects = _.compact(item.content.timelineObjects)
-
 			let timelineUniqueIds: { [id: string]: true } = {}
-			_.each(item.content.timelineObjects, (o: TimelineObj) => {
-				o._id = o['id']
-				delete o['id']
+			item.content.timelineObjects = _.map(_.compact(item.content.timelineObjects), (o: TimelineObjectCoreExt) => {
+				const item = convertTimelineObject(o)
 
-				if (!o._id) o._id = innerContext.getHashId('postprocess_' + (i++))
+				if (!item._id) item._id = innerContext.getHashId('postprocess_' + (i++))
 
-				if (timelineUniqueIds[o._id]) throw new Meteor.Error(400, 'Error in blueprint "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(o._id) + '")')
-				timelineUniqueIds[o._id] = true
+				if (timelineUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(item._id) + '")')
+				timelineUniqueIds[item._id] = true
+
+				return item
 			})
 		}
 
@@ -346,12 +345,25 @@ export function postProcessSegmentLineAdLibItems (innerContext: ICommonContext, 
 	})
 }
 
+function convertTimelineObject (o: TimelineObjectCoreExt): TimelineObj {
+	let item: TimelineObj = {
+		_id: o.id,
+		siId: '',
+		roId: '',
+		deviceId: [''],
+		...o,
+		id: '' // To makes types match
+	}
+	delete item['id']
+
+	return item
+}
+
 export function postProcessSegmentLineBaselineItems (innerContext: BaselineContext, baselineItems: TimelineObj[]): TimelineObj[] {
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
-	return _.map(_.compact(baselineItems), (item: TimelineObj) => {
-		item._id = item['id']
-		delete item['id']
+	return _.map(_.compact(baselineItems), (o: TimelineObjectCoreExt) => {
+		const item = convertTimelineObject(o)
 
 		if (!item._id) item._id = innerContext.getHashId('baseline_' + (i++))
 
