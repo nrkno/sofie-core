@@ -1,0 +1,17 @@
+@import "_variables";
+
+.status-bar {
+	position: fixed;
+	top: 64px;
+	width: $statusbar-width;
+	right: 0;
+	bottom: 0;
+	border: 1px solid rgba(0, 0, 0, 0.3);
+	z-index: 300;
+
+	transition: 0.3s background;
+
+	&.super-dark {
+		background: #000 !important;
+	}
+}

@@ -190,6 +190,11 @@ class NotificationCenter0 {
 		return _.flatten(_.map(notifiers, (item, key) => item.result)
 						 .concat(_.map(notifications, (item, key) => item)))
 	}
+
+	snoozeAll () {
+		const n = this.getNotifications()
+		n.forEach((item) => item.snooze())
+	}
 }
 
 export const NotificationCenter = new NotificationCenter0()

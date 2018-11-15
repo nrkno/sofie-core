@@ -47,6 +47,7 @@ import { mousetrapHelper } from '../lib/mousetrapHelper'
 
 import { RunningOrderViewNotifier } from './RunningOrderView/RunningOrderNotifier'
 import { NotificationCenterPopUps, NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
+import { NotificationCenter } from '../lib/notifications/notifications'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -912,7 +913,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 						<TimingDisplay {...this.props} />
 						{ this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} runningOrder={this.props.runningOrder} /> }
 					</div>
-					<div className='row dark'>
+					<div className='row dark margin-right'>
 						<div className='col c12 running-order-overview'>
 							{ this.props.runningOrder && <RunningOrderOverview runningOrderId={this.props.runningOrder._id} /> }
 						</div>
@@ -1328,6 +1329,10 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onToggleNotifications = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (!this.state.showNotifications === true) {
+			NotificationCenter.snoozeAll()
+		}
+
 		this.setState({
 			showNotifications: !this.state.showNotifications
 		})
@@ -1351,6 +1356,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							{ this.state.studioMode && <KeyboardFocusMarker /> }
 						</ErrorBoundary>
 						<ErrorBoundary>
+							<div className={ClassNames('status-bar dark', {
+								'super-dark': this.state.showNotifications
+							})}></div>
 							<RunningOrderFullscreenControls isFollowingOnAir={this.state.followLiveSegments} onFollowOnAir={this.onGoToLiveSegment} onRewindSegments={this.onRewindSegments} />
 						</ErrorBoundary>
 						<ErrorBoundary>

@@ -1,5 +1,6 @@
 @import "colorScheme";
 @import "itemTypeColors";
+@import "_variables";
 
 $output-layer-group-line: 1px solid #5C5C5C;
 $output-layer-group-collapse-animation-duration: 0.3s;
@@ -59,6 +60,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 .running-order-view {
 	padding-top: 125px;
 	padding-bottom: 50vh;
+	padding-right: $statusbar-width;
 
 	.header.running-order .notification-pop-ups {
 		top: 65px;
@@ -106,6 +108,10 @@ body.vertical-overflow-only {
 
 	.row {
 		width: 100%;
+
+		&.margin-right {
+			padding-right: $statusbar-width;
+		}
 	}
 
 	.flex-col.col-timing {
@@ -255,8 +261,6 @@ body.vertical-overflow-only {
 	background-color: #660
 }
 
-.segment-timeline-container {
-}
 // A component for displaying the segments (ENPS Stories/NKR Titles)
 .segment-timeline {
 	display: grid;
