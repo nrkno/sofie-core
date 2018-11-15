@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2018-11-14T10:17:29.083Z\n"
-"PO-Revision-Date: 2018-11-14T10:17:29.083Z\n"
+"POT-Creation-Date: 2018-11-15T10:07:29.289Z\n"
+"PO-Revision-Date: 2018-11-15T10:07:29.289Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -149,6 +149,9 @@ msgid "version"
 msgstr ""
 
 msgid "status"
+msgstr ""
+
+msgid "Status messages:"
 msgstr ""
 
 msgid "Delete this item?"
@@ -533,6 +536,12 @@ msgstr ""
 msgid "Select this"
 msgstr ""
 
+msgid "Set database version"
+msgstr ""
+
+msgid "Are you sure you want to set the database version to"
+msgstr ""
+
 msgid "System version"
 msgstr ""
 
@@ -540,6 +549,9 @@ msgid "Database version"
 msgstr ""
 
 msgid "Refresh"
+msgstr ""
+
+msgid "Reset version to"
 msgstr ""
 
 msgid "The migration can be completed automatically."
