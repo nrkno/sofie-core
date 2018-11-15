@@ -1,8 +1,6 @@
 import { ServerResponse, IncomingMessage } from 'http'
 // @ts-ignore Meteor package not recognized by Typescript
 import { Picker } from 'meteor/meteorhacks:picker'
-import { ShowStyle, ShowStyles } from '../lib/collections/ShowStyles'
-import { ShowBlueprints, ShowBlueprint } from '../lib/collections/ShowBlueprints'
 import * as bodyParser from 'body-parser'
 import { logger } from './logging'
 import * as _ from 'underscore'
@@ -10,8 +8,6 @@ import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { Meteor } from 'meteor/meteor'
 import { MosString128 } from 'mos-connection'
-import { evalBlueprints } from './api/blueprints'
-import { Random } from 'meteor/random'
 
 export interface RunningOrderCacheBackup {
 	type: 'runningOrderCache'
@@ -81,54 +77,6 @@ postJSONRoute.route('/backup/restore', (params, req: IncomingMessage, res: Serve
 		res.statusCode = 500
 		content = e + ''
 		logger.debug('Backup restore failed: ', e)
-	}
-
-	res.end(content)
-})
-
-const postJsRoute = Picker.filter((req, res) => req.method === 'POST')
-postJsRoute.middleware(bodyParser.text({
-	type: 'text/javascript',
-	limit: '1mb'
-}))
-postJsRoute.route('/blueprints/restore/:showStyleId', (params, req: IncomingMessage, res: ServerResponse, next) => {
-	res.setHeader('Content-Type', 'text/plain')
-
-	let content = ''
-	try {
-		const body = (req as any).body
-		if (!body) throw new Meteor.Error(500, 'Missing request body')
-
-		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(500, 'Invalid request body')
-
-		logger.info('Got new blueprint. ' + body.length + ' bytes')
-
-		const showStyle = ShowStyles.findOne(params.showStyleId)
-		if (!showStyle) throw new Meteor.Error(404, 'ShowStyle missing from db')
-
-		const newBlueprint: ShowBlueprint = {
-			_id: Random.id(7),
-			showStyleId: showStyle._id,
-			code: body as string,
-			modified: Date.now(),
-			studioConfigManifest: [],
-			showStyleConfigManifest: [],
-			version: ''
-		}
-
-		const blueprintCollection = evalBlueprints(newBlueprint, showStyle.name, false)
-		newBlueprint.version = blueprintCollection.Version
-		newBlueprint.studioConfigManifest = blueprintCollection.StudioConfigManifest
-		newBlueprint.showStyleConfigManifest = blueprintCollection.ShowStyleConfigManifest
-
-		ShowBlueprints.remove({ showStyleId: showStyle._id })
-		ShowBlueprints.insert(newBlueprint)
-
-		res.statusCode = 200
-	} catch (e) {
-		res.statusCode = 500
-		content = e + ''
-		logger.debug('Blueprint restore failed: ' + e)
 	}
 
 	res.end(content)

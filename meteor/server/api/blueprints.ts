@@ -13,7 +13,7 @@ import { logger } from '../logging'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { TimelineObj } from '../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
-import { ShowStyle } from '../../lib/collections/ShowStyles'
+import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
 import { Meteor } from 'meteor/meteor'
 import { ShowBlueprints, ShowBlueprint } from '../../lib/collections/ShowBlueprints'
 import {
@@ -27,7 +27,13 @@ import {
 } from 'tv-automation-sofie-blueprints-integration/dist/api'
 import { IBlueprintSegmentLineItem, IBlueprintSegmentLineAdLibItem, BlueprintRuntimeArguments, IBlueprintSegmentLine } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
-import { TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration/dist/timeline';
+import { TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration/dist/timeline'
+
+import { ServerResponse, IncomingMessage } from 'http'
+// @ts-ignore Meteor package not recognized by Typescript
+import { Picker } from 'meteor/meteorhacks:picker'
+import * as bodyParser from 'body-parser'
+import { Random } from 'meteor/random'
 
 class CommonContext implements ICommonContext {
 	runningOrderId: string
@@ -372,3 +378,53 @@ export function postProcessSegmentLineBaselineItems (innerContext: BaselineConte
 		return item
 	})
 }
+
+const postRoute = Picker.filter((req, res) => req.method === 'POST')
+postRoute.middleware(bodyParser.text({
+	type: 'text/javascript',
+	limit: '1mb'
+}))
+postRoute.route('/blueprints/restore/:showStyleId', (params, req: IncomingMessage, res: ServerResponse, next) => {
+	res.setHeader('Content-Type', 'text/plain')
+
+	let content = ''
+	try {
+		const body = (req as any).body
+		if (!body) throw new Meteor.Error(500, 'Missing request body')
+
+		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(500, 'Invalid request body')
+
+		logger.info('Got new blueprint. ' + body.length + ' bytes')
+
+		const showStyle = ShowStyles.findOne(params.showStyleId)
+		if (!showStyle) throw new Meteor.Error(404, 'ShowStyle missing from db')
+
+		const newBlueprint: ShowBlueprint = {
+			_id: Random.id(7),
+			showStyleId: showStyle._id,
+			code: body as string,
+			modified: Date.now(),
+			studioConfigManifest: [],
+			showStyleConfigManifest: [],
+			version: '',
+			minimumCoreVersion: ''
+		}
+
+		const blueprintCollection = evalBlueprints(newBlueprint, showStyle.name, false)
+		newBlueprint.version = blueprintCollection.Version
+		newBlueprint.minimumCoreVersion = blueprintCollection.MinimumCoreVersion
+		newBlueprint.studioConfigManifest = blueprintCollection.StudioConfigManifest
+		newBlueprint.showStyleConfigManifest = blueprintCollection.ShowStyleConfigManifest
+
+		ShowBlueprints.remove({ showStyleId: showStyle._id })
+		ShowBlueprints.insert(newBlueprint)
+
+		res.statusCode = 200
+	} catch (e) {
+		res.statusCode = 500
+		content = e + ''
+		logger.debug('Blueprint restore failed: ' + e)
+	}
+
+	res.end(content)
+})

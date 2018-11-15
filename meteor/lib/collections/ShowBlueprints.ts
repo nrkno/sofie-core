@@ -15,6 +15,7 @@ export interface ShowBlueprint {
 	showStyleConfigManifest: ConfigManifestEntry[]
 
 	version: string
+	minimumCoreVersion: string
 }
 
 export const ShowBlueprints: TransformedCollection<ShowBlueprint, ShowBlueprint>
