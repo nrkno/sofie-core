@@ -4,7 +4,7 @@ This is the core application of the [**Sofie** TV News Studio Automation System]
 
 
 ## Local development
-First, install meteor:
+First, install Meteor:
 
 * [Meteor Installation Guide](https://www.meteor.com/install)
 
@@ -18,7 +18,7 @@ meteor npm install
 meteor
 ```
 
-If you run into any issues while installing the dependencies, clone any offending packages from Git and link them using `npm link`. For exmaple, for `tv-automation-mos-connection` library:
+If you run into any issues while installing the dependencies, clone any offending packages from Git and link them using `npm link`. For example, for `tv-automation-mos-connection` library:
 
 ```
 git clone -b master https://github.com/nrkno/tv-automation-mos-connection.git
@@ -99,7 +99,7 @@ Next, modify the `package.json` scripts and create a new language compilations s
 "i18n-compile-json-xx": "i18next-conv -l nb -s i18n/xx.po -t public/locales/xx/translations.json",
 ```
 
-Then, run the compillation script:
+Then, run the compilation script:
 
 ```npm run i18n-compile-json```
 
