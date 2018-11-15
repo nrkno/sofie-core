@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.17.0"></a>
+# [0.17.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.16.0...v0.17.0) (2018-11-15)
+
+
+### Bug Fixes
+
+* bug when moving story to last ([2b86f1a](https://github.com/nrkno/tv-automation-server-core/commit/2b86f1a))
+* handle both update & insert of runningOrder ([84a6c53](https://github.com/nrkno/tv-automation-server-core/commit/84a6c53))
+* R3 ONLY: bugfix: reload data from ENPS ([cc6ed44](https://github.com/nrkno/tv-automation-server-core/commit/cc6ed44))
+* Release 3 only: disable config missing warning ([921cc82](https://github.com/nrkno/tv-automation-server-core/commit/921cc82))
+* remove full-screen button, add label ([5e9826e](https://github.com/nrkno/tv-automation-server-core/commit/5e9826e))
+* rewind icon was not responsive in ROFullscreenControls ([2e7c1d2](https://github.com/nrkno/tv-automation-server-core/commit/2e7c1d2))
+* smoother handling when reloading ENPS data ([83be7cb](https://github.com/nrkno/tv-automation-server-core/commit/83be7cb))
+* typo bug in performanceMonitor ([6a5eeb4](https://github.com/nrkno/tv-automation-server-core/commit/6a5eeb4))
+
+
+### Features
+
+* add performance monitor and track all server-side methods ([385f703](https://github.com/nrkno/tv-automation-server-core/commit/385f703))
+* add rewind button ([9fd61b5](https://github.com/nrkno/tv-automation-server-core/commit/9fd61b5))
+* display ms in user activity log ([7fc2744](https://github.com/nrkno/tv-automation-server-core/commit/7fc2744))
+
+
+
 <a name="0.16.0"></a>
 # [0.16.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.15.0...v0.16.0) (2018-10-26)
 
