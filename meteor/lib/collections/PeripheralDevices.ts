@@ -117,6 +117,13 @@ export interface PlayoutDeviceSettingsDeviceHyperdeck extends PlayoutDeviceSetti
 		port?: number
 	}
 }
+export interface PlayoutDeviceSettingsDevicePharos extends PlayoutDeviceSettingsDevice {
+	type: PlayoutDeviceType.PHAROS
+	options: {
+		host: string,
+		ssl?: boolean
+	}
+}
 
 export const PeripheralDevices: TransformedCollection<PeripheralDevice, PeripheralDevice>
 	= new Mongo.Collection<PeripheralDevice>('peripheralDevices')

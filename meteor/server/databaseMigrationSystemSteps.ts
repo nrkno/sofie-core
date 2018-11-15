@@ -7,7 +7,7 @@ import { Collections, objectPathGet, literal } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyles } from '../lib/collections/ShowStyles'
 import { RunningOrderAPI } from '../lib/api/runningOrder'
-import { PlayoutDeviceType, PeripheralDevices, PlayoutDeviceSettings, PlayoutDeviceSettingsDevice, PlayoutDeviceSettingsDeviceCasparCG, PlayoutDeviceSettingsDeviceAtem, PlayoutDeviceSettingsDeviceHyperdeck, PlayoutDeviceSettingsDevicePanasonicPTZ } from '../lib/collections/PeripheralDevices'
+import { PlayoutDeviceType, PeripheralDevices, PlayoutDeviceSettings, PlayoutDeviceSettingsDevice, PlayoutDeviceSettingsDeviceCasparCG, PlayoutDeviceSettingsDeviceAtem, PlayoutDeviceSettingsDeviceHyperdeck, PlayoutDeviceSettingsDevicePanasonicPTZ, PlayoutDeviceSettingsDevicePharos } from '../lib/collections/PeripheralDevices'
 import { LookaheadMode } from '../lib/api/playout'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { compareVersions, parseVersion, getCoreSystem, setCoreSystemStorePath } from '../lib/collections/CoreSystem'
@@ -1057,6 +1057,48 @@ addMigrationSteps( '0.18.0', [
 		unlimited: false,
 		isHidden: true // or should it be?
 	}),
+	{
+		id: 'Playout-gateway.pharos0',
+		canBeRunAutomatically: false,
+		validate: () => {
+			let device = PeripheralDevices.findOne({type: PeripheralDeviceAPI.DeviceType.PLAYOUT})
+			if (!device) return 'Playout-gateway not found'
+			let settings = device.settings || {devices: {}} as PlayoutDeviceSettings
+
+			let pharos0 = settings.devices['pharos0'] as PlayoutDeviceSettingsDevicePharos
+			if (!pharos0) return '"pharos0" missing'
+			// @ts-ignore
+			if (!pharos0.options) pharos0.options = {}
+			if (pharos0.type !== PlayoutDeviceType.PHAROS) return 'Type is not "PHAROS"'
+			// let cameraDevices = pharos0.options.cameraDevices
+
+			return false
+		},
+		migrate: () => {
+			let device = PeripheralDevices.findOne({type: PeripheralDeviceAPI.DeviceType.PLAYOUT})
+			if (device) {
+				// Set some default values:
+				let pharos0 = device.settings && device.settings.devices['pharos0']
+				if (!pharos0) {
+					logger.info(`Migration: Add PeripheralDevice.settings to ${device._id}: pharos0`)
+					PeripheralDevices.update(device._id, {$set: {
+						'settings.devices.pharos0': {
+							type: PlayoutDeviceType.PHAROS,
+							options: {
+								host: ''
+							}
+						}
+					}})
+				}
+			}
+		},
+		input: [{
+			label: 'Playout-gateway: device "pharos0" not set up',
+			description: 'Go into the settings of the Playout-gateway and setup the device "pharos0". ($validation)',
+			inputType: null,
+			attribute: null
+		}]
+	},
 	ensureMapping('pharos_lights', literal<Mapping>({
 		device: PlayoutDeviceType.PHAROS,
 		deviceId: 'pharos0',

@@ -131,7 +131,6 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 	let migrationSteps: {[id: string]: MigrationStepInternal} = {}
 	let ignoredSteps: {[id: string]: true} = {}
 	_.each(allMigrationSteps, (step: MigrationStepInternal) => {
-		console.log('step ' + step.id)
 		if (!step.canBeRunAutomatically && (!step.input || (_.isArray(step.input) && !step.input.length))) throw new Meteor.Error(500, `MigrationStep "${step.id}" is manual, but no input is provided`)
 
 		let stepVersion = step._version
@@ -144,7 +143,6 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 			if (step.overrideSteps) {
 				// Override / delete other steps
 				_.each(step.overrideSteps, (overrideId: string) => {
-					console.log('override ' + overrideId)
 					delete migrationSteps[overrideId]
 					if (ignoredSteps[overrideId]) {
 						delete ignoredSteps[overrideId]
