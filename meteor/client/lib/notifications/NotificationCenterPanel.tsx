@@ -11,6 +11,7 @@ import { faChevronLeft } from '@fortawesome/fontawesome-free-solid'
 
 interface IPopUpProps {
 	item: Notification
+	showDismiss?: boolean
 	onDismiss?: (e: any) => void
 }
 
@@ -28,11 +29,13 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 				<img className='icon' src='/icons/warning_icon.svg' />
 			</div>
 			<div className='notification-pop-up__contents' dangerouslySetInnerHTML={{ __html: item.message }}></div>
-			<div className='notification-pop-up__dismiss'>
-				<button className='notification-pop-up__dismiss__button' onClick={this.props.onDismiss}>
-					<CoreIcon id='nrk-close' />
-				</button>
-			</div>
+			{this.props.showDismiss &&
+				<div className='notification-pop-up__dismiss'>
+					<button className='notification-pop-up__dismiss__button' onClick={this.props.onDismiss}>
+						<CoreIcon id='nrk-close' />
+					</button>
+				</div>
+			}
 		</div>
 	}
 }
@@ -66,7 +69,9 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 	render () {
 		const { t } = this.props
 		const displayList = this.props.notifications.filter(i => this.props.showSnoozed || !i.snoozed).sort((a, b) => (b.created - a.created)).map(item => (
-			<NotificationPopUp key={item.created + item.message + (item.id || '')} item={item} onDismiss={() => this.dismissNotification(item)} />
+			<NotificationPopUp key={item.created + item.message + (item.id || '')}
+				item={item} onDismiss={() => this.dismissNotification(item)}
+				showDismiss={item.persistent && !this.props.showSnoozed} />
 		))
 
 		return (
@@ -74,7 +79,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 				<VelocityReact.VelocityTransitionGroup enter={{
 					animation: 'fadeIn', easing: 'ease-out', duration: 300, display: 'flex'
 				}} leave={{
-					animation: 'fadeOut', easing: 'ease-in', duration: 500, display: 'flex'
+					animation: 'fadeOut', easing: 'ease-in', duration: 150, display: 'flex'
 				}}>
 					{displayList}
 					{this.props.showEmptyListLabel && displayList.length === 0 &&
