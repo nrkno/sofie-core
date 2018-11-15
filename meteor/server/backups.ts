@@ -1,8 +1,3 @@
-import { ServerResponse, IncomingMessage } from 'http'
-// @ts-ignore Meteor package not recognized by Typescript
-import { Picker } from 'meteor/meteorhacks:picker'
-import * as bodyParser from 'body-parser'
-import { logger } from './logging'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
@@ -51,33 +46,3 @@ export function restoreRunningOrder (backup: RunningOrderCacheBackup) {
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoFullStory, id, token, story.data)
 	})
 }
-
-const postJSONRoute = Picker.filter((req, res) => req.method === 'POST')
-postJSONRoute.middleware(bodyParser.json({
-	limit: '1mb' // Arbitrary limit
-}))
-postJSONRoute.route('/backup/restore', (params, req: IncomingMessage, res: ServerResponse, next) => {
-	res.setHeader('Content-Type', 'text/plain')
-
-	let content = ''
-	try {
-		const body = (req as any).body
-		if (!body || !body.type) throw new Meteor.Error(500, 'Missing type in request body')
-
-		switch (body.type) {
-			case 'runningOrderCache':
-				restoreRunningOrder(body as RunningOrderCacheBackup)
-				break
-			default:
-				throw new Meteor.Error(500, 'Unknown type "' + body.type + '" in request body')
-		}
-
-		res.statusCode = 200
-	} catch (e) {
-		res.statusCode = 500
-		content = e + ''
-		logger.debug('Backup restore failed: ', e)
-	}
-
-	res.end(content)
-})
