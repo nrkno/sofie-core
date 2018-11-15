@@ -208,12 +208,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 					</div>
 				</div>
 				<div className='device-item__id'>
-					<label>{t('ID')}: </label>
-					<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device._id}</Link></div>
-				</div>
-				<div className='device-item__name'>
-					<label>{t('Name')}: </label>
-					<div className='value'>{this.props.device.name}</div>
+					<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link></div>
 				</div>
 				<div className='device-item__type'>
 					<label>{t('Type')}: </label>
