@@ -68,15 +68,15 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 		let t = this.props.t
 
 		switch (this.props.device.type) {
-			case PeripheralDeviceAPI.DeviceType.MOSDEVICE:
-				return t('MOS Device')
-			case PeripheralDeviceAPI.DeviceType.PLAYOUT:
-				return t('Play-out Device')
-			case PeripheralDeviceAPI.DeviceType.OTHER:
-				return t('Sub-Device')
-			default:
-				return t('Unknown Device')
-		}
+				case PeripheralDeviceAPI.DeviceType.MOSDEVICE:
+					return t('MOS gateway')
+				case PeripheralDeviceAPI.DeviceType.PLAYOUT:
+					return t('Playout gateway')
+				case PeripheralDeviceAPI.DeviceType.OTHER:
+					return ''
+				default:
+					return t('Unknown Device')
+			}
 	}
 	deviceVersions () {
 		let versions = this.props.device.versions
@@ -210,10 +210,6 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 				<div className='device-item__id'>
 					<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link></div>
 				</div>
-				<div className='device-item__type'>
-					<label>{t('Type')}: </label>
-					<div className='value'>{this.deviceTypeString()}</div>
-				</div>
 				{this.props.device.versions ?
 					<div className='device-item__version'>
 						<label>{t('Version')}: </label>
@@ -260,12 +256,12 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 						</button>
 						{(
 							this.props.device.type !== PeripheralDeviceAPI.DeviceType.OTHER ? <React.Fragment>
-								<ModalDialog title={t('Kill this device process?')} acceptText={t('Kill')}
+								<ModalDialog title={t('Restart this device?')} acceptText={t('Restart')}
 									secondaryText={t('Cancel')}
 									show={!!this.state.showKillDeviceConfirm}
 									onAccept={(e) => this.handleConfirmKillAccept(e)}
 									onSecondary={(e) => this.handleConfirmKillCancel(e)}>
-									<p>{t('Are you sure you want to kill the process of this device?')}</p>
+									<p>{t('Are you sure you want to restart this device?')}</p>
 								</ModalDialog>
 								<button className='btn btn-secondary' onClick={
 									(e) => {
@@ -274,7 +270,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 										this.onKillDevice(this.props.device)
 									}
 								}>
-									Kill process
+									Restart
 								</button>
 							</React.Fragment> : null
 						)}
