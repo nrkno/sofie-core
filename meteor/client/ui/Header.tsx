@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
-import { translate } from 'react-i18next'
+import { translate, InjectedTranslateProps } from 'react-i18next'
 
 import { NavLink } from 'react-router-dom'
 import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
@@ -17,8 +17,8 @@ interface IStateHeader {
 	showNotifications: boolean
 }
 
-class Header extends React.Component<Translated<IPropsHeader>, IStateHeader> {
-	constructor (props) {
+class Header extends React.Component<IPropsHeader & InjectedTranslateProps, IStateHeader> {
+	constructor (props: IPropsHeader & InjectedTranslateProps) {
 		super(props)
 
 		this.state = {
