@@ -12,7 +12,8 @@ export interface EvaluationBase {
 	runningOrderId: string,
 	answers: {
 		[key: string]: string
-	}
+	},
+	snapshots?: Array<string>
 }
 
 export const Evaluations: TransformedCollection<Evaluation, Evaluation>

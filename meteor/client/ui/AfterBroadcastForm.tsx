@@ -48,25 +48,37 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 
 		let answers = this.state
 
-		let evaluation: EvaluationBase = {
-			studioId: this.props.runningOrder.studioInstallationId,
-			runningOrderId: this.props.runningOrder._id,
-			answers: answers
+		if (answers.q0 !== 'nothing') {
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT, this.props.runningOrder._id, 'Evaluation form', (err, snapshotId) => {
+				if (!err && snapshotId) {
+					saveEvaluation(snapshotId)
+				} else {
+					saveEvaluation()
+				}
+			})
+		} else {
+			saveEvaluation()
 		}
+		function saveEvaluation (snapshotId?: string) {
 
-		if (evaluation.answers.q0 !== 'nothing') {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT, this.props.runningOrder._id, 'Evaluation form')
+			let evaluation: EvaluationBase = {
+				studioId: this.props.runningOrder.studioInstallationId,
+				runningOrderId: this.props.runningOrder._id,
+				answers: answers,
+				snapshots: []
+			}
+			if (snapshotId && evaluation.snapshots) evaluation.snapshots.push(snapshotId)
+
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.saveEvaluation, evaluation)
+
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
+
+			this.setState({
+				q0: '',
+				q1: '',
+				q2: '',
+			})
 		}
-
-		Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.saveEvaluation, evaluation)
-
-		Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
-
-		this.setState({
-			q0: '',
-			q1: '',
-			q2: '',
-		})
 	}
 	onUpdateValue = (edit: any, newValue: any ) => {
 		console.log('edit', edit, newValue)

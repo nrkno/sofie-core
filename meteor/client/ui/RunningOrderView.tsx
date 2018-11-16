@@ -43,7 +43,7 @@ import { eventContextForLog } from '../lib/eventTargetLogHelper'
 import { Tracker } from 'meteor/tracker'
 import { RunningOrderFullscreenControls } from './RunningOrderView/RunningOrderFullscreenControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
-import { SnapshotFunctionsAPI } from '../../lib/api/shapshot';
+import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
