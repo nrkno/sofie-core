@@ -47,11 +47,7 @@ import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { SnapshotFunctionsAPI } from '../../lib/api/shapshot';
 
 import { RunningOrderViewNotifier } from './RunningOrderView/RunningOrderNotifier'
-import { NotificationCenterPopUps, NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
-import { NotificationCenter } from '../lib/notifications/notifications'
-
-import { RunningOrderViewNotifier } from './RunningOrderView/RunningOrderNotifier'
-import { NotificationCenterPopUps, NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
+import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter } from '../lib/notifications/notifications'
 
 interface IKeyboardFocusMarkerState {
