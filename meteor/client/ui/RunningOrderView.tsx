@@ -50,6 +50,10 @@ import { RunningOrderViewNotifier } from './RunningOrderView/RunningOrderNotifie
 import { NotificationCenterPopUps, NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter } from '../lib/notifications/notifications'
 
+import { RunningOrderViewNotifier } from './RunningOrderView/RunningOrderNotifier'
+import { NotificationCenterPopUps, NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
+import { NotificationCenter } from '../lib/notifications/notifications'
+
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
 }
