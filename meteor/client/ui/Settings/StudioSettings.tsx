@@ -413,7 +413,7 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 					<p>{t('Are you sure you want to delete this config item "{{configId}}"?', { configId: (this.state.deleteConfirmItem && this.state.deleteConfirmItem._id) })}</p>
 					<p>{t('Please note: This action is irreversible!')}</p>
 				</ModalDialog>
-				<h3>{t('Custom Configuration')}</h3>
+				<h3>{t('Custom Configuration (deprecated)')}</h3>
 				<table className='expando settings-studio-custom-config-table'>
 					<tbody>
 						{this.renderItems()}
