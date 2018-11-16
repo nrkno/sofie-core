@@ -46,7 +46,6 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 
 			let newNotification: Notification | undefined = undefined
 			newNotification = new Notification(Random.id(), this.getNoticeLevel(status), this.getStatusText(status, reason, retryTime), t('Sofie Automation Server'), Date.now(), !connected)
-			console.log(newNotification)
 
 			if (newNotification.persistent) {
 				this._notificationList.set([newNotification])

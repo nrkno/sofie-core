@@ -137,7 +137,7 @@ export class NotifierObject {
 }
 
 class NotificationCenter0 {
-	NOTIFICATION_TIMEOUT = 30000
+	NOTIFICATION_TIMEOUT = 5000
 
 	registerNotifier (source: Notifier): NotifierObject {
 		const notifierId = Random.id()

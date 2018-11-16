@@ -128,8 +128,9 @@
 
 .notification-center-panel {
     position: fixed;
-    background: #000;
-    top: 64px;
+    background: #fff;
+    color: #000;
+    top: 59px;
     right: 0;
     bottom: 0;
     max-width: calc(430px + 75px);
@@ -144,7 +145,12 @@
         bottom: 0;
         left: -10px;
         width: 11px;
-        background: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.7) 100%);
+        background: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 100%);
+    }
+
+    .notification-pop-ups__empty-list {
+        margin-top: 1.5em;
+        margin-left: 1em;
     }
 
     .notification-pop-ups {
@@ -191,5 +197,22 @@
         &::-webkit-scrollbar-corner {
             background: transparent;
         }
+    }
+}
+
+.running-order-view .notification-center-panel {
+    background: #000;
+    color: #fff;
+    top: 64px;
+
+    &::before {
+        content: ' ';
+        display: block;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -10px;
+        width: 11px;
+        background: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.7) 100%);
     }
 }
