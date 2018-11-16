@@ -48,3 +48,17 @@ export namespace ReactiveDataHelper {
 		}
 	}
 }
+
+export abstract class WithManagedTracker {
+	private _autoruns: Tracker.Computation[] = []
+
+	stop () {
+		this._autoruns.forEach((item) => item.stop())
+	}
+
+	protected autorun (func: (comp: Tracker.Computation) => void, options?: { onError: Function | undefined } | undefined): Tracker.Computation {
+		const comp = Tracker.autorun(func, options)
+		this._autoruns.push(comp)
+		return comp
+	}
+}

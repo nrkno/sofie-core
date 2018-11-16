@@ -6,7 +6,7 @@ import * as _ from 'underscore'
 import { NotificationCenter, NotificationList, NotifierObject, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 
-import { ReactiveDataHelper } from '../../lib/reactiveData/reactiveDataHelper'
+import { ReactiveDataHelper, WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
 import { checkSLIContentStatus } from '../../../lib/mediaObjects'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
@@ -14,7 +14,7 @@ import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 
 import { StudioInstallations } from '../../../lib/collections/StudioInstallations'
 
-export class RunningOrderViewNotifier {
+export class RunningOrderViewNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
 	private _notifier: NotifierObject
 
@@ -24,9 +24,8 @@ export class RunningOrderViewNotifier {
 	private _deviceStatus: _.Dictionary<Notification | undefined> = {}
 	private _deviceStatusDep: Tracker.Dependency
 
-	private _autoruns: Tracker.Computation[] = []
-
 	constructor (runningOrderId: string) {
+		super()
 		this._notificationList = new NotificationList([])
 		this._mediaStatusDep = new Tracker.Dependency()
 		this._deviceStatusDep = new Tracker.Dependency()
@@ -132,11 +131,11 @@ export class RunningOrderViewNotifier {
 	}
 
 	stop () {
+		super.stop()
+
 		this._notifier.stop()
 
 		ReactiveDataHelper.stopComputation('RunningOrderView.MediaObjectStatus')
-
-		this._autoruns.forEach((item) => item.stop())
 	}
 
 	private cleanUpMediaStatus () {
@@ -171,11 +170,5 @@ export class RunningOrderViewNotifier {
 			return `Device ${device.name} is disconnected`
 		}
 		return `${device.name}: ` + (device.status.messages || ['']).join(', ')
-	}
-
-	private autorun (func: (comp: Tracker.Computation) => void, options?: { onError: Function | undefined } | undefined): Tracker.Computation {
-		const comp = Tracker.autorun(func, options)
-		this._autoruns.push(comp)
-		return comp
 	}
 }

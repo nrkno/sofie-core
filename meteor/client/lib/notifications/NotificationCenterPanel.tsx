@@ -21,14 +21,16 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 
 		return <div className={ClassNames('notification-pop-up', {
 			'critical': item.status === NoticeLevel.CRITICAL,
-			'notification': item.status === NoticeLevel.NOTIFICATION,
+			'notice': item.status === NoticeLevel.NOTIFICATION,
 			'warning': item.status === NoticeLevel.WARNING,
 			'tip': item.status === NoticeLevel.TIP
-		})} key={item.created + item.message}>
+		})}>
 			<div className='notification-pop-up__header'>
 				<img className='icon' src='/icons/warning_icon.svg' />
 			</div>
-			<div className='notification-pop-up__contents' dangerouslySetInnerHTML={{ __html: item.message }}></div>
+			<div className='notification-pop-up__contents'>
+				{item.message}
+			</div>
 			{this.props.showDismiss &&
 				<div className='notification-pop-up__dismiss'>
 					<button className='notification-pop-up__dismiss__button' onClick={this.props.onDismiss}>
@@ -69,12 +71,12 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 	render () {
 		const { t } = this.props
 		const displayList = this.props.notifications.filter(i => this.props.showSnoozed || !i.snoozed).sort((a, b) => (b.created - a.created)).map(item => (
-			<NotificationPopUp key={item.created + item.message + (item.id || '')}
+			<NotificationPopUp key={item.created + (item.message || 'undefined').toString() + (item.id || '')}
 				item={item} onDismiss={() => this.dismissNotification(item)}
-				showDismiss={item.persistent && !this.props.showSnoozed} />
+				showDismiss={!item.persistent || !this.props.showSnoozed} />
 		))
 
-		return (
+		return ((this.props.showEmptyListLabel || displayList.length > 0) &&
 			<div className='notification-pop-ups'>
 				<VelocityReact.VelocityTransitionGroup enter={{
 					animation: 'fadeIn', easing: 'ease-out', duration: 300, display: 'flex'

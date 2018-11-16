@@ -3,7 +3,7 @@
 
 .notification-pop-ups {
     position: fixed;
-    top: 0;
+    top: 64px;
     right: 75px;
     bottom: 0;
     width: 25vw;
@@ -54,7 +54,7 @@
             }
         }
 
-        &.notification {
+        &.notice {
             > .notification-pop-up__header {
                 background: dodgerblue;
                 color: #fff;
@@ -135,6 +135,17 @@
     max-width: calc(430px + 75px);
     width: calc(25vw + 75px);
     z-index: 290;
+
+    &::before {
+        content: ' ';
+        display: block;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -10px;
+        width: 11px;
+        background: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.7) 100%);
+    }
 
     .notification-pop-ups {
         position: absolute;
