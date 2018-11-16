@@ -85,7 +85,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 				}}>
 					{displayList}
 					{this.props.showEmptyListLabel && displayList.length === 0 &&
-						<span className='notification-pop-ups__empty-list'>{t('No notifications')}</span>
+						<div className='notification-pop-ups__empty-list'>{t('No notifications')}</div>
 					}
 				</VelocityReact.VelocityTransitionGroup>
 			</div>
