@@ -821,9 +821,6 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 				'rehearsal': this.props.runningOrder.rehearsal
 			})}>
-				<ErrorBoundary>
-					<NotificationCenterPopUps />
-				</ErrorBoundary>
 				<ContextMenu id='running-order-context-menu'>
 					<div className='react-contextmenu-label'>
 						{this.props.runningOrder && this.props.runningOrder.name}

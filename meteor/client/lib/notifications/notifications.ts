@@ -58,14 +58,14 @@ export interface NotificationAction {
 export class Notification extends EventEmitter {
 	id: string | undefined
 	status: NoticeLevel
-	message: string
+	message: string | React.ReactNode
 	source: string
 	persistent?: boolean
 	snoozed?: boolean
 	actions?: Array<NotificationAction>
 	created: Time
 
-	constructor (id: string | undefined, status: NoticeLevel, message: string, source: string, created?: Time, persistent?: boolean, actions?: Array<NotificationAction>) {
+	constructor (id: string | undefined, status: NoticeLevel, message: string | React.ReactNode, source: string, created?: Time, persistent?: boolean, actions?: Array<NotificationAction>) {
 		super()
 
 		this.id = id
@@ -137,7 +137,7 @@ export class NotifierObject {
 }
 
 class NotificationCenter0 {
-	NOTIFICATION_TIMEOUT = 5000
+	NOTIFICATION_TIMEOUT = 30000
 
 	registerNotifier (source: Notifier): NotifierObject {
 		const notifierId = Random.id()
