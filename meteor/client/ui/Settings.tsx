@@ -110,9 +110,9 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 
 		switch (type) {
 			case PeripheralDeviceAPI.DeviceType.MOSDEVICE:
-				return t('MOS gateway')
+				return t('MOS Gateway')
 			case PeripheralDeviceAPI.DeviceType.PLAYOUT:
-				return t('Playout gateway')
+				return t('Play-out Gateway')
 			case PeripheralDeviceAPI.DeviceType.OTHER:
 				return ''
 			default:

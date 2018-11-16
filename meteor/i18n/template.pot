@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2018-11-15T10:07:29.289Z\n"
-"PO-Revision-Date: 2018-11-15T10:07:29.289Z\n"
+"POT-Creation-Date: 2018-11-16T13:24:30.643Z\n"
+"PO-Revision-Date: 2018-11-16T13:24:30.643Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -392,13 +392,10 @@ msgstr ""
 msgid "Disconnected"
 msgstr ""
 
-msgid "MOS Device"
+msgid "MOS Gateway"
 msgstr ""
 
-msgid "Play-out Device"
-msgstr ""
-
-msgid "Sub-Device"
+msgid "Play-out Gateway"
 msgstr ""
 
 msgid "Unknown Device"
@@ -425,9 +422,6 @@ msgstr ""
 msgid "Devices"
 msgstr ""
 
-msgid "Type"
-msgstr ""
-
 msgid "Tools"
 msgstr ""
 
@@ -444,6 +438,9 @@ msgid "System Settings"
 msgstr ""
 
 msgid "URL"
+msgstr ""
+
+msgid "Type"
 msgstr ""
 
 msgid "Params"
@@ -941,25 +938,25 @@ msgstr ""
 msgid "Last seen"
 msgstr ""
 
-msgid "Name"
-msgstr ""
-
 msgid "Version"
 msgstr ""
 
 msgid "Are you sure you want to delete this device?"
 msgstr ""
 
-msgid "Kill this device process?"
+msgid "Restart this device?"
 msgstr ""
 
-msgid "Kill"
+msgid "Restart"
 msgstr ""
 
-msgid "Are you sure you want to kill the process of this device?"
+msgid "Are you sure you want to restart this device?"
 msgstr ""
 
 msgid "System Status"
+msgstr ""
+
+msgid "Name"
 msgstr ""
 
 msgid "Telemetry"
