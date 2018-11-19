@@ -41,7 +41,7 @@ export function transformTimeline (timeline: Array<TimelineObj>): Array<Timeline
 	let doTransform = (objs: Array<TimelineObj>) => {
 		let objsLeft: Array<TimelineObj> = []
 		let changedSomething: boolean = false
-		_.each(objs, (obj: TimelineObj) => {
+		_.each(objs, (obj: TimelineObj | TimelineObjGroup) => {
 
 			let transformedObj = transformObject(obj)
 
