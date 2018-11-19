@@ -13,7 +13,7 @@ import { applyClassToDocument, Time, registerCollection, normalizeArray } from '
 import { RunningOrderAPI } from '../api/runningOrder'
 import { checkSLIContentStatus } from '../mediaObjects'
 import { Meteor } from 'meteor/meteor'
-import { IMessageBlueprintSegmentLine, IMessageBlueprintSegmentLineTimings, SegmentLineHoldMode, BlueprintRuntimeArguments } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
+import { IMessageBlueprintSegmentLine, IMessageBlueprintSegmentLineTimings, SegmentLineHoldMode, BlueprintRuntimeArguments } from 'tv-automation-sofie-blueprints-integration'
 
 /** A "Line" in NRK Lingo. */
 export interface DBSegmentLine extends IMessageBlueprintSegmentLine {

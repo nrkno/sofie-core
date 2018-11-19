@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as $ from 'jquery'
 
 import { ISourceLayerItemProps } from '../SourceLayerItem'
-import { ScriptContent } from 'tv-automation-sofie-blueprints-integration/dist/content'
+import { ScriptContent } from 'tv-automation-sofie-blueprints-integration'
 
 import { FloatingInspector } from '../../FloatingInspector'
 import Moment from 'react-moment'

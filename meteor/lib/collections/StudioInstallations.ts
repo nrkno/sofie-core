@@ -1,5 +1,5 @@
 import { Mongo } from 'meteor/mongo'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration/dist/content'
+import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { TransformedCollection } from '../typings/meteor'
 import { applyClassToDocument, registerCollection } from '../lib'
 import * as _ from 'underscore'

@@ -3,7 +3,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import * as React from 'react'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
 import { StudioInstallations, ISourceLayer } from '../../../lib/collections/StudioInstallations'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration/dist/content'
+import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { normalizeArray } from '../../../lib/lib'
 import * as _ from 'underscore'
 

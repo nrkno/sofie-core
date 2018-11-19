@@ -7,7 +7,7 @@ import * as Timecode from 'smpte-timecode'
 import { Settings } from './Settings'
 import * as objectPath from 'object-path'
 import { Mongo } from 'meteor/mongo'
-import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration/dist/util'
+import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration'
 
 /**
  * Convenience method to convert a Meteor.call() into a Promise

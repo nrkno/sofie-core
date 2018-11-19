@@ -3,7 +3,7 @@ import { SegmentLineItemGeneric } from './SegmentLineItems'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import { IBlueprintSegmentLineAdLibItem } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
+import { IBlueprintSegmentLineAdLibItem } from 'tv-automation-sofie-blueprints-integration'
 
 export interface SegmentLineAdLibItem extends SegmentLineItemGeneric, IBlueprintSegmentLineAdLibItem {
 	_rank: number

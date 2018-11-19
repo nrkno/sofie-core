@@ -3,7 +3,7 @@ import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import Moment from 'react-moment'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration/dist/content'
+import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { LookaheadMode } from '../../../lib/api/playout'
 import { IOutputLayer,
 	ISourceLayer,

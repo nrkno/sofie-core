@@ -15,7 +15,7 @@ import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { ShowBlueprint } from '../../../lib/collections/ShowBlueprints'
-import { ConfigManifestEntry, ConfigManifestEntryType } from 'tv-automation-sofie-blueprints-integration/dist/config'
+import { ConfigManifestEntry, ConfigManifestEntryType } from 'tv-automation-sofie-blueprints-integration'
 import { literal } from '../../../lib/lib'
 
 interface IConfigManifestSettingsProps {

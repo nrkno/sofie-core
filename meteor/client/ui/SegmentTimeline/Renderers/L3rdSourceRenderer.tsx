@@ -5,8 +5,8 @@ import { Time } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import Moment from 'react-moment'
 
-import { SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
-import { NoraContent } from 'tv-automation-sofie-blueprints-integration/dist/content'
+import { SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { NoraContent } from 'tv-automation-sofie-blueprints-integration'
 
 import { FloatingInspector } from '../../FloatingInspector'
 

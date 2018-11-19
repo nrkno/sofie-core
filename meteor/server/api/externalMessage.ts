@@ -8,7 +8,7 @@ import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collect
 import { getCurrentTime, removeNullyProperties } from '../../lib/lib'
 import { triggerdoMessageQueue } from './ExternalMessageQueue'
 import * as _ from 'underscore'
-import { IBlueprintExternalMessageQueueObj } from 'tv-automation-sofie-blueprints-integration/dist/message'
+import { IBlueprintExternalMessageQueueObj } from 'tv-automation-sofie-blueprints-integration'
 
 export function triggerExternalMessage (
 	runningOrder: RunningOrder,

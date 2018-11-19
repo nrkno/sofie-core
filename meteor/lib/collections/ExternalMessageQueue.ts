@@ -2,7 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { Time, Collections, registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import { IBlueprintExternalMessageQueueObj } from 'tv-automation-sofie-blueprints-integration/dist/message'
+import { IBlueprintExternalMessageQueueObj } from 'tv-automation-sofie-blueprints-integration'
 
 export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueObj {
 	_id: string

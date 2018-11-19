@@ -16,7 +16,7 @@ import {
 } from 'timeline-state-resolver-types'
 import {
 	SourceLayerType
-} from 'tv-automation-sofie-blueprints-integration/dist/content'
+} from 'tv-automation-sofie-blueprints-integration'
 import { LookaheadMode } from '../lib/api/playout'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { compareVersions, parseVersion, getCoreSystem, setCoreSystemStorePath } from '../lib/collections/CoreSystem'

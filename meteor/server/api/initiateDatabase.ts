@@ -17,7 +17,7 @@ import {
 	DeviceType as PlayoutDeviceType
 } from 'timeline-state-resolver-types'
 import { literal, getCurrentTime } from '../../lib/lib'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration/dist/content'
+import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { LookaheadMode } from '../../lib/api/playout'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'

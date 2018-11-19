@@ -6,9 +6,9 @@ import {
 import {
 	ExternalMessageQueueObjSOAP,
 	ExternalMessageQueueObjSOAPMessageAttrFcn
-} from 'tv-automation-sofie-blueprints-integration/dist/message'
+} from 'tv-automation-sofie-blueprints-integration'
 import { getCurrentTime, escapeHtml } from '../../lib/lib'
-import { iterateDeeply, iterateDeeplyAsync, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration/dist/util'
+import { iterateDeeply, iterateDeeplyAsync, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
 import * as soap from 'soap'
 import * as parser from 'xml2json'

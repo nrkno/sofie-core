@@ -3,7 +3,7 @@ import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import { TimelineObjectCoreExt, TimelineTrigger } from 'tv-automation-sofie-blueprints-integration/dist/timeline'
+import { TimelineObjectCoreExt, TimelineTrigger } from 'tv-automation-sofie-blueprints-integration'
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',

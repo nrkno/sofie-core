@@ -17,7 +17,7 @@ import { Meteor } from 'meteor/meteor'
 import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
 import { RunningOrderBaselineItems } from './RunningOrderBaselineItems'
 import { RunningOrderBaselineAdLibItems } from './RunningOrderBaselineAdLibItems'
-import { IBlueprintRunningOrder } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
+import { IBlueprintRunningOrder } from 'tv-automation-sofie-blueprints-integration'
 
 export enum RunningOrderHoldState {
 	NONE = 0,

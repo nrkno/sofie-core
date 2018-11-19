@@ -3,8 +3,8 @@ import * as React from 'react'
 import { ISourceLayerUi, IOutputLayerUi, SegmentUi, SegmentLineUi, SegmentLineItemUi } from '../SegmentTimelineContainer'
 
 import { RundownUtils } from '../../../lib/rundown'
-import { SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
-import { VTContent } from 'tv-automation-sofie-blueprints-integration/dist/content'
+import { SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { VTContent } from 'tv-automation-sofie-blueprints-integration'
 
 export interface ISourceLayerItemProps {
 	mediaPreviewUrl?: string

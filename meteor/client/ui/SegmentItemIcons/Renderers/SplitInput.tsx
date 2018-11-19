@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { SegmentLineItem } from '../../../../lib/collections/SegmentLineItems'
-import { SplitsContent, SourceLayerType } from 'tv-automation-sofie-blueprints-integration/dist/content'
+import { SplitsContent, SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 
 // @todo: use colours from the scss
 // @todo: split can use any source (rather than cam + live)

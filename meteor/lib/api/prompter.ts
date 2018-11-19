@@ -5,7 +5,7 @@ import { RunningOrders } from '../collections/RunningOrders'
 import { SegmentLine } from '../collections/SegmentLines'
 import { CachePrefix } from '../collections/RunningOrderDataCache'
 import * as objectPath from 'object-path'
-import { ScriptContent } from 'tv-automation-sofie-blueprints-integration/dist/content'
+import { ScriptContent } from 'tv-automation-sofie-blueprints-integration'
 
 export enum PrompterMethods {
 	getPrompterData = 'PrompterMethods.getPrompterData'

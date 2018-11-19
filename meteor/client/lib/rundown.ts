@@ -1,7 +1,7 @@
 import { SegmentLineItemUi, SegmentLineUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
 import * as Timecode from 'smpte-timecode'
 import { Settings } from '../../lib/Settings'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration/dist/content'
+import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 
 export namespace RundownUtils {
 	function padZero (input: number, places?: number): string {

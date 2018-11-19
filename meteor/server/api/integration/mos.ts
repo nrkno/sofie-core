@@ -83,7 +83,7 @@ import {
 	ServerRunningOrderAPI
 } from '../runningOrder'
 import { syncFunction } from '../../codeControl'
-import { IBlueprintSegmentLine, SegmentLineHoldMode } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
+import { IBlueprintSegmentLine, SegmentLineHoldMode } from 'tv-automation-sofie-blueprints-integration'
 
 export function roId (roId: MosString128, original?: boolean): string {
 	// logger.debug('roId', roId)

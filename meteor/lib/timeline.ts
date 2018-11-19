@@ -1,4 +1,4 @@
-import { TimelineObj } from './collections/Timeline'
+import { TimelineObj, TimelineObjGroup } from './collections/Timeline'
 import { TimelineObject } from 'superfly-timeline'
 let clone = require('fast-clone')
 import * as _ from 'underscore'

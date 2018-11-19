@@ -8,10 +8,10 @@ import { ISourceLayerUi,
 		 SegmentLineItemUi } from './SegmentTimelineContainer'
 
 import { RunningOrderAPI } from '../../../lib/api/runningOrder'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration/dist/content'
+import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
 import { Transition } from '../../../lib/constants/casparcg'
-import { SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration/dist/runningOrder'
+import { SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration'
 import * as ClassNames from 'classnames'
 import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MicSourceRenderer } from './Renderers/MicSourceRenderer'
