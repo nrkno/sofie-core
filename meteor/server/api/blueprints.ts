@@ -23,11 +23,13 @@ import {
 	BaselineContext,
 	PostProcessContext,
 	MessageContext,
-	LayerType
+	LayerType,
+	TimelineObjectCoreExt,
+	IBlueprintSegmentLineItem, IBlueprintSegmentLineAdLibItem,
+	BlueprintRuntimeArguments,
+	IBlueprintSegmentLine
 } from 'tv-automation-sofie-blueprints-integration'
-import { IBlueprintSegmentLineItem, IBlueprintSegmentLineAdLibItem, BlueprintRuntimeArguments, IBlueprintSegmentLine } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
-import { TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration'
 
 import { ServerResponse, IncomingMessage } from 'http'
 // @ts-ignore Meteor package not recognized by Typescript

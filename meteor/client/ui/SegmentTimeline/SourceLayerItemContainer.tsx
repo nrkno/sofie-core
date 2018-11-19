@@ -4,11 +4,10 @@ import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { TriggerType } from 'superfly-timeline'
 import { Timeline } from '../../../lib/collections/Timeline'
 import { SourceLayerItem } from './SourceLayerItem'
-import { getSliGroupId } from 'tv-automation-sofie-blueprints-integration'
 import { getCurrentTime } from '../../../lib/lib'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
-import { VTContent, LiveSpeakContent } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, VTContent, LiveSpeakContent, getSliGroupId } from 'tv-automation-sofie-blueprints-integration'
 import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 // @ts-ignore Meteor package not recognized by Typescript
@@ -22,7 +21,6 @@ import {
 	SegmentLineUi,
 	SegmentLineItemUi
 } from './SegmentTimelineContainer'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { Tracker } from 'meteor/tracker'
 
 interface IPropsHeader {

@@ -6,9 +6,11 @@ import { SegmentLineTimings } from './SegmentLines'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 
-import { IBlueprintSegmentLineItem, SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration'
-import { TimelineTrigger } from 'tv-automation-sofie-blueprints-integration'
-import { SomeContent } from 'tv-automation-sofie-blueprints-integration'
+import {
+	IBlueprintSegmentLineItem, SegmentLineItemLifespan,
+	TimelineTrigger,
+	SomeContent
+} from 'tv-automation-sofie-blueprints-integration'
 
 /** A Single item in a "line": script, VT, cameras */
 export interface SegmentLineItemGeneric {
