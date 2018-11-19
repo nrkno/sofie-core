@@ -347,27 +347,7 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 						</div>
 					</div>
 				</div>
-				<VelocityReact.VelocityTransitionGroup leave={{ animation: 'fadeOut', duration: 3000 }}>
-					{ this.state.displayNotification && !this.state.forceHideNotification &&
-						<div className='running-order-system-status__message' onClick={this.forceHideNotification}>
-							{this.makeNotification()}
-						</div>
-					}
-				</VelocityReact.VelocityTransitionGroup>
 			</div>
 		)
-	}
-
-	private makeNotification (): string {
-		let result = ''
-		if (this.state.mosDiff.offLine.length > 0 || this.state.playoutDiff.offLine.length > 0) {
-			result += this.state.mosDiff.offLine.map((i) => i.name)
-				.concat(this.state.playoutDiff.offLine.map((i) => i.name)).join(', ') + ' have gone off-line.'
-		}
-		if (this.state.mosDiff.onLine.length > 0 || this.state.playoutDiff.onLine.length > 0) {
-			result += this.state.mosDiff.onLine.map((i) => i.name)
-				.concat(this.state.playoutDiff.onLine.map((i) => i.name)).join(', ') + ' is back on-line.'
-		}
-		return result
 	}
 })

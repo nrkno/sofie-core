@@ -1,29 +1,23 @@
 @import "_colorScheme";
-
-$fullscreen-controls__button--radius: 4vw;
-$fullscreen-controls__button--max-radius: 80px;
-$fullscreen-controls__button--min-radius: 15px;
+@import "_variables";
 
 .running-order__fullscreen-controls {
 	position: fixed;
 	top: 145px;
-	right: 1.5rem;
+	right: 5px;
 	width: $fullscreen-controls__button--radius;
-	max-width: $fullscreen-controls__button--max-radius;
-	min-width: $fullscreen-controls__button--min-radius;
-	z-index: 100;
+	z-index: 310;
 
 	.running-order__fullscreen-controls__button {
+		display: block;
+		border: none;
 		background: transparentize(#4B4B4B, 0.45);
 		width: $fullscreen-controls__button--radius;
 		height: $fullscreen-controls__button--radius;
-		max-width: $fullscreen-controls__button--max-radius;
-		max-height: $fullscreen-controls__button--max-radius;
-		min-width: $fullscreen-controls__button--min-radius;
-		min-height: $fullscreen-controls__button--min-radius;
 		border-radius: 100%;
 		transition: 0.3s background;
 		margin-bottom: 0.5rem;
+		font-size: 1em;
 
 		cursor: pointer;
 
@@ -51,7 +45,7 @@ $fullscreen-controls__button--min-radius: 15px;
 			text-align: center;
 			user-select: none;
 			margin-top: 0.6em;
-			font-size: 0.8rem;
+			font-size: 0.6rem;
 
 			.keyboard_key {
 				display: inline-block;

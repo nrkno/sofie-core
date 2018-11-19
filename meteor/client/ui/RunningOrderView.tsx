@@ -11,6 +11,7 @@ import * as _ from 'underscore'
 import Moment from 'react-moment'
 
 import { NavLink, Route, Prompt } from 'react-router-dom'
+import * as VelocityReact from 'velocity-react'
 
 import { ClientAPI } from '../../lib/api/client'
 import { PlayoutAPI } from '../../lib/api/playout'
@@ -28,7 +29,7 @@ import { InspectorDrawer } from './InspectorDrawer/InspectorDrawer'
 import { RunningOrderOverview } from './RunningOrderView/RunningOrderOverview'
 import { RunningOrderSystemStatus } from './RunningOrderView/RunningOrderSystemStatus'
 
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime, Time } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
 
 import * as mousetrap from 'mousetrap'
@@ -44,6 +45,10 @@ import { Tracker } from 'meteor/tracker'
 import { RunningOrderFullscreenControls } from './RunningOrderView/RunningOrderFullscreenControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { SnapshotFunctionsAPI } from '../../lib/api/shapshot';
+
+import { RunningOrderViewNotifier } from './RunningOrderView/RunningOrderNotifier'
+import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
+import { NotificationCenter } from '../lib/notifications/notifications'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -929,9 +934,9 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 							</div>
 						</div>
 						<TimingDisplay {...this.props} />
-						{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} runningOrder={this.props.runningOrder} />}
+						{ this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} runningOrder={this.props.runningOrder} /> }
 					</div>
-					<div className='row dark'>
+					<div className='row dark margin-right'>
 						<div className='col c12 running-order-overview'>
 							{ this.props.runningOrder && <RunningOrderOverview runningOrderId={this.props.runningOrder._id} /> }
 						</div>
@@ -964,6 +969,7 @@ interface IState {
 	manualSetAsNext: boolean
 	subsReady: boolean
 	usedHotkeys: Array<HotkeyDefinition>
+	showNotifications: boolean
 }
 
 export enum RunningOrderViewEvents {
@@ -1017,6 +1023,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		global?: boolean
 	}> = []
 	private _segments: _.Dictionary<React.ComponentClass<{}>> = {}
+	private _notifier: RunningOrderViewNotifier
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -1058,8 +1065,11 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					key: 'F11',
 					label: t('Change to fullscreen mode')
 				}
-			])
+			]),
+			showNotifications: false
 		}
+
+		this._notifier = new RunningOrderViewNotifier(this.props.runningOrderId)
 	}
 
 	componentWillMount () {
@@ -1251,6 +1261,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 
 		window.removeEventListener(RunningOrderViewEvents.goToLiveSegment, this.onGoToLiveSegment)
+
+		this._notifier.stop()
 	}
 
 	onBeforeUnload = (e: any) => {
@@ -1417,6 +1429,16 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		return false
 	}
 
+	onToggleNotifications = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (!this.state.showNotifications === true) {
+			NotificationCenter.snoozeAll()
+		}
+
+		this.setState({
+			showNotifications: !this.state.showNotifications
+		})
+	}
+
 	getStyle () {
 		return {
 			'marginBottom': this.state.bottomMargin
@@ -1435,7 +1457,26 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							{ this.state.studioMode && <KeyboardFocusMarker /> }
 						</ErrorBoundary>
 						<ErrorBoundary>
+							<div className={ClassNames('status-bar dark', {
+								'super-dark': this.state.showNotifications
+							})}></div>
 							<RunningOrderFullscreenControls isFollowingOnAir={this.state.followLiveSegments} onFollowOnAir={this.onGoToLiveSegment} onRewindSegments={this.onRewindSegments} />
+						</ErrorBoundary>
+						<ErrorBoundary>
+							<VelocityReact.VelocityTransitionGroup enter={{
+								animation: {
+									translateX: ['0%', '100%']
+								}, easing: 'ease-out', duration: 300
+							}} leave={{
+								animation: {
+									translateX: ['100%', '0%']
+								}, easing: 'ease-in', duration: 500
+							}}>
+								{ this.state.showNotifications && <NotificationCenterPanel /> }
+							</VelocityReact.VelocityTransitionGroup>
+						</ErrorBoundary>
+						<ErrorBoundary>
+							<NotificationCenterPanelToggle onClick={this.onToggleNotifications} isOpen={this.state.showNotifications} />
 						</ErrorBoundary>
 						<ErrorBoundary>
 							{ this.state.studioMode &&
