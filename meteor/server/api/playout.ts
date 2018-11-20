@@ -2715,7 +2715,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 			// fetch items
 			// fetch the timelineobjs in items
 			const isFollowed = nextSegmentLine && currentSegmentLine.autoNext
-			currentSegmentLineGroup = createSegmentLineGroup(currentSegmentLine, (isFollowed ? (currentSegmentLine.expectedDuration || 0) : 0))
+			currentSegmentLineGroup = createSegmentLineGroup(currentSegmentLine, (isFollowed ? (calcSlTargetDuration(previousSegmentLine, currentSegmentLine) || 0) : 0))
 			if (currentSegmentLine.startedPlayback && currentSegmentLine.getLastStartedPlayback()) { // If we are recalculating the currentLine, then ensure it doesnt think it is starting now
 				currentSegmentLineGroup.trigger = literal<ITimelineTrigger>({
 					type: TriggerType.TIME_ABSOLUTE,
@@ -2873,6 +2873,17 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 	afterUpdateTimeline(studioInstallation, timelineObjs)
 	logger.debug('updateTimeline done!')
 })
+function calcSlTargetDuration (prevSl: SegmentLine | undefined, currentSl: SegmentLine): number {
+	if (currentSl.expectedDuration === undefined) {
+		return 0
+	}
+
+	if (!prevSl || prevSl.disableOutTransition) {
+		return (currentSl.expectedDuration || 0) + (currentSl.overlapDuration || 0)
+	}
+
+	return currentSl.expectedDuration + (prevSl.autoNextOverlap || 0) + (currentSl.overlapDuration || 0)
+}
 function calcOverlapDuration (fromSl: SegmentLine, toSl: SegmentLine, toSLItems: SegmentLineItem[]): number {
 	const allowTransition: boolean = !fromSl.disableOutTransition
 	let overlapDuration: number = toSl.transitionDuration || 0
