@@ -4,12 +4,13 @@ import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowS
 // Setup rules:
 ShowStyleVariants.allow({
 	insert (userId: string, doc: ShowStyleVariant): boolean {
-		return true
+		return false
 	},
 	update (userId, doc, fields, modifier) {
+		if (fields.indexOf('showStyleBaseId') !== -1) return false
 		return true
 	},
 	remove (userId, doc) {
-		return true
+		return false
 	}
 })

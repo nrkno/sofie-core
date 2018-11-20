@@ -15,12 +15,12 @@ export namespace ShowStyleBasesSecurity {
 // Setup rules:
 ShowStyleBases.allow({
 	insert (userId: string, doc: ShowStyleBase): boolean {
-		return true
+		return false
 	},
 	update (userId, doc, fields, modifier) {
 		return true
 	},
 	remove (userId, doc) {
-		return true
+		return false
 	}
 })

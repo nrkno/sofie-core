@@ -21,6 +21,8 @@ import { Random } from 'meteor/random'
 import { translate } from 'react-i18next'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { callMethod } from '../../lib/clientAPI'
+import { ShowStylesAPI } from '../../../lib/api/showStyles'
 
 interface IProps {
 	match: {
@@ -129,6 +131,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				<div className='row'>
 					<div className='col c12 r1-c12'>
 						<HotkeyLegendSettings showStyleBase={showStyleBase}/>
+					</div>
+				</div>
+				<div className='row'>
+					<div className='col c12 r1-c12'>
+						<ConfigSettings item={showStyleBase}/>
 					</div>
 				</div>
 				<div className='row'>
@@ -964,13 +971,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 		}
 	}
 	onAddShowStyleVariant = () => {
-		ShowStyleVariants.insert({
-			_id: Random.id(),
-			name: this.props.showStyleBase.name + ' variant',
-			config: [],
-			showStyleBaseId: this.props.showStyleBase._id
-
-		})
+		callMethod('Menu', ShowStylesAPI.methods.insertShowStyleVariant, this.props.showStyleBase._id)
 	}
 	confirmRemove = (showStyleVariant: ShowStyleVariant) => {
 		const { t } = this.props
@@ -978,8 +979,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 			title: t('Remove this variant?'),
 			no: t('Cancel'),
 			onAccept: () => {
-				
-				ShowStyleVariants.remove(showStyleVariant._id)
+				callMethod('ModalDialog', ShowStylesAPI.methods.removeShowStyleVariant, showStyleVariant._id)
 			},
 			message: [
 				<p>{t('Are you sure you want to remove the variant "{{showStyleVariantId}}"?', { showStyleVariantId: showStyleVariant.name })}</p>

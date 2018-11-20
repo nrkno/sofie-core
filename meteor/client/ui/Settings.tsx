@@ -30,6 +30,8 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { MigrationView } from './Settings/Migration'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
+import { ShowStylesAPI } from '../../lib/api/showStyles'
+import { callMethod } from '../lib/clientAPI'
 
 class WelcomeToSettings extends React.Component {
 	render () {
@@ -116,15 +118,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 	}
 
 	onAddShowStyleBase () {
-		let id = Random.id()
-		ShowStyleBases.insert(literal<ShowStyleBase>({
-			_id: id,
-			name: id,
-			blueprintId: '',
-			outputLayers: [],
-			sourceLayers: [],
-			config: []
-		}))
+		callMethod('Menu', ShowStylesAPI.methods.insertShowStyleBase)
 	}
 	onAddBlueprint () {
 		let t = this.props.t
@@ -143,7 +137,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<p>{t('Are you sure you want to delete the show-style "{{showStyleId}}"?', { showStyleId: item && item.name })}</p>
 			],
 			onAccept: () => {
-				ShowStyleBases.remove(item._id)
+				callMethod('ModalDialog', ShowStylesAPI.methods.removeShowStyleBase, item._id)
 			}
 		})
 	}

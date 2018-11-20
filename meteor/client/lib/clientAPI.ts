@@ -11,8 +11,11 @@ export function callPeripheralDeviceFunction (e: any, methodName: string, ...par
 }
 
 function eventContextForLog (e: any): string {
+	if (!e) return ''
 	let str: string = ''
-	if (e.currentTarget && e.currentTarget.localName && !e.key && !e.code) {
+	if (_.isString(e)) {
+		return e
+	} else if (e.currentTarget && e.currentTarget.localName && !e.key && !e.code) {
 		str = e.type + ': ' + e.currentTarget.localName! + (e.currentTarget.id ? '#' + e.currentTarget.id : '') + (e.currentTarget.innerText ? ` "${e.currentTarget.innerText}"` : '')
 	} else if (e.key && e.code) {
 		str = e.type + ': ' + keyboardEventToShortcut(e as ExtendedKeyboardEvent)
