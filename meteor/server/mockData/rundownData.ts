@@ -13,7 +13,7 @@ import { logger } from '../logging'
 import { LookaheadMode } from '../../lib/api/playout'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { setMeteorMethods } from '../methods'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants';
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 
 // These are temporary method to fill the rundown database with some sample data
 // for development
@@ -25,6 +25,10 @@ setMeteorMethods({
 			name: 'Dummy studio',
 			defaultShowStyleVariant: 'dummyShow0',
 			supportedShowStyleBase: [],
+			settings: {
+				mediaPreviewsUrl: '',
+				sofieUrl: ''
+			},
 			// outputLayers: [
 			// 	{
 			// 		_id: 'studio0-pgm0',
