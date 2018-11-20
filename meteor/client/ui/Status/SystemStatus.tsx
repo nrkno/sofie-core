@@ -15,7 +15,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { eventContextForLog } from '../../lib/eventTargetLogHelper'
+import { callMethod, callPeripheralDeviceFunction } from '../../lib/clientAPI'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -93,7 +93,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 	}
 	handleConfirmDeleteShowStyleAccept = (e) => {
 		if (this.state.showDeleteDeviceConfirm) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), 'temporaryRemovePeripheralDevice', this.state.showDeleteDeviceConfirm._id)
+			callMethod(e, 'temporaryRemovePeripheralDevice', this.state.showDeleteDeviceConfirm._id)
 			// PeripheralDevices.remove(this.state.showDeleteDeviceConfirm._id)
 		}
 		// ShowStyles.remove(this.state.deleteConfirmItem._id)
@@ -115,7 +115,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 	}
 	handleConfirmKillAccept = (e) => {
 		if (this.state.showKillDeviceConfirm) {
-			Meteor.call(ClientAPI.methods.callPeripheralDeviceFunction, eventContextForLog(e), this.state.showKillDeviceConfirm._id, 'killProcess', 1, (err, result) => {
+			callPeripheralDeviceFunction(e, this.state.showKillDeviceConfirm._id, 'killProcess', 1, (err, result) => {
 				// console.log('reply', err, result)
 				if (err) {
 					console.error(err)
@@ -144,7 +144,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 			message: t('Do you want to restart CasparCG Server?'),
 			onAccept: (event: any) => {
 
-				Meteor.call(ClientAPI.methods.callPeripheralDeviceFunction, eventContextForLog(event), device._id, 'restartCasparCG', (err, result) => {
+				callPeripheralDeviceFunction(event, device._id, 'restartCasparCG', (err, result) => {
 					if (err) {
 						console.error(err)
 					} else {

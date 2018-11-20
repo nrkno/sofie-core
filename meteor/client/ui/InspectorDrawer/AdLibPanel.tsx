@@ -23,8 +23,8 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RunningOrderViewKbdShortcuts } from '../RunningOrderView'
-import { eventContextForLog } from '../../lib/eventTargetLogHelper'
 import { IOutputLayer, ISourceLayer, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { callMethod } from '../../lib/clientAPI'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<SegmentUi>
@@ -430,7 +430,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		}
 
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.segmentAdLibLineItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id, queue || false)
+			callMethod(e, PlayoutAPI.methods.segmentAdLibLineItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id, queue || false)
 		}
 	}
 
@@ -438,7 +438,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		// console.log(sourceLayer)
 
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.sourceLayerOnLineStop, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id)
+			callMethod(e, PlayoutAPI.methods.sourceLayerOnLineStop, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id)
 		}
 	}
 

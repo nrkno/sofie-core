@@ -978,6 +978,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 			title: t('Remove this variant?'),
 			no: t('Cancel'),
 			onAccept: () => {
+				
 				ShowStyleVariants.remove(showStyleVariant._id)
 			},
 			message: [

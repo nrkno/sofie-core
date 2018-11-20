@@ -8,14 +8,13 @@ import { RecordedFile, RecordedFiles } from '../../../lib/collections/RecordedFi
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
 import Moment from 'react-moment'
-import { eventContextForLog } from '../../lib/eventTargetLogHelper'
 import { TestToolsAPI } from '../../../lib/api/testTools'
-import { ClientAPI } from '../../../lib/api/client'
 import { EditAttribute } from '../../lib/EditAttribute'
 import * as objectPath from 'object-path'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { faTrash } from '@fortawesome/fontawesome-free-solid'
 import { ModalDialog } from '../../lib/ModalDialog'
+import { callMethod } from '../../lib/clientAPI'
 
 interface IRecordingListProps {
 	match?: {
@@ -76,7 +75,7 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 
 	stopRecording (e) {
 		if (this.props.match && this.props.match.params) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), TestToolsAPI.methods.recordStop, this.props.match.params.studioId, (err, res) => {
+			callMethod(e, TestToolsAPI.methods.recordStop, this.props.match.params.studioId, (err, res) => {
 				if (err || (res && res.error)) {
 					console.error(err || res)
 					// this.handleActivationError(err || res)
@@ -87,7 +86,7 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 	}
 	startRecording (e) {
 		if (this.props.match && this.props.match.params) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), TestToolsAPI.methods.recordStart, this.props.match.params.studioId, this.state.filename, (err, res) => {
+			callMethod(e, TestToolsAPI.methods.recordStart, this.props.match.params.studioId, this.state.filename, (err, res) => {
 				if (err || (res && res.error)) {
 					console.error(err || res)
 					// this.handleActivationError(err || res)
@@ -114,7 +113,7 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 	}
 	handleConfirmDeleteAccept = (e) => {
 		if (this.state.deleteConfirmItem) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), TestToolsAPI.methods.recordDelete, this.state.deleteConfirmItem._id)
+			callMethod(e, TestToolsAPI.methods.recordDelete, this.state.deleteConfirmItem._id)
 		}
 		this.setState({
 			showDeleteConfirm: false

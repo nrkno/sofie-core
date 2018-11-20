@@ -15,10 +15,9 @@ import * as faSync from '@fortawesome/fontawesome-free-solid/faSync'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
-import { ClientAPI } from '../../lib/api/client'
-import { eventContextForLog } from '../lib/eventTargetLogHelper'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
 import { SystemStatusAPI, StatusResponse } from '../../lib/api/systemStatus'
+import { callMethod } from '../lib/clientAPI'
 
 const PackageInfo = require('../../package.json')
 
@@ -64,7 +63,7 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 		const { t } = this.props
 
 		if (!ro.active) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), RunningOrderAPI.methods.removeRunningOrder, ro._id, (err, res) => {
+			callMethod(e, RunningOrderAPI.methods.removeRunningOrder, ro._id, (err, res) => {
 				if (err) {
 					// todo: notify the user
 					console.error(err)
@@ -88,7 +87,7 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 		const { t } = this.props
 
 		if (!ro.active) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), RunningOrderAPI.methods.resyncRunningOrder, ro._id, (err, res) => {
+			callMethod(e, RunningOrderAPI.methods.resyncRunningOrder, ro._id, (err, res) => {
 				if (err) {
 					// todo: notify the user
 					console.error(err)

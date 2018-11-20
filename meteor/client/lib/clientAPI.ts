@@ -1,7 +1,16 @@
+import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+import { ClientAPI } from '../../lib/api/client'
 import { logger } from '../../lib/logging'
 
-export function eventContextForLog (e: any): string {
+export function callMethod (e: any, methodName: string, ...params: any[]) {
+	Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), methodName, ...params)
+}
+export function callPeripheralDeviceFunction (e: any, methodName: string, ...params: any[]) {
+	Meteor.call(ClientAPI.methods.callPeripheralDeviceFunction, eventContextForLog(e), methodName, ...params)
+}
+
+function eventContextForLog (e: any): string {
 	let str: string = ''
 	if (e.currentTarget && e.currentTarget.localName && !e.key && !e.code) {
 		str = e.type + ': ' + e.currentTarget.localName! + (e.currentTarget.id ? '#' + e.currentTarget.id : '') + (e.currentTarget.innerText ? ` "${e.currentTarget.innerText}"` : '')
@@ -19,7 +28,7 @@ export function eventContextForLog (e: any): string {
 	return str
 }
 
-export function keyboardEventToShortcut (e: ExtendedKeyboardEvent): string {
+function keyboardEventToShortcut (e: ExtendedKeyboardEvent): string {
 	const combo = _.compact([
 		e.ctrlKey ? 'ctrl' : undefined,
 		e.shiftKey ? 'shift' : undefined,
