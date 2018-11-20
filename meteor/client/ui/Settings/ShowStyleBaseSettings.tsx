@@ -15,11 +15,12 @@ import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { findHighestRank } from './StudioSettings'
+import { findHighestRank, ConfigSettings } from './StudioSettings'
 import { literal } from '../../../lib/lib'
 import { Random } from 'meteor/random'
 import { translate } from 'react-i18next'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
+import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 
 interface IProps {
 	match: {
@@ -36,11 +37,15 @@ interface IState {
 }
 interface ITrackedProps {
 	showStyleBase?: ShowStyleBase
+	showStyleVariants: Array<ShowStyleVariant>
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	let showStyleBase = ShowStyleBases.findOne(props.match.params.showStyleBaseId)
 	return {
-		showStyleBase: showStyleBase
+		showStyleBase: showStyleBase,
+		showStyleVariants: showStyleBase ? ShowStyleVariants.find({
+			showStyleBaseId: showStyleBase._id
+		}).fetch() : []
 	}
 })( class ShowStyleBaseSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
@@ -70,6 +75,15 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		reader.readAsText(file)
 	}
 
+	getOptionBlueprints () {
+		return _.map(Blueprints.find().fetch(), (blueprint) => {
+			return {
+				name: blueprint.name || blueprint._id,
+				value: blueprint._id
+			}
+		})
+	}
+
 	renderEditForm (showStyleBase: ShowStyleBase) {
 		const { t } = this.props
 
@@ -89,18 +103,20 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							<span className='mdfx'></span>
 						</div>
 					</label>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							{t('Blueprint ID')}
+					<label className='field'>
+						{t('Blueprint')}
+						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'
-								attribute='_id'
+								attribute='blueprintId'
 								obj={showStyleBase}
-								type='text'
+								type='dropdown'
+								options={this.getOptionBlueprints()}
 								collection={ShowStyleBases}
-								className='input text-input input-l'></EditAttribute>
-						</label>
-					</div>
+								className='mdinput'></EditAttribute>
+							<span className='mdfx'></span>
+						</div>
+					</label>
 				</div>
 				<div className='row'>
 					<div className='col c12 rl-c6'>
@@ -113,6 +129,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				<div className='row'>
 					<div className='col c12 r1-c12'>
 						<HotkeyLegendSettings showStyleBase={showStyleBase}/>
+					</div>
+				</div>
+				<div className='row'>
+					<div className='col c12 r1-c12'>
+						<ShowStyleVariantsSettings
+							showStyleVariants={this.props.showStyleVariants}
+							showStyleBase={showStyleBase}
+						/>
 					</div>
 				</div>
 			</div>
@@ -897,6 +921,139 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 				</table>
 				<div className='mod mhs'>
 					<button className='btn btn-primary' onClick={this.onAddHotkeyLegend}>
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
+				</div>
+			</div>
+		)
+	}
+})
+interface IShowStyleVariantsProps {
+	showStyleBase: ShowStyleBase
+	showStyleVariants: Array<ShowStyleVariant>
+}
+interface IShowStyleVariantsSettingsState {
+	editedMappings: Array<string>
+}
+const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings extends React.Component<Translated<IShowStyleVariantsProps>, IShowStyleVariantsSettingsState> {
+	constructor (props: Translated<IShowStyleVariantsProps>) {
+		super(props)
+
+		this.state = {
+			editedMappings: []
+		}
+	}
+	isItemEdited = (layerId: string) => {
+		return this.state.editedMappings.indexOf(layerId) >= 0
+	}
+	finishEditItem = (layerId: string) => {
+		let index = this.state.editedMappings.indexOf(layerId)
+		if (index >= 0) {
+			this.state.editedMappings.splice(index, 1)
+			this.setState({
+				editedMappings: this.state.editedMappings
+			})
+		}
+	}
+	editItem = (layerId: string) => {
+		if (this.state.editedMappings.indexOf(layerId) < 0) {
+			this.state.editedMappings.push(layerId)
+			this.setState({
+				editedMappings: this.state.editedMappings
+			})
+		}
+	}
+	onAddShowStyleVariant = () => {
+		ShowStyleVariants.insert({
+			_id: Random.id(),
+			name: this.props.showStyleBase.name + ' variant',
+			config: [],
+			showStyleBaseId: this.props.showStyleBase._id
+
+		})
+	}
+	confirmRemove = (showStyleVariant: ShowStyleVariant) => {
+		const { t } = this.props
+		doModalDialog({
+			title: t('Remove this variant?'),
+			no: t('Cancel'),
+			onAccept: () => {
+				ShowStyleVariants.remove(showStyleVariant._id)
+			},
+			message: [
+				<p>{t('Are you sure you want to remove the variant "{{showStyleVariantId}}"?', { showStyleVariantId: showStyleVariant.name })}</p>
+			]
+		})
+	}
+
+	renderShowStyleVariants () {
+		const { t } = this.props
+
+		return (
+			this.props.showStyleVariants.map((showStyleVariant, index) => {
+				return <React.Fragment key={showStyleVariant._id}>
+					<tr className={ClassNames({
+						'hl': this.isItemEdited(showStyleVariant._id)
+					})}>
+						<th className='settings-studio-showStyleVariant__name c3'>
+							{showStyleVariant.name || t('Unnamed variant')}
+						</th>
+						<td className='settings-studio-showStyleVariant__actions table-item-actions c3'>
+							<button className='action-btn' onClick={(e) => this.editItem(showStyleVariant._id)}>
+								<FontAwesomeIcon icon={faPencilAlt} />
+							</button>
+							<button className='action-btn' onClick={(e) => this.confirmRemove(showStyleVariant)}>
+								<FontAwesomeIcon icon={faTrash} />
+							</button>
+						</td>
+					</tr>
+					{this.isItemEdited(showStyleVariant._id) &&
+						<tr className='expando-details hl'>
+							<td colSpan={5}>
+								<div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Variant Name')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'name'}
+												obj={showStyleVariant}
+												type='text'
+												collection={ShowStyleVariants}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+								</div>
+								<div className='row'>
+									<div className='col c12 r1-c12'>
+										<ConfigSettings item={showStyleVariant}/>
+									</div>
+								</div>
+								<div className='mod alright'>
+									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(showStyleVariant._id)}>
+										<FontAwesomeIcon icon={faCheck} />
+									</button>
+								</div>
+							</td>
+						</tr>
+					}
+				</React.Fragment>
+			})
+		)
+	}
+
+	render () {
+		const { t } = this.props
+		return (
+			<div>
+				<h3>{t('Variants')}</h3>
+				<table className='expando settings-studio-showStyleVariants-table'>
+					<tbody>
+						{this.renderShowStyleVariants()}
+					</tbody>
+				</table>
+				<div className='mod mhs'>
+					<button className='btn btn-primary' onClick={this.onAddShowStyleVariant}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 				</div>

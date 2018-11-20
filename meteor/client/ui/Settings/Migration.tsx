@@ -315,7 +315,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 
 							{this.state.migration.partialMigration ?
 								<div>
-									{t('The migration consists of several phases.')}
+									{t('The migration consists of several phases, you will get more options after you\'ve this migration')}
 								</div> : null
 							}
 							{this.state.migration.canDoAutomaticMigration ?

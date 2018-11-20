@@ -275,45 +275,4 @@ addMigrationSteps( '0.19.0', [
 	ensureCollectionProperty('StudioInstallations', {}, 'settings.sofieUrl', null, 'text', 'Sofie URL',
 		'Enter the URL to the Sofie Core (that\'s what\'s in your browser URL), example: http://sofie-tv-automation.com', undefined, 'studio.settings.sofieUrl from config'),
 
-	{
-		id: 'studio.settings.sofieUrl from config',
-		canBeRunAutomatically: true,
-		validate: () => {
-			let studios = StudioInstallations.find().fetch()
-			let showstyles = ShowStyles.find().fetch()
-
-			let validate: false | string = false
-			StudioInstallations.find().forEach((studio) => {
-				if (!studio.settings || !studio.settings.sofieUrl) {
-
-					if (studio.getConfigValue('sofie_url')) {
-						validate = `sofieUrl not set on studio ${studio._id}`
-					}
-
-				}
-			})
-			return validate
-		},
-		migrate: () => {
-			StudioInstallations.find().forEach((studio) => {
-				if (!studio.settings || !studio.settings.sofieUrl) {
-					let value = studio.getConfigValue('sofie_url')
-					if (value) {
-						// Update the studio
-						StudioInstallations.update(studio._id, {
-							$set: {
-								'settings.sofieUrl': value
-							},
-							$pull: {
-								config: {
-									_id: 'sofie_url'
-								}
-							}
-						})
-
-					}
-				}
-			})
-		}
-	},
 ])

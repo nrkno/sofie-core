@@ -5,7 +5,7 @@ import * as _ from 'underscore'
 import { translate } from 'react-i18next'
 import { Random } from 'meteor/random'
 import { literal } from '../../lib/lib'
-import { ModalDialog } from '../lib/ModalDialog'
+import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import {
 	Route,
@@ -29,6 +29,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { MigrationView } from './Settings/Migration'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
 
 class WelcomeToSettings extends React.Component {
 	render () {
@@ -40,12 +41,11 @@ interface ISettingsMenuProps {
 	match?: any
 }
 interface ISettingsMenuState {
-	deleteConfirmItem: any
-	showDeleteShowStyleConfirm: boolean
 }
 interface ISettingsMenuTrackedProps {
 	studioInstallations: Array<StudioInstallation>
 	showStyleBases: Array<ShowStyleBase>
+	blueprints: Array<Blueprint>
 	peripheralDevices: Array<PeripheralDevice>
 }
 const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps >(() => {
@@ -58,16 +58,16 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 	return {
 		studioInstallations: StudioInstallations.find({}).fetch(),
 		showStyleBases: ShowStyleBases.find({}).fetch(),
-		peripheralDevices: PeripheralDevices.find({}, {sort: {
-			lastConnected: -1
-		}}).fetch(),
+		peripheralDevices: PeripheralDevices.find({}, {
+			sort: {
+				lastConnected: -1
+			}}).fetch(),
+		blueprints: Blueprints.find({}).fetch(),
 	}
 })(class SettingsMenu extends MeteorReactComponent<Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>, ISettingsMenuState> {
 	constructor (props: Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>) {
 		super(props)
 		this.state = {
-			deleteConfirmItem: undefined,
-			showDeleteShowStyleConfirm: false
 		}
 	}
 
@@ -115,7 +115,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}
 	}
 
-	onAddShowStyle () {
+	onAddShowStyleBase () {
 		let id = Random.id()
 		ShowStyleBases.insert(literal<ShowStyleBase>({
 			_id: id,
@@ -126,28 +126,39 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 			config: []
 		}))
 	}
+	onAddBlueprint () {
+		let t = this.props.t
+		// doModalDialog({
+		// 	acceptOnly: true,
+		// 	title: t('Add new blueprint'),
+		// 	message: t('You can add a new blueprint by uploading')
+		// })
+	}
 
 	onDeleteShowStyleBase (item: ShowStyleBase) {
-		this.setState({
-			deleteConfirmItem: item,
-			showDeleteShowStyleConfirm: true
+		const { t } = this.props
+		doModalDialog({
+			title: t('Delete this show-style?'),
+			message: [
+				<p>{t('Are you sure you want to delete the show-style "{{showStyleId}}"?', { showStyleId: item && item.name })}</p>
+			],
+			onAccept: () => {
+				ShowStyleBases.remove(item._id)
+			}
 		})
 	}
-
-	handleConfirmDeleteShowStyleAccept = (e) => {
-		ShowStyleBases.remove(this.state.deleteConfirmItem._id)
-		this.setState({
-			showDeleteShowStyleConfirm: false
+	onDeleteBlueprint (blueprint: Blueprint) {
+		const { t } = this.props
+		doModalDialog({
+			title: t('Delete this blueprint?'),
+			message: [
+				<p>{t('Are you sure you want to delete the blueprint "{{blueprintId}}"?', { blueprintId: blueprint && blueprint.name })}</p>
+			],
+			onAccept: () => {
+				Blueprints.remove(blueprint._id)
+			}
 		})
 	}
-
-	handleConfirmDeleteShowStyleCancel = (e) => {
-		this.setState({
-			deleteConfirmItem: undefined,
-			showDeleteShowStyleConfirm: false
-		})
-	}
-
 	render () {
 		const { t } = this.props
 
@@ -159,37 +170,55 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					this.props.studioInstallations.map((studio) => {
 						return [
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={studio._id} to={'/settings/studio/' + studio._id}>
-								<h3>{studio.name}</h3>
+								<h3>{studio.name || t('Unnamed studio')}</h3>
 							</NavLink>,
 							<hr className='vsubtle man' key={studio._id + '-hr'} />
 						]
 					})
 				}
 				<h2 className='mhs'>
-					<button className='action-btn right' onClick={(e) => this.onAddShowStyle()}>
+					<button className='action-btn right' onClick={(e) => this.onAddShowStyleBase()}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
-					{t('Blueprints')}
-					</h2>
+					{t('Show-styles')}
+				</h2>
 				<hr className='vsubtle man' />
-				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteShowStyleConfirm} onAccept={(e) => this.handleConfirmDeleteShowStyleAccept(e)} onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
-					<p>{t('Are you sure you want to delete blueprint "{{showStyleId}}"?', { showStyleId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.name })}</p>
-					<p>{t('Please note: This action is irreversible!')}</p>
-				</ModalDialog>
 				{
 					this.props.showStyleBases.map((showStyleBase) => {
-						return (
+						return [
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={showStyleBase._id} to={'/settings/showStyleBase/' + showStyleBase._id}>
 								<div className='selectable clickable'>
 									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteShowStyleBase(showStyleBase) }}>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
-									<h3>{showStyleBase.name}</h3>
+									<h3>{showStyleBase.name || t('Unnamed show-style')}</h3>
 									{ showStyleBase.sourceLayers && showStyleBase.outputLayers &&
 										<p>
 											{t('Source layers')}: {showStyleBase.sourceLayers.length.toString()} {t('Output channels')}: {showStyleBase.outputLayers.length.toString()}
 										</p>
 									}
+								</div>
+							</NavLink>,
+							<hr className='vsubtle man' key={showStyleBase._id + '-hr'} />
+						]
+					})
+				}
+				<h2 className='mhs'>
+					<button className='action-btn right' onClick={(e) => this.onAddBlueprint()}>
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
+					{t('Blueprints')}
+				</h2>
+				<hr className='vsubtle man' />
+				{
+					this.props.blueprints.map((blueprint) => {
+						return (
+							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={blueprint._id} to={'/settings/blueprint/' + blueprint._id}>
+								<div className='selectable clickable'>
+									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteBlueprint(blueprint) }}>
+										<FontAwesomeIcon icon={faTrash} />
+									</button>
+									<h3>{blueprint.name || t('Unnamed blueprint')}</h3>
 								</div>
 								<hr className='vsubtle man' />
 							</NavLink>

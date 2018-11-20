@@ -1,7 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
+import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection } from '../lib'
+import { registerCollection, applyClassToDocument } from '../lib'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { IConfigItem } from './StudioInstallations'
 
@@ -77,7 +78,7 @@ export interface HotkeyDefinition {
 	label: string
 }
 
-export interface ShowStyleBase {
+export interface DBShowStyleBase {
 	_id: string
 	/** Name of this show style */
 	name: string
@@ -94,10 +95,26 @@ export interface ShowStyleBase {
 
 	hotkeyLegend?: Array<HotkeyDefinition>
 }
+export class ShowStyleBase implements DBShowStyleBase {
+	public _id: string
+	public name: string
+	public blueprintId: string
+	public outputLayers: Array<IOutputLayer>
+	public sourceLayers: Array<ISourceLayer>
+	public config: Array<IConfigItem>
+	public hotkeyLegend?: Array<HotkeyDefinition>
 
-export const ShowStyleBases: TransformedCollection<ShowStyleBase, ShowStyleBase>
-	= new Mongo.Collection<ShowStyleBase>('showStyleBases')
+	constructor (document: DBShowStyleBase) {
+		_.each(_.keys(document), (key) => {
+			this[key] = document[key]
+		})
+	}
+}
+
+export const ShowStyleBases: TransformedCollection<ShowStyleBase, DBShowStyleBase>
+	= new Mongo.Collection<ShowStyleBase>('showStyleBases', {transform: (doc) => applyClassToDocument(ShowStyleBase, doc) })
 registerCollection('ShowStyleBases', ShowStyleBases)
+
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		// ShowStyleBases._ensureIndex({

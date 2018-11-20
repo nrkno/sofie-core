@@ -1,6 +1,7 @@
 import * as ClassNames from 'classnames'
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { LookaheadMode } from '../../../lib/api/playout'
 import {
@@ -42,18 +43,20 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { translate } from 'react-i18next'
-import { ShowStyleBases, } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBases, ShowStyleBase, } from '../../../lib/collections/ShowStyleBases'
 import { ConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
+import { logger } from '../../../lib/logging'
 
-interface IStudioConfigSettingsProps {
-	studioInstallation: StudioInstallation
+type ObjectWithConfig = StudioInstallation | ShowStyleBase | ShowStyleVariant
+interface IConfigSettingsProps {
+	item: ObjectWithConfig
 }
-interface IStudioConfigSettingsState {
+interface IConfigSettingsState {
 	editedItems: Array<string>
 }
 
-const StudioConfigSettings = translate()(class StudioConfigSettings extends React.Component<Translated<IStudioConfigSettingsProps>, IStudioConfigSettingsState> {
-	constructor (props: Translated<IStudioConfigSettingsProps>) {
+export const ConfigSettings = translate()(class ConfigSettings extends React.Component<Translated<IConfigSettingsProps>, IConfigSettingsState> {
+	constructor (props: Translated<IConfigSettingsProps>) {
 		super(props)
 
 		this.state = {
@@ -98,15 +101,13 @@ const StudioConfigSettings = translate()(class StudioConfigSettings extends Reac
 		})
 	}
 	onDeleteConfigItem = (item: IConfigItem) => {
-		if (this.props.studioInstallation) {
-			StudioInstallations.update(this.props.studioInstallation._id, {
-				$pull: {
-					config: {
-						_id: item._id
-					}
+		this.getCollection().update(item._id, {
+			$pull: {
+				config: {
+					_id: item._id
 				}
-			})
-		}
+			}
+		})
 	}
 	onAddConfigItem = () => {
 		const { t } = this.props
@@ -116,21 +117,44 @@ const StudioConfigSettings = translate()(class StudioConfigSettings extends Reac
 			value: ''
 		})
 
-		if (this.props.studioInstallation) {
-			StudioInstallations.update(this.props.studioInstallation._id, {
+		if (this.props.item) {
+			this.getCollection().update(this.props.item._id, {
 				$push: {
 					config: newItem
 				}
 			})
 		}
 	}
+	getCollection (): Mongo.Collection<any> {
+		if (this.props.item instanceof StudioInstallation) {
+			return StudioInstallations
+		} else if (this.props.item instanceof ShowStyleBase) {
+			return ShowStyleBases
+		} else if (this.props.item instanceof ShowStyleVariant) {
+			return ShowStyleVariants
+		} else {
+			logger.error('collectConfigs: unknown item type', this.props.item)
+			throw new Meteor.Error('collectConfigs: unknown item type')
+		}
+	}
+	collectConfigs (item: ObjectWithConfig) {
 
-	collectStudioConfigs (studio: StudioInstallation) {
+		let showStyleBases: Array<ShowStyleBase> = []
 
-		// All showStyles that the studio is supposed to support:
-		let showStyleBases = ShowStyleBases.find({
-			_id: {$in: studio.supportedShowStyleBase || []}
-		}).fetch()
+		if (item instanceof StudioInstallation) {
+			// All showStyles that the studio is supposed to support:
+			showStyleBases = ShowStyleBases.find({
+				_id: {$in: item.supportedShowStyleBase || []}
+			}).fetch()
+		} else if (item instanceof ShowStyleBase) {
+			showStyleBases = [item]
+		} else if (item instanceof ShowStyleVariant) {
+			showStyleBases = ShowStyleBases.find({
+				_id: item.showStyleBaseId
+			}).fetch()
+		} else {
+			logger.error('collectConfigs: unknown item type', item)
+		}
 
 		// By extension, all blueprints that the studio is supposed to support:
 
@@ -155,12 +179,12 @@ const StudioConfigSettings = translate()(class StudioConfigSettings extends Reac
 	renderItems () {
 		const { t } = this.props
 
-		let manifestEntries = this.collectStudioConfigs(this.props.studioInstallation)
+		let manifestEntries = this.collectConfigs(this.props.item)
 
 		// const excludeIds = this.props.defaultBlueprint ? this.props.defaultBlueprint.studioConfigManifest.map(c => c.id) : []
 		const excludeIds = manifestEntries.map(c => c.id)
 		return (
-			(this.props.studioInstallation.config || []).map((item, index) => {
+			(this.props.item.config || []).map((item, index) => {
 				// Don't show if part of the config manifest
 				if (excludeIds.indexOf(item._id) !== -1) return null
 
@@ -193,9 +217,9 @@ const StudioConfigSettings = translate()(class StudioConfigSettings extends Reac
 												<EditAttribute
 													modifiedClassName='bghl'
 													attribute={'config.' + index + '._id'}
-													obj={this.props.studioInstallation}
+													obj={this.props.item}
 													type='text'
-													collection={StudioInstallations}
+													collection={this.getCollection()}
 													className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
@@ -205,9 +229,9 @@ const StudioConfigSettings = translate()(class StudioConfigSettings extends Reac
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'config.' + index + '.value'}
-												obj={this.props.studioInstallation}
+												obj={this.props.item}
 												type='text'
-												collection={StudioInstallations}
+												collection={this.getCollection()}
 												className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
@@ -229,7 +253,7 @@ const StudioConfigSettings = translate()(class StudioConfigSettings extends Reac
 		const { t } = this.props
 		return (
 			<div>
-				<h3>{t('Custom Configuration (deprecated)')}</h3>
+				<h3>{t('Custom Configuration')}</h3>
 				<table className='expando settings-studio-custom-config-table'>
 					<tbody>
 						{this.renderItems()}
@@ -1197,7 +1221,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				</div> */}
 				<div className='row'>
 					<div className='col c12 r1-c12'>
-						<StudioConfigSettings studioInstallation={this.props.studioInstallation}/>
+						<ConfigSettings item={this.props.studioInstallation}/>
 					</div>
 				</div>
 				<div className='row'>

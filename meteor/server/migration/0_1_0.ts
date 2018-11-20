@@ -75,8 +75,6 @@ addMigrationSteps( '0.1.0', [
 	// ensureCollectionProperty('StudioInstallations', {}, 'sourceLayers', []), // Deprecated
 	ensureCollectionProperty('StudioInstallations', {}, 'mappings', {}),
 	ensureCollectionProperty('StudioInstallations', {}, 'config', []),
-	ensureCollectionProperty('StudioInstallations', {}, 'settings', {}),
-	ensureCollectionProperty('StudioInstallations', {}, 'settings.mediaPreviewsUrl', ''),
 
 	/*
 	// ShowStyles collection has been depracated and split into ShowStyleBase & ShowStyleVariant

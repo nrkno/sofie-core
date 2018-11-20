@@ -21,7 +21,7 @@ export interface Blueprint {
 
 export const Blueprints: TransformedCollection<Blueprint, Blueprint>
 	= new Mongo.Collection<Blueprint>('blueprints')
-registerCollection('blueprints', Blueprints)
+registerCollection('Blueprints', Blueprints)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		// Blueprints._ensureIndex({

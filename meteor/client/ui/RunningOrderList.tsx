@@ -170,13 +170,13 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 				<div>
 					{
 						this.state.systemStatus ? [
-							<p>
+							<div>
 								{t('status')}: {this.state.systemStatus.status} / {this.state.systemStatus._internal.statusCodeString}
-							</p>,
-							<p>
+							</div>,
+							<div>
 								{
 									this.state.systemStatus._internal.messages.length ?
-										<p>
+										<div>
 											{t('Status messages:')}
 											<ul>
 												{_.map(this.state.systemStatus._internal.messages, (message, i) => {
@@ -187,10 +187,10 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 													)
 												})}
 											</ul>
-										</p> :
+										</div> :
 									null
 								}
-							</p>
+							</div>
 						] : null
 					}
 				</div>

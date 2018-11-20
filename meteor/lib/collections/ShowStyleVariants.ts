@@ -3,10 +3,10 @@ import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
 import { IConfigItem } from './StudioInstallations'
-import { registerCollection } from '../lib'
+import { registerCollection, applyClassToDocument } from '../lib'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 
-export interface ShowStyleVariant {
+export interface DBShowStyleVariant {
 	_id: string
 	name: string
 	/** Id of parent ShowStyleBase */
@@ -44,8 +44,20 @@ export function getShowStyleCompound (showStyleVariantId: string): ShowStyleComp
 	})
 }
 
-export const ShowStyleVariants: TransformedCollection<ShowStyleVariant, ShowStyleVariant>
-	= new Mongo.Collection<ShowStyleVariant>('showStyleVariants')
+export class ShowStyleVariant implements DBShowStyleVariant {
+	public _id: string
+	public name: string
+	public showStyleBaseId: string
+	public config: Array<IConfigItem>
+
+	constructor (document: DBShowStyleVariant) {
+		_.each(_.keys(document), (key) => {
+			this[key] = document[key]
+		})
+	}
+}
+export const ShowStyleVariants: TransformedCollection<ShowStyleVariant, DBShowStyleVariant>
+	= new Mongo.Collection<ShowStyleVariant>('showStyleVariants', {transform: (doc) => applyClassToDocument(ShowStyleVariant, doc) })
 registerCollection('ShowStyleVariants', ShowStyleVariants)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
