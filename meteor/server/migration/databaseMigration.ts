@@ -26,8 +26,9 @@ import { storeSystemSnapshot } from '../api/snapshot'
  * 0.16.0: Release 3 (2018-10-26)
  * 0.17.0: Release 3.1 (2018-11-14)
  * 0.18.0: Release 4 (TBD)
+ * 0.19.0: Release 5 (TBD)
  */
-export const CURRENT_SYSTEM_VERSION = '0.18.0'
+export const CURRENT_SYSTEM_VERSION = '0.19.0'
 
 /** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.
  * And Sofie said: The version of the database is to be GENESIS_SYSTEM_VERSION so that the migration scripts will run.
