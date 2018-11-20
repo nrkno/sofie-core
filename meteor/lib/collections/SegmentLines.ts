@@ -35,14 +35,14 @@ export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
 	slug: string
 	/** Should this item should progress to the next automatically */
 	autoNext?: boolean
-	/** How much to overlap on when doing autonext */
+	/** How much this sl should overrun into next on autonext (eg vignett out transition) */
 	autoNextOverlap?: number
-	/** What point to extend the old sli until when doing a take */
-	overlapDuration?: number
-	/** What point to delay the new sli contents until during a transition */
-	transitionDelay?: string
-	/** What point during the transition is it deemed over (so the previous line can be stopped) */
-	transitionDuration?: number
+	/** How long to before this sl is ready to take over from the previous */
+	prerollDuration?: number
+	/** How long to before this sl is ready to take over from the previous (during transition) */
+	transitionPrerollDuration?: number
+	/** How long to keep the old sl alive during the transition */
+	transitionKeepaliveDuration?: number
 	/** Should we block a transition at the out of this SegmentLine */
 	disableOutTransition?: boolean
 	/** If true, the story status (yellow line) will be updated upon next:ing  */
@@ -124,9 +124,9 @@ export class SegmentLine implements DBSegmentLine {
 	public slug: string
 	public autoNext?: boolean
 	public autoNextOverlap?: number
-	public overlapDuration?: number
-	public transitionDelay?: string
-	public transitionDuration?: number
+	public prerollDuration?: number
+	public transitionPrerollDuration?: number
+	public transitionKeepaliveDuration?: number
 	public metaData?: Array<IMOSExternalMetaData>
 	public status?: IMOSObjectStatus
 	public expectedDuration?: number
