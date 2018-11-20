@@ -35,6 +35,21 @@ export const CURRENT_SYSTEM_VERSION = '0.19.0'
  */
 export const GENESIS_SYSTEM_VERSION = '0.0.0'
 
+/**
+ * These versions are not supported anymore (breaking changes occurred after these version)
+ */
+export const UNSUPPORTED_VERSIONS = [ '0.18.0']
+
+export function isVersionSupported (version: Version) {
+	let isSupported: boolean = true
+	_.each(UNSUPPORTED_VERSIONS, (uv) => {
+		if (compareVersions(version, parseVersion(uv)) <= 0) {
+			isSupported = false
+		}
+	})
+	return isSupported
+}
+
 export interface MigrationStepBase {
 	/** Unique id for this step */
 	id: string
