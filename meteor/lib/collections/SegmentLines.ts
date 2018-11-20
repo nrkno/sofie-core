@@ -60,7 +60,7 @@ export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
 	/** The time the system played back this segment line, null if not yet finished playing, in milliseconds */
 	duration?: number
 
-	/** The type of the segmentLiene, could be the name of the template that created it */
+	/** The type of the segmentLiene, could be the name of the blueprint that created it */
 	typeVariant: string
 	/** The subtype fo the segmentLine */
 	subTypeVariant?: string
@@ -71,7 +71,7 @@ export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
 	/** Whether this segment line supports being used in HOLD */
 	holdMode?: SegmentLineHoldMode
 
-	/** Holds notes (warnings / errors) thrown by the templates during creation */
+	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<SegmentLineNote>
 	/** if the segmentLine is inserted after another (for adlibbing) */
 	afterSegmentLine?: string

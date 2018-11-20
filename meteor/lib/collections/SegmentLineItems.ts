@@ -58,7 +58,7 @@ export interface SegmentLineItemGeneric {
 	startedPlayback?: number
 	/** Playout timings, in here we log times when playout happens */
 	timings?: SegmentLineTimings
-	/** If this item has been inserted by the post-process template step */
+	/** If this item has been inserted by the post-process blueprint step */
 	fromPostProcess?: boolean
 
 	isTransition?: boolean

@@ -256,7 +256,7 @@ function updateWithinSegment (ro: RunningOrder, segmentId: string): boolean {
 		changed = changed || updateSegmentLine(ro, segmentLine)
 	})
 
-	runPostProcessTemplate(ro, segment)
+	runPostProcessBlueprint(ro, segment)
 
 	return changed
 }
@@ -270,7 +270,7 @@ function updateSegmentLine (ro: RunningOrder, segmentLine: SegmentLine): boolean
 		return false
 	}
 }
-export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
+export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 	let showStyleBase = ro.getShowStyleBase()
 
 	const segmentLines = segment.getSegmentLines()

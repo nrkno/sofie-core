@@ -79,7 +79,7 @@ import {
 	updateSegments,
 	updateAffectedSegmentLines,
 	removeSegmentLine,
-	runPostProcessTemplate,
+	runPostProcessBlueprint,
 	ServerRunningOrderAPI
 } from '../runningOrder'
 import { syncFunction } from '../../codeControl'
@@ -189,10 +189,7 @@ export function upsertSegmentLine (story: IMOSStory, runningOrderId: string, ran
 	return sl
 }
 export function afterInsertUpdateSegmentLine (story: IMOSStory, runningOrderId: string) {
-	// TODO: create segmentLineItems
-
-	// use the Template-generator to generate the segmentLineItems
-	// and put them into the db
+	// nothing
 }
 
 function fixIllegalObject (o: any) {
@@ -283,7 +280,6 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: IM
 		removed: 0
 	}
 	if (resultSl) {
-		// if (!result.SegmentLine.typeVariant) result.SegmentLine.typeVariant = tr.templateId
 		SegmentLines.update(segmentLine._id, {$set: {
 			expectedDuration:		resultSl.expectedDuration || 0,
 			notes: 					notes,
@@ -1033,7 +1029,7 @@ export namespace MosIntegration {
 		const segment = segmentLine.getSegment()
 		if (segment) {
 			// this could be run after the segment, if we were capable of limiting that
-			runPostProcessTemplate(ro, segment)
+			runPostProcessBlueprint(ro, segment)
 		}
 
 		if (changed) {

@@ -69,7 +69,7 @@ import { setMeteorMethods } from '../methods'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { sendStoryStatus, updateStory } from './integration/mos'
 import { updateSegmentLines, reloadRunningOrderData } from './runningOrder'
-import { runPostProcessTemplate } from '../../server/api/runningOrder'
+import { runPostProcessBlueprint } from '../../server/api/runningOrder'
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { generateRecordingTimelineObjs } from './testTools'
 import { reportRunningOrderHasStarted, reportSegmentLineHasStarted, reportSegmentLineItemHasStarted } from './asRunLog'
@@ -495,7 +495,7 @@ export namespace ServerPlayoutAPI {
 		const segment = sl.getSegment()
 		if (segment) {
 			// this could be run after the segment, if we were capable of limiting that
-			runPostProcessTemplate(ro, segment)
+			runPostProcessBlueprint(ro, segment)
 		}
 
 		updateSourceLayerInfinitesAfterLine(ro, false, sl)

@@ -27,7 +27,7 @@ export interface DBSegment {
 	status?: IMOSObjectStatus
 	expanded?: boolean
 
-	/** Holds notes (warnings / errors) thrown by the templates during creation */
+	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<SegmentLineNote>
 }
 export class Segment implements DBSegment {

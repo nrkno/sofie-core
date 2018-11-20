@@ -140,7 +140,7 @@ class CommonContext implements ICommonContext {
 		}
 	}
 	error (message: string) {
-		logger.error('Error from template: ' + message)
+		logger.error('Error from blueprint: ' + message)
 
 		const name = this.getLoggerName()
 
@@ -159,7 +159,7 @@ class CommonContext implements ICommonContext {
 		throw new Meteor.Error(500, message)
 	}
 	warning (message: string) {
-		// logger.warn('Warning from template: ' + message)
+		// logger.warn('Warning from blueprint: ' + message)
 		// @todo: save warnings, maybe to the RO somewhere?
 		// it should be displayed to the user in the UI
 
@@ -299,7 +299,7 @@ export function evalBlueprints (blueprint: Blueprint, noCache: boolean): Bluepri
 	}
 }
 
-export function postProcessSegmentLineItems (innerContext: ICommonContext, segmentLineItems: IBlueprintSegmentLineItem[], templateId: string, segmentLineId: string): SegmentLineItem[] {
+export function postProcessSegmentLineItems (innerContext: ICommonContext, segmentLineItems: IBlueprintSegmentLineItem[], blueprintId: string, segmentLineId: string): SegmentLineItem[] {
 	let i = 0
 	let segmentLinesUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(segmentLineItems), (itemOrig: IBlueprintSegmentLineItem) => {
@@ -310,10 +310,10 @@ export function postProcessSegmentLineItems (innerContext: ICommonContext, segme
 			...itemOrig
 		}
 
-		if (!item._id) item._id = innerContext.getHashId(templateId + '_sli_' + (i++))
-		if (!item.mosId && !item.isTransition) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for segmentLineItem in ' + segmentLineId + '! ("' + innerContext.unhashId(item._id) + '")')
+		if (!item._id) item._id = innerContext.getHashId(blueprintId + '_sli_' + (i++))
+		if (!item.mosId && !item.isTransition) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": mosId not set for segmentLineItem in ' + segmentLineId + '! ("' + innerContext.unhashId(item._id) + '")')
 
-		if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
+		if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
 		segmentLinesUniqueIds[item._id] = true
 
 		if (item.content && item.content.timelineObjects) {
@@ -321,9 +321,9 @@ export function postProcessSegmentLineItems (innerContext: ICommonContext, segme
 			item.content.timelineObjects = _.map(_.compact(item.content.timelineObjects), (o: TimelineObjectCoreExt) => {
 				const item = convertTimelineObject(o)
 
-				if (!item._id) item._id = innerContext.getHashId(templateId + '_' + (i++))
+				if (!item._id) item._id = innerContext.getHashId(blueprintId + '_' + (i++))
 
-				if (timelineUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(item._id) + '")')
+				if (timelineUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(item._id) + '")')
 				timelineUniqueIds[item._id] = true
 
 				return item
@@ -334,12 +334,12 @@ export function postProcessSegmentLineItems (innerContext: ICommonContext, segme
 	})
 }
 
-export function postProcessSegmentLineAdLibItems (innerContext: ICommonContext, segmentLineAdLibItems: IBlueprintSegmentLineAdLibItem[], templateId: string, segmentLineId?: string): SegmentLineAdLibItem[] {
+export function postProcessSegmentLineAdLibItems (innerContext: ICommonContext, segmentLineAdLibItems: IBlueprintSegmentLineAdLibItem[], blueprintId: string, segmentLineId?: string): SegmentLineAdLibItem[] {
 	let i = 0
 	let segmentLinesUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(segmentLineAdLibItems), (itemOrig: IBlueprintSegmentLineAdLibItem) => {
 		let item: SegmentLineAdLibItem = {
-			_id: innerContext.getHashId(templateId + '_adlib_sli_' + (i++)),
+			_id: innerContext.getHashId(blueprintId + '_adlib_sli_' + (i++)),
 			runningOrderId: innerContext.runningOrder._id,
 			segmentLineId: segmentLineId,
 			status: RunningOrderAPI.LineItemStatusCode.UNKNOWN,
@@ -348,9 +348,9 @@ export function postProcessSegmentLineAdLibItems (innerContext: ICommonContext, 
 			...itemOrig
 		}
 
-		if (!item.mosId) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for segmentLineItem in ' + segmentLineId + '! ("' + innerContext.unhashId(item._id) + '")')
+		if (!item.mosId) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": mosId not set for segmentLineItem in ' + segmentLineId + '! ("' + innerContext.unhashId(item._id) + '")')
 
-		if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + templateId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
+		if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
 		segmentLinesUniqueIds[item._id] = true
 
 		if (item.content && item.content.timelineObjects) {
@@ -358,9 +358,9 @@ export function postProcessSegmentLineAdLibItems (innerContext: ICommonContext, 
 			item.content.timelineObjects = _.map(_.compact(item.content.timelineObjects), (o: TimelineObjectCoreExt) => {
 				const item = convertTimelineObject(o)
 
-				if (!item._id) item._id = innerContext.getHashId(templateId + '_adlib_' + (i++))
+				if (!item._id) item._id = innerContext.getHashId(blueprintId + '_adlib_' + (i++))
 
-				if (timelineUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(item._id) + '")')
+				if (timelineUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(item._id) + '")')
 				timelineUniqueIds[item._id] = true
 
 				return item

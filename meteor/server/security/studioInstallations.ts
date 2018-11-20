@@ -16,12 +16,12 @@ export namespace StudioInstallationsSecurity {
 // Setup rules:
 StudioInstallations.allow({
 	insert (userId: string, doc: StudioInstallation): boolean {
-		return true // Not allowed client-side
+		return true
 	},
 	update (userId, doc, fields, modifier) {
-		return true // Not allowed client-side
+		return true
 	},
 	remove (userId, doc) {
-		return true // Not allowed client-side
+		return true
 	}
 })
