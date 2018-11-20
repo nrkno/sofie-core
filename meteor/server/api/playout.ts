@@ -2208,10 +2208,22 @@ function transformBaselineItemsIntoTimeline (items: RunningOrderBaselineItem[]):
 	return timelineObjs
 }
 
-function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjClasses: string[], segmentLineGroup?: TimelineObj, allowTransition?: boolean, triggerOffsetForTransition?: string, holdState?: RunningOrderHoldState, showHoldExcept?: boolean): Array<TimelineObj> {
+interface TransformTransitionProps {
+	allowed: boolean
+	preroll?: number
+	transitionPreroll?: number
+	transitionKeepalive?: number
+}
+
+function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjClasses: string[], segmentLineGroup?: TimelineObj, transitionProps?: TransformTransitionProps, holdState?: RunningOrderHoldState, showHoldExcept?: boolean): Array<TimelineObj> {
 	let timelineObjs: Array<TimelineObj> = []
 
 	const isHold = holdState === RunningOrderHoldState.ACTIVE
+
+	const allowTransition = transitionProps && transitionProps.allowed
+	const transition: SegmentLineItem | undefined = allowTransition ? clone(items.find(i => !!i.isTransition)) : undefined
+	const transitionSliDelay = transitionProps ? Math.max(0, (transitionProps.preroll || 0) - (transitionProps.transitionPreroll || 0)) : 0
+	const transitionContentsDelay = transitionProps ? (transitionProps.transitionPreroll || 0) - (transitionProps.preroll || 0) : 0
 
 	_.each(clone(items), (item: SegmentLineItem) => {
 		if (item.disabled) return
@@ -2227,9 +2239,13 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjCla
 
 			if (item.trigger.type === TriggerType.TIME_ABSOLUTE && item.trigger.value === 0) {
 				// If timed absolute and there is a transition delay, then apply delay
-				if (!item.isTransition && allowTransition && triggerOffsetForTransition && !item.adLibSourceId) {
+				if (!item.isTransition && allowTransition && transition && !item.adLibSourceId) {
+					const transitionContentsDelayStr = transitionContentsDelay < 0 ? `- ${-transitionContentsDelay}` : `+ ${transitionContentsDelay}`
 					item.trigger.type = TriggerType.TIME_RELATIVE
-					item.trigger.value = `${triggerOffsetForTransition} + ${item.trigger.value}`
+					item.trigger.value = `#${getSliGroupId(transition)}.start ${transitionContentsDelayStr}`
+				} else if (item.isTransition && transitionSliDelay) {
+					item.trigger.type = TriggerType.TIME_ABSOLUTE
+					item.trigger.value = Math.max(0, transitionSliDelay)
 				}
 			}
 
@@ -2638,156 +2654,10 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 		})
 		let roData: RoData = activeRunningOrder.fetchAllData()
 
-		let currentSegmentLine: SegmentLine | undefined
-		let nextSegmentLine: SegmentLine | undefined
-		let currentSegmentLineGroup: TimelineObj | undefined
-		let previousSegmentLineGroup: TimelineObj | undefined
-
-		let currentSegmentLineItems: Array<SegmentLineItem> = []
-		let previousSegmentLine: SegmentLine | undefined
-
-		// Fetch the nextSegmentLine first, because that affects how the currentSegmentLine will be treated
-		if (activeRunningOrder.nextSegmentLineId) {
-			// We may be at the beginning of a show, and there can be no currentSegmentLine and we are waiting for the user to Take
-			nextSegmentLine = roData.segmentLinesMap[activeRunningOrder.nextSegmentLineId]
-			if (!nextSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.nextSegmentLineId}" not found!`)
-		}
-
-		if (activeRunningOrder.currentSegmentLineId) {
-			currentSegmentLine = roData.segmentLinesMap[activeRunningOrder.currentSegmentLineId]
-			if (!currentSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.currentSegmentLineId}" not found!`)
-
-			if (activeRunningOrder.previousSegmentLineId) {
-				previousSegmentLine = roData.segmentLinesMap[activeRunningOrder.previousSegmentLineId]
-				if (!previousSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.previousSegmentLineId}" not found!`)
-			}
-		}
 		// Default timelineobjects:
 		let baselineItems = waitForPromise(promiseBaselineItems)
-		if (baselineItems) {
-			timelineObjs = timelineObjs.concat(transformBaselineItemsIntoTimeline(baselineItems))
-		}
 
-		// Currently playing:
-		if (currentSegmentLine) {
-
-			const currentSegmentLineItems = currentSegmentLine.getAllSegmentLineItems()
-			const currentInfiniteItems = currentSegmentLineItems.filter(l => (l.infiniteMode && l.infiniteId && l.infiniteId !== l._id))
-			const currentNormalItems = currentSegmentLineItems.filter(l => !(l.infiniteMode && l.infiniteId && l.infiniteId !== l._id))
-
-			let allowTransition = false
-
-			if (previousSegmentLine) {
-				allowTransition = !previousSegmentLine.disableOutTransition
-
-				if (previousSegmentLine.getLastStartedPlayback()) {
-					const overlapDuration = calcOverlapDuration(previousSegmentLine, currentSegmentLine, currentSegmentLineItems)
-
-					previousSegmentLineGroup = createSegmentLineGroup(previousSegmentLine, `#${getSlGroupId(currentSegmentLine)}.start + ${overlapDuration} - #.start`)
-					previousSegmentLineGroup.priority = -1
-					previousSegmentLineGroup.trigger = literal<TimelineTrigger>({
-						type: TriggerType.TIME_ABSOLUTE,
-						value: previousSegmentLine.getLastStartedPlayback() || 0
-					})
-
-					// If a SegmentLineItem is infinite, and continued in the new SegmentLine, then we want to add the SegmentLineItem only there to avoid id collisions
-					const skipIds = currentInfiniteItems.map(l => l.infiniteId || '')
-					const previousSegmentLineItems = previousSegmentLine.getAllSegmentLineItems().filter(l => !l.infiniteId || skipIds.indexOf(l.infiniteId) < 0)
-
-					const groupClasses: string[] = ['previous_sl']
-					let prevObjs = [previousSegmentLineGroup]
-					prevObjs = prevObjs.concat(
-						transformSegmentLineIntoTimeline(previousSegmentLineItems, groupClasses, previousSegmentLineGroup, undefined, undefined, activeRunningOrder.holdState, undefined))
-
-					prevObjs = prefixAllObjectIds(prevObjs, 'previous_')
-
-					// If autonext with an overlap, keep the previous line alive for the specified overlap
-					if (previousSegmentLine.autoNext && previousSegmentLine.autoNextOverlap) {
-						previousSegmentLineGroup.duration = `#${getSlGroupId(currentSegmentLine)}.start + ${previousSegmentLine.autoNextOverlap || 0} - #.start`
-					}
-
-					timelineObjs = timelineObjs.concat(prevObjs)
-				}
-			}
-
-			// fetch items
-			// fetch the timelineobjs in items
-			const isFollowed = nextSegmentLine && currentSegmentLine.autoNext
-			currentSegmentLineGroup = createSegmentLineGroup(currentSegmentLine, (isFollowed ? (currentSegmentLine.expectedDuration || 0) : 0))
-			if (currentSegmentLine.startedPlayback && currentSegmentLine.getLastStartedPlayback()) { // If we are recalculating the currentLine, then ensure it doesnt think it is starting now
-				currentSegmentLineGroup.trigger = literal<TimelineTrigger>({
-					type: TriggerType.TIME_ABSOLUTE,
-					value: currentSegmentLine.getLastStartedPlayback() || 0
-				})
-			}
-
-			// any continued infinite lines need to skip the group, as they need a different start trigger
-			for (let item of currentInfiniteItems) {
-				const infiniteGroup = createSegmentLineGroup(currentSegmentLine, item.expectedDuration || 0)
-				infiniteGroup._id = getSlGroupId(item._id) + '_infinite'
-				infiniteGroup.priority = 1
-
-				const groupClasses: string[] = ['current_sl']
-				// If the previousSegmentLine also contains another segment of this infinite sli, then we label our new one as such
-				if (previousSegmentLine && previousSegmentLine.getAllSegmentLineItems().filter(i => i.infiniteId && i.infiniteId === item.infiniteId)) {
-					groupClasses.push('continues_infinite')
-				}
-
-				if (item.infiniteId) {
-					const originalItem = _.find(roData.segmentLineItems, (sli => sli._id === item.infiniteId))
-
-					if (originalItem && originalItem.startedPlayback) {
-						infiniteGroup.trigger = literal<TimelineTrigger>({
-							type: TriggerType.TIME_ABSOLUTE,
-							value: originalItem.startedPlayback
-						})
-					}
-				}
-
-				// Still show objects flagged as 'HoldMode.EXCEPT' if this is a infinite continuation as they belong to the previous too
-				const showHoldExcept = item.infiniteId !== item._id
-				timelineObjs = timelineObjs.concat(infiniteGroup, transformSegmentLineIntoTimeline([item], groupClasses, infiniteGroup, undefined, undefined, activeRunningOrder.holdState, showHoldExcept))
-			}
-
-			const groupClasses: string[] = ['current_sl']
-			timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentNormalItems, groupClasses, currentSegmentLineGroup, allowTransition, currentSegmentLine.transitionDelay, activeRunningOrder.holdState, undefined))
-
-			timelineObjs.push(createSegmentLineGroupFirstObject(currentSegmentLine, currentSegmentLineGroup))
-
-			// only add the next objects into the timeline if the next segment is autoNext
-			if (nextSegmentLine && currentSegmentLine.autoNext) {
-				// console.log('This segment line will autonext')
-				let nextSegmentLineItemGroup = createSegmentLineGroup(nextSegmentLine, 0)
-				if (currentSegmentLineGroup) {
-					const nextSegmentLineItems = nextSegmentLine.getAllSegmentLineItems()
-					const overlapDuration = calcOverlapDuration(currentSegmentLine, nextSegmentLine, nextSegmentLineItems)
-
-					nextSegmentLineItemGroup.trigger = literal<TimelineTrigger>({
-						type: TriggerType.TIME_RELATIVE,
-						value: `#${currentSegmentLineGroup._id}.end - ${overlapDuration}`
-					})
-					if (typeof currentSegmentLineGroup.duration === 'number') {
-						currentSegmentLineGroup.duration += currentSegmentLine.autoNextOverlap || 0
-					}
-				}
-
-				let toSkipIds = currentSegmentLineItems.filter(i => i.infiniteId).map(i => i.infiniteId)
-
-				let nextItems = nextSegmentLine.getAllSegmentLineItems()
-				nextItems = nextItems.filter(i => !i.infiniteId || toSkipIds.indexOf(i.infiniteId) === -1)
-
-				const groupClasses: string[] = ['next_sl']
-				timelineObjs = timelineObjs.concat(
-					nextSegmentLineItemGroup,
-					transformSegmentLineIntoTimeline(nextItems, groupClasses, nextSegmentLineItemGroup, currentSegmentLine && !currentSegmentLine.disableOutTransition, nextSegmentLine.transitionDelay))
-				timelineObjs.push(createSegmentLineGroupFirstObject(nextSegmentLine, nextSegmentLineItemGroup))
-			}
-		}
-
-		if (!activeRunningOrder.nextSegmentLineId && !activeRunningOrder.currentSegmentLineId) {
-			// maybe at the end of the show
-			logger.info(`No next segmentLine and no current segment line set on running order "${activeRunningOrder._id}".`)
-		}
+		timelineObjs = timelineObjs.concat(buildTimelineObjs(roData, baselineItems))
 
 		// next (on pvw (or on pgm if first))
 		// addLookeaheadObjectsToTimeline(activeRunningOrder, studioInstallation, timelineObjs)
@@ -2805,7 +2675,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 		}
 
 		// TODO: Specific implementations, to be refactored into Blueprints:
-		setLawoObjectsTriggerValue(timelineObjs, currentSegmentLine)
+		setLawoObjectsTriggerValue(timelineObjs, activeRunningOrder.currentSegmentLineId || undefined)
 		timelineObjs = validateNoraPreload(timelineObjs)
 
 		waitForPromise(promiseClearTimeline)
@@ -2871,18 +2741,221 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 	afterUpdateTimeline(studioInstallation, timelineObjs)
 	logger.debug('updateTimeline done!')
 })
-function calcOverlapDuration (fromSl: SegmentLine, toSl: SegmentLine, toSLItems: SegmentLineItem[]): number {
-	const allowTransition: boolean = !fromSl.disableOutTransition
-	let overlapDuration: number = toSl.transitionDuration || 0
-	if (!toSl.transitionDuration && allowTransition) {
-		if (!toSLItems) toSLItems = toSl.getAllSegmentLineItems()
-		const transitionObjs = toSLItems.filter(i => i.isTransition)
-		overlapDuration = (transitionObjs && transitionObjs.length > 0) ? transitionObjs[0].duration || 0 : 0
-	} else if (!allowTransition) {
-		overlapDuration = fromSl.autoNextOverlap || 0
+
+export function buildTimelineObjs (roData: RoData, baselineItems: RunningOrderBaselineItem[]) {
+	let timelineObjs: Array<TimelineObj> = []
+	let currentSegmentLineGroup: TimelineObj | undefined
+	let previousSegmentLineGroup: TimelineObj | undefined
+
+	let currentSegmentLine: SegmentLine | undefined
+	let nextSegmentLine: SegmentLine | undefined
+
+	// let currentSegmentLineItems: Array<SegmentLineItem> = []
+	let previousSegmentLine: SegmentLine | undefined
+
+	let activeRunningOrder = roData.runningOrder
+
+	// Fetch the nextSegmentLine first, because that affects how the currentSegmentLine will be treated
+	if (activeRunningOrder.nextSegmentLineId) {
+		// We may be at the beginning of a show, and there can be no currentSegmentLine and we are waiting for the user to Take
+		nextSegmentLine = roData.segmentLinesMap[activeRunningOrder.nextSegmentLineId]
+		if (!nextSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.nextSegmentLineId}" not found!`)
 	}
 
-	return Math.max(overlapDuration, toSl.overlapDuration || 0)
+	if (activeRunningOrder.currentSegmentLineId) {
+		currentSegmentLine = roData.segmentLinesMap[activeRunningOrder.currentSegmentLineId]
+		if (!currentSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.currentSegmentLineId}" not found!`)
+
+		if (activeRunningOrder.previousSegmentLineId) {
+			previousSegmentLine = roData.segmentLinesMap[activeRunningOrder.previousSegmentLineId]
+			if (!previousSegmentLine) throw new Meteor.Error(404, `SegmentLine "${activeRunningOrder.previousSegmentLineId}" not found!`)
+		}
+	}
+
+	if (baselineItems) {
+		timelineObjs = timelineObjs.concat(transformBaselineItemsIntoTimeline(baselineItems))
+	}
+
+	// Currently playing:
+	if (currentSegmentLine) {
+
+		const currentSegmentLineItems = currentSegmentLine.getAllSegmentLineItems()
+		const currentInfiniteItems = currentSegmentLineItems.filter(l => (l.infiniteMode && l.infiniteId && l.infiniteId !== l._id))
+		const currentNormalItems = currentSegmentLineItems.filter(l => !(l.infiniteMode && l.infiniteId && l.infiniteId !== l._id))
+
+		let allowTransition = false
+
+		if (previousSegmentLine) {
+			allowTransition = !previousSegmentLine.disableOutTransition
+
+			if (previousSegmentLine.getLastStartedPlayback()) {
+				const prevSlOverlapDuration = calcSlKeepaliveDuration(previousSegmentLine, currentSegmentLine, true)
+				previousSegmentLineGroup = createSegmentLineGroup(previousSegmentLine, `#${getSlGroupId(currentSegmentLine)}.start + ${prevSlOverlapDuration} - #.start`)
+				previousSegmentLineGroup.priority = -1
+				previousSegmentLineGroup.trigger = literal<TimelineTrigger>({
+					type: TriggerType.TIME_ABSOLUTE,
+					value: previousSegmentLine.getLastStartedPlayback() || 0
+				})
+
+				// If a SegmentLineItem is infinite, and continued in the new SegmentLine, then we want to add the SegmentLineItem only there to avoid id collisions
+				const skipIds = currentInfiniteItems.map(l => l.infiniteId || '')
+				const previousSegmentLineItems = previousSegmentLine.getAllSegmentLineItems().filter(l => !l.infiniteId || skipIds.indexOf(l.infiniteId) < 0)
+
+				const groupClasses: string[] = ['previous_sl']
+				let prevObjs = [previousSegmentLineGroup]
+				prevObjs = prevObjs.concat(
+					transformSegmentLineIntoTimeline(previousSegmentLineItems, groupClasses, previousSegmentLineGroup, undefined, activeRunningOrder.holdState, undefined))
+
+				prevObjs = prefixAllObjectIds(prevObjs, 'previous_')
+
+				// If autonext with an overlap, keep the previous line alive for the specified overlap
+				if (previousSegmentLine.autoNext && previousSegmentLine.autoNextOverlap) {
+					previousSegmentLineGroup.duration = `#${getSlGroupId(currentSegmentLine)}.start + ${previousSegmentLine.autoNextOverlap || 0} - #.start`
+				}
+
+				timelineObjs = timelineObjs.concat(prevObjs)
+			}
+		}
+
+		// fetch items
+		// fetch the timelineobjs in items
+		const isFollowed = nextSegmentLine && currentSegmentLine.autoNext
+		const currentSLDuration = !isFollowed ? 0 : calcSlTargetDuration(previousSegmentLine, currentSegmentLine)
+		currentSegmentLineGroup = createSegmentLineGroup(currentSegmentLine, currentSLDuration)
+		if (currentSegmentLine.startedPlayback && currentSegmentLine.getLastStartedPlayback()) { // If we are recalculating the currentLine, then ensure it doesnt think it is starting now
+			currentSegmentLineGroup.trigger = literal<TimelineTrigger>({
+				type: TriggerType.TIME_ABSOLUTE,
+				value: currentSegmentLine.getLastStartedPlayback() || 0
+			})
+		}
+
+		// any continued infinite lines need to skip the group, as they need a different start trigger
+		for (let item of currentInfiniteItems) {
+			const infiniteGroup = createSegmentLineGroup(currentSegmentLine, item.expectedDuration || 0)
+			infiniteGroup._id = getSlGroupId(item._id) + '_infinite'
+			infiniteGroup.priority = 1
+
+			const groupClasses: string[] = ['current_sl']
+			// If the previousSegmentLine also contains another segment of this infinite sli, then we label our new one as such
+			if (previousSegmentLine && previousSegmentLine.getAllSegmentLineItems().filter(i => i.infiniteId && i.infiniteId === item.infiniteId)) {
+				groupClasses.push('continues_infinite')
+			}
+
+			if (item.infiniteId) {
+				const originalItem = _.find(roData.segmentLineItems, (sli => sli._id === item.infiniteId))
+
+				if (originalItem && originalItem.startedPlayback) {
+					infiniteGroup.trigger = literal<TimelineTrigger>({
+						type: TriggerType.TIME_ABSOLUTE,
+						value: originalItem.startedPlayback
+					})
+				}
+			}
+
+			// Still show objects flagged as 'HoldMode.EXCEPT' if this is a infinite continuation as they belong to the previous too
+			const showHoldExcept = item.infiniteId !== item._id
+			timelineObjs = timelineObjs.concat(infiniteGroup, transformSegmentLineIntoTimeline([item], groupClasses, infiniteGroup, undefined, activeRunningOrder.holdState, showHoldExcept))
+		}
+
+		const groupClasses: string[] = ['current_sl']
+		const transProps: TransformTransitionProps = {
+			allowed: allowTransition,
+			preroll: currentSegmentLine.prerollDuration,
+			transitionPreroll: currentSegmentLine.transitionPrerollDuration,
+			transitionKeepalive: currentSegmentLine.transitionKeepaliveDuration
+		}
+		timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentNormalItems, groupClasses, currentSegmentLineGroup, transProps, activeRunningOrder.holdState, undefined))
+
+		timelineObjs.push(createSegmentLineGroupFirstObject(currentSegmentLine, currentSegmentLineGroup))
+
+		// only add the next objects into the timeline if the next segment is autoNext
+		if (nextSegmentLine && currentSegmentLine.autoNext) {
+			// console.log('This segment line will autonext')
+			let nextSegmentLineItemGroup = createSegmentLineGroup(nextSegmentLine, 0)
+			if (currentSegmentLineGroup) {
+				const overlapDuration = calcSlOverlapDuration(currentSegmentLine, nextSegmentLine)
+
+				nextSegmentLineItemGroup.trigger = literal<TimelineTrigger>({
+					type: TriggerType.TIME_RELATIVE,
+					value: `#${currentSegmentLineGroup._id}.end - ${overlapDuration}`
+				})
+				if (typeof currentSegmentLineGroup.duration === 'number') {
+					currentSegmentLineGroup.duration += currentSegmentLine.autoNextOverlap || 0
+				}
+			}
+
+			let toSkipIds = currentSegmentLineItems.filter(i => i.infiniteId).map(i => i.infiniteId)
+
+			let nextItems = nextSegmentLine.getAllSegmentLineItems()
+			nextItems = nextItems.filter(i => !i.infiniteId || toSkipIds.indexOf(i.infiniteId) === -1)
+
+			const groupClasses: string[] = ['next_sl']
+			const transProps: TransformTransitionProps = {
+				allowed: currentSegmentLine && !currentSegmentLine.disableOutTransition,
+				preroll: nextSegmentLine.prerollDuration,
+				transitionPreroll: nextSegmentLine.transitionPrerollDuration,
+				transitionKeepalive: nextSegmentLine.transitionKeepaliveDuration
+			}
+			timelineObjs = timelineObjs.concat(
+				nextSegmentLineItemGroup,
+				transformSegmentLineIntoTimeline(nextItems, groupClasses, nextSegmentLineItemGroup, transProps))
+			timelineObjs.push(createSegmentLineGroupFirstObject(nextSegmentLine, nextSegmentLineItemGroup))
+		}
+	}
+
+	if (!nextSegmentLine && !currentSegmentLine) {
+		// maybe at the end of the show
+		logger.info(`No next segmentLine and no current segment line set on running order "${activeRunningOrder._id}".`)
+	}
+
+	return timelineObjs
+}
+
+function calcSlKeepaliveDuration (fromSl: SegmentLine, toSl: SegmentLine, relativeToFrom: boolean): number {
+	const allowTransition: boolean = !fromSl.disableOutTransition
+	if (!allowTransition) {
+		return fromSl.autoNextOverlap || 0
+	}
+
+	if (relativeToFrom) { // TODO remove
+		if (toSl.transitionKeepaliveDuration === undefined || toSl.transitionKeepaliveDuration === null) {
+			return (toSl.prerollDuration || 0)
+		}
+
+		const transSliDelay = Math.max(0, (toSl.prerollDuration || 0) - (toSl.transitionPrerollDuration || 0))
+		return transSliDelay + (toSl.transitionKeepaliveDuration || 0)
+	}
+
+	// if (toSl.transitionKeepaliveDuration === undefined || toSl.transitionKeepaliveDuration === null) {
+	// 	return (fromSl.autoNextOverlap || 0)
+	// }
+
+	return 0
+}
+function calcSlTargetDuration (prevSl: SegmentLine | undefined, currentSl: SegmentLine): number {
+	if (currentSl.expectedDuration === undefined) {
+		return 0
+	}
+
+	if (!prevSl || prevSl.disableOutTransition) {
+		return (currentSl.expectedDuration || 0) + (currentSl.prerollDuration || 0)
+	}
+
+	let prerollDuration = (currentSl.transitionPrerollDuration || currentSl.prerollDuration || 0)
+	return currentSl.expectedDuration + (prevSl.autoNextOverlap || 0) + prerollDuration
+}
+function calcSlOverlapDuration (fromSl: SegmentLine, toSl: SegmentLine): number {
+	const allowTransition: boolean = !fromSl.disableOutTransition
+	let overlapDuration: number = toSl.prerollDuration || 0
+	if (allowTransition && toSl.transitionPrerollDuration) {
+		overlapDuration = calcSlKeepaliveDuration(fromSl, toSl, true)
+	}
+
+	if (fromSl.autoNext) {
+		overlapDuration += (fromSl.autoNextOverlap || 0)
+	}
+
+	return overlapDuration
 }
 /**
  * Fix the timeline objects, adds properties like deviceId and siId to the timeline objects
@@ -3106,7 +3179,7 @@ function setNowToTimeInObjects (timelineObjs: Array<TimelineObj>, now: Time): vo
 	})
 }
 
-function setLawoObjectsTriggerValue (timelineObjs: Array<TimelineObj>, currentSegmentLine: SegmentLine | undefined) {
+function setLawoObjectsTriggerValue (timelineObjs: Array<TimelineObj>, currentSegmentLineId: string | undefined) {
 
 	_.each(timelineObjs, (obj) => {
 		if (obj.content.type === TimelineContentTypeLawo.SOURCE ) {
@@ -3114,7 +3187,7 @@ function setLawoObjectsTriggerValue (timelineObjs: Array<TimelineObj>, currentSe
 
 			_.each(lawoObj.content.attributes, (val, key) => {
 				// set triggerValue to the current playing segment, thus triggering commands to be sent when nexting:
-				lawoObj.content.attributes[key].triggerValue = (currentSegmentLine || {_id: ''})._id
+				lawoObj.content.attributes[key].triggerValue = currentSegmentLineId || ''
 			})
 		}
 	})
