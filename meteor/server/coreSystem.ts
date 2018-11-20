@@ -1,7 +1,7 @@
 import { getCoreSystem, CoreSystem, SYSTEM_ID, getCoreSystemCursor, parseVersion, compareVersions } from '../lib/collections/CoreSystem'
 import { getCurrentTime } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
-import { CURRENT_SYSTEM_VERSION, GENESIS_SYSTEM_VERSION } from './databaseMigration'
+import { CURRENT_SYSTEM_VERSION, GENESIS_SYSTEM_VERSION } from './migration/databaseMigration'
 import { setSystemStatus, StatusCode, StatusObject } from './systemStatus'
 
 function initializeCoreSystem () {

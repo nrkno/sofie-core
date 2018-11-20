@@ -25,6 +25,7 @@ export interface GetMigrationStatusResultMigrationNeeded extends GetMigrationSta
 		automaticStepCount: number
 		manualStepCount: number
 		ignoredStepCount: number
+		partialMigration: boolean
 	}
 }
 
@@ -46,7 +47,8 @@ export interface MigrationStepInputFilteredResult {
 }
 
 export interface RunMigrationResult {
-	migrationCompleted: boolean,
-	warnings: Array<string>,
+	migrationCompleted: boolean
+	partialMigration: boolean
+	warnings: Array<string>
 	snapshot: string
 }

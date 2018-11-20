@@ -861,8 +861,8 @@ setMeteorMethods({
 			config: [
 				{_id: 'nora_group', value: ''}, // Note: do not set to ensure that devs do not accidently use the live graphics channel
 				{_id: 'nora_apikey', value: ''}, // Note: must not be set as apikey must be kept private
-				{_id: 'media_previews_url', value: 'http://localhost:8000/'},
-				{_id: 'sofie_url', value: 'http://sllxsofie01'},
+				// {_id: 'media_previews_url', value: 'http://localhost:8000/'},
+				// {_id: 'sofie_url', value: 'http://sllxsofie01'},
 				{_id: 'metadata_url', value: 'http://160.67.87.105'},
 				{_id: 'atemSSrcBackground', value: '/opt/playout-gateway/static/atem-mp/split_overlay.rgba'},
 				{_id: 'atemSSrcBackground2', value: '/opt/playout-gateway/static/atem-mp/teknisk_feil.rgba'},

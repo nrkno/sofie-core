@@ -35,9 +35,11 @@ interface IState {
 		automaticStepCount: number
 		ignoredStepCount: number
 		manualStepCount: number
+		partialMigration: boolean
 	},
 	warnings: Array<string>,
 	migrationCompleted: boolean,
+	partialMigration: boolean,
 
 	haveRunMigration: boolean,
 
@@ -63,6 +65,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 			migrationNeeded: false,
 			warnings: [],
 			migrationCompleted: false,
+			partialMigration: false,
 			haveRunMigration: false,
 
 			inputValues: {}
@@ -106,9 +109,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 					migrationNeeded: r.migrationNeeded
 				})
 				if (r.migrationNeeded) {
-
 					let result = r as GetMigrationStatusResultMigrationNeeded
-
 					this.setState({
 						migration: result.migration
 					})
@@ -311,6 +312,12 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 							<div>
 								{t(`This migration consists of ${this.state.migration.automaticStepCount} automatic steps and  ${this.state.migration.manualStepCount} manual steps (${this.state.migration.ignoredStepCount} steps are ignored).`)}
 							</div>
+
+							{this.state.migration.partialMigration ?
+								<div>
+									{t('The migration consists of several phases.')}
+								</div> : null
+							}
 							{this.state.migration.canDoAutomaticMigration ?
 								<div>
 									<div>

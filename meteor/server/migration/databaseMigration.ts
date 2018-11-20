@@ -4,10 +4,10 @@ import {
 	compareVersions,
 	setCoreSystemVersion,
 	Version
-} from '../lib/collections/CoreSystem'
+} from '../../lib/collections/CoreSystem'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { getHash } from './lib'
+import { getHash } from '../lib'
 import {
 	MigrationMethods,
 	MigrationStepInputFilteredResult,
@@ -16,11 +16,11 @@ import {
 	GetMigrationStatusResultNoNeed,
 	GetMigrationStatusResultMigrationNeeded,
 	RunMigrationResult
-} from '../lib/api/migration'
-import { setMeteorMethods } from './methods'
-import { logger } from '../lib/logging'
-import { Optional } from '../lib/lib'
-import { storeSystemSnapshot } from './api/snapshot'
+} from '../../lib/api/migration'
+import { setMeteorMethods } from '../methods'
+import { logger } from '../../lib/logging'
+import { Optional } from '../../lib/lib'
+import { storeSystemSnapshot } from '../api/snapshot'
 
 /** The current database version, x.y.z
  * 0.16.0: Release 3 (2018-10-26)
@@ -57,6 +57,9 @@ export interface MigrationStepBase {
 	migrate?: (input: MigrationStepInputFilteredResult) => void
 	/** Query user for input, used in manual steps */
 	input?: Array<MigrationStepInput> | (() => Array<MigrationStepInput>)
+
+	/** If this step depend on the result of another step. Will pause the migration before this step in that case. */
+	dependOnResultFrom?: string
 }
 export interface MigrationStep extends MigrationStepBase {
 	/** The version this Step applies to */
@@ -126,6 +129,8 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 	let manualStepCount: number = 0
 	let ignoredStepCount: number = 0
 
+	let partialMigration: boolean = false
+
 	// Filter steps:
 	let overrideIds: {[id: string]: true} = {}
 	let migrationSteps: {[id: string]: MigrationStepInternal} = {}
@@ -133,6 +138,7 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 	_.each(allMigrationSteps, (step: MigrationStepInternal) => {
 		if (!step.canBeRunAutomatically && (!step.input || (_.isArray(step.input) && !step.input.length))) throw new Meteor.Error(500, `MigrationStep "${step.id}" is manual, but no input is provided`)
 
+		if (partialMigration) return
 		let stepVersion = step._version
 		if (
 			compareVersions(stepVersion, baseVersion) > 0 && // step version is larger than database version
@@ -156,6 +162,17 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 			// Check if the step can be applied:
 			step._validateResult = step.validate(false)
 			if (step._validateResult) {
+
+				if (step.dependOnResultFrom) {
+					if (ignoredSteps[step.dependOnResultFrom]) {
+						// dependent step was ignored, continue then
+					} else if (migrationSteps[step.dependOnResultFrom]) {
+						// we gotta pause here
+						partialMigration = true
+						return
+					}
+				}
+
 				migrationSteps[step.id] = step
 			} else {
 				// No need to run step
@@ -219,7 +236,8 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 		automaticStepCount: automaticStepCount,
 		manualStepCount: 	manualStepCount,
 		ignoredStepCount: 	ignoredStepCount,
-		manualInputs: 		manualInputs
+		manualInputs: 		manualInputs,
+		partialMigration: 	partialMigration
 	}
 }
 
@@ -297,10 +315,12 @@ export function runMigration (
 
 	let migrationCompleted: boolean = false
 
-	if (!warningMessages.length) {
-		// if there are no warning messages, we can complete the migration right away
-		updateDatabaseVersion(targetVersionStr)
-		migrationCompleted = true
+	if (!migration.partialMigration) {
+		if (!warningMessages.length) {
+			// if there are no warning messages, we can complete the migration right away
+			updateDatabaseVersion(targetVersionStr)
+			migrationCompleted = true
+		}
 	}
 
 	_.each(warningMessages, (str) => {
@@ -309,6 +329,7 @@ export function runMigration (
 	logger.info(`Migration: end`)
 	return {
 		migrationCompleted: migrationCompleted,
+		partialMigration: migration.partialMigration,
 		warnings: warningMessages,
 		snapshot: snapshotId
 	}
@@ -352,7 +373,8 @@ function getMigrationStatus (): GetMigrationStatusResultMigrationNeeded | GetMig
 
 				automaticStepCount: 		migration.automaticStepCount,
 				manualStepCount: 			migration.manualStepCount,
-				ignoredStepCount: 			migration.ignoredStepCount
+				ignoredStepCount: 			migration.ignoredStepCount,
+				partialMigration: 			migration.partialMigration
 			}
 		}
 	} else {

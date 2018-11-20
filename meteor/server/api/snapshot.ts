@@ -28,7 +28,7 @@ import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
 import { getCoreSystem, ICoreSystem, CoreSystem } from '../../lib/collections/CoreSystem'
 import { fsWriteFile, fsReadFile } from '../lib'
-import { CURRENT_SYSTEM_VERSION } from '../databaseMigration'
+import { CURRENT_SYSTEM_VERSION } from '../migration/databaseMigration'
 import { restoreRunningOrder } from '../backups'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 interface RunningOrderSnapshot {
