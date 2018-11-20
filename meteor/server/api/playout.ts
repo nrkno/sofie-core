@@ -2237,7 +2237,8 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjCla
 		) {
 			let tos = item.content.timelineObjects
 
-			if (item.trigger.type === TriggerType.TIME_ABSOLUTE && item.trigger.value === 0) {
+			const isInfiniteContinuation = item.infiniteId && item.infiniteId !== item._id
+			if (item.trigger.type === TriggerType.TIME_ABSOLUTE && item.trigger.value === 0 && !isInfiniteContinuation) {
 				// If timed absolute and there is a transition delay, then apply delay
 				if (!item.isTransition && allowTransition && transition && !item.adLibSourceId) {
 					const transitionContentsDelayStr = transitionContentsDelay < 0 ? `- ${-transitionContentsDelay}` : `+ ${transitionContentsDelay}`
@@ -2252,9 +2253,10 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjCla
 			// create a segmentLineItem group for the items and then place all of them there
 			const segmentLineItemGroup = createSegmentLineItemGroup(item, item.durationOverride || item.duration || item.expectedDuration || 0, segmentLineGroup)
 			timelineObjs.push(segmentLineItemGroup)
-			timelineObjs.push(createSegmentLineItemGroupFirstObject(item, segmentLineItemGroup, firstObjClasses))
 
 			if (!item.virtual) {
+				timelineObjs.push(createSegmentLineItemGroupFirstObject(item, segmentLineItemGroup, firstObjClasses))
+
 				_.each(tos, (o: TimelineObj) => {
 					if (o.holdMode) {
 						if (isHold && !showHoldExcept && o.holdMode === TimelineObjHoldMode.EXCEPT) {
