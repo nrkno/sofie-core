@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
-import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
+import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 
-export namespace ShowStylesSecurity {
+export namespace ShowStyleBasesSecurity {
 	export function allowReadAccess (selector: object, token: string, context) {
 
 		return true
@@ -11,17 +11,16 @@ export namespace ShowStylesSecurity {
 		// TODO
 	}
 }
-// Setup rules:
 
 // Setup rules:
-ShowStyles.allow({
-	insert (userId: string, doc: ShowStyle): boolean {
-		return true // Not allowed client-side
+ShowStyleBases.allow({
+	insert (userId: string, doc: ShowStyleBase): boolean {
+		return true
 	},
 	update (userId, doc, fields, modifier) {
-		return true // Not allowed client-side
+		return true
 	},
 	remove (userId, doc) {
-		return true // Not allowed client-side
+		return true
 	}
 })

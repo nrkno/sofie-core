@@ -15,13 +15,12 @@ import {
 } from 'react-router-dom'
 
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 
 import StudioSettings from './Settings/StudioSettings'
 import DeviceSettings from './Settings/DeviceSettings'
-import ShowStyleSettings from './Settings/ShowStyleSettings'
+import ShowStyleSettings from './Settings/ShowStyleBaseSettings'
 import RestoreBackup from './Settings/RestoreBackup'
 
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
@@ -29,6 +28,7 @@ import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { MigrationView } from './Settings/Migration'
+import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 
 class WelcomeToSettings extends React.Component {
 	render () {
@@ -45,18 +45,19 @@ interface ISettingsMenuState {
 }
 interface ISettingsMenuTrackedProps {
 	studioInstallations: Array<StudioInstallation>
-	showStyles: Array<ShowStyle>
+	showStyleBases: Array<ShowStyleBase>
 	peripheralDevices: Array<PeripheralDevice>
 }
 const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps >(() => {
 	Meteor.subscribe('studioInstallations', {})
-	Meteor.subscribe('showStyles', {})
-	Meteor.subscribe('showBlueprints', {})
+	Meteor.subscribe('showStyleBases', {})
+	Meteor.subscribe('showStyleVariants', {})
+	Meteor.subscribe('blueprints', {})
 	Meteor.subscribe('peripheralDevices', {})
 
 	return {
 		studioInstallations: StudioInstallations.find({}).fetch(),
-		showStyles: ShowStyles.find({}).fetch(),
+		showStyleBases: ShowStyleBases.find({}).fetch(),
 		peripheralDevices: PeripheralDevices.find({}, {sort: {
 			lastConnected: -1
 		}}).fetch(),
@@ -115,13 +116,18 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 	}
 
 	onAddShowStyle () {
-		ShowStyles.insert(literal<ShowStyle>({
-			_id: Random.hexString(5),
-			name: Random.hexString(5)
+		let id = Random.id()
+		ShowStyleBases.insert(literal<ShowStyleBase>({
+			_id: id,
+			name: id,
+			blueprintId: '',
+			outputLayers: [],
+			sourceLayers: [],
+			config: []
 		}))
 	}
 
-	onDeleteShowStyle (item: ShowStyle) {
+	onDeleteShowStyleBase (item: ShowStyleBase) {
 		this.setState({
 			deleteConfirmItem: item,
 			showDeleteShowStyleConfirm: true
@@ -129,7 +135,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 	}
 
 	handleConfirmDeleteShowStyleAccept = (e) => {
-		ShowStyles.remove(this.state.deleteConfirmItem._id)
+		ShowStyleBases.remove(this.state.deleteConfirmItem._id)
 		this.setState({
 			showDeleteShowStyleConfirm: false
 		})
@@ -150,17 +156,12 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<h2 className='mhs'>{t('Studios')}</h2>
 				<hr className='vsubtle man' />
 				{
-					this.props.studioInstallations.map((item) => {
+					this.props.studioInstallations.map((studio) => {
 						return [
-							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/studio/' + item._id}>
-								<h3>{item.name}</h3>
-								{ item.sourceLayers && item.outputLayers &&
-									<p>
-										{t('Source layers')}: {item.sourceLayers.length.toString()} {t('Output channels')}: {item.outputLayers.length.toString()}
-									</p>
-								}
+							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={studio._id} to={'/settings/studio/' + studio._id}>
+								<h3>{studio.name}</h3>
 							</NavLink>,
-							<hr className='vsubtle man' key={item._id + '-hr'} />
+							<hr className='vsubtle man' key={studio._id + '-hr'} />
 						]
 					})
 				}
@@ -176,14 +177,19 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					<p>{t('Please note: This action is irreversible!')}</p>
 				</ModalDialog>
 				{
-					this.props.showStyles.map((item) => {
+					this.props.showStyleBases.map((showStyleBase) => {
 						return (
-							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/showStyle/' + item._id}>
+							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={showStyleBase._id} to={'/settings/showStyleBase/' + showStyleBase._id}>
 								<div className='selectable clickable'>
-									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteShowStyle(item) }}>
+									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteShowStyleBase(showStyleBase) }}>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
-									<h3>{item.name}</h3>
+									<h3>{showStyleBase.name}</h3>
+									{ showStyleBase.sourceLayers && showStyleBase.outputLayers &&
+										<p>
+											{t('Source layers')}: {showStyleBase.sourceLayers.length.toString()} {t('Output channels')}: {showStyleBase.outputLayers.length.toString()}
+										</p>
+									}
 								</div>
 								<hr className='vsubtle man' />
 							</NavLink>
@@ -234,8 +240,9 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 		// Subscribe to data:
 		this.subscribe('peripheralDevices', {})
 		this.subscribe('studioInstallations', {})
-		this.subscribe('showStyles', {})
-		this.subscribe('showBlueprints', {})
+		this.subscribe('showStyleBases', {})
+		this.subscribe('showStyleVariants', {})
+		this.subscribe('blueprints', {})
 	}
 	render () {
 		const { t } = this.props
@@ -257,7 +264,7 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 								<Switch>
 									<Route path='/settings' exact component={WelcomeToSettings} />
 									<Route path='/settings/studio/:studioId' component={StudioSettings} />
-									<Route path='/settings/showStyle/:showStyleId' component={ShowStyleSettings} />
+									<Route path='/settings/showStyleBase/:showStyleBaseId' component={ShowStyleSettings} />
 									<Route path='/settings/peripheralDevice/:deviceId' component={DeviceSettings} />
 									<Route path='/settings/tools/restore' component={RestoreBackup} />
 									<Route path='/settings/migration' component={MigrationView} />

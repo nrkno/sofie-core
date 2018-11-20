@@ -1,22 +1,9 @@
 import * as React from 'react'
-import * as $ from 'jquery'
 import * as _ from 'underscore'
-import {
-	BrowserRouter as Router,
-	Route,
-	Switch,
-	Redirect
-} from 'react-router-dom'
-import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
+import { Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { Meteor } from 'meteor/meteor'
 
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
-
-import { Spinner } from '../lib/Spinner'
-import { RunningOrderView } from './RunningOrderView'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { objectPathGet } from '../../lib/lib'
+import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { translate } from 'react-i18next'
 import { EditAttribute } from '../lib/EditAttribute'
 import { ClientAPI } from '../../lib/api/client'

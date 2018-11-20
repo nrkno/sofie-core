@@ -141,13 +141,13 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 							{currentSegmentLine ?
 								<React.Fragment>
 									<div className='clocks-segment-icon clocks-current-segment-icon'>
-										<SegmentItemIconContainer segmentItemId={currentSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
+										<SegmentItemIconContainer segmentItemId={currentSegmentLine._id} showStyleBaseId={runningOrder.showStyleBaseId} runningOrderId={runningOrder._id} />
 									</div>
 									<div className='clocks-segment-title clocks-current-segment-title'>
 										{currentSegmentLine.slug.split(';')[0]}
 									</div>
 									<div className='clocks-segmentline-title clocks-segment-title clocks-current-segment-title'>
-										<SegmentItemNameContainer segmentLineSlug={currentSegmentLine.slug} segmentItemId={currentSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
+										<SegmentItemNameContainer segmentLineSlug={currentSegmentLine.slug} segmentItemId={currentSegmentLine._id} showStyleBaseId={runningOrder.showStyleBaseId} runningOrderId={runningOrder._id} />
 									</div>
 									<div className='clocks-current-segment-countdown clocks-segment-countdown'>
 										<Timediff time={currentSegmentDuration} />
@@ -161,7 +161,7 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 						<div className='clocks-half clocks-bottom clocks-top-bar'>
 							<div className='clocks-segment-icon'>
 								{nextSegmentLine ?
-									<SegmentItemIconContainer segmentItemId={nextSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
+									<SegmentItemIconContainer segmentItemId={nextSegmentLine._id} showStyleBaseId={runningOrder.showStyleBaseId} runningOrderId={runningOrder._id} />
 								: ''}
 							</div>
 							<div className='clocks-bottom-top'>
@@ -170,7 +170,7 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 								</div>
 								<div className='clocks-segment-title clocks-segmentline-title'>
 									{nextSegmentLine ?
-										<SegmentItemNameContainer segmentLineSlug={nextSegmentLine.slug} segmentItemId={nextSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
+										<SegmentItemNameContainer segmentLineSlug={nextSegmentLine.slug} segmentItemId={nextSegmentLine._id} showStyleBaseId={runningOrder.showStyleBaseId} runningOrderId={runningOrder._id} />
 									: '_'}
 								</div>
 							</div>
@@ -267,8 +267,8 @@ class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 			this.subscribe('segmentLineItems', {
 				runningOrderId: runningOrder._id
 			})
-			this.subscribe('showStyles', {
-				_id: runningOrder.showStyleId
+			this.subscribe('showStyleBases', {
+				_id: runningOrder.showStyleBaseId
 			})
 			this.subscribe('segmentLineAdLibItems', {
 				runningOrderId: runningOrder._id

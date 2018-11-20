@@ -14,9 +14,9 @@ import { GlobalAdLibPanel } from './GlobalAdLibPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
-import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { RunningOrderViewKbdShortcuts } from '../RunningOrderView'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 enum InspectorPanelTabs {
 	ADLIB = 'adlib',
@@ -27,7 +27,7 @@ interface IProps {
 	segments: Array<SegmentUi>
 	liveSegment?: SegmentUi
 	runningOrder: RunningOrder
-	studioInstallation: StudioInstallation
+	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	hotkeys: Array<{
 		key: string

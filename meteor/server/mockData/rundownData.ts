@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-import { ShowStyles } from '../../lib/collections/ShowStyles'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 import { SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
@@ -13,6 +13,7 @@ import { logger } from '../logging'
 import { LookaheadMode } from '../../lib/api/playout'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { setMeteorMethods } from '../methods'
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants';
 
 // These are temporary method to fill the rundown database with some sample data
 // for development
@@ -22,88 +23,89 @@ setMeteorMethods({
 		StudioInstallations.insert({
 			_id: 'studio0',
 			name: 'Dummy studio',
-			defaultShowStyle: 'dummyShow0',
-			outputLayers: [
-				{
-					_id: 'studio0-pgm0',
-					_rank: 0,
-					name: 'PGM',
-					isPGM: true,
-				},
-				{
-					_id: 'studio0-monitor0',
-					_rank: 1,
-					name: 'Skjerm',
-					isPGM: false,
-				}
-			],
-			sourceLayers: [
-				{
-					_id: 'studio0-lower-third0',
-					_rank: 10,
-					name: 'Super',
-					type: SourceLayerType.LOWER_THIRD,
-					unlimited: true,
-					onPGMClean: false
-				},
-				{
-					_id: 'studio0-split0',
-					_rank: 15,
-					name: 'Split',
-					type: SourceLayerType.SPLITS,
-					unlimited: false,
-					onPGMClean: true,
-				},
-				{
-					_id: 'studio0-graphics0',
-					_rank: 20,
-					name: 'GFX',
-					type: SourceLayerType.GRAPHICS,
-					unlimited: true,
-					onPGMClean: false
-				},
-				{
-					_id: 'studio0-live-speak0',
-					_rank: 50,
-					name: 'STK',
-					type: SourceLayerType.LIVE_SPEAK,
-					unlimited: true,
-					onPGMClean: false
-				},
-				{
-					_id: 'studio0-remote0',
-					_rank: 60,
-					name: 'RM1',
-					type: SourceLayerType.REMOTE,
-					unlimited: false,
-					onPGMClean: true,
-					isRemoteInput: true
-				},
-				{
-					_id: 'studio0-vt0',
-					_rank: 80,
-					name: 'VB',
-					type: SourceLayerType.VT,
-					unlimited: true,
-					onPGMClean: true,
-				},
-				{
-					_id: 'studio0-mic0',
-					_rank: 90,
-					name: 'Mic',
-					type: SourceLayerType.MIC,
-					unlimited: false,
-					onPGMClean: true,
-				},
-				{
-					_id: 'studio0-camera0',
-					_rank: 100,
-					name: 'Kam',
-					type: SourceLayerType.CAMERA,
-					unlimited: false,
-					onPGMClean: true,
-				},
-			],
+			defaultShowStyleVariant: 'dummyShow0',
+			supportedShowStyleBase: [],
+			// outputLayers: [
+			// 	{
+			// 		_id: 'studio0-pgm0',
+			// 		_rank: 0,
+			// 		name: 'PGM',
+			// 		isPGM: true,
+			// 	},
+			// 	{
+			// 		_id: 'studio0-monitor0',
+			// 		_rank: 1,
+			// 		name: 'Skjerm',
+			// 		isPGM: false,
+			// 	}
+			// ],
+			// sourceLayers: [
+			// 	{
+			// 		_id: 'studio0-lower-third0',
+			// 		_rank: 10,
+			// 		name: 'Super',
+			// 		type: SourceLayerType.LOWER_THIRD,
+			// 		unlimited: true,
+			// 		onPGMClean: false
+			// 	},
+			// 	{
+			// 		_id: 'studio0-split0',
+			// 		_rank: 15,
+			// 		name: 'Split',
+			// 		type: SourceLayerType.SPLITS,
+			// 		unlimited: false,
+			// 		onPGMClean: true,
+			// 	},
+			// 	{
+			// 		_id: 'studio0-graphics0',
+			// 		_rank: 20,
+			// 		name: 'GFX',
+			// 		type: SourceLayerType.GRAPHICS,
+			// 		unlimited: true,
+			// 		onPGMClean: false
+			// 	},
+			// 	{
+			// 		_id: 'studio0-live-speak0',
+			// 		_rank: 50,
+			// 		name: 'STK',
+			// 		type: SourceLayerType.LIVE_SPEAK,
+			// 		unlimited: true,
+			// 		onPGMClean: false
+			// 	},
+			// 	{
+			// 		_id: 'studio0-remote0',
+			// 		_rank: 60,
+			// 		name: 'RM1',
+			// 		type: SourceLayerType.REMOTE,
+			// 		unlimited: false,
+			// 		onPGMClean: true,
+			// 		isRemoteInput: true
+			// 	},
+			// 	{
+			// 		_id: 'studio0-vt0',
+			// 		_rank: 80,
+			// 		name: 'VB',
+			// 		type: SourceLayerType.VT,
+			// 		unlimited: true,
+			// 		onPGMClean: true,
+			// 	},
+			// 	{
+			// 		_id: 'studio0-mic0',
+			// 		_rank: 90,
+			// 		name: 'Mic',
+			// 		type: SourceLayerType.MIC,
+			// 		unlimited: false,
+			// 		onPGMClean: true,
+			// 	},
+			// 	{
+			// 		_id: 'studio0-camera0',
+			// 		_rank: 100,
+			// 		name: 'Kam',
+			// 		type: SourceLayerType.CAMERA,
+			// 		unlimited: false,
+			// 		onPGMClean: true,
+			// 	},
+			// ],
 			mappings: {
 				'layer0': {
 					device: PlayoutDeviceType.CASPARCG,
@@ -144,13 +146,16 @@ setMeteorMethods({
 		})
 	},
 
+	/*
 	'debug_emptyDatabase' () {
 		logger.debug('Clear the database')
 
-		ShowStyles.remove({})
+		ShowStyleBases.remove({})
+		ShowStyleVariants.remove({})
 		StudioInstallations.remove({})
 		Meteor.call('debug_removeAllRos')
 	},
+	*/
 
 	'debug_purgeMediaDB' () {
 		MediaObjects.remove({})
@@ -170,12 +175,16 @@ setMeteorMethods({
 	},
 
 	'debug_sampleShowStyle' () {
-		ShowStyles.insert({
+		ShowStyleBases.insert({
 			_id: 'dummyShow0',
-			name: 'Dummy show style'
+			name: 'Dummy show style',
+			blueprintId: '',
+			outputLayers: [],
+			sourceLayers: [],
+			config: []
 		})
 
-		RunningOrders.update({showStyleId: { $not: { $exists: true }}}, { $set: { showStyleId: 'dummyShow0' }})
+		RunningOrders.update({showStyleBaseId: { $not: { $exists: true }}}, { $set: { showStyleBaseId: 'dummyShow0' }})
 	},
 
 	'debug_takeNext' (roId) {

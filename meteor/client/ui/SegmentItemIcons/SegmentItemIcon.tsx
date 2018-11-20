@@ -2,7 +2,6 @@ import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import * as React from 'react'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
-import { StudioInstallations, ISourceLayer } from '../../../lib/collections/StudioInstallations'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { normalizeArray } from '../../../lib/lib'
 import * as _ from 'underscore'
@@ -14,11 +13,12 @@ import RemoteInputIcon from './Renderers/RemoteInput'
 import LiveSpeakInputIcon from './Renderers/LiveSpeakInput'
 import GraphicsInputIcon from './Renderers/GraphicsInput'
 import { Meteor } from 'meteor/meteor'
+import { ISourceLayer, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 
 interface IPropsHeader {
 	segmentItemId: string
 	runningOrderId: string
-	studioInstallationId: string
+	showStyleBaseId: string
 }
 
 interface INamePropsHeader extends IPropsHeader {
@@ -27,8 +27,10 @@ interface INamePropsHeader extends IPropsHeader {
 
 export const SegmentItemNameContainer = withTracker((props: INamePropsHeader) => {
 	let items = SegmentLineItems.find({ segmentLineId: props.segmentItemId }).fetch()
-	let studioInstallation = StudioInstallations.findOne(props.studioInstallationId)
-	let sourceLayers = studioInstallation ? normalizeArray<ISourceLayer>(studioInstallation.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
+
+	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
+
+	let sourceLayers = showStyleBase ? normalizeArray<ISourceLayer>(showStyleBase.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
 	let sourceLayer: ISourceLayer | undefined
 	let segmentLineItem: SegmentLineItem | undefined
 	const supportedLayers = new Set([SourceLayerType.GRAPHICS, SourceLayerType.LIVE_SPEAK, SourceLayerType.VT ])
@@ -60,8 +62,8 @@ export const SegmentItemNameContainer = withTracker((props: INamePropsHeader) =>
 		this.subscribe('segmentLineItemsSimple', {
 			runningOrderId: this.props.runningOrderId
 		})
-		this.subscribe('studioInstallations', {
-			_id: this.props.studioInstallationId
+		this.subscribe('showStyleBases', {
+			_id: this.props.showStyleBaseId
 		})
 	}
 
@@ -81,8 +83,9 @@ export const SegmentItemNameContainer = withTracker((props: INamePropsHeader) =>
 export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 	// console.log(props)
 	let items = SegmentLineItems.find({ segmentLineId: props.segmentItemId }).fetch()
-	let studioInstallation = StudioInstallations.findOne(props.studioInstallationId)
-	let sourceLayers = studioInstallation ? normalizeArray<ISourceLayer>(studioInstallation.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
+	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
+
+	let sourceLayers = showStyleBase ? normalizeArray<ISourceLayer>(showStyleBase.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
 	let sourceLayer: ISourceLayer | undefined
 	let segmentLineItem: SegmentLineItem | undefined
 	const supportedLayers = new Set([ SourceLayerType.GRAPHICS, SourceLayerType.LIVE_SPEAK, SourceLayerType.REMOTE, SourceLayerType.SPLITS, SourceLayerType.VT, SourceLayerType.CAMERA ])
@@ -114,8 +117,8 @@ export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 		this.subscribe('segmentLineItemsSimple', {
 			runningOrderId: this.props.runningOrderId
 		})
-		this.subscribe('studioInstallations', {
-			_id: this.props.studioInstallationId
+		this.subscribe('showStyleBases', {
+			_id: this.props.showStyleBaseId
 		})
 	}
 

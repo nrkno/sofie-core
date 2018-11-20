@@ -9,7 +9,7 @@ import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime } from '..
 import { logger } from '../logging'
 import { loadBlueprints, postProcessSegmentLineItems, getPostProcessContext } from './blueprints'
 import { getHash } from '../lib'
-import { ShowStyles } from '../../lib/collections/ShowStyles'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
 import { CachePrefix, RunningOrderDataCache } from '../../lib/collections/RunningOrderDataCache'
 import { updateStory, reloadRunningOrder } from './integration/mos'
@@ -271,8 +271,7 @@ function updateSegmentLine (ro: RunningOrder, segmentLine: SegmentLine): boolean
 	}
 }
 export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
-	let showStyle = ShowStyles.findOne(ro.showStyleId)
-	if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + ro.showStyleId + '" not found!')
+	let showStyleBase = ro.getShowStyleBase()
 
 	const segmentLines = segment.getSegmentLines()
 	if (segmentLines.length === 0) {
@@ -286,7 +285,7 @@ export function runPostProcessTemplate (ro: RunningOrder, segment: Segment) {
 	let resultSli: SegmentLineItem[] | undefined = undefined
 	let notes: SegmentLineNote[] = []
 	try {
-		const blueprints = loadBlueprints(showStyle)
+		const blueprints = loadBlueprints(showStyleBase)
 		let result = blueprints.PostProcess(context)
 		resultSli = postProcessSegmentLineItems(context, result.SegmentLineItems, 'post-process', firstSegmentLine._id)
 		notes = context.getNotes()

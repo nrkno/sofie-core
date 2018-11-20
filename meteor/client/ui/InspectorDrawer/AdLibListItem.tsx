@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
-import { IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
 import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 import * as ClassNames from 'classnames'
 
@@ -9,6 +8,7 @@ import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { RundownUtils } from '../../lib/rundown'
+import { ISourceLayer, IOutputLayer } from '../../../lib/collections/ShowStyleBases'
 
 export interface IAdLibListItem {
 	_id: string,

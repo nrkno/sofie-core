@@ -61,9 +61,9 @@ import {
 	SegmentLineAdLibItems
 } from '../../../lib/collections/SegmentLineAdLibItems'
 import {
-	ShowStyles,
-	ShowStyle
-} from '../../../lib/collections/ShowStyles'
+	ShowStyleBases,
+	ShowStyleBase
+} from '../../../lib/collections/ShowStyleBases'
 import {
 	ServerPlayoutAPI,
 	updateTimelineFromMosData
@@ -84,6 +84,7 @@ import {
 } from '../runningOrder'
 import { syncFunction } from '../../codeControl'
 import { IBlueprintSegmentLine, SegmentLineHoldMode } from 'tv-automation-sofie-blueprints-integration'
+import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 
 export function roId (roId: MosString128, original?: boolean): string {
 	// logger.debug('roId', roId)
@@ -236,8 +237,8 @@ function formatTime (time: any): number | undefined {
 }
 export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory) => boolean
 = syncFunction(function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory): boolean {
-	let showStyle = ShowStyles.findOne(ro.showStyleId)
-	if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + ro.showStyleId + '" not found!')
+	let showStyleBase = ShowStyleBases.findOne(ro.showStyleBaseId)
+	if (!showStyleBase) throw new Meteor.Error(404, 'ShowStyleBase "' + ro.showStyleBaseId + '" not found!')
 
 	const context = getRunStoryContext(ro, segmentLine, story)
 
@@ -246,7 +247,7 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: IM
 	let resultAdlibSli: SegmentLineAdLibItem[] | undefined = undefined
 	let notes: SegmentLineNote[] = []
 	try {
-		const blueprints = loadBlueprints(showStyle)
+		const blueprints = loadBlueprints(showStyleBase)
 		let result = blueprints.RunStory(context, story)
 
  		if (result) {
@@ -447,7 +448,8 @@ function handleRunningOrderData (ro: IMOSRunningOrder, peripheralDevice: Periphe
 	let studioInstallation = StudioInstallations.findOne(peripheralDevice.studioInstallationId) as StudioInstallation
 	if (!studioInstallation) throw new Meteor.Error(404, 'StudioInstallation "' + peripheralDevice.studioInstallationId + '" not found')
 
-	let showStyle = ShowStyles.findOne(studioInstallation.defaultShowStyle) as ShowStyle || {}
+	// the defaultShowStyleVariant is a temporary solution, to be replaced by a blueprint plugin
+	let defaultShowStyleVariant = ShowStyleVariants.findOne(studioInstallation.defaultShowStyleVariant) as ShowStyleVariant || {}
 
 	let dbROData: DBRunningOrder = _.extend(existingDbRo || {},
 		{
@@ -455,7 +457,8 @@ function handleRunningOrderData (ro: IMOSRunningOrder, peripheralDevice: Periphe
 			mosId: ro.ID.toString(),
 			studioInstallationId: studioInstallation._id,
 			mosDeviceId: peripheralDevice._id,
-			showStyleId: showStyle._id,
+			showStyleVariantId: defaultShowStyleVariant._id,
+			showStyleBaseId: defaultShowStyleVariant.showStyleBaseId,
 			name: ro.Slug.toString(),
 			expectedStart: formatTime(ro.EditorialStart),
 			expectedDuration: formatDuration(ro.EditorialDuration),

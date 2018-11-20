@@ -52,7 +52,7 @@ import { getSliGroupId, getSlGroupId, getSlFirstObjectId, getSliFirstObjectId } 
 import { LookaheadMode } from '../../lib/api/playout'
 import { loadBlueprints, getBaselineContext, postProcessSegmentLineAdLibItems, postProcessSegmentLineBaselineItems } from './blueprints'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
-import { StudioInstallations, StudioInstallation, IStudioConfigItem } from '../../lib/collections/StudioInstallations'
+import { StudioInstallations, StudioInstallation, IConfigItem } from '../../lib/collections/StudioInstallations'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
@@ -248,7 +248,7 @@ export namespace ServerPlayoutAPI {
 	function prepareStudioForBroadcast (studio: StudioInstallation) {
 		logger.info('prepareStudioForBroadcast ' + studio._id)
 
-		const ssrcBgs: Array<IStudioConfigItem> = _.compact([
+		const ssrcBgs: Array<IConfigItem> = _.compact([
 			studio.config.find((o) => o._id === 'atemSSrcBackground'),
 			studio.config.find((o) => o._id === 'atemSSrcBackground2')
 		])
@@ -346,8 +346,8 @@ export namespace ServerPlayoutAPI {
 
 			logger.info('Building baseline items...')
 
-			const showStyle = runningOrder.getShowStyle()
-			let blueprint = loadBlueprints(showStyle)
+			const showStyleBase = runningOrder.getShowStyleBase()
+			let blueprint = loadBlueprints(showStyleBase)
 			if (!blueprint || !blueprint.Baseline) {
 				logger.error('Failed to load baseline blueprint')
 			} else {
@@ -877,6 +877,8 @@ export namespace ServerPlayoutAPI {
 
 		let studio = runningOrder.getStudioInstallation()
 
+		let showStyleBase = runningOrder.getShowStyleBase()
+
 		let currentSegmentLine = SegmentLines.findOne(runningOrder.currentSegmentLineId)
 		if (!currentSegmentLine) throw new Meteor.Error(404, `SegmentLine "${runningOrder.currentSegmentLineId}" not found!`)
 
@@ -885,7 +887,7 @@ export namespace ServerPlayoutAPI {
 		let currentSement = Segments.findOne(currentSegmentLine.segmentId)
 		if (!currentSement) throw new Meteor.Error(404, `Segment "${currentSegmentLine.segmentId}" not found!`)
 
-		let o = getResolvedSegment(studio, runningOrder, currentSement)
+		let o = getResolvedSegment(showStyleBase, runningOrder, currentSement)
 
 		// @ts-ignore stringify
 		// logger.info(o)
@@ -1149,8 +1151,8 @@ export namespace ServerPlayoutAPI {
 		if (!segLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
 		if (runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in a current segment line!`)
 
-		const si = runningOrder.getStudioInstallation()
-		const sourceL = si.sourceLayers.find(i => i._id === slItem!.sourceLayerId)
+		let showStyleBase = runningOrder.getShowStyleBase()
+		const sourceL = showStyleBase.sourceLayers.find(i => i._id === slItem!.sourceLayerId)
 		if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS) throw new Meteor.Error(403, `Segment Line "${slId}" is not a GRAPHICS item!`)
 
 		let newSegmentLineItem = convertAdLibToSLineItem(slItem, segLine, false)
@@ -1356,10 +1358,9 @@ export namespace ServerPlayoutAPI {
 		if (!runningOrder.active) throw new Meteor.Error(403, `Segment Line Items can be only manipulated in an active running order!`)
 		if (!runningOrder.currentSegmentLineId) throw new Meteor.Error(400, `A segment line needs to be active to place a sticky item`)
 
-		const studio = StudioInstallations.findOne(runningOrder.studioInstallationId)
-		if (!studio) throw new Meteor.Error(501, `Studio "${runningOrder.studioInstallationId}" not found!`)
+		let showStyleBase = runningOrder.getShowStyleBase()
 
-		const sourceLayer = studio.sourceLayers.find(i => i._id === sourceLayerId)
+		const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === sourceLayerId)
 		if (!sourceLayer) throw new Meteor.Error(404, `Source layer "${sourceLayerId}" not found!`)
 		if (!sourceLayer.isSticky) throw new Meteor.Error(400, `Only sticky layers can be restarted. "${sourceLayerId}" is not sticky.`)
 
@@ -1984,8 +1985,8 @@ const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, runUntil
 })
 
 const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (runningOrder: RunningOrder, segLine: SegmentLine, newItem: SegmentLineItem) {
-	const studio: StudioInstallation = runningOrder.getStudioInstallation()
-	const sourceLayerLookup = normalizeArray(studio.sourceLayers, '_id')
+	let showStyleBase = runningOrder.getShowStyleBase()
+	const sourceLayerLookup = normalizeArray(showStyleBase.sourceLayers, '_id')
 	const newItemExclusivityGroup = sourceLayerLookup[newItem.sourceLayerId].exclusiveGroup
 
 	const items = getOrderedSegmentLineItem(segLine).filter(i =>

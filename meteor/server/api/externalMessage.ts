@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { SegmentLine } from '../../lib/collections/SegmentLines'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
-import { ShowStyles, ShowStyle } from '../../lib/collections/ShowStyles'
+import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { logger } from '../logging'
 import { loadBlueprints, getMessageContext } from './blueprints'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
@@ -18,12 +18,12 @@ export function triggerExternalMessage (
 	// console.log('triggerExternalMessage')
 	logger.debug('triggerExternalMessage')
 	try {
-		let showStyle: ShowStyle | undefined = ShowStyles.findOne(runningOrder.showStyleId)
-		if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + runningOrder.showStyleId + '" not found!')
+		let showStyleBase: ShowStyleBase | undefined = ShowStyleBases.findOne(runningOrder.showStyleBaseId)
+		if (!showStyleBase) throw new Meteor.Error(404, 'ShowStyleBase "' + runningOrder.showStyleBaseId + '" not found!')
 
 		const innerContext = getMessageContext(runningOrder)
 		try {
-			const blueprints = loadBlueprints(showStyle)
+			const blueprints = loadBlueprints(showStyleBase)
 
 			let resultMessages: Array<IBlueprintExternalMessageQueueObj> | null = blueprints.Message(innerContext, runningOrder, takeSegmentLine, previousSegmentLine)
 

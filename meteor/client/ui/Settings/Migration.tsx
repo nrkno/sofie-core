@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
+import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { faBinoculars, faDatabase, faCoffee } from '@fortawesome/fontawesome-free-solid'

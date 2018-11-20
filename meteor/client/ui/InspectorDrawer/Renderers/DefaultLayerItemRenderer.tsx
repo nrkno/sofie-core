@@ -1,8 +1,6 @@
 import * as React from 'react'
-
-import { SegmentLineAdLibItem } from '../../../../lib/collections/SegmentLineAdLibItems'
-import { ISourceLayer, IOutputLayer } from '../../../../lib/collections/StudioInstallations'
 import { IAdLibListItem } from '../AdLibListItem'
+import { ISourceLayer, IOutputLayer } from '../../../../lib/collections/ShowStyleBases'
 
 interface IPropsHeader {
 	item: IAdLibListItem

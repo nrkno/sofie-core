@@ -13,7 +13,12 @@ import { applyClassToDocument, Time, registerCollection, normalizeArray } from '
 import { RunningOrderAPI } from '../api/runningOrder'
 import { checkSLIContentStatus } from '../mediaObjects'
 import { Meteor } from 'meteor/meteor'
-import { IMessageBlueprintSegmentLine, IMessageBlueprintSegmentLineTimings, SegmentLineHoldMode, BlueprintRuntimeArguments } from 'tv-automation-sofie-blueprints-integration'
+import {
+	IMessageBlueprintSegmentLine,
+	IMessageBlueprintSegmentLineTimings,
+	SegmentLineHoldMode,
+	BlueprintRuntimeArguments
+} from 'tv-automation-sofie-blueprints-integration'
 
 /** A "Line" in NRK Lingo. */
 export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
@@ -214,7 +219,8 @@ export class SegmentLine implements DBSegmentLine {
 			const items = this.getSegmentLinesItems()
 			const ro = this.getRunningOrder()
 			const si = ro && ro.getStudioInstallation()
-			const slLookup = si && normalizeArray(si.sourceLayers, '_id')
+			const showStyleBase = ro && ro.getShowStyleBase()
+			const slLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
 			_.each(items, (item) => {
 				// TODO: check statuses (like media availability) here
 

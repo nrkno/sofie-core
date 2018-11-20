@@ -7,15 +7,15 @@ import {
 import { SegmentLine, DBSegmentLine, SegmentLineNote, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
-import { formatDateAsTimecode, formatDurationAsTimecode, literal } from '../../lib/lib'
+import { formatDateAsTimecode, formatDurationAsTimecode, literal, normalizeArray, getCurrentTime } from '../../lib/lib'
 import { getHash } from '../lib'
 import { logger } from '../logging'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { TimelineObj } from '../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
-import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
+import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
-import { ShowBlueprints, ShowBlueprint } from '../../lib/collections/ShowBlueprints'
+import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import {
 	BlueprintCollection,
 	ICommonContext,
@@ -34,6 +34,8 @@ import { ServerResponse, IncomingMessage } from 'http'
 import { Picker } from 'meteor/meteorhacks:picker'
 import * as bodyParser from 'body-parser'
 import { Random } from 'meteor/random'
+import { getShowStyleCompound } from '../../lib/collections/ShowStyleVariants'
+import { check } from 'meteor/check'
 
 class CommonContext implements ICommonContext {
 	runningOrderId: string
@@ -59,6 +61,12 @@ class CommonContext implements ICommonContext {
 
 		return studio
 	}
+	getShowStyleBase (): ShowStyleBase {
+		const showStyleBase = ShowStyleBases.findOne(this.runningOrder.showStyleBaseId)
+		if (!showStyleBase) throw new Meteor.Error(404, 'ShowStyleBase "' + this.runningOrder.showStyleBaseId + '" not found')
+
+		return showStyleBase
+	}
 	getHashId (str?: any) {
 
 		if (!str) str = 'hash' + (this.hashI++)
@@ -78,14 +86,15 @@ class CommonContext implements ICommonContext {
 	}
 	getLayer (type: LayerType, name: string): string {
 		const studio: StudioInstallation = this.getStudioInstallation()
+		const showStyleBase: ShowStyleBase = this.getShowStyleBase()
 
 		let layer: any
 		switch (type) {
 			case LayerType.Output:
-				layer = studio.outputLayers.find(l => l._id === name)
+				layer = showStyleBase.outputLayers.find(l => l._id === name)
 				break
 			case LayerType.Source:
-				layer = studio.sourceLayers.find(l => l._id === name)
+				layer = showStyleBase.sourceLayers.find(l => l._id === name)
 				break
 			case LayerType.LLayer:
 				layer = _.find(studio.mappings, (v, k) => k === name)
@@ -100,14 +109,24 @@ class CommonContext implements ICommonContext {
 
 		throw new Meteor.Error(404, 'Missing layer "' + name + '" of type LayerType."' + type + '"')
 	}
-	getConfig (): {[key: string]: string} {
+	getStudioConfig (): {[key: string]: string} {
 		const studio: StudioInstallation = this.getStudioInstallation()
 
 		const res: {[key: string]: string} = {}
-		for (let c of studio.config) {
+		_.each(studio.config, (c) => {
 			res[c._id] = c.value
-		}
+		})
 
+		return res
+	}
+	getShowStyleConfig (): {[key: string]: string} {
+		const showStyleCompound = getShowStyleCompound(this.runningOrder.showStyleVariantId)
+		if (!showStyleCompound) throw new Meteor.Error(404, `no showStyleCompound for "${this.runningOrder.showStyleVariantId}"`)
+
+		const res: {[key: string]: string} = {}
+		_.each(showStyleCompound.config, (c) => {
+			res[c._id] = c.value
+		})
 		return res
 	}
 
@@ -240,27 +259,28 @@ interface Cache {
 	fcn: BlueprintCollection
 }
 
-export function loadBlueprints (showStyle: ShowStyle): BlueprintCollection {
-	let blueprintDoc = ShowBlueprints.findOne({
-		showStyleId: showStyle._id
+export function loadBlueprints (showStyleBase: ShowStyleBase): BlueprintCollection {
+	let blueprint = Blueprints.findOne({
+		_id: showStyleBase.blueprintId
 	})
+	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${showStyleBase.blueprintId}" not found! (referenced by ShowStyleBase "${showStyleBase._id}"`)
 
-	if (blueprintDoc && blueprintDoc.code) {
+	if (blueprint.code) {
 		try {
-			return evalBlueprints(blueprintDoc, showStyle.name, false)
+			return evalBlueprints(blueprint, false)
 		} catch (e) {
-			throw new Meteor.Error(402, 'Syntax error in runtime function "' + showStyle.name + '": ' + e.toString())
+			throw new Meteor.Error(402, 'Syntax error in blueprint "' + blueprint._id + '": ' + e.toString())
 		}
+	} else {
+		throw new Meteor.Error(500, `Blueprint "${showStyleBase.blueprintId}" code not set!`)
 	}
-
-	throw new Meteor.Error(404, 'Function for ShowStyle "' + showStyle.name + '" not found!')
 }
-export function evalBlueprints (blueprintDoc: ShowBlueprint, showStyleName: string, noCache: boolean): BlueprintCollection {
+export function evalBlueprints (blueprint: Blueprint, noCache: boolean): BlueprintCollection {
 	let cached: Cache | null = null
 	if (!noCache) {
 		// First, check if we've got the function cached:
-		cached = blueprintCache[blueprintDoc._id] ? blueprintCache[blueprintDoc._id] : null
-		if (cached && (!cached.modified || cached.modified !== blueprintDoc.modified)) {
+		cached = blueprintCache[blueprint._id] ? blueprintCache[blueprint._id] : null
+		if (cached && (!cached.modified || cached.modified !== blueprint.modified)) {
 			// the function has been updated, invalidate it then:
 			cached = null
 		}
@@ -274,7 +294,7 @@ export function evalBlueprints (blueprintDoc: ShowBlueprint, showStyleName: stri
 			moment,
 		}
 
-		const entry = new SaferEval(context, { filename: showStyleName + '.js' }).runInContext(blueprintDoc.code)
+		const entry = new SaferEval(context, { filename: (blueprint.name || blueprint._id) + '.js' }).runInContext(blueprint.code)
 		return entry.default
 	}
 }
@@ -384,40 +404,44 @@ postRoute.middleware(bodyParser.text({
 	type: 'text/javascript',
 	limit: '1mb'
 }))
-postRoute.route('/blueprints/restore/:showStyleId', (params, req: IncomingMessage, res: ServerResponse, next) => {
+postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
+
+	let blueprintId = params.blueprintId
+
+	check(blueprintId, String)
 
 	let content = ''
 	try {
 		const body = (req as any).body
-		if (!body) throw new Meteor.Error(500, 'Missing request body')
+		if (!body) throw new Meteor.Error(400, 'Restore Blueprint: Missing request body')
 
-		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(500, 'Invalid request body')
+		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 
 		logger.info('Got new blueprint. ' + body.length + ' bytes')
 
-		const showStyle = ShowStyles.findOne(params.showStyleId)
-		if (!showStyle) throw new Meteor.Error(404, 'ShowStyle missing from db')
+		const blueprint = Blueprints.findOne(blueprintId)
+		if (!blueprint) throw new Meteor.Error(404, `Blueprint "${blueprintId}" not found`)
 
-		const newBlueprint: ShowBlueprint = {
-			_id: Random.id(7),
-			showStyleId: showStyle._id,
+		const newBlueprint: Blueprint = {
+			_id: blueprintId,
+			name: blueprint ? blueprint.name : blueprint,
+			created: blueprint ? blueprint.created : getCurrentTime(),
 			code: body as string,
-			modified: Date.now(),
+			modified: getCurrentTime(),
 			studioConfigManifest: [],
 			showStyleConfigManifest: [],
 			version: '',
 			minimumCoreVersion: ''
 		}
 
-		const blueprintCollection = evalBlueprints(newBlueprint, showStyle.name, false)
+		const blueprintCollection: BlueprintCollection = evalBlueprints(newBlueprint, false)
 		newBlueprint.version = blueprintCollection.Version
 		newBlueprint.minimumCoreVersion = blueprintCollection.MinimumCoreVersion
 		newBlueprint.studioConfigManifest = blueprintCollection.StudioConfigManifest
 		newBlueprint.showStyleConfigManifest = blueprintCollection.ShowStyleConfigManifest
 
-		ShowBlueprints.remove({ showStyleId: showStyle._id })
-		ShowBlueprints.insert(newBlueprint)
+		Blueprints.upsert(newBlueprint._id, newBlueprint)
 
 		res.statusCode = 200
 	} catch (e) {

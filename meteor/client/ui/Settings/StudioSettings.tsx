@@ -2,15 +2,11 @@ import * as ClassNames from 'classnames'
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import Moment from 'react-moment'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { LookaheadMode } from '../../../lib/api/playout'
-import { IOutputLayer,
-	ISourceLayer,
-	IStudioConfigItem,
+import {
+	IConfigItem,
 	StudioInstallation,
 	StudioInstallations,
-	HotkeyDefinition,
 	IStudioRuntimeArgumentsItem,
 	MappingExt
 } from '../../../lib/collections/StudioInstallations'
@@ -27,271 +23,49 @@ import {
 	DeviceType as PlayoutDeviceType,
 	ChannelFormat
 } from 'timeline-state-resolver-types'
-import { ShowStyles } from '../../../lib/collections/ShowStyles'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
-import { ModalDialog } from '../../lib/ModalDialog'
+import { doModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
 import { literal } from '../../../lib/lib'
-import { Random } from 'meteor/random'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { ShowBlueprint, ShowBlueprints } from '../../../lib/collections/ShowBlueprints'
+import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
 
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
-import { ConfigManifestSettings } from './ConfigManifestSettings'
+import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { translate } from 'react-i18next'
+import { ShowStyleBases, } from '../../../lib/collections/ShowStyleBases'
+import { ConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
 
-interface IProps {
+interface IStudioConfigSettingsProps {
 	studioInstallation: StudioInstallation
-	studioDevices: Array<PeripheralDevice>
-	availableDevices: Array<PeripheralDevice>
-	availableShowStyles: Array<{
-		name: string,
-		value: string
-	}>
-	defaultBlueprint: ShowBlueprint | undefined
 }
-
-interface IChildStudioInterfaceProps {
-	onDeleteSource?: (item: ISourceLayer) => void
-	onDeleteOutput?: (item: IOutputLayer) => void
-	onRemoveDevice?: (item: PeripheralDevice) => void
-	onRemoveMapping?: (layerId: string) => void
-	onDeleteConfigItem?: (item: IStudioConfigItem) => void
-	onDeleteHotkeyLegend?: (item: HotkeyDefinition) => void
-	onDeleteROArgument?: (item: IStudioRuntimeArgumentsItem) => void
-	onAddSource?: () => void
-	onAddOutput?: () => void
-	onAddDevice?: (item: PeripheralDevice) => void
-	onAddMapping?: () => void
-	onAddHotkeyLegend?: () => void
-	onAddConfigItem?: () => void
-	onAddROArgument?: () => void
-}
-
-interface IStudioOutputSettingsProps extends IProps, IChildStudioInterfaceProps {
-}
-interface IStudioOutputSettingsState {
-	showDeleteConfirm: boolean
-	deleteConfirmItem: IOutputLayer | undefined
-	editedOutputs: Array<string>
-}
-
-class StudioOutputSettings extends React.Component<Translated<IStudioOutputSettingsProps>, IStudioOutputSettingsState> {
-	constructor (props: Translated<IStudioOutputSettingsProps>) {
-		super(props)
-
-		this.state = {
-			showDeleteConfirm: false,
-			deleteConfirmItem: undefined,
-			editedOutputs: []
-		}
-	}
-
-	isItemEdited = (item: IOutputLayer) => {
-		return this.state.editedOutputs.indexOf(item._id) >= 0
-	}
-
-	finishEditItem = (item: IOutputLayer) => {
-		let index = this.state.editedOutputs.indexOf(item._id)
-		if (index >= 0) {
-			this.state.editedOutputs.splice(index, 1)
-			this.setState({
-				editedOutputs: this.state.editedOutputs
-			})
-		}
-	}
-
-	editItem = (item: IOutputLayer) => {
-		if (this.state.editedOutputs.indexOf(item._id) < 0) {
-			this.state.editedOutputs.push(item._id)
-			this.setState({
-				editedOutputs: this.state.editedOutputs
-			})
-		}
-	}
-
-	confirmDelete = (item: IOutputLayer) => {
-		this.setState({
-			showDeleteConfirm: true,
-			deleteConfirmItem: item
-		})
-	}
-
-	handleConfirmDeleteCancel = (e) => {
-		this.setState({
-			deleteConfirmItem: undefined,
-			showDeleteConfirm: false
-		})
-	}
-
-	handleConfirmDeleteAccept = (e) => {
-		if (this.props.onDeleteOutput && typeof this.props.onDeleteOutput === 'function' && this.state.deleteConfirmItem) {
-			this.props.onDeleteOutput(this.state.deleteConfirmItem)
-		}
-
-		this.setState({
-			deleteConfirmItem: undefined,
-			showDeleteConfirm: false
-		})
-	}
-
-	renderOutputs () {
-		const { t } = this.props
-		return (
-			this.props.studioInstallation.outputLayers.map((item, index) => {
-				let newItem = _.clone(item) as (IOutputLayer & { index: number })
-				newItem.index = index
-				return newItem
-			}).sort((a, b) => {
-				return a._rank - b._rank
-			}).map((item, index) => {
-				return [
-					<tr key={item._id} className={ClassNames({
-						'hl': this.isItemEdited(item)
-					})}>
-						<th className='settings-studio-output-table__name c2'>
-							{item.name}
-						</th>
-						<td className='settings-studio-output-table__id c4'>
-							{item._id}
-						</td>
-						<td className='settings-studio-output-table__isPGM c3'>
-							<div className={ClassNames('switch', 'switch-tight', {
-								'switch-active': item.isPGM
-							})}>PGM</div>
-						</td>
-						<td className='settings-studio-output-table__actions table-item-actions c3'>
-							<button className='action-btn' onClick={(e) => this.editItem(item)}>
-								<FontAwesomeIcon icon={faPencilAlt} />
-							</button>
-							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
-								<FontAwesomeIcon icon={faTrash} />
-							</button>
-						</td>
-					</tr>,
-					this.isItemEdited(item) ?
-						<tr className='expando-details hl' key={item._id + '-details'}>
-							<td colSpan={4}>
-								<div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Channel Name')}
-												<EditAttribute
-													modifiedClassName='bghl'
-													attribute={'outputLayers.' + item.index + '.name'}
-													obj={this.props.studioInstallation}
-													type='text'
-													collection={StudioInstallations}
-													className='input text-input input-l'></EditAttribute>
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Internal ID')}
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'outputLayers.' + item.index + '._id'}
-												obj={this.props.studioInstallation}
-												type='text'
-												collection={StudioInstallations}
-												className='input text-input input-l'></EditAttribute>
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'outputLayers.' + item.index + '.isPGM'}
-												obj={this.props.studioInstallation}
-												type='checkbox'
-												collection={StudioInstallations}
-												className=''></EditAttribute>
-											{t('Is PGM Output')}
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Display Rank')}
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'outputLayers.' + item.index + '._rank'}
-												obj={this.props.studioInstallation}
-												type='int'
-												collection={StudioInstallations}
-												className='input text-input input-l'></EditAttribute>
-										</label>
-									</div>
-								</div>
-								<div className='mod alright'>
-									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>
-										<FontAwesomeIcon icon={faCheck} />
-									</button>
-								</div>
-							</td>
-						</tr>
-					:
-						null
-				]
-			})
-		)
-	}
-
-	render () {
-		const { t } = this.props
-		return (
-			<div>
-				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
-					<p>{t('Are you sure you want to delete output channel "{{channelId}}"?', { channelId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.name })}</p>
-					<p>{t('Please note: This action is irreversible!')}</p>
-				</ModalDialog>
-				<h3>{t('Output channels')}</h3>
-				<table className='expando settings-studio-output-table'>
-					<tbody>
-						{this.renderOutputs()}
-					</tbody>
-				</table>
-				<div className='mod mhs'>
-					<button className='btn btn-primary' onClick={this.props.onAddOutput}>
-						<FontAwesomeIcon icon={faPlus} />
-					</button>
-				</div>
-			</div>
-		)
-	}
-}
-
-interface IStudioKeyValueSettingsProps extends IProps, IChildStudioInterfaceProps {
-}
-interface IStudioKeyValueSettingsState {
-	showDeleteConfirm: boolean
-	deleteConfirmItem: IStudioConfigItem | undefined
+interface IStudioConfigSettingsState {
 	editedItems: Array<string>
 }
 
-class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueSettingsProps>, IStudioKeyValueSettingsState> {
-	constructor (props: Translated<IStudioKeyValueSettingsProps>) {
+const StudioConfigSettings = translate()(class StudioConfigSettings extends React.Component<Translated<IStudioConfigSettingsProps>, IStudioConfigSettingsState> {
+	constructor (props: Translated<IStudioConfigSettingsProps>) {
 		super(props)
 
 		this.state = {
-			showDeleteConfirm: false,
-			deleteConfirmItem: undefined,
 			editedItems: []
 		}
 	}
 
-	isItemEdited = (item: IStudioConfigItem) => {
+	isItemEdited = (item: IConfigItem) => {
 		return this.state.editedItems.indexOf(item._id) >= 0
 	}
 
-	finishEditItem = (item: IStudioConfigItem) => {
+	finishEditItem = (item: IConfigItem) => {
 		let index = this.state.editedItems.indexOf(item._id)
 		if (index >= 0) {
 			this.state.editedItems.splice(index, 1)
@@ -301,7 +75,7 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 		}
 	}
 
-	editItem = (item: IStudioConfigItem) => {
+	editItem = (item: IConfigItem) => {
 		if (this.state.editedItems.indexOf(item._id) < 0) {
 			this.state.editedItems.push(item._id)
 			this.setState({
@@ -309,36 +83,82 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 			})
 		}
 	}
-
-	confirmDelete = (item: IStudioConfigItem) => {
-		this.setState({
-			showDeleteConfirm: true,
-			deleteConfirmItem: item
+	confirmDelete = (item: IConfigItem) => {
+		const { t } = this.props
+		doModalDialog({
+			title: t('Delete this item?'),
+			no: t('Cancel'),
+			onAccept: () => {
+				this.onDeleteConfigItem(item)
+			},
+			message: [
+				<p>{t('Are you sure you want to delete this config item "{{configId}}"?', { configId: (item && item._id) })}</p>,
+				<p>{t('Please note: This action is irreversible!')}</p>
+			]
 		})
 	}
-
-	handleConfirmDeleteCancel = (e) => {
-		this.setState({
-			deleteConfirmItem: undefined,
-			showDeleteConfirm: false
-		})
-	}
-
-	handleConfirmDeleteAccept = (e) => {
-		if (this.props.onDeleteConfigItem && typeof this.props.onDeleteConfigItem === 'function' && this.state.deleteConfirmItem) {
-			this.props.onDeleteConfigItem(this.state.deleteConfirmItem)
+	onDeleteConfigItem = (item: IConfigItem) => {
+		if (this.props.studioInstallation) {
+			StudioInstallations.update(this.props.studioInstallation._id, {
+				$pull: {
+					config: {
+						_id: item._id
+					}
+				}
+			})
 		}
+	}
+	onAddConfigItem = () => {
+		const { t } = this.props
 
-		this.setState({
-			deleteConfirmItem: undefined,
-			showDeleteConfirm: false
+		const newItem = literal<IConfigItem>({
+			_id: t('new_config_item'),
+			value: ''
 		})
+
+		if (this.props.studioInstallation) {
+			StudioInstallations.update(this.props.studioInstallation._id, {
+				$push: {
+					config: newItem
+				}
+			})
+		}
+	}
+
+	collectStudioConfigs (studio: StudioInstallation) {
+
+		// All showStyles that the studio is supposed to support:
+		let showStyleBases = ShowStyleBases.find({
+			_id: {$in: studio.supportedShowStyleBase || []}
+		}).fetch()
+
+		// By extension, all blueprints that the studio is supposed to support:
+
+		let blueprints = Blueprints.find({
+			_id: {
+				$in: _.compact(_.map(showStyleBases, (showStyleBase) => {
+					return showStyleBase.blueprintId
+				}))
+			}
+		}).fetch()
+
+		let manifestEntries: Array<ConfigManifestEntry> = []
+		_.each(blueprints, (blueprint: Blueprint) => {
+			_.each(blueprint.studioConfigManifest, (entry: ConfigManifestEntry) => {
+				// @todo: placeholder, implement this correctly
+				manifestEntries.push(entry)
+			})
+		})
+		return manifestEntries
 	}
 
 	renderItems () {
 		const { t } = this.props
 
-		const excludeIds = this.props.defaultBlueprint ? this.props.defaultBlueprint.studioConfigManifest.map(c => c.id) : []
+		let manifestEntries = this.collectStudioConfigs(this.props.studioInstallation)
+
+		// const excludeIds = this.props.defaultBlueprint ? this.props.defaultBlueprint.studioConfigManifest.map(c => c.id) : []
+		const excludeIds = manifestEntries.map(c => c.id)
 		return (
 			(this.props.studioInstallation.config || []).map((item, index) => {
 				// Don't show if part of the config manifest
@@ -409,10 +229,6 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 		const { t } = this.props
 		return (
 			<div>
-				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
-					<p>{t('Are you sure you want to delete this config item "{{configId}}"?', { configId: (this.state.deleteConfirmItem && this.state.deleteConfirmItem._id) })}</p>
-					<p>{t('Please note: This action is irreversible!')}</p>
-				</ModalDialog>
 				<h3>{t('Custom Configuration (deprecated)')}</h3>
 				<table className='expando settings-studio-custom-config-table'>
 					<tbody>
@@ -420,34 +236,30 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 					</tbody>
 				</table>
 				<div className='mod mhs'>
-					<button className='btn btn-primary' onClick={this.props.onAddConfigItem}>
+					<button className='btn btn-primary' onClick={this.onAddConfigItem}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 				</div>
 			</div>
 		)
 	}
-}
+})
 
-interface IStudioRuntimeArgumentsSettingsProps extends IProps, IChildStudioInterfaceProps {
+interface IStudioRuntimeArgumentsSettingsProps {
+	studioInstallation: StudioInstallation
 }
 interface IStudioRuntimeArgumentsSettingsState {
-	showDeleteConfirm: boolean
-	deleteConfirmItem: IStudioRuntimeArgumentsItem | undefined
 	editedItems: Array<Number>
 }
 
-class StudioRuntimeArgumentsSettings extends React.Component<Translated<IStudioRuntimeArgumentsSettingsProps>, IStudioRuntimeArgumentsSettingsState> {
+const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsSettings extends React.Component<Translated<IStudioRuntimeArgumentsSettingsProps>, IStudioRuntimeArgumentsSettingsState> {
 	constructor (props: Translated<IStudioRuntimeArgumentsSettingsProps>) {
 		super(props)
 
 		this.state = {
-			showDeleteConfirm: false,
-			deleteConfirmItem: undefined,
 			editedItems: []
 		}
 	}
-
 	isItemEdited = (index: Number) => {
 		return this.state.editedItems.indexOf(index) >= 0
 	}
@@ -470,32 +282,44 @@ class StudioRuntimeArgumentsSettings extends React.Component<Translated<IStudioR
 			})
 		}
 	}
-
-	confirmDelete = (item: IStudioRuntimeArgumentsItem) => {
-		this.setState({
-			showDeleteConfirm: true,
-			deleteConfirmItem: item
-		})
-	}
-
-	handleConfirmDeleteCancel = (e) => {
-		this.setState({
-			deleteConfirmItem: undefined,
-			showDeleteConfirm: false
-		})
-	}
-
-	handleConfirmDeleteAccept = (e) => {
-		if (this.props.onDeleteROArgument && typeof this.props.onDeleteROArgument === 'function' && this.state.deleteConfirmItem) {
-			this.props.onDeleteROArgument(this.state.deleteConfirmItem)
+	onDeleteROArgument = (item: IStudioRuntimeArgumentsItem) => {
+		if (this.props.studioInstallation) {
+			StudioInstallations.update(this.props.studioInstallation._id, {
+				$pull: {
+					runtimeArguments: item
+				}
+			})
 		}
+	}
+	onAddROArgument = () => {
+		const { t } = this.props
 
-		this.setState({
-			deleteConfirmItem: undefined,
-			showDeleteConfirm: false
+		const newItem = literal<IStudioRuntimeArgumentsItem>({
+			property: 'new-property',
+			value: '1',
+			hotkeys: 'mod+shift+z'
+		})
+
+		StudioInstallations.update(this.props.studioInstallation._id, {
+			$push: {
+				runtimeArguments: newItem
+			}
 		})
 	}
-
+	confirmDelete = (item: IStudioRuntimeArgumentsItem) => {
+		const { t } = this.props
+		doModalDialog({
+			title: t('Delete this item?'),
+			no: t('Cancel'),
+			onAccept: () => {
+				this.onDeleteROArgument(item)
+			},
+			message: [
+				<p>{t('Are you sure you want to delete this runtime argument "{{property}}: {{value}}"?', { property: (item && item.property), value: (item && item.value) })}</p>,
+				<p>{t('Please note: This action is irreversible!')}</p>
+			]
+		})
+	}
 	renderItems () {
 		const { t } = this.props
 		return (
@@ -580,10 +404,6 @@ class StudioRuntimeArgumentsSettings extends React.Component<Translated<IStudioR
 		const { t } = this.props
 		return (
 			<div>
-				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
-					<p>{t('Are you sure you want to delete this runtime argument "{{property}}: {{value}}"?', { property: (this.state.deleteConfirmItem && this.state.deleteConfirmItem.property), value: (this.state.deleteConfirmItem && this.state.deleteConfirmItem.value) })}</p>
-					<p>{t('Please note: This action is irreversible!')}</p>
-				</ModalDialog>
 				<h3>{t('Runtime Arguments for Blueprints')}</h3>
 				<table className='expando settings-studio-custom-config-table'>
 					<tbody>
@@ -591,464 +411,53 @@ class StudioRuntimeArgumentsSettings extends React.Component<Translated<IStudioR
 					</tbody>
 				</table>
 				<div className='mod mhs'>
-					<button className='btn btn-primary' onClick={this.props.onAddROArgument}>
+					<button className='btn btn-primary' onClick={this.onAddROArgument}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 				</div>
 			</div>
 		)
 	}
-}
-
-interface IStudioSourcesSettingsProps extends IProps, IChildStudioInterfaceProps {
-}
-interface IStudioSourcesSettingsState {
-	showDeleteConfirm: boolean
-	deleteConfirmItem: ISourceLayer | undefined
-	editedSources: Array<string>
-}
-
-class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSettingsProps>, IStudioSourcesSettingsState> {
-	constructor (props: Translated<IStudioSourcesSettingsProps>) {
-		super(props)
-
-		this.state = {
-			showDeleteConfirm: false,
-			deleteConfirmItem: undefined,
-			editedSources: []
-		}
-	}
-
-	isItemEdited = (item: ISourceLayer) => {
-		return this.state.editedSources.indexOf(item._id) >= 0
-	}
-
-	finishEditItem = (item: ISourceLayer) => {
-		let index = this.state.editedSources.indexOf(item._id)
-		if (index >= 0) {
-			this.state.editedSources.splice(index, 1)
-			this.setState({
-				editedSources: this.state.editedSources
-			})
-		}
-	}
-
-	editItem = (item: ISourceLayer) => {
-		if (this.state.editedSources.indexOf(item._id) < 0) {
-			this.state.editedSources.push(item._id)
-			this.setState({
-				editedSources: this.state.editedSources
-			})
-		}
-	}
-
-	sourceLayerString (type: SourceLayerType) {
-		const { t } = this.props
-		switch (type) {
-			case SourceLayerType.CAMERA:
-				return t('Camera')
-			case SourceLayerType.GRAPHICS:
-				return t('Graphics')
-			case SourceLayerType.LIVE_SPEAK:
-				return t('Live Speak')
-			case SourceLayerType.LOWER_THIRD:
-				return t('Lower Third')
-			case SourceLayerType.MIC:
-				return t('Studio Microphone')
-			case SourceLayerType.REMOTE:
-				return t('Remote Source')
-			case SourceLayerType.SCRIPT:
-				return t('Generic Script')
-			case SourceLayerType.SPLITS:
-				return t('Split Screen')
-			case SourceLayerType.VT:
-				return t('Clips')
-			case SourceLayerType.METADATA:
-				return t('Metadata')
-			case SourceLayerType.CAMERA_MOVEMENT:
-				return t('Camera Movement')
-			case SourceLayerType.UNKNOWN:
-				return t('Unknown Layer')
-			case SourceLayerType.AUDIO:
-				return t('Audio Mixing')
-			case SourceLayerType.TRANSITION:
-				return t('Transition')
-			default:
-				return SourceLayerType[type]
-		}
-	}
-
-	confirmDelete = (item: ISourceLayer) => {
-		this.setState({
-			showDeleteConfirm: true,
-			deleteConfirmItem: item
-		})
-	}
-
-	handleConfirmDeleteCancel = (e) => {
-		this.setState({
-			deleteConfirmItem: undefined,
-			showDeleteConfirm: false
-		})
-	}
-
-	handleConfirmDeleteAccept = (e) => {
-		if (this.props.onDeleteSource && typeof this.props.onDeleteSource === 'function' && this.state.deleteConfirmItem) {
-			this.props.onDeleteSource(this.state.deleteConfirmItem)
-		}
-
-		this.setState({
-			deleteConfirmItem: undefined,
-			showDeleteConfirm: false
-		})
-	}
-
-	renderInputSources () {
-		const { t } = this.props
-
-		return (
-			this.props.studioInstallation.sourceLayers.map((item, index) => {
-				let newItem = _.clone(item) as (ISourceLayer & {index: number})
-				newItem.index = index
-				return newItem
-			}).sort((a, b) => {
-				return a._rank - b._rank
-			}).map((item, index) => {
-				return <React.Fragment key={item._id}>
-					<tr className={ClassNames({
-						'hl': this.isItemEdited(item)
-					})}>
-						<th className='settings-studio-source-table__name c2'>
-							{item.name}
-						</th>
-						<td className='settings-studio-source-table__id c4'>
-							{item._id}
-						</td>
-						<td className='settings-studio-source-table__type c3'>
-							{this.sourceLayerString(Number.parseInt(item.type.toString(), 10) as SourceLayerType)}
-						</td>
-						<td className='settings-studio-source-table__actions table-item-actions c3'>
-							<button className='action-btn' onClick={(e) => this.editItem(item)}>
-								<FontAwesomeIcon icon={faPencilAlt} />
-							</button>
-							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
-								<FontAwesomeIcon icon={faTrash} />
-							</button>
-						</td>
-					</tr>
-					{this.isItemEdited(item) &&
-						<tr className='expando-details hl'>
-							<td colSpan={4}>
-								<div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Source Name')}
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.name'}
-												obj={this.props.studioInstallation}
-												type='text'
-												collection={StudioInstallations}
-												className='input text-input input-l'></EditAttribute>
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Source Abbreviation')}
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.abbreviation'}
-												obj={this.props.studioInstallation}
-												type='text'
-												collection={StudioInstallations}
-												className='input text-input input-l'></EditAttribute>
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Internal ID')}
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '._id'}
-												obj={this.props.studioInstallation}
-												type='text'
-												collection={StudioInstallations}
-												className='input text-input input-l'></EditAttribute>
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Source Type')}
-											<div className='select focusable'>
-												<EditAttribute
-													modifiedClassName='bghl'
-													attribute={'sourceLayers.' + item.index + '.type'}
-													obj={this.props.studioInstallation}
-													type='dropdown'
-													options={SourceLayerType}
-													optionsAreNumbers
-													collection={StudioInstallations}
-													className='focusable-main input-l'></EditAttribute>
-											</div>
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.unlimited'}
-												obj={this.props.studioInstallation}
-												type='checkbox'
-												collection={StudioInstallations}
-												className=''></EditAttribute>
-											{t('Is unlimited')}
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.onPGMClean'}
-												obj={this.props.studioInstallation}
-												type='checkbox'
-												collection={StudioInstallations}
-												className=''></EditAttribute>
-											{t('Is on clean PGM')}
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.isRemoteInput'}
-												obj={this.props.studioInstallation}
-												type='checkbox'
-												collection={StudioInstallations}
-												className=''></EditAttribute>
-											{t('Is a Live Remote Input')}
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.isGuestInput'}
-												obj={this.props.studioInstallation}
-												type='checkbox'
-												collection={StudioInstallations}
-												className=''></EditAttribute>
-											{t('Is a Guest Input')}
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.isHidden'}
-												obj={this.props.studioInstallation}
-												type='checkbox'
-												collection={StudioInstallations}
-												className=''></EditAttribute>
-											{t('Is hidden')}
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Display Rank')}
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '._rank'}
-												obj={this.props.studioInstallation}
-												type='int'
-												collection={StudioInstallations}
-												className='input text-input input-l'></EditAttribute>
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.onPresenterScreen'}
-												obj={this.props.studioInstallation}
-												type='checkbox'
-												collection={StudioInstallations}
-												className=''></EditAttribute>
-											{t('Display on Presenter\'s Screen')}
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Shortcut List')}
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.activateKeyboardHotkeys'}
-												obj={this.props.studioInstallation}
-												type='text'
-												collection={StudioInstallations}
-												className='input text-input input-l'></EditAttribute>
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Clear Shortcut')}
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.clearKeyboardHotkey'}
-												obj={this.props.studioInstallation}
-												type='text'
-												collection={StudioInstallations}
-												className='input text-input input-l'></EditAttribute>
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.assignHotkeysToGlobalAdlibs'}
-												obj={this.props.studioInstallation}
-												type='checkbox'
-												collection={StudioInstallations}
-												className=''></EditAttribute>
-											{t('Assign Hotkeys to Global AdLibs')}
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.isSticky'}
-												obj={this.props.studioInstallation}
-												type='checkbox'
-												collection={StudioInstallations}
-												className=''></EditAttribute>
-											{t('Items on this layer are sticky')}
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Activate Sticky Item Shortcut')}
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.activateStickyKeyboardHotkey'}
-												obj={this.props.studioInstallation}
-												type='text'
-												collection={StudioInstallations}
-												className='input text-input input-l'></EditAttribute>
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.allowDisable'}
-												obj={this.props.studioInstallation}
-												type='checkbox'
-												collection={StudioInstallations}
-												className=''
-											/>
-											{t('Allow disabling of elements')}
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.isQueueable'}
-												obj={this.props.studioInstallation}
-												type='checkbox'
-												collection={StudioInstallations}
-												className=''></EditAttribute>
-											{t('Adlibs on this layer can be queued')}
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Exclusivity group')}
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'sourceLayers.' + item.index + '.exclusiveGroup'}
-												obj={this.props.studioInstallation}
-												type='text'
-												collection={StudioInstallations}
-												className='input text-input input-l'></EditAttribute>
-										</label>
-									</div>
-								</div>
-								<div className='mod alright'>
-									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>
-										<FontAwesomeIcon icon={faCheck} />
-									</button>
-								</div>
-							</td>
-						</tr>
-					}
-				</React.Fragment>
-			})
-		)
-	}
-
-	render () {
-		const { t } = this.props
-		return (
-			<div>
-				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
-					<p>{t('Are you sure you want to delete source layer "{{sourceLayerId}}"?', { sourceLayerId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.name })}</p>
-					<p>{t('Please note: This action is irreversible!')}</p>
-				</ModalDialog>
-				<h3>{t('Source Layers')}</h3>
-				<table className='expando settings-studio-source-table'>
-					<tbody>
-						{this.renderInputSources()}
-					</tbody>
-				</table>
-				<div className='mod mhs'>
-					<button className='btn btn-primary' onClick={this.props.onAddSource}>
-						<FontAwesomeIcon icon={faPlus} />
-					</button>
-				</div>
-			</div>
-		)
-	}
-}
-interface IStudioDevicesProps extends IProps, IChildStudioInterfaceProps {
+})
+interface IStudioDevicesProps {
+	studioInstallation: StudioInstallation
+	studioDevices: Array<PeripheralDevice>
+	availableDevices: Array<PeripheralDevice>
 }
 interface IStudioDevicesSettingsState {
-	showDeleteConfirm: boolean
-	deleteConfirmItem: PeripheralDevice | undefined
 	showAvailableDevices: boolean
 }
-class StudioDevices extends React.Component<Translated<IStudioDevicesProps>, IStudioDevicesSettingsState> {
+const StudioDevices = translate()(class StudioDevices extends React.Component<Translated<IStudioDevicesProps>, IStudioDevicesSettingsState> {
 	constructor (props: Translated<IStudioDevicesProps>) {
 		super(props)
 
 		this.state = {
-			showDeleteConfirm: false,
-			deleteConfirmItem: undefined,
 			showAvailableDevices: false,
 		}
 	}
 
-	handleConfirmRemoveCancel = (e) => {
-		this.setState({
-			showDeleteConfirm: false,
-			deleteConfirmItem: undefined
-		})
+	onRemoveDevice = (item: PeripheralDevice) => {
+		PeripheralDevices.update(item._id, {$unset: {
+			studioInstallationId: 1
+		}})
 	}
 
-	handleConfirmRemoveAccept = (e) => {
-		if (this.props.onRemoveDevice && typeof this.props.onRemoveDevice === 'function' && this.state.deleteConfirmItem) {
-			this.props.onRemoveDevice(this.state.deleteConfirmItem)
-		}
-		this.setState({
-			showDeleteConfirm: false,
-			deleteConfirmItem: undefined
-		})
+	onAddDevice = (item: PeripheralDevice) => {
+		PeripheralDevices.update(item._id, {$set: {
+			studioInstallationId: this.props.studioInstallation._id
+		}})
 	}
-
-	confirmRemove = (item: PeripheralDevice) => {
-		this.setState({
-			showDeleteConfirm: true,
-			deleteConfirmItem: item
+	confirmRemove = (device: PeripheralDevice) => {
+		const { t } = this.props
+		doModalDialog({
+			title: t('Remove this device?'),
+			no: t('Cancel'),
+			onAccept: () => {
+				this.onRemoveDevice(device)
+			},
+			message: [
+				<p>{t('Are you sure you want to remove device "{{devideId}}"?', { deviceId: device && device.name })}</p>
+			]
 		})
 	}
 
@@ -1087,9 +496,6 @@ class StudioDevices extends React.Component<Translated<IStudioDevicesProps>, ISt
 		const { t } = this.props
 		return (
 			<div>
-				<ModalDialog title={t('Remove this device?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
-					<p>{t('Are you sure you want to remove device "{{devideId}}"?', { deviceId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.name })}</p>
-				</ModalDialog>
 				<h3>{t('Attached Devices')}</h3>
 				<table className='expando settings-studio-device-table'>
 					<tbody>
@@ -1106,7 +512,7 @@ class StudioDevices extends React.Component<Translated<IStudioDevicesProps>, ISt
 								{
 									this.props.availableDevices.map((device) => {
 										return (
-											<div className='ctx-menu-item' key={device._id} onClick={(e) => this.props.onAddDevice && this.props.onAddDevice(device)}>
+											<div className='ctx-menu-item' key={device._id} onClick={(e) => this.onAddDevice(device)}>
 												<b>{device.name}</b> <MomentFromNow date={device.lastSeen} /> ({device._id})
 											</div>
 										)
@@ -1119,35 +525,26 @@ class StudioDevices extends React.Component<Translated<IStudioDevicesProps>, ISt
 			</div>
 		)
 	}
-}
+})
 
+interface IStudioMappingsProps {
+	studioInstallation: StudioInstallation
+}
 interface IStudioMappingsState {
-	showDeleteConfirm: boolean
-	deleteConfirmLayerId: string | undefined
 	editedMappings: Array<string>
 }
-interface IStudioMappingsProps extends IProps, IChildStudioInterfaceProps {
-	match: {
-		params: {
-			studioId: string
-		}
-	}
-}
-class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, IStudioMappingsState> {
+
+const StudioMappings = translate()(class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, IStudioMappingsState> {
 	constructor (props: Translated<IStudioMappingsProps>) {
 		super(props)
 
 		this.state = {
-			showDeleteConfirm: false,
-			deleteConfirmLayerId: undefined,
 			editedMappings: []
 		}
 	}
-
 	isItemEdited = (layerId: string) => {
 		return this.state.editedMappings.indexOf(layerId) >= 0
 	}
-
 	finishEditItem = (layerId: string) => {
 		let index = this.state.editedMappings.indexOf(layerId)
 		if (index >= 0) {
@@ -1157,7 +554,6 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 			})
 		}
 	}
-
 	editItem = (layerId: string) => {
 		if (this.state.editedMappings.indexOf(layerId) < 0) {
 			this.state.editedMappings.push(layerId)
@@ -1166,31 +562,22 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 			})
 		}
 	}
-
-	handleConfirmRemoveCancel = (e) => {
-		this.setState({
-			showDeleteConfirm: false,
-			deleteConfirmLayerId: undefined
+	confirmRemove = (mappingId: string) => {
+		const { t } = this.props
+		doModalDialog({
+			title: t('Remove this mapping?'),
+			no: t('Cancel'),
+			onAccept: () => {
+				this.removeLayer(mappingId)
+			},
+			message: [
+				<p>{t('Are you sure you want to remove mapping for layer "{{mappingId}}"?', { mappingId: mappingId })}</p>
+			]
 		})
 	}
-
-	handleConfirmRemoveAccept = (e) => {
-		this.state.deleteConfirmLayerId && this.removeLayer(this.state.deleteConfirmLayerId)
-		this.setState({
-			showDeleteConfirm: false,
-			deleteConfirmLayerId: undefined
-		})
-	}
-
-	confirmRemove = (layerId: string) => {
-		this.setState({
-			showDeleteConfirm: true,
-			deleteConfirmLayerId: layerId
-		})
-	}
-	removeLayer = (layerId: string) => {
+	removeLayer = (mappingId: string) => {
 		let unsetObject = {}
-		unsetObject['mappings.' + layerId] = ''
+		unsetObject['mappings.' + mappingId] = ''
 		StudioInstallations.update(this.props.studioInstallation._id, {
 			$unset: unsetObject
 		})
@@ -1564,9 +951,6 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 		const { t } = this.props
 		return (
 			<div>
-				<ModalDialog title={t('Remove this mapping?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
-					<p>{t('Are you sure you want to remove mapping for layer "{{layerId}}"?', { layerId: this.state.deleteConfirmLayerId && this.state.deleteConfirmLayerId })}</p>
-				</ModalDialog>
 				<h3>{t('Layer Mappings')}</h3>
 				<table className='expando settings-studio-mappings-table'>
 					<tbody>
@@ -1581,131 +965,15 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 			</div>
 		)
 	}
+})
+
+interface ITestToolsRecordingsSettingsProps {
+	studioInstallation: StudioInstallation
 }
-
-class HotkeyLegendSettings extends React.Component<Translated<IStudioKeyValueSettingsProps>, IStudioKeyValueSettingsState> {
-	constructor (props: Translated<IStudioKeyValueSettingsProps>) {
-		super(props)
-
-		this.state = {
-			showDeleteConfirm: false,
-			deleteConfirmItem: undefined,
-			editedItems: []
-		}
-	}
-
-	isItemEdited = (item: HotkeyDefinition) => {
-		return this.state.editedItems.indexOf(item._id) >= 0
-	}
-
-	finishEditItem = (item: HotkeyDefinition) => {
-		let index = this.state.editedItems.indexOf(item._id)
-		if (index >= 0) {
-			this.state.editedItems.splice(index, 1)
-			this.setState({
-				editedItems: this.state.editedItems
-			})
-		}
-	}
-
-	editItem = (item: HotkeyDefinition) => {
-		if (this.state.editedItems.indexOf(item._id) < 0) {
-			this.state.editedItems.push(item._id)
-			this.setState({
-				editedItems: this.state.editedItems
-			})
-		}
-	}
-
-	renderItems () {
-		const { t } = this.props
-		return (
-			(this.props.studioInstallation.hotkeyLegend || []).map((item, index) => {
-				return <React.Fragment key={item.key}>
-					<tr className={ClassNames({
-						'hl': this.isItemEdited(item)
-					})}>
-						<th className='settings-studio-custom-config-table__name c2'>
-							{mousetrapHelper.shortcutLabel(item.key)}
-						</th>
-						<td className='settings-studio-custom-config-table__value c3'>
-							{item.label}
-						</td>
-						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
-							<button className='action-btn' onClick={(e) => this.editItem(item)}>
-								<FontAwesomeIcon icon={faPencilAlt} />
-							</button>
-							<button className='action-btn' onClick={(e) => this.props.onDeleteHotkeyLegend && this.props.onDeleteHotkeyLegend(item)}>
-								<FontAwesomeIcon icon={faTrash} />
-							</button>
-						</td>
-					</tr>
-					{this.isItemEdited(item) &&
-						<tr className='expando-details hl'>
-							<td colSpan={4}>
-								<div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Key')}
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'hotkeyLegend.' + index + '.key'}
-												obj={this.props.studioInstallation}
-												type='text'
-												collection={StudioInstallations}
-												className='input text-input input-l'></EditAttribute>
-										</label>
-									</div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{t('Value')}
-											<EditAttribute
-												modifiedClassName='bghl'
-												attribute={'hotkeyLegend.' + index + '.label'}
-												obj={this.props.studioInstallation}
-												type='text'
-												collection={StudioInstallations}
-												className='input text-input input-l'></EditAttribute>
-										</label>
-									</div>
-								</div>
-								<div className='mod alright'>
-									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>
-										<FontAwesomeIcon icon={faCheck} />
-									</button>
-								</div>
-							</td>
-						</tr>
-					}
-				</React.Fragment>
-			})
-		)
-	}
-
-	render () {
-		const { t } = this.props
-		return (
-			<div>
-				<h3>{t('Custom Hotkey Labels')}</h3>
-				<table className='expando settings-studio-custom-config-table'>
-					<tbody>
-						{this.renderItems()}
-					</tbody>
-				</table>
-				<div className='mod mhs'>
-					<button className='btn btn-primary' onClick={this.props.onAddHotkeyLegend}>
-						<FontAwesomeIcon icon={faPlus} />
-					</button>
-				</div>
-			</div>
-		)
-	}
-}
-
 interface ITestToolsRecordingsSettingsState {
 }
 
-class TestToolsRecordingsSettings extends React.Component<Translated<IProps>, ITestToolsRecordingsSettingsState> {
+const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSettings extends React.Component<Translated<ITestToolsRecordingsSettingsProps>, ITestToolsRecordingsSettingsState> {
 	render () {
 		const { t } = this.props
 		return (
@@ -1787,29 +1055,47 @@ class TestToolsRecordingsSettings extends React.Component<Translated<IProps>, IT
 			</div>
 		)
 	}
-}
+})
 
-interface IStudioSettingsProps extends IProps, IChildStudioInterfaceProps {
+interface IStudioSettingsProps {
 	match: {
 		params: {
 			studioId: string
 		}
 	}
 }
-export default translateWithTracker((props: IStudioSettingsProps, state) => {
+interface IStudioSettingsState {
+
+}
+interface IStudioSettingsTrackedProps {
+	studioInstallation?: StudioInstallation
+	studioDevices: Array<PeripheralDevice>
+	availableShowStyleVariants: Array<{
+		name: string,
+		value: string,
+		showStyleVariant: ShowStyleVariant
+	}>
+	availableDevices: Array<PeripheralDevice>
+}
+interface ITrackedProps {
+
+}
+
+export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, IStudioSettingsTrackedProps>((props: IStudioSettingsProps, state) => {
 	const studio = StudioInstallations.findOne(props.match.params.studioId)
+
 	return {
 		studioInstallation: studio,
 		studioDevices: PeripheralDevices.find({
 			studioInstallationId: props.match.params.studioId
 		}).fetch(),
-		availableShowStyles: ShowStyles.find().fetch().map((item) => {
+		availableShowStyleVariants: ShowStyleVariants.find().fetch().map((variant) => {
 			return {
-				name: `${item.name} (${item._id})`,
-				value: item._id
+				name: `${variant.name} (${variant._id})`,
+				value: variant._id,
+				showStyleVariant: variant
 			}
 		}),
-		defaultBlueprint: studio ? ShowBlueprints.findOne({ showStyleId: studio.defaultShowStyle }) : undefined,
 		availableDevices: PeripheralDevices.find({
 			studioInstallationId: {
 				$not: {
@@ -1822,267 +1108,79 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 			}
 		}).fetch()
 	}
-})(class StudioSettings extends MeteorReactComponent<Translated<IStudioSettingsProps>> {
-
-	static setProperty (studioInstallation: StudioInstallation, property: string, value: any) {
-		// console.log(property, value)
-		let m = {}
-		if (value !== undefined) {
-			m[property] = value
-			StudioInstallations.update(studioInstallation._id, { $set: m })
-		} else {
-			m[property] = 0
-			StudioInstallations.update(studioInstallation._id, { $unset: m })
-		}
-	}
-
-	static findHighestRank (array: Array<{ _rank: number }>): { _rank: number } | null {
-		let max: { _rank: number } | null = null
-
-		array.forEach((value, index) => {
-			if (max == null || max._rank < value._rank) {
-				max = value
-			}
-		})
-
-		return max
-	}
-
-	onDeleteSource = (item: ISourceLayer) => {
-		if (this.props.studioInstallation) {
-			StudioInstallations.update(this.props.studioInstallation._id, {
-				$pull: {
-					sourceLayers: {
-						_id: item._id
-					}
-				}
-			})
-		}
-	}
-
-	onDeleteOutput = (item: IOutputLayer) => {
-		if (this.props.studioInstallation) {
-			StudioInstallations.update(this.props.studioInstallation._id, {
-				$pull: {
-					outputLayers: {
-						_id: item._id
-					}
-				}
-			})
-		}
-	}
-
-	onDeleteConfigItem = (item: IStudioConfigItem) => {
-		if (this.props.studioInstallation) {
-			StudioInstallations.update(this.props.studioInstallation._id, {
-				$pull: {
-					config: {
-						_id: item._id
-					}
-				}
-			})
-		}
-	}
-
-	onDeleteHotkeyLegend = (item: HotkeyDefinition) => {
-		if (this.props.studioInstallation) {
-			StudioInstallations.update(this.props.studioInstallation._id, {
-				$pull: {
-					hotkeyLegend: {
-						_id: item._id
-					}
-				}
-			})
-		}
-	}
-
-	onDeleteROArgument = (item: IStudioRuntimeArgumentsItem) => {
-		if (this.props.studioInstallation) {
-			StudioInstallations.update(this.props.studioInstallation._id, {
-				$pull: {
-					runtimeArguments: item
-				}
-			})
-		}
-	}
-
-	onAddSource = () => {
-		const maxRank = StudioSettings.findHighestRank(this.props.studioInstallation.sourceLayers)
-		const { t } = this.props
-
-		const newSource = literal<ISourceLayer>({
-			_id: this.props.studioInstallation._id + '-' + Random.id(5),
-			_rank: maxRank ? maxRank._rank + 10 : 0,
-			name: t('New Source'),
-			type: SourceLayerType.UNKNOWN,
-			unlimited: false,
-			onPGMClean: true
-		})
-
-		StudioInstallations.update(this.props.studioInstallation._id, {
-			$push: {
-				sourceLayers: newSource
-			}
-		})
-	}
-
-	onAddOutput = () => {
-		const maxRank = StudioSettings.findHighestRank(this.props.studioInstallation.outputLayers)
-		const { t } = this.props
-
-		const newOutput = literal<IOutputLayer>({
-			_id: this.props.studioInstallation._id + '-' + Random.id(5),
-			_rank: maxRank ? maxRank._rank + 10 : 0,
-			name: t('New Output'),
-			isPGM: false
-		})
-
-		StudioInstallations.update(this.props.studioInstallation._id, {
-			$push: {
-				outputLayers: newOutput
-			}
-		})
-	}
-
-	onAddConfigItem = () => {
-		const { t } = this.props
-
-		const newItem = literal<IStudioConfigItem>({
-			_id: t('new_config_item'),
-			value: ''
-		})
-
-		StudioInstallations.update(this.props.studioInstallation._id, {
-			$push: {
-				config: newItem
-			}
-		})
-	}
-
-	onAddROArgument = () => {
-		const { t } = this.props
-
-		const newItem = literal<IStudioRuntimeArgumentsItem>({
-			property: 'new-property',
-			value: '1',
-			hotkeys: 'mod+shift+z'
-		})
-
-		StudioInstallations.update(this.props.studioInstallation._id, {
-			$push: {
-				runtimeArguments: newItem
-			}
-		})
-	}
-
-	onAddHotkeyLegend = () => {
-		const { t } = this.props
-
-		const newItem = literal<HotkeyDefinition>({
-			_id: Random.id(),
-			key: '',
-			label: 'New hotkey'
-		})
-
-		StudioInstallations.update(this.props.studioInstallation._id, {
-			$push: {
-				hotkeyLegend: newItem
-			}
-		})
-	}
-
-	onRemoveDevice = (item: PeripheralDevice) => {
-		PeripheralDevices.update(item._id, {$unset: {
-			studioInstallationId: 1
-		}})
-	}
-
-	onAddDevice = (item: PeripheralDevice) => {
-		PeripheralDevices.update(item._id, {$set: {
-			studioInstallationId: this.props.studioInstallation._id
-		}})
-	}
-
+})(class StudioSettings extends MeteorReactComponent<Translated<IStudioSettingsProps & IStudioSettingsTrackedProps>, IStudioSettingsState> {
 	renderEditForm () {
 		const { t } = this.props
 
 		return (
-				<div className='studio-edit mod mhl mvs'>
-					<div>
-						<h3>{t('Generic Properties')}</h3>
-						<label className='field'>
-							{t('Studio Name')}
-							<div className='mdi'>
-								<EditAttribute
-									modifiedClassName='bghl'
-									attribute='name'
-									obj={this.props.studioInstallation}
-									type='text'
-									collection={StudioInstallations}
-									className='mdinput'></EditAttribute>
-								<span className='mdfx'></span>
-							</div>
-						</label>
-						<label className='field'>
-							{t('Default Blueprint')}
-							<div className='mdi'>
-								<EditAttribute
-									modifiedClassName='bghl'
-									attribute='defaultShowStyle'
-									obj={this.props.studioInstallation}
-									type='dropdown'
-									options={this.props.availableShowStyles}
-									collection={StudioInstallations}
-									className='mdinput'></EditAttribute>
-								<span className='mdfx'></span>
-							</div>
-						</label>
-					</div>
-
-					<div className='row'>
-						<div className='col c12 rl-c6'>
-							<StudioSourcesSettings {...this.props} onDeleteSource={this.onDeleteSource} onAddSource={this.onAddSource} />
+			this.props.studioInstallation ?
+			<div className='studio-edit mod mhl mvs'>
+				<div>
+					<h3>{t('Generic Properties')}</h3>
+					<label className='field'>
+						{t('Studio Name')}
+						<div className='mdi'>
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='name'
+								obj={this.props.studioInstallation}
+								type='text'
+								collection={StudioInstallations}
+								className='mdinput'></EditAttribute>
+							<span className='mdfx'></span>
 						</div>
-						<div className='col c12 rl-c6'>
-							<StudioOutputSettings {...this.props} onDeleteOutput={this.onDeleteOutput} onAddOutput={this.onAddOutput} />
+					</label>
+					<label className='field'>
+						{t('Default ShowStyleVariant')}
+						<div className='mdi'>
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='defaultShowStyleVariant'
+								obj={this.props.studioInstallation}
+								type='dropdown'
+								options={this.props.availableShowStyleVariants}
+								collection={StudioInstallations}
+								className='mdinput'></EditAttribute>
+							<span className='mdfx'></span>
 						</div>
-					</div>
-					<div className='row'>
-						<div className='col c12 r1-c12'>
-							<StudioRuntimeArgumentsSettings {...this.props} onAddROArgument={this.onAddROArgument} onDeleteROArgument={this.onDeleteROArgument} />
-						</div>
-					</div>
-					<div className='row'>
-						<div className='col c12 r1-c12'>
-							<StudioDevices {...this.props} onRemoveDevice={this.onRemoveDevice} onAddDevice={this.onAddDevice} />
-						</div>
-					</div>
-					<div className='row'>
-						<div className='col c12 r1-c12'>
-							<StudioMappings {...this.props} />
-						</div>
-					</div>
-					<div className='row'>
-						<div className='col c12 r1-c12'>
-							{ this.props.defaultBlueprint ? <ConfigManifestSettings t={this.props.t} blueprint={this.props.defaultBlueprint} studioInstallation={this.props.studioInstallation} /> : null }
-						</div>
-					</div>
-					<div className='row'>
-						<div className='col c12 r1-c12'>
-							<StudioKeyValueSettings {...this.props} onAddConfigItem={this.onAddConfigItem} onDeleteConfigItem={this.onDeleteConfigItem} />
-						</div>
-					</div>
-					<div className='row'>
-						<div className='col c12 r1-c12'>
-							<HotkeyLegendSettings {...this.props} onAddHotkeyLegend={this.onAddHotkeyLegend} onDeleteHotkeyLegend={this.onDeleteHotkeyLegend} />
-						</div>
-					</div>
-					<div className='row'>
-						<div className='col c12 r1-c12'>
-							<TestToolsRecordingsSettings {...this.props} />
-						</div>
+					</label>
+				</div>
+				<div className='row'>
+					<div className='col c12 r1-c12'>
+						<StudioRuntimeArgumentsSettings studioInstallation={this.props.studioInstallation} />
 					</div>
 				</div>
+				<div className='row'>
+					<div className='col c12 r1-c12'>
+						<StudioDevices
+							studioInstallation={this.props.studioInstallation}
+							studioDevices={this.props.studioDevices}
+							availableDevices={this.props.availableDevices}
+						/>
+					</div>
+				</div>
+				<div className='row'>
+					<div className='col c12 r1-c12'>
+						<StudioMappings studioInstallation={this.props.studioInstallation} />
+					</div>
+				</div>
+				{/* <div className='row'>
+					<div className='col c12 r1-c12'>
+						{ this.props.defaultBlueprint ? <ConfigManifestSettings t={this.props.t} blueprint={this.props.defaultBlueprint} studioInstallation={this.props.studioInstallation} /> : null }
+					</div>
+				</div> */}
+				<div className='row'>
+					<div className='col c12 r1-c12'>
+						<StudioConfigSettings studioInstallation={this.props.studioInstallation}/>
+					</div>
+				</div>
+				<div className='row'>
+					<div className='col c12 r1-c12'>
+						<TestToolsRecordingsSettings studioInstallation={this.props.studioInstallation} />
+					</div>
+				</div>
+			</div> :
+			<Spinner />
 		)
 	}
 
@@ -2096,3 +1194,27 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 		}
 	}
 })
+
+export function setProperty (studioInstallation: StudioInstallation, property: string, value: any) {
+	// console.log(property, value)
+	let m = {}
+	if (value !== undefined) {
+		m[property] = value
+		StudioInstallations.update(studioInstallation._id, { $set: m })
+	} else {
+		m[property] = 0
+		StudioInstallations.update(studioInstallation._id, { $unset: m })
+	}
+}
+
+export function findHighestRank (array: Array<{ _rank: number }>): { _rank: number } | null {
+	let max: { _rank: number } | null = null
+
+	array.forEach((value, index) => {
+		if (max == null || max._rank < value._rank) {
+			max = value
+		}
+	})
+
+	return max
+}

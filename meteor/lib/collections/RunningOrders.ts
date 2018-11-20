@@ -12,12 +12,13 @@ import { FindOptions, MongoSelector, TransformedCollection } from '../typings/me
 import { StudioInstallations, StudioInstallation } from './StudioInstallations'
 import { SegmentLineItems, SegmentLineItem } from './SegmentLineItems'
 import { RunningOrderDataCache } from './RunningOrderDataCache'
-import { ShowStyle, ShowStyles } from './ShowStyles'
 import { Meteor } from 'meteor/meteor'
 import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
 import { RunningOrderBaselineItems } from './RunningOrderBaselineItems'
 import { RunningOrderBaselineAdLibItems } from './RunningOrderBaselineAdLibItems'
 import { IBlueprintRunningOrder } from 'tv-automation-sofie-blueprints-integration'
+import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
+import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 
 export enum RunningOrderHoldState {
 	NONE = 0,
@@ -32,7 +33,10 @@ export interface DBRunningOrder extends IBlueprintRunningOrder {
 	/** ID of the object in MOS */
 	mosId: string
 	studioInstallationId: string
-	showStyleId: string
+	/** The ShowStyleVariant this RunningOrder uses */
+	showStyleVariantId: string
+	/** The ShowStyleBase this RunningOrder uses (its the parent of the showStyleVariant) */
+	showStyleBaseId: string
 	/** the mos device the rundown originates from */
 	mosDeviceId: string
 	/** Rundown slug - user-presentable name */
@@ -78,7 +82,8 @@ export class RunningOrder implements DBRunningOrder {
 	public _id: string
 	public mosId: string
 	public studioInstallationId: string
-	public showStyleId: string
+	public showStyleVariantId: string
+	public showStyleBaseId: string
 	public mosDeviceId: string
 	public name: string
 	public created: Time
@@ -106,12 +111,18 @@ export class RunningOrder implements DBRunningOrder {
 			this[key] = document[key]
 		})
 	}
-	getShowStyle (): ShowStyle {
-		if (!this.showStyleId) throw new Meteor.Error(500, 'RunningOrder has no show style attached!')
-		let ss = ShowStyles.findOne(this.showStyleId)
+	getShowStyleCompound (): ShowStyleCompound {
+
+		if (!this.showStyleVariantId) throw new Meteor.Error(500, 'RunningOrder has no show style attached!')
+		let ss = getShowStyleCompound(this.showStyleVariantId)
 		if (ss) {
 			return ss
-		} else throw new Meteor.Error(404, `ShowStyle "${this.showStyleId}" not found!`)
+		} else throw new Meteor.Error(404, `ShowStyle "${this.showStyleVariantId}" not found!`)
+	}
+	getShowStyleBase (): ShowStyleBase {
+		let showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
+		if (!showStyleBase ) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)
+		return showStyleBase
 	}
 	getStudioInstallation (): StudioInstallation {
 		if (!this.studioInstallationId) throw new Meteor.Error(500,'RunningOrder is not in a studioInstallation!')

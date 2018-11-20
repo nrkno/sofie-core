@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { ShowStyles } from '../../lib/collections/ShowStyles'
-import { StudioInstallations, MappingExt, MappingsExt } from '../../lib/collections/StudioInstallations'
+import { StudioInstallations, MappingExt, MappingsExt, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import {
 	MappingCasparCG,
 	MappingAtem,
@@ -16,7 +15,7 @@ import {
 	MappingAbstract,
 	DeviceType as PlayoutDeviceType
 } from 'timeline-state-resolver-types'
-import { literal, getCurrentTime } from '../../lib/lib'
+import { literal, getCurrentTime, Optional } from '../../lib/lib'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { LookaheadMode } from '../../lib/api/playout'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
@@ -24,6 +23,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../logging'
 import * as _ from 'underscore'
 import { setMeteorMethods } from '../methods'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 
 // Imports from TSR (TODO make into an import)
 // export interface Mappings {
@@ -843,7 +843,7 @@ setMeteorMethods({
 			mappings: mappings
 		}})
 
-		ShowStyles.upsert('show0', {$set: {
+		ShowStyleBases.upsert('show0', {$set: {
 			name: 'Distriktsnyheter Sørlandet'
 		}})
 	},
@@ -854,10 +854,10 @@ setMeteorMethods({
 		}
 		// initializes the stuff that's not place specific (so not setting things hat has ip adresses, etc)
 		// Initiate database:
-		StudioInstallations.upsert('studio0', {$set: {
+		StudioInstallations.upsert('studio0', {$set: literal<Optional<StudioInstallation>>({
+			_id: 'studio0',
 			name: 'DKSL',
-			defaultShowStyle: 'show0',
-			outputLayers: [],
+			defaultShowStyleVariant: 'show0-variant0',
 			config: [
 				{_id: 'nora_group', value: ''}, // Note: do not set to ensure that devs do not accidently use the live graphics channel
 				{_id: 'nora_apikey', value: ''}, // Note: must not be set as apikey must be kept private
@@ -870,9 +870,9 @@ setMeteorMethods({
 				{_id: 'sources_kam_ptz', value: '1:ptz0'},
 				{_id: 'sources_rm', value: '1:5,2:6,3:7,4:8,5:9,6:10'}
 			],
-			hotkeyLegend: [
-				{_id: 'ctrlA', key: 'ctrl+a', label: 'Gå tilbake til linje standard'}
-			]
-		}})
+			// mappings: {},
+			// supportedShowStyleBase: [],
+			// runtimeArguments: []
+		})})
 	}
 })

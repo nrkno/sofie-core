@@ -5,7 +5,7 @@ import * as _ from 'underscore'
 import { MigrationStepInput, MigrationStepInputFilteredResult } from '../lib/api/migration'
 import { Collections, objectPathGet, literal } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
-import { ShowStyles } from '../lib/collections/ShowStyles'
+import { ShowStyles } from '../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PlayoutDeviceSettings, PlayoutDeviceSettingsDevice, PlayoutDeviceSettingsDeviceCasparCG, PlayoutDeviceSettingsDeviceAtem, PlayoutDeviceSettingsDeviceHyperdeck, PlayoutDeviceSettingsDevicePanasonicPTZ, PlayoutDeviceSettingsDevicePharos } from '../lib/collections/PeripheralDevices'
 import {
 	Mapping,
