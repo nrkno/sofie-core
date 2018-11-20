@@ -10,7 +10,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { compareVersions, parseVersion } from '../../lib/collections/CoreSystem'
 import { logger } from '../logging'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
-import { ISourceLayer } from '../../lib/collections/ShowStyleBases';
+import { ISourceLayer, ShowStyleBases, IOutputLayer } from '../../lib/collections/ShowStyleBases'
 
 /**
  * Convenience function to generate basic test
@@ -194,30 +194,27 @@ export function ensureSourceLayer (sourceLayer: ISourceLayer): MigrationStepBase
 		id: `sourceLayer.${sourceLayer._id}`,
 		canBeRunAutomatically: true,
 		validate: () => {
-			let studio = StudioInstallations.findOne()
-			if (!studio) return 'Studio not found'
-
-			let sl = _.find(studio.sourceLayers, (sl) => {
-				return sl._id === sourceLayer._id
+			let validate: false | string = false
+			ShowStyleBases.find().forEach((showStyleBase) => {
+				let sl = _.find(showStyleBase.sourceLayers, (sl) => {
+					return sl._id === sourceLayer._id
+				})
+				if (!sl) validate = `SourceLayer ${sourceLayer._id} missing in ${showStyleBase.name} (${showStyleBase._id})`
 			})
-
-			if (!sl) return `SourceLayer ${sourceLayer._id} missing`
-			return false
+			return validate
 		},
 		migrate: () => {
-			let studio = StudioInstallations.findOne()
-			if (!studio) return 'Studio not found'
-
-			let sl = _.find(studio.sourceLayers, (sl) => {
-				return sl._id === sourceLayer._id
+			ShowStyleBases.find().forEach((showStyleBase) => {
+				let sl = _.find(showStyleBase.sourceLayers, (sl) => {
+					return sl._id === sourceLayer._id
+				})
+				if (!sl) {
+					logger.info(`Migration: Adding sourceLayer "${sourceLayer._id}" to ${showStyleBase._id}`)
+					ShowStyleBases.update(showStyleBase._id, {$push: {
+						'sourceLayers': sourceLayer
+					}})
+				}
 			})
-
-			if (!sl) {
-				logger.info(`Migration: Adding Studio sourceLayer "${sourceLayer._id}" to ${studio._id}`)
-				StudioInstallations.update(studio._id, {$push: {
-					'sourceLayers': sourceLayer
-				}})
-			}
 		}
 	}
 }
@@ -226,30 +223,27 @@ export function ensureOutputLayer (outputLayer: IOutputLayer): MigrationStepBase
 		id: `outputLayer.${outputLayer._id}`,
 		canBeRunAutomatically: true,
 		validate: () => {
-			let studio = StudioInstallations.findOne()
-			if (!studio) return 'Studio not found'
-
-			let sl = _.find(studio.outputLayers, (sl) => {
-				return sl._id === outputLayer._id
+			let validate: false | string = false
+			ShowStyleBases.find().forEach((showStyleBase) => {
+				let sl = _.find(showStyleBase.outputLayers, (sl) => {
+					return sl._id === outputLayer._id
+				})
+				if (!sl) validate = `OutputLayer ${outputLayer._id} missing in ${showStyleBase.name} (${showStyleBase._id})`
 			})
-
-			if (!sl) return `OutputLayer ${outputLayer._id} missing`
-			return false
+			return validate
 		},
 		migrate: () => {
-			let studio = StudioInstallations.findOne()
-			if (!studio) return 'Studio not found'
-
-			let sl = _.find(studio.outputLayers, (sl) => {
-				return sl._id === outputLayer._id
+			ShowStyleBases.find().forEach((showStyleBase) => {
+				let sl = _.find(showStyleBase.outputLayers, (sl) => {
+					return sl._id === outputLayer._id
+				})
+				if (!sl) {
+					logger.info(`Migration: Adding outputLayer "${outputLayer._id}" to ${showStyleBase._id}`)
+					ShowStyleBases.update(showStyleBase._id, {$push: {
+						'outputLayers': outputLayer
+					}})
+				}
 			})
-
-			if (!sl) {
-				logger.info(`Migration: Adding Studio outputLayer "${outputLayer._id}" to ${studio._id}`)
-				StudioInstallations.update(studio._id, {$push: {
-					'outputLayers': outputLayer
-				}})
-			}
 		}
 	}
 }
