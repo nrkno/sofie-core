@@ -120,7 +120,7 @@ export function determineDiffTime (config: Config): Promise<{mean: number, stdDe
 		.map((result) => {
 			return result.diff
 		})
-		if (halfResults.length < 4) throw Error('Too few results left')
+		if (halfResults.length < 4) throw Error('Too few NTP-responses')
 		let stat = standardDeviation(halfResults)
 		return stat
 	})
@@ -171,16 +171,17 @@ let updateServerTime = (retries: number = 0) => {
 
 			systemTime.diff = result.mean
 			systemTime.stdDev = result.stdDev
-			setSystemStatus('systemTime', {statusCode: StatusCode.GOOD})
+			setSystemStatus('systemTime', {statusCode: StatusCode.GOOD, messages: [`NTP-time accuracy (standard deviation): ${Math.floor(result.stdDev * 10) / 10} ms`]})
 		} else {
 			if (result.stdDev < systemTime.stdDev ) {
 				systemTime.diff = result.mean
 				systemTime.stdDev = result.stdDev
 			}
+			let message = `Unable to accuire NTP-time with good enough accuracy (standard deviation: ${Math.floor(result.stdDev * 10) / 10} ms)`
 			if (systemTime.stdDev < 200) {
-				setSystemStatus('systemTime', {statusCode: StatusCode.WARNING_MAJOR})
+				setSystemStatus('systemTime', {statusCode: StatusCode.WARNING_MAJOR, messages: [message]})
 			} else {
-				setSystemStatus('systemTime', {statusCode: StatusCode.BAD})
+				setSystemStatus('systemTime', {statusCode: StatusCode.BAD, messages: [message]})
 			}
 			Meteor.setTimeout(() => {
 				updateServerTime()
@@ -195,7 +196,7 @@ let updateServerTime = (retries: number = 0) => {
 		} else {
 
 			logger.info('Unable to set system time (' + (err.reason || err) + ')')
-			setSystemStatus('systemTime', {statusCode: StatusCode.BAD, messages: [err.toString()]})
+			setSystemStatus('systemTime', {statusCode: StatusCode.BAD, messages: [`Error message: ${err.toString()}`]})
 		}
 	})
 }

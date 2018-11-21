@@ -194,7 +194,7 @@ function collectMesages ( statusObj: StatusResponse): Array<string> {
 	if (statusObj.checks) {
 		_.each(statusObj.checks, (check: CheckObj) => {
 
-			if (check.errors) {
+			if (check._status !== StatusCode.GOOD && check.errors) {
 				_.each(check.errors, (errMsg) => {
 					allMessages.push(`check ${check.description}: ${errMsg}`)
 				})
