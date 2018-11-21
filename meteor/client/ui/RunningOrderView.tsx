@@ -1439,7 +1439,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 						</ErrorBoundary>
 						<ErrorBoundary>
 							{ this.state.studioMode &&
-								<Prompt when={this.props.runningOrder.active} message={t('This running order is now active. Are you sure you want to exit this screen?')} />
+								<Prompt when={this.props.runningOrder.active || false} message={t('This running order is now active. Are you sure you want to exit this screen?')} />
 							}
 						</ErrorBoundary>
 						<ErrorBoundary>
