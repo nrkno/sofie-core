@@ -21,8 +21,12 @@ setMeteorMethods({
 		let token = pd.token
 		logger.info('debug_roMock3')
 
-		Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, id, token,
-			new MosString128('SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-BE80889DAE999E83'), true)
+		try {
+			Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, id, token,
+				new MosString128('SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-BE80889DAE999E83'), true)
+		} catch (e) {
+			logger.info('Previous ro not found')
+		}
 		//
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, id, token,
 			{

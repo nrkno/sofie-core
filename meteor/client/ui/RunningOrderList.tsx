@@ -168,29 +168,31 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 				</p>
 				<div>
 					{
-						this.state.systemStatus ? [
-							<div>
-								{t('status')}: {this.state.systemStatus.status} / {this.state.systemStatus._internal.statusCodeString}
-							</div>,
-							<div>
-								{
-									this.state.systemStatus._internal.messages.length ?
-										<div>
-											{t('Status messages:')}
-											<ul>
-												{_.map(this.state.systemStatus._internal.messages, (message, i) => {
-													return (
-														<li key={i}>
-															{message}
-														</li>
-													)
-												})}
-											</ul>
-										</div> :
-									null
-								}
-							</div>
-						] : null
+						this.state.systemStatus ?
+							<React.Fragment>
+								<div>
+									{t('status')}: {this.state.systemStatus.status} / {this.state.systemStatus._internal.statusCodeString}
+								</div>
+								<div>
+									{
+										this.state.systemStatus._internal.messages.length ?
+											<div>
+												{t('Status messages:')}
+												<ul>
+													{_.map(this.state.systemStatus._internal.messages, (message, i) => {
+														return (
+															<li key={i}>
+																{message}
+															</li>
+														)
+													})}
+												</ul>
+											</div> :
+										null
+									}
+								</div>
+							</React.Fragment>
+							: null
 					}
 				</div>
 			</div>

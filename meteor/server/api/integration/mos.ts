@@ -580,7 +580,7 @@ export namespace MosIntegration {
 	}
 	export function mosRoDelete (id, token, runningOrderId: MosString128, force?: boolean) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		logger.info('mosRoDelete ' + runningOrderId)
+		logger.info('mosRoDelete ' + runningOrderId.toString())
 
 		let ro = getRO(runningOrderId)
 		if (!isAvailableForMOS(ro)) return

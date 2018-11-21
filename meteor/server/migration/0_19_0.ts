@@ -15,6 +15,7 @@ import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyles } from './deprecatedDataTypes/0_18_0'
 import { Random } from 'meteor/random'
+import { RunningOrders } from '../../lib/collections/RunningOrders';
 
 /**
  * This file contains system specific migration steps.
@@ -189,6 +190,55 @@ addMigrationSteps( '0.19.0', [
 		}
 	},
 	ensureCollectionProperty('ShowStyleVariants', {}, 'config', []),
+
+	{ // Ensure rundowns have showStyleBaseId and showStyleVariandId set
+		id: 'runningOrders have showStyleBaseId and showStyleVariantId',
+		canBeRunAutomatically: true,
+		validate: () => {
+			const ros = RunningOrders.find({
+				$or: [
+					{ showStyleBaseId: { $exists: false } },
+					{ showStyleVariantId: { $exists: false } }
+				]
+			}).fetch()
+			if (ros.length > 0) return 'Running orders need to be migrated to new ShowStyleBase and ShowStyleVariant'
+			return false
+		},
+		migrate: () => {
+			const ros = RunningOrders.find({
+				$or: [
+					{ showStyleBaseId: { $exists: false } },
+					{ showStyleVariantId: { $exists: false } }
+				]
+			}).fetch()
+
+			let fail: string | undefined = undefined
+
+			ros.forEach((item) => {
+				let showStyleBase = ShowStyleBases.findOne((item as any).showStyleId) || ShowStyleBases.findOne('show0') || ShowStyleBases.findOne()
+				if (showStyleBase) {
+					let showStyleVariant = ShowStyleVariants.findOne({
+						showStyleBaseId: showStyleBase._id
+					})
+
+					if (showStyleVariant) {
+						logger.info(`Migration: Switch RunningOrder "${item._id}" from showStyle to showStyleBase and showStyleVariant`)
+
+						RunningOrders.update(item._id, {
+							$set: {
+								showStyleBaseId: showStyleBase._id,
+								showStyleVariantId: showStyleVariant._id
+							}
+						})
+					} else {
+						fail = `Migrating RO "${item._id}" failed, because a suitable showStyleVariant could not be found.`
+					}
+				} else {
+					fail = `Migrating RO "${item._id}" failed, because a suitable showStyleBase could not be found.`
+				}
+			})
+		}
+	},
 
 	ensureCollectionProperty('StudioInstallations', {}, 'settings', {}),
 	ensureCollectionProperty('StudioInstallations', {}, 'defaultShowStyleVariant', null, undefined, 'Default ShowStyleVariant',
