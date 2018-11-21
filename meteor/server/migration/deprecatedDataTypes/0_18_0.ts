@@ -1,11 +1,5 @@
 import { Mongo } from 'meteor/mongo'
-import {
-	ITestToolsConfig,
-	IStudioRuntimeArgumentsItem
-} from '../../../lib/collections/StudioInstallations'
 import { TransformedCollection } from '../../../lib/typings/meteor'
-import { LookaheadMode } from '../../../lib/api/playout'
-import { ISourceLayerBase, IOutputLayerBase } from '../../../lib/collections/ShowStyleBases'
 
 // lib/collections/ShowStyles.ts
 export interface TemplateMappings {
@@ -14,10 +8,6 @@ export interface TemplateMappings {
 export interface ShowStyle {
 	_id: string
 	name: string
-	/** Override studio-level source-layer properties (UI name, rank) */
-	sourceLayerOverrides?: Array<ISourceLayerBase>
-	/** Override studio-level output-layer properties (UI name, rank) */
-	outputLayerOverrides?: Array<IOutputLayerBase>
 	/** Map a template name to a runtime function? */
 	templateMappings: TemplateMappings | never[]
 	/** The name of the template to be run for the baseline state when the running order is activated */

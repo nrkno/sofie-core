@@ -4,7 +4,7 @@ import {
 	ensureStudioConfig,
 	ensureDeviceVersion
 } from './lib'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
 import {
 	DeviceType as PlayoutDeviceType,
 	MappingHyperdeck,
@@ -25,7 +25,6 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../logging'
 import { literal } from '../../lib/lib'
 import { MappingExt } from '../../lib/collections/StudioInstallations'
-import { LookaheadMode } from '../../lib/api/playout'
 
 /**
  * This file contains system specific migration steps.

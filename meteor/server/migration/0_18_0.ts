@@ -5,7 +5,7 @@ import {
 	ensureDeviceVersion,
 	removeMapping
 } from './lib'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
 import {
 	DeviceType as PlayoutDeviceType,
 	MappingPanasonicPtz,
@@ -17,14 +17,12 @@ import * as _ from 'underscore'
 import {
 	PeripheralDevices,
 	PlayoutDeviceSettings,
-	PlayoutDeviceSettingsDeviceHyperdeck,
-	PlayoutDeviceSettingsDevicePanasonicPTZ
+	PlayoutDeviceSettingsDevicePharos
 } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../logging'
 import { literal } from '../../lib/lib'
 import { MappingExt, StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { LookaheadMode } from '../../lib/api/playout'
 
 // 0.18.0: Release 4
 addMigrationSteps( '0.18.0', [

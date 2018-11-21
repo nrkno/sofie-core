@@ -6,7 +6,8 @@ import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/Segm
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { ISourceLayer, ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 
 export namespace reactiveData {
 	export const getRRunningOrderId = ReactiveDataHelper.memoizeRVar(

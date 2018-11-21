@@ -1,3 +1,4 @@
+import { MigrationStepInput } from 'tv-automation-sofie-blueprints-integration'
 
 export enum MigrationMethods {
 	'getMigrationStatus' 	= 'migration.getMigrationStatus',
@@ -27,23 +28,6 @@ export interface GetMigrationStatusResultMigrationNeeded extends GetMigrationSta
 		ignoredStepCount: number
 		partialMigration: boolean
 	}
-}
-
-export interface MigrationStepInput {
-	stepId?: string // automatically filled in later
-	label: string
-	description?: string
-	inputType: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch' | null // EditAttribute types, null = dont display edit field
-	attribute: string | null
-	defaultValue?: any
-}
-export interface MigrationStepInputResult {
-	stepId: string
-	attribute: string
-	value: any
-}
-export interface MigrationStepInputFilteredResult {
-	[attribute: string]: any
 }
 
 export interface RunMigrationResult {

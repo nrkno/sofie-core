@@ -8,7 +8,7 @@ import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { RundownUtils } from '../../lib/rundown'
-import { ISourceLayer, IOutputLayer } from '../../../lib/collections/ShowStyleBases'
+import { ISourceLayer, IOutputLayer } from 'tv-automation-sofie-blueprints-integration'
 
 export interface IAdLibListItem {
 	_id: string,

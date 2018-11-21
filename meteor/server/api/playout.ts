@@ -48,11 +48,10 @@ import { logger } from '../logging'
 import { PeripheralDevice,PeripheralDevices,PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { IMOSROFullStory } from 'mos-connection'
-import { getSliGroupId, getSlGroupId, getSlFirstObjectId, getSliFirstObjectId } from 'tv-automation-sofie-blueprints-integration'
-import { LookaheadMode } from '../../lib/api/playout'
+import { getSliGroupId, getSlGroupId, getSlFirstObjectId, getSliFirstObjectId, IConfigItem, LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
 import { loadBlueprints, getBaselineContext, postProcessSegmentLineAdLibItems, postProcessSegmentLineBaselineItems } from './blueprints'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
-import { StudioInstallations, StudioInstallation, IConfigItem } from '../../lib/collections/StudioInstallations'
+import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { triggerExternalMessage } from './externalMessage'
@@ -2211,8 +2210,8 @@ function transformBaselineItemsIntoTimeline (items: RunningOrderBaselineItem[]):
 interface TransformTransitionProps {
 	allowed: boolean
 	preroll?: number
-	transitionPreroll?: number
-	transitionKeepalive?: number
+	transitionPreroll?: number | null
+	transitionKeepalive?: number | null
 }
 
 function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjClasses: string[], segmentLineGroup?: TimelineObj, transitionProps?: TransformTransitionProps, holdState?: RunningOrderHoldState, showHoldExcept?: boolean): Array<TimelineObj> {

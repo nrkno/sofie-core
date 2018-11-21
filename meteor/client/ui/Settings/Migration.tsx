@@ -10,10 +10,12 @@ import {
 	MigrationMethods,
 	GetMigrationStatusResultMigrationNeeded,
 	GetMigrationStatusResult,
-	MigrationStepInput,
-	MigrationStepInputResult,
 	RunMigrationResult
 } from '../../../lib/api/migration'
+import {
+	MigrationStepInput,
+	MigrationStepInputResult
+} from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 

@@ -7,7 +7,8 @@ import { Segment } from './collections/Segments'
 import { SegmentLine, SegmentLines } from './collections/SegmentLines'
 import { RunningOrder } from './collections/RunningOrders'
 import { SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration'
-import { IOutputLayer, ISourceLayer, ShowStyleBase } from './collections/ShowStyleBases'
+import { ShowStyleBase } from './collections/ShowStyleBases'
+import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 
 export const DEFAULT_DISPLAY_DURATION = 3000
 

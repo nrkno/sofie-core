@@ -40,10 +40,3 @@ export namespace PlayoutAPI {
 		'userRoTake' = 'playout.userRoTake',
 	}
 }
-
-export enum LookaheadMode {
-	NONE = 0,
-	PRELOAD = 1,
-	RETAIN = 2,
-	WHEN_CLEAR = 3,
-}

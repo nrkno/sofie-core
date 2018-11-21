@@ -6,9 +6,9 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
-import { ShowStyleBase, ShowStyleBases, ISourceLayer, IOutputLayer, HotkeyDefinition } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBases, HotkeyDefinition } from '../../../lib/collections/ShowStyleBases'
 
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, ISourceLayer, IOutputLayer } from 'tv-automation-sofie-blueprints-integration'
 import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'

@@ -18,7 +18,7 @@ import {
 	DeviceType as PlayoutDeviceType
 } from 'timeline-state-resolver-types'
 import { getHash } from '../lib'
-import { LookaheadMode } from '../../lib/api/playout'
+import { LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
 import * as request from 'request'
 import { promisify } from 'util'
 
