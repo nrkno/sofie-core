@@ -102,18 +102,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							<span className='mdfx'></span>
 						</div>
 					</label>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							{t('Blueprint ID')}
+					<label className='field'>
+						{t('Blueprint ID')}
+						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute='_id'
 								obj={blueprint}
 								type='text'
 								collection={Blueprints}
-								className='input text-input input-l'></EditAttribute>
-						</label>
-					</div>
+								className='mdinput'></EditAttribute>
+							<span className='mdfx'></span>
+						</div>
+					</label>
 					<div className='mod mvs mhs'>
 						<p>{t('Version')}: {blueprint.version}</p>
 					</div>
