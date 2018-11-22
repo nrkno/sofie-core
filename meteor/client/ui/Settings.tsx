@@ -22,6 +22,7 @@ import StudioSettings from './Settings/StudioSettings'
 import DeviceSettings from './Settings/DeviceSettings'
 import ShowStyleSettings from './Settings/ShowStyleBaseSettings'
 import RestoreBackup from './Settings/RestoreBackup'
+import BlueprintSettings from './Settings/BlueprintSettings'
 
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
@@ -213,6 +214,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
 									<h3>{blueprint.name || t('Unnamed blueprint')}</h3>
+									<p>{t('Version')} {blueprint.version}</p>
 								</div>
 								<hr className='vsubtle man' />
 							</NavLink>
@@ -289,6 +291,7 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 									<Route path='/settings/studio/:studioId' component={StudioSettings} />
 									<Route path='/settings/showStyleBase/:showStyleBaseId' component={ShowStyleSettings} />
 									<Route path='/settings/peripheralDevice/:deviceId' component={DeviceSettings} />
+									<Route path='/settings/blueprint/:blueprintId' component={BlueprintSettings} />
 									<Route path='/settings/tools/restore' component={RestoreBackup} />
 									<Route path='/settings/migration' component={MigrationView} />
 									<Redirect to='/settings' />
