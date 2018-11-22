@@ -175,7 +175,6 @@ addMigrationSteps( '0.19.0', [
 		},
 		migrate: () => {
 			const si = StudioInstallations.find().fetch()
-			debugger
 			let result: string | undefined = undefined
 			si.forEach((siItem) => {
 				if ((siItem as any).runtimeArguments) {
@@ -197,9 +196,7 @@ addMigrationSteps( '0.19.0', [
 							result = `Default Show Style Variant "${defaultShowStyleVariant}" Base "${ssv.showStyleBaseId}" not found`
 							return
 						}
-						ssb.runtimeArguments = ssb.runtimeArguments || []
-
-						debugger
+						ssb.runtimeArguments = ssb.runtimeArguments || []; // HAHA: typeScript fails on this, thinking its a function call without the semicolon
 
 						(siItem as any).runtimeArguments.forEach((item) => {
 							const bItem: IBlueprintRuntimeArgumentsItem = item

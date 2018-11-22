@@ -14,7 +14,8 @@ export function insertShowStyleBase (): string {
 		blueprintId: '',
 		outputLayers: [],
 		sourceLayers: [],
-		config: []
+		config: [],
+		runtimeArguments: []
 	}))
 	insertShowStyleVariant(id, 'Default')
 	return id
