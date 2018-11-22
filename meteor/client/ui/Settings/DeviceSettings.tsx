@@ -836,7 +836,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 
 		return ([
 			<tr className='hl' key={'header'}>
-				<th>DeviceId</th>
+				<th>Device ID</th>
 				<th>Primary ID</th>
 				<th>Host</th>
 				<th>Secondary ID</th>
@@ -845,9 +845,10 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 			</tr>
 		].concat(
 			_.map(settings.devices, (device: MosDeviceSettingsDevice, deviceId) => {
-				return (
-					!this.isItemEdited(deviceId) ?
-					<tr key={deviceId}>
+				return <React.Fragment>
+					<tr key={deviceId} className={ClassNames({
+						'hl': this.isItemEdited(deviceId)
+					})}>
 						<th className='settings-studio-device__name c1'>
 							{deviceId}
 						</th>
@@ -871,81 +872,83 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 								<FontAwesomeIcon icon={faTrash} />
 							</button>
 						</td>
-					</tr> :
-					<tr className='expando-details hl' key={deviceId + '-details'}>
-						<td colSpan={6}>
-							<div>
-								<div className='mod mvs mhs'>
-									<label className='field'>
-										{t('Device ID')}
-										<EditAttribute
-											modifiedClassName='bghl'
-											attribute={'settings.devices' }
-											overrideDisplayValue={deviceId }
-											obj={this.props.device}
-											type='text'
-											collection={PeripheralDevices}
-											updateFunction={this.updateDeviceId}
-											className='input text-input input-l'></EditAttribute>
-									</label>
-								</div>
-								<div className='mod mvs mhs'>
-									<label className='field'>
-										{t('Primary ID (News Room System MOS ID)')}
-										<EditAttribute
-											modifiedClassName='bghl'
-											attribute={'settings.devices.' + deviceId + '.primary.id' }
-											obj={this.props.device}
-											type='text'
-											collection={PeripheralDevices}
-											className='input text-input input-l'></EditAttribute>
-									</label>
-								</div>
-								<div className='mod mvs mhs'>
-									<label className='field'>
-										{t('Primary Host (IP or Hostname)')}
-										<EditAttribute
-											modifiedClassName='bghl'
-											attribute={'settings.devices.' + deviceId + '.primary.host' }
-											obj={this.props.device}
-											type='text'
-											collection={PeripheralDevices}
-											className='input text-input input-l'></EditAttribute>
-									</label>
-								</div>
-								<div className='mod mvs mhs'>
-									<label className='field'>
-										{t('Secondary ID (News Room System MOS ID)')}
-										<EditAttribute
-											modifiedClassName='bghl'
-											attribute={'settings.devices.' + deviceId + '.secondary.id' }
-											obj={this.props.device}
-											type='text'
-											collection={PeripheralDevices}
-											className='input text-input input-l'></EditAttribute>
-									</label>
-								</div>
-								<div className='mod mvs mhs'>
-									<label className='field'>
-										{t('Secondary Host (IP Address or Hostname)')}
-										<EditAttribute
-											modifiedClassName='bghl'
-											attribute={'settings.devices.' + deviceId + '.secondary.host' }
-											obj={this.props.device}
-											type='text'
-											collection={PeripheralDevices}
-											className='input text-input input-l'></EditAttribute>
-									</label>
-								</div>
-							</div>
-							<div className='mod alright'>
-								<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(deviceId)}>
-									<FontAwesomeIcon icon={faCheck} />
-								</button>
-							</div>
-						</td>
 					</tr>
-				)
+					{ this.isItemEdited(deviceId) &&
+						<tr className='expando-details hl' key={deviceId + '-details'}>
+							<td colSpan={6}>
+								<div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Device ID')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'settings.devices' }
+												overrideDisplayValue={deviceId }
+												obj={this.props.device}
+												type='text'
+												collection={PeripheralDevices}
+												updateFunction={this.updateDeviceId}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Primary ID (News Room System MOS ID)')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'settings.devices.' + deviceId + '.primary.id' }
+												obj={this.props.device}
+												type='text'
+												collection={PeripheralDevices}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Primary Host (IP or Hostname)')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'settings.devices.' + deviceId + '.primary.host' }
+												obj={this.props.device}
+												type='text'
+												collection={PeripheralDevices}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Secondary ID (News Room System MOS ID)')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'settings.devices.' + deviceId + '.secondary.id' }
+												obj={this.props.device}
+												type='text'
+												collection={PeripheralDevices}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Secondary Host (IP Address or Hostname)')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'settings.devices.' + deviceId + '.secondary.host' }
+												obj={this.props.device}
+												type='text'
+												collection={PeripheralDevices}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+								</div>
+								<div className='mod alright'>
+									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(deviceId)}>
+										<FontAwesomeIcon icon={faCheck} />
+									</button>
+								</div>
+							</td>
+						</tr>
+					}
+				</React.Fragment>
 			})
 		))
 	}
