@@ -80,7 +80,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	getOptionBlueprints () {
 		return _.map(Blueprints.find().fetch(), (blueprint) => {
 			return {
-				name: blueprint.name || blueprint._id,
+				name: blueprint.name ? blueprint.name + ` (${blueprint._id})` : blueprint._id,
 				value: blueprint._id
 			}
 		})

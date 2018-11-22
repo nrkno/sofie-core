@@ -133,9 +133,9 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 	onDeleteShowStyleBase (item: ShowStyleBase) {
 		const { t } = this.props
 		doModalDialog({
-			title: t('Delete this show-style?'),
+			title: t('Delete this show style?'),
 			message: [
-				<p>{t('Are you sure you want to delete the show-style "{{showStyleId}}"?', { showStyleId: item && item.name })}</p>
+				<p>{t('Are you sure you want to delete the show style "{{showStyleId}}"?', { showStyleId: item && item.name })}</p>
 			],
 			onAccept: () => {
 				callMethod('ModalDialog', ShowStylesAPI.methods.removeShowStyleBase, item._id)
@@ -175,7 +175,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					<button className='action-btn right' onClick={(e) => this.onAddShowStyleBase()}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
-					{t('Show-styles')}
+					{t('Show styles')}
 				</h2>
 				<hr className='vsubtle man' />
 				{
@@ -186,7 +186,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteShowStyleBase(showStyleBase) }}>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
-									<h3>{showStyleBase.name || t('Unnamed show-style')}</h3>
+									<h3>{showStyleBase.name || t('Unnamed show style')}</h3>
 									{ showStyleBase.sourceLayers && showStyleBase.outputLayers &&
 										<p>
 											{t('Source layers')}: {showStyleBase.sourceLayers.length.toString()} {t('Output channels')}: {showStyleBase.outputLayers.length.toString()}

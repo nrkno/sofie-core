@@ -10,7 +10,7 @@ import { literal } from '../../lib/lib'
 export function insertShowStyleBase (): string {
 	let id = ShowStyleBases.insert(literal<ShowStyleBase>({
 		_id: Random.id(),
-		name: 'New show-style',
+		name: 'New show style',
 		blueprintId: '',
 		outputLayers: [],
 		sourceLayers: [],
