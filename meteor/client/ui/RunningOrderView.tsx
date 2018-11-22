@@ -1164,8 +1164,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			}
 		}
 
-		if (typeof this.props.studioInstallation !== typeof prevProps.studioInstallation ||
-			this.props.studioInstallation && this.props.studioInstallation.runtimeArguments) {
+		if (typeof this.props.showStyleBase !== typeof prevProps.showStyleBase ||
+			this.props.showStyleBase && this.props.showStyleBase.runtimeArguments) {
 			this.refreshHotkeys()
 		}
 	}
@@ -1192,8 +1192,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 		this.usedArgumentKeys.length = 0
 
-		if (this.props.studioInstallation) {
-			_.each(this.props.studioInstallation.runtimeArguments, (i) => {
+		if (this.props.showStyleBase) {
+			_.each(this.props.showStyleBase.runtimeArguments, (i) => {
 				const combos = i.hotkeys.split(',')
 				_.each(combos, (combo) => {
 					const handler = (e: KeyboardEvent) => {

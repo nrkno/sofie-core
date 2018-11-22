@@ -11,11 +11,11 @@ import {
 } from 'timeline-state-resolver-types'
 import { LookaheadMode } from '../../lib/api/playout'
 import { ensureCollectionProperty, ensureStudioConfig } from './lib'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBases, IBlueprintRuntimeArgumentsItem } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyles } from './deprecatedDataTypes/0_18_0'
 import { Random } from 'meteor/random'
-import { RunningOrders } from '../../lib/collections/RunningOrders';
+import { RunningOrders } from '../../lib/collections/RunningOrders'
 
 /**
  * This file contains system specific migration steps.
@@ -159,7 +159,78 @@ addMigrationSteps( '0.19.0', [
 	ensureCollectionProperty('ShowStyleBases', {}, 'outputLayers', []),
 	ensureCollectionProperty('ShowStyleBases', {}, 'sourceLayers', []),
 	ensureCollectionProperty('ShowStyleBases', {}, 'config', []),
+	ensureCollectionProperty('ShowStyleBases', {}, 'runtimeArguments', []),
+	{
+		id: 'Move runningOrderArguments from StudioInstallation into ShowStyleBase',
+		canBeRunAutomatically: true,
+		validate: () => {
+			const si = StudioInstallations.find().fetch()
+			let result: string | boolean = false
+			si.forEach((siItem) => {
+				if ((siItem as any).runtimeArguments && (siItem as any).runtimeArguments.length > 0) {
+					result = `Running Order Arguments set in a Studio Installation "${siItem._id}"`
+				}
+			})
+			return result
+		},
+		migrate: () => {
+			const si = StudioInstallations.find().fetch()
+			debugger
+			let result: string | undefined = undefined
+			si.forEach((siItem) => {
+				if ((siItem as any).runtimeArguments) {
+					if ((siItem as any).runtimeArguments.length > 0) {
+						const defaultShowStyleVariant = siItem.defaultShowStyleVariant
+						if (!defaultShowStyleVariant) {
+							result = `Default show style variant not set in "${siItem._id}"`
+							return
+						}
 
+						const ssv = ShowStyleVariants.findOne(defaultShowStyleVariant)
+						if (!ssv) {
+							result = `Default Show Style Variant "${defaultShowStyleVariant}" for Studio "${siItem._id}" not found`
+							return
+						}
+
+						const ssb = ShowStyleBases.findOne(ssv.showStyleBaseId)
+						if (!ssb) {
+							result = `Default Show Style Variant "${defaultShowStyleVariant}" Base "${ssv.showStyleBaseId}" not found`
+							return
+						}
+						ssb.runtimeArguments = ssb.runtimeArguments || []
+
+						debugger
+
+						(siItem as any).runtimeArguments.forEach((item) => {
+							const bItem: IBlueprintRuntimeArgumentsItem = item
+							const exisitng = ssb.runtimeArguments.find((ssbItem) => {
+								return ssbItem.hotkeys === item.hotkeys && ssbItem.label === item.label && ssbItem.property === item.property && ssbItem.value === item.value
+							})
+							if (!exisitng) {
+								ssb.runtimeArguments.push(item)
+							}
+						})
+
+						ShowStyleBases.update(ssb._id, {
+							$set: {
+								runtimeArguments: ssb.runtimeArguments
+							}
+						})
+					}
+
+					// No result set means no errors and the runtimeArguments can be removed from SI
+					if (!result) {
+						StudioInstallations.update(siItem._id, {
+							$unset: {
+								runtimeArguments: 1
+							}
+						})
+					}
+				}
+			})
+			return result
+		}
+	},
 	{ // Create showStyleVariant
 		id: 'showStyleVariant exists',
 		canBeRunAutomatically: true,

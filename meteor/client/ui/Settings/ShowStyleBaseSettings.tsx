@@ -6,7 +6,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
-import { ShowStyleBase, ShowStyleBases, ISourceLayer, IOutputLayer, HotkeyDefinition } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBases, ISourceLayer, IOutputLayer, HotkeyDefinition, IBlueprintRuntimeArgumentsItem } from '../../../lib/collections/ShowStyleBases'
 
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
@@ -135,6 +135,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
+						<StudioRuntimeArgumentsSettings showStyleBase={showStyleBase} />
+					</div>
+				</div>
+				<div className='row'>
+					<div className='col c12 r1-c12'>
 						<ConfigSettings item={showStyleBase}/>
 					</div>
 				</div>
@@ -158,6 +163,181 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		} else {
 			return <Spinner />
 		}
+	}
+})
+
+interface IStudioRuntimeArgumentsSettingsProps {
+	showStyleBase: ShowStyleBase
+}
+interface IStudioRuntimeArgumentsSettingsState {
+	editedItems: Array<Number>
+}
+
+const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsSettings extends React.Component<Translated<IStudioRuntimeArgumentsSettingsProps>, IStudioRuntimeArgumentsSettingsState> {
+	constructor (props: Translated<IStudioRuntimeArgumentsSettingsProps>) {
+		super(props)
+
+		this.state = {
+			editedItems: []
+		}
+	}
+	isItemEdited = (index: Number) => {
+		return this.state.editedItems.indexOf(index) >= 0
+	}
+
+	finishEditItem = (index: Number) => {
+		let i = this.state.editedItems.indexOf(index)
+		if (i >= 0) {
+			this.state.editedItems.splice(i, 1)
+			this.setState({
+				editedItems: this.state.editedItems
+			})
+		}
+	}
+
+	editItem = (index: Number) => {
+		if (this.state.editedItems.indexOf(index) < 0) {
+			this.state.editedItems.push(index)
+			this.setState({
+				editedItems: this.state.editedItems
+			})
+		}
+	}
+	onDeleteROArgument = (item: IBlueprintRuntimeArgumentsItem) => {
+		if (this.props.showStyleBase) {
+			ShowStyleBases.update(this.props.showStyleBase._id, {
+				$pull: {
+					runtimeArguments: item
+				}
+			})
+		}
+	}
+	onAddROArgument = () => {
+		const { t } = this.props
+
+		const newItem = literal<IBlueprintRuntimeArgumentsItem>({
+			property: 'new-property',
+			value: '1',
+			hotkeys: 'mod+shift+z'
+		})
+
+		ShowStyleBases.update(this.props.showStyleBase._id, {
+			$push: {
+				runtimeArguments: newItem
+			}
+		})
+	}
+	confirmDelete = (item: IBlueprintRuntimeArgumentsItem) => {
+		const { t } = this.props
+		doModalDialog({
+			title: t('Delete this item?'),
+			no: t('Cancel'),
+			onAccept: () => {
+				this.onDeleteROArgument(item)
+			},
+			message: [
+				<p>{t('Are you sure you want to delete this runtime argument "{{property}}: {{value}}"?', { property: (item && item.property), value: (item && item.value) })}</p>,
+				<p>{t('Please note: This action is irreversible!')}</p>
+			]
+		})
+	}
+	renderItems () {
+		const { t } = this.props
+		return (
+			(this.props.showStyleBase.runtimeArguments || []).map((item, index) => {
+				return <React.Fragment key={index + '_' + item.property}>
+					<tr className={ClassNames({
+						'hl': this.isItemEdited(index)
+					})}>
+						<th className='settings-studio-custom-config-table__name c2'>
+							{mousetrapHelper.shortcutLabel(item.hotkeys)}
+						</th>
+						<td className='settings-studio-custom-config-table__value c3'>
+							{item.property}
+						</td>
+						<td className='settings-studio-custom-config-table__value c3'>
+							{item.value}
+						</td>
+						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
+							<button className='action-btn' onClick={(e) => this.editItem(index)}>
+								<FontAwesomeIcon icon={faPencilAlt} />
+							</button>
+							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
+								<FontAwesomeIcon icon={faTrash} />
+							</button>
+						</td>
+					</tr>
+					{this.isItemEdited(index) &&
+						<tr className='expando-details hl'>
+							<td colSpan={4}>
+								<div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Hotkeys')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'runtimeArguments.' + index + '.hotkeys'}
+												obj={this.props.showStyleBase}
+												type='text'
+												collection={ShowStyleBases}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Property')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'runtimeArguments.' + index + '.property'}
+												obj={this.props.showStyleBase}
+												type='text'
+												collection={ShowStyleBases}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Value')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'runtimeArguments.' + index + '.value'}
+												obj={this.props.showStyleBase}
+												type='text'
+												collection={ShowStyleBases}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+								</div>
+								<div className='mod alright'>
+									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(index)}>
+										<FontAwesomeIcon icon={faCheck} />
+									</button>
+								</div>
+							</td>
+						</tr>
+					}
+				</React.Fragment>
+			})
+		)
+	}
+
+	render () {
+		const { t } = this.props
+		return (
+			<div>
+				<h3>{t('Runtime Arguments for Blueprints')}</h3>
+				<table className='expando settings-studio-custom-config-table'>
+					<tbody>
+						{this.renderItems()}
+					</tbody>
+				</table>
+				<div className='mod mhs'>
+					<button className='btn btn-primary' onClick={this.onAddROArgument}>
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
+				</div>
+			</div>
+		)
 	}
 })
 

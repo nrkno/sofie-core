@@ -94,7 +94,17 @@ export interface DBShowStyleBase {
 	config: Array<IConfigItem>
 
 	hotkeyLegend?: Array<HotkeyDefinition>
+
+	runtimeArguments?: Array<IBlueprintRuntimeArgumentsItem>
 }
+
+export interface IBlueprintRuntimeArgumentsItem {
+	label?: string
+	hotkeys: string
+	property: string
+	value: string
+}
+
 export class ShowStyleBase implements DBShowStyleBase {
 	public _id: string
 	public name: string
@@ -103,6 +113,7 @@ export class ShowStyleBase implements DBShowStyleBase {
 	public sourceLayers: Array<ISourceLayer>
 	public config: Array<IConfigItem>
 	public hotkeyLegend?: Array<HotkeyDefinition>
+	public runtimeArguments: Array<IBlueprintRuntimeArgumentsItem>
 
 	constructor (document: DBShowStyleBase) {
 		_.each(_.keys(document), (key) => {

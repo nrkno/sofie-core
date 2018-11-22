@@ -1,7 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import {
 	ITestToolsConfig,
-	IStudioRuntimeArgumentsItem
 } from '../../../lib/collections/StudioInstallations'
 import { TransformedCollection } from '../../../lib/typings/meteor'
 import { LookaheadMode } from '../../../lib/api/playout'

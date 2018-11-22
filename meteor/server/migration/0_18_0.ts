@@ -17,6 +17,7 @@ import * as _ from 'underscore'
 import {
 	PeripheralDevices,
 	PlayoutDeviceSettings,
+	PlayoutDeviceSettingsDevicePharos,
 	PlayoutDeviceSettingsDeviceHyperdeck,
 	PlayoutDeviceSettingsDevicePanasonicPTZ
 } from '../../lib/collections/PeripheralDevices'

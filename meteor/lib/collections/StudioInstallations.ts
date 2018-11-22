@@ -41,15 +41,6 @@ export interface DBStudioInstallation {
 	testToolsConfig?: ITestToolsConfig
 
 	settings: IStudioInstallationSettings
-
-	runtimeArguments?: Array<IStudioRuntimeArgumentsItem>
-}
-
-export interface IStudioRuntimeArgumentsItem {
-	label?: string
-	hotkeys: string
-	property: string
-	value: string
 }
 
 export interface IConfigItem {
@@ -78,7 +69,6 @@ export class StudioInstallation implements DBStudioInstallation {
 	public config: Array<IConfigItem>
 	public settings: IStudioInstallationSettings
 	public testToolsConfig?: ITestToolsConfig
-	public runtimeArguments: Array<IStudioRuntimeArgumentsItem>
 
 	constructor (document: DBStudioInstallation) {
 		_.each(_.keys(document), (key) => {
