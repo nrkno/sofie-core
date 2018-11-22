@@ -18,7 +18,11 @@ import {
 	MigrationStepInput,
 	MigrationStepInputResult,
 	MigrationStepInputFilteredResult,
-	MigrationStep, MigrationStepBase, ValidateCore, MigrationContextStudio
+	MigrationStep,
+	MigrationStepBase,
+	MigrationContextStudio,
+	ValidateFunctionCore,
+	MigrateFunctionCore
 } from 'tv-automation-sofie-blueprints-integration'
 import { setMeteorMethods } from '../methods'
 import { logger } from '../../lib/logging'
@@ -41,7 +45,11 @@ export const GENESIS_SYSTEM_VERSION = '0.0.0'
 /**
  * These versions are not supported anymore (breaking changes occurred after these version)
  */
-export const UNSUPPORTED_VERSIONS = [ '0.18.0']
+export const UNSUPPORTED_VERSIONS = [
+	// 0.18.0 to 0.19.0: Major refactoring, (ShowStyles was split into ShowStyleBase &
+	//    ShowStyleVariant, configs & layers wheremoved from studio to ShowStyles)
+	'0.18.0'
+]
 
 export function isVersionSupported (version: Version) {
 	let isSupported: boolean = true
@@ -148,7 +156,8 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 			if (migrationSteps[step.id] || ignoredSteps[step.id]) throw new Meteor.Error(500, `Error: MigrationStep.id must be unique: "${step.id}"`)
 
 			// Check if the step can be applied:
-			step._validateResult = step.validate(false)
+			let validate = step.validate as ValidateFunctionCore
+			step._validateResult = validate(false)
 			if (step._validateResult) {
 
 				if (step.dependOnResultFrom) {
@@ -279,13 +288,15 @@ export function runMigration (
 			})
 
 			// Run the migration script
-			if (step.migrate) {
-				step.migrate(stepInput)
+			let migrate = step.migrate as MigrateFunctionCore
+			if (migrate) {
+				migrate(stepInput)
 			}
 
 			// After migration, run the validation again
 			// Since the migration should be done by now, the validate should return true
-			let validateMessage: string | boolean = step.validate(true)
+			let validate = step.validate as ValidateFunctionCore
+			let validateMessage: string | boolean = validate(true)
 			if (validateMessage) {
 				// Something's not right
 				let msg = `Step "${step.id}": Something went wrong, validation didn't approve of the changes. The changes have been applied, but might need to be confirmed.`

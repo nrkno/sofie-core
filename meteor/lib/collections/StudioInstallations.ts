@@ -6,7 +6,8 @@ import { logger } from '../logging'
 import { ChannelFormat } from 'timeline-state-resolver-types'
 import {
 	IConfigItem,
-	BlueprintMappings, BlueprintMapping,
+	BlueprintMappings,
+	BlueprintMapping,
 	IBlueprintStudioInstallation
 } from 'tv-automation-sofie-blueprints-integration'
 

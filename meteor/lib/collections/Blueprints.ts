@@ -15,7 +15,9 @@ export interface Blueprint {
 	studioConfigManifest: ConfigManifestEntry[]
 	showStyleConfigManifest: ConfigManifestEntry[]
 
-	version: string
+	blueprintVersion: string
+	integrationVersion: string
+	TSRVersion: string
 	minimumCoreVersion: string
 }
 

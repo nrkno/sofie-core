@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { Meteor } from 'meteor/meteor'
-import { MosString128 } from 'mos-connection'
+import { MOS } from 'tv-automation-sofie-blueprints-integration'
 
 export interface RunningOrderCacheBackup {
 	type: 'runningOrderCache'
@@ -33,7 +33,7 @@ export function restoreRunningOrder (backup: RunningOrderCacheBackup) {
 
 	// Delete the existing copy, to ensure this is a clean import
 	try {
-		Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, id, token, new MosString128(roCreates[0].data.ID))
+		Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, id, token, new MOS.MosString128(roCreates[0].data.ID))
 	} catch (e) {
 		// Ignore. likely doesnt exist
 	}

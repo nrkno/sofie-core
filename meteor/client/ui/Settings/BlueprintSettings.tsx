@@ -115,7 +115,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						</label>
 					</div>
 					<div className='mod mvs mhs'>
-						<p>{t('Version')}: {blueprint.version}</p>
+						<p>{t('Blueprint Version')}: {blueprint.blueprintVersion}</p>
 					</div>
 
 					<div className='mod mvs mhs'>

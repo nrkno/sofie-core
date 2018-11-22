@@ -2,10 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { applyClassToDocument, Optional, registerCollection } from '../lib'
 import { SegmentLines, SegmentLineNote } from './SegmentLines'
-import {
-	IMOSExternalMetaData,
-	IMOSObjectStatus
-} from 'mos-connection'
+import { MOS } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrders } from './RunningOrders'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
@@ -23,8 +20,8 @@ export interface DBSegment {
 	name: string
 	number: string
 
-	metaData?: Array<IMOSExternalMetaData>
-	status?: IMOSObjectStatus
+	metaData?: Array<MOS.IMOSExternalMetaData>
+	status?: MOS.IMOSObjectStatus
 	expanded?: boolean
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
@@ -37,8 +34,8 @@ export class Segment implements DBSegment {
 	public runningOrderId: string
 	public name: string
 	public number: string
-	public metaData?: Array<IMOSExternalMetaData>
-	public status?: IMOSObjectStatus
+	public metaData?: Array<MOS.IMOSExternalMetaData>
+	public status?: MOS.IMOSObjectStatus
 	public expanded?: boolean
 	public notes?: Array<SegmentLineNote>
 

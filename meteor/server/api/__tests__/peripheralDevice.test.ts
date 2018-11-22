@@ -15,7 +15,7 @@ import {
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 
 import { getCurrentTime, literal } from '../../../lib/lib'
-import { MosString128, IMOSRunningOrderStatus, IMOSObjectStatus, MosTime, IMOSStoryStatus, IMOSItemStatus, IMOSStoryAction, IMOSItemAction, IMOSROAction, IMOSObjectAirStatus, IMOSROReadyToAir } from 'mos-connection'
+import { MOS } from 'tv-automation-sofie-blueprints-integration'
 import { xmlApiData } from '../../mockData/mosData'
 import { roId, segmentLineId, getRO } from '../integration/mos'
 import { segmentId } from '../runningOrder'
@@ -175,7 +175,7 @@ describe('peripheralDevice: MOS Basic functions', function () {
 		StubCollections.stub(SegmentLines)
 		StubCollections.stub(SegmentLineItems)
 
-		let roID = roId(new MosString128('ro0'))
+		let roID = roId(new MOS.MosString128('ro0'))
 		// Prepare database:
 		RunningOrders.insert({
 			_id: roID,
@@ -202,7 +202,7 @@ describe('peripheralDevice: MOS Basic functions', function () {
 			number: ''
 		})
 		SegmentLines.insert({
-			_id: segmentLineId(segmentID, new MosString128('segmentLine000')),
+			_id: segmentLineId(segmentID, new MOS.MosString128('segmentLine000')),
 			_rank: 0,
 			mosId: 'segmentLine000',
 			segmentId: segmentID,
@@ -210,7 +210,7 @@ describe('peripheralDevice: MOS Basic functions', function () {
 			slug: ''
 		})
 		SegmentLines.insert({
-			_id: segmentLineId(segmentID, new MosString128('segmentLine001')),
+			_id: segmentLineId(segmentID, new MOS.MosString128('segmentLine001')),
 			_rank: 1,
 			mosId: 'segmentLine001',
 			segmentId: segmentID,
@@ -233,7 +233,7 @@ describe('peripheralDevice: MOS Basic functions', function () {
 			runningOrderId: roID,
 			name: 'Earth'
 		})
-		roID = roId(new MosString128('ro1'))
+		roID = roId(new MOS.MosString128('ro1'))
 		RunningOrders.insert({
 			_id: roID,
 			mosId: 'ro1',
@@ -258,7 +258,7 @@ describe('peripheralDevice: MOS Basic functions', function () {
 			name: 'Fire'
 		})
 		RunningOrders.insert({
-			_id: roId(new MosString128('ro2')),
+			_id: roId(new MOS.MosString128('ro2')),
 			mosId: 'ro2',
 			studioInstallationId: 'studio0',
 			showStyleBaseId: 'showStyle1',
@@ -278,36 +278,36 @@ describe('peripheralDevice: MOS Basic functions', function () {
 		StubCollections.restore()
 	})
 	it('getRO', function () {
-		let ro = getRO(new MosString128('ro1'))
+		let ro = getRO(new MOS.MosString128('ro1'))
 
 		expect(ro).to.be.an('object')
 		expect(ro._id).to.be.equal('ro_ro1')
 		expect(ro.mosId).to.be.equal('ro1')
 
 		expect(() => {
-			let ro = getRO(new MosString128('unknown'))
+			let ro = getRO(new MOS.MosString128('unknown'))
 		}).to.throw()
 	})
 	it('getSegment', function () {
-		let segment = getSegment(new MosString128('ro1'), new MosString128('segment10'))
+		let segment = getSegment(new MOS.MosString128('ro1'), new MOS.MosString128('segment10'))
 
 		expect(segment).to.be.an('object')
 		expect(segment._id).to.be.equal('ro_ro1_segment10')
 		expect(segment.mosId).to.be.equal('segment10')
 
 		expect(() => {
-			let segment = getSegment(new MosString128('ro0'), new MosString128('unknown'))
+			let segment = getSegment(new MOS.MosString128('ro0'), new MOS.MosString128('unknown'))
 		}).to.throw()
 
 		expect(() => {
-			let segment = getSegment(new MosString128('unknown'), new MosString128('segment00'))
+			let segment = getSegment(new MOS.MosString128('unknown'), new MOS.MosString128('segment00'))
 		}).to.throw()
 	})
 	it('getSegmentLine', function () {
 		let segmentLine = getSegmentLine(
-			new MosString128('ro0'),
-			new MosString128('segment00'),
-			new MosString128('segmentLine000')
+			new MOS.MosString128('ro0'),
+			new MOS.MosString128('segment00'),
+			new MOS.MosString128('segmentLine000')
 		)
 
 		expect(segmentLine).to.be.an('object')
@@ -315,15 +315,15 @@ describe('peripheralDevice: MOS Basic functions', function () {
 		expect(segmentLine.mosId).to.be.equal('segmentLine000')
 
 		expect(() => {
-			let segmentLine = getSegmentLine(new MosString128('ro0'), new MosString128('segment00'), new MosString128('unknown'))
+			let segmentLine = getSegmentLine(new MOS.MosString128('ro0'), new MOS.MosString128('segment00'), new MOS.MosString128('unknown'))
 		}).to.throw()
 
 		expect(() => {
-			let segmentLine = getSegmentLine(new MosString128('ro0'), new MosString128('unknown'), new MosString128('segmentLine000'))
+			let segmentLine = getSegmentLine(new MOS.MosString128('ro0'), new MOS.MosString128('unknown'), new MOS.MosString128('segmentLine000'))
 		}).to.throw()
 
 		expect(() => {
-			let segmentLine = getSegmentLine(new MosString128('unknown'), new MosString128('segment00'), new MosString128('segmentLine000'))
+			let segmentLine = getSegmentLine(new MOS.MosString128('unknown'), new MOS.MosString128('segment00'), new MOS.MosString128('segmentLine000'))
 		}).to.throw()
 	})
 	it('convertToSegment', function () {
@@ -369,7 +369,7 @@ describe('peripheralDevice: MOS Basic functions', function () {
 		expect(dbSegmentLines[0]._id).to.equal( segmentLineId(dbSegment._id, story.Items[0].ID))
 	})
 	it('removeSegment', function () {
-		let dbSegment = Segments.findOne(segmentId('ro_ro0','',  new MosString128('segment00')))
+		let dbSegment = Segments.findOne(segmentId('ro_ro0','',  new MOS.MosString128('segment00')))
 		expect(dbSegment).to.be.an('object')
 		expect(dbSegment.mosId).to.equal('segment00')
 		expect(dbSegment.runningOrderId).to.equal('ro_ro0')
@@ -385,7 +385,7 @@ describe('peripheralDevice: MOS Basic functions', function () {
 		).to.have.length(0)
 	})
 	it('fetchBefore & fetchAfter', function () {
-		let segment00 = Segments.findOne(segmentId('ro_ro0','',  new MosString128('segment00')))
+		let segment00 = Segments.findOne(segmentId('ro_ro0','',  new MOS.MosString128('segment00')))
 		let segment00Before = fetchBefore(Segments, { runningOrderId: segment00.runningOrderId}, segment00._rank)
 		let segment00After = fetchAfter(Segments, { runningOrderId: segment00.runningOrderId}, segment00._rank)
 
@@ -393,7 +393,7 @@ describe('peripheralDevice: MOS Basic functions', function () {
 		expect(segment00After).to.be.an('object')
 		expect(segment00After.mosId).to.equal('segment01')
 
-		let segment01 = Segments.findOne(segmentId('ro_ro0','',  new MosString128('segment01')))
+		let segment01 = Segments.findOne(segmentId('ro_ro0','',  new MOS.MosString128('segment01')))
 		let segment01Before = fetchBefore(Segments, { runningOrderId: segment01.runningOrderId}, segment01._rank)
 		let segment01After = fetchAfter(Segments, { runningOrderId: segment01.runningOrderId}, segment01._rank)
 
@@ -402,7 +402,7 @@ describe('peripheralDevice: MOS Basic functions', function () {
 		expect(segment01After).to.be.an('object')
 		expect(segment01After.mosId).to.equal('segment02')
 
-		let segment02 = Segments.findOne(segmentId('ro_ro0','',  new MosString128('segment02')))
+		let segment02 = Segments.findOne(segmentId('ro_ro0','',  new MOS.MosString128('segment02')))
 		let segment02Before = fetchBefore(Segments, { runningOrderId: segment02.runningOrderId}, segment02._rank)
 		let segment02After = fetchAfter(Segments, { runningOrderId: segment02.runningOrderId}, segment02._rank)
 
@@ -518,20 +518,20 @@ describe('peripheralDevice: MOS API methods', function () {
 	it('mosRoStatus', function () {
 		// Test data:
 		let ro = xmlApiData.roCreate
-		let status0: IMOSRunningOrderStatus = {
+		let status0: MOS.IMOSRunningOrderStatus = {
 			ID: ro.ID,
-			Status: IMOSObjectStatus.MANUAL_CTRL,
-			Time: new MosTime('2009-04-11T14:13:53')
+			Status: MOS.IMOSObjectStatus.MANUAL_CTRL,
+			Time: new MOS.MosTime('2009-04-11T14:13:53')
 		}
-		let status1: IMOSRunningOrderStatus = {
+		let status1: MOS.IMOSRunningOrderStatus = {
 			ID: ro.ID,
-			Status: IMOSObjectStatus.READY,
-			Time: new MosTime('2009-04-11T14:13:53')
+			Status: MOS.IMOSObjectStatus.READY,
+			Time: new MOS.MosTime('2009-04-11T14:13:53')
 		}
-		let statusUnknown: IMOSRunningOrderStatus = {
-			ID: new MosString128('unknown'),
-			Status: IMOSObjectStatus.MOVED,
-			Time: new MosTime('2009-04-11T14:13:53')
+		let statusUnknown: MOS.IMOSRunningOrderStatus = {
+			ID: new MOS.MosString128('unknown'),
+			Status: MOS.IMOSObjectStatus.MOVED,
+			Time: new MOS.MosTime('2009-04-11T14:13:53')
 		}
 		// first create the ro:
 		ServerPeripheralDeviceAPI.mosRoCreate(ro)
@@ -549,29 +549,29 @@ describe('peripheralDevice: MOS API methods', function () {
 		// Test data:
 		let ro = xmlApiData.roCreate
 		let story = ro.Stories[0]
-		let status0: IMOSStoryStatus = {
+		let status0: MOS.IMOSStoryStatus = {
 			ID: story.ID,
 			RunningOrderId: ro.ID,
-			Status: IMOSObjectStatus.MANUAL_CTRL,
-			Time: new MosTime('2009-04-11T14:13:53')
+			Status: MOS.IMOSObjectStatus.MANUAL_CTRL,
+			Time: new MOS.MosTime('2009-04-11T14:13:53')
 		}
-		let status1: IMOSStoryStatus = {
+		let status1: MOS.IMOSStoryStatus = {
 			ID: story.ID,
 			RunningOrderId: ro.ID,
-			Status: IMOSObjectStatus.READY,
-			Time: new MosTime('2009-04-11T14:13:53')
+			Status: MOS.IMOSObjectStatus.READY,
+			Time: new MOS.MosTime('2009-04-11T14:13:53')
 		}
-		let statusUnknown0: IMOSStoryStatus = {
-			ID: new MosString128('unknown'),
+		let statusUnknown0: MOS.IMOSStoryStatus = {
+			ID: new MOS.MosString128('unknown'),
 			RunningOrderId: ro.ID,
-			Status: IMOSObjectStatus.NOT_READY,
-			Time: new MosTime('2009-04-11T14:13:53')
+			Status: MOS.IMOSObjectStatus.NOT_READY,
+			Time: new MOS.MosTime('2009-04-11T14:13:53')
 		}
-		let statusUnknown1: IMOSStoryStatus = {
+		let statusUnknown1: MOS.IMOSStoryStatus = {
 			ID: story.ID,
-			RunningOrderId: new MosString128('unknown'),
-			Status: IMOSObjectStatus.UPDATED,
-			Time: new MosTime('2009-04-11T14:13:53')
+			RunningOrderId: new MOS.MosString128('unknown'),
+			Status: MOS.IMOSObjectStatus.UPDATED,
+			Time: new MOS.MosTime('2009-04-11T14:13:53')
 		}
 		let segmentID = segmentId(roId(ro.ID), story.ID)
 		// first create the ro:
@@ -596,40 +596,40 @@ describe('peripheralDevice: MOS API methods', function () {
 		let story = ro.Stories[0]
 		let item = story.Items[0]
 
-		let status0: IMOSItemStatus = {
+		let status0: MOS.IMOSItemStatus = {
 			ID: item.ID,
 			StoryId: story.ID,
 			RunningOrderId: ro.ID,
-			Status: IMOSObjectStatus.MANUAL_CTRL,
-			Time: new MosTime('2009-04-11T14:13:53')
+			Status: MOS.IMOSObjectStatus.MANUAL_CTRL,
+			Time: new MOS.MosTime('2009-04-11T14:13:53')
 		}
-		let status1: IMOSItemStatus = {
+		let status1: MOS.IMOSItemStatus = {
 			ID: item.ID,
 			RunningOrderId: ro.ID,
 			StoryId: story.ID,
-			Status: IMOSObjectStatus.READY,
-			Time: new MosTime('2009-04-11T14:13:53')
+			Status: MOS.IMOSObjectStatus.READY,
+			Time: new MOS.MosTime('2009-04-11T14:13:53')
 		}
-		let statusUnknown0: IMOSItemStatus = {
-			ID: new MosString128('unknown'),
+		let statusUnknown0: MOS.IMOSItemStatus = {
+			ID: new MOS.MosString128('unknown'),
 			RunningOrderId: ro.ID,
 			StoryId: story.ID,
-			Status: IMOSObjectStatus.NOT_READY,
-			Time: new MosTime('2009-04-11T14:13:53')
+			Status: MOS.IMOSObjectStatus.NOT_READY,
+			Time: new MOS.MosTime('2009-04-11T14:13:53')
 		}
-		let statusUnknown1: IMOSItemStatus = {
+		let statusUnknown1: MOS.IMOSItemStatus = {
 			ID: item.ID,
-			StoryId: new MosString128('unknown'),
+			StoryId: new MOS.MosString128('unknown'),
 			RunningOrderId: ro.ID,
-			Status: IMOSObjectStatus.UPDATED,
-			Time: new MosTime('2009-04-11T14:13:53')
+			Status: MOS.IMOSObjectStatus.UPDATED,
+			Time: new MOS.MosTime('2009-04-11T14:13:53')
 		}
-		let statusUnknown2: IMOSItemStatus = {
+		let statusUnknown2: MOS.IMOSItemStatus = {
 			ID: item.ID,
 			StoryId: story.ID,
-			RunningOrderId: new MosString128('unknown'),
-			Status: IMOSObjectStatus.BUSY,
-			Time: new MosTime('2009-04-11T14:13:53')
+			RunningOrderId: new MOS.MosString128('unknown'),
+			Status: MOS.IMOSObjectStatus.BUSY,
+			Time: new MOS.MosTime('2009-04-11T14:13:53')
 		}
 		let segmentID = segmentId(roId(ro.ID), story.ID)
 		let segmentLineID = segmentLineId(segmentID, item.ID)
@@ -659,7 +659,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		let story0 = ro.Stories[0]
 		let story1 = ro.Stories[1]
 
-		let action0: IMOSStoryAction = {
+		let action0: MOS.IMOSStoryAction = {
 			RunningOrderID: ro.ID,
 			StoryID: story1.ID // will insert a story before this
 		}
@@ -686,7 +686,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		let story = ro.Stories[0]
 		let item0 = story.Items[0]
 
-		let action0: IMOSItemAction = {
+		let action0: MOS.IMOSItemAction = {
 			RunningOrderID: ro.ID,
 			StoryID: story.ID,
 			ItemID: item0.ID // will insert an item before this
@@ -713,7 +713,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		let ro = xmlApiData.roCreate
 		let story = ro.Stories[0]
 
-		let action0: IMOSStoryAction = {
+		let action0: MOS.IMOSStoryAction = {
 			RunningOrderID: ro.ID,
 			StoryID: story.ID // will replace this story
 
@@ -740,7 +740,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		let story = ro.Stories[0]
 		let item0 = story.Items[0]
 
-		let action0: IMOSItemAction = {
+		let action0: MOS.IMOSItemAction = {
 			RunningOrderID: ro.ID,
 			StoryID: story.ID,
 			ItemID: item0.ID // will replace this item
@@ -767,7 +767,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		let story0 = ro.Stories[0]
 		let story1 = ro.Stories[1]
 
-		let action0: IMOSStoryAction = {
+		let action0: MOS.IMOSStoryAction = {
 			RunningOrderID: ro.ID,
 			StoryID: story0.ID // will move a story to before this story
 		}
@@ -793,7 +793,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		let story = ro.Stories[0]
 		let item0 = story.Items[0]
 
-		let action0: IMOSItemAction = {
+		let action0: MOS.IMOSItemAction = {
 			RunningOrderID: ro.ID,
 			StoryID: story.ID,
 			ItemID: item0.ID // will move before this item
@@ -809,7 +809,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		let dbSegmentLines0 = SegmentLines.find({ runningOrderId: dbRo._id, segmentId: dbSegment0._id }).fetch()
 
 		// Move item:
-		ServerPeripheralDeviceAPI.mosRoItemMove(action0, [new MosString128(dbSegmentLines0[0].mosId)])
+		ServerPeripheralDeviceAPI.mosRoItemMove(action0, [new MOS.MosString128(dbSegmentLines0[0].mosId)])
 		let dbSegmentLines1 = SegmentLines.find({ runningOrderId: dbRo._id, segmentId: dbSegment0._id }, mod).fetch()
 		expect(dbSegmentLines1.length).to.equal(dbSegmentLines0.length)
 		expect(dbSegmentLines1[0].mosId).to.equal(dbSegmentLines0[1].mosId)
@@ -822,7 +822,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		let story0 = ro.Stories[0]
 		let story1 = ro.Stories[1]
 
-		let action0: IMOSStoryAction = {
+		let action0: MOS.IMOSStoryAction = {
 			RunningOrderID: ro.ID,
 			StoryID: story0.ID // will delete this story
 		}
@@ -846,7 +846,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		let story = ro.Stories[0]
 		let item0 = story.Items[0]
 
-		let action0: IMOSItemAction = {
+		let action0: MOS.IMOSItemAction = {
 			RunningOrderID: ro.ID,
 			StoryID: story.ID,
 			ItemID: item0.ID // will delete this item
@@ -863,7 +863,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		let dbSegmentLines0 = SegmentLines.find({ runningOrderId: dbRo._id, segmentId: dbSegment0._id }).fetch()
 
 		// Delete item:
-		ServerPeripheralDeviceAPI.mosRoItemDelete(action0, [new MosString128(dbSegmentLines0[0].mosId)])
+		ServerPeripheralDeviceAPI.mosRoItemDelete(action0, [new MOS.MosString128(dbSegmentLines0[0].mosId)])
 		let dbSegmentLines1 = SegmentLines.find({ runningOrderId: dbRo._id, segmentId: dbSegment0._id }, mod).fetch()
 		expect(dbSegmentLines1.length).to.equal(dbSegmentLines0.length - 1)
 
@@ -874,7 +874,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		let story0 = ro.Stories[0]
 		let story1 = ro.Stories[1]
 
-		let action0: IMOSROAction = {
+		let action0: MOS.IMOSROAction = {
 			RunningOrderID: ro.ID
 		}
 
@@ -899,12 +899,12 @@ describe('peripheralDevice: MOS API methods', function () {
 		let story = ro.Stories[0]
 		let item0 = story.Items[0]
 
-		let action0: IMOSItemAction = {
+		let action0: MOS.IMOSItemAction = {
 			RunningOrderID: ro.ID,
 			StoryID: story.ID,
 			ItemID: item0.ID // will move before this item
 		}
-		let action1: IMOSStoryAction = {
+		let action1: MOS.IMOSStoryAction = {
 			RunningOrderID: ro.ID,
 			StoryID: story.ID
 		}
@@ -932,13 +932,13 @@ describe('peripheralDevice: MOS API methods', function () {
 		let story = ro.Stories[0]
 		let item0 = story.Items[0]
 
-		let status0: IMOSROReadyToAir = {
+	
 			ID: ro.ID,
-			Status: IMOSObjectAirStatus.READY
+			Status: MOS.IMOSObjectAirStatus.READY
 		}
-		let status1: IMOSROReadyToAir = {
+	
 			ID: ro.ID,
-			Status: IMOSObjectAirStatus.NOT_READY
+			Status: MOS.IMOSObjectAirStatus.NOT_READY
 		}
 
 		// first create the ro:

@@ -74,7 +74,7 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 					$push: {
 						config: literal<IConfigItem>({
 							_id: item.id,
-							value: undefined
+							value: ''
 						})
 					}
 				})
@@ -107,7 +107,7 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 					$push: {
 						config: literal<IConfigItem>({
 							_id: this.state.addItemId,
-							value: item ? item.defaultVal : undefined
+							value: item ? item.defaultVal : ''
 						})
 					}
 				})

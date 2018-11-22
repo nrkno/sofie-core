@@ -286,7 +286,7 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 	let notes: SegmentLineNote[] = []
 	try {
 		const blueprints = loadBlueprints(showStyleBase)
-		let result = blueprints.PostProcess(context)
+		let result = blueprints.postProcess(context)
 		resultSli = postProcessSegmentLineItems(context, result.SegmentLineItems, 'post-process', firstSegmentLine._id)
 		notes = context.getNotes()
 	} catch (e) {

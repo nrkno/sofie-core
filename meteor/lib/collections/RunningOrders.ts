@@ -3,11 +3,7 @@ import * as _ from 'underscore'
 import { Time, applyClassToDocument, getCurrentTime, registerCollection, normalizeArray, waitForPromiseAll } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { SegmentLines, SegmentLine } from './SegmentLines'
-import {
-	IMOSExternalMetaData,
-	IMOSObjectStatus,
-	IMOSObjectAirStatus
-} from 'mos-connection'
+import { MOS } from 'tv-automation-sofie-blueprints-integration'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { StudioInstallations, StudioInstallation } from './StudioInstallations'
 import { SegmentLineItems, SegmentLineItem } from './SegmentLineItems'
@@ -49,9 +45,9 @@ export interface DBRunningOrder extends IBlueprintRunningOrder {
 	/** Expected duration of the running order - should be set to EditorialDuration from IMOSRunningOrder */
 	expectedDuration?: number
 
-	metaData?: Array<IMOSExternalMetaData>
-	status?: IMOSObjectStatus
-	airStatus?: IMOSObjectAirStatus
+	metaData?: Array<MOS.IMOSExternalMetaData>
+	status?: MOS.IMOSObjectStatus
+	airStatus?: MOS.IMOSObjectAirStatus
 	// There should be something like a Owner user here somewhere?
 	active?: boolean
 	/** the id of the Live Segment Line - if empty, no segment line in this rundown is live */
@@ -90,9 +86,9 @@ export class RunningOrder implements DBRunningOrder {
 	public modified: Time
 	public expectedStart?: Time
 	public expectedDuration?: number
-	public metaData?: Array<IMOSExternalMetaData>
-	public status?: IMOSObjectStatus
-	public airStatus?: IMOSObjectAirStatus
+	public metaData?: Array<MOS.IMOSExternalMetaData>
+	public status?: MOS.IMOSObjectStatus
+	public airStatus?: MOS.IMOSObjectAirStatus
 	public active?: boolean
 	public rehearsal?: boolean
 	public unsynced?: boolean

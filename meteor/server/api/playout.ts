@@ -4,7 +4,7 @@ import { RunningOrders, RunningOrder, RunningOrderHoldState, RoData, DBRunningOr
 import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineItemLifespan, SegmentLineHoldMode } from 'tv-automation-sofie-blueprints-integration'
-import { TimelineTrigger, TimelineObjHoldMode } from 'tv-automation-sofie-blueprints-integration'
+import { TimelineObjHoldMode } from 'tv-automation-sofie-blueprints-integration'
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItems, RunningOrderBaselineItem } from '../../lib/collections/RunningOrderBaselineItems'
 import { getCurrentTime,
@@ -38,7 +38,8 @@ import {
 	TimelineContentTypeLawo,
 	TimelineObjLawo,
 	TimelineContentTypeHttp,
-	TimelineObjHTTPRequest
+	TimelineObjHTTPRequest,
+	Timeline as TimelineTypes
 } from 'timeline-state-resolver-types'
 import { TriggerType } from 'superfly-timeline'
 import { Segments,Segment } from '../../lib/collections/Segments'
@@ -47,7 +48,6 @@ import * as _ from 'underscore'
 import { logger } from '../logging'
 import { PeripheralDevice,PeripheralDevices,PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { IMOSROFullStory } from 'mos-connection'
 import { getSliGroupId, getSlGroupId, getSlFirstObjectId, getSliFirstObjectId, IConfigItem, LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
 import { loadBlueprints, getBaselineContext, postProcessSegmentLineAdLibItems, postProcessSegmentLineBaselineItems } from './blueprints'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
@@ -65,7 +65,7 @@ import { ClientAPI } from '../../lib/api/client'
 import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
 import { sendSlackMessageToWebhook } from './slack'
 import { setMeteorMethods } from '../methods'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, MOS } from 'tv-automation-sofie-blueprints-integration'
 import { sendStoryStatus, updateStory } from './integration/mos'
 import { updateSegmentLines, reloadRunningOrderData } from './runningOrder'
 import { runPostProcessBlueprint } from '../../server/api/runningOrder'
@@ -347,12 +347,12 @@ export namespace ServerPlayoutAPI {
 
 			const showStyleBase = runningOrder.getShowStyleBase()
 			let blueprint = loadBlueprints(showStyleBase)
-			if (!blueprint || !blueprint.Baseline) {
+			if (!blueprint || !blueprint.baseline) {
 				logger.error('Failed to load baseline blueprint')
 			} else {
 				const ctx = getBaselineContext(runningOrder)
 
-				const res = blueprint.Baseline(ctx)
+				const res = blueprint.baseline(ctx)
 				const baselineItems = postProcessSegmentLineBaselineItems(ctx, res.BaselineItems as any as TimelineObj[]) // TODO - types used here
 				const adlibItems = postProcessSegmentLineAdLibItems(ctx, res.AdLibItems, 'baseline')
 
@@ -487,7 +487,7 @@ export namespace ServerPlayoutAPI {
 	}
 	function refreshSegmentLine (runningOrder: DBRunningOrder, segmentLine: DBSegmentLine) {
 		const ro = new RunningOrder(runningOrder)
-		const story = ro.fetchCache(CachePrefix.FULLSTORY + segmentLine._id) as IMOSROFullStory
+		const story = ro.fetchCache(CachePrefix.FULLSTORY + segmentLine._id) as MOS.IMOSROFullStory
 		const sl = new SegmentLine(segmentLine)
 		const changed = updateStory(ro, sl, story)
 
@@ -2793,7 +2793,7 @@ export function buildTimelineObjs (roData: RoData, baselineItems: RunningOrderBa
 				const prevSlOverlapDuration = calcSlKeepaliveDuration(previousSegmentLine, currentSegmentLine, true)
 				previousSegmentLineGroup = createSegmentLineGroup(previousSegmentLine, `#${getSlGroupId(currentSegmentLine)}.start + ${prevSlOverlapDuration} - #.start`)
 				previousSegmentLineGroup.priority = -1
-				previousSegmentLineGroup.trigger = literal<TimelineTrigger>({
+				previousSegmentLineGroup.trigger = literal<TimelineTypes.TimelineTrigger>({
 					type: TriggerType.TIME_ABSOLUTE,
 					value: previousSegmentLine.getLastStartedPlayback() || 0
 				})
@@ -2824,7 +2824,7 @@ export function buildTimelineObjs (roData: RoData, baselineItems: RunningOrderBa
 		const currentSLDuration = !isFollowed ? 0 : calcSlTargetDuration(previousSegmentLine, currentSegmentLine)
 		currentSegmentLineGroup = createSegmentLineGroup(currentSegmentLine, currentSLDuration)
 		if (currentSegmentLine.startedPlayback && currentSegmentLine.getLastStartedPlayback()) { // If we are recalculating the currentLine, then ensure it doesnt think it is starting now
-			currentSegmentLineGroup.trigger = literal<TimelineTrigger>({
+			currentSegmentLineGroup.trigger = literal<TimelineTypes.TimelineTrigger>({
 				type: TriggerType.TIME_ABSOLUTE,
 				value: currentSegmentLine.getLastStartedPlayback() || 0
 			})
@@ -2846,7 +2846,7 @@ export function buildTimelineObjs (roData: RoData, baselineItems: RunningOrderBa
 				const originalItem = _.find(roData.segmentLineItems, (sli => sli._id === item.infiniteId))
 
 				if (originalItem && originalItem.startedPlayback) {
-					infiniteGroup.trigger = literal<TimelineTrigger>({
+					infiniteGroup.trigger = literal<TimelineTypes.TimelineTrigger>({
 						type: TriggerType.TIME_ABSOLUTE,
 						value: originalItem.startedPlayback
 					})
@@ -2876,7 +2876,7 @@ export function buildTimelineObjs (roData: RoData, baselineItems: RunningOrderBa
 			if (currentSegmentLineGroup) {
 				const overlapDuration = calcSlOverlapDuration(currentSegmentLine, nextSegmentLine)
 
-				nextSegmentLineItemGroup.trigger = literal<TimelineTrigger>({
+				nextSegmentLineItemGroup.trigger = literal<TimelineTypes.TimelineTrigger>({
 					type: TriggerType.TIME_RELATIVE,
 					value: `#${currentSegmentLineGroup._id}.end - ${overlapDuration}`
 				})

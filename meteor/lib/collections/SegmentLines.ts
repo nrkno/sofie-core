@@ -1,9 +1,5 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
-import {
-	IMOSExternalMetaData,
-	IMOSObjectStatus
-} from 'mos-connection'
 import { TransformedCollection, FindOptions, MongoSelector } from '../typings/meteor'
 import { RunningOrders } from './RunningOrders'
 import { SegmentLineItem, SegmentLineItems } from './SegmentLineItems'
@@ -17,7 +13,8 @@ import {
 	IMessageBlueprintSegmentLine,
 	IMessageBlueprintSegmentLineTimings,
 	SegmentLineHoldMode,
-	BlueprintRuntimeArguments
+	BlueprintRuntimeArguments,
+	MOS
 } from 'tv-automation-sofie-blueprints-integration'
 
 /** A "Line" in NRK Lingo. */
@@ -48,8 +45,8 @@ export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
 	/** If true, the story status (yellow line) will be updated upon next:ing  */
 	updateStoryStatus?: boolean
 
-	metaData?: Array<IMOSExternalMetaData>
-	status?: IMOSObjectStatus
+	metaData?: Array<MOS.IMOSExternalMetaData>
+	status?: MOS.IMOSObjectStatus
 
 	/** Expected duration of the line, in milliseconds */
 	expectedDuration?: number
@@ -127,8 +124,8 @@ export class SegmentLine implements DBSegmentLine {
 	public prerollDuration?: number
 	public transitionPrerollDuration?: number | null
 	public transitionKeepaliveDuration?: number | null
-	public metaData?: Array<IMOSExternalMetaData>
-	public status?: IMOSObjectStatus
+	public metaData?: Array<MOS.IMOSExternalMetaData>
+	public status?: MOS.IMOSObjectStatus
 	public expectedDuration?: number
 	public startedPlayback?: boolean
 	public duration?: number

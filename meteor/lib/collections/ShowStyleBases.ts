@@ -3,7 +3,12 @@ import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, applyClassToDocument } from '../lib'
-import { IConfigItem, IBlueprintShowStyleBase, IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import {
+	IConfigItem,
+	IBlueprintShowStyleBase,
+	IOutputLayer,
+	ISourceLayer
+} from 'tv-automation-sofie-blueprints-integration'
 
 export interface HotkeyDefinition {
 	_id: string
