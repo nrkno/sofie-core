@@ -3,15 +3,18 @@ import { TransformedCollection } from '../typings/meteor'
 import { applyClassToDocument, registerCollection } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
-import { Mappings, Mapping, ChannelFormat } from 'timeline-state-resolver-types'
-import { LookaheadMode } from '../../lib/api/playout'
+import { ChannelFormat } from 'timeline-state-resolver-types'
+import {
+	IConfigItem,
+	BlueprintMappings,
+	BlueprintMapping,
+	IBlueprintStudioInstallation
+} from 'tv-automation-sofie-blueprints-integration'
 
-export interface MappingsExt extends Mappings {
+export interface MappingsExt extends BlueprintMappings {
 	[layerName: string]: MappingExt
 }
-export interface MappingExt extends Mapping {
-	/** @todo: write documentation about lookahead */
-	lookahead: LookaheadMode
+export interface MappingExt extends BlueprintMapping {
 	/** Internal mappings are hidden in the UI */
 	internal?: boolean
 }
@@ -23,7 +26,7 @@ export interface IStudioInstallationSettings {
 	sofieUrl: string // (former sofie_url in config)
 }
 /** A set of available layer groups in a given installation */
-export interface DBStudioInstallation {
+export interface DBStudioInstallation extends IBlueprintStudioInstallation {
 	_id: string
 	/** User-presentable name for the studio installation */
 	name: string
@@ -41,12 +44,6 @@ export interface DBStudioInstallation {
 	testToolsConfig?: ITestToolsConfig
 
 	settings: IStudioInstallationSettings
-}
-
-export interface IConfigItem {
-	_id: string
-	/** Value */
-	value: any
 }
 
 export interface ITestToolsConfig {

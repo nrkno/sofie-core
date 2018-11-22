@@ -2,7 +2,6 @@ import * as ClassNames from 'classnames'
 import * as React from 'react'
 import * as _ from 'underscore'
 import {
-	IConfigItem,
 	StudioInstallation,
 	StudioInstallations
 } from '../../../lib/collections/StudioInstallations'
@@ -15,7 +14,7 @@ import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Blueprint } from '../../../lib/collections/Blueprints'
-import { ConfigManifestEntry, ConfigManifestEntryType } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigManifestEntry, ConfigManifestEntryType, IConfigItem } from 'tv-automation-sofie-blueprints-integration'
 import { literal } from '../../../lib/lib'
 
 interface IConfigManifestSettingsProps {
@@ -75,7 +74,7 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 					$push: {
 						config: literal<IConfigItem>({
 							_id: item.id,
-							value: undefined
+							value: ''
 						})
 					}
 				})
@@ -108,7 +107,7 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 					$push: {
 						config: literal<IConfigItem>({
 							_id: this.state.addItemId,
-							value: item ? item.defaultVal : undefined
+							value: item ? item.defaultVal : ''
 						})
 					}
 				})

@@ -1,6 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import {
@@ -9,7 +9,6 @@ import {
 	TimelineObjCCGRecord, TimelineContentTypeCasparCg, TimelineObjCCGInput,
 	DeviceType as PlayoutDeviceType
 } from 'timeline-state-resolver-types'
-import { LookaheadMode } from '../../lib/api/playout'
 import { ensureCollectionProperty, ensureStudioConfig } from './lib'
 import { ShowStyleBases, IBlueprintRuntimeArgumentsItem } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'

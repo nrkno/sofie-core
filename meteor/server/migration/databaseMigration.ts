@@ -10,13 +10,20 @@ import * as _ from 'underscore'
 import { getHash } from '../lib'
 import {
 	MigrationMethods,
-	MigrationStepInputFilteredResult,
-	MigrationStepInput,
-	MigrationStepInputResult,
 	GetMigrationStatusResultNoNeed,
 	GetMigrationStatusResultMigrationNeeded,
 	RunMigrationResult
 } from '../../lib/api/migration'
+import {
+	MigrationStepInput,
+	MigrationStepInputResult,
+	MigrationStepInputFilteredResult,
+	MigrationStep,
+	MigrationStepBase,
+	MigrationContextStudio,
+	ValidateFunctionCore,
+	MigrateFunctionCore
+} from 'tv-automation-sofie-blueprints-integration'
 import { setMeteorMethods } from '../methods'
 import { logger } from '../../lib/logging'
 import { Optional } from '../../lib/lib'
@@ -38,7 +45,11 @@ export const GENESIS_SYSTEM_VERSION = '0.0.0'
 /**
  * These versions are not supported anymore (breaking changes occurred after these version)
  */
-export const UNSUPPORTED_VERSIONS = [ '0.18.0']
+export const UNSUPPORTED_VERSIONS = [
+	// 0.18.0 to 0.19.0: Major refactoring, (ShowStyles was split into ShowStyleBase &
+	//    ShowStyleVariant, configs & layers wheremoved from studio to ShowStyles)
+	'0.18.0'
+]
 
 export function isVersionSupported (version: Version) {
 	let isSupported: boolean = true
@@ -50,37 +61,6 @@ export function isVersionSupported (version: Version) {
 	return isSupported
 }
 
-export interface MigrationStepBase {
-	/** Unique id for this step */
-	id: string
-	/** If this step overrides another step. Note: It's only possible to override steps in previous versions */
-	overrideSteps?: Array<string>
-
-	/** The validate function determines whether the step is to be applied
-	 * (it can for example check that some value in the database is present)
-	 * The function should return falsy if step is fullfilled (ie truthy if migrate function should be applied, return value could then be a string describing why)
-	 * The function is also run after the migration-script has been applied (and should therefore return false if all is good)
-	 */
-	validate: (afterMigration: boolean) => boolean | string
-
-	/** If true, this step can be run automatically, without prompting for user input */
-	canBeRunAutomatically: boolean
-	/** The migration script. This is the script that performs the updates.
-	 * Input to the function is the result from the user prompt (for manual steps)
-	 * The miggration script is optional, and may be omitted if the user is expected to perform the update manually
-	 * @param result Input from the user query
-	 */
-	migrate?: (input: MigrationStepInputFilteredResult) => void
-	/** Query user for input, used in manual steps */
-	input?: Array<MigrationStepInput> | (() => Array<MigrationStepInput>)
-
-	/** If this step depend on the result of another step. Will pause the migration before this step in that case. */
-	dependOnResultFrom?: string
-}
-export interface MigrationStep extends MigrationStepBase {
-	/** The version this Step applies to */
-	version: string
-}
 interface MigrationStepInternal extends MigrationStep {
 	_rank: number,
 	_version: Version,
@@ -176,7 +156,8 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 			if (migrationSteps[step.id] || ignoredSteps[step.id]) throw new Meteor.Error(500, `Error: MigrationStep.id must be unique: "${step.id}"`)
 
 			// Check if the step can be applied:
-			step._validateResult = step.validate(false)
+			let validate = step.validate as ValidateFunctionCore
+			step._validateResult = validate(false)
 			if (step._validateResult) {
 
 				if (step.dependOnResultFrom) {
@@ -307,13 +288,15 @@ export function runMigration (
 			})
 
 			// Run the migration script
-			if (step.migrate) {
-				step.migrate(stepInput)
+			let migrate = step.migrate as MigrateFunctionCore
+			if (migrate) {
+				migrate(stepInput)
 			}
 
 			// After migration, run the validation again
 			// Since the migration should be done by now, the validate should return true
-			let validateMessage: string | boolean = step.validate(true)
+			let validate = step.validate as ValidateFunctionCore
+			let validateMessage: string | boolean = validate(true)
 			if (validateMessage) {
 				// Something's not right
 				let msg = `Step "${step.id}": Something went wrong, validation didn't approve of the changes. The changes have been applied, but might need to be confirmed.`

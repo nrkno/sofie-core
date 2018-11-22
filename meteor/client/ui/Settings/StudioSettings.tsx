@@ -3,9 +3,7 @@ import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
-import { LookaheadMode } from '../../../lib/api/playout'
 import {
-	IConfigItem,
 	StudioInstallation,
 	StudioInstallations,
 	MappingExt
@@ -43,7 +41,7 @@ import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { translate } from 'react-i18next'
 import { ShowStyleBases, ShowStyleBase, } from '../../../lib/collections/ShowStyleBases'
-import { ConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigManifestEntry, IConfigItem, LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 
 type ObjectWithConfig = StudioInstallation | ShowStyleBase | ShowStyleVariant

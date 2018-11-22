@@ -2,19 +2,15 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
-import { IConfigItem } from './StudioInstallations'
+import { IConfigItem, IBlueprintShowStyleVariant } from 'tv-automation-sofie-blueprints-integration'
 import { registerCollection, applyClassToDocument } from '../lib'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 
-export interface DBShowStyleVariant {
+export interface DBShowStyleVariant extends IBlueprintShowStyleVariant {
 	_id: string
 	name: string
 	/** Id of parent ShowStyleBase */
 	showStyleBaseId: string
-	/** Override studio-level source-layer properties (UI name, rank) */
-	// sourceLayerOverrides?: Array<ISourceLayerBase>
-	/** Override studio-level output-layer properties (UI name, rank) */
-	// outputLayerOverrides?: Array<IOutputLayerBase>
 
 	/** Config values are used by the Blueprints */
 	config: Array<IConfigItem>

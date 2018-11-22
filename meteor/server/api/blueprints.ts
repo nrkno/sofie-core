@@ -1,9 +1,6 @@
 import * as _ from 'underscore'
 import * as moment from 'moment'
 import { SaferEval } from 'safer-eval'
-import {
-	IMOSROFullStory, IMOSRunningOrder, IMOSStory
-} from 'mos-connection'
 import { SegmentLine, DBSegmentLine, SegmentLineNote, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
@@ -17,13 +14,14 @@ import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBa
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import {
-	BlueprintCollection,
+	BlueprintManifest,
 	ICommonContext,
 	RunStoryContext,
 	BaselineContext,
 	PostProcessContext,
 	MessageContext,
-	LayerType
+	LayerType,
+	MOS
 } from 'tv-automation-sofie-blueprints-integration'
 import { IBlueprintSegmentLineItem, IBlueprintSegmentLineAdLibItem, BlueprintRuntimeArguments, IBlueprintSegmentLine } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
@@ -47,9 +45,9 @@ class CommonContext implements ICommonContext {
 	private hashed: {[hash: string]: string} = {}
 	private savedNotes: Array<SegmentLineNote> = []
 
-	private story: IMOSStory | undefined
+	private story: MOS.IMOSStory | undefined
 
-	constructor (runningOrder: RunningOrder, segmentLine?: SegmentLine, story?: IMOSStory) {
+	constructor (runningOrder: RunningOrder, segmentLine?: SegmentLine, story?: MOS.IMOSStory) {
 		this.runningOrderId = runningOrder._id
 		this.runningOrder = runningOrder
 		this.segmentLine = segmentLine
@@ -183,7 +181,7 @@ class CommonContext implements ICommonContext {
 	}
 }
 
-export function getRunStoryContext (runningOrder: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory): RunStoryContext {
+export function getRunStoryContext (runningOrder: RunningOrder, segmentLine: SegmentLine, story: MOS.IMOSROFullStory): RunStoryContext {
 	class RunStoryContextImpl extends CommonContext implements RunStoryContext {
 		segmentLine: SegmentLine
 
@@ -227,10 +225,10 @@ export function getBaselineContext (runningOrder: RunningOrder): BaselineContext
 
 export function getMessageContext (runningOrder: RunningOrder): MessageContext {
 	class MessageContextImpl extends CommonContext implements MessageContext {
-		getCachedStoryForRunningOrder (): IMOSRunningOrder {
+		getCachedStoryForRunningOrder (): MOS.IMOSRunningOrder {
 			return this.runningOrder.fetchCache('roCreate' + this.runningOrder._id)
 		}
-		getCachedStoryForSegmentLine (segmentLine: IBlueprintSegmentLine): IMOSROFullStory {
+		getCachedStoryForSegmentLine (segmentLine: IBlueprintSegmentLine): MOS.IMOSROFullStory {
 			return this.runningOrder.fetchCache('fullStory' + segmentLine._id)
 		}
 
@@ -257,10 +255,10 @@ export function getMessageContext (runningOrder: RunningOrder): MessageContext {
 const blueprintCache: {[id: string]: Cache} = {}
 interface Cache {
 	modified: number,
-	fcn: BlueprintCollection
+	fcn: BlueprintManifest
 }
 
-export function loadBlueprints (showStyleBase: ShowStyleBase): BlueprintCollection {
+export function loadBlueprints (showStyleBase: ShowStyleBase): BlueprintManifest {
 	let blueprint = Blueprints.findOne({
 		_id: showStyleBase.blueprintId
 	})
@@ -276,7 +274,7 @@ export function loadBlueprints (showStyleBase: ShowStyleBase): BlueprintCollecti
 		throw new Meteor.Error(500, `Blueprint "${showStyleBase.blueprintId}" code not set!`)
 	}
 }
-export function evalBlueprints (blueprint: Blueprint, noCache: boolean): BlueprintCollection {
+export function evalBlueprints (blueprint: Blueprint, noCache: boolean): BlueprintManifest {
 	let cached: Cache | null = null
 	if (!noCache) {
 		// First, check if we've got the function cached:
@@ -389,8 +387,9 @@ function convertTimelineObject (o: TimelineObjectCoreExt): TimelineObj {
 export function postProcessSegmentLineBaselineItems (innerContext: BaselineContext, baselineItems: TimelineObj[]): TimelineObj[] {
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
-	return _.map(_.compact(baselineItems), (o: TimelineObjectCoreExt) => {
-		const item = convertTimelineObject(o)
+
+	return _.map(_.compact(baselineItems), (o: TimelineObj): TimelineObj => {
+		const item: TimelineObj = convertTimelineObject(o)
 
 		if (!item._id) item._id = innerContext.getHashId('baseline_' + (i++))
 
@@ -436,15 +435,19 @@ postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessag
 			modified: getCurrentTime(),
 			studioConfigManifest: [],
 			showStyleConfigManifest: [],
-			version: '',
+			blueprintVersion: '',
+			integrationVersion: '',
+			TSRVersion: '',
 			minimumCoreVersion: ''
 		}
 
-		const blueprintCollection: BlueprintCollection = evalBlueprints(newBlueprint, false)
-		newBlueprint.version = blueprintCollection.Version
-		newBlueprint.minimumCoreVersion = blueprintCollection.MinimumCoreVersion
-		newBlueprint.studioConfigManifest = blueprintCollection.StudioConfigManifest
-		newBlueprint.showStyleConfigManifest = blueprintCollection.ShowStyleConfigManifest
+		const BlueprintManifest: BlueprintManifest = evalBlueprints(newBlueprint, false)
+		newBlueprint.blueprintVersion = BlueprintManifest.blueprintVersion
+		newBlueprint.integrationVersion = BlueprintManifest.integrationVersion
+		newBlueprint.TSRVersion = BlueprintManifest.TSRVersion
+		newBlueprint.minimumCoreVersion = BlueprintManifest.minimumCoreVersion
+		newBlueprint.studioConfigManifest = BlueprintManifest.studioConfigManifest
+		newBlueprint.showStyleConfigManifest = BlueprintManifest.showStyleConfigManifest
 
 		Blueprints.upsert(newBlueprint._id, newBlueprint)
 

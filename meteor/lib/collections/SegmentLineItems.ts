@@ -6,8 +6,7 @@ import { SegmentLineTimings } from './SegmentLines'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 
-import { IBlueprintSegmentLineItem, SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration'
-import { TimelineTrigger } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintSegmentLineItem, SegmentLineItemLifespan, Timeline } from 'tv-automation-sofie-blueprints-integration'
 import { SomeContent } from 'tv-automation-sofie-blueprints-integration'
 
 /** A Single item in a "line": script, VT, cameras */
@@ -22,7 +21,7 @@ export interface SegmentLineItemGeneric {
 	/** User-presentable name for the timeline item */
 	name: string
 	/** Timeline item trigger. Possibly, most of these will be manually triggered as next, but maybe some will be automatic. */
-	trigger?: TimelineTrigger
+	trigger?: Timeline.TimelineTrigger
 	/** Playback availability status */
 	status: RunningOrderAPI.LineItemStatusCode
 	/** Source layer the timeline item belongs to */
@@ -67,7 +66,7 @@ export interface SegmentLineItemGeneric {
 }
 
 export interface SegmentLineItem extends SegmentLineItemGeneric, IBlueprintSegmentLineItem {
-	trigger: TimelineTrigger
+	trigger: Timeline.TimelineTrigger
 	segmentLineId: string
 	expectedDuration: number | string
 	/** This is set when an item's duration needs to be overriden */

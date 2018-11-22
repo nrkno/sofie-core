@@ -1,10 +1,7 @@
 import { SegmentLineItem } from './collections/SegmentLineItems'
-import { VTContent, LiveSpeakContent } from 'tv-automation-sofie-blueprints-integration'
+import { VTContent, LiveSpeakContent, SourceLayerType, IConfigItem, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from './api/runningOrder'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream } from './collections/MediaObjects'
-import { IConfigItem } from './collections/StudioInstallations'
-import { ISourceLayer } from './collections/ShowStyleBases'
 
 /**
  * Take properties from the mediainfo / medistream and transform into a

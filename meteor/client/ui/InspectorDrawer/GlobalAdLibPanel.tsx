@@ -26,7 +26,8 @@ import { Spinner } from '../../lib/Spinner'
 import { literal } from '../../../lib/lib'
 import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ShowStyleBase, IOutputLayer, ISourceLayer } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { callMethod } from '../../lib/clientAPI'
 
 interface IListViewPropsHeader {

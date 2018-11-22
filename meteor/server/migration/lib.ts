@@ -1,7 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
-import { MigrationStepInput, MigrationStepInputFilteredResult } from '../../lib/api/migration'
-import { MigrationStepBase } from './databaseMigration'
+import { MigrationStepInput, MigrationStepInputFilteredResult, MigrationStepBase, IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { Collections, objectPathGet, literal } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
@@ -10,7 +9,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { compareVersions, parseVersion } from '../../lib/collections/CoreSystem'
 import { logger } from '../logging'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
-import { ISourceLayer, ShowStyleBases, IOutputLayer } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 
 /**
  * Convenience function to generate basic test

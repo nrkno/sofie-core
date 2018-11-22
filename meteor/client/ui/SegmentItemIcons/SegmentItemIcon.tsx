@@ -2,7 +2,7 @@ import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import * as React from 'react'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { normalizeArray } from '../../../lib/lib'
 import * as _ from 'underscore'
 
@@ -13,7 +13,7 @@ import RemoteInputIcon from './Renderers/RemoteInput'
 import LiveSpeakInputIcon from './Renderers/LiveSpeakInput'
 import GraphicsInputIcon from './Renderers/GraphicsInput'
 import { Meteor } from 'meteor/meteor'
-import { ISourceLayer, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 
 interface IPropsHeader {
 	segmentItemId: string

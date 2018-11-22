@@ -6,9 +6,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
-import { ShowStyleBase, ShowStyleBases, ISourceLayer, IOutputLayer, HotkeyDefinition, IBlueprintRuntimeArgumentsItem } from '../../../lib/collections/ShowStyleBases'
-
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { ShowStyleBase, ShowStyleBases, HotkeyDefinition, IBlueprintRuntimeArgumentsItem } from '../../../lib/collections/ShowStyleBases'
 import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
@@ -23,6 +21,7 @@ import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { callMethod } from '../../lib/clientAPI'
 import { ShowStylesAPI } from '../../../lib/api/showStyles'
+import { ISourceLayer, SourceLayerType, IOutputLayer } from 'tv-automation-sofie-blueprints-integration'
 
 interface IProps {
 	match: {

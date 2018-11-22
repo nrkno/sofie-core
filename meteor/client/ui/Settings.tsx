@@ -214,7 +214,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
 									<h3>{blueprint.name || t('Unnamed blueprint')}</h3>
-									<p>{t('Version')} {blueprint.version}</p>
+									<p>{t('Version')} {blueprint.blueprintVersion}</p>
 								</div>
 								<hr className='vsubtle man' />
 							</NavLink>

@@ -25,7 +25,7 @@ export function triggerExternalMessage (
 		try {
 			const blueprints = loadBlueprints(showStyleBase)
 
-			let resultMessages: Array<IBlueprintExternalMessageQueueObj> | null = blueprints.Message(innerContext, runningOrder, takeSegmentLine, previousSegmentLine)
+			let resultMessages: Array<IBlueprintExternalMessageQueueObj> | null = blueprints.message(innerContext, runningOrder, takeSegmentLine, previousSegmentLine)
 
 			if (resultMessages === null) {
 				// do nothing

@@ -278,12 +278,18 @@ export type Partial<T> = {
 export function partial<T> (o: Partial<T>) {
 	return o
 }
+export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
 export interface IDObj {
 	_id: string
 }
 export function partialExceptId<T> (o: Partial<T> & IDObj) {
 	return o
 }
+export interface ObjId {
+	_id: string
+}
+export type OmitId<T> = Omit<T & ObjId, '_id'>
+
 export function applyClassToDocument (docClass, document) {
 	return new docClass(document)
 }

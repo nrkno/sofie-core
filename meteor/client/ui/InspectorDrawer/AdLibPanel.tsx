@@ -23,7 +23,8 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RunningOrderViewKbdShortcuts } from '../RunningOrderView'
-import { IOutputLayer, ISourceLayer, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { callMethod } from '../../lib/clientAPI'
 
 interface IListViewPropsHeader {
