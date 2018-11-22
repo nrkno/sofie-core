@@ -231,6 +231,8 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 				return t('Audio Mixing')
 			case SourceLayerType.TRANSITION:
 				return t('Transition')
+			case SourceLayerType.LIGHTS:
+				return t('Lights')
 			default:
 				return SourceLayerType[type]
 		}
