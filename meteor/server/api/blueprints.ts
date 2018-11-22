@@ -35,7 +35,8 @@ import { Picker } from 'meteor/meteorhacks:picker'
 import * as bodyParser from 'body-parser'
 import { Random } from 'meteor/random'
 import { getShowStyleCompound } from '../../lib/collections/ShowStyleVariants'
-import { check } from 'meteor/check'
+import { check, Match } from 'meteor/check'
+import { parse as parseUrl } from 'url'
 
 class CommonContext implements ICommonContext {
 	runningOrderId: string
@@ -408,8 +409,12 @@ postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessag
 	res.setHeader('Content-Type', 'text/plain')
 
 	let blueprintId = params.blueprintId
+	let url = parseUrl(req.url!, true)
+
+	let blueprintName = url.query['name'] || undefined
 
 	check(blueprintId, String)
+	check(blueprintName, Match.Maybe(String))
 
 	let content = ''
 	try {
@@ -421,11 +426,11 @@ postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessag
 		logger.info('Got new blueprint. ' + body.length + ' bytes')
 
 		const blueprint = Blueprints.findOne(blueprintId)
-		if (!blueprint) throw new Meteor.Error(404, `Blueprint "${blueprintId}" not found`)
+		// if (!blueprint) throw new Meteor.Error(404, `Blueprint "${blueprintId}" not found`)
 
 		const newBlueprint: Blueprint = {
 			_id: blueprintId,
-			name: blueprint ? blueprint.name : blueprint,
+			name: blueprint ? blueprint.name : (blueprintName || blueprintId),
 			created: blueprint ? blueprint.created : getCurrentTime(),
 			code: body as string,
 			modified: getCurrentTime(),

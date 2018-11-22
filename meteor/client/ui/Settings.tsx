@@ -198,9 +198,9 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					})
 				}
 				<h2 className='mhs'>
-					<button className='action-btn right' onClick={(e) => this.onAddBlueprint()}>
+					{ /* <button className='action-btn right' onClick={(e) => this.onAddBlueprint()}>
 						<FontAwesomeIcon icon={faPlus} />
-					</button>
+					</button> */ }
 					{t('Blueprints')}
 				</h2>
 				<hr className='vsubtle man' />
