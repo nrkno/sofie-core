@@ -33,6 +33,7 @@ import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBa
 import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
 import { ShowStylesAPI } from '../../lib/api/showStyles'
 import { callMethod } from '../lib/clientAPI'
+import { BlueprintAPI } from '../../lib/api/blueprint'
 
 class WelcomeToSettings extends React.Component {
 	render () {
@@ -123,11 +124,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 	}
 	onAddBlueprint () {
 		let t = this.props.t
-		// doModalDialog({
-		// 	acceptOnly: true,
-		// 	title: t('Add new blueprint'),
-		// 	message: t('You can add a new blueprint by uploading')
-		// })
+		callMethod('Menu', BlueprintAPI.methods.insertBlueprint)
 	}
 
 	onDeleteShowStyleBase (item: ShowStyleBase) {
@@ -199,9 +196,9 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					})
 				}
 				<h2 className='mhs'>
-					{ /* <button className='action-btn right' onClick={(e) => this.onAddBlueprint()}>
+					<button className='action-btn right' onClick={(e) => this.onAddBlueprint()}>
 						<FontAwesomeIcon icon={faPlus} />
-					</button> */ }
+					</button>
 					{t('Blueprints')}
 				</h2>
 				<hr className='vsubtle man' />

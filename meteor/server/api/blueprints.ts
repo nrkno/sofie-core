@@ -35,6 +35,8 @@ import { Random } from 'meteor/random'
 import { getShowStyleCompound } from '../../lib/collections/ShowStyleVariants'
 import { check, Match } from 'meteor/check'
 import { parse as parseUrl } from 'url'
+import { BlueprintAPI } from '../../lib/api/blueprint'
+import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 
 class CommonContext implements ICommonContext {
 	runningOrderId: string
@@ -251,6 +253,27 @@ export function getMessageContext (runningOrder: RunningOrder): MessageContext {
 
 	return new MessageContextImpl(runningOrder)
 }
+export function insertBlueprint (name?: string): string {
+	return Blueprints.insert({
+		_id: Random.id(),
+		name: name || 'Default Blueprint',
+		code: '',
+		modified: getCurrentTime(),
+		created: getCurrentTime(),
+
+		studioConfigManifest: [],
+		showStyleConfigManifest: [],
+
+		blueprintVersion: '',
+		integrationVersion: '',
+		TSRVersion: '',
+		minimumCoreVersion: ''
+	})
+}
+export function removeBlueprint (id: string) {
+	check(id, String)
+	Blueprints.remove(id)
+}
 
 const blueprintCache: {[id: string]: Cache} = {}
 interface Cache {
@@ -460,3 +483,12 @@ postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessag
 
 	res.end(content)
 })
+
+let methods: Methods = {}
+methods[BlueprintAPI.methods.insertBlueprint] = () => {
+	return insertBlueprint()
+}
+methods[BlueprintAPI.methods.removeBlueprint] = (id: string) => {
+	return removeBlueprint(id)
+}
+setMeteorMethods(wrapMethods(methods))
