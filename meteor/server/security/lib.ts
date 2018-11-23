@@ -6,7 +6,6 @@ import * as _ from 'underscore'
  */
 export function allowOnlyFields (fieldNames: string[], allowFields: string[]) {
 	let allow: boolean = true
-	console.log(fieldNames)
 	_.find(fieldNames, (field) => {
 		if (allowFields.indexOf(field) === -1) {
 			allow = false

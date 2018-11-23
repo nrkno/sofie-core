@@ -147,7 +147,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<p>{t('Are you sure you want to delete the blueprint "{{blueprintId}}"?', { blueprintId: blueprint && blueprint.name })}</p>
 			],
 			onAccept: () => {
-				Blueprints.remove(blueprint._id)
+				callMethod('ModalDialog', BlueprintAPI.methods.removeBlueprint, blueprint._id)
 			}
 		})
 	}
