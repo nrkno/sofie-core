@@ -79,6 +79,9 @@ export interface Version {
 	patch: number
 	label?: string
 }
+export function stripVersion (v: string): string {
+	return v.replace(/[^\d.]/g,'')
+}
 export function parseVersion (v: string): Version {
 
 	// https://github.com/semver/semver/issues/232

@@ -15,6 +15,15 @@ export interface Blueprint {
 	studioConfigManifest: ConfigManifestEntry[]
 	showStyleConfigManifest: ConfigManifestEntry[]
 
+	databaseVersion: {
+		showStyle: {
+			[showStyleBaseId: string]: string
+		},
+		studio: {
+			[showStyleBaseId: string]: string
+		}
+	}
+
 	blueprintVersion: string
 	integrationVersion: string
 	TSRVersion: string

@@ -37,6 +37,7 @@ import { check, Match } from 'meteor/check'
 import { parse as parseUrl } from 'url'
 import { BlueprintAPI } from '../../lib/api/blueprint'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
+import { parseVersion } from '../../lib/collections/CoreSystem';
 
 class CommonContext implements ICommonContext {
 	runningOrderId: string
@@ -264,6 +265,8 @@ export function insertBlueprint (name?: string): string {
 		studioConfigManifest: [],
 		showStyleConfigManifest: [],
 
+		databaseVersion: '0.0.0',
+
 		blueprintVersion: '',
 		integrationVersion: '',
 		TSRVersion: '',
@@ -297,7 +300,7 @@ export function loadBlueprints (showStyleBase: ShowStyleBase): BlueprintManifest
 		throw new Meteor.Error(500, `Blueprint "${showStyleBase.blueprintId}" code not set!`)
 	}
 }
-export function evalBlueprints (blueprint: Blueprint, noCache: boolean): BlueprintManifest {
+export function evalBlueprints (blueprint: Blueprint, noCache?: boolean): BlueprintManifest {
 	let cached: Cache | null = null
 	if (!noCache) {
 		// First, check if we've got the function cached:
@@ -458,19 +461,26 @@ postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessag
 			modified: getCurrentTime(),
 			studioConfigManifest: [],
 			showStyleConfigManifest: [],
+			databaseVersion: '0.0.0',
 			blueprintVersion: '',
 			integrationVersion: '',
 			TSRVersion: '',
 			minimumCoreVersion: ''
 		}
 
-		const BlueprintManifest: BlueprintManifest = evalBlueprints(newBlueprint, false)
-		newBlueprint.blueprintVersion = BlueprintManifest.blueprintVersion
-		newBlueprint.integrationVersion = BlueprintManifest.integrationVersion
-		newBlueprint.TSRVersion = BlueprintManifest.TSRVersion
-		newBlueprint.minimumCoreVersion = BlueprintManifest.minimumCoreVersion
-		newBlueprint.studioConfigManifest = BlueprintManifest.studioConfigManifest
-		newBlueprint.showStyleConfigManifest = BlueprintManifest.showStyleConfigManifest
+		const blueprintManifest: BlueprintManifest = evalBlueprints(newBlueprint, false)
+		newBlueprint.blueprintVersion			= blueprintManifest.blueprintVersion
+		newBlueprint.integrationVersion			= blueprintManifest.integrationVersion
+		newBlueprint.TSRVersion					= blueprintManifest.TSRVersion
+		newBlueprint.minimumCoreVersion			= blueprintManifest.minimumCoreVersion
+		newBlueprint.studioConfigManifest		= blueprintManifest.studioConfigManifest
+		newBlueprint.showStyleConfigManifest	= blueprintManifest.showStyleConfigManifest
+
+		// Parse the versions, just to verify that the format is correct:
+		parseVersion(blueprintManifest.blueprintVersion)
+		parseVersion(blueprintManifest.integrationVersion)
+		parseVersion(blueprintManifest.TSRVersion)
+		parseVersion(blueprintManifest.minimumCoreVersion)
 
 		Blueprints.upsert(newBlueprint._id, newBlueprint)
 

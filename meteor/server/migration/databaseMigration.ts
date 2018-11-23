@@ -12,7 +12,9 @@ import {
 	MigrationMethods,
 	GetMigrationStatusResultNoNeed,
 	GetMigrationStatusResultMigrationNeeded,
-	RunMigrationResult
+	RunMigrationResult,
+	MigrationChunk,
+	MigrationStepType
 } from '../../lib/api/migration'
 import {
 	MigrationStepInput,
@@ -28,6 +30,10 @@ import { setMeteorMethods } from '../methods'
 import { logger } from '../../lib/logging'
 import { Optional } from '../../lib/lib'
 import { storeSystemSnapshot } from '../api/snapshot'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { Blueprints } from '../../lib/collections/Blueprints'
+import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { evalBlueprints } from '../api/blueprints'
 
 /** The current database version, x.y.z
  * 0.16.0: Release 3 (2018-10-26)
@@ -62,19 +68,20 @@ export function isVersionSupported (version: Version) {
 }
 
 interface MigrationStepInternal extends MigrationStep {
-	_rank: number,
-	_version: Version,
+	chunk: MigrationChunk
+	_rank: number
+	_version: Version // step version
 	_validateResult: string | boolean
 }
 
-const systemMigrationSteps: Array<MigrationStep> = []
+const coreMigrationSteps: Array<MigrationStep> = []
 
 /**
  * Add new system Migration step
  * @param step
  */
 export function addMigrationStep (step: MigrationStep) {
-	systemMigrationSteps.push(step)
+	coreMigrationSteps.push(step)
 }
 /**
  * Convenience method to add multiple steps of the same version
@@ -94,20 +101,117 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 	let databaseSystem = getCoreSystem()
 	if (!databaseSystem) throw new Meteor.Error(500, 'System version not set up')
 
-	let baseVersion = parseVersion(baseVersionStr || databaseSystem.version)
-	let targetVersion = parseVersion(targetVersionStr || CURRENT_SYSTEM_VERSION)
-
-	// Discover applcable migration steps:
+	// Discover applicable migration steps:
 	let allMigrationSteps: Array<MigrationStepInternal> = []
+	let migrationChunks: Array<MigrationChunk> = []
 	let rank: number = 0
 
-	_.each(systemMigrationSteps, (step) => {
-		allMigrationSteps.push(_.extend(step, {
-			_rank: rank++,
-			_version: parseVersion(step.version)
-		}))
+	// Collect migration steps from core system:
+	let chunk: MigrationChunk = {
+		sourceType:				MigrationStepType.CORE,
+		sourceName:				'system',
+		_dbVersion: 			parseVersion(baseVersionStr || databaseSystem.version),
+		_targetVersion: 		parseVersion(targetVersionStr || CURRENT_SYSTEM_VERSION)
+	}
+	migrationChunks.push(chunk)
+
+	_.each(coreMigrationSteps, (step) => {
+		allMigrationSteps.push({
+			id:						step.id,
+			overrideSteps:			step.overrideSteps,
+			validate:				step.validate,
+			canBeRunAutomatically:	step.canBeRunAutomatically,
+			migrate:				step.migrate,
+			input:					step.input,
+			dependOnResultFrom:		step.dependOnResultFrom,
+			version: 				step.version,
+			_version: 				parseVersion(step.version),
+			_validateResult: 		false, // to be set later
+			_rank: 					rank++,
+			chunk: 					chunk
+		})
 	})
-	// TODO: add steps generated from blueprint here
+	// Collect migration steps from blueprints:
+
+	Blueprints.find({}).forEach((blueprint) => {
+
+		let bp = evalBlueprints(blueprint)
+
+		let blueprintTargetVersion = parseVersion(bp.blueprintVersion)
+
+		// @ts-ignore
+		if (blueprint.databaseVersion) blueprint.databaseVersion = {}
+		if (blueprint.databaseVersion.showStyle) blueprint.databaseVersion.showStyle = {}
+		if (blueprint.databaseVersion.studio) blueprint.databaseVersion.studio = {}
+
+		// Find all showStyles that uses this blueprint:
+		let showStyleBaseIds: {[showStyleBaseId: string]: true} = {}
+		let studioIds: {[studioId: string]: true} = {}
+		ShowStyleBases.find({
+			blueprintId: blueprint._id
+		}).forEach((showStyleBase) => {
+			showStyleBaseIds[showStyleBase._id] = true
+
+			let chunk: MigrationChunk = {
+				sourceType:				MigrationStepType.SHOWSTYLE,
+				sourceName:				'Blueprint ' + blueprint.name + ' for showStyle ' + showStyleBase.name,
+				_dbVersion: 			parseVersion(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0'),
+				_targetVersion: 		parseVersion(bp.blueprintVersion)
+			}
+			migrationChunks.push(chunk)
+			// Add show-style migration steps from blueprint:
+			_.each(bp.showStyleMigrations, (step) => {
+				allMigrationSteps.push(prefixIdsOnStep(blueprint.databaseVersion + '_', {
+					id:						step.id,
+					overrideSteps:			step.overrideSteps,
+					validate:				step.validate,
+					canBeRunAutomatically:	step.canBeRunAutomatically,
+					migrate:				step.migrate,
+					input:					step.input,
+					dependOnResultFrom:		step.dependOnResultFrom,
+					version: 				step.version,
+					_version: 				parseVersion(step.version),
+					_validateResult: 		false, // to be set later
+					_rank: 					rank++,
+					chunk: 					chunk
+				}))
+			})
+
+			// Find all studios that supports this showStyle
+			StudioInstallations.find({
+				supportedShowStyleBase: showStyleBase._id
+			}).forEach((studio) => {
+				if (!studioIds[studio._id]) {
+					studioIds[studio._id] = true
+
+					let chunk: MigrationChunk = {
+						sourceType:				MigrationStepType.STUDIO,
+						sourceName:				'Blueprint ' + blueprint.name + ' for studio ' + studio.name,
+						_dbVersion: 			parseVersion(blueprint.databaseVersion.studio[studio._id] || '0.0.0'),
+						_targetVersion: 		parseVersion(bp.blueprintVersion)
+					}
+					migrationChunks.push(chunk)
+					// Add studio migration steps from blueprint:
+					_.each(bp.showStyleMigrations, (step) => {
+						allMigrationSteps.push(prefixIdsOnStep(blueprint.databaseVersion + '_', {
+							id:						step.id,
+							overrideSteps:			step.overrideSteps,
+							validate:				step.validate,
+							canBeRunAutomatically:	step.canBeRunAutomatically,
+							migrate:				step.migrate,
+							input:					step.input,
+							dependOnResultFrom:		step.dependOnResultFrom,
+							version: 				step.version,
+							_version: 				parseVersion(step.version),
+							_validateResult: 		false, // to be set later
+							_rank: 					rank++,
+							chunk: 					chunk
+						}))
+					})
+				}
+			})
+		})
+	})
 
 	// Sort, smallest version first:
 	allMigrationSteps.sort((a, b) => {
@@ -137,8 +241,8 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 		if (partialMigration) return
 		let stepVersion = step._version
 		if (
-			compareVersions(stepVersion, baseVersion) > 0 && // step version is larger than database version
-			compareVersions(stepVersion, targetVersion) <= 0 // // step version is less than (or equal) to system version
+			compareVersions(stepVersion, step.chunk._dbVersion) > 0 && // step version is larger than database version
+			compareVersions(stepVersion, step.chunk._targetVersion) <= 0 // // step version is less than (or equal) to system version
 		) {
 			// Step is in play
 
@@ -227,8 +331,7 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 
 	return {
 		hash:				hash,
-		baseVersion:		baseVersion.toString(),
-		targetVersion:		targetVersion.toString(),
+		chunks: 			migrationChunks,
 		steps: 				_.values(migrationSteps),
 		automaticStepCount: automaticStepCount,
 		manualStepCount: 	manualStepCount,
@@ -236,6 +339,15 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 		manualInputs: 		manualInputs,
 		partialMigration: 	partialMigration
 	}
+}
+function prefixIdsOnStep (prefix: string, step: MigrationStepInternal): MigrationStepInternal {
+	step.id = prefix + step.id
+	if (step.overrideSteps) {
+		step.overrideSteps = _.map(step.overrideSteps, (override) => {
+			return prefix + override
+		})
+	}
+	return step
 }
 
 export function runMigration (
@@ -367,8 +479,7 @@ function getMigrationStatus (): GetMigrationStatusResultMigrationNeeded | GetMig
 
 				manualInputs:				migration.manualInputs,
 				hash:						migration.hash,
-				baseVersion: 				migration.baseVersion,
-				targetVersion: 				migration.targetVersion,
+				chunks:						migration.chunks,
 
 				automaticStepCount: 		migration.automaticStepCount,
 				manualStepCount: 			migration.manualStepCount,

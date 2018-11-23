@@ -1,4 +1,5 @@
 import { MigrationStepInput } from 'tv-automation-sofie-blueprints-integration'
+import { Version } from '../collections/CoreSystem'
 
 export enum MigrationMethods {
 	'getMigrationStatus' 	= 'migration.getMigrationStatus',
@@ -21,12 +22,11 @@ export interface GetMigrationStatusResultMigrationNeeded extends GetMigrationSta
 		canDoAutomaticMigration: boolean
 		manualInputs: Array<MigrationStepInput>
 		hash: string
-		baseVersion: string
-		targetVersion: string
 		automaticStepCount: number
 		manualStepCount: number
 		ignoredStepCount: number
 		partialMigration: boolean
+		chunks: Array<MigrationChunk>
 	}
 }
 
@@ -35,4 +35,15 @@ export interface RunMigrationResult {
 	partialMigration: boolean
 	warnings: Array<string>
 	snapshot: string
+}
+export enum MigrationStepType {
+	CORE = 'core',
+	STUDIO = 'studio',
+	SHOWSTYLE = 'showstyle'
+}
+export interface MigrationChunk {
+	sourceType: MigrationStepType
+	sourceName: string
+	_dbVersion: Version  // database version
+	_targetVersion: Version  // target version
 }
