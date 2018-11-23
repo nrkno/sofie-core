@@ -134,83 +134,84 @@ export function prepareMigration (targetVersionStr?: string, baseVersionStr?: st
 	// Collect migration steps from blueprints:
 
 	Blueprints.find({}).forEach((blueprint) => {
+		if (blueprint.code) {
+			let bp = evalBlueprints(blueprint)
 
-		let bp = evalBlueprints(blueprint)
+			let blueprintTargetVersion = parseVersion(bp.blueprintVersion)
 
-		let blueprintTargetVersion = parseVersion(bp.blueprintVersion)
+			// @ts-ignore
+			if (!blueprint.databaseVersion) blueprint.databaseVersion = {}
+			if (!blueprint.databaseVersion.showStyle) blueprint.databaseVersion.showStyle = {}
+			if (!blueprint.databaseVersion.studio) blueprint.databaseVersion.studio = {}
 
-		// @ts-ignore
-		if (blueprint.databaseVersion) blueprint.databaseVersion = {}
-		if (blueprint.databaseVersion.showStyle) blueprint.databaseVersion.showStyle = {}
-		if (blueprint.databaseVersion.studio) blueprint.databaseVersion.studio = {}
+			// Find all showStyles that uses this blueprint:
+			let showStyleBaseIds: {[showStyleBaseId: string]: true} = {}
+			let studioIds: {[studioId: string]: true} = {}
+			ShowStyleBases.find({
+				blueprintId: blueprint._id
+			}).forEach((showStyleBase) => {
+				showStyleBaseIds[showStyleBase._id] = true
 
-		// Find all showStyles that uses this blueprint:
-		let showStyleBaseIds: {[showStyleBaseId: string]: true} = {}
-		let studioIds: {[studioId: string]: true} = {}
-		ShowStyleBases.find({
-			blueprintId: blueprint._id
-		}).forEach((showStyleBase) => {
-			showStyleBaseIds[showStyleBase._id] = true
-
-			let chunk: MigrationChunk = {
-				sourceType:				MigrationStepType.SHOWSTYLE,
-				sourceName:				'Blueprint ' + blueprint.name + ' for showStyle ' + showStyleBase.name,
-				_dbVersion: 			parseVersion(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0'),
-				_targetVersion: 		parseVersion(bp.blueprintVersion)
-			}
-			migrationChunks.push(chunk)
-			// Add show-style migration steps from blueprint:
-			_.each(bp.showStyleMigrations, (step) => {
-				allMigrationSteps.push(prefixIdsOnStep(blueprint.databaseVersion + '_', {
-					id:						step.id,
-					overrideSteps:			step.overrideSteps,
-					validate:				step.validate,
-					canBeRunAutomatically:	step.canBeRunAutomatically,
-					migrate:				step.migrate,
-					input:					step.input,
-					dependOnResultFrom:		step.dependOnResultFrom,
-					version: 				step.version,
-					_version: 				parseVersion(step.version),
-					_validateResult: 		false, // to be set later
-					_rank: 					rank++,
-					chunk: 					chunk
-				}))
-			})
-
-			// Find all studios that supports this showStyle
-			StudioInstallations.find({
-				supportedShowStyleBase: showStyleBase._id
-			}).forEach((studio) => {
-				if (!studioIds[studio._id]) {
-					studioIds[studio._id] = true
-
-					let chunk: MigrationChunk = {
-						sourceType:				MigrationStepType.STUDIO,
-						sourceName:				'Blueprint ' + blueprint.name + ' for studio ' + studio.name,
-						_dbVersion: 			parseVersion(blueprint.databaseVersion.studio[studio._id] || '0.0.0'),
-						_targetVersion: 		parseVersion(bp.blueprintVersion)
-					}
-					migrationChunks.push(chunk)
-					// Add studio migration steps from blueprint:
-					_.each(bp.showStyleMigrations, (step) => {
-						allMigrationSteps.push(prefixIdsOnStep(blueprint.databaseVersion + '_', {
-							id:						step.id,
-							overrideSteps:			step.overrideSteps,
-							validate:				step.validate,
-							canBeRunAutomatically:	step.canBeRunAutomatically,
-							migrate:				step.migrate,
-							input:					step.input,
-							dependOnResultFrom:		step.dependOnResultFrom,
-							version: 				step.version,
-							_version: 				parseVersion(step.version),
-							_validateResult: 		false, // to be set later
-							_rank: 					rank++,
-							chunk: 					chunk
-						}))
-					})
+				let chunk: MigrationChunk = {
+					sourceType:				MigrationStepType.SHOWSTYLE,
+					sourceName:				'Blueprint ' + blueprint.name + ' for showStyle ' + showStyleBase.name,
+					_dbVersion: 			parseVersion(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0'),
+					_targetVersion: 		parseVersion(bp.blueprintVersion)
 				}
+				migrationChunks.push(chunk)
+				// Add show-style migration steps from blueprint:
+				_.each(bp.showStyleMigrations, (step) => {
+					allMigrationSteps.push(prefixIdsOnStep(blueprint.databaseVersion + '_', {
+						id:						step.id,
+						overrideSteps:			step.overrideSteps,
+						validate:				step.validate,
+						canBeRunAutomatically:	step.canBeRunAutomatically,
+						migrate:				step.migrate,
+						input:					step.input,
+						dependOnResultFrom:		step.dependOnResultFrom,
+						version: 				step.version,
+						_version: 				parseVersion(step.version),
+						_validateResult: 		false, // to be set later
+						_rank: 					rank++,
+						chunk: 					chunk
+					}))
+				})
+
+				// Find all studios that supports this showStyle
+				StudioInstallations.find({
+					supportedShowStyleBase: showStyleBase._id
+				}).forEach((studio) => {
+					if (!studioIds[studio._id]) { // only run once per blueprint and studio
+						studioIds[studio._id] = true
+
+						let chunk: MigrationChunk = {
+							sourceType:				MigrationStepType.STUDIO,
+							sourceName:				'Blueprint ' + blueprint.name + ' for studio ' + studio.name,
+							_dbVersion: 			parseVersion(blueprint.databaseVersion.studio[studio._id] || '0.0.0'),
+							_targetVersion: 		parseVersion(bp.blueprintVersion)
+						}
+						migrationChunks.push(chunk)
+						// Add studio migration steps from blueprint:
+						_.each(bp.showStyleMigrations, (step) => {
+							allMigrationSteps.push(prefixIdsOnStep(blueprint.databaseVersion + '_', {
+								id:						step.id,
+								overrideSteps:			step.overrideSteps,
+								validate:				step.validate,
+								canBeRunAutomatically:	step.canBeRunAutomatically,
+								migrate:				step.migrate,
+								input:					step.input,
+								dependOnResultFrom:		step.dependOnResultFrom,
+								version: 				step.version,
+								_version: 				parseVersion(step.version),
+								_validateResult: 		false, // to be set later
+								_rank: 					rank++,
+								chunk: 					chunk
+							}))
+						})
+					}
+				})
 			})
-		})
+		}
 	})
 
 	// Sort, smallest version first:

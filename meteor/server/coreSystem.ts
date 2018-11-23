@@ -5,6 +5,8 @@ import { CURRENT_SYSTEM_VERSION, GENESIS_SYSTEM_VERSION } from './migration/data
 import { setSystemStatus, StatusCode, StatusObject, removeSystemStatus } from './systemStatus'
 import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
+import { ShowStyleBases } from '../lib/collections/ShowStyleBases';
+import { StudioInstallations } from '../lib/collections/StudioInstallations';
 const PackageInfo = require('../package.json')
 
 function initializeCoreSystem () {
@@ -59,6 +61,55 @@ function checkDatabaseVersions () {
 		Blueprints.find().forEach((blueprint) => {
 			if (blueprint.code) {
 				blueprintIds[blueprint._id] = true
+
+				// @ts-ignore
+				if (!blueprint.databaseVersion) blueprint.databaseVersion = {}
+				if (!blueprint.databaseVersion.showStyle) blueprint.databaseVersion.showStyle = {}
+				if (!blueprint.databaseVersion.studio) blueprint.databaseVersion.studio = {}
+
+				let o: {
+					statusCode: StatusCode
+					messages: string[]
+				} = {
+					statusCode: StatusCode.BAD,
+					messages: []
+				}
+
+				let studioIds: {[studioId: string]: true} = {}
+				ShowStyleBases.find({
+					blueprintId: blueprint._id
+				}).forEach((showStyleBase) => {
+
+					if (o.statusCode === StatusCode.GOOD) {
+						o = checkDatabaseVersion(
+							blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
+							parseVersion(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0'),
+							'to fix, run migration',
+							'blueprint',
+							'database'
+						)
+					}
+
+					StudioInstallations.find({
+						supportedShowStyleBase: showStyleBase._id
+					}).forEach((studio) => {
+						if (!studioIds[studio._id]) { // only run once per blueprint and studio
+							studioIds[studio._id] = true
+
+							if (o.statusCode === StatusCode.GOOD) {
+								o = checkDatabaseVersion(
+									blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
+									parseVersion(blueprint.databaseVersion.studio[studio._id] || '0.0.0'),
+									'to fix, run migration',
+									'blueprint',
+									'database'
+								)
+							}
+						}
+					})
+				})
+
+
 
 				setSystemStatus('blueprintVersion_' + blueprint._id, checkDatabaseVersion(
 					blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
