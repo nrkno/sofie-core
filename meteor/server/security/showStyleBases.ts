@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { rejectFields } from './lib'
 
 export namespace ShowStyleBasesSecurity {
 	export function allowReadAccess (selector: object, token: string, context) {
@@ -18,7 +19,9 @@ ShowStyleBases.allow({
 		return false
 	},
 	update (userId, doc, fields, modifier) {
-		return true
+		return rejectFields(fields, [
+			'_id'
+		])
 	},
 	remove (userId, doc) {
 		return false

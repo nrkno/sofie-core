@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { rejectFields } from './lib'
 
 // Setup rules:
 ShowStyleVariants.allow({
@@ -7,8 +8,9 @@ ShowStyleVariants.allow({
 		return false
 	},
 	update (userId, doc, fields, modifier) {
-		if (fields.indexOf('showStyleBaseId') !== -1) return false
-		return true
+		return rejectFields(fields, [
+			'showStyleBaseId'
+		])
 	},
 	remove (userId, doc) {
 		return false

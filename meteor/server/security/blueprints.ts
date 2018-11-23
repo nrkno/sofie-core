@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
+import { allowOnlyFields, rejectFields } from './lib'
 
 export namespace BlueprintsSecurity {
 	export function allowReadAccess (selector: object, token: string, context) {
@@ -16,12 +17,14 @@ export namespace BlueprintsSecurity {
 // Setup rules:
 Blueprints.allow({
 	insert (userId: string, doc: Blueprint): boolean {
-		return true // Not allowed client-side
+		return false
 	},
 	update (userId, doc, fields, modifier) {
-		return true // Not allowed client-side
+		return allowOnlyFields(fields, [
+			'name'
+		])
 	},
 	remove (userId, doc) {
-		return true // Not allowed client-side
+		return false
 	}
 })
