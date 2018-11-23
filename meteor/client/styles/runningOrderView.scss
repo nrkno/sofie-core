@@ -443,6 +443,44 @@ body.vertical-overflow-only {
 		margin-right: 0em;
 		letter-spacing: 0px;
 	}
+	.segment-timeline__timeline-zoom-buttons {
+		position: relative;
+		grid-column: segment-group-controls / timeline;
+		grid-row: zoom-area / end;
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+
+		opacity: 0;
+		transition: 0.5s opacity ease-in-out;
+
+		> .segment-timeline__timeline-zoom-buttons__button {
+			min-width: 30px;
+			min-height: 30px;
+			max-width: 30px;
+			max-height: 30px;
+			background: transparent;
+			transition: 0.3s background-color ease-in-out;
+			border-radius: 100%;
+			overflow: visible;
+
+			&:hover {
+				background: $segment-title-background-color;
+				transition: 0s background-color;
+			}
+
+			&:active {
+				background: $ui-button-primary;
+				transition: 0s background-color;
+			}
+		}
+	}
+	&:hover {
+		.segment-timeline__timeline-zoom-buttons {
+			transition: 0.2s opacity ease-in-out;
+			opacity: 1;
+		}
+	}
 	.segment-timeline__next-preview {
 		position: relative;
 		grid-column: end / future-timeline-end;
