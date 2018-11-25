@@ -5,8 +5,9 @@ import { CURRENT_SYSTEM_VERSION, GENESIS_SYSTEM_VERSION } from './migration/data
 import { setSystemStatus, StatusCode, StatusObject, removeSystemStatus } from './systemStatus'
 import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
-import { ShowStyleBases } from '../lib/collections/ShowStyleBases';
-import { StudioInstallations } from '../lib/collections/StudioInstallations';
+import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
+import { StudioInstallations } from '../lib/collections/StudioInstallations'
+import { logger } from './logging'
 const PackageInfo = require('../package.json')
 
 function initializeCoreSystem () {
@@ -108,9 +109,6 @@ function checkDatabaseVersions () {
 						}
 					})
 				})
-
-
-
 				setSystemStatus('blueprintVersion_' + blueprint._id, checkDatabaseVersion(
 					blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
 					parseVersion(blueprint.databaseVersion || '0.0.0'),
@@ -234,9 +232,80 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 		})
 	}
 }
+function startupMessage () {
+	logger.info(`Core starting up`)
+	logger.info(`Core system version: "${CURRENT_SYSTEM_VERSION}"`)
+
+	logger.info(`Core package version: "${PackageInfo.version}"`)
+
+	let dependencies: any = PackageInfo.dependencies
+	if (dependencies) {
+
+		let names = _.keys(dependencies)
+		// Omit system libraries
+		let omitNames = [
+			'@babel/runtime',
+			'@fortawesome/fontawesome',
+			'@fortawesome/fontawesome-free-solid',
+			'@fortawesome/react-fontawesome',
+			'@nrk/core-icons',
+			'@slack/client',
+			'@types/body-parser',
+			'@types/request',
+			'body-parser',
+			'chai',
+			'classnames',
+			'core-js',
+			'element-resize-event',
+			'fast-clone',
+			'html-entities',
+			'i18next',
+			'i18next-browser-languagedetector',
+			'i18next-xhr-backend',
+			'indexof',
+			'jquery',
+			'lottie-web',
+			'meteor-node-stubs',
+			'moment',
+			'ntp-client',
+			'object-path',
+			'prop-types',
+			'query-string',
+			'rc-tooltip',
+			'react',
+			'react-bootstrap',
+			'react-contextmenu',
+			'react-datepicker',
+			'react-dom',
+			'react-escape',
+			'react-hotkeys',
+			'react-i18next',
+			'react-lottie',
+			'react-moment',
+			'react-router-dom',
+			'react-timer-hoc',
+			'safer-eval',
+			'smpte-timecode',
+			'soap',
+			'underscore',
+			'velocity-animate',
+			'velocity-react',
+			'winston',
+			'xml2json',
+		]
+		names = _.filter(names, (name) => {
+			return omitNames.indexOf(name) === -1
+		})
+		_.each(names, (name) => {
+			logger.info(`Core package.${name} version: "${dependencies[name]}"`)
+
+		})
+	} else logger.error(`Core package dependencies missing`)
+}
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
+		startupMessage()
 		initializeCoreSystem()
 	}
 })
