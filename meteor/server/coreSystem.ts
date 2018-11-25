@@ -109,13 +109,13 @@ function checkDatabaseVersions () {
 						}
 					})
 				})
-				setSystemStatus('blueprintVersion_' + blueprint._id, checkDatabaseVersion(
-					blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
-					parseVersion(blueprint.databaseVersion || '0.0.0'),
-					'to fix, run migration',
-					'blueprint',
-					'database'
-				))
+				// setSystemStatus('blueprintVersion_' + blueprint._id, checkDatabaseVersion(
+				// 	blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
+				// 	parseVersion(blueprint.databaseVersion || '0.0.0'),
+				// 	'to fix, run migration',
+				// 	'blueprint',
+				// 	'database'
+				// ))
 
 				checkBlueprintCompability(blueprint)
 				// also check:

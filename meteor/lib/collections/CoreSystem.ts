@@ -82,11 +82,22 @@ export interface Version {
 export function stripVersion (v: string): string {
 	return v.replace(/[^\d.]/g,'')
 }
-export function parseVersion (v: string): Version {
+export function parseVersion (v: string | Version): Version {
 
-	// https://github.com/semver/semver/issues/232
-	let m = (v + '').match(/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/)
+	let m: any
+	if (_.isString(v)) {
+		// https://github.com/semver/semver/issues/232
+		m = (v + '').match(/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/)
 
+	} else if (_.isObject(v)) {
+		m = [
+			'',
+			v.major + '',
+			v.minor + '',
+			v.patch + '',
+			v.label + ''
+		]
+	}
 	if (m) {
 		let major = parseInt(m[1], 10)
 		let minor = parseInt(m[2], 10)

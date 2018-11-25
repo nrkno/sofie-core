@@ -37,7 +37,7 @@ import { check, Match } from 'meteor/check'
 import { parse as parseUrl } from 'url'
 import { BlueprintAPI } from '../../lib/api/blueprint'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
-import { parseVersion } from '../../lib/collections/CoreSystem';
+import { parseVersion } from '../../lib/collections/CoreSystem'
 
 class CommonContext implements ICommonContext {
 	runningOrderId: string
@@ -265,7 +265,10 @@ export function insertBlueprint (name?: string): string {
 		studioConfigManifest: [],
 		showStyleConfigManifest: [],
 
-		databaseVersion: '0.0.0',
+		databaseVersion: {
+			studio: {},
+			showStyle: {}
+		},
 
 		blueprintVersion: '',
 		integrationVersion: '',
@@ -461,7 +464,10 @@ postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessag
 			modified: getCurrentTime(),
 			studioConfigManifest: [],
 			showStyleConfigManifest: [],
-			databaseVersion: '0.0.0',
+			databaseVersion: {
+				studio: {},
+				showStyle: {}
+			},
 			blueprintVersion: '',
 			integrationVersion: '',
 			TSRVersion: '',

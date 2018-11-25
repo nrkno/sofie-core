@@ -20,7 +20,7 @@ export interface Blueprint {
 			[showStyleBaseId: string]: string
 		},
 		studio: {
-			[showStyleBaseId: string]: string
+			[studioId: string]: string
 		}
 	}
 
