@@ -188,14 +188,14 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 	let systemStatusId = 'blueprintCompability_' + blueprint._id
 
 	let integrationStatus = checkDatabaseVersion(
-		parseVersion(blueprint.integrationVersion),
+		parseVersion(blueprint.integrationVersion || '0.0.0'),
 		parseVersion(integrationVersionStr),
 		'Blueprint has to be updated',
 		'blueprint',
 		'core'
 	)
 	let tsrStatus = checkDatabaseVersion(
-		parseVersion(blueprint.TSRVersion),
+		parseVersion(blueprint.TSRVersion || '0.0.0'),
 		parseVersion(TSRTypesVersionStr),
 		'Blueprint has to be updated',
 		'blueprint',
