@@ -1519,7 +1519,7 @@ export namespace ServerPlayoutAPI {
 			let studio = StudioInstallations.findOne(evaluation.studioId)
 			if (!studio) throw new Meteor.Error(500, `Studio ${evaluation.studioId} not found!`)
 
-			let webhookUrl = studio.getConfigValue('slack_evaluation')
+			let webhookUrl = (studio.getConfigValue('slack_evaluation') + '')
 
 			if (webhookUrl) {
 				// Only send notes if not everything is OK

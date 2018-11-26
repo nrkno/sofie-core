@@ -56,7 +56,6 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 		})
 	}
 	onUpdateValue = (edit: any, newValue: any ) => {
-		console.log('edit', edit, newValue)
 		let attr = edit.props.attribute
 
 		if (attr) {

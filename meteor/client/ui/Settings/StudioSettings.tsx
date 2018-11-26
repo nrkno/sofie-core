@@ -98,7 +98,7 @@ export const ConfigSettings = translate()(class ConfigSettings extends React.Com
 		})
 	}
 	onDeleteConfigItem = (item: IConfigItem) => {
-		this.getCollection().update(item._id, {
+		this.getCollection().update(this.props.item._id, {
 			$pull: {
 				config: {
 					_id: item._id
@@ -186,7 +186,7 @@ export const ConfigSettings = translate()(class ConfigSettings extends React.Com
 				if (excludeIds.indexOf(item._id) !== -1) return null
 
 				return <React.Fragment key={item._id}>
-					<tr className={ClassNames({
+					<tr key={index} className={ClassNames({
 						'hl': this.isItemEdited(item)
 					})}>
 						<th className='settings-studio-custom-config-table__name c2'>

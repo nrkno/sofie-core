@@ -7,6 +7,7 @@ import * as _ from 'underscore'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
+import Moment from 'react-moment';
 
 interface IProps {
 	match: {
@@ -105,6 +106,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							<span className='mdfx'></span>
 						</div>
 					</label>
+					<div className='mod mvs mhs'>
+						<p>{t('Last modified')}: <Moment format='YYYY/MM/DD HH:mm:ss'>{blueprint.modified}</Moment></p>
+					</div>
 					{
 						blueprint.blueprintVersion ?
 						<div className='mod mvs mhs'>
