@@ -13,15 +13,20 @@ import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { Blueprint } from '../../../lib/collections/Blueprints'
+import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
 import { ConfigManifestEntry, ConfigManifestEntryType, IConfigItem } from 'tv-automation-sofie-blueprints-integration'
 import { literal } from '../../../lib/lib'
+import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
+import { logger } from '../../../lib/logging'
+import { MongoModifier } from '../../../lib/typings/meteor'
+
+export type ObjectWithConfig = StudioInstallation | ShowStyleBase | ShowStyleVariant
 
 interface IConfigManifestSettingsProps {
-	blueprint: Blueprint
+	manifest: ConfigManifestEntry[]
 
-	studioInstallation?: StudioInstallation
-	// TODO - showstyle mode
+	object: ObjectWithConfig
 }
 interface IConfigManifestSettingsState {
 	showAddItem: boolean
@@ -41,6 +46,16 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 			showDeleteConfirm: false,
 			deleteConfirmItem: undefined,
 			editedItems: []
+		}
+	}
+
+	updateObject<T> (obj: T, updateObj: MongoModifier<T>) {
+		if (obj instanceof StudioInstallation) {
+			StudioInstallations.update(obj._id, updateObj)
+		} else if (obj instanceof ShowStyleBase) {
+			ShowStyleBases.update(obj._id, updateObj)
+		} else if (obj instanceof ShowStyleVariant) {
+			ShowStyleVariants.update(obj._id, updateObj)
 		}
 	}
 
@@ -67,18 +82,16 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 		}
 
 		// Ensure the item exists, so edit by index works
-		if (this.props.studioInstallation) {
-			const valIndex = this.props.studioInstallation.config.findIndex(v => v._id === item.id)
-			if (valIndex === -1) {
-				StudioInstallations.update(this.props.studioInstallation._id, {
-					$push: {
-						config: literal<IConfigItem>({
-							_id: item.id,
-							value: ''
-						})
-					}
-				})
-			}
+		const valIndex = this.props.object.config.findIndex(v => v._id === item.id)
+		if (valIndex === -1) {
+			this.updateObject(this.props.object, {
+				$push: {
+					config: literal<IConfigItem>({
+						_id: item.id,
+						value: ''
+					})
+				}
+			})
 		}
 	}
 
@@ -101,17 +114,15 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 
 	handleConfirmAddItemAccept = (e) => {
 		if (this.state.addItemId) {
-			if (this.props.studioInstallation) {
-				const item = this.props.blueprint.studioConfigManifest.find(c => c.id === this.state.addItemId)
-				StudioInstallations.update(this.props.studioInstallation._id, {
-					$push: {
-						config: literal<IConfigItem>({
-							_id: this.state.addItemId,
-							value: item ? item.defaultVal : ''
-						})
-					}
-				})
-			}
+			const item = this.props.manifest.find(c => c.id === this.state.addItemId)
+			this.updateObject(this.props.object, {
+				$push: {
+					config: literal<IConfigItem>({
+						_id: this.state.addItemId,
+						value: item ? item.defaultVal : ''
+					})
+				}
+			})
 		}
 
 		this.setState({
@@ -137,15 +148,13 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 
 	handleConfirmDeleteAccept = (e) => {
 		if (this.state.deleteConfirmItem) {
-			if (this.props.studioInstallation) {
-				StudioInstallations.update(this.props.studioInstallation._id, {
-					$pull: {
-						config: {
-							_id: this.state.deleteConfirmItem.id
-						}
+			this.updateObject(this.props.object, {
+				$pull: {
+					config: {
+						_id: this.state.deleteConfirmItem.id
 					}
-				})
-			}
+				}
+			})
 		}
 
 		this.setState({
@@ -157,20 +166,16 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 	renderItems () {
 		const { t } = this.props
 
-		let options: ConfigManifestEntry[] = []
-		let values: IConfigItem[] = []
 		let collection: any = null
-		let obj: any = null
-
-		if (this.props.studioInstallation) {
-			options = this.props.blueprint.studioConfigManifest
-			values = this.props.studioInstallation.config
+		if (this.props.object instanceof StudioInstallation) {
 			collection = StudioInstallations
-			obj = this.props.studioInstallation
+		} else if (this.props.object instanceof ShowStyleBase) {
+			collection = ShowStyleBases
 		}
 
+		const values = this.props.object.config
 		return (
-			options.map((item, index) => {
+			this.props.manifest.map((item, index) => {
 				const valIndex = values.findIndex(v => v._id === item.id)
 				if (valIndex === -1 && !item.required) return
 
@@ -220,7 +225,7 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 													<EditAttribute
 														modifiedClassName='bghl'
 														attribute={'config.' + valIndex + '.value'}
-														obj={obj}
+														obj={this.props.object}
 														type='text'
 														collection={collection}
 														className='input text-input input-l' />
@@ -229,7 +234,7 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 													<EditAttribute
 														modifiedClassName='bghl'
 														attribute={'config.' + valIndex + '.value'}
-														obj={obj}
+														obj={this.props.object}
 														type='int'
 														collection={collection}
 														className='input text-input input-l' />
@@ -238,7 +243,7 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 													<EditAttribute
 														modifiedClassName='bghl'
 														attribute={'config.' + valIndex + '.value'}
-														obj={obj}
+														obj={this.props.object}
 														type='checkbox'
 														collection={collection}
 														className='input text-input input-l' />
@@ -263,10 +268,8 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 	getAddOptions () {
 		let existingIds: string[] = []
 		let addOptions: { value: string, name: string }[] = []
-		if (this.props.studioInstallation) {
-			existingIds = this.props.studioInstallation.config.map(c => c._id)
-			addOptions = this.props.blueprint.studioConfigManifest.map(c => ({ value: c.id, name: c.name }))
-		}
+		existingIds = this.props.object.config.map(c => c._id)
+		addOptions = this.props.manifest.map(c => ({ value: c.id, name: c.name }))
 
 		return addOptions.filter(o => existingIds.indexOf(o.value) === -1)
 	}
@@ -309,4 +312,43 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 			</div>
 		)
 	}
+}
+
+export function collectConfigs (item: ObjectWithConfig): ConfigManifestEntry[] {
+	let showStyleBases: Array<ShowStyleBase> = []
+
+	if (item instanceof StudioInstallation) {
+		// All showStyles that the studio is supposed to support:
+		showStyleBases = ShowStyleBases.find({
+			_id: {$in: item.supportedShowStyleBase || []}
+		}).fetch()
+	} else if (item instanceof ShowStyleBase) {
+		showStyleBases = [item]
+	} else if (item instanceof ShowStyleVariant) {
+		showStyleBases = ShowStyleBases.find({
+			_id: item.showStyleBaseId
+		}).fetch()
+	} else {
+		logger.error('collectConfigs: unknown item type', item)
+	}
+
+	// By extension, all blueprints that the studio is supposed to support:
+
+	let blueprints = Blueprints.find({
+		_id: {
+			$in: _.compact(_.map(showStyleBases, (showStyleBase) => {
+				return showStyleBase.blueprintId
+			}))
+		}
+	}).fetch()
+
+	let manifestEntries: Array<ConfigManifestEntry> = []
+	_.each(blueprints, (blueprint: Blueprint) => {
+		const entries = item instanceof StudioInstallation ? blueprint.studioConfigManifest : blueprint.showStyleConfigManifest
+		_.each(entries, (entry: ConfigManifestEntry) => {
+			// @todo: placeholder, implement this correctly
+			manifestEntries.push(entry)
+		})
+	})
+	return manifestEntries
 }

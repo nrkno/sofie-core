@@ -32,19 +32,17 @@ import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
 
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { translate } from 'react-i18next'
 import { ShowStyleBases, ShowStyleBase, } from '../../../lib/collections/ShowStyleBases'
-import { ConfigManifestEntry, IConfigItem, LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
+import { IConfigItem, LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
+import { ConfigManifestSettings, ObjectWithConfig, collectConfigs } from './ConfigManifestSettings'
 
-type ObjectWithConfig = StudioInstallation | ShowStyleBase | ShowStyleVariant
 interface IConfigSettingsProps {
 	item: ObjectWithConfig
 }
@@ -134,51 +132,12 @@ export const ConfigSettings = translate()(class ConfigSettings extends React.Com
 			throw new Meteor.Error('collectConfigs: unknown item type')
 		}
 	}
-	collectConfigs (item: ObjectWithConfig) {
-
-		let showStyleBases: Array<ShowStyleBase> = []
-
-		if (item instanceof StudioInstallation) {
-			// All showStyles that the studio is supposed to support:
-			showStyleBases = ShowStyleBases.find({
-				_id: {$in: item.supportedShowStyleBase || []}
-			}).fetch()
-		} else if (item instanceof ShowStyleBase) {
-			showStyleBases = [item]
-		} else if (item instanceof ShowStyleVariant) {
-			showStyleBases = ShowStyleBases.find({
-				_id: item.showStyleBaseId
-			}).fetch()
-		} else {
-			logger.error('collectConfigs: unknown item type', item)
-		}
-
-		// By extension, all blueprints that the studio is supposed to support:
-
-		let blueprints = Blueprints.find({
-			_id: {
-				$in: _.compact(_.map(showStyleBases, (showStyleBase) => {
-					return showStyleBase.blueprintId
-				}))
-			}
-		}).fetch()
-
-		let manifestEntries: Array<ConfigManifestEntry> = []
-		_.each(blueprints, (blueprint: Blueprint) => {
-			_.each(blueprint.studioConfigManifest, (entry: ConfigManifestEntry) => {
-				// @todo: placeholder, implement this correctly
-				manifestEntries.push(entry)
-			})
-		})
-		return manifestEntries
-	}
 
 	renderItems () {
 		const { t } = this.props
 
-		let manifestEntries = this.collectConfigs(this.props.item)
+		let manifestEntries = collectConfigs(this.props.item)
 
-		// const excludeIds = this.props.defaultBlueprint ? this.props.defaultBlueprint.studioConfigManifest.map(c => c.id) : []
 		const excludeIds = manifestEntries.map(c => c.id)
 		return (
 			(this.props.item.config || []).map((item, index) => {
@@ -1033,11 +992,11 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 						<StudioMappings studioInstallation={this.props.studioInstallation} />
 					</div>
 				</div>
-				{/* <div className='row'>
+				<div className='row'>
 					<div className='col c12 r1-c12'>
-						{ this.props.defaultBlueprint ? <ConfigManifestSettings t={this.props.t} blueprint={this.props.defaultBlueprint} studioInstallation={this.props.studioInstallation} /> : null }
+						<ConfigManifestSettings t={this.props.t} manifest={collectConfigs(this.props.studioInstallation)} object={this.props.studioInstallation} />
 					</div>
-				</div> */}
+				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
 						<ConfigSettings item={this.props.studioInstallation}/>

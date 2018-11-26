@@ -22,6 +22,7 @@ import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/Sh
 import { callMethod } from '../../lib/clientAPI'
 import { ShowStylesAPI } from '../../../lib/api/showStyles'
 import { ISourceLayer, SourceLayerType, IOutputLayer } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings';
 
 interface IProps {
 	match: {
@@ -139,7 +140,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
-						<ConfigSettings item={showStyleBase}/>
+						<ConfigManifestSettings t={this.props.t} manifest={collectConfigs(showStyleBase)} object={showStyleBase} />
 					</div>
 				</div>
 				<div className='row'>
@@ -1208,7 +1209,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 								</div>
 								<div className='row'>
 									<div className='col c12 r1-c12'>
-										<ConfigSettings item={showStyleVariant}/>
+										<ConfigManifestSettings t={this.props.t} manifest={collectConfigs(showStyleVariant)} object={showStyleVariant} />
 									</div>
 								</div>
 								<div className='mod alright'>
