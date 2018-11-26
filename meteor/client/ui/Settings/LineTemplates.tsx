@@ -211,8 +211,9 @@ declare interface Context {
 	getHashId: (stringToBeHashed?: string | number) => string
 	unhashId: (hash: string) => string
 	getLayer: (type: LayerType, key: string) => string
-	getConfigValue: (key: string, defaultValue?: any) => any
-	getValueByPath: (sourceObject: object | undefined, pathToAttributeInObject: string, defaultValue?: any) => any
+	getConfig: () => any
+	getValueByPath: (obj: object | undefined, path: string, defaultValue?: any) => any
+	setValueByPath: (obj: object | undefined, path: string, value: any) => void
 	iterateDeeply: (obj: any, iteratee: (val: any, key?: string | number) => (any | iterateDeeplyEnum), key?: string | number) => any
 	getHelper: (functionId: string) => Function
 	runHelper: (functionId: string, ...args: any[]) => any
@@ -444,7 +445,7 @@ declare enum Direction {
 	RIGHT = 'RIGHT',
 }
 
-// RunDownAPI
+// RunningOrderAPI
 declare enum LineItemStatusCode {
 	/** No status has been determined (yet) */
 	UNKNOWN = -1,
@@ -750,7 +751,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				<div className='studio-edit mod mhl mvs'>
 					<div>
 						<label className='field'>
-							{t('Blueprint ID')}
+							{t('Blueprint logic ID')}
 							<div className='mdi'>
 								<EditAttribute
 									modifiedClassName='bghl'
@@ -838,7 +839,7 @@ let SelectRFDD = translateWithTracker<SelectRFDDProps, IState, ISelectRFDDTracke
 					<thead>
 						<tr>
 							<th>Timestamp</th>
-							<th>Snapshot name</th>
+							<th>Snapshot Name</th>
 							<th>Keep</th>
 							<th>Select</th>
 							<th className='actions'>Remove</th>

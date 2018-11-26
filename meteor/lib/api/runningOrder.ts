@@ -1,6 +1,5 @@
-import { Time } from '../lib'
 
-export namespace RundownAPI {
+export namespace RunningOrderAPI {
 	/** The type of the source layer, used to enable specific functions for special-type layers */
 	export enum SourceLayerType {
 		UNKNOWN 		= 0,
@@ -16,7 +15,8 @@ export namespace RundownAPI {
 		LOWER_THIRD		= 10,
 		LIVE_SPEAK		= 11,
 		MIC				= 12,
-		TRANSITION		= 13
+		TRANSITION		= 13,
+		LIGHTS			= 14
 	}
 
 	/** A generic list of playback availability statuses for a source layer/line item */
@@ -29,5 +29,10 @@ export namespace RundownAPI {
 		SOURCE_MISSING = 1,
 		/** The source is present, but should not be played due to a technical malfunction (file is broken, camera robotics failed, REMOTE input is just bars, etc.) */
 		SOURCE_BROKEN = 2
+	}
+
+	export enum methods {
+		'removeRunningOrder' = 'rundown.removeRunningOrder',
+		'resyncRunningOrder' = 'rundown.resyncRunningOrder'
 	}
 }

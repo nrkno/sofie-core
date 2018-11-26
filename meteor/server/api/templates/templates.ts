@@ -26,16 +26,17 @@ import {
 	Atem_Enums,
 	EmberPlusValueType,
 	TimelineObjHoldMode,
+	TimelineContentTypePharos,
 } from '../../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
-import { RundownAPI } from '../../../lib/api/rundown'
+import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 import { Transition, Ease, Direction } from '../../../lib/constants/casparcg'
 import { logger } from '../../logging'
 import { RunningOrders, RunningOrder } from '../../../lib/collections/RunningOrders'
 import { TimelineObj } from '../../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { ShowStyle } from '../../../lib/collections/ShowStyles'
+import { ShowStyle, ShowStyles } from '../../../lib/collections/ShowStyles'
 import { RuntimeFunctionDebugData } from '../../../lib/collections/RuntimeFunctionDebugData'
 import { Meteor } from 'meteor/meteor'
 
@@ -70,6 +71,10 @@ export type SegmentLineItemOptional = Optional<SegmentLineItem>
 export type SegmentLineAdLibItemOptional = Optional<SegmentLineAdLibItem>
 export type RunningOrderBaselineItemOptional = Optional<RunningOrderBaselineItem>
 
+export interface TemplateRuntimeArguments {
+	[key: string]: string
+}
+
 export interface TemplateSet {
 	getId: (context: TemplateContextInner, story: IMOSROFullStory) => string
 	templates: {
@@ -84,6 +89,7 @@ export interface TemplateContext {
 	// segment: Segment
 	segmentLine: SegmentLine
 	templateId: string
+	runtimeArguments: TemplateRuntimeArguments
 }
 
 export enum LayerType {
@@ -95,8 +101,9 @@ export interface TemplateContextInnerBase {
 	getHashId: (str?: any) => string
 	unhashId: (hash: string) => string
 	getLayer: (type: LayerType, key: string) => string
-	getConfigValue: (key: string, defaultValue?: any) => any
+	getConfig: () => any
 	getValueByPath: (obj: object | undefined, path: string, defaultValue?: any) => any
+	setValueByPath: (obj: object | undefined, path: string, value: any) => void
 	iterateDeeply: (obj: any, iteratee: (val: any, key?: string | number) => (any | iterateDeeplyEnum), key?: string | number) => any
 	getHelper: (functionId: string) => Function
 	runHelper: (functionId: string, ...args: any[]) => any
@@ -128,6 +135,7 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 	let hashI = 0
 	let hashed: {[hash: string]: string} = {}
 	let savedNotes: Array<SegmentLineNote> = []
+	let blueprintConfig: any = null
 	let c0 = literal<TemplateContextInternalBase>({
 		getRunningOrder (): RunningOrder {
 			const ro = RunningOrders.findOne(context.runningOrderId)
@@ -187,17 +195,9 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 
 			throw new Meteor.Error(404, 'Missing layer "' + name + '" of type LayerType."' + type + '"')
 		},
-		getConfigValue (key: string, defaultValue?: any): any {
+		getConfig (): any {
 			const studio: StudioInstallation = this.getStudioInstallation()
-
-			const value = studio.getConfigValue(key)
-			if (value === null) return defaultValue
-
-			if (defaultValue && typeof defaultValue === 'number') {
-				return parseFloat(value)
-			}
-
-			return value
+			return studio.config
 		},
 		getValueByPath (obj: object | undefined, path: string, defaultValue?: any): any {
 			let value = (
@@ -207,6 +207,9 @@ export function getContext (context: TemplateContext, extended?: boolean, story?
 			)
 			if (_.isUndefined(value) && !_.isUndefined(defaultValue)) value = defaultValue
 			return value
+		},
+		setValueByPath (obj: object | undefined, path: string, value: any) {
+			if (!_.isUndefined(obj)) objectPath.set(obj, path, value)
 		},
 		iterateDeeply,
 		getHelper (functionId: string): Function {
@@ -435,8 +438,9 @@ export function convertCodeToGeneralFunction (runtimeFunction: RuntimeFunction, 
 			TimelineContentTypeHttp,
 			TimelineContentTypePanasonicPtz,
 			TimelineContentTypeHyperdeck,
+			TimelineContentTypePharos,
 			Atem_Enums,
-			LineItemStatusCode: RundownAPI.LineItemStatusCode,
+			LineItemStatusCode: RunningOrderAPI.LineItemStatusCode,
 			EmberPlusValueType,
 			Transition,
 			Ease,
@@ -541,7 +545,7 @@ function findFunction (showStyle: ShowStyle, functionId: string, context: Templa
 		showStyleId: showStyle._id,
 		active: true,
 		templateId: functionId,
-		isHelper: functionId === 'getId'
+		isHelper: functionId === showStyle.routerBlueprint
 	})
 	if (runtimeFunction && runtimeFunction.code) {
 		try {
@@ -580,12 +584,12 @@ export function runNamedTemplate (
 		segmentLineItems: _.map(_.compact(result.segmentLineItems), (itemOrg: SegmentLineItemOptional) => {
 			let item: SegmentLineItem = itemOrg as SegmentLineItem
 
-			if (!item._id) item._id = innerContext.getHashId('postprocess_' + (i++))
+			if (!item._id) item._id = innerContext.getHashId('postprocess_' + templateId + '_' + (i++))
 			if (!item.runningOrderId) item.runningOrderId = innerContext.runningOrderId
 			if (!item.segmentLineId) item.segmentLineId = innerContext.segmentLine._id
 			if (!item.mosId && !item.isTransition) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for segmentLineItem in ' + innerContext.segmentLine._id + '! ("' + innerContext.unhashId(item._id) + '")')
 
-			if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLines must be unique! ("' + innerContext.unhashId(item._id) + '")')
+			if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
 			segmentLinesUniqueIds[item._id] = true
 
 			if (item.content && item.content.timelineObjects) {
@@ -594,9 +598,9 @@ export function runNamedTemplate (
 				let timelineUniqueIds: { [id: string]: true } = {}
 				_.each(item.content.timelineObjects, (o: TimelineObj) => {
 
-					if (!o._id) o._id = innerContext.getHashId('postprocess_' + (i++))
+					if (!o._id) o._id = innerContext.getHashId('postprocess_' + templateId + '_' + (i++))
 
-					if (timelineUniqueIds[o._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLines must be unique! ("' + innerContext.unhashId(o._id) + '")')
+					if (timelineUniqueIds[o._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(o._id) + '")')
 					timelineUniqueIds[o._id] = true
 				})
 			}
@@ -606,12 +610,12 @@ export function runNamedTemplate (
 		segmentLineAdLibItems: result.segmentLineAdLibItems ? _.map(_.compact(result.segmentLineAdLibItems), (itemOrg: SegmentLineAdLibItemOptional) => {
 			let item: SegmentLineAdLibItem = itemOrg as SegmentLineAdLibItem
 
-			if (!item._id) item._id = innerContext.getHashId('postprocess_' + (i++))
+			if (!item._id) item._id = innerContext.getHashId('postprocess_' + templateId + '_' + (i++))
 			if (!item.runningOrderId) item.runningOrderId = innerContext.runningOrderId
 			if (!item.segmentLineId) item.segmentLineId = innerContext.segmentLine._id
 			if (!item.mosId) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for segmentLineItem in ' + innerContext.segmentLine._id + '! ("' + innerContext.unhashId(item._id) + '")')
 
-			if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLines must be unique! ("' + innerContext.unhashId(item._id) + '")')
+			if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
 			segmentLinesUniqueIds[item._id] = true
 
 			if (item.content && item.content.timelineObjects) {
@@ -620,9 +624,9 @@ export function runNamedTemplate (
 				let timelineUniqueIds: { [id: string]: true } = {}
 				_.each(item.content.timelineObjects, (o: TimelineObj) => {
 
-					if (!o._id) o._id = innerContext.getHashId('postprocess_' + (i++))
+					if (!o._id) o._id = innerContext.getHashId('postprocess_' + templateId + '_' + (i++))
 
-					if (timelineUniqueIds[o._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLines must be unique! ("' + innerContext.unhashId(o._id) + '")')
+					if (timelineUniqueIds[o._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(o._id) + '")')
 					timelineUniqueIds[o._id] = true
 				})
 			}
@@ -632,11 +636,11 @@ export function runNamedTemplate (
 		baselineItems: result.baselineItems ? _.map(_.compact(result.baselineItems), (itemOrg: RunningOrderBaselineItemOptional) => {
 			let item: RunningOrderBaselineItem = itemOrg as RunningOrderBaselineItem
 
-			if (!item._id) item._id = innerContext.getHashId('postprocess_' + (i++))
+			if (!item._id) item._id = innerContext.getHashId('postprocess_' + templateId + '_' + (i++))
 			if (!item.runningOrderId) item.runningOrderId = innerContext.runningOrderId
 			item.segmentLineId = undefined
 
-			if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLines must be unique! ("' + innerContext.unhashId(item._id) + '")')
+			if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
 			segmentLinesUniqueIds[item._id] = true
 
 			if (item.content && item.content.timelineObjects) {
@@ -645,9 +649,9 @@ export function runNamedTemplate (
 				let timelineUniqueIds: { [id: string]: true } = {}
 				_.each(item.content.timelineObjects, (o: TimelineObj) => {
 
-					if (!o._id) o._id = innerContext.getHashId('postprocess_' + (i++))
+					if (!o._id) o._id = innerContext.getHashId('postprocess_' + templateId + '_' + (i++))
 
-					if (timelineUniqueIds[o._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLines must be unique! ("' + innerContext.unhashId(o._id) + '")')
+					if (timelineUniqueIds[o._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(o._id) + '")')
 					timelineUniqueIds[o._id] = true
 				})
 			}
@@ -664,7 +668,7 @@ export interface RunTemplateResult {
 export function runTemplate (showStyle: ShowStyle, context: TemplateContext, story: IMOSROFullStory, reason: string): RunTemplateResult | undefined {
 	let notes: Array<SegmentLineNote> = []
 	let innerContext0 = getContext(context, false, story)
-	let getId = findFunction(showStyle, 'getId', innerContext0, reason)
+	let getId = findFunction(showStyle, showStyle.routerBlueprint, innerContext0, reason)
 
 	let templateId: string | null = getId(story) as string | null
 	notes = notes.concat(innerContext0.getNotes()) // Add notes

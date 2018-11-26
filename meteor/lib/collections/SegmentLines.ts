@@ -10,9 +10,11 @@ import { SegmentLineItem, SegmentLineItems } from './SegmentLineItems'
 import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
 import { Segments } from './Segments'
 import { applyClassToDocument, Time, registerCollection, normalizeArray } from '../lib'
-import { RundownAPI } from '../api/rundown'
+import { RunningOrderAPI } from '../api/runningOrder'
 import { checkSLIContentStatus } from '../mediaObjects'
 import { Meteor } from 'meteor/meteor'
+
+import { TemplateRuntimeArguments } from '../../server/api/templates/templates'
 
 /** A "Line" in NRK Lingo. */
 export interface DBSegmentLine {
@@ -71,6 +73,11 @@ export interface DBSegmentLine {
 	afterSegmentLine?: string
 	/** if the segmentLine was dunamically inserted (adlib) */
 	dynamicallyInserted?: boolean
+
+	/** Runtime blueprint arguments allows Sofie-side data to be injected into the blueprint for an SL */
+	runtimeArguments?: TemplateRuntimeArguments
+	/** An SL should be marked as `dirty` if the SL blueprint has been injected with runtimeArguments */
+	dirty?: boolean
 }
 export interface SegmentLineTimings {
 	/** Point in time the SegmentLine was taken, (ie the time of the user action) */
@@ -133,6 +140,9 @@ export class SegmentLine implements DBSegmentLine {
 	public holdMode?: SegmentLineHoldMode
 	public notes?: Array<SegmentLineNote>
 	public afterSegmentLine?: string
+	public dirty?: boolean
+
+	public runtimeArguments?: TemplateRuntimeArguments
 
 	constructor (document: DBSegmentLine) {
 		_.each(_.keys(document), (key) => {
@@ -206,7 +216,7 @@ export class SegmentLine implements DBSegmentLine {
 		let notes: Array<SegmentLineNote> = []
 		notes = notes.concat(this.notes || [])
 
-		/* if (runtimeNotes) {
+		if (runtimeNotes) {
 			const items = this.getSegmentLinesItems()
 			const ro = this.getRunningOrder()
 			const si = ro && ro.getStudioInstallation()
@@ -216,8 +226,8 @@ export class SegmentLine implements DBSegmentLine {
 
 				if (slLookup && item.sourceLayerId && slLookup[item.sourceLayerId]) {
 					const sl = slLookup[item.sourceLayerId]
-					const st = checkSLIContentStatus(item, sl)
-					if (st.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING || st.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN) {
+					const st = checkSLIContentStatus(item, sl, si!.config)
+					if (st.status === RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING || st.status === RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN) {
 						notes.push({
 							type: SegmentLineNoteType.ERROR,
 							origin: {
@@ -230,7 +240,7 @@ export class SegmentLine implements DBSegmentLine {
 					}
 				}
 			})
-		} */
+		}
 		return notes
 	}
 	getLastStartedPlayback () {

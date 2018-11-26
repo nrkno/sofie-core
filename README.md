@@ -12,7 +12,7 @@ Then, clone the repository and install all dependencies:
 (Make sure your NODE_ENV is NOT set to production!)
 
 ```
-git clone https://github.com/nrkno/tv-automation-server-core.git
+git clone -b master https://github.com/nrkno/tv-automation-server-core.git
 cd tv-automation-server-core/meteor
 meteor npm install
 meteor
@@ -21,7 +21,7 @@ meteor
 If you run into any issues while installing the dependencies, clone any offending packages from Git and link them using `npm link`. For exmaple, for `tv-automation-mos-connection` library:
 
 ```
-git clone https://github.com/nrkno/tv-automation-mos-connection.git
+git clone -b master https://github.com/nrkno/tv-automation-mos-connection.git
 cd tv-automation-mos-connection
 npm run build
 npm link

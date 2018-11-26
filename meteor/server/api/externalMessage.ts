@@ -39,7 +39,8 @@ export function triggerExternalMessage (
 			runningOrder: runningOrder,
 			studioId: runningOrder.studioInstallationId,
 			segmentLine: takeSegmentLine,
-			templateId: functionId
+			templateId: functionId,
+			runtimeArguments: {}
 		}
 		let innerContext = getContext(context, true)
 		let fcn

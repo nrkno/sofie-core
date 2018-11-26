@@ -6,6 +6,7 @@ import { NavLink } from 'react-router-dom'
 
 interface IPropsHeader {
 	adminMode?: boolean
+	testingMode?: boolean
 }
 
 class Header extends React.Component<Translated<IPropsHeader>> {
@@ -29,6 +30,7 @@ class Header extends React.Component<Translated<IPropsHeader>> {
 								{ /* <NavLink to='/' activeClassName='active'>{t('Home')}</NavLink> */ }
 								<NavLink to='/?lng=nb' activeClassName='active'>{t('Running Orders')}</NavLink>
 								{ this.props.adminMode && <NavLink to='/nymansPlayground' activeClassName='active'>{t('Nyman\'s Playground')}</NavLink> }
+								{ this.props.testingMode && <NavLink to='/testTools' activeClassName='active'>{t('Test Tools')}</NavLink> }
 								<NavLink to='/status' activeClassName='active'>{t('Status')}</NavLink>
 								{ this.props.adminMode && <NavLink to='/settings' activeClassName='active'>{t('Settings')}</NavLink> }
 							</nav>

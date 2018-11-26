@@ -97,8 +97,12 @@ body.vertical-overflow-only {
     top: 0;
     left: 0;
     right: 0;
-	z-index: 20;
+	z-index: 200;
 	user-select: none;
+
+	.row {
+		width: 100%;
+	}
 
 	.flex-col.col-timing {
 		flex: 1 1;
@@ -127,7 +131,7 @@ body.vertical-overflow-only {
 			}
 
 			&.countdown {
-				font-weight: 500;
+				font-weight: 400;
 			}
 
 			&.playback-started {
@@ -186,7 +190,7 @@ body.vertical-overflow-only {
 			}
 
 			&.heavy-light {
-				font-weight: 400;
+				font-weight: 600;
 
 				&.heavy {
 					// color: $general-late-color;
@@ -196,6 +200,7 @@ body.vertical-overflow-only {
 
 				&.light {
 					color: $general-fast-color;
+					text-shadow: 0px 0px 6px transparentize($general-fast-color, 0.2);
 					background: none;
 				}
 			}
@@ -928,7 +933,7 @@ body.vertical-overflow-only {
 				top: -13px;
 				left: 100%;
 				white-space: nowrap;
-				bottom: -2em;
+				bottom: -1.3rem;
 				border-left: 2px solid $segment-line-start-color;
 				margin-left: 2px;
 				padding-left: 0.5em;

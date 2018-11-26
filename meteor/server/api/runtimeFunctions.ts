@@ -4,7 +4,7 @@ import { RuntimeFunctions, RuntimeFunction } from '../../lib/collections/Runtime
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
-import { convertCodeToGeneralFunction, convertCodeToFunction, getContext, TemplateContext, TemplateResult, TemplateGeneralFunction, TemplateContextInternalBase, LayerType, preventSaveDebugData } from './templates/templates'
+import { convertCodeToGeneralFunction, convertCodeToFunction, getContext, TemplateContext, TemplateResult, TemplateGeneralFunction, preventSaveDebugData } from './templates/templates'
 import { DBSegmentLine, SegmentLine } from '../../lib/collections/SegmentLines'
 import { IMOSROFullStory, MosString128, IMOSItem } from 'mos-connection'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
@@ -57,7 +57,8 @@ export function runtimeFunctionTestCode (runtimeFunction: RuntimeFunction, showS
 			modified: 1235,
 			currentSegmentLineId: null,
 			nextSegmentLineId: null,
-			previousSegmentLineId: null
+			previousSegmentLineId: null,
+			dataSource: 'testCore'
 
 		}
 		let tmpContext: TemplateContext = {
@@ -67,7 +68,8 @@ export function runtimeFunctionTestCode (runtimeFunction: RuntimeFunction, showS
 			studioId: 'myStudio',
 			// segment: Segment
 			segmentLine: new SegmentLine(tmpSegmentLine),
-			templateId: runtimeFunction._id
+			templateId: runtimeFunction._id,
+			runtimeArguments: {}
 		}
 
 		let innerContext = getContext(tmpContext)
@@ -176,7 +178,6 @@ export function runtimeFunctionUpdateIsHelper (runtimeFunctionId: string, isHelp
 	let oldRf = RuntimeFunctions.findOne(runtimeFunctionId)
 
 	if (!oldRf) throw new Meteor.Error(404, 'RuntimeFunction "' + runtimeFunctionId + '" not found!')
-	if (oldRf.templateId === 'getId') throw new Meteor.Error(500, 'RuntimeFunction "' + oldRf.templateId + '" have helper status changed!')
 
 	// Update the current version
 	RuntimeFunctions.update(oldRf._id, {$set: {
@@ -190,7 +191,6 @@ export function runtimeFunctionUpdateTemplateId (runtimeFunctionId: string, temp
 
 	let oldRf = RuntimeFunctions.findOne(runtimeFunctionId)
 	if (!oldRf) throw new Meteor.Error(404, 'RuntimeFunction "' + runtimeFunctionId + '" not found!')
-	if (oldRf.templateId === 'getId') throw new Meteor.Error(500, 'RuntimeFunction "' + oldRf.templateId + '" cannot be renamed!')
 
 	let anyExisting = RuntimeFunctions.find({
 		templateId: 	templateId,
@@ -250,7 +250,6 @@ export function runtimeFunctionRemove (runtimeFunctionId: string, confirm: boole
 	let oldRf = RuntimeFunctions.findOne(runtimeFunctionId)
 
 	if (!oldRf) throw new Meteor.Error(404, 'RuntimeFunction "' + runtimeFunctionId + '" not found!')
-	if (oldRf.templateId === 'getId') throw new Meteor.Error(500, 'RuntimeFunction "' + oldRf.templateId + '" cannot be removed!')
 
 	RuntimeFunctions.remove({
 		templateId: oldRf.templateId

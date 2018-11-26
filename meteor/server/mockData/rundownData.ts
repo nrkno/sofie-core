@@ -4,7 +4,7 @@ import { ShowStyles } from '../../lib/collections/ShowStyles'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 import { SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { RundownAPI } from '../../lib/api/rundown'
+import { RunningOrderAPI } from '../../lib/api/runningOrder'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
@@ -42,7 +42,7 @@ setMeteorMethods({
 					_id: 'studio0-lower-third0',
 					_rank: 10,
 					name: 'Super',
-					type: RundownAPI.SourceLayerType.LOWER_THIRD,
+					type: RunningOrderAPI.SourceLayerType.LOWER_THIRD,
 					unlimited: true,
 					onPGMClean: false
 				},
@@ -50,7 +50,7 @@ setMeteorMethods({
 					_id: 'studio0-split0',
 					_rank: 15,
 					name: 'Split',
-					type: RundownAPI.SourceLayerType.SPLITS,
+					type: RunningOrderAPI.SourceLayerType.SPLITS,
 					unlimited: false,
 					onPGMClean: true,
 				},
@@ -58,7 +58,7 @@ setMeteorMethods({
 					_id: 'studio0-graphics0',
 					_rank: 20,
 					name: 'GFX',
-					type: RundownAPI.SourceLayerType.GRAPHICS,
+					type: RunningOrderAPI.SourceLayerType.GRAPHICS,
 					unlimited: true,
 					onPGMClean: false
 				},
@@ -66,7 +66,7 @@ setMeteorMethods({
 					_id: 'studio0-live-speak0',
 					_rank: 50,
 					name: 'STK',
-					type: RundownAPI.SourceLayerType.LIVE_SPEAK,
+					type: RunningOrderAPI.SourceLayerType.LIVE_SPEAK,
 					unlimited: true,
 					onPGMClean: false
 				},
@@ -74,7 +74,7 @@ setMeteorMethods({
 					_id: 'studio0-remote0',
 					_rank: 60,
 					name: 'RM1',
-					type: RundownAPI.SourceLayerType.REMOTE,
+					type: RunningOrderAPI.SourceLayerType.REMOTE,
 					unlimited: false,
 					onPGMClean: true,
 					isRemoteInput: true
@@ -83,7 +83,7 @@ setMeteorMethods({
 					_id: 'studio0-vt0',
 					_rank: 80,
 					name: 'VB',
-					type: RundownAPI.SourceLayerType.VT,
+					type: RunningOrderAPI.SourceLayerType.VT,
 					unlimited: true,
 					onPGMClean: true,
 				},
@@ -91,7 +91,7 @@ setMeteorMethods({
 					_id: 'studio0-mic0',
 					_rank: 90,
 					name: 'Mic',
-					type: RundownAPI.SourceLayerType.MIC,
+					type: RunningOrderAPI.SourceLayerType.MIC,
 					unlimited: false,
 					onPGMClean: true,
 				},
@@ -99,7 +99,7 @@ setMeteorMethods({
 					_id: 'studio0-camera0',
 					_rank: 100,
 					name: 'Kam',
-					type: RundownAPI.SourceLayerType.CAMERA,
+					type: RunningOrderAPI.SourceLayerType.CAMERA,
 					unlimited: false,
 					onPGMClean: true,
 				},
@@ -175,7 +175,9 @@ setMeteorMethods({
 			name: 'Dummy show style',
 			templateMappings: [],
 			baselineTemplate: '',
-			messageTemplate: ''
+			messageTemplate: '',
+			routerBlueprint: '',
+			postProcessBlueprint: ''
 		})
 
 		RunningOrders.update({showStyleId: { $not: { $exists: true }}}, { $set: { showStyleId: 'dummyShow0' }})

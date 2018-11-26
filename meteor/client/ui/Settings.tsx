@@ -30,6 +30,7 @@ import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { MigrationView } from './Settings/Migration'
 
 class WelcomeToSettings extends React.Component {
 	render () {
@@ -125,7 +126,9 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 			name: Random.hexString(5),
 			templateMappings: [],
 			baselineTemplate: '',
-			messageTemplate: ''
+			messageTemplate: '',
+			routerBlueprint: '',
+			postProcessBlueprint: ''
 		}))
 	}
 
@@ -176,11 +179,11 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					<button className='action-btn right' onClick={(e) => this.onAddShowStyle()}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
-					{t('Show Styles')}
+					{t('Blueprints')}
 					</h2>
 				<hr className='vsubtle man' />
 				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteShowStyleConfirm} onAccept={(e) => this.handleConfirmDeleteShowStyleAccept(e)} onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
-					<p>{t('Are you sure you want to delete show style "{{showStyleId}}"?', { showStyleId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.name })}</p>
+					<p>{t('Are you sure you want to delete blueprint "{{showStyleId}}"?', { showStyleId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.name })}</p>
 					<p>{t('Please note: This action is irreversible!')}</p>
 				</ModalDialog>
 				{
@@ -188,7 +191,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 						return (
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/showStyle/' + item._id}>
 								<div className='selectable clickable'>
-									<button className='action-btn right' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteShowStyle(item)}>
+									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteShowStyle(item) }}>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
 									<h3>{item.name}</h3>
@@ -227,7 +230,11 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<h2 className='mhs'>{t('Devices')}</h2>
 				<hr className='vsubtle man' />
 				{
-					this.props.peripheralDevices.map((item) => {
+					this.props.peripheralDevices
+					.filter((device) => {
+						return device.type !== PeripheralDeviceAPI.DeviceType.OTHER
+					})
+					.map((item) => {
 						return [
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/peripheralDevice/' + item._id}>
 								<h3>{item.name}</h3>
@@ -246,6 +253,11 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<hr className='vsubtle man' />
 				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/restore'>
 					<h3>{t('Restore Backup')}</h3>
+				</NavLink>
+
+				<h2 className='mhs'>{t('Migration')}</h2>
+				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/migration'>
+					<h3>{t('Upgrade database')}</h3>
 				</NavLink>
 			</div>
 		)
@@ -286,6 +298,7 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 									<Route path='/settings/peripheralDevice/:deviceId' component={DeviceSettings} />
 									<Route path='/settings/lineTemplate/:ltId' component={LineTemplates} />
 									<Route path='/settings/tools/restore' component={RestoreBackup} />
+									<Route path='/settings/migration' component={MigrationView} />
 									<Redirect to='/settings' />
 								</Switch>
 							</ErrorBoundary>

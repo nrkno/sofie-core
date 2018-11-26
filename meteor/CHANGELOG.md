@@ -2,6 +2,188 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.18.0"></a>
+## 0.18.0 (2018-11-26)
+
+
+### Features
+* **Header**
+  <br> 
+* **Version migration**
+  <br> Merge pull request #56 from nrkno/feature/coreSystemAndMigration ([6d43e42](https://github.com/nrkno/tv-automation-server-core/commit/6d43e42)), closes [#56](https://github.com/nrkno/tv-automation-server-core/issues/56)
+  <br> add migration steps, logging ([96aae63](https://github.com/nrkno/tv-automation-server-core/commit/96aae63))
+  <br> backend implementation of migration (wip) ([8762ca3](https://github.com/nrkno/tv-automation-server-core/commit/8762ca3))
+  <br> continued implementation of Migration (wip) ([72fbcb5](https://github.com/nrkno/tv-automation-server-core/commit/72fbcb5))
+  <br> Migration UI & started adding migration steps ([2a117ad](https://github.com/nrkno/tv-automation-server-core/commit/2a117ad))
+  <br> Migration: added more migration steps for 0.16.0 ([2ac06ea](https://github.com/nrkno/tv-automation-server-core/commit/2ac06ea))
+  <br> Migration: continued impl. ([8982701](https://github.com/nrkno/tv-automation-server-core/commit/8982701))
+  <br> take snapshot before running migration ([3ae4e92](https://github.com/nrkno/tv-automation-server-core/commit/3ae4e92))
+  <br> add previousVersion and buttons in GUI to revert database version ([61525a5](https://github.com/nrkno/tv-automation-server-core/commit/61525a5))
+  <br> display returned error message in GUI ([6169048](https://github.com/nrkno/tv-automation-server-core/commit/6169048))
+  <br> CoreSystem initial implementation ([06369b2](https://github.com/nrkno/tv-automation-server-core/commit/06369b2))
+  <br> migration: Missing studio0_audio_bed ([1c6edcc](https://github.com/nrkno/tv-automation-server-core/commit/1c6edcc))
+  <br> migration: overrideSteps should be applied before .validate() is run, so overrideSteps works in ([c9c1f25](https://github.com/nrkno/tv-automation-server-core/commit/c9c1f25))
+* **Unsynced runningOrder**
+  <br> added unsyncedTime ([8fcffb5](https://github.com/nrkno/tv-automation-server-core/commit/8fcffb5))
+  <br> unsynced mode (#51) ([7e0a263](https://github.com/nrkno/tv-automation-server-core/commit/7e0a263)), closes [#51](https://github.com/nrkno/tv-automation-server-core/issues/51)
+* **RunningOrder arguments**
+  <br> Merge pull request #55 from nrkno/feature/ro-arguments ([6d8653c](https://github.com/nrkno/tv-automation-server-core/commit/6d8653c)), closes [#55](https://github.com/nrkno/tv-automation-server-core/issues/55)
+* **Manual record (for debugging / testing)**
+  <br> Merge pull request #52 from nrkno/feature/manual-casparcg-record ([1b7e852](https://github.com/nrkno/tv-automation-server-core/commit/1b7e852)), closes [#52](https://github.com/nrkno/tv-automation-server-core/issues/52)
+  <br> List, start and stop test recordings ([df552ab](https://github.com/nrkno/tv-automation-server-core/commit/df552ab))
+  <br> basic video player page ([138b8b9](https://github.com/nrkno/tv-automation-server-core/commit/138b8b9))
+  <br> Controls to delete files ([4236db2](https://github.com/nrkno/tv-automation-server-core/commit/4236db2))
+  <br> Create timelineobjects to control recording to the timeline. Add config to the db, and ([b5e4ebf](https://github.com/nrkno/tv-automation-server-core/commit/b5e4ebf))
+  <br> Input field for user to give recording a name ([116ea9f](https://github.com/nrkno/tv-automation-server-core/commit/116ea9f))
+  <br> CR changes ([b3adbec](https://github.com/nrkno/tv-automation-server-core/commit/b3adbec))
+  <br> Hide internal layer mappings ([24dfef1](https://github.com/nrkno/tv-automation-server-core/commit/24dfef1))
+
+* **Snapshots**
+  <br> Merge branch 'feature/ro-snapshot' into develop ([6bed457](https://github.com/nrkno/tv-automation-server-core/commit/6bed457))
+  <br> Add backup restore method to import mock rundowns similar to the embedded mocks ([d71d9c7](https://github.com/nrkno/tv-automation-server-core/commit/d71d9c7))
+  <br> continued implementation ([009e9e5](https://github.com/nrkno/tv-automation-server-core/commit/009e9e5))
+  <br> edit snapshot comments ([264638a](https://github.com/nrkno/tv-automation-server-core/commit/264638a))
+  <br> Implement snapshots, API endpoints & restore ([72e1a83](https://github.com/nrkno/tv-automation-server-core/commit/72e1a83))
+  <br> snapshot restore/backup GUI ([c414f70](https://github.com/nrkno/tv-automation-server-core/commit/c414f70))
+  <br> take snapshot of runningOrder & restore ([fc34f73](https://github.com/nrkno/tv-automation-server-core/commit/fc34f73))
+  <br> wip: running order snaphots ([eb069da](https://github.com/nrkno/tv-automation-server-core/commit/eb069da))
+* **Pharos device (lights control) support**
+  <br> Merge branch 'feature/pharosDevice' into develop ([354c3ed](https://github.com/nrkno/tv-automation-server-core/commit/354c3ed))
+  <br> add sourceLayerType.LIGHTS ([0554251](https://github.com/nrkno/tv-automation-server-core/commit/0554251))
+* **As-run log**
+  <br> Merge branch 'feature/as-run-log' into develop ([c73ee23](https://github.com/nrkno/tv-automation-server-core/commit/c73ee23))
+  <br> collection implementation ([0e63c36](https://github.com/nrkno/tv-automation-server-core/commit/0e63c36))
+  <br> implementation of asRunLog ([62f5b8c](https://github.com/nrkno/tv-automation-server-core/commit/62f5b8c))
+* **Performance monitor**
+  <br> add performance monitor and track all server-side methods ([2733d74](https://github.com/nrkno/tv-automation-server-core/commit/2733d74))
+  <br> typo bug in performanceMonitor ([797c393](https://github.com/nrkno/tv-automation-server-core/commit/797c393))
+* **System status improvements**
+  <br> add peripheralDevice expectedVersions, to throw error if device version is too low. Refactor / ([51ed4c3](https://github.com/nrkno/tv-automation-server-core/commit/51ed4c3))
+  <br> refactor systemStatus & add status messages on front page ([14da61a](https://github.com/nrkno/tv-automation-server-core/commit/14da61a))
+* **Media-object format check**
+  <br> add warnings for wrong field order ([c4d23d8](https://github.com/nrkno/tv-automation-server-core/commit/c4d23d8))
+  <br> allow ? as 'any' field/frame type ([c950fba](https://github.com/nrkno/tv-automation-server-core/commit/c950fba))
+  <br> warn media status for interlacing and fps ([fc3ac4b](https://github.com/nrkno/tv-automation-server-core/commit/fc3ac4b))
+  <br> warnings for media in wrong resolution ([55135c1](https://github.com/nrkno/tv-automation-server-core/commit/55135c1))
+* **Refactoring og mos data flow**
+  <br> Merge pull request #50 from nrkno/fix/refactorDataFlowFunctions ([1ae9f7b](https://github.com/nrkno/tv-automation-server-core/commit/1ae9f7b)), closes [#50](https://github.com/nrkno/tv-automation-server-core/issues/50)
+  <br> handle roList reply on reload RunningOrder data, also more refactoring & cleanup ([cee70c5](https://github.com/nrkno/tv-automation-server-core/commit/cee70c5))
+
+
+#### GUI
+* add a subtle line underneath segment title when has-remote-items and has-guest-items ([4b1d582](https://github.com/nrkno/tv-automation-server-core/commit/4b1d582))
+* add rewind button ([f235a25](https://github.com/nrkno/tv-automation-server-core/commit/f235a25))
+* ask before closing an active RO (if allowed by browser) ([16ee66b](https://github.com/nrkno/tv-automation-server-core/commit/16ee66b))
+* clean up: show style, blueprint, blueprint logic names in UI ([e1ae6a7](https://github.com/nrkno/tv-automation-server-core/commit/e1ae6a7))
+* countdown to running order expectedStart ([7b505c5](https://github.com/nrkno/tv-automation-server-core/commit/7b505c5))
+* display ms in user activity log ([5172f2e](https://github.com/nrkno/tv-automation-server-core/commit/5172f2e))
+* do not block click-to-take when trigger is absolute 0 ([cec86ca](https://github.com/nrkno/tv-automation-server-core/commit/cec86ca))
+* placeholder Service Worker to enable PWA detection ([0487c34](https://github.com/nrkno/tv-automation-server-core/commit/0487c34))
+* Updated Norwegian translation. Changed user-facing descriptions of "Backup" to "Snapshot". Spe ([3874c37](https://github.com/nrkno/tv-automation-server-core/commit/3874c37))
+* Updated Norwegian translations. ([b4957d5](https://github.com/nrkno/tv-automation-server-core/commit/b4957d5))
+#### Other
+* block take if duration since startedPlayback/take less than X ([99d41b9](https://github.com/nrkno/tv-automation-server-core/commit/99d41b9))
+* Define all special blueprints as options in the showstyle ([7e1da16](https://github.com/nrkno/tv-automation-server-core/commit/7e1da16))
+* reset 'dirty' segment lines by re-running blueprints on them ([064a84d](https://github.com/nrkno/tv-automation-server-core/commit/064a84d))
+* Rewrite templateContext.getConfigValue to get default values from defaultConfig 'blueprint' an ([6ce0f97](https://github.com/nrkno/tv-automation-server-core/commit/6ce0f97))
+* segment line arguments ([3c5313a](https://github.com/nrkno/tv-automation-server-core/commit/3c5313a))
+* show user name in evaluations ([c59d7ee](https://github.com/nrkno/tv-automation-server-core/commit/c59d7ee))
+* support for Pharos device ([4a99fb3](https://github.com/nrkno/tv-automation-server-core/commit/4a99fb3))
+* system version status monitoring ([1c96263](https://github.com/nrkno/tv-automation-server-core/commit/1c96263))
+* toggle running order argument on an SL with a hotkey ([258c3b3](https://github.com/nrkno/tv-automation-server-core/commit/258c3b3))
+* translation improvements ([d3a535d](https://github.com/nrkno/tv-automation-server-core/commit/d3a535d))
+* blueprint: refactor getConfigValue into the blueprints, with context exposing the raw array as ([5b0ac39](https://github.com/nrkno/tv-automation-server-core/commit/5b0ac39))
+* playout: Add class to sli first_object to indicate if sli is from the current or previous sl ([8de6004](https://github.com/nrkno/tv-automation-server-core/commit/8de6004))
+* playout: Add class to sli first_object when the sli is a continuation of another ([d53f06b](https://github.com/nrkno/tv-automation-server-core/commit/d53f06b))
+
+#### GUI improvements
+
+### Bug Fixes
+* added missing "force" parameter ([7b50a97](https://github.com/nrkno/tv-automation-server-core/commit/7b50a97))
+* always rewind GUI on roReset, roResetAndActivate ([4502d90](https://github.com/nrkno/tv-automation-server-core/commit/4502d90))
+* bug in storePath migration step ([b623973](https://github.com/nrkno/tv-automation-server-core/commit/b623973))
+* bug when moving story to last ([83cef62](https://github.com/nrkno/tv-automation-server-core/commit/83cef62))
+* undefined storePath ([cbfdde5](https://github.com/nrkno/tv-automation-server-core/commit/cbfdde5))
+* When updating collection, documents with removed properties didn't get their properties ([237b8ff](https://github.com/nrkno/tv-automation-server-core/commit/237b8ff))
+* clean up more collections when removing RO ([b84ed59](https://github.com/nrkno/tv-automation-server-core/commit/b84ed59))
+* clean up onBeforeUnload handler ([51adbba](https://github.com/nrkno/tv-automation-server-core/commit/51adbba))
+* clear runtimeArguments on resetRunningOrder ([350dd45](https://github.com/nrkno/tv-automation-server-core/commit/350dd45))
+* collection name ([e014558](https://github.com/nrkno/tv-automation-server-core/commit/e014558))
+* disable runtimeFunction caching during code-test & save ([e21f8dd](https://github.com/nrkno/tv-automation-server-core/commit/e21f8dd))
+* do not show empty string values in L3rd popup ([b0c6c8e](https://github.com/nrkno/tv-automation-server-core/commit/b0c6c8e))
+* Dont generate ui outputlayers for sli which are virtual ([c0ad368](https://github.com/nrkno/tv-automation-server-core/commit/c0ad368))
+* End of Show marker line doesn't end where it should ([e188c97](https://github.com/nrkno/tv-automation-server-core/commit/e188c97))
+* force lookahead inGroup field to be emptied. Fixes mismatched statobj ([c76209c](https://github.com/nrkno/tv-automation-server-core/commit/c76209c))
+* GUI: settings: only show parent-devices in left menu (only they have settings on them) ([ecb164e](https://github.com/nrkno/tv-automation-server-core/commit/ecb164e))
+* handle both update & insert of runningOrder ([3701bb3](https://github.com/nrkno/tv-automation-server-core/commit/3701bb3))
+* Hide Keyboard focus marker when not in studio mode ([70dc6b0](https://github.com/nrkno/tv-automation-server-core/commit/70dc6b0))
+* holdState = 0 displayed a status ([49c7ead](https://github.com/nrkno/tv-automation-server-core/commit/49c7ead))
+* holdState = 0 displayed a status ([aacd140](https://github.com/nrkno/tv-automation-server-core/commit/aacd140))
+* initDB for pharos lights ([57fbc73](https://github.com/nrkno/tv-automation-server-core/commit/57fbc73))
+* labels in modal dialogs ([3af18fc](https://github.com/nrkno/tv-automation-server-core/commit/3af18fc))
+* Major refactoring, splitting code into separate files depending on their areas: "rundown": Gene ([db82375](https://github.com/nrkno/tv-automation-server-core/commit/db82375))
+* make the context menu available in the entire header ([0590f9d](https://github.com/nrkno/tv-automation-server-core/commit/0590f9d))
+* Migration UI fixes ([b141243](https://github.com/nrkno/tv-automation-server-core/commit/b141243))
+* missing argument for mediaStatusCheck ([658e82a](https://github.com/nrkno/tv-automation-server-core/commit/658e82a))
+* Missing typings on ShowStyle ([a0a4e14](https://github.com/nrkno/tv-automation-server-core/commit/a0a4e14))
+* modified timestamp on imported blueprints was not being set, causing the cache to not be cleare ([2f3fd17](https://github.com/nrkno/tv-automation-server-core/commit/2f3fd17))
+* monaco typing error fix ([e73467e](https://github.com/nrkno/tv-automation-server-core/commit/e73467e))
+* move back executeFunction to peripheralDeviceAPI ([226289f](https://github.com/nrkno/tv-automation-server-core/commit/226289f))
+* new implementation of runtime caching ([767fbb7](https://github.com/nrkno/tv-automation-server-core/commit/767fbb7))
+* normalize naming scheme to 'runtimeArguments', normalize hotkey labels ([528679d](https://github.com/nrkno/tv-automation-server-core/commit/528679d))
+* PR changes ([c877aad](https://github.com/nrkno/tv-automation-server-core/commit/c877aad))
+* re-add blueprint & mosdatacache restore (to be deprecated later) ([886c756](https://github.com/nrkno/tv-automation-server-core/commit/886c756))
+* refactor storeSnapshot methods ([6e66394](https://github.com/nrkno/tv-automation-server-core/commit/6e66394))
+* remove full-screen button, add label ([5c9a3e5](https://github.com/nrkno/tv-automation-server-core/commit/5c9a3e5))
+* remove unused imports ([5fe6ac3](https://github.com/nrkno/tv-automation-server-core/commit/5fe6ac3))
+* rename rundownAPI => runningOrderAPI ([89d48d0](https://github.com/nrkno/tv-automation-server-core/commit/89d48d0))
+* rewind icon was not responsive in ROFullscreenControls ([0e494df](https://github.com/nrkno/tv-automation-server-core/commit/0e494df))
+* RO buttons z-order ([15e9da8](https://github.com/nrkno/tv-automation-server-core/commit/15e9da8))
+* RO buttons z-order ([3c53254](https://github.com/nrkno/tv-automation-server-core/commit/3c53254))
+* show media errors in segment header ([3775d2e](https://github.com/nrkno/tv-automation-server-core/commit/3775d2e))
+* SOAP message encoding ([b19ea77](https://github.com/nrkno/tv-automation-server-core/commit/b19ea77))
+* styling fix for z-order with menu and RO buttons ([1b0717e](https://github.com/nrkno/tv-automation-server-core/commit/1b0717e))
+* syntax errors in test file ([a8f5d1e](https://github.com/nrkno/tv-automation-server-core/commit/a8f5d1e))
+* timeline resolution bug for non-infinite items ([35fc40a](https://github.com/nrkno/tv-automation-server-core/commit/35fc40a))
+* type error in SegmentTimelineContainer ([c4d6b4d](https://github.com/nrkno/tv-automation-server-core/commit/c4d6b4d))
+
+* blueprints: Ensure the object ids generated by the post-process blueprint are unique ([bdee540](https://github.com/nrkno/tv-automation-server-core/commit/bdee540))
+* lookahead: clear inGroup in a better fashion ([60541cc](https://github.com/nrkno/tv-automation-server-core/commit/60541cc))
+* lookahead: Resolving an object for both transition clip and main clip causing an extra loadbg ([875bd1a](https://github.com/nrkno/tv-automation-server-core/commit/875bd1a))
+* media formats: do not 2x interlaced frame rates ([1639c32](https://github.com/nrkno/tv-automation-server-core/commit/1639c32))
+* playout: sl with autoNextOverlap not getting applied properly ([eb22967](https://github.com/nrkno/tv-automation-server-core/commit/eb22967))
+
+
+### Other
+* Add migrations for mappings changes ([5311056](https://github.com/nrkno/tv-automation-server-core/commit/5311056))
+* changelog typo ([fd4b420](https://github.com/nrkno/tv-automation-server-core/commit/fd4b420))
+* cleanup ([3122a48](https://github.com/nrkno/tv-automation-server-core/commit/3122a48))
+* correct error messages when template returns duplicate ids ([d783ca9](https://github.com/nrkno/tv-automation-server-core/commit/d783ca9))
+* edit & categorize changelog ([fbe999a](https://github.com/nrkno/tv-automation-server-core/commit/fbe999a))
+* ensure playout-gateway version ([fad6a01](https://github.com/nrkno/tv-automation-server-core/commit/fad6a01))
+* lint & trace fixes ([7639a5c](https://github.com/nrkno/tv-automation-server-core/commit/7639a5c))
+* merge Changelog from release3 ([29e8352](https://github.com/nrkno/tv-automation-server-core/commit/29e8352))
+* Merge with develop ([33bd23f](https://github.com/nrkno/tv-automation-server-core/commit/33bd23f))
+* merge with latest develop ([ea35a89](https://github.com/nrkno/tv-automation-server-core/commit/ea35a89))
+* migration steps for pharos ([b003dc7](https://github.com/nrkno/tv-automation-server-core/commit/b003dc7))
+* migration: ensure latest mos-device version ([da47723](https://github.com/nrkno/tv-automation-server-core/commit/da47723))
+* ptz crawl zoom migration ([6e4960c](https://github.com/nrkno/tv-automation-server-core/commit/6e4960c))
+* refactored SourceLayerType classNames (DRY) ([2dcfc32](https://github.com/nrkno/tv-automation-server-core/commit/2dcfc32))
+* remove unneccessary log tracing ([602f296](https://github.com/nrkno/tv-automation-server-core/commit/602f296))
+* remove unused function ([264b2a6](https://github.com/nrkno/tv-automation-server-core/commit/264b2a6))
+* removed mappings migration-steps, as blueprint can use .isAbstract instead ([de5aa30](https://github.com/nrkno/tv-automation-server-core/commit/de5aa30))
+* rename method ([b971af2](https://github.com/nrkno/tv-automation-server-core/commit/b971af2))
+* upd package-lock ([c3decd6](https://github.com/nrkno/tv-automation-server-core/commit/c3decd6))
+* upd SYSTEM_VERSION to release 4 ([f1b8dea](https://github.com/nrkno/tv-automation-server-core/commit/f1b8dea))
+* update changelog (from master) ([fd9d8fd](https://github.com/nrkno/tv-automation-server-core/commit/fd9d8fd))
+* update migration versions ([0a7d43e](https://github.com/nrkno/tv-automation-server-core/commit/0a7d43e))
+* updated changelog with commits during pre-release for 0.15.0 ([f005d1b](https://github.com/nrkno/tv-automation-server-core/commit/f005d1b))
+* init: add studio0_audio_bed source layer ([667b7e8](https://github.com/nrkno/tv-automation-server-core/commit/667b7e8))
+* initdb: Combine nora primary and permanent renderers ([772dda4](https://github.com/nrkno/tv-automation-server-core/commit/772dda4))
+* Panasonic PTZ: add support for zoom speed & zoom ([3a5babb](https://github.com/nrkno/tv-automation-server-core/commit/3a5babb))
+* release: 0.17.0 (from master) ([e390573](https://github.com/nrkno/tv-automation-server-core/commit/e390573))
+* docs: CD to correct folder for meteor project ([6591690](https://github.com/nrkno/tv-automation-server-core/commit/6591690))
+
 <a name="0.17.0"></a>
 # [0.17.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.16.0...v0.17.0) (2018-11-15)
 

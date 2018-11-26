@@ -12,9 +12,11 @@ import { StudioInstallations,
 	MappingLawoType,
 	MappingPanasonicPtz,
 	MappingPanasonicPtzType,
+	MappingPharos,
+	MappingAbstract,
 } from '../../lib/collections/StudioInstallations'
 import { literal, getCurrentTime } from '../../lib/lib'
-import { RundownAPI } from '../../lib/api/rundown'
+import { RunningOrderAPI } from '../../lib/api/runningOrder'
 import { LookaheadMode } from '../../lib/api/playout'
 import { PeripheralDevices, PlayoutDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
@@ -222,7 +224,7 @@ setMeteorMethods({
 					_rank: 7000,
 					name: 'Vignett',
 					abbreviation: 'Full',
-					type: RundownAPI.SourceLayerType.VT,
+					type: RunningOrderAPI.SourceLayerType.VT,
 					onPGMClean: true,
 					onPresenterScreen: true,
 					unlimited: false
@@ -232,7 +234,7 @@ setMeteorMethods({
 					_rank: 8000,
 					name: 'VB',
 					abbreviation: 'Full',
-					type: RundownAPI.SourceLayerType.VT,
+					type: RunningOrderAPI.SourceLayerType.VT,
 					onPGMClean: true,
 					onPresenterScreen: true,
 					unlimited: false,
@@ -243,7 +245,7 @@ setMeteorMethods({
 					_rank: 9000,
 					name: 'STK',
 					abbreviation: 'STK',
-					type: RundownAPI.SourceLayerType.LIVE_SPEAK,
+					type: RunningOrderAPI.SourceLayerType.LIVE_SPEAK,
 					onPGMClean: true,
 					onPresenterScreen: true,
 					unlimited: false,
@@ -253,7 +255,7 @@ setMeteorMethods({
 					_id: 'studio0_graphics_super',
 					_rank: 1000,
 					name: 'Super',
-					type: RundownAPI.SourceLayerType.GRAPHICS,
+					type: RunningOrderAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: false,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'u,alt+u',
@@ -264,7 +266,7 @@ setMeteorMethods({
 				 	_id: 'studio0_graphics_fullskjerm',
 				 	_rank: 12000,
 				 	name: 'Grafikk',
-				 	type: RundownAPI.SourceLayerType.GRAPHICS,
+				 	type: RunningOrderAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
 					onPresenterScreen: true,
 					unlimited: false,
@@ -274,7 +276,7 @@ setMeteorMethods({
 				 	_id: 'studio0_graphics_klokke',
 				 	_rank: 15000,
 				 	name: 'Klokke',
-				 	type: RundownAPI.SourceLayerType.GRAPHICS,
+				 	type: RunningOrderAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
 					isHidden: true,
 					assignHotkeysToGlobalAdlibs: true,
@@ -286,7 +288,7 @@ setMeteorMethods({
 				 	_id: 'studio0_graphics_logo',
 				 	_rank: 16000,
 				 	name: 'Logo',
-				 	type: RundownAPI.SourceLayerType.GRAPHICS,
+				 	type: RunningOrderAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
 					isHidden: true,
 					assignHotkeysToGlobalAdlibs: true,
@@ -298,7 +300,7 @@ setMeteorMethods({
 				 	_id: 'studio0_graphics_tag_left',
 				 	_rank: 2000,
 				 	name: 'Arkiv',
-				 	type: RundownAPI.SourceLayerType.GRAPHICS,
+				 	type: RunningOrderAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'alt+u',
@@ -309,7 +311,7 @@ setMeteorMethods({
 				 	_id: 'studio0_graphics_tag_right',
 				 	_rank: 3000,
 				 	name: 'Direkte',
-				 	type: RundownAPI.SourceLayerType.GRAPHICS,
+				 	type: RunningOrderAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'alt+d,alt+u',
@@ -320,7 +322,7 @@ setMeteorMethods({
 				 	_id: 'studio0_graphics_tema',
 				 	_rank: 4000,
 				 	name: 'Tema',
-				 	type: RundownAPI.SourceLayerType.GRAPHICS,
+				 	type: RunningOrderAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'i,alt+i,alt+u',
@@ -331,7 +333,7 @@ setMeteorMethods({
 				 	_id: 'studio0_graphics_ticker',
 				 	_rank: 5000,
 				 	name: 'Ticker',
-				 	type: RundownAPI.SourceLayerType.GRAPHICS,
+				 	type: RunningOrderAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'alt+o,alt+u',
@@ -342,7 +344,7 @@ setMeteorMethods({
 				 	_id: 'studio0_graphics_bakskjerm',
 				 	_rank: 17000,
 				 	name: 'Bakskjerm',
-				 	type: RundownAPI.SourceLayerType.GRAPHICS,
+				 	type: RunningOrderAPI.SourceLayerType.GRAPHICS,
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'p',
@@ -352,7 +354,7 @@ setMeteorMethods({
 				 	_id: 'studio0_clip_bakskjerm',
 				 	_rank: 17000,
 				 	name: 'Bakskjerm',
-				 	type: RundownAPI.SourceLayerType.VT,
+				 	type: RunningOrderAPI.SourceLayerType.VT,
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'p',
@@ -362,7 +364,7 @@ setMeteorMethods({
 				 	_id: 'studio0_cam_bakskjerm',
 				 	_rank: 17000,
 				 	name: 'Bakskjerm',
-				 	type: RundownAPI.SourceLayerType.REMOTE,
+				 	type: RunningOrderAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'q,w,e,r,t,y',
 					clearKeyboardHotkey: 'p',
@@ -373,7 +375,7 @@ setMeteorMethods({
 					_rank: 11000,
 					name: 'Split',
 					abbreviation: 'DVE',
-					type: RundownAPI.SourceLayerType.SPLITS,
+					type: RunningOrderAPI.SourceLayerType.SPLITS,
 					onPGMClean: true,
 					isSticky: true,
 					activateStickyKeyboardHotkey: 'f6',
@@ -386,7 +388,7 @@ setMeteorMethods({
 					_rank: 10000,
 					name: 'DIR',
 					abbreviation: 'DIR',
-					type: RundownAPI.SourceLayerType.REMOTE,
+					type: RunningOrderAPI.SourceLayerType.REMOTE,
 					onPGMClean: true,
 					activateKeyboardHotkeys: '1,2,3,4,5,6',
 					clearKeyboardHotkey: 'ctrl+a,ctrl+1',
@@ -402,7 +404,7 @@ setMeteorMethods({
 					_id: 'studio0_script',
 					_rank: 14000,
 					name: 'Manus',
-					type: RundownAPI.SourceLayerType.SCRIPT,
+					type: RunningOrderAPI.SourceLayerType.SCRIPT,
 					onPGMClean: true,
 					unlimited: false
 				},
@@ -410,7 +412,7 @@ setMeteorMethods({
 					_id: 'studio0_gjest_mic',
 					_rank: 15000,
 					name: 'Gjest',
-					type: RundownAPI.SourceLayerType.MIC,
+					type: RunningOrderAPI.SourceLayerType.MIC,
 					onPGMClean: true,
 					unlimited: false,
 					isGuestInput: true
@@ -420,7 +422,7 @@ setMeteorMethods({
 					_rank: 13000,
 					name: 'Kam',
 					abbreviation: 'K ',
-					type: RundownAPI.SourceLayerType.CAMERA,
+					type: RunningOrderAPI.SourceLayerType.CAMERA,
 					onPGMClean: true,
 					activateKeyboardHotkeys: 'f1,f2,f3,f4,8,9',
 					clearKeyboardHotkey: 'ctrl+a,ctrl+f1',
@@ -433,7 +435,7 @@ setMeteorMethods({
 					_id: 'studio0_live_transition0',
 					_rank: 0,
 					name: 'Transition',
-					type: RundownAPI.SourceLayerType.TRANSITION,
+					type: RunningOrderAPI.SourceLayerType.TRANSITION,
 					onPGMClean: true,
 					activateKeyboardHotkeys: '',
 					assignHotkeysToGlobalAdlibs: false,
@@ -443,7 +445,7 @@ setMeteorMethods({
 					_id: 'studio0_hyperdeck0',
 					_rank: 0,
 					name: 'Hyperdeck',
-					type: RundownAPI.SourceLayerType.UNKNOWN,
+					type: RunningOrderAPI.SourceLayerType.UNKNOWN,
 					onPGMClean: true,
 					activateKeyboardHotkeys: '',
 					assignHotkeysToGlobalAdlibs: false,
@@ -455,15 +457,37 @@ setMeteorMethods({
 					_rank: 13000,
 					name: 'KamPos',
 					abbreviation: 'K ',
-					type: RundownAPI.SourceLayerType.CAMERA_MOVEMENT,
+					type: RunningOrderAPI.SourceLayerType.CAMERA_MOVEMENT,
 					onPGMClean: true,
 					unlimited: true
+				},
+				{
+					_id: 'studio0_audio_bed',
+					_rank: 0,
+					name: 'Bed',
+					type: RunningOrderAPI.SourceLayerType.AUDIO,
+					onPGMClean: true,
+					activateKeyboardHotkeys: '',
+					assignHotkeysToGlobalAdlibs: false,
+					unlimited: false,
+					isHidden: true
+				},
+				{
+					_id: 'studio0_host_light',
+					_rank: 0,
+					name: 'HostLight',
+					type: RunningOrderAPI.SourceLayerType.LIGHTS,
+					onPGMClean: false,
+					activateKeyboardHotkeys: '',
+					assignHotkeysToGlobalAdlibs: false,
+					unlimited: false,
+					isHidden: true
 				}
 			],
 		}})
 		// Create Timeline mappings:
 		const mappings: Mappings = { // Logical layers and their mappings
-			'core_abstract': literal<Mapping>({
+			'core_abstract': literal<MappingAbstract>({
 				device: PlayoutDeviceType.ABSTRACT,
 				deviceId: 'abstract0',
 				lookahead: LookaheadMode.NONE,
@@ -530,13 +554,6 @@ setMeteorMethods({
 				lookahead: LookaheadMode.NONE,
 				channel: 1,
 				layer: 120
-			}),
-			'casparcg_cg_permanent': literal<MappingCasparCG>({
-				device: PlayoutDeviceType.CASPARCG,
-				deviceId: 'casparcg1',
-				lookahead: LookaheadMode.NONE,
-				channel: 2,
-				layer: 121
 			}),
 			'casparcg_player_studio': literal<MappingCasparCG>({
 				device: PlayoutDeviceType.CASPARCG,
@@ -757,12 +774,12 @@ setMeteorMethods({
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
 			}),
-			'nora_permanent_logo': literal<Mapping>({
+			'nora_primary_logo': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
 			}),
-			'nora_permanent_klokke': literal<Mapping>({
+			'nora_primary_klokke': literal<Mapping>({
 				device: PlayoutDeviceType.HTTPSEND,
 				deviceId: 'http0',
 				lookahead: LookaheadMode.NONE,
@@ -799,7 +816,27 @@ setMeteorMethods({
 				deviceId: 'ptz0',
 				mappingType: MappingPanasonicPtzType.PRESET_SPEED,
 				lookahead: LookaheadMode.WHEN_CLEAR
-			})
+			}),
+			'pharos_lights': literal<MappingPharos>({
+				device: PlayoutDeviceType.PHAROS,
+				deviceId: 'pharos0',
+				lookahead: LookaheadMode.NONE
+			}),
+			'lights_host': literal<MappingAbstract>({
+				device: PlayoutDeviceType.ABSTRACT,
+				deviceId: 'abstract0',
+				lookahead: LookaheadMode.NONE
+			}),
+			'lights_guest': literal<MappingAbstract>({
+				device: PlayoutDeviceType.ABSTRACT,
+				deviceId: 'abstract0',
+				lookahead: LookaheadMode.NONE
+			}),
+			'lights_studio': literal<MappingAbstract>({
+				device: PlayoutDeviceType.ABSTRACT,
+				deviceId: 'abstract0',
+				lookahead: LookaheadMode.NONE
+			}),
 		}
 		StudioInstallations.update('studio0', {$set: {
 			mappings: mappings
@@ -809,7 +846,9 @@ setMeteorMethods({
 			name: 'Distriktsnyheter Sørlandet',
 			templateMappings: [],
 			baselineTemplate: 'baseline',
-			messageTemplate: 'message'
+			messageTemplate: 'message',
+			routerBlueprint: 'getId',
+			postProcessBlueprint: 'post-process'
 		}})
 	},
 	'initDB_config': (really) => {

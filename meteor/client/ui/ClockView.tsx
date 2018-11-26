@@ -138,7 +138,7 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 				return (
 					<div className='clocks-full-screen'>
 						<div className='clocks-half clocks-top'>
-							{currentSegmentLine &&
+							{currentSegmentLine ?
 								<React.Fragment>
 									<div className='clocks-segment-icon clocks-current-segment-icon'>
 										<SegmentItemIconContainer segmentItemId={currentSegmentLine._id} studioInstallationId={runningOrder.studioInstallationId} runningOrderId={runningOrder._id} />
@@ -152,7 +152,10 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 									<div className='clocks-current-segment-countdown clocks-segment-countdown'>
 										<Timediff time={currentSegmentDuration} />
 									</div>
-								</React.Fragment>
+								</React.Fragment> :
+								runningOrder.expectedStart && <div className='clocks-ro-countdown clocks-segment-countdown'>
+									<Timediff time={runningOrder.expectedStart - getCurrentTime()} />
+								</div>
 							}
 						</div>
 						<div className='clocks-half clocks-bottom clocks-top-bar'>

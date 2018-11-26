@@ -148,7 +148,7 @@ class HttpSendDeviceSettingsComponent extends React.Component<Translated<IHttpSe
 						<div>
 							<div className='mod mvs mhs'>
 								<label className='field'>
-									{t('Url')}
+									{t('URL')}
 									<EditAttribute
 										modifiedClassName='bghl'
 										attribute={'settings.devices.' + deviceId + '.options.makeReadyCommands.' + i + '.url'}
@@ -602,7 +602,38 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 										</div>
 									</React.Fragment>
 									)
-								))
+								)) ||
+								(
+									device.type === PlayoutDeviceType.PHAROS && (
+										(
+										<React.Fragment>
+											<div className='mod mvs mhs'>
+												<label className='field'>
+													{t('Host')}
+													<EditAttribute
+														modifiedClassName='bghl'
+														attribute={'settings.devices.' + deviceId + '.options.host'}
+														obj={this.props.device}
+														type='text'
+														collection={PeripheralDevices}
+														className='input text-input input-l'></EditAttribute>
+												</label>
+											</div>
+											<div className='mod mvs mhs'>
+												<label className='field'>
+													{t('Enable SSL')}
+													<EditAttribute
+														modifiedClassName='bghl'
+														attribute={'settings.devices.' + deviceId + '.options.ssl'}
+														obj={this.props.device}
+														type='checkbox'
+														collection={PeripheralDevices}
+														className='input text-input input-l'></EditAttribute>
+												</label>
+											</div>
+										</React.Fragment>
+										)
+									))
 							}
 						</div>
 						<div className='mod alright'>
@@ -1029,9 +1060,9 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 		return (
 			<div className='studio-edit mod mhl mvs'>
 				<div>
-					<h3>{t('Generic properties')}</h3>
+					<h3>{t('Generic Properties')}</h3>
 					<label className='field'>
-						{t('Device name')}
+						{t('Device Name')}
 						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'

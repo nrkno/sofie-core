@@ -7,7 +7,7 @@ import { ISourceLayerUi,
 		 SegmentLineUi,
 		 SegmentLineItemUi } from './SegmentTimelineContainer'
 
-import { RundownAPI } from '../../../lib/api/rundown'
+import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 import { RundownUtils } from '../../lib/rundown'
 import { Transition } from '../../../lib/constants/casparcg'
 import { SegmentLineItemLifespan } from '../../../lib/collections/SegmentLineItems'
@@ -357,8 +357,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 	renderInsideItem (typeClass: string) {
 		switch (this.props.layer.type) {
-			case RundownAPI.SourceLayerType.SCRIPT:
-			// case RundownAPI.SourceLayerType.MIC:
+			case RunningOrderAPI.SourceLayerType.SCRIPT:
+			// case RunningOrderAPI.SourceLayerType.MIC:
 				return <MicSourceRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
@@ -366,7 +366,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
-			case RundownAPI.SourceLayerType.VT:
+			case RunningOrderAPI.SourceLayerType.VT:
 				return <VTSourceRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
@@ -374,8 +374,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
-			case RundownAPI.SourceLayerType.GRAPHICS:
-			case RundownAPI.SourceLayerType.LOWER_THIRD:
+			case RunningOrderAPI.SourceLayerType.GRAPHICS:
+			case RunningOrderAPI.SourceLayerType.LOWER_THIRD:
 				return <L3rdSourceRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
@@ -383,7 +383,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
-			case RundownAPI.SourceLayerType.SPLITS:
+			case RunningOrderAPI.SourceLayerType.SPLITS:
 				return <SplitsSourceRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
@@ -391,7 +391,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
-			case RundownAPI.SourceLayerType.LIVE_SPEAK:
+			case RunningOrderAPI.SourceLayerType.LIVE_SPEAK:
 				return <STKSourceRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
@@ -400,7 +400,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
 
-			case RundownAPI.SourceLayerType.TRANSITION:
+			case RunningOrderAPI.SourceLayerType.TRANSITION:
 				return <TransitionSourceRenderer key={this.props.segmentLineItem._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
@@ -432,21 +432,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 			this._placeHolderElement = false
 
-			const typeClass = ClassNames({
-				'audio': this.props.layer.type === RundownAPI.SourceLayerType.AUDIO,
-				'camera': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA,
-				'camera-movement': this.props.layer.type === RundownAPI.SourceLayerType.CAMERA_MOVEMENT,
-				'graphics': this.props.layer.type === RundownAPI.SourceLayerType.GRAPHICS,
-				'lower-third': this.props.layer.type === RundownAPI.SourceLayerType.LOWER_THIRD,
-				'live-speak': this.props.layer.type === RundownAPI.SourceLayerType.LIVE_SPEAK,
-				'mic': this.props.layer.type === RundownAPI.SourceLayerType.MIC,
-				'metadata': this.props.layer.type === RundownAPI.SourceLayerType.METADATA,
-				'remote': this.props.layer.type === RundownAPI.SourceLayerType.REMOTE,
-				'script': this.props.layer.type === RundownAPI.SourceLayerType.SCRIPT,
-				'splits': this.props.layer.type === RundownAPI.SourceLayerType.SPLITS,
-				'vt': this.props.layer.type === RundownAPI.SourceLayerType.VT,
-				'transition': this.props.layer.type === RundownAPI.SourceLayerType.TRANSITION,
-			})
+			const typeClass = RundownUtils.getSourceLayerClassName(this.props.layer.type)
 
 			return (
 				<div className={ClassNames('segment-timeline__layer-item', typeClass, {
@@ -458,9 +444,9 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 					'infinite': (this.props.segmentLineItem.duration === undefined && this.props.segmentLineItem.durationOverride === undefined && this.props.segmentLineItem.infiniteMode) as boolean, // 0 is a special value
 					'next-is-touching': !!(this.props.segmentLineItem.cropped || (this.props.segmentLineItem.expectedDuration && _.isString(this.props.segmentLineItem.expectedDuration))),
 
-					'source-missing': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING,
-					'source-broken': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN,
-					'unknown-state': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.UNKNOWN,
+					'source-missing': this.props.segmentLineItem.status === RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING,
+					'source-broken': this.props.segmentLineItem.status === RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN,
+					'unknown-state': this.props.segmentLineItem.status === RunningOrderAPI.LineItemStatusCode.UNKNOWN,
 					'disabled': this.props.segmentLineItem.disabled
 				})}
 					data-mos-id={this.props.segmentLineItem._id}

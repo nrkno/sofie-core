@@ -23,6 +23,7 @@ import { ClientAPI } from '../../lib/api/client'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
 import { eventContextForLog } from '../lib/eventTargetLogHelper'
+import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
 
 interface IProps {
 	runningOrder: RunningOrder
@@ -38,7 +39,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 	constructor (props: Translated<IProps>) {
 		super(props)
 		this.state = {
-			q0: '',
+			q0: 'nothing',
 			q1: '',
 			q2: '',
 		}
@@ -47,21 +48,37 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 
 		let answers = this.state
 
-		let evaluation: EvaluationBase = {
-			studioId: this.props.runningOrder.studioInstallationId,
-			runningOrderId: this.props.runningOrder._id,
-			answers: answers
+		if (answers.q0 !== 'nothing') {
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT, this.props.runningOrder._id, 'Evaluation form', (err, snapshotId) => {
+				if (!err && snapshotId) {
+					saveEvaluation(snapshotId)
+				} else {
+					saveEvaluation()
+				}
+			})
+		} else {
+			saveEvaluation()
 		}
+		function saveEvaluation (snapshotId?: string) {
 
-		Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.saveEvaluation, evaluation)
+			let evaluation: EvaluationBase = {
+				studioId: this.props.runningOrder.studioInstallationId,
+				runningOrderId: this.props.runningOrder._id,
+				answers: answers,
+				snapshots: []
+			}
+			if (snapshotId && evaluation.snapshots) evaluation.snapshots.push(snapshotId)
 
-		Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.saveEvaluation, evaluation)
 
-		this.setState({
-			q0: '',
-			q1: '',
-			q2: '',
-		})
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
+
+			this.setState({
+				q0: '',
+				q1: '',
+				q2: '',
+			})
+		}
 	}
 	onUpdateValue = (edit: any, newValue: any ) => {
 		console.log('edit', edit, newValue)

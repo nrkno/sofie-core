@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2018-11-08T10:35:10.801Z\n"
-"PO-Revision-Date: 2018-11-08 12:29+0100\n"
+"POT-Creation-Date: 2018-11-15T10:07:29.289Z\n"
+"PO-Revision-Date: 2018-11-15 11:11+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -97,6 +97,9 @@ msgstr "Kjøreplaner"
 msgid "Nyman's Playground"
 msgstr "Tester"
 
+msgid "Test Tools"
+msgstr "Test Tools"
+
 msgid "Status"
 msgstr "Status"
 
@@ -124,6 +127,9 @@ msgstr "Faste hurtigtaster"
 msgid "Shortcuts"
 msgstr "Hurtigtaster"
 
+msgid "Running Order is active"
+msgstr "Kjøreplanen er aktiv"
+
 msgid "Running Order"
 msgstr "Kjøreplan"
 
@@ -150,6 +156,41 @@ msgstr "version"
 
 msgid "status"
 msgstr "status"
+
+#| msgid "Sent Messages"
+msgid "Status messages:"
+msgstr "Status messages:"
+
+msgid "Delete this item?"
+msgstr "Delete this item?"
+
+msgid "Delete"
+msgstr "Delete"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Are you sure you want to delete running order \"{{runningOrderSlug}}\"?"
+msgstr "Er du sikker på at du vil slette kjøreplan {{runningOrderSlug}}?"
+
+msgid "Please note: This action is irreversible!"
+msgstr "Please note: This action is irreversible!"
+
+msgid "Re-Sync this running order?"
+msgstr "Last inn kjøreplan på nytt?"
+
+msgid "Re-Sync"
+msgstr "Re-Sync"
+
+msgid ""
+"Are you sure you want to re-sync running order \"{{runningOrderSlug}}\" with "
+"MOS script?"
+msgstr ""
+"Er du sikker på at du vil synkronisere den aktive kjørenplan på nytt "
+"\"{{runningOrderSlug}}\" med MOS script?"
+
+msgid "Re-sync with MOS"
+msgstr "Re-sync med MOS"
 
 msgid "Start time is close"
 msgstr "Start tidspunkt er nær"
@@ -197,7 +238,7 @@ msgstr "Deaktiver"
 msgid "Activate (Rehearsal)"
 msgstr "Aktiver testmodus"
 
-msgid "Reload running order"
+msgid "Reload Running Order"
 msgstr "Last inn kjøreplan på nytt"
 
 msgid "Move Next forwards"
@@ -219,8 +260,8 @@ msgid "Undo Disable the next element"
 msgstr "Angre Deaktiver følgende element"
 
 msgid ""
-"Only a single running order can be active in a studio. Deactivate the other "
-"running order and try again."
+"Only a single Running Order can be active in a studio at the same time. "
+"Please deactivate the other Running Order and try again."
 msgstr ""
 "Bare én kjøreplan kan være aktiv i et studio. Deaktiver den andre "
 "kjøreplanen, og prøv på nytt."
@@ -235,7 +276,7 @@ msgstr ""
 "Det planlagte sluttidspunktet er passert, er du sikker på at du vil aktivere "
 "denne kjøreplan?"
 
-msgid "Are you sure you want to go into rehearsal mode?"
+msgid "Are you sure you want to activate Rehearsal Mode?"
 msgstr "Er du sikker på at du vil gå i testmodus?"
 
 msgid ""
@@ -245,17 +286,20 @@ msgstr ""
 "Er du sikker på at du vil deaktivere denne kjøreplan?\n"
 "(Dette vil fjerne alle outputs.)"
 
-msgid "Are you sure you want to reset this running order?"
+msgid "Are you sure you want to reset this Running Order?"
 msgstr "Er du sikker på at du vil tilbakestille denne kjøreplan?"
 
-msgid "Prepare studio and Activate (Rehearsal)"
+msgid "Prepare Studio and Activate (Rehearsal)"
 msgstr "Forbered studio og aktiver testmodus"
 
 msgid "Reset Running Order"
 msgstr "Tilbakestill kjøreplan"
 
-msgid "Reload ENPS data"
+msgid "Reload ENPS Data"
 msgstr "Last ENPS-data på nytt"
+
+msgid "Store Snapshot"
+msgstr "Store Snapshot"
 
 msgid "No actions available"
 msgstr "Ingen handlinger er tilgjengelige"
@@ -272,12 +316,15 @@ msgstr "Gå til On Air-linje"
 msgid "Rewind segments to start"
 msgstr "Spol tilbake tittler til start"
 
-#, fuzzy
 msgid "Cancel currently pressed hotkey"
 msgstr "Avbryt den trykte tasten"
 
 msgid "Change to fullscreen mode"
-msgstr "Fullskjerm"
+msgstr "Fullskjermmodus"
+
+msgid ""
+"This running order is now active. Are you sure you want to exit this screen?"
+msgstr "Denne kjøreplan er aktiv. Er du sikker på at du vil avslutte?"
 
 msgid "This running order has been unpublished from Sofie."
 msgstr "Denne kjøreplanen er ikke lenger tilgjengelig i Sofie."
@@ -384,23 +431,11 @@ msgstr "Source layers"
 msgid "Output channels"
 msgstr "Output channels"
 
-msgid "Show Styles"
-msgstr "Show Styles"
+msgid "Blueprints"
+msgstr "Blueprints"
 
-msgid "Delete this item?"
-msgstr "Delete this item?"
-
-msgid "Delete"
-msgstr "Delete"
-
-msgid "Cancel"
-msgstr "Cancel"
-
-msgid "Are you sure you want to delete show style \"{{showStyleId}}\"?"
-msgstr "Are you sure you want to delete show style \"{{showStyleId}}\"?"
-
-msgid "Please note: This action is irreversible!"
-msgstr "Please note: This action is irreversible!"
+msgid "Are you sure you want to delete blueprint \"{{showStyleId}}\"?"
+msgstr "Are you sure you want to delete blueprint \"{{showStyleId}}\"?"
 
 msgid "Line Templates"
 msgstr "Line Templates"
@@ -417,11 +452,17 @@ msgstr "Tools"
 msgid "Restore Backup"
 msgstr "Restore Backup"
 
+msgid "Migration"
+msgstr "Migration"
+
+msgid "Upgrade database"
+msgstr "Upgrade database"
+
 msgid "System Settings"
 msgstr "System Settings"
 
-msgid "Url"
-msgstr "Url"
+msgid "URL"
+msgstr "URL"
 
 msgid "Params"
 msgstr "Params"
@@ -462,6 +503,9 @@ msgstr "Sources Path"
 msgid "Ramp Function Path"
 msgstr "Ramp Function Path"
 
+msgid "Enable SSL"
+msgstr "Enable SSL"
+
 msgid "Media Scanner Host"
 msgstr "Media Scanner Host"
 
@@ -495,14 +539,14 @@ msgstr "Secondary Host (IP Address or Hostname)"
 msgid "MOS ID of Gateway (Sofie MOS ID)"
 msgstr "MOS ID of Gateway (Sofie MOS ID)"
 
-msgid "Generic properties"
+msgid "Generic Properties"
 msgstr "Generic Properties"
 
-msgid "Device name"
+msgid "Device Name"
 msgstr "Device Name"
 
-msgid "Blueprint ID"
-msgstr "Blueprint ID"
+msgid "Blueprint logic ID"
+msgstr "Blueprint logic ID"
 
 msgid "Is Helper"
 msgstr "Is Helper"
@@ -510,26 +554,137 @@ msgstr "Is Helper"
 msgid "Select this"
 msgstr "Select this"
 
-msgid "Restore this backup?"
-msgstr "Restore this backup?"
+#| msgid "Database version"
+msgid "Set database version"
+msgstr "Set database version"
+
+#| msgid "Are you sure you want to delete this device?"
+msgid "Are you sure you want to set the database version to"
+msgstr "Are you sure you want to set the database version to"
+
+msgid "System version"
+msgstr "System version"
+
+msgid "Database version"
+msgstr "Database version"
+
+msgid "Refresh"
+msgstr "Refresh"
+
+#| msgid "System version"
+msgid "Reset version to"
+msgstr "Reset version to"
+
+msgid "The migration can be completed automatically."
+msgstr "The migration can be completed automatically."
+
+msgid "Run automatic migration procedure"
+msgstr "Run automatic migration procedure"
+
+msgid ""
+"The migration procedure needs some help from you in order to complete, see "
+"below:"
+msgstr ""
+"The migration procedure needs some help from you in order to complete, see "
+"below:"
+
+msgid "Double-check Values"
+msgstr "Double-check Values"
+
+msgid "Are you sure the values you have entered are correct?"
+msgstr "Are you sure the values you have entered are correct?"
+
+msgid "Run Migration Procedure"
+msgstr "Run Migration Procedure"
+
+msgid "Warnings during migration"
+msgstr "Warnings during migration"
+
+msgid ""
+"Please check the database related to the warnings above. If neccessary, you "
+"can"
+msgstr ""
+"Please check the database related to the warnings above. If neccessary, you "
+"can"
+
+msgid "Force migration"
+msgstr "Force migration"
+
+msgid ""
+"Are you sure you want to force the migration? This will bypass the migration "
+"checks, so be sure to verify that the values in the settings are correct!"
+msgstr ""
+"Are you sure you want to force the migration? This will bypass the migration "
+"checks, so be sure to verify that the values in the settings are correct!"
+
+msgid "Force migration (unsafe)"
+msgstr "Force migration (unsafe)"
+
+msgid "The migration has completed successfully!"
+msgstr "The migration has completed successfully!"
+
+msgid "All is well, go get a"
+msgstr "All is well, go get a"
+
+msgid "Take a Snapshot"
+msgstr "Take a Snapshot"
+
+msgid "Take a System Snapshot"
+msgstr "Take a System Snapshot"
+
+msgid ""
+"A System Snapshot contains all system settings (studio, showstyles, devices, "
+"etc.)"
+msgstr ""
+"A System Snapshot contains all system settings (studio, showstyles, devices, "
+"etc.)"
+
+msgid "Take debug snapshot"
+msgstr "Take debug snapshot"
+
+msgid ""
+"A Debug Snapshot contains info about the system and the active running "
+"order(s)"
+msgstr ""
+"A Debug Snapshot contains info about the system and the active running "
+"order(s)"
+
+msgid "Restore from Snapshot File"
+msgstr "Restore from Snapshot File"
+
+msgid "Restore from this Snapshot File?"
+msgstr "Restore from this Snapshot File?"
 
 msgid "Restore"
 msgstr "Restore"
 
-msgid "Are you sure you want to restore the backup file \"{{fileName}}\"?"
-msgstr "Are you sure you want to restore the backup file \"{{fileName}}\"?"
+msgid ""
+"Are you sure you want to restore the system from the Snapshot file "
+"\"{{fileName}}\"?"
+msgstr ""
+"Are you sure you want to restore the system from the Snapshot file "
+"\"{{fileName}}\"?"
 
-msgid "Show Style Name"
-msgstr "Show Style Name"
+msgid "Restore from Stored Snapshots"
+msgstr "Restore from Stored Snapshots"
 
-msgid "Show Style ID"
-msgstr "Show Style ID"
+msgid "Blueprint Name"
+msgstr "Blueprint Name"
 
-msgid "Baseline Blueprint ID"
-msgstr "Baseline Blueprint ID"
+msgid "Blueprint ID"
+msgstr "Blueprint ID"
 
-msgid "External Message Blueprint ID"
-msgstr "External Message Blueprint ID"
+msgid "Router logic ID"
+msgstr "Router logic ID"
+
+msgid "Baseline logic ID"
+msgstr "Baseline logic ID"
+
+msgid "Post Process logic ID"
+msgstr "Post Process logic ID"
+
+msgid "External Message logic ID"
+msgstr "External Message logic ID"
 
 msgid "Download Full Backup"
 msgstr "Download Full Backup"
@@ -540,8 +695,8 @@ msgstr "Download Current State"
 msgid "Blueprints' logic"
 msgstr "Blueprints' logic"
 
-msgid "Are you sure you want to delete line blueprint logic \"{{itemId}}\"?"
-msgstr "Are you sure you want to delete line blueprint logic \"{{itemId}}\"?"
+msgid "Are you sure you want to delete blueprint logic \"{{itemId}}\"?"
+msgstr "Are you sure you want to delete blueprint logic \"{{itemId}}\"?"
 
 msgid "Helper"
 msgstr "Helper"
@@ -569,6 +724,22 @@ msgstr "Are you sure you want to delete this config item \"{{configId}}\"?"
 
 msgid "Custom Configuration"
 msgstr "Custom Configuration"
+
+msgid "Hotkeys"
+msgstr "Hotkeys"
+
+msgid "Property"
+msgstr "Property"
+
+msgid ""
+"Are you sure you want to delete this runtime argument \"{{property}}: "
+"{{value}}\"?"
+msgstr ""
+"Are you sure you want to delete this runtime argument \"{{property}}: "
+"{{value}}\"?"
+
+msgid "Runtime Arguments for Blueprints"
+msgstr "Runtime Arguments for Blueprints"
 
 msgid "Camera"
 msgstr "Camera"
@@ -630,8 +801,6 @@ msgstr "Is on clean PGM"
 msgid "Is a Live Remote Input"
 msgstr "Is a Live Remote Input"
 
-#, fuzzy
-#| msgid "Is a Live Remote Input"
 msgid "Is a Guest Input"
 msgstr "Is a Guest Input"
 
@@ -689,16 +858,12 @@ msgstr "index"
 msgid "Identifier"
 msgstr "Identifier"
 
-#, fuzzy
 msgid "Preset"
 msgstr "Preset"
 
-#, fuzzy
 msgid "Preset transition speed"
 msgstr "Preset transition speed"
 
-#, fuzzy
-#| msgid "Unknown Layer"
 msgid "Unknown mapping"
 msgstr "Unknown mapping"
 
@@ -717,13 +882,29 @@ msgstr "Are you sure you want to remove mapping for layer \"{{layerId}}\"?"
 msgid "Layer Mappings"
 msgstr "Layer Mappings"
 
-#, fuzzy
 msgid "Key"
 msgstr "Key"
 
-#, fuzzy
 msgid "Custom Hotkey Labels"
 msgstr "Custom Hotkey Labels"
+
+msgid "Test Tools - Recordings"
+msgstr "Test Tools - Recordings"
+
+msgid "CasparCG Channel"
+msgstr "CasparCG Channel"
+
+msgid "Path prefix"
+msgstr "Path prefix"
+
+msgid "URL prefix"
+msgstr "URL prefix"
+
+msgid "Decklink input index"
+msgstr "Decklink input index"
+
+msgid "Decklink input format"
+msgstr "Decklink input format"
 
 msgid "New Source"
 msgstr "New Source"
@@ -731,14 +912,11 @@ msgstr "New Source"
 msgid "New Output"
 msgstr "New Output"
 
-msgid "Generic Properties"
-msgstr "Generic Properties"
-
 msgid "Studio Name"
 msgstr "Studio Name"
 
-msgid "Default Show Style"
-msgstr "Default Show Style"
+msgid "Default Blueprint"
+msgstr "Default Blueprint"
 
 msgid "System"
 msgstr "System"
@@ -758,8 +936,8 @@ msgstr "Evalueringer"
 msgid "Timestamp"
 msgstr "Timestamp"
 
-msgid "User ID"
-msgstr "User ID"
+msgid "User name"
+msgstr "User name"
 
 msgid "Answers"
 msgstr "Answers"
@@ -776,8 +954,14 @@ msgstr "Sent Messages"
 msgid "Take Snapshot"
 msgstr "Take Snapshot"
 
-msgid "Download System Snapshot"
-msgstr "Download System Snapshot"
+msgid "Download Debug-Snapshot (all studios)"
+msgstr "Download Debug-Snapshot (all studios)"
+
+msgid "Download System Snapshot for the studio"
+msgstr "Download System Snapshot for the studio"
+
+msgid "Download Debug-Snapshot for the studio"
+msgstr "Download Debug-Snapshot for the studio"
 
 msgid "Not connected"
 msgstr "Not connected"
@@ -818,6 +1002,9 @@ msgstr "Telemetry"
 msgid "Execution time"
 msgstr "Execution time"
 
+msgid "User ID"
+msgstr "User ID"
+
 msgid "Client IP"
 msgstr "Client IP"
 
@@ -833,15 +1020,71 @@ msgstr "Parameters"
 msgid "User Activity Log"
 msgstr "User Activity Log"
 
+msgid "Recordings"
+msgstr "Recordings"
+
+msgid "A required setting is not configured"
+msgstr "A required setting is not configured"
+
+msgid "Active"
+msgstr "Active"
+
+msgid "Ready"
+msgstr "Ready"
+
+msgid "Stop"
+msgstr "Stop"
+
+msgid "Start"
+msgstr "Start"
+
+msgid "Are you sure you want to delete recording \"{{name}}\"?"
+msgstr "Are you sure you want to delete recording \"{{name}}\"?"
+
+msgid "Stopped"
+msgstr "Stopped"
+
+msgid "Your browser does not support video playback"
+msgstr "Your browser does not support video playback"
+
+msgid "Recording still in progress"
+msgstr "Recording still in progress"
+
 msgctxt "item"
 msgid "new_config"
 msgstr "new_config"
+
+#~| msgid "Restore this backup?"
+#~ msgid "Restore from this Backup?"
+#~ msgstr "Restore from this Backup?"
+
+#~| msgid "Take Snapshot"
+#~ msgid "Take snapshot"
+#~ msgstr "Take snapshot"
+
+#~ msgid "Url"
+#~ msgstr "Url"
+
+#~ msgid "Generic properties"
+#~ msgstr "Generic Properties"
 
 #~ msgid "ON AIR"
 #~ msgstr "ON AIR"
 
 #~ msgid "Click Anywhere to go Fullscreen..."
 #~ msgstr "Klikk hvor som helst for gå til fullskjerm..."
+
+#~ msgid "Show Styles"
+#~ msgstr "Show Styles"
+
+#~ msgid "Show Style Name"
+#~ msgstr "Show Style Name"
+
+#~ msgid "Show Style ID"
+#~ msgstr "Show Style ID"
+
+#~ msgid "Default Show Style"
+#~ msgstr "Default Show Style"
 
 #~ msgid "Restart this device process?"
 #~ msgstr "Restart this device process?"
@@ -892,9 +1135,6 @@ msgstr "new_config"
 
 #~ msgid "Core status"
 #~ msgstr "Sofie-status"
-
-#~ msgid "Restore from Backup"
-#~ msgstr "Restore from Backup"
 
 #~ msgid "MOS Devices"
 #~ msgstr "MOS Devices"

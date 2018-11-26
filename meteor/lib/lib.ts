@@ -341,6 +341,28 @@ export function formatDurationAsTimecode (duration: Time) {
 	return Timecode(duration * Settings['frameRate'] / 1000, Settings['frameRate'], false).toString()
 }
 /**
+ * Formats the time as human-readable time "YYYY-MM-DD hh:ii:ss"
+ * @param time
+ */
+export function formatDateTime (time: Time) {
+	let d = new Date(time)
+
+	let yyyy: any = d.getFullYear()
+	let mm: any = d.getMonth() + 1
+	let dd: any = d.getDate()
+
+	let hh: any = d.getHours()
+	let ii: any = d.getMinutes()
+	let ss: any = d.getSeconds()
+
+	if (mm < 10) mm = '0' + mm
+	if (hh < 10) hh = '0' + hh
+	if (ii < 10) ii = '0' + ii
+	if (ss < 10) ss = '0' + ss
+
+	return `${yyyy}-${mm}-${dd} ${hh}:${ii}:${ss}`
+}
+/**
  * Deeply iterates through the object and removes propertys whose value equals null
  * @param obj
  */
@@ -365,6 +387,10 @@ export function objectPathGet (obj: any, path: string, defaultValue?: any) {
 	let v = objectPath.get(obj, path)
 	if (v === undefined && defaultValue !== undefined) return defaultValue
 	return v
+}
+export function objectPathSet (obj: any, path: string, value: any) {
+	objectPath.set(obj, path, value)
+	return obj
 }
 /**
  * Returns a string that can be used to compare objects for equality
@@ -799,4 +825,11 @@ export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T): Arr
 
 	arr.push(valueToPush)
 	return arr
+}
+/**
+ * Replaces all invalid characters in order to make the path a valid one
+ * @param path
+ */
+export function fixValidPath (path) {
+	return path.replace(/([^a-z0-9_.@()-])/ig, '_')
 }

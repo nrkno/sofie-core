@@ -1,11 +1,12 @@
 import { Mongo } from 'meteor/mongo'
-import { RundownAPI } from '../api/rundown'
+import { RunningOrderAPI } from '../api/runningOrder'
 import { TransformedCollection } from '../typings/meteor'
 import { PlayoutDeviceType } from './PeripheralDevices'
 import { LookaheadMode } from '../api/playout'
 import { applyClassToDocument, registerCollection } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
+import { ChannelFormat } from '../../lib/constants/casparcg'
 
 // Imports from TSR (TODO make into an import)
 export enum MappingLawoType {
@@ -13,7 +14,9 @@ export enum MappingLawoType {
 }
 export enum MappingPanasonicPtzType {
 	PRESET_SPEED = 0,
-	PRESET = 1
+	PRESET = 1,
+	ZOOM = 2,
+	ZOOM_SPEED = 3
 }
 export enum MappingAtemType {
 	MixEffect,
@@ -33,6 +36,7 @@ export interface Mapping {
 	device: PlayoutDeviceType,
 	lookahead: LookaheadMode,
 	deviceId: string
+	internal?: boolean
 	// [key: string]: any
 }
 export interface MappingCasparCG extends Mapping {
@@ -41,8 +45,7 @@ export interface MappingCasparCG extends Mapping {
 	layer: number
 }
 export interface MappingAbstract extends Mapping {
-	device: PlayoutDeviceType.ABSTRACT,
-	abstractPipe: number
+	device: PlayoutDeviceType.ABSTRACT
 }
 export interface MappingAtem extends Mapping {
 	device: PlayoutDeviceType.ATEM,
@@ -62,6 +65,9 @@ export interface MappingHyperdeck extends Mapping {
 export interface MappingPanasonicPtz extends Mapping {
 	device: PlayoutDeviceType.PANASONIC_PTZ,
 	mappingType: MappingPanasonicPtzType
+}
+export interface MappingPharos extends Mapping {
+	device: PlayoutDeviceType.PHAROS,
 }
 
 export interface HotkeyDefinition {
@@ -83,8 +89,11 @@ export interface DBStudioInstallation {
 	defaultShowStyle: string
 
 	config: Array<IStudioConfigItem>
+	testToolsConfig?: ITestToolsConfig
 
 	hotkeyLegend?: Array<HotkeyDefinition>
+
+	runtimeArguments?: Array<IStudioRuntimeArgumentsItem>
 }
 
 export interface ISourceLayerBase {
@@ -117,6 +126,13 @@ export interface ISourceLayerBase {
 	onPresenterScreen?: boolean
 }
 
+export interface IStudioRuntimeArgumentsItem {
+	label?: string
+	hotkeys: string
+	property: string
+	value: string
+}
+
 export interface IStudioConfigItem {
 	_id: string
 	/** Value */
@@ -131,7 +147,7 @@ export interface ISourceLayer extends ISourceLayerBase {
 	name: string
 	/** Abbreviation for display in the countdown screens */
 	abbreviation?: string
-	type: RundownAPI.SourceLayerType
+	type: RunningOrderAPI.SourceLayerType
 	/** If set to true, the layer can handle any number of simultaneus Line Items */
 	unlimited: boolean
 	/** If set to true, the layer will be shown in PGM Clean */
@@ -161,6 +177,17 @@ export interface IOutputLayer extends IOutputLayerBase {
 	isPGM: boolean
 }
 
+export interface ITestToolsConfig {
+	recordings: {
+		deviceId?: string
+		channelIndex?: number
+		channelFormat: ChannelFormat
+		decklinkDevice?: number
+		filePrefix?: string
+		urlPrefix?: string
+	}
+}
+
 export class StudioInstallation implements DBStudioInstallation {
 	public _id: string
 	public name: string
@@ -169,7 +196,9 @@ export class StudioInstallation implements DBStudioInstallation {
 	public mappings: Mappings
 	public defaultShowStyle: string
 	public config: Array<IStudioConfigItem>
+	public testToolsConfig?: ITestToolsConfig
 	public hotkeyLegend?: Array<HotkeyDefinition>
+	public runtimeArguments: Array<IStudioRuntimeArgumentsItem>
 
 	constructor (document: DBStudioInstallation) {
 		_.each(_.keys(document), (key) => {

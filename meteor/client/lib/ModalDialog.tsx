@@ -106,7 +106,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 										translateY: [0, 100],
 										opacity: [1, 0]
 									}, easing: 'spring', duration: 250 }} runOnMount={true}>
-										<div className='border-box overlay-m'>
+										<dialog open={true} className='border-box overlay-m'>
 											<div className='flex-row info vertical-align-stretch tight-s'>
 												<div className='flex-col c12'>
 													<h2>
@@ -135,7 +135,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 													'right': this.props.secondaryText !== undefined
 												})} onClick={this.handleAccept}>{this.props.acceptText}</button>
 											</div>
-										</div>
+										</dialog>
 									</VelocityReact.VelocityTransitionGroup>
 								</div>
 							</div>
@@ -155,6 +155,7 @@ interface ModalDialogQueueItem {
 	message: string | JSX.Element
 	yes?: string
 	no?: string
+	acceptOnly?: boolean
 	onAccept: (e: any) => void
 	onDiscard?: (e: any) => void
 	onSecondary?: (e: any) => void
@@ -231,7 +232,7 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 			return (
 			<ModalDialog title	= {onQueue.title}
 				acceptText		= {onQueue.yes || t('Yes')}
-				secondaryText	= {onQueue.no || t('No')}
+				secondaryText	= {onQueue.no || (!onQueue.acceptOnly ? t('No') : undefined)}
 				onAccept		= {this.onAccept}
 				onDiscard		= {this.onDiscard}
 				onSecondary		= {this.onSecondary}

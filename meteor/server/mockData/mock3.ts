@@ -22,7 +22,7 @@ setMeteorMethods({
 		logger.info('debug_roMock3')
 
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, id, token,
-			new MosString128('SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-BE80889DAE999E83'))
+			new MosString128('SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-BE80889DAE999E83'), true)
 		//
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, id, token,
 			{

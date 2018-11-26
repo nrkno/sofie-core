@@ -87,7 +87,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			<div className='studio-edit mod mhl mvs'>
 				<div>
 					<label className='field'>
-						{t('Show Style Name')}
+						{t('Blueprint Name')}
 						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'
@@ -101,7 +101,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</label>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							{t('Show Style ID')}
+							{t('Blueprint ID')}
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute='_id'
@@ -113,7 +113,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							{t('Baseline Blueprint ID')}
+							{t('Router logic ID')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='routerBlueprint'
+								obj={this.props.showStyle}
+								type='text'
+								collection={ShowStyles}
+								className='input text-input input-l'></EditAttribute>
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Baseline logic ID')}
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute='baselineTemplate'
@@ -125,7 +137,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							{t('External Message Blueprint ID')}
+							{t('Post Process logic ID')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='postProcessBlueprint'
+								obj={this.props.showStyle}
+								type='text'
+								collection={ShowStyles}
+								className='input text-input input-l'></EditAttribute>
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('External Message logic ID')}
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute='messageTemplate'
@@ -149,7 +173,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				<div>
 					<h2>{t('Blueprints\' logic')}</h2>
 					<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteLineTemplateConfirm} onAccept={(e) => this.handleConfirmDeleteLineTemplateAccept(e)} onSecondary={(e) => this.handleConfirmDeleteLineTemplateCancel(e)}>
-						<p>{t('Are you sure you want to delete line blueprint logic "{{itemId}}"?', {itemId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.templateId})}</p>
+						<p>{t('Are you sure you want to delete blueprint logic "{{itemId}}"?', {itemId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.templateId})}</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</ModalDialog>
 					<table className='expando settings-showStyle-lineTemplates'>

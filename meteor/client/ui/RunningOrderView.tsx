@@ -10,7 +10,7 @@ import * as $ from 'jquery'
 import * as _ from 'underscore'
 import Moment from 'react-moment'
 
-import { NavLink, Route } from 'react-router-dom'
+import { NavLink, Route, Prompt } from 'react-router-dom'
 
 import { ClientAPI } from '../../lib/api/client'
 import { PlayoutAPI } from '../../lib/api/playout'
@@ -43,6 +43,7 @@ import { eventContextForLog } from '../lib/eventTargetLogHelper'
 import { Tracker } from 'meteor/tracker'
 import { RunningOrderFullscreenControls } from './RunningOrderView/RunningOrderFullscreenControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
+import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -365,7 +366,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RESET_RUNNING_ORDER,
 					up: this.keyResetRunningOrder,
-					label: t('Reload running order'),
+					label: t('Reload Running Order'),
 					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_FORWARD,
@@ -553,7 +554,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		if (err.error === 409) {
 			this.setState({
 				isError: true,
-				errorMessage: t('Only a single running order can be active in a studio. Deactivate the other running order and try again.')
+				errorMessage: t('Only a single Running Order can be active in a studio at the same time. Please deactivate the other Running Order and try again.')
 			})
 		}
 	}
@@ -677,7 +678,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					// Active, and not in rehearsal
 					doModalDialog({
 						title: this.props.runningOrder.name,
-						message: t('Are you sure you want to go into rehearsal mode?'),
+						message: t('Are you sure you want to activate Rehearsal Mode?'),
 						onAccept: () => {
 							doActivateRehersal()
 						}
@@ -691,7 +692,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					// We are in the broadcast
 					doModalDialog({
 						title: this.props.runningOrder.name,
-						message: t('Are you sure you want to go into rehearsal mode?'),
+						message: t('Are you sure you want to activate Rehearsal Mode?'),
 						onAccept: () => {
 							doActivateRehersal()
 						}
@@ -733,9 +734,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		if (e.persist) e.persist()
 
 		let doReset = () => {
-
 			this.rewindSegments() // Do a rewind right away
-
 			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roResetRunningOrder, this.props.runningOrder._id, (err) => {
 				if (err) {
 					// TODO: notify user
@@ -749,7 +748,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			// The running order is active and not in rehersal
 			doModalDialog({
 				title: this.props.runningOrder.name,
-				message: t('Are you sure you want to reset this running order?'),
+				message: t('Are you sure you want to reset this Running Order?'),
 				onAccept: () => {
 					doReset()
 				}
@@ -778,6 +777,28 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		})
 
 		return p
+	}
+
+	takeRunningOrderSnapshot = (e) => {
+		const p = new Promise((resolve, reject) => {
+			if (this.props.studioMode) {
+				Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT, this.props.runningOrder._id, 'Taken by user', (err, result) => {
+					if (err) {
+						console.error(err)
+						reject(err)
+						return
+					} else {
+						// todo: notify user of success, just a little nudge
+						resolve()
+					}
+				})
+			} else {
+				reject()
+			}
+		})
+
+		return p
+
 	}
 
 	resetAndActivateRunningOrder = (e: any) => {
@@ -818,56 +839,35 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 				'rehearsal': this.props.runningOrder.rehearsal
 			})}>
-				<WarningDisplay
-					studioMode={this.props.studioMode}
-					inActiveROView={this.props.inActiveROView}
-					runningOrder={this.props.runningOrder}
-					oneMinuteBeforeAction={this.resetAndActivateRunningOrder}
-				/>
-				<div className='row first-row super-dark'>
-					<div className='flex-col left horizontal-align-left'>
-						{/* !!! TODO: This is just a temporary solution !!! */}
-						<div className='badge mod'>
-							<div className='media-elem mrs sofie-logo' />
-							<div className='bd mls'><span className='logo-text'></span></div>
-						</div>
+				<ContextMenu id='running-order-context-menu'>
+					<div className='react-contextmenu-label'>
+						{this.props.runningOrder && this.props.runningOrder.name}
 					</div>
-					<div className='flex-col right horizontal-align-right'>
-						<div className='links mod close'>
-							<NavLink to='/runningOrders'>
-								<CoreIcon id='nrk-close' />
-							</NavLink>
-						</div>
-					</div>
-					<ContextMenu id='running-order-context-menu'>
-						<div className='react-contextmenu-label'>
-							{this.props.runningOrder && this.props.runningOrder.name}
-						</div>
-						{
-							this.props.studioMode ?
+					{
+						this.props.studioMode ?
 							<React.Fragment>
 								{
 									!(this.props.runningOrder.active && this.props.runningOrder.rehearsal) ?
-									(
-										!this.runningOrderShouldHaveStarted() && !this.props.runningOrder.active ?
-										<MenuItem onClick={(e) => this.activateRehearsal(e)}>
-											{t('Prepare studio and Activate (Rehearsal)')}
-										</MenuItem> :
-										<MenuItem onClick={(e) => this.activateRehearsal(e)}>
-											{t('Activate (Rehearsal)')}
-										</MenuItem>
-									) : (
-										<MenuItem onClick={(e) => this.activate(e)}>
-											{t('Activate')}
-										</MenuItem>
-									)
+										(
+											!this.runningOrderShouldHaveStarted() && !this.props.runningOrder.active ?
+												<MenuItem onClick={(e) => this.activateRehearsal(e)}>
+													{t('Prepare Studio and Activate (Rehearsal)')}
+												</MenuItem> :
+												<MenuItem onClick={(e) => this.activateRehearsal(e)}>
+													{t('Activate (Rehearsal)')}
+												</MenuItem>
+										) : (
+											<MenuItem onClick={(e) => this.activate(e)}>
+												{t('Activate')}
+											</MenuItem>
+										)
 								}
 								{
 									this.props.runningOrder.active ?
-									<MenuItem onClick={(e) => this.deactivate(e)}>
-										{t('Deactivate')}
-									</MenuItem> :
-									null
+										<MenuItem onClick={(e) => this.deactivate(e)}>
+											{t('Deactivate')}
+										</MenuItem> :
+										null
 								}
 								{
 									this.props.runningOrder.active ?
@@ -885,13 +885,16 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 								}
 								{
 									!(this.props.runningOrder.active && !this.props.runningOrder.rehearsal) ?
-									<MenuItem onClick={(e) => this.resetRunningOrder(e)}>
-										{t('Reset Running Order')}
-									</MenuItem> :
-									null
+										<MenuItem onClick={(e) => this.resetRunningOrder(e)}>
+											{t('Reset Running Order')}
+										</MenuItem> :
+										null
 								}
 								<MenuItem onClick={(e) => this.reloadRunningOrder(e)}>
-									{t('Reload ENPS data')}
+									{t('Reload ENPS Data')}
+								</MenuItem>
+								<MenuItem onClick={(e) => this.takeRunningOrderSnapshot(e)}>
+									{t('Store Snapshot')}
 								</MenuItem>
 							</React.Fragment> :
 							<React.Fragment>
@@ -899,20 +902,41 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 									{t('No actions available')}
 								</MenuItem>
 							</React.Fragment>
-						}
-					</ContextMenu>
-					<ContextMenuTrigger id='running-order-context-menu' attributes={{
-						className: 'flex-col col-timing horizontal-align-center'
-					}}>
+					}
+				</ContextMenu>
+				<ContextMenuTrigger id='running-order-context-menu' attributes={{
+					className: 'flex-col col-timing horizontal-align-center'
+				}}>
+					<WarningDisplay
+						studioMode={this.props.studioMode}
+						inActiveROView={this.props.inActiveROView}
+						runningOrder={this.props.runningOrder}
+						oneMinuteBeforeAction={this.resetAndActivateRunningOrder}
+					/>
+					<div className='row first-row super-dark'>
+						<div className='flex-col left horizontal-align-left'>
+							{/* !!! TODO: This is just a temporary solution !!! */}
+							<div className='badge mod'>
+								<div className='media-elem mrs sofie-logo' />
+								<div className='bd mls'><span className='logo-text'></span></div>
+							</div>
+						</div>
+						<div className='flex-col right horizontal-align-right'>
+							<div className='links mod close'>
+								<NavLink to='/runningOrders'>
+									<CoreIcon id='nrk-close' />
+								</NavLink>
+							</div>
+						</div>
 						<TimingDisplay {...this.props} />
 						{this.props.studioInstallation && <RunningOrderSystemStatus studioInstallation={this.props.studioInstallation} runningOrder={this.props.runningOrder} />}
-					</ContextMenuTrigger>
-				</div>
-				<div className='row dark'>
-					<div className='col c12 running-order-overview'>
-						{ this.props.runningOrder && <RunningOrderOverview runningOrderId={this.props.runningOrder._id} /> }
 					</div>
-				</div>
+					<div className='row dark'>
+						<div className='col c12 running-order-overview'>
+							{ this.props.runningOrder && <RunningOrderOverview runningOrderId={this.props.runningOrder._id} /> }
+						</div>
+					</div>
+				</ContextMenuTrigger>
 			</div>
 			<ModalDialog title={t('Error')} acceptText={t('OK')} show={!!this.state.isError} onAccept={this.discardError} onDiscard={this.discardError}>
 				<p>{this.state.errorMessage}</p>
@@ -985,6 +1009,13 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		label: string,
 		global?: boolean
 	}> = []
+	private usedArgumentKeys: Array<{
+		key: string,
+		up?: (e: KeyboardEvent) => any,
+		down?: (e: KeyboardEvent) => any,
+		label: string,
+		global?: boolean
+	}> = []
 	private _segments: _.Dictionary<React.ComponentClass<{}>> = {}
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
@@ -1006,6 +1037,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				global: true
 			}
 		]
+
+		this.usedArgumentKeys = []
 
 		this.state = {
 			timeScale: 0.03,
@@ -1119,12 +1152,83 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			this.props.runningOrder.nextSegmentLineId) {
 			scrollToSegmentLine(this.props.runningOrder.nextSegmentLineId)
 		}
+
+		if (typeof this.props.runningOrder !== typeof this.props.runningOrder ||
+			(this.props.runningOrder || {_id: ''})._id !== (prevProps.runningOrder || {_id: ''})._id ||
+			(this.props.runningOrder || {active: false}).active !== (prevProps.runningOrder || {active: false}).active ||
+			this.state.studioMode !== prevState.studioMode) {
+			if (this.props.runningOrder && this.props.runningOrder.active && this.state.studioMode && !getDeveloperMode()) {
+				$(window).on('beforeunload', this.onBeforeUnload)
+			} else {
+				$(window).off('beforeunload', this.onBeforeUnload)
+			}
+		}
+
+		if (typeof this.props.studioInstallation !== typeof prevProps.studioInstallation ||
+			this.props.studioInstallation && this.props.studioInstallation.runtimeArguments) {
+			this.refreshHotkeys()
+		}
+	}
+
+	refreshHotkeys = () => {
+		let preventDefault = (e) => {
+			e.preventDefault()
+			e.stopImmediatePropagation()
+			e.stopPropagation()
+		}
+		const noOp = (e) => {
+			if (disableInInputFields(e)) return
+			preventDefault(e)
+		}
+
+		this.usedArgumentKeys.forEach((k) => {
+			if (k.up) {
+				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keyup')
+				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+			}
+			if (k.down) {
+				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+			}
+		})
+		this.usedArgumentKeys.length = 0
+
+		if (this.props.studioInstallation) {
+			_.each(this.props.studioInstallation.runtimeArguments, (i) => {
+				const combos = i.hotkeys.split(',')
+				_.each(combos, (combo) => {
+					const handler = (e: KeyboardEvent) => {
+						if (disableInInputFields(e)) return
+
+						if (this.props.runningOrder && this.props.runningOrder.active && this.props.runningOrder.nextSegmentLineId) {
+							Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roToggleSegmentLineArgument,
+								this.props.runningOrder._id, this.props.runningOrder.nextSegmentLineId, i.property, i.value,
+							(err) => {
+								if (err) {
+									// TODO: notify user
+									console.error(err)
+									return
+								}
+								console.log(`${combo} : ${i.property} ${i.value}`)
+							})
+						}
+					}
+					this.usedArgumentKeys.push({
+						up: handler,
+						key: combo,
+						label: i.label || ''
+					})
+					mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
+					mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
+				})
+			})
+		}
 	}
 
 	componentWillUnmount () {
 		this._cleanUp()
 		$(document.body).removeClass(['dark', 'vertical-overflow-only'])
 		$(window).off('scroll', this.onWindowScroll)
+		$(window).off('beforeunload', this.onBeforeUnload)
 
 		_.each(this.bindKeys, (k) => {
 			if (k.up) {
@@ -1136,7 +1240,26 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			}
 		})
 
+		_.each(this.usedArgumentKeys, (k) => {
+			if (k.up) {
+				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keyup')
+				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+			}
+			if (k.down) {
+				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+			}
+		})
+
 		window.removeEventListener(RunningOrderViewEvents.goToLiveSegment, this.onGoToLiveSegment)
+	}
+
+	onBeforeUnload = (e: any) => {
+		const {t} = this.props
+
+		e.preventDefault()
+		e.returnValue = t('This running order is now active. Are you sure you want to exit this screen?')
+
+		return t('This running order is now active. Are you sure you want to exit this screen?')
 	}
 
 	onRewindSegments = () => {
@@ -1309,10 +1432,15 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					defaultDuration={DEFAULT_DISPLAY_DURATION}>
 					<div className='running-order-view' style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
 						<ErrorBoundary>
-							<KeyboardFocusMarker />
+							{ this.state.studioMode && <KeyboardFocusMarker /> }
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<RunningOrderFullscreenControls isFollowingOnAir={this.state.followLiveSegments} onFollowOnAir={this.onGoToLiveSegment} onRewindSegments={this.onRewindSegments} />
+						</ErrorBoundary>
+						<ErrorBoundary>
+							{ this.state.studioMode &&
+								<Prompt when={this.props.runningOrder.active || false} message={t('This running order is now active. Are you sure you want to exit this screen?')} />
+							}
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<RunningOrderHeader

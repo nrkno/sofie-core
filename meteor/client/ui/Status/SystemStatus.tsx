@@ -235,7 +235,13 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 						{(
 							// TODO: implement better way to determine what device it is
 							this.props.device.type === PeripheralDeviceAPI.DeviceType.OTHER && this.props.device.name.match(/CasparCG/i) ? <React.Fragment>
-								<button className='btn btn-secondary' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onRestartCasparCG(this.props.device)}>
+								<button className='btn btn-secondary' onClick={
+									(e) => {
+										e.preventDefault()
+										e.stopPropagation()
+										this.onRestartCasparCG(this.props.device)
+									}
+								}>
 									Restart
 									{ JSON.stringify(this.props.device.settings) }
 								</button>
@@ -248,7 +254,13 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 							onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
 							<p>{t('Are you sure you want to delete this device?')}</p>
 						</ModalDialog>
-						<button key='button-device' className='btn btn-primary' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteDevice(this.props.device)}>
+						<button key='button-device' className='btn btn-primary' onClick={
+							(e) => {
+								e.preventDefault()
+								e.stopPropagation()
+								this.onDeleteDevice(this.props.device)
+							}
+						}>
 							<FontAwesomeIcon icon={faTrash} />
 						</button>
 						{(
@@ -260,7 +272,13 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 									onSecondary={(e) => this.handleConfirmKillCancel(e)}>
 									<p>{t('Are you sure you want to kill the process of this device?')}</p>
 								</ModalDialog>
-								<button className='btn btn-secondary' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onKillDevice(this.props.device)}>
+								<button className='btn btn-secondary' onClick={
+									(e) => {
+										e.preventDefault()
+										e.stopPropagation()
+										this.onKillDevice(this.props.device)
+									}
+								}>
 									Kill process
 								</button>
 							</React.Fragment> : null

@@ -5,10 +5,11 @@ import * as m from 'moment'
 import 'moment/min/locales'
 import { parse as queryStringParse } from 'query-string'
 import Header from './Header'
-import { setStudioMode, setAdminMode, getStudioMode, getAdminMode, setDeveloperMode } from '../lib/localStorage'
+import { setStudioMode, setAdminMode, getStudioMode, getAdminMode, setDeveloperMode, setTestingMode, getTestingMode } from '../lib/localStorage'
 import Dashboard from './Dashboard'
 import Status from './Status'
 import Settings from './Settings'
+import TestTools from './TestTools'
 import { RunningOrderList } from './RunningOrderList'
 import { RunningOrderView } from './RunningOrderView'
 import { ActiveROView } from './ActiveROView'
@@ -29,6 +30,7 @@ import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
 interface IAppState {
 	studioMode: boolean
 	adminMode: boolean
+	testingMode: boolean
 }
 
 const NullComponent = () => null
@@ -43,19 +45,23 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		if (params['studio']) 	setStudioMode(params['studio'] === '1')
 		if (params['configure']) setAdminMode(params['configure'] === '1')
 		if (params['develop']) setDeveloperMode(params['develop'] === '1')
+		if (params['testing']) setTestingMode(params['testing'] === '1')
 
 		this.state = {
 			studioMode: getStudioMode(),
-			adminMode: getAdminMode()
+			adminMode: getAdminMode(),
+			testingMode: getTestingMode()
 		}
 
 	}
 
-	render () {
+	componentDidMount () {
 		const { i18n } = this.props
 
 		m.locale(i18n.language)
+	}
 
+	render () {
 		// EXAMPLE IMPLEMENTATION of subscription
 		//
 		// Subscribe to data
@@ -100,7 +106,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Route path='/countdowns/presenter' component={NullComponent} />
 							<Route path='/activeRo' component={NullComponent} />
 							<Route path='/prompter/:studioId' component={NullComponent} />
-							<Route path='/' render={(props) => <Header {...props} adminMode={this.state.adminMode} />} />
+							<Route path='/' render={(props) => <Header {...props} adminMode={this.state.adminMode} testingMode={this.state.testingMode} />} />
 						</Switch>
 					</ErrorBoundary>
 					{/* Main app switch */}
@@ -118,6 +124,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Route path='/nymansPlayground' component={NymansPlayground} />
 							<Route path='/status' component={Status} />
 							<Route path='/settings' component={Settings} />
+							<Route path='/testTools' component={TestTools} />
 							<Redirect to='/' />
 						</Switch>
 					</ErrorBoundary>

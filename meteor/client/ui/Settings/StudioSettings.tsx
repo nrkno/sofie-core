@@ -3,7 +3,7 @@ import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import Moment from 'react-moment'
-import { RundownAPI } from '../../../lib/api/rundown'
+import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 import { LookaheadMode } from '../../../lib/api/playout'
 import { IOutputLayer,
 	ISourceLayer,
@@ -20,7 +20,8 @@ import { IOutputLayer,
 	MappingPanasonicPtzType,
 	MappingPanasonicPtz,
 	MappingHyperdeckType,
-	HotkeyDefinition
+	HotkeyDefinition,
+	IStudioRuntimeArgumentsItem
 } from '../../../lib/collections/StudioInstallations'
 import { ShowStyles } from '../../../lib/collections/ShowStyles'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
@@ -39,6 +40,8 @@ import { PeripheralDevice, PeripheralDevices, PlayoutDeviceType } from '../../..
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { mousetrapHelper } from '../../lib/mousetrapHelper'
+import { ChannelFormat } from '../../../lib/constants/casparcg'
 
 interface IProps {
 	studioInstallation: StudioInstallation
@@ -57,12 +60,14 @@ interface IChildStudioInterfaceProps {
 	onRemoveMapping?: (layerId: string) => void
 	onDeleteConfigItem?: (item: IStudioConfigItem) => void
 	onDeleteHotkeyLegend?: (item: HotkeyDefinition) => void
+	onDeleteROArgument?: (item: IStudioRuntimeArgumentsItem) => void
 	onAddSource?: () => void
 	onAddOutput?: () => void
 	onAddDevice?: (item: PeripheralDevice) => void
 	onAddMapping?: () => void
 	onAddHotkeyLegend?: () => void
 	onAddConfigItem?: () => void
+	onAddROArgument?: () => void
 }
 
 interface IStudioOutputSettingsProps extends IProps, IChildStudioInterfaceProps {
@@ -413,6 +418,177 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 	}
 }
 
+interface IStudioRuntimeArgumentsSettingsProps extends IProps, IChildStudioInterfaceProps {
+}
+interface IStudioRuntimeArgumentsSettingsState {
+	showDeleteConfirm: boolean
+	deleteConfirmItem: IStudioRuntimeArgumentsItem | undefined
+	editedItems: Array<Number>
+}
+
+class StudioRuntimeArgumentsSettings extends React.Component<Translated<IStudioRuntimeArgumentsSettingsProps>, IStudioRuntimeArgumentsSettingsState> {
+	constructor (props: Translated<IStudioRuntimeArgumentsSettingsProps>) {
+		super(props)
+
+		this.state = {
+			showDeleteConfirm: false,
+			deleteConfirmItem: undefined,
+			editedItems: []
+		}
+	}
+
+	isItemEdited = (index: Number) => {
+		return this.state.editedItems.indexOf(index) >= 0
+	}
+
+	finishEditItem = (index: Number) => {
+		let i = this.state.editedItems.indexOf(index)
+		if (i >= 0) {
+			this.state.editedItems.splice(i, 1)
+			this.setState({
+				editedItems: this.state.editedItems
+			})
+		}
+	}
+
+	editItem = (index: Number) => {
+		if (this.state.editedItems.indexOf(index) < 0) {
+			this.state.editedItems.push(index)
+			this.setState({
+				editedItems: this.state.editedItems
+			})
+		}
+	}
+
+	confirmDelete = (item: IStudioRuntimeArgumentsItem) => {
+		this.setState({
+			showDeleteConfirm: true,
+			deleteConfirmItem: item
+		})
+	}
+
+	handleConfirmDeleteCancel = (e) => {
+		this.setState({
+			deleteConfirmItem: undefined,
+			showDeleteConfirm: false
+		})
+	}
+
+	handleConfirmDeleteAccept = (e) => {
+		if (this.props.onDeleteROArgument && typeof this.props.onDeleteROArgument === 'function' && this.state.deleteConfirmItem) {
+			this.props.onDeleteROArgument(this.state.deleteConfirmItem)
+		}
+
+		this.setState({
+			deleteConfirmItem: undefined,
+			showDeleteConfirm: false
+		})
+	}
+
+	renderItems () {
+		const { t } = this.props
+		return (
+			(this.props.studioInstallation.runtimeArguments || []).map((item, index) => {
+				return <React.Fragment key={index + '_' + item.property}>
+					<tr className={ClassNames({
+						'hl': this.isItemEdited(index)
+					})}>
+						<th className='settings-studio-custom-config-table__name c2'>
+							{mousetrapHelper.shortcutLabel(item.hotkeys)}
+						</th>
+						<td className='settings-studio-custom-config-table__value c3'>
+							{item.property}
+						</td>
+						<td className='settings-studio-custom-config-table__value c3'>
+							{item.value}
+						</td>
+						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
+							<button className='action-btn' onClick={(e) => this.editItem(index)}>
+								<FontAwesomeIcon icon={faPencilAlt} />
+							</button>
+							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
+								<FontAwesomeIcon icon={faTrash} />
+							</button>
+						</td>
+					</tr>
+					{this.isItemEdited(index) &&
+						<tr className='expando-details hl'>
+							<td colSpan={4}>
+								<div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Hotkeys')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'runtimeArguments.' + index + '.hotkeys'}
+												obj={this.props.studioInstallation}
+												type='text'
+												collection={StudioInstallations}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Property')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'runtimeArguments.' + index + '.property'}
+												obj={this.props.studioInstallation}
+												type='text'
+												collection={StudioInstallations}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Value')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'runtimeArguments.' + index + '.value'}
+												obj={this.props.studioInstallation}
+												type='text'
+												collection={StudioInstallations}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+								</div>
+								<div className='mod alright'>
+									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(index)}>
+										<FontAwesomeIcon icon={faCheck} />
+									</button>
+								</div>
+							</td>
+						</tr>
+					}
+				</React.Fragment>
+			})
+		)
+	}
+
+	render () {
+		const { t } = this.props
+		return (
+			<div>
+				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
+					<p>{t('Are you sure you want to delete this runtime argument "{{property}}: {{value}}"?', { property: (this.state.deleteConfirmItem && this.state.deleteConfirmItem.property), value: (this.state.deleteConfirmItem && this.state.deleteConfirmItem.value) })}</p>
+					<p>{t('Please note: This action is irreversible!')}</p>
+				</ModalDialog>
+				<h3>{t('Runtime Arguments for Blueprints')}</h3>
+				<table className='expando settings-studio-custom-config-table'>
+					<tbody>
+						{this.renderItems()}
+					</tbody>
+				</table>
+				<div className='mod mhs'>
+					<button className='btn btn-primary' onClick={this.props.onAddROArgument}>
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
+				</div>
+			</div>
+		)
+	}
+}
+
 interface IStudioSourcesSettingsProps extends IProps, IChildStudioInterfaceProps {
 }
 interface IStudioSourcesSettingsState {
@@ -455,39 +631,39 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 		}
 	}
 
-	sourceLayerString (type: RundownAPI.SourceLayerType) {
+	sourceLayerString (type: RunningOrderAPI.SourceLayerType) {
 		const { t } = this.props
 		switch (type) {
-			case RundownAPI.SourceLayerType.CAMERA:
+			case RunningOrderAPI.SourceLayerType.CAMERA:
 				return t('Camera')
-			case RundownAPI.SourceLayerType.GRAPHICS:
+			case RunningOrderAPI.SourceLayerType.GRAPHICS:
 				return t('Graphics')
-			case RundownAPI.SourceLayerType.LIVE_SPEAK:
+			case RunningOrderAPI.SourceLayerType.LIVE_SPEAK:
 				return t('Live Speak')
-			case RundownAPI.SourceLayerType.LOWER_THIRD:
+			case RunningOrderAPI.SourceLayerType.LOWER_THIRD:
 				return t('Lower Third')
-			case RundownAPI.SourceLayerType.MIC:
+			case RunningOrderAPI.SourceLayerType.MIC:
 				return t('Studio Microphone')
-			case RundownAPI.SourceLayerType.REMOTE:
+			case RunningOrderAPI.SourceLayerType.REMOTE:
 				return t('Remote Source')
-			case RundownAPI.SourceLayerType.SCRIPT:
+			case RunningOrderAPI.SourceLayerType.SCRIPT:
 				return t('Generic Script')
-			case RundownAPI.SourceLayerType.SPLITS:
+			case RunningOrderAPI.SourceLayerType.SPLITS:
 				return t('Split Screen')
-			case RundownAPI.SourceLayerType.VT:
+			case RunningOrderAPI.SourceLayerType.VT:
 				return t('Clips')
-			case RundownAPI.SourceLayerType.METADATA:
+			case RunningOrderAPI.SourceLayerType.METADATA:
 				return t('Metadata')
-			case RundownAPI.SourceLayerType.CAMERA_MOVEMENT:
+			case RunningOrderAPI.SourceLayerType.CAMERA_MOVEMENT:
 				return t('Camera Movement')
-			case RundownAPI.SourceLayerType.UNKNOWN:
+			case RunningOrderAPI.SourceLayerType.UNKNOWN:
 				return t('Unknown Layer')
-			case RundownAPI.SourceLayerType.AUDIO:
+			case RunningOrderAPI.SourceLayerType.AUDIO:
 				return t('Audio Mixing')
-			case RundownAPI.SourceLayerType.TRANSITION:
+			case RunningOrderAPI.SourceLayerType.TRANSITION:
 				return t('Transition')
 			default:
-				return RundownAPI.SourceLayerType[type]
+				return RunningOrderAPI.SourceLayerType[type]
 		}
 	}
 
@@ -538,7 +714,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 							{item._id}
 						</td>
 						<td className='settings-studio-source-table__type c3'>
-							{this.sourceLayerString(Number.parseInt(item.type.toString(), 10) as RundownAPI.SourceLayerType)}
+							{this.sourceLayerString(Number.parseInt(item.type.toString(), 10) as RunningOrderAPI.SourceLayerType)}
 						</td>
 						<td className='settings-studio-source-table__actions table-item-actions c3'>
 							<button className='action-btn' onClick={(e) => this.editItem(item)}>
@@ -598,7 +774,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 													attribute={'sourceLayers.' + item.index + '.type'}
 													obj={this.props.studioInstallation}
 													type='dropdown'
-													options={RundownAPI.SourceLayerType}
+													options={RunningOrderAPI.SourceLayerType}
 													optionsAreNumbers
 													collection={StudioInstallations}
 													className='focusable-main input-l'></EditAttribute>
@@ -1192,12 +1368,23 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 			</React.Fragment>
 		)
 	}
+	renderPharosMappingSettings (layerId: string) {
+		const { t } = this.props
+		return (
+			<React.Fragment>
+				<div></div>
+			</React.Fragment>
+		)
+	}
 
 	renderMappings () {
 		const { t } = this.props
 
 		return (
 			_.map(this.props.studioInstallation.mappings, (mapping: Mapping , layerId: string) => {
+				// If an internal mapping, then hide it
+				if (mapping.internal) return <React.Fragment key={layerId}></React.Fragment>
+
 				return <React.Fragment key={layerId}>
 					<tr className={ClassNames({
 						'hl': this.isItemEdited(layerId)
@@ -1206,7 +1393,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 							{layerId}
 						</th>
 						<td className='settings-studio-device__id c2'>
-							{mapping.device}
+							{PlayoutDeviceType[mapping.device]}
 						</td>
 						<td className='settings-studio-device__id c2'>
 							{mapping.deviceId}
@@ -1214,12 +1401,16 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 						<td className='settings-studio-device__id c4'>
 						{
 							(
+								mapping.device === PlayoutDeviceType.ABSTRACT && (
+								<span>-</span>
+							)) ||
+							(
 								mapping.device === PlayoutDeviceType.CASPARCG && (
 								<span>{ (mapping as MappingCasparCG).channel } - { (mapping as MappingCasparCG).layer }</span>
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.ATEM && (
-								<span>{ (mapping as MappingAtem).mappingType } - { (mapping as MappingAtem).index }</span>
+								<span>{ MappingAtemType[(mapping as MappingAtem).mappingType] } { (mapping as MappingAtem).index }</span>
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.LAWO && (
@@ -1227,7 +1418,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.PANASONIC_PTZ && (
-									<span>{ 
+									<span>{
 										(mapping as MappingPanasonicPtz).mappingType === MappingPanasonicPtzType.PRESET ? t('Preset') :
 										(mapping as MappingPanasonicPtz).mappingType === MappingPanasonicPtzType.PRESET_SPEED ? t('Preset transition speed') :
 										t('Unknown mapping')
@@ -1235,11 +1426,15 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.HTTPSEND && (
-								<span></span>
+								<span>-</span>
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.HYPERDECK && (
 								<span>{ (mapping as MappingHyperdeck).mappingType }</span>
+							)) ||
+							(
+								mapping.device === PlayoutDeviceType.PHAROS && (
+								<span>-</span>
 							)) ||
 							(
 								<span>Unknown device type: {PlayoutDeviceType[mapping.device] } </span>
@@ -1334,6 +1529,10 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 										(
 										mapping.device === PlayoutDeviceType.HYPERDECK && (
 											this.renderHyperdeckMappingSettings(layerId)
+										)) ||
+										(
+										mapping.device === PlayoutDeviceType.PHAROS && (
+											this.renderPharosMappingSettings(layerId)
 										))
 									}
 								</div>
@@ -1374,7 +1573,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 }
 
 class HotkeyLegendSettings extends React.Component<Translated<IStudioKeyValueSettingsProps>, IStudioKeyValueSettingsState> {
-	constructor(props: Translated<IStudioKeyValueSettingsProps>) {
+	constructor (props: Translated<IStudioKeyValueSettingsProps>) {
 		super(props)
 
 		this.state = {
@@ -1416,7 +1615,7 @@ class HotkeyLegendSettings extends React.Component<Translated<IStudioKeyValueSet
 						'hl': this.isItemEdited(item)
 					})}>
 						<th className='settings-studio-custom-config-table__name c2'>
-							{item.key}
+							{mousetrapHelper.shortcutLabel(item.key)}
 						</th>
 						<td className='settings-studio-custom-config-table__value c3'>
 							{item.label}
@@ -1486,6 +1685,93 @@ class HotkeyLegendSettings extends React.Component<Translated<IStudioKeyValueSet
 					<button className='btn btn-primary' onClick={this.props.onAddHotkeyLegend}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
+				</div>
+			</div>
+		)
+	}
+}
+
+interface ITestToolsRecordingsSettingsState {
+}
+
+class TestToolsRecordingsSettings extends React.Component<Translated<IProps>, ITestToolsRecordingsSettingsState> {
+	render () {
+		const { t } = this.props
+		return (
+			<div>
+				<h3>{t('Test Tools - Recordings')}</h3>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Device ID')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute='testToolsConfig.recordings.deviceId'
+							obj={this.props.studioInstallation}
+							type='text'
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('CasparCG Channel')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute='testToolsConfig.recordings.channelIndex'
+							obj={this.props.studioInstallation}
+							type='int'
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Path prefix')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute='testToolsConfig.recordings.filePrefix'
+							obj={this.props.studioInstallation}
+							type='text'
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('URL prefix')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute='testToolsConfig.recordings.urlPrefix'
+							obj={this.props.studioInstallation}
+							type='text'
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Decklink input index')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute='testToolsConfig.recordings.decklinkDevice'
+							obj={this.props.studioInstallation}
+							type='int'
+							collection={StudioInstallations}
+							className='input text-input input-l'></EditAttribute>
+					</label>
+				</div>
+				<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Decklink input format')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute='testToolsConfig.recordings.channelFormat'
+							obj={this.props.studioInstallation}
+							type='dropdown'
+							options={ChannelFormat}
+							collection={StudioInstallations}
+							className='input text-input input-l '></EditAttribute>
+					</label>
 				</div>
 			</div>
 		)
@@ -1597,6 +1883,16 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 		}
 	}
 
+	onDeleteROArgument = (item: IStudioRuntimeArgumentsItem) => {
+		if (this.props.studioInstallation) {
+			StudioInstallations.update(this.props.studioInstallation._id, {
+				$pull: {
+					runtimeArguments: item
+				}
+			})
+		}
+	}
+
 	onAddSource = () => {
 		const maxRank = StudioSettings.findHighestRank(this.props.studioInstallation.sourceLayers)
 		const { t } = this.props
@@ -1605,7 +1901,7 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 			_id: this.props.studioInstallation._id + '-' + Random.id(5),
 			_rank: maxRank ? maxRank._rank + 10 : 0,
 			name: t('New Source'),
-			type: RundownAPI.SourceLayerType.UNKNOWN,
+			type: RunningOrderAPI.SourceLayerType.UNKNOWN,
 			unlimited: false,
 			onPGMClean: true
 		})
@@ -1646,6 +1942,22 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 		StudioInstallations.update(this.props.studioInstallation._id, {
 			$push: {
 				config: newItem
+			}
+		})
+	}
+
+	onAddROArgument = () => {
+		const { t } = this.props
+
+		const newItem = literal<IStudioRuntimeArgumentsItem>({
+			property: 'new-property',
+			value: '1',
+			hotkeys: 'mod+shift+z'
+		})
+
+		StudioInstallations.update(this.props.studioInstallation._id, {
+			$push: {
+				runtimeArguments: newItem
 			}
 		})
 	}
@@ -1699,7 +2011,7 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 							</div>
 						</label>
 						<label className='field'>
-							{t('Default Show Style')}
+							{t('Default Blueprint')}
 							<div className='mdi'>
 								<EditAttribute
 									modifiedClassName='bghl'
@@ -1724,6 +2036,11 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 					</div>
 					<div className='row'>
 						<div className='col c12 r1-c12'>
+							<StudioRuntimeArgumentsSettings {...this.props} onAddROArgument={this.onAddROArgument} onDeleteROArgument={this.onDeleteROArgument} />
+						</div>
+					</div>
+					<div className='row'>
+						<div className='col c12 r1-c12'>
 							<StudioDevices {...this.props} onRemoveDevice={this.onRemoveDevice} onAddDevice={this.onAddDevice} />
 						</div>
 					</div>
@@ -1740,6 +2057,11 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 					<div className='row'>
 						<div className='col c12 r1-c12'>
 							<HotkeyLegendSettings {...this.props} onAddHotkeyLegend={this.onAddHotkeyLegend} onDeleteHotkeyLegend={this.onDeleteHotkeyLegend} />
+						</div>
+					</div>
+					<div className='row'>
+						<div className='col c12 r1-c12'>
+							<TestToolsRecordingsSettings {...this.props} />
 						</div>
 					</div>
 				</div>

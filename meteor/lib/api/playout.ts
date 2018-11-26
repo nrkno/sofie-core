@@ -32,6 +32,7 @@ export namespace PlayoutAPI {
 		'roActivateHold' = 'playout.roActivateHold',
 		'roStoriesMoved' = 'playout.roStoriesMoved',
 		'roDisableNextSegmentLineItem' = 'playout.roDisableNextSegmentLineItem',
+		'roToggleSegmentLineArgument' = 'playout.roToggleSegmentLineArgument',
 		'segmentLinePlaybackStartedCallback' = 'playout.segmentLinePlaybackStartedCallback',
 		'segmentLineItemPlaybackStartedCallback' = 'playout.segmentLineItemPlaybackStartedCallback',
 		'segmentLineItemTakeNow' = 'playout.segmentLineItemTakeNow',

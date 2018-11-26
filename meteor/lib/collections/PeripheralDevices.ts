@@ -11,7 +11,12 @@ export interface PeripheralDevice {
 
 	studioInstallationId: string
 	parentDeviceId?: string
+	/** Versions reported from the device */
 	versions?: {
+		[libraryName: string]: string
+	}
+	/** Expected versions (at least this) */
+	expectedVersions?: {
 		[libraryName: string]: string
 	}
 
@@ -57,7 +62,9 @@ export enum PlayoutDeviceType { // to match DeviceType in TSR
 	LAWO = 3,
 	HTTPSEND = 4,
 	PANASONIC_PTZ = 5,
-	HYPERDECK = 7
+	// TCPSEND = 6, // to be implemented
+	HYPERDECK = 7,
+	PHAROS = 8
 }
 
 export interface PlayoutDeviceSettings {
@@ -108,6 +115,13 @@ export interface PlayoutDeviceSettingsDeviceHyperdeck extends PlayoutDeviceSetti
 	options: {
 		host: string,
 		port?: number
+	}
+}
+export interface PlayoutDeviceSettingsDevicePharos extends PlayoutDeviceSettingsDevice {
+	type: PlayoutDeviceType.PHAROS
+	options: {
+		host: string,
+		ssl?: boolean
 	}
 }
 

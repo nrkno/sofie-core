@@ -8,7 +8,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { KeyboardEvent } from 'react'
+// import { KeyboardEvent } from 'react'
+type KeyboardEvent = any
+type HTMLElement = any
+type MouseEvent = any
 // @ts-ignore
 declare namespace monaco {
 	export type Thenable<T> = PromiseLike<T>

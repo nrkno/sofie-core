@@ -14,6 +14,9 @@ import { SegmentLineItems, SegmentLineItem } from './SegmentLineItems'
 import { RunningOrderDataCache } from './RunningOrderDataCache'
 import { ShowStyle, ShowStyles } from './ShowStyles'
 import { Meteor } from 'meteor/meteor'
+import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
+import { RunningOrderBaselineItems } from './RunningOrderBaselineItems'
+import { RunningOrderBaselineAdLibItems } from './RunningOrderBaselineAdLibItems'
 
 export enum RunningOrderHoldState {
 	NONE = 0,
@@ -58,10 +61,17 @@ export interface DBRunningOrder {
 	/** Actual time of playback starting */
 	startedPlayback?: Time
 
+	/** Is the running order in an unsynced (has been unpublished from ENPS) state? */
+	unsynced?: boolean
+	/** Timestamp of when RO was unsynced */
+	unsyncedTime?: Time
+
 	/** Last sent storyStatus to MOS */
 	currentPlayingStoryStatus?: string
 
 	holdState?: RunningOrderHoldState
+	/** What the source of the data was */
+	dataSource: string
 }
 export class RunningOrder implements DBRunningOrder {
 	public _id: string
@@ -79,6 +89,8 @@ export class RunningOrder implements DBRunningOrder {
 	public airStatus?: IMOSObjectAirStatus
 	public active?: boolean
 	public rehearsal?: boolean
+	public unsynced?: boolean
+	public unsyncedTime?: Time
 	public previousSegmentLineId: string | null
 	public nextSegmentLineManual?: boolean
 	public currentSegmentLineId: string | null
@@ -86,6 +98,7 @@ export class RunningOrder implements DBRunningOrder {
 	public startedPlayback?: Time
 	public currentPlayingStoryStatus?: string
 	public holdState?: RunningOrderHoldState
+	public dataSource: string
 
 	constructor (document: DBRunningOrder) {
 		_.each(_.keys(document), (key) => {
@@ -135,6 +148,9 @@ export class RunningOrder implements DBRunningOrder {
 		Segments.remove({runningOrderId: this._id})
 		SegmentLines.remove({runningOrderId: this._id})
 		SegmentLineItems.remove({ runningOrderId: this._id})
+		SegmentLineAdLibItems.remove({ runningOrderId: this._id})
+		RunningOrderBaselineItems.remove({ runningOrderId: this._id})
+		RunningOrderBaselineAdLibItems.remove({ runningOrderId: this._id})
 		this.removeCache()
 	}
 	touch () {
