@@ -155,7 +155,7 @@ export function prepareMigration (returnAllChunks?: boolean) {
 		if (blueprint.code) {
 			let bp = evalBlueprints(blueprint)
 
-			console.log('Blueprint' + blueprint.name)
+			console.log('Blueprint: ' + blueprint.name)
 
 			// @ts-ignore
 			if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion)) blueprint.databaseVersion = {}
@@ -216,7 +216,7 @@ export function prepareMigration (returnAllChunks?: boolean) {
 						}
 						migrationChunks.push(chunk)
 						// Add studio migration steps from blueprint:
-						_.each(bp.showStyleMigrations, (step) => {
+						_.each(bp.studioMigrations, (step) => {
 							allMigrationSteps.push(prefixIdsOnStep('blueprint_' + blueprint._id + '_studio_' + studio._id + '_', {
 								id:						step.id,
 								overrideSteps:			step.overrideSteps,
