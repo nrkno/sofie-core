@@ -123,6 +123,9 @@ class CommonContext implements ICommonContext {
 			res[c._id] = c.value
 		})
 
+		// Expose special values as defined in the studio
+		res['SofieHostURL'] = studio.settings.sofieUrl
+
 		return res
 	}
 	getShowStyleConfig (): {[key: string]: ConfigItemValue} {
