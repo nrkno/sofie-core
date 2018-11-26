@@ -2,14 +2,9 @@ import * as React from 'react'
 import * as $ from 'jquery'
 import * as _ from 'underscore'
 import {
-	BrowserRouter as Router,
-	Route,
-	Switch,
-	Redirect
+	Route
 } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
-import { Meteor } from 'meteor/meteor'
-
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 

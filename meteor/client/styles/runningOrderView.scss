@@ -141,7 +141,7 @@ body.vertical-overflow-only {
 			}
 
 			&.countdown {
-				font-weight: 500;
+				font-weight: 400;
 			}
 
 			&.playback-started {
@@ -200,7 +200,7 @@ body.vertical-overflow-only {
 			}
 
 			&.heavy-light {
-				font-weight: 400;
+				font-weight: 600;
 
 				&.heavy {
 					// color: $general-late-color;
@@ -210,6 +210,7 @@ body.vertical-overflow-only {
 
 				&.light {
 					color: $general-fast-color;
+					text-shadow: 0px 0px 6px transparentize($general-fast-color, 0.2);
 					background: none;
 				}
 			}
@@ -442,6 +443,44 @@ body.vertical-overflow-only {
 		padding-right: 0px;
 		margin-right: 0em;
 		letter-spacing: 0px;
+	}
+	.segment-timeline__timeline-zoom-buttons {
+		position: relative;
+		grid-column: segment-group-controls / timeline;
+		grid-row: zoom-area / end;
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+
+		opacity: 0;
+		transition: 0.5s opacity ease-in-out;
+
+		> .segment-timeline__timeline-zoom-buttons__button {
+			min-width: 30px;
+			min-height: 30px;
+			max-width: 30px;
+			max-height: 30px;
+			background: transparent;
+			transition: 0.3s background-color ease-in-out;
+			border-radius: 100%;
+			overflow: visible;
+
+			&:hover {
+				background: $segment-title-background-color;
+				transition: 0s background-color;
+			}
+
+			&:active {
+				background: $ui-button-primary;
+				transition: 0s background-color;
+			}
+		}
+	}
+	&:hover {
+		.segment-timeline__timeline-zoom-buttons {
+			transition: 0.2s opacity ease-in-out;
+			opacity: 1;
+		}
 	}
 	.segment-timeline__next-preview {
 		position: relative;

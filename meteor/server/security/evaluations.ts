@@ -15,12 +15,12 @@ export namespace EvaluationsSecurity {
 // Setup rules:
 Evaluations.allow({
 	insert (userId: string, doc: Evaluation): boolean {
-		return true // Tmp: Allow everything client-side
+		return true
 	},
 	update (userId, doc, fields, modifier) {
-		return true // Tmp: Allow everything client-side
+		return false
 	},
 	remove (userId, doc) {
-		return true // Tmp: Allow everything client-side
+		return false
 	}
 })

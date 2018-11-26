@@ -3,7 +3,8 @@ import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import { TimelineObjectCoreExt, TimelineTrigger } from 'tv-automation-sofie-blueprints-integration'
+import { TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration'
+import { Timeline as TimelineTypes } from 'timeline-state-resolver-types'
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -21,7 +22,7 @@ export interface TimelineObj extends TimelineObjectCoreExt {
 	/** Id of the Device */
 	deviceId: Array<string>
 
-	trigger: TimelineTrigger & {
+	trigger: TimelineTypes.TimelineTrigger & {
 		setFromNow?: boolean
 	}
 

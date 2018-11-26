@@ -2,11 +2,12 @@ import * as _ from 'underscore'
 import * as SuperTimeline from 'superfly-timeline'
 import { SegmentLineItems, SegmentLineItem } from './collections/SegmentLineItems'
 import { SegmentLineItemLifespan, getSliGroupId } from 'tv-automation-sofie-blueprints-integration'
-import { IOutputLayer, ISourceLayer, StudioInstallation } from './collections/StudioInstallations'
 import { normalizeArray } from './lib'
 import { Segment } from './collections/Segments'
 import { SegmentLine, SegmentLines } from './collections/SegmentLines'
 import { RunningOrder } from './collections/RunningOrders'
+import { ShowStyleBase } from './collections/ShowStyleBases'
+import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 
 export const DEFAULT_DISPLAY_DURATION = 3000
 
@@ -60,7 +61,7 @@ export interface SegmentLineItemExtended extends SegmentLineItem {
 	maxLabelWidth?: number
 }
 
-export function getResolvedSegment (studioInstallation: StudioInstallation, runningOrder: RunningOrder, segment: Segment): {
+export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: RunningOrder, segment: Segment): {
 	segmentExtended: SegmentExtended,
 	segmentLines: Array<SegmentLineExtended>,
 	isLiveSegment: boolean,
@@ -109,8 +110,8 @@ export function getResolvedSegment (studioInstallation: StudioInstallation, runn
 
 		// create local deep copies of the studioInstallation outputLayers and sourceLayers so that we can store
 		// items present on those layers inside and also figure out which layers are used when inside the rundown
-		const outputLayers = studioInstallation ? normalizeArray<IOutputLayerExtended>(studioInstallation.outputLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
-		const sourceLayers = studioInstallation ? normalizeArray<ISourceLayerExtended>(studioInstallation.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
+		const outputLayers = showStyleBase ? normalizeArray<IOutputLayerExtended>(showStyleBase.outputLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
+		const sourceLayers = showStyleBase ? normalizeArray<ISourceLayerExtended>(showStyleBase.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
 
 		const TIMELINE_TEMP_OFFSET = 1
 

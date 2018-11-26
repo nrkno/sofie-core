@@ -15,12 +15,12 @@ export namespace AsRunLogSecurity {
 // Setup rules:
 AsRunLog.allow({
 	insert (userId: string, doc: AsRunLogEvent): boolean {
-		return false // not allowed client-side
+		return false
 	},
 	update (userId, doc, fields, modifier) {
-		return false // not allowed client-side
+		return false
 	},
 	remove (userId, doc) {
-		return false // not allowed client-side
+		return false
 	}
 })

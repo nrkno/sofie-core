@@ -11,8 +11,7 @@ import { reactiveData } from '../../lib/reactiveData/reactiveData'
 import { checkSLIContentStatus } from '../../../lib/mediaObjects'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
-
-import { StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 
 export class RunningOrderViewNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
@@ -34,22 +33,24 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 			return this._notificationList
 		})
 		ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus', this.autorun(() => {
-			const runningOrder = reactiveData.getRRunningOrderId(runningOrderId).get()
+			const rRunningOrderId = reactiveData.getRRunningOrderId(runningOrderId).get()
 
-			if (runningOrder) {
-				const studioInstallationId = reactiveData.getRRunningOrderStudioId(runningOrder).get()
+			if (rRunningOrderId) {
+				const studioInstallationId = reactiveData.getRRunningOrderStudioId(rRunningOrderId).get()
+				const showStyleBaseId = reactiveData.getRRunningOrderShowStyleBaseId(rRunningOrderId).get()
 				ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus.StudioInstallation', this.autorun(() => {
-					const studioInstallation = StudioInstallations.findOne(studioInstallationId)
-					if (studioInstallation) {
+					// const studioInstallation = StudioInstallations.findOne(studioInstallationId)
+					const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+					if (showStyleBase) {
 						let oldItemIds: Array<string> = []
 						ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus.SegmentLineItems', this.autorun((comp: Tracker.Computation) => {
-							const items = reactiveData.getRSegmentLineItems(runningOrder).get()
+							const items = reactiveData.getRSegmentLineItems(rRunningOrderId).get()
 							const newItemIds = items.map(item => item._id)
 							items.forEach((item) => {
-								const sourceLayer = reactiveData.getRSourceLayer(studioInstallation, item.sourceLayerId).get()
+								const sourceLayer = reactiveData.getRSourceLayer(showStyleBase, item.sourceLayerId).get()
 								if (sourceLayer) {
 									ReactiveDataHelper.registerComputation(`RunningOrderView.MediaObjectStatus.SegmentLineItems.${item._id}`, this.autorun(() => {
-										const { metadata, status, message } = checkSLIContentStatus(item, sourceLayer, studioInstallation.config)
+										const { metadata, status, message } = checkSLIContentStatus(item, sourceLayer, showStyleBase.config)
 										let newNotification: Notification | undefined = undefined
 										if ((status !== RunningOrderAPI.LineItemStatusCode.OK) && (status !== RunningOrderAPI.LineItemStatusCode.UNKNOWN)) {
 											newNotification = new Notification(item._id, NoticeLevel.WARNING, message || 'Media is broken', 'Media', Date.now(), true)
@@ -82,8 +83,10 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 
 						let oldDevItemIds: Array<string> = []
 						ReactiveDataHelper.registerComputation('RunningOrderView.PeripheralDevices', this.autorun(() => {
-							Meteor.subscribe('peripheralDevices', { studioInstallationId: studioInstallation._id })
-							const devices = reactiveData.getRPeripheralDevices(studioInstallation._id).get()
+							if (studioInstallationId) {
+								Meteor.subscribe('peripheralDevices', { studioInstallationId: studioInstallationId })
+							}
+							const devices = studioInstallationId ? reactiveData.getRPeripheralDevices(studioInstallationId).get() : []
 							const newDevItemIds = devices.map(item => item._id)
 
 							devices.forEach((item) => {

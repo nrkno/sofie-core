@@ -11,7 +11,6 @@ import { PeripheralDevice,
 	MosDeviceSettingsDevice
 } from '../../../lib/collections/PeripheralDevices'
 import { DeviceType as PlayoutDeviceType, TimelineContentTypeHttp } from 'timeline-state-resolver-types'
-import { literal } from '../../../lib/lib'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -107,7 +106,7 @@ class HttpSendDeviceSettingsComponent extends React.Component<Translated<IHttpSe
 
 		let setObject = {}
 		setObject['settings.devices.' + deviceId + '.options.makeReadyCommands'] = {
-			id: Random.hexString(5),
+			id: Random.id(),
 			type: TimelineContentTypeHttp.POST,
 			url: 'http://',
 			params: {}

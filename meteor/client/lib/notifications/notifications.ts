@@ -1,14 +1,12 @@
 /// <reference path="./reactivearray.d.ts" />
 
 import { ReactiveVar } from 'meteor/reactive-var'
-import { StatusCode } from '../../../server/systemStatus'
 import { Dictionary } from 'underscore'
 import * as _ from 'underscore'
 import { Tracker } from 'meteor/tracker'
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import { EventEmitter } from 'events'
-import { faThumbsDown } from '@fortawesome/fontawesome-free-solid'
 import { Time } from '../../../lib/lib'
 
 declare class ReactiveArray<T> extends Array<T> {

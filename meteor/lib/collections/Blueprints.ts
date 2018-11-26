@@ -5,26 +5,37 @@ import { Meteor } from 'meteor/meteor'
 
 import { ConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
 
-export interface ShowBlueprint {
+export interface Blueprint {
 	_id: string
-	showStyleId: string
+	name: string
 	code: string
 	modified: number
+	created: number
 
 	studioConfigManifest: ConfigManifestEntry[]
 	showStyleConfigManifest: ConfigManifestEntry[]
 
-	version: string
+	databaseVersion: {
+		showStyle: {
+			[showStyleBaseId: string]: string
+		},
+		studio: {
+			[studioId: string]: string
+		}
+	}
+
+	blueprintVersion: string
+	integrationVersion: string
+	TSRVersion: string
 	minimumCoreVersion: string
 }
 
-export const ShowBlueprints: TransformedCollection<ShowBlueprint, ShowBlueprint>
-	= new Mongo.Collection<ShowBlueprint>('showBlueprints')
-registerCollection('ShowBlueprints', ShowBlueprints)
+export const Blueprints: TransformedCollection<Blueprint, Blueprint>
+	= new Mongo.Collection<Blueprint>('blueprints')
+registerCollection('Blueprints', Blueprints)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		ShowBlueprints._ensureIndex({
-			showStyleId: 1
-		})
+		// Blueprints._ensureIndex({
+		// })
 	}
 })

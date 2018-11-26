@@ -15,12 +15,12 @@ export namespace UserActionsLogSecurity {
 // Setup rules:
 UserActionsLog.allow({
 	insert (userId: string, doc: UserActionsLogItem): boolean {
-		return true // Tmp: Allow everything client-side
+		return false
 	},
 	update (userId, doc, fields, modifier) {
-		return true // Tmp: Allow everything client-side
+		return false
 	},
 	remove (userId, doc) {
-		return true // Tmp: Allow everything client-side
+		return false
 	}
 })

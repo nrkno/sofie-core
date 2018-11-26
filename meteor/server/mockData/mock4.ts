@@ -1,8 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { getPD } from './mosData'
-import {
-	MosString128
-} from 'mos-connection'
+import { MOS } from 'tv-automation-sofie-blueprints-integration'
 
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
@@ -22,7 +20,7 @@ setMeteorMethods({
 		logger.info('debug_roMock3')
 
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoDelete, id, token,
-			new MosString128('SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-BE80889DAE999E84'))
+			new MOS.MosString128('SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-BE80889DAE999E84'))
 		//
 		Meteor.call(PeripheralDeviceAPI.methods.mosRoCreate, id, token,
 			{

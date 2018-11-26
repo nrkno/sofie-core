@@ -17,7 +17,7 @@ import { SegmentLineItems, SegmentLineItem } from '../../lib/collections/Segment
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
 import { getCurrentTime, Time, formatDateAsTimecode, formatDateTime, fixValidPath, saveIntoDb } from '../../lib/lib'
-import { ShowStyles, ShowStyle } from '../../lib/collections/ShowStyles'
+import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
 import { Timeline, TimelineObj } from '../../lib/collections/Timeline'
@@ -26,11 +26,13 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { ServerPeripheralDeviceAPI } from './peripheralDevice'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
-import { getCoreSystem, ICoreSystem, CoreSystem } from '../../lib/collections/CoreSystem'
+import { getCoreSystem, ICoreSystem, CoreSystem, parseVersion, compareVersions } from '../../lib/collections/CoreSystem'
 import { fsWriteFile, fsReadFile } from '../lib'
-import { CURRENT_SYSTEM_VERSION } from '../databaseMigration'
+import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databaseMigration'
 import { restoreRunningOrder } from '../backups'
+import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 interface RunningOrderSnapshot {
+	version: string
 	runningOrderId: string
 	snapshot: SnapshotRunningOrder
 	runningOrder: RunningOrder
@@ -42,15 +44,20 @@ interface RunningOrderSnapshot {
 	mediaObjects: Array<MediaObject>
 }
 interface SystemSnapshot {
+	version: string
 	studioId: string | null
 	snapshot: SnapshotSystem
 	studios: Array<StudioInstallation>
-	showStyles: Array<ShowStyle>
+	showStyleBases: Array<ShowStyleBase>
+	showStyleVariants: Array<ShowStyleVariant>
 	devices: Array<PeripheralDevice>
 	deviceCommands: Array<PeripheralDeviceCommand>
 	coreSystem: ICoreSystem
+	// old, deprecated:
+	showStyles?: Array<any>
 }
 interface DebugSnapshot {
+	version: string
 	studioId?: string
 	snapshot: SnapshotDebug
 	system: SystemSnapshot
@@ -91,6 +98,7 @@ function createRunningOrderSnapshot (runningOrderId: string): RunningOrderSnapsh
 
 	logger.info(`Snapshot generation done`)
 	return {
+		version: CURRENT_SYSTEM_VERSION,
 		runningOrderId: runningOrderId,
 		snapshot: {
 			_id: snapshotId,
@@ -123,7 +131,8 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 	const coreSystem 	= getCoreSystem()
 	if (!coreSystem) throw new Meteor.Error(500, `coreSystem not set up`)
 	const studios 		= StudioInstallations.find((studioId ? {_id: studioId} : {})).fetch()
-	const showStyles 	= ShowStyles.find().fetch()
+	const showStyleBases 	= ShowStyleBases.find().fetch()
+	const showStyleVariants = ShowStyleVariants.find().fetch()
 	const devices 		= PeripheralDevices.find((studioId ? {studioInstallationId: studioId} : {})).fetch()
 
 	const deviceCommands = PeripheralDeviceCommands.find({
@@ -132,6 +141,7 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 
 	logger.info(`Snapshot generation done`)
 	return {
+		version: CURRENT_SYSTEM_VERSION,
 		studioId: studioId,
 		snapshot: {
 			_id: snapshotId,
@@ -141,7 +151,8 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 			version: CURRENT_SYSTEM_VERSION,
 		},
 		studios,
-		showStyles,
+		showStyleBases,
+		showStyleVariants,
 		devices,
 		coreSystem,
 		deviceCommands: deviceCommands,
@@ -196,6 +207,7 @@ function createDebugSnapshot (studioId: string): DebugSnapshot {
 
 	logger.info(`Snapshot generation done`)
 	return {
+		version: CURRENT_SYSTEM_VERSION,
 		studioId: studioId,
 		snapshot: {
 			_id: snapshotId,
@@ -297,6 +309,10 @@ function restoreFromRunningOrderSnapshot (snapshot: RunningOrderSnapshot) {
 	logger.info(`Restoring from runningOrder snapshot "${snapshot.snapshot.name}"`)
 	let runningOrderId = snapshot.runningOrderId
 
+	if (!isVersionSupported(parseVersion(snapshot.version || '0.18.0'))) {
+		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
+	}
+
 	if (runningOrderId !== snapshot.runningOrder._id) throw new Meteor.Error(500, `Restore snapshot: runningOrderIds don\'t match, "${runningOrderId}", "${snapshot.runningOrder._id}!"`)
 
 	let dbRunningOrder = RunningOrders.findOne(runningOrderId)
@@ -322,8 +338,13 @@ function restoreFromSystemSnapshot (snapshot: SystemSnapshot) {
 	logger.info(`Restoring from system snapshot "${snapshot.snapshot.name}"`)
 	let studioId = snapshot.studioId
 
+	if (!isVersionSupported(parseVersion(snapshot.version || '0.18.0'))) {
+		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
+	}
+
 	saveIntoDb(StudioInstallations, (studioId ? {_id: studioId} : {}), snapshot.studios)
-	saveIntoDb(ShowStyles, {}, snapshot.showStyles)
+	saveIntoDb(ShowStyleBases, {}, snapshot.showStyleBases)
+	saveIntoDb(ShowStyleVariants, {}, snapshot.showStyleVariants)
 	saveIntoDb(PeripheralDevices, (studioId ? {studioInstallationId: studioId} : {}), snapshot.devices)
 	saveIntoDb(CoreSystem, {}, [snapshot.coreSystem])
 	// saveIntoDb(PeripheralDeviceCommands, {}, snapshot.deviceCommands) // ignored

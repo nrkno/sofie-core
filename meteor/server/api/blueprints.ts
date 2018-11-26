@@ -1,31 +1,31 @@
 import * as _ from 'underscore'
 import * as moment from 'moment'
 import { SaferEval } from 'safer-eval'
-import {
-	IMOSROFullStory, IMOSRunningOrder, IMOSStory
-} from 'mos-connection'
 import { SegmentLine, DBSegmentLine, SegmentLineNote, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
-import { formatDateAsTimecode, formatDurationAsTimecode, literal } from '../../lib/lib'
+import { formatDateAsTimecode, formatDurationAsTimecode, literal, normalizeArray, getCurrentTime } from '../../lib/lib'
 import { getHash } from '../lib'
 import { logger } from '../logging'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { TimelineObj } from '../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
-import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
+import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
-import { ShowBlueprints, ShowBlueprint } from '../../lib/collections/ShowBlueprints'
+import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import {
-	BlueprintCollection,
+	BlueprintManifest,
 	ICommonContext,
 	RunStoryContext,
 	BaselineContext,
 	PostProcessContext,
 	MessageContext,
 	LayerType,
+	MOS,
+	ConfigItemValue,
 	TimelineObjectCoreExt,
-	IBlueprintSegmentLineItem, IBlueprintSegmentLineAdLibItem,
+	IBlueprintSegmentLineItem,
+	IBlueprintSegmentLineAdLibItem,
 	BlueprintRuntimeArguments,
 	IBlueprintSegmentLine
 } from 'tv-automation-sofie-blueprints-integration'
@@ -36,6 +36,12 @@ import { ServerResponse, IncomingMessage } from 'http'
 import { Picker } from 'meteor/meteorhacks:picker'
 import * as bodyParser from 'body-parser'
 import { Random } from 'meteor/random'
+import { getShowStyleCompound } from '../../lib/collections/ShowStyleVariants'
+import { check, Match } from 'meteor/check'
+import { parse as parseUrl } from 'url'
+import { BlueprintAPI } from '../../lib/api/blueprint'
+import { Methods, setMeteorMethods, wrapMethods } from '../methods'
+import { parseVersion } from '../../lib/collections/CoreSystem'
 
 class CommonContext implements ICommonContext {
 	runningOrderId: string
@@ -46,9 +52,9 @@ class CommonContext implements ICommonContext {
 	private hashed: {[hash: string]: string} = {}
 	private savedNotes: Array<SegmentLineNote> = []
 
-	private story: IMOSStory | undefined
+	private story: MOS.IMOSStory | undefined
 
-	constructor (runningOrder: RunningOrder, segmentLine?: SegmentLine, story?: IMOSStory) {
+	constructor (runningOrder: RunningOrder, segmentLine?: SegmentLine, story?: MOS.IMOSStory) {
 		this.runningOrderId = runningOrder._id
 		this.runningOrder = runningOrder
 		this.segmentLine = segmentLine
@@ -60,6 +66,12 @@ class CommonContext implements ICommonContext {
 		if (!studio) throw new Meteor.Error(404, 'StudioInstallation "' + this.runningOrder.studioInstallationId + '" not found')
 
 		return studio
+	}
+	getShowStyleBase (): ShowStyleBase {
+		const showStyleBase = ShowStyleBases.findOne(this.runningOrder.showStyleBaseId)
+		if (!showStyleBase) throw new Meteor.Error(404, 'ShowStyleBase "' + this.runningOrder.showStyleBaseId + '" not found')
+
+		return showStyleBase
 	}
 	getHashId (str?: any) {
 
@@ -80,14 +92,15 @@ class CommonContext implements ICommonContext {
 	}
 	getLayer (type: LayerType, name: string): string {
 		const studio: StudioInstallation = this.getStudioInstallation()
+		const showStyleBase: ShowStyleBase = this.getShowStyleBase()
 
 		let layer: any
 		switch (type) {
 			case LayerType.Output:
-				layer = studio.outputLayers.find(l => l._id === name)
+				layer = showStyleBase.outputLayers.find(l => l._id === name)
 				break
 			case LayerType.Source:
-				layer = studio.sourceLayers.find(l => l._id === name)
+				layer = showStyleBase.sourceLayers.find(l => l._id === name)
 				break
 			case LayerType.LLayer:
 				layer = _.find(studio.mappings, (v, k) => k === name)
@@ -102,14 +115,24 @@ class CommonContext implements ICommonContext {
 
 		throw new Meteor.Error(404, 'Missing layer "' + name + '" of type LayerType."' + type + '"')
 	}
-	getConfig (): {[key: string]: string} {
+	getStudioConfig (): {[key: string]: ConfigItemValue} {
 		const studio: StudioInstallation = this.getStudioInstallation()
 
-		const res: {[key: string]: string} = {}
-		for (let c of studio.config) {
+		const res: {[key: string]: ConfigItemValue} = {}
+		_.each(studio.config, (c) => {
 			res[c._id] = c.value
-		}
+		})
 
+		return res
+	}
+	getShowStyleConfig (): {[key: string]: ConfigItemValue} {
+		const showStyleCompound = getShowStyleCompound(this.runningOrder.showStyleVariantId)
+		if (!showStyleCompound) throw new Meteor.Error(404, `no showStyleCompound for "${this.runningOrder.showStyleVariantId}"`)
+
+		const res: {[key: string]: ConfigItemValue} = {}
+		_.each(showStyleCompound.config, (c) => {
+			res[c._id] = c.value
+		})
 		return res
 	}
 
@@ -123,7 +146,7 @@ class CommonContext implements ICommonContext {
 		}
 	}
 	error (message: string) {
-		logger.error('Error from template: ' + message)
+		logger.error('Error from blueprint: ' + message)
 
 		const name = this.getLoggerName()
 
@@ -142,7 +165,7 @@ class CommonContext implements ICommonContext {
 		throw new Meteor.Error(500, message)
 	}
 	warning (message: string) {
-		// logger.warn('Warning from template: ' + message)
+		// logger.warn('Warning from blueprint: ' + message)
 		// @todo: save warnings, maybe to the RO somewhere?
 		// it should be displayed to the user in the UI
 
@@ -165,7 +188,7 @@ class CommonContext implements ICommonContext {
 	}
 }
 
-export function getRunStoryContext (runningOrder: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory): RunStoryContext {
+export function getRunStoryContext (runningOrder: RunningOrder, segmentLine: SegmentLine, story: MOS.IMOSROFullStory): RunStoryContext {
 	class RunStoryContextImpl extends CommonContext implements RunStoryContext {
 		segmentLine: SegmentLine
 
@@ -209,10 +232,10 @@ export function getBaselineContext (runningOrder: RunningOrder): BaselineContext
 
 export function getMessageContext (runningOrder: RunningOrder): MessageContext {
 	class MessageContextImpl extends CommonContext implements MessageContext {
-		getCachedStoryForRunningOrder (): IMOSRunningOrder {
+		getCachedStoryForRunningOrder (): MOS.IMOSRunningOrder {
 			return this.runningOrder.fetchCache('roCreate' + this.runningOrder._id)
 		}
-		getCachedStoryForSegmentLine (segmentLine: IBlueprintSegmentLine): IMOSROFullStory {
+		getCachedStoryForSegmentLine (segmentLine: IBlueprintSegmentLine): MOS.IMOSROFullStory {
 			return this.runningOrder.fetchCache('fullStory' + segmentLine._id)
 		}
 
@@ -235,34 +258,61 @@ export function getMessageContext (runningOrder: RunningOrder): MessageContext {
 
 	return new MessageContextImpl(runningOrder)
 }
+export function insertBlueprint (name?: string): string {
+	return Blueprints.insert({
+		_id: Random.id(),
+		name: name || 'Default Blueprint',
+		code: '',
+		modified: getCurrentTime(),
+		created: getCurrentTime(),
+
+		studioConfigManifest: [],
+		showStyleConfigManifest: [],
+
+		databaseVersion: {
+			studio: {},
+			showStyle: {}
+		},
+
+		blueprintVersion: '',
+		integrationVersion: '',
+		TSRVersion: '',
+		minimumCoreVersion: ''
+	})
+}
+export function removeBlueprint (id: string) {
+	check(id, String)
+	Blueprints.remove(id)
+}
 
 const blueprintCache: {[id: string]: Cache} = {}
 interface Cache {
 	modified: number,
-	fcn: BlueprintCollection
+	fcn: BlueprintManifest
 }
 
-export function loadBlueprints (showStyle: ShowStyle): BlueprintCollection {
-	let blueprintDoc = ShowBlueprints.findOne({
-		showStyleId: showStyle._id
+export function loadBlueprints (showStyleBase: ShowStyleBase): BlueprintManifest {
+	let blueprint = Blueprints.findOne({
+		_id: showStyleBase.blueprintId
 	})
+	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${showStyleBase.blueprintId}" not found! (referenced by ShowStyleBase "${showStyleBase._id}"`)
 
-	if (blueprintDoc && blueprintDoc.code) {
+	if (blueprint.code) {
 		try {
-			return evalBlueprints(blueprintDoc, showStyle.name, false)
+			return evalBlueprints(blueprint, false)
 		} catch (e) {
-			throw new Meteor.Error(402, 'Syntax error in runtime function "' + showStyle.name + '": ' + e.toString())
+			throw new Meteor.Error(402, 'Syntax error in blueprint "' + blueprint._id + '": ' + e.toString())
 		}
+	} else {
+		throw new Meteor.Error(500, `Blueprint "${showStyleBase.blueprintId}" code not set!`)
 	}
-
-	throw new Meteor.Error(404, 'Function for ShowStyle "' + showStyle.name + '" not found!')
 }
-export function evalBlueprints (blueprintDoc: ShowBlueprint, showStyleName: string, noCache: boolean): BlueprintCollection {
+export function evalBlueprints (blueprint: Blueprint, noCache?: boolean): BlueprintManifest {
 	let cached: Cache | null = null
 	if (!noCache) {
 		// First, check if we've got the function cached:
-		cached = blueprintCache[blueprintDoc._id] ? blueprintCache[blueprintDoc._id] : null
-		if (cached && (!cached.modified || cached.modified !== blueprintDoc.modified)) {
+		cached = blueprintCache[blueprint._id] ? blueprintCache[blueprint._id] : null
+		if (cached && (!cached.modified || cached.modified !== blueprint.modified)) {
 			// the function has been updated, invalidate it then:
 			cached = null
 		}
@@ -276,12 +326,12 @@ export function evalBlueprints (blueprintDoc: ShowBlueprint, showStyleName: stri
 			moment,
 		}
 
-		const entry = new SaferEval(context, { filename: showStyleName + '.js' }).runInContext(blueprintDoc.code)
+		const entry = new SaferEval(context, { filename: (blueprint.name || blueprint._id) + '.js' }).runInContext(blueprint.code)
 		return entry.default
 	}
 }
 
-export function postProcessSegmentLineItems (innerContext: ICommonContext, segmentLineItems: IBlueprintSegmentLineItem[], templateId: string, segmentLineId: string): SegmentLineItem[] {
+export function postProcessSegmentLineItems (innerContext: ICommonContext, segmentLineItems: IBlueprintSegmentLineItem[], blueprintId: string, segmentLineId: string): SegmentLineItem[] {
 	let i = 0
 	let segmentLinesUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(segmentLineItems), (itemOrig: IBlueprintSegmentLineItem) => {
@@ -292,10 +342,10 @@ export function postProcessSegmentLineItems (innerContext: ICommonContext, segme
 			...itemOrig
 		}
 
-		if (!item._id) item._id = innerContext.getHashId(templateId + '_sli_' + (i++))
-		if (!item.mosId && !item.isTransition) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for segmentLineItem in ' + segmentLineId + '! ("' + innerContext.unhashId(item._id) + '")')
+		if (!item._id) item._id = innerContext.getHashId(blueprintId + '_sli_' + (i++))
+		if (!item.mosId && !item.isTransition) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": mosId not set for segmentLineItem in ' + segmentLineId + '! ("' + innerContext.unhashId(item._id) + '")')
 
-		if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
+		if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
 		segmentLinesUniqueIds[item._id] = true
 
 		if (item.content && item.content.timelineObjects) {
@@ -303,9 +353,9 @@ export function postProcessSegmentLineItems (innerContext: ICommonContext, segme
 			item.content.timelineObjects = _.map(_.compact(item.content.timelineObjects), (o: TimelineObjectCoreExt) => {
 				const item = convertTimelineObject(o)
 
-				if (!item._id) item._id = innerContext.getHashId(templateId + '_' + (i++))
+				if (!item._id) item._id = innerContext.getHashId(blueprintId + '_' + (i++))
 
-				if (timelineUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in template "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(item._id) + '")')
+				if (timelineUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(item._id) + '")')
 				timelineUniqueIds[item._id] = true
 
 				return item
@@ -316,12 +366,12 @@ export function postProcessSegmentLineItems (innerContext: ICommonContext, segme
 	})
 }
 
-export function postProcessSegmentLineAdLibItems (innerContext: ICommonContext, segmentLineAdLibItems: IBlueprintSegmentLineAdLibItem[], templateId: string, segmentLineId?: string): SegmentLineAdLibItem[] {
+export function postProcessSegmentLineAdLibItems (innerContext: ICommonContext, segmentLineAdLibItems: IBlueprintSegmentLineAdLibItem[], blueprintId: string, segmentLineId?: string): SegmentLineAdLibItem[] {
 	let i = 0
 	let segmentLinesUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(segmentLineAdLibItems), (itemOrig: IBlueprintSegmentLineAdLibItem) => {
 		let item: SegmentLineAdLibItem = {
-			_id: innerContext.getHashId(templateId + '_adlib_sli_' + (i++)),
+			_id: innerContext.getHashId(blueprintId + '_adlib_sli_' + (i++)),
 			runningOrderId: innerContext.runningOrder._id,
 			segmentLineId: segmentLineId,
 			status: RunningOrderAPI.LineItemStatusCode.UNKNOWN,
@@ -330,9 +380,9 @@ export function postProcessSegmentLineAdLibItems (innerContext: ICommonContext, 
 			...itemOrig
 		}
 
-		if (!item.mosId) throw new Meteor.Error(400, 'Error in template "' + templateId + '": mosId not set for segmentLineItem in ' + segmentLineId + '! ("' + innerContext.unhashId(item._id) + '")')
+		if (!item.mosId) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": mosId not set for segmentLineItem in ' + segmentLineId + '! ("' + innerContext.unhashId(item._id) + '")')
 
-		if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + templateId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
+		if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
 		segmentLinesUniqueIds[item._id] = true
 
 		if (item.content && item.content.timelineObjects) {
@@ -340,9 +390,9 @@ export function postProcessSegmentLineAdLibItems (innerContext: ICommonContext, 
 			item.content.timelineObjects = _.map(_.compact(item.content.timelineObjects), (o: TimelineObjectCoreExt) => {
 				const item = convertTimelineObject(o)
 
-				if (!item._id) item._id = innerContext.getHashId(templateId + '_adlib_' + (i++))
+				if (!item._id) item._id = innerContext.getHashId(blueprintId + '_adlib_' + (i++))
 
-				if (timelineUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + templateId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(item._id) + '")')
+				if (timelineUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": ids of timelineObjs must be unique! ("' + innerContext.unhashId(item._id) + '")')
 				timelineUniqueIds[item._id] = true
 
 				return item
@@ -370,8 +420,9 @@ function convertTimelineObject (o: TimelineObjectCoreExt): TimelineObj {
 export function postProcessSegmentLineBaselineItems (innerContext: BaselineContext, baselineItems: TimelineObj[]): TimelineObj[] {
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
-	return _.map(_.compact(baselineItems), (o: TimelineObjectCoreExt) => {
-		const item = convertTimelineObject(o)
+
+	return _.map(_.compact(baselineItems), (o: TimelineObj): TimelineObj => {
+		const item: TimelineObj = convertTimelineObject(o)
 
 		if (!item._id) item._id = innerContext.getHashId('baseline_' + (i++))
 
@@ -386,40 +437,62 @@ postRoute.middleware(bodyParser.text({
 	type: 'text/javascript',
 	limit: '1mb'
 }))
-postRoute.route('/blueprints/restore/:showStyleId', (params, req: IncomingMessage, res: ServerResponse, next) => {
+postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
+
+	let blueprintId = params.blueprintId
+	let url = parseUrl(req.url!, true)
+
+	let blueprintName = url.query['name'] || undefined
+
+	check(blueprintId, String)
+	check(blueprintName, Match.Maybe(String))
 
 	let content = ''
 	try {
 		const body = (req as any).body
-		if (!body) throw new Meteor.Error(500, 'Missing request body')
+		if (!body) throw new Meteor.Error(400, 'Restore Blueprint: Missing request body')
 
-		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(500, 'Invalid request body')
+		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 
 		logger.info('Got new blueprint. ' + body.length + ' bytes')
 
-		const showStyle = ShowStyles.findOne(params.showStyleId)
-		if (!showStyle) throw new Meteor.Error(404, 'ShowStyle missing from db')
+		const blueprint = Blueprints.findOne(blueprintId)
+		// if (!blueprint) throw new Meteor.Error(404, `Blueprint "${blueprintId}" not found`)
 
-		const newBlueprint: ShowBlueprint = {
-			_id: Random.id(7),
-			showStyleId: showStyle._id,
+		const newBlueprint: Blueprint = {
+			_id: blueprintId,
+			name: blueprint ? blueprint.name : (blueprintName || blueprintId),
+			created: blueprint ? blueprint.created : getCurrentTime(),
 			code: body as string,
-			modified: Date.now(),
+			modified: getCurrentTime(),
 			studioConfigManifest: [],
 			showStyleConfigManifest: [],
-			version: '',
+			databaseVersion: {
+				studio: {},
+				showStyle: {}
+			},
+			blueprintVersion: '',
+			integrationVersion: '',
+			TSRVersion: '',
 			minimumCoreVersion: ''
 		}
 
-		const blueprintCollection = evalBlueprints(newBlueprint, showStyle.name, false)
-		newBlueprint.version = blueprintCollection.Version
-		newBlueprint.minimumCoreVersion = blueprintCollection.MinimumCoreVersion
-		newBlueprint.studioConfigManifest = blueprintCollection.StudioConfigManifest
-		newBlueprint.showStyleConfigManifest = blueprintCollection.ShowStyleConfigManifest
+		const blueprintManifest: BlueprintManifest = evalBlueprints(newBlueprint, false)
+		newBlueprint.blueprintVersion			= blueprintManifest.blueprintVersion
+		newBlueprint.integrationVersion			= blueprintManifest.integrationVersion
+		newBlueprint.TSRVersion					= blueprintManifest.TSRVersion
+		newBlueprint.minimumCoreVersion			= blueprintManifest.minimumCoreVersion
+		newBlueprint.studioConfigManifest		= blueprintManifest.studioConfigManifest
+		newBlueprint.showStyleConfigManifest	= blueprintManifest.showStyleConfigManifest
 
-		ShowBlueprints.remove({ showStyleId: showStyle._id })
-		ShowBlueprints.insert(newBlueprint)
+		// Parse the versions, just to verify that the format is correct:
+		parseVersion(blueprintManifest.blueprintVersion)
+		parseVersion(blueprintManifest.integrationVersion)
+		parseVersion(blueprintManifest.TSRVersion)
+		parseVersion(blueprintManifest.minimumCoreVersion)
+
+		Blueprints.upsert(newBlueprint._id, newBlueprint)
 
 		res.statusCode = 200
 	} catch (e) {
@@ -430,3 +503,12 @@ postRoute.route('/blueprints/restore/:showStyleId', (params, req: IncomingMessag
 
 	res.end(content)
 })
+
+let methods: Methods = {}
+methods[BlueprintAPI.methods.insertBlueprint] = () => {
+	return insertBlueprint()
+}
+methods[BlueprintAPI.methods.removeBlueprint] = (id: string) => {
+	return removeBlueprint(id)
+}
+setMeteorMethods(wrapMethods(methods))

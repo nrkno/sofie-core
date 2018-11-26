@@ -5,7 +5,7 @@ import * as _ from 'underscore'
 import { translate } from 'react-i18next'
 import { Random } from 'meteor/random'
 import { literal } from '../../lib/lib'
-import { ModalDialog } from '../lib/ModalDialog'
+import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import {
 	Route,
@@ -15,20 +15,25 @@ import {
 } from 'react-router-dom'
 
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { ShowStyle, ShowStyles } from '../../lib/collections/ShowStyles'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 
 import StudioSettings from './Settings/StudioSettings'
 import DeviceSettings from './Settings/DeviceSettings'
-import ShowStyleSettings from './Settings/ShowStyleSettings'
+import ShowStyleSettings from './Settings/ShowStyleBaseSettings'
 import RestoreBackup from './Settings/RestoreBackup'
+import BlueprintSettings from './Settings/BlueprintSettings'
 
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { MigrationView } from './Settings/Migration'
+import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
+import { ShowStylesAPI } from '../../lib/api/showStyles'
+import { callMethod } from '../lib/clientAPI'
+import { BlueprintAPI } from '../../lib/api/blueprint'
 
 class WelcomeToSettings extends React.Component {
 	render () {
@@ -40,33 +45,33 @@ interface ISettingsMenuProps {
 	match?: any
 }
 interface ISettingsMenuState {
-	deleteConfirmItem: any
-	showDeleteShowStyleConfirm: boolean
 }
 interface ISettingsMenuTrackedProps {
 	studioInstallations: Array<StudioInstallation>
-	showStyles: Array<ShowStyle>
+	showStyleBases: Array<ShowStyleBase>
+	blueprints: Array<Blueprint>
 	peripheralDevices: Array<PeripheralDevice>
 }
 const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps >(() => {
 	Meteor.subscribe('studioInstallations', {})
-	Meteor.subscribe('showStyles', {})
-	Meteor.subscribe('showBlueprints', {})
+	Meteor.subscribe('showStyleBases', {})
+	Meteor.subscribe('showStyleVariants', {})
+	Meteor.subscribe('blueprints', {})
 	Meteor.subscribe('peripheralDevices', {})
 
 	return {
 		studioInstallations: StudioInstallations.find({}).fetch(),
-		showStyles: ShowStyles.find({}).fetch(),
-		peripheralDevices: PeripheralDevices.find({}, {sort: {
-			lastConnected: -1
-		}}).fetch(),
+		showStyleBases: ShowStyleBases.find({}).fetch(),
+		peripheralDevices: PeripheralDevices.find({}, {
+			sort: {
+				lastConnected: -1
+			}}).fetch(),
+		blueprints: Blueprints.find({}).fetch(),
 	}
 })(class SettingsMenu extends MeteorReactComponent<Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>, ISettingsMenuState> {
 	constructor (props: Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>) {
 		super(props)
 		this.state = {
-			deleteConfirmItem: undefined,
-			showDeleteShowStyleConfirm: false
 		}
 	}
 
@@ -114,34 +119,38 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}
 	}
 
-	onAddShowStyle () {
-		ShowStyles.insert(literal<ShowStyle>({
-			_id: Random.hexString(5),
-			name: Random.hexString(5)
-		}))
+	onAddShowStyleBase () {
+		callMethod('Menu', ShowStylesAPI.methods.insertShowStyleBase)
+	}
+	onAddBlueprint () {
+		let t = this.props.t
+		callMethod('Menu', BlueprintAPI.methods.insertBlueprint)
 	}
 
-	onDeleteShowStyle (item: ShowStyle) {
-		this.setState({
-			deleteConfirmItem: item,
-			showDeleteShowStyleConfirm: true
+	onDeleteShowStyleBase (item: ShowStyleBase) {
+		const { t } = this.props
+		doModalDialog({
+			title: t('Delete this show style?'),
+			message: [
+				<p>{t('Are you sure you want to delete the show style "{{showStyleId}}"?', { showStyleId: item && item.name })}</p>
+			],
+			onAccept: () => {
+				callMethod('ModalDialog', ShowStylesAPI.methods.removeShowStyleBase, item._id)
+			}
 		})
 	}
-
-	handleConfirmDeleteShowStyleAccept = (e) => {
-		ShowStyles.remove(this.state.deleteConfirmItem._id)
-		this.setState({
-			showDeleteShowStyleConfirm: false
+	onDeleteBlueprint (blueprint: Blueprint) {
+		const { t } = this.props
+		doModalDialog({
+			title: t('Delete this blueprint?'),
+			message: [
+				<p>{t('Are you sure you want to delete the blueprint "{{blueprintId}}"?', { blueprintId: blueprint && blueprint.name })}</p>
+			],
+			onAccept: () => {
+				callMethod('ModalDialog', BlueprintAPI.methods.removeBlueprint, blueprint._id)
+			}
 		})
 	}
-
-	handleConfirmDeleteShowStyleCancel = (e) => {
-		this.setState({
-			deleteConfirmItem: undefined,
-			showDeleteShowStyleConfirm: false
-		})
-	}
-
 	render () {
 		const { t } = this.props
 
@@ -150,40 +159,59 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<h2 className='mhs'>{t('Studios')}</h2>
 				<hr className='vsubtle man' />
 				{
-					this.props.studioInstallations.map((item) => {
+					this.props.studioInstallations.map((studio) => {
 						return [
-							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/studio/' + item._id}>
-								<h3>{item.name}</h3>
-								{ item.sourceLayers && item.outputLayers &&
-									<p>
-										{t('Source layers')}: {item.sourceLayers.length.toString()} {t('Output channels')}: {item.outputLayers.length.toString()}
-									</p>
-								}
+							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={studio._id} to={'/settings/studio/' + studio._id}>
+								<h3>{studio.name || t('Unnamed studio')}</h3>
 							</NavLink>,
-							<hr className='vsubtle man' key={item._id + '-hr'} />
+							<hr className='vsubtle man' key={studio._id + '-hr'} />
 						]
 					})
 				}
 				<h2 className='mhs'>
-					<button className='action-btn right' onClick={(e) => this.onAddShowStyle()}>
+					<button className='action-btn right' onClick={(e) => this.onAddShowStyleBase()}>
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
+					{t('Show styles')}
+				</h2>
+				<hr className='vsubtle man' />
+				{
+					this.props.showStyleBases.map((showStyleBase) => {
+						return [
+							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={showStyleBase._id} to={'/settings/showStyleBase/' + showStyleBase._id}>
+								<div className='selectable clickable'>
+									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteShowStyleBase(showStyleBase) }}>
+										<FontAwesomeIcon icon={faTrash} />
+									</button>
+									<h3>{showStyleBase.name || t('Unnamed show style')}</h3>
+									{ showStyleBase.sourceLayers && showStyleBase.outputLayers &&
+										<p>
+											{t('Source layers')}: {showStyleBase.sourceLayers.length.toString()} {t('Output channels')}: {showStyleBase.outputLayers.length.toString()}
+										</p>
+									}
+								</div>
+							</NavLink>,
+							<hr className='vsubtle man' key={showStyleBase._id + '-hr'} />
+						]
+					})
+				}
+				<h2 className='mhs'>
+					<button className='action-btn right' onClick={(e) => this.onAddBlueprint()}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 					{t('Blueprints')}
-					</h2>
+				</h2>
 				<hr className='vsubtle man' />
-				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteShowStyleConfirm} onAccept={(e) => this.handleConfirmDeleteShowStyleAccept(e)} onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
-					<p>{t('Are you sure you want to delete blueprint "{{showStyleId}}"?', { showStyleId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.name })}</p>
-					<p>{t('Please note: This action is irreversible!')}</p>
-				</ModalDialog>
 				{
-					this.props.showStyles.map((item) => {
+					this.props.blueprints.map((blueprint) => {
 						return (
-							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/showStyle/' + item._id}>
+							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={blueprint._id} to={'/settings/blueprint/' + blueprint._id}>
 								<div className='selectable clickable'>
-									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteShowStyle(item) }}>
+									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteBlueprint(blueprint) }}>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
-									<h3>{item.name}</h3>
+									<h3>{blueprint.name || t('Unnamed blueprint')}</h3>
+									<p>{t('Version')} {blueprint.blueprintVersion}</p>
 								</div>
 								<hr className='vsubtle man' />
 							</NavLink>
@@ -234,8 +262,9 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 		// Subscribe to data:
 		this.subscribe('peripheralDevices', {})
 		this.subscribe('studioInstallations', {})
-		this.subscribe('showStyles', {})
-		this.subscribe('showBlueprints', {})
+		this.subscribe('showStyleBases', {})
+		this.subscribe('showStyleVariants', {})
+		this.subscribe('blueprints', {})
 	}
 	render () {
 		const { t } = this.props
@@ -257,8 +286,9 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 								<Switch>
 									<Route path='/settings' exact component={WelcomeToSettings} />
 									<Route path='/settings/studio/:studioId' component={StudioSettings} />
-									<Route path='/settings/showStyle/:showStyleId' component={ShowStyleSettings} />
+									<Route path='/settings/showStyleBase/:showStyleBaseId' component={ShowStyleSettings} />
 									<Route path='/settings/peripheralDevice/:deviceId' component={DeviceSettings} />
+									<Route path='/settings/blueprint/:blueprintId' component={BlueprintSettings} />
 									<Route path='/settings/tools/restore' component={RestoreBackup} />
 									<Route path='/settings/migration' component={MigrationView} />
 									<Redirect to='/settings' />

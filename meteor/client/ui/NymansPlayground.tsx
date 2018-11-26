@@ -34,7 +34,8 @@ export class NymansPlayground extends MeteorReactComponent<INPProps> {
 				active: true
 			})
 			this.subscribe('studioInstallations', {})
-			this.subscribe('showStyles', {})
+			this.subscribe('showStyleBases', {})
+			this.subscribe('showStyleVariants', {})
 			let activeRO = RunningOrders.findOne({active: true})
 			if (activeRO) {
 				this.subscribe('segments', {
@@ -143,7 +144,8 @@ class extends MeteorReactComponent<IRunningOrders> {
 
 				<div>mosId: {ro.mosId}</div>
 				<div>studioInstallationId: {ro.studioInstallationId}</div>
-				<div>showStyleId: {ro.showStyleId}</div>
+				<div>showStyleBaseId: {ro.showStyleBaseId}</div>
+				<div>showStyleVariantId: {ro.showStyleVariantId}</div>
 				<div>name: {ro.name}</div>
 				<div>created: {ro.created}</div>
 

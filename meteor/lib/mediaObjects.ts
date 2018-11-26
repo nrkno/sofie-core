@@ -1,8 +1,13 @@
 import { SegmentLineItem } from './collections/SegmentLineItems'
-import { SourceLayerType, VTContent, LiveSpeakContent } from 'tv-automation-sofie-blueprints-integration'
+import {
+	VTContent,
+	LiveSpeakContent,
+	SourceLayerType,
+	IConfigItem,
+	ISourceLayer
+} from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from './api/runningOrder'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream } from './collections/MediaObjects'
-import { ISourceLayer, IStudioConfigItem } from './collections/StudioInstallations'
 
 /**
  * Take properties from the mediainfo / medistream and transform into a
@@ -72,16 +77,16 @@ export function acceptFormat (format: string, formats: Array<Array<string>>): bo
  * 	[undefined, undefined, i, 5000, tff]
  * ]
  */
-export function getAcceptedFormats (config: Array<IStudioConfigItem>): Array<Array<string>> {
+export function getAcceptedFormats (config: Array<IConfigItem>): Array<Array<string>> {
 	const formatsConfigField = config.find((item) => item._id === 'mediaResolutions')
-	const formatsString = formatsConfigField && formatsConfigField.value !== '' ? formatsConfigField.value : '1920x1080i5000'
+	const formatsString: string = (formatsConfigField && formatsConfigField.value !== '' ? formatsConfigField.value : '1920x1080i5000') + ''
 	return formatsString
 		.split(', ')
 		.map(res => /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(res)!
 			.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i)))
 }
 
-export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourceLayer, config: Array<IStudioConfigItem>) {
+export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourceLayer, config: Array<IConfigItem>) {
 	let newStatus: RunningOrderAPI.LineItemStatusCode = RunningOrderAPI.LineItemStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
 	let message: string | null = null

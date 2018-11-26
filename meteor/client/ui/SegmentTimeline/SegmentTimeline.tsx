@@ -23,6 +23,20 @@ import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { scrollToSegment } from '../../lib/viewPort'
 import { SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
 
+// @ts-ignore Not recognized by Typescript
+import * as Zoom_In_MouseOut from './Zoom_In_MouseOut.json'
+// @ts-ignore Not recognized by Typescript
+import * as Zoom_In_MouseOver from './Zoom_In_MouseOver.json'
+// @ts-ignore Not recognized by Typescript
+import * as Zoom_Normal_MouseOut from './Zoom_Normal_MouseOut.json'
+// @ts-ignore Not recognized by Typescript
+import * as Zoom_Normal_MouseOver from './Zoom_Normal_MouseOver.json'
+// @ts-ignore Not recognized by Typescript
+import * as Zoom_Out_MouseOut from './Zoom_Out_MouseOut.json'
+// @ts-ignore Not recognized by Typescript
+import * as Zoom_Out_MouseOver from './Zoom_Out_MouseOver.json'
+import { LottieButton } from '../../lib/LottieButton'
+
 interface IProps {
 	key: string
 	segment: SegmentUi
@@ -182,6 +196,44 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 		)
 	}
 }
+
+class SegmentTimelineZoomButtons extends React.Component<IProps> {
+	constructor (props: IProps) {
+		super(props)
+	}
+
+	zoomIn = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.props.onZoomChange(this.props.timeScale * 2, e)
+	}
+
+	zoomOut = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.props.onZoomChange(this.props.timeScale * 0.5, e)
+	}
+
+	zoomNormalize = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.props.onZoomChange(0.03, e)
+	}
+
+	render () {
+		return (
+			<div className='segment-timeline__timeline-zoom-buttons'>
+				<LottieButton className='segment-timeline__timeline-zoom-buttons__button'
+					inAnimation={Zoom_In_MouseOver}
+					outAnimation={Zoom_In_MouseOut}
+					onClick={this.zoomIn} />
+				<LottieButton className='segment-timeline__timeline-zoom-buttons__button'
+					inAnimation={Zoom_Normal_MouseOver}
+					outAnimation={Zoom_Normal_MouseOut}
+					onClick={this.zoomNormalize} />
+				<LottieButton className='segment-timeline__timeline-zoom-buttons__button'
+					inAnimation={Zoom_Out_MouseOver}
+					outAnimation={Zoom_Out_MouseOut}
+					onClick={this.zoomOut} />
+			</div>
+		)
+	}
+}
+
 export const SegmentTimelineElementId = 'running-order__segment__'
 export const SegmentTimeline = translate()(
 class extends React.Component<Translated<IProps>, IStateHeader> {
@@ -434,7 +486,6 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	}
 
 	render () {
-
 		let notes: Array<SegmentLineNote> = this.props.segmentNotes
 
 		return (
@@ -528,6 +579,9 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 					</div>
 					{this.renderLiveLine()}
 				</div>
+				<ErrorBoundary>
+					<SegmentTimelineZoomButtons {...this.props} />
+				</ErrorBoundary>
 				{/* <ErrorBoundary>
 					<SegmentNextPreview
 						runningOrder={this.props.runningOrder}

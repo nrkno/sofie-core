@@ -99,6 +99,4 @@ setMeteorMethods({
 	}
 })
 
-logger.info('Starting up')
-
 export { logger }

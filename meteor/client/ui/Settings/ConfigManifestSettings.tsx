@@ -2,7 +2,6 @@ import * as ClassNames from 'classnames'
 import * as React from 'react'
 import * as _ from 'underscore'
 import {
-	IStudioConfigItem,
 	StudioInstallation,
 	StudioInstallations
 } from '../../../lib/collections/StudioInstallations'
@@ -14,12 +13,12 @@ import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { ShowBlueprint } from '../../../lib/collections/ShowBlueprints'
-import { ConfigManifestEntry, ConfigManifestEntryType } from 'tv-automation-sofie-blueprints-integration'
+import { Blueprint } from '../../../lib/collections/Blueprints'
+import { ConfigManifestEntry, ConfigManifestEntryType, IConfigItem } from 'tv-automation-sofie-blueprints-integration'
 import { literal } from '../../../lib/lib'
 
 interface IConfigManifestSettingsProps {
-	blueprint: ShowBlueprint
+	blueprint: Blueprint
 
 	studioInstallation?: StudioInstallation
 	// TODO - showstyle mode
@@ -73,9 +72,9 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 			if (valIndex === -1) {
 				StudioInstallations.update(this.props.studioInstallation._id, {
 					$push: {
-						config: literal<IStudioConfigItem>({
+						config: literal<IConfigItem>({
 							_id: item.id,
-							value: undefined
+							value: ''
 						})
 					}
 				})
@@ -106,9 +105,9 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 				const item = this.props.blueprint.studioConfigManifest.find(c => c.id === this.state.addItemId)
 				StudioInstallations.update(this.props.studioInstallation._id, {
 					$push: {
-						config: literal<IStudioConfigItem>({
+						config: literal<IConfigItem>({
 							_id: this.state.addItemId,
-							value: item ? item.defaultVal : undefined
+							value: item ? item.defaultVal : ''
 						})
 					}
 				})
@@ -159,7 +158,7 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 		const { t } = this.props
 
 		let options: ConfigManifestEntry[] = []
-		let values: IStudioConfigItem[] = []
+		let values: IConfigItem[] = []
 		let collection: any = null
 		let obj: any = null
 
