@@ -34,8 +34,8 @@ import {
 	SegmentLine,
 	SegmentLines,
 	DBSegmentLine,
-	SegmentLineHoldMode,
-	SegmentLineNoteType
+	SegmentLineNoteType,
+	SegmentLineNote
 } from '../../../lib/collections/SegmentLines'
 import {
 	SegmentLineItem,
@@ -50,11 +50,7 @@ import {
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
-import {
-	runTemplate,
-	TemplateContext,
-	RunTemplateResult
-} from '../templates/templates'
+import { loadBlueprints, postProcessSegmentLineAdLibItems, postProcessSegmentLineItems, getRunStoryContext } from '../blueprints'
 import { getHash } from '../../lib'
 import {
 	StudioInstallations,
@@ -86,6 +82,8 @@ import {
 	runPostProcessTemplate,
 	ServerRunningOrderAPI
 } from '../runningOrder'
+import { syncFunction } from '../../codeControl'
+import { IBlueprintSegmentLine, SegmentLineHoldMode } from 'tv-automation-sofie-blueprints-integration'
 
 export function roId (roId: MosString128, original?: boolean): string {
 	// logger.debug('roId', roId)
@@ -155,7 +153,8 @@ export function convertToSegmentLine (story: IMOSStory, runningOrderId: string, 
 		segmentId: '', // to be coupled later
 		_rank: rank,
 		mosId: story.ID.toString(),
-		slug: (story.Slug || '').toString()
+		slug: (story.Slug || '').toString(),
+		typeVariant: ''
 		// expectedDuration: item.EditorialDuration,
 		// autoNext: item.Trigger === ??
 	}
@@ -235,45 +234,42 @@ function formatTime (time: any): number | undefined {
 		return undefined
 	}
 }
-export function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory): boolean {
+export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory) => boolean
+= syncFunction(function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: IMOSROFullStory): boolean {
 	let showStyle = ShowStyles.findOne(ro.showStyleId)
 	if (!showStyle) throw new Meteor.Error(404, 'ShowStyle "' + ro.showStyleId + '" not found!')
 
-	let context: TemplateContext = {
-		noCache: false,
-		runningOrderId: ro._id,
-		runningOrder: ro,
-		studioId: ro.studioInstallationId,
-		// segment: Segment,
-		segmentLine: segmentLine,
-		templateId: 'N/A',
-		runtimeArguments: segmentLine.runtimeArguments || {}
-	}
-	let tr: RunTemplateResult | undefined
+	const context = getRunStoryContext(ro, segmentLine, story)
+
+	let resultSl: IBlueprintSegmentLine | undefined = undefined
+	let resultSli: SegmentLineItem[] | undefined = undefined
+	let resultAdlibSli: SegmentLineAdLibItem[] | undefined = undefined
+	let notes: SegmentLineNote[] = []
 	try {
-		tr = runTemplate(showStyle, context, story, 'story ' + story.ID.toString())
+		const blueprints = loadBlueprints(showStyle)
+		let result = blueprints.RunStory(context, story)
+
+ 		if (result) {
+			resultAdlibSli = postProcessSegmentLineAdLibItems(context, result.AdLibItems, result.SegmentLine.typeVariant, segmentLine._id)
+			resultSli = postProcessSegmentLineItems(context, result.SegmentLineItems, result.SegmentLine.typeVariant, segmentLine._id)
+			resultSl = result.SegmentLine
+		}
+
+ 		notes = context.getNotes()
 	} catch (e) {
 		logger.error(e.stack ? e.stack : e.toString())
 		// throw e
-		tr = {
-			templateId: '',
-			result: {
-				notes: [{
-					type: SegmentLineNoteType.ERROR,
-					origin: {
-						name: '',
-						roId: context.runningOrderId,
-						segmentId: context.segmentLine.segmentId,
-						segmentLineId: context.segmentLine._id,
-					},
-					message: 'Internal Server Error'
-				}],
-				segmentLine: null, 			// DBSegmentLine | null,
-				segmentLineItems: [], 		// Array<SegmentLineItem> | null
-				segmentLineAdLibItems: [], 	// Array<SegmentLineAdLibItem> | null
-				baselineItems: [] 			// Array<RunningOrderBaselineItem> | null
-			}
-		}
+		notes = [{
+			type: SegmentLineNoteType.ERROR,
+			origin: {
+				name: '',				roId: context.runningOrder._id,
+				segmentId: (context.segmentLine as DBSegmentLine).segmentId,
+				segmentLineId: context.segmentLine._id,
+			},
+			message: 'Internal Server Error'
+		}],
+		resultSli = undefined
+		resultAdlibSli = undefined
 	}
 
 	let changedSli: {
@@ -285,34 +281,34 @@ export function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: 
 		updated: 0,
 		removed: 0
 	}
-	if (tr) {
+	if (resultSl) {
+		// if (!result.SegmentLine.typeVariant) result.SegmentLine.typeVariant = tr.templateId
+		SegmentLines.update(segmentLine._id, {$set: {
+			expectedDuration:		resultSl.expectedDuration || 0,
+			notes: 					notes,
+			autoNext: 				resultSl.autoNext || false,
+			autoNextOverlap: 		resultSl.autoNextOverlap || 0,
+			overlapDuration: 		resultSl.overlapDuration || 0,
+			transitionDelay: 		resultSl.transitionDelay || '',
+			transitionDuration: 	resultSl.transitionDuration || 0,
+			disableOutTransition: 	resultSl.disableOutTransition || false,
+			updateStoryStatus:		resultSl.updateStoryStatus || false,
+			typeVariant:			resultSl.typeVariant || '',
+			subTypeVariant:			resultSl.subTypeVariant || '',
+			holdMode: 				resultSl.holdMode || SegmentLineHoldMode.NONE,
+		}})
+	} else {
+		SegmentLines.update(segmentLine._id, {$set: {
+			notes: notes,
+		}})
+	}
 
-		if (tr.result.segmentLine) {
-			if (!tr.result.segmentLine.typeVariant) tr.result.segmentLine.typeVariant = tr.templateId
-			SegmentLines.update(segmentLine._id, {$set: {
-				expectedDuration:		tr.result.segmentLine.expectedDuration || 0,
-				notes: 					tr.result.notes,
-				autoNext: 				tr.result.segmentLine.autoNext || false,
-				autoNextOverlap: 		tr.result.segmentLine.autoNextOverlap || 0,
-				overlapDuration: 		tr.result.segmentLine.overlapDuration || 0,
-				transitionDelay: 		tr.result.segmentLine.transitionDelay || '',
-				transitionDuration: 	tr.result.segmentLine.transitionDuration || 0,
-				disableOutTransition: 	tr.result.segmentLine.disableOutTransition || false,
-				updateStoryStatus:		tr.result.segmentLine.updateStoryStatus || false,
-				typeVariant:			tr.result.segmentLine.typeVariant || '',
-				subTypeVariant:			tr.result.segmentLine.subTypeVariant || '',
-				holdMode: 				tr.result.segmentLine.holdMode || SegmentLineHoldMode.NONE,
-			}})
-		} else {
-			SegmentLines.update(segmentLine._id, {$set: {
-				notes: 					tr.result.notes,
-			}})
-		}
+	if (resultSli) {
 		changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
 			runningOrderId: ro._id,
 			segmentLineId: segmentLine._id,
 			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
-		}, tr.result.segmentLineItems || [], {
+		}, resultSli || [], {
 			afterInsert (segmentLineItem) {
 				logger.debug('inserted segmentLineItem ' + segmentLineItem._id)
 				logger.debug(segmentLineItem)
@@ -336,11 +332,13 @@ export function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: 
 				// afterRemoveSegmentLineItem(segmentLine._id)
 			}
 		})
+	}
+	if (resultAdlibSli) {
 		saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
 			runningOrderId: ro._id,
 			segmentLineId: segmentLine._id,
 			fromPostProcess: { $ne: true }, // do not affect postProcess items
-		}, tr.result.segmentLineAdLibItems || [], {
+		}, resultAdlibSli || [], {
 			afterInsert (segmentLineAdLibItem) {
 				logger.debug('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
 				logger.debug(segmentLineAdLibItem)
@@ -369,7 +367,8 @@ export function updateStory (ro: RunningOrder, segmentLine: SegmentLine, story: 
 	// if anything was changed
 	return (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
 	// return this.core.mosManipulate(P.methods.mosRoReadyToAir, story)
-}
+})
+
 export function sendStoryStatus (ro: RunningOrder, takeSegmentLine: SegmentLine | null) {
 
 	if (ro.currentPlayingStoryStatus) {

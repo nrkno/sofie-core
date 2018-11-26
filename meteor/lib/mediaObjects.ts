@@ -1,4 +1,5 @@
-import { SegmentLineItem, VTContent, LiveSpeakContent } from './collections/SegmentLineItems'
+import { SegmentLineItem } from './collections/SegmentLineItems'
+import { SourceLayerType, VTContent, LiveSpeakContent } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from './api/runningOrder'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream } from './collections/MediaObjects'
 import { ISourceLayer, IStudioConfigItem } from './collections/StudioInstallations'
@@ -86,7 +87,7 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 	let message: string | null = null
 
 	switch (sourceLayer.type) {
-		case RunningOrderAPI.SourceLayerType.VT:
+		case SourceLayerType.VT:
 			if (sli.content && sli.content.fileName) {
 				const content = sli.content as VTContent
 				const mediaObject = MediaObjects.findOne({
@@ -125,7 +126,7 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 				}
 			}
 			break
-		case RunningOrderAPI.SourceLayerType.LIVE_SPEAK:
+		case SourceLayerType.LIVE_SPEAK:
 			if (sli.content && sli.content.fileName) {
 				const content = sli.content as LiveSpeakContent
 				const mediaObject = MediaObjects.findOne({

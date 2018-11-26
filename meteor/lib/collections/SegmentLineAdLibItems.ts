@@ -3,9 +3,12 @@ import { SegmentLineItemGeneric } from './SegmentLineItems'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { IBlueprintSegmentLineAdLibItem } from 'tv-automation-sofie-blueprints-integration'
 
-export interface SegmentLineAdLibItem extends SegmentLineItemGeneric {
+export interface SegmentLineAdLibItem extends SegmentLineItemGeneric, IBlueprintSegmentLineAdLibItem {
 	_rank: number
+
+	expectedDuration: number | string
 
 	trigger: undefined
 	disabled: false

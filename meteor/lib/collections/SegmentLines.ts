@@ -13,11 +13,10 @@ import { applyClassToDocument, Time, registerCollection, normalizeArray } from '
 import { RunningOrderAPI } from '../api/runningOrder'
 import { checkSLIContentStatus } from '../mediaObjects'
 import { Meteor } from 'meteor/meteor'
-
-import { TemplateRuntimeArguments } from '../../server/api/templates/templates'
+import { IMessageBlueprintSegmentLine, IMessageBlueprintSegmentLineTimings, SegmentLineHoldMode, BlueprintRuntimeArguments } from 'tv-automation-sofie-blueprints-integration'
 
 /** A "Line" in NRK Lingo. */
-export interface DBSegmentLine {
+export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
 	_id: string
   /** Position inside the segment */
 	_rank: number
@@ -57,7 +56,7 @@ export interface DBSegmentLine {
 	duration?: number
 
 	/** The type of the segmentLiene, could be the name of the template that created it */
-	typeVariant?: string
+	typeVariant: string
 	/** The subtype fo the segmentLine */
 	subTypeVariant?: string
 
@@ -75,11 +74,11 @@ export interface DBSegmentLine {
 	dynamicallyInserted?: boolean
 
 	/** Runtime blueprint arguments allows Sofie-side data to be injected into the blueprint for an SL */
-	runtimeArguments?: TemplateRuntimeArguments
+	runtimeArguments?: BlueprintRuntimeArguments
 	/** An SL should be marked as `dirty` if the SL blueprint has been injected with runtimeArguments */
 	dirty?: boolean
 }
-export interface SegmentLineTimings {
+export interface SegmentLineTimings extends IMessageBlueprintSegmentLineTimings {
 	/** Point in time the SegmentLine was taken, (ie the time of the user action) */
 	take: Array<Time>,
 	/** Point in time the "take" action has finished executing */
@@ -92,12 +91,6 @@ export interface SegmentLineTimings {
 	stoppedPlayback: Array<Time>,
 	/** Point in time the SegmentLine was set as Next (ie the time of the user action) */
 	next: Array<Time>
-}
-
-export enum SegmentLineHoldMode {
-	NONE = 0,
-	FROM = 1,
-	TO = 2,
 }
 
 export enum SegmentLineNoteType {
@@ -142,7 +135,8 @@ export class SegmentLine implements DBSegmentLine {
 	public afterSegmentLine?: string
 	public dirty?: boolean
 
-	public runtimeArguments?: TemplateRuntimeArguments
+	public runtimeArguments?: BlueprintRuntimeArguments
+	public typeVariant: string
 
 	constructor (document: DBSegmentLine) {
 		_.each(_.keys(document), (key) => {

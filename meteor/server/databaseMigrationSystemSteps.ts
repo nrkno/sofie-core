@@ -1,13 +1,22 @@
 import { addMigrationStep, MigrationStep, addMigrationSteps, MigrationStepBase } from './databaseMigration'
-import { StudioInstallation, StudioInstallations, DBStudioInstallation, ISourceLayer, IOutputLayer, Mapping, MappingHyperdeck, MappingPanasonicPtz, MappingHyperdeckType, MappingPanasonicPtzType } from '../lib/collections/StudioInstallations'
+import { StudioInstallation, StudioInstallations, DBStudioInstallation, ISourceLayer, IOutputLayer, MappingExt } from '../lib/collections/StudioInstallations'
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { MigrationStepInput, MigrationStepInputFilteredResult } from '../lib/api/migration'
 import { Collections, objectPathGet, literal } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyles } from '../lib/collections/ShowStyles'
-import { RunningOrderAPI } from '../lib/api/runningOrder'
-import { PlayoutDeviceType, PeripheralDevices, PlayoutDeviceSettings, PlayoutDeviceSettingsDevice, PlayoutDeviceSettingsDeviceCasparCG, PlayoutDeviceSettingsDeviceAtem, PlayoutDeviceSettingsDeviceHyperdeck, PlayoutDeviceSettingsDevicePanasonicPTZ, PlayoutDeviceSettingsDevicePharos } from '../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PlayoutDeviceSettings, PlayoutDeviceSettingsDevice, PlayoutDeviceSettingsDeviceCasparCG, PlayoutDeviceSettingsDeviceAtem, PlayoutDeviceSettingsDeviceHyperdeck, PlayoutDeviceSettingsDevicePanasonicPTZ, PlayoutDeviceSettingsDevicePharos } from '../lib/collections/PeripheralDevices'
+import {
+	Mapping,
+	MappingHyperdeck, MappingHyperdeckType,
+	MappingPanasonicPtz, MappingPanasonicPtzType,
+	MappingPharos,
+	DeviceType as PlayoutDeviceType
+} from 'timeline-state-resolver-types'
+import {
+	SourceLayerType
+} from 'tv-automation-sofie-blueprints-integration'
 import { LookaheadMode } from '../lib/api/playout'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { compareVersions, parseVersion, getCoreSystem, setCoreSystemStorePath } from '../lib/collections/CoreSystem'
@@ -392,7 +401,7 @@ addMigrationSteps( '0.1.0', [
 						_id: 'studio0-lower-third0',
 						_rank: 10,
 						name: 'Super',
-						type: RunningOrderAPI.SourceLayerType.LOWER_THIRD,
+						type: SourceLayerType.LOWER_THIRD,
 						unlimited: true,
 						onPGMClean: false
 					},
@@ -400,7 +409,7 @@ addMigrationSteps( '0.1.0', [
 						_id: 'studio0-split0',
 						_rank: 15,
 						name: 'Split',
-						type: RunningOrderAPI.SourceLayerType.SPLITS,
+						type: SourceLayerType.SPLITS,
 						unlimited: false,
 						onPGMClean: true,
 					},
@@ -408,7 +417,7 @@ addMigrationSteps( '0.1.0', [
 						_id: 'studio0-graphics0',
 						_rank: 20,
 						name: 'GFX',
-						type: RunningOrderAPI.SourceLayerType.GRAPHICS,
+						type: SourceLayerType.GRAPHICS,
 						unlimited: true,
 						onPGMClean: false
 					},
@@ -416,7 +425,7 @@ addMigrationSteps( '0.1.0', [
 						_id: 'studio0-live-speak0',
 						_rank: 50,
 						name: 'STK',
-						type: RunningOrderAPI.SourceLayerType.LIVE_SPEAK,
+						type: SourceLayerType.LIVE_SPEAK,
 						unlimited: true,
 						onPGMClean: false
 					},
@@ -424,7 +433,7 @@ addMigrationSteps( '0.1.0', [
 						_id: 'studio0-remote0',
 						_rank: 60,
 						name: 'RM1',
-						type: RunningOrderAPI.SourceLayerType.REMOTE,
+						type: SourceLayerType.REMOTE,
 						unlimited: false,
 						onPGMClean: true,
 						isRemoteInput: true
@@ -433,7 +442,7 @@ addMigrationSteps( '0.1.0', [
 						_id: 'studio0-vt0',
 						_rank: 80,
 						name: 'VB',
-						type: RunningOrderAPI.SourceLayerType.VT,
+						type: SourceLayerType.VT,
 						unlimited: true,
 						onPGMClean: true,
 					},
@@ -441,7 +450,7 @@ addMigrationSteps( '0.1.0', [
 						_id: 'studio0-mic0',
 						_rank: 90,
 						name: 'Mic',
-						type: RunningOrderAPI.SourceLayerType.MIC,
+						type: SourceLayerType.MIC,
 						unlimited: false,
 						onPGMClean: true,
 					},
@@ -449,7 +458,7 @@ addMigrationSteps( '0.1.0', [
 						_id: 'studio0-camera0',
 						_rank: 100,
 						name: 'Kam',
-						type: RunningOrderAPI.SourceLayerType.CAMERA,
+						type: SourceLayerType.CAMERA,
 						unlimited: false,
 						onPGMClean: true,
 					},
@@ -501,11 +510,6 @@ addMigrationSteps( '0.1.0', [
 			ShowStyles.insert({
 				_id: 'show0',
 				name: 'Default showstyle',
-				templateMappings: {},
-				baselineTemplate: '',
-				messageTemplate: '',
-				routerBlueprint: '',
-				postProcessBlueprint: ''
 			})
 		}
 	},
@@ -964,7 +968,7 @@ addMigrationSteps( '0.16.0', [
 		_id: 'studio0_hyperdeck0',
 		_rank: 0,
 		name: 'Hyperdeck',
-		type: RunningOrderAPI.SourceLayerType.UNKNOWN,
+		type: SourceLayerType.UNKNOWN,
 		onPGMClean: true,
 		activateKeyboardHotkeys: '',
 		assignHotkeysToGlobalAdlibs: false,
@@ -975,25 +979,25 @@ addMigrationSteps( '0.16.0', [
 		_id: 'studio0_ptz',
 		_rank: 0,
 		name: 'Robotics',
-		type: RunningOrderAPI.SourceLayerType.CAMERA_MOVEMENT,
+		type: SourceLayerType.CAMERA_MOVEMENT,
 		onPGMClean: true,
 		activateKeyboardHotkeys: '',
 		assignHotkeysToGlobalAdlibs: false,
 		unlimited: true
 	}),
-	ensureMapping('hyperdeck0', literal<MappingHyperdeck>({
+	ensureMapping('hyperdeck0', literal<MappingHyperdeck & MappingExt>({
 		device: PlayoutDeviceType.HYPERDECK,
 		deviceId: 'hyperdeck0',
 		mappingType: MappingHyperdeckType.TRANSPORT,
 		lookahead: LookaheadMode.NONE,
 	})),
-	ensureMapping('ptz0_preset', literal<MappingPanasonicPtz>({
+	ensureMapping('ptz0_preset', literal<MappingPanasonicPtz & MappingExt>({
 		device: PlayoutDeviceType.PANASONIC_PTZ,
 		deviceId: 'ptz0',
 		mappingType: MappingPanasonicPtzType.PRESET,
 		lookahead: LookaheadMode.WHEN_CLEAR,
 	})),
-	ensureMapping('ptz0_speed', literal<MappingPanasonicPtz>({
+	ensureMapping('ptz0_speed', literal<MappingPanasonicPtz & MappingExt>({
 		device: PlayoutDeviceType.PANASONIC_PTZ,
 		deviceId: 'ptz0',
 		mappingType: MappingPanasonicPtzType.PRESET_SPEED,
@@ -1007,12 +1011,12 @@ addMigrationSteps( '0.16.0', [
 addMigrationSteps( '0.18.0', [
 	removeMapping('nora_permanent_klokke'),
 	removeMapping('nora_permanent_logo'),
-	ensureMapping('nora_primary_klokke', literal<Mapping>({
+	ensureMapping('nora_primary_klokke', literal<MappingExt>({
 		device: PlayoutDeviceType.HTTPSEND,
 		deviceId: 'http0',
 		lookahead: LookaheadMode.NONE,
 	})),
-	ensureMapping('nora_primary_logo', literal<Mapping>({
+	ensureMapping('nora_primary_logo', literal<MappingExt>({
 		device: PlayoutDeviceType.HTTPSEND,
 		deviceId: 'http0',
 		lookahead: LookaheadMode.NONE,
@@ -1050,7 +1054,7 @@ addMigrationSteps( '0.18.0', [
 		_id: 'studio0_host_light',
 		_rank: 0,
 		name: 'HostLight',
-		type: RunningOrderAPI.SourceLayerType.LIGHTS,
+		type: SourceLayerType.LIGHTS,
 		onPGMClean: false,
 		activateKeyboardHotkeys: '',
 		assignHotkeysToGlobalAdlibs: false,
@@ -1099,18 +1103,18 @@ addMigrationSteps( '0.18.0', [
 			attribute: null
 		}]
 	},
-	ensureMapping('pharos_lights', literal<Mapping>({
+	ensureMapping('pharos_lights', literal<MappingExt>({
 		device: PlayoutDeviceType.PHAROS,
 		deviceId: 'pharos0',
 		lookahead: LookaheadMode.NONE,
 	})),
-	ensureMapping('ptz0_zoom', literal<MappingPanasonicPtz>({
+	ensureMapping('ptz0_zoom', literal<MappingPanasonicPtz & MappingExt>({
 		device: PlayoutDeviceType.PANASONIC_PTZ,
 		deviceId: 'ptz0',
 		mappingType: MappingPanasonicPtzType.ZOOM,
 		lookahead: LookaheadMode.NONE,
 	})),
-	ensureMapping('ptz0_zoom_speed', literal<MappingPanasonicPtz>({
+	ensureMapping('ptz0_zoom_speed', literal<MappingPanasonicPtz & MappingExt>({
 		device: PlayoutDeviceType.PANASONIC_PTZ,
 		deviceId: 'ptz0',
 		mappingType: MappingPanasonicPtzType.ZOOM_SPEED,
@@ -1128,7 +1132,7 @@ addMigrationSteps( '0.18.0', [
 		_id: 'studio0_audio_bed',
 		_rank: 0,
 		name: 'Bed',
-		type: RunningOrderAPI.SourceLayerType.AUDIO,
+		type: SourceLayerType.AUDIO,
 		onPGMClean: true,
 		activateKeyboardHotkeys: '',
 		assignHotkeysToGlobalAdlibs: false,

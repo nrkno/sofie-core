@@ -3,14 +3,18 @@ import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import Moment from 'react-moment'
-import { RunningOrderAPI } from '../../../lib/api/runningOrder'
+import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { LookaheadMode } from '../../../lib/api/playout'
 import { IOutputLayer,
 	ISourceLayer,
 	IStudioConfigItem,
 	StudioInstallation,
 	StudioInstallations,
-	Mapping,
+	HotkeyDefinition,
+	IStudioRuntimeArgumentsItem,
+	MappingExt
+} from '../../../lib/collections/StudioInstallations'
+import {
 	MappingCasparCG,
 	MappingAtem,
 	MappingLawo,
@@ -20,9 +24,9 @@ import { IOutputLayer,
 	MappingPanasonicPtzType,
 	MappingPanasonicPtz,
 	MappingHyperdeckType,
-	HotkeyDefinition,
-	IStudioRuntimeArgumentsItem
-} from '../../../lib/collections/StudioInstallations'
+	DeviceType as PlayoutDeviceType,
+	ChannelFormat
+} from 'timeline-state-resolver-types'
 import { ShowStyles } from '../../../lib/collections/ShowStyles'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
@@ -35,13 +39,14 @@ import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { PeripheralDevice, PeripheralDevices, PlayoutDeviceType } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { ShowBlueprint, ShowBlueprints } from '../../../lib/collections/ShowBlueprints'
 
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
-import { ChannelFormat } from '../../../lib/constants/casparcg'
+import { ConfigManifestSettings } from './ConfigManifestSettings'
 
 interface IProps {
 	studioInstallation: StudioInstallation
@@ -51,6 +56,7 @@ interface IProps {
 		name: string,
 		value: string
 	}>
+	defaultBlueprint: ShowBlueprint | undefined
 }
 
 interface IChildStudioInterfaceProps {
@@ -331,8 +337,13 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 
 	renderItems () {
 		const { t } = this.props
+
+		const excludeIds = this.props.defaultBlueprint ? this.props.defaultBlueprint.studioConfigManifest.map(c => c.id) : []
 		return (
 			(this.props.studioInstallation.config || []).map((item, index) => {
+				// Don't show if part of the config manifest
+				if (excludeIds.indexOf(item._id) !== -1) return null
+
 				return <React.Fragment key={item._id}>
 					<tr className={ClassNames({
 						'hl': this.isItemEdited(item)
@@ -402,7 +413,7 @@ class StudioKeyValueSettings extends React.Component<Translated<IStudioKeyValueS
 					<p>{t('Are you sure you want to delete this config item "{{configId}}"?', { configId: (this.state.deleteConfirmItem && this.state.deleteConfirmItem._id) })}</p>
 					<p>{t('Please note: This action is irreversible!')}</p>
 				</ModalDialog>
-				<h3>{t('Custom Configuration')}</h3>
+				<h3>{t('Custom Configuration (deprecated)')}</h3>
 				<table className='expando settings-studio-custom-config-table'>
 					<tbody>
 						{this.renderItems()}
@@ -631,39 +642,39 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 		}
 	}
 
-	sourceLayerString (type: RunningOrderAPI.SourceLayerType) {
+	sourceLayerString (type: SourceLayerType) {
 		const { t } = this.props
 		switch (type) {
-			case RunningOrderAPI.SourceLayerType.CAMERA:
+			case SourceLayerType.CAMERA:
 				return t('Camera')
-			case RunningOrderAPI.SourceLayerType.GRAPHICS:
+			case SourceLayerType.GRAPHICS:
 				return t('Graphics')
-			case RunningOrderAPI.SourceLayerType.LIVE_SPEAK:
+			case SourceLayerType.LIVE_SPEAK:
 				return t('Live Speak')
-			case RunningOrderAPI.SourceLayerType.LOWER_THIRD:
+			case SourceLayerType.LOWER_THIRD:
 				return t('Lower Third')
-			case RunningOrderAPI.SourceLayerType.MIC:
+			case SourceLayerType.MIC:
 				return t('Studio Microphone')
-			case RunningOrderAPI.SourceLayerType.REMOTE:
+			case SourceLayerType.REMOTE:
 				return t('Remote Source')
-			case RunningOrderAPI.SourceLayerType.SCRIPT:
+			case SourceLayerType.SCRIPT:
 				return t('Generic Script')
-			case RunningOrderAPI.SourceLayerType.SPLITS:
+			case SourceLayerType.SPLITS:
 				return t('Split Screen')
-			case RunningOrderAPI.SourceLayerType.VT:
+			case SourceLayerType.VT:
 				return t('Clips')
-			case RunningOrderAPI.SourceLayerType.METADATA:
+			case SourceLayerType.METADATA:
 				return t('Metadata')
-			case RunningOrderAPI.SourceLayerType.CAMERA_MOVEMENT:
+			case SourceLayerType.CAMERA_MOVEMENT:
 				return t('Camera Movement')
-			case RunningOrderAPI.SourceLayerType.UNKNOWN:
+			case SourceLayerType.UNKNOWN:
 				return t('Unknown Layer')
-			case RunningOrderAPI.SourceLayerType.AUDIO:
+			case SourceLayerType.AUDIO:
 				return t('Audio Mixing')
-			case RunningOrderAPI.SourceLayerType.TRANSITION:
+			case SourceLayerType.TRANSITION:
 				return t('Transition')
 			default:
-				return RunningOrderAPI.SourceLayerType[type]
+				return SourceLayerType[type]
 		}
 	}
 
@@ -714,7 +725,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 							{item._id}
 						</td>
 						<td className='settings-studio-source-table__type c3'>
-							{this.sourceLayerString(Number.parseInt(item.type.toString(), 10) as RunningOrderAPI.SourceLayerType)}
+							{this.sourceLayerString(Number.parseInt(item.type.toString(), 10) as SourceLayerType)}
 						</td>
 						<td className='settings-studio-source-table__actions table-item-actions c3'>
 							<button className='action-btn' onClick={(e) => this.editItem(item)}>
@@ -774,7 +785,7 @@ class StudioSourcesSettings extends React.Component<Translated<IStudioSourcesSet
 													attribute={'sourceLayers.' + item.index + '.type'}
 													obj={this.props.studioInstallation}
 													type='dropdown'
-													options={RunningOrderAPI.SourceLayerType}
+													options={SourceLayerType}
 													optionsAreNumbers
 													collection={StudioInstallations}
 													className='focusable-main input-l'></EditAttribute>
@@ -1381,7 +1392,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 		const { t } = this.props
 
 		return (
-			_.map(this.props.studioInstallation.mappings, (mapping: Mapping , layerId: string) => {
+			_.map(this.props.studioInstallation.mappings, (mapping: MappingExt , layerId: string) => {
 				// If an internal mapping, then hide it
 				if (mapping.internal) return <React.Fragment key={layerId}></React.Fragment>
 
@@ -1410,17 +1421,17 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.ATEM && (
-								<span>{ MappingAtemType[(mapping as MappingAtem).mappingType] } { (mapping as MappingAtem).index }</span>
+								<span>{ MappingAtemType[(mapping as MappingAtem & MappingExt).mappingType] } { (mapping as MappingAtem & MappingExt).index }</span>
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.LAWO && (
-								<span>{ (mapping as MappingLawo).identifier }</span>
+								<span>{ (mapping as MappingLawo & MappingExt).identifier }</span>
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.PANASONIC_PTZ && (
 									<span>{
-										(mapping as MappingPanasonicPtz).mappingType === MappingPanasonicPtzType.PRESET ? t('Preset') :
-										(mapping as MappingPanasonicPtz).mappingType === MappingPanasonicPtzType.PRESET_SPEED ? t('Preset transition speed') :
+										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.PRESET ? t('Preset') :
+										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.PRESET_SPEED ? t('Preset transition speed') :
 										t('Unknown mapping')
 									}</span>
 							)) ||
@@ -1430,7 +1441,7 @@ class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, I
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.HYPERDECK && (
-								<span>{ (mapping as MappingHyperdeck).mappingType }</span>
+								<span>{ (mapping as MappingHyperdeck & MappingExt).mappingType }</span>
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.PHAROS && (
@@ -1786,8 +1797,9 @@ interface IStudioSettingsProps extends IProps, IChildStudioInterfaceProps {
 	}
 }
 export default translateWithTracker((props: IStudioSettingsProps, state) => {
+	const studio = StudioInstallations.findOne(props.match.params.studioId)
 	return {
-		studioInstallation: StudioInstallations.findOne(props.match.params.studioId),
+		studioInstallation: studio,
 		studioDevices: PeripheralDevices.find({
 			studioInstallationId: props.match.params.studioId
 		}).fetch(),
@@ -1797,6 +1809,7 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 				value: item._id
 			}
 		}),
+		defaultBlueprint: studio ? ShowBlueprints.findOne({ showStyleId: studio.defaultShowStyle }) : undefined,
 		availableDevices: PeripheralDevices.find({
 			studioInstallationId: {
 				$not: {
@@ -1901,7 +1914,7 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 			_id: this.props.studioInstallation._id + '-' + Random.id(5),
 			_rank: maxRank ? maxRank._rank + 10 : 0,
 			name: t('New Source'),
-			type: RunningOrderAPI.SourceLayerType.UNKNOWN,
+			type: SourceLayerType.UNKNOWN,
 			unlimited: false,
 			onPGMClean: true
 		})
@@ -2047,6 +2060,11 @@ export default translateWithTracker((props: IStudioSettingsProps, state) => {
 					<div className='row'>
 						<div className='col c12 r1-c12'>
 							<StudioMappings {...this.props} />
+						</div>
+					</div>
+					<div className='row'>
+						<div className='col c12 r1-c12'>
+							{ this.props.defaultBlueprint ? <ConfigManifestSettings t={this.props.t} blueprint={this.props.defaultBlueprint} studioInstallation={this.props.studioInstallation} /> : null }
 						</div>
 					</div>
 					<div className='row'>

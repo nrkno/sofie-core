@@ -3,7 +3,6 @@ import { ShowStyles, ShowStyle } from '../../../lib/collections/ShowStyles'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-import { RuntimeFunctions, RuntimeFunction } from '../../../lib/collections/RuntimeFunctions'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
@@ -13,10 +12,10 @@ import { ModalDialog } from '../../lib/ModalDialog'
 import { literal } from '../../../lib/lib'
 import { Random } from 'meteor/random'
 import { ClientAPI } from '../../../lib/api/client'
-import { RuntimeFunctionsAPI } from '../../../lib/api/runtimeFunctions'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { eventContextForLog } from '../../lib/eventTargetLogHelper'
 import { Meteor } from 'meteor/meteor'
+import { ShowBlueprint, ShowBlueprints } from '../../../lib/collections/ShowBlueprints'
 
 interface IProps {
 	match: {
@@ -26,57 +25,71 @@ interface IProps {
 	}
 }
 interface IState {
-	showDeleteLineTemplateConfirm: boolean
-	deleteConfirmItem?: RuntimeFunction
+	uploadFileKey: number // Used to force clear the input after use
+	showUploadConfirm: boolean
+	uploadFileName?: string
+	uploadFileContents?: string
 }
 interface ITrackedProps {
 	showStyle?: ShowStyle
-	lineTemplates: Array<RuntimeFunction>
+	showBlueprint?: ShowBlueprint
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	return {
 		showStyle: ShowStyles.findOne(props.match.params.showStyleId),
-		lineTemplates: RuntimeFunctions.find({
-			showStyleId: props.match.params.showStyleId,
-			active: true
-		}).fetch()
+		showBlueprint: ShowBlueprints.findOne({ showStyleId: props.match.params.showStyleId})
 	}
 })( class ShowStyleSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {
-			showDeleteLineTemplateConfirm: false,
+			uploadFileKey: Date.now(),
+			showUploadConfirm: false,
+		}
+	}
 
+	onUploadFile (e) {
+		const file = e.target.files[0]
+		if (!file) {
+			return
 		}
+
+		const reader = new FileReader()
+		reader.onload = (e2) => {
+			this.setState({
+				uploadFileKey: Date.now(),
+				showUploadConfirm: true,
+				uploadFileName: file.name,
+				uploadFileContents: (e2.target as any).result
+			})
+		}
+
+		reader.readAsText(file)
 	}
-	onAddLineTemplate (e: any) {
-		Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), RuntimeFunctionsAPI.INSERT, this.props.match.params.showStyleId, (e) => {
-			if (e) {
-				console.log(e)
-			} else {
-				console.log('saved')
-			}
-		})
-	}
-	handleConfirmDeleteLineTemplateCancel = (e) => {
+	handleConfirmUploadFileCancel = () => {
 		this.setState({
-			deleteConfirmItem: undefined,
-			showDeleteLineTemplateConfirm: false
+			uploadFileKey: Date.now(),
+			uploadFileName: undefined,
+			uploadFileContents: undefined,
+			showUploadConfirm: false
 		})
 	}
-	onDeleteLineTemplate (item: RuntimeFunction) {
-		this.setState({
-			deleteConfirmItem: item,
-			showDeleteLineTemplateConfirm: true
-		})
-	}
-	handleConfirmDeleteLineTemplateAccept = (e) => {
-		if (this.state.deleteConfirmItem) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), RuntimeFunctionsAPI.REMOVE, this.state.deleteConfirmItem._id, true)
-			// RuntimeFunctions.remove(this.state.deleteConfirmItem._id)
+	handleConfirmUploadFileAccept = () => {
+		if (this.state.uploadFileContents && this.props.showStyle) {
+			fetch('/blueprints/restore/' + this.props.showStyle._id, {
+				method: 'POST',
+				body: this.state.uploadFileContents,
+				headers: {
+					'content-type': 'text/javascript'
+				},
+			}).then(res => {
+				console.log('Blueprint restore success')
+			}).catch(err => {
+				console.error('Blueprint restore failure: ', err)
+			})
 		}
 		this.setState({
-			showDeleteLineTemplateConfirm: false
+			showUploadConfirm: false
 		})
 	}
 
@@ -112,104 +125,23 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						</label>
 					</div>
 					<div className='mod mvs mhs'>
-						<label className='field'>
-							{t('Router logic ID')}
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute='routerBlueprint'
-								obj={this.props.showStyle}
-								type='text'
-								collection={ShowStyles}
-								className='input text-input input-l'></EditAttribute>
-						</label>
+						<p>{t('Version')}: {this.props.showBlueprint ? this.props.showBlueprint.version : t('Unknown')}</p>
 					</div>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							{t('Baseline logic ID')}
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute='baselineTemplate'
-								obj={this.props.showStyle}
-								type='text'
-								collection={ShowStyles}
-								className='input text-input input-l'></EditAttribute>
-						</label>
-					</div>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							{t('Post Process logic ID')}
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute='postProcessBlueprint'
-								obj={this.props.showStyle}
-								type='text'
-								collection={ShowStyles}
-								className='input text-input input-l'></EditAttribute>
-						</label>
-					</div>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							{t('External Message logic ID')}
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute='messageTemplate'
-								obj={this.props.showStyle}
-								type='text'
-								collection={ShowStyles}
-								className='input text-input input-l'></EditAttribute>
-						</label>
-					</div>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							<a href={`/backup/show/${(this.props.showStyle as any)._id}`} target='_new'>{t('Download Full Backup')}</a>
-						</label>
-					</div>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							<a href={`/backup/show/${(this.props.showStyle as any)._id}/active`} target='_new'>{t('Download Current State')}</a>
-						</label>
-					</div>
-				</div>
-				<div>
-					<h2>{t('Blueprints\' logic')}</h2>
-					<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteLineTemplateConfirm} onAccept={(e) => this.handleConfirmDeleteLineTemplateAccept(e)} onSecondary={(e) => this.handleConfirmDeleteLineTemplateCancel(e)}>
-						<p>{t('Are you sure you want to delete blueprint logic "{{itemId}}"?', {itemId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.templateId})}</p>
+					<ModalDialog title={t('Update blueprints?')} acceptText={t('Update')} secondaryText={t('Cancel')} show={this.state.showUploadConfirm} onAccept={() => this.handleConfirmUploadFileAccept()} onSecondary={() => this.handleConfirmUploadFileCancel()}>
+						<p>{t('Are you sure you want to update the bluerpints from the file "{{fileName}}"?', { fileName: this.state.uploadFileName })}</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</ModalDialog>
-					<table className='expando settings-showStyle-lineTemplates'>
-						<tbody>
-							{this.props.lineTemplates.map((item) => {
-								return (
-									<tr key={item._id}>
-										<td>
-											<Link to={'/settings/lineTemplate/' + item._id} >{item.templateId}</Link>
-										</td>
-										<td>
-											{item.isHelper ? t('Helper') : ''}
-										</td>
-										<td className='actions'>
-											<button className='action-btn' onClick={(e) => this.onDeleteLineTemplate(item)}>
-												<FontAwesomeIcon icon={faTrash} />
-											</button>
-										</td>
-									</tr>
-									// <NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/lineTemplate/' + item._id}>
-									// 	<div className='selectable clickable'>
-									// 		<button className='action-btn right' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteLineTemplate(item)}>
-									// 			<FontAwesomeIcon icon={faTrash} />
-									// 		</button>
-									// 		<h3>{item._id}</h3>
-									// 	</div>
-									// 	<hr className='vsubtle man' />
-									// </NavLink>
-								)
-							})}
-						</tbody>
-					</table>
-					<div className='mod mvm mhn'>
-						<button className='btn btn-primary right' onClick={(e) => this.onAddLineTemplate(e)}>
-							<FontAwesomeIcon icon={faPlus} />
-						</button>
+					<div className='mod mvs mhs'>
+					<label className='field'>
+						{t('Upload Blueprints')}
+						<div className='mdi'>
+							<input type='file' accept='.js' onChange={this.onUploadFile.bind(this)} key={this.state.uploadFileKey} />
+							<span className='mdfx'></span>
+						</div>
+					</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<p>TODO: Manual edit (with warnings)</p>
 					</div>
 				</div>
 			</div>

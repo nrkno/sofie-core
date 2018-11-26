@@ -9,14 +9,13 @@ import * as SuperTimeline from 'superfly-timeline'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems, SegmentLineItemLifespan } from '../../../lib/collections/SegmentLineItems'
+import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
 import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
 
 import { SegmentTimeline } from './SegmentTimeline'
 
 import { getCurrentTime, Time } from '../../../lib/lib'
 import { RunningOrderTiming } from '../RunningOrderView/RunningOrderTiming'
-import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 
 import { CollapsedStateStorage } from '../../lib/CollapsedStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -122,6 +121,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	_.each(o.segmentLines, (sl) => {
 		notes = notes.concat(sl.getNotes(true))
 	})
+	notes = notes.concat(segment.notes || [])
 
 	return {
 		segmentui: o.segmentExtended,

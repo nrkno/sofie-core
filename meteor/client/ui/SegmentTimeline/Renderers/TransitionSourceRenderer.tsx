@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as $ from 'jquery'
 import * as _ from 'underscore'
 
-import { TransitionContent } from '../../../../lib/collections/SegmentLineItems'
+import { TransitionContent } from 'tv-automation-sofie-blueprints-integration'
 
 import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
 import { FloatingInspector } from '../../FloatingInspector'

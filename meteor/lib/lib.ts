@@ -7,6 +7,7 @@ import * as Timecode from 'smpte-timecode'
 import { Settings } from './Settings'
 import * as objectPath from 'object-path'
 import { Mongo } from 'meteor/mongo'
+import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration'
 
 /**
  * Convenience method to convert a Meteor.call() into a Promise
@@ -285,51 +286,6 @@ export function partialExceptId<T> (o: Partial<T> & IDObj) {
 }
 export function applyClassToDocument (docClass, document) {
 	return new docClass(document)
-}
-/**
- * Iterates deeply through object or array
- * @param obj the object or array to iterate through
- * @param iteratee function to apply on every attribute
- */
-export function iterateDeeply (obj: any, iteratee: (val: any, key?: string | number) => (any | iterateDeeplyEnum), key?: string | number) {
-	let newValue = iteratee(obj, key)
-	if (newValue === iterateDeeplyEnum.CONTINUE) {
-		// Continue iterate deeper if possible
-		if (_.isObject(obj)) { // object or array
-			_.each(obj, (val, key) => {
-				obj[key] = iterateDeeply(val, iteratee, key)
-			})
-		} else {
-			// don't change anything
-		}
-		return obj
-	} else {
-		return newValue
-	}
-}
-/**
- * Iterates deeply through object or array, using an asynchronous iteratee
- * @param obj the object or array to iterate through
- * @param iteratee function to apply on every attribute
- */
-export async function iterateDeeplyAsync (obj: any, iteratee: (val: any, key?: string | number) => Promise<any | iterateDeeplyEnum>, key?: string | number) {
-	let newValue = await iteratee(obj, key)
-	if (newValue === iterateDeeplyEnum.CONTINUE) {
-		// Continue iterate deeper if possible
-		if (_.isObject(obj)) { // object or array
-			await Promise.all(_.map(obj, async (val, key) => {
-				obj[key] = await iterateDeeply(val, iteratee, key)
-			}))
-		} else {
-			// don't change anything
-		}
-		return obj
-	} else {
-		return newValue
-	}
-}
-export enum iterateDeeplyEnum {
-	CONTINUE = '$continue'
 }
 export function formatDateAsTimecode (date: Date) {
 	return Timecode(date, Settings['frameRate'], false).toString()

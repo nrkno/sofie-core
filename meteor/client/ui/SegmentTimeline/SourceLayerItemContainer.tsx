@@ -4,10 +4,10 @@ import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { TriggerType } from 'superfly-timeline'
 import { Timeline } from '../../../lib/collections/Timeline'
 import { SourceLayerItem } from './SourceLayerItem'
-import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
 import { getCurrentTime } from '../../../lib/lib'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
-import { VTContent, LiveSpeakContent, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
+import { SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
+import { SourceLayerType, VTContent, LiveSpeakContent, getSliGroupId } from 'tv-automation-sofie-blueprints-integration'
 import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 // @ts-ignore Meteor package not recognized by Typescript
@@ -21,7 +21,6 @@ import {
 	SegmentLineUi,
 	SegmentLineItemUi
 } from './SegmentTimelineContainer'
-import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 import { Tracker } from 'meteor/tracker'
 
 interface IPropsHeader {
@@ -62,10 +61,10 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			let objId: string | undefined = undefined
 
 			switch (this.props.segmentLineItem.sourceLayer.type) {
-				case RunningOrderAPI.SourceLayerType.VT:
+				case SourceLayerType.VT:
 					objId = (sli.content as VTContent).fileName.toUpperCase()
 					break
-				case RunningOrderAPI.SourceLayerType.LIVE_SPEAK:
+				case SourceLayerType.LIVE_SPEAK:
 					objId = (sli.content as LiveSpeakContent).fileName.toUpperCase()
 					break
 			}
@@ -98,7 +97,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 
 			if (props.isLiveLine) {
 				// Check in Timeline collection for any changes to the related object
-				let timelineObj = Timeline.findOne({ _id: PlayoutTimelinePrefixes.SEGMENT_LINE_ITEM_GROUP_PREFIX + props.segmentLineItem._id })
+				let timelineObj = Timeline.findOne({ _id: getSliGroupId(props.segmentLineItem) })
 
 				if (timelineObj) {
 					let segmentCopy = (_.clone(overrides.segmentLineItem || props.segmentLineItem) as SegmentLineItemUi)
@@ -135,7 +134,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 				const { metadata, status } = checkSLIContentStatus(props.segmentLineItem, props.segmentLineItem.sourceLayer, props.runningOrder.getStudioInstallation().config)
 
 				// switch (props.segmentLineItem.sourceLayer.type) {
-				// 	case RunningOrderAPI.SourceLayerType.VT:
+				// 	case SourceLayerType.VT:
 				// 		if (props.segmentLineItem.content && props.segmentLineItem.content.fileName) {
 				// 			const content = props.segmentLineItem.content as VTContent
 				// 			const mediaObject = MediaObjects.findOne({
@@ -156,7 +155,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 				// 			}
 				// 		}
 				// 		break
-				// 	case RunningOrderAPI.SourceLayerType.LIVE_SPEAK:
+				// 	case SourceLayerType.LIVE_SPEAK:
 				// 		if (props.segmentLineItem.content && props.segmentLineItem.content.fileName) {
 				// 			const content = props.segmentLineItem.content as LiveSpeakContent
 				// 			const mediaObject = MediaObjects.findOne({

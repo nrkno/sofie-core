@@ -17,6 +17,7 @@ import { Meteor } from 'meteor/meteor'
 import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
 import { RunningOrderBaselineItems } from './RunningOrderBaselineItems'
 import { RunningOrderBaselineAdLibItems } from './RunningOrderBaselineAdLibItems'
+import { IBlueprintRunningOrder } from 'tv-automation-sofie-blueprints-integration'
 
 export enum RunningOrderHoldState {
 	NONE = 0,
@@ -26,7 +27,7 @@ export enum RunningOrderHoldState {
 }
 
 /** This is a very uncomplete mock-up of the Rundown object */
-export interface DBRunningOrder {
+export interface DBRunningOrder extends IBlueprintRunningOrder {
 	_id: string
 	/** ID of the object in MOS */
 	mosId: string
