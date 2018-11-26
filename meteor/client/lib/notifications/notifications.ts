@@ -196,9 +196,3 @@ class NotificationCenter0 {
 }
 
 export const NotificationCenter = new NotificationCenter0()
-
-window['NotificationCenter'] = NotificationCenter
-window['notifiers'] = notifiers
-window['testNotify'] = function () {
-	NotificationCenter.push(new Notification(Random.id(), NoticeLevel.CRITICAL, 'Raz dwa trzy', 'Test', Date.now(), false))
-}
