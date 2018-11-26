@@ -6,6 +6,7 @@ import {
 	Version
 } from '../../lib/collections/CoreSystem'
 import { Meteor } from 'meteor/meteor'
+import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { getHash } from '../lib'
 import {
@@ -23,15 +24,33 @@ import {
 	MigrationStepBase,
 	MigrationContextStudio,
 	ValidateFunctionCore,
-	MigrateFunctionCore
+	MigrateFunctionCore,
+	ValidateFunctionStudio,
+	ValidateFunctionShowStyle,
+	MigrateFunctionStudio,
+	MigrateFunctionShowStyle,
+	InputFunctionCore,
+	InputFunctionStudio,
+	InputFunctionShowStyle,
+	BlueprintMapping,
+	ConfigItemValue,
+	MigrationContextShowStyle,
+	IBlueprintShowStyleVariant,
+	ShowStyleVariantPart,
+	ISourceLayer,
+	IConfigItem,
+	IOutputLayer
 } from 'tv-automation-sofie-blueprints-integration'
 import { setMeteorMethods } from '../methods'
 import { logger } from '../../lib/logging'
 import { storeSystemSnapshot } from '../api/snapshot'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
-import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { evalBlueprints } from '../api/blueprints'
+import { OmitId } from '../../lib/lib'
+import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { Random } from 'meteor/random'
 
 /** The current database version, x.y.z
  * 0.16.0: Release 3 (2018-10-26)
@@ -94,7 +113,7 @@ export function addMigrationSteps (version: string, steps: Array<MigrationStepBa
 	})
 }
 
-export function prepareMigration () {
+export function prepareMigration (returnAllChunks?: boolean) {
 
 	let databaseSystem = getCoreSystem()
 	if (!databaseSystem) throw new Meteor.Error(500, 'System version not set up')
@@ -129,7 +148,6 @@ export function prepareMigration () {
 			_rank: 					rank++,
 			chunk: 					chunk
 		})
-		chunk._steps.push(step.id)
 	})
 	// Collect migration steps from blueprints:
 
@@ -137,10 +155,10 @@ export function prepareMigration () {
 		if (blueprint.code) {
 			let bp = evalBlueprints(blueprint)
 
-			let blueprintTargetVersion = parseVersion(bp.blueprintVersion)
+			console.log('Blueprint' + blueprint.name)
 
 			// @ts-ignore
-			if (!blueprint.databaseVersion) blueprint.databaseVersion = {}
+			if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion)) blueprint.databaseVersion = {}
 			if (!blueprint.databaseVersion.showStyle) blueprint.databaseVersion.showStyle = {}
 			if (!blueprint.databaseVersion.studio) blueprint.databaseVersion.studio = {}
 
@@ -164,7 +182,7 @@ export function prepareMigration () {
 				migrationChunks.push(chunk)
 				// Add show-style migration steps from blueprint:
 				_.each(bp.showStyleMigrations, (step) => {
-					allMigrationSteps.push(prefixIdsOnStep(blueprint.databaseVersion + '_', {
+					allMigrationSteps.push(prefixIdsOnStep('blueprint_' + blueprint._id + '_showStyle_' + showStyleBase._id + '_', {
 						id:						step.id,
 						overrideSteps:			step.overrideSteps,
 						validate:				step.validate,
@@ -178,7 +196,6 @@ export function prepareMigration () {
 						_rank: 					rank++,
 						chunk: 					chunk
 					}))
-					chunk._steps.push(step.id)
 				})
 
 				// Find all studios that supports this showStyle
@@ -200,7 +217,7 @@ export function prepareMigration () {
 						migrationChunks.push(chunk)
 						// Add studio migration steps from blueprint:
 						_.each(bp.showStyleMigrations, (step) => {
-							allMigrationSteps.push(prefixIdsOnStep(blueprint.databaseVersion + '_', {
+							allMigrationSteps.push(prefixIdsOnStep('blueprint_' + blueprint._id + '_studio_' + studio._id + '_', {
 								id:						step.id,
 								overrideSteps:			step.overrideSteps,
 								validate:				step.validate,
@@ -214,7 +231,6 @@ export function prepareMigration () {
 								_rank: 					rank++,
 								chunk: 					chunk
 							}))
-							chunk._steps.push(step.id)
 						})
 					}
 				})
@@ -268,10 +284,18 @@ export function prepareMigration () {
 			if (migrationSteps[step.id] || ignoredSteps[step.id]) throw new Meteor.Error(500, `Error: MigrationStep.id must be unique: "${step.id}"`)
 
 			// Check if the step can be applied:
-			let validate = step.validate as ValidateFunctionCore
-			step._validateResult = validate(false)
-			if (step._validateResult) {
+			if (step.chunk.sourceType === MigrationStepType.CORE) {
+				let validate = step.validate as ValidateFunctionCore
+				step._validateResult = validate(false)
+			} else if (step.chunk.sourceType === MigrationStepType.STUDIO) {
+				let validate = step.validate as ValidateFunctionStudio
+				step._validateResult = validate(getMigrationStudioContext(step.chunk), false)
+			} else if (step.chunk.sourceType === MigrationStepType.SHOWSTYLE) {
+				let validate = step.validate as ValidateFunctionShowStyle
+				step._validateResult = validate(getMigrationShowStyleContext(step.chunk),false)
+			} else throw new Meteor.Error(500, `Unknown step.chunk.sourceType "${step.chunk.sourceType}"`)
 
+			if (step._validateResult) {
 				if (step.dependOnResultFrom) {
 					if (ignoredSteps[step.dependOnResultFrom]) {
 						// dependent step was ignored, continue then
@@ -302,6 +326,7 @@ export function prepareMigration () {
 	let stepsHash: Array<string> = []
 	_.each(migrationSteps, (step: MigrationStepInternal, id: string) => {
 		stepsHash.push(step.id)
+		step.chunk._steps.push(step.id)
 		if (!step.canBeRunAutomatically) {
 			manualStepCount++
 
@@ -313,7 +338,17 @@ export function prepareMigration () {
 						input.push(_.clone(i))
 					})
 				} else if (_.isFunction(step.input)) {
-					input = step.input()
+
+					if (step.chunk.sourceType === MigrationStepType.CORE) {
+						let inputFunction = step.input as InputFunctionCore
+						input = inputFunction()
+					} else if (step.chunk.sourceType === MigrationStepType.STUDIO) {
+						let inputFunction = step.input as InputFunctionStudio
+						input = inputFunction(getMigrationStudioContext(step.chunk))
+					} else if (step.chunk.sourceType === MigrationStepType.SHOWSTYLE) {
+						let inputFunction = step.input as InputFunctionShowStyle
+						input = inputFunction(getMigrationShowStyleContext(step.chunk))
+					} else throw new Meteor.Error(500, `Unknown step.chunk.sourceType "${step.chunk.sourceType}"`)
 				}
 				if (input.length) {
 					_.each(input, (i) => {
@@ -336,9 +371,13 @@ export function prepareMigration () {
 	})
 
 	// Only return the chunks which has steps in them:
-	let activeChunks = _.filter(migrationChunks, (chunk) => {
-		return chunk._steps.length > 0
-	})
+	let activeChunks = (
+		returnAllChunks ?
+		migrationChunks :
+		_.filter(migrationChunks, (chunk) => {
+			return chunk._steps.length > 0
+		})
+	)
 
 	let hash = getHash(stepsHash.join(','))
 
@@ -381,16 +420,18 @@ export function runMigration (
 	if (migration.hash !== hash) throw new Meteor.Error(500, `Migration input hash differ from expected: "${hash}", "${migration.hash}"`)
 	if (manualInputsWithUserPrompt.length !== inputResults.length ) throw new Meteor.Error(500, `Migration manualInput lengths differ from expected: "${inputResults.length}", "${migration.manualInputs.length}"`)
 
+	console.log('migration.chunks', migration.chunks)
+	console.log('chunks', chunks)
 	// Check that chunks match:
 	let unmatchedChunk = _.find(migration.chunks, (migrationChunk) => {
-		return !!_.find(chunks, (chunk) => {
-			return _.isEqual(chunk, migrationChunk)
+		return !_.find(chunks, (chunk) => {
+			return _.isEqual(_.omit(chunk, ['_steps']), _.omit(migrationChunk, ['_steps']))
 		})
 	})
 	if (unmatchedChunk) throw new Meteor.Error(500, `Migration input chunks differ from expected, chunk "${JSON.stringify(unmatchedChunk)}" not found in input`)
 	unmatchedChunk = _.find(chunks, (chunk) => {
-		return !!_.find(migration.chunks, (migrationChunk) => {
-			return _.isEqual(migrationChunk, chunk)
+		return !_.find(migration.chunks, (migrationChunk) => {
+			return _.isEqual(_.omit(chunk, ['_steps']), _.omit(migrationChunk, ['_steps']))
 		})
 	})
 	if (unmatchedChunk) throw new Meteor.Error(500, `Migration input chunks differ from expected, chunk in input "${JSON.stringify(unmatchedChunk)}" not found in migration.chunks`)
@@ -413,11 +454,11 @@ export function runMigration (
 		}
 	}
 
-	logger.info(`Migration: ${migration.automaticStepCount} automatic and ${migration.manualStepCount} steps (${migration.ignoredStepCount} ignored).`)
+	logger.info(`Migration: ${migration.automaticStepCount} automatic and ${migration.manualStepCount} manual steps (${migration.ignoredStepCount} ignored).`)
 
 	logger.debug(inputResults)
 
-	_.each(migration.steps, (step: MigrationStep) => {
+	_.each(migration.steps, (step: MigrationStepInternal) => {
 
 		try {
 			// Prepare input from user
@@ -429,6 +470,18 @@ export function runMigration (
 			})
 
 			// Run the migration script
+
+			if (step.chunk.sourceType === MigrationStepType.CORE) {
+				let migration = step.migrate as MigrateFunctionCore
+				migration(stepInput)
+			} else if (step.chunk.sourceType === MigrationStepType.STUDIO) {
+				let migration = step.migrate as MigrateFunctionStudio
+				migration(getMigrationStudioContext(step.chunk), stepInput)
+			} else if (step.chunk.sourceType === MigrationStepType.SHOWSTYLE) {
+				let migration = step.migrate as MigrateFunctionShowStyle
+				migration(getMigrationShowStyleContext(step.chunk), stepInput)
+			} else throw new Meteor.Error(500, `Unknown step.chunk.sourceType "${step.chunk.sourceType}"`)
+
 			let migrate = step.migrate as MigrateFunctionCore
 			if (migrate) {
 				migrate(stepInput)
@@ -436,8 +489,22 @@ export function runMigration (
 
 			// After migration, run the validation again
 			// Since the migration should be done by now, the validate should return true
-			let validate = step.validate as ValidateFunctionCore
-			let validateMessage: string | boolean = validate(true)
+
+			let validateMessage: string | boolean = false
+
+			if (step.chunk.sourceType === MigrationStepType.CORE) {
+				let validate = step.validate as ValidateFunctionCore
+				validateMessage = validate(true)
+			} else if (step.chunk.sourceType === MigrationStepType.STUDIO) {
+				let validate = step.validate as ValidateFunctionStudio
+				validateMessage = validate(getMigrationStudioContext(step.chunk), true)
+			} else if (step.chunk.sourceType === MigrationStepType.SHOWSTYLE) {
+				let validate = step.validate as ValidateFunctionShowStyle
+				validateMessage = validate(getMigrationShowStyleContext(step.chunk),true)
+			} else throw new Meteor.Error(500, `Unknown step.chunk.sourceType "${step.chunk.sourceType}"`)
+
+			// let validate = step.validate as ValidateFunctionCore
+			// let validateMessage: string | boolean = validate(true)
 			if (validateMessage) {
 				// Something's not right
 				let msg = `Step "${step.id}": Something went wrong, validation didn't approve of the changes. The changes have been applied, but might need to be confirmed.`
@@ -516,7 +583,7 @@ export function updateDatabaseVersionToSystem () {
 
 function getMigrationStatus (): GetMigrationStatusResult {
 
-	let migration = prepareMigration()
+	let migration = prepareMigration(true)
 
 	return {
 		// databaseVersion:	 		databaseVersion.toString(),
@@ -559,6 +626,344 @@ function resetDatabaseVersions () {
 			}
 		}})
 	})
+}
+
+function getMigrationStudioContext (chunk: MigrationChunk): MigrationContextStudio {
+
+	if (chunk.sourceType !== MigrationStepType.STUDIO) throw new Meteor.Error(500, `wrong chunk.sourceType "${chunk.sourceType}", expected STUDIO`)
+	if (!chunk.sourceId) throw new Meteor.Error(500, `chunk.sourceId missing` )
+
+	let studio = StudioInstallations.findOne(chunk.sourceId) as StudioInstallation
+	if (!studio) throw new Meteor.Error(404, `Studio "${chunk.sourceId}" not found`)
+
+	return {
+		getMapping: (mappingId: string): BlueprintMapping | undefined => {
+			check(mappingId, String)
+			let mapping = studio.mappings[mappingId]
+			if (mapping) return _.clone(mapping)
+		},
+		insertMapping: (mappingId: string, mapping: OmitId<BlueprintMapping>): string => {
+			check(mappingId, String)
+			let m: any = {}
+			m['mappings.' + mappingId] = mapping
+			StudioInstallations.update(studio._id, {$set: m})
+			studio.mappings[mappingId] = m['mappings.' + mappingId] // Update local
+			return mappingId
+		},
+		updateMapping: (mappingId: string, mapping: Partial<BlueprintMapping>): void => {
+			check(mappingId, String)
+			let m: any = {}
+			m['mappings.' + mappingId] = _.extend(studio.mappings[mappingId], mapping)
+			StudioInstallations.update(studio._id, {$set: m})
+			studio.mappings[mappingId] = m['mappings.' + mappingId] // Update local
+		},
+		removeMapping: (mappingId: string): void => {
+			check(mappingId, String)
+			let m: any = {}
+			m['mappings.' + mappingId] = 1
+			StudioInstallations.update(studio._id, {$unset: m})
+			delete studio.mappings[mappingId] // Update local
+		},
+		getConfig: (configId: string): ConfigItemValue | undefined => {
+			check(configId, String)
+			let configItem = _.find(studio.config, c => c._id === configId)
+			if (configItem) return configItem.value
+		},
+		setConfig: (configId: string, value: ConfigItemValue): void => {
+			check(configId, String)
+
+			let configItem = _.find(studio.config, c => c._id === configId)
+			if (configItem) {
+				StudioInstallations.update({
+					_id: studio._id,
+					'config._id': configId
+				}, {$set: {
+					'config.$.value' : value
+				}})
+				configItem.value = value // Update local
+			} else {
+				let config: IConfigItem = {
+					_id: configId,
+					value: value
+				}
+				StudioInstallations.update({
+					_id: studio._id,
+				}, {$push: {
+					config : config
+				}})
+				studio.config.push(config) // Update local
+			}
+		},
+		removeConfig: (configId: string): void => {
+			check(configId, String)
+
+			StudioInstallations.update({
+				_id: studio._id,
+			}, {$pull: {
+				'config': {
+					_id: configId
+				}
+			}})
+			// Update local:
+			studio.config = _.reject(studio.config, c => c._id === configId)
+		}
+	}
+}
+function getMigrationShowStyleContext (chunk: MigrationChunk): MigrationContextShowStyle {
+	if (chunk.sourceType !== MigrationStepType.SHOWSTYLE) throw new Meteor.Error(500, `wrong chunk.sourceType "${chunk.sourceType}", expected SHOWSTYLE`)
+	if (!chunk.sourceId) throw new Meteor.Error(500, `chunk.sourceId missing` )
+
+	let showStyleBase = ShowStyleBases.findOne(chunk.sourceId) as ShowStyleBase
+	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${chunk.sourceId}" not found`)
+
+	return {
+		getAllVariants: (): IBlueprintShowStyleVariant[] => {
+			return ShowStyleVariants.find({
+				showStyleBaseId: showStyleBase._id
+			}).fetch()
+		},
+		getVariant: (variantId: string): IBlueprintShowStyleVariant | undefined => {
+			check(variantId, String)
+			return ShowStyleVariants.findOne({
+				showStyleBaseId: showStyleBase._id,
+				_id: variantId
+			})
+		},
+		insertVariant: (variantPart: OmitId<ShowStyleVariantPart>): string => {
+
+			let variant = {
+				_id: Random.id(),
+				showStyleBaseId: showStyleBase._id,
+				name: variantPart.name,
+				config: []
+			}
+			return ShowStyleVariants.insert(variant)
+		},
+		updateVariant: (variantId: string, variant: Partial<ShowStyleVariantPart>): void => {
+			check(variantId, String)
+			ShowStyleVariants.update({
+				_id: variantId,
+				showStyleBaseId: showStyleBase._id,
+			}, {$set: variant})
+		},
+		removeVariant: (variantId: string): void => {
+			check(variantId, String)
+			ShowStyleVariants.remove({
+				_id: variantId,
+				showStyleBaseId: showStyleBase._id,
+			})
+		},
+		getSourceLayer: (sourceLayerId: string): ISourceLayer | undefined => {
+			check(sourceLayerId, String)
+			return _.find(showStyleBase.sourceLayers, sl => sl._id === sourceLayerId)
+		},
+		insertSourceLayer: (layer: ISourceLayer): string => {
+			if (layer._id) {
+				let oldLayer = _.find(showStyleBase.sourceLayers, sl => sl._id === layer._id)
+				if (oldLayer) throw new Meteor.Error(500, `Can't insert SourceLayer, _id "${layer._id}" already exists!`)
+			}
+
+			let sl: ISourceLayer = _.extend(layer, {
+				_id: layer._id || Random.id()
+			})
+			ShowStyleBases.update({
+				_id: showStyleBase._id,
+			}, {$push: {
+				sourceLayers: sl
+			}})
+			showStyleBase.sourceLayers.push(sl) // Update local
+			return sl._id
+		},
+		updateSourceLayer: (sourceLayerId: string, layer: Partial<ISourceLayer>): void => {
+			check(sourceLayerId, String)
+			let sl = _.find(showStyleBase.sourceLayers, sl => sl._id === sourceLayerId) as ISourceLayer
+			if (!sl) throw new Meteor.Error(404, `SourceLayer "${sourceLayerId}" not found`)
+
+			_.each(layer, (value, key) => {
+				sl[key] = value // Update local
+			})
+			ShowStyleBases.update({
+				_id: showStyleBase._id,
+				'sourceLayers._id': sourceLayerId
+			}, {$set: {
+				'sourceLayers.$' : sl
+			}})
+
+		},
+		removeSourceLayer: (sourceLayerId: string): void => {
+			check(sourceLayerId, String)
+
+			ShowStyleBases.update({
+				_id: showStyleBase._id,
+			}, {$pull: {
+				'sourceLayers': {
+					_id: sourceLayerId
+				}
+			}})
+			// Update local:
+			showStyleBase.sourceLayers = _.reject(showStyleBase.sourceLayers, c => c._id === sourceLayerId)
+		},
+		getOutputLayer: (outputLayerId: string): IOutputLayer | undefined => {
+			check(outputLayerId, String)
+			return _.find(showStyleBase.outputLayers, sl => sl._id === outputLayerId)
+		},
+		insertOutputLayer: (layer: IOutputLayer): string => {
+			if (layer._id) {
+				let oldLayer = _.find(showStyleBase.outputLayers, sl => sl._id === layer._id)
+				if (oldLayer) throw new Meteor.Error(500, `Can't insert OutputLayer, _id "${layer._id}" already exists!`)
+			}
+
+			let sl: IOutputLayer = _.extend(layer, {
+				_id: layer._id || Random.id()
+			})
+			ShowStyleBases.update({
+				_id: showStyleBase._id,
+			}, {$push: {
+				outputLayers: sl
+			}})
+			showStyleBase.outputLayers.push(sl) // Update local
+			return sl._id
+		},
+		updateOutputLayer: (outputLayerId: string, layer: Partial<IOutputLayer>): void => {
+			check(outputLayerId, String)
+			let sl = _.find(showStyleBase.outputLayers, sl => sl._id === outputLayerId) as IOutputLayer
+			if (!sl) throw new Meteor.Error(404, `OutputLayer "${outputLayerId}" not found`)
+
+			_.each(layer, (value, key) => {
+				sl[key] = value // Update local
+			})
+			ShowStyleBases.update({
+				_id: showStyleBase._id,
+				'outputLayers._id': outputLayerId
+			}, {$set: {
+				'outputLayers.$' : sl
+			}})
+		},
+		removeOutputLayer: (outputLayerId: string): void => {
+			check(outputLayerId, String)
+			ShowStyleBases.update({
+				_id: showStyleBase._id,
+			}, {$pull: {
+				'outputLayers': {
+					_id: outputLayerId
+				}
+			}})
+			// Update local:
+			showStyleBase.outputLayers = _.reject(showStyleBase.outputLayers, c => c._id === outputLayerId)
+		},
+		getBaseConfig: (configId: string): ConfigItemValue | undefined => {
+			check(configId, String)
+			let configItem = _.find(showStyleBase.config, c => c._id === configId)
+			if (configItem) return configItem.value
+		},
+		setBaseConfig: (configId: string, value: ConfigItemValue): void => {
+			check(configId, String)
+			if (_.isUndefined(value)) throw new Meteor.Error(400, `setBaseConfig "${configId}": value is undefined`)
+
+			let configItem = _.find(showStyleBase.config, c => c._id === configId)
+			if (configItem) {
+				ShowStyleBases.update({
+					_id: showStyleBase._id,
+					'config._id': configId
+				}, {$set: {
+					'config.$.value' : value
+				}})
+				configItem.value = value // Update local
+			} else {
+				let config: IConfigItem = {
+					_id: configId,
+					value: value
+				}
+				ShowStyleBases.update({
+					_id: showStyleBase._id,
+				}, {$push: {
+					config : config
+				}})
+				showStyleBase.config.push(config) // Update local
+			}
+		},
+		removeBaseConfig: (configId: string): void => {
+			check(configId, String)
+			ShowStyleBases.update({
+				_id: showStyleBase._id,
+			}, {$pull: {
+				'config': {
+					_id: configId
+				}
+			}})
+			// Update local:
+			showStyleBase.config = _.reject(showStyleBase.config, c => c._id === configId)
+		},
+		getVariantConfig: (variantId: string, configId: string): ConfigItemValue | undefined => {
+			check(variantId, String)
+			check(configId, String)
+
+			let variant = ShowStyleVariants.findOne({
+				_id: variantId,
+				showStyleBaseId: showStyleBase._id
+			}) as ShowStyleVariant
+			if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
+
+			let configItem = _.find(variant.config, c => c._id === configId)
+			if (configItem) return configItem.value
+		},
+		setVariantConfig: (variantId: string, configId: string, value: ConfigItemValue): void => {
+			check(variantId, String)
+			check(configId, String)
+
+			if (_.isUndefined(value)) throw new Meteor.Error(400, `setVariantConfig "${variantId}", "${configId}": value is undefined`)
+
+			console.log('setVariantConfig', variantId, configId, value)
+
+			let variant = ShowStyleVariants.findOne({
+				_id: variantId,
+				showStyleBaseId: showStyleBase._id
+			}) as ShowStyleVariant
+			if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
+
+			let configItem = _.find(variant.config, c => c._id === configId)
+			if (configItem) {
+				ShowStyleVariants.update({
+					_id: variant._id,
+					'config._id': configId
+				}, {$set: {
+					'config.$.value' : value
+				}})
+				configItem.value = value // Update local
+			} else {
+				let config: IConfigItem = {
+					_id: configId,
+					value: value
+				}
+				ShowStyleVariants.update({
+					_id: variant._id,
+				}, {$push: {
+					config : config
+				}})
+				variant.config.push(config) // Update local
+			}
+		},
+		removeVariantConfig: (variantId: string, configId: string): void => {
+			check(variantId, String)
+			check(configId, String)
+
+			let variant = ShowStyleVariants.findOne({
+				_id: variantId,
+				showStyleBaseId: showStyleBase._id
+			}) as ShowStyleVariant
+			if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
+
+			ShowStyleVariants.update({
+				_id: variant._id,
+			}, {$pull: {
+				'config': {
+					_id: configId
+				}
+			}})
+			// Update local:
+			showStyleBase.config = _.reject(showStyleBase.config, c => c._id === configId)
+		}
+	}
 }
 
 let methods = {}

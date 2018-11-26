@@ -147,7 +147,7 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 	componentDidUpdate (prevProps, prevState: IState) {
 		if ((prevState.expanded !== this.state.expanded) || (prevState.drawerHeight !== this.state.drawerHeight)) {
 			if (this.props.onChangeBottomMargin && typeof this.props.onChangeBottomMargin === 'function') {
-				console.log(this.state.expanded, this.getHeight())
+				// console.log(this.state.expanded, this.getHeight())
 				this.props.onChangeBottomMargin(this.getHeight() || '0px')
 			}
 		}

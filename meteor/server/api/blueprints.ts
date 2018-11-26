@@ -21,7 +21,8 @@ import {
 	PostProcessContext,
 	MessageContext,
 	LayerType,
-	MOS
+	MOS,
+	ConfigItemValue
 } from 'tv-automation-sofie-blueprints-integration'
 import { IBlueprintSegmentLineItem, IBlueprintSegmentLineAdLibItem, BlueprintRuntimeArguments, IBlueprintSegmentLine } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
@@ -111,21 +112,21 @@ class CommonContext implements ICommonContext {
 
 		throw new Meteor.Error(404, 'Missing layer "' + name + '" of type LayerType."' + type + '"')
 	}
-	getStudioConfig (): {[key: string]: string} {
+	getStudioConfig (): {[key: string]: ConfigItemValue} {
 		const studio: StudioInstallation = this.getStudioInstallation()
 
-		const res: {[key: string]: string} = {}
+		const res: {[key: string]: ConfigItemValue} = {}
 		_.each(studio.config, (c) => {
 			res[c._id] = c.value
 		})
 
 		return res
 	}
-	getShowStyleConfig (): {[key: string]: string} {
+	getShowStyleConfig (): {[key: string]: ConfigItemValue} {
 		const showStyleCompound = getShowStyleCompound(this.runningOrder.showStyleVariantId)
 		if (!showStyleCompound) throw new Meteor.Error(404, `no showStyleCompound for "${this.runningOrder.showStyleVariantId}"`)
 
-		const res: {[key: string]: string} = {}
+		const res: {[key: string]: ConfigItemValue} = {}
 		_.each(showStyleCompound.config, (c) => {
 			res[c._id] = c.value
 		})

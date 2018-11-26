@@ -15,6 +15,8 @@ import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyles } from './deprecatedDataTypes/0_18_0'
 import { Random } from 'meteor/random'
 import { RunningOrders } from '../../lib/collections/RunningOrders'
+import { Blueprints } from '../../lib/collections/Blueprints'
+import * as _ from 'underscore'
 
 /**
  * This file contains system specific migration steps.
@@ -315,7 +317,7 @@ addMigrationSteps( '0.19.0', [
 		id: 'studio.settings.mediaPreviewsUrl from config',
 		canBeRunAutomatically: true,
 		validate: () => {
-			let validate: false | string = false
+			let validate: boolean | string = false
 			StudioInstallations.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.mediaPreviewsUrl) {
 
@@ -353,7 +355,7 @@ addMigrationSteps( '0.19.0', [
 		id: 'studio.settings.sofieUrl from config',
 		canBeRunAutomatically: true,
 		validate: () => {
-			let validate: false | string = false
+			let validate: boolean | string = false
 			StudioInstallations.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.sofieUrl) {
 
@@ -387,9 +389,33 @@ addMigrationSteps( '0.19.0', [
 			})
 		}
 	},
+	ensureCollectionProperty('StudioInstallations', {}, 'supportedShowStyleBase', []),
 	ensureCollectionProperty('StudioInstallations', {}, 'settings.mediaPreviewsUrl', null, 'text', 'Media previews URL',
 		'Enter the URL to the media previews provider, example: http://10.0.1.100:8000/', undefined, 'studio.settings.mediaPreviewsUrl from config'),
 	ensureCollectionProperty('StudioInstallations', {}, 'settings.sofieUrl', null, 'text', 'Sofie URL',
 		'Enter the URL to the Sofie Core (that\'s what\'s in your browser URL), example: http://sofie-tv-automation.com', undefined, 'studio.settings.sofieUrl from config'),
 
+	{ // Blueprint.databaseVersion
+		id: 'blueprint.databaseVersion',
+		canBeRunAutomatically: true,
+		validate: () => {
+			let validate: boolean | string = false
+			Blueprints.find({}).forEach((blueprint) => {
+				if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion)) validate = true
+			})
+			return validate
+		},
+		migrate: () => {
+			Blueprints.find({}).forEach((blueprint) => {
+				if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion)) {
+					Blueprints.update(blueprint._id, {$set: {
+						databaseVersion: {
+							showStyle: {},
+							studio: {}
+						}
+					}})
+				}
+			})
+		}
+	},
 ])

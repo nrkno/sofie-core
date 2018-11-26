@@ -8,7 +8,8 @@ import {
 	IConfigItem,
 	BlueprintMappings,
 	BlueprintMapping,
-	IBlueprintStudioInstallation
+	IBlueprintStudioInstallation,
+	ConfigItemValue
 } from 'tv-automation-sofie-blueprints-integration'
 
 export interface MappingsExt extends BlueprintMappings {
@@ -72,7 +73,7 @@ export class StudioInstallation implements DBStudioInstallation {
 			this[key] = document[key]
 		})
 	}
-	public getConfigValue (name: string): string | null {
+	public getConfigValue (name: string): ConfigItemValue | undefined {
 		const item = this.config.find((item) => {
 			return (item._id === name)
 		})
@@ -80,7 +81,7 @@ export class StudioInstallation implements DBStudioInstallation {
 			return item.value
 		} else {
 			// logger.warn(`Studio "${this._id}": Config "${name}" not set`)
-			return null
+			return undefined
 		}
 	}
 }

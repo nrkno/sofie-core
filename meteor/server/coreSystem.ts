@@ -64,7 +64,7 @@ function checkDatabaseVersions () {
 				blueprintIds[blueprint._id] = true
 
 				// @ts-ignore
-				if (!blueprint.databaseVersion) blueprint.databaseVersion = {}
+				if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion)) blueprint.databaseVersion = {}
 				if (!blueprint.databaseVersion.showStyle) blueprint.databaseVersion.showStyle = {}
 				if (!blueprint.databaseVersion.studio) blueprint.databaseVersion.studio = {}
 

@@ -281,13 +281,19 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 						<div>
 							{this.state.migration ?
 								_.map(this.state.migration.chunks, (chunk, i) => {
+									let str = t('Version for {{name}}: From {{fromVersion}} to {{toVersion}}', {
+										name: chunk.sourceName,
+										fromVersion: chunk._dbVersion,
+										toVersion: chunk._targetVersion
+									})
 									return (
 										<div key={i}>
-											{t('Version for {{name}}: from {{fromVersion}} to {{toVersion}}', {
-												name: chunk.sourceName,
-												fromVersion: chunk._dbVersion,
-												toVersion: chunk._targetVersion
-											})}
+											{chunk._dbVersion === chunk._targetVersion ?
+											<b>
+												{str}
+											</b> :
+											str
+											}
 										</div>
 									)
 								}) : null

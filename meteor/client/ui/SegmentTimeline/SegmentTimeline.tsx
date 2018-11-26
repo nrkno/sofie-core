@@ -35,7 +35,7 @@ import * as Zoom_Normal_MouseOver from './Zoom_Normal_MouseOver.json'
 import * as Zoom_Out_MouseOut from './Zoom_Out_MouseOut.json'
 // @ts-ignore Not recognized by Typescript
 import * as Zoom_Out_MouseOver from './Zoom_Out_MouseOver.json'
-import { LottieButton } from '../../lib/LottieButton';
+import { LottieButton } from '../../lib/LottieButton'
 
 interface IProps {
 	key: string
