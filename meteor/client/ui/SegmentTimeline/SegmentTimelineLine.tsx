@@ -469,18 +469,4 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 			return input
 		}
 	}
-
-	private getConfigValue (name: string): ConfigItemValue | undefined {
-		if (this.props.studioInstallation && this._configValueMemo[name] === undefined) {
-			const value = this.props.studioInstallation.getConfigValue(name)
-			if (value !== undefined) {
-				this._configValueMemo[name] = value
-			}
-			return value
-		} else if (this._configValueMemo[name] !== undefined) {
-			return this._configValueMemo[name]
-		} else {
-			return undefined
-		}
-	}
 }))
