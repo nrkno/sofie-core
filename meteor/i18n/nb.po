@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2018-11-15T10:07:29.289Z\n"
-"PO-Revision-Date: 2018-11-15 11:11+0100\n"
+"POT-Creation-Date: 2018-11-23T10:23:28.158Z\n"
+"PO-Revision-Date: 2018-11-23 11:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -55,11 +55,11 @@ msgstr "Noe gikk galt, men det påvirket ikke produksjonen"
 msgid "Something went wrong, and it affected the output"
 msgstr "Noe gikk galt, og det påvirket output"
 
-msgid "Connecting to the"
-msgstr "Kobler til"
-
 msgid "Sofie Automation Server"
 msgstr "Sofie Automasjonsservere"
+
+msgid "Connecting to the"
+msgstr "Kobler til"
 
 msgid "Cannot connect to the"
 msgstr "Kan ikke koble til"
@@ -157,7 +157,6 @@ msgstr "version"
 msgid "status"
 msgstr "status"
 
-#| msgid "Sent Messages"
 msgid "Status messages:"
 msgstr "Status messages:"
 
@@ -554,11 +553,9 @@ msgstr "Is Helper"
 msgid "Select this"
 msgstr "Select this"
 
-#| msgid "Database version"
 msgid "Set database version"
 msgstr "Set database version"
 
-#| msgid "Are you sure you want to delete this device?"
 msgid "Are you sure you want to set the database version to"
 msgstr "Are you sure you want to set the database version to"
 
@@ -571,7 +568,6 @@ msgstr "Database version"
 msgid "Refresh"
 msgstr "Refresh"
 
-#| msgid "System version"
 msgid "Reset version to"
 msgstr "Reset version to"
 

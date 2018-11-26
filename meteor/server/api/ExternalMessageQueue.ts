@@ -5,10 +5,10 @@ import {
 } from '../../lib/collections/ExternalMessageQueue'
 import {
 	ExternalMessageQueueObjSOAP,
-	ExternalMessageQueueObjSOAPMessageAttrFcn
+	ExternalMessageQueueObjSOAPMessageAttrFcn,
+	iterateDeeply, iterateDeeplyAsync, iterateDeeplyEnum
 } from 'tv-automation-sofie-blueprints-integration'
 import { getCurrentTime, escapeHtml } from '../../lib/lib'
-import { iterateDeeply, iterateDeeplyAsync, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
 import * as soap from 'soap'
 import * as parser from 'xml2json'

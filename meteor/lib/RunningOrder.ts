@@ -1,12 +1,11 @@
 import * as _ from 'underscore'
 import * as SuperTimeline from 'superfly-timeline'
 import { SegmentLineItems, SegmentLineItem } from './collections/SegmentLineItems'
-import { getSliGroupId } from 'tv-automation-sofie-blueprints-integration'
+import { SegmentLineItemLifespan, getSliGroupId } from 'tv-automation-sofie-blueprints-integration'
 import { normalizeArray } from './lib'
 import { Segment } from './collections/Segments'
 import { SegmentLine, SegmentLines } from './collections/SegmentLines'
 import { RunningOrder } from './collections/RunningOrders'
-import { SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleBase } from './collections/ShowStyleBases'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 

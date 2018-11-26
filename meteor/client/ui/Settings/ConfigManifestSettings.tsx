@@ -285,6 +285,7 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 									type='dropdown'
 									options={this.getAddOptions()}
 									updateFunction={(e, v) => this.setState({ addItemId: v })}
+									overrideDisplayValue={this.state.addItemId}
 									/>
 							</div>
 						</label>

@@ -3,8 +3,6 @@ import { check, Match } from 'meteor/check'
 import { RunningOrders, RunningOrder, RunningOrderHoldState, RoData, DBRunningOrder } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
-import { SegmentLineItemLifespan, SegmentLineHoldMode } from 'tv-automation-sofie-blueprints-integration'
-import { TimelineObjHoldMode } from 'tv-automation-sofie-blueprints-integration'
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { RunningOrderBaselineItems, RunningOrderBaselineItem } from '../../lib/collections/RunningOrderBaselineItems'
 import { getCurrentTime,
@@ -48,7 +46,19 @@ import * as _ from 'underscore'
 import { logger } from '../logging'
 import { PeripheralDevice,PeripheralDevices,PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { getSliGroupId, getSlGroupId, getSlFirstObjectId, getSliFirstObjectId, IConfigItem, LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
+import {
+	getSliGroupId,
+	getSlGroupId,
+	getSlFirstObjectId,
+	getSliFirstObjectId,
+	IConfigItem,
+	LookaheadMode,
+	SourceLayerType,
+	SegmentLineItemLifespan,
+	SegmentLineHoldMode,
+	TimelineObjHoldMode,
+	MOS
+} from 'tv-automation-sofie-blueprints-integration'
 import { loadBlueprints, getBaselineContext, postProcessSegmentLineAdLibItems, postProcessSegmentLineBaselineItems } from './blueprints'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
@@ -65,7 +75,6 @@ import { ClientAPI } from '../../lib/api/client'
 import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
 import { sendSlackMessageToWebhook } from './slack'
 import { setMeteorMethods } from '../methods'
-import { SourceLayerType, MOS } from 'tv-automation-sofie-blueprints-integration'
 import { sendStoryStatus, updateStory } from './integration/mos'
 import { updateSegmentLines, reloadRunningOrderData } from './runningOrder'
 import { runPostProcessBlueprint } from '../../server/api/runningOrder'
