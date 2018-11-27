@@ -737,6 +737,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				if (err) {
 					// TODO: notify user
 					console.error(err)
+					this.deferFlushAndRewindSegments()
 					return
 				}
 				this.deferFlushAndRewindSegments()
