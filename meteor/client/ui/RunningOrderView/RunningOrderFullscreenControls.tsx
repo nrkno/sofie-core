@@ -110,7 +110,7 @@ export class RunningOrderFullscreenControls extends React.Component<IProps, ISta
 	checkFullScreen () {
 		// @ts-ignore TypeScript doesn't have vendor-prefixed fullscreen flags
 		return document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen ||
-				screen.height === window.innerHeight ||
+				(Math.abs(screen.height - window.innerHeight) < 10) ||
 				false // This will return true or false depending on if it's full screen or not.
 	}
 
