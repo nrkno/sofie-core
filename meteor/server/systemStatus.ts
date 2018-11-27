@@ -203,7 +203,7 @@ function collectMesages ( statusObj: StatusResponse): Array<string> {
 
 			if (check._status !== StatusCode.GOOD && check.errors) {
 				_.each(check.errors, (errMsg) => {
-					allMessages.push(`check ${check.description}: ${errMsg}`)
+					allMessages.push(`check ${check.description}: ${errMsg.message}`)
 				})
 			}
 
