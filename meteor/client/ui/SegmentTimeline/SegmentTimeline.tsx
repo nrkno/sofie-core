@@ -452,7 +452,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 
 	renderOutputLayerControls () {
 		if (this.props.segment.outputLayers !== undefined) {
-			return _.map(_.values(this.props.segment.outputLayers!).sort((a, b) => {
+			return _.map(_.values(this.props.segment.outputLayers).sort((a, b) => {
 				return a._rank - b._rank
 			}), (outputLayer) => {
 				if (outputLayer.used) {

@@ -444,7 +444,7 @@ postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessag
 	res.setHeader('Content-Type', 'text/plain')
 
 	let blueprintId = params.blueprintId
-	let url = parseUrl(req.url!, true)
+	let url = parseUrl(req.url, true)
 
 	let blueprintName = url.query['name'] || undefined
 

@@ -292,7 +292,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 				let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
 
 				if (sourceLayer && sourceLayer.activateKeyboardHotkeys) {
-					let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys!.split(',')
+					let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
 					const sourceHotKeyUseLayerId = (sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id) || item.sourceLayerId
 					if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
 						item.hotkey = keyboardHotkeysList[(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0)]

@@ -367,8 +367,8 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, ISegmentDuratio
 				this.props.timingDurations &&
 				this.props.timingDurations.segmentLineExpectedDurations) {
 				const duration = this.props.segmentLineIds.reduce((memo, item) => {
-					return this.props.timingDurations!.segmentLineExpectedDurations![item] !== undefined ?
-						memo + Math.max(0, this.props.timingDurations!.segmentLineExpectedDurations![item] - (this.props.timingDurations!.segmentLinePlayed![item] || 0)) :
+					return this.props.timingDurations.segmentLineExpectedDurations[item] !== undefined ?
+						memo + Math.max(0, this.props.timingDurations.segmentLineExpectedDurations[item] - (this.props.timingDurations.segmentLinePlayed[item] || 0)) :
 						memo
 				}, 0)
 

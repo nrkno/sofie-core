@@ -260,8 +260,8 @@ export namespace ServerPlayoutAPI {
 			studio.config.find((o) => o._id === 'atemSSrcBackground'),
 			studio.config.find((o) => o._id === 'atemSSrcBackground2')
 		])
-		if (ssrcBgs.length > 1) logger.info(ssrcBgs[0]!.value + ' and ' + ssrcBgs[1]!.value + ' will be loaded to atems')
-		if (ssrcBgs.length > 0) logger.info(ssrcBgs[0]!.value + ' will be loaded to atems')
+		if (ssrcBgs.length > 1) logger.info(ssrcBgs[0].value + ' and ' + ssrcBgs[1].value + ' will be loaded to atems')
+		if (ssrcBgs.length > 0) logger.info(ssrcBgs[0].value + ' will be loaded to atems')
 
 		let playoutDevices = PeripheralDevices.find({
 			studioInstallationId: studio._id,
@@ -1160,7 +1160,7 @@ export namespace ServerPlayoutAPI {
 		if (runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in a current segment line!`)
 
 		let showStyleBase = runningOrder.getShowStyleBase()
-		const sourceL = showStyleBase.sourceLayers.find(i => i._id === slItem!.sourceLayerId)
+		const sourceL = showStyleBase.sourceLayers.find(i => i._id === slItem.sourceLayerId)
 		if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS) throw new Meteor.Error(403, `Segment Line "${slId}" is not a GRAPHICS item!`)
 
 		let newSegmentLineItem = convertAdLibToSLineItem(slItem, segLine, false)
@@ -1171,7 +1171,7 @@ export namespace ServerPlayoutAPI {
 		// disable the original SLI if from the same SL
 		if (slItem.segmentLineId === segLine._id) {
 			const segmentLineItems = getResolvedSegmentLineItems(segLine)
-			const resSlItem = segmentLineItems.find(item => item._id === slItem!._id)
+			const resSlItem = segmentLineItems.find(item => item._id === slItem._id)
 
 			if (slItem.startedPlayback && slItem.startedPlayback <= getCurrentTime()) {
 				if (resSlItem && resSlItem.duration !== undefined && (slItem.infiniteMode || slItem.startedPlayback + resSlItem.duration >= getCurrentTime())) {

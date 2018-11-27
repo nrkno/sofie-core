@@ -60,7 +60,7 @@ export class CustomLayerItemRenderer<IProps = any, IState = any> extends React.C
 		if (typeof this.props.getItemDuration === 'function') {
 			return this.props.getItemDuration()
 		}
-		return (this.props.segmentLineDuration! || 0)
+		return (this.props.segmentLineDuration || 0)
 	}
 
 	setAnchoredElsWidths (leftAnchoredWidth: number, rightAnchoredWidth: number): void {
@@ -71,8 +71,8 @@ export class CustomLayerItemRenderer<IProps = any, IState = any> extends React.C
 
 	renderOverflowTimeLabel () {
 		const vtContent = this.props.segmentLineItem.content as VTContent
-		if (!this.props.segmentLineItem.duration && this.props.segmentLineItem.content && vtContent.sourceDuration && (this.props.segmentLineItem.renderedInPoint! + vtContent.sourceDuration) > (this.props.segmentLineDuration || 0)) {
-			let time = this.props.segmentLineItem.renderedInPoint! + vtContent.sourceDuration - ((this.props.segmentLineDuration || 0) as number)
+		if (!this.props.segmentLineItem.duration && this.props.segmentLineItem.content && vtContent.sourceDuration && (this.props.segmentLineItem.renderedInPoint + vtContent.sourceDuration) > (this.props.segmentLineDuration || 0)) {
+			let time = this.props.segmentLineItem.renderedInPoint + vtContent.sourceDuration - ((this.props.segmentLineDuration || 0) as number)
 			// only display differences greater than 1 second
 			return (time > 0) ? (
 				<div className='segment-timeline__layer-item__label label-overflow-time'>

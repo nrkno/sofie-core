@@ -32,7 +32,7 @@ export interface IOutputLayerExtended extends IOutputLayer {
 	/** Is this output layer used in this segment */
 	used?: boolean
 	/** Source layers that will be used by this output layer */
-	sourceLayers?: Array<ISourceLayer>,
+	sourceLayers: Array<ISourceLayer>,
 }
 export interface ISourceLayerExtended extends ISourceLayer {
 	/** Segment line items present on this source layer */
@@ -44,7 +44,7 @@ interface ISegmentLineItemExtendedDictionary {
 }
 export interface SegmentLineItemExtended extends SegmentLineItem {
 	/** Source layer that this segment line item belongs to */
-	sourceLayer?: ISourceLayerExtended
+	sourceLayer: ISourceLayerExtended
 	/** Output layer that this segment line uses */
 	outputLayer?: IOutputLayerExtended
 	/** Position in timeline, relative to the beginning of the segment */
