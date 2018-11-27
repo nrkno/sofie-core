@@ -38,7 +38,7 @@ export namespace ServerPeripheralDeviceAPI {
 					connected: true,
 					connectionId: options.connectionId,
 					type: options.type,
-					name: options.name,
+					name: peripheralDevice.name || options.name,
 					parentDeviceId: options.parentDeviceId,
 					versions: options.versions,
 				}
