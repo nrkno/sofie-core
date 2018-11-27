@@ -795,3 +795,16 @@ export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T): Arr
 export function fixValidPath (path) {
 	return path.replace(/([^a-z0-9_.@()-])/ig, '_')
 }
+
+/**
+ * Returns the difference between object A and B
+ */
+type Difference<A, B extends A> = Pick<B, Exclude<keyof B, keyof A>>
+/**
+ * Somewhat like _.extend, but with strong types & mandated additional properties
+ * @param original Object to be extended
+ * @param extendObj properties to add
+ */
+export function extendMandadory<A, B extends A> (original: A, extendObj: Difference<A, B>): B {
+	return _.extend(original, extendObj)
+}

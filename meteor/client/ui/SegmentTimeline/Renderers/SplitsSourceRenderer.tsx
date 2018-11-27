@@ -4,7 +4,7 @@ import * as $ from 'jquery'
 import { FloatingInspector } from '../../FloatingInspector'
 
 import * as ClassNames from 'classnames'
-import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
+import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 
 import { SourceLayerType, SplitsContent } from 'tv-automation-sofie-blueprints-integration'
 import { literal } from '../../../../lib/lib'
@@ -24,8 +24,11 @@ interface SplitSubItem {
 	role: SplitRole
 	content?: any
 }
-
-export class SplitsSourceRenderer extends CustomLayerItemRenderer {
+interface IProps extends ICustomLayerItemProps {
+}
+interface IState {
+}
+export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState> {
 	subItems: Array<SplitSubItem>
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
@@ -59,7 +62,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer {
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
-	componentDidUpdate (prevProps: Readonly<ISourceLayerItemProps>, prevState: Readonly<any>) {
+	componentDidUpdate (prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}

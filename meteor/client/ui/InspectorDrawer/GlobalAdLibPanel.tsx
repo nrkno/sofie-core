@@ -114,7 +114,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 										key={item._id}
 										item={item}
 										selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
-										layer={item.layer!}
+										layer={item.layer}
 										onToggleAdLib={this.props.onToggleSticky}
 										onSelectAdLib={this.props.onSelectAdLib}
 									/>
@@ -125,8 +125,8 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 										key={item._id}
 										item={item}
 										selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
-										layer={this.state.sourceLayers[item.sourceLayerId!]}
-										outputLayer={this.state.outputLayers[item.outputLayerId!]}
+										layer={this.state.sourceLayers[item.sourceLayerId]}
+										outputLayer={this.state.outputLayers[item.outputLayerId]}
 										onToggleAdLib={this.props.onToggleAdLib}
 										onSelectAdLib={this.props.onSelectAdLib}
 									/>
@@ -381,7 +381,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 
 		if (this.props.sourceLayerLookup) {
-			_.forEach(this.props.sourceLayerLookup, (item) => {
+			_.each(this.props.sourceLayerLookup, (item) => {
 				if (item.clearKeyboardHotkey) {
 					item.clearKeyboardHotkey.split(',').forEach(element => {
 						mousetrapHelper.bind(element, preventDefault, 'keydown')

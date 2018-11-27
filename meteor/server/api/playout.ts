@@ -1149,7 +1149,7 @@ export namespace ServerPlayoutAPI {
 		let slItem = SegmentLineItems.findOne({
 			_id: sliId,
 			runningOrderId: roId
-		})
+		}) as SegmentLineItem
 		if (!slItem) throw new Meteor.Error(404, `Segment Line Item "${sliId}" not found!`)
 
 		let segLine = SegmentLines.findOne({

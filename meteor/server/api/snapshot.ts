@@ -31,6 +31,7 @@ import { fsWriteFile, fsReadFile } from '../lib'
 import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databaseMigration'
 import { restoreRunningOrder } from '../backups'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { AudioContent } from 'tv-automation-sofie-blueprints-integration'
 interface RunningOrderSnapshot {
 	version: string
 	runningOrderId: string
@@ -91,8 +92,8 @@ function createRunningOrderSnapshot (runningOrderId: string): RunningOrderSnapsh
 	const segmentLineItems = SegmentLineItems.find({ runningOrderId }).fetch()
 	const segmentLineAdLibItems = SegmentLineAdLibItems.find({ runningOrderId }).fetch()
 	const mediaObjectIds: Array<string> = [
-		...segmentLineItems.filter(item => item.content && item.content.fileName).map((item) => (item.content!.fileName! as string)),
-		...segmentLineAdLibItems.filter(item => item.content && item.content.fileName).map((item) => (item.content!.fileName! as string))
+		...segmentLineItems.filter(item => item.content && item.content.fileName).map((item) => ((item.content as AudioContent).fileName)),
+		...segmentLineAdLibItems.filter(item => item.content && item.content.fileName).map((item) => ((item.content as AudioContent).fileName))
 	]
 	const mediaObjects = MediaObjects.find({ mediaId: { $in: mediaObjectIds } }).fetch()
 

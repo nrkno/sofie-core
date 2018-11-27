@@ -1,7 +1,6 @@
 import * as React from 'react'
 import * as $ from 'jquery'
 
-import { ISourceLayerItemProps } from '../SourceLayerItem'
 import { ScriptContent } from 'tv-automation-sofie-blueprints-integration'
 
 import { FloatingInspector } from '../../FloatingInspector'
@@ -10,11 +9,17 @@ import Moment from 'react-moment'
 import { faPlay } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
-import { CustomLayerItemRenderer } from './CustomLayerItemRenderer'
+import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
+import { translate, InjectedTranslateProps } from 'react-i18next'
 
 const BREAK_SCRIPT_BREAKPOINT = 620
 const SCRIPT_PART_LENGTH = 250
-export class MicSourceRenderer extends CustomLayerItemRenderer {
+interface IProps extends ICustomLayerItemProps {
+}
+interface IState {
+}
+
+export const MicSourceRenderer = translate()(class extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
 
 	itemPosition: number
 	itemWidth: number
@@ -63,7 +68,7 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 		this.rightLabel = e
 	}
 
-	componentWillReceiveProps (nextProps: ISourceLayerItemProps, nextContext: any) {
+	componentWillReceiveProps (nextProps: IProps & InjectedTranslateProps, nextContext: any) {
 		if (super.componentWillReceiveProps && typeof super.componentWillReceiveProps === 'function') {
 			super.componentWillReceiveProps(nextProps, nextContext)
 		}
@@ -96,7 +101,7 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
-	componentDidUpdate (prevProps: Readonly<any>, prevState: Readonly<any>) {
+	componentDidUpdate (prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -133,7 +138,7 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 	}
 
 	render () {
-		const {t} = this.props
+		const { t } = this.props
 		let labelItems = (this.props.segmentLineItem.name || '').split('||')
 		let begin = labelItems[0] || ''
 		let end = labelItems[1] || ''
@@ -179,4 +184,4 @@ export class MicSourceRenderer extends CustomLayerItemRenderer {
 			</FloatingInspector>
 		</React.Fragment>
 	}
-}
+})

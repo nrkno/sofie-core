@@ -118,7 +118,11 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 					}
 
 					if (typeof timelineObj.duration !== 'string' && !segmentCopy.cropped) {
-						segmentCopy.renderedDuration = timelineObj.duration !== 0 ? timelineObj.duration : (props.segmentLineDuration - (segmentCopy.renderedInPoint || 0))
+						segmentCopy.renderedDuration = (
+							timelineObj.duration !== 0 ?
+							timelineObj.duration :
+							(props.segmentLineDuration - (segmentCopy.renderedInPoint || 0))
+						) || null
 					}
 					// console.log(segmentCopy.renderedDuration)
 

@@ -4,9 +4,13 @@ import * as $ from 'jquery'
 import { FloatingInspector } from '../../FloatingInspector'
 
 import * as ClassNames from 'classnames'
-import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
-
-export class DefaultLayerItemRenderer extends CustomLayerItemRenderer {
+import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
+interface IProps extends ICustomLayerItemProps {
+	itemState: number
+}
+interface IState {
+}
+export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IState> {
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
 
@@ -29,7 +33,7 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer {
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
-	componentDidUpdate (prevProps: Readonly<ISourceLayerItemProps>, prevState: Readonly<any>) {
+	componentDidUpdate (prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}

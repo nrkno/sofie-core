@@ -16,12 +16,12 @@ import { SegmentLineUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../lib/rundown'
 import * as TimecodeString from 'smpte-timecode'
 import { Settings } from '../../lib/Settings'
-import { getCurrentTime, objectPathGet } from '../../lib/lib'
+import { getCurrentTime, objectPathGet, extendMandadory } from '../../lib/lib'
 import { SegmentItemIconContainer, SegmentItemNameContainer } from './SegmentItemIcons/SegmentItemIcon'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 interface SegmentUi extends Segment {
-	items?: Array<SegmentLineUi>
+	items: Array<SegmentLineUi>
 }
 
 interface TimeMap {
@@ -65,9 +65,17 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 		if (props.runningOrderId) ro = RunningOrders.findOne(props.runningOrderId)
 		let segments: Array<SegmentUi> = []
 		if (ro) {
-			segments = ro.getSegments()
-			segments.forEach((seg) => {
-				seg.items = seg.getSegmentLines()
+			segments = _.map(ro.getSegments(), (segment) => {
+				return extendMandadory<Segment, SegmentUi>(segment, {
+					items: _.map(segment.getSegmentLines(), (sl) => {
+						return extendMandadory<SegmentLine, SegmentLineUi>(sl, {
+							items: [],
+							renderedDuration: 0,
+							startsAt: 0,
+							willProbablyAutoNext: false
+						})
+					})
+				})
 			})
 
 		}

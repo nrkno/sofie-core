@@ -9,11 +9,15 @@ import { SegmentLineItemLifespan, NoraContent } from 'tv-automation-sofie-bluepr
 
 import { FloatingInspector } from '../../FloatingInspector'
 
-import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
+import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
+import { translate, InjectedTranslateProps } from 'react-i18next'
 
 type KeyValue = { key: string, value: string }
-
-export class L3rdSourceRenderer extends CustomLayerItemRenderer {
+interface IProps extends ICustomLayerItemProps {
+}
+interface IState {
+}
+export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
 	leftLabel: HTMLElement
 	rightLabel: HTMLElement
 
@@ -36,7 +40,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 		this.updateAnchoredElsWidths()
 	}
 
-	componentDidUpdate (prevProps: Readonly<ISourceLayerItemProps>, prevState: Readonly<any>) {
+	componentDidUpdate (prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -118,14 +122,14 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 									<tr>
 										<td className='mini-inspector__row--timing'></td>
 										<td className='mini-inspector__row--timing'>
-											<span className='mini-inspector__in-point'>{RundownUtils.formatTimeToShortTime(this.props.segmentLineItem.renderedInPoint)}</span>
+											<span className='mini-inspector__in-point'>{RundownUtils.formatTimeToShortTime(this.props.segmentLineItem.renderedInPoint || 0)}</span>
 											{this.props.segmentLineItem.infiniteMode ?
 												(
 													(this.props.segmentLineItem.infiniteMode === SegmentLineItemLifespan.OutOnNextSegmentLine && <span className='mini-inspector__duration'>{t('Until next take')}</span>) ||
 													(this.props.segmentLineItem.infiniteMode === SegmentLineItemLifespan.OutOnNextSegment && <span className='mini-inspector__duration'>{t('Until next segment')}</span>) ||
 													(this.props.segmentLineItem.infiniteMode === SegmentLineItemLifespan.Infinite && <span className='mini-inspector__duration'>{t('Infinite')}</span>)
 												)
-												: <span className='mini-inspector__duration'>{RundownUtils.formatTimeToShortTime(this.props.segmentLineItem.renderedDuration || this.props.segmentLineItem.expectedDuration)}</span>
+												: <span className='mini-inspector__duration'>{RundownUtils.formatTimeToShortTime(this.props.segmentLineItem.renderedDuration || this.props.segmentLineItem.expectedDuration )}</span>
 											}
 											{changed && <span className='mini-inspector__changed'><Moment date={changed} calendar={true} /></span>}
 										</td>
@@ -136,4 +140,4 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer {
 					</FloatingInspector>
 				</React.Fragment>
 	}
-}
+})

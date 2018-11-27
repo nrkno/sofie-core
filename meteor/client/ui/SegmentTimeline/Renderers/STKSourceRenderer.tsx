@@ -8,14 +8,18 @@ import { SegmentLineItemUi } from '../SegmentTimelineContainer'
 import { FloatingInspector } from '../../FloatingInspector'
 
 import * as ClassNames from 'classnames'
-import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
+import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { MediaObject } from '../../../../lib/collections/MediaObjects'
 
 import Lottie from 'react-lottie'
 // @ts-ignore Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
-
-export class STKSourceRenderer extends CustomLayerItemRenderer {
+import { InjectedTranslateProps, translate } from 'react-i18next'
+interface IProps extends ICustomLayerItemProps {
+}
+interface IState {
+}
+export const STKSourceRenderer = translate()(class extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
 	vPreview: HTMLVideoElement
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
@@ -64,7 +68,7 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
-	componentDidUpdate (prevProps: Readonly<ISourceLayerItemProps>, prevState: Readonly<any>) {
+	componentDidUpdate (prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -105,7 +109,7 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 	}
 
 	render () {
-		const {t} = this.props
+		const { t } = this.props
 
 		let labelItems = this.props.segmentLineItem.name.split('||')
 		this.begin = labelItems[0] || ''
@@ -130,14 +134,14 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 						})} key={this.props.segmentLineItem._id + '-start'}>
 							{this.begin}
 						</span>
-						{(this.begin && this.end === '' && (this.props.segmentLineItem as SegmentLineItemUi).content && (this.props.segmentLineItem as SegmentLineItemUi).content.loop) &&
+						{(this.begin && this.end === '' && this.props.segmentLineItem.content && this.props.segmentLineItem.content.loop) &&
 							(<div className='segment-timeline__layer-item__label label-icon'>
 								<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
 							</div>)
 						}
 					</span>
 					<span className='segment-timeline__layer-item__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
-						{(this.end && (this.props.segmentLineItem as SegmentLineItemUi).content && (this.props.segmentLineItem as SegmentLineItemUi).content.loop) &&
+						{(this.end && this.props.segmentLineItem.content && this.props.segmentLineItem.content.loop) &&
 							(<div className='segment-timeline__layer-item__label label-icon'>
 								<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
 							</div>)
@@ -158,11 +162,11 @@ export class STKSourceRenderer extends CustomLayerItemRenderer {
 							<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
 								<div>
 									<span className='mini-inspector__label'>{t('File name')}</span>
-									<span className='mini-inspector__value'>{this.props.segmentLineItem.content.fileName}</span>
+									<span className='mini-inspector__value'>{this.props.segmentLineItem.content && this.props.segmentLineItem.content.fileName}</span>
 								</div>
 							</div>
 						}
 					</FloatingInspector>
 				</React.Fragment>
 	}
-}
+})
