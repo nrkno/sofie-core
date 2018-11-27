@@ -23,7 +23,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 
 	itemPosition: number
 	itemWidth: number
-	itemElement: HTMLDivElement
+	itemElement: HTMLDivElement | null
 	lineItem: JQuery<HTMLDivElement>
 	linePosition: number
 	leftLabel: HTMLSpanElement
@@ -33,7 +33,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 
 	private _forceSizingRecheck: boolean
 
-	constructor (props) {
+	constructor (props: IProps & InjectedTranslateProps) {
 		super(props)
 	}
 
@@ -112,8 +112,10 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 				this.lineItem.remove()
 			}
 			this.itemElement = this.props.itemElement
-			$(this.itemElement).parent().parent().append(this.lineItem)
-			this._forceSizingRecheck = true
+			if (this.itemElement) {
+				$(this.itemElement).parent().parent().append(this.lineItem)
+				this._forceSizingRecheck = true
+			}
 		}
 
 		const content = this.props.segmentLineItem.content as ScriptContent

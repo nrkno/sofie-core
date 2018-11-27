@@ -1,3 +1,4 @@
+import * as _ from 'underscore'
 import { SegmentLineItem } from './collections/SegmentLineItems'
 import {
 	VTContent,
@@ -53,7 +54,10 @@ export function buildFormatString (mediainfo: MediaInfo, stream: MediaStream): s
  * accepted resolution and move to the next accepted resolution.
  */
 export function acceptFormat (format: string, formats: Array<Array<string>>): boolean {
-	const mediaFormat = /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(format)
+	const match = /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(format)
+	if (!match) return false // ingested format string is invalid
+
+	const mediaFormat = match
 		.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i))
 	for (const format of formats) {
 		let failed = false
@@ -80,10 +84,17 @@ export function acceptFormat (format: string, formats: Array<Array<string>>): bo
 export function getAcceptedFormats (config: Array<IConfigItem>): Array<Array<string>> {
 	const formatsConfigField = config.find((item) => item._id === 'mediaResolutions')
 	const formatsString: string = (formatsConfigField && formatsConfigField.value !== '' ? formatsConfigField.value : '1920x1080i5000') + ''
-	return formatsString
+	return _.compact(formatsString
 		.split(', ')
-		.map(res => /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(res)
-			.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i)))
+		.map((res) => {
+			const match = /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(res)
+			if (match) {
+				return match.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i))
+			} else {
+				// specified format string was invalid
+				return false
+			}
+		}))
 }
 
 export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourceLayer, config: Array<IConfigItem>) {

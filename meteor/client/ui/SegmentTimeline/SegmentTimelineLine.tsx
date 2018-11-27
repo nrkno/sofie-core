@@ -357,7 +357,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					return (
 						<OutputGroup key={layer._id}
 							{...this.props}
-							mediaPreviewUrl={this.ensureHasTrailingSlash(this.props.studioInstallation.settings.mediaPreviewsUrl) || ''}
+							mediaPreviewUrl={this.ensureHasTrailingSlash(this.props.studioInstallation.getConfigValue('mediaPreviewsUrl') + '' || '') || ''}
 							layer={layer}
 							segment={this.props.segment}
 							segmentLine={segmentLine}
@@ -413,7 +413,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					</div>
 					{ DEBUG_MODE &&
 						<div className='segment-timeline__debug-info'>
-						{this.props.livePosition} / {this.props.segmentLine.startsAt} / {(this.props.timingDurations || {segmentLineStartsAt: {}}).segmentLineStartsAt[this.props.segmentLine._id]}
+						{this.props.livePosition} / {this.props.segmentLine.startsAt} / {((this.props.timingDurations || {segmentLineStartsAt: {}}).segmentLineStartsAt || {})[this.props.segmentLine._id]}
 						</div>
 					}
 					{this.state.isLive && !this.props.relative && !this.props.autoNextSegmentLine && !this.props.segmentLine.autoNext &&

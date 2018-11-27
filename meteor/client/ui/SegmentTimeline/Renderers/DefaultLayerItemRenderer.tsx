@@ -6,13 +6,16 @@ import { FloatingInspector } from '../../FloatingInspector'
 import * as ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 interface IProps extends ICustomLayerItemProps {
-	itemState: number
 }
 interface IState {
 }
 export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IState> {
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
+
+	constructor (props) {
+		super(props)
+	}
 
 	setLeftLabelRef = (e: HTMLSpanElement) => {
 		this.leftLabel = e
@@ -45,14 +48,7 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IS
 
 	render () {
 		return <React.Fragment>
-			<span className={
-				ClassNames('segment-timeline__layer-item__label', {
-					'bold': this.props.itemState === 0,
-					'regular': this.props.itemState === 1,
-					'light': this.props.itemState === 2,
-					'light-file-missing': this.props.itemState === 3,
-				})
-			}
+			<span className='segment-timeline__layer-item__label'
 				ref={this.setLeftLabelRef}
 				style={this.getItemLabelOffsetLeft()}
 			>

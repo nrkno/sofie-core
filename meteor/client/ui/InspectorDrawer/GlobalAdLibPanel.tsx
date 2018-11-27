@@ -108,7 +108,9 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 					})))
 					.map((item) => {
 						if (!item.isHidden) {
-							if (item.isSticky && (!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0)) {
+							if (item.isSticky && item.layer &&
+								(!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0)
+							) {
 								return (
 									<AdLibListItem
 										key={item._id}
@@ -119,7 +121,9 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 										onSelectAdLib={this.props.onSelectAdLib}
 									/>
 								)
-							} else if (!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0) {
+							} else if (item.sourceLayerId && item.outputLayerId &&
+								(!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0)
+							) {
 								return (
 									<AdLibListItem
 										key={item._id}

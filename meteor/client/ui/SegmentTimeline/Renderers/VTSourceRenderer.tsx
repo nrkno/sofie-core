@@ -27,6 +27,10 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 	end: string
 	scenes?: Array<number>
 
+	constructor (props: IProps & InjectedTranslateProps) {
+		super(props)
+	}
+
 	setVideoRef = (e: HTMLVideoElement) => {
 		this.vPreview = e
 	}
