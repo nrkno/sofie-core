@@ -2228,6 +2228,10 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjCla
 			return
 		}
 
+		if (item.extendOnHold && item.infiniteId && item.infiniteId !== item._id) {
+			item._id = item.infiniteId
+		}
+
 		if (
 			item.content &&
 			item.content.timelineObjects
