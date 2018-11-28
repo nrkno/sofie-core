@@ -2217,7 +2217,7 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjCla
 
 	const isHold = holdState === RunningOrderHoldState.ACTIVE
 
-	const allowTransition = transitionProps && transitionProps.allowed
+	const allowTransition = transitionProps && transitionProps.allowed && holdState !== RunningOrderHoldState.COMPLETE
 	const transition: SegmentLineItem | undefined = allowTransition ? clone(items.find(i => !!i.isTransition)) : undefined
 	const transitionSliDelay = transitionProps ? Math.max(0, (transitionProps.preroll || 0) - (transitionProps.transitionPreroll || 0)) : 0
 	const transitionContentsDelay = transitionProps ? (transitionProps.transitionPreroll || 0) - (transitionProps.preroll || 0) : 0
@@ -2272,10 +2272,10 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjCla
 						o.inGroup = segmentLineItemGroup._id
 
 						// If we are leaving a HOLD, the transition was suppressed, so force it to run now
-						if (item.isTransition && holdState === RunningOrderHoldState.COMPLETE) {
-							o.trigger.value = TriggerType.TIME_ABSOLUTE
-							o.trigger.value = 'now'
-						}
+						// if (item.isTransition && holdState === RunningOrderHoldState.COMPLETE) {
+						// 	o.trigger.value = TriggerType.TIME_ABSOLUTE
+						// 	o.trigger.value = 'now'
+						// }
 					}
 
 					timelineObjs.push(o)
