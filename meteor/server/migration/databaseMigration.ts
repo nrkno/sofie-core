@@ -414,6 +414,11 @@ export function runMigration (
 	// Verify the input:
 	let migration = prepareMigration()
 
+	// Filter out any empty chunks
+	chunks = _.filter(chunks, (chunk) => {
+		return chunk._steps.length > 0
+	})
+
 	let manualInputsWithUserPrompt = _.filter(migration.manualInputs, (manualInput) => {
 		return !!(manualInput.stepId && manualInput.attribute)
 	})
@@ -481,11 +486,6 @@ export function runMigration (
 				let migration = step.migrate as MigrateFunctionShowStyle
 				migration(getMigrationShowStyleContext(step.chunk), stepInput)
 			} else throw new Meteor.Error(500, `Unknown step.chunk.sourceType "${step.chunk.sourceType}"`)
-
-			let migrate = step.migrate as MigrateFunctionCore
-			if (migrate) {
-				migrate(stepInput)
-			}
 
 			// After migration, run the validation again
 			// Since the migration should be done by now, the validate should return true
