@@ -2201,6 +2201,9 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjCla
 	let timelineObjs: Array<TimelineObj> = []
 
 	const isHold = holdState === RunningOrderHoldState.ACTIVE
+	if (holdState === RunningOrderHoldState.COMPLETE) {
+		allowTransition = false
+	}
 
 	_.each(clone(items), (item: SegmentLineItem) => {
 		if (item.disabled) return
@@ -2248,10 +2251,10 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjCla
 						o.inGroup = segmentLineItemGroup._id
 
 						// If we are leaving a HOLD, the transition was suppressed, so force it to run now
-						if (item.isTransition && holdState === RunningOrderHoldState.COMPLETE) {
-							o.trigger.value = TriggerType.TIME_ABSOLUTE
-							o.trigger.value = 'now'
-						}
+						// if (item.isTransition && holdState === RunningOrderHoldState.COMPLETE) {
+						// 	o.trigger.value = TriggerType.TIME_ABSOLUTE
+						// 	o.trigger.value = 'now'
+						// }
 					}
 
 					timelineObjs.push(o)
