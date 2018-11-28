@@ -6,8 +6,10 @@ import * as faSquare from '@fortawesome/fontawesome-free-solid/faSquare'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Mongo } from 'meteor/mongo'
 
+import { MultiSelect, MultiSelectEvent } from './multiSelect'
+
 interface IEditAttribute extends IEditAttributeBaseProps {
-	type: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch'
+	type: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch' | 'multiselect'
 }
 export class EditAttribute extends React.Component<IEditAttribute> {
 	render () {
@@ -35,6 +37,10 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 		} else if (this.props.type === 'dropdown') {
 			return (
 				<EditAttributeDropdown {...this.props} />
+			)
+		} else if (this.props.type === 'multiselect') {
+			return (
+				<EditAttributeMultiSelect {...this.props} />
 			)
 		}
 
@@ -434,6 +440,65 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 					<option key={o.i} value={o.value}>{o.name}</option>
 				))}
 			</select>
+		)
+	}
+})
+const EditAttributeMultiSelect = wrapEditAttribute(class extends EditAttributeBase {
+	constructor (props) {
+		super(props)
+
+		this.handleChange = this.handleChange.bind(this)
+	}
+	handleChange (event: MultiSelectEvent) {
+		this.handleUpdate(event.selectedValues)
+	}
+	getOptions () {
+		let options: _.Dictionary<string> = {}
+
+		if (Array.isArray(this.props.options)) {
+			// is it an enum?
+			for (let key in this.props.options) {
+				let val = this.props.options[key]
+				if (typeof val === 'object') {
+					options[val.value] = val.name
+				} else {
+					options[val] = val
+				}
+			}
+		} else if (typeof this.props.options === 'object') {
+
+			// Is options an enum?
+			let keys = Object.keys(this.props.options)
+			let first = this.props.options[keys[0]]
+			if ((this.props.options[first] + '') === (keys[0] + '')) {
+				// is an enum, only pick
+				for (let key in this.props.options) {
+					if (!_.isNaN(parseInt(key, 10))) { // key is a number (the key)
+						let enumValue = this.props.options[key]
+						let enumKey = this.props.options[enumValue]
+						options[enumValue] = enumKey
+					}
+				}
+			} else {
+				for (let key in this.props.options) {
+					let val = this.props.options[key]
+					options[val] = key + ': ' + val
+				}
+			}
+
+		}
+
+		return options
+	}
+	render () {
+		return (
+			<MultiSelect
+				className={this.props.className}
+				availableOptions={this.getOptions()}
+				value={this.getAttribute()}
+				placeholder={this.props.label}
+				onChange={this.handleChange}>
+			</MultiSelect>
 		)
 	}
 })
