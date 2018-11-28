@@ -2758,6 +2758,22 @@ export function buildTimelineObjs (roData: RoData, baselineItems: RunningOrderBa
 
 	let activeRunningOrder = roData.runningOrder
 
+	timelineObjs.push(literal<TimelineObj>({
+		siId: '',
+		roId: '',
+		deviceId: [''],
+		_id: activeRunningOrder._id + '_status',
+		id: '',
+		trigger: {
+			type: TriggerType.LOGICAL,
+			value: '1'
+		},
+		LLayer: 'ro_status',
+		isAbstract: true,
+		content: {},
+		classes: [activeRunningOrder.rehearsal ? 'ro_rehersal' : 'ro_active']
+	}))
+
 	// Fetch the nextSegmentLine first, because that affects how the currentSegmentLine will be treated
 	if (activeRunningOrder.nextSegmentLineId) {
 		// We may be at the beginning of a show, and there can be no currentSegmentLine and we are waiting for the user to Take
