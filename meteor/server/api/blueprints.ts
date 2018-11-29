@@ -7,7 +7,7 @@ import { SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItem
 import { formatDateAsTimecode, formatDurationAsTimecode, literal, normalizeArray, getCurrentTime } from '../../lib/lib'
 import { getHash } from '../lib'
 import { logger } from '../logging'
-import { RunningOrder } from '../../lib/collections/RunningOrders'
+import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { TimelineObj } from '../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
@@ -16,18 +16,20 @@ import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import {
 	BlueprintManifest,
 	ICommonContext,
-	RunStoryContext,
-	BaselineContext,
-	PostProcessContext,
 	MessageContext,
-	LayerType,
 	MOS,
 	ConfigItemValue,
 	TimelineObjectCoreExt,
 	IBlueprintSegmentLineItem,
 	IBlueprintSegmentLineAdLibItem,
 	BlueprintRuntimeArguments,
-	IBlueprintSegmentLine
+	IBlueprintSegmentLine,
+	SegmentLineContext as IISegmentLineContext,
+	RunningOrderContext as IRunningOrderContext,
+	NotesContext as INotesContext,
+	SegmentContext as ISegmentContext,
+	SegmentLineContext as ISegmentLineContext,
+	MessageContext as IMessageContext
 } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
 
@@ -42,23 +44,110 @@ import { parse as parseUrl } from 'url'
 import { BlueprintAPI } from '../../lib/api/blueprint'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 import { parseVersion } from '../../lib/collections/CoreSystem'
+import { Segment } from '../../lib/collections/Segments'
 
-class CommonContext implements ICommonContext {
-	runningOrderId: string
-	runningOrder: RunningOrder
-	segmentLine: SegmentLine | undefined
+export class CommonContext implements ICommonContext {
 
+	private _idPrefix: string = ''
 	private hashI = 0
 	private hashed: {[hash: string]: string} = {}
+
+	constructor (idPrefix) {
+		this._idPrefix = idPrefix
+	}
+	getHashId (str?: any) {
+
+		if (!str) str = 'hash' + (this.hashI++)
+
+		let id
+		id = getHash(
+			this._idPrefix + '_' +
+			str.toString()
+		)
+		this.hashed[id] = str
+		return id
+		// return Random.id()
+	}
+	unhashId (hash: string): string {
+		return this.hashed[hash] || hash
+	}
+}
+
+export class NotesContext extends CommonContext implements INotesContext {
+
+	private _runningOrderId: string
+	private _contextName: string
+	private _segmentId?: string
+	private _segmentLineId?: string
+
 	private savedNotes: Array<SegmentLineNote> = []
 
-	private story: MOS.IMOSStory | undefined
+	constructor (
+		contextName: string,
+		runningOrderId: string,
+		segmentId?: string,
+		segmentLineId?: string,
+	) {
+		super(
+			runningOrderId +
+			(
+				segmentLineId ? '_' + segmentLineId :
+				(
+					segmentId ? '_' + segmentId : ''
+				)
+			)
+		)
+		this._contextName		= contextName
+		this._runningOrderId	= runningOrderId
+		this._segmentId			= segmentId
+		this._segmentLineId		= segmentLineId
 
-	constructor (runningOrder: RunningOrder, segmentLine?: SegmentLine, story?: MOS.IMOSStory) {
+	}
+	/** Throw Error and display message to the user in the GUI */
+	error (message: string) {
+		logger.error('Error from blueprint: ' + message)
+		this._pushNote(
+			SegmentLineNoteType.ERROR,
+			message
+		)
+		throw new Meteor.Error(500, message)
+	}
+	/** Save note, which will be displayed to the user in the GUI */
+	warning (message: string) {
+		this._pushNote(
+			SegmentLineNoteType.WARNING,
+			message
+		)
+	}
+	getNotes () {
+		return this.savedNotes
+	}
+	private _pushNote (type: SegmentLineNoteType, message: string) {
+		this.savedNotes.push({
+			type: SegmentLineNoteType.WARNING,
+			origin: {
+				name: this._getLoggerName(),
+				roId: this._runningOrderId,
+				segmentId: this._segmentId,
+				segmentLineId: this._segmentLineId
+			},
+			message: message
+		})
+	}
+	private _getLoggerName () {
+		return this._contextName
+
+	}
+}
+export class RunningOrderContext extends NotesContext implements IRunningOrderContext {
+	runningOrderId: string
+	runningOrder: RunningOrder
+
+	constructor (runningOrder: RunningOrder, contextName?: string) {
+		super(contextName || runningOrder.name, runningOrder._id)
+
 		this.runningOrderId = runningOrder._id
 		this.runningOrder = runningOrder
-		this.segmentLine = segmentLine
-		this.story = story
 	}
 
 	getStudioInstallation (): StudioInstallation {
@@ -72,48 +161,6 @@ class CommonContext implements ICommonContext {
 		if (!showStyleBase) throw new Meteor.Error(404, 'ShowStyleBase "' + this.runningOrder.showStyleBaseId + '" not found')
 
 		return showStyleBase
-	}
-	getHashId (str?: any) {
-
-		if (!str) str = 'hash' + (this.hashI++)
-
-		let id
-		id = getHash(
-			this.runningOrderId + '_' +
-			(this.segmentLine ? this.segmentLine._id + '_' : '') +
-			str.toString()
-		)
-		this.hashed[id] = str
-		return id
-		// return Random.id()
-	}
-	unhashId (hash: string): string {
-		return this.hashed[hash] || hash
-	}
-	getLayer (type: LayerType, name: string): string {
-		const studio: StudioInstallation = this.getStudioInstallation()
-		const showStyleBase: ShowStyleBase = this.getShowStyleBase()
-
-		let layer: any
-		switch (type) {
-			case LayerType.Output:
-				layer = showStyleBase.outputLayers.find(l => l._id === name)
-				break
-			case LayerType.Source:
-				layer = showStyleBase.sourceLayers.find(l => l._id === name)
-				break
-			case LayerType.LLayer:
-				layer = _.find(studio.mappings, (v, k) => k === name)
-				break
-			default:
-				throw new Meteor.Error(404, 'getLayer: LayerType "' + type + '" unknown')
-		}
-
-		if (layer) {
-			return name
-		}
-
-		throw new Meteor.Error(404, 'Missing layer "' + name + '" of type LayerType."' + type + '"')
 	}
 	getStudioConfig (): {[key: string]: ConfigItemValue} {
 		const studio: StudioInstallation = this.getStudioInstallation()
@@ -138,128 +185,42 @@ class CommonContext implements ICommonContext {
 		})
 		return res
 	}
-
-	getLoggerName () {
-		if (this.story && this.story.Slug) {
-			return this.story.Slug.toString()
-		} else if (this.segmentLine) {
-			return this.segmentLine.mosId
-		} else {
-			return ''
-		}
-	}
-	error (message: string) {
-		logger.error('Error from blueprint: ' + message)
-
-		const name = this.getLoggerName()
-
-		this.savedNotes.push({
-			type: SegmentLineNoteType.ERROR,
-			origin: {
-				name: name,
-				roId: this.runningOrderId,
-				segmentId: this.story || !this.segmentLine ? undefined : this.segmentLine.segmentId,
-				segmentLineId: this.story && this.segmentLine ? this.segmentLine._id : undefined
-				// segmentLineItemId?: string,
-			},
-			message: message
-		})
-
-		throw new Meteor.Error(500, message)
-	}
-	warning (message: string) {
-		// logger.warn('Warning from blueprint: ' + message)
-		// @todo: save warnings, maybe to the RO somewhere?
-		// it should be displayed to the user in the UI
-
-		const name = this.getLoggerName()
-
-		this.savedNotes.push({
-			type: SegmentLineNoteType.WARNING,
-			origin: {
-				name: name,
-				roId: this.runningOrderId,
-				segmentId: this.story || !this.segmentLine ? undefined : this.segmentLine.segmentId,
-				segmentLineId: this.story && this.segmentLine ? this.segmentLine._id : undefined
-				// segmentLineItemId?: string,
-			},
-			message: message
-		})
-	}
-	getNotes () {
-		return this.savedNotes
+	/** return segmentLines in this runningOrder */
+	getSegmentLines (): Array<SegmentLine> {
+		return this.runningOrder.getSegmentLines()
 	}
 }
+export class SegmentContext extends RunningOrderContext implements ISegmentContext {
+	readonly segment: Segment
+	constructor (runningOrder: RunningOrder, segment: Segment) {
+		super(runningOrder, segment.mosId)
 
-export function getRunStoryContext (runningOrder: RunningOrder, segmentLine: SegmentLine, story: MOS.IMOSROFullStory): RunStoryContext {
-	class RunStoryContextImpl extends CommonContext implements RunStoryContext {
-		segmentLine: SegmentLine
+		this.segment = segment
 
-		getRuntimeArguments (): BlueprintRuntimeArguments {
-			return segmentLine.runtimeArguments || {}
-		}
-
-		getSegmentLines (): Array<SegmentLine> {
-			// return stories in segmentLine
-			const ro: RunningOrder = this.runningOrder
-			return ro.getSegmentLines().filter((sl: SegmentLine) => sl.segmentId === this.segmentLine.segmentId)
-		}
-		getSegmentLineIndex (): number {
-			return this.getSegmentLines().findIndex((sl: SegmentLine) => sl._id === this.segmentLine._id)
-		}
 	}
-
-	return new RunStoryContextImpl(runningOrder, segmentLine, story)
+	getSegmentLines (): Array<SegmentLine> {
+		return this.segment.getSegmentLines()
+	}
 }
+export { MOS, RunningOrder, SegmentLine, ISegmentLineContext }
+export class SegmentLineContext extends RunningOrderContext implements ISegmentLineContext {
+	readonly segmentLine: SegmentLine
+	constructor (runningOrder: RunningOrder, segmentLine: SegmentLine, story: MOS.IMOSStory) {
+		super(runningOrder, (story.Slug || segmentLine.mosId) + '')
 
-export function getPostProcessContext (runningOrder: RunningOrder, segmentLine: SegmentLine): PostProcessContext {
-	class PostProcessContextImpl extends CommonContext implements PostProcessContext {
-		segmentLine: SegmentLine
+		this.segmentLine = segmentLine
 
-		getSegmentLines (): Array<SegmentLine> {
-			// return stories in segmentLine
-			const ro: RunningOrder = this.runningOrder
-			return ro.getSegmentLines().filter((sl: SegmentLine) => sl.segmentId === this.segmentLine.segmentId)
-		}
 	}
-
-	return new PostProcessContextImpl(runningOrder, segmentLine)
-}
-
-export function getBaselineContext (runningOrder: RunningOrder): BaselineContext {
-	class BaselineContextImpl extends CommonContext implements BaselineContext {
+	getRuntimeArguments (): BlueprintRuntimeArguments {
+		return this.segmentLine.runtimeArguments || {}
 	}
-
-	return new BaselineContextImpl(runningOrder)
-}
-
-export function getMessageContext (runningOrder: RunningOrder): MessageContext {
-	class MessageContextImpl extends CommonContext implements MessageContext {
-		getCachedStoryForRunningOrder (): MOS.IMOSRunningOrder {
-			return this.runningOrder.fetchCache('roCreate' + this.runningOrder._id)
-		}
-		getCachedStoryForSegmentLine (segmentLine: IBlueprintSegmentLine): MOS.IMOSROFullStory {
-			return this.runningOrder.fetchCache('fullStory' + segmentLine._id)
-		}
-
-		getAllSegmentLines (): Array<SegmentLine> {
-			return this.runningOrder.getSegmentLines()
-		}
-
-		formatDateAsTimecode (time: Date | number): string {
-			let date = (
-				_.isDate(time) ?
-				time :
-				new Date(time)
-			)
-			return formatDateAsTimecode(date)
-		}
-		formatDurationAsTimecode (time: number): string {
-			return formatDurationAsTimecode(time)
-		}
+	getSegmentLineIndex (): number {
+		return this.getSegmentLines().findIndex((sl: SegmentLine) => sl._id === this.segmentLine._id)
 	}
-
-	return new MessageContextImpl(runningOrder)
+	/** return segmentLines in this segment */
+	getSegmentLines (): Array<SegmentLine> {
+		return super.getSegmentLines().filter((sl: SegmentLine) => sl.segmentId === this.segmentLine.segmentId)
+	}
 }
 export function insertBlueprint (name?: string): string {
 	return Blueprints.insert({
@@ -292,6 +253,14 @@ const blueprintCache: {[id: string]: Cache} = {}
 interface Cache {
 	modified: number,
 	fcn: BlueprintManifest
+}
+
+export function getBlueprintOfRunningOrder (runnningOrder: RunningOrder): BlueprintManifest {
+
+	if (!runnningOrder.showStyleBaseId) throw new Meteor.Error(400, `RunningOrder is missing showStyleBaseId!`)
+	let showStyleBase = ShowStyleBases.findOne(runnningOrder.showStyleBaseId)
+	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${runnningOrder.showStyleBaseId}" not found!`)
+	return loadBlueprints(showStyleBase)
 }
 
 export function loadBlueprints (showStyleBase: ShowStyleBase): BlueprintManifest {
@@ -334,19 +303,19 @@ export function evalBlueprints (blueprint: Blueprint, noCache?: boolean): Bluepr
 	}
 }
 
-export function postProcessSegmentLineItems (innerContext: ICommonContext, segmentLineItems: IBlueprintSegmentLineItem[], blueprintId: string, segmentLineId: string): SegmentLineItem[] {
+export function postProcessSegmentLineItems (innerContext: IRunningOrderContext, segmentLineItems: IBlueprintSegmentLineItem[], blueprintId: string, firstSegmentLineId: string): SegmentLineItem[] {
 	let i = 0
 	let segmentLinesUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(segmentLineItems), (itemOrig: IBlueprintSegmentLineItem) => {
 		let item: SegmentLineItem = {
 			runningOrderId: innerContext.runningOrder._id,
-			segmentLineId: itemOrig.segmentLineId || segmentLineId,
+			segmentLineId: itemOrig.segmentLineId || firstSegmentLineId,
 			status: RunningOrderAPI.LineItemStatusCode.UNKNOWN,
 			...itemOrig
 		}
 
 		if (!item._id) item._id = innerContext.getHashId(blueprintId + '_sli_' + (i++))
-		if (!item.mosId && !item.isTransition) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": mosId not set for segmentLineItem in ' + segmentLineId + '! ("' + innerContext.unhashId(item._id) + '")')
+		if (!item.mosId && !item.isTransition) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": mosId not set for segmentLineItem in ' + firstSegmentLineId + '! ("' + innerContext.unhashId(item._id) + '")')
 
 		if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
 		segmentLinesUniqueIds[item._id] = true
@@ -369,7 +338,7 @@ export function postProcessSegmentLineItems (innerContext: ICommonContext, segme
 	})
 }
 
-export function postProcessSegmentLineAdLibItems (innerContext: ICommonContext, segmentLineAdLibItems: IBlueprintSegmentLineAdLibItem[], blueprintId: string, segmentLineId?: string): SegmentLineAdLibItem[] {
+export function postProcessSegmentLineAdLibItems (innerContext: IRunningOrderContext, segmentLineAdLibItems: IBlueprintSegmentLineAdLibItem[], blueprintId: string, segmentLineId?: string): SegmentLineAdLibItem[] {
 	let i = 0
 	let segmentLinesUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(segmentLineAdLibItems), (itemOrig: IBlueprintSegmentLineAdLibItem) => {
@@ -420,7 +389,7 @@ function convertTimelineObject (o: TimelineObjectCoreExt): TimelineObj {
 	return item
 }
 
-export function postProcessSegmentLineBaselineItems (innerContext: BaselineContext, baselineItems: TimelineObj[]): TimelineObj[] {
+export function postProcessSegmentLineBaselineItems (innerContext: RunningOrderContext, baselineItems: TimelineObj[]): TimelineObj[] {
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
 

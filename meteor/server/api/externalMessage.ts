@@ -45,11 +45,13 @@ export function triggerExternalMessage (
 					let now = getCurrentTime()
 					let message2: ExternalMessageQueueObj = {
 						_id: '',
+						type: message.type,
+						receiver: message.receiver,
+						message: message.message,
 						studioId: runningOrder.studioInstallationId,
 						created: now,
 						tryCount: 0,
 						expires: now + 35 * 24 * 3600 * 1000, // 35 days
-						...message
 					}
 
 					message = removeNullyProperties(message)

@@ -7,7 +7,7 @@ import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/Segment
 import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
 import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime } from '../../lib/lib'
 import { logger } from '../logging'
-import { loadBlueprints, postProcessSegmentLineItems, getPostProcessContext } from './blueprints'
+import { loadBlueprints, postProcessSegmentLineItems, SegmentContext } from './blueprints'
 import { getHash } from '../lib'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
@@ -280,14 +280,14 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 
 	const firstSegmentLine = segmentLines.sort((a, b) => b._rank = a._rank)[0]
 
-	const context = getPostProcessContext(ro, firstSegmentLine)
+	const context = new SegmentContext(ro, segment)
 
 	let resultSli: SegmentLineItem[] | undefined = undefined
 	let notes: SegmentLineNote[] = []
 	try {
 		const blueprints = loadBlueprints(showStyleBase)
-		let result = blueprints.postProcess(context)
-		resultSli = postProcessSegmentLineItems(context, result.SegmentLineItems, 'post-process', firstSegmentLine._id)
+		let result = blueprints.getSegmentPost(context)
+		resultSli = postProcessSegmentLineItems(context, result.segmentLineItems, 'post-process', firstSegmentLine._id)
 		notes = context.getNotes()
 	} catch (e) {
 		logger.error(e.stack ? e.stack : e.toString())
@@ -297,7 +297,7 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 			origin: {
 				name: '',
 				roId: context.runningOrder._id,
-				segmentId: firstSegmentLine.segmentId,
+				segmentId: segment._id,
 				segmentLineId: '',
 			},
 			message: 'Internal Server Error'

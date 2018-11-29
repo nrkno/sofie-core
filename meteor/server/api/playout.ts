@@ -59,7 +59,7 @@ import {
 	TimelineObjHoldMode,
 	MOS
 } from 'tv-automation-sofie-blueprints-integration'
-import { loadBlueprints, getBaselineContext, postProcessSegmentLineAdLibItems, postProcessSegmentLineBaselineItems } from './blueprints'
+import { loadBlueprints, postProcessSegmentLineAdLibItems, postProcessSegmentLineBaselineItems, RunningOrderContext } from './blueprints'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
@@ -356,37 +356,34 @@ export namespace ServerPlayoutAPI {
 
 			const showStyleBase = runningOrder.getShowStyleBase()
 			let blueprint = loadBlueprints(showStyleBase)
-			if (!blueprint || !blueprint.baseline) {
-				logger.error('Failed to load baseline blueprint')
-			} else {
-				const ctx = getBaselineContext(runningOrder)
 
-				const res = blueprint.baseline(ctx)
-				const baselineItems = postProcessSegmentLineBaselineItems(ctx, res.BaselineItems as any as TimelineObj[]) // TODO - types used here
-				const adlibItems = postProcessSegmentLineAdLibItems(ctx, res.AdLibItems, 'baseline')
+			const context = new RunningOrderContext(runningOrder)
 
-				// TODO - should any notes be logged as a warning, or is that done already?
+			const res = blueprint.getBaseline(context)
+			const baselineItems = postProcessSegmentLineBaselineItems(context, res.baselineItems as any as TimelineObj[]) // TODO - types used here
+			const adlibItems = postProcessSegmentLineAdLibItems(context, res.adLibItems, 'baseline')
 
-				if (baselineItems) {
-					logger.info(`... got ${baselineItems.length} items from baseline.`)
+			// TODO - should any notes be logged as a warning, or is that done already?
 
-					const baselineItem: RunningOrderBaselineItem = {
-						_id: Random.id(7),
-						runningOrderId: runningOrder._id,
-						objects: baselineItems
-					}
+			if (baselineItems) {
+				logger.info(`... got ${baselineItems.length} items from baseline.`)
 
-					saveIntoDb<RunningOrderBaselineItem, RunningOrderBaselineItem>(RunningOrderBaselineItems, {
-						runningOrderId: runningOrder._id
-					}, [baselineItem])
+				const baselineItem: RunningOrderBaselineItem = {
+					_id: Random.id(7),
+					runningOrderId: runningOrder._id,
+					objects: baselineItems
 				}
 
-				if (adlibItems) {
-					logger.info(`... got ${adlibItems.length} adLib items from baseline.`)
-					saveIntoDb<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>(RunningOrderBaselineAdLibItems, {
-						runningOrderId: runningOrder._id
-					}, adlibItems)
-				}
+				saveIntoDb<RunningOrderBaselineItem, RunningOrderBaselineItem>(RunningOrderBaselineItems, {
+					runningOrderId: runningOrder._id
+				}, [baselineItem])
+			}
+
+			if (adlibItems) {
+				logger.info(`... got ${adlibItems.length} adLib items from baseline.`)
+				saveIntoDb<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>(RunningOrderBaselineAdLibItems, {
+					runningOrderId: runningOrder._id
+				}, adlibItems)
 			}
 
 			updateTimeline(runningOrder.studioInstallationId)
