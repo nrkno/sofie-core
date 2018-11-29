@@ -1,18 +1,10 @@
 import {
-	ensureSourceLayer,
-	ensureMapping,
-	ensureStudioConfig,
-	ensureDeviceVersion,
-	removeMapping
+	ensureDeviceVersion
 } from './lib'
-import { SourceLayerType, LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
 import {
 	DeviceType as PlayoutDeviceType,
-	MappingPanasonicPtz,
-	MappingPanasonicPtzType
 } from 'timeline-state-resolver-types'
 import { addMigrationSteps } from './databaseMigration'
-import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
 import * as _ from 'underscore'
 import {
 	PeripheralDevices,
@@ -21,63 +13,9 @@ import {
 } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../logging'
-import { literal } from '../../lib/lib'
-import { MappingExt, StudioInstallations } from '../../lib/collections/StudioInstallations'
 
 // 0.18.0: Release 4
 addMigrationSteps( '0.18.0', [
-	removeMapping('nora_permanent_klokke'),
-	removeMapping('nora_permanent_logo'),
-	ensureMapping('nora_primary_klokke', literal<MappingExt>({
-		device: PlayoutDeviceType.HTTPSEND,
-		deviceId: 'http0',
-		lookahead: LookaheadMode.NONE,
-	})),
-	ensureMapping('nora_primary_logo', literal<MappingExt>({
-		device: PlayoutDeviceType.HTTPSEND,
-		deviceId: 'http0',
-		lookahead: LookaheadMode.NONE,
-	})),
-	removeMapping('casparcg_cg_permanent'),
-	{
-		id: 'mapping.casparcg_player_wipe.lookahead',
-		canBeRunAutomatically: true,
-		validate: () => {
-			let studio = StudioInstallations.findOne()
-			if (!studio) return 'Studio not found'
-
-			let dbMapping = studio.mappings['casparcg_player_wipe']
-			if (!dbMapping) return false
-
-			if (dbMapping.lookahead !== LookaheadMode.PRELOAD) return `Mapping "casparcg_player_wipe" wrong lookahead mode`
-
-			return false
-		},
-		migrate: () => {
-			let studio = StudioInstallations.findOne()
-			if (!studio) return 'Studio not found'
-
-			let dbMapping = studio.mappings['casparcg_player_wipe']
-
-			if (dbMapping) { // only update if the mapping does exist
-				let m = {}
-				m['mappings.casparcg_player_wipe.lookahead'] = LookaheadMode.PRELOAD
-				logger.info(`Migration: Updating Studio mapping "casparcg_player_wipe" in ${studio._id}`)
-				StudioInstallations.update(studio._id, {$set: m})
-			}
-		}
-	},
-	ensureSourceLayer({
-		_id: 'studio0_host_light',
-		_rank: 0,
-		name: 'HostLight',
-		type: SourceLayerType.LIGHTS,
-		onPGMClean: false,
-		activateKeyboardHotkeys: '',
-		assignHotkeysToGlobalAdlibs: false,
-		unlimited: false,
-		isHidden: true // or should it be?
-	}),
 	{
 		id: 'Playout-gateway.pharos0',
 		canBeRunAutomatically: false,
@@ -120,40 +58,7 @@ addMigrationSteps( '0.18.0', [
 			attribute: null
 		}]
 	},
-	ensureMapping('pharos_lights', literal<MappingExt>({
-		device: PlayoutDeviceType.PHAROS,
-		deviceId: 'pharos0',
-		lookahead: LookaheadMode.NONE,
-	})),
-	ensureMapping('ptz0_zoom', literal<MappingPanasonicPtz & MappingExt>({
-		device: PlayoutDeviceType.PANASONIC_PTZ,
-		deviceId: 'ptz0',
-		mappingType: MappingPanasonicPtzType.ZOOM,
-		lookahead: LookaheadMode.NONE,
-	})),
-	ensureMapping('ptz0_zoom_speed', literal<MappingPanasonicPtz & MappingExt>({
-		device: PlayoutDeviceType.PANASONIC_PTZ,
-		deviceId: 'ptz0',
-		mappingType: MappingPanasonicPtzType.ZOOM_SPEED,
-		lookahead: LookaheadMode.NONE,
-	})),
-	ensureStudioConfig('ApningCameraInitialZoom', 0),
-	ensureStudioConfig('ApningCameraZoomSpeed', 0.1),
-	ensureStudioConfig('ApningCameraZoomDuration', 3000),
-	ensureStudioConfig('SluttCameraInitialZoom', 1),
-	ensureStudioConfig('SluttCameraZoomSpeed', -0.1),
-	ensureStudioConfig('SluttCameraZoomDuration', 3000),
+
 	ensureDeviceVersion('ensureVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '0.13.0'),
 	ensureDeviceVersion('ensureVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.4.2'),
-	ensureSourceLayer({
-		_id: 'studio0_audio_bed',
-		_rank: 0,
-		name: 'Bed',
-		type: SourceLayerType.AUDIO,
-		onPGMClean: true,
-		activateKeyboardHotkeys: '',
-		assignHotkeysToGlobalAdlibs: false,
-		unlimited: false,
-		isHidden: true
-	})
 ])

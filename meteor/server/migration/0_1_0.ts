@@ -1,17 +1,10 @@
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
-import { SourceLayerType, LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
-import { RunningOrderAPI } from '../../lib/api/runningOrder'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import {
-	ChannelFormat,
-	MappingCasparCG,
-	TimelineObjCCGRecord, TimelineContentTypeCasparCg, TimelineObjCCGInput,
 	DeviceType as PlayoutDeviceType
 } from 'timeline-state-resolver-types'
 import { ensureCollectionProperty, ensureStudioConfig } from './lib'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { PeripheralDevices, PlayoutDeviceSettings, PlayoutDeviceSettingsDevice, PlayoutDeviceSettingsDeviceCasparCG, PlayoutDeviceSettingsDeviceAtem } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
@@ -35,61 +28,21 @@ addMigrationSteps( '0.1.0', [
 			StudioInstallations.insert({
 				_id: 'studio0',
 				name: 'Default studio',
-				defaultShowStyleVariant: 'variant0',
-				supportedShowStyleBase: ['show0'],
-				// defaultShowStyle: 'show0', // deprecated
+				defaultShowStyleVariant: '',
+				supportedShowStyleBase: [],
 				settings: {
 					mediaPreviewsUrl: '',
 					sofieUrl: ''
 				},
-				mappings: {
-					'layer0': {
-						device: PlayoutDeviceType.CASPARCG,
-						lookahead: LookaheadMode.NONE,
-						deviceId: 'casparcg0'
-					}
-				},
-				config: [
-					{
-						_id: 'nora_group',
-						value: 'dksl'
-					},
-					{
-						_id: 'nora_apikey',
-						value: ''
-					},
-					{
-						_id: 'slack_evaluation',
-						value: ''
-					}
-				]
+				mappings: {},
+				config: []
 			})
 		}
 	},
 	ensureCollectionProperty('StudioInstallations', {}, 'name', null, 'text', 'Studio $id: Name',
 		'Enter the Name of the Studio "$id"'),
-	// ensureCollectionProperty('StudioInstallations', {}, 'defaultShowStyle', null, 'text', 'Studio $id: Default ShowStyle',
-	// 	'Enter the Default show style id for this Studio'), // Deprecated
-	// ensureCollectionProperty('StudioInstallations', {}, 'outputLayers', []), // Deprecated
-	// ensureCollectionProperty('StudioInstallations', {}, 'sourceLayers', []), // Deprecated
 	ensureCollectionProperty('StudioInstallations', {}, 'mappings', {}),
 	ensureCollectionProperty('StudioInstallations', {}, 'config', []),
-
-	/*
-	// ShowStyles collection has been depracated and split into ShowStyleBase & ShowStyleVariant
-	ensureCollectionProperty('ShowStyles', {}, 'name', null, 'text', 'ShowStyle $id: Name', 'Enter the Name of the ShowStyles "$id"'),
-	ensureCollectionProperty('ShowStyles', {}, 'templateMappings', []),
-	// ensureCollectionProperty('ShowStyles', {}, 'baselineTemplate', ''),
-	// ensureCollectionProperty('ShowStyles', {}, 'messageTemplate', ''),
-	// ensureCollectionProperty('ShowStyles', {}, 'routerBlueprint', ''),
-	// ensureCollectionProperty('ShowStyles', {}, 'postProcessBlueprint', ''),
-	// Studio configs:
-	// ensureStudioConfig('media_previews_url', null, 'text', 'Studio $id config: media_previews_url',
-	// 	'Enter the url to the Media-previews endpoint (exposed by the CasparCG-Launcher), example: "http://192.168.0.1:8000/"', 'http://IP-ADDRESS:8000/'),
-	ensureStudioConfig('sofie_url', null, 'text', 'Studio $id config: sofie_url',
-		'Enter the url to this Sofie-application (it\'s the url in your browser), example: "http://sofie01"', 'http://URL-TO-SOFIE'),
-	*/
-
 	{
 		id: 'playoutDevice exists',
 		canBeRunAutomatically: true,
@@ -116,16 +69,7 @@ addMigrationSteps( '0.1.0', [
 		'Enter the file path to ATEM SuperSource Background, example: "/opt/playout-gateway/static/atem-mp/split_overlay.rgba"'),
 	ensureStudioConfig('atemSSrcBackground2', null, 'text', 'Studio $id config: atemSSrcBackground2',
 		'Enter the file path to ATEM SuperSource Background 2, example: "/opt/playout-gateway/static/atem-mp/teknisk_feil.rgba"'),
-	ensureStudioConfig('nora_group', null, 'text', 'Studio $id config: nora_group',
-		'Enter the nora_group paramter, example: "dksl"'),
-	ensureStudioConfig('nora_apikey', null, 'text', 'Studio $id config: nora_apikey',
-		'Enter the nora_apikey parameter'),
-	ensureStudioConfig('metadata_url', null, 'text', 'Studio $id config: metadata_url',
-		'Enter the URL to the send metadata to'),
-	ensureStudioConfig('sources_kam', null, 'text', 'Studio $id config: sources_kam',
-		'Enter the sources_kam parameter (example: "1:1,2:2,3:3,4:4,8:11,9:12"'),
-	ensureStudioConfig('sources_rm', null, 'text', 'Studio $id config: sources_rm',
-		'Enter the sources_rm parameter (example: "1:5,2:6,3:7,4:8,5:9,6:10"'),
+
 	{
 		id: 'Playout-gateway exists',
 		canBeRunAutomatically: false,

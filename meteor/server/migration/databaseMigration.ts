@@ -726,13 +726,13 @@ function getMigrationShowStyleContext (chunk: MigrationChunk): MigrationContextS
 			check(variantId, String)
 			return ShowStyleVariants.findOne({
 				showStyleBaseId: showStyleBase._id,
-				_id: variantId
+				_id: getHash(showStyleBase._id + '_' + variantId)
 			})
 		},
-		insertVariant: (variantPart: OmitId<ShowStyleVariantPart>): string => {
+		insertVariant: (variantId: string, variantPart: OmitId<ShowStyleVariantPart>): string => {
 
 			let variant = {
-				_id: Random.id(),
+				_id: getHash(showStyleBase._id + '_' + variantId),
 				showStyleBaseId: showStyleBase._id,
 				name: variantPart.name,
 				config: []
@@ -742,14 +742,14 @@ function getMigrationShowStyleContext (chunk: MigrationChunk): MigrationContextS
 		updateVariant: (variantId: string, variant: Partial<ShowStyleVariantPart>): void => {
 			check(variantId, String)
 			ShowStyleVariants.update({
-				_id: variantId,
+				_id: getHash(showStyleBase._id + '_' + variantId),
 				showStyleBaseId: showStyleBase._id,
 			}, {$set: variant})
 		},
 		removeVariant: (variantId: string): void => {
 			check(variantId, String)
 			ShowStyleVariants.remove({
-				_id: variantId,
+				_id: getHash(showStyleBase._id + '_' + variantId),
 				showStyleBaseId: showStyleBase._id,
 			})
 		},
@@ -899,7 +899,7 @@ function getMigrationShowStyleContext (chunk: MigrationChunk): MigrationContextS
 			check(configId, String)
 
 			let variant = ShowStyleVariants.findOne({
-				_id: variantId,
+				_id: getHash(showStyleBase._id + '_' + variantId),
 				showStyleBaseId: showStyleBase._id
 			}) as ShowStyleVariant
 			if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
@@ -916,7 +916,7 @@ function getMigrationShowStyleContext (chunk: MigrationChunk): MigrationContextS
 			console.log('setVariantConfig', variantId, configId, value)
 
 			let variant = ShowStyleVariants.findOne({
-				_id: variantId,
+				_id: getHash(showStyleBase._id + '_' + variantId),
 				showStyleBaseId: showStyleBase._id
 			}) as ShowStyleVariant
 			if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
@@ -948,7 +948,7 @@ function getMigrationShowStyleContext (chunk: MigrationChunk): MigrationContextS
 			check(configId, String)
 
 			let variant = ShowStyleVariants.findOne({
-				_id: variantId,
+				_id: getHash(showStyleBase._id + '_' + variantId),
 				showStyleBaseId: showStyleBase._id
 			}) as ShowStyleVariant
 			if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)

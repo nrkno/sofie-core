@@ -1,16 +1,9 @@
 import {
-	ensureSourceLayer,
-	ensureMapping,
 	ensureStudioConfig,
 	ensureDeviceVersion
 } from './lib'
-import { SourceLayerType, LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
 import {
 	DeviceType as PlayoutDeviceType,
-	MappingHyperdeck,
-	MappingHyperdeckType,
-	MappingPanasonicPtz,
-	MappingPanasonicPtzType
 } from 'timeline-state-resolver-types'
 import { addMigrationSteps } from './databaseMigration'
 import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
@@ -23,8 +16,6 @@ import {
 } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../logging'
-import { literal } from '../../lib/lib'
-import { MappingExt } from '../../lib/collections/StudioInstallations'
 
 /**
  * This file contains system specific migration steps.
@@ -149,45 +140,5 @@ addMigrationSteps( '0.16.0', [
 			attribute: null
 		}]
 	},
-	ensureSourceLayer({
-		_id: 'studio0_hyperdeck0',
-		_rank: 0,
-		name: 'Hyperdeck',
-		type: SourceLayerType.UNKNOWN,
-		onPGMClean: true,
-		activateKeyboardHotkeys: '',
-		assignHotkeysToGlobalAdlibs: false,
-		unlimited: false,
-		isHidden: true
-	}),
-	ensureSourceLayer({
-		_id: 'studio0_ptz',
-		_rank: 0,
-		name: 'Robotics',
-		type: SourceLayerType.CAMERA_MOVEMENT,
-		onPGMClean: true,
-		activateKeyboardHotkeys: '',
-		assignHotkeysToGlobalAdlibs: false,
-		unlimited: true
-	}),
-	ensureMapping('hyperdeck0', literal<MappingHyperdeck & MappingExt>({
-		device: PlayoutDeviceType.HYPERDECK,
-		deviceId: 'hyperdeck0',
-		mappingType: MappingHyperdeckType.TRANSPORT,
-		lookahead: LookaheadMode.NONE,
-	})),
-	ensureMapping('ptz0_preset', literal<MappingPanasonicPtz & MappingExt>({
-		device: PlayoutDeviceType.PANASONIC_PTZ,
-		deviceId: 'ptz0',
-		mappingType: MappingPanasonicPtzType.PRESET,
-		lookahead: LookaheadMode.WHEN_CLEAR,
-	})),
-	ensureMapping('ptz0_speed', literal<MappingPanasonicPtz & MappingExt>({
-		device: PlayoutDeviceType.PANASONIC_PTZ,
-		deviceId: 'ptz0',
-		mappingType: MappingPanasonicPtzType.PRESET_SPEED,
-		lookahead: LookaheadMode.NONE,
-	})),
-	ensureStudioConfig('sources_kam_ptz', '1:ptz0'),
 	ensureDeviceVersion('ensureVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.1.1')
 ])
