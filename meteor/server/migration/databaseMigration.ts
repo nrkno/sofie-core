@@ -41,6 +41,9 @@ import {
 	IConfigItem,
 	IOutputLayer
 } from 'tv-automation-sofie-blueprints-integration'
+import {
+	DeviceOptions as PlayoutDeviceSettingsDevice
+} from 'timeline-state-resolver-types'
 import { setMeteorMethods } from '../methods'
 import { logger } from '../../lib/logging'
 import { storeSystemSnapshot } from '../api/snapshot'
@@ -51,6 +54,8 @@ import { evalBlueprints } from '../api/blueprints'
 import { OmitId } from '../../lib/lib'
 import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { Random } from 'meteor/random'
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 /** The current database version, x.y.z
  * 0.16.0: Release 3 (2018-10-26)
@@ -706,6 +711,81 @@ function getMigrationStudioContext (chunk: MigrationChunk): MigrationContextStud
 			}})
 			// Update local:
 			studio.config = _.reject(studio.config, c => c._id === configId)
+		},
+
+		getDevice: (deviceId: string): PlayoutDeviceSettingsDevice | undefined => {
+			check(deviceId, String)
+
+			const selector = {
+				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+				studioInstallationId: studio._id
+			}
+			selector[`settings.devices.${deviceId}`] = { $exists: 1 }
+
+			const parentDevice = PeripheralDevices.findOne(selector, {
+				sort: {
+					created: 1
+				}
+			})
+
+			if (!parentDevice || !parentDevice.settings) return undefined
+			return parentDevice.settings.devices[deviceId] as PlayoutDeviceSettingsDevice
+		},
+		insertDevice: (deviceId: string, device: PlayoutDeviceSettingsDevice): string | null => {
+			check(deviceId, String)
+
+			const parentDevice = PeripheralDevices.findOne({
+				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+				studioInstallationId: studio._id
+			}, {
+				sort: {
+					created: 1
+				}
+			})
+			if (!parentDevice) return null
+
+			let m: any = {}
+			m[`settings.devices.${deviceId}`] = device
+
+			PeripheralDevices.update(parentDevice._id, {
+				$set: m
+			})
+
+			return ''
+		},
+		updateDevice: (deviceId: string, device: Partial<PlayoutDeviceSettingsDevice>): void => {
+			check(deviceId, String)
+
+			const selector = {
+				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+				studioInstallationId: studio._id
+			}
+			selector[`settings.devices.${deviceId}`] = { $exists: 1 }
+
+			const parentDevice = PeripheralDevices.findOne(selector, {
+				sort: {
+					created: 1
+				}
+			})
+			if (!parentDevice || !parentDevice.settings) return
+
+			let m: any = {}
+			m[`settings.devices.${deviceId}`] = _.extend(parentDevice.settings.devices[deviceId], device)
+			PeripheralDevices.update(selector, {
+				$unset: m
+			})
+		},
+		removeDevice: (deviceId: string): void => {
+			check(deviceId, String)
+
+			let m: any = {}
+			m[`settings.devices.${deviceId}`] = 1
+			PeripheralDevices.update({
+				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+				studioInstallationId: studio._id
+			}, {
+				$unset: m
+			})
 		}
 	}
 }

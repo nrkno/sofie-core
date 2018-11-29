@@ -5,6 +5,7 @@ import { TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import {
 	DeviceType as PlayoutDeviceType,
+	DeviceOptions as PlayoutDeviceSettingsDevice,
 	CasparCGOptions,
 	AtemOptions,
 	HyperdeckOptions
@@ -72,10 +73,7 @@ export interface PlayoutDeviceSettings {
 		port: number
 	}
 }
-export interface PlayoutDeviceSettingsDevice {
-	type: PlayoutDeviceType
-	options?: {}
-}
+
 export interface PlayoutDeviceSettingsDeviceCasparCG extends PlayoutDeviceSettingsDevice {
 	type: PlayoutDeviceType.CASPARCG
 	options: CasparCGOptions
