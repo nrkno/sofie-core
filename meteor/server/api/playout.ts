@@ -2975,11 +2975,6 @@ function calcSlOverlapDuration (fromSl: SegmentLine, toSl: SegmentLine): number 
  * @param timelineObjs Array of timeline objects
  */
 function processTimelineObjects (studioInstallation: StudioInstallation, parentRunningOrder: RunningOrder | undefined, timelineObjs: Array<TimelineObj>): void {
-	// Pre-process the timelineObjects:
-	_.each(timelineObjs, (o) => {
-		o.siId = studioInstallation._id
-	})
-
 	// first, split out any grouped objects, to make the timeline shallow:
 	let fixObjectChildren = (o: TimelineObjGroup) => {
 		// Unravel children objects and put them on the (flat) timelineObjs array
@@ -2999,6 +2994,7 @@ function processTimelineObjects (studioInstallation: StudioInstallation, parentR
 	}
 	_.each(timelineObjs, (o: TimelineObj) => {
 		delete o.id
+		o.siId = studioInstallation._id
 
 		if (parentRunningOrder) o.roId = parentRunningOrder._id
 		fixObjectChildren(o as TimelineObjGroup)
@@ -3029,15 +3025,6 @@ export function afterUpdateTimeline (studioInstallation: StudioInstallation, tim
 		return 0
 	})
 	let objHash = getHash(stringifyObjects(timelineObjs))
-
-	// const hashes = {}
-	// for (let o of objs) {
-	// 	hashes[o._id] = getHash(stringifyObjects([o]))
-	// 	if (o._id === 'lookahead_0_7C8oNgssOd2yG0ynN9C1vquc8yc_') {
-	// 		console.log('OBJ: ' + stringifyObjects(o))
-	// 	}
-	// }
-	// console.log('obj hashes: ' + JSON.stringify(hashes))
 
 	// save into "magic object":
 	let magicId = studioInstallation._id + '_statObj'
