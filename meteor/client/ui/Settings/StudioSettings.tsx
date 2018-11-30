@@ -42,6 +42,7 @@ import { ShowStyleBases, ShowStyleBase, } from '../../../lib/collections/ShowSty
 import { IConfigItem, LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { ConfigManifestSettings, ObjectWithConfig, collectConfigs } from './ConfigManifestSettings'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice';
 
 interface IConfigSettingsProps {
 	item: ObjectWithConfig
@@ -920,6 +921,9 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				$not: {
 					$eq: props.match.params.studioId
 				}
+			},
+			parentDeviceId: {
+				$exists: false
 			}
 		}, {
 			sort: {
