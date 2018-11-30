@@ -1,6 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { AsRunLogEventBase, AsRunLog, AsRunLogEvent } from '../../lib/collections/AsRunLog'
+import {
+	AsRunLogEventBase,
+	AsRunLog,
+	AsRunLogEvent
+} from '../../lib/collections/AsRunLog'
 import {
 	getCurrentTime,
 	Time,
@@ -18,7 +22,10 @@ import {
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { logger } from '../../lib/logging'
-import { getBlueprintOfRunningOrder } from './blueprints'
+import { getBlueprintOfRunningOrder, AsRunEventContext } from './blueprints'
+import { IBlueprintExternalMessageQueueObj } from 'tv-automation-sofie-blueprints-integration'
+import { queueExternalMessages } from './ExternalMessageQueue'
+
 export function pushAsRunLogAsync (eventBase: AsRunLogEventBase, rehersal: boolean, timestamp?: Time): Promise<AsRunLogEvent> {
 	if (!timestamp) timestamp = getCurrentTime()
 
@@ -37,13 +44,27 @@ export function pushAsRunLog (eventBase: AsRunLogEventBase, rehersal: boolean, t
 
 	return waitForPromise(p)
 }
+/**
+ * Called after an asRun log event occurs
+ * @param event
+ */
 function handleEvent (event: AsRunLogEvent) {
 	try {
 		if (event.runningOrderId) {
-			let runningOrder = RunningOrders.findOne(event.runningOrderId)
+			let runningOrder = RunningOrders.findOne(event.runningOrderId) as RunningOrder
 			if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${event.runningOrderId}" not found!`)
 
 			let bp = getBlueprintOfRunningOrder(runningOrder)
+
+			if (bp.onAsRunEvent) {
+				const context = new AsRunEventContext(runningOrder)
+
+				Promise.resolve(bp.onAsRunEvent(context))
+				.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {
+
+					queueExternalMessages(runningOrder, messages)
+				})
+			}
 
 		}
 	} catch (e) {

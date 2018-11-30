@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import * as moment from 'moment'
 import { SaferEval } from 'safer-eval'
-import { SegmentLine, DBSegmentLine, SegmentLineNote, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
+import { SegmentLine, DBSegmentLine, SegmentLineNote, SegmentLineNoteType, SegmentLines } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { formatDateAsTimecode, formatDurationAsTimecode, literal, normalizeArray, getCurrentTime } from '../../lib/lib'
@@ -16,20 +16,21 @@ import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import {
 	BlueprintManifest,
 	ICommonContext,
-	MessageContext,
 	MOS,
 	ConfigItemValue,
 	TimelineObjectCoreExt,
 	IBlueprintSegmentLineItem,
 	IBlueprintSegmentLineAdLibItem,
 	BlueprintRuntimeArguments,
-	IBlueprintSegmentLine,
-	SegmentLineContext as IISegmentLineContext,
-	RunningOrderContext as IRunningOrderContext,
 	NotesContext as INotesContext,
+	RunningOrderContextPure as IRunningOrderContextPure,
+	RunningOrderContext as IRunningOrderContext,
+	SegmentContextPure as ISegmentContextPure,
 	SegmentContext as ISegmentContext,
+	SegmentLineContextPure as ISegmentLineContextPure,
 	SegmentLineContext as ISegmentLineContext,
-	MessageContext as IMessageContext
+	EventContext as IEventContext,
+	AsRunEventContext as IAsRunEventContext
 } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
 
@@ -45,7 +46,10 @@ import { BlueprintAPI } from '../../lib/api/blueprint'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 import { parseVersion } from '../../lib/collections/CoreSystem'
 import { Segment } from '../../lib/collections/Segments'
+import { AsRunLogEvent, AsRunLog } from '../../lib/collections/AsRunLog'
+import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 
+// export { MOS, RunningOrder, SegmentLine, ISegmentLineContext }
 export class CommonContext implements ICommonContext {
 
 	private _idPrefix: string = ''
@@ -139,6 +143,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 
 	}
 }
+
 export class RunningOrderContext extends NotesContext implements IRunningOrderContext {
 	runningOrderId: string
 	runningOrder: RunningOrder
@@ -190,23 +195,10 @@ export class RunningOrderContext extends NotesContext implements IRunningOrderCo
 		return this.runningOrder.getSegmentLines()
 	}
 }
-export class SegmentContext extends RunningOrderContext implements ISegmentContext {
-	readonly segment: Segment
-	constructor (runningOrder: RunningOrder, segment: Segment) {
-		super(runningOrder, segment.mosId)
-
-		this.segment = segment
-
-	}
-	getSegmentLines (): Array<SegmentLine> {
-		return this.segment.getSegmentLines()
-	}
-}
-export { MOS, RunningOrder, SegmentLine, ISegmentLineContext }
 export class SegmentLineContext extends RunningOrderContext implements ISegmentLineContext {
 	readonly segmentLine: SegmentLine
-	constructor (runningOrder: RunningOrder, segmentLine: SegmentLine, story: MOS.IMOSStory) {
-		super(runningOrder, (story.Slug || segmentLine.mosId) + '')
+	constructor (runningOrder: RunningOrder, segmentLine: SegmentLine, story?: MOS.IMOSStory) {
+		super(runningOrder, ((story ? story.Slug : '') || segmentLine.mosId) + '')
 
 		this.segmentLine = segmentLine
 
@@ -220,6 +212,53 @@ export class SegmentLineContext extends RunningOrderContext implements ISegmentL
 	/** return segmentLines in this segment */
 	getSegmentLines (): Array<SegmentLine> {
 		return super.getSegmentLines().filter((sl: SegmentLine) => sl.segmentId === this.segmentLine.segmentId)
+	}
+}
+
+export class EventContext extends CommonContext implements IEventContext {
+	// TDB: Certain actions that can be triggered in Core by the Blueprint
+}
+export class AsRunEventContext extends RunningOrderContext implements IAsRunEventContext {
+
+	public asRunEvent: AsRunLogEvent
+
+	constructor (runningOrder: RunningOrder) {
+		super(runningOrder)
+	}
+
+	/** Get all asRunEvents in the runningOrder */
+	getAllAsRunEvents (): Array<AsRunLogEvent> {
+		return AsRunLog.find({
+			runningOrderId: this.runningOrder._id
+		}, {
+			sort: {
+				timestamp: 1
+			}
+		}).fetch()
+	}
+	/** Get all segmentLines in this runningOrder */
+	getSegmentLines (): Array<SegmentLine> {
+		return this.runningOrder.getSegmentLines()
+	}
+	/** Get the segmentLine related to this AsRunEvent */
+	getSegmentLine (): SegmentLine | undefined {
+		if (this.asRunEvent.segmentLineId) {
+			return SegmentLines.findOne(this.asRunEvent.segmentLineId)
+		}
+	}
+	/** Get the mos story related to a segmentLine */
+	getStoryForSegmentLine (segmentLine: SegmentLine): MOS.IMOSROFullStory {
+		return this.runningOrder.fetchCache(CachePrefix.FULLSTORY + segmentLine._id)
+	}
+	/** Get the mos story related to the runningOrder */
+	getStoryForRunningOrder (): MOS.IMOSRunningOrder {
+		return this.runningOrder.fetchCache(CachePrefix.ROCREATE + this.runningOrder._id)
+	}
+	formatDateAsTimecode (time: number): string {
+		return formatDateAsTimecode(new Date(time))
+	}
+	formatDurationAsTimecode (time: number): string {
+		return formatDurationAsTimecode(time)
 	}
 }
 export function insertBlueprint (name?: string): string {
