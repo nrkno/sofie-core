@@ -481,16 +481,18 @@ export function runMigration (
 
 			// Run the migration script
 
-			if (step.chunk.sourceType === MigrationStepType.CORE) {
-				let migration = step.migrate as MigrateFunctionCore
-				migration(stepInput)
-			} else if (step.chunk.sourceType === MigrationStepType.STUDIO) {
-				let migration = step.migrate as MigrateFunctionStudio
-				migration(getMigrationStudioContext(step.chunk), stepInput)
-			} else if (step.chunk.sourceType === MigrationStepType.SHOWSTYLE) {
-				let migration = step.migrate as MigrateFunctionShowStyle
-				migration(getMigrationShowStyleContext(step.chunk), stepInput)
-			} else throw new Meteor.Error(500, `Unknown step.chunk.sourceType "${step.chunk.sourceType}"`)
+			if (step.migrate !== undefined) {
+				if (step.chunk.sourceType === MigrationStepType.CORE) {
+					let migration = step.migrate as MigrateFunctionCore
+					migration(stepInput)
+				} else if (step.chunk.sourceType === MigrationStepType.STUDIO) {
+					let migration = step.migrate as MigrateFunctionStudio
+					migration(getMigrationStudioContext(step.chunk), stepInput)
+				} else if (step.chunk.sourceType === MigrationStepType.SHOWSTYLE) {
+					let migration = step.migrate as MigrateFunctionShowStyle
+					migration(getMigrationShowStyleContext(step.chunk), stepInput)
+				} else throw new Meteor.Error(500, `Unknown step.chunk.sourceType "${step.chunk.sourceType}"`)
+			}
 
 			// After migration, run the validation again
 			// Since the migration should be done by now, the validate should return true
