@@ -59,7 +59,6 @@ export function generateRecordingTimelineObjs (studio: StudioInstallation, recor
 			id: '',
 			siId: studio._id,
 			roId: '',
-			deviceId: [''],
 			trigger: {
 				type: TriggerType.TIME_ABSOLUTE,
 				value: recording.startedAt
@@ -81,7 +80,6 @@ export function generateRecordingTimelineObjs (studio: StudioInstallation, recor
 			id: '',
 			siId: studio._id,
 			roId: '',
-			deviceId: [''],
 			trigger: {
 				type: TriggerType.LOGICAL,
 				value: '1'

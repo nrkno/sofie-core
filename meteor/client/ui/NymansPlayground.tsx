@@ -288,7 +288,6 @@ class extends MeteorReactComponent<ITimeline> {
 				<tr><td>LLayer:</td><td> <EditAttribute type='text' collection={Timeline}	obj={timelineObj} attribute='LLayer'/></td></tr>
 				<tr><td>disabled:</td><td> <EditAttribute type='checkbox' collection={Timeline}	obj={timelineObj} attribute='disabled'/></td></tr> */}
 
-				<tr><td>DeviceId:</td><td>{timelineObj.deviceId}</td></tr>
 				<tr><td>trigger.type:</td><td>{timelineObj.trigger.type}</td></tr>
 				<tr><td>trigger.value:</td><td>{timelineObj.trigger.value}</td></tr>
 				<tr><td>duration:</td><td>{timelineObj.duration} </td></tr>

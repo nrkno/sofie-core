@@ -91,29 +91,31 @@ class CommonContext implements ICommonContext {
 		return this.hashed[hash] || hash
 	}
 	getLayer (type: LayerType, name: string): string {
-		const studio: StudioInstallation = this.getStudioInstallation()
-		const showStyleBase: ShowStyleBase = this.getShowStyleBase()
+		type = type
+		return name
+		// const studio: StudioInstallation = this.getStudioInstallation()
+		// const showStyleBase: ShowStyleBase = this.getShowStyleBase()
 
-		let layer: any
-		switch (type) {
-			case LayerType.Output:
-				layer = showStyleBase.outputLayers.find(l => l._id === name)
-				break
-			case LayerType.Source:
-				layer = showStyleBase.sourceLayers.find(l => l._id === name)
-				break
-			case LayerType.LLayer:
-				layer = _.find(studio.mappings, (v, k) => k === name)
-				break
-			default:
-				throw new Meteor.Error(404, 'getLayer: LayerType "' + type + '" unknown')
-		}
+		// let layer: any
+		// switch (type) {
+		// 	case LayerType.Output:
+		// 		layer = showStyleBase.outputLayers.find(l => l._id === name)
+		// 		break
+		// 	case LayerType.Source:
+		// 		layer = showStyleBase.sourceLayers.find(l => l._id === name)
+		// 		break
+		// 	case LayerType.LLayer:
+		// 		layer = _.find(studio.mappings, (v, k) => k === name)
+		// 		break
+		// 	default:
+		// 		throw new Meteor.Error(404, 'getLayer: LayerType "' + type + '" unknown')
+		// }
 
-		if (layer) {
-			return name
-		}
+		// if (layer) {
+		// 	return name
+		// }
 
-		throw new Meteor.Error(404, 'Missing layer "' + name + '" of type LayerType."' + type + '"')
+		// throw new Meteor.Error(404, 'Missing layer "' + name + '" of type LayerType."' + type + '"')
 	}
 	getStudioConfig (): {[key: string]: ConfigItemValue} {
 		const studio: StudioInstallation = this.getStudioInstallation()
@@ -411,7 +413,6 @@ function convertTimelineObject (o: TimelineObjectCoreExt): TimelineObj {
 		_id: o.id,
 		siId: '',
 		roId: '',
-		deviceId: [''],
 		...o,
 		id: '' // To makes types match
 	}
