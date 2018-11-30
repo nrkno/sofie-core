@@ -56,6 +56,11 @@ import { parseVersion } from '../../lib/collections/CoreSystem'
 import { Segment } from '../../lib/collections/Segments'
 import { AsRunLogEvent, AsRunLog } from '../../lib/collections/AsRunLog'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
+import {
+	DeviceOptions as PlayoutDeviceSettingsDevice
+} from 'timeline-state-resolver-types'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 
 // export { MOS, RunningOrder, SegmentLine, ISegmentLineContext }
 export class CommonContext implements ICommonContext {
@@ -357,6 +362,81 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		}})
 		// Update local:
 		this.studio.config = _.reject(this.studio.config, c => c._id === configId)
+	}
+
+	getDevice (deviceId: string): PlayoutDeviceSettingsDevice | undefined {
+		check(deviceId, String)
+
+		const selector = {
+			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			studioInstallationId: this.studio._id
+		}
+		selector[`settings.devices.${deviceId}`] = { $exists: 1 }
+
+		const parentDevice = PeripheralDevices.findOne(selector, {
+			sort: {
+				created: 1
+			}
+		})
+
+		if (!parentDevice || !parentDevice.settings) return undefined
+		return parentDevice.settings.devices[deviceId] as PlayoutDeviceSettingsDevice
+	}
+	insertDevice (deviceId: string, device: PlayoutDeviceSettingsDevice): string | null {
+		check(deviceId, String)
+
+		const parentDevice = PeripheralDevices.findOne({
+			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			studioInstallationId: this.studio._id
+		}, {
+			sort: {
+				created: 1
+			}
+		})
+		if (!parentDevice) return null
+
+		let m: any = {}
+		m[`settings.devices.${deviceId}`] = device
+
+		PeripheralDevices.update(parentDevice._id, {
+			$set: m
+		})
+
+		return ''
+	}
+	updateDevice (deviceId: string, device: Partial<PlayoutDeviceSettingsDevice>): void {
+		check(deviceId, String)
+
+		const selector = {
+			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			studioInstallationId: this.studio._id
+		}
+		selector[`settings.devices.${deviceId}`] = { $exists: 1 }
+
+		const parentDevice = PeripheralDevices.findOne(selector, {
+			sort: {
+				created: 1
+			}
+		})
+		if (!parentDevice || !parentDevice.settings) return
+
+		let m: any = {}
+		m[`settings.devices.${deviceId}`] = _.extend(parentDevice.settings.devices[deviceId], device)
+		PeripheralDevices.update(selector, {
+			$unset: m
+		})
+	}
+	removeDevice (deviceId: string): void {
+		check(deviceId, String)
+
+		let m: any = {}
+		m[`settings.devices.${deviceId}`] = 1
+		PeripheralDevices.update({
+			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			studioInstallationId: this.studio._id
+		}, {
+			$unset: m
+		})
 	}
 }
 export class MigrationContextShowStyle implements IMigrationContextShowStyle {

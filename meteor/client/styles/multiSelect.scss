@@ -1,0 +1,31 @@
+.expco {
+	user-select: none;
+
+	.expco-expand.action-btn {
+		top: 10px;
+	}
+
+	.expco-body .expco-item {
+		.action-btn {
+			position: static;
+
+			.checkbox {
+				.checkbox-checked, .checkbox-unchecked {
+					top: -3px;
+				}
+			}
+		}
+	}
+	
+	.expco-title.focusable-main {
+		&.placeholder {
+			color: #bbb;
+		}
+	}
+
+	&:not(.expco-expanded) {
+		.action-btn.expco-expand {
+			transform: rotate(180deg);
+		}
+	}
+}

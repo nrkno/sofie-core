@@ -33,6 +33,9 @@ import {
 	MigrationContextStudio as IMigrationContextStudio,
 	MigrationContextShowStyle as IMigrationContextShowStyle
 } from 'tv-automation-sofie-blueprints-integration'
+import {
+	DeviceOptions as PlayoutDeviceSettingsDevice
+} from 'timeline-state-resolver-types'
 import { setMeteorMethods } from '../methods'
 import { logger } from '../../lib/logging'
 import { storeSystemSnapshot } from '../api/snapshot'
@@ -403,6 +406,11 @@ export function runMigration (
 	// Verify the input:
 	let migration = prepareMigration()
 
+	// Filter out any empty chunks
+	chunks = _.filter(chunks, (chunk) => {
+		return chunk._steps.length > 0
+	})
+
 	let manualInputsWithUserPrompt = _.filter(migration.manualInputs, (manualInput) => {
 		return !!(manualInput.stepId && manualInput.attribute)
 	})
@@ -460,20 +468,17 @@ export function runMigration (
 
 			// Run the migration script
 
-			if (step.chunk.sourceType === MigrationStepType.CORE) {
-				let migration = step.migrate as MigrateFunctionCore
-				migration(stepInput)
-			} else if (step.chunk.sourceType === MigrationStepType.STUDIO) {
-				let migration = step.migrate as MigrateFunctionStudio
-				migration(getMigrationStudioContext(step.chunk), stepInput)
-			} else if (step.chunk.sourceType === MigrationStepType.SHOWSTYLE) {
-				let migration = step.migrate as MigrateFunctionShowStyle
-				migration(getMigrationShowStyleContext(step.chunk), stepInput)
-			} else throw new Meteor.Error(500, `Unknown step.chunk.sourceType "${step.chunk.sourceType}"`)
-
-			let migrate = step.migrate as MigrateFunctionCore
-			if (migrate) {
-				migrate(stepInput)
+			if (step.migrate !== undefined) {
+				if (step.chunk.sourceType === MigrationStepType.CORE) {
+					let migration = step.migrate as MigrateFunctionCore
+					migration(stepInput)
+				} else if (step.chunk.sourceType === MigrationStepType.STUDIO) {
+					let migration = step.migrate as MigrateFunctionStudio
+					migration(getMigrationStudioContext(step.chunk), stepInput)
+				} else if (step.chunk.sourceType === MigrationStepType.SHOWSTYLE) {
+					let migration = step.migrate as MigrateFunctionShowStyle
+					migration(getMigrationShowStyleContext(step.chunk), stepInput)
+				} else throw new Meteor.Error(500, `Unknown step.chunk.sourceType "${step.chunk.sourceType}"`)
 			}
 
 			// After migration, run the validation again

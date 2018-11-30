@@ -90,9 +90,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		return (
 			<div className='studio-edit mod mhl mvs'>
 				<div>
-					<label className='field'>
+					<div className='mod mvs mhs'>
 						{t('Blueprint ID')} <i>{blueprint._id}</i>
-					</label>
+					</div>
 					<label className='field'>
 						{t('Blueprint Name')}
 						<div className='mdi'>
