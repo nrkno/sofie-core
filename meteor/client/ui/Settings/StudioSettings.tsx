@@ -920,6 +920,9 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				$not: {
 					$eq: props.match.params.studioId
 				}
+			},
+			parentDeviceId: {
+				$exists: false
 			}
 		}, {
 			sort: {
