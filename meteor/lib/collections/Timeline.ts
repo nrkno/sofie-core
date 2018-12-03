@@ -19,15 +19,12 @@ export interface TimelineObj extends TimelineObjectCoreExt {
 	siId: string
 	/** Running Order Id */
 	roId: string
-	/** Id of the Device */
-	deviceId: Array<string>
 
 	trigger: TimelineTypes.TimelineTrigger & {
 		setFromNow?: boolean
 	}
 
 	inGroup?: string
-	repeating?: boolean
 
 	metadata?: {
 		[key: string]: any

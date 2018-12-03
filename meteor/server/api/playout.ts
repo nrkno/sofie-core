@@ -2146,7 +2146,6 @@ function createSegmentLineGroup (segmentLine: SegmentLine, duration: number | st
 		id: '',
 		siId: '', // added later
 		roId: '', // added later
-		deviceId: [],
 		trigger: {
 			type: TriggerType.TIME_ABSOLUTE,
 			value: 'now'
@@ -2171,7 +2170,6 @@ function createSegmentLineGroupFirstObject (segmentLine: SegmentLine, segmentLin
 		id: '',
 		siId: '', // added later
 		roId: '', // added later
-		deviceId: [],
 		trigger: {
 			type: TriggerType.TIME_ABSOLUTE,
 			value: 0
@@ -2193,7 +2191,6 @@ function createSegmentLineItemGroupFirstObject (segmentLineItem: SegmentLineItem
 		id: '',
 		siId: '', // added later
 		roId: '', // added later
-		deviceId: [],
 		trigger: {
 			type: TriggerType.TIME_ABSOLUTE,
 			value: 0
@@ -2226,7 +2223,6 @@ function createSegmentLineItemGroup (
 		isGroup: true,
 		siId: '',
 		roId: '',
-		deviceId: [],
 		trigger: item.trigger,
 		duration: duration,
 		LLayer: item.sourceLayerId,
@@ -2706,12 +2702,10 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 		timelineObjs = timelineObjs.concat(buildTimelineObjs(roData, baselineItems))
 
 		// next (on pvw (or on pgm if first))
-		// addLookeaheadObjectsToTimeline(activeRunningOrder, studioInstallation, timelineObjs)
 		addLookeaheadObjectsToTimeline(roData, studioInstallation, timelineObjs)
 
 		// console.log(JSON.stringify(timelineObjs))
 
-		// processTimelineObjects(studioInstallation, timelineObjs)
 		processTimelineObjects(studioInstallation, activeRunningOrder, timelineObjs)
 
 		// logger.debug('timelineObjs', timelineObjs)
@@ -2804,7 +2798,6 @@ export function buildTimelineObjs (roData: RoData, baselineItems: RunningOrderBa
 	timelineObjs.push(literal<TimelineObj>({
 		siId: '',
 		roId: '',
-		deviceId: [''],
 		_id: activeRunningOrder._id + '_status',
 		id: '',
 		trigger: {
@@ -3025,8 +3018,6 @@ function calcSlOverlapDuration (fromSl: SegmentLine, toSl: SegmentLine): number 
  * @param timelineObjs Array of timeline objects
  */
 function processTimelineObjects (studioInstallation: StudioInstallation, parentRunningOrder: RunningOrder | undefined, timelineObjs: Array<TimelineObj>): void {
-	// Pre-process the timelineObjects:
-
 	// first, split out any grouped objects, to make the timeline shallow:
 	let fixObjectChildren = (o: TimelineObjGroup) => {
 		// Unravel children objects and put them on the (flat) timelineObjs array
@@ -3046,90 +3037,11 @@ function processTimelineObjects (studioInstallation: StudioInstallation, parentR
 	}
 	_.each(timelineObjs, (o: TimelineObj) => {
 		delete o.id
+		o.siId = studioInstallation._id
 
 		if (parentRunningOrder) o.roId = parentRunningOrder._id
 		fixObjectChildren(o as TimelineObjGroup)
 	})
-
-	// create a mapping of which playout parent processes that has which playoutdevices:
-	let deviceParentDevice: {[deviceId: string]: PeripheralDevice} = {}
-	let peripheralDevicesInStudio = PeripheralDevices.find({
-		studioInstallationId: studioInstallation._id,
-		type: PeripheralDeviceAPI.DeviceType.PLAYOUT
-	}).fetch()
-	_.each(peripheralDevicesInStudio, (pd) => {
-		if (pd.settings) {
-			let settings = pd.settings as PlayoutDeviceSettings
-			_.each(settings.devices, (device, deviceId) => {
-				deviceParentDevice[deviceId] = pd
-			})
-		}
-	})
-
-	// Add deviceIds to all children objects
-	let groupDeviceIds: {[groupId: string]: Array<string>} = {}
-	_.each(timelineObjs, (o) => {
-		o.siId = studioInstallation._id
-		if (!o.isGroup) {
-			const layerId = o.originalLLayer || o.LLayer + ''
-			let LLayerMapping = (studioInstallation.mappings || {})[layerId]
-
-			if (!LLayerMapping && o.isAbstract) {
-				// If the item is abstract, then use the core_abstract mapping, but leave it on the orignal LLayer
-				// We do this because the layer is only needed due to how we construct and run the timeline
-				LLayerMapping = (studioInstallation.mappings || {})['core_abstract']
-			}
-
-			if (LLayerMapping) {
-				let parentDevice = deviceParentDevice[LLayerMapping.deviceId]
-				if (!parentDevice) throw new Meteor.Error(404, 'No parent-device found for device "' + LLayerMapping.deviceId + '"')
-
-				o.deviceId = [parentDevice._id]
-
-				if (o.inGroup) {
-					if (!groupDeviceIds[o.inGroup]) groupDeviceIds[o.inGroup] = []
-					groupDeviceIds[o.inGroup].push(parentDevice._id)
-				}
-
-			} else logger.warn('TimelineObject "' + o._id + '" has an unknown LLayer: "' + o.LLayer + '"')
-		}
-	})
-
-	let groupObjs = _.compact(_.map(timelineObjs, (o) => {
-		if (o.isGroup) {
-			return o
-		}
-		return null
-	}))
-
-	// add the children's deviceIds to their parent groups:
-	let shouldNotRunAgain = true
-	let shouldRunAgain = true
-	for (let i = 0; i < 10; i++) {
-		shouldNotRunAgain = true
-		shouldRunAgain = false
-		_.each(groupObjs, (o) => {
-			if (o.inGroup) {
-				if (!groupDeviceIds[o.inGroup]) groupDeviceIds[o.inGroup] = []
-				groupDeviceIds[o.inGroup] = groupDeviceIds[o.inGroup].concat(o.deviceId)
-				shouldNotRunAgain = false
-			}
-			if (o.isGroup) {
-				let newDeviceId = _.uniq(groupDeviceIds[o._id] || [], false)
-
-				if (!_.isEqual(o.deviceId, newDeviceId)) {
-					shouldRunAgain = true
-					o.deviceId = newDeviceId
-				}
-			}
-		})
-		if (!shouldRunAgain && shouldNotRunAgain) break
-	}
-
-	const missingDev = groupObjs.filter(o => !o.deviceId || !o.deviceId[0]).map(o => o._id)
-	if (missingDev.length > 0) {
-		logger.warn('Found groups without any deviceId: ' + missingDev)
-	}
 }
 
 /**
@@ -3146,83 +3058,41 @@ export function afterUpdateTimeline (studioInstallation: StudioInstallation, tim
 			statObject: {$ne: true}
 		}).fetch()
 	}
-	let ps: Array<Promise<any>> = []
-	let deviceIdObjs: {[deviceId: string]: Array<TimelineObj>} = {}
 
-	if (timelineObjs.length) {
-		_.each(timelineObjs, (o: TimelineObj) => {
-			if (o.statObject !== true) {
-				_.each(o.deviceId || [], (deviceId: string) => {
-					if (!deviceIdObjs[deviceId]) deviceIdObjs[deviceId] = []
-					deviceIdObjs[deviceId].push(o)
-				})
-			}
-		})
-	} else {
-		// there are no objects, timeline is empty
-		// well, we still want to update out statobjs, use their deviceIds then:
-		let statObjs = Timeline.find({
-			siId: studioInstallation._id,
-			statObject: true
-		}).fetch()
-		_.each(statObjs, (o: TimelineObj) => {
-			_.each(o.deviceId || [], (deviceId: string) => {
-				if (!deviceIdObjs[deviceId]) deviceIdObjs[deviceId] = []
-			})
-		})
+	// Number of objects
+	let objCount = timelineObjs.length
+	// Hash of all objects
+	timelineObjs = timelineObjs.sort((a, b) => {
+		if (a._id < b._id) return 1
+		if (a._id > b._id) return -1
+		return 0
+	})
+	let objHash = getHash(stringifyObjects(timelineObjs))
+
+	// save into "magic object":
+	let magicId = studioInstallation._id + '_statObj'
+	let statObj: TimelineObj = {
+		_id: magicId,
+		id: '',
+		siId: studioInstallation._id,
+		statObject: true,
+		roId: '',
+		content: {
+			type: TimelineContentTypeOther.NOTHING,
+			modified: getCurrentTime(),
+			objCount: objCount,
+			objHash: objHash
+		},
+		trigger: {
+			type: TriggerType.TIME_ABSOLUTE,
+			value: 0 // never
+		},
+		duration: 0,
+		isAbstract: true,
+		LLayer: '__stat'
 	}
 
-	// Collect statistics, per device
-	_.each(deviceIdObjs, (objs, deviceId) => {
-		// console.log('deviceId', deviceId)
-
-		// Number of objects
-		let objCount = objs.length
-		// Hash of all objects
-		objs = objs.sort((a, b) => {
-			if (a._id < b._id) return 1
-			if (a._id > b._id) return -1
-			return 0
-		})
-		let objHash = getHash(stringifyObjects(objs))
-
-		// const hashes = {}
-		// for (let o of objs) {
-		// 	hashes[o._id] = getHash(stringifyObjects([o]))
-		// 	if (o._id === 'lookahead_0_7C8oNgssOd2yG0ynN9C1vquc8yc_') {
-		// 		console.log('OBJ: ' + stringifyObjects(o))
-		// 	}
-		// }
-		// console.log('obj hashes: ' + JSON.stringify(hashes))
-
-		// save into "magic object":
-		let magicId = studioInstallation._id + '_' + deviceId + '_statObj'
-		let statObj: TimelineObj = {
-			_id: magicId,
-			id: '',
-			siId: studioInstallation._id,
-			statObject: true,
-			roId: '',
-			deviceId: [deviceId],
-			content: {
-				type: TimelineContentTypeOther.NOTHING,
-				modified: getCurrentTime(),
-				objCount: objCount,
-				objHash: objHash
-			},
-			trigger: {
-				type: TriggerType.TIME_ABSOLUTE,
-				value: 0 // never
-			},
-			duration: 0,
-			isAbstract: true,
-			LLayer: '__stat'
-		}
-		// processTimelineObjects(studioInstallation, [statObj])
-
-		ps.push(asyncCollectionUpsert(Timeline, magicId, {$set: statObj}))
-	})
-	waitForPromiseAll(ps)
+	waitForPromise(asyncCollectionUpsert(Timeline, magicId, {$set: statObj}))
 }
 
 /**

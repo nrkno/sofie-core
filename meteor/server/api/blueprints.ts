@@ -848,7 +848,6 @@ function convertTimelineObject (o: TimelineObjectCoreExt): TimelineObj {
 		_id: o.id,
 		siId: '',
 		roId: '',
-		deviceId: [''],
 		...o,
 		id: '' // To makes types match
 	}
