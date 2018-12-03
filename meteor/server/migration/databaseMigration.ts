@@ -230,8 +230,6 @@ export function prepareMigration (returnAllChunks?: boolean) {
 		}
 	})
 
-	console.log('steps: ', _.map(allMigrationSteps, s => s.id))
-
 	// Sort, smallest version first:
 	allMigrationSteps.sort((a, b) => {
 		let i = compareVersions(a._version, b._version)
@@ -241,8 +239,6 @@ export function prepareMigration (returnAllChunks?: boolean) {
 		if (a._rank < b._rank) return -1
 		return 0
 	})
-
-	console.log('steps2: ', _.map(allMigrationSteps, s => s.id))
 
 	// console.log('allMigrationSteps', allMigrationSteps)
 
@@ -282,11 +278,9 @@ export function prepareMigration (returnAllChunks?: boolean) {
 			if (step.dependOnResultFrom) {
 				if (ignoredSteps[step.dependOnResultFrom]) {
 					// dependent step was ignored, continue then
-					console.log('dependent ignore ' + step.id + ' ' + step.dependOnResultFrom)
 				} else if (migrationSteps[step.dependOnResultFrom]) {
 					// we gotta pause here
 					partialMigration = true
-					console.log('dependent partial ' + step.id + ' ' + step.dependOnResultFrom)
 					return
 				}
 			}
