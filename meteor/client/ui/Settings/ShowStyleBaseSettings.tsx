@@ -482,7 +482,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 		const { t } = this.props
 
 		return (
-			this.props.showStyleBase.sourceLayers.map((item, index) => {
+			_.map(this.props.showStyleBase.sourceLayers, (item, index) => {
 				let newItem = _.clone(item) as (ISourceLayer & {index: number})
 				newItem.index = index
 				return newItem
@@ -867,7 +867,7 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 	renderOutputs () {
 		const { t } = this.props
 		return (
-			this.props.showStyleBase.outputLayers.map((item, index) => {
+			_.map(this.props.showStyleBase.outputLayers, (item, index) => {
 				let newItem = _.clone(item) as (IOutputLayer & { index: number })
 				newItem.index = index
 				return newItem

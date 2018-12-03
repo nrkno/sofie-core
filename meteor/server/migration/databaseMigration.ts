@@ -230,6 +230,8 @@ export function prepareMigration (returnAllChunks?: boolean) {
 		}
 	})
 
+	console.log('steps: ', _.map(allMigrationSteps, s => s.id))
+
 	// Sort, smallest version first:
 	allMigrationSteps.sort((a, b) => {
 		let i = compareVersions(a._version, b._version)
@@ -239,6 +241,8 @@ export function prepareMigration (returnAllChunks?: boolean) {
 		if (a._rank < b._rank) return -1
 		return 0
 	})
+
+	console.log('steps2: ', _.map(allMigrationSteps, s => s.id))
 
 	// console.log('allMigrationSteps', allMigrationSteps)
 
@@ -275,6 +279,18 @@ export function prepareMigration (returnAllChunks?: boolean) {
 
 			if (migrationSteps[step.id] || ignoredSteps[step.id]) throw new Meteor.Error(500, `Error: MigrationStep.id must be unique: "${step.id}"`)
 
+			if (step.dependOnResultFrom) {
+				if (ignoredSteps[step.dependOnResultFrom]) {
+					// dependent step was ignored, continue then
+					console.log('dependent ignore ' + step.id + ' ' + step.dependOnResultFrom)
+				} else if (migrationSteps[step.dependOnResultFrom]) {
+					// we gotta pause here
+					partialMigration = true
+					console.log('dependent partial ' + step.id + ' ' + step.dependOnResultFrom)
+					return
+				}
+			}
+
 			// Check if the step can be applied:
 			if (step.chunk.sourceType === MigrationStepType.CORE) {
 				let validate = step.validate as ValidateFunctionCore
@@ -288,16 +304,6 @@ export function prepareMigration (returnAllChunks?: boolean) {
 			} else throw new Meteor.Error(500, `Unknown step.chunk.sourceType "${step.chunk.sourceType}"`)
 
 			if (step._validateResult) {
-				if (step.dependOnResultFrom) {
-					if (ignoredSteps[step.dependOnResultFrom]) {
-						// dependent step was ignored, continue then
-					} else if (migrationSteps[step.dependOnResultFrom]) {
-						// we gotta pause here
-						partialMigration = true
-						return
-					}
-				}
-
 				migrationSteps[step.id] = step
 			} else {
 				// No need to run step

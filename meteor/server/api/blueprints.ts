@@ -359,6 +359,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			}, {$push: {
 				config : config
 			}})
+			if (!this.studio.config) this.studio.config = []
 			this.studio.config.push(config) // Update local
 		}
 	}
@@ -509,6 +510,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		}, {$push: {
 			sourceLayers: sl
 		}})
+		if (!this.showStyleBase.sourceLayers) this.showStyleBase.sourceLayers = []
 		this.showStyleBase.sourceLayers.push(sl) // Update local
 		return sl._id
 	}
@@ -559,6 +561,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		}, {$push: {
 			outputLayers: sl
 		}})
+		if (!this.showStyleBase.outputLayers) this.showStyleBase.outputLayers = []
 		this.showStyleBase.outputLayers.push(sl) // Update local
 		return sl._id
 	}
@@ -617,6 +620,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 			}, {$push: {
 				config : config
 			}})
+			if (!this.showStyleBase.config) this.showStyleBase.config = []
 			this.showStyleBase.config.push(config) // Update local
 		}
 	}

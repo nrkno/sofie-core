@@ -1,6 +1,7 @@
+import * as _ from 'underscore'
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
-import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { ensureCollectionProperty, ensureStudioConfig } from './lib'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
@@ -40,62 +41,65 @@ addMigrationSteps( '0.1.0', [
 		'Enter the Name of the Studio "$id"'),
 	ensureCollectionProperty('StudioInstallations', {}, 'mappings', {}),
 	ensureCollectionProperty('StudioInstallations', {}, 'config', []),
-	{
-		id: 'playoutDevice exists',
-		canBeRunAutomatically: true,
-		validate: () => {
-			if (!PeripheralDevices.findOne({
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT
-			})) return 'No Playout-device found'
-			return false
-		},
-		// Note: No migrate() function, user must fix this him/herself
-		input: [{
-			label: 'Sofie needs at least one playout-device',
-			description: 'Start up and connect with at least one Playout-gateway',
-			inputType: null,
-			attribute: null
-		}]
-	},
-	// ---------------------------------------------------------------
-	// ---------------------------------------------------------------
-	// To be moved into Blueprints:
-	// ---------------------------------------------------------------
-	// ---------------------------------------------------------------
+
 	ensureStudioConfig('atemSSrcBackground', null, 'text', 'Studio $id config: atemSSrcBackground',
-		'Enter the file path to ATEM SuperSource Background, example: "/opt/playout-gateway/static/atem-mp/split_overlay.rgba"'),
+		'Enter the file path to ATEM SuperSource Background, example: "/opt/playout-gateway/static/atem-mp/split_overlay.rgba"', undefined, 'studio exists'),
 	ensureStudioConfig('atemSSrcBackground2', null, 'text', 'Studio $id config: atemSSrcBackground2',
-		'Enter the file path to ATEM SuperSource Background 2, example: "/opt/playout-gateway/static/atem-mp/teknisk_feil.rgba"'),
+		'Enter the file path to ATEM SuperSource Background 2, example: "/opt/playout-gateway/static/atem-mp/teknisk_feil.rgba"', undefined, 'studio exists'),
 
 	{
 		id: 'Playout-gateway exists',
 		canBeRunAutomatically: false,
+		dependOnResultFrom: 'studio exists',
 		validate: () => {
-			if (!PeripheralDevices.findOne({type: PeripheralDeviceAPI.DeviceType.PLAYOUT})) return 'Playout-gateway not found'
-			return false
+			let studios = StudioInstallations.find().fetch()
+			let missing: string | boolean = false
+			_.each(studios, (studio: StudioInstallation) => {
+				const dev = PeripheralDevices.findOne({
+					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+					studioInstallationId: studio._id
+				})
+				if (!dev) {
+					missing = `Playout-device is missing on ${studio._id}`
+				}
+			})
+
+			return missing
 		},
 		// Note: No migrate() function, user must fix this him/herself
 		input: [{
-			label: 'Playout-device 0 not set up',
+			label: 'Playout-device not set up for all studios',
 			description: 'Start up the Playout-gateway and make sure it\'s connected to Sofie',
 			inputType: null,
 			attribute: null
 		}]
 	},
-	{
-		id: 'Mos-gateway exists',
-		canBeRunAutomatically: false,
-		validate: () => {
-			if (!PeripheralDevices.findOne({type: PeripheralDeviceAPI.DeviceType.MOSDEVICE})) return 'Mos-gateway not found'
-			return false
-		},
-		// Note: No migrate() function, user must fix this him/herself
-		input: [{
-			label: 'Mos-device 0 not set up',
-			description: 'Start up the Mos-gateway and make sure it\'s connected to Sofie',
-			inputType: null,
-			attribute: null
-		}]
-	},
+	// {
+	// 	id: 'Mos-gateway exists',
+	// 	canBeRunAutomatically: false,
+	//	dependOnResultFrom: 'studio exists',
+	// 	validate: () => {
+	// 		let studios = StudioInstallations.find().fetch()
+	// 		let missing: string | boolean = false
+	// 		_.each(studios, (studio: StudioInstallation) => {
+	// 			const dev = PeripheralDevices.findOne({
+	// 				type: PeripheralDeviceAPI.DeviceType.MOSDEVICE,
+	// 				studioInstallationId: studio._id
+	// 			})
+	// 			if (!dev) {
+	// 				missing = `Mos-device is missing on ${studio._id}`
+	// 			}
+	// 		})
+
+	// 		return missing
+	// 	},
+	// 	// Note: No migrate() function, user must fix this him/herself
+	// 	input: [{
+	// 		label: 'Mos-device not set up for all studios',
+	// 		description: 'Start up the Mos-gateway and make sure it\'s connected to Sofie',
+	// 		inputType: null,
+	// 		attribute: null
+	// 	}]
+	// }
 
 ])

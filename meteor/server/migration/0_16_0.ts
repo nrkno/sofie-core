@@ -19,7 +19,7 @@ addMigrationSteps( '0.16.0', [
 	// Todo: Blueprints version
 
 	ensureStudioConfig('slack_evaluation', null, 'text', 'Studio $id config: slack_evaluation',
-		'Enter the URL to the Slack webhook (example: "https://hooks.slack.com/services/WEBHOOKURL"'),
+		'Enter the URL to the Slack webhook (example: "https://hooks.slack.com/services/WEBHOOKURL"', undefined, 'studio exists'),
 
 	{
 		id: 'CoreSystem.storePath',

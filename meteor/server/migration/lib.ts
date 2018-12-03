@@ -104,12 +104,14 @@ export function ensureStudioConfig (
 	inputType?: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch', // EditAttribute types
 	label?: string,
 	description?: string,
-	defaultValue?: any
+	defaultValue?: any,
+	dependOnResultFrom?: string
 ): MigrationStepBase {
 
 	return {
 		id: `studioConfig.${configName}`,
 		canBeRunAutomatically: (_.isNull(value) ? false : true),
+		dependOnResultFrom: dependOnResultFrom,
 		validate: () => {
 			let studios = StudioInstallations.find().fetch()
 			let configMissing: string | boolean = false

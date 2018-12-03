@@ -190,11 +190,12 @@ addMigrationSteps( '0.19.0', [
 
 	ensureCollectionProperty('StudioInstallations', {}, 'settings', {}),
 	ensureCollectionProperty('StudioInstallations', {}, 'defaultShowStyleVariant', null, undefined, 'Default ShowStyleVariant',
-		'Go to the studio settings and set the Default ShowStyleVariant'),
+		'Go to the studio settings and set the Default ShowStyleVariant', undefined, 'studio exists'),
 
 	{ // migrate from config.media_previews_url to settings.mediaPreviewsUrl
 		id: 'studio.settings.mediaPreviewsUrl from config',
 		canBeRunAutomatically: true,
+		dependOnResultFrom: 'studio exists',
 		validate: () => {
 			let validate: boolean | string = false
 			StudioInstallations.find().forEach((studio) => {
@@ -233,6 +234,7 @@ addMigrationSteps( '0.19.0', [
 	{ // migrate from config.sofie_url to settings.sofieUrl
 		id: 'studio.settings.sofieUrl from config',
 		canBeRunAutomatically: true,
+		dependOnResultFrom: 'studio exists',
 		validate: () => {
 			let validate: boolean | string = false
 			StudioInstallations.find().forEach((studio) => {
