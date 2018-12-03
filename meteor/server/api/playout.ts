@@ -59,12 +59,11 @@ import {
 	TimelineObjHoldMode,
 	MOS
 } from 'tv-automation-sofie-blueprints-integration'
-import { loadBlueprints, getBaselineContext, postProcessSegmentLineAdLibItems, postProcessSegmentLineBaselineItems } from './blueprints'
+import { loadBlueprints, postProcessSegmentLineAdLibItems, postProcessSegmentLineBaselineItems, RunningOrderContext, getBlueprintOfRunningOrder, SegmentLineContext } from './blueprints'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 import { PlayoutAPI } from '../../lib/api/playout'
-import { triggerExternalMessage } from './externalMessage'
 import { getHash } from '../lib'
 import { syncFunction, syncFunctionIgnore } from '../codeControl'
 import { getResolvedSegment, ISourceLayerExtended } from '../../lib/RunningOrder'
@@ -334,6 +333,10 @@ export namespace ServerPlayoutAPI {
 		RunningOrders.update(runningOrder._id, {
 			$set: m
 		})
+		// Update local object:
+		runningOrder.active = true
+		runningOrder.rehearsal = rehearsal
+
 		if (!runningOrder.nextSegmentLineId) {
 			let segmentLines = runningOrder.getSegmentLines()
 			let firstSegmentLine = _.first(segmentLines)
@@ -348,40 +351,45 @@ export namespace ServerPlayoutAPI {
 
 			const showStyleBase = runningOrder.getShowStyleBase()
 			let blueprint = loadBlueprints(showStyleBase)
-			if (!blueprint || !blueprint.baseline) {
-				logger.error('Failed to load baseline blueprint')
-			} else {
-				const ctx = getBaselineContext(runningOrder)
 
-				const res = blueprint.baseline(ctx)
-				const baselineItems = postProcessSegmentLineBaselineItems(ctx, res.BaselineItems as any as TimelineObj[]) // TODO - types used here
-				const adlibItems = postProcessSegmentLineAdLibItems(ctx, res.AdLibItems, 'baseline')
+			const context = new RunningOrderContext(runningOrder)
 
-				// TODO - should any notes be logged as a warning, or is that done already?
+			const res = blueprint.getBaseline(context)
+			const baselineItems = postProcessSegmentLineBaselineItems(context, res.baselineItems as any as TimelineObj[]) // TODO - types used here
+			const adlibItems = postProcessSegmentLineAdLibItems(context, res.adLibItems, 'baseline')
 
-				if (baselineItems) {
-					logger.info(`... got ${baselineItems.length} items from baseline.`)
+			// TODO - should any notes be logged as a warning, or is that done already?
 
-					const baselineItem: RunningOrderBaselineItem = {
-						_id: Random.id(7),
-						runningOrderId: runningOrder._id,
-						objects: baselineItems
-					}
+			if (baselineItems) {
+				logger.info(`... got ${baselineItems.length} items from baseline.`)
 
-					saveIntoDb<RunningOrderBaselineItem, RunningOrderBaselineItem>(RunningOrderBaselineItems, {
-						runningOrderId: runningOrder._id
-					}, [baselineItem])
+				const baselineItem: RunningOrderBaselineItem = {
+					_id: Random.id(7),
+					runningOrderId: runningOrder._id,
+					objects: baselineItems
 				}
 
-				if (adlibItems) {
-					logger.info(`... got ${adlibItems.length} adLib items from baseline.`)
-					saveIntoDb<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>(RunningOrderBaselineAdLibItems, {
-						runningOrderId: runningOrder._id
-					}, adlibItems)
-				}
+				saveIntoDb<RunningOrderBaselineItem, RunningOrderBaselineItem>(RunningOrderBaselineItems, {
+					runningOrderId: runningOrder._id
+				}, [baselineItem])
+			}
+
+			if (adlibItems) {
+				logger.info(`... got ${adlibItems.length} adLib items from baseline.`)
+				saveIntoDb<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>(RunningOrderBaselineAdLibItems, {
+					runningOrderId: runningOrder._id
+				}, adlibItems)
 			}
 
 			updateTimeline(runningOrder.studioInstallationId)
+
+			Meteor.defer(() => {
+				let bp = getBlueprintOfRunningOrder(runningOrder)
+				if (bp.onRunningOrderActivate) {
+					Promise.resolve(bp.onRunningOrderActivate(new RunningOrderContext(runningOrder)))
+					.catch(logger.error)
+				}
+			})
 		}
 
 		return literal<ClientAPI.ClientResponse>({
@@ -427,6 +435,14 @@ export namespace ServerPlayoutAPI {
 		updateTimeline(runningOrder.studioInstallationId)
 
 		sendStoryStatus(runningOrder, null)
+
+		Meteor.defer(() => {
+			let bp = getBlueprintOfRunningOrder(runningOrder)
+			if (bp.onRunningOrderDeActivate) {
+				Promise.resolve(bp.onRunningOrderDeActivate(new RunningOrderContext(runningOrder)))
+				.catch(logger.error)
+			}
+		})
 	}
 	function resetSegmentLine (segmentLine: DBSegmentLine): Promise<void> {
 		let ps: Array<Promise<any>> = []
@@ -559,14 +575,16 @@ export namespace ServerPlayoutAPI {
 	export function roTake (roId: string | RunningOrder ) {
 
 		let now = getCurrentTime()
-		let runningOrder: RunningOrder | undefined = (
+		let runningOrder: RunningOrder = (
 			_.isObject(roId) ? roId as RunningOrder :
 			_.isString(roId) ? RunningOrders.findOne(roId) :
 			undefined
-		)
+		) as RunningOrder
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
 		if (!runningOrder.nextSegmentLineId) throw new Meteor.Error(500, 'nextSegmentLineId is not set!')
+
+		let firstTake = !runningOrder.startedPlayback
 
 		if (runningOrder.holdState === RunningOrderHoldState.COMPLETE) {
 			RunningOrders.update(runningOrder._id, {
@@ -632,6 +650,18 @@ export namespace ServerPlayoutAPI {
 		// beforeTake(runningOrder, previousSegmentLine || null, takeSegmentLine)
 		beforeTake(roData, previousSegmentLine || null, takeSegmentLine)
 
+		let bp = getBlueprintOfRunningOrder(runningOrder)
+		if (bp.onPreTake) {
+			try {
+				waitForPromise(
+					Promise.resolve(bp.onPreTake(new SegmentLineContext(runningOrder, takeSegmentLine)))
+					.catch(logger.error)
+				)
+			} catch (e) {
+				logger.error(e)
+			}
+		}
+
 		let ps: Array<Promise<any>> = []
 		let m = {
 			previousSegmentLineId: runningOrder.currentSegmentLineId,
@@ -696,6 +726,21 @@ export namespace ServerPlayoutAPI {
 		SegmentLines.update(takeSegmentLine._id, {
 			$push: {
 				'timings.takeDone': getCurrentTime()
+			}
+		})
+
+		Meteor.defer(() => {
+			let bp = getBlueprintOfRunningOrder(runningOrder)
+			if (firstTake) {
+				if (bp.onRunningOrderFirstTake) {
+					Promise.resolve(bp.onRunningOrderFirstTake(new SegmentLineContext(runningOrder, takeSegmentLine)))
+					.catch(logger.error)
+				}
+			}
+
+			if (bp.onPostTake) {
+				Promise.resolve(bp.onPostTake(new SegmentLineContext(runningOrder, takeSegmentLine)))
+				.catch(logger.error)
 			}
 		})
 	}
@@ -1697,8 +1742,6 @@ function afterTake (runningOrder: RunningOrder, takeSegmentLine: SegmentLine, pr
 		if (takeSegmentLine.updateStoryStatus) {
 			sendStoryStatus(runningOrder, takeSegmentLine)
 		}
-
-		triggerExternalMessage(runningOrder, takeSegmentLine, previousSegmentLine)
 	}, 40)
 }
 

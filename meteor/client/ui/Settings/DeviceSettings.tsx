@@ -6,11 +6,10 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevice,
 	PeripheralDevices,
 	PlayoutDeviceSettings,
-	PlayoutDeviceSettingsDevice,
 	MosDeviceSettings,
 	MosDeviceSettingsDevice
 } from '../../../lib/collections/PeripheralDevices'
-import { DeviceType as PlayoutDeviceType, TimelineContentTypeHttp } from 'timeline-state-resolver-types'
+import { DeviceType as PlayoutDeviceType, DeviceOptions as PlayoutDeviceSettingsDevice, TimelineContentTypeHttp } from 'timeline-state-resolver-types'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'

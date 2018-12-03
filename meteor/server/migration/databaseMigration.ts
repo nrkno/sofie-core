@@ -6,7 +6,6 @@ import {
 	Version
 } from '../../lib/collections/CoreSystem'
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { getHash } from '../lib'
 import {
@@ -22,7 +21,6 @@ import {
 	MigrationStepInputFilteredResult,
 	MigrationStep,
 	MigrationStepBase,
-	MigrationContextStudio,
 	ValidateFunctionCore,
 	MigrateFunctionCore,
 	ValidateFunctionStudio,
@@ -32,25 +30,19 @@ import {
 	InputFunctionCore,
 	InputFunctionStudio,
 	InputFunctionShowStyle,
-	BlueprintMapping,
-	ConfigItemValue,
-	MigrationContextShowStyle,
-	IBlueprintShowStyleVariant,
-	ShowStyleVariantPart,
-	ISourceLayer,
-	IConfigItem,
-	IOutputLayer
+	MigrationContextStudio as IMigrationContextStudio,
+	MigrationContextShowStyle as IMigrationContextShowStyle
 } from 'tv-automation-sofie-blueprints-integration'
+import {
+	DeviceOptions as PlayoutDeviceSettingsDevice
+} from 'timeline-state-resolver-types'
 import { setMeteorMethods } from '../methods'
 import { logger } from '../../lib/logging'
 import { storeSystemSnapshot } from '../api/snapshot'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
-import { evalBlueprints } from '../api/blueprints'
-import { OmitId } from '../../lib/lib'
-import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
-import { Random } from 'meteor/random'
+import { evalBlueprints, MigrationContextStudio, MigrationContextShowStyle } from '../api/blueprints'
 
 /** The current database version, x.y.z
  * 0.16.0: Release 3 (2018-10-26)
@@ -476,16 +468,18 @@ export function runMigration (
 
 			// Run the migration script
 
-			if (step.chunk.sourceType === MigrationStepType.CORE) {
-				let migration = step.migrate as MigrateFunctionCore
-				migration(stepInput)
-			} else if (step.chunk.sourceType === MigrationStepType.STUDIO) {
-				let migration = step.migrate as MigrateFunctionStudio
-				migration(getMigrationStudioContext(step.chunk), stepInput)
-			} else if (step.chunk.sourceType === MigrationStepType.SHOWSTYLE) {
-				let migration = step.migrate as MigrateFunctionShowStyle
-				migration(getMigrationShowStyleContext(step.chunk), stepInput)
-			} else throw new Meteor.Error(500, `Unknown step.chunk.sourceType "${step.chunk.sourceType}"`)
+			if (step.migrate !== undefined) {
+				if (step.chunk.sourceType === MigrationStepType.CORE) {
+					let migration = step.migrate as MigrateFunctionCore
+					migration(stepInput)
+				} else if (step.chunk.sourceType === MigrationStepType.STUDIO) {
+					let migration = step.migrate as MigrateFunctionStudio
+					migration(getMigrationStudioContext(step.chunk), stepInput)
+				} else if (step.chunk.sourceType === MigrationStepType.SHOWSTYLE) {
+					let migration = step.migrate as MigrateFunctionShowStyle
+					migration(getMigrationShowStyleContext(step.chunk), stepInput)
+				} else throw new Meteor.Error(500, `Unknown step.chunk.sourceType "${step.chunk.sourceType}"`)
+			}
 
 			// After migration, run the validation again
 			// Since the migration should be done by now, the validate should return true
@@ -628,342 +622,24 @@ function resetDatabaseVersions () {
 	})
 }
 
-function getMigrationStudioContext (chunk: MigrationChunk): MigrationContextStudio {
+function getMigrationStudioContext (chunk: MigrationChunk): IMigrationContextStudio {
 
 	if (chunk.sourceType !== MigrationStepType.STUDIO) throw new Meteor.Error(500, `wrong chunk.sourceType "${chunk.sourceType}", expected STUDIO`)
 	if (!chunk.sourceId) throw new Meteor.Error(500, `chunk.sourceId missing` )
 
-	let studio = StudioInstallations.findOne(chunk.sourceId) as StudioInstallation
+	let studio = StudioInstallations.findOne(chunk.sourceId)
 	if (!studio) throw new Meteor.Error(404, `Studio "${chunk.sourceId}" not found`)
 
-	return {
-		getMapping: (mappingId: string): BlueprintMapping | undefined => {
-			check(mappingId, String)
-			let mapping = studio.mappings[mappingId]
-			if (mapping) return _.clone(mapping)
-		},
-		insertMapping: (mappingId: string, mapping: OmitId<BlueprintMapping>): string => {
-			check(mappingId, String)
-			let m: any = {}
-			m['mappings.' + mappingId] = mapping
-			StudioInstallations.update(studio._id, {$set: m})
-			studio.mappings[mappingId] = m['mappings.' + mappingId] // Update local
-			return mappingId
-		},
-		updateMapping: (mappingId: string, mapping: Partial<BlueprintMapping>): void => {
-			check(mappingId, String)
-			let m: any = {}
-			m['mappings.' + mappingId] = _.extend(studio.mappings[mappingId], mapping)
-			StudioInstallations.update(studio._id, {$set: m})
-			studio.mappings[mappingId] = m['mappings.' + mappingId] // Update local
-		},
-		removeMapping: (mappingId: string): void => {
-			check(mappingId, String)
-			let m: any = {}
-			m['mappings.' + mappingId] = 1
-			StudioInstallations.update(studio._id, {$unset: m})
-			delete studio.mappings[mappingId] // Update local
-		},
-		getConfig: (configId: string): ConfigItemValue | undefined => {
-			check(configId, String)
-			let configItem = _.find(studio.config, c => c._id === configId)
-			if (configItem) return configItem.value
-		},
-		setConfig: (configId: string, value: ConfigItemValue): void => {
-			check(configId, String)
-
-			let configItem = _.find(studio.config, c => c._id === configId)
-			if (configItem) {
-				StudioInstallations.update({
-					_id: studio._id,
-					'config._id': configId
-				}, {$set: {
-					'config.$.value' : value
-				}})
-				configItem.value = value // Update local
-			} else {
-				let config: IConfigItem = {
-					_id: configId,
-					value: value
-				}
-				StudioInstallations.update({
-					_id: studio._id,
-				}, {$push: {
-					config : config
-				}})
-				studio.config.push(config) // Update local
-			}
-		},
-		removeConfig: (configId: string): void => {
-			check(configId, String)
-
-			StudioInstallations.update({
-				_id: studio._id,
-			}, {$pull: {
-				'config': {
-					_id: configId
-				}
-			}})
-			// Update local:
-			studio.config = _.reject(studio.config, c => c._id === configId)
-		}
-	}
+	return new MigrationContextStudio(studio)
 }
-function getMigrationShowStyleContext (chunk: MigrationChunk): MigrationContextShowStyle {
+function getMigrationShowStyleContext (chunk: MigrationChunk): IMigrationContextShowStyle {
 	if (chunk.sourceType !== MigrationStepType.SHOWSTYLE) throw new Meteor.Error(500, `wrong chunk.sourceType "${chunk.sourceType}", expected SHOWSTYLE`)
 	if (!chunk.sourceId) throw new Meteor.Error(500, `chunk.sourceId missing` )
 
-	let showStyleBase = ShowStyleBases.findOne(chunk.sourceId) as ShowStyleBase
+	let showStyleBase = ShowStyleBases.findOne(chunk.sourceId)
 	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${chunk.sourceId}" not found`)
 
-	return {
-		getAllVariants: (): IBlueprintShowStyleVariant[] => {
-			return ShowStyleVariants.find({
-				showStyleBaseId: showStyleBase._id
-			}).fetch()
-		},
-		getVariant: (variantId: string): IBlueprintShowStyleVariant | undefined => {
-			check(variantId, String)
-			return ShowStyleVariants.findOne({
-				showStyleBaseId: showStyleBase._id,
-				_id: variantId
-			})
-		},
-		insertVariant: (variantPart: OmitId<ShowStyleVariantPart>): string => {
-
-			let variant = {
-				_id: Random.id(),
-				showStyleBaseId: showStyleBase._id,
-				name: variantPart.name,
-				config: []
-			}
-			return ShowStyleVariants.insert(variant)
-		},
-		updateVariant: (variantId: string, variant: Partial<ShowStyleVariantPart>): void => {
-			check(variantId, String)
-			ShowStyleVariants.update({
-				_id: variantId,
-				showStyleBaseId: showStyleBase._id,
-			}, {$set: variant})
-		},
-		removeVariant: (variantId: string): void => {
-			check(variantId, String)
-			ShowStyleVariants.remove({
-				_id: variantId,
-				showStyleBaseId: showStyleBase._id,
-			})
-		},
-		getSourceLayer: (sourceLayerId: string): ISourceLayer | undefined => {
-			check(sourceLayerId, String)
-			return _.find(showStyleBase.sourceLayers, sl => sl._id === sourceLayerId)
-		},
-		insertSourceLayer: (layer: ISourceLayer): string => {
-			if (layer._id) {
-				let oldLayer = _.find(showStyleBase.sourceLayers, sl => sl._id === layer._id)
-				if (oldLayer) throw new Meteor.Error(500, `Can't insert SourceLayer, _id "${layer._id}" already exists!`)
-			}
-
-			let sl: ISourceLayer = _.extend(layer, {
-				_id: layer._id || Random.id()
-			})
-			ShowStyleBases.update({
-				_id: showStyleBase._id,
-			}, {$push: {
-				sourceLayers: sl
-			}})
-			showStyleBase.sourceLayers.push(sl) // Update local
-			return sl._id
-		},
-		updateSourceLayer: (sourceLayerId: string, layer: Partial<ISourceLayer>): void => {
-			check(sourceLayerId, String)
-			let sl = _.find(showStyleBase.sourceLayers, sl => sl._id === sourceLayerId) as ISourceLayer
-			if (!sl) throw new Meteor.Error(404, `SourceLayer "${sourceLayerId}" not found`)
-
-			_.each(layer, (value, key) => {
-				sl[key] = value // Update local
-			})
-			ShowStyleBases.update({
-				_id: showStyleBase._id,
-				'sourceLayers._id': sourceLayerId
-			}, {$set: {
-				'sourceLayers.$' : sl
-			}})
-
-		},
-		removeSourceLayer: (sourceLayerId: string): void => {
-			check(sourceLayerId, String)
-
-			ShowStyleBases.update({
-				_id: showStyleBase._id,
-			}, {$pull: {
-				'sourceLayers': {
-					_id: sourceLayerId
-				}
-			}})
-			// Update local:
-			showStyleBase.sourceLayers = _.reject(showStyleBase.sourceLayers, c => c._id === sourceLayerId)
-		},
-		getOutputLayer: (outputLayerId: string): IOutputLayer | undefined => {
-			check(outputLayerId, String)
-			return _.find(showStyleBase.outputLayers, sl => sl._id === outputLayerId)
-		},
-		insertOutputLayer: (layer: IOutputLayer): string => {
-			if (layer._id) {
-				let oldLayer = _.find(showStyleBase.outputLayers, sl => sl._id === layer._id)
-				if (oldLayer) throw new Meteor.Error(500, `Can't insert OutputLayer, _id "${layer._id}" already exists!`)
-			}
-
-			let sl: IOutputLayer = _.extend(layer, {
-				_id: layer._id || Random.id()
-			})
-			ShowStyleBases.update({
-				_id: showStyleBase._id,
-			}, {$push: {
-				outputLayers: sl
-			}})
-			showStyleBase.outputLayers.push(sl) // Update local
-			return sl._id
-		},
-		updateOutputLayer: (outputLayerId: string, layer: Partial<IOutputLayer>): void => {
-			check(outputLayerId, String)
-			let sl = _.find(showStyleBase.outputLayers, sl => sl._id === outputLayerId) as IOutputLayer
-			if (!sl) throw new Meteor.Error(404, `OutputLayer "${outputLayerId}" not found`)
-
-			_.each(layer, (value, key) => {
-				sl[key] = value // Update local
-			})
-			ShowStyleBases.update({
-				_id: showStyleBase._id,
-				'outputLayers._id': outputLayerId
-			}, {$set: {
-				'outputLayers.$' : sl
-			}})
-		},
-		removeOutputLayer: (outputLayerId: string): void => {
-			check(outputLayerId, String)
-			ShowStyleBases.update({
-				_id: showStyleBase._id,
-			}, {$pull: {
-				'outputLayers': {
-					_id: outputLayerId
-				}
-			}})
-			// Update local:
-			showStyleBase.outputLayers = _.reject(showStyleBase.outputLayers, c => c._id === outputLayerId)
-		},
-		getBaseConfig: (configId: string): ConfigItemValue | undefined => {
-			check(configId, String)
-			let configItem = _.find(showStyleBase.config, c => c._id === configId)
-			if (configItem) return configItem.value
-		},
-		setBaseConfig: (configId: string, value: ConfigItemValue): void => {
-			check(configId, String)
-			if (_.isUndefined(value)) throw new Meteor.Error(400, `setBaseConfig "${configId}": value is undefined`)
-
-			let configItem = _.find(showStyleBase.config, c => c._id === configId)
-			if (configItem) {
-				ShowStyleBases.update({
-					_id: showStyleBase._id,
-					'config._id': configId
-				}, {$set: {
-					'config.$.value' : value
-				}})
-				configItem.value = value // Update local
-			} else {
-				let config: IConfigItem = {
-					_id: configId,
-					value: value
-				}
-				ShowStyleBases.update({
-					_id: showStyleBase._id,
-				}, {$push: {
-					config : config
-				}})
-				showStyleBase.config.push(config) // Update local
-			}
-		},
-		removeBaseConfig: (configId: string): void => {
-			check(configId, String)
-			ShowStyleBases.update({
-				_id: showStyleBase._id,
-			}, {$pull: {
-				'config': {
-					_id: configId
-				}
-			}})
-			// Update local:
-			showStyleBase.config = _.reject(showStyleBase.config, c => c._id === configId)
-		},
-		getVariantConfig: (variantId: string, configId: string): ConfigItemValue | undefined => {
-			check(variantId, String)
-			check(configId, String)
-
-			let variant = ShowStyleVariants.findOne({
-				_id: variantId,
-				showStyleBaseId: showStyleBase._id
-			}) as ShowStyleVariant
-			if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
-
-			let configItem = _.find(variant.config, c => c._id === configId)
-			if (configItem) return configItem.value
-		},
-		setVariantConfig: (variantId: string, configId: string, value: ConfigItemValue): void => {
-			check(variantId, String)
-			check(configId, String)
-
-			if (_.isUndefined(value)) throw new Meteor.Error(400, `setVariantConfig "${variantId}", "${configId}": value is undefined`)
-
-			console.log('setVariantConfig', variantId, configId, value)
-
-			let variant = ShowStyleVariants.findOne({
-				_id: variantId,
-				showStyleBaseId: showStyleBase._id
-			}) as ShowStyleVariant
-			if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
-
-			let configItem = _.find(variant.config, c => c._id === configId)
-			if (configItem) {
-				ShowStyleVariants.update({
-					_id: variant._id,
-					'config._id': configId
-				}, {$set: {
-					'config.$.value' : value
-				}})
-				configItem.value = value // Update local
-			} else {
-				let config: IConfigItem = {
-					_id: configId,
-					value: value
-				}
-				ShowStyleVariants.update({
-					_id: variant._id,
-				}, {$push: {
-					config : config
-				}})
-				variant.config.push(config) // Update local
-			}
-		},
-		removeVariantConfig: (variantId: string, configId: string): void => {
-			check(variantId, String)
-			check(configId, String)
-
-			let variant = ShowStyleVariants.findOne({
-				_id: variantId,
-				showStyleBaseId: showStyleBase._id
-			}) as ShowStyleVariant
-			if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
-
-			ShowStyleVariants.update({
-				_id: variant._id,
-			}, {$pull: {
-				'config': {
-					_id: configId
-				}
-			}})
-			// Update local:
-			showStyleBase.config = _.reject(showStyleBase.config, c => c._id === configId)
-		}
-	}
+	return new MigrationContextShowStyle(showStyleBase)
 }
 
 let methods = {}

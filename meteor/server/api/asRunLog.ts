@@ -1,5 +1,10 @@
+import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { AsRunLogEventBase, AsRunLog, AsRunLogEvent } from '../../lib/collections/AsRunLog'
+import {
+	AsRunLogEventBase,
+	AsRunLog,
+	AsRunLogEvent
+} from '../../lib/collections/AsRunLog'
 import {
 	getCurrentTime,
 	Time,
@@ -17,8 +22,11 @@ import {
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { logger } from '../../lib/logging'
+import { getBlueprintOfRunningOrder, AsRunEventContext } from './blueprints'
+import { IBlueprintExternalMessageQueueObj } from 'tv-automation-sofie-blueprints-integration'
+import { queueExternalMessages } from './ExternalMessageQueue'
 
-export function pushAsRunLogAsync (eventBase: AsRunLogEventBase, rehersal: boolean, timestamp?: Time) {
+export function pushAsRunLogAsync (eventBase: AsRunLogEventBase, rehersal: boolean, timestamp?: Time): Promise<AsRunLogEvent> {
 	if (!timestamp) timestamp = getCurrentTime()
 
 	let event: AsRunLogEvent = _.extend({}, eventBase, {
@@ -27,11 +35,41 @@ export function pushAsRunLogAsync (eventBase: AsRunLogEventBase, rehersal: boole
 	})
 
 	return asyncCollectionInsert(AsRunLog, event)
+	.then(() => {
+		return event
+	})
 }
-export function pushAsRunLog (eventBase: AsRunLogEventBase, rehersal: boolean, timestamp?: Time) {
+export function pushAsRunLog (eventBase: AsRunLogEventBase, rehersal: boolean, timestamp?: Time): AsRunLogEvent {
 	let p = pushAsRunLogAsync(eventBase, rehersal, timestamp)
 
 	return waitForPromise(p)
+}
+/**
+ * Called after an asRun log event occurs
+ * @param event
+ */
+function handleEvent (event: AsRunLogEvent) {
+	try {
+		if (event.runningOrderId) {
+			let runningOrder = RunningOrders.findOne(event.runningOrderId) as RunningOrder
+			if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${event.runningOrderId}" not found!`)
+
+			let bp = getBlueprintOfRunningOrder(runningOrder)
+
+			if (bp.onAsRunEvent) {
+				const context = new AsRunEventContext(runningOrder)
+
+				Promise.resolve(bp.onAsRunEvent(context))
+				.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {
+
+					queueExternalMessages(runningOrder, messages)
+				})
+			}
+
+		}
+	} catch (e) {
+		logger.error(e)
+	}
 }
 
 // Convenience functions:
@@ -53,12 +91,13 @@ export function reportRunningOrderHasStarted (runningOrderOrId: RunningOrder | s
 		// also update local object:
 		runningOrder.startedPlayback = timestamp
 
-		pushAsRunLog({
+		let event = pushAsRunLog({
 			studioId: runningOrder.studioInstallationId,
 			runningOrderId: runningOrder._id,
 			content: 'startedPlayback',
 			content2: 'runningOrder'
 		}, !!runningOrder.rehearsal, timestamp)
+		handleEvent(event)
 	} else logger.error(`runningOrder not found in reportRunningOrderHasStarted "${runningOrderOrId}"`)
 }
 // export function reportSegmentHasStarted (segment: Segment, timestamp?: Time) {
@@ -90,7 +129,7 @@ export function reportSegmentLineHasStarted (segmentLineOrId: SegmentLine | stri
 		pushOntoPath(segmentLine, 'timings.startedPlayback', timestamp)
 
 		if (runningOrder) {
-			pushAsRunLog({
+			let event = pushAsRunLog({
 				studioId:			runningOrder.studioInstallationId,
 				runningOrderId:		runningOrder._id,
 				segmentId:			segmentLine.segmentId,
@@ -98,6 +137,7 @@ export function reportSegmentLineHasStarted (segmentLineOrId: SegmentLine | stri
 				content:			'startedPlayback',
 				content2: 			'segmentLine'
 			}, !!runningOrder.rehearsal, timestamp)
+			handleEvent(event)
 		} else logger.error(`runningOrder "${segmentLine.runningOrderId}" not found in reportSegmentLineHasStarted "${segmentLine._id}"`)
 	} else logger.error(`segmentLine not found in reportSegmentLineHasStarted "${segmentLineOrId}"`)
 }
@@ -132,7 +172,7 @@ export function reportSegmentLineItemHasStarted (segmentLineItemOrId: SegmentLin
 		pushOntoPath(segmentLineItem, 'timings.startedPlayback', timestamp)
 
 		if (runningOrder) {
-			pushAsRunLog({
+			let event = pushAsRunLog({
 				studioId:			runningOrder.studioInstallationId,
 				runningOrderId:		runningOrder._id,
 				segmentId:			segmentLine.segmentId,
@@ -141,6 +181,7 @@ export function reportSegmentLineItemHasStarted (segmentLineItemOrId: SegmentLin
 				content:			'startedPlayback',
 				content2: 			'segmentLineItem'
 			}, !!runningOrder.rehearsal, timestamp)
+			handleEvent(event)
 		} else logger.error(`runningOrder "${segmentLine.runningOrderId}" not found in reportSegmentLineHasStarted "${segmentLine._id}"`)
 
 	} else logger.error(`segmentLineItem not found in reportSegmentLineItemHasStarted "${segmentLineItemOrId}"`)

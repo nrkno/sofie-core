@@ -6,16 +6,51 @@ import {
 import {
 	ExternalMessageQueueObjSOAP,
 	ExternalMessageQueueObjSOAPMessageAttrFcn,
-	iterateDeeply, iterateDeeplyAsync, iterateDeeplyEnum
+	iterateDeeply, iterateDeeplyAsync, iterateDeeplyEnum, IBlueprintExternalMessageQueueObj
 } from 'tv-automation-sofie-blueprints-integration'
-import { getCurrentTime, escapeHtml } from '../../lib/lib'
+import { getCurrentTime, escapeHtml, removeNullyProperties } from '../../lib/lib'
 import * as _ from 'underscore'
 import * as soap from 'soap'
 import * as parser from 'xml2json'
 import { XmlEntities as Entities } from 'html-entities'
 import { Meteor } from 'meteor/meteor'
 import { setMeteorMethods } from '../methods'
+import { RunningOrder } from '../../lib/collections/RunningOrders'
 const entities = new Entities()
+
+export function queueExternalMessages (runningOrder: RunningOrder, messages: Array<IBlueprintExternalMessageQueueObj>) {
+	_.each(messages, (message) => {
+
+		// check the output:
+		if (!message) 			throw new Meteor.Error('Falsy result!')
+		if (!message.type) 		throw new Meteor.Error('attribute .type missing!')
+		if (!message.receiver) 	throw new Meteor.Error('attribute .receiver missing!')
+		if (!message.message) 	throw new Meteor.Error('attribute .message missing!')
+
+		// Save the output into the message queue, for later processing:
+		let now = getCurrentTime()
+		let message2: ExternalMessageQueueObj = {
+			_id: '',
+			type: message.type,
+			receiver: message.receiver,
+			message: message.message,
+			studioId: runningOrder.studioInstallationId,
+			created: now,
+			tryCount: 0,
+			expires: now + 35 * 24 * 3600 * 1000, // 35 days
+		}
+
+		message2 = removeNullyProperties(message2)
+
+		// console.log('result', result)
+
+		if (!runningOrder.rehearsal) { // Don't save the message when running rehearsals
+			ExternalMessageQueue.insert(message2)
+
+			triggerdoMessageQueue() // trigger processing of the queue
+		}
+	})
+}
 
 let runMessageQueue = true
 let errorOnLastRunCount: number = 0
