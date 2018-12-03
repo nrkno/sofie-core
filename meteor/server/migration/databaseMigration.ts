@@ -404,12 +404,7 @@ export function runMigration (
 	// logger.info(`Migration: Starting, from "${baseVersion.toString()}" to "${targetVersion.toString()}".`)
 
 	// Verify the input:
-	let migration = prepareMigration()
-
-	// Filter out any empty chunks
-	chunks = _.filter(chunks, (chunk) => {
-		return chunk._steps.length > 0
-	})
+	let migration = prepareMigration(true)
 
 	let manualInputsWithUserPrompt = _.filter(migration.manualInputs, (manualInput) => {
 		return !!(manualInput.stepId && manualInput.attribute)

@@ -8,7 +8,7 @@ import { ShowStyles } from './deprecatedDataTypes/0_18_0'
 import { RunningOrders } from '../../lib/collections/RunningOrders'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import * as _ from 'underscore'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices';
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 
 /**
  * This file contains system specific migration steps.
@@ -320,6 +320,8 @@ addMigrationSteps( '0.19.0', [
 				$unset: {
 					studioInstallationId: true
 				}
+			}, {
+				multi: true
 			})
 		}
 	},
