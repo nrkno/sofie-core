@@ -34,7 +34,12 @@ import {
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
-import { loadBlueprints, postProcessSegmentLineAdLibItems, postProcessSegmentLineItems, getRunStoryContext } from '../blueprints'
+import {
+	loadBlueprints,
+	postProcessSegmentLineAdLibItems,
+	postProcessSegmentLineItems,
+	SegmentLineContext
+} from '../blueprints'
 import { getHash } from '../../lib'
 import {
 	StudioInstallations,
@@ -221,7 +226,7 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 	let showStyleBase = ShowStyleBases.findOne(ro.showStyleBaseId)
 	if (!showStyleBase) throw new Meteor.Error(404, 'ShowStyleBase "' + ro.showStyleBaseId + '" not found!')
 
-	const context = getRunStoryContext(ro, segmentLine, story)
+	const context = new SegmentLineContext(ro, segmentLine, story)
 
 	let resultSl: IBlueprintSegmentLine | undefined = undefined
 	let resultSli: SegmentLineItem[] | undefined = undefined
@@ -229,12 +234,12 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 	let notes: SegmentLineNote[] = []
 	try {
 		const blueprints = loadBlueprints(showStyleBase)
-		let result = blueprints.runStory(context, story)
+		let result = blueprints.getSegmentLine(context, story)
 
  		if (result) {
-			resultAdlibSli = postProcessSegmentLineAdLibItems(context, result.AdLibItems, result.SegmentLine.typeVariant, segmentLine._id)
-			resultSli = postProcessSegmentLineItems(context, result.SegmentLineItems, result.SegmentLine.typeVariant, segmentLine._id)
-			resultSl = result.SegmentLine
+			resultAdlibSli = postProcessSegmentLineAdLibItems(context, result.adLibItems, result.segmentLine.typeVariant, segmentLine._id)
+			resultSli = postProcessSegmentLineItems(context, result.segmentLineItems, result.segmentLine.typeVariant, segmentLine._id)
+			resultSl = result.segmentLine
 		}
 
  		notes = context.getNotes()

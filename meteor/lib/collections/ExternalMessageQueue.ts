@@ -2,7 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { Time, Collections, registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import { IBlueprintExternalMessageQueueObj } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintExternalMessageQueueObj, IBlueprintExternalMessageQueueType } from 'tv-automation-sofie-blueprints-integration'
 
 export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueObj {
 	_id: string
@@ -30,7 +30,7 @@ export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueO
 	errorFatal?: boolean
 
 	/** Type of message */
-	type: 'soap' | 'slack'
+	type: IBlueprintExternalMessageQueueType
 	/** Receiver details */
 	receiver: any
 	/** Messate details */
