@@ -9,6 +9,7 @@ import { RunningOrders } from '../../lib/collections/RunningOrders'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { Random } from 'meteor/random';
 
 /**
  * This file contains system specific migration steps.
@@ -20,6 +21,7 @@ addMigrationSteps( '0.19.0', [
 	{ // Create showStyleBase (migrate from studioInstallation)
 		id: 'showStyleBase exists',
 		canBeRunAutomatically: true,
+		dependOnResultFrom: 'studio exists',
 		validate: () => {
 			if (!ShowStyleBases.findOne()) return 'No ShowStyleBase found'
 			return false
@@ -46,9 +48,19 @@ addMigrationSteps( '0.19.0', [
 					hotkeyLegend: studio.hotkeyLegend,
 					config: []
 				})
-				if (!studio.supportedShowStyleBase) {
+
+				const variantId = Random.id()
+				ShowStyleVariants.insert({
+					_id: variantId,
+					name: 'Default variant',
+					showStyleBaseId: id,
+					config: []
+				})
+
+				if (!studio.supportedShowStyleBase || studio.supportedShowStyleBase.length === 0) {
 					StudioInstallations.update(studio._id, {$set: {
-						supportedShowStyleBase: [id]
+						supportedShowStyleBase: [id],
+						defaultShowStyleVariant: variantId
 					}})
 				}
 			} else {
@@ -60,6 +72,13 @@ addMigrationSteps( '0.19.0', [
 					blueprintId: '',
 					outputLayers: [],
 					sourceLayers: [],
+					config: []
+				})
+
+				ShowStyleVariants.insert({
+					_id: Random.id(),
+					name: 'Default variant',
+					showStyleBaseId: 'show0',
 					config: []
 				})
 			}
@@ -135,6 +154,69 @@ addMigrationSteps( '0.19.0', [
 				}
 			})
 			return result
+		}
+	},
+	// { // Create showStyleVariant
+	// 	id: 'showStyleVariant exists',
+	// 	canBeRunAutomatically: true,
+	// 	validate: () => {
+	// 		const showStyles = ShowStyleBases.find().fetch()
+	// 		const missing = showStyles.find(s => {
+	// 			return !ShowStyleVariants.findOne({ showStyleBaseId: s._id })
+	// 		})
+	// 		if (missing) return 'No ShowStyleVariant found for ' + missing._id
+	// 		return false
+	// 	},
+	// 	migrate: () => {
+	// 		const showStyles = ShowStyleBases.find().fetch()
+	// 		_.each(showStyles, s => {
+	// 			const variant = ShowStyleVariants.findOne({ showStyleBaseId: s._id })
+	// 			if (variant) return
+
+	// 			logger.info(`Migration: Add default ShowStyleVariant for ${s._id}`)
+	// 			let id = Random.id()
+	// 			ShowStyleVariants.insert({
+	// 				_id: id,
+	// 				name: 'Default variant',
+	// 				showStyleBaseId: s._id,
+	// 				config: []
+	// 			})
+	// 		})
+	// 	}
+	// },
+	{
+		id: 'studioInstallation has valid defaultShowStyleVariant',
+		canBeRunAutomatically: true,
+		dependOnResultFrom: 'showStyleBase exists',
+		validate: () => {
+			const studios = StudioInstallations.find().fetch()
+			const missing: string | boolean = false
+			_.each(studios, s => {
+				if (!s.defaultShowStyleVariant) return `Studio "${s.name || s._id}" is missing default ShowStyleVariant`
+
+				const variant = ShowStyleVariants.findOne(s.defaultShowStyleVariant)
+				if (!variant) return `Studio "${s.name || s._id}" has invalid default ShowStyleVariant`
+			})
+
+			return missing
+		},
+		migrate () {
+			const studios = StudioInstallations.find().fetch()
+
+			_.each(studios, s => {
+				if (s.supportedShowStyleBase.length === 0) return
+
+				const variant = ShowStyleVariants.findOne({
+					_id: {
+						$in: s.supportedShowStyleBase
+					}
+				})
+				if (variant) {
+					StudioInstallations.update(s._id, {$set: {
+						defaultShowStyleVariant: variant._id
+					}})
+				}
+			})
 		}
 	},
 	ensureCollectionProperty('ShowStyleVariants', {}, 'config', []),

@@ -465,30 +465,33 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 			showStyleBaseId: this.showStyleBase._id
 		}).fetch()
 	}
+	getVariantId (variantId: string): string {
+		return getHash(this.showStyleBase._id + '_' + variantId)
+	}
 	getVariant (variantId: string): IBlueprintShowStyleVariant | undefined {
 		check(variantId, String)
 		return ShowStyleVariants.findOne({
 			showStyleBaseId: this.showStyleBase._id,
-			_id: getHash(this.showStyleBase._id + '_' + variantId)
+			_id: this.getVariantId(variantId)
 		})
 	}
 	insertVariant (variantId: string, variant: OmitId<ShowStyleVariantPart>): string {
 		return ShowStyleVariants.insert(_.extend({}, variant, {
-			_id: getHash(this.showStyleBase._id + '_' + variantId),
+			_id: this.getVariantId(variantId),
 			showStyleBaseId: this.showStyleBase._id
 		}))
 	}
 	updateVariant (variantId: string, variant: Partial<ShowStyleVariantPart>): void {
 		check(variantId, String)
 		ShowStyleVariants.update({
-			_id: getHash(this.showStyleBase._id + '_' + variantId),
+			_id: this.getVariantId(variantId),
 			showStyleBaseId: this.showStyleBase._id,
 		}, {$set: variant})
 	}
 	removeVariant (variantId: string): void {
 		check(variantId, String)
 		ShowStyleVariants.remove({
-			_id: getHash(this.showStyleBase._id + '_' + variantId),
+			_id: this.getVariantId(variantId),
 			showStyleBaseId: this.showStyleBase._id,
 		})
 	}
@@ -641,7 +644,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		check(configId, String)
 
 		let variant = ShowStyleVariants.findOne({
-			_id: getHash(this.showStyleBase._id + '_' + variantId),
+			_id: this.getVariantId(variantId),
 			showStyleBaseId: this.showStyleBase._id
 		}) as ShowStyleVariant
 		if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
@@ -658,7 +661,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		console.log('setVariantConfig', variantId, configId, value)
 
 		let variant = ShowStyleVariants.findOne({
-			_id: getHash(this.showStyleBase._id + '_' + variantId),
+			_id: this.getVariantId(variantId),
 			showStyleBaseId: this.showStyleBase._id
 		}) as ShowStyleVariant
 		if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
@@ -691,7 +694,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		check(configId, String)
 
 		let variant = ShowStyleVariants.findOne({
-			_id: getHash(this.showStyleBase._id + '_' + variantId),
+			_id: this.getVariantId(variantId),
 			showStyleBaseId: this.showStyleBase._id
 		}) as ShowStyleVariant
 		if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
