@@ -74,32 +74,32 @@ addMigrationSteps( '0.1.0', [
 			attribute: null
 		}]
 	},
-	// {
-	// 	id: 'Mos-gateway exists',
-	// 	canBeRunAutomatically: false,
-	//	dependOnResultFrom: 'studio exists',
-	// 	validate: () => {
-	// 		let studios = StudioInstallations.find().fetch()
-	// 		let missing: string | boolean = false
-	// 		_.each(studios, (studio: StudioInstallation) => {
-	// 			const dev = PeripheralDevices.findOne({
-	// 				type: PeripheralDeviceAPI.DeviceType.MOSDEVICE,
-	// 				studioInstallationId: studio._id
-	// 			})
-	// 			if (!dev) {
-	// 				missing = `Mos-device is missing on ${studio._id}`
-	// 			}
-	// 		})
+	{
+		id: 'Mos-gateway exists',
+		canBeRunAutomatically: false,
+		dependOnResultFrom: 'studio exists',
+		validate: () => {
+			let studios = StudioInstallations.find().fetch()
+			let missing: string | boolean = false
+			_.each(studios, (studio: StudioInstallation) => {
+				const dev = PeripheralDevices.findOne({
+					type: PeripheralDeviceAPI.DeviceType.MOSDEVICE,
+					studioInstallationId: studio._id
+				})
+				if (!dev) {
+					missing = `Mos-device is missing on ${studio._id}`
+				}
+			})
 
-	// 		return missing
-	// 	},
-	// 	// Note: No migrate() function, user must fix this him/herself
-	// 	input: [{
-	// 		label: 'Mos-device not set up for all studios',
-	// 		description: 'Start up the Mos-gateway and make sure it\'s connected to Sofie',
-	// 		inputType: null,
-	// 		attribute: null
-	// 	}]
-	// }
+			return missing
+		},
+		// Note: No migrate() function, user must fix this him/herself
+		input: [{
+			label: 'Mos-device not set up for all studios',
+			description: 'Start up the Mos-gateway and make sure it\'s connected to Sofie',
+			inputType: null,
+			attribute: null
+		}]
+	}
 
 ])
