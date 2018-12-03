@@ -23,11 +23,8 @@ import {
 	IBlueprintSegmentLineAdLibItem,
 	BlueprintRuntimeArguments,
 	NotesContext as INotesContext,
-	RunningOrderContextPure as IRunningOrderContextPure,
 	RunningOrderContext as IRunningOrderContext,
-	SegmentContextPure as ISegmentContextPure,
 	SegmentContext as ISegmentContext,
-	SegmentLineContextPure as ISegmentLineContextPure,
 	SegmentLineContext as ISegmentLineContext,
 	EventContext as IEventContext,
 	AsRunEventContext as IAsRunEventContext,
@@ -157,7 +154,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 	}
 }
 
-export class RunningOrderContext extends NotesContext implements IRunningOrderContext, IRunningOrderContextPure {
+export class RunningOrderContext extends NotesContext implements IRunningOrderContext {
 	runningOrderId: string
 	runningOrder: RunningOrder
 
@@ -209,7 +206,7 @@ export class RunningOrderContext extends NotesContext implements IRunningOrderCo
 	}
 }
 
-export class SegmentContext extends RunningOrderContext implements ISegmentContext, ISegmentContextPure {
+export class SegmentContext extends RunningOrderContext implements ISegmentContext {
 	readonly segment: Segment
 	constructor (runningOrder: RunningOrder, segment: Segment) {
 		super(runningOrder)
@@ -219,7 +216,7 @@ export class SegmentContext extends RunningOrderContext implements ISegmentConte
 		return this.segment.getSegmentLines()
 	}
 }
-export class SegmentLineContext extends RunningOrderContext implements ISegmentLineContext, ISegmentLineContextPure {
+export class SegmentLineContext extends RunningOrderContext implements ISegmentLineContext {
 	readonly segmentLine: SegmentLine
 	constructor (runningOrder: RunningOrder, segmentLine: SegmentLine, story?: MOS.IMOSStory) {
 		super(runningOrder, ((story ? story.Slug : '') || segmentLine.mosId) + '')
@@ -236,6 +233,21 @@ export class SegmentLineContext extends RunningOrderContext implements ISegmentL
 	/** return segmentLines in this segment */
 	getSegmentLines (): Array<SegmentLine> {
 		return super.getSegmentLines().filter((sl: SegmentLine) => sl.segmentId === this.segmentLine.segmentId)
+	}
+	/** Return true if segmentLine is the first in the Segment */
+	getIsFirstSegmentLine (): boolean {
+		let sls = this.getSegmentLines()
+		let first = sls[0]
+		return (first && first._id === this.segmentLine._id)
+	}
+	/** Return true if segmentLine is the false in the Segment */
+	getIsLastSegmentLine (): boolean {
+		let sls = this.getSegmentLines()
+		if (sls.length) {
+			let last = sls[sls.length - 1]
+			return (last && last._id === this.segmentLine._id)
+		}
+		return false
 	}
 }
 
