@@ -138,7 +138,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 	}
 	private _pushNote (type: SegmentLineNoteType, message: string) {
 		this.savedNotes.push({
-			type: SegmentLineNoteType.WARNING,
+			type: type,
 			origin: {
 				name: this._getLoggerName(),
 				roId: this._runningOrderId,
