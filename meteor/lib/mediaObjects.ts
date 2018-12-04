@@ -85,7 +85,7 @@ export function getAcceptedFormats (config: Array<IConfigItem>): Array<Array<str
 	const formatsConfigField = config.find((item) => item._id === 'mediaResolutions')
 	const formatsString: string = (formatsConfigField && formatsConfigField.value !== '' ? formatsConfigField.value : '1920x1080i5000') + ''
 	return _.compact(formatsString
-		.split(', ')
+		.split(',')
 		.map((res) => {
 			const match = /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(res)
 			if (match) {
