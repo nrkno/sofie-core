@@ -20,6 +20,7 @@ import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyl
 import { ShowStyleVariant, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
 import { logger } from '../../../lib/logging'
 import { MongoModifier } from '../../../lib/typings/meteor'
+import { Meteor } from 'meteor/meteor'
 
 export type ObjectWithConfig = StudioInstallation | ShowStyleBase | ShowStyleVariant
 
@@ -73,24 +74,27 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 		}
 	}
 
+	createItem = (item: ConfigManifestEntry) => {
+		this.updateObject(this.props.object, {
+			$push: {
+				config: literal<IConfigItem>({
+					_id: item.id,
+					value: ''
+				})
+			}
+		})
+	}
+
 	editItem = (item: ConfigManifestEntry) => {
+		// Ensure the item exists, so edit by index works
+		const valIndex = this.props.object.config.findIndex(v => v._id === item.id)
+
+		if (valIndex === -1) throw new Meteor.Error(500, `Unable to edit an item that doesn't exist`)
+
 		if (this.state.editedItems.indexOf(item.id) < 0) {
 			this.state.editedItems.push(item.id)
 			this.setState({
 				editedItems: this.state.editedItems
-			})
-		}
-
-		// Ensure the item exists, so edit by index works
-		const valIndex = this.props.object.config.findIndex(v => v._id === item.id)
-		if (valIndex === -1) {
-			this.updateObject(this.props.object, {
-				$push: {
-					config: literal<IConfigItem>({
-						_id: item.id,
-						value: ''
-					})
-				}
 			})
 		}
 	}
@@ -177,7 +181,9 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 		return (
 			this.props.manifest.map((item, index) => {
 				const valIndex = values.findIndex(v => v._id === item.id)
-				if (valIndex === -1 && !item.required) return
+				// if (valIndex === -1 && !item.required) return
+
+				const configItem = values[valIndex]
 
 				return <React.Fragment key={item.id}>
 					<tr className={ClassNames({
@@ -187,24 +193,34 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 							{item.name}
 						</th>
 						<td className='settings-studio-custom-config-table__value c3'>
-							{valIndex !== -1 && values[valIndex].value !== undefined ? (
+							{configItem && configItem.value !== undefined ? (
 								(item.type === ConfigManifestEntryType.BOOLEAN && (
-									values[valIndex].value ? t('true') : t('false')
+									configItem.value ? t('true') : t('false')
 								))
-								|| values[valIndex].value
+								|| configItem.value
 							) : item.defaultVal}
 						</td>
 						<td className='settings-studio-custom-config-table__required c3'>
 							{item.required ? 'REQUIRED' : null}
 						</td>
 						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
-							<button className='action-btn' onClick={(e) => this.editItem(item)}>
-								<FontAwesomeIcon icon={faPencilAlt} />
-							</button>
-							{ !item.required &&
-								<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
-									<FontAwesomeIcon icon={faTrash} />
+							{
+								configItem ?
+								<React.Fragment>
+									<button className='action-btn' onClick={(e) => this.editItem(item)}>
+										<FontAwesomeIcon icon={faPencilAlt} />
+									</button>
+									{
+										!item.required &&
+										<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
+											<FontAwesomeIcon icon={faTrash} />
+										</button>
+									}
+								</React.Fragment> :
+								<button className='btn btn-primary' onClick={(e) => this.createItem(item)}>
+									<FontAwesomeIcon icon={faPlus} /> {t('Create')}
 								</button>
+
 							}
 						</td>
 					</tr>
