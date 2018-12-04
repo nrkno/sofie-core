@@ -22,7 +22,9 @@ import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/Sh
 import { callMethod } from '../../lib/clientAPI'
 import { ShowStylesAPI } from '../../../lib/api/showStyles'
 import { ISourceLayer, SourceLayerType, IOutputLayer } from 'tv-automation-sofie-blueprints-integration'
-import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings';
+import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
+import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { Link } from 'react-router-dom';
 
 interface IProps {
 	match: {
@@ -40,14 +42,21 @@ interface IState {
 interface ITrackedProps {
 	showStyleBase?: ShowStyleBase
 	showStyleVariants: Array<ShowStyleVariant>
+	compatibleStudios: Array<StudioInstallation>
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	let showStyleBase = ShowStyleBases.findOne(props.match.params.showStyleBaseId)
+	const compatibleStudios = showStyleBase ? StudioInstallations.find({
+		supportedShowStyleBase: {
+			$in: [showStyleBase._id]
+		}
+	}).fetch() : []
 	return {
 		showStyleBase: showStyleBase,
 		showStyleVariants: showStyleBase ? ShowStyleVariants.find({
 			showStyleBaseId: showStyleBase._id
-		}).fetch() : []
+		}).fetch() : [],
+		compatibleStudios: compatibleStudios
 	}
 })( class ShowStyleBaseSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
@@ -119,6 +128,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							<span className='mdfx'></span>
 						</div>
 					</label>
+				</div>
+				<div>
+					<p className='mod mhn mvs'>{t('Compatible studios:')}</p>
+					<p className='mod mhn mvs'>
+						{this.props.compatibleStudios.length > 0 ?
+							this.props.compatibleStudios.map(i => <span key={i._id} className='pill'><Link className='pill-link' to={`/settings/studio/${i._id}`}>{i.name}</Link></span>) :
+							t('No studios are compatible with this Show Style')}
+					</p>
 				</div>
 				<div className='row'>
 					<div className='col c12 rl-c6'>
@@ -465,7 +482,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 		const { t } = this.props
 
 		return (
-			this.props.showStyleBase.sourceLayers.map((item, index) => {
+			_.map(this.props.showStyleBase.sourceLayers, (item, index) => {
 				let newItem = _.clone(item) as (ISourceLayer & {index: number})
 				newItem.index = index
 				return newItem
@@ -850,7 +867,7 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 	renderOutputs () {
 		const { t } = this.props
 		return (
-			this.props.showStyleBase.outputLayers.map((item, index) => {
+			_.map(this.props.showStyleBase.outputLayers, (item, index) => {
 				let newItem = _.clone(item) as (IOutputLayer & { index: number })
 				newItem.index = index
 				return newItem

@@ -10,6 +10,7 @@ import {
 } from 'react-router-dom'
 
 import { RecordingsList, RecordingsStudioSelect } from './RecordingsList'
+import { TimelineView, TimelineStudioSelect } from './Timeline'
 import { RecordingView } from './RecordingView'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 
@@ -30,6 +31,12 @@ const StatusMenu = translate()(class StatusMenu extends React.Component<Translat
 					className='testTools-menu__testTools-menu-item selectable clickable'
 					to={'/testTools/recordings'}>
 					<h3>{t('Recordings')}</h3>
+				</NavLink>
+				<NavLink
+					activeClassName='selectable-selected'
+					className='testTools-menu__testTools-menu-item selectable clickable'
+					to={'/testTools/timeline'}>
+					<h3>{t('Timeline')}</h3>
 				</NavLink>
 			</div>
 		)
@@ -67,9 +74,11 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 						</div>
 						<div className='flex-col c12 rm-c11 status-dialog'>
 							<Switch>
-							<Route path='/testTools/recordings/:studioId/:recordingId' component={RecordingView} />
-							<Route path='/testTools/recordings/:studioId' component={RecordingsList} />
-							<Route path='/testTools/recordings' component={RecordingsStudioSelect} />
+								<Route path='/testTools/timeline/:studioId' component={TimelineView} />
+								<Route path='/testTools/timeline' component={TimelineStudioSelect} />
+								<Route path='/testTools/recordings/:studioId/:recordingId' component={RecordingView} />
+								<Route path='/testTools/recordings/:studioId' component={RecordingsList} />
+								<Route path='/testTools/recordings' component={RecordingsStudioSelect} />
 								<Redirect to='/testTools/recordings' />
 							</Switch>
 						</div>

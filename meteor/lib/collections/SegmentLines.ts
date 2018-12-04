@@ -106,7 +106,7 @@ export interface SegmentLineNote {
 		roId?: string,
 		segmentId?: string,
 		segmentLineId?: string,
-		segmentLineItemId?: string,
+		segmentLineItemId?: string
 	},
 	message: string
 

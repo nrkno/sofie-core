@@ -2,6 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { Time, registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { IBlueprintAsRunLogEvent } from 'tv-automation-sofie-blueprints-integration'
 
 export interface AsRunLogEventBase {
 	studioId: string,
@@ -19,7 +20,7 @@ export interface AsRunLogEventBase {
 	metadata?: any
 }
 
-export interface AsRunLogEvent extends AsRunLogEventBase {
+export interface AsRunLogEvent extends AsRunLogEventBase, IBlueprintAsRunLogEvent {
 	_id: string,
 	/** Timestamp of the event */
 	timestamp: Time

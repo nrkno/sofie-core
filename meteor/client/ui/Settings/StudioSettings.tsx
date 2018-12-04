@@ -89,10 +89,10 @@ export const ConfigSettings = translate()(class ConfigSettings extends React.Com
 			onAccept: () => {
 				this.onDeleteConfigItem(item)
 			},
-			message: [
+			message: <React.Fragment>
 				<p>{t('Are you sure you want to delete this config item "{{configId}}"?', { configId: (item && item._id) })}</p>,
 				<p>{t('Please note: This action is irreversible!')}</p>
-			]
+			</React.Fragment>
 		})
 	}
 	onDeleteConfigItem = (item: IConfigItem) => {
@@ -261,9 +261,7 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 			onAccept: () => {
 				this.onRemoveDevice(device)
 			},
-			message: [
-				<p>{t('Are you sure you want to remove device "{{devideId}}"?', { deviceId: device && device.name })}</p>
-			]
+			message: <p>{t('Are you sure you want to remove device "{{devideId}}"?', { deviceId: device && device.name })}</p>
 		})
 	}
 
@@ -376,9 +374,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 			onAccept: () => {
 				this.removeLayer(mappingId)
 			},
-			message: [
-				<p>{t('Are you sure you want to remove mapping for layer "{{mappingId}}"?', { mappingId: mappingId })}</p>
-			]
+			message: <p>{t('Are you sure you want to remove mapping for layer "{{mappingId}}"?', { mappingId: mappingId })}</p>
 		})
 	}
 	removeLayer = (mappingId: string) => {
@@ -881,6 +877,11 @@ interface IStudioSettingsTrackedProps {
 		value: string,
 		showStyleVariant: ShowStyleVariant
 	}>
+	availableShowStyleBases: Array<{
+		name: string,
+		value: string
+		showStyleBase: ShowStyleBase
+	}>
 	availableDevices: Array<PeripheralDevice>
 }
 interface ITrackedProps {
@@ -895,7 +896,11 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		studioDevices: PeripheralDevices.find({
 			studioInstallationId: props.match.params.studioId
 		}).fetch(),
-		availableShowStyleVariants: ShowStyleVariants.find().fetch().map((variant) => {
+		availableShowStyleVariants: ShowStyleVariants.find(studio ? {
+			showStyleBaseId: {
+				$in: studio.supportedShowStyleBase || []
+			}
+		} : {}).fetch().map((variant) => {
 			const baseStyle = ShowStyleBases.findOne(variant.showStyleBaseId)
 			return {
 				name: `${(baseStyle || {name: ''}).name}: ${variant.name} (${variant._id})`,
@@ -903,11 +908,21 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				showStyleVariant: variant
 			}
 		}),
+		availableShowStyleBases: ShowStyleBases.find().fetch().map((showStyle) => {
+			return {
+				name: `${showStyle.name}`,
+				value: showStyle._id,
+				showStyleBase: showStyle
+			}
+		}),
 		availableDevices: PeripheralDevices.find({
 			studioInstallationId: {
 				$not: {
 					$eq: props.match.params.studioId
 				}
+			},
+			parentDeviceId: {
+				$exists: false
 			}
 		}, {
 			sort: {
@@ -937,6 +952,18 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 							<span className='mdfx'></span>
 						</div>
 					</label>
+					<div className='field'>
+						{t('Select compatible Show Styles')}
+						<div className='mdi'>
+							<EditAttribute
+								attribute='supportedShowStyleBase'
+								obj={this.props.studioInstallation}
+								options={this.props.availableShowStyleBases}
+								label={t('Click to show available Show Styles')}
+								type='multiselect'
+								collection={StudioInstallations}></EditAttribute>
+						</div>
+					</div>
 					<label className='field'>
 						{t('Default ShowStyleVariant')}
 						<div className='mdi'>

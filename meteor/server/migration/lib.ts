@@ -1,15 +1,13 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
-import { MigrationStepInput, MigrationStepInputFilteredResult, MigrationStepBase, IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
-import { Collections, objectPathGet, literal } from '../../lib/lib'
+import { MigrationStepInput, MigrationStepInputFilteredResult, MigrationStepBase } from 'tv-automation-sofie-blueprints-integration'
+import { Collections, objectPathGet } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { Mapping } from 'timeline-state-resolver-types'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { compareVersions, parseVersion } from '../../lib/collections/CoreSystem'
 import { logger } from '../logging'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 
 /**
  * Convenience function to generate basic test
@@ -106,12 +104,14 @@ export function ensureStudioConfig (
 	inputType?: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch', // EditAttribute types
 	label?: string,
 	description?: string,
-	defaultValue?: any
+	defaultValue?: any,
+	dependOnResultFrom?: string
 ): MigrationStepBase {
 
 	return {
 		id: `studioConfig.${configName}`,
 		canBeRunAutomatically: (_.isNull(value) ? false : true),
+		dependOnResultFrom: dependOnResultFrom,
 		validate: () => {
 			let studios = StudioInstallations.find().fetch()
 			let configMissing: string | boolean = false
@@ -188,121 +188,6 @@ export function ensureStudioConfig (
 	}
 }
 
-export function ensureSourceLayer (sourceLayer: ISourceLayer): MigrationStepBase {
-	return {
-		id: `sourceLayer.${sourceLayer._id}`,
-		canBeRunAutomatically: true,
-		validate: () => {
-			let validate: false | string = false
-			ShowStyleBases.find().forEach((showStyleBase) => {
-				let sl = _.find(showStyleBase.sourceLayers, (sl) => {
-					return sl._id === sourceLayer._id
-				})
-				if (!sl) validate = `SourceLayer ${sourceLayer._id} missing in ${showStyleBase.name} (${showStyleBase._id})`
-			})
-			return validate
-		},
-		migrate: () => {
-			ShowStyleBases.find().forEach((showStyleBase) => {
-				let sl = _.find(showStyleBase.sourceLayers, (sl) => {
-					return sl._id === sourceLayer._id
-				})
-				if (!sl) {
-					logger.info(`Migration: Adding sourceLayer "${sourceLayer._id}" to ${showStyleBase._id}`)
-					ShowStyleBases.update(showStyleBase._id, {$push: {
-						'sourceLayers': sourceLayer
-					}})
-				}
-			})
-		}
-	}
-}
-export function ensureOutputLayer (outputLayer: IOutputLayer): MigrationStepBase {
-	return {
-		id: `outputLayer.${outputLayer._id}`,
-		canBeRunAutomatically: true,
-		validate: () => {
-			let validate: false | string = false
-			ShowStyleBases.find().forEach((showStyleBase) => {
-				let sl = _.find(showStyleBase.outputLayers, (sl) => {
-					return sl._id === outputLayer._id
-				})
-				if (!sl) validate = `OutputLayer ${outputLayer._id} missing in ${showStyleBase.name} (${showStyleBase._id})`
-			})
-			return validate
-		},
-		migrate: () => {
-			ShowStyleBases.find().forEach((showStyleBase) => {
-				let sl = _.find(showStyleBase.outputLayers, (sl) => {
-					return sl._id === outputLayer._id
-				})
-				if (!sl) {
-					logger.info(`Migration: Adding outputLayer "${outputLayer._id}" to ${showStyleBase._id}`)
-					ShowStyleBases.update(showStyleBase._id, {$push: {
-						'outputLayers': outputLayer
-					}})
-				}
-			})
-		}
-	}
-}
-export function ensureMapping (mappingId: string, mapping: Mapping): MigrationStepBase {
-	return {
-		id: `mapping.${mappingId}`,
-		canBeRunAutomatically: true,
-		validate: () => {
-			let studio = StudioInstallations.findOne()
-			if (!studio) return 'Studio not found'
-
-			let dbMapping = studio.mappings[mappingId]
-
-			if (!dbMapping) return `Mapping ${mappingId} missing`
-
-			return false
-		},
-		migrate: () => {
-			let studio = StudioInstallations.findOne()
-			if (!studio) return 'Studio not found'
-
-			let dbMapping = studio.mappings[mappingId]
-
-			if (!dbMapping) { // only add if the mapping does not exist
-				let m = {}
-				m['mappings.' + mappingId] = mapping
-				logger.info(`Migration: Adding Studio mapping "${mappingId}" to ${studio._id}`)
-				StudioInstallations.update(studio._id, {$set: m})
-			}
-		}
-	}
-}
-export function removeMapping (mappingId: string): MigrationStepBase {
-	return {
-		id: `mapping.${mappingId}`,
-		canBeRunAutomatically: true,
-		validate: () => {
-			let studio = StudioInstallations.findOne()
-			if (!studio) return 'Studio not found'
-
-			let dbMapping = studio.mappings[mappingId]
-			if (dbMapping) return `Mapping ${mappingId} exists, but should be removed`
-
-			return false
-		},
-		migrate: () => {
-			let studio = StudioInstallations.findOne()
-			if (!studio) return 'Studio not found'
-
-			let dbMapping = studio.mappings[mappingId]
-
-			if (dbMapping) { // only remove if the mapping does exist
-				let m = {}
-				m['mappings.' + mappingId] = 1
-				logger.info(`Migration: Removing Studio mapping "${mappingId}" from ${studio._id}`)
-				StudioInstallations.update(studio._id, {$unset: m})
-			}
-		}
-	}
-}
 export function ensureDeviceVersion (id, deviceType: PeripheralDeviceAPI.DeviceType, libraryName: string, versionStr: string ): MigrationStepBase {
 	return {
 		id: id,
