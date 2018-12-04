@@ -251,7 +251,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 						return el._id === segmentLineItem.sourceLayerId
 					})
 
-					if (sourceLayer) {
+					if (!sourceLayer) {
 						sourceLayer = sourceLayers[segmentLineItem.sourceLayerId]
 						if (sourceLayer) {
 							sourceLayer = _.clone(sourceLayer)
