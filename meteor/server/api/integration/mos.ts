@@ -428,10 +428,19 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 	updateMosLastDataReceived(peripheralDevice._id)
 	logger.info((existingDbRo ? 'Updating' : 'Adding') + ' RO ' + roId(ro.ID))
 
-	if (!peripheralDevice.studioInstallationId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no StudioInstallation')
+	let studioInstallationId = peripheralDevice.studioInstallationId
+	if (!studioInstallationId && peripheralDevice.parentDeviceId) {
+		// Also check the parent device:
+		let parentDevice = PeripheralDevices.findOne(peripheralDevice.parentDeviceId)
+		if (parentDevice) {
+			studioInstallationId = parentDevice.studioInstallationId
+		}
+	}
 
-	let studioInstallation = StudioInstallations.findOne(peripheralDevice.studioInstallationId) as StudioInstallation
-	if (!studioInstallation) throw new Meteor.Error(404, 'StudioInstallation "' + peripheralDevice.studioInstallationId + '" not found')
+	if (!studioInstallationId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no StudioInstallation')
+
+	let studioInstallation = StudioInstallations.findOne(studioInstallationId) as StudioInstallation
+	if (!studioInstallation) throw new Meteor.Error(404, 'StudioInstallation "' + studioInstallationId + '" not found')
 
 	// the defaultShowStyleVariant is a temporary solution, to be replaced by a blueprint plugin
 	let defaultShowStyleVariant = ShowStyleVariants.findOne(studioInstallation.defaultShowStyleVariant) as ShowStyleVariant || {}
