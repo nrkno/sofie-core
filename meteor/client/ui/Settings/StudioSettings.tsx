@@ -621,6 +621,8 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 									<span>{
 										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.PRESET ? t('Preset') :
 										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.PRESET_SPEED ? t('Preset transition speed') :
+										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.ZOOM ? t('Zoom') :
+										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.ZOOM_SPEED ? t('Zoom speed') :
 										t('Unknown mapping')
 									}</span>
 							)) ||
@@ -634,6 +636,10 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							)) ||
 							(
 								mapping.device === PlayoutDeviceType.PHAROS && (
+								<span>-</span>
+							)) ||
+							(
+								mapping.device === PlayoutDeviceType.OSC && (
 								<span>-</span>
 							)) ||
 							(
