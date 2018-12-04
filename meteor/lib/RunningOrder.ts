@@ -235,7 +235,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 						id: segmentLineItem._id
 					}
 				})
-				let outputLayer = outputLayers[segmentLineItem.outputLayerId]
+				let outputLayer = outputLayers[segmentLineItem.outputLayerId] as IOutputLayerExtended | undefined
 				segmentLineItem.outputLayer = outputLayer
 
 				if (!segmentLineItem.virtual && outputLayer) {
@@ -358,7 +358,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 			_.each<SegmentLineItemExtended>(followingSegmentLine.items, (segmentLineItem) => {
 				// match output layers in following segment line, but do not mark as used
 				// we only care about output layers used in this segment.
-				let outputLayer = outputLayers[segmentLineItem.outputLayerId]
+				let outputLayer = outputLayers[segmentLineItem.outputLayerId] as IOutputLayerExtended | undefined
 				segmentLineItem.outputLayer = outputLayer
 
 				// find matching layer in the output layer
@@ -367,16 +367,16 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 				})
 
 				if (sourceLayer === undefined) {
-					sourceLayer = sourceLayers[segmentLineItem.sourceLayerId]
-					if (sourceLayer) {
-						sourceLayer = _.clone(sourceLayer)
-						let sl = sourceLayer as ISourceLayerExtended
-						sl.items = []
-						outputLayer.sourceLayers.push(sl)
+					if (outputLayer) {
+						sourceLayer = sourceLayers[segmentLineItem.sourceLayerId]
+						if (sourceLayer) {
+							sourceLayer = _.clone(sourceLayer)
+							let sl = sourceLayer as ISourceLayerExtended
+							sl.items = []
+							outputLayer.sourceLayers.push(sl)
+						}
 					}
-				}
-
-				if (sourceLayer !== undefined) {
+				} else {
 					segmentLineItem.sourceLayer = sourceLayer
 					if (segmentLineItem.sourceLayer.followingItems === undefined) {
 						segmentLineItem.sourceLayer.followingItems = []
