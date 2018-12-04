@@ -181,7 +181,7 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 		return (
 			this.props.manifest.map((item, index) => {
 				const valIndex = values.findIndex(v => v._id === item.id)
-				// if (valIndex === -1 && !item.required) return
+				if (valIndex === -1 && !item.required) return
 
 				const configItem = values[valIndex]
 
@@ -199,9 +199,6 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 								))
 								|| configItem.value
 							) : item.defaultVal}
-						</td>
-						<td className='settings-studio-custom-config-table__required c3'>
-							{item.required ? 'REQUIRED' : null}
 						</td>
 						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
 							{
