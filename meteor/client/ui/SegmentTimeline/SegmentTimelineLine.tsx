@@ -357,7 +357,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					return (
 						<OutputGroup key={layer._id}
 							{...this.props}
-							mediaPreviewUrl={this.ensureHasTrailingSlash(this.props.studioInstallation.getConfigValue('mediaPreviewsUrl') + '' || '') || ''}
+							mediaPreviewUrl={this.ensureHasTrailingSlash(this.props.studioInstallation.settings.mediaPreviewsUrl + '' || '') || ''}
 							layer={layer}
 							segment={this.props.segment}
 							segmentLine={segmentLine}
