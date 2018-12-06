@@ -176,7 +176,7 @@ export function reportSegmentLineItemHasStarted (segmentLineItemOrId: SegmentLin
 				studioId:			runningOrder.studioInstallationId,
 				runningOrderId:		runningOrder._id,
 				segmentId:			segmentLine.segmentId,
-				segmentLineId:		segmentLineItem._id,
+				segmentLineId:		segmentLineItem.segmentLineId,
 				segmentLineItemId:	segmentLineItem._id,
 				content:			'startedPlayback',
 				content2: 			'segmentLineItem'
