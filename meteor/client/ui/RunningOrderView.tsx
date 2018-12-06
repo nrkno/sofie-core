@@ -34,7 +34,7 @@ import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
 import { DEFAULT_DISPLAY_DURATION } from '../../lib/RunningOrder'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
-import { scrollToSegmentLine } from '../lib/viewPort'
+import { scrollToSegmentLine, scrollToPosition } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RunningOrderFullscreenControls } from './RunningOrderView/RunningOrderFullscreenControls'
@@ -824,7 +824,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			Tracker.flush()
 			Meteor.setTimeout(() => {
 				window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
-				window.dispatchEvent(new Event(RunningOrderViewEvents.goToLiveSegment))
+				window.dispatchEvent(new Event(RunningOrderViewEvents.goToTop))
 			}, 500)
 		})
 	}
@@ -967,7 +967,8 @@ interface IState {
 
 export enum RunningOrderViewEvents {
 	'rewindsegments'	=	'sofie:roRewindSegments',
-	'goToLiveSegment'	=	'sofie:goToLiveSegment'
+	'goToLiveSegment'	=	'sofie:goToLiveSegment',
+	'goToTop'			=	'sofie:goToTop'
 }
 
 interface ITrackedProps {
@@ -1132,6 +1133,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 
 		window.addEventListener(RunningOrderViewEvents.goToLiveSegment, this.onGoToLiveSegment)
+		window.addEventListener(RunningOrderViewEvents.goToTop, this.onGoToTop)
 	}
 
 	componentDidUpdate (prevProps: IProps & ITrackedProps, prevState: IState) {
@@ -1252,6 +1254,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 
 		window.removeEventListener(RunningOrderViewEvents.goToLiveSegment, this.onGoToLiveSegment)
+		window.removeEventListener(RunningOrderViewEvents.goToTop, this.onGoToTop)
 	}
 
 	onBeforeUnload = (e: any) => {
@@ -1302,6 +1305,15 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
+	onGoToTop = () => {
+		scrollToPosition(0)
+
+		Meteor.setTimeout(() => {
+			this.setState({
+				followLiveSegments: true
+			})
+		}, 400)
+	}
 	onGoToLiveSegment = () => {
 		if (this.props.runningOrder && this.props.runningOrder.active && !this.props.runningOrder.currentSegmentLineId &&
 			this.props.runningOrder.nextSegmentLineId) {
