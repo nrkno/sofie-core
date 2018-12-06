@@ -281,6 +281,7 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 	const firstSegmentLine = segmentLines.sort((a, b) => b._rank = a._rank)[0]
 
 	const context = new SegmentContext(ro, segment)
+	context.handleNotesExternally = true
 
 	let resultSli: SegmentLineItem[] | undefined = undefined
 	let notes: SegmentLineNote[] = []

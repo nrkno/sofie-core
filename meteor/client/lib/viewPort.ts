@@ -22,18 +22,10 @@ export function scrollToSegment ( elementToScrollToOrSegmentId: HTMLElement | JQ
 		$('#' + SegmentTimelineElementId + elementToScrollToOrSegmentId) :
 		elementToScrollToOrSegmentId
 	)
-
-	// const previousElement = $(elementToScrollTo).prev()
 	const elementPosition = $(elementToScrollTo).offset()
 	const elementHeight = $(elementToScrollTo).height() || 0
 	let scrollTop: number | null = null
 
-	// if (previousElement.length > 0) {
-	// 	const elementPosition = $(previousElement).offset()
-	// 	if (elementPosition) {
-	// 		scrollTop = elementPosition.top
-	// 	}
-	// } else
 
 	// check if the item is in viewport
 	if (elementPosition && ((
@@ -42,25 +34,27 @@ export function scrollToSegment ( elementToScrollToOrSegmentId: HTMLElement | JQ
 	) || forceScroll)) {
 		scrollTop = elementPosition.top
 	}
-
 	if (scrollTop !== null) {
-
-		$(document.body).addClass('auto-scrolling')
-		const autoScrolling = parseInt($(document.body).data('auto-scrolling') || 0, 10) + 1
-		$(document.body).data('auto-scrolling', autoScrolling)
-		$('html,body').animate({
-			scrollTop: Math.max(0, scrollTop - HEADER_HEIGHT)
-		}, 400).promise().then(() => {
-			// delay until next frame, so that the scroll handler can fire
-			setTimeout(function () {
-				const autoScrolling = parseInt($(document.body).data('auto-scrolling') || 0, 10) - 1
-				$(document.body).data('auto-scrolling', autoScrolling)
-				if (autoScrolling <= 0) {
-					$(document.body).removeClass('auto-scrolling')
-				}
-			})
-		})
+		scrollToPosition(scrollTop)
 		return true
 	}
 	return false
+}
+
+export function scrollToPosition ( scrollPosition: number): void {
+	$(document.body).addClass('auto-scrolling')
+	const autoScrolling = parseInt($(document.body).data('auto-scrolling') || 0, 10) + 1
+	$(document.body).data('auto-scrolling', autoScrolling)
+	$('html,body').animate({
+		scrollTop: Math.max(0, scrollPosition - HEADER_HEIGHT)
+	}, 400).promise().then(() => {
+		// delay until next frame, so that the scroll handler can fire
+		setTimeout(function () {
+			const autoScrolling = parseInt($(document.body).data('auto-scrolling') || 0, 10) - 1
+			$(document.body).data('auto-scrolling', autoScrolling)
+			if (autoScrolling <= 0) {
+				$(document.body).removeClass('auto-scrolling')
+			}
+		})
+	})
 }

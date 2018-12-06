@@ -227,6 +227,7 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 	if (!showStyleBase) throw new Meteor.Error(404, 'ShowStyleBase "' + ro.showStyleBaseId + '" not found!')
 
 	const context = new SegmentLineContext(ro, segmentLine, story)
+	context.handleNotesExternally = true
 
 	let resultSl: IBlueprintSegmentLine | undefined = undefined
 	let resultSli: SegmentLineItem[] | undefined = undefined

@@ -188,7 +188,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 		const { t } = this.props
 		this.setErrorMessage('')
 		doModalDialog({
-			title: t('Rest database version'),
+			title: t('Reset database version'),
 			message: t('Are you sure you want to reset the database version?\nOnly do this if you plan on running the migration right after.'),
 			onAccept: () => {
 				Meteor.call(MigrationMethods.resetDatabaseVersions,

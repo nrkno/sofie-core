@@ -57,7 +57,7 @@ function handleEvent (event: AsRunLogEvent) {
 			let bp = getBlueprintOfRunningOrder(runningOrder)
 
 			if (bp.onAsRunEvent) {
-				const context = new AsRunEventContext(runningOrder)
+				const context = new AsRunEventContext(runningOrder, event)
 
 				Promise.resolve(bp.onAsRunEvent(context))
 				.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {
@@ -176,7 +176,7 @@ export function reportSegmentLineItemHasStarted (segmentLineItemOrId: SegmentLin
 				studioId:			runningOrder.studioInstallationId,
 				runningOrderId:		runningOrder._id,
 				segmentId:			segmentLine.segmentId,
-				segmentLineId:		segmentLineItem._id,
+				segmentLineId:		segmentLineItem.segmentLineId,
 				segmentLineItemId:	segmentLineItem._id,
 				content:			'startedPlayback',
 				content2: 			'segmentLineItem'

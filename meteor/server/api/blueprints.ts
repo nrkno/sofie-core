@@ -89,7 +89,10 @@ export class CommonContext implements ICommonContext {
 
 export class NotesContext extends CommonContext implements INotesContext {
 
-	private _runningOrderId: string
+	/** If the notes will be handled externally (using .getNotes()), set this to true */
+	public handleNotesExternally: boolean = false
+
+	protected _runningOrderId: string
 	private _contextName: string
 	private _segmentId?: string
 	private _segmentLineId?: string
@@ -136,19 +139,34 @@ export class NotesContext extends CommonContext implements INotesContext {
 	getNotes () {
 		return this.savedNotes
 	}
-	private _pushNote (type: SegmentLineNoteType, message: string) {
-		this.savedNotes.push({
-			type: type,
-			origin: {
-				name: this._getLoggerName(),
-				roId: this._runningOrderId,
-				segmentId: this._segmentId,
-				segmentLineId: this._segmentLineId
-			},
-			message: message
-		})
+	protected getLoggerIdentifier (): string {
+		let ids: string[] = []
+		if (this._runningOrderId) ids.push('roId: ' + this._runningOrderId)
+		if (this._segmentId) ids.push('segmentId: ' + this._segmentId)
+		if (this._segmentLineId) ids.push('segmentLineId: ' + this._segmentLineId)
+		return ids.join(',')
 	}
-	private _getLoggerName () {
+	private _pushNote (type: SegmentLineNoteType, message: string) {
+		if (this.handleNotesExternally) {
+			this.savedNotes.push({
+				type: type,
+				origin: {
+					name: this._getLoggerName(),
+					roId: this._runningOrderId,
+					segmentId: this._segmentId,
+					segmentLineId: this._segmentLineId
+				},
+				message: message
+			})
+		} else {
+			if (type === SegmentLineNoteType.WARNING) {
+				logger.warn(`Warning from "${this._getLoggerName()}": "${message}"\n(${this.getLoggerIdentifier()})`)
+			} else {
+				logger.error(`Error from "${this._getLoggerName()}": "${message}"\n(${this.getLoggerIdentifier()})`)
+			}
+		}
+	}
+	private _getLoggerName (): string {
 		return this._contextName
 
 	}
@@ -258,8 +276,9 @@ export class AsRunEventContext extends RunningOrderContext implements IAsRunEven
 
 	public asRunEvent: AsRunLogEvent
 
-	constructor (runningOrder: RunningOrder) {
+	constructor (runningOrder: RunningOrder, asRunEvent: AsRunLogEvent) {
 		super(runningOrder)
+		this.asRunEvent = asRunEvent
 	}
 
 	/** Get all asRunEvents in the runningOrder */
@@ -295,6 +314,16 @@ export class AsRunEventContext extends RunningOrderContext implements IAsRunEven
 	}
 	formatDurationAsTimecode (time: number): string {
 		return formatDurationAsTimecode(time)
+	}
+	protected getLoggerIdentifier (): string {
+		// override NotesContext.getLoggerIdentifier
+		let ids: string[] = []
+		if (this._runningOrderId) ids.push('roId: ' + this._runningOrderId)
+		if (this.asRunEvent.segmentId) ids.push('segmentId: ' + this.asRunEvent.segmentId)
+		if (this.asRunEvent.segmentLineId) ids.push('segmentLineId: ' + this.asRunEvent.segmentLineId)
+		if (this.asRunEvent.segmentLineItemId) ids.push('segmentLineItemId: ' + this.asRunEvent.segmentLineItemId)
+		if (this.asRunEvent.timelineObjectId) ids.push('timelineObjectId: ' + this.asRunEvent.timelineObjectId)
+		return ids.join(',')
 	}
 }
 export class MigrationContextStudio implements IMigrationContextStudio {
@@ -788,7 +817,26 @@ export function evalBlueprints (blueprint: Blueprint, noCache?: boolean): Bluepr
 		}
 
 		const entry = new SaferEval(context, { filename: (blueprint.name || blueprint._id) + '.js' }).runInContext(blueprint.code)
-		return entry.default
+		let manifest = entry.default
+
+		// Wrap the functions in manifest, to emit better errors
+		_.each(_.keys(manifest), (key) => {
+			let value = manifest[key]
+			if (_.isFunction(value)) {
+				manifest[key] = (...args: any[]) => {
+					try {
+						return value(...args)
+					} catch (e) {
+						let msg = `Error in Blueprint "${blueprint._id}".${key}: "${e.toString()}"`
+						if (e.stack) msg += '\n' + e.stack
+						logger.error(msg)
+						throw e
+					}
+				}
+			}
+		})
+
+		return manifest
 	}
 }
 
