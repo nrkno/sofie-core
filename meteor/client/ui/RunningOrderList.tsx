@@ -19,6 +19,7 @@ import { RunningOrderAPI } from '../../lib/api/runningOrder'
 import { SystemStatusAPI, StatusResponse } from '../../lib/api/systemStatus'
 import { callMethod } from '../lib/clientAPI'
 import { ManualPlayout } from './manualPlayout'
+import { getDeveloperMode } from '../lib/localStorage'
 
 const PackageInfo = require('../../package.json')
 
@@ -196,7 +197,10 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 							: null
 					}
 				</div>
-				<ManualPlayout></ManualPlayout>
+				{
+					getDeveloperMode() ?
+					<ManualPlayout></ManualPlayout> : null
+				}
 			</div>
 		</React.Fragment>
 	}

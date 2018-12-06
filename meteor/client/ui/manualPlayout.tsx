@@ -24,7 +24,7 @@ import {
 	PlayoutDeviceSettingsDeviceAtem
 } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { EditAttribute } from '../lib/EditAttribute';
+import { EditAttribute } from '../lib/EditAttribute'
 interface IManualPlayoutProps {
 }
 interface IManualPlayoutState {
