@@ -18,6 +18,7 @@ import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
 import { SystemStatusAPI, StatusResponse } from '../../lib/api/systemStatus'
 import { callMethod } from '../lib/clientAPI'
+import { ManualPlayout } from './manualPlayout'
 
 const PackageInfo = require('../../package.json')
 
@@ -195,6 +196,7 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 							: null
 					}
 				</div>
+				<ManualPlayout></ManualPlayout>
 			</div>
 		</React.Fragment>
 	}

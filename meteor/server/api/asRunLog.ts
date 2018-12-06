@@ -49,6 +49,7 @@ export function pushAsRunLog (eventBase: AsRunLogEventBase, rehersal: boolean, t
  * @param event
  */
 function handleEvent (event: AsRunLogEvent) {
+	console.log('handleEvent')
 	try {
 		if (event.runningOrderId) {
 			let runningOrder = RunningOrders.findOne(event.runningOrderId) as RunningOrder

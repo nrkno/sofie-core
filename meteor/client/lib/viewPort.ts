@@ -26,7 +26,6 @@ export function scrollToSegment ( elementToScrollToOrSegmentId: HTMLElement | JQ
 	const elementHeight = $(elementToScrollTo).height() || 0
 	let scrollTop: number | null = null
 
-
 	// check if the item is in viewport
 	if (elementPosition && ((
 		(elementPosition.top + elementHeight > ($('html,body').scrollTop() || 0) + window.innerHeight) ||
