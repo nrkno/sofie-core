@@ -258,8 +258,9 @@ export class AsRunEventContext extends RunningOrderContext implements IAsRunEven
 
 	public asRunEvent: AsRunLogEvent
 
-	constructor (runningOrder: RunningOrder) {
+	constructor (runningOrder: RunningOrder, asRunEvent: AsRunLogEvent) {
 		super(runningOrder)
+		this.asRunEvent = asRunEvent
 	}
 
 	/** Get all asRunEvents in the runningOrder */

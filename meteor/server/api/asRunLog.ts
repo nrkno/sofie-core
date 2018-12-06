@@ -57,7 +57,7 @@ function handleEvent (event: AsRunLogEvent) {
 			let bp = getBlueprintOfRunningOrder(runningOrder)
 
 			if (bp.onAsRunEvent) {
-				const context = new AsRunEventContext(runningOrder)
+				const context = new AsRunEventContext(runningOrder, event)
 
 				Promise.resolve(bp.onAsRunEvent(context))
 				.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {
