@@ -9,7 +9,7 @@ import { RunningOrders } from '../../lib/collections/RunningOrders'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { Random } from 'meteor/random';
+import { Random } from 'meteor/random'
 
 /**
  * This file contains system specific migration steps.
