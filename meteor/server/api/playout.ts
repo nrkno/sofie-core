@@ -2255,8 +2255,7 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjCla
 	let timelineObjs: Array<TimelineObj> = []
 
 	const isHold = holdState === RunningOrderHoldState.ACTIVE
-
-	const allowTransition = transitionProps && transitionProps.allowed && holdState !== RunningOrderHoldState.COMPLETE
+	const allowTransition = transitionProps && transitionProps.allowed && !isHold && holdState !== RunningOrderHoldState.COMPLETE
 	const transition: SegmentLineItem | undefined = allowTransition ? clone(items.find(i => !!i.isTransition)) : undefined
 	const transitionSliDelay = transitionProps ? Math.max(0, (transitionProps.preroll || 0) - (transitionProps.transitionPreroll || 0)) : 0
 	const transitionContentsDelay = transitionProps ? (transitionProps.transitionPreroll || 0) - (transitionProps.preroll || 0) : 0
