@@ -2201,7 +2201,7 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjCla
 	let timelineObjs: Array<TimelineObj> = []
 
 	const isHold = holdState === RunningOrderHoldState.ACTIVE
-	if (holdState === RunningOrderHoldState.COMPLETE) {
+	if (isHold || holdState === RunningOrderHoldState.COMPLETE) {
 		allowTransition = false
 	}
 
