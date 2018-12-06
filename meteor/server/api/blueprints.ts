@@ -788,7 +788,26 @@ export function evalBlueprints (blueprint: Blueprint, noCache?: boolean): Bluepr
 		}
 
 		const entry = new SaferEval(context, { filename: (blueprint.name || blueprint._id) + '.js' }).runInContext(blueprint.code)
-		return entry.default
+		let manifest = entry.default
+
+		// Wrap the functions in manifest, to emit better errors
+		_.each(_.keys(manifest), (key) => {
+			let value = manifest[key]
+			if (_.isFunction(value)) {
+				manifest[key] = (...args: any[]) => {
+					try {
+						return value(...args)
+					} catch (e) {
+						let msg = `Error in Blueprint "${blueprint._id}".${key}: "${e.toString()}"`
+						if (e.stack) msg += '\n' + e.stack
+						logger.error(msg)
+						throw e
+					}
+				}
+			}
+		})
+
+		return manifest
 	}
 }
 
