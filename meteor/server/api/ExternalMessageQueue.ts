@@ -16,6 +16,7 @@ import { XmlEntities as Entities } from 'html-entities'
 import { Meteor } from 'meteor/meteor'
 import { setMeteorMethods } from '../methods'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
+import { Random } from 'meteor/random'
 const entities = new Entities()
 
 export function queueExternalMessages (runningOrder: RunningOrder, messages: Array<IBlueprintExternalMessageQueueObj>) {
@@ -30,7 +31,7 @@ export function queueExternalMessages (runningOrder: RunningOrder, messages: Arr
 		// Save the output into the message queue, for later processing:
 		let now = getCurrentTime()
 		let message2: ExternalMessageQueueObj = {
-			_id: '',
+			_id: Random.id(),
 			type: message.type,
 			receiver: message.receiver,
 			message: message.message,
