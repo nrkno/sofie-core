@@ -28,6 +28,8 @@ export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueO
 	sentReply?: any
 	/** If true, wont retry no more */
 	errorFatal?: boolean
+	/** If true, wont retry (can be set from UI) */
+	hold?: boolean
 
 	/** Type of message */
 	type: IBlueprintExternalMessageQueueType

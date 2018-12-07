@@ -14,9 +14,11 @@ import * as soap from 'soap'
 import * as parser from 'xml2json'
 import { XmlEntities as Entities } from 'html-entities'
 import { Meteor } from 'meteor/meteor'
-import { setMeteorMethods } from '../methods'
+import { setMeteorMethods, Methods, wrapMethods } from '../methods'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { Random } from 'meteor/random'
+import { ExternalMessageQueueAPI } from '../../lib/api/ExternalMessageQueue'
+import { check } from 'meteor/check'
 const entities = new Entities()
 
 export function queueExternalMessages (runningOrder: RunningOrder, messages: Array<IBlueprintExternalMessageQueueObj>) {
@@ -82,7 +84,8 @@ function doMessageQueue () {
 		let messagesToSend = ExternalMessageQueue.find({
 			expires: {$gt: now},
 			lastTry: {$not: {$gt: now - tryInterval}},
-			sent: {$not: {$gt: 0}}
+			sent: {$not: {$gt: 0}},
+			hold: {$not: {$eq: true}}
 		}, {
 			sort: {
 				lastTry: 1
@@ -288,15 +291,27 @@ async function resolveSOAPFcnData (soapClient: soap.Client, valFcn: ExternalMess
 		}
 	})
 }
-setMeteorMethods({
-	'removeExternalMessageQueueObj': (id) => {
-		ExternalMessageQueue.remove(id)
-	},
-	'setRunMessageQueue': (value) => {
-		logger.info('setRunMessageQueue: set to ' + value)
-		runMessageQueue = value
-		if (runMessageQueue) {
-			triggerdoMessageQueue(1000)
-		}
+
+let methods: Methods = {}
+methods[ExternalMessageQueueAPI.methods.remove] = (id: string) => {
+	check(id, String)
+	ExternalMessageQueue.remove(id)
+}
+methods[ExternalMessageQueueAPI.methods.toggleHold] = (id: string) => {
+	check(id, String)
+	let m = ExternalMessageQueue.findOne(id)
+	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${id}" not found`)
+	ExternalMessageQueue.update(id, {$set: {
+		hold: !m.hold
+	}})
+}
+methods[ExternalMessageQueueAPI.methods.setRunMessageQueue] = (value: boolean) => {
+	check(value, Boolean)
+	logger.info('setRunMessageQueue: set to ' + value)
+	runMessageQueue = value
+	if (runMessageQueue) {
+		triggerdoMessageQueue(1000)
 	}
-})
+}
+
+setMeteorMethods(wrapMethods(methods))
