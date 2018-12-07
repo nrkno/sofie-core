@@ -9,7 +9,10 @@ import {
 } from '../../lib/collections/ExternalMessageQueue'
 import {
 	ExternalMessageQueueObjSOAP,
-	IBlueprintExternalMessageQueueObj
+	IBlueprintExternalMessageQueueObj,
+	IBlueprintExternalMessageQueueType,
+	ExternalMessageQueueObjSlack,
+	ExternalMessageQueueObjRabbitMQ
 } from 'tv-automation-sofie-blueprints-integration'
 import { getCurrentTime, removeNullyProperties } from '../../lib/lib'
 
@@ -17,6 +20,8 @@ import { setMeteorMethods, Methods, wrapMethods } from '../methods'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { ExternalMessageQueueAPI } from '../../lib/api/ExternalMessageQueue'
 import { sendSOAPMessage } from './integration/soap'
+import { sendSlackMessageToWebhook } from './integration/slack'
+import { sendRabbitMQMessage } from './integration/rabbitMQ'
 
 export function queueExternalMessages (runningOrder: RunningOrder, messages: Array<IBlueprintExternalMessageQueueObj>) {
 	_.each(messages, (message) => {
@@ -104,10 +109,15 @@ function doMessageQueue () {
 				}})
 
 				let p: Promise<any>
-				if (msg.type === 'soap') {
+				if (msg.type === IBlueprintExternalMessageQueueType.SOAP) {
 					p = sendSOAPMessage(msg as ExternalMessageQueueObjSOAP & ExternalMessageQueueObj)
+				} else if (msg.type === IBlueprintExternalMessageQueueType.SLACK) {
+					let m = msg as ExternalMessageQueueObjSlack & ExternalMessageQueueObj
+					p = sendSlackMessageToWebhook(msg.message, msg.receiver)
+				} else if (msg.type === IBlueprintExternalMessageQueueType.RABBIT_MQ) {
+					p = sendRabbitMQMessage(msg as ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj)
 				} else {
-					throw new Meteor.Error(500, 'Unknown message type "' + msg.type + '"')
+					throw new Meteor.Error(500, `Unknown / Unsupported externalMessage type "${msg.type}"`)
 				}
 				ps.push(
 					Promise.resolve(p)

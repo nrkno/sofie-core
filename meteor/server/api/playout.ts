@@ -72,7 +72,7 @@ import { Resolver } from 'superfly-timeline'
 import { transformTimeline } from '../../lib/timeline'
 import { ClientAPI } from '../../lib/api/client'
 import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
-import { sendSlackMessageToWebhook } from './integration/slack'
+import { sendSlackMessageToWebhookSync } from './integration/slack'
 import { setMeteorMethods } from '../methods'
 import { sendStoryStatus, updateStory } from './integration/mos'
 import { updateSegmentLines, reloadRunningOrderData } from './runningOrder'
@@ -1582,7 +1582,7 @@ export namespace ServerPlayoutAPI {
 						message += '\n<' + hostUrl + '/ro/' + ro._id + '|' + ro.name + '>'
 					}
 
-					sendSlackMessageToWebhook(message, webhookUrl)
+					sendSlackMessageToWebhookSync(message, webhookUrl)
 				}
 
 			}
