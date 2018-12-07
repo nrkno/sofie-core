@@ -4,7 +4,7 @@ import { SaferEval } from 'safer-eval'
 import { SegmentLine, DBSegmentLine, SegmentLineNote, SegmentLineNoteType, SegmentLines } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
-import { formatDateAsTimecode, formatDurationAsTimecode, literal, normalizeArray, getCurrentTime, OmitId } from '../../lib/lib'
+import { formatDateAsTimecode, formatDurationAsTimecode, literal, normalizeArray, getCurrentTime, OmitId, trimIfString } from '../../lib/lib'
 import { getHash } from '../lib'
 import { logger } from '../logging'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
@@ -364,10 +364,12 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	getConfig (configId: string): ConfigItemValue | undefined {
 		check(configId, String)
 		let configItem = _.find(this.studio.config, c => c._id === configId)
-		if (configItem) return configItem.value
+		if (configItem) return trimIfString(configItem.value)
 	}
 	setConfig (configId: string, value: ConfigItemValue): void {
 		check(configId, String)
+
+		value = trimIfString(value)
 
 		let configItem = _.find(this.studio.config, c => c._id === configId)
 		if (configItem) {
@@ -627,11 +629,13 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 	getBaseConfig (configId: string): ConfigItemValue | undefined {
 		check(configId, String)
 		let configItem = _.find(this.showStyleBase.config, c => c._id === configId)
-		if (configItem) return configItem.value
+		if (configItem) return trimIfString(configItem.value)
 	}
 	setBaseConfig (configId: string, value: ConfigItemValue): void {
 		check(configId, String)
 		if (_.isUndefined(value)) throw new Meteor.Error(400, `setBaseConfig "${configId}": value is undefined`)
+
+		value = trimIfString(value)
 
 		let configItem = _.find(this.showStyleBase.config, c => c._id === configId)
 		if (configItem) {
@@ -679,11 +683,13 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
 
 		let configItem = _.find(variant.config, c => c._id === configId)
-		if (configItem) return configItem.value
+		if (configItem) return trimIfString(configItem.value)
 	}
 	setVariantConfig (variantId: string, configId: string, value: ConfigItemValue): void {
 		check(variantId, String)
 		check(configId, String)
+
+		value = trimIfString(value)
 
 		if (_.isUndefined(value)) throw new Meteor.Error(400, `setVariantConfig "${variantId}", "${configId}": value is undefined`)
 

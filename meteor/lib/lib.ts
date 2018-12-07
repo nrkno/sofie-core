@@ -808,3 +808,8 @@ type Difference<A, B extends A> = Pick<B, Exclude<keyof B, keyof A>>
 export function extendMandadory<A, B extends A> (original: A, extendObj: Difference<A, B>): B {
 	return _.extend(original, extendObj)
 }
+
+export function trimIfString<T extends any> (value: T): T {
+	if (_.isString(value)) return value.trim()
+	return value
+}
