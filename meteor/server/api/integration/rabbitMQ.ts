@@ -8,6 +8,7 @@ import { promisify } from 'util'
 import { ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
 
 interface Message {
+	_id: string
 	exchangeTopic: string
 	routingKey: string
 	message: string
@@ -184,12 +185,13 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 		}
 	}
 
-	sendMessage (exchangeTopic: string, routingKey: string, message: string) {
+	sendMessage (exchangeTopic: string, routingKey: string, messageId: string, message: string) {
 		return new Promise ((resolve, reject) => {
 
 			this.channel.assertExchange(exchangeTopic, 'topic', { durable: true })
 
 			this.outgoingQueue.push({
+				_id: messageId,
 				exchangeTopic,
 				routingKey,
 				message,
@@ -222,7 +224,8 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 				{
 					// options
 					// headers: {}
-					persistent : true, // same thing as deliveryMode=2
+					messageId: messageToSend._id,
+					persistent : true // same thing as deliveryMode=2
 				}, (err, ok) => {
 					if (err) {
 						messageToSend.reject(err)
@@ -284,7 +287,7 @@ export async function sendRabbitMQMessage (msg: ExternalMessageQueueObjRabbitMQ 
 
 	if (_.isObject(message)) message = JSON.stringify(message)
 
-	await channelManager.sendMessage(exchangeTopic, routingKey, message)
+	await channelManager.sendMessage(exchangeTopic, routingKey, msg._id, message)
 
 }
 /*
