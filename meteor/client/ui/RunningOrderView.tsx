@@ -42,6 +42,7 @@ import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { callMethod } from '../lib/clientAPI'
+import { RunningOrderViewNotifier } from './RunningOrderView/RunningOrderNotifier'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -1019,6 +1020,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		global?: boolean
 	}> = []
 	private _segments: _.Dictionary<React.ComponentClass<{}>> = {}
+	private _notifier: RunningOrderViewNotifier
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -1062,6 +1064,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				}
 			])
 		}
+
+		this._notifier = new RunningOrderViewNotifier(this.props.runningOrderId)
 	}
 
 	componentWillMount () {
@@ -1255,6 +1259,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 		window.removeEventListener(RunningOrderViewEvents.goToLiveSegment, this.onGoToLiveSegment)
 		window.removeEventListener(RunningOrderViewEvents.goToTop, this.onGoToTop)
+
+		this._notifier.stop()
 	}
 
 	onBeforeUnload = (e: any) => {
