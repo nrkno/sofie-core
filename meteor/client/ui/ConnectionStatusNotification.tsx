@@ -40,8 +40,9 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			const retryTime = Meteor.status().retryTime
 
 			if (lastNotificationId) {
-				NotificationCenter.drop(lastNotificationId)
+				const buf = lastNotificationId
 				lastNotificationId = undefined
+				NotificationCenter.drop(buf)
 			}
 
 			let newNotification: Notification | undefined = undefined
