@@ -222,6 +222,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 				{
 					// options
 					// headers: {}
+					persistent : true, // same thing as deliveryMode=2
 				}, (err, ok) => {
 					if (err) {
 						messageToSend.reject(err)
