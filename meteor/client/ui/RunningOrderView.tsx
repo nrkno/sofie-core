@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
+import * as VelocityReact from 'velocity-react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 import timer from 'react-timer-hoc'
@@ -43,6 +44,8 @@ import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { callMethod } from '../lib/clientAPI'
 import { RunningOrderViewNotifier } from './RunningOrderView/RunningOrderNotifier'
+import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
+import { NotificationCenter } from '../lib/notifications/notifications'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -964,6 +967,7 @@ interface IState {
 	manualSetAsNext: boolean
 	subsReady: boolean
 	usedHotkeys: Array<HotkeyDefinition>
+	showNotifications: boolean
 }
 
 export enum RunningOrderViewEvents {
@@ -1062,7 +1066,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					key: 'F11',
 					label: t('Change to fullscreen mode')
 				}
-			])
+			]),
+			showNotifications: false
 		}
 
 		this._notifier = new RunningOrderViewNotifier(this.props.runningOrderId)
@@ -1441,6 +1446,16 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		return false
 	}
 
+	onToggleNotifications = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (!this.state.showNotifications === true) {
+			NotificationCenter.snoozeAll()
+		}
+
+		this.setState({
+			showNotifications: !this.state.showNotifications
+		})
+	}
+
 	getStyle () {
 		return {
 			'marginBottom': this.state.bottomMargin
@@ -1464,6 +1479,22 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<RunningOrderFullscreenControls isFollowingOnAir={this.state.followLiveSegments} onFollowOnAir={this.onGoToLiveSegment} onRewindSegments={this.onRewindSegments} />
+						</ErrorBoundary>
+						<ErrorBoundary>
+							<VelocityReact.VelocityTransitionGroup enter={{
+								animation: {
+									translateX: ['0%', '100%']
+								}, easing: 'ease-out', duration: 300
+							}} leave={{
+								animation: {
+									translateX: ['100%', '0%']
+								}, easing: 'ease-in', duration: 500
+							}}>
+								{this.state.showNotifications && <NotificationCenterPanel />}
+							</VelocityReact.VelocityTransitionGroup>
+						</ErrorBoundary>
+						<ErrorBoundary>
+							<NotificationCenterPanelToggle onClick={this.onToggleNotifications} isOpen={this.state.showNotifications} />
 						</ErrorBoundary>
 						<ErrorBoundary>
 							{ this.state.studioMode &&
