@@ -182,25 +182,17 @@ export namespace ServerPlayoutAPI {
 			}})
 		})
 
-		// Remove all segment line items that were added for holds
-		let holdItems = SegmentLineItems.find({
+		// Reset all segment line items that were modified for holds
+		SegmentLineItems.update({
 			runningOrderId: runningOrder._id,
 			extendOnHold: true,
 			infiniteId: { $exists: true },
-		})
-		holdItems.forEach(i => {
-			if (!i.infiniteId || i.infiniteId === i._id) {
-				// Was the source, so clear infinite props
-				SegmentLineItems.update(i._id, {
-					$unset: {
-						infiniteId: 0,
-						infiniteMode: 0,
-					}
-				})
-			} else {
-				SegmentLineItems.remove(i)
+		}, {
+			$unset: {
+				infiniteId: 0,
+				infiniteMode: 0,
 			}
-		})
+		}, {multi: true})
 
 		// ensure that any removed infinites (caused by adlib) are restored
 		updateSourceLayerInfinitesAfterLine(runningOrder, true)
@@ -457,12 +449,6 @@ export namespace ServerPlayoutAPI {
 			segmentLineId: segmentLine._id,
 			dynamicallyInserted: true
 		}))
-		ps.push(asyncCollectionRemove(SegmentLineItems, {
-			runningOrderId: segmentLine.runningOrderId,
-			segmentLineId: segmentLine._id,
-			extendOnHold: true,
-			infiniteId: { $exists: true },
-		}))
 
 		if (isDirty) {
 			return new Promise((resolve, reject) => {
@@ -587,9 +573,10 @@ export namespace ServerPlayoutAPI {
 				if (!currentSegmentLine) throw new Meteor.Error(404, 'currentSegmentLine not found!')
 
 				// Remove the current extension line
-				const items = currentSegmentLine.getAllSegmentLineItems().filter(i => i.extendOnHold && i.infiniteId && i.infiniteId !== i._id)
 				SegmentLineItems.remove({
-					_id: {$in: _.pluck(items, '_id')}
+					segmentLineId: currentSegmentLine._id,
+					extendOnHold: true,
+					dynamicallyInserted: true
 				})
 			}
 			if (runningOrder.previousSegmentLineId) {
@@ -597,10 +584,10 @@ export namespace ServerPlayoutAPI {
 				if (!previousSegmentLine) throw new Meteor.Error(404, 'previousSegmentLine not found!')
 
 				// Clear the extended mark on the original
-				const items = previousSegmentLine.getAllSegmentLineItems().filter(i => i.extendOnHold && i.infiniteId && i.infiniteId === i._id)
-
 				SegmentLineItems.update({
-					_id: {$in: _.pluck(items, '_id')}
+					segmentLineId: previousSegmentLine._id,
+					extendOnHold: true,
+					dynamicallyInserted: false
 				}, {
 					$unset: {
 						infiniteId: 0,
@@ -666,6 +653,8 @@ export namespace ServerPlayoutAPI {
 			const itemsToCopy = previousSegmentLine.getAllSegmentLineItems().filter(i => i.extendOnHold)
 			itemsToCopy.forEach(sli => {
 				// mark current one as infinite
+				sli.infiniteId = sli._id
+				sli.infiniteMode = SegmentLineItemLifespan.OutOnNextSegmentLine
 				SegmentLineItems.update(sli._id, {
 					$set: {
 						infiniteMode: SegmentLineItemLifespan.OutOnNextSegmentLine,
@@ -674,15 +663,15 @@ export namespace ServerPlayoutAPI {
 				})
 
 				// make the extension
-				sli.infiniteId = sli._id
-				sli.segmentLineId = m.currentSegmentLineId
-				sli.infiniteMode = SegmentLineItemLifespan.OutOnNextSegmentLine
-				sli.expectedDuration = 0
-				sli._id = sli._id + '_hold'
+				const newSli = clone(sli) as SegmentLineItem
+				newSli.segmentLineId = m.currentSegmentLineId
+				newSli.expectedDuration = 0
+				newSli.dynamicallyInserted = true
+				newSli._id = sli._id + '_hold'
 
 				// This gets deleted once the nextsegment line is activated, so it doesnt linger for long
-				ps.push(asyncCollectionUpsert(SegmentLineItems, sli._id, sli))
-				roData.segmentLineItems.push(sli) // update the local collection
+				ps.push(asyncCollectionUpsert(SegmentLineItems, newSli._id, newSli))
+				roData.segmentLineItems.push(newSli) // update the local collection
 
 			})
 		}
@@ -2212,11 +2201,18 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjCla
 	let timelineObjs: Array<TimelineObj> = []
 
 	const isHold = holdState === RunningOrderHoldState.ACTIVE
+	if (isHold || holdState === RunningOrderHoldState.COMPLETE) {
+		allowTransition = false
+	}
 
 	_.each(clone(items), (item: SegmentLineItem) => {
 		if (item.disabled) return
 		if (item.isTransition && (!allowTransition || isHold)) {
 			return
+		}
+
+		if (item.extendOnHold && item.infiniteId && item.infiniteId !== item._id) {
+			item._id = item.infiniteId
 		}
 
 		if (
@@ -2255,10 +2251,10 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjCla
 						o.inGroup = segmentLineItemGroup._id
 
 						// If we are leaving a HOLD, the transition was suppressed, so force it to run now
-						if (item.isTransition && holdState === RunningOrderHoldState.COMPLETE) {
-							o.trigger.value = TriggerType.TIME_ABSOLUTE
-							o.trigger.value = 'now'
-						}
+						// if (item.isTransition && holdState === RunningOrderHoldState.COMPLETE) {
+						// 	o.trigger.value = TriggerType.TIME_ABSOLUTE
+						// 	o.trigger.value = 'now'
+						// }
 					}
 
 					timelineObjs.push(o)

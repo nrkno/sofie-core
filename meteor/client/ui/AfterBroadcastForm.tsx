@@ -45,21 +45,9 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 		}
 	}
 	saveForm = (e: React.MouseEvent<HTMLElement>) => {
-
 		let answers = this.state
 
-		if (answers.q0 !== 'nothing') {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT, this.props.runningOrder._id, 'Evaluation form', (err, snapshotId) => {
-				if (!err && snapshotId) {
-					saveEvaluation(snapshotId)
-				} else {
-					saveEvaluation()
-				}
-			})
-		} else {
-			saveEvaluation()
-		}
-		function saveEvaluation (snapshotId?: string) {
+		const saveEvaluation = (snapshotId?: string) => {
 
 			let evaluation: EvaluationBase = {
 				studioId: this.props.runningOrder.studioInstallationId,
@@ -78,6 +66,18 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 				q1: '',
 				q2: '',
 			})
+		}
+
+		if (answers.q0 !== 'nothing') {
+			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT, this.props.runningOrder._id, 'Evaluation form', (err, snapshotId) => {
+				if (!err && snapshotId) {
+					saveEvaluation(snapshotId)
+				} else {
+					saveEvaluation()
+				}
+			})
+		} else {
+			saveEvaluation()
 		}
 	}
 	onUpdateValue = (edit: any, newValue: any ) => {

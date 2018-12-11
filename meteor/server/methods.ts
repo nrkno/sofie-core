@@ -85,3 +85,9 @@ export function getRunningMethods () {
 export function resetRunningMethods () {
 	runningMethods = {}
 }
+
+setMeteorMethods({
+	'logger': (type, ...args) => {
+		(logger[type] || logger.log)(...args)
+	}
+})
