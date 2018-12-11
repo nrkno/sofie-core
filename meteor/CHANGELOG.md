@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.18.1"></a>
+## [0.18.1](https://github.com/nrkno/tv-automation-server-core/compare/v0.18.0...v0.18.1) (2018-12-11)
+
+
+### Bug Fixes
+
+* after broadcast form failed to saveEvaluation ([f55546b](https://github.com/nrkno/tv-automation-server-core/commit/f55546b))
+* fix for strange (temporary?) error about method missing ([0db30ae](https://github.com/nrkno/tv-automation-server-core/commit/0db30ae))
+* make the FullScreen detection more lenient ([215d73c](https://github.com/nrkno/tv-automation-server-core/commit/215d73c))
+* rewind UI even if reset returns error ([08c5d6b](https://github.com/nrkno/tv-automation-server-core/commit/08c5d6b))
+* systemStatus _internal messages ([d150f54](https://github.com/nrkno/tv-automation-server-core/commit/d150f54))
+* updated health endpoint according to spec ([c196382](https://github.com/nrkno/tv-automation-server-core/commit/c196382))
+* **hold:** Disable transition when in HOLD ([cfcb141](https://github.com/nrkno/tv-automation-server-core/commit/cfcb141))
+* **hold:** Disable transition when leaving HOLD ([6b7184c](https://github.com/nrkno/tv-automation-server-core/commit/6b7184c))
+* **hold:** Ensure the original stk does not get picked up as a dynamic object when setting the sl as next ([22da4d8](https://github.com/nrkno/tv-automation-server-core/commit/22da4d8))
+* **hold:** When extending a sli during hold, use the original id to make any triggers on the sli work ([a3fd1a6](https://github.com/nrkno/tv-automation-server-core/commit/a3fd1a6))
+
+
+
 <a name="0.18.0"></a>
 # [0.18.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.17.0...v0.18.0) (2018-11-26)
 
