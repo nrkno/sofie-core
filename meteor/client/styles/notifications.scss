@@ -70,6 +70,16 @@
             }
         }
 
+        &.has-default-action {
+            > .notification-pop-up__contents {
+                cursor: pointer;
+                
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+        }
+
         > .notification-pop-up__contents {
             flex: 1;
             padding: 10px 15px;

@@ -16,15 +16,27 @@ interface IPopUpProps {
 }
 
 class NotificationPopUp extends React.Component<IPopUpProps> {
+	triggerEvent = (eventName, e) => {
+		if (this.props.item.actions && this.props.item.actions.find(i => i.type === eventName)) {
+			this.props.item.action(eventName, e)
+		}
+	}
+
 	render () {
 		const { item } = this.props
+
+		const hasDefaultAction = item.actions && !!item.actions.find(i => i.type === 'default')
 
 		return <div className={ClassNames('notification-pop-up', {
 			'critical': item.status === NoticeLevel.CRITICAL,
 			'notice': item.status === NoticeLevel.NOTIFICATION,
 			'warning': item.status === NoticeLevel.WARNING,
-			'tip': item.status === NoticeLevel.TIP
-		})}>
+			'tip': item.status === NoticeLevel.TIP,
+
+			'has-default-action': hasDefaultAction
+		})}
+		onClick={(e) => this.triggerEvent('default', e)}
+		>
 			<div className='notification-pop-up__header'>
 				<img className='icon' src='/icons/warning_icon.svg' />
 			</div>
@@ -33,7 +45,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 			</div>
 			{this.props.showDismiss &&
 				<div className='notification-pop-up__dismiss'>
-					<button className='notification-pop-up__dismiss__button' onClick={this.props.onDismiss}>
+					<button className='notification-pop-up__dismiss__button' onClick={(e) => e.stopPropagation() || (typeof this.props.onDismiss === 'function' && this.props.onDismiss(e))}>
 						<CoreIcon id='nrk-close' />
 					</button>
 				</div>
@@ -70,7 +82,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 
 	render () {
 		const { t } = this.props
-		const displayList = this.props.notifications.filter(i => this.props.showSnoozed || !i.snoozed).sort((a, b) => (b.created - a.created)).map(item => (
+		const displayList = this.props.notifications.filter(i => this.props.showSnoozed || !i.snoozed).sort((a, b) => Notification.compare(a, b)).map(item => (
 			<NotificationPopUp key={item.created + (item.message || 'undefined').toString() + (item.id || '')}
 				item={item} onDismiss={() => this.dismissNotification(item)}
 				showDismiss={!item.persistent || !this.props.showSnoozed} />

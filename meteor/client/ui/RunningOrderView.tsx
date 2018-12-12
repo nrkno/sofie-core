@@ -15,7 +15,7 @@ import { PlayoutAPI } from '../../lib/api/playout'
 import { RunningOrder, RunningOrders, RunningOrderHoldState } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { SegmentLine } from '../../lib/collections/SegmentLines'
+import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
@@ -35,7 +35,7 @@ import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
 import { DEFAULT_DISPLAY_DURATION } from '../../lib/RunningOrder'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
-import { scrollToSegmentLine, scrollToPosition } from '../lib/viewPort'
+import { scrollToSegmentLine, scrollToPosition, scrollToSegment } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RunningOrderFullscreenControls } from './RunningOrderView/RunningOrderFullscreenControls'
@@ -43,7 +43,7 @@ import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { callMethod } from '../lib/clientAPI'
-import { RunningOrderViewNotifier } from './RunningOrderView/RunningOrderNotifier'
+import { RunningOrderViewNotifier, RONotificationEvent } from './RunningOrderView/RunningOrderNotifier'
 import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter } from '../lib/notifications/notifications'
 
@@ -1071,6 +1071,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 
 		this._notifier = new RunningOrderViewNotifier(this.props.runningOrderId)
+		this._notifier.onRONotificationClick = this.onRONotificationClick
 	}
 
 	componentWillMount () {
@@ -1370,6 +1371,24 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		if (this.state.studioMode && item && item._id && this.props.runningOrder && this.props.runningOrder.active && this.props.runningOrder.currentSegmentLineId) {
 			callMethod(e, PlayoutAPI.methods.segmentLineItemTakeNow, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, item._id)
 			console.log(item, e)
+		}
+	}
+
+	onRONotificationClick = (e: RONotificationEvent) => {
+		if (e.sourceLocator) {
+			let segmentId = e.sourceLocator.segmentId
+
+			if (!segmentId) {
+				if (e.sourceLocator.segmentLineId) {
+					let segmentLine = SegmentLines.findOne(e.sourceLocator.segmentLineId)
+					if (segmentLine) {
+						segmentId = segmentLine.segmentId
+					}
+				}
+			}
+			if (segmentId) {
+				scrollToSegment(segmentId)
+			}
 		}
 	}
 

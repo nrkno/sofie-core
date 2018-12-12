@@ -62,8 +62,9 @@ export class Notification extends EventEmitter {
 	snoozed?: boolean
 	actions?: Array<NotificationAction>
 	created: Time
+	rank: number
 
-	constructor (id: string | undefined, status: NoticeLevel, message: string | React.ReactNode, source: string, created?: Time, persistent?: boolean, actions?: Array<NotificationAction>) {
+	constructor (id: string | undefined, status: NoticeLevel, message: string | React.ReactNode, source: string, created?: Time, persistent?: boolean, actions?: Array<NotificationAction>, rank?: number) {
 		super()
 
 		this.id = id
@@ -73,6 +74,7 @@ export class Notification extends EventEmitter {
 		this.persistent = persistent || false
 		this.actions = actions || undefined
 		this.created = created || Date.now()
+		this.rank = rank || 0
 	}
 
 	snooze () {
@@ -89,6 +91,15 @@ export class Notification extends EventEmitter {
 
 	action (type: string, event: any) {
 		this.emit('action', this, type, event)
+	}
+
+	static isEqual (a: Notification | undefined, b: Notification | undefined): boolean {
+		if (typeof a !== typeof b) return false
+		return _.isEqual(_.omit(a, ['created']), _.omit(b, ['created']))
+	}
+
+	static compare (a: Notification, b: Notification): number {
+		return (a.status - b.status) || (a.created - b.created) || (a.rank - b.rank)
 	}
 }
 
