@@ -15,7 +15,7 @@ declare class FontFace {
 	load (): void
 }
 
-const GRID_FONT_URL = 'url("/roboto-gh-pages/fonts/Light/Roboto-Light.woff")'
+const GRID_FONT_URL = 'url("/fonts/roboto-gh-pages/fonts/Light/Roboto-Light.woff")'
 const TIMELINE_GRID_LABEL_COLOR = 'rgb(175,175,175)'
 const INNER_STEP_GRID_COLOR = 'rgb(112,112,112)'
 const LARGE_STEP_GRID_COLOR = 'rgb(112,112,112)'
