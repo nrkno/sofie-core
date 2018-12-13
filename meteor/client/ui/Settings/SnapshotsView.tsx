@@ -12,6 +12,7 @@ import { EditAttribute } from '../../lib/EditAttribute'
 import { faWindowClose } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { multilineText } from '../../lib/lib'
 
 interface IProps {
 	match: {
@@ -207,9 +208,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									{
 										_.map(this.props.studios, (studio) => {
 											return <div key={studio._id}>
-												<div>
-													<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot(studio._id) }}>{t('Take a Snapshot for studio "{{studioName}}" only', {studioName: studio.name})}</button>
-												</div>
+												<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot(studio._id) }}>{t('Take a Snapshot for studio "{{studioName}}" only', {studioName: studio.name})}</button>
 											</div>
 										})
 									}
@@ -267,9 +266,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 															</button>
 														]
 													:
-													<i onClick={() => { this.editSnapshot(snapshot._id) }}>
-														{snapshot.comment}
-													</i>
+													<a href='#' onClick={(e) => { e.preventDefault(); this.editSnapshot(snapshot._id) }}>
+														<i>{multilineText(snapshot.comment)}</i>
+													</a>
 												}
 											</td>
 										</tr>
