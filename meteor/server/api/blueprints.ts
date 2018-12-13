@@ -35,7 +35,8 @@ import {
 	IOutputLayer,
 	ISourceLayer,
 	ShowStyleVariantPart,
-	IBlueprintShowStyleVariant
+	IBlueprintShowStyleVariant,
+	IBlueprintSegment
 } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
 
@@ -291,14 +292,33 @@ export class AsRunEventContext extends RunningOrderContext implements IAsRunEven
 			}
 		}).fetch()
 	}
+	/** Get all segments in this runningOrder */
+	getSegments (): Array<IBlueprintSegment> {
+		return this.runningOrder.getSegments()
+	}
+	/**
+	 * Returns a segment
+	 * @param id Id of segment to fetch. If is omitted, return the segment related to this AsRunEvent
+	 */
+	getSegment (id?: string): IBlueprintSegment | undefined {
+		id = id || this.asRunEvent.segmentId
+		if (id) {
+			return this.runningOrder.getSegments({
+				_id: id
+			})[0]
+		}
+	}
 	/** Get all segmentLines in this runningOrder */
 	getSegmentLines (): Array<SegmentLine> {
 		return this.runningOrder.getSegmentLines()
 	}
 	/** Get the segmentLine related to this AsRunEvent */
-	getSegmentLine (): SegmentLine | undefined {
-		if (this.asRunEvent.segmentLineId) {
-			return SegmentLines.findOne(this.asRunEvent.segmentLineId)
+	getSegmentLine (id?: string): SegmentLine | undefined {
+		id = id || this.asRunEvent.segmentLineId
+		if (id) {
+			return this.runningOrder.getSegmentLines({
+				_id: id
+			})[0]
 		}
 	}
 	/** Get the mos story related to a segmentLine */
