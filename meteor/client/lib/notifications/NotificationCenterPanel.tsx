@@ -135,7 +135,9 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 				'open': this.props.isOpen
 			})} role='button' onClick={this.props.onClick} tabIndex={0}>
 				<FontAwesomeIcon icon={faChevronLeft} />
-				<span className='notifications__toggle-button__count'>{this.props.count}</span>
+				{ this.props.count > 0 &&
+					<span className='notifications__toggle-button__count'>{this.props.count}</span>
+				}
 			</div>
 		)
 	}
