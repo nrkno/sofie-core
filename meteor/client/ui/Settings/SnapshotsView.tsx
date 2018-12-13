@@ -27,6 +27,7 @@ interface IState {
 	uploadFileName?: string
 	uploadFileContents?: string
 	editSnapshotId: string | null
+	removeSnapshots: boolean
 }
 interface ITrackedProps {
 	snapshots: Array<SnapshotItem>
@@ -48,7 +49,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		this.state = {
 			uploadFileKey: Date.now(),
 			showUploadConfirm: false,
-			editSnapshotId: null
+			editSnapshotId: null,
+			removeSnapshots: false
 		}
 	}
 	componentWillMount () {
@@ -182,6 +184,36 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			})
 		}
 	}
+	toggleRemoveView = () => {
+		this.setState({
+			removeSnapshots: !this.state.removeSnapshots
+		})
+	}
+	removeStoredSnapshot = (snapshotId: string) => {
+		let snapshot = Snapshots.findOne(snapshotId)
+		if (snapshot) {
+			doModalDialog({
+				title: 'Remove Snapshot',
+				message: `Are you sure, do you really want to REMOVE the Snapshot ${snapshot.name}?\r\nThis cannot be undone!!`,
+				onAccept: () => {
+					Meteor.call(SnapshotFunctionsAPI.REMOVE_SNAPSHOT, snapshotId, (err) => {
+						if (err) {
+							// todo: notify user
+							logger.error(err)
+							doModalDialog({
+								title: 'Remove Snapshot',
+								message: `Error: ${err.toString()}`,
+								acceptOnly: true,
+								onAccept: () => {
+									// nothing
+								}
+							})
+						}
+					})
+				}
+			})
+		}
+	}
 	render () {
 		const { t } = this.props
 
@@ -271,11 +303,20 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 													</a>
 												}
 											</td>
+											{
+												this.state.removeSnapshots ?
+												<td>
+													<button className='btn btn-secondary' onClick={() => { this.removeStoredSnapshot(snapshot._id) }}>{t('Remove')}</button>
+												</td> : null
+											}
 										</tr>
 									)
 								})}
 							</tbody>
 						</table>
+						<div>
+							<a href='#' onClick={(e) => { e.preventDefault(); this.toggleRemoveView() }}>{t('Show "Remove snapshots"-buttons')}</a>
+						</div>
 					</div>
 				</div>
 			</div>

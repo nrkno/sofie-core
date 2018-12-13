@@ -27,7 +27,7 @@ import { ServerPeripheralDeviceAPI } from './peripheralDevice'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
 import { getCoreSystem, ICoreSystem, CoreSystem, parseVersion, compareVersions } from '../../lib/collections/CoreSystem'
-import { fsWriteFile, fsReadFile } from '../lib'
+import { fsWriteFile, fsReadFile, fsUnlinkFile } from '../lib'
 import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databaseMigration'
 import { restoreRunningOrder } from '../backups'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
@@ -295,6 +295,7 @@ function storeSnaphot (snapshot: {snapshot: SnapshotBase}, comment: string): str
 	let str = JSON.stringify(snapshot)
 
 	// Store to the persistant file storage
+	logger.info(`Save snapshot file ${filePath}`)
 	fsWriteFile(filePath, str)
 
 	let id = Snapshots.insert({
@@ -409,6 +410,33 @@ export function restoreSnapshot (snapshotId: string) {
 	let snapshot = retreiveSnapshot(snapshotId)
 	return restoreFromSnapshot(snapshot)
 }
+export function removeSnapshot (snapshotId: string) {
+	check(snapshotId, String)
+
+	logger.info(`Removing snapshot ${snapshotId}`)
+
+	let snapshot = Snapshots.findOne(snapshotId)
+	if (!snapshot) throw new Meteor.Error(404, `Snapshot not found!`)
+
+	if (snapshot.fileName) {
+		// remove from disk
+		let system = getCoreSystem()
+		if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
+		if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
+
+		let filePath = Path.join(system.storePath, snapshot.fileName)
+		try {
+			logger.info(`Removing snapshot file ${filePath}`)
+
+			fsUnlinkFile(filePath)
+		} catch (e) {
+			// Log the error, but continue
+			logger.error('Error in removeSnapshot')
+			logger.error(e)
+		}
+	}
+	Snapshots.remove(snapshot._id)
+}
 
 Picker.route('/snapshot/system/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {
 	return handleResponse(response, () => {
@@ -480,6 +508,9 @@ methods[SnapshotFunctionsAPI.STORE_DEBUG_SNAPSHOT] = (studioId: string, reason: 
 }
 methods[SnapshotFunctionsAPI.RESTORE_SNAPSHOT] = (snapshotId: string) => {
 	return restoreSnapshot(snapshotId)
+}
+methods[SnapshotFunctionsAPI.REMOVE_SNAPSHOT] = (snapshotId: string) => {
+	return removeSnapshot(snapshotId)
 }
 // Apply methods:
 setMeteorMethods(wrapMethods(methods))

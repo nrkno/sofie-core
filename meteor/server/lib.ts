@@ -11,3 +11,5 @@ export const fsWriteFile: (path: fs.PathLike | number, data: any, options?: { en
 	= Meteor.wrapAsync(fs.writeFile)
 export const fsReadFile: (path: fs.PathLike | number, options?: { encoding?: null; flag?: string; } | undefined | null) => Buffer
 	= Meteor.wrapAsync(fs.readFile)
+export const fsUnlinkFile: (path: fs.PathLike) => void
+	= Meteor.wrapAsync(fs.unlink)
