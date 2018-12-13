@@ -3,7 +3,7 @@ import * as CoreIcon from '@nrk/core-icons/jsx'
 import * as ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
 
-import { translateWithTracker, Translated } from '../ReactMeteorData/ReactMeteorData'
+import { translateWithTracker, Translated, withTracker } from '../ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from './notifications'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
@@ -120,14 +120,23 @@ interface IToggleProps {
 	isOpen?: boolean
 }
 
-export class NotificationCenterPanelToggle extends React.Component<IToggleProps> {
+interface ITrackedCountProps {
+	count: number
+}
+
+export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrackedCountProps>(() => {
+	return {
+		count: NotificationCenter.count()
+	}
+})(class NotificationCenterPanelToggle extends MeteorReactComponent<IToggleProps & ITrackedCountProps> {
 	render () {
 		return (
 			<div className={ClassNames('notifications__toggle-button', {
 				'open': this.props.isOpen
 			})} role='button' onClick={this.props.onClick} tabIndex={0}>
 				<FontAwesomeIcon icon={faChevronLeft} />
+				<span className='notifications__toggle-button__count'>{this.props.count}</span>
 			</div>
 		)
 	}
-}
+})

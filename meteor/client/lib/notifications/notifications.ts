@@ -200,6 +200,12 @@ class NotificationCenter0 {
 						 .concat(_.map(notifications, (item, key) => item)))
 	}
 
+	count (): number {
+		notificationsDep.depend()
+
+		return _.reduce(_.map(notifiers, (item) => item.result.length), (a, b) => a + b, 0) + _.values(notifications).length
+	}
+
 	snoozeAll () {
 		const n = this.getNotifications()
 		n.forEach((item) => item.snooze())

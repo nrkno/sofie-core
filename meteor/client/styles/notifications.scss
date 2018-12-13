@@ -111,29 +111,42 @@
     width: $fullscreen-controls__button--radius;
     height: $fullscreen-controls__button--radius;
     border-radius: 100%;
-    transition: 0.3s background, 0.5s transform ease-in-out;
+    transition: 0.3s background-color;
     margin-bottom: 0.5rem;
     font-size: 1em;
     z-index: 310;
     text-align: left;
-    transform-origin: center center;
-    transform: rotate(0deg);
 
     &:active, &.active {
         background: $ui-button-primary;
-        transition: 0s background, 0.5s transform ease-in-out;
-    }
-
-    &.open {
-        transform: rotate(180deg);
-        transition: 0.3s background, 0.3s transform ease-in-out;
+        transition: 0s background-color;
     }
 
     > svg.svg-inline--fa {
+        display: block;
+        position: relative;
         width: 0.7em;
         height: auto;
         margin-top: 1em;
         margin-left: 1.2em;
+        
+        transform-origin: center center;
+        transform: rotate(0deg);
+        transition: 0.5s transform ease-in-out;
+    }
+
+    &.open {
+        transition: 0.3s background-color;
+        
+        > svg.svg-inline--fa {
+            transform: rotate(180deg);
+            transition: 0.3s transform ease-in-out;
+        }
+    }
+
+    .notifications__toggle-button__count {
+        display: block;
+        position: absolute;
     }
 }
 
