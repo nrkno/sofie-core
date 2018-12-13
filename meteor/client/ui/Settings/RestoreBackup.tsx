@@ -11,6 +11,7 @@ import { logger } from '../../../lib/logging'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { faWindowClose } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
 
 interface IProps {
 	match: {
@@ -28,6 +29,7 @@ interface IState {
 }
 interface ITrackedProps {
 	snapshots: Array<SnapshotItem>
+	studios: Array<StudioInstallation>
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 
@@ -36,7 +38,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			sort: {
 				created: -1
 			}
-		}).fetch()
+		}).fetch(),
+		studios: StudioInstallations.find({}, {}).fetch()
 	}
 })( class RestoreBackup extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
@@ -53,10 +56,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				$gt: getCurrentTime() - 30 * 24 * 3600 * 1000 // last 30 days
 			}
 		})
+		this.subscribe('studioInstallations', {})
 	}
-	// componentWillUnmount () {
-	// 	this._cleanUp()
-	// }
 
 	onUploadFile (e) {
 		const file = e.target.files[0]
@@ -137,8 +138,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			})
 		}
 	}
-	takeSystemSnapshot = () => {
-		Meteor.call(SnapshotFunctionsAPI.STORE_SYSTEM_SNAPSHOT, null, `Requested by user`, (err) => {
+	takeSystemSnapshot = (studioId: string | null) => {
+		Meteor.call(SnapshotFunctionsAPI.STORE_SYSTEM_SNAPSHOT, studioId, `Requested by user`, (err) => {
 			if (err) {
 				// todo: notify user
 				logger.error(err)
@@ -188,18 +189,33 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				<div>
 					<div>
 						<h3>{t('Take a Snapshot')}</h3>
+						<div>
+							<h4>{t('Full system Snapshot')}</h4>
+							<i>
+								{t('A Full System Snapshot contains all system settings (studios, showstyles, blueprints, devices, etc.)')}
+							</i>
 							<div>
-								<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot() }}>{t('Take a System Snapshot')}</button>
-								<i>
-									{t('A System Snapshot contains all system settings (studio, showstyles, devices, etc.)')}
-								</i>
+								<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot(null) }}>{t('Take a Full system Snapshot')}</button>
 							</div>
-							{/* <div>
-								<button className='btn btn-primary' onClick={() => { this.takeDebugSnapshot() }}>{t('Take debug snapshot')}</button>
-								<i>
-									{t('A Debug Snapshot contains info about the system and the active running order(s)')}
-								</i>
-							</div> */}
+							{
+								this.props.studios.length > 1 ?
+								<div>
+									<h4>{t('Studio Snapshot')}</h4>
+									<i>
+										{t('A System Snapshot contains all system settings related to that studio')}
+									</i>
+									{
+										_.map(this.props.studios, (studio) => {
+											return <div key={studio._id}>
+												<div>
+													<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot(studio._id) }}>{t('Take a Snapshot for studio "{{studioName}}" only', {studioName: studio.name})}</button>
+												</div>
+											</div>
+										})
+									}
+								</div> : null
+							}
+						</div>
 					</div>
 					<h3>{t('Restore from Snapshot File')}</h3>
 					<label className='field'>

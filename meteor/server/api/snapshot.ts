@@ -32,6 +32,8 @@ import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databas
 import { restoreRunningOrder } from '../backups'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { AudioContent } from 'tv-automation-sofie-blueprints-integration'
+import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
+import { MongoSelector } from '../../lib/typings/meteor'
 interface RunningOrderSnapshot {
 	version: string
 	runningOrderId: string
@@ -51,11 +53,10 @@ interface SystemSnapshot {
 	studios: Array<StudioInstallation>
 	showStyleBases: Array<ShowStyleBase>
 	showStyleVariants: Array<ShowStyleVariant>
+	blueprints?: Array<Blueprint> // optional, to be backwards compatible
 	devices: Array<PeripheralDevice>
 	deviceCommands: Array<PeripheralDeviceCommand>
 	coreSystem: ICoreSystem
-	// old, deprecated:
-	showStyles?: Array<any>
 }
 interface DebugSnapshot {
 	version: string
@@ -123,18 +124,50 @@ function createRunningOrderSnapshot (runningOrderId: string): RunningOrderSnapsh
 /**
  * Create a snapshot of all items related to the base system (all settings),
  * that means all studios, showstyles, peripheralDevices etc
+ * If studioId is provided, only return items related to that studio
  * @param studioId (Optional) Only generate for a certain studio
  */
 function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 	let snapshotId = Random.id()
 	logger.info(`Generating System snapshot "${snapshotId}"` + (studioId ? `for studio "${studioId}"` : ''))
 
-	const coreSystem 	= getCoreSystem()
+	const coreSystem 		= getCoreSystem()
 	if (!coreSystem) throw new Meteor.Error(500, `coreSystem not set up`)
-	const studios 		= StudioInstallations.find((studioId ? {_id: studioId} : {})).fetch()
-	const showStyleBases 	= ShowStyleBases.find().fetch()
-	const showStyleVariants = ShowStyleVariants.find().fetch()
-	const devices 		= PeripheralDevices.find((studioId ? {studioInstallationId: studioId} : {})).fetch()
+	const studios 			= StudioInstallations.find((studioId ? {_id: studioId} : {})).fetch()
+
+	let queryShowStyleBases: MongoSelector<ShowStyleBase> = {}
+	let queryShowStyleVariants: MongoSelector<ShowStyleVariant> = {}
+	let queryDevices: MongoSelector<PeripheralDevice> = {}
+	let queryBlueprints: MongoSelector<Blueprint> = {}
+
+	if (studioId) {
+		let showStyleBaseIds: string[] = []
+		_.each(studios, (studio) => {
+			showStyleBaseIds = showStyleBaseIds.concat(studio.supportedShowStyleBase)
+		})
+
+		queryShowStyleBases = {
+			_id: {$in: showStyleBaseIds}
+		}
+		queryShowStyleVariants = {
+			showStyleBaseId: {$in: showStyleBaseIds}
+		}
+		queryDevices = { studioInstallationId: studioId }
+	}
+	const showStyleBases 	= ShowStyleBases	.find(queryShowStyleBases).fetch()
+	const showStyleVariants = ShowStyleVariants	.find(queryShowStyleVariants).fetch()
+	const devices 			= PeripheralDevices	.find(queryDevices).fetch()
+
+	if (studioId) {
+		let blueprintIds: string[] = []
+		_.each(showStyleBases, (showStyleBase => {
+			blueprintIds = blueprintIds.concat(showStyleBase.blueprintId)
+		}))
+		queryBlueprints = {
+			_id: {$in: blueprintIds}
+		}
+	}
+	const blueprints 		= Blueprints		.find(queryBlueprints).fetch()
 
 	const deviceCommands = PeripheralDeviceCommands.find({
 		deviceId: {$in: _.pluck(devices, '_id')}
@@ -154,6 +187,7 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 		studios,
 		showStyleBases,
 		showStyleVariants,
+		blueprints,
 		devices,
 		coreSystem,
 		deviceCommands: deviceCommands,
@@ -346,6 +380,7 @@ function restoreFromSystemSnapshot (snapshot: SystemSnapshot) {
 	saveIntoDb(StudioInstallations, (studioId ? {_id: studioId} : {}), snapshot.studios)
 	saveIntoDb(ShowStyleBases, {}, snapshot.showStyleBases)
 	saveIntoDb(ShowStyleVariants, {}, snapshot.showStyleVariants)
+	if (snapshot.blueprints) saveIntoDb(Blueprints, {}, snapshot.blueprints)
 	saveIntoDb(PeripheralDevices, (studioId ? {studioInstallationId: studioId} : {}), snapshot.devices)
 	saveIntoDb(CoreSystem, {}, [snapshot.coreSystem])
 	// saveIntoDb(PeripheralDeviceCommands, {}, snapshot.deviceCommands) // ignored
