@@ -21,7 +21,7 @@ import { ErrorBoundary } from '../lib/ErrorBoundary'
 import StudioSettings from './Settings/StudioSettings'
 import DeviceSettings from './Settings/DeviceSettings'
 import ShowStyleSettings from './Settings/ShowStyleBaseSettings'
-import RestoreBackup from './Settings/RestoreBackup'
+import SnapshotsView from './Settings/SnapshotsView'
 import BlueprintSettings from './Settings/BlueprintSettings'
 
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
@@ -245,8 +245,8 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/migration'>
 					<h3>{t('Upgrade database')}</h3>
 				</NavLink>
-				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/restore'>
-					<h3>{t('Restore Snapshot')}</h3>
+				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/snapshots'>
+					<h3>{t('Manage Snapshots')}</h3>
 				</NavLink>
 			</div>
 		)
@@ -287,7 +287,7 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 									<Route path='/settings/showStyleBase/:showStyleBaseId' component={ShowStyleSettings} />
 									<Route path='/settings/peripheralDevice/:deviceId' component={DeviceSettings} />
 									<Route path='/settings/blueprint/:blueprintId' component={BlueprintSettings} />
-									<Route path='/settings/tools/restore' component={RestoreBackup} />
+									<Route path='/settings/tools/snapshots' component={SnapshotsView} />
 									<Route path='/settings/migration' component={MigrationView} />
 									<Redirect to='/settings' />
 								</Switch>

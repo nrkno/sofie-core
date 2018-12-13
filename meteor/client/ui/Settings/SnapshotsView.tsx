@@ -41,7 +41,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		}).fetch(),
 		studios: StudioInstallations.find({}, {}).fetch()
 	}
-})( class RestoreBackup extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+})( class SnapshotsView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {
