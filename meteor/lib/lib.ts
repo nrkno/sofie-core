@@ -101,6 +101,11 @@ interface SaveIntoDbOptions<DocClass, DBInterface> {
 	afterUpdate?: (o: DBInterface) => void
 	afterRemove?: (o: DBInterface) => void
 }
+interface Changes {
+	added: number
+	updated: number
+	removed: number
+}
 /**
  * Saves an array of data into a collection
  * No matter if the data needs to be created, updated or removed
@@ -113,8 +118,8 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 	filter: MongoSelector<DBInterface>,
 	newData: Array<DBInterface>,
 	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
-) {
-	let change = {
+): Changes {
+	let change: Changes = {
 		added: 0,
 		updated: 0,
 		removed: 0
@@ -217,6 +222,21 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 	})
 	waitForPromiseAll(ps)
 
+	return change
+}
+export function sumChanges (...changes: (Changes | null)[]): Changes {
+	let change: Changes = {
+		added: 0,
+		updated: 0,
+		removed: 0
+	}
+	_.each(changes, (c) => {
+		if (c) {
+			change.added += c.added
+			change.updated += c.updated
+			change.removed += c.removed
+		}
+	})
 	return change
 }
 /**

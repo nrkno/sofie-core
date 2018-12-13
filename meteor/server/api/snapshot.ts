@@ -16,7 +16,7 @@ import { Segments, Segment } from '../../lib/collections/Segments'
 import { SegmentLineItems, SegmentLineItem } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
-import { getCurrentTime, Time, formatDateAsTimecode, formatDateTime, fixValidPath, saveIntoDb } from '../../lib/lib'
+import { getCurrentTime, Time, formatDateAsTimecode, formatDateTime, fixValidPath, saveIntoDb, sumChanges } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
@@ -376,16 +376,17 @@ function restoreFromSystemSnapshot (snapshot: SystemSnapshot) {
 	if (!isVersionSupported(parseVersion(snapshot.version || '0.18.0'))) {
 		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
 	}
-
-	saveIntoDb(StudioInstallations, (studioId ? {_id: studioId} : {}), snapshot.studios)
-	saveIntoDb(ShowStyleBases, {}, snapshot.showStyleBases)
-	saveIntoDb(ShowStyleVariants, {}, snapshot.showStyleVariants)
-	if (snapshot.blueprints) saveIntoDb(Blueprints, {}, snapshot.blueprints)
-	saveIntoDb(PeripheralDevices, (studioId ? {studioInstallationId: studioId} : {}), snapshot.devices)
-	saveIntoDb(CoreSystem, {}, [snapshot.coreSystem])
+	let changes = sumChanges(
+		saveIntoDb(StudioInstallations, (studioId ? {_id: studioId} : {}), snapshot.studios),
+		saveIntoDb(ShowStyleBases, {}, snapshot.showStyleBases),
+		saveIntoDb(ShowStyleVariants, {}, snapshot.showStyleVariants),
+		(snapshot.blueprints ? saveIntoDb(Blueprints, {}, snapshot.blueprints) : null),
+		saveIntoDb(PeripheralDevices, (studioId ? {studioInstallationId: studioId} : {}), snapshot.devices),
+		saveIntoDb(CoreSystem, {}, [snapshot.coreSystem])
+	)
 	// saveIntoDb(PeripheralDeviceCommands, {}, snapshot.deviceCommands) // ignored
 
-	logger.info(`Restore done`)
+	logger.info(`Restore done (added ${changes.added}, updated ${changes.updated}, removed ${changes.removed} documents)`)
 }
 
 export function storeSystemSnapshot (studioId: string | null, reason: string) {
