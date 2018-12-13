@@ -1492,7 +1492,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				<RunningOrderTimingProvider
 					runningOrder={this.props.runningOrder}
 					defaultDuration={DEFAULT_DISPLAY_DURATION}>
-					<div className='running-order-view' style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
+					<div className={ClassNames('running-order-view', {
+						'notification-center-open': this.state.showNotifications
+					})} style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
 						<ErrorBoundary>
 							{ this.state.studioMode && <KeyboardFocusMarker /> }
 						</ErrorBoundary>

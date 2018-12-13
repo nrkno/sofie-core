@@ -61,9 +61,24 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	padding-top: 125px;
 	padding-bottom: 50vh;
 	padding-right: $statusbar-width;
+	transition: 0s padding-right 0s;
 
 	.header.running-order .notification-pop-ups {
 		top: 65px;
+	}
+
+	> .header .running-order-overview {
+		transition: 0s padding-right 0.5s;
+	}
+
+	&.notification-center-open {
+		padding-right: calc(#{$statusbar-width} + 400px);
+		transition: 0s padding-right 0.5s;
+
+		> .header .running-order-overview {
+			padding-right: calc(#{$statusbar-width} + 400px + 1.5em);
+			transition: 0s padding-right 0.5s;
+		}
 	}
 }
 
