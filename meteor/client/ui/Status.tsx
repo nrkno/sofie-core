@@ -14,7 +14,6 @@ import {
 import SystemStatus from './Status/SystemStatus'
 import { ExternalMessages } from './Status/ExternalMessages'
 import { UserActivity } from './Status/UserActivity'
-import { SnapshotView } from './Status/Snapshot'
 import { EvaluationView } from './Status/Evaluations'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
@@ -40,12 +39,6 @@ const StatusMenu = translate()(class StatusMenu extends React.Component<Translat
 					className='status-menu__status-menu-item selectable clickable'
 					to={'/status/system'}>
 					<h3>{t('System')}</h3>
-				</NavLink>
-				<NavLink
-					activeClassName='selectable-selected'
-					className='status-menu__status-menu-item selectable clickable'
-					to={'/status/snapshot'}>
-					<h3>{t('Snapshot')}</h3>
 				</NavLink>
 				<NavLink
 					activeClassName='selectable-selected'
@@ -106,7 +99,6 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 								<Route path='/status/messages' component={ExternalMessages} />
 								<Route path='/status/system' component={SystemStatus} />
 								<Route path='/status/userLog' component={UserActivity} />
-								<Route path='/status/snapshot' component={SnapshotView} />
 								<Route path='/status/evaluations' component={EvaluationView} />
 								<Redirect to='/status/system' />
 							</Switch>
