@@ -187,11 +187,7 @@ export class RunningOrderFullscreenControls extends React.Component<IProps, ISta
 						</div>
 					}
 					{!this.state.isFullscreen &&
-						<div className='running-order__fullscreen-controls__button running-order__fullscreen-controls__button--inactive' role='button' onMouseEnter={this.onFullscreenMouseEnter} onMouseLeave={this.onFullscreenMouseLeave} tabIndex={0}>
-							{ this.state.fullScreenHover ?
-								<Lottie options={this.windowedOver} isStopped={false} isPaused={false} /> :
-								<Lottie options={this.windowedOut} isStopped={false} isPaused={false} />
-							}
+						<div className='running-order__fullscreen-controls__label'>
 							<div className='running-order__fullscreen-controls__button__label'><span className='keyboard_key'>F11</span> Fullscreen</div>
 						</div>
 					}
