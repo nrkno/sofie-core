@@ -242,7 +242,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				}
 				<h2 className='mhs'>{t('Tools')}</h2>
 				<hr className='vsubtle man' />
-				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/migration'>
+				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/migration'>
 					<h3>{t('Upgrade database')}</h3>
 				</NavLink>
 				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/snapshots'>
@@ -288,7 +288,7 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 									<Route path='/settings/peripheralDevice/:deviceId' component={DeviceSettings} />
 									<Route path='/settings/blueprint/:blueprintId' component={BlueprintSettings} />
 									<Route path='/settings/tools/snapshots' component={SnapshotsView} />
-									<Route path='/settings/migration' component={MigrationView} />
+									<Route path='/settings/tools/migration' component={MigrationView} />
 									<Redirect to='/settings' />
 								</Switch>
 							</ErrorBoundary>
