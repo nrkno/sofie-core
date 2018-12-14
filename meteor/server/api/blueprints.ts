@@ -123,6 +123,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 	}
 	/** Throw Error and display message to the user in the GUI */
 	error (message: string) {
+		check(message, String)
 		logger.error('Error from blueprint: ' + message)
 		this._pushNote(
 			SegmentLineNoteType.ERROR,
@@ -132,6 +133,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 	}
 	/** Save note, which will be displayed to the user in the GUI */
 	warning (message: string) {
+		check(message, String)
 		this._pushNote(
 			SegmentLineNoteType.WARNING,
 			message
@@ -302,6 +304,7 @@ export class AsRunEventContext extends RunningOrderContext implements IAsRunEven
 	 */
 	getSegment (id?: string): IBlueprintSegment | undefined {
 		id = id || this.asRunEvent.segmentId
+		check(id, String)
 		if (id) {
 			return this.runningOrder.getSegments({
 				_id: id
@@ -315,6 +318,7 @@ export class AsRunEventContext extends RunningOrderContext implements IAsRunEven
 	/** Get the segmentLine related to this AsRunEvent */
 	getSegmentLine (id?: string): SegmentLine | undefined {
 		id = id || this.asRunEvent.segmentLineId
+		check(id, String)
 		if (id) {
 			return this.runningOrder.getSegmentLines({
 				_id: id
@@ -323,16 +327,21 @@ export class AsRunEventContext extends RunningOrderContext implements IAsRunEven
 	}
 	/** Get the mos story related to a segmentLine */
 	getStoryForSegmentLine (segmentLine: SegmentLine): MOS.IMOSROFullStory {
-		return this.runningOrder.fetchCache(CachePrefix.FULLSTORY + segmentLine._id)
+		check(segmentLine, Object)
+		let segmentLineId = segmentLine._id
+		check(segmentLineId, String)
+		return this.runningOrder.fetchCache(CachePrefix.FULLSTORY + segmentLineId)
 	}
 	/** Get the mos story related to the runningOrder */
 	getStoryForRunningOrder (): MOS.IMOSRunningOrder {
 		return this.runningOrder.fetchCache(CachePrefix.ROCREATE + this.runningOrder._id)
 	}
 	formatDateAsTimecode (time: number): string {
+		check(time, Number)
 		return formatDateAsTimecode(new Date(time))
 	}
 	formatDurationAsTimecode (time: number): string {
+		check(time, Number)
 		return formatDurationAsTimecode(time)
 	}
 	protected getLoggerIdentifier (): string {
