@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:experimental
 # BUILD IMAGE
-FROM node:8.11.4 AS build
+FROM node:8.11.4
 RUN curl https://install.meteor.com/ | sh
 COPY meteor /opt/core/meteor
 WORKDIR /opt/core/meteor
@@ -16,6 +16,6 @@ RUN npm install
 
 # DEPLOY IMAGE
 FROM node:8.11.4-slim
-COPY --from=build /opt/bundle /opt/core
+COPY --from=0 /opt/bundle /opt/core
 WORKDIR /opt/core/
 CMD ["node", "main.js"]
