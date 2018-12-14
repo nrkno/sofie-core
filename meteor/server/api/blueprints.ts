@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import * as moment from 'moment'
 import { SaferEval } from 'safer-eval'
 import { SegmentLine, DBSegmentLine, SegmentLineNote, SegmentLineNoteType, SegmentLines } from '../../lib/collections/SegmentLines'
-import { SegmentLineItem } from '../../lib/collections/SegmentLineItems'
+import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { formatDateAsTimecode, formatDurationAsTimecode, literal, normalizeArray, getCurrentTime, OmitId, trimIfString } from '../../lib/lib'
 import { getHash } from '../lib'
@@ -336,6 +336,35 @@ export class AsRunEventContext extends RunningOrderContext implements IAsRunEven
 	getStoryForRunningOrder (): MOS.IMOSRunningOrder {
 		return this.runningOrder.fetchCache(CachePrefix.ROCREATE + this.runningOrder._id)
 	}
+	/**
+	 * Returns a segmentLineItem.
+	 * @param id Id of segmentLineItem to fetch. If omitted, return the segmentLineItem related to this AsRunEvent
+	 */
+	getSegmentLineItem (segmentLineItemId?: string): IBlueprintSegmentLineItem | undefined {
+		check(segmentLineItemId, Match.Optional(String))
+		segmentLineItemId = segmentLineItemId || this.asRunEvent.segmentLineItemId
+		if (segmentLineItemId) {
+			return SegmentLineItems.findOne({
+				runningOrderId: this.runningOrder._id,
+				_id: segmentLineItemId
+			})
+		}
+	}
+	/**
+	 * Returns segmentLineItems in a segmentLine
+	 * @param id Id of segmentLine to fetch items in
+	 */
+	getSegmentLineItems (segmentLineId: string): Array<IBlueprintSegmentLineItem> {
+		check(segmentLineId, String)
+		if (segmentLineId) {
+			return SegmentLineItems.find({
+				runningOrderId: this.runningOrder._id,
+				segmentLineId: segmentLineId
+			}).fetch()
+		}
+		return []
+	}
+
 	formatDateAsTimecode (time: number): string {
 		check(time, Number)
 		return formatDateAsTimecode(new Date(time))
