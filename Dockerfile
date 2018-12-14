@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:experimental
 # BUILD IMAGE
 FROM node:8.11.4 AS build
 RUN curl https://install.meteor.com/ | sh
@@ -9,7 +10,7 @@ ENV NODE_ENV anythingButProduction
 RUN meteor npm install
 # Restore the NODE_ENV variable:
 ENV NODE_ENV $NODE_ENV_TMP
-RUN meteor build --allow-superuser --directory /opt/
+RUN --mount=type=cache,target=/opt/core/meteor/.meteor/local meteor build --allow-superuser --directory /opt/
 WORKDIR /opt/bundle/programs/server/
 RUN npm install
 
