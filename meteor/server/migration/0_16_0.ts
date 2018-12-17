@@ -37,7 +37,7 @@ addMigrationSteps( '0.16.0', [
 		},
 		input: [{
 			label: 'File path for persistant storage',
-			description: 'Enter the file path for the persistant storage (example "/mnt/drive/sofie")',
+			description: 'Enter the file path for the persistant storage (example "/opt/coredisk")',
 			inputType: 'text',
 			attribute: 'storePath'
 		}]
