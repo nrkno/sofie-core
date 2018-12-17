@@ -1,5 +1,5 @@
 import { addMigrationStep, MigrationStep, addMigrationSteps, MigrationStepBase } from './databaseMigration'
-import { StudioInstallation, StudioInstallations, DBStudioInstallation, ISourceLayer, IOutputLayer, Mapping, MappingHyperdeck, MappingPanasonicPtz, MappingHyperdeckType, MappingPanasonicPtzType } from '../lib/collections/StudioInstallations'
+import { StudioInstallation, StudioInstallations, DBStudioInstallation, ISourceLayer, IOutputLayer, Mapping, MappingHyperdeck, MappingPanasonicPtz, MappingHyperdeckType, MappingPanasonicPtzType, MappingLawo, MappingLawoType } from '../lib/collections/StudioInstallations'
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { MigrationStepInput, MigrationStepInputFilteredResult } from '../lib/api/migration'
@@ -1135,4 +1135,23 @@ addMigrationSteps( '0.18.0', [
 		unlimited: false,
 		isHidden: true
 	})
+])
+
+// 0.18.2: Release 4 - MP1 audio channel restructure
+addMigrationSteps( '0.18.2', [
+	removeMapping('lawo_source_clip'),
+	ensureMapping('lawo_source_clip_full', literal<MappingLawo>({
+		device: PlayoutDeviceType.LAWO,
+		deviceId: 'lawo0',
+		lookahead: LookaheadMode.NONE,
+		mappingType: MappingLawoType.SOURCE,
+		identifier: 'FULL'
+	})),
+	ensureMapping('lawo_source_clip_stk', literal<MappingLawo>({
+		device: PlayoutDeviceType.LAWO,
+		deviceId: 'lawo0',
+		lookahead: LookaheadMode.NONE,
+		mappingType: MappingLawoType.SOURCE,
+		identifier: 'STK'
+	}))
 ])
