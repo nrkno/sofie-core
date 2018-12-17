@@ -20,8 +20,8 @@ export interface ExpectedMediaItem {
 	/** The last time the object was seen / used in Core */
 	lastSeen: Time
 
-	/** Time to wait before removing file */
-	lingerTime: number
+	/** Time to wait before removing file - override media manager default settings */
+	lingerTime?: number
 }
 
 export const ExpectedMediaItems: TransformedCollection<ExpectedMediaItem, ExpectedMediaItem>
