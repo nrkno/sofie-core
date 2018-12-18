@@ -74,6 +74,7 @@ import {
 import { syncFunction } from '../../codeControl'
 import { IBlueprintSegmentLine, SegmentLineHoldMode } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { updateExpectedMediaItems } from '../expectedMediaItems'
 
 export function roId (roId: MOS.MosString128, original?: boolean): string {
 	// logger.debug('roId', roId)
@@ -349,6 +350,10 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 				// afterRemoveSegmentLineItem(segmentLine._id)
 			}
 		})
+	}
+
+	if (resultSli || resultAdlibSli) {
+		updateExpectedMediaItems(ro._id, segmentLine._id)
 	}
 
 	// if anything was changed
