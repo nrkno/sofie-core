@@ -3,19 +3,15 @@ import * as React from 'react'
 import { ISourceLayerUi, IOutputLayerUi, SegmentUi, SegmentLineUi, SegmentLineItemUi } from '../SegmentTimelineContainer'
 
 import { RundownUtils } from '../../../lib/rundown'
-import { VTContent, SegmentLineItemLifespan } from '../../../../lib/collections/SegmentLineItems'
-import { FloatingInspector } from '../../FloatingInspector'
-import { StudioInstallation } from '../../../../lib/collections/StudioInstallations'
+import { SegmentLineItemLifespan, VTContent } from 'tv-automation-sofie-blueprints-integration'
 
-import * as ClassNames from 'classnames'
-
-export interface ISourceLayerItemProps {
+export interface ICustomLayerItemProps {
 	mediaPreviewUrl?: string
 	typeClass?: string
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi
 	segmentLine: SegmentLineUi
-	segmentLineDuration?: number
+	segmentLineDuration: number // 0 if unknown
 	segmentLineItem: SegmentLineItemUi
 	timeScale: number
 	onFollowLiveLine?: (state: boolean, event: any) => void
@@ -33,8 +29,10 @@ export interface ISourceLayerItemProps {
 	getItemDuration?: () => number
 	setAnchoredElsWidths?: (rightAnchoredWidth: number, leftAnchoredWidth: number) => void
 }
+export interface ISourceLayerItemState {
+}
 
-export class CustomLayerItemRenderer<IProps = any, IState = any> extends React.Component<ISourceLayerItemProps & IProps, IState> {
+export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IState extends ISourceLayerItemState> extends React.Component<ICustomLayerItemProps & IProps, ISourceLayerItemState & IState> {
 	getItemLabelOffsetLeft (): { [key: string]: string } {
 		if (this.props.getItemLabelOffsetLeft && typeof this.props.getItemLabelOffsetLeft === 'function') {
 			return this.props.getItemLabelOffsetLeft()
@@ -64,7 +62,7 @@ export class CustomLayerItemRenderer<IProps = any, IState = any> extends React.C
 		if (typeof this.props.getItemDuration === 'function') {
 			return this.props.getItemDuration()
 		}
-		return (this.props.segmentLineDuration! || 0)
+		return this.props.segmentLineDuration
 	}
 
 	setAnchoredElsWidths (leftAnchoredWidth: number, rightAnchoredWidth: number): void {
@@ -75,8 +73,8 @@ export class CustomLayerItemRenderer<IProps = any, IState = any> extends React.C
 
 	renderOverflowTimeLabel () {
 		const vtContent = this.props.segmentLineItem.content as VTContent
-		if (!this.props.segmentLineItem.duration && this.props.segmentLineItem.content && vtContent.sourceDuration && (this.props.segmentLineItem.renderedInPoint! + vtContent.sourceDuration) > this.props.segmentLineDuration) {
-			let time = this.props.segmentLineItem.renderedInPoint! + vtContent.sourceDuration - ((this.props.segmentLineDuration || 0) as number)
+		if (!this.props.segmentLineItem.duration && this.props.segmentLineItem.content && vtContent.sourceDuration && ((this.props.segmentLineItem.renderedInPoint || 0) + vtContent.sourceDuration) > (this.props.segmentLineDuration || 0)) {
+			let time = (this.props.segmentLineItem.renderedInPoint || 0) + vtContent.sourceDuration - ((this.props.segmentLineDuration || 0) as number)
 			// only display differences greater than 1 second
 			return (time > 0) ? (
 				<div className='segment-timeline__layer-item__label label-overflow-time'>
@@ -88,7 +86,7 @@ export class CustomLayerItemRenderer<IProps = any, IState = any> extends React.C
 
 	renderInfiniteItemContentEnded () {
 		const content = this.props.segmentLineItem.content
-		if (this.props.segmentLineItem.infiniteMode && content && content.sourceDuration && (this.props.segmentLineItem.renderedInPoint || 0) + (content.sourceDuration as number) < this.props.segmentLineDuration) {
+		if (this.props.segmentLineItem.infiniteMode && content && content.sourceDuration && (this.props.segmentLineItem.renderedInPoint || 0) + (content.sourceDuration as number) < (this.props.segmentLineDuration || 0)) {
 			return <div className='segment-timeline__layer-item__source-finished' style={{'left': ((content.sourceDuration as number) * this.props.timeScale).toString() + 'px'}}></div>
 		}
 		return null

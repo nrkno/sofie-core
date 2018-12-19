@@ -2,19 +2,23 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Random } from 'meteor/random'
 import { RecordedFiles, RecordedFile } from '../../lib/collections/RecordedFiles'
-import { StudioInstallations, StudioInstallation, ITestToolsConfig, Mappings, MappingCasparCG } from '../../lib/collections/StudioInstallations'
+import { StudioInstallations, StudioInstallation, ITestToolsConfig, MappingExt } from '../../lib/collections/StudioInstallations'
 import { getCurrentTime, literal } from '../../lib/lib'
 import { TestToolsAPI } from '../../lib/api/testTools'
 import { setMeteorMethods } from '../methods'
 import { logger } from '../logging'
 import { updateTimeline } from './playout'
 import * as moment from 'moment'
-import { TimelineObj, TimelineObjCCGRecord, TimelineContentTypeCasparCg, TimelineObjCCGInput } from '../../lib/collections/Timeline'
+import { TimelineObj } from '../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
-import { ChannelFormat } from '../../lib/constants/casparcg'
+import {
+	ChannelFormat,
+	MappingCasparCG,
+	TimelineObjCCGRecord, TimelineContentTypeCasparCg, TimelineObjCCGInput,
+	DeviceType as PlayoutDeviceType
+} from 'timeline-state-resolver-types'
 import { getHash } from '../lib'
-import { PlayoutDeviceType } from '../../lib/collections/PeripheralDevices'
-import { LookaheadMode } from '../../lib/api/playout'
+import { LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
 import * as request from 'request'
 import { promisify } from 'util'
 
@@ -50,11 +54,11 @@ export function generateRecordingTimelineObjs (studio: StudioInstallation, recor
 	}
 
 	return [
-		literal<TimelineObjCCGRecord>({
+		literal<TimelineObjCCGRecord & TimelineObj>({
 			_id: IDs.record,
+			id: '',
 			siId: studio._id,
 			roId: '',
-			deviceId: [''],
 			trigger: {
 				type: TriggerType.TIME_ABSOLUTE,
 				value: recording.startedAt
@@ -71,11 +75,11 @@ export function generateRecordingTimelineObjs (studio: StudioInstallation, recor
 				}
 			}
 		}),
-		literal<TimelineObjCCGInput>({
+		literal<TimelineObjCCGInput & TimelineObj>({
 			_id: IDs.input,
+			id: '',
 			siId: studio._id,
 			roId: '',
-			deviceId: [''],
 			trigger: {
 				type: TriggerType.LOGICAL,
 				value: '1'
@@ -136,7 +140,7 @@ export namespace ServerTestToolsAPI {
 
 		// Ensure the layer mappings in the db are correct
 		const setter = {}
-		setter['mappings.' + LLayerInput] = literal<MappingCasparCG>({
+		setter['mappings.' + LLayerInput] = literal<MappingCasparCG & MappingExt>({
 			device: PlayoutDeviceType.CASPARCG,
 			deviceId: config.recordings.deviceId,
 			channel: config.recordings.channelIndex,
@@ -144,7 +148,7 @@ export namespace ServerTestToolsAPI {
 			lookahead: LookaheadMode.NONE,
 			internal: true
 		})
-		setter['mappings.' + LLayerRecord] = literal<MappingCasparCG>({
+		setter['mappings.' + LLayerRecord] = literal<MappingCasparCG & MappingExt>({
 			device: PlayoutDeviceType.CASPARCG,
 			deviceId: config.recordings.deviceId,
 			channel: config.recordings.channelIndex,

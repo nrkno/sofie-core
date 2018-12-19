@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
+import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { faBinoculars, faDatabase, faCoffee } from '@fortawesome/fontawesome-free-solid'
@@ -8,12 +8,14 @@ import { Meteor } from 'meteor/meteor'
 import { logger } from '../../../lib/logging'
 import {
 	MigrationMethods,
-	GetMigrationStatusResultMigrationNeeded,
 	GetMigrationStatusResult,
-	MigrationStepInput,
-	MigrationStepInputResult,
-	RunMigrationResult
+	RunMigrationResult,
+	MigrationChunk
 } from '../../../lib/api/migration'
+import {
+	MigrationStepInput,
+	MigrationStepInputResult
+} from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 
@@ -21,8 +23,8 @@ interface IProps {
 }
 interface IState {
 	errorMessage?: string
-	systemVersion: string
-	databaseVersion: string
+	// systemVersion: string
+	// databaseVersion: string
 	migrationNeeded: boolean
 	databasePreviousVersion: string | null
 
@@ -30,14 +32,15 @@ interface IState {
 		canDoAutomaticMigration: boolean
 		manualInputs: Array<MigrationStepInput>
 		hash: string
-		baseVersion: string
-		targetVersion: string
+		chunks: Array<MigrationChunk>
 		automaticStepCount: number
 		ignoredStepCount: number
 		manualStepCount: number
+		partialMigration: boolean
 	},
 	warnings: Array<string>,
 	migrationCompleted: boolean,
+	partialMigration: boolean,
 
 	haveRunMigration: boolean,
 
@@ -57,12 +60,11 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {
-			systemVersion: '',
-			databaseVersion: '',
 			databasePreviousVersion: null,
 			migrationNeeded: false,
 			warnings: [],
 			migrationCompleted: false,
+			partialMigration: false,
 			haveRunMigration: false,
 
 			inputValues: {}
@@ -88,8 +90,6 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 	updateVersions () {
 		this.setState({
 			errorMessage: '',
-			systemVersion: '',
-			databaseVersion: '',
 			databasePreviousVersion: '',
 			migrationNeeded: false
 		})
@@ -99,21 +99,16 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				// todo: notify user
 				this.setErrorMessage(err)
 			} else {
+				console.log(r)
 				this.setState({
-					systemVersion: r.systemVersion,
-					databaseVersion: r.databaseVersion,
-					databasePreviousVersion: r.databasePreviousVersion,
+					// systemVersion: r.systemVersion,
+					// databaseVersion: r.databaseVersion,
+					// databasePreviousVersion: r.databasePreviousVersion,
 					migrationNeeded: r.migrationNeeded
 				})
-				if (r.migrationNeeded) {
-
-					let result = r as GetMigrationStatusResultMigrationNeeded
-
-					this.setState({
-						migration: result.migration
-					})
-
-				}
+				this.setState({
+					migration: r.migration
+				})
 			}
 		})
 	}
@@ -147,8 +142,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 			})
 			this.setErrorMessage('')
 			Meteor.call(MigrationMethods.runMigration,
-				this.state.migration.baseVersion, // baseVersionStr
-				this.state.migration.targetVersion, // targetVersionStr
+				this.state.migration.chunks,
 				this.state.migration.hash, // hash
 				inputResults, // inputResults
 			(err, r: RunMigrationResult) => {
@@ -172,7 +166,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 		this.setErrorMessage('')
 		if (this.state.migration) {
 			Meteor.call(MigrationMethods.forceMigration,
-				this.state.migration.targetVersion, // targetVersionStr
+				this.state.migration.chunks,
 			(err) => {
 				if (err) {
 					logger.error(err)
@@ -189,6 +183,26 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 			})
 		}
 
+	}
+	resetDatabaseVersions () {
+		const { t } = this.props
+		this.setErrorMessage('')
+		doModalDialog({
+			title: t('Reset database version'),
+			message: t('Are you sure you want to reset the database version?\nOnly do this if you plan on running the migration right after.'),
+			onAccept: () => {
+				Meteor.call(MigrationMethods.resetDatabaseVersions,
+				(err) => {
+					if (err) {
+						logger.error(err)
+						// todo: notify user
+						this.setErrorMessage(err)
+					} else {
+						this.updateVersions()
+					}
+				})
+			}
+		})
 	}
 	setDatabaseVersion (version: string) {
 		const { t } = this.props
@@ -265,10 +279,25 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 
 					<div>
 						<div>
-							{t('System version')}: {this.state.systemVersion || '-'}
-						</div>
-						<div>
-							{t('Database version')}: {this.state.databaseVersion || '-'}
+							{this.state.migration ?
+								_.map(this.state.migration.chunks, (chunk, i) => {
+									let str = t('Version for {{name}}: From {{fromVersion}} to {{toVersion}}', {
+										name: chunk.sourceName,
+										fromVersion: chunk._dbVersion,
+										toVersion: chunk._targetVersion
+									})
+									return (
+										<div key={i}>
+											{chunk._dbVersion === chunk._targetVersion ?
+											<b>
+												{str}
+											</b> :
+											str
+											}
+										</div>
+									)
+								}) : null
+							}
 						</div>
 						<div>
 							{this.state.errorMessage}
@@ -279,8 +308,8 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 								{t('Refresh')}
 							</button>
 
-							{
-								this.state.databaseVersion &&
+							{/* {
+								this.state.chunks &&
 								this.state.databasePreviousVersion &&
 								this.state.databasePreviousVersion !== '0.0.0' &&
 								this.state.databaseVersion !== this.state.databasePreviousVersion ?
@@ -293,24 +322,28 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 										{t('Reset version to') + ` ${this.state.databasePreviousVersion}`}
 									</button>
 								: null
-							}
+							} */}
 							{
-								this.state.databaseVersion && this.state.databaseVersion !== '0.0.0' ?
-								<button className='btn mod mhm' onClick={() => { this.setDatabaseVersion('0.0.0') }}>
+								<button className='btn mod mhm' onClick={() => { this.resetDatabaseVersions() }}>
 									<FontAwesomeIcon icon={faDatabase} />
-									{t('Reset version to') + ` 0.0.0`}
+									{t('Reset all versions')}
 								</button>
-								: null
 							}
 						</div>
 					</div>
 					{this.state.migrationNeeded && this.state.migration ?
 						<div>
-							<h2>Migrate database, from {this.state.migration.baseVersion} to {this.state.migration.targetVersion}</h2>
+							<h2>Migrate database</h2>
 
 							<div>
 								{t(`This migration consists of ${this.state.migration.automaticStepCount} automatic steps and  ${this.state.migration.manualStepCount} manual steps (${this.state.migration.ignoredStepCount} steps are ignored).`)}
 							</div>
+
+							{this.state.migration.partialMigration ?
+								<div>
+									{t('The migration consists of several phases, you will get more options after you\'ve this migration')}
+								</div> : null
+							}
 							{this.state.migration.canDoAutomaticMigration ?
 								<div>
 									<div>

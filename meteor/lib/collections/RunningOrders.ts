@@ -3,20 +3,18 @@ import * as _ from 'underscore'
 import { Time, applyClassToDocument, getCurrentTime, registerCollection, normalizeArray, waitForPromiseAll } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { SegmentLines, SegmentLine } from './SegmentLines'
-import {
-	IMOSExternalMetaData,
-	IMOSObjectStatus,
-	IMOSObjectAirStatus
-} from 'mos-connection'
+import { MOS } from 'tv-automation-sofie-blueprints-integration'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { StudioInstallations, StudioInstallation } from './StudioInstallations'
 import { SegmentLineItems, SegmentLineItem } from './SegmentLineItems'
 import { RunningOrderDataCache } from './RunningOrderDataCache'
-import { ShowStyle, ShowStyles } from './ShowStyles'
 import { Meteor } from 'meteor/meteor'
 import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
 import { RunningOrderBaselineItems } from './RunningOrderBaselineItems'
 import { RunningOrderBaselineAdLibItems } from './RunningOrderBaselineAdLibItems'
+import { IBlueprintRunningOrder } from 'tv-automation-sofie-blueprints-integration'
+import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
+import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 
 export enum RunningOrderHoldState {
 	NONE = 0,
@@ -26,12 +24,15 @@ export enum RunningOrderHoldState {
 }
 
 /** This is a very uncomplete mock-up of the Rundown object */
-export interface DBRunningOrder {
+export interface DBRunningOrder extends IBlueprintRunningOrder {
 	_id: string
 	/** ID of the object in MOS */
 	mosId: string
 	studioInstallationId: string
-	showStyleId: string
+	/** The ShowStyleVariant this RunningOrder uses */
+	showStyleVariantId: string
+	/** The ShowStyleBase this RunningOrder uses (its the parent of the showStyleVariant) */
+	showStyleBaseId: string
 	/** the mos device the rundown originates from */
 	mosDeviceId: string
 	/** Rundown slug - user-presentable name */
@@ -44,9 +45,9 @@ export interface DBRunningOrder {
 	/** Expected duration of the running order - should be set to EditorialDuration from IMOSRunningOrder */
 	expectedDuration?: number
 
-	metaData?: Array<IMOSExternalMetaData>
-	status?: IMOSObjectStatus
-	airStatus?: IMOSObjectAirStatus
+	metaData?: Array<MOS.IMOSExternalMetaData>
+	status?: MOS.IMOSObjectStatus
+	airStatus?: MOS.IMOSObjectAirStatus
 	// There should be something like a Owner user here somewhere?
 	active?: boolean
 	/** the id of the Live Segment Line - if empty, no segment line in this rundown is live */
@@ -77,16 +78,17 @@ export class RunningOrder implements DBRunningOrder {
 	public _id: string
 	public mosId: string
 	public studioInstallationId: string
-	public showStyleId: string
+	public showStyleVariantId: string
+	public showStyleBaseId: string
 	public mosDeviceId: string
 	public name: string
 	public created: Time
 	public modified: Time
 	public expectedStart?: Time
 	public expectedDuration?: number
-	public metaData?: Array<IMOSExternalMetaData>
-	public status?: IMOSObjectStatus
-	public airStatus?: IMOSObjectAirStatus
+	public metaData?: Array<MOS.IMOSExternalMetaData>
+	public status?: MOS.IMOSObjectStatus
+	public airStatus?: MOS.IMOSObjectAirStatus
 	public active?: boolean
 	public rehearsal?: boolean
 	public unsynced?: boolean
@@ -105,12 +107,18 @@ export class RunningOrder implements DBRunningOrder {
 			this[key] = document[key]
 		})
 	}
-	getShowStyle (): ShowStyle {
-		if (!this.showStyleId) throw new Meteor.Error(500, 'RunningOrder has no show style attached!')
-		let ss = ShowStyles.findOne(this.showStyleId)
+	getShowStyleCompound (): ShowStyleCompound {
+
+		if (!this.showStyleVariantId) throw new Meteor.Error(500, 'RunningOrder has no show style attached!')
+		let ss = getShowStyleCompound(this.showStyleVariantId)
 		if (ss) {
 			return ss
-		} else throw new Meteor.Error(404, `ShowStyle "${this.showStyleId}" not found!`)
+		} else throw new Meteor.Error(404, `ShowStyle "${this.showStyleVariantId}" not found!`)
+	}
+	getShowStyleBase (): ShowStyleBase {
+		let showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
+		if (!showStyleBase ) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)
+		return showStyleBase
 	}
 	getStudioInstallation (): StudioInstallation {
 		if (!this.studioInstallationId) throw new Meteor.Error(500,'RunningOrder is not in a studioInstallation!')

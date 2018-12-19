@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { rejectFields } from './lib'
 
 export namespace StudioInstallationsSecurity {
 	export function allowReadAccess (selector: object, token: string, context) {
@@ -16,12 +17,14 @@ export namespace StudioInstallationsSecurity {
 // Setup rules:
 StudioInstallations.allow({
 	insert (userId: string, doc: StudioInstallation): boolean {
-		return true // Not allowed client-side
+		return false
 	},
 	update (userId, doc, fields, modifier) {
-		return true // Not allowed client-side
+		return rejectFields(fields, [
+			'_id'
+		])
 	},
 	remove (userId, doc) {
-		return true // Not allowed client-side
+		return false
 	}
 })

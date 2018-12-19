@@ -14,13 +14,13 @@ export namespace RunningOrderSecurity {
 
 RunningOrders.allow({
 	insert (userId: string, doc: RunningOrder): boolean {
-		return false // Not allowed client-side
+		return false
 	},
 	update (userId, doc, fields, modifier) {
 		// return true // tmp!
-		return false // Not allowed client-side
+		return false
 	},
 	remove (userId, doc) {
-		return false // Not allowed client-side
+		return false
 	}
 })

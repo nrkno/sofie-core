@@ -152,7 +152,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 
 interface ModalDialogQueueItem {
 	title: string
-	message: string | JSX.Element
+	message: string | JSX.Element | Array<JSX.Element >
 	yes?: string
 	no?: string
 	acceptOnly?: boolean

@@ -5,8 +5,15 @@ import * as m from 'moment'
 import 'moment/min/locales'
 import { parse as queryStringParse } from 'query-string'
 import Header from './Header'
-import { setStudioMode, setAdminMode, getStudioMode, getAdminMode, setDeveloperMode, setTestingMode, getTestingMode } from '../lib/localStorage'
-import Dashboard from './Dashboard'
+import {
+	setStudioMode,
+	setAdminMode,
+	getStudioMode,
+	getAdminMode,
+	setDeveloperMode,
+	setTestingMode,
+	getTestingMode
+} from '../lib/localStorage'
 import Status from './Status'
 import Settings from './Settings'
 import TestTools from './TestTools'
@@ -22,7 +29,6 @@ import {
   Switch,
   Redirect
 } from 'react-router-dom'
-import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './PrompterView'
 import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
@@ -62,39 +68,6 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 	}
 
 	render () {
-		// EXAMPLE IMPLEMENTATION of subscription
-		//
-		// Subscribe to data
-		// Note: we should NOT call the subscription in this place, but instead move it into something handled by the router,
-		// so the subscriptions are set/stopped when navigating between pages, or something.
-		//
-		// let sub = Meteor.subscribe('peripheralDevices', {}, { // subscribe to ALL peripherals
-		// 	onReady () {
-		// 			// called when ready
-		// 	},
-		// 	onStop () {
-		// 			// called when stopped
-		// 	}
-		// })
-		// Subscription status available at sub.ready()
-		// Stop subscription by calling sub.stop()
-		// TEMPORARY subscriptions:
-		// let sub2 = Meteor.subscribe('runningOrders', {})
-		// let sub3 = Meteor.subscribe('segments', {})
-		// let sub4 = Meteor.subscribe('segmentLines', {})
-		// let sub5 = Meteor.subscribe('segmentLineItems', {})
-		// let sub6 = Meteor.subscribe('studioInstallations', {})
-		// let sub7 = Meteor.subscribe('showStyles', {})
-		// let sub8 = Meteor.subscribe('timeline', {})
-
-		// Tracker.autorun(() => {
-		// 	// temporary implementation:
-		// 	let studio = StudioInstallations.findOne()
-		// 	if (studio) {
-		// 		let sub9 = Meteor.subscribe('mediaObjects', studio._id, {})
-		// 	}
-		// })
-
 		return (
 			<Router>
 				<div className='container-fluid'>

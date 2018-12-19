@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+import { Random } from 'meteor/random'
 import * as React from 'react'
 import * as VelocityReact from 'velocity-react'
 import Moment from 'react-moment'
@@ -9,6 +10,88 @@ import { translateWithTracker, Translated } from '../lib/ReactMeteorData/react-m
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { MomentFromNow } from '../lib/Moment'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+
+import { NotificationCenter, NoticeLevel, Notification, NotificationList, NotifierObject } from '../lib/notifications/notifications'
+import { WithManagedTracker } from '../lib/reactiveData/reactiveDataHelper'
+import { TranslationFunction, translate } from 'react-i18next'
+import { NotificationCenterPopUps } from '../lib/notifications/NotificationCenterPanel'
+
+export class ConnectionStatusNotifier extends WithManagedTracker {
+	private _notificationList: NotificationList
+	private _notifier: NotifierObject
+	private _translater: TranslationFunction
+
+	constructor (t: TranslationFunction) {
+		super()
+
+		this._translater = t
+
+		this._notificationList = new NotificationList([])
+		this._notifier = NotificationCenter.registerNotifier((): NotificationList => {
+			return this._notificationList
+		})
+
+		let lastNotificationId: string | undefined = undefined
+
+		this.autorun(() => {
+			const connected = Meteor.status().connected
+			const status = Meteor.status().status
+			const reason = Meteor.status().reason
+			const retryTime = Meteor.status().retryTime
+
+			if (lastNotificationId) {
+				const buf = lastNotificationId
+				lastNotificationId = undefined
+				NotificationCenter.drop(buf)
+			}
+
+			let newNotification: Notification | undefined = undefined
+			newNotification = new Notification(Random.id(), this.getNoticeLevel(status), this.getStatusText(status, reason, retryTime), t('Sofie Automation Server'), Date.now(), !connected)
+
+			if (newNotification.persistent) {
+				this._notificationList.set([newNotification])
+			} else {
+				this._notificationList.set([])
+				NotificationCenter.push(newNotification)
+				lastNotificationId = newNotification.id
+			}
+		})
+	}
+
+	stop () {
+		super.stop()
+
+		this._notifier.stop()
+	}
+
+	private getNoticeLevel (status: string) {
+		switch (status) {
+			case 'connected':
+				return NoticeLevel.NOTIFICATION
+			case 'connecting':
+				return NoticeLevel.WARNING
+			default:
+				return NoticeLevel.CRITICAL
+		}
+	}
+
+	private getStatusText (status: string, reason: string | undefined, retryTime: number | undefined): string | React.ReactChild | null {
+		const t = this._translater
+		switch (status) {
+			case 'connecting':
+				return <span>{t('Connecting to the')} {t('Sofie Automation Server')}.</span>
+			case 'failed':
+				return <span>{t('Cannot connect to the')} {t('Sofie Automation Server:')}) + reason}</span>
+			case 'waiting':
+				return <span>{t('Reconnecting to the')} {t('Sofie Automation Server')} <MomentFromNow unit='seconds'>{retryTime}</MomentFromNow></span>
+			case 'offline':
+				return <span>{t('Your machine is offline and cannot connect to the')} {t('Sofie Automation Server')}.</span>
+			case 'connected':
+				return <span>{t('Connected to the')} {t('Sofie Automation Server')}.</span>
+		}
+		return null
+	}
+}
 
 interface IProps {
 }
@@ -22,94 +105,21 @@ interface ITrackedProps {
 	retryTime: number
 }
 
-export const ConnectionStatusNotification = translateWithTracker<IProps, IState, ITrackedProps>((props, state) => {
-	const connected = Meteor.status().connected
-	const status = Meteor.status().status
-	const reason = Meteor.status().reason
-	const retryTime = Meteor.status().retryTime
+export const ConnectionStatusNotification = translate()(class extends React.Component<Translated<IProps>, IState> {
+	private notifier: ConnectionStatusNotifier
 
-	return {
-		connected,
-		status,
-		reason,
-		retryTime
-	}
-})(class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-	constructor (props: Translated<IProps & ITrackedProps>) {
+	constructor (props: Translated<IProps>) {
 		super(props)
-		this.state = {
-			dismissed: false
-		}
+
+		this.notifier = new ConnectionStatusNotifier(props.t)
 	}
 
-	componentWillReceiveProps (nextProps) {
-		if ((nextProps.connected !== this.props.connected) || (nextProps.status !== this.props.status)) {
-			this.setState({
-				dismissed: false
-			})
-		}
-	}
-
-	dimissNotification () {
-		this.setState({
-			dismissed: true
-		})
-	}
-
-	getStatusText (): string | React.ReactChild | null {
-		const { t } = this.props
-		switch (this.props.status) {
-			case 'connecting':
-				return <span>{t('Connecting to the')} {t('Sofie Automation Server')}.</span>
-			case 'failed':
-				return <span>{t('Cannot connect to the')} {t('Sofie Automation Server:')}) + this.props.reason}</span>
-			case 'waiting':
-				return <span>{t('Reconnecting to the')} {t('Sofie Automation Server')} <MomentFromNow unit='seconds'>{this.props.retryTime}</MomentFromNow></span>
-			case 'offline':
-				return <span>{t('Your machine is offline and cannot connect to the')} {t('Sofie Automation Server')}.</span>
-			case 'connected':
-				return <span>{t('Connected to the')} {t('Sofie Automation Server')}.</span>
-		}
-		return null
-	}
-
-	tryReconnect () {
-		if (!this.props.connected) {
-			Meteor.reconnect()
-		}
+	componentWillUnmount () {
+		this.notifier.stop()
 	}
 
 	render () {
 		// this.props.connected
-		return <ErrorBoundary><VelocityReact.VelocityTransitionGroup enter={{ animation: {
-			'translateY': [0, '200%'],
-			'translateX': ['-50%', '-50%'],
-			'opacity': [1, 0]
-		}, easing: 'spring', duration: 500 }} leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}>
-			{(!this.props.connected && !this.state.dismissed) ? (
-					<div className={ClassNames('row text-s tight-s status-notification connection-status-notification',
-						{
-							'warn': this.props.status === 'failed' || this.props.status === 'offline' || this.props.status === 'waiting',
-							'bghl': this.props.status === 'connecting',
-							'info': this.props.status === 'connected'
-						}
-					)}
-					onClick={(e) => {
-						// console.log('Reconnecting...')
-						this.tryReconnect()
-					}}>
-						<p className='right'>
-							<button className='action-btn' onClick={(e) => this.dimissNotification()}>
-								<CoreIcons id='nrk-close' />
-							</button>
-						</p>
-						<p className=''>
-							{this.getStatusText()}
-						</p>
-						<p>
-						</p>
-					</div>
-				) : undefined }
-			</VelocityReact.VelocityTransitionGroup></ErrorBoundary>
+		return <NotificationCenterPopUps />
 	}
 })

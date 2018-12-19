@@ -33,3 +33,18 @@ if (debugData) {
 	console.log('Debug: comment out this!')
 	setDebugData()
 }
+
+const expectToRunWithinCache: any = {}
+export function expectToRunWithin (name, time: number = 1000) {
+	if (expectToRunWithinCache[name]) {
+		if (expectToRunWithinCache[name] !== true) {
+			Meteor.clearTimeout(expectToRunWithinCache[name])
+			expectToRunWithinCache[name] = true
+		}
+	}
+	let timeout = Meteor.setTimeout(() => {
+		console.error('Expected to run within ' + time + 'ms: ' + name)
+	}, time)
+	expectToRunWithinCache[name] = timeout
+
+}

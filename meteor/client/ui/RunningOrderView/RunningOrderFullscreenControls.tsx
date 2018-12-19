@@ -110,7 +110,7 @@ export class RunningOrderFullscreenControls extends React.Component<IProps, ISta
 	checkFullScreen () {
 		// @ts-ignore TypeScript doesn't have vendor-prefixed fullscreen flags
 		return document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen ||
-				screen.height === window.innerHeight ||
+				(Math.abs(screen.height - window.innerHeight) < 10) ||
 				false // This will return true or false depending on if it's full screen or not.
 	}
 
@@ -176,22 +176,18 @@ export class RunningOrderFullscreenControls extends React.Component<IProps, ISta
 				<VelocityReact.VelocityTransitionGroup
 					enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
 					leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}>
-					<div className='running-order__fullscreen-controls__button' onMouseEnter={this.onRewindEnter} onMouseLeave={this.onRewindLeave} onClick={this.onRewindClick} tabIndex={0}>
+					<div className='running-order__fullscreen-controls__button' role='button' onMouseEnter={this.onRewindEnter} onMouseLeave={this.onRewindLeave} onClick={this.onRewindClick} tabIndex={0}>
 						<FontAwesomeIcon icon={faFastBackward} />
 					</div>
 					{!this.props.isFollowingOnAir &&
-						<div className='running-order__fullscreen-controls__button' onMouseEnter={this.onOnAirMouseEnter} onMouseLeave={this.onOnAirMouseLeave} onClick={this.onOnAirClick} tabIndex={0}>
+						<div className='running-order__fullscreen-controls__button' role='button' onMouseEnter={this.onOnAirMouseEnter} onMouseLeave={this.onOnAirMouseLeave} onClick={this.onOnAirClick} tabIndex={0}>
 							{this.state.onAirHover ?
 								<Lottie options={this.onAirOver} isStopped={false} isPaused={false} /> :
 								<Lottie options={this.onAirOut} isStopped={false} isPaused={false} />}
 						</div>
 					}
 					{!this.state.isFullscreen &&
-						<div className='running-order__fullscreen-controls__button running-order__fullscreen-controls__button--inactive' onMouseEnter={this.onFullscreenMouseEnter} onMouseLeave={this.onFullscreenMouseLeave} tabIndex={0}>
-							{ this.state.fullScreenHover ?
-								<Lottie options={this.windowedOver} isStopped={false} isPaused={false} /> :
-								<Lottie options={this.windowedOut} isStopped={false} isPaused={false} />
-							}
+						<div className='running-order__fullscreen-controls__label'>
 							<div className='running-order__fullscreen-controls__button__label'><span className='keyboard_key'>F11</span> Fullscreen</div>
 						</div>
 					}

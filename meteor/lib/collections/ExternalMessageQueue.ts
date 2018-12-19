@@ -2,7 +2,9 @@ import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { Time, Collections, registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
-export interface ExternalMessageQueueObj {
+import { IBlueprintExternalMessageQueueObj, IBlueprintExternalMessageQueueType } from 'tv-automation-sofie-blueprints-integration'
+
+export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueObj {
 	_id: string
 	/** Id of the studio this message originates from */
 	studioId: string
@@ -26,40 +28,15 @@ export interface ExternalMessageQueueObj {
 	sentReply?: any
 	/** If true, wont retry no more */
 	errorFatal?: boolean
+	/** If true, wont retry (can be set from UI) */
+	hold?: boolean
 
 	/** Type of message */
-	type: 'soap' | 'slack'
+	type: IBlueprintExternalMessageQueueType
 	/** Receiver details */
 	receiver: any
 	/** Messate details */
 	message: any
-}
-
-export interface ExternalMessageQueueObjSOAP extends ExternalMessageQueueObj {
-	type: 'soap'
-	receiver: {
-		url: string
-	}
-	message: {
-		fcn: string, // soap function to execute
-		clip_key: ExternalMessageQueueObjSOAPMessageAttrOrFcn
-		clip: ExternalMessageQueueObjSOAPMessageAttrOrFcn
-	}
-}
-export type ExternalMessageQueueObjSOAPMessageAttrOrFcn = ExternalMessageQueueObjSOAPMessageAttrFcn | any
-export interface ExternalMessageQueueObjSOAPMessageAttr {
-	[attr: string]: ExternalMessageQueueObjSOAPMessageAttrOrFcn
-}
-export interface ExternalMessageQueueObjSOAPMessageAttrFcn {
-	_fcn: {
-		soapFetchFrom?: {
-			fcn: string
-			attrs: any[]
-		}
-		xmlEncode?: {
-			value: any
-		}
-	}
 }
 
 export const ExternalMessageQueue: TransformedCollection<ExternalMessageQueueObj, ExternalMessageQueueObj>

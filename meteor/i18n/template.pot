@@ -5,8 +5,9 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2018-11-16T13:24:30.643Z\n"
-"PO-Revision-Date: 2018-11-16T13:24:30.643Z\n"
+"POT-Creation-Date: 2018-11-23T10:23:28.158Z\n"
+"PO-Revision-Date: 2018-11-23T10:23:28.158Z\n"
+
 
 msgid "Return to list"
 msgstr ""
@@ -49,10 +50,10 @@ msgstr ""
 msgid "Something went wrong, and it affected the output"
 msgstr ""
 
-msgid "Connecting to the"
+msgid "Sofie Automation Server"
 msgstr ""
 
-msgid "Sofie Automation Server"
+msgid "Connecting to the"
 msgstr ""
 
 msgid "Cannot connect to the"

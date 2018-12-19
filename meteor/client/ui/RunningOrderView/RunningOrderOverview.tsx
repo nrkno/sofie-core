@@ -4,23 +4,25 @@ import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as ClassNames from 'classnames'
 import { RunningOrder, RunningOrders } from '../../../lib/collections/RunningOrders'
-import { getCurrentTime } from '../../../lib/lib'
+import { getCurrentTime, extendMandadory } from '../../../lib/lib'
 import { SegmentLineUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { Segment } from '../../../lib/collections/Segments'
 import { withTiming, WithTiming, SegmentDuration } from './RunningOrderTiming'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
+import { SegmentLineExtended } from '../../../lib/RunningOrder'
+import { SegmentLine } from '../../../lib/collections/SegmentLines'
 
 interface SegmentUi extends Segment {
-	items?: Array<SegmentLineUi>
+	items: Array<SegmentLineUi>
 }
 
 interface ISegmentPropsHeader {
 	segment: SegmentUi
 	runningOrder: RunningOrder
 	totalDuration: number
-	segmentLiveDurations?: TimeMap
+	segmentLiveDurations: TimeMap
 	segmentStartsAt?: TimeMap
 }
 
@@ -69,7 +71,7 @@ const SegmentLineOverview: React.SFC<ISegmentLinePropsHeader> = (props: ISegment
 }
 
 const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHeader) => {
-	const segmentDuration = props.segmentLiveDurations ? props.segment.items!.map((i) => props.segmentLiveDurations![i._id]).reduce((memo, item) => (memo || 0) + (item || 0), 0) : undefined
+	const segmentDuration = props.segmentLiveDurations ? props.segment.items.map((i) => props.segmentLiveDurations[i._id]).reduce((memo, item) => (memo || 0) + (item || 0), 0) : undefined
 
 	return props.segment.items && (
 		<div className={ClassNames('running-order__overview__segment', {
@@ -123,11 +125,20 @@ withTracker<WithTiming<RunningOrderOverviewProps>, RunningOrderOverviewState, Ru
 	if (props.runningOrderId) ro = RunningOrders.findOne(props.runningOrderId)
 	let segments: Array<SegmentUi> = []
 	if (ro) {
-		segments = ro.getSegments()
-		segments.forEach((seg) => {
-			seg.items = seg.getSegmentLines()
-		})
+		segments = _.map(ro.getSegments(), (segment) => {
+			return extendMandadory<Segment, SegmentUi>(segment, {
+				items: _.map(segment.getSegmentLines(), (sl) => {
+					let sle = extendMandadory<SegmentLine, SegmentLineExtended>(sl, {
+						items: [],
+						renderedDuration: 0,
+						startsAt: 0,
+						willProbablyAutoNext: false
+					})
 
+					return extendMandadory<SegmentLineExtended, SegmentLineUi>(sle, {})
+				})
+			})
+		})
 	}
 	return {
 		segments,

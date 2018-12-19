@@ -1,18 +1,61 @@
+import { Meteor } from 'meteor/meteor'
+import { Random } from 'meteor/random'
+import { check } from 'meteor/check'
+import * as _ from 'underscore'
 import { logger } from '../logging'
 import {
 	ExternalMessageQueue,
-	ExternalMessageQueueObj,
-	ExternalMessageQueueObjSOAP,
-	ExternalMessageQueueObjSOAPMessageAttrFcn
+	ExternalMessageQueueObj
 } from '../../lib/collections/ExternalMessageQueue'
-import { getCurrentTime, iterateDeeply, iterateDeeplyAsync, iterateDeeplyEnum, escapeHtml } from '../../lib/lib'
-import * as _ from 'underscore'
-import * as soap from 'soap'
-import * as parser from 'xml2json'
-import { XmlEntities as Entities } from 'html-entities'
-import { Meteor } from 'meteor/meteor'
-import { setMeteorMethods } from '../methods'
-const entities = new Entities()
+import {
+	ExternalMessageQueueObjSOAP,
+	IBlueprintExternalMessageQueueObj,
+	IBlueprintExternalMessageQueueType,
+	ExternalMessageQueueObjSlack,
+	ExternalMessageQueueObjRabbitMQ
+} from 'tv-automation-sofie-blueprints-integration'
+import { getCurrentTime, removeNullyProperties } from '../../lib/lib'
+
+import { setMeteorMethods, Methods, wrapMethods } from '../methods'
+import { RunningOrder } from '../../lib/collections/RunningOrders'
+import { ExternalMessageQueueAPI } from '../../lib/api/ExternalMessageQueue'
+import { sendSOAPMessage } from './integration/soap'
+import { sendSlackMessageToWebhook } from './integration/slack'
+import { sendRabbitMQMessage } from './integration/rabbitMQ'
+
+export function queueExternalMessages (runningOrder: RunningOrder, messages: Array<IBlueprintExternalMessageQueueObj>) {
+	_.each(messages, (message) => {
+
+		// check the output:
+		if (!message) 			throw new Meteor.Error('Falsy result!')
+		if (!message.type) 		throw new Meteor.Error('attribute .type missing!')
+		if (!message.receiver) 	throw new Meteor.Error('attribute .receiver missing!')
+		if (!message.message) 	throw new Meteor.Error('attribute .message missing!')
+
+		// Save the output into the message queue, for later processing:
+		let now = getCurrentTime()
+		let message2: ExternalMessageQueueObj = {
+			_id: Random.id(),
+			type: message.type,
+			receiver: message.receiver,
+			message: message.message,
+			studioId: runningOrder.studioInstallationId,
+			created: now,
+			tryCount: 0,
+			expires: now + 35 * 24 * 3600 * 1000, // 35 days
+		}
+
+		message2 = removeNullyProperties(message2)
+
+		// console.log('result', result)
+
+		if (!runningOrder.rehearsal) { // Don't save the message when running rehearsals
+			ExternalMessageQueue.insert(message2)
+
+			triggerdoMessageQueue() // trigger processing of the queue
+		}
+	})
+}
 
 let runMessageQueue = true
 let errorOnLastRunCount: number = 0
@@ -43,7 +86,8 @@ function doMessageQueue () {
 		let messagesToSend = ExternalMessageQueue.find({
 			expires: {$gt: now},
 			lastTry: {$not: {$gt: now - tryInterval}},
-			sent: {$not: {$gt: 0}}
+			sent: {$not: {$gt: 0}},
+			hold: {$not: {$eq: true}}
 		}, {
 			sort: {
 				lastTry: 1
@@ -65,10 +109,15 @@ function doMessageQueue () {
 				}})
 
 				let p: Promise<any>
-				if (msg.type === 'soap') {
-					p = sendSOAPMessage(msg as ExternalMessageQueueObjSOAP)
+				if (msg.type === IBlueprintExternalMessageQueueType.SOAP) {
+					p = sendSOAPMessage(msg as ExternalMessageQueueObjSOAP & ExternalMessageQueueObj)
+				} else if (msg.type === IBlueprintExternalMessageQueueType.SLACK) {
+					let m = msg as ExternalMessageQueueObjSlack & ExternalMessageQueueObj
+					p = sendSlackMessageToWebhook(msg.message, msg.receiver)
+				} else if (msg.type === IBlueprintExternalMessageQueueType.RABBIT_MQ) {
+					p = sendRabbitMQMessage(msg as ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj)
 				} else {
-					throw new Meteor.Error(500, 'Unknown message type "' + msg.type + '"')
+					throw new Meteor.Error(500, `Unknown / Unsupported externalMessage type "${msg.type}"`)
 				}
 				ps.push(
 					Promise.resolve(p)
@@ -101,7 +150,7 @@ function doMessageQueue () {
 	}
 	triggerdoMessageQueue(tryInterval)
 }
-function logMessageError (msg: ExternalMessageQueueObj, e: any) {
+export function logMessageError (msg: ExternalMessageQueueObj, e: any) {
 	try {
 		errorOnLastRunCount++
 		logger.warn(e)
@@ -113,7 +162,7 @@ function logMessageError (msg: ExternalMessageQueueObj, e: any) {
 		logger.error(e)
 	}
 }
-function throwFatalError (msg, e) {
+export function throwFatalError (msg, e) {
 
 	ExternalMessageQueue.update(msg._id, {$set: {
 		errorFatal: true
@@ -122,142 +171,26 @@ function throwFatalError (msg, e) {
 	throw e
 }
 
-async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP) {
-
-	logger.info('sendSOAPMessage ' + msg._id)
-	if (!msg.receiver) 		throwFatalError(msg, new Meteor.Error(401, 'attribute .receiver missing!'))
-	if (!msg.receiver.url) 	throwFatalError(msg, new Meteor.Error(401, 'attribute .receiver.url missing!'))
-	if (!msg.message) 		throwFatalError(msg, new Meteor.Error(401, 'attribute .message missing!'))
-	if (!msg.message.fcn) 	throwFatalError(msg, new Meteor.Error(401, 'attribute .message.fcn missing!'))
-	if (!msg.message.clip_key) 	throwFatalError(msg, new Meteor.Error(401, 'attribute .message.clip_key missing!'))
-	if (!msg.message.clip) 	throwFatalError(msg, new Meteor.Error(401, 'attribute .message.clip missing!'))
-
-	let url = msg.receiver.url
-
-	// console.log('url', url)
-
-	let soapClient: soap.Client = await new Promise((resolve: (soapClient: soap.Client,) => any, reject) => {
-		soap.createClient(url, (err, client: soap.Client) => {
-			// console.log('callback', err)
-			// console.log('keys', _.keys(client))
-			if (err) reject(err)
-			else resolve(client)
-		})
-	})
-
-	// Prepare data, resolve the special {_fcn: {}} - functions:
-	let iteratee = async (val) => {
-		if (_.isObject(val)) {
-			if (val['_fcn']) {
-				let valFcn = val as ExternalMessageQueueObjSOAPMessageAttrFcn
-				let result = await resolveSOAPFcnData(soapClient, valFcn)
-
-				return result
-			} else {
-				return iterateDeeplyEnum.CONTINUE
-			}
-		} else if (_.isString(val)) {
-			// Escape strings, so they are XML-compatible:
-			return escapeHtml(val)
-		} else {
-			return val
-		}
-	}
-	msg.message.clip_key = 	await iterateDeeplyAsync(msg.message.clip_key, 	iteratee)
-	msg.message.clip = 		await iterateDeeplyAsync(msg.message.clip, 		iteratee)
-
-	// Send the message:
-
-	await new Promise ((resolve, reject) => {
-		let fcn = soapClient[msg.message.fcn ] as soap.ISoapMethod | undefined
-		if (fcn) {
-
-			let args = _.omit(msg.message, ['fcn'])
-
-			// console.log('SOAP', msg.message.fcn, args)
-
-			fcn(
-				args, (err: any, result: any, raw: any, soapHeader: any) => {
-					if (err) {
-						logger.debug('Sent SOAP message', args)
-						reject(err)
-					} else {
-						let resultValue = result[msg.message.fcn + 'Result']
-						resolve(resultValue)
-					}
-				}
-			)
-		} else {
-			reject(new Meteor.Error(401, 'SOAP method "' + msg.message.fcn + '" missing on endpoint!'))
-		}
-	})
+let methods: Methods = {}
+methods[ExternalMessageQueueAPI.methods.remove] = (id: string) => {
+	check(id, String)
+	ExternalMessageQueue.remove(id)
 }
-async function resolveSOAPFcnData (soapClient: soap.Client, valFcn: ExternalMessageQueueObjSOAPMessageAttrFcn ) {
-	return new Promise((resolve, reject) => {
-		// console.log('resolveSOAPFcnData')
-
-		if (valFcn._fcn.soapFetchFrom) {
-			let fetchFrom = valFcn._fcn.soapFetchFrom
-			let fcn = soapClient[fetchFrom.fcn] as soap.ISoapMethod | undefined
-			if (fcn) {
-
-				let args = fetchFrom.attrs
-				// console.log('SOAP', fetchFrom.fcn, args)
-
-				fcn(
-					args, (err: any, result: any, raw: any, soapHeader: any) => {
-						if (err) {
-							reject(err)
-						} else {
-							// console.log('reply', result)
-							let resultValue = result[fetchFrom.fcn + 'Result']
-							resolve(resultValue)
-						}
-					}
-				)
-			} else {
-				reject(new Meteor.Error(401, 'SOAP method "' + fetchFrom.fcn + '" missing on endpoint!'))
-			}
-		} else if (valFcn._fcn.xmlEncode) {
-			let val = valFcn._fcn.xmlEncode.value
-
-			// Convert into an object that parser.toXml can use:
-			if (_.isObject(val)) {
-				iterateDeeply(val, (val) => {
-					if (_.isObject(val)) {
-						if (val._t) {
-							val.$t = val._t
-							delete val._t
-							if (_.isString(val.$t)) val.$t = escapeHtml(val.$t)
-							return val
-						} else {
-							return iterateDeeplyEnum.CONTINUE
-						}
-					} else if (_.isString(val)) {
-						// Escape strings, so they are XML-compatible:
-						return escapeHtml(val)
-					} else {
-						return val
-					}
-				})
-			}
-			let xml: string = parser.toXml(val)
-			// resolve(entities.encode(xml))
-			resolve(xml)
-		} else {
-			reject(new Meteor.Error(401, 'Unknown SOAP function: ' + _.keys(valFcn._fcn)))
-		}
-	})
+methods[ExternalMessageQueueAPI.methods.toggleHold] = (id: string) => {
+	check(id, String)
+	let m = ExternalMessageQueue.findOne(id)
+	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${id}" not found`)
+	ExternalMessageQueue.update(id, {$set: {
+		hold: !m.hold
+	}})
 }
-setMeteorMethods({
-	'removeExternalMessageQueueObj': (id) => {
-		ExternalMessageQueue.remove(id)
-	},
-	'setRunMessageQueue': (value) => {
-		logger.info('setRunMessageQueue: set to ' + value)
-		runMessageQueue = value
-		if (runMessageQueue) {
-			triggerdoMessageQueue(1000)
-		}
+methods[ExternalMessageQueueAPI.methods.setRunMessageQueue] = (value: boolean) => {
+	check(value, Boolean)
+	logger.info('setRunMessageQueue: set to ' + value)
+	runMessageQueue = value
+	if (runMessageQueue) {
+		triggerdoMessageQueue(1000)
 	}
-})
+}
+
+setMeteorMethods(wrapMethods(methods))

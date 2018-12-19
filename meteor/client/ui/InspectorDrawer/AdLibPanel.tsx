@@ -8,11 +8,9 @@ import { PlayoutAPI } from '../../../lib/api/playout'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
-import { Segment, Segments } from '../../../lib/collections/Segments'
+import { Segment } from '../../../lib/collections/Segments'
 import { SegmentLine } from '../../../lib/collections/SegmentLines'
 import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
-import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
-import { RunningOrderBaselineAdLibItems } from '../../../lib/collections/RunningOrderBaselineAdLibItems'
 import { AdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
@@ -25,7 +23,9 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RunningOrderViewKbdShortcuts } from '../RunningOrderView'
-import { eventContextForLog } from '../../lib/eventTargetLogHelper'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import { callMethod } from '../../lib/clientAPI'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<SegmentUi>
@@ -34,7 +34,7 @@ interface IListViewPropsHeader {
 	selectedItem: SegmentLineAdLibItemUi | undefined
 	selectedSegment: SegmentUi | undefined
 	filter: string | undefined
-	studioInstallation: StudioInstallation
+	showStyleBase: ShowStyleBase
 }
 
 interface IListViewStateHeader {
@@ -66,11 +66,11 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 			[key: string]: ISourceLayer
 		} = {}
 
-		if (props.studioInstallation && props.studioInstallation.outputLayers && props.studioInstallation.sourceLayers) {
-			props.studioInstallation.outputLayers.forEach((item) => {
+		if (props.showStyleBase && props.showStyleBase.outputLayers && props.showStyleBase.sourceLayers) {
+			props.showStyleBase.outputLayers.forEach((item) => {
 				tOLayers[item._id] = item
 			})
-			props.studioInstallation.sourceLayers.forEach((item) => {
+			props.showStyleBase.sourceLayers.forEach((item) => {
 				tSLayers[item._id] = item
 			})
 
@@ -240,7 +240,7 @@ interface IProps {
 	// liveSegment: Segment | undefined
 	visible: boolean
 	runningOrder: RunningOrder
-	studioInstallation: StudioInstallation
+	showStyleBase: ShowStyleBase
 	studioMode: boolean
 }
 
@@ -260,14 +260,14 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	let liveSegment: SegmentUi | undefined = undefined
 
 	const sourceLayerLookup: ISourceLayerLookup = (
-		props.studioInstallation && props.studioInstallation.sourceLayers ?
-		_.object(_.map(props.studioInstallation.sourceLayers, (item) => [item._id, item])) :
+		props.showStyleBase && props.showStyleBase.sourceLayers ?
+		_.object(_.map(props.showStyleBase.sourceLayers, (item) => [item._id, item])) :
 		{}
 	)
 	// a hash to store various indices of the used hotkey lists
 	let sourceHotKeyUse = {}
 
-	const sharedHotkeyList = _.groupBy(props.studioInstallation.sourceLayers, (item) => item.activateKeyboardHotkeys)
+	const sharedHotkeyList = _.groupBy(props.showStyleBase.sourceLayers, (item) => item.activateKeyboardHotkeys)
 	let segments: Array<Segment> = props.runningOrder.getSegments()
 
 	const uiSegments = props.runningOrder ? (segments as Array<SegmentUi>).map((segSource) => {
@@ -292,7 +292,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 				let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
 
 				if (sourceLayer && sourceLayer.activateKeyboardHotkeys) {
-					let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys!.split(',')
+					let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
 					const sourceHotKeyUseLayerId = (sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id) || item.sourceLayerId
 					if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
 						item.hotkey = keyboardHotkeysList[(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0)]
@@ -340,8 +340,8 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		Meteor.subscribe('studioInstallations', {
 			_id: this.props.runningOrder.studioInstallationId
 		})
-		Meteor.subscribe('showStyles', {
-			_id: this.props.runningOrder.showStyleId
+		Meteor.subscribe('showStyleBases', {
+			_id: this.props.runningOrder.showStyleBaseId
 		})
 	}
 
@@ -431,7 +431,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		}
 
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.segmentAdLibLineItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id, queue || false)
+			callMethod(e, PlayoutAPI.methods.segmentAdLibLineItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id, queue || false)
 		}
 	}
 
@@ -439,7 +439,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		// console.log(sourceLayer)
 
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.sourceLayerOnLineStop, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id)
+			callMethod(e, PlayoutAPI.methods.sourceLayerOnLineStop, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id)
 		}
 	}
 
@@ -480,7 +480,7 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 					onToggleAdLib={this.onToggleAdLib}
 					selectedItem={this.state.selectedItem}
 					selectedSegment={this.state.selectedSegment}
-					studioInstallation={this.props.studioInstallation}
+					showStyleBase={this.props.showStyleBase}
 					filter={this.state.filter} />
 			</React.Fragment>
 		)

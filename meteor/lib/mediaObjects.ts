@@ -1,7 +1,14 @@
-import { SegmentLineItem, VTContent, LiveSpeakContent } from './collections/SegmentLineItems'
+import * as _ from 'underscore'
+import { SegmentLineItem } from './collections/SegmentLineItems'
+import {
+	VTContent,
+	LiveSpeakContent,
+	SourceLayerType,
+	IConfigItem,
+	ISourceLayer
+} from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from './api/runningOrder'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream } from './collections/MediaObjects'
-import { ISourceLayer, IStudioConfigItem } from './collections/StudioInstallations'
 
 /**
  * Take properties from the mediainfo / medistream and transform into a
@@ -47,7 +54,10 @@ export function buildFormatString (mediainfo: MediaInfo, stream: MediaStream): s
  * accepted resolution and move to the next accepted resolution.
  */
 export function acceptFormat (format: string, formats: Array<Array<string>>): boolean {
-	const mediaFormat = /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(format)!
+	const match = /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(format)
+	if (!match) return false // ingested format string is invalid
+
+	const mediaFormat = match
 		.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i))
 	for (const format of formats) {
 		let failed = false
@@ -71,22 +81,29 @@ export function acceptFormat (format: string, formats: Array<Array<string>>): bo
  * 	[undefined, undefined, i, 5000, tff]
  * ]
  */
-export function getAcceptedFormats (config: Array<IStudioConfigItem>): Array<Array<string>> {
+export function getAcceptedFormats (config: Array<IConfigItem>): Array<Array<string>> {
 	const formatsConfigField = config.find((item) => item._id === 'mediaResolutions')
-	const formatsString = formatsConfigField && formatsConfigField.value !== '' ? formatsConfigField.value : '1920x1080i5000'
-	return formatsString
-		.split(', ')
-		.map(res => /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(res)!
-			.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i)))
+	const formatsString: string = (formatsConfigField && formatsConfigField.value !== '' ? formatsConfigField.value : '1920x1080i5000') + ''
+	return _.compact(formatsString
+		.split(',')
+		.map((res) => {
+			const match = /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(res)
+			if (match) {
+				return match.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i))
+			} else {
+				// specified format string was invalid
+				return false
+			}
+		}))
 }
 
-export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourceLayer, config: Array<IStudioConfigItem>) {
+export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourceLayer, config: Array<IConfigItem>) {
 	let newStatus: RunningOrderAPI.LineItemStatusCode = RunningOrderAPI.LineItemStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
 	let message: string | null = null
 
 	switch (sourceLayer.type) {
-		case RunningOrderAPI.SourceLayerType.VT:
+		case SourceLayerType.VT:
 			if (sli.content && sli.content.fileName) {
 				const content = sli.content as VTContent
 				const mediaObject = MediaObjects.findOne({
@@ -125,7 +142,7 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 				}
 			}
 			break
-		case RunningOrderAPI.SourceLayerType.LIVE_SPEAK:
+		case SourceLayerType.LIVE_SPEAK:
 			if (sli.content && sli.content.fileName) {
 				const content = sli.content as LiveSpeakContent
 				const mediaObject = MediaObjects.findOne({

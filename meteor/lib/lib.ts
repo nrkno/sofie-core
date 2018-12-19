@@ -7,6 +7,7 @@ import * as Timecode from 'smpte-timecode'
 import { Settings } from './Settings'
 import * as objectPath from 'object-path'
 import { Mongo } from 'meteor/mongo'
+import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration'
 
 /**
  * Convenience method to convert a Meteor.call() into a Promise
@@ -100,6 +101,11 @@ interface SaveIntoDbOptions<DocClass, DBInterface> {
 	afterUpdate?: (o: DBInterface) => void
 	afterRemove?: (o: DBInterface) => void
 }
+interface Changes {
+	added: number
+	updated: number
+	removed: number
+}
 /**
  * Saves an array of data into a collection
  * No matter if the data needs to be created, updated or removed
@@ -112,8 +118,8 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 	filter: MongoSelector<DBInterface>,
 	newData: Array<DBInterface>,
 	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
-) {
-	let change = {
+): Changes {
+	let change: Changes = {
 		added: 0,
 		updated: 0,
 		removed: 0
@@ -218,6 +224,21 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 
 	return change
 }
+export function sumChanges (...changes: (Changes | null)[]): Changes {
+	let change: Changes = {
+		added: 0,
+		updated: 0,
+		removed: 0
+	}
+	_.each(changes, (c) => {
+		if (c) {
+			change.added += c.added
+			change.updated += c.updated
+			change.removed += c.removed
+		}
+	})
+	return change
+}
 /**
  * Deep comparison of objects, returns true if equal
  * @param a
@@ -277,59 +298,20 @@ export type Partial<T> = {
 export function partial<T> (o: Partial<T>) {
 	return o
 }
+export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
 export interface IDObj {
 	_id: string
 }
 export function partialExceptId<T> (o: Partial<T> & IDObj) {
 	return o
 }
+export interface ObjId {
+	_id: string
+}
+export type OmitId<T> = Omit<T & ObjId, '_id'>
+
 export function applyClassToDocument (docClass, document) {
 	return new docClass(document)
-}
-/**
- * Iterates deeply through object or array
- * @param obj the object or array to iterate through
- * @param iteratee function to apply on every attribute
- */
-export function iterateDeeply (obj: any, iteratee: (val: any, key?: string | number) => (any | iterateDeeplyEnum), key?: string | number) {
-	let newValue = iteratee(obj, key)
-	if (newValue === iterateDeeplyEnum.CONTINUE) {
-		// Continue iterate deeper if possible
-		if (_.isObject(obj)) { // object or array
-			_.each(obj, (val, key) => {
-				obj[key] = iterateDeeply(val, iteratee, key)
-			})
-		} else {
-			// don't change anything
-		}
-		return obj
-	} else {
-		return newValue
-	}
-}
-/**
- * Iterates deeply through object or array, using an asynchronous iteratee
- * @param obj the object or array to iterate through
- * @param iteratee function to apply on every attribute
- */
-export async function iterateDeeplyAsync (obj: any, iteratee: (val: any, key?: string | number) => Promise<any | iterateDeeplyEnum>, key?: string | number) {
-	let newValue = await iteratee(obj, key)
-	if (newValue === iterateDeeplyEnum.CONTINUE) {
-		// Continue iterate deeper if possible
-		if (_.isObject(obj)) { // object or array
-			await Promise.all(_.map(obj, async (val, key) => {
-				obj[key] = await iterateDeeply(val, iteratee, key)
-			}))
-		} else {
-			// don't change anything
-		}
-		return obj
-	} else {
-		return newValue
-	}
-}
-export enum iterateDeeplyEnum {
-	CONTINUE = '$continue'
 }
 export function formatDateAsTimecode (date: Date) {
 	return Timecode(date, Settings['frameRate'], false).toString()
@@ -832,4 +814,22 @@ export function pushOntoPath<T> (obj: Object, path: string, valueToPush: T): Arr
  */
 export function fixValidPath (path) {
 	return path.replace(/([^a-z0-9_.@()-])/ig, '_')
+}
+
+/**
+ * Returns the difference between object A and B
+ */
+type Difference<A, B extends A> = Pick<B, Exclude<keyof B, keyof A>>
+/**
+ * Somewhat like _.extend, but with strong types & mandated additional properties
+ * @param original Object to be extended
+ * @param extendObj properties to add
+ */
+export function extendMandadory<A, B extends A> (original: A, extendObj: Difference<A, B>): B {
+	return _.extend(original, extendObj)
+}
+
+export function trimIfString<T extends any> (value: T): T {
+	if (_.isString(value)) return value.trim()
+	return value
 }

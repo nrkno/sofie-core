@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2018-11-16T13:24:30.643Z\n"
-"PO-Revision-Date: 2018-11-16 14:24+0100\n"
+"POT-Creation-Date: 2018-11-23T10:23:28.158Z\n"
+"PO-Revision-Date: 2018-11-23 11:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -55,11 +55,11 @@ msgstr "Noe gikk galt, men det påvirket ikke produksjonen"
 msgid "Something went wrong, and it affected the output"
 msgstr "Noe gikk galt, og det påvirket output"
 
-msgid "Connecting to the"
-msgstr "Kobler til"
-
 msgid "Sofie Automation Server"
 msgstr "Sofie Automasjonsservere"
+
+msgid "Connecting to the"
+msgstr "Kobler til"
 
 msgid "Cannot connect to the"
 msgstr "Kan ikke koble til"

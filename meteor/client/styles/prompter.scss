@@ -1,9 +1,11 @@
 
 .prompter {
     font-size: 16vh;
+    font-weight: 400;
     background: #000;
-    line-height: 0.95;
-    text-align: center;
+    line-height: 1.25;
+    text-align: left;
+    letter-spacing: 0.9px;
 
     &.mirror {
         transform: scaleX(-1);
@@ -11,11 +13,11 @@
 
     .prompter-segment {
 
-        font-size: 50%;
+        font-size: 75%;
         text-align: center;
 
-        margin-top: 0.5em;
-        border-top: 0.5em solid #999;
+        margin-top: -0.5em;
+        border-top: 0.1em solid #fff;
         
     }
     .prompter-segmentLine {

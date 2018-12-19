@@ -1,9 +1,5 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
-import {
-	IMOSExternalMetaData,
-	IMOSObjectStatus
-} from 'mos-connection'
 import { TransformedCollection, FindOptions, MongoSelector } from '../typings/meteor'
 import { RunningOrders } from './RunningOrders'
 import { SegmentLineItem, SegmentLineItems } from './SegmentLineItems'
@@ -13,11 +9,16 @@ import { applyClassToDocument, Time, registerCollection, normalizeArray } from '
 import { RunningOrderAPI } from '../api/runningOrder'
 import { checkSLIContentStatus } from '../mediaObjects'
 import { Meteor } from 'meteor/meteor'
-
-import { TemplateRuntimeArguments } from '../../server/api/templates/templates'
+import {
+	IMessageBlueprintSegmentLine,
+	IMessageBlueprintSegmentLineTimings,
+	SegmentLineHoldMode,
+	BlueprintRuntimeArguments,
+	MOS
+} from 'tv-automation-sofie-blueprints-integration'
 
 /** A "Line" in NRK Lingo. */
-export interface DBSegmentLine {
+export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
 	_id: string
   /** Position inside the segment */
 	_rank: number
@@ -31,21 +32,21 @@ export interface DBSegmentLine {
 	slug: string
 	/** Should this item should progress to the next automatically */
 	autoNext?: boolean
-	/** How much to overlap on when doing autonext */
+	/** How much this sl should overrun into next on autonext (eg vignett out transition) */
 	autoNextOverlap?: number
-	/** What point to extend the old sli until when doing a take */
-	overlapDuration?: number
-	/** What point to delay the new sli contents until during a transition */
-	transitionDelay?: string
-	/** What point during the transition is it deemed over (so the previous line can be stopped) */
-	transitionDuration?: number
+	/** How long to before this sl is ready to take over from the previous */
+	prerollDuration?: number
+	/** How long to before this sl is ready to take over from the previous (during transition) */
+	transitionPrerollDuration?: number | null
+	/** How long to keep the old sl alive during the transition */
+	transitionKeepaliveDuration?: number | null
 	/** Should we block a transition at the out of this SegmentLine */
 	disableOutTransition?: boolean
 	/** If true, the story status (yellow line) will be updated upon next:ing  */
 	updateStoryStatus?: boolean
 
-	metaData?: Array<IMOSExternalMetaData>
-	status?: IMOSObjectStatus
+	metaData?: Array<MOS.IMOSExternalMetaData>
+	status?: MOS.IMOSObjectStatus
 
 	/** Expected duration of the line, in milliseconds */
 	expectedDuration?: number
@@ -56,8 +57,8 @@ export interface DBSegmentLine {
 	/** The time the system played back this segment line, null if not yet finished playing, in milliseconds */
 	duration?: number
 
-	/** The type of the segmentLiene, could be the name of the template that created it */
-	typeVariant?: string
+	/** The type of the segmentLiene, could be the name of the blueprint that created it */
+	typeVariant: string
 	/** The subtype fo the segmentLine */
 	subTypeVariant?: string
 
@@ -67,7 +68,7 @@ export interface DBSegmentLine {
 	/** Whether this segment line supports being used in HOLD */
 	holdMode?: SegmentLineHoldMode
 
-	/** Holds notes (warnings / errors) thrown by the templates during creation */
+	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<SegmentLineNote>
 	/** if the segmentLine is inserted after another (for adlibbing) */
 	afterSegmentLine?: string
@@ -75,11 +76,11 @@ export interface DBSegmentLine {
 	dynamicallyInserted?: boolean
 
 	/** Runtime blueprint arguments allows Sofie-side data to be injected into the blueprint for an SL */
-	runtimeArguments?: TemplateRuntimeArguments
+	runtimeArguments?: BlueprintRuntimeArguments
 	/** An SL should be marked as `dirty` if the SL blueprint has been injected with runtimeArguments */
 	dirty?: boolean
 }
-export interface SegmentLineTimings {
+export interface SegmentLineTimings extends IMessageBlueprintSegmentLineTimings {
 	/** Point in time the SegmentLine was taken, (ie the time of the user action) */
 	take: Array<Time>,
 	/** Point in time the "take" action has finished executing */
@@ -94,12 +95,6 @@ export interface SegmentLineTimings {
 	next: Array<Time>
 }
 
-export enum SegmentLineHoldMode {
-	NONE = 0,
-	FROM = 1,
-	TO = 2,
-}
-
 export enum SegmentLineNoteType {
 	WARNING = 1,
 	ERROR = 2
@@ -111,7 +106,7 @@ export interface SegmentLineNote {
 		roId?: string,
 		segmentId?: string,
 		segmentLineId?: string,
-		segmentLineItemId?: string,
+		segmentLineItemId?: string
 	},
 	message: string
 
@@ -126,11 +121,11 @@ export class SegmentLine implements DBSegmentLine {
 	public slug: string
 	public autoNext?: boolean
 	public autoNextOverlap?: number
-	public overlapDuration?: number
-	public transitionDelay?: string
-	public transitionDuration?: number
-	public metaData?: Array<IMOSExternalMetaData>
-	public status?: IMOSObjectStatus
+	public prerollDuration?: number
+	public transitionPrerollDuration?: number | null
+	public transitionKeepaliveDuration?: number | null
+	public metaData?: Array<MOS.IMOSExternalMetaData>
+	public status?: MOS.IMOSObjectStatus
 	public expectedDuration?: number
 	public startedPlayback?: boolean
 	public duration?: number
@@ -142,7 +137,8 @@ export class SegmentLine implements DBSegmentLine {
 	public afterSegmentLine?: string
 	public dirty?: boolean
 
-	public runtimeArguments?: TemplateRuntimeArguments
+	public runtimeArguments?: BlueprintRuntimeArguments
+	public typeVariant: string
 
 	constructor (document: DBSegmentLine) {
 		_.each(_.keys(document), (key) => {
@@ -220,13 +216,14 @@ export class SegmentLine implements DBSegmentLine {
 			const items = this.getSegmentLinesItems()
 			const ro = this.getRunningOrder()
 			const si = ro && ro.getStudioInstallation()
-			const slLookup = si && normalizeArray(si.sourceLayers, '_id')
+			const showStyleBase = ro && ro.getShowStyleBase()
+			const slLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
 			_.each(items, (item) => {
 				// TODO: check statuses (like media availability) here
 
 				if (slLookup && item.sourceLayerId && slLookup[item.sourceLayerId]) {
 					const sl = slLookup[item.sourceLayerId]
-					const st = checkSLIContentStatus(item, sl, si!.config)
+					const st = checkSLIContentStatus(item, sl, si ? si.config : [])
 					if (st.status === RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING || st.status === RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN) {
 						notes.push({
 							type: SegmentLineNoteType.ERROR,

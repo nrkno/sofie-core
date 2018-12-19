@@ -6,12 +6,12 @@ import { Picker } from 'meteor/meteorhacks:picker'
 import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { syncFunctionIgnore } from './codeControl'
 import { StudioInstallations } from '../lib/collections/StudioInstallations'
-import { getCurrentTime } from '../lib/lib'
+import { getCurrentTime, Time } from '../lib/lib'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { Meteor } from 'meteor/meteor'
 import { setMeteorMethods, Methods } from './methods'
 import { parseVersion, compareVersions } from '../lib/collections/CoreSystem'
-import { StatusResponse, CheckObj, SystemStatusAPI, ExternalStatus } from '../lib/api/systemStatus'
+import { StatusResponse, CheckObj, SystemStatusAPI, ExternalStatus, CheckError } from '../lib/api/systemStatus'
 
 // This data structure is to be used to determine the system-wide status of the Core instance
 
@@ -28,36 +28,40 @@ export enum StatusCode {
 }
 
 export interface StatusObject {
-	studioId?: string,
-	statusCode: StatusCode,
-	messages?: Array<string>,
+	studioId?: string
+	statusCode: StatusCode
+	messages?: Array<string>
 }
-// export interface StatusObjectFull extends StatusObject {
-// 	checks: Array<CheckObj>
-// }
-let systemStatuses: {[key: string]: StatusObject} = {}
+export interface StatusObjectInternal {
+	studioId?: string
+	statusCode: StatusCode
+	timestamp: Time // when statusCode was last changed
+	messages: Array<{
+		message: string
+		timestamp: Time // when message appeared first
+	}>,
+}
+let systemStatuses: {[key: string]: StatusObjectInternal} = {}
 
 export function getSystemStatus (studioId?: string): StatusResponse {
 
 	let checks: Array<CheckObj> = []
 
-	_.each(systemStatuses, (status: StatusObject, key: string) => {
+	_.each(systemStatuses, (status: StatusObjectInternal, key: string) => {
 		checks.push({
 			description: key,
 			status: status2ExternalStatus(status.statusCode),
+			updated: new Date(status.timestamp).toISOString(),
 			_status: status.statusCode,
-			errors: status.messages || []
+			errors: _.map(status.messages || [], (m): CheckError => {
+				return {
+					type: 'message',
+					time: new Date(m.timestamp).toISOString(),
+					message: m.message
+				}
+			})
 		})
 
-		if (status.statusCode !== StatusCode.GOOD) {
-			// systemStatusMessages.push(key + ': Status: ' + StatusCode[status.statusCode])
-		}
-
-		_.each(status.messages || [], (message: string) => {
-			if (message) {
-				// systemStatusMessages.push(key + ': ' + message)
-			}
-		})
 	})
 
 	let statusObj: StatusResponse = {
@@ -87,10 +91,6 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 		let deviceStatusMessages: Array<string> = device.status.messages || []
 
 		let checks: Array<CheckObj> = []
-		// if (!device.connected) {
-		// 	deviceStatus = StatusCode.BAD
-		// 	deviceStatusMessages.push('Disconnected')
-		// }
 
 		if (deviceStatus === StatusCode.GOOD) {
 
@@ -123,18 +123,25 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 					checks.push({
 						description: `expectedVersion.${libraryName}`,
 						status: status2ExternalStatus(statusCode),
+						updated: new Date(device.lastSeen).toISOString(),
 						_status: statusCode,
-						errors: messages
+						errors: _.map(messages, (message): CheckError => {
+							return {
+								type: 'version-differ',
+								time: new Date(device.lastSeen).toISOString(),
+								message: ''
+							}
+						})
 					})
 
 				})
 			}
 		}
-
 		let so: StatusResponse = {
 			name: device.name,
 			instanceId: device._id,
 			status: 'UNDEFINED',
+			updated: new Date(device.lastSeen).toISOString(),
 			_status: deviceStatus,
 			documentation: '',
 			_internal: {
@@ -194,9 +201,9 @@ function collectMesages ( statusObj: StatusResponse): Array<string> {
 	if (statusObj.checks) {
 		_.each(statusObj.checks, (check: CheckObj) => {
 
-			if (check.errors) {
+			if (check._status !== StatusCode.GOOD && check.errors) {
 				_.each(check.errors, (errMsg) => {
-					allMessages.push(`check ${check.description}: ${errMsg}`)
+					allMessages.push(`check ${check.description}: ${errMsg.message}`)
 				})
 			}
 
@@ -216,7 +223,39 @@ function collectMesages ( statusObj: StatusResponse): Array<string> {
 }
 
 export function setSystemStatus (type: string, status: StatusObject) {
-	systemStatuses[type] = status
+	let systemStatus: StatusObjectInternal = systemStatuses[type]
+	if (!systemStatus) {
+		systemStatus = {
+			statusCode: StatusCode.UNKNOWN,
+			timestamp: 0,
+			messages: []
+		}
+		systemStatuses[type] = systemStatus
+	}
+
+	if (systemStatus.statusCode !== status.statusCode) {
+		systemStatus.statusCode = status.statusCode
+		systemStatus.timestamp = getCurrentTime()
+	}
+
+	let messages: Array<{
+		message: string
+		timestamp: Time
+	}> = []
+	if (status.messages) {
+		_.each(status.messages, (message) => {
+			let m = _.find(systemStatus.messages, m => m.message === message)
+			if (m) {
+				messages.push(m)
+			} else {
+				messages.push({
+					message: message,
+					timestamp: getCurrentTime()
+				})
+			}
+		})
+	}
+	systemStatus.messages = messages
 }
 export function removeSystemStatus (type: string) {
 	delete systemStatuses[type]
@@ -246,7 +285,6 @@ methods[SystemStatusAPI.getSystemStatus] = () => {
 }
 setMeteorMethods(methods)
 // Server route
-// according to spec at https://github.com/nrkno/blaabok-mu/blob/master/Standarder/RFC-MU-2-Helsesjekk.md
 Picker.route('/health', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	let status = getSystemStatus()
 	health(status, res)

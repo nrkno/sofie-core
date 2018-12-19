@@ -3,7 +3,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Link } from 'react-router-dom'
-import * as Tooltip from 'rc-tooltip'
+import Tooltip from 'rc-tooltip'
 import timer from 'react-timer-hoc'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import Moment from 'react-moment'
@@ -15,10 +15,11 @@ import * as faSync from '@fortawesome/fontawesome-free-solid/faSync'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
-import { ClientAPI } from '../../lib/api/client'
-import { eventContextForLog } from '../lib/eventTargetLogHelper'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
 import { SystemStatusAPI, StatusResponse } from '../../lib/api/systemStatus'
+import { callMethod } from '../lib/clientAPI'
+import { ManualPlayout } from './manualPlayout'
+import { getDeveloperMode } from '../lib/localStorage'
 
 const PackageInfo = require('../../package.json')
 
@@ -64,7 +65,7 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 		const { t } = this.props
 
 		if (!ro.active) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), RunningOrderAPI.methods.removeRunningOrder, ro._id, (err, res) => {
+			callMethod(e, RunningOrderAPI.methods.removeRunningOrder, ro._id, (err, res) => {
 				if (err) {
 					// todo: notify the user
 					console.error(err)
@@ -88,7 +89,7 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 		const { t } = this.props
 
 		if (!ro.active) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), RunningOrderAPI.methods.resyncRunningOrder, ro._id, (err, res) => {
+			callMethod(e, RunningOrderAPI.methods.resyncRunningOrder, ro._id, (err, res) => {
 				if (err) {
 					// todo: notify the user
 					console.error(err)
@@ -169,31 +170,37 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 				</p>
 				<div>
 					{
-						this.state.systemStatus ? [
-							<p>
-								{t('status')}: {this.state.systemStatus.status} / {this.state.systemStatus._internal.statusCodeString}
-							</p>,
-							<p>
-								{
-									this.state.systemStatus._internal.messages.length ?
-										<p>
-											{t('Status messages:')}
-											<ul>
-												{_.map(this.state.systemStatus._internal.messages, (message, i) => {
-													return (
-														<li key={i}>
-															{message}
-														</li>
-													)
-												})}
-											</ul>
-										</p> :
-									null
-								}
-							</p>
-						] : null
+						this.state.systemStatus ?
+							<React.Fragment>
+								<div>
+									{t('status')}: {this.state.systemStatus.status} / {this.state.systemStatus._internal.statusCodeString}
+								</div>
+								<div>
+									{
+										this.state.systemStatus._internal.messages.length ?
+											<div>
+												{t('Status messages:')}
+												<ul>
+													{_.map(this.state.systemStatus._internal.messages, (message, i) => {
+														return (
+															<li key={i}>
+																{message}
+															</li>
+														)
+													})}
+												</ul>
+											</div> :
+										null
+									}
+								</div>
+							</React.Fragment>
+							: null
 					}
 				</div>
+				{
+					getDeveloperMode() ?
+					<ManualPlayout></ManualPlayout> : null
+				}
 			</div>
 		</React.Fragment>
 	}

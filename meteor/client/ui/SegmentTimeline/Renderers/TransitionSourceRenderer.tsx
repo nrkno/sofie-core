@@ -2,14 +2,19 @@ import * as React from 'react'
 import * as $ from 'jquery'
 import * as _ from 'underscore'
 
-import { TransitionContent } from '../../../../lib/collections/SegmentLineItems'
+import { TransitionContent } from 'tv-automation-sofie-blueprints-integration'
 
-import { CustomLayerItemRenderer, ISourceLayerItemProps } from './CustomLayerItemRenderer'
+import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { FloatingInspector } from '../../FloatingInspector'
 
 type KeyValue = { key: string, value: string }
 
-export class TransitionSourceRenderer extends CustomLayerItemRenderer<ISourceLayerItemProps> {
+interface IProps extends ICustomLayerItemProps {
+}
+interface IState {
+	iconFailed: boolean
+}
+export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IState> {
 	leftLabel: HTMLElement
 	rightLabel: HTMLElement
 
@@ -42,7 +47,7 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<ISourceLay
 		})
 	}
 
-	componentDidUpdate (prevProps: Readonly<ISourceLayerItemProps>, prevState: Readonly<any>) {
+	componentDidUpdate (prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}

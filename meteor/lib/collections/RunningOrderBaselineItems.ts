@@ -1,21 +1,15 @@
 import { Mongo } from 'meteor/mongo'
-import { SegmentLineItemGeneric } from './SegmentLineItems'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { TimelineObj } from './Timeline'
 
-export interface RunningOrderBaselineItem extends SegmentLineItemGeneric {
-	segmentLineId: undefined
-	trigger: {
-		type: 0
-		value: 0
-	}
-	disabled: false
-	expectedDuration: 0
-	transitions: undefined
-	continuesRefId: undefined
-	adLibSourceId: undefined
-	dynamicallyInserted: undefined
+export interface RunningOrderBaselineItem {
+	_id: string
+	/** The running order this item belongs to */
+	runningOrderId: string
+
+	objects: TimelineObj[]
 }
 
 export const RunningOrderBaselineItems: TransformedCollection<RunningOrderBaselineItem, RunningOrderBaselineItem>
