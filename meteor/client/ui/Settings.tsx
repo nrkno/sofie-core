@@ -109,11 +109,11 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 
 		switch (type) {
 			case PeripheralDeviceAPI.DeviceType.MOSDEVICE:
-				return t('MOS Device')
+				return t('MOS Gateway')
 			case PeripheralDeviceAPI.DeviceType.PLAYOUT:
-				return t('Play-out Device')
+				return t('Play-out Gateway')
 			case PeripheralDeviceAPI.DeviceType.OTHER:
-				return t('Sub-Device')
+				return ''
 			default:
 				return t('Unknown Device')
 		}
@@ -230,10 +230,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/peripheralDevice/' + item._id}>
 								<h3>{item.name}</h3>
 								<p>
-									{item._id}
-								</p>
-								<p>
-									{t('Status')}: {this.statusCodeString(item.status.statusCode)} {t('Type')}: {this.deviceTypeString(item.type)}
+									{t('Status')}: {this.statusCodeString(item.status.statusCode)}
 								</p>
 							</NavLink>,
 							<hr className='vsubtle man' key={item._id + '-hr'} />
