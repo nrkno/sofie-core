@@ -188,7 +188,7 @@ export function ensureStudioConfig (
 	}
 }
 
-export function ensureDeviceVersion (id, deviceType: PeripheralDeviceAPI.DeviceType, libraryName: string, versionStr: string ): MigrationStepBase {
+export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceType, libraryName: string, versionStr: string ): MigrationStepBase {
 	return {
 		id: id,
 		canBeRunAutomatically: true,
