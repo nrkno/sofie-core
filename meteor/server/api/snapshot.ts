@@ -13,6 +13,7 @@ import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders
 import { RunningOrderDataCache, RunningOrderDataCacheObj } from '../../lib/collections/RunningOrderDataCache'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { Segments, Segment } from '../../lib/collections/Segments'
+import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 import { SegmentLineItems, SegmentLineItem } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
@@ -37,6 +38,7 @@ interface RunningOrderSnapshot {
 	mosData: Array<RunningOrderDataCacheObj>
 	userActions: Array<UserActionsLogItem>
 	segments: Array<Segment>
+	segmentLines: Array<SegmentLine>
 	segmentLineItems: Array<SegmentLineItem>
 	segmentLineAdLibItems: Array<SegmentLineAdLibItem>
 	mediaObjects: Array<MediaObject>
@@ -81,6 +83,7 @@ function createRunningOrderSnapshot (runningOrderId: string): RunningOrderSnapsh
 	const userActions = UserActionsLog.find({ args: { $regex: `.*"${runningOrderId}".*` } }).fetch()
 
 	const segments = Segments.find({ runningOrderId }).fetch()
+	const segmentLines = SegmentLines.find({ runningOrderId }).fetch()
 	const segmentLineItems = SegmentLineItems.find({ runningOrderId }).fetch()
 	const segmentLineAdLibItems = SegmentLineAdLibItems.find({ runningOrderId }).fetch()
 	const mediaObjectIds: Array<string> = [
@@ -105,6 +108,7 @@ function createRunningOrderSnapshot (runningOrderId: string): RunningOrderSnapsh
 		mosData,
 		userActions,
 		segments,
+		segmentLines,
 		segmentLineItems,
 		segmentLineAdLibItems,
 		mediaObjects
@@ -312,6 +316,7 @@ function restoreFromRunningOrderSnapshot (snapshot: RunningOrderSnapshot) {
 	saveIntoDb(RunningOrderDataCache, {roId: runningOrderId}, snapshot.mosData)
 	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
 	saveIntoDb(Segments, {runningOrderId: runningOrderId}, snapshot.segments)
+	saveIntoDb(SegmentLines, {runningOrderId: runningOrderId}, snapshot.segmentLines)
 	saveIntoDb(SegmentLineItems, {runningOrderId: runningOrderId}, snapshot.segmentLineItems)
 	saveIntoDb(SegmentLineAdLibItems, {runningOrderId: runningOrderId}, snapshot.segmentLineAdLibItems)
 	saveIntoDb(MediaObjects, {_id: {$in: _.pluck(snapshot.mediaObjects, '_id')}}, snapshot.mediaObjects)
