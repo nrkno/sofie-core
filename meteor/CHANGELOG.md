@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file. See [standa
 <a name="0.19.0-0"></a>
 ## 0.19.0-0 (2018-12-19)
 
+This version features a big rehaul of the internal data structures of Sofie, Core and the Blueprints.
+In particular, the Blueprints, which where previously stored as a big code-in-json file, now can be a fully normal node module, which can
+be uploaded using webpack or similar (an example of a Blueprint will be published separately).
+
+The data structure of Core has also been rehauled. ShowStyles have been split into ShowStyles and ShowStyle Variants, and we're now introducing
+Configuration-values both on studios (for studio-specific customizations) and ShowStyles (for Show-specific customizations).
+
+This is a major and Breaking release, extra care is recommended when upgrading from previous versions.
+(Although with the new migration scripts that have been further improved with this version, we expect the upgrade to be fairly simple. )
+
 ### Features
 
 #### Playout
