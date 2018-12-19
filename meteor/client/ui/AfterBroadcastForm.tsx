@@ -32,28 +32,38 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 		}
 	}
 	saveForm = (e: React.MouseEvent<HTMLElement>) => {
-
 		let answers = this.state
 
-		let evaluation: EvaluationBase = {
-			studioId: this.props.runningOrder.studioInstallationId,
-			runningOrderId: this.props.runningOrder._id,
-			answers: answers
+		const saveEvaluation = (snapshotId?: string) => {
+			let evaluation: EvaluationBase = {
+				studioId: this.props.runningOrder.studioInstallationId,
+				runningOrderId: this.props.runningOrder._id,
+				answers: answers
+			}
+			if (snapshotId && evaluation.snapshots) evaluation.snapshots.push(snapshotId)
+
+			callMethod(e, PlayoutAPI.methods.saveEvaluation, evaluation)
+
+			callMethod(e, PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
+
+			this.setState({
+				q0: '',
+				q1: '',
+				q2: '',
+			})
 		}
 
-		if (evaluation.answers.q0 !== 'nothing') {
-			callMethod(e, SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT, this.props.runningOrder._id, 'Evaluation form')
+		if (answers.q0 !== 'nothing') {
+			callMethod(e, SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT, this.props.runningOrder._id, 'Evaluation form', (err, snapshotId) => {
+				if (!err && snapshotId) {
+					saveEvaluation(snapshotId)
+				} else {
+					saveEvaluation()
+				}
+			})
+		} else {
+			saveEvaluation()
 		}
-
-		callMethod(e, PlayoutAPI.methods.saveEvaluation, evaluation)
-
-		callMethod(e, PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
-
-		this.setState({
-			q0: '',
-			q1: '',
-			q2: '',
-		})
 	}
 	onUpdateValue = (edit: any, newValue: any ) => {
 		let attr = edit.props.attribute
