@@ -1,7 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { ensureCollectionProperty } from './lib'
+import { ensureCollectionProperty, setExpectedVersion } from './lib'
 import { ShowStyleBases, IBlueprintRuntimeArgumentsItem } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyles } from './deprecatedDataTypes/0_18_0'
@@ -10,6 +10,7 @@ import { Blueprints } from '../../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { Random } from 'meteor/random'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 /**
  * This file contains system specific migration steps.
@@ -409,4 +410,7 @@ addMigrationSteps( '0.19.0', [
 			})
 		}
 	},
+
+	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '0.15.0'),
+	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.4.6'),
 ])
