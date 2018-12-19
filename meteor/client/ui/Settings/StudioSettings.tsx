@@ -855,7 +855,10 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 							attribute='testToolsConfig.recordings.channelFormat'
 							obj={this.props.studioInstallation}
 							type='dropdown'
-							options={ChannelFormat}
+							options={_.keys(ChannelFormat).map((k) => ({
+								name: k,
+								value: ChannelFormat[k]
+							}))}
 							collection={StudioInstallations}
 							className='input text-input input-l '></EditAttribute>
 					</label>
