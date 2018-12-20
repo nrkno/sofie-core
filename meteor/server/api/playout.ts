@@ -2100,7 +2100,7 @@ function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): SegmentLine
 		let contentObjects = newAdLibItem.content.timelineObjects
 		const objs = prefixAllObjectIds(
 			_.compact(
-				_.map(contentObjects, (obj) => {
+				_.map(contentObjects, (obj: TimelineObjectCoreExt) => {
 					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
 						_id: obj.id || obj['_id'],
 						siId: '', // set later
@@ -2426,7 +2426,7 @@ export function findLookaheadForLLayer (
 	layer: string,
 	mode: LookaheadMode
 ): Array<{
-	obj: TimelineObjectCoreExt,
+	obj: TimelineObjRunningOrder,
 	slId: string
 }> {
 	let activeRunningOrder: RunningOrder = roData.runningOrder
@@ -2457,7 +2457,7 @@ export function findLookaheadForLLayer (
 		const i = layerItems[0]
 		if (i.content && i.content.timelineObjects) {
 			const r = i.content.timelineObjects.find(o => o !== null && o.LLayer === layer)
-			return r ? [{ obj: r, slId: i.segmentLineId }] : []
+			return r ? [{ obj: r as TimelineObjRunningOrder, slId: i.segmentLineId }] : []
 		}
 
 		return []
@@ -2560,18 +2560,18 @@ export function findLookaheadForLLayer (
 		return []
 	}
 
-	let findObjectForSegmentLine = (): TimelineObjectCoreExt[] => {
+	let findObjectForSegmentLine = (): TimelineObjRunningOrder[] => {
 		if (!sliGroup || sliGroup.items.length === 0) {
 			return []
 		}
 
-		let rawObjs: (TimelineObjectCoreExt | null)[] = []
+		let rawObjs: (TimelineObjRunningOrder | null)[] = []
 		sliGroup.items.forEach(i => {
 			if (i.content && i.content.timelineObjects) {
-				rawObjs = rawObjs.concat(i.content.timelineObjects)
+				rawObjs = rawObjs.concat(i.content.timelineObjects as TimelineObjRunningOrder[])
 			}
 		})
-		let allObjs: TimelineObjectCoreExt[] = _.compact(rawObjs)
+		let allObjs: TimelineObjRunningOrder[] = _.compact(rawObjs)
 
 		if (allObjs.length === 0) {
 			// Should never happen. suggests something got 'corrupt' during this process
@@ -2591,7 +2591,7 @@ export function findLookaheadForLLayer (
 				const transObj2 = transObj ? sliGroup.items.find(l => l._id === transObj._id) : undefined
 				const hasTransition = allowTransition && transObj2 && transObj2.content && transObj2.content.timelineObjects && transObj2.content.timelineObjects.find(o => o != null && o.LLayer === layer)
 
-				const res: TimelineObjectCoreExt[] = []
+				const res: TimelineObjRunningOrder[] = []
 				orderedItems.forEach(i => {
 					if (!sliGroup || (!allowTransition && i.isTransition)) {
 						return
@@ -2610,7 +2610,7 @@ export function findLookaheadForLLayer (
 					// Note: This is assuming that there is only one use of a layer in each sli.
 					const obj = item.content.timelineObjects.find(o => o !== null && o.LLayer === layer)
 					if (obj) {
-						res.push(obj)
+						res.push(obj as TimelineObjRunningOrder)
 					}
 				})
 
@@ -2621,7 +2621,7 @@ export function findLookaheadForLLayer (
 		return allObjs
 	}
 
-	const res: {obj: TimelineObjectCoreExt, slId: string}[] = []
+	const res: {obj: TimelineObjRunningOrder, slId: string}[] = []
 
 	const slId = sliGroup.slId
 	const objs = findObjectForSegmentLine()
