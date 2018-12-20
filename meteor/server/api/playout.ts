@@ -85,7 +85,7 @@ import { updateSegmentLines, reloadRunningOrderData } from './runningOrder'
 import { runPostProcessBlueprint } from '../../server/api/runningOrder'
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { generateRecordingTimelineObjs } from './testTools'
-import { reportRunningOrderHasStarted, reportSegmentLineHasStarted, reportSegmentLineItemHasStarted } from './asRunLog'
+import { reportRunningOrderHasStarted, reportSegmentLineHasStarted, reportSegmentLineItemHasStarted, reportSegmentLineHasStopped, reportSegmentLineItemHasStopped } from './asRunLog'
 
 const MINIMUM_TAKE_SPAN = 1000
 
@@ -1039,30 +1039,44 @@ export namespace ServerPlayoutAPI {
 		check(startedPlayback, Number)
 
 		// This method is called when an auto-next event occurs
-		let runningOrder = RunningOrders.findOne(roId)
-		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		let segLineItem = SegmentLineItems.findOne({
 			_id: sliId,
 			runningOrderId: roId
 		})
-		if (!segLineItem) {
-			throw new Meteor.Error(404, `Segment line item "${sliId}" in running order "${roId}" not found!`)
-		}
+		if (!segLineItem) throw new Meteor.Error(404, `Segment line item "${sliId}" in running order "${roId}" not found!`)
 
-		let segLine = SegmentLines.findOne({
-			_id: segLineItem.segmentLineId,
-			runningOrderId: roId
-		})
-		if (!segLine) {
-			throw new Meteor.Error(404, `Segment line "${segLineItem._id}" in running order "${roId}" not found!`)
-		}
-
-		if (!segLineItem.startedPlayback) {
+		let isPlaying: boolean = !!(
+			segLineItem.startedPlayback &&
+			!segLineItem.stoppedPlayback
+		)
+		if (!isPlaying) {
 			logger.info(`Playout reports segmentLineItem "${sliId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
 
 			reportSegmentLineItemHasStarted(segLineItem, startedPlayback)
 
-			// We don't need to bother with an updateTimeline(), as this hasnt changed anything, but lets us accurately add started items when reevaluating
+			// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
+		}
+	}
+	export function sliPlaybackStoppedCallback (roId: string, sliId: string, stoppedPlayback: Time) {
+		check(roId, String)
+		check(sliId, String)
+		check(stoppedPlayback, Number)
+
+		// This method is called when an auto-next event occurs
+		let segLineItem = SegmentLineItems.findOne({
+			_id: sliId,
+			runningOrderId: roId
+		})
+		if (!segLineItem) throw new Meteor.Error(404, `Segment line item "${sliId}" in running order "${roId}" not found!`)
+
+		let isPlaying: boolean = !!(
+			segLineItem.startedPlayback &&
+			!segLineItem.stoppedPlayback
+		)
+		if (isPlaying) {
+			logger.info(`Playout reports segmentLineItem "${sliId}" has stopped playback on timestamp ${(new Date(stoppedPlayback)).toISOString()}`)
+
+			reportSegmentLineItemHasStopped(segLineItem, stoppedPlayback)
 		}
 	}
 
@@ -1071,25 +1085,31 @@ export namespace ServerPlayoutAPI {
 		check(slId, String)
 		check(startedPlayback, Number)
 
-		// This method is called when an auto-next event occurs
-		let runningOrder = RunningOrders.findOne(roId)
-		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
-		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
+		// This method is called when a segmentLine starts playing (like when an auto-next event occurs)
 
 		let playingSegmentLine = SegmentLines.findOne({
 			_id: slId,
 			runningOrderId: roId
 		})
 
-		let currentSegmentLine = (runningOrder.currentSegmentLineId ?
-			SegmentLines.findOne(runningOrder.currentSegmentLineId)
-			: null
-		)
-
 		if (playingSegmentLine) {
 			// make sure we don't run multiple times, even if TSR calls us multiple times
-			if (!playingSegmentLine.startedPlayback) {
+
+			const isPlaying = (
+				playingSegmentLine.startedPlayback &&
+				!playingSegmentLine.stoppedPlayback
+			)
+			if (!isPlaying) {
 				logger.info(`Playout reports segmentLine "${slId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
+
+				let runningOrder = RunningOrders.findOne(roId)
+				if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+				if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
+
+				let currentSegmentLine = (runningOrder.currentSegmentLineId ?
+					SegmentLines.findOne(runningOrder.currentSegmentLineId)
+					: null
+				)
 
 				if (runningOrder.currentSegmentLineId === slId) {
 					// this is the current segment line, it has just started playback
@@ -1172,6 +1192,37 @@ export namespace ServerPlayoutAPI {
 				reportSegmentLineHasStarted(playingSegmentLine, startedPlayback)
 
 				afterTake(runningOrder, playingSegmentLine, currentSegmentLine || null)
+			}
+		} else {
+			throw new Meteor.Error(404, `Segment line "${slId}" in running order "${roId}" not found!`)
+		}
+	}
+	export function slPlaybackStoppedCallback (roId: string, slId: string, stoppedPlayback: Time) {
+		check(roId, String)
+		check(slId, String)
+		check(stoppedPlayback, Number)
+
+		// This method is called when an auto-next event occurs
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
+
+		let segmentLine = SegmentLines.findOne({
+			_id: slId,
+			runningOrderId: roId
+		})
+
+		if (segmentLine) {
+			// make sure we don't run multiple times, even if TSR calls us multiple times
+
+			const isPlaying = (
+				segmentLine.startedPlayback &&
+				!segmentLine.stoppedPlayback
+			)
+			if (isPlaying) {
+				logger.info(`Playout reports segmentLine "${slId}" has stopped playback on timestamp ${(new Date(stoppedPlayback)).toISOString()}`)
+
+				reportSegmentLineHasStopped(segmentLine, stoppedPlayback)
 			}
 		} else {
 			throw new Meteor.Error(404, `Segment line "${slId}" in running order "${roId}" not found!`)
@@ -1752,6 +1803,7 @@ function beforeTake (roData: RoData, currentSegmentLine: SegmentLine | null, nex
 
 function afterTake (runningOrder: RunningOrder, takeSegmentLine: SegmentLine, previousSegmentLine: SegmentLine | null) {
 	// This function should be called at the end of a "take" event (when the SegmentLines have been updated)
+	// or after a new segmentLine has started playing
 	updateTimeline(runningOrder.studioInstallationId)
 
 	// defer these so that the playout gateway has the chance to learn about the changes
@@ -2164,9 +2216,6 @@ function segmentLineStoppedPlaying (roId: string, segmentLine: SegmentLine, stop
 		SegmentLines.update(segmentLine._id, {
 			$set: {
 				duration: stoppedPlayingTime - lastStartedPlayback
-			},
-			$push: {
-				'timings.stoppedPlayback': stoppedPlayingTime
 			}
 		})
 		segmentLine.duration = stoppedPlayingTime - lastStartedPlayback

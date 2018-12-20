@@ -86,7 +86,14 @@ export interface SegmentLineItem extends SegmentLineItemGeneric, IBlueprintSegme
 	/** Whether this line should be extended into the next segment line when HOLD is activated */
 	extendOnHold?: boolean
 
+	/** Whether the sli has started playback (the most recent time it was played).
+	 * This is set from a callback from the playout gateway
+	 */
 	startedPlayback?: number
+	/** Whether the sli has stopped playback (the most recent time it was played).
+	 * This is set from a callback from the playout gateway
+	 */
+	stoppedPlayback?: number
 
 	adLibSourceId?: string // only set when generated from an adlib
 	dynamicallyInserted?: boolean // only set when generated from an adlib

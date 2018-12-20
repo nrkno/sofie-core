@@ -162,7 +162,8 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 	}, 'timelineTriggerTime$0,$1')
 	export function segmentLinePlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) {
-		// This is called from the playout-gateway when an auto-next event occurs
+		// This is called from the playout-gateway when a segmentLine starts playing.
+		// Note that this function can / might be called several times from playout-gateway for the same segmentLine
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
@@ -172,6 +173,18 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// Meteor.call('playout_segmentLinePlaybackStart', r.roId, r.slId, r.time)
 		ServerPlayoutAPI.slPlaybackStartedCallback(r.roId, r.slId, r.time)
+	}
+	export function segmentLinePlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStoppedResult) {
+		// This is called from the playout-gateway when an
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
+
+		check(r.time, Number)
+		check(r.roId, String)
+		check(r.slId, String)
+
+		// TODO: implement this:
+		ServerPlayoutAPI.slPlaybackStoppedCallback(r.roId, r.slId, r.time)
 	}
 	export function segmentLineItemPlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) {
 		// This is called from the playout-gateway when an auto-next event occurs
@@ -184,6 +197,18 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// Meteor.call('playout_segmentLineItemPlaybackStart', r.roId, r.sliId, r.time)
 		ServerPlayoutAPI.sliPlaybackStartedCallback(r.roId, r.sliId, r.time)
+	}
+	export function segmentLineItemPlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) {
+		// This is called from the playout-gateway when an auto-next event occurs
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
+
+		check(r.time, Number)
+		check(r.roId, String)
+		check(r.sliId, String)
+
+		// Meteor.call('playout_segmentLineItemPlaybackStart', r.roId, r.sliId, r.time)
+		ServerPlayoutAPI.sliPlaybackStoppedCallback(r.roId, r.sliId, r.time)
 	}
 	export function pingWithCommand (id: string, token: string, message: string) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)

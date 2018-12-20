@@ -44,11 +44,13 @@ export interface SegmentLinePlaybackStartedResult {
 	slId: string,
 	time: number
 }
+export type SegmentLinePlaybackStoppedResult = SegmentLinePlaybackStartedResult
 export interface SegmentLineItemPlaybackStartedResult {
 	roId: string,
 	sliId: string,
 	time: number
 }
+export type SegmentLineItemPlaybackStoppedResult = SegmentLineItemPlaybackStartedResult
 
 export enum methods {
 	'functionReply' 	= 'peripheralDevice.functionReply',
@@ -68,7 +70,9 @@ export enum methods {
 
 	'timelineTriggerTime'			= 'peripheralDevice.timeline.setTimelineTriggerTime',
 	'segmentLinePlaybackStarted' 	= 'peripheralDevice.runningOrder.segmentLinePlaybackStarted',
+	'segmentLinePlaybackStopped' 	= 'peripheralDevice.runningOrder.segmentLinePlaybackStopped',
 	'segmentLineItemPlaybackStarted'= 'peripheralDevice.runningOrder.segmentLineItemPlaybackStarted',
+	'segmentLineItemPlaybackStopped'= 'peripheralDevice.runningOrder.segmentLineItemPlaybackStopped',
 
 	'mosRoCreate' 		= 'peripheralDevice.mos.roCreate',
 	'mosRoReplace' 		= 'peripheralDevice.mos.roReplace',
