@@ -49,7 +49,6 @@ export function pushAsRunLog (eventBase: AsRunLogEventBase, rehersal: boolean, t
  * @param event
  */
 function handleEvent (event: AsRunLogEvent) {
-	console.log('handleEvent')
 	try {
 		if (event.runningOrderId) {
 			let runningOrder = RunningOrders.findOne(event.runningOrderId) as RunningOrder
@@ -103,7 +102,7 @@ export function reportRunningOrderHasStarted (runningOrderOrId: RunningOrder | s
 }
 // export function reportSegmentHasStarted (segment: Segment, timestamp?: Time) {
 // }
-export function reportSegmentLineHasStarted (segmentLineOrId: SegmentLine | string , timestamp?: Time) {
+export function reportSegmentLineHasStarted (segmentLineOrId: SegmentLine | string , timestamp: Time) {
 
 	let segmentLine = (
 		_.isString(segmentLineOrId) ?
@@ -117,6 +116,7 @@ export function reportSegmentLineHasStarted (segmentLineOrId: SegmentLine | stri
 			asyncCollectionUpdate(SegmentLines, segmentLine._id, {
 				$set: {
 					startedPlayback: true,
+					stoppedPlayback: false,
 				},
 				$push: {
 					'timings.startedPlayback': timestamp
@@ -127,6 +127,7 @@ export function reportSegmentLineHasStarted (segmentLineOrId: SegmentLine | stri
 		runningOrder = r[1]
 		// also update local object:
 		segmentLine.startedPlayback = true
+		segmentLine.stoppedPlayback = false
 		pushOntoPath(segmentLine, 'timings.startedPlayback', timestamp)
 
 		if (runningOrder) {
@@ -142,8 +143,47 @@ export function reportSegmentLineHasStarted (segmentLineOrId: SegmentLine | stri
 		} else logger.error(`runningOrder "${segmentLine.runningOrderId}" not found in reportSegmentLineHasStarted "${segmentLine._id}"`)
 	} else logger.error(`segmentLine not found in reportSegmentLineHasStarted "${segmentLineOrId}"`)
 }
+export function reportSegmentLineHasStopped (segmentLineOrId: SegmentLine | string , timestamp: Time) {
 
-export function reportSegmentLineItemHasStarted (segmentLineItemOrId: SegmentLineItem | string, timestamp?: Time) {
+	let segmentLine = (
+		_.isString(segmentLineOrId) ?
+		SegmentLines.findOne(segmentLineOrId) :
+		segmentLineOrId
+	)
+	if (segmentLine) {
+		let runningOrder: RunningOrder
+
+		let r = waitForPromiseAll<any>([
+			asyncCollectionUpdate(SegmentLines, segmentLine._id, {
+				$set: {
+					stoppedPlayback: true,
+				},
+				$push: {
+					'timings.stoppedPlayback': timestamp
+				}
+			}),
+			asyncCollectionFindOne(RunningOrders, segmentLine.runningOrderId)
+		])
+		runningOrder = r[1]
+		// also update local object:
+		segmentLine.stoppedPlayback = true
+		pushOntoPath(segmentLine, 'timings.stoppedPlayback', timestamp)
+
+		if (runningOrder) {
+			let event = pushAsRunLog({
+				studioId:			runningOrder.studioInstallationId,
+				runningOrderId:		runningOrder._id,
+				segmentId:			segmentLine.segmentId,
+				segmentLineId:		segmentLine._id,
+				content:			'stoppedPlayback',
+				content2: 			'segmentLine'
+			}, !!runningOrder.rehearsal, timestamp)
+			handleEvent(event)
+		} else logger.error(`runningOrder "${segmentLine.runningOrderId}" not found in reportSegmentLineHasStopped "${segmentLine._id}"`)
+	} else logger.error(`segmentLine not found in reportSegmentLineHasStopped "${segmentLineOrId}"`)
+}
+
+export function reportSegmentLineItemHasStarted (segmentLineItemOrId: SegmentLineItem | string, timestamp: Time) {
 
 	let segmentLineItem = (
 		_.isString(segmentLineItemOrId) ?
@@ -157,7 +197,8 @@ export function reportSegmentLineItemHasStarted (segmentLineItemOrId: SegmentLin
 		let r = waitForPromiseAll<any>([
 			asyncCollectionUpdate(SegmentLineItems, segmentLineItem._id, {
 				$set: {
-					startedPlayback: timestamp
+					startedPlayback: timestamp,
+					stoppedPlayback: 0
 				},
 				$push: {
 					'timings.startedPlayback': timestamp
@@ -170,6 +211,7 @@ export function reportSegmentLineItemHasStarted (segmentLineItemOrId: SegmentLin
 		segmentLine = r[2]
 		// also update local object:
 		segmentLineItem.startedPlayback = timestamp
+		segmentLineItem.stoppedPlayback = 0
 		pushOntoPath(segmentLineItem, 'timings.startedPlayback', timestamp)
 
 		if (runningOrder) {
@@ -183,7 +225,51 @@ export function reportSegmentLineItemHasStarted (segmentLineItemOrId: SegmentLin
 				content2: 			'segmentLineItem'
 			}, !!runningOrder.rehearsal, timestamp)
 			handleEvent(event)
-		} else logger.error(`runningOrder "${segmentLine.runningOrderId}" not found in reportSegmentLineHasStarted "${segmentLine._id}"`)
+		} else logger.error(`runningOrder "${segmentLine.runningOrderId}" not found in reportSegmentLineItemHasStarted "${segmentLine._id}"`)
 
 	} else logger.error(`segmentLineItem not found in reportSegmentLineItemHasStarted "${segmentLineItemOrId}"`)
+}
+export function reportSegmentLineItemHasStopped (segmentLineItemOrId: SegmentLineItem | string, timestamp: Time) {
+
+	let segmentLineItem = (
+		_.isString(segmentLineItemOrId) ?
+		SegmentLineItems.findOne(segmentLineItemOrId) :
+		segmentLineItemOrId
+	)
+	if (segmentLineItem) {
+
+		let runningOrder: RunningOrder
+		let segmentLine: SegmentLine
+		let r = waitForPromiseAll<any>([
+			asyncCollectionUpdate(SegmentLineItems, segmentLineItem._id, {
+				$set: {
+					stoppedPlayback: timestamp
+				},
+				$push: {
+					'timings.stoppedPlayback': timestamp
+				}
+			}),
+			asyncCollectionFindOne(RunningOrders, segmentLineItem.runningOrderId),
+			asyncCollectionFindOne(SegmentLines, segmentLineItem.segmentLineId)
+		])
+		runningOrder = r[1]
+		segmentLine = r[2]
+		// also update local object:
+		segmentLineItem.stoppedPlayback = timestamp
+		pushOntoPath(segmentLineItem, 'timings.stoppedPlayback', timestamp)
+
+		if (runningOrder) {
+			let event = pushAsRunLog({
+				studioId:			runningOrder.studioInstallationId,
+				runningOrderId:		runningOrder._id,
+				segmentId:			segmentLine.segmentId,
+				segmentLineId:		segmentLineItem.segmentLineId,
+				segmentLineItemId:	segmentLineItem._id,
+				content:			'stoppedPlayback',
+				content2: 			'segmentLineItem'
+			}, !!runningOrder.rehearsal, timestamp)
+			handleEvent(event)
+		} else logger.error(`runningOrder "${segmentLine.runningOrderId}" not found in reportSegmentLineItemHasStopped "${segmentLine._id}"`)
+
+	} else logger.error(`segmentLineItem not found in reportSegmentLineItemHasStopped "${segmentLineItemOrId}"`)
 }
