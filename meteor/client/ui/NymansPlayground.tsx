@@ -8,7 +8,7 @@ import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 
 import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders'
 import { Segments, Segment } from '../../lib/collections/Segments'
-import { Timeline, TimelineObj } from '../../lib/collections/Timeline'
+import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
 import { TriggerType, TimelineState } from 'superfly-timeline'
 import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines'
 import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
@@ -265,7 +265,7 @@ class extends MeteorReactComponent<ISegmentLineProps & ISegmentLineTrackedState,
 	}
 })
 interface ITimeline {
-	timeline: Array<TimelineObj>
+	timeline: Array<TimelineObjGeneric>
 }
 export const ComponentTimeline = withTracker(() => {
 

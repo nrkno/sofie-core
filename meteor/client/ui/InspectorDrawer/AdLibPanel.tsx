@@ -26,6 +26,7 @@ import { RunningOrderViewKbdShortcuts } from '../RunningOrderView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { callMethod } from '../../lib/clientAPI'
+import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<SegmentUi>
@@ -337,10 +338,10 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.subscribe('runningOrderBaselineAdLibItems', {
 			runningOrderId: this.props.runningOrder._id
 		})
-		Meteor.subscribe('studioInstallations', {
+		meteorSubscribe(PubSub.studioInstallations, {
 			_id: this.props.runningOrder.studioInstallationId
 		})
-		Meteor.subscribe('showStyleBases', {
+		meteorSubscribe(PubSub.showStyleBases, {
 			_id: this.props.runningOrder.showStyleBaseId
 		})
 	}

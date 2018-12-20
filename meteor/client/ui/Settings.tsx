@@ -34,6 +34,7 @@ import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
 import { ShowStylesAPI } from '../../lib/api/showStyles'
 import { callMethod } from '../lib/clientAPI'
 import { BlueprintAPI } from '../../lib/api/blueprint'
+import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
 
 class WelcomeToSettings extends React.Component {
 	render () {
@@ -53,11 +54,11 @@ interface ISettingsMenuTrackedProps {
 	peripheralDevices: Array<PeripheralDevice>
 }
 const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps >(() => {
-	Meteor.subscribe('studioInstallations', {})
-	Meteor.subscribe('showStyleBases', {})
-	Meteor.subscribe('showStyleVariants', {})
-	Meteor.subscribe('blueprints', {})
-	Meteor.subscribe('peripheralDevices', {})
+	meteorSubscribe(PubSub.studioInstallations, {})
+	meteorSubscribe(PubSub.showStyleBases, {})
+	meteorSubscribe(PubSub.showStyleVariants, {})
+	meteorSubscribe(PubSub.blueprints, {})
+	meteorSubscribe(PubSub.peripheralDevices, {})
 
 	return {
 		studioInstallations: StudioInstallations.find({}).fetch(),

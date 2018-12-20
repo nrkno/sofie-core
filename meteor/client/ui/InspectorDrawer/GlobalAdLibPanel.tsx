@@ -29,6 +29,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { callMethod } from '../../lib/clientAPI'
+import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (aSLine: SegmentLineAdLibItemUi) => void
@@ -267,10 +268,10 @@ interface ITrackedProps {
 }
 
 export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
-	Meteor.subscribe('runningOrderBaselineAdLibItems', {
+	meteorSubscribe(PubSub.runningOrderBaselineAdLibItems, {
 		runningOrderId: props.runningOrder._id
 	})
-	Meteor.subscribe('showStyleBases', {
+	meteorSubscribe(PubSub.showStyleBases, {
 		_id: props.runningOrder.showStyleBaseId
 	})
 

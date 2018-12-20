@@ -16,6 +16,7 @@ import * as classNames from 'classnames'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import * as moment from 'moment'
 import { getQuestionOptions } from '../AfterBroadcastForm'
+import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 interface IEvaluationProps {
 }
 interface IEvaluationState {
@@ -61,7 +62,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 			if (this._sub) {
 				this._sub.stop()
 			}
-			this._sub = Meteor.subscribe('evaluations', {
+			this._sub = meteorSubscribe(PubSub.evaluations, {
 				timestamp: {
 					$gte: this.state.dateFrom,
 					$lt: this.state.dateTo,

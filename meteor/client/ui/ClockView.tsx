@@ -19,6 +19,7 @@ import { Settings } from '../../lib/Settings'
 import { getCurrentTime, objectPathGet, extendMandadory } from '../../lib/lib'
 import { SegmentItemIconContainer, SegmentItemNameContainer } from './SegmentItemIcons/SegmentItemIcon'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
 
 interface SegmentUi extends Segment {
 	items: Array<SegmentLineUi>
@@ -223,7 +224,7 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 			studioInstallationId: studioId
 		})
 	)
-	Meteor.subscribe('studioInstallations', {
+	meteorSubscribe(PubSub.studioInstallations, {
 		_id: studioId
 	})
 

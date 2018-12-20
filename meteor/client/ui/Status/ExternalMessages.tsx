@@ -17,6 +17,7 @@ import * as moment from 'moment'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { faTrash, faPause, faPlay } from '@fortawesome/fontawesome-free-solid'
 import { ExternalMessageQueueAPI } from '../../../lib/api/ExternalMessageQueue'
+import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 
 interface IExternalMessagesProps {
 }
@@ -149,7 +150,7 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 			if (this._sub) {
 				this._sub.stop()
 			}
-			this._sub = Meteor.subscribe('externalMessageQueue', {
+			this._sub = meteorSubscribe(PubSub.externalMessageQueue, {
 				studioId: this.props.studioId,
 				created: {
 					$gte: this.state.dateFrom,

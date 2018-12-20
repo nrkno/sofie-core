@@ -14,6 +14,7 @@ import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SegmentLines, SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
 import { getCurrentTime } from '../../../lib/lib'
+import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 
 export interface RONotificationEvent {
 	sourceLocator: {
@@ -26,6 +27,7 @@ export interface RONotificationEvent {
 }
 
 export class RunningOrderViewNotifier extends WithManagedTracker {
+	onRONotificationClick: ((e: RONotificationEvent) => void) | undefined = undefined
 	private _notificationList: NotificationList
 	private _notifier: NotifierObject
 
@@ -37,8 +39,6 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 
 	private _deviceStatus: _.Dictionary<Notification | undefined> = {}
 	private _deviceStatusDep: Tracker.Dependency
-
-	onRONotificationClick: ((e: RONotificationEvent) => void) | undefined = undefined
 
 	constructor (runningOrderId: string) {
 		super()
@@ -101,7 +101,7 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 		let oldDevItemIds: Array<string> = []
 		ReactiveDataHelper.registerComputation('RunningOrderView.PeripheralDevices', this.autorun(() => {
 			if (studioInstallationId) {
-				Meteor.subscribe('peripheralDevices', { studioInstallationId: studioInstallationId })
+				meteorSubscribe(PubSub.peripheralDevices, { studioInstallationId: studioInstallationId })
 			}
 			const devices = studioInstallationId ? reactiveData.getRPeripheralDevices(studioInstallationId).get() : []
 			const newDevItemIds = devices.map(item => item._id)

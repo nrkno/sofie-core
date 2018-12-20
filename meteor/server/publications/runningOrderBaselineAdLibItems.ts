@@ -2,8 +2,10 @@ import { Meteor } from 'meteor/meteor'
 
 import { RunningOrderSecurity } from '../security/runningOrders'
 import { RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
+import { meteorPublish } from './lib'
+import { PubSub } from '../../lib/api/pubsub'
 
-Meteor.publish('runningOrderBaselineAdLibItems', function (selector, token) {
+meteorPublish(PubSub.runningOrderBaselineAdLibItems, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400,'selector argument missing')
 	const modifier = {
 		fields: {
@@ -13,5 +15,5 @@ Meteor.publish('runningOrderBaselineAdLibItems', function (selector, token) {
 	if (RunningOrderSecurity.allowReadAccess(selector, token, this)) {
 		return RunningOrderBaselineAdLibItems.find(selector, modifier)
 	}
-	return this.ready()
+	return null
 })

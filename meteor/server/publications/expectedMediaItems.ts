@@ -2,10 +2,12 @@ import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { ExpectedMediaItemsSecurity } from '../security/expectedMediaItems'
+import { meteorPublish } from './lib'
+import { PubSub } from '../../lib/api/pubsub'
 
-Meteor.publish('expectedMediaItems', (selector, token) => {
+meteorPublish(PubSub.expectedMediaItems, (selector, token) => {
 	if (ExpectedMediaItemsSecurity.allowReadAccess(selector, token, this)) {
 		return ExpectedMediaItems.find(selector)
 	}
-	return this.ready()
+	return null
 })

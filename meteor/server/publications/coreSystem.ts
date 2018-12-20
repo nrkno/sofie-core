@@ -1,6 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import { getCoreSystemCursor } from '../../lib/collections/CoreSystem'
+import { meteorPublish } from './lib'
+import { PubSub } from '../../lib/api/pubsub'
 
-Meteor.publish('coreSystem', (selector) => {
+meteorPublish(PubSub.coreSystem, (selector) => {
 	return getCoreSystemCursor()
 })

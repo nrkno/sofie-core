@@ -2,8 +2,10 @@ import { Meteor } from 'meteor/meteor'
 
 import { StudioInstallationsSecurity } from '../security/studioInstallations'
 import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
+import { meteorPublish } from './lib'
+import { PubSub } from '../../lib/api/pubsub'
 
-Meteor.publish('externalMessageQueue', function (selector, token) {
+meteorPublish(PubSub.externalMessageQueue, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400,'selector argument missing')
 	const modifier = {
 		fields: {
@@ -13,5 +15,5 @@ Meteor.publish('externalMessageQueue', function (selector, token) {
 	if (StudioInstallationsSecurity.allowReadAccess(selector, token, this)) {
 		return ExternalMessageQueue.find(selector, modifier)
 	}
-	return this.ready()
+	return null
 })

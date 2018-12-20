@@ -4,8 +4,10 @@ import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { StudioInstallationsSecurity } from '../security/studioInstallations'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { meteorPublish } from './lib'
+import { PubSub } from '../../lib/api/pubsub'
 
-Meteor.publish('studioInstallations', (selector, token) => {
+meteorPublish(PubSub.studioInstallations, (selector, token) => {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier = {
 		fields: {
@@ -15,9 +17,9 @@ Meteor.publish('studioInstallations', (selector, token) => {
 	if (StudioInstallationsSecurity.allowReadAccess(selector, token, this)) {
 		return StudioInstallations.find(selector, modifier)
 	}
-	return this.ready()
+	return null
 })
-Meteor.publish('studioInstallationOfDevice', (deviceId: string, token) => {
+meteorPublish(PubSub.studioInstallationOfDevice, (deviceId: string, token) => {
 
 	if (PeripheralDeviceSecurity.allowReadAccess({_id: deviceId}, token, this)) {
 
@@ -37,5 +39,5 @@ Meteor.publish('studioInstallationOfDevice', (deviceId: string, token) => {
 			return StudioInstallations.find(selector, modifier)
 		}
 	}
-	return this.ready()
+	return null
 })

@@ -15,6 +15,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as classNames from 'classnames'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import * as moment from 'moment'
+import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 interface IUserActivityProps {
 }
 interface IUserActivityState {
@@ -60,7 +61,7 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 			if (this._sub) {
 				this._sub.stop()
 			}
-			this._sub = Meteor.subscribe('userActionsLog', {
+			this._sub = meteorSubscribe(PubSub.userActionsLog, {
 				timestamp: {
 					$gte: this.state.dateFrom,
 					$lt: this.state.dateTo,

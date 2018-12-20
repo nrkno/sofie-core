@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
 import { Link } from 'react-router-dom'
-import { TimelineObj, Timeline } from '../../../lib/collections/Timeline'
+import { TimelineObjGeneric, Timeline } from '../../../lib/collections/Timeline'
 import { clone } from 'underscore'
 import { Resolver } from 'superfly-timeline'
 import { transformTimeline } from '../../../lib/timeline'
@@ -18,11 +18,11 @@ interface ITimelineViewProps {
 }
 interface ITimelineViewState {
 	currentState?: string
-	stateData: {[key: string]: TimelineObj[]}
+	stateData: {[key: string]: TimelineObjGeneric[]}
 }
 interface ITimelineViewTrackedProps {
 	studio?: StudioInstallation,
-	timeline: TimelineObj[]
+	timeline: TimelineObjGeneric[]
 }
 
 const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState, ITimelineViewTrackedProps>((props: ITimelineViewProps) => {

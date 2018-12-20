@@ -3,8 +3,10 @@ import { check } from 'meteor/check'
 
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
+import { meteorPublish } from './lib'
+import { PubSub } from '../../lib/api/pubsub'
 
-Meteor.publish('peripheralDeviceCommands', function (deviceId: string, token) {
+meteorPublish(PubSub.peripheralDeviceCommands, function (deviceId: string, token) {
 	if (!deviceId) throw new Meteor.Error(400,'deviceId argument missing')
 	check(deviceId, String)
 
@@ -14,14 +16,13 @@ Meteor.publish('peripheralDeviceCommands', function (deviceId: string, token) {
 		}
 	}
 
-
 	if (PeripheralDeviceSecurity.allowReadAccess({_id: deviceId}, token, this)) {
 		return PeripheralDeviceCommands.find({deviceId: deviceId}, modifier)
 
 	}
-	return this.ready()
+	return null
 })
-Meteor.publish('allPeripheralDeviceCommands', function () { // tmp: dev only, should be removed before release
+meteorPublish(PubSub.allPeripheralDeviceCommands, function () { // tmp: dev only, should be removed before release
 
 	const modifier = {
 		fields: {
@@ -29,8 +30,5 @@ Meteor.publish('allPeripheralDeviceCommands', function () { // tmp: dev only, sh
 		}
 	}
 
-
 	return PeripheralDeviceCommands.find({}, modifier)
-
-	// return this.ready()
 })
