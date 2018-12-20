@@ -9,7 +9,7 @@ import { setMeteorMethods } from '../methods'
 import { logger } from '../logging'
 import { updateTimeline } from './playout'
 import * as moment from 'moment'
-import { TimelineObj } from '../../lib/collections/Timeline'
+import { TimelineObjGeneric, TimelineObjRecording, TimelineObjType } from '../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
 import {
 	ChannelFormat,
@@ -24,6 +24,7 @@ import { promisify } from 'util'
 
 const deleteRequest = promisify(request.delete)
 
+// TODO: Allow arbitrary layers:
 const LLayerRecord = '_internal_ccg_record_consumer'
 const LLayerInput = '_internal_ccg_record_input'
 
@@ -37,7 +38,7 @@ function getStudioConfig (studio: StudioInstallation): ITestToolsConfig {
 	return config
 }
 
-export function generateRecordingTimelineObjs (studio: StudioInstallation, recording: RecordedFile): TimelineObj[] {
+export function generateRecordingTimelineObjs (studio: StudioInstallation, recording: RecordedFile): TimelineObjRecording[] {
 	if (!studio) throw new Meteor.Error(404, `Studio was not defined!`)
 	if (!recording) throw new Meteor.Error(404, `Recording was not defined!`)
 
@@ -49,16 +50,16 @@ export function generateRecordingTimelineObjs (studio: StudioInstallation, recor
 	}
 
 	const IDs = {
-		record: getHash(studio._id + LLayerRecord),
-		input: getHash(studio._id + LLayerInput)
+		record: getHash(recording._id + LLayerRecord),
+		input: getHash(recording._id + LLayerInput)
 	}
 
 	return [
-		literal<TimelineObjCCGRecord & TimelineObj>({
+		literal<TimelineObjCCGRecord & TimelineObjRecording>({
 			_id: IDs.record,
 			id: '',
 			siId: studio._id,
-			roId: '',
+			objectType: TimelineObjType.RECORDING,
 			trigger: {
 				type: TriggerType.TIME_ABSOLUTE,
 				value: recording.startedAt
@@ -75,11 +76,11 @@ export function generateRecordingTimelineObjs (studio: StudioInstallation, recor
 				}
 			}
 		}),
-		literal<TimelineObjCCGInput & TimelineObj>({
+		literal<TimelineObjCCGInput & TimelineObjRecording>({
 			_id: IDs.input,
 			id: '',
 			siId: studio._id,
-			roId: '',
+			objectType: TimelineObjType.RECORDING,
 			trigger: {
 				type: TriggerType.LOGICAL,
 				value: '1'

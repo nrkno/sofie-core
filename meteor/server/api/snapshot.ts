@@ -21,7 +21,7 @@ import { getCurrentTime, Time, formatDateAsTimecode, formatDateTime, fixValidPat
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
-import { Timeline, TimelineObj } from '../../lib/collections/Timeline'
+import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
 import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { ServerPeripheralDeviceAPI } from './peripheralDevice'
@@ -66,7 +66,7 @@ interface DebugSnapshot {
 	snapshot: SnapshotDebug
 	system: SystemSnapshot
 	activeRunningOrders: Array<RunningOrderSnapshot>
-	timeline: Array<TimelineObj>
+	timeline: Array<TimelineObjGeneric>
 	userActionLog: Array<UserActionsLogItem>
 	deviceSnaphots: Array<DeviceSnapshot>
 }

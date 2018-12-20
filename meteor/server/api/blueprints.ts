@@ -4,11 +4,11 @@ import { SaferEval } from 'safer-eval'
 import { SegmentLine, DBSegmentLine, SegmentLineNote, SegmentLineNoteType, SegmentLines } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
-import { formatDateAsTimecode, formatDurationAsTimecode, literal, normalizeArray, getCurrentTime, OmitId, trimIfString } from '../../lib/lib'
+import { formatDateAsTimecode, formatDurationAsTimecode, literal, normalizeArray, getCurrentTime, OmitId, trimIfString, extendMandadory } from '../../lib/lib'
 import { getHash } from '../lib'
 import { logger } from '../logging'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-import { TimelineObj } from '../../lib/collections/Timeline'
+import { TimelineObjGeneric, TimelineObjRunningOrder, TimelineObjType } from '../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
@@ -55,7 +55,7 @@ import { Segment } from '../../lib/collections/Segments'
 import { AsRunLogEvent, AsRunLog } from '../../lib/collections/AsRunLog'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 import {
-	DeviceOptions as PlayoutDeviceSettingsDevice
+	DeviceOptions as PlayoutDeviceSettingsDevice, Timeline
 } from 'timeline-state-resolver-types'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
@@ -924,7 +924,7 @@ export function postProcessSegmentLineItems (innerContext: IRunningOrderContext,
 		if (item.content && item.content.timelineObjects) {
 			let timelineUniqueIds: { [id: string]: true } = {}
 			item.content.timelineObjects = _.map(_.compact(item.content.timelineObjects), (o: TimelineObjectCoreExt) => {
-				const item = convertTimelineObject(o)
+				const item = convertTimelineObject(innerContext.runningOrder._id, o)
 
 				if (!item._id) item._id = innerContext.getHashId(blueprintId + '_' + (i++))
 
@@ -961,7 +961,7 @@ export function postProcessSegmentLineAdLibItems (innerContext: IRunningOrderCon
 		if (item.content && item.content.timelineObjects) {
 			let timelineUniqueIds: { [id: string]: true } = {}
 			item.content.timelineObjects = _.map(_.compact(item.content.timelineObjects), (o: TimelineObjectCoreExt) => {
-				const item = convertTimelineObject(o)
+				const item = convertTimelineObject(innerContext.runningOrder._id, o)
 
 				if (!item._id) item._id = innerContext.getHashId(blueprintId + '_adlib_' + (i++))
 
@@ -976,25 +976,24 @@ export function postProcessSegmentLineAdLibItems (innerContext: IRunningOrderCon
 	})
 }
 
-function convertTimelineObject (o: TimelineObjectCoreExt): TimelineObj {
-	let item: TimelineObj = {
+function convertTimelineObject (runningOrderId: string, o: TimelineObjectCoreExt): TimelineObjRunningOrder {
+	let item: TimelineObjRunningOrder = extendMandadory<TimelineObjectCoreExt, TimelineObjRunningOrder>(o, {
 		_id: o.id,
-		siId: '',
-		roId: '',
-		...o,
-		id: '' // To makes types match
-	}
+		siId: '', // set later
+		roId: runningOrderId,
+		objectType: TimelineObjType.RUNNINGORDER,
+	})
 	delete item['id']
 
 	return item
 }
 
-export function postProcessSegmentLineBaselineItems (innerContext: RunningOrderContext, baselineItems: TimelineObj[]): TimelineObj[] {
+export function postProcessSegmentLineBaselineItems (innerContext: RunningOrderContext, baselineItems: Timeline.TimelineObject[]): TimelineObjGeneric[] {
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
 
-	return _.map(_.compact(baselineItems), (o: TimelineObj): TimelineObj => {
-		const item: TimelineObj = convertTimelineObject(o)
+	return _.map(_.compact(baselineItems), (o: TimelineObjGeneric): TimelineObjGeneric => {
+		const item: TimelineObjGeneric = convertTimelineObject(innerContext.runningOrder._id, o)
 
 		if (!item._id) item._id = innerContext.getHashId('baseline_' + (i++))
 

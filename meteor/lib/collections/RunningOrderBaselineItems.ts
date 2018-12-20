@@ -2,14 +2,14 @@ import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import { TimelineObj } from './Timeline'
+import { TimelineObjGeneric } from './Timeline'
 
 export interface RunningOrderBaselineItem {
 	_id: string
 	/** The running order this item belongs to */
 	runningOrderId: string
 
-	objects: TimelineObj[]
+	objects: TimelineObjGeneric[]
 }
 
 export const RunningOrderBaselineItems: TransformedCollection<RunningOrderBaselineItem, RunningOrderBaselineItem>

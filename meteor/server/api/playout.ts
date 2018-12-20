@@ -21,16 +21,21 @@ import { getCurrentTime,
 	asyncCollectionFindFetch,
 	waitForPromise,
 	asyncCollectionFindOne,
-	pushOntoPath
+	pushOntoPath,
+	extendMandadory
 } from '../../lib/lib'
 import {
 	Timeline,
-	TimelineObj,
+	TimelineObjGeneric,
 	TimelineContentTypeOther,
 	TimelineObjSegmentLineAbstract,
 	TimelineObjSegmentLineItemAbstract,
 	TimelineObjGroup,
 	TimelineObjGroupSegmentLine,
+	TimelineObjType,
+	TimelineObjRunningOrder,
+	TimelineObjRecording,
+	TimelineObjStat,
 } from '../../lib/collections/Timeline'
 import {
 	TimelineContentTypeLawo,
@@ -57,7 +62,8 @@ import {
 	SegmentLineItemLifespan,
 	SegmentLineHoldMode,
 	TimelineObjHoldMode,
-	MOS
+	MOS,
+	TimelineObjectCoreExt
 } from 'tv-automation-sofie-blueprints-integration'
 import { loadBlueprints, postProcessSegmentLineAdLibItems, postProcessSegmentLineBaselineItems, RunningOrderContext, getBlueprintOfRunningOrder, SegmentLineContext } from './blueprints'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
@@ -355,7 +361,7 @@ export namespace ServerPlayoutAPI {
 			const context = new RunningOrderContext(runningOrder)
 
 			const res = blueprint.getBaseline(context)
-			const baselineItems = postProcessSegmentLineBaselineItems(context, res.baselineItems as any as TimelineObj[]) // TODO - types used here
+			const baselineItems = postProcessSegmentLineBaselineItems(context, res.baselineItems)
 			const adlibItems = postProcessSegmentLineAdLibItems(context, res.adLibItems, 'baseline')
 
 			// TODO - should any notes be logged as a warning, or is that done already?
@@ -1199,7 +1205,18 @@ export namespace ServerPlayoutAPI {
 
 		let newSegmentLineItem = convertAdLibToSLineItem(slItem, segLine, false)
 		if (newSegmentLineItem.content && newSegmentLineItem.content.timelineObjects) {
-			newSegmentLineItem.content.timelineObjects = prefixAllObjectIds(_.compact(newSegmentLineItem.content.timelineObjects), newSegmentLineItem._id)
+			newSegmentLineItem.content.timelineObjects = prefixAllObjectIds(
+				_.compact(
+					_.map(newSegmentLineItem.content.timelineObjects, (obj) => {
+						return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
+							_id: obj.id || obj['_id'],
+							siId: '', // set later
+							objectType: TimelineObjType.RUNNINGORDER
+						})
+					})
+				),
+				newSegmentLineItem._id
+			)
 		}
 
 		// disable the original SLI if from the same SL
@@ -1835,7 +1852,7 @@ function getOrderedSegmentLineItem (line: SegmentLine): Array<SegmentLineItemRes
 	const itemMap: { [key: string]: SegmentLineItem } = {}
 	items.forEach(i => itemMap[i._id] = i)
 
-	const objs: Array<TimelineObj> = items.map(
+	const objs: Array<TimelineObjRunningOrder> = items.map(
 		i => clone(createSegmentLineItemGroup(i, i.durationOverride || i.duration || i.expectedDuration || 0))
 	)
 	objs.forEach(o => {
@@ -2081,7 +2098,18 @@ function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): SegmentLine
 
 	if (newAdLibItem.content && newAdLibItem.content.timelineObjects) {
 		let contentObjects = newAdLibItem.content.timelineObjects
-		const objs = prefixAllObjectIds(_.compact(contentObjects), newId + '_')
+		const objs = prefixAllObjectIds(
+			_.compact(
+				_.map(contentObjects, (obj) => {
+					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
+						_id: obj.id || obj['_id'],
+						siId: '', // set later
+						objectType: TimelineObjType.RUNNINGORDER
+					})
+				})
+			),
+			newId + '_'
+		)
 		newAdLibItem.content.timelineObjects = objs
 	}
 	return newAdLibItem
@@ -2110,7 +2138,15 @@ function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem | SegmentLineI
 
 	if (newSLineItem.content && newSLineItem.content.timelineObjects) {
 		let contentObjects = newSLineItem.content.timelineObjects
-		const objs = prefixAllObjectIds(_.compact(contentObjects), newId + '_')
+		const objs = prefixAllObjectIds(_.compact(
+			_.map(contentObjects, (obj) => {
+				return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
+					_id: obj.id || obj['_id'],
+					siId: '',
+					objectType: TimelineObjType.RUNNINGORDER
+				})
+			})
+		), newId + '_')
 		newSLineItem.content.timelineObjects = objs
 	}
 	return newSLineItem
@@ -2140,12 +2176,13 @@ function segmentLineStoppedPlaying (roId: string, segmentLine: SegmentLine, stop
 	}
 }
 
-function createSegmentLineGroup (segmentLine: SegmentLine, duration: number | string): TimelineObj {
-	let slGrp = literal<TimelineObjGroupSegmentLine>({
+function createSegmentLineGroup (segmentLine: SegmentLine, duration: number | string): TimelineObjGroupSegmentLine & TimelineObjRunningOrder {
+	let slGrp = literal<TimelineObjGroupSegmentLine & TimelineObjRunningOrder>({
 		_id: getSlGroupId(segmentLine),
 		id: '',
 		siId: '', // added later
-		roId: '', // added later
+		roId: segmentLine.runningOrderId,
+		objectType: TimelineObjType.RUNNINGORDER,
 		trigger: {
 			type: TriggerType.TIME_ABSOLUTE,
 			value: 'now'
@@ -2164,12 +2201,16 @@ function createSegmentLineGroup (segmentLine: SegmentLine, duration: number | st
 
 	return slGrp
 }
-function createSegmentLineGroupFirstObject (segmentLine: SegmentLine, segmentLineGroup: TimelineObj): TimelineObj {
+function createSegmentLineGroupFirstObject (
+	segmentLine: SegmentLine,
+	segmentLineGroup: TimelineObjRunningOrder
+): TimelineObjSegmentLineAbstract {
 	return literal<TimelineObjSegmentLineAbstract>({
 		_id: getSlFirstObjectId(segmentLine),
 		id: '',
 		siId: '', // added later
-		roId: '', // added later
+		roId: segmentLine.runningOrderId,
+		objectType: TimelineObjType.RUNNINGORDER,
 		trigger: {
 			type: TriggerType.TIME_ABSOLUTE,
 			value: 0
@@ -2185,12 +2226,17 @@ function createSegmentLineGroupFirstObject (segmentLine: SegmentLine, segmentLin
 		slId: segmentLine._id
 	})
 }
-function createSegmentLineItemGroupFirstObject (segmentLineItem: SegmentLineItem, segmentLineItemGroup: TimelineObj, firstObjClasses?: string[]): TimelineObj {
+function createSegmentLineItemGroupFirstObject (
+	segmentLineItem: SegmentLineItem,
+	segmentLineItemGroup: TimelineObjRunningOrder,
+	firstObjClasses?: string[]
+): TimelineObjSegmentLineItemAbstract {
 	return literal<TimelineObjSegmentLineItemAbstract>({
 		_id: getSliFirstObjectId(segmentLineItem),
 		id: '',
 		siId: '', // added later
-		roId: '', // added later
+		roId: segmentLineItem.runningOrderId,
+		objectType: TimelineObjType.RUNNINGORDER,
 		trigger: {
 			type: TriggerType.TIME_ABSOLUTE,
 			value: 0
@@ -2210,9 +2256,9 @@ function createSegmentLineItemGroupFirstObject (segmentLineItem: SegmentLineItem
 function createSegmentLineItemGroup (
 	item: SegmentLineItem,
 	duration: number | string,
-	segmentLineGroup?: TimelineObj
-): TimelineObj {
-	return literal<TimelineObjGroup>({
+	segmentLineGroup?: TimelineObjRunningOrder
+): TimelineObjGroup & TimelineObjRunningOrder {
+	return literal<TimelineObjGroup & TimelineObjRunningOrder>({
 		_id: getSliGroupId(item),
 		id: '',
 		content: {
@@ -2222,7 +2268,8 @@ function createSegmentLineItemGroup (
 		inGroup: segmentLineGroup && segmentLineGroup._id,
 		isGroup: true,
 		siId: '',
-		roId: '',
+		roId: item.runningOrderId,
+		objectType: TimelineObjType.RUNNINGORDER,
 		trigger: item.trigger,
 		duration: duration,
 		LLayer: item.sourceLayerId,
@@ -2232,13 +2279,16 @@ function createSegmentLineItemGroup (
 	})
 }
 
-function transformBaselineItemsIntoTimeline (items: RunningOrderBaselineItem[]): Array<TimelineObj> {
-	let timelineObjs: Array<TimelineObj> = []
+function transformBaselineItemsIntoTimeline (ro: RunningOrder, items: RunningOrderBaselineItem[]): Array<TimelineObjRunningOrder> {
+	let timelineObjs: Array<TimelineObjRunningOrder> = []
 	_.each(items, (item: RunningOrderBaselineItem) => {
 		// the baseline items are layed out without any grouping
-		_.each(item.objects, (o: TimelineObj) => {
+		_.each(item.objects, (o: TimelineObjGeneric) => {
 			// do some transforms maybe?
-			timelineObjs.push(o)
+			timelineObjs.push(extendMandadory<TimelineObjGeneric, TimelineObjRunningOrder>(o, {
+				roId: ro._id,
+				objectType: TimelineObjType.RUNNINGORDER
+			}))
 		})
 	})
 	return timelineObjs
@@ -2251,8 +2301,16 @@ interface TransformTransitionProps {
 	transitionKeepalive?: number | null
 }
 
-function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjClasses: string[], segmentLineGroup?: TimelineObj, transitionProps?: TransformTransitionProps, holdState?: RunningOrderHoldState, showHoldExcept?: boolean): Array<TimelineObj> {
-	let timelineObjs: Array<TimelineObj> = []
+function transformSegmentLineIntoTimeline (
+	runningOrder: RunningOrder,
+	items: SegmentLineItem[],
+	firstObjClasses: string[],
+	segmentLineGroup?: TimelineObjRunningOrder,
+	transitionProps?: TransformTransitionProps,
+	holdState?: RunningOrderHoldState,
+	showHoldExcept?: boolean
+): Array<TimelineObjRunningOrder> {
+	let timelineObjs: Array<TimelineObjRunningOrder> = []
 
 	const isHold = holdState === RunningOrderHoldState.ACTIVE
 	const allowTransition = transitionProps && transitionProps.allowed && !isHold && holdState !== RunningOrderHoldState.COMPLETE
@@ -2274,7 +2332,7 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjCla
 			item.content &&
 			item.content.timelineObjects
 		) {
-			let tos = item.content.timelineObjects
+			let tos: TimelineObjectCoreExt[] = item.content.timelineObjects
 
 			const isInfiniteContinuation = item.infiniteId && item.infiniteId !== item._id
 			if (item.trigger.type === TriggerType.TIME_ABSOLUTE && item.trigger.value === 0 && !isInfiniteContinuation) {
@@ -2296,7 +2354,7 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjCla
 			if (!item.virtual) {
 				timelineObjs.push(createSegmentLineItemGroupFirstObject(item, segmentLineItemGroup, firstObjClasses))
 
-				_.each(tos, (o: TimelineObj) => {
+				_.each(tos, (o: TimelineObjectCoreExt) => {
 					if (o.holdMode) {
 						if (isHold && !showHoldExcept && o.holdMode === TimelineObjHoldMode.EXCEPT) {
 							return
@@ -2305,18 +2363,21 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjCla
 							return
 						}
 					}
-
-					if (segmentLineGroup) {
-						o.inGroup = segmentLineItemGroup._id
-
+					// if (segmentLineGroup) {
 						// If we are leaving a HOLD, the transition was suppressed, so force it to run now
 						// if (item.isTransition && holdState === RunningOrderHoldState.COMPLETE) {
 						// 	o.trigger.value = TriggerType.TIME_ABSOLUTE
 						// 	o.trigger.value = 'now'
 						// }
-					}
+					// }
 
-					timelineObjs.push(o)
+					timelineObjs.push(extendMandadory<TimelineObjectCoreExt, TimelineObjRunningOrder>(o, {
+						_id: o.id,
+						siId: '', // set later
+						inGroup: segmentLineGroup ? segmentLineItemGroup._id : undefined,
+						roId: runningOrder._id,
+						objectType: TimelineObjType.RUNNINGORDER
+					}))
 				})
 			}
 		}
@@ -2324,7 +2385,7 @@ function transformSegmentLineIntoTimeline (items: SegmentLineItem[], firstObjCla
 	return timelineObjs
 }
 
-export function addLookeaheadObjectsToTimeline (roData: RoData, studioInstallation: StudioInstallation, timelineObjs: TimelineObj[]) {
+export function addLookeaheadObjectsToTimeline (roData: RoData, studioInstallation: StudioInstallation, timelineObjs: TimelineObjGeneric[]) {
 	let activeRunningOrder = roData.runningOrder
 
 	_.each(studioInstallation.mappings || {}, (m, l) => {
@@ -2335,7 +2396,7 @@ export function addLookeaheadObjectsToTimeline (roData: RoData, studioInstallati
 		}
 
 		for (let i = 0; i < res.length; i++) {
-			const r = clone(res[i].obj) as TimelineObj
+			const r = clone(res[i].obj) as TimelineObjGeneric
 
 			r._id = 'lookahead_' + i + '_' + r._id
 			r.priority = 0.1
@@ -2360,7 +2421,14 @@ export function addLookeaheadObjectsToTimeline (roData: RoData, studioInstallati
 	})
 }
 
-export function findLookaheadForLLayer (roData: RoData, layer: string, mode: LookaheadMode): {obj: TimelineObj, slId: string}[] {
+export function findLookaheadForLLayer (
+	roData: RoData,
+	layer: string,
+	mode: LookaheadMode
+): Array<{
+	obj: TimelineObjectCoreExt,
+	slId: string
+}> {
 	let activeRunningOrder: RunningOrder = roData.runningOrder
 
 	if (mode === undefined || mode === LookaheadMode.NONE) {
@@ -2377,7 +2445,7 @@ export function findLookaheadForLLayer (roData: RoData, layer: string, mode: Loo
 		return !!(
 			sli.content &&
 			sli.content.timelineObjects &&
-			_.find(sli.content.timelineObjects as TimelineObj[], (o) => (o && o.LLayer === layer))
+			_.find(sli.content.timelineObjects, (o) => (o && o.LLayer === layer))
 		)
 	})
 	if (layerItems.length === 0) {
@@ -2492,18 +2560,18 @@ export function findLookaheadForLLayer (roData: RoData, layer: string, mode: Loo
 		return []
 	}
 
-	let findObjectForSegmentLine = (): TimelineObj[] => {
+	let findObjectForSegmentLine = (): TimelineObjectCoreExt[] => {
 		if (!sliGroup || sliGroup.items.length === 0) {
 			return []
 		}
 
-		let rawObjs: (TimelineObj | null)[] = []
+		let rawObjs: (TimelineObjectCoreExt | null)[] = []
 		sliGroup.items.forEach(i => {
 			if (i.content && i.content.timelineObjects) {
 				rawObjs = rawObjs.concat(i.content.timelineObjects)
 			}
 		})
-		let allObjs = _.compact(rawObjs)
+		let allObjs: TimelineObjectCoreExt[] = _.compact(rawObjs)
 
 		if (allObjs.length === 0) {
 			// Should never happen. suggests something got 'corrupt' during this process
@@ -2523,7 +2591,7 @@ export function findLookaheadForLLayer (roData: RoData, layer: string, mode: Loo
 				const transObj2 = transObj ? sliGroup.items.find(l => l._id === transObj._id) : undefined
 				const hasTransition = allowTransition && transObj2 && transObj2.content && transObj2.content.timelineObjects && transObj2.content.timelineObjects.find(o => o != null && o.LLayer === layer)
 
-				const res: TimelineObj[] = []
+				const res: TimelineObjectCoreExt[] = []
 				orderedItems.forEach(i => {
 					if (!sliGroup || (!allowTransition && i.isTransition)) {
 						return
@@ -2553,7 +2621,7 @@ export function findLookaheadForLLayer (roData: RoData, layer: string, mode: Loo
 		return allObjs
 	}
 
-	const res: {obj: TimelineObj, slId: string}[] = []
+	const res: {obj: TimelineObjectCoreExt, slId: string}[] = []
 
 	const slId = sliGroup.slId
 	const objs = findObjectForSegmentLine()
@@ -2627,7 +2695,7 @@ export function updateTimelineFromMosData (roId: string, changedLines?: Array<st
 	updateTimelineFromMosDataTimeouts[roId] = data
 }
 
-function prefixAllObjectIds (objList: TimelineObj[], prefix: string) {
+function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], prefix: string): T[] {
 	const changedIds = objList.map(o => o._id)
 
 	let replaceIds = (str: string) => {
@@ -2666,125 +2734,157 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 = syncFunctionIgnore(function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 	logger.debug('updateTimeline running...')
 
-	let timelineObjs: Array<TimelineObj> = []
+	let timelineObjs: Array<TimelineObjGeneric> = []
 
-	const promiseActiveRunningOrder = asyncCollectionFindOne(RunningOrders, {
-		studioInstallationId: studioInstallationId,
-		active: true
-	})
-	let promiseStudioInstallation = asyncCollectionFindOne(StudioInstallations, studioInstallationId)
-
-	let activeRunningOrder = waitForPromise(promiseActiveRunningOrder)
-	let studioInstallation = waitForPromise(promiseStudioInstallation)
-
+	let studioInstallation = StudioInstallations.findOne(studioInstallationId)
 	if (!studioInstallation) throw new Meteor.Error(404, 'studioInstallation "' + studioInstallationId + '" not found!')
-	if (activeRunningOrder) {
 
-		// remove anything not related to active running order:
-		let promiseClearTimeline: Promise<void> = asyncCollectionRemove(Timeline, {
-			siId: studioInstallationId,
-			roId: {
-				$not: {
-					$eq: activeRunningOrder._id
-				}
-			}
-		})
-		// Start with fetching stuff from database:
-		let promiseBaselineItems: Promise<Array<RunningOrderBaselineItem>> = asyncCollectionFindFetch(RunningOrderBaselineItems, {
-			runningOrderId: activeRunningOrder._id
-		})
-		let roData: RoData = activeRunningOrder.fetchAllData()
+	const applyTimelineObjs = (_timelineObjs: TimelineObjGeneric[]) => {
+		timelineObjs = timelineObjs.concat(_timelineObjs)
+	}
+	waitForPromise(
+		Promise.all([
+			getTimelineRunningOrder(studioInstallation).then(applyTimelineObjs),
+			getTimelineRecording(studioInstallation).then(applyTimelineObjs)
+		])
+	)
 
-		// Default timelineobjects:
-		let baselineItems = waitForPromise(promiseBaselineItems)
+	processTimelineObjects(studioInstallation, timelineObjs)
 
-		timelineObjs = timelineObjs.concat(buildTimelineObjs(roData, baselineItems))
-
-		// next (on pvw (or on pgm if first))
-		addLookeaheadObjectsToTimeline(roData, studioInstallation, timelineObjs)
-
-		// console.log(JSON.stringify(timelineObjs))
-
-		processTimelineObjects(studioInstallation, activeRunningOrder, timelineObjs)
-
-		// logger.debug('timelineObjs', timelineObjs)
-
-		if (forceNowToTime) { // used when autoNexting
-			setNowToTimeInObjects(timelineObjs, forceNowToTime)
-		}
-
-		// TODO: Specific implementations, to be refactored into Blueprints:
-		setLawoObjectsTriggerValue(timelineObjs, activeRunningOrder.currentSegmentLineId || undefined)
-		timelineObjs = validateNoraPreload(timelineObjs)
-
-		waitForPromise(promiseClearTimeline)
-
-		// console.log('full', JSON.stringify(timelineObjs, undefined, 4))
-
-		saveIntoDb<TimelineObj, TimelineObj>(Timeline, {
-			roId: activeRunningOrder._id
-		}, timelineObjs, {
-			beforeUpdate: (o: TimelineObj, oldO: TimelineObj): TimelineObj => {
-				// do not overwrite trigger when the trigger has been denowified
-				if (o.trigger.value === 'now' && oldO.trigger.setFromNow) {
-					o.trigger.type = oldO.trigger.type
-					o.trigger.value = oldO.trigger.value
-				}
-				return o
-			}
-		})
-	} else {
-		// remove everything:
-		Timeline.remove({
-			siId: studioInstallationId,
-			statObject: {$ne: true},
-			recordingObject: {$ne: true}
-		})
+	if (forceNowToTime) { // used when autoNexting
+		setNowToTimeInObjects(timelineObjs, forceNowToTime)
 	}
 
-	// Ensure recording is running
-	const activeRecording = RecordedFiles.findOne({
-		stoppedAt: {$exists: false}
-	}, {
-		sort: {
-			startedAt: 1 // TODO - is order correct?
+	saveIntoDb<TimelineObjGeneric, TimelineObjGeneric>(Timeline, {
+		siId: studioInstallation._id
+	}, timelineObjs, {
+		beforeUpdate: (o: TimelineObjGeneric, oldO: TimelineObjGeneric): TimelineObjGeneric => {
+			// do not overwrite trigger when the trigger has been denowified
+			if (o.trigger.value === 'now' && oldO.trigger.setFromNow) {
+				o.trigger.type = oldO.trigger.type
+				o.trigger.value = oldO.trigger.value
+			}
+			return o
 		}
 	})
-	if (activeRecording) {
-		const recordingTimelineObjs = generateRecordingTimelineObjs(studioInstallation, activeRecording)
 
-		processTimelineObjects(studioInstallation, undefined, recordingTimelineObjs)
-		timelineObjs = timelineObjs.concat(recordingTimelineObjs)
-
-		saveIntoDb<TimelineObj, TimelineObj>(Timeline, {
-			siId: studioInstallationId,
-			recordingObject: true
-		}, recordingTimelineObjs, {
-			beforeUpdate: (o: TimelineObj, oldO: TimelineObj): TimelineObj => {
-				// do not overwrite trigger when the trigger has been denowified
-				if (o.trigger.value === 'now' && oldO.trigger.setFromNow) {
-					o.trigger.type = oldO.trigger.type
-					o.trigger.value = oldO.trigger.value
-				}
-				return o
-			}
-		})
-	} else {
-		Timeline.remove({
-			siId: studioInstallationId,
-			recordingObject: true
-		})
-	}
-
-	// afterUpdateTimeline(studioInstallation)
 	afterUpdateTimeline(studioInstallation, timelineObjs)
 	logger.debug('updateTimeline done!')
 })
 
-export function buildTimelineObjs (roData: RoData, baselineItems: RunningOrderBaselineItem[]) {
-	let timelineObjs: Array<TimelineObj> = []
-	let currentSegmentLineGroup: TimelineObj | undefined
-	let previousSegmentLineGroup: TimelineObj | undefined
+/**
+ * Returns timeline objects related to runningOrders in a studio
+ */
+function getTimelineRunningOrder (studioInstallation: StudioInstallation): Promise<TimelineObjRunningOrder[]> {
+
+	return new Promise((resolve, reject) => {
+		try {
+			let timelineObjs: Array<TimelineObjGeneric> = []
+
+			const promiseActiveRunningOrder = asyncCollectionFindOne(RunningOrders, {
+				studioInstallationId: studioInstallation._id,
+				active: true
+			})
+			let promiseStudioInstallation = asyncCollectionFindOne(StudioInstallations, studioInstallation._id)
+
+			let activeRunningOrder = waitForPromise(promiseActiveRunningOrder)
+
+			if (activeRunningOrder) {
+
+				// remove anything not related to active running order:
+				let promiseClearTimeline: Promise<void> = asyncCollectionRemove(Timeline, {
+					siId: studioInstallation._id,
+					roId: {
+						$not: {
+							$eq: activeRunningOrder._id
+						}
+					}
+				})
+				// Start with fetching stuff from database:
+				let promiseBaselineItems: Promise<Array<RunningOrderBaselineItem>> = asyncCollectionFindFetch(RunningOrderBaselineItems, {
+					runningOrderId: activeRunningOrder._id
+				})
+				let roData: RoData = activeRunningOrder.fetchAllData()
+
+				// Default timelineobjects:
+				let baselineItems = waitForPromise(promiseBaselineItems)
+
+				timelineObjs = timelineObjs.concat(buildTimelineObjsForRunningOrder(roData, baselineItems))
+
+				// next (on pvw (or on pgm if first))
+				addLookeaheadObjectsToTimeline(roData, studioInstallation, timelineObjs)
+
+				// console.log(JSON.stringify(timelineObjs))
+
+				// TODO: Specific implementations, to be refactored into Blueprints:
+				setLawoObjectsTriggerValue(timelineObjs, activeRunningOrder.currentSegmentLineId || undefined)
+				timelineObjs = validateNoraPreload(timelineObjs)
+
+				waitForPromise(promiseClearTimeline)
+
+				// console.log('full', JSON.stringify(timelineObjs, undefined, 4))
+
+				resolve(
+					_.map<TimelineObjGeneric, TimelineObjRunningOrder>(timelineObjs, (timelineObj) => {
+
+						return extendMandadory<TimelineObjGeneric, TimelineObjRunningOrder>(timelineObj, {
+							roId: activeRunningOrder._id,
+							objectType: TimelineObjType.RUNNINGORDER
+						})
+					})
+				)
+			} else {
+				resolve([])
+				// remove everything:
+				// Timeline.remove({
+				// 	siId: studioInstallationId,
+				// 	objectType: TimelineObjType.RUNNINGORDER,
+				// 	statObject: {$ne: true},
+				// })
+			}
+		} catch (e) {
+			reject(e)
+		}
+	})
+
+}
+/**
+ * Returns timeline objects related to Test Recordings in a studio
+ */
+function getTimelineRecording (studioInstallation: StudioInstallation, forceNowToTime?: Time): Promise<TimelineObjRecording[]> {
+
+	return new Promise((resolve, reject) => {
+		try {
+			let recordingTimelineObjs: TimelineObjRecording[] = []
+
+			const activeRecordings = RecordedFiles.find({ // TODO: ask Julian if this is okay, having multiple recordings at the same time?
+				studioId: studioInstallation._id,
+				stoppedAt: {$exists: false}
+			}, {
+				sort: {
+					startedAt: 1 // TODO - is order correct?
+				}
+			}).forEach((activeRecording) => {
+				recordingTimelineObjs = recordingTimelineObjs.concat(
+					generateRecordingTimelineObjs(studioInstallation, activeRecording)
+				)
+			})
+
+			resolve(recordingTimelineObjs)
+		} catch (e) {
+			reject(e)
+		}
+	})
+	// Timeline.remove({
+	// 	siId: studioInstallationId,
+	// 	recordingObject: true
+	// })
+}
+
+export function buildTimelineObjsForRunningOrder (roData: RoData, baselineItems: RunningOrderBaselineItem[]): TimelineObjRunningOrder[] {
+	let timelineObjs: Array<TimelineObjRunningOrder> = []
+	let currentSegmentLineGroup: TimelineObjRunningOrder | undefined
+	let previousSegmentLineGroup: TimelineObjRunningOrder | undefined
 
 	let currentSegmentLine: SegmentLine | undefined
 	let nextSegmentLine: SegmentLine | undefined
@@ -2794,11 +2894,12 @@ export function buildTimelineObjs (roData: RoData, baselineItems: RunningOrderBa
 
 	let activeRunningOrder = roData.runningOrder
 
-	timelineObjs.push(literal<TimelineObj>({
-		siId: '',
-		roId: '',
+	timelineObjs.push(literal<TimelineObjRunningOrder>({
+		siId: '', // set later
+		id: '', // set later
+		objectType: TimelineObjType.RUNNINGORDER,
+		roId: roData.runningOrder._id,
 		_id: activeRunningOrder._id + '_status',
-		id: '',
 		trigger: {
 			type: TriggerType.LOGICAL,
 			value: '1'
@@ -2827,7 +2928,7 @@ export function buildTimelineObjs (roData: RoData, baselineItems: RunningOrderBa
 	}
 
 	if (baselineItems) {
-		timelineObjs = timelineObjs.concat(transformBaselineItemsIntoTimeline(baselineItems))
+		timelineObjs = timelineObjs.concat(transformBaselineItemsIntoTimeline(roData.runningOrder, baselineItems))
 	}
 
 	// Currently playing:
@@ -2856,9 +2957,9 @@ export function buildTimelineObjs (roData: RoData, baselineItems: RunningOrderBa
 				const previousSegmentLineItems = previousSegmentLine.getAllSegmentLineItems().filter(l => !l.infiniteId || skipIds.indexOf(l.infiniteId) < 0)
 
 				const groupClasses: string[] = ['previous_sl']
-				let prevObjs = [previousSegmentLineGroup]
+				let prevObjs: TimelineObjRunningOrder[] = [previousSegmentLineGroup]
 				prevObjs = prevObjs.concat(
-					transformSegmentLineIntoTimeline(previousSegmentLineItems, groupClasses, previousSegmentLineGroup, undefined, activeRunningOrder.holdState, undefined))
+					transformSegmentLineIntoTimeline(roData.runningOrder, previousSegmentLineItems, groupClasses, previousSegmentLineGroup, undefined, activeRunningOrder.holdState, undefined))
 
 				prevObjs = prefixAllObjectIds(prevObjs, 'previous_')
 
@@ -2908,7 +3009,7 @@ export function buildTimelineObjs (roData: RoData, baselineItems: RunningOrderBa
 
 			// Still show objects flagged as 'HoldMode.EXCEPT' if this is a infinite continuation as they belong to the previous too
 			const showHoldExcept = item.infiniteId !== item._id
-			timelineObjs = timelineObjs.concat(infiniteGroup, transformSegmentLineIntoTimeline([item], groupClasses, infiniteGroup, undefined, activeRunningOrder.holdState, showHoldExcept))
+			timelineObjs = timelineObjs.concat(infiniteGroup, transformSegmentLineIntoTimeline(roData.runningOrder, [item], groupClasses, infiniteGroup, undefined, activeRunningOrder.holdState, showHoldExcept))
 		}
 
 		const groupClasses: string[] = ['current_sl']
@@ -2918,7 +3019,7 @@ export function buildTimelineObjs (roData: RoData, baselineItems: RunningOrderBa
 			transitionPreroll: currentSegmentLine.transitionPrerollDuration,
 			transitionKeepalive: currentSegmentLine.transitionKeepaliveDuration
 		}
-		timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(currentNormalItems, groupClasses, currentSegmentLineGroup, transProps, activeRunningOrder.holdState, undefined))
+		timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(roData.runningOrder, currentNormalItems, groupClasses, currentSegmentLineGroup, transProps, activeRunningOrder.holdState, undefined))
 
 		timelineObjs.push(createSegmentLineGroupFirstObject(currentSegmentLine, currentSegmentLineGroup))
 
@@ -2952,7 +3053,7 @@ export function buildTimelineObjs (roData: RoData, baselineItems: RunningOrderBa
 			}
 			timelineObjs = timelineObjs.concat(
 				nextSegmentLineItemGroup,
-				transformSegmentLineIntoTimeline(nextItems, groupClasses, nextSegmentLineItemGroup, transProps))
+				transformSegmentLineIntoTimeline(roData.runningOrder, nextItems, groupClasses, nextSegmentLineItemGroup, transProps))
 			timelineObjs.push(createSegmentLineGroupFirstObject(nextSegmentLine, nextSegmentLineItemGroup))
 		}
 	}
@@ -3016,16 +3117,18 @@ function calcSlOverlapDuration (fromSl: SegmentLine, toSl: SegmentLine): number 
  * @param studioInstallation
  * @param timelineObjs Array of timeline objects
  */
-function processTimelineObjects (studioInstallation: StudioInstallation, parentRunningOrder: RunningOrder | undefined, timelineObjs: Array<TimelineObj>): void {
+function processTimelineObjects (studioInstallation: StudioInstallation, timelineObjs: Array<TimelineObjGeneric>): void {
 	// first, split out any grouped objects, to make the timeline shallow:
-	let fixObjectChildren = (o: TimelineObjGroup) => {
+	let fixObjectChildren = (o: TimelineObjGeneric) => {
 		// Unravel children objects and put them on the (flat) timelineObjs array
 		if (o.isGroup && o.content && o.content.objects && o.content.objects.length) {
-			// let o2 = o as TimelineObjGroup
-			_.each(o.content.objects, (child) => {
-				let childFixed: TimelineObj = _.extend(child, {
-					inGroup: o._id,
-					_id: child.id || child['_id']
+			// let o2 = o as TimelineObjGeneric
+			_.each(o.content.objects, (child: TimelineTypes.TimelineObject) => {
+				let childFixed: TimelineObjGeneric = extendMandadory<TimelineTypes.TimelineObject, TimelineObjGeneric>(child, {
+					_id: child.id || child['_id'],
+					siId: o.siId,
+					objectType: o.objectType,
+					inGroup: o._id
 				})
 				delete childFixed['id']
 				timelineObjs.push(childFixed)
@@ -3034,12 +3137,11 @@ function processTimelineObjects (studioInstallation: StudioInstallation, parentR
 			delete o.content.objects
 		}
 	}
-	_.each(timelineObjs, (o: TimelineObj) => {
+	_.each(timelineObjs, (o: TimelineObjGeneric) => {
 		delete o.id
 		o.siId = studioInstallation._id
 
-		if (parentRunningOrder) o.roId = parentRunningOrder._id
-		fixObjectChildren(o as TimelineObjGroup)
+		fixObjectChildren(o)
 	})
 }
 
@@ -3048,7 +3150,7 @@ function processTimelineObjects (studioInstallation: StudioInstallation, parentR
  * containing the hash of the timeline, used to determine if the timeline should be updated in the gateways
  * @param studioInstallationId id of the studioInstallation to update
  */
-export function afterUpdateTimeline (studioInstallation: StudioInstallation, timelineObjs?: Array<TimelineObj>) {
+export function afterUpdateTimeline (studioInstallation: StudioInstallation, timelineObjs?: Array<TimelineObjGeneric>) {
 
 	// logger.info('afterUpdateTimeline')
 	if (!timelineObjs) {
@@ -3070,12 +3172,12 @@ export function afterUpdateTimeline (studioInstallation: StudioInstallation, tim
 
 	// save into "magic object":
 	let magicId = studioInstallation._id + '_statObj'
-	let statObj: TimelineObj = {
+	let statObj: TimelineObjStat = {
 		_id: magicId,
 		id: '',
 		siId: studioInstallation._id,
+		objectType: TimelineObjType.STAT,
 		statObject: true,
-		roId: '',
 		content: {
 			type: TimelineContentTypeOther.NOTHING,
 			modified: getCurrentTime(),
@@ -3099,7 +3201,7 @@ export function afterUpdateTimeline (studioInstallation: StudioInstallation, tim
  * @param timelineObjs Array of (flat) timeline objects
  * @param now The time to set the "now":s to
  */
-function setNowToTimeInObjects (timelineObjs: Array<TimelineObj>, now: Time): void {
+function setNowToTimeInObjects (timelineObjs: Array<TimelineObjGeneric>, now: Time): void {
 	_.each(timelineObjs, (o) => {
 		if (o.trigger.type === TriggerType.TIME_ABSOLUTE &&
 			o.trigger.value === 'now'
@@ -3110,11 +3212,11 @@ function setNowToTimeInObjects (timelineObjs: Array<TimelineObj>, now: Time): vo
 	})
 }
 
-function setLawoObjectsTriggerValue (timelineObjs: Array<TimelineObj>, currentSegmentLineId: string | undefined) {
+function setLawoObjectsTriggerValue (timelineObjs: Array<TimelineObjGeneric>, currentSegmentLineId: string | undefined) {
 
 	_.each(timelineObjs, (obj) => {
 		if (obj.content.type === TimelineContentTypeLawo.SOURCE ) {
-			let lawoObj = obj as TimelineObjLawo & TimelineObj
+			let lawoObj = obj as TimelineObjLawo & TimelineObjGeneric
 
 			_.each(lawoObj.content.attributes, (val, key) => {
 				// set triggerValue to the current playing segment, thus triggering commands to be sent when nexting:
@@ -3124,14 +3226,14 @@ function setLawoObjectsTriggerValue (timelineObjs: Array<TimelineObj>, currentSe
 	})
 }
 
-function validateNoraPreload (timelineObjs: Array<TimelineObj>) {
+function validateNoraPreload (timelineObjs: Array<TimelineObjGeneric>) {
 	const toRemoveIds: Array<string> = []
 	_.each(timelineObjs, obj => {
 		// ignore normal objects
 		if (obj.content.type !== TimelineContentTypeHttp.POST) return
 		if (!obj.isBackground) return
 
-		const obj2 = obj as TimelineObjHTTPRequest & TimelineObj
+		const obj2 = obj as TimelineObjHTTPRequest & TimelineObjGeneric
 		if (obj2.content.params && obj2.content.params.template && (obj2.content.params.template as any).event === 'take') {
 			(obj2.content.params.template as any).event = 'cue'
 		} else {

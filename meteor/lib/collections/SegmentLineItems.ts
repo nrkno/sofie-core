@@ -8,7 +8,8 @@ import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintSegmentLineItem, SegmentLineItemLifespan,
 	Timeline,
-	SomeContent
+	SomeContent,
+	BaseContent
 } from 'tv-automation-sofie-blueprints-integration'
 
 /** A Single item in a "line": script, VT, cameras */
@@ -78,6 +79,9 @@ export interface SegmentLineItem extends SegmentLineItemGeneric, IBlueprintSegme
 	/** This is set when the item is infinite, to deduplicate the contents on the timeline, while allowing out of order */
 	infiniteMode?: SegmentLineItemLifespan
 	infiniteId?: string
+
+	/** The object describing the item in detail */
+	content?: BaseContent // TODO: Temporary, should be put into IBlueprintSegmentLineItem
 
 	/** Whether this line should be extended into the next segment line when HOLD is activated */
 	extendOnHold?: boolean

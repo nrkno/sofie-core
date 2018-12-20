@@ -1,13 +1,13 @@
-import { TimelineObj, TimelineObjGroup } from './collections/Timeline'
+import { TimelineObjGeneric, TimelineObjGroup } from './collections/Timeline'
 import { TimelineObject } from 'superfly-timeline'
 let clone = require('fast-clone')
 import * as _ from 'underscore'
 
 // This is a collection of functions that match what the playout-gateway / TSR does
 // playout-gateway:
-export function transformTimeline (timeline: Array<TimelineObj>): Array<TimelineContentObject> {
+export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<TimelineContentObject> {
 
-	let transformObject = (obj: TimelineObj): TimelineContentObject => {
+	let transformObject = (obj: TimelineObjGeneric): TimelineContentObject => {
 		let transformedObj = clone(_.extend({
 		   id: obj['_id'],
 		   roId: obj['roId']
