@@ -51,7 +51,7 @@ export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
 	/** Expected duration of the line, in milliseconds */
 	expectedDuration?: number
 
-	/** Whether the sl has started playback, reset each time setAsNext is used */
+	/** Whether the sl has started playback, the most recent time it was played, reset each time setAsNext is used */
 	startedPlayback?: boolean
 
 	/** The time the system played back this segment line, null if not yet finished playing, in milliseconds */

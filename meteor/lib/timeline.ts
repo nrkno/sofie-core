@@ -38,10 +38,10 @@ export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<T
 
 	let groupObjects: {[id: string]: TimelineContentObject} = {}
 	let transformedTimeline: Array<TimelineContentObject> = []
-	let doTransform = (objs: Array<TimelineObj>) => {
-		let objsLeft: Array<TimelineObj> = []
+	let doTransform = (objs: Array<TimelineObjGeneric>) => {
+		let objsLeft: Array<TimelineObjGeneric> = []
 		let changedSomething: boolean = false
-		_.each(objs, (obj: TimelineObj | TimelineObjGroup) => {
+		_.each(objs, (obj: TimelineObjGeneric | TimelineObjGroup) => {
 
 			let transformedObj = transformObject(obj)
 
