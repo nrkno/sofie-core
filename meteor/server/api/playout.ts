@@ -2439,9 +2439,10 @@ function transformSegmentLineIntoTimeline (
 	return timelineObjs
 }
 
-export function addLookeaheadObjectsToTimeline (roData: RoData, studioInstallation: StudioInstallation, timelineObjs: TimelineObjGeneric[]) {
+export function getLookeaheadObjects (roData: RoData, studioInstallation: StudioInstallation ): Array<TimelineObjGeneric> {
 	let activeRunningOrder = roData.runningOrder
 
+	const timelineObjs: Array<TimelineObjGeneric> = []
 	_.each(studioInstallation.mappings || {}, (m, l) => {
 
 		const res = findLookaheadForLLayer(roData, l, m.lookahead)
@@ -2473,6 +2474,7 @@ export function addLookeaheadObjectsToTimeline (roData: RoData, studioInstallati
 			timelineObjs.push(r)
 		}
 	})
+	return timelineObjs
 }
 
 export function findLookaheadForLLayer (
@@ -2866,7 +2868,7 @@ function getTimelineRunningOrder (studioInstallation: StudioInstallation): Promi
 				timelineObjs = timelineObjs.concat(buildTimelineObjsForRunningOrder(roData, baselineItems))
 
 				// next (on pvw (or on pgm if first))
-				addLookeaheadObjectsToTimeline(roData, studioInstallation, timelineObjs)
+				timelineObjs = timelineObjs.concat(getLookeaheadObjects(roData, studioInstallation))
 
 				// console.log(JSON.stringify(timelineObjs))
 
@@ -3073,7 +3075,10 @@ export function buildTimelineObjsForRunningOrder (roData: RoData, baselineItems:
 			transitionPreroll: currentSegmentLine.transitionPrerollDuration,
 			transitionKeepalive: currentSegmentLine.transitionKeepaliveDuration
 		}
-		timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(roData.runningOrder, currentNormalItems, groupClasses, currentSegmentLineGroup, transProps, activeRunningOrder.holdState, undefined))
+		timelineObjs = timelineObjs.concat(
+			currentSegmentLineGroup,
+			transformSegmentLineIntoTimeline(roData.runningOrder, currentNormalItems, groupClasses, currentSegmentLineGroup, transProps, activeRunningOrder.holdState, undefined)
+		)
 
 		timelineObjs.push(createSegmentLineGroupFirstObject(currentSegmentLine, currentSegmentLineGroup))
 
@@ -3107,7 +3112,8 @@ export function buildTimelineObjsForRunningOrder (roData: RoData, baselineItems:
 			}
 			timelineObjs = timelineObjs.concat(
 				nextSegmentLineItemGroup,
-				transformSegmentLineIntoTimeline(roData.runningOrder, nextItems, groupClasses, nextSegmentLineItemGroup, transProps))
+				transformSegmentLineIntoTimeline(roData.runningOrder, nextItems, groupClasses, nextSegmentLineItemGroup, transProps)
+			)
 			timelineObjs.push(createSegmentLineGroupFirstObject(nextSegmentLine, nextSegmentLineItemGroup))
 		}
 	}
