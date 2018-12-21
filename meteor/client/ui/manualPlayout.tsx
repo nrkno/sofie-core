@@ -160,7 +160,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 											{
 												_.map([1,2,3,4,5,6,7,8], (cam) => {
 													return (
-														<td>
+														<td key={cam}>
 															<button className='btn btn-primary' onClick={(e) => this.atemCamera(e, studio, mappingLayerId, cam)}>
 																Camera {cam}
 															</button>
