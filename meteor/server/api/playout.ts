@@ -2421,7 +2421,7 @@ function transformSegmentLineIntoTimeline (
 					// }
 
 					timelineObjs.push(extendMandadory<TimelineObjectCoreExt, TimelineObjRunningOrder>(o, {
-						_id: o.id,
+						_id: o.id || o['_id'],
 						siId: '', // set later
 						inGroup: segmentLineGroup ? segmentLineItemGroup._id : undefined,
 						roId: runningOrder._id,
@@ -3179,6 +3179,7 @@ function processTimelineObjects (studioInstallation: StudioInstallation, timelin
 					objectType: o.objectType,
 					inGroup: o._id
 				})
+				if (!childFixed._id) logger.error(`TimelineObj missing _id attribute (child of ${o._id})`, childFixed)
 				delete childFixed['id']
 				timelineObjs.push(childFixed)
 				fixObjectChildren(childFixed as TimelineObjGroup)
@@ -3187,6 +3188,8 @@ function processTimelineObjects (studioInstallation: StudioInstallation, timelin
 		}
 	}
 	_.each(timelineObjs, (o: TimelineObjGeneric) => {
+		o._id = o._id || o.id
+		if (!o._id) logger.error('TimelineObj missing _id attribute', o)
 		delete o.id
 		o.siId = studioInstallation._id
 
