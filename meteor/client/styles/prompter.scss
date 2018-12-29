@@ -1,11 +1,15 @@
 
 .prompter {
+    user-select: none;
+    cursor: none;
+
     font-size: 16vh;
     font-weight: 400;
     background: #000;
     line-height: 1.25;
     text-align: left;
     letter-spacing: 0.9px;
+
 
     &.mirror {
         transform: scaleX(-1);
@@ -16,7 +20,7 @@
         font-size: 75%;
         text-align: center;
 
-        margin-top: -0.5em;
+        margin-top: -0.1em;
         border-top: 0.1em solid #fff;
         
     }
@@ -47,6 +51,31 @@
 
     .prompter-line {
         margin-bottom: 0.5em;
+    }
+
+    .overlay-fix {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        z-index: 1000;
+
+        .center-marker {
+            position: absolute;
+            top: 33%;
+            bottom: 33%;
+            width: 1em;
+            border-top: 3px solid rgba(255, 255, 255, 0.5);
+            border-bottom: 3px solid rgba(255, 255, 255, 0.5);
+
+            &.left {
+                left: 0
+            }
+            &.right {
+                right: 0
+            }
+        }
     }
 
     

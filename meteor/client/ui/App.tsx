@@ -30,7 +30,7 @@ import {
   Redirect
 } from 'react-router-dom'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
-import { PrompterView } from './PrompterView'
+import { PrompterView } from './Prompter/PrompterView'
 import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
 
 interface IAppState {
