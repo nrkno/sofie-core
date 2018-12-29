@@ -25,14 +25,17 @@ export class MouseIshController extends ControllerAbstract {
 	private _mouseKeyDown: {[button: string]: number} = {}
 
 	/** scroll speed, in pixels per frame */
-	private _scrollSpeedTarget: number = 0
+	private _scrollSpeedTarget: number = 4
 	private _scrollSpeedCurrent: number = 0
 	private _scrollingDown: boolean = false
+	private _scrollingDownHold: boolean = false
 	private _scrollingUp: boolean = false
 	private _updateSpeedHandle: number | null = null
 	private _scrollPosition: number = 0
 	private _scrollRest: number = 0
 	private _noMovement: number = 0
+
+	private _nextPausePosition: number | null = null
 
 	constructor (view: PrompterViewInner) {
 		super (view)
@@ -53,6 +56,10 @@ export class MouseIshController extends ControllerAbstract {
 			e.ctrlKey
 		) {
 			e.preventDefault() // Prevent print-dialogue
+		} else if (
+			e.keyCode === 116 // f5
+		) {
+			e.preventDefault() // Prevent reload of page
 		}
 	}
 	public onKeyUp (e: KeyboardEvent) {
@@ -65,17 +72,16 @@ export class MouseIshController extends ControllerAbstract {
 				e.button === 1	// middle mouse button
 			) {
 				e.preventDefault()
-				// this._scrollingPaused = !this._scrollingPaused
 				this._scrollingDown = !this._scrollingDown
+				this._scrollingDownHold = this._scrollingDown
 				this._scrollingUp = false
-				this._updateScrollPosition()
+				this.triggerStartScrolling()
 			} else if (
 				e.button === 2 // right mouse button
 			) {
 				e.preventDefault()
 				this._scrollingUp = true
-				// this._scrollingReverse = true
-				this._updateScrollPosition()
+				this.triggerStartScrolling()
 			}
 		}
 
@@ -93,15 +99,17 @@ export class MouseIshController extends ControllerAbstract {
 				if (timeSincePress > LONGPRESS_TIME) {
 					// Long-press release => toggle
 					this._scrollingDown = !this._scrollingDown
-					this._updateScrollPosition()
+					this._scrollingDownHold = this._scrollingDown
+					this.triggerStartScrolling()
+				} else {
+					this._scrollingDownHold = false
 				}
 			} else if (
 				e.button === 2 // right mouse button
 			) {
 				e.preventDefault()
 				this._scrollingUp = false
-				// this._scrollingReverse = false
-				this._updateScrollPosition()
+				this.triggerStartScrolling()
 			}
 		}
 		if (
@@ -130,15 +138,24 @@ export class MouseIshController extends ControllerAbstract {
 
 			this._scrollingDown = true
 
-			this._updateScrollPosition()
+			this.triggerStartScrolling()
 
 		}
 	}
-
+	private triggerStartScrolling () {
+		if (this._scrollingDown) {
+			const scrollPosition = this.getScrollPosition()
+			if (scrollPosition !== undefined) {
+				this._nextPausePosition = this.findAnchorPosition(scrollPosition + 50, -1, 1)
+			}
+		}
+		this._noMovement = 0
+		this._updateScrollPosition()
+	}
 	private _toggleMode () {
 		if (this._mode === Mode.NORMAL) {
 			this._setMode(Mode.SPEED)
-			this._scrollSpeedTarget = 0
+			this._scrollSpeedTarget = 4
 			this._scrollSpeedCurrent = 0
 			this._scrollingDown = false
 			this._scrollingUp = false
@@ -160,6 +177,19 @@ export class MouseIshController extends ControllerAbstract {
 		if (this._updateSpeedHandle !== null) return
 		this._updateSpeedHandle = null
 		if (this._mode !== Mode.SPEED) return
+
+		let scrollPosition = this.getScrollPosition()
+
+		if (
+			scrollPosition !== undefined &&
+			this._nextPausePosition &&
+			this._scrollingDown &&
+			!this._scrollingDownHold &&
+			scrollPosition > this._nextPausePosition - 5 * this._scrollSpeedCurrent
+		) {
+			// stop
+			this._scrollingDown = false
+		}
 
 		let targetSpeed = this._scrollSpeedTarget
 
@@ -200,7 +230,7 @@ export class MouseIshController extends ControllerAbstract {
 
 		window.scrollBy(0, speed)
 
-		const scrollPosition = window.scrollY || window.pageYOffset || (document.documentElement || {scrollTop: undefined}).scrollTop
+		scrollPosition = this.getScrollPosition()
 
 		if (scrollPosition !== undefined) {
 			// Reached end-of-scroll:

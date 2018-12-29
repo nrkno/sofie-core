@@ -202,6 +202,7 @@ interface IPrompterProps {
 	runningOrderId: string
 }
 interface IPrompterTrackedProps {
+	runningOrder: RunningOrder | undefined,
 	currentSegmentLineId: string,
 	nextSegmentLineId: string,
 	prompterData: PrompterData
@@ -217,6 +218,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 	let prompterData = PrompterAPI.getPrompterData(props.runningOrderId)
 
 	return {
+		runningOrder: runningOrder,
 		currentSegmentLineId: runningOrder && runningOrder.currentSegmentLineId || '',
 		nextSegmentLineId: runningOrder && runningOrder.nextSegmentLineId || '',
 		prompterData
@@ -249,7 +251,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		let divs: any[] = []
 		let previousSegmentId = ''
 		let previousSegmentLineId = ''
-		_.map(prompterData.lines, (line, i: number) => {
+		_.each(prompterData.lines, (line, i: number) => {
 
 			let currentNextLine: 'current' | 'next' | null = null
 
@@ -267,6 +269,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 						key={line.segmentId}
 						className={classNames(
 							'prompter-segment',
+							'scroll-anchor',
 							'segment-' + line.segmentId,
 							'segmentLine-' + line.segmentLineId,
 							currentNextLine
@@ -287,6 +290,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 						key={line.segmentLineId}
 						className={classNames(
 							'prompter-segmentLine',
+							'scroll-anchor',
 							'segmentLine-' + line.segmentLineId,
 							currentNextLine
 						)}
@@ -312,15 +316,25 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		return divs
 	}
 	render () {
+		const { t } = this.props
 
-		if (this.props.prompterData) {
+		if (this.props.prompterData && this.props.runningOrder) {
 			return (
 				<div className={ClassNames('prompter', this.state.isMirror ? 'mirror' : undefined)}>
 					<div className='overlay-fix'>
 						<div className='center-marker left'></div>
 						<div className='center-marker right'></div>
 					</div>
+
+					<div className='prompter-break begin'>
+						{this.props.runningOrder.name}
+					</div>
+
 					{this.renderPrompterData(this.props.prompterData)}
+
+					<div className='prompter-break end'>
+						-{t('End of script')}-
+					</div>
 				</div >
 			)
 		} else {

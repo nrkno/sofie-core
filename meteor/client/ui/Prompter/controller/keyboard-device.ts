@@ -54,7 +54,8 @@ export class KeyboardController extends ControllerAbstract {
 					e.keyCode === 33	// page up
 				) {
 					e.preventDefault()
-					this._targetPosition = scrollPosition - scrollBy
+					let newPosition = scrollPosition - scrollBy
+					this._targetPosition = this.findAnchorPosition(newPosition, scrollPosition - 10, -1) || newPosition
 					this._continousScrolling = -1
 					this._updateScrollPosition()
 				} else if (
@@ -64,7 +65,9 @@ export class KeyboardController extends ControllerAbstract {
 					e.keyCode === 34 	// page down
 				) {
 					e.preventDefault()
-					this._targetPosition = scrollPosition + scrollBy
+
+					let newPosition = scrollPosition + scrollBy
+					this._targetPosition = this.findAnchorPosition(scrollPosition + 10, newPosition, 1) || newPosition
 					this._continousScrolling = 1
 					this._updateScrollPosition()
 				}
@@ -88,7 +91,17 @@ export class KeyboardController extends ControllerAbstract {
 				) {
 					e.preventDefault()
 					this._continousScrolling = 0
+					let setNewPosition = false
 					if (timeSincePress > LONGPRESS_TIME) {
+						setNewPosition = true
+					} else {
+						let dp = this._targetPosition - this._currentPosition
+						if (Math.sign(this._currentSpeed) !== Math.sign(dp)) {
+							// we've overshot..
+							setNewPosition = true
+						}
+					}
+					if (setNewPosition) {
 						let stopAcceleration = Math.sign(this._currentSpeed) * this._acceleration
 						const d = this._getDistanceToStop (this._currentSpeed, stopAcceleration)
 						this._targetPosition = scrollPosition + d / 4
@@ -127,9 +140,6 @@ export class KeyboardController extends ControllerAbstract {
 		let timeToStop = currentSpeed / normalStopAcceleration // (not in seconds, but frames!)
 		if (!timeToStop) return 0
 		return ( 2 * ( distanceLeft - (currentSpeed * timeToStop) ) ) / Math.pow(timeToStop, 2)
-	}
-	private getScrollPosition () {
-		return window.scrollY || window.pageYOffset || (document.documentElement || {scrollTop: undefined}).scrollTop
 	}
 	private _updateScrollPosition () {
 		if (this._destroyed) return
