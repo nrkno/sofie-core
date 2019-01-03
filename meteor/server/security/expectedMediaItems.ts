@@ -3,16 +3,30 @@ import { check } from 'meteor/check'
 
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { rejectFields } from './lib'
-import { PeripheralDeviceSecurity } from './peripheralDevices';
+import { PeripheralDeviceSecurity } from './peripheralDevices'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+
+import { logger } from '../logging'
 
 export namespace ExpectedMediaItemsSecurity {
-	export function allowReadAccess(selector: object, token: string, context: any) {
+	export function allowReadAccess (selector: any, token: string, context: any) {
+		check(selector, Object)
+		check(selector.mediaFlowId, Object)
+		check(selector.mediaFlowId.$in, Array)
 
-		if (selector['_id'] && token) {
+		let mediaFlowIds: string[] = selector.mediaFlowId.$in
 
-			check(selector['_id'], String)
+		let mediaManagerDevice = PeripheralDevices.findOne({
+			type: PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
+			token: token
+		})
 
-			PeripheralDeviceSecurity.getPeripheralDevice(selector['_id'], token, context)
+		if (!mediaManagerDevice) return false
+
+		if (mediaManagerDevice && token) {
+
+			// mediaManagerDevice.settings
 
 			return true
 		} else {

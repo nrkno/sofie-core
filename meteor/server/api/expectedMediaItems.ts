@@ -8,6 +8,8 @@ import { SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibIte
 import { syncFunctionIgnore } from '../codeControl'
 import { saveIntoDb, literal, getCurrentTime } from '../../lib/lib'
 import { SegmentLines } from '../../lib/collections/SegmentLines';
+import { wrapMethods, setMeteorMethods } from '../methods';
+import { Random } from 'meteor/random';
 
 export const updateExpectedMediaItems: (roId: string, slId: string) => void
 = syncFunctionIgnore(function updateExpectedMediaItems (roId: string, slId: string) {
@@ -31,7 +33,6 @@ export const updateExpectedMediaItems: (roId: string, slId: string) => void
 	const slali = SegmentLineAdLibItems.find({
 		runningOrderId: ro._id
 	})
-	
 
 	function iterateOnSLILike (doc: SegmentLineItemGeneric, prefix: string) {
 		if (doc.content && doc.content.fileName && doc.content.mediaFlowId) {
@@ -57,3 +58,23 @@ export const updateExpectedMediaItems: (roId: string, slId: string) => void
 		segmentLineId: sl._id
 	}, eMIs)
 })
+
+function insertExpectedObject (fileName: string, mediaFlowId: string, runningOrderId: string, segmentLineId: string) {
+	ExpectedMediaItems.insert({
+		_id: Random.id(),
+		disabled: false,
+		lastSeen: getCurrentTime(),
+		mediaFlowId: mediaFlowId,
+		path: fileName,
+		runningOrderId,
+		segmentLineId
+	})
+}
+
+let methods = {}
+methods['insertExpected'] = (fileName, mediaFlowId, runningOrderId, segmentLineId) => {
+	return insertExpectedObject(fileName, mediaFlowId, runningOrderId, segmentLineId)
+}
+
+// Apply methods:
+setMeteorMethods(wrapMethods(methods))

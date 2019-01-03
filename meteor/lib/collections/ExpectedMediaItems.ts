@@ -36,6 +36,9 @@ Meteor.startup(() => {
 			path: 1
 		})
 		ExpectedMediaItems._ensureIndex({
+			mediaFlowId: 1
+		})
+		ExpectedMediaItems._ensureIndex({
 			runningOrderId: 1,
 			segmentLineId: 1
 		})
