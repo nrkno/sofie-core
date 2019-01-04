@@ -112,6 +112,8 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				return t('MOS Device')
 			case PeripheralDeviceAPI.DeviceType.PLAYOUT:
 				return t('Play-out Device')
+			case PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER:
+				return t('Media Manager')
 			case PeripheralDeviceAPI.DeviceType.OTHER:
 				return t('Sub-Device')
 			default:
