@@ -2372,7 +2372,7 @@ function transformSegmentLineIntoTimeline (
 					// }
 
 					timelineObjs.push(extendMandadory<TimelineObjectCoreExt, TimelineObjRunningOrder>(o, {
-						_id: o.id,
+						_id: o.id || o['_id'],
 						siId: '', // set later
 						inGroup: segmentLineGroup ? segmentLineItemGroup._id : undefined,
 						roId: runningOrder._id,
@@ -2754,6 +2754,8 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 	if (forceNowToTime) { // used when autoNexting
 		setNowToTimeInObjects(timelineObjs, forceNowToTime)
 	}
+
+	console.log(JSON.stringify(timelineObjs))
 
 	saveIntoDb<TimelineObjGeneric, TimelineObjGeneric>(Timeline, {
 		siId: studioInstallation._id
