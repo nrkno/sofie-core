@@ -2755,8 +2755,6 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 		setNowToTimeInObjects(timelineObjs, forceNowToTime)
 	}
 
-	console.log(JSON.stringify(timelineObjs))
-
 	saveIntoDb<TimelineObjGeneric, TimelineObjGeneric>(Timeline, {
 		siId: studioInstallation._id
 	}, timelineObjs, {
