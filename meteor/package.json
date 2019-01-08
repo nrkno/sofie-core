@@ -66,7 +66,7 @@
     "smpte-timecode": "^1.2.1",
     "soap": "^0.24.0",
     "superfly-timeline": "^6.0.3",
-    "tv-automation-sofie-blueprints-integration": "^0.8.0",
+    "tv-automation-sofie-blueprints-integration": "^0.9.0",
     "timeline-state-resolver-types": "^1.5.0",
     "underscore": "^1.8.3",
     "velocity-animate": "^1.5.1",

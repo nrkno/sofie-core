@@ -183,7 +183,6 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.roId, String)
 		check(r.slId, String)
 
-		// TODO: implement this:
 		ServerPlayoutAPI.slPlaybackStoppedCallback(r.roId, r.slId, r.time)
 	}
 	export function segmentLineItemPlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) {
@@ -329,8 +328,14 @@ methods[PeripheralDeviceAPI.methods.getPeripheralDevice ] = (deviceId, deviceTok
 methods[PeripheralDeviceAPI.methods.segmentLinePlaybackStarted] = (deviceId, deviceToken, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) => {
 	return ServerPeripheralDeviceAPI.segmentLinePlaybackStarted(deviceId, deviceToken, r)
 }
+methods[PeripheralDeviceAPI.methods.segmentLinePlaybackStopped] = (deviceId, deviceToken, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) => {
+	return ServerPeripheralDeviceAPI.segmentLinePlaybackStopped(deviceId, deviceToken, r)
+}
 methods[PeripheralDeviceAPI.methods.segmentLineItemPlaybackStarted] = (deviceId, deviceToken, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) => {
 	return ServerPeripheralDeviceAPI.segmentLineItemPlaybackStarted(deviceId, deviceToken, r)
+}
+methods[PeripheralDeviceAPI.methods.segmentLineItemPlaybackStopped] = (deviceId, deviceToken, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) => {
+	return ServerPeripheralDeviceAPI.segmentLineItemPlaybackStopped(deviceId, deviceToken, r)
 }
 methods[PeripheralDeviceAPI.methods.pingWithCommand] = (deviceId, deviceToken, message: string) => {
 	return ServerPeripheralDeviceAPI.pingWithCommand(deviceId, deviceToken, message)
