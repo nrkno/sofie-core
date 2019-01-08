@@ -1085,7 +1085,7 @@ export namespace ServerPlayoutAPI {
 		check(slId, String)
 		check(startedPlayback, Number)
 
-		// This method is called when a segmentLine starts playing (like when an auto-next event occurs)
+		// This method is called when a segmentLine starts playing (like when an auto-next event occurs, or a manual next)
 
 		let playingSegmentLine = SegmentLines.findOne({
 			_id: slId,
@@ -1202,7 +1202,8 @@ export namespace ServerPlayoutAPI {
 		check(slId, String)
 		check(stoppedPlayback, Number)
 
-		// This method is called when an auto-next event occurs
+		// This method is called when a segmentLine stops playing (like when an auto-next event occurs, or a manual next)
+
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
@@ -1228,7 +1229,7 @@ export namespace ServerPlayoutAPI {
 			throw new Meteor.Error(404, `Segment line "${slId}" in running order "${roId}" not found!`)
 		}
 	}
-	export const sliTakeNow = function sliTakeNow (roId: string, slId: string, sliId: string) {
+	export const segmentLineItemTakeNow = function segmentLineItemTakeNow (roId: string, slId: string, sliId: string) {
 		check(roId, String)
 		check(slId, String)
 		check(sliId, String)
@@ -1300,7 +1301,7 @@ export namespace ServerPlayoutAPI {
 			success: 200
 		})
 	}
-	export const salliPlaybackStart = syncFunction(function salliPlaybackStart (roId: string, slId: string, slaiId: string, queue: boolean) {
+	export const segmentAdLibLineItemStart = syncFunction(function segmentAdLibLineItemStart (roId: string, slId: string, slaiId: string, queue: boolean) {
 		check(roId, String)
 		check(slId, String)
 		check(slaiId, String)
@@ -1337,11 +1338,11 @@ export namespace ServerPlayoutAPI {
 			updateTimeline(runningOrder.studioInstallationId)
 		}
 	})
-	export const robaliPlaybackStart = syncFunction(function robaliPlaybackStart (roId: string, slId: string, robaliId: string, queue: boolean) {
+	export const runningOrderBaselineAdLibItemStart = syncFunction(function runningOrderBaselineAdLibItemStart (roId: string, slId: string, robaliId: string, queue: boolean) {
 		check(roId, String)
 		check(slId, String)
 		check(robaliId, String)
-		logger.info('robaliPlaybackStart')
+		logger.debug('runningOrderBaselineAdLibItemStart')
 
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -1408,7 +1409,7 @@ export namespace ServerPlayoutAPI {
 		return newSegmentLineId
 
 	}
-	export function salliStop (roId: string, slId: string, sliId: string) {
+	export function segmentAdLibLineItemStop (roId: string, slId: string, sliId: string) {
 		check(roId, String)
 		check(slId, String)
 		check(sliId, String)
@@ -1679,7 +1680,7 @@ methods[PlayoutAPI.methods.reloadData] = (roId: string) => {
 	return ServerPlayoutAPI.reloadData(roId)
 }
 methods[PlayoutAPI.methods.segmentLineItemTakeNow] = (roId: string, slId: string, sliId: string) => {
-	return ServerPlayoutAPI.sliTakeNow(roId, slId, sliId)
+	return ServerPlayoutAPI.segmentLineItemTakeNow(roId, slId, sliId)
 }
 methods[PlayoutAPI.methods.roTake] = (roId: string) => {
 	return ServerPlayoutAPI.roTake(roId)
@@ -1712,13 +1713,13 @@ methods[PlayoutAPI.methods.segmentLineItemPlaybackStartedCallback] = (roId: stri
 	return ServerPlayoutAPI.sliPlaybackStartedCallback(roId, sliId, startedPlayback)
 }
 methods[PlayoutAPI.methods.segmentAdLibLineItemStart] = (roId: string, slId: string, salliId: string, queue: boolean) => {
-	return ServerPlayoutAPI.salliPlaybackStart(roId, slId, salliId, queue)
+	return ServerPlayoutAPI.segmentAdLibLineItemStart(roId, slId, salliId, queue)
 }
 methods[PlayoutAPI.methods.runningOrderBaselineAdLibItemStart] = (roId: string, slId: string, robaliId: string, queue: boolean) => {
-	return ServerPlayoutAPI.robaliPlaybackStart(roId, slId, robaliId, queue)
+	return ServerPlayoutAPI.runningOrderBaselineAdLibItemStart(roId, slId, robaliId, queue)
 }
 methods[PlayoutAPI.methods.segmentAdLibLineItemStop] = (roId: string, slId: string, sliId: string) => {
-	return ServerPlayoutAPI.salliStop(roId, slId, sliId)
+	return ServerPlayoutAPI.segmentAdLibLineItemStop(roId, slId, sliId)
 }
 methods[PlayoutAPI.methods.sourceLayerOnLineStop] = (roId: string, slId: string, sourceLayerId: string) => {
 	return ServerPlayoutAPI.sourceLayerOnLineStop(roId, slId, sourceLayerId)
