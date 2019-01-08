@@ -395,6 +395,18 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 											className='input text-input input-l'></EditAttribute>
 									</label>
 								</div>
+								<div className='mod mvs mhs'>
+									<label className='field'>
+										{t('Thread Usage')}
+										<EditAttribute
+											modifiedClassName='bghl'
+											attribute={`settings.devices.${deviceId}.threadUsage`}
+											obj={this.props.device}
+											type='float'
+											collection={PeripheralDevices}
+											className='input text-input input-l'></EditAttribute>
+									</label>
+								</div>
 								{(
 									device.type === PlayoutDeviceType.CASPARCG && (
 										(
