@@ -1012,6 +1012,18 @@ const MediaManagerSettingsComponent = translate()(
 													</div>
 													<div className='mod mvs mhs'>
 														<label className='field'>
+															{t('Media Path')}
+															<EditAttribute
+																modifiedClassName='bghl'
+																attribute={'settings.storages.' + index + '.options.mediaPath'}
+																obj={this.props.device}
+																type='text'
+																collection={PeripheralDevices}
+																className='input text-input input-l'></EditAttribute>
+														</label>
+													</div>
+													<div className='mod mvs mhs'>
+														<label className='field'>
 															{t('Mapped Networked Drive')}
 															<EditAttribute
 																modifiedClassName='bghl'
@@ -1059,6 +1071,18 @@ const MediaManagerSettingsComponent = translate()(
 																<EditAttribute
 																	modifiedClassName='bghl'
 																	attribute={'settings.storages.' + index + '.options.basePath'}
+																	obj={this.props.device}
+																	type='text'
+																	collection={PeripheralDevices}
+																	className='input text-input input-l'></EditAttribute>
+															</label>
+														</div>
+														<div className='mod mvs mhs'>
+															<label className='field'>
+																{t('Media Path')}
+																<EditAttribute
+																	modifiedClassName='bghl'
+																	attribute={'settings.storages.' + index + '.options.mediaPath'}
 																	obj={this.props.device}
 																	type='text'
 																	collection={PeripheralDevices}
@@ -1145,7 +1169,7 @@ const MediaManagerSettingsComponent = translate()(
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Source Storage')}
+											{t('Media Flow Type')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'settings.mediaFlows.' + index + '.mediaFlowType'}
@@ -1236,6 +1260,30 @@ const MediaManagerSettingsComponent = translate()(
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute={'settings.cronJobTime'}
+								obj={this.props.device}
+								type='int'
+								collection={PeripheralDevices}
+								className=''></EditAttribute>
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Media Scanner Host')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={'settings.mediaScanner.host'}
+								obj={this.props.device}
+								type='text'
+								collection={PeripheralDevices}
+								className=''></EditAttribute>
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Media Scanner Port')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={'settings.mediaScanner.port'}
 								obj={this.props.device}
 								type='int'
 								collection={PeripheralDevices}

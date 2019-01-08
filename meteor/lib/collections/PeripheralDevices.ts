@@ -88,6 +88,12 @@ export interface MediaManagerDeviceSettings {
 
 	/** Cron job time - how often to check the file system for consistency - do a poll of the filesystem to check that the files are where they are supposed to be, clean out expired files */
 	cronJobTime?: number
+
+	/** Connection details for the media scanner */
+	mediaScanner: {
+		host: string
+		port: number
+	}
 }
 
 
@@ -130,6 +136,7 @@ export interface LocalFolderStorage extends StorageSettings {
 	type: StorageType.LOCAL_FOLDER
 	options: {
 		basePath: string
+		mediaPath?: string
 	}
 }
 export interface FileShareStorage extends StorageSettings {
@@ -137,6 +144,8 @@ export interface FileShareStorage extends StorageSettings {
 	options: {
 		/** URI to the network share, eg "\\somehting\share" */
 		basePath: string
+		/** The playout media folder location */
+		mediaPath?: string
 		/** A virtual local drive letter, "E", the basePath should be mounted to */
 		mappedNetworkedDriveTarget: string
 		username?: string
