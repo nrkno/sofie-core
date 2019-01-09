@@ -122,8 +122,8 @@ class HttpSendDeviceSettingsComponent extends React.Component<Translated<IHttpSe
 
 		const commands = (device.options as any || {}).makeReadyCommands || []
 		return _.map(commands, (cmd: any, i) => {
-			return <React.Fragment>
-				<tr key={i} className={ClassNames({
+			return <React.Fragment key={i}>
+				<tr className={ClassNames({
 					'hl': this.isItemEdited(cmd.id)
 				})}>
 					<th className='settings-studio-device-httpsend__url c5'>
@@ -875,7 +875,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 
 		const { t } = this.props
 
-		return ([
+		return (<React.Fragment>
 			<tr className='hl' key={'header'}>
 				<th>Device ID</th>
 				<th>Primary ID</th>
@@ -884,10 +884,9 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 				<th>Host</th>
 				<th></th>
 			</tr>
-		].concat(
-			_.map(settings.devices, (device: MosDeviceSettingsDevice, deviceId) => {
-				return <React.Fragment>
-					<tr key={deviceId} className={ClassNames({
+			{_.map(settings.devices, (device: MosDeviceSettingsDevice, deviceId) => {
+				return <React.Fragment key={deviceId}>
+					<tr className={ClassNames({
 						'hl': this.isItemEdited(deviceId)
 					})}>
 						<th className='settings-studio-device__name c1'>
@@ -990,8 +989,8 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 						</tr>
 					}
 				</React.Fragment>
-			})
-		))
+			})}
+			</React.Fragment>)
 	}
 	render () {
 		const { t, subDevices } = this.props
