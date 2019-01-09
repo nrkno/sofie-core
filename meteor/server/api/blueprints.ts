@@ -525,7 +525,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		let m: any = {}
 		m[`settings.devices.${deviceId}`] = _.extend(parentDevice.settings.devices[deviceId], device)
 		PeripheralDevices.update(selector, {
-			$unset: m
+			$set: m
 		})
 	}
 	removeDevice (deviceId: string): void {
