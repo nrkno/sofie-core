@@ -40,6 +40,24 @@ class Header extends React.Component<IPropsHeader & InjectedTranslateProps, ISta
 		const { t } = this.props
 
 		return <React.Fragment>
+			<ErrorBoundary>
+				<VelocityReact.VelocityTransitionGroup enter={{
+					animation: {
+						translateX: ['0%', '100%']
+					}, easing: 'ease-out', duration: 300
+				}} leave={{
+					animation: {
+						translateX: ['100%', '0%']
+					}, easing: 'ease-in', duration: 500
+				}}>
+					{this.state.showNotifications && <NotificationCenterPanel />}
+				</VelocityReact.VelocityTransitionGroup>
+			</ErrorBoundary>
+			<ErrorBoundary>
+				<div className='status-bar'>
+					<NotificationCenterPanelToggle onClick={this.onToggleNotifications} />
+				</div>
+			</ErrorBoundary>
 			<div className='header dark'>
 				<div className='gutter frow va-middle ha-between phm'>
 					<div className='fcol'>
@@ -64,24 +82,6 @@ class Header extends React.Component<IPropsHeader & InjectedTranslateProps, ISta
 					</div>
 				</div>
 			</div>
-			<ErrorBoundary>
-				<VelocityReact.VelocityTransitionGroup enter={{
-					animation: {
-						translateX: ['0%', '100%']
-					}, easing: 'ease-out', duration: 300
-				}} leave={{
-					animation: {
-						translateX: ['100%', '0%']
-					}, easing: 'ease-in', duration: 500
-				}}>
-					{this.state.showNotifications && <NotificationCenterPanel />}
-				</VelocityReact.VelocityTransitionGroup>
-			</ErrorBoundary>
-			<ErrorBoundary>
-				<div className='status-bar'>
-					<NotificationCenterPanelToggle onClick={this.onToggleNotifications} />
-				</div>
-			</ErrorBoundary>
 		</React.Fragment>
 	}
 }
