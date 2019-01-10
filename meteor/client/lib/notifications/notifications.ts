@@ -190,7 +190,7 @@ export class Notification extends EventEmitter {
 
 	static isEqual (a: Notification | undefined, b: Notification | undefined): boolean {
 		if (typeof a !== typeof b) return false
-		return _.isEqual(_.omit(a, ['created', 'snoozed']), _.omit(b, ['created', 'snoozed']))
+		return _.isEqual(_.omit(a, ['created', 'snoozed', 'actions', '_events']), _.omit(b, ['created', 'snoozed', 'actions', '_events']))
 	}
 
 	static compare (a: Notification, b: Notification): number {
