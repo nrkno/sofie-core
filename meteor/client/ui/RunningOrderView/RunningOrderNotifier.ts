@@ -47,25 +47,19 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 		this._deviceStatusDep = new Tracker.Dependency()
 		this._notesDep = new Tracker.Dependency()
 
-		console.log(`Starting up RunningOrderNotifier...`)
-
 		this._notifier = NotificationCenter.registerNotifier((): NotificationList => {
-			console.log(`Return notificationList`)
 			return this._notificationList
 		})
 		ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus', this.autorun(() => {
-			console.log(`main RO notification autorun`)
 			const rRunningOrderId = reactiveData.getRRunningOrderId(runningOrderId).get()
 
 			if (rRunningOrderId) {
-				console.log(`has rRunningOrderId`)
 				const studioInstallationId = reactiveData.getRRunningOrderStudioId(rRunningOrderId).get()
 				const showStyleBaseId = reactiveData.getRRunningOrderShowStyleBaseId(rRunningOrderId).get()
 				ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus.StudioInstallation', this.autorun(() => {
 					// const studioInstallation = StudioInstallations.findOne(studioInstallationId)
 					const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
 					if (showStyleBase) {
-						console.log(`has showStyleBase`)
 						this.reactiveMediaStatus(rRunningOrderId, showStyleBase)
 						this.reactiveSLNotes(rRunningOrderId)
 						this.reactivePeripheralDeviceStatus(studioInstallationId)
@@ -83,7 +77,6 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 		}))
 
 		this.autorun((comp) => {
-			console.log(`notifications autorun`)
 			this._mediaStatusDep.depend()
 			this._deviceStatusDep.depend()
 			this._notesDep.depend()
@@ -97,7 +90,6 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 	}
 
 	stop () {
-		console.log(`RunningOrderNotifier stopped`)
 		super.stop()
 
 		this._notifier.stop()
@@ -113,11 +105,8 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 			reactivePeripheralDevices = reactiveData.getRPeripheralDevices(studioInstallationId)
 		}
 		ReactiveDataHelper.registerComputation('RunningOrderView.PeripheralDevices', this.autorun(() => {
-			console.log(`peripheral devices autorun`)
 			const devices = reactivePeripheralDevices ? reactivePeripheralDevices.get() : []
 			const newDevItemIds = devices.map(item => item._id)
-
-			console.log(devices)
 
 			devices.forEach((item) => {
 				let newNotification: Notification | undefined = undefined
@@ -145,7 +134,6 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 	private reactiveSLNotes (rRunningOrderId: string) {
 		let oldNoteIds: Array<string> = []
 		ReactiveDataHelper.registerComputation('RunningOrderView.SegmentLineNotes', this.autorun(() => {
-			console.log(`line notes autorun`)
 			const segmentLines = SegmentLines.find({
 				runningOrderId: rRunningOrderId
 			}).fetch()
@@ -190,7 +178,6 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 	private reactiveMediaStatus (rRunningOrderId: string, showStyleBase: ShowStyleBase) {
 		let oldItemIds: Array<string> = []
 		ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus.SegmentLineItems', this.autorun((comp: Tracker.Computation) => {
-			console.log(`media status autorun`)
 			const items = reactiveData.getRSegmentLineItems(rRunningOrderId).get()
 			const newItemIds = items.map(item => item._id)
 			items.forEach((item) => {
