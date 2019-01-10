@@ -1206,7 +1206,6 @@ export namespace ServerPlayoutAPI {
 
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
-		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
 
 		let segmentLine = SegmentLines.findOne({
 			_id: slId,
