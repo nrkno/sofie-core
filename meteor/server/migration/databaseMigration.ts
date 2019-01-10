@@ -391,6 +391,9 @@ function prefixIdsOnStep (prefix: string, step: MigrationStepInternal): Migratio
 			return prefix + override
 		})
 	}
+	if (step.dependOnResultFrom) {
+		step.dependOnResultFrom = prefix + step.dependOnResultFrom
+	}
 	return step
 }
 
