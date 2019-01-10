@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+import { Random } from 'meteor/random'
 import {
 	AsRunLogEventBase,
 	AsRunLog,
@@ -13,7 +14,8 @@ import {
 	pushOntoPath,
 	waitForPromiseAll,
 	asyncCollectionFindOne,
-	asyncCollectionUpdate
+	asyncCollectionUpdate,
+	extendMandadory
 } from '../../lib/lib'
 import {
 	RunningOrder,
@@ -29,7 +31,8 @@ import { queueExternalMessages } from './ExternalMessageQueue'
 export function pushAsRunLogAsync (eventBase: AsRunLogEventBase, rehersal: boolean, timestamp?: Time): Promise<AsRunLogEvent> {
 	if (!timestamp) timestamp = getCurrentTime()
 
-	let event: AsRunLogEvent = _.extend({}, eventBase, {
+	let event: AsRunLogEvent = extendMandadory<AsRunLogEventBase, AsRunLogEvent>(eventBase, {
+		_id: Random.id(),
 		timestamp: timestamp,
 		rehersal: rehersal
 	})
