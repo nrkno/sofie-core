@@ -194,7 +194,7 @@ export class Notification extends EventEmitter {
 	}
 
 	static compare (a: Notification, b: Notification): number {
-		return (a.status - b.status) || (a.created - b.created) || (a.rank - b.rank)
+		return (a.status - b.status) || (a.rank - b.rank) || (a.created - b.created)
 	}
 
 	snooze () {

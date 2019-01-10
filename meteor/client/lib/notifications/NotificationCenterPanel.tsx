@@ -8,6 +8,7 @@ import { MeteorReactComponent } from '../MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from './notifications'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { faChevronLeft } from '@fortawesome/fontawesome-free-solid'
+import { sofieWarningIcon as warningIcon } from './warningIcon'
 
 interface IPopUpProps {
 	item: Notification
@@ -38,7 +39,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 		onClick={(e) => this.triggerEvent('default', e)}
 		>
 			<div className='notification-pop-up__header'>
-				<svg height='16' viewBox='0 0 17 16' width='17' xmlns='http://www.w3.org/2000/svg'><path d='m14.8185992 4.55137109 3.200058 10.98449001c.3089457 1.060484-.3002966 2.1706261-1.3607806 2.4795717-.3653366.1064318-.7534545.1064318-1.1187911 0l-10.98449006-3.200058c-1.06048403-.3089456-1.66972626-1.4190877-1.36078061-2.4795717.09408471-.3229543.26810614-.6169615.50596262-.854818l7.78443205-7.784432c.7810486-.78104858 2.0473785-.78104858 2.8284271 0 .2378565.23785649.4118779.53186368.5059626.85481799z' fill='none' stroke='#ff0' transform='matrix(-.70710678 -.70710678 .70710678 -.70710678 8.608516 25.600215)' /></svg>
+				{warningIcon}
 			</div>
 			<div className='notification-pop-up__contents'>
 				{item.message}
@@ -132,9 +133,10 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 	render () {
 		return (
 			<div className={ClassNames('notifications__toggle-button', {
-				'open': this.props.isOpen
+				'open': this.props.isOpen,
+				'has-items': this.props.count > 0
 			})} role='button' onClick={this.props.onClick} tabIndex={0}>
-				<FontAwesomeIcon icon={faChevronLeft} />
+				{warningIcon}
 				{ this.props.count > 0 &&
 					<span className='notifications__toggle-button__count'>{this.props.count}</span>
 				}

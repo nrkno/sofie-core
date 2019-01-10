@@ -108,11 +108,13 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 			const devices = reactivePeripheralDevices ? reactivePeripheralDevices.get() : []
 			const newDevItemIds = devices.map(item => item._id)
 
+			console.log(devices)
+
 			devices.forEach((item) => {
 				let newNotification: Notification | undefined = undefined
 
 				if (item.status.statusCode !== PeripheralDeviceAPI.StatusCode.GOOD || !item.connected) {
-					newNotification = new Notification(item._id, this.convertDeviceStatus(item), this.makeDeviceMessage(item), 'Devices', getCurrentTime(), true)
+					newNotification = new Notification(item._id, this.convertDeviceStatus(item), this.makeDeviceMessage(item), 'Devices', getCurrentTime(), true, undefined, -1)
 				}
 				if (newNotification && !Notification.isEqual(this._deviceStatus[item._id], newNotification)) {
 					this._deviceStatus[item._id] = newNotification
@@ -192,7 +194,7 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 									label: 'Show issue',
 									type: 'default'
 								}
-							], 0)
+							], 1)
 							newNotification.on('action', (notification, type, e) => {
 								switch (type) {
 									case 'default':

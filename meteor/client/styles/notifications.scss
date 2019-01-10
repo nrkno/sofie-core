@@ -122,36 +122,56 @@
         transition: 0s background-color;
     }
 
-    > svg.svg-inline--fa {
-        display: block;
-        position: relative;
-        width: 0.7em;
-        height: auto;
-        margin-top: 1em;
-        margin-left: 1.2em;
-        
-        transform-origin: center center;
-        transform: rotate(0deg);
-        transition: 0.5s transform ease-in-out;
+    > svg {
+        position: absolute;
+        width: 50%;
+        height: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -53%);
+        transition: 0.5s all ease-in-out;
+
+        > path {
+            stroke: rgb(255, 255, 255);
+            transition: 0.5s all linear;
+        }
+    }
+
+    &.has-items {
+        > svg {
+            transform: translate(-80%, -53%);
+
+            > path {
+                stroke: rgb(255, 255, 0);
+            }
+        }
     }
 
     &.open {
-        transition: 0.3s background-color;
         
-        > svg.svg-inline--fa {
-            transform: rotate(180deg);
-            transition: 0.3s transform ease-in-out;
-        }
     }
 
     .notifications__toggle-button__count {
         display: block;
         position: absolute;
 
-        bottom: 0;
-        right: 0;
+        left: 62%;
+        top: 50%;
+        transform: translate(0, -50%);
+        width: 35%;
+        text-align: center;
         font-size: 0.8em;
         font-weight: 500;
+
+        opacity: 0;
+        transition: 0.2s opacity ease-in 0s;
+    }
+    
+    &.has-items {
+        .notifications__toggle-button__count {
+            opacity: 1;
+            transition: 0.2s opacity ease-out 0.4s;
+        }
     }
 }
 
