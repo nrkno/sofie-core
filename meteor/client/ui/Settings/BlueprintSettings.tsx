@@ -125,9 +125,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						</div>
 					</label>
 					</div>
-					<div className='mod mvs mhs'>
-						<p>TODO: Manual edit (with warnings)</p>
-					</div>
 				</div>
 			</div>
 		)
