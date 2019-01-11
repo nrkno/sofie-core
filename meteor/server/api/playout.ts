@@ -2372,7 +2372,7 @@ function transformSegmentLineIntoTimeline (
 					// }
 
 					timelineObjs.push(extendMandadory<TimelineObjectCoreExt, TimelineObjRunningOrder>(o, {
-						_id: o.id,
+						_id: o.id || o['_id'],
 						siId: '', // set later
 						inGroup: segmentLineGroup ? segmentLineItemGroup._id : undefined,
 						roId: runningOrder._id,
