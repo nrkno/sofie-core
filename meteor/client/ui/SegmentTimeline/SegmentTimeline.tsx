@@ -179,19 +179,21 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 
 	render () {
 		return (
-			<div className='segment-timeline__zoom-area'
-				onDoubleClick={(e) => this.props.onZoomDblClick(e)}>
-				<div className='segment-timeline__timeline'>
-					{this.renderZoomTimeline()}
+			<div className='segment-timeline__zoom-area-container'>
+				<div className='segment-timeline__zoom-area'
+					onDoubleClick={(e) => this.props.onZoomDblClick(e)}>
+					<div className='segment-timeline__timeline'>
+						{this.renderZoomTimeline()}
+					</div>
+					<SegmentTimelineZoomControls scrollLeft={this.props.scrollLeft}
+						scrollWidth={this.props.timelineWidth / this.props.timeScale}
+						onScroll={(left, e) => this.props.onScroll(left, e)}
+						segmentDuration={this.getSegmentDuration()}
+						liveLineHistorySize={this.props.liveLineHistorySize}
+						timeScale={this.props.timeScale}
+						onZoomChange={(newScale, e) => this.props.onZoomChange(newScale, e)} />
+					{this.renderMiniLiveLine()}
 				</div>
-				<SegmentTimelineZoomControls scrollLeft={this.props.scrollLeft}
-					scrollWidth={this.props.timelineWidth / this.props.timeScale}
-					onScroll={(left, e) => this.props.onScroll(left, e)}
-					segmentDuration={this.getSegmentDuration()}
-					liveLineHistorySize={this.props.liveLineHistorySize}
-					timeScale={this.props.timeScale}
-					onZoomChange={(newScale, e) => this.props.onZoomChange(newScale, e)} />
-				{this.renderMiniLiveLine()}
 			</div>
 		)
 	}

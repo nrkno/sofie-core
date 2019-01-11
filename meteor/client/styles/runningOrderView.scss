@@ -516,11 +516,14 @@ body.vertical-overflow-only {
 					$output-layer-group-collapse-animation-duration margin ($output-layer-group-collapse-animation-duration * 1/2);
 	}
 
+	.segment-timeline__zoom-area-container {
+		grid-column: timeline / end;
+		grid-row: zoom-area / end;
+	}
+
 	// The area controlling the zoom at the bottom of the segment
 	.segment-timeline__zoom-area {
 		position: relative;
-		grid-column: timeline / end;
-		grid-row: zoom-area / end;
 		max-height: 4em;
 		margin: 0.2em 0.2em 0em 0;
 		padding: 1px 0;
@@ -646,7 +649,7 @@ body.vertical-overflow-only {
 
 			.segment-timeline__zoom-area__controls__selected-area {
 				position: absolute;
-				border: 1px solid white;
+				border: 1px solid rgba(255, 255, 255, 0.3);
 				top: 0;
 				bottom: 0;
 				width: 250px;
