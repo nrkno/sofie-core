@@ -116,7 +116,6 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 		}).fetch()
 		attachedDevices.splice(attachedDevices.length, 0, ...subDevices)
 	})
-	console.log(attachedDevices)
 
 	let mosDevices = attachedDevices.filter(i => i.type === PeripheralDeviceAPI.DeviceType.MOSDEVICE)
 	let playoutDevices = attachedDevices.filter(i => i.type === PeripheralDeviceAPI.DeviceType.PLAYOUT)
