@@ -29,6 +29,7 @@ export function getShowStyleCompound (showStyleVariantId: string): ShowStyleComp
 	_.each(showStyleBase.config, (config: IConfigItem) => {
 		configs[config._id] = config
 	})
+	// Override base configs with variant configs:
 	_.each(showStyleVariant.config, (config: IConfigItem) => {
 		configs[config._id] = config
 	})
