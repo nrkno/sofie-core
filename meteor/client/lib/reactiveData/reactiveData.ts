@@ -127,10 +127,8 @@ export namespace reactiveData {
 				peripheralDevices.forEach((i) => {
 					const subDevices = PeripheralDevices.find({ parentDeviceId: i._id }).fetch()
 					allDevices.splice(allDevices.length, 0, ...subDevices)
-					console.log(subDevices)
 				})
 				rVar.set(allDevices)
-				console.log('Setting reactive peripheral devices to: ', allDevices)
 			})
 
 			return rVar
