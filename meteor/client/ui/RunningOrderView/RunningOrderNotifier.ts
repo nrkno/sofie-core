@@ -14,6 +14,7 @@ import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SegmentLines, SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
 import { getCurrentTime } from '../../../lib/lib'
+import { ReactiveVar } from 'meteor/reactive-var';
 
 export interface RONotificationEvent {
 	sourceLocator: {
@@ -99,9 +100,9 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 
 	private reactivePeripheralDeviceStatus (studioInstallationId: string | undefined) {
 		let oldDevItemIds: Array<string> = []
-		let reactivePeripheralDevices
+		let reactivePeripheralDevices: ReactiveVar<PeripheralDevice[]>
 		if (studioInstallationId) {
-			Meteor.subscribe('peripheralDevices', { studioInstallationId: studioInstallationId })
+			Meteor.subscribe('peripheralDevicesAndSubDevices', { studioInstallationId: studioInstallationId })
 			reactivePeripheralDevices = reactiveData.getRPeripheralDevices(studioInstallationId)
 		}
 		ReactiveDataHelper.registerComputation('RunningOrderView.PeripheralDevices', this.autorun(() => {

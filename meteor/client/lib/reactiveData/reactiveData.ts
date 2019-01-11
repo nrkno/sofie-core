@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { ReactiveDataHelper } from './reactiveDataHelper'
 import { ReactiveVar } from 'meteor/reactive-var'
@@ -118,10 +119,18 @@ export namespace reactiveData {
 			const rVar = new ReactiveVar<PeripheralDevice[]>([])
 
 			Tracker.autorun(() => {
+				const allDevices: PeripheralDevice[] = []
 				const peripheralDevices = PeripheralDevices.find({
 					studioInstallationId: studioId
 				}).fetch()
-				rVar.set(peripheralDevices)
+				allDevices.splice(allDevices.length, 0, ...peripheralDevices)
+				peripheralDevices.forEach((i) => {
+					const subDevices = PeripheralDevices.find({ parentDeviceId: i._id }).fetch()
+					allDevices.splice(allDevices.length, 0, ...subDevices)
+					console.log(subDevices)
+				})
+				rVar.set(allDevices)
+				console.log('Setting reactive peripheral devices to: ', allDevices)
 			})
 
 			return rVar

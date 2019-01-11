@@ -105,9 +105,18 @@ function diffOnLineOffLineList (prevList: OnLineOffLineList, list: OnLineOffLine
 export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
-	const attachedDevices = PeripheralDevices.find({
+	const attachedDevices: PeripheralDevice[] = []
+	const parentDevices = PeripheralDevices.find({
 		studioInstallationId: props.studioInstallation._id
 	}).fetch()
+	attachedDevices.splice(attachedDevices.length, 0, ...parentDevices)
+	parentDevices.forEach(i => {
+		const subDevices = PeripheralDevices.find({
+			parentDeviceId: i._id
+		}).fetch()
+		attachedDevices.splice(attachedDevices.length, 0, ...subDevices)
+	})
+	console.log(attachedDevices)
 
 	let mosDevices = attachedDevices.filter(i => i.type === PeripheralDeviceAPI.DeviceType.MOSDEVICE)
 	let playoutDevices = attachedDevices.filter(i => i.type === PeripheralDeviceAPI.DeviceType.PLAYOUT)
@@ -191,7 +200,7 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 	}
 
 	componentWillMount () {
-		this.subscribe('peripheralDevices', {
+		this.subscribe('peripheralDevicesAndSubDevices', {
 			studioInstallationId: this.props.studioInstallation._id
 		})
 	}
