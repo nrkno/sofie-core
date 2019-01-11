@@ -85,9 +85,10 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 	}
 
 	renderInfiniteItemContentEnded () {
-		const content = this.props.segmentLineItem.content
-		if (this.props.segmentLineItem.infiniteMode && content && content.sourceDuration && (this.props.segmentLineItem.renderedInPoint || 0) + (content.sourceDuration as number) < (this.props.segmentLineDuration || 0)) {
-			return <div className='segment-timeline__layer-item__source-finished' style={{'left': ((content.sourceDuration as number) * this.props.timeScale).toString() + 'px'}}></div>
+		const content = this.props.segmentLineItem.content as VTContent
+		const seek = content && content.seek ? content.seek : 0
+		if (this.props.segmentLineItem.infiniteMode && content && content.sourceDuration && (this.props.segmentLineItem.renderedInPoint || 0) + (content.sourceDuration - seek) < (this.props.segmentLineDuration || 0)) {
+			return <div className='segment-timeline__layer-item__source-finished' style={{'left': ((content.sourceDuration - seek) * this.props.timeScale).toString() + 'px'}}></div>
 		}
 		return null
 	}

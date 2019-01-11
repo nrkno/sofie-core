@@ -57,7 +57,8 @@ import {
 	SegmentLineItemLifespan,
 	SegmentLineHoldMode,
 	TimelineObjHoldMode,
-	MOS
+	MOS,
+	VTContent
 } from 'tv-automation-sofie-blueprints-integration'
 import { loadBlueprints, postProcessSegmentLineAdLibItems, postProcessSegmentLineBaselineItems, RunningOrderContext, getBlueprintOfRunningOrder, SegmentLineContext } from './blueprints'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
@@ -710,6 +711,10 @@ export namespace ServerPlayoutAPI {
 				const newSli = clone(sli) as SegmentLineItem
 				newSli.segmentLineId = m.currentSegmentLineId
 				newSli.expectedDuration = 0
+				const content = newSli.content as VTContent
+				if (content.fileName && content.sourceDuration && sli.startedPlayback) {
+					content.seek = Math.min(content.sourceDuration, getCurrentTime() - sli.startedPlayback)
+				}
 				newSli.dynamicallyInserted = true
 				newSli._id = sli._id + '_hold'
 
