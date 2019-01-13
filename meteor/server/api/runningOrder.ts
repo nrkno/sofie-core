@@ -16,6 +16,7 @@ import { updateStory, reloadRunningOrder } from './integration/mos'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
+import { MongoModifier } from '../../lib/typings/meteor'
 
 /**
  * After a Segment has beed removed, handle its contents
@@ -184,7 +185,7 @@ export function updateSegments (runningOrderId: string) {
 	let segment: DBSegment
 	let segments: Array<DBSegment> = []
 	let rankSegment = 0
-	let segmentLineUpdates = {}
+	let segmentLineUpdates: {[id: string]: Partial<DBSegmentLine>} = {}
 	_.each(segmentLines, (segmentLine: SegmentLine) => {
 		let slugParts = segmentLine.slug.split(';')
 
@@ -202,7 +203,7 @@ export function updateSegments (runningOrderId: string) {
 	})
 
 	// Update SegmentLines:
-	_.each(segmentLineUpdates, (modifier, id) => {
+	_.each(segmentLineUpdates, (modifier, id: string) => {
 
 		logger.info('added SegmentLine to segment ' + modifier['segmentId'])
 		SegmentLines.update(id, {$set: modifier})
@@ -388,7 +389,7 @@ export namespace ServerRunningOrderAPI {
 				}
 			})
 
-			Meteor.call(PlayoutAPI.methods.reloadData, runningOrderId, false, (err, result) => {
+			Meteor.call(PlayoutAPI.methods.reloadData, runningOrderId, false, (err: Error | undefined) => {
 				if (err) {
 					logger.error(err)
 					return

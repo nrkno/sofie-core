@@ -149,7 +149,7 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 		_.each(studios, (studio) => {
 			showStyleBaseIds = showStyleBaseIds.concat(studio.supportedShowStyleBase)
 		})
-
+		queryShowStyleBases._id = ''
 		queryShowStyleBases = {
 			_id: {$in: showStyleBaseIds}
 		}

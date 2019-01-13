@@ -5,7 +5,7 @@ import { RecordedFiles, RecordedFile } from '../../lib/collections/RecordedFiles
 import { StudioInstallations, StudioInstallation, ITestToolsConfig, MappingExt } from '../../lib/collections/StudioInstallations'
 import { getCurrentTime, literal } from '../../lib/lib'
 import { TestToolsAPI } from '../../lib/api/testTools'
-import { setMeteorMethods } from '../methods'
+import { setMeteorMethods, Methods } from '../methods'
 import { logger } from '../logging'
 import { updateTimeline } from './playout'
 import * as moment from 'moment'
@@ -21,6 +21,7 @@ import { getHash } from '../lib'
 import { LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
 import * as request from 'request'
 import { promisify } from 'util'
+import { check } from 'meteor/check'
 
 const deleteRequest = promisify(request.delete)
 
@@ -105,6 +106,7 @@ export namespace ServerTestToolsAPI {
 	 * Stop a currently running recording
 	 */
 	export function recordStop (studioId: string) {
+		check(studioId, String)
 		const updated = RecordedFiles.update({
 			studioId: studioId,
 			stoppedAt: {$exists: false}
@@ -122,6 +124,8 @@ export namespace ServerTestToolsAPI {
 	}
 
 	export function recordStart (studioId: string, name: string) {
+		check(studioId, String)
+		check(name, String)
 		const studio = StudioInstallations.findOne(studioId)
 		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" was not found!`)
 
@@ -140,7 +144,7 @@ export namespace ServerTestToolsAPI {
 		if (!config.recordings.channelIndex) throw new Meteor.Error(500, `Recording channel for Studio "${studio._id}" not defined!`)
 
 		// Ensure the layer mappings in the db are correct
-		const setter = {}
+		const setter: any = {}
 		setter['mappings.' + LLayerInput] = literal<MappingCasparCG & MappingExt>({
 			device: PlayoutDeviceType.CASPARCG,
 			deviceId: config.recordings.deviceId,
@@ -177,6 +181,7 @@ export namespace ServerTestToolsAPI {
 	}
 
 	export function recordDelete (id: string) {
+		check(id, String)
 		const file = RecordedFiles.findOne(id)
 		if (!file) throw new Meteor.Error(404, `Recording "${id}" was not found!`)
 
@@ -199,14 +204,14 @@ export namespace ServerTestToolsAPI {
 	}
 }
 
-let methods = {}
-methods[TestToolsAPI.methods.recordStop] = (studioId) => {
+let methods: Methods = {}
+methods[TestToolsAPI.methods.recordStop] = (studioId: string) => {
 	return ServerTestToolsAPI.recordStop(studioId)
 }
-methods[TestToolsAPI.methods.recordStart] = (studioId, name) => {
+methods[TestToolsAPI.methods.recordStart] = (studioId: string, name: string) => {
 	return ServerTestToolsAPI.recordStart(studioId, name)
 }
-methods[TestToolsAPI.methods.recordDelete] = (id) => {
+methods[TestToolsAPI.methods.recordDelete] = (id: string) => {
 	return ServerTestToolsAPI.recordDelete(id)
 }
 

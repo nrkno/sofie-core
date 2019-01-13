@@ -3,7 +3,7 @@ import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBa
 import { rejectFields } from './lib'
 
 export namespace ShowStyleBasesSecurity {
-	export function allowReadAccess (selector: object, token: string, context) {
+	export function allowReadAccess (selector: object, token: string, context: any) {
 
 		return true
 		// TODO: implement some security here

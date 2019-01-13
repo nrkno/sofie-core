@@ -80,7 +80,7 @@ import { transformTimeline } from '../../lib/timeline'
 import { ClientAPI } from '../../lib/api/client'
 import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
 import { sendSlackMessageToWebhookSync } from './integration/slack'
-import { setMeteorMethods } from '../methods'
+import { setMeteorMethods, Methods } from '../methods'
 import { sendStoryStatus, updateStory } from './integration/mos'
 import { updateSegmentLines, reloadRunningOrderData } from './runningOrder'
 import { runPostProcessBlueprint } from '../../server/api/runningOrder'
@@ -95,7 +95,7 @@ export namespace ServerPlayoutAPI {
 	 * Prepare the broadcast for transmission
 	 * To be triggered well before the broadcast because it may take time
 	 */
-	export function roPrepareForBroadcast (roId: string) {
+	export function roPrepareForBroadcast (roId: string): ClientAPI.ClientResponse {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (runningOrder.active) throw new Meteor.Error(404, `roPrepareForBroadcast cannot be run on an active runningOrder!`)
@@ -118,7 +118,7 @@ export namespace ServerPlayoutAPI {
 	 * Reset the broadcast, to be used during testing.
 	 * The User might have run through the running order and wants to start over and try again
 	 */
-	export function roResetRunningOrder (roId: string) {
+	export function roResetRunningOrder (roId: string): ClientAPI.ClientResponse {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (runningOrder.active && !runningOrder.rehearsal) throw new Meteor.Error(401, `roResetBroadcast can only be run in rehearsal!`)
@@ -126,12 +126,14 @@ export namespace ServerPlayoutAPI {
 		resetRunningOrder(runningOrder)
 
 		updateTimeline(runningOrder.studioInstallationId)
+
+		return { success: 200 }
 	}
 	/**
 	 * Activate the runningOrder, final preparations before going on air
 	 * To be triggered by the User a short while before going on air
 	 */
-	export function roResetAndActivate (roId: string) {
+	export function roResetAndActivate (roId: string): ClientAPI.ClientResponse {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (runningOrder.active && !runningOrder.rehearsal) throw new Meteor.Error(402, `roResetAndActivate cannot be run when active!`)
@@ -143,7 +145,7 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Only activate the runningOrder, don't reset anything
 	 */
-	export function roActivate (roId: string, rehearsal: boolean) {
+	export function roActivate (roId: string, rehearsal: boolean): ClientAPI.ClientResponse {
 		check(rehearsal, Boolean)
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -153,22 +155,26 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Deactivate the runningOrder
 	 */
-	export function roDeactivate (roId: string, rehearsal: boolean) {
+	export function roDeactivate (roId: string, rehearsal: boolean): ClientAPI.ClientResponse {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
-		return deactivateRunningOrder(runningOrder)
+		return ClientAPI.responseSuccess(
+			deactivateRunningOrder(runningOrder)
+		)
 	}
 	/**
 	 * Trigger a reload of data of the runningOrder
 	 */
-	export function reloadData (roId: string) {
+	export function reloadData (roId: string): ClientAPI.ClientResponse {
 		// Reload and reset the Running order
 		check(roId, String)
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
-		return reloadRunningOrderData(runningOrder)
+		return ClientAPI.responseSuccess(
+			reloadRunningOrderData(runningOrder)
+		)
 	}
 	function resetRunningOrder (runningOrder: RunningOrder) {
 		logger.info('resetRunningOrder ' + runningOrder._id)
@@ -301,7 +307,7 @@ export namespace ServerPlayoutAPI {
 
 		return anyOtherActiveRunningOrders
 	}
-	function activateRunningOrder (runningOrder: RunningOrder, rehearsal: boolean) {
+	function activateRunningOrder (runningOrder: RunningOrder, rehearsal: boolean): ClientAPI.ClientResponse {
 		logger.info('Activating RO ' + runningOrder._id + (rehearsal ? ' (Rehearsal)' : ''))
 
 		rehearsal = !!rehearsal
@@ -550,18 +556,16 @@ export namespace ServerPlayoutAPI {
 		}
 		waitForPromiseAll(ps)
 	}
-	export function userRoTake (roId: string) {
+	export function userRoTake (roId: string): ClientAPI.ClientResponse {
 		// Called by the user. Wont throw as nasty errors
 
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (!runningOrder.active) {
-			logger.warn(`RunningOrder "${roId}" is not active!`)
-			return
+			return ClientAPI.responseError(`RunningOrder "${roId}" is not active! Please activate the runningOrder before doing a TAKE.`)
 		}
 		if (!runningOrder.nextSegmentLineId) {
-			logger.warn('nextSegmentLineId is not set!')
-			return
+			return ClientAPI.responseError('No Next point found. Please set a segmentLine as Next before foing a TAKE.')
 		}
 		if (runningOrder.currentSegmentLineId) {
 			const currentSegmentLine = SegmentLines.findOne(runningOrder.currentSegmentLineId)
@@ -570,16 +574,18 @@ export namespace ServerPlayoutAPI {
 				const lastTake = currentSegmentLine.timings.take ? currentSegmentLine.timings.take[currentSegmentLine.timings.take.length - 1] : 0
 				const lastChange = Math.max(lastTake, lastStartedPlayback)
 				if (getCurrentTime() - lastChange < MINIMUM_TAKE_SPAN) {
-					logger.warn(`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${currentSegmentLine._id}: ${getCurrentTime() - lastStartedPlayback}`)
-					return
+					logger.debug(`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${currentSegmentLine._id}: ${getCurrentTime() - lastStartedPlayback}`)
+					return ClientAPI.responseError(`Ignoring TAKES that are too quick after eachother (${MINIMUM_TAKE_SPAN} ms)`)
 				}
 			} else {
 				throw new Meteor.Error(404, `SegmentLine "${runningOrder.currentSegmentLineId}", set as currentSegmentLine in "${roId}", not found!`)
 			}
 		}
-		return roTake(runningOrder)
+		return ClientAPI.responseSuccess(
+			roTake(runningOrder)
+		)
 	}
-	export function roTake (roId: string | RunningOrder ) {
+	export function roTake (roId: string | RunningOrder ): void {
 
 		let now = getCurrentTime()
 		let runningOrder: RunningOrder = (
@@ -755,7 +761,7 @@ export namespace ServerPlayoutAPI {
 			}
 		})
 	}
-	export function roSetNext (roId: string, nextSlId: string | null, setManually?: boolean) {
+	export function roSetNext (roId: string, nextSlId: string | null, setManually?: boolean): ClientAPI.ClientResponse {
 		check(roId, String)
 		if (nextSlId) check(nextSlId, String)
 
@@ -775,8 +781,41 @@ export namespace ServerPlayoutAPI {
 
 		// remove old auto-next from timeline, and add new one
 		updateTimeline(runningOrder.studioInstallationId)
+
+		return ClientAPI.responseSuccess()
 	}
-	export function roMoveNext (roId: string, horisontalDelta: number, verticalDelta: number, setManually: boolean, currentNextSegmentLineItemId?: string) {
+	export function userRoMoveNext (
+		roId: string,
+		horisontalDelta: number,
+		verticalDelta: number,
+		setManually: boolean,
+		currentNextSegmentLineItemId?: string
+	): ClientAPI.ClientResponse {
+		try {
+			return literal<ClientAPI.ClientResponseSuccess>({
+				success: 200,
+				result: roMoveNext(
+					roId,
+					horisontalDelta,
+					verticalDelta,
+					setManually,
+					currentNextSegmentLineItemId
+				)
+			})
+		} catch (error) {
+			return literal<ClientAPI.ClientResponseError>({
+				error: 500,
+				message: error.toString()
+			})
+		}
+	}
+	export function roMoveNext (
+		roId: string,
+		horisontalDelta: number,
+		verticalDelta: number,
+		setManually: boolean,
+		currentNextSegmentLineItemId?: string
+	): string {
 		check(roId, String)
 		check(horisontalDelta, Number)
 		check(verticalDelta, Number)
@@ -858,9 +897,9 @@ export namespace ServerPlayoutAPI {
 		}
 
 	}
-	export function roActivateHold (roId: string) {
+	export function roActivateHold (roId: string): ClientAPI.ClientResponse {
 		check(roId, String)
-		console.log('roActivateHold')
+		logger.debug('roActivateHold')
 
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -885,6 +924,7 @@ export namespace ServerPlayoutAPI {
 
 		updateTimeline(runningOrder.studioInstallationId)
 
+		return ClientAPI.responseSuccess()
 	}
 	export function roStoriesMoved (roId: string, onAirNextWindowWidth: number | undefined, nextPosition: number | undefined) {
 		check(roId, String)
@@ -921,7 +961,7 @@ export namespace ServerPlayoutAPI {
 			}
 		}
 	}
-	export function roDisableNextSegmentLineItem (roId: string, undo?: boolean): string | null {
+	export function roDisableNextSegmentLineItem (roId: string, undo?: boolean): ClientAPI.ClientResponse {
 		check(roId, String)
 
 		let runningOrder = RunningOrders.findOne(roId)
@@ -1032,9 +1072,9 @@ export namespace ServerPlayoutAPI {
 			}})
 			updateTimeline(studio._id)
 
-			return nextSegmentLineItem._id
+			return ClientAPI.responseSuccess()
 		} else {
-			return null
+			return ClientAPI.responseError('Found no future segmentLineItems')
 		}
 	}
 
@@ -1265,7 +1305,8 @@ export namespace ServerPlayoutAPI {
 				_.compact(
 					_.map(newSegmentLineItem.content.timelineObjects, (obj) => {
 						return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
-							_id: obj.id || obj['_id'],
+							// @ts-ignore _id
+							_id: obj.id || obj._id,
 							siId: '', // set later
 							objectType: TimelineObjType.RUNNINGORDER
 						})
@@ -1557,7 +1598,7 @@ export namespace ServerPlayoutAPI {
 
 		updateTimeline(runningOrder.studioInstallationId)
 	}
-	export const roToggleSegmentLineArgument = syncFunction(function roToggleSegmentLineArgument (roId: string, slId: string, property: string, value: string) {
+	export const roToggleSegmentLineArgument = syncFunction(function roToggleSegmentLineArgument (roId: string, slId: string, property: string, value: string): ClientAPI.ClientResponse {
 		check(roId, String)
 		check(slId, String)
 
@@ -1571,7 +1612,7 @@ export namespace ServerPlayoutAPI {
 
 		if (rArguments[property] === value) {
 			// unset property
-			const mUnset = {}
+			const mUnset: any = {}
 			mUnset['runtimeArguments.' + property] = 1
 			SegmentLines.update(segmentLine._id, {$unset: mUnset, $set: {
 				dirty: true
@@ -1603,6 +1644,7 @@ export namespace ServerPlayoutAPI {
 				updateTimeline(runningOrder.studioInstallationId)
 			}
 		}
+		return ClientAPI.responseSuccess()
 	})
 	export function timelineTriggerTimeUpdateCallback (timelineObjId: string, time: number) {
 		check(timelineObjId, String)
@@ -1625,7 +1667,7 @@ export namespace ServerPlayoutAPI {
 			})
 		}
 	}
-	export function saveEvaluation (evaluation: EvaluationBase): string {
+	export function saveEvaluation (evaluation: EvaluationBase): ClientAPI.ClientResponse {
 		let id = Evaluations.insert(_.extend(evaluation, {
 			userId: this.userId,
 			timestamp: getCurrentTime(),
@@ -1660,54 +1702,54 @@ export namespace ServerPlayoutAPI {
 
 			}
 		})
-		return id
+		return ClientAPI.responseSuccess()
 	}
 }
 
-let methods = {}
-methods[PlayoutAPI.methods.roPrepareForBroadcast] = (roId: string) => {
+let methods: Methods = {}
+methods[PlayoutAPI.methods.roPrepareForBroadcast] = (roId: string): ClientAPI.ClientResponse => {
 	return ServerPlayoutAPI.roPrepareForBroadcast(roId)
 }
-methods[PlayoutAPI.methods.roResetRunningOrder] = (roId: string) => {
+methods[PlayoutAPI.methods.roResetRunningOrder] = (roId: string): ClientAPI.ClientResponse => {
 	return ServerPlayoutAPI.roResetRunningOrder(roId)
 }
-methods[PlayoutAPI.methods.roResetAndActivate] = (roId: string) => {
+methods[PlayoutAPI.methods.roResetAndActivate] = (roId: string): ClientAPI.ClientResponse => {
 	return ServerPlayoutAPI.roResetAndActivate(roId)
 }
-methods[PlayoutAPI.methods.roActivate] = (roId: string, rehearsal: boolean) => {
+methods[PlayoutAPI.methods.roActivate] = (roId: string, rehearsal: boolean): ClientAPI.ClientResponse => {
 	return ServerPlayoutAPI.roActivate(roId, rehearsal)
 }
-methods[PlayoutAPI.methods.roDeactivate] = (roId: string, rehearsal: boolean) => {
+methods[PlayoutAPI.methods.roDeactivate] = (roId: string, rehearsal: boolean): ClientAPI.ClientResponse => {
 	return ServerPlayoutAPI.roDeactivate(roId, rehearsal)
 }
-methods[PlayoutAPI.methods.reloadData] = (roId: string) => {
+methods[PlayoutAPI.methods.reloadData] = (roId: string): ClientAPI.ClientResponse => {
 	return ServerPlayoutAPI.reloadData(roId)
 }
-methods[PlayoutAPI.methods.segmentLineItemTakeNow] = (roId: string, slId: string, sliId: string) => {
+methods[PlayoutAPI.methods.segmentLineItemTakeNow] = (roId: string, slId: string, sliId: string): ClientAPI.ClientResponse => {
 	return ServerPlayoutAPI.segmentLineItemTakeNow(roId, slId, sliId)
 }
 methods[PlayoutAPI.methods.roTake] = (roId: string) => {
 	return ServerPlayoutAPI.roTake(roId)
 }
-methods[PlayoutAPI.methods.userRoTake] = (roId: string) => {
+methods[PlayoutAPI.methods.userRoTake] = (roId: string): ClientAPI.ClientResponse => {
 	return ServerPlayoutAPI.userRoTake(roId)
 }
-methods[PlayoutAPI.methods.roToggleSegmentLineArgument] = (roId: string, slId: string, property: string, value: string) => {
+methods[PlayoutAPI.methods.roToggleSegmentLineArgument] = (roId: string, slId: string, property: string, value: string): ClientAPI.ClientResponse => {
 	return ServerPlayoutAPI.roToggleSegmentLineArgument(roId, slId, property, value)
 }
-methods[PlayoutAPI.methods.roSetNext] = (roId: string, slId: string) => {
+methods[PlayoutAPI.methods.roSetNext] = (roId: string, slId: string): ClientAPI.ClientResponse => {
 	return ServerPlayoutAPI.roSetNext(roId, slId, true)
 }
-methods[PlayoutAPI.methods.roMoveNext] = (roId: string, horisontalDelta: number, verticalDelta: number) => {
-	return ServerPlayoutAPI.roMoveNext(roId, horisontalDelta, verticalDelta, true)
+methods[PlayoutAPI.methods.roMoveNext] = (roId: string, horisontalDelta: number, verticalDelta: number): ClientAPI.ClientResponse => {
+	return ServerPlayoutAPI.userRoMoveNext(roId, horisontalDelta, verticalDelta, true)
 }
-methods[PlayoutAPI.methods.roActivateHold] = (roId: string) => {
+methods[PlayoutAPI.methods.roActivateHold] = (roId: string): ClientAPI.ClientResponse => {
 	return ServerPlayoutAPI.roActivateHold(roId)
 }
 methods[PlayoutAPI.methods.roStoriesMoved] = (roId: string, onAirNextWindowWidth: number | undefined, nextPosition: number | undefined) => {
 	return ServerPlayoutAPI.roStoriesMoved(roId, onAirNextWindowWidth, nextPosition)
 }
-methods[PlayoutAPI.methods.roDisableNextSegmentLineItem] = (roId: string, undo?: boolean) => {
+methods[PlayoutAPI.methods.roDisableNextSegmentLineItem] = (roId: string, undo?: boolean): ClientAPI.ClientResponse => {
 	return ServerPlayoutAPI.roDisableNextSegmentLineItem(roId, undo)
 }
 methods[PlayoutAPI.methods.segmentLinePlaybackStartedCallback] = (roId: string, slId: string, startedPlayback: number) => {
@@ -1734,7 +1776,7 @@ methods[PlayoutAPI.methods.timelineTriggerTimeUpdateCallback] = (timelineObjId: 
 methods[PlayoutAPI.methods.sourceLayerStickyItemStart] = (roId: string, sourceLayerId: string) => {
 	return ServerPlayoutAPI.sourceLayerStickyItemStart(roId, sourceLayerId)
 }
-methods[PlayoutAPI.methods.saveEvaluation] = (evaluation: EvaluationBase) => {
+methods[PlayoutAPI.methods.saveEvaluation] = (evaluation: EvaluationBase): ClientAPI.ClientResponse => {
 	return ServerPlayoutAPI.saveEvaluation(evaluation)
 }
 
@@ -2159,6 +2201,7 @@ function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): SegmentLine
 			_.compact(
 				_.map(contentObjects, (obj: TimelineObjectCoreExt) => {
 					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
+						// @ts-ignore _id
 						_id: obj.id || obj['_id'],
 						siId: '', // set later
 						objectType: TimelineObjType.RUNNINGORDER
@@ -2198,6 +2241,7 @@ function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem | SegmentLineI
 		const objs = prefixAllObjectIds(_.compact(
 			_.map(contentObjects, (obj) => {
 				return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
+					// @ts-ignore _id
 					_id: obj.id || obj['_id'],
 					siId: '',
 					objectType: TimelineObjType.RUNNINGORDER
@@ -2426,6 +2470,7 @@ function transformSegmentLineIntoTimeline (
 					// }
 
 					timelineObjs.push(extendMandadory<TimelineObjectCoreExt, TimelineObjRunningOrder>(o, {
+						// @ts-ignore _id
 						_id: o.id || o['_id'],
 						siId: '', // set later
 						inGroup: segmentLineGroup ? segmentLineItemGroup._id : undefined,
@@ -2705,15 +2750,21 @@ export function findLookaheadForLLayer (
 	return res
 }
 
-let updateTimelineFromMosDataTimeouts = {}
+interface UpdateTimelineFromMosDataTimeout {
+	timeout?: number
+	changedLines?: string[]
+}
+let updateTimelineFromMosDataTimeouts: {
+	[id: string]: UpdateTimelineFromMosDataTimeout
+} = {}
 export function updateTimelineFromMosData (roId: string, changedLines?: Array<string>) {
 	const runningOrder = RunningOrders.findOne(roId)
 	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
 	// Lock behind a timeout, so it doesnt get executed loads when importing a rundown or there are large changes
-	let data = updateTimelineFromMosDataTimeouts[roId]
+	let data: UpdateTimelineFromMosDataTimeout = updateTimelineFromMosDataTimeouts[roId]
 	if (data) {
-		Meteor.clearTimeout(data.timeout)
+		if (data.timeout) Meteor.clearTimeout(data.timeout)
 		if (data.changedLines) {
 			data.changedLines = changedLines ? data.changedLines.concat(changedLines) : undefined
 		}
@@ -3185,6 +3236,7 @@ function processTimelineObjects (studioInstallation: StudioInstallation, timelin
 			// let o2 = o as TimelineObjGeneric
 			_.each(o.content.objects, (child: TimelineTypes.TimelineObject) => {
 				let childFixed: TimelineObjGeneric = extendMandadory<TimelineTypes.TimelineObject, TimelineObjGeneric>(child, {
+					// @ts-ignore _id
 					_id: child.id || child['_id'],
 					siId: o.siId,
 					objectType: o.objectType,

@@ -310,48 +310,48 @@ export namespace ServerPeripheralDeviceAPI {
 // }
 
 let methods: Methods = {}
-methods[PeripheralDeviceAPI.methods.initialize] = (deviceId, deviceToken, options) => {
+methods[PeripheralDeviceAPI.methods.initialize] = (deviceId: string, deviceToken: string, options: PeripheralDeviceAPI.InitOptions) => {
 	return ServerPeripheralDeviceAPI.initialize(deviceId, deviceToken, options)
 }
-methods[PeripheralDeviceAPI.methods.unInitialize] = (deviceId, deviceToken) => {
+methods[PeripheralDeviceAPI.methods.unInitialize] = (deviceId: string, deviceToken: string) => {
 	return ServerPeripheralDeviceAPI.unInitialize(deviceId, deviceToken)
 }
-methods[PeripheralDeviceAPI.methods.setStatus] = (deviceId, deviceToken, status) => {
+methods[PeripheralDeviceAPI.methods.setStatus] = (deviceId: string, deviceToken: string, status: PeripheralDeviceAPI.StatusObject) => {
 	return ServerPeripheralDeviceAPI.setStatus(deviceId, deviceToken, status)
 }
-methods[PeripheralDeviceAPI.methods.ping] = (deviceId, deviceToken) => {
+methods[PeripheralDeviceAPI.methods.ping] = (deviceId: string, deviceToken: string) => {
 	return ServerPeripheralDeviceAPI.ping(deviceId, deviceToken)
 }
-methods[PeripheralDeviceAPI.methods.getPeripheralDevice ] = (deviceId, deviceToken) => {
+methods[PeripheralDeviceAPI.methods.getPeripheralDevice ] = (deviceId: string, deviceToken: string) => {
 	return ServerPeripheralDeviceAPI.getPeripheralDevice(deviceId, deviceToken)
 }
-methods[PeripheralDeviceAPI.methods.segmentLinePlaybackStarted] = (deviceId, deviceToken, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) => {
+methods[PeripheralDeviceAPI.methods.segmentLinePlaybackStarted] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) => {
 	return ServerPeripheralDeviceAPI.segmentLinePlaybackStarted(deviceId, deviceToken, r)
 }
-methods[PeripheralDeviceAPI.methods.segmentLinePlaybackStopped] = (deviceId, deviceToken, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) => {
+methods[PeripheralDeviceAPI.methods.segmentLinePlaybackStopped] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) => {
 	return ServerPeripheralDeviceAPI.segmentLinePlaybackStopped(deviceId, deviceToken, r)
 }
-methods[PeripheralDeviceAPI.methods.segmentLineItemPlaybackStarted] = (deviceId, deviceToken, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) => {
-	return ServerPeripheralDeviceAPI.segmentLineItemPlaybackStarted(deviceId, deviceToken, r)
-}
-methods[PeripheralDeviceAPI.methods.segmentLineItemPlaybackStopped] = (deviceId, deviceToken, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) => {
+methods[PeripheralDeviceAPI.methods.segmentLineItemPlaybackStopped] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) => {
 	return ServerPeripheralDeviceAPI.segmentLineItemPlaybackStopped(deviceId, deviceToken, r)
 }
-methods[PeripheralDeviceAPI.methods.pingWithCommand] = (deviceId, deviceToken, message: string) => {
+methods[PeripheralDeviceAPI.methods.segmentLineItemPlaybackStarted] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) => {
+	return ServerPeripheralDeviceAPI.segmentLineItemPlaybackStarted(deviceId, deviceToken, r)
+}
+methods[PeripheralDeviceAPI.methods.pingWithCommand] = (deviceId: string, deviceToken: string, message: string) => {
 	return ServerPeripheralDeviceAPI.pingWithCommand(deviceId, deviceToken, message)
 }
-methods[PeripheralDeviceAPI.methods.killProcess] = (deviceId, deviceToken, really: boolean) => {
+methods[PeripheralDeviceAPI.methods.killProcess] = (deviceId: string, deviceToken: string, really: boolean) => {
 	return ServerPeripheralDeviceAPI.killProcess(deviceId, deviceToken, really)
 }
-methods[PeripheralDeviceAPI.methods.testMethod] = (deviceId, deviceToken, returnValue, throwError ) => {
+methods[PeripheralDeviceAPI.methods.testMethod] = (deviceId: string, deviceToken: string, returnValue: string, throwError?: boolean ) => {
 	return ServerPeripheralDeviceAPI.testMethod(deviceId, deviceToken, returnValue, throwError)
 }
-methods[PeripheralDeviceAPI.methods.timelineTriggerTime] = (deviceId, deviceToken, r: PeripheralDeviceAPI.TimelineTriggerTimeResult) => {
+methods[PeripheralDeviceAPI.methods.timelineTriggerTime] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.TimelineTriggerTimeResult) => {
 	return ServerPeripheralDeviceAPI.timelineTriggerTime(deviceId, deviceToken, r)
 }
 
 // --------------------
-methods[PeripheralDeviceAPI.methods.functionReply] = (deviceId, deviceToken, commandId, err: any, result: any) => {
+methods[PeripheralDeviceAPI.methods.functionReply] = (deviceId: string, deviceToken: string, commandId: string, err: any, result: any) => {
 	// logger.debug('functionReply', err, result)
 	PeripheralDeviceCommands.update(commandId, {
 		$set: {

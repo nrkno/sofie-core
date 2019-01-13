@@ -10,7 +10,7 @@ enum syncFunctionFcnStatus {
 	RUNNING = 1,
 	DONE = 2
 }
-type Callback = (err, res?: any) => void
+type Callback = (err: Error | null, res?: any) => void
 
 interface SyncFunctionFcn {
 	id: string
@@ -33,7 +33,7 @@ export function syncFunction<T extends Function> (fcn: T, id0?: string, timeout:
 
 	let id1 = Random.id()
 
-	return Meteor.wrapAsync((...args0) => {
+	return Meteor.wrapAsync((...args0: any[]) => {
 
 		let args = args0.slice(0,-1)
 		// @ts-ignore
@@ -170,7 +170,7 @@ const doTest = false
 if (doTest) {
 
 	// Tests ---------------------------
-	let takesALongTimeInner = Meteor.wrapAsync(function takesALongTime (name, cb) {
+	let takesALongTimeInner = Meteor.wrapAsync(function takesALongTime (name: string, cb: Callback) {
 		logger.info('fcn start ' + name)
 		Meteor.setTimeout(() => {
 			logger.info('fcn end')
@@ -185,7 +185,7 @@ if (doTest) {
 		return takesALongTimeInner(name)
 	}, 'asdf')
 
-	let takesALongTimeInner3 = Meteor.wrapAsync(function takesALongTime (name, name2, cb) {
+	let takesALongTimeInner3 = Meteor.wrapAsync(function takesALongTime (name: string, name2: string, cb: Callback) {
 		logger.info('fcn start ' + name + name2)
 		Meteor.setTimeout(() => {
 			logger.info('fcn end')

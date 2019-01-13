@@ -7,7 +7,7 @@ import { getCurrentTime } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 
-let lowPrioFcn = (fcn: (...args) => any, ...args: any[]) => {
+let lowPrioFcn = (fcn: (...args: any[]) => any, ...args: any[]) => {
 	// Do it at a random time in the future:
 	Meteor.setTimeout(() => {
 		fcn(...args)

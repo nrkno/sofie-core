@@ -16,7 +16,8 @@ import { escapeHtml } from '../../../lib/lib'
 // import { XmlEntities as Entities } from 'html-entities'
 // const entities = new Entities()
 
-export async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP & ExternalMessageQueueObj) {
+type ExternalMessageQueueObjSOAP0 = ExternalMessageQueueObjSOAP & ExternalMessageQueueObj
+export async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP0 & ExternalMessageQueueObj) {
 
 	logger.info('sendSOAPMessage ' + msg._id)
 	if (!msg.receiver) 		throwFatalError(msg, new Meteor.Error(401, 'attribute .receiver missing!'))
@@ -40,7 +41,7 @@ export async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP & Extern
 	})
 
 	// Prepare data, resolve the special {_fcn: {}} - functions:
-	let iteratee = async (val) => {
+	let iteratee = async (val: any) => {
 		if (_.isObject(val)) {
 			if (val['_fcn']) {
 				let valFcn = val as ExternalMessageQueueObjSOAPMessageAttrFcn

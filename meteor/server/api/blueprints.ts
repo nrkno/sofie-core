@@ -59,7 +59,8 @@ import {
 	DeviceOptions as PlayoutDeviceSettingsDevice, Timeline
 } from 'timeline-state-resolver-types'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices, PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice, PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
+import { Mongo } from 'meteor/mongo'
 
 export namespace ConfigRef {
 	export function getStudioConfigRef (configKey: string): string {
@@ -128,7 +129,7 @@ export class CommonContext implements ICommonContext {
 	private hashI = 0
 	private hashed: {[hash: string]: string} = {}
 
-	constructor (idPrefix) {
+	constructor (idPrefix: string) {
 		this._idPrefix = idPrefix
 	}
 	getHashId (str?: any) {
@@ -535,7 +536,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	getDevice (deviceId: string): PlayoutDeviceSettingsDevice | undefined {
 		check(deviceId, String)
 
-		const selector = {
+		const selector: Mongo.Selector<PeripheralDevice> = {
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 			studioInstallationId: this.studio._id
 		}
@@ -575,7 +576,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	updateDevice (deviceId: string, device: Partial<PlayoutDeviceSettingsDevice>): void {
 		check(deviceId, String)
 
-		const selector = {
+		const selector: Mongo.Selector<PeripheralDevice> = {
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 			studioInstallationId: this.studio._id
 		}
@@ -677,8 +678,8 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		let sl = _.find(this.showStyleBase.sourceLayers, sl => sl._id === sourceLayerId) as ISourceLayer
 		if (!sl) throw new Meteor.Error(404, `SourceLayer "${sourceLayerId}" not found`)
 
-		_.each(layer, (value, key) => {
-			sl[key] = value // Update local
+		_.each(layer, (value, key: keyof ISourceLayer) => {
+			sl[key] = value // Update local object
 		})
 		ShowStyleBases.update({
 			_id: this.showStyleBase._id,
@@ -725,10 +726,11 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 	}
 	updateOutputLayer (outputLayerId: string, layer: Partial<IOutputLayer>): void {
 		check(outputLayerId, String)
-		let sl = _.find(this.showStyleBase.outputLayers, sl => sl._id === outputLayerId) as IOutputLayer
+		let sl: IOutputLayer = _.find(this.showStyleBase.outputLayers, sl => sl._id === outputLayerId) as IOutputLayer
 		if (!sl) throw new Meteor.Error(404, `OutputLayer "${outputLayerId}" not found`)
 
-		_.each(layer, (value, key) => {
+		_.each(layer, (value, key: keyof IOutputLayer) => {
+			// @ts-ignore Type 'undefined' is not assignable to type 'ConfigItemValue'
 			sl[key] = value // Update local
 		})
 		ShowStyleBases.update({
@@ -1129,7 +1131,12 @@ postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessag
 	let blueprintId = params.blueprintId
 	let url = parseUrl(req.url || '', true)
 
-	let blueprintName = url.query['name'] || undefined
+	let blueprintNames = url.query['name'] || undefined
+	let blueprintName: string = (
+		_.isArray(blueprintNames) ?
+		blueprintNames[0] :
+		blueprintNames
+	) || ''
 
 	check(blueprintId, String)
 	check(blueprintName, Match.Maybe(String))
