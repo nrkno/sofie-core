@@ -516,7 +516,12 @@ export namespace ServerPlayoutAPI {
 
 		updateSourceLayerInfinitesAfterLine(ro, false, sl)
 	}
-	function setNextSegmentLine (runningOrder: RunningOrder, nextSegmentLine: DBSegmentLine | null, setManually?: boolean) {
+	function setNextSegmentLine (
+		runningOrder: RunningOrder,
+		nextSegmentLine: DBSegmentLine | null,
+		setManually?: boolean,
+		nextTimeOffset?: number | undefined
+	) {
 		let ps: Array<Promise<any>> = []
 
 		if (nextSegmentLine) {
@@ -531,7 +536,8 @@ export namespace ServerPlayoutAPI {
 			ps.push(asyncCollectionUpdate(RunningOrders, runningOrder._id, {
 				$set: {
 					nextSegmentLineId: nextSegmentLine._id,
-					nextSegmentLineManual: !!setManually
+					nextSegmentLineManual: !!setManually,
+					nextTimeOffset: nextTimeOffset || null
 				}
 			}))
 			ps.push(asyncCollectionUpdate(SegmentLines, nextSegmentLine._id, {
@@ -589,6 +595,8 @@ export namespace ServerPlayoutAPI {
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
 		if (!runningOrder.nextSegmentLineId) throw new Meteor.Error(500, 'nextSegmentLineId is not set!')
+
+		let timeOffset: number | null = runningOrder.nextTimeOffset || null
 
 		let firstTake = !runningOrder.startedPlayback
 
@@ -726,7 +734,7 @@ export namespace ServerPlayoutAPI {
 			})
 		}
 		waitForPromiseAll(ps)
-		afterTake(runningOrder, takeSegmentLine, previousSegmentLine || null)
+		afterTake(runningOrder, takeSegmentLine, previousSegmentLine || null, timeOffset)
 
 		// last:
 		SegmentLines.update(takeSegmentLine._id, {
@@ -750,7 +758,12 @@ export namespace ServerPlayoutAPI {
 			}
 		})
 	}
-	export function roSetNext (roId: string, nextSlId: string | null, setManually?: boolean) {
+	export function roSetNext (
+		roId: string,
+		nextSlId: string | null,
+		setManually?: boolean,
+		nextTimeOffset?: number | undefined
+	) {
 		check(roId, String)
 		if (nextSlId) check(nextSlId, String)
 
@@ -766,7 +779,7 @@ export namespace ServerPlayoutAPI {
 			if (!nextSegmentLine) throw new Meteor.Error(404, `Segment Line "${nextSlId}" not found!`)
 		}
 
-		setNextSegmentLine(runningOrder, nextSegmentLine, setManually)
+		setNextSegmentLine(runningOrder, nextSegmentLine, setManually, nextTimeOffset)
 
 		// remove old auto-next from timeline, and add new one
 		updateTimeline(runningOrder.studioInstallationId)
@@ -1750,8 +1763,18 @@ function beforeTake (roData: RoData, currentSegmentLine: SegmentLine | null, nex
 	}
 }
 
-function afterTake (runningOrder: RunningOrder, takeSegmentLine: SegmentLine, previousSegmentLine: SegmentLine | null) {
+function afterTake (
+	runningOrder: RunningOrder,
+	takeSegmentLine: SegmentLine,
+	previousSegmentLine: SegmentLine | null,
+	timeOffset: number | null = null
+) {
 	// This function should be called at the end of a "take" event (when the SegmentLines have been updated)
+
+	let forceNowTime: number | undefined = undefined
+	if (timeOffset) {
+		forceNowTime = getCurrentTime() - timeOffset
+	}
 	updateTimeline(runningOrder.studioInstallationId)
 
 	// defer these so that the playout gateway has the chance to learn about the changes
