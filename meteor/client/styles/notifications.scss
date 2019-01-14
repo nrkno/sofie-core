@@ -120,6 +120,7 @@
     font-size: 1em;
     z-index: 310;
     text-align: left;
+    cursor: pointer;
 
     &:active, &.active {
         background: $ui-button-primary;
