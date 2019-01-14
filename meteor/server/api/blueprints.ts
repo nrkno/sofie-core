@@ -327,7 +327,6 @@ export class AsRunEventContext extends RunningOrderContext implements IAsRunEven
 	}
 	/** Get the mos story related to a segmentLine */
 	getStoryForSegmentLine (segmentLine: SegmentLine): MOS.IMOSROFullStory {
-		check(segmentLine, Object)
 		let segmentLineId = segmentLine._id
 		check(segmentLineId, String)
 		return this.runningOrder.fetchCache(CachePrefix.FULLSTORY + segmentLineId)
