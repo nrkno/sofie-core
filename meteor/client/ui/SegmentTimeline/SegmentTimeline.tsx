@@ -68,6 +68,7 @@ interface IProps {
 	onFollowLiveLine: (state: boolean, event: any) => void
 	onContextMenu?: (contextMenuContext: any) => void
 	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onHeaderNoteClick?: (level: SegmentLineNoteType) => void
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	followingSegmentLine: SegmentLineUi | undefined
 	isLastSegment: boolean
@@ -490,6 +491,17 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	render () {
 		let notes: Array<SegmentLineNote> = this.props.segmentNotes
 
+		const {t} = this.props
+
+		const criticalNotes = _.reduce(notes, (prev, item) => {
+			if (item.type === SegmentLineNoteType.ERROR) return ++prev
+			return prev
+		}, 0)
+		const warningNotes = _.reduce(notes, (prev, item) => {
+			if (item.type === SegmentLineNoteType.WARNING) return ++prev
+			return prev
+		}, 0)
+
 		return (
 			<div id={SegmentTimelineElementId + this.props.segment._id}
 				className={ClassNames('segment-timeline', {
@@ -514,28 +526,26 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 						{this.props.segment.name}
 					</h2>
 					<div className='segment-timeline__title__notes'>
-						{
-							_.map(notes, (note, key) => {
-								return (
-									<div className='segment-timeline__title__notes__note' key={key}>
-										<img className='icon' src='/icons/warning_icon.svg' />
-										<div>
-											<b>
-												{(
-													note.type === SegmentLineNoteType.WARNING ? '' :
-													note.type === SegmentLineNoteType.ERROR ? 'Error:\u00A0' :
-													''
-												)}
-												{note.origin.name.replace(this.props.segment.name + ';', '')}
-											</b>
-										</div>
-										<div>
-											{note.message}
-										</div>
-									</div>
-								)
-							})
-						}
+						{criticalNotes > 0 && <div className='segment-timeline__title__notes__note'
+							onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(SegmentLineNoteType.ERROR)}>
+							<img className='icon' src='/icons/warning_icon.svg' />
+							<div>
+								{t('Critical errors')}:&nbsp;
+								<b>
+									{criticalNotes}
+								</b>
+							</div>
+						</div>}
+						{warningNotes > 0 && <div className='segment-timeline__title__notes__note'
+							onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(SegmentLineNoteType.WARNING)}>
+							<img className='icon' src='/icons/warning_icon.svg' />
+							<div>
+								{t('Warnings')}:&nbsp;
+								<b>
+									{warningNotes}
+								</b>
+							</div>
+						</div>}
 					</div>
 				</ContextMenuTrigger>
 				<div className='segment-timeline__duration' tabIndex={0}

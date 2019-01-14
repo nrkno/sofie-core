@@ -334,6 +334,7 @@ body.vertical-overflow-only {
 			> .segment-timeline__title__notes__note {
 				position: relative;
 				padding-left: 20px;
+				cursor: pointer;
 
 				> .icon {
 					position: absolute;
@@ -341,6 +342,10 @@ body.vertical-overflow-only {
 					top: 1px;
 					height: auto;
 					width: 16px;
+				}
+
+				&:hover {
+					text-decoration: underline;
 				}
 			}
 		}

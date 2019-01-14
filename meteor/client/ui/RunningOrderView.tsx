@@ -15,7 +15,7 @@ import { PlayoutAPI } from '../../lib/api/playout'
 import { RunningOrder, RunningOrders, RunningOrderHoldState } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
+import { SegmentLine, SegmentLines, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
@@ -45,7 +45,7 @@ import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBa
 import { callMethod } from '../lib/clientAPI'
 import { RunningOrderViewNotifier, RONotificationEvent } from './RunningOrderView/RunningOrderNotifier'
 import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
-import { NotificationCenter } from '../lib/notifications/notifications'
+import { NotificationCenter, NoticeLevel } from '../lib/notifications/notifications'
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -1392,6 +1392,17 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
+	onHeaderNoteClick = (segmentId: string, level: SegmentLineNoteType) => {
+		NotificationCenter.snoozeAll()
+		const isOpen = this.state.showNotifications
+		this.setState({
+			showNotifications: true
+		})
+		setTimeout(function () {
+			NotificationCenter.highlightSource(segmentId, level === SegmentLineNoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING)
+		}, isOpen ? 1 : 1000)
+	}
+
 	renderSegments () {
 		if (this.props.segments) {
 			return this.props.segments.map((segment, index, array) => {
@@ -1414,6 +1425,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								onSegmentScroll={this.onSegmentScroll}
 								isLastSegment={index === array.length - 1}
 								onItemDoubleClick={this.onSLItemDoubleClick}
+								onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
 							/>
 						</ErrorBoundary>
 				}
@@ -1468,6 +1480,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	onToggleNotifications = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (!this.state.showNotifications === true) {
 			NotificationCenter.snoozeAll()
+			NotificationCenter.highlightSource(undefined, SegmentLineNoteType.ERROR)
 		}
 
 		this.setState({

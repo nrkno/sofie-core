@@ -59,6 +59,7 @@ interface IProps {
 	onTimeScaleChange?: (timeScaleVal: number) => void
 	onContextMenu?: (contextMenuContext: any) => void
 	onSegmentScroll?: () => void
+	onHeaderNoteClick?: (level: SegmentLineNoteType) => void
 	followLiveSegments: boolean
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	isLastSegment: boolean
@@ -354,7 +355,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				onZoomChange={(newScale: number, e) => this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)}
 				onScroll={this.onScroll}
 				followingSegmentLine={this.props.followingSegmentLine}
-				isLastSegment={this.props.isLastSegment} />
+				isLastSegment={this.props.isLastSegment}
+				onHeaderNoteClick={this.props.onHeaderNoteClick} />
 		) || null
 	}
 }

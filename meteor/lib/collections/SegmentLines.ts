@@ -226,7 +226,7 @@ export class SegmentLine implements DBSegmentLine {
 					const st = checkSLIContentStatus(item, sl, si ? si.config : [])
 					if (st.status === RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING || st.status === RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN) {
 						notes.push({
-							type: SegmentLineNoteType.ERROR,
+							type: SegmentLineNoteType.WARNING,
 							origin: {
 								name: 'Media Check',
 								segmentLineId: this._id,

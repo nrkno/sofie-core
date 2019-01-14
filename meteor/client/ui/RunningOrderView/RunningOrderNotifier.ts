@@ -15,6 +15,7 @@ import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyl
 import { SegmentLines, SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
 import { getCurrentTime } from '../../../lib/lib'
 import { ReactiveVar } from 'meteor/reactive-var';
+import { Segments } from '../../../lib/collections/Segments';
 
 export interface RONotificationEvent {
 	sourceLocator: {
@@ -141,10 +142,13 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 
 			const newNoteIds: Array<string> = []
 			_.flatten(_.compact(segmentLines.map(i => i.notes && i.notes.map(j => _.extend(j, {
-				rank: i._rank
-			}))))).forEach((item: SegmentLineNote & {rank: number}) => {
+				rank: i._rank,
+				segmentLineId: i._id
+			}))))).forEach((item: SegmentLineNote & {rank: number, segmentLineId: string}) => {
+				const segmentLine = SegmentLines.findOne(item.segmentLineId)
+				const segment = segmentLine ? Segments.findOne(segmentLine.segmentId) : undefined
 				const id = item.message + '-' + (item.origin.segmentLineItemId || item.origin.segmentLineId || item.origin.segmentId || item.origin.roId) + '-' + item.origin.name + '-' + item.type
-				let newNotification = new Notification(id, item.type === SegmentLineNoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, 'Blueprint', getCurrentTime(), true, [
+				let newNotification = new Notification(id, item.type === SegmentLineNoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, segment ? segment._id : 'blueprint', getCurrentTime(), true, [
 					{
 						label: 'Show issue',
 						type: 'default'
@@ -183,12 +187,14 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 			const newItemIds = items.map(item => item._id)
 			items.forEach((item) => {
 				const sourceLayer = reactiveData.getRSourceLayer(showStyleBase, item.sourceLayerId).get()
+				const segmentLine = SegmentLines.findOne(item.segmentLineId)
+				const segment = segmentLine ? Segments.findOne(segmentLine.segmentId) : undefined
 				if (sourceLayer) {
 					ReactiveDataHelper.registerComputation(`RunningOrderView.MediaObjectStatus.SegmentLineItems.${item._id}`, this.autorun(() => {
 						const { metadata, status, message } = checkSLIContentStatus(item, sourceLayer, showStyleBase.config)
 						let newNotification: Notification | undefined = undefined
 						if ((status !== RunningOrderAPI.LineItemStatusCode.OK) && (status !== RunningOrderAPI.LineItemStatusCode.UNKNOWN)) {
-							newNotification = new Notification(item._id, NoticeLevel.WARNING, message || 'Media is broken', item._id, getCurrentTime(), true, [
+							newNotification = new Notification(item._id, NoticeLevel.WARNING, message || 'Media is broken', segment ? segment._id : 'line_' + item.segmentLineId, getCurrentTime(), true, [
 								{
 									label: 'Show issue',
 									type: 'default'
