@@ -1,6 +1,6 @@
 import {
 	ensureStudioConfig,
-	ensureDeviceVersion
+	setExpectedVersion
 } from './lib'
 import { addMigrationSteps } from './databaseMigration'
 import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
@@ -43,5 +43,5 @@ addMigrationSteps( '0.16.0', [
 		}]
 	},
 
-	ensureDeviceVersion('ensureVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.1.1')
+	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.1.1')
 ])

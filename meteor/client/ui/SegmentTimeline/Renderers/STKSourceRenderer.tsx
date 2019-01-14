@@ -15,6 +15,7 @@ import Lottie from 'react-lottie'
 // @ts-ignore Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
 import { InjectedTranslateProps, translate } from 'react-i18next'
+import { LiveSpeakContent } from 'tv-automation-sofie-blueprints-integration'
 interface IProps extends ICustomLayerItemProps {
 }
 interface IState {
@@ -116,6 +117,8 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 		this.end = labelItems[1] || ''
 
 		const itemDuration = this.getItemDuration()
+		const content = this.props.segmentLineItem.content as LiveSpeakContent
+		const seek = content && content.seek ? content.seek : 0
 
 		const defaultOptions = {
 			loop: true,
@@ -152,7 +155,7 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 							{this.end}
 						</span>
 					</span>
-					{this.scenes && this.scenes.map((i) => i < itemDuration && <span className='segment-timeline__layer-item__scene-marker' key={i} style={{ 'left': (i * this.props.timeScale).toString() + 'px' }}></span>)}
+					{this.scenes && this.scenes.map((i) => i < itemDuration && <span className='segment-timeline__layer-item__scene-marker' key={i} style={{ 'left': ((i - seek) * this.props.timeScale).toString() + 'px' }}></span>)}
 					<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 						{this.getPreviewUrl() ?
 							<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>

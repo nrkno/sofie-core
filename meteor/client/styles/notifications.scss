@@ -30,6 +30,10 @@
             margin-top: 15px;
         }
 
+        &:last-child {
+            margin-bottom: 15px;
+        }
+
         > .notification-pop-up__header {
             display: block;
             flex: 0;
@@ -122,36 +126,56 @@
         transition: 0s background-color;
     }
 
-    > svg.svg-inline--fa {
-        display: block;
-        position: relative;
-        width: 0.7em;
-        height: auto;
-        margin-top: 1em;
-        margin-left: 1.2em;
-        
-        transform-origin: center center;
-        transform: rotate(0deg);
-        transition: 0.5s transform ease-in-out;
+    > svg {
+        position: absolute;
+        width: 50%;
+        height: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -53%);
+        transition: 0.5s all ease-in-out;
+
+        > path {
+            stroke: rgb(255, 255, 255);
+            transition: 0.5s all linear;
+        }
+    }
+
+    &.has-items {
+        > svg {
+            transform: translate(-80%, -53%);
+
+            > path {
+                stroke: rgb(255, 255, 0);
+            }
+        }
     }
 
     &.open {
-        transition: 0.3s background-color;
         
-        > svg.svg-inline--fa {
-            transform: rotate(180deg);
-            transition: 0.3s transform ease-in-out;
-        }
     }
 
     .notifications__toggle-button__count {
         display: block;
         position: absolute;
 
-        bottom: 0;
-        right: 0;
+        left: 62%;
+        top: 50%;
+        transform: translate(0, -50%);
+        width: 35%;
+        text-align: center;
         font-size: 0.8em;
         font-weight: 500;
+
+        opacity: 0;
+        transition: 0.2s opacity ease-in 0s;
+    }
+    
+    &.has-items {
+        .notifications__toggle-button__count {
+            opacity: 1;
+            transition: 0.2s opacity ease-out 0.4s;
+        }
     }
 }
 
@@ -159,11 +183,10 @@
     position: fixed;
     background: #fff;
     color: #000;
-    top: 59px;
+    top: 0;
     right: 0;
     bottom: 0;
-    max-width: calc(430px + 75px);
-    width: calc(25vw + 75px);
+    width: calc(#{$notification-center-width} + 75px);
     z-index: 290;
 
     &::before {
@@ -173,7 +196,7 @@
         top: 0;
         bottom: 0;
         left: -10px;
-        width: 11px;
+        width: 10px;
         background: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 100%);
     }
 
@@ -184,11 +207,11 @@
 
     .notification-pop-ups {
         position: absolute;
-        top: 0;
+        top: 59px;
         left: 0;
         bottom: 0;
         overflow: auto;
-        width: calc(25vw + 10px);
+        width: calc(#{$notification-center-width} + 10px);
         pointer-events: auto;
 
         mask-image: none;
@@ -203,26 +226,26 @@
             height: 0px;
         }
         &::-webkit-scrollbar-thumb {
-            background: #e1e1e1;
-            border: 3px solid #000000;
+            background: #666666;
+            border: 3px solid #fff;
             border-radius: 50px;
         }
         &::-webkit-scrollbar-thumb:hover {
-            background: #ffffff;
+            background: #e1e1e1;
         }
         &::-webkit-scrollbar-thumb:active {
             background: #808080;
         }
         &::-webkit-scrollbar-track {
-            background: #666666;
-            border: 3px solid #000000;
+            background: #cccccc;
+            border: 3px solid #fff;
             border-radius: 50px;
         }
         &::-webkit-scrollbar-track:hover {
-            background: #666666;
+            background: #ffffff;
         }
         &::-webkit-scrollbar-track:active {
-            background: #333333;
+            background: #ffffff;
         }
         &::-webkit-scrollbar-corner {
             background: transparent;
@@ -231,7 +254,7 @@
 }
 
 .running-order-view .notification-center-panel {
-    background: #000;
+    background: #fff;
     color: #fff;
     top: 64px;
 
@@ -242,7 +265,34 @@
         top: 0;
         bottom: 0;
         left: -10px;
-        width: 11px;
+        width: 10px;
         background: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.7) 100%);
+    }
+
+    .notification-pop-ups {
+        top: 0;
+
+        .notification-pop-up {
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        }
+    }
+}
+
+@media screen and (max-width: 1600px) {
+    .notification-center-panel {
+        width: calc(25vw + 75px) !important;
+
+        .notification-pop-ups {
+            width: calc(25vw + 10px) !important;
+        }
+    }
+
+    .running-order-view {
+        &.notification-center-open {
+            padding-right: calc(#{$statusbar-width} + 25vw) !important;
+            > .header .running-order-overview {
+                padding-right: calc(#{$statusbar-width} + 25vw + 1.5em) !important;
+            }
+        }
     }
 }

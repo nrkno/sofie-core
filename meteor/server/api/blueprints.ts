@@ -60,6 +60,66 @@ import {
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 
+export namespace ConfigRef {
+	export function getStudioConfigRef (configKey: string): string {
+		return '${studio.' + this.runningOrder.studioInstallationId + '.' + configKey + '}'
+	}
+	export function getShowStyleRef (configKey: string): string {
+		return '${showStyle.' + this.runningOrder.showStyleVariantId + '.' + configKey + '}'
+	}
+	export function retrieveRefs (stringWithReferences: string, bailOnError?: boolean) {
+		if (!stringWithReferences) return stringWithReferences
+
+		const refs = stringWithReferences.match(/\$\{[^}]+\}/g) || []
+		_.each(refs, (ref) => {
+			if (ref) {
+				const value = retrieveRef(ref) + ''
+				if (value) {
+					stringWithReferences.replace(ref, value)
+				} else {
+					if (bailOnError) {
+						throw new Meteor.Error(`Error in retrieveRefs: Error in ref "${ref}"`)
+					}
+				}
+			}
+		})
+		return stringWithReferences
+	}
+	function retrieveRef (reference: string): ConfigItemValue | string | undefined {
+		if (!reference) return undefined
+
+		let m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
+		if (m) {
+			if (
+				m[1] === 'studio' &&
+				_.isString(m[2]) &&
+				_.isString(m[3])
+			) {
+				const studio = StudioInstallations.findOne(m[2])
+				if (studio) {
+					return studio.getConfigValue(m[3])
+				}
+			} else if (
+				m[1] === 'showStyle' &&
+				_.isString(m[2]) &&
+				_.isString(m[3])
+			) {
+				const configId = m[3]
+				const showStyleCompound = getShowStyleCompound(this.runningOrder.showStyleVariantId)
+				if (showStyleCompound) {
+					const config = _.find(showStyleCompound.config, (config) => {
+						return config._id === configId
+					})
+					if (config) {
+						return config.value
+					}
+				}
+			}
+		}
+		return undefined
+	}
+}
+
 // export { MOS, RunningOrder, SegmentLine, ISegmentLineContext }
 export class CommonContext implements ICommonContext {
 
@@ -211,6 +271,9 @@ export class RunningOrderContext extends NotesContext implements IRunningOrderCo
 
 		return res
 	}
+	getStudioConfigRef (configKey: string): string {
+		return ConfigRef.getStudioConfigRef(configKey)
+	}
 	getShowStyleConfig (): {[key: string]: ConfigItemValue} {
 		const showStyleCompound = getShowStyleCompound(this.runningOrder.showStyleVariantId)
 		if (!showStyleCompound) throw new Meteor.Error(404, `no showStyleCompound for "${this.runningOrder.showStyleVariantId}"`)
@@ -220,6 +283,9 @@ export class RunningOrderContext extends NotesContext implements IRunningOrderCo
 			res[c._id] = c.value
 		})
 		return res
+	}
+	getShowStyleRef (configKey: string): string {
+		return ConfigRef.getShowStyleRef(configKey)
 	}
 	/** return segmentLines in this runningOrder */
 	getSegmentLines (): Array<SegmentLine> {
@@ -327,7 +393,6 @@ export class AsRunEventContext extends RunningOrderContext implements IAsRunEven
 	}
 	/** Get the mos story related to a segmentLine */
 	getStoryForSegmentLine (segmentLine: SegmentLine): MOS.IMOSROFullStory {
-		check(segmentLine, Object)
 		let segmentLineId = segmentLine._id
 		check(segmentLineId, String)
 		return this.runningOrder.fetchCache(CachePrefix.FULLSTORY + segmentLineId)
@@ -525,7 +590,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		let m: any = {}
 		m[`settings.devices.${deviceId}`] = _.extend(parentDevice.settings.devices[deviceId], device)
 		PeripheralDevices.update(selector, {
-			$unset: m
+			$set: m
 		})
 	}
 	removeDevice (deviceId: string): void {

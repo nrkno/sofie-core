@@ -7,6 +7,7 @@ import * as faFastBackward from '@fortawesome/fontawesome-free-solid/faFastBackw
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import Lottie from 'react-lottie'
+import { NotificationCenterPanelToggle } from '../../lib/notifications/NotificationCenterPanel'
 
 // @ts-ignore Not recognized by Typescript
 import * as Fullscreen_MouseOut from './Fullscreen_MouseOut.json'
@@ -25,6 +26,8 @@ interface IProps {
 	isFollowingOnAir: boolean
 	onFollowOnAir?: () => void
 	onRewindSegments?: () => void
+	isNotificationCenterOpen: boolean
+	onToggleNotifications?: (e: React.MouseEvent<HTMLDivElement>) => void
 }
 
 interface IState {
@@ -176,6 +179,7 @@ export class RunningOrderFullscreenControls extends React.Component<IProps, ISta
 				<VelocityReact.VelocityTransitionGroup
 					enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
 					leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}>
+					<NotificationCenterPanelToggle onClick={this.props.onToggleNotifications} isOpen={this.props.isNotificationCenterOpen} />
 					<div className='running-order__fullscreen-controls__button' role='button' onMouseEnter={this.onRewindEnter} onMouseLeave={this.onRewindLeave} onClick={this.onRewindClick} tabIndex={0}>
 						<FontAwesomeIcon icon={faFastBackward} />
 					</div>

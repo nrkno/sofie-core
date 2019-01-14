@@ -3,7 +3,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Link } from 'react-router-dom'
-import Tooltip from 'rc-tooltip'
+import Tooltip = require('rc-tooltip')
 import timer from 'react-timer-hoc'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import Moment from 'react-moment'
@@ -351,7 +351,7 @@ export class RunningOrderListItem extends React.Component<Translated<IRunningOrd
 						{this.props.runningOrder.airStatus}
 					</td>
 					<td className='running-order-list-item__actions'>
-						{this.props.runningOrder && this.props.runningOrder.unsynced &&
+						{ (this.props.runningOrder && this.props.runningOrder.unsynced) &&
 							<React.Fragment>
 								<Tooltip overlay={t('Delete')} placement='top'>
 									<button className='action-btn' onClick={(e) => this.confirmDelete(this.props.runningOrder)}>

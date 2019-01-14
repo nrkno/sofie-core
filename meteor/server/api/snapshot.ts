@@ -463,7 +463,7 @@ Picker.route('/snapshot/debug/:studioId', (params, req: IncomingMessage, respons
 })
 const postRoute = Picker.filter((req, res) => req.method === 'POST')
 postRoute.middleware(bodyParser.json({
-	limit: '1mb' // Arbitrary limit
+	limit: '15mb' // Arbitrary limit
 }))
 postRoute.route('/backup/restore', (params, req: IncomingMessage, response: ServerResponse, next) => {
 	response.setHeader('Content-Type', 'text/plain')
