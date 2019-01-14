@@ -22,5 +22,13 @@
         button {
             margin-top: 2.5em;
         }
+
+        &:not(:focus-within) {
+            input, textarea, select {
+                background: #505253;
+                color: #fff;
+                border: 1px solid #19191a;
+            }
+        }
     }
 }

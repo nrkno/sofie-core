@@ -85,7 +85,6 @@
     "@types/node": "^9.6.1",
     "@types/prop-types": "^15.5.2",
     "@types/query-string": "^5.1.0",
-    "@types/rc-tooltip": "^3.4.12",
     "@types/react": "^16.3.2",
     "@types/react-dom": "^16.0.4",
     "@types/react-i18next": "^7.3.2",
