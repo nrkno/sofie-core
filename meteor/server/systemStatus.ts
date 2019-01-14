@@ -47,6 +47,7 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 
 	let checks: Array<CheckObj> = []
 
+	// Check systemStatuses:
 	_.each(systemStatuses, (status: StatusObjectInternal, key: string) => {
 		checks.push({
 			description: key,
@@ -61,7 +62,6 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 				}
 			})
 		})
-
 	})
 
 	let statusObj: StatusResponse = {

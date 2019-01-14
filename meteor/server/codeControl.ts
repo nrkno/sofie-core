@@ -3,6 +3,7 @@ import * as _ from 'underscore'
 import { getHash } from './lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
+import { waitForPromise } from '../lib/lib';
 
 enum syncFunctionFcnStatus {
 	WAITING = 0,
@@ -154,6 +155,16 @@ function assertTimecloseTo (start: number, target: number) {
 	if (diff > 50) {
 		throw new Meteor.Error(500, `Assert: time too far from ${target} (${deltaTime}) `)
 	}
+}
+/**
+ * Wait for specified time
+ * @param time
+ */
+export function waitTime (time: number) {
+	let p = new Promise((resolve) => {
+		Meteor.setTimeout(resolve, time)
+	})
+	waitForPromise(p)
 }
 const doTest = false
 if (doTest) {

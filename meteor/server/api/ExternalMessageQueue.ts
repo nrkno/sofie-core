@@ -14,7 +14,7 @@ import {
 	ExternalMessageQueueObjSlack,
 	ExternalMessageQueueObjRabbitMQ
 } from 'tv-automation-sofie-blueprints-integration'
-import { getCurrentTime, removeNullyProperties } from '../../lib/lib'
+import { getCurrentTime, removeNullyProperties, literal, rateLimit, rateLimitIgnore } from '../../lib/lib'
 
 import { setMeteorMethods, Methods, wrapMethods } from '../methods'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
@@ -22,6 +22,8 @@ import { ExternalMessageQueueAPI } from '../../lib/api/ExternalMessageQueue'
 import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
+import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus'
+import { syncFunctionIgnore, waitTime } from '../codeControl'
 
 export function queueExternalMessages (runningOrder: RunningOrder, messages: Array<IBlueprintExternalMessageQueueObj>) {
 	_.each(messages, (message) => {
@@ -170,6 +172,45 @@ export function throwFatalError (msg, e) {
 
 	throw e
 }
+
+const updateExternalMessageQueueStatus = syncFunctionIgnore(function (): void {
+
+	waitTime(5000) // Combined with syncFunctionIgnore, this makes effectively a rateLimiter
+
+	const messagesOnQueueCursor = ExternalMessageQueue.find({
+		sent: {$not: {$gt: 0}},
+		tryCount: {$gt: 3}
+	})
+	const messagesOnQueueCount: number = messagesOnQueueCursor.count()
+	let status: StatusObject = {
+		statusCode: StatusCode.GOOD
+	}
+	if (messagesOnQueueCount > 1) {
+		const messagesOnQueueExample = messagesOnQueueCursor.fetch()[0]
+		status = {
+			statusCode: (
+				messagesOnQueueCount > 10 ?
+				StatusCode.BAD :
+				StatusCode.WARNING_MINOR
+			),
+			messages: [
+				`There are ${messagesOnQueueCount} unsent messages on queue (one of the unsent messages has the error message: "${messagesOnQueueExample.errorMessage}", to receiver "${messagesOnQueueExample.type}", "${JSON.stringify(messagesOnQueueExample.receiver)}")`
+			]
+		}
+	}
+	setSystemStatus('External Message queue', status)
+}, 'updateExternalMessageQueueStatus', 10000)
+
+const messagesOnQueueCursor = ExternalMessageQueue.find({
+	sent: {$not: {$gt: 0}},
+	tryCount: {$gt: 3}
+}).observeChanges({
+	added: updateExternalMessageQueueStatus,
+	changed: updateExternalMessageQueueStatus,
+})
+Meteor.startup(() => {
+	updateExternalMessageQueueStatus()
+})
 
 let methods: Methods = {}
 methods[ExternalMessageQueueAPI.methods.remove] = (id: string) => {
