@@ -836,77 +836,77 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	render () {
 		const { t } = this.props
 		return <React.Fragment>
+			<ContextMenu id='running-order-context-menu'>
+				<div className='react-contextmenu-label'>
+					{this.props.runningOrder && this.props.runningOrder.name}
+				</div>
+				{
+					this.props.studioMode ?
+						<React.Fragment>
+							{
+								!(this.props.runningOrder.active && this.props.runningOrder.rehearsal) ?
+									(
+										!this.runningOrderShouldHaveStarted() && !this.props.runningOrder.active ?
+											<MenuItem onClick={(e) => this.activateRehearsal(e)}>
+												{t('Prepare Studio and Activate (Rehearsal)')}
+											</MenuItem> :
+											<MenuItem onClick={(e) => this.activateRehearsal(e)}>
+												{t('Activate (Rehearsal)')}
+											</MenuItem>
+									) : (
+										<MenuItem onClick={(e) => this.activate(e)}>
+											{t('Activate')}
+										</MenuItem>
+									)
+							}
+							{
+								this.props.runningOrder.active ?
+									<MenuItem onClick={(e) => this.deactivate(e)}>
+										{t('Deactivate')}
+									</MenuItem> :
+									null
+							}
+							{
+								this.props.runningOrder.active ?
+									<MenuItem onClick={(e) => this.take(e)}>
+										{t('Take')}
+									</MenuItem> :
+									null
+							}
+							{
+								this.props.runningOrder.active ?
+									<MenuItem onClick={(e) => this.hold(e)}>
+										{t('Hold')}
+									</MenuItem> :
+									null
+							}
+							{
+								!(this.props.runningOrder.active && !this.props.runningOrder.rehearsal) ?
+									<MenuItem onClick={(e) => this.resetRunningOrder(e)}>
+										{t('Reset Running Order')}
+									</MenuItem> :
+									null
+							}
+							<MenuItem onClick={(e) => this.reloadRunningOrder(e)}>
+								{t('Reload ENPS Data')}
+							</MenuItem>
+							<MenuItem onClick={(e) => this.takeRunningOrderSnapshot(e)}>
+								{t('Store Snapshot')}
+							</MenuItem>
+						</React.Fragment> :
+						<React.Fragment>
+							<MenuItem>
+								{t('No actions available')}
+							</MenuItem>
+						</React.Fragment>
+				}
+			</ContextMenu>
 			<div className={ClassNames('header running-order', {
 				'active': this.props.runningOrder.active,
 				'not-active': !this.props.runningOrder.active,
 
 				'rehearsal': this.props.runningOrder.rehearsal
 			})}>
-				<ContextMenu id='running-order-context-menu'>
-					<div className='react-contextmenu-label'>
-						{this.props.runningOrder && this.props.runningOrder.name}
-					</div>
-					{
-						this.props.studioMode ?
-							<React.Fragment>
-								{
-									!(this.props.runningOrder.active && this.props.runningOrder.rehearsal) ?
-										(
-											!this.runningOrderShouldHaveStarted() && !this.props.runningOrder.active ?
-												<MenuItem onClick={(e) => this.activateRehearsal(e)}>
-													{t('Prepare Studio and Activate (Rehearsal)')}
-												</MenuItem> :
-												<MenuItem onClick={(e) => this.activateRehearsal(e)}>
-													{t('Activate (Rehearsal)')}
-												</MenuItem>
-										) : (
-											<MenuItem onClick={(e) => this.activate(e)}>
-												{t('Activate')}
-											</MenuItem>
-										)
-								}
-								{
-									this.props.runningOrder.active ?
-										<MenuItem onClick={(e) => this.deactivate(e)}>
-											{t('Deactivate')}
-										</MenuItem> :
-										null
-								}
-								{
-									this.props.runningOrder.active ?
-										<MenuItem onClick={(e) => this.take(e)}>
-											{t('Take')}
-										</MenuItem> :
-										null
-								}
-								{
-									this.props.runningOrder.active ?
-										<MenuItem onClick={(e) => this.hold(e)}>
-											{t('Hold')}
-										</MenuItem> :
-										null
-								}
-								{
-									!(this.props.runningOrder.active && !this.props.runningOrder.rehearsal) ?
-										<MenuItem onClick={(e) => this.resetRunningOrder(e)}>
-											{t('Reset Running Order')}
-										</MenuItem> :
-										null
-								}
-								<MenuItem onClick={(e) => this.reloadRunningOrder(e)}>
-									{t('Reload ENPS Data')}
-								</MenuItem>
-								<MenuItem onClick={(e) => this.takeRunningOrderSnapshot(e)}>
-									{t('Store Snapshot')}
-								</MenuItem>
-							</React.Fragment> :
-							<React.Fragment>
-								<MenuItem>
-									{t('No actions available')}
-								</MenuItem>
-							</React.Fragment>
-					}
-				</ContextMenu>
 				<ContextMenuTrigger id='running-order-context-menu' attributes={{
 					className: 'flex-col col-timing horizontal-align-center'
 				}}>
@@ -1499,7 +1499,12 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							{ this.state.studioMode && <KeyboardFocusMarker /> }
 						</ErrorBoundary>
 						<ErrorBoundary>
-							<RunningOrderFullscreenControls isFollowingOnAir={this.state.followLiveSegments} onFollowOnAir={this.onGoToLiveSegment} onRewindSegments={this.onRewindSegments} />
+							<RunningOrderFullscreenControls
+								isFollowingOnAir={this.state.followLiveSegments}
+								onFollowOnAir={this.onGoToLiveSegment}
+								onRewindSegments={this.onRewindSegments}
+								isNotificationCenterOpen={this.state.showNotifications}
+								onToggleNotifications={this.onToggleNotifications} />
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<VelocityReact.VelocityTransitionGroup enter={{
@@ -1513,9 +1518,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							}}>
 								{this.state.showNotifications && <NotificationCenterPanel />}
 							</VelocityReact.VelocityTransitionGroup>
-						</ErrorBoundary>
-						<ErrorBoundary>
-							<NotificationCenterPanelToggle onClick={this.onToggleNotifications} isOpen={this.state.showNotifications} />
 						</ErrorBoundary>
 						<ErrorBoundary>
 							{ this.state.studioMode &&
