@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as $ from 'jquery'
 import { translate } from 'react-i18next'
 
 import * as ClassNames from 'classnames'
@@ -21,6 +22,8 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
+
+export const SegmentTimelineLineElementId = 'running-order__segment__line__'
 
 interface ISourceLayerProps {
 	key: string
@@ -54,7 +57,9 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 	getSegmentLineContext = (props) => {
 		const ctx = {
 			segment: this.props.segment,
-			segmentLine: this.props.segmentLine
+			segmentLine: this.props.segmentLine,
+			segmentLineDocumentOffset: $('#' + SegmentTimelineLineElementId + this.props.segmentLine._id).offset(),
+			timeScale: this.props.timeScale
 		}
 
 		if (this.props.onContextMenu && typeof this.props.onContextMenu === 'function') {
@@ -399,6 +404,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 
 					'duration-settling': this.state.isDurationSettling
 				})} data-mos-id={this.props.segmentLine._id}
+					id={SegmentTimelineLineElementId + this.props.segmentLine._id}
 					style={this.getLayerStyle()}
 					>
 					<div className={ClassNames('segment-timeline__segment-line__nextline', {
@@ -411,6 +417,11 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 							{ this.state.isNext && t('Next') }
 						</div>
 					</div>
+					{this.props.runningOrder.nextTimeOffset && this.state.isNext && 
+						<div className='segment-timeline__segment-line__previewline' style={{
+							'left': (this.props.runningOrder.nextTimeOffset * this.props.timeScale) + 'px',
+						}}></div>
+					}
 					{ DEBUG_MODE &&
 						<div className='segment-timeline__debug-info'>
 						{this.props.livePosition} / {this.props.segmentLine.startsAt} / {((this.props.timingDurations || {segmentLineStartsAt: {}}).segmentLineStartsAt || {})[this.props.segmentLine._id]}

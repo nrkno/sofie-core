@@ -1358,9 +1358,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 	}
 
-	onSetNext = (segmentLine: SegmentLine, e: any) => {
+	onSetNext = (segmentLine: SegmentLine, e: any, offset?: number) => {
 		if (this.state.studioMode && segmentLine && segmentLine._id && this.props.runningOrder) {
-			callMethod(e, PlayoutAPI.methods.roSetNext, this.props.runningOrder._id, segmentLine._id)
+			callMethod(e, PlayoutAPI.methods.roSetNext, this.props.runningOrder._id, segmentLine._id, offset)
 			this.setState({
 				manualSetAsNext: true
 			})

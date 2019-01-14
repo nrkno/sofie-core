@@ -1652,8 +1652,8 @@ methods[PlayoutAPI.methods.userRoTake] = (roId: string) => {
 methods[PlayoutAPI.methods.roToggleSegmentLineArgument] = (roId: string, slId: string, property: string, value: string) => {
 	return ServerPlayoutAPI.roToggleSegmentLineArgument(roId, slId, property, value)
 }
-methods[PlayoutAPI.methods.roSetNext] = (roId: string, slId: string) => {
-	return ServerPlayoutAPI.roSetNext(roId, slId, true)
+methods[PlayoutAPI.methods.roSetNext] = (roId: string, slId: string, timeOffset?: number | undefined) => {
+	return ServerPlayoutAPI.roSetNext(roId, slId, true, timeOffset)
 }
 methods[PlayoutAPI.methods.roMoveNext] = (roId: string, horisontalDelta: number, verticalDelta: number) => {
 	return ServerPlayoutAPI.roMoveNext(roId, horisontalDelta, verticalDelta, true)
