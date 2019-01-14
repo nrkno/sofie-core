@@ -1432,6 +1432,9 @@ body.vertical-overflow-only {
 
 				opacity: 1;
 				transition: $output-layer-group-collapse-animation-duration opacity;
+
+				text-shadow: 0 0 5px $segment-background-color;
+    			z-index: 2;
 			}
 
 			// the label for the source-layer within this output group
