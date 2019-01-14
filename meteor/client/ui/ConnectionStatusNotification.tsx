@@ -7,6 +7,7 @@ import * as CoreIcons from '@nrk/core-icons/jsx'
 import * as ClassNames from 'classnames'
 
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/react-meteor-data'
+import { literal } from '../../lib/lib'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { MomentFromNow } from '../lib/Moment'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
@@ -46,7 +47,18 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			}
 
 			let newNotification: Notification | undefined = undefined
-			newNotification = new Notification(Random.id(), this.getNoticeLevel(status), this.getStatusText(status, reason, retryTime), t('Sofie Automation Server'), Date.now(), !connected)
+			newNotification = new Notification(Random.id(), this.getNoticeLevel(status), this.getStatusText(status, reason, retryTime), t('Sofie Automation Server'), Date.now(), !connected, (status === 'failed' || status === 'waiting' || status === 'offline') ? [
+				{
+					label: 'Show issue',
+					type: 'default'
+				}
+			] : undefined)
+			newNotification.on('action', (notification, type, e) => {
+				switch (type) {
+					case 'default':
+						Meteor.reconnect()
+				}
+			})
 
 			if (newNotification.persistent) {
 				this._notificationList.set([newNotification])

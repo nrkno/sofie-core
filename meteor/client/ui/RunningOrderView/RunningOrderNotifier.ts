@@ -15,6 +15,7 @@ import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyl
 import { SegmentLines, SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
 import { getCurrentTime } from '../../../lib/lib'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { ReactiveVar } from 'meteor/reactive-var'
 
 export interface RONotificationEvent {
 	sourceLocator: {
@@ -99,18 +100,23 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 
 	private reactivePeripheralDeviceStatus (studioInstallationId: string | undefined) {
 		let oldDevItemIds: Array<string> = []
+		let reactivePeripheralDevices: ReactiveVar<PeripheralDevice[]>
+		if (studioInstallationId) {
+			Meteor.subscribe('peripheralDevicesAndSubDevices', { studioInstallationId: studioInstallationId })
+			reactivePeripheralDevices = reactiveData.getRPeripheralDevices(studioInstallationId)
+		}
 		ReactiveDataHelper.registerComputation('RunningOrderView.PeripheralDevices', this.autorun(() => {
 			if (studioInstallationId) {
 				meteorSubscribe(PubSub.peripheralDevices, { studioInstallationId: studioInstallationId })
 			}
-			const devices = studioInstallationId ? reactiveData.getRPeripheralDevices(studioInstallationId).get() : []
+			const devices = reactivePeripheralDevices ? reactivePeripheralDevices.get() : []
 			const newDevItemIds = devices.map(item => item._id)
 
 			devices.forEach((item) => {
 				let newNotification: Notification | undefined = undefined
 
 				if (item.status.statusCode !== PeripheralDeviceAPI.StatusCode.GOOD || !item.connected) {
-					newNotification = new Notification(item._id, this.convertDeviceStatus(item), this.makeDeviceMessage(item), 'Devices', getCurrentTime(), true)
+					newNotification = new Notification(item._id, this.convertDeviceStatus(item), this.makeDeviceMessage(item), 'Devices', getCurrentTime(), true, undefined, -1)
 				}
 				if (newNotification && !Notification.isEqual(this._deviceStatus[item._id], newNotification)) {
 					this._deviceStatus[item._id] = newNotification
@@ -190,7 +196,7 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 									label: 'Show issue',
 									type: 'default'
 								}
-							], 0)
+							], 1)
 							newNotification.on('action', (notification, type, e) => {
 								switch (type) {
 									case 'default':

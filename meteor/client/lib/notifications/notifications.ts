@@ -53,55 +53,12 @@ export interface NotificationAction {
 	icon?: any
 }
 
-export class Notification extends EventEmitter {
-	id: string | undefined
-	status: NoticeLevel
-	message: string | React.ReactNode
-	source: string
-	persistent?: boolean
-	snoozed?: boolean
-	actions?: Array<NotificationAction>
-	created: Time
-	rank: number
+export type Notifier = () => NotificationList
 
-	constructor (id: string | undefined, status: NoticeLevel, message: string | React.ReactNode, source: string, created?: Time, persistent?: boolean, actions?: Array<NotificationAction>, rank?: number) {
-		super()
+const notifiers: Dictionary<NotifierObject> = {}
 
-		this.id = id
-		this.status = status
-		this.message = message
-		this.source = source
-		this.persistent = persistent || false
-		this.actions = actions || undefined
-		this.created = created || Date.now()
-		this.rank = rank || 0
-	}
-
-	snooze () {
-		this.snoozed = true
-		notificationsDep.changed()
-		this.emit('snoozed', this)
-	}
-
-	drop () {
-		if (this.id) {
-			NotificationCenter.drop(this.id)
-		}
-	}
-
-	action (type: string, event: any) {
-		this.emit('action', this, type, event)
-	}
-
-	static isEqual (a: Notification | undefined, b: Notification | undefined): boolean {
-		if (typeof a !== typeof b) return false
-		return _.isEqual(_.omit(a, ['created']), _.omit(b, ['created']))
-	}
-
-	static compare (a: Notification, b: Notification): number {
-		return (a.status - b.status) || (a.created - b.created) || (a.rank - b.rank)
-	}
-}
+const notifications: Dictionary<Notification> = {}
+const notificationsDep: Tracker.Dependency = new Tracker.Dependency()
 
 interface NotificationHandle {
 	id: string,
@@ -111,13 +68,6 @@ interface NotificationHandle {
 export class NotificationList extends ReactiveVar<Notification[]> {
 
 }
-
-export type Notifier = () => NotificationList
-
-const notifiers: Dictionary<NotifierObject> = {}
-
-const notifications: Dictionary<Notification> = {}
-const notificationsDep: Tracker.Dependency = new Tracker.Dependency()
 
 export class NotifierObject {
 	id: string
@@ -213,3 +163,54 @@ class NotificationCenter0 {
 }
 
 export const NotificationCenter = new NotificationCenter0()
+
+export class Notification extends EventEmitter {
+	id: string | undefined
+	status: NoticeLevel
+	message: string | React.ReactNode
+	source: string
+	persistent?: boolean
+	snoozed?: boolean
+	actions?: Array<NotificationAction>
+	created: Time
+	rank: number
+
+	constructor (id: string | undefined, status: NoticeLevel, message: string | React.ReactNode, source: string, created?: Time, persistent?: boolean, actions?: Array<NotificationAction>, rank?: number) {
+		super()
+
+		this.id = id
+		this.status = status
+		this.message = message
+		this.source = source
+		this.persistent = persistent || false
+		this.actions = actions || undefined
+		this.created = created || Date.now()
+		this.rank = rank || 0
+	}
+
+	static isEqual (a: Notification | undefined, b: Notification | undefined): boolean {
+		if (typeof a !== typeof b) return false
+		return _.isEqual(_.omit(a, ['created', 'snoozed', 'actions', '_events']), _.omit(b, ['created', 'snoozed', 'actions', '_events']))
+	}
+
+	static compare (a: Notification, b: Notification): number {
+		return (a.status - b.status) || (a.rank - b.rank) || (a.created - b.created)
+	}
+
+	snooze () {
+		this.snoozed = true
+		notificationsDep.changed()
+		this.emit('snoozed', this)
+	}
+
+	drop () {
+		if (this.id) {
+			NotificationCenter.drop(this.id)
+		}
+	}
+
+	action (type: string, event: any) {
+		this.emit('action', this, type, event)
+	}
+
+}

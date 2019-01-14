@@ -17,7 +17,8 @@ export interface PeripheralDevice {
 	name: string
 	type: PeripheralDeviceAPI.DeviceType
 
-	studioInstallationId: string
+	/** The studio this device is assigned to. Will be undefined for sub-devices */
+	studioInstallationId?: string
 	parentDeviceId?: string
 	/** Versions reported from the device */
 	versions?: {
