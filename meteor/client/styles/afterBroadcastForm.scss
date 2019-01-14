@@ -23,6 +23,12 @@
             margin-top: 2.5em;
         }
 
+        input, textarea, select {
+            padding: 5px;
+            border: 1px solid #000;
+            background: #fff;
+        }
+
         &:not(:focus-within) {
             input, textarea, select {
                 background: #505253;
