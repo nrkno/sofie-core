@@ -41,10 +41,10 @@ declare class ReactiveDict<T> {
 }
 
 export enum NoticeLevel {
-	CRITICAL,
-	WARNING,
-	NOTIFICATION,
-	TIP
+	CRITICAL = 1,
+	WARNING = 2,
+	NOTIFICATION = 3,
+	TIP = 4
 }
 
 export interface NotificationAction {
@@ -96,7 +96,14 @@ export class NotifierObject {
 }
 
 class NotificationCenter0 {
-	NOTIFICATION_TIMEOUT = 5000
+	private NOTIFICATION_TIMEOUT = 5000
+	private highlightedSource: ReactiveVar<string | undefined>
+	private highlightedLevel: ReactiveVar<NoticeLevel>
+
+	constructor () {
+		this.highlightedSource = new ReactiveVar<string>('')
+		this.highlightedLevel = new ReactiveVar<NoticeLevel>(NoticeLevel.TIP)
+	}
 
 	registerNotifier (source: Notifier): NotifierObject {
 		const notifierId = Random.id()
@@ -159,6 +166,19 @@ class NotificationCenter0 {
 	snoozeAll () {
 		const n = this.getNotifications()
 		n.forEach((item) => item.snooze())
+	}
+
+	highlightSource (source: string | undefined, level: NoticeLevel) {
+		this.highlightedSource.set(source)
+		this.highlightedLevel.set(level)
+	}
+
+	getHighlightedSource () {
+		return this.highlightedSource.get()
+	}
+
+	getHighlightedLevel () {
+		return this.highlightedLevel.get()
 	}
 }
 

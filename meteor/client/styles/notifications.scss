@@ -275,6 +275,24 @@
 
         .notification-pop-up {
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+
+            @keyframes highlight {
+                0% {
+                    background-color: rgb(118, 196, 235);
+                }
+                100% {
+                    background-color: #fff;
+                }
+            }
+
+            &.is-highlighted {
+                animation-name: highlight;
+                animation-duration: 2s;
+                animation-delay: 1s;
+                animation-iteration-count: 1;
+                animation-fill-mode: both;
+                animation-direction: normal;
+            }
         }
     }
 }

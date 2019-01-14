@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as $ from 'jquery'
 import * as CoreIcon from '@nrk/core-icons/jsx'
 import * as ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
@@ -13,6 +14,7 @@ import { sofieWarningIcon as warningIcon } from './warningIcon'
 interface IPopUpProps {
 	item: Notification
 	showDismiss?: boolean
+	isHighlighted?: boolean
 	onDismiss?: (e: any) => void
 }
 
@@ -34,7 +36,9 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 			'warning': item.status === NoticeLevel.WARNING,
 			'tip': item.status === NoticeLevel.TIP,
 
-			'has-default-action': hasDefaultAction
+			'has-default-action': hasDefaultAction,
+
+			'is-highlighted': this.props.isHighlighted
 		})}
 		onClick={(e) => this.triggerEvent('default', e)}
 		>
@@ -46,7 +50,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 			</div>
 			{this.props.showDismiss &&
 				<div className='notification-pop-up__dismiss'>
-					<button className='notification-pop-up__dismiss__button' onClick={(e) => e.stopPropagation() || (typeof this.props.onDismiss === 'function' && this.props.onDismiss(e))}>
+					<button className='notification-pop-up__dismiss__button' onClick={(e) => (e.stopPropagation(), (typeof this.props.onDismiss === 'function' && this.props.onDismiss(e)))}>
 						<CoreIcon id='nrk-close' />
 					</button>
 				</div>
@@ -65,12 +69,16 @@ interface IState {
 }
 
 interface ITrackedProps {
-	notifications: Array<Notification>
+	notifications: Array<Notification>,
+	highlightedSource: string
+	highlightedLevel: NoticeLevel
 }
 
 export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
 	return {
-		notifications: NotificationCenter.getNotifications()
+		notifications: NotificationCenter.getNotifications(),
+		highlightedSource: NotificationCenter.getHighlightedSource(),
+		highlightedLevel: NotificationCenter.getHighlightedLevel()
 	}
 })(class NotificationCenterPopUps extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	dismissNotification (item: Notification) {
@@ -81,12 +89,32 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 		}
 	}
 
+	componentDidUpdate (prevProps, prevState, snapshot) {
+		if (super.componentDidUpdate) super.componentDidUpdate(prevProps, prevState, snapshot)
+
+		if (this.props.highlightedSource && this.props.highlightedLevel) {
+			const items = $('.notification-pop-up.is-highlighted')
+			if (items.length > 0) {
+				// scroll to highlighted items
+				const position = $(items[0]).position() || {top: 0}
+				const container = $('.notification-center-panel .notification-pop-ups')
+				container && container.animate({
+					scrollTop: (container.scrollTop() || 0) + position.top - 10
+				}, {
+					queue: false,
+					duration: 1000
+				})
+			}
+		}
+	}
+
 	render () {
-		const { t } = this.props
+		const { t, highlightedSource, highlightedLevel } = this.props
 		const displayList = this.props.notifications.filter(i => this.props.showSnoozed || !i.snoozed).sort((a, b) => Notification.compare(a, b)).map(item => (
 			<NotificationPopUp key={item.created + (item.message || 'undefined').toString() + (item.id || '')}
 				item={item} onDismiss={() => this.dismissNotification(item)}
-				showDismiss={!item.persistent || !this.props.showSnoozed} />
+				showDismiss={!item.persistent || !this.props.showSnoozed}
+				isHighlighted={item.source === highlightedSource && item.status === highlightedLevel} />
 		))
 
 		return ((this.props.showEmptyListLabel || displayList.length > 0) &&
