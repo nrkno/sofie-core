@@ -230,7 +230,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/peripheralDevice/' + item._id}>
 								<h3>{item.name}</h3>
 								<p>
-									{t('Status')}: {this.statusCodeString(item.status.statusCode)}
+									{item.connected ? t('Connected') : t('Disconnected')}, {t('Status')}: {this.statusCodeString(item.status.statusCode)}
 								</p>
 							</NavLink>,
 							<hr className='vsubtle man' key={item._id + '-hr'} />

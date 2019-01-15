@@ -27,98 +27,6 @@
 			}
 		}
 	}
-	.device-item {
-		line-height: 1.5em;
-		clear: both;
-
-		.clear {
-			clear: both;
-		}
-
-		.status-container {
-			float: right;
-			text-align: right;
-		}
-		.actions-container {
-			margin-top: 0.5em;
-			display: block;
-			text-align: right;
-			clear: both;
-		}
-
-		label {
-			display: inline;
-		}
-		div.value {
-			display: inline;
-		}
-		.device-item__id {
-			font-weight: bold;
-		}
-		.device-item__connected {
-			font-weight: bold;
-		}
-		.device-item__device-status {
-			> .value {
-				> .pill {
-					margin-right: 0;
-				}
-			}
-
-			&.device-item__device-status--good {
-				.pill {
-					background: $color-status-good;
-					border: $color-status-good;
-				}
-			}
-
-			&.device-item__device-status--minor-warning {
-				.pill {
-					background: $color-status-minor-warning;
-					border: $color-status-minor-warning;
-				}
-			}
-
-			&.device-item__device-status--warning {
-				.pill {
-					background: $color-status-warning;
-					border: $color-status-warning;
-				}
-			}
-
-			&.device-item__device-status--bad {
-				.pill {
-					background: $color-status-bad;
-					border: $color-status-bad;
-				}
-			}
-
-			&.device-item__device-status--fatal {
-				.pill {
-					background: $color-status-fatal;
-					border: $color-status-fatal;
-				}
-			}
-
-			&.device-item__device-status--unknown {
-				.pill {
-					background: $color-status-unknown;
-					border: $color-status-unknown;
-				}
-			}
-		}
-
-		.device-item__actions {
-			> .action-btn {
-				vertical-align: top;
-    			margin-top: 0.4em;
-			}
-
-			> .btn {
-				margin-left: 0.3em;
-			}
-		}
-	}
 
 	&.expando {
 		> thead {
@@ -127,6 +35,99 @@
 					padding: 3px 5px 3px 10px;
 				}
 			}
+		}
+	}
+}
+
+.device-item {
+	line-height: 1.5em;
+	clear: both;
+
+	.clear {
+		clear: both;
+	}
+
+	.status-container {
+		float: right;
+		text-align: right;
+	}
+	.actions-container {
+		margin-top: 0.5em;
+		display: block;
+		text-align: right;
+		clear: both;
+	}
+
+	label {
+		display: inline;
+	}
+	div.value {
+		display: inline;
+	}
+	.device-item__id {
+		font-weight: bold;
+	}
+	.device-item__connected {
+		font-weight: bold;
+	}
+	.device-item__device-status {
+		> .value {
+			> .pill {
+				margin-right: 0;
+			}
+		}
+
+		&.device-item__device-status--good {
+			.pill {
+				background: $color-status-good;
+				border: $color-status-good;
+			}
+		}
+
+		&.device-item__device-status--minor-warning {
+			.pill {
+				background: $color-status-minor-warning;
+				border: $color-status-minor-warning;
+			}
+		}
+
+		&.device-item__device-status--warning {
+			.pill {
+				background: $color-status-warning;
+				border: $color-status-warning;
+			}
+		}
+
+		&.device-item__device-status--bad {
+			.pill {
+				background: $color-status-bad;
+				border: $color-status-bad;
+			}
+		}
+
+		&.device-item__device-status--fatal {
+			.pill {
+				background: $color-status-fatal;
+				border: $color-status-fatal;
+			}
+		}
+
+		&.device-item__device-status--unknown {
+			.pill {
+				background: $color-status-unknown;
+				border: $color-status-unknown;
+			}
+		}
+	}
+
+	.device-item__actions {
+		> .action-btn {
+			vertical-align: top;
+			margin-top: 0.4em;
+		}
+
+		> .btn {
+			margin-left: 0.3em;
 		}
 	}
 }
