@@ -89,6 +89,11 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 		}
 	}
 
+	UNSAFE_componentWillUpdate () {
+		const items = $('.notification-pop-up.is-highlighted')
+		items.css('animationName', '')
+	}
+
 	componentDidUpdate (prevProps, prevState, snapshot) {
 		if (super.componentDidUpdate) super.componentDidUpdate(prevProps, prevState, snapshot)
 
@@ -103,6 +108,12 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 				}, {
 					queue: false,
 					duration: 1000
+				})
+
+				const value = items.css('animationName')
+				items.css('animationName', 'none')
+				setTimeout(function () {
+					if (value !== 'none') items.css('animationName', value)
 				})
 			}
 		}
