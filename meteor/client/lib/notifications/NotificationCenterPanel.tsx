@@ -70,7 +70,7 @@ interface IState {
 
 interface ITrackedProps {
 	notifications: Array<Notification>,
-	highlightedSource: string
+	highlightedSource: string | undefined
 	highlightedLevel: NoticeLevel
 }
 
