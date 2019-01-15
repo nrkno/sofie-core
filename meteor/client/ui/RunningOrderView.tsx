@@ -1497,7 +1497,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	onToggleNotifications = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (!this.state.showNotifications === true) {
 			NotificationCenter.snoozeAll()
-			NotificationCenter.highlightSource(undefined, SegmentLineNoteType.ERROR)
+			NotificationCenter.highlightSource(undefined, NoticeLevel.CRITICAL)
 		}
 
 		this.setState({
