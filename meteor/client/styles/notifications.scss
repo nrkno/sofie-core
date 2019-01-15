@@ -297,6 +297,16 @@
     }
 }
 
+
+.running-order-view + .notification-pop-ups {
+    transition: 1s right ease-out;
+}
+
+.running-order-view.notification-center-open + .notification-pop-ups {
+    right: 460px;
+    transition: 1s right ease-out;
+}
+
 @media screen and (max-width: 1600px) {
     .notification-center-panel {
         width: calc(25vw + 75px) !important;
@@ -313,5 +323,9 @@
                 padding-right: calc(#{$statusbar-width} + 25vw + 1.5em) !important;
             }
         }
+    }
+
+    .running-order-view.notification-center-open + .notification-pop-ups {
+        right: calc(25vw + 85px);
     }
 }
