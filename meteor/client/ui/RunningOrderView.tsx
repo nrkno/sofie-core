@@ -202,6 +202,7 @@ export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_NEXT_UP = 'shift+f10',
 	RUNNING_ORDER_DISABLE_NEXT_ELEMENT = 'g',
 	RUNNING_ORDER_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
+	RUNNING_ORDER_LOG_ERROR	= 'backspace'
 }
 
 const TimingDisplay = translate()(withTiming<ITimingDisplayProps, {}>()(
@@ -405,6 +406,12 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					up: this.keyDisableNextSegmentLineItemUndo,
 					label: t('Undo Disable the next element'),
 					global: true
+				},
+				{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_LOG_ERROR,
+					up: this.keyLogError,
+					label: t('Log Error'),
+					global: true
 				}
 			]
 		} else {
@@ -525,6 +532,9 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				}
 			})
 		}
+	}
+	keyLogError = (e: any) => {
+		callMethod(e, SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT, this.props.runningOrder._id, "User requested log at" + Date.now());
 	}
 
 	take = (e: any) => {
