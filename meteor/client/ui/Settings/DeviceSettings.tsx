@@ -22,6 +22,7 @@ import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Meteor } from 'meteor/meteor'
+import { DeviceItem } from '../Status/SystemStatus';
 
 interface IHttpSendDeviceSettingsComponentProps {
 	parentDevice: PeripheralDevice
@@ -224,6 +225,7 @@ class HttpSendDeviceSettingsComponent extends React.Component<Translated<IHttpSe
 
 interface IPlayoutDeviceSettingsComponentProps {
 	device: PeripheralDevice
+	subDevices?: PeripheralDevice[]
 }
 
 interface IPlayoutDeviceSettingsComponentState {
@@ -344,8 +346,8 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 		const { t } = this.props
 
 		return _.map(settings.devices, (device: PlayoutDeviceSettingsDevice, deviceId) => {
-			return <React.Fragment>
-				<tr key={deviceId} className={ClassNames({
+			return <React.Fragment key={deviceId}>
+				<tr className={ClassNames({
 					'hl': this.isItemEdited(deviceId)
 				})}>
 					<th className='settings-studio-device__name c5'>
@@ -680,9 +682,9 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 		})
 	}
 	render () {
-		const { t } = this.props
+		const { t, subDevices } = this.props
 
-		let settings = this.props.device.settings as PlayoutDeviceSettings
+		const settings = this.props.device.settings as PlayoutDeviceSettings
 
 		return (
 			<div>
@@ -730,7 +732,7 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 				{settings && settings.devices &&
 					(
 						<React.Fragment>
-							<h3>{t('Attached Devices')}</h3>
+							<h3>{t('Devices')}</h3>
 							<table className='expando settings-studio-device-table'>
 								<tbody>
 									{this.renderDevices()}
@@ -745,6 +747,15 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 				</div>
+
+				{subDevices &&
+					(
+						<React.Fragment>
+							<h3>{t('Attached subdevices')}</h3>
+							{subDevices.map((item) => <DeviceItem key={item._id} device={item} showRemoveButtons={true} />)}
+						</React.Fragment>
+					)
+				}
 			</div>
 		)
 	}
@@ -983,9 +994,9 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 		))
 	}
 	render () {
-		const { t } = this.props
+		const { t, subDevices } = this.props
 
-		let settings = this.props.device.settings as PlayoutDeviceSettings
+		const settings = this.props.device.settings as PlayoutDeviceSettings
 
 		return (
 			<div>
@@ -1037,6 +1048,14 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 					</button>
 				</div>
 
+				{subDevices &&
+					(
+						<React.Fragment>
+							<h3>{t('Attached subdevices')}</h3>
+							{subDevices.map((item) => <DeviceItem key={item._id} device={item} showRemoveButtons={true} />)}
+						</React.Fragment>
+					)
+				}
 			</div>
 		)
 	}
@@ -1053,37 +1072,30 @@ interface IDeviceSettingsState {
 }
 interface IDeviceSettingsTrackedProps {
 	device?: PeripheralDevice
+	subDevices?: PeripheralDevice[]
 }
 export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, IDeviceSettingsTrackedProps>(
 (props: IDeviceSettingsProps) => {
 	return {
-		device: PeripheralDevices.findOne(props.match.params.deviceId)
+		device: PeripheralDevices.findOne(props.match.params.deviceId),
+		subDevices: PeripheralDevices.find({
+			parentDeviceId: props.match.params.deviceId
+		}).fetch()
 	}
 })(
 class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProps & IDeviceSettingsTrackedProps>> {
-
-	findHighestRank (array: Array<{ _rank: number }>): { _rank: number } | null {
-		let max: { _rank: number } | null = null
-
-		array.forEach((value, index) => {
-			if (max == null || max._rank < value._rank) {
-				max = value
-			}
-		})
-
-		return max
-	}
-
 	renderSpecifics () {
 		if (this.props.device) {
 			switch (this.props.device.type) {
 				case PeripheralDeviceAPI.DeviceType.MOSDEVICE:
 					return <MosDeviceSettingsComponent
 						device={this.props.device}
+						subDevices={this.props.subDevices}
 					/>
 				case PeripheralDeviceAPI.DeviceType.PLAYOUT:
 					return <PlayoutDeviceSettingsComponent
 						device={this.props.device}
+						subDevices={this.props.subDevices}
 					/>
 			}
 		}

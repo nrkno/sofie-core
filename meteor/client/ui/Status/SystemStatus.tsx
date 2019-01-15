@@ -20,6 +20,7 @@ import { callMethod, callPeripheralDeviceFunction } from '../../lib/clientAPI'
 interface IDeviceItemProps {
 	// key: string,
 	device: PeripheralDevice
+	showRemoveButtons?: boolean
 }
 interface IDeviceItemState {
 	showDeleteDeviceConfirm: PeripheralDevice | null
@@ -44,7 +45,7 @@ export function statusCodeToString (t: i18next.TranslationFunction, statusCode: 
 	)
 }
 
-const DeviceItem = translate()(class extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
+export const DeviceItem = translate()(class extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
 	constructor (props: Translated<IDeviceItemProps>) {
 		super(props)
 		this.state = {
@@ -68,15 +69,15 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 		let t = this.props.t
 
 		switch (this.props.device.type) {
-				case PeripheralDeviceAPI.DeviceType.MOSDEVICE:
-					return t('MOS Gateway')
-				case PeripheralDeviceAPI.DeviceType.PLAYOUT:
-					return t('Play-out Gateway')
-				case PeripheralDeviceAPI.DeviceType.OTHER:
-					return ''
-				default:
-					return t('Unknown Device')
-			}
+			case PeripheralDeviceAPI.DeviceType.MOSDEVICE:
+				return t('MOS Gateway')
+			case PeripheralDeviceAPI.DeviceType.PLAYOUT:
+				return t('Play-out Gateway')
+			case PeripheralDeviceAPI.DeviceType.OTHER:
+				return ''
+			default:
+				return t('Unknown Device')
+		}
 	}
 	deviceVersions () {
 		let versions = this.props.device.versions
@@ -245,7 +246,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 							onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
 							<p>{t('Are you sure you want to delete this device?')}</p>
 						</ModalDialog>
-						<button key='button-device' className='btn btn-primary' onClick={
+						{this.props.showRemoveButtons && <button key='button-device' className='btn btn-primary' onClick={
 							(e) => {
 								e.preventDefault()
 								e.stopPropagation()
@@ -253,7 +254,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 							}
 						}>
 							<FontAwesomeIcon icon={faTrash} />
-						</button>
+						</button>}
 						{(
 							this.props.device.type !== PeripheralDeviceAPI.DeviceType.OTHER ? <React.Fragment>
 								<ModalDialog title={t('Restart this device?')} acceptText={t('Restart')}
@@ -409,33 +410,6 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 				</header>
 				<div className='mod mvl'>
 					{this.renderPeripheralDevices()}
-					{/* <table className='table system-status-table'>
-						<thead>
-							<tr>
-								<th className='c2'>
-									{t('ID')}
-								</th>
-								<th className='c3'>
-									{t('Name')}
-								</th>
-								<th className='c1'>
-									{t('Telemetry')}
-								</th>
-								<th className='c2'>
-									{t('Type')}
-								</th>
-								<th className='c2'>
-									{t('Status')}
-								</th>
-								<th className='c2'>
-									{t('Last seen')}
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{this.renderPeripheralDevices()}
-						</tbody>
-					</table> */}
 				</div>
 			</div>
 		)

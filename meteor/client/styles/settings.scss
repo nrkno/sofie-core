@@ -109,4 +109,18 @@
 			}
 		}
 	}
+
+	.device-item {
+		background: #f0f0f0;
+		border-top: 1px solid #ddd;
+		padding: 9px 10px 8px;
+
+		&:last-child {
+			border-bottom: 1px solid #ddd;
+		}
+
+		&:hover {
+			background: #fff;
+		}
+	}
 }
