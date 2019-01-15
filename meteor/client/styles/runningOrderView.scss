@@ -336,6 +336,10 @@ body.vertical-overflow-only {
 				padding-left: 20px;
 				cursor: pointer;
 
+				&:not(:last-child) {
+					margin-bottom: 5px;
+				}
+
 				> .icon {
 					position: absolute;
 					left: 0;
