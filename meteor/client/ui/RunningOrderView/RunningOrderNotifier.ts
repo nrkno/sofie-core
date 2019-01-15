@@ -14,8 +14,8 @@ import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SegmentLines, SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
 import { getCurrentTime } from '../../../lib/lib'
-import { ReactiveVar } from 'meteor/reactive-var';
-import { Segments } from '../../../lib/collections/Segments';
+import { ReactiveVar } from 'meteor/reactive-var'
+import { Segments } from '../../../lib/collections/Segments'
 
 export interface RONotificationEvent {
 	sourceLocator: {
