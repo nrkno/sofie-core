@@ -218,6 +218,10 @@
         mask-image: none;
         -webkit-mask-image: none;
 
+        .notification-pop-up {
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        }
+
         &::-webkit-scrollbar {
             width: 10px;
             height: 10px;
@@ -274,7 +278,6 @@
         top: 0;
 
         .notification-pop-up {
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 
             @keyframes highlight {
                 0% {
