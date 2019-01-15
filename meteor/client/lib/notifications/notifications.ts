@@ -234,3 +234,7 @@ export class Notification extends EventEmitter {
 	}
 
 }
+
+window['testNotification'] = function () {
+	NotificationCenter.push(new Notification(undefined, NoticeLevel.TIP, 'Notification test', 'test'))
+}
