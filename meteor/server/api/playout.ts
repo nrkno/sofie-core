@@ -1498,6 +1498,9 @@ export namespace ServerPlayoutAPI {
 
 		const runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `Running order "${roId}" not found!`)
+		if (runningOrder.holdState === RunningOrderHoldState.ACTIVE || runningOrder.holdState === RunningOrderHoldState.PENDING) {
+			throw new Meteor.Error(403, `Segment Line Arguments can not be toggled when hold is used!`)
+		} 
 
 		let segmentLine = SegmentLines.findOne(slId)
 		if (!segmentLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
