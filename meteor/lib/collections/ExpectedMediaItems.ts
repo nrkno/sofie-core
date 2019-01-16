@@ -8,8 +8,11 @@ export interface ExpectedMediaItem {
 	/** Local path to the media object */
 	path: string
 
-	/** The running order id of the source RO */
+	/** The running order id that is the source of this MediaItem */
 	runningOrderId: string
+
+	/** The segment line id that is the source of this Media Item */
+	segmentLineId: string
 
 	/** True if the media item has been marked as possibly unavailable */
 	disabled: boolean
@@ -20,8 +23,8 @@ export interface ExpectedMediaItem {
 	/** The last time the object was seen / used in Core */
 	lastSeen: Time
 
-	/** Time to wait before removing file */
-	lingerTime: number
+	/** Time to wait before removing file - override media manager default settings */
+	lingerTime?: number
 }
 
 export const ExpectedMediaItems: TransformedCollection<ExpectedMediaItem, ExpectedMediaItem>
@@ -31,6 +34,13 @@ Meteor.startup(() => {
 	if (Meteor.isServer) {
 		ExpectedMediaItems._ensureIndex({
 			path: 1
+		})
+		ExpectedMediaItems._ensureIndex({
+			mediaFlowId: 1
+		})
+		ExpectedMediaItems._ensureIndex({
+			runningOrderId: 1,
+			segmentLineId: 1
 		})
 	}
 })

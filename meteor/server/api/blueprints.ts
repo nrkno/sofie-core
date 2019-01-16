@@ -59,7 +59,7 @@ import {
 	DeviceOptions as PlayoutDeviceSettingsDevice, Timeline
 } from 'timeline-state-resolver-types'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
 
 export namespace ConfigRef {
 	export function getStudioConfigRef (configKey: string): string {
@@ -548,7 +548,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		})
 
 		if (!parentDevice || !parentDevice.settings) return undefined
-		return parentDevice.settings.devices[deviceId] as PlayoutDeviceSettingsDevice
+		return (parentDevice.settings as PlayoutDeviceSettings).devices[deviceId] as PlayoutDeviceSettingsDevice
 	}
 	insertDevice (deviceId: string, device: PlayoutDeviceSettingsDevice): string | null {
 		check(deviceId, String)
@@ -589,7 +589,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		if (!parentDevice || !parentDevice.settings) return
 
 		let m: any = {}
-		m[`settings.devices.${deviceId}`] = _.extend(parentDevice.settings.devices[deviceId], device)
+		m[`settings.devices.${deviceId}`] = _.extend((parentDevice.settings as PlayoutDeviceSettings).devices[deviceId], device)
 		PeripheralDevices.update(selector, {
 			$set: m
 		})

@@ -9,7 +9,7 @@ import { Meteor } from 'meteor/meteor'
 
 let lowPrioFcn = (fcn: (...args) => any, ...args: any[]) => {
 	// Do it at a random time in the future:
-	setTimeout(() => {
+	Meteor.setTimeout(() => {
 		fcn(...args)
 	}, Math.random() * 10 * 1000)
 }

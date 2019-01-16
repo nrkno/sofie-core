@@ -73,6 +73,8 @@ export const DeviceItem = translate()(class extends React.Component<Translated<I
 				return t('MOS Gateway')
 			case PeripheralDeviceAPI.DeviceType.PLAYOUT:
 				return t('Play-out Gateway')
+			case PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER:
+				return t('Media Manager')
 			case PeripheralDeviceAPI.DeviceType.OTHER:
 				return ''
 			default:
