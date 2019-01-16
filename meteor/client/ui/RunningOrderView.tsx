@@ -320,6 +320,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		down?: (e: KeyboardEvent) => any
 		label: string
 		global?: boolean
+		coolDown?: number
 	}> = []
 	constructor (props: Translated<IRunningOrderHeaderProps>) {
 		super(props)
@@ -411,7 +412,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_LOG_ERROR,
 					up: this.keyLogError,
 					label: t('Log Error'),
-					global: true
+					global: true,
+					coolDown: 1000
 				}
 			]
 		} else {
@@ -433,11 +435,14 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		}
 		_.each(this.bindKeys, (k) => {
 			const method = k.global ? mousetrapHelper.bindGlobal : mousetrapHelper.bind
+			let lastUsed = Date.now()
 			if (k.up) {
 				method(k.key, (e: KeyboardEvent) => {
 					if (disableInInputFields(e)) return
 					preventDefault(e)
+					if (k.coolDown && lastUsed > Date.now() - k.coolDown) return
 					if (k.up) k.up(e)
+					lastUsed = Date.now()
 				}, 'keyup', 'RunningOrderHeader')
 				method(k.key, (e: KeyboardEvent) => {
 					if (disableInInputFields(e)) return
@@ -448,7 +453,9 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				method(k.key, (e: KeyboardEvent) => {
 					if (disableInInputFields(e)) return
 					preventDefault(e)
+					if (k.coolDown && lastUsed > Date.now() - k.coolDown) return
 					if (k.down) k.down(e)
+					lastUsed = Date.now()
 				}, 'keydown', 'RunningOrderHeader')
 			}
 		})
