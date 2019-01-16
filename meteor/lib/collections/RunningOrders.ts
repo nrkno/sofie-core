@@ -18,9 +18,9 @@ import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 
 export enum RunningOrderHoldState {
 	NONE = 0,
-	PENDING = 1,
-	ACTIVE = 2,
-	COMPLETE = 3,
+	PENDING = 1, // During STK
+	ACTIVE = 2, // During full, STK is played
+	COMPLETE = 3, // During full, full is played
 }
 
 /** This is a very uncomplete mock-up of the Rundown object */

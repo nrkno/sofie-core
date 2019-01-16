@@ -1245,6 +1245,9 @@ export namespace ServerPlayoutAPI {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (!runningOrder.active) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in an active running order!`)
+		if (runningOrder.holdState === RunningOrderHoldState.ACTIVE || runningOrder.holdState === RunningOrderHoldState.PENDING) {
+			throw new Meteor.Error(403, `Segment Line Ad Lib Items can not be used in combination with hold!`)
+		} 
 
 		let adLibItem = SegmentLineAdLibItems.findOne({
 			_id: slaiId,
