@@ -151,6 +151,18 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 			}
 		})
 	}
+	onDeleteDevice (device: PeripheralDevice) {
+		const { t } = this.props
+		doModalDialog({
+			title: t('Remove this device?'),
+			message: [
+				<p>{t('Are you sure you want to remove the device "{{deviceName}}" and all of it\'s sub-devices?', { deviceName: device && device.name })}</p>
+			],
+			onAccept: () => {
+				callMethod('ModalDialog', 'temporaryRemovePeripheralDevice', device._id)
+			}
+		})
+	}
 	render () {
 		const { t } = this.props
 
@@ -228,6 +240,9 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					.map((item) => {
 						return [
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/peripheralDevice/' + item._id}>
+								<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteDevice(item) }}>
+									<FontAwesomeIcon icon={faTrash} />
+								</button>
 								<h3>{item.name}</h3>
 								<p>
 									{item.connected ? t('Connected') : t('Disconnected')}, {t('Status')}: {this.statusCodeString(item.status.statusCode)}

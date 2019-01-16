@@ -751,7 +751,7 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 				{subDevices &&
 					(
 						<React.Fragment>
-							<h3>{t('Attached subdevices')}</h3>
+							<h3>{t('Attached sub-devices')}</h3>
 							{subDevices.map((item) => <DeviceItem key={item._id} device={item} showRemoveButtons={true} />)}
 						</React.Fragment>
 					)
