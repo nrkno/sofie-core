@@ -48,7 +48,7 @@ export function syncFunction<T extends Function> (fcn: T, id0?: string, timeout:
 			getId(id0, args) :
 			getHash(id1 + JSON.stringify(args.join()))
 		)
-		logger.info('id ' + id + ' ' + (fcn.name || 'Anonymous function'))
+		logger.debug(`syncFunction: ${id} (${(fcn.name || 'Anonymous function')})`)
 
 		syncFunctionFcns.push({
 			id: id,
