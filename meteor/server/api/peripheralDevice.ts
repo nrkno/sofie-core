@@ -341,6 +341,9 @@ setMeteorMethods({
 	'temporaryRemovePeripheralDevice' (id: string) {
 		// TODO: Replace this function with an authorized one
 		PeripheralDevices.remove(id)
+		PeripheralDevices.remove({
+			parentDeviceId: id
+		})
 		return id
 	}
 })
