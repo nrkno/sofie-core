@@ -1025,17 +1025,17 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
-						<StudioMappings studioInstallation={this.props.studioInstallation} />
-					</div>
-				</div>
-				<div className='row'>
-					<div className='col c12 r1-c12'>
 						<ConfigManifestSettings t={this.props.t} manifest={collectConfigs(this.props.studioInstallation)} object={this.props.studioInstallation} />
 					</div>
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
 						<ConfigSettings item={this.props.studioInstallation}/>
+					</div>
+				</div>
+				<div className='row'>
+					<div className='col c12 r1-c12'>
+						<StudioMappings studioInstallation={this.props.studioInstallation} />
 					</div>
 				</div>
 				<div className='row'>
