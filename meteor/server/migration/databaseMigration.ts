@@ -400,7 +400,8 @@ function prefixIdsOnStep (prefix: string, step: MigrationStepInternal): Migratio
 export function runMigration (
 	chunks: Array<MigrationChunk>,
 	hash: string,
-	inputResults: Array<MigrationStepInputResult>
+	inputResults: Array<MigrationStepInputResult>,
+	isFirstOfPartialMigrations = true
 ): RunMigrationResult {
 
 	logger.info(`Migration: Starting`)
@@ -437,15 +438,16 @@ export function runMigration (
 	})
 
 	let warningMessages: Array<string> = []
-	// First, take a system snapshot:
-	let system = getCoreSystem()
 	let snapshotId: string = ''
-	if (system && system.storePath) {
-		try {
-			snapshotId = storeSystemSnapshot(null, `Automatic, taken before migration`)
-		} catch (e) {
-			warningMessages.push(`Error when taking snapshot:${e.toString()}`)
-			logger.error(e)
+	if (isFirstOfPartialMigrations) { // First, take a system snapshot:
+		let system = getCoreSystem()
+		if (system && system.storePath) {
+			try {
+				snapshotId = storeSystemSnapshot(null, `Automatic, taken before migration`)
+			} catch (e) {
+				warningMessages.push(`Error when taking snapshot:${e.toString()}`)
+				logger.error(e)
+			}
 		}
 	}
 
@@ -514,13 +516,20 @@ export function runMigration (
 
 	let migrationCompleted: boolean = false
 
-	if (!migration.partialMigration) {
-		if (!warningMessages.length) {
-			// if there are no warning messages, we can complete the migration right away:
-			logger.info(`Migration: Completing...`)
-			completeMigration(migration.chunks)
-			migrationCompleted = true
+	if (migration.manualStepCount === 0 && !warningMessages.length) { // continue automatically with the next batch
+		migration.partialMigration = false
+		const s = getMigrationStatus()
+		const res = runMigration(s.migration.chunks, s.migration.hash, inputResults, false)
+		if (res.migrationCompleted) {
+			return res
 		}
+
+	}
+	if (!migration.partialMigration && !warningMessages.length) {
+		// if there are no warning messages, we can complete the migration right away:
+		logger.info(`Migration: Completing...`)
+		completeMigration(migration.chunks)
+		migrationCompleted = true
 	}
 
 	_.each(warningMessages, (str) => {
