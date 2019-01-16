@@ -173,33 +173,38 @@ export function throwFatalError (msg, e) {
 	throw e
 }
 
-const updateExternalMessageQueueStatus = syncFunctionIgnore(function (): void {
+let updateExternalMessageQueueStatusTimeout: number = 0
+function updateExternalMessageQueueStatus (): void {
 
-	waitTime(5000) // Combined with syncFunctionIgnore, this makes effectively a rateLimiter
+	if (!updateExternalMessageQueueStatusTimeout) {
+		updateExternalMessageQueueStatusTimeout = Meteor.setTimeout(() => {
+			updateExternalMessageQueueStatusTimeout = 0
 
-	const messagesOnQueueCursor = ExternalMessageQueue.find({
-		sent: {$not: {$gt: 0}},
-		tryCount: {$gt: 3}
-	})
-	const messagesOnQueueCount: number = messagesOnQueueCursor.count()
-	let status: StatusObject = {
-		statusCode: StatusCode.GOOD
+			const messagesOnQueueCursor = ExternalMessageQueue.find({
+				sent: {$not: {$gt: 0}},
+				tryCount: {$gt: 3}
+			})
+			const messagesOnQueueCount: number = messagesOnQueueCursor.count()
+			let status: StatusObject = {
+				statusCode: StatusCode.GOOD
+			}
+			if (messagesOnQueueCount > 1) {
+				const messagesOnQueueExample = messagesOnQueueCursor.fetch()[0]
+				status = {
+					statusCode: (
+						messagesOnQueueCount > 10 ?
+						StatusCode.BAD :
+						StatusCode.WARNING_MINOR
+					),
+					messages: [
+						`There are ${messagesOnQueueCount} unsent messages on queue (one of the unsent messages has the error message: "${messagesOnQueueExample.errorMessage}", to receiver "${messagesOnQueueExample.type}", "${JSON.stringify(messagesOnQueueExample.receiver)}")`
+					]
+				}
+			}
+			setSystemStatus('External Message queue', status)
+		}, 5000)
 	}
-	if (messagesOnQueueCount > 1) {
-		const messagesOnQueueExample = messagesOnQueueCursor.fetch()[0]
-		status = {
-			statusCode: (
-				messagesOnQueueCount > 10 ?
-				StatusCode.BAD :
-				StatusCode.WARNING_MINOR
-			),
-			messages: [
-				`There are ${messagesOnQueueCount} unsent messages on queue (one of the unsent messages has the error message: "${messagesOnQueueExample.errorMessage}", to receiver "${messagesOnQueueExample.type}", "${JSON.stringify(messagesOnQueueExample.receiver)}")`
-			]
-		}
-	}
-	setSystemStatus('External Message queue', status)
-}, 'updateExternalMessageQueueStatus', 10000)
+}
 
 const messagesOnQueueCursor = ExternalMessageQueue.find({
 	sent: {$not: {$gt: 0}},
