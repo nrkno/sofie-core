@@ -148,14 +148,13 @@ methods[PeripheralDeviceAPI.methods.getTime] = () => {
 setMeteorMethods(methods)
 
 let updateServerTime = (retries: number = 0) => {
-	logger.info('Updating systemTime...')
 
 	let ntpServerStr: string | undefined = process.env.NTP_SERVERS
 	if (!ntpServerStr) {
 		ntpServerStr = '0.se.pool.ntp.org,1.se.pool.ntp.org,2.se.pool.ntp.org'
 	}
 	let ntpServer = (ntpServerStr.split(',') || [])[0] || 'pool.ntp.org' // Just use the first one specified, for now
-	logger.info('Using ntp-server, ' + ntpServer)
+	logger.info(`System time: Updating, using ntp-server "${ntpServer}"...`)
 
 	determineDiffTime({
 		host: ntpServer,
@@ -166,8 +165,7 @@ let updateServerTime = (retries: number = 0) => {
 	.then((result) => {
 		// if result.stdDev is less than one frame-time, it should be okay:
 		if (result.stdDev < 1000 / 50) {
-			logger.info('Setting time-diff to ' + Math.round(result.mean) +
-				'ms (stdDev: ' + (Math.floor(result.stdDev * 10) / 10) + 'ms)')
+			logger.info(`System time: Setting diff to ${Math.round(result.mean)} ms (std. dev: ${(Math.floor(result.stdDev * 10) / 10) } ms)`)
 
 			systemTime.diff = result.mean
 			systemTime.stdDev = result.stdDev
