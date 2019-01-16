@@ -2,7 +2,7 @@ import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { ensureCollectionProperty, ensureStudioConfig, setExpectedVersion } from './lib'
-import { ShowStyleBases, IBlueprintRuntimeArgumentsItem } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyles } from './deprecatedDataTypes/0_18_0'
 import { RunningOrders } from '../../lib/collections/RunningOrders'
@@ -11,6 +11,7 @@ import * as _ from 'underscore'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { Random } from 'meteor/random'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { IBlueprintRuntimeArgumentsItem } from 'tv-automation-sofie-blueprints-integration'
 
 /**
  * This file contains system specific migration steps.

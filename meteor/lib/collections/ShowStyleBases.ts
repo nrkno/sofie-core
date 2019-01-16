@@ -7,7 +7,8 @@ import {
 	IConfigItem,
 	IBlueprintShowStyleBase,
 	IOutputLayer,
-	ISourceLayer
+	ISourceLayer,
+	IBlueprintRuntimeArgumentsItem
 } from 'tv-automation-sofie-blueprints-integration'
 
 export interface HotkeyDefinition {
@@ -34,13 +35,6 @@ export interface DBShowStyleBase extends IBlueprintShowStyleBase {
 	hotkeyLegend?: Array<HotkeyDefinition>
 
 	runtimeArguments?: Array<IBlueprintRuntimeArgumentsItem>
-}
-
-export interface IBlueprintRuntimeArgumentsItem {
-	label?: string
-	hotkeys: string
-	property: string
-	value: string
 }
 
 export class ShowStyleBase implements DBShowStyleBase {

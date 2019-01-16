@@ -50,7 +50,7 @@ import { evalBlueprints, MigrationContextStudio, MigrationContextShowStyle } fro
  * 0.18.0: Release 4 (TBD)
  * 0.19.0: Release 5 (TBD)
  */
-export const CURRENT_SYSTEM_VERSION = '0.19.0'
+export const CURRENT_SYSTEM_VERSION = '0.20.0'
 
 /** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.
  * And Sofie said: The version of the database is to be GENESIS_SYSTEM_VERSION so that the migration scripts will run.

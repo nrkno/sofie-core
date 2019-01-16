@@ -5,15 +5,15 @@ import { EditAttribute } from '../../lib/EditAttribute'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
-import { ShowStyleBase, ShowStyleBases, HotkeyDefinition, IBlueprintRuntimeArgumentsItem } from '../../../lib/collections/ShowStyleBases'
-import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
+import { Blueprints } from '../../../lib/collections/Blueprints'
+import { ShowStyleBase, ShowStyleBases, HotkeyDefinition } from '../../../lib/collections/ShowStyleBases'
+import { doModalDialog } from '../../lib/ModalDialog'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { findHighestRank, ConfigSettings } from './StudioSettings'
+import { findHighestRank } from './StudioSettings'
 import { literal } from '../../../lib/lib'
 import { Random } from 'meteor/random'
 import { translate } from 'react-i18next'
@@ -21,10 +21,10 @@ import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { callMethod } from '../../lib/clientAPI'
 import { ShowStylesAPI } from '../../../lib/api/showStyles'
-import { ISourceLayer, SourceLayerType, IOutputLayer } from 'tv-automation-sofie-blueprints-integration'
+import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem } from 'tv-automation-sofie-blueprints-integration'
 import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
 
 interface IProps {
 	match: {
@@ -187,7 +187,7 @@ interface IStudioRuntimeArgumentsSettingsProps {
 	showStyleBase: ShowStyleBase
 }
 interface IStudioRuntimeArgumentsSettingsState {
-	editedItems: Array<Number>
+	editedItems: Array<string>
 }
 
 const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsSettings extends React.Component<Translated<IStudioRuntimeArgumentsSettingsProps>, IStudioRuntimeArgumentsSettingsState> {
@@ -198,12 +198,12 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 			editedItems: []
 		}
 	}
-	isItemEdited = (index: Number) => {
-		return this.state.editedItems.indexOf(index) >= 0
+	isItemEdited = (item: IBlueprintRuntimeArgumentsItem) => {
+		return this.state.editedItems.indexOf(item._id) >= 0
 	}
 
-	finishEditItem = (index: Number) => {
-		let i = this.state.editedItems.indexOf(index)
+	finishEditItem = (item: IBlueprintRuntimeArgumentsItem) => {
+		let i = this.state.editedItems.indexOf(item._id)
 		if (i >= 0) {
 			this.state.editedItems.splice(i, 1)
 			this.setState({
@@ -212,9 +212,9 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 		}
 	}
 
-	editItem = (index: Number) => {
-		if (this.state.editedItems.indexOf(index) < 0) {
-			this.state.editedItems.push(index)
+	editItem = (item: IBlueprintRuntimeArgumentsItem) => {
+		if (this.state.editedItems.indexOf(item._id) < 0) {
+			this.state.editedItems.push(item._id)
 			this.setState({
 				editedItems: this.state.editedItems
 			})
@@ -224,7 +224,9 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 		if (this.props.showStyleBase) {
 			ShowStyleBases.update(this.props.showStyleBase._id, {
 				$pull: {
-					runtimeArguments: item
+					runtimeArguments: {
+						_id: item._id
+					}
 				}
 			})
 		}
@@ -233,6 +235,7 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 		const { t } = this.props
 
 		const newItem = literal<IBlueprintRuntimeArgumentsItem>({
+			_id: Random.id(),
 			property: 'new-property',
 			value: '1',
 			hotkeys: 'mod+shift+z'
@@ -264,7 +267,7 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 			(this.props.showStyleBase.runtimeArguments || []).map((item, index) => {
 				return <React.Fragment key={index + '_' + item.property}>
 					<tr className={ClassNames({
-						'hl': this.isItemEdited(index)
+						'hl': this.isItemEdited(item)
 					})}>
 						<th className='settings-studio-custom-config-table__name c2'>
 							{mousetrapHelper.shortcutLabel(item.hotkeys)}
@@ -276,7 +279,7 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 							{item.value}
 						</td>
 						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
-							<button className='action-btn' onClick={(e) => this.editItem(index)}>
+							<button className='action-btn' onClick={(e) => this.editItem(item)}>
 								<FontAwesomeIcon icon={faPencilAlt} />
 							</button>
 							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
@@ -284,7 +287,7 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 							</button>
 						</td>
 					</tr>
-					{this.isItemEdited(index) &&
+					{this.isItemEdited(item) &&
 						<tr className='expando-details hl'>
 							<td colSpan={4}>
 								<div>
@@ -326,7 +329,7 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 									</div>
 								</div>
 								<div className='mod alright'>
-									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(index)}>
+									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>

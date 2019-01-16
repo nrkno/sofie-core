@@ -36,7 +36,8 @@ import {
 	ISourceLayer,
 	ShowStyleVariantPart,
 	IBlueprintShowStyleVariant,
-	IBlueprintSegment
+	IBlueprintSegment,
+	IBlueprintRuntimeArgumentsItem
 } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
 
@@ -653,14 +654,14 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		check(sourceLayerId, String)
 		return _.find(this.showStyleBase.sourceLayers, sl => sl._id === sourceLayerId)
 	}
-	insertSourceLayer (layer: ISourceLayer): string {
-		if (layer._id) {
-			let oldLayer = _.find(this.showStyleBase.sourceLayers, sl => sl._id === layer._id)
-			if (oldLayer) throw new Meteor.Error(500, `Can't insert SourceLayer, _id "${layer._id}" already exists!`)
+	insertSourceLayer (sourceLayerId: string, layer: OmitId<ISourceLayer>): string {
+		if (sourceLayerId) {
+			let oldLayer = _.find(this.showStyleBase.sourceLayers, sl => sl._id === sourceLayerId)
+			if (oldLayer) throw new Meteor.Error(500, `Can't insert SourceLayer, _id "${sourceLayerId}" already exists!`)
 		}
 
 		let sl: ISourceLayer = _.extend(layer, {
-			_id: layer._id || Random.id()
+			_id: sourceLayerId
 		})
 		ShowStyleBases.update({
 			_id: this.showStyleBase._id,
@@ -704,14 +705,14 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		check(outputLayerId, String)
 		return _.find(this.showStyleBase.outputLayers, sl => sl._id === outputLayerId)
 	}
-	insertOutputLayer (layer: IOutputLayer): string {
-		if (layer._id) {
-			let oldLayer = _.find(this.showStyleBase.outputLayers, sl => sl._id === layer._id)
-			if (oldLayer) throw new Meteor.Error(500, `Can't insert OutputLayer, _id "${layer._id}" already exists!`)
+	insertOutputLayer (outputLayerId: string, layer: OmitId<IOutputLayer>): string {
+		if (outputLayerId) {
+			let oldLayer = _.find(this.showStyleBase.outputLayers, sl => sl._id === outputLayerId)
+			if (oldLayer) throw new Meteor.Error(500, `Can't insert OutputLayer, _id "${outputLayerId}" already exists!`)
 		}
 
 		let sl: IOutputLayer = _.extend(layer, {
-			_id: layer._id || Random.id()
+			_id: outputLayerId
 		})
 		ShowStyleBases.update({
 			_id: this.showStyleBase._id,
@@ -866,6 +867,55 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		}})
 		// Update local:
 		this.showStyleBase.config = _.reject(this.showStyleBase.config, c => c._id === configId)
+	}
+
+	getRuntimeArgument (argumentId: string): IBlueprintRuntimeArgumentsItem | undefined {
+		check(argumentId, String)
+		return _.find(this.showStyleBase.runtimeArguments || [], ra => ra._id === argumentId)
+	}
+	insertRuntimeArgument (argumentId: string, argument: IBlueprintRuntimeArgumentsItem) {
+		if (argumentId && this.showStyleBase.runtimeArguments) {
+			let oldLayer = _.find(this.showStyleBase.runtimeArguments, ra => ra._id === argumentId)
+			if (oldLayer) throw new Meteor.Error(500, `Can't insert RuntimeArgument, _id "${argumentId}" already exists!`)
+		}
+
+		let ra: IBlueprintRuntimeArgumentsItem = _.extend(argument, {
+			_id: argumentId
+		})
+		ShowStyleBases.update({
+			_id: this.showStyleBase._id,
+		}, {$push: {
+			runtimeArguments: ra
+		}})
+		if (!this.showStyleBase.outputLayers) this.showStyleBase.outputLayers = []
+		this.showStyleBase.runtimeArguments.push(ra) // Update local
+	}
+	updateRuntimeArgument (argumentId: string, argument: Partial<OmitId<IBlueprintRuntimeArgumentsItem>>) {
+		check(argumentId, String)
+		let ra = _.find(this.showStyleBase.runtimeArguments, ra => ra._id === argumentId) as IBlueprintRuntimeArgumentsItem
+		if (!ra) throw new Meteor.Error(404, `RuntimeArgument "${argumentId}" not found`)
+
+		_.each(argument, (value, key) => {
+			ra[key] = value // Update local
+		})
+		ShowStyleBases.update({
+			_id: this.showStyleBase._id,
+			'runtimeArguments._id': argumentId
+		}, {$set: {
+			'runtimeArguments.$' : ra
+		}})
+	}
+	removeRuntimeArgument (argumentId: string) {
+		check(argumentId, String)
+		ShowStyleBases.update({
+			_id: this.showStyleBase._id,
+		}, {$pull: {
+			'runtimeArguments': {
+				_id: argumentId
+			}
+		}})
+		// Update local:
+		this.showStyleBase.runtimeArguments = _.reject(this.showStyleBase.runtimeArguments, c => c._id === argumentId)
 	}
 }
 
