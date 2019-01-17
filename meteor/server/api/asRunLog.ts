@@ -23,7 +23,7 @@ import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { logger } from '../../lib/logging'
 import { getBlueprintOfRunningOrder, AsRunEventContext } from './blueprints'
-import { IBlueprintExternalMessageQueueObj } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintExternalMessageQueueObj, IBlueprintAsRunLogEventContent } from 'tv-automation-sofie-blueprints-integration'
 import { queueExternalMessages } from './ExternalMessageQueue'
 
 export function pushAsRunLogAsync (eventBase: AsRunLogEventBase, rehersal: boolean, timestamp?: Time): Promise<AsRunLogEvent> {
@@ -94,7 +94,7 @@ export function reportRunningOrderHasStarted (runningOrderOrId: RunningOrder | s
 		let event = pushAsRunLog({
 			studioId: runningOrder.studioInstallationId,
 			runningOrderId: runningOrder._id,
-			content: 'startedPlayback',
+			content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 			content2: 'runningOrder'
 		}, !!runningOrder.rehearsal, timestamp)
 		handleEvent(event)
@@ -136,7 +136,7 @@ export function reportSegmentLineHasStarted (segmentLineOrId: SegmentLine | stri
 				runningOrderId:		runningOrder._id,
 				segmentId:			segmentLine.segmentId,
 				segmentLineId:		segmentLine._id,
-				content:			'startedPlayback',
+				content:			IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 				content2: 			'segmentLine'
 			}, !!runningOrder.rehearsal, timestamp)
 			handleEvent(event)
@@ -175,7 +175,7 @@ export function reportSegmentLineHasStopped (segmentLineOrId: SegmentLine | stri
 				runningOrderId:		runningOrder._id,
 				segmentId:			segmentLine.segmentId,
 				segmentLineId:		segmentLine._id,
-				content:			'stoppedPlayback',
+				content:			IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
 				content2: 			'segmentLine'
 			}, !!runningOrder.rehearsal, timestamp)
 			handleEvent(event)
@@ -221,7 +221,7 @@ export function reportSegmentLineItemHasStarted (segmentLineItemOrId: SegmentLin
 				segmentId:			segmentLine.segmentId,
 				segmentLineId:		segmentLineItem.segmentLineId,
 				segmentLineItemId:	segmentLineItem._id,
-				content:			'startedPlayback',
+				content:			IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 				content2: 			'segmentLineItem'
 			}, !!runningOrder.rehearsal, timestamp)
 			handleEvent(event)
@@ -265,7 +265,7 @@ export function reportSegmentLineItemHasStopped (segmentLineItemOrId: SegmentLin
 				segmentId:			segmentLine.segmentId,
 				segmentLineId:		segmentLineItem.segmentLineId,
 				segmentLineItemId:	segmentLineItem._id,
-				content:			'stoppedPlayback',
+				content:			IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
 				content2: 			'segmentLineItem'
 			}, !!runningOrder.rehearsal, timestamp)
 			handleEvent(event)
