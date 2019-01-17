@@ -35,17 +35,19 @@ export const updateExpectedMediaItems: (roId: string, slId: string) => void
 	})
 
 	function iterateOnSLILike (doc: SegmentLineItemGeneric, prefix: string) {
-		if (doc.content && doc.content.fileName && doc.content.mediaFlowId) {
-			eMIs.push(literal<ExpectedMediaItem>({
-				_id: prefix + '_' + doc._id,
-				disabled: false,
-				lastSeen: getCurrentTime(),
-				mediaFlowId: doc.content.mediaFlowId as string,
-				path: doc.content.fileName as string,
+		if (doc.content && doc.content.fileName && doc.content.mediaFlowIds) {
+			(doc.content.mediaFlowIds as string[]).forEach((flow) => {
+				eMIs.push(literal<ExpectedMediaItem>({
+					_id: prefix + '_' + doc._id + '_' + flow,
+					disabled: false,
+					lastSeen: getCurrentTime(),
+					mediaFlowId: flow,
+					path: this.toString(),
 
-				runningOrderId: roId,
-				segmentLineId: slId
-			}))
+					runningOrderId: roId,
+					segmentLineId: slId
+				}))
+			}, doc.content.fileName)
 		}
 	}
 
