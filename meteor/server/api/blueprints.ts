@@ -68,25 +68,22 @@ export namespace ConfigRef {
 	export function getShowStyleRef (configKey: string): string {
 		return '${showStyle.' + this.runningOrder.showStyleVariantId + '.' + configKey + '}'
 	}
-	export function retrieveRefs (stringWithReferences: string, bailOnError?: boolean) {
+	export function retrieveRefs (stringWithReferences: string, modifier?: (str: string) => string, bailOnError?: boolean) {
 		if (!stringWithReferences) return stringWithReferences
 
 		const refs = stringWithReferences.match(/\$\{[^}]+\}/g) || []
 		_.each(refs, (ref) => {
 			if (ref) {
-				const value = retrieveRef(ref) + ''
+				let value = retrieveRef(ref, bailOnError) + ''
 				if (value) {
+					if (modifier) value = modifier(value)
 					stringWithReferences.replace(ref, value)
-				} else {
-					if (bailOnError) {
-						throw new Meteor.Error(`Error in retrieveRefs: Error in ref "${ref}"`)
-					}
 				}
 			}
 		})
 		return stringWithReferences
 	}
-	function retrieveRef (reference: string): ConfigItemValue | string | undefined {
+	function retrieveRef (reference: string, bailOnError?: boolean): ConfigItemValue | string | undefined {
 		if (!reference) return undefined
 
 		let m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
@@ -96,24 +93,27 @@ export namespace ConfigRef {
 				_.isString(m[2]) &&
 				_.isString(m[3])
 			) {
-				const studio = StudioInstallations.findOne(m[2])
+				const studioId = m[2]
+				const configId = m[3]
+				const studio = StudioInstallations.findOne(studioId)
 				if (studio) {
-					return studio.getConfigValue(m[3])
-				}
+					return studio.getConfigValue(configId)
+				} else if (bailOnError) throw new Meteor.Error(404,`Ref "${reference}": Studio "${studioId}" not found`)
 			} else if (
 				m[1] === 'showStyle' &&
 				_.isString(m[2]) &&
 				_.isString(m[3])
 			) {
+				const showStyleVariantId = m[2]
 				const configId = m[3]
-				const showStyleCompound = getShowStyleCompound(this.runningOrder.showStyleVariantId)
+				const showStyleCompound = getShowStyleCompound(showStyleVariantId)
 				if (showStyleCompound) {
 					const config = _.find(showStyleCompound.config, (config) => {
 						return config._id === configId
 					})
 					if (config) {
 						return config.value
-					}
+					} else if (bailOnError) throw new Meteor.Error(404,`Ref "${reference}": Showstyle variant "${showStyleVariantId}" not found`)
 				}
 			}
 		}

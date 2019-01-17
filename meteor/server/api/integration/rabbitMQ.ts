@@ -6,6 +6,7 @@ import { ExternalMessageQueueObjRabbitMQ } from 'tv-automation-sofie-blueprints-
 import { extendMandadory } from '../../../lib/lib'
 import { promisify } from 'util'
 import { ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
+import { ConfigRef } from '../blueprints';
 
 interface Message {
 	_id: string
@@ -273,10 +274,14 @@ async function getChannelManager (hostURL: string) {
 
 export async function sendRabbitMQMessage (msg: ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj) {
 
-	const hostURL: string			= msg.receiver.host
+	let hostURL: string			= msg.receiver.host
 	const exchangeTopic: string		= msg.receiver.topic
 	const routingKey: string		= msg.message.routingKey
 	let message: any				= msg.message.message
+
+	hostURL = ConfigRef.retrieveRefs(hostURL, (str: string) => {
+		return encodeURIComponent(str)
+	}, true)
 
 	if (!hostURL) throw new Meteor.Error(400, `RabbitMQ: Message host not set`)
 	if (!exchangeTopic) throw new Meteor.Error(400, `RabbitMQ: Message topic not set`)
