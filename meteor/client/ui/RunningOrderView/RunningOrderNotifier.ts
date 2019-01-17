@@ -16,6 +16,7 @@ import { SegmentLines, SegmentLineNote, SegmentLineNoteType } from '../../../lib
 import { getCurrentTime } from '../../../lib/lib'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Segments } from '../../../lib/collections/Segments'
+import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 
 export interface RONotificationEvent {
 	sourceLocator: {
@@ -59,10 +60,10 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 				const studioInstallationId = reactiveData.getRRunningOrderStudioId(rRunningOrderId).get()
 				const showStyleBaseId = reactiveData.getRRunningOrderShowStyleBaseId(rRunningOrderId).get()
 				ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus.StudioInstallation', this.autorun(() => {
-					// const studioInstallation = StudioInstallations.findOne(studioInstallationId)
+					const studioInstallation = StudioInstallations.findOne(studioInstallationId)
 					const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
 					if (showStyleBase) {
-						this.reactiveMediaStatus(rRunningOrderId, showStyleBase)
+						this.reactiveMediaStatus(rRunningOrderId, showStyleBase, studioInstallation)
 						this.reactiveSLNotes(rRunningOrderId)
 						this.reactivePeripheralDeviceStatus(studioInstallationId)
 					} else {
@@ -180,7 +181,7 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 		}))
 	}
 
-	private reactiveMediaStatus (rRunningOrderId: string, showStyleBase: ShowStyleBase) {
+	private reactiveMediaStatus (rRunningOrderId: string, showStyleBase: ShowStyleBase, studioInstallation: StudioInstallation) {
 		let oldItemIds: Array<string> = []
 		ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus.SegmentLineItems', this.autorun((comp: Tracker.Computation) => {
 			const items = reactiveData.getRSegmentLineItems(rRunningOrderId).get()
@@ -189,9 +190,9 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 				const sourceLayer = reactiveData.getRSourceLayer(showStyleBase, item.sourceLayerId).get()
 				const segmentLine = SegmentLines.findOne(item.segmentLineId)
 				const segment = segmentLine ? Segments.findOne(segmentLine.segmentId) : undefined
-				if (sourceLayer) {
+				if (sourceLayer && segmentLine) {
 					ReactiveDataHelper.registerComputation(`RunningOrderView.MediaObjectStatus.SegmentLineItems.${item._id}`, this.autorun(() => {
-						const { metadata, status, message } = checkSLIContentStatus(item, sourceLayer, showStyleBase.config)
+						const { metadata, status, message } = checkSLIContentStatus(item, sourceLayer, studioInstallation.config)
 						let newNotification: Notification | undefined = undefined
 						if ((status !== RunningOrderAPI.LineItemStatusCode.OK) && (status !== RunningOrderAPI.LineItemStatusCode.UNKNOWN)) {
 							newNotification = new Notification(item._id, NoticeLevel.WARNING, message || 'Media is broken', segment ? segment._id : 'line_' + item.segmentLineId, getCurrentTime(), true, [
@@ -199,7 +200,10 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 									label: 'Show issue',
 									type: 'default'
 								}
-							], 1)
+							], segmentLine._rank)
+							if (newNotification.message && newNotification.message.toString().startsWith('Source format')) {
+								debugger
+							}
 							newNotification.on('action', (notification, type, e) => {
 								switch (type) {
 									case 'default':
@@ -220,7 +224,9 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 						if (newNotification && !Notification.isEqual(this._mediaStatus[item._id], newNotification)) {
 							this._mediaStatus[item._id] = newNotification
 							this._mediaStatusDep.changed()
+							console.log('Creating notification:', item._id, newNotification)
 						} else if (!newNotification && this._mediaStatus[item._id]) {
+							console.log('Removing notification:', item._id, this._mediaStatus[item._id])
 							delete this._mediaStatus[item._id]
 							this._mediaStatusDep.changed()
 						}
