@@ -14,14 +14,15 @@ interface IModalDialogAttributes {
 	title: string
 	secondaryText?: string
 	acceptText: string
-	onAccept?: (e) => void
-	onSecondary?: (e) => void
-	onDiscard?: (e) => void
+	onAccept?: (e: SomeEvent) => void
+	onSecondary?: (e: SomeEvent) => void
+	onDiscard?: (e: SomeEvent) => void
 }
+type SomeEvent = Event | React.MouseEvent<HTMLElement>
 export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	boundKeys: Array<string> = []
 
-	constructor (args) {
+	constructor (args: IModalDialogAttributes) {
 		super(args)
 	}
 
@@ -62,7 +63,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 		this.boundKeys.length = 0
 	}
 
-	handleKey = (e) => {
+	handleKey = (e: KeyboardEvent) => {
 		if (this.props.show) {
 			if (e.keyCode === 13) { // Enter
 				this.handleAccept(e)
@@ -76,19 +77,19 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 		}
 	}
 
-	handleAccept = (e) => {
+	handleAccept = (e: SomeEvent) => {
 		if (this.props.onAccept && typeof this.props.onAccept === 'function') {
 			this.props.onAccept(e)
 		}
 	}
 
-	handleSecondary = (e) => {
+	handleSecondary = (e: SomeEvent) => {
 		if (this.props.onSecondary && typeof this.props.onSecondary === 'function') {
 			this.props.onSecondary(e)
 		}
 	}
 
-	handleDiscard = (e) => {
+	handleDiscard = (e: SomeEvent) => {
 		if (this.props.onDiscard && typeof this.props.onDiscard === 'function') {
 			this.props.onDiscard(e)
 		} else {
@@ -167,7 +168,7 @@ interface IModalDialogGlobalContainerState {
 }
 
 class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialogGlobalContainerProps>, IModalDialogGlobalContainerState> {
-	constructor (props) {
+	constructor (props: Translated<IModalDialogGlobalContainerProps>) {
 		super(props)
 		if (modalDialogGlobalContainerSingleton) {
 			logger.warning('modalDialogGlobalContainerSingleton called more than once!')

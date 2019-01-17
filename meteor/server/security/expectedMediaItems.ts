@@ -8,9 +8,10 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 
 import { logger } from '../logging'
+import { Mongo } from 'meteor/mongo'
 
 export namespace ExpectedMediaItemsSecurity {
-	export function allowReadAccess (selector: any, token: string, context: any) {
+	export function allowReadAccess (selector: Mongo.Query<ExpectedMediaItem> | any, token: string, context: any) {
 		check(selector, Object)
 		check(selector.mediaFlowId, Object)
 		check(selector.mediaFlowId.$in, Array)
@@ -38,22 +39,22 @@ export namespace ExpectedMediaItemsSecurity {
 			return true
 		}
 	}
-	export function allowWriteAccess() {
+	export function allowWriteAccess () {
 		// TODO
 	}
 }
 // Setup rules:
 
 ExpectedMediaItems.allow({
-	insert(userId: string, doc: ExpectedMediaItem): boolean {
+	insert (userId: string, doc: ExpectedMediaItem): boolean {
 		return false
 	},
 
-	update(userId, doc, fields, modifier) {
+	update (userId, doc, fields, modifier) {
 		return false
 	},
 
-	remove(userId, doc) {
+	remove (userId, doc) {
 		return false
 	}
 })

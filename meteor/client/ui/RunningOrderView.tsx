@@ -50,11 +50,12 @@ import { NotificationCenter, NoticeLevel } from '../lib/notifications/notificati
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
 }
-
-class KeyboardFocusMarker extends React.Component<any, IKeyboardFocusMarkerState> {
+interface IKeyboardFocusMarkerProps {
+}
+class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKeyboardFocusMarkerState> {
 	keyboardFocusInterval: number
 
-	constructor (props) {
+	constructor (props: IKeyboardFocusMarkerProps) {
 		super(props)
 
 		this.state = {
@@ -96,7 +97,7 @@ interface ITimingWarningProps {
 	runningOrder: RunningOrder
 	inActiveROView?: boolean
 	studioMode: boolean
-	oneMinuteBeforeAction: (e) => void
+	oneMinuteBeforeAction: (e: Event) => void
 }
 
 interface ITimingWarningState {
@@ -108,7 +109,7 @@ const WarningDisplay = translate()(timer(5000)(
 	class extends React.Component<Translated<ITimingWarningProps>, ITimingWarningState> {
 		private REHEARSAL_MARGIN = 1 * 60 * 1000
 
-		constructor (props) {
+		constructor (props: Translated<ITimingWarningProps>) {
 			super(props)
 
 			this.state = {}
@@ -428,7 +429,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		// 	console.log(e)
 		// })
 
-		let preventDefault = (e) => {
+		let preventDefault = (e: Event) => {
 			e.preventDefault()
 			e.stopImmediatePropagation()
 			e.stopPropagation()
@@ -518,7 +519,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 	keyDisableNextSegmentLineItem = (e: any) => {
 		if (this.props.studioMode) {
-			callMethod(e, PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, false, (err, segmentLineItemId) => {
+			callMethod(e, PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, false, (err: Error | undefined, segmentLineItemId: string) => {
 				if (err) {
 					// todo: notify the user
 					console.error(err)
@@ -530,7 +531,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 	keyDisableNextSegmentLineItemUndo = (e: any) => {
 		if (this.props.studioMode) {
-			callMethod(e, PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, true, (err, segmentLineItemId) => {
+			callMethod(e, PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, true, (err: Error | undefined, segmentLineItemId: string) => {
 				if (err) {
 					// todo: notify the user
 					console.error(err)
@@ -555,7 +556,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	moveNext = (e: any, horizonalDelta: number, verticalDelta: number) => {
 		if (this.props.studioMode) {
 			if (this.props.runningOrder.active) {
-				callMethod(e, PlayoutAPI.methods.roMoveNext, this.props.runningOrder._id, horizonalDelta, verticalDelta, (err, segmentLineId) => {
+				callMethod(e, PlayoutAPI.methods.roMoveNext, this.props.runningOrder._id, horizonalDelta, verticalDelta, (err: Error | undefined, segmentLineId: string) => {
 					if (err) {
 						// todo: notify the user
 						console.error(err)
@@ -568,7 +569,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		// console.log(new Date(getCurrentTime()))
 	}
 
-	handleActivationError = (err) => {
+	handleActivationError = (err: Meteor.Error) => {
 		const { t } = this.props
 		if (err.error === 409) {
 			this.setState({
@@ -586,7 +587,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 	hold = (e: any) => {
 		if (this.props.studioMode && this.props.runningOrder.active) {
-			callMethod(e, PlayoutAPI.methods.roActivateHold, this.props.runningOrder._id, (err, res) => {
+			callMethod(e, PlayoutAPI.methods.roActivateHold, this.props.runningOrder._id, (err: Error | undefined) => {
 				if (err) {
 					// TODO
 					// this.handleActivationError(err)
@@ -618,7 +619,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			)
 		) {
 			let doActivate = (le: any) => {
-				callMethod(e, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false, (err, res) => {
+				callMethod(e, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false, (err: Error | undefined, res) => {
 					if (err || (res && res.error)) {
 						this.handleActivationError(err || res)
 						return

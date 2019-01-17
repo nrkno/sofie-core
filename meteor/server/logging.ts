@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as Winston from 'winston'
 import * as fs from 'fs'
 import { setMeteorMethods } from './methods'
+import { getAbsolutePath } from './lib'
 
 // @todo: remove this and do a PR to https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/winston
 // because there's an error in the typings logging.debug() takes any, not only string
@@ -31,7 +32,7 @@ interface LeveledLogMethodFixed {
 let logger: LoggerInstanceFixed = new (Winston.Logger)({
 })
 
-let leadingZeros = (num,length) => {
+let leadingZeros = (num: number | string, length: number) => {
 	num = num + ''
 	if (num.length < length) {
 		return '00000000000000000000000000000000000000000'.slice(0,length - num.length) + num
@@ -42,7 +43,7 @@ let leadingZeros = (num,length) => {
 let logToFile = false
 if (process.env.LOG_TO_FILE) logToFile = true
 
-function safeStringify (o): string {
+function safeStringify (o: any): string {
 	try {
 		return JSON.stringify(o) // make single line
 	} catch (e) {
@@ -59,7 +60,7 @@ if (logToFile) {
 		leadingZeros(time.getHours(),2) + '_' +
 		leadingZeros(time.getMinutes(),2) + '_ ' +
 		leadingZeros(time.getSeconds(),2)
-	let logDirectory = Meteor['absolutePath'] + '/.meteor/local/log'
+	let logDirectory = getAbsolutePath() + '/.meteor/local/log'
 	let logPath = logDirectory + '/log_' + startDate + '.log'
 	// let logPath = './log/'
 
@@ -83,7 +84,7 @@ if (logToFile) {
 		level: 'silly',
 		handleExceptions: true,
 		json: true,
-		stringify: (obj) => safeStringify(obj)
+		stringify: (obj: any) => safeStringify(obj)
 	})
 }
 
@@ -94,8 +95,10 @@ if (logToFile) {
 // }
 
 setMeteorMethods({
-	'logger': (type, ...args) => {
-		(logger[type] || logger.log)(...args)
+	'logger': (type: string, ...args: any[]) => {
+		// @ts-ignore
+		let l: any = logger[type] || logger.log
+		l(...args)
 	}
 })
 

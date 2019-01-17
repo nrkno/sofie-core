@@ -32,7 +32,7 @@ interface IManualPlayoutState {
 }
 export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IManualPlayoutState> {
 
-	constructor (props) {
+	constructor (props: IManualPlayoutProps) {
 		super(props)
 		this.state = {
 			inputValues: {}
@@ -82,7 +82,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		})
 		return mappings
 	}
-	atemCamera (e, studio: StudioInstallation, mappingLayerId: string, cam) {
+	atemCamera (e: React.MouseEvent<HTMLElement>, studio: StudioInstallation, mappingLayerId: string, cam: number) {
 
 		let o: TimelineObjAtemME = {
 			id: 'camera_' + mappingLayerId,
@@ -111,7 +111,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		})
 		return mappings
 	}
-	casparcgPlay (e, studio: StudioInstallation, mappingLayerId: string) {
+	casparcgPlay (e: React.MouseEvent<HTMLElement>, studio: StudioInstallation, mappingLayerId: string) {
 
 		let input = this.state.inputValues[mappingLayerId]
 
@@ -131,7 +131,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		}
 		callMethod(e, ManualPlayoutAPI.methods.insertTimelineObject, studio._id, o)
 	}
-	casparcgClear (e, studio: StudioInstallation, mappingLayerId: string) {
+	casparcgClear (e: React.MouseEvent<HTMLElement>, studio: StudioInstallation, mappingLayerId: string) {
 		callMethod(e, ManualPlayoutAPI.methods.removeTimelineObject, studio._id, 'caspar_' + mappingLayerId)
 	}
 	onInputChange (id: string, value: any) {

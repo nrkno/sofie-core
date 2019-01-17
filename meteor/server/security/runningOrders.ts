@@ -1,7 +1,7 @@
 import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders'
 
 export namespace RunningOrderSecurity {
-	export function allowReadAccess (selector: object, token: string, context) {
+	export function allowReadAccess (selector: object, token: string, context: any) {
 
 		return true
 		// TODO: implement some security here

@@ -9,7 +9,7 @@ import { logger } from '../logging'
 import { ClientAPI } from '../../lib/api/client'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { setMeteorMethods } from '../methods'
+import { setMeteorMethods, Methods } from '../methods'
 
 export namespace ServerClientAPI {
 	export function execMethod (context: string, methodName: string, ...args: any[]) {
@@ -120,11 +120,11 @@ export namespace ServerClientAPI {
 		})
 	}
 }
-let methods = {}
-methods[ClientAPI.methods.execMethod] = function (...args) {
+let methods: Methods = {}
+methods[ClientAPI.methods.execMethod] = function (...args: any[]) {
 	return ServerClientAPI.execMethod.apply(this, args)
 }
-methods[ClientAPI.methods.callPeripheralDeviceFunction] = function (...args) {
+methods[ClientAPI.methods.callPeripheralDeviceFunction] = function (...args: any[]) {
 	return ServerClientAPI.callPeripheralDeviceFunction.apply(this, args)
 }
 

@@ -3,7 +3,7 @@ import { StudioInstallation, StudioInstallations } from '../../lib/collections/S
 import { rejectFields } from './lib'
 
 export namespace StudioInstallationsSecurity {
-	export function allowReadAccess (selector: object, token: string, context) {
+	export function allowReadAccess (selector: object, token: string, context: any) {
 
 		return true
 		// TODO: implement some security here

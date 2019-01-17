@@ -3,7 +3,7 @@ import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import { allowOnlyFields, rejectFields } from './lib'
 
 export namespace BlueprintsSecurity {
-	export function allowReadAccess (selector: object, token: string, context) {
+	export function allowReadAccess (selector: object, token: string, context: any) {
 
 		return true
 		// TODO: implement some security here

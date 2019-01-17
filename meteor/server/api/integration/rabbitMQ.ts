@@ -53,7 +53,7 @@ class ConnectionManager extends Manager<AMQP.Connection> {
 
 	private hostURL: string
 
-	constructor (hostURL) {
+	constructor (hostURL: string) {
 		super()
 		// nothing
 		this.hostURL = hostURL

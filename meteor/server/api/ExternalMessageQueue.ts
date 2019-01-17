@@ -164,7 +164,7 @@ export function logMessageError (msg: ExternalMessageQueueObj, e: any) {
 		logger.error(e)
 	}
 }
-export function throwFatalError (msg, e) {
+export function throwFatalError (msg: ExternalMessageQueueObj, e: Meteor.Error) {
 
 	ExternalMessageQueue.update(msg._id, {$set: {
 		errorFatal: true

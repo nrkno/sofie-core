@@ -1,7 +1,6 @@
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { ServerResponse, IncomingMessage } from 'http'
-// @ts-ignore Meteor package not recognized by Typescript
 import { Picker } from 'meteor/meteorhacks:picker'
 import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { syncFunctionIgnore } from './codeControl'
