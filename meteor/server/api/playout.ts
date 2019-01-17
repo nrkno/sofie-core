@@ -172,6 +172,11 @@ export namespace ServerPlayoutAPI {
 			dynamicallyInserted: true
 		})
 
+		SegmentLines.remove({
+			runningOrderId: runningOrder._id,
+			dynamicallyInserted: true
+		})
+
 		SegmentLines.update({
 			runningOrderId: runningOrder._id
 		}, {
