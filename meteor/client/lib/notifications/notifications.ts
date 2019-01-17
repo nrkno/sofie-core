@@ -137,7 +137,7 @@ class NotificationCenter0 {
 					this.drop(id)
 				}
 			}
-		}, this.NOTIFICATION_TIMEOUT)
+		}, notice.timeout || this.NOTIFICATION_TIMEOUT)
 	}
 
 	drop (id: string): void {
@@ -190,12 +190,13 @@ export class Notification extends EventEmitter {
 	message: string | React.ReactNode
 	source: string
 	persistent?: boolean
+	timeout?: number
 	snoozed?: boolean
 	actions?: Array<NotificationAction>
 	created: Time
 	rank: number
 
-	constructor (id: string | undefined, status: NoticeLevel, message: string | React.ReactNode, source: string, created?: Time, persistent?: boolean, actions?: Array<NotificationAction>, rank?: number) {
+	constructor (id: string | undefined, status: NoticeLevel, message: string | React.ReactNode, source: string, created?: Time, persistent?: boolean, actions?: Array<NotificationAction>, rank?: number, timeout?: number) {
 		super()
 
 		this.id = id
@@ -206,6 +207,7 @@ export class Notification extends EventEmitter {
 		this.actions = actions || undefined
 		this.created = created || Date.now()
 		this.rank = rank || 0
+		this.timeout = timeout
 	}
 
 	static isEqual (a: Notification | undefined, b: Notification | undefined): boolean {
