@@ -16,7 +16,7 @@ import { SegmentLines, SegmentLineNote, SegmentLineNoteType } from '../../../lib
 import { getCurrentTime } from '../../../lib/lib'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Segments } from '../../../lib/collections/Segments'
-import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
 
 export interface RONotificationEvent {
 	sourceLocator: {
@@ -62,7 +62,7 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 				ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus.StudioInstallation', this.autorun(() => {
 					const studioInstallation = StudioInstallations.findOne(studioInstallationId)
 					const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
-					if (showStyleBase) {
+					if (showStyleBase && studioInstallation) {
 						this.reactiveMediaStatus(rRunningOrderId, showStyleBase, studioInstallation)
 						this.reactiveSLNotes(rRunningOrderId)
 						this.reactivePeripheralDeviceStatus(studioInstallationId)
@@ -137,19 +137,16 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 	private reactiveSLNotes (rRunningOrderId: string) {
 		let oldNoteIds: Array<string> = []
 		ReactiveDataHelper.registerComputation('RunningOrderView.SegmentLineNotes', this.autorun(() => {
-			const segmentLines = SegmentLines.find({
+			const segments = Segments.find({
 				runningOrderId: rRunningOrderId
 			}).fetch()
 
 			const newNoteIds: Array<string> = []
-			_.flatten(_.compact(segmentLines.map(i => i.notes && i.notes.map(j => _.extend(j, {
-				rank: i._rank,
-				segmentLineId: i._id
-			}))))).forEach((item: SegmentLineNote & {rank: number, segmentLineId: string}) => {
-				const segmentLine = SegmentLines.findOne(item.segmentLineId)
-				const segment = segmentLine ? Segments.findOne(segmentLine.segmentId) : undefined
+			_.flatten(_.compact(segments.map(i => i.getNotes(true).map(j => _.extend(j, {
+				rank: i._rank
+			}))))).forEach((item: SegmentLineNote & {rank: number}) => {
 				const id = item.message + '-' + (item.origin.segmentLineItemId || item.origin.segmentLineId || item.origin.segmentId || item.origin.roId) + '-' + item.origin.name + '-' + item.type
-				let newNotification = new Notification(id, item.type === SegmentLineNoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, segment ? segment._id : 'blueprint', getCurrentTime(), true, [
+				let newNotification = new Notification(id, item.type === SegmentLineNoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, item.origin.segmentId || 'unknown', getCurrentTime(), true, [
 					{
 						label: 'Show issue',
 						type: 'default'
@@ -224,9 +221,7 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 						if (newNotification && !Notification.isEqual(this._mediaStatus[item._id], newNotification)) {
 							this._mediaStatus[item._id] = newNotification
 							this._mediaStatusDep.changed()
-							console.log('Creating notification:', item._id, newNotification)
 						} else if (!newNotification && this._mediaStatus[item._id]) {
-							console.log('Removing notification:', item._id, this._mediaStatus[item._id])
 							delete this._mediaStatus[item._id]
 							this._mediaStatusDep.changed()
 						}

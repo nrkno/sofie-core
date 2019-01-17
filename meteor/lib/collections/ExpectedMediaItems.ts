@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { TransformedCollection } from "../typings/meteor"
+import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, Time } from '../lib'
 
 export interface ExpectedMediaItem {
@@ -21,7 +21,10 @@ export interface ExpectedMediaItem {
 	lastSeen: Time
 
 	/** Time to wait before removing file */
-	lingerTime: number
+	lingerTime?: number
+
+	/** The segment line this item belongs to */
+	segmentLineId: string
 }
 
 export const ExpectedMediaItems: TransformedCollection<ExpectedMediaItem, ExpectedMediaItem>
