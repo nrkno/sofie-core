@@ -84,13 +84,14 @@ export namespace ServerPeripheralDeviceAPI {
 		check(token, String)
 		check(status, Object)
 		check(status.statusCode, Number)
-		logger.debug('setStatus', status.statusCode)
 
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
 
 		// check if we have to update something:
 		if (!_.isEqual(status, peripheralDevice.status)) {
+
+			logger.debug(`Changed status of device ${peripheralDevice._id} "${peripheralDevice.name}" to ${status.statusCode}`)
 			// perform the update:
 			PeripheralDevices.update(id, {$set: {
 				status: status

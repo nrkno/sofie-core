@@ -26,7 +26,7 @@ export namespace MediaScannerIntegration {
 		}
 	}
 	export function updateMediaObject (id: string, token: string, collectionId: string, objId: string, doc: MediaObject | null) {
-		logger.debug('updateMediaObject')
+		// logger.debug('updateMediaObject')
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 
 		let _id = collectionId + '_' + objId

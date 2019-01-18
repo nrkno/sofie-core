@@ -184,6 +184,11 @@ export namespace ServerPlayoutAPI {
 			dynamicallyInserted: true
 		})
 
+		SegmentLines.remove({
+			runningOrderId: runningOrder._id,
+			dynamicallyInserted: true
+		})
+
 		SegmentLines.update({
 			runningOrderId: runningOrder._id
 		}, {
@@ -1354,6 +1359,9 @@ export namespace ServerPlayoutAPI {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (!runningOrder.active) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in an active running order!`)
+		if (runningOrder.holdState === RunningOrderHoldState.ACTIVE || runningOrder.holdState === RunningOrderHoldState.PENDING) {
+			throw new Meteor.Error(403, `Segment Line Ad Lib Items can not be used in combination with hold!`)
+		} 
 
 		let adLibItem = SegmentLineAdLibItems.findOne({
 			_id: slaiId,
@@ -1361,6 +1369,7 @@ export namespace ServerPlayoutAPI {
 		})
 		if (!adLibItem) throw new Meteor.Error(404, `Segment Line Ad Lib Item "${slaiId}" not found!`)
 
+		let orgSlId = slId
 		if (queue) {
 			// insert a NEW, adlibbed segmentLine after this segmentLine
 			slId = adlibQueueInsertSegmentLine (runningOrder, slId, adLibItem )
@@ -1370,12 +1379,20 @@ export namespace ServerPlayoutAPI {
 			runningOrderId: roId
 		})
 		if (!segLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
-		if (!queue && runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in a current segment line!`)
+		if (!queue && runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in a current segment line!`) 
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine, queue)
 		SegmentLineItems.insert(newSegmentLineItem)
 
 		// logger.debug('adLibItemStart', newSegmentLineItem)
 		if (queue) {
+			// keep infinite sLineItems
+			SegmentLineItems.find({ runningOrderId: roId, segmentLineId: orgSlId }).forEach(sli => {
+				if (sli.infiniteMode && sli.infiniteMode >= SegmentLineItemLifespan.Infinite) {
+					let newSegmentLineItem = convertAdLibToSLineItem(sli, segLine!, queue)
+					SegmentLineItems.insert(newSegmentLineItem)
+				}
+			})
+
 			ServerPlayoutAPI.roSetNext(runningOrder._id, slId)
 		} else {
 			cropInfinitesOnLayer(runningOrder, segLine, newSegmentLineItem)
@@ -1391,12 +1408,16 @@ export namespace ServerPlayoutAPI {
 
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		if (runningOrder.holdState === RunningOrderHoldState.ACTIVE || runningOrder.holdState === RunningOrderHoldState.PENDING) {
+			throw new Meteor.Error(403, `Segment Line Ad Lib Items can not be used in combination with hold!`)
+		} 
 
 		let adLibItem = RunningOrderBaselineAdLibItems.findOne({
 			_id: robaliId,
 			runningOrderId: roId
 		})
 		if (!adLibItem) throw new Meteor.Error(404, `Running Order Baseline Ad Lib Item "${robaliId}" not found!`)
+		let orgSlId = slId
 		if (queue) {
 			// insert a NEW, adlibbed segmentLine after this segmentLine
 			slId = adlibQueueInsertSegmentLine (runningOrder, slId, adLibItem )
@@ -1415,6 +1436,15 @@ export namespace ServerPlayoutAPI {
 		// logger.debug('adLibItemStart', newSegmentLineItem)
 
 		if (queue) {
+			// keep infinite sLineItems
+			SegmentLineItems.find({ runningOrderId: roId, segmentLineId: orgSlId }).forEach(sli => {
+				console.log(sli.name + ' has life span of ' + sli.infiniteMode)
+				if (sli.infiniteMode && sli.infiniteMode >= SegmentLineItemLifespan.Infinite) {
+					let newSegmentLineItem = convertAdLibToSLineItem(sli, segLine!, queue)
+					SegmentLineItems.insert(newSegmentLineItem)
+				}
+			})
+
 			ServerPlayoutAPI.roSetNext(runningOrder._id, slId)
 		} else {
 			cropInfinitesOnLayer(runningOrder, segLine, newSegmentLineItem)
@@ -1604,6 +1634,9 @@ export namespace ServerPlayoutAPI {
 
 		const runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `Running order "${roId}" not found!`)
+		if (runningOrder.holdState === RunningOrderHoldState.ACTIVE || runningOrder.holdState === RunningOrderHoldState.PENDING) {
+			throw new Meteor.Error(403, `Segment Line Arguments can not be toggled when hold is used!`)
+		} 
 
 		let segmentLine = SegmentLines.findOne(slId)
 		if (!segmentLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)

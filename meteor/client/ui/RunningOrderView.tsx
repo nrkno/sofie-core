@@ -769,10 +769,12 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			// The running order is active and not in rehersal
 			doModalDialog({
 				title: this.props.runningOrder.name,
-				message: t('Are you sure you want to reset this Running Order?'),
+				message: t('The running order can not be reset while it is active'),
 				onAccept: () => {
-					doReset()
-				}
+					
+				},
+				acceptOnly: true,
+				yes: 'OK'
 			})
 		} else {
 			doReset()
@@ -1226,7 +1228,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		if (this.props.showStyleBase) {
 			_.each(this.props.showStyleBase.runtimeArguments, (i) => {
 				const combos = i.hotkeys.split(',')
-				_.each(combos, (combo) => {
+				_.each(combos, (combo: string) => {
 					const handler = (e: KeyboardEvent) => {
 						if (disableInInputFields(e)) return
 

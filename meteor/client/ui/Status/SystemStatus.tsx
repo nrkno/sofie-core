@@ -76,7 +76,6 @@ export const DeviceItem = translate()(class extends React.Component<Translated<I
 			case PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER:
 				return t('Media Manager')
 			case PeripheralDeviceAPI.DeviceType.OTHER:
-				return ''
 			default:
 				return t('Unknown Device')
 		}
