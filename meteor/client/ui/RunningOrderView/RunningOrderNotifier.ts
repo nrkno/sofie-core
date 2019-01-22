@@ -1,7 +1,8 @@
+import * as React from 'react'
+import * as _ from 'underscore'
 import { Tracker } from 'meteor/tracker'
 import { Meteor } from 'meteor/meteor'
 
-import * as _ from 'underscore'
 
 import { NotificationCenter, NotificationList, NotifierObject, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { RunningOrderAPI } from '../../../lib/api/runningOrder'
@@ -17,6 +18,7 @@ import { getCurrentTime } from '../../../lib/lib'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Segments } from '../../../lib/collections/Segments'
 import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { RunningOrders } from '../../../lib/collections/RunningOrders';
 
 export interface RONotificationEvent {
 	sourceLocator: {
@@ -28,7 +30,9 @@ export interface RONotificationEvent {
 	}
 }
 
-export class RunningOrderViewNotifier extends WithManagedTracker {
+class RunningOrderViewNotifier extends WithManagedTracker {
+	onRONotificationClick: ((e: RONotificationEvent) => void) | undefined = undefined
+
 	private _notificationList: NotificationList
 	private _notifier: NotifierObject
 
@@ -41,20 +45,36 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 	private _deviceStatus: _.Dictionary<Notification | undefined> = {}
 	private _deviceStatusDep: Tracker.Dependency
 
-	onRONotificationClick: ((e: RONotificationEvent) => void) | undefined = undefined
+	private _runningOrderId: ReactiveVar<string | undefined>
+	private _studioId: ReactiveVar<string | undefined>
 
-	constructor (runningOrderId: string) {
+	constructor () {
 		super()
 		this._notificationList = new NotificationList([])
 		this._mediaStatusDep = new Tracker.Dependency()
 		this._deviceStatusDep = new Tracker.Dependency()
 		this._notesDep = new Tracker.Dependency()
+		this._runningOrderId = new ReactiveVar<string | undefined>(undefined)
+		this._studioId = new ReactiveVar<string | undefined>(undefined)
 
 		this._notifier = NotificationCenter.registerNotifier((): NotificationList => {
 			return this._notificationList
 		})
 		ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus', this.autorun(() => {
-			const rRunningOrderId = reactiveData.getRRunningOrderId(runningOrderId).get()
+			let roId = this._runningOrderId.get()
+			if (roId === undefined) {
+				const studioId = this._studioId.get()
+				const ro = RunningOrders.findOne({
+					active: true,
+					studioInstallationId: studioId
+				})
+				if (ro) {
+					roId = ro._id
+				} else {
+					roId = ''
+				}
+			}
+			const rRunningOrderId = reactiveData.getRRunningOrderId(roId).get()
 
 			if (rRunningOrderId) {
 				const studioInstallationId = reactiveData.getRRunningOrderStudioId(rRunningOrderId).get()
@@ -75,6 +95,9 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 				}))
 			} else {
 				ReactiveDataHelper.stopComputation('RunningOrderView.MediaObjectStatus.StudioInstallation')
+				this._mediaStatus = {}
+				this._deviceStatus = {}
+				this._notes = {}
 				this.cleanUpMediaStatus()
 			}
 		}))
@@ -84,12 +107,22 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 			this._deviceStatusDep.depend()
 			this._notesDep.depend()
 
-			this._notificationList.set(
-				_.compact(_.values(this._mediaStatus))
+			const notifications = _.compact(_.values(this._mediaStatus))
 				.concat(_.compact(_.values(this._deviceStatus)))
 				.concat(_.compact(_.values(this._notes)))
+
+			this._notificationList.set(
+				notifications
 			)
 		})
+	}
+
+	setRunningOrderId (id: string | undefined) {
+		this._runningOrderId.set(id)
+	}
+
+	setStudioId (id: string | undefined) {
+		this._studioId.set(id)
 	}
 
 	stop () {
@@ -274,5 +307,47 @@ export class RunningOrderViewNotifier extends WithManagedTracker {
 			return `Device ${device.name} is disconnected`
 		}
 		return `${device.name}: ` + (device.status.messages || ['']).join(', ')
+	}
+}
+
+export interface IProps {
+	match?: {
+		params: {
+			runningOrderId?: string
+			studioId?: string
+		}
+	}
+	onRONotificationClick?: (e: RONotificationEvent) => void
+}
+
+export const RunningOrderNotifier = class extends React.Component<IProps> {
+	private notifier: RunningOrderViewNotifier
+
+	constructor (props: IProps) {
+		super(props)
+		this.notifier = new RunningOrderViewNotifier()
+	}
+
+	componentDidMount () {
+		const roId = this.props.match ? this.props.match.params.runningOrderId : undefined
+		const studioId = this.props.match ? this.props.match.params.studioId : undefined
+		this.notifier.setRunningOrderId(roId)
+		this.notifier.setStudioId(studioId)
+	}
+
+	componentDidUpdate () {
+		const roId = this.props.match ? this.props.match.params.runningOrderId : undefined
+		const studioId = this.props.match ? this.props.match.params.studioId : undefined
+		this.notifier.setRunningOrderId(roId)
+		this.notifier.setStudioId(studioId)
+	}
+
+	componentWillUnmount () {
+		this.notifier.stop()
+	}
+
+	render () {
+		// this.props.connected
+		return null
 	}
 }

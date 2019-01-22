@@ -43,7 +43,11 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			if (lastNotificationId) {
 				const buf = lastNotificationId
 				lastNotificationId = undefined
-				NotificationCenter.drop(buf)
+				try {
+					NotificationCenter.drop(buf)
+				} catch (e) {
+
+				}
 			}
 
 			let newNotification: Notification | undefined = undefined
@@ -110,12 +114,6 @@ interface IProps {
 interface IState {
 	dismissed: boolean
 }
-interface ITrackedProps {
-	connected: boolean
-	status: string
-	reason: string
-	retryTime: number
-}
 
 export const ConnectionStatusNotification = translate()(class extends React.Component<Translated<IProps>, IState> {
 	private notifier: ConnectionStatusNotifier
@@ -123,7 +121,10 @@ export const ConnectionStatusNotification = translate()(class extends React.Comp
 	constructor (props: Translated<IProps>) {
 		super(props)
 
-		this.notifier = new ConnectionStatusNotifier(props.t)
+	}
+
+	componentDidMount () {
+		this.notifier = new ConnectionStatusNotifier(this.props.t)
 	}
 
 	componentWillUnmount () {

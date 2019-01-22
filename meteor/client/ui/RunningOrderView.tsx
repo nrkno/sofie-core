@@ -43,7 +43,7 @@ import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { callMethod } from '../lib/clientAPI'
-import { RunningOrderViewNotifier, RONotificationEvent } from './RunningOrderView/RunningOrderNotifier'
+import { RONotificationEvent, RunningOrderNotifier } from './RunningOrderView/RunningOrderNotifier'
 import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter, NoticeLevel } from '../lib/notifications/notifications'
 
@@ -752,9 +752,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			doModalDialog({
 				title: this.props.runningOrder.name,
 				message: t('The running order can not be reset while it is active'),
-				onAccept: () => {
-					
-				},
+				onAccept: () => {},
 				acceptOnly: true,
 				yes: 'OK'
 			})
@@ -1026,7 +1024,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		global?: boolean
 	}> = []
 	private _segments: _.Dictionary<React.ComponentClass<{}>> = {}
-	private _notifier: RunningOrderViewNotifier
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -1071,9 +1068,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			]),
 			showNotifications: false
 		}
-
-		this._notifier = new RunningOrderViewNotifier(this.props.runningOrderId)
-		this._notifier.onRONotificationClick = this.onRONotificationClick
 	}
 
 	componentWillMount () {
@@ -1267,8 +1261,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 		window.removeEventListener(RunningOrderViewEvents.goToLiveSegment, this.onGoToLiveSegment)
 		window.removeEventListener(RunningOrderViewEvents.goToTop, this.onGoToTop)
-
-		this._notifier.stop()
 	}
 
 	onBeforeUnload = (e: any) => {
@@ -1498,6 +1490,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	render () {
 		const { t } = this.props
+
 		if (
 			this.props.runningOrder &&
 			this.props.studioInstallation &&
