@@ -43,7 +43,7 @@ import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { callMethod } from '../lib/clientAPI'
-import { RONotificationEvent, RunningOrderNotifier } from './RunningOrderView/RunningOrderNotifier'
+import { RONotificationEvent, onRONotificationClick as roNotificationHandler } from './RunningOrderView/RunningOrderNotifier'
 import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter, NoticeLevel } from '../lib/notifications/notifications'
 
@@ -1137,6 +1137,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				}, 'keydown')
 			}
 		})
+
+		roNotificationHandler.set(this.onRONotificationClick)
 
 		window.addEventListener(RunningOrderViewEvents.goToLiveSegment, this.onGoToLiveSegment)
 		window.addEventListener(RunningOrderViewEvents.goToTop, this.onGoToTop)

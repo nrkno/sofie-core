@@ -18,7 +18,9 @@ import { getCurrentTime } from '../../../lib/lib'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Segments } from '../../../lib/collections/Segments'
 import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
-import { RunningOrders } from '../../../lib/collections/RunningOrders';
+import { RunningOrders } from '../../../lib/collections/RunningOrders'
+
+export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 
 export interface RONotificationEvent {
 	sourceLocator: {
@@ -31,8 +33,6 @@ export interface RONotificationEvent {
 }
 
 class RunningOrderViewNotifier extends WithManagedTracker {
-	onRONotificationClick: ((e: RONotificationEvent) => void) | undefined = undefined
-
 	private _notificationList: NotificationList
 	private _notifier: NotifierObject
 
@@ -188,8 +188,9 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 				newNotification.on('action', (notification, type, e) => {
 					switch (type) {
 						case 'default':
-							if (this.onRONotificationClick && typeof this.onRONotificationClick === 'function') {
-								this.onRONotificationClick({
+							const handler = onRONotificationClick.get()
+							if (handler && typeof handler === 'function') {
+								handler({
 									sourceLocator: item.origin
 								})
 							}
@@ -237,8 +238,9 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 							newNotification.on('action', (notification, type, e) => {
 								switch (type) {
 									case 'default':
-										if (this.onRONotificationClick && typeof this.onRONotificationClick === 'function') {
-											this.onRONotificationClick({
+										const handler = onRONotificationClick.get()
+										if (handler && typeof handler === 'function') {
+											handler({
 												sourceLocator: {
 													name: item.name,
 													roId: item.runningOrderId,
