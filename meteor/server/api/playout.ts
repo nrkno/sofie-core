@@ -526,7 +526,12 @@ export namespace ServerPlayoutAPI {
 			runPostProcessBlueprint(ro, segment)
 		}
 
-		updateSourceLayerInfinitesAfterLine(ro, false, sl)
+		const prevLine = SegmentLines.findOne({
+			runningOrderId: runningOrder._id,
+			_rank: { $lt: sl._rank }
+		}, { sort: { _rank: -1 } })
+
+		updateSourceLayerInfinitesAfterLine(ro, false, prevLine)
 	}
 	function setNextSegmentLine (runningOrder: RunningOrder, nextSegmentLine: DBSegmentLine | null, setManually?: boolean) {
 		let ps: Array<Promise<any>> = []
