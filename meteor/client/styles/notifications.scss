@@ -73,6 +73,12 @@
             }
         }
 
+        > .notification-pop-up__contents {
+            flex: 1;
+            padding: 10px 15px;
+            cursor: default;
+        }
+
         &.has-default-action {
             > .notification-pop-up__contents {
                 cursor: pointer;
@@ -81,11 +87,6 @@
                     text-decoration: underline;
                 }
             }
-        }
-
-        > .notification-pop-up__contents {
-            flex: 1;
-            padding: 10px 15px;
         }
 
         > .notification-pop-up__dismiss {

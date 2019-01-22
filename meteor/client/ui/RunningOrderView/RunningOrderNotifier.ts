@@ -138,13 +138,10 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 		let oldDevItemIds: Array<string> = []
 		let reactivePeripheralDevices: ReactiveVar<PeripheralDevice[]>
 		if (studioInstallationId) {
-			Meteor.subscribe('peripheralDevicesAndSubDevices', { studioInstallationId: studioInstallationId })
+			meteorSubscribe(PubSub.peripheralDevicesAndSubDevices, { studioInstallationId: studioInstallationId })
 			reactivePeripheralDevices = reactiveData.getRPeripheralDevices(studioInstallationId)
 		}
 		ReactiveDataHelper.registerComputation('RunningOrderView.PeripheralDevices', this.autorun(() => {
-			if (studioInstallationId) {
-				meteorSubscribe(PubSub.peripheralDevices, { studioInstallationId: studioInstallationId })
-			}
 			const devices = reactivePeripheralDevices ? reactivePeripheralDevices.get() : []
 			const newDevItemIds = devices.map(item => item._id)
 

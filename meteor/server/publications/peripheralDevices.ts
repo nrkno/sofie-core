@@ -29,7 +29,7 @@ meteorPublish(PubSub.peripheralDevicesAndSubDevices, function (selector) {
 
 	const parents = PeripheralDevices.find(selector).fetch()
 
-	return PeripheralDevices.find({
+	const cursor = PeripheralDevices.find({
 		$or: [
 			{
 				parentDeviceId: { $in: parents.map(i => i._id) }
@@ -37,4 +37,6 @@ meteorPublish(PubSub.peripheralDevicesAndSubDevices, function (selector) {
 			selector
 		]
 	})
+
+	return cursor
 })
