@@ -11,6 +11,7 @@ import { Meteor } from 'meteor/meteor'
 import { setMeteorMethods, Methods } from './methods'
 import { parseVersion, compareVersions } from '../lib/collections/CoreSystem'
 import { StatusResponse, CheckObj, SystemStatusAPI, ExternalStatus, CheckError } from '../lib/api/systemStatus'
+import { getRelevantSystemVersions } from './coreSystem'
 
 // This data structure is to be used to determine the system-wide status of the Core instance
 
@@ -71,9 +72,10 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 		_status: StatusCode.UNKNOWN,
 		documentation: 'https://github.com/nrkno/tv-automation-server-core',
 		_internal: {
-			// statusCode: StatusCode.UNKNOWN,
+			// this _internal is set later
 			statusCodeString: StatusCode[StatusCode.UNKNOWN],
-			messages: []
+			messages: [],
+			versions: {}
 		},
 		checks: checks,
 	}
@@ -147,7 +149,8 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 			_internal: {
 				// statusCode: deviceStatus,
 				statusCodeString: StatusCode[deviceStatus],
-				messages: deviceStatusMessages
+				messages: deviceStatusMessages,
+				versions: device.versions || {}
 			},
 			checks: checks
 		}
@@ -166,7 +169,8 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 	statusObj._internal = {
 		// statusCode: systemStatus,
 		statusCodeString: StatusCode[systemStatus],
-		messages: collectMesages(statusObj)
+		messages: collectMesages(statusObj),
+		versions: getRelevantSystemVersions()
 	}
 	statusObj.statusMessage = statusObj._internal.messages.join(', ')
 

@@ -232,11 +232,8 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 		})
 	}
 }
-function startupMessage () {
-	logger.info(`Core starting up`)
-	logger.info(`Core system version: "${CURRENT_SYSTEM_VERSION}"`)
-
-	logger.info(`Core package version: "${PackageInfo.version}"`)
+export function getRelevantSystemVersions (): {[name: string]: string} {
+	const versions: {[name: string]: string} = {}
 
 	let dependencies: any = PackageInfo.dependencies
 	if (dependencies) {
@@ -299,10 +296,22 @@ function startupMessage () {
 			return omitNames.indexOf(name) === -1
 		})
 		_.each(names, (name) => {
-			logger.info(`Core package.${name} version: "${dependencies[name]}"`)
-
+			versions[name] = dependencies[name]
 		})
 	} else logger.error(`Core package dependencies missing`)
+	return versions
+}
+function startupMessage () {
+	logger.info(`Core starting up`)
+	logger.info(`Core system version: "${CURRENT_SYSTEM_VERSION}"`)
+
+	logger.info(`Core package version: "${PackageInfo.version}"`)
+
+	const versions = getRelevantSystemVersions()
+	_.each(versions, (version, name) => {
+		logger.info(`Core package ${name} version: "${version}"`)
+	})
+
 }
 
 Meteor.startup(() => {
