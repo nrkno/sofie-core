@@ -15,7 +15,9 @@ interface Message {
 	message: string
 	resolve: Function
 	reject: Function
+	headers: Headers
 }
+type Headers = {[key: string]: string}
 class Manager<T extends AMQP.Connection | AMQP.ConfirmChannel> {
 	public initializing?: Promise<T>
 	open: boolean = false
@@ -186,7 +188,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 		}
 	}
 
-	sendMessage (exchangeTopic: string, routingKey: string, messageId: string, message: string) {
+	sendMessage (exchangeTopic: string, routingKey: string, messageId: string, message: string, headers: Headers) {
 		return new Promise ((resolve, reject) => {
 
 			this.channel.assertExchange(exchangeTopic, 'topic', { durable: true })
@@ -197,7 +199,8 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 				routingKey,
 				message,
 				resolve,
-				reject
+				reject,
+				headers
 			})
 			this.triggerHandleOutgoingQueue()
 		})
@@ -225,6 +228,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 				{
 					// options
 					// headers: {}
+					headers: messageToSend.headers,
 					messageId: messageToSend._id,
 					persistent : true // same thing as deliveryMode=2
 				}, (err, ok) => {
@@ -274,10 +278,11 @@ async function getChannelManager (hostURL: string) {
 
 export async function sendRabbitMQMessage (msg: ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj) {
 
-	let hostURL: string			= msg.receiver.host
+	let hostURL: string				= msg.receiver.host
 	const exchangeTopic: string		= msg.receiver.topic
 	const routingKey: string		= msg.message.routingKey
 	let message: any				= msg.message.message
+	let headers: Headers 			= msg.message.headers
 
 	hostURL = ConfigRef.retrieveRefs(hostURL, (str: string) => {
 		return encodeURIComponent(str)
@@ -292,7 +297,7 @@ export async function sendRabbitMQMessage (msg: ExternalMessageQueueObjRabbitMQ 
 
 	if (_.isObject(message)) message = JSON.stringify(message)
 
-	await channelManager.sendMessage(exchangeTopic, routingKey, msg._id, message)
+	await channelManager.sendMessage(exchangeTopic, routingKey, msg._id, message, headers)
 
 }
 /*
