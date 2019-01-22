@@ -32,6 +32,7 @@ import {
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './PrompterView'
 import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
+import { RunningOrderNotifier } from './RunningOrderView/RunningOrderNotifier'
 
 interface IAppState {
 	studioMode: boolean
@@ -101,7 +102,16 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Redirect to='/' />
 						</Switch>
 					</ErrorBoundary>
-					<ConnectionStatusNotification />
+					<Switch>
+						<Route path='/countdowns/:studioId/presenter' component={NullComponent} />
+						<Route path='/countdowns/presenter' component={NullComponent} />
+						<Route path='/prompter/:studioId' component={NullComponent} />
+						<Route path='/' component={ConnectionStatusNotification} />
+					</Switch>
+					<Switch>
+						<Route path='/ro/:runningOrderId' component={RunningOrderNotifier} />
+						<Route path='/activeRo/:studioId' component={RunningOrderNotifier} />
+					</Switch>
 					<ModalDialogGlobalContainer />
 				</div>
 			</Router>
