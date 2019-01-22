@@ -2035,7 +2035,7 @@ function getOrderedSegmentLineItem (line: SegmentLine): Array<SegmentLineItemRes
 	return resolvedItems
 }
 
-const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, runUntilEnd: boolean, previousLine?: SegmentLine) => void
+export const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, runUntilEnd: boolean, previousLine?: SegmentLine) => void
  = syncFunctionIgnore(function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUntilEnd: boolean, previousLine?: SegmentLine) {
 	let activeInfiniteItems: { [layer: string]: SegmentLineItem } = {}
 	let activeInfiniteItemsSegmentId: { [layer: string]: string } = {}
