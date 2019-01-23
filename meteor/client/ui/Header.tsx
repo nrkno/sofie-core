@@ -6,6 +6,7 @@ import { NavLink } from 'react-router-dom'
 import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter } from '../lib/notifications/notifications'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
+import { SupportPopUpToggle } from './SupportPopUp'
 import * as VelocityReact from 'velocity-react'
 
 interface IPropsHeader {
@@ -15,6 +16,7 @@ interface IPropsHeader {
 
 interface IStateHeader {
 	showNotifications: boolean
+	showSupportPanel: boolean
 }
 
 class Header extends React.Component<IPropsHeader & InjectedTranslateProps, IStateHeader> {
@@ -22,7 +24,8 @@ class Header extends React.Component<IPropsHeader & InjectedTranslateProps, ISta
 		super(props)
 
 		this.state = {
-			showNotifications: false
+			showNotifications: false,
+			showSupportPanel: false
 		}
 	}
 
@@ -33,6 +36,12 @@ class Header extends React.Component<IPropsHeader & InjectedTranslateProps, ISta
 
 		this.setState({
 			showNotifications: !this.state.showNotifications
+		})
+	}
+
+	onToggleSupportPanel = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.setState({
+			showSupportPanel: !this.state.showSupportPanel
 		})
 	}
 
@@ -55,7 +64,8 @@ class Header extends React.Component<IPropsHeader & InjectedTranslateProps, ISta
 			</ErrorBoundary>
 			<ErrorBoundary>
 				<div className='status-bar'>
-					<NotificationCenterPanelToggle onClick={this.onToggleNotifications} />
+					<NotificationCenterPanelToggle onClick={this.onToggleNotifications} isOpen={this.state.showNotifications} />
+					<SupportPopUpToggle onClick={this.onToggleSupportPanel} isOpen={this.state.showSupportPanel} />
 				</div>
 			</ErrorBoundary>
 			<div className='header dark'>
