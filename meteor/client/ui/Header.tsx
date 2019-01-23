@@ -6,7 +6,7 @@ import { NavLink } from 'react-router-dom'
 import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter } from '../lib/notifications/notifications'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
-import { SupportPopUpToggle } from './SupportPopUp'
+import { SupportPopUpToggle, SupportPopUp } from './SupportPopUp'
 import * as VelocityReact from 'velocity-react'
 
 interface IPropsHeader {
@@ -60,6 +60,17 @@ class Header extends React.Component<IPropsHeader & InjectedTranslateProps, ISta
 					}, easing: 'ease-in', duration: 500
 				}}>
 					{this.state.showNotifications && <NotificationCenterPanel />}
+				</VelocityReact.VelocityTransitionGroup>
+				<VelocityReact.VelocityTransitionGroup enter={{
+					animation: {
+						translateX: ['0%', '100%']
+					}, easing: 'ease-out', duration: 300
+				}} leave={{
+					animation: {
+						translateX: ['100%', '0%']
+					}, easing: 'ease-in', duration: 500
+				}}>
+					{this.state.showSupportPanel && <SupportPopUp />}
 				</VelocityReact.VelocityTransitionGroup>
 			</ErrorBoundary>
 			<ErrorBoundary>

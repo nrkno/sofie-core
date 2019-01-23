@@ -21,10 +21,6 @@ interface ITrackedProps {
 	}
 }
 
-interface IState {
-	isOpen: boolean
-}
-
 export const SupportPopUp = withTracker<IProps, {}, ITrackedProps>((props: IProps) => {
 	const core = CoreSystem.findOne()
 	return {
@@ -54,7 +50,7 @@ interface IToggleProps {
 	onClick?: (e: React.MouseEvent<HTMLDivElement>) => void
 }
 
-export class SupportPopUpToggle extends React.Component<IToggleProps> {
+export class SupportPopUpToggle extends React.PureComponent<IToggleProps> {
 	render () {
 		return <React.Fragment>
 			<div className={ClassNames('support__toggle-button', {

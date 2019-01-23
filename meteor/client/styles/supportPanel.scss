@@ -1,0 +1,54 @@
+@import '_colorScheme';
+@import '_variables';
+
+.support__toggle-button {
+	position: fixed;
+    display: block;
+    border: none;
+    right: 5px;
+    bottom: 5px;
+    background: transparentize(#4B4B4B, 0.45);
+    width: $fullscreen-controls__button--radius;
+    height: $fullscreen-controls__button--radius;
+    border-radius: 100%;
+    transition: 0.3s background-color;
+    margin-bottom: 0.5rem;
+    font-size: 1em;
+    z-index: 310;
+    text-align: left;
+    cursor: pointer;
+
+    &:active, &.active {
+        background: $ui-button-primary;
+        transition: 0s background-color;
+    }
+
+    > svg {
+        position: absolute;
+        width: 50%;
+        height: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -53%);
+        transition: 0.5s all ease-in-out;
+
+        > path {
+            fill: rgb(255, 255, 255);
+            transition: 0.5s all linear;
+        }
+    }
+}
+
+.support-pop-up-panel {
+	position: fixed;
+    bottom: 14px;
+    right: 0;
+    left: auto;
+    margin-right: 60px;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    padding: 15px 20px;
+    z-index: 291;
+	min-height: 50px;
+	max-width: 350px;
+}

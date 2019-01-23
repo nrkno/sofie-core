@@ -313,7 +313,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 	}
 }
 
-export interface IProps {
+interface IProps {
 	match?: {
 		params: {
 			runningOrderId?: string

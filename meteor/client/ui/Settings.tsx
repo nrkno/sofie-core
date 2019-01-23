@@ -23,6 +23,7 @@ import DeviceSettings from './Settings/DeviceSettings'
 import ShowStyleSettings from './Settings/ShowStyleBaseSettings'
 import SnapshotsView from './Settings/SnapshotsView'
 import BlueprintSettings from './Settings/BlueprintSettings'
+import SystemMessages from './Settings/SystemMessages'
 
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
@@ -257,6 +258,9 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				}
 				<h2 className='mhs'>{t('Tools')}</h2>
 				<hr className='vsubtle man' />
+				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/messages'>
+					<h3>{t('System messages')}</h3>
+				</NavLink>
 				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/migration'>
 					<h3>{t('Upgrade database')}</h3>
 				</NavLink>
@@ -304,6 +308,7 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 									<Route path='/settings/blueprint/:blueprintId' component={BlueprintSettings} />
 									<Route path='/settings/tools/snapshots' component={SnapshotsView} />
 									<Route path='/settings/tools/migration' component={MigrationView} />
+									<Route path='/settings/tools/messages' component={SystemMessages} />
 									<Redirect to='/settings' />
 								</Switch>
 							</ErrorBoundary>
