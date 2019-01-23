@@ -813,7 +813,7 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 				</div>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('Path prefix')}
+						{t('Path Prefix')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute='testToolsConfig.recordings.filePrefix'
@@ -825,7 +825,7 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 				</div>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('URL prefix')}
+						{t('URL Prefix')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute='testToolsConfig.recordings.urlPrefix'
@@ -837,7 +837,7 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 				</div>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('Decklink input index')}
+						{t('Decklink Input Index')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute='testToolsConfig.recordings.decklinkDevice'
@@ -849,7 +849,7 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 				</div>
 				<div className='mod mvs mhs'>
 					<label className='field'>
-						{t('Decklink input format')}
+						{t('Decklink Input Format')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute='testToolsConfig.recordings.channelFormat'
@@ -962,7 +962,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 						</div>
 					</label>
 					<div className='field'>
-						{t('Select compatible Show Styles')}
+						{t('Select Compatible Show Styles')}
 						<div className='mdi'>
 							<EditAttribute
 								attribute='supportedShowStyleBase'
@@ -988,7 +988,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 						</div>
 					</label>
 					<label className='field'>
-						{t('Media-previews URL')}
+						{t('Media Preview URL')}
 						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'
@@ -1001,7 +1001,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 						</div>
 					</label>
 					<label className='field'>
-						{t('Sofie host URL')}
+						{t('Sofie Host URL')}
 						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'

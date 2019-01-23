@@ -187,7 +187,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					<button className='action-btn right' onClick={(e) => this.onAddShowStyleBase()}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
-					{t('Show styles')}
+					{t('Show Styles')}
 				</h2>
 				<hr className='vsubtle man' />
 				{

@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-01-22T10:53:06.045Z\n"
-"PO-Revision-Date: 2019-01-22T10:53:06.045Z\n"
+"POT-Creation-Date: 2019-01-23T10:44:04.655Z\n"
+"PO-Revision-Date: 2019-01-23T10:44:04.655Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -439,7 +439,7 @@ msgstr ""
 msgid "Unnamed studio"
 msgstr ""
 
-msgid "Show styles"
+msgid "Show Styles"
 msgstr ""
 
 msgid "Unnamed show style"
@@ -475,11 +475,11 @@ msgstr ""
 msgid "System Settings"
 msgstr ""
 
-msgid "Update blueprints?"
+msgid "Update Blueprints?"
 msgstr ""
 
 msgid ""
-"Are you sure you want to update the bluerpints from the file "
+"Are you sure you want to update the blueprints from the file "
 "\"{{fileName}}\"?"
 msgstr ""
 
@@ -931,7 +931,7 @@ msgstr ""
 msgid "Take a Snapshot"
 msgstr ""
 
-msgid "Full system Snapshot"
+msgid "Full System Snapshot"
 msgstr ""
 
 msgid ""
@@ -939,13 +939,13 @@ msgid ""
 "blueprints, devices, etc.)"
 msgstr ""
 
-msgid "Take a Full system Snapshot"
+msgid "Take a Full System Snapshot"
 msgstr ""
 
 msgid "Studio Snapshot"
 msgstr ""
 
-msgid "A System Snapshot contains all system settings related to that studio"
+msgid "A Studio Snapshot contains all system settings related to that studio"
 msgstr ""
 
 msgid "Take a Snapshot for studio \"{{studioName}}\" only"
@@ -954,7 +954,7 @@ msgstr ""
 msgid "Restore from Snapshot File"
 msgstr ""
 
-msgid "Restore from this Snapshot File?"
+msgid "Restore from this Snapshot file?"
 msgstr ""
 
 msgid "Restore"
@@ -1031,22 +1031,22 @@ msgstr ""
 msgid "CasparCG Channel"
 msgstr ""
 
-msgid "Path prefix"
+msgid "Path Prefix"
 msgstr ""
 
-msgid "URL prefix"
+msgid "URL Prefix"
 msgstr ""
 
-msgid "Decklink input index"
+msgid "Decklink Input Index"
 msgstr ""
 
-msgid "Decklink input format"
+msgid "Decklink Input Format"
 msgstr ""
 
 msgid "Studio Name"
 msgstr ""
 
-msgid "Select compatible Show Styles"
+msgid "Select Compatible Show Styles"
 msgstr ""
 
 msgid "Click to show available Show Styles"
@@ -1055,10 +1055,10 @@ msgstr ""
 msgid "Default ShowStyleVariant"
 msgstr ""
 
-msgid "Media-previews URL"
+msgid "Media Preview URL"
 msgstr ""
 
-msgid "Sofie host URL"
+msgid "Sofie Host URL"
 msgstr ""
 
 msgid "System"
