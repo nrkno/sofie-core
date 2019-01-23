@@ -223,6 +223,27 @@ export namespace ServerPlayoutAPI {
 			}
 		}, {multi: true})
 
+		// Reset any segment line items that were modified by inserted adlibs
+		const modifiedSegmentLineItems = SegmentLineItems.find({
+			runningOrderId: runningOrder._id,
+			$or: [
+				{ originalExpectedDuration: { $exists: true } },
+				{ originalInfiniteMode: { $exists: true } }
+			]
+		}).fetch()
+		modifiedSegmentLineItems.forEach(sli => {
+			SegmentLineItems.update(sli._id, {
+				$set: {
+					expectedDuration: sli.originalExpectedDuration || sli.expectedDuration,
+					infiniteMode: sli.originalInfiniteMode || sli.infiniteMode
+				},
+				$unset: {
+					originalExpectedDuration: 1,
+					originalInfiniteMode: 1
+				}
+			})
+		})
+
 		// ensure that any removed infinites (caused by adlib) are restored
 		updateSourceLayerInfinitesAfterLine(runningOrder, true)
 
@@ -1366,7 +1387,7 @@ export namespace ServerPlayoutAPI {
 		if (!runningOrder.active) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in an active running order!`)
 		if (runningOrder.holdState === RunningOrderHoldState.ACTIVE || runningOrder.holdState === RunningOrderHoldState.PENDING) {
 			throw new Meteor.Error(403, `Segment Line Ad Lib Items can not be used in combination with hold!`)
-		} 
+		}
 
 		let adLibItem = SegmentLineAdLibItems.findOne({
 			_id: slaiId,
@@ -1384,7 +1405,7 @@ export namespace ServerPlayoutAPI {
 			runningOrderId: roId
 		})
 		if (!segLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
-		if (!queue && runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in a current segment line!`) 
+		if (!queue && runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in a current segment line!`)
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine, queue)
 		SegmentLineItems.insert(newSegmentLineItem)
 
@@ -1415,7 +1436,7 @@ export namespace ServerPlayoutAPI {
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (runningOrder.holdState === RunningOrderHoldState.ACTIVE || runningOrder.holdState === RunningOrderHoldState.PENDING) {
 			throw new Meteor.Error(403, `Segment Line Ad Lib Items can not be used in combination with hold!`)
-		} 
+		}
 
 		let adLibItem = RunningOrderBaselineAdLibItems.findOne({
 			_id: robaliId,
@@ -1641,7 +1662,7 @@ export namespace ServerPlayoutAPI {
 		if (!runningOrder) throw new Meteor.Error(404, `Running order "${roId}" not found!`)
 		if (runningOrder.holdState === RunningOrderHoldState.ACTIVE || runningOrder.holdState === RunningOrderHoldState.PENDING) {
 			throw new Meteor.Error(403, `Segment Line Arguments can not be toggled when hold is used!`)
-		} 
+		}
 
 		let segmentLine = SegmentLines.findOne(slId)
 		if (!segmentLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
@@ -2054,6 +2075,7 @@ export const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, r
 				// ensure infinite id is set
 				item.infiniteId = item._id
 				SegmentLineItems.update(item._id, { $set: { infiniteId: item.infiniteId } })
+				logger.debug(`updateSourceLayerInfinitesAfterLine: marked "${item._id}" as start of infinite`)
 			}
 
 			if (item.infiniteMode === SegmentLineItemLifespan.OutOnNextSegmentLine) {
@@ -2091,6 +2113,7 @@ export const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, r
 				// Previous item no longer enforces the existence of this one
 				SegmentLineItems.remove(item)
 				removedInfinites.push(item._id)
+				logger.debug(`updateSourceLayerInfinitesAfterLine: removed old infinite "${item._id}" from "${item.segmentLineId}"`)
 			}
 		}
 
@@ -2152,6 +2175,7 @@ export const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, r
 			}
 
 			SegmentLineItems.insert(newItem)
+			logger.debug(`updateSourceLayerInfinitesAfterLine: inserted infinite continuation "${newItem._id}"`)
 		}
 
 		// find any new infinites exposed by this
@@ -2170,6 +2194,7 @@ export const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, r
 				// ensure infinite id is set
 				item.infiniteId = item._id
 				SegmentLineItems.update(item._id, { $set: { infiniteId: item.infiniteId } })
+				logger.debug(`updateSourceLayerInfinitesAfterLine: marked "${item._id}" as start of infinite`)
 			}
 
 			activeInfiniteItems[item.sourceLayerId] = item
@@ -2186,18 +2211,18 @@ const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (running
 	const items = getOrderedSegmentLineItem(segLine).filter(i =>
 		(i.sourceLayerId === newItem.sourceLayerId
 			|| (newItemExclusivityGroup && sourceLayerLookup[i.sourceLayerId] && sourceLayerLookup[i.sourceLayerId].exclusiveGroup === newItemExclusivityGroup)
-		) && i._id !== newItem._id
+		) && i._id !== newItem._id && i.infiniteMode
 	)
 
 	for (const i of items) {
-		if (i.infiniteMode && !i.expectedDuration && i.dynamicallyInserted) {
-			SegmentLineItems.update({
-				_id: i._id
-			}, { $set: {
-				expectedDuration: `#${getSliGroupId(newItem)}.start - #.start`,
-				infiniteMode: SegmentLineItemLifespan.Normal
-			}})
-		}
+		SegmentLineItems.update({
+			_id: i._id
+		}, { $set: {
+			expectedDuration: `#${getSliGroupId(newItem)}.start - #.start`,
+			originalExpectedDuration: i.originalExpectedDuration !== undefined ? i.originalExpectedDuration : i.expectedDuration,
+			infiniteMode: SegmentLineItemLifespan.Normal,
+			originalInfiniteMode: i.originalInfiniteMode !== undefined ? i.originalInfiniteMode : i.infiniteMode
+		}})
 	}
 })
 
@@ -2228,10 +2253,15 @@ function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): SegmentLine
 				value: 'now'
 			},
 			dynamicallyInserted: true,
-			expectedDuration: segmentLineItem.expectedDuration || 0 // set duration to infinite if not set by AdLibItem
+			infiniteMode: segmentLineItem.originalInfiniteMode !== undefined ? segmentLineItem.originalInfiniteMode : segmentLineItem.infiniteMode,
+			expectedDuration: segmentLineItem.originalExpectedDuration !== undefined ? segmentLineItem.originalExpectedDuration : segmentLineItem.expectedDuration || 0 // set duration to infinite if not set by AdLibItem
 		}
 	))
 	delete newAdLibItem.trigger
+	delete newAdLibItem.timings
+	delete newAdLibItem.startedPlayback
+	delete newAdLibItem['infiniteId']
+	delete newAdLibItem['stoppedPlayback']
 
 	if (newAdLibItem.content && newAdLibItem.content.timelineObjects) {
 		let contentObjects = newAdLibItem.content.timelineObjects
