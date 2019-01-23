@@ -9,7 +9,7 @@ import { FloatingInspector } from '../../FloatingInspector'
 
 import * as ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
-import { MediaObject } from '../../../../lib/collections/MediaObjects'
+import { MediaObject, Anomaly } from '../../../../lib/collections/MediaObjects'
 
 import Lottie from 'react-lottie'
 // @ts-ignore Not recognized by Typescript
@@ -27,6 +27,7 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 	begin: string
 	end: string
 	scenes?: Array<number>
+	anomalies?: Array<Anomaly>
 
 	setVideoRef = (e: HTMLVideoElement) => {
 		this.vPreview = e
@@ -80,6 +81,7 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 		}
 
 		this.scenes = this.getScenes()
+		this.anomalies = this.getAnomalies()
 	}
 
 	getPreviewUrl = (): string | undefined => {
@@ -106,6 +108,46 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 					return undefined
 				})) // convert into milliseconds
 			}
+		}
+	}
+
+	getAnomalies = (): Array<Anomaly> | undefined => {
+		if (this.props.segmentLineItem) {
+			const itemDuration = this.getItemDuration()
+			const item = this.props.segmentLineItem as SegmentLineItemUi
+			const metadata = item.metadata as MediaObject
+			let items: Array<Anomaly> = []
+			// add freezes
+			if (metadata && metadata.mediainfo && metadata.mediainfo.freezes) {
+				items = metadata.mediainfo.freezes
+						.filter((i) => i.start < itemDuration)
+						.map((i): Anomaly => { return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 } })
+			}
+			// add blacks
+			if (metadata && metadata.mediainfo && metadata.mediainfo.blacks) {
+				items = [
+					...items,
+					...metadata.mediainfo.blacks
+						.filter((i) => i.start < itemDuration)
+						.map((i): Anomaly => { return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 } })
+				]
+			}
+			// compact array
+			items.sort((a, b) => a.start - b.start)
+			if (items.length > 1)
+				for (const i in items) {
+					for (let j = Number(i) + 1; j < items.length; j++) {
+						if (items[i].end < items[j].start) {
+							break
+						} else {
+							items[i].end = items[j].end
+							items[i].duration = items[i].end - items[i].start
+							items.splice(j, 1)
+							j--
+						}
+					}
+				}
+			return items
 		}
 	}
 
@@ -156,6 +198,10 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 						</span>
 					</span>
 					{this.scenes && this.scenes.map((i) => i < itemDuration && <span className='segment-timeline__layer-item__scene-marker' key={i} style={{ 'left': ((i - seek) * this.props.timeScale).toString() + 'px' }}></span>)}
+					{this.anomalies &&
+						this.anomalies.map((i) => i.start < itemDuration &&
+						<span className='segment-timeline__layer-item__anomaly-marker' key={i.start} 
+							style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
 					<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 						{this.getPreviewUrl() ?
 							<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>

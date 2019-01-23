@@ -90,8 +90,16 @@ export interface MediaInfo {
 	name: string
 	field_order: FieldOrder
 	scenes: number[]
+	blacks: Array<Anomaly>
+	freezes: Array<Anomaly>
 	streams: MediaStream[]
 	format: MediaFormat
+}
+
+export interface Anomaly {
+	start: number
+	duration: number
+	end: number
 }
 
 export interface MediaAttachment {
