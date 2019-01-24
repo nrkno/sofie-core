@@ -46,6 +46,7 @@ import { callMethod } from '../lib/clientAPI'
 import { RONotificationEvent, onRONotificationClick as roNotificationHandler } from './RunningOrderView/RunningOrderNotifier'
 import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter, NoticeLevel } from '../lib/notifications/notifications'
+import { SupportPopUp } from './SupportPopUp';
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -986,6 +987,7 @@ interface IState {
 	subsReady: boolean
 	usedHotkeys: Array<HotkeyDefinition>
 	showNotifications: boolean
+	showSupportPanel: boolean
 }
 
 export enum RunningOrderViewEvents {
@@ -1084,7 +1086,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					label: t('Change to fullscreen mode')
 				}
 			]),
-			showNotifications: false
+			showNotifications: false,
+			showSupportPanel: false
 		}
 	}
 
@@ -1417,6 +1420,12 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}, isOpen ? 1 : 1000)
 	}
 
+	onToggleSupportPanel = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.setState({
+			showSupportPanel: !this.state.showSupportPanel
+		})
+	}
+
 	renderSegments () {
 		if (this.props.segments) {
 			return this.props.segments.map((segment, index, array) => {
@@ -1532,7 +1541,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								onFollowOnAir={this.onGoToLiveSegment}
 								onRewindSegments={this.onRewindSegments}
 								isNotificationCenterOpen={this.state.showNotifications}
-								onToggleNotifications={this.onToggleNotifications} />
+								onToggleNotifications={this.onToggleNotifications}
+								isSupportPanelOpen={this.state.showSupportPanel}
+								onToggleSupportPanel={this.onToggleSupportPanel} />
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<VelocityReact.VelocityTransitionGroup enter={{
@@ -1545,6 +1556,17 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								}, easing: 'ease-in', duration: 500
 							}}>
 								{this.state.showNotifications && <NotificationCenterPanel />}
+							</VelocityReact.VelocityTransitionGroup>
+							<VelocityReact.VelocityTransitionGroup enter={{
+								animation: {
+									translateX: ['0%', '100%']
+								}, easing: 'ease-out', duration: 300
+							}} leave={{
+								animation: {
+									translateX: ['100%', '0%']
+								}, easing: 'ease-in', duration: 500
+							}}>
+								{this.state.showSupportPanel && <SupportPopUp />}
 							</VelocityReact.VelocityTransitionGroup>
 						</ErrorBoundary>
 						<ErrorBoundary>
