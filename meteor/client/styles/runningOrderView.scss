@@ -1218,6 +1218,16 @@ body.vertical-overflow-only {
 							// transform: translate3d(0,0,2px)
 						}
 
+						.segment-timeline__layer-item__anomaly-marker__freezes {
+							background: repeating-linear-gradient(
+								0deg,
+								black,
+								black 3px,
+								rgba(0, 0, 0, .2) 3px,
+								rgba(0, 0, 0, .2) 6px
+							);
+						}
+
 						.segment-timeline__layer-item__source-finished {
 							position: absolute;
 							top: 0;
@@ -1772,7 +1782,7 @@ body.vertical-overflow-only {
 			display: block;
 			width: 160px;
 			height: 90px;
-			background: #000;
+			background: #f00;
 		}
 
 		> .segment-timeline__mini-inspector__timecode {
@@ -1786,6 +1796,20 @@ body.vertical-overflow-only {
 			padding: 0.2em 0.3em;
 			background: rgba(0,0,0,0.25);
 			border-bottom-left-radius: 3px;
+		}
+
+		> .segment-timeline__mini-inspector__warnings {
+			display: block;
+			position: absolute;
+			left: 0;
+			bottom: 0;
+			max-width: 100%;
+			font-weight: 400;
+			text-shadow: 0 0 1px rgba(0,0,0,1);
+			font-size: 0.75em;
+			padding: 0.2em 0.3em;
+			background: rgba(0,0,0,0.25);
+			border-top-right-radius: 3px;
 		}
 
 		> .video-preview {

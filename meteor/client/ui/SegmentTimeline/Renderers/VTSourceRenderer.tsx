@@ -27,7 +27,8 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 	begin: string
 	end: string
 	scenes?: Array<number>
-	anomalies?: Array<Anomaly>
+	blacks?: Array<Anomaly>
+	freezes?: Array<Anomaly>
 
 	constructor (props: IProps & InjectedTranslateProps) {
 		super(props)
@@ -85,7 +86,8 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 		}
 
 		this.scenes = this.getScenes()
-		this.anomalies = this.getAnomalies()
+		this.freezes = this.getFreezes()
+		this.blacks = this.getBlacks()
 	}
 
 	getPreviewUrl = (): string | undefined => {
@@ -115,7 +117,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 		}
 	}
 
-	getAnomalies = (): Array<Anomaly> | undefined => {
+	getFreezes = (): Array<Anomaly> | undefined => {
 		if (this.props.segmentLineItem) {
 			const itemDuration = this.getItemDuration()
 			const item = this.props.segmentLineItem as SegmentLineItemUi
@@ -127,6 +129,16 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 						.filter((i) => i.start < itemDuration)
 						.map((i): Anomaly => { return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 } })
 			}
+			return items
+		}
+	}
+
+	getBlacks = (): Array<Anomaly> | undefined => {
+		if (this.props.segmentLineItem) {
+			const itemDuration = this.getItemDuration()
+			const item = this.props.segmentLineItem as SegmentLineItemUi
+			const metadata = item.metadata as MediaObject
+			let items: Array<Anomaly> = []
 			// add blacks
 			if (metadata && metadata.mediainfo && metadata.mediainfo.blacks) {
 				items = [
@@ -136,22 +148,54 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 						.map((i): Anomaly => { return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 } })
 				]
 			}
-			// compact array
-			items.sort((a, b) => a.start - b.start)
-			if (items.length > 1)
-				for (const i in items) {
-					for (let j = Number(i) + 1; j < items.length; j++) {
-						if (items[i].end < items[j].start) {
-							break
-						} else {
-							items[i].end = items[j].end
-							items[i].duration = items[i].end - items[i].start
-							items.splice(j, 1)
-							j--
-						}
-					}
-				}
 			return items
+		}
+	}
+
+	getInspectorWarnings = (time: number): JSX.Element | undefined => {
+		let show = false
+		let msgBlacks = ''
+		let msgFreezes = ''
+		if (this.blacks) {
+			let tot = 0
+			for (const b of this.blacks) {
+				tot += b.duration
+				let s = b.start
+				let e = b.end
+				if (b.duration < 5000) {
+					s = b.start + b.duration * .5 - 2500
+					e = b.end - b.duration * .5 + 2500
+				}
+				if (s < time && e > time) {
+					show = true
+				}
+			}
+			// @todo: hardcoded 25fps
+			if (tot > 0) msgBlacks = `${tot / 40} black frame${tot > 40 ? 's' : ''} in clip`
+		}
+		if (this.freezes) {
+			let tot = 0
+			for (const b of this.freezes) {
+				tot += b.duration
+				let s = b.start
+				let e = b.end
+				if (b.duration < 5000) {
+					s = b.start + b.duration * .5 - 2500
+					e = b.end - b.duration * .5 + 2500
+				}
+				if (s < time && e > time) {
+					show = true
+				}
+			}
+			// @todo: hardcoded 25fps
+			if (tot > 0) msgFreezes += `${tot / 40} freeze\n frame${tot > 40 ? 's' : ''} in clip`
+		}
+		if (show) {
+			return <React.Fragment>
+				<div className='segment-timeline__mini-inspector__warnings'>{msgBlacks}{msgFreezes && <br />}{msgFreezes}</div>
+			</React.Fragment>
+		} else {
+			return
 		}
 	}
 
@@ -202,15 +246,20 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 						</span>
 					</span>
 					{this.scenes && this.scenes.map((i) => i < itemDuration && <span className='segment-timeline__layer-item__scene-marker' key={i} style={{ 'left': ((i - seek) * this.props.timeScale).toString() + 'px' }}></span>)}
-					{this.anomalies &&
-						this.anomalies.map((i) => i.start < itemDuration &&
+					{this.freezes &&
+						this.freezes.map((i) => i.start < itemDuration &&
 						<span className='segment-timeline__layer-item__anomaly-marker' key={i.start} 
-							style={{ 'left': ((i.start - seek) * this.props.timeScale + 1).toString() + 'px', width: ((i.duration) * this.props.timeScale - 2).toString() + 'px' }}></span>)}
+							style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
+					{this.blacks &&
+						this.blacks.map((i) => i.start < itemDuration &&
+						<span className='segment-timeline__layer-item__anomaly-marker segment-timeline__layer-item__anomaly-marker__freezes' key={i.start} 
+							style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
 					<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 						{this.getPreviewUrl() ?
 							<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
 								<video src={this.getPreviewUrl()} ref={this.setVideoRef} crossOrigin='anonymous' playsInline={true} muted={true}/>
 								<span className='segment-timeline__mini-inspector__timecode'>{RundownUtils.formatDiffToTimecode(this.props.cursorTimePosition, false, false, false, false, true, undefined, true)}</span>
+								{this.getInspectorWarnings(this.props.cursorTimePosition)}
 							</div> :
 							<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
 								<div>
