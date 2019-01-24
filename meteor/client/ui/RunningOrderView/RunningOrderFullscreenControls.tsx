@@ -21,13 +21,16 @@ import * as Windowed_MouseOver from './Windowed_MouseOver.json'
 import * as On_Air_MouseOut from './On_Air_MouseOut.json'
 // @ts-ignore Not recognized by Typescript
 import * as On_Air_MouseOver from './On_Air_MouseOver.json'
+import { SupportPopUpToggle } from '../SupportPopUp';
 
 interface IProps {
 	isFollowingOnAir: boolean
 	onFollowOnAir?: () => void
 	onRewindSegments?: () => void
 	isNotificationCenterOpen: boolean
+	isSupportPanelOpen: boolean
 	onToggleNotifications?: (e: React.MouseEvent<HTMLDivElement>) => void
+	onToggleSupportPanel?: (e: React.MouseEvent<HTMLDivElement>) => void
 }
 
 interface IState {
@@ -195,6 +198,7 @@ export class RunningOrderFullscreenControls extends React.Component<IProps, ISta
 							<div className='running-order__fullscreen-controls__button__label'><span className='keyboard_key'>F11</span> Fullscreen</div>
 						</div>
 					}
+					<SupportPopUpToggle onClick={this.props.onToggleSupportPanel} isOpen={this.props.isSupportPanelOpen} />
 				</VelocityReact.VelocityTransitionGroup>
 			</div>
 		)
