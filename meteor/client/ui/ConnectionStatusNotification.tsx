@@ -1,21 +1,17 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as React from 'react'
-import * as VelocityReact from 'velocity-react'
-import Moment from 'react-moment'
-import * as CoreIcons from '@nrk/core-icons/jsx'
-import * as ClassNames from 'classnames'
+import * as _ from 'underscore'
 
-import { translateWithTracker, Translated } from '../lib/ReactMeteorData/react-meteor-data'
-import { literal } from '../../lib/lib'
-import { ErrorBoundary } from '../lib/ErrorBoundary'
+import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
 import { MomentFromNow } from '../lib/Moment'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 import { NotificationCenter, NoticeLevel, Notification, NotificationList, NotifierObject } from '../lib/notifications/notifications'
 import { WithManagedTracker } from '../lib/reactiveData/reactiveDataHelper'
 import { TranslationFunction, translate } from 'react-i18next'
 import { NotificationCenterPopUps } from '../lib/notifications/NotificationCenterPanel'
+import { PubSub } from '../../lib/api/pubsub'
+import { CoreSystem } from '../../lib/collections/CoreSystem'
 
 export class ConnectionStatusNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
@@ -25,6 +21,8 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 	constructor (t: TranslationFunction) {
 		super()
 
+		this.subscribe(PubSub.coreSystem, null)
+
 		this._translater = t
 
 		this._notificationList = new NotificationList([])
@@ -33,6 +31,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		})
 
 		let lastNotificationId: string | undefined = undefined
+		let lastStatus: any = undefined
 
 		this.autorun(() => {
 			const connected = Meteor.status().connected
@@ -46,8 +45,14 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 				try {
 					NotificationCenter.drop(buf)
 				} catch (e) {
-
+					// if the last notification can't be dropped, ignore
 				}
+			}
+
+			const cs = CoreSystem.findOne()
+			let systemNotification: Notification | undefined = undefined
+			if (cs && cs.systemInfo && cs.systemInfo.enabled) {
+				systemNotification = new Notification(Random.id(), NoticeLevel.CRITICAL, cs.systemInfo.message, 'SystemMessage', undefined, true, undefined, 1000)
 			}
 
 			let newNotification: Notification | undefined = undefined
@@ -65,12 +70,16 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			})
 
 			if (newNotification.persistent) {
-				this._notificationList.set([newNotification])
+				this._notificationList.set(_.compact([newNotification, systemNotification]))
 			} else {
-				this._notificationList.set([])
-				NotificationCenter.push(newNotification)
-				lastNotificationId = newNotification.id
+				this._notificationList.set(_.compact([systemNotification]))
+				if (lastStatus !== status) {
+					NotificationCenter.push(newNotification)
+					lastNotificationId = newNotification.id
+				}
 			}
+
+			lastStatus = status
 		})
 	}
 

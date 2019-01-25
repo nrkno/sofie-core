@@ -2,7 +2,6 @@ import * as React from 'react'
 import * as ClassNames from 'classnames'
 import { withTracker } from '../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { PubSub } from '../../lib/api/pubsub'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as faQuestion from '@fortawesome/fontawesome-free-solid/faQuestion'
@@ -33,7 +32,7 @@ export const SupportPopUp = withTracker<IProps, {}, ITrackedProps>((props: IProp
 	}
 
 	componentDidMount () {
-		this.subscribe(PubSub.coreSystem, null)
+		
 	}
 
 	render () {
