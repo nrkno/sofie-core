@@ -48,9 +48,19 @@
     background: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
     padding: 15px 20px;
-    z-index: 291;
+    z-index: 300;
 	min-height: 50px;
-	max-width: 350px;
+    max-width: 350px;
+    
+    .support-pop-up-panel__actions {
+        margin-top: 1em;
+
+        > button {
+            display: block;
+            width: 100%;
+            margin-top: 0.4em;
+        }
+    }
 }
 
 .running-order-view {

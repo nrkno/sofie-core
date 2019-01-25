@@ -40,6 +40,9 @@ export const SupportPopUp = withTracker<IProps, {}, ITrackedProps>((props: IProp
 		return (
 			<div className='support-pop-up-panel'>
 				<div dangerouslySetInnerHTML={this.props.support.message ? { __html: this.props.support.message } : undefined} />
+				{this.props.children && <div className='support-pop-up-panel__actions'>
+					{this.props.children}
+				</div>}
 			</div>
 		)
 	}

@@ -22,7 +22,7 @@ import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 import { RunningOrderTimingProvider, withTiming, WithTiming } from './RunningOrderView/RunningOrderTiming'
 import { SegmentTimelineContainer, SegmentLineItemUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
-import { InspectorDrawer } from './InspectorDrawer/InspectorDrawer'
+import { InspectorDrawer, InspectorDrawerBase, InspectorDrawerProps, InspectorPanelTabs } from './InspectorDrawer/InspectorDrawer'
 import { RunningOrderOverview } from './RunningOrderView/RunningOrderOverview'
 import { RunningOrderSystemStatus } from './RunningOrderView/RunningOrderSystemStatus'
 
@@ -42,11 +42,15 @@ import { RunningOrderFullscreenControls } from './RunningOrderView/RunningOrderF
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { callMethod } from '../lib/clientAPI'
+import { callMethod, PeripheralDevicesAPI } from '../lib/clientAPI'
 import { RONotificationEvent, onRONotificationClick as roNotificationHandler } from './RunningOrderView/RunningOrderNotifier'
-import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
-import { NotificationCenter, NoticeLevel } from '../lib/notifications/notifications'
-import { SupportPopUp } from './SupportPopUp';
+import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
+import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
+import { SupportPopUp } from './SupportPopUp'
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+
+type WrappedInspectorDrawer = InspectorDrawerBase & { getWrappedInstance (): InspectorDrawerBase }
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -519,10 +523,22 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		this.moveNext(e, 0, -1)
 	}
 	keyDisableNextSegmentLineItem = (e: any) => {
+		this.disableNextSLI(e)
+	}
+	keyDisableNextSegmentLineItemUndo = (e: any) => {
+		this.disableNextSLIUndo(e)
+	}
+	keyLogError = (e: any) => {
+		this.takeRunningOrderSnapshot(e).catch(() => {})
+	}
+
+	disableNextSLI = (e: any) => {
+		const { t } = this.props
+
 		if (this.props.studioMode) {
 			callMethod(e, PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, false, (err: Error | undefined, segmentLineItemId: string) => {
 				if (err) {
-					// todo: notify the user
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
 					console.error(err)
 				} else {
 					// console.log('segmentLineItemId', segmentLineItemId)
@@ -530,11 +546,14 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			})
 		}
 	}
-	keyDisableNextSegmentLineItemUndo = (e: any) => {
+
+	disableNextSLIUndo = (e: any) => {
+		const {t} = this.props
+
 		if (this.props.studioMode) {
 			callMethod(e, PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, true, (err: Error | undefined, segmentLineItemId: string) => {
 				if (err) {
-					// todo: notify the user
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
 					console.error(err)
 				} else {
 					// console.log('segmentLineItemId', segmentLineItemId)
@@ -542,25 +561,29 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			})
 		}
 	}
-	keyLogError = (e: any) => {
-		callMethod(e, SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT, this.props.runningOrder._id, "User requested log at" + Date.now());
-	}
 
 	take = (e: any) => {
+		const {t} = this.props
 		if (this.props.studioMode) {
 			if (this.props.runningOrder.active) {
-				callMethod(e, PlayoutAPI.methods.userRoTake, this.props.runningOrder._id)
+				callMethod(e, PlayoutAPI.methods.userRoTake, this.props.runningOrder._id, (err, res) => {
+					if (err) {
+						console.error(err)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
+					}
+				})
 			}
 		}
 		// console.log(new Date(getCurrentTime()))
 	}
 	moveNext = (e: any, horizonalDelta: number, verticalDelta: number) => {
+		const {t} = this.props
 		if (this.props.studioMode) {
 			if (this.props.runningOrder.active) {
 				callMethod(e, PlayoutAPI.methods.roMoveNext, this.props.runningOrder._id, horizonalDelta, verticalDelta, (err: Error | undefined, segmentLineId: string) => {
 					if (err) {
-						// todo: notify the user
 						console.error(err)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
 					} else {
 						scrollToSegmentLine(segmentLineId)
 					}
@@ -577,6 +600,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				isError: true,
 				errorMessage: t('Only a single Running Order can be active in a studio at the same time. Please deactivate the other Running Order and try again.')
 			})
+		} else {
+			NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
 		}
 	}
 
@@ -587,12 +612,12 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	hold = (e: any) => {
+		const {t} = this.props
 		if (this.props.studioMode && this.props.runningOrder.active) {
 			callMethod(e, PlayoutAPI.methods.roActivateHold, this.props.runningOrder._id, (err: Error | undefined) => {
 				if (err) {
-					// TODO
-					// this.handleActivationError(err)
 					console.error(err)
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
 					return
 				}
 			})
@@ -733,7 +758,11 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			if (this.runningOrderShouldHaveStarted()) {
 				if (this.props.runningOrder.rehearsal) {
 					// We're in rehearsal mode
-					callMethod(e, PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
+					callMethod(e, PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id, (err, res) => {
+						if (err) {
+							NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
+						}
+					})
 				} else {
 					doModalDialog({
 						title: this.props.runningOrder.name,
@@ -745,7 +774,11 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				}
 			} else {
 				// Do it right away
-				callMethod(e, PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
+				callMethod(e, PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id, (err, res) => {
+					if (err) {
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
+					}
+				})
 			}
 		}
 	}
@@ -760,6 +793,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 				if (err) {
 					// TODO: notify user
 					console.error(err)
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
 					this.deferFlushAndRewindSegments()
 					return
 				}
@@ -781,11 +815,13 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	reloadRunningOrder = (e: any, changeRehearsal?: boolean) => {
+		const { t } = this.props
 		const p = new Promise((resolve, reject) => {
 			if (this.props.studioMode) {
 				callMethod(e, PlayoutAPI.methods.reloadData, this.props.runningOrder._id, changeRehearsal, (err, result) => {
 					if (err) {
 						console.error(err)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
 						reject(err)
 						return
 					}
@@ -802,15 +838,17 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 
 	takeRunningOrderSnapshot = (e) => {
+		const {t} = this.props
 		const p = new Promise((resolve, reject) => {
 			if (this.props.studioMode) {
 				callMethod(e, SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT, this.props.runningOrder._id, 'Taken by user', (err, result) => {
 					if (err) {
 						console.error(err)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
 						reject(err)
 						return
 					} else {
-						// todo: notify user of success, just a little nudge
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('A snapshot of the current Running\xa0Order has been created for troubleshooting.'), 'RunningOrderView'))
 						resolve()
 					}
 				})
@@ -937,7 +975,6 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					/>
 					<div className='row first-row super-dark'>
 						<div className='flex-col left horizontal-align-left'>
-							{/* !!! TODO: This is just a temporary solution !!! */}
 							<div className='badge mod'>
 								<div className='media-elem mrs sofie-logo' />
 								<div className='bd mls'><span className='logo-text'></span></div>
@@ -986,8 +1023,9 @@ interface IState {
 	manualSetAsNext: boolean
 	subsReady: boolean
 	usedHotkeys: Array<HotkeyDefinition>
-	showNotifications: boolean
-	showSupportPanel: boolean
+	isNotificationsCenterOpen: boolean
+	isSupportPanelOpen: boolean
+	isInspectorDrawerExpanded: boolean
 }
 
 export enum RunningOrderViewEvents {
@@ -1043,7 +1081,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		label: string,
 		global?: boolean
 	}> = []
-	private _segments: _.Dictionary<React.ComponentClass<{}>> = {}
+	private _inspectorDrawer: WrappedInspectorDrawer | null
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -1086,8 +1124,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					label: t('Change to fullscreen mode')
 				}
 			]),
-			showNotifications: false,
-			showSupportPanel: false
+			isNotificationsCenterOpen: false,
+			isSupportPanelOpen: false,
+			isInspectorDrawerExpanded: false
 		}
 	}
 
@@ -1411,9 +1450,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	onHeaderNoteClick = (segmentId: string, level: SegmentLineNoteType) => {
 		NotificationCenter.snoozeAll()
-		const isOpen = this.state.showNotifications
+		const isOpen = this.state.isNotificationsCenterOpen
 		this.setState({
-			showNotifications: true
+			isNotificationsCenterOpen: true
 		})
 		setTimeout(function () {
 			NotificationCenter.highlightSource(segmentId, level === SegmentLineNoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING)
@@ -1422,7 +1461,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 
 	onToggleSupportPanel = (e: React.MouseEvent<HTMLDivElement>) => {
 		this.setState({
-			showSupportPanel: !this.state.showSupportPanel
+			isSupportPanelOpen: !this.state.isSupportPanelOpen
 		})
 	}
 
@@ -1501,14 +1540,69 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onToggleNotifications = (e: React.MouseEvent<HTMLDivElement>) => {
-		if (!this.state.showNotifications === true) {
+		if (!this.state.isNotificationsCenterOpen === true) {
 			NotificationCenter.snoozeAll()
 			NotificationCenter.highlightSource(undefined, NoticeLevel.CRITICAL)
 		}
 
 		this.setState({
-			showNotifications: !this.state.showNotifications
+			isNotificationsCenterOpen: !this.state.isNotificationsCenterOpen
 		})
+	}
+
+	onShowHotkeys = () => {
+		this.setState({
+			isInspectorDrawerExpanded: true
+		})
+		if (this._inspectorDrawer) {
+			this._inspectorDrawer.getWrappedInstance().switchTab(InspectorPanelTabs.SYSTEM_HOTKEYS)
+		}
+	}
+
+	onRestartPlayout = (e: React.MouseEvent<HTMLButtonElement>) => {
+		const { t } = this.props
+
+		if (this.props.studioInstallation) {
+			const attachedPlayoutGateways = PeripheralDevices.find({
+				studioInstallationId: this.props.studioInstallation._id,
+				connected: true,
+				type: PeripheralDeviceAPI.DeviceType.PLAYOUT
+			}).fetch()
+			if (attachedPlayoutGateways.length === 0) {
+				NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('There are no Playout\xa0Gateways connected and attached to this studio. Please contact the system administrator to start the Playout Gateway.'), 'RunningOrderView'))
+				return
+			}
+			attachedPlayoutGateways.forEach((item) => {
+				PeripheralDevicesAPI.restartDevice(item, e).then(() => {
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Playout\xa0Gateway "{{playoutDeviceName}}" is now restarting.', {playoutDeviceName: item.name}), 'RunningOrderView'))
+				}).catch(() => {
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not restart Playout\xa0Gateway "{{playoutDeviceName}}".', {playoutDeviceName: item.name}), 'RunningOrderView'))
+				})
+			})
+		}
+	}
+
+	onTakeRunningOrderSnapshot = (e: React.MouseEvent<HTMLButtonElement>) => {
+		const { t } = this.props
+		if (this.props.runningOrder) {
+			callMethod(e, SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT, this.props.runningOrder._id, 'User requested log at' + Date.now(), (err, result) => {
+				if (err) {
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Failed to create a snapshot of the current Running\xa0Order.'), 'RunningOrderView'))
+					return
+				}
+				NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('A snapshot of the current Running\xa0Order has been created for troubleshooting.'), 'RunningOrderView'))
+			})
+		}
+	}
+
+	onDrawerChangeExpanded = (value: boolean) => {
+		this.setState({
+			isInspectorDrawerExpanded: value
+		})
+	}
+
+	setInspectorDrawer = (isp: WrappedInspectorDrawer | null) => {
+		this._inspectorDrawer = isp
 	}
 
 	getStyle () {
@@ -1530,7 +1624,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					runningOrder={this.props.runningOrder}
 					defaultDuration={DEFAULT_DISPLAY_DURATION}>
 					<div className={ClassNames('running-order-view', {
-						'notification-center-open': this.state.showNotifications
+						'notification-center-open': this.state.isNotificationsCenterOpen
 					})} style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
 						<ErrorBoundary>
 							{ this.state.studioMode && <KeyboardFocusMarker /> }
@@ -1540,9 +1634,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								isFollowingOnAir={this.state.followLiveSegments}
 								onFollowOnAir={this.onGoToLiveSegment}
 								onRewindSegments={this.onRewindSegments}
-								isNotificationCenterOpen={this.state.showNotifications}
+								isNotificationCenterOpen={this.state.isNotificationsCenterOpen}
 								onToggleNotifications={this.onToggleNotifications}
-								isSupportPanelOpen={this.state.showSupportPanel}
+								isSupportPanelOpen={this.state.isSupportPanelOpen}
 								onToggleSupportPanel={this.onToggleSupportPanel} />
 						</ErrorBoundary>
 						<ErrorBoundary>
@@ -1555,7 +1649,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									translateX: ['100%', '0%']
 								}, easing: 'ease-in', duration: 500
 							}}>
-								{this.state.showNotifications && <NotificationCenterPanel />}
+								{this.state.isNotificationsCenterOpen && <NotificationCenterPanel />}
 							</VelocityReact.VelocityTransitionGroup>
 							<VelocityReact.VelocityTransitionGroup enter={{
 								animation: {
@@ -1566,7 +1660,13 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									translateX: ['100%', '0%']
 								}, easing: 'ease-in', duration: 500
 							}}>
-								{this.state.showSupportPanel && <SupportPopUp />}
+								{this.state.isSupportPanelOpen &&
+									<SupportPopUp>
+										<button className='btn btn-primary' onClick={this.onShowHotkeys}>{t('Show hotkeys')}</button>
+										<button className='btn btn-primary' onClick={this.onTakeRunningOrderSnapshot}>{t('Take a snapshot')}</button>
+										<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart playout')}</button>
+									</SupportPopUp>
+								}
 							</VelocityReact.VelocityTransitionGroup>
 						</ErrorBoundary>
 						<ErrorBoundary>
@@ -1598,6 +1698,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<InspectorDrawer
+								ref={this.setInspectorDrawer}
+								isExpanded={this.state.isInspectorDrawerExpanded}
+								onChangeExpanded={this.onDrawerChangeExpanded}
 								segments={this.props.segments}
 								hotkeys={this.state.usedHotkeys}
 								runningOrder={this.props.runningOrder}
