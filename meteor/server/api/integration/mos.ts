@@ -162,6 +162,10 @@ export function mergeSegmentLine (newSegmentLine: DBSegmentLine, existingSegment
 		}
 
 		newSegmentLine = _.extend({}, existingSegmentLine, _.omit(newSegmentLine, ['segmentId']))
+
+		newSegmentLine.typeVariant = existingSegmentLine.typeVariant || newSegmentLine.typeVariant // typeVariant is set in the blueprints
+		newSegmentLine.subTypeVariant = existingSegmentLine.subTypeVariant || newSegmentLine.subTypeVariant // subTypeVariant is set in the blueprints
+
 	}
 	return newSegmentLine
 }
