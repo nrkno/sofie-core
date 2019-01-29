@@ -94,12 +94,13 @@ export interface MediaInfo {
 	freezes: Array<Anomaly>
 	streams: MediaStream[]
 	format: MediaFormat
+	timebase: number
 }
 
 export interface Anomaly {
-	start: number
-	duration: number
-	end: number
+	start: string
+	duration: string
+	end: string
 }
 
 export interface MediaAttachment {
