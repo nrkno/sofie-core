@@ -6,6 +6,7 @@ import { ExternalMessageQueueObjRabbitMQ } from 'tv-automation-sofie-blueprints-
 import { extendMandadory } from '../../../lib/lib'
 import { promisify } from 'util'
 import { ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
+import { ConfigRef } from '../blueprints';
 
 interface Message {
 	_id: string
@@ -81,7 +82,6 @@ class ConnectionManager extends Manager<AMQP.Connection> {
 	}
 
 	async initConnection (): Promise<AMQP.Connection> {
-
 		try {
 			const connection = await AMQP.connect(this.hostURL, {
 				// socketOptions
@@ -111,7 +111,8 @@ class ConnectionManager extends Manager<AMQP.Connection> {
 			this.errorCount++
 			this.fatalError = true
 
-			throw new Error('Error when connecting AMQP ' + err)
+			logger.error('Error when connecting AMQP (to ' + this.hostURL + ') ' + err)
+			throw err
 		}
 	}
 }
@@ -265,7 +266,7 @@ async function getChannelManager (hostURL: string) {
 		connectionsCache[hostURL] = connectionManager
 	}
 	// Let the connectionManager set up the connection:
-	await connectionManager.prepare()
+	await connectionManager.prepare()4
 
 	// Let the connectionManager set up the channel:
 	await connectionManager.channelManager.prepare()
@@ -273,10 +274,9 @@ async function getChannelManager (hostURL: string) {
 	return connectionManager.channelManager
 }
 export async function sendRabbitMQMessage (msg0: ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj) {
-
 	let msg: ExternalMessageQueueObjRabbitMQ = msg0 // for typings
 
-	const hostURL: string			= msg.receiver.host
+	let hostURL: string			= msg.receiver.host
 	const exchangeTopic: string		= msg.receiver.topic
 	const routingKey: string		= msg.message.routingKey
 	let message: any				= msg.message.message
@@ -287,12 +287,15 @@ export async function sendRabbitMQMessage (msg0: ExternalMessageQueueObjRabbitMQ
 	if (!routingKey) throw new Meteor.Error(400, `RabbitMQ: Message routing key not set`)
 	if (!message) throw new Meteor.Error(400, `RabbitMQ: Message message not set`)
 
+	hostURL = ConfigRef.retrieveRefs(hostURL, (str) => {
+		return encodeURIComponent(str)
+	}, true)
+
 	const channelManager = await getChannelManager(hostURL)
 
 	if (_.isObject(message)) message = JSON.stringify(message)
 
 	await channelManager.sendMessage(exchangeTopic, routingKey, msg0._id, message, headers)
-
 }
 /*
 // Temporary self-test:

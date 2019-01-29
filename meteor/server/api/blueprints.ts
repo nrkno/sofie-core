@@ -69,7 +69,7 @@ export namespace ConfigRef {
 	export function getShowStyleRef (configKey: string): string {
 		return '${showStyle.' + this.runningOrder.showStyleVariantId + '.' + configKey + '}'
 	}
-	export function retrieveRefs (stringWithReferences: string, modifier?: (str: string) => string, bailOnError?: boolean) {
+	export function retrieveRefs (stringWithReferences: string, modifier?: (str: string) => string, bailOnError?: boolean): string {
 		if (!stringWithReferences) return stringWithReferences
 
 		const refs = stringWithReferences.match(/\$\{[^}]+\}/g) || []
@@ -78,7 +78,7 @@ export namespace ConfigRef {
 				let value = retrieveRef(ref, bailOnError) + ''
 				if (value) {
 					if (modifier) value = modifier(value)
-					stringWithReferences.replace(ref, value)
+					stringWithReferences = stringWithReferences.replace(ref, value)
 				}
 			}
 		})
@@ -86,7 +86,6 @@ export namespace ConfigRef {
 	}
 	function retrieveRef (reference: string, bailOnError?: boolean): ConfigItemValue | string | undefined {
 		if (!reference) return undefined
-
 		let m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
 		if (m) {
 			if (
@@ -819,7 +818,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 
 		if (_.isUndefined(value)) throw new Meteor.Error(400, `setVariantConfig "${variantId}", "${configId}": value is undefined`)
 
-		console.log('setVariantConfig', variantId, configId, value)
+		// console.log('setVariantConfig', variantId, configId, value)
 
 		let variant = ShowStyleVariants.findOne({
 			_id: this.getVariantId(variantId),
