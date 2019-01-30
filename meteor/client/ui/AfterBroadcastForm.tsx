@@ -1,16 +1,13 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated } from '../lib/ReactMeteorData/ReactMeteorData'
-import { Meteor } from 'meteor/meteor'
-
 import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { translate } from 'react-i18next'
 import { EditAttribute } from '../lib/EditAttribute'
 import { ClientAPI } from '../../lib/api/client'
-import { PlayoutAPI } from '../../lib/api/playout'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
-import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
-import { callMethod } from '../lib/clientAPI'
+import { doUserAction } from '../lib/userAction'
+import { UserActionAPI } from '../../lib/api/userActions'
 
 interface IProps {
 	runningOrder: RunningOrder
@@ -32,6 +29,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 		}
 	}
 	saveForm = (e: React.MouseEvent<HTMLElement>) => {
+		const { t } = this.props
 		let answers = this.state
 
 		const saveEvaluation = (snapshotId?: string) => {
@@ -42,9 +40,9 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 			}
 			if (snapshotId && evaluation.snapshots) evaluation.snapshots.push(snapshotId)
 
-			callMethod(e, PlayoutAPI.methods.saveEvaluation, evaluation)
+			doUserAction(t, e, UserActionAPI.methods.saveEvaluation, [evaluation])
 
-			callMethod(e, PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
+			doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.runningOrder._id])
 
 			this.setState({
 				q0: '',
@@ -54,9 +52,9 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 		}
 
 		if (answers.q0 !== 'nothing') {
-			callMethod(e, SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT, this.props.runningOrder._id, 'Evaluation form', (err, snapshotId) => {
-				if (!err && snapshotId) {
-					saveEvaluation(snapshotId)
+			doUserAction(t, e, UserActionAPI.methods.storeRunningOrderSnapshot, [this.props.runningOrder._id, 'Evaluation form'], (err, response) => {
+				if (!err && ClientAPI.isClientResponseSuccess(response)) {
+					saveEvaluation(response.result)
 				} else {
 					saveEvaluation()
 				}

@@ -28,8 +28,9 @@ import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
-import { callMethod } from '../../lib/clientAPI'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { doUserAction } from '../../lib/userAction'
+import { UserActionAPI } from '../../../lib/api/userActions'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (aSLine: SegmentLineAdLibItemUi) => void
@@ -425,7 +426,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && this.props.runningOrder.active) {
-			callMethod(e, PlayoutAPI.methods.sourceLayerStickyItemStart, this.props.runningOrder._id, sourceLayerId)
+			const { t } = this.props
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyItemStart, [this.props.runningOrder._id, sourceLayerId])
 		}
 	}
 
@@ -444,7 +446,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && aSLine.isGlobal) {
-			callMethod(e, PlayoutAPI.methods.runningOrderBaselineAdLibItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id, queue || false)
+			const { t } = this.props
+			doUserAction(t, e, UserActionAPI.methods.baselineAdLibItemStart, [this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id, queue || false])
 		}
 	}
 
@@ -452,7 +455,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		// console.log(sourceLayer)
 
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
-			callMethod(e, PlayoutAPI.methods.sourceLayerOnLineStop, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id)
+			const { t } = this.props
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnLineStop, [this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id])
 		}
 	}
 

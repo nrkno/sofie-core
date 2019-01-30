@@ -165,7 +165,6 @@ export function mergeSegmentLine (newSegmentLine: DBSegmentLine, existingSegment
 
 		newSegmentLine.typeVariant = existingSegmentLine.typeVariant || newSegmentLine.typeVariant // typeVariant is set in the blueprints
 		newSegmentLine.subTypeVariant = existingSegmentLine.subTypeVariant || newSegmentLine.subTypeVariant // subTypeVariant is set in the blueprints
-
 	}
 	return newSegmentLine
 }

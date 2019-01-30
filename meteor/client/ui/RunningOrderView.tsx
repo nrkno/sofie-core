@@ -49,6 +49,10 @@ import { NotificationCenter, NoticeLevel, Notification } from '../lib/notificati
 import { SupportPopUp } from './SupportPopUp'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { doUserAction } from '../lib/userAction'
+import { UserActionAPI } from '../../lib/api/userActions'
+import { disableNextSegmentLineItem } from '../../server/api/userActions';
+import { ClientAPI } from '../../lib/api/client';
 
 type WrappedInspectorDrawer = InspectorDrawerBase & { getWrappedInstance (): InspectorDrawerBase }
 
@@ -529,21 +533,16 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		this.disableNextSLIUndo(e)
 	}
 	keyLogError = (e: any) => {
-		this.takeRunningOrderSnapshot(e).catch(() => {})
+		this.takeRunningOrderSnapshot(e).catch(() => {
+			// nothing
+		})
 	}
 
 	disableNextSLI = (e: any) => {
 		const { t } = this.props
 
 		if (this.props.studioMode) {
-			callMethod(e, PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, false, (err: Error | undefined, segmentLineItemId: string) => {
-				if (err) {
-					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
-					console.error(err)
-				} else {
-					// console.log('segmentLineItemId', segmentLineItemId)
-				}
-			})
+			doUserAction(t, e, UserActionAPI.methods.disableNextSegmentLineItem, [this.props.runningOrder._id, false])
 		}
 	}
 
@@ -551,57 +550,27 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		const {t} = this.props
 
 		if (this.props.studioMode) {
-			callMethod(e, PlayoutAPI.methods.roDisableNextSegmentLineItem, this.props.runningOrder._id, true, (err: Error | undefined, segmentLineItemId: string) => {
-				if (err) {
-					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
-					console.error(err)
-				} else {
-					// console.log('segmentLineItemId', segmentLineItemId)
-				}
-			})
+			doUserAction(t, e, UserActionAPI.methods.disableNextSegmentLineItem, [this.props.runningOrder._id, true])
 		}
 	}
 
 	take = (e: any) => {
 		const {t} = this.props
 		if (this.props.studioMode) {
-			if (this.props.runningOrder.active) {
-				callMethod(e, PlayoutAPI.methods.userRoTake, this.props.runningOrder._id, (err, res) => {
-					if (err) {
-						console.error(err)
-						NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
-					}
-				})
-			}
+			doUserAction(t, e, UserActionAPI.methods.take, [this.props.runningOrder._id])
 		}
-		// console.log(new Date(getCurrentTime()))
 	}
 	moveNext = (e: any, horizonalDelta: number, verticalDelta: number) => {
 		const {t} = this.props
 		if (this.props.studioMode) {
 			if (this.props.runningOrder.active) {
-				callMethod(e, PlayoutAPI.methods.roMoveNext, this.props.runningOrder._id, horizonalDelta, verticalDelta, (err: Error | undefined, segmentLineId: string) => {
-					if (err) {
-						console.error(err)
-						NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
-					} else {
-						scrollToSegmentLine(segmentLineId)
+				doUserAction(t, e, UserActionAPI.methods.moveNext, [this.props.runningOrder._id, horizonalDelta, verticalDelta], (err, response) => {
+					if (!err && ClientAPI.isClientResponseSuccess(response)) {
+						const segmentLineId = response.result
+						if (segmentLineId) scrollToSegmentLine(segmentLineId)
 					}
 				})
 			}
-		}
-		// console.log(new Date(getCurrentTime()))
-	}
-
-	handleActivationError = (err: Meteor.Error) => {
-		const { t } = this.props
-		if (err.error === 409) {
-			this.setState({
-				isError: true,
-				errorMessage: t('Only a single Running Order can be active in a studio at the same time. Please deactivate the other Running Order and try again.')
-			})
-		} else {
-			NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
 		}
 	}
 
@@ -614,13 +583,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	hold = (e: any) => {
 		const {t} = this.props
 		if (this.props.studioMode && this.props.runningOrder.active) {
-			callMethod(e, PlayoutAPI.methods.roActivateHold, this.props.runningOrder._id, (err: Error | undefined) => {
-				if (err) {
-					console.error(err)
-					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
-					return
-				}
-			})
+			doUserAction(t, e, UserActionAPI.methods.activateHold, [this.props.runningOrder._id])
 		}
 	}
 	runningOrderShouldHaveStarted () {
@@ -645,12 +608,10 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			)
 		) {
 			let doActivate = (le: any) => {
-				callMethod(e, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, false, (err: Error | undefined, res) => {
-					if (err || (res && res.error)) {
-						this.handleActivationError(err || res)
-						return
+				doUserAction(t, e, UserActionAPI.methods.activate, [this.props.runningOrder._id, false], (err, response) => {
+					if (!err && ClientAPI.isClientResponseSuccess(response)) {
+						if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 					}
-					if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 				})
 			}
 			if (!this.runningOrderShouldHaveStarted() ) {
@@ -660,14 +621,11 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					message: t('Do you want to activate this Running Order?'),
 					onAccept: (le: any) => {
 						this.rewindSegments()
-						callMethod(e, PlayoutAPI.methods.roResetAndActivate, this.props.runningOrder._id, (err, res) => {
-							if (err || (res && res.error)) {
-								this.handleActivationError(err || res)
-								return
+						doUserAction(t, e, UserActionAPI.methods.resetAndActivate, [this.props.runningOrder._id], (err, response) => {
+							if (!err && ClientAPI.isClientResponseSuccess(response)) {
+								this.deferFlushAndRewindSegments()
+								if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 							}
-							this.deferFlushAndRewindSegments()
-
-							if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 						})
 					}
 				})
@@ -701,24 +659,20 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			)
 		) {
 			let doActivateRehersal = () => {
-				callMethod(e, PlayoutAPI.methods.roActivate, this.props.runningOrder._id, true, (err, res) => {
-					if (err || (res && res.error)) {
-						this.handleActivationError(err || res)
-						return
+				doUserAction(t, e, UserActionAPI.methods.activate, [this.props.runningOrder._id, true], (err, response) => {
+					if (!err && ClientAPI.isClientResponseSuccess(response)) {
+						if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 					}
-					if (typeof this.props.onActivate === 'function') this.props.onActivate(true)
 				})
 			}
 			if (!this.runningOrderShouldHaveStarted()) {
 				// The broadcast hasn't started yet
 				if (!this.props.runningOrder.active) {
 					// inactive, do the full preparation:
-					callMethod(e, PlayoutAPI.methods.roPrepareForBroadcast, this.props.runningOrder._id, (err, res) => {
-						if (err || (res && res.error)) {
-							this.handleActivationError(err || res)
-							return
+					doUserAction(t, e, UserActionAPI.methods.prepareForBroadcast, [this.props.runningOrder._id], (err, response) => {
+						if (!err && ClientAPI.isClientResponseSuccess(response)) {
+							if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 						}
-						if (typeof this.props.onActivate === 'function') this.props.onActivate(true)
 					})
 				} else if (!this.props.runningOrder.rehearsal) {
 					// Active, and not in rehearsal
@@ -758,27 +712,19 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			if (this.runningOrderShouldHaveStarted()) {
 				if (this.props.runningOrder.rehearsal) {
 					// We're in rehearsal mode
-					callMethod(e, PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id, (err, res) => {
-						if (err) {
-							NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
-						}
-					})
+					doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.runningOrder._id])
 				} else {
 					doModalDialog({
 						title: this.props.runningOrder.name,
 						message: t('Are you sure you want to deactivate this Running Order?\n(This will clear the outputs)'),
 						onAccept: () => {
-							callMethod(e, PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
+							doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.runningOrder._id])
 						}
 					})
 				}
 			} else {
 				// Do it right away
-				callMethod(e, PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id, (err, res) => {
-					if (err) {
-						NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
-					}
-				})
+				doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.runningOrder._id])
 			}
 		}
 	}
@@ -789,14 +735,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 		let doReset = () => {
 			this.rewindSegments() // Do a rewind right away
-			callMethod(e, PlayoutAPI.methods.roResetRunningOrder, this.props.runningOrder._id, (err) => {
-				if (err) {
-					// TODO: notify user
-					console.error(err)
-					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
-					this.deferFlushAndRewindSegments()
-					return
-				}
+			doUserAction(t, e, UserActionAPI.methods.resetRunningOrder, [this.props.runningOrder._id], () => {
 				this.deferFlushAndRewindSegments()
 			})
 		}
@@ -805,7 +744,9 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			doModalDialog({
 				title: this.props.runningOrder.name,
 				message: t('The running order can not be reset while it is active'),
-				onAccept: () => {},
+				onAccept: () => {
+					// nothing
+				},
 				acceptOnly: true,
 				yes: 'OK'
 			})
@@ -818,16 +759,13 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		const { t } = this.props
 		const p = new Promise((resolve, reject) => {
 			if (this.props.studioMode) {
-				callMethod(e, PlayoutAPI.methods.reloadData, this.props.runningOrder._id, changeRehearsal, (err, result) => {
+				doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.runningOrder._id, changeRehearsal], (err) => {
 					if (err) {
-						console.error(err)
-						NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not perform this operation. More information can be found in the system log.'), 'RunningOrderView'))
 						reject(err)
-						return
+					} else {
+						if (this.props.runningOrder && this.props.runningOrder.nextSegmentLineId) scrollToSegmentLine(this.props.runningOrder.nextSegmentLineId)
+						resolve()
 					}
-
-					if (this.props.runningOrder && this.props.runningOrder.nextSegmentLineId) scrollToSegmentLine(this.props.runningOrder.nextSegmentLineId)
-					resolve()
 				})
 			} else {
 				reject()
@@ -841,6 +779,15 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		const {t} = this.props
 		const p = new Promise((resolve, reject) => {
 			if (this.props.studioMode) {
+				doUserAction(t, e, UserActionAPI.methods.storeRunningOrderSnapshot, [this.props.runningOrder._id, 'Taken by user'], (err) => {
+					if (err) {
+						reject(err)
+					} else {
+						if (this.props.runningOrder && this.props.runningOrder.nextSegmentLineId) scrollToSegmentLine(this.props.runningOrder.nextSegmentLineId)
+						resolve()
+					}
+				})
+
 				callMethod(e, SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT, this.props.runningOrder._id, 'Taken by user', (err, result) => {
 					if (err) {
 						console.error(err)
