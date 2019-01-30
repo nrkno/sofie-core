@@ -66,7 +66,7 @@ export namespace ConfigRef {
 	export function getStudioConfigRef (configKey: string): string {
 		return '${studio.' + this.runningOrder.studioInstallationId + '.' + configKey + '}'
 	}
-	export function getShowStyleRef (configKey: string): string {
+	export function getShowStyleConfigRef (configKey: string): string {
 		return '${showStyle.' + this.runningOrder.showStyleVariantId + '.' + configKey + '}'
 	}
 	export function retrieveRefs (stringWithReferences: string, modifier?: (str: string) => string, bailOnError?: boolean): string {
@@ -285,8 +285,11 @@ export class RunningOrderContext extends NotesContext implements IRunningOrderCo
 		})
 		return res
 	}
-	getShowStyleRef (configKey: string): string {
-		return ConfigRef.getShowStyleRef(configKey)
+	getShowStyleRef (configKey: string): string { // to be deprecated
+		return this.getShowStyleConfigRef(configKey)
+	}
+	getShowStyleConfigRef (configKey: string): string {
+		return ConfigRef.getShowStyleConfigRef(configKey)
 	}
 	/** return segmentLines in this runningOrder */
 	getSegmentLines (): Array<SegmentLine> {
