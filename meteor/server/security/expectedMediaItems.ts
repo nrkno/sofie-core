@@ -29,7 +29,7 @@ export namespace ExpectedMediaItemsSecurity {
 
 			// mediaManagerDevice.settings
 
-			return true
+			return mediaManagerDevice
 		} else {
 
 			// TODO: implement access logic here

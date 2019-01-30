@@ -27,7 +27,9 @@ export enum PubSub {
 	studioInstallations = 'studioInstallations',
 	studioInstallationOfDevice = 'studioInstallationOfDevice',
 	timeline = 'timeline',
-	userActionsLog = 'userActionsLog'
+	userActionsLog = 'userActionsLog',
+	mediaWorkFlows = 'mediaWorkFlows',
+	mediaWorkFlowSteps = 'mediaWorkFlowSteps'
 }
 
 export function meteorSubscribe (name: PubSub, ...args: any[]): Meteor.SubscriptionHandle {

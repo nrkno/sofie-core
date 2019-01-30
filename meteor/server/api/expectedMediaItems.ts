@@ -18,6 +18,7 @@ export const updateExpectedMediaItems: (roId: string, slId: string) => void
 
 	const ro = RunningOrders.findOne(roId)
 	if (!ro) throw new Meteor.Error(404, `RunningOrder "${roId}" not found.`)
+	const studioInstallationId = ro.studioInstallationId
 
 	const sl = SegmentLines.findOne(slId)
 	if (!sl) throw new Meteor.Error(404, `SegmentLine "${slId}" not found.`)
@@ -45,7 +46,8 @@ export const updateExpectedMediaItems: (roId: string, slId: string) => void
 					path: this.toString(),
 
 					runningOrderId: roId,
-					segmentLineId: slId
+					segmentLineId: slId,
+					studioInstallationId: studioInstallationId
 				}))
 			}, doc.content.fileName)
 		}
@@ -62,6 +64,9 @@ export const updateExpectedMediaItems: (roId: string, slId: string) => void
 })
 
 function insertExpectedObject (fileName: string, mediaFlowId: string, runningOrderId: string, segmentLineId: string) {
+	const ro = RunningOrders.findOne(runningOrderId)
+	if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found.`)
+
 	ExpectedMediaItems.insert({
 		_id: Random.id(),
 		disabled: false,
@@ -69,7 +74,8 @@ function insertExpectedObject (fileName: string, mediaFlowId: string, runningOrd
 		mediaFlowId: mediaFlowId,
 		path: fileName,
 		runningOrderId,
-		segmentLineId
+		segmentLineId,
+		studioInstallationId: ro.studioInstallationId
 	})
 }
 

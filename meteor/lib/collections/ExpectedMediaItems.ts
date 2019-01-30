@@ -14,6 +14,9 @@ export interface ExpectedMediaItem {
 	/** The segment line id that is the source of this Media Item */
 	segmentLineId: string
 
+	/** The studio installation this ExpectedMediaItem was generated in */
+	studioInstallationId: string
+
 	/** True if the media item has been marked as possibly unavailable */
 	disabled: boolean
 
