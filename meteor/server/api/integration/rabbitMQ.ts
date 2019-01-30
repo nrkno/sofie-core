@@ -266,7 +266,7 @@ async function getChannelManager (hostURL: string) {
 		connectionsCache[hostURL] = connectionManager
 	}
 	// Let the connectionManager set up the connection:
-	await connectionManager.prepare()4
+	await connectionManager.prepare()
 
 	// Let the connectionManager set up the channel:
 	await connectionManager.channelManager.prepare()
