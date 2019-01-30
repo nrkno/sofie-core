@@ -63,11 +63,11 @@ import { PeripheralDevices, PeripheralDevice, PlayoutDeviceSettings } from '../.
 import { Mongo } from 'meteor/mongo'
 
 export namespace ConfigRef {
-	export function getStudioConfigRef (configKey: string): string {
-		return '${studio.' + this.runningOrder.studioInstallationId + '.' + configKey + '}'
+	export function getStudioConfigRef (studioInstallationId: string, configKey: string): string {
+		return '${studio.' + studioInstallationId + '.' + configKey + '}'
 	}
-	export function getShowStyleConfigRef (configKey: string): string {
-		return '${showStyle.' + this.runningOrder.showStyleVariantId + '.' + configKey + '}'
+	export function getShowStyleConfigRef (showStyleVariantId: string, configKey: string): string {
+		return '${showStyle.' + showStyleVariantId + '.' + configKey + '}'
 	}
 	export function retrieveRefs (stringWithReferences: string, modifier?: (str: string) => string, bailOnError?: boolean): string {
 		if (!stringWithReferences) return stringWithReferences
@@ -273,7 +273,7 @@ export class RunningOrderContext extends NotesContext implements IRunningOrderCo
 		return res
 	}
 	getStudioConfigRef (configKey: string): string {
-		return ConfigRef.getStudioConfigRef(configKey)
+		return ConfigRef.getStudioConfigRef(this.runningOrder.studioInstallationId, configKey)
 	}
 	getShowStyleConfig (): {[key: string]: ConfigItemValue} {
 		const showStyleCompound = getShowStyleCompound(this.runningOrder.showStyleVariantId)
@@ -289,7 +289,7 @@ export class RunningOrderContext extends NotesContext implements IRunningOrderCo
 		return this.getShowStyleConfigRef(configKey)
 	}
 	getShowStyleConfigRef (configKey: string): string {
-		return ConfigRef.getShowStyleConfigRef(configKey)
+		return ConfigRef.getShowStyleConfigRef(this.runningOrder.showStyleVariantId, configKey)
 	}
 	/** return segmentLines in this runningOrder */
 	getSegmentLines (): Array<SegmentLine> {
