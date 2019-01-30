@@ -2551,7 +2551,7 @@ export function getLookeaheadObjects (roData: RoData, studioInstallation: Studio
 			r.isBackground = true
 			delete r.inGroup // force it to be cleared
 
-			if (m.lookahead !== LookaheadMode.WHEN_CLEAR) {
+			if (m.lookahead === LookaheadMode.PRELOAD) {
 				r.originalLLayer = r.LLayer
 				r.LLayer += '_lookahead'
 			}
