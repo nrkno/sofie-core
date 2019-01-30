@@ -288,6 +288,8 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 			typeVariant:			resultSl.typeVariant || '',
 			subTypeVariant:			resultSl.subTypeVariant || '',
 			holdMode: 				resultSl.holdMode || SegmentLineHoldMode.NONE,
+			classes: 				resultSl.classes || [],
+			classesForNext: 		resultSl.classesForNext || [],
 		}})
 	} else {
 		SegmentLines.update(segmentLine._id, {$set: {

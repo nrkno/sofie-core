@@ -1366,7 +1366,7 @@ export namespace ServerPlayoutAPI {
 		if (!runningOrder.active) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in an active running order!`)
 		if (runningOrder.holdState === RunningOrderHoldState.ACTIVE || runningOrder.holdState === RunningOrderHoldState.PENDING) {
 			throw new Meteor.Error(403, `Segment Line Ad Lib Items can not be used in combination with hold!`)
-		} 
+		}
 
 		let adLibItem = SegmentLineAdLibItems.findOne({
 			_id: slaiId,
@@ -1384,7 +1384,7 @@ export namespace ServerPlayoutAPI {
 			runningOrderId: roId
 		})
 		if (!segLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
-		if (!queue && runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in a current segment line!`) 
+		if (!queue && runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in a current segment line!`)
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine, queue)
 		SegmentLineItems.insert(newSegmentLineItem)
 
@@ -1415,7 +1415,7 @@ export namespace ServerPlayoutAPI {
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (runningOrder.holdState === RunningOrderHoldState.ACTIVE || runningOrder.holdState === RunningOrderHoldState.PENDING) {
 			throw new Meteor.Error(403, `Segment Line Ad Lib Items can not be used in combination with hold!`)
-		} 
+		}
 
 		let adLibItem = RunningOrderBaselineAdLibItems.findOne({
 			_id: robaliId,
@@ -1641,7 +1641,7 @@ export namespace ServerPlayoutAPI {
 		if (!runningOrder) throw new Meteor.Error(404, `Running order "${roId}" not found!`)
 		if (runningOrder.holdState === RunningOrderHoldState.ACTIVE || runningOrder.holdState === RunningOrderHoldState.PENDING) {
 			throw new Meteor.Error(403, `Segment Line Arguments can not be toggled when hold is used!`)
-		} 
+		}
 
 		let segmentLine = SegmentLines.findOne(slId)
 		if (!segmentLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
@@ -2339,7 +2339,8 @@ function createSegmentLineGroup (segmentLine: SegmentLine, duration: number | st
 }
 function createSegmentLineGroupFirstObject (
 	segmentLine: SegmentLine,
-	segmentLineGroup: TimelineObjRunningOrder
+	segmentLineGroup: TimelineObjRunningOrder,
+	previousSegmentLine?: SegmentLine
 ): TimelineObjSegmentLineAbstract {
 	return literal<TimelineObjSegmentLineAbstract>({
 		_id: getSlFirstObjectId(segmentLine),
@@ -2359,7 +2360,8 @@ function createSegmentLineGroupFirstObject (
 		},
 		// isGroup: true,
 		inGroup: segmentLineGroup._id,
-		slId: segmentLine._id
+		slId: segmentLine._id,
+		classes: (segmentLine.classes || []).concat(previousSegmentLine ? previousSegmentLine.classesForNext || [] : [])
 	})
 }
 function createSegmentLineItemGroupFirstObject (
@@ -3169,7 +3171,7 @@ export function buildTimelineObjsForRunningOrder (roData: RoData, baselineItems:
 			transformSegmentLineIntoTimeline(roData.runningOrder, currentNormalItems, groupClasses, currentSegmentLineGroup, transProps, activeRunningOrder.holdState, undefined)
 		)
 
-		timelineObjs.push(createSegmentLineGroupFirstObject(currentSegmentLine, currentSegmentLineGroup))
+		timelineObjs.push(createSegmentLineGroupFirstObject(currentSegmentLine, currentSegmentLineGroup, previousSegmentLine))
 
 		// only add the next objects into the timeline if the next segment is autoNext
 		if (nextSegmentLine && currentSegmentLine.autoNext) {
@@ -3203,7 +3205,7 @@ export function buildTimelineObjsForRunningOrder (roData: RoData, baselineItems:
 				nextSegmentLineItemGroup,
 				transformSegmentLineIntoTimeline(roData.runningOrder, nextItems, groupClasses, nextSegmentLineItemGroup, transProps)
 			)
-			timelineObjs.push(createSegmentLineGroupFirstObject(nextSegmentLine, nextSegmentLineItemGroup))
+			timelineObjs.push(createSegmentLineGroupFirstObject(nextSegmentLine, nextSegmentLineItemGroup, currentSegmentLine))
 		}
 	}
 
