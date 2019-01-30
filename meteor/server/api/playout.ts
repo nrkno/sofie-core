@@ -2878,7 +2878,7 @@ function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], prefix:
 	let replaceIds = (str: string) => {
 		return str.replace(/#([a-zA-Z0-9_]+)/g, (m) => {
 			const id = m.substr(1, m.length - 1)
-			return changedIds.indexOf(id) >= 0 ? '#' + prefix + id + '.' : m
+			return changedIds.indexOf(id) >= 0 ? '#' + prefix + id : m
 		})
 	}
 
