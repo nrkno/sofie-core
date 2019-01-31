@@ -1234,7 +1234,7 @@ body.vertical-overflow-only {
 							right: 0;
 							bottom: 0;
 							background: repeating-linear-gradient(to right, $segment-timeline-background-color 0, $segment-timeline-background-color 5px, transparent 5.1px, transparent 10px);
-							transform: translate3d(0,0,1px)
+							z-index: 2;
 						}
 
 						.segment-timeline__layer-item__label {

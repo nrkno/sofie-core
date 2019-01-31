@@ -226,7 +226,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 					ReactiveDataHelper.registerComputation(`RunningOrderView.MediaObjectStatus.SegmentLineItems.${item._id}`, this.autorun(() => {
 						const { metadata, status, message } = checkSLIContentStatus(item, sourceLayer, studioInstallation.config)
 						let newNotification: Notification | undefined = undefined
-						if ((status !== RunningOrderAPI.LineItemStatusCode.OK) && (status !== RunningOrderAPI.LineItemStatusCode.UNKNOWN)) {
+						if ((status !== RunningOrderAPI.LineItemStatusCode.OK) && (status !== RunningOrderAPI.LineItemStatusCode.UNKNOWN) && (status !== RunningOrderAPI.LineItemStatusCode.SOURCE_NOT_SET)) {
 							newNotification = new Notification(item._id, NoticeLevel.WARNING, message || 'Media is broken', segment ? segment._id : 'line_' + item.segmentLineId, getCurrentTime(), true, [
 								{
 									label: 'Show issue',

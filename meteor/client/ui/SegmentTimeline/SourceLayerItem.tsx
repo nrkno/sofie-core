@@ -444,7 +444,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 					'infinite': (this.props.segmentLineItem.duration === undefined && this.props.segmentLineItem.durationOverride === undefined && this.props.segmentLineItem.infiniteMode) as boolean, // 0 is a special value
 					'next-is-touching': !!(this.props.segmentLineItem.cropped || (this.props.segmentLineItem.expectedDuration && _.isString(this.props.segmentLineItem.expectedDuration))),
 
-					'source-missing': this.props.segmentLineItem.status === RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING,
+					'source-missing': this.props.segmentLineItem.status === RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING || this.props.segmentLineItem.status === RunningOrderAPI.LineItemStatusCode.SOURCE_NOT_SET,
 					'source-broken': this.props.segmentLineItem.status === RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN,
 					'unknown-state': this.props.segmentLineItem.status === RunningOrderAPI.LineItemStatusCode.UNKNOWN,
 					'disabled': this.props.segmentLineItem.disabled
