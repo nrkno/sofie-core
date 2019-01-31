@@ -17,6 +17,7 @@ import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
 import { MongoModifier } from '../../lib/typings/meteor'
+import { updateExpectedMediaItems } from './expectedMediaItems';
 
 /**
  * After a Segment has beed removed, handle its contents
@@ -62,6 +63,8 @@ export function removeSegmentLine (roId: string, segmentLineOrId: DBSegmentLine 
 				afterSegmentLine: segmentLineToRemove._id
 			})
 		}
+
+		updateExpectedMediaItems(roId, segmentLineToRemove._id)
 	}
 }
 export function afterRemoveSegmentLine (removedSegmentLine: DBSegmentLine, replacedBySegmentLine?: DBSegmentLine) {
