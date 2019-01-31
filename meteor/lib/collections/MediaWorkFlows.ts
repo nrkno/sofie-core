@@ -14,6 +14,7 @@ export interface MediaWorkFlow {
 	_id: string
 	_rev: string
 
+	name?: string
 	studioInstallationId: string
 
 	source: WorkFlowSource
