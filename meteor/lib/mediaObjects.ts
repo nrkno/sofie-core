@@ -104,167 +104,91 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
-			if (sli.content && sli.content.fileName) {
-				const content = sli.content as VTContent
-				const mediaObject = MediaObjects.findOne({
-					mediaId: content.fileName.toUpperCase()
-				})
-				// If media object not found, then...
-				if (!mediaObject) {
-					newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING
-					message = 'Source is missing: ' + content.fileName
-					// All VT content should have at least two streams
-				} else if (mediaObject && mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2) {
-					newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
-					message = 'Source doesn\'t have audio & video: ' + content.fileName
-				}
-				if (mediaObject) {
-					if (!newStatus) newStatus = RunningOrderAPI.LineItemStatusCode.OK
-					const messages: Array<String> = []
-
-					// Do a format check:
-					if (mediaObject.mediainfo) {
-						const formats = getAcceptedFormats(config)
-						let timebase
-
-						// check the streams for resolution info
-						for (const stream of mediaObject.mediainfo.streams) {
-							if (stream.width && stream.height) {
-								if (stream.codec.time_base) {
-									const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec.time_base) as RegExpExecArray
-									timebase = 1000 * Number(formattedTimebase[1]) / Number(formattedTimebase[2])
-								}
-
-								const format = buildFormatString(mediaObject.mediainfo, stream)
-								if (!acceptFormat(format, formats)) {
-									messages.push(`Source format (${format}) is not in accepted formats`)
-								}
-							}
-						}
-
-						// check for black/freeze frames
-						const addFrameWarning = (arr: Array<Anomaly>, type: string) => {
-							if (arr.length === 1) {
-								const frames = Number(arr[0].duration) * 1000 / timebase
-								if (Number(arr[0].start) === 0) {
-									messages.push(`Clip starts with ${frames} ${type} frame${frames > 1 ? 's' : ''}`)
-								} else if (arr[0].end === mediaObject.mediainfo!.format.duration) {
-									messages.push(`Clip ends with ${frames} ${type} frame${frames > 1 ? 's' : ''}`)
-								} else {
-									messages.push(`${frames} ${type} frame${frames > 1 ? 's' : ''} detected in clip.`)
-								}
-							} else {
-								const dur = arr
-									.map(b => b.duration)
-									.reduce((a, b) => Number(a) + Number(b), 0)
-								const frames = dur * 1000 / timebase
-								messages.push(`${frames} ${type} frame${frames > 1 ? 's' : ''} detected in clip.`)
-							}
-						}
-
-						if (mediaObject.mediainfo.blacks) {
-							addFrameWarning(mediaObject.mediainfo.blacks, 'black')
-						}
-						if (mediaObject.mediainfo.freezes) {
-							addFrameWarning(mediaObject.mediainfo.freezes, 'freeze')
-						}
-					}
-
-					if (messages.length) {
-						if (newStatus === RunningOrderAPI.LineItemStatusCode.OK) {
-							newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
-							message = messages.join(', ')
-						} else {
-							message += ', ' + messages.join(', ')
-						}
-					}
-				}
-
-				if (mediaObject) {
-					metadata = mediaObject
-				}
-			}
-			break
 		case SourceLayerType.LIVE_SPEAK:
 			if (sli.content && sli.content.fileName) {
-				const content = sli.content as LiveSpeakContent
-				const mediaObject = MediaObjects.findOne({
-					mediaId: content.fileName.toUpperCase()
-				})
-				// If media object not found, then...
-				if (!mediaObject) {
-					newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING
-					message = 'Source is missing: ' + content.fileName
-					// All VT content should have at least two streams
-				} else if (mediaObject && mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2) {
-					newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
-					message = 'Source doesn\'t have audio & video: ' + content.fileName
-				}
-				if (mediaObject) {
-					if (!newStatus) newStatus = RunningOrderAPI.LineItemStatusCode.OK
-					const messages: Array<String> = []
+				const content = sli.content as VTContent
+				// If the fileName is not set...
+				if (!content.fileName) {
+					newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_NOT_SET
+					message = 'Source is not set'
+				} else {
+					const mediaObject = MediaObjects.findOne({
+						mediaId: content.fileName.toUpperCase()
+					})
+					// If media object not found, then...
+					if (!mediaObject && content.fileName) {
+						newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING
+						message = 'Source is missing: ' + content.fileName
+						// All VT content should have at least two streams
+					} else if (mediaObject && mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2) {
+						newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
+						message = 'Source doesn\'t have audio & video: ' + content.fileName
+					}
+					if (mediaObject) {
+						if (!newStatus) newStatus = RunningOrderAPI.LineItemStatusCode.OK
+						const messages: Array<String> = []
 
-					// Do a format check:
-					if (mediaObject.mediainfo) {
-						const formats = getAcceptedFormats(config)
-						let timebase: number
+						// Do a format check:
+						if (mediaObject.mediainfo) {
+							const formats = getAcceptedFormats(config)
+							let timebase
 
-						// check the streams for resolution info
-						for (const stream of mediaObject.mediainfo.streams) {
-							if (stream.width && stream.height) {
-								if (stream.codec.time_base) {
-									const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec.time_base) as RegExpExecArray
-									timebase = 1000 * Number(formattedTimebase[1]) / Number(formattedTimebase[2])
-									mediaObject.mediainfo.timebase = timebase
-								}
+							// check the streams for resolution info
+							for (const stream of mediaObject.mediainfo.streams) {
+								if (stream.width && stream.height) {
+									if (stream.codec.time_base) {
+										const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec.time_base) as RegExpExecArray
+										timebase = 1000 * Number(formattedTimebase[1]) / Number(formattedTimebase[2])
+									}
 
-								const format = buildFormatString(mediaObject.mediainfo, stream)
-								if (!acceptFormat(format, formats)) {
-									messages.push(`Source format (${format}) is not in accepted formats`)
+									const format = buildFormatString(mediaObject.mediainfo, stream)
+									if (!acceptFormat(format, formats)) {
+										messages.push(`Source format (${format}) is not in accepted formats`)
+									}
 								}
 							}
-						}
 
-						// check for black/freeze frames
-						const addFrameWarning = (arr: Array<Anomaly>, type: string) => {
-							if (arr.length === 1) {
-								const frames = Number(arr[0].duration) * 1000 / timebase
-								if (Number(arr[0].start) === 0) {
-									messages.push(`Clip starts with ${frames} ${type} frame${frames > 1 ? 's' : ''}`)
-								} else if (Number(arr[0].end) === Number(mediaObject.mediainfo!.format.duration)) {
-									messages.push(`Clip ends with ${frames} ${type} frame${frames > 1 ? 's' : ''}`)
+							// check for black/freeze frames
+							const addFrameWarning = (arr: Array<Anomaly>, type: string) => {
+								if (arr.length === 1) {
+									const frames = Number(arr[0].duration) * 1000 / timebase
+									if (Number(arr[0].start) === 0) {
+										messages.push(`Clip starts with ${frames} ${type} frame${frames > 1 ? 's' : ''}`)
+									} else if (arr[0].end === mediaObject.mediainfo!.format.duration) {
+										messages.push(`Clip ends with ${frames} ${type} frame${frames > 1 ? 's' : ''}`)
+									} else {
+										messages.push(`${frames} ${type} frame${frames > 1 ? 's' : ''} detected in clip.`)
+									}
 								} else {
+									const dur = arr
+										.map(b => b.duration)
+										.reduce((a, b) => Number(a) + Number(b), 0)
+									const frames = dur * 1000 / timebase
 									messages.push(`${frames} ${type} frame${frames > 1 ? 's' : ''} detected in clip.`)
 								}
-							} else {
-								const dur = arr
-									.map(b => b.duration)
-									.reduce((a, b) => Number(a) + Number(b), 0)
-								const frames = dur * 1000 / timebase
-								messages.push(`${frames} ${type} frame${frames > 1 ? 's' : ''} detected in clip.`)
+							}
+
+							if (mediaObject.mediainfo.blacks) {
+								addFrameWarning(mediaObject.mediainfo.blacks, 'black')
+							}
+							if (mediaObject.mediainfo.freezes) {
+								addFrameWarning(mediaObject.mediainfo.freezes, 'freeze')
 							}
 						}
 
-						if (mediaObject.mediainfo.blacks) {
-							addFrameWarning(mediaObject.mediainfo.blacks, 'black')
-						}
-						if (mediaObject.mediainfo.freezes) {
-							addFrameWarning(mediaObject.mediainfo.freezes, 'freeze')
+						if (messages.length) {
+							if (newStatus === RunningOrderAPI.LineItemStatusCode.OK) {
+								newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
+								message = messages.join(', ')
+							} else {
+								message += ', ' + messages.join(', ')
+							}
 						}
 					}
 
-					if (messages.length) {
-						if (newStatus === RunningOrderAPI.LineItemStatusCode.OK) {
-							newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
-							message = messages.join(', ')
-						} else {
-							message += ', ' + messages.join(', ')
-						}
+					if (mediaObject) {
+						metadata = mediaObject
 					}
-				}
-
-				if (mediaObject) {
-					metadata = mediaObject
 				}
 			}
 			break

@@ -220,6 +220,15 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 
 		return <React.Fragment>
 					{this.renderInfiniteItemContentEnded()}
+					{this.scenes && this.scenes.map((i) => i < itemDuration && <span className='segment-timeline__layer-item__scene-marker' key={i} style={{ 'left': ((i - seek) * this.props.timeScale).toString() + 'px' }}></span>)}
+					{this.freezes &&
+						this.freezes.map((i) => i.start < itemDuration &&
+						<span className='segment-timeline__layer-item__anomaly-marker' key={i.start} 
+							style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
+					{this.blacks &&
+						this.blacks.map((i) => i.start < itemDuration &&
+						<span className='segment-timeline__layer-item__anomaly-marker segment-timeline__layer-item__anomaly-marker__freezes' key={i.start} 
+							style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
 					<span className='segment-timeline__layer-item__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 						<span className={ClassNames('segment-timeline__layer-item__label', {
 							'overflow-label': this.end !== ''
@@ -244,15 +253,6 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 							{this.end}
 						</span>
 					</span>
-					{this.scenes && this.scenes.map((i) => i < itemDuration && <span className='segment-timeline__layer-item__scene-marker' key={i} style={{ 'left': ((i - seek) * this.props.timeScale).toString() + 'px' }}></span>)}
-					{this.freezes &&
-						this.freezes.map((i) => i.start < itemDuration &&
-						<span className='segment-timeline__layer-item__anomaly-marker' key={i.start} 
-							style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
-					{this.blacks &&
-						this.blacks.map((i) => i.start < itemDuration &&
-						<span className='segment-timeline__layer-item__anomaly-marker segment-timeline__layer-item__anomaly-marker__freezes' key={i.start} 
-							style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
 					<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 						{this.getPreviewUrl() ?
 							<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
