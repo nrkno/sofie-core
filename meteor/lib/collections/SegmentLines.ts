@@ -150,6 +150,9 @@ export class SegmentLine implements DBSegmentLine {
 	public runtimeArguments?: BlueprintRuntimeArguments
 	public typeVariant: string
 
+	public classes?: Array<string>
+	public classesForNext?: Array<string>
+
 	constructor (document: DBSegmentLine) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]

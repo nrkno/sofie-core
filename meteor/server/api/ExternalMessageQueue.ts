@@ -104,7 +104,7 @@ function doMessageQueue () {
 		let ps: Array<Promise<any>> = []
 		_.each(messagesToSend, (msg) => {
 			try {
-				logger.debug('Trying to send message: ' + msg._id)
+				logger.debug(`Trying to send externalMessage, id: ${msg._id}, type: "${msg.type}"`)
 				ExternalMessageQueue.update(msg._id, {$set: {
 					tryCount: (msg.tryCount || 0) + 1,
 					lastTry: now,
@@ -119,7 +119,7 @@ function doMessageQueue () {
 				} else if (msg.type === IBlueprintExternalMessageQueueType.RABBIT_MQ) {
 					p = sendRabbitMQMessage(msg as ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj)
 				} else {
-					throw new Meteor.Error(500, `Unknown / Unsupported externalMessage type "${msg.type}"`)
+					throw new Meteor.Error(500, `Unknown / Unsupported externalMessage type: "${msg.type}"`)
 				}
 				ps.push(
 					Promise.resolve(p)
@@ -129,7 +129,7 @@ function doMessageQueue () {
 							sent: getCurrentTime(),
 							sentReply: result
 						}})
-						logger.debug('Message sucessfully sent: ' + msg._id)
+						logger.debug(`ExternalMessage sucessfully sent, id: ${msg._id}, type: "${msg.type}"`)
 					})
 					.catch((e) => {
 						logMessageError(msg, e)
