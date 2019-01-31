@@ -61,7 +61,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 					label: 'Show issue',
 					type: 'default'
 				}
-			] : undefined)
+			] : undefined, -100)
 			newNotification.on('action', (notification, type, e) => {
 				switch (type) {
 					case 'default':
