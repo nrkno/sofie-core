@@ -5,7 +5,7 @@ import { MediaWorkFlowsSecurity, MediaWorkFlowStepsSecurity } from '../security/
 import { MediaWorkFlows } from '../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps } from '../../lib/collections/MediaWorkFlowSteps'
 
-meteorPublish(PubSub.mediaWorkFlowSteps, (selector, token) => {
+meteorPublish(PubSub.mediaWorkFlowSteps, (studioId, selector, token) => {
 	selector = selector || {}
 	check(selector, Object)
 

@@ -98,9 +98,9 @@ export interface MediaInfo {
 }
 
 export interface Anomaly {
-	start: number
-	duration: number
-	end: number
+	start: string
+	duration: string
+	end: string
 }
 
 export interface MediaAttachment {

@@ -12,7 +12,6 @@ import {
 	NavLink
 } from 'react-router-dom'
 import SystemStatus from './Status/SystemStatus'
-import { MediaManagerStatus } from './Status/MediaManager'
 import { ExternalMessages } from './Status/ExternalMessages'
 import { UserActivity } from './Status/UserActivity'
 import { EvaluationView } from './Status/Evaluations'
@@ -40,12 +39,6 @@ const StatusMenu = translate()(class StatusMenu extends React.Component<Translat
 					className='status-menu__status-menu-item selectable clickable'
 					to={'/status/system'}>
 					<h3>{t('System')}</h3>
-				</NavLink>
-				<NavLink
-					activeClassName='selectable-selected'
-					className='status-menu__status-menu-item selectable clickable'
-					to={'/status/media'}>
-					<h3>{t('Media')}</h3>
 				</NavLink>
 				<NavLink
 					activeClassName='selectable-selected'
@@ -104,7 +97,6 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 							<Switch>
 								{/* <Route path='/status' exact component={WelcomeToStatus} /> */}
 								<Route path='/status/messages' component={ExternalMessages} />
-								<Route path='/status/media' component={MediaManagerStatus} />
 								<Route path='/status/system' component={SystemStatus} />
 								<Route path='/status/userLog' component={UserActivity} />
 								<Route path='/status/evaluations' component={EvaluationView} />

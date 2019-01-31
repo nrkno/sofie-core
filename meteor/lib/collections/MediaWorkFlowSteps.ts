@@ -18,7 +18,7 @@ export abstract class MediaWorkFlowStep {
 
 	studioInstallationId: string
 
-	workFlowId: string
+	mediaWorkFlowId: string
 	action: string
 	status: WorkStepStatus
 	messages?: Array<string>
