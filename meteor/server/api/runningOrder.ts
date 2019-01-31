@@ -373,41 +373,37 @@ export namespace ServerRunningOrderAPI {
 		logger.info('removeRunningOrder ' + runningOrderId)
 
 		let ro = RunningOrders.findOne(runningOrderId)
-		if (ro) {
-			ro.remove()
-		}
+		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
+		if (ro.active) throw new Meteor.Error(400,`Not allowed to remove an active RunningOrder "${runningOrderId}".`)
+
+		ro.remove()
 	}
 	export function resyncRunningOrder (runningOrderId: string) {
 		check(runningOrderId, String)
 		logger.info('resyncRunningOrder ' + runningOrderId)
 
 		let ro = RunningOrders.findOne(runningOrderId)
-		if (ro) {
-			RunningOrders.update(ro._id, {
-				$set: {
-					unsynced: false
-				}
-			})
+		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
+		if (ro.active) throw new Meteor.Error(400,`Not allowed to resync an active RunningOrder "${runningOrderId}".`)
+		RunningOrders.update(ro._id, {
+			$set: {
+				unsynced: false
+			}
+		})
 
-			Meteor.call(PlayoutAPI.methods.reloadData, runningOrderId, false, (err: Error | undefined) => {
-				if (err) {
-					logger.error(err)
-					return
-				}
-			})
-		}
+		Meteor.call(PlayoutAPI.methods.reloadData, runningOrderId, false)
 	}
 	export function unsyncRunningOrder (runningOrderId: string) {
 		check(runningOrderId, String)
 		logger.info('unsyncRunningOrder ' + runningOrderId)
 
 		let ro = RunningOrders.findOne(runningOrderId)
-		if (ro) {
-			RunningOrders.update(ro._id, {$set: {
-				unsynced: true,
-				unsyncedTime: getCurrentTime()
-			}})
-		} else throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found`)
+		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
+
+		RunningOrders.update(ro._id, {$set: {
+			unsynced: true,
+			unsyncedTime: getCurrentTime()
+		}})
 	}
 }
 

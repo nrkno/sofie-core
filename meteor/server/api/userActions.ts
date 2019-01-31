@@ -24,6 +24,9 @@ import { SegmentLineItems, SegmentLineItem } from '../../lib/collections/Segment
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { storeRunningOrderSnapshot } from './snapshot'
 import { setMeteorMethods } from '../methods'
+import { ServerRunningOrderAPI } from './runningOrder'
+import { ServerTestToolsAPI, getStudioConfig } from './testTools';
+import { RecordedFiles } from '../../lib/collections/RecordedFiles';
 
 const MINIMUM_TAKE_SPAN = 1000
 
@@ -356,6 +359,64 @@ export function userStoreRunningOrderSnapshot (runningOrderId: string, reason: s
 		storeRunningOrderSnapshot(runningOrderId, reason)
 	)
 }
+export function removeRunningOrder (runningOrderId: string) {
+	let runningOrder = RunningOrders.findOne(runningOrderId)
+	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
+	if (runningOrder.active) return ClientAPI.responseError(`The RunningOrder is currently active, you can't remove an active RunningOrder!`)
+
+	return ClientAPI.responseSuccess(
+		ServerRunningOrderAPI.removeRunningOrder(runningOrderId)
+	)
+}
+export function resyncRunningOrder (runningOrderId: string) {
+	let runningOrder = RunningOrders.findOne(runningOrderId)
+	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
+	if (runningOrder.active) return ClientAPI.responseError(`The RunningOrder is currently active, you need to deactivate it before resyncing it.`)
+
+	return ClientAPI.responseSuccess(
+		ServerRunningOrderAPI.resyncRunningOrder(runningOrderId)
+	)
+}
+export function recordStop (studioId: string) {
+	check(studioId, String)
+	const record = RecordedFiles.findOne({
+		studioId: studioId,
+		stoppedAt: {$exists: false}
+	})
+	if (!record) return ClientAPI.responseError(`No active recording for "${studioId}" was found!`)
+	return ClientAPI.responseSuccess(
+		ServerTestToolsAPI.recordStop(studioId)
+	)
+}
+
+export function recordStart (studioId: string, fileName: string) {
+	check(studioId, String)
+	check(name, String)
+	const studio = StudioInstallations.findOne(studioId)
+	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" was not found!`)
+
+	const active = RecordedFiles.findOne({
+		studioId: studioId,
+		stoppedAt: {$exists: false}
+	})
+	if (active) return ClientAPI.responseError(`There is already an active recording in studio "${studioId}"!`)
+
+	const config = getStudioConfig(studio)
+	if (!config.recordings.channelIndex)	return ClientAPI.responseError(`Cannot start recording due to a missing setting: "channel".`)
+	if (!config.recordings.deviceId)		return ClientAPI.responseError(`Cannot start recording due to a missing setting: "device".`)
+	if (!config.recordings.decklinkDevice)	return ClientAPI.responseError(`Cannot start recording due to a missing setting: "decklink".`)
+	if (!config.recordings.channelIndex)	return ClientAPI.responseError(`Cannot start recording due to a missing setting: "channel".`)
+
+	return ClientAPI.responseSuccess(
+		ServerTestToolsAPI.recordStart(studioId, fileName)
+	)
+}
+
+export function recordDelete (id: string) {
+	return ClientAPI.responseSuccess(
+		ServerTestToolsAPI.recordDelete(id)
+	)
+}
 
 interface UserMethods {
 	[method: string]: (...args: any[]) => ClientAPI.ClientResponse
@@ -422,5 +483,21 @@ methods[UserActionAPI.methods.saveEvaluation] = (evaluation: EvaluationBase): Cl
 methods[UserActionAPI.methods.storeRunningOrderSnapshot] = (runningOrderId: string, reason: string) => {
 	return userStoreRunningOrderSnapshot(runningOrderId, reason)
 }
+methods[UserActionAPI.methods.removeRunningOrder] = (roId: string) => {
+	return removeRunningOrder(roId)
+}
+methods[UserActionAPI.methods.resyncRunningOrder] = (roId: string) => {
+	return resyncRunningOrder(roId)
+}
+methods[UserActionAPI.methods.recordStop] = (studioId: string) => {
+	return ServerTestToolsAPI.recordStop(studioId)
+}
+methods[UserActionAPI.methods.recordStart] = (studioId: string, name: string) => {
+	return ServerTestToolsAPI.recordStart(studioId, name)
+}
+methods[UserActionAPI.methods.recordDelete] = (id: string) => {
+	return ServerTestToolsAPI.recordDelete(id)
+}
+
 // Apply methods:
 setMeteorMethods(methods)

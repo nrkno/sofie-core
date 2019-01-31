@@ -227,7 +227,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 					{this.scenes && this.scenes.map((i) => i < itemDuration && <span className='segment-timeline__layer-item__scene-marker' key={i} style={{ 'left': ((i - seek) * this.props.timeScale).toString() + 'px' }}></span>)}
 					{this.freezes &&
 						this.freezes.map((i) => i.start < itemDuration &&
-						<span className='segment-timeline__layer-item__anomaly-marker' key={i.start} 
+						<span className='segment-timeline__layer-item__anomaly-marker' key={i.start}
 							style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
 					{this.blacks &&
 						this.blacks.map((i) => i.start < itemDuration &&

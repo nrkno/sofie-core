@@ -22,6 +22,7 @@ export namespace UserActionAPI {
 		'segmentLineItemTakeNow'				= 'userAction.segmentLineItemTakeNow',
 
 		'segmentAdLibLineItemStart'				= 'userAction.segmentAdLibLineItemStart',
+		'sourceLayerOnLineStop'					= 'userAction.sourceLayerOnLineStop',
 		'baselineAdLibItemStart'				= 'userAction.baselineAdLibItemStart',
 		'segmentAdLibLineItemStop'				= 'userAction.segmentAdLibLineItemStop',
 
@@ -34,8 +35,14 @@ export namespace UserActionAPI {
 		// 'roStoriesMoved'						= 'userAction.roStoriesMoved',
 		// 'segmentLinePlaybackStartedCallback'	= 'userAction.segmentLinePlaybackStartedCallback',
 		// 'segmentLineItemPlaybackStartedCallback'= 'userAction.segmentLineItemPlaybackStartedCallback',
-		// 'sourceLayerOnLineStop'					= 'userAction.sourceLayerOnLineStop',
 
 		'storeRunningOrderSnapshot'				= 'userAction.storeRunningOrderSnapshot',
+
+		'removeRunningOrder'					= 'userAction.removeRunningOrder',
+		'resyncRunningOrder'					= 'userAction.resyncRunningOrder',
+
+		'recordStop'							= 'userAction.recordStop',
+		'recordStart'							= 'userAction.recordStart',
+		'recordDelete'							= 'userAction.recordDelete'
 	}
 }

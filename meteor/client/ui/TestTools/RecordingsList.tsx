@@ -14,7 +14,8 @@ import * as objectPath from 'object-path'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { faTrash } from '@fortawesome/fontawesome-free-solid'
 import { ModalDialog } from '../../lib/ModalDialog'
-import { callMethod } from '../../lib/clientAPI'
+import { doUserAction } from '../../lib/userAction'
+import { UserActionAPI } from '../../../lib/api/userActions'
 
 interface IRecordingListProps {
 	match?: {
@@ -75,26 +76,18 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 
 	stopRecording (e) {
 		if (this.props.match && this.props.match.params) {
-			callMethod(e, TestToolsAPI.methods.recordStop, this.props.match.params.studioId, (err, res) => {
-				if (err || (res && res.error)) {
-					console.error(err || res)
-					// this.handleActivationError(err || res)
-					return
-				}
-			})
+			const { t } = this.props
+			doUserAction(t, e, UserActionAPI.methods.recordStop, [this.props.match.params.studioId])
+
 		}
 	}
 	startRecording (e) {
 		if (this.props.match && this.props.match.params) {
-			callMethod(e, TestToolsAPI.methods.recordStart, this.props.match.params.studioId, this.state.filename, (err, res) => {
-				if (err || (res && res.error)) {
-					console.error(err || res)
-					// this.handleActivationError(err || res)
-					return
-				}
-			})
-			this.setState({
-				filename: ''
+			const { t } = this.props
+			doUserAction(t, e, UserActionAPI.methods.recordStart, [this.props.match.params.studioId, this.state.filename], (err) => {
+				this.setState({
+					filename: ''
+				})
 			})
 		}
 	}
@@ -113,7 +106,8 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 	}
 	handleConfirmDeleteAccept = (e) => {
 		if (this.state.deleteConfirmItem) {
-			callMethod(e, TestToolsAPI.methods.recordDelete, this.state.deleteConfirmItem._id)
+			const { t } = this.props
+			doUserAction(t, e, UserActionAPI.methods.recordDelete, [this.state.deleteConfirmItem._id])
 		}
 		this.setState({
 			showDeleteConfirm: false

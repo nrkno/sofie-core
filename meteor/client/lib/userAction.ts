@@ -15,7 +15,8 @@ export function doUserAction (
 	event: any,
 	method: UserActionAPI.methods,
 	params: Array<any>,
-	callback?: (err: any, res?: ClientAPI.ClientResponse) => void
+	callback?: (err: any, res?: ClientAPI.ClientResponseSuccess) => void,
+	okMessage?: string
 ) {
 
 	// Display a progress message, if the method takes a long time to execute:
@@ -39,23 +40,25 @@ export function doUserAction (
 			NotificationCenter.push(
 				new Notification(undefined, NoticeLevel.CRITICAL, t('{{actionName}} failed! More information can be found in the system log.', {actionName: userActionMethodName(t, method)}), 'userAction')
 			)
+			if (callback) callback(err)
 		} else if (ClientAPI.isClientResponseError(res)) {
 			NotificationCenter.push(
 				new Notification(undefined, NoticeLevel.CRITICAL,
 					t('Action {{actionName}} failed: {{error}}', { error: res.message || res.error, actionName: userActionMethodName(t, method) })
 				, 'userAction')
 			)
+			if (callback) callback(res)
 		} else {
 			// all good
 			if (timeoutMessage) {
 				NotificationCenter.push(
 					new Notification(undefined, NoticeLevel.NOTIFICATION,
-						t('Action {{actionName}} done!', {actionName: userActionMethodName(t, method)})
+						okMessage || t('Action {{actionName}} done!', {actionName: userActionMethodName(t, method)})
 					, 'userAction', undefined, false, undefined, undefined, 2000)
 				)
 			}
+			if (callback) callback(undefined, res)
 		}
-		if (callback) callback(err, res)
 	})
 }
 function userActionMethodName (

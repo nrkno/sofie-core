@@ -53,7 +53,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 
 		if (answers.q0 !== 'nothing') {
 			doUserAction(t, e, UserActionAPI.methods.storeRunningOrderSnapshot, [this.props.runningOrder._id, 'Evaluation form'], (err, response) => {
-				if (!err && ClientAPI.isClientResponseSuccess(response)) {
+				if (!err && response) {
 					saveEvaluation(response.result)
 				} else {
 					saveEvaluation()

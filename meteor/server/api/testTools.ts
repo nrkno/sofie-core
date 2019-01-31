@@ -33,7 +33,7 @@ const defaultConfig = {
 	channelFormat: ChannelFormat.HD_1080I5000,
 	prefix: ''
 }
-function getStudioConfig (studio: StudioInstallation): ITestToolsConfig {
+export function getStudioConfig (studio: StudioInstallation): ITestToolsConfig {
 	const config: ITestToolsConfig = studio.testToolsConfig || { recordings: defaultConfig }
 	if (!config.recordings) config.recordings = defaultConfig
 	return config

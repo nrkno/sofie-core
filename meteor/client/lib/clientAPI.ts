@@ -3,9 +3,8 @@ import * as _ from 'underscore'
 import { ClientAPI } from '../../lib/api/client'
 import { logger } from '../../lib/logging'
 import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { PlayoutAPI } from '../../lib/api/playout'
 
-export function callMethod (e: any, methodName: PlayoutAPI.userMethods, ...params: any[]) {
+export function callMethod (e: any, methodName: string, ...params: any[]) {
 	Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), methodName, ...params)
 }
 export function callPeripheralDeviceFunction (e: any, deviceFunctionName: string, ...params: any[]) {
