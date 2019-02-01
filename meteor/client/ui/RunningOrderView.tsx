@@ -44,7 +44,7 @@ import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { callMethod, PeripheralDevicesAPI } from '../lib/clientAPI'
-import { RONotificationEvent, onRONotificationClick as roNotificationHandler } from './RunningOrderView/RunningOrderNotifier'
+import { RONotificationEvent, onRONotificationClick as roNotificationHandler, RunningOrderNotifier } from './RunningOrderView/RunningOrderNotifier'
 import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
@@ -1711,6 +1711,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								studioMode={this.state.studioMode}
 								onChangeBottomMargin={this.onChangeBottomMargin}
 								onRegisterHotkeys={this.onRegisterHotkeys} />
+						</ErrorBoundary>
+						<ErrorBoundary>
+							<RunningOrderNotifier runningOrderId={this.props.runningOrder._id} studioId={this.props.studioInstallation._id} />
 						</ErrorBoundary>
 					</div>
 				</RunningOrderTimingProvider>
