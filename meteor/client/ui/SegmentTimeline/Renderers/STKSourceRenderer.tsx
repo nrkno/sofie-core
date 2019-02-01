@@ -264,7 +264,6 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 								<div>
 									<span className='mini-inspector__label'>{t('File name')}</span>
 									<span className='mini-inspector__value'>{this.props.segmentLineItem.content && this.props.segmentLineItem.content.fileName}</span>
-									<span className='mini-inspector__value'>{this.props.cursorTimePosition}</span>
 								</div>
 							</div>
 						}
