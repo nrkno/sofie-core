@@ -8,6 +8,9 @@ export interface ExpectedMediaItem {
 	/** Local path to the media object */
 	path: string
 
+	/** Global path to the media object */
+	url: string
+
 	/** The running order id that is the source of this MediaItem */
 	runningOrderId: string
 

@@ -10,6 +10,7 @@ import { saveIntoDb, literal, getCurrentTime } from '../../lib/lib'
 import { SegmentLines } from '../../lib/collections/SegmentLines'
 import { wrapMethods, setMeteorMethods } from '../methods'
 import { Random } from 'meteor/random'
+import { logger } from '../logging'
 
 export const updateExpectedMediaItems: (roId: string, slId: string) => void
 = syncFunctionIgnore(function updateExpectedMediaItems (roId: string, slId: string) {
@@ -17,11 +18,24 @@ export const updateExpectedMediaItems: (roId: string, slId: string) => void
 	check(slId, String)
 
 	const ro = RunningOrders.findOne(roId)
-	if (!ro) throw new Meteor.Error(404, `RunningOrder "${roId}" not found.`)
+	if (!ro) {
+		const removedItems = ExpectedMediaItems.remove({
+			runningOrderId: roId
+		})
+		logger.info(`Removed ${removedItems} expected media items for deleted runningOrder "${roId}"`)
+		return
+	}
 	const studioInstallationId = ro.studioInstallationId
 
 	const sl = SegmentLines.findOne(slId)
-	if (!sl) throw new Meteor.Error(404, `SegmentLine "${slId}" not found.`)
+	if (!sl) {
+		const removedItems = ExpectedMediaItems.remove({
+			runningOrderId: roId,
+			segmentLineId: slId
+		})
+		logger.info(`Removed ${removedItems} expected media items for deleted segmentLine "${slId}"`)
+		return
+	}
 
 	const eMIs: ExpectedMediaItem[] = []
 
@@ -43,13 +57,14 @@ export const updateExpectedMediaItems: (roId: string, slId: string) => void
 					disabled: false,
 					lastSeen: getCurrentTime(),
 					mediaFlowId: flow,
-					path: this.toString(),
+					path: this[0].toString(),
+					url: this[1].toString(),
 
 					runningOrderId: roId,
 					segmentLineId: slId,
 					studioInstallationId: studioInstallationId
 				}))
-			}, doc.content.fileName)
+			}, [doc.content.fileName, doc.content.path])
 		}
 	}
 
@@ -63,7 +78,7 @@ export const updateExpectedMediaItems: (roId: string, slId: string) => void
 	}, eMIs)
 })
 
-function insertExpectedObject (fileName: string, mediaFlowId: string, runningOrderId: string, segmentLineId: string) {
+function insertExpectedObject (fileName: string, url: string, mediaFlowId: string, runningOrderId: string, segmentLineId: string) {
 	const ro = RunningOrders.findOne(runningOrderId)
 	if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found.`)
 
@@ -73,6 +88,7 @@ function insertExpectedObject (fileName: string, mediaFlowId: string, runningOrd
 		lastSeen: getCurrentTime(),
 		mediaFlowId: mediaFlowId,
 		path: fileName,
+		url,
 		runningOrderId,
 		segmentLineId,
 		studioInstallationId: ro.studioInstallationId
@@ -80,8 +96,8 @@ function insertExpectedObject (fileName: string, mediaFlowId: string, runningOrd
 }
 
 let methods = {}
-methods['insertExpected'] = (fileName, mediaFlowId, runningOrderId, segmentLineId) => {
-	return insertExpectedObject(fileName, mediaFlowId, runningOrderId, segmentLineId)
+methods['insertExpected'] = (fileName, url, mediaFlowId, runningOrderId, segmentLineId) => {
+	return insertExpectedObject(fileName, url, mediaFlowId, runningOrderId, segmentLineId)
 }
 
 // Apply methods:
