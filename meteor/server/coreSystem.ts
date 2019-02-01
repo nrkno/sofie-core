@@ -298,6 +298,8 @@ export function getRelevantSystemVersions (): {[name: string]: string} {
 		_.each(names, (name) => {
 			versions[name] = dependencies[name]
 		})
+		versions['core'] = PackageInfo.version // package version
+
 	} else logger.error(`Core package dependencies missing`)
 	return versions
 }
