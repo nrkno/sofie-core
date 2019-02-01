@@ -157,8 +157,8 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 		}
 	}, PeripheralDeviceAPI.StatusCode.UNKNOWN)
 	const playoutOnlineOffline: OnLineOffLineList = {
-		onLine: playoutDevices.filter(i => i.connected),
-		offLine: playoutDevices.filter(i => !i.connected)
+		onLine: playoutDevices.filter(i => i.connected && i.status.statusCode < PeripheralDeviceAPI.StatusCode.WARNING_MINOR),
+		offLine: playoutDevices.filter(i => !i.connected || i.status.statusCode >= PeripheralDeviceAPI.StatusCode.WARNING_MINOR)
 	}
 
 	let segments = props.runningOrder.getSegments()
@@ -259,6 +259,9 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 		})
 	}
 	render () {
+		const playoutDevicesIssues = this.props.playoutDevices.offLine.filter(dev => dev.connected)
+		const playoutDisconnected = this.props.playoutDevices.offLine.filter(dev => !dev.connected)
+
 		return (
 			<div className='running-order-system-status'>
 				<div className='running-order-system-status__indicators'>
@@ -341,12 +344,24 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 								{
 									this.props.playoutDevices.offLine.length > 0 ?
 										<React.Fragment>
-											<h5>Off-line devices</h5>
-											<ul>
-												{this.props.playoutDevices.offLine.map((dev) => {
-													return <li key={dev._id}>{dev.name}</li>
-												})}
-											</ul>
+											{playoutDisconnected.length ?
+											<React.Fragment>
+												<h5>Off-line devices</h5>
+												<ul>
+													{playoutDisconnected.map((dev) => {
+														return <li key={dev._id}>{dev.name}</li>
+													})}
+												</ul>
+											</React.Fragment> : null}
+											{playoutDevicesIssues.length ?
+											<React.Fragment>
+												<h5>Devices with issues</h5>
+												<ul>
+													{playoutDevicesIssues.map((dev) => {
+														return <li key={dev._id}>{dev.name}</li>
+													})}
+												</ul>
+											</React.Fragment> : null}
 										</React.Fragment>
 									:
 										<span>All devices working correctly</span>
