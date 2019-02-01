@@ -9,6 +9,7 @@ import { Spinner } from '../lib/Spinner'
 import * as ClassNames from 'classnames'
 import * as $ from 'jquery'
 import * as _ from 'underscore'
+import * as Escape from 'react-escape'
 import Moment from 'react-moment'
 import { NavLink, Route, Prompt } from 'react-router-dom'
 import { PlayoutAPI } from '../../lib/api/playout'
@@ -893,71 +894,73 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	render () {
 		const { t } = this.props
 		return <React.Fragment>
-			<ContextMenu id='running-order-context-menu'>
-				<div className='react-contextmenu-label'>
-					{this.props.runningOrder && this.props.runningOrder.name}
-				</div>
-				{
-					this.props.studioMode ?
-						<React.Fragment>
-							{
-								!(this.props.runningOrder.active && this.props.runningOrder.rehearsal) ?
-									(
-										!this.runningOrderShouldHaveStarted() && !this.props.runningOrder.active ?
-											<MenuItem onClick={(e) => this.activateRehearsal(e)}>
-												{t('Prepare Studio and Activate (Rehearsal)')}
-											</MenuItem> :
-											<MenuItem onClick={(e) => this.activateRehearsal(e)}>
-												{t('Activate (Rehearsal)')}
+			<Escape to='document'>
+				<ContextMenu id='running-order-context-menu'>
+					<div className='react-contextmenu-label'>
+						{this.props.runningOrder && this.props.runningOrder.name}
+					</div>
+					{
+						this.props.studioMode ?
+							<React.Fragment>
+								{
+									!(this.props.runningOrder.active && this.props.runningOrder.rehearsal) ?
+										(
+											!this.runningOrderShouldHaveStarted() && !this.props.runningOrder.active ?
+												<MenuItem onClick={(e) => this.activateRehearsal(e)}>
+													{t('Prepare Studio and Activate (Rehearsal)')}
+												</MenuItem> :
+												<MenuItem onClick={(e) => this.activateRehearsal(e)}>
+													{t('Activate (Rehearsal)')}
+												</MenuItem>
+										) : (
+											<MenuItem onClick={(e) => this.activate(e)}>
+												{t('Activate')}
 											</MenuItem>
-									) : (
-										<MenuItem onClick={(e) => this.activate(e)}>
-											{t('Activate')}
-										</MenuItem>
-									)
-							}
-							{
-								this.props.runningOrder.active ?
-									<MenuItem onClick={(e) => this.deactivate(e)}>
-										{t('Deactivate')}
-									</MenuItem> :
-									null
-							}
-							{
-								this.props.runningOrder.active ?
-									<MenuItem onClick={(e) => this.take(e)}>
-										{t('Take')}
-									</MenuItem> :
-									null
-							}
-							{
-								this.props.runningOrder.active ?
-									<MenuItem onClick={(e) => this.hold(e)}>
-										{t('Hold')}
-									</MenuItem> :
-									null
-							}
-							{
-								!(this.props.runningOrder.active && !this.props.runningOrder.rehearsal) ?
-									<MenuItem onClick={(e) => this.resetRunningOrder(e)}>
-										{t('Reset Running Order')}
-									</MenuItem> :
-									null
-							}
-							<MenuItem onClick={(e) => this.reloadRunningOrder(e)}>
-								{t('Reload ENPS Data')}
-							</MenuItem>
-							<MenuItem onClick={(e) => this.takeRunningOrderSnapshot(e)}>
-								{t('Store Snapshot')}
-							</MenuItem>
-						</React.Fragment> :
-						<React.Fragment>
-							<MenuItem>
-								{t('No actions available')}
-							</MenuItem>
-						</React.Fragment>
-				}
-			</ContextMenu>
+										)
+								}
+								{
+									this.props.runningOrder.active ?
+										<MenuItem onClick={(e) => this.deactivate(e)}>
+											{t('Deactivate')}
+										</MenuItem> :
+										null
+								}
+								{
+									this.props.runningOrder.active ?
+										<MenuItem onClick={(e) => this.take(e)}>
+											{t('Take')}
+										</MenuItem> :
+										null
+								}
+								{
+									this.props.runningOrder.active ?
+										<MenuItem onClick={(e) => this.hold(e)}>
+											{t('Hold')}
+										</MenuItem> :
+										null
+								}
+								{
+									!(this.props.runningOrder.active && !this.props.runningOrder.rehearsal) ?
+										<MenuItem onClick={(e) => this.resetRunningOrder(e)}>
+											{t('Reset Running Order')}
+										</MenuItem> :
+										null
+								}
+								<MenuItem onClick={(e) => this.reloadRunningOrder(e)}>
+									{t('Reload ENPS Data')}
+								</MenuItem>
+								<MenuItem onClick={(e) => this.takeRunningOrderSnapshot(e)}>
+									{t('Store Snapshot')}
+								</MenuItem>
+							</React.Fragment> :
+							<React.Fragment>
+								<MenuItem>
+									{t('No actions available')}
+								</MenuItem>
+							</React.Fragment>
+					}
+				</ContextMenu>
+			</Escape>
 			<div className={ClassNames('header running-order', {
 				'active': this.props.runningOrder.active,
 				'not-active': !this.props.runningOrder.active,
