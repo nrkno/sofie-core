@@ -42,6 +42,8 @@ let leadingZeros = (num: number | string, length: number) => {
 let logToFile = false
 if (process.env.LOG_TO_FILE) logToFile = true
 
+let logPath = process.env.LOG_FILE || ''
+
 function safeStringify (o: any): string {
 	try {
 		return JSON.stringify(o) // make single line
@@ -49,23 +51,26 @@ function safeStringify (o: any): string {
 		return 'ERROR in safeStringify: ' + (e || 'N/A').toString()
 	}
 }
-if (logToFile) {
+if (logToFile || logPath !== '') {
 
 	// console.log(Meteor)
-	let time = new Date()
-	let startDate = time.getFullYear() + '-' +
-		leadingZeros(time.getMonth(),2) + '-' +
-		leadingZeros(time.getDate(),2) + '_' +
-		leadingZeros(time.getHours(),2) + '_' +
-		leadingZeros(time.getMinutes(),2) + '_ ' +
-		leadingZeros(time.getSeconds(),2)
-	let logDirectory = getAbsolutePath() + '/.meteor/local/log'
-	let logPath = logDirectory + '/log_' + startDate + '.log'
-	// let logPath = './log/'
+	if (logPath === '') {
+		let time = new Date()
+		let startDate = time.getFullYear() + '-' +
+			leadingZeros(time.getMonth(),2) + '-' +
+			leadingZeros(time.getDate(),2) + '_' +
+			leadingZeros(time.getHours(),2) + '_' +
+			leadingZeros(time.getMinutes(),2) + '_ ' +
+			leadingZeros(time.getSeconds(),2)
+		let logDirectory = getAbsolutePath() + '/.meteor/local/log'
+		logPath = logDirectory + '/log_' + startDate + '.log'
+		// let logPath = './log/'
 
-	if (!fs.existsSync(logDirectory)) {
-		fs.mkdirSync(logDirectory)
+		if (!fs.existsSync(logDirectory)) {
+			fs.mkdirSync(logDirectory)
+		}
 	}
+
 	logger.add(Winston.transports.Console, {
 		level: 'verbose',
 		handleExceptions: true,
