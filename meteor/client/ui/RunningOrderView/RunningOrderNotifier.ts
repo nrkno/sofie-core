@@ -61,8 +61,10 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 		this._notifier = NotificationCenter.registerNotifier((): NotificationList => {
 			return this._notificationList
 		})
-		ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus', this.autorun(() => {
+		this.autorun(() => {
+			// console.log('RunningOrderViewNotifier 1')
 			let roId = this._runningOrderId.get()
+			// console.log('roId: ' + roId)
 			if (roId === undefined) {
 				const studioId = this._studioId.get()
 				const ro = RunningOrders.findOne({
@@ -76,11 +78,13 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 				}
 			}
 			const rRunningOrderId = reactiveData.getRRunningOrderId(roId).get()
+			// console.log('rRunningOrderId: ' + rRunningOrderId)
 
 			if (rRunningOrderId) {
 				const studioInstallationId = reactiveData.getRRunningOrderStudioId(rRunningOrderId).get()
 				const showStyleBaseId = reactiveData.getRRunningOrderShowStyleBaseId(rRunningOrderId).get()
-				ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus.StudioInstallation', this.autorun(() => {
+				this.autorun(() => {
+					// console.log('RunningOrderViewNotifier 1-1')
 					const studioInstallation = StudioInstallations.findOne(studioInstallationId)
 					const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
 					if (showStyleBase && studioInstallation) {
@@ -88,22 +92,19 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 						this.reactiveSLNotes(rRunningOrderId)
 						this.reactivePeripheralDeviceStatus(studioInstallationId)
 					} else {
-						ReactiveDataHelper.stopComputation('RunningOrderView.MediaObjectStatus.SegmentLineItems')
-						ReactiveDataHelper.stopComputation('RunningOrderView.PeripheralDevices')
-						ReactiveDataHelper.stopComputation('RunningOrderView.SegmentLineNotes')
 						this.cleanUpMediaStatus()
 					}
-				}))
+				})
 			} else {
-				ReactiveDataHelper.stopComputation('RunningOrderView.MediaObjectStatus.StudioInstallation')
 				this._mediaStatus = {}
 				this._deviceStatus = {}
 				this._notes = {}
 				this.cleanUpMediaStatus()
 			}
-		}))
+		})
 
 		this.autorun((comp) => {
+			// console.log('RunningOrderViewNotifier 2')
 			this._mediaStatusDep.depend()
 			this._deviceStatusDep.depend()
 			this._notesDep.depend()
@@ -115,6 +116,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 			this._notificationList.set(
 				notifications
 			)
+			// console.log(this._notificationList)
 		})
 	}
 
@@ -130,8 +132,6 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 		super.stop()
 
 		this._notifier.stop()
-
-		ReactiveDataHelper.stopComputation('RunningOrderView.MediaObjectStatus')
 	}
 
 	private reactivePeripheralDeviceStatus (studioInstallationId: string | undefined) {
@@ -141,7 +141,8 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 			meteorSubscribe(PubSub.peripheralDevicesAndSubDevices, { studioInstallationId: studioInstallationId })
 			reactivePeripheralDevices = reactiveData.getRPeripheralDevices(studioInstallationId)
 		}
-		ReactiveDataHelper.registerComputation('RunningOrderView.PeripheralDevices', this.autorun(() => {
+		this.autorun(() => {
+			// console.log('RunningOrderViewNotifier 3')
 			const devices = reactivePeripheralDevices ? reactivePeripheralDevices.get() : []
 			const newDevItemIds = devices.map(item => item._id)
 
@@ -165,12 +166,13 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 				this._deviceStatusDep.changed()
 			})
 			oldDevItemIds = newDevItemIds
-		}))
+		})
 	}
 
 	private reactiveSLNotes (rRunningOrderId: string) {
 		let oldNoteIds: Array<string> = []
-		ReactiveDataHelper.registerComputation('RunningOrderView.SegmentLineNotes', this.autorun(() => {
+		this.autorun(() => {
+			// console.log('RunningOrderViewNotifier 4')
 			const segments = Segments.find({
 				runningOrderId: rRunningOrderId
 			}).fetch()
@@ -210,12 +212,13 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 				this._notesDep.changed()
 			})
 			oldNoteIds = newNoteIds
-		}))
+		})
 	}
 
 	private reactiveMediaStatus (rRunningOrderId: string, showStyleBase: ShowStyleBase, studioInstallation: StudioInstallation) {
 		let oldItemIds: Array<string> = []
-		ReactiveDataHelper.registerComputation('RunningOrderView.MediaObjectStatus.SegmentLineItems', this.autorun((comp: Tracker.Computation) => {
+		this.autorun((comp: Tracker.Computation) => {
+			// console.log('RunningOrderViewNotifier 5')
 			const items = reactiveData.getRSegmentLineItems(rRunningOrderId).get()
 			const newItemIds = items.map(item => item._id)
 			items.forEach((item) => {
@@ -223,7 +226,8 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 				const segmentLine = SegmentLines.findOne(item.segmentLineId)
 				const segment = segmentLine ? Segments.findOne(segmentLine.segmentId) : undefined
 				if (sourceLayer && segmentLine) {
-					ReactiveDataHelper.registerComputation(`RunningOrderView.MediaObjectStatus.SegmentLineItems.${item._id}`, this.autorun(() => {
+					this.autorun(() => {
+						// console.log('RunningOrderViewNotifier 5-1')
 						const { metadata, status, message } = checkSLIContentStatus(item, sourceLayer, studioInstallation.config)
 						let newNotification: Notification | undefined = undefined
 						if ((status !== RunningOrderAPI.LineItemStatusCode.OK) && (status !== RunningOrderAPI.LineItemStatusCode.UNKNOWN) && (status !== RunningOrderAPI.LineItemStatusCode.SOURCE_NOT_SET)) {
@@ -233,9 +237,6 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 									type: 'default'
 								}
 							], segmentLine._rank)
-							if (newNotification.message && newNotification.message.toString().startsWith('Source format')) {
-								debugger
-							}
 							newNotification.on('action', (notification, type, e) => {
 								switch (type) {
 									case 'default':
@@ -261,10 +262,8 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 							delete this._mediaStatus[item._id]
 							this._mediaStatusDep.changed()
 						}
-					}))
+					})
 				} else {
-					ReactiveDataHelper.stopComputation(`RunningOrderView.MediaObjectStatus.SegmentLineItems.${item._id}`)
-
 					delete this._mediaStatus[item._id]
 					this._mediaStatusDep.changed()
 				}
@@ -275,7 +274,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 				this._mediaStatusDep.changed()
 			})
 			oldItemIds = newItemIds
-		}))
+		})
 	}
 
 	private cleanUpMediaStatus () {
@@ -314,12 +313,14 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 }
 
 interface IProps {
-	match?: {
-		params: {
-			runningOrderId?: string
-			studioId?: string
-		}
-	}
+	// match?: {
+	// 	params: {
+	// 		runningOrderId?: string
+	// 		studioId?: string
+	// 	}
+	// }
+	runningOrderId: string,
+	studioId: string
 	onRONotificationClick?: (e: RONotificationEvent) => void
 }
 
@@ -332,15 +333,17 @@ export const RunningOrderNotifier = class extends React.Component<IProps> {
 	}
 
 	componentDidMount () {
-		const roId = this.props.match ? this.props.match.params.runningOrderId : undefined
-		const studioId = this.props.match ? this.props.match.params.studioId : undefined
+		const roId = this.props.runningOrderId // || (this.props.match ? this.props.match.params.runningOrderId : undefined)
+		const studioId = this.props.studioId // || (this.props.match ? this.props.match.params.studioId : undefined)
+		// console.log('Setting running order id to: ', roId, studioId)
 		this.notifier.setRunningOrderId(roId)
 		this.notifier.setStudioId(studioId)
 	}
 
 	componentDidUpdate () {
-		const roId = this.props.match ? this.props.match.params.runningOrderId : undefined
-		const studioId = this.props.match ? this.props.match.params.studioId : undefined
+		const roId = this.props.runningOrderId // || (this.props.match ? this.props.match.params.runningOrderId : undefined)
+		const studioId = this.props.studioId // || (this.props.match ? this.props.match.params.studioId : undefined)
+		// console.log('Setting running order id to: ', roId, studioId)
 		this.notifier.setRunningOrderId(roId)
 		this.notifier.setStudioId(studioId)
 	}

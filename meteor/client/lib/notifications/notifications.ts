@@ -78,10 +78,12 @@ export class NotifierObject {
 	constructor (notifierId: string, source: Notifier) {
 		this.id = notifierId
 		this.source = source
-		this.handle = Tracker.autorun(() => {
-			this.result = source().get()
-			notificationsDep.changed()
-		})
+		this.handle = Tracker.nonreactive(() => {
+			return Tracker.autorun(() => {
+				this.result = source().get()
+				notificationsDep.changed()
+			})
+		}) as any as Tracker.Computation
 
 		notifiers[notifierId] = this
 	}

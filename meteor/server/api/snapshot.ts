@@ -35,6 +35,7 @@ import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowS
 import { AudioContent } from 'tv-automation-sofie-blueprints-integration'
 import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import { MongoSelector } from '../../lib/typings/meteor'
+import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems';
 interface RunningOrderSnapshot {
 	version: string
 	runningOrderId: string
@@ -47,6 +48,7 @@ interface RunningOrderSnapshot {
 	segmentLineItems: Array<SegmentLineItem>
 	segmentLineAdLibItems: Array<SegmentLineAdLibItem>
 	mediaObjects: Array<MediaObject>
+	expectedMediaItems: Array<ExpectedMediaItem>
 }
 interface SystemSnapshot {
 	version: string
@@ -100,6 +102,7 @@ function createRunningOrderSnapshot (runningOrderId: string): RunningOrderSnapsh
 		...segmentLineAdLibItems.filter(item => item.content && item.content.fileName).map((item) => ((item.content as AudioContent).fileName))
 	]
 	const mediaObjects = MediaObjects.find({ mediaId: { $in: mediaObjectIds } }).fetch()
+	const expectedMediaItems = ExpectedMediaItems.find({ segmentLineId: { $in: segmentLines.map(i => i._id)}}).fetch()
 
 	logger.info(`Snapshot generation done`)
 	return {
@@ -121,7 +124,8 @@ function createRunningOrderSnapshot (runningOrderId: string): RunningOrderSnapsh
 		segmentLines,
 		segmentLineItems,
 		segmentLineAdLibItems,
-		mediaObjects
+		mediaObjects,
+		expectedMediaItems
 	}
 }
 
@@ -372,6 +376,7 @@ function restoreFromRunningOrderSnapshot (snapshot: RunningOrderSnapshot) {
 	saveIntoDb(SegmentLineItems, {runningOrderId: runningOrderId}, snapshot.segmentLineItems)
 	saveIntoDb(SegmentLineAdLibItems, {runningOrderId: runningOrderId}, snapshot.segmentLineAdLibItems)
 	saveIntoDb(MediaObjects, {_id: {$in: _.pluck(snapshot.mediaObjects, '_id')}}, snapshot.mediaObjects)
+	saveIntoDb(ExpectedMediaItems, {segmentLineId: {$in: snapshot.segmentLines.map(i => i._id)}}, snapshot.expectedMediaItems)
 
 	logger.info(`Restore done`)
 }

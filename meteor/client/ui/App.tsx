@@ -108,10 +108,6 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 						<Route path='/prompter/:studioId' component={NullComponent} />
 						<Route path='/' component={ConnectionStatusNotification} />
 					</Switch>
-					<Switch>
-						<Route path='/ro/:runningOrderId' component={RunningOrderNotifier} />
-						<Route path='/activeRo/:studioId' component={RunningOrderNotifier} />
-					</Switch>
 					<ModalDialogGlobalContainer />
 				</div>
 			</Router>

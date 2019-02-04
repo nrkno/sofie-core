@@ -359,7 +359,11 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 	}
 
 	if (resultSli || resultAdlibSli) {
-		updateExpectedMediaItems(ro._id, segmentLine._id)
+		try {
+			updateExpectedMediaItems(ro._id, segmentLine._id)
+		} catch (e) {
+			logger.error('Error updating expectedMediaItems: ' + e.toString())
+		}
 	}
 
 	// if anything was changed
