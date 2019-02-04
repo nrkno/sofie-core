@@ -74,8 +74,8 @@ export interface MediaStream {
 export interface MediaFormat {
 	name?: string
 	long_name?: string
-	start_time?: string
-	duration?: string
+	start_time?: number
+	duration?: number
 	bit_rate?: string
 }
 

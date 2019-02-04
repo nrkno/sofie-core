@@ -9,7 +9,7 @@ import { MeteorReactComponent } from '../MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from './notifications'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { faChevronLeft } from '@fortawesome/fontawesome-free-solid'
-import { sofieWarningIcon as warningIcon } from './warningIcon'
+import { sofieWarningIcon as WarningIcon } from './warningIcon'
 
 interface IPopUpProps {
 	item: Notification
@@ -43,7 +43,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 		onClick={(e) => this.triggerEvent('default', e)}
 		>
 			<div className='notification-pop-up__header'>
-				{warningIcon}
+				{WarningIcon}
 			</div>
 			<div className='notification-pop-up__contents'>
 				{item.message}
@@ -175,7 +175,7 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 				'open': this.props.isOpen,
 				'has-items': this.props.count > 0
 			})} role='button' onClick={this.props.onClick} tabIndex={0}>
-				{warningIcon}
+				<WarningIcon />
 				{ this.props.count > 0 &&
 					<span className='notifications__toggle-button__count'>{this.props.count > 99 ? '99+' : this.props.count}</span>
 				}
