@@ -83,7 +83,7 @@ export class NotifierObject {
 				this.result = source().get()
 				notificationsDep.changed()
 			})
-		}) as unknown as Tracker.Computation
+		}) as any as Tracker.Computation
 
 		notifiers[notifierId] = this
 	}
