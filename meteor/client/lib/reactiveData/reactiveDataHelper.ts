@@ -54,17 +54,11 @@ export abstract class WithManagedTracker {
 	}
 
 	protected autorun (func: (comp: Tracker.Computation) => void, options?: { onError: Function | undefined } | undefined): Tracker.Computation {
-		let comp
-		Tracker.nonreactive(() => {
-			comp = Tracker.autorun(func, options)
-			comp.onStop(() => {
-				debugger
-				console.log('Stopped autorun: ', comp)
-			})
+		return Tracker.nonreactive(() => {
+			const comp = Tracker.autorun(func, options)
 			this._autoruns.push(comp)
 			return comp
-		})
-		return comp
+		}) as any as Tracker.Computation
 	}
 }
 
