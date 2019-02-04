@@ -11,6 +11,7 @@ import { SegmentLines } from '../../lib/collections/SegmentLines'
 import { wrapMethods, setMeteorMethods } from '../methods'
 import { Random } from 'meteor/random'
 import { logger } from '../logging'
+import { getHash } from '../lib'
 
 export const updateExpectedMediaItems: (roId: string, slId: string) => void
 = syncFunctionIgnore(function updateExpectedMediaItems (roId: string, slId: string) {
@@ -53,7 +54,7 @@ export const updateExpectedMediaItems: (roId: string, slId: string) => void
 		if (doc.content && doc.content.fileName && doc.content.mediaFlowIds) {
 			(doc.content.mediaFlowIds as string[]).forEach(function (flow) {
 				eMIs.push(literal<ExpectedMediaItem>({
-					_id: prefix + '_' + doc._id + '_' + flow,
+					_id: getHash(prefix + '_' + doc._id + '_' + flow + '_' + roId + '_' + slId),
 					disabled: false,
 					lastSeen: getCurrentTime(),
 					mediaFlowId: flow,
