@@ -1,9 +1,5 @@
 export namespace PlayoutAPI {
 	export enum methods {
-		// 'reloadData' = 'playout.reloadData',
-		// 'roReset' = 'playout.roReset',
-		// 'roFastReset' = 'playout.roFastReset',
-		// 'roActivate' = 'playout.roActivate',
 
 		'roPrepareForBroadcast' = 'playout.roPrepareForBroadcast',
 		'roResetRunningOrder' 	= 'playout.roResetRunningOrdert',
@@ -11,14 +7,7 @@ export namespace PlayoutAPI {
 		'roActivate' 			= 'playout.roActivate',
 		'roDeactivate' 			= 'playout.roDeactivate',
 		'reloadData' 			= 'playout.reloadData',
-		/**
-		 * Inactivates the RunningOrder
-		 * TODO: Clear the Timeline (?)
-		 */
-		// 'roDeactivate' = 'playout.roDeactivate',
-		/**
-		 * Perform the TAKE action, i.e start playing a segmentLineItem
-		 */
+
 		'roTake' = 'playout.roTake',
 		'roSetNext' = 'playout.roSetNext',
 		'roMoveNext' = 'playout.roMoveNext',
@@ -35,8 +24,5 @@ export namespace PlayoutAPI {
 		'sourceLayerOnLineStop' = 'playout.sourceLayerOnLineStop',
 		'sourceLayerStickyItemStart' = 'playout.sourceLayerStickyItemStart',
 		'timelineTriggerTimeUpdateCallback' = 'playout.timelineTriggerTimeUpdateCallback',
-		'saveEvaluation' = 'playout.saveEvaluation',
-
-		'userRoTake' = 'playout.userRoTake',
 	}
 }

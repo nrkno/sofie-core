@@ -198,7 +198,16 @@ export class Notification extends EventEmitter {
 	created: Time
 	rank: number
 
-	constructor (id: string | undefined, status: NoticeLevel, message: string | React.ReactNode, source: string, created?: Time, persistent?: boolean, actions?: Array<NotificationAction>, rank?: number, timeout?: number) {
+	constructor (
+		id: string | undefined,
+		status: NoticeLevel,
+		message: string | React.ReactNode,
+		source: string,
+		created?: Time,
+		persistent?: boolean,
+		actions?: Array<NotificationAction>,
+		rank?: number,
+		timeout?: number) {
 		super()
 
 		this.id = id

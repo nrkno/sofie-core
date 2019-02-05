@@ -88,25 +88,19 @@ import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { generateRecordingTimelineObjs } from './testTools'
 import { reportRunningOrderHasStarted, reportSegmentLineHasStarted, reportSegmentLineItemHasStarted, reportSegmentLineHasStopped, reportSegmentLineItemHasStopped } from './asRunLog'
 
-const MINIMUM_TAKE_SPAN = 1000
-
 export namespace ServerPlayoutAPI {
 	/**
 	 * Prepare the broadcast for transmission
 	 * To be triggered well before the broadcast because it may take time
 	 */
-	export function roPrepareForBroadcast (roId: string): ClientAPI.ClientResponse {
+	export function roPrepareForBroadcast (roId: string) {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (runningOrder.active) throw new Meteor.Error(404, `roPrepareForBroadcast cannot be run on an active runningOrder!`)
 		const anyOtherActiveRunningOrders = areThereActiveROsInStudio(runningOrder.studioInstallationId, runningOrder._id)
 		if (anyOtherActiveRunningOrders.length) {
-			logger.warn('Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
-			const res = literal<ClientAPI.ClientResponse>({
-				error: 409,
-				message: 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id')
-			})
-			return res
+			// logger.warn('Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
+			throw new Meteor.Error(409, 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
 		}
 
 		resetRunningOrder(runningOrder)
@@ -118,7 +112,7 @@ export namespace ServerPlayoutAPI {
 	 * Reset the broadcast, to be used during testing.
 	 * The User might have run through the running order and wants to start over and try again
 	 */
-	export function roResetRunningOrder (roId: string): ClientAPI.ClientResponse {
+	export function roResetRunningOrder (roId: string) {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (runningOrder.active && !runningOrder.rehearsal) throw new Meteor.Error(401, `roResetBroadcast can only be run in rehearsal!`)
@@ -133,7 +127,7 @@ export namespace ServerPlayoutAPI {
 	 * Activate the runningOrder, final preparations before going on air
 	 * To be triggered by the User a short while before going on air
 	 */
-	export function roResetAndActivate (roId: string): ClientAPI.ClientResponse {
+	export function roResetAndActivate (roId: string) {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (runningOrder.active && !runningOrder.rehearsal) throw new Meteor.Error(402, `roResetAndActivate cannot be run when active!`)
@@ -145,7 +139,7 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Only activate the runningOrder, don't reset anything
 	 */
-	export function roActivate (roId: string, rehearsal: boolean): ClientAPI.ClientResponse {
+	export function roActivate (roId: string, rehearsal: boolean) {
 		check(rehearsal, Boolean)
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -155,18 +149,16 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Deactivate the runningOrder
 	 */
-	export function roDeactivate (roId: string, rehearsal: boolean): ClientAPI.ClientResponse {
+	export function roDeactivate (roId: string) {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
-		return ClientAPI.responseSuccess(
-			deactivateRunningOrder(runningOrder)
-		)
+		return deactivateRunningOrder(runningOrder)
 	}
 	/**
 	 * Trigger a reload of data of the runningOrder
 	 */
-	export function reloadData (roId: string): ClientAPI.ClientResponse {
+	export function reloadData (roId: string) {
 		// Reload and reset the Running order
 		check(roId, String)
 		let runningOrder = RunningOrders.findOne(roId)
@@ -319,21 +311,18 @@ export namespace ServerPlayoutAPI {
 			}
 		})
 	}
-	function areThereActiveROsInStudio (studioInstallationId: string, excludeROId?: string): RunningOrder[] {
-		let anyOtherActiveRunningOrders = RunningOrders.find(excludeROId ? {
+	export function areThereActiveROsInStudio (studioInstallationId: string, excludeROId: string): RunningOrder[] {
+		let anyOtherActiveRunningOrders = RunningOrders.find({
 			studioInstallationId: studioInstallationId,
 			active: true,
 			_id: {
 				$ne: excludeROId
 			}
-		} : {
-			studioInstallationId: studioInstallationId,
-			active: true
 		}).fetch()
 
 		return anyOtherActiveRunningOrders
 	}
-	function activateRunningOrder (runningOrder: RunningOrder, rehearsal: boolean): ClientAPI.ClientResponse {
+	function activateRunningOrder (runningOrder: RunningOrder, rehearsal: boolean) {
 		logger.info('Activating RO ' + runningOrder._id + (rehearsal ? ' (Rehearsal)' : ''))
 
 		rehearsal = !!rehearsal
@@ -346,21 +335,11 @@ export namespace ServerPlayoutAPI {
 
 		let studioInstallation = runningOrder.getStudioInstallation()
 
-		let anyOtherActiveRunningOrders = RunningOrders.find({
-			studioInstallationId: runningOrder.studioInstallationId,
-			active: true,
-			_id: {
-				$ne: runningOrder._id
-			}
-		}).fetch()
+		const anyOtherActiveRunningOrders = areThereActiveROsInStudio(runningOrder.studioInstallationId, runningOrder._id)
 
 		if (anyOtherActiveRunningOrders.length) {
-			logger.warn('Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
-			const res = literal<ClientAPI.ClientResponse>({
-				error: 409,
-				message: 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id')
-			})
-			return res
+			// logger.warn('Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
+			throw new Meteor.Error(409, 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
 		}
 
 		let wasInactive = !runningOrder.active
@@ -430,10 +409,6 @@ export namespace ServerPlayoutAPI {
 				}
 			})
 		}
-
-		return literal<ClientAPI.ClientResponse>({
-			success: 200
-		})
 	}
 	function deactivateRunningOrder (runningOrder: RunningOrder) {
 		logger.info('Deactivating RO ' + runningOrder._id)
@@ -586,35 +561,6 @@ export namespace ServerPlayoutAPI {
 			}))
 		}
 		waitForPromiseAll(ps)
-	}
-	export function userRoTake (roId: string): ClientAPI.ClientResponse {
-		// Called by the user. Wont throw as nasty errors
-
-		let runningOrder = RunningOrders.findOne(roId)
-		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
-		if (!runningOrder.active) {
-			return ClientAPI.responseError(`RunningOrder "${roId}" is not active! Please activate the runningOrder before doing a TAKE.`)
-		}
-		if (!runningOrder.nextSegmentLineId) {
-			return ClientAPI.responseError('No Next point found. Please set a segmentLine as Next before foing a TAKE.')
-		}
-		if (runningOrder.currentSegmentLineId) {
-			const currentSegmentLine = SegmentLines.findOne(runningOrder.currentSegmentLineId)
-			if (currentSegmentLine && currentSegmentLine.timings) {
-				const lastStartedPlayback = currentSegmentLine.timings.startedPlayback ? currentSegmentLine.timings.startedPlayback[currentSegmentLine.timings.startedPlayback.length - 1] : 0
-				const lastTake = currentSegmentLine.timings.take ? currentSegmentLine.timings.take[currentSegmentLine.timings.take.length - 1] : 0
-				const lastChange = Math.max(lastTake, lastStartedPlayback)
-				if (getCurrentTime() - lastChange < MINIMUM_TAKE_SPAN) {
-					logger.debug(`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${currentSegmentLine._id}: ${getCurrentTime() - lastStartedPlayback}`)
-					return ClientAPI.responseError(`Ignoring TAKES that are too quick after eachother (${MINIMUM_TAKE_SPAN} ms)`)
-				}
-			} else {
-				throw new Meteor.Error(404, `SegmentLine "${runningOrder.currentSegmentLineId}", set as currentSegmentLine in "${roId}", not found!`)
-			}
-		}
-		return ClientAPI.responseSuccess(
-			roTake(runningOrder)
-		)
 	}
 	export function roTake (roId: string | RunningOrder ): void {
 
@@ -792,7 +738,7 @@ export namespace ServerPlayoutAPI {
 			}
 		})
 	}
-	export function roSetNext (roId: string, nextSlId: string | null, setManually?: boolean): ClientAPI.ClientResponse {
+	export function roSetNext (roId: string, nextSlId: string | null, setManually?: boolean) {
 		check(roId, String)
 		if (nextSlId) check(nextSlId, String)
 
@@ -814,31 +760,6 @@ export namespace ServerPlayoutAPI {
 		updateTimeline(runningOrder.studioInstallationId)
 
 		return ClientAPI.responseSuccess()
-	}
-	export function userRoMoveNext (
-		roId: string,
-		horisontalDelta: number,
-		verticalDelta: number,
-		setManually: boolean,
-		currentNextSegmentLineItemId?: string
-	): ClientAPI.ClientResponse {
-		try {
-			return literal<ClientAPI.ClientResponseSuccess>({
-				success: 200,
-				result: roMoveNext(
-					roId,
-					horisontalDelta,
-					verticalDelta,
-					setManually,
-					currentNextSegmentLineItemId
-				)
-			})
-		} catch (error) {
-			return literal<ClientAPI.ClientResponseError>({
-				error: 500,
-				message: error.toString()
-			})
-		}
 	}
 	export function roMoveNext (
 		roId: string,
@@ -897,6 +818,8 @@ export namespace ServerPlayoutAPI {
 
 			let segment = segments[segmentIndex]
 
+			if (!segment) throw new Meteor.Error(404, `No Segment found!`)
+
 			let segmentLinesInSegment = segment.getSegmentLines()
 			let segmentLine = _.first(segmentLinesInSegment) as SegmentLine
 			if (!segmentLine) throw new Meteor.Error(404, `No SegmentLines in segment "${segment._id}"!`)
@@ -928,7 +851,7 @@ export namespace ServerPlayoutAPI {
 		}
 
 	}
-	export function roActivateHold (roId: string): ClientAPI.ClientResponse {
+	export function roActivateHold (roId: string) {
 		check(roId, String)
 		logger.debug('roActivateHold')
 
@@ -992,7 +915,7 @@ export namespace ServerPlayoutAPI {
 			}
 		}
 	}
-	export function roDisableNextSegmentLineItem (roId: string, undo?: boolean): ClientAPI.ClientResponse {
+	export function roDisableNextSegmentLineItem (roId: string, undo?: boolean) {
 		check(roId, String)
 
 		let runningOrder = RunningOrders.findOne(roId)
@@ -1354,11 +1277,8 @@ export namespace ServerPlayoutAPI {
 
 			if (slItem.startedPlayback && slItem.startedPlayback <= getCurrentTime()) {
 				if (resSlItem && resSlItem.duration !== undefined && (slItem.infiniteMode || slItem.startedPlayback + resSlItem.duration >= getCurrentTime())) {
-					logger.debug(`Segment Line Item "${slItem._id}" is currently live and cannot be used as an ad-lib`)
-					return literal<ClientAPI.ClientResponse>({
-						error: 409,
-						message: `Segment Line Item "${slItem._id}" is currently live and cannot be used as an ad-lib`
-					})
+					// logger.debug(`Segment Line Item "${slItem._id}" is currently live and cannot be used as an ad-lib`)
+					throw new Meteor.Error(409, `Segment Line Item "${slItem._id}" is currently live and cannot be used as an ad-lib`)
 				}
 			}
 
@@ -1372,10 +1292,6 @@ export namespace ServerPlayoutAPI {
 		cropInfinitesOnLayer(runningOrder, segLine, newSegmentLineItem)
 		stopInfinitesRunningOnLayer(runningOrder, segLine, newSegmentLineItem.sourceLayerId)
 		updateTimeline(runningOrder.studioInstallationId)
-
-		return literal<ClientAPI.ClientResponse>({
-			success: 200
-		})
 	}
 	export const segmentAdLibLineItemStart = syncFunction(function segmentAdLibLineItemStart (roId: string, slId: string, slaiId: string, queue: boolean) {
 		check(roId, String)
@@ -1388,12 +1304,12 @@ export namespace ServerPlayoutAPI {
 		if (runningOrder.holdState === RunningOrderHoldState.ACTIVE || runningOrder.holdState === RunningOrderHoldState.PENDING) {
 			throw new Meteor.Error(403, `Segment Line Ad Lib Items can not be used in combination with hold!`)
 		}
-
 		let adLibItem = SegmentLineAdLibItems.findOne({
 			_id: slaiId,
 			runningOrderId: roId
 		})
 		if (!adLibItem) throw new Meteor.Error(404, `Segment Line Ad Lib Item "${slaiId}" not found!`)
+		if (!queue && runningOrder.currentSegmentLineId !== slId) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in a current segment line!`)
 
 		let orgSlId = slId
 		if (queue) {
@@ -1434,6 +1350,7 @@ export namespace ServerPlayoutAPI {
 
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		if (!runningOrder.active) throw new Meteor.Error(403, `Running Order Baseline Ad Lib Items can be only placed in an active running order!`)
 		if (runningOrder.holdState === RunningOrderHoldState.ACTIVE || runningOrder.holdState === RunningOrderHoldState.PENDING) {
 			throw new Meteor.Error(403, `Segment Line Ad Lib Items can not be used in combination with hold!`)
 		}
@@ -1454,7 +1371,6 @@ export namespace ServerPlayoutAPI {
 			runningOrderId: roId
 		})
 		if (!segLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
-		if (!runningOrder.active) throw new Meteor.Error(403, `Running Order Baseline Ad Lib Items can be only placed in an active running order!`)
 		if (!queue && runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Running Order Baseline Ad Lib Items can be only placed in a current segment line!`)
 
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine, queue)
@@ -1654,7 +1570,7 @@ export namespace ServerPlayoutAPI {
 
 		updateTimeline(runningOrder.studioInstallationId)
 	}
-	export const roToggleSegmentLineArgument = syncFunction(function roToggleSegmentLineArgument (roId: string, slId: string, property: string, value: string): ClientAPI.ClientResponse {
+	export const roToggleSegmentLineArgument = syncFunction(function roToggleSegmentLineArgument (roId: string, slId: string, property: string, value: string) {
 		check(roId, String)
 		check(slId, String)
 
@@ -1726,89 +1642,46 @@ export namespace ServerPlayoutAPI {
 			})
 		}
 	}
-	export function saveEvaluation (evaluation: EvaluationBase): ClientAPI.ClientResponse {
-		let id = Evaluations.insert(_.extend(evaluation, {
-			userId: this.userId,
-			timestamp: getCurrentTime(),
-		}))
-		Meteor.defer(() => {
-
-			let studio = StudioInstallations.findOne(evaluation.studioId)
-			if (!studio) throw new Meteor.Error(500, `Studio ${evaluation.studioId} not found!`)
-
-			let webhookUrl = (studio.getConfigValue('slack_evaluation') + '')
-
-			if (webhookUrl) {
-				// Only send notes if not everything is OK
-				let q0 = _.find(evaluation.answers, (_answer, key) => {
-					return key === 'q0'
-				})
-
-				if (q0 !== 'nothing') {
-
-					let ro = RunningOrders.findOne(evaluation.runningOrderId)
-
-					let message = 'Uh-oh, message from RunningOrder "' + (ro ? ro.name : 'N/A' ) + '": \n' +
-						_.values(evaluation.answers).join(', ')
-
-					let hostUrl = studio.settings.sofieUrl
-					if (hostUrl && ro) {
-						message += '\n<' + hostUrl + '/ro/' + ro._id + '|' + ro.name + '>'
-					}
-
-					sendSlackMessageToWebhookSync(message, webhookUrl)
-				}
-
-			}
-		})
-		return ClientAPI.responseSuccess()
-	}
 }
 
 let methods: Methods = {}
-methods[PlayoutAPI.methods.roPrepareForBroadcast] = (roId: string): ClientAPI.ClientResponse => {
+methods[PlayoutAPI.methods.roPrepareForBroadcast] = (roId: string) => {
 	return ServerPlayoutAPI.roPrepareForBroadcast(roId)
 }
-methods[PlayoutAPI.methods.roResetRunningOrder] = (roId: string): ClientAPI.ClientResponse => {
+methods[PlayoutAPI.methods.roResetRunningOrder] = (roId: string) => {
 	return ServerPlayoutAPI.roResetRunningOrder(roId)
 }
-methods[PlayoutAPI.methods.roResetAndActivate] = (roId: string): ClientAPI.ClientResponse => {
+methods[PlayoutAPI.methods.roResetAndActivate] = (roId: string) => {
 	return ServerPlayoutAPI.roResetAndActivate(roId)
 }
-methods[PlayoutAPI.methods.roActivate] = (roId: string, rehearsal: boolean): ClientAPI.ClientResponse => {
+methods[PlayoutAPI.methods.roActivate] = (roId: string, rehearsal: boolean) => {
 	return ServerPlayoutAPI.roActivate(roId, rehearsal)
 }
-methods[PlayoutAPI.methods.roDeactivate] = (roId: string, rehearsal: boolean): ClientAPI.ClientResponse => {
-	return ServerPlayoutAPI.roDeactivate(roId, rehearsal)
+methods[PlayoutAPI.methods.roDeactivate] = (roId: string) => {
+	return ServerPlayoutAPI.roDeactivate(roId)
 }
-methods[PlayoutAPI.methods.reloadData] = (roId: string): ClientAPI.ClientResponse => {
+methods[PlayoutAPI.methods.reloadData] = (roId: string) => {
 	return ServerPlayoutAPI.reloadData(roId)
 }
-methods[PlayoutAPI.methods.segmentLineItemTakeNow] = (roId: string, slId: string, sliId: string): ClientAPI.ClientResponse => {
+methods[PlayoutAPI.methods.segmentLineItemTakeNow] = (roId: string, slId: string, sliId: string) => {
 	return ServerPlayoutAPI.segmentLineItemTakeNow(roId, slId, sliId)
 }
 methods[PlayoutAPI.methods.roTake] = (roId: string) => {
 	return ServerPlayoutAPI.roTake(roId)
 }
-methods[PlayoutAPI.methods.userRoTake] = (roId: string): ClientAPI.ClientResponse => {
-	return ServerPlayoutAPI.userRoTake(roId)
-}
-methods[PlayoutAPI.methods.roToggleSegmentLineArgument] = (roId: string, slId: string, property: string, value: string): ClientAPI.ClientResponse => {
+methods[PlayoutAPI.methods.roToggleSegmentLineArgument] = (roId: string, slId: string, property: string, value: string) => {
 	return ServerPlayoutAPI.roToggleSegmentLineArgument(roId, slId, property, value)
 }
-methods[PlayoutAPI.methods.roSetNext] = (roId: string, slId: string): ClientAPI.ClientResponse => {
+methods[PlayoutAPI.methods.roSetNext] = (roId: string, slId: string) => {
 	return ServerPlayoutAPI.roSetNext(roId, slId, true)
 }
-methods[PlayoutAPI.methods.roMoveNext] = (roId: string, horisontalDelta: number, verticalDelta: number): ClientAPI.ClientResponse => {
-	return ServerPlayoutAPI.userRoMoveNext(roId, horisontalDelta, verticalDelta, true)
-}
-methods[PlayoutAPI.methods.roActivateHold] = (roId: string): ClientAPI.ClientResponse => {
+methods[PlayoutAPI.methods.roActivateHold] = (roId: string) => {
 	return ServerPlayoutAPI.roActivateHold(roId)
 }
 methods[PlayoutAPI.methods.roStoriesMoved] = (roId: string, onAirNextWindowWidth: number | undefined, nextPosition: number | undefined) => {
 	return ServerPlayoutAPI.roStoriesMoved(roId, onAirNextWindowWidth, nextPosition)
 }
-methods[PlayoutAPI.methods.roDisableNextSegmentLineItem] = (roId: string, undo?: boolean): ClientAPI.ClientResponse => {
+methods[PlayoutAPI.methods.roDisableNextSegmentLineItem] = (roId: string, undo?: boolean) => {
 	return ServerPlayoutAPI.roDisableNextSegmentLineItem(roId, undo)
 }
 methods[PlayoutAPI.methods.segmentLinePlaybackStartedCallback] = (roId: string, slId: string, startedPlayback: number) => {
@@ -1834,9 +1707,6 @@ methods[PlayoutAPI.methods.timelineTriggerTimeUpdateCallback] = (timelineObjId: 
 }
 methods[PlayoutAPI.methods.sourceLayerStickyItemStart] = (roId: string, sourceLayerId: string) => {
 	return ServerPlayoutAPI.sourceLayerStickyItemStart(roId, sourceLayerId)
-}
-methods[PlayoutAPI.methods.saveEvaluation] = (evaluation: EvaluationBase): ClientAPI.ClientResponse => {
-	return ServerPlayoutAPI.saveEvaluation(evaluation)
 }
 
 _.each(methods, (fcn: Function, key) => {

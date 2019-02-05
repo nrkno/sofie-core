@@ -15,11 +15,11 @@ import * as faSync from '@fortawesome/fontawesome-free-solid/faSync'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
-import { RunningOrderAPI } from '../../lib/api/runningOrder'
 import { SystemStatusAPI, StatusResponse } from '../../lib/api/systemStatus'
-import { callMethod } from '../lib/clientAPI'
 import { ManualPlayout } from './manualPlayout'
 import { getDeveloperMode } from '../lib/localStorage'
+import { doUserAction } from '../lib/userAction'
+import { UserActionAPI } from '../../lib/api/userActions'
 
 const PackageInfo = require('../../package.json')
 
@@ -38,7 +38,7 @@ interface IRunningOrderListItemStats {
 }
 
 export class RunningOrderListItem extends React.Component<Translated<IRunningOrderListItemProps>, IRunningOrderListItemStats> {
-	constructor(props) {
+	constructor (props) {
 		super(props)
 
 		this.state = {
@@ -47,7 +47,7 @@ export class RunningOrderListItem extends React.Component<Translated<IRunningOrd
 		}
 	}
 
-	getRunningOrderLink(runningOrderId) {
+	getRunningOrderLink (runningOrderId) {
 		// double encoding so that "/" are handled correctly
 		return '/ro/' + encodeURIComponent(encodeURIComponent(runningOrderId))
 	}
@@ -88,21 +88,21 @@ export class RunningOrderListItem extends React.Component<Translated<IRunningOrd
 		})
 	}
 
-	confirmDelete(item: RunningOrder) {
+	confirmDelete (item: RunningOrder) {
 		this.setState({
 			showDeleteConfirm: true,
 			actionConfirmItem: item
 		})
 	}
 
-	confirmSyncRO(item: RunningOrder) {
+	confirmSyncRO (item: RunningOrder) {
 		this.setState({
 			showSyncConfirm: true,
 			actionConfirmItem: item
 		})
 	}
 
-	render() {
+	render () {
 		const { t } = this.props
 
 		return (
@@ -222,49 +222,13 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 	deleteRO = (ro: RunningOrder, e: any) => {
 		const { t } = this.props
 
-		if (!ro.active) {
-			callMethod(e, RunningOrderAPI.methods.removeRunningOrder, ro._id, (err, res) => {
-				if (err) {
-					// todo: notify the user
-					console.error(err)
-				} else {
-					// console.log('segmentLineItemId', segmentLineItemId)
-					console.log(res)
-				}
-			})
-		} else {
-			doModalDialog({
-				title: t('Running Order is active'),
-				message: (<p>The running order is active. You need to deactivate it to be able to delete it.</p>),
-				acceptOnly: true,
-				yes: 'OK',
-				onAccept: () => { console.log('Discarded') }
-			})
-		}
+		doUserAction(t, e, UserActionAPI.methods.removeRunningOrder, [ro._id])
 	}
 
 	syncRO = (ro: RunningOrder, e: any) => {
 		const { t } = this.props
 
-		if (!ro.active) {
-			callMethod(e, RunningOrderAPI.methods.resyncRunningOrder, ro._id, (err, res) => {
-				if (err) {
-					// todo: notify the user
-					console.error(err)
-				} else {
-					// console.log('segmentLineItemId', segmentLineItemId)
-					console.log(res)
-				}
-			})
-		} else {
-			doModalDialog({
-				title: t('Running Order is active'),
-				message: (<p>The running order is active. You need to deactivate it to be able to re-sync it with MOS.</p>),
-				acceptOnly: true,
-				yes: 'OK',
-				onAccept: () => { console.log('Discarded') }
-			})
-		}
+		doUserAction(t, e, UserActionAPI.methods.resyncRunningOrder, [ro._id])
 	}
 
 	renderRunningOrders () {
@@ -273,7 +237,7 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 		))
 	}
 
-	renderUnsyncedRunningOrders() {
+	renderUnsyncedRunningOrders () {
 		return this.props.runningOrders.filter(i => i.unsynced).map((runningOrder) => (
 			<RunningOrderListItem key={runningOrder._id} runningOrder={runningOrder} onDeleteRO={this.deleteRO} onSyncRO={this.syncRO} t={this.props.t} />
 		))
