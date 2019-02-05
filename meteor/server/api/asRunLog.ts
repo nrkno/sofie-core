@@ -28,6 +28,8 @@ import { getBlueprintOfRunningOrder, AsRunEventContext } from './blueprints'
 import { IBlueprintExternalMessageQueueObj, IBlueprintAsRunLogEventContent } from 'tv-automation-sofie-blueprints-integration'
 import { queueExternalMessages } from './ExternalMessageQueue'
 
+const EVENT_WAIT_TIME = 500
+
 export function pushAsRunLogAsync (eventBase: AsRunLogEventBase, rehersal: boolean, timestamp?: Time): Promise<AsRunLogEvent> {
 	if (!timestamp) timestamp = getCurrentTime()
 
@@ -47,33 +49,39 @@ export function pushAsRunLog (eventBase: AsRunLogEventBase, rehersal: boolean, t
 
 	return waitForPromise(p)
 }
+
 /**
  * Called after an asRun log event occurs
  * @param event
  */
-function handleEvent (event: AsRunLogEvent) {
-	try {
-		if (event.runningOrderId) {
-			let runningOrder = RunningOrders.findOne(event.runningOrderId) as RunningOrder
-			if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${event.runningOrderId}" not found!`)
+function handleEvent (event: AsRunLogEvent): void {
+	// wait EVENT_WAIT_TIME, because blueprint.onAsRunEvent() might depend on events that
+	// might havent been reported yet
+	Meteor.setTimeout(() => {
+		try {
+			if (event.runningOrderId) {
 
-			let bp = getBlueprintOfRunningOrder(runningOrder)
+				let runningOrder = RunningOrders.findOne(event.runningOrderId) as RunningOrder
+				if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${event.runningOrderId}" not found!`)
 
-			if (bp.onAsRunEvent) {
-				const context = new AsRunEventContext(runningOrder, event)
+				let bp = getBlueprintOfRunningOrder(runningOrder)
 
-				Promise.resolve(bp.onAsRunEvent(context))
-				.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {
+				if (bp.onAsRunEvent) {
+					const context = new AsRunEventContext(runningOrder, event)
 
-					queueExternalMessages(runningOrder, messages)
-				})
-				.catch(error => logger.error(error))
+					Promise.resolve(bp.onAsRunEvent(context))
+					.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {
+
+						queueExternalMessages(runningOrder, messages)
+					})
+					.catch(error => logger.error(error))
+				}
+
 			}
-
+		} catch (e) {
+			logger.error(e)
 		}
-	} catch (e) {
-		logger.error(e)
-	}
+	}, EVENT_WAIT_TIME)
 }
 
 // Convenience functions:
