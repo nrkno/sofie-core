@@ -11,6 +11,7 @@
     "integration-test": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
     "test-once": "meteor test --once --driver-package meteortesting:mocha",
     "license-validate": "node-license-validator -p -d --allow-licenses MIT BSD BSD-3-Clause ISC Apache Public-Domain 'Public Domain' Unlicense WTFPL CC-BY-4.0 --allow-packages cycle @fortawesome/fontawesome-common-types",
+    "lint": "tslint --project tsconfig.json --config tslint.json",
     "i18n-extract-pot": "i18next-extract-gettext --files=\"./client/ui/**/*.tsx\" --output=i18n/template.pot",
     "i18n-compile-json": "npm run i18n-compile-json-nb & npm run i18n-compile-json-sv",
     "i18n-compile-json-nb": "i18next-conv -l nb -s i18n/nb.po -t public/locales/nb/translations.json",
