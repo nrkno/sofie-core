@@ -2,8 +2,7 @@ import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import * as React from 'react'
 import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
-import { StudioInstallations, ISourceLayer } from '../../../lib/collections/StudioInstallations'
-import { RunningOrderAPI } from '../../../lib/api/runningOrder'
+import { SourceLayerType, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { normalizeArray } from '../../../lib/lib'
 import * as _ from 'underscore'
 
@@ -14,11 +13,12 @@ import RemoteInputIcon from './Renderers/RemoteInput'
 import LiveSpeakInputIcon from './Renderers/LiveSpeakInput'
 import GraphicsInputIcon from './Renderers/GraphicsInput'
 import { Meteor } from 'meteor/meteor'
+import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 
 interface IPropsHeader {
 	segmentItemId: string
 	runningOrderId: string
-	studioInstallationId: string
+	showStyleBaseId: string
 }
 
 interface INamePropsHeader extends IPropsHeader {
@@ -27,11 +27,13 @@ interface INamePropsHeader extends IPropsHeader {
 
 export const SegmentItemNameContainer = withTracker((props: INamePropsHeader) => {
 	let items = SegmentLineItems.find({ segmentLineId: props.segmentItemId }).fetch()
-	let studioInstallation = StudioInstallations.findOne(props.studioInstallationId)
-	let sourceLayers = studioInstallation ? normalizeArray<ISourceLayer>(studioInstallation.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
+
+	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
+
+	let sourceLayers = showStyleBase ? normalizeArray<ISourceLayer>(showStyleBase.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
 	let sourceLayer: ISourceLayer | undefined
 	let segmentLineItem: SegmentLineItem | undefined
-	const supportedLayers = new Set([RunningOrderAPI.SourceLayerType.GRAPHICS, RunningOrderAPI.SourceLayerType.LIVE_SPEAK, RunningOrderAPI.SourceLayerType.VT ])
+	const supportedLayers = new Set([SourceLayerType.GRAPHICS, SourceLayerType.LIVE_SPEAK, SourceLayerType.VT ])
 
 	for (const item of items) {
 		let layer = sourceLayers[item.sourceLayerId]
@@ -60,17 +62,17 @@ export const SegmentItemNameContainer = withTracker((props: INamePropsHeader) =>
 		this.subscribe('segmentLineItemsSimple', {
 			runningOrderId: this.props.runningOrderId
 		})
-		this.subscribe('studioInstallations', {
-			_id: this.props.studioInstallationId
+		this.subscribe('showStyleBases', {
+			_id: this.props.showStyleBaseId
 		})
 	}
 
 	render () {
 		if (this.props.sourceLayer) {
 			switch (this.props.sourceLayer.type) {
-				case RunningOrderAPI.SourceLayerType.GRAPHICS:
-				case RunningOrderAPI.SourceLayerType.LIVE_SPEAK:
-				case RunningOrderAPI.SourceLayerType.VT:
+				case SourceLayerType.GRAPHICS:
+				case SourceLayerType.LIVE_SPEAK:
+				case SourceLayerType.VT:
 					return this.props.segmentLineItem.name
 			}
 		}
@@ -81,11 +83,12 @@ export const SegmentItemNameContainer = withTracker((props: INamePropsHeader) =>
 export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 	// console.log(props)
 	let items = SegmentLineItems.find({ segmentLineId: props.segmentItemId }).fetch()
-	let studioInstallation = StudioInstallations.findOne(props.studioInstallationId)
-	let sourceLayers = studioInstallation ? normalizeArray<ISourceLayer>(studioInstallation.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
+	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
+
+	let sourceLayers = showStyleBase ? normalizeArray<ISourceLayer>(showStyleBase.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
 	let sourceLayer: ISourceLayer | undefined
 	let segmentLineItem: SegmentLineItem | undefined
-	const supportedLayers = new Set([ RunningOrderAPI.SourceLayerType.GRAPHICS, RunningOrderAPI.SourceLayerType.LIVE_SPEAK, RunningOrderAPI.SourceLayerType.REMOTE, RunningOrderAPI.SourceLayerType.SPLITS, RunningOrderAPI.SourceLayerType.VT, RunningOrderAPI.SourceLayerType.CAMERA ])
+	const supportedLayers = new Set([ SourceLayerType.GRAPHICS, SourceLayerType.LIVE_SPEAK, SourceLayerType.REMOTE, SourceLayerType.SPLITS, SourceLayerType.VT, SourceLayerType.CAMERA ])
 
 	for (const item of items) {
 		let layer = sourceLayers[item.sourceLayerId]
@@ -114,35 +117,35 @@ export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 		this.subscribe('segmentLineItemsSimple', {
 			runningOrderId: this.props.runningOrderId
 		})
-		this.subscribe('studioInstallations', {
-			_id: this.props.studioInstallationId
+		this.subscribe('showStyleBases', {
+			_id: this.props.showStyleBaseId
 		})
 	}
 
 	render () {
 		if (this.props.sourceLayer) {
 			switch (this.props.sourceLayer.type) {
-				case RunningOrderAPI.SourceLayerType.GRAPHICS :
+				case SourceLayerType.GRAPHICS :
 					return (
 						<GraphicsInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
 					)
-				case RunningOrderAPI.SourceLayerType.LIVE_SPEAK :
+				case SourceLayerType.LIVE_SPEAK :
 					return (
 						<LiveSpeakInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
 					)
-				case RunningOrderAPI.SourceLayerType.REMOTE :
+				case SourceLayerType.REMOTE :
 					return (
 						<RemoteInputIcon inputIndex={ parseInt(((this.props.segmentLineItem || {}).name.toString()).split(' ').slice(-1)[0], 10) as number } abbreviation={this.props.sourceLayer.abbreviation} />
 					)
-				case RunningOrderAPI.SourceLayerType.SPLITS :
+				case SourceLayerType.SPLITS :
 					return (
 						<SplitInputIcon abbreviation={this.props.sourceLayer.abbreviation} segmentLineItem={this.props.segmentLineItem} />
 					)
-				case RunningOrderAPI.SourceLayerType.VT :
+				case SourceLayerType.VT :
 					return (
 						<VTInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
 					)
-				case RunningOrderAPI.SourceLayerType.CAMERA :
+				case SourceLayerType.CAMERA :
 					return (
 						<CamInputIcon inputIndex={ parseInt(((this.props.segmentLineItem || {}).name.toString()).split(' ').slice(-1)[0], 10) as number } abbreviation={this.props.sourceLayer.abbreviation} />
 					)

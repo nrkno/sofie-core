@@ -2,13 +2,12 @@ import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/col
 
 PeripheralDeviceCommands.allow({
 	insert (userId: string, doc: PeripheralDeviceCommand): boolean {
-		return true // Temporary: allow all updates client-side
+		return true
 	},
 	update (userId, doc, fields, modifier) {
-		return true // Temporary: allow all updates client-side
+		return false
 	},
-
 	remove (userId, doc) {
-		return true // Temporary: allow all updates client-side
+		return true
 	}
 })

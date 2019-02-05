@@ -1,29 +1,16 @@
 import * as React from 'react'
-import * as $ from 'jquery'
 import * as _ from 'underscore'
-import {
-	BrowserRouter as Router,
-	Route,
-	Switch,
-	Redirect
-} from 'react-router-dom'
-import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
+import { Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { Meteor } from 'meteor/meteor'
 
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
-
-import { Spinner } from '../lib/Spinner'
-import { RunningOrderView } from './RunningOrderView'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { objectPathGet } from '../../lib/lib'
+import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { translate } from 'react-i18next'
 import { EditAttribute } from '../lib/EditAttribute'
 import { ClientAPI } from '../../lib/api/client'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
-import { eventContextForLog } from '../lib/eventTargetLogHelper'
 import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
+import { callMethod } from '../lib/clientAPI'
 
 interface IProps {
 	runningOrder: RunningOrder
@@ -48,18 +35,16 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 		let answers = this.state
 
 		const saveEvaluation = (snapshotId?: string) => {
-
 			let evaluation: EvaluationBase = {
 				studioId: this.props.runningOrder.studioInstallationId,
 				runningOrderId: this.props.runningOrder._id,
-				answers: answers,
-				snapshots: []
+				answers: answers
 			}
 			if (snapshotId && evaluation.snapshots) evaluation.snapshots.push(snapshotId)
 
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.saveEvaluation, evaluation)
+			callMethod(e, PlayoutAPI.methods.saveEvaluation, evaluation)
 
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
+			callMethod(e, PlayoutAPI.methods.roDeactivate, this.props.runningOrder._id)
 
 			this.setState({
 				q0: '',
@@ -69,7 +54,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 		}
 
 		if (answers.q0 !== 'nothing') {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT, this.props.runningOrder._id, 'Evaluation form', (err, snapshotId) => {
+			callMethod(e, SnapshotFunctionsAPI.STORE_RUNNING_ORDER_SNAPSHOT, this.props.runningOrder._id, 'Evaluation form', (err, snapshotId) => {
 				if (!err && snapshotId) {
 					saveEvaluation(snapshotId)
 				} else {
@@ -81,7 +66,6 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 		}
 	}
 	onUpdateValue = (edit: any, newValue: any ) => {
-		console.log('edit', edit, newValue)
 		let attr = edit.props.attribute
 
 		if (attr) {

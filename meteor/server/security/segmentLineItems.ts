@@ -4,12 +4,12 @@ import { SegmentLineItems, SegmentLineItem } from '../../lib/collections/Segment
 // Setup rules:
 SegmentLineItems.allow({
 	insert (userId: string, doc: SegmentLineItem): boolean {
-		return false // Not allowed client-side
+		return false
 	},
 	update (userId, doc, fields, modifier) {
-		return false // Not allowed client-side
+		return false
 	},
 	remove (userId, doc) {
-		return false // Not allowed client-side
+		return false
 	}
 })

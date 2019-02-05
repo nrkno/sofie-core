@@ -38,7 +38,7 @@ export namespace ServerPeripheralDeviceAPI {
 					connected: true,
 					connectionId: options.connectionId,
 					type: options.type,
-					name: options.name,
+					name: peripheralDevice.name || options.name,
 					parentDeviceId: options.parentDeviceId,
 					versions: options.versions,
 				}
@@ -84,13 +84,14 @@ export namespace ServerPeripheralDeviceAPI {
 		check(token, String)
 		check(status, Object)
 		check(status.statusCode, Number)
-		logger.debug('setStatus', status.statusCode)
 
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
 
 		// check if we have to update something:
 		if (!_.isEqual(status, peripheralDevice.status)) {
+
+			logger.debug(`Changed status of device ${peripheralDevice._id} "${peripheralDevice.name}" to ${status.statusCode}`)
 			// perform the update:
 			PeripheralDevices.update(id, {$set: {
 				status: status
@@ -341,6 +342,9 @@ setMeteorMethods({
 	'temporaryRemovePeripheralDevice' (id: string) {
 		// TODO: Replace this function with an authorized one
 		PeripheralDevices.remove(id)
+		PeripheralDevices.remove({
+			parentDeviceId: id
+		})
 		return id
 	}
 })

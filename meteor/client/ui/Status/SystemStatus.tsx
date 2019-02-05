@@ -15,11 +15,12 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { eventContextForLog } from '../../lib/eventTargetLogHelper'
+import { callMethod, callPeripheralDeviceFunction } from '../../lib/clientAPI'
 
 interface IDeviceItemProps {
 	// key: string,
 	device: PeripheralDevice
+	showRemoveButtons?: boolean
 }
 interface IDeviceItemState {
 	showDeleteDeviceConfirm: PeripheralDevice | null
@@ -44,7 +45,7 @@ export function statusCodeToString (t: i18next.TranslationFunction, statusCode: 
 	)
 }
 
-const DeviceItem = translate()(class extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
+export const DeviceItem = translate()(class extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
 	constructor (props: Translated<IDeviceItemProps>) {
 		super(props)
 		this.state = {
@@ -69,11 +70,11 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 
 		switch (this.props.device.type) {
 			case PeripheralDeviceAPI.DeviceType.MOSDEVICE:
-				return t('MOS Device')
+				return t('MOS Gateway')
 			case PeripheralDeviceAPI.DeviceType.PLAYOUT:
-				return t('Play-out Device')
+				return t('Play-out Gateway')
 			case PeripheralDeviceAPI.DeviceType.OTHER:
-				return t('Sub-Device')
+				return ''
 			default:
 				return t('Unknown Device')
 		}
@@ -93,7 +94,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 	}
 	handleConfirmDeleteShowStyleAccept = (e) => {
 		if (this.state.showDeleteDeviceConfirm) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), 'temporaryRemovePeripheralDevice', this.state.showDeleteDeviceConfirm._id)
+			callMethod(e, 'temporaryRemovePeripheralDevice', this.state.showDeleteDeviceConfirm._id)
 			// PeripheralDevices.remove(this.state.showDeleteDeviceConfirm._id)
 		}
 		// ShowStyles.remove(this.state.deleteConfirmItem._id)
@@ -115,7 +116,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 	}
 	handleConfirmKillAccept = (e) => {
 		if (this.state.showKillDeviceConfirm) {
-			Meteor.call(ClientAPI.methods.callPeripheralDeviceFunction, eventContextForLog(e), this.state.showKillDeviceConfirm._id, 'killProcess', 1, (err, result) => {
+			callPeripheralDeviceFunction(e, this.state.showKillDeviceConfirm._id, 'killProcess', 1, (err, result) => {
 				// console.log('reply', err, result)
 				if (err) {
 					console.error(err)
@@ -144,7 +145,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 			message: t('Do you want to restart CasparCG Server?'),
 			onAccept: (event: any) => {
 
-				Meteor.call(ClientAPI.methods.callPeripheralDeviceFunction, eventContextForLog(event), device._id, 'restartCasparCG', (err, result) => {
+				callPeripheralDeviceFunction(event, device._id, 'restartCasparCG', (err, result) => {
 					if (err) {
 						console.error(err)
 					} else {
@@ -208,16 +209,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 					</div>
 				</div>
 				<div className='device-item__id'>
-					<label>{t('ID')}: </label>
-					<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device._id}</Link></div>
-				</div>
-				<div className='device-item__name'>
-					<label>{t('Name')}: </label>
-					<div className='value'>{this.props.device.name}</div>
-				</div>
-				<div className='device-item__type'>
-					<label>{t('Type')}: </label>
-					<div className='value'>{this.deviceTypeString()}</div>
+					<div className='value'><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link></div>
 				</div>
 				{this.props.device.versions ?
 					<div className='device-item__version'>
@@ -254,7 +246,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 							onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
 							<p>{t('Are you sure you want to delete this device?')}</p>
 						</ModalDialog>
-						<button key='button-device' className='btn btn-primary' onClick={
+						{this.props.showRemoveButtons && <button key='button-device' className='btn btn-primary' onClick={
 							(e) => {
 								e.preventDefault()
 								e.stopPropagation()
@@ -262,15 +254,15 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 							}
 						}>
 							<FontAwesomeIcon icon={faTrash} />
-						</button>
+						</button>}
 						{(
 							this.props.device.type !== PeripheralDeviceAPI.DeviceType.OTHER ? <React.Fragment>
-								<ModalDialog title={t('Kill this device process?')} acceptText={t('Kill')}
+								<ModalDialog title={t('Restart this device?')} acceptText={t('Restart')}
 									secondaryText={t('Cancel')}
 									show={!!this.state.showKillDeviceConfirm}
 									onAccept={(e) => this.handleConfirmKillAccept(e)}
 									onSecondary={(e) => this.handleConfirmKillCancel(e)}>
-									<p>{t('Are you sure you want to kill the process of this device?')}</p>
+									<p>{t('Are you sure you want to restart this device?')}</p>
 								</ModalDialog>
 								<button className='btn btn-secondary' onClick={
 									(e) => {
@@ -279,7 +271,7 @@ const DeviceItem = translate()(class extends React.Component<Translated<IDeviceI
 										this.onKillDevice(this.props.device)
 									}
 								}>
-									Kill process
+									Restart
 								</button>
 							</React.Fragment> : null
 						)}
@@ -418,33 +410,6 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 				</header>
 				<div className='mod mvl'>
 					{this.renderPeripheralDevices()}
-					{/* <table className='table system-status-table'>
-						<thead>
-							<tr>
-								<th className='c2'>
-									{t('ID')}
-								</th>
-								<th className='c3'>
-									{t('Name')}
-								</th>
-								<th className='c1'>
-									{t('Telemetry')}
-								</th>
-								<th className='c2'>
-									{t('Type')}
-								</th>
-								<th className='c2'>
-									{t('Status')}
-								</th>
-								<th className='c2'>
-									{t('Last seen')}
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{this.renderPeripheralDevices()}
-						</tbody>
-					</table> */}
 				</div>
 			</div>
 		)

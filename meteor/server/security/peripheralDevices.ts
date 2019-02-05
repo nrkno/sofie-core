@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
 
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { rejectFields } from './lib'
 
 export namespace PeripheralDeviceSecurity {
 
@@ -58,14 +59,26 @@ export namespace PeripheralDeviceSecurity {
 
 PeripheralDevices.allow({
 	insert (userId: string, doc: PeripheralDevice): boolean {
-		return true // Not allowed client-side
+		return true
 	},
 	update (userId, doc, fields, modifier) {
-		return true // Temporary: allow all updates client-side
-		// return false // Not allowed client-side
+		return rejectFields(fields, [
+			'type',
+			'parentDeviceId',
+			'versions',
+			'expectedVersions',
+			'created',
+			'status',
+			'lastSeen',
+			'lastConnected',
+			'connected',
+			'connectionId',
+			'token',
+			// 'settings' is allowed
+		])
 	},
 
 	remove (userId, doc) {
-		return false // Not allowed client-side
+		return false
 	}
 })

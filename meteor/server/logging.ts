@@ -93,6 +93,10 @@ if (logToFile) {
 // 	logger.debug(...args)
 // }
 
-logger.info('Starting up')
+setMeteorMethods({
+	'logger': (type, ...args) => {
+		(logger[type] || logger.log)(...args)
+	}
+})
 
 export { logger }

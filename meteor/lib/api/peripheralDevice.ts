@@ -25,6 +25,7 @@ export enum DeviceType {
 	MOSDEVICE = 0,
 	PLAYOUT = 1,
 	OTHER = 2, // i.e. sub-devices
+	MEDIA_MANAGER = 3,
 }
 export interface InitOptions {
 	type: DeviceType
@@ -144,8 +145,7 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 					timeoutCheck = 0
 				}
 			} else if (getCurrentTime() - (cmd.time || 0) >= timeoutTime) { // timeout
-				logger.warn('timeout in PeripheralDevice.ExecuteFunction "' + cmd.functionName + '" on device "' + cmd.deviceId + '" ')
-				cb('Timeout', null)
+				cb('Timeout when executing the function "' + cmd.functionName + '" on device "' + cmd.deviceId + '" ', null)
 				cursor.stop()
 				PeripheralDeviceCommands.remove(cmd._id)
 				if (subscription) subscription.stop()

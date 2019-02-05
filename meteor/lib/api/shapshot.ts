@@ -3,5 +3,6 @@ export enum SnapshotFunctionsAPI {
 	STORE_RUNNING_ORDER_SNAPSHOT = 'snapshot.runningOrderSnapshot',
 	STORE_DEBUG_SNAPSHOT = 'snapshot.debugSnaphot',
 
-	RESTORE_SNAPSHOT = 'snapshot.restoreSnaphot'
+	RESTORE_SNAPSHOT = 'snapshot.restoreSnaphot',
+	REMOVE_SNAPSHOT = 'snapshot.removeSnaphot'
 }

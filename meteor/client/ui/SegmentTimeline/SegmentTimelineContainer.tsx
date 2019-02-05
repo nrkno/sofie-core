@@ -2,33 +2,23 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { withRenderLimiter } from '../../lib/RenderLimiter'
-
-import * as SuperTimeline from 'superfly-timeline'
-
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../../lib/collections/Segments'
-import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems, SegmentLineItemLifespan } from '../../../lib/collections/SegmentLineItems'
-import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
-
+import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { SegmentTimeline } from './SegmentTimeline'
-
 import { getCurrentTime, Time } from '../../../lib/lib'
 import { RunningOrderTiming } from '../RunningOrderView/RunningOrderTiming'
-import { PlayoutTimelinePrefixes } from '../../../lib/api/playout'
-
 import { CollapsedStateStorage } from '../../lib/CollapsedStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { getResolvedSegment,
 	IOutputLayerExtended,
 	ISourceLayerExtended,
 	SegmentLineItemExtended,
-	SegmentExtended,
 	SegmentLineExtended
 } from '../../../lib/RunningOrder'
 import { RunningOrderViewEvents } from '../RunningOrderView'
 import { SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 export interface SegmentUi extends Segment {
 	/** Output layers available in the installation used by this segment */
@@ -61,6 +51,7 @@ interface ISegmentLineItemUiDictionary {
 interface IProps {
 	segmentId: string,
 	studioInstallation: StudioInstallation,
+	showStyleBase: ShowStyleBase,
 	runningOrder: RunningOrder,
 	timeScale: number,
 	liveLineHistorySize: number
@@ -68,6 +59,7 @@ interface IProps {
 	onTimeScaleChange?: (timeScaleVal: number) => void
 	onContextMenu?: (contextMenuContext: any) => void
 	onSegmentScroll?: () => void
+	onHeaderNoteClick?: (level: SegmentLineNoteType) => void
 	followLiveSegments: boolean
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	isLastSegment: boolean
@@ -117,11 +109,12 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 	}
 
-	let o = getResolvedSegment(props.studioInstallation, props.runningOrder, segment)
+	let o = getResolvedSegment(props.showStyleBase, props.runningOrder, segment)
 	let notes: Array<SegmentLineNote> = []
 	_.each(o.segmentLines, (sl) => {
 		notes = notes.concat(sl.getNotes(true))
 	})
+	notes = notes.concat(segment.notes || [])
 
 	return {
 		segmentui: o.segmentExtended,
@@ -174,8 +167,9 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	if (
 		(typeof props.studioInstallation !== typeof nextProps.studioInstallation) ||
 		!_.isEqual(props.studioInstallation.config, nextProps.studioInstallation.config) ||
-		!_.isEqual(props.studioInstallation.sourceLayers, nextProps.studioInstallation.sourceLayers) ||
-		!_.isEqual(props.studioInstallation.outputLayers, nextProps.studioInstallation.outputLayers)
+		!_.isEqual(props.showStyleBase.config, nextProps.showStyleBase.config) ||
+		!_.isEqual(props.showStyleBase.sourceLayers, nextProps.showStyleBase.sourceLayers) ||
+		!_.isEqual(props.showStyleBase.outputLayers, nextProps.showStyleBase.outputLayers)
 	) {
 		return true
 	}
@@ -361,7 +355,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				onZoomChange={(newScale: number, e) => this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)}
 				onScroll={this.onScroll}
 				followingSegmentLine={this.props.followingSegmentLine}
-				isLastSegment={this.props.isLastSegment} />
+				isLastSegment={this.props.isLastSegment}
+				onHeaderNoteClick={this.props.onHeaderNoteClick} />
 		) || null
 	}
 }

@@ -1,20 +1,13 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import { Translated, translateWithTracker, ReactMeteorData } from '../../lib/ReactMeteorData/react-meteor-data'
-import { PeripheralDevice,
-		PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import Moment from 'react-moment'
-import { translate } from 'react-i18next'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { getCurrentTime, Time } from '../../../lib/lib'
 import { MomentFromNow } from '../../lib/Moment'
 import { getAdminMode } from '../../lib/localStorage'
 import { ClientAPI } from '../../../lib/api/client'
-import { Link } from 'react-router-dom'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
-import { ModalDialog } from '../../lib/ModalDialog'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { makeTableOfObject } from '../../lib/utilComponents'
@@ -22,6 +15,8 @@ import * as classNames from 'classnames'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import * as moment from 'moment'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { faTrash, faPause, faPlay } from '@fortawesome/fontawesome-free-solid'
+import { ExternalMessageQueueAPI } from '../../../lib/api/ExternalMessageQueue'
 
 interface IExternalMessagesProps {
 }
@@ -170,7 +165,10 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 		this._cleanUp()
 	}
 	removeMessage (msg: ExternalMessageQueueObj) {
-		Meteor.call(ClientAPI.methods.execMethod, '', 'removeExternalMessageQueueObj', msg._id)
+		Meteor.call(ClientAPI.methods.execMethod, '', ExternalMessageQueueAPI.methods.remove, msg._id)
+	}
+	toggleHoldMessage (msg: ExternalMessageQueueObj) {
+		Meteor.call(ClientAPI.methods.execMethod, '', ExternalMessageQueueAPI.methods.toggleHold, msg._id)
 	}
 	renderMessageRow (msg: ExternalMessageQueueObj) {
 
@@ -238,6 +236,13 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 						getAdminMode() ? <React.Fragment>
 							<button className='action-btn' onClick={(e) => this.removeMessage(msg)}>
 								<FontAwesomeIcon icon={faTrash} />
+							</button>
+							<button className='action-btn' onClick={(e) => this.toggleHoldMessage(msg)}>
+								{
+									msg.hold ?
+									<FontAwesomeIcon icon={faPlay} /> :
+									<FontAwesomeIcon icon={faPause} />
+								}
 							</button><br/>
 						</React.Fragment> : null
 					}
@@ -318,5 +323,4 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 		)
 	}
 })
-
 export { ExternalMessages }

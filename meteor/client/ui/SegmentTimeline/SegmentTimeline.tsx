@@ -23,6 +23,20 @@ import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { scrollToSegment } from '../../lib/viewPort'
 import { SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
 
+// @ts-ignore Not recognized by Typescript
+import * as Zoom_In_MouseOut from './Zoom_In_MouseOut.json'
+// @ts-ignore Not recognized by Typescript
+import * as Zoom_In_MouseOver from './Zoom_In_MouseOver.json'
+// @ts-ignore Not recognized by Typescript
+import * as Zoom_Normal_MouseOut from './Zoom_Normal_MouseOut.json'
+// @ts-ignore Not recognized by Typescript
+import * as Zoom_Normal_MouseOver from './Zoom_Normal_MouseOver.json'
+// @ts-ignore Not recognized by Typescript
+import * as Zoom_Out_MouseOut from './Zoom_Out_MouseOut.json'
+// @ts-ignore Not recognized by Typescript
+import * as Zoom_Out_MouseOver from './Zoom_Out_MouseOver.json'
+import { LottieButton } from '../../lib/LottieButton'
+
 interface IProps {
 	key: string
 	segment: SegmentUi
@@ -54,6 +68,7 @@ interface IProps {
 	onFollowLiveLine: (state: boolean, event: any) => void
 	onContextMenu?: (contextMenuContext: any) => void
 	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onHeaderNoteClick?: (level: SegmentLineNoteType) => void
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	followingSegmentLine: SegmentLineUi | undefined
 	isLastSegment: boolean
@@ -165,23 +180,63 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 
 	render () {
 		return (
-			<div className='segment-timeline__zoom-area'
-				onDoubleClick={(e) => this.props.onZoomDblClick(e)}>
-				<div className='segment-timeline__timeline'>
-					{this.renderZoomTimeline()}
+			<div className='segment-timeline__zoom-area-container'>
+				<div className='segment-timeline__zoom-area'
+					onDoubleClick={(e) => this.props.onZoomDblClick(e)}>
+					<div className='segment-timeline__timeline'>
+						{this.renderZoomTimeline()}
+					</div>
+					<SegmentTimelineZoomControls scrollLeft={this.props.scrollLeft}
+						scrollWidth={this.props.timelineWidth / this.props.timeScale}
+						onScroll={(left, e) => this.props.onScroll(left, e)}
+						segmentDuration={this.getSegmentDuration()}
+						liveLineHistorySize={this.props.liveLineHistorySize}
+						timeScale={this.props.timeScale}
+						onZoomChange={(newScale, e) => this.props.onZoomChange(newScale, e)} />
+					{this.renderMiniLiveLine()}
 				</div>
-				<SegmentTimelineZoomControls scrollLeft={this.props.scrollLeft}
-					scrollWidth={this.props.timelineWidth / this.props.timeScale}
-					onScroll={(left, e) => this.props.onScroll(left, e)}
-					segmentDuration={this.getSegmentDuration()}
-					liveLineHistorySize={this.props.liveLineHistorySize}
-					timeScale={this.props.timeScale}
-					onZoomChange={(newScale, e) => this.props.onZoomChange(newScale, e)} />
-				{this.renderMiniLiveLine()}
 			</div>
 		)
 	}
 }
+
+class SegmentTimelineZoomButtons extends React.Component<IProps> {
+	constructor (props: IProps) {
+		super(props)
+	}
+
+	zoomIn = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.props.onZoomChange(this.props.timeScale * 2, e)
+	}
+
+	zoomOut = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.props.onZoomChange(this.props.timeScale * 0.5, e)
+	}
+
+	zoomNormalize = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.props.onZoomChange(0.03, e)
+	}
+
+	render () {
+		return (
+			<div className='segment-timeline__timeline-zoom-buttons'>
+				<LottieButton className='segment-timeline__timeline-zoom-buttons__button'
+					inAnimation={Zoom_In_MouseOver}
+					outAnimation={Zoom_In_MouseOut}
+					onClick={this.zoomIn} />
+				<LottieButton className='segment-timeline__timeline-zoom-buttons__button'
+					inAnimation={Zoom_Normal_MouseOver}
+					outAnimation={Zoom_Normal_MouseOut}
+					onClick={this.zoomNormalize} />
+				<LottieButton className='segment-timeline__timeline-zoom-buttons__button'
+					inAnimation={Zoom_Out_MouseOver}
+					outAnimation={Zoom_Out_MouseOut}
+					onClick={this.zoomOut} />
+			</div>
+		)
+	}
+}
+
 export const SegmentTimelineElementId = 'running-order__segment__'
 export const SegmentTimeline = translate()(
 class extends React.Component<Translated<IProps>, IStateHeader> {
@@ -400,7 +455,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 
 	renderOutputLayerControls () {
 		if (this.props.segment.outputLayers !== undefined) {
-			return _.map(_.values(this.props.segment.outputLayers!).sort((a, b) => {
+			return _.map(_.values(this.props.segment.outputLayers).sort((a, b) => {
 				return a._rank - b._rank
 			}), (outputLayer) => {
 				if (outputLayer.used) {
@@ -434,8 +489,18 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	}
 
 	render () {
-
 		let notes: Array<SegmentLineNote> = this.props.segmentNotes
+
+		const {t} = this.props
+
+		const criticalNotes = _.reduce(notes, (prev, item) => {
+			if (item.type === SegmentLineNoteType.ERROR) return ++prev
+			return prev
+		}, 0)
+		const warningNotes = _.reduce(notes, (prev, item) => {
+			if (item.type === SegmentLineNoteType.WARNING) return ++prev
+			return prev
+		}, 0)
 
 		return (
 			<div id={SegmentTimelineElementId + this.props.segment._id}
@@ -461,28 +526,26 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 						{this.props.segment.name}
 					</h2>
 					<div className='segment-timeline__title__notes'>
-						{
-							_.map(notes, (note, key) => {
-								return (
-									<div key={key}>
-										<div>
-											<b>
-												<img className='icon' src='/icons/warning_icon.svg'/>
-												{(
-													note.type === SegmentLineNoteType.WARNING ? '' :
-													note.type === SegmentLineNoteType.ERROR ? 'Error:\u00A0' :
-													''
-												)}
-											</b>
-											{note.origin.name}
-										</div>
-										<div>
-											{note.message}
-										</div>
-									</div>
-								)
-							})
-						}
+						{criticalNotes > 0 && <div className='segment-timeline__title__notes__note'
+							onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(SegmentLineNoteType.ERROR)}>
+							<img className='icon' src='/icons/warning_icon.svg' />
+							<div>
+								{t('Critical errors')}:&nbsp;
+								<b>
+									{criticalNotes}
+								</b>
+							</div>
+						</div>}
+						{warningNotes > 0 && <div className='segment-timeline__title__notes__note'
+							onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(SegmentLineNoteType.WARNING)}>
+							<img className='icon' src='/icons/warning_icon.svg' />
+							<div>
+								{t('Warnings')}:&nbsp;
+								<b>
+									{warningNotes}
+								</b>
+							</div>
+						</div>}
 					</div>
 				</ContextMenuTrigger>
 				<div className='segment-timeline__duration' tabIndex={0}
@@ -528,6 +591,9 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 					</div>
 					{this.renderLiveLine()}
 				</div>
+				<ErrorBoundary>
+					<SegmentTimelineZoomButtons {...this.props} />
+				</ErrorBoundary>
 				{/* <ErrorBoundary>
 					<SegmentNextPreview
 						runningOrder={this.props.runningOrder}

@@ -144,6 +144,7 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 			updated: new Date(device.lastSeen).toISOString(),
 			_status: deviceStatus,
 			documentation: '',
+			statusMessage: deviceStatusMessages.length ? deviceStatusMessages.join(', ') : undefined,
 			_internal: {
 				// statusCode: deviceStatus,
 				statusCodeString: StatusCode[deviceStatus],
@@ -168,6 +169,7 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 		statusCodeString: StatusCode[systemStatus],
 		messages: collectMesages(statusObj)
 	}
+	statusObj.statusMessage = statusObj._internal.messages.join(', ')
 
 	return statusObj
 }

@@ -1,6 +1,6 @@
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
-import { getHash } from '../server/lib'
+import { getHash } from './lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 
@@ -48,7 +48,7 @@ export function syncFunction<T extends Function> (fcn: T, id0?: string, timeout:
 			getId(id0, args) :
 			getHash(id1 + JSON.stringify(args.join()))
 		)
-		logger.info('id ' + id + ' ' + (fcn.name || 'Anonymous function'))
+		logger.debug(`syncFunction: ${id} (${(fcn.name || 'Anonymous function')})`)
 
 		syncFunctionFcns.push({
 			id: id,

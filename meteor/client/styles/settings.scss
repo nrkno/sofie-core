@@ -64,8 +64,9 @@
 	}
 
 	.settings-studio-source-table, .settings-studio-output-table, .settings-studio-device-table,
-	.settings-studio-mappings-table, .settings-studio-custom-config-table, .settings-showStyle-lineTemplates,
-	.settings-line-templates-snapshots, .settings-studio-device-httpsend-table {
+	.settings-studio-mappings-table, .settings-studio-custom-config-table,
+	.settings-line-templates-snapshots, .settings-studio-device-httpsend-table,
+	.settings-studio-showStyleVariants-table {
 		width: 100%;
 
 		> thead > tr {
@@ -106,6 +107,20 @@
 				vertical-align: top;
 				float: right;
 			}
+		}
+	}
+
+	.device-item {
+		background: #f0f0f0;
+		border-top: 1px solid #ddd;
+		padding: 9px 10px 8px;
+
+		&:last-child {
+			border-bottom: 1px solid #ddd;
+		}
+
+		&:hover {
+			background: #fff;
 		}
 	}
 }

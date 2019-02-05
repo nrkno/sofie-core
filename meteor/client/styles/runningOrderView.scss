@@ -1,5 +1,6 @@
 @import "colorScheme";
 @import "itemTypeColors";
+@import "_variables";
 
 $output-layer-group-line: 1px solid #5C5C5C;
 $output-layer-group-collapse-animation-duration: 0.3s;
@@ -59,6 +60,26 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 .running-order-view {
 	padding-top: 125px;
 	padding-bottom: 50vh;
+	padding-right: $statusbar-width;
+	transition: 0s padding-right 0s;
+
+	.header.running-order .notification-pop-ups {
+		top: 65px;
+	}
+
+	> .header .running-order-overview {
+		transition: 0s padding-right 0.5s;
+	}
+
+	&.notification-center-open {
+		padding-right: calc(#{$statusbar-width} + #{$notification-center-width});
+		transition: 0s padding-right 0.5s;
+
+		> .header .running-order-overview {
+			padding-right: calc(#{$statusbar-width} + #{$notification-center-width} + 1.5em);
+			transition: 0s padding-right 0.5s;
+		}
+	}
 }
 
 body.vertical-overflow-only {
@@ -102,6 +123,10 @@ body.vertical-overflow-only {
 
 	.row {
 		width: 100%;
+
+		&.margin-right {
+			padding-right: $statusbar-width;
+		}
 	}
 
 	.flex-col.col-timing {
@@ -252,8 +277,6 @@ body.vertical-overflow-only {
 	background-color: #660
 }
 
-.segment-timeline-container {
-}
 // A component for displaying the segments (ENPS Stories/NKR Titles)
 .segment-timeline {
 	display: grid;
@@ -307,6 +330,28 @@ body.vertical-overflow-only {
 			padding: 0.5em;
 			line-height: 1.4em;
 			font-size: 75%;
+
+			> .segment-timeline__title__notes__note {
+				position: relative;
+				padding-left: 20px;
+				cursor: pointer;
+
+				&:not(:last-child) {
+					margin-bottom: 5px;
+				}
+
+				> .icon {
+					position: absolute;
+					left: 0;
+					top: 1px;
+					height: auto;
+					width: 16px;
+				}
+
+				&:hover {
+					text-decoration: underline;
+				}
+			}
 		}
 	}
 
@@ -423,6 +468,44 @@ body.vertical-overflow-only {
 		margin-right: 0em;
 		letter-spacing: 0px;
 	}
+	.segment-timeline__timeline-zoom-buttons {
+		position: relative;
+		grid-column: segment-group-controls / timeline;
+		grid-row: zoom-area / end;
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+
+		opacity: 0;
+		transition: 0.5s opacity ease-in-out;
+
+		> .segment-timeline__timeline-zoom-buttons__button {
+			min-width: 30px;
+			min-height: 30px;
+			max-width: 30px;
+			max-height: 30px;
+			background: transparent;
+			transition: 0.3s background-color ease-in-out;
+			border-radius: 100%;
+			overflow: visible;
+
+			&:hover {
+				background: $segment-title-background-color;
+				transition: 0s background-color;
+			}
+
+			&:active {
+				background: $ui-button-primary;
+				transition: 0s background-color;
+			}
+		}
+	}
+	&:hover {
+		.segment-timeline__timeline-zoom-buttons {
+			transition: 0.2s opacity ease-in-out;
+			opacity: 1;
+		}
+	}
 	.segment-timeline__next-preview {
 		position: relative;
 		grid-column: end / future-timeline-end;
@@ -442,11 +525,14 @@ body.vertical-overflow-only {
 					$output-layer-group-collapse-animation-duration margin ($output-layer-group-collapse-animation-duration * 1/2);
 	}
 
+	.segment-timeline__zoom-area-container {
+		grid-column: timeline / end;
+		grid-row: zoom-area / end;
+	}
+
 	// The area controlling the zoom at the bottom of the segment
 	.segment-timeline__zoom-area {
 		position: relative;
-		grid-column: timeline / end;
-		grid-row: zoom-area / end;
 		max-height: 4em;
 		margin: 0.2em 0.2em 0em 0;
 		padding: 1px 0;
@@ -572,7 +658,7 @@ body.vertical-overflow-only {
 
 			.segment-timeline__zoom-area__controls__selected-area {
 				position: absolute;
-				border: 1px solid white;
+				border: 1px solid rgba(255, 255, 255, 0.3);
 				top: 0;
 				bottom: 0;
 				width: 250px;
@@ -1355,6 +1441,9 @@ body.vertical-overflow-only {
 
 				opacity: 1;
 				transition: $output-layer-group-collapse-animation-duration opacity;
+
+				text-shadow: 0 0 5px $segment-background-color;
+    			z-index: 2;
 			}
 
 			// the label for the source-layer within this output group

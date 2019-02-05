@@ -20,8 +20,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-
-export const MEDIA_PREVIEWS_URL = 'media_previews_url'
+import { ConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
 
 interface ISourceLayerProps {
 	key: string
@@ -232,7 +231,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 		filter: ['segmentLineDurations', props.segmentLine._id]
 	}
 })(class extends React.Component<Translated<WithTiming<IProps>>, IState> {
-	private _configValueMemo: { [key: string]: string } = {}
+	private _configValueMemo: { [key: string]: ConfigItemValue } = {}
 
 	constructor (props: Translated<WithTiming<IProps>>) {
 		super(props)
@@ -358,7 +357,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					return (
 						<OutputGroup key={layer._id}
 							{...this.props}
-							mediaPreviewUrl={this.ensureHasTrailingSlash(this.getConfigValue(MEDIA_PREVIEWS_URL)) || ''}
+							mediaPreviewUrl={this.ensureHasTrailingSlash(this.props.studioInstallation.settings.mediaPreviewsUrl + '' || '') || ''}
 							layer={layer}
 							segment={this.props.segment}
 							segmentLine={segmentLine}
@@ -414,7 +413,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					</div>
 					{ DEBUG_MODE &&
 						<div className='segment-timeline__debug-info'>
-						{this.props.livePosition} / {this.props.segmentLine.startsAt} / {(this.props.timingDurations || {segmentLineStartsAt: {}}).segmentLineStartsAt![this.props.segmentLine._id]}
+						{this.props.livePosition} / {this.props.segmentLine.startsAt} / {((this.props.timingDurations || {segmentLineStartsAt: {}}).segmentLineStartsAt || {})[this.props.segmentLine._id]}
 						</div>
 					}
 					{this.state.isLive && !this.props.relative && !this.props.autoNextSegmentLine && !this.props.segmentLine.autoNext &&
@@ -468,20 +467,6 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 			return (input.substr(-1) === '/') ? input : input + '/'
 		} else {
 			return input
-		}
-	}
-
-	private getConfigValue (name: string): string | null {
-		if (this.props.studioInstallation && this._configValueMemo[name] === undefined) {
-			const value = this.props.studioInstallation.getConfigValue(name)
-			if (value !== null) {
-				this._configValueMemo[name] = value
-			}
-			return value
-		} else if (this._configValueMemo[name] !== undefined) {
-			return this._configValueMemo[name]
-		} else {
-			return null
 		}
 	}
 }))

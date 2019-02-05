@@ -3,13 +3,22 @@ import { PeripheralDeviceAPI } from '../api/peripheralDevice'
 import { Time, registerCollection } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
+import {
+	DeviceType as PlayoutDeviceType,
+	DeviceOptions as PlayoutDeviceSettingsDevice,
+	CasparCGOptions,
+	AtemOptions,
+	HyperdeckOptions
+} from 'timeline-state-resolver-types'
+
 export interface PeripheralDevice {
 	_id: string
 
 	name: string
 	type: PeripheralDeviceAPI.DeviceType
 
-	studioInstallationId: string
+	/** The studio this device is assigned to. Will be undefined for sub-devices */
+	studioInstallationId?: string
 	parentDeviceId?: string
 	/** Versions reported from the device */
 	versions?: {
@@ -55,17 +64,6 @@ export interface MosDeviceSettingsDeviceOptions {
 	id: string
 	host: string
 }
-export enum PlayoutDeviceType { // to match DeviceType in TSR
-	ABSTRACT = 0,
-	CASPARCG = 1,
-	ATEM = 2,
-	LAWO = 3,
-	HTTPSEND = 4,
-	PANASONIC_PTZ = 5,
-	// TCPSEND = 6, // to be implemented
-	HYPERDECK = 7,
-	PHAROS = 8
-}
 
 export interface PlayoutDeviceSettings {
 	devices: {
@@ -76,26 +74,14 @@ export interface PlayoutDeviceSettings {
 		port: number
 	}
 }
-export interface PlayoutDeviceSettingsDevice {
-	type: PlayoutDeviceType
-	options?: {}
-}
+
 export interface PlayoutDeviceSettingsDeviceCasparCG extends PlayoutDeviceSettingsDevice {
 	type: PlayoutDeviceType.CASPARCG
-	options: {
-		host: string,
-		port: number,
-		useScheduling?: boolean, // whether to use the CasparCG-SCHEDULE command to run future commands, or the internal (backwards-compatible) command queue
-		launcherHost: string,
-		launcherPort: string
-	}
+	options: CasparCGOptions
 }
 export interface PlayoutDeviceSettingsDeviceAtem extends PlayoutDeviceSettingsDevice {
 	type: PlayoutDeviceType.ATEM
-	options: {
-		host: string,
-		port?: number
-	}
+	options: AtemOptions
 }
 
 export interface PanasonicDeviceSettings {
@@ -112,10 +98,7 @@ export interface PlayoutDeviceSettingsDevicePanasonicPTZ extends PlayoutDeviceSe
 
 export interface PlayoutDeviceSettingsDeviceHyperdeck extends PlayoutDeviceSettingsDevice {
 	type: PlayoutDeviceType.HYPERDECK
-	options: {
-		host: string,
-		port?: number
-	}
+	options: HyperdeckOptions
 }
 export interface PlayoutDeviceSettingsDevicePharos extends PlayoutDeviceSettingsDevice {
 	type: PlayoutDeviceType.PHAROS

@@ -105,9 +105,17 @@ function diffOnLineOffLineList (prevList: OnLineOffLineList, list: OnLineOffLine
 export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
-	const attachedDevices = PeripheralDevices.find({
+	const attachedDevices: PeripheralDevice[] = []
+	const parentDevices = PeripheralDevices.find({
 		studioInstallationId: props.studioInstallation._id
 	}).fetch()
+	attachedDevices.splice(attachedDevices.length, 0, ...parentDevices)
+	parentDevices.forEach(i => {
+		const subDevices = PeripheralDevices.find({
+			parentDeviceId: i._id
+		}).fetch()
+		attachedDevices.splice(attachedDevices.length, 0, ...subDevices)
+	})
 
 	let mosDevices = attachedDevices.filter(i => i.type === PeripheralDeviceAPI.DeviceType.MOSDEVICE)
 	let playoutDevices = attachedDevices.filter(i => i.type === PeripheralDeviceAPI.DeviceType.PLAYOUT)
@@ -191,7 +199,7 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 	}
 
 	componentWillMount () {
-		this.subscribe('peripheralDevices', {
+		this.subscribe('peripheralDevicesAndSubDevices', {
 			studioInstallationId: this.props.studioInstallation._id
 		})
 	}
@@ -347,27 +355,7 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 						</div>
 					</div>
 				</div>
-				<VelocityReact.VelocityTransitionGroup leave={{ animation: 'fadeOut', duration: 3000 }}>
-					{ this.state.displayNotification && !this.state.forceHideNotification &&
-						<div className='running-order-system-status__message' onClick={this.forceHideNotification}>
-							{this.makeNotification()}
-						</div>
-					}
-				</VelocityReact.VelocityTransitionGroup>
 			</div>
 		)
-	}
-
-	private makeNotification (): string {
-		let result = ''
-		if (this.state.mosDiff.offLine.length > 0 || this.state.playoutDiff.offLine.length > 0) {
-			result += this.state.mosDiff.offLine.map((i) => i.name)
-				.concat(this.state.playoutDiff.offLine.map((i) => i.name)).join(', ') + ' have gone off-line.'
-		}
-		if (this.state.mosDiff.onLine.length > 0 || this.state.playoutDiff.onLine.length > 0) {
-			result += this.state.mosDiff.onLine.map((i) => i.name)
-				.concat(this.state.playoutDiff.onLine.map((i) => i.name)).join(', ') + ' is back on-line.'
-		}
-		return result
 	}
 })

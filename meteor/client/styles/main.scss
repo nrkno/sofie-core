@@ -14,16 +14,19 @@ input {
 @import "_header";
 @import "_colorScheme";
 
-$FontPath: "./roboto-gh-pages/fonts";
-@import "./../../../public/roboto-gh-pages/roboto.scss";
-
 /* Don't show visited status, since people will browse around the app a lot */
 a:visited {
 	color: $ui-button-primary;
 }
 
+.header {
+	position: relative;
+	z-index: 500;
+}
+
 #render-target {
 	font-weight: 300;
+
 
 	h5, .h5, .text-s, .text-s p, .text-s .mod, .text-s .table, .text-s .action-btn, .switch, .pill, .pills .action-btn, .notification, .tooltip, .btn, .btn-tight {
 		font-weight: 300;

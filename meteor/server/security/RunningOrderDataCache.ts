@@ -4,12 +4,12 @@ import { RunningOrderDataCache, RunningOrderDataCacheObj } from '../../lib/colle
 
 RunningOrderDataCache.allow({
 	insert (userId: string, doc: RunningOrderDataCacheObj): boolean {
-		return false // Not allowed client-side
+		return false
 	},
 	update (userId, doc, fields, modifier) {
-		return false // Not allowed client-side
+		return false
 	},
 	remove (userId, doc) {
-		return false // Not allowed client-side
+		return false
 	}
 })

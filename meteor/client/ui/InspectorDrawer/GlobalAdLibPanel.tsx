@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as $ from 'jquery'
 
 import { ClientAPI } from '../../../lib/api/client'
 import { PlayoutAPI } from '../../../lib/api/playout'
@@ -11,7 +10,6 @@ import { Segment } from '../../../lib/collections/Segments'
 import { SegmentLine } from '../../../lib/collections/SegmentLines'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { SegmentLineAdLibItem } from '../../../lib/collections/SegmentLineAdLibItems'
-import { StudioInstallation, IOutputLayer, ISourceLayer } from '../../../lib/collections/StudioInstallations'
 import { RunningOrderBaselineAdLibItems } from '../../../lib/collections/RunningOrderBaselineAdLibItems'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
@@ -28,7 +26,9 @@ import { Spinner } from '../../lib/Spinner'
 import { literal } from '../../../lib/lib'
 import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { eventContextForLog } from '../../lib/eventTargetLogHelper'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import { callMethod } from '../../lib/clientAPI'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (aSLine: SegmentLineAdLibItemUi) => void
@@ -36,7 +36,7 @@ interface IListViewPropsHeader {
 	onToggleAdLib: (aSLine: SegmentLineAdLibItemUi, queue: boolean, e: any) => void
 	selectedItem: SegmentLineAdLibItemUi | undefined
 	filter: string | undefined
-	studioInstallation: StudioInstallation
+	showStyleBase: ShowStyleBase
 	roAdLibs: Array<SegmentLineAdLibItemUi>
 }
 
@@ -69,11 +69,11 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 			[key: string]: ISourceLayer
 		} = {}
 
-		if (props.studioInstallation && props.studioInstallation.outputLayers && props.studioInstallation.sourceLayers) {
-			props.studioInstallation.outputLayers.forEach((item) => {
+		if (props.showStyleBase && props.showStyleBase.outputLayers && props.showStyleBase.sourceLayers) {
+			props.showStyleBase.outputLayers.forEach((item) => {
 				tOLayers[item._id] = item
 			})
-			props.studioInstallation.sourceLayers.forEach((item) => {
+			props.showStyleBase.sourceLayers.forEach((item) => {
 				tSLayers[item._id] = item
 			})
 
@@ -97,7 +97,7 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 		return (
 			<tbody id={'adlib-panel__list-view__globals'} key='globals' className={ClassNames('adlib-panel__list-view__list__segment')}>
 			{
-				itemList.concat(this.props.roAdLibs).concat(this.props.studioInstallation.sourceLayers.filter(i => i.isSticky)
+				itemList.concat(this.props.roAdLibs).concat(this.props.showStyleBase.sourceLayers.filter(i => i.isSticky)
 					.map(layer => literal<IAdLibListItem & { layer: ISourceLayer, isSticky: boolean }>({
 						_id: layer._id,
 						hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
@@ -108,25 +108,29 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 					})))
 					.map((item) => {
 						if (!item.isHidden) {
-							if (item.isSticky && (!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0)) {
+							if (item.isSticky && item.layer &&
+								(!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0)
+							) {
 								return (
 									<AdLibListItem
 										key={item._id}
 										item={item}
 										selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
-										layer={item.layer!}
+										layer={item.layer}
 										onToggleAdLib={this.props.onToggleSticky}
 										onSelectAdLib={this.props.onSelectAdLib}
 									/>
 								)
-							} else if (!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0) {
+							} else if (item.sourceLayerId && item.outputLayerId &&
+								(!this.props.filter || item.name.toUpperCase().indexOf(this.props.filter.toUpperCase()) >= 0)
+							) {
 								return (
 									<AdLibListItem
 										key={item._id}
 										item={item}
 										selected={this.props.selectedItem && this.props.selectedItem._id === item._id || false}
-										layer={this.state.sourceLayers[item.sourceLayerId!]}
-										outputLayer={this.state.outputLayers[item.outputLayerId!]}
+										layer={this.state.sourceLayers[item.sourceLayerId]}
+										outputLayer={this.state.outputLayers[item.outputLayerId]}
 										onToggleAdLib={this.props.onToggleAdLib}
 										onSelectAdLib={this.props.onSelectAdLib}
 									/>
@@ -246,7 +250,7 @@ interface ISourceLayerLookup {
 
 interface IProps {
 	runningOrder: RunningOrder
-	studioInstallation: StudioInstallation
+	showStyleBase: ShowStyleBase
 	visible: boolean
 	studioMode: boolean
 }
@@ -266,16 +270,13 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	Meteor.subscribe('runningOrderBaselineAdLibItems', {
 		runningOrderId: props.runningOrder._id
 	})
-	Meteor.subscribe('studioInstallations', {
-		_id: props.runningOrder.studioInstallationId
-	})
-	Meteor.subscribe('showStyles', {
-		_id: props.runningOrder.showStyleId
+	Meteor.subscribe('showStyleBases', {
+		_id: props.runningOrder.showStyleBaseId
 	})
 
 	const sourceLayerLookup: ISourceLayerLookup = (
-		props.studioInstallation && props.studioInstallation.sourceLayers ?
-		_.object(_.map(props.studioInstallation.sourceLayers, (item) => [item._id, item])) :
+		props.showStyleBase && props.showStyleBase.sourceLayers ?
+		_.object(_.map(props.showStyleBase.sourceLayers, (item) => [item._id, item])) :
 		{}
 	)
 	// a hash to store various indices of the used hotkey lists
@@ -283,7 +284,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 	let roAdLibs: Array<SegmentLineAdLibItemUi> = []
 
-	const sharedHotkeyList = _.groupBy(props.studioInstallation.sourceLayers, (item) => item.activateKeyboardHotkeys)
+	const sharedHotkeyList = _.groupBy(props.showStyleBase.sourceLayers, (item) => item.activateKeyboardHotkeys)
 
 	if (props.runningOrder) {
 		let roAdLibItems = RunningOrderBaselineAdLibItems.find({ runningOrderId: props.runningOrder._id }, { sort: { sourceLayerId: 1, _rank: 1 } }).fetch()
@@ -384,7 +385,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 
 		if (this.props.sourceLayerLookup) {
-			_.forEach(this.props.sourceLayerLookup, (item) => {
+			_.each(this.props.sourceLayerLookup, (item) => {
 				if (item.clearKeyboardHotkey) {
 					item.clearKeyboardHotkey.split(',').forEach(element => {
 						mousetrapHelper.bind(element, preventDefault, 'keydown')
@@ -423,7 +424,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && this.props.runningOrder.active) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.sourceLayerStickyItemStart, this.props.runningOrder._id, sourceLayerId)
+			callMethod(e, PlayoutAPI.methods.sourceLayerStickyItemStart, this.props.runningOrder._id, sourceLayerId)
 		}
 	}
 
@@ -442,7 +443,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && aSLine.isGlobal) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.runningOrderBaselineAdLibItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id, queue || false)
+			callMethod(e, PlayoutAPI.methods.runningOrderBaselineAdLibItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id, queue || false)
 		}
 	}
 
@@ -450,7 +451,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		// console.log(sourceLayer)
 
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
-			Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), PlayoutAPI.methods.sourceLayerOnLineStop, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id)
+			callMethod(e, PlayoutAPI.methods.sourceLayerOnLineStop, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id)
 		}
 	}
 
@@ -468,7 +469,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					onToggleAdLib={this.onToggleAdLib}
 					onToggleSticky={this.onToggleStickyItem}
 					selectedItem={this.state.selectedItem}
-					studioInstallation={this.props.studioInstallation}
+					showStyleBase={this.props.showStyleBase}
 					roAdLibs={this.props.roAdLibs}
 					filter={this.state.filter} />
 			</React.Fragment>
