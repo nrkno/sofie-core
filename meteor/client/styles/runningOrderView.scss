@@ -1888,6 +1888,10 @@ body.vertical-overflow-only {
 			margin-top: 6px;
 			text-align: right;
 		}
+
+		&.text-broken {
+			display: block;
+		}
 	}
 	.mini-inspector__in-point {
 		margin-right: 1em;
