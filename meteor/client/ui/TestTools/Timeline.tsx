@@ -99,10 +99,10 @@ const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState
 		const objOffset = 10
 		const scaleFactor = 1 / 40
 
-		let i = -1
+		// let i = -1
 		let yOffset = 0
 		const elms = _.map(grouped, (objs, k) => {
-			i++
+			// i++
 
 			const sortedObjs = _.chain(objs).sortBy('priority').sortBy('resolved.startTime').value()
 

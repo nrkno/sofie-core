@@ -67,6 +67,7 @@ function handleEvent (event: AsRunLogEvent) {
 
 					queueExternalMessages(runningOrder, messages)
 				})
+				.catch(error => logger.error(error))
 			}
 
 		}

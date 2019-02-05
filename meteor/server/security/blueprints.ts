@@ -1,6 +1,5 @@
-import { Meteor } from 'meteor/meteor'
 import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
-import { allowOnlyFields, rejectFields } from './lib'
+import { allowOnlyFields } from './lib'
 
 export namespace BlueprintsSecurity {
 	export function allowReadAccess (selector: object, token: string, context: any) {

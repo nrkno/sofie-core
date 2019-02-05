@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
@@ -8,7 +7,6 @@ import { RecordedFile, RecordedFiles } from '../../../lib/collections/RecordedFi
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
 import Moment from 'react-moment'
-import { TestToolsAPI } from '../../../lib/api/testTools'
 import { EditAttribute } from '../../lib/EditAttribute'
 import * as objectPath from 'object-path'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
@@ -84,7 +82,7 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 	startRecording (e) {
 		if (this.props.match && this.props.match.params) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.recordStart, [this.props.match.params.studioId, this.state.filename], (err) => {
+			doUserAction(t, e, UserActionAPI.methods.recordStart, [this.props.match.params.studioId, this.state.filename], () => {
 				this.setState({
 					filename: ''
 				})

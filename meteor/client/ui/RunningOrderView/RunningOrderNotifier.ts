@@ -1,13 +1,9 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Tracker } from 'meteor/tracker'
-import { Meteor } from 'meteor/meteor'
-
-
 import { NotificationCenter, NotificationList, NotifierObject, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { RunningOrderAPI } from '../../../lib/api/runningOrder'
-
-import { ReactiveDataHelper, WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
+import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
 import { checkSLIContentStatus } from '../../../lib/mediaObjects'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
@@ -228,7 +224,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 				if (sourceLayer && segmentLine) {
 					this.autorun(() => {
 						// console.log('RunningOrderViewNotifier 5-1')
-						const { metadata, status, message } = checkSLIContentStatus(item, sourceLayer, studioInstallation.config)
+						const { status, message } = checkSLIContentStatus(item, sourceLayer, studioInstallation.config)
 						let newNotification: Notification | undefined = undefined
 						if ((status !== RunningOrderAPI.LineItemStatusCode.OK) && (status !== RunningOrderAPI.LineItemStatusCode.UNKNOWN) && (status !== RunningOrderAPI.LineItemStatusCode.SOURCE_NOT_SET)) {
 							newNotification = new Notification(item._id, NoticeLevel.WARNING, message || 'Media is broken', segment ? segment._id : 'line_' + item.segmentLineId, getCurrentTime(), true, [

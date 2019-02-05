@@ -1,10 +1,6 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as _ from 'underscore'
 import * as $ from 'jquery'
-
-import { ClientAPI } from '../../../lib/api/client'
-import { PlayoutAPI } from '../../../lib/api/playout'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
@@ -142,7 +138,6 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 	}
 
 	render () {
-		const { t } = this.props
 
 		return (
 			<div className='adlib-panel__list-view__list'>

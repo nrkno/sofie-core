@@ -755,22 +755,15 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 	reloadRunningOrder = (e: any, changeRehearsal?: boolean) => {
 		const { t } = this.props
-		const p = new Promise((resolve, reject) => {
-			if (this.props.studioMode) {
-				doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.runningOrder._id, changeRehearsal], (err) => {
-					if (err) {
-						reject(err)
-					} else {
-						if (this.props.runningOrder && this.props.runningOrder.nextSegmentLineId) scrollToSegmentLine(this.props.runningOrder.nextSegmentLineId)
-						resolve()
+		if (this.props.studioMode) {
+			doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.runningOrder._id, changeRehearsal], (err) => {
+				if (!err) {
+					if (this.props.runningOrder && this.props.runningOrder.nextSegmentLineId) {
+						scrollToSegmentLine(this.props.runningOrder.nextSegmentLineId)
 					}
-				})
-			} else {
-				reject()
-			}
-		})
-
-		return p
+				}
+			})
+		}
 	}
 
 	takeRunningOrderSnapshot = (e) => {

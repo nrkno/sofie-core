@@ -295,7 +295,6 @@ export interface RoData {
 export const RunningOrders: TransformedCollection<RunningOrder, DBRunningOrder>
 	= new Mongo.Collection<RunningOrder>('rundowns', {transform: (doc) => applyClassToDocument(RunningOrder, doc) })
 registerCollection('RunningOrders', RunningOrders)
-let c = RunningOrders
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		RunningOrders._ensureIndex({

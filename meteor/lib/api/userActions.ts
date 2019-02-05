@@ -1,5 +1,3 @@
-import { PlayoutAPI } from './playout'
-
 export namespace UserActionAPI {
 	/**
 	 * These methods are intended to be called by a user,

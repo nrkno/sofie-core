@@ -172,7 +172,6 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 		} = {}
 
 		let nextAIndex = -1
-		let curAIndex = -1
 
 		let now = getCurrentTime()
 

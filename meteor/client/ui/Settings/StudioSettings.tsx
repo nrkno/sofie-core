@@ -266,8 +266,6 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 	}
 
 	renderDevices () {
-		const { t } = this.props
-
 		return (
 			this.props.studioDevices.map((device, index) => {
 				return <tr key={device._id}>
@@ -569,7 +567,6 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 		)
 	}
 	renderPharosMappingSettings (layerId: string) {
-		const { t } = this.props
 		return (
 			<React.Fragment>
 				<div></div>
@@ -893,9 +890,6 @@ interface IStudioSettingsTrackedProps {
 	}>
 	availableDevices: Array<PeripheralDevice>
 }
-interface ITrackedProps {
-
-}
 
 export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, IStudioSettingsTrackedProps>((props: IStudioSettingsProps, state) => {
 	const studio = StudioInstallations.findOne(props.match.params.studioId)
@@ -1049,7 +1043,6 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 	}
 
 	render () {
-		const { t } = this.props
 
 		if (this.props.studioInstallation) {
 			return this.renderEditForm()
@@ -1075,7 +1068,7 @@ export function findHighestRank (array: Array<{ _rank: number }>): { _rank: numb
 	let max: { _rank: number } | null = null
 
 	array.forEach((value, index) => {
-		if (max == null || max._rank < value._rank) {
+		if (max === null || max._rank < value._rank) {
 			max = value
 		}
 	})

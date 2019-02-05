@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import * as Winston from 'winston'
 import * as fs from 'fs'
 import { setMeteorMethods } from './methods'

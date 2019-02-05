@@ -1,6 +1,5 @@
 import * as i18next from 'i18next'
 import { callMethod } from './clientAPI'
-import { PlayoutAPI } from '../../lib/api/playout'
 import {
 	NotificationCenter,
 	Notification,

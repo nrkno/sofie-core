@@ -98,7 +98,6 @@ export interface MediaManagerDeviceSettings {
 	}
 }
 
-
 export enum MediaFlowType {
 	WATCH_FOLDER = 'watch_folder',
 	LOCAL_INGEST = 'local_ingest',

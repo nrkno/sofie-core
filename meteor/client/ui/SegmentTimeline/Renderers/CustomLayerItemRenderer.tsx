@@ -1,6 +1,11 @@
 import * as React from 'react'
 
-import { ISourceLayerUi, IOutputLayerUi, SegmentUi, SegmentLineUi, SegmentLineItemUi } from '../SegmentTimelineContainer'
+import {
+	ISourceLayerUi,
+	IOutputLayerUi,
+	SegmentLineUi,
+	SegmentLineItemUi
+} from '../SegmentTimelineContainer'
 
 import { RundownUtils } from '../../../lib/rundown'
 import { SegmentLineItemLifespan, VTContent } from 'tv-automation-sofie-blueprints-integration'

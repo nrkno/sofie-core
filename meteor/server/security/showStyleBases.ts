@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { rejectFields } from './lib'
 

@@ -1,9 +1,5 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as _ from 'underscore'
-
-import { ClientAPI } from '../../../lib/api/client'
-import { PlayoutAPI } from '../../../lib/api/playout'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 import { Segment } from '../../../lib/collections/Segments'
@@ -154,8 +150,6 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 	}
 
 	render () {
-		const { t } = this.props
-
 		return (
 			<div className='adlib-panel__list-view__list adlib-panel__list-view__list--global'>
 				<table className='adlib-panel__list-view__list__table' ref={this.setTableRef}>

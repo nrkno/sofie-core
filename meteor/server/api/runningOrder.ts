@@ -9,14 +9,12 @@ import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime } from '..
 import { logger } from '../logging'
 import { loadBlueprints, postProcessSegmentLineItems, SegmentContext } from './blueprints'
 import { getHash } from '../lib'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
-import { CachePrefix, RunningOrderDataCache } from '../../lib/collections/RunningOrderDataCache'
+import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 import { updateStory, reloadRunningOrder } from './integration/mos'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
-import { MongoModifier } from '../../lib/typings/meteor'
 
 /**
  * After a Segment has beed removed, handle its contents
@@ -276,7 +274,7 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 
 	const segmentLines = segment.getSegmentLines()
 	if (segmentLines.length === 0) {
-		return
+		return undefined
 	}
 
 	const firstSegmentLine = segmentLines.sort((a, b) => b._rank = a._rank)[0]

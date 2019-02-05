@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { translate, InjectedI18nProps } from 'react-i18next'
 import * as m from 'moment'
@@ -32,7 +31,6 @@ import {
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './PrompterView'
 import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
-import { RunningOrderNotifier } from './RunningOrderView/RunningOrderNotifier'
 
 interface IAppState {
 	studioMode: boolean

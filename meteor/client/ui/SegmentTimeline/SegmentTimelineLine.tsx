@@ -5,7 +5,13 @@ import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { SegmentUi, SegmentLineUi, IOutputLayerUi, ISourceLayerUi, SegmentLineItemUi } from './SegmentTimelineContainer'
+import {
+	SegmentUi,
+	SegmentLineUi,
+	IOutputLayerUi,
+	ISourceLayerUi,
+	SegmentLineItemUi
+} from './SegmentTimelineContainer'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { RunningOrderTiming, WithTiming } from '../RunningOrderView/RunningOrderTiming'
 
@@ -14,9 +20,6 @@ import { ContextMenuTrigger } from 'react-contextmenu'
 import { RundownUtils } from '../../lib/rundown'
 import { getCurrentTime } from '../../../lib/lib'
 import { withTiming } from '../RunningOrderView/RunningOrderTiming'
-
-import * as faFastForward from '@fortawesome/fontawesome-free-solid/faFastForward'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -323,7 +326,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 	}
 
 	getLineDuration (): number {
-		const segmentLine = this.props.segmentLine
+		// const segmentLine = this.props.segmentLine
 
 		return Math.max(this.state.liveDuration,
 			this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0)

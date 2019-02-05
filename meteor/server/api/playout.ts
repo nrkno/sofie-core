@@ -1,3 +1,5 @@
+
+/* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from 'meteor/check'
 import { RunningOrders, RunningOrder, RunningOrderHoldState, RoData, DBRunningOrder } from '../../lib/collections/RunningOrders'
@@ -12,7 +14,6 @@ import { getCurrentTime,
 	stringifyObjects,
 	fetchAfter,
 	normalizeArray,
-	getRank,
 	asyncCollectionUpdate,
 	asyncCollectionRemove,
 	waitForPromiseAll,
@@ -45,11 +46,11 @@ import {
 	Timeline as TimelineTypes
 } from 'timeline-state-resolver-types'
 import { TriggerType } from 'superfly-timeline'
-import { Segments,Segment } from '../../lib/collections/Segments'
+import { Segments, Segment } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../logging'
-import { PeripheralDevice,PeripheralDevices,PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import {
 	getSliGroupId,
@@ -66,7 +67,14 @@ import {
 	TimelineObjectCoreExt,
 	VTContent
 } from 'tv-automation-sofie-blueprints-integration'
-import { loadBlueprints, postProcessSegmentLineAdLibItems, postProcessSegmentLineBaselineItems, RunningOrderContext, getBlueprintOfRunningOrder, SegmentLineContext } from './blueprints'
+import {
+	loadBlueprints,
+	postProcessSegmentLineAdLibItems,
+	postProcessSegmentLineBaselineItems,
+	RunningOrderContext,
+	getBlueprintOfRunningOrder,
+	SegmentLineContext
+} from './blueprints'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
@@ -78,15 +86,19 @@ let clone = require('fast-clone')
 import { Resolver } from 'superfly-timeline'
 import { transformTimeline } from '../../lib/timeline'
 import { ClientAPI } from '../../lib/api/client'
-import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
-import { sendSlackMessageToWebhookSync } from './integration/slack'
 import { setMeteorMethods, Methods } from '../methods'
 import { sendStoryStatus, updateStory } from './integration/mos'
 import { updateSegmentLines, reloadRunningOrderData } from './runningOrder'
 import { runPostProcessBlueprint } from '../../server/api/runningOrder'
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { generateRecordingTimelineObjs } from './testTools'
-import { reportRunningOrderHasStarted, reportSegmentLineHasStarted, reportSegmentLineItemHasStarted, reportSegmentLineHasStopped, reportSegmentLineItemHasStopped } from './asRunLog'
+import {
+	reportRunningOrderHasStarted,
+	reportSegmentLineHasStarted,
+	reportSegmentLineItemHasStarted,
+	reportSegmentLineHasStopped,
+	reportSegmentLineItemHasStopped
+} from './asRunLog'
 
 export namespace ServerPlayoutAPI {
 	/**
@@ -333,9 +345,9 @@ export namespace ServerPlayoutAPI {
 		if (!newRunningOrder) throw new Meteor.Error(404, `RunningOrder "${runningOrder._id}" not found!`)
 		runningOrder = newRunningOrder
 
-		let studioInstallation = runningOrder.getStudioInstallation()
+		let studio = runningOrder.getStudioInstallation()
 
-		const anyOtherActiveRunningOrders = areThereActiveROsInStudio(runningOrder.studioInstallationId, runningOrder._id)
+		const anyOtherActiveRunningOrders = areThereActiveROsInStudio(studio._id, runningOrder._id)
 
 		if (anyOtherActiveRunningOrders.length) {
 			// logger.warn('Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
@@ -399,7 +411,7 @@ export namespace ServerPlayoutAPI {
 				}, adlibItems)
 			}
 
-			updateTimeline(runningOrder.studioInstallationId)
+			updateTimeline(studio._id)
 
 			Meteor.defer(() => {
 				let bp = getBlueprintOfRunningOrder(runningOrder)
@@ -514,7 +526,7 @@ export namespace ServerPlayoutAPI {
 		const ro = new RunningOrder(runningOrder)
 		const story = ro.fetchCache(CachePrefix.FULLSTORY + segmentLine._id) as MOS.IMOSROFullStory
 		const sl = new SegmentLine(segmentLine)
-		const changed = updateStory(ro, sl, story)
+		updateStory(ro, sl, story)
 
 		const segment = sl.getSegment()
 		if (segment) {
@@ -629,7 +641,7 @@ export namespace ServerPlayoutAPI {
 		)
 		let takeSegmentLine = roData.segmentLinesMap[runningOrder.nextSegmentLineId]
 		if (!takeSegmentLine) throw new Meteor.Error(404, 'takeSegmentLine not found!')
-		let takeSegment = roData.segmentsMap[takeSegmentLine.segmentId]
+		// let takeSegment = roData.segmentsMap[takeSegmentLine.segmentId]
 
 		let segmentLineAfter = fetchAfter(roData.segmentLines, {
 			runningOrderId: runningOrder._id
@@ -1402,11 +1414,11 @@ export namespace ServerPlayoutAPI {
 		let segmentLine = SegmentLines.findOne(slId)
 		if (!segmentLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
 
-		let nextSegmentLine = fetchAfter(SegmentLines, {
-			runningOrderId: ro._id
-		}, segmentLine._rank)
+		// let nextSegmentLine = fetchAfter(SegmentLines, {
+		// 	runningOrderId: ro._id
+		// }, segmentLine._rank)
 
-		let newRank = getRank(segmentLine, nextSegmentLine, 0, 1)
+		// let newRank = getRank(segmentLine, nextSegmentLine, 0, 1)
 
 		let newSegmentLineId = Random.id()
 		SegmentLines.insert({
@@ -2112,7 +2124,7 @@ const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOn
 })
 
 function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): SegmentLineAdLibItem {
-	const oldId = segmentLineItem._id
+	// const oldId = segmentLineItem._id
 	const newId = Random.id()
 	const newAdLibItem = literal<SegmentLineAdLibItem>(_.extend(
 		segmentLineItem,
@@ -2154,7 +2166,7 @@ function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): SegmentLine
 }
 
 function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem | SegmentLineItem, segmentLine: SegmentLine, queue: boolean): SegmentLineItem {
-	const oldId = adLibItem._id
+	// const oldId = adLibItem._id
 	const newId = Random.id()
 	const newSLineItem = literal<SegmentLineItem>(_.extend(
 		_.clone(adLibItem),
@@ -2832,7 +2844,7 @@ function getTimelineRunningOrder (studioInstallation: StudioInstallation): Promi
 				studioInstallationId: studioInstallation._id,
 				active: true
 			})
-			let promiseStudioInstallation = asyncCollectionFindOne(StudioInstallations, studioInstallation._id)
+			// let promiseStudioInstallation = asyncCollectionFindOne(StudioInstallations, studioInstallation._id)
 
 			let activeRunningOrder = waitForPromise(promiseActiveRunningOrder)
 

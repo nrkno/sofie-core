@@ -173,7 +173,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	}
 
 	render () {
-		const { t } = this.props
 
 		if (this.props.showStyleBase) {
 			return this.renderEditForm(this.props.showStyleBase)
@@ -232,7 +231,6 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 		}
 	}
 	onAddROArgument = () => {
-		const { t } = this.props
 
 		const newItem = literal<IBlueprintRuntimeArgumentsItem>({
 			_id: Random.id(),
@@ -1038,7 +1036,6 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 		}
 	}
 	onAddHotkeyLegend = () => {
-		const { t } = this.props
 
 		const newItem = literal<HotkeyDefinition>({
 			_id: Random.id(),

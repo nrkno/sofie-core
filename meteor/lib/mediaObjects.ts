@@ -2,7 +2,6 @@ import * as _ from 'underscore'
 import { SegmentLineItem } from './collections/SegmentLineItems'
 import {
 	VTContent,
-	LiveSpeakContent,
 	SourceLayerType,
 	IConfigItem,
 	ISourceLayer

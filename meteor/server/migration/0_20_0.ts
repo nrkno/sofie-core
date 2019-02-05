@@ -1,6 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import * as _ from 'underscore'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases';
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Random } from 'meteor/random'
 
 // 0.20.0

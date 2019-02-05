@@ -6,9 +6,6 @@ import { ScriptContent } from 'tv-automation-sofie-blueprints-integration'
 import { FloatingInspector } from '../../FloatingInspector'
 import Moment from 'react-moment'
 
-import { faPlay } from '@fortawesome/fontawesome-free-solid'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 

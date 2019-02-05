@@ -1,8 +1,19 @@
-import { getCoreSystem, CoreSystem, SYSTEM_ID, getCoreSystemCursor, parseVersion, compareVersions, Version, stripVersion } from '../lib/collections/CoreSystem'
+import {
+	getCoreSystem,
+	CoreSystem,
+	SYSTEM_ID,
+	getCoreSystemCursor,
+	parseVersion,
+	Version,
+	stripVersion
+} from '../lib/collections/CoreSystem'
 import { getCurrentTime } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
-import { CURRENT_SYSTEM_VERSION, GENESIS_SYSTEM_VERSION } from './migration/databaseMigration'
-import { setSystemStatus, StatusCode, StatusObject, removeSystemStatus } from './systemStatus'
+import {
+	CURRENT_SYSTEM_VERSION,
+	GENESIS_SYSTEM_VERSION
+} from './migration/databaseMigration'
+import { setSystemStatus, StatusCode, removeSystemStatus } from './systemStatus'
 import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
@@ -219,6 +230,9 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 	if (coreStatus && coreStatus.statusCode >= StatusCode.WARNING_MAJOR) {
 		coreStatus.messages[0] = 'Core version: ' + coreStatus.messages[0]
 		setSystemStatus(systemStatusId, coreStatus)
+	} else if (tsrStatus && tsrStatus.statusCode >= StatusCode.WARNING_MAJOR) {
+		tsrStatus.messages[0] = 'Core - TSR library version: ' + tsrStatus.messages[0]
+		setSystemStatus(systemStatusId, tsrStatus)
 	} else if (integrationStatus.statusCode >= StatusCode.WARNING_MAJOR) {
 		integrationStatus.messages[0] = 'Integration version: ' + integrationStatus.messages[0]
 		setSystemStatus(systemStatusId, integrationStatus)

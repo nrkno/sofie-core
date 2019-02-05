@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { rejectFields } from './lib'
 

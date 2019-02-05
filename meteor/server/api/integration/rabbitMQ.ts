@@ -3,10 +3,9 @@ import * as _ from 'underscore'
 import * as AMQP from 'amqplib'
 import { logger } from '../../logging'
 import { ExternalMessageQueueObjRabbitMQ } from 'tv-automation-sofie-blueprints-integration'
-import { extendMandadory } from '../../../lib/lib'
 import { promisify } from 'util'
 import { ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
-import { ConfigRef } from '../blueprints';
+import { ConfigRef } from '../blueprints'
 
 interface Message {
 	_id: string

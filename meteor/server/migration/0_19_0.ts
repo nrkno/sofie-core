@@ -11,7 +11,6 @@ import * as _ from 'underscore'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { Random } from 'meteor/random'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { IBlueprintRuntimeArgumentsItem } from 'tv-automation-sofie-blueprints-integration'
 
 /**
  * This file contains system specific migration steps.
@@ -129,7 +128,7 @@ addMigrationSteps( '0.19.0', [
 						ssb.runtimeArguments = ssb.runtimeArguments || []; // HAHA: typeScript fails on this, thinking its a function call without the semicolon
 
 						(siItem as any).runtimeArguments.forEach((item) => {
-							const bItem: IBlueprintRuntimeArgumentsItem = item
+							// const bItem: IBlueprintRuntimeArgumentsItem = item
 							const exisitng = ssb.runtimeArguments.find((ssbItem) => {
 								return ssbItem.hotkeys === item.hotkeys && ssbItem.label === item.label && ssbItem.property === item.property && ssbItem.value === item.value
 							})
@@ -269,6 +268,7 @@ addMigrationSteps( '0.19.0', [
 					fail = `Migrating RO "${item._id}" failed, because a suitable showStyleBase could not be found.`
 				}
 			})
+			return fail
 		}
 	},
 

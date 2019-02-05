@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 
 import { NavLink } from 'react-router-dom'

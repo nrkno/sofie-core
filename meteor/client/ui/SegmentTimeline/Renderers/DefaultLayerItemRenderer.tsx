@@ -1,9 +1,6 @@
 import * as React from 'react'
 import * as $ from 'jquery'
 
-import { FloatingInspector } from '../../FloatingInspector'
-
-import * as ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 interface IProps extends ICustomLayerItemProps {
 }

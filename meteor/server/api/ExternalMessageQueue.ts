@@ -11,11 +11,12 @@ import {
 	ExternalMessageQueueObjSOAP,
 	IBlueprintExternalMessageQueueObj,
 	IBlueprintExternalMessageQueueType,
-	ExternalMessageQueueObjSlack,
 	ExternalMessageQueueObjRabbitMQ
 } from 'tv-automation-sofie-blueprints-integration'
-import { getCurrentTime, removeNullyProperties, literal, rateLimit, rateLimitIgnore } from '../../lib/lib'
-
+import {
+	getCurrentTime,
+	removeNullyProperties
+} from '../../lib/lib'
 import { setMeteorMethods, Methods, wrapMethods } from '../methods'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { ExternalMessageQueueAPI } from '../../lib/api/ExternalMessageQueue'
@@ -23,7 +24,6 @@ import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
 import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus'
-import { syncFunctionIgnore, waitTime } from '../codeControl'
 
 export function queueExternalMessages (runningOrder: RunningOrder, messages: Array<IBlueprintExternalMessageQueueObj>) {
 	_.each(messages, (message) => {
@@ -114,7 +114,7 @@ function doMessageQueue () {
 				if (msg.type === IBlueprintExternalMessageQueueType.SOAP) {
 					p = sendSOAPMessage(msg as ExternalMessageQueueObjSOAP & ExternalMessageQueueObj)
 				} else if (msg.type === IBlueprintExternalMessageQueueType.SLACK) {
-					let m = msg as ExternalMessageQueueObjSlack & ExternalMessageQueueObj
+					// let m = msg as ExternalMessageQueueObjSlack & ExternalMessageQueueObj
 					p = sendSlackMessageToWebhook(msg.message, msg.receiver)
 				} else if (msg.type === IBlueprintExternalMessageQueueType.RABBIT_MQ) {
 					p = sendRabbitMQMessage(msg as ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj)
@@ -147,6 +147,7 @@ function doMessageQueue () {
 				triggerdoMessageQueue(1000)
 			}
 		})
+		.catch(error => logger.error(error))
 	} catch (e) {
 		logger.error(e)
 	}
@@ -206,7 +207,7 @@ function updateExternalMessageQueueStatus (): void {
 	}
 }
 
-const messagesOnQueueCursor = ExternalMessageQueue.find({
+ExternalMessageQueue.find({
 	sent: {$not: {$gt: 0}},
 	tryCount: {$gt: 3}
 }).observeChanges({

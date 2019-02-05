@@ -807,7 +807,7 @@ interface IMediaManagerSettingsComponentProps {
 
 const MediaManagerSettingsComponent = translate()(
 	class MediaManagerSettingsComponent extends React.Component<Translated<IMediaManagerSettingsComponentProps>, IMediaManagerSettingsComponentState> {
-		constructor(props: Translated<IMediaManagerSettingsComponentProps>) {
+		constructor (props: Translated<IMediaManagerSettingsComponentProps>) {
 			super(props)
 
 			this.state = {
@@ -1160,7 +1160,7 @@ const MediaManagerSettingsComponent = translate()(
 				}
 			})
 		}
-		renderFlows() {
+		renderFlows () {
 			let settings = this.props.device.settings as MediaManagerDeviceSettings
 
 			const { t } = this.props
@@ -1254,8 +1254,6 @@ const MediaManagerSettingsComponent = translate()(
 				</React.Fragment>
 			})
 		}
-
-
 
 		render () {
 			const { t } = this.props

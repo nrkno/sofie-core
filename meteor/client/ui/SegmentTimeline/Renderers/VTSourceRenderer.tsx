@@ -198,7 +198,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 				<div className='segment-timeline__mini-inspector__warnings'>{msgBlacks}{msgFreezes && <br />}{msgFreezes}</div>
 			</React.Fragment>
 		} else {
-			return
+			return undefined
 		}
 	}
 
@@ -231,7 +231,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 							style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
 					{this.blacks &&
 						this.blacks.map((i) => i.start < itemDuration &&
-					<span className='segment-timeline__layer-item__anomaly-marker segment-timeline__layer-item__anomaly-marker__freezes' key={i.start} 
+					<span className='segment-timeline__layer-item__anomaly-marker segment-timeline__layer-item__anomaly-marker__freezes' key={i.start}
 						style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
 					<span className='segment-timeline__layer-item__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 						<span className={ClassNames('segment-timeline__layer-item__label', {

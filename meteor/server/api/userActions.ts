@@ -8,8 +8,7 @@ import {
 } from '../../lib/collections/RunningOrders'
 import { getCurrentTime } from '../../lib/lib'
 import {
-	SegmentLines,
-	SegmentLine
+	SegmentLines
 } from '../../lib/collections/SegmentLines'
 import { logger } from '../logging'
 import { ServerPlayoutAPI } from './playout'
@@ -25,8 +24,8 @@ import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { storeRunningOrderSnapshot } from './snapshot'
 import { setMeteorMethods } from '../methods'
 import { ServerRunningOrderAPI } from './runningOrder'
-import { ServerTestToolsAPI, getStudioConfig } from './testTools';
-import { RecordedFiles } from '../../lib/collections/RecordedFiles';
+import { ServerTestToolsAPI, getStudioConfig } from './testTools'
+import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 
 const MINIMUM_TAKE_SPAN = 1000
 
@@ -100,10 +99,7 @@ export function moveNext (
 		return ClientAPI.responseError('The Next cannot be changed next during a Hold!')
 	}
 
-	let currentNextSegmentLineItem: SegmentLine
-	if (currentNextSegmentLineItemId) {
-		currentNextSegmentLineItem = SegmentLines.findOne(currentNextSegmentLineItemId) as SegmentLine
-	} else {
+	if (!currentNextSegmentLineItemId) {
 		if (!runningOrder.nextSegmentLineId) {
 			return ClientAPI.responseError('RunningOrder has no next segmentLine!')
 		}
@@ -318,7 +314,7 @@ export function activateHold (roId: string) {
 	)
 }
 export function saveEvaluation (evaluation: EvaluationBase): ClientAPI.ClientResponse {
-	let id = Evaluations.insert(_.extend(evaluation, {
+	Evaluations.insert(_.extend(evaluation, {
 		userId: this.userId,
 		timestamp: getCurrentTime(),
 	}))
@@ -391,7 +387,7 @@ export function recordStop (studioId: string) {
 
 export function recordStart (studioId: string, fileName: string) {
 	check(studioId, String)
-	check(name, String)
+	check(fileName, String)
 	const studio = StudioInstallations.findOne(studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" was not found!`)
 
@@ -490,13 +486,13 @@ methods[UserActionAPI.methods.resyncRunningOrder] = (roId: string) => {
 	return resyncRunningOrder(roId)
 }
 methods[UserActionAPI.methods.recordStop] = (studioId: string) => {
-	return ServerTestToolsAPI.recordStop(studioId)
+	return recordStop(studioId)
 }
 methods[UserActionAPI.methods.recordStart] = (studioId: string, name: string) => {
-	return ServerTestToolsAPI.recordStart(studioId, name)
+	return recordStart(studioId, name)
 }
 methods[UserActionAPI.methods.recordDelete] = (id: string) => {
-	return ServerTestToolsAPI.recordDelete(id)
+	return recordDelete(id)
 }
 
 // Apply methods:
