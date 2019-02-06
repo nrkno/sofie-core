@@ -51,6 +51,13 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		if (params['configure']) setAdminMode(params['configure'] === '1')
 		if (params['develop']) setDeveloperMode(params['develop'] === '1')
 		if (params['testing']) setTestingMode(params['testing'] === '1')
+		if (params['all']) {
+			const val = params['all'] === '1'
+			setStudioMode(val)
+			setAdminMode(val)
+			setDeveloperMode(val)
+			setTestingMode(val)
+		}
 
 		this.state = {
 			studioMode: getStudioMode(),
