@@ -130,7 +130,11 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 						// Do a format check:
 						if (mediaObject.mediainfo) {
 							const formats = getAcceptedFormats(config)
+							const audioConfig = config.find(item => item._id === 'audioStreams')
+							const expectedAudioStreams = audioConfig ? new Set((audioConfig.value + '').split(',').map(v => parseInt(v))) : new Set()
+
 							let timebase
+							let audioStreams = 0
 
 							// check the streams for resolution info
 							for (const stream of mediaObject.mediainfo.streams) {
@@ -144,16 +148,22 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 									if (!acceptFormat(format, formats)) {
 										messages.push(`Source format (${format}) is not in accepted formats`)
 									}
+								} else if (stream.codec.type === 'audio') {
+									audioStreams++
 								}
+							}
+
+							if (audioConfig && !expectedAudioStreams.has(audioStreams)) {
+								messages.push(`Source has ${audioStreams} audio streams`)
 							}
 
 							// check for black/freeze frames
 							const addFrameWarning = (arr: Array<Anomaly>, type: string) => {
 								if (arr.length === 1) {
-									const frames = Number(arr[0].duration) * 1000 / timebase
-									if (Number(arr[0].start) === 0) {
+									const frames = arr[0].duration * 1000 / timebase
+									if (arr[0].start === 0) {
 										messages.push(`Clip starts with ${frames} ${type} frame${frames > 1 ? 's' : ''}`)
-									} else if (arr[0].end === mediaObject.mediainfo!.format.duration) {
+									} else if (arr[0].end === Number(mediaObject.mediainfo!.format.duration)) {
 										messages.push(`Clip ends with ${frames} ${type} frame${frames > 1 ? 's' : ''}`)
 									} else {
 										messages.push(`${frames} ${type} frame${frames > 1 ? 's' : ''} detected in clip.`)
@@ -161,7 +171,7 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 								} else {
 									const dur = arr
 										.map(b => b.duration)
-										.reduce((a, b) => Number(a) + Number(b), 0)
+										.reduce((a, b) => a + b, 0)
 									const frames = dur * 1000 / timebase
 									messages.push(`${frames} ${type} frame${frames > 1 ? 's' : ''} detected in clip.`)
 								}
