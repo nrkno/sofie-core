@@ -248,9 +248,6 @@ export namespace ServerPlayoutAPI {
 			})
 		})
 
-		// ensure that any removed infinites (caused by adlib) are restored
-		updateSourceLayerInfinitesAfterLine(runningOrder, true)
-
 		SegmentLineItems.update({
 			runningOrderId: runningOrder._id
 		}, {
@@ -262,6 +259,9 @@ export namespace ServerPlayoutAPI {
 				hidden: 1
 			}
 		}, {multi: true})
+
+		// ensure that any removed infinites are restored
+		updateSourceLayerInfinitesAfterLine(runningOrder, true)
 
 		resetRunningOrderPlayhead(runningOrder)
 	}
@@ -506,6 +506,8 @@ export namespace ServerPlayoutAPI {
 			dynamicallyInserted: true
 		}))
 
+		// TODO - ensure ifninites are ok
+
 		if (isDirty) {
 			return new Promise((resolve, reject) => {
 				Promise.all(ps).then(() => {
@@ -518,9 +520,20 @@ export namespace ServerPlayoutAPI {
 		} else {
 			return Promise.all(ps)
 			.then(() => {
+				const ro = RunningOrders.findOne(segmentLine.runningOrderId)
+				if (!ro) throw new Meteor.Error(404, `Running Order "${segmentLine.runningOrderId}" not found!`)
+
+				const prevLine = getPreviousSegmentLine(ro, segmentLine)
+				updateSourceLayerInfinitesAfterLine(ro, false, prevLine)
 				// do nothing
 			})
 		}
+	}
+	function getPreviousSegmentLine (runningOrder: DBRunningOrder, segmentLine: DBSegmentLine) {
+		return SegmentLines.findOne({
+			runningOrderId: runningOrder._id,
+			_rank: { $lt: segmentLine._rank }
+		}, { sort: { _rank: -1 } })
 	}
 	function refreshSegmentLine (runningOrder: DBRunningOrder, segmentLine: DBSegmentLine) {
 		const ro = new RunningOrder(runningOrder)
@@ -534,11 +547,7 @@ export namespace ServerPlayoutAPI {
 			runPostProcessBlueprint(ro, segment)
 		}
 
-		const prevLine = SegmentLines.findOne({
-			runningOrderId: runningOrder._id,
-			_rank: { $lt: sl._rank }
-		}, { sort: { _rank: -1 } })
-
+		const prevLine = getPreviousSegmentLine(runningOrder, sl)
 		updateSourceLayerInfinitesAfterLine(ro, false, prevLine)
 	}
 	function setNextSegmentLine (runningOrder: RunningOrder, nextSegmentLine: DBSegmentLine | null, setManually?: boolean) {
