@@ -2374,7 +2374,7 @@ function transformSegmentLineIntoTimeline (
 			return
 		}
 
-		if (item.extendOnHold && item.infiniteId && item.infiniteId !== item._id) {
+		if (item.infiniteId && item.infiniteId !== item._id) {
 			item._id = item.infiniteId
 		}
 
