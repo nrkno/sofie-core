@@ -166,6 +166,14 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 	renderWorkFlows () {
 		const { t } = this.props
 
+		const iconEnterAnimation = {
+			translateY: ['0%', '-100%']
+		}
+
+		const iconLeaveAnimation = {
+			translateY: ['100%', '0%']
+		}
+
 		return this.props.workFlows.sort((a, b) => a.created - b.created).map(i => {
 			const expanded = this.state.expanded[i._id] === true
 			const finishedOK = i.success && i.finished
@@ -181,28 +189,26 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 			})} key={i._id}>
 				<div className='workflow__header pas'>
 					<div className='workflow__header__progress'>
-						<VelocityReact.VelocityTransitionGroup enter={{
-							animation: 'slideUp', easing: 'ease-out', duration: 300, display: 'block'
-						}} leave={{
-							animation: 'slideUp', easing: 'ease-in', duration: 300, display: 'block'
-						}}>
-							{finishedOK ? 
+						<VelocityReact.VelocityComponent animation={finishedOK ? iconEnterAnimation : iconLeaveAnimation} duration={300} easing='easeIn'>
 							<div className='big-status ok'>
 								<FontAwesomeIcon icon={faCheck} />
 							</div>
-							: finishedError ?
+						</VelocityReact.VelocityComponent>
+						<VelocityReact.VelocityComponent animation={finishedError ? iconEnterAnimation : iconLeaveAnimation} duration={300} easing='easeIn'>
 							<div className='big-status error'>
 								<WarningIcon />
 							</div>
-							: <ReactCircularProgressbar initialAnimation={true} percentage={progress * 100}
+						</VelocityReact.VelocityComponent>
+						<VelocityReact.VelocityComponent animation={(!finishedOK && !finishedError) ? iconEnterAnimation : iconLeaveAnimation} duration={300} easing='easeIn'>
+							<ReactCircularProgressbar initialAnimation={true} percentage={progress * 100}
 								text={Math.round(progress * 100) + '%'}
 								strokeWidth={10}
 								styles={{
 									path: { stroke: `#1769ff`, strokeLinecap: 'round' },
 									trail: { stroke: '#E0E3E4' },
 									text: { fill: '#252627', fontSize: '170%', transform: 'translate(0, 8%)', textAnchor: 'middle' },
-							}} />}
-						</VelocityReact.VelocityTransitionGroup>
+							}} />
+						</VelocityReact.VelocityComponent>
 					</div>
 					<div className='workflow__header__summary'>
 						<div className='workflow__header__name'>{i.name || 'Unnamed Workflow'}</div>
@@ -219,26 +225,34 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 						</div>
 					</div>
 				</div>
-				{expanded && i.steps.sort((a, b) => b.priority - a.priority).map(j => 
-					<div className={ClassNames('workflow__step', {
-						'ok': j.status === MediaManagerAPI.WorkStepStatus.DONE,
-						'error': j.status === MediaManagerAPI.WorkStepStatus.ERROR,
-						'working': j.status === MediaManagerAPI.WorkStepStatus.WORKING
-					})} key={j._id}>
-						<div className='workflow__step__action pas'>{this.actionLabel(j.action)}</div>
-						<div className='workflow__step__status pas'>{this.workStepStatusLabel(j.status)}</div>
-						<div className='workflow__step__progress progress-bar'>
-							<div className='pb-indicator' style={{
-								'width': ((j.progress || 0) * 100) + '%'
-							}} />
-						</div>
-						{j.messages && j.messages.length > 0 && (
-							<ul className='workflow__step__messages pas man'>
-								{j.messages.map((k, key) => <li key={key}>{k}</li>)}
-							</ul>
+				<VelocityReact.VelocityTransitionGroup enter={{
+					animation: 'slideDown', easing: 'ease-out', duration: 150, maxHeight: 0, overflow: 'hidden'
+				}} leave={{
+					animation: 'slideUp', easing: 'ease-in', duration: 150, overflow: 'hidden'
+				}}>	
+					{expanded && <div>
+						{i.steps.sort((a, b) => b.priority - a.priority).map(j => 
+							<div className={ClassNames('workflow__step', {
+								'ok': j.status === MediaManagerAPI.WorkStepStatus.DONE,
+								'error': j.status === MediaManagerAPI.WorkStepStatus.ERROR,
+								'working': j.status === MediaManagerAPI.WorkStepStatus.WORKING
+							})} key={j._id}>
+								<div className='workflow__step__action pas'>{this.actionLabel(j.action)}</div>
+								<div className='workflow__step__status pas'>{this.workStepStatusLabel(j.status)}</div>
+								<div className='workflow__step__progress progress-bar'>
+									<div className='pb-indicator' style={{
+										'width': ((j.progress || 0) * 100) + '%'
+									}} />
+								</div>
+								{j.messages && j.messages.length > 0 && (
+									<ul className='workflow__step__messages pas man'>
+										{j.messages.map((k, key) => <li key={key}>{k}</li>)}
+									</ul>
+								)}
+							</div>
 						)}
-					</div>
-				)}
+					</div>}
+				</VelocityReact.VelocityTransitionGroup>
 			</div>
 		})
 	}
@@ -249,7 +263,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 		return (
 			<div className='mhl gutter media-manager-status'>
 				<header className='mbs'>
-					<h1>{t('Media Manager Status')}</h1>
+					<h1>{t('Media Transfer Status')}</h1>
 				</header>
 				<div className='mod mvl'>
 					{this.renderWorkFlows()}
