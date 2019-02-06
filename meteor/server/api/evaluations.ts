@@ -13,6 +13,11 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 		userId: this.userId,
 		timestamp: getCurrentTime(),
 	}))
+	logger.info({
+		message: 'evaluation',
+		evaluation: evaluation
+	})
+
 	Meteor.defer(() => {
 
 		let studio = StudioInstallations.findOne(evaluation.studioId)
