@@ -423,80 +423,80 @@ interface UserMethods {
 }
 let methods: UserMethods = {}
 
-methods[UserActionAPI.methods.take] = (roId: string): ClientAPI.ClientResponse => {
+methods[UserActionAPI.methods.take] = function (roId: string): ClientAPI.ClientResponse {
 	return take.call(this, roId)
 }
-methods[UserActionAPI.methods.setNext] = (roId: string, slId: string): ClientAPI.ClientResponse => {
+methods[UserActionAPI.methods.setNext] = function (roId: string, slId: string): ClientAPI.ClientResponse {
 	return setNext.call(this, roId, slId, true)
 }
-methods[UserActionAPI.methods.moveNext] = (roId: string, horisontalDelta: number, verticalDelta: number): ClientAPI.ClientResponse => {
+methods[UserActionAPI.methods.moveNext] = function (roId: string, horisontalDelta: number, verticalDelta: number): ClientAPI.ClientResponse {
 	return moveNext.call(this, roId, horisontalDelta, verticalDelta, true)
 }
-methods[UserActionAPI.methods.prepareForBroadcast] = (roId: string): ClientAPI.ClientResponse => {
+methods[UserActionAPI.methods.prepareForBroadcast] = function (roId: string): ClientAPI.ClientResponse {
 	return prepareForBroadcast.call(this, roId)
 }
-methods[UserActionAPI.methods.resetRunningOrder] = (roId: string): ClientAPI.ClientResponse => {
+methods[UserActionAPI.methods.resetRunningOrder] = function (roId: string): ClientAPI.ClientResponse {
 	return resetRunningOrder.call(this, roId)
 }
-methods[UserActionAPI.methods.resetAndActivate] = (roId: string): ClientAPI.ClientResponse => {
+methods[UserActionAPI.methods.resetAndActivate] = function (roId: string): ClientAPI.ClientResponse {
 	return resetAndActivate.call(this, roId)
 }
-methods[UserActionAPI.methods.activate] = (roId: string, rehearsal: boolean): ClientAPI.ClientResponse => {
+methods[UserActionAPI.methods.activate] = function (roId: string, rehearsal: boolean): ClientAPI.ClientResponse {
 	return activate.call(this, roId, rehearsal)
 }
-methods[UserActionAPI.methods.deactivate] = (roId: string): ClientAPI.ClientResponse => {
+methods[UserActionAPI.methods.deactivate] = function (roId: string): ClientAPI.ClientResponse {
 	return deactivate.call(this, roId)
 }
-methods[UserActionAPI.methods.reloadData] = (roId: string): ClientAPI.ClientResponse => {
+methods[UserActionAPI.methods.reloadData] = function (roId: string): ClientAPI.ClientResponse {
 	return reloadData.call(this, roId)
 }
-methods[UserActionAPI.methods.disableNextSegmentLineItem] = (roId: string, undo?: boolean): ClientAPI.ClientResponse => {
+methods[UserActionAPI.methods.disableNextSegmentLineItem] = function (roId: string, undo?: boolean): ClientAPI.ClientResponse {
 	return disableNextSegmentLineItem.call(this, roId, undo)
 }
-methods[UserActionAPI.methods.toggleSegmentLineArgument] = (roId: string, slId: string, property: string, value: string): ClientAPI.ClientResponse => {
+methods[UserActionAPI.methods.toggleSegmentLineArgument] = function (roId: string, slId: string, property: string, value: string): ClientAPI.ClientResponse {
 	return toggleSegmentLineArgument.call(this, roId, slId, property, value)
 }
-methods[UserActionAPI.methods.segmentLineItemTakeNow] = (roId: string, slId: string, sliId: string): ClientAPI.ClientResponse => {
+methods[UserActionAPI.methods.segmentLineItemTakeNow] = function (roId: string, slId: string, sliId: string): ClientAPI.ClientResponse {
 	return segmentLineItemTakeNow.call(this, roId, slId, sliId)
 }
-methods[UserActionAPI.methods.segmentAdLibLineItemStart] = (roId: string, slId: string, salliId: string, queue: boolean) => {
+methods[UserActionAPI.methods.segmentAdLibLineItemStart] = function (roId: string, slId: string, salliId: string, queue: boolean) {
 	return segmentAdLibLineItemStart.call(this, roId, slId, salliId, queue)
 }
-methods[UserActionAPI.methods.sourceLayerOnLineStop] = (roId: string, slId: string, sourceLayerId: string) => {
+methods[UserActionAPI.methods.sourceLayerOnLineStop] = function (roId: string, slId: string, sourceLayerId: string) {
 	return sourceLayerOnLineStop.call(this, roId, slId, sourceLayerId)
 }
-methods[UserActionAPI.methods.baselineAdLibItemStart] = (roId: string, slId: string, robaliId: string, queue: boolean) => {
+methods[UserActionAPI.methods.baselineAdLibItemStart] = function (roId: string, slId: string, robaliId: string, queue: boolean) {
 	return runningOrderBaselineAdLibItemStart.call(this, roId, slId, robaliId, queue)
 }
-methods[UserActionAPI.methods.segmentAdLibLineItemStop] = (roId: string, slId: string, sliId: string) => {
+methods[UserActionAPI.methods.segmentAdLibLineItemStop] = function (roId: string, slId: string, sliId: string) {
 	return segmentAdLibLineItemStop.call(this, roId, slId, sliId)
 }
-methods[UserActionAPI.methods.sourceLayerStickyItemStart] = (roId: string, sourceLayerId: string) => {
+methods[UserActionAPI.methods.sourceLayerStickyItemStart] = function (roId: string, sourceLayerId: string) {
 	return sourceLayerStickyItemStart.call(this, roId, sourceLayerId)
 }
-methods[UserActionAPI.methods.activateHold] = (roId: string): ClientAPI.ClientResponse => {
+methods[UserActionAPI.methods.activateHold] = function (roId: string): ClientAPI.ClientResponse {
 	return activateHold.call(this, roId)
 }
-methods[UserActionAPI.methods.saveEvaluation] = (evaluation: EvaluationBase): ClientAPI.ClientResponse => {
+methods[UserActionAPI.methods.saveEvaluation] = function (evaluation: EvaluationBase): ClientAPI.ClientResponse {
 	return saveEvaluation.call(this, evaluation)
 }
-methods[UserActionAPI.methods.storeRunningOrderSnapshot] = (runningOrderId: string, reason: string) => {
-	return userStoreRunningOrderSnapshot(runningOrderId, reason)
+methods[UserActionAPI.methods.storeRunningOrderSnapshot] = function (runningOrderId: string, reason: string) {
+	return userStoreRunningOrderSnapshot.call(this, runningOrderId, reason)
 }
-methods[UserActionAPI.methods.removeRunningOrder] = (roId: string) => {
-	return removeRunningOrder(roId)
+methods[UserActionAPI.methods.removeRunningOrder] = function (roId: string) {
+	return removeRunningOrder.call(this, roId)
 }
-methods[UserActionAPI.methods.resyncRunningOrder] = (roId: string) => {
-	return resyncRunningOrder(roId)
+methods[UserActionAPI.methods.resyncRunningOrder] = function (roId: string) {
+	return resyncRunningOrder.call(this, roId)
 }
-methods[UserActionAPI.methods.recordStop] = (studioId: string) => {
-	return recordStop(studioId)
+methods[UserActionAPI.methods.recordStop] = function (studioId: string) {
+	return recordStop.call(this, studioId)
 }
-methods[UserActionAPI.methods.recordStart] = (studioId: string, name: string) => {
-	return recordStart(studioId, name)
+methods[UserActionAPI.methods.recordStart] = function (studioId: string, name: string) {
+	return recordStart.call(this, studioId, name)
 }
-methods[UserActionAPI.methods.recordDelete] = (id: string) => {
-	return recordDelete(id)
+methods[UserActionAPI.methods.recordDelete] = function (id: string) {
+	return recordDelete.call(this, id)
 }
 
 // Apply methods:
