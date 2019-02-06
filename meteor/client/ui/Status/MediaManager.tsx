@@ -3,8 +3,11 @@ import * as React from 'react'
 import * as CoreIcons from '@nrk/core-icons'
 import * as faChevronDown from '@fortawesome/fontawesome-free-solid/faChevronDown'
 import * as faChevronRight from '@fortawesome/fontawesome-free-solid/faChevronRight'
+import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
+import * as VelocityReact from 'velocity-react'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as ClassNames from 'classnames'
+import ReactCircularProgressbar from 'react-circular-progressbar'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { MediaWorkFlow, MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowStep, MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
@@ -127,7 +130,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 				<WarningIcon />{t('Failed')}
 			</React.Fragment>
 		} else if (!finished) {
-			return <React.Fragment><Spinner size='medium' />{t('Working')}</React.Fragment>
+			return <React.Fragment><Spinner className='working-spinner' size='medium' />{t('Working')}</React.Fragment>
 		} else {
 			return t('Unknown')
 		}
@@ -166,24 +169,62 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 		return this.props.workFlows.sort((a, b) => a.created - b.created).map(i => {
 			const expanded = this.state.expanded[i._id] === true
 			const finishedOK = i.success && i.finished
-			const finishedError = i.success && i.finished
+			const finishedError = !i.success && i.finished
+			const currentTask = i.steps.sort((a, b) => b.priority - a.priority).find(i => ((i.status === MediaManagerAPI.WorkStepStatus.WORKING) || (i.status === MediaManagerAPI.WorkStepStatus.ERROR)))
+			const progress = i.steps.filter((i => i.status === MediaManagerAPI.WorkStepStatus.DONE)).length / i.steps.length
 	
 			return <div className={ClassNames('workflow mbs', {
 				'expanded': expanded,
 				
-				'finished-ok': finishedOK,
-				'finished-error': finishedError
+				'ok': finishedOK,
+				'error': finishedError
 			})} key={i._id}>
 				<div className='workflow__header pas'>
-					<div className='workflow__header__name'>{i.name || 'Unnamed Workflow'}</div>
-					<div className='workflow__header__expand'>
-						{expanded ? t('Collapse') : t('Expand')}
-						{expanded ? <FontAwesomeIcon icon={faChevronDown} /> : <FontAwesomeIcon icon={faChevronRight} />}
+					<div className='workflow__header__progress'>
+						<VelocityReact.VelocityTransitionGroup enter={{
+							animation: 'slideUp', easing: 'ease-out', duration: 300, display: 'block'
+						}} leave={{
+							animation: 'slideUp', easing: 'ease-in', duration: 300, display: 'block'
+						}}>
+							{finishedOK ? 
+							<div className='big-status ok'>
+								<FontAwesomeIcon icon={faCheck} />
+							</div>
+							: finishedError ?
+							<div className='big-status error'>
+								<WarningIcon />
+							</div>
+							: <ReactCircularProgressbar initialAnimation={true} percentage={progress * 100}
+								text={Math.round(progress * 100) + '%'}
+								strokeWidth={10}
+								styles={{
+									path: { stroke: `#1769ff`, strokeLinecap: 'round' },
+									trail: { stroke: '#E0E3E4' },
+									text: { fill: '#252627', fontSize: '170%', transform: 'translate(0, 8%)', textAnchor: 'middle' },
+							}} />}
+						</VelocityReact.VelocityTransitionGroup>
 					</div>
-					<div className='workflow__header__status'>{this.workFlowStatusLabel(i.success, i.finished)}</div>
+					<div className='workflow__header__summary'>
+						<div className='workflow__header__name'>{i.name || 'Unnamed Workflow'}</div>
+						<div className='workflow__header__expand' onClick={() => this.toggleExpanded(i._id)}>
+							{expanded ? t('Collapse') : t('Expand')}
+							{expanded ? <FontAwesomeIcon icon={faChevronDown} /> : <FontAwesomeIcon icon={faChevronRight} />}
+						</div>
+						<div className='workflow__header__status'>{this.workFlowStatusLabel(i.success, i.finished)}</div>
+						<div className='workflow__header__current-task workflow__step'>
+							{currentTask && <React.Fragment>
+								<div className='workflow__step__action pts'>{this.actionLabel(currentTask.action)}</div>
+								<div className='workflow__step__status pts'>{this.workStepStatusLabel(currentTask.status)}</div>
+							</React.Fragment>}
+						</div>
+					</div>
 				</div>
-				{i.steps.map(j => 
-					<div className='workflow__step' key={j._id}>
+				{expanded && i.steps.sort((a, b) => b.priority - a.priority).map(j => 
+					<div className={ClassNames('workflow__step', {
+						'ok': j.status === MediaManagerAPI.WorkStepStatus.DONE,
+						'error': j.status === MediaManagerAPI.WorkStepStatus.ERROR,
+						'working': j.status === MediaManagerAPI.WorkStepStatus.WORKING
+					})} key={j._id}>
 						<div className='workflow__step__action pas'>{this.actionLabel(j.action)}</div>
 						<div className='workflow__step__status pas'>{this.workStepStatusLabel(j.status)}</div>
 						<div className='workflow__step__progress progress-bar'>
@@ -192,7 +233,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 							}} />
 						</div>
 						{j.messages && j.messages.length > 0 && (
-							<ul className='workflow__step__messages pas'>
+							<ul className='workflow__step__messages pas man'>
 								{j.messages.map((k, key) => <li key={key}>{k}</li>)}
 							</ul>
 						)}

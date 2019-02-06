@@ -43,7 +43,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 		onClick={(e) => this.triggerEvent('default', e)}
 		>
 			<div className='notification-pop-up__header'>
-				{WarningIcon}
+				<WarningIcon />
 			</div>
 			<div className='notification-pop-up__contents'>
 				{item.message}
