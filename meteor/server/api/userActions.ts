@@ -14,11 +14,9 @@ import { logger } from '../logging'
 import { ServerPlayoutAPI } from './playout'
 import { UserActionAPI } from '../../lib/api/userActions'
 import {
-	EvaluationBase,
-	Evaluations
+	EvaluationBase
 } from '../../lib/collections/Evaluations'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { sendSlackMessageToWebhookSync } from './integration/slack'
 import { SegmentLineItems, SegmentLineItem } from '../../lib/collections/SegmentLineItems'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { storeRunningOrderSnapshot } from './snapshot'
@@ -26,6 +24,7 @@ import { setMeteorMethods } from '../methods'
 import { ServerRunningOrderAPI } from './runningOrder'
 import { ServerTestToolsAPI, getStudioConfig } from './testTools'
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
+import { saveEvaluation } from './evaluations'
 
 const MINIMUM_TAKE_SPAN = 1000
 
@@ -313,42 +312,10 @@ export function activateHold (roId: string) {
 		ServerPlayoutAPI.roActivateHold(roId)
 	)
 }
-export function saveEvaluation (evaluation: EvaluationBase): ClientAPI.ClientResponse {
-	Evaluations.insert(_.extend(evaluation, {
-		userId: this.userId,
-		timestamp: getCurrentTime(),
-	}))
-	Meteor.defer(() => {
-
-		let studio = StudioInstallations.findOne(evaluation.studioId)
-		if (!studio) throw new Meteor.Error(500, `Studio ${evaluation.studioId} not found!`)
-
-		let webhookUrl = (studio.getConfigValue('slack_evaluation') + '')
-
-		if (webhookUrl) {
-			// Only send notes if not everything is OK
-			let q0 = _.find(evaluation.answers, (_answer, key) => {
-				return key === 'q0'
-			})
-
-			if (q0 !== 'nothing') {
-
-				let ro = RunningOrders.findOne(evaluation.runningOrderId)
-
-				let message = 'Uh-oh, message from RunningOrder "' + (ro ? ro.name : 'N/A' ) + '": \n' +
-					_.values(evaluation.answers).join(', ')
-
-				let hostUrl = studio.settings.sofieUrl
-				if (hostUrl && ro) {
-					message += '\n<' + hostUrl + '/ro/' + ro._id + '|' + ro.name + '>'
-				}
-
-				sendSlackMessageToWebhookSync(message, webhookUrl)
-			}
-
-		}
-	})
-	return ClientAPI.responseSuccess()
+export function userSaveEvaluation (evaluation: EvaluationBase): ClientAPI.ClientResponse {
+	return ClientAPI.responseSuccess(
+		saveEvaluation(evaluation)
+	)
 }
 export function userStoreRunningOrderSnapshot (runningOrderId: string, reason: string) {
 	return ClientAPI.responseSuccess(
@@ -474,7 +441,7 @@ methods[UserActionAPI.methods.activateHold] = (roId: string): ClientAPI.ClientRe
 	return activateHold.call(this, roId)
 }
 methods[UserActionAPI.methods.saveEvaluation] = (evaluation: EvaluationBase): ClientAPI.ClientResponse => {
-	return saveEvaluation.call(this, evaluation)
+	return userSaveEvaluation.call(this, evaluation)
 }
 methods[UserActionAPI.methods.storeRunningOrderSnapshot] = (runningOrderId: string, reason: string) => {
 	return userStoreRunningOrderSnapshot(runningOrderId, reason)
