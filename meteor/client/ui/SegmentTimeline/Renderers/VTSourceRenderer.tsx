@@ -158,7 +158,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 		let msgFreezes = ''
 		const item = this.props.segmentLineItem as SegmentLineItemUi
 		const metadata = item.metadata as MediaObject
-		const timebase = metadata.mediainfo ? metadata.mediainfo.timebase : 20
+		const timebase = metadata.mediainfo && metadata.mediainfo.timebase ? metadata.mediainfo.timebase : 20
 		if (this.blacks) {
 			let tot = 0
 			for (const b of this.blacks) {
@@ -174,7 +174,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 				}
 			}
 			// @todo: hardcoded 25fps
-			if (tot > 0) msgBlacks = `${tot / 40} black frame${tot > 40 ? 's' : ''} in clip`
+			if (tot > 0) msgBlacks = `${tot / timebase} black frame${tot > timebase ? 's' : ''} in clip`
 		}
 		if (this.freezes) {
 			let tot = 0

@@ -153,6 +153,10 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 								}
 							}
 
+							if (timebase) {
+								mediaObject.mediainfo.timebase = timebase
+							}
+
 							if (audioConfig && !expectedAudioStreams.has(audioStreams)) {
 								messages.push(`Source has ${audioStreams} audio streams`)
 							}

@@ -154,7 +154,7 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 		let msgFreezes = ''
 		const item = this.props.segmentLineItem as SegmentLineItemUi
 		const metadata = item.metadata as MediaObject
-		const timebase = metadata.mediainfo ? metadata.mediainfo.timebase : 20
+		const timebase = metadata.mediainfo && metadata.mediainfo.timebase ? metadata.mediainfo.timebase : 20
 		if (this.blacks) {
 			let tot = 0
 			for (const b of this.blacks) {
