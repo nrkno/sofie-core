@@ -121,7 +121,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 		}
 	}
 
-	workFlowStatusLabel (success: boolean, finished: boolean): React.ReactChild {
+	workFlowStatusLabel (success: boolean, finished: boolean, currentTask: MediaWorkFlowStep | undefined): React.ReactChild {
 		const { t } = this.props
 		if (success && finished) {
 			return <React.Fragment><CoreIcons id='nrk-check' />{t('Done')}</React.Fragment>
@@ -129,16 +129,18 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 			return <React.Fragment>
 				<WarningIcon />{t('Failed')}
 			</React.Fragment>
-		} else if (!finished) {
+		} else if (!finished && currentTask && currentTask.status === MediaManagerAPI.WorkStepStatus.WORKING) {
 			return <React.Fragment><Spinner className='working-spinner' size='medium' />{t('Working')}</React.Fragment>
+		} else if (!finished && !currentTask) {
+			return t('Pending')
 		} else {
 			return t('Unknown')
 		}
 	}
 
-	workStepStatusLabel (status: string): string {
+	workStepStatusLabel (step: MediaWorkFlowStep): string {
 		const { t } = this.props
-		switch (status) {
+		switch (step.status) {
 			case MediaManagerAPI.WorkStepStatus.BLOCKED:
 				return t('Blocked')
 			case MediaManagerAPI.WorkStepStatus.CANCELED:
@@ -150,9 +152,13 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 			case MediaManagerAPI.WorkStepStatus.IDLE:
 				return t('Idle')
 			case MediaManagerAPI.WorkStepStatus.WORKING:
-				return t('Working')
+				if (step.progress) {
+					return t('Step progress: {{progress}}', {progress: Math.round(step.progress * 100) + '%'})
+				} else {
+					return t('Processing')
+				}
 			default:
-				return t('Unknown: {{status}}', {state: status})
+				return t('Unknown: {{status}}', {state: step.status})
 		}
 	}
 
@@ -179,7 +185,18 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 			const finishedOK = i.success && i.finished
 			const finishedError = !i.success && i.finished
 			const currentTask = i.steps.sort((a, b) => b.priority - a.priority).find(i => ((i.status === MediaManagerAPI.WorkStepStatus.WORKING) || (i.status === MediaManagerAPI.WorkStepStatus.ERROR)))
-			const progress = i.steps.filter((i => i.status === MediaManagerAPI.WorkStepStatus.DONE)).length / i.steps.length
+			const progress = (
+				i.steps.map(i => {
+					switch (i.status) {
+						case MediaManagerAPI.WorkStepStatus.DONE:
+							return 1
+						case MediaManagerAPI.WorkStepStatus.WORKING:
+							return i.progress || 0
+						default:
+							return 0
+					}
+				}).reduce((memo, i) => memo + i, 0)
+			) / i.steps.length
 	
 			return <div className={ClassNames('workflow mbs', {
 				'expanded': expanded,
@@ -216,11 +233,11 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 							{expanded ? t('Collapse') : t('Expand')}
 							{expanded ? <FontAwesomeIcon icon={faChevronDown} /> : <FontAwesomeIcon icon={faChevronRight} />}
 						</div>
-						<div className='workflow__header__status'>{this.workFlowStatusLabel(i.success, i.finished)}</div>
+						<div className='workflow__header__status'>{this.workFlowStatusLabel(i.success, i.finished, currentTask)}</div>
 						<div className='workflow__header__current-task workflow__step'>
 							{currentTask && <React.Fragment>
 								<div className='workflow__step__action pts'>{this.actionLabel(currentTask.action)}</div>
-								<div className='workflow__step__status pts'>{this.workStepStatusLabel(currentTask.status)}</div>
+								<div className='workflow__step__status pts'>{this.workStepStatusLabel(currentTask)}</div>
 							</React.Fragment>}
 						</div>
 					</div>
@@ -238,7 +255,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 								'working': j.status === MediaManagerAPI.WorkStepStatus.WORKING
 							})} key={j._id}>
 								<div className='workflow__step__action pas'>{this.actionLabel(j.action)}</div>
-								<div className='workflow__step__status pas'>{this.workStepStatusLabel(j.status)}</div>
+								<div className='workflow__step__status pas'>{this.workStepStatusLabel(j)}</div>
 								<div className='workflow__step__progress progress-bar'>
 									<div className='pb-indicator' style={{
 										'width': ((j.progress || 0) * 100) + '%'
