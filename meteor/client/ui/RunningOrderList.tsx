@@ -231,14 +231,14 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 		doUserAction(t, e, UserActionAPI.methods.resyncRunningOrder, [ro._id])
 	}
 
-	renderRunningOrders () {
-		return this.props.runningOrders.filter(i => !i.unsynced).map((runningOrder) => (
+	renderRunningOrders (list: RunningOrder[]) {
+		return list.map((runningOrder) => (
 			<RunningOrderListItem key={runningOrder._id} runningOrder={runningOrder} onDeleteRO={this.deleteRO} onSyncRO={this.syncRO} t={this.props.t} />
 		))
 	}
 
-	renderUnsyncedRunningOrders () {
-		return this.props.runningOrders.filter(i => i.unsynced).map((runningOrder) => (
+	renderUnsyncedRunningOrders (list: RunningOrder[]) {
+		return list.map((runningOrder) => (
 			<RunningOrderListItem key={runningOrder._id} runningOrder={runningOrder} onDeleteRO={this.deleteRO} onSyncRO={this.syncRO} t={this.props.t} />
 		))
 	}
@@ -251,6 +251,9 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 
 	render () {
 		const { t } = this.props
+
+		const synced = this.props.runningOrders.filter(i => !i.unsynced)
+		const unsynced = this.props.runningOrders.filter(i => i.unsynced)
 
 		return <React.Fragment>
 			<div className='mtl gutter'>
@@ -288,17 +291,17 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 							</tr>
 						</thead>
 						<tbody>
-							{this.renderRunningOrders()}
+							{this.renderRunningOrders(synced)}
 						</tbody>
-						<tbody>
+						{unsynced.length > 0 && <tbody>
 							<tr className='hl'>
 								<th colSpan={8} className='pvn phn'>
-									<h2 className='mtm mbs mhn'>Unsynced from MOS</h2>
+									<h2 className='mtm mbs mhn'>{t('Unsynced from MOS')}</h2>
 								</th>
 							</tr>
-						</tbody>
+						</tbody>}
 						<tbody>
-							{this.renderUnsyncedRunningOrders()}
+							{this.renderUnsyncedRunningOrders(unsynced)}
 						</tbody>
 					</table>
 				</div>
