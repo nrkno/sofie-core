@@ -230,7 +230,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 					<div className='workflow__header__summary'>
 						<div className='workflow__header__name'>{i.name || 'Unnamed Workflow'}</div>
 						<div className='workflow__header__expand' onClick={() => this.toggleExpanded(i._id)}>
-							{expanded ? t('Collapse') : t('Expand')}
+							{expanded ? t('Collapse') : t('Details')}
 							{expanded ? <FontAwesomeIcon icon={faChevronDown} /> : <FontAwesomeIcon icon={faChevronRight} />}
 						</div>
 						<div className='workflow__header__status'>{this.workFlowStatusLabel(i.success, i.finished, currentTask)}</div>
