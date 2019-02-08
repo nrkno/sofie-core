@@ -272,6 +272,11 @@
 				}
 			}
 
+			.workflow__header__created {
+				text-align: center;
+				flex: 1 1;
+			}
+
 			.workflow__header__current-task {
 				flex: 0 1 100%;
 				background: none;

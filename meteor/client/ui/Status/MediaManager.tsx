@@ -7,6 +7,7 @@ import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as VelocityReact from 'velocity-react'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as ClassNames from 'classnames'
+import { MomentFromNow } from '../../lib/Moment'
 import ReactCircularProgressbar from 'react-circular-progressbar'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { MediaWorkFlow, MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
@@ -23,9 +24,9 @@ import * as _ from 'underscore'
 import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { callMethod, callPeripheralDeviceFunction } from '../../lib/clientAPI'
-import { PubSub } from '../../../lib/api/pubsub';
-import { Spinner } from '../../lib/Spinner';
-import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon';
+import { PubSub } from '../../../lib/api/pubsub'
+import { Spinner } from '../../lib/Spinner'
+import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon'
 
 interface IMediaManagerStatusProps {
 
@@ -229,6 +230,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 					</div>
 					<div className='workflow__header__summary'>
 						<div className='workflow__header__name'>{i.name || 'Unnamed Workflow'}</div>
+						<div className='workflow__header__created'><MomentFromNow>{i.created}</MomentFromNow></div>
 						<div className='workflow__header__expand' onClick={() => this.toggleExpanded(i._id)}>
 							{expanded ? t('Collapse') : t('Details')}
 							{expanded ? <FontAwesomeIcon icon={faChevronDown} /> : <FontAwesomeIcon icon={faChevronRight} />}
