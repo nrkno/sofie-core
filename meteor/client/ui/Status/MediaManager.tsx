@@ -180,7 +180,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 			translateY: ['100%', '0%']
 		}
 
-		return this.props.workFlows.sort((a, b) => a.created - b.created).map(i => {
+		return this.props.workFlows.sort((a, b) => b.created - a.created).map(i => {
 			const expanded = this.state.expanded[i._id] === true
 			const finishedOK = i.success && i.finished
 			const finishedError = !i.success && i.finished
