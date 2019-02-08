@@ -242,7 +242,10 @@
 			}
 
 			.workflow__header__expand {
+    			flex: 1 1;
+				text-align: center;
 				cursor: pointer;
+
 				&:hover {
 					text-decoration: underline;
 				}
