@@ -147,13 +147,17 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 								}
 							}
 
+							if (timebase) {
+								mediaObject.mediainfo.timebase = timebase
+							}
+
 							// check for black/freeze frames
 							const addFrameWarning = (arr: Array<Anomaly>, type: string) => {
 								if (arr.length === 1) {
-									const frames = Number(arr[0].duration) * 1000 / timebase
-									if (Number(arr[0].start) === 0) {
+									const frames = arr[0].duration * 1000 / timebase
+									if (arr[0].start === 0) {
 										messages.push(`Clip starts with ${frames} ${type} frame${frames > 1 ? 's' : ''}`)
-									} else if (arr[0].end === mediaObject.mediainfo!.format.duration) {
+									} else if (arr[0].end === Number(mediaObject.mediainfo!.format.duration)) {
 										messages.push(`Clip ends with ${frames} ${type} frame${frames > 1 ? 's' : ''}`)
 									} else {
 										messages.push(`${frames} ${type} frame${frames > 1 ? 's' : ''} detected in clip.`)
@@ -161,7 +165,7 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 								} else {
 									const dur = arr
 										.map(b => b.duration)
-										.reduce((a, b) => Number(a) + Number(b), 0)
+										.reduce((a, b) => a + b, 0)
 									const frames = dur * 1000 / timebase
 									messages.push(`${frames} ${type} frame${frames > 1 ? 's' : ''} detected in clip.`)
 								}
