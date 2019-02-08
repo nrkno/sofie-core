@@ -26,6 +26,7 @@ export abstract class MediaWorkFlowStep {
 	priority: number
 	/** 0-1 */
 	progress?: number
+	keyStep?: boolean
 	/** Calculated time left of this step */
 	expectedLeft?: number
 }
