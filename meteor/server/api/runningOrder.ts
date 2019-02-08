@@ -15,8 +15,12 @@ import { updateStory, reloadRunningOrder } from './integration/mos'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
-import { MongoModifier } from '../../lib/typings/meteor'
 import { updateExpectedMediaItems } from './expectedMediaItems'
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { Blueprints } from '../../lib/collections/Blueprints'
+import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+const PackageInfo = require('../../package.json')
 
 /**
  * After a Segment has beed removed, handle its contents
@@ -412,6 +416,35 @@ export namespace ServerRunningOrderAPI {
 		}})
 	}
 }
+export namespace ClientRunningOrderAPI {
+	export function runningOrderNeedsUpdating (runningOrderId: string) {
+		check(runningOrderId, String)
+		logger.info('runningOrderNeedsUpdating ' + runningOrderId)
+
+		let ro = RunningOrders.findOne(runningOrderId)
+		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
+
+		if (ro.importVersions.core !== PackageInfo.version) return 'coreVersion'
+
+		const showStyleVariant = ShowStyleVariants.findOne(ro.showStyleVariantId)
+		if (!showStyleVariant) return 'missing showStyleVariant'
+		if (ro.importVersions.showStyleVariant !== (showStyleVariant.revision || 0)) return 'showStyleVariant'
+
+		const showStyleBase = ShowStyleBases.findOne(ro.showStyleBaseId)
+		if (!showStyleBase) return 'missing showStyleBase'
+		if (ro.importVersions.showStyleBase !== (showStyleBase.revision || 0)) return 'showStyleBase'
+
+		const blueprint = Blueprints.findOne(showStyleBase.blueprintId)
+		if (!blueprint) return 'missing blueprint'
+		if (ro.importVersions.blueprint !== (blueprint.revision || 0)) return 'blueprint'
+
+		const si = StudioInstallations.findOne(ro.studioInstallationId)
+		if (!si) return 'missing studioInstallation'
+		if (ro.importVersions.studioInstallation !== (si.revision || 0)) return 'studioInstallation'
+
+		return undefined
+	}
+}
 
 let methods: Methods = {}
 methods[RunningOrderAPI.methods.removeRunningOrder] = (roId: string) => {
@@ -422,6 +455,9 @@ methods[RunningOrderAPI.methods.resyncRunningOrder] = (roId: string) => {
 }
 methods[RunningOrderAPI.methods.unsyncRunningOrder] = (roId: string) => {
 	return ServerRunningOrderAPI.unsyncRunningOrder(roId)
+}
+methods[RunningOrderAPI.methods.runningOrderNeedsUpdating] = (roId: string) => {
+	return ClientRunningOrderAPI.runningOrderNeedsUpdating(roId)
 }
 // Apply methods:
 setMeteorMethods(wrapMethods(methods))

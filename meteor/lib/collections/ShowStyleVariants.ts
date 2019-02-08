@@ -5,8 +5,9 @@ import { TransformedCollection } from '../typings/meteor'
 import { IConfigItem, IBlueprintShowStyleVariant } from 'tv-automation-sofie-blueprints-integration'
 import { registerCollection, applyClassToDocument } from '../lib'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
+import { Revisionable, RevisionCollection } from './Revisionable'
 
-export interface DBShowStyleVariant extends IBlueprintShowStyleVariant {
+export interface DBShowStyleVariant extends IBlueprintShowStyleVariant, Revisionable {
 	_id: string
 	name: string
 	/** Id of parent ShowStyleBase */
@@ -46,6 +47,7 @@ export class ShowStyleVariant implements DBShowStyleVariant {
 	public name: string
 	public showStyleBaseId: string
 	public config: Array<IConfigItem>
+	public revision: number
 
 	constructor (document: DBShowStyleVariant) {
 		_.each(_.keys(document), (key) => {
@@ -54,7 +56,7 @@ export class ShowStyleVariant implements DBShowStyleVariant {
 	}
 }
 export const ShowStyleVariants: TransformedCollection<ShowStyleVariant, DBShowStyleVariant>
-	= new Mongo.Collection<ShowStyleVariant>('showStyleVariants', {transform: (doc) => applyClassToDocument(ShowStyleVariant, doc) })
+	= new RevisionCollection<ShowStyleVariant>('showStyleVariants', {transform: (doc) => applyClassToDocument(ShowStyleVariant, doc) })
 registerCollection('ShowStyleVariants', ShowStyleVariants)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

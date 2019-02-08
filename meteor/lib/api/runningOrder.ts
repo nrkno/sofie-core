@@ -16,6 +16,7 @@ export namespace RunningOrderAPI {
 	export enum methods {
 		'removeRunningOrder' = 'rundown.removeRunningOrder',
 		'resyncRunningOrder' = 'rundown.resyncRunningOrder',
-		'unsyncRunningOrder' = 'rundown.unsyncRunningOrder'
+		'unsyncRunningOrder' = 'rundown.unsyncRunningOrder',
+		'runningOrderNeedsUpdating' = 'rundown.runningOrderNeedsUpdating'
 	}
 }

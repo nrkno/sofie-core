@@ -10,6 +10,7 @@ import {
 	ISourceLayer,
 	IBlueprintRuntimeArgumentsItem
 } from 'tv-automation-sofie-blueprints-integration'
+import { Revisionable, RevisionCollection } from './Revisionable'
 
 export interface HotkeyDefinition {
 	_id: string
@@ -17,7 +18,7 @@ export interface HotkeyDefinition {
 	label: string
 }
 
-export interface DBShowStyleBase extends IBlueprintShowStyleBase {
+export interface DBShowStyleBase extends IBlueprintShowStyleBase, Revisionable {
 	_id: string
 	/** Name of this show style */
 	name: string
@@ -46,6 +47,7 @@ export class ShowStyleBase implements DBShowStyleBase {
 	public config: Array<IConfigItem>
 	public hotkeyLegend?: Array<HotkeyDefinition>
 	public runtimeArguments: Array<IBlueprintRuntimeArgumentsItem>
+	public revision: number
 
 	constructor (document: DBShowStyleBase) {
 		_.each(_.keys(document), (key) => {
@@ -55,7 +57,7 @@ export class ShowStyleBase implements DBShowStyleBase {
 }
 
 export const ShowStyleBases: TransformedCollection<ShowStyleBase, DBShowStyleBase>
-	= new Mongo.Collection<ShowStyleBase>('showStyleBases', {transform: (doc) => applyClassToDocument(ShowStyleBase, doc) })
+	= new RevisionCollection<ShowStyleBase>('showStyleBases', {transform: (doc) => applyClassToDocument(ShowStyleBase, doc) })
 registerCollection('ShowStyleBases', ShowStyleBases)
 
 Meteor.startup(() => {

@@ -1,4 +1,3 @@
-import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { applyClassToDocument, registerCollection } from '../lib'
 import * as _ from 'underscore'
@@ -10,6 +9,7 @@ import {
 	IBlueprintStudioInstallation,
 	ConfigItemValue
 } from 'tv-automation-sofie-blueprints-integration'
+import { Revisionable, RevisionCollection } from './Revisionable'
 
 export interface MappingsExt extends BlueprintMappings {
 	[layerName: string]: MappingExt
@@ -26,7 +26,7 @@ export interface IStudioInstallationSettings {
 	sofieUrl: string // (former sofie_url in config)
 }
 /** A set of available layer groups in a given installation */
-export interface DBStudioInstallation extends IBlueprintStudioInstallation {
+export interface DBStudioInstallation extends IBlueprintStudioInstallation, Revisionable {
 	_id: string
 	/** User-presentable name for the studio installation */
 	name: string
@@ -67,6 +67,8 @@ export class StudioInstallation implements DBStudioInstallation {
 	public settings: IStudioInstallationSettings
 	public testToolsConfig?: ITestToolsConfig
 
+	public revision: number
+
 	constructor (document: DBStudioInstallation) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
@@ -86,5 +88,5 @@ export class StudioInstallation implements DBStudioInstallation {
 }
 
 export const StudioInstallations: TransformedCollection<StudioInstallation, DBStudioInstallation>
-	= new Mongo.Collection<StudioInstallation>('studioInstallation', {transform: (doc) => applyClassToDocument(StudioInstallation, doc) })
+	= new RevisionCollection<StudioInstallation>('studioInstallation', {transform: (doc) => applyClassToDocument(StudioInstallation, doc) })
 registerCollection('StudioInstallations', StudioInstallations)
