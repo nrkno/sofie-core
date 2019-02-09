@@ -78,6 +78,194 @@ namespace MediaManagerAPI {
 	}
 }
 
+interface IItemProps {
+	item: MediaWorkFlowUi
+	expanded: _.Dictionary<boolean>
+	toggleExpanded: (id: string) => void
+}
+
+const iconEnterAnimation = {
+	translateY: ['0%', '-100%']
+}
+
+const iconLeaveAnimation = {
+	translateY: ['100%', '0%']
+}
+
+const subIconEnterAnimation = {
+	translateY: ['0%', '100%'],
+	opacity: [1, 1]
+}
+
+const subIconLeaveAnimation = {
+	opacity: [0, 1]
+}
+
+type TFunc = (label: string, attrs?: object) => string
+
+function actionLabel (t: TFunc, action: string): string {
+	switch (action) {
+		case MediaManagerAPI.WorkStepAction.COPY:
+			return t('File copy')
+		case MediaManagerAPI.WorkStepAction.DELETE:
+			return t('File delete')
+		case MediaManagerAPI.WorkStepAction.GENERATE_METADATA:
+			return t('Scan file')
+		case MediaManagerAPI.WorkStepAction.GENERATE_THUMBNAIL:
+			return t('Generate thumbnail')
+		case MediaManagerAPI.WorkStepAction.GENERATE_PREVIEW:
+			return t('Generate preview')
+		default:
+			return t('Unknown action: {{action}}', { action })
+	}
+}
+
+function workFlowStatusLabel (t: TFunc, success: boolean, finished: boolean, keyFinishedOk: boolean, currentTask: MediaWorkFlowStep | undefined): React.ReactChild {
+	if (success && finished) {
+		return <React.Fragment><CoreIcons id='nrk-check' />{t('Done')}</React.Fragment>
+	} else if (!success && finished) {
+		return <React.Fragment>
+			<WarningIcon />{t('Failed')}
+		</React.Fragment>
+	} else if (!finished && currentTask && currentTask.status === MediaManagerAPI.WorkStepStatus.WORKING) {
+		return <React.Fragment>
+			<Spinner className='working-spinner' size='medium' />{keyFinishedOk ? t('Working, Media Available') : t('Working')}
+		</React.Fragment>
+	} else if (!finished && !currentTask) {
+		return t('Pending')
+	} else {
+		return t('Unknown')
+	}
+}
+
+function workStepStatusLabel (t: TFunc, step: MediaWorkFlowStep): string {
+	switch (step.status) {
+		case MediaManagerAPI.WorkStepStatus.BLOCKED:
+			return t('Blocked')
+		case MediaManagerAPI.WorkStepStatus.CANCELED:
+			return t('Canceled')
+		case MediaManagerAPI.WorkStepStatus.DONE:
+			return t('Done')
+		case MediaManagerAPI.WorkStepStatus.ERROR:
+			return t('Error')
+		case MediaManagerAPI.WorkStepStatus.IDLE:
+			return t('Idle')
+		case MediaManagerAPI.WorkStepStatus.WORKING:
+			if (step.progress) {
+				return t('Step progress: {{progress}}', { progress: Math.round(step.progress * 100) + '%' })
+			} else {
+				return t('Processing')
+			}
+		default:
+			return t('Unknown: {{status}}', { state: step.status })
+	}
+}
+
+const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.InjectedTranslateProps> = (props: IItemProps & i18next.InjectedTranslateProps) => {
+	const i = props.item
+	const t = props.t
+
+	const expanded = props.expanded[i._id] === true
+	const finishedOK = i.success && i.finished
+	const finishedError = !i.success && i.finished
+	const keySteps = i.steps.filter(j => j.keyStep)
+	const keyFinishedOK = keySteps.length === 0 ? false : keySteps.reduce((memo, item) => memo && item.status === MediaManagerAPI.WorkStepStatus.DONE, true)
+	const currentTask = i.steps.sort((a, b) => b.priority - a.priority).find(i => ((i.status === MediaManagerAPI.WorkStepStatus.WORKING) || (i.status === MediaManagerAPI.WorkStepStatus.ERROR)))
+	const progress = (
+		i.steps.map(i => {
+			switch (i.status) {
+				case MediaManagerAPI.WorkStepStatus.DONE:
+					return 1
+				case MediaManagerAPI.WorkStepStatus.WORKING:
+					return i.progress || 0
+				default:
+					return 0
+			}
+		}).reduce((memo, i) => memo + i, 0)
+	) / i.steps.length
+
+	return <div className={ClassNames('workflow mbs', {
+		'expanded': expanded,
+
+		'keyOk': keyFinishedOK,
+		'ok': finishedOK,
+		'error': finishedError
+	})}>
+		<div className='workflow__header pas'>
+			<div className='workflow__header__progress'>
+				<VelocityReact.VelocityComponent animation={finishedOK ? iconEnterAnimation : iconLeaveAnimation} duration={300} easing='easeIn'>
+					<div className='big-status ok'>
+						<FontAwesomeIcon icon={faCheck} />
+					</div>
+				</VelocityReact.VelocityComponent>
+				<VelocityReact.VelocityComponent animation={finishedError ? iconEnterAnimation : iconLeaveAnimation} duration={300} easing='easeIn'>
+					<div className='big-status error'>
+						<WarningIcon />
+					</div>
+				</VelocityReact.VelocityComponent>
+				<VelocityReact.VelocityComponent animation={(!finishedOK && !finishedError) ? iconEnterAnimation : iconLeaveAnimation} duration={300} easing='easeIn'>
+					<ReactCircularProgressbar initialAnimation={true} percentage={progress * 100}
+						text={Math.round(progress * 100) + '%'}
+						strokeWidth={10}
+						styles={{
+							path: { stroke: `#1769ff`, strokeLinecap: 'round' },
+							trail: { stroke: '#E0E3E4' },
+							text: { fill: '#252627', fontSize: '170%', transform: 'translate(0, 8%)', textAnchor: 'middle' },
+						}} />
+				</VelocityReact.VelocityComponent>
+				<VelocityReact.VelocityComponent animation={(!finishedOK && !finishedError && keyFinishedOK) ? subIconEnterAnimation : subIconLeaveAnimation} duration={300} easing='easeIn'>
+					<div className='big-status sub-icon ok'>
+						<FontAwesomeIcon icon={faCheck} />
+					</div>
+				</VelocityReact.VelocityComponent>
+			</div>
+			<div className='workflow__header__summary'>
+				<div className='workflow__header__name'>{i.name || 'Unnamed Workflow'}</div>
+				<div className='workflow__header__created'><MomentFromNow>{i.created}</MomentFromNow></div>
+				<div className='workflow__header__expand' onClick={() => props.toggleExpanded(i._id)}>
+					{expanded ? t('Collapse') : t('Details')}
+					{expanded ? <FontAwesomeIcon icon={faChevronDown} /> : <FontAwesomeIcon icon={faChevronRight} />}
+				</div>
+				<div className='workflow__header__status'>{workFlowStatusLabel(t, i.success, i.finished, keyFinishedOK, currentTask)}</div>
+				<div className='workflow__header__current-task workflow__step'>
+					{currentTask && <React.Fragment>
+						<div className='workflow__step__action pts'>{actionLabel(t, currentTask.action)}</div>
+						<div className='workflow__step__status pts'>{workStepStatusLabel(t, currentTask)}</div>
+					</React.Fragment>}
+				</div>
+			</div>
+		</div>
+		<VelocityReact.VelocityTransitionGroup enter={{
+			animation: 'slideDown', easing: 'ease-out', duration: 150, maxHeight: 0, overflow: 'hidden'
+		}} leave={{
+			animation: 'slideUp', easing: 'ease-in', duration: 150, overflow: 'hidden'
+		}}>
+			{expanded && <div>
+				{i.steps.sort((a, b) => b.priority - a.priority).map(j =>
+					<div className={ClassNames('workflow__step', {
+						'ok': j.status === MediaManagerAPI.WorkStepStatus.DONE,
+						'error': j.status === MediaManagerAPI.WorkStepStatus.ERROR,
+						'working': j.status === MediaManagerAPI.WorkStepStatus.WORKING
+					})} key={j._id}>
+						<div className='workflow__step__action pas'>{actionLabel(t, j.action)}</div>
+						<div className='workflow__step__status pas'>{workStepStatusLabel(t, j)}</div>
+						<div className='workflow__step__progress progress-bar'>
+							<div className='pb-indicator' style={{
+								'width': ((j.progress || 0) * 100) + '%'
+							}} />
+						</div>
+						{j.messages && j.messages.length > 0 && (
+							<ul className='workflow__step__messages pas man'>
+								{j.messages.map((k, key) => <li key={key}>{k}</li>)}
+							</ul>
+						)}
+					</div>
+				)}
+			</div>}
+		</VelocityReact.VelocityTransitionGroup>
+	</div>
+}
+
 export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps, {}, IMediaManagerStatusTrackedProps>((props: IMediaManagerStatusProps) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
@@ -104,66 +292,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 		this.subscribe(PubSub.mediaWorkFlowSteps, {})
 	}
 
-	actionLabel (action: string): string {
-		const {t} = this.props
-		switch (action) {
-			case MediaManagerAPI.WorkStepAction.COPY:
-				return t('File copy')
-			case MediaManagerAPI.WorkStepAction.DELETE:
-				return t('File delete')
-			case MediaManagerAPI.WorkStepAction.GENERATE_METADATA:
-				return t('Scan file')
-			case MediaManagerAPI.WorkStepAction.GENERATE_THUMBNAIL:
-				return t('Generate thumbnail')
-			case MediaManagerAPI.WorkStepAction.GENERATE_PREVIEW:
-				return t('Generate preview')
-			default:
-				return t('Unknown action: {{action}}', { action }) 
-		}
-	}
-
-	workFlowStatusLabel (success: boolean, finished: boolean, currentTask: MediaWorkFlowStep | undefined): React.ReactChild {
-		const { t } = this.props
-		if (success && finished) {
-			return <React.Fragment><CoreIcons id='nrk-check' />{t('Done')}</React.Fragment>
-		} else if (!success && finished) {
-			return <React.Fragment>
-				<WarningIcon />{t('Failed')}
-			</React.Fragment>
-		} else if (!finished && currentTask && currentTask.status === MediaManagerAPI.WorkStepStatus.WORKING) {
-			return <React.Fragment><Spinner className='working-spinner' size='medium' />{t('Working')}</React.Fragment>
-		} else if (!finished && !currentTask) {
-			return t('Pending')
-		} else {
-			return t('Unknown')
-		}
-	}
-
-	workStepStatusLabel (step: MediaWorkFlowStep): string {
-		const { t } = this.props
-		switch (step.status) {
-			case MediaManagerAPI.WorkStepStatus.BLOCKED:
-				return t('Blocked')
-			case MediaManagerAPI.WorkStepStatus.CANCELED:
-				return t('Canceled')
-			case MediaManagerAPI.WorkStepStatus.DONE:
-				return t('Done')
-			case MediaManagerAPI.WorkStepStatus.ERROR:
-				return t('Error')
-			case MediaManagerAPI.WorkStepStatus.IDLE:
-				return t('Idle')
-			case MediaManagerAPI.WorkStepStatus.WORKING:
-				if (step.progress) {
-					return t('Step progress: {{progress}}', {progress: Math.round(step.progress * 100) + '%'})
-				} else {
-					return t('Processing')
-				}
-			default:
-				return t('Unknown: {{status}}', {state: step.status})
-		}
-	}
-
-	toggleExpanded (id: string) {
+	toggleExpanded = (id: string) => {
 		this.state.expanded[id] = !this.state.expanded[id] 
 		this.setState({
 			expanded: this.state.expanded
@@ -173,106 +302,8 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 	renderWorkFlows () {
 		const { t } = this.props
 
-		const iconEnterAnimation = {
-			translateY: ['0%', '-100%']
-		}
-
-		const iconLeaveAnimation = {
-			translateY: ['100%', '0%']
-		}
-
 		return this.props.workFlows.sort((a, b) => b.created - a.created).map(i => {
-			const expanded = this.state.expanded[i._id] === true
-			const finishedOK = i.success && i.finished
-			const finishedError = !i.success && i.finished
-			const currentTask = i.steps.sort((a, b) => b.priority - a.priority).find(i => ((i.status === MediaManagerAPI.WorkStepStatus.WORKING) || (i.status === MediaManagerAPI.WorkStepStatus.ERROR)))
-			const progress = (
-				i.steps.map(i => {
-					switch (i.status) {
-						case MediaManagerAPI.WorkStepStatus.DONE:
-							return 1
-						case MediaManagerAPI.WorkStepStatus.WORKING:
-							return i.progress || 0
-						default:
-							return 0
-					}
-				}).reduce((memo, i) => memo + i, 0)
-			) / i.steps.length
-	
-			return <div className={ClassNames('workflow mbs', {
-				'expanded': expanded,
-				
-				'ok': finishedOK,
-				'error': finishedError
-			})} key={i._id}>
-				<div className='workflow__header pas'>
-					<div className='workflow__header__progress'>
-						<VelocityReact.VelocityComponent animation={finishedOK ? iconEnterAnimation : iconLeaveAnimation} duration={300} easing='easeIn'>
-							<div className='big-status ok'>
-								<FontAwesomeIcon icon={faCheck} />
-							</div>
-						</VelocityReact.VelocityComponent>
-						<VelocityReact.VelocityComponent animation={finishedError ? iconEnterAnimation : iconLeaveAnimation} duration={300} easing='easeIn'>
-							<div className='big-status error'>
-								<WarningIcon />
-							</div>
-						</VelocityReact.VelocityComponent>
-						<VelocityReact.VelocityComponent animation={(!finishedOK && !finishedError) ? iconEnterAnimation : iconLeaveAnimation} duration={300} easing='easeIn'>
-							<ReactCircularProgressbar initialAnimation={true} percentage={progress * 100}
-								text={Math.round(progress * 100) + '%'}
-								strokeWidth={10}
-								styles={{
-									path: { stroke: `#1769ff`, strokeLinecap: 'round' },
-									trail: { stroke: '#E0E3E4' },
-									text: { fill: '#252627', fontSize: '170%', transform: 'translate(0, 8%)', textAnchor: 'middle' },
-							}} />
-						</VelocityReact.VelocityComponent>
-					</div>
-					<div className='workflow__header__summary'>
-						<div className='workflow__header__name'>{i.name || 'Unnamed Workflow'}</div>
-						<div className='workflow__header__created'><MomentFromNow>{i.created}</MomentFromNow></div>
-						<div className='workflow__header__expand' onClick={() => this.toggleExpanded(i._id)}>
-							{expanded ? t('Collapse') : t('Details')}
-							{expanded ? <FontAwesomeIcon icon={faChevronDown} /> : <FontAwesomeIcon icon={faChevronRight} />}
-						</div>
-						<div className='workflow__header__status'>{this.workFlowStatusLabel(i.success, i.finished, currentTask)}</div>
-						<div className='workflow__header__current-task workflow__step'>
-							{currentTask && <React.Fragment>
-								<div className='workflow__step__action pts'>{this.actionLabel(currentTask.action)}</div>
-								<div className='workflow__step__status pts'>{this.workStepStatusLabel(currentTask)}</div>
-							</React.Fragment>}
-						</div>
-					</div>
-				</div>
-				<VelocityReact.VelocityTransitionGroup enter={{
-					animation: 'slideDown', easing: 'ease-out', duration: 150, maxHeight: 0, overflow: 'hidden'
-				}} leave={{
-					animation: 'slideUp', easing: 'ease-in', duration: 150, overflow: 'hidden'
-				}}>	
-					{expanded && <div>
-						{i.steps.sort((a, b) => b.priority - a.priority).map(j => 
-							<div className={ClassNames('workflow__step', {
-								'ok': j.status === MediaManagerAPI.WorkStepStatus.DONE,
-								'error': j.status === MediaManagerAPI.WorkStepStatus.ERROR,
-								'working': j.status === MediaManagerAPI.WorkStepStatus.WORKING
-							})} key={j._id}>
-								<div className='workflow__step__action pas'>{this.actionLabel(j.action)}</div>
-								<div className='workflow__step__status pas'>{this.workStepStatusLabel(j)}</div>
-								<div className='workflow__step__progress progress-bar'>
-									<div className='pb-indicator' style={{
-										'width': ((j.progress || 0) * 100) + '%'
-									}} />
-								</div>
-								{j.messages && j.messages.length > 0 && (
-									<ul className='workflow__step__messages pas man'>
-										{j.messages.map((k, key) => <li key={key}>{k}</li>)}
-									</ul>
-								)}
-							</div>
-						)}
-					</div>}
-				</VelocityReact.VelocityTransitionGroup>
-			</div>
+			return <MediaManagerWorkFlowItem expanded={this.state.expanded} item={i} key={i._id} t={t} toggleExpanded={this.toggleExpanded} />
 		})
 	}
 

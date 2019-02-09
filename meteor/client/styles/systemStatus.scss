@@ -225,6 +225,19 @@
 							}
 						}
 					}
+
+					&.sub-icon {
+					    top: auto;
+						left: auto;
+						right: 0;
+						bottom: 0;
+						width: 15px;
+						height: 15px;
+
+						> svg.svg-inline--fa {
+							top: -2px;
+						}
+					}
 				}
 				> svg.CircularProgressbar {
 					transform: translateY(0%);
