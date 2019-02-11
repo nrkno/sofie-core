@@ -210,7 +210,7 @@ class HttpSendDeviceSettingsComponent extends React.Component<Translated<IHttpSe
 
 		return (
 			<React.Fragment>
-				<h3 className='mhn'>{t('Make ready commands')}</h3>
+				<h3 className='mhs'>{t('Make ready commands')}</h3>
 				<table className='expando settings-studio-device-httpsend-table'>
 					<tbody>
 						{this.renderHttpSendCommands()}
@@ -764,7 +764,7 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 				{settings && settings.devices &&
 					(
 						<React.Fragment>
-							<h3 className='mhn'>{t('Devices')}</h3>
+							<h3 className='mhs'>{t('Devices')}</h3>
 							<table className='expando settings-studio-device-table'>
 								<tbody>
 									{this.renderDevices()}
@@ -783,7 +783,7 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 				{subDevices &&
 					(
 						<React.Fragment>
-						<h3 className='mhn'>{t('Attached sub-devices')}</h3>
+						<h3 className='mhs'>{t('Attached sub-devices')}</h3>
 							{subDevices.map((item) => <DeviceItem key={item._id} device={item} showRemoveButtons={true} />)}
 						</React.Fragment>
 					)
@@ -1332,7 +1332,7 @@ const MediaManagerSettingsComponent = translate()(
 						<p>{t('Are you sure you want to remove flow "{{flowId}}"?', { flowId: (this.state.deleteConfirmFlowId) })}</p>
 					</ModalDialog>
 
-					<h3 className='mhn'>{t('Attached Storages')}</h3>
+					<h3 className='mhs'>{t('Attached Storages')}</h3>
 					{settings && settings.storages &&
 						(
 							<table className='expando settings-studio-device-table'>
@@ -1348,7 +1348,7 @@ const MediaManagerSettingsComponent = translate()(
 						</button>
 					</div>
 
-					<h3 className='mhn'>{t('Media Flows')}</h3>
+					<h3 className='mhs'>{t('Media Flows')}</h3>
 					{settings && settings.mediaFlows &&
 						(
 						<table className='expando settings-studio-device-table'>
@@ -1638,7 +1638,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 				{settings && settings.devices &&
 					(
 						<React.Fragment>
-							<h3 className='mhn'>{t('Devices')}</h3>
+							<h3 className='mhs'>{t('Devices')}</h3>
 							<table className='expando settings-studio-device-table'>
 								<tbody>
 									{this.renderDevices()}
@@ -1657,7 +1657,7 @@ class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDevi
 				{subDevices &&
 					(
 						<React.Fragment>
-							<h3 className='mhn'>{t('Attached subdevices')}</h3>
+							<h3 className='mhs'>{t('Attached subdevices')}</h3>
 							{subDevices.map((item) => <DeviceItem key={item._id} device={item} showRemoveButtons={true} />)}
 						</React.Fragment>
 					)
@@ -1738,7 +1738,7 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 					<button className='btn btn-secondary btn-tight right' onClick={(e) => this.props.device && this.restartDevice(this.props.device)}>
 						{t('Restart device')}
 					</button>
-					<h3 className='mhn'>
+					<h3 className='mhs'>
 						{t('Generic Properties')}
 					</h3>
 					<label className='field'>
