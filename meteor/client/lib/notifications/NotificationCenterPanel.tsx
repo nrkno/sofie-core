@@ -10,6 +10,7 @@ import { NotificationCenter, Notification, NoticeLevel } from './notifications'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { faChevronLeft } from '@fortawesome/fontawesome-free-solid'
 import { sofieWarningIcon as WarningIcon } from './warningIcon'
+import { ContextMenuTrigger, ContextMenu, MenuItem } from 'react-contextmenu'
 
 interface IPopUpProps {
 	item: Notification
@@ -49,11 +50,13 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 				{item.message}
 			</div>
 			{this.props.showDismiss &&
-				<div className='notification-pop-up__dismiss'>
+				<ContextMenuTrigger id='context-menu-dissmiss-all' attributes={{className: 'notification-pop-up__dismiss'}}>
+				{/* <div className='notification-pop-up__dismiss'> */}
 					<button className='notification-pop-up__dismiss__button' onClick={(e) => (e.stopPropagation(), (typeof this.props.onDismiss === 'function' && this.props.onDismiss(e)))}>
 						<CoreIcon id='nrk-close' />
 					</button>
-				</div>
+				{/* </div> */}
+				</ContextMenuTrigger>
 			}
 		</div>
 	}
@@ -86,6 +89,12 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 			item.snooze()
 		} else {
 			item.drop()
+		}
+	}
+
+	dismissAll () {
+		for (const notification of this.props.notifications) {
+			this.dismissNotification(notification)
 		}
 	}
 
@@ -140,6 +149,10 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 						<div className='notification-pop-ups__empty-list'>{t('No notifications')}</div>
 					}
 				</VelocityReact.VelocityTransitionGroup>
+
+				<ContextMenu id='context-menu-dissmiss-all'>
+					<MenuItem onClick={() => this.dismissAll()}>Dismiss all</MenuItem>
+				</ContextMenu>
 			</div>
 		)
 	}

@@ -3,7 +3,7 @@ import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/Reac
 import { ICoreSystem, CoreSystem } from '../../../lib/collections/CoreSystem'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
-import { EditAttribute } from '../../lib/EditAttribute';
+import { EditAttribute } from '../../lib/EditAttribute'
 
 interface IProps {
 

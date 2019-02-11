@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { translate, InjectedI18nProps } from 'react-i18next'
 import * as m from 'moment'
@@ -32,7 +31,6 @@ import {
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './PrompterView'
 import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
-import { RunningOrderNotifier } from './RunningOrderView/RunningOrderNotifier'
 
 interface IAppState {
 	studioMode: boolean
@@ -53,6 +51,13 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		if (params['configure']) setAdminMode(params['configure'] === '1')
 		if (params['develop']) setDeveloperMode(params['develop'] === '1')
 		if (params['testing']) setTestingMode(params['testing'] === '1')
+		if (params['admin']) {
+			const val = params['admin'] === '1'
+			setStudioMode(val)
+			setAdminMode(val)
+			setDeveloperMode(val)
+			setTestingMode(val)
+		}
 
 		this.state = {
 			studioMode: getStudioMode(),

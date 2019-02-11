@@ -1,13 +1,9 @@
-import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
 
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
-import { rejectFields } from './lib'
-import { PeripheralDeviceSecurity } from './peripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 
-import { logger } from '../logging'
 import { Mongo } from 'meteor/mongo'
 
 export namespace ExpectedMediaItemsSecurity {
@@ -16,7 +12,7 @@ export namespace ExpectedMediaItemsSecurity {
 		check(selector.mediaFlowId, Object)
 		check(selector.mediaFlowId.$in, Array)
 
-		let mediaFlowIds: string[] = selector.mediaFlowId.$in
+		// let mediaFlowIds: string[] = selector.mediaFlowId.$in
 
 		let mediaManagerDevice = PeripheralDevices.findOne({
 			type: PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,

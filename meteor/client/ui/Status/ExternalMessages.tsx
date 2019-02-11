@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { getCurrentTime, Time } from '../../../lib/lib'
 import { MomentFromNow } from '../../lib/Moment'
 import { getAdminMode } from '../../lib/localStorage'
@@ -93,11 +92,6 @@ interface IExternalMessagesInStudioState {
 interface IExternalMessagesInStudioTrackedProps {
 	queuedMessages: Array<ExternalMessageQueueObj>
 	sentMessages: Array<ExternalMessageQueueObj>
-}
-
-interface DeviceInHierarchy {
-	device: PeripheralDevice
-	children: Array<DeviceInHierarchy>
 }
 
 const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioProps, IExternalMessagesInStudioState, IExternalMessagesInStudioTrackedProps>((props: IExternalMessagesInStudioProps) => {
@@ -309,7 +303,6 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 	}
 
 	render () {
-		const { t } = this.props
 
 		return (
 			<div className='mhl gutter external-message-status'>

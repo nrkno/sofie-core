@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { Evaluations, Evaluation } from '../../lib/collections/Evaluations'
 
 export namespace EvaluationsSecurity {

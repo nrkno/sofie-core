@@ -6,9 +6,13 @@ import { translate } from 'react-i18next'
 
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 
-import { SegmentLineUi, IOutputLayerUi, ISourceLayerUi, SegmentLineItemUi } from './SegmentTimelineContainer'
+import {
+	SegmentLineUi,
+	IOutputLayerUi,
+	ISourceLayerUi,
+	SegmentLineItemUi
+} from './SegmentTimelineContainer'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
-import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
 interface IProps {

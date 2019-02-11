@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
 
 export namespace TimelineSecurity {

@@ -11,11 +11,12 @@ import {
 	ExternalMessageQueueObjSOAP,
 	IBlueprintExternalMessageQueueObj,
 	IBlueprintExternalMessageQueueType,
-	ExternalMessageQueueObjSlack,
 	ExternalMessageQueueObjRabbitMQ
 } from 'tv-automation-sofie-blueprints-integration'
-import { getCurrentTime, removeNullyProperties, literal, rateLimit, rateLimitIgnore } from '../../lib/lib'
-
+import {
+	getCurrentTime,
+	removeNullyProperties
+} from '../../lib/lib'
 import { setMeteorMethods, Methods, wrapMethods } from '../methods'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { ExternalMessageQueueAPI } from '../../lib/api/ExternalMessageQueue'
@@ -23,7 +24,6 @@ import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
 import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus'
-import { syncFunctionIgnore, waitTime } from '../codeControl'
 
 export function queueExternalMessages (runningOrder: RunningOrder, messages: Array<IBlueprintExternalMessageQueueObj>) {
 	_.each(messages, (message) => {
@@ -104,7 +104,7 @@ function doMessageQueue () {
 		let ps: Array<Promise<any>> = []
 		_.each(messagesToSend, (msg) => {
 			try {
-				logger.debug('Trying to send message: ' + msg._id)
+				logger.debug(`Trying to send externalMessage, id: ${msg._id}, type: "${msg.type}"`)
 				ExternalMessageQueue.update(msg._id, {$set: {
 					tryCount: (msg.tryCount || 0) + 1,
 					lastTry: now,
@@ -114,12 +114,12 @@ function doMessageQueue () {
 				if (msg.type === IBlueprintExternalMessageQueueType.SOAP) {
 					p = sendSOAPMessage(msg as ExternalMessageQueueObjSOAP & ExternalMessageQueueObj)
 				} else if (msg.type === IBlueprintExternalMessageQueueType.SLACK) {
-					let m = msg as ExternalMessageQueueObjSlack & ExternalMessageQueueObj
+					// let m = msg as ExternalMessageQueueObjSlack & ExternalMessageQueueObj
 					p = sendSlackMessageToWebhook(msg.message, msg.receiver)
 				} else if (msg.type === IBlueprintExternalMessageQueueType.RABBIT_MQ) {
 					p = sendRabbitMQMessage(msg as ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj)
 				} else {
-					throw new Meteor.Error(500, `Unknown / Unsupported externalMessage type "${msg.type}"`)
+					throw new Meteor.Error(500, `Unknown / Unsupported externalMessage type: "${msg.type}"`)
 				}
 				ps.push(
 					Promise.resolve(p)
@@ -129,7 +129,7 @@ function doMessageQueue () {
 							sent: getCurrentTime(),
 							sentReply: result
 						}})
-						logger.debug('Message sucessfully sent: ' + msg._id)
+						logger.debug(`ExternalMessage sucessfully sent, id: ${msg._id}, type: "${msg.type}"`)
 					})
 					.catch((e) => {
 						logMessageError(msg, e)
@@ -147,6 +147,7 @@ function doMessageQueue () {
 				triggerdoMessageQueue(1000)
 			}
 		})
+		.catch(error => logger.error(error))
 	} catch (e) {
 		logger.error(e)
 	}
@@ -206,7 +207,7 @@ function updateExternalMessageQueueStatus (): void {
 	}
 }
 
-const messagesOnQueueCursor = ExternalMessageQueue.find({
+ExternalMessageQueue.find({
 	sent: {$not: {$gt: 0}},
 	tryCount: {$gt: 3}
 }).observeChanges({

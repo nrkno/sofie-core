@@ -73,6 +73,7 @@ export interface PlayoutDeviceSettings {
 		host: string
 		port: number
 	}
+	multiThreading?: boolean
 }
 export interface MediaManagerDeviceSettings {
 	/** A list of available storage locations */
@@ -96,7 +97,6 @@ export interface MediaManagerDeviceSettings {
 		port: number
 	}
 }
-
 
 export enum MediaFlowType {
 	WATCH_FOLDER = 'watch_folder',

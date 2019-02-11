@@ -7,8 +7,8 @@ import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 export function callMethod (e: any, methodName: string, ...params: any[]) {
 	Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), methodName, ...params)
 }
-export function callPeripheralDeviceFunction (e: any, methodName: string, ...params: any[]) {
-	Meteor.call(ClientAPI.methods.callPeripheralDeviceFunction, eventContextForLog(e), methodName, ...params)
+export function callPeripheralDeviceFunction (e: any, deviceFunctionName: string, ...params: any[]) {
+	Meteor.call(ClientAPI.methods.callPeripheralDeviceFunction, eventContextForLog(e), deviceFunctionName, ...params)
 }
 
 export namespace PeripheralDevicesAPI {

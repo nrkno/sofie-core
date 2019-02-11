@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { AsRunLog, AsRunLogEvent } from '../../lib/collections/AsRunLog'
 
 export namespace AsRunLogSecurity {

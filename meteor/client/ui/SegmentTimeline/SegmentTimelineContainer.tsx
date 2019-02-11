@@ -6,7 +6,7 @@ import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { SegmentTimeline } from './SegmentTimeline'
-import { getCurrentTime, Time } from '../../../lib/lib'
+import { getCurrentTime } from '../../../lib/lib'
 import { RunningOrderTiming } from '../RunningOrderView/RunningOrderTiming'
 import { CollapsedStateStorage } from '../../lib/CollapsedStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -44,9 +44,6 @@ export interface SegmentLineItemUi extends SegmentLineItemExtended {
 	/** Metadata object */
 	metadata?: any
 	message?: string | null
-}
-interface ISegmentLineItemUiDictionary {
-	[key: string]: SegmentLineItemUi
 }
 interface IProps {
 	segmentId: string,
@@ -186,7 +183,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	constructor (props: IProps & ITrackedProps) {
 		super(props)
 
-		let that = this
 		this.state = {
 			collapsedOutputs: CollapsedStateStorage.getItemBooleanMap(`runningOrderView.segment.${props.segmentId}.outputs`, {}),
 			collapsed: CollapsedStateStorage.getItemBoolean(`runningOrderView.segment.${props.segmentId}`, false),
@@ -281,7 +277,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	onAirLineRefresh = () => {
 		if (this.props.isLiveSegment && this.props.currentLiveSegmentLine) {
-			let speed = 1
 			const segmentLineOffset = this.context.durations &&
 									  this.context.durations.segmentLineDisplayStartsAt &&
 									  (this.context.durations.segmentLineDisplayStartsAt[this.props.currentLiveSegmentLine._id] - this.context.durations.segmentLineDisplayStartsAt[this.props.segmentLines[0]._id])

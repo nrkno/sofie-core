@@ -21,9 +21,9 @@ export interface ShowStyleCompound extends ShowStyleBase {
 }
 export function getShowStyleCompound (showStyleVariantId: string): ShowStyleCompound | undefined {
 	let showStyleVariant = ShowStyleVariants.findOne(showStyleVariantId)
-	if (!showStyleVariant) return
+	if (!showStyleVariant) return undefined
 	let showStyleBase = ShowStyleBases.findOne(showStyleVariant.showStyleBaseId)
-	if (!showStyleBase) return
+	if (!showStyleBase) return undefined
 
 	let configs: {[id: string]: IConfigItem} = {}
 	_.each(showStyleBase.config, (config: IConfigItem) => {

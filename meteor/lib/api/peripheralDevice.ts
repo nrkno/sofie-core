@@ -2,7 +2,6 @@ import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import { MeteorPromiseCall, getCurrentTime } from '../lib'
 import { PeripheralDeviceCommands } from '../collections/PeripheralDeviceCommands'
-import { logger } from '../logging'
 import { PubSub, meteorSubscribe } from './pubsub'
 
 namespace PeripheralDeviceAPI {
@@ -132,8 +131,13 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 	}
 	const timeoutTime = 3000
 	// logger.debug('command created: ' + functionName)
+	const cursor = PeripheralDeviceCommands.find({
+		_id: commandId
+	})
+	let observer: Meteor.LiveQueryHandle
+	let timeoutCheck: number = 0
 	// we've sent the command, let's just wait for the reply
-	let checkReply = () => {
+	const checkReply = () => {
 		let cmd = PeripheralDeviceCommands.findOne(commandId)
 		// if (!cmd) throw new Meteor.Error('Command "' + commandId + '" not found')
 		// logger.debug('checkReply')
@@ -147,7 +151,7 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 				} else {
 					cb(null, cmd.reply)
 				}
-				cursor.stop()
+				observer.stop()
 				PeripheralDeviceCommands.remove(cmd._id)
 				if (subscription) subscription.stop()
 				if (timeoutCheck) {
@@ -156,7 +160,7 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 				}
 			} else if (getCurrentTime() - (cmd.time || 0) >= timeoutTime) { // timeout
 				cb('Timeout when executing the function "' + cmd.functionName + '" on device "' + cmd.deviceId + '" ', null)
-				cursor.stop()
+				observer.stop()
 				PeripheralDeviceCommands.remove(cmd._id)
 				if (subscription) subscription.stop()
 			}
@@ -165,13 +169,11 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 		}
 	}
 
-	let cursor = PeripheralDeviceCommands.find({
-		_id: commandId
-	}).observeChanges({
+	observer = cursor.observeChanges({
 		added: checkReply,
 		changed: checkReply,
 	})
-	let timeoutCheck: number = Meteor.setTimeout(checkReply, timeoutTime)
+	timeoutCheck = Meteor.setTimeout(checkReply, timeoutTime)
 }
 
 }

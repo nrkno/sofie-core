@@ -21,7 +21,7 @@ import * as Windowed_MouseOver from './Windowed_MouseOver.json'
 import * as On_Air_MouseOut from './On_Air_MouseOut.json'
 // @ts-ignore Not recognized by Typescript
 import * as On_Air_MouseOver from './On_Air_MouseOver.json'
-import { SupportPopUpToggle } from '../SupportPopUp';
+import { SupportPopUpToggle } from '../SupportPopUp'
 
 interface IProps {
 	isFollowingOnAir: boolean

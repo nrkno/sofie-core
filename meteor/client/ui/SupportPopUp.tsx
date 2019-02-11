@@ -31,9 +31,7 @@ export const SupportPopUp = withTracker<IProps, {}, ITrackedProps>((props: IProp
 		super (props)
 	}
 
-	componentDidMount () {
-		
-	}
+	// componentDidMount () {}
 
 	render () {
 		return (

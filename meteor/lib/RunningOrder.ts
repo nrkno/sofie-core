@@ -79,7 +79,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 	let isLiveSegment = false
 	let isNextSegment = false
 	let currentLiveSegmentLine: SegmentLineExtended | undefined = undefined
-	let nextSegmentLine: SegmentLineExtended | undefined = undefined
+	// let nextSegmentLine: SegmentLineExtended | undefined = undefined
 	let hasAlreadyPlayed = false
 	let hasRemoteItems = false
 	let hasGuestItems = false
@@ -208,7 +208,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 			if (runningOrder.nextSegmentLineId === segmentLineE._id) {
 				isNextSegment = true
 				// next is only auto, if current has a duration
-				nextSegmentLine = segmentLineE
+				// nextSegmentLine = segmentLineE
 			}
 			autoNextSegmentLine = (
 				currentLiveSegmentLine ?

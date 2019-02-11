@@ -404,6 +404,18 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 											className='input text-input input-l'></EditAttribute>
 									</label>
 								</div>
+								<div className='mod mvs mhs'>
+									<label className='field'>
+										{t('Thread Usage')}
+										<EditAttribute
+											modifiedClassName='bghl'
+											attribute={`settings.devices.${deviceId}.threadUsage`}
+											obj={this.props.device}
+											type='float'
+											collection={PeripheralDevices}
+											className='input text-input input-l'></EditAttribute>
+									</label>
+								</div>
 								{(
 									device.type === PlayoutDeviceType.CASPARCG && (
 										(
@@ -731,6 +743,18 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 							className=''></EditAttribute>
 					</label>
 				</div>
+				<div>
+					<label className='field'>
+						{t('Activate multi threading')}
+						<EditAttribute
+							modifiedClassName='bghl'
+							attribute={'settings.multiThreading'}
+							obj={this.props.device}
+							type='checkbox'
+							collection={PeripheralDevices}
+							className=''></EditAttribute>
+					</label>
+				</div>
 
 				<ModalDialog title={t('Remove this device?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
 					<p>{t('Are you sure you want to remove device "{{deviceId}}"?', { deviceId: (this.state.deleteConfirmDeviceId && this.state.deleteConfirmDeviceId) })}</p>
@@ -783,7 +807,7 @@ interface IMediaManagerSettingsComponentProps {
 
 const MediaManagerSettingsComponent = translate()(
 	class MediaManagerSettingsComponent extends React.Component<Translated<IMediaManagerSettingsComponentProps>, IMediaManagerSettingsComponentState> {
-		constructor(props: Translated<IMediaManagerSettingsComponentProps>) {
+		constructor (props: Translated<IMediaManagerSettingsComponentProps>) {
 			super(props)
 
 			this.state = {
@@ -1136,7 +1160,7 @@ const MediaManagerSettingsComponent = translate()(
 				}
 			})
 		}
-		renderFlows() {
+		renderFlows () {
 			let settings = this.props.device.settings as MediaManagerDeviceSettings
 
 			const { t } = this.props
@@ -1230,8 +1254,6 @@ const MediaManagerSettingsComponent = translate()(
 				</React.Fragment>
 			})
 		}
-
-
 
 		render () {
 			const { t } = this.props

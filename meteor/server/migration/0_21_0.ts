@@ -1,10 +1,10 @@
 import { addMigrationSteps } from './databaseMigration'
 import * as _ from 'underscore'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases';
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Random } from 'meteor/random'
 
-// 0.20.0
-addMigrationSteps( '0.20.0', [
+// 0.21.0
+addMigrationSteps( '0.21.0', [
 	{
 		id: 'showStyleBase runtimeArguments _id',
 		canBeRunAutomatically: true,

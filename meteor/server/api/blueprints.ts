@@ -1,14 +1,25 @@
 import * as _ from 'underscore'
 import * as moment from 'moment'
 import { SaferEval } from 'safer-eval'
-import { SegmentLine, DBSegmentLine, SegmentLineNote, SegmentLineNoteType, SegmentLines } from '../../lib/collections/SegmentLines'
+import { SegmentLine, SegmentLineNote, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
-import { formatDateAsTimecode, formatDurationAsTimecode, literal, normalizeArray, getCurrentTime, OmitId, trimIfString, extendMandadory } from '../../lib/lib'
+import {
+	formatDateAsTimecode,
+	formatDurationAsTimecode,
+	getCurrentTime,
+	OmitId,
+	trimIfString,
+	extendMandadory
+} from '../../lib/lib'
 import { getHash } from '../lib'
 import { logger } from '../logging'
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-import { TimelineObjGeneric, TimelineObjRunningOrder, TimelineObjType } from '../../lib/collections/Timeline'
+import { RunningOrder } from '../../lib/collections/RunningOrders'
+import {
+	TimelineObjGeneric,
+	TimelineObjRunningOrder,
+	TimelineObjType
+} from '../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'

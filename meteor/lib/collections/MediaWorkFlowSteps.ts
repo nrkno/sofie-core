@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, Time } from '../lib'
+import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 
 export enum WorkStepStatus {

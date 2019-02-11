@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
-import { Time, Collections, registerCollection } from '../lib'
+import { Time, registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintExternalMessageQueueObj, IBlueprintExternalMessageQueueType } from 'tv-automation-sofie-blueprints-integration'
 

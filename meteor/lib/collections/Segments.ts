@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
-import { applyClassToDocument, Optional, registerCollection } from '../lib'
+import { applyClassToDocument, registerCollection } from '../lib'
 import { SegmentLines, SegmentLineNote } from './SegmentLines'
 import { MOS } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrders } from './RunningOrders'

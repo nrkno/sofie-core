@@ -158,7 +158,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 		let msgFreezes = ''
 		const item = this.props.segmentLineItem as SegmentLineItemUi
 		const metadata = item.metadata as MediaObject
-		const timebase = metadata.mediainfo ? metadata.mediainfo.timebase : 20
+		const timebase = metadata.mediainfo && metadata.mediainfo.timebase ? metadata.mediainfo.timebase : 20
 		if (this.blacks) {
 			let tot = 0
 			for (const b of this.blacks) {
@@ -174,7 +174,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 				}
 			}
 			// @todo: hardcoded 25fps
-			if (tot > 0) msgBlacks = `${tot / 40} black frame${tot > 40 ? 's' : ''} in clip`
+			if (tot > 0) msgBlacks = `${tot / timebase} black frame${tot > timebase ? 's' : ''} in clip`
 		}
 		if (this.freezes) {
 			let tot = 0
@@ -198,7 +198,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 				<div className='segment-timeline__mini-inspector__warnings'>{msgBlacks}{msgFreezes && <br />}{msgFreezes}</div>
 			</React.Fragment>
 		} else {
-			return
+			return undefined
 		}
 	}
 
@@ -227,11 +227,11 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 					{this.scenes && this.scenes.map((i) => i < itemDuration && <span className='segment-timeline__layer-item__scene-marker' key={i} style={{ 'left': ((i - seek) * this.props.timeScale).toString() + 'px' }}></span>)}
 					{this.freezes &&
 						this.freezes.map((i) => i.start < itemDuration &&
-						<span className='segment-timeline__layer-item__anomaly-marker' key={i.start} 
+						<span className='segment-timeline__layer-item__anomaly-marker' key={i.start}
 							style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
 					{this.blacks &&
 						this.blacks.map((i) => i.start < itemDuration &&
-					<span className='segment-timeline__layer-item__anomaly-marker segment-timeline__layer-item__anomaly-marker__freezes' key={i.start} 
+					<span className='segment-timeline__layer-item__anomaly-marker segment-timeline__layer-item__anomaly-marker__freezes' key={i.start}
 						style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
 					<span className='segment-timeline__layer-item__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 						<span className={ClassNames('segment-timeline__layer-item__label', {

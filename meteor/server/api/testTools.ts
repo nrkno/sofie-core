@@ -3,13 +3,13 @@ import * as _ from 'underscore'
 import { Random } from 'meteor/random'
 import { RecordedFiles, RecordedFile } from '../../lib/collections/RecordedFiles'
 import { StudioInstallations, StudioInstallation, ITestToolsConfig, MappingExt } from '../../lib/collections/StudioInstallations'
-import { getCurrentTime, literal } from '../../lib/lib'
+import { getCurrentTime, literal, waitForPromise } from '../../lib/lib'
 import { TestToolsAPI } from '../../lib/api/testTools'
 import { setMeteorMethods, Methods } from '../methods'
 import { logger } from '../logging'
 import { updateTimeline } from './playout'
 import * as moment from 'moment'
-import { TimelineObjGeneric, TimelineObjRecording, TimelineObjType } from '../../lib/collections/Timeline'
+import { TimelineObjRecording, TimelineObjType } from '../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
 import {
 	ChannelFormat,
@@ -33,7 +33,7 @@ const defaultConfig = {
 	channelFormat: ChannelFormat.HD_1080I5000,
 	prefix: ''
 }
-function getStudioConfig (studio: StudioInstallation): ITestToolsConfig {
+export function getStudioConfig (studio: StudioInstallation): ITestToolsConfig {
 	const config: ITestToolsConfig = studio.testToolsConfig || { recordings: defaultConfig }
 	if (!config.recordings) config.recordings = defaultConfig
 	return config
@@ -191,7 +191,8 @@ export namespace ServerTestToolsAPI {
 		const config = getStudioConfig(studio)
 		if (!config.recordings.urlPrefix) throw new Meteor.Error(500, `URL prefix for Studio "${studio._id}" not defined!`)
 
-		deleteRequest({ uri: config.recordings.urlPrefix + file.path }).then(res => {
+		const p = deleteRequest({ uri: config.recordings.urlPrefix + file.path })
+		.then(res => {
 			// 404 is ok, as it means file already doesnt exist. 200 is also good
 			if (res.statusCode !== 404 && res.statusCode !== 200) {
 				throw new Meteor.Error(500, `Failed to delete recording "${id}"!`)
@@ -201,6 +202,7 @@ export namespace ServerTestToolsAPI {
 
 			return true
 		})
+		waitForPromise(p)
 	}
 }
 

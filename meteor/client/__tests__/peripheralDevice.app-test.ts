@@ -1,9 +1,9 @@
 /* Integration test for peripheralDevice */
 
-import * as chai from 'chai'
+// import * as chai from 'chai'
 import {} from 'mocha'
 
-const expect = chai.expect
+// const expect = chai.expect
 
 describe('Access to peripheralDevice API', function () {
 	beforeEach(function () {

@@ -25,7 +25,7 @@ import {
 	SegmentLineItem,
 	SegmentLineItems
 } from '../../../lib/collections/SegmentLineItems'
-import { DBSegment, Segment } from '../../../lib/collections/Segments'
+import { DBSegment } from '../../../lib/collections/Segments'
 import {
 	saveIntoDb,
 	getCurrentTime,fetchBefore,
@@ -50,8 +50,7 @@ import {
 	SegmentLineAdLibItems
 } from '../../../lib/collections/SegmentLineAdLibItems'
 import {
-	ShowStyleBases,
-	ShowStyleBase
+	ShowStyleBases
 } from '../../../lib/collections/ShowStyleBases'
 import {
 	ServerPlayoutAPI,
@@ -165,7 +164,6 @@ export function mergeSegmentLine (newSegmentLine: DBSegmentLine, existingSegment
 
 		newSegmentLine.typeVariant = existingSegmentLine.typeVariant || newSegmentLine.typeVariant // typeVariant is set in the blueprints
 		newSegmentLine.subTypeVariant = existingSegmentLine.subTypeVariant || newSegmentLine.subTypeVariant // subTypeVariant is set in the blueprints
-
 	}
 	return newSegmentLine
 }

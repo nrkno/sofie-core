@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
@@ -7,7 +6,7 @@ import * as _ from 'underscore'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
-import Moment from 'react-moment';
+import Moment from 'react-moment'
 
 interface IProps {
 	match: {
@@ -131,7 +130,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	}
 
 	render () {
-		const { t } = this.props
 
 		if (this.props.blueprint) {
 			return this.renderEditForm(this.props.blueprint)

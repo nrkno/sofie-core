@@ -2,9 +2,9 @@ import * as chai from 'chai'
 import * as _ from 'underscore'
 import {} from 'mocha'
 
-import { RunningOrder, RunningOrders, DBRunningOrder, RoData } from '../../../lib/collections/RunningOrders'
-import { SegmentLine, SegmentLines, DBSegmentLine } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
+import { RunningOrder, DBRunningOrder, RoData } from '../../../lib/collections/RunningOrders'
+import { SegmentLine, DBSegmentLine } from '../../../lib/collections/SegmentLines'
+import { SegmentLineItem } from '../../../lib/collections/SegmentLineItems'
 
 import { buildTimelineObjs } from '../playout'
 import { getSlGroupId, getSlFirstObjectId, TriggerType, getSliGroupId, getSliFirstObjectId } from 'tv-automation-sofie-blueprints-integration/dist/timeline';

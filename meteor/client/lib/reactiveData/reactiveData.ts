@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { ReactiveDataHelper } from './reactiveDataHelper'
 import { ReactiveVar } from 'meteor/reactive-var'

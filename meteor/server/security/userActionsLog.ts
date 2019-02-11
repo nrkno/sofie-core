@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 
 export namespace UserActionsLogSecurity {

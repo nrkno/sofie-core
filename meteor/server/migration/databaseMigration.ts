@@ -33,24 +33,24 @@ import {
 	MigrationContextStudio as IMigrationContextStudio,
 	MigrationContextShowStyle as IMigrationContextShowStyle
 } from 'tv-automation-sofie-blueprints-integration'
-import {
-	DeviceOptions as PlayoutDeviceSettingsDevice
-} from 'timeline-state-resolver-types'
 import { setMeteorMethods } from '../methods'
 import { logger } from '../../lib/logging'
 import { storeSystemSnapshot } from '../api/snapshot'
-import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
-import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
+import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { evalBlueprints, MigrationContextStudio, MigrationContextShowStyle } from '../api/blueprints'
 
 /** The current database version, x.y.z
- * 0.16.0: Release 3 (2018-10-26)
+ * 0.16.0: Release 3   (2018-10-26)
  * 0.17.0: Release 3.1 (2018-11-14)
- * 0.18.0: Release 4 (TBD)
- * 0.19.0: Release 5 (TBD)
+ * 0.18.0: Release 4   (2018-11-26)
+ * 0.19.0: Release 5   (2019-01-11)
+ * 0.20.0: Release 5.1 (2019-02-05)
+ * 0.21.0: Release 6   (TBD, in testing)
+ * 0.22.0: Release 7   (TBD)
  */
-export const CURRENT_SYSTEM_VERSION = '0.20.0'
+export const CURRENT_SYSTEM_VERSION = '0.22.0'
 
 /** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.
  * And Sofie said: The version of the database is to be GENESIS_SYSTEM_VERSION so that the migration scripts will run.

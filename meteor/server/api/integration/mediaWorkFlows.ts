@@ -6,7 +6,7 @@ import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { MediaWorkFlows, MediaWorkFlow } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps, MediaWorkFlowStep } from '../../../lib/collections/MediaWorkFlowSteps'
 import { setMeteorMethods, Methods, wrapMethods } from '../../methods'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice';
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 
 export namespace MediaManagerIntegration {
 

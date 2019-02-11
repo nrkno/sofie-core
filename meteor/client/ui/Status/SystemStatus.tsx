@@ -1,10 +1,10 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { PeripheralDevice,
-		PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevice,
+	PeripheralDevices
+} from '../../../lib/collections/PeripheralDevices'
 import * as i18next from 'react-i18next'
-import { ClientAPI } from '../../../lib/api/client'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
 import { translate } from 'react-i18next'

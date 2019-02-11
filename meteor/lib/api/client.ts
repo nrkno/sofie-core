@@ -1,3 +1,5 @@
+import * as _ from 'underscore'
+
 export namespace ClientAPI {
 	export enum methods {
 		'execMethod' = 'client.execMethod',
@@ -34,4 +36,18 @@ export namespace ClientAPI {
 		}
 	}
 	export type ClientResponse = ClientResponseError | ClientResponseSuccess
+	export function isClientResponseError (res: any): res is ClientResponseError {
+		return (
+			_.isObject(res) &&
+			!_.isArray(res) &&
+			res.error !== undefined
+		)
+	}
+	export function isClientResponseSuccess (res: any): res is ClientResponseSuccess {
+		return (
+			_.isObject(res) &&
+			!_.isArray(res) &&
+			res.error !== undefined
+		)
+	}
 }

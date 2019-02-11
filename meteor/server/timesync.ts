@@ -111,9 +111,6 @@ export function determineDiffTime (config: Config): Promise<{mean: number, stdDe
 		pushTime()
 	})
 	.then((results: Array<ServerTime>) => {
-		let diffAvg = 0
-		let count = 0
-		let diffSum = 0
 		let halfResults = results.sort((a, b) => { // sort by response time, lower is better
 			return a.responseTime - b.responseTime
 		})

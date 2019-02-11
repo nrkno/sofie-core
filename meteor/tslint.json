@@ -6,6 +6,9 @@
 			"SwitchCase": 1
     }],
     "trailing-comma": false,
-    "semicolon": [true, "never"]
+    "semicolon": [true, "never"],
+    "strict-type-predicates": true,
+    "await-promise": [true, "Bluebird"],
+    "no-use-before-declare": false
   }
 }

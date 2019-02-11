@@ -2,7 +2,6 @@ import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { applyClassToDocument, registerCollection } from '../lib'
 import * as _ from 'underscore'
-import { logger } from '../logging'
 import { ChannelFormat } from 'timeline-state-resolver-types'
 import {
 	IConfigItem,
