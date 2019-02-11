@@ -221,7 +221,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			<div className='studio-edit mod mhl mvs'>
 				<div>
 					<div>
-						<h3 className='mhn'>{t('Take a Snapshot')}</h3>
+						<h3 className='mhs'>{t('Take a Snapshot')}</h3>
 						<div>
 							<h4>{t('Full System Snapshot')}</h4>
 							<i>
@@ -248,7 +248,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							}
 						</div>
 					</div>
-					<h3 className='mhn'>{t('Restore from Snapshot File')}</h3>
+					<h3 className='mhs'>{t('Restore from Snapshot File')}</h3>
 					<label className='field'>
 						<div className='mdi'>
 							<input type='file' accept='.json' onChange={this.onUploadFile.bind(this)} key={this.state.uploadFileKey} />
@@ -259,7 +259,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						<p>{t('Are you sure you want to restore the system from the Snapshot file "{{fileName}}"?', { fileName: this.state.uploadFileName })}</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</ModalDialog>
-					<h3 className='mhn'>{t('Restore from Stored Snapshots')}</h3>
+					<h3 className='mhs'>{t('Restore from Stored Snapshots')}</h3>
 					<div>
 						<table className='table'>
 							<tbody>

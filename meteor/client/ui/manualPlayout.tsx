@@ -150,7 +150,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 					_.map(this.getStudios(), (studio) => {
 						return <div key={studio._id}>
 							<h2>{studio.name}</h2>
-							<h3 className='mhn'>ATEM Control</h3>
+							<h3 className='mhs'>ATEM Control</h3>
 							<table>
 								<tbody>
 								{
@@ -173,7 +173,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 								}
 								</tbody>
 							</table>
-							<h3 className='mhn'>CasparCG Control</h3>
+							<h3 className='mhs'>CasparCG Control</h3>
 							<table>
 								<tbody>
 								{
