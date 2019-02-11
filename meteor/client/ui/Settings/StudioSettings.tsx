@@ -209,7 +209,7 @@ export const ConfigSettings = translate()(class ConfigSettings extends React.Com
 		const { t } = this.props
 		return (
 			<div>
-				<h3>{t('Custom Configuration')}</h3>
+				<h3 className='mhn'>{t('Custom Configuration')}</h3>
 				<table className='expando settings-studio-custom-config-table'>
 					<tbody>
 						{this.renderItems()}
@@ -298,7 +298,7 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 		const { t } = this.props
 		return (
 			<div>
-				<h3>{t('Attached Devices')}</h3>
+				<h3 className='mhn'>{t('Attached Devices')}</h3>
 				<table className='expando settings-studio-device-table'>
 					<tbody>
 						{this.renderDevices()}
@@ -756,7 +756,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 		const { t } = this.props
 		return (
 			<div>
-				<h3>{t('Layer Mappings')}</h3>
+				<h3 className='mhn'>{t('Layer Mappings')}</h3>
 				<table className='expando settings-studio-mappings-table'>
 					<tbody>
 						{this.renderMappings()}
@@ -783,7 +783,7 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 		const { t } = this.props
 		return (
 			<div>
-				<h3>{t('Test Tools - Recordings')}</h3>
+				<h3 className='mhn'>{t('Test Tools - Recordings')}</h3>
 				<div className='mod mvs mhs'>
 					<label className='field'>
 						{t('Device ID')}
@@ -941,7 +941,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 			this.props.studioInstallation ?
 			<div className='studio-edit mod mhl mvs'>
 				<div>
-					<h3>{t('Generic Properties')}</h3>
+						<h3 className='mhn'>{t('Generic Properties')}</h3>
 					<label className='field'>
 						{t('Studio Name')}
 						<div className='mdi'>
