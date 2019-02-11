@@ -15,7 +15,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { callMethod, callPeripheralDeviceFunction } from '../../lib/clientAPI'
+import { callMethod, callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -117,13 +117,10 @@ export const DeviceItem = translate()(class extends React.Component<Translated<I
 	}
 	handleConfirmKillAccept = (e) => {
 		if (this.state.showKillDeviceConfirm) {
-			callPeripheralDeviceFunction(e, this.state.showKillDeviceConfirm._id, 'killProcess', 1, (err, result) => {
-				// console.log('reply', err, result)
-				if (err) {
-					console.error(err)
-				} else {
-					console.log(result)
-				}
+			PeripheralDevicesAPI.restartDevice(this.state.showKillDeviceConfirm, e).then((res) => {
+				console.log(res)
+			}).catch((err) => {
+				console.error(err)
 			})
 		}
 		// ShowStyles.remove(this.state.KillConfirmItem._id)
@@ -235,8 +232,8 @@ export const DeviceItem = translate()(class extends React.Component<Translated<I
 										this.onRestartCasparCG(this.props.device)
 									}
 								}>
-									Restart
-									{ JSON.stringify(this.props.device.settings) }
+									{t('Restart')}
+									{/** IDK what this does, but it doesn't seem to make a lot of sense: JSON.stringify(this.props.device.settings) */}
 								</button>
 							</React.Fragment> : null
 						)}
@@ -272,7 +269,7 @@ export const DeviceItem = translate()(class extends React.Component<Translated<I
 										this.onKillDevice(this.props.device)
 									}
 								}>
-									Restart
+									{t('Restart')}
 								</button>
 							</React.Fragment> : null
 						)}
@@ -281,43 +278,6 @@ export const DeviceItem = translate()(class extends React.Component<Translated<I
 
 				<div className='clear'></div>
 			</div>
-			// <tr className='device-item'>
-			// 	<td className='device-item__id'>
-			// 		<p><Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device._id}</Link></p>
-			// 	</td>
-			// 	<td className='device-item__name'>
-			// 		<p>{this.props.device.name}</p>
-			// 	</td>
-			// 	<td className='device-item__connected'>
-			// 		<p>{this.connectedString()}</p>
-			// 	</td>
-			// 	<td className='device-item__type'>
-			// 		<p>{this.deviceTypeString()}</p>
-			// 	</td>
-			// 	<td className={statusClassNames}>
-			// 		<p>
-			// 			<span className='pill device-item__device-status__label'>
-			// 				{this.statusCodeString()}
-			// 			</span>
-			// 		</p>
-			// 		<div><i>{(((this.props.device || {}).status || {}).messages || []).join(', ')}</i></div>
-			// 	</td>
-			// 	<td className='device-item__last-seen'>
-			// 		<p><Moment from={getCurrentTime()} date={this.props.device.lastSeen} /></p>
-			// 	</td>
-			// 	<td className='device-item__actions'>
-			// 		<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')}
-			// 			secondaryText={t('Cancel')}
-			// 			show={!!this.state.showDeleteDeviceConfirm}
-			// 			onAccept={(e) => this.handleConfirmDeleteShowStyleAccept(e)}
-			// 			onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
-			// 			<p>{t(`Are you sure you want to delete this device?`)}</p>
-			// 		</ModalDialog>
-			// 		<button className='action-btn' onClick={(e) => e.preventDefault() || e.stopPropagation() || this.onDeleteDevice(this.props.device)}>
-			// 			<FontAwesomeIcon icon={faTrash} />
-			// 		</button>
-			// 	</td>
-			// </tr>
 		)
 	}
 })

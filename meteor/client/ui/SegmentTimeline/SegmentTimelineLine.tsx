@@ -69,26 +69,17 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 
 	renderInside () {
 		if (this.props.layer.items !== undefined) {
-			return this.props.layer.items
-				.filter((segmentLineItem) => {
+			return _.chain(this.props.layer.items.filter((segmentLineItem) => {
 					// filter only segment line items belonging to this segment line
 					return (segmentLineItem.segmentLineId === this.props.segmentLine._id) ?
 						// filter only segment line items, that have not been hidden from the UI
 						(segmentLineItem.hidden !== true) &&
 						(segmentLineItem.virtual !== true)
-					: false
-				})
-				.sort((a: SegmentLineItemUi, b: SegmentLineItemUi): number => {
-					if ((a.renderedInPoint !== undefined) && (b.renderedInPoint !== undefined)) {
-						return (a.renderedInPoint as number) - (b.renderedInPoint as number)
-					} else if (a.renderedInPoint !== undefined) {
-						return -1
-					} else if (b.renderedInPoint !== undefined) {
-						return 1
-					} else {
-						return 1
-					}
-				})
+						: false
+				}))
+				.sortBy((it) => it.renderedInPoint)
+				.sortBy((it) => it.infiniteMode)
+				.sortBy((it) => it.cropped)
 				.map((segmentLineItem) => {
 					return (
 						<SourceLayerItemContainer key={segmentLineItem._id}
@@ -110,7 +101,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 							scrollWidth={this.props.scrollWidth}
 							/>
 					)
-				})
+				}).value()
 		}
 	}
 
