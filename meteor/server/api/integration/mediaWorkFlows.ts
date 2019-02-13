@@ -48,7 +48,6 @@ export namespace MediaManagerIntegration {
 
 	export function updateMediaWorkFlow (id: string, token: string, docId: string, obj: MediaWorkFlow | null) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 		if (!peripheralDevice.studioInstallationId) throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studioInstallation')
 
 		check(docId, String)
@@ -66,7 +65,6 @@ export namespace MediaManagerIntegration {
 
 	export function updateMediaWorkFlowStep (id: string, token: string, docId: string, obj: MediaWorkFlowStep | null) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
-		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 		if (!peripheralDevice.studioInstallationId) throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studioInstallation')
 
 		check(docId, String)
