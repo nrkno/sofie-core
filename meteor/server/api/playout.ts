@@ -3164,12 +3164,19 @@ function calcSlTargetDuration (prevSl: SegmentLine | undefined, currentSl: Segme
 		return 0
 	}
 
+	// This is a horrible hack, to compensate for the expectedDuration mangling in the blueprints which is
+	// needed to get the show runtime to be correct. This just inverts that mangling before running as 'intended'
+	const maxPreroll = Math.max(currentSl.transitionPrerollDuration ? currentSl.transitionPrerollDuration : 0, currentSl.prerollDuration || 0)
+	const maxKeepalive = Math.max(currentSl.transitionKeepaliveDuration ? currentSl.transitionKeepaliveDuration : 0, currentSl.prerollDuration || 0)
+	const lengthAdjustment = maxPreroll - maxKeepalive
+	const rawExpectedDuration = (currentSl.expectedDuration || 0) - lengthAdjustment
+
 	if (!prevSl || prevSl.disableOutTransition) {
-		return (currentSl.expectedDuration || 0) + (currentSl.prerollDuration || 0)
+		return rawExpectedDuration + (currentSl.prerollDuration || 0)
 	}
 
 	let prerollDuration = (currentSl.transitionPrerollDuration || currentSl.prerollDuration || 0)
-	return currentSl.expectedDuration + (prevSl.autoNextOverlap || 0) + prerollDuration
+	return rawExpectedDuration + (prevSl.autoNextOverlap || 0) + prerollDuration
 }
 function calcSlOverlapDuration (fromSl: SegmentLine, toSl: SegmentLine): number {
 	const allowTransition: boolean = !fromSl.disableOutTransition
