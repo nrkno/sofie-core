@@ -288,7 +288,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 	
 	componentWillMount () {
 		// Subscribe to data:
-		this.subscribe(PubSub.mediaWorkFlows, {})
+		this.subscribe(PubSub.mediaWorkFlows, {}) // TODO: add some limit
 		this.subscribe(PubSub.mediaWorkFlowSteps, {})
 	}
 

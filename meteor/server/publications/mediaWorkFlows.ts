@@ -10,6 +10,7 @@ meteorPublish(PubSub.mediaWorkFlowSteps, (selector, token) => {
 	check(selector, Object)
 
 	if (MediaWorkFlowStepsSecurity.allowReadAccess(selector, token, this)) {
+		// TODO: require deviceId
 		return MediaWorkFlowSteps.find(selector)
 	}
 	return null
@@ -20,6 +21,7 @@ meteorPublish(PubSub.mediaWorkFlows, (selector, token) => {
 	check(selector, Object)
 
 	if (MediaWorkFlowsSecurity.allowReadAccess(selector, token, this)) {
+		// TODO: require deviceId
 		return MediaWorkFlows.find(selector)
 	}
 	return null
