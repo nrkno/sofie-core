@@ -14,6 +14,10 @@ export interface MediaWorkFlow {
 	_id: string
 	_rev: string
 
+	name?: string
+
+	/** Which device this workflow originated from */
+	deviceId: string
 	studioInstallationId: string
 
 	source: WorkFlowSource
@@ -34,6 +38,7 @@ registerCollection('MediaWorkFlows', MediaWorkFlows)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		MediaWorkFlows._ensureIndex({
+			// TODO: add deviceId: 1,
 			mediaObjectId: 1
 		})
 		MediaWorkFlows._ensureIndex({

@@ -1014,7 +1014,7 @@ const MediaManagerSettingsComponent = translate()(
 												obj={this.props.device}
 												type='checkbox'
 												collection={PeripheralDevices}
-												className='input text-input input-l'></EditAttribute>
+												className='input input-l'></EditAttribute>
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -1026,7 +1026,7 @@ const MediaManagerSettingsComponent = translate()(
 												obj={this.props.device}
 												type='checkbox'
 												collection={PeripheralDevices}
-												className='input text-input input-l'></EditAttribute>
+												className='input input-l'></EditAttribute>
 										</label>
 									</div>
 									{(
@@ -1091,6 +1091,18 @@ const MediaManagerSettingsComponent = translate()(
 																type='text'
 																collection={PeripheralDevices}
 																className='input text-input input-l'></EditAttribute>
+														</label>
+													</div>
+													<div className='mod mvs mhs'>
+														<label className='field'>
+															{t('Don\'t scan entire storage')}
+															<EditAttribute
+																modifiedClassName='bghl'
+																attribute={'settings.storages.' + index + '.options.onlySelectedFiles'}
+																obj={this.props.device}
+																type='checkbox'
+																collection={PeripheralDevices}
+																className='input input-l'></EditAttribute>
 														</label>
 													</div>
 												</React.Fragment>

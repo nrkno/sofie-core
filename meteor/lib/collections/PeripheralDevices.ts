@@ -130,14 +130,19 @@ export interface StorageSettings {
 		write: boolean
 	}
 	type: StorageType
-	options: any
+	options: {
+		/** Only subscribed files can be listened to for changes */
+		onlySelectedFiles?: boolean
+		[key: string]: any
+	}
 }
-
 export interface LocalFolderStorage extends StorageSettings {
 	type: StorageType.LOCAL_FOLDER
 	options: {
 		basePath: string
 		mediaPath?: string
+		usePolling?: boolean
+		onlySelectedFiles?: boolean
 	}
 }
 export interface FileShareStorage extends StorageSettings {
@@ -145,12 +150,13 @@ export interface FileShareStorage extends StorageSettings {
 	options: {
 		/** URI to the network share, eg "\\somehting\share" */
 		basePath: string
-		/** The playout media folder location */
+		/** A folder prefix relative to the Playout media folder */
 		mediaPath?: string
 		/** A virtual local drive letter, "E", the basePath should be mounted to */
 		mappedNetworkedDriveTarget: string
-		username?: string
-		password?: string
+		username?: string // wip?
+		password?: string // wip?
+		onlySelectedFiles?: boolean
 	}
 }
 

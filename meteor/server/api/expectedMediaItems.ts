@@ -50,7 +50,7 @@ export const updateExpectedMediaItems: (roId: string, slId: string) => void
 	})
 
 	function iterateOnSLILike (doc: SegmentLineItemGeneric, prefix: string) {
-		if (doc.content && doc.content.fileName && doc.content.mediaFlowIds) {
+		if (doc.content && doc.content.fileName && doc.content.path && doc.content.mediaFlowIds) {
 			(doc.content.mediaFlowIds as string[]).forEach(function (flow) {
 				eMIs.push(literal<ExpectedMediaItem>({
 					_id: getHash(prefix + '_' + doc._id + '_' + flow + '_' + roId + '_' + slId),

@@ -16,9 +16,11 @@ export abstract class MediaWorkFlowStep {
 	_id: string
 	_rev: string
 
+	/** Which device this workflow originated from */
+	deviceId: string
 	studioInstallationId: string
 
-	mediaWorkFlowId: string
+	workFlowId: string
 	action: string
 	status: WorkStepStatus
 	messages?: Array<string>
@@ -26,6 +28,7 @@ export abstract class MediaWorkFlowStep {
 	priority: number
 	/** 0-1 */
 	progress?: number
+	keyStep?: boolean
 	/** Calculated time left of this step */
 	expectedLeft?: number
 }
@@ -36,6 +39,7 @@ registerCollection('MediaWorkFlowSteps', MediaWorkFlowSteps)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		MediaWorkFlowSteps._ensureIndex({
+			// TODO: add deviceId: 1,
 			mediaWorkFlowId: 1
 		})
 		MediaWorkFlowSteps._ensureIndex({
