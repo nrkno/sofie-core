@@ -7,10 +7,10 @@ import { SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibIte
 import { syncFunctionIgnore } from '../codeControl'
 import { saveIntoDb, literal, getCurrentTime } from '../../lib/lib'
 import { SegmentLines } from '../../lib/collections/SegmentLines'
-import { wrapMethods, setMeteorMethods } from '../methods'
+import { setMeteorMethods } from '../methods'
 import { Random } from 'meteor/random'
 import { logger } from '../logging'
-import { getHash } from '../lib'
+import { getHash, wrapMethods } from '../lib'
 
 export const updateExpectedMediaItems: (roId: string, slId: string) => void
 = syncFunctionIgnore(function updateExpectedMediaItems (roId: string, slId: string) {

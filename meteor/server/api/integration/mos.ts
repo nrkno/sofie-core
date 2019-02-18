@@ -40,7 +40,7 @@ import {
 	postProcessSegmentLineItems,
 	SegmentLineContext
 } from '../blueprints'
-import { getHash } from '../../lib'
+import { getHash, wrapMethods } from '../../lib'
 import {
 	StudioInstallations,
 	StudioInstallation
@@ -59,7 +59,6 @@ import {
 import { CachePrefix } from '../../../lib/collections/RunningOrderDataCache'
 import {
 	setMeteorMethods,
-	wrapMethods,
 	Methods
 } from '../../methods'
 import {

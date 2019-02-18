@@ -12,7 +12,7 @@ import {
 	trimIfString,
 	extendMandadory
 } from '../../lib/lib'
-import { getHash } from '../lib'
+import { getHash, wrapMethods } from '../lib'
 import { logger } from '../logging'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
 import {
@@ -61,7 +61,7 @@ import { getShowStyleCompound, ShowStyleVariants, ShowStyleVariant } from '../..
 import { check, Match } from 'meteor/check'
 import { parse as parseUrl } from 'url'
 import { BlueprintAPI } from '../../lib/api/blueprint'
-import { Methods, setMeteorMethods, wrapMethods } from '../methods'
+import { Methods, setMeteorMethods } from '../methods'
 import { parseVersion } from '../../lib/collections/CoreSystem'
 import { Segment } from '../../lib/collections/Segments'
 import { AsRunLogEvent, AsRunLog } from '../../lib/collections/AsRunLog'

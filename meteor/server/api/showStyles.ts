@@ -1,11 +1,12 @@
 import { Random } from 'meteor/random'
 import { check } from 'meteor/check'
-import { Methods, setMeteorMethods, wrapMethods } from '../methods'
+import { Methods, setMeteorMethods } from '../methods'
 import { ShowStylesAPI } from '../../lib/api/showStyles'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { literal } from '../../lib/lib'
+import { wrapMethods } from '../lib'
 
 export function insertShowStyleBase (): string {
 	let id = ShowStyleBases.insert(literal<ShowStyleBase>({

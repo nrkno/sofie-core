@@ -4,7 +4,8 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
 import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
-import { setMeteorMethods, Methods, wrapMethods } from '../../methods'
+import { setMeteorMethods, Methods } from '../../methods'
+import { wrapMethods } from '../../lib'
 
 export namespace MediaScannerIntegration {
 	export function getMediaObjectRevisions (id: string, token: string, collectionId: string) {

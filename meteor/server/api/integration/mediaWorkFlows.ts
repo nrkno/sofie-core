@@ -5,8 +5,9 @@ import { logger } from '../../logging'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { MediaWorkFlows, MediaWorkFlow } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps, MediaWorkFlowStep } from '../../../lib/collections/MediaWorkFlowSteps'
-import { setMeteorMethods, Methods, wrapMethods } from '../../methods'
+import { setMeteorMethods, Methods } from '../../methods'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { wrapMethods } from '../../lib'
 
 export namespace MediaManagerIntegration {
 
