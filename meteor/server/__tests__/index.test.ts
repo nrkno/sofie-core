@@ -39,6 +39,12 @@
 import { ValidatedMethod } from 'meteor/mdg:validated-method'
 import { addFoo } from '../tempTest'
 import { Meteor } from 'meteor/meteor'
+
+jest.mock('meteor/mdg:validated-method', require('../../__mocks__/validated-method').setup, { virtual: true })
+jest.mock('meteor/random', require('../../__mocks__/random').setup, { virtual: true })
+jest.mock('meteor/meteorhacks:picker', require('../../__mocks__/meteorhacks-picker').setup, { virtual: true })
+jest.mock('meteor/mongo', require('../../__mocks__/mongo').setup, { virtual: true })
+
 describe('demo', () => {
 	it('should add foo', () => {
 		addFoo()

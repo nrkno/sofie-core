@@ -27,3 +27,10 @@ export class ValidatedMethodMock {
 		return this.run() // ???
 	}
 }
+export function setup () {
+	return {
+		ValidatedMethod: jest.fn((opts) => {
+			return new ValidatedMethodMock(opts)
+		})
+	}
+}
