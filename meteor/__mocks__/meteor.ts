@@ -43,7 +43,7 @@ export class MeteorMock {
 
 	static isClient: boolean = false
 	static isCordova: boolean = false
-	static isServer: boolean = false
+	static isServer: boolean = true
 	static isProduction: boolean = false
 	static release: string = ''
 
@@ -69,9 +69,9 @@ export class MeteorMock {
 		Object.assign(this.mockMethods, methods)
 	}
 	static call (methodName: string, args: any[]) {
-		this.mockMethods[methodName].call({})
+		this.mockMethods[methodName].call({}, args)
 	}
-	static apply (methodName: string, args: EJSONable[], options?: {
+	static apply (methodName: string, args: any[], options?: {
 		wait?: boolean;
 		onResultReceived?: Function;
 		returnStubValue?: boolean;
@@ -81,7 +81,7 @@ export class MeteorMock {
 		this.mockMethods[methodName].call({})
 	}
 	static absoluteUrl (path?: string): string {
-		return path // todo
+		return path + '' // todo
 	}
 	static setTimeout (fcn: Function, time: number): number {
 		return setTimeout(fcn, time)
@@ -103,13 +103,12 @@ export class MeteorMock {
 		this.mockStartupFunctions.push(fcn)
 	}
 
-	/*
 	static wrapAsync (fcn: Function, context?: Object): any {
 		return (...args: any[]) => {
-			fcn.apply(context, [...args, cb])
+			// don't know how to implement, in a mock...
+			fcn.apply(context, [...args])
 		}
 	}
-	*/
 
 	static bindEnvironment (fcn: Function): any {
 		return fcn
