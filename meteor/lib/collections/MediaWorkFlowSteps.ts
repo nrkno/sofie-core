@@ -8,6 +8,7 @@ export enum WorkStepStatus {
 	WORKING = 'working',
 	DONE = 'done',
 	ERROR = 'error',
+	SKIPPED = 'skipped',
 	CANCELED = 'canceled',
 	BLOCKED = 'blocked'
 }

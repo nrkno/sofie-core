@@ -53,22 +53,23 @@ namespace MediaManagerAPI {
 		LOCAL_MEDIA_ITEM = 'local_media_item',
 		TARGET_STORAGE_REMOVE = 'local_storage_remove'
 	}
-	
+
 	export enum MediaFlowType {
 		WATCH_FOLDER = 'watch_folder',
 		LOCAL_INGEST = 'local_ingest',
 		EXPECTED_ITEMS = 'expected_items'
 	}
-	
+
 	export enum WorkStepStatus {
 		IDLE = 'idle',
 		WORKING = 'working',
 		DONE = 'done',
 		ERROR = 'error',
 		CANCELED = 'canceled',
+		SKIPPED = 'skipped',
 		BLOCKED = 'blocked'
 	}
-	
+
 	export enum WorkStepAction {
 		COPY = 'copy',
 		DELETE = 'delete',
@@ -150,6 +151,8 @@ function workStepStatusLabel (t: TFunc, step: MediaWorkFlowStep): string {
 			return t('Error')
 		case MediaManagerAPI.WorkStepStatus.IDLE:
 			return t('Idle')
+		case MediaManagerAPI.WorkStepStatus.SKIPPED:
+			return t('Skipped')
 		case MediaManagerAPI.WorkStepStatus.WORKING:
 			if (step.progress) {
 				return t('Step progress: {{progress}}', { progress: Math.round(step.progress * 100) + '%' })
@@ -285,7 +288,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 			expanded: {}
 		}
 	}
-	
+
 	componentWillMount () {
 		// Subscribe to data:
 		this.subscribe(PubSub.mediaWorkFlows, {}) // TODO: add some limit
@@ -293,7 +296,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 	}
 
 	toggleExpanded = (id: string) => {
-		this.state.expanded[id] = !this.state.expanded[id] 
+		this.state.expanded[id] = !this.state.expanded[id]
 		this.setState({
 			expanded: this.state.expanded
 		})
