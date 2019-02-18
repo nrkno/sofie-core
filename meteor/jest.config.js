@@ -13,7 +13,7 @@ module.exports = {
 
 	globals: {
 		'ts-jest': {
-			tsConfigFile: 'tsconfig.json'
+			tsConfig: 'tsconfig.json'
 		}
 	},
 	moduleFileExtensions: [
@@ -21,10 +21,20 @@ module.exports = {
 		'js'
 	],
 	transform: {
-		'^.+\\.(ts|tsx)$': './node_modules/ts-jest/preprocessor.js'
+		'^.+\\.(ts|tsx)$': 'ts-jest'
 	},
 	testMatch: [
-		'**/*.test.(ts|js)'
+		'**/__tests__/**/*.(spec|test).(ts|js)'
 	],
-	testEnvironment: 'node'
+	testEnvironment: 'node',
+	coverageThreshold: {
+		global: {
+		  branches: 0,
+		  functions: 0,
+		  lines: 0,
+		  statements: 0
+		}
+	},
+	coverageDirectory: "./coverage/",
+	collectCoverage: true
 }
