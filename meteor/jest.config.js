@@ -4,13 +4,11 @@ module.exports = {
 		'<rootDir>/node_modules/jest-meteor-stubs/lib/',
 	],
 	moduleNameMapper: {
-		'^(.*):(.*)$': '$1_$2',
 	},
 	unmockedModulePathPatterns: [
 		'/^imports\\/.*\\.jsx?$/',
 		'/^node_modules/',
 	],
-
 	globals: {
 		'ts-jest': {
 			tsConfig: 'tsconfig.json'
@@ -35,6 +33,11 @@ module.exports = {
 		  statements: 0
 		}
 	},
-	coverageDirectory: "./coverage/",
+	coverageDirectory: "./.coverage/",
+	collectCoverageFrom: [
+		"**/*.{js,ts}",
+		"!**/*.{tsx}",
+		"!**/client/main.js",
+	],
 	collectCoverage: true
 }

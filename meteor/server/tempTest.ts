@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+import { Random } from 'meteor/random'
 // import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 // @ts-ignore
 import { ValidatedMethod } from 'meteor/mdg:validated-method'
@@ -12,4 +13,8 @@ export const addFoo = function () {
 			console.log('foo', bar)
 		},
 	})
+}
+
+export function tempTestRandom () {
+	return Random.id()
 }
