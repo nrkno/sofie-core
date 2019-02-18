@@ -8,3 +8,8 @@ export class RandomMock {
 		return id
 	}
 }
+export function setup () {
+	return {
+		Random: RandomMock
+	}
+}
