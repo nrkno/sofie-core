@@ -7,11 +7,16 @@ module.exports = {
 	},
 	unmockedModulePathPatterns: [
 		'/^imports\\/.*\\.jsx?$/',
-		'/^node_modules/',
+		'/^node_modules/'
 	],
 	globals: {
 		'ts-jest': {
-			tsConfig: 'tsconfig.json'
+			tsConfig: 'tsconfig.json',
+			diagnostics: {
+				ignoreCodes: [
+					'TS151001'
+				]
+			}
 		}
 	},
 	moduleFileExtensions: [
