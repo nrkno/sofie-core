@@ -694,6 +694,16 @@ export function asyncCollectionRemove<DocClass, DBInterface> (
 	})
 }
 /**
+ * Supresses the "UnhandledPromiseRejectionWarning" warning
+ * ref: https://stackoverflow.com/questions/40920179/should-i-refrain-from-handling-promise-rejection-asynchronously
+ *
+ * creds: https://github.com/rsp/node-caught/blob/master/index.js
+ */
+export const caught = ( f => p => (p.catch(f), p))(() => {
+	// nothing
+})
+
+/**
  * Blocks the fiber until all the Promises have resolved
  */
 export const waitForPromiseAll: <T>(ps: Array<Promise<T>>) => T = Meteor.wrapAsync (function waitForPromises<T> (ps: Array<Promise<T>>, cb: (err: any | null, result?: any) => T) {

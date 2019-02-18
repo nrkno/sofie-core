@@ -23,7 +23,8 @@ import { getCurrentTime,
 	waitForPromise,
 	asyncCollectionFindOne,
 	pushOntoPath,
-	extendMandadory
+	extendMandadory,
+	caught
 } from '../../lib/lib'
 import {
 	Timeline,
@@ -2810,12 +2811,11 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 	const applyTimelineObjs = (_timelineObjs: TimelineObjGeneric[]) => {
 		timelineObjs = timelineObjs.concat(_timelineObjs)
 	}
-	waitForPromise(
-		Promise.all([
-			getTimelineRunningOrder(studioInstallation).then(applyTimelineObjs),
-			getTimelineRecording(studioInstallation).then(applyTimelineObjs)
-		])
-	)
+
+	waitForPromiseAll([
+		caught(getTimelineRunningOrder(studioInstallation).then(applyTimelineObjs)),
+		caught(getTimelineRecording(studioInstallation).then(applyTimelineObjs))
+	])
 
 	processTimelineObjects(studioInstallation, timelineObjs)
 
@@ -2854,7 +2854,6 @@ function getTimelineRunningOrder (studioInstallation: StudioInstallation): Promi
 				active: true
 			})
 			// let promiseStudioInstallation = asyncCollectionFindOne(StudioInstallations, studioInstallation._id)
-
 			let activeRunningOrder = waitForPromise(promiseActiveRunningOrder)
 
 			if (activeRunningOrder) {
