@@ -37,7 +37,6 @@
 
 // @ts-ignore
 import { ValidatedMethod } from 'meteor/mdg:validated-method'
-import { addFoo } from '../tempTest'
 import { Meteor } from 'meteor/meteor'
 
 jest.mock('meteor/mdg:validated-method', require('../../__mocks__/validated-method').setup, { virtual: true })
@@ -45,6 +44,11 @@ jest.mock('meteor/random', require('../../__mocks__/random').setup, { virtual: t
 jest.mock('meteor/meteorhacks:picker', require('../../__mocks__/meteorhacks-picker').setup, { virtual: true })
 jest.mock('meteor/mongo', require('../../__mocks__/mongo').setup, { virtual: true })
 
+Meteor.wrapAsync = jest.fn((param) => {
+	return jest.fn(param)
+})
+
+import { addFoo, functionToTest } from '../tempTest'
 describe('demo', () => {
 	it('should add foo', () => {
 		addFoo()
@@ -54,5 +58,13 @@ describe('demo', () => {
 			run: jasmine.any(Function),
 			validate: undefined,
 		})
+	})
+})
+
+test('functionToTest', async () => {
+	// (running in fiber)
+	functionToTest('myValue', function (err, value) {
+		expect(err).toEqual(null)
+		expect(value).toEqual('myValue')
 	})
 })

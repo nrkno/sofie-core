@@ -18,3 +18,9 @@ export const addFoo = function () {
 export function tempTestRandom () {
 	return Random.id()
 }
+
+export const functionToTest = Meteor.wrapAsync((value: string, cb: Function) => {
+	setTimeout(() => {
+		cb(null, value)
+	}, 100)
+})
