@@ -17,7 +17,7 @@ const instance = i18n
 		debug: false,
 		joinArrays: '\n',
 
-		whitelist: ['en', 'nb', 'sv'],
+		whitelist: ['en', 'nb', 'nn', 'sv'],
 
 		keySeparator: '→',
 		nsSeparator: '⇒',
