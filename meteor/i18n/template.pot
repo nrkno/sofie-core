@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-01-23T10:44:04.655Z\n"
-"PO-Revision-Date: 2019-01-23T10:44:04.655Z\n"
+"POT-Creation-Date: 2019-02-21T10:26:48.781Z\n"
+"PO-Revision-Date: 2019-02-21T10:26:48.781Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -121,39 +121,6 @@ msgstr ""
 msgid "Shortcuts"
 msgstr ""
 
-msgid "Running Order is active"
-msgstr ""
-
-msgid "Running Order"
-msgstr ""
-
-msgid "ID"
-msgstr ""
-
-msgid "Created"
-msgstr ""
-
-msgid "On Air Start Time"
-msgstr ""
-
-msgid "Duration"
-msgstr ""
-
-msgid "Air Status"
-msgstr ""
-
-msgid "Sofie Automation"
-msgstr ""
-
-msgid "version"
-msgstr ""
-
-msgid "status"
-msgstr ""
-
-msgid "Status messages:"
-msgstr ""
-
 msgid "Delete this item?"
 msgstr ""
 
@@ -181,6 +148,39 @@ msgid ""
 msgstr ""
 
 msgid "Re-sync with MOS"
+msgstr ""
+
+msgid "Running Order"
+msgstr ""
+
+msgid "ID"
+msgstr ""
+
+msgid "Created"
+msgstr ""
+
+msgid "On Air Start Time"
+msgstr ""
+
+msgid "Duration"
+msgstr ""
+
+msgid "Air Status"
+msgstr ""
+
+msgid "Unsynced from MOS"
+msgstr ""
+
+msgid "Sofie Automation"
+msgstr ""
+
+msgid "version"
+msgstr ""
+
+msgid "status"
+msgstr ""
+
+msgid "Status messages:"
 msgstr ""
 
 msgid "Start time is close"
@@ -251,11 +251,6 @@ msgstr ""
 msgid "Log Error"
 msgstr ""
 
-msgid ""
-"Only a single Running Order can be active in a studio at the same time. "
-"Please deactivate the other Running Order and try again."
-msgstr ""
-
 msgid "Do you want to activate this Running Order?"
 msgstr ""
 
@@ -273,6 +268,11 @@ msgid ""
 msgstr ""
 
 msgid "The running order can not be reset while it is active"
+msgstr ""
+
+msgid ""
+"A snapshot of the current Running Order has been created for "
+"troubleshooting."
 msgstr ""
 
 msgid "Prepare Studio and Activate (Rehearsal)"
@@ -309,6 +309,26 @@ msgid "Change to fullscreen mode"
 msgstr ""
 
 msgid "This running order is now active. Are you sure you want to exit this screen?"
+msgstr ""
+
+msgid ""
+"There are no Playout Gateways connected and attached to this studio. Please "
+"contact the system administrator to start the Playout Gateway."
+msgstr ""
+
+msgid "Playout Gateway \"{{playoutDeviceName}}\" is now restarting."
+msgstr ""
+
+msgid "Could not restart Playout Gateway \"{{playoutDeviceName}}\"."
+msgstr ""
+
+msgid "Show Hotkeys"
+msgstr ""
+
+msgid "Take a Snapshot"
+msgstr ""
+
+msgid "Restart Playout"
 msgstr ""
 
 msgid "This running order has been unpublished from Sofie."
@@ -466,6 +486,9 @@ msgstr ""
 msgid "Tools"
 msgstr ""
 
+msgid "System messages"
+msgstr ""
+
 msgid "Upgrade database"
 msgstr ""
 
@@ -552,6 +575,9 @@ msgstr ""
 msgid "Device Type"
 msgstr ""
 
+msgid "Thread Usage"
+msgstr ""
+
 msgid "Host"
 msgstr ""
 
@@ -580,6 +606,9 @@ msgid "Media Scanner Port"
 msgstr ""
 
 msgid "Activate Debug Logging"
+msgstr ""
+
+msgid "Activate Multi-Threading"
 msgstr ""
 
 msgid "Are you sure you want to remove device \"{{deviceId}}\"?"
@@ -613,6 +642,9 @@ msgid "Username"
 msgstr ""
 
 msgid "Password"
+msgstr ""
+
+msgid "Don't scan entire storage"
 msgstr ""
 
 msgid "Media Flow ID"
@@ -670,6 +702,18 @@ msgid "MOS ID of Gateway (Sofie MOS ID)"
 msgstr ""
 
 msgid "Attached subdevices"
+msgstr ""
+
+msgid "Are you sure you want to restart this device?"
+msgstr ""
+
+msgid "Restart this device?"
+msgstr ""
+
+msgid "Restart"
+msgstr ""
+
+msgid "Restart Device"
 msgstr ""
 
 msgid "Generic Properties"
@@ -928,9 +972,6 @@ msgstr ""
 msgid "Variants"
 msgstr ""
 
-msgid "Take a Snapshot"
-msgstr ""
-
 msgid "Full System Snapshot"
 msgstr ""
 
@@ -1061,7 +1102,22 @@ msgstr ""
 msgid "Sofie Host URL"
 msgstr ""
 
+msgid "System Message"
+msgstr ""
+
+msgid "Message"
+msgstr ""
+
+msgid "Enabled"
+msgstr ""
+
+msgid "Support Message"
+msgstr ""
+
 msgid "System"
+msgstr ""
+
+msgid "Media"
 msgstr ""
 
 msgid "Messages"
@@ -1091,6 +1147,69 @@ msgstr ""
 msgid "Sent Messages"
 msgstr ""
 
+msgid "File Copy"
+msgstr ""
+
+msgid "File Delete"
+msgstr ""
+
+msgid "Scan File"
+msgstr ""
+
+msgid "Generate Thumbnail"
+msgstr ""
+
+msgid "Generate Preview"
+msgstr ""
+
+msgid "Unknown action: {{action}}"
+msgstr ""
+
+msgid "Done"
+msgstr ""
+
+msgid "Failed"
+msgstr ""
+
+msgid "Working, Media Available"
+msgstr ""
+
+msgid "Working"
+msgstr ""
+
+msgid "Pending"
+msgstr ""
+
+msgid "Blocked"
+msgstr ""
+
+msgid "Canceled"
+msgstr ""
+
+msgid "Idle"
+msgstr ""
+
+msgid "Skipped"
+msgstr ""
+
+msgid "Step progress: {{progress}}"
+msgstr ""
+
+msgid "Processing"
+msgstr ""
+
+msgid "Unknown: {{status}}"
+msgstr ""
+
+msgid "Collapse"
+msgstr ""
+
+msgid "Details"
+msgstr ""
+
+msgid "Media Transfer Status"
+msgstr ""
+
 msgid "Not connected"
 msgstr ""
 
@@ -1104,15 +1223,6 @@ msgid "Last seen"
 msgstr ""
 
 msgid "Are you sure you want to delete this device?"
-msgstr ""
-
-msgid "Restart this device?"
-msgstr ""
-
-msgid "Restart"
-msgstr ""
-
-msgid "Are you sure you want to restart this device?"
 msgstr ""
 
 msgid "System Status"

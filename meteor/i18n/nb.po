@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-01-23T10:39:20.353Z\n"
-"PO-Revision-Date: 2019-01-23 11:43+0100\n"
+"POT-Creation-Date: 2019-02-21T10:26:48.781Z\n"
+"PO-Revision-Date: 2019-02-21 11:27+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Poedit 2.2.1\n"
 
 msgid "Return to list"
 msgstr "Gå tilbake til listen"
@@ -127,39 +127,6 @@ msgstr "Faste hurtigtaster"
 msgid "Shortcuts"
 msgstr "Hurtigtaster"
 
-msgid "Running Order is active"
-msgstr "Kjøreplanen er aktiv"
-
-msgid "Running Order"
-msgstr "Kjøreplan"
-
-msgid "ID"
-msgstr "ID"
-
-msgid "Created"
-msgstr "Opprettet"
-
-msgid "On Air Start Time"
-msgstr "Sendestart"
-
-msgid "Duration"
-msgstr "Varighet"
-
-msgid "Air Status"
-msgstr "Sendningsstatus"
-
-msgid "Sofie Automation"
-msgstr "Sofie Automasjon"
-
-msgid "version"
-msgstr "version"
-
-msgid "status"
-msgstr "status"
-
-msgid "Status messages:"
-msgstr "Status messages:"
-
 msgid "Delete this item?"
 msgstr "Delete this item?"
 
@@ -190,6 +157,39 @@ msgstr ""
 
 msgid "Re-sync with MOS"
 msgstr "Re-sync med MOS"
+
+msgid "Running Order"
+msgstr "Kjøreplan"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Created"
+msgstr "Opprettet"
+
+msgid "On Air Start Time"
+msgstr "Sendestart"
+
+msgid "Duration"
+msgstr "Varighet"
+
+msgid "Air Status"
+msgstr "Sendningsstatus"
+
+msgid "Unsynced from MOS"
+msgstr ""
+
+msgid "Sofie Automation"
+msgstr "Sofie Automasjon"
+
+msgid "version"
+msgstr "version"
+
+msgid "status"
+msgstr "status"
+
+msgid "Status messages:"
+msgstr "Status messages:"
 
 msgid "Start time is close"
 msgstr "Start tidspunkt er nær"
@@ -261,13 +261,6 @@ msgstr "Angre Deaktiver følgende element"
 msgid "Log Error"
 msgstr "Logfeil"
 
-msgid ""
-"Only a single Running Order can be active in a studio at the same time. "
-"Please deactivate the other Running Order and try again."
-msgstr ""
-"Bare én kjøreplan kan være aktiv i et studio. Deaktiver den andre "
-"kjøreplanen, og prøv på nytt."
-
 msgid "Do you want to activate this Running Order?"
 msgstr "Vil du aktivere denne kjøreplan?"
 
@@ -289,6 +282,10 @@ msgstr ""
 "(Dette vil fjerne alle outputs.)"
 
 msgid "The running order can not be reset while it is active"
+msgstr ""
+
+msgid ""
+"A snapshot of the current Running Order has been created for troubleshooting."
 msgstr ""
 
 msgid "Prepare Studio and Activate (Rehearsal)"
@@ -327,6 +324,26 @@ msgstr "Fullskjermmodus"
 msgid ""
 "This running order is now active. Are you sure you want to exit this screen?"
 msgstr "Denne kjøreplan er aktiv. Er du sikker på at du vil avslutte?"
+
+msgid ""
+"There are no Playout Gateways connected and attached to this studio. Please "
+"contact the system administrator to start the Playout Gateway."
+msgstr ""
+
+msgid "Playout Gateway \"{{playoutDeviceName}}\" is now restarting."
+msgstr ""
+
+msgid "Could not restart Playout Gateway \"{{playoutDeviceName}}\"."
+msgstr ""
+
+msgid "Show Hotkeys"
+msgstr ""
+
+msgid "Take a Snapshot"
+msgstr "Take a Snapshot"
+
+msgid "Restart Playout"
+msgstr ""
 
 msgid "This running order has been unpublished from Sofie."
 msgstr "Denne kjøreplanen er ikke lenger tilgjengelig i Sofie."
@@ -483,6 +500,9 @@ msgstr "Devices"
 msgid "Tools"
 msgstr "Tools"
 
+msgid "System messages"
+msgstr ""
+
 msgid "Upgrade database"
 msgstr "Upgrade database"
 
@@ -569,6 +589,9 @@ msgstr "Device ID"
 msgid "Device Type"
 msgstr "Device Type"
 
+msgid "Thread Usage"
+msgstr ""
+
 msgid "Host"
 msgstr "Host"
 
@@ -598,6 +621,9 @@ msgstr "Media Scanner Port"
 
 msgid "Activate Debug Logging"
 msgstr "Activate Debug Logging"
+
+msgid "Activate Multi-Threading"
+msgstr ""
 
 msgid "Are you sure you want to remove device \"{{deviceId}}\"?"
 msgstr "Are you sure you want to remove device \"{{deviceId}}\"?"
@@ -630,6 +656,9 @@ msgid "Username"
 msgstr ""
 
 msgid "Password"
+msgstr ""
+
+msgid "Don't scan entire storage"
 msgstr ""
 
 msgid "Media Flow ID"
@@ -687,6 +716,18 @@ msgid "MOS ID of Gateway (Sofie MOS ID)"
 msgstr "MOS ID of Gateway (Sofie MOS ID)"
 
 msgid "Attached subdevices"
+msgstr ""
+
+msgid "Are you sure you want to restart this device?"
+msgstr "Are you sure you want to restart this device?"
+
+msgid "Restart this device?"
+msgstr "Restart this device?"
+
+msgid "Restart"
+msgstr "Restart"
+
+msgid "Restart Device"
 msgstr ""
 
 msgid "Generic Properties"
@@ -952,9 +993,6 @@ msgstr ""
 msgid "Variants"
 msgstr ""
 
-msgid "Take a Snapshot"
-msgstr "Take a Snapshot"
-
 msgid "Full System Snapshot"
 msgstr ""
 
@@ -1057,22 +1095,22 @@ msgstr "Test Tools - Recordings"
 msgid "CasparCG Channel"
 msgstr "CasparCG Channel"
 
-msgid "Path prefix"
-msgstr "Path prefix"
+msgid "Path Prefix"
+msgstr ""
 
-msgid "URL prefix"
-msgstr "URL prefix"
+msgid "URL Prefix"
+msgstr ""
 
-msgid "Decklink input index"
-msgstr "Decklink input index"
+msgid "Decklink Input Index"
+msgstr ""
 
-msgid "Decklink input format"
-msgstr "Decklink input format"
+msgid "Decklink Input Format"
+msgstr ""
 
 msgid "Studio Name"
 msgstr "Studio Name"
 
-msgid "Select compatible Show Styles"
+msgid "Select Compatible Show Styles"
 msgstr ""
 
 msgid "Click to show available Show Styles"
@@ -1081,14 +1119,29 @@ msgstr ""
 msgid "Default ShowStyleVariant"
 msgstr ""
 
-msgid "Media-previews URL"
+msgid "Media Preview URL"
 msgstr ""
 
-msgid "Sofie host URL"
+msgid "Sofie Host URL"
+msgstr ""
+
+msgid "System Message"
+msgstr ""
+
+msgid "Message"
+msgstr ""
+
+msgid "Enabled"
+msgstr ""
+
+msgid "Support Message"
 msgstr ""
 
 msgid "System"
 msgstr "System"
+
+msgid "Media"
+msgstr ""
 
 msgid "Messages"
 msgstr "Messages"
@@ -1117,6 +1170,69 @@ msgstr "Queued Messages"
 msgid "Sent Messages"
 msgstr "Sent Messages"
 
+msgid "File Copy"
+msgstr ""
+
+msgid "File Delete"
+msgstr ""
+
+msgid "Scan File"
+msgstr ""
+
+msgid "Generate Thumbnail"
+msgstr ""
+
+msgid "Generate Preview"
+msgstr ""
+
+msgid "Unknown action: {{action}}"
+msgstr ""
+
+msgid "Done"
+msgstr ""
+
+msgid "Failed"
+msgstr ""
+
+msgid "Working, Media Available"
+msgstr ""
+
+msgid "Working"
+msgstr ""
+
+msgid "Pending"
+msgstr ""
+
+msgid "Blocked"
+msgstr ""
+
+msgid "Canceled"
+msgstr ""
+
+msgid "Idle"
+msgstr ""
+
+msgid "Skipped"
+msgstr ""
+
+msgid "Step progress: {{progress}}"
+msgstr ""
+
+msgid "Processing"
+msgstr ""
+
+msgid "Unknown: {{status}}"
+msgstr ""
+
+msgid "Collapse"
+msgstr ""
+
+msgid "Details"
+msgstr ""
+
+msgid "Media Transfer Status"
+msgstr ""
+
 msgid "Not connected"
 msgstr "Not connected"
 
@@ -1131,15 +1247,6 @@ msgstr "Last seen"
 
 msgid "Are you sure you want to delete this device?"
 msgstr "Are you sure you want to delete this device?"
-
-msgid "Restart this device?"
-msgstr "Restart this device?"
-
-msgid "Restart"
-msgstr "Restart"
-
-msgid "Are you sure you want to restart this device?"
-msgstr "Are you sure you want to restart this device?"
 
 msgid "System Status"
 msgstr "System Status"
@@ -1204,6 +1311,16 @@ msgstr "Recording still in progress"
 msgctxt "item"
 msgid "new_config"
 msgstr "new_config"
+
+#~ msgid "Running Order is active"
+#~ msgstr "Kjøreplanen er aktiv"
+
+#~ msgid ""
+#~ "Only a single Running Order can be active in a studio at the same time. "
+#~ "Please deactivate the other Running Order and try again."
+#~ msgstr ""
+#~ "Bare én kjøreplan kan være aktiv i et studio. Deaktiver den andre "
+#~ "kjøreplanen, og prøv på nytt."
 
 #~ msgid "Are you sure you want to reset this Running Order?"
 #~ msgstr "Er du sikker på at du vil tilbakestille denne kjøreplan?"
@@ -1312,9 +1429,6 @@ msgstr "new_config"
 
 #~ msgid "Url"
 #~ msgstr "Url"
-
-#~ msgid "Generic properties"
-#~ msgstr "Generic Properties"
 
 #~ msgid "ON AIR"
 #~ msgstr "ON AIR"
