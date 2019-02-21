@@ -92,7 +92,7 @@ class Header extends React.Component<IPropsHeader & InjectedTranslateProps, ISta
 						<div className='frow ha-right'>
 							<nav className='links mod'>
 								{ /* <NavLink to='/' activeClassName='active'>{t('Home')}</NavLink> */ }
-								<NavLink to='/?lng=nb' activeClassName='active'>{t('Running Orders')}</NavLink>
+								<NavLink to='/' activeClassName='active'>{t('Running Orders')}</NavLink>
 								{ this.props.adminMode && <NavLink to='/nymansPlayground' activeClassName='active'>{t('Nyman\'s Playground')}</NavLink> }
 								{ this.props.testingMode && <NavLink to='/testTools' activeClassName='active'>{t('Test Tools')}</NavLink> }
 								<NavLink to='/status' activeClassName='active'>{t('Status')}</NavLink>
