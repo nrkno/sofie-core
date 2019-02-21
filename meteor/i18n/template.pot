@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-02-21T10:26:48.781Z\n"
-"PO-Revision-Date: 2019-02-21T10:26:48.781Z\n"
+"POT-Creation-Date: 2019-02-21T11:35:46.333Z\n"
+"PO-Revision-Date: 2019-02-21T11:35:46.334Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -486,10 +486,10 @@ msgstr ""
 msgid "Tools"
 msgstr ""
 
-msgid "System messages"
+msgid "System Messages"
 msgstr ""
 
-msgid "Upgrade database"
+msgid "Upgrade Database"
 msgstr ""
 
 msgid "Manage Snapshots"
