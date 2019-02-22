@@ -16,6 +16,11 @@ import { ReactiveVar } from 'meteor/reactive-var'
 import { Segments } from '../../../lib/collections/Segments'
 import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
 import { RunningOrders } from '../../../lib/collections/RunningOrders'
+import { doModalDialog } from '../../lib/ModalDialog'
+import { UserActionAPI } from '../../../lib/api/userActions'
+import { doUserAction } from '../../lib/userAction'
+// import { translate, getI18n, getDefaults } from 'react-i18next'
+import { i18nTranslator } from '../i18n'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 
@@ -39,6 +44,9 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 	private _notes: _.Dictionary<Notification | undefined> = {}
 	private _notesDep: Tracker.Dependency
 
+	private _runningOrderStatus: _.Dictionary<Notification | undefined> = {}
+	private _runningOrderStatusDep: Tracker.Dependency
+
 	private _deviceStatus: _.Dictionary<Notification | undefined> = {}
 	private _deviceStatusDep: Tracker.Dependency
 
@@ -49,7 +57,9 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 		super()
 		this._notificationList = new NotificationList([])
 		this._mediaStatusDep = new Tracker.Dependency()
+		this._runningOrderStatusDep = new Tracker.Dependency()
 		this._deviceStatusDep = new Tracker.Dependency()
+
 		this._notesDep = new Tracker.Dependency()
 		this._runningOrderId = new ReactiveVar<string | undefined>(undefined)
 		this._studioId = new ReactiveVar<string | undefined>(undefined)
@@ -75,6 +85,8 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 			}
 			const rRunningOrderId = reactiveData.getRRunningOrderId(roId).get()
 			// console.log('rRunningOrderId: ' + rRunningOrderId)
+
+			this.reactiveRunningOrderStatus(rRunningOrderId)
 
 			if (rRunningOrderId) {
 				const studioInstallationId = reactiveData.getRRunningOrderStudioId(rRunningOrderId).get()
@@ -103,11 +115,13 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 			// console.log('RunningOrderViewNotifier 2')
 			this._mediaStatusDep.depend()
 			this._deviceStatusDep.depend()
+			this._runningOrderStatusDep.depend()
 			this._notesDep.depend()
 
 			const notifications = _.compact(_.values(this._mediaStatus))
 				.concat(_.compact(_.values(this._deviceStatus)))
 				.concat(_.compact(_.values(this._notes)))
+				.concat(_.compact(_.values(this._runningOrderStatus)))
 
 			this._notificationList.set(
 				notifications
@@ -128,6 +142,56 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 		super.stop()
 
 		this._notifier.stop()
+	}
+
+	private reactiveRunningOrderStatus (runningOrderId: string | undefined) {
+		const t = i18nTranslator
+
+		this.autorun(() => {
+
+			const runningOrder = RunningOrders.findOne(runningOrderId)
+			if (runningOrder) {
+				let unsyncedId = runningOrder._id + '_unsynced'
+				let newNotification: Notification | undefined = undefined
+				if (runningOrder.unsynced) {
+					newNotification = new Notification(
+						unsyncedId,
+						NoticeLevel.CRITICAL,
+						t('Running-order has been UNSYNCED from ENPS! No data updates will currently come through.'),
+						'RunningOrder',
+						getCurrentTime(),
+						true,
+						[
+							{
+								label: t('Re-sync'),
+								type: 'primary',
+								action: () => {
+									doModalDialog({
+										title: t('Re-sync runningOrder'),
+										message: t('Are you sure you want to re-sync the runningOrder?\n(If the currently playing segmentLine has been changed, this can affect the output.)'),
+										onAccept: () => {
+											doUserAction(t, event, UserActionAPI.methods.resyncRunningOrder, [runningOrderId])
+										}
+									})
+								}
+							},
+							// {
+							// 	label: t('Delete'),
+							// 	type: 'delete'
+							// }
+						],
+						-1
+					)
+				}
+				if (newNotification && !Notification.isEqual(this._runningOrderStatus[unsyncedId], newNotification)) {
+					this._runningOrderStatus[unsyncedId] = newNotification
+					this._runningOrderStatusDep.changed()
+				} else if (!newNotification && this._runningOrderStatus[unsyncedId]) {
+					delete this._runningOrderStatus[unsyncedId]
+					this._deviceStatusDep.changed()
+				}
+			}
+		})
 	}
 
 	private reactivePeripheralDeviceStatus (studioInstallationId: string | undefined) {
@@ -166,6 +230,8 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 	}
 
 	private reactiveSLNotes (rRunningOrderId: string) {
+		const t = i18nTranslator
+
 		let oldNoteIds: Array<string> = []
 		this.autorun(() => {
 			// console.log('RunningOrderViewNotifier 4')
@@ -180,7 +246,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 				const id = item.message + '-' + (item.origin.segmentLineItemId || item.origin.segmentLineId || item.origin.segmentId || item.origin.roId) + '-' + item.origin.name + '-' + item.type
 				let newNotification = new Notification(id, item.type === SegmentLineNoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, item.origin.segmentId || 'unknown', getCurrentTime(), true, [
 					{
-						label: 'Show issue',
+						label: t('Show issue'),
 						type: 'default'
 					}
 				], item.rank)
@@ -212,6 +278,8 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 	}
 
 	private reactiveMediaStatus (rRunningOrderId: string, showStyleBase: ShowStyleBase, studioInstallation: StudioInstallation) {
+		const t = i18nTranslator
+
 		let oldItemIds: Array<string> = []
 		this.autorun((comp: Tracker.Computation) => {
 			// console.log('RunningOrderViewNotifier 5')
@@ -229,7 +297,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 						if ((status !== RunningOrderAPI.LineItemStatusCode.OK) && (status !== RunningOrderAPI.LineItemStatusCode.UNKNOWN) && (status !== RunningOrderAPI.LineItemStatusCode.SOURCE_NOT_SET)) {
 							newNotification = new Notification(item._id, NoticeLevel.WARNING, message || 'Media is broken', segment ? segment._id : 'line_' + item.segmentLineId, getCurrentTime(), true, [
 								{
-									label: 'Show issue',
+									label: t('Show issue'),
 									type: 'default'
 								}
 							], segmentLine._rank)
@@ -301,8 +369,10 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 	}
 
 	private makeDeviceMessage (device: PeripheralDevice): string {
+		const t = i18nTranslator
+
 		if (!device.connected) {
-			return `Device ${device.name} is disconnected`
+			return t('Device {{deviceName}} is disconnected', {deviceName: device.name})
 		}
 		return `${device.name}: ` + (device.status.messages || ['']).join(', ')
 	}
