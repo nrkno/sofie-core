@@ -92,6 +92,16 @@ function userActionMethodName (
 		case UserActionAPI.methods.saveEvaluation: return 'Saving Evaluation'
 
 		case UserActionAPI.methods.storeRunningOrderSnapshot: return 'Creating Snapshot for debugging'
+
+		case UserActionAPI.methods.sourceLayerOnLineStop: return 'Stopping source layer'
+
+		case UserActionAPI.methods.removeRunningOrder: return 'Removing Runningorder'
+		case UserActionAPI.methods.resyncRunningOrder: return 'Re-syncing Runningorder'
+
+		case UserActionAPI.methods.recordStop: return 'Stopping recording'
+		case UserActionAPI.methods.recordStart: return 'Starting recording'
+		case UserActionAPI.methods.recordDelete: return 'Deleting recording'
 	}
+	return method // fallback
 
 }
