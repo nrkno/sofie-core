@@ -62,6 +62,10 @@ export namespace MediaManagerIntegration {
 			MediaWorkFlows.upsert(docId, obj)
 		} else {
 			MediaWorkFlows.remove(docId)
+
+			MediaWorkFlowSteps.remove({
+				workFlowId: docId
+			})
 		}
 	}
 
@@ -75,6 +79,13 @@ export namespace MediaManagerIntegration {
 
 		if (obj) {
 			check(obj._id, String)
+			check(obj.workFlowId, String)
+
+			const workflow = MediaWorkFlows.findOne(obj.workFlowId)
+
+			if (!workflow) throw new Meteor.Error(404, `Workflow "${obj.workFlowId}" not found`)
+
+			obj.workFlowId = workflow._id
 			obj.deviceId = peripheralDevice._id
 			obj.studioInstallationId = peripheralDevice.studioInstallationId
 
