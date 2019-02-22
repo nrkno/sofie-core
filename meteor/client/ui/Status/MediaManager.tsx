@@ -107,15 +107,15 @@ type TFunc = (label: string, attrs?: object) => string
 function actionLabel (t: TFunc, action: string): string {
 	switch (action) {
 		case MediaManagerAPI.WorkStepAction.COPY:
-			return t('File copy')
+			return t('File Copy')
 		case MediaManagerAPI.WorkStepAction.DELETE:
-			return t('File delete')
+			return t('File Delete')
 		case MediaManagerAPI.WorkStepAction.GENERATE_METADATA:
-			return t('Scan file')
+			return t('Scan File')
 		case MediaManagerAPI.WorkStepAction.GENERATE_THUMBNAIL:
-			return t('Generate thumbnail')
+			return t('Generate Thumbnail')
 		case MediaManagerAPI.WorkStepAction.GENERATE_PREVIEW:
-			return t('Generate preview')
+			return t('Generate Preview')
 		default:
 			return t('Unknown action: {{action}}', { action })
 	}

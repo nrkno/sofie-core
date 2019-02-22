@@ -259,10 +259,10 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<h2 className='mhs'>{t('Tools')}</h2>
 				<hr className='vsubtle man' />
 				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/messages'>
-					<h3>{t('System messages')}</h3>
+					<h3>{t('System Messages')}</h3>
 				</NavLink>
 				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/migration'>
-					<h3>{t('Upgrade database')}</h3>
+					<h3>{t('Upgrade Database')}</h3>
 				</NavLink>
 				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/snapshots'>
 					<h3>{t('Manage Snapshots')}</h3>

@@ -1580,9 +1580,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							}}>
 								{this.state.isSupportPanelOpen &&
 									<SupportPopUp>
-										<button className='btn btn-primary' onClick={this.onShowHotkeys}>{t('Show hotkeys')}</button>
-										<button className='btn btn-primary' onClick={this.onTakeRunningOrderSnapshot}>{t('Take a snapshot')}</button>
-										<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart playout')}</button>
+										<button className='btn btn-primary' onClick={this.onShowHotkeys}>{t('Show Hotkeys')}</button>
+										<button className='btn btn-primary' onClick={this.onTakeRunningOrderSnapshot}>{t('Take a Snapshot')}</button>
+										<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart Playout')}</button>
 									</SupportPopUp>
 								}
 							</VelocityReact.VelocityTransitionGroup>

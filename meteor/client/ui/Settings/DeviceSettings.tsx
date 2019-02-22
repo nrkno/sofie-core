@@ -746,7 +746,7 @@ class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayout
 				</div>
 				<div>
 					<label className='field'>
-						{t('Activate multi threading')}
+						{t('Activate Multi-Threading')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'settings.multiThreading'}
@@ -1760,7 +1760,7 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 			<div className='studio-edit mod mhl mvs'>
 				<div>
 					<button className='btn btn-secondary btn-tight right' onClick={(e) => this.props.device && this.restartDevice(this.props.device)}>
-						{t('Restart device')}
+						{t('Restart Device')}
 					</button>
 					<h3 className='mhs'>
 						{t('Generic Properties')}
