@@ -386,7 +386,7 @@ export namespace ServerRunningOrderAPI {
 
 		let ro = RunningOrders.findOne(runningOrderId)
 		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
-		if (ro.active) throw new Meteor.Error(400,`Not allowed to resync an active RunningOrder "${runningOrderId}".`)
+		// if (ro.active) throw new Meteor.Error(400,`Not allowed to resync an active RunningOrder "${runningOrderId}".`)
 		RunningOrders.update(ro._id, {
 			$set: {
 				unsynced: false

@@ -334,7 +334,7 @@ export function removeRunningOrder (runningOrderId: string) {
 export function resyncRunningOrder (runningOrderId: string) {
 	let runningOrder = RunningOrders.findOne(runningOrderId)
 	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
-	if (runningOrder.active) return ClientAPI.responseError(`The RunningOrder is currently active, you need to deactivate it before resyncing it.`)
+	// if (runningOrder.active) return ClientAPI.responseError(`The RunningOrder is currently active, you need to deactivate it before resyncing it.`)
 
 	return ClientAPI.responseSuccess(
 		ServerRunningOrderAPI.resyncRunningOrder(runningOrderId)
