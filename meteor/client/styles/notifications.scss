@@ -77,6 +77,11 @@
             flex: 1;
             padding: 10px 15px;
             cursor: default;
+
+            > .notification-pop-up__actions {
+                text-align: right;
+                margin-top: 0.5em;
+            }
         }
 
         &.has-default-action {

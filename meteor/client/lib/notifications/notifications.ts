@@ -49,8 +49,9 @@ export enum NoticeLevel {
 
 export interface NotificationAction {
 	label: string
-	type: string
+	type: string // for a default, use 'default'
 	icon?: any
+	action?: Function
 }
 
 export type Notifier = () => NotificationList
