@@ -2118,7 +2118,7 @@ const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (running
 		SegmentLineItems.update({
 			_id: i._id
 		}, { $set: {
-			expectedDuration: `#${getSliGroupId(newItem)}.start - #.start`,
+			expectedDuration: `#${getSliGroupId(newItem)}.start + ${newItem.adlibPreroll || 0} - #.start`,
 			originalExpectedDuration: i.originalExpectedDuration !== undefined ? i.originalExpectedDuration : i.expectedDuration,
 			infiniteMode: SegmentLineItemLifespan.Normal,
 			originalInfiniteMode: i.originalInfiniteMode !== undefined ? i.originalInfiniteMode : i.infiniteMode
