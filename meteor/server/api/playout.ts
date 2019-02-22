@@ -229,25 +229,18 @@ export namespace ServerPlayoutAPI {
 		}, {multi: true})
 
 		// Reset any segment line items that were modified by inserted adlibs
-		const modifiedSegmentLineItems = SegmentLineItems.find({
+		SegmentLineItems.update({
 			runningOrderId: runningOrder._id,
 			$or: [
 				{ originalExpectedDuration: { $exists: true } },
 				{ originalInfiniteMode: { $exists: true } }
 			]
-		}).fetch()
-		modifiedSegmentLineItems.forEach(sli => {
-			SegmentLineItems.update(sli._id, {
-				$set: {
-					expectedDuration: sli.originalExpectedDuration || sli.expectedDuration,
-					infiniteMode: sli.originalInfiniteMode || sli.infiniteMode
-				},
-				$unset: {
-					originalExpectedDuration: 1,
-					originalInfiniteMode: 1
-				}
-			})
-		})
+		}, {
+			$rename: {
+				originalExpectedDuration: 'expectedDuration',
+				originalInfiniteMode: 'infiniteMode'
+			}
+		}, {multi: true})
 
 		SegmentLineItems.update({
 			runningOrderId: runningOrder._id
@@ -507,7 +500,22 @@ export namespace ServerPlayoutAPI {
 			dynamicallyInserted: true
 		}))
 
-		// TODO - ensure ifninites are ok
+		// Reset any segment line items that were modified by inserted adlibs
+		ps.push(asyncCollectionUpdate(SegmentLineItems, {
+			runningOrderId: segmentLine.runningOrderId,
+			segmentLineId: segmentLine._id,
+			$or: [
+				{ originalExpectedDuration: { $exists: true } },
+				{ originalInfiniteMode: { $exists: true } }
+			]
+		}, {
+			$rename: {
+				originalExpectedDuration: 'expectedDuration',
+				originalInfiniteMode: 'infiniteMode'
+			}
+		}, {
+			multi: true
+		}))
 
 		if (isDirty) {
 			return new Promise((resolve, reject) => {
