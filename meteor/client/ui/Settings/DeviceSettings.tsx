@@ -1289,7 +1289,7 @@ const MediaManagerSettingsComponent = translate()(
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							{t('Default linger time')}
+							{t('File linger time')}
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute={'settings.lingerTime'}
@@ -1301,7 +1301,19 @@ const MediaManagerSettingsComponent = translate()(
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							{t('Cron Job period')}
+							{t('Workflow linger time')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={'settings.workFlowLingerTime'}
+								obj={this.props.device}
+								type='int'
+								collection={PeripheralDevices}
+								className=''></EditAttribute>
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Cron-Job interval time')}
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute={'settings.cronJobTime'}
