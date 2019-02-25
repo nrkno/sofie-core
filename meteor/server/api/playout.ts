@@ -2032,7 +2032,6 @@ export const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, r
 			}
 		}
 		waitForPromiseAll(psInf)
-	
 
 		// stop if not running to the end and there is/was nothing active
 		const midInfinites = currentInfinites.filter(i => !i.expectedDuration && i.infiniteMode)
@@ -2153,27 +2152,27 @@ export const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, r
 	waitForPromiseAll(ps)
 })
 
-const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (runningOrder: RunningOrder, segLine: SegmentLine, newItem: SegmentLineItem) {
+const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (runningOrder: RunningOrder, segmentLine: SegmentLine, newItem: SegmentLineItem) {
 	let showStyleBase = runningOrder.getShowStyleBase()
 	const sourceLayerLookup = normalizeArray(showStyleBase.sourceLayers, '_id')
 	const newItemExclusivityGroup = sourceLayerLookup[newItem.sourceLayerId].exclusiveGroup
 
-	const items = getOrderedSegmentLineItem(segLine).filter(i =>
+	const items = segmentLine.getAllSegmentLineItems().filter(i =>
 		(i.sourceLayerId === newItem.sourceLayerId
 			|| (newItemExclusivityGroup && sourceLayerLookup[i.sourceLayerId] && sourceLayerLookup[i.sourceLayerId].exclusiveGroup === newItemExclusivityGroup)
 		) && i._id !== newItem._id && i.infiniteMode
 	)
 
+	let ps: Array<Promise<any>> = []
 	for (const i of items) {
-		SegmentLineItems.update({
-			_id: i._id
-		}, { $set: {
+		asyncCollectionUpdate(SegmentLineItems, i._id, { $set: {
 			expectedDuration: `#${getSliGroupId(newItem)}.start - #.start`,
 			originalExpectedDuration: i.originalExpectedDuration !== undefined ? i.originalExpectedDuration : i.expectedDuration,
 			infiniteMode: SegmentLineItemLifespan.Normal,
 			originalInfiniteMode: i.originalInfiniteMode !== undefined ? i.originalInfiniteMode : i.infiniteMode
 		}})
 	}
+	waitForPromiseAll(ps)
 })
 
 const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOnLayer (runningOrder: RunningOrder, segLine: SegmentLine, sourceLayer: string) {
