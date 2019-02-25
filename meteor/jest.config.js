@@ -27,7 +27,8 @@ module.exports = {
 		'^.+\\.(ts|tsx)$': 'ts-jest'
 	},
 	testMatch: [
-		'**/__tests__/**/*.(spec|test).(ts|js)'
+		'**/__tests__/**/*.(spec|test).(ts|js)',
+		'!.meteor/*.*'
 	],
 	testEnvironment: 'node',
 	coverageThreshold: {
@@ -43,6 +44,10 @@ module.exports = {
 		"**/*.{js,ts}",
 		"!**/*.{tsx}",
 		"!**/client/main.js",
+		"!.meteor/**/*.*",
 	],
-	collectCoverage: true
+	collectCoverage: false,
+	watchPathIgnorePatterns: [
+		'/.meteor/'
+	]
 }
