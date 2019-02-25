@@ -2165,12 +2165,12 @@ const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (running
 
 	let ps: Array<Promise<any>> = []
 	for (const i of items) {
-		asyncCollectionUpdate(SegmentLineItems, i._id, { $set: {
+		ps.push(asyncCollectionUpdate(SegmentLineItems, i._id, { $set: {
 			expectedDuration: `#${getSliGroupId(newItem)}.start - #.start`,
 			originalExpectedDuration: i.originalExpectedDuration !== undefined ? i.originalExpectedDuration : i.expectedDuration,
 			infiniteMode: SegmentLineItemLifespan.Normal,
 			originalInfiniteMode: i.originalInfiniteMode !== undefined ? i.originalInfiniteMode : i.infiniteMode
-		}})
+		}}))
 	}
 	waitForPromiseAll(ps)
 })
