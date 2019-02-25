@@ -594,6 +594,7 @@ export namespace ServerPlayoutAPI {
 	}
 	export function roTake (roId: string | RunningOrder ): void {
 
+
 		let now = getCurrentTime()
 		let runningOrder: RunningOrder = (
 			_.isObject(roId) ? roId as RunningOrder :
@@ -660,7 +661,6 @@ export namespace ServerPlayoutAPI {
 		let takeSegmentLine = roData.segmentLinesMap[runningOrder.nextSegmentLineId]
 		if (!takeSegmentLine) throw new Meteor.Error(404, 'takeSegmentLine not found!')
 		// let takeSegment = roData.segmentsMap[takeSegmentLine.segmentId]
-
 		let segmentLineAfter = fetchAfter(roData.segmentLines, {
 			runningOrderId: runningOrder._id
 		}, takeSegmentLine._rank)
@@ -669,7 +669,6 @@ export namespace ServerPlayoutAPI {
 
 		// beforeTake(runningOrder, previousSegmentLine || null, takeSegmentLine)
 		beforeTake(roData, previousSegmentLine || null, takeSegmentLine)
-
 		let bp = getBlueprintOfRunningOrder(runningOrder)
 		if (bp.onPreTake) {
 			try {
@@ -745,7 +744,6 @@ export namespace ServerPlayoutAPI {
 		}
 		waitForPromiseAll(ps)
 		afterTake(runningOrder, takeSegmentLine, previousSegmentLine || null)
-
 		// last:
 		SegmentLines.update(takeSegmentLine._id, {
 			$push: {
@@ -1962,60 +1960,88 @@ export const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, r
 	let activeInfiniteItemsSegmentId: { [layer: string]: string } = {}
 
 	if (previousLine) {
+		let ps: Array<Promise<any>> = []
 		// figure out the baseline to set
 		let prevItems = getOrderedSegmentLineItem(previousLine)
-		for (let item of prevItems) {
+		_.each(prevItems, item => {
 			if (!item.infiniteMode || item.duration || item.durationOverride || item.expectedDuration) {
 				delete activeInfiniteItems[item.sourceLayerId]
 				delete activeInfiniteItemsSegmentId[item.sourceLayerId]
-				continue
+			} else {
+				if (!item.infiniteId) {
+					// ensure infinite id is set
+					item.infiniteId = item._id
+					ps.push(
+						asyncCollectionUpdate(SegmentLineItems, item._id, {
+							$set: { infiniteId: item.infiniteId }
+						})
+					)
+					logger.debug(`updateSourceLayerInfinitesAfterLine: marked "${item._id}" as start of infinite`)
+				}
+				if (item.infiniteMode !== SegmentLineItemLifespan.OutOnNextSegmentLine) {
+					activeInfiniteItems[item.sourceLayerId] = item
+					activeInfiniteItemsSegmentId[item.sourceLayerId] = previousLine.segmentId
+				}
 			}
-
-			if (!item.infiniteId) {
-				// ensure infinite id is set
-				item.infiniteId = item._id
-				SegmentLineItems.update(item._id, { $set: { infiniteId: item.infiniteId } })
-				logger.debug(`updateSourceLayerInfinitesAfterLine: marked "${item._id}" as start of infinite`)
-			}
-
-			if (item.infiniteMode === SegmentLineItemLifespan.OutOnNextSegmentLine) {
-				continue
-			}
-
-			activeInfiniteItems[item.sourceLayerId] = item
-			activeInfiniteItemsSegmentId[item.sourceLayerId] = previousLine.segmentId
-		}
+		})
+		waitForPromiseAll(ps)
 	}
 
-	let linesToProcess = runningOrder.getSegmentLines()
+	let segmentLinesToProcess = runningOrder.getSegmentLines()
 	if (previousLine) {
-		linesToProcess = linesToProcess.filter(l => l._rank > previousLine._rank)
+		segmentLinesToProcess = segmentLinesToProcess.filter(l => l._rank > previousLine._rank)
 	}
+	let ps: Array<Promise<any>> = []
 
-	for (let line of linesToProcess) {
+	// Prepare segmentLineItems:
+	const currentItemsCache: {[segmentLineId: string]: SegmentLineItemResolved[]} = {}
+	_.each(segmentLinesToProcess, (segmentLine) => {
+		ps.push(new Promise((resolve, reject) => {
+			try {
+				let currentItems = getOrderedSegmentLineItem(segmentLine)
+
+				currentItemsCache[segmentLine._id] = currentItems
+				resolve()
+			} catch (e) {
+				reject(e)
+			}
+		}))
+	})
+	waitForPromiseAll(ps)
+	ps = []
+
+	for (let segmentLine of segmentLinesToProcess) {
 		// Drop any that relate only to previous segments
 		for (let k in activeInfiniteItemsSegmentId) {
 			let s = activeInfiniteItemsSegmentId[k]
 			let i = activeInfiniteItems[k]
-			if (!i.infiniteMode || i.infiniteMode === SegmentLineItemLifespan.OutOnNextSegment && s !== line.segmentId) {
+			if (!i.infiniteMode || i.infiniteMode === SegmentLineItemLifespan.OutOnNextSegment && s !== segmentLine.segmentId) {
 				delete activeInfiniteItems[k]
 				delete activeInfiniteItemsSegmentId[k]
 			}
 		}
 
 		// ensure any currently defined infinites are still wanted
-		let currentItems = getOrderedSegmentLineItem(line)
+		// let currentItems = getOrderedSegmentLineItem(segmentLine)
+		let currentItems = currentItemsCache[segmentLine._id]
+		if (!currentItems) throw new Meteor.Error(500, `currentItemsCache didn't contain "${segmentLine._id}", which it should have`)
+
 		let currentInfinites = currentItems.filter(i => i.infiniteId && i.infiniteId !== i._id)
 		let removedInfinites: string[] = []
-		for (let item of currentInfinites) {
-			const active = activeInfiniteItems[item.sourceLayerId]
-			if (!active || active.infiniteId !== item.infiniteId) {
+
+		let psInf: Array<Promise<any>> = []
+		for (let segmentLineItem of currentInfinites) {
+			const active = activeInfiniteItems[segmentLineItem.sourceLayerId]
+			if (!active || active.infiniteId !== segmentLineItem.infiniteId) {
 				// Previous item no longer enforces the existence of this one
-				SegmentLineItems.remove(item)
-				removedInfinites.push(item._id)
-				logger.debug(`updateSourceLayerInfinitesAfterLine: removed old infinite "${item._id}" from "${item.segmentLineId}"`)
+				psInf.push(asyncCollectionRemove(SegmentLineItems, segmentLineItem._id))
+
+				removedInfinites.push(segmentLineItem._id)
+				logger.debug(`updateSourceLayerInfinitesAfterLine: removed old infinite "${segmentLineItem._id}" from "${segmentLineItem.segmentLineId}"`)
 			}
 		}
+		waitForPromiseAll(psInf)
+	
 
 		// stop if not running to the end and there is/was nothing active
 		const midInfinites = currentInfinites.filter(i => !i.expectedDuration && i.infiniteMode)
@@ -2028,32 +2054,39 @@ export const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, r
 		for (let k in activeInfiniteItems) {
 			let newItem = activeInfiniteItems[k]
 
+			let existingItem: SegmentLineItemResolved | undefined = undefined
+
 			// If something exists on the layer, the infinite must be stopped and potentially replaced
-			const exist = currentItems.filter(i => i.sourceLayerId === newItem.sourceLayerId)
-			if (exist && exist.length > 0) {
+			const existingItems = currentItems.filter(i => i.sourceLayerId === newItem.sourceLayerId)
+			if (existingItems && existingItems.length > 0) {
 				// remove the existing, as we need to update its contents
-				const existInf = exist.findIndex(e => !!e.infiniteId && e.infiniteId === newItem.infiniteId)
+				const existInf = existingItems.findIndex(e => !!e.infiniteId && e.infiniteId === newItem.infiniteId)
 				if (existInf >= 0) {
-					SegmentLineItems.remove(exist[existInf]._id)
-					removedInfinites.push(exist[existInf]._id)
-					exist.splice(existInf, 1)
+					existingItem = existingItems[existInf]
+
+					// SegmentLineItems.remove(existingItem._id)
+					// removedInfinites.push(existingItem._id)
+
+					existingItems.splice(existInf, 1)
 				}
 
-				if (exist.length > 0) {
+				if (existingItems.length > 0) {
 					// It will be stopped by this line
 					delete activeInfiniteItems[k]
 					delete activeInfiniteItemsSegmentId[k]
 
+					const lastExistingItem = _.last(existingItems) as SegmentLineItemResolved
+					const firstExistingItem = _.first(existingItems) as SegmentLineItemResolved
 					// if we matched with an infinite, then make sure that infinite is kept going
-					if (exist[exist.length - 1].infiniteMode && exist[exist.length - 1].infiniteMode !== SegmentLineItemLifespan.OutOnNextSegmentLine) {
-						activeInfiniteItems[k] = exist[0]
-						activeInfiniteItemsSegmentId[k] = line.segmentId
+					if (lastExistingItem.infiniteMode && lastExistingItem.infiniteMode !== SegmentLineItemLifespan.OutOnNextSegmentLine) {
+						activeInfiniteItems[k] = existingItems[0]
+						activeInfiniteItemsSegmentId[k] = segmentLine.segmentId
 					}
 
 					// If something starts at the beginning, then dont bother adding this infinite.
 					// Otherwise we should add the infinite but set it to end at the start of the first item
-					if (exist[0].trigger.type === TriggerType.TIME_ABSOLUTE) {
-						if (exist[0].trigger.value === 0) {
+					if (firstExistingItem.trigger.type === TriggerType.TIME_ABSOLUTE) {
+						if (firstExistingItem.trigger.value === 0) {
 							// skip the infinite, as it will never show
 							continue
 						}
@@ -2061,46 +2094,72 @@ export const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, r
 				}
 			}
 
-			newItem.segmentLineId = line._id
+			newItem.segmentLineId = segmentLine._id
 			newItem.continuesRefId = newItem._id
 			newItem.trigger = {
 				type: TriggerType.TIME_ABSOLUTE,
 				value: 0
 			}
-			newItem._id = newItem.infiniteId + '_' + line._id
+			newItem._id = newItem.infiniteId + '_' + segmentLine._id
 
-			if (exist && exist.length) {
-				newItem.expectedDuration = `#${getSliGroupId(exist[0])}.start - #.start`
+			if (existingItems && existingItems.length) {
+				newItem.expectedDuration = `#${getSliGroupId(existingItems[0])}.start - #.start`
 				newItem.infiniteMode = SegmentLineItemLifespan.Normal // it is no longer infinite, and the ui needs this to draw properly
 			}
 
-			SegmentLineItems.insert(newItem)
-			logger.debug(`updateSourceLayerInfinitesAfterLine: inserted infinite continuation "${newItem._id}"`)
+			if (existingItem && _.isEqual(existingItem, newItem)) {
+				// no change, since the new item is equal to the existing one
+				// logger.debug(`updateSourceLayerInfinitesAfterLine: no change to infinite continuation "${newItem._id}"`)
+			} else {
+				if (existingItem && existingItem._id === newItem._id ) {
+					// same _id; we can do an update:
+					SegmentLineItems.update(newItem._id, newItem) // note; not a $set, because we want to replace the object
+					logger.debug(`updateSourceLayerInfinitesAfterLine: updated infinite continuation "${newItem._id}"`)
+				} else {
+					if (existingItem) {
+						SegmentLineItems.remove(existingItem._id)
+						removedInfinites.push(existingItem._id)
+					}
+					SegmentLineItems.insert(newItem)
+					logger.debug(`updateSourceLayerInfinitesAfterLine: inserted infinite continuation "${newItem._id}"`)
+				}
+			}
 		}
 
 		// find any new infinites exposed by this
-		for (let item of currentItems.filter(i => removedInfinites.indexOf(i._id) < 0)) {
-			if (!item.infiniteMode || item.duration || item.durationOverride || item.expectedDuration) {
-				delete activeInfiniteItems[item.sourceLayerId]
-				delete activeInfiniteItemsSegmentId[item.sourceLayerId]
+		let psExposed: Array<Promise<any>> = []
+		for (let segmentLineItem of currentItems.filter(i => removedInfinites.indexOf(i._id) < 0)) {
+			if (
+				!segmentLineItem.infiniteMode ||
+				segmentLineItem.duration ||
+				segmentLineItem.durationOverride ||
+				segmentLineItem.expectedDuration
+			) {
+				delete activeInfiniteItems[segmentLineItem.sourceLayerId]
+				delete activeInfiniteItemsSegmentId[segmentLineItem.sourceLayerId]
 				continue
 			}
 
-			if (item.infiniteMode === SegmentLineItemLifespan.OutOnNextSegmentLine) {
+			if (segmentLineItem.infiniteMode === SegmentLineItemLifespan.OutOnNextSegmentLine) {
 				continue
 			}
 
-			if (!item.infiniteId) {
+			if (!segmentLineItem.infiniteId) {
 				// ensure infinite id is set
-				item.infiniteId = item._id
-				SegmentLineItems.update(item._id, { $set: { infiniteId: item.infiniteId } })
-				logger.debug(`updateSourceLayerInfinitesAfterLine: marked "${item._id}" as start of infinite`)
+				segmentLineItem.infiniteId = segmentLineItem._id
+				psExposed.push(asyncCollectionUpdate(SegmentLineItems, segmentLineItem._id, { $set: {
+					infiniteId: segmentLineItem.infiniteId }
+				}))
+				// SegmentLineItems.update(segmentLineItem._id, { $set: { infiniteId: segmentLineItem.infiniteId } })
+				logger.debug(`updateSourceLayerInfinitesAfterLine: marked "${segmentLineItem._id}" as start of infinite`)
 			}
 
-			activeInfiniteItems[item.sourceLayerId] = item
-			activeInfiniteItemsSegmentId[item.sourceLayerId] = line.segmentId
+			activeInfiniteItems[segmentLineItem.sourceLayerId] = segmentLineItem
+			activeInfiniteItemsSegmentId[segmentLineItem.sourceLayerId] = segmentLine.segmentId
 		}
+		waitForPromiseAll(psExposed)
 	}
+	waitForPromiseAll(ps)
 })
 
 const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (runningOrder: RunningOrder, segLine: SegmentLine, newItem: SegmentLineItem) {
