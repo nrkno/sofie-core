@@ -18,3 +18,20 @@ export const addFoo = function () {
 export function tempTestRandom () {
 	return Random.id()
 }
+
+export function tempTestAsync (a: number, b: number, c: number): number {
+	// console.log('tempTestAsyncInner', tempTestAsyncInner)
+	// console.log('a')
+	const val = tempTestAsyncInner(a, b) + c
+	// console.log('d')
+	return val
+}
+
+const tempTestAsyncInner = Meteor.wrapAsync((val0, val1, cb) => {
+	// console.log('b')
+	setTimeout(() => {
+		// console.log('c')
+		cb(undefined, val0 + val1)
+	}, 100)
+	// console.log('b2')
+})

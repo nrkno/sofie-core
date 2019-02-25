@@ -1,4 +1,5 @@
-// import { Meteor } from 'meteor/meteor'
+import _ from 'underscore'
+import { Fiber } from './Fibers'
 
 namespace Meteor {
 
@@ -105,12 +106,26 @@ export class MeteorMock {
 
 	static wrapAsync (fcn: Function, context?: Object): any {
 		return (...args: any[]) => {
-			// don't know how to implement, in a mock...
-			fcn.apply(context, [...args])
+
+			const fiber = Fiber.current
+			if (!fiber) throw Error(`It appears that wrapAsync isn't running in a fiber`)
+
+			const callback = (err, value) => {
+				if (err) {
+					fiber.throwInto(err)
+				} else {
+					fiber.run(value)
+				}
+			}
+			fcn.apply(context, [...args, callback])
+
+			const returnValue = Fiber.yield()
+			return returnValue
 		}
 	}
 
 	static bindEnvironment (fcn: Function): any {
+		// Don't know how to implement in mock?
 		return fcn
 	}
 
