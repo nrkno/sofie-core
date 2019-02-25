@@ -2057,6 +2057,7 @@ export function updateSourceLayerInfinitesAfterLineInner (runningOrder: RunningO
 
 		// figure out what infinites are to be extended
 		currentItems = currentItems.filter(i => removedInfinites.indexOf(i._id) < 0)
+		let infiniteConinuationSegmentLineItems: string[] = []
 		for (let k in activeInfiniteItems) {
 			let newItem: SegmentLineItem = activeInfiniteItems[k]
 
@@ -2070,6 +2071,7 @@ export function updateSourceLayerInfinitesAfterLineInner (runningOrder: RunningO
 				const existInf = existingItems.findIndex(e => !!e.infiniteId && e.infiniteId === newItem.infiniteId)
 				if (existInf >= 0) {
 					existingItem = existingItems[existInf]
+					infiniteConinuationSegmentLineItems.push(existingItem._id)
 
 					existingItems.splice(existInf, 1)
 				}
@@ -2112,7 +2114,7 @@ export function updateSourceLayerInfinitesAfterLineInner (runningOrder: RunningO
 
 			let itemToInsert: SegmentLineItem | null = (allowInsert ? newItem : null)
 
-			if (existingItem && _.isEqual(existingItem, itemToInsert)) {
+			if (existingItem && itemToInsert && _.isEqual(existingItem, itemToInsert)) {
 				// no change, since the new item is equal to the existing one
 				// logger.debug(`updateSourceLayerInfinitesAfterLine: no change to infinite continuation "${itemToInsert._id}"`)
 			} else {
@@ -2123,7 +2125,6 @@ export function updateSourceLayerInfinitesAfterLineInner (runningOrder: RunningO
 				} else {
 					if (existingItem) {
 						SegmentLineItems.remove(existingItem._id)
-						removedInfinites.push(existingItem._id)
 					}
 					if (itemToInsert) {
 						SegmentLineItems.insert(itemToInsert)
@@ -2135,7 +2136,7 @@ export function updateSourceLayerInfinitesAfterLineInner (runningOrder: RunningO
 
 		// find any new infinites exposed by this
 		let psExposed: Array<Promise<any>> = []
-		for (let segmentLineItem of currentItems.filter(i => removedInfinites.indexOf(i._id) < 0)) {
+		for (let segmentLineItem of currentItems.filter(i => infiniteConinuationSegmentLineItems.indexOf(i._id) < 0)) {
 			if (
 				!segmentLineItem.infiniteMode ||
 				segmentLineItem.duration ||
@@ -2144,25 +2145,20 @@ export function updateSourceLayerInfinitesAfterLineInner (runningOrder: RunningO
 			) {
 				delete activeInfiniteItems[segmentLineItem.sourceLayerId]
 				delete activeInfiniteItemsSegmentId[segmentLineItem.sourceLayerId]
-				continue
-			}
+			} else if (segmentLineItem.infiniteMode !== SegmentLineItemLifespan.OutOnNextSegmentLine) {
+				if (!segmentLineItem.infiniteId) {
+					// ensure infinite id is set
+					segmentLineItem.infiniteId = segmentLineItem._id
+					psExposed.push(asyncCollectionUpdate(SegmentLineItems, segmentLineItem._id, { $set: {
+						infiniteId: segmentLineItem.infiniteId }
+					}))
+					// SegmentLineItems.update(segmentLineItem._id, { $set: { infiniteId: segmentLineItem.infiniteId } })
+					logger.debug(`updateSourceLayerInfinitesAfterLine: marked "${segmentLineItem._id}" as start of infinite`)
+				}
 
-			if (segmentLineItem.infiniteMode === SegmentLineItemLifespan.OutOnNextSegmentLine) {
-				continue
+				activeInfiniteItems[segmentLineItem.sourceLayerId] = segmentLineItem
+				activeInfiniteItemsSegmentId[segmentLineItem.sourceLayerId] = segmentLine.segmentId
 			}
-
-			if (!segmentLineItem.infiniteId) {
-				// ensure infinite id is set
-				segmentLineItem.infiniteId = segmentLineItem._id
-				psExposed.push(asyncCollectionUpdate(SegmentLineItems, segmentLineItem._id, { $set: {
-					infiniteId: segmentLineItem.infiniteId }
-				}))
-				// SegmentLineItems.update(segmentLineItem._id, { $set: { infiniteId: segmentLineItem.infiniteId } })
-				logger.debug(`updateSourceLayerInfinitesAfterLine: marked "${segmentLineItem._id}" as start of infinite`)
-			}
-
-			activeInfiniteItems[segmentLineItem.sourceLayerId] = segmentLineItem
-			activeInfiniteItemsSegmentId[segmentLineItem.sourceLayerId] = segmentLine.segmentId
 		}
 		waitForPromiseAll(psExposed)
 	}
