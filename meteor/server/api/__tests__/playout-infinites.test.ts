@@ -45,7 +45,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 
 		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, true)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
 
 		const allSegmentLineItems = SegmentLineItems.find({ runningOrderId: ro._id }).fetch()
 		const insertedItems = allSegmentLineItems.filter(sli => origSegmentLineItemIds.indexOf(sli._id) === -1)
@@ -60,8 +60,6 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		})
 
 		const grouped = _.groupBy(_.filter(allSegmentLineItems, sli => sli.infiniteId), sli => sli.infiniteId)
-		expect(_.keys(grouped)).lengthOf(14) // TODO - remove?
-
 		const actualInfinites: {[key: string]: string[]} = {}
 		_.each(grouped, (items, key) => {
 			actualInfinites[key] = _.map(items, item => item.segmentLineId).sort()
@@ -209,7 +207,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 
 		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, true)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
 
 		// Make everything be non-infinite
 		SegmentLineItems.update({ runningOrderId: ro._id }, {
@@ -218,7 +216,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 			}
 		}, { multi: true})
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, true)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
 
 		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
 		expect(afterSegmentLineItemIds).to.eql(origSegmentLineItemIds)
@@ -237,7 +235,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 			}
 		}, { multi: true})
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, true)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
 
 		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
 		expect(afterSegmentLineItemIds).to.eql(origSegmentLineItemIds)
@@ -256,7 +254,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 			}
 		}, { multi: true})
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, true)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
 
 		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
 		expect(afterSegmentLineItemIds).to.eql(origSegmentLineItemIds)
@@ -266,11 +264,11 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		const ro = setupMockRO(testRO1)
 		expect(ro).to.not.be.undefined
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, true)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
 
 		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, true)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
 
 		// Expect the ids to all be the same
 		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
@@ -280,7 +278,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 	it('Ensure line mode change propogates', function () {
 		const ro = setupMockRO(testRO1)
 		expect(ro).to.not.be.undefined
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, true)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
 
 		const sliId = '9wPCrktBThPitm0JiE7FIOuoRJo_'
 
@@ -305,7 +303,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		})
 
 		// regenerate infinites
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, true)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
 
 		const afterModes = getInfiniteModes(sliId)
 		expect(afterModes).eql([3, 3, 0, 3])
@@ -314,7 +312,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 	it('Ensure line name change propogates', function () {
 		const ro = setupMockRO(testRO1)
 		expect(ro).to.not.be.undefined
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, true)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
 
 		const sliId = '9wPCrktBThPitm0JiE7FIOuoRJo_'
 
@@ -342,7 +340,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		})
 
 		// regenerate infinites
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, true)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
 
 		checkInfiniteNames(sliId, 'new name')
 	})
@@ -354,14 +352,14 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		const sliId = 'M7Yw6rNvbRW8mgwbVWCo0CFpdBI_'
 		const prevSlId = 'BNx_pjsUS_NZmV8z_YmAT_C0riU_'
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, true)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
 
 		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
 
 		const prevSegmentLine = SegmentLines.findOne(prevSlId)
 		expect(prevSegmentLine).not.undefined
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, false, prevSegmentLine)).eq('') // TODO - this should stop before the end!
+		expect(updateSourceLayerInfinitesAfterLineInner(ro, prevSegmentLine)).eq('') // TODO - this should stop before the end!
 
 		// Expect the ids to all be the same
 		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
@@ -375,7 +373,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		const sliId = 'M7Yw6rNvbRW8mgwbVWCo0CFpdBI_'
 		const prevSlId = 'BNx_pjsUS_NZmV8z_YmAT_C0riU_'
 
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, true)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
 
 		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
 
@@ -403,7 +401,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		expect(prevSegmentLine).not.undefined
 
 		// regenerate infinites
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, false, prevSegmentLine)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro, prevSegmentLine)).eq('')
 
 		// It is expected that there are 2 more sli now
 		const afterModes = getInfiniteModes(sliId)
@@ -416,7 +414,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		expect(afterSegmentLineItemIds.sort()).to.eql(origSegmentLineItemIds.sort())
 	})
 
-	it('Ensure update when adding sli which breaks an infinite', function () {
+	it('Ensure update when adding infinite in the middle of another', function () {
 		const ro = setupMockRO(testRO1)
 		expect(ro).to.not.be.undefined
 
@@ -424,16 +422,16 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		const prevSlId = 'BNx_pjsUS_NZmV8z_YmAT_C0riU_'
 
 		// First generate
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, true)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
 		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
 
 		const newSli = literal<SegmentLineItem>({
-			_id: 'test_stop_klokke',
+			_id: 'test_klokke_break',
 			runningOrderId : ro._id,
 			segmentLineId : currentSlId,
 			status : -1,
 			mosId : '',
-			name : 'stop klokke',
+			name : 'split klokke',
 			trigger : {
 				type : 0,
 				value : 0
@@ -441,19 +439,20 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 			sourceLayerId : 'studio0_graphics_klokke',
 			outputLayerId : 'pgm0',
 			expectedDuration : 0,
-			virtual : true,
 			content : {
 				timelineObjects : []
-			}
+			},
+			infiniteMode: SegmentLineItemLifespan.OutOnNextSegment
 		})
 		SegmentLineItems.insert(newSli)
-		origSegmentLineItemIds.push('test_stop_klokke')
+
+		const expectedSegmentLineItemIds = ['test_klokke_break', 'test_klokke_break_3_qhlFEIYlESrvZYxbk3ie_5_z0_'].concat(origSegmentLineItemIds)
 
 		const prevSegmentLine = SegmentLines.findOne(prevSlId)
 		expect(prevSegmentLine).not.undefined
 
 		// regenerate infinites
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, false, prevSegmentLine)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro, prevSegmentLine)).eq('')
 
 		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
 
@@ -480,7 +479,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		})
 
 		const afterWithRemoved = expectedMissing.concat(afterSegmentLineItemIds)
-		expect(afterWithRemoved.sort()).eql(origSegmentLineItemIds.sort())
+		expect(afterWithRemoved.sort()).eql(expectedSegmentLineItemIds.sort())
 	})
 
 	it('Ensure update when moving ro removing sli which breaks an infinite', function () {
@@ -492,7 +491,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		const prevSlId = 'qGi_A8A0NtZoSgNnYZVNI_Vb700_'
 
 		// First generate
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, true)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
 		const origSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
 
 		const prevSegmentLine = SegmentLines.findOne(prevSlId)
@@ -509,7 +508,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		})
 
 		// regenerate infinites
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, false, prevSegmentLine)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro, prevSegmentLine)).eq('')
 
 		const midSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
 
@@ -520,7 +519,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 
 		// Now remove the blocker and it should basically just come back
 		SegmentLineItems.remove(sliId)
-		expect(updateSourceLayerInfinitesAfterLineInner(ro, false, prevSegmentLine)).eq('')
+		expect(updateSourceLayerInfinitesAfterLineInner(ro, prevSegmentLine)).eq('')
 
 		const afterSegmentLineItemIds: string[] = SegmentLineItems.find({ runningOrderId: ro._id }).map(sli => sli._id)
 		expect(afterSegmentLineItemIds).contains('9wPCrktBThPitm0JiE7FIOuoRJo__nDQtVZ1Bo0J3qEYnBqjr7KuyhDQ_')

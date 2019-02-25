@@ -97,7 +97,7 @@ setMeteorMethods({
 		})
 
 		logger.info('debug_roRunBlueprints: infinites')
-		updateSourceLayerInfinitesAfterLine(ro, true)
+		updateSourceLayerInfinitesAfterLine(ro)
 
 		if (unsynced) RunningOrders.update(ro._id, { $set: { unsynced }})
 
@@ -152,24 +152,24 @@ setMeteorMethods({
 		})
 
 		logger.info('debug_roRunMosData: infinites')
-		updateSourceLayerInfinitesAfterLine(ro, true)
+		updateSourceLayerInfinitesAfterLine(ro)
 
 		if (unsynced) RunningOrders.update(ro._id, { $set: { unsynced }})
 
 		logger.info('debug_roRunMosData: done')
 	},
 
-	'debug_updateSourceLayerInfinitesAfterLine' (roId: string, runToEnd: boolean, previousSlId?: string) {
+	'debug_updateSourceLayerInfinitesAfterLine' (roId: string, previousSlId?: string, runToEnd?: boolean) {
 		check(roId, String)
-		check(runToEnd, Boolean)
 		if (previousSlId) check(previousSlId, String)
+		if (runToEnd !== undefined) check(runToEnd, Boolean)
 
 		const ro = RunningOrders.findOne(roId)
 		if (!ro) throw new Meteor.Error(404, 'Running order not found')
 
 		const prevSl = previousSlId ? SegmentLines.findOne(previousSlId) : undefined
 
-		updateSourceLayerInfinitesAfterLine(ro, runToEnd, prevSl)
+		updateSourceLayerInfinitesAfterLine(ro, prevSl, runToEnd)
 
 		logger.info('debug_updateSourceLayerInfinitesAfterLine: done')
 	}
