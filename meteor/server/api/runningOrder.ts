@@ -168,7 +168,6 @@ export function convertToSegment (segmentLine: SegmentLine, rank: number): DBSeg
 		_rank: rank,
 		mosId: 'N/A', // to be removed?
 		name: slugParts[0],
-		number: 'N/A' // @todo: to be removed from data structure
 		// number: (story.Number ? story.Number.toString() : '')
 	}
 	// logger.debug('story.Number', story.Number)

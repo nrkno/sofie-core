@@ -202,7 +202,6 @@ class extends MeteorReactComponent<ISegmentsProps & ISegmentsTrackedProps, ISegm
 				<b>Segment</b>
 				<div>ID: <i>{segment._id}</i></div>
 				<div>Name: <i>{segment.name}</i></div>
-				<div>Number: <i>{segment.number}</i></div>
 				<div>
 				<ComponentSegmentLines segmentId={segment._id} />
 				</div>

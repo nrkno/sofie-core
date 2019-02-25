@@ -1954,10 +1954,17 @@ function getOrderedSegmentLineItem (line: SegmentLine): Array<SegmentLineItemRes
 	return resolvedItems
 }
 
+// TODO - refactor parameters, so that runUntilEnd is optional and default follows previousLine presence. Perhaps should always be true when prevLine is undefined?
 export const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, runUntilEnd: boolean, previousLine?: SegmentLine) => void
- = syncFunctionIgnore(function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUntilEnd: boolean, previousLine?: SegmentLine) {
+ = syncFunctionIgnore(updateSourceLayerInfinitesAfterLineInner)
+export function updateSourceLayerInfinitesAfterLineInner (runningOrder: RunningOrder, runUntilEnd: boolean, previousLine?: SegmentLine): string {
 	let activeInfiniteItems: { [layer: string]: SegmentLineItem } = {}
 	let activeInfiniteItemsSegmentId: { [layer: string]: string } = {}
+
+	if (previousLine === undefined) {
+		// This parameter only makes sense as an update after a specific sl has changed
+		runUntilEnd = true
+	}
 
 	if (previousLine) {
 		let ps: Array<Promise<any>> = []
@@ -2044,7 +2051,8 @@ export const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, r
 		// stop if not running to the end and there is/was nothing active
 		const midInfinites = currentInfinites.filter(i => !i.expectedDuration && i.infiniteMode)
 		if (!runUntilEnd && Object.keys(activeInfiniteItemsSegmentId).length === 0 && midInfinites.length === 0) {
-			break
+			// TODO - this guard is useless, as all shows have klokke and logo as infinites throughout...
+			return segmentLine._id
 		}
 
 		// figure out what infinites are to be extended
@@ -2158,8 +2166,10 @@ export const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, r
 		}
 		waitForPromiseAll(psExposed)
 	}
+
 	waitForPromiseAll(ps)
-})
+	return ''
+}
 
 const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (runningOrder: RunningOrder, segmentLine: SegmentLine, newItem: SegmentLineItem) {
 	let showStyleBase = runningOrder.getShowStyleBase()
