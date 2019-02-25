@@ -35,3 +35,8 @@ const tempTestAsyncInner = Meteor.wrapAsync((val0, val1, cb) => {
 	}, 100)
 	// console.log('b2')
 })
+export const functionToTest = Meteor.wrapAsync((value: string, cb: Function) => {
+	setTimeout(() => {
+		cb(null, value)
+	}, 100)
+})
