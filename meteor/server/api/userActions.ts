@@ -25,6 +25,7 @@ import { ServerRunningOrderAPI } from './runningOrder'
 import { ServerTestToolsAPI, getStudioConfig } from './testTools'
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { saveEvaluation } from './evaluations'
+import { MediaManagerAPI } from './mediaManager'
 
 const MINIMUM_TAKE_SPAN = 1000
 
@@ -380,6 +381,16 @@ export function recordDelete (id: string) {
 		ServerTestToolsAPI.recordDelete(id)
 	)
 }
+export function mediaRestartWorkflow (workflowId: string) {
+	return ClientAPI.responseSuccess(
+		MediaManagerAPI.restartWorkflow(workflowId)
+	)
+}
+export function mediaAbortWorkflow (workflowId: string) {
+	return ClientAPI.responseSuccess(
+		MediaManagerAPI.abortWorkflow(workflowId)
+	)
+}
 
 interface UserMethods {
 	[method: string]: (...args: any[]) => ClientAPI.ClientResponse
@@ -460,6 +471,12 @@ methods[UserActionAPI.methods.recordStart] = function (studioId: string, name: s
 }
 methods[UserActionAPI.methods.recordDelete] = function (id: string) {
 	return recordDelete.call(this, id)
+}
+methods[UserActionAPI.methods.mediaRestartWorkflow] = function (workflowId: string) {
+	return mediaRestartWorkflow.call(this, workflowId)
+}
+methods[UserActionAPI.methods.mediaAbortWorkflow] = function (workflowId: string) {
+	return mediaAbortWorkflow.call(this, workflowId)
 }
 
 // Apply methods:

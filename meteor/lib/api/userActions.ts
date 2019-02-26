@@ -41,6 +41,9 @@ export namespace UserActionAPI {
 
 		'recordStop'							= 'userAction.recordStop',
 		'recordStart'							= 'userAction.recordStart',
-		'recordDelete'							= 'userAction.recordDelete'
+		'recordDelete'							= 'userAction.recordDelete',
+
+		'mediaRestartWorkflow'					= 'userAction.mediamanager.restartWorkflow',
+		'mediaAbortWorkflow'					= 'userAction.mediamanager.abortWorkflow'
 	}
 }
