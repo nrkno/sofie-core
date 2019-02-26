@@ -1,9 +1,5 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as _ from 'underscore'
-
-import { ClientAPI } from '../../../lib/api/client'
-import { PlayoutAPI } from '../../../lib/api/playout'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 import { Segment } from '../../../lib/collections/Segments'
@@ -28,8 +24,9 @@ import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
-import { callMethod } from '../../lib/clientAPI'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { doUserAction } from '../../lib/userAction'
+import { UserActionAPI } from '../../../lib/api/userActions'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (aSLine: SegmentLineAdLibItemUi) => void
@@ -153,8 +150,6 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 	}
 
 	render () {
-		const { t } = this.props
-
 		return (
 			<div className='adlib-panel__list-view__list adlib-panel__list-view__list--global'>
 				<table className='adlib-panel__list-view__list__table' ref={this.setTableRef}>
@@ -425,7 +420,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && this.props.runningOrder.active) {
-			callMethod(e, PlayoutAPI.methods.sourceLayerStickyItemStart, this.props.runningOrder._id, sourceLayerId)
+			const { t } = this.props
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyItemStart, [this.props.runningOrder._id, sourceLayerId])
 		}
 	}
 
@@ -444,7 +440,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId && aSLine.isGlobal) {
-			callMethod(e, PlayoutAPI.methods.runningOrderBaselineAdLibItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id, queue || false)
+			const { t } = this.props
+			doUserAction(t, e, UserActionAPI.methods.baselineAdLibItemStart, [this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id, queue || false])
 		}
 	}
 
@@ -452,7 +449,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		// console.log(sourceLayer)
 
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
-			callMethod(e, PlayoutAPI.methods.sourceLayerOnLineStop, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id)
+			const { t } = this.props
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnLineStop, [this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id])
 		}
 	}
 

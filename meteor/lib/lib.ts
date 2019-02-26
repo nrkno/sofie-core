@@ -25,16 +25,16 @@ export function MeteorPromiseCall (callName: string, ...args: any[] ): Promise<a
 
 export type Time = number
 
+const systemTime = {
+	diff: 0,
+	stdDev: 9999
+}
 /**
  * Returns the current (synced) time
  * @return {Time}
  */
 export function getCurrentTime (): Time {
 	return Math.floor(Date.now() - systemTime.diff)
-}
-let systemTime = {
-	diff: 0,
-	stdDev: 9999
 }
 export {systemTime}
 
@@ -129,8 +129,6 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 	let identifier = '_id'
 
 	let oldObjs: Array<DocClass> = collection.find(filter).fetch()
-
-	let newObjs2 = []
 
 	let ps: Array<Promise<any>> = []
 
@@ -477,6 +475,7 @@ export function normalizeArray<T> (array: Array<T>, indexKey: keyof T): {[indexK
 	return normalizedObject as { [key: string]: T }
 }
 
+const rateLimitCache: {[name: string]: number} = {}
 export function rateLimit (name: string,f1: Function, f2: Function, t: number) {
 	// if time t has passed since last call, run f1(), otherwise run f2()
 	if (Math.random() < 0.05) Meteor.setTimeout(cleanUpRateLimit, 10000)
@@ -491,7 +490,6 @@ export function rateLimit (name: string,f1: Function, f2: Function, t: number) {
 
 	return null
 }
-const rateLimitCache: {[name: string]: number} = {}
 function cleanUpRateLimit () {
 	const now = Date.now()
 	const maxTime = 1000
@@ -502,6 +500,7 @@ function cleanUpRateLimit () {
 	}
 }
 
+const rateLimitAndDoItLaterCache: {[name: string]: number} = {}
 export function rateLimitAndDoItLater (name: string, f1: Function, limit: number) {
 	// if time *limit* has passed since last call, run f1(), otherwise run f1 later
 	if (Math.random() < 0.05) Meteor.setTimeout(cleanUprateLimitAndDoItLater, 10000)
@@ -521,10 +520,8 @@ export function rateLimitAndDoItLater (name: string, f1: Function, limit: number
 		return false
 	}
 }
-const rateLimitAndDoItLaterCache: {[name: string]: number} = {}
 function cleanUprateLimitAndDoItLater () {
 	const now = Date.now()
-	const maxTime = 1
 	for (const name in rateLimitAndDoItLaterCache) {
 		if (rateLimitAndDoItLaterCache[name] && rateLimitAndDoItLaterCache[name] < (now - 100) ) {
 			delete rateLimitAndDoItLaterCache[name]
@@ -532,6 +529,7 @@ function cleanUprateLimitAndDoItLater () {
 	}
 }
 
+const rateLimitIgnoreCache: {[name: string]: number} = {}
 export function rateLimitIgnore (name: string, f1: Function, limit: number) {
 	// if time *limit* has passed since function was last run, run it right away.
 	// Otherwise, set it to run in some time
@@ -572,10 +570,8 @@ export function rateLimitIgnore (name: string, f1: Function, limit: number) {
 		}
 	}
 }
-const rateLimitIgnoreCache: {[name: string]: number} = {}
 function cleanUprateLimitIgnore () {
 	const now = Date.now()
-	const maxTime = 1
 	for (const name in rateLimitIgnoreCache) {
 		if (rateLimitIgnoreCache[name] && rateLimitIgnoreCache[name] < (now - 100) ) {
 			delete rateLimitIgnoreCache[name]
@@ -608,15 +604,15 @@ export function escapeHtml (text: string): string {
 	}
 	return outText
 }
+const ticCache = {}
 export function tic (name: string = 'default') {
 	ticCache[name] = Date.now()
 }
 export function toc (name: string = 'default', logStr?: string) {
 	let t: number = Date.now() - ticCache[name]
-	if (logStr) logger.info('toc: ' + logStr + ': ' + t)
+	if (logStr) logger.info('toc: ' + name + ': ' + logStr + ': ' + t)
 	return t
 }
-const ticCache = {}
 
 export function asyncCollectionFindFetch<DocClass, DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
@@ -697,6 +693,16 @@ export function asyncCollectionRemove<DocClass, DBInterface> (
 		})
 	})
 }
+/**
+ * Supresses the "UnhandledPromiseRejectionWarning" warning
+ * ref: https://stackoverflow.com/questions/40920179/should-i-refrain-from-handling-promise-rejection-asynchronously
+ *
+ * creds: https://github.com/rsp/node-caught/blob/master/index.js
+ */
+export const caught = ( f => p => (p.catch(f), p))(() => {
+	// nothing
+})
+
 /**
  * Blocks the fiber until all the Promises have resolved
  */

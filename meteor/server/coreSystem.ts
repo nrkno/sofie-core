@@ -1,8 +1,19 @@
-import { getCoreSystem, CoreSystem, SYSTEM_ID, getCoreSystemCursor, parseVersion, compareVersions, Version, stripVersion } from '../lib/collections/CoreSystem'
+import {
+	getCoreSystem,
+	CoreSystem,
+	SYSTEM_ID,
+	getCoreSystemCursor,
+	parseVersion,
+	Version,
+	stripVersion
+} from '../lib/collections/CoreSystem'
 import { getCurrentTime } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
-import { CURRENT_SYSTEM_VERSION, GENESIS_SYSTEM_VERSION } from './migration/databaseMigration'
-import { setSystemStatus, StatusCode, StatusObject, removeSystemStatus } from './systemStatus'
+import {
+	CURRENT_SYSTEM_VERSION,
+	GENESIS_SYSTEM_VERSION
+} from './migration/databaseMigration'
+import { setSystemStatus, StatusCode, removeSystemStatus } from './systemStatus'
 import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
@@ -219,6 +230,9 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 	if (coreStatus && coreStatus.statusCode >= StatusCode.WARNING_MAJOR) {
 		coreStatus.messages[0] = 'Core version: ' + coreStatus.messages[0]
 		setSystemStatus(systemStatusId, coreStatus)
+	} else if (tsrStatus && tsrStatus.statusCode >= StatusCode.WARNING_MAJOR) {
+		tsrStatus.messages[0] = 'Core - TSR library version: ' + tsrStatus.messages[0]
+		setSystemStatus(systemStatusId, tsrStatus)
 	} else if (integrationStatus.statusCode >= StatusCode.WARNING_MAJOR) {
 		integrationStatus.messages[0] = 'Integration version: ' + integrationStatus.messages[0]
 		setSystemStatus(systemStatusId, integrationStatus)
@@ -232,11 +246,8 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 		})
 	}
 }
-function startupMessage () {
-	logger.info(`Core starting up`)
-	logger.info(`Core system version: "${CURRENT_SYSTEM_VERSION}"`)
-
-	logger.info(`Core package version: "${PackageInfo.version}"`)
+export function getRelevantSystemVersions (): {[name: string]: string} {
+	const versions: {[name: string]: string} = {}
 
 	let dependencies: any = PackageInfo.dependencies
 	if (dependencies) {
@@ -252,6 +263,7 @@ function startupMessage () {
 			'@slack/client',
 			'@types/amqplib',
 			'@types/body-parser',
+			'@types/react-circular-progressbar',
 			'@types/request',
 			'amqplib',
 			'body-parser',
@@ -276,6 +288,7 @@ function startupMessage () {
 			'rc-tooltip',
 			'react',
 			'react-bootstrap',
+			'react-circular-progressbar',
 			'react-contextmenu',
 			'react-datepicker',
 			'react-dom',
@@ -299,10 +312,24 @@ function startupMessage () {
 			return omitNames.indexOf(name) === -1
 		})
 		_.each(names, (name) => {
-			logger.info(`Core package.${name} version: "${dependencies[name]}"`)
-
+			versions[name] = dependencies[name]
 		})
+		versions['core'] = PackageInfo.version // package version
+
 	} else logger.error(`Core package dependencies missing`)
+	return versions
+}
+function startupMessage () {
+	logger.info(`Core starting up`)
+	logger.info(`Core system version: "${CURRENT_SYSTEM_VERSION}"`)
+
+	logger.info(`Core package version: "${PackageInfo.version}"`)
+
+	const versions = getRelevantSystemVersions()
+	_.each(versions, (version, name) => {
+		logger.info(`Core package ${name} version: "${version}"`)
+	})
+
 }
 
 Meteor.startup(() => {

@@ -72,11 +72,11 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	}
 
 	&.notification-center-open {
-		padding-right: calc(#{$statusbar-width} + 400px);
+		padding-right: calc(#{$statusbar-width} + #{$notification-center-width});
 		transition: 0s padding-right 0.5s;
 
 		> .header .running-order-overview {
-			padding-right: calc(#{$statusbar-width} + 400px + 1.5em);
+			padding-right: calc(#{$statusbar-width} + #{$notification-center-width} + 1.5em);
 			transition: 0s padding-right 0.5s;
 		}
 	}
@@ -334,6 +334,11 @@ body.vertical-overflow-only {
 			> .segment-timeline__title__notes__note {
 				position: relative;
 				padding-left: 20px;
+				cursor: pointer;
+
+				&:not(:last-child) {
+					margin-bottom: 5px;
+				}
 
 				> .icon {
 					position: absolute;
@@ -341,6 +346,10 @@ body.vertical-overflow-only {
 					top: 1px;
 					height: auto;
 					width: 16px;
+				}
+
+				&:hover {
+					text-decoration: underline;
 				}
 			}
 		}
@@ -516,11 +525,14 @@ body.vertical-overflow-only {
 					$output-layer-group-collapse-animation-duration margin ($output-layer-group-collapse-animation-duration * 1/2);
 	}
 
+	.segment-timeline__zoom-area-container {
+		grid-column: timeline / end;
+		grid-row: zoom-area / end;
+	}
+
 	// The area controlling the zoom at the bottom of the segment
 	.segment-timeline__zoom-area {
 		position: relative;
-		grid-column: timeline / end;
-		grid-row: zoom-area / end;
 		max-height: 4em;
 		margin: 0.2em 0.2em 0em 0;
 		padding: 1px 0;
@@ -646,7 +658,7 @@ body.vertical-overflow-only {
 
 			.segment-timeline__zoom-area__controls__selected-area {
 				position: absolute;
-				border: 1px solid white;
+				border: 1px solid rgba(255, 255, 255, 0.3);
 				top: 0;
 				bottom: 0;
 				width: 250px;
@@ -1170,13 +1182,59 @@ body.vertical-overflow-only {
 							transform: translate3d(0,0,2px)
 						}
 
+						.segment-timeline__layer-item__anomaly-marker {
+							position: absolute;
+							display: block;
+							top: -2px;
+							height: calc(100% + 2px);
+							min-width: 2px;
+							background: repeating-linear-gradient(
+								90deg,
+								black,
+								black 3px,
+								rgba(0, 0, 0, .2) 3px,
+								rgba(0, 0, 0, .2) 6px
+							);
+							overflow: hidden;
+							// transform: translate3d(0,0,-2px)
+						}
+						.segment-timeline__layer-item__anomaly-marker::after {
+							content: '';
+							position: absolute;
+							display: block;
+							top: 0px;
+							width: 100%;
+							height: 2px;
+							min-width: 2px;
+							// background: repeating-linear-gradient(
+							// 	90deg,
+							// 	black,
+							// 	black 2px,
+							// 	rgba(0, 0, 0, .2) 1.5px,
+							// 	rgba(0, 0, 0, .2) 3px
+							// );
+							background: yellow;
+							overflow: hidden;
+							// transform: translate3d(0,0,2px)
+						}
+
+						.segment-timeline__layer-item__anomaly-marker__freezes {
+							background: repeating-linear-gradient(
+								0deg,
+								black,
+								black 3px,
+								rgba(0, 0, 0, .2) 3px,
+								rgba(0, 0, 0, .2) 6px
+							);
+						}
+
 						.segment-timeline__layer-item__source-finished {
 							position: absolute;
 							top: 0;
 							right: 0;
 							bottom: 0;
 							background: repeating-linear-gradient(to right, $segment-timeline-background-color 0, $segment-timeline-background-color 5px, transparent 5.1px, transparent 10px);
-							transform: translate3d(0,0,1px)
+							z-index: 2;
 						}
 
 						.segment-timeline__layer-item__label {
@@ -1429,6 +1487,9 @@ body.vertical-overflow-only {
 
 				opacity: 1;
 				transition: $output-layer-group-collapse-animation-duration opacity;
+
+				text-shadow: 0 0 5px $segment-background-color;
+    			z-index: 2;
 			}
 
 			// the label for the source-layer within this output group
@@ -1737,6 +1798,20 @@ body.vertical-overflow-only {
 			border-bottom-left-radius: 3px;
 		}
 
+		> .segment-timeline__mini-inspector__warnings {
+			display: block;
+			position: absolute;
+			left: 0;
+			bottom: 0;
+			max-width: 100%;
+			font-weight: 400;
+			text-shadow: 0 0 1px rgba(0,0,0,1);
+			font-size: 0.75em;
+			padding: 0.2em 0.3em;
+			background: rgba(0,0,0,0.25);
+			border-top-right-radius: 3px;
+		}
+
 		> .video-preview {
 			position: relative;
 			overflow: hidden;
@@ -1812,6 +1887,10 @@ body.vertical-overflow-only {
 		&.text-end {
 			margin-top: 6px;
 			text-align: right;
+		}
+
+		&.text-broken {
+			display: block;
 		}
 	}
 	.mini-inspector__in-point {

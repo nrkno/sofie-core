@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { Snapshots, SnapshotItem } from '../../lib/collections/Snapshots'
 
 // Setup rules:

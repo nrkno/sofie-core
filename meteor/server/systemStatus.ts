@@ -1,17 +1,14 @@
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { ServerResponse, IncomingMessage } from 'http'
-// @ts-ignore Meteor package not recognized by Typescript
 import { Picker } from 'meteor/meteorhacks:picker'
 import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
-import { syncFunctionIgnore } from './codeControl'
-import { StudioInstallations } from '../lib/collections/StudioInstallations'
 import { getCurrentTime, Time } from '../lib/lib'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
-import { Meteor } from 'meteor/meteor'
 import { setMeteorMethods, Methods } from './methods'
-import { parseVersion, compareVersions } from '../lib/collections/CoreSystem'
+import { parseVersion } from '../lib/collections/CoreSystem'
 import { StatusResponse, CheckObj, SystemStatusAPI, ExternalStatus, CheckError } from '../lib/api/systemStatus'
+import { getRelevantSystemVersions } from './coreSystem'
 
 // This data structure is to be used to determine the system-wide status of the Core instance
 
@@ -47,6 +44,7 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 
 	let checks: Array<CheckObj> = []
 
+	// Check systemStatuses:
 	_.each(systemStatuses, (status: StatusObjectInternal, key: string) => {
 		checks.push({
 			description: key,
@@ -61,7 +59,6 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 				}
 			})
 		})
-
 	})
 
 	let statusObj: StatusResponse = {
@@ -72,9 +69,10 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 		_status: StatusCode.UNKNOWN,
 		documentation: 'https://github.com/nrkno/tv-automation-server-core',
 		_internal: {
-			// statusCode: StatusCode.UNKNOWN,
+			// this _internal is set later
 			statusCodeString: StatusCode[StatusCode.UNKNOWN],
-			messages: []
+			messages: [],
+			versions: {}
 		},
 		checks: checks,
 	}
@@ -144,10 +142,12 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 			updated: new Date(device.lastSeen).toISOString(),
 			_status: deviceStatus,
 			documentation: '',
+			statusMessage: deviceStatusMessages.length ? deviceStatusMessages.join(', ') : undefined,
 			_internal: {
 				// statusCode: deviceStatus,
 				statusCodeString: StatusCode[deviceStatus],
-				messages: deviceStatusMessages
+				messages: deviceStatusMessages,
+				versions: device.versions || {}
 			},
 			checks: checks
 		}
@@ -166,8 +166,10 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 	statusObj._internal = {
 		// statusCode: systemStatus,
 		statusCodeString: StatusCode[systemStatus],
-		messages: collectMesages(statusObj)
+		messages: collectMesages(statusObj),
+		versions: getRelevantSystemVersions()
 	}
+	statusObj.statusMessage = statusObj._internal.messages.join(', ')
 
 	return statusObj
 }

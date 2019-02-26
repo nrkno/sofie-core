@@ -1,3 +1,5 @@
+
+/* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from 'meteor/check'
 import { RunningOrders, RunningOrder, RunningOrderHoldState, RoData, DBRunningOrder } from '../../lib/collections/RunningOrders'
@@ -12,7 +14,6 @@ import { getCurrentTime,
 	stringifyObjects,
 	fetchAfter,
 	normalizeArray,
-	getRank,
 	asyncCollectionUpdate,
 	asyncCollectionRemove,
 	waitForPromiseAll,
@@ -22,7 +23,8 @@ import { getCurrentTime,
 	waitForPromise,
 	asyncCollectionFindOne,
 	pushOntoPath,
-	extendMandadory
+	extendMandadory,
+	caught
 } from '../../lib/lib'
 import {
 	Timeline,
@@ -45,11 +47,11 @@ import {
 	Timeline as TimelineTypes
 } from 'timeline-state-resolver-types'
 import { TriggerType } from 'superfly-timeline'
-import { Segments,Segment } from '../../lib/collections/Segments'
+import { Segments, Segment } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../logging'
-import { PeripheralDevice,PeripheralDevices,PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import {
 	getSliGroupId,
@@ -63,9 +65,17 @@ import {
 	SegmentLineHoldMode,
 	TimelineObjHoldMode,
 	MOS,
-	TimelineObjectCoreExt
+	TimelineObjectCoreExt,
+	VTContent
 } from 'tv-automation-sofie-blueprints-integration'
-import { loadBlueprints, postProcessSegmentLineAdLibItems, postProcessSegmentLineBaselineItems, RunningOrderContext, getBlueprintOfRunningOrder, SegmentLineContext } from './blueprints'
+import {
+	loadBlueprints,
+	postProcessSegmentLineAdLibItems,
+	postProcessSegmentLineBaselineItems,
+	RunningOrderContext,
+	getBlueprintOfRunningOrder,
+	SegmentLineContext
+} from './blueprints'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
@@ -77,17 +87,19 @@ let clone = require('fast-clone')
 import { Resolver } from 'superfly-timeline'
 import { transformTimeline } from '../../lib/timeline'
 import { ClientAPI } from '../../lib/api/client'
-import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
-import { sendSlackMessageToWebhookSync } from './integration/slack'
-import { setMeteorMethods } from '../methods'
+import { setMeteorMethods, Methods } from '../methods'
 import { sendStoryStatus, updateStory } from './integration/mos'
 import { updateSegmentLines, reloadRunningOrderData } from './runningOrder'
 import { runPostProcessBlueprint } from '../../server/api/runningOrder'
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { generateRecordingTimelineObjs } from './testTools'
-import { reportRunningOrderHasStarted, reportSegmentLineHasStarted, reportSegmentLineItemHasStarted } from './asRunLog'
-
-const MINIMUM_TAKE_SPAN = 1000
+import {
+	reportRunningOrderHasStarted,
+	reportSegmentLineHasStarted,
+	reportSegmentLineItemHasStarted,
+	reportSegmentLineHasStopped,
+	reportSegmentLineItemHasStopped
+} from './asRunLog'
 
 export namespace ServerPlayoutAPI {
 	/**
@@ -100,12 +112,8 @@ export namespace ServerPlayoutAPI {
 		if (runningOrder.active) throw new Meteor.Error(404, `roPrepareForBroadcast cannot be run on an active runningOrder!`)
 		const anyOtherActiveRunningOrders = areThereActiveROsInStudio(runningOrder.studioInstallationId, runningOrder._id)
 		if (anyOtherActiveRunningOrders.length) {
-			logger.warn('Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
-			const res = literal<ClientAPI.ClientResponse>({
-				error: 409,
-				message: 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id')
-			})
-			return res
+			// logger.warn('Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
+			throw new Meteor.Error(409, 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
 		}
 
 		resetRunningOrder(runningOrder)
@@ -125,6 +133,8 @@ export namespace ServerPlayoutAPI {
 		resetRunningOrder(runningOrder)
 
 		updateTimeline(runningOrder.studioInstallationId)
+
+		return { success: 200 }
 	}
 	/**
 	 * Activate the runningOrder, final preparations before going on air
@@ -152,7 +162,7 @@ export namespace ServerPlayoutAPI {
 	/**
 	 * Deactivate the runningOrder
 	 */
-	export function roDeactivate (roId: string, rehearsal: boolean) {
+	export function roDeactivate (roId: string) {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
@@ -167,12 +177,19 @@ export namespace ServerPlayoutAPI {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
-		return reloadRunningOrderData(runningOrder)
+		return ClientAPI.responseSuccess(
+			reloadRunningOrderData(runningOrder)
+		)
 	}
 	function resetRunningOrder (runningOrder: RunningOrder) {
 		logger.info('resetRunningOrder ' + runningOrder._id)
 		// Remove all dunamically inserted items (adlibs etc)
 		SegmentLineItems.remove({
+			runningOrderId: runningOrder._id,
+			dynamicallyInserted: true
+		})
+
+		SegmentLines.remove({
 			runningOrderId: runningOrder._id,
 			dynamicallyInserted: true
 		})
@@ -211,8 +228,19 @@ export namespace ServerPlayoutAPI {
 			}
 		}, {multi: true})
 
-		// ensure that any removed infinites (caused by adlib) are restored
-		updateSourceLayerInfinitesAfterLine(runningOrder, true)
+		// Reset any segment line items that were modified by inserted adlibs
+		SegmentLineItems.update({
+			runningOrderId: runningOrder._id,
+			$or: [
+				{ originalExpectedDuration: { $exists: true } },
+				{ originalInfiniteMode: { $exists: true } }
+			]
+		}, {
+			$rename: {
+				originalExpectedDuration: 'expectedDuration',
+				originalInfiniteMode: 'infiniteMode'
+			}
+		}, {multi: true})
 
 		SegmentLineItems.update({
 			runningOrderId: runningOrder._id
@@ -225,6 +253,9 @@ export namespace ServerPlayoutAPI {
 				hidden: 1
 			}
 		}, {multi: true})
+
+		// ensure that any removed infinites are restored
+		updateSourceLayerInfinitesAfterLine(runningOrder)
 
 		resetRunningOrderPlayhead(runningOrder)
 	}
@@ -286,16 +317,13 @@ export namespace ServerPlayoutAPI {
 			}
 		})
 	}
-	function areThereActiveROsInStudio (studioInstallationId: string, excludeROId?: string): RunningOrder[] {
-		let anyOtherActiveRunningOrders = RunningOrders.find(excludeROId ? {
+	export function areThereActiveROsInStudio (studioInstallationId: string, excludeROId: string): RunningOrder[] {
+		let anyOtherActiveRunningOrders = RunningOrders.find({
 			studioInstallationId: studioInstallationId,
 			active: true,
 			_id: {
 				$ne: excludeROId
 			}
-		} : {
-			studioInstallationId: studioInstallationId,
-			active: true
 		}).fetch()
 
 		return anyOtherActiveRunningOrders
@@ -311,23 +339,13 @@ export namespace ServerPlayoutAPI {
 		if (!newRunningOrder) throw new Meteor.Error(404, `RunningOrder "${runningOrder._id}" not found!`)
 		runningOrder = newRunningOrder
 
-		let studioInstallation = runningOrder.getStudioInstallation()
+		let studio = runningOrder.getStudioInstallation()
 
-		let anyOtherActiveRunningOrders = RunningOrders.find({
-			studioInstallationId: runningOrder.studioInstallationId,
-			active: true,
-			_id: {
-				$ne: runningOrder._id
-			}
-		}).fetch()
+		const anyOtherActiveRunningOrders = areThereActiveROsInStudio(studio._id, runningOrder._id)
 
 		if (anyOtherActiveRunningOrders.length) {
-			logger.warn('Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
-			const res = literal<ClientAPI.ClientResponse>({
-				error: 409,
-				message: 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id')
-			})
-			return res
+			// logger.warn('Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
+			throw new Meteor.Error(409, 'Only one running-order can be active at the same time. Active runningOrders: ' + _.pluck(anyOtherActiveRunningOrders, '_id'))
 		}
 
 		let wasInactive = !runningOrder.active
@@ -387,7 +405,7 @@ export namespace ServerPlayoutAPI {
 				}, adlibItems)
 			}
 
-			updateTimeline(runningOrder.studioInstallationId)
+			updateTimeline(studio._id)
 
 			Meteor.defer(() => {
 				let bp = getBlueprintOfRunningOrder(runningOrder)
@@ -397,10 +415,6 @@ export namespace ServerPlayoutAPI {
 				}
 			})
 		}
-
-		return literal<ClientAPI.ClientResponse>({
-			success: 200
-		})
 	}
 	function deactivateRunningOrder (runningOrder: RunningOrder) {
 		logger.info('Deactivating RO ' + runningOrder._id)
@@ -486,6 +500,23 @@ export namespace ServerPlayoutAPI {
 			dynamicallyInserted: true
 		}))
 
+		// Reset any segment line items that were modified by inserted adlibs
+		ps.push(asyncCollectionUpdate(SegmentLineItems, {
+			runningOrderId: segmentLine.runningOrderId,
+			segmentLineId: segmentLine._id,
+			$or: [
+				{ originalExpectedDuration: { $exists: true } },
+				{ originalInfiniteMode: { $exists: true } }
+			]
+		}, {
+			$rename: {
+				originalExpectedDuration: 'expectedDuration',
+				originalInfiniteMode: 'infiniteMode'
+			}
+		}, {
+			multi: true
+		}))
+
 		if (isDirty) {
 			return new Promise((resolve, reject) => {
 				Promise.all(ps).then(() => {
@@ -498,15 +529,26 @@ export namespace ServerPlayoutAPI {
 		} else {
 			return Promise.all(ps)
 			.then(() => {
+				const ro = RunningOrders.findOne(segmentLine.runningOrderId)
+				if (!ro) throw new Meteor.Error(404, `Running Order "${segmentLine.runningOrderId}" not found!`)
+
+				const prevLine = getPreviousSegmentLine(ro, segmentLine)
+				updateSourceLayerInfinitesAfterLine(ro, prevLine)
 				// do nothing
 			})
 		}
+	}
+	function getPreviousSegmentLine (runningOrder: DBRunningOrder, segmentLine: DBSegmentLine) {
+		return SegmentLines.findOne({
+			runningOrderId: runningOrder._id,
+			_rank: { $lt: segmentLine._rank }
+		}, { sort: { _rank: -1 } })
 	}
 	function refreshSegmentLine (runningOrder: DBRunningOrder, segmentLine: DBSegmentLine) {
 		const ro = new RunningOrder(runningOrder)
 		const story = ro.fetchCache(CachePrefix.FULLSTORY + segmentLine._id) as MOS.IMOSROFullStory
 		const sl = new SegmentLine(segmentLine)
-		const changed = updateStory(ro, sl, story)
+		updateStory(ro, sl, story)
 
 		const segment = sl.getSegment()
 		if (segment) {
@@ -514,7 +556,8 @@ export namespace ServerPlayoutAPI {
 			runPostProcessBlueprint(ro, segment)
 		}
 
-		updateSourceLayerInfinitesAfterLine(ro, false, sl)
+		const prevLine = getPreviousSegmentLine(runningOrder, sl)
+		updateSourceLayerInfinitesAfterLine(ro, prevLine)
 	}
 	function setNextSegmentLine (runningOrder: RunningOrder, nextSegmentLine: DBSegmentLine | null, setManually?: boolean) {
 		let ps: Array<Promise<any>> = []
@@ -549,37 +592,7 @@ export namespace ServerPlayoutAPI {
 		}
 		waitForPromiseAll(ps)
 	}
-	export function userRoTake (roId: string) {
-		// Called by the user. Wont throw as nasty errors
-
-		let runningOrder = RunningOrders.findOne(roId)
-		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
-		if (!runningOrder.active) {
-			logger.warn(`RunningOrder "${roId}" is not active!`)
-			return
-		}
-		if (!runningOrder.nextSegmentLineId) {
-			logger.warn('nextSegmentLineId is not set!')
-			return
-		}
-		if (runningOrder.currentSegmentLineId) {
-			const currentSegmentLine = SegmentLines.findOne(runningOrder.currentSegmentLineId)
-			if (currentSegmentLine && currentSegmentLine.timings) {
-				const lastStartedPlayback = currentSegmentLine.timings.startedPlayback ? currentSegmentLine.timings.startedPlayback[currentSegmentLine.timings.startedPlayback.length - 1] : 0
-				const lastTake = currentSegmentLine.timings.take ? currentSegmentLine.timings.take[currentSegmentLine.timings.take.length - 1] : 0
-				const lastChange = Math.max(lastTake, lastStartedPlayback)
-				if (getCurrentTime() - lastChange < MINIMUM_TAKE_SPAN) {
-					logger.warn(`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${currentSegmentLine._id}: ${getCurrentTime() - lastStartedPlayback}`)
-					return
-				}
-			} else {
-				throw new Meteor.Error(404, `SegmentLine "${runningOrder.currentSegmentLineId}", set as currentSegmentLine in "${roId}", not found!`)
-			}
-		}
-		return roTake(runningOrder)
-	}
-	export function roTake (roId: string | RunningOrder ) {
-
+	export function roTake (roId: string | RunningOrder ): void {
 		let now = getCurrentTime()
 		let runningOrder: RunningOrder = (
 			_.isObject(roId) ? roId as RunningOrder :
@@ -645,8 +658,7 @@ export namespace ServerPlayoutAPI {
 		)
 		let takeSegmentLine = roData.segmentLinesMap[runningOrder.nextSegmentLineId]
 		if (!takeSegmentLine) throw new Meteor.Error(404, 'takeSegmentLine not found!')
-		let takeSegment = roData.segmentsMap[takeSegmentLine.segmentId]
-
+		// let takeSegment = roData.segmentsMap[takeSegmentLine.segmentId]
 		let segmentLineAfter = fetchAfter(roData.segmentLines, {
 			runningOrderId: runningOrder._id
 		}, takeSegmentLine._rank)
@@ -655,7 +667,6 @@ export namespace ServerPlayoutAPI {
 
 		// beforeTake(runningOrder, previousSegmentLine || null, takeSegmentLine)
 		beforeTake(roData, previousSegmentLine || null, takeSegmentLine)
-
 		let bp = getBlueprintOfRunningOrder(runningOrder)
 		if (bp.onPreTake) {
 			try {
@@ -716,6 +727,10 @@ export namespace ServerPlayoutAPI {
 				const newSli = clone(sli) as SegmentLineItem
 				newSli.segmentLineId = m.currentSegmentLineId
 				newSli.expectedDuration = 0
+				const content = newSli.content as VTContent
+				if (content.fileName && content.sourceDuration && sli.startedPlayback) {
+					content.seek = Math.min(content.sourceDuration, getCurrentTime() - sli.startedPlayback)
+				}
 				newSli.dynamicallyInserted = true
 				newSli._id = sli._id + '_hold'
 
@@ -727,7 +742,6 @@ export namespace ServerPlayoutAPI {
 		}
 		waitForPromiseAll(ps)
 		afterTake(runningOrder, takeSegmentLine, previousSegmentLine || null)
-
 		// last:
 		SegmentLines.update(takeSegmentLine._id, {
 			$push: {
@@ -770,8 +784,16 @@ export namespace ServerPlayoutAPI {
 
 		// remove old auto-next from timeline, and add new one
 		updateTimeline(runningOrder.studioInstallationId)
+
+		return ClientAPI.responseSuccess()
 	}
-	export function roMoveNext (roId: string, horisontalDelta: number, verticalDelta: number, setManually: boolean, currentNextSegmentLineItemId?: string) {
+	export function roMoveNext (
+		roId: string,
+		horisontalDelta: number,
+		verticalDelta: number,
+		setManually: boolean,
+		currentNextSegmentLineItemId?: string
+	): string {
 		check(roId, String)
 		check(horisontalDelta, Number)
 		check(verticalDelta, Number)
@@ -822,6 +844,8 @@ export namespace ServerPlayoutAPI {
 
 			let segment = segments[segmentIndex]
 
+			if (!segment) throw new Meteor.Error(404, `No Segment found!`)
+
 			let segmentLinesInSegment = segment.getSegmentLines()
 			let segmentLine = _.first(segmentLinesInSegment) as SegmentLine
 			if (!segmentLine) throw new Meteor.Error(404, `No SegmentLines in segment "${segment._id}"!`)
@@ -855,7 +879,7 @@ export namespace ServerPlayoutAPI {
 	}
 	export function roActivateHold (roId: string) {
 		check(roId, String)
-		console.log('roActivateHold')
+		logger.debug('roActivateHold')
 
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -880,6 +904,7 @@ export namespace ServerPlayoutAPI {
 
 		updateTimeline(runningOrder.studioInstallationId)
 
+		return ClientAPI.responseSuccess()
 	}
 	export function roStoriesMoved (roId: string, onAirNextWindowWidth: number | undefined, nextPosition: number | undefined) {
 		check(roId, String)
@@ -916,7 +941,7 @@ export namespace ServerPlayoutAPI {
 			}
 		}
 	}
-	export function roDisableNextSegmentLineItem (roId: string, undo?: boolean): string | null {
+	export function roDisableNextSegmentLineItem (roId: string, undo?: boolean) {
 		check(roId, String)
 
 		let runningOrder = RunningOrders.findOne(roId)
@@ -1027,9 +1052,9 @@ export namespace ServerPlayoutAPI {
 			}})
 			updateTimeline(studio._id)
 
-			return nextSegmentLineItem._id
+			return ClientAPI.responseSuccess()
 		} else {
-			return null
+			return ClientAPI.responseError('Found no future segmentLineItems')
 		}
 	}
 
@@ -1039,30 +1064,44 @@ export namespace ServerPlayoutAPI {
 		check(startedPlayback, Number)
 
 		// This method is called when an auto-next event occurs
-		let runningOrder = RunningOrders.findOne(roId)
-		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		let segLineItem = SegmentLineItems.findOne({
 			_id: sliId,
 			runningOrderId: roId
 		})
-		if (!segLineItem) {
-			throw new Meteor.Error(404, `Segment line item "${sliId}" in running order "${roId}" not found!`)
-		}
+		if (!segLineItem) throw new Meteor.Error(404, `Segment line item "${sliId}" in running order "${roId}" not found!`)
 
-		let segLine = SegmentLines.findOne({
-			_id: segLineItem.segmentLineId,
-			runningOrderId: roId
-		})
-		if (!segLine) {
-			throw new Meteor.Error(404, `Segment line "${segLineItem._id}" in running order "${roId}" not found!`)
-		}
-
-		if (!segLineItem.startedPlayback) {
+		let isPlaying: boolean = !!(
+			segLineItem.startedPlayback &&
+			!segLineItem.stoppedPlayback
+		)
+		if (!isPlaying) {
 			logger.info(`Playout reports segmentLineItem "${sliId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
 
 			reportSegmentLineItemHasStarted(segLineItem, startedPlayback)
 
-			// We don't need to bother with an updateTimeline(), as this hasnt changed anything, but lets us accurately add started items when reevaluating
+			// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
+		}
+	}
+	export function sliPlaybackStoppedCallback (roId: string, sliId: string, stoppedPlayback: Time) {
+		check(roId, String)
+		check(sliId, String)
+		check(stoppedPlayback, Number)
+
+		// This method is called when an auto-next event occurs
+		let segLineItem = SegmentLineItems.findOne({
+			_id: sliId,
+			runningOrderId: roId
+		})
+		if (!segLineItem) throw new Meteor.Error(404, `Segment line item "${sliId}" in running order "${roId}" not found!`)
+
+		let isPlaying: boolean = !!(
+			segLineItem.startedPlayback &&
+			!segLineItem.stoppedPlayback
+		)
+		if (isPlaying) {
+			logger.info(`Playout reports segmentLineItem "${sliId}" has stopped playback on timestamp ${(new Date(stoppedPlayback)).toISOString()}`)
+
+			reportSegmentLineItemHasStopped(segLineItem, stoppedPlayback)
 		}
 	}
 
@@ -1071,25 +1110,31 @@ export namespace ServerPlayoutAPI {
 		check(slId, String)
 		check(startedPlayback, Number)
 
-		// This method is called when an auto-next event occurs
-		let runningOrder = RunningOrders.findOne(roId)
-		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
-		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
+		// This method is called when a segmentLine starts playing (like when an auto-next event occurs, or a manual next)
 
 		let playingSegmentLine = SegmentLines.findOne({
 			_id: slId,
 			runningOrderId: roId
 		})
 
-		let currentSegmentLine = (runningOrder.currentSegmentLineId ?
-			SegmentLines.findOne(runningOrder.currentSegmentLineId)
-			: null
-		)
-
 		if (playingSegmentLine) {
 			// make sure we don't run multiple times, even if TSR calls us multiple times
-			if (!playingSegmentLine.startedPlayback) {
+
+			const isPlaying = (
+				playingSegmentLine.startedPlayback &&
+				!playingSegmentLine.stoppedPlayback
+			)
+			if (!isPlaying) {
 				logger.info(`Playout reports segmentLine "${slId}" has started playback on timestamp ${(new Date(startedPlayback)).toISOString()}`)
+
+				let runningOrder = RunningOrders.findOne(roId)
+				if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+				if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
+
+				let currentSegmentLine = (runningOrder.currentSegmentLineId ?
+					SegmentLines.findOne(runningOrder.currentSegmentLineId)
+					: null
+				)
 
 				if (runningOrder.currentSegmentLineId === slId) {
 					// this is the current segment line, it has just started playback
@@ -1177,7 +1222,38 @@ export namespace ServerPlayoutAPI {
 			throw new Meteor.Error(404, `Segment line "${slId}" in running order "${roId}" not found!`)
 		}
 	}
-	export const sliTakeNow = function sliTakeNow (roId: string, slId: string, sliId: string) {
+	export function slPlaybackStoppedCallback (roId: string, slId: string, stoppedPlayback: Time) {
+		check(roId, String)
+		check(slId, String)
+		check(stoppedPlayback, Number)
+
+		// This method is called when a segmentLine stops playing (like when an auto-next event occurs, or a manual next)
+
+		let runningOrder = RunningOrders.findOne(roId)
+		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+
+		let segmentLine = SegmentLines.findOne({
+			_id: slId,
+			runningOrderId: roId
+		})
+
+		if (segmentLine) {
+			// make sure we don't run multiple times, even if TSR calls us multiple times
+
+			const isPlaying = (
+				segmentLine.startedPlayback &&
+				!segmentLine.stoppedPlayback
+			)
+			if (isPlaying) {
+				logger.info(`Playout reports segmentLine "${slId}" has stopped playback on timestamp ${(new Date(stoppedPlayback)).toISOString()}`)
+
+				reportSegmentLineHasStopped(segmentLine, stoppedPlayback)
+			}
+		} else {
+			throw new Meteor.Error(404, `Segment line "${slId}" in running order "${roId}" not found!`)
+		}
+	}
+	export const segmentLineItemTakeNow = function segmentLineItemTakeNow (roId: string, slId: string, sliId: string) {
 		check(roId, String)
 		check(slId, String)
 		check(sliId, String)
@@ -1209,7 +1285,8 @@ export namespace ServerPlayoutAPI {
 				_.compact(
 					_.map(newSegmentLineItem.content.timelineObjects, (obj) => {
 						return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
-							_id: obj.id || obj['_id'],
+							// @ts-ignore _id
+							_id: obj.id || obj._id,
 							siId: '', // set later
 							objectType: TimelineObjType.RUNNINGORDER
 						})
@@ -1226,11 +1303,8 @@ export namespace ServerPlayoutAPI {
 
 			if (slItem.startedPlayback && slItem.startedPlayback <= getCurrentTime()) {
 				if (resSlItem && resSlItem.duration !== undefined && (slItem.infiniteMode || slItem.startedPlayback + resSlItem.duration >= getCurrentTime())) {
-					logger.debug(`Segment Line Item "${slItem._id}" is currently live and cannot be used as an ad-lib`)
-					return literal<ClientAPI.ClientResponse>({
-						error: 409,
-						message: `Segment Line Item "${slItem._id}" is currently live and cannot be used as an ad-lib`
-					})
+					// logger.debug(`Segment Line Item "${slItem._id}" is currently live and cannot be used as an ad-lib`)
+					throw new Meteor.Error(409, `Segment Line Item "${slItem._id}" is currently live and cannot be used as an ad-lib`)
 				}
 			}
 
@@ -1244,12 +1318,8 @@ export namespace ServerPlayoutAPI {
 		cropInfinitesOnLayer(runningOrder, segLine, newSegmentLineItem)
 		stopInfinitesRunningOnLayer(runningOrder, segLine, newSegmentLineItem.sourceLayerId)
 		updateTimeline(runningOrder.studioInstallationId)
-
-		return literal<ClientAPI.ClientResponse>({
-			success: 200
-		})
 	}
-	export const salliPlaybackStart = syncFunction(function salliPlaybackStart (roId: string, slId: string, slaiId: string, queue: boolean) {
+	export const segmentAdLibLineItemStart = syncFunction(function segmentAdLibLineItemStart (roId: string, slId: string, slaiId: string, queue: boolean) {
 		check(roId, String)
 		check(slId, String)
 		check(slaiId, String)
@@ -1257,13 +1327,17 @@ export namespace ServerPlayoutAPI {
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 		if (!runningOrder.active) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in an active running order!`)
-
+		if (runningOrder.holdState === RunningOrderHoldState.ACTIVE || runningOrder.holdState === RunningOrderHoldState.PENDING) {
+			throw new Meteor.Error(403, `Segment Line Ad Lib Items can not be used in combination with hold!`)
+		}
 		let adLibItem = SegmentLineAdLibItems.findOne({
 			_id: slaiId,
 			runningOrderId: roId
 		})
 		if (!adLibItem) throw new Meteor.Error(404, `Segment Line Ad Lib Item "${slaiId}" not found!`)
+		if (!queue && runningOrder.currentSegmentLineId !== slId) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in a current segment line!`)
 
+		let orgSlId = slId
 		if (queue) {
 			// insert a NEW, adlibbed segmentLine after this segmentLine
 			slId = adlibQueueInsertSegmentLine (runningOrder, slId, adLibItem )
@@ -1279,6 +1353,14 @@ export namespace ServerPlayoutAPI {
 
 		// logger.debug('adLibItemStart', newSegmentLineItem)
 		if (queue) {
+			// keep infinite sLineItems
+			SegmentLineItems.find({ runningOrderId: roId, segmentLineId: orgSlId }).forEach(sli => {
+				if (sli.infiniteMode && sli.infiniteMode >= SegmentLineItemLifespan.Infinite) {
+					let newSegmentLineItem = convertAdLibToSLineItem(sli, segLine!, queue)
+					SegmentLineItems.insert(newSegmentLineItem)
+				}
+			})
+
 			ServerPlayoutAPI.roSetNext(runningOrder._id, slId)
 		} else {
 			cropInfinitesOnLayer(runningOrder, segLine, newSegmentLineItem)
@@ -1286,20 +1368,25 @@ export namespace ServerPlayoutAPI {
 			updateTimeline(runningOrder.studioInstallationId)
 		}
 	})
-	export const robaliPlaybackStart = syncFunction(function robaliPlaybackStart (roId: string, slId: string, robaliId: string, queue: boolean) {
+	export const runningOrderBaselineAdLibItemStart = syncFunction(function runningOrderBaselineAdLibItemStart (roId: string, slId: string, robaliId: string, queue: boolean) {
 		check(roId, String)
 		check(slId, String)
 		check(robaliId, String)
-		logger.info('robaliPlaybackStart')
+		logger.debug('runningOrderBaselineAdLibItemStart')
 
 		let runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+		if (!runningOrder.active) throw new Meteor.Error(403, `Running Order Baseline Ad Lib Items can be only placed in an active running order!`)
+		if (runningOrder.holdState === RunningOrderHoldState.ACTIVE || runningOrder.holdState === RunningOrderHoldState.PENDING) {
+			throw new Meteor.Error(403, `Segment Line Ad Lib Items can not be used in combination with hold!`)
+		}
 
 		let adLibItem = RunningOrderBaselineAdLibItems.findOne({
 			_id: robaliId,
 			runningOrderId: roId
 		})
 		if (!adLibItem) throw new Meteor.Error(404, `Running Order Baseline Ad Lib Item "${robaliId}" not found!`)
+		let orgSlId = slId
 		if (queue) {
 			// insert a NEW, adlibbed segmentLine after this segmentLine
 			slId = adlibQueueInsertSegmentLine (runningOrder, slId, adLibItem )
@@ -1310,7 +1397,6 @@ export namespace ServerPlayoutAPI {
 			runningOrderId: roId
 		})
 		if (!segLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
-		if (!runningOrder.active) throw new Meteor.Error(403, `Running Order Baseline Ad Lib Items can be only placed in an active running order!`)
 		if (!queue && runningOrder.currentSegmentLineId !== segLine._id) throw new Meteor.Error(403, `Running Order Baseline Ad Lib Items can be only placed in a current segment line!`)
 
 		let newSegmentLineItem = convertAdLibToSLineItem(adLibItem, segLine, queue)
@@ -1318,6 +1404,15 @@ export namespace ServerPlayoutAPI {
 		// logger.debug('adLibItemStart', newSegmentLineItem)
 
 		if (queue) {
+			// keep infinite sLineItems
+			SegmentLineItems.find({ runningOrderId: roId, segmentLineId: orgSlId }).forEach(sli => {
+				console.log(sli.name + ' has life span of ' + sli.infiniteMode)
+				if (sli.infiniteMode && sli.infiniteMode >= SegmentLineItemLifespan.Infinite) {
+					let newSegmentLineItem = convertAdLibToSLineItem(sli, segLine!, queue)
+					SegmentLineItems.insert(newSegmentLineItem)
+				}
+			})
+
 			ServerPlayoutAPI.roSetNext(runningOrder._id, slId)
 		} else {
 			cropInfinitesOnLayer(runningOrder, segLine, newSegmentLineItem)
@@ -1333,11 +1428,11 @@ export namespace ServerPlayoutAPI {
 		let segmentLine = SegmentLines.findOne(slId)
 		if (!segmentLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
 
-		let nextSegmentLine = fetchAfter(SegmentLines, {
-			runningOrderId: ro._id
-		}, segmentLine._rank)
+		// let nextSegmentLine = fetchAfter(SegmentLines, {
+		// 	runningOrderId: ro._id
+		// }, segmentLine._rank)
 
-		let newRank = getRank(segmentLine, nextSegmentLine, 0, 1)
+		// let newRank = getRank(segmentLine, nextSegmentLine, 0, 1)
 
 		let newSegmentLineId = Random.id()
 		SegmentLines.insert({
@@ -1357,7 +1452,7 @@ export namespace ServerPlayoutAPI {
 		return newSegmentLineId
 
 	}
-	export function salliStop (roId: string, slId: string, sliId: string) {
+	export function segmentAdLibLineItemStop (roId: string, slId: string, sliId: string) {
 		check(roId, String)
 		check(slId, String)
 		check(sliId, String)
@@ -1497,7 +1592,7 @@ export namespace ServerPlayoutAPI {
 			}
 		})
 
-		updateSourceLayerInfinitesAfterLine(runningOrder, false, segLine)
+		updateSourceLayerInfinitesAfterLine(runningOrder, segLine)
 
 		updateTimeline(runningOrder.studioInstallationId)
 	}
@@ -1507,6 +1602,9 @@ export namespace ServerPlayoutAPI {
 
 		const runningOrder = RunningOrders.findOne(roId)
 		if (!runningOrder) throw new Meteor.Error(404, `Running order "${roId}" not found!`)
+		if (runningOrder.holdState === RunningOrderHoldState.ACTIVE || runningOrder.holdState === RunningOrderHoldState.PENDING) {
+			throw new Meteor.Error(403, `Segment Line Arguments can not be toggled when hold is used!`)
+		}
 
 		let segmentLine = SegmentLines.findOne(slId)
 		if (!segmentLine) throw new Meteor.Error(404, `Segment Line "${slId}" not found!`)
@@ -1515,7 +1613,7 @@ export namespace ServerPlayoutAPI {
 
 		if (rArguments[property] === value) {
 			// unset property
-			const mUnset = {}
+			const mUnset: any = {}
 			mUnset['runtimeArguments.' + property] = 1
 			SegmentLines.update(segmentLine._id, {$unset: mUnset, $set: {
 				dirty: true
@@ -1547,6 +1645,7 @@ export namespace ServerPlayoutAPI {
 				updateTimeline(runningOrder.studioInstallationId)
 			}
 		}
+		return ClientAPI.responseSuccess()
 	})
 	export function timelineTriggerTimeUpdateCallback (timelineObjId: string, time: number) {
 		check(timelineObjId, String)
@@ -1569,46 +1668,9 @@ export namespace ServerPlayoutAPI {
 			})
 		}
 	}
-	export function saveEvaluation (evaluation: EvaluationBase): string {
-		let id = Evaluations.insert(_.extend(evaluation, {
-			userId: this.userId,
-			timestamp: getCurrentTime(),
-		}))
-		Meteor.defer(() => {
-
-			let studio = StudioInstallations.findOne(evaluation.studioId)
-			if (!studio) throw new Meteor.Error(500, `Studio ${evaluation.studioId} not found!`)
-
-			let webhookUrl = (studio.getConfigValue('slack_evaluation') + '')
-
-			if (webhookUrl) {
-				// Only send notes if not everything is OK
-				let q0 = _.find(evaluation.answers, (_answer, key) => {
-					return key === 'q0'
-				})
-
-				if (q0 !== 'nothing') {
-
-					let ro = RunningOrders.findOne(evaluation.runningOrderId)
-
-					let message = 'Uh-oh, message from RunningOrder "' + (ro ? ro.name : 'N/A' ) + '": \n' +
-						_.values(evaluation.answers).join(', ')
-
-					let hostUrl = studio.settings.sofieUrl
-					if (hostUrl && ro) {
-						message += '\n<' + hostUrl + '/ro/' + ro._id + '|' + ro.name + '>'
-					}
-
-					sendSlackMessageToWebhookSync(message, webhookUrl)
-				}
-
-			}
-		})
-		return id
-	}
 }
 
-let methods = {}
+let methods: Methods = {}
 methods[PlayoutAPI.methods.roPrepareForBroadcast] = (roId: string) => {
 	return ServerPlayoutAPI.roPrepareForBroadcast(roId)
 }
@@ -1621,29 +1683,23 @@ methods[PlayoutAPI.methods.roResetAndActivate] = (roId: string) => {
 methods[PlayoutAPI.methods.roActivate] = (roId: string, rehearsal: boolean) => {
 	return ServerPlayoutAPI.roActivate(roId, rehearsal)
 }
-methods[PlayoutAPI.methods.roDeactivate] = (roId: string, rehearsal: boolean) => {
-	return ServerPlayoutAPI.roDeactivate(roId, rehearsal)
+methods[PlayoutAPI.methods.roDeactivate] = (roId: string) => {
+	return ServerPlayoutAPI.roDeactivate(roId)
 }
 methods[PlayoutAPI.methods.reloadData] = (roId: string) => {
 	return ServerPlayoutAPI.reloadData(roId)
 }
 methods[PlayoutAPI.methods.segmentLineItemTakeNow] = (roId: string, slId: string, sliId: string) => {
-	return ServerPlayoutAPI.sliTakeNow(roId, slId, sliId)
+	return ServerPlayoutAPI.segmentLineItemTakeNow(roId, slId, sliId)
 }
 methods[PlayoutAPI.methods.roTake] = (roId: string) => {
 	return ServerPlayoutAPI.roTake(roId)
-}
-methods[PlayoutAPI.methods.userRoTake] = (roId: string) => {
-	return ServerPlayoutAPI.userRoTake(roId)
 }
 methods[PlayoutAPI.methods.roToggleSegmentLineArgument] = (roId: string, slId: string, property: string, value: string) => {
 	return ServerPlayoutAPI.roToggleSegmentLineArgument(roId, slId, property, value)
 }
 methods[PlayoutAPI.methods.roSetNext] = (roId: string, slId: string) => {
 	return ServerPlayoutAPI.roSetNext(roId, slId, true)
-}
-methods[PlayoutAPI.methods.roMoveNext] = (roId: string, horisontalDelta: number, verticalDelta: number) => {
-	return ServerPlayoutAPI.roMoveNext(roId, horisontalDelta, verticalDelta, true)
 }
 methods[PlayoutAPI.methods.roActivateHold] = (roId: string) => {
 	return ServerPlayoutAPI.roActivateHold(roId)
@@ -1661,13 +1717,13 @@ methods[PlayoutAPI.methods.segmentLineItemPlaybackStartedCallback] = (roId: stri
 	return ServerPlayoutAPI.sliPlaybackStartedCallback(roId, sliId, startedPlayback)
 }
 methods[PlayoutAPI.methods.segmentAdLibLineItemStart] = (roId: string, slId: string, salliId: string, queue: boolean) => {
-	return ServerPlayoutAPI.salliPlaybackStart(roId, slId, salliId, queue)
+	return ServerPlayoutAPI.segmentAdLibLineItemStart(roId, slId, salliId, queue)
 }
 methods[PlayoutAPI.methods.runningOrderBaselineAdLibItemStart] = (roId: string, slId: string, robaliId: string, queue: boolean) => {
-	return ServerPlayoutAPI.robaliPlaybackStart(roId, slId, robaliId, queue)
+	return ServerPlayoutAPI.runningOrderBaselineAdLibItemStart(roId, slId, robaliId, queue)
 }
 methods[PlayoutAPI.methods.segmentAdLibLineItemStop] = (roId: string, slId: string, sliId: string) => {
-	return ServerPlayoutAPI.salliStop(roId, slId, sliId)
+	return ServerPlayoutAPI.segmentAdLibLineItemStop(roId, slId, sliId)
 }
 methods[PlayoutAPI.methods.sourceLayerOnLineStop] = (roId: string, slId: string, sourceLayerId: string) => {
 	return ServerPlayoutAPI.sourceLayerOnLineStop(roId, slId, sourceLayerId)
@@ -1677,9 +1733,6 @@ methods[PlayoutAPI.methods.timelineTriggerTimeUpdateCallback] = (timelineObjId: 
 }
 methods[PlayoutAPI.methods.sourceLayerStickyItemStart] = (roId: string, sourceLayerId: string) => {
 	return ServerPlayoutAPI.sourceLayerStickyItemStart(roId, sourceLayerId)
-}
-methods[PlayoutAPI.methods.saveEvaluation] = (evaluation: EvaluationBase) => {
-	return ServerPlayoutAPI.saveEvaluation(evaluation)
 }
 
 _.each(methods, (fcn: Function, key) => {
@@ -1752,6 +1805,7 @@ function beforeTake (roData: RoData, currentSegmentLine: SegmentLine | null, nex
 
 function afterTake (runningOrder: RunningOrder, takeSegmentLine: SegmentLine, previousSegmentLine: SegmentLine | null) {
 	// This function should be called at the end of a "take" event (when the SegmentLines have been updated)
+	// or after a new segmentLine has started playing
 	updateTimeline(runningOrder.studioInstallationId)
 
 	// defer these so that the playout gateway has the chance to learn about the changes
@@ -1898,170 +1952,233 @@ function getOrderedSegmentLineItem (line: SegmentLine): Array<SegmentLineItemRes
 	return resolvedItems
 }
 
-const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, runUntilEnd: boolean, previousLine?: SegmentLine) => void
- = syncFunctionIgnore(function updateSourceLayerInfinitesAfterLine (runningOrder: RunningOrder, runUntilEnd: boolean, previousLine?: SegmentLine) {
+export const updateSourceLayerInfinitesAfterLine: (runningOrder: RunningOrder, previousLine?: SegmentLine, runUntilEnd?: boolean) => void
+ = syncFunctionIgnore(updateSourceLayerInfinitesAfterLineInner)
+export function updateSourceLayerInfinitesAfterLineInner (runningOrder: RunningOrder, previousLine?: SegmentLine, runUntilEnd?: boolean): string {
 	let activeInfiniteItems: { [layer: string]: SegmentLineItem } = {}
 	let activeInfiniteItemsSegmentId: { [layer: string]: string } = {}
 
+	if (previousLine === undefined) {
+		// If running from start (no previousLine), then always run to the end
+		runUntilEnd = true
+	}
+
 	if (previousLine) {
+		let ps: Array<Promise<any>> = []
 		// figure out the baseline to set
 		let prevItems = getOrderedSegmentLineItem(previousLine)
-		for (let item of prevItems) {
+		_.each(prevItems, item => {
 			if (!item.infiniteMode || item.duration || item.durationOverride || item.expectedDuration) {
 				delete activeInfiniteItems[item.sourceLayerId]
 				delete activeInfiniteItemsSegmentId[item.sourceLayerId]
-				continue
+			} else {
+				if (!item.infiniteId) {
+					// ensure infinite id is set
+					item.infiniteId = item._id
+					ps.push(
+						asyncCollectionUpdate(SegmentLineItems, item._id, {
+							$set: { infiniteId: item.infiniteId }
+						})
+					)
+					logger.debug(`updateSourceLayerInfinitesAfterLine: marked "${item._id}" as start of infinite`)
+				}
+				if (item.infiniteMode !== SegmentLineItemLifespan.OutOnNextSegmentLine) {
+					activeInfiniteItems[item.sourceLayerId] = item
+					activeInfiniteItemsSegmentId[item.sourceLayerId] = previousLine.segmentId
+				}
 			}
-
-			if (!item.infiniteId) {
-				// ensure infinite id is set
-				item.infiniteId = item._id
-				SegmentLineItems.update(item._id, { $set: { infiniteId: item.infiniteId } })
-			}
-
-			if (item.infiniteMode === SegmentLineItemLifespan.OutOnNextSegmentLine) {
-				continue
-			}
-
-			activeInfiniteItems[item.sourceLayerId] = item
-			activeInfiniteItemsSegmentId[item.sourceLayerId] = previousLine.segmentId
-		}
+		})
+		waitForPromiseAll(ps)
 	}
 
-	let linesToProcess = runningOrder.getSegmentLines()
+	let segmentLinesToProcess = runningOrder.getSegmentLines()
 	if (previousLine) {
-		linesToProcess = linesToProcess.filter(l => l._rank > previousLine._rank)
+		segmentLinesToProcess = segmentLinesToProcess.filter(l => l._rank > previousLine._rank)
 	}
 
-	for (let line of linesToProcess) {
+	// Prepare segmentLineItems:
+	let psPopulateCache: Array<Promise<any>> = []
+	const currentItemsCache: {[segmentLineId: string]: SegmentLineItemResolved[]} = {}
+	_.each(segmentLinesToProcess, (segmentLine) => {
+		psPopulateCache.push(new Promise((resolve, reject) => {
+			try {
+				let currentItems = getOrderedSegmentLineItem(segmentLine)
+
+				currentItemsCache[segmentLine._id] = currentItems
+				resolve()
+			} catch (e) {
+				reject(e)
+			}
+		}))
+	})
+	waitForPromiseAll(psPopulateCache)
+
+	let ps: Array<Promise<any>> = []
+	for (let segmentLine of segmentLinesToProcess) {
 		// Drop any that relate only to previous segments
 		for (let k in activeInfiniteItemsSegmentId) {
 			let s = activeInfiniteItemsSegmentId[k]
 			let i = activeInfiniteItems[k]
-			if (!i.infiniteMode || i.infiniteMode === SegmentLineItemLifespan.OutOnNextSegment && s !== line.segmentId) {
+			if (!i.infiniteMode || i.infiniteMode === SegmentLineItemLifespan.OutOnNextSegment && s !== segmentLine.segmentId) {
 				delete activeInfiniteItems[k]
 				delete activeInfiniteItemsSegmentId[k]
 			}
 		}
 
 		// ensure any currently defined infinites are still wanted
-		let currentItems = getOrderedSegmentLineItem(line)
+		// let currentItems = getOrderedSegmentLineItem(segmentLine)
+		let currentItems = currentItemsCache[segmentLine._id]
+		if (!currentItems) throw new Meteor.Error(500, `currentItemsCache didn't contain "${segmentLine._id}", which it should have`)
+
 		let currentInfinites = currentItems.filter(i => i.infiniteId && i.infiniteId !== i._id)
 		let removedInfinites: string[] = []
-		for (let item of currentInfinites) {
-			const active = activeInfiniteItems[item.sourceLayerId]
-			if (!active || active.infiniteId !== item.infiniteId) {
+
+		for (let segmentLineItem of currentInfinites) {
+			const active = activeInfiniteItems[segmentLineItem.sourceLayerId]
+			if (!active || active.infiniteId !== segmentLineItem.infiniteId) {
 				// Previous item no longer enforces the existence of this one
-				SegmentLineItems.remove(item)
-				removedInfinites.push(item._id)
+				ps.push(asyncCollectionRemove(SegmentLineItems, segmentLineItem._id))
+
+				removedInfinites.push(segmentLineItem._id)
+				logger.debug(`updateSourceLayerInfinitesAfterLine: removed old infinite "${segmentLineItem._id}" from "${segmentLineItem.segmentLineId}"`)
 			}
 		}
 
 		// stop if not running to the end and there is/was nothing active
 		const midInfinites = currentInfinites.filter(i => !i.expectedDuration && i.infiniteMode)
 		if (!runUntilEnd && Object.keys(activeInfiniteItemsSegmentId).length === 0 && midInfinites.length === 0) {
-			break
+			// TODO - this guard is useless, as all shows have klokke and logo as infinites throughout...
+			// This should instead do a check after each iteration to check if anything changed (even fields such as name on the sli)
+			// If nothing changed, then it is safe to assume that it doesnt need to go further
+			return segmentLine._id
 		}
 
 		// figure out what infinites are to be extended
 		currentItems = currentItems.filter(i => removedInfinites.indexOf(i._id) < 0)
+		let infiniteConinuationSegmentLineItems: string[] = []
 		for (let k in activeInfiniteItems) {
-			let newItem = activeInfiniteItems[k]
+			let newItem: SegmentLineItem = activeInfiniteItems[k]
+
+			let existingItem: SegmentLineItemResolved | undefined = undefined
+			let allowInsert: boolean = true
 
 			// If something exists on the layer, the infinite must be stopped and potentially replaced
-			const exist = currentItems.filter(i => i.sourceLayerId === newItem.sourceLayerId)
-			if (exist && exist.length > 0) {
+			const existingItems = currentItems.filter(i => i.sourceLayerId === newItem.sourceLayerId)
+			if (existingItems && existingItems.length > 0) {
 				// remove the existing, as we need to update its contents
-				const existInf = exist.findIndex(e => !!e.infiniteId && e.infiniteId === newItem.infiniteId)
+				const existInf = existingItems.findIndex(e => !!e.infiniteId && e.infiniteId === newItem.infiniteId)
 				if (existInf >= 0) {
-					SegmentLineItems.remove(exist[existInf]._id)
-					removedInfinites.push(exist[existInf]._id)
-					exist.splice(existInf, 1)
+					existingItem = existingItems[existInf]
+					infiniteConinuationSegmentLineItems.push(existingItem._id)
+
+					existingItems.splice(existInf, 1)
 				}
 
-				if (exist.length > 0) {
+				if (existingItems.length > 0) {
 					// It will be stopped by this line
 					delete activeInfiniteItems[k]
 					delete activeInfiniteItemsSegmentId[k]
 
+					const lastExistingItem = _.last(existingItems) as SegmentLineItemResolved
+					const firstExistingItem = _.first(existingItems) as SegmentLineItemResolved
 					// if we matched with an infinite, then make sure that infinite is kept going
-					if (exist[exist.length - 1].infiniteMode && exist[exist.length - 1].infiniteMode !== SegmentLineItemLifespan.OutOnNextSegmentLine) {
-						activeInfiniteItems[k] = exist[0]
-						activeInfiniteItemsSegmentId[k] = line.segmentId
+					if (lastExistingItem.infiniteMode && lastExistingItem.infiniteMode !== SegmentLineItemLifespan.OutOnNextSegmentLine) {
+						activeInfiniteItems[k] = existingItems[0]
+						activeInfiniteItemsSegmentId[k] = segmentLine.segmentId
 					}
 
 					// If something starts at the beginning, then dont bother adding this infinite.
 					// Otherwise we should add the infinite but set it to end at the start of the first item
-					if (exist[0].trigger.type === TriggerType.TIME_ABSOLUTE) {
-						if (exist[0].trigger.value === 0) {
-							// skip the infinite, as it will never show
-							continue
-						}
+					if (firstExistingItem.trigger.type === TriggerType.TIME_ABSOLUTE && firstExistingItem.trigger.value === 0) {
+						// skip the infinite, as it will never show
+						allowInsert = false
 					}
 				}
 			}
-
-			newItem.segmentLineId = line._id
+			newItem.segmentLineId = segmentLine._id
 			newItem.continuesRefId = newItem._id
 			newItem.trigger = {
 				type: TriggerType.TIME_ABSOLUTE,
 				value: 0
 			}
-			newItem._id = newItem.infiniteId + '_' + line._id
+			newItem._id = newItem.infiniteId + '_' + segmentLine._id
 
-			if (exist && exist.length) {
-				newItem.expectedDuration = `#${getSliGroupId(exist[0])}.start - #.start`
+			if (existingItems && existingItems.length) {
+				newItem.expectedDuration = `#${getSliGroupId(existingItems[0])}.start - #.start`
 				newItem.infiniteMode = SegmentLineItemLifespan.Normal // it is no longer infinite, and the ui needs this to draw properly
 			}
 
-			SegmentLineItems.insert(newItem)
+			let itemToInsert: SegmentLineItem | null = (allowInsert ? newItem : null)
+
+			if (existingItem && itemToInsert && _.isEqual(existingItem, itemToInsert)) {
+				// no change, since the new item is equal to the existing one
+				// logger.debug(`updateSourceLayerInfinitesAfterLine: no change to infinite continuation "${itemToInsert._id}"`)
+			} else if (existingItem && itemToInsert && existingItem._id === itemToInsert._id ) {
+				// same _id; we can do an update:
+				ps.push(asyncCollectionUpdate(SegmentLineItems, itemToInsert._id, itemToInsert))// note; not a $set, because we want to replace the object
+				logger.debug(`updateSourceLayerInfinitesAfterLine: updated infinite continuation "${itemToInsert._id}"`)
+			} else {
+				if (existingItem) {
+					ps.push(asyncCollectionRemove(SegmentLineItems, existingItem._id))
+				}
+				if (itemToInsert) {
+					ps.push(asyncCollectionInsert(SegmentLineItems, itemToInsert))
+					logger.debug(`updateSourceLayerInfinitesAfterLine: inserted infinite continuation "${itemToInsert._id}"`)
+				}
+			}
 		}
 
 		// find any new infinites exposed by this
-		for (let item of currentItems.filter(i => removedInfinites.indexOf(i._id) < 0)) {
-			if (!item.infiniteMode || item.duration || item.durationOverride || item.expectedDuration) {
-				delete activeInfiniteItems[item.sourceLayerId]
-				delete activeInfiniteItemsSegmentId[item.sourceLayerId]
-				continue
-			}
+		for (let segmentLineItem of currentItems.filter(i => infiniteConinuationSegmentLineItems.indexOf(i._id) < 0)) {
+			if (
+				!segmentLineItem.infiniteMode ||
+				segmentLineItem.duration ||
+				segmentLineItem.durationOverride ||
+				segmentLineItem.expectedDuration
+			) {
+				delete activeInfiniteItems[segmentLineItem.sourceLayerId]
+				delete activeInfiniteItemsSegmentId[segmentLineItem.sourceLayerId]
+			} else if (segmentLineItem.infiniteMode !== SegmentLineItemLifespan.OutOnNextSegmentLine) {
+				if (!segmentLineItem.infiniteId) {
+					// ensure infinite id is set
+					segmentLineItem.infiniteId = segmentLineItem._id
+					ps.push(asyncCollectionUpdate(SegmentLineItems, segmentLineItem._id, { $set: {
+						infiniteId: segmentLineItem.infiniteId }
+					}))
+					logger.debug(`updateSourceLayerInfinitesAfterLine: marked "${segmentLineItem._id}" as start of infinite`)
+				}
 
-			if (item.infiniteMode === SegmentLineItemLifespan.OutOnNextSegmentLine) {
-				continue
+				activeInfiniteItems[segmentLineItem.sourceLayerId] = segmentLineItem
+				activeInfiniteItemsSegmentId[segmentLineItem.sourceLayerId] = segmentLine.segmentId
 			}
-
-			if (!item.infiniteId) {
-				// ensure infinite id is set
-				item.infiniteId = item._id
-				SegmentLineItems.update(item._id, { $set: { infiniteId: item.infiniteId } })
-			}
-
-			activeInfiniteItems[item.sourceLayerId] = item
-			activeInfiniteItemsSegmentId[item.sourceLayerId] = line.segmentId
 		}
 	}
-})
 
-const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (runningOrder: RunningOrder, segLine: SegmentLine, newItem: SegmentLineItem) {
+	waitForPromiseAll(ps)
+	return ''
+}
+
+const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (runningOrder: RunningOrder, segmentLine: SegmentLine, newItem: SegmentLineItem) {
 	let showStyleBase = runningOrder.getShowStyleBase()
 	const sourceLayerLookup = normalizeArray(showStyleBase.sourceLayers, '_id')
 	const newItemExclusivityGroup = sourceLayerLookup[newItem.sourceLayerId].exclusiveGroup
 
-	const items = getOrderedSegmentLineItem(segLine).filter(i =>
+	const items = segmentLine.getAllSegmentLineItems().filter(i =>
 		(i.sourceLayerId === newItem.sourceLayerId
 			|| (newItemExclusivityGroup && sourceLayerLookup[i.sourceLayerId] && sourceLayerLookup[i.sourceLayerId].exclusiveGroup === newItemExclusivityGroup)
-		) && i._id !== newItem._id
+		) && i._id !== newItem._id && i.infiniteMode
 	)
 
+	let ps: Array<Promise<any>> = []
 	for (const i of items) {
-		if (i.infiniteMode && !i.expectedDuration && i.dynamicallyInserted) {
-			SegmentLineItems.update({
-				_id: i._id
-			}, { $set: {
-				expectedDuration: `#${getSliGroupId(newItem)}.start - #.start`,
-				infiniteMode: SegmentLineItemLifespan.Normal
-			}})
-		}
+		ps.push(asyncCollectionUpdate(SegmentLineItems, i._id, { $set: {
+			expectedDuration: `#${getSliGroupId(newItem)}.start + ${newItem.adlibPreroll || 0} - #.start`,
+			originalExpectedDuration: i.originalExpectedDuration !== undefined ? i.originalExpectedDuration : i.expectedDuration,
+			infiniteMode: SegmentLineItemLifespan.Normal,
+			originalInfiniteMode: i.originalInfiniteMode !== undefined ? i.originalInfiniteMode : i.infiniteMode
+		}}))
 	}
+	waitForPromiseAll(ps)
 })
 
 const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOnLayer (runningOrder: RunningOrder, segLine: SegmentLine, sourceLayer: string) {
@@ -2076,11 +2193,11 @@ const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOn
 	}
 
 	// ensure adlib is extended correctly if infinite
-	updateSourceLayerInfinitesAfterLine(runningOrder, false, segLine)
+	updateSourceLayerInfinitesAfterLine(runningOrder, segLine)
 })
 
 function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): SegmentLineAdLibItem {
-	const oldId = segmentLineItem._id
+	// const oldId = segmentLineItem._id
 	const newId = Random.id()
 	const newAdLibItem = literal<SegmentLineAdLibItem>(_.extend(
 		segmentLineItem,
@@ -2091,10 +2208,15 @@ function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): SegmentLine
 				value: 'now'
 			},
 			dynamicallyInserted: true,
-			expectedDuration: segmentLineItem.expectedDuration || 0 // set duration to infinite if not set by AdLibItem
+			infiniteMode: segmentLineItem.originalInfiniteMode !== undefined ? segmentLineItem.originalInfiniteMode : segmentLineItem.infiniteMode,
+			expectedDuration: segmentLineItem.originalExpectedDuration !== undefined ? segmentLineItem.originalExpectedDuration : segmentLineItem.expectedDuration || 0 // set duration to infinite if not set by AdLibItem
 		}
 	))
 	delete newAdLibItem.trigger
+	delete newAdLibItem.timings
+	delete newAdLibItem.startedPlayback
+	delete newAdLibItem['infiniteId']
+	delete newAdLibItem['stoppedPlayback']
 
 	if (newAdLibItem.content && newAdLibItem.content.timelineObjects) {
 		let contentObjects = newAdLibItem.content.timelineObjects
@@ -2102,6 +2224,7 @@ function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): SegmentLine
 			_.compact(
 				_.map(contentObjects, (obj: TimelineObjectCoreExt) => {
 					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
+						// @ts-ignore _id
 						_id: obj.id || obj['_id'],
 						siId: '', // set later
 						objectType: TimelineObjType.RUNNINGORDER
@@ -2116,7 +2239,7 @@ function convertSLineToAdLibItem (segmentLineItem: SegmentLineItem): SegmentLine
 }
 
 function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem | SegmentLineItem, segmentLine: SegmentLine, queue: boolean): SegmentLineItem {
-	const oldId = adLibItem._id
+	// const oldId = adLibItem._id
 	const newId = Random.id()
 	const newSLineItem = literal<SegmentLineItem>(_.extend(
 		_.clone(adLibItem),
@@ -2141,6 +2264,7 @@ function convertAdLibToSLineItem (adLibItem: SegmentLineAdLibItem | SegmentLineI
 		const objs = prefixAllObjectIds(_.compact(
 			_.map(contentObjects, (obj) => {
 				return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
+					// @ts-ignore _id
 					_id: obj.id || obj['_id'],
 					siId: '',
 					objectType: TimelineObjType.RUNNINGORDER
@@ -2164,9 +2288,6 @@ function segmentLineStoppedPlaying (roId: string, segmentLine: SegmentLine, stop
 		SegmentLines.update(segmentLine._id, {
 			$set: {
 				duration: stoppedPlayingTime - lastStartedPlayback
-			},
-			$push: {
-				'timings.stoppedPlayback': stoppedPlayingTime
 			}
 		})
 		segmentLine.duration = stoppedPlayingTime - lastStartedPlayback
@@ -2203,7 +2324,8 @@ function createSegmentLineGroup (segmentLine: SegmentLine, duration: number | st
 }
 function createSegmentLineGroupFirstObject (
 	segmentLine: SegmentLine,
-	segmentLineGroup: TimelineObjRunningOrder
+	segmentLineGroup: TimelineObjRunningOrder,
+	previousSegmentLine?: SegmentLine
 ): TimelineObjSegmentLineAbstract {
 	return literal<TimelineObjSegmentLineAbstract>({
 		_id: getSlFirstObjectId(segmentLine),
@@ -2223,7 +2345,8 @@ function createSegmentLineGroupFirstObject (
 		},
 		// isGroup: true,
 		inGroup: segmentLineGroup._id,
-		slId: segmentLine._id
+		slId: segmentLine._id,
+		classes: (segmentLine.classes || []).concat(previousSegmentLine ? previousSegmentLine.classesForNext || [] : [])
 	})
 }
 function createSegmentLineItemGroupFirstObject (
@@ -2324,7 +2447,7 @@ function transformSegmentLineIntoTimeline (
 			return
 		}
 
-		if (item.extendOnHold && item.infiniteId && item.infiniteId !== item._id) {
+		if (item.infiniteId && item.infiniteId !== item._id) {
 			item._id = item.infiniteId
 		}
 
@@ -2372,7 +2495,8 @@ function transformSegmentLineIntoTimeline (
 					// }
 
 					timelineObjs.push(extendMandadory<TimelineObjectCoreExt, TimelineObjRunningOrder>(o, {
-						_id: o.id,
+						// @ts-ignore _id
+						_id: o.id || o['_id'],
 						siId: '', // set later
 						inGroup: segmentLineGroup ? segmentLineItemGroup._id : undefined,
 						roId: runningOrder._id,
@@ -2385,9 +2509,10 @@ function transformSegmentLineIntoTimeline (
 	return timelineObjs
 }
 
-export function addLookeaheadObjectsToTimeline (roData: RoData, studioInstallation: StudioInstallation, timelineObjs: TimelineObjGeneric[]) {
+export function getLookeaheadObjects (roData: RoData, studioInstallation: StudioInstallation ): Array<TimelineObjGeneric> {
 	let activeRunningOrder = roData.runningOrder
 
+	const timelineObjs: Array<TimelineObjGeneric> = []
 	_.each(studioInstallation.mappings || {}, (m, l) => {
 
 		const res = findLookaheadForLLayer(roData, l, m.lookahead)
@@ -2411,7 +2536,7 @@ export function addLookeaheadObjectsToTimeline (roData: RoData, studioInstallati
 			r.isBackground = true
 			delete r.inGroup // force it to be cleared
 
-			if (m.lookahead !== LookaheadMode.WHEN_CLEAR) {
+			if (m.lookahead === LookaheadMode.PRELOAD) {
 				r.originalLLayer = r.LLayer
 				r.LLayer += '_lookahead'
 			}
@@ -2419,6 +2544,7 @@ export function addLookeaheadObjectsToTimeline (roData: RoData, studioInstallati
 			timelineObjs.push(r)
 		}
 	})
+	return timelineObjs
 }
 
 export function findLookaheadForLLayer (
@@ -2649,15 +2775,21 @@ export function findLookaheadForLLayer (
 	return res
 }
 
-let updateTimelineFromMosDataTimeouts = {}
+interface UpdateTimelineFromMosDataTimeout {
+	timeout?: number
+	changedLines?: string[]
+}
+let updateTimelineFromMosDataTimeouts: {
+	[id: string]: UpdateTimelineFromMosDataTimeout
+} = {}
 export function updateTimelineFromMosData (roId: string, changedLines?: Array<string>) {
 	const runningOrder = RunningOrders.findOne(roId)
 	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 
 	// Lock behind a timeout, so it doesnt get executed loads when importing a rundown or there are large changes
-	let data = updateTimelineFromMosDataTimeouts[roId]
+	let data: UpdateTimelineFromMosDataTimeout = updateTimelineFromMosDataTimeouts[roId]
 	if (data) {
-		Meteor.clearTimeout(data.timeout)
+		if (data.timeout) Meteor.clearTimeout(data.timeout)
 		if (data.changedLines) {
 			data.changedLines = changedLines ? data.changedLines.concat(changedLines) : undefined
 		}
@@ -2685,7 +2817,7 @@ export function updateTimelineFromMosData (roId: string, changedLines?: Array<st
 			}
 		}
 
-		updateSourceLayerInfinitesAfterLine(runningOrder, true, prevLine)
+		updateSourceLayerInfinitesAfterLine(runningOrder, prevLine, true)
 
 		if (runningOrder.active) {
 			updateTimeline(runningOrder.studioInstallationId)
@@ -2699,9 +2831,9 @@ function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], prefix:
 	const changedIds = objList.map(o => o._id)
 
 	let replaceIds = (str: string) => {
-		return str.replace(/#([a-zA-Z0-9_]+)\./g, (m) => {
-			const id = m.substr(1, m.length - 2)
-			return changedIds.indexOf(id) >= 0 ? '#' + prefix + id + '.' : m
+		return str.replace(/#([a-zA-Z0-9_]+)/g, (m) => {
+			const id = m.substr(1, m.length - 1)
+			return changedIds.indexOf(id) >= 0 ? '#' + prefix + id : m
 		})
 	}
 
@@ -2742,12 +2874,11 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 	const applyTimelineObjs = (_timelineObjs: TimelineObjGeneric[]) => {
 		timelineObjs = timelineObjs.concat(_timelineObjs)
 	}
-	waitForPromise(
-		Promise.all([
-			getTimelineRunningOrder(studioInstallation).then(applyTimelineObjs),
-			getTimelineRecording(studioInstallation).then(applyTimelineObjs)
-		])
-	)
+
+	waitForPromiseAll([
+		caught(getTimelineRunningOrder(studioInstallation).then(applyTimelineObjs)),
+		caught(getTimelineRecording(studioInstallation).then(applyTimelineObjs))
+	])
 
 	processTimelineObjects(studioInstallation, timelineObjs)
 
@@ -2785,8 +2916,7 @@ function getTimelineRunningOrder (studioInstallation: StudioInstallation): Promi
 				studioInstallationId: studioInstallation._id,
 				active: true
 			})
-			let promiseStudioInstallation = asyncCollectionFindOne(StudioInstallations, studioInstallation._id)
-
+			// let promiseStudioInstallation = asyncCollectionFindOne(StudioInstallations, studioInstallation._id)
 			let activeRunningOrder = waitForPromise(promiseActiveRunningOrder)
 
 			if (activeRunningOrder) {
@@ -2812,7 +2942,7 @@ function getTimelineRunningOrder (studioInstallation: StudioInstallation): Promi
 				timelineObjs = timelineObjs.concat(buildTimelineObjsForRunningOrder(roData, baselineItems))
 
 				// next (on pvw (or on pgm if first))
-				addLookeaheadObjectsToTimeline(roData, studioInstallation, timelineObjs)
+				timelineObjs = timelineObjs.concat(getLookeaheadObjects(roData, studioInstallation))
 
 				// console.log(JSON.stringify(timelineObjs))
 
@@ -3019,9 +3149,12 @@ export function buildTimelineObjsForRunningOrder (roData: RoData, baselineItems:
 			transitionPreroll: currentSegmentLine.transitionPrerollDuration,
 			transitionKeepalive: currentSegmentLine.transitionKeepaliveDuration
 		}
-		timelineObjs = timelineObjs.concat(currentSegmentLineGroup, transformSegmentLineIntoTimeline(roData.runningOrder, currentNormalItems, groupClasses, currentSegmentLineGroup, transProps, activeRunningOrder.holdState, undefined))
+		timelineObjs = timelineObjs.concat(
+			currentSegmentLineGroup,
+			transformSegmentLineIntoTimeline(roData.runningOrder, currentNormalItems, groupClasses, currentSegmentLineGroup, transProps, activeRunningOrder.holdState, undefined)
+		)
 
-		timelineObjs.push(createSegmentLineGroupFirstObject(currentSegmentLine, currentSegmentLineGroup))
+		timelineObjs.push(createSegmentLineGroupFirstObject(currentSegmentLine, currentSegmentLineGroup, previousSegmentLine))
 
 		// only add the next objects into the timeline if the next segment is autoNext
 		if (nextSegmentLine && currentSegmentLine.autoNext) {
@@ -3053,8 +3186,9 @@ export function buildTimelineObjsForRunningOrder (roData: RoData, baselineItems:
 			}
 			timelineObjs = timelineObjs.concat(
 				nextSegmentLineItemGroup,
-				transformSegmentLineIntoTimeline(roData.runningOrder, nextItems, groupClasses, nextSegmentLineItemGroup, transProps))
-			timelineObjs.push(createSegmentLineGroupFirstObject(nextSegmentLine, nextSegmentLineItemGroup))
+				transformSegmentLineIntoTimeline(roData.runningOrder, nextItems, groupClasses, nextSegmentLineItemGroup, transProps)
+			)
+			timelineObjs.push(createSegmentLineGroupFirstObject(nextSegmentLine, nextSegmentLineItemGroup, currentSegmentLine))
 		}
 	}
 
@@ -3125,11 +3259,13 @@ function processTimelineObjects (studioInstallation: StudioInstallation, timelin
 			// let o2 = o as TimelineObjGeneric
 			_.each(o.content.objects, (child: TimelineTypes.TimelineObject) => {
 				let childFixed: TimelineObjGeneric = extendMandadory<TimelineTypes.TimelineObject, TimelineObjGeneric>(child, {
+					// @ts-ignore _id
 					_id: child.id || child['_id'],
 					siId: o.siId,
 					objectType: o.objectType,
 					inGroup: o._id
 				})
+				if (!childFixed._id) logger.error(`TimelineObj missing _id attribute (child of ${o._id})`, childFixed)
 				delete childFixed['id']
 				timelineObjs.push(childFixed)
 				fixObjectChildren(childFixed as TimelineObjGroup)
@@ -3138,6 +3274,8 @@ function processTimelineObjects (studioInstallation: StudioInstallation, timelin
 		}
 	}
 	_.each(timelineObjs, (o: TimelineObjGeneric) => {
+		o._id = o._id || o.id
+		if (!o._id) logger.error('TimelineObj missing _id attribute', o)
 		delete o.id
 		o.siId = studioInstallation._id
 

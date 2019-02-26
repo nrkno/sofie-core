@@ -3,14 +3,15 @@ import * as _ from 'underscore'
 import * as AMQP from 'amqplib'
 import { logger } from '../../logging'
 import { ExternalMessageQueueObjRabbitMQ } from 'tv-automation-sofie-blueprints-integration'
-import { extendMandadory } from '../../../lib/lib'
 import { promisify } from 'util'
 import { ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
+import { ConfigRef } from '../blueprints'
 
 interface Message {
 	_id: string
 	exchangeTopic: string
 	routingKey: string
+	headers: {[header: string]: string} | undefined
 	message: string
 	resolve: Function
 	reject: Function
@@ -80,7 +81,6 @@ class ConnectionManager extends Manager<AMQP.Connection> {
 	}
 
 	async initConnection (): Promise<AMQP.Connection> {
-
 		try {
 			const connection = await AMQP.connect(this.hostURL, {
 				// socketOptions
@@ -110,7 +110,8 @@ class ConnectionManager extends Manager<AMQP.Connection> {
 			this.errorCount++
 			this.fatalError = true
 
-			throw new Error('Error when connecting AMQP ' + err)
+			logger.error('Error when connecting AMQP (to ' + this.hostURL + ') ' + err)
+			throw err
 		}
 	}
 }
@@ -185,7 +186,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 		}
 	}
 
-	sendMessage (exchangeTopic: string, routingKey: string, messageId: string, message: string) {
+	sendMessage (exchangeTopic: string, routingKey: string, messageId: string, message: string, headers: {[headers: string]: string} | undefined) {
 		return new Promise ((resolve, reject) => {
 
 			this.channel.assertExchange(exchangeTopic, 'topic', { durable: true })
@@ -194,6 +195,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 				_id: messageId,
 				exchangeTopic,
 				routingKey,
+				headers,
 				message,
 				resolve,
 				reject
@@ -212,10 +214,10 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 	}
 	handleOutgoingQueue () {
 
-		let firstMessageInQueue = this.outgoingQueue.shift()
+		let firstMessageInQueue: Message | undefined = this.outgoingQueue.shift()
 
 		if (firstMessageInQueue) {
-			let messageToSend = firstMessageInQueue
+			let messageToSend: Message = firstMessageInQueue
 
 			let sent = this.channel.publish(
 				messageToSend.exchangeTopic,
@@ -223,7 +225,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 				new Buffer(messageToSend.message),
 				{
 					// options
-					// headers: {}
+					headers: messageToSend.headers,
 					messageId: messageToSend._id,
 					persistent : true // same thing as deliveryMode=2
 				}, (err, ok) => {
@@ -270,25 +272,29 @@ async function getChannelManager (hostURL: string) {
 
 	return connectionManager.channelManager
 }
+export async function sendRabbitMQMessage (msg0: ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj) {
+	let msg: ExternalMessageQueueObjRabbitMQ = msg0 // for typings
 
-export async function sendRabbitMQMessage (msg: ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj) {
-
-	const hostURL: string			= msg.receiver.host
+	let hostURL: string			= msg.receiver.host
 	const exchangeTopic: string		= msg.receiver.topic
 	const routingKey: string		= msg.message.routingKey
 	let message: any				= msg.message.message
+	let headers: {[header: string]: string}	= msg.message.headers
 
 	if (!hostURL) throw new Meteor.Error(400, `RabbitMQ: Message host not set`)
 	if (!exchangeTopic) throw new Meteor.Error(400, `RabbitMQ: Message topic not set`)
 	if (!routingKey) throw new Meteor.Error(400, `RabbitMQ: Message routing key not set`)
 	if (!message) throw new Meteor.Error(400, `RabbitMQ: Message message not set`)
 
+	hostURL = ConfigRef.retrieveRefs(hostURL, (str) => {
+		return encodeURIComponent(str)
+	}, true)
+
 	const channelManager = await getChannelManager(hostURL)
 
 	if (_.isObject(message)) message = JSON.stringify(message)
 
-	await channelManager.sendMessage(exchangeTopic, routingKey, msg._id, message)
-
+	await channelManager.sendMessage(exchangeTopic, routingKey, msg0._id, message, headers)
 }
 /*
 // Temporary self-test:

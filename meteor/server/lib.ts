@@ -13,3 +13,8 @@ export const fsReadFile: (path: fs.PathLike | number, options?: { encoding?: nul
 	= Meteor.wrapAsync(fs.readFile)
 export const fsUnlinkFile: (path: fs.PathLike) => void
 	= Meteor.wrapAsync(fs.unlink)
+
+export function getAbsolutePath (): string {
+	// @ts-ignore Meteor.absolutePath is injected by the package ostrio:meteor-root
+	return Meteor.absolutePath
+}

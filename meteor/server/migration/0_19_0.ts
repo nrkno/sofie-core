@@ -1,8 +1,8 @@
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { ensureCollectionProperty } from './lib'
-import { ShowStyleBases, IBlueprintRuntimeArgumentsItem } from '../../lib/collections/ShowStyleBases'
+import { ensureCollectionProperty, ensureStudioConfig, setExpectedVersion } from './lib'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyles } from './deprecatedDataTypes/0_18_0'
 import { RunningOrders } from '../../lib/collections/RunningOrders'
@@ -10,6 +10,7 @@ import { Blueprints } from '../../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { Random } from 'meteor/random'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 /**
  * This file contains system specific migration steps.
@@ -127,7 +128,7 @@ addMigrationSteps( '0.19.0', [
 						ssb.runtimeArguments = ssb.runtimeArguments || []; // HAHA: typeScript fails on this, thinking its a function call without the semicolon
 
 						(siItem as any).runtimeArguments.forEach((item) => {
-							const bItem: IBlueprintRuntimeArgumentsItem = item
+							// const bItem: IBlueprintRuntimeArgumentsItem = item
 							const exisitng = ssb.runtimeArguments.find((ssbItem) => {
 								return ssbItem.hotkeys === item.hotkeys && ssbItem.label === item.label && ssbItem.property === item.property && ssbItem.value === item.value
 							})
@@ -267,6 +268,7 @@ addMigrationSteps( '0.19.0', [
 					fail = `Migrating RO "${item._id}" failed, because a suitable showStyleBase could not be found.`
 				}
 			})
+			return fail
 		}
 	},
 
@@ -356,7 +358,9 @@ addMigrationSteps( '0.19.0', [
 	ensureCollectionProperty('StudioInstallations', {}, 'settings.mediaPreviewsUrl', null, 'text', 'Media previews URL',
 		'Enter the URL to the media previews provider, example: http://10.0.1.100:8000/', undefined, 'studio.settings.mediaPreviewsUrl from config'),
 	ensureCollectionProperty('StudioInstallations', {}, 'settings.sofieUrl', null, 'text', 'Sofie URL',
-		'Enter the URL to the Sofie Core (that\'s what\'s in your browser URL), example: http://sofie-tv-automation.com', undefined, 'studio.settings.sofieUrl from config'),
+		'Enter the URL to the Sofie Core (that\'s what\'s in your browser URL,), example: https://slsofie without trailing /, short form server name is OK.', undefined, 'studio.settings.sofieUrl from config'),
+	ensureStudioConfig('mediaResolutions', '1920x1080i5000tff', undefined, 'Studio config: mediaResolutions',
+		'A set of accepted media formats for playback (example: "1920x1080i5000tff,1280x720p5000"'),
 
 	{ // Blueprint.databaseVersion
 		id: 'blueprint.databaseVersion',
@@ -409,4 +413,7 @@ addMigrationSteps( '0.19.0', [
 			})
 		}
 	},
+
+	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '0.15.0'),
+	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.4.6'),
 ])

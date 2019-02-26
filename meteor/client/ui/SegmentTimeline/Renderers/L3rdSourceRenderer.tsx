@@ -63,8 +63,8 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 				value: string
 			} | undefined => {
 				let str: string
-				if (key.startsWith('_') || value === '') {
-					return
+				if (key.startsWith('_') || key.startsWith('@') || value === '') {
+					return undefined
 				} else {
 					if (_.isObject(value)) {
 						// @ts-ignore

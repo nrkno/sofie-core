@@ -221,21 +221,21 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			<div className='studio-edit mod mhl mvs'>
 				<div>
 					<div>
-						<h3>{t('Take a Snapshot')}</h3>
+						<h3 className='mhs'>{t('Take a Snapshot')}</h3>
 						<div>
-							<h4>{t('Full system Snapshot')}</h4>
+							<h4>{t('Full System Snapshot')}</h4>
 							<i>
 								{t('A Full System Snapshot contains all system settings (studios, showstyles, blueprints, devices, etc.)')}
 							</i>
 							<div>
-								<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot(null) }}>{t('Take a Full system Snapshot')}</button>
+								<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot(null) }}>{t('Take a Full System Snapshot')}</button>
 							</div>
 							{
 								this.props.studios.length > 1 ?
 								<div>
 									<h4>{t('Studio Snapshot')}</h4>
 									<i>
-										{t('A System Snapshot contains all system settings related to that studio')}
+										{t('A Studio Snapshot contains all system settings related to that studio')}
 									</i>
 									{
 										_.map(this.props.studios, (studio) => {
@@ -248,18 +248,18 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							}
 						</div>
 					</div>
-					<h3>{t('Restore from Snapshot File')}</h3>
+					<h3 className='mhs'>{t('Restore from Snapshot File')}</h3>
 					<label className='field'>
 						<div className='mdi'>
 							<input type='file' accept='.json' onChange={this.onUploadFile.bind(this)} key={this.state.uploadFileKey} />
 							<span className='mdfx'></span>
 						</div>
 					</label>
-					<ModalDialog title={t('Restore from this Snapshot File?')} acceptText={t('Restore')} secondaryText={t('Cancel')} show={this.state.showUploadConfirm} onAccept={() => this.handleConfirmUploadFileAccept()} onSecondary={() => this.handleConfirmUploadFileCancel()}>
+					<ModalDialog title={t('Restore from this Snapshot file?')} acceptText={t('Restore')} secondaryText={t('Cancel')} show={this.state.showUploadConfirm} onAccept={() => this.handleConfirmUploadFileAccept()} onSecondary={() => this.handleConfirmUploadFileCancel()}>
 						<p>{t('Are you sure you want to restore the system from the Snapshot file "{{fileName}}"?', { fileName: this.state.uploadFileName })}</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</ModalDialog>
-					<h3>{t('Restore from Stored Snapshots')}</h3>
+					<h3 className='mhs'>{t('Restore from Stored Snapshots')}</h3>
 					<div>
 						<table className='table'>
 							<tbody>

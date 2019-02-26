@@ -13,9 +13,11 @@ import { SegmentUi, SegmentLineUi, IOutputLayerUi, SegmentLineItemUi } from './S
 import { TimelineGrid } from './TimelineGrid'
 import { SegmentTimelineLine } from './SegmentTimelineLine'
 import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
-import { SegmentNextPreview } from './SegmentNextPreview'
-
-import { SegmentDuration, SegmentLineCountdown, RunningOrderTiming } from '../RunningOrderView/RunningOrderTiming'
+import {
+	SegmentDuration,
+	SegmentLineCountdown,
+	RunningOrderTiming
+} from '../RunningOrderView/RunningOrderTiming'
 
 import { RundownUtils } from '../../lib/rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -68,6 +70,7 @@ interface IProps {
 	onFollowLiveLine: (state: boolean, event: any) => void
 	onContextMenu?: (contextMenuContext: any) => void
 	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onHeaderNoteClick?: (level: SegmentLineNoteType) => void
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	followingSegmentLine: SegmentLineUi | undefined
 	isLastSegment: boolean
@@ -179,19 +182,21 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 
 	render () {
 		return (
-			<div className='segment-timeline__zoom-area'
-				onDoubleClick={(e) => this.props.onZoomDblClick(e)}>
-				<div className='segment-timeline__timeline'>
-					{this.renderZoomTimeline()}
+			<div className='segment-timeline__zoom-area-container'>
+				<div className='segment-timeline__zoom-area'
+					onDoubleClick={(e) => this.props.onZoomDblClick(e)}>
+					<div className='segment-timeline__timeline'>
+						{this.renderZoomTimeline()}
+					</div>
+					<SegmentTimelineZoomControls scrollLeft={this.props.scrollLeft}
+						scrollWidth={this.props.timelineWidth / this.props.timeScale}
+						onScroll={(left, e) => this.props.onScroll(left, e)}
+						segmentDuration={this.getSegmentDuration()}
+						liveLineHistorySize={this.props.liveLineHistorySize}
+						timeScale={this.props.timeScale}
+						onZoomChange={(newScale, e) => this.props.onZoomChange(newScale, e)} />
+					{this.renderMiniLiveLine()}
 				</div>
-				<SegmentTimelineZoomControls scrollLeft={this.props.scrollLeft}
-					scrollWidth={this.props.timelineWidth / this.props.timeScale}
-					onScroll={(left, e) => this.props.onScroll(left, e)}
-					segmentDuration={this.getSegmentDuration()}
-					liveLineHistorySize={this.props.liveLineHistorySize}
-					timeScale={this.props.timeScale}
-					onZoomChange={(newScale, e) => this.props.onZoomChange(newScale, e)} />
-				{this.renderMiniLiveLine()}
 			</div>
 		)
 	}
@@ -488,6 +493,17 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	render () {
 		let notes: Array<SegmentLineNote> = this.props.segmentNotes
 
+		const {t} = this.props
+
+		const criticalNotes = _.reduce(notes, (prev, item) => {
+			if (item.type === SegmentLineNoteType.ERROR) return ++prev
+			return prev
+		}, 0)
+		const warningNotes = _.reduce(notes, (prev, item) => {
+			if (item.type === SegmentLineNoteType.WARNING) return ++prev
+			return prev
+		}, 0)
+
 		return (
 			<div id={SegmentTimelineElementId + this.props.segment._id}
 				className={ClassNames('segment-timeline', {
@@ -512,28 +528,26 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 						{this.props.segment.name}
 					</h2>
 					<div className='segment-timeline__title__notes'>
-						{
-							_.map(notes, (note, key) => {
-								return (
-									<div className='segment-timeline__title__notes__note' key={key}>
-										<img className='icon' src='/icons/warning_icon.svg' />
-										<div>
-											<b>
-												{(
-													note.type === SegmentLineNoteType.WARNING ? '' :
-													note.type === SegmentLineNoteType.ERROR ? 'Error:\u00A0' :
-													''
-												)}
-												{note.origin.name.replace(this.props.segment.name + ';', '')}
-											</b>
-										</div>
-										<div>
-											{note.message}
-										</div>
-									</div>
-								)
-							})
-						}
+						{criticalNotes > 0 && <div className='segment-timeline__title__notes__note'
+							onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(SegmentLineNoteType.ERROR)}>
+							<img className='icon' src='/icons/warning_icon.svg' />
+							<div>
+								{t('Critical errors')}:&nbsp;
+								<b>
+									{criticalNotes}
+								</b>
+							</div>
+						</div>}
+						{warningNotes > 0 && <div className='segment-timeline__title__notes__note'
+							onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(SegmentLineNoteType.WARNING)}>
+							<img className='icon' src='/icons/warning_icon.svg' />
+							<div>
+								{t('Warnings')}:&nbsp;
+								<b>
+									{warningNotes}
+								</b>
+							</div>
+						</div>}
 					</div>
 				</ContextMenuTrigger>
 				<div className='segment-timeline__duration' tabIndex={0}

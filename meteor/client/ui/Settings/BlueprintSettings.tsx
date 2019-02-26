@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
@@ -7,7 +6,7 @@ import * as _ from 'underscore'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
-import Moment from 'react-moment';
+import Moment from 'react-moment'
 
 interface IProps {
 	match: {
@@ -54,9 +53,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			let blueprint = this.props.blueprint
 
 			doModalDialog({
-				title: t('Update blueprints?'),
+				title: t('Update Blueprints?'),
 				message: [
-					<p>{t('Are you sure you want to update the bluerpints from the file "{{fileName}}"?', { fileName: file.name })}</p>,
+					<p>{t('Are you sure you want to update the blueprints from the file "{{fileName}}"?', { fileName: file.name })}</p>,
 					<p>{t('Please note: This action is irreversible!')}</p>
 				],
 				onAccept: () => {
@@ -125,16 +124,12 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						</div>
 					</label>
 					</div>
-					<div className='mod mvs mhs'>
-						<p>TODO: Manual edit (with warnings)</p>
-					</div>
 				</div>
 			</div>
 		)
 	}
 
 	render () {
-		const { t } = this.props
 
 		if (this.props.blueprint) {
 			return this.renderEditForm(this.props.blueprint)

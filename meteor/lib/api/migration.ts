@@ -1,5 +1,4 @@
 import { MigrationStepInput } from 'tv-automation-sofie-blueprints-integration'
-import { Version } from '../collections/CoreSystem'
 
 export enum MigrationMethods {
 	'getMigrationStatus' 	= 'migration.getMigrationStatus',

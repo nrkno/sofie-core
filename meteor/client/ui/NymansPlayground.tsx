@@ -9,14 +9,13 @@ import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders'
 import { Segments, Segment } from '../../lib/collections/Segments'
 import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
-import { TriggerType, TimelineState } from 'superfly-timeline'
+import { TimelineState } from 'superfly-timeline'
 import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines'
 import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
 import { Resolver, Enums } from 'superfly-timeline'
 import { transformTimeline } from '../../lib/timeline'
 import { Time } from '../../lib/lib'
 import { getCurrentTimeReactive } from '../lib/currentTimeReactive'
-import { EditAttribute } from '../lib/EditAttribute'
 import { makeTableOfObject } from '../lib/utilComponents'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
@@ -203,7 +202,6 @@ class extends MeteorReactComponent<ISegmentsProps & ISegmentsTrackedProps, ISegm
 				<b>Segment</b>
 				<div>ID: <i>{segment._id}</i></div>
 				<div>Name: <i>{segment.name}</i></div>
-				<div>Number: <i>{segment.number}</i></div>
 				<div>
 				<ComponentSegmentLines segmentId={segment._id} />
 				</div>

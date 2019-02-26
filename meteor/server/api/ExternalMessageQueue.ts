@@ -11,17 +11,19 @@ import {
 	ExternalMessageQueueObjSOAP,
 	IBlueprintExternalMessageQueueObj,
 	IBlueprintExternalMessageQueueType,
-	ExternalMessageQueueObjSlack,
 	ExternalMessageQueueObjRabbitMQ
 } from 'tv-automation-sofie-blueprints-integration'
-import { getCurrentTime, removeNullyProperties } from '../../lib/lib'
-
+import {
+	getCurrentTime,
+	removeNullyProperties
+} from '../../lib/lib'
 import { setMeteorMethods, Methods, wrapMethods } from '../methods'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
 import { ExternalMessageQueueAPI } from '../../lib/api/ExternalMessageQueue'
 import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
+import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus'
 
 export function queueExternalMessages (runningOrder: RunningOrder, messages: Array<IBlueprintExternalMessageQueueObj>) {
 	_.each(messages, (message) => {
@@ -102,7 +104,7 @@ function doMessageQueue () {
 		let ps: Array<Promise<any>> = []
 		_.each(messagesToSend, (msg) => {
 			try {
-				logger.debug('Trying to send message: ' + msg._id)
+				logger.debug(`Trying to send externalMessage, id: ${msg._id}, type: "${msg.type}"`)
 				ExternalMessageQueue.update(msg._id, {$set: {
 					tryCount: (msg.tryCount || 0) + 1,
 					lastTry: now,
@@ -112,12 +114,12 @@ function doMessageQueue () {
 				if (msg.type === IBlueprintExternalMessageQueueType.SOAP) {
 					p = sendSOAPMessage(msg as ExternalMessageQueueObjSOAP & ExternalMessageQueueObj)
 				} else if (msg.type === IBlueprintExternalMessageQueueType.SLACK) {
-					let m = msg as ExternalMessageQueueObjSlack & ExternalMessageQueueObj
+					// let m = msg as ExternalMessageQueueObjSlack & ExternalMessageQueueObj
 					p = sendSlackMessageToWebhook(msg.message, msg.receiver)
 				} else if (msg.type === IBlueprintExternalMessageQueueType.RABBIT_MQ) {
 					p = sendRabbitMQMessage(msg as ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj)
 				} else {
-					throw new Meteor.Error(500, `Unknown / Unsupported externalMessage type "${msg.type}"`)
+					throw new Meteor.Error(500, `Unknown / Unsupported externalMessage type: "${msg.type}"`)
 				}
 				ps.push(
 					Promise.resolve(p)
@@ -127,7 +129,7 @@ function doMessageQueue () {
 							sent: getCurrentTime(),
 							sentReply: result
 						}})
-						logger.debug('Message sucessfully sent: ' + msg._id)
+						logger.debug(`ExternalMessage sucessfully sent, id: ${msg._id}, type: "${msg.type}"`)
 					})
 					.catch((e) => {
 						logMessageError(msg, e)
@@ -145,6 +147,7 @@ function doMessageQueue () {
 				triggerdoMessageQueue(1000)
 			}
 		})
+		.catch(error => logger.error(error))
 	} catch (e) {
 		logger.error(e)
 	}
@@ -162,7 +165,7 @@ export function logMessageError (msg: ExternalMessageQueueObj, e: any) {
 		logger.error(e)
 	}
 }
-export function throwFatalError (msg, e) {
+export function throwFatalError (msg: ExternalMessageQueueObj, e: Meteor.Error) {
 
 	ExternalMessageQueue.update(msg._id, {$set: {
 		errorFatal: true
@@ -170,6 +173,50 @@ export function throwFatalError (msg, e) {
 
 	throw e
 }
+
+let updateExternalMessageQueueStatusTimeout: number = 0
+function updateExternalMessageQueueStatus (): void {
+
+	if (!updateExternalMessageQueueStatusTimeout) {
+		updateExternalMessageQueueStatusTimeout = Meteor.setTimeout(() => {
+			updateExternalMessageQueueStatusTimeout = 0
+
+			const messagesOnQueueCursor = ExternalMessageQueue.find({
+				sent: {$not: {$gt: 0}},
+				tryCount: {$gt: 3}
+			})
+			const messagesOnQueueCount: number = messagesOnQueueCursor.count()
+			let status: StatusObject = {
+				statusCode: StatusCode.GOOD
+			}
+			if (messagesOnQueueCount > 1) {
+				const messagesOnQueueExample = messagesOnQueueCursor.fetch()[0]
+				status = {
+					statusCode: (
+						messagesOnQueueCount > 10 ?
+						StatusCode.BAD :
+						StatusCode.WARNING_MINOR
+					),
+					messages: [
+						`There are ${messagesOnQueueCount} unsent messages on queue (one of the unsent messages has the error message: "${messagesOnQueueExample.errorMessage}", to receiver "${messagesOnQueueExample.type}", "${JSON.stringify(messagesOnQueueExample.receiver)}")`
+					]
+				}
+			}
+			setSystemStatus('External Message queue', status)
+		}, 5000)
+	}
+}
+
+ExternalMessageQueue.find({
+	sent: {$not: {$gt: 0}},
+	tryCount: {$gt: 3}
+}).observeChanges({
+	added: updateExternalMessageQueueStatus,
+	changed: updateExternalMessageQueueStatus,
+})
+Meteor.startup(() => {
+	updateExternalMessageQueueStatus()
+})
 
 let methods: Methods = {}
 methods[ExternalMessageQueueAPI.methods.remove] = (id: string) => {

@@ -1,12 +1,12 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import * as $ from 'jquery'
-import { ISourceLayerUi,
-		 IOutputLayerUi,
-		 SegmentUi,
-		 SegmentLineUi,
-		 SegmentLineItemUi } from './SegmentTimelineContainer'
-
+import {
+	ISourceLayerUi,
+	IOutputLayerUi,
+	SegmentLineUi,
+	SegmentLineItemUi
+} from './SegmentTimelineContainer'
 import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 import { SourceLayerType, SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
@@ -180,14 +180,14 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			if (this.props.segmentLine && this.props.segmentLineStartsAt !== undefined) { //  && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined
 				let segmentLineItem = this.props.segmentLineItem
 
-				let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration || 0 : 0
+				// let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration || 0 : 0
 				let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration || 0 : 0
 
 				const inPoint = segmentLineItem.renderedInPoint || 0
 				const duration = (segmentLineItem.infiniteMode || segmentLineItem.renderedDuration === 0) ? (this.props.segmentLineDuration - inPoint) : Math.min((segmentLineItem.renderedDuration || 0), this.props.segmentLineDuration - inPoint)
 				const outPoint = inPoint + duration
 
-				const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
+				// const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
 
 				if (this.props.scrollLeft + this.props.scrollWidth < (outPoint - outTransitionDuration + this.props.segmentLineStartsAt) &&
 					this.props.scrollLeft + this.props.scrollWidth > (inPoint + this.props.segmentLineStartsAt)) {
@@ -444,7 +444,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 					'infinite': (this.props.segmentLineItem.duration === undefined && this.props.segmentLineItem.durationOverride === undefined && this.props.segmentLineItem.infiniteMode) as boolean, // 0 is a special value
 					'next-is-touching': !!(this.props.segmentLineItem.cropped || (this.props.segmentLineItem.expectedDuration && _.isString(this.props.segmentLineItem.expectedDuration))),
 
-					'source-missing': this.props.segmentLineItem.status === RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING,
+					'source-missing': this.props.segmentLineItem.status === RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING || this.props.segmentLineItem.status === RunningOrderAPI.LineItemStatusCode.SOURCE_NOT_SET,
 					'source-broken': this.props.segmentLineItem.status === RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN,
 					'unknown-state': this.props.segmentLineItem.status === RunningOrderAPI.LineItemStatusCode.UNKNOWN,
 					'disabled': this.props.segmentLineItem.disabled

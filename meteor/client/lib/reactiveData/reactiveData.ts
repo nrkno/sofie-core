@@ -24,7 +24,7 @@ export namespace reactiveData {
 
 			return rVar
 		}
-	)
+		, 'getRRunningOrderId')
 
 	export const getRRunningOrderStudioId = ReactiveDataHelper.memoizeRVar(
 		function getRRunningOrderStudioId (roId: string): ReactiveVar<string | undefined> {
@@ -40,7 +40,7 @@ export namespace reactiveData {
 
 			return rVar
 		}
-	)
+		, 'getRRunningOrderStudioId')
 	export const getRRunningOrderShowStyleBaseId = ReactiveDataHelper.memoizeRVar(
 		function getRRunningOrderShowStyleBaseId (roId: string): ReactiveVar<string | undefined> {
 			const rVar = new ReactiveVar<string | undefined>(undefined)
@@ -55,7 +55,7 @@ export namespace reactiveData {
 
 			return rVar
 		}
-	)
+		, 'getRRunningOrderShowStyleBaseId')
 
 	export const getRStudioInstallation = ReactiveDataHelper.memoizeRVar(
 		function getRStudioInstallation (siId: string): ReactiveVar<StudioInstallation | undefined> {
@@ -67,13 +67,11 @@ export namespace reactiveData {
 
 			return rVar
 		}
-	)
+		, 'getRStudioInstallation')
 
 	export const getRSegmentLineItems = ReactiveDataHelper.memoizeRVar(
 		function getRSegmentLineItems (roId: string): ReactiveVar<SegmentLineItem[]> {
-			const rVar = new ReactiveVar<SegmentLineItem[]>([], (oldVal: SegmentLineItem[], newVal: SegmentLineItem[]) => {
-				return !((oldVal !== newVal) || (oldVal.length !== newVal.length))
-			})
+			const rVar = new ReactiveVar<SegmentLineItem[]>([])
 
 			Tracker.autorun(() => {
 				const slis = SegmentLineItems.find({
@@ -83,7 +81,7 @@ export namespace reactiveData {
 			})
 			return rVar
 		}
-	)
+		, 'getRSegmentLineItems')
 
 	export const getRSourceLayer = ReactiveDataHelper.memoizeRVar(
 		function getRSourceLayer (showStyleBase: ShowStyleBase, sourceLayerId: string): ReactiveVar<ISourceLayer | undefined> {
@@ -99,7 +97,7 @@ export namespace reactiveData {
 			})
 			return rVar
 		}
-	)
+		, 'getRSourceLayer')
 
 	export const getRMediaObject = ReactiveDataHelper.memoizeRVar(
 		function getRMediaObject (mediaId: string): ReactiveVar<MediaObject | undefined> {
@@ -111,20 +109,26 @@ export namespace reactiveData {
 
 			return rVar
 		}
-	)
+		, 'getRMediaObject')
 
 	export const getRPeripheralDevices = ReactiveDataHelper.memoizeRVar(
 		function getRPeripheralDevices (studioId: string): ReactiveVar<PeripheralDevice[]> {
 			const rVar = new ReactiveVar<PeripheralDevice[]>([])
 
 			Tracker.autorun(() => {
+				const allDevices: PeripheralDevice[] = []
 				const peripheralDevices = PeripheralDevices.find({
 					studioInstallationId: studioId
 				}).fetch()
-				rVar.set(peripheralDevices)
+				allDevices.splice(allDevices.length, 0, ...peripheralDevices)
+				peripheralDevices.forEach((i) => {
+					const subDevices = PeripheralDevices.find({ parentDeviceId: i._id }).fetch()
+					allDevices.splice(allDevices.length, 0, ...subDevices)
+				})
+				rVar.set(allDevices)
 			})
 
 			return rVar
 		}
-	)
+		, 'getRPeripheralDevices')
 }

@@ -8,7 +8,14 @@ import { ServerResponse, IncomingMessage } from 'http'
 import * as bodyParser from 'body-parser'
 import { check, Match } from 'meteor/check'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { Snapshots, SnapshotRunningOrder, SnapshotType, SnapshotSystem, SnapshotDebug, SnapshotBase } from '../../lib/collections/Snapshots'
+import {
+	Snapshots,
+	SnapshotRunningOrder,
+	SnapshotType,
+	SnapshotSystem,
+	SnapshotDebug,
+	SnapshotBase
+} from '../../lib/collections/Snapshots'
 import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders'
 import { RunningOrderDataCache, RunningOrderDataCacheObj } from '../../lib/collections/RunningOrderDataCache'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
@@ -17,7 +24,14 @@ import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 import { SegmentLineItems, SegmentLineItem } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItems, SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
-import { getCurrentTime, Time, formatDateAsTimecode, formatDateTime, fixValidPath, saveIntoDb, sumChanges } from '../../lib/lib'
+import {
+	getCurrentTime,
+	Time,
+	formatDateTime,
+	fixValidPath,
+	saveIntoDb,
+	sumChanges
+} from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
@@ -27,7 +41,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { ServerPeripheralDeviceAPI } from './peripheralDevice'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 import { SnapshotFunctionsAPI } from '../../lib/api/shapshot'
-import { getCoreSystem, ICoreSystem, CoreSystem, parseVersion, compareVersions } from '../../lib/collections/CoreSystem'
+import { getCoreSystem, ICoreSystem, CoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
 import { fsWriteFile, fsReadFile, fsUnlinkFile } from '../lib'
 import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databaseMigration'
 import { restoreRunningOrder } from '../backups'
@@ -35,6 +49,7 @@ import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowS
 import { AudioContent } from 'tv-automation-sofie-blueprints-integration'
 import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import { MongoSelector } from '../../lib/typings/meteor'
+import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 interface RunningOrderSnapshot {
 	version: string
 	runningOrderId: string
@@ -47,6 +62,7 @@ interface RunningOrderSnapshot {
 	segmentLineItems: Array<SegmentLineItem>
 	segmentLineAdLibItems: Array<SegmentLineAdLibItem>
 	mediaObjects: Array<MediaObject>
+	expectedMediaItems: Array<ExpectedMediaItem>
 }
 interface SystemSnapshot {
 	version: string
@@ -100,6 +116,7 @@ function createRunningOrderSnapshot (runningOrderId: string): RunningOrderSnapsh
 		...segmentLineAdLibItems.filter(item => item.content && item.content.fileName).map((item) => ((item.content as AudioContent).fileName))
 	]
 	const mediaObjects = MediaObjects.find({ mediaId: { $in: mediaObjectIds } }).fetch()
+	const expectedMediaItems = ExpectedMediaItems.find({ segmentLineId: { $in: segmentLines.map(i => i._id)}}).fetch()
 
 	logger.info(`Snapshot generation done`)
 	return {
@@ -121,7 +138,8 @@ function createRunningOrderSnapshot (runningOrderId: string): RunningOrderSnapsh
 		segmentLines,
 		segmentLineItems,
 		segmentLineAdLibItems,
-		mediaObjects
+		mediaObjects,
+		expectedMediaItems
 	}
 }
 
@@ -149,7 +167,7 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 		_.each(studios, (studio) => {
 			showStyleBaseIds = showStyleBaseIds.concat(studio.supportedShowStyleBase)
 		})
-
+		queryShowStyleBases._id = ''
 		queryShowStyleBases = {
 			_id: {$in: showStyleBaseIds}
 		}
@@ -372,6 +390,7 @@ function restoreFromRunningOrderSnapshot (snapshot: RunningOrderSnapshot) {
 	saveIntoDb(SegmentLineItems, {runningOrderId: runningOrderId}, snapshot.segmentLineItems)
 	saveIntoDb(SegmentLineAdLibItems, {runningOrderId: runningOrderId}, snapshot.segmentLineAdLibItems)
 	saveIntoDb(MediaObjects, {_id: {$in: _.pluck(snapshot.mediaObjects, '_id')}}, snapshot.mediaObjects)
+	saveIntoDb(ExpectedMediaItems, {segmentLineId: {$in: snapshot.segmentLines.map(i => i._id)}}, snapshot.expectedMediaItems)
 
 	logger.info(`Restore done`)
 }
@@ -463,7 +482,7 @@ Picker.route('/snapshot/debug/:studioId', (params, req: IncomingMessage, respons
 })
 const postRoute = Picker.filter((req, res) => req.method === 'POST')
 postRoute.middleware(bodyParser.json({
-	limit: '1mb' // Arbitrary limit
+	limit: '15mb' // Arbitrary limit
 }))
 postRoute.route('/backup/restore', (params, req: IncomingMessage, response: ServerResponse, next) => {
 	response.setHeader('Content-Type', 'text/plain')

@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
-import { Time, registerCollection, getCurrentTime } from '../lib'
+import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from '../logging'
@@ -19,6 +19,16 @@ export interface ICoreSystem {
 
 	/** File path to store persistant data (like snapshots, etc) */
 	storePath: string
+
+	/** Support info */
+	support?: {
+		message: string
+	}
+
+	systemInfo?: {
+		message: string
+		enabled: boolean
+	}
 }
 
 // The CoreSystem collection will contain one (exactly 1) object.

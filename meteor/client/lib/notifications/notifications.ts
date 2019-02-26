@@ -41,67 +41,25 @@ declare class ReactiveDict<T> {
 }
 
 export enum NoticeLevel {
-	CRITICAL,
-	WARNING,
-	NOTIFICATION,
-	TIP
+	CRITICAL = 1,
+	WARNING = 2,
+	NOTIFICATION = 3,
+	TIP = 4
 }
 
 export interface NotificationAction {
 	label: string
-	type: string
+	type: string // for a default, use 'default'
 	icon?: any
+	action?: Function
 }
 
-export class Notification extends EventEmitter {
-	id: string | undefined
-	status: NoticeLevel
-	message: string | React.ReactNode
-	source: string
-	persistent?: boolean
-	snoozed?: boolean
-	actions?: Array<NotificationAction>
-	created: Time
-	rank: number
+export type Notifier = () => NotificationList
 
-	constructor (id: string | undefined, status: NoticeLevel, message: string | React.ReactNode, source: string, created?: Time, persistent?: boolean, actions?: Array<NotificationAction>, rank?: number) {
-		super()
+const notifiers: Dictionary<NotifierObject> = {}
 
-		this.id = id
-		this.status = status
-		this.message = message
-		this.source = source
-		this.persistent = persistent || false
-		this.actions = actions || undefined
-		this.created = created || Date.now()
-		this.rank = rank || 0
-	}
-
-	snooze () {
-		this.snoozed = true
-		notificationsDep.changed()
-		this.emit('snoozed', this)
-	}
-
-	drop () {
-		if (this.id) {
-			NotificationCenter.drop(this.id)
-		}
-	}
-
-	action (type: string, event: any) {
-		this.emit('action', this, type, event)
-	}
-
-	static isEqual (a: Notification | undefined, b: Notification | undefined): boolean {
-		if (typeof a !== typeof b) return false
-		return _.isEqual(_.omit(a, ['created']), _.omit(b, ['created']))
-	}
-
-	static compare (a: Notification, b: Notification): number {
-		return (a.status - b.status) || (a.created - b.created) || (a.rank - b.rank)
-	}
-}
+const notifications: Dictionary<Notification> = {}
+const notificationsDep: Tracker.Dependency = new Tracker.Dependency()
 
 interface NotificationHandle {
 	id: string,
@@ -112,13 +70,6 @@ export class NotificationList extends ReactiveVar<Notification[]> {
 
 }
 
-export type Notifier = () => NotificationList
-
-const notifiers: Dictionary<NotifierObject> = {}
-
-const notifications: Dictionary<Notification> = {}
-const notificationsDep: Tracker.Dependency = new Tracker.Dependency()
-
 export class NotifierObject {
 	id: string
 	source: Notifier
@@ -128,10 +79,12 @@ export class NotifierObject {
 	constructor (notifierId: string, source: Notifier) {
 		this.id = notifierId
 		this.source = source
-		this.handle = Tracker.autorun(() => {
-			this.result = source().get()
-			notificationsDep.changed()
-		})
+		this.handle = Tracker.nonreactive(() => {
+			return Tracker.autorun(() => {
+				this.result = source().get()
+				notificationsDep.changed()
+			})
+		}) as any as Tracker.Computation
 
 		notifiers[notifierId] = this
 	}
@@ -146,7 +99,14 @@ export class NotifierObject {
 }
 
 class NotificationCenter0 {
-	NOTIFICATION_TIMEOUT = 5000
+	private NOTIFICATION_TIMEOUT = 5000
+	private highlightedSource: ReactiveVar<string | undefined>
+	private highlightedLevel: ReactiveVar<NoticeLevel>
+
+	constructor () {
+		this.highlightedSource = new ReactiveVar<string>('')
+		this.highlightedLevel = new ReactiveVar<NoticeLevel>(NoticeLevel.TIP)
+	}
 
 	registerNotifier (source: Notifier): NotifierObject {
 		const notifierId = Random.id()
@@ -180,7 +140,7 @@ class NotificationCenter0 {
 					this.drop(id)
 				}
 			}
-		}, this.NOTIFICATION_TIMEOUT)
+		}, notice.timeout || this.NOTIFICATION_TIMEOUT)
 	}
 
 	drop (id: string): void {
@@ -210,6 +170,86 @@ class NotificationCenter0 {
 		const n = this.getNotifications()
 		n.forEach((item) => item.snooze())
 	}
+
+	highlightSource (source: string | undefined, level: NoticeLevel) {
+		this.highlightedSource.set(source)
+		this.highlightedLevel.set(level)
+	}
+
+	getHighlightedSource () {
+		return this.highlightedSource.get()
+	}
+
+	getHighlightedLevel () {
+		return this.highlightedLevel.get()
+	}
 }
 
 export const NotificationCenter = new NotificationCenter0()
+
+export class Notification extends EventEmitter {
+	id: string | undefined
+	status: NoticeLevel
+	message: string | React.ReactNode
+	source: string
+	persistent?: boolean
+	timeout?: number
+	snoozed?: boolean
+	actions?: Array<NotificationAction>
+	created: Time
+	rank: number
+
+	constructor (
+		id: string | undefined,
+		status: NoticeLevel,
+		message: string | React.ReactNode,
+		source: string,
+		created?: Time,
+		persistent?: boolean,
+		actions?: Array<NotificationAction>,
+		rank?: number,
+		timeout?: number) {
+		super()
+
+		this.id = id
+		this.status = status
+		this.message = message
+		this.source = source
+		this.persistent = persistent || false
+		this.actions = actions || undefined
+		this.created = created || Date.now()
+		this.rank = rank || 0
+		this.timeout = timeout
+	}
+
+	static isEqual (a: Notification | undefined, b: Notification | undefined): boolean {
+		if (typeof a !== typeof b) return false
+		return _.isEqual(_.omit(a, ['created', 'snoozed', 'actions', '_events']), _.omit(b, ['created', 'snoozed', 'actions', '_events']))
+	}
+
+	static compare (a: Notification, b: Notification): number {
+		return (!!a.persistent === !!b.persistent ? 0 : a.persistent && !b.persistent ? 1 : -1) ||
+			   (a.status - b.status) || (a.rank - b.rank) || (a.created - b.created)
+	}
+
+	snooze () {
+		this.snoozed = true
+		notificationsDep.changed()
+		this.emit('snoozed', this)
+	}
+
+	drop () {
+		if (this.id) {
+			NotificationCenter.drop(this.id)
+		}
+	}
+
+	action (type: string, event: any) {
+		this.emit('action', this, type, event)
+	}
+
+}
+
+window['testNotification'] = function () {
+	NotificationCenter.push(new Notification(undefined, NoticeLevel.TIP, 'Notification test', 'test'))
+}

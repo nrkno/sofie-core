@@ -32,6 +32,11 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 	}
 	/** Only set to true for the "magic" statistic objects, used to trigger playout */
 	statObject?: boolean
+
+	/** Only set to true when an object is inserted by lookahead */
+	isBackground?: boolean
+	/** Set when an object is on a virtual layer for lookahead, so that it can be routed correctly */
+	originalLLayer?: string | number
 }
 // export type TimelineObj = TimelineObjRunningOrder | TimelineObjRecording | TimelineObjManual | TimelineObjStat
 

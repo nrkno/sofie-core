@@ -84,13 +84,14 @@ export namespace ServerPeripheralDeviceAPI {
 		check(token, String)
 		check(status, Object)
 		check(status.statusCode, Number)
-		logger.debug('setStatus', status.statusCode)
 
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + id + "' not found!")
 
 		// check if we have to update something:
 		if (!_.isEqual(status, peripheralDevice.status)) {
+
+			logger.debug(`Changed status of device ${peripheralDevice._id} "${peripheralDevice.name}" to ${status.statusCode}`)
 			// perform the update:
 			PeripheralDevices.update(id, {$set: {
 				status: status
@@ -162,7 +163,8 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 	}, 'timelineTriggerTime$0,$1')
 	export function segmentLinePlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) {
-		// This is called from the playout-gateway when an auto-next event occurs
+		// This is called from the playout-gateway when a segmentLine starts playing.
+		// Note that this function can / might be called several times from playout-gateway for the same segmentLine
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
@@ -172,6 +174,17 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// Meteor.call('playout_segmentLinePlaybackStart', r.roId, r.slId, r.time)
 		ServerPlayoutAPI.slPlaybackStartedCallback(r.roId, r.slId, r.time)
+	}
+	export function segmentLinePlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStoppedResult) {
+		// This is called from the playout-gateway when an
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
+
+		check(r.time, Number)
+		check(r.roId, String)
+		check(r.slId, String)
+
+		ServerPlayoutAPI.slPlaybackStoppedCallback(r.roId, r.slId, r.time)
 	}
 	export function segmentLineItemPlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) {
 		// This is called from the playout-gateway when an auto-next event occurs
@@ -184,6 +197,18 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// Meteor.call('playout_segmentLineItemPlaybackStart', r.roId, r.sliId, r.time)
 		ServerPlayoutAPI.sliPlaybackStartedCallback(r.roId, r.sliId, r.time)
+	}
+	export function segmentLineItemPlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) {
+		// This is called from the playout-gateway when an auto-next event occurs
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
+
+		check(r.time, Number)
+		check(r.roId, String)
+		check(r.sliId, String)
+
+		// Meteor.call('playout_segmentLineItemPlaybackStart', r.roId, r.sliId, r.time)
+		ServerPlayoutAPI.sliPlaybackStoppedCallback(r.roId, r.sliId, r.time)
 	}
 	export function pingWithCommand (id: string, token: string, message: string) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -286,42 +311,48 @@ export namespace ServerPeripheralDeviceAPI {
 // }
 
 let methods: Methods = {}
-methods[PeripheralDeviceAPI.methods.initialize] = (deviceId, deviceToken, options) => {
+methods[PeripheralDeviceAPI.methods.initialize] = (deviceId: string, deviceToken: string, options: PeripheralDeviceAPI.InitOptions) => {
 	return ServerPeripheralDeviceAPI.initialize(deviceId, deviceToken, options)
 }
-methods[PeripheralDeviceAPI.methods.unInitialize] = (deviceId, deviceToken) => {
+methods[PeripheralDeviceAPI.methods.unInitialize] = (deviceId: string, deviceToken: string) => {
 	return ServerPeripheralDeviceAPI.unInitialize(deviceId, deviceToken)
 }
-methods[PeripheralDeviceAPI.methods.setStatus] = (deviceId, deviceToken, status) => {
+methods[PeripheralDeviceAPI.methods.setStatus] = (deviceId: string, deviceToken: string, status: PeripheralDeviceAPI.StatusObject) => {
 	return ServerPeripheralDeviceAPI.setStatus(deviceId, deviceToken, status)
 }
-methods[PeripheralDeviceAPI.methods.ping] = (deviceId, deviceToken) => {
+methods[PeripheralDeviceAPI.methods.ping] = (deviceId: string, deviceToken: string) => {
 	return ServerPeripheralDeviceAPI.ping(deviceId, deviceToken)
 }
-methods[PeripheralDeviceAPI.methods.getPeripheralDevice ] = (deviceId, deviceToken) => {
+methods[PeripheralDeviceAPI.methods.getPeripheralDevice ] = (deviceId: string, deviceToken: string) => {
 	return ServerPeripheralDeviceAPI.getPeripheralDevice(deviceId, deviceToken)
 }
-methods[PeripheralDeviceAPI.methods.segmentLinePlaybackStarted] = (deviceId, deviceToken, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) => {
+methods[PeripheralDeviceAPI.methods.segmentLinePlaybackStarted] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) => {
 	return ServerPeripheralDeviceAPI.segmentLinePlaybackStarted(deviceId, deviceToken, r)
 }
-methods[PeripheralDeviceAPI.methods.segmentLineItemPlaybackStarted] = (deviceId, deviceToken, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) => {
+methods[PeripheralDeviceAPI.methods.segmentLinePlaybackStopped] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) => {
+	return ServerPeripheralDeviceAPI.segmentLinePlaybackStopped(deviceId, deviceToken, r)
+}
+methods[PeripheralDeviceAPI.methods.segmentLineItemPlaybackStopped] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) => {
+	return ServerPeripheralDeviceAPI.segmentLineItemPlaybackStopped(deviceId, deviceToken, r)
+}
+methods[PeripheralDeviceAPI.methods.segmentLineItemPlaybackStarted] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) => {
 	return ServerPeripheralDeviceAPI.segmentLineItemPlaybackStarted(deviceId, deviceToken, r)
 }
-methods[PeripheralDeviceAPI.methods.pingWithCommand] = (deviceId, deviceToken, message: string) => {
+methods[PeripheralDeviceAPI.methods.pingWithCommand] = (deviceId: string, deviceToken: string, message: string) => {
 	return ServerPeripheralDeviceAPI.pingWithCommand(deviceId, deviceToken, message)
 }
-methods[PeripheralDeviceAPI.methods.killProcess] = (deviceId, deviceToken, really: boolean) => {
+methods[PeripheralDeviceAPI.methods.killProcess] = (deviceId: string, deviceToken: string, really: boolean) => {
 	return ServerPeripheralDeviceAPI.killProcess(deviceId, deviceToken, really)
 }
-methods[PeripheralDeviceAPI.methods.testMethod] = (deviceId, deviceToken, returnValue, throwError ) => {
+methods[PeripheralDeviceAPI.methods.testMethod] = (deviceId: string, deviceToken: string, returnValue: string, throwError?: boolean ) => {
 	return ServerPeripheralDeviceAPI.testMethod(deviceId, deviceToken, returnValue, throwError)
 }
-methods[PeripheralDeviceAPI.methods.timelineTriggerTime] = (deviceId, deviceToken, r: PeripheralDeviceAPI.TimelineTriggerTimeResult) => {
+methods[PeripheralDeviceAPI.methods.timelineTriggerTime] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.TimelineTriggerTimeResult) => {
 	return ServerPeripheralDeviceAPI.timelineTriggerTime(deviceId, deviceToken, r)
 }
 
 // --------------------
-methods[PeripheralDeviceAPI.methods.functionReply] = (deviceId, deviceToken, commandId, err: any, result: any) => {
+methods[PeripheralDeviceAPI.methods.functionReply] = (deviceId: string, deviceToken: string, commandId: string, err: any, result: any) => {
 	// logger.debug('functionReply', err, result)
 	PeripheralDeviceCommands.update(commandId, {
 		$set: {
@@ -341,6 +372,9 @@ setMeteorMethods({
 	'temporaryRemovePeripheralDevice' (id: string) {
 		// TODO: Replace this function with an authorized one
 		PeripheralDevices.remove(id)
+		PeripheralDevices.remove({
+			parentDeviceId: id
+		})
 		return id
 	}
 })

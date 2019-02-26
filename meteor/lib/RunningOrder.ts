@@ -63,7 +63,7 @@ export interface SegmentLineItemExtended extends SegmentLineItem {
 	maxLabelWidth?: number
 }
 
-export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: RunningOrder, segment: Segment): {
+export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: RunningOrder, segment: Segment, checkFollowingSegment?: boolean): {
 	segmentExtended: SegmentExtended,
 	segmentLines: Array<SegmentLineExtended>,
 	isLiveSegment: boolean,
@@ -79,7 +79,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 	let isLiveSegment = false
 	let isNextSegment = false
 	let currentLiveSegmentLine: SegmentLineExtended | undefined = undefined
-	let nextSegmentLine: SegmentLineExtended | undefined = undefined
+	// let nextSegmentLine: SegmentLineExtended | undefined = undefined
 	let hasAlreadyPlayed = false
 	let hasRemoteItems = false
 	let hasGuestItems = false
@@ -96,36 +96,38 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 	let segmentLines = segment.getSegmentLines()
 
 	if (segmentLines.length > 0) {
-		let followingSLines = SegmentLines.find({
-			runningOrderId: segment.runningOrderId,
-			_rank: {
-				$gt: segmentLines[segmentLines.length - 1]._rank
+		if (checkFollowingSegment) {
+			let followingSLines = SegmentLines.find({
+				runningOrderId: segment.runningOrderId,
+				_rank: {
+					$gt: segmentLines[segmentLines.length - 1]._rank
+				}
+			}, { sort: { _rank: 1 }, limit: 1 }).fetch()
+			if (followingSLines.length > 0) {
+				let followingSLine = followingSLines[0]
+
+				let segmentLineItems = SegmentLineItems.find({
+					segmentLineId: followingSLine._id
+				}).fetch()
+
+				followingSegmentLine = extendMandadory<SegmentLine, SegmentLineExtended>(followingSLine, {
+					items: _.map(segmentLineItems, (sli) => {
+						return extendMandadory<SegmentLineItem, SegmentLineItemExtended>(sli, {
+							// sourceLayer: ISourceLayerExtended,
+							// outputLayer: IOutputLayerExtended,
+							renderedInPoint: null,
+							renderedDuration: null,
+							// cropped: false,
+							// continuedByRef: SegmentLineItemExtended,
+							// continuesRef: SegmentLineItemExtended,
+							// maxLabelWidth: 0
+						})
+					}),
+					renderedDuration: 0, // ?
+					startsAt: 0, // ?
+					willProbablyAutoNext: false // ?
+				})
 			}
-		}, { sort: { _rank: 1 }, limit: 1 }).fetch()
-		if (followingSLines.length > 0) {
-			let followingSLine = followingSLines[0]
-
-			let segmentLineItems = SegmentLineItems.find({
-				segmentLineId: followingSLine._id
-			}).fetch()
-
-			followingSegmentLine = extendMandadory<SegmentLine, SegmentLineExtended>(followingSLine, {
-				items: _.map(segmentLineItems, (sli) => {
-					return extendMandadory<SegmentLineItem, SegmentLineItemExtended>(sli, {
-						// sourceLayer: ISourceLayerExtended,
-						// outputLayer: IOutputLayerExtended,
-						renderedInPoint: null,
-						renderedDuration: null,
-						// cropped: false,
-						// continuedByRef: SegmentLineItemExtended,
-						// continuesRef: SegmentLineItemExtended,
-						// maxLabelWidth: 0
-					})
-				}),
-				renderedDuration: 0, // ?
-				startsAt: 0, // ?
-				willProbablyAutoNext: false // ?
-			})
 		}
 
 		// create local deep copies of the studioInstallation outputLayers and sourceLayers so that we can store
@@ -188,7 +190,6 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 					return extendMandadory<SegmentLineItem, SegmentLineItemExtended>(sli, {
 						renderedDuration: 0,
 						renderedInPoint: 0
-
 					})
 				}),
 				renderedDuration: 0,
@@ -207,7 +208,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 			if (runningOrder.nextSegmentLineId === segmentLineE._id) {
 				isNextSegment = true
 				// next is only auto, if current has a duration
-				nextSegmentLine = segmentLineE
+				// nextSegmentLine = segmentLineE
 			}
 			autoNextSegmentLine = (
 				currentLiveSegmentLine ?

@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { translate, InjectedI18nProps } from 'react-i18next'
 import * as m from 'moment'
@@ -52,6 +51,13 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		if (params['configure']) setAdminMode(params['configure'] === '1')
 		if (params['develop']) setDeveloperMode(params['develop'] === '1')
 		if (params['testing']) setTestingMode(params['testing'] === '1')
+		if (params['admin']) {
+			const val = params['admin'] === '1'
+			setStudioMode(val)
+			setAdminMode(val)
+			setDeveloperMode(val)
+			setTestingMode(val)
+		}
 
 		this.state = {
 			studioMode: getStudioMode(),
@@ -101,7 +107,12 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Redirect to='/' />
 						</Switch>
 					</ErrorBoundary>
-					<ConnectionStatusNotification />
+					<Switch>
+						<Route path='/countdowns/:studioId/presenter' component={NullComponent} />
+						<Route path='/countdowns/presenter' component={NullComponent} />
+						<Route path='/prompter/:studioId' component={NullComponent} />
+						<Route path='/' component={ConnectionStatusNotification} />
+					</Switch>
 					<ModalDialogGlobalContainer />
 				</div>
 			</Router>
