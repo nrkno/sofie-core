@@ -27,6 +27,8 @@ import { callMethod, callPeripheralDeviceFunction } from '../../lib/clientAPI'
 import { PubSub } from '../../../lib/api/pubsub'
 import { Spinner } from '../../lib/Spinner'
 import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon'
+import { doUserAction } from '../../lib/userAction'
+import { UserActionAPI } from '../../../lib/api/userActions'
 
 interface IMediaManagerStatusProps {
 
@@ -83,6 +85,8 @@ interface IItemProps {
 	item: MediaWorkFlowUi
 	expanded: _.Dictionary<boolean>
 	toggleExpanded: (id: string) => void
+	actionRestart: (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => void
+	actionAbort: (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => void
 }
 
 const iconEnterAnimation = {
@@ -237,6 +241,14 @@ const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.InjectedTranslate
 					</React.Fragment>}
 				</div>
 			</div>
+			<div className='workflow__header__actions'>
+				<button className='btn btn-default' onClick={(e) => props.actionRestart(e, i)}>
+					{t('Restart')}
+				</button>
+				<button className='btn btn-default' onClick={(e) => props.actionAbort(e, i)}>
+					{t('Abort')}
+				</button>
+			</div>
 		</div>
 		<VelocityReact.VelocityTransitionGroup enter={{
 			animation: 'slideDown', easing: 'ease-out', duration: 150, maxHeight: 0, overflow: 'hidden'
@@ -301,12 +313,28 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 			expanded: this.state.expanded
 		})
 	}
+	actionRestart = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
+		doUserAction(this.props.t, event, UserActionAPI.methods.mediaRestartWorkflow, [workflow._id])
+	}
+	actionAbort = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
+		doUserAction(this.props.t, event, UserActionAPI.methods.mediaAbortWorkflow, [workflow._id])
+
+		
+	}
 
 	renderWorkFlows () {
 		const { t } = this.props
 
 		return this.props.workFlows.sort((a, b) => b.created - a.created).map(i => {
-			return <MediaManagerWorkFlowItem expanded={this.state.expanded} item={i} key={i._id} t={t} toggleExpanded={this.toggleExpanded} />
+			return <MediaManagerWorkFlowItem
+				expanded={this.state.expanded}
+				item={i}
+				key={i._id}
+				t={t}
+				toggleExpanded={this.toggleExpanded}
+				actionRestart={this.actionRestart}
+				actionAbort={this.actionAbort}
+			/>
 		})
 	}
 

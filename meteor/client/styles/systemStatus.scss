@@ -253,6 +253,13 @@
 				flex-wrap: wrap;	
 				flex: 1 1;
 			}
+			> .workflow__header__actions {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;	
+				flex: 0 0;
+				margin-left: 0.5em;
+			}
 
 			.workflow__header__expand {
     			flex: 1 1;
