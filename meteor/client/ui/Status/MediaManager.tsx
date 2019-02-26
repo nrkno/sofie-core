@@ -175,8 +175,14 @@ const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.InjectedTranslate
 	const expanded = props.expanded[i._id] === true
 	const finishedOK = i.success && i.finished
 	const finishedError = !i.success && i.finished
-	const keySteps = i.steps.filter(j => j.keyStep)
-	const keyFinishedOK = keySteps.length === 0 ? false : keySteps.reduce((memo, item) => memo && item.status === MediaManagerAPI.WorkStepStatus.DONE, true)
+	const criticalSteps = i.steps.filter(j => j.criticalStep)
+	const keyFinishedOK = (
+		criticalSteps.length === 0 ?
+		false :
+		criticalSteps.reduce((memo, item) => {
+			return memo && item.status === MediaManagerAPI.WorkStepStatus.DONE
+		}, true)
+	)
 	const currentTask = i.steps.sort((a, b) => b.priority - a.priority).find(i => ((i.status === MediaManagerAPI.WorkStepStatus.WORKING) || (i.status === MediaManagerAPI.WorkStepStatus.ERROR)))
 	const progress = (
 		i.steps.map(i => {
