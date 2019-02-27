@@ -62,14 +62,13 @@ export function removeSegmentLine (roId: string, segmentLineOrId: DBSegmentLine 
 				afterSegmentLine: segmentLineToRemove._id
 			})
 		}
-
-		updateExpectedMediaItems(roId, segmentLineToRemove._id)
 	}
 }
 export function afterRemoveSegmentLine (removedSegmentLine: DBSegmentLine, replacedBySegmentLine?: DBSegmentLine) {
 	SegmentLineItems.remove({
 		segmentLineId: removedSegmentLine._id
 	})
+	updateExpectedMediaItems(removedSegmentLine.runningOrderId, removedSegmentLine._id)
 
 	let ro = RunningOrders.findOne(removedSegmentLine.runningOrderId)
 	if (ro) {
@@ -351,7 +350,13 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 	}
 
 	// if anything was changed
-	return (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
+	const anythingChanged = (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
+	if (anythingChanged) {
+		_.each(slIds, (slId) => {
+			updateExpectedMediaItems(ro._id, slId)
+		})
+	}
+	return anythingChanged
 }
 export function reloadRunningOrderData (runningOrder: RunningOrder) {
 	// TODO: determine that the runningOrder is Mos-driven, then call the function
