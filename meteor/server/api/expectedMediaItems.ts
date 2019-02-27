@@ -43,10 +43,12 @@ export const updateExpectedMediaItems: (roId: string, slId: string) => void
 	// 	runningOrderId: ro._id
 	// })
 	const slis = SegmentLineItems.find({
-		runningOrderId: ro._id
+		runningOrderId: ro._id,
+		segmentLineId: sl._id
 	})
 	const slali = SegmentLineAdLibItems.find({
-		runningOrderId: ro._id
+		runningOrderId: ro._id,
+		segmentLineId: sl._id
 	})
 
 	function iterateOnSLILike (doc: SegmentLineItemGeneric, prefix: string) {
