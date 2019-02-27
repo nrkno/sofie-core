@@ -1,7 +1,7 @@
 import * as mousetrap from 'mousetrap'
 import * as _ from 'underscore'
-import { isEventInInputField } from './lib';
-import { isModalShowing } from './ModalDialog';
+import { isEventInInputField } from './lib'
+import { isModalShowing } from './ModalDialog'
 
 export namespace mousetrapHelper {
 	const _boundHotkeys: {
@@ -21,7 +21,7 @@ export namespace mousetrapHelper {
 		})
 	}
 
-	export function bindGlobal (keys: string, callback: (e: Event) => void, action?: string, tag?: string) {
+	export function bindGlobal (keys: string, callback: (e: Event) => void, action?: string, tag?: string, allowInModal?: boolean) {
 		let index = keys
 		if (action) index = keys + '_' + action
 		if (_boundHotkeys[index] === undefined) {
@@ -33,8 +33,8 @@ export namespace mousetrapHelper {
 		// console.log(`Registering callback for key combo "${keys}"`)
 		_boundHotkeys[index].push((e: Event) => {
 			e.preventDefault()
-			if (isEventInInputField(e)) return
-			if (isModalShowing()) return
+			if (!allowInModal && isEventInInputField(e)) return
+			if (!allowInModal && isModalShowing()) return
 
 			callback(e)
 		})
@@ -47,7 +47,7 @@ export namespace mousetrapHelper {
 		}
 	}
 
-	export function bind (keys: string, callback: (e: Event) => void, action?: string, tag?: string) {
+	export function bind (keys: string, callback: (e: Event) => void, action?: string, tag?: string, allowInModal?: boolean) {
 		let index = keys
 		if (action) index = keys + '_' + action
 		if (_boundHotkeys[index] === undefined) {
@@ -59,8 +59,8 @@ export namespace mousetrapHelper {
 		// console.log(`Registering callback for key combo "${keys}"`)
 		_boundHotkeys[index].push((e: Event) => {
 			e.preventDefault()
-			if (isEventInInputField(e)) return
-			if (isModalShowing()) return
+			if (!allowInModal && isEventInInputField(e)) return
+			if (!allowInModal && isModalShowing()) return
 
 			callback(e)
 		})

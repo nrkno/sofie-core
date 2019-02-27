@@ -41,13 +41,13 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	bindKeys = () => {
 		if (this.props.show) {
 			if (this.boundKeys.indexOf('enter') < 0) {
-				mousetrapHelper.bind('enter', this.preventDefault, 'keydown')
-				mousetrapHelper.bind('enter', this.handleKey, 'keyup')
+				mousetrapHelper.bind('enter', this.preventDefault, 'keydown', undefined, true)
+				mousetrapHelper.bind('enter', this.handleKey, 'keyup', undefined, true)
 				this.boundKeys.push('enter')
 			}
 			if (this.boundKeys.indexOf('esc') < 0) {
-				mousetrapHelper.bind('esc', this.preventDefault, 'keydown')
-				mousetrapHelper.bind('esc', this.handleKey, 'keyup')
+				mousetrapHelper.bind('esc', this.preventDefault, 'keydown', undefined, true)
+				mousetrapHelper.bind('esc', this.handleKey, 'keyup', undefined, true)
 				this.boundKeys.push('esc')
 			}
 		} else {
