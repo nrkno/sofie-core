@@ -6,3 +6,7 @@ export function multilineText (txt: string) {
 		return <p>{line}</p>
 	})
 }
+export function isEventInInputField (e: Event) {
+	// @ts-ignore localName
+	return (e && e.target && ['textarea', 'input'].indexOf(e.target.localName + '') !== -1 )
+}

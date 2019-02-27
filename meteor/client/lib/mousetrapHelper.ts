@@ -1,5 +1,7 @@
 import * as mousetrap from 'mousetrap'
 import * as _ from 'underscore'
+import { isEventInInputField } from './lib';
+import { isModalShowing } from './ModalDialog';
 
 export namespace mousetrapHelper {
 	const _boundHotkeys: {
@@ -29,7 +31,13 @@ export namespace mousetrapHelper {
 			}, action)
 		}
 		// console.log(`Registering callback for key combo "${keys}"`)
-		_boundHotkeys[index].push(callback)
+		_boundHotkeys[index].push((e: Event) => {
+			e.preventDefault()
+			if (isEventInInputField(e)) return
+			if (isModalShowing()) return
+
+			callback(e)
+		})
 
 		if (tag) {
 			if (_callbackTags[index + '_' + tag]) {
@@ -49,7 +57,13 @@ export namespace mousetrapHelper {
 			}, action)
 		}
 		// console.log(`Registering callback for key combo "${keys}"`)
-		_boundHotkeys[index].push(callback)
+		_boundHotkeys[index].push((e: Event) => {
+			e.preventDefault()
+			if (isEventInInputField(e)) return
+			if (isModalShowing()) return
+
+			callback(e)
+		})
 
 		if (tag) {
 			if (_callbackTags[index + '_' + tag]) {

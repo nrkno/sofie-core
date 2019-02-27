@@ -32,7 +32,7 @@ import { RundownUtils } from '../lib/rundown'
 
 import * as mousetrap from 'mousetrap'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
-import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
+import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { DEFAULT_DISPLAY_DURATION } from '../../lib/RunningOrder'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
@@ -446,20 +446,17 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			let lastUsed = Date.now()
 			if (k.up) {
 				method(k.key, (e: KeyboardEvent) => {
-					if (disableInInputFields(e)) return
 					preventDefault(e)
 					if (k.coolDown && lastUsed > Date.now() - k.coolDown) return
 					if (k.up) k.up(e)
 					lastUsed = Date.now()
 				}, 'keyup', 'RunningOrderHeader')
 				method(k.key, (e: KeyboardEvent) => {
-					if (disableInInputFields(e)) return
 					preventDefault(e)
 				}, 'keydown', 'RunningOrderHeader')
 			}
 			if (k.down) {
 				method(k.key, (e: KeyboardEvent) => {
-					if (disableInInputFields(e)) return
 					preventDefault(e)
 					if (k.coolDown && lastUsed > Date.now() - k.coolDown) return
 					if (k.down) k.down(e)
@@ -486,7 +483,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 	keyTake = (e: ExtendedKeyboardEvent) => {
 		if (e.key !== 'Enter' || e.location === 3) { // only allow the rightmost enter key
-			this.take(e)
+			if (!isModalShowing()) this.take(e)
 		}
 	}
 	keyHold = (e: ExtendedKeyboardEvent) => {
@@ -524,16 +521,14 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		// "down" = to next Segment
 		this.moveNext(e, 0, -1)
 	}
-	keyDisableNextSegmentLineItem = (e: any) => {
+	keyDisableNextSegmentLineItem = (e: ExtendedKeyboardEvent) => {
 		this.disableNextSLI(e)
 	}
-	keyDisableNextSegmentLineItemUndo = (e: any) => {
+	keyDisableNextSegmentLineItemUndo = (e: ExtendedKeyboardEvent) => {
 		this.disableNextSLIUndo(e)
 	}
-	keyLogError = (e: any) => {
-		this.takeRunningOrderSnapshot(e).catch(() => {
-			// nothing
-		})
+	keyLogError = (e: ExtendedKeyboardEvent) => {
+		this.takeRunningOrderSnapshot(e)
 	}
 
 	disableNextSLI = (e: any) => {
@@ -768,22 +763,10 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 	takeRunningOrderSnapshot = (e) => {
 		const {t} = this.props
-		const p = new Promise((resolve, reject) => {
-			if (this.props.studioMode) {
-				doUserAction(t, e, UserActionAPI.methods.storeRunningOrderSnapshot, [this.props.runningOrder._id, 'Taken by user'], (err) => {
-					if (err) {
-						reject(err)
-					} else {
-						resolve()
-					}
-				}, t('A snapshot of the current Running\xa0Order has been created for troubleshooting.'))
-			} else {
-				reject()
-			}
-		})
-
-		return p
-
+		if (this.props.studioMode) {
+			doUserAction(t, e, UserActionAPI.methods.storeRunningOrderSnapshot, [this.props.runningOrder._id, 'Taken by user'], undefined,
+				t('A snapshot of the current Running\xa0Order has been created for troubleshooting.'))
+		}
 	}
 
 	resetAndActivateRunningOrder = (e: any) => {
@@ -1109,17 +1092,14 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
 			if (k.up) {
 				method(k.key, (e: KeyboardEvent) => {
-					if (disableInInputFields(e)) return
 					if (k.up) k.up(e)
 				}, 'keyup')
 				method(k.key, (e: KeyboardEvent) => {
-					if (disableInInputFields(e)) return
 					preventDefault(e)
 				}, 'keydown')
 			}
 			if (k.down) {
 				method(k.key, (e: KeyboardEvent) => {
-					if (disableInInputFields(e)) return
 					if (k.down) k.down(e)
 				}, 'keydown')
 			}
@@ -1176,7 +1156,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			e.stopPropagation()
 		}
 		const noOp = (e) => {
-			if (disableInInputFields(e)) return
 			preventDefault(e)
 		}
 
@@ -1196,8 +1175,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				const combos = i.hotkeys.split(',')
 				_.each(combos, (combo: string) => {
 					const handler = (e: KeyboardEvent) => {
-						if (disableInInputFields(e)) return
-
 						if (this.props.runningOrder && this.props.runningOrder.active && this.props.runningOrder.nextSegmentLineId) {
 							doUserAction(t, e, UserActionAPI.methods.toggleSegmentLineArgument, [
 								this.props.runningOrder._id, this.props.runningOrder.nextSegmentLineId, i.property, i.value
@@ -1660,8 +1637,3 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 }
 )
-
-function disableInInputFields (e: KeyboardEvent) {
-	// @ts-ignore localName
-	return (e && e.target && ['textarea', 'input'].indexOf(e.target.localName + '') !== -1 )
-}

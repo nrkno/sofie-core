@@ -185,6 +185,9 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 			queue
 		})
 	}
+	public queueHasItems (): boolean {
+		return this.state.queue.length > 0
+	}
 	onAccept = (e: any) => {
 		let queue = this.state.queue
 		let onQueue = queue.pop()
@@ -269,4 +272,13 @@ export function doModalDialog (q: ModalDialogQueueItem) {
 	} else {
 		logger.error('modalDialogGlobalContainerSingleton not set!')
 	}
+}
+/**
+ * Return true if there's any modal currently showing
+ */
+export function isModalShowing (): boolean {
+	if (modalDialogGlobalContainerSingleton) {
+		return modalDialogGlobalContainerSingleton.queueHasItems()
+	}
+	return false
 }
