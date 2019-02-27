@@ -1168,7 +1168,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
 			}
 		})
-		this.usedArgumentKeys.length = 0
+		this.usedArgumentKeys = []
 
 		if (this.props.showStyleBase) {
 			_.each(this.props.showStyleBase.runtimeArguments, (i) => {

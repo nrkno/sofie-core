@@ -31,17 +31,17 @@ export namespace mousetrapHelper {
 			}, action)
 		}
 		// console.log(`Registering callback for key combo "${keys}"`)
-		_boundHotkeys[index].push((e: Event) => {
+		const callbackOrg = callback
+		callback = (e: Event) => {
 			e.preventDefault()
 			if (!allowInModal && isEventInInputField(e)) return
 			if (!allowInModal && isModalShowing()) return
 
-			callback(e)
-		})
-
+			callbackOrg(e)
+		}
 		if (tag) {
 			if (_callbackTags[index + '_' + tag]) {
-				throw new Error(`Callback with tag "${tag}" already exists for ${index}!`)
+				throw new Error(`Globalbind: Callback with tag "${tag}" already exists for ${index}!`)
 			}
 			_callbackTags[index + '_' + tag] = callback
 		}
@@ -57,17 +57,20 @@ export namespace mousetrapHelper {
 			}, action)
 		}
 		// console.log(`Registering callback for key combo "${keys}"`)
-		_boundHotkeys[index].push((e: Event) => {
+
+		const callbackOrg = callback
+		callback = (e: Event) => {
 			e.preventDefault()
 			if (!allowInModal && isEventInInputField(e)) return
 			if (!allowInModal && isModalShowing()) return
 
-			callback(e)
-		})
+			callbackOrg(e)
+		}
+		_boundHotkeys[index].push(callback)
 
 		if (tag) {
 			if (_callbackTags[index + '_' + tag]) {
-				throw new Error(`Callback with tag "${tag}" already exists for ${index}!`)
+				throw new Error(`Bind: Callback with tag "${tag}" already exists for ${index}!`)
 			}
 			_callbackTags[index + '_' + tag] = callback
 		}
