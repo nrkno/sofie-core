@@ -2,6 +2,8 @@ import { addMigrationSteps } from './databaseMigration'
 import * as _ from 'underscore'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Random } from 'meteor/random'
+import { setExpectedVersion } from './lib';
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice';
 
 // 0.21.0
 addMigrationSteps( '0.21.0', [
@@ -33,4 +35,6 @@ addMigrationSteps( '0.21.0', [
 			})
 		}
 	},
+	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '0.16.0'),
+	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOSDEVICE, '_process', '0.5.1'),
 ])
