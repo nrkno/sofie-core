@@ -33,8 +33,8 @@ export namespace mousetrapHelper {
 		// console.log(`Registering callback for key combo "${keys}"`)
 
 		const callbackWrap = (e: Event) => {
+			if (isEventInInputField(e)) return
 			e.preventDefault()
-			if (!allowInModal && isEventInInputField(e)) return
 			if (!allowInModal && isModalShowing()) return
 
 			callback(e)
@@ -61,8 +61,8 @@ export namespace mousetrapHelper {
 		// console.log(`Registering callback for key combo "${keys}"`)
 
 		const callbackWrap = (e: Event) => {
+			if (isEventInInputField(e)) return
 			e.preventDefault()
-			if (!allowInModal && isEventInInputField(e)) return
 			if (!allowInModal && isModalShowing()) return
 
 			callback(e)
