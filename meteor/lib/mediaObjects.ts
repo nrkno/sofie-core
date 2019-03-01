@@ -131,7 +131,7 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 						if (mediaObject.mediainfo) {
 							const formats = getAcceptedFormats(config)
 							const audioConfig = config.find(item => item._id === 'audioStreams')
-							const expectedAudioStreams = audioConfig ? new Set((audioConfig.value + '').split(',').map(v => parseInt(v))) : new Set()
+							const expectedAudioStreams = audioConfig ? new Set((audioConfig.value + '').split(',').map(v => parseInt(v, 10))) : new Set()
 
 							let timebase
 							let audioStreams = 0

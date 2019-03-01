@@ -30,7 +30,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Meteor } from 'meteor/meteor'
 import { DeviceItem } from '../Status/SystemStatus'
-import { callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI';
+import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 
 interface IHttpSendDeviceSettingsComponentProps {
 	parentDevice: PeripheralDevice

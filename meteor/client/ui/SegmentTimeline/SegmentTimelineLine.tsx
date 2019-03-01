@@ -70,38 +70,38 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 	renderInside () {
 		if (this.props.layer.items !== undefined) {
 			return _.chain(this.props.layer.items.filter((segmentLineItem) => {
-					// filter only segment line items belonging to this segment line
-					return (segmentLineItem.segmentLineId === this.props.segmentLine._id) ?
-						// filter only segment line items, that have not been hidden from the UI
-						(segmentLineItem.hidden !== true) &&
-						(segmentLineItem.virtual !== true)
-						: false
-				}))
-				.sortBy((it) => it.renderedInPoint)
-				.sortBy((it) => it.infiniteMode)
-				.sortBy((it) => it.cropped)
-				.map((segmentLineItem) => {
-					return (
-						<SourceLayerItemContainer key={segmentLineItem._id}
-							{...this.props}
-							// The following code is fine, just withTracker HOC messing with available props
-							onDoubleClick={this.props.onItemDoubleClick}
-							mediaPreviewUrl={this.props.mediaPreviewUrl}
-							segmentLineItem={segmentLineItem}
-							layer={this.props.layer}
-							outputLayer={this.props.outputLayer}
-							segmentLine={this.props.segmentLine}
-							segmentLineStartsAt={this.props.startsAt}
-							segmentLineDuration={this.props.duration}
-							timeScale={this.props.timeScale}
-							relative={this.props.relative}
-							autoNextSegmentLine={this.props.autoNextSegmentLine}
-							liveLinePadding={this.props.liveLinePadding}
-							scrollLeft={this.props.scrollLeft}
-							scrollWidth={this.props.scrollWidth}
-							/>
-					)
-				}).value()
+				// filter only segment line items belonging to this segment line
+				return (segmentLineItem.segmentLineId === this.props.segmentLine._id) ?
+					// filter only segment line items, that have not been hidden from the UI
+					(segmentLineItem.hidden !== true) &&
+					(segmentLineItem.virtual !== true)
+					: false
+			}))
+			.sortBy((it) => it.renderedInPoint)
+			.sortBy((it) => it.infiniteMode)
+			.sortBy((it) => it.cropped)
+			.map((segmentLineItem) => {
+				return (
+					<SourceLayerItemContainer key={segmentLineItem._id}
+						{...this.props}
+						// The following code is fine, just withTracker HOC messing with available props
+						onDoubleClick={this.props.onItemDoubleClick}
+						mediaPreviewUrl={this.props.mediaPreviewUrl}
+						segmentLineItem={segmentLineItem}
+						layer={this.props.layer}
+						outputLayer={this.props.outputLayer}
+						segmentLine={this.props.segmentLine}
+						segmentLineStartsAt={this.props.startsAt}
+						segmentLineDuration={this.props.duration}
+						timeScale={this.props.timeScale}
+						relative={this.props.relative}
+						autoNextSegmentLine={this.props.autoNextSegmentLine}
+						liveLinePadding={this.props.liveLinePadding}
+						scrollLeft={this.props.scrollLeft}
+						scrollWidth={this.props.scrollWidth}
+						/>
+				)
+			}).value()
 		}
 	}
 

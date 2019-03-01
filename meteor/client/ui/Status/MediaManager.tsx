@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as CoreIcons from '@nrk/core-icons'
 import * as faChevronDown from '@fortawesome/fontawesome-free-solid/faChevronDown'
@@ -13,17 +12,9 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { MediaWorkFlow, MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowStep, MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import * as i18next from 'react-i18next'
-import { ClientAPI } from '../../../lib/api/client'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import Moment from 'react-moment'
-import { translate } from 'react-i18next'
-import { getCurrentTime, extendMandadory } from '../../../lib/lib'
-import { Link } from 'react-router-dom'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
+import { extendMandadory } from '../../../lib/lib'
 import * as _ from 'underscore'
-import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { callMethod, callPeripheralDeviceFunction } from '../../lib/clientAPI'
 import { PubSub } from '../../../lib/api/pubsub'
 import { Spinner } from '../../lib/Spinner'
 import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon'
@@ -324,8 +315,6 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 	}
 	actionAbort = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
 		doUserAction(this.props.t, event, UserActionAPI.methods.mediaAbortWorkflow, [workflow._id])
-
-		
 	}
 
 	renderWorkFlows () {
