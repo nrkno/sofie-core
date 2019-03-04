@@ -25,8 +25,6 @@ import { getCurrentTime,
 	pushOntoPath,
 	extendMandadory,
 	caught,
-	tic,
-	toc,
 	makePromise
 } from '../../lib/lib'
 import {
@@ -758,16 +756,16 @@ export namespace ServerPlayoutAPI {
 		})
 
 		Meteor.defer(() => {
-			let bp = getBlueprintOfRunningOrder(runningOrder)
+			// let bp = getBlueprintOfRunningOrder(runningOrder)
 			if (firstTake) {
-				if (bp.onRunningOrderFirstTake) {
-					Promise.resolve(bp.onRunningOrderFirstTake(new SegmentLineContext(runningOrder, takeSegmentLine)))
+				if (blueprint.onRunningOrderFirstTake) {
+					Promise.resolve(blueprint.onRunningOrderFirstTake(new SegmentLineContext(runningOrder, takeSegmentLine)))
 					.catch(logger.error)
 				}
 			}
 
-			if (bp.onPostTake) {
-				Promise.resolve(bp.onPostTake(new SegmentLineContext(runningOrder, takeSegmentLine)))
+			if (blueprint.onPostTake) {
+				Promise.resolve(blueprint.onPostTake(new SegmentLineContext(runningOrder, takeSegmentLine)))
 				.catch(logger.error)
 			}
 		})
@@ -2873,10 +2871,9 @@ function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], prefix:
 export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Time) => void
 = syncFunctionIgnore(function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
 	logger.debug('updateTimeline running...')
-
 	let timelineObjs: Array<TimelineObjGeneric> = []
 
-	let studioInstallation = StudioInstallations.findOne(studioInstallationId)
+	let studioInstallation = StudioInstallations.findOne(studioInstallationId) as StudioInstallation
 	if (!studioInstallation) throw new Meteor.Error(404, 'studioInstallation "' + studioInstallationId + '" not found!')
 
 	const applyTimelineObjs = (_timelineObjs: TimelineObjGeneric[]) => {
@@ -2894,20 +2891,28 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 		setNowToTimeInObjects(timelineObjs, forceNowToTime)
 	}
 
-	saveIntoDb<TimelineObjGeneric, TimelineObjGeneric>(Timeline, {
-		siId: studioInstallation._id
-	}, timelineObjs, {
-		beforeUpdate: (o: TimelineObjGeneric, oldO: TimelineObjGeneric): TimelineObjGeneric => {
-			// do not overwrite trigger when the trigger has been denowified
-			if (o.trigger.value === 'now' && oldO.trigger.setFromNow) {
-				o.trigger.type = oldO.trigger.type
-				o.trigger.value = oldO.trigger.value
-			}
-			return o
-		}
-	})
+	const ps: Promise<any>[] = []
 
-	afterUpdateTimeline(studioInstallation, timelineObjs)
+	ps.push(makePromise(() => {
+		saveIntoDb<TimelineObjGeneric, TimelineObjGeneric>(Timeline, {
+			siId: studioInstallation._id
+		}, timelineObjs, {
+			beforeUpdate: (o: TimelineObjGeneric, oldO: TimelineObjGeneric): TimelineObjGeneric => {
+				// do not overwrite trigger when the trigger has been denowified
+				if (o.trigger.value === 'now' && oldO.trigger.setFromNow) {
+					o.trigger.type = oldO.trigger.type
+					o.trigger.value = oldO.trigger.value
+				}
+				return o
+			}
+		})
+	}))
+
+	ps.push(makePromise(() => {
+		afterUpdateTimeline(studioInstallation, timelineObjs)
+	}))
+	waitForPromiseAll(ps)
+
 	logger.debug('updateTimeline done!')
 })
 

@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
-import { Time, applyClassToDocument, getCurrentTime, registerCollection, normalizeArray, waitForPromiseAll } from '../lib'
+import { Time, applyClassToDocument, getCurrentTime, registerCollection, normalizeArray, waitForPromiseAll, makePromise } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { SegmentLines, SegmentLine } from './SegmentLines'
 import { MOS } from 'tv-automation-sofie-blueprints-integration'
@@ -225,12 +225,12 @@ export class RunningOrder implements DBRunningOrder {
 			Promise<{ segmentLines: SegmentLine[], segmentLinesMap: any } >,
 			Promise<SegmentLineItem[]>
 		] = [
-			new Promise((resolve, reject) => {
+			makePromise(() => {
 				let segments = this.getSegments()
 				let segmentsMap = normalizeArray(segments, '_id')
-				resolve( { segments, segmentsMap } )
+				return { segments, segmentsMap }
 			}),
-			new Promise((resolve, reject) => {
+			makePromise(() => {
 				let segmentLines = _.map(this.getSegmentLines(), (sl) => {
 					// Override member function to use cached data instead:
 					sl.getAllSegmentLineItems = () => {
@@ -245,16 +245,10 @@ export class RunningOrder implements DBRunningOrder {
 					return sl
 				})
 				let segmentLinesMap = normalizeArray(segmentLines, '_id')
-				resolve({ segmentLines, segmentLinesMap })
+				return { segmentLines, segmentLinesMap }
 			}),
-			new Promise((resolve, reject) => {
-				Meteor.defer(() => {
-					try {
-						resolve( SegmentLineItems.find({ runningOrderId: this._id }).fetch())
-					} catch (e) {
-						reject(e)
-					}
-				})
+			makePromise(() => {
+				return SegmentLineItems.find({ runningOrderId: this._id }).fetch()
 			})
 		]
 		let r = waitForPromiseAll(ps as any)

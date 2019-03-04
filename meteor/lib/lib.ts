@@ -726,7 +726,9 @@ export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync (functio
 })
 export function makePromise<T> (fcn: () => T): Promise<T> {
 	return new Promise((resolve) => {
-		resolve(fcn())
+		Meteor.defer(() => {
+			resolve(fcn())
+		})
 	})
 }
 export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
