@@ -382,7 +382,19 @@ function restoreFromRunningOrderSnapshot (snapshot: RunningOrderSnapshot) {
 		snapshot.runningOrder.unsyncedTime = getCurrentTime()
 	}
 
-	snapshot.runningOrder.active = !!( dbRunningOrder ? dbRunningOrder.active : false)
+	snapshot.runningOrder.active					= ( dbRunningOrder ? dbRunningOrder.active : false)
+	snapshot.runningOrder.currentSegmentLineId		= ( dbRunningOrder ? dbRunningOrder.currentSegmentLineId : null)
+	snapshot.runningOrder.nextSegmentLineId			= ( dbRunningOrder ? dbRunningOrder.nextSegmentLineId : null)
+	snapshot.runningOrder.currentPlayingStoryStatus = ( dbRunningOrder ? dbRunningOrder.currentPlayingStoryStatus : undefined)
+
+	const studios = StudioInstallations.find().fetch()
+	if (studios.length === 1) snapshot.runningOrder.studioInstallationId = studios[0]._id
+
+	const showStyleVariants = ShowStyleVariants.find().fetch()
+	if (showStyleVariants.length === 1) {
+		snapshot.runningOrder.showStyleBaseId = showStyleVariants[0].showStyleBaseId
+		snapshot.runningOrder.showStyleVariantId = showStyleVariants[0]._id
+	}
 
 	saveIntoDb(RunningOrders, {_id: runningOrderId}, [snapshot.runningOrder])
 	saveIntoDb(RunningOrderDataCache, {roId: runningOrderId}, snapshot.mosData)
