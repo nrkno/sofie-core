@@ -24,7 +24,10 @@ import { getCurrentTime,
 	asyncCollectionFindOne,
 	pushOntoPath,
 	extendMandadory,
-	caught
+	caught,
+	tic,
+	toc,
+	makePromise
 } from '../../lib/lib'
 import {
 	Timeline,
@@ -519,20 +522,22 @@ export namespace ServerPlayoutAPI {
 
 		if (isDirty) {
 			return new Promise((resolve, reject) => {
-				Promise.all(ps).then(() => {
-					const ro = RunningOrders.findOne(segmentLine.runningOrderId)
-					if (!ro) throw new Meteor.Error(404, `Running Order "${segmentLine.runningOrderId}" not found!`)
+				const ro = RunningOrders.findOne(segmentLine.runningOrderId)
+				if (!ro) throw new Meteor.Error(404, `Running Order "${segmentLine.runningOrderId}" not found!`)
+
+				Promise.all(ps)
+				.then(() => {
 					refreshSegmentLine(ro, segmentLine)
 					resolve()
 				}).catch((e) => reject())
 			})
 		} else {
+			const ro = RunningOrders.findOne(segmentLine.runningOrderId)
+			if (!ro) throw new Meteor.Error(404, `Running Order "${segmentLine.runningOrderId}" not found!`)
+			const prevLine = getPreviousSegmentLine(ro, segmentLine)
+
 			return Promise.all(ps)
 			.then(() => {
-				const ro = RunningOrders.findOne(segmentLine.runningOrderId)
-				if (!ro) throw new Meteor.Error(404, `Running Order "${segmentLine.runningOrderId}" not found!`)
-
-				const prevLine = getPreviousSegmentLine(ro, segmentLine)
 				updateSourceLayerInfinitesAfterLine(ro, prevLine)
 				// do nothing
 			})
@@ -561,7 +566,6 @@ export namespace ServerPlayoutAPI {
 	}
 	function setNextSegmentLine (runningOrder: RunningOrder, nextSegmentLine: DBSegmentLine | null, setManually?: boolean) {
 		let ps: Array<Promise<any>> = []
-
 		if (nextSegmentLine) {
 
 			if (nextSegmentLine.runningOrderId !== runningOrder._id) throw new Meteor.Error(409, `SegmentLine "${nextSegmentLine._id}" not part of running order "${runningOrder._id}"`)
@@ -650,6 +654,7 @@ export namespace ServerPlayoutAPI {
 			updateTimeline(runningOrder.studioInstallationId)
 			return
 		}
+		let pBlueprint = makePromise(() => getBlueprintOfRunningOrder(runningOrder))
 		let roData = runningOrder.fetchAllData()
 
 		let previousSegmentLine = (runningOrder.currentSegmentLineId ?
@@ -667,11 +672,12 @@ export namespace ServerPlayoutAPI {
 
 		// beforeTake(runningOrder, previousSegmentLine || null, takeSegmentLine)
 		beforeTake(roData, previousSegmentLine || null, takeSegmentLine)
-		let bp = getBlueprintOfRunningOrder(runningOrder)
-		if (bp.onPreTake) {
+
+		let blueprint = waitForPromise(pBlueprint)
+		if (blueprint.onPreTake) {
 			try {
 				waitForPromise(
-					Promise.resolve(bp.onPreTake(new SegmentLineContext(runningOrder, takeSegmentLine)))
+					Promise.resolve(blueprint.onPreTake(new SegmentLineContext(runningOrder, takeSegmentLine)))
 					.catch(logger.error)
 				)
 			} catch (e) {
@@ -701,8 +707,10 @@ export namespace ServerPlayoutAPI {
 			}))
 		}
 		runningOrder = _.extend(runningOrder, m) as RunningOrder
+
 		setNextSegmentLine(runningOrder, nextSegmentLine)
 		waitForPromiseAll(ps)
+
 		ps = []
 
 		// Setup the items for the HOLD we are starting
@@ -716,12 +724,12 @@ export namespace ServerPlayoutAPI {
 				// mark current one as infinite
 				sli.infiniteId = sli._id
 				sli.infiniteMode = SegmentLineItemLifespan.OutOnNextSegmentLine
-				SegmentLineItems.update(sli._id, {
+				ps.push(asyncCollectionUpdate(SegmentLineItems, sli._id, {
 					$set: {
 						infiniteMode: SegmentLineItemLifespan.OutOnNextSegmentLine,
 						infiniteId: sli._id,
 					}
-				})
+				}))
 
 				// make the extension
 				const newSli = clone(sli) as SegmentLineItem

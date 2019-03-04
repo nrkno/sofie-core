@@ -724,6 +724,11 @@ export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync (functio
 		cb(e)
 	})
 })
+export function makePromise<T> (fcn: () => T): Promise<T> {
+	return new Promise((resolve) => {
+		resolve(fcn())
+	})
+}
 export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 	let ok = true
 	_.each(selector, (s: any, key: string) => {

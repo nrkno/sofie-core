@@ -220,25 +220,32 @@ export class RunningOrder implements DBRunningOrder {
 	fetchAllData (): RoData {
 
 		// Do fetches in parallell:
-		let ps: [Promise<Segment[]>, Promise<SegmentLine[]>, Promise<SegmentLineItem[]> ] = [
-
+		let ps: [
+			Promise<{ segments: Segment[], segmentsMap: any }>,
+			Promise<{ segmentLines: SegmentLine[], segmentLinesMap: any } >,
+			Promise<SegmentLineItem[]>
+		] = [
 			new Promise((resolve, reject) => {
-				Meteor.defer(() => {
-					try {
-						resolve( this.getSegments())
-					} catch (e) {
-						reject(e)
-					}
-				})
+				let segments = this.getSegments()
+				let segmentsMap = normalizeArray(segments, '_id')
+				resolve( { segments, segmentsMap } )
 			}),
 			new Promise((resolve, reject) => {
-				Meteor.defer(() => {
-					try {
-						resolve( this.getSegmentLines())
-					} catch (e) {
-						reject(e)
+				let segmentLines = _.map(this.getSegmentLines(), (sl) => {
+					// Override member function to use cached data instead:
+					sl.getAllSegmentLineItems = () => {
+						return _.map(_.filter(segmentLineItems, (sli) => {
+							return (
+								sli.segmentLineId === sl._id
+							)
+						}), (sl) => {
+							return _.clone(sl)
+						})
 					}
+					return sl
 				})
+				let segmentLinesMap = normalizeArray(segmentLines, '_id')
+				resolve({ segmentLines, segmentLinesMap })
 			}),
 			new Promise((resolve, reject) => {
 				Meteor.defer(() => {
@@ -251,26 +258,11 @@ export class RunningOrder implements DBRunningOrder {
 			})
 		]
 		let r = waitForPromiseAll(ps as any)
-		let segments: Segment[] 				= r[0]
-		let segmentLines: SegmentLine[] 		= r[1]
+		let segments: Segment[] 				= r[0].segments
+		let segmentsMap 				 		= r[0].segmentsMap
+		let segmentLinesMap 					= r[1].segmentLinesMap
+		let segmentLines: SegmentLine[]			= r[1].segmentLines
 		let segmentLineItems: SegmentLineItem[] = r[2]
-
-		segmentLines = _.map(segmentLines, (sl) => {
-			// Override member function to use cached data instead:
-			sl.getAllSegmentLineItems = () => {
-				return _.map(_.filter(segmentLineItems, (sli) => {
-					return (
-						sli.segmentLineId === sl._id
-					)
-				}), (sl) => {
-					return _.clone(sl)
-				})
-			}
-			return sl
-		})
-
-		let segmentsMap = normalizeArray(segments, '_id')
-		let segmentLinesMap = normalizeArray(segmentLines, '_id')
 
 		return {
 			runningOrder: this,
