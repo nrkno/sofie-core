@@ -13,6 +13,7 @@ import { faWindowClose } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
 import { multilineText } from '../../lib/lib'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 
 interface IProps {
 	match: {
@@ -23,9 +24,6 @@ interface IProps {
 }
 interface IState {
 	uploadFileKey: number // Used to force clear the input after use
-	showUploadConfirm: boolean
-	uploadFileName?: string
-	uploadFileContents?: string
 	editSnapshotId: string | null
 	removeSnapshots: boolean
 }
@@ -48,7 +46,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		super(props)
 		this.state = {
 			uploadFileKey: Date.now(),
-			showUploadConfirm: false,
 			editSnapshotId: null,
 			removeSnapshots: false
 		}
@@ -63,6 +60,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	}
 
 	onUploadFile (e) {
+		const { t } = this.props
+
 		const file = e.target.files[0]
 		if (!file) {
 			return
@@ -71,40 +70,36 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		const reader = new FileReader()
 		reader.onload = (e2) => {
 			this.setState({
-				uploadFileKey: Date.now(),
-				showUploadConfirm: true,
-				uploadFileName: file.name,
-				uploadFileContents: (e2.target as any).result
+				uploadFileKey: Date.now()
+			})
+			const uploadFileContents = (e2.target as any || {}).result
+
+			doModalDialog({
+				title: t('Restore from this Snapshot file?'),
+				message: t('Are you sure you want to restore the system from the Snapshot file "{{fileName}}"?', { fileName: file.name }),
+				onAccept: () => {
+					fetch('/backup/restore', {
+						method: 'POST',
+						body: uploadFileContents,
+						headers: {
+							'content-type': 'application/json'
+						},
+					}).then(res => {
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Successfully restored snapshot'), 'RestoreSnapshot'))
+					}).catch(err => {
+						console.error('Snapshot restore failure: ', err)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Snapshot restore failed: {{errorMessage}}', { errorMessage: (err + '') }), 'RestoreSnapshot'))
+					})
+				},
+				onDiscard: () => {
+					this.setState({
+						uploadFileKey: Date.now() // to clear input field
+					})
+				}
 			})
 		}
 
 		reader.readAsText(file)
-	}
-	handleConfirmUploadFileCancel = () => {
-		this.setState({
-			uploadFileKey: Date.now(),
-			uploadFileName: undefined,
-			uploadFileContents: undefined,
-			showUploadConfirm: false
-		})
-	}
-	handleConfirmUploadFileAccept = () => {
-		if (this.state.uploadFileContents) {
-			fetch('/backup/restore', {
-				method: 'POST',
-				body: this.state.uploadFileContents,
-				headers: {
-					'content-type': 'application/json'
-				},
-			}).then(res => {
-				console.log('Snapshot restore success')
-			}).catch(err => {
-				console.error('Snapshot restore failure: ', err)
-			})
-		}
-		this.setState({
-			showUploadConfirm: false
-		})
 	}
 	restoreStoredSnapshot = (snapshotId) => {
 		let snapshot = Snapshots.findOne(snapshotId)
@@ -255,10 +250,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							<span className='mdfx'></span>
 						</div>
 					</label>
-					<ModalDialog title={t('Restore from this Snapshot file?')} acceptText={t('Restore')} secondaryText={t('Cancel')} show={this.state.showUploadConfirm} onAccept={() => this.handleConfirmUploadFileAccept()} onSecondary={() => this.handleConfirmUploadFileCancel()}>
-						<p>{t('Are you sure you want to restore the system from the Snapshot file "{{fileName}}"?', { fileName: this.state.uploadFileName })}</p>
-						<p>{t('Please note: This action is irreversible!')}</p>
-					</ModalDialog>
 					<h3 className='mhs'>{t('Restore from Stored Snapshots')}</h3>
 					<div>
 						<table className='table'>
