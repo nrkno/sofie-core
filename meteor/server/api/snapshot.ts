@@ -382,6 +382,8 @@ function restoreFromRunningOrderSnapshot (snapshot: RunningOrderSnapshot) {
 		snapshot.runningOrder.unsyncedTime = getCurrentTime()
 	}
 
+	snapshot.runningOrder.active = !!( dbRunningOrder ? dbRunningOrder.active : false)
+
 	saveIntoDb(RunningOrders, {_id: runningOrderId}, [snapshot.runningOrder])
 	saveIntoDb(RunningOrderDataCache, {roId: runningOrderId}, snapshot.mosData)
 	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
