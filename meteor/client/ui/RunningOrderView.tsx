@@ -1509,124 +1509,134 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	render () {
 		const { t } = this.props
 
-		if (
-			this.props.runningOrder &&
-			this.props.studioInstallation &&
-			this.props.showStyleBase
-		) {
-			return (
-				<RunningOrderTimingProvider
-					runningOrder={this.props.runningOrder}
-					defaultDuration={DEFAULT_DISPLAY_DURATION}>
-					<div className={ClassNames('running-order-view', {
-						'notification-center-open': this.state.isNotificationsCenterOpen
-					})} style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
-						<ErrorBoundary>
-							{ this.state.studioMode && <KeyboardFocusMarker /> }
-						</ErrorBoundary>
-						<ErrorBoundary>
-							<RunningOrderFullscreenControls
-								isFollowingOnAir={this.state.followLiveSegments}
-								onFollowOnAir={this.onGoToLiveSegment}
-								onRewindSegments={this.onRewindSegments}
-								isNotificationCenterOpen={this.state.isNotificationsCenterOpen}
-								onToggleNotifications={this.onToggleNotifications}
-								isSupportPanelOpen={this.state.isSupportPanelOpen}
-								onToggleSupportPanel={this.onToggleSupportPanel} />
-						</ErrorBoundary>
-						<ErrorBoundary>
-							<VelocityReact.VelocityTransitionGroup enter={{
-								animation: {
-									translateX: ['0%', '100%']
-								}, easing: 'ease-out', duration: 300
-							}} leave={{
-								animation: {
-									translateX: ['100%', '0%']
-								}, easing: 'ease-in', duration: 500
-							}}>
-								{this.state.isNotificationsCenterOpen && <NotificationCenterPanel />}
-							</VelocityReact.VelocityTransitionGroup>
-							<VelocityReact.VelocityTransitionGroup enter={{
-								animation: {
-									translateX: ['0%', '100%']
-								}, easing: 'ease-out', duration: 300
-							}} leave={{
-								animation: {
-									translateX: ['100%', '0%']
-								}, easing: 'ease-in', duration: 500
-							}}>
-								{this.state.isSupportPanelOpen &&
-									<SupportPopUp>
-										<button className='btn btn-primary' onClick={this.onShowHotkeys}>{t('Show Hotkeys')}</button>
-										<button className='btn btn-primary' onClick={this.onTakeRunningOrderSnapshot}>{t('Take a Snapshot')}</button>
-										<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart Playout')}</button>
-									</SupportPopUp>
+		if (this.state.subsReady) {
+			if (
+				this.props.runningOrder &&
+				this.props.studioInstallation &&
+				this.props.showStyleBase
+			) {
+				return (
+					<RunningOrderTimingProvider
+						runningOrder={this.props.runningOrder}
+						defaultDuration={DEFAULT_DISPLAY_DURATION}>
+						<div className={ClassNames('running-order-view', {
+							'notification-center-open': this.state.isNotificationsCenterOpen
+						})} style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
+							<ErrorBoundary>
+								{ this.state.studioMode && <KeyboardFocusMarker /> }
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<RunningOrderFullscreenControls
+									isFollowingOnAir={this.state.followLiveSegments}
+									onFollowOnAir={this.onGoToLiveSegment}
+									onRewindSegments={this.onRewindSegments}
+									isNotificationCenterOpen={this.state.isNotificationsCenterOpen}
+									onToggleNotifications={this.onToggleNotifications}
+									isSupportPanelOpen={this.state.isSupportPanelOpen}
+									onToggleSupportPanel={this.onToggleSupportPanel} />
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<VelocityReact.VelocityTransitionGroup enter={{
+									animation: {
+										translateX: ['0%', '100%']
+									}, easing: 'ease-out', duration: 300
+								}} leave={{
+									animation: {
+										translateX: ['100%', '0%']
+									}, easing: 'ease-in', duration: 500
+								}}>
+									{this.state.isNotificationsCenterOpen && <NotificationCenterPanel />}
+								</VelocityReact.VelocityTransitionGroup>
+								<VelocityReact.VelocityTransitionGroup enter={{
+									animation: {
+										translateX: ['0%', '100%']
+									}, easing: 'ease-out', duration: 300
+								}} leave={{
+									animation: {
+										translateX: ['100%', '0%']
+									}, easing: 'ease-in', duration: 500
+								}}>
+									{this.state.isSupportPanelOpen &&
+										<SupportPopUp>
+											<button className='btn btn-primary' onClick={this.onShowHotkeys}>{t('Show Hotkeys')}</button>
+											<button className='btn btn-primary' onClick={this.onTakeRunningOrderSnapshot}>{t('Take a Snapshot')}</button>
+											<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart Playout')}</button>
+										</SupportPopUp>
+									}
+								</VelocityReact.VelocityTransitionGroup>
+							</ErrorBoundary>
+							<ErrorBoundary>
+								{ this.state.studioMode &&
+									<Prompt when={this.props.runningOrder.active || false} message={t('This running order is now active. Are you sure you want to exit this screen?')} />
 								}
-							</VelocityReact.VelocityTransitionGroup>
-						</ErrorBoundary>
-						<ErrorBoundary>
-							{ this.state.studioMode &&
-								<Prompt when={this.props.runningOrder.active || false} message={t('This running order is now active. Are you sure you want to exit this screen?')} />
-							}
-						</ErrorBoundary>
-						<ErrorBoundary>
-							<RunningOrderHeader
-								runningOrder={this.props.runningOrder}
-								studioInstallation={this.props.studioInstallation}
-								onActivate={this.onActivate}
-								studioMode={this.state.studioMode}
-								onRegisterHotkeys={this.onRegisterHotkeys}
-								inActiveROView={this.props.inActiveROView} />
-						</ErrorBoundary>
-						<ErrorBoundary>
-							<SegmentContextMenu
-								contextMenuContext={this.state.contextMenuContext}
-								runningOrder={this.props.runningOrder}
-								onSetNext={this.onSetNext}
-								studioMode={this.state.studioMode} />
-						</ErrorBoundary>
-						{this.renderSegmentsList()}
-						<ErrorBoundary>
-							{ this.props.segments && this.props.segments.length > 0 && <AfterBroadcastForm
-								runningOrder={this.props.runningOrder}
-							/> }
-						</ErrorBoundary>
-						<ErrorBoundary>
-							<InspectorDrawer
-								ref={this.setInspectorDrawer}
-								isExpanded={this.state.isInspectorDrawerExpanded}
-								onChangeExpanded={this.onDrawerChangeExpanded}
-								segments={this.props.segments}
-								hotkeys={this.state.usedHotkeys}
-								runningOrder={this.props.runningOrder}
-								showStyleBase={this.props.showStyleBase}
-								studioMode={this.state.studioMode}
-								onChangeBottomMargin={this.onChangeBottomMargin}
-								onRegisterHotkeys={this.onRegisterHotkeys} />
-						</ErrorBoundary>
-						<ErrorBoundary>
-							<RunningOrderNotifier runningOrderId={this.props.runningOrder._id} studioId={this.props.studioInstallation._id} />
-						</ErrorBoundary>
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<RunningOrderHeader
+									runningOrder={this.props.runningOrder}
+									studioInstallation={this.props.studioInstallation}
+									onActivate={this.onActivate}
+									studioMode={this.state.studioMode}
+									onRegisterHotkeys={this.onRegisterHotkeys}
+									inActiveROView={this.props.inActiveROView} />
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<SegmentContextMenu
+									contextMenuContext={this.state.contextMenuContext}
+									runningOrder={this.props.runningOrder}
+									onSetNext={this.onSetNext}
+									studioMode={this.state.studioMode} />
+							</ErrorBoundary>
+							{this.renderSegmentsList()}
+							<ErrorBoundary>
+								{ this.props.segments && this.props.segments.length > 0 && <AfterBroadcastForm
+									runningOrder={this.props.runningOrder}
+								/> }
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<InspectorDrawer
+									ref={this.setInspectorDrawer}
+									isExpanded={this.state.isInspectorDrawerExpanded}
+									onChangeExpanded={this.onDrawerChangeExpanded}
+									segments={this.props.segments}
+									hotkeys={this.state.usedHotkeys}
+									runningOrder={this.props.runningOrder}
+									showStyleBase={this.props.showStyleBase}
+									studioMode={this.state.studioMode}
+									onChangeBottomMargin={this.onChangeBottomMargin}
+									onRegisterHotkeys={this.onRegisterHotkeys} />
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<RunningOrderNotifier runningOrderId={this.props.runningOrder._id} studioId={this.props.studioInstallation._id} />
+							</ErrorBoundary>
+						</div>
+					</RunningOrderTimingProvider>
+				)
+			} else {
+				return (
+					<div className='running-order-view running-order-view--unpublished'>
+						<div className='running-order-view__label'>
+							<p>
+								{
+									!this.props.runningOrder ?
+										t('This running order has been unpublished from Sofie.') :
+									!this.props.studioInstallation ?
+										t('Error: The studio of this RunningOrder was not found.') :
+									!this.props.showStyleBase ?
+										t('Error: The ShowStyle of this RunningOrder was not found.') :
+									t('Unknown error')
+								}
+							</p>
+							<p>
+								<Route render={({history}) => (
+									<button className='btn btn-primary' onClick={() => { history.push('/runningOrders') }}>
+										{t('Return to list')}
+									</button>
+								)} />
+							</p>
+						</div>
 					</div>
-				</RunningOrderTimingProvider>
-			)
-		} else if (this.state.subsReady) {
-			return (
-				<div className='running-order-view running-order-view--unpublished'>
-					<div className='running-order-view__label'>
-						<p>
-							{t('This running order has been unpublished from Sofie.')}
-						</p>
-						<p>
-							<Route render={({history}) => (
-								<button className='btn btn-primary' onClick={() => { history.push('/runningOrders') }}>
-									{t('Return to list')}
-								</button>
-							)} />
-						</p>
-					</div>
-				</div>
-			)
+				)
+			}
 		} else {
 			return (
 				<div className='running-order-view running-order-view--loading'>
