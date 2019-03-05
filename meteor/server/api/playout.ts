@@ -1577,18 +1577,29 @@ export namespace ServerPlayoutAPI {
 		// }), null, 2))
 
 		orderedItems.filter(i => i.sourceLayerId === sourceLayerId).forEach((i) => {
-			if (i.startedPlayback && !i.durationOverride && (i.trigger.value < relativeNow) && (((i.trigger.value as number) + (i.duration || 0) > relativeNow) || i.duration === 0)) {
-				const newExpectedDuration = now - i.startedPlayback
+			if (!i.durationOverride) {
+				let newExpectedDuration: number | undefined = undefined
 
-				console.log(`Cropping item "${i._id}" at ${newExpectedDuration}`)
+				if (i.infiniteId && i.infiniteId !== i._id && segLine) {
+					let segLineStarted = segLine.getLastStartedPlayback()
+					if (segLineStarted) {
+						newExpectedDuration = now - segLineStarted
+					}
+				} else if (i.startedPlayback && (i.trigger.value < relativeNow) && (((i.trigger.value as number) + (i.duration || 0) > relativeNow) || i.duration === 0)) {
+					newExpectedDuration = now - i.startedPlayback
+				}
 
-				SegmentLineItems.update({
-		 			_id: i._id
-		 		}, {
-		 			$set: {
-		 				durationOverride: newExpectedDuration
-		 			}
-		 		})
+				if (newExpectedDuration !== undefined) {
+					console.log(`Cropping item "${i._id}" at ${newExpectedDuration}`)
+
+					SegmentLineItems.update({
+						_id: i._id
+					}, {
+						$set: {
+							durationOverride: newExpectedDuration
+						}
+					})
+				}
 			}
 		})
 
@@ -2055,7 +2066,8 @@ export function updateSourceLayerInfinitesAfterLineInner (runningOrder: RunningO
 
 		// figure out what infinites are to be extended
 		currentItems = currentItems.filter(i => removedInfinites.indexOf(i._id) < 0)
-		let infiniteConinuationSegmentLineItems: string[] = []
+		let oldInfiniteContinuation: string[] = []
+		let newInfiniteContinations: SegmentLineItem[] = []
 		for (let k in activeInfiniteItems) {
 			let newItem: SegmentLineItem = activeInfiniteItems[k]
 
@@ -2069,7 +2081,7 @@ export function updateSourceLayerInfinitesAfterLineInner (runningOrder: RunningO
 				const existInf = existingItems.findIndex(e => !!e.infiniteId && e.infiniteId === newItem.infiniteId)
 				if (existInf >= 0) {
 					existingItem = existingItems[existInf]
-					infiniteConinuationSegmentLineItems.push(existingItem._id)
+					oldInfiniteContinuation.push(existingItem._id)
 
 					existingItems.splice(existInf, 1)
 				}
@@ -2102,13 +2114,29 @@ export function updateSourceLayerInfinitesAfterLineInner (runningOrder: RunningO
 				value: 0
 			}
 			newItem._id = newItem.infiniteId + '_' + segmentLine._id
+			newItem.startedPlayback = undefined
+			newItem.stoppedPlayback = undefined
+			newItem.timings = undefined
 
 			if (existingItems && existingItems.length) {
 				newItem.expectedDuration = `#${getSliGroupId(existingItems[0])}.start - #.start`
 				newItem.infiniteMode = SegmentLineItemLifespan.Normal // it is no longer infinite, and the ui needs this to draw properly
 			}
 
+			if (existingItem) { // Some properties need to be persisted
+				newItem.durationOverride = existingItem.durationOverride
+				newItem.startedPlayback = existingItem.startedPlayback
+				newItem.stoppedPlayback = existingItem.stoppedPlayback
+				newItem.timings = existingItem.timings
+			}
+
 			let itemToInsert: SegmentLineItem | null = (allowInsert ? newItem : null)
+			if (itemToInsert) {
+				newInfiniteContinations.push(itemToInsert)
+
+				delete itemToInsert['resolvedStart']
+				delete itemToInsert['resolved']
+			}
 
 			if (existingItem && itemToInsert && _.isEqual(existingItem, itemToInsert)) {
 				// no change, since the new item is equal to the existing one
@@ -2129,7 +2157,8 @@ export function updateSourceLayerInfinitesAfterLineInner (runningOrder: RunningO
 		}
 
 		// find any new infinites exposed by this
-		for (let segmentLineItem of currentItems.filter(i => infiniteConinuationSegmentLineItems.indexOf(i._id) < 0)) {
+		currentItems = currentItems.filter(i => oldInfiniteContinuation.indexOf(i._id) < 0)
+		for (let segmentLineItem of newInfiniteContinations.concat(currentItems)) {
 			if (
 				!segmentLineItem.infiniteMode ||
 				segmentLineItem.duration ||
@@ -3129,11 +3158,19 @@ export function buildTimelineObjsForRunningOrder (roData: RoData, baselineItems:
 			if (item.infiniteId) {
 				const originalItem = _.find(roData.segmentLineItems, (sli => sli._id === item.infiniteId))
 
+				// If we are a continuation, set the same start point to ensure that anything timed is correct
 				if (originalItem && originalItem.startedPlayback) {
 					infiniteGroup.trigger = literal<TimelineTypes.TimelineTrigger>({
 						type: TriggerType.TIME_ABSOLUTE,
 						value: originalItem.startedPlayback
 					})
+
+					// If an absolute time has been set by a hotkey, then update the duration to be correct
+					const slStartedPlayback = currentSegmentLine.getLastStartedPlayback()
+					if (item.durationOverride && slStartedPlayback) {
+						const originalEndTime = slStartedPlayback + item.durationOverride
+						infiniteGroup.duration = originalEndTime - originalItem.startedPlayback
+					}
 				}
 			}
 
