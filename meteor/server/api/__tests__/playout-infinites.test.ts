@@ -527,4 +527,34 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 		// Should have same ids as the start
 		expect(origSegmentLineItemIds.sort()).eql(origSegmentLineItemIds.sort())
 	})
+
+	it('Ensure durationOverride value persists', function () {
+		const ro = setupMockRO(testRO1)
+		expect(ro).to.not.be.undefined
+		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
+
+		const infId = '9wPCrktBThPitm0JiE7FIOuoRJo_'
+		const slId = 'bzwmGuXuSSg_dRHhlNDFNNl1_Js_'
+
+		// Update a single sli
+		expect(SegmentLineItems.update({
+			segmentLineId: slId,
+			infiniteId: infId
+		}, {
+			$set: {
+				durationOverride: 1000
+			}
+		})).eq(1)
+
+		// regenerate infinites
+		expect(updateSourceLayerInfinitesAfterLineInner(ro)).eq('')
+
+		const infiniteParts = SegmentLineItems.find({ infiniteId: infId }).fetch()
+		expect(infiniteParts).lengthOf(2)
+
+		const partWithDuration = SegmentLineItems.findOne({ infiniteId: infId, segmentLineId: slId })
+		expect(partWithDuration).not.undefined
+		expect(partWithDuration.durationOverride).not.undefined
+
+	})
 })
