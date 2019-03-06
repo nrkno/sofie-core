@@ -1347,6 +1347,18 @@ const MediaManagerSettingsComponent = translate()(
 								className=''></EditAttribute>
 						</label>
 					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Activate Debug Logging')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={'settings.debugLogging'}
+								obj={this.props.device}
+								type='checkbox'
+								collection={PeripheralDevices}
+								className=''></EditAttribute>
+						</label>
+					</div>
 
 					<ModalDialog title={t('Remove this storage?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteStorageConfirm} onAccept={(e) => this.handleConfirmRemoveStorageAccept(e)} onSecondary={(e) => this.handleConfirmRemoveStorageCancel(e)}>
 						<p>{t('Are you sure you want to remove storage "{{storageId}}"?', { storageId: (this.state.deleteConfirmStorageId) })}</p>
