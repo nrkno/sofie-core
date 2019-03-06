@@ -202,6 +202,7 @@ export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_GO_TO_LIVE = 'mod+home',
 	RUNNING_ORDER_REWIND_SEGMENTS = 'shift+home',
 	RUNNING_ORDER_RESET_RUNNING_ORDER = 'mod+shift+f12',
+	RUNNING_ORDER_RESET_RUNNING_ORDER2 = 'mod+shift+enter',
 	RUNNING_ORDER_TOGGLE_DRAWER = 'tab',
 	ADLIB_QUEUE_MODIFIER = 'shift',
 	RUNNING_ORDER_NEXT_FORWARD = 'f9',
@@ -377,6 +378,11 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					global: true
 				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RESET_RUNNING_ORDER,
+					up: this.keyResetRunningOrder,
+					label: t('Reload Running Order'),
+					global: true
+				},{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RESET_RUNNING_ORDER2,
 					up: this.keyResetRunningOrder,
 					label: t('Reload Running Order'),
 					global: true
