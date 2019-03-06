@@ -2895,7 +2895,8 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 
 	ps.push(makePromise(() => {
 		saveIntoDb<TimelineObjGeneric, TimelineObjGeneric>(Timeline, {
-			siId: studioInstallation._id
+			siId: studioInstallation._id,
+			statObject: { $ne: true }
 		}, timelineObjs, {
 			beforeUpdate: (o: TimelineObjGeneric, oldO: TimelineObjGeneric): TimelineObjGeneric => {
 				// do not overwrite trigger when the trigger has been denowified
