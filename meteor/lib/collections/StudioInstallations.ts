@@ -1,3 +1,4 @@
+import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { applyClassToDocument, registerCollection } from '../lib'
 import * as _ from 'underscore'
@@ -10,7 +11,6 @@ import {
 	ConfigItemValue
 } from 'tv-automation-sofie-blueprints-integration'
 import { Meteor } from 'meteor/meteor'
-import { Mongo } from 'meteor/mongo'
 import { ObserveChangesForHash } from './lib'
 
 export interface MappingsExt extends BlueprintMappings {

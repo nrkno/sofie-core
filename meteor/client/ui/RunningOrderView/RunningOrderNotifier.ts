@@ -350,6 +350,8 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 	}
 
 	private reactiveVersionStatus (rRunningOrderId: string) {
+		const t = i18nTranslator
+
 		this.autorun((comp: Tracker.Computation) => {
 			// console.log('RunningOrderViewNotifier 5')
 
@@ -359,7 +361,23 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 				if (err) {
 					// TODO
 				} else if (versionMismatch) {
-					newNotification = new Notification('ro_importVersions', NoticeLevel.WARNING, 'The system configuration has been changed since importing this running order. It might not run correctly', 'ro_' + rRunningOrderId, getCurrentTime(), true, undefined, -1)
+					newNotification = new Notification('ro_importVersions', NoticeLevel.WARNING, t('The system configuration has been changed since importing this running order. It might not run correctly'), 'ro_' + rRunningOrderId, getCurrentTime(), true, [
+						{
+							label: t('Reload Running Order'),
+							type: 'primary',
+							action: () => {
+								console.log('RELOAD')
+								// TODO
+								// doModalDialog({
+								// 	title: t('Re-sync runningOrder'),
+								// 	message: t('Are you sure you want to re-sync the runningOrder?\n(If the currently playing segmentLine has been changed, this can affect the output.)'),
+								// 	onAccept: () => {
+								// 		doUserAction(t, event, UserActionAPI.methods.resyncRunningOrder, [runningOrderId])
+								// 	}
+								// })
+							}
+						}
+					], -1)
 				}
 
 				if (newNotification && !Notification.isEqual(this._roImportVersionStatus, newNotification)) {
