@@ -480,10 +480,10 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 			unsynced: false,
 
 			importVersions: {
-				studioInstallation: studioInstallation.revision,
-				showStyleBase: showStyleBase.revision || 0,
-				showStyleVariant: defaultShowStyleVariant.revision || 0,
-				blueprint: blueprint.revision || 0,
+				studioInstallation: studioInstallation.runningOrderVersionHash,
+				showStyleBase: showStyleBase.runningOrderVersionHash,
+				showStyleVariant: defaultShowStyleVariant.runningOrderVersionHash,
+				blueprint: blueprint.blueprintVersion,
 				core: PackageInfo.version,
 			},
 

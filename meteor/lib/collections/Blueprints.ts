@@ -4,9 +4,8 @@ import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 
 import { ConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
-import { Revisionable, RevisionCollection } from './Revisionable'
 
-export interface Blueprint extends Revisionable {
+export interface Blueprint {
 	_id: string
 	name: string
 	code: string
@@ -32,7 +31,7 @@ export interface Blueprint extends Revisionable {
 }
 
 export const Blueprints: TransformedCollection<Blueprint, Blueprint>
-	= new RevisionCollection<Blueprint>('blueprints')
+	= new Mongo.Collection<Blueprint>('blueprints')
 registerCollection('Blueprints', Blueprints)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
@@ -40,3 +39,4 @@ Meteor.startup(() => {
 		// })
 	}
 })
+

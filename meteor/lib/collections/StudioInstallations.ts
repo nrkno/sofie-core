@@ -9,7 +9,9 @@ import {
 	IBlueprintStudioInstallation,
 	ConfigItemValue
 } from 'tv-automation-sofie-blueprints-integration'
-import { Revisionable, RevisionCollection } from './Revisionable'
+import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
+import { ObserveChangesForHash } from './lib'
 
 export interface MappingsExt extends BlueprintMappings {
 	[layerName: string]: MappingExt
@@ -26,7 +28,7 @@ export interface IStudioInstallationSettings {
 	sofieUrl: string // (former sofie_url in config)
 }
 /** A set of available layer groups in a given installation */
-export interface DBStudioInstallation extends IBlueprintStudioInstallation, Revisionable {
+export interface DBStudioInstallation extends IBlueprintStudioInstallation {
 	_id: string
 	/** User-presentable name for the studio installation */
 	name: string
@@ -44,6 +46,8 @@ export interface DBStudioInstallation extends IBlueprintStudioInstallation, Revi
 	testToolsConfig?: ITestToolsConfig
 
 	settings: IStudioInstallationSettings
+
+	runningOrderVersionHash: string
 }
 
 export interface ITestToolsConfig {
@@ -67,7 +71,7 @@ export class StudioInstallation implements DBStudioInstallation {
 	public settings: IStudioInstallationSettings
 	public testToolsConfig?: ITestToolsConfig
 
-	public revision: number
+	public runningOrderVersionHash: string
 
 	constructor (document: DBStudioInstallation) {
 		_.each(_.keys(document), (key) => {
@@ -88,5 +92,11 @@ export class StudioInstallation implements DBStudioInstallation {
 }
 
 export const StudioInstallations: TransformedCollection<StudioInstallation, DBStudioInstallation>
-	= new RevisionCollection<StudioInstallation>('studioInstallation', {transform: (doc) => applyClassToDocument(StudioInstallation, doc) })
+	= new Mongo.Collection<StudioInstallation>('studioInstallation', {transform: (doc) => applyClassToDocument(StudioInstallation, doc) })
 registerCollection('StudioInstallations', StudioInstallations)
+
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		ObserveChangesForHash(StudioInstallations, 'runningOrderVersionHash', ['config'])
+	}
+})

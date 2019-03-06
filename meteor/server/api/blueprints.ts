@@ -953,9 +953,7 @@ export function insertBlueprint (name?: string): string {
 		blueprintVersion: '',
 		integrationVersion: '',
 		TSRVersion: '',
-		minimumCoreVersion: '',
-
-		revision: 1
+		minimumCoreVersion: ''
 	})
 }
 export function removeBlueprint (id: string) {
@@ -1183,9 +1181,7 @@ postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessag
 			blueprintVersion: '',
 			integrationVersion: '',
 			TSRVersion: '',
-			minimumCoreVersion: '',
-
-			revision: 1
+			minimumCoreVersion: ''
 		}
 
 		const blueprintManifest: BlueprintManifest = evalBlueprints(newBlueprint, false)

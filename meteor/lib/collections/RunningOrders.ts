@@ -24,10 +24,10 @@ export enum RunningOrderHoldState {
 }
 
 export interface RunningOrderImportVersions {
-	studioInstallation: number
-	showStyleBase: number
-	showStyleVariant: number
-	blueprint: number
+	studioInstallation: string
+	showStyleBase: string
+	showStyleVariant: string
+	blueprint: string
 
 	core: string
 }

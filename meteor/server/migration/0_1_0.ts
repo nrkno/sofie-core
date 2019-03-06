@@ -34,7 +34,7 @@ addMigrationSteps( '0.1.0', [
 				},
 				mappings: {},
 				config: [],
-				revision: 1,
+				runningOrderVersionHash: '',
 			})
 		}
 	},

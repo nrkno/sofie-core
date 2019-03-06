@@ -8,10 +8,10 @@ addMigrationSteps( '0.22.0', [
 		id: 'runningOrders have importVersions',
 		canBeRunAutomatically: true,
 		validate: () => {
-			const ros = RunningOrders.find({
+			const roCount = RunningOrders.find({
 				importVersions: { $exists: false }
-			}).fetch()
-			if (ros.length > 0) return 'Running orders need to be migrated to have importVersions'
+			}).count()
+			if (roCount > 0) return 'Running orders need to be migrated to have importVersions'
 			return false
 		},
 		migrate: () => {
@@ -20,10 +20,10 @@ addMigrationSteps( '0.22.0', [
 			}, {
 				$set: {
 					importVersions: {
-						studioInstallation: 0,
-						showStyleBase: 0,
-						showStyleVariant: 0,
-						blueprint: 0,
+						studioInstallation: '',
+						showStyleBase: '',
+						showStyleVariant: '',
+						blueprint: '',
 
 						core: '0.0.0'
 					}

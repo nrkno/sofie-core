@@ -5,9 +5,9 @@ import { TransformedCollection } from '../typings/meteor'
 import { IConfigItem, IBlueprintShowStyleVariant } from 'tv-automation-sofie-blueprints-integration'
 import { registerCollection, applyClassToDocument } from '../lib'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
-import { Revisionable, RevisionCollection } from './Revisionable'
+import { ObserveChangesForHash } from './lib'
 
-export interface DBShowStyleVariant extends IBlueprintShowStyleVariant, Revisionable {
+export interface DBShowStyleVariant extends IBlueprintShowStyleVariant {
 	_id: string
 	name: string
 	/** Id of parent ShowStyleBase */
@@ -15,6 +15,8 @@ export interface DBShowStyleVariant extends IBlueprintShowStyleVariant, Revision
 
 	/** Config values are used by the Blueprints */
 	config: Array<IConfigItem>
+
+	runningOrderVersionHash: string
 }
 
 export interface ShowStyleCompound extends ShowStyleBase {
@@ -47,7 +49,7 @@ export class ShowStyleVariant implements DBShowStyleVariant {
 	public name: string
 	public showStyleBaseId: string
 	public config: Array<IConfigItem>
-	public revision: number
+	public runningOrderVersionHash: string
 
 	constructor (document: DBShowStyleVariant) {
 		_.each(_.keys(document), (key) => {
@@ -56,12 +58,18 @@ export class ShowStyleVariant implements DBShowStyleVariant {
 	}
 }
 export const ShowStyleVariants: TransformedCollection<ShowStyleVariant, DBShowStyleVariant>
-	= new RevisionCollection<ShowStyleVariant>('showStyleVariants', {transform: (doc) => applyClassToDocument(ShowStyleVariant, doc) })
+	= new Mongo.Collection<ShowStyleVariant>('showStyleVariants', {transform: (doc) => applyClassToDocument(ShowStyleVariant, doc) })
 registerCollection('ShowStyleVariants', ShowStyleVariants)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		ShowStyleVariants._ensureIndex({
 			showStyleBaseId: 1,
 		})
+	}
+})
+
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		ObserveChangesForHash(ShowStyleVariants, 'runningOrderVersionHash', ['config', 'showStyleBaseId'])
 	}
 })
