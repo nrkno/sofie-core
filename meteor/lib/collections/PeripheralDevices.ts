@@ -74,6 +74,7 @@ export interface PlayoutDeviceSettings {
 		port: number
 	}
 	multiThreading?: boolean
+	multiThreadedResolver?: boolean
 }
 export interface MediaManagerDeviceSettings {
 	/** A list of available storage locations */
