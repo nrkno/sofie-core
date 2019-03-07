@@ -315,7 +315,6 @@ interface IRunningOrderHeaderProps {
 	onRegisterHotkeys?: (hotkeys: Array<HotkeyDefinition>) => void
 	studioMode: boolean
 	inActiveROView?: boolean
-	reloadRunningOrder: (e: any) => void
 }
 
 interface IRunningOrderHeaderState {
@@ -475,6 +474,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		if (typeof this.props.onRegisterHotkeys === 'function') {
 			this.props.onRegisterHotkeys(this.bindKeys)
 		}
+
+		reloadRunningOrderClick.set(this.reloadRunningOrder)
 	}
 
 	componentWillUnmount () {
@@ -510,7 +511,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		this.resetRunningOrder(e)
 	}
 	keyReloadRunningOrder = (e: ExtendedKeyboardEvent) => {
-		this.props.reloadRunningOrder(e)
+		this.reloadRunningOrder(e)
 	}
 	keyMoveNextForward = (e: ExtendedKeyboardEvent) => {
 		// "forward" = to next SegmentLine
@@ -755,6 +756,19 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		}
 	}
 
+	reloadRunningOrder = (e: any, changeRehearsal?: boolean) => {
+		const { t } = this.props
+		if (this.props.studioMode) {
+			doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.runningOrder._id, changeRehearsal], (err) => {
+				if (!err) {
+					if (this.props.runningOrder && this.props.runningOrder.nextSegmentLineId) {
+						scrollToSegmentLine(this.props.runningOrder.nextSegmentLineId)
+					}
+				}
+			})
+		}
+	}
+
 	takeRunningOrderSnapshot = (e) => {
 		const {t} = this.props
 		if (this.props.studioMode) {
@@ -847,7 +861,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 										</MenuItem> :
 										null
 								}
-								<MenuItem onClick={(e) => this.props.reloadRunningOrder(e)}>
+								<MenuItem onClick={(e) => this.reloadRunningOrder(e)}>
 									{t('Reload ENPS Data')}
 								</MenuItem>
 								<MenuItem onClick={(e) => this.takeRunningOrderSnapshot(e)}>
@@ -1100,7 +1114,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 
 		roNotificationHandler.set(this.onRONotificationClick)
-		reloadRunningOrderClick.set(this.reloadRunningOrder)
 
 		window.addEventListener(RunningOrderViewEvents.goToLiveSegment, this.onGoToLiveSegment)
 		window.addEventListener(RunningOrderViewEvents.goToTop, this.onGoToTop)
@@ -1184,19 +1197,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
 					mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
 				})
-			})
-		}
-	}
-
-	reloadRunningOrder = (e: any, changeRehearsal?: boolean) => {
-		const { t } = this.props
-		if (this.state.studioMode && this.props.runningOrder) {
-			doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.runningOrder._id, changeRehearsal], (err) => {
-				if (!err) {
-					if (this.props.runningOrder && this.props.runningOrder.nextSegmentLineId) {
-						scrollToSegmentLine(this.props.runningOrder.nextSegmentLineId)
-					}
-				}
 			})
 		}
 	}
@@ -1585,8 +1585,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									onActivate={this.onActivate}
 									studioMode={this.state.studioMode}
 									onRegisterHotkeys={this.onRegisterHotkeys}
-									inActiveROView={this.props.inActiveROView}
-									reloadRunningOrder={this.reloadRunningOrder} />
+									inActiveROView={this.props.inActiveROView} />
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<SegmentContextMenu
