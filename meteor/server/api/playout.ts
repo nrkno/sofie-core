@@ -25,7 +25,8 @@ import { getCurrentTime,
 	pushOntoPath,
 	extendMandadory,
 	caught,
-	makePromise
+	makePromise,
+	getHash
 } from '../../lib/lib'
 import {
 	Timeline,
@@ -81,7 +82,6 @@ import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '.
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 import { PlayoutAPI } from '../../lib/api/playout'
-import { getHash } from '../lib'
 import { syncFunction, syncFunctionIgnore } from '../codeControl'
 import { getResolvedSegment, ISourceLayerExtended } from '../../lib/RunningOrder'
 let clone = require('fast-clone')

@@ -31,7 +31,8 @@ import {
 	getCurrentTime,fetchBefore,
 	getRank,
 	fetchAfter,
-	literal
+	literal,
+	getHash
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
@@ -41,7 +42,6 @@ import {
 	postProcessSegmentLineItems,
 	SegmentLineContext
 } from '../blueprints'
-import { getHash } from '../../lib'
 import {
 	StudioInstallations,
 	StudioInstallation

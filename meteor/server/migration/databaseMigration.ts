@@ -7,7 +7,6 @@ import {
 } from '../../lib/collections/CoreSystem'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { getHash } from '../lib'
 import {
 	MigrationMethods,
 	RunMigrationResult,
@@ -40,6 +39,7 @@ import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { evalBlueprints, MigrationContextStudio, MigrationContextShowStyle } from '../api/blueprints'
+import { getHash } from '../../lib/lib'
 
 /** The current database version, x.y.z
  * 0.16.0: Release 3   (2018-10-26)

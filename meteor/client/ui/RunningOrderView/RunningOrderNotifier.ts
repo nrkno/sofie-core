@@ -359,7 +359,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 			Meteor.call(RunningOrderAPI.methods.runningOrderNeedsUpdating, rRunningOrderId, (err: Error, versionMismatch: string) => {
 				let newNotification: Notification | undefined = undefined
 				if (err) {
-					// TODO
+					newNotification = new Notification('ro_importVersions', NoticeLevel.WARNING, t('Unable to check the system configuration for changes'), 'ro_' + rRunningOrderId, getCurrentTime(), true, undefined, -1)
 				} else if (versionMismatch) {
 					newNotification = new Notification('ro_importVersions', NoticeLevel.WARNING, t('The system configuration has been changed since importing this running order. It might not run correctly'), 'ro_' + rRunningOrderId, getCurrentTime(), true, [
 						{
