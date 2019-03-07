@@ -33,7 +33,8 @@ addMigrationSteps( '0.1.0', [
 					sofieUrl: ''
 				},
 				mappings: {},
-				config: []
+				config: [],
+				_runningOrderVersionHash: '',
 			})
 		}
 	},

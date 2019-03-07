@@ -13,7 +13,7 @@ import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
 import { RunningOrderBaselineItems } from './RunningOrderBaselineItems'
 import { RunningOrderBaselineAdLibItems } from './RunningOrderBaselineAdLibItems'
 import { IBlueprintRunningOrder } from 'tv-automation-sofie-blueprints-integration'
-import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
+import { ShowStyleCompound, getShowStyleCompound, ShowStyleVariants } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 
 export enum RunningOrderHoldState {
@@ -21,6 +21,15 @@ export enum RunningOrderHoldState {
 	PENDING = 1, // During STK
 	ACTIVE = 2, // During full, STK is played
 	COMPLETE = 3, // During full, full is played
+}
+
+export interface RunningOrderImportVersions {
+	studioInstallation: string
+	showStyleBase: string
+	showStyleVariant: string
+	blueprint: string
+
+	core: string
 }
 
 /** This is a very uncomplete mock-up of the Rundown object */
@@ -39,6 +48,9 @@ export interface DBRunningOrder extends IBlueprintRunningOrder {
 	name: string
 	created: Time
 	modified: Time
+
+	/** Revisions/Versions of various docs that when changed require the user to reimport the RO */
+	importVersions: RunningOrderImportVersions
 
 	/** Expected start should be set to the expected time this running order should run on air. Should be set to EditorialStart from IMOSRunningOrder */
 	expectedStart?: Time
@@ -84,6 +96,7 @@ export class RunningOrder implements DBRunningOrder {
 	public name: string
 	public created: Time
 	public modified: Time
+	public importVersions: RunningOrderImportVersions
 	public expectedStart?: Time
 	public expectedDuration?: number
 	public metaData?: Array<MOS.IMOSExternalMetaData>

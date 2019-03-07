@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { Random } from 'meteor/random'
 import { RecordedFiles, RecordedFile } from '../../lib/collections/RecordedFiles'
 import { StudioInstallations, StudioInstallation, ITestToolsConfig, MappingExt } from '../../lib/collections/StudioInstallations'
-import { getCurrentTime, literal, waitForPromise } from '../../lib/lib'
+import { getCurrentTime, literal, waitForPromise, getHash } from '../../lib/lib'
 import { TestToolsAPI } from '../../lib/api/testTools'
 import { setMeteorMethods, Methods } from '../methods'
 import { logger } from '../logging'
@@ -17,7 +17,6 @@ import {
 	TimelineObjCCGRecord, TimelineContentTypeCasparCg, TimelineObjCCGInput,
 	DeviceType as PlayoutDeviceType
 } from 'timeline-state-resolver-types'
-import { getHash } from '../lib'
 import { LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
 import * as request from 'request'
 import { promisify } from 'util'

@@ -10,9 +10,9 @@ import {
 	getCurrentTime,
 	OmitId,
 	trimIfString,
-	extendMandadory
+	extendMandadory,
+	getHash
 } from '../../lib/lib'
-import { getHash } from '../lib'
 import { logger } from '../logging'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
 import {

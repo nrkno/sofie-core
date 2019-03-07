@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { NotificationCenter, NotificationList, NotifierObject, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { RunningOrderAPI } from '../../../lib/api/runningOrder'
@@ -23,6 +24,7 @@ import { doUserAction } from '../../lib/userAction'
 import { i18nTranslator } from '../i18n'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
+export const reloadRunningOrderClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
 
 export interface RONotificationEvent {
 	sourceLocator: {
@@ -50,8 +52,12 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 	private _deviceStatus: _.Dictionary<Notification | undefined> = {}
 	private _deviceStatusDep: Tracker.Dependency
 
+	private _roImportVersionStatus: Notification | undefined = undefined
+	private _roImportVersionStatusDep: Tracker.Dependency
+
 	private _runningOrderId: ReactiveVar<string | undefined>
 	private _studioId: ReactiveVar<string | undefined>
+
 
 	constructor () {
 		super()
@@ -59,7 +65,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 		this._mediaStatusDep = new Tracker.Dependency()
 		this._runningOrderStatusDep = new Tracker.Dependency()
 		this._deviceStatusDep = new Tracker.Dependency()
-
+		this._roImportVersionStatusDep = new Tracker.Dependency()
 		this._notesDep = new Tracker.Dependency()
 		this._runningOrderId = new ReactiveVar<string | undefined>(undefined)
 		this._studioId = new ReactiveVar<string | undefined>(undefined)
@@ -102,11 +108,13 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 					} else {
 						this.cleanUpMediaStatus()
 					}
+					this.reactiveVersionStatus(rRunningOrderId)
 				})
 			} else {
 				this._mediaStatus = {}
 				this._deviceStatus = {}
 				this._notes = {}
+				this._roImportVersionStatus = undefined
 				this.cleanUpMediaStatus()
 			}
 		})
@@ -117,11 +125,13 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 			this._deviceStatusDep.depend()
 			this._runningOrderStatusDep.depend()
 			this._notesDep.depend()
+			this._roImportVersionStatusDep.depend()
 
 			const notifications = _.compact(_.values(this._mediaStatus))
 				.concat(_.compact(_.values(this._deviceStatus)))
 				.concat(_.compact(_.values(this._notes)))
 				.concat(_.compact(_.values(this._runningOrderStatus)))
+				.concat(_.compact([this._roImportVersionStatus]))
 
 			this._notificationList.set(
 				notifications
@@ -341,6 +351,43 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 		})
 	}
 
+	private reactiveVersionStatus (rRunningOrderId: string) {
+		const t = i18nTranslator
+
+		this.autorun((comp: Tracker.Computation) => {
+			// console.log('RunningOrderViewNotifier 5')
+
+			// Doing the check server side, to avoid needing to subscribe to the blueprint and showStyleVariant
+			Meteor.call(RunningOrderAPI.methods.runningOrderNeedsUpdating, rRunningOrderId, (err: Error, versionMismatch: string) => {
+				let newNotification: Notification | undefined = undefined
+				if (err) {
+					newNotification = new Notification('ro_importVersions', NoticeLevel.WARNING, t('Unable to check the system configuration for changes'), 'ro_' + rRunningOrderId, getCurrentTime(), true, undefined, -1)
+				} else if (versionMismatch) {
+					newNotification = new Notification('ro_importVersions', NoticeLevel.WARNING, t('The system configuration has been changed since importing this running order. It might not run correctly'), 'ro_' + rRunningOrderId, getCurrentTime(), true, [
+						{
+							label: t('Reload ENPS Data'),
+							type: 'primary',
+							action: (e) => {
+								const reloadFunc = reloadRunningOrderClick.get()
+								if (reloadFunc) {
+									reloadFunc(e)
+								}
+							}
+						}
+					], -1)
+				}
+
+				if (newNotification && !Notification.isEqual(this._roImportVersionStatus, newNotification)) {
+					this._roImportVersionStatus = newNotification
+					this._roImportVersionStatusDep.changed()
+				} else if (!newNotification && this._roImportVersionStatus) {
+					this._roImportVersionStatus = undefined
+					this._roImportVersionStatusDep.changed()
+				}
+			})
+		})
+	}
+
 	private cleanUpMediaStatus () {
 		this._mediaStatus = {}
 		this._mediaStatusDep.changed()
@@ -387,7 +434,6 @@ interface IProps {
 	// }
 	runningOrderId: string,
 	studioId: string
-	onRONotificationClick?: (e: RONotificationEvent) => void
 }
 
 export const RunningOrderNotifier = class extends React.Component<IProps> {

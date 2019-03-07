@@ -10,6 +10,7 @@ import {
 	ISourceLayer,
 	IBlueprintRuntimeArgumentsItem
 } from 'tv-automation-sofie-blueprints-integration'
+import { ObserveChangesForHash } from './lib'
 
 export interface HotkeyDefinition {
 	_id: string
@@ -35,6 +36,8 @@ export interface DBShowStyleBase extends IBlueprintShowStyleBase {
 	hotkeyLegend?: Array<HotkeyDefinition>
 
 	runtimeArguments?: Array<IBlueprintRuntimeArgumentsItem>
+
+	_runningOrderVersionHash: string
 }
 
 export class ShowStyleBase implements DBShowStyleBase {
@@ -46,6 +49,7 @@ export class ShowStyleBase implements DBShowStyleBase {
 	public config: Array<IConfigItem>
 	public hotkeyLegend?: Array<HotkeyDefinition>
 	public runtimeArguments: Array<IBlueprintRuntimeArgumentsItem>
+	public _runningOrderVersionHash: string
 
 	constructor (document: DBShowStyleBase) {
 		_.each(_.keys(document), (key) => {
@@ -63,5 +67,7 @@ Meteor.startup(() => {
 		// ShowStyleBases._ensureIndex({
 		// 	_id: 1,
 		// })
+
+		ObserveChangesForHash(ShowStyleBases, '_runningOrderVersionHash', ['config', 'blueprintId'])
 	}
 })

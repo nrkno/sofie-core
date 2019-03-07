@@ -30,7 +30,9 @@ import {
 	saveIntoDb,
 	getCurrentTime,fetchBefore,
 	getRank,
-	fetchAfter
+	fetchAfter,
+	literal,
+	getHash
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
@@ -40,7 +42,6 @@ import {
 	postProcessSegmentLineItems,
 	SegmentLineContext
 } from '../blueprints'
-import { getHash } from '../../lib'
 import {
 	StudioInstallations,
 	StudioInstallation
@@ -50,7 +51,7 @@ import {
 	SegmentLineAdLibItems
 } from '../../../lib/collections/SegmentLineAdLibItems'
 import {
-	ShowStyleBases
+	ShowStyleBases, ShowStyleBase
 } from '../../../lib/collections/ShowStyleBases'
 import {
 	ServerPlayoutAPI,
@@ -74,6 +75,8 @@ import { syncFunction } from '../../codeControl'
 import { IBlueprintSegmentLine, SegmentLineHoldMode } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { updateExpectedMediaItems } from '../expectedMediaItems'
+import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
+const PackageInfo = require('../../../package.json')
 
 export function roId (roId: MOS.MosString128, original?: boolean): string {
 	// logger.debug('roId', roId)
@@ -459,8 +462,11 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 	// the defaultShowStyleVariant is a temporary solution, to be replaced by a blueprint plugin
 	let defaultShowStyleVariant = ShowStyleVariants.findOne(studioInstallation.defaultShowStyleVariant) as ShowStyleVariant || {}
 
+	let showStyleBase = ShowStyleBases.findOne(defaultShowStyleVariant.showStyleBaseId) as ShowStyleBase || {}
+	let blueprint = Blueprints.findOne(showStyleBase.blueprintId) as Blueprint || {}
+
 	let dbROData: DBRunningOrder = _.extend(existingDbRo || {},
-		{
+		_.omit(literal<DBRunningOrder>({
 			_id: roId(ro.ID),
 			mosId: ro.ID.toString(),
 			studioInstallationId: studioInstallation._id,
@@ -471,8 +477,23 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 			expectedStart: formatTime(ro.EditorialStart),
 			expectedDuration: formatDuration(ro.EditorialDuration),
 			dataSource: dataSource,
-			unsynced: false
-		} as DBRunningOrder
+			unsynced: false,
+
+			importVersions: {
+				studioInstallation: studioInstallation._runningOrderVersionHash,
+				showStyleBase: showStyleBase._runningOrderVersionHash,
+				showStyleVariant: defaultShowStyleVariant._runningOrderVersionHash,
+				blueprint: blueprint.blueprintVersion,
+				core: PackageInfo.version,
+			},
+
+			// omit the below fields
+			previousSegmentLineId: null,
+			currentSegmentLineId: null,
+			nextSegmentLineId: null,
+			created: 0,
+			modified: 0,
+		}), ['previousSegmentLineId', 'currentSegmentLineId', 'nextSegmentLineId', 'created', 'modified'])
 	)
 	// Save RO into database:
 	saveIntoDb(RunningOrders, {

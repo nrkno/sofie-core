@@ -43,7 +43,7 @@ import { RunningOrderFullscreenControls } from './RunningOrderView/RunningOrderF
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevicesAPI } from '../lib/clientAPI'
-import { RONotificationEvent, onRONotificationClick as roNotificationHandler, RunningOrderNotifier } from './RunningOrderView/RunningOrderNotifier'
+import { RONotificationEvent, onRONotificationClick as roNotificationHandler, RunningOrderNotifier, reloadRunningOrderClick } from './RunningOrderView/RunningOrderNotifier'
 import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
@@ -474,6 +474,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		if (typeof this.props.onRegisterHotkeys === 'function') {
 			this.props.onRegisterHotkeys(this.bindKeys)
 		}
+
+		reloadRunningOrderClick.set(this.reloadRunningOrder)
 	}
 
 	componentWillUnmount () {
