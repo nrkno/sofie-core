@@ -68,6 +68,6 @@ Meteor.startup(() => {
 		// 	_id: 1,
 		// })
 
-		ObserveChangesForHash(ShowStyleBases, '_runningOrderVersionHash', ['config', 'blueprintId']) // TODO - more fields?
+		ObserveChangesForHash(ShowStyleBases, '_runningOrderVersionHash', ['config', 'blueprintId'])
 	}
 })
