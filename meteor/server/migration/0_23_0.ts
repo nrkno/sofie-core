@@ -2,8 +2,8 @@ import { addMigrationSteps } from './databaseMigration'
 import * as _ from 'underscore'
 import { RunningOrders } from '../../lib/collections/RunningOrders'
 
-// 0.22.0
-addMigrationSteps( '0.22.0', [
+// 0.23.0
+addMigrationSteps( '0.23.0', [
 	{ // Ensure rundowns have importVersions set
 		id: 'runningOrders have importVersions',
 		canBeRunAutomatically: true,
