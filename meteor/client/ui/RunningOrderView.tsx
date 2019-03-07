@@ -43,7 +43,7 @@ import { RunningOrderFullscreenControls } from './RunningOrderView/RunningOrderF
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevicesAPI } from '../lib/clientAPI'
-import { RONotificationEvent, onRONotificationClick as roNotificationHandler, RunningOrderNotifier } from './RunningOrderView/RunningOrderNotifier'
+import { RONotificationEvent, onRONotificationClick as roNotificationHandler, RunningOrderNotifier, reloadRunningOrderClick } from './RunningOrderView/RunningOrderNotifier'
 import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
@@ -315,6 +315,7 @@ interface IRunningOrderHeaderProps {
 	onRegisterHotkeys?: (hotkeys: Array<HotkeyDefinition>) => void
 	studioMode: boolean
 	inActiveROView?: boolean
+	reloadRunningOrder: (e: any) => void
 }
 
 interface IRunningOrderHeaderState {
@@ -509,7 +510,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		this.resetRunningOrder(e)
 	}
 	keyReloadRunningOrder = (e: ExtendedKeyboardEvent) => {
-		this.reloadRunningOrder(e)
+		this.props.reloadRunningOrder(e)
 	}
 	keyMoveNextForward = (e: ExtendedKeyboardEvent) => {
 		// "forward" = to next SegmentLine
@@ -754,19 +755,6 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		}
 	}
 
-	reloadRunningOrder = (e: any, changeRehearsal?: boolean) => {
-		const { t } = this.props
-		if (this.props.studioMode) {
-			doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.runningOrder._id, changeRehearsal], (err) => {
-				if (!err) {
-					if (this.props.runningOrder && this.props.runningOrder.nextSegmentLineId) {
-						scrollToSegmentLine(this.props.runningOrder.nextSegmentLineId)
-					}
-				}
-			})
-		}
-	}
-
 	takeRunningOrderSnapshot = (e) => {
 		const {t} = this.props
 		if (this.props.studioMode) {
@@ -859,7 +847,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 										</MenuItem> :
 										null
 								}
-								<MenuItem onClick={(e) => this.reloadRunningOrder(e)}>
+								<MenuItem onClick={(e) => this.props.reloadRunningOrder(e)}>
 									{t('Reload ENPS Data')}
 								</MenuItem>
 								<MenuItem onClick={(e) => this.takeRunningOrderSnapshot(e)}>
@@ -1112,6 +1100,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 
 		roNotificationHandler.set(this.onRONotificationClick)
+		reloadRunningOrderClick.set(this.reloadRunningOrder)
 
 		window.addEventListener(RunningOrderViewEvents.goToLiveSegment, this.onGoToLiveSegment)
 		window.addEventListener(RunningOrderViewEvents.goToTop, this.onGoToTop)
@@ -1195,6 +1184,19 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
 					mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
 				})
+			})
+		}
+	}
+
+	reloadRunningOrder = (e: any, changeRehearsal?: boolean) => {
+		const { t } = this.props
+		if (this.state.studioMode && this.props.runningOrder) {
+			doUserAction(t, e, UserActionAPI.methods.reloadData, [this.props.runningOrder._id, changeRehearsal], (err) => {
+				if (!err) {
+					if (this.props.runningOrder && this.props.runningOrder.nextSegmentLineId) {
+						scrollToSegmentLine(this.props.runningOrder.nextSegmentLineId)
+					}
+				}
 			})
 		}
 	}
@@ -1583,7 +1585,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									onActivate={this.onActivate}
 									studioMode={this.state.studioMode}
 									onRegisterHotkeys={this.onRegisterHotkeys}
-									inActiveROView={this.props.inActiveROView} />
+									inActiveROView={this.props.inActiveROView}
+									reloadRunningOrder={this.reloadRunningOrder} />
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<SegmentContextMenu

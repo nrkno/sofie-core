@@ -24,6 +24,7 @@ import { doUserAction } from '../../lib/userAction'
 import { i18nTranslator } from '../i18n'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
+export const reloadRunningOrderClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
 
 export interface RONotificationEvent {
 	sourceLocator: {
@@ -56,6 +57,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 
 	private _runningOrderId: ReactiveVar<string | undefined>
 	private _studioId: ReactiveVar<string | undefined>
+
 
 	constructor () {
 		super()
@@ -363,18 +365,13 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 				} else if (versionMismatch) {
 					newNotification = new Notification('ro_importVersions', NoticeLevel.WARNING, t('The system configuration has been changed since importing this running order. It might not run correctly'), 'ro_' + rRunningOrderId, getCurrentTime(), true, [
 						{
-							label: t('Reload Running Order'),
+							label: t('Reload ENPS Data'),
 							type: 'primary',
-							action: () => {
-								console.log('RELOAD')
-								// TODO
-								// doModalDialog({
-								// 	title: t('Re-sync runningOrder'),
-								// 	message: t('Are you sure you want to re-sync the runningOrder?\n(If the currently playing segmentLine has been changed, this can affect the output.)'),
-								// 	onAccept: () => {
-								// 		doUserAction(t, event, UserActionAPI.methods.resyncRunningOrder, [runningOrderId])
-								// 	}
-								// })
+							action: (e) => {
+								const reloadFunc = reloadRunningOrderClick.get()
+								if (reloadFunc) {
+									reloadFunc(e)
+								}
 							}
 						}
 					], -1)
@@ -437,7 +434,6 @@ interface IProps {
 	// }
 	runningOrderId: string,
 	studioId: string
-	onRONotificationClick?: (e: RONotificationEvent) => void
 }
 
 export const RunningOrderNotifier = class extends React.Component<IProps> {
