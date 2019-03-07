@@ -672,11 +672,11 @@ export function asyncCollectionUpsert<DocClass, DBInterface> (
 	modifier: MongoModifier<DBInterface>,
 	options?: UpsertOptions
 
-): Promise<number> {
+): Promise<{numberAffected: number, insertedId: string}> {
 	return new Promise((resolve, reject) => {
-		collection.upsert(selector, modifier, options, (err: any, affectedCount: number) => {
+		collection.upsert(selector, modifier, options, (err: any, returnValue: { numberAffected: number, insertedId: string }) => {
 			if (err) reject(err)
-			else resolve(affectedCount)
+			else resolve(returnValue)
 		})
 	})
 }
