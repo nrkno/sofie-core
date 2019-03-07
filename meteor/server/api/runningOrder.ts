@@ -428,11 +428,11 @@ export namespace ClientRunningOrderAPI {
 
 		const showStyleVariant = ShowStyleVariants.findOne(ro.showStyleVariantId)
 		if (!showStyleVariant) return 'missing showStyleVariant'
-		if (ro.importVersions.showStyleVariant !== (showStyleVariant.runningOrderVersionHash || 0)) return 'showStyleVariant'
+		if (ro.importVersions.showStyleVariant !== (showStyleVariant._runningOrderVersionHash || 0)) return 'showStyleVariant'
 
 		const showStyleBase = ShowStyleBases.findOne(ro.showStyleBaseId)
 		if (!showStyleBase) return 'missing showStyleBase'
-		if (ro.importVersions.showStyleBase !== (showStyleBase.runningOrderVersionHash || 0)) return 'showStyleBase'
+		if (ro.importVersions.showStyleBase !== (showStyleBase._runningOrderVersionHash || 0)) return 'showStyleBase'
 
 		const blueprint = Blueprints.findOne(showStyleBase.blueprintId)
 		if (!blueprint) return 'missing blueprint'
@@ -440,7 +440,7 @@ export namespace ClientRunningOrderAPI {
 
 		const si = StudioInstallations.findOne(ro.studioInstallationId)
 		if (!si) return 'missing studioInstallation'
-		if (ro.importVersions.studioInstallation !== (si.runningOrderVersionHash || 0)) return 'studioInstallation'
+		if (ro.importVersions.studioInstallation !== (si._runningOrderVersionHash || 0)) return 'studioInstallation'
 
 		return undefined
 	}

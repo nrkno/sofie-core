@@ -37,7 +37,7 @@ export interface DBShowStyleBase extends IBlueprintShowStyleBase {
 
 	runtimeArguments?: Array<IBlueprintRuntimeArgumentsItem>
 
-	runningOrderVersionHash: string
+	_runningOrderVersionHash: string
 }
 
 export class ShowStyleBase implements DBShowStyleBase {
@@ -49,7 +49,7 @@ export class ShowStyleBase implements DBShowStyleBase {
 	public config: Array<IConfigItem>
 	public hotkeyLegend?: Array<HotkeyDefinition>
 	public runtimeArguments: Array<IBlueprintRuntimeArgumentsItem>
-	public runningOrderVersionHash: string
+	public _runningOrderVersionHash: string
 
 	constructor (document: DBShowStyleBase) {
 		_.each(_.keys(document), (key) => {
@@ -68,6 +68,6 @@ Meteor.startup(() => {
 		// 	_id: 1,
 		// })
 
-		ObserveChangesForHash(ShowStyleBases, 'runningOrderVersionHash', ['config', 'blueprintId']) // TODO - more fields?
+		ObserveChangesForHash(ShowStyleBases, '_runningOrderVersionHash', ['config', 'blueprintId']) // TODO - more fields?
 	}
 })

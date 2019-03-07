@@ -48,7 +48,7 @@ addMigrationSteps( '0.19.0', [
 					// @ts-ignore
 					hotkeyLegend: studio.hotkeyLegend,
 					config: [],
-					runningOrderVersionHash: '',
+					_runningOrderVersionHash: '',
 				})
 
 				const variantId = Random.id()
@@ -57,7 +57,7 @@ addMigrationSteps( '0.19.0', [
 					name: 'Default variant',
 					showStyleBaseId: id,
 					config: [],
-					runningOrderVersionHash: '',
+					_runningOrderVersionHash: '',
 				})
 
 				if (!studio.supportedShowStyleBase || studio.supportedShowStyleBase.length === 0) {
@@ -76,7 +76,7 @@ addMigrationSteps( '0.19.0', [
 					outputLayers: [],
 					sourceLayers: [],
 					config: [],
-					runningOrderVersionHash: '',
+					_runningOrderVersionHash: '',
 				})
 
 				ShowStyleVariants.insert({
@@ -84,7 +84,7 @@ addMigrationSteps( '0.19.0', [
 					name: 'Default variant',
 					showStyleBaseId: 'show0',
 					config: [],
-					runningOrderVersionHash: '',
+					_runningOrderVersionHash: '',
 				})
 			}
 		}

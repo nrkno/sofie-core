@@ -16,7 +16,7 @@ export function insertShowStyleBase (): string {
 		sourceLayers: [],
 		config: [],
 		runtimeArguments: [],
-		runningOrderVersionHash: '',
+		_runningOrderVersionHash: '',
 	}))
 	insertShowStyleVariant(id, 'Default')
 	return id
@@ -32,7 +32,7 @@ export function insertShowStyleVariant (showStyleBaseId: string, name?: string):
 		showStyleBaseId: showStyleBase._id,
 		name: name || 'Variant',
 		config: [],
-		runningOrderVersionHash: '',
+		_runningOrderVersionHash: '',
 	})
 }
 export function removeShowStyleBase (showStyleBaseId: string) {
