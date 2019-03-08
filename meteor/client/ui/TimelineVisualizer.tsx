@@ -4,22 +4,12 @@ Please note that the contents of this file is quite unstructured and for test pu
 
 import * as React from 'react'
 import * as _ from 'underscore'
-import { withTracker, translateWithTracker, Translated } from '../lib/ReactMeteorData/react-meteor-data'
-
-import { RunningOrders, RunningOrder } from '../../lib/collections/RunningOrders'
-import { Segments, Segment } from '../../lib/collections/Segments'
+import { translateWithTracker, Translated } from '../lib/ReactMeteorData/react-meteor-data'
 import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
-import { TimelineState, TriggerType } from 'superfly-timeline'
-import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines'
-import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
-import { Resolver, Enums } from 'superfly-timeline'
-import { transformTimeline } from '../../lib/timeline'
-import { Time, getCurrentTime } from '../../lib/lib'
-import { getCurrentTimeReactive } from '../lib/currentTimeReactive'
-import { makeTableOfObject } from '../lib/utilComponents'
+import { TriggerType } from 'superfly-timeline'
+import { getCurrentTime } from '../../lib/lib'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
-import Script from 'react-load-script'
 import { loadScript } from '../lib/lib'
 
 // ----------------------------------------------------------------------------
@@ -94,6 +84,7 @@ interface ITimelineVisualizerInStudioProps {
 interface ITimelineVisualizerInStudioState {
 	scriptLoaded?: boolean
 	scriptError?: boolean
+	showDetails: any
 }
 interface ITimelineVisualizerInStudioTrackedProps {
 	timeline: Array<TimelineObjGeneric>
@@ -114,7 +105,8 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 		super(props)
 		this.state = {
 			scriptLoaded: false,
-			scriptError: false
+			scriptError: false,
+			showDetails: null
 		}
 	}
 	componentWillMount () {
@@ -133,6 +125,13 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 				// initialize
 				this.visualizer = new TimelineVisualizer.TimelineVisualizer('timeline-visualizer', {
 					drawPlayhead: true,
+				})
+				this.visualizer.on('timeline:mouseDown', (event) => {
+					if (event.detail) {
+						this.setState({
+							showDetails: event.detail
+						})
+					}
 				})
 
 				// @ts-ignore
@@ -163,6 +162,11 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 			})
 		})
 	}
+	closeDetails () {
+		this.setState({
+			showDetails: null
+		})
+	}
 	renderTimeline () {
 		this.startVisualizer = true
 
@@ -190,17 +194,28 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 		const { t } = this.props
 
 		return (
-			<div>
+			<div className='timeline-visualizer'>
 				{/* <script src='/script/timeline-visualizer.js'></script> */}
-				<div>studio: {this.props.studioId}</div>
-				<div>timeline objects: {this.props.timeline.length}</div>
-				<div>
+				<div>Studio: {this.props.studioId}</div>
+				<div>Timeline objects: {this.props.timeline.length}</div>
+				<div className='timeline'>
 					{
 						this.state.scriptLoaded ?
 							this.renderTimeline() :
 						this.state.scriptError ?
 							<div>'Unable to load script'</div> :
 						null
+					}
+				</div>
+				<div className='details'>
+					{
+						this.state.showDetails ?
+						<div className='content'>
+							<button className='btn btn-secondary btn-tight' onClick={() => this.closeDetails()}>Close</button>
+							<pre>
+								{JSON.stringify(this.state.showDetails, null, 2)}
+							</pre>
+						</div> : null
 					}
 				</div>
 			</div>
@@ -292,46 +307,3 @@ function convertTimelineKeyframe (obj: any): any {
 	}
 	return newKf
 }
-
-// export class TimelineVisualizer extends MeteorReactComponent<INPProps> {
-// 	componentWillMount () {
-// 		// Subscribe to data:
-// 		this.autorun(() => {
-// 			this.subscribe('timeline', {})
-
-// 			/*
-// 			this.subscribe('runningOrders', {
-// 				active: true
-// 			})
-// 			this.subscribe('studioInstallations', {})
-// 			this.subscribe('showStyleBases', {})
-// 			this.subscribe('showStyleVariants', {})
-// 			let activeRO = RunningOrders.findOne({active: true})
-// 			if (activeRO) {
-// 				this.subscribe('segments', {
-// 					runningOrderId: activeRO._id
-// 				})
-// 				this.subscribe('segmentLines', {
-// 					runningOrderId: activeRO._id
-// 				})
-// 				this.subscribe('segmentLineItems', {
-// 					runningOrderId: activeRO._id
-// 				})
-// 				this.subscribe('segmentLineAdLibItems', {
-// 					runningOrderId: activeRO._id
-// 				})
-// 			}
-// 			*/
-// 		})
-// 	}
-// 	render () {
-// 		return (
-// 			<div>
-// 				<h1>Timeline visualizer</h1>
-// 				<div>
-
-// 				</div>
-// 			</div>
-// 		)
-// 	}
-// }
