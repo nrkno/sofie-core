@@ -385,7 +385,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 
 	timelineStyle () {
 		return {
-			'transform': 'translate3d(-' + Math.round(this.props.scrollLeft * this.props.timeScale).toString() + 'px, 0, 0.1px)',
+			'transform': 'translate3d(-' + Math.floor(this.props.scrollLeft * this.props.timeScale).toString() + 'px, 0, 0.1px)',
 			'willChange': 'transform'
 		}
 	}
@@ -394,7 +394,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 		const { t } = this.props
 
 		if (this.props.isLiveSegment) {
-			let pixelPostion = (this.props.livePosition * this.props.timeScale) - (!this.props.followLiveLine ? (this.props.scrollLeft * this.props.timeScale) : 0)
+			let pixelPostion = Math.floor((this.props.livePosition * this.props.timeScale) - (!this.props.followLiveLine ? (this.props.scrollLeft * this.props.timeScale) : 0))
 			let lineStyle = {
 				'left': (this.props.followLiveLine ?
 							Math.min(pixelPostion, this.props.liveLineHistorySize).toString() :

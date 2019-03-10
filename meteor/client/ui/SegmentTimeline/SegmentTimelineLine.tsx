@@ -309,7 +309,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 			}
 		} else {
 			return {
-				minWidth: Math.round(this.getLineDuration() * this.props.timeScale).toString() + 'px',
+				minWidth: Math.floor(this.getLineDuration() * this.props.timeScale).toString() + 'px',
 				// minWidth: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || 3000) * this.props.timeScale).toString() + 'px',
 				willChange: this.state.isLive ? 'minWidth' : undefined
 			}
