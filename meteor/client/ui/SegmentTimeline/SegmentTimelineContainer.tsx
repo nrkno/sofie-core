@@ -5,9 +5,9 @@ import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { SegmentTimeline } from './SegmentTimeline'
+import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
 import { getCurrentTime } from '../../../lib/lib'
-import { RunningOrderTiming } from '../RunningOrderView/RunningOrderTiming'
+import { RunningOrderTiming, computeSegmentDuration } from '../RunningOrderView/RunningOrderTiming'
 import { CollapsedStateStorage } from '../../lib/CollapsedStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { getResolvedSegment,
@@ -178,7 +178,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	isLiveSegment: boolean
 	roCurrentSegmentId: string | null
-	lastRender: JSX.Element
+	timelineDiv: HTMLDivElement
 
 	constructor (props: IProps & ITrackedProps) {
 		super(props)
@@ -317,10 +317,24 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		} */
 	}
 
+	segmentRef = (el: SegmentTimelineClass, sId: string) => {
+		this.timelineDiv = el.timeline
+	}
+
+	onShowEntireSegment = (event: any) => {
+		this.setState(_.extend({
+			scrollLeft: 0
+		}, this.props.isLiveSegment ? {
+			followLiveLine: false
+		} : {}))
+		if (typeof this.props.onTimeScaleChange === 'function') this.props.onTimeScaleChange(($(this.timelineDiv).width() || 1) / (computeSegmentDuration(this.context.durations, this.props.segmentLines.map(i => i._id)) || 1))
+		if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
+	}
+
 	render () {
 		return this.props.segmentui && (
 			<SegmentTimeline
-				segmentRef={this.props.segmentRef}
+				segmentRef={this.segmentRef}
 				key={this.props.segmentui._id}
 				segment={this.props.segmentui}
 				studioInstallation={this.props.studioInstallation}
@@ -347,6 +361,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				displayTimecode={this.state.displayTimecode}
 				onContextMenu={this.props.onContextMenu}
 				onFollowLiveLine={this.onFollowLiveLine}
+				onShowEntireSegment={this.onShowEntireSegment}
 				onZoomChange={(newScale: number, e) => this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)}
 				onScroll={this.onScroll}
 				followingSegmentLine={this.props.followingSegmentLine}

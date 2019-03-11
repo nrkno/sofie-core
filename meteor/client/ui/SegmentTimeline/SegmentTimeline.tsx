@@ -67,11 +67,12 @@ interface IProps {
 	autoNextSegmentLine: boolean,
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
-	onFollowLiveLine: (state: boolean, event: any) => void
+	onFollowLiveLine?: (state: boolean, event: any) => void
+	onShowEntireSegment?: (event: any) => void
 	onContextMenu?: (contextMenuContext: any) => void
 	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onHeaderNoteClick?: (level: SegmentLineNoteType) => void
-	segmentRef?: (el: React.ComponentClass, sId: string) => void
+	segmentRef?: (el: SegmentTimelineClass, sId: string) => void
 	followingSegmentLine: SegmentLineUi | undefined
 	isLastSegment: boolean
 }
@@ -240,8 +241,7 @@ class SegmentTimelineZoomButtons extends React.Component<IProps> {
 }
 
 export const SegmentTimelineElementId = 'running-order__segment__'
-export const SegmentTimeline = translate()(
-class extends React.Component<Translated<IProps>, IStateHeader> {
+export class SegmentTimelineClass extends React.Component<Translated<IProps>, IStateHeader> {
 	timeline: HTMLDivElement
 	segmentBlock: HTMLDivElement
 
@@ -275,8 +275,8 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	}
 
 	onZoomDblClick = (e) => {
-		if (this.props.onFollowLiveLine) {
-			this.props.onFollowLiveLine(true, e)
+		if (this.props.onShowEntireSegment) {
+			this.props.onShowEntireSegment(e)
 		}
 	}
 
@@ -614,4 +614,6 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 			</div>
 		)
 	}
-})
+}
+
+export const SegmentTimeline = translate()(SegmentTimelineClass)

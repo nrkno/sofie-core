@@ -123,8 +123,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						let styleObj = {
 							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
 								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none',
-							'transform': 'translate3d(' + Math.round(widthConstrictedMode ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
-								'translate3d(' + Math.round(liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
+							'transform': 'translate3d(' + Math.floor(widthConstrictedMode ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
+								'translate3d(' + Math.floor(liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
 								'translate3d(-100%, 0, 5px)',
 							'willChange': 'transform'
 						}
@@ -138,8 +138,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						let styleObj = {
 							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
 								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none',
-							'transform': 'translate3d(' + Math.round(Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
-								'translate3d(' + Math.round(liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
+							'transform': 'translate3d(' + Math.floor(Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
+								'translate3d(' + Math.floor(liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
 								'translate3d(-100%, 0, 5px)',
 							'willChange': 'transform'
 						}
@@ -154,7 +154,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						let styleObj = {
 							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
 								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none',
-							'transform': 'translate3d(' + Math.round(widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth))).toString() + 'px,  0, 5px)',
+							'transform': 'translate3d(' + Math.floor(widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth))).toString() + 'px,  0, 5px)',
 							'willChange': 'transform'
 						}
 
@@ -194,7 +194,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 					const targetPos = Math.max(((this.props.scrollLeft + this.props.scrollWidth) - outPoint - this.props.segmentLineStartsAt - outTransitionDuration) * this.props.timeScale, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth - LEFT_RIGHT_ANCHOR_SPACER) * -1)
 
 					return {
-						'transform': 'translate3d(' + Math.round(targetPos).toString() + 'px,  0, 15px)',
+						'transform': 'translate3d(' + Math.floor(targetPos).toString() + 'px,  0, 15px)',
 						'willChange': 'transform'
 					}
 				}
@@ -239,7 +239,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			}
 		} else {
 			return {
-				'left': Math.round(((segmentLineItem.renderedInPoint || 0) + inTransitionDuration) * this.props.timeScale).toString() + 'px',
+				'left': Math.floor(((segmentLineItem.renderedInPoint || 0) + inTransitionDuration) * this.props.timeScale).toString() + 'px',
 				'width': Math.round((itemDuration - inTransitionDuration - outTransitionDuration) * this.props.timeScale).toString() + 'px'
 			}
 		}

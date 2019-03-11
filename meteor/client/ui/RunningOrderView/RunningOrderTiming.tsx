@@ -385,3 +385,17 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, ISegmentDuratio
 			return null
 		}
 	})
+
+export function computeSegmentDuration (timingDurations: RunningOrderTiming.RunningOrderTimingContext, segmentLineIds: Array<string>): number {
+	let segmentLineDurations = timingDurations.segmentLineDurations
+
+	if (segmentLineDurations === undefined) return 0
+
+	return segmentLineIds.reduce((memo, item) => {
+		return segmentLineDurations ?
+				segmentLineDurations[item] !== undefined ?
+				memo + segmentLineDurations[item] :
+				memo
+			: 0
+	}, 0)
+}
