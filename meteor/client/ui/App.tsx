@@ -32,7 +32,6 @@ import {
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './PrompterView'
 import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
-import { TimelineVisualizerView } from './TimelineVisualizer'
 
 interface IAppState {
 	studioMode: boolean
@@ -105,7 +104,6 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Route path='/countdowns/:studioId/presenter' component={ClockView} />
 							{/* <Route path='/countdowns/presenter' component={ClockView} /> */}
 							<Route path='/nymansPlayground' component={NymansPlayground} />
-							<Route path='/timeline' component={TimelineVisualizerView} />
 							<Route path='/status' component={Status} />
 							<Route path='/settings' component={Settings} />
 							<Route path='/testTools' component={TestTools} />

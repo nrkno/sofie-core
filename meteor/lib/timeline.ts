@@ -50,6 +50,7 @@ export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<T
 			if (obj.isGroup) {
 				groupObjects[transformedObj.id] = transformedObj
 				changedSomething = true
+				if (!obj['children']) obj['children'] = []
 			}
 			if (obj.inGroup) {
 				let groupObj = groupObjects[obj.inGroup]
