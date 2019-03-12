@@ -192,6 +192,40 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 				case PlayoutDeviceType.HTTPSEND:
 					renderObject = (<HttpSendDeviceSettingsComponent parentDevice={this.props.device} device={device} deviceId={deviceId} />)
 					break
+				case PlayoutDeviceType.HTTPWATCHER:
+					renderObject = (<React.Fragment>
+						<div className='mod mvs mhs'>
+							<label className='field'>
+								{t('URI')}
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.uri'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+							</label>
+						</div>
+						<div className='mod mvs mhs'>
+							<label className='field'>
+								{t('HTTPMethod')}
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.httpMethod'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+							</label>
+						</div>
+						<div className='mod mvs mhs'>
+							<label className='field'>
+								{t('expectedHttpResponse')}
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.expectedHttpResponse'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+							</label>
+						</div>
+						<div className='mod mvs mhs'>
+							<label className='field'>
+								{t('keyword')}
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.keyword'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+							</label>
+						</div>
+						<div className='mod mvs mhs'>
+							<label className='field'>
+								{t('interval')}
+								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.interval'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+							</label>
+						</div>
+					</React.Fragment>)
+					break
 				case PlayoutDeviceType.PANASONIC_PTZ:
 					renderObject = (<React.Fragment>
 						<div className='mod mvs mhs'>
