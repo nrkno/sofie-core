@@ -175,6 +175,8 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 			collection = StudioInstallations
 		} else if (this.props.object instanceof ShowStyleBase) {
 			collection = ShowStyleBases
+		} else if (this.props.object instanceof ShowStyleVariant) {
+			collection = ShowStyleVariants
 		}
 
 		const values = this.props.object.config
