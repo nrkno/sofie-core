@@ -23,7 +23,7 @@ export function doUserAction (
 	let timeout = Meteor.setTimeout(() => {
 		timeoutMessage = new Notification(undefined, NoticeLevel.NOTIFICATION, t('Waiting for action: {{actionName}}...', {actionName: userActionMethodName(t, method)}), 'userAction')
 		NotificationCenter.push(timeoutMessage)
-	}, 500)
+	}, 2000)
 
 	callMethod(event, method, ...params, (err, res) => {
 
