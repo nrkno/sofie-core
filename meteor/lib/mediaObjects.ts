@@ -164,7 +164,7 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 							// check for black/freeze frames
 							const addFrameWarning = (arr: Array<Anomaly>, type: string) => {
 								if (arr.length === 1) {
-									const frames = arr[0].duration * 1000 / timebase
+									const frames = Math.round(arr[0].duration * 1000 / timebase)
 									if (arr[0].start === 0) {
 										messages.push(`Clip starts with ${frames} ${type} frame${frames > 1 ? 's' : ''}`)
 									} else if (arr[0].end === Number(mediaObject.mediainfo!.format.duration)) {
@@ -176,7 +176,7 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 									const dur = arr
 										.map(b => b.duration)
 										.reduce((a, b) => a + b, 0)
-									const frames = dur * 1000 / timebase
+									const frames = Math.round(dur * 1000 / timebase)
 									messages.push(`${frames} ${type} frame${frames > 1 ? 's' : ''} detected in clip.`)
 								}
 							}
