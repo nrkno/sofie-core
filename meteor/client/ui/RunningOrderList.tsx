@@ -20,6 +20,7 @@ import { ManualPlayout } from './manualPlayout'
 import { getDeveloperMode } from '../lib/localStorage'
 import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
+import { getAdminMode } from '../lib/localStorage'
 
 const PackageInfo = require('../../package.json')
 
@@ -151,7 +152,7 @@ export class RunningOrderListItem extends React.Component<Translated<IRunningOrd
 						{this.props.runningOrder.airStatus}
 					</td>
 					<td className='running-order-list-item__actions'>
-						{(this.props.runningOrder && this.props.runningOrder.unsynced) &&
+						{(this.props.runningOrder && (this.props.runningOrder.unsynced || getAdminMode())) &&
 							<React.Fragment>
 								<Tooltip overlay={t('Delete')} placement='top'>
 									<button className='action-btn' onClick={(e) => this.confirmDelete(this.props.runningOrder)}>
