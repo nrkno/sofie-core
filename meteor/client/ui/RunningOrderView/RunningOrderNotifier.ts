@@ -198,7 +198,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 					this._runningOrderStatusDep.changed()
 				} else if (!newNotification && this._runningOrderStatus[unsyncedId]) {
 					delete this._runningOrderStatus[unsyncedId]
-					this._deviceStatusDep.changed()
+					this._runningOrderStatusDep.changed()
 				}
 			}
 		})
