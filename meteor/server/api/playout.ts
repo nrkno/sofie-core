@@ -404,17 +404,16 @@ export namespace ServerPlayoutAPI {
 					runningOrderId: runningOrder._id
 				}, adlibItems)
 			}
-
-			updateTimeline(studio._id)
-
-			Meteor.defer(() => {
-				let bp = getBlueprintOfRunningOrder(runningOrder)
-				if (bp.onRunningOrderActivate) {
-					Promise.resolve(bp.onRunningOrderActivate(new RunningOrderContext(runningOrder)))
-					.catch(logger.error)
-				}
-			})
 		}
+		updateTimeline(studio._id)
+
+		Meteor.defer(() => {
+			let bp = getBlueprintOfRunningOrder(runningOrder)
+			if (bp.onRunningOrderActivate) {
+				Promise.resolve(bp.onRunningOrderActivate(new RunningOrderContext(runningOrder)))
+				.catch(logger.error)
+			}
+		})
 	}
 	function deactivateRunningOrder (runningOrder: RunningOrder) {
 		logger.info('Deactivating RO ' + runningOrder._id)
