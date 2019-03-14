@@ -21,6 +21,7 @@ import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
+import { doModalDialog, SomeEvent, ModalInputResult } from '../../lib/ModalDialog'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -290,6 +291,36 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		// this.props.onFollowLiveLine && this.props.onFollowLiveLine(false, e)
 		e.preventDefault()
 		e.stopPropagation()
+		this.tempDisplayInOutpoints(e)
+
+	}
+	tempDisplayInOutpoints = (e: React.MouseEvent<HTMLDivElement>) => {
+		// Note: This is a TEMPORARY way to set in & out points, will be replaced with a much nicer looking way at a later stage
+		doModalDialog({
+			title: 'Set in point & duration',
+			message: 'Please set the in-point & duration below',
+			yes: 'Save',
+			no: 'Discard',
+			// acceptOnly?: boolean
+			onAccept: (e: SomeEvent, inputResult: ModalInputResult) => {
+				console.log('accept', inputResult)
+				// call a meteor method to update the in & out-point
+			},
+			inputs: {
+				inPoint: {
+					label: 'In point',
+					text: 'In point',
+					type: 'float',
+					defaultValue: 123
+				},
+				duration: {
+					label: 'Duration',
+					text: 'Duration',
+					type: 'float',
+					defaultValue: 14
+				}
+			}
+		})
 	}
 
 	itemDblClick = (e: React.MouseEvent<HTMLDivElement>) => {
