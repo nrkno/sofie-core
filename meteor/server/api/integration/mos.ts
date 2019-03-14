@@ -291,6 +291,8 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 			holdMode: 				resultSl.holdMode || SegmentLineHoldMode.NONE,
 			classes: 				resultSl.classes || [],
 			classesForNext: 		resultSl.classesForNext || [],
+			displayDurationGroup: 	resultSl.displayDurationGroup || '', // TODO - or unset?
+			displayDuration: 		resultSl.displayDuration || 0, // TODO - or unset
 		}})
 	} else {
 		SegmentLines.update(segmentLine._id, {$set: {
