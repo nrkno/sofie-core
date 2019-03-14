@@ -416,8 +416,8 @@ export const RunningOrderNotifier = class extends React.Component<IProps> {
 
 	shouldComponentUpdate (nextProps: IProps): boolean {
 		if ((this.props.runningOrderId === nextProps.runningOrderId) &&
-			(this.props.showStyleBase === nextProps.showStyleBase) &&
-			(this.props.studioInstallation === nextProps.studioInstallation)) {
+			(this.props.showStyleBase._id !== nextProps.showStyleBase._id) &&
+			(this.props.studioInstallation._id !== nextProps.studioInstallation._id)) {
 			return false
 		}
 		return true
