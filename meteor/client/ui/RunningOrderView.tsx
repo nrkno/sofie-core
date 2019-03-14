@@ -1614,7 +1614,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									onRegisterHotkeys={this.onRegisterHotkeys} />
 							</ErrorBoundary>
 							<ErrorBoundary>
-								<RunningOrderNotifier runningOrderId={this.props.runningOrder._id} studioId={this.props.studioInstallation._id} />
+								{this.props.runningOrder && this.props.studioInstallation && this.props.showStyleBase &&
+									<RunningOrderNotifier runningOrderId={this.props.runningOrder._id} studioInstallation={this.props.studioInstallation} showStyleBase={this.props.showStyleBase} />
+								}
 							</ErrorBoundary>
 						</div>
 					</RunningOrderTimingProvider>
