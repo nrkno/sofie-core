@@ -178,6 +178,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 		// })
 
 		let segmentLineItemsLookup: ISegmentLineItemExtendedDictionary = {}
+		const displayDurationGroups: _.Dictionary<number> = {}
 
 		let startsAt = 0
 		let previousSegmentLine: SegmentLineExtended
@@ -303,6 +304,13 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 			})
 
 			segmentLineE.renderedDuration = segmentLineE.expectedDuration || DEFAULT_DISPLAY_DURATION // furthestDuration
+
+			if (segmentLineE.displayDurationGroup) {
+				displayDurationGroups[segmentLineE.displayDurationGroup] = (displayDurationGroups[segmentLineE.displayDurationGroup] || 0) + (segmentLineE.expectedDuration || 0)
+				segmentLineE.renderedDuration = segmentLineE.displayDuration || displayDurationGroups[segmentLineE.displayDurationGroup]
+				displayDurationGroups[segmentLineE.displayDurationGroup] = Math.max(0, displayDurationGroups[segmentLineE.displayDurationGroup] - segmentLineE.renderedDuration)
+			}
+
 			segmentLineE.startsAt = startsAt
 			startsAt = segmentLineE.startsAt + (segmentLineE.renderedDuration || 0)
 

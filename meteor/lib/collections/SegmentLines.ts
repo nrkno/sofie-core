@@ -136,6 +136,8 @@ export class SegmentLine implements DBSegmentLine {
 	public metaData?: Array<MOS.IMOSExternalMetaData>
 	public status?: MOS.IMOSObjectStatus
 	public expectedDuration?: number
+	public displayDuration?: number
+	public displayDurationGroup?: string
 	public startedPlayback?: boolean
 	public stoppedPlayback?: boolean
 	public duration?: number

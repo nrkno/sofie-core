@@ -245,7 +245,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 						(this.getCurrentLiveLinePosition() + this.getLiveLineTimePadding(props.timeScale))
 					) || 0),
 					props.timingDurations.segmentLineDurations ?
-						props.timingDurations.segmentLineDurations[props.segmentLine._id] :
+						(props.segmentLine.displayDuration || props.timingDurations.segmentLineDurations[props.segmentLine._id]) :
 						0
 				)
 				: 0
@@ -286,7 +286,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 								this.getCurrentLiveLinePosition() + this.getLiveLineTimePadding(nextProps.timeScale))
 						) || 0),
 					nextProps.timingDurations.segmentLineDurations ?
-						nextProps.timingDurations.segmentLineDurations[nextProps.segmentLine._id] :
+						(nextProps.segmentLine.displayDuration || nextProps.timingDurations.segmentLineDurations[nextProps.segmentLine._id]) :
 						0
 				)
 				: 0
