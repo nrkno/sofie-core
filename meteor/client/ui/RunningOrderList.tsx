@@ -3,7 +3,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Link } from 'react-router-dom'
-import Tooltip = require('rc-tooltip')
+const Tooltip = require('rc-tooltip')
 import timer from 'react-timer-hoc'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import Moment from 'react-moment'
@@ -14,214 +14,14 @@ import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faSync from '@fortawesome/fontawesome-free-solid/faSync'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
-import { RunningOrderAPI } from '../../lib/api/runningOrder'
+import { ModalDialog } from '../lib/ModalDialog'
 import { SystemStatusAPI, StatusResponse } from '../../lib/api/systemStatus'
-import { callMethod } from '../lib/clientAPI'
 import { ManualPlayout } from './manualPlayout'
 import { getDeveloperMode } from '../lib/localStorage'
+import { doUserAction } from '../lib/userAction'
+import { UserActionAPI } from '../../lib/api/userActions'
 
 const PackageInfo = require('../../package.json')
-
-interface IRunningOrdersListProps {
-	runningOrders: Array<RunningOrder>
-}
-
-interface IRunningOrdersListState {
-	systemStatus?: StatusResponse
-}
-
-export const RunningOrderList = translateWithTracker(() => {
-	// console.log('PeripheralDevices',PeripheralDevices);
-	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
-
-	return {
-		runningOrders: RunningOrders.find({}, { sort: { created: -1 } }).fetch()
-	}
-})(
-class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunningOrdersListState> {
-	// private _subscriptions: Array<Meteor.SubscriptionHandle> = []
-
-	constructor (props) {
-		super(props)
-
-		this.state = {}
-	}
-
-	componentDidMount () {
-		Meteor.call(SystemStatusAPI.getSystemStatus, (err: any, systemStatus: StatusResponse) => {
-			if (err) {
-				console.error(err)
-				return
-			}
-
-			this.setState({
-				systemStatus: systemStatus
-			})
-		})
-	}
-
-	deleteRO = (ro: RunningOrder, e: any) => {
-		const { t } = this.props
-
-		if (!ro.active) {
-			callMethod(e, RunningOrderAPI.methods.removeRunningOrder, ro._id, (err, res) => {
-				if (err) {
-					// todo: notify the user
-					console.error(err)
-				} else {
-					// console.log('segmentLineItemId', segmentLineItemId)
-					console.log(res)
-				}
-			})
-		} else {
-			doModalDialog({
-				title: t('Running Order is active'),
-				message: (<p>The running order is active. You need to deactivate it to be able to delete it.</p>),
-				acceptOnly: true,
-				yes: 'OK',
-				onAccept: () => { console.log('Discarded') }
-			})
-		}
-	}
-
-	syncRO = (ro: RunningOrder, e: any) => {
-		const { t } = this.props
-
-		if (!ro.active) {
-			callMethod(e, RunningOrderAPI.methods.resyncRunningOrder, ro._id, (err, res) => {
-				if (err) {
-					// todo: notify the user
-					console.error(err)
-				} else {
-					// console.log('segmentLineItemId', segmentLineItemId)
-					console.log(res)
-				}
-			})
-		} else {
-			doModalDialog({
-				title: t('Running Order is active'),
-				message: (<p>The running order is active. You need to deactivate it to be able to re-sync it with MOS.</p>),
-				acceptOnly: true,
-				yes: 'OK',
-				onAccept: () => { console.log('Discarded') }
-			})
-		}
-	}
-
-	renderRunningOrders () {
-		return this.props.runningOrders.map((runningOrder) => (
-			<RunningOrderListItem key={runningOrder._id} runningOrder={runningOrder} onDeleteRO={this.deleteRO} onSyncRO={this.syncRO} t={this.props.t} />
-		))
-	}
-	componentWillMount () {
-		// Subscribe to data:
-		// TODO: make something clever here, to not load ALL the runningOrders
-		this.subscribe('runningOrders', {})
-	}
-
-	render () {
-		const { t } = this.props
-
-		return <React.Fragment>
-			<div className='mtl gutter'>
-				<header className='mvs'>
-					<h1>{t('Running Orders')}</h1>
-				</header>
-				<div className='mod mvl'>
-					<table className='table system-status-table expando expando-tight'>
-						<thead>
-							<tr className='hl'>
-								<th className='c3'>
-									{t('Running Order')}
-								</th>
-								<th className='c2'>
-									{t('ID')}
-								</th>
-								<th className='c2'>
-									{t('Created')}
-								</th>
-								<th className='c2'>
-									{t('On Air Start Time')}
-								</th>
-								<th className='c1'>
-									{t('Duration')}
-								</th>
-								<th className='c1'>
-									{t('Status')}
-								</th>
-								<th className='c1'>
-									{t('Air Status')}
-								</th>
-								<th className='c1'>
-									&nbsp;
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{this.renderRunningOrders()}
-						</tbody>
-					</table>
-				</div>
-			</div>
-			<div className='mtl gutter version-info'>
-				<p>
-					{t('Sofie Automation')} {t('version')}: {PackageInfo.version || 'UNSTABLE'}
-				</p>
-				<div>
-					{
-						this.state.systemStatus ?
-							<React.Fragment>
-								<div>
-									{t('status')}: {this.state.systemStatus.status} / {this.state.systemStatus._internal.statusCodeString}
-								</div>
-								<div>
-									{
-										this.state.systemStatus._internal.messages.length ?
-											<div>
-												{t('Status messages:')}
-												<ul>
-													{_.map(this.state.systemStatus._internal.messages, (message, i) => {
-														return (
-															<li key={i}>
-																{message}
-															</li>
-														)
-													})}
-												</ul>
-											</div> :
-										null
-									}
-								</div>
-							</React.Fragment>
-							: null
-					}
-				</div>
-				{
-					getDeveloperMode() ?
-					<ManualPlayout></ManualPlayout> : null
-				}
-			</div>
-		</React.Fragment>
-	}
-}
-)
-
-interface IActiveProgressBarProps {
-	runningOrder: RunningOrder
-}
-
-const ActiveProgressBar = timer(1000)(class extends React.Component<IActiveProgressBarProps> {
-	render () {
-		return (this.props.runningOrder.startedPlayback && this.props.runningOrder.expectedDuration ?
-			<div className='progress-bar'>
-				<div className='pb-indicator' style={{
-					'width': Math.min(((getCurrentTime() - this.props.runningOrder.startedPlayback) / this.props.runningOrder.expectedDuration) * 100, 100) + '%'
-				}} />
-			</div> : null
-		)
-	}
-})
 
 interface IRunningOrderListItemProps {
 	key: string,
@@ -249,7 +49,7 @@ export class RunningOrderListItem extends React.Component<Translated<IRunningOrd
 
 	getRunningOrderLink (runningOrderId) {
 		// double encoding so that "/" are handled correctly
-		return '/ro/' + encodeURIComponent(encodeURIComponent( runningOrderId ))
+		return '/ro/' + encodeURIComponent(encodeURIComponent(runningOrderId))
 	}
 
 	handleConfirmDeleteCancel = (e) => {
@@ -326,7 +126,7 @@ export class RunningOrderListItem extends React.Component<Translated<IRunningOrd
 							</div>
 							: null
 						}
-							<Link to={this.getRunningOrderLink(this.props.runningOrder._id)}>{this.props.runningOrder.name}</Link>
+						<Link to={this.getRunningOrderLink(this.props.runningOrder._id)}>{this.props.runningOrder.name}</Link>
 					</th>
 					<td className='running-order-list-item__id'>
 						{this.props.runningOrder._id}
@@ -351,7 +151,7 @@ export class RunningOrderListItem extends React.Component<Translated<IRunningOrd
 						{this.props.runningOrder.airStatus}
 					</td>
 					<td className='running-order-list-item__actions'>
-						{ (this.props.runningOrder && this.props.runningOrder.unsynced) &&
+						{(this.props.runningOrder && this.props.runningOrder.unsynced) &&
 							<React.Fragment>
 								<Tooltip overlay={t('Delete')} placement='top'>
 									<button className='action-btn' onClick={(e) => this.confirmDelete(this.props.runningOrder)}>
@@ -380,3 +180,187 @@ export class RunningOrderListItem extends React.Component<Translated<IRunningOrd
 		)
 	}
 }
+
+interface IRunningOrdersListProps {
+	runningOrders: Array<RunningOrder>
+}
+
+interface IRunningOrdersListState {
+	systemStatus?: StatusResponse
+}
+
+export const RunningOrderList = translateWithTracker(() => {
+	// console.log('PeripheralDevices',PeripheralDevices);
+	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
+
+	return {
+		runningOrders: RunningOrders.find({}, { sort: { created: -1 } }).fetch()
+	}
+})(
+class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunningOrdersListState> {
+	// private _subscriptions: Array<Meteor.SubscriptionHandle> = []
+
+	constructor (props) {
+		super(props)
+
+		this.state = {}
+	}
+
+	componentDidMount () {
+		Meteor.call(SystemStatusAPI.getSystemStatus, (err: any, systemStatus: StatusResponse) => {
+			if (err) {
+				console.error(err)
+				return
+			}
+
+			this.setState({
+				systemStatus: systemStatus
+			})
+		})
+	}
+
+	deleteRO = (ro: RunningOrder, e: any) => {
+		const { t } = this.props
+
+		doUserAction(t, e, UserActionAPI.methods.removeRunningOrder, [ro._id])
+	}
+
+	syncRO = (ro: RunningOrder, e: any) => {
+		const { t } = this.props
+
+		doUserAction(t, e, UserActionAPI.methods.resyncRunningOrder, [ro._id])
+	}
+
+	renderRunningOrders (list: RunningOrder[]) {
+		return list.map((runningOrder) => (
+			<RunningOrderListItem key={runningOrder._id} runningOrder={runningOrder} onDeleteRO={this.deleteRO} onSyncRO={this.syncRO} t={this.props.t} />
+		))
+	}
+
+	renderUnsyncedRunningOrders (list: RunningOrder[]) {
+		return list.map((runningOrder) => (
+			<RunningOrderListItem key={runningOrder._id} runningOrder={runningOrder} onDeleteRO={this.deleteRO} onSyncRO={this.syncRO} t={this.props.t} />
+		))
+	}
+
+	componentWillMount () {
+		// Subscribe to data:
+		// TODO: make something clever here, to not load ALL the runningOrders
+		this.subscribe('runningOrders', {})
+	}
+
+	render () {
+		const { t } = this.props
+
+		const synced = this.props.runningOrders.filter(i => !i.unsynced)
+		const unsynced = this.props.runningOrders.filter(i => i.unsynced)
+
+		return <React.Fragment>
+			<div className='mtl gutter'>
+				<header className='mvs'>
+					<h1>{t('Running Orders')}</h1>
+				</header>
+				<div className='mod mvl'>
+					<table className='table system-status-table expando expando-tight'>
+						<thead>
+							<tr className='hl'>
+								<th className='c3'>
+									{t('Running Order')}
+								</th>
+								<th className='c2'>
+									{t('ID')}
+								</th>
+								<th className='c2'>
+									{t('Created')}
+								</th>
+								<th className='c2'>
+									{t('On Air Start Time')}
+								</th>
+								<th className='c1'>
+									{t('Duration')}
+								</th>
+								<th className='c1'>
+									{t('Status')}
+								</th>
+								<th className='c1'>
+									{t('Air Status')}
+								</th>
+								<th className='c1'>
+									&nbsp;
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							{this.renderRunningOrders(synced)}
+						</tbody>
+						{unsynced.length > 0 && <tbody>
+							<tr className='hl'>
+								<th colSpan={8} className='pvn phn'>
+									<h2 className='mtm mbs mhn'>{t('Unsynced from MOS')}</h2>
+								</th>
+							</tr>
+						</tbody>}
+						<tbody>
+							{this.renderUnsyncedRunningOrders(unsynced)}
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div className='mtl gutter version-info'>
+				<p>
+					{t('Sofie Automation')} {t('version')}: {PackageInfo.version || 'UNSTABLE'}
+				</p>
+				<div>
+					{
+						this.state.systemStatus ?
+							<React.Fragment>
+								<div>
+									{t('status')}: {this.state.systemStatus.status} / {this.state.systemStatus._internal.statusCodeString}
+								</div>
+								<div>
+									{
+										this.state.systemStatus._internal.messages.length ?
+											<div>
+												{t('Status messages:')}
+												<ul>
+													{_.map(this.state.systemStatus._internal.messages, (message, i) => {
+														return (
+															<li key={i}>
+																{message}
+															</li>
+														)
+													})}
+												</ul>
+											</div> :
+										null
+									}
+								</div>
+							</React.Fragment>
+							: null
+					}
+				</div>
+				{
+					getDeveloperMode() ?
+					<ManualPlayout></ManualPlayout> : null
+				}
+			</div>
+		</React.Fragment>
+	}
+}
+)
+
+interface IActiveProgressBarProps {
+	runningOrder: RunningOrder
+}
+
+const ActiveProgressBar = timer(1000)(class extends React.Component<IActiveProgressBarProps> {
+	render () {
+		return (this.props.runningOrder.startedPlayback && this.props.runningOrder.expectedDuration ?
+			<div className='progress-bar'>
+				<div className='pb-indicator' style={{
+					'width': Math.min(((getCurrentTime() - this.props.runningOrder.startedPlayback) / this.props.runningOrder.expectedDuration) * 100, 100) + '%'
+				}} />
+			</div> : null
+		)
+	}
+})

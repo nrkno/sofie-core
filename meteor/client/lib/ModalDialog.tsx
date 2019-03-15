@@ -14,14 +14,15 @@ interface IModalDialogAttributes {
 	title: string
 	secondaryText?: string
 	acceptText: string
-	onAccept?: (e) => void
-	onSecondary?: (e) => void
-	onDiscard?: (e) => void
+	onAccept?: (e: SomeEvent) => void
+	onSecondary?: (e: SomeEvent) => void
+	onDiscard?: (e: SomeEvent) => void
 }
+type SomeEvent = Event | React.MouseEvent<HTMLElement>
 export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	boundKeys: Array<string> = []
 
-	constructor (args) {
+	constructor (args: IModalDialogAttributes) {
 		super(args)
 	}
 
@@ -40,13 +41,13 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	bindKeys = () => {
 		if (this.props.show) {
 			if (this.boundKeys.indexOf('enter') < 0) {
-				mousetrapHelper.bind('enter', this.preventDefault, 'keydown')
-				mousetrapHelper.bind('enter', this.handleKey, 'keyup')
+				mousetrapHelper.bind('enter', this.preventDefault, 'keydown', undefined, true)
+				mousetrapHelper.bind('enter', this.handleKey, 'keyup', undefined, true)
 				this.boundKeys.push('enter')
 			}
 			if (this.boundKeys.indexOf('esc') < 0) {
-				mousetrapHelper.bind('esc', this.preventDefault, 'keydown')
-				mousetrapHelper.bind('esc', this.handleKey, 'keyup')
+				mousetrapHelper.bind('esc', this.preventDefault, 'keydown', undefined, true)
+				mousetrapHelper.bind('esc', this.handleKey, 'keyup', undefined, true)
 				this.boundKeys.push('esc')
 			}
 		} else {
@@ -62,7 +63,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 		this.boundKeys.length = 0
 	}
 
-	handleKey = (e) => {
+	handleKey = (e: KeyboardEvent) => {
 		if (this.props.show) {
 			if (e.keyCode === 13) { // Enter
 				this.handleAccept(e)
@@ -76,19 +77,19 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 		}
 	}
 
-	handleAccept = (e) => {
+	handleAccept = (e: SomeEvent) => {
 		if (this.props.onAccept && typeof this.props.onAccept === 'function') {
 			this.props.onAccept(e)
 		}
 	}
 
-	handleSecondary = (e) => {
+	handleSecondary = (e: SomeEvent) => {
 		if (this.props.onSecondary && typeof this.props.onSecondary === 'function') {
 			this.props.onSecondary(e)
 		}
 	}
 
-	handleDiscard = (e) => {
+	handleDiscard = (e: SomeEvent) => {
 		if (this.props.onDiscard && typeof this.props.onDiscard === 'function') {
 			this.props.onDiscard(e)
 		} else {
@@ -167,7 +168,7 @@ interface IModalDialogGlobalContainerState {
 }
 
 class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialogGlobalContainerProps>, IModalDialogGlobalContainerState> {
-	constructor (props) {
+	constructor (props: Translated<IModalDialogGlobalContainerProps>) {
 		super(props)
 		if (modalDialogGlobalContainerSingleton) {
 			logger.warning('modalDialogGlobalContainerSingleton called more than once!')
@@ -183,6 +184,9 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 		this.setState({
 			queue
 		})
+	}
+	public queueHasItems (): boolean {
+		return this.state.queue.length > 0
 	}
 	onAccept = (e: any) => {
 		let queue = this.state.queue
@@ -268,4 +272,13 @@ export function doModalDialog (q: ModalDialogQueueItem) {
 	} else {
 		logger.error('modalDialogGlobalContainerSingleton not set!')
 	}
+}
+/**
+ * Return true if there's any modal currently showing
+ */
+export function isModalShowing (): boolean {
+	if (modalDialogGlobalContainerSingleton) {
+		return modalDialogGlobalContainerSingleton.queueHasItems()
+	}
+	return false
 }

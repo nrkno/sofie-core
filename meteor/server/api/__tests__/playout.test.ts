@@ -2,13 +2,14 @@ import * as chai from 'chai'
 import * as _ from 'underscore'
 import {} from 'mocha'
 
-import { RunningOrder, RunningOrders, DBRunningOrder, RoData } from '../../../lib/collections/RunningOrders'
-import { SegmentLine, SegmentLines, DBSegmentLine } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
+import { RunningOrder, DBRunningOrder, RoData } from '../../../lib/collections/RunningOrders'
+import { SegmentLine, DBSegmentLine } from '../../../lib/collections/SegmentLines'
+import { SegmentLineItem } from '../../../lib/collections/SegmentLineItems'
 
-import { buildTimelineObjs } from '../playout'
-import { getSlGroupId, getSlFirstObjectId, TriggerType, getSliGroupId, getSliFirstObjectId } from 'tv-automation-sofie-blueprints-integration/dist/timeline';
-import { RunningOrderAPI } from '../../../lib/api/runningOrder';
+import { buildTimelineObjsForRunningOrder } from '../playout'
+import { getSlGroupId, getSlFirstObjectId, getSliGroupId, getSliFirstObjectId } from 'tv-automation-sofie-blueprints-integration/dist/timeline'
+import { TriggerType } from 'superfly-timeline'
+import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 
 const expect = chai.expect
 const assert = chai.assert
@@ -18,7 +19,8 @@ function createEmptyRoData () {
 		_id: 'mock',
 		mosId: '',
 		studioInstallationId: '',
-		showStyleId: '',
+		showStyleBaseId: '',
+		showStyleVariantId: '',
 		mosDeviceId: '',
 		name: 'Mock',
 		created: 0,
@@ -102,13 +104,14 @@ function createEmptySegmentLineItem (id: string, slId: string) {
 	return sli
 }
 
-describe('playout: buildTimelineObjs', function () {
+describe('playout: buildTimelineObjsForRunningOrder', function () {
 
 	it('Empty RO', function () {
 		const roData = createEmptyRoData()
 
-		const res = buildTimelineObjs(roData, [])
-		expect(res).empty
+		const res = buildTimelineObjsForRunningOrder(roData, [])
+		expect(res).lengthOf(1)
+		expect(res[0]._id).to.eq('mock_status')
 	})
 
 	it('Simple RO', function () {
@@ -121,7 +124,7 @@ describe('playout: buildTimelineObjs', function () {
 		roData.runningOrder.previousSegmentLineId = 'a'
 		roData.runningOrder.currentSegmentLineId = 'b'
 
-		const res = buildTimelineObjs(roData, [])
+		const res = buildTimelineObjsForRunningOrder(roData, [])
 		expect(res).not.empty
 
 		// Not defined as no startedPlayback on a
@@ -258,11 +261,12 @@ describe('playout: buildTimelineObjs', function () {
 	it('Overlap - no transition (cut)', function () {
 		const roData = createBasicCutScenario(false)
 
-		const res = buildTimelineObjs(roData, [])
+		const res = buildTimelineObjsForRunningOrder(roData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
+			'mock_status',
 			'previous_' + getSlGroupId('a'),
 			'previous_' + getSliGroupId('a_1'),
 			'previous_' + getSliFirstObjectId('a_1'),
@@ -291,11 +295,12 @@ describe('playout: buildTimelineObjs', function () {
 	it('Overlap - no transition (cut) and autonext', function () {
 		const roData = createBasicCutScenario(true)
 
-		const res = buildTimelineObjs(roData, [])
+		const res = buildTimelineObjsForRunningOrder(roData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
+			'mock_status',
 			'previous_' + getSlGroupId('a'),
 			'previous_' + getSliGroupId('a_1'),
 			'previous_' + getSliFirstObjectId('a_1'),
@@ -331,11 +336,12 @@ describe('playout: buildTimelineObjs', function () {
 	it('Overlap - "normal" transition with gap', function () {
 		const roData = createBasicTransitionScenario(300, 500, 400)
 
-		const res = buildTimelineObjs(roData, [])
+		const res = buildTimelineObjsForRunningOrder(roData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
+			'mock_status',
 			'previous_' + getSlGroupId('a'),
 			'previous_' + getSliGroupId('a_1'),
 			'previous_' + getSliFirstObjectId('a_1'),
@@ -378,11 +384,12 @@ describe('playout: buildTimelineObjs', function () {
 	it('Overlap - "normal" transition no gap', function () {
 		const roData = createBasicTransitionScenario(300, 500, 500)
 
-		const res = buildTimelineObjs(roData, [])
+		const res = buildTimelineObjsForRunningOrder(roData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
+			'mock_status',
 			'previous_' + getSlGroupId('a'),
 			'previous_' + getSliGroupId('a_1'),
 			'previous_' + getSliFirstObjectId('a_1'),
@@ -425,11 +432,12 @@ describe('playout: buildTimelineObjs', function () {
 	it('Overlap - "fast" transition with gap', function () {
 		const roData = createBasicTransitionScenario(500, 300, 200)
 
-		const res = buildTimelineObjs(roData, [])
+		const res = buildTimelineObjsForRunningOrder(roData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
+			'mock_status',
 			'previous_' + getSlGroupId('a'),
 			'previous_' + getSliGroupId('a_1'),
 			'previous_' + getSliFirstObjectId('a_1'),
@@ -472,11 +480,12 @@ describe('playout: buildTimelineObjs', function () {
 	it('Overlap - "fast" transition no gap', function () {
 		const roData = createBasicTransitionScenario(500, 300, 400)
 
-		const res = buildTimelineObjs(roData, [])
+		const res = buildTimelineObjsForRunningOrder(roData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
+			'mock_status',
 			'previous_' + getSlGroupId('a'),
 			'previous_' + getSliGroupId('a_1'),
 			'previous_' + getSliFirstObjectId('a_1'),
@@ -519,11 +528,12 @@ describe('playout: buildTimelineObjs', function () {
 	it('Overlap - next is "normal" transition with gap', function () {
 		const roData = createBasicNextTransitionScenario(300, 500, 400)
 
-		const res = buildTimelineObjs(roData, [])
+		const res = buildTimelineObjsForRunningOrder(roData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
+			'mock_status',
 			getSlGroupId('a'),
 			getSlFirstObjectId('a'),
 			getSliGroupId('a_1'),
@@ -560,11 +570,12 @@ describe('playout: buildTimelineObjs', function () {
 	it('Overlap - next is "normal" transition no gap', function () {
 		const roData = createBasicNextTransitionScenario(300, 500, 500)
 
-		const res = buildTimelineObjs(roData, [])
+		const res = buildTimelineObjsForRunningOrder(roData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
+			'mock_status',
 			getSlGroupId('a'),
 			getSlFirstObjectId('a'),
 			getSliGroupId('a_1'),
@@ -601,11 +612,12 @@ describe('playout: buildTimelineObjs', function () {
 	it('Overlap - next is "fast" transition with gap', function () {
 		const roData = createBasicNextTransitionScenario(500, 300, 200)
 
-		const res = buildTimelineObjs(roData, [])
+		const res = buildTimelineObjsForRunningOrder(roData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
+			'mock_status',
 			getSlGroupId('a'),
 			getSlFirstObjectId('a'),
 			getSliGroupId('a_1'),
@@ -642,11 +654,12 @@ describe('playout: buildTimelineObjs', function () {
 	it('Overlap - next is "fast" transition no gap', function () {
 		const roData = createBasicNextTransitionScenario(500, 300, 400)
 
-		const res = buildTimelineObjs(roData, [])
+		const res = buildTimelineObjsForRunningOrder(roData, [])
 		expect(res).not.empty
 
 		const ids = res.map(o => o._id)
 		expect(ids.sort()).eql([
+			'mock_status',
 			getSlGroupId('a'),
 			getSlFirstObjectId('a'),
 			getSliGroupId('a_1'),

@@ -103,7 +103,7 @@ export class RunningOrder implements DBRunningOrder {
 	public dataSource: string
 
 	constructor (document: DBRunningOrder) {
-		_.each(_.keys(document), (key) => {
+		_.each(_.keys(document), (key: keyof DBRunningOrder) => {
 			this[key] = document[key]
 		})
 	}
@@ -220,7 +220,7 @@ export class RunningOrder implements DBRunningOrder {
 	fetchAllData (): RoData {
 
 		// Do fetches in parallell:
-		let ps = [
+		let ps: [Promise<Segment[]>, Promise<SegmentLine[]>, Promise<SegmentLineItem[]> ] = [
 
 			new Promise((resolve, reject) => {
 				Meteor.defer(() => {
@@ -250,7 +250,7 @@ export class RunningOrder implements DBRunningOrder {
 				})
 			})
 		]
-		let r = waitForPromiseAll(ps)
+		let r = waitForPromiseAll(ps as any)
 		let segments: Segment[] 				= r[0]
 		let segmentLines: SegmentLine[] 		= r[1]
 		let segmentLineItems: SegmentLineItem[] = r[2]
@@ -295,7 +295,6 @@ export interface RoData {
 export const RunningOrders: TransformedCollection<RunningOrder, DBRunningOrder>
 	= new Mongo.Collection<RunningOrder>('rundowns', {transform: (doc) => applyClassToDocument(RunningOrder, doc) })
 registerCollection('RunningOrders', RunningOrders)
-let c = RunningOrders
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		RunningOrders._ensureIndex({

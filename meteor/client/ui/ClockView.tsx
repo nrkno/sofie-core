@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as ClassNames from 'classnames'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
@@ -14,11 +13,10 @@ import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines'
 import { SegmentLineUi } from './SegmentTimeline/SegmentTimelineContainer'
 
 import { RundownUtils } from '../lib/rundown'
-import * as TimecodeString from 'smpte-timecode'
-import { Settings } from '../../lib/Settings'
 import { getCurrentTime, objectPathGet, extendMandadory } from '../../lib/lib'
 import { SegmentItemIconContainer, SegmentItemNameContainer } from './SegmentItemIcons/SegmentItemIcon'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
 
 interface SegmentUi extends Segment {
 	items: Array<SegmentLineUi>
@@ -45,7 +43,7 @@ const Timediff = class extends React.Component<{ time: number}> {
 		const isNegative = (Math.floor(time / 1000) > 0)
 		const timeString = RundownUtils.formatDiffToTimecode(time, true, false, true, false, true, '', false, true) // @todo: something happened here with negative time
 		// RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)
-		const timeStringSegments = timeString.split(':')
+		// const timeStringSegments = timeString.split(':')
 		const fontWeight = (no) => no === '00' || no === '+00'
 		return (
 			<span className={ClassNames({
@@ -130,14 +128,14 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 						}
 					}
 				}
-				let nextSegmentDuration = 0
-				if (nextSegmentLine) {
-					nextSegmentDuration += nextSegmentLine.expectedDuration || 0
-					nextSegmentDuration += -1 * (nextSegmentLine.duration || 0)
-					if (!nextSegmentLine.duration && nextSegmentLine.startedPlayback) {
-						nextSegmentDuration += -1 * (getCurrentTime() - nextSegmentLine.startedPlayback)
-					}
-				}
+				// let nextSegmentDuration = 0
+				// if (nextSegmentLine) {
+				// 	nextSegmentDuration += nextSegmentLine.expectedDuration || 0
+				// 	nextSegmentDuration += -1 * (nextSegmentLine.duration || 0)
+				// 	if (!nextSegmentLine.duration && nextSegmentLine.startedPlayback) {
+				// 		nextSegmentDuration += -1 * (getCurrentTime() - nextSegmentLine.startedPlayback)
+				// 	}
+				// }
 
 				const overUnderClock = runningOrder.expectedDuration ?
 					(this.props.timingDurations.asPlayedRundownDuration || 0) - runningOrder.expectedDuration
@@ -223,7 +221,7 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 			studioInstallationId: studioId
 		})
 	)
-	Meteor.subscribe('studioInstallations', {
+	meteorSubscribe(PubSub.studioInstallations, {
 		_id: studioId
 	})
 
@@ -290,12 +288,12 @@ class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 	}
 
 	render () {
-		const { t, runningOrder, segmentLines, segments } = this.props
+		const { t } = this.props
 
-		if (runningOrder) {
+		if (this.props.runningOrder) {
 			return (
-				<RunningOrderTimingProvider runningOrder={runningOrder} >
-					<ClockComponent runningOrderId={runningOrder._id} />
+				<RunningOrderTimingProvider runningOrder={this.props.runningOrder} >
+					<ClockComponent runningOrderId={this.props.runningOrder._id} />
 				</RunningOrderTimingProvider>
 			)
 		} else {

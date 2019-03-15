@@ -49,8 +49,9 @@ export enum NoticeLevel {
 
 export interface NotificationAction {
 	label: string
-	type: string
+	type: string // for a default, use 'default'
 	icon?: any
+	action?: Function
 }
 
 export type Notifier = () => NotificationList
@@ -78,10 +79,12 @@ export class NotifierObject {
 	constructor (notifierId: string, source: Notifier) {
 		this.id = notifierId
 		this.source = source
-		this.handle = Tracker.autorun(() => {
-			this.result = source().get()
-			notificationsDep.changed()
-		})
+		this.handle = Tracker.nonreactive(() => {
+			return Tracker.autorun(() => {
+				this.result = source().get()
+				notificationsDep.changed()
+			})
+		}) as any as Tracker.Computation
 
 		notifiers[notifierId] = this
 	}
@@ -137,7 +140,7 @@ class NotificationCenter0 {
 					this.drop(id)
 				}
 			}
-		}, this.NOTIFICATION_TIMEOUT)
+		}, notice.timeout || this.NOTIFICATION_TIMEOUT)
 	}
 
 	drop (id: string): void {
@@ -190,12 +193,22 @@ export class Notification extends EventEmitter {
 	message: string | React.ReactNode
 	source: string
 	persistent?: boolean
+	timeout?: number
 	snoozed?: boolean
 	actions?: Array<NotificationAction>
 	created: Time
 	rank: number
 
-	constructor (id: string | undefined, status: NoticeLevel, message: string | React.ReactNode, source: string, created?: Time, persistent?: boolean, actions?: Array<NotificationAction>, rank?: number) {
+	constructor (
+		id: string | undefined,
+		status: NoticeLevel,
+		message: string | React.ReactNode,
+		source: string,
+		created?: Time,
+		persistent?: boolean,
+		actions?: Array<NotificationAction>,
+		rank?: number,
+		timeout?: number) {
 		super()
 
 		this.id = id
@@ -206,6 +219,7 @@ export class Notification extends EventEmitter {
 		this.actions = actions || undefined
 		this.created = created || Date.now()
 		this.rank = rank || 0
+		this.timeout = timeout
 	}
 
 	static isEqual (a: Notification | undefined, b: Notification | undefined): boolean {
@@ -214,7 +228,8 @@ export class Notification extends EventEmitter {
 	}
 
 	static compare (a: Notification, b: Notification): number {
-		return (a.status - b.status) || (a.rank - b.rank) || (a.created - b.created)
+		return (!!a.persistent === !!b.persistent ? 0 : a.persistent && !b.persistent ? 1 : -1) ||
+			   (a.status - b.status) || (a.rank - b.rank) || (a.created - b.created)
 	}
 
 	snooze () {

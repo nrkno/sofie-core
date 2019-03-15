@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
-import { applyClassToDocument, Optional, registerCollection } from '../lib'
+import { applyClassToDocument, registerCollection } from '../lib'
 import { SegmentLines, SegmentLineNote } from './SegmentLines'
 import { MOS } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrders } from './RunningOrders'
@@ -18,7 +18,6 @@ export interface DBSegment {
 	runningOrderId: string
 	/** User-presentable name (Slug) for the Title */
 	name: string
-	number: string
 
 	metaData?: Array<MOS.IMOSExternalMetaData>
 	status?: MOS.IMOSObjectStatus
@@ -33,7 +32,6 @@ export class Segment implements DBSegment {
 	public mosId: string
 	public runningOrderId: string
 	public name: string
-	public number: string
 	public metaData?: Array<MOS.IMOSExternalMetaData>
 	public status?: MOS.IMOSObjectStatus
 	public expanded?: boolean

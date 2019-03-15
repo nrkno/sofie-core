@@ -23,6 +23,7 @@ import DeviceSettings from './Settings/DeviceSettings'
 import ShowStyleSettings from './Settings/ShowStyleBaseSettings'
 import SnapshotsView from './Settings/SnapshotsView'
 import BlueprintSettings from './Settings/BlueprintSettings'
+import SystemMessages from './Settings/SystemMessages'
 
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
@@ -34,6 +35,7 @@ import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
 import { ShowStylesAPI } from '../../lib/api/showStyles'
 import { callMethod } from '../lib/clientAPI'
 import { BlueprintAPI } from '../../lib/api/blueprint'
+import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
 
 class WelcomeToSettings extends React.Component {
 	render () {
@@ -53,11 +55,11 @@ interface ISettingsMenuTrackedProps {
 	peripheralDevices: Array<PeripheralDevice>
 }
 const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps >(() => {
-	Meteor.subscribe('studioInstallations', {})
-	Meteor.subscribe('showStyleBases', {})
-	Meteor.subscribe('showStyleVariants', {})
-	Meteor.subscribe('blueprints', {})
-	Meteor.subscribe('peripheralDevices', {})
+	meteorSubscribe(PubSub.studioInstallations, {})
+	meteorSubscribe(PubSub.showStyleBases, {})
+	meteorSubscribe(PubSub.showStyleVariants, {})
+	meteorSubscribe(PubSub.blueprints, {})
+	meteorSubscribe(PubSub.peripheralDevices, {})
 
 	return {
 		studioInstallations: StudioInstallations.find({}).fetch(),
@@ -112,6 +114,8 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				return t('MOS Gateway')
 			case PeripheralDeviceAPI.DeviceType.PLAYOUT:
 				return t('Play-out Gateway')
+			case PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER:
+				return t('Media Manager')
 			case PeripheralDeviceAPI.DeviceType.OTHER:
 				return ''
 			default:
@@ -184,7 +188,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					<button className='action-btn right' onClick={(e) => this.onAddShowStyleBase()}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
-					{t('Show styles')}
+					{t('Show Styles')}
 				</h2>
 				<hr className='vsubtle man' />
 				{
@@ -254,8 +258,11 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				}
 				<h2 className='mhs'>{t('Tools')}</h2>
 				<hr className='vsubtle man' />
+				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/messages'>
+					<h3>{t('System Messages')}</h3>
+				</NavLink>
 				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/migration'>
-					<h3>{t('Upgrade database')}</h3>
+					<h3>{t('Upgrade Database')}</h3>
 				</NavLink>
 				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/snapshots'>
 					<h3>{t('Manage Snapshots')}</h3>
@@ -301,6 +308,7 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 									<Route path='/settings/blueprint/:blueprintId' component={BlueprintSettings} />
 									<Route path='/settings/tools/snapshots' component={SnapshotsView} />
 									<Route path='/settings/tools/migration' component={MigrationView} />
+									<Route path='/settings/tools/messages' component={SystemMessages} />
 									<Redirect to='/settings' />
 								</Switch>
 							</ErrorBoundary>

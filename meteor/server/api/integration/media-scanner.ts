@@ -7,7 +7,7 @@ import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects
 import { setMeteorMethods, Methods, wrapMethods } from '../../methods'
 
 export namespace MediaScannerIntegration {
-	export function getMediaObjectRevisions (id, token, collectionId: string) {
+	export function getMediaObjectRevisions (id: string, token: string, collectionId: string) {
 		logger.debug('getMediaObjectRevisions')
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 
@@ -25,7 +25,7 @@ export namespace MediaScannerIntegration {
 			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studioInstallation')
 		}
 	}
-	export function updateMediaObject (id, token, collectionId: string, objId, doc: MediaObject | null) {
+	export function updateMediaObject (id: string, token: string, collectionId: string, objId: string, doc: MediaObject | null) {
 		// logger.debug('updateMediaObject')
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 
@@ -48,10 +48,10 @@ export namespace MediaScannerIntegration {
 }
 
 let methods: Methods = {}
-methods[PeripheralDeviceAPI.methods.getMediaObjectRevisions] = (deviceId, deviceToken, collectionId: string,) => {
+methods[PeripheralDeviceAPI.methods.getMediaObjectRevisions] = (deviceId: string, deviceToken: string, collectionId: string,) => {
 	return MediaScannerIntegration.getMediaObjectRevisions(deviceId, deviceToken, collectionId)
 }
-methods[PeripheralDeviceAPI.methods.updateMediaObject] = (deviceId, deviceToken, collectionId: string, id: string, doc: MediaObject | null) => {
+methods[PeripheralDeviceAPI.methods.updateMediaObject] = (deviceId: string, deviceToken: string, collectionId: string, id: string, doc: MediaObject | null) => {
 	return MediaScannerIntegration.updateMediaObject(deviceId, deviceToken, collectionId, id, doc)
 }
 // Apply methods:

@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { getCurrentTime, Time } from '../../../lib/lib'
 import { MomentFromNow } from '../../lib/Moment'
 import { getAdminMode } from '../../lib/localStorage'
@@ -17,6 +16,7 @@ import * as moment from 'moment'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { faTrash, faPause, faPlay } from '@fortawesome/fontawesome-free-solid'
 import { ExternalMessageQueueAPI } from '../../../lib/api/ExternalMessageQueue'
+import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 
 interface IExternalMessagesProps {
 }
@@ -94,11 +94,6 @@ interface IExternalMessagesInStudioTrackedProps {
 	sentMessages: Array<ExternalMessageQueueObj>
 }
 
-interface DeviceInHierarchy {
-	device: PeripheralDevice
-	children: Array<DeviceInHierarchy>
-}
-
 const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioProps, IExternalMessagesInStudioState, IExternalMessagesInStudioTrackedProps>((props: IExternalMessagesInStudioProps) => {
 
 	return {
@@ -149,7 +144,7 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 			if (this._sub) {
 				this._sub.stop()
 			}
-			this._sub = Meteor.subscribe('externalMessageQueue', {
+			this._sub = meteorSubscribe(PubSub.externalMessageQueue, {
 				studioId: this.props.studioId,
 				created: {
 					$gte: this.state.dateFrom,
@@ -308,7 +303,6 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 	}
 
 	render () {
-		const { t } = this.props
 
 		return (
 			<div className='mhl gutter external-message-status'>

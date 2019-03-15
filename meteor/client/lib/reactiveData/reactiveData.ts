@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { ReactiveDataHelper } from './reactiveDataHelper'
 import { ReactiveVar } from 'meteor/reactive-var'
@@ -72,9 +71,7 @@ export namespace reactiveData {
 
 	export const getRSegmentLineItems = ReactiveDataHelper.memoizeRVar(
 		function getRSegmentLineItems (roId: string): ReactiveVar<SegmentLineItem[]> {
-			const rVar = new ReactiveVar<SegmentLineItem[]>([], (oldVal: SegmentLineItem[], newVal: SegmentLineItem[]) => {
-				return !((oldVal !== newVal) || (oldVal.length !== newVal.length))
-			})
+			const rVar = new ReactiveVar<SegmentLineItem[]>([])
 
 			Tracker.autorun(() => {
 				const slis = SegmentLineItems.find({

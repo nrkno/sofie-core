@@ -2,18 +2,16 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
-import * as VelocityReact from 'velocity-react'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PeripheralDevice, PeripheralDevices, MosDevice } from '../../../lib/collections/PeripheralDevices'
-import { RunningOrder, RunningOrders } from '../../../lib/collections/RunningOrders'
-import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { RunningOrder } from '../../../lib/collections/RunningOrders'
+import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Time, getCurrentTime } from '../../../lib/lib'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { SegmentLineNote, SegmentLineNoteType, SegmentLines } from '../../../lib/collections/SegmentLines'
 import { scrollToSegment } from '../../lib/viewPort'
-import { SegmentTimelineElementId } from '../SegmentTimeline/SegmentTimeline'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
@@ -157,8 +155,8 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 		}
 	}, PeripheralDeviceAPI.StatusCode.UNKNOWN)
 	const playoutOnlineOffline: OnLineOffLineList = {
-		onLine: playoutDevices.filter(i => i.connected),
-		offLine: playoutDevices.filter(i => !i.connected)
+		onLine: playoutDevices.filter(i => i.connected && i.status.statusCode < PeripheralDeviceAPI.StatusCode.WARNING_MINOR),
+		offLine: playoutDevices.filter(i => !i.connected || i.status.statusCode >= PeripheralDeviceAPI.StatusCode.WARNING_MINOR)
 	}
 
 	let segments = props.runningOrder.getSegments()
@@ -259,6 +257,9 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 		})
 	}
 	render () {
+		const playoutDevicesIssues = this.props.playoutDevices.offLine.filter(dev => dev.connected)
+		const playoutDisconnected = this.props.playoutDevices.offLine.filter(dev => !dev.connected)
+
 		return (
 			<div className='running-order-system-status'>
 				<div className='running-order-system-status__indicators'>
@@ -341,12 +342,24 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 								{
 									this.props.playoutDevices.offLine.length > 0 ?
 										<React.Fragment>
-											<h5>Off-line devices</h5>
-											<ul>
-												{this.props.playoutDevices.offLine.map((dev) => {
-													return <li key={dev._id}>{dev.name}</li>
-												})}
-											</ul>
+											{playoutDisconnected.length ?
+											<React.Fragment>
+												<h5>Off-line devices</h5>
+												<ul>
+													{playoutDisconnected.map((dev) => {
+														return <li key={dev._id}>{dev.name}</li>
+													})}
+												</ul>
+											</React.Fragment> : null}
+											{playoutDevicesIssues.length ?
+											<React.Fragment>
+												<h5>Devices with issues</h5>
+												<ul>
+													{playoutDevicesIssues.map((dev) => {
+														return <li key={dev._id}>{dev.name}</li>
+													})}
+												</ul>
+											</React.Fragment> : null}
 										</React.Fragment>
 									:
 										<span>All devices working correctly</span>

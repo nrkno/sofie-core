@@ -73,6 +73,17 @@
             }
         }
 
+        > .notification-pop-up__contents {
+            flex: 1;
+            padding: 10px 15px;
+            cursor: default;
+
+            > .notification-pop-up__actions {
+                text-align: right;
+                margin-top: 0.5em;
+            }
+        }
+
         &.has-default-action {
             > .notification-pop-up__contents {
                 cursor: pointer;
@@ -81,11 +92,6 @@
                     text-decoration: underline;
                 }
             }
-        }
-
-        > .notification-pop-up__contents {
-            flex: 1;
-            padding: 10px 15px;
         }
 
         > .notification-pop-up__dismiss {
@@ -259,8 +265,8 @@
 }
 
 .running-order-view .notification-center-panel {
-    background: #fff;
-    color: #fff;
+    background: #eee;
+    color: #000;
     top: 64px;
 
     &::before {
@@ -303,6 +309,7 @@
 
 .running-order-view + .notification-pop-ups {
     transition: 1s right ease-out;
+    
 }
 
 .running-order-view.notification-center-open + .notification-pop-ups {

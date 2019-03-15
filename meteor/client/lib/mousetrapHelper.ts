@@ -1,5 +1,7 @@
 import * as mousetrap from 'mousetrap'
 import * as _ from 'underscore'
+import { isEventInInputField } from './lib'
+import { isModalShowing } from './ModalDialog'
 
 export namespace mousetrapHelper {
 	const _boundHotkeys: {
@@ -19,7 +21,7 @@ export namespace mousetrapHelper {
 		})
 	}
 
-	export function bindGlobal (keys: string, callback: (e: Event) => void, action?: string, tag?: string) {
+	export function bindGlobal (keys: string, callback: (e: Event) => void, action?: string, tag?: string, allowInModal?: boolean) {
 		let index = keys
 		if (action) index = keys + '_' + action
 		if (_boundHotkeys[index] === undefined) {
@@ -29,17 +31,25 @@ export namespace mousetrapHelper {
 			}, action)
 		}
 		// console.log(`Registering callback for key combo "${keys}"`)
-		_boundHotkeys[index].push(callback)
+
+		const callbackWrap = (e: Event) => {
+			if (isEventInInputField(e)) return
+			e.preventDefault()
+			if (!allowInModal && isModalShowing()) return
+
+			callback(e)
+		}
+		_boundHotkeys[index].push(callbackWrap)
 
 		if (tag) {
 			if (_callbackTags[index + '_' + tag]) {
-				throw new Error(`Callback with tag "${tag}" already exists for ${index}!`)
+				throw new Error(`Globalbind: Callback with tag "${tag}" already exists for ${index}!`)
 			}
-			_callbackTags[index + '_' + tag] = callback
+			_callbackTags[index + '_' + tag] = callbackWrap
 		}
 	}
 
-	export function bind (keys: string, callback: (e: Event) => void, action?: string, tag?: string) {
+	export function bind (keys: string, callback: (e: Event) => void, action?: string, tag?: string, allowInModal?: boolean) {
 		let index = keys
 		if (action) index = keys + '_' + action
 		if (_boundHotkeys[index] === undefined) {
@@ -49,13 +59,21 @@ export namespace mousetrapHelper {
 			}, action)
 		}
 		// console.log(`Registering callback for key combo "${keys}"`)
-		_boundHotkeys[index].push(callback)
+
+		const callbackWrap = (e: Event) => {
+			if (isEventInInputField(e)) return
+			e.preventDefault()
+			if (!allowInModal && isModalShowing()) return
+
+			callback(e)
+		}
+		_boundHotkeys[index].push(callbackWrap)
 
 		if (tag) {
 			if (_callbackTags[index + '_' + tag]) {
-				throw new Error(`Callback with tag "${tag}" already exists for ${index}!`)
+				throw new Error(`Bind: Callback with tag "${tag}" already exists for ${index}!`)
 			}
-			_callbackTags[index + '_' + tag] = callback
+			_callbackTags[index + '_' + tag] = callbackWrap
 		}
 	}
 

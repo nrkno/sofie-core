@@ -74,8 +74,8 @@ export interface MediaStream {
 export interface MediaFormat {
 	name?: string
 	long_name?: string
-	start_time?: string
-	duration?: string
+	start_time?: number
+	duration?: number
 	bit_rate?: string
 }
 
@@ -90,8 +90,17 @@ export interface MediaInfo {
 	name: string
 	field_order: FieldOrder
 	scenes: number[]
+	blacks: Array<Anomaly>
+	freezes: Array<Anomaly>
 	streams: MediaStream[]
 	format: MediaFormat
+	timebase: number
+}
+
+export interface Anomaly {
+	start: number
+	duration: number
+	end: number
 }
 
 export interface MediaAttachment {

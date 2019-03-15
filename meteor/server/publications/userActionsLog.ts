@@ -1,11 +1,11 @@
-import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
 import { UserActionsLogSecurity } from '../security/userActionsLog'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
+import { meteorPublish } from './lib'
+import { PubSub } from '../../lib/api/pubsub'
 
-Meteor.publish('userActionsLog', (selector) => {
+meteorPublish(PubSub.userActionsLog, (selector) => {
 	if (UserActionsLogSecurity.allowReadAccess({}, this)) {
 		return UserActionsLog.find(selector)
 	}
-	return this.ready()
+	return null
 })

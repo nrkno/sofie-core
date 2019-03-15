@@ -217,6 +217,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				}, (fontFace) => {
 					// console.log('Grid font failed to load: ' + fontFace.status)
 				})
+				.catch(err => console.log(err))
 				document['fonts'].add(gridFont)
 			}
 

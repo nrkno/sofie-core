@@ -7,8 +7,8 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 
 	private _subscriptions: {[id: string]: Meteor.SubscriptionHandle} = {}
 	private _computations: Array<Tracker.Computation> = []
-	constructor (props) {
-		super(props)
+	constructor (props, context?: any) {
+		super(props, context)
 	}
 
 	componentWillUnmount () {

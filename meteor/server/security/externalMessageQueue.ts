@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
 
 // Setup rules:

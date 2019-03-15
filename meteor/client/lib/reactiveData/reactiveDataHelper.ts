@@ -1,10 +1,11 @@
 import * as _ from 'underscore'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Tracker } from 'meteor/tracker'
+import { PubSub } from '../../../lib/api/pubsub'
+import { Meteor } from 'meteor/meteor'
 
 export namespace ReactiveDataHelper {
 	const rVarCache: _.Dictionary<ReactiveVar<any>> = {}
-	const trackers: _.Dictionary<Tracker.Computation> = {}
 
 	function cacheId (...params): string {
 		return params.join('_')
@@ -35,34 +36,29 @@ export namespace ReactiveDataHelper {
 			}
 		}
 	}
-
-	export function registerComputation (id: string, comp: Tracker.Computation) {
-		if (trackers[id] && !trackers[id].stopped) {
-			trackers[id].stop()
-		}
-
-		trackers[id] = comp
-	}
-
-	export function stopComputation (id: string) {
-		if (trackers[id]) {
-			trackers[id].stop()
-			delete trackers[id]
-		}
-	}
 }
 
 export abstract class WithManagedTracker {
 	private _autoruns: Tracker.Computation[] = []
+	private _subs: Meteor.SubscriptionHandle[] = []
 
 	stop () {
 		this._autoruns.forEach((item) => item.stop())
+		setTimeout(() => {
+			this._subs.forEach((item) => item.stop())
+		}, 2000) // wait for a couple of seconds, before unsubscribing
+	}
+
+	protected subscribe (sub: PubSub, ...args: any[]) {
+		this._subs.push(Meteor.subscribe(sub, ...args))
 	}
 
 	protected autorun (func: (comp: Tracker.Computation) => void, options?: { onError: Function | undefined } | undefined): Tracker.Computation {
-		const comp = Tracker.autorun(func, options)
-		this._autoruns.push(comp)
-		return comp
+		return Tracker.nonreactive(() => {
+			const comp = Tracker.autorun(func, options)
+			this._autoruns.push(comp)
+			return comp
+		}) as any as Tracker.Computation
 	}
 }
 

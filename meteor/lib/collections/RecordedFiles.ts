@@ -1,17 +1,17 @@
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection } from '../lib'
+import { registerCollection, Time } from '../lib'
 import { Meteor } from 'meteor/meteor'
 
 export interface RecordedFile {
 	_id: string
 	/** Id of the studio this file originates from */
 	studioId: string
-	modified: number
+	modified: Time
 	name: string
 	path: string
-	startedAt: number
-	stoppedAt?: number
+	startedAt: Time
+	stoppedAt?: Time
 }
 
 export const RecordedFiles: TransformedCollection<RecordedFile, RecordedFile>
@@ -20,7 +20,8 @@ registerCollection('RecordedFiles', RecordedFiles)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		RecordedFiles._ensureIndex({
-			roId: 1
+			studioId: 1,
+			roId: 1,
 		})
 	}
 })

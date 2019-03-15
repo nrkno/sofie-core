@@ -2,8 +2,10 @@ import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
 import { StudioInstallationsSecurity } from '../security/studioInstallations'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
+import { meteorPublish } from './lib'
+import { PubSub } from '../../lib/api/pubsub'
 
-Meteor.publish('mediaObjects', (studioId, selector, token) => {
+meteorPublish(PubSub.mediaObjects, (studioId, selector, token) => {
 	if (!studioId) throw new Meteor.Error(400, 'studioId argument missing')
 	selector = selector || {}
 	check(studioId, String)
@@ -17,5 +19,5 @@ Meteor.publish('mediaObjects', (studioId, selector, token) => {
 		selector.studioId = studioId
 		return MediaObjects.find(selector, modifier)
 	}
-	return this.ready()
+	return null
 })

@@ -5,12 +5,29 @@ export function makeTableOfObject (o: any) {
 	return (
 		<table><tbody>
 			{_.map(o, (val, key) => {
+
+				let content: any = null
+				if (_.isObject(val)) {
+					content = makeTableOfObject(val)
+				} else {
+					content = val
+					if (_.isString(val)) {
+						let json = ''
+						try {
+							json = JSON.parse(val)
+						} catch (e) {
+							// ignore
+						}
+						if (json) {
+							// @ts-ignore
+							content = <pre>{JSON.stringify(json, '', ' ')}</pre>
+						}
+					}
+				}
 				return (
 					<tr key={key}>
 						<td>{key}</td>
-						<td>{(
-							_.isObject(val) ? makeTableOfObject(val) : val
-						)}</td>
+						<td>{content}</td>
 					</tr>
 				)
 			})}

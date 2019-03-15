@@ -1,20 +1,31 @@
-import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
 
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
-import { rejectFields } from './lib'
-import { PeripheralDeviceSecurity } from './peripheralDevices';
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+
+import { Mongo } from 'meteor/mongo'
 
 export namespace ExpectedMediaItemsSecurity {
-	export function allowReadAccess(selector: object, token: string, context: any) {
+	export function allowReadAccess (selector: Mongo.Query<ExpectedMediaItem> | any, token: string, context: any) {
+		check(selector, Object)
+		check(selector.mediaFlowId, Object)
+		check(selector.mediaFlowId.$in, Array)
 
-		if (selector['_id'] && token) {
+		// let mediaFlowIds: string[] = selector.mediaFlowId.$in
 
-			check(selector['_id'], String)
+		let mediaManagerDevice = PeripheralDevices.findOne({
+			type: PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
+			token: token
+		})
 
-			PeripheralDeviceSecurity.getPeripheralDevice(selector['_id'], token, context)
+		if (!mediaManagerDevice) return false
 
-			return true
+		if (mediaManagerDevice && token) {
+
+			// mediaManagerDevice.settings
+
+			return mediaManagerDevice
 		} else {
 
 			// TODO: implement access logic here
@@ -24,22 +35,22 @@ export namespace ExpectedMediaItemsSecurity {
 			return true
 		}
 	}
-	export function allowWriteAccess() {
+	export function allowWriteAccess () {
 		// TODO
 	}
 }
 // Setup rules:
 
 ExpectedMediaItems.allow({
-	insert(userId: string, doc: ExpectedMediaItem): boolean {
+	insert (userId: string, doc: ExpectedMediaItem): boolean {
 		return false
 	},
 
-	update(userId, doc, fields, modifier) {
+	update (userId, doc, fields, modifier) {
 		return false
 	},
 
-	remove(userId, doc) {
+	remove (userId, doc) {
 		return false
 	}
 })

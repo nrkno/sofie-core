@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import { MeteorPromiseCall, getCurrentTime } from '../lib'
 import { PeripheralDeviceCommands } from '../collections/PeripheralDeviceCommands'
-import { logger } from '../logging'
+import { PubSub, meteorSubscribe } from './pubsub'
 
 namespace PeripheralDeviceAPI {
 
@@ -43,11 +43,13 @@ export interface SegmentLinePlaybackStartedResult {
 	slId: string,
 	time: number
 }
+export type SegmentLinePlaybackStoppedResult = SegmentLinePlaybackStartedResult
 export interface SegmentLineItemPlaybackStartedResult {
 	roId: string,
 	sliId: string,
 	time: number
 }
+export type SegmentLineItemPlaybackStoppedResult = SegmentLineItemPlaybackStartedResult
 
 export enum methods {
 	'functionReply' 	= 'peripheralDevice.functionReply',
@@ -67,7 +69,9 @@ export enum methods {
 
 	'timelineTriggerTime'			= 'peripheralDevice.timeline.setTimelineTriggerTime',
 	'segmentLinePlaybackStarted' 	= 'peripheralDevice.runningOrder.segmentLinePlaybackStarted',
+	'segmentLinePlaybackStopped' 	= 'peripheralDevice.runningOrder.segmentLinePlaybackStopped',
 	'segmentLineItemPlaybackStarted'= 'peripheralDevice.runningOrder.segmentLineItemPlaybackStarted',
+	'segmentLineItemPlaybackStopped'= 'peripheralDevice.runningOrder.segmentLineItemPlaybackStopped',
 
 	'mosRoCreate' 		= 'peripheralDevice.mos.roCreate',
 	'mosRoReplace' 		= 'peripheralDevice.mos.roReplace',
@@ -93,7 +97,12 @@ export enum methods {
 	'resyncRo'			= 'peripheralDevice.mos.roResync',
 
 	'getMediaObjectRevisions' 	= 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
-	'updateMediaObject' 		= 'peripheralDevice.mediaScanner.updateMediaObject'
+	'updateMediaObject' 		= 'peripheralDevice.mediaScanner.updateMediaObject',
+
+	'getMediaWorkFlowRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowRevisions',
+	'updateMediaWorkFlow' = 'peripheralDevice.mediaManager.updateMediaWorkFlow',
+	'getMediaWorkFlowStepRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowStepRevisions',
+	'updateMediaWorkFlowStep' = 'peripheralDevice.mediaManager.updateMediaWorkFlowStep'
 }
 export function initialize (id: string, token: string, options: InitOptions): Promise<string> {
 	return MeteorPromiseCall(methods.initialize, id, token, options)
@@ -118,12 +127,17 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 	})
 	let subscription: Meteor.SubscriptionHandle | null = null
 	if (Meteor.isClient) {
-		subscription = Meteor.subscribe('peripheralDeviceCommands', deviceId )
+		subscription = meteorSubscribe(PubSub.peripheralDeviceCommands, deviceId )
 	}
 	const timeoutTime = 3000
 	// logger.debug('command created: ' + functionName)
+	const cursor = PeripheralDeviceCommands.find({
+		_id: commandId
+	})
+	let observer: Meteor.LiveQueryHandle
+	let timeoutCheck: number = 0
 	// we've sent the command, let's just wait for the reply
-	let checkReply = () => {
+	const checkReply = () => {
 		let cmd = PeripheralDeviceCommands.findOne(commandId)
 		// if (!cmd) throw new Meteor.Error('Command "' + commandId + '" not found')
 		// logger.debug('checkReply')
@@ -137,7 +151,7 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 				} else {
 					cb(null, cmd.reply)
 				}
-				cursor.stop()
+				observer.stop()
 				PeripheralDeviceCommands.remove(cmd._id)
 				if (subscription) subscription.stop()
 				if (timeoutCheck) {
@@ -146,7 +160,7 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 				}
 			} else if (getCurrentTime() - (cmd.time || 0) >= timeoutTime) { // timeout
 				cb('Timeout when executing the function "' + cmd.functionName + '" on device "' + cmd.deviceId + '" ', null)
-				cursor.stop()
+				observer.stop()
 				PeripheralDeviceCommands.remove(cmd._id)
 				if (subscription) subscription.stop()
 			}
@@ -155,13 +169,11 @@ export function executeFunction (deviceId: string, cb: (err, result) => void, fu
 		}
 	}
 
-	let cursor = PeripheralDeviceCommands.find({
-		_id: commandId
-	}).observeChanges({
+	observer = cursor.observeChanges({
 		added: checkReply,
 		changed: checkReply,
 	})
-	let timeoutCheck: number = Meteor.setTimeout(checkReply, timeoutTime)
+	timeoutCheck = Meteor.setTimeout(checkReply, timeoutTime)
 }
 
 }

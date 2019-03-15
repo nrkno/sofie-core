@@ -1,11 +1,12 @@
 
-import * as ntpClient from 'ntp-client'
+const ntpClient: NtpClient = require('ntp-client')
+import { NtpClient } from './typings/ntp-client'
 import { getCurrentTime, systemTime } from '../lib/lib'
 import { StatusCode, setSystemStatus } from './systemStatus'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
-import { setMeteorMethods } from './methods'
+import { setMeteorMethods, Methods } from './methods'
 
 interface ServerTime {
 	diff: number
@@ -22,7 +23,7 @@ let getServerTime = (host?: string, port?: number, timeout?: number): Promise<Se
 			ntpClient.getNetworkTime(
 				host || '0.se.pool.ntp.org',
 				port || 123,
-				(err, date: Date, a, b) => {
+				(err: any, date: Date) => {
 					if (err) {
 						reject(err)
 						return
@@ -110,9 +111,6 @@ export function determineDiffTime (config: Config): Promise<{mean: number, stdDe
 		pushTime()
 	})
 	.then((results: Array<ServerTime>) => {
-		let diffAvg = 0
-		let count = 0
-		let diffSum = 0
 		let halfResults = results.sort((a, b) => { // sort by response time, lower is better
 			return a.responseTime - b.responseTime
 		})
@@ -125,7 +123,7 @@ export function determineDiffTime (config: Config): Promise<{mean: number, stdDe
 		return stat
 	})
 }
-let methods = {}
+let methods: Methods = {}
 methods[PeripheralDeviceAPI.methods.determineDiffTime] = () => {
 	return determineDiffTime({
 		maxSampleCount: 20,

@@ -1,13 +1,13 @@
-import { TimelineObj, TimelineObjGroup } from './collections/Timeline'
+import { TimelineObjGeneric, TimelineObjGroup } from './collections/Timeline'
 import { TimelineObject } from 'superfly-timeline'
 let clone = require('fast-clone')
 import * as _ from 'underscore'
 
 // This is a collection of functions that match what the playout-gateway / TSR does
 // playout-gateway:
-export function transformTimeline (timeline: Array<TimelineObj>): Array<TimelineContentObject> {
+export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<TimelineContentObject> {
 
-	let transformObject = (obj: TimelineObj): TimelineContentObject => {
+	let transformObject = (obj: TimelineObjGeneric): TimelineContentObject => {
 		let transformedObj = clone(_.extend({
 		   id: obj['_id'],
 		   roId: obj['roId']
@@ -16,32 +16,34 @@ export function transformTimeline (timeline: Array<TimelineObj>): Array<Timeline
 	   if (!transformedObj.content) transformedObj.content = {}
 	   if (!transformedObj.content.objects) transformedObj.content.objects = []
 
-	   if (obj['slId']) {
-		   // Will cause a callback to be called, when the object starts to play:
-		   transformedObj.content.callBack = 'segmentLinePlaybackStarted'
-		   transformedObj.content.callBackData = {
-			   roId: obj.roId,
-			   slId: obj['slId']
-		   }
+		if (obj['slId']) {
+			// Will cause a callback to be called, when the object starts to play:
+			transformedObj.content.callBack = 'segmentLinePlaybackStarted'
+			transformedObj.content.callBackData = {
+				roId: obj.roId,
+				slId: obj['slId']
+			}
+			transformedObj.content.callBackStopped = 'segmentLinePlaybackStopped'
 	   }
-	   if (obj['sliId']) {
-		// Will cause a callback to be called, when the object starts to play:
-		   transformedObj.content.callBack = 'segmentLineItemPlaybackStarted'
-		   transformedObj.content.callBackData = {
-			   roId: obj.roId,
-			   sliId: obj['sliId']
-		   }
-	   }
+		if (obj['sliId']) {
+			// Will cause a callback to be called, when the object starts to play:
+			transformedObj.content.callBack = 'segmentLineItemPlaybackStarted'
+			transformedObj.content.callBackData = {
+				roId: obj.roId,
+				sliId: obj['sliId']
+			}
+			transformedObj.content.callBackStopped = 'segmentLineItemPlaybackStopped'
+		}
 
 	   return transformedObj
 	}
 
 	let groupObjects: {[id: string]: TimelineContentObject} = {}
 	let transformedTimeline: Array<TimelineContentObject> = []
-	let doTransform = (objs: Array<TimelineObj>) => {
-		let objsLeft: Array<TimelineObj> = []
+	let doTransform = (objs: Array<TimelineObjGeneric>) => {
+		let objsLeft: Array<TimelineObjGeneric> = []
 		let changedSomething: boolean = false
-		_.each(objs, (obj: TimelineObj | TimelineObjGroup) => {
+		_.each(objs, (obj: TimelineObjGeneric | TimelineObjGroup) => {
 
 			let transformedObj = transformObject(obj)
 

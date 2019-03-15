@@ -69,7 +69,7 @@ const RecordingView = translateWithTracker<IRecordingViewProps, IRecordingViewSt
 	}
 
 	render () {
-		const { t, file } = this.props
+		const { file } = this.props
 
 		return <div className='mtl gutter'>
 			{ file ? this.renderRecordingView() : (

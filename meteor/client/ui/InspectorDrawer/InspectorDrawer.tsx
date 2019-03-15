@@ -18,12 +18,13 @@ import { RunningOrderViewKbdShortcuts } from '../RunningOrderView'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
-enum InspectorPanelTabs {
+export enum InspectorPanelTabs {
 	ADLIB = 'adlib',
 	GLOBAL_ADLIB = 'global_adlib',
 	SYSTEM_HOTKEYS = 'system_hotkeys'
 }
-interface IProps {
+export interface InspectorDrawerProps {
+	isExpanded: boolean
 	segments: Array<SegmentUi>
 	liveSegment?: SegmentUi
 	runningOrder: RunningOrder
@@ -34,6 +35,7 @@ interface IProps {
 		label: string
 	}>
 
+	onChangeExpanded: (value: boolean) => void
 	onRegisterHotkeys: (hotkeys: Array<{
 		key: string
 		label: string
@@ -42,7 +44,6 @@ interface IProps {
 }
 
 interface IState {
-	expanded: boolean
 	drawerHeight: string
 	overrideHeight: number | undefined
 	moving: boolean
@@ -51,7 +52,7 @@ interface IState {
 
 const CLOSE_MARGIN = 45
 
-export const InspectorDrawer = translate()(class extends React.Component<Translated<IProps>, IState> {
+export class InspectorDrawerBase extends React.Component<Translated<InspectorDrawerProps>, IState> {
 	private _mouseStart: {
 		x: number
 		y: number
@@ -76,11 +77,10 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 		global?: boolean
 	}> = []
 
-	constructor (props: Translated<IProps>) {
+	constructor (props: Translated<InspectorDrawerProps>) {
 		super(props)
 
 		this.state = {
-			expanded: false,
 			moving: false,
 			drawerHeight: localStorage.getItem('runningOrderView.inspectorDrawer.drawerHeight') || '50vh',
 			overrideHeight: undefined,
@@ -144,8 +144,8 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 		})
 	}
 
-	componentDidUpdate (prevProps, prevState: IState) {
-		if ((prevState.expanded !== this.state.expanded) || (prevState.drawerHeight !== this.state.drawerHeight)) {
+	componentDidUpdate (prevProps: InspectorDrawerProps, prevState: IState) {
+		if ((prevProps.isExpanded !== this.props.isExpanded) || (prevState.drawerHeight !== this.state.drawerHeight)) {
 			if (this.props.onChangeBottomMargin && typeof this.props.onChangeBottomMargin === 'function') {
 				// console.log(this.state.expanded, this.getHeight())
 				this.props.onChangeBottomMargin(this.getHeight() || '0px')
@@ -155,29 +155,29 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 
 	getHeight (): string {
 		const top = parseFloat(this.state.drawerHeight.substr(0, this.state.drawerHeight.length - 2))
-		return this.state.expanded ? (100 - top).toString() + 'vh' : '0px'
+		return this.props.isExpanded ? (100 - top).toString() + 'vh' : '0px'
 	}
 
 	getTop (newState?: boolean): string | undefined {
 		return this.state.overrideHeight ?
 			((this.state.overrideHeight / window.innerHeight) * 100) + 'vh' :
-			((newState !== undefined ? newState : this.state.expanded) ?
+			((newState !== undefined ? newState : this.props.isExpanded) ?
 				this.state.drawerHeight
 				:
 				undefined)
 	}
 
 	getStyle () {
-		return this.state.expanded ?
-		{
-			'top': this.getTop(),
-			'transition': this.state.moving ? '' : '0.5s top ease-out'
-		}
-		:
-		{
-			'top': this.getTop(),
-			'transition': this.state.moving ? '' : '0.5s top ease-out'
-		}
+		return this.props.isExpanded ?
+			{
+				'top': this.getTop(),
+				'transition': this.state.moving ? '' : '0.5s top ease-out'
+			}
+			:
+			{
+				'top': this.getTop(),
+				'transition': this.state.moving ? '' : '0.5s top ease-out'
+			}
 	}
 
 	keyBlurActiveElement = () => {
@@ -199,9 +199,7 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 
 	toggleDrawer = () => {
 		this.blurActiveElement()
-		this.setState({
-			expanded: !this.state.expanded
-		})
+		this.props.onChangeExpanded(!this.props.isExpanded)
 	}
 
 	dropHandle = (e: MouseEvent) => {
@@ -214,24 +212,23 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 			overrideHeight: undefined
 		}
 
+		let shouldBeExpanded: boolean = false
+
 		if (Date.now() - this._mouseDown > 350) {
 			if (this.state.overrideHeight && (window.innerHeight - this.state.overrideHeight > CLOSE_MARGIN)) {
 				stateChange = _.extend(stateChange, {
 					drawerHeight: (Math.max(0.1, 0, this.state.overrideHeight / window.innerHeight) * 100) + 'vh',
-					expanded: true
 				})
+				shouldBeExpanded = true
 			} else {
-				stateChange = _.extend(stateChange, {
-					expanded: false
-				})
+				shouldBeExpanded = false
 			}
 		} else {
-			stateChange = _.extend(stateChange, {
-				expanded: !this.state.expanded
-			})
+			shouldBeExpanded = !this.props.isExpanded
 		}
 
 		this.setState(stateChange)
+		this.props.onChangeExpanded(shouldBeExpanded)
 		this.blurActiveElement()
 
 		localStorage.setItem('runningOrderView.inspectorDrawer.drawerHeight', this.state.drawerHeight)
@@ -296,4 +293,8 @@ export const InspectorDrawer = translate()(class extends React.Component<Transla
 			</div>
 		)
 	}
-})
+}
+
+export const InspectorDrawer = translate(undefined, {
+	withRef: true
+})(InspectorDrawerBase)

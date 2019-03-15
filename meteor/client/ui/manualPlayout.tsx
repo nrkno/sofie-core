@@ -32,7 +32,7 @@ interface IManualPlayoutState {
 }
 export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IManualPlayoutState> {
 
-	constructor (props) {
+	constructor (props: IManualPlayoutProps) {
 		super(props)
 		this.state = {
 			inputValues: {}
@@ -82,7 +82,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		})
 		return mappings
 	}
-	atemCamera (e, studio: StudioInstallation, mappingLayerId: string, cam) {
+	atemCamera (e: React.MouseEvent<HTMLElement>, studio: StudioInstallation, mappingLayerId: string, cam: number) {
 
 		let o: TimelineObjAtemME = {
 			id: 'camera_' + mappingLayerId,
@@ -111,7 +111,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		})
 		return mappings
 	}
-	casparcgPlay (e, studio: StudioInstallation, mappingLayerId: string) {
+	casparcgPlay (e: React.MouseEvent<HTMLElement>, studio: StudioInstallation, mappingLayerId: string) {
 
 		let input = this.state.inputValues[mappingLayerId]
 
@@ -131,7 +131,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		}
 		callMethod(e, ManualPlayoutAPI.methods.insertTimelineObject, studio._id, o)
 	}
-	casparcgClear (e, studio: StudioInstallation, mappingLayerId: string) {
+	casparcgClear (e: React.MouseEvent<HTMLElement>, studio: StudioInstallation, mappingLayerId: string) {
 		callMethod(e, ManualPlayoutAPI.methods.removeTimelineObject, studio._id, 'caspar_' + mappingLayerId)
 	}
 	onInputChange (id: string, value: any) {
@@ -150,7 +150,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 					_.map(this.getStudios(), (studio) => {
 						return <div key={studio._id}>
 							<h2>{studio.name}</h2>
-							<h3>ATEM Control</h3>
+							<h3 className='mhs'>ATEM Control</h3>
 							<table>
 								<tbody>
 								{
@@ -160,7 +160,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 											{
 												_.map([1,2,3,4,5,6,7,8], (cam) => {
 													return (
-														<td>
+														<td key={cam}>
 															<button className='btn btn-primary' onClick={(e) => this.atemCamera(e, studio, mappingLayerId, cam)}>
 																Camera {cam}
 															</button>
@@ -173,7 +173,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 								}
 								</tbody>
 							</table>
-							<h3>CasparCG Control</h3>
+							<h3 className='mhs'>CasparCG Control</h3>
 							<table>
 								<tbody>
 								{

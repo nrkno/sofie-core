@@ -6,9 +6,6 @@ import { ScriptContent } from 'tv-automation-sofie-blueprints-integration'
 import { FloatingInspector } from '../../FloatingInspector'
 import Moment from 'react-moment'
 
-import { faPlay } from '@fortawesome/fontawesome-free-solid'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 
@@ -145,12 +142,22 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 		let begin = labelItems[0] || ''
 		let end = labelItems[1] || ''
 
-		function shorten (str: string, maxLen: number, separator: string = ' ') {
-			if (str.length <= maxLen) return str
-			return str.substr(0, str.lastIndexOf(separator, maxLen))
-		}
+		// function shorten (str: string, maxLen: number, separator: string = ' ') {
+		// 	if (str.length <= maxLen) return str
+		// 	return str.substr(0, str.substr(0, maxLen).lastIndexOf(separator))
+		// }
 
 		const content = this.props.segmentLineItem.content as ScriptContent
+		let startOfScript = content.fullScript || ''
+		let cutLength = startOfScript.length
+		if (startOfScript.length > SCRIPT_PART_LENGTH) {
+			startOfScript = startOfScript.substring(0, startOfScript.substr(0, SCRIPT_PART_LENGTH).lastIndexOf(' '))
+			cutLength = startOfScript.length
+		}
+		let endOfScript = content.fullScript || ''
+		if (endOfScript.length > SCRIPT_PART_LENGTH) {
+			endOfScript = endOfScript.substring(endOfScript.indexOf(' ', Math.max(cutLength, endOfScript.length - SCRIPT_PART_LENGTH)), endOfScript.length)
+		}
 
 		const breakScript = !!(content && content.fullScript && content.fullScript.length > BREAK_SCRIPT_BREAKPOINT)
 
@@ -169,8 +176,8 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 						{content && content.fullScript ?
 							breakScript ?
 								<React.Fragment>
-									<span className='mini-inspector__full-text'>{shorten(content.fullScript, SCRIPT_PART_LENGTH) + '\u2026'}</span>
-									<span className='mini-inspector__full-text text-end'>{shorten(content.fullScript, SCRIPT_PART_LENGTH) + '\u2026'}</span>
+									<span className='mini-inspector__full-text text-broken'>{startOfScript + '\u2026'}</span>
+									<span className='mini-inspector__full-text text-broken text-end'>{'\u2026' + endOfScript}</span>
 								</React.Fragment>
 								: <span className='mini-inspector__full-text'>{content.fullScript}</span>
 							: <span className='mini-inspector__system'>{t('Script is empty')}</span>

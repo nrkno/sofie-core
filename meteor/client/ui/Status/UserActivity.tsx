@@ -1,20 +1,14 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import { Translated, translateWithTracker, ReactMeteorData } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import Moment from 'react-moment'
-import { translate } from 'react-i18next'
-import { getCurrentTime, Time } from '../../../lib/lib'
-import { ClientAPI } from '../../../lib/api/client'
+import { Time } from '../../../lib/lib'
 import * as _ from 'underscore'
-import { ModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { UserActionsLog, UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
-import * as faChevronRight from '@fortawesome/fontawesome-free-solid/faChevronRight'
-import * as faChevronLeft from '@fortawesome/fontawesome-free-solid/faChevronLeft'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import * as classNames from 'classnames'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import * as moment from 'moment'
+import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 interface IUserActivityProps {
 }
 interface IUserActivityState {
@@ -60,7 +54,7 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 			if (this._sub) {
 				this._sub.stop()
 			}
-			this._sub = Meteor.subscribe('userActionsLog', {
+			this._sub = meteorSubscribe(PubSub.userActionsLog, {
 				timestamp: {
 					$gte: this.state.dateFrom,
 					$lt: this.state.dateTo,
@@ -115,7 +109,6 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 	}
 
 	renderUserActivity () {
-		const { t } = this.props
 		return (
 			<div>
 				<div className='paging'>

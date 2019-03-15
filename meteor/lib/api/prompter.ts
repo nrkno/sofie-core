@@ -1,10 +1,8 @@
 import { Meteor } from 'meteor/meteor'
-import { check, Match } from 'meteor/check'
+import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { RunningOrders } from '../collections/RunningOrders'
 import { SegmentLine } from '../collections/SegmentLines'
-import { CachePrefix } from '../collections/RunningOrderDataCache'
-import * as objectPath from 'object-path'
 import { ScriptContent } from 'tv-automation-sofie-blueprints-integration'
 
 export enum PrompterMethods {

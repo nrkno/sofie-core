@@ -132,55 +132,8 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 
 			// Check item status
 			if (props.segmentLineItem.sourceLayer) {
-				// let newStatus: RunningOrderAPI.LineItemStatusCode = RunningOrderAPI.LineItemStatusCode.UNKNOWN
-				// let metadata: any = undefined
 
 				const { metadata, status } = checkSLIContentStatus(props.segmentLineItem, props.segmentLineItem.sourceLayer, props.runningOrder.getStudioInstallation().config)
-
-				// switch (props.segmentLineItem.sourceLayer.type) {
-				// 	case SourceLayerType.VT:
-				// 		if (props.segmentLineItem.content && props.segmentLineItem.content.fileName) {
-				// 			const content = props.segmentLineItem.content as VTContent
-				// 			const mediaObject = MediaObjects.findOne({
-				// 				mediaId: content.fileName.toUpperCase()
-				// 			})
-				// 			// If media object not found, then...
-				// 			if (!mediaObject) {
-				// 				newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING
-				// 				// All VT content should have at least two streams
-				// 			} else if (mediaObject && mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2) {
-				// 				newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
-				// 			} else if (mediaObject) {
-				// 				newStatus = RunningOrderAPI.LineItemStatusCode.OK
-				// 			}
-
-				// 			if (mediaObject) {
-				// 				metadata = mediaObject
-				// 			}
-				// 		}
-				// 		break
-				// 	case SourceLayerType.LIVE_SPEAK:
-				// 		if (props.segmentLineItem.content && props.segmentLineItem.content.fileName) {
-				// 			const content = props.segmentLineItem.content as LiveSpeakContent
-				// 			const mediaObject = MediaObjects.findOne({
-				// 				mediaId: content.fileName.toUpperCase()
-				// 			})
-				// 			// If media object not found, then...
-				// 			if (!mediaObject) {
-				// 				newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING
-				// 				// All VT content should have at least two streams
-				// 			} else if (mediaObject && mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2) {
-				// 				newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
-				// 			} else if (mediaObject) {
-				// 				newStatus = RunningOrderAPI.LineItemStatusCode.OK
-				// 			}
-
-				// 			if (mediaObject) {
-				// 				metadata = mediaObject
-				// 			}
-				// 		}
-				// 		break
-				// }
 				if (status !== props.segmentLineItem.status || metadata) {
 					let segmentCopy = (_.clone(overrides.segmentLineItem || props.segmentLineItem) as SegmentLineItemUi)
 
@@ -195,12 +148,6 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 
 			this.forceUpdate()
 		})
-		// this.statusComp.onInvalidate(() => {
-		// 	console.log(`Invalidated "${this.props.segmentLineItem._id}"...`)
-		// })
-		// this.statusComp.onStop(() => {
-		// 	console.log(`Stopping "${this.props.segmentLineItem._id}...`)
-		// })
 	}
 
 	componentDidMount () {

@@ -1,10 +1,6 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as _ from 'underscore'
 import * as $ from 'jquery'
-
-import { ClientAPI } from '../../../lib/api/client'
-import { PlayoutAPI } from '../../../lib/api/playout'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
@@ -25,7 +21,9 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RunningOrderViewKbdShortcuts } from '../RunningOrderView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
-import { callMethod } from '../../lib/clientAPI'
+import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { doUserAction } from '../../lib/userAction'
+import { UserActionAPI } from '../../../lib/api/userActions'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<SegmentUi>
@@ -140,7 +138,6 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 	}
 
 	render () {
-		const { t } = this.props
 
 		return (
 			<div className='adlib-panel__list-view__list'>
@@ -337,10 +334,10 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.subscribe('runningOrderBaselineAdLibItems', {
 			runningOrderId: this.props.runningOrder._id
 		})
-		Meteor.subscribe('studioInstallations', {
+		meteorSubscribe(PubSub.studioInstallations, {
 			_id: this.props.runningOrder.studioInstallationId
 		})
-		Meteor.subscribe('showStyleBases', {
+		meteorSubscribe(PubSub.showStyleBases, {
 			_id: this.props.runningOrder.showStyleBaseId
 		})
 	}
@@ -429,17 +426,17 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 			console.log(`Item "${aSLine._id}" is on sourceLayer "${aSLine.sourceLayerId}" that is not queueable.`)
 			return
 		}
-
+		const { t } = this.props
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
-			callMethod(e, PlayoutAPI.methods.segmentAdLibLineItemStart, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id, queue || false)
+			doUserAction(t, e, UserActionAPI.methods.segmentAdLibLineItemStart, [this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, aSLine._id, queue || false])
 		}
 	}
 
 	onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
 		// console.log(sourceLayer)
-
+		const { t } = this.props
 		if (this.props.runningOrder && this.props.runningOrder.currentSegmentLineId) {
-			callMethod(e, PlayoutAPI.methods.sourceLayerOnLineStop, this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id)
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnLineStop, [this.props.runningOrder._id, this.props.runningOrder.currentSegmentLineId, sourceLayer._id])
 		}
 	}
 

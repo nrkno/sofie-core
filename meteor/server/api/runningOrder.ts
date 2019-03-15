@@ -9,13 +9,14 @@ import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime } from '..
 import { logger } from '../logging'
 import { loadBlueprints, postProcessSegmentLineItems, SegmentContext } from './blueprints'
 import { getHash } from '../lib'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
-import { CachePrefix, RunningOrderDataCache } from '../../lib/collections/RunningOrderDataCache'
+import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 import { updateStory, reloadRunningOrder } from './integration/mos'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
+import { MongoModifier } from '../../lib/typings/meteor'
+import { updateExpectedMediaItems } from './expectedMediaItems'
 
 /**
  * After a Segment has beed removed, handle its contents
@@ -67,6 +68,7 @@ export function afterRemoveSegmentLine (removedSegmentLine: DBSegmentLine, repla
 	SegmentLineItems.remove({
 		segmentLineId: removedSegmentLine._id
 	})
+	updateExpectedMediaItems(removedSegmentLine.runningOrderId, removedSegmentLine._id)
 
 	let ro = RunningOrders.findOne(removedSegmentLine.runningOrderId)
 	if (ro) {
@@ -165,7 +167,6 @@ export function convertToSegment (segmentLine: SegmentLine, rank: number): DBSeg
 		_rank: rank,
 		mosId: 'N/A', // to be removed?
 		name: slugParts[0],
-		number: 'N/A' // @todo: to be removed from data structure
 		// number: (story.Number ? story.Number.toString() : '')
 	}
 	// logger.debug('story.Number', story.Number)
@@ -184,7 +185,7 @@ export function updateSegments (runningOrderId: string) {
 	let segment: DBSegment
 	let segments: Array<DBSegment> = []
 	let rankSegment = 0
-	let segmentLineUpdates = {}
+	let segmentLineUpdates: {[id: string]: Partial<DBSegmentLine>} = {}
 	_.each(segmentLines, (segmentLine: SegmentLine) => {
 		let slugParts = segmentLine.slug.split(';')
 
@@ -202,7 +203,7 @@ export function updateSegments (runningOrderId: string) {
 	})
 
 	// Update SegmentLines:
-	_.each(segmentLineUpdates, (modifier, id) => {
+	_.each(segmentLineUpdates, (modifier, id: string) => {
 
 		logger.info('added SegmentLine to segment ' + modifier['segmentId'])
 		SegmentLines.update(id, {$set: modifier})
@@ -275,7 +276,7 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 
 	const segmentLines = segment.getSegmentLines()
 	if (segmentLines.length === 0) {
-		return
+		return undefined
 	}
 
 	const firstSegmentLine = segmentLines.sort((a, b) => b._rank = a._rank)[0]
@@ -349,7 +350,13 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 	}
 
 	// if anything was changed
-	return (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
+	const anythingChanged = (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
+	if (anythingChanged) {
+		_.each(slIds, (slId) => {
+			updateExpectedMediaItems(ro._id, slId)
+		})
+	}
+	return anythingChanged
 }
 export function reloadRunningOrderData (runningOrder: RunningOrder) {
 	// TODO: determine that the runningOrder is Mos-driven, then call the function
@@ -372,41 +379,37 @@ export namespace ServerRunningOrderAPI {
 		logger.info('removeRunningOrder ' + runningOrderId)
 
 		let ro = RunningOrders.findOne(runningOrderId)
-		if (ro) {
-			ro.remove()
-		}
+		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
+		if (ro.active) throw new Meteor.Error(400,`Not allowed to remove an active RunningOrder "${runningOrderId}".`)
+
+		ro.remove()
 	}
 	export function resyncRunningOrder (runningOrderId: string) {
 		check(runningOrderId, String)
 		logger.info('resyncRunningOrder ' + runningOrderId)
 
 		let ro = RunningOrders.findOne(runningOrderId)
-		if (ro) {
-			RunningOrders.update(ro._id, {
-				$set: {
-					unsynced: false
-				}
-			})
+		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
+		// if (ro.active) throw new Meteor.Error(400,`Not allowed to resync an active RunningOrder "${runningOrderId}".`)
+		RunningOrders.update(ro._id, {
+			$set: {
+				unsynced: false
+			}
+		})
 
-			Meteor.call(PlayoutAPI.methods.reloadData, runningOrderId, false, (err, result) => {
-				if (err) {
-					logger.error(err)
-					return
-				}
-			})
-		}
+		Meteor.call(PlayoutAPI.methods.reloadData, runningOrderId, false)
 	}
 	export function unsyncRunningOrder (runningOrderId: string) {
 		check(runningOrderId, String)
 		logger.info('unsyncRunningOrder ' + runningOrderId)
 
 		let ro = RunningOrders.findOne(runningOrderId)
-		if (ro) {
-			RunningOrders.update(ro._id, {$set: {
-				unsynced: true,
-				unsyncedTime: getCurrentTime()
-			}})
-		} else throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found`)
+		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
+
+		RunningOrders.update(ro._id, {$set: {
+			unsynced: true,
+			unsyncedTime: getCurrentTime()
+		}})
 	}
 }
 

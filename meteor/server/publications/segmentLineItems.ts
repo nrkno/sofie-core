@@ -2,8 +2,10 @@ import { Meteor } from 'meteor/meteor'
 
 import { RunningOrderSecurity } from '../security/runningOrders'
 import { SegmentLineItems } from '../../lib/collections/SegmentLineItems'
+import { meteorPublish } from './lib'
+import { PubSub } from '../../lib/api/pubsub'
 
-Meteor.publish('segmentLineItems', function (selector, token) {
+meteorPublish(PubSub.segmentLineItems, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400,'selector argument missing')
 	const modifier = {
 		fields: {
@@ -13,10 +15,10 @@ Meteor.publish('segmentLineItems', function (selector, token) {
 	if (RunningOrderSecurity.allowReadAccess(selector, token, this)) {
 		return SegmentLineItems.find(selector, modifier)
 	}
-	return this.ready()
+	return null
 })
 
-Meteor.publish('segmentLineItemsSimple', function (selector, token) {
+meteorPublish(PubSub.segmentLineItemsSimple, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier = {
 		fields: {
@@ -29,5 +31,5 @@ Meteor.publish('segmentLineItemsSimple', function (selector, token) {
 	if (RunningOrderSecurity.allowReadAccess(selector, token, this)) {
 		return SegmentLineItems.find(selector, modifier)
 	}
-	return this.ready()
+	return null
 })

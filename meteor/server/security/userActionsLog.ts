@@ -1,8 +1,7 @@
-import { Meteor } from 'meteor/meteor'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 
 export namespace UserActionsLogSecurity {
-	export function allowReadAccess (selector: object, context) {
+	export function allowReadAccess (selector: object, context: any) {
 
 		return true
 		// TODO: implement some security here

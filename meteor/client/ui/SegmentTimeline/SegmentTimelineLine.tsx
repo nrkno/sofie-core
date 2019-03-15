@@ -5,7 +5,13 @@ import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { SegmentUi, SegmentLineUi, IOutputLayerUi, ISourceLayerUi, SegmentLineItemUi } from './SegmentTimelineContainer'
+import {
+	SegmentUi,
+	SegmentLineUi,
+	IOutputLayerUi,
+	ISourceLayerUi,
+	SegmentLineItemUi
+} from './SegmentTimelineContainer'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { RunningOrderTiming, WithTiming } from '../RunningOrderView/RunningOrderTiming'
 
@@ -14,9 +20,6 @@ import { ContextMenuTrigger } from 'react-contextmenu'
 import { RundownUtils } from '../../lib/rundown'
 import { getCurrentTime } from '../../../lib/lib'
 import { withTiming } from '../RunningOrderView/RunningOrderTiming'
-
-import * as faFastForward from '@fortawesome/fontawesome-free-solid/faFastForward'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -66,48 +69,39 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 
 	renderInside () {
 		if (this.props.layer.items !== undefined) {
-			return this.props.layer.items
-				.filter((segmentLineItem) => {
-					// filter only segment line items belonging to this segment line
-					return (segmentLineItem.segmentLineId === this.props.segmentLine._id) ?
-						// filter only segment line items, that have not been hidden from the UI
-						(segmentLineItem.hidden !== true) &&
-						(segmentLineItem.virtual !== true)
+			return _.chain(this.props.layer.items.filter((segmentLineItem) => {
+				// filter only segment line items belonging to this segment line
+				return (segmentLineItem.segmentLineId === this.props.segmentLine._id) ?
+					// filter only segment line items, that have not been hidden from the UI
+					(segmentLineItem.hidden !== true) &&
+					(segmentLineItem.virtual !== true)
 					: false
-				})
-				.sort((a: SegmentLineItemUi, b: SegmentLineItemUi): number => {
-					if ((a.renderedInPoint !== undefined) && (b.renderedInPoint !== undefined)) {
-						return (a.renderedInPoint as number) - (b.renderedInPoint as number)
-					} else if (a.renderedInPoint !== undefined) {
-						return -1
-					} else if (b.renderedInPoint !== undefined) {
-						return 1
-					} else {
-						return 1
-					}
-				})
-				.map((segmentLineItem) => {
-					return (
-						<SourceLayerItemContainer key={segmentLineItem._id}
-							{...this.props}
-							// The following code is fine, just withTracker HOC messing with available props
-							onDoubleClick={this.props.onItemDoubleClick}
-							mediaPreviewUrl={this.props.mediaPreviewUrl}
-							segmentLineItem={segmentLineItem}
-							layer={this.props.layer}
-							outputLayer={this.props.outputLayer}
-							segmentLine={this.props.segmentLine}
-							segmentLineStartsAt={this.props.startsAt}
-							segmentLineDuration={this.props.duration}
-							timeScale={this.props.timeScale}
-							relative={this.props.relative}
-							autoNextSegmentLine={this.props.autoNextSegmentLine}
-							liveLinePadding={this.props.liveLinePadding}
-							scrollLeft={this.props.scrollLeft}
-							scrollWidth={this.props.scrollWidth}
-							/>
-					)
-				})
+			}))
+			.sortBy((it) => it.renderedInPoint)
+			.sortBy((it) => it.infiniteMode)
+			.sortBy((it) => it.cropped)
+			.map((segmentLineItem) => {
+				return (
+					<SourceLayerItemContainer key={segmentLineItem._id}
+						{...this.props}
+						// The following code is fine, just withTracker HOC messing with available props
+						onDoubleClick={this.props.onItemDoubleClick}
+						mediaPreviewUrl={this.props.mediaPreviewUrl}
+						segmentLineItem={segmentLineItem}
+						layer={this.props.layer}
+						outputLayer={this.props.outputLayer}
+						segmentLine={this.props.segmentLine}
+						segmentLineStartsAt={this.props.startsAt}
+						segmentLineDuration={this.props.duration}
+						timeScale={this.props.timeScale}
+						relative={this.props.relative}
+						autoNextSegmentLine={this.props.autoNextSegmentLine}
+						liveLinePadding={this.props.liveLinePadding}
+						scrollLeft={this.props.scrollLeft}
+						scrollWidth={this.props.scrollWidth}
+						/>
+				)
+			}).value()
 		}
 	}
 
@@ -323,7 +317,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 	}
 
 	getLineDuration (): number {
-		const segmentLine = this.props.segmentLine
+		// const segmentLine = this.props.segmentLine
 
 		return Math.max(this.state.liveDuration,
 			this.props.segmentLine.duration || this.props.segmentLine.renderedDuration || 0)

@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
 import { Link } from 'react-router-dom'
-import { TimelineObj, Timeline } from '../../../lib/collections/Timeline'
+import { TimelineObjGeneric, Timeline } from '../../../lib/collections/Timeline'
 import { clone } from 'underscore'
 import { Resolver } from 'superfly-timeline'
 import { transformTimeline } from '../../../lib/timeline'
@@ -18,11 +18,11 @@ interface ITimelineViewProps {
 }
 interface ITimelineViewState {
 	currentState?: string
-	stateData: {[key: string]: TimelineObj[]}
+	stateData: {[key: string]: TimelineObjGeneric[]}
 }
 interface ITimelineViewTrackedProps {
 	studio?: StudioInstallation,
-	timeline: TimelineObj[]
+	timeline: TimelineObjGeneric[]
 }
 
 const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState, ITimelineViewTrackedProps>((props: ITimelineViewProps) => {
@@ -99,10 +99,10 @@ const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState
 		const objOffset = 10
 		const scaleFactor = 1 / 40
 
-		let i = -1
+		// let i = -1
 		let yOffset = 0
 		const elms = _.map(grouped, (objs, k) => {
-			i++
+			// i++
 
 			const sortedObjs = _.chain(objs).sortBy('priority').sortBy('resolved.startTime').value()
 
