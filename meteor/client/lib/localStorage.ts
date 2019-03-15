@@ -26,3 +26,9 @@ export function setTestingMode (testingMode: boolean) {
 export function getTestingMode (): boolean {
 	return localStorage.getItem('testingMode') === '1'
 }
+export function setSpeakingMode (speakingMode: boolean) {
+	localStorage.setItem('speakingMode', (speakingMode ? '1' : '0'))
+}
+export function getSpeakingMode (): boolean {
+	return localStorage.getItem('speakingMode') === '1'
+}
