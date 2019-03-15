@@ -104,9 +104,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 					// systemVersion: r.systemVersion,
 					// databaseVersion: r.databaseVersion,
 					// databasePreviousVersion: r.databasePreviousVersion,
-					migrationNeeded: r.migrationNeeded
-				})
-				this.setState({
+					migrationNeeded: r.migrationNeeded,
 					migration: r.migration
 				})
 			}
