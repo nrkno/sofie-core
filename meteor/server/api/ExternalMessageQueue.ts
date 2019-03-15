@@ -213,6 +213,7 @@ ExternalMessageQueue.find({
 }).observeChanges({
 	added: updateExternalMessageQueueStatus,
 	changed: updateExternalMessageQueueStatus,
+	removed: updateExternalMessageQueueStatus
 })
 Meteor.startup(() => {
 	updateExternalMessageQueueStatus()
