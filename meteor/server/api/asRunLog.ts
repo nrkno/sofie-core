@@ -15,7 +15,8 @@ import {
 	waitForPromiseAll,
 	asyncCollectionFindOne,
 	asyncCollectionUpdate,
-	extendMandadory
+	extendMandadory,
+	asyncCollectionUpsert
 } from '../../lib/lib'
 import {
 	RunningOrder,
@@ -27,24 +28,27 @@ import { logger } from '../../lib/logging'
 import { getBlueprintOfRunningOrder, AsRunEventContext } from './blueprints'
 import { IBlueprintExternalMessageQueueObj, IBlueprintAsRunLogEventContent } from 'tv-automation-sofie-blueprints-integration'
 import { queueExternalMessages } from './ExternalMessageQueue'
+import { getHash } from '../lib'
 
 const EVENT_WAIT_TIME = 500
 
-export function pushAsRunLogAsync (eventBase: AsRunLogEventBase, rehersal: boolean, timestamp?: Time): Promise<AsRunLogEvent> {
+export async function pushAsRunLogAsync (eventBase: AsRunLogEventBase, rehersal: boolean, timestamp?: Time): Promise<AsRunLogEvent | null> {
 	if (!timestamp) timestamp = getCurrentTime()
 
 	let event: AsRunLogEvent = extendMandadory<AsRunLogEventBase, AsRunLogEvent>(eventBase, {
-		_id: Random.id(),
+		_id: getHash(JSON.stringify(eventBase) + timestamp + '_' + rehersal),
 		timestamp: timestamp,
 		rehersal: rehersal
 	})
 
-	return asyncCollectionInsert(AsRunLog, event)
-	.then(() => {
+	let result = await asyncCollectionUpsert(AsRunLog, event._id, event)
+	if (result.insertedId) {
 		return event
-	})
+	} else {
+		return null
+	}
 }
-export function pushAsRunLog (eventBase: AsRunLogEventBase, rehersal: boolean, timestamp?: Time): AsRunLogEvent {
+export function pushAsRunLog (eventBase: AsRunLogEventBase, rehersal: boolean, timestamp?: Time): AsRunLogEvent | null {
 	let p = pushAsRunLogAsync(eventBase, rehersal, timestamp)
 
 	return waitForPromise(p)
@@ -109,7 +113,7 @@ export function reportRunningOrderHasStarted (runningOrderOrId: RunningOrder | s
 			content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 			content2: 'runningOrder'
 		}, !!runningOrder.rehearsal, timestamp)
-		handleEvent(event)
+		if (event) handleEvent(event)
 	} else logger.error(`runningOrder not found in reportRunningOrderHasStarted "${runningOrderOrId}"`)
 }
 // export function reportSegmentHasStarted (segment: Segment, timestamp?: Time) {
@@ -151,7 +155,7 @@ export function reportSegmentLineHasStarted (segmentLineOrId: SegmentLine | stri
 				content:			IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 				content2: 			'segmentLine'
 			}, !!runningOrder.rehearsal, timestamp)
-			handleEvent(event)
+			if (event) handleEvent(event)
 		} else logger.error(`runningOrder "${segmentLine.runningOrderId}" not found in reportSegmentLineHasStarted "${segmentLine._id}"`)
 	} else logger.error(`segmentLine not found in reportSegmentLineHasStarted "${segmentLineOrId}"`)
 }
@@ -190,7 +194,8 @@ export function reportSegmentLineHasStopped (segmentLineOrId: SegmentLine | stri
 				content:			IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
 				content2: 			'segmentLine'
 			}, !!runningOrder.rehearsal, timestamp)
-			handleEvent(event)
+			if (event) handleEvent(event)
+			return event
 		} else logger.error(`runningOrder "${segmentLine.runningOrderId}" not found in reportSegmentLineHasStopped "${segmentLine._id}"`)
 	} else logger.error(`segmentLine not found in reportSegmentLineHasStopped "${segmentLineOrId}"`)
 }
@@ -236,7 +241,7 @@ export function reportSegmentLineItemHasStarted (segmentLineItemOrId: SegmentLin
 				content:			IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 				content2: 			'segmentLineItem'
 			}, !!runningOrder.rehearsal, timestamp)
-			handleEvent(event)
+			if (event) handleEvent(event)
 		} else logger.error(`runningOrder "${segmentLine.runningOrderId}" not found in reportSegmentLineItemHasStarted "${segmentLine._id}"`)
 
 	} else logger.error(`segmentLineItem not found in reportSegmentLineItemHasStarted "${segmentLineItemOrId}"`)
@@ -280,7 +285,7 @@ export function reportSegmentLineItemHasStopped (segmentLineItemOrId: SegmentLin
 				content:			IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
 				content2: 			'segmentLineItem'
 			}, !!runningOrder.rehearsal, timestamp)
-			handleEvent(event)
+			if (event) handleEvent(event)
 		} else logger.error(`runningOrder "${segmentLine.runningOrderId}" not found in reportSegmentLineItemHasStopped "${segmentLine._id}"`)
 
 	} else logger.error(`segmentLineItem not found in reportSegmentLineItemHasStopped "${segmentLineItemOrId}"`)
