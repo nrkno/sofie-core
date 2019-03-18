@@ -434,7 +434,7 @@ export namespace ServerRunningOrderAPI {
 export namespace ClientRunningOrderAPI {
 	export function runningOrderNeedsUpdating (runningOrderId: string) {
 		check(runningOrderId, String)
-		logger.info('runningOrderNeedsUpdating ' + runningOrderId)
+		// logger.info('runningOrderNeedsUpdating ' + runningOrderId)
 
 		let ro = RunningOrders.findOne(runningOrderId)
 		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
