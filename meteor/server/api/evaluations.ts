@@ -64,6 +64,11 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 				})
 			}
 
+			// log for statistics
+			if(q0) {
+				logger.info(q0)
+			}
+
 		}
 	})
 }
