@@ -51,7 +51,7 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 
 				let ro = RunningOrders.findOne(evaluation.runningOrderId)
 
-				message =+ ' From rundown "' + (ro ? ro.name : '' ) + '": \n' +
+				message += ' From rundown "' + (ro ? ro.name : '' ) + '": \n' +
 					_.values(evaluation.answers).join(', ')
 
 				let hostUrl = studio.settings.sofieUrl
@@ -66,7 +66,7 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 
 			// log for statistics
 			if(q0) {
-				logger.info(q0)
+				logger.warning('evaluation' + q0)
 			}
 
 		}
