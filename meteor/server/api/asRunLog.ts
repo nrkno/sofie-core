@@ -16,7 +16,8 @@ import {
 	asyncCollectionFindOne,
 	asyncCollectionUpdate,
 	extendMandadory,
-	asyncCollectionUpsert
+	asyncCollectionUpsert,
+	getHash
 } from '../../lib/lib'
 import {
 	RunningOrder,
@@ -28,7 +29,6 @@ import { logger } from '../../lib/logging'
 import { getBlueprintOfRunningOrder, AsRunEventContext } from './blueprints'
 import { IBlueprintExternalMessageQueueObj, IBlueprintAsRunLogEventContent } from 'tv-automation-sofie-blueprints-integration'
 import { queueExternalMessages } from './ExternalMessageQueue'
-import { getHash } from '../lib'
 
 const EVENT_WAIT_TIME = 500
 
