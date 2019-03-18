@@ -30,12 +30,28 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 			let q0 = _.find(evaluation.answers, (_answer, key) => {
 				return key === 'q0'
 			})
+			let q1 = _.find(evaluation.answers, (_answer, key) => {
+				return key === 'q1'
+			})
 
-			if (q0 !== 'nothing') {
+			let message = 'Evaluation!"'
+			switch (q0) {
+				case 'nothing':
+					message = 'Hey!'
+					break;
+				case 'minor':
+					message = 'Ehm!'
+					break;
+				case 'major':
+					message = 'Uh-oh!'
+					break;
+			}
+
+			if (q1) {
 
 				let ro = RunningOrders.findOne(evaluation.runningOrderId)
 
-				let message = 'Uh-oh, message from RunningOrder "' + (ro ? ro.name : 'N/A' ) + '": \n' +
+				message =+ ' From rundown "' + (ro ? ro.name : '' ) + '": \n' +
 					_.values(evaluation.answers).join(', ')
 
 				let hostUrl = studio.settings.sofieUrl
