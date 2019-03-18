@@ -37,7 +37,7 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 				return key === 'q1'
 			})
 
-			let slackMessage = 'Evaluation!"'
+			let slackMessage = 'Evaluation!'
 			switch (evaluationLevel) {
 				case 'nothing':
 				slackMessage = 'Hey!'
