@@ -326,34 +326,38 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 		this.autorun((comp: Tracker.Computation) => {
 			// console.log('RunningOrderViewNotifier 5')
 
-			// Doing the check server side, to avoid needing to subscribe to the blueprint and showStyleVariant
-			Meteor.call(RunningOrderAPI.methods.runningOrderNeedsUpdating, rRunningOrderId, (err: Error, versionMismatch: string) => {
-				let newNotification: Notification | undefined = undefined
-				if (err) {
-					newNotification = new Notification('ro_importVersions', NoticeLevel.WARNING, t('Unable to check the system configuration for changes'), 'ro_' + rRunningOrderId, getCurrentTime(), true, undefined, -1)
-				} else if (versionMismatch) {
-					newNotification = new Notification('ro_importVersions', NoticeLevel.WARNING, t('The system configuration has been changed since importing this running order. It might not run correctly'), 'ro_' + rRunningOrderId, getCurrentTime(), true, [
-						{
-							label: t('Reload ENPS Data'),
-							type: 'primary',
-							action: (e) => {
-								const reloadFunc = reloadRunningOrderClick.get()
-								if (reloadFunc) {
-									reloadFunc(e)
+			// Track the RO as a dependency of this autorun
+			const runningOrder = RunningOrders.findOne(rRunningOrderId)
+			if (runningOrder) {
+				// Doing the check server side, to avoid needing to subscribe to the blueprint and showStyleVariant
+				Meteor.call(RunningOrderAPI.methods.runningOrderNeedsUpdating, runningOrder._id, (err: Error, versionMismatch: string) => {
+					let newNotification: Notification | undefined = undefined
+					if (err) {
+						newNotification = new Notification('ro_importVersions', NoticeLevel.WARNING, t('Unable to check the system configuration for changes'), 'ro_' + rRunningOrderId, getCurrentTime(), true, undefined, -1)
+					} else if (versionMismatch) {
+						newNotification = new Notification('ro_importVersions', NoticeLevel.WARNING, t('The system configuration has been changed since importing this running order. It might not run correctly'), 'ro_' + rRunningOrderId, getCurrentTime(), true, [
+							{
+								label: t('Reload ENPS Data'),
+								type: 'primary',
+								action: (e) => {
+									const reloadFunc = reloadRunningOrderClick.get()
+									if (reloadFunc) {
+										reloadFunc(e)
+									}
 								}
 							}
-						}
-					], -1)
-				}
+						], -1)
+					}
 
-				if (newNotification && !Notification.isEqual(this._roImportVersionStatus, newNotification)) {
-					this._roImportVersionStatus = newNotification
-					this._roImportVersionStatusDep.changed()
-				} else if (!newNotification && this._roImportVersionStatus) {
-					this._roImportVersionStatus = undefined
-					this._roImportVersionStatusDep.changed()
-				}
-			})
+					if (newNotification && !Notification.isEqual(this._roImportVersionStatus, newNotification)) {
+						this._roImportVersionStatus = newNotification
+						this._roImportVersionStatusDep.changed()
+					} else if (!newNotification && this._roImportVersionStatus) {
+						this._roImportVersionStatus = undefined
+						this._roImportVersionStatusDep.changed()
+					}
+				})
+			}
 		})
 	}
 
