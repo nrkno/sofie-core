@@ -174,7 +174,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 				}
 			}
 			// @todo: hardcoded 25fps
-			if (tot > 0) msgBlacks = `${tot / timebase} black frame${tot > timebase ? 's' : ''} in clip`
+			if (tot > 0) msgBlacks = `${Math.round(tot / timebase)} black frame${tot > timebase ? 's' : ''} in clip`
 		}
 		if (this.freezes) {
 			let tot = 0
@@ -191,7 +191,7 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 				}
 			}
 			// @todo: hardcoded 25fps
-			if (tot > 0) msgFreezes += `${tot / timebase} freeze\n frame${tot > timebase ? 's' : ''} in clip`
+			if (tot > 0) msgFreezes += `${Math.round(tot / timebase)} freeze\n frame${tot > timebase ? 's' : ''} in clip`
 		}
 		if (show) {
 			return <React.Fragment>

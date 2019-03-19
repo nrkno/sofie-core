@@ -12,7 +12,8 @@ import {
 	setDeveloperMode,
 	setTestingMode,
 	getTestingMode,
-	getDeveloperMode
+	getDeveloperMode,
+	setSpeakingMode
 } from '../lib/localStorage'
 import Status from './Status'
 import Settings from './Settings'
@@ -32,7 +33,6 @@ import {
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './PrompterView'
 import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
-import { TimelineVisualizerView } from './TimelineVisualizer'
 
 interface IAppState {
 	studioMode: boolean
@@ -54,6 +54,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		if (params['configure']) setAdminMode(params['configure'] === '1')
 		if (params['develop']) setDeveloperMode(params['develop'] === '1')
 		if (params['testing']) setTestingMode(params['testing'] === '1')
+		if (params['speak']) setSpeakingMode(params['speak'] === '1')
 		if (params['admin']) {
 			const val = params['admin'] === '1'
 			setStudioMode(val)
@@ -105,7 +106,6 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Route path='/countdowns/:studioId/presenter' component={ClockView} />
 							{/* <Route path='/countdowns/presenter' component={ClockView} /> */}
 							<Route path='/nymansPlayground' component={NymansPlayground} />
-							<Route path='/timeline' component={TimelineVisualizerView} />
 							<Route path='/status' component={Status} />
 							<Route path='/settings' component={Settings} />
 							<Route path='/testTools' component={TestTools} />

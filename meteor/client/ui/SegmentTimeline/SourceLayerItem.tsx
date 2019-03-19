@@ -21,6 +21,10 @@ import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
+import { doModalDialog, SomeEvent, ModalInputResult } from '../../lib/ModalDialog'
+import { doUserAction } from '../../lib/userAction'
+import { UserActionAPI } from '../../../lib/api/userActions'
+import { translate, InjectedTranslateProps } from 'react-i18next'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -59,7 +63,7 @@ interface ISourceLayerItemState {
 	leftAnchoredWidth: number
 	rightAnchoredWidth: number
 }
-export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISourceLayerItemState> {
+export const SourceLayerItem = translate()(class extends React.Component<ISourceLayerItemProps & InjectedTranslateProps, ISourceLayerItemState> {
 	private _forceSizingRecheck: boolean
 	private _placeHolderElement: boolean
 
@@ -290,6 +294,42 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		// this.props.onFollowLiveLine && this.props.onFollowLiveLine(false, e)
 		e.preventDefault()
 		e.stopPropagation()
+		this.tempDisplayInOutpoints(e)
+
+	}
+	tempDisplayInOutpoints = (e: React.MouseEvent<HTMLDivElement>) => {
+		// Note: This is a TEMPORARY way to set in & out points, will be replaced with a much nicer looking way at a later stage
+		doModalDialog({
+			title: 'Set in point & duration',
+			message: 'Please set the in-point & duration below',
+			yes: 'Save',
+			no: 'Discard',
+			// acceptOnly?: boolean
+			onAccept: (e: SomeEvent, inputResult: ModalInputResult) => {
+				console.log('accept', inputResult)
+				doUserAction(this.props.t, e, UserActionAPI.methods.setInOutPoints, [
+					this.props.segmentLine.runningOrderId,
+					this.props.segmentLine._id,
+					this.props.segmentLineItem._id,
+					inputResult.inPoint,
+					inputResult.outPoint
+				])
+			},
+			inputs: {
+				inPoint: {
+					label: 'In point',
+					text: 'In point',
+					type: 'float',
+					defaultValue: 0
+				},
+				outPoint: {
+					label: 'Out point',
+					text: 'Out point',
+					type: 'float',
+					defaultValue: 0
+				}
+			}
+		})
 	}
 
 	itemDblClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -505,4 +545,4 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 		}
 	}
-}
+})

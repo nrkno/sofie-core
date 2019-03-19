@@ -1,11 +1,12 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
+import { IBlueprintPostProcessSegmentLine } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineNoteType, SegmentLineNote } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
-import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime, getHash } from '../../lib/lib'
+import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime, getHash, asyncCollectionUpdate, waitForPromiseAll } from '../../lib/lib'
 import { logger } from '../logging'
 import { loadBlueprints, postProcessSegmentLineItems, SegmentContext } from './blueprints'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
@@ -288,11 +289,13 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 	context.handleNotesExternally = true
 
 	let resultSli: SegmentLineItem[] | undefined = undefined
+	let resultSlUpdates: IBlueprintPostProcessSegmentLine[] | undefined = undefined
 	let notes: SegmentLineNote[] = []
 	try {
 		const blueprints = loadBlueprints(showStyleBase)
 		let result = blueprints.getSegmentPost(context)
 		resultSli = postProcessSegmentLineItems(context, result.segmentLineItems, 'post-process', firstSegmentLine._id)
+		resultSlUpdates = result.segmentLineUpdates // TODO - validate/filter/tidy?
 		notes = context.getNotes()
 	} catch (e) {
 		logger.error(e.stack ? e.stack : e.toString())
@@ -350,6 +353,19 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 				logger.debug('PostProcess: deleted segmentLineItem ' + segmentLineItem._id)
 			}
 		})
+	}
+	if (resultSlUpdates) {
+		// At the moment this only affects the UI, so doesnt need to report 'anythingChanged'
+
+		let ps = resultSlUpdates.map(sl => asyncCollectionUpdate(SegmentLines, {
+			_id: sl._id,
+			runningOrderId: ro._id
+		}, {
+			$set: {
+				displayDurationGroup: sl.displayDurationGroup || ''
+			}
+		}))
+		waitForPromiseAll(ps)
 	}
 
 	// if anything was changed
@@ -418,7 +434,7 @@ export namespace ServerRunningOrderAPI {
 export namespace ClientRunningOrderAPI {
 	export function runningOrderNeedsUpdating (runningOrderId: string) {
 		check(runningOrderId, String)
-		logger.info('runningOrderNeedsUpdating ' + runningOrderId)
+		// logger.info('runningOrderNeedsUpdating ' + runningOrderId)
 
 		let ro = RunningOrders.findOne(runningOrderId)
 		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)

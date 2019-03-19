@@ -26,6 +26,9 @@ import { ServerTestToolsAPI, getStudioConfig } from './testTools'
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
+import { number } from 'prop-types';
+import { RunningOrderDataCache } from '../../lib/collections/RunningOrderDataCache';
+import { MosIntegration, replaceStoryItem } from './integration/mos';
 
 const MINIMUM_TAKE_SPAN = 1000
 
@@ -221,6 +224,30 @@ export function segmentLineItemTakeNow (roId: string, slId: string, sliId: strin
 	return ClientAPI.responseSuccess(
 		ServerPlayoutAPI.segmentLineItemTakeNow(roId, slId, sliId)
 	)
+}
+export function segmentLineItemSetInOutPoints (roId: string, slId: string, sliId: string, inPoint: number, outPoint: number) {
+	check(roId, String)
+	check(slId, String)
+	check(sliId, String)
+	check(inPoint, Number)
+	check(outPoint, Number)
+
+	const runningOrder = RunningOrders.findOne(roId)
+	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
+	const sl = SegmentLines.findOne(slId)
+	if (!sl) throw new Meteor.Error(404, `SegmentLine "${slId}" not found!`)
+	if (runningOrder && runningOrder.active && sl.status === "PLAY") {
+		return ClientAPI.responseError(`SegmentLine cannot be active while setting in/out!`) // @todo: un-hardcode
+	}
+	const slCache = RunningOrderDataCache.findOne(roId + '_fullStory' + slId)
+	if (!slCache) throw new Meteor.Error(404, `SegmentLine Cache for "${slId}" not found!`)
+	const sli = SegmentLineItems.findOne(sliId)
+	if (!sli) throw new Meteor.Error(404, `SegmentLineItem "${sliId}" not found!`)
+
+	return ClientAPI.responseSuccess(
+		replaceStoryItem(runningOrder, sli, slCache, inPoint, outPoint)
+	)
+
 }
 export function segmentAdLibLineItemStart (roId: string, slId: string, slaiId: string, queue: boolean) {
 	check(roId, String)
@@ -432,6 +459,9 @@ methods[UserActionAPI.methods.toggleSegmentLineArgument] = function (roId: strin
 }
 methods[UserActionAPI.methods.segmentLineItemTakeNow] = function (roId: string, slId: string, sliId: string): ClientAPI.ClientResponse {
 	return segmentLineItemTakeNow.call(this, roId, slId, sliId)
+}
+methods[UserActionAPI.methods.setInOutPoints] = function (roId: string, slId: string, sliId: string, inPoint: number, outPoint: number): ClientAPI.ClientResponse {
+	return segmentLineItemSetInOutPoints(roId, slId, sliId, inPoint, outPoint)
 }
 methods[UserActionAPI.methods.segmentAdLibLineItemStart] = function (roId: string, slId: string, salliId: string, queue: boolean) {
 	return segmentAdLibLineItemStart.call(this, roId, slId, salliId, queue)

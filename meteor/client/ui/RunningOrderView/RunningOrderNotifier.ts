@@ -54,12 +54,9 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 
 	private _roImportVersionStatus: Notification | undefined = undefined
 	private _roImportVersionStatusDep: Tracker.Dependency
+	private _roImportVersionInterval: number | undefined = undefined
 
-	private _runningOrderId: ReactiveVar<string | undefined>
-	private _studioId: ReactiveVar<string | undefined>
-
-
-	constructor () {
+	constructor (runningOrderId: string, showStyleBase: ShowStyleBase, studioInstallation: StudioInstallation) {
 		super()
 		this._notificationList = new NotificationList([])
 		this._mediaStatusDep = new Tracker.Dependency()
@@ -67,48 +64,28 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 		this._deviceStatusDep = new Tracker.Dependency()
 		this._roImportVersionStatusDep = new Tracker.Dependency()
 		this._notesDep = new Tracker.Dependency()
-		this._runningOrderId = new ReactiveVar<string | undefined>(undefined)
-		this._studioId = new ReactiveVar<string | undefined>(undefined)
 
 		this._notifier = NotificationCenter.registerNotifier((): NotificationList => {
 			return this._notificationList
 		})
 		this.autorun(() => {
 			// console.log('RunningOrderViewNotifier 1')
-			let roId = this._runningOrderId.get()
-			// console.log('roId: ' + roId)
-			if (roId === undefined) {
-				const studioId = this._studioId.get()
-				const ro = RunningOrders.findOne({
-					active: true,
-					studioInstallationId: studioId
-				})
-				if (ro) {
-					roId = ro._id
-				} else {
-					roId = ''
-				}
-			}
-			const rRunningOrderId = reactiveData.getRRunningOrderId(roId).get()
+			const rRunningOrderId = runningOrderId
 			// console.log('rRunningOrderId: ' + rRunningOrderId)
 
 			this.reactiveRunningOrderStatus(rRunningOrderId)
+			this.reactiveVersionStatus(rRunningOrderId)
 
 			if (rRunningOrderId) {
-				const studioInstallationId = reactiveData.getRRunningOrderStudioId(rRunningOrderId).get()
-				const showStyleBaseId = reactiveData.getRRunningOrderShowStyleBaseId(rRunningOrderId).get()
 				this.autorun(() => {
 					// console.log('RunningOrderViewNotifier 1-1')
-					const studioInstallation = StudioInstallations.findOne(studioInstallationId)
-					const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
 					if (showStyleBase && studioInstallation) {
 						this.reactiveMediaStatus(rRunningOrderId, showStyleBase, studioInstallation)
 						this.reactiveSLNotes(rRunningOrderId)
-						this.reactivePeripheralDeviceStatus(studioInstallationId)
+						this.reactivePeripheralDeviceStatus(studioInstallation._id)
 					} else {
 						this.cleanUpMediaStatus()
 					}
-					this.reactiveVersionStatus(rRunningOrderId)
 				})
 			} else {
 				this._mediaStatus = {}
@@ -140,16 +117,10 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	setRunningOrderId (id: string | undefined) {
-		this._runningOrderId.set(id)
-	}
-
-	setStudioId (id: string | undefined) {
-		this._studioId.set(id)
-	}
-
 	stop () {
 		super.stop()
+
+		if (this._roImportVersionInterval) Meteor.clearInterval(this._roImportVersionInterval)
 
 		this._notifier.stop()
 	}
@@ -198,7 +169,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 					this._runningOrderStatusDep.changed()
 				} else if (!newNotification && this._runningOrderStatus[unsyncedId]) {
 					delete this._runningOrderStatus[unsyncedId]
-					this._deviceStatusDep.changed()
+					this._runningOrderStatusDep.changed()
 				}
 			}
 		})
@@ -291,12 +262,13 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 		const t = i18nTranslator
 
 		let oldItemIds: Array<string> = []
+		const rSegmentLineItems = reactiveData.getRSegmentLineItems(rRunningOrderId)
 		this.autorun((comp: Tracker.Computation) => {
 			// console.log('RunningOrderViewNotifier 5')
-			const items = reactiveData.getRSegmentLineItems(rRunningOrderId).get()
+			const items = rSegmentLineItems.get()
 			const newItemIds = items.map(item => item._id)
 			items.forEach((item) => {
-				const sourceLayer = reactiveData.getRSourceLayer(showStyleBase, item.sourceLayerId).get()
+				const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === item.sourceLayerId)
 				const segmentLine = SegmentLines.findOne(item.segmentLineId)
 				const segment = segmentLine ? Segments.findOne(segmentLine.segmentId) : undefined
 				if (sourceLayer && segmentLine) {
@@ -354,37 +326,54 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 	private reactiveVersionStatus (rRunningOrderId: string) {
 		const t = i18nTranslator
 
+		const updatePeriod = 30000 // every 30s
+
+		if (this._roImportVersionInterval) Meteor.clearInterval(this._roImportVersionInterval)
+		this._roImportVersionInterval = rRunningOrderId ? Meteor.setInterval(() => this.updateVersionStatus(rRunningOrderId), updatePeriod) : undefined
+
 		this.autorun((comp: Tracker.Computation) => {
 			// console.log('RunningOrderViewNotifier 5')
 
-			// Doing the check server side, to avoid needing to subscribe to the blueprint and showStyleVariant
-			Meteor.call(RunningOrderAPI.methods.runningOrderNeedsUpdating, rRunningOrderId, (err: Error, versionMismatch: string) => {
-				let newNotification: Notification | undefined = undefined
-				if (err) {
-					newNotification = new Notification('ro_importVersions', NoticeLevel.WARNING, t('Unable to check the system configuration for changes'), 'ro_' + rRunningOrderId, getCurrentTime(), true, undefined, -1)
-				} else if (versionMismatch) {
-					newNotification = new Notification('ro_importVersions', NoticeLevel.WARNING, t('The system configuration has been changed since importing this running order. It might not run correctly'), 'ro_' + rRunningOrderId, getCurrentTime(), true, [
-						{
-							label: t('Reload ENPS Data'),
-							type: 'primary',
-							action: (e) => {
-								const reloadFunc = reloadRunningOrderClick.get()
-								if (reloadFunc) {
-									reloadFunc(e)
-								}
+			// Track the RO as a dependency of this autorun
+			const runningOrder = RunningOrders.findOne(rRunningOrderId)
+			if (runningOrder) {
+				this.updateVersionStatus(runningOrder._id)
+			}
+		})
+	}
+
+	private updateVersionStatus (runningOrderId: string) {
+		const t = i18nTranslator
+
+		// console.log('update_version_status, ' + runningOrderId)
+
+		// Doing the check server side, to avoid needing to subscribe to the blueprint and showStyleVariant
+		Meteor.call(RunningOrderAPI.methods.runningOrderNeedsUpdating, runningOrderId, (err: Error, versionMismatch: string) => {
+			let newNotification: Notification | undefined = undefined
+			if (err) {
+				newNotification = new Notification('ro_importVersions', NoticeLevel.WARNING, t('Unable to check the system configuration for changes'), 'ro_' + runningOrderId, getCurrentTime(), true, undefined, -1)
+			} else if (versionMismatch) {
+				newNotification = new Notification('ro_importVersions', NoticeLevel.WARNING, t('The system configuration has been changed since importing this running order. It might not run correctly'), 'ro_' + runningOrderId, getCurrentTime(), true, [
+					{
+						label: t('Reload ENPS Data'),
+						type: 'primary',
+						action: (e) => {
+							const reloadFunc = reloadRunningOrderClick.get()
+							if (reloadFunc) {
+								reloadFunc(e)
 							}
 						}
-					], -1)
-				}
+					}
+				], -1)
+			}
 
-				if (newNotification && !Notification.isEqual(this._roImportVersionStatus, newNotification)) {
-					this._roImportVersionStatus = newNotification
-					this._roImportVersionStatusDep.changed()
-				} else if (!newNotification && this._roImportVersionStatus) {
-					this._roImportVersionStatus = undefined
-					this._roImportVersionStatusDep.changed()
-				}
-			})
+			if (newNotification && !Notification.isEqual(this._roImportVersionStatus, newNotification)) {
+				this._roImportVersionStatus = newNotification
+				this._roImportVersionStatusDep.changed()
+			} else if (!newNotification && this._roImportVersionStatus) {
+				this._roImportVersionStatus = undefined
+				this._roImportVersionStatusDep.changed()
+			}
 		})
 	}
 
@@ -433,7 +422,8 @@ interface IProps {
 	// 	}
 	// }
 	runningOrderId: string,
-	studioId: string
+	studioInstallation: StudioInstallation
+	showStyleBase: ShowStyleBase
 }
 
 export const RunningOrderNotifier = class extends React.Component<IProps> {
@@ -441,23 +431,21 @@ export const RunningOrderNotifier = class extends React.Component<IProps> {
 
 	constructor (props: IProps) {
 		super(props)
-		this.notifier = new RunningOrderViewNotifier()
+		this.notifier = new RunningOrderViewNotifier(props.runningOrderId, props.showStyleBase, props.studioInstallation)
 	}
 
-	componentDidMount () {
-		const roId = this.props.runningOrderId // || (this.props.match ? this.props.match.params.runningOrderId : undefined)
-		const studioId = this.props.studioId // || (this.props.match ? this.props.match.params.studioId : undefined)
-		// console.log('Setting running order id to: ', roId, studioId)
-		this.notifier.setRunningOrderId(roId)
-		this.notifier.setStudioId(studioId)
+	shouldComponentUpdate (nextProps: IProps): boolean {
+		if ((this.props.runningOrderId === nextProps.runningOrderId) &&
+			(this.props.showStyleBase._id === nextProps.showStyleBase._id) &&
+			(this.props.studioInstallation._id === nextProps.studioInstallation._id)) {
+			return false
+		}
+		return true
 	}
 
 	componentDidUpdate () {
-		const roId = this.props.runningOrderId // || (this.props.match ? this.props.match.params.runningOrderId : undefined)
-		const studioId = this.props.studioId // || (this.props.match ? this.props.match.params.studioId : undefined)
-		// console.log('Setting running order id to: ', roId, studioId)
-		this.notifier.setRunningOrderId(roId)
-		this.notifier.setStudioId(studioId)
+		this.notifier.stop()
+		this.notifier = new RunningOrderViewNotifier(this.props.runningOrderId, this.props.showStyleBase, this.props.studioInstallation)
 	}
 
 	componentWillUnmount () {

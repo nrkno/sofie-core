@@ -172,6 +172,10 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 							</div>
 							<div className='clocks-bottom-top'>
 								<div className='clocks-segment-title'>
+									{currentSegmentLine && currentSegmentLine.autoNext  ?
+									<div style={{display: 'inline-block', height: '18vh'}}>
+										<img style={{height: '12vh', paddingTop: '2vh'}} src="/icons/auto-presenter-screen.svg" />
+									</div> : ''}
 									{nextSegmentLine ? nextSegmentLine.slug.split(';')[0] : '_'}
 								</div>
 								<div className='clocks-segment-title clocks-segmentline-title'>

@@ -18,6 +18,7 @@ export namespace UserActionAPI {
 		'disableNextSegmentLineItem'			= 'userAction.disableNextSegmentLineItem',
 		'toggleSegmentLineArgument'				= 'userAction.toggleSegmentLineArgument',
 		'segmentLineItemTakeNow'				= 'userAction.segmentLineItemTakeNow',
+		'setInOutPoints'						= 'userAction.segmentLineItemSetInOutPoints',
 
 		'segmentAdLibLineItemStart'				= 'userAction.segmentAdLibLineItemStart',
 		'sourceLayerOnLineStop'					= 'userAction.sourceLayerOnLineStop',

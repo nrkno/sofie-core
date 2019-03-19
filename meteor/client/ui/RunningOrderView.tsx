@@ -1458,12 +1458,18 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 	}
 
-	onShowHotkeys = () => {
-		this.setState({
-			isInspectorDrawerExpanded: true
-		})
-		if (this._inspectorDrawer) {
-			this._inspectorDrawer.getWrappedInstance().switchTab(InspectorPanelTabs.SYSTEM_HOTKEYS)
+	onToggleHotkeys = () => {
+		if (!this.state.isInspectorDrawerExpanded) {
+			this.setState({
+				isInspectorDrawerExpanded: true
+			})
+			if (this._inspectorDrawer) {
+				this._inspectorDrawer.getWrappedInstance().switchTab(InspectorPanelTabs.SYSTEM_HOTKEYS)
+			}
+		} else {
+			this.setState({
+				isInspectorDrawerExpanded: false
+			})
 		}
 	}
 
@@ -1566,7 +1572,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								}}>
 									{this.state.isSupportPanelOpen &&
 										<SupportPopUp>
-											<button className='btn btn-primary' onClick={this.onShowHotkeys}>{t('Show Hotkeys')}</button>
+											<button className='btn btn-primary' onClick={this.onToggleHotkeys}>{t('Show Hotkeys')}</button>
 											<button className='btn btn-primary' onClick={this.onTakeRunningOrderSnapshot}>{t('Take a Snapshot')}</button>
 											<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart Playout')}</button>
 										</SupportPopUp>
@@ -1614,7 +1620,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									onRegisterHotkeys={this.onRegisterHotkeys} />
 							</ErrorBoundary>
 							<ErrorBoundary>
-								<RunningOrderNotifier runningOrderId={this.props.runningOrder._id} studioId={this.props.studioInstallation._id} />
+								{this.props.runningOrder && this.props.studioInstallation && this.props.showStyleBase &&
+									<RunningOrderNotifier runningOrderId={this.props.runningOrder._id} studioInstallation={this.props.studioInstallation} showStyleBase={this.props.showStyleBase} />
+								}
 							</ErrorBoundary>
 						</div>
 					</RunningOrderTimingProvider>

@@ -39,7 +39,9 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 		})
 	}
 	autorun (cb: (computation: Tracker.Computation) => void, options?: any): Tracker.Computation {
-		let computation = Tracker.autorun(cb, options)
+		let computation = Tracker.nonreactive(() => {
+			return Tracker.autorun(cb, options)
+		})
 		this._computations.push(computation)
 		return computation
 	}

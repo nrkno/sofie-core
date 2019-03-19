@@ -9,8 +9,9 @@ import { Mongo } from 'meteor/mongo'
 import { MultiSelect, MultiSelectEvent } from './multiSelect'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
-	type: 'text' | 'multiline' | 'int' | 'float' | 'checkbox' | 'dropdown' | 'switch' | 'multiselect'
+	type: EditAttributeType
 }
+export type EditAttributeType = 'text' | 'multiline' | 'int' | 'float' | 'checkbox' | 'dropdown' | 'switch' | 'multiselect'
 export class EditAttribute extends React.Component<IEditAttribute> {
 	render () {
 
@@ -65,8 +66,8 @@ interface IEditAttributeBaseProps {
 	updateFunction?: (edit: EditAttributeBase, newValue: any ) => void
 	overrideDisplayValue?: any
 	label?: string
-	mutateDisplayValue?: any
-	mutateUpdateValue?: any
+	mutateDisplayValue?: (v: any) => any
+	mutateUpdateValue?: (v: any) => any
 }
 interface IEditAttributeBaseState {
 	value: any,

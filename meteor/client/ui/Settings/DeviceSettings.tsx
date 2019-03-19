@@ -9,9 +9,11 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
+
 import { PlayoutDeviceSettingsComponent } from './components/PlayoutDeviceSettingsComponent'
 import { MediaManagerSettingsComponent } from './components/MediaManagerSettingsComponent'
 import { MosDeviceSettingsComponent } from './components/MosDeviceSettingsComponent'
+
 interface IDeviceSettingsProps {
 	match: {
 		params: {
