@@ -387,7 +387,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 
 			{settings && settings.devices &&
 				(<React.Fragment>
-					<h3 className='mhs'>{t('Devices')}</h3>
+					<h2 className='mhn'>{t('Devices')}</h2>
 					<table className='expando settings-studio-device-table'>
 						<tbody>
 							{this.renderDevices()}
@@ -403,7 +403,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 
 			{subDevices &&
 				(<React.Fragment>
-					<h3 className='mhs'>{t('Attached sub-devices')}</h3>
+					<h2 className='mhn'>{t('Attached sub-devices')}</h2>
 					{subDevices.map((item) => <DeviceItem key={item._id} device={item} showRemoveButtons={true} />)}
 				</React.Fragment>)}
 		</div>);

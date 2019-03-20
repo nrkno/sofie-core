@@ -364,43 +364,43 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 		const { t } = this.props;
 		let settings = this.props.device.settings as MediaManagerDeviceSettings;
 		return (<div>
-			<div className='mod mvs mhs'>
+			<div className='mod mvs mhn'>
 				<label className='field'>
 					{t('No. of available workers')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.workers'} obj={this.props.device} type='int' collection={PeripheralDevices} className=''></EditAttribute>
 				</label>
 			</div>
-			<div className='mod mvs mhs'>
+			<div className='mod mvs mhn'>
 				<label className='field'>
 					{t('File linger time')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.lingerTime'} obj={this.props.device} type='int' collection={PeripheralDevices} className=''></EditAttribute>
 				</label>
 			</div>
-			<div className='mod mvs mhs'>
+			<div className='mod mvs mhn'>
 				<label className='field'>
 					{t('Workflow linger time')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.workFlowLingerTime'} obj={this.props.device} type='int' collection={PeripheralDevices} className=''></EditAttribute>
 				</label>
 			</div>
-			<div className='mod mvs mhs'>
+			<div className='mod mvs mhn'>
 				<label className='field'>
 					{t('Cron-Job interval time')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.cronJobTime'} obj={this.props.device} type='int' collection={PeripheralDevices} className=''></EditAttribute>
 				</label>
 			</div>
-			<div className='mod mvs mhs'>
+			<div className='mod mvs mhn'>
 				<label className='field'>
 					{t('Media Scanner Host')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.mediaScanner.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className=''></EditAttribute>
 				</label>
 			</div>
-			<div className='mod mvs mhs'>
+			<div className='mod mvs mhn'>
 				<label className='field'>
 					{t('Media Scanner Port')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.mediaScanner.port'} obj={this.props.device} type='int' collection={PeripheralDevices} className=''></EditAttribute>
 				</label>
 			</div>
-			<div className='mod mvs mhs'>
+			<div className='mod mvs mhn'>
 				<label className='field'>
 					{t('Activate Debug Logging')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.debugLogging'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className=''></EditAttribute>
@@ -416,7 +416,7 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 				<p>{t('Are you sure you want to remove flow "{{flowId}}"?', { flowId: (this.state.deleteConfirmFlowId) })}</p>
 			</ModalDialog>
 
-			<h3 className='mhs'>{t('Attached Storages')}</h3>
+			<h2 className='mhn'>{t('Attached Storages')}</h2>
 			{settings && settings.storages &&
 				(<table className='expando settings-studio-device-table'>
 					<tbody>
@@ -429,7 +429,7 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 				</button>
 			</div>
 
-			<h3 className='mhs'>{t('Media Flows')}</h3>
+			<h2 className='mhn'>{t('Media Flows')}</h2>
 			{settings && settings.mediaFlows &&
 				(<table className='expando settings-studio-device-table'>
 					<tbody>

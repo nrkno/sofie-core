@@ -313,7 +313,7 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 					<p>{t('Are you sure you want to delete this config item "{{configId}}"?', { configId: (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) })}</p>
 					<p>{t('Please note: This action is irreversible!')}</p>
 				</ModalDialog>
-				<h3 className='mhs'>{t('Blueprint Configuration')}</h3>
+				<h2 className='mhn'>{t('Blueprint Configuration')}</h2>
 				<table className='expando settings-studio-custom-config-table'>
 					<tbody>
 						{this.renderItems()}

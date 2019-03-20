@@ -80,14 +80,14 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 		const { t } = this.props
 
 		return (
-			<div className='studio-edit mod mhl mvs'>
+			<div className='studio-edit mod mhl mvn'>
 				<div>
 					<button className='btn btn-secondary btn-tight right' onClick={(e) => this.props.device && this.restartDevice(this.props.device)}>
 						{t('Restart Device')}
 					</button>
-					<h3 className='mhs'>
+					<h2 className='mhn mtn'>
 						{t('Generic Properties')}
-					</h3>
+					</h2>
 					<label className='field'>
 						{t('Device Name')}
 						<div className='mdi'>

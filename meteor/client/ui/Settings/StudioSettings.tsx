@@ -209,7 +209,7 @@ export const ConfigSettings = translate()(class ConfigSettings extends React.Com
 		const { t } = this.props
 		return (
 			<div>
-				<h3 className='mhs'>{t('Custom Configuration')}</h3>
+				<h2 className='mhn'>{t('Custom Configuration')}</h2>
 				<table className='expando settings-studio-custom-config-table'>
 					<tbody>
 						{this.renderItems()}
@@ -298,7 +298,7 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 		const { t } = this.props
 		return (
 			<div>
-				<h3 className='mhs'>{t('Attached Devices')}</h3>
+				<h2 className='mhn'>{t('Attached Devices')}</h2>
 				<table className='expando settings-studio-device-table'>
 					<tbody>
 						{this.renderDevices()}
@@ -756,7 +756,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 		const { t } = this.props
 		return (
 			<div>
-				<h3 className='mhs'>{t('Layer Mappings')}</h3>
+				<h2 className='mhn'>{t('Layer Mappings')}</h2>
 				<table className='expando settings-studio-mappings-table'>
 					<tbody>
 						{this.renderMappings()}
@@ -783,8 +783,8 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 		const { t } = this.props
 		return (
 			<div>
-				<h3 className='mhs'>{t('Test Tools - Recordings')}</h3>
-				<div className='mod mvs mhs'>
+				<h2 className='mhn'>{t('Test Tools - Recordings')}</h2>
+				<div className='mod mvs mhn'>
 					<label className='field'>
 						{t('Device ID')}
 						<EditAttribute
@@ -796,7 +796,7 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
-				<div className='mod mvs mhs'>
+				<div className='mod mvs mhn'>
 					<label className='field'>
 						{t('CasparCG Channel')}
 						<EditAttribute
@@ -808,7 +808,7 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
-				<div className='mod mvs mhs'>
+				<div className='mod mvs mhn'>
 					<label className='field'>
 						{t('Path Prefix')}
 						<EditAttribute
@@ -820,7 +820,7 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
-				<div className='mod mvs mhs'>
+				<div className='mod mvs mhn'>
 					<label className='field'>
 						{t('URL Prefix')}
 						<EditAttribute
@@ -832,7 +832,7 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
-				<div className='mod mvs mhs'>
+				<div className='mod mvs mhn'>
 					<label className='field'>
 						{t('Decklink Input Index')}
 						<EditAttribute
@@ -844,7 +844,7 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
-				<div className='mod mvs mhs'>
+				<div className='mod mvs mhn'>
 					<label className='field'>
 						{t('Decklink Input Format')}
 						<EditAttribute
@@ -939,9 +939,9 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 
 		return (
 			this.props.studioInstallation ?
-			<div className='studio-edit mod mhl mvs'>
+			<div className='studio-edit mod mhl mvn'>
 				<div>
-						<h3 className='mhs'>{t('Generic Properties')}</h3>
+					<h2 className='mhn mtn'>{t('Generic Properties')}</h2>
 					<label className='field'>
 						{t('Studio Name')}
 						<div className='mdi'>

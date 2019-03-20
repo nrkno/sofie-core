@@ -213,25 +213,29 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		const { t } = this.props
 
 		return (
-			<div className='studio-edit mod mhl mvs'>
+			<div className='studio-edit mod mhl mvn'>
 				<div>
 					<div>
-						<h3 className='mhs'>{t('Take a Snapshot')}</h3>
+						<h2 className='mhn mtn'>{t('Take a Snapshot')}</h2>
 						<div>
-							<h4>{t('Full System Snapshot')}</h4>
-							<i>
-								{t('A Full System Snapshot contains all system settings (studios, showstyles, blueprints, devices, etc.)')}
-							</i>
+							<h3 className='mhn'>{t('Full System Snapshot')}</h3>
+							<p className='mhn'>
+								<i>
+									{t('A Full System Snapshot contains all system settings (studios, showstyles, blueprints, devices, etc.)')}
+								</i>
+							</p>
 							<div>
 								<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot(null) }}>{t('Take a Full System Snapshot')}</button>
 							</div>
 							{
 								this.props.studios.length > 1 ?
 								<div>
-									<h4>{t('Studio Snapshot')}</h4>
-									<i>
-										{t('A Studio Snapshot contains all system settings related to that studio')}
-									</i>
+									<h3 className='mhn'>{t('Studio Snapshot')}</h3>
+									<p className='mhn'>
+										<i>
+											{t('A Studio Snapshot contains all system settings related to that studio')}
+										</i>
+									</p>
 									{
 										_.map(this.props.studios, (studio) => {
 											return <div key={studio._id}>
@@ -243,14 +247,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							}
 						</div>
 					</div>
-					<h3 className='mhs'>{t('Restore from Snapshot File')}</h3>
+					<h2 className='mhn'>{t('Restore from Snapshot File')}</h2>
 					<label className='field'>
 						<div className='mdi'>
 							<input type='file' accept='.json' onChange={this.onUploadFile.bind(this)} key={this.state.uploadFileKey} />
 							<span className='mdfx'></span>
 						</div>
 					</label>
-					<h3 className='mhs'>{t('Restore from Stored Snapshots')}</h3>
+					<h2 className='mhn'>{t('Restore from Stored Snapshots')}</h2>
 					<div>
 						<table className='table'>
 							<tbody>
@@ -259,6 +263,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									<th>Type</th>
 									<th>Name</th>
 									<th>Comment</th>
+									{ this.state.removeSnapshots ? <th></th> : null }
 								</tr>
 								{_.map(this.props.snapshots, (snapshot) => {
 									return (
@@ -297,7 +302,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											{
 												this.state.removeSnapshots ?
 												<td>
-													<button className='btn btn-secondary' onClick={() => { this.removeStoredSnapshot(snapshot._id) }}>{t('Remove')}</button>
+													<button className='btn mod mhm btn-secondary' onClick={() => { this.removeStoredSnapshot(snapshot._id) }}>{t('Remove')}</button>
 												</td> : null
 											}
 										</tr>
