@@ -27,7 +27,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 		return this.props.coreSystem ? (
 			<div className='studio-edit mod mhl mvs'>
 				<div>
-					<h3 className='mhs'>{t('System Message')}</h3>
+					<h2 className='mhs'>{t('System-wide Notification Message')}</h2>
 					<label className='field'>
 						{t('Message')}
 						<div className='mdi'>
@@ -51,9 +51,9 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 								collection={CoreSystem}></EditAttribute>
 						</div>
 					</div>
-					<h3 className='mhs'>{t('Support Message')}</h3>
+					<h2 className='mhs'>{t('Edit Support Panel')}</h2>
 					<label className='field'>
-						{t('Message')}
+						{t('HTML that will be shown in the Support Panel')}
 						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'
