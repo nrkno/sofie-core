@@ -4,7 +4,7 @@ import { Meteor } from 'meteor/meteor'
 import { logger } from '../../logging'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { MediaWorkFlows, MediaWorkFlow } from '../../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowSteps, MediaWorkFlowStep } from '../../../lib/collections/MediaWorkFlowSteps'
+import { MediaWorkFlowSteps, MediaWorkFlowStep, WorkStepStatus } from '../../../lib/collections/MediaWorkFlowSteps'
 import { setMeteorMethods, Methods, wrapMethods } from '../../methods'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 
@@ -60,6 +60,12 @@ export namespace MediaManagerIntegration {
 			obj.studioInstallationId = peripheralDevice.studioInstallationId
 
 			MediaWorkFlows.upsert(docId, obj)
+
+			if (obj.finished && !obj.success) {
+				logger.info('mm job failed')
+			} else if (obj.finished && obj.success) {
+				logger.info('mm job success')
+			}
 		} else {
 			MediaWorkFlows.remove(docId)
 
