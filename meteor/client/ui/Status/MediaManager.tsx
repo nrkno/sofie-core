@@ -3,6 +3,8 @@ import * as CoreIcons from '@nrk/core-icons'
 import * as faChevronDown from '@fortawesome/fontawesome-free-solid/faChevronDown'
 import * as faChevronRight from '@fortawesome/fontawesome-free-solid/faChevronRight'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
+import * as faStopCircle from '@fortawesome/fontawesome-free-solid/faStopCircle'
+import * as faRedo from '@fortawesome/fontawesome-free-solid/faRedo'
 import * as VelocityReact from 'velocity-react'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as ClassNames from 'classnames'
@@ -20,6 +22,7 @@ import { Spinner } from '../../lib/Spinner'
 import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
+const Tooltip = require('rc-tooltip')
 
 interface IMediaManagerStatusProps {
 
@@ -239,12 +242,16 @@ const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.InjectedTranslate
 				</div>
 			</div>
 			<div className='workflow__header__actions'>
-				<button className='btn btn-default' onClick={(e) => props.actionRestart(e, i)}>
-					{t('Restart')}
-				</button>
-				<button className='btn btn-default' onClick={(e) => props.actionAbort(e, i)}>
-					{t('Abort')}
-				</button>
+				<Tooltip overlay={t('Restart')} placement='top'>
+					<button className='action-btn' onClick={(e) => props.actionRestart(e, i)}>
+						<FontAwesomeIcon icon={faRedo} />
+					</button>
+				</Tooltip>
+				<Tooltip overlay={t('Abort')} placement='top'>
+					<button className='action-btn' disabled={i.finished} onClick={(e) => props.actionAbort(e, i)}>
+						<FontAwesomeIcon icon={faStopCircle} />
+					</button>
+				</Tooltip>
 			</div>
 		</div>
 		<VelocityReact.VelocityTransitionGroup enter={{
