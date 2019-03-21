@@ -101,7 +101,9 @@ export interface SegmentLineTimings extends IMessageBlueprintSegmentLineTimings 
 	/** Point in time the SegmentLine stopped playing (ie the time of the playout) */
 	stoppedPlayback: Array<Time>,
 	/** Point in time the SegmentLine was set as Next (ie the time of the user action) */
-	next: Array<Time>
+	next: Array<Time>,
+	/** The playback offset that was set for the last take */
+	playOffset: Array<Time>
 }
 
 export enum SegmentLineNoteType {
@@ -261,6 +263,13 @@ export class SegmentLine implements DBSegmentLine {
 		if (!this.timings.startedPlayback || this.timings.startedPlayback.length === 0) return undefined
 
 		return this.timings.startedPlayback[this.timings.startedPlayback.length - 1]
+	}
+	getLastPlayOffset () {
+		if (!this.timings) return undefined
+
+		if (!this.timings.playOffset || this.timings.playOffset.length === 0) return undefined
+
+		return this.timings.playOffset[this.timings.playOffset.length - 1]
 	}
 }
 

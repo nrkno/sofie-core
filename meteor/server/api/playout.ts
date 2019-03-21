@@ -701,7 +701,8 @@ export namespace ServerPlayoutAPI {
 		}))
 		ps.push(asyncCollectionUpdate(SegmentLines, takeSegmentLine._id, {
 			$push: {
-				'timings.take': now
+				'timings.take': now,
+				'timings.playOffset': timeOffset || 0
 			}
 		}))
 		if (m.previousSegmentLineId) {

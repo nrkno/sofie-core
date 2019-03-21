@@ -288,8 +288,10 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 									  || 0
 
 			const lastStartedPlayback = this.props.currentLiveSegmentLine.getLastStartedPlayback()
+			const lastPlayOffset = this.props.currentLiveSegmentLine.getLastPlayOffset() || 0
+
 			let newLivePosition = this.props.currentLiveSegmentLine.startedPlayback && lastStartedPlayback ?
-				(getCurrentTime() - lastStartedPlayback + segmentLineOffset) :
+				(getCurrentTime() - lastStartedPlayback + segmentLineOffset + lastPlayOffset) :
 				segmentLineOffset
 
 			this.setState(_.extend({

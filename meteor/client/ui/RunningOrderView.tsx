@@ -1328,7 +1328,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					manualSetAsNext: true
 				})
 			})
-			console.log(offset)
 		}
 	}
 

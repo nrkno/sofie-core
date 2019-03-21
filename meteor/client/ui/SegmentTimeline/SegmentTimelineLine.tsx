@@ -411,7 +411,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 							{ this.state.isNext && t('Next') }
 						</div>
 					</div>
-					{this.props.runningOrder.nextTimeOffset && this.state.isNext && 
+					{this.props.runningOrder.nextTimeOffset && this.state.isNext &&
 						<div className='segment-timeline__segment-line__previewline' style={{
 							'left': (this.props.runningOrder.nextTimeOffset * this.props.timeScale) + 'px',
 						}}></div>
