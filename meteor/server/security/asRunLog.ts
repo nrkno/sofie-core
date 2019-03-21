@@ -1,8 +1,7 @@
-import { Meteor } from 'meteor/meteor'
 import { AsRunLog, AsRunLogEvent } from '../../lib/collections/AsRunLog'
 
 export namespace AsRunLogSecurity {
-	export function allowReadAccess (selector: object, context) {
+	export function allowReadAccess (selector: object, context: any) {
 
 		return true
 		// TODO: implement some security here

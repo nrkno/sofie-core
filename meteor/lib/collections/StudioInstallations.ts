@@ -2,7 +2,6 @@ import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
 import { applyClassToDocument, registerCollection } from '../lib'
 import * as _ from 'underscore'
-import { logger } from '../logging'
 import { ChannelFormat } from 'timeline-state-resolver-types'
 import {
 	IConfigItem,
@@ -11,6 +10,8 @@ import {
 	IBlueprintStudioInstallation,
 	ConfigItemValue
 } from 'tv-automation-sofie-blueprints-integration'
+import { Meteor } from 'meteor/meteor'
+import { ObserveChangesForHash } from './lib'
 
 export interface MappingsExt extends BlueprintMappings {
 	[layerName: string]: MappingExt
@@ -45,6 +46,8 @@ export interface DBStudioInstallation extends IBlueprintStudioInstallation {
 	testToolsConfig?: ITestToolsConfig
 
 	settings: IStudioInstallationSettings
+
+	_runningOrderVersionHash: string
 }
 
 export interface ITestToolsConfig {
@@ -68,6 +71,8 @@ export class StudioInstallation implements DBStudioInstallation {
 	public settings: IStudioInstallationSettings
 	public testToolsConfig?: ITestToolsConfig
 
+	public _runningOrderVersionHash: string
+
 	constructor (document: DBStudioInstallation) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
@@ -89,3 +94,9 @@ export class StudioInstallation implements DBStudioInstallation {
 export const StudioInstallations: TransformedCollection<StudioInstallation, DBStudioInstallation>
 	= new Mongo.Collection<StudioInstallation>('studioInstallation', {transform: (doc) => applyClassToDocument(StudioInstallation, doc) })
 registerCollection('StudioInstallations', StudioInstallations)
+
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		ObserveChangesForHash(StudioInstallations, '_runningOrderVersionHash', ['config'])
+	}
+})

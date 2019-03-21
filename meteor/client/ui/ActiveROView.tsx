@@ -32,7 +32,6 @@ interface IState {
 export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
 
 	let studioId = objectPathGet(props, 'match.params.studioId')
-	let studioInstallationSubscription
 	let studioInstallation
 	if (studioId) {
 		studioInstallation = StudioInstallations.findOne(studioId)
@@ -46,8 +45,7 @@ export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 	return {
 		runningOrder,
 		studioInstallation,
-		studioId,
-		// isReady: runningOrderSubscription.ready() && (studioInstallationSubscription ? studioInstallationSubscription.ready() : true)
+		studioId
 	}
 })(class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 

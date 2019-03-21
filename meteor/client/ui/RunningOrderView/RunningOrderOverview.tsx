@@ -7,7 +7,7 @@ import { RunningOrder, RunningOrders } from '../../../lib/collections/RunningOrd
 import { getCurrentTime, extendMandadory } from '../../../lib/lib'
 import { SegmentLineUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { Segment } from '../../../lib/collections/Segments'
-import { withTiming, WithTiming, SegmentDuration } from './RunningOrderTiming'
+import { withTiming, WithTiming } from './RunningOrderTiming'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
@@ -148,7 +148,6 @@ withTracker<WithTiming<RunningOrderOverviewProps>, RunningOrderOverviewState, Ru
 class extends MeteorReactComponent<WithTiming<RunningOrderOverviewProps & RunningOrderOverviewTrackedProps>, RunningOrderOverviewState> {
 	render () {
 		if (this.props.runningOrder && this.props.runningOrderId && this.props.segments) {
-			const totalDuration = 1
 
 			return (<ErrorBoundary>
 				<div className='running-order__overview'>

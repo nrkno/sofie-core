@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as $ from 'jquery'
+import * as Escape from 'react-escape'
 import { translate } from 'react-i18next'
 import { ContextMenu, MenuItem } from 'react-contextmenu'
 import { SegmentLine } from '../../../lib/collections/SegmentLines'
@@ -42,14 +43,16 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 
 		return (
 			this.props.studioMode && this.props.runningOrder && this.props.runningOrder.active ?
-				<ContextMenu id='segment-timeline-context-menu'>
-					<MenuItem onClick={(e) => this.props.onSetNext(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
-							{t('Set as Next')}
-					</MenuItem>
-					<MenuItem onClick={(e) => this.onSetAsNextFromHere(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
+				<Escape to='document'>
+					<ContextMenu id='segment-timeline-context-menu'>
+						<MenuItem onClick={(e) => this.props.onSetNext(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
+								{t('Set as Next')}
+						</MenuItem>
+						<MenuItem onClick={(e) => this.onSetAsNextFromHere(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
 							{t('Set as Next from here')}
-					</MenuItem>
-				</ContextMenu>
+						</MenuItem>
+					</ContextMenu>
+				</Escape>
 				: null
 		)
 	}

@@ -1,6 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
-import { Time, applyClassToDocument, getCurrentTime, registerCollection, normalizeArray, waitForPromiseAll } from '../lib'
+import { Time, applyClassToDocument, getCurrentTime, registerCollection, normalizeArray, waitForPromiseAll, makePromise } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { SegmentLines, SegmentLine } from './SegmentLines'
 import { MOS } from 'tv-automation-sofie-blueprints-integration'
@@ -13,14 +13,23 @@ import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
 import { RunningOrderBaselineItems } from './RunningOrderBaselineItems'
 import { RunningOrderBaselineAdLibItems } from './RunningOrderBaselineAdLibItems'
 import { IBlueprintRunningOrder } from 'tv-automation-sofie-blueprints-integration'
-import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
+import { ShowStyleCompound, getShowStyleCompound, ShowStyleVariants } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 
 export enum RunningOrderHoldState {
 	NONE = 0,
-	PENDING = 1,
-	ACTIVE = 2,
-	COMPLETE = 3,
+	PENDING = 1, // During STK
+	ACTIVE = 2, // During full, STK is played
+	COMPLETE = 3, // During full, full is played
+}
+
+export interface RunningOrderImportVersions {
+	studioInstallation: string
+	showStyleBase: string
+	showStyleVariant: string
+	blueprint: string
+
+	core: string
 }
 
 /** This is a very uncomplete mock-up of the Rundown object */
@@ -39,6 +48,9 @@ export interface DBRunningOrder extends IBlueprintRunningOrder {
 	name: string
 	created: Time
 	modified: Time
+
+	/** Revisions/Versions of various docs that when changed require the user to reimport the RO */
+	importVersions: RunningOrderImportVersions
 
 	/** Expected start should be set to the expected time this running order should run on air. Should be set to EditorialStart from IMOSRunningOrder */
 	expectedStart?: Time
@@ -86,6 +98,7 @@ export class RunningOrder implements DBRunningOrder {
 	public name: string
 	public created: Time
 	public modified: Time
+	public importVersions: RunningOrderImportVersions
 	public expectedStart?: Time
 	public expectedDuration?: number
 	public metaData?: Array<MOS.IMOSExternalMetaData>
@@ -106,7 +119,7 @@ export class RunningOrder implements DBRunningOrder {
 	public dataSource: string
 
 	constructor (document: DBRunningOrder) {
-		_.each(_.keys(document), (key) => {
+		_.each(_.keys(document), (key: keyof DBRunningOrder) => {
 			this[key] = document[key]
 		})
 	}
@@ -223,57 +236,43 @@ export class RunningOrder implements DBRunningOrder {
 	fetchAllData (): RoData {
 
 		// Do fetches in parallell:
-		let ps = [
-
-			new Promise((resolve, reject) => {
-				Meteor.defer(() => {
-					try {
-						resolve( this.getSegments())
-					} catch (e) {
-						reject(e)
-					}
-				})
+		let ps: [
+			Promise<{ segments: Segment[], segmentsMap: any }>,
+			Promise<{ segmentLines: SegmentLine[], segmentLinesMap: any } >,
+			Promise<SegmentLineItem[]>
+		] = [
+			makePromise(() => {
+				let segments = this.getSegments()
+				let segmentsMap = normalizeArray(segments, '_id')
+				return { segments, segmentsMap }
 			}),
-			new Promise((resolve, reject) => {
-				Meteor.defer(() => {
-					try {
-						resolve( this.getSegmentLines())
-					} catch (e) {
-						reject(e)
+			makePromise(() => {
+				let segmentLines = _.map(this.getSegmentLines(), (sl) => {
+					// Override member function to use cached data instead:
+					sl.getAllSegmentLineItems = () => {
+						return _.map(_.filter(segmentLineItems, (sli) => {
+							return (
+								sli.segmentLineId === sl._id
+							)
+						}), (sl) => {
+							return _.clone(sl)
+						})
 					}
+					return sl
 				})
+				let segmentLinesMap = normalizeArray(segmentLines, '_id')
+				return { segmentLines, segmentLinesMap }
 			}),
-			new Promise((resolve, reject) => {
-				Meteor.defer(() => {
-					try {
-						resolve( SegmentLineItems.find({ runningOrderId: this._id }).fetch())
-					} catch (e) {
-						reject(e)
-					}
-				})
+			makePromise(() => {
+				return SegmentLineItems.find({ runningOrderId: this._id }).fetch()
 			})
 		]
-		let r = waitForPromiseAll(ps)
-		let segments: Segment[] 				= r[0]
-		let segmentLines: SegmentLine[] 		= r[1]
+		let r = waitForPromiseAll(ps as any)
+		let segments: Segment[] 				= r[0].segments
+		let segmentsMap 				 		= r[0].segmentsMap
+		let segmentLinesMap 					= r[1].segmentLinesMap
+		let segmentLines: SegmentLine[]			= r[1].segmentLines
 		let segmentLineItems: SegmentLineItem[] = r[2]
-
-		segmentLines = _.map(segmentLines, (sl) => {
-			// Override member function to use cached data instead:
-			sl.getAllSegmentLineItems = () => {
-				return _.map(_.filter(segmentLineItems, (sli) => {
-					return (
-						sli.segmentLineId === sl._id
-					)
-				}), (sl) => {
-					return _.clone(sl)
-				})
-			}
-			return sl
-		})
-
-		let segmentsMap = normalizeArray(segments, '_id')
-		let segmentLinesMap = normalizeArray(segmentLines, '_id')
 
 		return {
 			runningOrder: this,
@@ -298,7 +297,6 @@ export interface RoData {
 export const RunningOrders: TransformedCollection<RunningOrder, DBRunningOrder>
 	= new Mongo.Collection<RunningOrder>('rundowns', {transform: (doc) => applyClassToDocument(RunningOrder, doc) })
 registerCollection('RunningOrders', RunningOrders)
-let c = RunningOrders
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		RunningOrders._ensureIndex({

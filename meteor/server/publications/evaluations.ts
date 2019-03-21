@@ -1,7 +1,5 @@
-import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
 import { EvaluationsSecurity } from '../security/evaluations'
-import { Evaluations, Evaluation } from '../../lib/collections/Evaluations'
+import { Evaluations } from '../../lib/collections/Evaluations'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 

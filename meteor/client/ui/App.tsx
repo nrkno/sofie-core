@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { translate, InjectedI18nProps } from 'react-i18next'
 import * as m from 'moment'
@@ -12,7 +11,9 @@ import {
 	getAdminMode,
 	setDeveloperMode,
 	setTestingMode,
-	getTestingMode
+	getTestingMode,
+	getDeveloperMode,
+	setSpeakingMode
 } from '../lib/localStorage'
 import Status from './Status'
 import Settings from './Settings'
@@ -37,6 +38,7 @@ interface IAppState {
 	studioMode: boolean
 	adminMode: boolean
 	testingMode: boolean
+	developerMode: boolean
 }
 
 const NullComponent = () => null
@@ -52,11 +54,20 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		if (params['configure']) setAdminMode(params['configure'] === '1')
 		if (params['develop']) setDeveloperMode(params['develop'] === '1')
 		if (params['testing']) setTestingMode(params['testing'] === '1')
+		if (params['speak']) setSpeakingMode(params['speak'] === '1')
+		if (params['admin']) {
+			const val = params['admin'] === '1'
+			setStudioMode(val)
+			setAdminMode(val)
+			setDeveloperMode(val)
+			setTestingMode(val)
+		}
 
 		this.state = {
 			studioMode: getStudioMode(),
 			adminMode: getAdminMode(),
-			testingMode: getTestingMode()
+			testingMode: getTestingMode(),
+			developerMode: getDeveloperMode()
 		}
 
 	}
@@ -79,7 +90,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Route path='/countdowns/presenter' component={NullComponent} />
 							<Route path='/activeRo' component={NullComponent} />
 							<Route path='/prompter/:studioId' component={NullComponent} />
-							<Route path='/' render={(props) => <Header {...props} adminMode={this.state.adminMode} testingMode={this.state.testingMode} />} />
+							<Route path='/' render={(props) => <Header {...props} adminMode={this.state.adminMode} testingMode={this.state.testingMode} developerMode={this.state.developerMode} />} />
 						</Switch>
 					</ErrorBoundary>
 					{/* Main app switch */}
@@ -101,7 +112,12 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Redirect to='/' />
 						</Switch>
 					</ErrorBoundary>
-					<ConnectionStatusNotification />
+					<Switch>
+						<Route path='/countdowns/:studioId/presenter' component={NullComponent} />
+						<Route path='/countdowns/presenter' component={NullComponent} />
+						<Route path='/prompter/:studioId' component={NullComponent} />
+						<Route path='/' component={ConnectionStatusNotification} />
+					</Switch>
 					<ModalDialogGlobalContainer />
 				</div>
 			</Router>

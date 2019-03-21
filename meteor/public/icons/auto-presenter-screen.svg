@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   id="svg8"
+   version="1.1"
+   viewBox="0 0 211.66666 211.66667">
+  <defs
+     id="defs2" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     transform="translate(0,-85.333317)"
+     id="layer1">
+    <path
+       id="path815"
+       d="M 10.443322,94.187422 V 227.30916 L 120.073,157.30752 Z"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.23490874px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       id="path827"
+       d="m 190.39904,145.74955 v 23.12307 a 32.1621,32.1621 0 0 1 -32.16211,32.05699 h -36.6816 v -18.28825 l -40.044974,23.12308 40.044974,23.22818 V 211.4401 h 36.6816 a 42.672588,42.672588 0 0 0 42.67258,-42.04195 v -23.6486 z"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2.78090024px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <text
+       id="text831"
+       y="286.14899"
+       x="10.825707"
+       style="font-style:normal;font-weight:normal;font-size:12.9360857px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.32340214"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:62.09321213px;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';fill:#ffffff;stroke-width:0.32340214"
+         y="286.14899"
+         x="10.825707"
+         id="tspan829">AUTO</tspan></text>
+  </g>
+</svg>

@@ -36,6 +36,7 @@ export interface StatusResponseBase {
 		// statusCode: StatusCode,
 		statusCodeString: string
 		messages: Array<string>
+		versions: {[component: string]: string}
 	}
 	_status: StatusCode
 }

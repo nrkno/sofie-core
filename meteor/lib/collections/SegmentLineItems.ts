@@ -72,12 +72,17 @@ export interface SegmentLineItem extends SegmentLineItemGeneric, IBlueprintSegme
 	trigger: Timeline.TimelineTrigger
 	segmentLineId: string
 	expectedDuration: number | string
+	/** This is a backup of the original expectedDuration of the item, so that the normal field can be modified during playback and restored afterwards */
+	originalExpectedDuration?: number | string
 	/** This is set when an item's duration needs to be overriden */
 	durationOverride?: number
 	isTransition?: boolean
 
 	/** This is set when the item is infinite, to deduplicate the contents on the timeline, while allowing out of order */
 	infiniteMode?: SegmentLineItemLifespan
+	/** This is a backup of the original infiniteMode of the item, so that the normal field can be modified during playback and restored afterwards */
+	originalInfiniteMode?: SegmentLineItemLifespan
+	/** This is the id of the original segment of an infinite item chain. If it matches the id of itself then it is the first in the chain */
 	infiniteId?: string
 
 	/** The object describing the item in detail */
@@ -86,7 +91,14 @@ export interface SegmentLineItem extends SegmentLineItemGeneric, IBlueprintSegme
 	/** Whether this line should be extended into the next segment line when HOLD is activated */
 	extendOnHold?: boolean
 
+	/** Whether the sli has started playback (the most recent time it was played).
+	 * This is set from a callback from the playout gateway
+	 */
 	startedPlayback?: number
+	/** Whether the sli has stopped playback (the most recent time it was played).
+	 * This is set from a callback from the playout gateway
+	 */
+	stoppedPlayback?: number
 
 	adLibSourceId?: string // only set when generated from an adlib
 	dynamicallyInserted?: boolean // only set when generated from an adlib

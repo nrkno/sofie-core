@@ -1,14 +1,25 @@
 import * as _ from 'underscore'
 import * as moment from 'moment'
 import { SaferEval } from 'safer-eval'
-import { SegmentLine, DBSegmentLine, SegmentLineNote, SegmentLineNoteType, SegmentLines } from '../../lib/collections/SegmentLines'
+import { SegmentLine, SegmentLineNote, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
-import { formatDateAsTimecode, formatDurationAsTimecode, literal, normalizeArray, getCurrentTime, OmitId, trimIfString, extendMandadory } from '../../lib/lib'
-import { getHash } from '../lib'
+import {
+	formatDateAsTimecode,
+	formatDurationAsTimecode,
+	getCurrentTime,
+	OmitId,
+	trimIfString,
+	extendMandadory,
+	getHash
+} from '../../lib/lib'
 import { logger } from '../logging'
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-import { TimelineObjGeneric, TimelineObjRunningOrder, TimelineObjType } from '../../lib/collections/Timeline'
+import { RunningOrder } from '../../lib/collections/RunningOrders'
+import {
+	TimelineObjGeneric,
+	TimelineObjRunningOrder,
+	TimelineObjType
+} from '../../lib/collections/Timeline'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
@@ -36,7 +47,8 @@ import {
 	ISourceLayer,
 	ShowStyleVariantPart,
 	IBlueprintShowStyleVariant,
-	IBlueprintSegment
+	IBlueprintSegment,
+	IBlueprintRuntimeArgumentsItem
 } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
 
@@ -58,36 +70,33 @@ import {
 	DeviceOptions as PlayoutDeviceSettingsDevice, Timeline
 } from 'timeline-state-resolver-types'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice, PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
+import { Mongo } from 'meteor/mongo'
 
 export namespace ConfigRef {
-	export function getStudioConfigRef (configKey: string): string {
-		return '${studio.' + this.runningOrder.studioInstallationId + '.' + configKey + '}'
+	export function getStudioConfigRef (studioInstallationId: string, configKey: string): string {
+		return '${studio.' + studioInstallationId + '.' + configKey + '}'
 	}
-	export function getShowStyleRef (configKey: string): string {
-		return '${showStyle.' + this.runningOrder.showStyleVariantId + '.' + configKey + '}'
+	export function getShowStyleConfigRef (showStyleVariantId: string, configKey: string): string {
+		return '${showStyle.' + showStyleVariantId + '.' + configKey + '}'
 	}
-	export function retrieveRefs (stringWithReferences: string, bailOnError?: boolean) {
+	export function retrieveRefs (stringWithReferences: string, modifier?: (str: string) => string, bailOnError?: boolean): string {
 		if (!stringWithReferences) return stringWithReferences
 
 		const refs = stringWithReferences.match(/\$\{[^}]+\}/g) || []
 		_.each(refs, (ref) => {
 			if (ref) {
-				const value = retrieveRef(ref) + ''
+				let value = retrieveRef(ref, bailOnError) + ''
 				if (value) {
-					stringWithReferences.replace(ref, value)
-				} else {
-					if (bailOnError) {
-						throw new Meteor.Error(`Error in retrieveRefs: Error in ref "${ref}"`)
-					}
+					if (modifier) value = modifier(value)
+					stringWithReferences = stringWithReferences.replace(ref, value)
 				}
 			}
 		})
 		return stringWithReferences
 	}
-	function retrieveRef (reference: string): ConfigItemValue | string | undefined {
+	function retrieveRef (reference: string, bailOnError?: boolean): ConfigItemValue | string | undefined {
 		if (!reference) return undefined
-
 		let m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
 		if (m) {
 			if (
@@ -95,24 +104,27 @@ export namespace ConfigRef {
 				_.isString(m[2]) &&
 				_.isString(m[3])
 			) {
-				const studio = StudioInstallations.findOne(m[2])
+				const studioId = m[2]
+				const configId = m[3]
+				const studio = StudioInstallations.findOne(studioId)
 				if (studio) {
-					return studio.getConfigValue(m[3])
-				}
+					return studio.getConfigValue(configId)
+				} else if (bailOnError) throw new Meteor.Error(404,`Ref "${reference}": Studio "${studioId}" not found`)
 			} else if (
 				m[1] === 'showStyle' &&
 				_.isString(m[2]) &&
 				_.isString(m[3])
 			) {
+				const showStyleVariantId = m[2]
 				const configId = m[3]
-				const showStyleCompound = getShowStyleCompound(this.runningOrder.showStyleVariantId)
+				const showStyleCompound = getShowStyleCompound(showStyleVariantId)
 				if (showStyleCompound) {
 					const config = _.find(showStyleCompound.config, (config) => {
 						return config._id === configId
 					})
 					if (config) {
 						return config.value
-					}
+					} else if (bailOnError) throw new Meteor.Error(404,`Ref "${reference}": Showstyle variant "${showStyleVariantId}" not found`)
 				}
 			}
 		}
@@ -127,7 +139,7 @@ export class CommonContext implements ICommonContext {
 	private hashI = 0
 	private hashed: {[hash: string]: string} = {}
 
-	constructor (idPrefix) {
+	constructor (idPrefix: string) {
 		this._idPrefix = idPrefix
 	}
 	getHashId (str?: any) {
@@ -272,7 +284,7 @@ export class RunningOrderContext extends NotesContext implements IRunningOrderCo
 		return res
 	}
 	getStudioConfigRef (configKey: string): string {
-		return ConfigRef.getStudioConfigRef(configKey)
+		return ConfigRef.getStudioConfigRef(this.runningOrder.studioInstallationId, configKey)
 	}
 	getShowStyleConfig (): {[key: string]: ConfigItemValue} {
 		const showStyleCompound = getShowStyleCompound(this.runningOrder.showStyleVariantId)
@@ -284,8 +296,11 @@ export class RunningOrderContext extends NotesContext implements IRunningOrderCo
 		})
 		return res
 	}
-	getShowStyleRef (configKey: string): string {
-		return ConfigRef.getShowStyleRef(configKey)
+	getShowStyleRef (configKey: string): string { // to be deprecated
+		return this.getShowStyleConfigRef(configKey)
+	}
+	getShowStyleConfigRef (configKey: string): string {
+		return ConfigRef.getShowStyleConfigRef(this.runningOrder.showStyleVariantId, configKey)
 	}
 	/** return segmentLines in this runningOrder */
 	getSegmentLines (): Array<SegmentLine> {
@@ -393,7 +408,6 @@ export class AsRunEventContext extends RunningOrderContext implements IAsRunEven
 	}
 	/** Get the mos story related to a segmentLine */
 	getStoryForSegmentLine (segmentLine: SegmentLine): MOS.IMOSROFullStory {
-		check(segmentLine, Object)
 		let segmentLineId = segmentLine._id
 		check(segmentLineId, String)
 		return this.runningOrder.fetchCache(CachePrefix.FULLSTORY + segmentLineId)
@@ -535,7 +549,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	getDevice (deviceId: string): PlayoutDeviceSettingsDevice | undefined {
 		check(deviceId, String)
 
-		const selector = {
+		const selector: Mongo.Selector<PeripheralDevice> = {
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 			studioInstallationId: this.studio._id
 		}
@@ -548,7 +562,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		})
 
 		if (!parentDevice || !parentDevice.settings) return undefined
-		return parentDevice.settings.devices[deviceId] as PlayoutDeviceSettingsDevice
+		return (parentDevice.settings as PlayoutDeviceSettings).devices[deviceId] as PlayoutDeviceSettingsDevice
 	}
 	insertDevice (deviceId: string, device: PlayoutDeviceSettingsDevice): string | null {
 		check(deviceId, String)
@@ -575,7 +589,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	updateDevice (deviceId: string, device: Partial<PlayoutDeviceSettingsDevice>): void {
 		check(deviceId, String)
 
-		const selector = {
+		const selector: Mongo.Selector<PeripheralDevice> = {
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 			studioInstallationId: this.studio._id
 		}
@@ -589,7 +603,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		if (!parentDevice || !parentDevice.settings) return
 
 		let m: any = {}
-		m[`settings.devices.${deviceId}`] = _.extend(parentDevice.settings.devices[deviceId], device)
+		m[`settings.devices.${deviceId}`] = _.extend((parentDevice.settings as PlayoutDeviceSettings).devices[deviceId], device)
 		PeripheralDevices.update(selector, {
 			$set: m
 		})
@@ -654,14 +668,14 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		check(sourceLayerId, String)
 		return _.find(this.showStyleBase.sourceLayers, sl => sl._id === sourceLayerId)
 	}
-	insertSourceLayer (layer: ISourceLayer): string {
-		if (layer._id) {
-			let oldLayer = _.find(this.showStyleBase.sourceLayers, sl => sl._id === layer._id)
-			if (oldLayer) throw new Meteor.Error(500, `Can't insert SourceLayer, _id "${layer._id}" already exists!`)
+	insertSourceLayer (sourceLayerId: string, layer: OmitId<ISourceLayer>): string {
+		if (sourceLayerId) {
+			let oldLayer = _.find(this.showStyleBase.sourceLayers, sl => sl._id === sourceLayerId)
+			if (oldLayer) throw new Meteor.Error(500, `Can't insert SourceLayer, _id "${sourceLayerId}" already exists!`)
 		}
 
 		let sl: ISourceLayer = _.extend(layer, {
-			_id: layer._id || Random.id()
+			_id: sourceLayerId
 		})
 		ShowStyleBases.update({
 			_id: this.showStyleBase._id,
@@ -677,8 +691,8 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		let sl = _.find(this.showStyleBase.sourceLayers, sl => sl._id === sourceLayerId) as ISourceLayer
 		if (!sl) throw new Meteor.Error(404, `SourceLayer "${sourceLayerId}" not found`)
 
-		_.each(layer, (value, key) => {
-			sl[key] = value // Update local
+		_.each(layer, (value, key: keyof ISourceLayer) => {
+			sl[key] = value // Update local object
 		})
 		ShowStyleBases.update({
 			_id: this.showStyleBase._id,
@@ -705,14 +719,14 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		check(outputLayerId, String)
 		return _.find(this.showStyleBase.outputLayers, sl => sl._id === outputLayerId)
 	}
-	insertOutputLayer (layer: IOutputLayer): string {
-		if (layer._id) {
-			let oldLayer = _.find(this.showStyleBase.outputLayers, sl => sl._id === layer._id)
-			if (oldLayer) throw new Meteor.Error(500, `Can't insert OutputLayer, _id "${layer._id}" already exists!`)
+	insertOutputLayer (outputLayerId: string, layer: OmitId<IOutputLayer>): string {
+		if (outputLayerId) {
+			let oldLayer = _.find(this.showStyleBase.outputLayers, sl => sl._id === outputLayerId)
+			if (oldLayer) throw new Meteor.Error(500, `Can't insert OutputLayer, _id "${outputLayerId}" already exists!`)
 		}
 
 		let sl: IOutputLayer = _.extend(layer, {
-			_id: layer._id || Random.id()
+			_id: outputLayerId
 		})
 		ShowStyleBases.update({
 			_id: this.showStyleBase._id,
@@ -725,10 +739,11 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 	}
 	updateOutputLayer (outputLayerId: string, layer: Partial<IOutputLayer>): void {
 		check(outputLayerId, String)
-		let sl = _.find(this.showStyleBase.outputLayers, sl => sl._id === outputLayerId) as IOutputLayer
+		let sl: IOutputLayer = _.find(this.showStyleBase.outputLayers, sl => sl._id === outputLayerId) as IOutputLayer
 		if (!sl) throw new Meteor.Error(404, `OutputLayer "${outputLayerId}" not found`)
 
-		_.each(layer, (value, key) => {
+		_.each(layer, (value, key: keyof IOutputLayer) => {
+			// @ts-ignore Type 'undefined' is not assignable to type 'ConfigItemValue'
 			sl[key] = value // Update local
 		})
 		ShowStyleBases.update({
@@ -817,7 +832,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 
 		if (_.isUndefined(value)) throw new Meteor.Error(400, `setVariantConfig "${variantId}", "${configId}": value is undefined`)
 
-		console.log('setVariantConfig', variantId, configId, value)
+		// console.log('setVariantConfig', variantId, configId, value)
 
 		let variant = ShowStyleVariants.findOne({
 			_id: this.getVariantId(variantId),
@@ -867,6 +882,55 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		}})
 		// Update local:
 		this.showStyleBase.config = _.reject(this.showStyleBase.config, c => c._id === configId)
+	}
+
+	getRuntimeArgument (argumentId: string): IBlueprintRuntimeArgumentsItem | undefined {
+		check(argumentId, String)
+		return _.find(this.showStyleBase.runtimeArguments || [], ra => ra._id === argumentId)
+	}
+	insertRuntimeArgument (argumentId: string, argument: IBlueprintRuntimeArgumentsItem) {
+		if (argumentId && this.showStyleBase.runtimeArguments) {
+			let oldLayer = _.find(this.showStyleBase.runtimeArguments, ra => ra._id === argumentId)
+			if (oldLayer) throw new Meteor.Error(500, `Can't insert RuntimeArgument, _id "${argumentId}" already exists!`)
+		}
+
+		let ra: IBlueprintRuntimeArgumentsItem = _.extend(argument, {
+			_id: argumentId
+		})
+		ShowStyleBases.update({
+			_id: this.showStyleBase._id,
+		}, {$push: {
+			runtimeArguments: ra
+		}})
+		if (!this.showStyleBase.outputLayers) this.showStyleBase.outputLayers = []
+		this.showStyleBase.runtimeArguments.push(ra) // Update local
+	}
+	updateRuntimeArgument (argumentId: string, argument: Partial<OmitId<IBlueprintRuntimeArgumentsItem>>) {
+		check(argumentId, String)
+		let ra = _.find(this.showStyleBase.runtimeArguments, ra => ra._id === argumentId) as IBlueprintRuntimeArgumentsItem
+		if (!ra) throw new Meteor.Error(404, `RuntimeArgument "${argumentId}" not found`)
+
+		_.each(argument, (value, key) => {
+			ra[key] = value // Update local
+		})
+		ShowStyleBases.update({
+			_id: this.showStyleBase._id,
+			'runtimeArguments._id': argumentId
+		}, {$set: {
+			'runtimeArguments.$' : ra
+		}})
+	}
+	removeRuntimeArgument (argumentId: string) {
+		check(argumentId, String)
+		ShowStyleBases.update({
+			_id: this.showStyleBase._id,
+		}, {$pull: {
+			'runtimeArguments': {
+				_id: argumentId
+			}
+		}})
+		// Update local:
+		this.showStyleBase.runtimeArguments = _.reject(this.showStyleBase.runtimeArguments, c => c._id === argumentId)
 	}
 }
 
@@ -1080,7 +1144,12 @@ postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessag
 	let blueprintId = params.blueprintId
 	let url = parseUrl(req.url || '', true)
 
-	let blueprintName = url.query['name'] || undefined
+	let blueprintNames = url.query['name'] || undefined
+	let blueprintName: string = (
+		_.isArray(blueprintNames) ?
+		blueprintNames[0] :
+		blueprintNames
+	) || ''
 
 	check(blueprintId, String)
 	check(blueprintName, Match.Maybe(String))

@@ -5,9 +5,9 @@ import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { SegmentTimeline } from './SegmentTimeline'
-import { getCurrentTime, Time } from '../../../lib/lib'
-import { RunningOrderTiming } from '../RunningOrderView/RunningOrderTiming'
+import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
+import { getCurrentTime } from '../../../lib/lib'
+import { RunningOrderTiming, computeSegmentDuration } from '../RunningOrderView/RunningOrderTiming'
 import { CollapsedStateStorage } from '../../lib/CollapsedStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { getResolvedSegment,
@@ -19,6 +19,8 @@ import { getResolvedSegment,
 import { RunningOrderViewEvents } from '../RunningOrderView'
 import { SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { SpeechSynthesiser } from '../../lib/speechSynthesis'
+import { getSpeakingMode } from '../../lib/localStorage'
 
 export interface SegmentUi extends Segment {
 	/** Output layers available in the installation used by this segment */
@@ -45,9 +47,6 @@ export interface SegmentLineItemUi extends SegmentLineItemExtended {
 	metadata?: any
 	message?: string | null
 }
-interface ISegmentLineItemUiDictionary {
-	[key: string]: SegmentLineItemUi
-}
 interface IProps {
 	segmentId: string,
 	studioInstallation: StudioInstallation,
@@ -59,6 +58,7 @@ interface IProps {
 	onTimeScaleChange?: (timeScaleVal: number) => void
 	onContextMenu?: (contextMenuContext: any) => void
 	onSegmentScroll?: () => void
+	onHeaderNoteClick?: (level: SegmentLineNoteType) => void
 	followLiveSegments: boolean
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	isLastSegment: boolean
@@ -180,12 +180,13 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	isLiveSegment: boolean
 	roCurrentSegmentId: string | null
-	lastRender: JSX.Element
+	timelineDiv: HTMLDivElement
+
+	private _prevDisplayTime: number
 
 	constructor (props: IProps & ITrackedProps) {
 		super(props)
 
-		let that = this
 		this.state = {
 			collapsedOutputs: CollapsedStateStorage.getItemBooleanMap(`runningOrderView.segment.${props.segmentId}.outputs`, {}),
 			collapsed: CollapsedStateStorage.getItemBoolean(`runningOrderView.segment.${props.segmentId}`, false),
@@ -205,6 +206,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		this.subscribe('segmentLines', {
 			segmentId: this.props.segmentId
 		})
+		SpeechSynthesiser.init()
 	}
 
 	componentDidMount () {
@@ -280,7 +282,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	onAirLineRefresh = () => {
 		if (this.props.isLiveSegment && this.props.currentLiveSegmentLine) {
-			let speed = 1
 			const segmentLineOffset = this.context.durations &&
 									  this.context.durations.segmentLineDisplayStartsAt &&
 									  (this.context.durations.segmentLineDisplayStartsAt[this.props.currentLiveSegmentLine._id] - this.context.durations.segmentLineDisplayStartsAt[this.props.segmentLines[0]._id])
@@ -321,10 +322,58 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		} */
 	}
 
+	segmentRef = (el: SegmentTimelineClass, sId: string) => {
+		this.timelineDiv = el.timeline
+	}
+
+	onShowEntireSegment = (event: any) => {
+		this.setState(_.extend({
+			scrollLeft: 0
+		}, this.props.isLiveSegment ? {
+			followLiveLine: false
+		} : {}))
+		if (typeof this.props.onTimeScaleChange === 'function') this.props.onTimeScaleChange(($(this.timelineDiv).width() || 1) / (computeSegmentDuration(this.context.durations, this.props.segmentLines.map(i => i._id)) || 1))
+		if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
+	}
+	updateSpeech () {
+
+		let displayTime = Math.floor( ( this.state.displayTimecode / 1000))
+
+		if (this._prevDisplayTime !== displayTime) {
+
+			let text = ''
+
+			if (getSpeakingMode()) {
+				switch (displayTime) {
+					case -1: text = 'One'; break
+					case -2: text = 'Two'; break
+					case -3: text = 'Three'; break
+					case -4: text = 'Four'; break
+					case -5: text = 'Five'; break
+					case -6: text = 'Six'; break
+					case -7: text = 'Seven'; break
+					case -8: text = 'Eight'; break
+					case -9: text = 'Nine'; break
+					case -10: text = 'Ten'; break
+				}
+				if (displayTime === 0 && this._prevDisplayTime === -1) {
+					text = 'Zero'
+				}
+			}
+			this._prevDisplayTime = displayTime
+			if (text) {
+				SpeechSynthesiser.speak(text)
+			}
+		}
+	}
+
 	render () {
+
+		this.updateSpeech()
+
 		return this.props.segmentui && (
 			<SegmentTimeline
-				segmentRef={this.props.segmentRef}
+				segmentRef={this.segmentRef}
 				key={this.props.segmentui._id}
 				segment={this.props.segmentui}
 				studioInstallation={this.props.studioInstallation}
@@ -351,10 +400,12 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				displayTimecode={this.state.displayTimecode}
 				onContextMenu={this.props.onContextMenu}
 				onFollowLiveLine={this.onFollowLiveLine}
+				onShowEntireSegment={this.onShowEntireSegment}
 				onZoomChange={(newScale: number, e) => this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)}
 				onScroll={this.onScroll}
 				followingSegmentLine={this.props.followingSegmentLine}
-				isLastSegment={this.props.isLastSegment} />
+				isLastSegment={this.props.isLastSegment}
+				onHeaderNoteClick={this.props.onHeaderNoteClick} />
 		) || null
 	}
 }

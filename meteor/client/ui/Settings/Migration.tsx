@@ -104,9 +104,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 					// systemVersion: r.systemVersion,
 					// databaseVersion: r.databaseVersion,
 					// databasePreviousVersion: r.databasePreviousVersion,
-					migrationNeeded: r.migrationNeeded
-				})
-				this.setState({
+					migrationNeeded: r.migrationNeeded,
 					migration: r.migration
 				})
 			}
@@ -240,7 +238,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 						}
 					}
 					return (<div key={rank++}>
-						<h3>{manualInput.label}</h3>
+						<h3 className='mhn'>{manualInput.label}</h3>
 						<div>{manualInput.description}</div>
 						<div>{
 							manualInput.inputType && manualInput.attribute ?
@@ -379,7 +377,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 
 							{this.state.warnings.length ?
 								<div>
-									<h3>{t('Warnings during migration')}</h3>
+									<h2 className='mhn'>{t('Warnings during migration')}</h2>
 									<ul>
 										{_.map(this.state.warnings, (warning, key) => {
 											return (<li key={key}>

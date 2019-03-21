@@ -1,4 +1,4 @@
-import { Meteor } from 'meteor/meteor'
+import * as _ from 'underscore'
 import { CoreSystem, ICoreSystem } from '../../lib/collections/CoreSystem'
 
 // Setup rules:
@@ -7,6 +7,9 @@ CoreSystem.allow({
 		return false
 	},
 	update (userId, doc, fields, modifier) {
+		if (_.difference(fields, [ 'support', 'systemInfo' ]).length === 0) {
+			return true
+		}
 		return false
 	},
 	remove (userId, doc) {

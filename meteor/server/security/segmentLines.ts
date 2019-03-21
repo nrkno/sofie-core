@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines'
 
 // Setup rules:

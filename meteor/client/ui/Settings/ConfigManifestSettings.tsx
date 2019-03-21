@@ -175,13 +175,15 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 			collection = StudioInstallations
 		} else if (this.props.object instanceof ShowStyleBase) {
 			collection = ShowStyleBases
+		} else if (this.props.object instanceof ShowStyleVariant) {
+			collection = ShowStyleVariants
 		}
 
 		const values = this.props.object.config
 		return (
 			this.props.manifest.map((item, index) => {
 				const valIndex = values.findIndex(v => v._id === item.id)
-				if (valIndex === -1 && !item.required) return
+				if (valIndex === -1 && !item.required) return undefined
 
 				const configItem = values[valIndex]
 
@@ -311,7 +313,7 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 					<p>{t('Are you sure you want to delete this config item "{{configId}}"?', { configId: (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) })}</p>
 					<p>{t('Please note: This action is irreversible!')}</p>
 				</ModalDialog>
-				<h3>{t('Blueprint Configuration')}</h3>
+				<h2 className='mhn'>{t('Blueprint Configuration')}</h2>
 				<table className='expando settings-studio-custom-config-table'>
 					<tbody>
 						{this.renderItems()}

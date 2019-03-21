@@ -22,3 +22,21 @@ meteorPublish(PubSub.peripheralDevices, function (selector, token) {
 	}
 	return null
 })
+
+meteorPublish(PubSub.peripheralDevicesAndSubDevices, function (selector) {
+
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+
+	const parents = PeripheralDevices.find(selector).fetch()
+
+	const cursor = PeripheralDevices.find({
+		$or: [
+			{
+				parentDeviceId: { $in: parents.map(i => i._id) }
+			},
+			selector
+		]
+	})
+
+	return cursor
+})

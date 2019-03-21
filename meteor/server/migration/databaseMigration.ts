@@ -7,7 +7,6 @@ import {
 } from '../../lib/collections/CoreSystem'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { getHash } from '../lib'
 import {
 	MigrationMethods,
 	RunMigrationResult,
@@ -33,24 +32,26 @@ import {
 	MigrationContextStudio as IMigrationContextStudio,
 	MigrationContextShowStyle as IMigrationContextShowStyle
 } from 'tv-automation-sofie-blueprints-integration'
-import {
-	DeviceOptions as PlayoutDeviceSettingsDevice
-} from 'timeline-state-resolver-types'
 import { setMeteorMethods } from '../methods'
 import { logger } from '../../lib/logging'
 import { storeSystemSnapshot } from '../api/snapshot'
-import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
-import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
+import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { evalBlueprints, MigrationContextStudio, MigrationContextShowStyle } from '../api/blueprints'
+import { getHash } from '../../lib/lib'
 
 /** The current database version, x.y.z
- * 0.16.0: Release 3 (2018-10-26)
+ * 0.16.0: Release 3   (2018-10-26)
  * 0.17.0: Release 3.1 (2018-11-14)
- * 0.18.0: Release 4 (TBD)
- * 0.19.0: Release 5 (TBD)
+ * 0.18.0: Release 4   (2018-11-26)
+ * 0.19.0: Release 5   (2019-01-11)
+ * 0.20.0: Release 5.1 (2019-02-05)
+ * 0.21.0: Release 6   (TBD, in testing)
+ * 0.22.0: Release 7   (TBD)
+ * 0.23.0: Release 8   (TBD)
  */
-export const CURRENT_SYSTEM_VERSION = '0.19.0'
+export const CURRENT_SYSTEM_VERSION = '0.23.0'
 
 /** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.
  * And Sofie said: The version of the database is to be GENESIS_SYSTEM_VERSION so that the migration scripts will run.
@@ -400,7 +401,8 @@ function prefixIdsOnStep (prefix: string, step: MigrationStepInternal): Migratio
 export function runMigration (
 	chunks: Array<MigrationChunk>,
 	hash: string,
-	inputResults: Array<MigrationStepInputResult>
+	inputResults: Array<MigrationStepInputResult>,
+	isFirstOfPartialMigrations = true
 ): RunMigrationResult {
 
 	logger.info(`Migration: Starting`)
@@ -437,15 +439,16 @@ export function runMigration (
 	})
 
 	let warningMessages: Array<string> = []
-	// First, take a system snapshot:
-	let system = getCoreSystem()
 	let snapshotId: string = ''
-	if (system && system.storePath) {
-		try {
-			snapshotId = storeSystemSnapshot(null, `Automatic, taken before migration`)
-		} catch (e) {
-			warningMessages.push(`Error when taking snapshot:${e.toString()}`)
-			logger.error(e)
+	if (isFirstOfPartialMigrations) { // First, take a system snapshot:
+		let system = getCoreSystem()
+		if (system && system.storePath) {
+			try {
+				snapshotId = storeSystemSnapshot(null, `Automatic, taken before migration`)
+			} catch (e) {
+				warningMessages.push(`Error when taking snapshot:${e.toString()}`)
+				logger.error(e)
+			}
 		}
 	}
 
@@ -514,13 +517,20 @@ export function runMigration (
 
 	let migrationCompleted: boolean = false
 
-	if (!migration.partialMigration) {
-		if (!warningMessages.length) {
-			// if there are no warning messages, we can complete the migration right away:
-			logger.info(`Migration: Completing...`)
-			completeMigration(migration.chunks)
-			migrationCompleted = true
+	if (migration.manualStepCount === 0 && !warningMessages.length) { // continue automatically with the next batch
+		migration.partialMigration = false
+		const s = getMigrationStatus()
+		const res = runMigration(s.migration.chunks, s.migration.hash, inputResults, false)
+		if (res.migrationCompleted) {
+			return res
 		}
+
+	}
+	if (!migration.partialMigration && !warningMessages.length) {
+		// if there are no warning messages, we can complete the migration right away:
+		logger.info(`Migration: Completing...`)
+		completeMigration(migration.chunks)
+		migrationCompleted = true
 	}
 
 	_.each(warningMessages, (str) => {

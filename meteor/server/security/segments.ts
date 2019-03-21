@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { Segments, Segment } from '../../lib/collections/Segments'
 
 // Setup rules:

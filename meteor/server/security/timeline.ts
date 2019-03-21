@@ -1,8 +1,7 @@
-import { Meteor } from 'meteor/meteor'
 import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
 
 export namespace TimelineSecurity {
-	export function allowReadAccess (selector: object, token: string, context) {
+	export function allowReadAccess (selector: object, token: string, context: any) {
 
 		return true
 		// TODO: implement some security here

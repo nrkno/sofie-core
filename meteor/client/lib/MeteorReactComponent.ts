@@ -7,8 +7,8 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 
 	private _subscriptions: {[id: string]: Meteor.SubscriptionHandle} = {}
 	private _computations: Array<Tracker.Computation> = []
-	constructor (props) {
-		super(props)
+	constructor (props, context?: any) {
+		super(props, context)
 	}
 
 	componentWillUnmount () {
@@ -39,7 +39,9 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 		})
 	}
 	autorun (cb: (computation: Tracker.Computation) => void, options?: any): Tracker.Computation {
-		let computation = Tracker.autorun(cb, options)
+		let computation = Tracker.nonreactive(() => {
+			return Tracker.autorun(cb, options)
+		})
 		this._computations.push(computation)
 		return computation
 	}

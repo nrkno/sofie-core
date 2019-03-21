@@ -209,7 +209,7 @@ export const ConfigSettings = translate()(class ConfigSettings extends React.Com
 		const { t } = this.props
 		return (
 			<div>
-				<h3>{t('Custom Configuration')}</h3>
+				<h2 className='mhn'>{t('Custom Configuration')}</h2>
 				<table className='expando settings-studio-custom-config-table'>
 					<tbody>
 						{this.renderItems()}
@@ -266,8 +266,6 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 	}
 
 	renderDevices () {
-		const { t } = this.props
-
 		return (
 			this.props.studioDevices.map((device, index) => {
 				return <tr key={device._id}>
@@ -300,7 +298,7 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 		const { t } = this.props
 		return (
 			<div>
-				<h3>{t('Attached Devices')}</h3>
+				<h2 className='mhn'>{t('Attached Devices')}</h2>
 				<table className='expando settings-studio-device-table'>
 					<tbody>
 						{this.renderDevices()}
@@ -569,7 +567,6 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 		)
 	}
 	renderPharosMappingSettings (layerId: string) {
-		const { t } = this.props
 		return (
 			<React.Fragment>
 				<div></div>
@@ -759,7 +756,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 		const { t } = this.props
 		return (
 			<div>
-				<h3>{t('Layer Mappings')}</h3>
+				<h2 className='mhn'>{t('Layer Mappings')}</h2>
 				<table className='expando settings-studio-mappings-table'>
 					<tbody>
 						{this.renderMappings()}
@@ -786,8 +783,8 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 		const { t } = this.props
 		return (
 			<div>
-				<h3>{t('Test Tools - Recordings')}</h3>
-				<div className='mod mvs mhs'>
+				<h2 className='mhn'>{t('Test Tools - Recordings')}</h2>
+				<div className='mod mvs mhn'>
 					<label className='field'>
 						{t('Device ID')}
 						<EditAttribute
@@ -799,7 +796,7 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
-				<div className='mod mvs mhs'>
+				<div className='mod mvs mhn'>
 					<label className='field'>
 						{t('CasparCG Channel')}
 						<EditAttribute
@@ -811,9 +808,9 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
-				<div className='mod mvs mhs'>
+				<div className='mod mvs mhn'>
 					<label className='field'>
-						{t('Path prefix')}
+						{t('Path Prefix')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute='testToolsConfig.recordings.filePrefix'
@@ -823,9 +820,9 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
-				<div className='mod mvs mhs'>
+				<div className='mod mvs mhn'>
 					<label className='field'>
-						{t('URL prefix')}
+						{t('URL Prefix')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute='testToolsConfig.recordings.urlPrefix'
@@ -835,9 +832,9 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
-				<div className='mod mvs mhs'>
+				<div className='mod mvs mhn'>
 					<label className='field'>
-						{t('Decklink input index')}
+						{t('Decklink Input Index')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute='testToolsConfig.recordings.decklinkDevice'
@@ -847,9 +844,9 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
-				<div className='mod mvs mhs'>
+				<div className='mod mvs mhn'>
 					<label className='field'>
-						{t('Decklink input format')}
+						{t('Decklink Input Format')}
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute='testToolsConfig.recordings.channelFormat'
@@ -892,9 +889,6 @@ interface IStudioSettingsTrackedProps {
 		showStyleBase: ShowStyleBase
 	}>
 	availableDevices: Array<PeripheralDevice>
-}
-interface ITrackedProps {
-
 }
 
 export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, IStudioSettingsTrackedProps>((props: IStudioSettingsProps, state) => {
@@ -945,9 +939,9 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 
 		return (
 			this.props.studioInstallation ?
-			<div className='studio-edit mod mhl mvs'>
+			<div className='studio-edit mod mhl mvn'>
 				<div>
-					<h3>{t('Generic Properties')}</h3>
+					<h2 className='mhn mtn'>{t('Generic Properties')}</h2>
 					<label className='field'>
 						{t('Studio Name')}
 						<div className='mdi'>
@@ -962,7 +956,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 						</div>
 					</label>
 					<div className='field'>
-						{t('Select compatible Show Styles')}
+						{t('Select Compatible Show Styles')}
 						<div className='mdi'>
 							<EditAttribute
 								attribute='supportedShowStyleBase'
@@ -988,7 +982,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 						</div>
 					</label>
 					<label className='field'>
-						{t('Media-previews URL')}
+						{t('Media Preview URL')}
 						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'
@@ -1001,7 +995,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 						</div>
 					</label>
 					<label className='field'>
-						{t('Sofie host URL')}
+						{t('Sofie Host URL')}
 						<div className='mdi'>
 							<EditAttribute
 								modifiedClassName='bghl'
@@ -1025,17 +1019,17 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
-						<StudioMappings studioInstallation={this.props.studioInstallation} />
-					</div>
-				</div>
-				<div className='row'>
-					<div className='col c12 r1-c12'>
 						<ConfigManifestSettings t={this.props.t} manifest={collectConfigs(this.props.studioInstallation)} object={this.props.studioInstallation} />
 					</div>
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
 						<ConfigSettings item={this.props.studioInstallation}/>
+					</div>
+				</div>
+				<div className='row'>
+					<div className='col c12 r1-c12'>
+						<StudioMappings studioInstallation={this.props.studioInstallation} />
 					</div>
 				</div>
 				<div className='row'>
@@ -1049,7 +1043,6 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 	}
 
 	render () {
-		const { t } = this.props
 
 		if (this.props.studioInstallation) {
 			return this.renderEditForm()
@@ -1075,7 +1068,7 @@ export function findHighestRank (array: Array<{ _rank: number }>): { _rank: numb
 	let max: { _rank: number } | null = null
 
 	array.forEach((value, index) => {
-		if (max == null || max._rank < value._rank) {
+		if (max === null || max._rank < value._rank) {
 			max = value
 		}
 	})

@@ -2,12 +2,27 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { ClientAPI } from '../../lib/api/client'
 import { logger } from '../../lib/logging'
+import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 
 export function callMethod (e: any, methodName: string, ...params: any[]) {
 	Meteor.call(ClientAPI.methods.execMethod, eventContextForLog(e), methodName, ...params)
 }
-export function callPeripheralDeviceFunction (e: any, methodName: string, ...params: any[]) {
-	Meteor.call(ClientAPI.methods.callPeripheralDeviceFunction, eventContextForLog(e), methodName, ...params)
+export function callPeripheralDeviceFunction (e: any, deviceFunctionName: string, ...params: any[]) {
+	Meteor.call(ClientAPI.methods.callPeripheralDeviceFunction, eventContextForLog(e), deviceFunctionName, ...params)
+}
+
+export namespace PeripheralDevicesAPI {
+	export function restartDevice (dev: PeripheralDevice, e: React.SyntheticEvent<object>): Promise<any> {
+		return new Promise((resolve, reject) => {
+			callPeripheralDeviceFunction(e, dev._id, 'killProcess', 1, (err, result) => {
+				if (err) {
+					reject(err)
+				} else {
+					resolve(result)
+				}
+			})
+		})
+	}
 }
 
 function eventContextForLog (e: any): string {

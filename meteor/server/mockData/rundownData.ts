@@ -9,11 +9,12 @@ import { setMeteorMethods } from '../methods'
 import { getCurrentTime } from '../../lib/lib'
 import { check } from 'meteor/check'
 import { SegmentLines, SegmentLine } from '../../lib/collections/SegmentLines'
-import { updateStory, getSegmentLine } from '../api/integration/mos'
 import { RunningOrderDataCache, RunningOrderDataCacheObj } from '../../lib/collections/RunningOrderDataCache'
-import { MosString128 } from 'tv-automation-sofie-blueprints-integration/dist/copy/mos-connection';
-import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices';
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice';
+import { updateStory, getSegmentLine } from '../api/integration/mos'
+import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { MosString128 } from 'tv-automation-sofie-blueprints-integration/dist/copy/mos-connection'
+import { updateSourceLayerInfinitesAfterLine } from '../api/playout'
 
 // These are temporary method to fill the rundown database with some sample data
 // for development
@@ -68,6 +69,8 @@ setMeteorMethods({
 		const ro = RunningOrders.findOne(roId)
 		if (!ro) throw new Meteor.Error(404, 'Running order not found')
 
+		const unsynced = ro.unsynced
+
 		const segmentLines = SegmentLines.find({ runningOrderId: ro._id }).fetch()
 		segmentLines.forEach((sl: SegmentLine) => {
 			if (!sl.mosId || sl.mosId === '' || sl.mosId === '-') {
@@ -93,6 +96,11 @@ setMeteorMethods({
 			}
 		})
 
+		logger.info('debug_roRunBlueprints: infinites')
+		updateSourceLayerInfinitesAfterLine(ro)
+
+		if (unsynced) RunningOrders.update(ro._id, { $set: { unsynced }})
+
 		logger.info('debug_roRunBlueprints: done')
 	},
 
@@ -101,6 +109,8 @@ setMeteorMethods({
 
 		const ro = RunningOrders.findOne(roId)
 		if (!ro) throw new Meteor.Error(404, 'Running order not found')
+
+		const unsynced = ro.unsynced
 
 		const mosData = RunningOrderDataCache.find({ roId: ro._id }).fetch()
 
@@ -140,6 +150,27 @@ setMeteorMethods({
 				logger.warn('debug_roRunMosData: chunk ' + s._id + ' failed: ' + e)
 			}
 		})
+
+		logger.info('debug_roRunMosData: infinites')
+		updateSourceLayerInfinitesAfterLine(ro)
+
+		if (unsynced) RunningOrders.update(ro._id, { $set: { unsynced }})
+
 		logger.info('debug_roRunMosData: done')
+	},
+
+	'debug_updateSourceLayerInfinitesAfterLine' (roId: string, previousSlId?: string, runToEnd?: boolean) {
+		check(roId, String)
+		if (previousSlId) check(previousSlId, String)
+		if (runToEnd !== undefined) check(runToEnd, Boolean)
+
+		const ro = RunningOrders.findOne(roId)
+		if (!ro) throw new Meteor.Error(404, 'Running order not found')
+
+		const prevSl = previousSlId ? SegmentLines.findOne(previousSlId) : undefined
+
+		updateSourceLayerInfinitesAfterLine(ro, prevSl, runToEnd)
+
+		logger.info('debug_updateSourceLayerInfinitesAfterLine: done')
 	}
 })

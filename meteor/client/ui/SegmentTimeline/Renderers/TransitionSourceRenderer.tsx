@@ -7,7 +7,7 @@ import { TransitionContent } from 'tv-automation-sofie-blueprints-integration'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { FloatingInspector } from '../../FloatingInspector'
 
-type KeyValue = { key: string, value: string }
+// type KeyValue = { key: string, value: string }
 
 interface IProps extends ICustomLayerItemProps {
 }

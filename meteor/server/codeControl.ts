@@ -1,15 +1,15 @@
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
-import { getHash } from './lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
+import { waitForPromise, getHash } from '../lib/lib'
 
 enum syncFunctionFcnStatus {
 	WAITING = 0,
 	RUNNING = 1,
 	DONE = 2
 }
-type Callback = (err, res?: any) => void
+type Callback = (err: Error | null, res?: any) => void
 
 interface SyncFunctionFcn {
 	id: string
@@ -32,7 +32,7 @@ export function syncFunction<T extends Function> (fcn: T, id0?: string, timeout:
 
 	let id1 = Random.id()
 
-	return Meteor.wrapAsync((...args0) => {
+	return Meteor.wrapAsync((...args0: any[]) => {
 
 		let args = args0.slice(0,-1)
 		// @ts-ignore
@@ -48,7 +48,7 @@ export function syncFunction<T extends Function> (fcn: T, id0?: string, timeout:
 			getId(id0, args) :
 			getHash(id1 + JSON.stringify(args.join()))
 		)
-		logger.info('id ' + id + ' ' + (fcn.name || 'Anonymous function'))
+		logger.debug(`syncFunction: ${id} (${(fcn.name || 'Anonymous function')})`)
 
 		syncFunctionFcns.push({
 			id: id,
@@ -155,11 +155,21 @@ function assertTimecloseTo (start: number, target: number) {
 		throw new Meteor.Error(500, `Assert: time too far from ${target} (${deltaTime}) `)
 	}
 }
+/**
+ * Wait for specified time
+ * @param time
+ */
+export function waitTime (time: number) {
+	let p = new Promise((resolve) => {
+		Meteor.setTimeout(resolve, time)
+	})
+	waitForPromise(p)
+}
 const doTest = false
 if (doTest) {
 
 	// Tests ---------------------------
-	let takesALongTimeInner = Meteor.wrapAsync(function takesALongTime (name, cb) {
+	let takesALongTimeInner = Meteor.wrapAsync(function takesALongTime (name: string, cb: Callback) {
 		logger.info('fcn start ' + name)
 		Meteor.setTimeout(() => {
 			logger.info('fcn end')
@@ -174,7 +184,7 @@ if (doTest) {
 		return takesALongTimeInner(name)
 	}, 'asdf')
 
-	let takesALongTimeInner3 = Meteor.wrapAsync(function takesALongTime (name, name2, cb) {
+	let takesALongTimeInner3 = Meteor.wrapAsync(function takesALongTime (name: string, name2: string, cb: Callback) {
 		logger.info('fcn start ' + name + name2)
 		Meteor.setTimeout(() => {
 			logger.info('fcn end')

@@ -33,7 +33,6 @@ export function setMeteorMethods (orgMethods: Methods): void {
 					startTime: Date.now(),
 					i: i
 				}
-				let result: any
 				try {
 					let result = method.apply(this, args)
 

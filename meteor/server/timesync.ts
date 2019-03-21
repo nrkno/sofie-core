@@ -1,11 +1,12 @@
 
-import * as ntpClient from 'ntp-client'
+const ntpClient: NtpClient = require('ntp-client')
+import { NtpClient } from './typings/ntp-client'
 import { getCurrentTime, systemTime } from '../lib/lib'
 import { StatusCode, setSystemStatus } from './systemStatus'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
-import { setMeteorMethods } from './methods'
+import { setMeteorMethods, Methods } from './methods'
 
 interface ServerTime {
 	diff: number
@@ -22,7 +23,7 @@ let getServerTime = (host?: string, port?: number, timeout?: number): Promise<Se
 			ntpClient.getNetworkTime(
 				host || '0.se.pool.ntp.org',
 				port || 123,
-				(err, date: Date, a, b) => {
+				(err: any, date: Date) => {
 					if (err) {
 						reject(err)
 						return
@@ -110,9 +111,6 @@ export function determineDiffTime (config: Config): Promise<{mean: number, stdDe
 		pushTime()
 	})
 	.then((results: Array<ServerTime>) => {
-		let diffAvg = 0
-		let count = 0
-		let diffSum = 0
 		let halfResults = results.sort((a, b) => { // sort by response time, lower is better
 			return a.responseTime - b.responseTime
 		})
@@ -125,7 +123,7 @@ export function determineDiffTime (config: Config): Promise<{mean: number, stdDe
 		return stat
 	})
 }
-let methods = {}
+let methods: Methods = {}
 methods[PeripheralDeviceAPI.methods.determineDiffTime] = () => {
 	return determineDiffTime({
 		maxSampleCount: 20,
@@ -148,14 +146,13 @@ methods[PeripheralDeviceAPI.methods.getTime] = () => {
 setMeteorMethods(methods)
 
 let updateServerTime = (retries: number = 0) => {
-	logger.info('Updating systemTime...')
 
 	let ntpServerStr: string | undefined = process.env.NTP_SERVERS
 	if (!ntpServerStr) {
 		ntpServerStr = '0.se.pool.ntp.org,1.se.pool.ntp.org,2.se.pool.ntp.org'
 	}
 	let ntpServer = (ntpServerStr.split(',') || [])[0] || 'pool.ntp.org' // Just use the first one specified, for now
-	logger.info('Using ntp-server, ' + ntpServer)
+	logger.info(`System time: Updating, using ntp-server "${ntpServer}"...`)
 
 	determineDiffTime({
 		host: ntpServer,
@@ -166,8 +163,7 @@ let updateServerTime = (retries: number = 0) => {
 	.then((result) => {
 		// if result.stdDev is less than one frame-time, it should be okay:
 		if (result.stdDev < 1000 / 50) {
-			logger.info('Setting time-diff to ' + Math.round(result.mean) +
-				'ms (stdDev: ' + (Math.floor(result.stdDev * 10) / 10) + 'ms)')
+			logger.info(`System time: Setting diff to ${Math.round(result.mean)} ms (std. dev: ${(Math.floor(result.stdDev * 10) / 10) } ms)`)
 
 			systemTime.diff = result.mean
 			systemTime.stdDev = result.stdDev

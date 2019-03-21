@@ -1,0 +1,1498 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: i18next-conv\n"
+"POT-Creation-Date: 2019-02-21T11:35:46.333Z\n"
+"PO-Revision-Date: 2019-02-21 12:40+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: nn\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 2.2.1\n"
+
+msgid "Return to list"
+msgstr "Gå tilbake til lista"
+
+msgid "There is no running order active in this studio."
+msgstr "Fann ingen aktive køyreplanar for dette studioet."
+
+msgid "This studio doesn't exist."
+msgstr "Dette studioet eksisterer ikkje."
+
+msgid "There are no active running orders."
+msgstr "Fann ingen aktive køyreplanar."
+
+msgid "Evaluation"
+msgstr "Evaluering"
+
+msgid "Please take a minute to fill in this form."
+msgstr "Ver venleg og fyll ut dette skjemaet."
+
+msgid "Did you have any problems with the broadcast?"
+msgstr "Hadde du nokre problem under sendinga?"
+
+msgid ""
+"Please explain the problems you experienced (what happened and when, what "
+"should have happened, what could have triggered the problems, etcetera...)"
+msgstr ""
+"Ver venleg og forklar kva problem du hadde (kva hende og når hende det, kva "
+"skulle skjedd, kva kan ha utløyst problema o.s.b.)"
+
+msgid "Your name"
+msgstr "Namnet ditt"
+
+msgid "Save message and Deactivate Rundown"
+msgstr "Send evalueringa og deaktiver køyreplanen"
+
+msgid "No problems"
+msgstr "Inga problem"
+
+msgid "Something went wrong, but it didn't affect the output"
+msgstr "Noko gikk gale, men det virka ikkje inn på sendinga"
+
+msgid "Something went wrong, and it affected the output"
+msgstr "Noko gikk gale, og det virka inn på sendinga"
+
+msgid "Sofie Automation Server"
+msgstr "Sofie"
+
+msgid "Connecting to the"
+msgstr "Koplar til"
+
+msgid "Cannot connect to the"
+msgstr "Kan ikkje koble til"
+
+msgid "Sofie Automation Server:"
+msgstr "Sofie:"
+
+msgid "Reconnecting to the"
+msgstr "Koplar til"
+
+msgid "Your machine is offline and cannot connect to the"
+msgstr "Maskina di er fråkopla og kan ikkje kople til"
+
+msgid "Connected to the"
+msgstr "Tilkopla til"
+
+msgid "Welcome to the Sofie Automation system"
+msgstr "Velkommen til Sofie"
+
+msgid "Sofie Automation version"
+msgstr "Sofie-versjon"
+
+msgid "Sofie status"
+msgstr "Sofie-status"
+
+msgid "Test test"
+msgstr "Test test"
+
+msgid "Home"
+msgstr "Heim"
+
+msgid "Running Orders"
+msgstr "Køyreplanar"
+
+msgid "Nyman's Playground"
+msgstr "Testar"
+
+msgid "Test Tools"
+msgstr "Testverktøy"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Settings"
+msgstr "Innstillingar"
+
+msgid "Search..."
+msgstr "Søk..."
+
+msgid "Last "
+msgstr "Sist "
+
+msgid "Toggle drawer"
+msgstr "Skuff"
+
+msgid "Escape from filter search"
+msgstr "Gå ut av filtersøk"
+
+msgid "AdLib"
+msgstr "Manuelle element"
+
+msgid "Global AdLib"
+msgstr "Hurtigtastar"
+
+msgid "Shortcuts"
+msgstr "Funksjonstastar"
+
+msgid "Delete this item?"
+msgstr "Slett dette elementet?"
+
+msgid "Delete"
+msgstr "Slett"
+
+msgid "Cancel"
+msgstr "Avbryt"
+
+msgid "Are you sure you want to delete running order \"{{runningOrderSlug}}\"?"
+msgstr ""
+"Er du sikker på at du vil slette køyreplanen {{runningOrderSlug}} frå Sofie?"
+
+msgid "Please note: This action is irreversible!"
+msgstr "Merk: Denne handlinga kan du ikkje angre!"
+
+msgid "Re-Sync this running order?"
+msgstr "Synkroniser køyreplanen med ENPS på nytt?"
+
+msgid "Re-Sync"
+msgstr "Synkroniser"
+
+msgid ""
+"Are you sure you want to re-sync running order \"{{runningOrderSlug}}\" with "
+"MOS script?"
+msgstr ""
+"Er du sikker på at du vil synkronisere køyreplanen \"{{runningOrderSlug}}\" "
+"med MOS?"
+
+msgid "Re-sync with MOS"
+msgstr "Synkroniser med MOS"
+
+msgid "Running Order"
+msgstr "Køyreplan"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Created"
+msgstr "Oppretta"
+
+msgid "On Air Start Time"
+msgstr "Sendestart"
+
+msgid "Duration"
+msgstr "Lengde"
+
+msgid "Air Status"
+msgstr "Status for sendinga"
+
+msgid "Unsynced from MOS"
+msgstr ""
+
+msgid "Sofie Automation"
+msgstr "Sofie"
+
+msgid "version"
+msgstr "versjon"
+
+msgid "status"
+msgstr "status"
+
+msgid "Status messages:"
+msgstr "Statusmeldingar:"
+
+msgid "Start time is close"
+msgstr "Oppgitt sendestart er kvart augeblink"
+
+msgid "Yes"
+msgstr "Ja"
+
+msgid "No"
+msgstr "Nei"
+
+msgid ""
+"You are in rehearsal mode, the broadcast starts in less than 1 minute. Do "
+"you want to reset the rundown and go into playout mode?"
+msgstr ""
+"Du er i testmodus og sendinga startar om mindre enn eitt minutt. Vil du "
+"laste inn køyreplanen på nytt og gjere klar til sending?"
+
+msgid "Started"
+msgstr "Starta"
+
+msgid "Planned start"
+msgstr "Planlagt start"
+
+msgid "Hold"
+msgstr "Hold"
+
+msgid "Planned end"
+msgstr "Planlagt slutt"
+
+msgid "Diff"
+msgstr "Skilnad"
+
+msgid "Expected end"
+msgstr "Forventa slutt"
+
+msgid "Take"
+msgstr "Take"
+
+msgid "Activate"
+msgstr "Aktiver"
+
+msgid "Deactivate"
+msgstr "Deaktiver"
+
+msgid "Activate (Rehearsal)"
+msgstr "Aktiver testmodus"
+
+msgid "Reload Running Order"
+msgstr "Last inn køyreplanen på nytt"
+
+msgid "Move Next forwards"
+msgstr "Skip neste"
+
+msgid "Move Next to the following segment"
+msgstr "Skip til neste segment"
+
+msgid "Move Next to the previous segment"
+msgstr "Unskip neste segment"
+
+msgid "Move Next backwards"
+msgstr "Unskip neste"
+
+msgid "Disable the next element"
+msgstr "Skip neste super"
+
+msgid "Undo Disable the next element"
+msgstr "Unskip neste super"
+
+msgid "Log Error"
+msgstr "Loggfør feil"
+
+msgid "Do you want to activate this Running Order?"
+msgstr "Vil du aktivere denne køyreplanen?"
+
+msgid ""
+"The planned end time has passed, are you sure you want to activate this "
+"Running Order?"
+msgstr ""
+"Det planlagte sluttidspunktet er passert, er du sikker på at du vil aktivere "
+"denne køyreplanen?"
+
+msgid "Are you sure you want to activate Rehearsal Mode?"
+msgstr "Er du sikker på at du vil gå i testmodus?"
+
+msgid ""
+"Are you sure you want to deactivate this Running Order?\n"
+"(This will clear the outputs)"
+msgstr ""
+"Er du sikker på at du vil deaktivere denne køyreplanen?\n"
+"(Dette vil nullstille alle utgangar.)"
+
+msgid "The running order can not be reset while it is active"
+msgstr "Ein aktivert køyreplan kan ikkje tilbakestillast"
+
+msgid ""
+"A snapshot of the current Running Order has been created for troubleshooting."
+msgstr ""
+
+msgid "Prepare Studio and Activate (Rehearsal)"
+msgstr "Førebu studio og aktiver testmodus"
+
+msgid "Reset Running Order"
+msgstr "Tilbakestill køyreplanen"
+
+msgid "Reload ENPS Data"
+msgstr "Last inn ENPS-data på nytt"
+
+msgid "Store Snapshot"
+msgstr "Lagre snapshot"
+
+msgid "No actions available"
+msgstr "Inga køyreplanval tilgjengelege i påsynmodus"
+
+msgid "Error"
+msgstr "Feil"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Go to On Air line"
+msgstr "Gå til On Air-posisjon"
+
+msgid "Rewind segments to start"
+msgstr "Sett segmenta tilbake til start"
+
+msgid "Cancel currently pressed hotkey"
+msgstr "Avbryt den trykte tasten"
+
+msgid "Change to fullscreen mode"
+msgstr "Fullskjermmodus"
+
+msgid ""
+"This running order is now active. Are you sure you want to exit this screen?"
+msgstr "Denne køyreplanen er aktiv. Er du sikker på at du vil avslutte?"
+
+msgid ""
+"There are no Playout Gateways connected and attached to this studio. Please "
+"contact the system administrator to start the Playout Gateway."
+msgstr ""
+
+msgid "Playout Gateway \"{{playoutDeviceName}}\" is now restarting."
+msgstr ""
+
+msgid "Could not restart Playout Gateway \"{{playoutDeviceName}}\"."
+msgstr ""
+
+msgid "Show Hotkeys"
+msgstr "Vise hurtigtastar"
+
+msgid "Take a Snapshot"
+msgstr "Lagre eit snapshot"
+
+msgid "Restart Playout"
+msgstr ""
+
+msgid "This running order has been unpublished from Sofie."
+msgstr "Denne køyreplanen er ikkje lenger tilgjengeleg i Sofie."
+
+msgid "Just now"
+msgstr "No"
+
+msgid "Less than a minute ago"
+msgstr "Under eitt minutt sidan"
+
+msgid "Less than five minutes ago"
+msgstr "Under fem minutt sidan"
+
+msgid "Around 10 minutes ago"
+msgstr "Cirka 10 minutt sidan"
+
+msgid "More than 10 minutes ago"
+msgstr "Over 10 minutt sidan"
+
+msgid "More than 30 minutes ago"
+msgstr "Over 30 minutt sidan"
+
+msgid "More than 2 hours ago"
+msgstr "Over 2 timer sidan"
+
+msgid "More than 5 hours ago"
+msgstr "Over 5 timar sidan"
+
+msgid "More than a day ago"
+msgstr "Over ein dag sidan"
+
+msgid "Until next take"
+msgstr "Til neste Take"
+
+msgid "Until next segment"
+msgstr "Til neste segment"
+
+msgid "Infinite"
+msgstr "Manuell"
+
+msgid "Script is empty"
+msgstr "Manuset er tomt"
+
+msgid "File name"
+msgstr "Filnamn"
+
+msgid "Set as Next"
+msgstr "Sett som neste"
+
+msgid "On Air"
+msgstr "On Air"
+
+msgid "Critical errors"
+msgstr "Kritiske feil"
+
+msgid "Warnings"
+msgstr "Åtvaringar"
+
+msgid "Auto"
+msgstr "Auto"
+
+msgid "Next"
+msgstr "Neste"
+
+msgid "Show End"
+msgstr "Sendeslutt"
+
+msgid "Unknown"
+msgstr "Ukjend"
+
+msgid "Good"
+msgstr "Bra"
+
+msgid "Minor Warning"
+msgstr "Mindre åtvaring (avvik)"
+
+msgid "Warning"
+msgstr "Åtvaring"
+
+msgid "Bad"
+msgstr "Feil"
+
+msgid "Fatal"
+msgstr "Kritisk"
+
+msgid "Connected"
+msgstr "Tilkopla"
+
+msgid "Disconnected"
+msgstr "Fråkopla"
+
+msgid "MOS Gateway"
+msgstr "MOS-gateway"
+
+msgid "Play-out Gateway"
+msgstr "Playout-gateway"
+
+msgid "Media Manager"
+msgstr "Media Manager"
+
+msgid "Unknown Device"
+msgstr "Ukjend eining"
+
+msgid "Delete this show style?"
+msgstr "Slett denne showstylen?"
+
+msgid "Are you sure you want to delete the show style \"{{showStyleId}}\"?"
+msgstr "Er du sikker på at du vil slette showstylen \"{{showStyleId}}\"?"
+
+msgid "Delete this blueprint?"
+msgstr "Slett dette blueprintet?"
+
+msgid "Are you sure you want to delete the blueprint \"{{blueprintId}}\"?"
+msgstr "Er du sikker på at du vil slette blueprintet \"{{blueprintId}}\"?"
+
+msgid "Remove this device?"
+msgstr "Fjern denne eininga?"
+
+msgid ""
+"Are you sure you want to remove the device \"{{deviceName}}\" and all of "
+"it's sub-devices?"
+msgstr ""
+"Er du sikker på at du vil fjerne eninga \"{{deviceName}}\" og alle "
+"undereiningane?"
+
+msgid "Studios"
+msgstr "Studio"
+
+msgid "Unnamed studio"
+msgstr "Studio utan namn"
+
+msgid "Show Styles"
+msgstr "Showstyle"
+
+msgid "Unnamed show style"
+msgstr "Showstyle utan namn"
+
+msgid "Source layers"
+msgstr "Kjeldelag"
+
+msgid "Output channels"
+msgstr "Utgangskanalar"
+
+msgid "Blueprints"
+msgstr "Blueprint"
+
+msgid "Unnamed blueprint"
+msgstr "Blueprint utan namn"
+
+msgid "Version"
+msgstr "Versjon"
+
+msgid "Devices"
+msgstr "Einingar"
+
+msgid "Tools"
+msgstr "Verktøy"
+
+msgid "System Messages"
+msgstr "Systemmeldingar"
+
+msgid "Upgrade Database"
+msgstr ""
+
+msgid "Manage Snapshots"
+msgstr "Behandle snapshots"
+
+msgid "System Settings"
+msgstr "Systeminstillinger"
+
+msgid "Update Blueprints?"
+msgstr "Oppdater blueprint?"
+
+msgid ""
+"Are you sure you want to update the blueprints from the file "
+"\"{{fileName}}\"?"
+msgstr ""
+"Er du sikker på at du vil oppdatere blueprintet frå fila \"{{fileName}}\"?"
+
+msgid "Blueprint ID"
+msgstr "Blueprint-id"
+
+msgid "Blueprint Name"
+msgstr "Blueprintnamn"
+
+msgid "Last modified"
+msgstr "Sist endra"
+
+msgid "Blueprint Version"
+msgstr "Blueprintversjon"
+
+msgid "Upload Blueprints"
+msgstr "Last opp blueprint"
+
+msgid "true"
+msgstr ""
+
+msgid "false"
+msgstr ""
+
+msgid "Create"
+msgstr "Opprett"
+
+msgid "Value"
+msgstr "Verdi"
+
+msgid "Add config item"
+msgstr "Legg til konfigurasjonselement"
+
+msgid "Add"
+msgstr "Legg til"
+
+msgid "Item"
+msgstr "Element"
+
+msgid "Are you sure you want to delete this config item \"{{configId}}\"?"
+msgstr ""
+"Er du sikker på at du vil slette dette konfigurasjonselementet "
+"\"{{configId}}\"?"
+
+msgid "Blueprint Configuration"
+msgstr "Blueprintkonfigurasjon"
+
+msgid "URL"
+msgstr "Adresse (url)"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Params"
+msgstr "Parametrar"
+
+msgid "Make ready commands"
+msgstr "Klargjøringskommandoar"
+
+msgid "Remove this command?"
+msgstr "Fjern denne kommandoen?"
+
+msgid "Remove"
+msgstr "Fjern"
+
+msgid "Are you sure you want to remove this command?"
+msgstr "Er du sikker på at du vil fjerne denne kommandoen?"
+
+msgid "Device ID"
+msgstr "Einings-id"
+
+msgid "Device Type"
+msgstr "Type eining"
+
+msgid "Thread Usage"
+msgstr ""
+
+msgid "Host"
+msgstr "Vert"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "CasparCG Launcher Host"
+msgstr "CasparCG Launcher-vert"
+
+msgid "CasparCG Launcher Port"
+msgstr "CasparCG Launcher-port"
+
+msgid "Sources Path"
+msgstr ""
+
+msgid "Ramp Function Path"
+msgstr ""
+
+msgid "Enable SSL"
+msgstr "Aktiver SSL"
+
+msgid "Media Scanner Host"
+msgstr "Media Scanner-vert"
+
+msgid "Media Scanner Port"
+msgstr "Media Scanner-port"
+
+msgid "Activate Debug Logging"
+msgstr "Aktiver debug-logging"
+
+msgid "Activate Multi-Threading"
+msgstr ""
+
+msgid "Are you sure you want to remove device \"{{deviceId}}\"?"
+msgstr "Er du sikker på at du vil fjerne eininga \"{{deviceId}}\"?"
+
+msgid "Attached sub-devices"
+msgstr "Tilkobla undereiningar"
+
+msgid "Storage ID"
+msgstr ""
+
+msgid "Storage Type"
+msgstr ""
+
+msgid "Allow read"
+msgstr "Tillat lesetilgang"
+
+msgid "Allow write"
+msgstr "Tillat skrivetilgang"
+
+msgid "Base Path"
+msgstr ""
+
+msgid "Media Path"
+msgstr ""
+
+msgid "Mapped Networked Drive"
+msgstr ""
+
+msgid "Username"
+msgstr "Brukarnamn"
+
+msgid "Password"
+msgstr "Passord"
+
+msgid "Don't scan entire storage"
+msgstr ""
+
+msgid "Media Flow ID"
+msgstr ""
+
+msgid "Media Flow Type"
+msgstr ""
+
+msgid "Source Storage"
+msgstr ""
+
+msgid "Target Storage"
+msgstr ""
+
+msgid "No. of available workers"
+msgstr ""
+
+msgid "Default linger time"
+msgstr ""
+
+msgid "Cron Job period"
+msgstr ""
+
+msgid "Remove this storage?"
+msgstr ""
+
+msgid "Are you sure you want to remove storage \"{{storageId}}\"?"
+msgstr ""
+
+msgid "Remove this flow?"
+msgstr ""
+
+msgid "Are you sure you want to remove flow \"{{flowId}}\"?"
+msgstr ""
+
+msgid "Attached Storages"
+msgstr ""
+
+msgid "Media Flows"
+msgstr ""
+
+msgid "Primary ID (News Room System MOS ID)"
+msgstr "Primary ID (News Room System MOS ID)"
+
+msgid "Primary Host (IP or Hostname)"
+msgstr "Primary Host (ip-adresse eller vertsnamn)"
+
+msgid "Secondary ID (News Room System MOS ID)"
+msgstr "Secondary ID (News Room System MOS ID)"
+
+msgid "Secondary Host (IP Address or Hostname)"
+msgstr "Secondary Host (ip-adresse eller vertsnamn)"
+
+msgid "MOS ID of Gateway (Sofie MOS ID)"
+msgstr "MOS ID of Gateway (Sofie MOS ID)"
+
+msgid "Attached subdevices"
+msgstr "Tilkopla undereiningar"
+
+msgid "Are you sure you want to restart this device?"
+msgstr "Er du sikker på at du vil starte denne eininga på nytt?"
+
+msgid "Restart this device?"
+msgstr "Start denne eininga på nytt?"
+
+msgid "Restart"
+msgstr "Restart"
+
+msgid "Restart Device"
+msgstr ""
+
+msgid "Generic Properties"
+msgstr "Generelle eigenskapar"
+
+msgid "Device Name"
+msgstr "Einingsnamn"
+
+msgid "Reset database version"
+msgstr "Nullstill databaseversjon"
+
+msgid ""
+"Are you sure you want to reset the database version?\n"
+"Only do this if you plan on running the migration right after."
+msgstr ""
+"Er du sikker på at du vil nullstille databaseversjon?\n"
+"Berre gjer dette dersom du planlegg å køyre ein migrering med ein einaste "
+"gong."
+
+msgid "Set database version"
+msgstr "Sett databaseversjon"
+
+msgid "Are you sure you want to set the database version to"
+msgstr "Er du sikker på at du vil sette databaseversjonen til"
+
+msgid "Version for {{name}}: From {{fromVersion}} to {{toVersion}}"
+msgstr "Versjon for {{name}}: Frå {{fromVersion}} til {{toVersion}}"
+
+msgid "Refresh"
+msgstr "Oppdater"
+
+msgid "Reset version to"
+msgstr "Nullstill versjon til"
+
+msgid "Reset all versions"
+msgstr "Nullstill alle versjonar"
+
+msgid ""
+"The migration consists of several phases, you will get more options after "
+"you've this migration"
+msgstr ""
+"Denne migreringa består av fleire fasar, du vil få flerie val etter du har "
+"gjennomført migreringa"
+
+msgid "The migration can be completed automatically."
+msgstr "Migreringa kan bli fullført automatisk."
+
+msgid "Run automatic migration procedure"
+msgstr "Køyr automatisk migreringsprosedyre"
+
+msgid ""
+"The migration procedure needs some help from you in order to complete, see "
+"below:"
+msgstr "Migreringa treng litt hjelp ifrå deg for å fullføre, sjå under:"
+
+msgid "Double-check Values"
+msgstr "Dobbeltsjekk verdiar"
+
+msgid "Are you sure the values you have entered are correct?"
+msgstr "Er du sikker på at verdiane du har skrive er korrekte?"
+
+msgid "Run Migration Procedure"
+msgstr "Køyr migrasjonsprosedyre"
+
+msgid "Warnings during migration"
+msgstr "Åtvaringar under migreringa"
+
+msgid ""
+"Please check the database related to the warnings above. If neccessary, you "
+"can"
+msgstr ""
+"Ver venleg og kontroller databasen knytta til åtvaringane over. Dersom det "
+"er naudsynt, kan du"
+
+msgid "Force migration"
+msgstr "Tving migrering"
+
+msgid ""
+"Are you sure you want to force the migration? This will bypass the migration "
+"checks, so be sure to verify that the values in the settings are correct!"
+msgstr ""
+"Er du sikker på at du vil tvinge migreringa? Dette lar deg hoppe over "
+"migreringskontrollane, så ver venleg å kontroller at verdiane i "
+"innstillingane er korrekte!"
+
+msgid "Force migration (unsafe)"
+msgstr "Tving migrering (farefullt)"
+
+msgid "The migration has completed successfully!"
+msgstr "Migreringa var vellukka!"
+
+msgid "All is well, go get a"
+msgstr "Alt er i orden, gå og ta deg ein"
+
+msgid "Show Style Base Name"
+msgstr ""
+
+msgid "Blueprint"
+msgstr "Blueprint"
+
+msgid "Compatible studios:"
+msgstr "Kompatible studio:"
+
+msgid "No studios are compatible with this Show Style"
+msgstr "Inga studio er kompatible med denne showstylen"
+
+msgid ""
+"Are you sure you want to delete this runtime argument \"{{property}}: "
+"{{value}}\"?"
+msgstr ""
+
+msgid "Hotkeys"
+msgstr "Hurtigtastar"
+
+msgid "Property"
+msgstr "Eigenskap"
+
+msgid "Runtime Arguments for Blueprints"
+msgstr ""
+
+msgid "Camera"
+msgstr "Kamera"
+
+msgid "Graphics"
+msgstr "Grafikk"
+
+msgid "Live Speak"
+msgstr "STK"
+
+msgid "Lower Third"
+msgstr "Super"
+
+msgid "Studio Microphone"
+msgstr "Studiomikrofon"
+
+msgid "Remote Source"
+msgstr "RM"
+
+msgid "Generic Script"
+msgstr ""
+
+msgid "Split Screen"
+msgstr "Splitt"
+
+msgid "Clips"
+msgstr "Klipp"
+
+msgid "Metadata"
+msgstr "Metadata"
+
+msgid "Camera Movement"
+msgstr "Kamerarørsle"
+
+msgid "Unknown Layer"
+msgstr "Ukjend lag"
+
+msgid "Audio Mixing"
+msgstr "Lydmiksing"
+
+msgid "Transition"
+msgstr "Effekt"
+
+msgid "Lights"
+msgstr "Lys"
+
+msgid "New Source"
+msgstr "Ny kjelde"
+
+msgid "Are you sure you want to delete source layer \"{{sourceLayerId}}\"?"
+msgstr "Er du sikker på at du vil slette kjeldelaget \"{{sourceLayerId}}\"?"
+
+msgid "Source Name"
+msgstr "Kjeldenamn"
+
+msgid "Source Abbreviation"
+msgstr "Kjeldeforkorting"
+
+msgid "Internal ID"
+msgstr "Intern-id"
+
+msgid "Source Type"
+msgstr "Kjeldetype"
+
+msgid "Is unlimited"
+msgstr "Er utan grenser"
+
+msgid "Is on clean PGM"
+msgstr "Ligg på cleanfeed"
+
+msgid "Is a Live Remote Input"
+msgstr "Er ein RM"
+
+msgid "Is a Guest Input"
+msgstr "Er ein gjesteinngang"
+
+msgid "Is hidden"
+msgstr "Er skjult"
+
+msgid "Display Rank"
+msgstr ""
+
+msgid "Display on Presenter's Screen"
+msgstr ""
+
+msgid "Shortcut List"
+msgstr "Liste over funksjonstastar"
+
+msgid "Clear Shortcut"
+msgstr "Fjern funksjonstast"
+
+msgid "Assign Hotkeys to Global AdLibs"
+msgstr ""
+
+msgid "Items on this layer are sticky"
+msgstr ""
+
+msgid "Activate Sticky Item Shortcut"
+msgstr ""
+
+msgid "Allow disabling of elements"
+msgstr "Tillat deaktivering av elementer"
+
+msgid "Adlibs on this layer can be queued"
+msgstr ""
+
+msgid "Exclusivity group"
+msgstr ""
+
+msgid "Source Layers"
+msgstr "Kjeldelag"
+
+msgid "Delete this output?"
+msgstr "Slett denne utgangen?"
+
+msgid "Are you sure you want to delete source layer \"{{outputId}}\"?"
+msgstr "Er du sikker på at du vil slette kjeldelaget \"{{outputId}}\"?"
+
+msgid "New Output"
+msgstr "Ny utgang"
+
+msgid "Channel Name"
+msgstr "Kanalnavn"
+
+msgid "Is PGM Output"
+msgstr "Ligg på program"
+
+msgid "Key"
+msgstr "Key"
+
+msgid "Custom Hotkey Labels"
+msgstr "Eigendefinerte etikettar for hurtigtastar"
+
+msgid "Remove this variant?"
+msgstr "Fjern denne varianten?"
+
+msgid "Are you sure you want to remove the variant \"{{showStyleVariantId}}\"?"
+msgstr ""
+"Er du sikker på at du vil fjerne denne showstylevarianten "
+"\"{{showStyleVariantId}}\"?"
+
+msgid "Unnamed variant"
+msgstr "Variant utan namn"
+
+msgid "Variant Name"
+msgstr "Variantnamn"
+
+msgid "Variants"
+msgstr "Variantar"
+
+msgid "Full System Snapshot"
+msgstr "Fullt systemsnapshot"
+
+msgid ""
+"A Full System Snapshot contains all system settings (studios, showstyles, "
+"blueprints, devices, etc.)"
+msgstr ""
+"Eit fullt systemsnapshot inneheld alle systeminnstillingar (studio, "
+"showstyles, blueprints, einingar o.s.b.)"
+
+msgid "Take a Full System Snapshot"
+msgstr "Lagre eit fullt systemsnapshot"
+
+msgid "Studio Snapshot"
+msgstr "Studiosnapshot"
+
+msgid "A Studio Snapshot contains all system settings related to that studio"
+msgstr ""
+"Eit studiosnapshot inneheld alle systeminnstillingar knytt til eit studio"
+
+msgid "Take a Snapshot for studio \"{{studioName}}\" only"
+msgstr "Lagre eit studiosnapshot utelukkande for \"{{studioName}}\""
+
+msgid "Restore from Snapshot File"
+msgstr "Gjenopprett ìfrå snapshotfil"
+
+msgid "Restore from this Snapshot file?"
+msgstr "Gjenopprett ifrå denne snapshotfila?"
+
+msgid "Restore"
+msgstr "Gjenopprett"
+
+msgid ""
+"Are you sure you want to restore the system from the Snapshot file "
+"\"{{fileName}}\"?"
+msgstr ""
+"Er du sikker på at du vil gjenopprette systemet ifrå denne snapshotfila "
+"\"{{fileName}}\"?"
+
+msgid "Restore from Stored Snapshots"
+msgstr "Gjenopprett ifrå lagra snapshots"
+
+msgid "Show \"Remove snapshots\"-buttons"
+msgstr "Vis \"Fjern snapshots\"-knappar"
+
+msgid "Custom Configuration"
+msgstr "Eigendefinert konfigurasjon"
+
+msgid "Are you sure you want to remove device \"{{devideId}}\"?"
+msgstr "Er du sikker på at du vil fjerne eininga \"{{devideId}}\"?"
+
+msgid "Attached Devices"
+msgstr "Tilkopla eingingar"
+
+msgid "Remove this mapping?"
+msgstr ""
+
+msgid "Are you sure you want to remove mapping for layer \"{{mappingId}}\"?"
+msgstr ""
+
+msgid "channel"
+msgstr "kanal"
+
+msgid "layer"
+msgstr "lag"
+
+msgid "mappingType"
+msgstr ""
+
+msgid "index"
+msgstr "index"
+
+msgid "Identifier"
+msgstr "Identifikator"
+
+msgid "Preset"
+msgstr ""
+
+msgid "Preset transition speed"
+msgstr ""
+
+msgid "Zoom"
+msgstr "Zoom"
+
+msgid "Zoom speed"
+msgstr "Zoom-hastighet"
+
+msgid "Unknown mapping"
+msgstr ""
+
+msgid "Layer ID"
+msgstr "Lag-id"
+
+msgid "Lookahead Mode"
+msgstr ""
+
+msgid "Layer Mappings"
+msgstr ""
+
+msgid "Test Tools - Recordings"
+msgstr "Testverktøy - Opptak"
+
+msgid "CasparCG Channel"
+msgstr "CasparCG-kanal"
+
+msgid "Path Prefix"
+msgstr ""
+
+msgid "URL Prefix"
+msgstr ""
+
+msgid "Decklink Input Index"
+msgstr ""
+
+msgid "Decklink Input Format"
+msgstr ""
+
+msgid "Studio Name"
+msgstr "Studionamn"
+
+msgid "Select Compatible Show Styles"
+msgstr "Vel kompatible showstyles"
+
+msgid "Click to show available Show Styles"
+msgstr "Klikk for å vise tilgjengelege showstyles"
+
+msgid "Default ShowStyleVariant"
+msgstr "Standard showstylevariant"
+
+msgid "Media Preview URL"
+msgstr ""
+
+msgid "Sofie Host URL"
+msgstr ""
+
+msgid "System Message"
+msgstr "Systemmelding"
+
+msgid "Message"
+msgstr "Melding"
+
+msgid "Enabled"
+msgstr ""
+
+msgid "Support Message"
+msgstr "Supportmelding"
+
+msgid "System"
+msgstr "System"
+
+msgid "Media"
+msgstr ""
+
+msgid "Messages"
+msgstr "Meldingar"
+
+msgid "User Log"
+msgstr "Brukarlogg"
+
+msgid "Evaluations"
+msgstr "Evalueringar"
+
+msgid "Timestamp"
+msgstr "Tidsstempel"
+
+msgid "User name"
+msgstr "Brukernamn"
+
+msgid "Answers"
+msgstr "Svar"
+
+msgid "Message Queue"
+msgstr "Meldingskø"
+
+msgid "Queued Messages"
+msgstr "Meldingar i kø"
+
+msgid "Sent Messages"
+msgstr "Sendte meldingar"
+
+msgid "File Copy"
+msgstr ""
+
+msgid "File Delete"
+msgstr ""
+
+msgid "Scan File"
+msgstr ""
+
+msgid "Generate Thumbnail"
+msgstr ""
+
+msgid "Generate Preview"
+msgstr ""
+
+msgid "Unknown action: {{action}}"
+msgstr ""
+
+msgid "Done"
+msgstr ""
+
+msgid "Failed"
+msgstr ""
+
+msgid "Working, Media Available"
+msgstr ""
+
+msgid "Working"
+msgstr ""
+
+msgid "Pending"
+msgstr ""
+
+msgid "Blocked"
+msgstr ""
+
+msgid "Canceled"
+msgstr ""
+
+msgid "Idle"
+msgstr ""
+
+msgid "Skipped"
+msgstr ""
+
+msgid "Step progress: {{progress}}"
+msgstr ""
+
+msgid "Processing"
+msgstr ""
+
+msgid "Unknown: {{status}}"
+msgstr ""
+
+msgid "Collapse"
+msgstr ""
+
+msgid "Details"
+msgstr ""
+
+msgid "Media Transfer Status"
+msgstr ""
+
+msgid "Not connected"
+msgstr "Ikkje tilkopla"
+
+msgid "Restart CasparCG Server"
+msgstr "Restart Caspar"
+
+msgid "Do you want to restart CasparCG Server?"
+msgstr "Er du sikker på at du vil restarte Caspar?"
+
+msgid "Last seen"
+msgstr "Sist sett"
+
+msgid "Are you sure you want to delete this device?"
+msgstr "Er du sikker på at du vil slette denne eininga?"
+
+msgid "System Status"
+msgstr "Systemstatus"
+
+msgid "Execution time"
+msgstr "Eksekveringsvarigheit"
+
+msgid "User ID"
+msgstr "Brukar-id"
+
+msgid "Client IP"
+msgstr "Klient-ip"
+
+msgid "Action"
+msgstr "Handling"
+
+msgid "Method"
+msgstr "Metode"
+
+msgid "Parameters"
+msgstr "Parametrar"
+
+msgid "User Activity Log"
+msgstr "Aktivitetslogg"
+
+msgid "Recordings"
+msgstr "Opptak"
+
+msgid "Timeline"
+msgstr "Tidslinje"
+
+msgid "A required setting is not configured"
+msgstr "Ei obligatorisk innstilling er ikkje konfigurert"
+
+msgid "Active"
+msgstr "Aktiv"
+
+msgid "Ready"
+msgstr "Klar"
+
+msgid "Stop"
+msgstr "Stop"
+
+msgid "Start"
+msgstr "Start"
+
+msgid "Are you sure you want to delete recording \"{{name}}\"?"
+msgstr "Er  du sikker på at du vil slette opptaket \"{{name}}\"?"
+
+msgid "Name"
+msgstr "Namn"
+
+msgid "Stopped"
+msgstr "Stoppa"
+
+msgid "Your browser does not support video playback"
+msgstr "Nettlesaren støtter ikkje videoavspeling"
+
+msgid "Recording still in progress"
+msgstr "Opptak held framleis på"
+
+msgctxt "item"
+msgid "new_config"
+msgstr "new_config"
+
+#~ msgid "Running Order is active"
+#~ msgstr "Køyreplanen er aktiv"
+
+#~ msgid ""
+#~ "Only a single Running Order can be active in a studio at the same time. "
+#~ "Please deactivate the other Running Order and try again."
+#~ msgstr ""
+#~ "Bare éin køyreplan kan være aktiv i eit studio. Deaktiver den andre "
+#~ "køyreplanen, og prøv på nytt."
+
+#~ msgid "Are you sure you want to reset this Running Order?"
+#~ msgstr "Er du sikker på at du vil tilbakestille denne kjøreplan?"
+
+#~ msgid "Line Templates"
+#~ msgstr "Line Templates"
+
+#~ msgid "Restore Backup"
+#~ msgstr "Restore Backup"
+
+#~ msgid "Migration"
+#~ msgstr "Migration"
+
+#~ msgid "Blueprint logic ID"
+#~ msgstr "Blueprint logic ID"
+
+#~ msgid "Is Helper"
+#~ msgstr "Is Helper"
+
+#~ msgid "Select this"
+#~ msgstr "Select this"
+
+#~ msgid "System version"
+#~ msgstr "System version"
+
+#~ msgid "Database version"
+#~ msgstr "Database version"
+
+#~ msgid "Take debug snapshot"
+#~ msgstr "Take debug snapshot"
+
+#~ msgid ""
+#~ "A Debug Snapshot contains info about the system and the active running "
+#~ "order(s)"
+#~ msgstr ""
+#~ "A Debug Snapshot contains info about the system and the active running "
+#~ "order(s)"
+
+#~ msgid "Router logic ID"
+#~ msgstr "Router logic ID"
+
+#~ msgid "Baseline logic ID"
+#~ msgstr "Baseline logic ID"
+
+#~ msgid "Post Process logic ID"
+#~ msgstr "Post Process logic ID"
+
+#~ msgid "External Message logic ID"
+#~ msgstr "External Message logic ID"
+
+#~ msgid "Download Full Backup"
+#~ msgstr "Download Full Backup"
+
+#~ msgid "Download Current State"
+#~ msgstr "Download Current State"
+
+#~ msgid "Blueprints' logic"
+#~ msgstr "Blueprints' logic"
+
+#~ msgid "Are you sure you want to delete blueprint logic \"{{itemId}}\"?"
+#~ msgstr "Are you sure you want to delete blueprint logic \"{{itemId}}\"?"
+
+#~ msgid "Helper"
+#~ msgstr "Helper"
+
+#~ msgid "Are you sure you want to delete output channel \"{{channelId}}\"?"
+#~ msgstr "Are you sure you want to delete output channel \"{{channelId}}\"?"
+
+#~ msgid "Snapshot"
+#~ msgstr "Snapshot"
+
+#~ msgid "Download Debug-Snapshot (all studios)"
+#~ msgstr "Download Debug-Snapshot (all studios)"
+
+#~ msgid "Download System Snapshot for the studio"
+#~ msgstr "Download System Snapshot for the studio"
+
+#~ msgid "Download Debug-Snapshot for the studio"
+#~ msgstr "Download Debug-Snapshot for the studio"
+
+#~ msgid "Telemetry"
+#~ msgstr "Telemetry"
+
+#~ msgid "MOS Device"
+#~ msgstr "MOS Device"
+
+#~ msgid "Sub-Device"
+#~ msgstr "Sub-Device"
+
+#~ msgid "Kill this device process?"
+#~ msgstr "Kill this device process?"
+
+#~ msgid "Kill"
+#~ msgstr "Kill"
+
+#~ msgid "Are you sure you want to kill the process of this device?"
+#~ msgstr "Are you sure you want to kill the process of this device?"
+
+#~| msgid "Restore this backup?"
+#~ msgid "Restore from this Backup?"
+#~ msgstr "Restore from this Backup?"
+
+#~| msgid "Take Snapshot"
+#~ msgid "Take snapshot"
+#~ msgstr "Take snapshot"
+
+#~ msgid "Url"
+#~ msgstr "Url"
+
+#~ msgid "Generic properties"
+#~ msgstr "Generic Properties"
+
+#~ msgid "ON AIR"
+#~ msgstr "ON AIR"
+
+#~ msgid "Click Anywhere to go Fullscreen..."
+#~ msgstr "Klikk hvor som helst for gå til fullskjerm..."
+
+#~ msgid "Please enter your name"
+#~ msgstr "Vennligst legg til ditt navn"
+
+#~ msgid "Template ID"
+#~ msgstr "Template ID"
+
+#~ msgid "Templates"
+#~ msgstr "Templates"
+
+#~ msgid "Server"
+#~ msgstr "Serveren"
+
+#, fuzzy
+#~| msgid "Devices"
+#~ msgid "Mos-devices"
+#~ msgstr "Devices"
+
+#, fuzzy
+#~| msgid "Device Type"
+#~ msgid "Device type"
+#~ msgstr "Device Type"
+
+#, fuzzy
+#~| msgid "Device ID"
+#~ msgid "Device Id"
+#~ msgstr "Device ID"
+
+#~ msgid "Connecting to Sofie Automation Server..."
+#~ msgstr "Kobler til Sofie-serveren..."
+
+#~ msgid "Cannot connect to the Sofie Automation Server"
+#~ msgstr "Kan ikke koble til Sofie-serveren"
+
+#~ msgid "Connected to Sofie Automation Server."
+#~ msgstr "Koblet til Sofie-serveren."
+
+#~ msgid "Sofie Automation Core version"
+#~ msgstr "Sofie Automation Core versjon"
+
+#~ msgid "Core status"
+#~ msgstr "Sofie-status"
+
+#~ msgid "MOS Devices"
+#~ msgstr "MOS Devices"

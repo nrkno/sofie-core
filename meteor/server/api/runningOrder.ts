@@ -1,21 +1,26 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
+import { IBlueprintPostProcessSegmentLine } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineNoteType, SegmentLineNote } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
-import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime } from '../../lib/lib'
+import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime, getHash, asyncCollectionUpdate, waitForPromiseAll } from '../../lib/lib'
 import { logger } from '../logging'
 import { loadBlueprints, postProcessSegmentLineItems, SegmentContext } from './blueprints'
-import { getHash } from '../lib'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
-import { CachePrefix, RunningOrderDataCache } from '../../lib/collections/RunningOrderDataCache'
+import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 import { updateStory, reloadRunningOrder } from './integration/mos'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
+import { updateExpectedMediaItems } from './expectedMediaItems'
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { Blueprints } from '../../lib/collections/Blueprints'
+import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+const PackageInfo = require('../../package.json')
 
 /**
  * After a Segment has beed removed, handle its contents
@@ -67,6 +72,7 @@ export function afterRemoveSegmentLine (removedSegmentLine: DBSegmentLine, repla
 	SegmentLineItems.remove({
 		segmentLineId: removedSegmentLine._id
 	})
+	updateExpectedMediaItems(removedSegmentLine.runningOrderId, removedSegmentLine._id)
 
 	let ro = RunningOrders.findOne(removedSegmentLine.runningOrderId)
 	if (ro) {
@@ -165,7 +171,6 @@ export function convertToSegment (segmentLine: SegmentLine, rank: number): DBSeg
 		_rank: rank,
 		mosId: 'N/A', // to be removed?
 		name: slugParts[0],
-		number: 'N/A' // @todo: to be removed from data structure
 		// number: (story.Number ? story.Number.toString() : '')
 	}
 	// logger.debug('story.Number', story.Number)
@@ -184,7 +189,7 @@ export function updateSegments (runningOrderId: string) {
 	let segment: DBSegment
 	let segments: Array<DBSegment> = []
 	let rankSegment = 0
-	let segmentLineUpdates = {}
+	let segmentLineUpdates: {[id: string]: Partial<DBSegmentLine>} = {}
 	_.each(segmentLines, (segmentLine: SegmentLine) => {
 		let slugParts = segmentLine.slug.split(';')
 
@@ -202,7 +207,7 @@ export function updateSegments (runningOrderId: string) {
 	})
 
 	// Update SegmentLines:
-	_.each(segmentLineUpdates, (modifier, id) => {
+	_.each(segmentLineUpdates, (modifier, id: string) => {
 
 		logger.info('added SegmentLine to segment ' + modifier['segmentId'])
 		SegmentLines.update(id, {$set: modifier})
@@ -275,7 +280,7 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 
 	const segmentLines = segment.getSegmentLines()
 	if (segmentLines.length === 0) {
-		return
+		return undefined
 	}
 
 	const firstSegmentLine = segmentLines.sort((a, b) => b._rank = a._rank)[0]
@@ -284,11 +289,13 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 	context.handleNotesExternally = true
 
 	let resultSli: SegmentLineItem[] | undefined = undefined
+	let resultSlUpdates: IBlueprintPostProcessSegmentLine[] | undefined = undefined
 	let notes: SegmentLineNote[] = []
 	try {
 		const blueprints = loadBlueprints(showStyleBase)
 		let result = blueprints.getSegmentPost(context)
 		resultSli = postProcessSegmentLineItems(context, result.segmentLineItems, 'post-process', firstSegmentLine._id)
+		resultSlUpdates = result.segmentLineUpdates // TODO - validate/filter/tidy?
 		notes = context.getNotes()
 	} catch (e) {
 		logger.error(e.stack ? e.stack : e.toString())
@@ -347,9 +354,28 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 			}
 		})
 	}
+	if (resultSlUpdates) {
+		// At the moment this only affects the UI, so doesnt need to report 'anythingChanged'
+
+		let ps = resultSlUpdates.map(sl => asyncCollectionUpdate(SegmentLines, {
+			_id: sl._id,
+			runningOrderId: ro._id
+		}, {
+			$set: {
+				displayDurationGroup: sl.displayDurationGroup || ''
+			}
+		}))
+		waitForPromiseAll(ps)
+	}
 
 	// if anything was changed
-	return (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
+	const anythingChanged = (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
+	if (anythingChanged) {
+		_.each(slIds, (slId) => {
+			updateExpectedMediaItems(ro._id, slId)
+		})
+	}
+	return anythingChanged
 }
 export function reloadRunningOrderData (runningOrder: RunningOrder) {
 	// TODO: determine that the runningOrder is Mos-driven, then call the function
@@ -372,41 +398,67 @@ export namespace ServerRunningOrderAPI {
 		logger.info('removeRunningOrder ' + runningOrderId)
 
 		let ro = RunningOrders.findOne(runningOrderId)
-		if (ro) {
-			ro.remove()
-		}
+		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
+		if (ro.active) throw new Meteor.Error(400,`Not allowed to remove an active RunningOrder "${runningOrderId}".`)
+
+		ro.remove()
 	}
 	export function resyncRunningOrder (runningOrderId: string) {
 		check(runningOrderId, String)
 		logger.info('resyncRunningOrder ' + runningOrderId)
 
 		let ro = RunningOrders.findOne(runningOrderId)
-		if (ro) {
-			RunningOrders.update(ro._id, {
-				$set: {
-					unsynced: false
-				}
-			})
+		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
+		// if (ro.active) throw new Meteor.Error(400,`Not allowed to resync an active RunningOrder "${runningOrderId}".`)
+		RunningOrders.update(ro._id, {
+			$set: {
+				unsynced: false
+			}
+		})
 
-			Meteor.call(PlayoutAPI.methods.reloadData, runningOrderId, false, (err, result) => {
-				if (err) {
-					logger.error(err)
-					return
-				}
-			})
-		}
+		Meteor.call(PlayoutAPI.methods.reloadData, runningOrderId, false)
 	}
 	export function unsyncRunningOrder (runningOrderId: string) {
 		check(runningOrderId, String)
 		logger.info('unsyncRunningOrder ' + runningOrderId)
 
 		let ro = RunningOrders.findOne(runningOrderId)
-		if (ro) {
-			RunningOrders.update(ro._id, {$set: {
-				unsynced: true,
-				unsyncedTime: getCurrentTime()
-			}})
-		} else throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found`)
+		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
+
+		RunningOrders.update(ro._id, {$set: {
+			unsynced: true,
+			unsyncedTime: getCurrentTime()
+		}})
+	}
+}
+export namespace ClientRunningOrderAPI {
+	export function runningOrderNeedsUpdating (runningOrderId: string) {
+		check(runningOrderId, String)
+		// logger.info('runningOrderNeedsUpdating ' + runningOrderId)
+
+		let ro = RunningOrders.findOne(runningOrderId)
+		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
+		if (!ro.importVersions) return 'unknown'
+
+		if (ro.importVersions.core !== PackageInfo.version) return 'coreVersion'
+
+		const showStyleVariant = ShowStyleVariants.findOne(ro.showStyleVariantId)
+		if (!showStyleVariant) return 'missing showStyleVariant'
+		if (ro.importVersions.showStyleVariant !== (showStyleVariant._runningOrderVersionHash || 0)) return 'showStyleVariant'
+
+		const showStyleBase = ShowStyleBases.findOne(ro.showStyleBaseId)
+		if (!showStyleBase) return 'missing showStyleBase'
+		if (ro.importVersions.showStyleBase !== (showStyleBase._runningOrderVersionHash || 0)) return 'showStyleBase'
+
+		const blueprint = Blueprints.findOne(showStyleBase.blueprintId)
+		if (!blueprint) return 'missing blueprint'
+		if (ro.importVersions.blueprint !== (blueprint.blueprintVersion || 0)) return 'blueprint'
+
+		const si = StudioInstallations.findOne(ro.studioInstallationId)
+		if (!si) return 'missing studioInstallation'
+		if (ro.importVersions.studioInstallation !== (si._runningOrderVersionHash || 0)) return 'studioInstallation'
+
+		return undefined
 	}
 }
 
@@ -419,6 +471,9 @@ methods[RunningOrderAPI.methods.resyncRunningOrder] = (roId: string) => {
 }
 methods[RunningOrderAPI.methods.unsyncRunningOrder] = (roId: string) => {
 	return ServerRunningOrderAPI.unsyncRunningOrder(roId)
+}
+methods[RunningOrderAPI.methods.runningOrderNeedsUpdating] = (roId: string) => {
+	return ClientRunningOrderAPI.runningOrderNeedsUpdating(roId)
 }
 // Apply methods:
 setMeteorMethods(wrapMethods(methods))

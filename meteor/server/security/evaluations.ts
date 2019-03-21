@@ -1,8 +1,7 @@
-import { Meteor } from 'meteor/meteor'
 import { Evaluations, Evaluation } from '../../lib/collections/Evaluations'
 
 export namespace EvaluationsSecurity {
-	export function allowReadAccess (selector: object, context) {
+	export function allowReadAccess (selector: object, context: any) {
 
 		return true
 		// TODO: implement some security here

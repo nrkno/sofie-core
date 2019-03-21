@@ -9,8 +9,9 @@ import { Mongo } from 'meteor/mongo'
 import { MultiSelect, MultiSelectEvent } from './multiSelect'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
-	type: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch' | 'multiselect'
+	type: EditAttributeType
 }
+export type EditAttributeType = 'text' | 'multiline' | 'int' | 'float' | 'checkbox' | 'dropdown' | 'switch' | 'multiselect'
 export class EditAttribute extends React.Component<IEditAttribute> {
 	render () {
 
@@ -25,6 +26,10 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 		} else if (this.props.type === 'int') {
 			return (
 				<EditAttributeInt {...this.props} />
+			)
+		} else if (this.props.type === 'float') {
+			return (
+				<EditAttributeFloat {...this.props} />
 			)
 		} else if (this.props.type === 'checkbox') {
 			return (
@@ -61,8 +66,8 @@ interface IEditAttributeBaseProps {
 	updateFunction?: (edit: EditAttributeBase, newValue: any ) => void
 	overrideDisplayValue?: any
 	label?: string
-	mutateDisplayValue?: any
-	mutateUpdateValue?: any
+	mutateDisplayValue?: (v: any) => any
+	mutateUpdateValue?: (v: any) => any
 }
 interface IEditAttributeBaseState {
 	value: any,
@@ -278,6 +283,43 @@ const EditAttributeInt = wrapEditAttribute(class extends EditAttributeBase {
 		return (
 			<input type='number'
 				step='1'
+				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+
+				value={this.getEditAttributeNumber()}
+				onChange={this.handleChange}
+				onBlur={this.handleBlur}
+			/>
+		)
+	}
+})
+const EditAttributeFloat = wrapEditAttribute(class extends EditAttributeBase {
+	constructor (props) {
+		super(props)
+
+		this.handleChange = this.handleChange.bind(this)
+		this.handleBlur = this.handleBlur.bind(this)
+	}
+	getValue (event) {
+		return parseFloat(event.target.value.replace(',', '.'))
+	}
+	handleChange (event) {
+		// this.handleEdit(this.getValue(event))
+		let v = this.getValue(event)
+		_.isNaN(v) ? this.handleUpdateButDontSave(v) : this.handleUpdate(v)
+	}
+	handleBlur (event) {
+		let v = this.getValue(event)
+		_.isNaN(v) ? this.handleDiscard() : this.handleUpdate(v)
+	}
+	getEditAttributeNumber () {
+		let val = this.getEditAttribute()
+		if (_.isNaN(val)) val = 'NaN'
+		return val
+	}
+	render () {
+		return (
+			<input type='number'
+				step='0.1'
 				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
 
 				value={this.getEditAttributeNumber()}

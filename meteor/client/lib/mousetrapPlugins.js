@@ -95,6 +95,6 @@ import { mousetrapHelper } from './mousetrapHelper'
 
 	Mousetrap.init();
 
-	mousetrapHelper.bind('esc', escDown, 'keydown');
-	mousetrapHelper.bind('esc', escUp, 'keyup');
+	mousetrapHelper.bind('esc', escDown, 'keydown', undefined, true);
+	mousetrapHelper.bind('esc', escUp, 'keyup', undefined, true);
 })(Mousetrap);

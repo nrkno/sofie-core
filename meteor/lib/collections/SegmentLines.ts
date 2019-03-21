@@ -51,10 +51,19 @@ export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
 	/** Expected duration of the line, in milliseconds */
 	expectedDuration?: number
 
-	/** Whether the sl has started playback, the most recent time it was played, reset each time setAsNext is used */
+	/** Whether the sl has started playback (the most recent time it was played).
+	 * This is reset each time setAsNext is used.
+	 * This is set from a callback from the playout gateway
+	 */
 	startedPlayback?: boolean
+	/** Whether the sl has stopped playback (the most recent time it was played & stopped).
+	 * This is set from a callback from the playout gateway
+	 */
+	stoppedPlayback?: boolean
 
-	/** The time the system played back this segment line, null if not yet finished playing, in milliseconds */
+	/** The time the system played back this segment line, null if not yet finished playing, in milliseconds.
+	 * This is set when Take:ing the next segmentLine
+	 */
 	duration?: number
 
 	/** The type of the segmentLiene, could be the name of the blueprint that created it */
@@ -127,7 +136,10 @@ export class SegmentLine implements DBSegmentLine {
 	public metaData?: Array<MOS.IMOSExternalMetaData>
 	public status?: MOS.IMOSObjectStatus
 	public expectedDuration?: number
+	public displayDuration?: number
+	public displayDurationGroup?: string
 	public startedPlayback?: boolean
+	public stoppedPlayback?: boolean
 	public duration?: number
 	public disableOutTransition?: boolean
 	public updateStoryStatus?: boolean
@@ -139,6 +151,9 @@ export class SegmentLine implements DBSegmentLine {
 
 	public runtimeArguments?: BlueprintRuntimeArguments
 	public typeVariant: string
+
+	public classes?: Array<string>
+	public classesForNext?: Array<string>
 
 	constructor (document: DBSegmentLine) {
 		_.each(_.keys(document), (key) => {
@@ -226,7 +241,7 @@ export class SegmentLine implements DBSegmentLine {
 					const st = checkSLIContentStatus(item, sl, si ? si.config : [])
 					if (st.status === RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING || st.status === RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN) {
 						notes.push({
-							type: SegmentLineNoteType.ERROR,
+							type: SegmentLineNoteType.WARNING,
 							origin: {
 								name: 'Media Check',
 								segmentLineId: this._id,

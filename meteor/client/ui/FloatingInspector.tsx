@@ -1,8 +1,5 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import * as _ from 'underscore'
-
-import * as ClassNames from 'classnames'
 import * as Escape from 'react-escape'
 
 interface IPropsHeader {

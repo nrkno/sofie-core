@@ -13,6 +13,7 @@ import { faWindowClose } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
 import { multilineText } from '../../lib/lib'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 
 interface IProps {
 	match: {
@@ -23,9 +24,6 @@ interface IProps {
 }
 interface IState {
 	uploadFileKey: number // Used to force clear the input after use
-	showUploadConfirm: boolean
-	uploadFileName?: string
-	uploadFileContents?: string
 	editSnapshotId: string | null
 	removeSnapshots: boolean
 }
@@ -48,7 +46,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		super(props)
 		this.state = {
 			uploadFileKey: Date.now(),
-			showUploadConfirm: false,
 			editSnapshotId: null,
 			removeSnapshots: false
 		}
@@ -63,6 +60,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	}
 
 	onUploadFile (e) {
+		const { t } = this.props
+
 		const file = e.target.files[0]
 		if (!file) {
 			return
@@ -71,40 +70,36 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		const reader = new FileReader()
 		reader.onload = (e2) => {
 			this.setState({
-				uploadFileKey: Date.now(),
-				showUploadConfirm: true,
-				uploadFileName: file.name,
-				uploadFileContents: (e2.target as any).result
+				uploadFileKey: Date.now()
+			})
+			const uploadFileContents = (e2.target as any || {}).result
+
+			doModalDialog({
+				title: t('Restore from this Snapshot file?'),
+				message: t('Are you sure you want to restore the system from the Snapshot file "{{fileName}}"?', { fileName: file.name }),
+				onAccept: () => {
+					fetch('/backup/restore', {
+						method: 'POST',
+						body: uploadFileContents,
+						headers: {
+							'content-type': 'application/json'
+						},
+					}).then(res => {
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Successfully restored snapshot'), 'RestoreSnapshot'))
+					}).catch(err => {
+						console.error('Snapshot restore failure: ', err)
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Snapshot restore failed: {{errorMessage}}', { errorMessage: (err + '') }), 'RestoreSnapshot'))
+					})
+				},
+				onDiscard: () => {
+					this.setState({
+						uploadFileKey: Date.now() // to clear input field
+					})
+				}
 			})
 		}
 
 		reader.readAsText(file)
-	}
-	handleConfirmUploadFileCancel = () => {
-		this.setState({
-			uploadFileKey: Date.now(),
-			uploadFileName: undefined,
-			uploadFileContents: undefined,
-			showUploadConfirm: false
-		})
-	}
-	handleConfirmUploadFileAccept = () => {
-		if (this.state.uploadFileContents) {
-			fetch('/backup/restore', {
-				method: 'POST',
-				body: this.state.uploadFileContents,
-				headers: {
-					'content-type': 'application/json'
-				},
-			}).then(res => {
-				console.log('Snapshot restore success')
-			}).catch(err => {
-				console.error('Snapshot restore failure: ', err)
-			})
-		}
-		this.setState({
-			showUploadConfirm: false
-		})
 	}
 	restoreStoredSnapshot = (snapshotId) => {
 		let snapshot = Snapshots.findOne(snapshotId)
@@ -218,25 +213,29 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		const { t } = this.props
 
 		return (
-			<div className='studio-edit mod mhl mvs'>
+			<div className='studio-edit mod mhl mvn'>
 				<div>
 					<div>
-						<h3>{t('Take a Snapshot')}</h3>
+						<h2 className='mhn mtn'>{t('Take a Snapshot')}</h2>
 						<div>
-							<h4>{t('Full system Snapshot')}</h4>
-							<i>
-								{t('A Full System Snapshot contains all system settings (studios, showstyles, blueprints, devices, etc.)')}
-							</i>
+							<h3 className='mhn'>{t('Full System Snapshot')}</h3>
+							<p className='mhn'>
+								<i>
+									{t('A Full System Snapshot contains all system settings (studios, showstyles, blueprints, devices, etc.)')}
+								</i>
+							</p>
 							<div>
-								<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot(null) }}>{t('Take a Full system Snapshot')}</button>
+								<button className='btn btn-primary' onClick={() => { this.takeSystemSnapshot(null) }}>{t('Take a Full System Snapshot')}</button>
 							</div>
 							{
 								this.props.studios.length > 1 ?
 								<div>
-									<h4>{t('Studio Snapshot')}</h4>
-									<i>
-										{t('A System Snapshot contains all system settings related to that studio')}
-									</i>
+									<h3 className='mhn'>{t('Studio Snapshot')}</h3>
+									<p className='mhn'>
+										<i>
+											{t('A Studio Snapshot contains all system settings related to that studio')}
+										</i>
+									</p>
 									{
 										_.map(this.props.studios, (studio) => {
 											return <div key={studio._id}>
@@ -248,18 +247,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							}
 						</div>
 					</div>
-					<h3>{t('Restore from Snapshot File')}</h3>
+					<h2 className='mhn'>{t('Restore from Snapshot File')}</h2>
 					<label className='field'>
 						<div className='mdi'>
 							<input type='file' accept='.json' onChange={this.onUploadFile.bind(this)} key={this.state.uploadFileKey} />
 							<span className='mdfx'></span>
 						</div>
 					</label>
-					<ModalDialog title={t('Restore from this Snapshot File?')} acceptText={t('Restore')} secondaryText={t('Cancel')} show={this.state.showUploadConfirm} onAccept={() => this.handleConfirmUploadFileAccept()} onSecondary={() => this.handleConfirmUploadFileCancel()}>
-						<p>{t('Are you sure you want to restore the system from the Snapshot file "{{fileName}}"?', { fileName: this.state.uploadFileName })}</p>
-						<p>{t('Please note: This action is irreversible!')}</p>
-					</ModalDialog>
-					<h3>{t('Restore from Stored Snapshots')}</h3>
+					<h2 className='mhn'>{t('Restore from Stored Snapshots')}</h2>
 					<div>
 						<table className='table'>
 							<tbody>
@@ -268,6 +263,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									<th>Type</th>
 									<th>Name</th>
 									<th>Comment</th>
+									{ this.state.removeSnapshots ? <th></th> : null }
 								</tr>
 								{_.map(this.props.snapshots, (snapshot) => {
 									return (
@@ -306,7 +302,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											{
 												this.state.removeSnapshots ?
 												<td>
-													<button className='btn btn-secondary' onClick={() => { this.removeStoredSnapshot(snapshot._id) }}>{t('Remove')}</button>
+													<button className='btn mod mhm btn-secondary' onClick={() => { this.removeStoredSnapshot(snapshot._id) }}>{t('Remove')}</button>
 												</td> : null
 											}
 										</tr>

@@ -3,10 +3,21 @@
 
 .running-order__fullscreen-controls {
 	position: fixed;
-	top: 145px;
-	right: 5px;
-	width: $fullscreen-controls__button--radius;
-	z-index: 310;
+    padding-right: 5px;
+    padding-left: 5px;
+    top: 64px;
+    padding-top: 15px;
+    bottom: 0;
+    right: 0;
+	width: #{$fullscreen-controls__button--radius + 10px};
+	z-index: 2000;
+	background: $ui-dark-color;
+
+	.notifications__toggle-button {
+		position: relative;
+		top: auto;
+		right: auto;
+	}
 
 	.running-order__fullscreen-controls__button {
 		display: block;
@@ -15,7 +26,7 @@
 		width: $fullscreen-controls__button--radius;
 		height: $fullscreen-controls__button--radius;
 		border-radius: 100%;
-		transition: 0.3s background;
+		transition: 0.3s background-color;
 		margin-bottom: 0.5rem;
 		font-size: 1em;
 
