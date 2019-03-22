@@ -44,16 +44,18 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 
 	updateTime = () => {
 		if (this.vPreview) {
-			let targetTime = this.props.cursorTimePosition
 			const segmentLineItem = this.props.segmentLineItem as SegmentLineItemUi
 			const itemDuration = ((segmentLineItem.content ? segmentLineItem.content.sourceDuration as number : undefined) || segmentLineItem.duration || segmentLineItem.renderedDuration || 0)
+			let targetTime = this.props.cursorTimePosition
+			let seek = ((segmentLineItem.content ? segmentLineItem.content.seek as number : undefined) || 0)
 			if (segmentLineItem.content && segmentLineItem.content.loop && this.vPreview.duration > 0) {
-				targetTime = targetTime % (this.vPreview.duration * 1000)
+				targetTime = targetTime % (Math.min(this.vPreview.duration, itemDuration) * 1000)
 			} else if (itemDuration === 0 && segmentLineItem.infiniteMode) {
 				// noop
 			} else {
 				targetTime = Math.min(targetTime, itemDuration)
 			}
+			targetTime += seek
 			this.vPreview.currentTime = targetTime / 1000
 		}
 	}
@@ -218,17 +220,22 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 			}
 		}
 
+		const realCursorTimePosition = this.props.cursorTimePosition + seek
+
 		return <React.Fragment>
 					{this.renderInfiniteItemContentEnded()}
-					{this.scenes && this.scenes.map((i) => i < itemDuration && <span className='segment-timeline__layer-item__scene-marker' key={i} style={{ 'left': ((i - seek) * this.props.timeScale).toString() + 'px' }}></span>)}
+					{this.scenes &&
+						this.scenes.map((i) => (i < itemDuration) && (i - seek >= 0) &&
+							<span className='segment-timeline__layer-item__scene-marker' key={i}
+								style={{ 'left': ((i - seek) * this.props.timeScale).toString() + 'px' }}></span>)}
 					{this.freezes &&
-						this.freezes.map((i) => i.start < itemDuration &&
-						<span className='segment-timeline__layer-item__anomaly-marker' key={i.start}
-							style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
+						this.freezes.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
+							<span className='segment-timeline__layer-item__anomaly-marker' key={i.start}
+								style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
 					{this.blacks &&
-						this.blacks.map((i) => i.start < itemDuration &&
-						<span className='segment-timeline__layer-item__anomaly-marker segment-timeline__layer-item__anomaly-marker__freezes' key={i.start}
-							style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
+						this.blacks.map((i) => (i.start < itemDuration) && (i.start - seek >= 0) &&
+							<span className='segment-timeline__layer-item__anomaly-marker segment-timeline__layer-item__anomaly-marker__freezes' key={i.start}
+								style={{ 'left': ((i.start - seek) * this.props.timeScale).toString() + 'px', width: ((i.duration) * this.props.timeScale).toString() + 'px' }}></span>)}
 					<span className='segment-timeline__layer-item__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 						<span className={ClassNames('segment-timeline__layer-item__label', {
 							'overflow-label': this.end !== ''
@@ -257,8 +264,8 @@ export const STKSourceRenderer = translate()(class extends CustomLayerItemRender
 						{this.getPreviewUrl() ?
 							<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--video' style={this.getFloatingInspectorStyle()}>
 								<video src={this.getPreviewUrl()} ref={this.setVideoRef} crossOrigin='anonymous' playsInline={true} muted={true} />
-								<span className='segment-timeline__mini-inspector__timecode'>{RundownUtils.formatDiffToTimecode(this.props.cursorTimePosition, false, false, false, false, true, undefined, true)}</span>
-								{this.getInspectorWarnings(this.props.cursorTimePosition)}
+								<span className='segment-timeline__mini-inspector__timecode'>{RundownUtils.formatDiffToTimecode(realCursorTimePosition, false, false, false, false, true, undefined, true)}</span>
+								{this.getInspectorWarnings(realCursorTimePosition)}
 							</div> :
 							<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
 								<div>
