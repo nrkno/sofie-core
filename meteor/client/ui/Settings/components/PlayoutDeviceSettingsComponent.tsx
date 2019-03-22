@@ -214,13 +214,13 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 						</div>
 						<div className='mod mvs mhs'>
 							<label className='field'>
-								{t('keyword')}
+								{t('Keyword')}
 								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.keyword'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 							</label>
 						</div>
 						<div className='mod mvs mhs'>
 							<label className='field'>
-								{t('interval')}
+								{t('Interval')}
 								<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.interval'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 							</label>
 						</div>
@@ -376,7 +376,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</div>
 			<div>
 				<label className='field'>
-					{t('Activate Multi-Threaded Timeline-resolving')}
+					{t('Activate Multi-Threaded Timeline Resolving')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.multiThreadedResolver'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className=''></EditAttribute><i>{t('(Restart to apply)')}</i>
 				</label>
 			</div>
@@ -403,7 +403,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 
 			{subDevices &&
 				(<React.Fragment>
-					<h2 className='mhn'>{t('Attached sub-devices')}</h2>
+					<h2 className='mhn'>{t('Attached Sub-devices')}</h2>
 					{subDevices.map((item) => <DeviceItem key={item._id} device={item} showRemoveButtons={true} />)}
 				</React.Fragment>)}
 		</div>);

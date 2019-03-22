@@ -193,13 +193,13 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 								</div>
 								<div className='mod mvs mhs'>
 									<label className='field'>
-										{t('Allow read')}
+										{t('Allow Read')}
 										<EditAttribute modifiedClassName='bghl' attribute={'settings.storages.' + index + '.support.read'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input input-l'></EditAttribute>
 									</label>
 								</div>
 								<div className='mod mvs mhs'>
 									<label className='field'>
-										{t('Allow write')}
+										{t('Allow Write')}
 										<EditAttribute modifiedClassName='bghl' attribute={'settings.storages.' + index + '.support.write'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input input-l'></EditAttribute>
 									</label>
 								</div>
@@ -236,7 +236,7 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Don\'t scan entire storage')}
+											{t('Don\'t Scan Entire Storage')}
 											<EditAttribute modifiedClassName='bghl' attribute={'settings.storages.' + index + '.options.onlySelectedFiles'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input input-l'></EditAttribute>
 										</label>
 									</div>
@@ -366,25 +366,25 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 		return (<div>
 			<div className='mod mvs mhn'>
 				<label className='field'>
-					{t('No. of available workers')}
+					{t('No. of Available Workers')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.workers'} obj={this.props.device} type='int' collection={PeripheralDevices} className=''></EditAttribute>
 				</label>
 			</div>
 			<div className='mod mvs mhn'>
 				<label className='field'>
-					{t('File linger time')}
+					{t('File Linger Time')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.lingerTime'} obj={this.props.device} type='int' collection={PeripheralDevices} className=''></EditAttribute>
 				</label>
 			</div>
 			<div className='mod mvs mhn'>
 				<label className='field'>
-					{t('Workflow linger time')}
+					{t('Workflow Linger Time')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.workFlowLingerTime'} obj={this.props.device} type='int' collection={PeripheralDevices} className=''></EditAttribute>
 				</label>
 			</div>
 			<div className='mod mvs mhn'>
 				<label className='field'>
-					{t('Cron-Job interval time')}
+					{t('Cron-Job Interval Time')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.cronJobTime'} obj={this.props.device} type='int' collection={PeripheralDevices} className=''></EditAttribute>
 				</label>
 			</div>

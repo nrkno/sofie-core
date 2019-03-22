@@ -138,7 +138,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 					newNotification = new Notification(
 						unsyncedId,
 						NoticeLevel.CRITICAL,
-						t('Running-order has been UNSYNCED from ENPS! No data updates will currently come through.'),
+						t('The Running Order has been UNSYNCED from ENPS! No data updates will currently come through.'),
 						'RunningOrder',
 						getCurrentTime(),
 						true,
@@ -148,8 +148,8 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 								type: 'primary',
 								action: () => {
 									doModalDialog({
-										title: t('Re-sync runningOrder'),
-										message: t('Are you sure you want to re-sync the runningOrder?\n(If the currently playing segmentLine has been changed, this can affect the output.)'),
+										title: t('Re-sync Running Order'),
+										message: t('Are you sure you want to re-sync the Running Order?\n(If the currently playing Segment Line has been changed, this can affect the output.)'),
 										onAccept: () => {
 											doUserAction(t, event, UserActionAPI.methods.resyncRunningOrder, [runningOrderId])
 										}
