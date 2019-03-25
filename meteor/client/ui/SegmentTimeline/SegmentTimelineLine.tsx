@@ -392,7 +392,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					'next': this.state.isNext,
 
 					'duration-settling': this.state.isDurationSettling
-				})} data-mos-id={this.props.segmentLine._id}
+				})} data-mos-id={this.props.segmentLine._id} data-total-duration={'' + ((this.props.totalSegmentDuration || 0) / 1000)} data-line-duration={'' + (this.getLineDuration() / 1000)}
 					style={this.getLayerStyle()}
 					>
 					<div className={ClassNames('segment-timeline__segment-line__nextline', {

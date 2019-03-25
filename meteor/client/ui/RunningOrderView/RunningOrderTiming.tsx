@@ -31,6 +31,9 @@ export namespace RunningOrderTiming {
 		segmentLineDisplayStartsAt?: {
 			[key: string]: number
 		}
+		segmentLineDisplayDurations?: {
+			[key: string]: number
+		}
 		segmentLinePlayed?: {
 			[key: string]: number
 		}
@@ -170,6 +173,9 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 		const segLineDisplayStartsAt: {
 			[key: string]: number
 		} = {}
+		const segLineDisplayDurations: {
+			[key: string]: number
+		} = {}
 		const displayDurationGroups: _.Dictionary<number> = {}
 
 		let nextAIndex = -1
@@ -221,6 +227,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 				segLineStartsAt[item._id] = startsAtAccumulator
 				segLineDisplayStartsAt[item._id] = displayStartsAtAccumulator
 				segLineDurations[item._id] = segLineDuration
+				segLineDisplayDurations[item._id] = segLineDisplayDuration
 				startsAtAccumulator += segLineDurations[item._id]
 				displayStartsAtAccumulator += segLineDisplayDuration || this.props.defaultDuration || 3000
 				// always add the full duration, in case by some manual intervention this segment should play twice
@@ -261,7 +268,8 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 			segmentLinePlayed: segLinePlayed,
 			segmentLineStartsAt: segLineStartsAt,
 			segmentLineDisplayStartsAt: segLineDisplayStartsAt,
-			segmentLineExpectedDurations: segLineExpectedDurations
+			segmentLineExpectedDurations: segLineExpectedDurations,
+			segmentLineDisplayDurations: segLineDisplayDurations
 		})
 	}
 
