@@ -441,8 +441,8 @@ export const reloadRunningOrder: (runningOrder: RunningOrder) => void = Meteor.w
 )
 export function replaceStoryItem (runningOrder: RunningOrder, segmentLineItem: SegmentLineItem, slCache: RunningOrderDataCacheObj, inPoint: number, outPoint: number) {
 	return new Promise((resolve, reject) => {
-		const story = slCache.data.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === segmentLineItem.mosId)[0]
-		story.EditorialStartTime = inPoint
+		const story = slCache.data.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === segmentLineItem.mosId)[0].Content
+		story.EditorialStart = inPoint
 		story.EditorialDuration = outPoint
 
 		let peripheralDevice = PeripheralDevices.findOne(runningOrder.mosDeviceId) as PeripheralDevice
@@ -451,7 +451,7 @@ export function replaceStoryItem (runningOrder: RunningOrder, segmentLineItem: S
 		PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err?: any) => {
 			if (err) reject(err)
 			else resolve()
-		}, 'replaceStoryItem', slCache.data.runningOrderId, slCache.data.ID, story)
+		}, 'replaceStoryItem', slCache.data.RunningOrderId, slCache.data.ID, story)
 	})
 }
 function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: PeripheralDevice, dataSource: string) {
