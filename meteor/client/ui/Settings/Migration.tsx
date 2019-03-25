@@ -2,8 +2,9 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import * as ClassNames from 'classnames'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { faBinoculars, faDatabase, faCoffee } from '@fortawesome/fontawesome-free-solid'
+import { faBinoculars, faDatabase, faCoffee, faEye, faEyeSlash } from '@fortawesome/fontawesome-free-solid'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../../../lib/logging'
 import {
@@ -27,6 +28,7 @@ interface IState {
 	// databaseVersion: string
 	migrationNeeded: boolean
 	databasePreviousVersion: string | null
+	showAllSteps: boolean
 
 	migration?: {
 		canDoAutomaticMigration: boolean
@@ -61,6 +63,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 		super(props)
 		this.state = {
 			databasePreviousVersion: null,
+			showAllSteps: false,
 			migrationNeeded: false,
 			warnings: [],
 			migrationCompleted: false,
@@ -336,6 +339,31 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 							<div>
 								{t(`This migration consists of ${this.state.migration.automaticStepCount} automatic steps and  ${this.state.migration.manualStepCount} manual steps (${this.state.migration.ignoredStepCount} steps are ignored).`)}
 							</div>
+
+							<table className='expando migration-steps-table'>
+								<tbody>
+								<tr className={ClassNames({
+									'hl': this.state.showAllSteps
+								})}>
+								<th className='c3'>{t('All steps')}</th>
+									<td className='table-item-actions c3'>
+										<button className='action-btn' onClick={(e) => this.setState({ showAllSteps: !this.state.showAllSteps})}>
+											<FontAwesomeIcon icon={this.state.showAllSteps ? faEyeSlash : faEye} />
+										</button>
+									</td>
+								</tr>
+								{this.state.showAllSteps && <tr className='expando-details hl'>
+									<td colSpan={2}>
+									{
+										this.state.migration.chunks.map(c => <div key={c.sourceName}>
+											<h3>{c.sourceName}</h3>
+											{ _.map(c._steps, s => <p key={s}>{s}</p>) }
+										</div>)
+									}
+									</td>
+								</tr>}
+								</tbody>
+							</table>
 
 							{this.state.migration.partialMigration ?
 								<div>

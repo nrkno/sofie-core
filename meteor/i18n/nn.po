@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2019-02-21T11:35:46.333Z\n"
-"PO-Revision-Date: 2019-02-21 12:40+0100\n"
+"POT-Creation-Date: 2019-03-22T08:12:27.011Z\n"
+"PO-Revision-Date: 2019-03-22 09:16+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nn\n"
@@ -105,6 +105,9 @@ msgstr "Status"
 
 msgid "Settings"
 msgstr "Innstillingar"
+
+msgid "My name is {{name}}"
+msgstr ""
 
 msgid "Search..."
 msgstr "Søk..."
@@ -349,6 +352,50 @@ msgstr ""
 msgid "This running order has been unpublished from Sofie."
 msgstr "Denne køyreplanen er ikkje lenger tilgjengeleg i Sofie."
 
+msgid "Error: The studio of this RunningOrder was not found."
+msgstr ""
+
+msgid "Error: The ShowStyle of this RunningOrder was not found."
+msgstr ""
+
+msgid "Unknown error"
+msgstr ""
+
+msgid ""
+"The Running Order has been UNSYNCED from ENPS! No data updates will "
+"currently come through."
+msgstr ""
+
+msgid "Re-sync"
+msgstr "Synkroniser"
+
+#, fuzzy
+#| msgid "Reset Running Order"
+msgid "Re-sync Running Order"
+msgstr "Tilbakestill køyreplanen"
+
+msgid ""
+"Are you sure you want to re-sync the Running Order?\n"
+"(If the currently playing Segment Line has been changed, this can affect the "
+"output.)"
+msgstr ""
+"Er du sikker på at du vil tilbakestille denne køyreplanen?\n"
+"(Dette vil nullstille alle utgangar.)"
+
+msgid "Show issue"
+msgstr ""
+
+msgid "Unable to check the system configuration for changes"
+msgstr ""
+
+msgid ""
+"The system configuration has been changed since importing this running "
+"order. It might not run correctly"
+msgstr ""
+
+msgid "Device {{deviceName}} is disconnected"
+msgstr ""
+
 msgid "Just now"
 msgstr "No"
 
@@ -539,6 +586,186 @@ msgstr "Blueprintversjon"
 msgid "Upload Blueprints"
 msgstr "Last opp blueprint"
 
+msgid "URL"
+msgstr "Adresse (url)"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Params"
+msgstr "Parametrar"
+
+msgid "Make ready commands"
+msgstr "Klargjøringskommandoar"
+
+msgid "Remove this command?"
+msgstr "Fjern denne kommandoen?"
+
+msgid "Remove"
+msgstr "Fjern"
+
+msgid "Are you sure you want to remove this command?"
+msgstr "Er du sikker på at du vil fjerne denne kommandoen?"
+
+msgid "Storage ID"
+msgstr ""
+
+msgid "Storage Type"
+msgstr ""
+
+msgid "Allow Read"
+msgstr ""
+
+msgid "Allow Write"
+msgstr ""
+
+msgid "Base Path"
+msgstr ""
+
+msgid "Media Path"
+msgstr ""
+
+msgid "Mapped Networked Drive"
+msgstr ""
+
+msgid "Username"
+msgstr "Brukarnamn"
+
+msgid "Password"
+msgstr "Passord"
+
+msgid "Don't Scan Entire Storage"
+msgstr ""
+
+msgid "Media Flow ID"
+msgstr ""
+
+msgid "Media Flow Type"
+msgstr ""
+
+msgid "Source Storage"
+msgstr ""
+
+msgid "Target Storage"
+msgstr ""
+
+msgid "No. of Available Workers"
+msgstr ""
+
+msgid "File Linger Time"
+msgstr ""
+
+msgid "Workflow Linger Time"
+msgstr ""
+
+msgid "Cron-Job Interval Time"
+msgstr ""
+
+msgid "Media Scanner Host"
+msgstr "Media Scanner-vert"
+
+msgid "Media Scanner Port"
+msgstr "Media Scanner-port"
+
+msgid "Activate Debug Logging"
+msgstr "Aktiver debug-logging"
+
+msgid "Remove this storage?"
+msgstr ""
+
+msgid "Are you sure you want to remove storage \"{{storageId}}\"?"
+msgstr ""
+
+msgid "Remove this flow?"
+msgstr ""
+
+msgid "Are you sure you want to remove flow \"{{flowId}}\"?"
+msgstr ""
+
+msgid "Attached Storages"
+msgstr ""
+
+msgid "Media Flows"
+msgstr ""
+
+msgid "Device ID"
+msgstr "Einings-id"
+
+msgid "Primary ID (News Room System MOS ID)"
+msgstr "Primary ID (News Room System MOS ID)"
+
+msgid "Primary Host (IP or Hostname)"
+msgstr "Primary Host (ip-adresse eller vertsnamn)"
+
+msgid "Secondary ID (News Room System MOS ID)"
+msgstr "Secondary ID (News Room System MOS ID)"
+
+msgid "Secondary Host (IP Address or Hostname)"
+msgstr "Secondary Host (ip-adresse eller vertsnamn)"
+
+msgid "MOS ID of Gateway (Sofie MOS ID)"
+msgstr "MOS ID of Gateway (Sofie MOS ID)"
+
+msgid "Are you sure you want to remove device \"{{deviceId}}\"?"
+msgstr "Er du sikker på at du vil fjerne eininga \"{{deviceId}}\"?"
+
+msgid "Attached subdevices"
+msgstr "Tilkopla undereiningar"
+
+msgid "Host"
+msgstr "Vert"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "CasparCG Launcher Host"
+msgstr "CasparCG Launcher-vert"
+
+msgid "CasparCG Launcher Port"
+msgstr "CasparCG Launcher-port"
+
+msgid "Sources Path"
+msgstr ""
+
+msgid "Ramp Function Path"
+msgstr ""
+
+msgid "URI"
+msgstr ""
+
+msgid "HTTPMethod"
+msgstr ""
+
+msgid "expectedHttpResponse"
+msgstr ""
+
+msgid "Keyword"
+msgstr ""
+
+msgid "Interval"
+msgstr ""
+
+msgid "Enable SSL"
+msgstr "Aktiver SSL"
+
+msgid "Device Type"
+msgstr "Type eining"
+
+msgid "Thread Usage"
+msgstr ""
+
+msgid "Activate Multi-Threading"
+msgstr ""
+
+msgid "Activate Multi-Threaded Timeline Resolving"
+msgstr ""
+
+msgid "(Restart to apply)"
+msgstr ""
+
+msgid "Attached Sub-devices"
+msgstr ""
+
 msgid "true"
 msgstr ""
 
@@ -567,162 +794,6 @@ msgstr ""
 
 msgid "Blueprint Configuration"
 msgstr "Blueprintkonfigurasjon"
-
-msgid "URL"
-msgstr "Adresse (url)"
-
-msgid "Type"
-msgstr "Type"
-
-msgid "Params"
-msgstr "Parametrar"
-
-msgid "Make ready commands"
-msgstr "Klargjøringskommandoar"
-
-msgid "Remove this command?"
-msgstr "Fjern denne kommandoen?"
-
-msgid "Remove"
-msgstr "Fjern"
-
-msgid "Are you sure you want to remove this command?"
-msgstr "Er du sikker på at du vil fjerne denne kommandoen?"
-
-msgid "Device ID"
-msgstr "Einings-id"
-
-msgid "Device Type"
-msgstr "Type eining"
-
-msgid "Thread Usage"
-msgstr ""
-
-msgid "Host"
-msgstr "Vert"
-
-msgid "Port"
-msgstr "Port"
-
-msgid "CasparCG Launcher Host"
-msgstr "CasparCG Launcher-vert"
-
-msgid "CasparCG Launcher Port"
-msgstr "CasparCG Launcher-port"
-
-msgid "Sources Path"
-msgstr ""
-
-msgid "Ramp Function Path"
-msgstr ""
-
-msgid "Enable SSL"
-msgstr "Aktiver SSL"
-
-msgid "Media Scanner Host"
-msgstr "Media Scanner-vert"
-
-msgid "Media Scanner Port"
-msgstr "Media Scanner-port"
-
-msgid "Activate Debug Logging"
-msgstr "Aktiver debug-logging"
-
-msgid "Activate Multi-Threading"
-msgstr ""
-
-msgid "Are you sure you want to remove device \"{{deviceId}}\"?"
-msgstr "Er du sikker på at du vil fjerne eininga \"{{deviceId}}\"?"
-
-msgid "Attached sub-devices"
-msgstr "Tilkobla undereiningar"
-
-msgid "Storage ID"
-msgstr ""
-
-msgid "Storage Type"
-msgstr ""
-
-msgid "Allow read"
-msgstr "Tillat lesetilgang"
-
-msgid "Allow write"
-msgstr "Tillat skrivetilgang"
-
-msgid "Base Path"
-msgstr ""
-
-msgid "Media Path"
-msgstr ""
-
-msgid "Mapped Networked Drive"
-msgstr ""
-
-msgid "Username"
-msgstr "Brukarnamn"
-
-msgid "Password"
-msgstr "Passord"
-
-msgid "Don't scan entire storage"
-msgstr ""
-
-msgid "Media Flow ID"
-msgstr ""
-
-msgid "Media Flow Type"
-msgstr ""
-
-msgid "Source Storage"
-msgstr ""
-
-msgid "Target Storage"
-msgstr ""
-
-msgid "No. of available workers"
-msgstr ""
-
-msgid "Default linger time"
-msgstr ""
-
-msgid "Cron Job period"
-msgstr ""
-
-msgid "Remove this storage?"
-msgstr ""
-
-msgid "Are you sure you want to remove storage \"{{storageId}}\"?"
-msgstr ""
-
-msgid "Remove this flow?"
-msgstr ""
-
-msgid "Are you sure you want to remove flow \"{{flowId}}\"?"
-msgstr ""
-
-msgid "Attached Storages"
-msgstr ""
-
-msgid "Media Flows"
-msgstr ""
-
-msgid "Primary ID (News Room System MOS ID)"
-msgstr "Primary ID (News Room System MOS ID)"
-
-msgid "Primary Host (IP or Hostname)"
-msgstr "Primary Host (ip-adresse eller vertsnamn)"
-
-msgid "Secondary ID (News Room System MOS ID)"
-msgstr "Secondary ID (News Room System MOS ID)"
-
-msgid "Secondary Host (IP Address or Hostname)"
-msgstr "Secondary Host (ip-adresse eller vertsnamn)"
-
-msgid "MOS ID of Gateway (Sofie MOS ID)"
-msgstr "MOS ID of Gateway (Sofie MOS ID)"
-
-msgid "Attached subdevices"
-msgstr "Tilkopla undereiningar"
 
 msgid "Are you sure you want to restart this device?"
 msgstr "Er du sikker på at du vil starte denne eininga på nytt?"
@@ -770,6 +841,9 @@ msgstr "Nullstill versjon til"
 
 msgid "Reset all versions"
 msgstr "Nullstill alle versjonar"
+
+msgid "All steps"
+msgstr ""
 
 msgid ""
 "The migration consists of several phases, you will get more options after "
@@ -1003,6 +1077,22 @@ msgstr "Variantnamn"
 msgid "Variants"
 msgstr "Variantar"
 
+msgid "Restore from this Snapshot file?"
+msgstr "Gjenopprett ifrå denne snapshotfila?"
+
+msgid ""
+"Are you sure you want to restore the system from the Snapshot file "
+"\"{{fileName}}\"?"
+msgstr ""
+"Er du sikker på at du vil gjenopprette systemet ifrå denne snapshotfila "
+"\"{{fileName}}\"?"
+
+msgid "Successfully restored snapshot"
+msgstr ""
+
+msgid "Snapshot restore failed: {{errorMessage}}"
+msgstr ""
+
 msgid "Full System Snapshot"
 msgstr "Fullt systemsnapshot"
 
@@ -1029,21 +1119,11 @@ msgstr "Lagre eit studiosnapshot utelukkande for \"{{studioName}}\""
 msgid "Restore from Snapshot File"
 msgstr "Gjenopprett ìfrå snapshotfil"
 
-msgid "Restore from this Snapshot file?"
-msgstr "Gjenopprett ifrå denne snapshotfila?"
+msgid "Restore from Stored Snapshots"
+msgstr "Gjenopprett ifrå lagra snapshots"
 
 msgid "Restore"
 msgstr "Gjenopprett"
-
-msgid ""
-"Are you sure you want to restore the system from the Snapshot file "
-"\"{{fileName}}\"?"
-msgstr ""
-"Er du sikker på at du vil gjenopprette systemet ifrå denne snapshotfila "
-"\"{{fileName}}\"?"
-
-msgid "Restore from Stored Snapshots"
-msgstr "Gjenopprett ifrå lagra snapshots"
 
 msgid "Show \"Remove snapshots\"-buttons"
 msgstr "Vis \"Fjern snapshots\"-knappar"
@@ -1138,8 +1218,8 @@ msgstr ""
 msgid "Sofie Host URL"
 msgstr ""
 
-msgid "System Message"
-msgstr "Systemmelding"
+msgid "System-wide Notification Message"
+msgstr ""
 
 msgid "Message"
 msgstr "Melding"
@@ -1147,8 +1227,11 @@ msgstr "Melding"
 msgid "Enabled"
 msgstr ""
 
-msgid "Support Message"
-msgstr "Supportmelding"
+msgid "Edit Support Panel"
+msgstr ""
+
+msgid "HTML that will be shown in the Support Panel"
+msgstr ""
 
 msgid "System"
 msgstr "System"
@@ -1241,6 +1324,9 @@ msgid "Collapse"
 msgstr ""
 
 msgid "Details"
+msgstr ""
+
+msgid "Abort"
 msgstr ""
 
 msgid "Media Transfer Status"
