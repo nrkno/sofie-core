@@ -48,7 +48,7 @@ import {
 	TimelineObjHTTPRequest,
 	Timeline as TimelineTypes
 } from 'timeline-state-resolver-types'
-import { TriggerType } from 'superfly-timeline'
+import { TriggerType, TimelineTrigger } from 'superfly-timeline'
 import { Segments, Segment } from '../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
@@ -2557,16 +2557,26 @@ export function getLookeaheadObjects (roData: RoData, studioInstallation: Studio
 		for (let i = 0; i < res.length; i++) {
 			const r = clone(res[i].obj) as TimelineObjGeneric
 
+			let trigger: TimelineTrigger = {
+				type: TriggerType.TIME_ABSOLUTE,
+				value: 0
+			}
+			if (i !== 0) {
+				const prevObj = res[i - 1].obj
+				const prevHasDelayFlag = (prevObj.classes || []).indexOf('_lookahead_start_delay') !== -1
+
+				// Start with previous item
+				const startOffset = prevHasDelayFlag ? 1000 : 0
+				trigger = {
+					type: TriggerType.TIME_RELATIVE,
+					value: `#${prevObj._id}.start + ${startOffset}`
+				}
+			}
+
 			r._id = 'lookahead_' + i + '_' + r._id
 			r.priority = 0.1
 			r.duration = res[i].slId !== activeRunningOrder.currentSegmentLineId ? 0 : `#${res[i].obj._id}.start - #.start`
-			r.trigger = i === 0 ? {
-				type: TriggerType.LOGICAL,
-				value: '1'
-			} : { // Start with previous clip if possible
-				type: TriggerType.TIME_RELATIVE,
-				value: `#${res[i - 1].obj._id}.start + 0`
-			}
+			r.trigger = trigger
 			r.isBackground = true
 			delete r.inGroup // force it to be cleared
 
