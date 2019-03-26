@@ -48,7 +48,7 @@
     background: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
     padding: 15px 20px;
-    z-index: 1900;
+    z-index: 290;
 	min-height: 50px;
     max-width: 350px;
     
@@ -67,5 +67,6 @@
     .support-pop-up-panel {
         color: #000;
         background: #eee;
+        z-index: 1900;
     }
 }

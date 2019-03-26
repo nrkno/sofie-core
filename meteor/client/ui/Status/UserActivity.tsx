@@ -9,6 +9,69 @@ import { UserActionsLog, UserActionsLogItem } from '../../../lib/collections/Use
 import { DatePickerFromTo } from '../../lib/datePicker'
 import * as moment from 'moment'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { translate } from 'react-i18next'
+
+interface IUserActionsListProps {
+	items: UserActionsLogItem[]
+	onItemClick?: (item: UserActionsLogItem) => void
+}
+
+export const UserActionsList = translate()(class UserActionsList extends React.Component<Translated<IUserActionsListProps>> {
+	renderMessageHead () {
+		const { t } = this.props
+		return (
+			<thead>
+				<tr>
+					<th className='c3 user-action-log__timestamp'>
+						{t('Timestamp')}
+					</th>
+					<th className='c3 user-action-log__executionTime'>
+						{t('Execution time')}
+					</th>
+					<th className='c1 user-action-log__userId'>
+						{t('User ID')}
+					</th>
+					<th className='c2 user-action-log__clientAddress'>
+						{t('Client IP')}
+					</th>
+					<th className='c3 user-action-log__context'>
+						{t('Action')}
+					</th>
+					<th className='c3 user-action-log__method'>
+						{t('Method')}
+					</th>
+					<th className='c1 user-action-log__args'>
+						{t('Parameters')}
+					</th>
+				</tr>
+			</thead>
+		)
+	}
+
+	render () {
+		return (
+			<table className='table user-action-log'>
+				{this.renderMessageHead()}
+				<tbody>
+					{_.map(this.props.items, (msg) => {
+						return (
+							<tr className={this.props.onItemClick ? 'clickable' : undefined} key={msg._id} onClick={(e) => this.props.onItemClick && this.props.onItemClick(msg)}>
+								<td className='user-action-log__timestamp'><Moment format='YYYY/MM/DD HH:mm:ss.SSS'>{msg.timestamp}</Moment></td>
+								<td className='user-action-log__args'>{msg.executionTime ? msg.executionTime + 'ms' : ''}</td>
+								<td className='user-action-log__userId'>{msg.userId}</td>
+								<td className='user-action-log__clientAddress'>{msg.clientAddress}</td>
+								<td className='user-action-log__context'>{msg.context}</td>
+								<td className='user-action-log__method'>{msg.method}</td>
+								<td className='user-action-log__args'>{msg.args}</td>
+							</tr>
+						)
+					})}
+				</tbody>
+			</table>
+		)
+	}
+})
+
 interface IUserActivityProps {
 }
 interface IUserActivityState {
@@ -71,36 +134,6 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 		this._cleanUp()
 	}
 
-	renderMessageHead () {
-		const { t } = this.props
-		return (
-			<thead>
-				<tr>
-					<th className='c3 user-action-log__timestamp'>
-						{t('Timestamp')}
-					</th>
-					<th className='c3 user-action-log__executionTime'>
-						{t('Execution time')}
-					</th>
-					<th className='c1 user-action-log__userId'>
-						{t('User ID')}
-					</th>
-					<th className='c2 user-action-log__clientAddress'>
-						{t('Client IP')}
-					</th>
-					<th className='c3 user-action-log__context'>
-						{t('Action')}
-					</th>
-					<th className='c3 user-action-log__method'>
-						{t('Method')}
-					</th>
-					<th className='c1 user-action-log__args'>
-						{t('Parameters')}
-					</th>
-				</tr>
-			</thead>
-		)
-	}
 	handleChangeDate = (from: Time, to: Time) => {
 		this.setState({
 			dateFrom: from,
@@ -114,29 +147,12 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 				<div className='paging'>
 					<DatePickerFromTo from={this.state.dateFrom} to={this.state.dateTo} onChange={this.handleChangeDate} />
 				</div>
-				<table className='table user-action-log'>
-					{this.renderMessageHead()}
-					<tbody>
-						{_.map(_.filter(this.props.log, (ua) => {
-							return (
-								ua.timestamp >= this.state.dateFrom &&
-								ua.timestamp < this.state.dateTo
-							)
-						}), (msg) => {
-							return (
-								<tr key={msg._id}>
-									<td className='user-action-log__timestamp'><Moment format='YYYY/MM/DD HH:mm:ss.SSS'>{msg.timestamp}</Moment></td>
-									<td className='user-action-log__args'>{msg.executionTime ? msg.executionTime + 'ms' : ''}</td>
-									<td className='user-action-log__userId'>{msg.userId}</td>
-									<td className='user-action-log__clientAddress'>{msg.clientAddress}</td>
-									<td className='user-action-log__context'>{msg.context}</td>
-									<td className='user-action-log__method'>{msg.method}</td>
-									<td className='user-action-log__args'>{msg.args}</td>
-								</tr>
-							)
-						})}
-					</tbody>
-				</table>
+				<UserActionsList items={_.filter(this.props.log, (ua) => {
+					return (
+						ua.timestamp >= this.state.dateFrom &&
+						ua.timestamp < this.state.dateTo
+					)
+				})} />
 			</div>
 		)
 	}
