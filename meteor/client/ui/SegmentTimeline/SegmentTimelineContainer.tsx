@@ -245,6 +245,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		if (this.props.followLiveSegments && !prevProps.followLiveSegments) {
 			this.onFollowLiveLine(true, {})
 		}
+
+		this.updateSpeech()
 	}
 
 	componentWillUnmount () {
@@ -370,9 +372,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	render () {
-
-		this.updateSpeech()
-
 		return this.props.segmentui && (
 			<SegmentTimeline
 				segmentRef={this.segmentRef}
