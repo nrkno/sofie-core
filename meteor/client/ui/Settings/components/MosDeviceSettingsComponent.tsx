@@ -180,7 +180,7 @@ export const MosDeviceSettingsComponent = translate()(class MosDeviceSettingsCom
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Primary ID (News Room System MOS ID)')}
+											{t('Primary ID (Newsroom System MOS ID)')}
 											<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.primary.id'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
@@ -192,7 +192,7 @@ export const MosDeviceSettingsComponent = translate()(class MosDeviceSettingsCom
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Secondary ID (News Room System MOS ID)')}
+											{t('Secondary ID (Newsroom System MOS ID)')}
 											<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.secondary.id'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
@@ -254,7 +254,7 @@ export const MosDeviceSettingsComponent = translate()(class MosDeviceSettingsCom
 
 			{subDevices &&
 				(<React.Fragment>
-					<h2 className='mhn'>{t('Attached subdevices')}</h2>
+					<h2 className='mhn'>{t('Attached Subdevices')}</h2>
 					{subDevices.map((item) => <DeviceItem key={item._id} device={item} showRemoveButtons={true} />)}
 				</React.Fragment>)}
 		</div>);

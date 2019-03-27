@@ -229,7 +229,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 						<Moment interval={0} format='HH:mm:ss' date={this.props.runningOrder.startedPlayback} />
 					</span> :
 					<span className='timing-clock plan-start left'>
-						<span className='timing-clock-label left'>{t('Planned start')}</span>
+						<span className='timing-clock-label left'>{t('Planned Start')}</span>
 						<Moment interval={0} format='HH:mm:ss' date={this.props.runningOrder.expectedStart} />
 					</span>
 				}
@@ -259,7 +259,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 					(<React.Fragment>
 						{this.props.runningOrder.expectedStart && this.props.runningOrder.expectedDuration &&
 							<span className='timing-clock plan-end right visual-last-child'>
-								<span className='timing-clock-label right'>{t('Planned end')}</span>
+								<span className='timing-clock-label right'>{t('Planned End')}</span>
 								<Moment interval={0} format='HH:mm:ss' date={this.props.runningOrder.expectedStart + this.props.runningOrder.expectedDuration} />
 							</span>
 						}
@@ -281,7 +281,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 					(<React.Fragment>
 						{this.props.timingDurations ?
 							<span className='timing-clock plan-end right visual-last-child'>
-								<span className='timing-clock-label right'>{t('Expected end')}</span>
+								<span className='timing-clock-label right'>{t('Expected End')}</span>
 								<Moment interval={0} format='HH:mm:ss' date={getCurrentTime() + (this.props.timingDurations.totalRundownDuration || 0)} />
 							</span> :
 							null

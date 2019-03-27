@@ -403,7 +403,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 
 			{subDevices &&
 				(<React.Fragment>
-					<h2 className='mhn'>{t('Attached Sub-devices')}</h2>
+					<h2 className='mhn'>{t('Attached Subdevices')}</h2>
 					{subDevices.map((item) => <DeviceItem key={item._id} device={item} showRemoveButtons={true} />)}
 				</React.Fragment>)}
 		</div>);

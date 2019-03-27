@@ -130,7 +130,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</label>
 				</div>
 				<div>
-					<p className='mod mhn mvs'>{t('Compatible studios:')}</p>
+					<p className='mod mhn mvs'>{t('Compatible Studios:')}</p>
 					<p className='mod mhn mvs'>
 						{this.props.compatibleStudios.length > 0 ?
 							this.props.compatibleStudios.map(i => <span key={i._id} className='pill'><Link className='pill-link' to={`/settings/studio/${i._id}`}>{i.name}</Link></span>) :
@@ -1175,7 +1175,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 	confirmRemove = (showStyleVariant: ShowStyleVariant) => {
 		const { t } = this.props
 		doModalDialog({
-			title: t('Remove this variant?'),
+			title: t('Remove this Variant?'),
 			no: t('Cancel'),
 			onAccept: () => {
 				callMethod('ModalDialog', ShowStylesAPI.methods.removeShowStyleVariant, showStyleVariant._id)
