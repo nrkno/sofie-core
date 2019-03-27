@@ -250,7 +250,6 @@ export function prepareMigration (returnAllChunks?: boolean) {
 	let partialMigration: boolean = false
 
 	// Filter steps:
-	let overrideIds: {[id: string]: true} = {}
 	let migrationSteps: {[id: string]: MigrationStepInternal} = {}
 	let ignoredSteps: {[id: string]: true} = {}
 	_.each(allMigrationSteps, (step: MigrationStepInternal) => {

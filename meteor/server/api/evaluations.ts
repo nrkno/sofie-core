@@ -1,5 +1,4 @@
 import { Evaluations, EvaluationBase } from '../../lib/collections/Evaluations'
-import { ClientAPI } from '../../lib/api/client'
 import { getCurrentTime } from '../../lib/lib'
 import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'

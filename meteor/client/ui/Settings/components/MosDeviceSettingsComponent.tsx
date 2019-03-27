@@ -6,8 +6,8 @@ import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { translate } from 'react-i18next';
-import { PeripheralDevices, PlayoutDeviceSettings, MosDeviceSettings, MosDeviceSettingsDevice } from '../../../../lib/collections/PeripheralDevices';
+import { translate } from 'react-i18next'
+import { PeripheralDevices, PlayoutDeviceSettings, MosDeviceSettings, MosDeviceSettingsDevice } from '../../../../lib/collections/PeripheralDevices'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { ModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -15,13 +15,13 @@ import { Meteor } from 'meteor/meteor'
 import { DeviceItem } from '../../Status/SystemStatus'
 import { IPlayoutDeviceSettingsComponentProps } from './IHttpSendDeviceSettingsComponentProps'
 interface IMosDeviceSettingsComponentState {
-	deleteConfirmDeviceId: string | undefined;
-	showDeleteConfirm: boolean;
-	editedDevices: Array<string>;
+	deleteConfirmDeviceId: string | undefined
+	showDeleteConfirm: boolean
+	editedDevices: Array<string>
 }
 export const MosDeviceSettingsComponent = translate()(class MosDeviceSettingsComponent extends React.Component<Translated<IPlayoutDeviceSettingsComponentProps>, IMosDeviceSettingsComponentState> {
 	constructor (props: Translated<IPlayoutDeviceSettingsComponentProps>) {
-		super(props);
+		super(props)
 		this.state = {
 			deleteConfirmDeviceId: undefined,
 			showDeleteConfirm: false,
@@ -30,13 +30,13 @@ export const MosDeviceSettingsComponent = translate()(class MosDeviceSettingsCom
 	}
 
 	isItemEdited = (deviceId: string) => {
-		return this.state.editedDevices.indexOf(deviceId) >= 0;
+		return this.state.editedDevices.indexOf(deviceId) >= 0
 	}
 
 	finishEditItem = (deviceId: string) => {
-		let index = this.state.editedDevices.indexOf(deviceId);
+		let index = this.state.editedDevices.indexOf(deviceId)
 		if (index >= 0) {
-			this.state.editedDevices.splice(index, 1);
+			this.state.editedDevices.splice(index, 1)
 			this.setState({
 				editedDevices: this.state.editedDevices
 			})
@@ -45,7 +45,7 @@ export const MosDeviceSettingsComponent = translate()(class MosDeviceSettingsCom
 
 	editItem = (deviceId: string) => {
 		if (this.state.editedDevices.indexOf(deviceId) < 0) {
-			this.state.editedDevices.push(deviceId);
+			this.state.editedDevices.push(deviceId)
 			this.setState({
 				editedDevices: this.state.editedDevices
 			})
@@ -60,7 +60,7 @@ export const MosDeviceSettingsComponent = translate()(class MosDeviceSettingsCom
 	}
 
 	handleConfirmRemoveAccept = (e) => {
-		this.state.deleteConfirmDeviceId && this.removeDevice(this.state.deleteConfirmDeviceId);
+		this.state.deleteConfirmDeviceId && this.removeDevice(this.state.deleteConfirmDeviceId)
 		this.setState({
 			showDeleteConfirm: false,
 			deleteConfirmDeviceId: undefined
@@ -75,22 +75,22 @@ export const MosDeviceSettingsComponent = translate()(class MosDeviceSettingsCom
 	}
 
 	removeDevice = (deviceId: string) => {
-		let unsetObject = {};
-		unsetObject['settings.devices.' + deviceId] = '';
+		let unsetObject = {}
+		unsetObject['settings.devices.' + deviceId] = ''
 		PeripheralDevices.update(this.props.device._id, {
 			$unset: unsetObject
 		})
 	}
 
 	addNewDevice = () => {
-		let settings = this.props.device.settings as PlayoutDeviceSettings || {};
+		let settings = this.props.device.settings as PlayoutDeviceSettings || {}
 		// find free key name
-		let newDeviceId = 'mosDevice';
-		let iter = 0;
+		let newDeviceId = 'mosDevice'
+		let iter = 0
 		while ((settings.devices || {})[newDeviceId + iter.toString()]) {
 			iter++
 		}
-		let setObject = {};
+		let setObject = {}
 		setObject['settings.devices.' + newDeviceId + iter.toString()] = {
 			primary: {
 				id: 'MOSSERVERID',
@@ -103,33 +103,33 @@ export const MosDeviceSettingsComponent = translate()(class MosDeviceSettingsCom
 	}
 
 	updateDeviceId = (edit: EditAttributeBase, newValue: string) => {
-		let settings = this.props.device.settings as MosDeviceSettings;
-		let oldDeviceId = edit.props.overrideDisplayValue;
-		let newDeviceId = newValue + '';
-		let device = settings.devices[oldDeviceId];
+		let settings = this.props.device.settings as MosDeviceSettings
+		let oldDeviceId = edit.props.overrideDisplayValue
+		let newDeviceId = newValue + ''
+		let device = settings.devices[oldDeviceId]
 		if (settings[newDeviceId]) {
-			throw new Meteor.Error(400, 'Device "' + newDeviceId + '" already exists');
+			throw new Meteor.Error(400, 'Device "' + newDeviceId + '" already exists')
 		}
-		let mSet = {};
-		let mUnset = {};
-		mSet['settings.devices.' + newDeviceId] = device;
-		mUnset['settings.devices.' + oldDeviceId] = 1;
+		let mSet = {}
+		let mUnset = {}
+		mSet['settings.devices.' + newDeviceId] = device
+		mUnset['settings.devices.' + oldDeviceId] = 1
 		if (edit.props.collection) {
 			edit.props.collection.update(this.props.device._id, {
 				$set: mSet,
 				$unset: mUnset
-			});
+			})
 		} else {
 			throw new Meteor.Error(500, 'EditAttribute.props.collection is not set (it should be)!')
 		}
 
-		this.finishEditItem(oldDeviceId);
-		this.editItem(newDeviceId);
+		this.finishEditItem(oldDeviceId)
+		this.editItem(newDeviceId)
 	}
 
 	renderDevices () {
-		let settings = this.props.device.settings as MosDeviceSettings;
-		const { t } = this.props;
+		let settings = this.props.device.settings as MosDeviceSettings
+		const { t } = this.props
 		return (<React.Fragment>
 			<tr className='hl' key={'header'}>
 				<th>Device ID</th>
@@ -210,14 +210,14 @@ export const MosDeviceSettingsComponent = translate()(class MosDeviceSettingsCom
 								</div>
 							</td>
 						</tr>}
-				</React.Fragment>;
+				</React.Fragment>
 			})}
-		</React.Fragment>);
+		</React.Fragment>)
 	}
 
 	render () {
-		const { t, subDevices } = this.props;
-		const settings = this.props.device.settings as PlayoutDeviceSettings;
+		const { t, subDevices } = this.props
+		const settings = this.props.device.settings as PlayoutDeviceSettings
 		return (<div>
 			<div>
 				<label className='field'>
@@ -257,6 +257,6 @@ export const MosDeviceSettingsComponent = translate()(class MosDeviceSettingsCom
 					<h2 className='mhn'>{t('Attached Subdevices')}</h2>
 					{subDevices.map((item) => <DeviceItem key={item._id} device={item} showRemoveButtons={true} />)}
 				</React.Fragment>)}
-		</div>);
+		</div>)
 	}
-});
+})

@@ -17,106 +17,106 @@ import { DeviceItem } from '../../Status/SystemStatus'
 import { HttpSendDeviceSettingsComponent } from './HttpSendDeviceSettingsComponent'
 import { IPlayoutDeviceSettingsComponentProps, IPlayoutDeviceSettingsComponentState } from './IHttpSendDeviceSettingsComponentProps'
 export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSettingsComponent extends React.Component<Translated<IPlayoutDeviceSettingsComponentProps>, IPlayoutDeviceSettingsComponentState> {
-	constructor(props: Translated<IPlayoutDeviceSettingsComponentProps>) {
-		super(props);
+	constructor (props: Translated<IPlayoutDeviceSettingsComponentProps>) {
+		super(props)
 		this.state = {
 			deleteConfirmDeviceId: undefined,
 			showDeleteConfirm: false,
 			editedDevices: []
-		};
+		}
 	}
 	isItemEdited = (deviceId: string) => {
-		return this.state.editedDevices.indexOf(deviceId) >= 0;
-	};
+		return this.state.editedDevices.indexOf(deviceId) >= 0
+	}
 	finishEditItem = (deviceId: string) => {
-		let index = this.state.editedDevices.indexOf(deviceId);
+		let index = this.state.editedDevices.indexOf(deviceId)
 		if (index >= 0) {
-			this.state.editedDevices.splice(index, 1);
+			this.state.editedDevices.splice(index, 1)
 			this.setState({
 				editedDevices: this.state.editedDevices
-			});
+			})
 		}
-	};
+	}
 	editItem = (deviceId: string) => {
 		if (this.state.editedDevices.indexOf(deviceId) < 0) {
-			this.state.editedDevices.push(deviceId);
+			this.state.editedDevices.push(deviceId)
 			this.setState({
 				editedDevices: this.state.editedDevices
-			});
+			})
 		}
-	};
+	}
 	handleConfirmRemoveCancel = (e) => {
 		this.setState({
 			showDeleteConfirm: false,
 			deleteConfirmDeviceId: undefined
-		});
-	};
+		})
+	}
 	handleConfirmRemoveAccept = (e) => {
-		this.state.deleteConfirmDeviceId && this.removeDevice(this.state.deleteConfirmDeviceId);
+		this.state.deleteConfirmDeviceId && this.removeDevice(this.state.deleteConfirmDeviceId)
 		this.setState({
 			showDeleteConfirm: false,
 			deleteConfirmDeviceId: undefined
-		});
-	};
+		})
+	}
 	confirmRemove = (deviceId: string) => {
 		this.setState({
 			showDeleteConfirm: true,
 			deleteConfirmDeviceId: deviceId
-		});
-	};
+		})
+	}
 	removeDevice = (deviceId: string) => {
-		let unsetObject = {};
-		unsetObject['settings.devices.' + deviceId] = '';
+		let unsetObject = {}
+		unsetObject['settings.devices.' + deviceId] = ''
 		PeripheralDevices.update(this.props.device._id, {
 			$unset: unsetObject
-		});
-	};
+		})
+	}
 	addNewDevice = () => {
-		let settings = this.props.device.settings as PlayoutDeviceSettings || {};
+		let settings = this.props.device.settings as PlayoutDeviceSettings || {}
 		// find free key name
-		let newDeviceId = 'newDevice';
-		let iter = 0;
+		let newDeviceId = 'newDevice'
+		let iter = 0
 		while ((settings.devices || {})[newDeviceId + iter.toString()]) {
-			iter++;
+			iter++
 		}
-		let setObject = {};
+		let setObject = {}
 		setObject['settings.devices.' + newDeviceId + iter.toString()] = {
 			type: PlayoutDeviceType.ABSTRACT,
 			options: {}
-		};
+		}
 		PeripheralDevices.update(this.props.device._id, {
 			$set: setObject
-		});
-	};
+		})
+	}
 	updateDeviceId = (edit: EditAttributeBase, newValue: string) => {
-		let settings = this.props.device.settings as PlayoutDeviceSettings;
-		let oldDeviceId = edit.props.overrideDisplayValue;
-		let newDeviceId = newValue + '';
-		let device = settings.devices[oldDeviceId];
+		let settings = this.props.device.settings as PlayoutDeviceSettings
+		let oldDeviceId = edit.props.overrideDisplayValue
+		let newDeviceId = newValue + ''
+		let device = settings.devices[oldDeviceId]
 		if (settings[newDeviceId]) {
-			throw new Meteor.Error(400, 'Device "' + newDeviceId + '" already exists');
+			throw new Meteor.Error(400, 'Device "' + newDeviceId + '" already exists')
 		}
-		let mSet = {};
-		let mUnset = {};
-		mSet['settings.devices.' + newDeviceId] = device;
-		mUnset['settings.devices.' + oldDeviceId] = 1;
+		let mSet = {}
+		let mUnset = {}
+		mSet['settings.devices.' + newDeviceId] = device
+		mUnset['settings.devices.' + oldDeviceId] = 1
 		if (edit.props.collection) {
 			edit.props.collection.update(this.props.device._id, {
 				$set: mSet,
 				$unset: mUnset
-			});
+			})
 		} else {
-			throw new Meteor.Error(500, 'EditAttribute.props.collection is not set (it should be)!');
+			throw new Meteor.Error(500, 'EditAttribute.props.collection is not set (it should be)!')
 		}
-		this.finishEditItem(oldDeviceId);
-		this.editItem(newDeviceId);
-	};
-	renderDevices() {
-		let settings = this.props.device.settings as PlayoutDeviceSettings;
-		const { t } = this.props;
+		this.finishEditItem(oldDeviceId)
+		this.editItem(newDeviceId)
+	}
+	renderDevices () {
+		let settings = this.props.device.settings as PlayoutDeviceSettings
+		const { t } = this.props
 		return _.map(settings.devices, (device: PlayoutDeviceSettingsDevice, deviceId) => {
 			let renderObject: any | undefined = undefined
-			switch(device.type) {
+			switch (device.type) {
 				case PlayoutDeviceType.CASPARCG:
 					renderObject = (<React.Fragment>
 						<div className='mod mvs mhs'>
@@ -346,9 +346,9 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</React.Fragment>
 		})
 	}
-	render() {
-		const { t, subDevices } = this.props;
-		const settings = this.props.device.settings as PlayoutDeviceSettings;
+	render () {
+		const { t, subDevices } = this.props
+		const settings = this.props.device.settings as PlayoutDeviceSettings
 		return (<div>
 			<div className='mod mvs mhs'>
 				<label className='field'>
@@ -406,6 +406,6 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 					<h2 className='mhn'>{t('Attached Subdevices')}</h2>
 					{subDevices.map((item) => <DeviceItem key={item._id} device={item} showRemoveButtons={true} />)}
 				</React.Fragment>)}
-		</div>);
+		</div>)
 	}
-});
+})

@@ -25,7 +25,6 @@ import {
 	SegmentLineItem,
 	SegmentLineItems
 } from '../../../lib/collections/SegmentLineItems'
-import { DBSegment } from '../../../lib/collections/Segments'
 import {
 	saveIntoDb,
 	getCurrentTime,fetchBefore,
@@ -537,15 +536,15 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 	let existingSegmentLines = dbRo.getSegmentLines()
 
 	// Note: a number of X stories will result in (<=X) Segments and X SegmentLines
-	let segments: DBSegment[] = []
+	// let segments: DBSegment[] = []
 	let segmentLines: DBSegmentLine[] = []
-	let rankSegment = 0
+	// let rankSegment = 0
 	let rankSegmentLine = 0
-	let prevSlugParts: string[] = []
-	let segment: DBSegment
+	// let prevSlugParts: string[] = []
+	// let segment: DBSegment
 	_.each(ro.Stories, (story: MOS.IMOSStory) => {
 		// divide into
-		let slugParts = (story.Slug || '').toString().split(';')
+		// let slugParts = (story.Slug || '').toString().split(';')
 
 		// if (slugParts[0] !== prevSlugParts[0]) {
 			// segment = convertToSegment(story, roId(ro.ID), rankSegment++)
@@ -562,7 +561,7 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 			segmentLines.push(segmentLine)
 		} else throw new Meteor.Error(500, 'Running order not found (it should have been)')
 
-		prevSlugParts = slugParts
+		// prevSlugParts = slugParts
 	})
 	// logger.debug('segmentLines', segmentLines)
 	// logger.debug('---------------')
@@ -755,8 +754,8 @@ export namespace MosIntegration {
 		// insert a story (aka SegmentLine) before another story:
 		let segmentLineAfter = (Action.StoryID ? getSegmentLine(Action.RunningOrderID, Action.StoryID) : null)
 
-		let newRankMax
-		let newRankMin
+		// let newRankMax
+		// let newRankMin
 		let segmentLineBeforeOrLast: DBSegmentLine | undefined = (
 			segmentLineAfter ?
 				fetchBefore(SegmentLines,

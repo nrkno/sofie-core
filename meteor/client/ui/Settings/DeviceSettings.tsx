@@ -109,7 +109,6 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 	}
 
 	render () {
-		const { t } = this.props
 
 		if (this.props.device) {
 			return this.renderEditForm()

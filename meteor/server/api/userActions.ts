@@ -26,9 +26,8 @@ import { ServerTestToolsAPI, getStudioConfig } from './testTools'
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
-import { number } from 'prop-types';
-import { RunningOrderDataCache } from '../../lib/collections/RunningOrderDataCache';
-import { MosIntegration, replaceStoryItem } from './integration/mos';
+import { RunningOrderDataCache } from '../../lib/collections/RunningOrderDataCache'
+import { replaceStoryItem } from './integration/mos'
 
 const MINIMUM_TAKE_SPAN = 1000
 
@@ -236,7 +235,7 @@ export function segmentLineItemSetInOutPoints (roId: string, slId: string, sliId
 	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 	const sl = SegmentLines.findOne(slId)
 	if (!sl) throw new Meteor.Error(404, `SegmentLine "${slId}" not found!`)
-	if (runningOrder && runningOrder.active && sl.status === "PLAY") {
+	if (runningOrder && runningOrder.active && sl.status === 'PLAY') {
 		return ClientAPI.responseError(`SegmentLine cannot be active while setting in/out!`) // @todo: un-hardcode
 	}
 	const slCache = RunningOrderDataCache.findOne(roId + '_fullStory' + slId)

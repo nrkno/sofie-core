@@ -3039,7 +3039,7 @@ function getTimelineRecording (studioInstallation: StudioInstallation, forceNowT
 		try {
 			let recordingTimelineObjs: TimelineObjRecording[] = []
 
-			const activeRecordings = RecordedFiles.find({ // TODO: ask Julian if this is okay, having multiple recordings at the same time?
+			RecordedFiles.find({ // TODO: ask Julian if this is okay, having multiple recordings at the same time?
 				studioId: studioInstallation._id,
 				stoppedAt: {$exists: false}
 			}, {

@@ -23,8 +23,8 @@ interface IMediaManagerSettingsComponentProps {
 	device: PeripheralDevice
 }
 export const MediaManagerSettingsComponent = translate()(class MediaManagerSettingsComponent extends React.Component<Translated<IMediaManagerSettingsComponentProps>, IMediaManagerSettingsComponentState> {
-	constructor(props: Translated<IMediaManagerSettingsComponentProps>) {
-		super(props);
+	constructor (props: Translated<IMediaManagerSettingsComponentProps>) {
+		super(props)
 		this.state = {
 			deleteConfirmStorageId: undefined,
 			showDeleteStorageConfirm: false,
@@ -32,86 +32,86 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			deleteConfirmFlowId: undefined,
 			showDeleteFlowConfirm: false,
 			editedFlows: []
-		};
+		}
 	}
 	isStorageItemEdited = (deviceId: string) => {
-		return this.state.editedStorages.indexOf(deviceId) >= 0;
-	};
+		return this.state.editedStorages.indexOf(deviceId) >= 0
+	}
 	isFlowItemEdited = (flowId: string) => {
-		return this.state.editedFlows.indexOf(flowId) >= 0;
-	};
+		return this.state.editedFlows.indexOf(flowId) >= 0
+	}
 	finishEditStorageItem = (deviceId: string) => {
-		let index = this.state.editedStorages.indexOf(deviceId);
+		let index = this.state.editedStorages.indexOf(deviceId)
 		if (index >= 0) {
-			this.state.editedStorages.splice(index, 1);
+			this.state.editedStorages.splice(index, 1)
 			this.setState({
 				editedStorages: this.state.editedStorages
-			});
+			})
 		}
-	};
+	}
 	finishEditFlowItem = (flowId: string) => {
-		let index = this.state.editedFlows.indexOf(flowId);
+		let index = this.state.editedFlows.indexOf(flowId)
 		if (index >= 0) {
-			this.state.editedFlows.splice(index, 1);
+			this.state.editedFlows.splice(index, 1)
 			this.setState({
 				editedFlows: this.state.editedFlows
-			});
+			})
 		}
-	};
+	}
 	editStorageItem = (deviceId: string) => {
 		if (this.state.editedStorages.indexOf(deviceId) < 0) {
-			this.state.editedStorages.push(deviceId);
+			this.state.editedStorages.push(deviceId)
 			this.setState({
 				editedStorages: this.state.editedStorages
-			});
+			})
 		}
-	};
+	}
 	editFlowItem = (flowId: string) => {
 		if (this.state.editedFlows.indexOf(flowId) < 0) {
-			this.state.editedFlows.push(flowId);
+			this.state.editedFlows.push(flowId)
 			this.setState({
 				editedFlows: this.state.editedFlows
-			});
+			})
 		}
-	};
+	}
 	handleConfirmRemoveStorageCancel = (e) => {
 		this.setState({
 			showDeleteStorageConfirm: false,
 			deleteConfirmStorageId: undefined
-		});
-	};
+		})
+	}
 	handleConfirmRemoveStorageAccept = (e) => {
-		this.state.deleteConfirmStorageId && this.removeStorage(this.state.deleteConfirmStorageId);
+		this.state.deleteConfirmStorageId && this.removeStorage(this.state.deleteConfirmStorageId)
 		this.setState({
 			showDeleteStorageConfirm: false,
 			deleteConfirmStorageId: undefined
-		});
-	};
+		})
+	}
 	handleConfirmRemoveFlowCancel = (e) => {
 		this.setState({
 			showDeleteFlowConfirm: false,
 			deleteConfirmFlowId: undefined
-		});
-	};
+		})
+	}
 	handleConfirmRemoveFlowAccept = (e) => {
-		this.state.deleteConfirmFlowId && this.removeFlow(this.state.deleteConfirmFlowId);
+		this.state.deleteConfirmFlowId && this.removeFlow(this.state.deleteConfirmFlowId)
 		this.setState({
 			showDeleteFlowConfirm: false,
 			deleteConfirmFlowId: undefined
-		});
-	};
+		})
+	}
 	confirmRemoveStorage = (deviceId: string) => {
 		this.setState({
 			showDeleteStorageConfirm: true,
 			deleteConfirmStorageId: deviceId
-		});
-	};
+		})
+	}
 	confirmRemoveFlow = (flowId: string) => {
 		this.setState({
 			showDeleteFlowConfirm: true,
 			deleteConfirmFlowId: flowId
-		});
-	};
+		})
+	}
 	removeStorage = (deviceId: string) => {
 		PeripheralDevices.update(this.props.device._id, {
 			$pull: {
@@ -119,8 +119,8 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 					id: deviceId
 				}
 			}
-		});
-	};
+		})
+	}
 	removeFlow = (flowId: string) => {
 		PeripheralDevices.update(this.props.device._id, {
 			$pull: {
@@ -128,15 +128,15 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 					id: flowId
 				}
 			}
-		});
-	};
+		})
+	}
 	addNewStorage = () => {
-		let settings = this.props.device.settings as MediaManagerDeviceSettings || {};
+		let settings = this.props.device.settings as MediaManagerDeviceSettings || {}
 		// find free key name
-		let newDeviceId = 'storage';
-		let iter = 0;
+		let newDeviceId = 'storage'
+		let iter = 0
 		while ((settings.storages || []).findIndex(i => i.id === newDeviceId + iter.toString()) >= 0) {
-			iter++;
+			iter++
 		}
 		PeripheralDevices.update(this.props.device._id, {
 			$push: {
@@ -150,11 +150,11 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 					}
 				})
 			}
-		});
-	};
-	renderStorages() {
-		let settings = this.props.device.settings as MediaManagerDeviceSettings;
-		const { t } = this.props;
+		})
+	}
+	renderStorages () {
+		let settings = this.props.device.settings as MediaManagerDeviceSettings
+		const { t } = this.props
 		return settings.storages.map((storage: StorageSettings, index) => {
 			return <React.Fragment key={storage.id}>
 				<tr key={storage.id} className={ClassNames({
@@ -263,16 +263,16 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 							</div>
 						</td>
 					</tr>}
-			</React.Fragment>;
-		});
+			</React.Fragment>
+		})
 	}
 	addNewFlow = () => {
-		let settings = this.props.device.settings as MediaManagerDeviceSettings || {};
+		let settings = this.props.device.settings as MediaManagerDeviceSettings || {}
 		// find free key name
-		let newFlowId = 'flow';
-		let iter = 0;
+		let newFlowId = 'flow'
+		let iter = 0
 		while ((settings.mediaFlows || []).findIndex(i => i.id === newFlowId + iter.toString()) >= 0) {
-			iter++;
+			iter++
 		}
 		PeripheralDevices.update(this.props.device._id, {
 			$push: {
@@ -282,11 +282,11 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 					sourceId: ''
 				})
 			}
-		});
-	};
-	renderFlows() {
-		let settings = this.props.device.settings as MediaManagerDeviceSettings;
-		const { t } = this.props;
+		})
+	}
+	renderFlows () {
+		let settings = this.props.device.settings as MediaManagerDeviceSettings
+		const { t } = this.props
 		return settings.mediaFlows.map((flow: MediaFlow, index) => {
 			return <React.Fragment key={flow.id}>
 				<tr key={flow.id} className={ClassNames({
@@ -344,8 +344,8 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 							</div>
 						</td>
 					</tr>}
-			</React.Fragment>;
-		});
+			</React.Fragment>
+		})
 	}
 	// componentDidMount() {
 	// 	// const script = document.createElement('script')
@@ -360,9 +360,9 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 	// 		}
 	// 	})
 	// }
-	render() {
-		const { t } = this.props;
-		let settings = this.props.device.settings as MediaManagerDeviceSettings;
+	render () {
+		const { t } = this.props
+		let settings = this.props.device.settings as MediaManagerDeviceSettings
 		return (<div>
 			<div className='mod mvs mhn'>
 				<label className='field'>
@@ -407,7 +407,6 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 				</label>
 			</div>
 
-
 			<ModalDialog title={t('Remove this storage?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteStorageConfirm} onAccept={(e) => this.handleConfirmRemoveStorageAccept(e)} onSecondary={(e) => this.handleConfirmRemoveStorageCancel(e)}>
 				<p>{t('Are you sure you want to remove storage "{{storageId}}"?', { storageId: (this.state.deleteConfirmStorageId) })}</p>
 			</ModalDialog>
@@ -441,6 +440,6 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 					<FontAwesomeIcon icon={faPlus} />
 				</button>
 			</div>
-		</div>);
+		</div>)
 	}
-});
+})
