@@ -1847,7 +1847,7 @@ function afterTake (
 		forceNowTime = getCurrentTime() - timeOffset
 	}
 	// or after a new segmentLine has started playing
-	updateTimeline(runningOrder.studioInstallationId)
+	updateTimeline(runningOrder.studioInstallationId, forceNowTime)
 
 	// defer these so that the playout gateway has the chance to learn about the changes
 	Meteor.setTimeout(() => {

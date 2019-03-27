@@ -79,7 +79,7 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 			$push: {
 				config: literal<IConfigItem>({
 					_id: item.id,
-					value: ''
+					value: item.defaultVal
 				})
 			}
 		})
@@ -260,6 +260,16 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 														attribute={'config.' + valIndex + '.value'}
 														obj={this.props.object}
 														type='checkbox'
+														collection={collection}
+														className='input text-input input-l' />
+												))
+												|| (item.type === ConfigManifestEntryType.ENUM && (
+													<EditAttribute
+														modifiedClassName='bghl'
+														attribute={'config.' + valIndex + '.value'}
+														obj={this.props.object}
+														type='dropdown'
+														options={item.options || []}
 														collection={collection}
 														className='input text-input input-l' />
 												))

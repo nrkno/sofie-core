@@ -247,6 +247,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 							manualInput.inputType && manualInput.attribute ?
 							<EditAttribute
 								type={manualInput.inputType}
+								options={manualInput.dropdownOptions}
 								overrideDisplayValue={value}
 								updateFunction={(edit: EditAttributeBase, newValue: any ) => {
 									if (manualInput.attribute) {
