@@ -593,7 +593,7 @@ export namespace ServerPlayoutAPI {
 		}
 		waitForPromiseAll(ps)
 	}
-	export function roTake (roId: string | RunningOrder ): void {
+	export function roTake (roId: string | RunningOrder): ClientAPI.ClientResponse {
 		let now = getCurrentTime()
 		let runningOrder: RunningOrder = (
 			_.isObject(roId) ? roId as RunningOrder :
@@ -604,7 +604,23 @@ export namespace ServerPlayoutAPI {
 		if (!runningOrder.active) throw new Meteor.Error(501, `RunningOrder "${roId}" is not active!`)
 		if (!runningOrder.nextSegmentLineId) throw new Meteor.Error(500, 'nextSegmentLineId is not set!')
 
-		let firstTake = !runningOrder.startedPlayback
+		let roData = runningOrder.fetchAllData()
+
+		const currentSL = runningOrder.currentSegmentLineId ? roData.segmentLinesMap[runningOrder.currentSegmentLineId] : undefined
+		if (currentSL && currentSL.transitionDuration) {
+			const prevSL = runningOrder.previousSegmentLineId ? roData.segmentLinesMap[runningOrder.previousSegmentLineId] : undefined
+			const allowTransition = prevSL && !prevSL.disableOutTransition
+
+			// If there was a transition from the previous SL, then ensure that has finished before another take is permitted
+			if (allowTransition) {
+				const start = currentSL.getLastStartedPlayback()
+				if (start && now < start + currentSL.transitionDuration) {
+					return ClientAPI.responseError('Cannot take during a transition')
+				}
+			}
+		}
+
+		const firstTake = !runningOrder.startedPlayback
 
 		if (runningOrder.holdState === RunningOrderHoldState.COMPLETE) {
 			RunningOrders.update(runningOrder._id, {
@@ -621,7 +637,7 @@ export namespace ServerPlayoutAPI {
 			})
 
 			if (runningOrder.currentSegmentLineId) {
-				let currentSegmentLine = SegmentLines.findOne(runningOrder.currentSegmentLineId)
+				const currentSegmentLine = roData.segmentLinesMap[runningOrder.currentSegmentLineId]
 				if (!currentSegmentLine) throw new Meteor.Error(404, 'currentSegmentLine not found!')
 
 				// Remove the current extension line
@@ -632,7 +648,7 @@ export namespace ServerPlayoutAPI {
 				})
 			}
 			if (runningOrder.previousSegmentLineId) {
-				let previousSegmentLine = SegmentLines.findOne(runningOrder.previousSegmentLineId)
+				const previousSegmentLine = roData.segmentLinesMap[runningOrder.previousSegmentLineId]
 				if (!previousSegmentLine) throw new Meteor.Error(404, 'previousSegmentLine not found!')
 
 				// Clear the extended mark on the original
@@ -649,10 +665,9 @@ export namespace ServerPlayoutAPI {
 			}
 
 			updateTimeline(runningOrder.studioInstallationId)
-			return
+			return ClientAPI.responseSuccess()
 		}
 		let pBlueprint = makePromise(() => getBlueprintOfRunningOrder(runningOrder))
-		let roData = runningOrder.fetchAllData()
 
 		let previousSegmentLine = (runningOrder.currentSegmentLineId ?
 			roData.segmentLinesMap[runningOrder.currentSegmentLineId]
@@ -768,8 +783,10 @@ export namespace ServerPlayoutAPI {
 				.catch(logger.error)
 			}
 		})
+
+		return ClientAPI.responseSuccess()
 	}
-	export function roSetNext (roId: string, nextSlId: string | null, setManually?: boolean) {
+	export function roSetNext (roId: string, nextSlId: string | null, setManually?: boolean): ClientAPI.ClientResponse {
 		check(roId, String)
 		if (nextSlId) check(nextSlId, String)
 
