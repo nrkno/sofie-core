@@ -281,6 +281,7 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 			autoNext: 				resultSl.autoNext || false,
 			autoNextOverlap: 		resultSl.autoNextOverlap || 0,
 			prerollDuration: 		resultSl.prerollDuration || 0,
+			transitionDuration:				resultSl.transitionDuration,
 			transitionPrerollDuration: 		resultSl.transitionPrerollDuration,
 			transitionKeepaliveDuration: 	resultSl.transitionKeepaliveDuration,
 			disableOutTransition: 	resultSl.disableOutTransition || false,
