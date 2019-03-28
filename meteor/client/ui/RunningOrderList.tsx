@@ -14,37 +14,27 @@ import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faSync from '@fortawesome/fontawesome-free-solid/faSync'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { ModalDialog } from '../lib/ModalDialog'
+import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
 import { SystemStatusAPI, StatusResponse } from '../../lib/api/systemStatus'
 import { ManualPlayout } from './manualPlayout'
 import { getDeveloperMode } from '../lib/localStorage'
 import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
+import { getAdminMode } from '../lib/localStorage'
 
 const PackageInfo = require('../../package.json')
 
 interface IRunningOrderListItemProps {
 	key: string,
-	runningOrder: RunningOrder,
-
-	onDeleteRO: (ro: RunningOrder, e: any) => void,
-	onSyncRO: (ro: RunningOrder, e: any) => void
+	runningOrder: RunningOrder
 }
 
 interface IRunningOrderListItemStats {
-	showDeleteConfirm: boolean,
-	showSyncConfirm: boolean,
-	actionConfirmItem?: RunningOrder
 }
 
 export class RunningOrderListItem extends React.Component<Translated<IRunningOrderListItemProps>, IRunningOrderListItemStats> {
 	constructor (props) {
 		super(props)
-
-		this.state = {
-			showDeleteConfirm: false,
-			showSyncConfirm: false
-		}
 	}
 
 	getRunningOrderLink (runningOrderId) {
@@ -52,69 +42,43 @@ export class RunningOrderListItem extends React.Component<Translated<IRunningOrd
 		return '/ro/' + encodeURIComponent(encodeURIComponent(runningOrderId))
 	}
 
-	handleConfirmDeleteCancel = (e) => {
-		this.setState({
-			actionConfirmItem: undefined,
-			showDeleteConfirm: false
+	confirmDelete (runningOrder: RunningOrder) {
+		const { t } = this.props
+
+		doModalDialog({
+			title: t('Delete this item?'),
+			yes: t('Delete'),
+			no: t('Cancel'),
+			onAccept: (e) => {
+				doUserAction(t, e, UserActionAPI.methods.removeRunningOrder, [runningOrder._id])
+			},
+			message: (
+				t('Are you sure you want to delete running order "{{name}}"?', { name: runningOrder.name }) + '\n' +
+				t('Please note: This action is irreversible!')
+			)
 		})
 	}
 
-	handleConfirmDeleteAccept = (e) => {
-		if (this.props.onDeleteRO && typeof this.props.onDeleteRO === 'function' && this.state.actionConfirmItem) {
-			this.props.onDeleteRO(this.state.actionConfirmItem, e)
-		}
-
-		this.setState({
-			actionConfirmItem: undefined,
-			showDeleteConfirm: false
-		})
-	}
-
-	handleConfirmSyncCancel = (e) => {
-		this.setState({
-			actionConfirmItem: undefined,
-			showSyncConfirm: false
-		})
-	}
-
-	handleConfirmSyncAccept = (e) => {
-		if (this.props.onSyncRO && typeof this.props.onSyncRO === 'function' && this.state.actionConfirmItem) {
-			this.props.onSyncRO(this.state.actionConfirmItem, e)
-		}
-
-		this.setState({
-			actionConfirmItem: undefined,
-			showSyncConfirm: false
-		})
-	}
-
-	confirmDelete (item: RunningOrder) {
-		this.setState({
-			showDeleteConfirm: true,
-			actionConfirmItem: item
-		})
-	}
-
-	confirmSyncRO (item: RunningOrder) {
-		this.setState({
-			showSyncConfirm: true,
-			actionConfirmItem: item
+	confirmReSyncRO (runningOrder: RunningOrder) {
+		const { t } = this.props
+		doModalDialog({
+			title: t('Re-Sync this running order?'),
+			yes: t('Re-Sync'),
+			no: t('Cancel'),
+			onAccept: (e) => {
+				doUserAction(t, e, UserActionAPI.methods.resyncRunningOrder, [runningOrder._id])
+			},
+			message: (
+				t('Are you sure you want to re-sync running order "{{name}}" with MOS script?', { name: runningOrder.name }) + '\n' +
+				t('Please note: This action is irreversible!')
+			)
 		})
 	}
 
 	render () {
 		const { t } = this.props
-
 		return (
 			<React.Fragment>
-				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmDeleteAccept(e)} onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
-					<p>{t('Are you sure you want to delete running order "{{runningOrderSlug}}"?', { runningOrderSlug: this.state.actionConfirmItem && this.state.actionConfirmItem.name })}</p>
-					<p>{t('Please note: This action is irreversible!')}</p>
-				</ModalDialog>
-				<ModalDialog title={t('Re-Sync this running order?')} acceptText={t('Re-Sync')} secondaryText={t('Cancel')} show={this.state.showSyncConfirm} onAccept={(e) => this.handleConfirmSyncAccept(e)} onSecondary={(e) => this.handleConfirmSyncCancel(e)}>
-					<p>{t('Are you sure you want to re-sync running order "{{runningOrderSlug}}" with MOS script?', { runningOrderSlug: this.state.actionConfirmItem && this.state.actionConfirmItem.name })}</p>
-					<p>{t('Please note: This action is irreversible!')}</p>
-				</ModalDialog>
 				<tr className='running-order-list-item'>
 					<th className='running-order-list-item__name'>
 						{this.props.runningOrder.active ?
@@ -151,19 +115,21 @@ export class RunningOrderListItem extends React.Component<Translated<IRunningOrd
 						{this.props.runningOrder.airStatus}
 					</td>
 					<td className='running-order-list-item__actions'>
-						{(this.props.runningOrder && this.props.runningOrder.unsynced) &&
-							<React.Fragment>
-								<Tooltip overlay={t('Delete')} placement='top'>
-									<button className='action-btn' onClick={(e) => this.confirmDelete(this.props.runningOrder)}>
-										<FontAwesomeIcon icon={faTrash} />
-									</button>
-								</Tooltip>
-								<Tooltip overlay={t('Re-sync with MOS')} placement='top'>
-									<button className='action-btn' onClick={(e) => this.confirmSyncRO(this.props.runningOrder)}>
-										<FontAwesomeIcon icon={faSync} />
-									</button>
-								</Tooltip>
-							</React.Fragment>
+						{
+							this.props.runningOrder.unsynced || getAdminMode() ?
+							<Tooltip overlay={t('Delete')} placement='top'>
+								<button className='action-btn' onClick={(e) => this.confirmDelete(this.props.runningOrder)}>
+									<FontAwesomeIcon icon={faTrash} />
+								</button>
+							</Tooltip> : null
+						}
+						{
+							this.props.runningOrder.unsynced ?
+							<Tooltip overlay={t('Re-sync with MOS')} placement='top'>
+								<button className='action-btn' onClick={(e) => this.confirmReSyncRO(this.props.runningOrder)}>
+									<FontAwesomeIcon icon={faSync} />
+								</button>
+							</Tooltip> : null
 						}
 					</td>
 				</tr>
@@ -219,27 +185,15 @@ class extends MeteorReactComponent<Translated<IRunningOrdersListProps>, IRunning
 		})
 	}
 
-	deleteRO = (ro: RunningOrder, e: any) => {
-		const { t } = this.props
-
-		doUserAction(t, e, UserActionAPI.methods.removeRunningOrder, [ro._id])
-	}
-
-	syncRO = (ro: RunningOrder, e: any) => {
-		const { t } = this.props
-
-		doUserAction(t, e, UserActionAPI.methods.resyncRunningOrder, [ro._id])
-	}
-
 	renderRunningOrders (list: RunningOrder[]) {
 		return list.map((runningOrder) => (
-			<RunningOrderListItem key={runningOrder._id} runningOrder={runningOrder} onDeleteRO={this.deleteRO} onSyncRO={this.syncRO} t={this.props.t} />
+			<RunningOrderListItem key={runningOrder._id} runningOrder={runningOrder} t={this.props.t} />
 		))
 	}
 
 	renderUnsyncedRunningOrders (list: RunningOrder[]) {
 		return list.map((runningOrder) => (
-			<RunningOrderListItem key={runningOrder._id} runningOrder={runningOrder} onDeleteRO={this.deleteRO} onSyncRO={this.syncRO} t={this.props.t} />
+			<RunningOrderListItem key={runningOrder._id} runningOrder={runningOrder} t={this.props.t} />
 		))
 	}
 
