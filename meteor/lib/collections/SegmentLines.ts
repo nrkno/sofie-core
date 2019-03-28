@@ -133,6 +133,7 @@ export class SegmentLine implements DBSegmentLine {
 	public prerollDuration?: number
 	public transitionPrerollDuration?: number | null
 	public transitionKeepaliveDuration?: number | null
+	public transitionDuration?: number | null
 	public metaData?: Array<MOS.IMOSExternalMetaData>
 	public status?: MOS.IMOSObjectStatus
 	public expectedDuration?: number

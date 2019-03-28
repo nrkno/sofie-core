@@ -66,9 +66,7 @@ export function take (roId: string): ClientAPI.ClientResponse {
 			throw new Meteor.Error(404, `SegmentLine "${runningOrder.currentSegmentLineId}", set as currentSegmentLine in "${roId}", not found!`)
 		}
 	}
-	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.roTake(runningOrder)
-	)
+	return ServerPlayoutAPI.roTake(runningOrder)
 }
 export function setNext (roId: string, nextSlId: string | null, setManually?: boolean): ClientAPI.ClientResponse {
 	check(roId, String)
@@ -82,9 +80,7 @@ export function setNext (roId: string, nextSlId: string | null, setManually?: bo
 		return ClientAPI.responseError('The Next cannot be changed next during a Hold!')
 	}
 
-	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.roSetNext(roId, nextSlId, setManually)
-	)
+	return ServerPlayoutAPI.roSetNext(roId, nextSlId, setManually)
 }
 export function moveNext (
 	roId: string,
