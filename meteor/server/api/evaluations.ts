@@ -34,7 +34,7 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 				return key === 'q1'
 			})
 			let evaluationProducer = _.find(evaluation.answers, (_answer, key) => {
-				return key === 'q1'
+				return key === 'q2'
 			})
 
 			let slackMessage = 'Evaluation!'
