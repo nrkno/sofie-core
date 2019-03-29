@@ -3,7 +3,6 @@ import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { Meteor } from 'meteor/meteor'
 import { MOS } from 'tv-automation-sofie-blueprints-integration'
-import { logger } from '../lib/logging'
 
 export interface RunningOrderCacheBackup {
 	type: 'runningOrderCache'
@@ -15,11 +14,11 @@ export interface RunningOrderCacheBackup {
 export function restoreRunningOrder (backup: RunningOrderCacheBackup) {
 	const roCreates = backup.data.filter(d => d.type === 'roCreate')
 	const stories = backup.data.filter(d => d.type === 'fullStory')
-	if (roCreates.length !== 1) {
+	if (!roCreates || roCreates.length !== 1) {
 		throw new Meteor.Error(500, 'bad number of roCreate entries')
 	}
-	if (stories.length !== roCreates[0].data.Stories.length) {
-		logger.warning('bad number of fullStory entries in running order data')
+	if (roCreates[0].data.Stories && stories.length !== roCreates[0].data.Stories.length) {
+		// logger.warning('bad number of fullStory entries in running order data')
 	}
 
 	// TODO - this should choose one in a better way

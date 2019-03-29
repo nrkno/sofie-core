@@ -55,7 +55,7 @@ export const DeviceItem = translate()(class extends React.Component<Translated<I
 	}
 	statusCodeString () {
 		let t = this.props.t
-		return this.props.device.connected ? statusCodeToString(t, this.props.device.status.statusCode) : t('Not connected')
+		return this.props.device.connected ? statusCodeToString(t, this.props.device.status.statusCode) : t('Not Connected')
 	}
 	statusMessages () {
 		let messages = ((this.props.device || {}).status || {}).messages || []

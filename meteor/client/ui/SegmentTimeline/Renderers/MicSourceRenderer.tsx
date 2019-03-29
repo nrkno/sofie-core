@@ -142,12 +142,11 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 		let begin = labelItems[0] || ''
 		let end = labelItems[1] || ''
 
-		
-		function shorten (str: string, maxLen: number, separator: string = ' ') {
-			if (str.length <= maxLen) return str
-			return str.substr(0, str.substr(0, maxLen).lastIndexOf(separator))
-		}
-		
+		// function shorten (str: string, maxLen: number, separator: string = ' ') {
+		// 	if (str.length <= maxLen) return str
+		// 	return str.substr(0, str.substr(0, maxLen).lastIndexOf(separator))
+		// }
+
 		const content = this.props.segmentLineItem.content as ScriptContent
 		let startOfScript = content.fullScript || ''
 		let cutLength = startOfScript.length

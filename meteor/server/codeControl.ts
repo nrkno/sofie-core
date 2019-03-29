@@ -1,9 +1,8 @@
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
-import { getHash } from './lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
-import { waitForPromise } from '../lib/lib'
+import { waitForPromise, getHash } from '../lib/lib'
 
 enum syncFunctionFcnStatus {
 	WAITING = 0,

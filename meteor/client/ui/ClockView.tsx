@@ -44,7 +44,7 @@ const Timediff = class extends React.Component<{ time: number}> {
 		const timeString = RundownUtils.formatDiffToTimecode(time, true, false, true, false, true, '', false, true) // @todo: something happened here with negative time
 		// RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)
 		// const timeStringSegments = timeString.split(':')
-		const fontWeight = (no) => no === '00' || no === '+00'
+		// const fontWeight = (no) => no === '00' || no === '+00'
 		return (
 			<span className={ClassNames({
 				'clocks-segment-countdown-red': isNegative,
@@ -96,7 +96,7 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 		}
 
 		render () {
-			const { runningOrder, segments, t } = this.props
+			const { runningOrder, segments } = this.props
 
 			if (runningOrder && this.props.runningOrderId && this.props.segments) {
 				let currentSegmentLine: SegmentLine | undefined
@@ -172,6 +172,10 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 							</div>
 							<div className='clocks-bottom-top'>
 								<div className='clocks-segment-title'>
+									{currentSegmentLine && currentSegmentLine.autoNext ?
+									<div style={{display: 'inline-block', height: '18vh'}}>
+										<img style={{height: '12vh', paddingTop: '2vh'}} src='/icons/auto-presenter-screen.svg' />
+									</div> : ''}
 									{nextSegmentLine ? nextSegmentLine.slug.split(';')[0] : '_'}
 								</div>
 								<div className='clocks-segment-title clocks-segmentline-title'>

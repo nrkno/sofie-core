@@ -1,9 +1,10 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as CoreIcons from '@nrk/core-icons'
 import * as faChevronDown from '@fortawesome/fontawesome-free-solid/faChevronDown'
 import * as faChevronRight from '@fortawesome/fontawesome-free-solid/faChevronRight'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
+import * as faStopCircle from '@fortawesome/fontawesome-free-solid/faStopCircle'
+import * as faRedo from '@fortawesome/fontawesome-free-solid/faRedo'
 import * as VelocityReact from 'velocity-react'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as ClassNames from 'classnames'
@@ -13,22 +14,15 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { MediaWorkFlow, MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowStep, MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import * as i18next from 'react-i18next'
-import { ClientAPI } from '../../../lib/api/client'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import Moment from 'react-moment'
-import { translate } from 'react-i18next'
-import { getCurrentTime, extendMandadory } from '../../../lib/lib'
-import { Link } from 'react-router-dom'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
+import { extendMandadory } from '../../../lib/lib'
 import * as _ from 'underscore'
-import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { callMethod, callPeripheralDeviceFunction } from '../../lib/clientAPI'
 import { PubSub } from '../../../lib/api/pubsub'
 import { Spinner } from '../../lib/Spinner'
 import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
+const Tooltip = require('rc-tooltip')
 
 interface IMediaManagerStatusProps {
 
@@ -248,12 +242,16 @@ const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.InjectedTranslate
 				</div>
 			</div>
 			<div className='workflow__header__actions'>
-				<button className='btn btn-default' onClick={(e) => props.actionRestart(e, i)}>
-					{t('Restart')}
-				</button>
-				<button className='btn btn-default' onClick={(e) => props.actionAbort(e, i)}>
-					{t('Abort')}
-				</button>
+				<Tooltip overlay={t('Restart')} placement='top'>
+					<button className='action-btn' onClick={(e) => props.actionRestart(e, i)}>
+						<FontAwesomeIcon icon={faRedo} />
+					</button>
+				</Tooltip>
+				<Tooltip overlay={t('Abort')} placement='top'>
+					<button className='action-btn' disabled={i.finished} onClick={(e) => props.actionAbort(e, i)}>
+						<FontAwesomeIcon icon={faStopCircle} />
+					</button>
+				</Tooltip>
 			</div>
 		</div>
 		<VelocityReact.VelocityTransitionGroup enter={{
@@ -324,8 +322,6 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 	}
 	actionAbort = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
 		doUserAction(this.props.t, event, UserActionAPI.methods.mediaAbortWorkflow, [workflow._id])
-
-		
 	}
 
 	renderWorkFlows () {

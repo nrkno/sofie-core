@@ -31,6 +31,9 @@ export namespace RunningOrderTiming {
 		segmentLineDisplayStartsAt?: {
 			[key: string]: number
 		}
+		segmentLineDisplayDurations?: {
+			[key: string]: number
+		}
 		segmentLinePlayed?: {
 			[key: string]: number
 		}
@@ -170,6 +173,10 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 		const segLineDisplayStartsAt: {
 			[key: string]: number
 		} = {}
+		const segLineDisplayDurations: {
+			[key: string]: number
+		} = {}
+		const displayDurationGroups: _.Dictionary<number> = {}
 
 		let nextAIndex = -1
 
@@ -198,26 +205,38 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 					asPlayedRundownDuration += (item.duration || item.expectedDuration || 0)
 				}
 
+				let segLineDuration = 0
+				let segLineDisplayDuration = 0
+				let displayDuration = 0
+				if (item.displayDurationGroup) {
+					displayDurationGroups[item.displayDurationGroup] = (displayDurationGroups[item.displayDurationGroup] || 0) + (item.expectedDuration || 0)
+					displayDuration = item.displayDuration || displayDurationGroups[item.displayDurationGroup]
+					displayDurationGroups[item.displayDurationGroup] = displayDurationGroups[item.displayDurationGroup] - displayDuration
+				}
 				if (item.startedPlayback && lastStartedPlayback && !item.duration) {
 					currentRemaining = Math.max(0, (item.duration || item.expectedDuration || 0) - (now - lastStartedPlayback))
-					segLineDurations[item._id] = Math.max((item.duration || item.expectedDuration || 0), (now - lastStartedPlayback))
+					segLineDuration = Math.max((item.duration || item.expectedDuration || 0), (now - lastStartedPlayback))
+					segLineDisplayDuration = Math.max((item.duration || displayDuration || item.expectedDuration || 0), (now - lastStartedPlayback))
 					segLinePlayed[item._id] = (now - lastStartedPlayback)
 				} else {
-					segLineDurations[item._id] = item.duration || item.expectedDuration || 0
+					segLineDuration = item.duration || item.expectedDuration || 0
+					segLineDisplayDuration = item.duration || displayDuration || item.expectedDuration || 0
 					segLinePlayed[item._id] = item.duration || 0
 				}
 				segLineExpectedDurations[item._id] = item.expectedDuration || item.duration || 0
 				segLineStartsAt[item._id] = startsAtAccumulator
 				segLineDisplayStartsAt[item._id] = displayStartsAtAccumulator
+				segLineDurations[item._id] = segLineDuration
+				segLineDisplayDurations[item._id] = segLineDisplayDuration
 				startsAtAccumulator += segLineDurations[item._id]
-				displayStartsAtAccumulator += segLineDurations[item._id] || this.props.defaultDuration || 3000
+				displayStartsAtAccumulator += segLineDisplayDuration || this.props.defaultDuration || 3000
 				// always add the full duration, in case by some manual intervention this segment should play twice
 				waitAccumulator += (item.duration || item.expectedDuration || 0)
 
 				// remaining is the sum of unplayed lines + whatever is left of the current segment
 				if (!item.startedPlayback) {
 					remainingRundownDuration += item.expectedDuration || 0
-					// item is onAir right now, and it's is currently shorter than expectedDuration
+					// item is onAir right now, and it's is currentljy shorter than expectedDuration
 				} else if (item.startedPlayback && lastStartedPlayback && !item.duration && runningOrder.currentSegmentLineId === item._id && lastStartedPlayback + (item.expectedDuration || 0) > now) {
 					// console.log((now - item.startedPlayback))
 					remainingRundownDuration += (item.expectedDuration || 0) - (now - lastStartedPlayback)
@@ -249,7 +268,8 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 			segmentLinePlayed: segLinePlayed,
 			segmentLineStartsAt: segLineStartsAt,
 			segmentLineDisplayStartsAt: segLineDisplayStartsAt,
-			segmentLineExpectedDurations: segLineExpectedDurations
+			segmentLineExpectedDurations: segLineExpectedDurations,
+			segmentLineDisplayDurations: segLineDisplayDurations
 		})
 	}
 
@@ -385,3 +405,17 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, ISegmentDuratio
 			return null
 		}
 	})
+
+export function computeSegmentDuration (timingDurations: RunningOrderTiming.RunningOrderTimingContext, segmentLineIds: Array<string>): number {
+	let segmentLineDurations = timingDurations.segmentLineDurations
+
+	if (segmentLineDurations === undefined) return 0
+
+	return segmentLineIds.reduce((memo, item) => {
+		return segmentLineDurations ?
+				segmentLineDurations[item] !== undefined ?
+				memo + segmentLineDurations[item] :
+				memo
+			: 0
+	}, 0)
+}

@@ -21,6 +21,10 @@ import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
+import { doModalDialog, SomeEvent, ModalInputResult } from '../../lib/ModalDialog'
+import { doUserAction } from '../../lib/userAction'
+import { UserActionAPI } from '../../../lib/api/userActions'
+import { translate, InjectedTranslateProps } from 'react-i18next'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -59,7 +63,7 @@ interface ISourceLayerItemState {
 	leftAnchoredWidth: number
 	rightAnchoredWidth: number
 }
-export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISourceLayerItemState> {
+export const SourceLayerItem = translate()(class extends React.Component<ISourceLayerItemProps & InjectedTranslateProps, ISourceLayerItemState> {
 	private _forceSizingRecheck: boolean
 	private _placeHolderElement: boolean
 
@@ -123,8 +127,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						let styleObj = {
 							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
 								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none',
-							'transform': 'translate3d(' + Math.round(widthConstrictedMode ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
-								'translate3d(' + Math.round(liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
+							'transform': 'translate3d(' + Math.floor(widthConstrictedMode ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
+								'translate3d(' + Math.floor(liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
 								'translate3d(-100%, 0, 5px)',
 							'willChange': 'transform'
 						}
@@ -138,8 +142,8 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						let styleObj = {
 							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
 								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none',
-							'transform': 'translate3d(' + Math.round(Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
-								'translate3d(' + Math.round(liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
+							'transform': 'translate3d(' + Math.floor(Math.min(targetPos, (this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10))).toString() + 'px, 0, 0) ' +
+								'translate3d(' + Math.floor(liveLineHistoryWithMargin).toString() + 'px, 0, 0) ' +
 								'translate3d(-100%, 0, 5px)',
 							'willChange': 'transform'
 						}
@@ -154,7 +158,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 						let styleObj = {
 							'maxWidth': this.state.rightAnchoredWidth > 0 ? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px' :
 								maxLabelWidth !== undefined ? (maxLabelWidth * this.props.timeScale).toString() + 'px' : 'none',
-							'transform': 'translate3d(' + Math.round(widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth))).toString() + 'px,  0, 5px)',
+							'transform': 'translate3d(' + Math.floor(widthConstrictedMode || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0) ? targetPos : Math.min(targetPos, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth))).toString() + 'px,  0, 5px)',
 							'willChange': 'transform'
 						}
 
@@ -194,7 +198,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 					const targetPos = Math.max(((this.props.scrollLeft + this.props.scrollWidth) - outPoint - this.props.segmentLineStartsAt - outTransitionDuration) * this.props.timeScale, (this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth - LEFT_RIGHT_ANCHOR_SPACER) * -1)
 
 					return {
-						'transform': 'translate3d(' + Math.round(targetPos).toString() + 'px,  0, 15px)',
+						'transform': 'translate3d(' + Math.floor(targetPos).toString() + 'px,  0, 15px)',
 						'willChange': 'transform'
 					}
 				}
@@ -239,7 +243,7 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 			}
 		} else {
 			return {
-				'left': Math.round(((segmentLineItem.renderedInPoint || 0) + inTransitionDuration) * this.props.timeScale).toString() + 'px',
+				'left': Math.floor(((segmentLineItem.renderedInPoint || 0) + inTransitionDuration) * this.props.timeScale).toString() + 'px',
 				'width': Math.round((itemDuration - inTransitionDuration - outTransitionDuration) * this.props.timeScale).toString() + 'px'
 			}
 		}
@@ -290,6 +294,42 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 		// this.props.onFollowLiveLine && this.props.onFollowLiveLine(false, e)
 		e.preventDefault()
 		e.stopPropagation()
+		this.tempDisplayInOutpoints(e)
+
+	}
+	tempDisplayInOutpoints = (e: React.MouseEvent<HTMLDivElement>) => {
+		// Note: This is a TEMPORARY way to set in & out points, will be replaced with a much nicer looking way at a later stage
+		doModalDialog({
+			title: 'Set in point & duration',
+			message: 'Please set the in-point & duration below',
+			yes: 'Save',
+			no: 'Discard',
+			// acceptOnly?: boolean
+			onAccept: (e: SomeEvent, inputResult: ModalInputResult) => {
+				console.log('accept', inputResult)
+				doUserAction(this.props.t, e, UserActionAPI.methods.setInOutPoints, [
+					this.props.segmentLine.runningOrderId,
+					this.props.segmentLine._id,
+					this.props.segmentLineItem._id,
+					inputResult.inPoint,
+					inputResult.outPoint
+				])
+			},
+			inputs: {
+				inPoint: {
+					label: 'In point',
+					text: 'In point',
+					type: 'float',
+					defaultValue: 0
+				},
+				outPoint: {
+					label: 'Out point',
+					text: 'Out point',
+					type: 'float',
+					defaultValue: 0
+				}
+			}
+		})
 	}
 
 	itemDblClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -505,4 +545,4 @@ export class SourceLayerItem extends React.Component<ISourceLayerItemProps, ISou
 
 		}
 	}
-}
+})

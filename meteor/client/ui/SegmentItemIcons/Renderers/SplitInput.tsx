@@ -9,10 +9,10 @@ export default class SplitInputIcon extends React.Component<{ abbreviation?: str
 		if (segmentLineItem && segmentLineItem.content) {
 			let c = segmentLineItem.content as SplitsContent
 			const camera = c.boxSourceConfiguration.find(i => i.type === SourceLayerType.CAMERA)
-			if (camera) {
+			if (camera && camera.studioLabel) {
 				const label = camera.studioLabel.match(/([a-zA-Z]+)?(\d+)/)
 				return <React.Fragment>
-							{label ? label[1] + ' ' : camera.studioLabel}
+							{label && label[1] ? label[1].substr(0, 1).toUpperCase() + ' ' : ''}
 							<tspan style={{ 'fontFamily': 'Roboto', 'fontWeight': 'normal' }}>{ label ? label[2] : '' }</tspan>
 						</React.Fragment>
 			} else {
@@ -57,10 +57,10 @@ export default class SplitInputIcon extends React.Component<{ abbreviation?: str
 	render () {
 		return (
 			<svg className='segment_line_item_icon' version='1.1' viewBox='0 0 126.5 89' xmlns='http://www.w3.org/2000/svg'>
-				<rect width='63.25' height='89' className={this.getLeftSourceType(this.props.segmentLineItem)} />
-				<rect width='63.25' height='89' x='63.25' className={this.getRightSourceType(this.props.segmentLineItem)} />
-				<text x='9.6414976' textLength='106.5' y='71.513954' textAnchor='middle' style={{ fill: '#ffffff', 'fontFamily': 'open-sans', 'fontSize': '40px', 'letterSpacing': '0px', 'lineHeight': '1.25', 'wordSpacing': '0px', 'textShadow': '0 2px 9px rgba(0, 0, 0, 0.5)' }} xmlSpace='preserve'>
-					<tspan x='63.25' y='71.513954' style={{ fill: '#ffffff', 'fontFamily': 'Roboto', 'fontSize': '75px', 'fontWeight': 100 }}>{
+				<rect width='126.5' height='44.5' className={this.getLeftSourceType(this.props.segmentLineItem)} />
+				<rect width='126.5' height='44.5' y='44.5' className={this.getRightSourceType(this.props.segmentLineItem)} />
+				<text x='9.6414976' textLength='106.5' lengthAdjust='spacing' y='71.513954' textAnchor='middle' style={{ fill: '#ffffff', 'fontFamily': 'open-sans', 'fontSize': '40px', 'letterSpacing': '0px', 'lineHeight': '1.25', 'wordSpacing': '0px', 'textShadow': '0 2px 9px rgba(0, 0, 0, 0.5)' }} xmlSpace='preserve'>
+					<tspan x='63.25' y='71.513954' textLength='106.5' lengthAdjust='spacingAndLength' style={{ fill: '#ffffff', 'fontFamily': 'Roboto', 'fontSize': '75px', 'fontWeight': 100 }}>{
 						this.getCameraLabel(this.props.segmentLineItem)
 					}</tspan>
 				</text>

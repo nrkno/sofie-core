@@ -134,7 +134,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 	onDeleteShowStyleBase (item: ShowStyleBase) {
 		const { t } = this.props
 		doModalDialog({
-			title: t('Delete this show style?'),
+			title: t('Delete this Show Style?'),
 			message: [
 				<p>{t('Are you sure you want to delete the show style "{{showStyleId}}"?', { showStyleId: item && item.name })}</p>
 			],
@@ -146,7 +146,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 	onDeleteBlueprint (blueprint: Blueprint) {
 		const { t } = this.props
 		doModalDialog({
-			title: t('Delete this blueprint?'),
+			title: t('Delete this Blueprint?'),
 			message: [
 				<p>{t('Are you sure you want to delete the blueprint "{{blueprintId}}"?', { blueprintId: blueprint && blueprint.name })}</p>
 			],
@@ -158,7 +158,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 	onDeleteDevice (device: PeripheralDevice) {
 		const { t } = this.props
 		doModalDialog({
-			title: t('Remove this device?'),
+			title: t('Remove this Device?'),
 			message: [
 				<p>{t('Are you sure you want to remove the device "{{deviceName}}" and all of it\'s sub-devices?', { deviceName: device && device.name })}</p>
 			],
@@ -178,7 +178,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					this.props.studioInstallations.map((studio) => {
 						return [
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={studio._id} to={'/settings/studio/' + studio._id}>
-								<h3>{studio.name || t('Unnamed studio')}</h3>
+								<h3>{studio.name || t('Unnamed Studio')}</h3>
 							</NavLink>,
 							<hr className='vsubtle man' key={studio._id + '-hr'} />
 						]
@@ -199,10 +199,10 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteShowStyleBase(showStyleBase) }}>
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
-									<h3>{showStyleBase.name || t('Unnamed show style')}</h3>
+									<h3>{showStyleBase.name || t('Unnamed Show Style')}</h3>
 									{ showStyleBase.sourceLayers && showStyleBase.outputLayers &&
 										<p>
-											{t('Source layers')}: {showStyleBase.sourceLayers.length.toString()} {t('Output channels')}: {showStyleBase.outputLayers.length.toString()}
+											{t('Source Layers')}: {showStyleBase.sourceLayers.length.toString()} {t('Output Channels')}: {showStyleBase.outputLayers.length.toString()}
 										</p>
 									}
 								</div>

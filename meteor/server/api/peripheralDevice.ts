@@ -91,7 +91,7 @@ export namespace ServerPeripheralDeviceAPI {
 		// check if we have to update something:
 		if (!_.isEqual(status, peripheralDevice.status)) {
 
-			logger.debug(`Changed status of device ${peripheralDevice._id} "${peripheralDevice.name}" to ${status.statusCode}`)
+			logger.info(`Changed status of device ${peripheralDevice._id} "${peripheralDevice.name}" to ${status.statusCode}`)
 			// perform the update:
 			PeripheralDevices.update(id, {$set: {
 				status: status

@@ -87,9 +87,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		const { t } = this.props
 
 		return (
-			<div className='studio-edit mod mhl mvs'>
+			<div className='studio-edit mod mhl mvn'>
 				<div>
-					<div className='mod mvs mhs'>
+					<div className='mod mvs mhn'>
 						{t('Blueprint ID')} <i>{blueprint._id}</i>
 					</div>
 					<label className='field'>
@@ -105,17 +105,17 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							<span className='mdfx'></span>
 						</div>
 					</label>
-					<div className='mod mvs mhs'>
-						<p>{t('Last modified')}: <Moment format='YYYY/MM/DD HH:mm:ss'>{blueprint.modified}</Moment></p>
+					<div className='mod mvs mhn'>
+						<p className='mhn'>{t('Last modified')}: <Moment format='YYYY/MM/DD HH:mm:ss'>{blueprint.modified}</Moment></p>
 					</div>
 					{
 						blueprint.blueprintVersion ?
-						<div className='mod mvs mhs'>
-							<p>{t('Blueprint Version')}: {blueprint.blueprintVersion}</p>
+						<div className='mod mvs mhn'>
+							<p className='mhn'>{t('Blueprint Version')}: {blueprint.blueprintVersion}</p>
 						</div> : null
 					}
 
-					<div className='mod mvs mhs'>
+					<div className='mod mvs mhn'>
 					<label className='field'>
 						{t('Upload Blueprints')}
 						<div className='mdi'>

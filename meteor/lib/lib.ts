@@ -8,6 +8,12 @@ import { Settings } from './Settings'
 import * as objectPath from 'object-path'
 import { Mongo } from 'meteor/mongo'
 import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration'
+import * as crypto from 'crypto'
+
+export function getHash (str: string): string {
+	const hash = crypto.createHash('sha1')
+	return hash.update(str).digest('base64').replace(/[\+\/\=]/g, '_') // remove +/= from strings, because they cause troubles
+}
 
 /**
  * Convenience method to convert a Meteor.call() into a Promise
@@ -672,11 +678,11 @@ export function asyncCollectionUpsert<DocClass, DBInterface> (
 	modifier: MongoModifier<DBInterface>,
 	options?: UpsertOptions
 
-): Promise<number> {
+): Promise<{numberAffected: number, insertedId: string}> {
 	return new Promise((resolve, reject) => {
-		collection.upsert(selector, modifier, options, (err: any, affectedCount: number) => {
+		collection.upsert(selector, modifier, options, (err: any, returnValue: { numberAffected: number, insertedId: string }) => {
 			if (err) reject(err)
-			else resolve(affectedCount)
+			else resolve(returnValue)
 		})
 	})
 }
@@ -724,6 +730,13 @@ export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync (functio
 		cb(e)
 	})
 })
+export function makePromise<T> (fcn: () => T): Promise<T> {
+	return new Promise((resolve) => {
+		Meteor.defer(() => {
+			resolve(fcn())
+		})
+	})
+}
 export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 	let ok = true
 	_.each(selector, (s: any, key: string) => {
@@ -754,6 +767,8 @@ export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 						ok = (oAttr <= s.$lte)
 					} else if (_.has(s,'$eq')) {
 						ok = (oAttr === s.$eq)
+					} else if (_.has(s,'$ne')) {
+						ok = (oAttr !== s.$ne)
 					} else if (_.has(s,'$in')) {
 						ok = (oAttr.indexOf(s.$in) !== -1)
 					} else if (_.has(s,'$nin')) {

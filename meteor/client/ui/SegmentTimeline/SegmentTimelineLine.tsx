@@ -70,38 +70,38 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 	renderInside () {
 		if (this.props.layer.items !== undefined) {
 			return _.chain(this.props.layer.items.filter((segmentLineItem) => {
-					// filter only segment line items belonging to this segment line
-					return (segmentLineItem.segmentLineId === this.props.segmentLine._id) ?
-						// filter only segment line items, that have not been hidden from the UI
-						(segmentLineItem.hidden !== true) &&
-						(segmentLineItem.virtual !== true)
-						: false
-				}))
-				.sortBy((it) => it.renderedInPoint)
-				.sortBy((it) => it.infiniteMode)
-				.sortBy((it) => it.cropped)
-				.map((segmentLineItem) => {
-					return (
-						<SourceLayerItemContainer key={segmentLineItem._id}
-							{...this.props}
-							// The following code is fine, just withTracker HOC messing with available props
-							onDoubleClick={this.props.onItemDoubleClick}
-							mediaPreviewUrl={this.props.mediaPreviewUrl}
-							segmentLineItem={segmentLineItem}
-							layer={this.props.layer}
-							outputLayer={this.props.outputLayer}
-							segmentLine={this.props.segmentLine}
-							segmentLineStartsAt={this.props.startsAt}
-							segmentLineDuration={this.props.duration}
-							timeScale={this.props.timeScale}
-							relative={this.props.relative}
-							autoNextSegmentLine={this.props.autoNextSegmentLine}
-							liveLinePadding={this.props.liveLinePadding}
-							scrollLeft={this.props.scrollLeft}
-							scrollWidth={this.props.scrollWidth}
-							/>
-					)
-				}).value()
+				// filter only segment line items belonging to this segment line
+				return (segmentLineItem.segmentLineId === this.props.segmentLine._id) ?
+					// filter only segment line items, that have not been hidden from the UI
+					(segmentLineItem.hidden !== true) &&
+					(segmentLineItem.virtual !== true)
+					: false
+			}))
+			.sortBy((it) => it.renderedInPoint)
+			.sortBy((it) => it.infiniteMode)
+			.sortBy((it) => it.cropped)
+			.map((segmentLineItem) => {
+				return (
+					<SourceLayerItemContainer key={segmentLineItem._id}
+						{...this.props}
+						// The following code is fine, just withTracker HOC messing with available props
+						onDoubleClick={this.props.onItemDoubleClick}
+						mediaPreviewUrl={this.props.mediaPreviewUrl}
+						segmentLineItem={segmentLineItem}
+						layer={this.props.layer}
+						outputLayer={this.props.outputLayer}
+						segmentLine={this.props.segmentLine}
+						segmentLineStartsAt={this.props.startsAt}
+						segmentLineDuration={this.props.duration}
+						timeScale={this.props.timeScale}
+						relative={this.props.relative}
+						autoNextSegmentLine={this.props.autoNextSegmentLine}
+						liveLinePadding={this.props.liveLinePadding}
+						scrollLeft={this.props.scrollLeft}
+						scrollWidth={this.props.scrollWidth}
+						/>
+				)
+			}).value()
 		}
 	}
 
@@ -245,7 +245,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 						(this.getCurrentLiveLinePosition() + this.getLiveLineTimePadding(props.timeScale))
 					) || 0),
 					props.timingDurations.segmentLineDurations ?
-						props.timingDurations.segmentLineDurations[props.segmentLine._id] :
+						(props.segmentLine.displayDuration || props.timingDurations.segmentLineDurations[props.segmentLine._id]) :
 						0
 				)
 				: 0
@@ -286,7 +286,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 								this.getCurrentLiveLinePosition() + this.getLiveLineTimePadding(nextProps.timeScale))
 						) || 0),
 					nextProps.timingDurations.segmentLineDurations ?
-						nextProps.timingDurations.segmentLineDurations[nextProps.segmentLine._id] :
+						(nextProps.segmentLine.displayDuration || nextProps.timingDurations.segmentLineDurations[nextProps.segmentLine._id]) :
 						0
 				)
 				: 0
@@ -309,7 +309,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 			}
 		} else {
 			return {
-				minWidth: Math.round(this.getLineDuration() * this.props.timeScale).toString() + 'px',
+				minWidth: Math.floor(this.getLineDuration() * this.props.timeScale).toString() + 'px',
 				// minWidth: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || 3000) * this.props.timeScale).toString() + 'px',
 				willChange: this.state.isLive ? 'minWidth' : undefined
 			}

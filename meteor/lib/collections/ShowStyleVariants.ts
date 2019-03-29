@@ -5,6 +5,7 @@ import { TransformedCollection } from '../typings/meteor'
 import { IConfigItem, IBlueprintShowStyleVariant } from 'tv-automation-sofie-blueprints-integration'
 import { registerCollection, applyClassToDocument } from '../lib'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
+import { ObserveChangesForHash } from './lib'
 
 export interface DBShowStyleVariant extends IBlueprintShowStyleVariant {
 	_id: string
@@ -14,6 +15,8 @@ export interface DBShowStyleVariant extends IBlueprintShowStyleVariant {
 
 	/** Config values are used by the Blueprints */
 	config: Array<IConfigItem>
+
+	_runningOrderVersionHash: string
 }
 
 export interface ShowStyleCompound extends ShowStyleBase {
@@ -46,6 +49,7 @@ export class ShowStyleVariant implements DBShowStyleVariant {
 	public name: string
 	public showStyleBaseId: string
 	public config: Array<IConfigItem>
+	public _runningOrderVersionHash: string
 
 	constructor (document: DBShowStyleVariant) {
 		_.each(_.keys(document), (key) => {
@@ -61,5 +65,11 @@ Meteor.startup(() => {
 		ShowStyleVariants._ensureIndex({
 			showStyleBaseId: 1,
 		})
+	}
+})
+
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		ObserveChangesForHash(ShowStyleVariants, '_runningOrderVersionHash', ['config', 'showStyleBaseId'])
 	}
 })

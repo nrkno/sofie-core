@@ -28,6 +28,8 @@ export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
 	segmentId: string
   /** The running order this line belongs to */
 	runningOrderId: string
+	/** When something very bad has happened, we can mark the SL as invalid */
+	invalid?: boolean
 	/** The story Slug (like a title, but slimier) */
 	slug: string
 	/** Should this item should progress to the next automatically */
@@ -127,15 +129,19 @@ export class SegmentLine implements DBSegmentLine {
 	public mosId: string
 	public segmentId: string
 	public runningOrderId: string
+	public invalid: boolean
 	public slug: string
 	public autoNext?: boolean
 	public autoNextOverlap?: number
 	public prerollDuration?: number
 	public transitionPrerollDuration?: number | null
 	public transitionKeepaliveDuration?: number | null
+	public transitionDuration?: number | null
 	public metaData?: Array<MOS.IMOSExternalMetaData>
 	public status?: MOS.IMOSObjectStatus
 	public expectedDuration?: number
+	public displayDuration?: number
+	public displayDurationGroup?: string
 	public startedPlayback?: boolean
 	public stoppedPlayback?: boolean
 	public duration?: number

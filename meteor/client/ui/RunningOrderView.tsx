@@ -32,7 +32,7 @@ import { RundownUtils } from '../lib/rundown'
 
 import * as mousetrap from 'mousetrap'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
-import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
+import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { DEFAULT_DISPLAY_DURATION } from '../../lib/RunningOrder'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getStudioMode, getDeveloperMode } from '../lib/localStorage'
@@ -43,7 +43,7 @@ import { RunningOrderFullscreenControls } from './RunningOrderView/RunningOrderF
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevicesAPI } from '../lib/clientAPI'
-import { RONotificationEvent, onRONotificationClick as roNotificationHandler, RunningOrderNotifier } from './RunningOrderView/RunningOrderNotifier'
+import { RONotificationEvent, onRONotificationClick as roNotificationHandler, RunningOrderNotifier, reloadRunningOrderClick } from './RunningOrderView/RunningOrderNotifier'
 import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
@@ -202,6 +202,7 @@ export enum RunningOrderViewKbdShortcuts {
 	RUNNING_ORDER_GO_TO_LIVE = 'mod+home',
 	RUNNING_ORDER_REWIND_SEGMENTS = 'shift+home',
 	RUNNING_ORDER_RESET_RUNNING_ORDER = 'mod+shift+f12',
+	RUNNING_ORDER_RESET_RUNNING_ORDER2 = 'mod+shift+enter',
 	RUNNING_ORDER_TOGGLE_DRAWER = 'tab',
 	ADLIB_QUEUE_MODIFIER = 'shift',
 	RUNNING_ORDER_NEXT_FORWARD = 'f9',
@@ -228,7 +229,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 						<Moment interval={0} format='HH:mm:ss' date={this.props.runningOrder.startedPlayback} />
 					</span> :
 					<span className='timing-clock plan-start left'>
-						<span className='timing-clock-label left'>{t('Planned start')}</span>
+						<span className='timing-clock-label left'>{t('Planned Start')}</span>
 						<Moment interval={0} format='HH:mm:ss' date={this.props.runningOrder.expectedStart} />
 					</span>
 				}
@@ -258,7 +259,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 					(<React.Fragment>
 						{this.props.runningOrder.expectedStart && this.props.runningOrder.expectedDuration &&
 							<span className='timing-clock plan-end right visual-last-child'>
-								<span className='timing-clock-label right'>{t('Planned end')}</span>
+								<span className='timing-clock-label right'>{t('Planned End')}</span>
 								<Moment interval={0} format='HH:mm:ss' date={this.props.runningOrder.expectedStart + this.props.runningOrder.expectedDuration} />
 							</span>
 						}
@@ -280,7 +281,7 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 					(<React.Fragment>
 						{this.props.timingDurations ?
 							<span className='timing-clock plan-end right visual-last-child'>
-								<span className='timing-clock-label right'>{t('Expected end')}</span>
+								<span className='timing-clock-label right'>{t('Expected End')}</span>
 								<Moment interval={0} format='HH:mm:ss' date={getCurrentTime() + (this.props.timingDurations.totalRundownDuration || 0)} />
 							</span> :
 							null
@@ -381,6 +382,11 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 					label: t('Reload Running Order'),
 					global: true
 				},{
+					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RESET_RUNNING_ORDER2,
+					up: this.keyResetRunningOrder,
+					label: t('Reload Running Order'),
+					global: true
+				},{
 					key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_NEXT_FORWARD,
 					up: this.keyMoveNextForward,
 					label: t('Move Next forwards'),
@@ -446,20 +452,17 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 			let lastUsed = Date.now()
 			if (k.up) {
 				method(k.key, (e: KeyboardEvent) => {
-					if (disableInInputFields(e)) return
 					preventDefault(e)
 					if (k.coolDown && lastUsed > Date.now() - k.coolDown) return
 					if (k.up) k.up(e)
 					lastUsed = Date.now()
 				}, 'keyup', 'RunningOrderHeader')
 				method(k.key, (e: KeyboardEvent) => {
-					if (disableInInputFields(e)) return
 					preventDefault(e)
 				}, 'keydown', 'RunningOrderHeader')
 			}
 			if (k.down) {
 				method(k.key, (e: KeyboardEvent) => {
-					if (disableInInputFields(e)) return
 					preventDefault(e)
 					if (k.coolDown && lastUsed > Date.now() - k.coolDown) return
 					if (k.down) k.down(e)
@@ -471,6 +474,8 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		if (typeof this.props.onRegisterHotkeys === 'function') {
 			this.props.onRegisterHotkeys(this.bindKeys)
 		}
+
+		reloadRunningOrderClick.set(this.reloadRunningOrder)
 	}
 
 	componentWillUnmount () {
@@ -486,7 +491,7 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 	}
 	keyTake = (e: ExtendedKeyboardEvent) => {
 		if (e.key !== 'Enter' || e.location === 3) { // only allow the rightmost enter key
-			this.take(e)
+			if (!isModalShowing()) this.take(e)
 		}
 	}
 	keyHold = (e: ExtendedKeyboardEvent) => {
@@ -524,16 +529,14 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 		// "down" = to next Segment
 		this.moveNext(e, 0, -1)
 	}
-	keyDisableNextSegmentLineItem = (e: any) => {
+	keyDisableNextSegmentLineItem = (e: ExtendedKeyboardEvent) => {
 		this.disableNextSLI(e)
 	}
-	keyDisableNextSegmentLineItemUndo = (e: any) => {
+	keyDisableNextSegmentLineItemUndo = (e: ExtendedKeyboardEvent) => {
 		this.disableNextSLIUndo(e)
 	}
-	keyLogError = (e: any) => {
-		this.takeRunningOrderSnapshot(e).catch(() => {
-			// nothing
-		})
+	keyLogError = (e: ExtendedKeyboardEvent) => {
+		this.takeRunningOrderSnapshot(e)
 	}
 
 	disableNextSLI = (e: any) => {
@@ -768,22 +771,10 @@ const RunningOrderHeader = translate()(class extends React.Component<Translated<
 
 	takeRunningOrderSnapshot = (e) => {
 		const {t} = this.props
-		const p = new Promise((resolve, reject) => {
-			if (this.props.studioMode) {
-				doUserAction(t, e, UserActionAPI.methods.storeRunningOrderSnapshot, [this.props.runningOrder._id, 'Taken by user'], (err) => {
-					if (err) {
-						reject(err)
-					} else {
-						resolve()
-					}
-				}, t('A snapshot of the current Running\xa0Order has been created for troubleshooting.'))
-			} else {
-				reject()
-			}
-		})
-
-		return p
-
+		if (this.props.studioMode) {
+			doUserAction(t, e, UserActionAPI.methods.storeRunningOrderSnapshot, [this.props.runningOrder._id, 'Taken by user'], undefined,
+				t('A snapshot of the current Running\xa0Order has been created for troubleshooting.'))
+		}
 	}
 
 	resetAndActivateRunningOrder = (e: any) => {
@@ -1109,17 +1100,14 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
 			if (k.up) {
 				method(k.key, (e: KeyboardEvent) => {
-					if (disableInInputFields(e)) return
 					if (k.up) k.up(e)
 				}, 'keyup')
 				method(k.key, (e: KeyboardEvent) => {
-					if (disableInInputFields(e)) return
 					preventDefault(e)
 				}, 'keydown')
 			}
 			if (k.down) {
 				method(k.key, (e: KeyboardEvent) => {
-					if (disableInInputFields(e)) return
 					if (k.down) k.down(e)
 				}, 'keydown')
 			}
@@ -1176,7 +1164,6 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			e.stopPropagation()
 		}
 		const noOp = (e) => {
-			if (disableInInputFields(e)) return
 			preventDefault(e)
 		}
 
@@ -1189,15 +1176,13 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
 			}
 		})
-		this.usedArgumentKeys.length = 0
+		this.usedArgumentKeys = []
 
 		if (this.props.showStyleBase) {
 			_.each(this.props.showStyleBase.runtimeArguments, (i) => {
 				const combos = i.hotkeys.split(',')
 				_.each(combos, (combo: string) => {
 					const handler = (e: KeyboardEvent) => {
-						if (disableInInputFields(e)) return
-
 						if (this.props.runningOrder && this.props.runningOrder.active && this.props.runningOrder.nextSegmentLineId) {
 							doUserAction(t, e, UserActionAPI.methods.toggleSegmentLineArgument, [
 								this.props.runningOrder._id, this.props.runningOrder.nextSegmentLineId, i.property, i.value
@@ -1473,12 +1458,18 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 	}
 
-	onShowHotkeys = () => {
-		this.setState({
-			isInspectorDrawerExpanded: true
-		})
-		if (this._inspectorDrawer) {
-			this._inspectorDrawer.getWrappedInstance().switchTab(InspectorPanelTabs.SYSTEM_HOTKEYS)
+	onToggleHotkeys = () => {
+		if (!this.state.isInspectorDrawerExpanded) {
+			this.setState({
+				isInspectorDrawerExpanded: true
+			})
+			if (this._inspectorDrawer) {
+				this._inspectorDrawer.getWrappedInstance().switchTab(InspectorPanelTabs.SYSTEM_HOTKEYS)
+			}
+		} else {
+			this.setState({
+				isInspectorDrawerExpanded: false
+			})
 		}
 	}
 
@@ -1532,124 +1523,136 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	render () {
 		const { t } = this.props
 
-		if (
-			this.props.runningOrder &&
-			this.props.studioInstallation &&
-			this.props.showStyleBase
-		) {
-			return (
-				<RunningOrderTimingProvider
-					runningOrder={this.props.runningOrder}
-					defaultDuration={DEFAULT_DISPLAY_DURATION}>
-					<div className={ClassNames('running-order-view', {
-						'notification-center-open': this.state.isNotificationsCenterOpen
-					})} style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
-						<ErrorBoundary>
-							{ this.state.studioMode && <KeyboardFocusMarker /> }
-						</ErrorBoundary>
-						<ErrorBoundary>
-							<RunningOrderFullscreenControls
-								isFollowingOnAir={this.state.followLiveSegments}
-								onFollowOnAir={this.onGoToLiveSegment}
-								onRewindSegments={this.onRewindSegments}
-								isNotificationCenterOpen={this.state.isNotificationsCenterOpen}
-								onToggleNotifications={this.onToggleNotifications}
-								isSupportPanelOpen={this.state.isSupportPanelOpen}
-								onToggleSupportPanel={this.onToggleSupportPanel} />
-						</ErrorBoundary>
-						<ErrorBoundary>
-							<VelocityReact.VelocityTransitionGroup enter={{
-								animation: {
-									translateX: ['0%', '100%']
-								}, easing: 'ease-out', duration: 300
-							}} leave={{
-								animation: {
-									translateX: ['100%', '0%']
-								}, easing: 'ease-in', duration: 500
-							}}>
-								{this.state.isNotificationsCenterOpen && <NotificationCenterPanel />}
-							</VelocityReact.VelocityTransitionGroup>
-							<VelocityReact.VelocityTransitionGroup enter={{
-								animation: {
-									translateX: ['0%', '100%']
-								}, easing: 'ease-out', duration: 300
-							}} leave={{
-								animation: {
-									translateX: ['100%', '0%']
-								}, easing: 'ease-in', duration: 500
-							}}>
-								{this.state.isSupportPanelOpen &&
-									<SupportPopUp>
-										<button className='btn btn-primary' onClick={this.onShowHotkeys}>{t('Show Hotkeys')}</button>
-										<button className='btn btn-primary' onClick={this.onTakeRunningOrderSnapshot}>{t('Take a Snapshot')}</button>
-										<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart Playout')}</button>
-									</SupportPopUp>
+		if (this.state.subsReady) {
+			if (
+				this.props.runningOrder &&
+				this.props.studioInstallation &&
+				this.props.showStyleBase
+			) {
+				return (
+					<RunningOrderTimingProvider
+						runningOrder={this.props.runningOrder}
+						defaultDuration={DEFAULT_DISPLAY_DURATION}>
+						<div className={ClassNames('running-order-view', {
+							'notification-center-open': this.state.isNotificationsCenterOpen
+						})} style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
+							<ErrorBoundary>
+								{ this.state.studioMode && <KeyboardFocusMarker /> }
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<RunningOrderFullscreenControls
+									isFollowingOnAir={this.state.followLiveSegments}
+									onFollowOnAir={this.onGoToLiveSegment}
+									onRewindSegments={this.onRewindSegments}
+									isNotificationCenterOpen={this.state.isNotificationsCenterOpen}
+									onToggleNotifications={this.onToggleNotifications}
+									isSupportPanelOpen={this.state.isSupportPanelOpen}
+									onToggleSupportPanel={this.onToggleSupportPanel} />
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<VelocityReact.VelocityTransitionGroup enter={{
+									animation: {
+										translateX: ['0%', '100%']
+									}, easing: 'ease-out', duration: 300
+								}} leave={{
+									animation: {
+										translateX: ['100%', '0%']
+									}, easing: 'ease-in', duration: 500
+								}}>
+									{this.state.isNotificationsCenterOpen && <NotificationCenterPanel />}
+								</VelocityReact.VelocityTransitionGroup>
+								<VelocityReact.VelocityTransitionGroup enter={{
+									animation: {
+										translateX: ['0%', '100%']
+									}, easing: 'ease-out', duration: 300
+								}} leave={{
+									animation: {
+										translateX: ['100%', '0%']
+									}, easing: 'ease-in', duration: 500
+								}}>
+									{this.state.isSupportPanelOpen &&
+										<SupportPopUp>
+											<button className='btn btn-primary' onClick={this.onToggleHotkeys}>{t('Show Hotkeys')}</button>
+											<button className='btn btn-primary' onClick={this.onTakeRunningOrderSnapshot}>{t('Take a Snapshot')}</button>
+											<button className='btn btn-primary' onClick={this.onRestartPlayout}>{t('Restart Playout')}</button>
+										</SupportPopUp>
+									}
+								</VelocityReact.VelocityTransitionGroup>
+							</ErrorBoundary>
+							<ErrorBoundary>
+								{ this.state.studioMode &&
+									<Prompt when={this.props.runningOrder.active || false} message={t('This running order is now active. Are you sure you want to exit this screen?')} />
 								}
-							</VelocityReact.VelocityTransitionGroup>
-						</ErrorBoundary>
-						<ErrorBoundary>
-							{ this.state.studioMode &&
-								<Prompt when={this.props.runningOrder.active || false} message={t('This running order is now active. Are you sure you want to exit this screen?')} />
-							}
-						</ErrorBoundary>
-						<ErrorBoundary>
-							<RunningOrderHeader
-								runningOrder={this.props.runningOrder}
-								studioInstallation={this.props.studioInstallation}
-								onActivate={this.onActivate}
-								studioMode={this.state.studioMode}
-								onRegisterHotkeys={this.onRegisterHotkeys}
-								inActiveROView={this.props.inActiveROView} />
-						</ErrorBoundary>
-						<ErrorBoundary>
-							<SegmentContextMenu
-								contextMenuContext={this.state.contextMenuContext}
-								runningOrder={this.props.runningOrder}
-								onSetNext={this.onSetNext}
-								studioMode={this.state.studioMode} />
-						</ErrorBoundary>
-						{this.renderSegmentsList()}
-						<ErrorBoundary>
-							{ this.props.segments && this.props.segments.length > 0 && <AfterBroadcastForm
-								runningOrder={this.props.runningOrder}
-							/> }
-						</ErrorBoundary>
-						<ErrorBoundary>
-							<InspectorDrawer
-								ref={this.setInspectorDrawer}
-								isExpanded={this.state.isInspectorDrawerExpanded}
-								onChangeExpanded={this.onDrawerChangeExpanded}
-								segments={this.props.segments}
-								hotkeys={this.state.usedHotkeys}
-								runningOrder={this.props.runningOrder}
-								showStyleBase={this.props.showStyleBase}
-								studioMode={this.state.studioMode}
-								onChangeBottomMargin={this.onChangeBottomMargin}
-								onRegisterHotkeys={this.onRegisterHotkeys} />
-						</ErrorBoundary>
-						<ErrorBoundary>
-							<RunningOrderNotifier runningOrderId={this.props.runningOrder._id} studioId={this.props.studioInstallation._id} />
-						</ErrorBoundary>
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<RunningOrderHeader
+									runningOrder={this.props.runningOrder}
+									studioInstallation={this.props.studioInstallation}
+									onActivate={this.onActivate}
+									studioMode={this.state.studioMode}
+									onRegisterHotkeys={this.onRegisterHotkeys}
+									inActiveROView={this.props.inActiveROView} />
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<SegmentContextMenu
+									contextMenuContext={this.state.contextMenuContext}
+									runningOrder={this.props.runningOrder}
+									onSetNext={this.onSetNext}
+									studioMode={this.state.studioMode} />
+							</ErrorBoundary>
+							{this.renderSegmentsList()}
+							<ErrorBoundary>
+								{ this.props.segments && this.props.segments.length > 0 && <AfterBroadcastForm
+									runningOrder={this.props.runningOrder}
+								/> }
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<InspectorDrawer
+									ref={this.setInspectorDrawer}
+									isExpanded={this.state.isInspectorDrawerExpanded}
+									onChangeExpanded={this.onDrawerChangeExpanded}
+									segments={this.props.segments}
+									hotkeys={this.state.usedHotkeys}
+									runningOrder={this.props.runningOrder}
+									showStyleBase={this.props.showStyleBase}
+									studioMode={this.state.studioMode}
+									onChangeBottomMargin={this.onChangeBottomMargin}
+									onRegisterHotkeys={this.onRegisterHotkeys} />
+							</ErrorBoundary>
+							<ErrorBoundary>
+								{this.props.runningOrder && this.props.studioInstallation && this.props.showStyleBase &&
+									<RunningOrderNotifier runningOrderId={this.props.runningOrder._id} studioInstallation={this.props.studioInstallation} showStyleBase={this.props.showStyleBase} />
+								}
+							</ErrorBoundary>
+						</div>
+					</RunningOrderTimingProvider>
+				)
+			} else {
+				return (
+					<div className='running-order-view running-order-view--unpublished'>
+						<div className='running-order-view__label'>
+							<p>
+								{
+									!this.props.runningOrder ?
+										t('This running order has been unpublished from Sofie.') :
+									!this.props.studioInstallation ?
+										t('Error: The studio of this RunningOrder was not found.') :
+									!this.props.showStyleBase ?
+										t('Error: The ShowStyle of this RunningOrder was not found.') :
+									t('Unknown error')
+								}
+							</p>
+							<p>
+								<Route render={({history}) => (
+									<button className='btn btn-primary' onClick={() => { history.push('/runningOrders') }}>
+										{t('Return to list')}
+									</button>
+								)} />
+							</p>
+						</div>
 					</div>
-				</RunningOrderTimingProvider>
-			)
-		} else if (this.state.subsReady) {
-			return (
-				<div className='running-order-view running-order-view--unpublished'>
-					<div className='running-order-view__label'>
-						<p>
-							{t('This running order has been unpublished from Sofie.')}
-						</p>
-						<p>
-							<Route render={({history}) => (
-								<button className='btn btn-primary' onClick={() => { history.push('/runningOrders') }}>
-									{t('Return to list')}
-								</button>
-							)} />
-						</p>
-					</div>
-				</div>
-			)
+				)
+			}
 		} else {
 			return (
 				<div className='running-order-view running-order-view--loading'>
@@ -1660,8 +1663,3 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 }
 )
-
-function disableInInputFields (e: KeyboardEvent) {
-	// @ts-ignore localName
-	return (e && e.target && ['textarea', 'input'].indexOf(e.target.localName + '') !== -1 )
-}

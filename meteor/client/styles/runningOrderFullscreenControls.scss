@@ -10,7 +10,7 @@
     bottom: 0;
     right: 0;
 	width: #{$fullscreen-controls__button--radius + 10px};
-	z-index: 310;
+	z-index: 2000;
 	background: $ui-dark-color;
 
 	.notifications__toggle-button {
