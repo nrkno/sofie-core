@@ -39,16 +39,16 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 			let slackMessage = 'Evaluation!'
 			switch (evaluationLevel) {
 				case 'nothing':
-				slackMessage = 'Hey!'
-					break;
+					slackMessage = 'Hey!'
+					break
 				case 'minor':
-				slackMessage = 'Ehm!'
-					break;
+					slackMessage = 'Ehm!'
+					break
 				case 'major':
-				slackMessage = 'Uh-oh!'
-					break;
+					slackMessage = '*Uh-oh!*'
+					break
 			}
-			
+
 			// only send message for evaluations with content
 			if (evaluationMessage) {
 				let ro = RunningOrders.findOne(evaluation.runningOrderId)
