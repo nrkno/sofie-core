@@ -60,6 +60,7 @@ export function take (roId: string): ClientAPI.ClientResponse {
 			const lastChange = Math.max(lastTake, lastStartedPlayback)
 			if (getCurrentTime() - lastChange < MINIMUM_TAKE_SPAN) {
 				logger.debug(`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${currentSegmentLine._id}: ${getCurrentTime() - lastStartedPlayback}`)
+				logger.debug(`lastStartedPlayback: ${lastStartedPlayback}, getCurrentTime(): ${getCurrentTime()}`)
 				return ClientAPI.responseError(`Ignoring TAKES that are too quick after eachother (${MINIMUM_TAKE_SPAN} ms)`)
 			}
 		} else {
