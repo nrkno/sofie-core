@@ -6,24 +6,24 @@ import {
 	BrowserRouter as Router,
 	Route
 } from 'react-router-dom'
-import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
+import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { Meteor } from 'meteor/meteor'
 
-import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
+import { RunningOrder, RunningOrders } from '../../../lib/collections/RunningOrders'
+import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { parse as queryStringParse } from 'query-string'
 
-import { Spinner } from '../lib/Spinner'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { objectPathGet } from '../../lib/lib'
-import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
-import { PrompterMethods, PrompterData, PrompterAPI } from '../../lib/api/prompter'
+import { Spinner } from '../../lib/Spinner'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { objectPathGet } from '../../../lib/lib'
+import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
+import { PrompterMethods, PrompterData, PrompterAPI } from '../../../lib/api/prompter'
 import * as classNames from 'classnames'
-import { Segment, Segments } from '../../lib/collections/Segments'
-import { mousetrapHelper } from '../lib/mousetrapHelper'
+import { Segment, Segments } from '../../../lib/collections/Segments'
 // @ts-ignore Meteor package not recognized by Typescript
 import { ComputedField } from 'meteor/peerlibrary:computed-field'
 import { Tracker } from 'meteor/tracker'
+import { PrompterControlManager } from './controller/manager'
 
 interface IProps {
 	match?: {
@@ -41,27 +41,7 @@ interface ITrackedProps {
 interface IState {
 	subsReady: boolean
 }
-export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
-
-	let studioId = objectPathGet(props, 'match.params.studioId')
-	let studioInstallationSubscription
-	let studioInstallation
-	if (studioId) {
-		studioInstallation = StudioInstallations.findOne(studioId)
-	}
-	const runningOrder = RunningOrders.findOne(_.extend({
-		active: true
-	}, {
-		studioInstallationId: studioId
-	}))
-
-	return {
-		runningOrder,
-		studioInstallation,
-		studioId,
-		// isReady: runningOrderSubscription.ready() && (studioInstallationSubscription ? studioInstallationSubscription.ready() : true)
-	}
-})(class PrompterView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
 	isMounted0: boolean = false
@@ -78,11 +58,18 @@ export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 
 	autorun0: Tracker.Computation | undefined
 
+	private _controller: PrompterControlManager
+
 	constructor (props) {
 		super(props)
 		this.state = {
 			subsReady: false
 		}
+		// Disable the context menu:
+		document.addEventListener('contextmenu', (e) => {
+			e.preventDefault()
+		})
+		this._controller = new PrompterControlManager(this)
 	}
 
 	componentWillMount () {
@@ -136,108 +123,13 @@ export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 	componentDidMount () {
 		$(document.body).addClass(['dark', 'vertical-overflow-only'])
 
-		mousetrapHelper.bind('down', e => this.arrowDown(e, true), 'keydown')
-		mousetrapHelper.bind('shift+down', e => this.arrowDown(e, true), 'keydown')
-		mousetrapHelper.bind('down', e => this.arrowDown(e, false), 'keyup')
-		mousetrapHelper.bind('shift+down', e => this.arrowDown(e, false), 'keyup')
-
-		mousetrapHelper.bind('up', e => this.arrowUp(e, true), 'keydown')
-		mousetrapHelper.bind('shift+up', e => this.arrowUp(e, true), 'keydown')
-		mousetrapHelper.bind('up', e => this.arrowUp(e, false), 'keyup')
-		mousetrapHelper.bind('shift+up', e => this.arrowUp(e, false), 'keyup')
-
-		mousetrapHelper.bind('shift', e => this.shiftKey(e, true), 'keydown')
-		mousetrapHelper.bind('shift', e => this.shiftKey(e, false), 'keyup')
-
-		mousetrapHelper.bind('home', e => this.homeKey(e, false), 'keydown')
-		mousetrapHelper.bind('home', e => this.homeKey(e, true), 'keyup')
-
 		this.isMounted0 = true
-		this.animate()
 	}
-	arrowDown = (e, keyDown: boolean) => {
-		e.preventDefault()
-		this.autoScroll = false
-		if (keyDown) {
-			this.scrollDirection = 1
-		} else {
-			this.scrollDirection = 0
-		}
-	}
-	arrowUp = (e, keyDown: boolean) => {
-		e.preventDefault()
-		this.autoScroll = false
-		if (keyDown) {
-			this.scrollDirection = -1
-		} else {
-			this.scrollDirection = 0
-		}
-	}
-	shiftKey = (e, keyDown: boolean) => {
-		e.preventDefault()
-		if (keyDown) {
-			this.scrollSpeedMultiplier = 3
-		} else {
-			this.scrollSpeedMultiplier = 1
-		}
-	}
-	homeKey = (e, keyDown: boolean) => {
-		e.preventDefault()
-		if (keyDown) {
-			this.autoScroll = true
-			this.scrollToCurrent()
-		}
-	}
-	animate = () => {
-
-		const deltaTime = (
-			this.animatePreviousTime ?
-			Math.min(200, Date.now() - this.animatePreviousTime) :
-			1000 / 60
-		)
-		this.animatePreviousTime = Date.now()
-
-		// Add a little smoothness:
-		if (this.scrollDirection) {
-			this.scrollDirection2 = this.scrollDirection
-		} else {
-			let dd = (this.scrollDirection - this.scrollDirection2)
-			if (Math.abs(dd) <= 0.2) {
-				this.scrollDirection2 = this.scrollDirection
-			} else {
-				// this.scrollDirection2 += dd * 0.1
-				this.scrollDirection2 += Math.sign(dd) * 0.2
-			}
-		}
-		// } else {
-		// 	if (
-		// 		this.scrollDirection &&
-		// 		this.scrollDirection2 &&
-		// 		Math.sign(this.scrollDirection) !== Math.sign(this.scrollDirection2)
-		// 	) {
-		// 		// do a sharp turn:
-		// 		this.scrollDirection2 = this.scrollDirection
-		// 	} else {
-		// 		this.scrollDirection2 += Math.sign(dd) * 0.04
-		// 	}
-		// }
-
-		if (this.scrollDirection2) {
-			window.scrollBy(0, this.scrollDirection2 * this.scrollSpeed * this.scrollSpeedMultiplier * (deltaTime / 1000) )
-		}
-
-		if (this.isMounted0) {
-			window.requestAnimationFrame(this.animate)
-		}
-	}
-
 	componentWillUnmount () {
 		super.componentWillUnmount()
 		this.isMounted0 = false
 		$(document.body).removeClass(['dark', 'vertical-overflow-only'])
 
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup')
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown')
 	}
 
 	renderMessage (message: string) {
@@ -283,17 +175,34 @@ export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 			}
 		}
 	}
-})
+}
+export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
+
+	let studioId = objectPathGet(props, 'match.params.studioId')
+	let studioInstallationSubscription
+	let studioInstallation
+	if (studioId) {
+		studioInstallation = StudioInstallations.findOne(studioId)
+	}
+	const runningOrder = RunningOrders.findOne(_.extend({
+		active: true
+	}, {
+		studioInstallationId: studioId
+	}))
+
+	return {
+		runningOrder,
+		studioInstallation,
+		studioId,
+		// isReady: runningOrderSubscription.ready() && (studioInstallationSubscription ? studioInstallationSubscription.ready() : true)
+	}
+})(PrompterViewInner)
 
 interface IPrompterProps {
 	runningOrderId: string
 }
 interface IPrompterTrackedProps {
-	// runningOrder?: RunningOrder
-	// segmentLines: Array<SegmentLine>
-	// segmentLineItems: Array<SegmentLineItem>
-	// // studioId?: string
-	// // isReady: boolean
+	runningOrder: RunningOrder | undefined,
 	currentSegmentLineId: string,
 	nextSegmentLineId: string,
 	prompterData: PrompterData
@@ -301,24 +210,18 @@ interface IPrompterTrackedProps {
 interface IPrompterState {
 	subsReady: boolean
 	isMirror: boolean
-	// currentSegmentLineId: string,
-	// nextSegmentLineId: string,
-	// prompterData: PrompterData
 }
 export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTrackedProps>((props: IPrompterProps) => {
 
 	const runningOrder = RunningOrders.findOne(props.runningOrderId)
-	// let lines = runningOrder && SegmentLines.find({runningOrderId: runningOrder._id}).fetch() || []
-	// let items = runningOrder && SegmentLineItems.find({runningOrderId: runningOrder._id}).fetch() || []
 
-	// rateLimitIgnore('prompterView', () => {
 	let prompterData = PrompterAPI.getPrompterData(props.runningOrderId)
 
 	return {
+		runningOrder: runningOrder,
 		currentSegmentLineId: runningOrder && runningOrder.currentSegmentLineId || '',
 		nextSegmentLineId: runningOrder && runningOrder.nextSegmentLineId || '',
 		prompterData
-		// isReady: runningOrderSubscription.ready() && (studioInstallationSubscription ? studioInstallationSubscription.ready() : true)
 	}
 })(class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, IPrompterState> {
 
@@ -329,9 +232,6 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		this.state = {
 			subsReady: false,
 			isMirror: params['mirror'] === '1' ? true : false
-			// prompterData: null,
-			// currentSegmentLineId: null,
-			// nextSegmentLineId: null
 		}
 	}
 	componentWillUnmount () {
@@ -351,7 +251,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		let divs: any[] = []
 		let previousSegmentId = ''
 		let previousSegmentLineId = ''
-		_.map(prompterData.lines, (line, i: number) => {
+		_.each(prompterData.lines, (line, i: number) => {
 
 			let currentNextLine: 'current' | 'next' | null = null
 
@@ -369,6 +269,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 						key={line.segmentId}
 						className={classNames(
 							'prompter-segment',
+							'scroll-anchor',
 							'segment-' + line.segmentId,
 							'segmentLine-' + line.segmentLineId,
 							currentNextLine
@@ -389,6 +290,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 						key={line.segmentLineId}
 						className={classNames(
 							'prompter-segmentLine',
+							'scroll-anchor',
 							'segmentLine-' + line.segmentLineId,
 							currentNextLine
 						)}
@@ -412,16 +314,27 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			)
 		})
 		return divs
-
 	}
-
 	render () {
-		// const { t } = this.props
+		const { t } = this.props
 
-		if (this.props.prompterData) {
+		if (this.props.prompterData && this.props.runningOrder) {
 			return (
 				<div className={ClassNames('prompter', this.state.isMirror ? 'mirror' : undefined)}>
+					<div className='overlay-fix'>
+						<div className='center-marker left'></div>
+						<div className='center-marker right'></div>
+					</div>
+
+					<div className='prompter-break begin'>
+						{this.props.runningOrder.name}
+					</div>
+
 					{this.renderPrompterData(this.props.prompterData)}
+
+					<div className='prompter-break end'>
+						-{t('End of script')}-
+					</div>
 				</div >
 			)
 		} else {
