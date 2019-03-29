@@ -15,7 +15,7 @@ export class PrompterControlManager {
 
 		window.addEventListener('keydown', this._onKeyDown)
 		window.addEventListener('keyup', this._onKeyUp)
-		window.addEventListener('wheel', this._onWheel)
+		window.addEventListener('wheel', this._onWheel, { passive: false })
 		window.addEventListener('mousedown', this._onMouseKeyDown)
 		window.addEventListener('mouseup', this._onMouseKeyUp)
 
