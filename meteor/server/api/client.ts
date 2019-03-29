@@ -33,11 +33,24 @@ export namespace ServerClientAPI {
 		try {
 			let result = Meteor.call(methodName, ...args)
 
-			UserActionsLog.update(actionId, {$set: {
-				success: true,
-				doneTime: getCurrentTime(),
-				executionTime: Date.now() - startTime
-			}})
+			// check the nature of the result
+			if (
+				ClientAPI.isClientResponseError(result)
+			) {
+				UserActionsLog.update(actionId, {$set: {
+					success: false,
+					doneTime: getCurrentTime(),
+					executionTime: Date.now() - startTime,
+					errorMessage: `ClientResponseError: ${result.error}: ${result.message}`
+				}})
+			} else {
+				UserActionsLog.update(actionId, {$set: {
+					success: true,
+					doneTime: getCurrentTime(),
+					executionTime: Date.now() - startTime
+				}})
+			}
+
 			return result
 		} catch (e) {
 			// console.log('eeeeeeeeeeeeeee')
