@@ -39,13 +39,13 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 			let slackMessage = 'Evaluation!'
 			switch (evaluationLevel) {
 				case 'nothing':
-					slackMessage = ':heavy_check_mark: Feedback from '
+					slackMessage = ':heavy_check_mark: Hey! Fra '
 					break
 				case 'minor':
-					slackMessage = ':grey_question: Minor issues with '
+					slackMessage = ':grey_question: Ehm! Fra '
 					break
 				case 'major':
-					slackMessage = ':warning: Major issues (affecting playout) in '
+					slackMessage = ':warning: Uh-oh! Fra '
 					break
 			}
 
@@ -61,9 +61,9 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 						('*<' + hostUrl + '/ro/' + ro._id + '|' + ro.name + '>*') :
 						(ro && ro.name || 'N/A')
 					) +
-					(hostUrl ? ' in ' + hostUrl : '' ) + '\n' +
+					(hostUrl ? ' in ' + hostUrl.replace(/http:\/\/|https:\/\//, '') : '' ) + '\n' +
 					evaluationMessage + '\n' +
-					'/_' + evaluationProducer + '_'
+					'_' + evaluationProducer + '_'
 				)
 
 				_.each(webhookUrls, (webhookUrl) => {
