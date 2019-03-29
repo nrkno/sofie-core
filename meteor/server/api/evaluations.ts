@@ -39,28 +39,32 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 			let slackMessage = 'Evaluation!'
 			switch (evaluationLevel) {
 				case 'nothing':
-					slackMessage = 'Hey!'
+					slackMessage = ':heavy_check_mark: Feedback from '
 					break
 				case 'minor':
-					slackMessage = 'Ehm!'
+					slackMessage = ':grey_question: Minor issues with '
 					break
 				case 'major':
-					slackMessage = '*Uh-oh!*'
+					slackMessage = ':warning: Major issues (affecting playout) in '
 					break
 			}
 
 			// only send message for evaluations with content
 			if (evaluationMessage) {
 				let ro = RunningOrders.findOne(evaluation.runningOrderId)
-
-				slackMessage += ' From rundown "' + (ro ? ro.name : '' ) + '": \n' +
-					evaluationMessage + '\n\n' + 
-					evaluationProducer
-
 				let hostUrl = studio.settings.sofieUrl
-				if (hostUrl && ro) {
-					slackMessage += '\n<' + hostUrl + '/ro/' + ro._id + '|' + ro.name + '>'
-				}
+
+				slackMessage += (
+					'rundown ' +
+					(
+						hostUrl && ro ?
+						('*<' + hostUrl + '/ro/' + ro._id + '|' + ro.name + '>*') :
+						(ro && ro.name || 'N/A')
+					) +
+					(hostUrl ? ' in ' + hostUrl : '' ) + '\n' +
+					evaluationMessage + '\n' +
+					'/_' + evaluationProducer + '_'
+				)
 
 				_.each(webhookUrls, (webhookUrl) => {
 					sendSlackMessageToWebhookSync(slackMessage, webhookUrl)
