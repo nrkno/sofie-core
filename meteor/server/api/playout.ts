@@ -569,6 +569,9 @@ export namespace ServerPlayoutAPI {
 			if (nextSegmentLine._id === runningOrder.currentSegmentLineId) {
 				throw new Meteor.Error(402, 'Not allowed to Next the currently playing SegmentLine')
 			}
+			if (nextSegmentLine.invalid) {
+				throw new Meteor.Error(400, "SegmentLine is marked as invalid, cannot set as next.")
+			}
 
 			ps.push(resetSegmentLine(nextSegmentLine))
 
@@ -889,7 +892,7 @@ export namespace ServerPlayoutAPI {
 		let segmentLine = segmentLines[segmentLineIndex]
 		if (!segmentLine) throw new Meteor.Error(501, `SegmentLine index ${segmentLineIndex} not found in list of segmentLines!`)
 
-		if (segmentLine._id === runningOrder.currentSegmentLineId && !currentNextSegmentLineItemId) {
+		if ((segmentLine._id === runningOrder.currentSegmentLineId && !currentNextSegmentLineItemId) || segmentLine.invalid) {
 			// Whoops, we're not allowed to next to that.
 			// Skip it, then (ie run the whole thing again)
 			return ServerPlayoutAPI.roMoveNext (roId, horisontalDelta, verticalDelta, setManually, segmentLine._id)
