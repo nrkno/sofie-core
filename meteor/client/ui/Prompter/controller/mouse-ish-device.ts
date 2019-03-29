@@ -16,6 +16,8 @@ const LOCALSTORAGE_MODE = 'prompter-controller-mouseish'
  *    Use the scroll-wheel to control the speed of scrolling
  *    Press (or hold) left mouse button to pause / continue scrolling
  *    Press and hold right mouse button to rewind
+ * Mode 3 (smooth scrolling):
+ *    Use the scroll-wheel as you normally do to scroll the page but the page will scroll more smoothly
  */
 export class MouseIshController extends ControllerAbstract {
 
@@ -35,7 +37,11 @@ export class MouseIshController extends ControllerAbstract {
 	private _scrollRest: number = 0
 	private _noMovement: number = 0
 
+	private _scrollDownDelta: number = 0
+	private _scrollDownDeltaTracker: number = 0
+
 	private _nextPausePosition: number | null = null
+	private _lastWheelTime: number = 0
 
 	constructor (view: PrompterViewInner) {
 		super (view)
@@ -75,13 +81,13 @@ export class MouseIshController extends ControllerAbstract {
 				this._scrollingDown = !this._scrollingDown
 				this._scrollingDownHold = this._scrollingDown
 				this._scrollingUp = false
-				this.triggerStartScrolling()
+				this.triggerStartSpeedScrolling()
 			} else if (
 				e.button === 2 // right mouse button
 			) {
 				e.preventDefault()
 				this._scrollingUp = true
-				this.triggerStartScrolling()
+				this.triggerStartSpeedScrolling()
 			}
 		}
 
@@ -100,7 +106,7 @@ export class MouseIshController extends ControllerAbstract {
 					// Long-press release => toggle
 					this._scrollingDown = !this._scrollingDown
 					this._scrollingDownHold = this._scrollingDown
-					this.triggerStartScrolling()
+					this.triggerStartSpeedScrolling()
 				} else {
 					this._scrollingDownHold = false
 				}
@@ -109,7 +115,7 @@ export class MouseIshController extends ControllerAbstract {
 			) {
 				e.preventDefault()
 				this._scrollingUp = false
-				this.triggerStartScrolling()
+				this.triggerStartSpeedScrolling()
 			}
 		}
 		if (
@@ -123,6 +129,9 @@ export class MouseIshController extends ControllerAbstract {
 		this._mouseKeyDown[e.button + ''] = 0
 	}
 	public onWheel (e: WheelEvent) {
+		const timeSinceLastWheel = Date.now() - this._lastWheelTime
+
+		this._lastWheelTime = Date.now()
 		if (this._mode === Mode.NORMAL) {
 			// Do nothing
 		} else if (this._mode === Mode.SPEED) {
@@ -138,16 +147,72 @@ export class MouseIshController extends ControllerAbstract {
 
 			this._scrollingDown = true
 
-			this.triggerStartScrolling()
+			this.triggerStartSpeedScrolling()
+		} else if (this._mode === Mode.SMOOTHSCROLL) {
+			e.preventDefault()
 
+			const delta: number = e.deltaY || 0
+
+			if (delta) {
+
+				if (Math.sign(this._scrollDownDeltaTracker) === Math.sign(delta)) {
+					this._scrollDownDeltaTracker += delta
+				} else {
+					this._scrollDownDeltaTracker = delta
+				}
+
+				if (Math.sign(this._scrollDownDelta) === Math.sign(delta)) {
+					// Continue scrolling
+					this._scrollDownDelta += delta
+				} else if (Math.sign(this._scrollDownDelta) !== 0) {
+					if (
+						this._scrollSpeedCurrent === 0 ||
+						Math.abs(this._scrollDownDeltaTracker) > 500
+					) {
+						// Stop
+						this._scrollDownDelta = 0
+					} else {
+						// decrease speed
+						this._scrollDownDelta += delta
+					}
+				} else {
+					if (timeSinceLastWheel > 200) {
+						// change direction
+						this._scrollDownDelta = delta
+					}
+				}
+				const scrollSpeed = Math.max(
+					2,
+					Math.round(
+						Math.abs(this._scrollDownDelta) / 100
+					) * 1
+				)
+
+				if (this._scrollDownDelta > 0) {
+					this._scrollSpeedTarget = scrollSpeed
+					this._scrollingDown = true
+					this._scrollingUp = false
+				} else if (this._scrollDownDelta < 0) {
+					this._scrollSpeedTarget = scrollSpeed
+					this._scrollingDown = false
+					this._scrollingUp = true
+				} else {
+					this._scrollingDown = false
+					this._scrollingUp = false
+				}
+
+			}
+			this.triggerStartSpeedScrolling()
 		}
 	}
-	private triggerStartScrolling () {
+	private triggerStartSpeedScrolling () {
 		if (this._scrollingDown) {
 			const scrollPosition = this.getScrollPosition()
 			if (scrollPosition !== undefined) {
 				this._nextPausePosition = this.findAnchorPosition(scrollPosition + 50, -1, 1)
 			}
+		} else {
+			this._nextPausePosition = null
 		}
 		this._noMovement = 0
 		this._updateScrollPosition()
@@ -160,8 +225,13 @@ export class MouseIshController extends ControllerAbstract {
 			this._scrollingDown = false
 			this._scrollingUp = false
 
-		// } else if (this._mode === Mode.SPEED) {
-		// 	this._setMode(Mode.FLICK)
+		} else if (this._mode === Mode.SPEED) {
+			this._setMode(Mode.SMOOTHSCROLL)
+
+			this._scrollSpeedTarget = 4
+			this._scrollSpeedCurrent = 0
+			this._scrollingDown = false
+			this._scrollingUp = false
 
 		} else {
 			this._setMode(Mode.NORMAL)
@@ -176,7 +246,10 @@ export class MouseIshController extends ControllerAbstract {
 		if (this._destroyed) return
 		if (this._updateSpeedHandle !== null) return
 		this._updateSpeedHandle = null
-		if (this._mode !== Mode.SPEED) return
+		if (
+			this._mode !== Mode.SPEED &&
+			this._mode !== Mode.SMOOTHSCROLL
+		) return
 
 		let scrollPosition = this.getScrollPosition()
 
@@ -235,25 +308,26 @@ export class MouseIshController extends ControllerAbstract {
 		if (scrollPosition !== undefined) {
 			// Reached end-of-scroll:
 			if (
-				!this._scrollingUp // don't check if we're scrolling up
+				(
+					scrollPosition < 10 && // positioned at the top
+					speed < -10 // only check if we have a significant speed
+				) && (
+					scrollPosition >= 10 && // positioned not at the top
+					speed > 10 // only check if we have a significant speed
+				) &&
+				this._scrollPosition === scrollPosition
 			) {
-				if (
-					(
-						scrollPosition < 10 && // positioned at the top
-						speed < -10 // only check if we have a significant speed
-					) && (
-						scrollPosition >= 10 && // positioned not at the top
-						speed > 10 // only check if we have a significant speed
-					) &&
-					this._scrollPosition === scrollPosition
-				) {
-					// We tried to move, but haven't
-					// Reset speeds:
+				// We tried to move, but haven't
+				// Reset speeds:
+
+				if (!this._scrollingUp) { // don't check if we're scrolling up
 					this._scrollSpeedCurrent = 0
 					this._scrollSpeedTarget = 0
 				}
-				this._scrollPosition = scrollPosition
+				this._scrollDownDelta = 0
+				this._scrollDownDeltaTracker = 0
 			}
+			this._scrollPosition = scrollPosition
 		}
 		if (speed === 0) {
 			this._noMovement++
@@ -274,6 +348,6 @@ enum Mode {
 	NORMAL = 'normal',
 	/** Control the speed with the mouse wheel */
 	SPEED = 'speed',
-	/** Scroll a page up/down when flicking the wheel */
-	// FLICK = 'flick',
+	/** Scroll the page smoothly */
+	SMOOTHSCROLL = 'smoothscroll',
 }
