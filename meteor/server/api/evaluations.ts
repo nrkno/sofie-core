@@ -26,27 +26,46 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 
 		if (webhookUrls.length) {
 			// Only send notes if not everything is OK
-			let q0 = _.find(evaluation.answers, (_answer, key) => {
+			let evaluationLevel = _.find(evaluation.answers, (_answer, key) => {
 				return key === 'q0'
 			})
+			let evaluationMessage = _.find(evaluation.answers, (_answer, key) => {
+				return key === 'q1'
+			})
+			let evaluationProducer = _.find(evaluation.answers, (_answer, key) => {
+				return key === 'q2'
+			})
 
-			if (q0 !== 'nothing') {
-
+			let slackMessage = 'Evaluation!'
+			switch (evaluationLevel) {
+				case 'nothing':
+				slackMessage = 'Hey!'
+					break;
+				case 'minor':
+				slackMessage = 'Ehm!'
+					break;
+				case 'major':
+				slackMessage = 'Uh-oh!'
+					break;
+			}
+			
+			// only send message for evaluations with content
+			if (evaluationMessage) {
 				let ro = RunningOrders.findOne(evaluation.runningOrderId)
 
-				let message = 'Uh-oh, message from RunningOrder "' + (ro ? ro.name : 'N/A' ) + '": \n' +
-					_.values(evaluation.answers).join(', ')
+				slackMessage += ' From rundown "' + (ro ? ro.name : '' ) + '": \n' +
+					evaluationMessage + '\n\n' + 
+					evaluationProducer
 
 				let hostUrl = studio.settings.sofieUrl
 				if (hostUrl && ro) {
-					message += '\n<' + hostUrl + '/ro/' + ro._id + '|' + ro.name + '>'
+					slackMessage += '\n<' + hostUrl + '/ro/' + ro._id + '|' + ro.name + '>'
 				}
 
 				_.each(webhookUrls, (webhookUrl) => {
-					sendSlackMessageToWebhookSync(message, webhookUrl)
+					sendSlackMessageToWebhookSync(slackMessage, webhookUrl)
 				})
 			}
-
 		}
 	})
 }
