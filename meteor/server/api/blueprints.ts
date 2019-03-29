@@ -1204,7 +1204,7 @@ postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessag
 	} catch (e) {
 		res.statusCode = 500
 		content = e + ''
-		logger.debug('Blueprint restore failed: ' + e)
+		logger.error('Blueprint restore failed: ' + e)
 	}
 
 	res.end(content)
