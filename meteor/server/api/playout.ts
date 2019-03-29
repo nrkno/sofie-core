@@ -2576,7 +2576,7 @@ export function getLookeaheadObjects (roData: RoData, studioInstallation: Studio
 
 			let trigger: TimelineTrigger = {
 				type: TriggerType.TIME_ABSOLUTE,
-				value: 0
+				value: 1 // Absolute 0 without a group doesnt work
 			}
 			if (i !== 0) {
 				const prevObj = res[i - 1].obj
