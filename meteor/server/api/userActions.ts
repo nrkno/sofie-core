@@ -8,7 +8,7 @@ import {
 } from '../../lib/collections/RunningOrders'
 import { getCurrentTime } from '../../lib/lib'
 import {
-	SegmentLines
+	SegmentLines, SegmentLine
 } from '../../lib/collections/SegmentLines'
 import { logger } from '../logging'
 import { ServerPlayoutAPI } from './playout'
@@ -75,6 +75,14 @@ export function setNext (roId: string, nextSlId: string | null, setManually?: bo
 	const runningOrder = RunningOrders.findOne(roId)
 	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 	if (!runningOrder.active) return ClientAPI.responseError('RunningOrder is not active, please activate it before setting a segmentLine as Next')
+
+	let nextSegmentLine: SegmentLine | undefined
+	if (nextSlId) {
+		nextSegmentLine = SegmentLines.findOne(nextSlId)
+		if (!nextSegmentLine) throw new Meteor.Error(404, `Segment Line "${nextSlId}" not found!`)
+
+		if (nextSegmentLine.invalid) return ClientAPI.responseError('SegmentLine is marked as invalid, cannot set as next.')
+	}
 
 	if (runningOrder.holdState && runningOrder.holdState !== RunningOrderHoldState.COMPLETE) {
 		return ClientAPI.responseError('The Next cannot be changed next during a Hold!')

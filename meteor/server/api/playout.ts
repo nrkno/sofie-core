@@ -570,7 +570,7 @@ export namespace ServerPlayoutAPI {
 				throw new Meteor.Error(402, 'Not allowed to Next the currently playing SegmentLine')
 			}
 			if (nextSegmentLine.invalid) {
-				throw new Meteor.Error(400, "SegmentLine is marked as invalid, cannot set as next.")
+				throw new Meteor.Error(400, 'SegmentLine is marked as invalid, cannot set as next.')
 			}
 
 			ps.push(resetSegmentLine(nextSegmentLine))
@@ -680,7 +680,8 @@ export namespace ServerPlayoutAPI {
 		if (!takeSegmentLine) throw new Meteor.Error(404, 'takeSegmentLine not found!')
 		// let takeSegment = roData.segmentsMap[takeSegmentLine.segmentId]
 		let segmentLineAfter = fetchAfter(roData.segmentLines, {
-			runningOrderId: runningOrder._id
+			runningOrderId: runningOrder._id,
+			invalid: { $ne: true }
 		}, takeSegmentLine._rank)
 
 		let nextSegmentLine: DBSegmentLine | null = segmentLineAfter || null
