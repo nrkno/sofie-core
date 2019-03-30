@@ -121,6 +121,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 
 	componentDidMount () {
 		this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
+		this.onRefreshTimer()
 	}
 
 	componentWillReceiveProps (nextProps) {
@@ -156,6 +157,8 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 		let startsAtAccumulator = 0
 		let displayStartsAtAccumulator = 0
 
+		let debugConsole = ''
+
 		const { runningOrder, segmentLines } = this.props
 		const linearSegLines: Array<[string, number | null]> = []
 		const segLineDurations: {
@@ -179,6 +182,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 		const displayDurationGroups: _.Dictionary<number> = {}
 
 		let nextAIndex = -1
+		let currentAIndex = -1
 
 		let now = getCurrentTime()
 
@@ -190,6 +194,8 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 				// if this is next segementLine, clear previous countdowns and clear accumulator
 				if (runningOrder.nextSegmentLineId === item._id) {
 					nextAIndex = aIndex
+				} else if (runningOrder.currentSegmentLineId === item._id) {
+					currentAIndex = aIndex
 				}
 
 				// expected is just a sum of expectedDurations
@@ -208,21 +214,33 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 				let segLineDuration = 0
 				let segLineDisplayDuration = 0
 				let displayDuration = 0
-				if (item.displayDurationGroup) {
+				let memberOfDisplayDurationGroup = false
+				if (item.displayDurationGroup && (
+					// either this is not the first element of the displayDurationGroup
+					(displayDurationGroups[item.displayDurationGroup]) ||
+					// or there is a following member of this displayDurationGroup
+					(segmentLines[itIndex + 1] && segmentLines[itIndex + 1].displayDurationGroup === item.displayDurationGroup)
+				)) {
 					displayDurationGroups[item.displayDurationGroup] = (displayDurationGroups[item.displayDurationGroup] || 0) + (item.expectedDuration || 0)
-					displayDuration = item.displayDuration || displayDurationGroups[item.displayDurationGroup]
-					displayDurationGroups[item.displayDurationGroup] = displayDurationGroups[item.displayDurationGroup] - displayDuration
+					displayDuration = Math.min(item.displayDuration || item.expectedDuration || 0, item.expectedDuration || 0) || displayDurationGroups[item.displayDurationGroup]
+					memberOfDisplayDurationGroup = true
 				}
 				if (item.startedPlayback && lastStartedPlayback && !item.duration) {
-					currentRemaining = Math.max(0, (item.duration || item.expectedDuration || 0) - (now - lastStartedPlayback))
+					currentRemaining = Math.max(0, (item.duration || displayDuration || item.expectedDuration || 0) - (now - lastStartedPlayback))
 					segLineDuration = Math.max((item.duration || item.expectedDuration || 0), (now - lastStartedPlayback))
 					segLineDisplayDuration = Math.max((item.duration || displayDuration || item.expectedDuration || 0), (now - lastStartedPlayback))
 					segLinePlayed[item._id] = (now - lastStartedPlayback)
 				} else {
 					segLineDuration = item.duration || item.expectedDuration || 0
-					segLineDisplayDuration = item.duration || displayDuration || item.expectedDuration || 0
+					segLineDisplayDuration = Math.max(0, item.duration || displayDuration || item.expectedDuration || 0)
 					segLinePlayed[item._id] = item.duration || 0
 				}
+				if (memberOfDisplayDurationGroup && item.displayDurationGroup) {
+					displayDurationGroups[item.displayDurationGroup] = Math.max(0, displayDurationGroups[item.displayDurationGroup] - segLineDisplayDuration)
+				}
+				/* if (item.displayDurationGroup && item.slug.startsWith('Julian')) {
+					console.log(item.displayDurationGroup + ', ' + item.slug + ': ' + (segLineDisplayDuration / 1000))
+				} */
 				segLineExpectedDurations[item._id] = item.expectedDuration || item.duration || 0
 				segLineStartsAt[item._id] = startsAtAccumulator
 				segLineDisplayStartsAt[item._id] = displayStartsAtAccumulator
@@ -231,7 +249,15 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 				startsAtAccumulator += segLineDurations[item._id]
 				displayStartsAtAccumulator += segLineDisplayDuration || this.props.defaultDuration || 3000
 				// always add the full duration, in case by some manual intervention this segment should play twice
-				waitAccumulator += (item.duration || item.expectedDuration || 0)
+				// console.log('%c' + item._id + ', ' + waitAccumulator, 'color: red')
+				if (memberOfDisplayDurationGroup) {
+					waitAccumulator += (item.duration || segLineDisplayDuration || item.expectedDuration || 0)
+				} else {
+					waitAccumulator += (item.duration || item.expectedDuration || 0)
+				}
+				/* if ((item.slug.startsWith('Julian') || item.slug.startsWith('NETTPROMO'))) {
+					console.log(item.slug + ', wa: ' + (waitAccumulator / 1000))
+				} */
 
 				// remaining is the sum of unplayed lines + whatever is left of the current segment
 				if (!item.startedPlayback) {
@@ -245,16 +271,23 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 
 			let localAccum = 0
 			for (let i = 0; i < linearSegLines.length; i++) {
-				if (i < nextAIndex) {
+				if (i < nextAIndex) { // this is a line before next line
 					localAccum = linearSegLines[i][1] || 0
 					linearSegLines[i][1] = null
-				} else if (i === nextAIndex) {
-					// localAccum += linearSegLines[i][1] || 0
+				} else if (i === nextAIndex) { // this is a calculation for the next line, which is basically how much there is left of the current line
+					localAccum = linearSegLines[i][1] || 0 // if there is no current line, rebase following lines to the next line
 					linearSegLines[i][1] = currentRemaining
-				} else {
+					// debugConsole += linearSegLines[i][0] + ', ' + ((linearSegLines[i][1] || 0) / 1000) + '\n'
+				} else { // these are lines after next line
 					linearSegLines[i][1] = (linearSegLines[i][1] || 0) - localAccum + currentRemaining
+					// debugConsole += linearSegLines[i][0] + ', ' + ((linearSegLines[i][1] || 0) / 1000) + '\n'
 				}
 			}
+
+			// if (this.refreshDecimator % LOW_RESOLUTION_TIMING_DECIMATOR === 0) {
+			// 	const c = document.getElementById('debug-console')
+			// 	if (c) c.innerHTML = debugConsole.replace(/\n/g, '<br>')
+			// }
 		}
 
 		// console.log(linearSegLines.map((value) => value[1]))

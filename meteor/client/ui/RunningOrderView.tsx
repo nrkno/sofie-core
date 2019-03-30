@@ -1625,6 +1625,17 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								}
 							</ErrorBoundary>
 						</div>
+						{// USE IN CASE OF DEBUGGING EMERGENCY
+						/* getDeveloperMode() && <div id='debug-console' className='debug-console' style={{
+							background: 'rgba(255,255,255,0.7)',
+							color: '#000',
+							position: 'fixed',
+							top: '0',
+							right: '0',
+							zIndex: 10000,
+							pointerEvents: 'none'
+						}}>
+						</div> */}
 					</RunningOrderTimingProvider>
 				)
 			} else {
