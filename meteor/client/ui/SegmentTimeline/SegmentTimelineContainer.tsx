@@ -172,6 +172,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	) {
 		return true
 	}
+
 	return false
 })(class extends MeteorReactComponent<IProps & ITrackedProps, IState> {
 	static contextTypes = {
@@ -292,11 +293,16 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				(getCurrentTime() - lastStartedPlayback + segmentLineOffset) :
 				segmentLineOffset
 
+			let onAirLineDuration = (this.props.currentLiveSegmentLine.duration || this.props.currentLiveSegmentLine.expectedDuration || 0)
+			if (this.props.currentLiveSegmentLine.displayDurationGroup && !this.props.currentLiveSegmentLine.displayDuration) {
+				onAirLineDuration = this.props.currentLiveSegmentLine.renderedDuration || onAirLineDuration
+			}
+
 			this.setState(_.extend({
 				livePosition: newLivePosition,
 				displayTimecode: this.props.currentLiveSegmentLine.startedPlayback && lastStartedPlayback ?
-					(getCurrentTime() - (lastStartedPlayback + (this.props.currentLiveSegmentLine.duration || this.props.currentLiveSegmentLine.expectedDuration || 0))) :
-					((this.props.currentLiveSegmentLine.duration || this.props.currentLiveSegmentLine.expectedDuration || 0) * -1)
+					(getCurrentTime() - (lastStartedPlayback + onAirLineDuration)) :
+					(onAirLineDuration * -1)
 			}, this.state.followLiveLine ? {
 				scrollLeft: Math.max(newLivePosition - (this.props.liveLineHistorySize / this.props.timeScale), 0)
 			} : null))
