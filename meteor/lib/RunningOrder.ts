@@ -307,7 +307,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 
 			if (segmentLineE.displayDurationGroup && (
 				// either this is not the first element of the displayDurationGroup
-				(displayDurationGroups[segmentLineE.displayDurationGroup]) ||
+				(displayDurationGroups[segmentLineE.displayDurationGroup] !== undefined) ||
 				// or there is a following member of this displayDurationGroup
 				(segmentLines[itIndex + 1] && segmentLines[itIndex + 1].displayDurationGroup === segmentLineE.displayDurationGroup)
 			)) {
