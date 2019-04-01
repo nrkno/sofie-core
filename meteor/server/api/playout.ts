@@ -2565,7 +2565,9 @@ function transformSegmentLineIntoTimeline (
 }
 
 export function getLookeaheadObjects (roData: RoData, studioInstallation: StudioInstallation ): Array<TimelineObjGeneric> {
-	let activeRunningOrder = roData.runningOrder
+	const activeRunningOrder = roData.runningOrder
+
+	const currentSegmentLine = activeRunningOrder.currentSegmentLineId ? roData.segmentLinesMap[activeRunningOrder.currentSegmentLineId] : undefined
 
 	const timelineObjs: Array<TimelineObjGeneric> = []
 	_.each(studioInstallation.mappings || {}, (m, l) => {
@@ -2596,7 +2598,8 @@ export function getLookeaheadObjects (roData: RoData, studioInstallation: Studio
 
 			r._id = 'lookahead_' + i + '_' + r._id
 			r.priority = 0.1
-			r.duration = res[i].slId !== activeRunningOrder.currentSegmentLineId ? 0 : `#${res[i].obj._id}.start - #.start`
+			const finiteDuration = res[i].slId === activeRunningOrder.currentSegmentLineId || (currentSegmentLine && currentSegmentLine.autoNext && res[i].slId === activeRunningOrder.nextSegmentLineId)
+			r.duration = finiteDuration ? `#${res[i].obj._id}.start - #.start` : 0
 			r.trigger = trigger
 			r.isBackground = true
 			delete r.inGroup // force it to be cleared
