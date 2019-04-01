@@ -16,6 +16,7 @@ export interface IAdLibListItem {
 	status?: RunningOrderAPI.LineItemStatusCode
 	hotkey?: string
 	isHidden?: boolean
+	invalid?: boolean
 }
 
 interface IListViewItemProps {
@@ -35,7 +36,8 @@ export const AdLibListItem = translate()(class extends MeteorReactComponent<Tran
 	render () {
 		return (
 			<tr className={ClassNames('adlib-panel__list-view__list__segment__item', {
-				'selected': this.props.selected
+				'selected': this.props.selected,
+				'invalid': this.props.item.invalid
 			})} key={this.props.item._id}
 				onClick={(e) => this.props.onSelectAdLib(this.props.item)}
 				onDoubleClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey, e)}>

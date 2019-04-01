@@ -1361,6 +1361,8 @@ export namespace ServerPlayoutAPI {
 			runningOrderId: roId
 		})
 		if (!adLibItem) throw new Meteor.Error(404, `Segment Line Ad Lib Item "${slaiId}" not found!`)
+		if (adLibItem.invalid) throw new Meteor.Error(404, `Cannot take invalid Segment Line Ad Lib Item "${slaiId}"!`)
+
 		if (!queue && runningOrder.currentSegmentLineId !== slId) throw new Meteor.Error(403, `Segment Line Ad Lib Items can be only placed in a current segment line!`)
 
 		let orgSlId = slId

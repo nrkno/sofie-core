@@ -390,19 +390,29 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 				<div className={ClassNames('segment-timeline__segment-line', {
 					'live': this.state.isLive,
 					'next': this.state.isNext,
+					'invalid': this.props.segmentLine.invalid,
 
 					'duration-settling': this.state.isDurationSettling
 				})} data-mos-id={this.props.segmentLine._id}
 					style={this.getLayerStyle()}
-					>
+				>
+					{this.props.segmentLine.invalid ? <div className='segment-timeline__segment-line__invalid-cover'></div> : null }
+
 					<div className={ClassNames('segment-timeline__segment-line__nextline', {
-						'auto-next': this.props.segmentLine.willProbablyAutoNext
+						'auto-next': this.props.segmentLine.willProbablyAutoNext,
+						'invalid': this.props.segmentLine.invalid
 					})}>
 						<div className={ClassNames('segment-timeline__segment-line__nextline__label', {
 							'segment-timeline__segment-line__nextline__label--thin': (this.props.autoNextSegmentLine || this.props.segmentLine.willProbablyAutoNext) && !this.state.isNext
 						})}>
-							{ (this.props.autoNextSegmentLine || this.props.segmentLine.willProbablyAutoNext) && t('Auto') + ' '}
-							{ this.state.isNext && t('Next') }
+							{(
+								this.props.segmentLine.invalid ?
+									t('Invalid') :
+								[
+									(this.props.autoNextSegmentLine || this.props.segmentLine.willProbablyAutoNext) && t('Auto') + ' ',
+									this.state.isNext && t('Next')
+								]
+							)}
 						</div>
 					</div>
 					{ DEBUG_MODE &&
