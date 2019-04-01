@@ -27,6 +27,7 @@ import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integ
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
+import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (aSLine: SegmentLineAdLibItemUi) => void
@@ -433,6 +434,12 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	}
 
 	onToggleAdLib = (aSLine: SegmentLineAdLibItemUi, queue: boolean, e: any) => {
+		const { t } = this.props
+
+		if (aSLine.invalid) {
+			NotificationCenter.push(new Notification(t('Invalid AdLib'), NoticeLevel.WARNING, t('Cannot play this AdLib becasue it is marked as Invalid'), 'toggleAdLib'))
+			return
+		}
 		if (queue && this.props.sourceLayerLookup && this.props.sourceLayerLookup[aSLine.sourceLayerId] &&
 			!this.props.sourceLayerLookup[aSLine.sourceLayerId].isQueueable) {
 			console.log(`Item "${aSLine._id}" is on sourceLayer "${aSLine.sourceLayerId}" that is not queueable.`)

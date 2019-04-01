@@ -293,10 +293,12 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 			classesForNext: 		resultSl.classesForNext || [],
 			displayDurationGroup: 	resultSl.displayDurationGroup || '', // TODO - or unset?
 			displayDuration: 		resultSl.displayDuration || 0, // TODO - or unset
+			invalid: 				resultSl.invalid || false
 		}})
 	} else {
 		SegmentLines.update(segmentLine._id, {$set: {
 			notes: notes,
+			invalid: true
 		}})
 	}
 

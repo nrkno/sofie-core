@@ -15,6 +15,9 @@ export interface SegmentLineAdLibItem extends SegmentLineItemGeneric, IBlueprint
 
 	trigger: undefined
 	disabled: false
+
+	/** When something bad has happened, we can mark the AdLib as invalid, which will prevent the user from TAKE:ing it */
+	invalid?: boolean
 }
 
 export const SegmentLineAdLibItems: TransformedCollection<SegmentLineAdLibItem, SegmentLineAdLibItem>

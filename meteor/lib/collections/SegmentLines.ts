@@ -28,7 +28,7 @@ export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
 	segmentId: string
   /** The running order this line belongs to */
 	runningOrderId: string
-	/** When something very bad has happened, we can mark the SL as invalid */
+	/** When something bad has happened, we can mark the SL as invalid, which will prevent the user from TAKE:ing it */
 	invalid?: boolean
 	/** The story Slug (like a title, but slimier) */
 	slug: string
