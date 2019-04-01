@@ -116,7 +116,7 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 	})
 
 	let mosDevices = attachedDevices.filter(i => i.type === PeripheralDeviceAPI.DeviceType.MOSDEVICE)
-	let playoutDevices = attachedDevices.filter(i => i.type === PeripheralDeviceAPI.DeviceType.PLAYOUT)
+	let playoutDevices = attachedDevices.filter(i => (i.type === PeripheralDeviceAPI.DeviceType.PLAYOUT || i.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER))
 
 	let playoutChildren: PeripheralDevice[] = []
 	playoutDevices.forEach((i) => {
