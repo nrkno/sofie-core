@@ -64,11 +64,22 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 		let segments: Array<SegmentUi> = []
 		if (ro) {
 			segments = _.map(ro.getSegments(), (segment) => {
+				const displayDurationGroups: _.Dictionary<number> = {}
+				const segmentLines = segment.getSegmentLines()
+				let displayDuration = 0
+
 				return extendMandadory<Segment, SegmentUi>(segment, {
-					items: _.map(segment.getSegmentLines(), (sl) => {
+					items: _.map(segmentLines, (sl, index) => {
+						if (sl.displayDurationGroup && (
+							(displayDurationGroups[sl.displayDurationGroup]) ||
+							// or there is a following member of this displayDurationGroup
+							(segmentLines[index + 1] && segmentLines[index + 1].displayDurationGroup === sl.displayDurationGroup))) {
+							displayDurationGroups[sl.displayDurationGroup] = (displayDurationGroups[sl.displayDurationGroup] || 0) + ((sl.expectedDuration || 0) - (sl.duration || 0))
+							displayDuration = Math.max(0, Math.min(sl.displayDuration || sl.expectedDuration || 0, sl.expectedDuration || 0) || displayDurationGroups[sl.displayDurationGroup])
+						}
 						return extendMandadory<SegmentLine, SegmentLineUi>(sl, {
 							items: [],
-							renderedDuration: 0,
+							renderedDuration: sl.expectedDuration ? 0 : displayDuration,
 							startsAt: 0,
 							willProbablyAutoNext: false
 						})
@@ -99,7 +110,7 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 			const { runningOrder, segments } = this.props
 
 			if (runningOrder && this.props.runningOrderId && this.props.segments) {
-				let currentSegmentLine: SegmentLine | undefined
+				let currentSegmentLine: SegmentLineUi | undefined
 				for (const segment of segments) {
 					if (segment.items) {
 						for (const item of segment.items) {
@@ -111,7 +122,7 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 				}
 				let currentSegmentDuration = 0
 				if (currentSegmentLine) {
-					currentSegmentDuration += currentSegmentLine.expectedDuration || 0
+					currentSegmentDuration += currentSegmentLine.renderedDuration || currentSegmentLine.expectedDuration || 0
 					currentSegmentDuration += -1 * (currentSegmentLine.duration || 0)
 					if (!currentSegmentLine.duration && currentSegmentLine.startedPlayback) {
 						currentSegmentDuration += -1 * (getCurrentTime() - (currentSegmentLine.getLastStartedPlayback() || 0))
