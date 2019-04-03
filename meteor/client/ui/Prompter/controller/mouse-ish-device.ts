@@ -1,6 +1,7 @@
 import { ControllerAbstract, LONGPRESS_TIME } from './lib'
 import { PrompterViewInner } from '../PrompterView'
 import * as $ from 'jquery'
+import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 
 const LOCALSTORAGE_MODE = 'prompter-controller-mouseish'
 /**
@@ -22,9 +23,12 @@ const LOCALSTORAGE_MODE = 'prompter-controller-mouseish'
 export class MouseIshController extends ControllerAbstract {
 
 	private _mode: Mode = Mode.NORMAL
+	private _allowModeSwitch: boolean = true
 	private _destroyed: boolean = false
 
 	private _mouseKeyDown: {[button: string]: number} = {}
+
+	private _prompterView: PrompterViewInner
 
 	/** scroll speed, in pixels per frame */
 	private _scrollSpeedTarget: number = 4
@@ -46,11 +50,17 @@ export class MouseIshController extends ControllerAbstract {
 	constructor (view: PrompterViewInner) {
 		super (view)
 
-		// Recall mode:
-		const recalledMode: string | null = localStorage.getItem(LOCALSTORAGE_MODE)
-		this._mode = (
-			recalledMode as Mode || Mode.NORMAL
-		)
+		this._prompterView = view
+
+		if (view.configOptions.restrictMode !== undefined) {
+			this._setMode(view.configOptions.restrictMode as Mode)
+			this._allowModeSwitch = false
+		} else {
+			// Recall mode:
+			const recalledMode: string | null = localStorage.getItem(LOCALSTORAGE_MODE)
+			this._setMode(recalledMode as Mode || Mode.NORMAL)
+			this._allowModeSwitch = true
+		}
 	}
 	public destroy () {
 		this._destroyed = true
@@ -207,9 +217,9 @@ export class MouseIshController extends ControllerAbstract {
 	}
 	private triggerStartSpeedScrolling () {
 		if (this._scrollingDown) {
-			const scrollPosition = this.getScrollPosition()
+			const scrollPosition = this._prompterView.getScrollPosition()
 			if (scrollPosition !== undefined) {
-				this._nextPausePosition = this.findAnchorPosition(scrollPosition + 50, -1, 1)
+				this._nextPausePosition = this._prompterView.findAnchorPosition(scrollPosition + 50, -1, 1)
 			}
 		} else {
 			this._nextPausePosition = null
@@ -238,9 +248,14 @@ export class MouseIshController extends ControllerAbstract {
 		}
 	}
 	private _setMode (mode: Mode) {
+		const { t } = this._prompterView.props
+
 		this._mode = mode
 		console.log('Mouse-control: Switching mode to ' + mode)
 		localStorage.setItem(LOCALSTORAGE_MODE, mode)
+
+		NotificationCenter.push(new Notification(t('Operating Mode'), NoticeLevel.NOTIFICATION, t('Switching operating mode to {{mode}}', { mode: mode }), 'setMode'))
+
 	}
 	private _updateScrollPosition () {
 		if (this._destroyed) return
@@ -251,7 +266,7 @@ export class MouseIshController extends ControllerAbstract {
 			this._mode !== Mode.SMOOTHSCROLL
 		) return
 
-		let scrollPosition = this.getScrollPosition()
+		let scrollPosition = this._prompterView.getScrollPosition()
 
 		if (
 			scrollPosition !== undefined &&
@@ -303,7 +318,7 @@ export class MouseIshController extends ControllerAbstract {
 
 		window.scrollBy(0, speed)
 
-		scrollPosition = this.getScrollPosition()
+		scrollPosition = this._prompterView.getScrollPosition()
 
 		if (scrollPosition !== undefined) {
 			// Reached end-of-scroll:

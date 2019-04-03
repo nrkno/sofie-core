@@ -34,23 +34,35 @@ export namespace PrompterAPI {
 		}
 
 		_.each(segmentLines, (sl: SegmentLine) => {
+			let hasSentInThisLine = false
 
 			_.each(sl.getAllSegmentLineItems(), (sli) => {
+
+				let text: string = ''
 				if (
 					sli.content &&
 					sli.content.fullScript
 				) {
 					const content = sli.content as ScriptContent
-
 					if (content.fullScript) {
 						data.lines.push({
 							text: content.fullScript,
 							segmentId: sl.segmentId,
 							segmentLineId: sl._id
 						})
+						hasSentInThisLine = true
 					}
+
 				}
 			})
+			if (!hasSentInThisLine) {
+				// insert an empty line
+				data.lines.push({
+					text: '',
+					segmentId: sl.segmentId,
+					segmentLineId: sl._id
+				})
+			}
 		})
 		return data
 	}

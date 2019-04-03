@@ -3,12 +3,9 @@ import * as $ from 'jquery'
 import * as _ from 'underscore'
 import * as ClassNames from 'classnames'
 import {
-	BrowserRouter as Router,
 	Route
 } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Meteor } from 'meteor/meteor'
-
 import { RunningOrder, RunningOrders } from '../../../lib/collections/RunningOrders'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { parse as queryStringParse } from 'query-string'
@@ -16,15 +13,25 @@ import { parse as queryStringParse } from 'query-string'
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { objectPathGet } from '../../../lib/lib'
-import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
-import { PrompterMethods, PrompterData, PrompterAPI } from '../../../lib/api/prompter'
+import { SegmentLines } from '../../../lib/collections/SegmentLines'
+import { PrompterData, PrompterAPI } from '../../../lib/api/prompter'
 import * as classNames from 'classnames'
-import { Segment, Segments } from '../../../lib/collections/Segments'
-// @ts-ignore Meteor package not recognized by Typescript
-import { ComputedField } from 'meteor/peerlibrary:computed-field'
+import { Segments } from '../../../lib/collections/Segments'
 import { Tracker } from 'meteor/tracker'
 import { PrompterControlManager } from './controller/manager'
+import { NotificationCenterPanel } from '../../lib/notifications/NotificationCenterPanel'
 
+interface PrompterConfig {
+	mirror?: boolean
+	mirrorv?: boolean
+
+	restrictMode?: string
+	followTake?: boolean
+	fontSize?: number
+	margin?: number
+
+	marker?: 'center' | 'top' | 'bottom' | 'hide'
+}
 interface IProps {
 	match?: {
 		params?: {
@@ -51,12 +58,13 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	scrollSpeed: number = window.innerHeight * 2 // px per second
 	scrollSpeedMultiplier: number = 1
 
-	autoScroll: boolean = true
 	autoScrollPreviousSegmentLineId: string | null = null
 
 	scrollDirection2: number = 0
 
 	autorun0: Tracker.Computation | undefined
+
+	configOptions: PrompterConfig
 
 	private _controller: PrompterControlManager
 
@@ -69,6 +77,20 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		document.addEventListener('contextmenu', (e) => {
 			e.preventDefault()
 		})
+
+		const queryParams = queryStringParse(location.search)
+
+		this.configOptions = {
+			mirror: queryParams['mirror'] === '1',
+			mirrorv: queryParams['mirrorv'] === '1',
+			restrictMode: queryParams['mode'] || undefined,
+			followTake: ( queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1'),
+			fontSize: parseInt(queryParams['fontsize'], 10) || undefined,
+			margin: parseInt(queryParams['margin'], 10) || undefined,
+
+			marker: queryParams['marker']
+		}
+
 		this._controller = new PrompterControlManager(this)
 	}
 
@@ -95,10 +117,12 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 	componentDidUpdate () {
 		$(document.body).addClass(['dark', 'xdark', 'vertical-overflow-only'])
-
+		this.checkScrollToCurrent()
+	}
+	checkScrollToCurrent () {
 		let roId = this.props.runningOrder && this.props.runningOrder._id
 		let runningOrder = RunningOrders.findOne(roId || '')
-		if (this.autoScroll) {
+		if (this.configOptions.followTake ) {
 			if (runningOrder) {
 
 				if (runningOrder.currentSegmentLineId !== this.autoScrollPreviousSegmentLineId) {
@@ -119,10 +143,40 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			}, 300)
 		}
 	}
+	scrollToNext () {
+		const elementPosition = $('.prompter .next').offset()
+		if (elementPosition) {
+			let scrollTop = elementPosition.top // $('html,body').scrollTop()
+
+			$('html,body').animate({
+				scrollTop: Math.max(0, scrollTop)
+			}, 300)
+		}
+	}
+	findAnchorPosition (startY: number, endY: number, sortDirection: number = 1): number | null {
+		let foundPositions: number[] = []
+		_.find($('.prompter .scroll-anchor'), el => {
+			const offset = $(el).offset()
+			if (
+				offset &&
+				( startY === -1 || offset.top > startY ) &&
+				( endY === -1 	|| offset.top <= endY )
+			) {
+				foundPositions.push(offset.top)
+				return true
+			}
+		})
+		foundPositions = _.sortBy(foundPositions, v => sortDirection * v)
+
+		return foundPositions[0] || null
+	}
+	getScrollPosition () {
+		return window.scrollY || window.pageYOffset || (document.documentElement || {scrollTop: undefined}).scrollTop
+	}
 
 	componentDidMount () {
 		$(document.body).addClass(['dark', 'vertical-overflow-only'])
-
+		this.checkScrollToCurrent()
 		this.isMounted0 = true
 	}
 	componentWillUnmount () {
@@ -156,24 +210,25 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	render () {
 		const { t } = this.props
 
-		if (!this.state.subsReady) {
-			return (
-				<div className='running-order-view running-order-view--loading' >
-					<Spinner />
-				</div >
-			)
-		} else {
-			if (this.props.runningOrder) {
-				return <Prompter runningOrderId={this.props.runningOrder._id} />
-				// return <RunningOrderView runningOrderId={this.props.runningOrder._id} inActiveROView={true} />
-			} else if (this.props.studioInstallation) {
-				return this.renderMessage(t('There is no running order active in this studio.'))
-			} else if (this.props.studioId) {
-				return this.renderMessage(t('This studio doesn\'t exist.'))
-			} else {
-				return this.renderMessage(t('There are no active running orders.'))
+		return <React.Fragment>
+			{/* <NotificationCenterPanel /> */}
+
+			{
+				!this.state.subsReady ?
+					<div className='running-order-view running-order-view--loading' >
+						<Spinner />
+					</div> :
+				(
+					this.props.runningOrder ?
+						<Prompter runningOrderId={this.props.runningOrder._id} config={this.configOptions} /> :
+					this.props.studioInstallation ?
+						this.renderMessage(t('There is no running order active in this studio.')) :
+					this.props.studioId ?
+						this.renderMessage(t('This studio doesn\'t exist.')) :
+					this.renderMessage(t('There are no active running orders.'))
+				)
 			}
-		}
+		</React.Fragment>
 	}
 }
 export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
@@ -200,6 +255,7 @@ export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 
 interface IPrompterProps {
 	runningOrderId: string
+	config: PrompterConfig
 }
 interface IPrompterTrackedProps {
 	runningOrder: RunningOrder | undefined,
@@ -209,7 +265,6 @@ interface IPrompterTrackedProps {
 }
 interface IPrompterState {
 	subsReady: boolean
-	isMirror: boolean
 }
 export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTrackedProps>((props: IPrompterProps) => {
 
@@ -226,12 +281,9 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 })(class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, IPrompterState> {
 
 	constructor (props) {
-		const params = queryStringParse(location.search)
-
 		super(props)
 		this.state = {
-			subsReady: false,
-			isMirror: params['mirror'] === '1' ? true : false
+			subsReady: false
 		}
 	}
 	componentWillUnmount () {
@@ -266,7 +318,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 				divs.push(
 					<div
-						key={line.segmentId}
+						key={'segment_' + i}
 						className={classNames(
 							'prompter-segment',
 							'scroll-anchor',
@@ -279,15 +331,14 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					</div>
 				)
 			} else if (line.segmentLineId !== previousSegmentLineId) {
+
 				let segmentLine = SegmentLines.findOne(line.segmentLineId)
-
-				let text: string = segmentLine ? segmentLine.slug : 'N/A'
-
-				text = text.replace(/.*;/, '') // DIREKTE PUNKT FESTIVAL;Split
+				let title: string = segmentLine ? segmentLine.slug : 'N/A'
+				title = title.replace(/.*;/, '') // DIREKTE PUNKT FESTIVAL;Split
 
 				divs.push(
 					<div
-						key={line.segmentLineId}
+						key={'segmentLine_' + i}
 						className={classNames(
 							'prompter-segmentLine',
 							'scroll-anchor',
@@ -295,21 +346,22 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 							currentNextLine
 						)}
 					>
-						{ text }
+						{title}
 					</div>
 				)
 			}
 			previousSegmentId = line.segmentId
-			previousSegmentLineId = line.segmentId
+			previousSegmentLineId = line.segmentLineId
 
 			divs.push(
 				<div
 					key={i}
 					className={classNames(
-						'prompter-line'
+						'prompter-line',
+						(!line.text ? 'empty' : undefined)
 					)}
 				>
-					{line.text}
+					{line.text || ''}
 				</div>
 			)
 		})
@@ -318,12 +370,28 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 	render () {
 		const { t } = this.props
 
+		console.log(this.props.prompterData)
+
 		if (this.props.prompterData && this.props.runningOrder) {
 			return (
-				<div className={ClassNames('prompter', this.state.isMirror ? 'mirror' : undefined)}>
+				<div
+					className={ClassNames('prompter', this.props.config.mirror ? 'mirror' : undefined, this.props.config.mirrorv ? 'mirrorv' : undefined)}
+					style={{
+						fontSize:		(this.props.config.fontSize ? this.props.config.fontSize + 'vh' : undefined),
+						marginLeft:		(this.props.config.margin ? this.props.config.margin + 'vw' : undefined),
+						marginRight:	(this.props.config.margin ? this.props.config.margin + 'vw' : undefined),
+						marginTop:		(this.props.config.margin ? this.props.config.margin + 'vh' : undefined),
+						marginBottom:	(this.props.config.margin ? this.props.config.margin + 'vh' : undefined)
+					}}
+				>
 					<div className='overlay-fix'>
-						<div className='center-marker left'></div>
-						<div className='center-marker right'></div>
+						<div className={'read-marker ' + ( this.props.config.marker || 'hide' )}>
+							<div className='side left'></div>
+							<div className='side right'></div>
+						</div>
+
+						<div className='take-indicator'></div>
+						<div className='next-indicator'></div>
 					</div>
 
 					<div className='prompter-break begin'>
@@ -332,9 +400,12 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 					{this.renderPrompterData(this.props.prompterData)}
 
-					<div className='prompter-break end'>
-						-{t('End of script')}-
-					</div>
+					{
+						this.props.prompterData.lines.length ?
+						<div className='prompter-break end'>
+							-{t('End of script')}-
+						</div> : null
+					}
 				</div >
 			)
 		} else {
