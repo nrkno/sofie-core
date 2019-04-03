@@ -76,7 +76,10 @@ import {
 	postProcessSegmentLineBaselineItems,
 	RunningOrderContext,
 	getBlueprintOfRunningOrder,
-	SegmentLineContext
+	SegmentLineContext,
+	loadStudioBlueprints,
+	StudioContext,
+	postProcessStudioBaselineObjects
 } from './blueprints'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
@@ -3042,13 +3045,17 @@ function getTimelineRunningOrder (studioInstallation: StudioInstallation): Promi
 					})
 				)
 			} else {
-				resolve([])
-				// remove everything:
-				// Timeline.remove({
-				// 	siId: studioInstallationId,
-				// 	objectType: TimelineObjType.RUNNINGORDER,
-				// 	statObject: {$ne: true},
-				// })
+				// TODO - need to trigger this update on startup and be able to after config changes?
+
+				let studioBaseline: TimelineObjRunningOrder[] = []
+
+				const blueprint = loadStudioBlueprints(studioInstallation)
+				if (blueprint) {
+					const baselineObjs = blueprint.getBaseline(new StudioContext(studioInstallation))
+					studioBaseline = postProcessStudioBaselineObjects(studioInstallation, baselineObjs)
+				}
+
+				resolve(studioBaseline)
 			}
 		} catch (e) {
 			reject(e)

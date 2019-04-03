@@ -28,7 +28,7 @@ export interface IStudioInstallationSettings {
 	sofieUrl: string // (former sofie_url in config)
 }
 /** A set of available layer groups in a given installation */
-export interface DBStudioInstallation extends IBlueprintStudioInstallation {
+export interface DBStudioInstallation {
 	_id: string
 	/** User-presentable name for the studio installation */
 	name: string

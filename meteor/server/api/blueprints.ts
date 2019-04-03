@@ -54,7 +54,8 @@ import {
 	StudioBlueprintManifest,
 	SystemBlueprintManifest,
 	IStudioContext,
-	IBlueprintShowStyleBase
+	IBlueprintShowStyleBase,
+	BlueprintMappings
 } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
 
@@ -362,20 +363,24 @@ export class SegmentLineContext extends RunningOrderContext implements ISegmentL
 }
 
 export class StudioContext implements IStudioContext {
-	readonly studioInstalation: StudioInstallation
-	constructor (studioInstalation: StudioInstallation) {
-		this.studioInstalation = studioInstalation
+	readonly studioInstallation: StudioInstallation
+	constructor (studioInstallation: StudioInstallation) {
+		this.studioInstallation = studioInstallation
+	}
+
+	getStudioMappings (): BlueprintMappings {
+		return this.studioInstallation.mappings
 	}
 
 	getStudioConfig (): {[key: string]: ConfigItemValue} {
-		return compileStudioConfig(this.studioInstalation)
+		return compileStudioConfig(this.studioInstallation)
 	}
 	getStudioConfigRef (configKey: string): string {
-		return ConfigRef.getStudioConfigRef(this.studioInstalation._id, configKey)
+		return ConfigRef.getStudioConfigRef(this.studioInstallation._id, configKey)
 	}
 
 	getShowStyleBases (): Array<IBlueprintShowStyleBase> {
-		return ShowStyleBases.find({ _id: { $in: this.studioInstalation.supportedShowStyleBase } }).fetch()
+		return ShowStyleBases.find({ _id: { $in: this.studioInstallation.supportedShowStyleBase } }).fetch()
 	}
 	getShowStyleVariants (showStyleBaseId: string): Array<IBlueprintShowStyleVariant> {
 		// TODO - does this need to be checked to ensure the showStyle belongs to the studio?
@@ -1167,6 +1172,20 @@ export function postProcessSegmentLineAdLibItems (innerContext: IRunningOrderCon
 				return item
 			})
 		}
+
+		return item
+	})
+}
+
+export function postProcessStudioBaselineObjects (studio: StudioInstallation, objs: Timeline.TimelineObject[]): TimelineObjRunningOrder[] {
+	let timelineUniqueIds: { [id: string]: true } = {}
+	return _.map(objs, (o, i) => {
+		const item = convertTimelineObject('', o)
+
+		if (!item._id) item._id = getHash(studio._id + '_baseline_' + (i++))
+
+		if (timelineUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + studio.blueprintId + '": ids of timelineObjs must be unique! ("' + item._id + '")')
+		timelineUniqueIds[item._id] = true
 
 		return item
 	})
