@@ -102,7 +102,11 @@ export enum methods {
 	'getMediaWorkFlowRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowRevisions',
 	'updateMediaWorkFlow' = 'peripheralDevice.mediaManager.updateMediaWorkFlow',
 	'getMediaWorkFlowStepRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowStepRevisions',
-	'updateMediaWorkFlowStep' = 'peripheralDevice.mediaManager.updateMediaWorkFlowStep'
+	'updateMediaWorkFlowStep' = 'peripheralDevice.mediaManager.updateMediaWorkFlowStep',
+
+	'requestUserAuthToken' 	= 'peripheralDevice.spreadsheet.requestUserAuthToken',
+	'storeAccessToken' 	= 'peripheralDevice.spreadsheet.storeAccessToken',
+
 }
 export function initialize (id: string, token: string, options: InitOptions): Promise<string> {
 	return MeteorPromiseCall(methods.initialize, id, token, options)

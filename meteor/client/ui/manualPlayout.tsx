@@ -20,9 +20,11 @@ import {
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
 import {
 	PeripheralDevices,
+} from '../../lib/collections/PeripheralDevices'
+import {
 	PlayoutDeviceSettings,
 	PlayoutDeviceSettingsDeviceAtem
-} from '../../lib/collections/PeripheralDevices'
+} from '../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { EditAttribute } from '../lib/EditAttribute'
 interface IManualPlayoutProps {

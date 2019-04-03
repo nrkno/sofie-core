@@ -70,7 +70,8 @@ import {
 	DeviceOptions as PlayoutDeviceSettingsDevice, Timeline
 } from 'timeline-state-resolver-types'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDevice, PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PlayoutDeviceSettings } from '../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { Mongo } from 'meteor/mongo'
 
 export namespace ConfigRef {
