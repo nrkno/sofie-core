@@ -1,5 +1,4 @@
 import { Evaluations, EvaluationBase } from '../../lib/collections/Evaluations'
-import { ClientAPI } from '../../lib/api/client'
 import { getCurrentTime } from '../../lib/lib'
 import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'
@@ -27,27 +26,50 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 
 		if (webhookUrls.length) {
 			// Only send notes if not everything is OK
-			let q0 = _.find(evaluation.answers, (_answer, key) => {
+			let evaluationLevel = _.find(evaluation.answers, (_answer, key) => {
 				return key === 'q0'
 			})
+			let evaluationMessage = _.find(evaluation.answers, (_answer, key) => {
+				return key === 'q1'
+			})
+			let evaluationProducer = _.find(evaluation.answers, (_answer, key) => {
+				return key === 'q2'
+			})
 
-			if (q0 !== 'nothing') {
-
-				let ro = RunningOrders.findOne(evaluation.runningOrderId)
-
-				let message = 'Uh-oh, message from RunningOrder "' + (ro ? ro.name : 'N/A' ) + '": \n' +
-					_.values(evaluation.answers).join(', ')
-
-				let hostUrl = studio.settings.sofieUrl
-				if (hostUrl && ro) {
-					message += '\n<' + hostUrl + '/ro/' + ro._id + '|' + ro.name + '>'
-				}
-
-				_.each(webhookUrls, (webhookUrl) => {
-					sendSlackMessageToWebhookSync(message, webhookUrl)
-				})
+			let slackMessage = 'Evaluation!'
+			switch (evaluationLevel) {
+				case 'nothing':
+					slackMessage = ':heavy_check_mark: Hey! Fra '
+					break
+				case 'minor':
+					slackMessage = ':grey_question: Ehm! Fra '
+					break
+				case 'major':
+					slackMessage = ':warning: Uh-oh! Fra '
+					break
 			}
 
+			// only send message for evaluations with content
+			if (evaluationMessage) {
+				let ro = RunningOrders.findOne(evaluation.runningOrderId)
+				let hostUrl = studio.settings.sofieUrl
+
+				slackMessage += (
+					'rundown ' +
+					(
+						hostUrl && ro ?
+						('*<' + hostUrl + '/ro/' + ro._id + '|' + ro.name + '>*') :
+						(ro && ro.name || 'N/A')
+					) +
+					(hostUrl ? ' in ' + hostUrl.replace(/http:\/\/|https:\/\//, '') : '' ) + '\n' +
+					evaluationMessage + '\n' +
+					'_' + evaluationProducer + '_'
+				)
+
+				_.each(webhookUrls, (webhookUrl) => {
+					sendSlackMessageToWebhookSync(slackMessage, webhookUrl)
+				})
+			}
 		}
 	})
 }

@@ -533,7 +533,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(SegmentLineNoteType.ERROR)}>
 							<img className='icon' src='/icons/warning_icon.svg' />
 							<div>
-								{t('Critical errors')}:&nbsp;
+								{t('Critical Errors')}:&nbsp;
 								<b>
 									{criticalNotes}
 								</b>

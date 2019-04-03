@@ -8,7 +8,7 @@ import {
 } from '../../lib/collections/RunningOrders'
 import { getCurrentTime } from '../../lib/lib'
 import {
-	SegmentLines
+	SegmentLines, SegmentLine
 } from '../../lib/collections/SegmentLines'
 import { logger } from '../logging'
 import { ServerPlayoutAPI } from './playout'
@@ -26,9 +26,8 @@ import { ServerTestToolsAPI, getStudioConfig } from './testTools'
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
-import { number } from 'prop-types';
-import { RunningOrderDataCache } from '../../lib/collections/RunningOrderDataCache';
-import { MosIntegration, replaceStoryItem } from './integration/mos';
+import { RunningOrderDataCache } from '../../lib/collections/RunningOrderDataCache'
+import { replaceStoryItem } from './integration/mos'
 
 const MINIMUM_TAKE_SPAN = 1000
 
@@ -61,15 +60,14 @@ export function take (roId: string): ClientAPI.ClientResponse {
 			const lastChange = Math.max(lastTake, lastStartedPlayback)
 			if (getCurrentTime() - lastChange < MINIMUM_TAKE_SPAN) {
 				logger.debug(`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${currentSegmentLine._id}: ${getCurrentTime() - lastStartedPlayback}`)
+				logger.debug(`lastStartedPlayback: ${lastStartedPlayback}, getCurrentTime(): ${getCurrentTime()}`)
 				return ClientAPI.responseError(`Ignoring TAKES that are too quick after eachother (${MINIMUM_TAKE_SPAN} ms)`)
 			}
 		} else {
 			throw new Meteor.Error(404, `SegmentLine "${runningOrder.currentSegmentLineId}", set as currentSegmentLine in "${roId}", not found!`)
 		}
 	}
-	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.roTake(runningOrder)
-	)
+	return ServerPlayoutAPI.roTake(runningOrder)
 }
 export function setNext (roId: string, nextSlId: string | null, setManually?: boolean, timeOffset?: number | undefined): ClientAPI.ClientResponse {
 	check(roId, String)
@@ -79,13 +77,19 @@ export function setNext (roId: string, nextSlId: string | null, setManually?: bo
 	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 	if (!runningOrder.active) return ClientAPI.responseError('RunningOrder is not active, please activate it before setting a segmentLine as Next')
 
+	let nextSegmentLine: SegmentLine | undefined
+	if (nextSlId) {
+		nextSegmentLine = SegmentLines.findOne(nextSlId)
+		if (!nextSegmentLine) throw new Meteor.Error(404, `Segment Line "${nextSlId}" not found!`)
+
+		if (nextSegmentLine.invalid) return ClientAPI.responseError('SegmentLine is marked as invalid, cannot set as next.')
+	}
+
 	if (runningOrder.holdState && runningOrder.holdState !== RunningOrderHoldState.COMPLETE) {
 		return ClientAPI.responseError('The Next cannot be changed next during a Hold!')
 	}
 
-	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.roSetNext(roId, nextSlId, setManually, timeOffset)
-	)
+	return ServerPlayoutAPI.roSetNext(roId, nextSlId, setManually, timeOffset)
 }
 export function moveNext (
 	roId: string,
@@ -236,7 +240,7 @@ export function segmentLineItemSetInOutPoints (roId: string, slId: string, sliId
 	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
 	const sl = SegmentLines.findOne(slId)
 	if (!sl) throw new Meteor.Error(404, `SegmentLine "${slId}" not found!`)
-	if (runningOrder && runningOrder.active && sl.status === "PLAY") {
+	if (runningOrder && runningOrder.active && sl.status === 'PLAY') {
 		return ClientAPI.responseError(`SegmentLine cannot be active while setting in/out!`) // @todo: un-hardcode
 	}
 	const slCache = RunningOrderDataCache.findOne(roId + '_fullStory' + slId)

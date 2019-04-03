@@ -12,80 +12,83 @@ import { EditAttribute } from '../../../lib/EditAttribute'
 import { ModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { Random } from 'meteor/random'
-import { IHttpSendDeviceSettingsComponentProps, IHttpSendDeviceSettingsComponentState } from "./IHttpSendDeviceSettingsComponentProps"
+import {
+	IHttpSendDeviceSettingsComponentProps,
+	IHttpSendDeviceSettingsComponentState
+} from './IHttpSendDeviceSettingsComponentProps'
 
 export const HttpSendDeviceSettingsComponent = translate()(class HttpSendDeviceSettingsComponent extends React.Component<Translated<IHttpSendDeviceSettingsComponentProps>, IHttpSendDeviceSettingsComponentState> {
-	constructor(props: Translated<IHttpSendDeviceSettingsComponentProps>) {
+	constructor (props: Translated<IHttpSendDeviceSettingsComponentProps>) {
 		super(props)
 		this.state = {
 			deleteConfirmMakeReadyId: undefined,
 			showDeleteConfirmMakeReady: false,
 			editedMakeReady: []
-		};
+		}
 	}
 	isItemEdited = (rowId: string) => {
-		return this.state.editedMakeReady.indexOf(rowId) >= 0;
-	};
+		return this.state.editedMakeReady.indexOf(rowId) >= 0
+	}
 	finishEditItem = (rowId: string) => {
-		let index = this.state.editedMakeReady.indexOf(rowId);
+		let index = this.state.editedMakeReady.indexOf(rowId)
 		if (index >= 0) {
-			this.state.editedMakeReady.splice(index, 1);
+			this.state.editedMakeReady.splice(index, 1)
 			this.setState({
 				editedMakeReady: this.state.editedMakeReady
-			});
+			})
 		}
-	};
+	}
 	editItem = (rowId: string) => {
 		if (this.state.editedMakeReady.indexOf(rowId) < 0) {
-			this.state.editedMakeReady.push(rowId);
+			this.state.editedMakeReady.push(rowId)
 			this.setState({
 				editedMakeReady: this.state.editedMakeReady
-			});
+			})
 		}
-	};
+	}
 	handleConfirmRemoveCancel = (e) => {
 		this.setState({
 			showDeleteConfirmMakeReady: false,
 			deleteConfirmMakeReadyId: undefined
-		});
-	};
+		})
+	}
 	handleConfirmRemoveAccept = (e) => {
-		this.state.deleteConfirmMakeReadyId && this.removeMakeReady(this.state.deleteConfirmMakeReadyId);
+		this.state.deleteConfirmMakeReadyId && this.removeMakeReady(this.state.deleteConfirmMakeReadyId)
 		this.setState({
 			showDeleteConfirmMakeReady: false,
 			deleteConfirmMakeReadyId: undefined
-		});
-	};
+		})
+	}
 	confirmRemove = (rowId: string) => {
 		this.setState({
 			showDeleteConfirmMakeReady: true,
 			deleteConfirmMakeReadyId: rowId
-		});
-	};
+		})
+	}
 	removeMakeReady = (rowId: string) => {
 		// TODO this
-		let unsetObject = {};
-		unsetObject['settings.devices.' + this.props.deviceId + '.options.makeReadyCommands'] = { id: rowId };
+		let unsetObject = {}
+		unsetObject['settings.devices.' + this.props.deviceId + '.options.makeReadyCommands'] = { id: rowId }
 		PeripheralDevices.update(this.props.parentDevice._id, {
 			$pull: unsetObject
-		});
-	};
-	addNewHttpSendCommand() {
-		const { deviceId } = this.props;
-		let setObject = {};
+		})
+	}
+	addNewHttpSendCommand () {
+		const { deviceId } = this.props
+		let setObject = {}
 		setObject['settings.devices.' + deviceId + '.options.makeReadyCommands'] = {
 			id: Random.id(),
 			type: TimelineContentTypeHttp.POST,
 			url: 'http://',
 			params: {}
-		};
+		}
 		PeripheralDevices.update(this.props.parentDevice._id, {
 			$push: setObject
-		});
+		})
 	}
-	renderHttpSendCommands() {
-		const { t, device, deviceId } = this.props;
-		const commands = (device.options as any || {}).makeReadyCommands || [];
+	renderHttpSendCommands () {
+		const { t, device, deviceId } = this.props
+		const commands = (device.options as any || {}).makeReadyCommands || []
 		return commands.map((cmd: any, i) => {
 			return <React.Fragment key={i}>
 				<tr className={ClassNames({
@@ -136,11 +139,11 @@ export const HttpSendDeviceSettingsComponent = translate()(class HttpSendDeviceS
 							</div>
 						</td>
 					</tr>}
-			</React.Fragment>;
+			</React.Fragment>
 		})
 	}
-	render() {
-		const { t } = this.props;
+	render () {
+		const { t } = this.props
 		return (<React.Fragment>
 			<h3 className='mhs'>{t('Make ready commands')}</h3>
 			<table className='expando settings-studio-device-httpsend-table'>
@@ -158,6 +161,6 @@ export const HttpSendDeviceSettingsComponent = translate()(class HttpSendDeviceS
 					<FontAwesomeIcon icon={faPlus} />
 				</button>
 			</div>
-		</React.Fragment>);
+		</React.Fragment>)
 	}
 })

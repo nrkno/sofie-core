@@ -5,10 +5,10 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RecordedFile, RecordedFiles } from '../../../lib/collections/RecordedFiles'
 import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
 import * as objectPath from 'object-path'
-import { PubSub } from '../../../lib/api/pubsub';
-import { Meteor } from 'meteor/meteor';
-import { UserActionsLogItem, UserActionsLog } from '../../../lib/collections/UserActionsLog';
-import { UserActionsList } from '../Status/UserActivity';
+import { PubSub } from '../../../lib/api/pubsub'
+import { Meteor } from 'meteor/meteor'
+import { UserActionsLogItem, UserActionsLog } from '../../../lib/collections/UserActionsLog'
+import { UserActionsList } from '../Status/UserActivity'
 
 interface IRecordingViewProps {
 	match?: {

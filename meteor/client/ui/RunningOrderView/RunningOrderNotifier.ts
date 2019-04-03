@@ -9,13 +9,13 @@ import { reactiveData } from '../../lib/reactiveData/reactiveData'
 import { checkSLIContentStatus } from '../../../lib/mediaObjects'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
-import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SegmentLines, SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
 import { getCurrentTime } from '../../../lib/lib'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Segments } from '../../../lib/collections/Segments'
-import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { RunningOrders } from '../../../lib/collections/RunningOrders'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { UserActionAPI } from '../../../lib/api/userActions'
@@ -324,7 +324,6 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 	}
 
 	private reactiveVersionStatus (rRunningOrderId: string) {
-		const t = i18nTranslator
 
 		const updatePeriod = 30000 // every 30s
 

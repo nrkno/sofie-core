@@ -63,7 +63,7 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 		const { t } = this.props
 		doModalDialog({
 			message: t('Are you sure you want to restart this device?'),
-			title: t('Restart this device?'),
+			title: t('Restart this Device?'),
 			yes: t('Restart'),
 			no: t('Cancel'),
 			onAccept: (e: any) => {
@@ -109,7 +109,6 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 	}
 
 	render () {
-		const { t } = this.props
 
 		if (this.props.device) {
 			return this.renderEditForm()

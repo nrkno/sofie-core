@@ -767,6 +767,8 @@ export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 						ok = (oAttr <= s.$lte)
 					} else if (_.has(s,'$eq')) {
 						ok = (oAttr === s.$eq)
+					} else if (_.has(s,'$ne')) {
+						ok = (oAttr !== s.$ne)
 					} else if (_.has(s,'$in')) {
 						ok = (oAttr.indexOf(s.$in) !== -1)
 					} else if (_.has(s,'$nin')) {

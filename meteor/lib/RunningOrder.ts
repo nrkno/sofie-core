@@ -75,7 +75,6 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 	autoNextSegmentLine: boolean
 	followingSegmentLine: SegmentLineExtended | undefined
 } {
-
 	let isLiveSegment = false
 	let isNextSegment = false
 	let currentLiveSegmentLine: SegmentLineExtended | undefined = undefined
@@ -93,7 +92,8 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 
 	// fetch all the segment lines for the segment
 	let segmentLinesE: Array<SegmentLineExtended> = []
-	let segmentLines = segment.getSegmentLines()
+	// let segmentLines = segment.getSegmentLines()
+	const segmentLines = segment.getSegmentLines()
 
 	if (segmentLines.length > 0) {
 		if (checkFollowingSegment) {
@@ -183,7 +183,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 		let startsAt = 0
 		let previousSegmentLine: SegmentLineExtended
 		// fetch all the segment line items for the segment lines
-		segmentLinesE = _.map(segmentLines, (segmentLine) => {
+		segmentLinesE = _.map(segmentLines, (segmentLine, itIndex) => {
 			let slTimeline: SuperTimeline.UnresolvedTimeline = []
 
 			let segmentLineE: SegmentLineExtended = extendMandadory(segmentLine, {
@@ -305,10 +305,15 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 
 			segmentLineE.renderedDuration = segmentLineE.expectedDuration || DEFAULT_DISPLAY_DURATION // furthestDuration
 
-			if (segmentLineE.displayDurationGroup) {
+			if (segmentLineE.displayDurationGroup && (
+				// either this is not the first element of the displayDurationGroup
+				(displayDurationGroups[segmentLineE.displayDurationGroup] !== undefined) ||
+				// or there is a following member of this displayDurationGroup
+				(segmentLines[itIndex + 1] && segmentLines[itIndex + 1].displayDurationGroup === segmentLineE.displayDurationGroup)
+			)) {
 				displayDurationGroups[segmentLineE.displayDurationGroup] = (displayDurationGroups[segmentLineE.displayDurationGroup] || 0) + (segmentLineE.expectedDuration || 0)
-				segmentLineE.renderedDuration = segmentLineE.displayDuration || displayDurationGroups[segmentLineE.displayDurationGroup]
-				displayDurationGroups[segmentLineE.displayDurationGroup] = Math.max(0, displayDurationGroups[segmentLineE.displayDurationGroup] - segmentLineE.renderedDuration)
+				segmentLineE.renderedDuration = segmentLineE.duration || Math.min(segmentLineE.displayDuration || 0, segmentLineE.expectedDuration || 0) || displayDurationGroups[segmentLineE.displayDurationGroup]
+				displayDurationGroups[segmentLineE.displayDurationGroup] = Math.max(0, displayDurationGroups[segmentLineE.displayDurationGroup] - (segmentLineE.duration || segmentLineE.renderedDuration))
 			}
 
 			segmentLineE.startsAt = startsAt
@@ -320,10 +325,6 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, runningOrder: 
 
 		const resolveDuration = (item: SegmentLineItemExtended): number => {
 			let childDuration = 0
-			/* if (item.continuedByRef) {
-				childDuration = resolveDuration(item.continuedByRef)
-				item.continuedByRef.linked = true
-			} */
 			const expectedDurationNumber = (typeof item.expectedDuration === 'number' ? item.expectedDuration || 0 : 0)
 			return (item.durationOverride || item.duration || item.renderedDuration || expectedDurationNumber) + childDuration
 		}

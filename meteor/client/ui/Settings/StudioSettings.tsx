@@ -617,10 +617,10 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 								mapping.device === PlayoutDeviceType.PANASONIC_PTZ && (
 									<span>{
 										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.PRESET ? t('Preset') :
-										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.PRESET_SPEED ? t('Preset transition speed') :
+										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.PRESET_SPEED ? t('Preset Transition Speed') :
 										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.ZOOM ? t('Zoom') :
-										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.ZOOM_SPEED ? t('Zoom speed') :
-										t('Unknown mapping')
+										(mapping as MappingPanasonicPtz & MappingExt).mappingType === MappingPanasonicPtzType.ZOOM_SPEED ? t('Zoom Speed') :
+										t('Unknown Mapping')
 									}</span>
 							)) ||
 							(
@@ -783,7 +783,7 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 		const { t } = this.props
 		return (
 			<div>
-				<h2 className='mhn'>{t('Test Tools - Recordings')}</h2>
+				<h2 className='mhn'>{t('Test Tools – Recordings')}</h2>
 				<div className='mod mvs mhn'>
 					<label className='field'>
 						{t('Device ID')}

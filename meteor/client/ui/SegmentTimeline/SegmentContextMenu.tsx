@@ -45,12 +45,14 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 			this.props.studioMode && this.props.runningOrder && this.props.runningOrder.active ?
 				<Escape to='document'>
 					<ContextMenu id='segment-timeline-context-menu'>
+						{!segLine.invalid && <React.Fragment>
 						<MenuItem onClick={(e) => this.props.onSetNext(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
 								{t('Set as Next')}
 						</MenuItem>
 						<MenuItem onClick={(e) => this.onSetAsNextFromHere(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
 							{t('Set as Next from here')}
 						</MenuItem>
+						</React.Fragment> }
 					</ContextMenu>
 				</Escape>
 				: null

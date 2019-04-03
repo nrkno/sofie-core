@@ -189,7 +189,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 		const { t } = this.props
 		this.setErrorMessage('')
 		doModalDialog({
-			title: t('Reset database version'),
+			title: t('Reset Database Version'),
 			message: t('Are you sure you want to reset the database version?\nOnly do this if you plan on running the migration right after.'),
 			onAccept: () => {
 				Meteor.call(MigrationMethods.resetDatabaseVersions,
@@ -209,7 +209,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 		const { t } = this.props
 		this.setErrorMessage('')
 		doModalDialog({
-			title: t('Set database version'),
+			title: t('Set Database Version'),
 			message: t('Are you sure you want to set the database version to') + ` ${version}?`,
 			onAccept: () => {
 				Meteor.call(MigrationMethods.forceMigration,
@@ -321,14 +321,14 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 										}
 									}}>
 										<FontAwesomeIcon icon={faDatabase} />
-										{t('Reset version to') + ` ${this.state.databasePreviousVersion}`}
+										{t('Reset Version to') + ` ${this.state.databasePreviousVersion}`}
 									</button>
 								: null
 							} */}
 							{
 								<button className='btn mod mhm' onClick={() => { this.resetDatabaseVersions() }}>
 									<FontAwesomeIcon icon={faDatabase} />
-									{t('Reset all versions')}
+									{t('Reset All Versions')}
 								</button>
 							}
 						</div>
@@ -406,7 +406,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 
 							{this.state.warnings.length ?
 								<div>
-									<h2 className='mhn'>{t('Warnings during migration')}</h2>
+									<h2 className='mhn'>{t('Warnings During Migration')}</h2>
 									<ul>
 										{_.map(this.state.warnings, (warning, key) => {
 											return (<li key={key}>
@@ -425,7 +425,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 										</div>
 										<button className='btn-secondary' onClick={() => {
 											doModalDialog({
-												title: t('Force migration'),
+												title: t('Force Migration'),
 												message: t('Are you sure you want to force the migration? This will bypass the migration checks, so be sure to verify that the values in the settings are correct!'),
 												onAccept: () => {
 													this.forceMigration()
@@ -433,7 +433,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 											})
 										}}>
 											<FontAwesomeIcon icon={faDatabase} />
-											{t('Force migration (unsafe)')}
+											{t('Force Migration (unsafe)')}
 										</button>
 									</div>
 								</div>
@@ -444,7 +444,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 
 					{this.state.migrationCompleted ?
 						<div>
-							{t('The migration has completed successfully!')}
+							{t('The migration was completed successfully!')}
 						</div>
 					: null}
 

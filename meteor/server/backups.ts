@@ -3,7 +3,6 @@ import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { Meteor } from 'meteor/meteor'
 import { MOS } from 'tv-automation-sofie-blueprints-integration'
-import { logger } from '../lib/logging'
 
 export interface RunningOrderCacheBackup {
 	type: 'runningOrderCache'

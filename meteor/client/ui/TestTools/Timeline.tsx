@@ -246,7 +246,6 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 		)
 	}
 	render () {
-		const { t } = this.props
 
 		return (
 			<div className='timeline-visualizer'>

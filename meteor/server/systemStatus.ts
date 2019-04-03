@@ -104,7 +104,13 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 					let statusCode = StatusCode.GOOD
 					let messages: Array<string> = []
 
-					if (!versionStr) {
+					if (
+						version.major === 0 &&
+						version.minor === 0 &&
+						version.patch === 0
+					) {
+						// if the major version is 0.0.0, ignore it
+					} else if (!versionStr) {
 						statusCode = StatusCode.BAD
 						messages.push(`${libraryName}: Expected version ${expectedVersionStr}, got undefined`)
 					} else if (version.major !== expectedVersion.major ) {
@@ -113,7 +119,7 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 					} else if (version.minor < expectedVersion.minor ) {
 						statusCode = StatusCode.WARNING_MAJOR
 						messages.push(`${libraryName}: Expected version ${expectedVersionStr}, got ${versionStr} (minor version differ)`)
-					} else if (version.patch < expectedVersion.patch ) {
+					} else if (version.minor <= expectedVersion.minor && version.patch < expectedVersion.patch ) {
 						statusCode = StatusCode.WARNING_MINOR
 						messages.push(`${libraryName}: Expected version ${expectedVersionStr}, got ${versionStr} (patch version differ)`)
 					}
@@ -123,15 +129,14 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 						status: status2ExternalStatus(statusCode),
 						updated: new Date(device.lastSeen).toISOString(),
 						_status: statusCode,
-						errors: _.map(messages, (message): CheckError => {
+						errors: _.map(messages, (message: string): CheckError => {
 							return {
 								type: 'version-differ',
 								time: new Date(device.lastSeen).toISOString(),
-								message: ''
+								message: message
 							}
 						})
 					})
-
 				})
 			}
 		}

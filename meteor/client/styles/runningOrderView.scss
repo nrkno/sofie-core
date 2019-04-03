@@ -725,6 +725,13 @@ body.vertical-overflow-only {
 				}
 			}
 		}
+		.segment-timeline__segment-line {
+			.segment-timeline__segment-line__invalid-cover {
+				background-image:
+					repeating-linear-gradient(45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 4px, rgba(0, 0, 0, 1) 4px, rgba(0, 0, 0, 1) 8px),
+					repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 4px, rgba(0, 0, 0, 1) 4px, rgba(0, 0, 0, 1) 8px) !important;
+			}
+		}
 	}
 
 	/* The timeline itself is constructed out of three overlapping layers:
@@ -908,6 +915,9 @@ body.vertical-overflow-only {
 				min-width: 200%;
 				z-index: 0;
 			}
+			&.invalid {
+				background-color: #333;
+			}
 
 			.segment-timeline__segment-line__previewline {
 				display: block;
@@ -993,8 +1003,23 @@ body.vertical-overflow-only {
 				}
 			}
 
+			.segment-timeline__segment-line__invalid-cover {
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				right: 0;
+				z-index: 1;
+				pointer-events: none;
+				background-image:
+					repeating-linear-gradient(45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px),
+					repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px);
+
+			}
+
 			&:not(.live) {
-				.segment-timeline__segment-line__nextline.auto-next:not(.segment-timeline__segment-line__nextline--endline) {
+				.segment-timeline__segment-line__nextline.auto-next:not(.segment-timeline__segment-line__nextline--endline),
+				.segment-timeline__segment-line__nextline.invalid:not(.segment-timeline__segment-line__nextline--endline) {
 					border-left-width: 1px;
 
 					&::before, &::after {
@@ -1262,6 +1287,8 @@ body.vertical-overflow-only {
 							pointer-events: none;
 							display: inline-block;
 							white-space: nowrap;
+
+							transform: translate3d(0, 0, 1px); // Just to make it render in front
 
 							&:not(.right-side) {
 								overflow: hidden;

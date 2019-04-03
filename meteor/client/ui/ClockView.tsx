@@ -44,7 +44,7 @@ const Timediff = class extends React.Component<{ time: number}> {
 		const timeString = RundownUtils.formatDiffToTimecode(time, true, false, true, false, true, '', false, true) // @todo: something happened here with negative time
 		// RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)
 		// const timeStringSegments = timeString.split(':')
-		const fontWeight = (no) => no === '00' || no === '+00'
+		// const fontWeight = (no) => no === '00' || no === '+00'
 		return (
 			<span className={ClassNames({
 				'clocks-segment-countdown-red': isNegative,
@@ -64,11 +64,22 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 		let segments: Array<SegmentUi> = []
 		if (ro) {
 			segments = _.map(ro.getSegments(), (segment) => {
+				const displayDurationGroups: _.Dictionary<number> = {}
+				const segmentLines = segment.getSegmentLines()
+				let displayDuration = 0
+
 				return extendMandadory<Segment, SegmentUi>(segment, {
-					items: _.map(segment.getSegmentLines(), (sl) => {
+					items: _.map(segmentLines, (sl, index) => {
+						if (sl.displayDurationGroup && (
+							(displayDurationGroups[sl.displayDurationGroup]) ||
+							// or there is a following member of this displayDurationGroup
+							(segmentLines[index + 1] && segmentLines[index + 1].displayDurationGroup === sl.displayDurationGroup))) {
+							displayDurationGroups[sl.displayDurationGroup] = (displayDurationGroups[sl.displayDurationGroup] || 0) + ((sl.expectedDuration || 0) - (sl.duration || 0))
+							displayDuration = Math.max(0, Math.min(sl.displayDuration || sl.expectedDuration || 0, sl.expectedDuration || 0) || displayDurationGroups[sl.displayDurationGroup])
+						}
 						return extendMandadory<SegmentLine, SegmentLineUi>(sl, {
 							items: [],
-							renderedDuration: 0,
+							renderedDuration: sl.expectedDuration ? 0 : displayDuration,
 							startsAt: 0,
 							willProbablyAutoNext: false
 						})
@@ -96,10 +107,10 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 		}
 
 		render () {
-			const { runningOrder, segments, t } = this.props
+			const { runningOrder, segments } = this.props
 
 			if (runningOrder && this.props.runningOrderId && this.props.segments) {
-				let currentSegmentLine: SegmentLine | undefined
+				let currentSegmentLine: SegmentLineUi | undefined
 				for (const segment of segments) {
 					if (segment.items) {
 						for (const item of segment.items) {
@@ -111,7 +122,7 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 				}
 				let currentSegmentDuration = 0
 				if (currentSegmentLine) {
-					currentSegmentDuration += currentSegmentLine.expectedDuration || 0
+					currentSegmentDuration += currentSegmentLine.renderedDuration || currentSegmentLine.expectedDuration || 0
 					currentSegmentDuration += -1 * (currentSegmentLine.duration || 0)
 					if (!currentSegmentLine.duration && currentSegmentLine.startedPlayback) {
 						currentSegmentDuration += -1 * (getCurrentTime() - (currentSegmentLine.getLastStartedPlayback() || 0))
@@ -172,9 +183,9 @@ const ClockComponent = translate()(withTiming<RunningOrderOverviewProps, Running
 							</div>
 							<div className='clocks-bottom-top'>
 								<div className='clocks-segment-title'>
-									{currentSegmentLine && currentSegmentLine.autoNext  ?
+									{currentSegmentLine && currentSegmentLine.autoNext ?
 									<div style={{display: 'inline-block', height: '18vh'}}>
-										<img style={{height: '12vh', paddingTop: '2vh'}} src="/icons/auto-presenter-screen.svg" />
+										<img style={{height: '12vh', paddingTop: '2vh'}} src='/icons/auto-presenter-screen.svg' />
 									</div> : ''}
 									{nextSegmentLine ? nextSegmentLine.slug.split(';')[0] : '_'}
 								</div>

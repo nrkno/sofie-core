@@ -59,8 +59,8 @@ export default class SplitInputIcon extends React.Component<{ abbreviation?: str
 			<svg className='segment_line_item_icon' version='1.1' viewBox='0 0 126.5 89' xmlns='http://www.w3.org/2000/svg'>
 				<rect width='126.5' height='44.5' className={this.getLeftSourceType(this.props.segmentLineItem)} />
 				<rect width='126.5' height='44.5' y='44.5' className={this.getRightSourceType(this.props.segmentLineItem)} />
-				<text x='9.6414976' textLength='106.5' lengthAdjust="spacing" y='71.513954' textAnchor='middle' style={{ fill: '#ffffff', 'fontFamily': 'open-sans', 'fontSize': '40px', 'letterSpacing': '0px', 'lineHeight': '1.25', 'wordSpacing': '0px', 'textShadow': '0 2px 9px rgba(0, 0, 0, 0.5)' }} xmlSpace='preserve'>
-					<tspan x='63.25' y='71.513954' textLength='106.5' lengthAdjust="spacingAndLength" style={{ fill: '#ffffff', 'fontFamily': 'Roboto', 'fontSize': '75px', 'fontWeight': 100 }}>{
+				<text x='9.6414976' textLength='106.5' lengthAdjust='spacing' y='71.513954' textAnchor='middle' style={{ fill: '#ffffff', 'fontFamily': 'open-sans', 'fontSize': '40px', 'letterSpacing': '0px', 'lineHeight': '1.25', 'wordSpacing': '0px', 'textShadow': '0 2px 9px rgba(0, 0, 0, 0.5)' }} xmlSpace='preserve'>
+					<tspan x='63.25' y='71.513954' textLength='106.5' lengthAdjust='spacingAndLength' style={{ fill: '#ffffff', 'fontFamily': 'Roboto', 'fontSize': '75px', 'fontWeight': 100 }}>{
 						this.getCameraLabel(this.props.segmentLineItem)
 					}</tspan>
 				</text>
