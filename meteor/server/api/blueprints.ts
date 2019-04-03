@@ -52,7 +52,9 @@ import {
 	SomeBlueprintManifest,
 	ShowStyleBlueprintManifest,
 	StudioBlueprintManifest,
-	SystemBlueprintManifest
+	SystemBlueprintManifest,
+	IStudioContext,
+	IBlueprintShowStyleBase
 } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
 
@@ -251,6 +253,18 @@ export class NotesContext extends CommonContext implements INotesContext {
 	}
 }
 
+function compileStudioConfig (studio: StudioInstallation) {
+	const res: {[key: string]: ConfigItemValue} = {}
+	_.each(studio.config, (c) => {
+		res[c._id] = c.value
+	})
+
+	// Expose special values as defined in the studio
+	res['SofieHostURL'] = studio.settings.sofieUrl
+
+	return res
+}
+
 export class RunningOrderContext extends NotesContext implements IRunningOrderContext {
 	runningOrderId: string
 	runningOrder: RunningOrder
@@ -275,17 +289,7 @@ export class RunningOrderContext extends NotesContext implements IRunningOrderCo
 		return showStyleBase
 	}
 	getStudioConfig (): {[key: string]: ConfigItemValue} {
-		const studio: StudioInstallation = this.getStudioInstallation()
-
-		const res: {[key: string]: ConfigItemValue} = {}
-		_.each(studio.config, (c) => {
-			res[c._id] = c.value
-		})
-
-		// Expose special values as defined in the studio
-		res['SofieHostURL'] = studio.settings.sofieUrl
-
-		return res
+		return compileStudioConfig(this.getStudioInstallation())
 	}
 	getStudioConfigRef (configKey: string): string {
 		return ConfigRef.getStudioConfigRef(this.runningOrder.studioInstallationId, configKey)
@@ -354,6 +358,31 @@ export class SegmentLineContext extends RunningOrderContext implements ISegmentL
 			return (last && last._id === this.segmentLine._id)
 		}
 		return false
+	}
+}
+
+export class StudioContext implements IStudioContext {
+	readonly studioInstalation: StudioInstallation
+	constructor (studioInstalation: StudioInstallation) {
+		this.studioInstalation = studioInstalation
+	}
+
+	getStudioConfig (): {[key: string]: ConfigItemValue} {
+		return compileStudioConfig(this.studioInstalation)
+	}
+	getStudioConfigRef (configKey: string): string {
+		return ConfigRef.getStudioConfigRef(this.studioInstalation._id, configKey)
+	}
+
+	getShowStyleBases (): Array<IBlueprintShowStyleBase> {
+		return ShowStyleBases.find({ _id: { $in: this.studioInstalation.supportedShowStyleBase } }).fetch()
+	}
+	getShowStyleVariants (showStyleBaseId: string): Array<IBlueprintShowStyleVariant> {
+		// TODO - does this need to be checked to ensure the showStyle belongs to the studio?
+		return ShowStyleVariants.find({ showStyleBaseId: showStyleBaseId }).fetch()
+	}
+	getShowStyleVariantId (showStyleBase: IBlueprintShowStyleBase, variantId: string): string {
+		return getHash(showStyleBase._id + '_' + variantId)
 	}
 }
 

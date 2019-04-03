@@ -39,7 +39,9 @@ import {
 	loadShowStyleBlueprints,
 	postProcessSegmentLineAdLibItems,
 	postProcessSegmentLineItems,
-	SegmentLineContext
+	SegmentLineContext,
+	loadStudioBlueprints,
+	StudioContext
 } from '../blueprints'
 import {
 	StudioInstallations,
@@ -456,6 +458,54 @@ export function replaceStoryItem (runningOrder: RunningOrder, segmentLineItem: S
 		}, 'replaceStoryItem', slCache.data.RunningOrderId, slCache.data.ID, story)
 	})
 }
+function selectShowStyleVariant (studio: StudioInstallation, ro: MOS.IMOSRunningOrder): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
+	const studioBlueprint = loadStudioBlueprints(studio)
+	if (studioBlueprint) {
+		const context = new StudioContext(studio)
+		const showStyleVariantId = studioBlueprint.getShowStyleVariantId(context, ro)
+		if (showStyleVariantId) {
+			const showStyleVariant = ShowStyleVariants.findOne(showStyleVariantId)
+			if (!showStyleVariant) {
+				throw new Meteor.Error(404, `ShowStyleVariant "${showStyleVariantId}" not found`)
+			}
+
+			const showStyleBase = ShowStyleBases.findOne(showStyleVariant.showStyleBaseId)
+			if (!showStyleBase) {
+				throw new Meteor.Error(404, `ShowStyleBase "${showStyleVariant.showStyleBaseId}" not found`)
+			}
+
+			if (studio.supportedShowStyleBase.indexOf(showStyleBase._id) === -1) {
+				throw new Meteor.Error(404, `Studio "${studio._id}" does not support ShowStyleBase "${showStyleVariant.showStyleBaseId}"`)
+			}
+
+			return {
+				variant: showStyleVariant,
+				base: showStyleBase,
+			}
+		} else {
+			return null
+		}
+	} else {
+		const showStyleBaseId = _.first(studio.supportedShowStyleBase)
+		if (showStyleBaseId) {
+			const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+			if (!showStyleBase) {
+				throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found`)
+			}
+			const showStyleVariant = ShowStyleVariants.findOne({ showStyleBaseId: showStyleBaseId })
+			if (!showStyleVariant) {
+				throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" has no variants`)
+			}
+
+			return {
+				variant: showStyleVariant,
+				base: showStyleBase,
+			}
+		} else {
+			return null
+		}
+	}
+}
 function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: PeripheralDevice, dataSource: string) {
 	// Create or update a runningorder (ie from roCreate or roList)
 
@@ -478,11 +528,13 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 	let studioInstallation = StudioInstallations.findOne(studioInstallationId) as StudioInstallation
 	if (!studioInstallation) throw new Meteor.Error(404, 'StudioInstallation "' + studioInstallationId + '" not found')
 
-	// the defaultShowStyleVariant is a temporary solution, to be replaced by a blueprint plugin
-	let defaultShowStyleVariant = ShowStyleVariants.findOne(studioInstallation.defaultShowStyleVariant) as ShowStyleVariant || {}
+	let showStyle = selectShowStyleVariant(studioInstallation, ro)
+	if (!showStyle) {
+		logger.warn('Studio blueprint rejected RO')
+		return
+	}
 
-	let showStyleBase = ShowStyleBases.findOne(defaultShowStyleVariant.showStyleBaseId) as ShowStyleBase || {}
-	let blueprint = Blueprints.findOne(showStyleBase.blueprintId) as Blueprint || {}
+	let blueprint = Blueprints.findOne(showStyle.base.blueprintId) as Blueprint || {}
 
 	let dbROData: DBRunningOrder = _.extend(existingDbRo || {},
 		_.omit(literal<DBRunningOrder>({
@@ -490,8 +542,8 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 			mosId: ro.ID.toString(),
 			studioInstallationId: studioInstallation._id,
 			mosDeviceId: peripheralDevice._id,
-			showStyleVariantId: defaultShowStyleVariant._id,
-			showStyleBaseId: defaultShowStyleVariant.showStyleBaseId,
+			showStyleVariantId: showStyle.variant._id,
+			showStyleBaseId: showStyle.base._id,
 			name: ro.Slug.toString(),
 			expectedStart: formatTime(ro.EditorialStart),
 			expectedDuration: formatDuration(ro.EditorialDuration),
@@ -500,8 +552,8 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 
 			importVersions: {
 				studioInstallation: studioInstallation._runningOrderVersionHash,
-				showStyleBase: showStyleBase._runningOrderVersionHash,
-				showStyleVariant: defaultShowStyleVariant._runningOrderVersionHash,
+				showStyleBase: showStyle.base._runningOrderVersionHash,
+				showStyleVariant: showStyle.variant._runningOrderVersionHash,
 				blueprint: blueprint.blueprintVersion,
 				core: PackageInfo.version,
 			},
