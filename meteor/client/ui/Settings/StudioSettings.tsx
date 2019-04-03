@@ -39,9 +39,10 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { translate } from 'react-i18next'
 import { ShowStyleBases, ShowStyleBase, } from '../../../lib/collections/ShowStyleBases'
-import { IConfigItem, LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
+import { IConfigItem, LookaheadMode, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { ConfigManifestSettings, ObjectWithConfig, collectConfigs } from './ConfigManifestSettings'
+import { Blueprints } from '../../../lib/collections/Blueprints';
 
 interface IConfigSettingsProps {
 	item: ObjectWithConfig
@@ -934,6 +935,24 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		}).fetch()
 	}
 })(class StudioSettings extends MeteorReactComponent<Translated<IStudioSettingsProps & IStudioSettingsTrackedProps>, IStudioSettingsState> {
+	getOptionBlueprints () {
+		const { t } = this.props
+
+		// TODO - ideally this wants to be undefined, not empty string (for defaults rendering)
+		let options: { name: string, value: string }[] = [{
+			name: t('None'),
+			value: '',
+		}]
+		options.push(..._.map(Blueprints.find({ blueprintType: BlueprintManifestType.STUDIO }).fetch(), (blueprint) => {
+			return {
+				name: blueprint.name ? blueprint.name + ` (${blueprint._id})` : blueprint._id,
+				value: blueprint._id
+			}
+		}))
+
+		return options
+	}
+
 	renderEditForm () {
 		const { t } = this.props
 
@@ -950,6 +969,20 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								attribute='name'
 								obj={this.props.studioInstallation}
 								type='text'
+								collection={StudioInstallations}
+								className='mdinput'></EditAttribute>
+							<span className='mdfx'></span>
+						</div>
+					</label>
+					<label className='field'>
+						{t('Blueprint')}
+						<div className='mdi'>
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='blueprintId'
+								obj={this.props.studioInstallation}
+								type='dropdown'
+								options={this.getOptionBlueprints()}
 								collection={StudioInstallations}
 								className='mdinput'></EditAttribute>
 							<span className='mdfx'></span>

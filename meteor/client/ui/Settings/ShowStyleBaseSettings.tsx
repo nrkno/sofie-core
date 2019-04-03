@@ -21,7 +21,7 @@ import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { callMethod } from '../../lib/clientAPI'
 import { ShowStylesAPI } from '../../../lib/api/showStyles'
-import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem } from 'tv-automation-sofie-blueprints-integration'
+import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { Link } from 'react-router-dom'
@@ -87,7 +87,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	}
 
 	getOptionBlueprints () {
-		return _.map(Blueprints.find().fetch(), (blueprint) => {
+		return _.map(Blueprints.find({ blueprintType: BlueprintManifestType.SHOWSTYLE }).fetch(), (blueprint) => {
 			return {
 				name: blueprint.name ? blueprint.name + ` (${blueprint._id})` : blueprint._id,
 				value: blueprint._id

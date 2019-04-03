@@ -71,7 +71,7 @@ import {
 	VTContent
 } from 'tv-automation-sofie-blueprints-integration'
 import {
-	loadBlueprints,
+	loadShowStyleBlueprints,
 	postProcessSegmentLineAdLibItems,
 	postProcessSegmentLineBaselineItems,
 	RunningOrderContext,
@@ -375,7 +375,7 @@ export namespace ServerPlayoutAPI {
 			logger.info('Building baseline items...')
 
 			const showStyleBase = runningOrder.getShowStyleBase()
-			let blueprint = loadBlueprints(showStyleBase)
+			let blueprint = loadShowStyleBlueprints(showStyleBase)
 
 			const context = new RunningOrderContext(runningOrder)
 

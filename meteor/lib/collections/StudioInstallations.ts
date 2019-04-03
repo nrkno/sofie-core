@@ -32,6 +32,9 @@ export interface DBStudioInstallation extends IBlueprintStudioInstallation {
 	_id: string
 	/** User-presentable name for the studio installation */
 	name: string
+	/** Id of the blueprint used by this studio-installation */
+	blueprintId?: string
+
 	/** Mappings between the physical devices / outputs and logical ones */
 	mappings: MappingsExt
 
@@ -64,6 +67,7 @@ export interface ITestToolsConfig {
 export class StudioInstallation implements DBStudioInstallation {
 	public _id: string
 	public name: string
+	public blueprintId?: string
 	public mappings: MappingsExt
 	public defaultShowStyleVariant: string
 	public supportedShowStyleBase: Array<string>

@@ -36,7 +36,7 @@ import {
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
 import {
-	loadBlueprints,
+	loadShowStyleBlueprints,
 	postProcessSegmentLineAdLibItems,
 	postProcessSegmentLineItems,
 	SegmentLineContext
@@ -239,7 +239,7 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 	let resultAdlibSli: SegmentLineAdLibItem[] | undefined = undefined
 	let notes: SegmentLineNote[] = []
 	try {
-		const blueprints = loadBlueprints(showStyleBase)
+		const blueprints = loadShowStyleBlueprints(showStyleBase)
 		let result = blueprints.getSegmentLine(context, story)
 
  		if (result) {

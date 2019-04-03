@@ -3,7 +3,7 @@ import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 
-import { ConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigManifestEntry, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 
 export interface Blueprint {
 	_id: string
@@ -11,6 +11,8 @@ export interface Blueprint {
 	code: string
 	modified: number
 	created: number
+
+	blueprintType: BlueprintManifestType,
 
 	studioConfigManifest: ConfigManifestEntry[]
 	showStyleConfigManifest: ConfigManifestEntry[]
