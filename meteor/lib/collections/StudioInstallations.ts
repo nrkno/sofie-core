@@ -38,9 +38,6 @@ export interface DBStudioInstallation extends IBlueprintStudioInstallation {
 	/** Mappings between the physical devices / outputs and logical ones */
 	mappings: MappingsExt
 
-	/** RunningOrders will have this, if nothing else is specified */
-	defaultShowStyleVariant: string
-
 	/** List of which ShowStyleBases this studio wants to support */
 	supportedShowStyleBase: Array<string>
 
@@ -69,7 +66,6 @@ export class StudioInstallation implements DBStudioInstallation {
 	public name: string
 	public blueprintId?: string
 	public mappings: MappingsExt
-	public defaultShowStyleVariant: string
 	public supportedShowStyleBase: Array<string>
 	public config: Array<IConfigItem>
 	public settings: IStudioInstallationSettings

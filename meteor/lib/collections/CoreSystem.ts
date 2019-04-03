@@ -18,7 +18,7 @@ export interface ICoreSystem {
 	previousVersion: string | null
 
 	/** Id of the blueprint used by this system */
-	blueprintId?: string
+	blueprintId?: string // TODO - need to set this somewhere
 
 	/** File path to store persistant data (like snapshots, etc) */
 	storePath: string

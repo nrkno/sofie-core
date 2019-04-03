@@ -1001,20 +1001,6 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 						</div>
 					</div>
 					<label className='field'>
-						{t('Default ShowStyleVariant')}
-						<div className='mdi'>
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute='defaultShowStyleVariant'
-								obj={this.props.studioInstallation}
-								type='dropdown'
-								options={this.props.availableShowStyleVariants}
-								collection={StudioInstallations}
-								className='mdinput'></EditAttribute>
-							<span className='mdfx'></span>
-						</div>
-					</label>
-					<label className='field'>
 						{t('Media Preview URL')}
 						<div className='mdi'>
 							<EditAttribute
