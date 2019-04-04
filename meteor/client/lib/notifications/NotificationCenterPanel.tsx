@@ -177,7 +177,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 				</VelocityReact.VelocityTransitionGroup>
 
 				<ContextMenu id='context-menu-dissmiss-all'>
-					<MenuItem onClick={() => this.dismissAll()}>Dismiss all</MenuItem>
+					<MenuItem onClick={() => this.dismissAll()}>{t('Dismiss all notifications')}</MenuItem>
 				</ContextMenu>
 			</div>
 		)

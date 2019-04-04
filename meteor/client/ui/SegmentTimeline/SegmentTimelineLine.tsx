@@ -56,13 +56,16 @@ interface ISourceLayerProps {
 	onContextMenu?: (contextMenuContext: any) => void
 }
 class SourceLayer extends React.Component<ISourceLayerProps> {
+	private mousePosition = {}
 
 	getSegmentLineContext = (props) => {
 		const ctx = {
 			segment: this.props.segment,
 			segmentLine: this.props.segmentLine,
 			segmentLineDocumentOffset: $('#' + SegmentTimelineLineElementId + this.props.segmentLine._id).offset(),
-			timeScale: this.props.timeScale
+			timeScale: this.props.timeScale,
+			mousePosition: this.mousePosition,
+			segmentLineStartsAt: this.props.startsAt
 		}
 
 		if (this.props.onContextMenu && typeof this.props.onContextMenu === 'function') {
@@ -70,6 +73,10 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 		}
 
 		return ctx
+	}
+
+	onMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.mousePosition = {left: e.pageX, top: e.pageY}
 	}
 
 	renderInside () {
@@ -113,7 +120,8 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 	render () {
 		return (
 			<ContextMenuTrigger id='segment-timeline-context-menu' attributes={{
-				className: 'segment-timeline__layer'
+				className: 'segment-timeline__layer',
+				onMouseUpCapture: (e) => this.onMouseUp(e)
 			}}
 				collect={this.getSegmentLineContext}>
 				{this.renderInside()}
@@ -404,9 +412,10 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 				>
 					{this.props.segmentLine.invalid ? <div className='segment-timeline__segment-line__invalid-cover'></div> : null }
 
-					<div className={ClassNames('segment-timeline__segment-line__nextline', {
+					<div className={ClassNames('segment-timeline__segment-line__nextline', { // This is the base, basic line
 						'auto-next': this.props.segmentLine.willProbablyAutoNext,
-						'invalid': this.props.segmentLine.invalid
+						'invalid': this.props.segmentLine.invalid,
+						'offset': !!this.props.runningOrder.nextTimeOffset
 					})}>
 						<div className={ClassNames('segment-timeline__segment-line__nextline__label', {
 							'segment-timeline__segment-line__nextline__label--thin': (this.props.autoNextSegmentLine || this.props.segmentLine.willProbablyAutoNext) && !this.state.isNext
@@ -421,10 +430,28 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 							)}
 						</div>
 					</div>
-					{this.props.runningOrder.nextTimeOffset && this.state.isNext &&
-						<div className='segment-timeline__segment-line__previewline' style={{
-							'left': (this.props.runningOrder.nextTimeOffset * this.props.timeScale) + 'px',
-						}}></div>
+					{this.props.runningOrder.nextTimeOffset && this.state.isNext && // This is the off-set line
+						<div className={ClassNames('segment-timeline__segment-line__nextline', {
+							'auto-next': this.props.segmentLine.willProbablyAutoNext,
+							'invalid': this.props.segmentLine.invalid
+						})} style={{
+							'left': (this.props.relative ?
+								((this.props.runningOrder.nextTimeOffset / (this.getLineDuration() || 1) * 100) + '%') :
+								((this.props.runningOrder.nextTimeOffset * this.props.timeScale) + 'px')),
+						}}>
+							<div className={ClassNames('segment-timeline__segment-line__nextline__label', {
+								'segment-timeline__segment-line__nextline__label--thin': (this.props.autoNextSegmentLine || this.props.segmentLine.willProbablyAutoNext) && !this.state.isNext
+							})}>
+								{(
+									this.props.segmentLine.invalid ?
+										t('Invalid') :
+									[
+										(this.props.autoNextSegmentLine || this.props.segmentLine.willProbablyAutoNext) && t('Auto') + ' ',
+										this.state.isNext && t('Next')
+									]
+								)}
+							</div>
+						</div>
 					}
 					{ DEBUG_MODE &&
 						<div className='segment-timeline__debug-info'>

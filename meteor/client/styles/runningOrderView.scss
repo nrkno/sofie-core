@@ -1084,7 +1084,7 @@ body.vertical-overflow-only {
 			}
 
 			&.next {
-				.segment-timeline__segment-line__nextline {
+				.segment-timeline__segment-line__nextline:not(.offset) {
 					.segment-timeline__segment-line__nextline__label {
 						> svg {
 							margin-left: 1px;
@@ -1093,7 +1093,7 @@ body.vertical-overflow-only {
 					}
 				}
 
-				.segment-timeline__segment-line__nextline:not(.segment-timeline__segment-line__nextline--endline) {
+				.segment-timeline__segment-line__nextline:not(.segment-timeline__segment-line__nextline--endline):not(.offset) {
 					border-left-color: $general-next-color;
 					color: $general-next-color;
 
