@@ -192,7 +192,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	}
 }
 
-interface ModalDialogQueueItem {
+export interface ModalDialogQueueItem {
 	title: string
 	message: string | JSX.Element | Array<JSX.Element >
 	yes?: string

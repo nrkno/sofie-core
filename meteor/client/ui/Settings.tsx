@@ -5,7 +5,7 @@ import * as _ from 'underscore'
 import { translate } from 'react-i18next'
 import { Random } from 'meteor/random'
 import { literal } from '../../lib/lib'
-import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
+import { ModalDialog, doModalDialog, ModalDialogQueueItem } from '../lib/ModalDialog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import {
 	Route,
@@ -36,6 +36,8 @@ import { ShowStylesAPI } from '../../lib/api/showStyles'
 import { callMethod } from '../lib/clientAPI'
 import { BlueprintAPI } from '../../lib/api/blueprint'
 import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
+import { getDeveloperMode } from '../lib/localStorage'
+import * as i18next from 'i18next'
 
 class WelcomeToSettings extends React.Component {
 	render () {
@@ -135,9 +137,12 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		const { t } = this.props
 		doModalDialog({
 			title: t('Delete this Show Style?'),
-			message: [
+			yes: t('Delete'),
+			no: t('Cancel'),
+			message: <React.Fragment>
 				<p>{t('Are you sure you want to delete the show style "{{showStyleId}}"?', { showStyleId: item && item.name })}</p>
-			],
+				<p>{t('Please note: This action is irreversible!')}</p>
+			</React.Fragment>,
 			onAccept: () => {
 				callMethod('ModalDialog', ShowStylesAPI.methods.removeShowStyleBase, item._id)
 			}
@@ -147,9 +152,12 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		const { t } = this.props
 		doModalDialog({
 			title: t('Delete this Blueprint?'),
-			message: [
+			yes: t('Delete'),
+			no: t('Cancel'),
+			message: <React.Fragment>
 				<p>{t('Are you sure you want to delete the blueprint "{{blueprintId}}"?', { blueprintId: blueprint && blueprint.name })}</p>
-			],
+				<p>{t('Please note: This action is irreversible!')}</p>
+			</React.Fragment>,
 			onAccept: () => {
 				callMethod('ModalDialog', BlueprintAPI.methods.removeBlueprint, blueprint._id)
 			}
@@ -159,9 +167,12 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		const { t } = this.props
 		doModalDialog({
 			title: t('Remove this Device?'),
-			message: [
+			yes: t('Delete'),
+			no: t('Cancel'),
+			message: <React.Fragment>
 				<p>{t('Are you sure you want to remove the device "{{deviceName}}" and all of it\'s sub-devices?', { deviceName: device && device.name })}</p>
-			],
+				<p>{t('Please note: This action is irreversible!')}</p>
+			</React.Fragment>,
 			onAccept: () => {
 				callMethod('ModalDialog', 'temporaryRemovePeripheralDevice', device._id)
 			}

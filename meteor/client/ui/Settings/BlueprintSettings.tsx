@@ -54,6 +54,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 			doModalDialog({
 				title: t('Update Blueprints?'),
+				yes: t('Update'),
+				no: t('Cancel'),
 				message: [
 					<p>{t('Are you sure you want to update the blueprints from the file "{{fileName}}"?', { fileName: file.name })}</p>,
 					<p>{t('Please note: This action is irreversible!')}</p>

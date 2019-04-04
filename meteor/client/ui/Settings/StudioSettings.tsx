@@ -85,12 +85,13 @@ export const ConfigSettings = translate()(class ConfigSettings extends React.Com
 		const { t } = this.props
 		doModalDialog({
 			title: t('Delete this item?'),
+			yes: t('Delete'),
 			no: t('Cancel'),
 			onAccept: () => {
 				this.onDeleteConfigItem(item)
 			},
 			message: <React.Fragment>
-				<p>{t('Are you sure you want to delete this config item "{{configId}}"?', { configId: (item && item._id) })}</p>,
+				<p>{t('Are you sure you want to delete this config item "{{configId}}"?', { configId: (item && item._id) })}</p>
 				<p>{t('Please note: This action is irreversible!')}</p>
 			</React.Fragment>
 		})
@@ -257,11 +258,12 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 		const { t } = this.props
 		doModalDialog({
 			title: t('Remove this device?'),
+			yes: t('Remove'),
 			no: t('Cancel'),
 			onAccept: () => {
 				this.onRemoveDevice(device)
 			},
-			message: <p>{t('Are you sure you want to remove device "{{devideId}}"?', { deviceId: device && device.name })}</p>
+			message: <p>{t('Are you sure you want to remove device "{{deviceId}}"?', { deviceId: device && (device.name || device._id) })}</p>
 		})
 	}
 
@@ -368,11 +370,15 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 		const { t } = this.props
 		doModalDialog({
 			title: t('Remove this mapping?'),
+			yes: t('Remove'),
 			no: t('Cancel'),
 			onAccept: () => {
 				this.removeLayer(mappingId)
 			},
-			message: <p>{t('Are you sure you want to remove mapping for layer "{{mappingId}}"?', { mappingId: mappingId })}</p>
+			message: <React.Fragment>
+				<p>{t('Are you sure you want to remove mapping for layer "{{mappingId}}"?', { mappingId: mappingId })}</p>
+				<p>{t('Please note: This action is irreversible!')}</p>
+			</React.Fragment>
 		})
 	}
 	removeLayer = (mappingId: string) => {

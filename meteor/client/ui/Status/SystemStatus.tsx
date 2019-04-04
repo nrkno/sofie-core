@@ -242,7 +242,7 @@ export const DeviceItem = translate()(class extends React.Component<Translated<I
 							show={!!this.state.showDeleteDeviceConfirm}
 							onAccept={(e) => this.handleConfirmDeleteShowStyleAccept(e)}
 							onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
-							<p>{t('Are you sure you want to delete this device?')}</p>
+							<p>{t('Are you sure you want to delete this device: "{{deviceId}}"?', { deviceId: this.state.showDeleteDeviceConfirm && (this.state.showDeleteDeviceConfirm.name || this.state.showDeleteDeviceConfirm._id) })}</p>
 						</ModalDialog>
 						{this.props.showRemoveButtons && <button key='button-device' className='btn btn-primary' onClick={
 							(e) => {
