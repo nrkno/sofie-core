@@ -19,7 +19,7 @@ import * as classNames from 'classnames'
 import { Segments } from '../../../lib/collections/Segments'
 import { Tracker } from 'meteor/tracker'
 import { PrompterControlManager } from './controller/manager'
-import { NotificationCenterPanel } from '../../lib/notifications/NotificationCenterPanel'
+import { Meteor } from 'meteor/meteor'
 
 interface PrompterConfig {
 	mirror?: boolean
@@ -67,6 +67,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	configOptions: PrompterConfig
 
 	private _controller: PrompterControlManager
+
+	private checkWindowScroll: number | null = null
 
 	constructor (props) {
 		super(props)
@@ -117,6 +119,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 	componentDidUpdate () {
 		$(document.body).addClass(['dark', 'xdark', 'vertical-overflow-only'])
+		this.triggerCheckCurrentTakeMarkers()
 		this.checkScrollToCurrent()
 	}
 	checkScrollToCurrent () {
@@ -173,16 +176,92 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	getScrollPosition () {
 		return window.scrollY || window.pageYOffset || (document.documentElement || {scrollTop: undefined}).scrollTop
 	}
+	onWindowScroll = () => {
+		this.triggerCheckCurrentTakeMarkers()
+	}
+	triggerCheckCurrentTakeMarkers = () => {
+		// Rate limit:
+		if (!this.checkWindowScroll) {
+			this.checkWindowScroll = Meteor.setTimeout(() => {
+				this.checkWindowScroll = null
+
+				this.checkCurrentTakeMarkers()
+			}, 500)
+		}
+	}
+	checkCurrentTakeMarkers = () => {
+
+		let roId = this.props.runningOrder && this.props.runningOrder._id
+		let runningOrder = RunningOrders.findOne(roId || '')
+
+		if (runningOrder) {
+
+			const positionTop = this.getScrollPosition()
+			const positionBottom = positionTop + window.innerHeight
+
+			const anchors = $('.scroll-anchor')
+
+			let currentSegmentLineElement: JQuery<HTMLElement> | null = null
+			let currentSegmentLineElementAfter: JQuery<HTMLElement> | null = null
+			let nextSegmentLineElement: JQuery<HTMLElement> | null = null
+			let nextSegmentLineElementAfter: JQuery<HTMLElement> | null = null
+
+			for (let i = 0; i < anchors.length; i++) {
+				const el = anchors[i]
+				const next = anchors[i + 1]
+
+				if (runningOrder.currentSegmentLineId && el.className.match('.segmentLine-' + runningOrder.currentSegmentLineId ) ) {
+					currentSegmentLineElement = $(el)
+					currentSegmentLineElementAfter = $(next) || null
+				}
+				if (runningOrder.nextSegmentLineId && el.className.match('.segmentLine-' + runningOrder.nextSegmentLineId ) ) {
+					nextSegmentLineElement = $(el)
+					nextSegmentLineElementAfter = $(next) || null
+				}
+			}
+
+			const currentPositionStart 	= currentSegmentLineElement 		? (currentSegmentLineElement.offset() 		|| {top: undefined}).top : null
+			const currentPositionEnd 	= currentSegmentLineElementAfter 	? (currentSegmentLineElementAfter.offset() 	|| {top: undefined}).top : null
+
+			const nextPositionStart 	= nextSegmentLineElement 			? (nextSegmentLineElement.offset() 		|| {top: undefined}).top : null
+			const nextPositionEnd 		= nextSegmentLineElementAfter 		? (nextSegmentLineElementAfter.offset() 	|| {top: undefined}).top : null
+
+			if (currentPositionEnd && currentPositionEnd < positionTop) {
+				// Display take "^" indicator
+				$('.take-indicator').toggleClass('hidden', false).toggleClass('top', true)
+			} else if (currentPositionStart && currentPositionStart > positionBottom) {
+				// Display take "v" indicator
+				$('.take-indicator').toggleClass('hidden', false).toggleClass('top', false)
+			} else {
+				$('.take-indicator').toggleClass('hidden', true)
+			}
+
+			if (nextPositionEnd && nextPositionEnd < positionTop) {
+				// Display next "^" indicator
+				$('.next-indicator').toggleClass('hidden', false).toggleClass('top', true)
+			// } else if (nextPositionStart && nextPositionStart > positionBottom) {
+				// Don't display next "v" indicator
+				// $('.next-indicator').toggleClass('hidden', false).toggleClass('top', false)
+			} else {
+				$('.next-indicator').toggleClass('hidden', true)
+			}
+		}
+	}
 
 	componentDidMount () {
 		$(document.body).addClass(['dark', 'vertical-overflow-only'])
-		this.checkScrollToCurrent()
+		window.addEventListener('scroll', this.onWindowScroll)
 		this.isMounted0 = true
+
+		this.triggerCheckCurrentTakeMarkers()
+		this.checkScrollToCurrent()
 	}
 	componentWillUnmount () {
 		super.componentWillUnmount()
-		this.isMounted0 = false
+
 		$(document.body).removeClass(['dark', 'vertical-overflow-only'])
+		window.removeEventListener('scroll', this.onWindowScroll)
+		this.isMounted0 = false
 
 	}
 
@@ -370,8 +449,6 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 	render () {
 		const { t } = this.props
 
-		console.log(this.props.prompterData)
-
 		if (this.props.prompterData && this.props.runningOrder) {
 			return (
 				<div
@@ -390,8 +467,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 							<div className='side right'></div>
 						</div>
 
-						<div className='take-indicator'></div>
-						<div className='next-indicator'></div>
+						<div className='take-indicator hidden'></div>
+						<div className='next-indicator hidden'></div>
 					</div>
 
 					<div className='prompter-break begin'>
