@@ -1,7 +1,6 @@
 import {
 	parseVersion,
 	getCoreSystem,
-	compareVersions,
 	setCoreSystemVersion,
 	Version
 } from '../../lib/collections/CoreSystem'
@@ -40,6 +39,7 @@ import { Blueprints } from '../../lib/collections/Blueprints'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { evalBlueprints, MigrationContextStudio, MigrationContextShowStyle } from '../api/blueprints'
 import { getHash } from '../../lib/lib'
+import * as semver from 'semver'
 
 /** The current database version, x.y.z
  * 0.16.0: Release 3   (2018-10-26)
@@ -63,14 +63,14 @@ export const GENESIS_SYSTEM_VERSION = '0.0.0'
  */
 export const UNSUPPORTED_VERSIONS = [
 	// 0.18.0 to 0.19.0: Major refactoring, (ShowStyles was split into ShowStyleBase &
-	//    ShowStyleVariant, configs & layers wheremoved from studio to ShowStyles)
-	'0.18.0'
+	//    ShowStyleVariant, configs & layers wher emoved from studio to ShowStyles)
+	'<=0.18'
 ]
 
 export function isVersionSupported (version: Version) {
 	let isSupported: boolean = true
 	_.each(UNSUPPORTED_VERSIONS, (uv) => {
-		if (compareVersions(version, parseVersion(uv)) <= 0) {
+		if (semver.satisfies(version, uv)) {
 			isSupported = false
 		}
 	})
@@ -120,8 +120,8 @@ export function prepareMigration (returnAllChunks?: boolean) {
 	let chunk: MigrationChunk = {
 		sourceType:				MigrationStepType.CORE,
 		sourceName:				'system',
-		_dbVersion: 			parseVersion(databaseSystem.version).toString(),
-		_targetVersion: 		parseVersion(CURRENT_SYSTEM_VERSION).toString(),
+		_dbVersion: 			parseVersion(databaseSystem.version),
+		_targetVersion: 		parseVersion(CURRENT_SYSTEM_VERSION),
 		_steps:					[]
 	}
 	migrationChunks.push(chunk)
@@ -168,8 +168,8 @@ export function prepareMigration (returnAllChunks?: boolean) {
 					sourceName:				'Blueprint ' + blueprint.name + ' for showStyle ' + showStyleBase.name,
 					blueprintId: 			blueprint._id,
 					sourceId: 				showStyleBase._id,
-					_dbVersion: 			parseVersion(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0').toString(),
-					_targetVersion: 		parseVersion(bp.blueprintVersion).toString(),
+					_dbVersion: 			parseVersion(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0'),
+					_targetVersion: 		parseVersion(bp.blueprintVersion),
 					_steps:					[]
 				}
 				migrationChunks.push(chunk)
@@ -203,8 +203,8 @@ export function prepareMigration (returnAllChunks?: boolean) {
 							sourceName:				'Blueprint ' + blueprint.name + ' for studio ' + studio.name,
 							blueprintId: 			blueprint._id,
 							sourceId: 				studio._id,
-							_dbVersion: 			parseVersion(blueprint.databaseVersion.studio[studio._id] || '0.0.0').toString(),
-							_targetVersion: 		parseVersion(bp.blueprintVersion).toString(),
+							_dbVersion: 			parseVersion(blueprint.databaseVersion.studio[studio._id] || '0.0.0'),
+							_targetVersion: 		parseVersion(bp.blueprintVersion),
 							_steps:					[]
 						}
 						migrationChunks.push(chunk)
@@ -233,8 +233,10 @@ export function prepareMigration (returnAllChunks?: boolean) {
 
 	// Sort, smallest version first:
 	allMigrationSteps.sort((a, b) => {
-		let i = compareVersions(a._version, b._version)
-		if (i !== 0) return i
+
+		if (semver.gt(a._version, b._version)) return 1
+		if (semver.lt(a._version, b._version)) return -1
+
 		// Keep ranking within version:
 		if (a._rank > b._rank) return 1
 		if (a._rank < b._rank) return -1
@@ -257,8 +259,8 @@ export function prepareMigration (returnAllChunks?: boolean) {
 
 		if (partialMigration) return
 		if (
-			compareVersions(step._version, parseVersion(step.chunk._dbVersion)) > 0 && // step version is larger than database version
-			compareVersions(step._version, parseVersion(step.chunk._targetVersion)) <= 0 // // step version is less than (or equal) to system version
+			semver.gt(step._version, step.chunk._dbVersion) && // step version is larger than database version
+			semver.gte(step._version, step.chunk._targetVersion) // // step version is less than (or equal) to system version
 		) {
 			// Step is in play
 
@@ -405,7 +407,7 @@ export function runMigration (
 ): RunMigrationResult {
 
 	logger.info(`Migration: Starting`)
-	// logger.info(`Migration: Starting, from "${baseVersion.toString()}" to "${targetVersion.toString()}".`)
+	// logger.info(`Migration: Starting, from "${baseVersion}" to "${targetVersion}".`)
 
 	// Verify the input:
 	let migration = prepareMigration(true)
@@ -546,7 +548,7 @@ export function runMigration (
 function completeMigration (chunks: Array<MigrationChunk>) {
 	_.each(chunks, (chunk) => {
 		if (chunk.sourceType === MigrationStepType.CORE) {
-			setCoreSystemVersion(chunk._targetVersion.toString())
+			setCoreSystemVersion(chunk._targetVersion)
 		} else if (
 			chunk.sourceType === MigrationStepType.STUDIO ||
 			chunk.sourceType === MigrationStepType.SHOWSTYLE
@@ -560,12 +562,12 @@ function completeMigration (chunks: Array<MigrationChunk>) {
 
 			let m: any = {}
 			if (chunk.sourceType === MigrationStepType.STUDIO) {
-				logger.info(`Updating Blueprint "${chunk.sourceName}" version, from "${blueprint.databaseVersion.studio[chunk.sourceId]}" to "${chunk._targetVersion.toString()}".`)
-				m[`databaseVersion.studio.${chunk.sourceId}`] = chunk._targetVersion.toString()
+				logger.info(`Updating Blueprint "${chunk.sourceName}" version, from "${blueprint.databaseVersion.studio[chunk.sourceId]}" to "${chunk._targetVersion}".`)
+				m[`databaseVersion.studio.${chunk.sourceId}`] = chunk._targetVersion
 
 			} else if (chunk.sourceType === MigrationStepType.SHOWSTYLE) {
-				logger.info(`Updating Blueprint "${chunk.sourceName}" version, from "${blueprint.databaseVersion.showStyle[chunk.sourceId]}" to "${chunk._targetVersion.toString()}".`)
-				m[`databaseVersion.showStyle.${chunk.sourceId}`] = chunk._targetVersion.toString()
+				logger.info(`Updating Blueprint "${chunk.sourceName}" version, from "${blueprint.databaseVersion.showStyle[chunk.sourceId]}" to "${chunk._targetVersion}".`)
+				m[`databaseVersion.showStyle.${chunk.sourceId}`] = chunk._targetVersion
 
 			} else throw new Meteor.Error(500, `Bad chunk.sourcetype: "${chunk.sourceType}"`)
 
@@ -575,7 +577,7 @@ function completeMigration (chunks: Array<MigrationChunk>) {
 }
 export function updateDatabaseVersion (targetVersionStr: string) {
 	let targetVersion = parseVersion(targetVersionStr)
-	setCoreSystemVersion(targetVersion.toString())
+	setCoreSystemVersion(targetVersion)
 }
 
 export function updateDatabaseVersionToSystem () {
@@ -587,9 +589,9 @@ function getMigrationStatus (): GetMigrationStatusResult {
 	let migration = prepareMigration(true)
 
 	return {
-		// databaseVersion:	 		databaseVersion.toString(),
+		// databaseVersion:	 		databaseVersion,
 		// databasePreviousVersion:	system.previousVersion,
-		// systemVersion:		 		systemVersion.toString(),
+		// systemVersion:		 		systemVersion,
 		migrationNeeded:	 			migration.steps.length > 0,
 
 		migration: {
