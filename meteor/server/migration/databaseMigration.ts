@@ -519,11 +519,12 @@ export function runMigration (
 	if (migration.manualStepCount === 0 && !warningMessages.length) { // continue automatically with the next batch
 		migration.partialMigration = false
 		const s = getMigrationStatus()
-		const res = runMigration(s.migration.chunks, s.migration.hash, inputResults, false)
-		if (res.migrationCompleted) {
-			return res
+		if (s.migration.automaticStepCount > 0 && s.migration.manualStepCount > 0) {
+			const res = runMigration(s.migration.chunks, s.migration.hash, inputResults, false)
+			if (res.migrationCompleted) {
+				return res
+			}
 		}
-
 	}
 	if (!migration.partialMigration && !warningMessages.length) {
 		// if there are no warning messages, we can complete the migration right away:
