@@ -946,6 +946,7 @@ interface IState {
 	isSupportPanelOpen: boolean
 	isInspectorDrawerExpanded: boolean
 	isClipTrimmerOpen: boolean
+	selectedSegmentLineItem: SegmentLineItemUi | undefined
 }
 
 export enum RunningOrderViewEvents {
@@ -1047,7 +1048,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			isNotificationsCenterOpen: false,
 			isSupportPanelOpen: false,
 			isInspectorDrawerExpanded: false,
-			isClipTrimmerOpen: false
+			isClipTrimmerOpen: false,
+			selectedSegmentLineItem: undefined
 		}
 	}
 
@@ -1202,6 +1204,13 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				})
 			})
 		}
+	}
+
+	onSelectSegmentLineItem = (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => {
+		this.setState({
+			isClipTrimmerOpen: true,
+			selectedSegmentLineItem: sli
+		})
 	}
 
 	componentWillUnmount () {
@@ -1398,6 +1407,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								onContextMenu={this.onContextMenu}
 								onSegmentScroll={this.onSegmentScroll}
 								isLastSegment={index === array.length - 1}
+								onItemClick={this.onSelectSegmentLineItem}
 								onItemDoubleClick={this.onSLItemDoubleClick}
 								onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
 							/>
@@ -1605,10 +1615,42 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									studioMode={this.state.studioMode} />
 							</ErrorBoundary>
 							<ErrorBoundary>
-								{this.state.isClipTrimmerOpen &&
-									<ClipTrimPanel
-										studioInstallationId={this.props.studioInstallation._id}
-										runningOrderId={this.props.runningOrderId} />
+								{this.state.isClipTrimmerOpen && this.state.selectedSegmentLineItem &&
+									<div className='glass-pane'>
+										<div className='glass-pane-content'>
+											<VelocityReact.VelocityTransitionGroup enter={{
+												animation: {
+													translateY: [0, 100],
+													opacity: [1, 0]
+												}, easing: 'spring', duration: 250
+											}} runOnMount={true}>
+												<dialog open={true} className='border-box overlay-m'>
+													<div className='flex-row info vertical-align-stretch tight-s'>
+														<div className='flex-col c12'>
+															<h2>
+																Edit Clip
+															</h2>
+														</div>
+														<div className='flex-col horizontal-align-right vertical-align-middle'>
+															<p>
+																<button className='action-btn' onClick={(e) => { }}>
+																	<CoreIcon id='nrk-close' />
+																</button>
+															</p>
+														</div>
+													</div>
+													<div className='title-box-content'>
+														<ClipTrimPanel
+															studioInstallationId={this.props.studioInstallation._id}
+															runningOrderId={this.props.runningOrderId}
+															segmentLineItemId={this.state.selectedSegmentLineItem._id}
+															segmentLineId={this.state.selectedSegmentLineItem.segmentLineId}
+															 />
+													</div>
+												</dialog>
+											</VelocityReact.VelocityTransitionGroup>
+										</div>
+									</div>
 								}
 							</ErrorBoundary>
 							{this.renderSegmentsList()}

@@ -16,12 +16,12 @@ export interface IProps {
 }
 
 interface ITrackedProps {
-	segmentLineItem: SegmentLineItem
+	segmentLineItem: SegmentLineItem | undefined
 	mediaObject: MediaObject | undefined
 	studioInstallation: StudioInstallation | undefined
 }
 
-export const ClipTrimPanel = translateWithTracker((props: IProps) => {
+export const ClipTrimPanel = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
 	const sli = SegmentLineItems.findOne(props.segmentLineItemId)
 	const si = StudioInstallations.findOne(props.studioInstallationId)
 	return {

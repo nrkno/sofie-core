@@ -70,6 +70,7 @@ interface IProps {
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	onShowEntireSegment?: (event: any) => void
 	onContextMenu?: (contextMenuContext: any) => void
+	onItemClick?: (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onHeaderNoteClick?: (level: SegmentLineNoteType) => void
 	segmentRef?: (el: SegmentTimelineClass, sId: string) => void
@@ -441,6 +442,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				return (
 					<SegmentTimelineLine key={segmentLine._id}
 						{...this.props}
+						onItemClick={this.props.onItemClick}
 						onItemDoubleClick={this.props.onItemDoubleClick}
 						scrollWidth={this.state.timelineWidth / this.props.timeScale}
 						firstSegmentLineInSegment={this.props.segmentLines[0]}
