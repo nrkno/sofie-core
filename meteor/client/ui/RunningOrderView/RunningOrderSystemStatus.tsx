@@ -139,7 +139,7 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 		} else {
 			return memo
 		}
-	})
+	}, PeripheralDeviceAPI.StatusCode.UNKNOWN)
 	const mosOnlineOffline: OnLineOffLineList = {
 		onLine: mosDevices.filter(i => i.connected),
 		offLine: mosDevices.filter(i => !i.connected)
@@ -257,6 +257,7 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 		})
 	}
 	render () {
+		const { t } = this.props
 		const playoutDevicesIssues = this.props.playoutDevices.offLine.filter(dev => dev.connected)
 		const playoutDisconnected = this.props.playoutDevices.offLine.filter(dev => !dev.connected)
 
@@ -307,16 +308,16 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 						'fatal': this.props.mosStatus === PeripheralDeviceAPI.StatusCode.FATAL,
 					})}>
 						<div className='indicator__tooltip'>
-							<h4>MOS Connection</h4>
+							<h4>{t('MOS Connection')}</h4>
 							<div>
-								<h5>Last update</h5>
+								<h5>{t('Last update')}</h5>
 								<MOSLastUpdateStatus lastUpdate={this.props.mosLastUpdate} />
 							</div>
 							<div>
 								{
 									this.props.mosDevices.offLine.length > 0 ?
 										<React.Fragment>
-											<h5>Off-line devices</h5>
+											<h5>{t('Off-line devices')}</h5>
 											<ul>
 												{ this.props.mosDevices.offLine.map((dev) => {
 													return <li key={dev._id}>{dev.name}</li>
@@ -324,7 +325,7 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 											</ul>
 										</React.Fragment>
 									:
-										<span>All connections working correctly</span>
+										<span>{t('All connections working correctly')}</span>
 								}
 							</div>
 						</div>
@@ -337,14 +338,14 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 						'fatal': this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.FATAL,
 					})}>
 						<div className='indicator__tooltip'>
-							<h4>Play-out</h4>
+							<h4>{t('Play-out')}</h4>
 							<div>
 								{
 									this.props.playoutDevices.offLine.length > 0 ?
 										<React.Fragment>
 											{playoutDisconnected.length ?
 											<React.Fragment>
-												<h5>Off-line devices</h5>
+												<h5>{t('Off-line devices')}</h5>
 												<ul>
 													{playoutDisconnected.map((dev) => {
 														return <li key={dev._id}>{dev.name}</li>
@@ -353,7 +354,7 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 											</React.Fragment> : null}
 											{playoutDevicesIssues.length ?
 											<React.Fragment>
-												<h5>Devices with issues</h5>
+												<h5>{t('Devices with issues')}</h5>
 												<ul>
 													{playoutDevicesIssues.map((dev) => {
 														return <li key={dev._id}>{dev.name}</li>
@@ -362,7 +363,7 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 											</React.Fragment> : null}
 										</React.Fragment>
 									:
-										<span>All devices working correctly</span>
+										<span>{t('All devices working correctly')}</span>
 								}
 							</div>
 						</div>
