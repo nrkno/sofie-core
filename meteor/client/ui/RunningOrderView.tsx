@@ -51,6 +51,7 @@ import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
+import { ClipTrimPanel } from './ClipTrimPanel/ClipTrimPanel';
 
 type WrappedInspectorDrawer = InspectorDrawerBase & { getWrappedInstance (): InspectorDrawerBase }
 
@@ -944,6 +945,7 @@ interface IState {
 	isNotificationsCenterOpen: boolean
 	isSupportPanelOpen: boolean
 	isInspectorDrawerExpanded: boolean
+	isClipTrimmerOpen: boolean
 }
 
 export enum RunningOrderViewEvents {
@@ -1044,7 +1046,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			]),
 			isNotificationsCenterOpen: false,
 			isSupportPanelOpen: false,
-			isInspectorDrawerExpanded: false
+			isInspectorDrawerExpanded: false,
+			isClipTrimmerOpen: false
 		}
 	}
 
@@ -1600,6 +1603,13 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									runningOrder={this.props.runningOrder}
 									onSetNext={this.onSetNext}
 									studioMode={this.state.studioMode} />
+							</ErrorBoundary>
+							<ErrorBoundary>
+								{this.state.isClipTrimmerOpen &&
+									<ClipTrimPanel
+										studioInstallationId={this.props.studioInstallation._id}
+										runningOrderId={this.props.runningOrderId} />
+								}
 							</ErrorBoundary>
 							{this.renderSegmentsList()}
 							<ErrorBoundary>
