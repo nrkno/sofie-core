@@ -1,0 +1,33 @@
+.video-edit-monitor {
+	background: #2A2A2A;
+	font-size: 1em;
+	width: 16em;
+	box-shadow: 0 0 15px rgba(0,0,0,0.8);
+
+	> .video-edit-monitor__monitor {
+		width: 16em;
+		height: 9em;
+		background: black;
+
+		> video {
+			width: 16em;
+			height: 9em;
+		}
+	}
+
+	> .video-edit-monitor__buttons {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		> .video-edit-monitor__button {
+			background: none;
+			border: none;
+			color: #4F4F4F;
+			margin: 0 5px;
+			padding: 6px 6px;
+			min-width: 30px;
+			text-align: center;
+		}
+	}
+}

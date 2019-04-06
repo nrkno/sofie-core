@@ -1,0 +1,12 @@
+.clip-trim-panel {
+	.clip-trim-panel__monitors {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		.clip-trim-panel__monitors__monitor {
+			flex: 1 1;
+			margin: 15px;
+		}
+	}
+}

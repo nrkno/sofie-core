@@ -48,6 +48,8 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 
 	private setVideo = (el: HTMLVideoElement) => {
 		this.videoEl = el
-		this.videoEl.src = this.props.src || ''
+		if (el) {
+			this.videoEl.src = this.props.src || ''
+		}
 	}
 })
