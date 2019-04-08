@@ -17,7 +17,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
  * These files are combined with / overridden by migration steps defined in the blueprints.
  */
 
-// 0.19.0 is a BIG refactoring
+// 0.19.0 (Release 4) is a BIG refactoring
 addMigrationSteps( '0.19.0', [
 	{ // Create showStyleBase (migrate from studioInstallation)
 		id: 'showStyleBase exists',

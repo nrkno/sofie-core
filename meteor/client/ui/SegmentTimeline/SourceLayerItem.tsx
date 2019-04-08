@@ -294,7 +294,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		// this.props.onFollowLiveLine && this.props.onFollowLiveLine(false, e)
 		e.preventDefault()
 		e.stopPropagation()
-		this.tempDisplayInOutpoints(e)
+		// this.tempDisplayInOutpoints(e) // temporary disabled the temporary function in Release 8
 
 	}
 	tempDisplayInOutpoints = (e: React.MouseEvent<HTMLDivElement>) => {
