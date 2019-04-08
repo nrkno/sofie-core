@@ -39,9 +39,11 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { translate } from 'react-i18next'
 import { ShowStyleBases, ShowStyleBase, } from '../../../lib/collections/ShowStyleBases'
-import { IConfigItem, LookaheadMode } from 'tv-automation-sofie-blueprints-integration'
+import { IConfigItem, LookaheadMode, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { ConfigManifestSettings, ObjectWithConfig, collectConfigs } from './ConfigManifestSettings'
+import { Blueprints } from '../../../lib/collections/Blueprints'
+import { PlayoutAPI } from '../../../lib/api/playout'
 
 interface IConfigSettingsProps {
 	item: ObjectWithConfig
@@ -897,6 +899,78 @@ interface IStudioSettingsTrackedProps {
 	availableDevices: Array<PeripheralDevice>
 }
 
+interface IStudioBaselineStatusProps {
+	studioInstallation: StudioInstallation
+}
+interface IStudioBaselineStatusState {
+	needsUpdate: boolean
+}
+
+class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaselineStatusProps>, IStudioBaselineStatusState> {
+	private updateInterval: number | undefined = undefined
+
+	constructor (props: Translated<IConfigSettingsProps>) {
+		super(props)
+
+		this.state = {
+			needsUpdate: false
+		}
+	}
+
+	componentDidMount () {
+		const updatePeriod = 30000 // every 30s
+		this.updateInterval = Meteor.setInterval(() => this.updateStatus(), updatePeriod)
+		this.updateStatus()
+	}
+	componentWillUnmount () {
+		if (this.updateInterval) {
+			Meteor.clearInterval(this.updateInterval)
+			this.updateInterval = undefined
+		}
+	}
+	componentWillReceiveProps (newProps: Translated<IStudioBaselineStatusProps>) {
+		this.updateStatus(newProps)
+	}
+
+	updateStatus (props?: Translated<IStudioBaselineStatusProps>) {
+		const studioInstallation = props ? props.studioInstallation : this.props.studioInstallation
+
+		Meteor.call(PlayoutAPI.methods.shouldUpdateStudioBaseline, studioInstallation._id, (err, res) => {
+			if (err) {
+				console.log('Failed to update studio baseline status: ' + err)
+				res = false
+			}
+
+			this.setState({
+				needsUpdate: !!res
+			})
+		})
+	}
+
+	reloadBaseline () {
+		Meteor.call(PlayoutAPI.methods.updateStudioBaseline, this.props.studioInstallation._id, (err, res) => {
+			if (err) {
+				console.log('Failed to update studio baseline: ' + err)
+				res = false
+			}
+
+			this.setState({
+				needsUpdate: !!res
+			})
+		})
+	}
+
+	render () {
+		const { t } = this.props
+		const { needsUpdate } = this.state
+
+		return <div>
+			<p>{t('Studio Baseline needs update: ')} {t(needsUpdate ? 'Yes' : 'No')}</p>
+			<p><button className='btn btn-primary' onClick={(e) => this.reloadBaseline()}>{t('Reload Baseline')}</button></p>
+		</div>
+	}
+}
+
 export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, IStudioSettingsTrackedProps>((props: IStudioSettingsProps, state) => {
 	const studio = StudioInstallations.findOne(props.match.params.studioId)
 
@@ -940,6 +1014,24 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		}).fetch()
 	}
 })(class StudioSettings extends MeteorReactComponent<Translated<IStudioSettingsProps & IStudioSettingsTrackedProps>, IStudioSettingsState> {
+	getBlueprintOptions () {
+		const { t } = this.props
+
+		let options: { name: string, value: string | null }[] = [{
+			name: t('None'),
+			value: '',
+		}]
+
+		options.push(..._.map(Blueprints.find({ blueprintType: BlueprintManifestType.STUDIO }).fetch(), (blueprint) => {
+			return {
+				name: blueprint.name ? blueprint.name + ` (${blueprint._id})` : blueprint._id,
+				value: blueprint._id
+			}
+		}))
+
+		return options
+	}
+
 	renderEditForm () {
 		const { t } = this.props
 
@@ -961,6 +1053,22 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 							<span className='mdfx'></span>
 						</div>
 					</label>
+					<label className='field'>
+						{t('Blueprint')}
+						<div className='mdi'>
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='blueprintId'
+								obj={this.props.studioInstallation}
+								type='dropdown'
+								options={this.getBlueprintOptions()}
+								mutateDisplayValue={v => v || ''}
+								mutateUpdateValue={v => v === '' ? undefined : v}
+								collection={StudioInstallations}
+								className='mdinput'></EditAttribute>
+							<span className='mdfx'></span>
+						</div>
+					</label>
 					<div className='field'>
 						{t('Select Compatible Show Styles')}
 						<div className='mdi'>
@@ -973,20 +1081,6 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								collection={StudioInstallations}></EditAttribute>
 						</div>
 					</div>
-					<label className='field'>
-						{t('Default ShowStyleVariant')}
-						<div className='mdi'>
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute='defaultShowStyleVariant'
-								obj={this.props.studioInstallation}
-								type='dropdown'
-								options={this.props.availableShowStyleVariants}
-								collection={StudioInstallations}
-								className='mdinput'></EditAttribute>
-							<span className='mdfx'></span>
-						</div>
-					</label>
 					<label className='field'>
 						{t('Media Preview URL')}
 						<div className='mdi'>
@@ -1013,6 +1107,11 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 							<span className='mdfx'></span>
 						</div>
 					</label>
+				</div>
+				<div className='row'>
+					<div className='col c12 r1-c12'>
+						<StudioBaselineStatus studioInstallation={this.props.studioInstallation} t={t} />
+					</div>
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>

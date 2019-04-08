@@ -25,7 +25,6 @@ import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBa
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import {
-	BlueprintManifest,
 	ICommonContext,
 	MOS,
 	ConfigItemValue,
@@ -48,7 +47,16 @@ import {
 	ShowStyleVariantPart,
 	IBlueprintShowStyleVariant,
 	IBlueprintSegment,
-	IBlueprintRuntimeArgumentsItem
+	IBlueprintRuntimeArgumentsItem,
+	BlueprintManifestType,
+	SomeBlueprintManifest,
+	ShowStyleBlueprintManifest,
+	StudioBlueprintManifest,
+	SystemBlueprintManifest,
+	IStudioContext,
+	IBlueprintShowStyleBase,
+	BlueprintMappings,
+	BlueprintManifestSet
 } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
 
@@ -62,7 +70,7 @@ import { check, Match } from 'meteor/check'
 import { parse as parseUrl } from 'url'
 import { BlueprintAPI } from '../../lib/api/blueprint'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
-import { parseVersion } from '../../lib/collections/CoreSystem'
+import { parseVersion, ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import { Segment } from '../../lib/collections/Segments'
 import { AsRunLogEvent, AsRunLog } from '../../lib/collections/AsRunLog'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
@@ -247,6 +255,18 @@ export class NotesContext extends CommonContext implements INotesContext {
 	}
 }
 
+function compileStudioConfig (studio: StudioInstallation) {
+	const res: {[key: string]: ConfigItemValue} = {}
+	_.each(studio.config, (c) => {
+		res[c._id] = c.value
+	})
+
+	// Expose special values as defined in the studio
+	res['SofieHostURL'] = studio.settings.sofieUrl
+
+	return res
+}
+
 export class RunningOrderContext extends NotesContext implements IRunningOrderContext {
 	runningOrderId: string
 	runningOrder: RunningOrder
@@ -271,17 +291,7 @@ export class RunningOrderContext extends NotesContext implements IRunningOrderCo
 		return showStyleBase
 	}
 	getStudioConfig (): {[key: string]: ConfigItemValue} {
-		const studio: StudioInstallation = this.getStudioInstallation()
-
-		const res: {[key: string]: ConfigItemValue} = {}
-		_.each(studio.config, (c) => {
-			res[c._id] = c.value
-		})
-
-		// Expose special values as defined in the studio
-		res['SofieHostURL'] = studio.settings.sofieUrl
-
-		return res
+		return compileStudioConfig(this.getStudioInstallation())
 	}
 	getStudioConfigRef (configKey: string): string {
 		return ConfigRef.getStudioConfigRef(this.runningOrder.studioInstallationId, configKey)
@@ -350,6 +360,35 @@ export class SegmentLineContext extends RunningOrderContext implements ISegmentL
 			return (last && last._id === this.segmentLine._id)
 		}
 		return false
+	}
+}
+
+export class StudioContext implements IStudioContext {
+	readonly studioInstallation: StudioInstallation
+	constructor (studioInstallation: StudioInstallation) {
+		this.studioInstallation = studioInstallation
+	}
+
+	getStudioMappings (): BlueprintMappings {
+		return this.studioInstallation.mappings
+	}
+
+	getStudioConfig (): {[key: string]: ConfigItemValue} {
+		return compileStudioConfig(this.studioInstallation)
+	}
+	getStudioConfigRef (configKey: string): string {
+		return ConfigRef.getStudioConfigRef(this.studioInstallation._id, configKey)
+	}
+
+	getShowStyleBases (): Array<IBlueprintShowStyleBase> {
+		return ShowStyleBases.find({ _id: { $in: this.studioInstallation.supportedShowStyleBase } }).fetch()
+	}
+	getShowStyleVariants (showStyleBaseId: string): Array<IBlueprintShowStyleVariant> {
+		// TODO - does this need to be checked to ensure the showStyle belongs to the studio?
+		return ShowStyleVariants.find({ showStyleBaseId: showStyleBaseId }).fetch()
+	}
+	getShowStyleVariantId (showStyleBase: IBlueprintShowStyleBase, variantId: string): string {
+		return getHash(showStyleBase._id + '_' + variantId)
 	}
 }
 
@@ -934,13 +973,15 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 	}
 }
 
-export function insertBlueprint (name?: string): string {
+export function insertBlueprint (type?: BlueprintManifestType, name?: string): string {
 	return Blueprints.insert({
 		_id: Random.id(),
-		name: name || 'Default Blueprint',
+		name: name || 'New Blueprint',
 		code: '',
 		modified: getCurrentTime(),
 		created: getCurrentTime(),
+
+		blueprintType: type,
 
 		studioConfigManifest: [],
 		showStyleConfigManifest: [],
@@ -964,22 +1005,53 @@ export function removeBlueprint (id: string) {
 const blueprintCache: {[id: string]: Cache} = {}
 interface Cache {
 	modified: number,
-	fcn: BlueprintManifest
+	fcn: SomeBlueprintManifest
 }
 
-export function getBlueprintOfRunningOrder (runnningOrder: RunningOrder): BlueprintManifest {
+export function loadSystemBlueprints (system: ICoreSystem): SystemBlueprintManifest | undefined {
+	if (!system.blueprintId) return undefined
 
+	const blueprint = loadBlueprintsById(system.blueprintId)
+	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${system.blueprintId}" not found! (referenced by CoreSystem)`)
+
+	if (blueprint.blueprintType !== BlueprintManifestType.SYSTEM) {
+		throw new Meteor.Error(500, `Blueprint "${system.blueprintId}" is not valid for a CoreSystem!`)
+	}
+	return blueprint
+}
+
+export function loadStudioBlueprints (studio: StudioInstallation): StudioBlueprintManifest | undefined {
+	if (!studio.blueprintId) return undefined
+
+	const blueprint = loadBlueprintsById(studio.blueprintId)
+	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${studio.blueprintId}" not found! (referenced by StudioInstallation "${studio._id}")`)
+
+	if (blueprint.blueprintType !== BlueprintManifestType.STUDIO) {
+		throw new Meteor.Error(500, `Blueprint "${studio.blueprintId}" is not valid for a StudioInstallation "${studio._id}"!`)
+	}
+	return blueprint
+}
+
+export function getBlueprintOfRunningOrder (runnningOrder: RunningOrder): ShowStyleBlueprintManifest {
 	if (!runnningOrder.showStyleBaseId) throw new Meteor.Error(400, `RunningOrder is missing showStyleBaseId!`)
 	let showStyleBase = ShowStyleBases.findOne(runnningOrder.showStyleBaseId)
 	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${runnningOrder.showStyleBaseId}" not found!`)
-	return loadBlueprints(showStyleBase)
+	return loadShowStyleBlueprints(showStyleBase)
 }
 
-export function loadBlueprints (showStyleBase: ShowStyleBase): BlueprintManifest {
-	let blueprint = Blueprints.findOne({
-		_id: showStyleBase.blueprintId
-	})
-	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${showStyleBase.blueprintId}" not found! (referenced by ShowStyleBase "${showStyleBase._id}"`)
+export function loadShowStyleBlueprints (showStyleBase: ShowStyleBase): ShowStyleBlueprintManifest {
+	const blueprint = loadBlueprintsById(showStyleBase.blueprintId)
+	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${showStyleBase.blueprintId}" not found! (referenced by ShowStyleBase "${showStyleBase._id}")`)
+
+	if (blueprint.blueprintType !== BlueprintManifestType.SHOWSTYLE) {
+		throw new Meteor.Error(500, `Blueprint "${showStyleBase.blueprintId}" is not valid for a ShowStyle "${showStyleBase._id}"!`)
+	}
+	return blueprint
+}
+
+function loadBlueprintsById (id: string): SomeBlueprintManifest | undefined {
+	const blueprint = Blueprints.findOne(id)
+	if (!blueprint) return undefined
 
 	if (blueprint.code) {
 		try {
@@ -988,10 +1060,10 @@ export function loadBlueprints (showStyleBase: ShowStyleBase): BlueprintManifest
 			throw new Meteor.Error(402, 'Syntax error in blueprint "' + blueprint._id + '": ' + e.toString())
 		}
 	} else {
-		throw new Meteor.Error(500, `Blueprint "${showStyleBase.blueprintId}" code not set!`)
+		throw new Meteor.Error(500, `Blueprint "${id}" code not set!`)
 	}
 }
-export function evalBlueprints (blueprint: Blueprint, noCache?: boolean): BlueprintManifest {
+export function evalBlueprints (blueprint: Blueprint, noCache?: boolean): SomeBlueprintManifest {
 	let cached: Cache | null = null
 	if (!noCache) {
 		// First, check if we've got the function cached:
@@ -1106,6 +1178,20 @@ export function postProcessSegmentLineAdLibItems (innerContext: IRunningOrderCon
 	})
 }
 
+export function postProcessStudioBaselineObjects (studio: StudioInstallation, objs: Timeline.TimelineObject[]): TimelineObjRunningOrder[] {
+	let timelineUniqueIds: { [id: string]: true } = {}
+	return _.map(objs, (o, i) => {
+		const item = convertTimelineObject('', o)
+
+		if (!item._id) item._id = getHash(studio._id + '_baseline_' + (i++))
+
+		if (timelineUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + studio.blueprintId + '": ids of timelineObjs must be unique! ("' + item._id + '")')
+		timelineUniqueIds[item._id] = true
+
+		return item
+	})
+}
+
 function convertTimelineObject (runningOrderId: string, o: TimelineObjectCoreExt): TimelineObjRunningOrder {
 	let item: TimelineObjRunningOrder = extendMandadory<TimelineObjectCoreExt, TimelineObjRunningOrder>(o, {
 		_id: o.id,
@@ -1133,12 +1219,64 @@ export function postProcessSegmentLineBaselineItems (innerContext: RunningOrderC
 	})
 }
 
-const postRoute = Picker.filter((req, res) => req.method === 'POST')
-postRoute.middleware(bodyParser.text({
+function uploadBlueprint (blueprintId: string, body: string, blueprintName: string) {
+	logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
+
+	const blueprint = Blueprints.findOne(blueprintId)
+
+	const newBlueprint: Blueprint = {
+		_id: blueprintId,
+		name: blueprint ? blueprint.name : (blueprintName || blueprintId),
+		created: blueprint ? blueprint.created : getCurrentTime(),
+		code: body as string,
+		modified: getCurrentTime(),
+		studioConfigManifest: [],
+		showStyleConfigManifest: [],
+		databaseVersion: {
+			studio: {},
+			showStyle: {}
+		},
+		blueprintVersion: '',
+		integrationVersion: '',
+		TSRVersion: '',
+		minimumCoreVersion: '',
+		blueprintType: undefined,
+	}
+
+	const blueprintManifest: SomeBlueprintManifest = evalBlueprints(newBlueprint, false)
+	newBlueprint.blueprintType				= blueprintManifest.blueprintType || BlueprintManifestType.SHOWSTYLE
+	newBlueprint.blueprintVersion			= blueprintManifest.blueprintVersion
+	newBlueprint.integrationVersion			= blueprintManifest.integrationVersion
+	newBlueprint.TSRVersion					= blueprintManifest.TSRVersion
+	newBlueprint.minimumCoreVersion			= blueprintManifest.minimumCoreVersion
+
+	if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE) {
+		newBlueprint.showStyleConfigManifest = blueprintManifest.showStyleConfigManifest
+	}
+	if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE || blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
+		newBlueprint.studioConfigManifest = blueprintManifest.studioConfigManifest
+	}
+
+	// Parse the versions, just to verify that the format is correct:
+	parseVersion(blueprintManifest.blueprintVersion)
+	parseVersion(blueprintManifest.integrationVersion)
+	parseVersion(blueprintManifest.TSRVersion)
+	parseVersion(blueprintManifest.minimumCoreVersion)
+
+	const existing = Blueprints.findOne(newBlueprint._id)
+	if (existing && existing.blueprintType && existing.blueprintType !== newBlueprint.blueprintType) {
+		throw new Meteor.Error(500, 'Restore blueprint: Cannot replace blueprint with a different type')
+	}
+
+	Blueprints.upsert(newBlueprint._id, newBlueprint)
+}
+
+const postJsRoute = Picker.filter((req, res) => req.method === 'POST')
+postJsRoute.middleware(bodyParser.text({
 	type: 'text/javascript',
 	limit: '1mb'
 }))
-postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessage, res: ServerResponse, next) => {
+postJsRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	let blueprintId = params.blueprintId
@@ -1161,44 +1299,7 @@ postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessag
 
 		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 
-		logger.info('Got new blueprint. ' + body.length + ' bytes')
-
-		const blueprint = Blueprints.findOne(blueprintId)
-		// if (!blueprint) throw new Meteor.Error(404, `Blueprint "${blueprintId}" not found`)
-
-		const newBlueprint: Blueprint = {
-			_id: blueprintId,
-			name: blueprint ? blueprint.name : (blueprintName || blueprintId),
-			created: blueprint ? blueprint.created : getCurrentTime(),
-			code: body as string,
-			modified: getCurrentTime(),
-			studioConfigManifest: [],
-			showStyleConfigManifest: [],
-			databaseVersion: {
-				studio: {},
-				showStyle: {}
-			},
-			blueprintVersion: '',
-			integrationVersion: '',
-			TSRVersion: '',
-			minimumCoreVersion: ''
-		}
-
-		const blueprintManifest: BlueprintManifest = evalBlueprints(newBlueprint, false)
-		newBlueprint.blueprintVersion			= blueprintManifest.blueprintVersion
-		newBlueprint.integrationVersion			= blueprintManifest.integrationVersion
-		newBlueprint.TSRVersion					= blueprintManifest.TSRVersion
-		newBlueprint.minimumCoreVersion			= blueprintManifest.minimumCoreVersion
-		newBlueprint.studioConfigManifest		= blueprintManifest.studioConfigManifest
-		newBlueprint.showStyleConfigManifest	= blueprintManifest.showStyleConfigManifest
-
-		// Parse the versions, just to verify that the format is correct:
-		parseVersion(blueprintManifest.blueprintVersion)
-		parseVersion(blueprintManifest.integrationVersion)
-		parseVersion(blueprintManifest.TSRVersion)
-		parseVersion(blueprintManifest.minimumCoreVersion)
-
-		Blueprints.upsert(newBlueprint._id, newBlueprint)
+		uploadBlueprint(blueprintId, body, blueprintName)
 
 		res.statusCode = 200
 	} catch (e) {
@@ -1209,6 +1310,77 @@ postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessag
 
 	res.end(content)
 })
+const postJsonRoute = Picker.filter((req, res) => req.method === 'POST')
+postJsonRoute.middleware(bodyParser.text({
+	type: 'application/json',
+	limit: '10mb'
+}))
+postJsonRoute.route('/blueprints/restore', (params, req: IncomingMessage, res: ServerResponse, next) => {
+	res.setHeader('Content-Type', 'text/plain')
+
+	let content = ''
+	try {
+		const body = (req as any).body
+		if (!body) throw new Meteor.Error(400, 'Restore Blueprint: Missing request body')
+
+		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
+
+		logger.info(`Got blueprint collection. ${body.length} bytes`)
+
+		const collection = JSON.parse(body) as BlueprintManifestSet
+
+		let errors: any[] = []
+		for (const id of _.keys(collection)) {
+			try {
+				uploadBlueprint(id, collection[id], id)
+			} catch (e) {
+				logger.error('Blueprint restore failed: ' + e)
+				errors.push(e)
+			}
+		}
+
+		// Report errors
+		if (errors.length > 0) {
+			res.statusCode = 500
+			content += 'Errors were encountered: \n'
+			for (const e of errors) {
+				content += e + '\n'
+			}
+		} else {
+			res.statusCode = 200
+		}
+
+	} catch (e) {
+		res.statusCode = 500
+		content = e + ''
+		logger.error('Blueprint restore failed: ' + e)
+	}
+
+	res.end(content)
+})
+
+function assignSystemBlueprint (id?: string) {
+	if (id !== undefined && id !== null) {
+		check(id, String)
+
+		const blueprint = Blueprints.findOne(id)
+		if (!blueprint) throw new Meteor.Error(404, 'Blueprint not found')
+
+		if (blueprint.blueprintType !== BlueprintManifestType.SYSTEM) throw new Meteor.Error(404, 'Blueprint not of type SYSTEM')
+
+		CoreSystem.update(SYSTEM_ID, {
+			$set: {
+				blueprintId: id
+			}
+		})
+	} else {
+		CoreSystem.update(SYSTEM_ID, {
+			$unset: {
+				blueprintId: 1
+			}
+		})
+	}
+}
 
 let methods: Methods = {}
 methods[BlueprintAPI.methods.insertBlueprint] = () => {
@@ -1216,5 +1388,8 @@ methods[BlueprintAPI.methods.insertBlueprint] = () => {
 }
 methods[BlueprintAPI.methods.removeBlueprint] = (id: string) => {
 	return removeBlueprint(id)
+}
+methods[BlueprintAPI.methods.assignSystemBlueprint] = (id?: string) => {
+	return assignSystemBlueprint(id)
 }
 setMeteorMethods(wrapMethods(methods))

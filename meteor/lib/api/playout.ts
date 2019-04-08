@@ -8,6 +8,9 @@ export namespace PlayoutAPI {
 		'roDeactivate' 			= 'playout.roDeactivate',
 		'reloadData' 			= 'playout.reloadData',
 
+		'updateStudioBaseline'			= 'playout.updateStudioBaseline',
+		'shouldUpdateStudioBaseline'	= 'playout.shouldUpdateStudioBaseline',
+
 		'roTake' = 'playout.roTake',
 		'roSetNext' = 'playout.roSetNext',
 		'roMoveNext' = 'playout.roMoveNext',

@@ -17,6 +17,9 @@ export interface ICoreSystem {
 	/** Previous version, on the form x.y.z */
 	previousVersion: string | null
 
+	/** Id of the blueprint used by this system */
+	blueprintId?: string
+
 	/** File path to store persistant data (like snapshots, etc) */
 	storePath: string
 

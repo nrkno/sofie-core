@@ -26,7 +26,6 @@ addMigrationSteps( '0.1.0', [
 			StudioInstallations.insert({
 				_id: 'studio0',
 				name: 'Default studio',
-				defaultShowStyleVariant: '',
 				supportedShowStyleBase: [],
 				settings: {
 					mediaPreviewsUrl: '',

@@ -7,6 +7,13 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
 import Moment from 'react-moment'
+import { Link } from 'react-router-dom'
+import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ICoreSystem, CoreSystem } from '../../../lib/collections/CoreSystem'
+import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
+import { Meteor } from 'meteor/meteor'
+import { BlueprintAPI } from '../../../lib/api/blueprint'
 
 interface IProps {
 	match: {
@@ -20,10 +27,18 @@ interface IState {
 }
 interface ITrackedProps {
 	blueprint?: Blueprint
+	assignedStudios: StudioInstallation[]
+	assignedShowStyles: ShowStyleBase[]
+	assignedSystem: ICoreSystem | undefined
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
+	const id = props.match.params.blueprintId
+
 	return {
-		blueprint: Blueprints.findOne(props.match.params.blueprintId)
+		blueprint: Blueprints.findOne(id),
+		assignedStudios: StudioInstallations.find({ blueprintId: id }).fetch(),
+		assignedShowStyles: ShowStyleBases.find({ blueprintId: id }).fetch(),
+		assignedSystem: CoreSystem.findOne({ blueprintId: id })
 	}
 })( class BlueprintSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
@@ -85,6 +100,51 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		reader.readAsText(file)
 	}
 
+	assignSystemBlueprint (id: string | undefined) {
+		Meteor.call(BlueprintAPI.methods.assignSystemBlueprint, id)
+	}
+
+	renderAssignment (blueprint: Blueprint) {
+		const { t } = this.props
+
+		switch (blueprint.blueprintType) {
+			case BlueprintManifestType.SHOWSTYLE:
+				return (
+					<div>
+						<p className='mod mhn mvs'>{t('Assigned Show Styles:')}</p>
+						<p className='mod mhn mvs'>
+							{this.props.assignedShowStyles.length > 0 ?
+								this.props.assignedShowStyles.map(i => <span key={i._id} className='pill'><Link className='pill-link' to={`/settings/showStyleBase/${i._id}`}>{i.name}</Link></span>) :
+								t('No show styles are using this blueprint')}
+						</p>
+					</div>
+				)
+			case BlueprintManifestType.STUDIO:
+				return (
+					<div>
+						<p className='mod mhn mvs'>{t('Assigned Studios:')}</p>
+						<p className='mod mhn mvs'>
+							{this.props.assignedStudios.length > 0 ?
+								this.props.assignedStudios.map(i => <span key={i._id} className='pill'><Link className='pill-link' to={`/settings/studio/${i._id}`}>{i.name}</Link></span>) :
+								t('No studios are compatible with this blueprint')}
+						</p>
+					</div>
+				)
+			case BlueprintManifestType.SYSTEM:
+				return (
+					<div>
+						<p>
+							<button className='btn btn-primary' onClick={(e) => this.assignSystemBlueprint(this.props.assignedSystem ? undefined : blueprint._id)}>
+								{ this.props.assignedSystem ? t('Unassign') : t('Assign') }
+							</button>
+						</p>
+					</div>
+				)
+			default:
+				return <div></div>
+		}
+	}
+
 	renderEditForm (blueprint: Blueprint) {
 		const { t } = this.props
 
@@ -107,6 +167,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							<span className='mdfx'></span>
 						</div>
 					</label>
+					<div className='mod mvs mhn'>
+						{t('Blueprint Type')} <i>{(blueprint.blueprintType || '').toUpperCase()}</i>
+					</div>
+					{ this.renderAssignment(blueprint) }
 					<div className='mod mvs mhn'>
 						<p className='mhn'>{t('Last modified')}: <Moment format='YYYY/MM/DD HH:mm:ss'>{blueprint.modified}</Moment></p>
 					</div>
