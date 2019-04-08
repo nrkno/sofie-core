@@ -69,7 +69,7 @@ import { check, Match } from 'meteor/check'
 import { parse as parseUrl } from 'url'
 import { BlueprintAPI } from '../../lib/api/blueprint'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
-import { parseVersion, ICoreSystem } from '../../lib/collections/CoreSystem'
+import { parseVersion, ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import { Segment } from '../../lib/collections/Segments'
 import { AsRunLogEvent, AsRunLog } from '../../lib/collections/AsRunLog'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
@@ -1307,11 +1307,37 @@ postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessag
 	res.end(content)
 })
 
+function assignSystemBlueprint (id?: string) {
+	if (id !== undefined && id !== null) {
+		check(id, String)
+
+		const blueprint = Blueprints.findOne(id)
+		if (!blueprint) throw new Meteor.Error(404, 'Blueprint not found')
+
+		if (blueprint.blueprintType !== BlueprintManifestType.SYSTEM) throw new Meteor.Error(404, 'Blueprint not of type SYSTEM')
+
+		CoreSystem.update(SYSTEM_ID, {
+			$set: {
+				blueprintId: id
+			}
+		})
+	} else {
+		CoreSystem.update(SYSTEM_ID, {
+			$unset: {
+				blueprintId: 1
+			}
+		})
+	}
+}
+
 let methods: Methods = {}
 methods[BlueprintAPI.methods.insertBlueprint] = () => {
 	return insertBlueprint(BlueprintManifestType.SHOWSTYLE) // TODO - dynamic
 }
 methods[BlueprintAPI.methods.removeBlueprint] = (id: string) => {
 	return removeBlueprint(id)
+}
+methods[BlueprintAPI.methods.assignSystemBlueprint] = (id?: string) => {
+	return assignSystemBlueprint(id)
 }
 setMeteorMethods(wrapMethods(methods))

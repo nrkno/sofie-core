@@ -11,7 +11,9 @@ import { Link } from 'react-router-dom'
 import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ICoreSystem, CoreSystem } from '../../../lib/collections/CoreSystem'
-import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration';
+import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
+import { Meteor } from 'meteor/meteor'
+import { BlueprintAPI } from '../../../lib/api/blueprint'
 
 interface IProps {
 	match: {
@@ -96,6 +98,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		reader.readAsText(file)
 	}
 
+	assignSystemBlueprint (id: string | undefined) {
+		Meteor.call(BlueprintAPI.methods.assignSystemBlueprint, id)
+	}
+
 	renderAssignment (blueprint: Blueprint) {
 		const { t } = this.props
 
@@ -125,7 +131,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			case BlueprintManifestType.SYSTEM:
 				return (
 					<div>
-						<p className='mod mhn mvs'>{t('Assigned to system:')} {t(this.props.assignedSystem ? 'Yes' : 'No')}</p>
+						<p>
+							<button className='btn btn-primary' onClick={(e) => this.assignSystemBlueprint(this.props.assignedSystem ? undefined : blueprint._id)}>
+								{ this.props.assignedSystem ? t('Unassign') : t('Assign') }
+							</button>
+						</p>
 					</div>
 				)
 			default:
