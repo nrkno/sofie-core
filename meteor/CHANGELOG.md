@@ -5,87 +5,6 @@ All notable changes to this project will be documented in this file. See [standa
 <a name="0.23.0"></a>
 # [0.23.0](https://github.com/nrkno/tv-automation-server-core/compare/v0.22.0...v0.23.0) (2019-04-08)
 
-
-### Bug Fixes
-
-* a bug where DEFAULT_DISPLAY_DURATION would be added to a 0-duration member of a displayDurationGroup ([5f2ed62](https://github.com/nrkno/tv-automation-server-core/commit/5f2ed62))
-* add shortcut ctrl+shift+enter-on-numpad to reload ([b9820ff](https://github.com/nrkno/tv-automation-server-core/commit/b9820ff))
-* Allow translations of media warnings, show clip as broken until scan finished ([b693de7](https://github.com/nrkno/tv-automation-server-core/commit/b693de7))
-* apply some fixes when restoring a RO ([b04bf53](https://github.com/nrkno/tv-automation-server-core/commit/b04bf53))
-* broken logging + message ([ffe4fb4](https://github.com/nrkno/tv-automation-server-core/commit/ffe4fb4))
-* change logging to info on device state change ([1cc9429](https://github.com/nrkno/tv-automation-server-core/commit/1cc9429))
-* Changed the color of the top bar during Rehearsal mode to something a little less hideous. ([1e887e3](https://github.com/nrkno/tv-automation-server-core/commit/1e887e3))
-* delete & sync buttons in RO-list ([9fbc875](https://github.com/nrkno/tv-automation-server-core/commit/9fbc875))
-* do not refresh RO notifications if RO/showStyleBase/studioInstallation changes ([5702939](https://github.com/nrkno/tv-automation-server-core/commit/5702939))
-* externalMessage: update status on removed document ([75a1053](https://github.com/nrkno/tv-automation-server-core/commit/75a1053))
-* getHash undefined exception in asRunLog ([8faab78](https://github.com/nrkno/tv-automation-server-core/commit/8faab78))
-* make sure that the OnAir line connects to the label ([3788672](https://github.com/nrkno/tv-automation-server-core/commit/3788672))
-* message came twice, wrong index for signature ([64aeafb](https://github.com/nrkno/tv-automation-server-core/commit/64aeafb))
-* more optimizations ([df8c397](https://github.com/nrkno/tv-automation-server-core/commit/df8c397))
-* optimizations in roTake ([3457e73](https://github.com/nrkno/tv-automation-server-core/commit/3457e73))
-* output version differ error ([8816ed3](https://github.com/nrkno/tv-automation-server-core/commit/8816ed3))
-* refactor ([9e9d60a](https://github.com/nrkno/tv-automation-server-core/commit/9e9d60a))
-* remove memoization of RVars ([ca22155](https://github.com/nrkno/tv-automation-server-core/commit/ca22155))
-* resolve issue with segmentLineDisplayDuration & segment duration ([a73ed09](https://github.com/nrkno/tv-automation-server-core/commit/a73ed09))
-* RO config changed notification not updating when RO is updated ([f5c2540](https://github.com/nrkno/tv-automation-server-core/commit/f5c2540))
-* Running order status notifying wrong dep ([e6b84e5](https://github.com/nrkno/tv-automation-server-core/commit/e6b84e5))
-* seek support in VT, STK, hoverscrub ([43e413b](https://github.com/nrkno/tv-automation-server-core/commit/43e413b))
-* settings styling improvements, code fixes ([d9484cd](https://github.com/nrkno/tv-automation-server-core/commit/d9484cd))
-* ShowStyleVariant settings not saving changes ([e90137b](https://github.com/nrkno/tv-automation-server-core/commit/e90137b))
-* skip untranslated strings from po files, update i18next-conv to latest version ([1de4ccb](https://github.com/nrkno/tv-automation-server-core/commit/1de4ccb))
-* Toggle hotkeys legend in support panel ([e6f4769](https://github.com/nrkno/tv-automation-server-core/commit/e6f4769))
-* typo ([2efc829](https://github.com/nrkno/tv-automation-server-core/commit/2efc829))
-* update package versions to fix audit issues ([be3cae5](https://github.com/nrkno/tv-automation-server-core/commit/be3cae5))
-* Update RO change notification on an interval, to ensure it catches changes to other document types ([79d8c05](https://github.com/nrkno/tv-automation-server-core/commit/79d8c05))
-* use a single setState in updateVersions in MigrationsView ([afd730a](https://github.com/nrkno/tv-automation-server-core/commit/afd730a))
-* use floor for all positioning and sizing of segment lines ([8a84a7e](https://github.com/nrkno/tv-automation-server-core/commit/8a84a7e))
-* when restoring a runningOrder, use the .active property of the database (or false) ([b5e5b05](https://github.com/nrkno/tv-automation-server-core/commit/b5e5b05))
-* **backup:** make restore running order less strict ([e78313f](https://github.com/nrkno/tv-automation-server-core/commit/e78313f))
-* **countdowns:** split text parsing ([9a174ae](https://github.com/nrkno/tv-automation-server-core/commit/9a174ae))
-* **displayDurationGroup:** fix GUI clocks for displayDurationGroups ([10ac255](https://github.com/nrkno/tv-automation-server-core/commit/10ac255))
-* **displayDurationGroup:** use displayDurationGroup timing in presenter's screen ([61e04f9](https://github.com/nrkno/tv-automation-server-core/commit/61e04f9))
-* **infinite:** Persist overrideDuration when updating infinites ([b15bfa3](https://github.com/nrkno/tv-automation-server-core/commit/b15bfa3))
-* **lookahead:** Give lookahead the correct limit when in the next SegmentLine during autonext ([a3a299a](https://github.com/nrkno/tv-automation-server-core/commit/a3a299a))
-* **lookahead:** Produced objects not resolving properly ([322a94f](https://github.com/nrkno/tv-automation-server-core/commit/322a94f))
-* wrap all MeteorReactComponent.autoruns in nonreactive. ([9020c96](https://github.com/nrkno/tv-automation-server-core/commit/9020c96))
-* **migrations:** Ensure there are migrations to run before running another batch ([3b703e5](https://github.com/nrkno/tv-automation-server-core/commit/3b703e5))
-* **Notifications refresh:** limit amount of reactive vars ([2c01e66](https://github.com/nrkno/tv-automation-server-core/commit/2c01e66))
-* **playout:** StatObj not being generated ([581d99d](https://github.com/nrkno/tv-automation-server-core/commit/581d99d))
-* **presenter screen:** split background + text spacing ([9aad750](https://github.com/nrkno/tv-automation-server-core/commit/9aad750))
-
-
-### Features
-
-* add a user-definable CoreSystem.name that is displayed in the header and title bar ([717ee45](https://github.com/nrkno/tv-automation-server-core/commit/717ee45))
-* add checkbox for debugLogging in media manager ([64b80e9](https://github.com/nrkno/tv-automation-server-core/commit/64b80e9))
-* add httpWatcher settings ([fbb91d9](https://github.com/nrkno/tv-automation-server-core/commit/fbb91d9))
-* add option to input data into a ModalDialogue ([ef54b74](https://github.com/nrkno/tv-automation-server-core/commit/ef54b74))
-* Add warning to rundown when config changed ([#69](https://github.com/nrkno/tv-automation-server-core/issues/69)) ([4f5e6a9](https://github.com/nrkno/tv-automation-server-core/commit/4f5e6a9))
-* allow admins to delete non-unsynced running orders ([190ca36](https://github.com/nrkno/tv-automation-server-core/commit/190ca36))
-* change labeled buttons to icons with tooltips in Media Transfer Status ([c5e582b](https://github.com/nrkno/tv-automation-server-core/commit/c5e582b))
-* implement timeline-visualizer view ([e725618](https://github.com/nrkno/tv-automation-server-core/commit/e725618))
-* log WorkFlow success or failure ([8e7d9d7](https://github.com/nrkno/tv-automation-server-core/commit/8e7d9d7))
-* move new timeline visualizer to replace the old broken one ([174dd7e](https://github.com/nrkno/tv-automation-server-core/commit/174dd7e))
-* set in/out points through itemReplace ([4d31d70](https://github.com/nrkno/tv-automation-server-core/commit/4d31d70))
-* SH-121-Double-clicking zoom-scrubber should mean "zoom to show everything in this segment" ([aeadc46](https://github.com/nrkno/tv-automation-server-core/commit/aeadc46))
-* show user activity log for timeslot of recording ([5c75305](https://github.com/nrkno/tv-automation-server-core/commit/5c75305))
-* speech synthesis ([eb9643a](https://github.com/nrkno/tv-automation-server-core/commit/eb9643a))
-* **blueprints:** Allow the post-process blueprint to modify a select few properties on the segmentLines ([ee02813](https://github.com/nrkno/tv-automation-server-core/commit/ee02813))
-* **config:** Add support for enum config entries ([b4ae4b5](https://github.com/nrkno/tv-automation-server-core/commit/b4ae4b5))
-* **countdowns:** display autonext ([1405a89](https://github.com/nrkno/tv-automation-server-core/commit/1405a89))
-* **evaluation:** adds logging of evaluation level to keep statistics ([5da33a0](https://github.com/nrkno/tv-automation-server-core/commit/5da33a0))
-* **evaluation:** sends positive evaluations too ([d6c0bff](https://github.com/nrkno/tv-automation-server-core/commit/d6c0bff))
-* **lookahead:** Delay lookahead after an object by 1s if it is labelled by a class ([2c595fb](https://github.com/nrkno/tv-automation-server-core/commit/2c595fb))
-* **playout:** Block take during transitions ([d0628a2](https://github.com/nrkno/tv-automation-server-core/commit/d0628a2))
-* stub of setting in & out points ([0852b42](https://github.com/nrkno/tv-automation-server-core/commit/0852b42))
-* support displayDurationGroups in RO view ([460df8d](https://github.com/nrkno/tv-automation-server-core/commit/460df8d))
-* timeline-visualizer: add details-on-click ([c81243c](https://github.com/nrkno/tv-automation-server-core/commit/c81243c))
-
-
-
-<a name="0.23.0-0"></a>
-## 0.23.0-0 (2019-03-27)
-
 ### Features
 
 #### Set In / Out points (preliminary implementation)
@@ -103,17 +22,24 @@ All notable changes to this project will be documented in this file. See [standa
 * speech synthesis ([eb9643a](https://github.com/nrkno/tv-automation-server-core/commit/eb9643a))
 * support displayDurationGroups in RO view ([460df8d](https://github.com/nrkno/tv-automation-server-core/commit/460df8d))
 * feat(countdowns): display autonext ([1405a89](https://github.com/nrkno/tv-automation-server-core/commit/1405a89))
+* add a user-definable CoreSystem.name that is displayed in the header and title bar ([717ee45](https://github.com/nrkno/tv-automation-server-core/commit/717ee45))
 
 #### Timeline vizualiser
 * implement timeline-visualizer view ([e725618](https://github.com/nrkno/tv-automation-server-core/commit/e725618))
 * timeline-visualizer: add details-on-click ([c81243c](https://github.com/nrkno/tv-automation-server-core/commit/c81243c))
 * move new timeline visualizer to replace the old broken one ([174dd7e](https://github.com/nrkno/tv-automation-server-core/commit/174dd7e))
 
+#### Evaluations
+* adds logging of evaluation level to keep statistics ([5da33a0](https://github.com/nrkno/tv-automation-server-core/commit/5da33a0))
+* sends positive evaluations too ([d6c0bff](https://github.com/nrkno/tv-automation-server-core/commit/d6c0bff))
+
 #### Other
+* **playout:** Block take during transitions ([d0628a2](https://github.com/nrkno/tv-automation-server-core/commit/d0628a2))
+* **blueprints:** Allow the post-process blueprint to modify a select few properties on the segmentL ([ee02813](https://github.com/nrkno/tv-automation-server-core/commit/ee02813))
+* **config:** Add support for enum config entries ([b4ae4b5](https://github.com/nrkno/tv-automation-server-core/commit/b4ae4b5))
+* **lookahead:** Delay lookahead after an object by 1s if it is labelled by a class ([2c595fb](https://github.com/nrkno/tv-automation-server-core/commit/2c595fb))
 * log WorkFlow success or failure ([8e7d9d7](https://github.com/nrkno/tv-automation-server-core/commit/8e7d9d7))
-* feat(blueprints): Allow the post-process blueprint to modify a select few properties on the segmentL ([ee02813](https://github.com/nrkno/tv-automation-server-core/commit/ee02813))
-* feat(config): Add support for enum config entries ([b4ae4b5](https://github.com/nrkno/tv-automation-server-core/commit/b4ae4b5))
-* feat(lookahead): Delay lookahead after an object by 1s if it is labelled by a class ([2c595fb](https://github.com/nrkno/tv-automation-server-core/commit/2c595fb))
+* allow admins to delete non-unsynced running orders ([190ca36](https://github.com/nrkno/tv-automation-server-core/commit/190ca36))
 
 ### Bug Fixes
 
@@ -152,6 +78,16 @@ All notable changes to this project will be documented in this file. See [standa
 * Notifications refresh: limit amount of reactive vars ([2c01e66](https://github.com/nrkno/tv-automation-server-core/commit/2c01e66))
 * playout: StatObj not being generated ([581d99d](https://github.com/nrkno/tv-automation-server-core/commit/581d99d))
 * presenter screen: split background + text spacing ([9aad750](https://github.com/nrkno/tv-automation-server-core/commit/9aad750))
+* a bug where DEFAULT_DISPLAY_DURATION would be added to a 0-duration member of a displayDurationGroup ([5f2ed62](https://github.com/nrkno/tv-automation-server-core/commit/5f2ed62))
+* broken logging + message ([ffe4fb4](https://github.com/nrkno/tv-automation-server-core/commit/ffe4fb4))
+* delete & sync buttons in RO-list ([9fbc875](https://github.com/nrkno/tv-automation-server-core/commit/9fbc875))
+* message came twice, wrong index for signature ([64aeafb](https://github.com/nrkno/tv-automation-server-core/commit/64aeafb))
+* displayDurationGroup: fix GUI clocks for displayDurationGroups ([10ac255](https://github.com/nrkno/tv-automation-server-core/commit/10ac255))
+* displayDurationGroup: use displayDurationGroup timing in presenter's screen ([61e04f9](https://github.com/nrkno/tv-automation-server-core/commit/61e04f9))
+* lookahead: Give lookahead the correct limit when in the next SegmentLine during autonext ([a3a299a](https://github.com/nrkno/tv-automation-server-core/commit/a3a299a))
+* lookahead: Produced objects not resolving properly ([322a94f](https://github.com/nrkno/tv-automation-server-core/commit/322a94f))
+* migrations: Ensure there are migrations to run before running another batch ([3b703e5](https://github.com/nrkno/tv-automation-server-core/commit/3b703e5))
+-
 
 ### Other
 * Merge branch 'feature/timeline-visualizer' into develop ([9a1ca6c](https://github.com/nrkno/tv-automation-server-core/commit/9a1ca6c))
