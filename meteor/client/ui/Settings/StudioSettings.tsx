@@ -1008,14 +1008,14 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		}).fetch()
 	}
 })(class StudioSettings extends MeteorReactComponent<Translated<IStudioSettingsProps & IStudioSettingsTrackedProps>, IStudioSettingsState> {
-	getOptionBlueprints () {
+	getBlueprintOptions () {
 		const { t } = this.props
 
-		// TODO - ideally this wants to be undefined, not empty string (for defaults rendering)
-		let options: { name: string, value: string }[] = [{
+		let options: { name: string, value: string | null }[] = [{
 			name: t('None'),
 			value: '',
 		}]
+
 		options.push(..._.map(Blueprints.find({ blueprintType: BlueprintManifestType.STUDIO }).fetch(), (blueprint) => {
 			return {
 				name: blueprint.name ? blueprint.name + ` (${blueprint._id})` : blueprint._id,
@@ -1055,7 +1055,9 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								attribute='blueprintId'
 								obj={this.props.studioInstallation}
 								type='dropdown'
-								options={this.getOptionBlueprints()}
+								options={this.getBlueprintOptions()}
+								mutateDisplayValue={v => v || ''}
+								mutateUpdateValue={v => v === '' ? undefined : v}
 								collection={StudioInstallations}
 								className='mdinput'></EditAttribute>
 							<span className='mdfx'></span>
