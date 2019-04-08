@@ -53,8 +53,9 @@ import { getHash } from '../../lib/lib'
  * 0.21.0: Release 6   (TBD, in testing)
  * 0.22.0: Release 7   (TBD)
  * 0.23.0: Release 8   (TBD)
+ * 0.24.0: Release 9   (TBD)
  */
-export const CURRENT_SYSTEM_VERSION = '0.23.0'
+export const CURRENT_SYSTEM_VERSION = '0.24.0'
 
 /** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.
  * And Sofie said: The version of the database is to be GENESIS_SYSTEM_VERSION so that the migration scripts will run.
