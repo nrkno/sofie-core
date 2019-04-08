@@ -81,7 +81,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 						{t('Timestamp')}
 					</th>
 					<th className='c1 user-action-log__userId'>
-						{t('User name')}
+						{t('User Name')}
 					</th>
 					<th>
 						{t('Running Order')}

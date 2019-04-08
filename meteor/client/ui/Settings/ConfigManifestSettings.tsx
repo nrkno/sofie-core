@@ -79,7 +79,7 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 			$push: {
 				config: literal<IConfigItem>({
 					_id: item.id,
-					value: ''
+					value: item.defaultVal
 				})
 			}
 		})
@@ -175,6 +175,8 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 			collection = StudioInstallations
 		} else if (this.props.object instanceof ShowStyleBase) {
 			collection = ShowStyleBases
+		} else if (this.props.object instanceof ShowStyleVariant) {
+			collection = ShowStyleVariants
 		}
 
 		const values = this.props.object.config
@@ -261,6 +263,16 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 														collection={collection}
 														className='input text-input input-l' />
 												))
+												|| (item.type === ConfigManifestEntryType.ENUM && (
+													<EditAttribute
+														modifiedClassName='bghl'
+														attribute={'config.' + valIndex + '.value'}
+														obj={this.props.object}
+														type='dropdown'
+														options={item.options || []}
+														collection={collection}
+														className='input text-input input-l' />
+												))
 											}
 										</label>
 									</div>
@@ -311,7 +323,7 @@ export class ConfigManifestSettings extends React.Component<Translated<IConfigMa
 					<p>{t('Are you sure you want to delete this config item "{{configId}}"?', { configId: (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) })}</p>
 					<p>{t('Please note: This action is irreversible!')}</p>
 				</ModalDialog>
-				<h3 className='mhs'>{t('Blueprint Configuration')}</h3>
+				<h2 className='mhn'>{t('Blueprint Configuration')}</h2>
 				<table className='expando settings-studio-custom-config-table'>
 					<tbody>
 						{this.renderItems()}

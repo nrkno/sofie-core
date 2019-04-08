@@ -99,7 +99,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		const { t } = this.props
 
 		return (
-			<div className='studio-edit mod mhl mvs'>
+			<div className='studio-edit mod mhl mvn'>
 				<div>
 					<label className='field'>
 						{t('Show Style Base Name')}
@@ -130,7 +130,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</label>
 				</div>
 				<div>
-					<p className='mod mhn mvs'>{t('Compatible studios:')}</p>
+					<p className='mod mhn mvs'>{t('Compatible Studios:')}</p>
 					<p className='mod mhn mvs'>
 						{this.props.compatibleStudios.length > 0 ?
 							this.props.compatibleStudios.map(i => <span key={i._id} className='pill'><Link className='pill-link' to={`/settings/studio/${i._id}`}>{i.name}</Link></span>) :
@@ -343,7 +343,7 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 		const { t } = this.props
 		return (
 			<div>
-				<h3 className='mhs'>{t('Runtime Arguments for Blueprints')}</h3>
+				<h2 className='mhn'>{t('Runtime Arguments for Blueprints')}</h2>
 				<table className='expando settings-studio-custom-config-table'>
 					<tbody>
 						{this.renderItems()}
@@ -767,7 +767,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 		const { t } = this.props
 		return (
 			<div>
-				<h3 className='mhs'>{t('Source Layers')}</h3>
+				<h2 className='mhn'>{t('Source Layers')}</h2>
 				<table className='expando settings-studio-source-table'>
 					<tbody>
 						{this.renderInputSources()}
@@ -970,7 +970,7 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 		const { t } = this.props
 		return (
 			<div>
-				<h3 className='mhs'>{t('Output channels')}</h3>
+				<h2 className='mhn'>{t('Output channels')}</h2>
 				<table className='expando settings-studio-output-table'>
 					<tbody>
 						{this.renderOutputs()}
@@ -1119,7 +1119,7 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 		const { t } = this.props
 		return (
 			<div>
-				<h3 className='mhs'>{t('Custom Hotkey Labels')}</h3>
+				<h2 className='mhn'>{t('Custom Hotkey Labels')}</h2>
 				<table className='expando settings-studio-custom-config-table'>
 					<tbody>
 						{this.renderItems()}
@@ -1175,7 +1175,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 	confirmRemove = (showStyleVariant: ShowStyleVariant) => {
 		const { t } = this.props
 		doModalDialog({
-			title: t('Remove this variant?'),
+			title: t('Remove this Variant?'),
 			no: t('Cancel'),
 			onAccept: () => {
 				callMethod('ModalDialog', ShowStylesAPI.methods.removeShowStyleVariant, showStyleVariant._id)
@@ -1246,7 +1246,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 		const { t } = this.props
 		return (
 			<div>
-				<h3 className='mhs'>{t('Variants')}</h3>
+				<h2 className='mhn'>{t('Variants')}</h2>
 				<table className='expando settings-studio-showStyleVariants-table'>
 					<tbody>
 						{this.renderShowStyleVariants()}

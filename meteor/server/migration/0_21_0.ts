@@ -2,10 +2,10 @@ import { addMigrationSteps } from './databaseMigration'
 import * as _ from 'underscore'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Random } from 'meteor/random'
-import { setExpectedVersion } from './lib';
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice';
+import { setExpectedVersion } from './lib'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
-// 0.21.0
+// 0.21.0 ( Release 6 )
 addMigrationSteps( '0.21.0', [
 	{
 		id: 'showStyleBase runtimeArguments _id',

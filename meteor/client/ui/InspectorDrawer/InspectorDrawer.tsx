@@ -93,7 +93,7 @@ export class InspectorDrawerBase extends React.Component<Translated<InspectorDra
 			{
 				key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_TOGGLE_DRAWER,
 				up: this.keyToggleDrawer,
-				label: t('Toggle drawer')
+				label: t('Toggle Drawer')
 			},
 			// {
 			// 	key: RunningOrderViewKbdShortcuts.RUNNING_ORDER_RESET_FOCUS,

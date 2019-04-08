@@ -29,6 +29,9 @@ export interface ICoreSystem {
 		message: string
 		enabled: boolean
 	}
+
+	/** A user-defined name for the installation */
+	name?: string
 }
 
 // The CoreSystem collection will contain one (exactly 1) object.

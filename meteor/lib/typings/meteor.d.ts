@@ -1,5 +1,13 @@
 import { Mongo } from 'meteor/mongo'
+import { Tracker } from 'meteor/tracker'
 import { Optional } from '../lib'
+
+declare module 'meteor/tracker' {
+	namespace Tracker {
+		// Fix an incomplete definition of Tracker.nonreactive in @typings/meteor 
+		function nonreactive<U>(func: () => U): U
+	}
+}
 
 // Note: This file is temporary, we should make a PR to @typings/meteor later on!
 /*

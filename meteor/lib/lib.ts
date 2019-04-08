@@ -8,6 +8,12 @@ import { Settings } from './Settings'
 import * as objectPath from 'object-path'
 import { Mongo } from 'meteor/mongo'
 import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration'
+import * as crypto from 'crypto'
+
+export function getHash (str: string): string {
+	const hash = crypto.createHash('sha1')
+	return hash.update(str).digest('base64').replace(/[\+\/\=]/g, '_') // remove +/= from strings, because they cause troubles
+}
 
 /**
  * Convenience method to convert a Meteor.call() into a Promise
@@ -724,6 +730,13 @@ export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync (functio
 		cb(e)
 	})
 })
+export function makePromise<T> (fcn: () => T): Promise<T> {
+	return new Promise((resolve) => {
+		Meteor.defer(() => {
+			resolve(fcn())
+		})
+	})
+}
 export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 	let ok = true
 	_.each(selector, (s: any, key: string) => {

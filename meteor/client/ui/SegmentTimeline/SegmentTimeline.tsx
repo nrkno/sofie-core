@@ -67,11 +67,12 @@ interface IProps {
 	autoNextSegmentLine: boolean,
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
-	onFollowLiveLine: (state: boolean, event: any) => void
+	onFollowLiveLine?: (state: boolean, event: any) => void
+	onShowEntireSegment?: (event: any) => void
 	onContextMenu?: (contextMenuContext: any) => void
 	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onHeaderNoteClick?: (level: SegmentLineNoteType) => void
-	segmentRef?: (el: React.ComponentClass, sId: string) => void
+	segmentRef?: (el: SegmentTimelineClass, sId: string) => void
 	followingSegmentLine: SegmentLineUi | undefined
 	isLastSegment: boolean
 }
@@ -129,7 +130,8 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 			const durations = this.context.durations as RunningOrderTiming.RunningOrderTimingContext
 			this.props.segmentLines.forEach((item) => {
 				// total += durations.segmentLineDurations ? durations.segmentLineDurations[item._id] : (item.duration || item.renderedDuration || 1)
-				total += Math.max((item.duration || item.renderedDuration || item.expectedDuration || 1), durations.segmentLineDurations && durations.segmentLineDurations[item._id] || 0)
+				const duration = Math.max((item.duration || item.renderedDuration || 0), durations.segmentLineDisplayDurations && durations.segmentLineDisplayDurations[item._id] || 0)
+				total += duration
 			})
 		} else {
 			total = RundownUtils.getSegmentDuration(this.props.segmentLines)
@@ -240,8 +242,7 @@ class SegmentTimelineZoomButtons extends React.Component<IProps> {
 }
 
 export const SegmentTimelineElementId = 'running-order__segment__'
-export const SegmentTimeline = translate()(
-class extends React.Component<Translated<IProps>, IStateHeader> {
+export class SegmentTimelineClass extends React.Component<Translated<IProps>, IStateHeader> {
 	timeline: HTMLDivElement
 	segmentBlock: HTMLDivElement
 
@@ -275,8 +276,8 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 	}
 
 	onZoomDblClick = (e) => {
-		if (this.props.onFollowLiveLine) {
-			this.props.onFollowLiveLine(true, e)
+		if (this.props.onShowEntireSegment) {
+			this.props.onShowEntireSegment(e)
 		}
 	}
 
@@ -385,7 +386,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 
 	timelineStyle () {
 		return {
-			'transform': 'translate3d(-' + Math.round(this.props.scrollLeft * this.props.timeScale).toString() + 'px, 0, 0.1px)',
+			'transform': 'translate3d(-' + Math.floor(this.props.scrollLeft * this.props.timeScale).toString() + 'px, 0, 0.1px)',
 			'willChange': 'transform'
 		}
 	}
@@ -394,7 +395,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 		const { t } = this.props
 
 		if (this.props.isLiveSegment) {
-			let pixelPostion = (this.props.livePosition * this.props.timeScale) - (!this.props.followLiveLine ? (this.props.scrollLeft * this.props.timeScale) : 0)
+			let pixelPostion = Math.floor((this.props.livePosition * this.props.timeScale) - (!this.props.followLiveLine ? (this.props.scrollLeft * this.props.timeScale) : 0))
 			let lineStyle = {
 				'left': (this.props.followLiveLine ?
 							Math.min(pixelPostion, this.props.liveLineHistorySize).toString() :
@@ -532,7 +533,7 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 							onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(SegmentLineNoteType.ERROR)}>
 							<img className='icon' src='/icons/warning_icon.svg' />
 							<div>
-								{t('Critical errors')}:&nbsp;
+								{t('Critical Errors')}:&nbsp;
 								<b>
 									{criticalNotes}
 								</b>
@@ -614,4 +615,6 @@ class extends React.Component<Translated<IProps>, IStateHeader> {
 			</div>
 		)
 	}
-})
+}
+
+export const SegmentTimeline = translate()(SegmentTimelineClass)

@@ -245,7 +245,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 						(this.getCurrentLiveLinePosition() + this.getLiveLineTimePadding(props.timeScale))
 					) || 0),
 					props.timingDurations.segmentLineDurations ?
-						props.timingDurations.segmentLineDurations[props.segmentLine._id] :
+						(props.segmentLine.displayDuration || props.timingDurations.segmentLineDurations[props.segmentLine._id]) :
 						0
 				)
 				: 0
@@ -286,7 +286,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 								this.getCurrentLiveLinePosition() + this.getLiveLineTimePadding(nextProps.timeScale))
 						) || 0),
 					nextProps.timingDurations.segmentLineDurations ?
-						nextProps.timingDurations.segmentLineDurations[nextProps.segmentLine._id] :
+						(nextProps.segmentLine.displayDuration || nextProps.timingDurations.segmentLineDurations[nextProps.segmentLine._id]) :
 						0
 				)
 				: 0
@@ -309,7 +309,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 			}
 		} else {
 			return {
-				minWidth: Math.round(this.getLineDuration() * this.props.timeScale).toString() + 'px',
+				minWidth: Math.floor(this.getLineDuration() * this.props.timeScale).toString() + 'px',
 				// minWidth: (Math.max(this.state.liveDuration, this.props.segmentLine.duration || this.props.segmentLine.expectedDuration || 3000) * this.props.timeScale).toString() + 'px',
 				willChange: this.state.isLive ? 'minWidth' : undefined
 			}

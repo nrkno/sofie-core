@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { setExpectedVersion } from './lib'
 
-// 0.22.0
+// 0.22.0 (Release 7)
 addMigrationSteps( '0.22.0', [
 	// add steps here:
 	// {

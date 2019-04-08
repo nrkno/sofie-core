@@ -25,7 +25,14 @@ export const testRO1: MockRO = {
 		previousSegmentLineId: null,
 		currentSegmentLineId: null,
 		nextSegmentLineId: null,
-		dataSource: ''
+		dataSource: '',
+		importVersions: {
+			studioInstallation: '',
+			showStyleBase: '',
+			showStyleVariant: '',
+			blueprint: '',
+			core: ''
+		}
 	})),
 	segments: [
 		{

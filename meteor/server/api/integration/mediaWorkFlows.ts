@@ -60,6 +60,12 @@ export namespace MediaManagerIntegration {
 			obj.studioInstallationId = peripheralDevice.studioInstallationId
 
 			MediaWorkFlows.upsert(docId, obj)
+
+			if (obj.finished && !obj.success) {
+				logger.info('mm job failed')
+			} else if (obj.finished && obj.success) {
+				logger.info('mm job success')
+			}
 		} else {
 			MediaWorkFlows.remove(docId)
 

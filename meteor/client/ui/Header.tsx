@@ -7,10 +7,18 @@ import { NotificationCenter } from '../lib/notifications/notifications'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { SupportPopUpToggle, SupportPopUp } from './SupportPopUp'
 import * as VelocityReact from 'velocity-react'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
+import { CoreSystem } from '../../lib/collections/CoreSystem'
 
 interface IPropsHeader {
 	adminMode?: boolean
 	testingMode?: boolean
+	developerMode?: boolean
+}
+
+interface ITrackedPropsHeader {
+	name: string
 }
 
 interface IStateHeader {
@@ -18,7 +26,7 @@ interface IStateHeader {
 	showSupportPanel: boolean
 }
 
-class Header extends React.Component<IPropsHeader & InjectedTranslateProps, IStateHeader> {
+class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedPropsHeader>, IStateHeader> {
 	constructor (props: IPropsHeader & InjectedTranslateProps) {
 		super(props)
 
@@ -84,7 +92,7 @@ class Header extends React.Component<IPropsHeader & InjectedTranslateProps, ISta
 						<div className='frow'>
 							<div className='badge'>
 								<div className='media-elem mrs sofie-logo' />
-								<div className='bd mls'><span className='logo-text'>Sofie</span></div>
+								<div className='bd mls'><span className='logo-text'>Sofie {this.props.name ? ' - ' + this.props.name : null}</span></div>
 							</div>
 						</div>
 					</div>
@@ -93,7 +101,7 @@ class Header extends React.Component<IPropsHeader & InjectedTranslateProps, ISta
 							<nav className='links mod'>
 								{ /* <NavLink to='/' activeClassName='active'>{t('Home')}</NavLink> */ }
 								<NavLink to='/' activeClassName='active'>{t('Running Orders')}</NavLink>
-								{ this.props.adminMode && <NavLink to='/nymansPlayground' activeClassName='active'>{t('Nyman\'s Playground')}</NavLink> }
+								{ this.props.developerMode && <NavLink to='/nymansPlayground' activeClassName='active'>{t('Nyman\'s Playground')}</NavLink> }
 								{ this.props.testingMode && <NavLink to='/testTools' activeClassName='active'>{t('Test Tools')}</NavLink> }
 								<NavLink to='/status' activeClassName='active'>{t('Status')}</NavLink>
 								{ this.props.adminMode && <NavLink to='/settings' activeClassName='active'>{t('Settings')}</NavLink> }
@@ -106,4 +114,15 @@ class Header extends React.Component<IPropsHeader & InjectedTranslateProps, ISta
 	}
 }
 
-export default translate()(Header)
+export default translateWithTracker((props: IPropsHeader & InjectedTranslateProps) => {
+	const coreSystem = CoreSystem.findOne()
+	let name: string | undefined = undefined
+
+	if (coreSystem) {
+		name = coreSystem.name
+	}
+
+	return {
+		name
+	}
+})(Header)

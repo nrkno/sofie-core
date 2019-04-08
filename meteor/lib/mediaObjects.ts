@@ -8,6 +8,7 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from './api/runningOrder'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly } from './collections/MediaObjects'
+import * as i18next from 'i18next'
 
 /**
  * Take properties from the mediainfo / medistream and transform into a
@@ -96,7 +97,8 @@ export function getAcceptedFormats (config: Array<IConfigItem>): Array<Array<str
 		}))
 }
 
-export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourceLayer, config: Array<IConfigItem>) {
+export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourceLayer, config: Array<IConfigItem>, t?: i18next.TranslationFunction<any, object, string>) {
+	t = t || ((s: string, options?: _.Dictionary<any>) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options))
 	let newStatus: RunningOrderAPI.LineItemStatusCode = RunningOrderAPI.LineItemStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
 	let message: string | null = null
@@ -109,7 +111,7 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 				// If the fileName is not set...
 				if (!content.fileName) {
 					newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_NOT_SET
-					message = 'Source is not set'
+					message = t('Source is not set')
 				} else {
 					const mediaObject = MediaObjects.findOne({
 						mediaId: content.fileName.toUpperCase()
@@ -117,11 +119,11 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 					// If media object not found, then...
 					if (!mediaObject && content.fileName) {
 						newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING
-						message = 'Source is missing: ' + content.fileName
+						message = t('Source is missing: {{fileName}}', {fileName: content.fileName})
 						// All VT content should have at least two streams
-					} else if (mediaObject && mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2) {
+					} else if (mediaObject && (mediaObject.mediainfo && mediaObject.mediainfo.streams.length < 2)) {
 						newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
-						message = 'Source doesn\'t have audio & video: ' + content.fileName
+						message = t('Source doesn\'t have audio & video: {{fileName}}', {fileName: content.fileName})
 					}
 					if (mediaObject) {
 						if (!newStatus) newStatus = RunningOrderAPI.LineItemStatusCode.OK
@@ -146,7 +148,7 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 
 									const format = buildFormatString(mediaObject.mediainfo, stream)
 									if (!acceptFormat(format, formats)) {
-										messages.push(`Source format (${format}) is not in accepted formats`)
+										messages.push(t('Source format ({{format}}) is not in accepted formats', { format }))
 									}
 								} else if (stream.codec.type === 'audio') {
 									audioStreams++
@@ -158,35 +160,38 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 							}
 
 							if (audioConfig && !expectedAudioStreams.has(audioStreams)) {
-								messages.push(`Source has ${audioStreams} audio streams`)
+								messages.push(t('Source has {{audioStreams}} audio streams', {audioStreams}))
 							}
 
 							// check for black/freeze frames
-							const addFrameWarning = (arr: Array<Anomaly>, type: string) => {
+							const addFrameWarning = (arr: Array<Anomaly>, type: string, t: i18next.TranslationFunction<any, object, string>) => {
 								if (arr.length === 1) {
 									const frames = Math.round(arr[0].duration * 1000 / timebase)
 									if (arr[0].start === 0) {
-										messages.push(`Clip starts with ${frames} ${type} frame${frames > 1 ? 's' : ''}`)
+										messages.push(t('Clip starts with {{frames}} {{type}} frame', {frames, type, count: frames}))
 									} else if (arr[0].end === Number(mediaObject.mediainfo!.format.duration)) {
-										messages.push(`Clip ends with ${frames} ${type} frame${frames > 1 ? 's' : ''}`)
+										messages.push(t('Clip ends with {{frames}} {{type}} frame', { frames, type, count: frames }))
 									} else {
-										messages.push(`${frames} ${type} frame${frames > 1 ? 's' : ''} detected in clip.`)
+										messages.push(t('{{frames}} {{type}} frame detected in clip.', { frames, type, count: frames }))
 									}
 								} else {
 									const dur = arr
 										.map(b => b.duration)
 										.reduce((a, b) => a + b, 0)
 									const frames = Math.round(dur * 1000 / timebase)
-									messages.push(`${frames} ${type} frame${frames > 1 ? 's' : ''} detected in clip.`)
+									messages.push(t('{{frames}} {{type}} frame detected in clip.', { frames, type, count: frames }))
 								}
 							}
 
 							if (mediaObject.mediainfo.blacks) {
-								addFrameWarning(mediaObject.mediainfo.blacks, 'black')
+								addFrameWarning(mediaObject.mediainfo.blacks, 'black', t)
 							}
 							if (mediaObject.mediainfo.freezes) {
-								addFrameWarning(mediaObject.mediainfo.freezes, 'freeze')
+								addFrameWarning(mediaObject.mediainfo.freezes, 'freeze', t)
 							}
+						} else {
+							newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
+							messages.push(t('Clip is being ingested: {{fileName}}', { fileName: content.fileName }))
 						}
 
 						if (messages.length) {

@@ -1,22 +1,26 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
+import { IBlueprintPostProcessSegmentLine } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineNoteType, SegmentLineNote } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
-import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime } from '../../lib/lib'
+import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime, getHash, asyncCollectionUpdate, waitForPromiseAll } from '../../lib/lib'
 import { logger } from '../logging'
 import { loadBlueprints, postProcessSegmentLineItems, SegmentContext } from './blueprints'
-import { getHash } from '../lib'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 import { updateStory, reloadRunningOrder } from './integration/mos'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
-import { MongoModifier } from '../../lib/typings/meteor'
 import { updateExpectedMediaItems } from './expectedMediaItems'
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { Blueprints } from '../../lib/collections/Blueprints'
+import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+const PackageInfo = require('../../package.json')
 
 /**
  * After a Segment has beed removed, handle its contents
@@ -285,11 +289,13 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 	context.handleNotesExternally = true
 
 	let resultSli: SegmentLineItem[] | undefined = undefined
+	let resultSlUpdates: IBlueprintPostProcessSegmentLine[] | undefined = undefined
 	let notes: SegmentLineNote[] = []
 	try {
 		const blueprints = loadBlueprints(showStyleBase)
 		let result = blueprints.getSegmentPost(context)
 		resultSli = postProcessSegmentLineItems(context, result.segmentLineItems, 'post-process', firstSegmentLine._id)
+		resultSlUpdates = result.segmentLineUpdates // TODO - validate/filter/tidy?
 		notes = context.getNotes()
 	} catch (e) {
 		logger.error(e.stack ? e.stack : e.toString())
@@ -347,6 +353,19 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 				logger.debug('PostProcess: deleted segmentLineItem ' + segmentLineItem._id)
 			}
 		})
+	}
+	if (resultSlUpdates) {
+		// At the moment this only affects the UI, so doesnt need to report 'anythingChanged'
+
+		let ps = resultSlUpdates.map(sl => asyncCollectionUpdate(SegmentLines, {
+			_id: sl._id,
+			runningOrderId: ro._id
+		}, {
+			$set: {
+				displayDurationGroup: sl.displayDurationGroup || ''
+			}
+		}))
+		waitForPromiseAll(ps)
 	}
 
 	// if anything was changed
@@ -412,6 +431,36 @@ export namespace ServerRunningOrderAPI {
 		}})
 	}
 }
+export namespace ClientRunningOrderAPI {
+	export function runningOrderNeedsUpdating (runningOrderId: string) {
+		check(runningOrderId, String)
+		// logger.info('runningOrderNeedsUpdating ' + runningOrderId)
+
+		let ro = RunningOrders.findOne(runningOrderId)
+		if (!ro) throw new Meteor.Error(404, `RunningOrder "${runningOrderId}" not found!`)
+		if (!ro.importVersions) return 'unknown'
+
+		if (ro.importVersions.core !== PackageInfo.version) return 'coreVersion'
+
+		const showStyleVariant = ShowStyleVariants.findOne(ro.showStyleVariantId)
+		if (!showStyleVariant) return 'missing showStyleVariant'
+		if (ro.importVersions.showStyleVariant !== (showStyleVariant._runningOrderVersionHash || 0)) return 'showStyleVariant'
+
+		const showStyleBase = ShowStyleBases.findOne(ro.showStyleBaseId)
+		if (!showStyleBase) return 'missing showStyleBase'
+		if (ro.importVersions.showStyleBase !== (showStyleBase._runningOrderVersionHash || 0)) return 'showStyleBase'
+
+		const blueprint = Blueprints.findOne(showStyleBase.blueprintId)
+		if (!blueprint) return 'missing blueprint'
+		if (ro.importVersions.blueprint !== (blueprint.blueprintVersion || 0)) return 'blueprint'
+
+		const si = StudioInstallations.findOne(ro.studioInstallationId)
+		if (!si) return 'missing studioInstallation'
+		if (ro.importVersions.studioInstallation !== (si._runningOrderVersionHash || 0)) return 'studioInstallation'
+
+		return undefined
+	}
+}
 
 let methods: Methods = {}
 methods[RunningOrderAPI.methods.removeRunningOrder] = (roId: string) => {
@@ -422,6 +471,9 @@ methods[RunningOrderAPI.methods.resyncRunningOrder] = (roId: string) => {
 }
 methods[RunningOrderAPI.methods.unsyncRunningOrder] = (roId: string) => {
 	return ServerRunningOrderAPI.unsyncRunningOrder(roId)
+}
+methods[RunningOrderAPI.methods.runningOrderNeedsUpdating] = (roId: string) => {
+	return ClientRunningOrderAPI.runningOrderNeedsUpdating(roId)
 }
 // Apply methods:
 setMeteorMethods(wrapMethods(methods))

@@ -17,7 +17,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
  * These files are combined with / overridden by migration steps defined in the blueprints.
  */
 
-// 0.19.0 is a BIG refactoring
+// 0.19.0 (Release 4) is a BIG refactoring
 addMigrationSteps( '0.19.0', [
 	{ // Create showStyleBase (migrate from studioInstallation)
 		id: 'showStyleBase exists',
@@ -47,7 +47,8 @@ addMigrationSteps( '0.19.0', [
 					sourceLayers: studio.sourceLayers,
 					// @ts-ignore
 					hotkeyLegend: studio.hotkeyLegend,
-					config: []
+					config: [],
+					_runningOrderVersionHash: '',
 				})
 
 				const variantId = Random.id()
@@ -55,7 +56,8 @@ addMigrationSteps( '0.19.0', [
 					_id: variantId,
 					name: 'Default variant',
 					showStyleBaseId: id,
-					config: []
+					config: [],
+					_runningOrderVersionHash: '',
 				})
 
 				if (!studio.supportedShowStyleBase || studio.supportedShowStyleBase.length === 0) {
@@ -73,14 +75,16 @@ addMigrationSteps( '0.19.0', [
 					blueprintId: '',
 					outputLayers: [],
 					sourceLayers: [],
-					config: []
+					config: [],
+					_runningOrderVersionHash: '',
 				})
 
 				ShowStyleVariants.insert({
 					_id: Random.id(),
 					name: 'Default variant',
 					showStyleBaseId: 'show0',
-					config: []
+					config: [],
+					_runningOrderVersionHash: '',
 				})
 			}
 		}

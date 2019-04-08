@@ -5,12 +5,11 @@ import { RunningOrders } from '../../lib/collections/RunningOrders'
 import { SegmentLineItems, SegmentLineItemGeneric } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItems } from '../../lib/collections/SegmentLineAdLibItems'
 import { syncFunctionIgnore } from '../codeControl'
-import { saveIntoDb, literal, getCurrentTime } from '../../lib/lib'
+import { saveIntoDb, literal, getCurrentTime, getHash } from '../../lib/lib'
 import { SegmentLines } from '../../lib/collections/SegmentLines'
 import { wrapMethods, setMeteorMethods } from '../methods'
 import { Random } from 'meteor/random'
 import { logger } from '../logging'
-import { getHash } from '../lib'
 
 export const updateExpectedMediaItems: (roId: string, slId: string) => void
 = syncFunctionIgnore(function updateExpectedMediaItems (roId: string, slId: string) {

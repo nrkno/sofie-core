@@ -7,7 +7,6 @@ import {
 } from '../../lib/collections/CoreSystem'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { getHash } from '../lib'
 import {
 	MigrationMethods,
 	RunMigrationResult,
@@ -40,6 +39,7 @@ import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
 import { evalBlueprints, MigrationContextStudio, MigrationContextShowStyle } from '../api/blueprints'
+import { getHash } from '../../lib/lib'
 
 /** The current database version, x.y.z
  * 0.16.0: Release 3   (2018-10-26)
@@ -49,8 +49,9 @@ import { evalBlueprints, MigrationContextStudio, MigrationContextShowStyle } fro
  * 0.20.0: Release 5.1 (2019-02-05)
  * 0.21.0: Release 6   (TBD, in testing)
  * 0.22.0: Release 7   (TBD)
+ * 0.23.0: Release 8   (TBD)
  */
-export const CURRENT_SYSTEM_VERSION = '0.22.0'
+export const CURRENT_SYSTEM_VERSION = '0.23.0'
 
 /** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.
  * And Sofie said: The version of the database is to be GENESIS_SYSTEM_VERSION so that the migration scripts will run.
@@ -249,7 +250,6 @@ export function prepareMigration (returnAllChunks?: boolean) {
 	let partialMigration: boolean = false
 
 	// Filter steps:
-	let overrideIds: {[id: string]: true} = {}
 	let migrationSteps: {[id: string]: MigrationStepInternal} = {}
 	let ignoredSteps: {[id: string]: true} = {}
 	_.each(allMigrationSteps, (step: MigrationStepInternal) => {
@@ -519,11 +519,12 @@ export function runMigration (
 	if (migration.manualStepCount === 0 && !warningMessages.length) { // continue automatically with the next batch
 		migration.partialMigration = false
 		const s = getMigrationStatus()
-		const res = runMigration(s.migration.chunks, s.migration.hash, inputResults, false)
-		if (res.migrationCompleted) {
-			return res
+		if (s.migration.automaticStepCount > 0 && s.migration.manualStepCount > 0) {
+			const res = runMigration(s.migration.chunks, s.migration.hash, inputResults, false)
+			if (res.migrationCompleted) {
+				return res
+			}
 		}
-
 	}
 	if (!migration.partialMigration && !warningMessages.length) {
 		// if there are no warning messages, we can complete the migration right away:

@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-02-21T11:35:46.333Z\n"
-"PO-Revision-Date: 2019-02-21T11:35:46.334Z\n"
+"POT-Creation-Date: 2019-03-27T10:52:51.719Z\n"
+"PO-Revision-Date: 2019-03-27T10:52:51.719Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -100,13 +100,16 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
+msgid "My name is {{name}}"
+msgstr ""
+
 msgid "Search..."
 msgstr ""
 
 msgid "Last "
 msgstr ""
 
-msgid "Toggle drawer"
+msgid "Toggle Drawer"
 msgstr ""
 
 msgid "Escape from filter search"
@@ -180,7 +183,7 @@ msgstr ""
 msgid "status"
 msgstr ""
 
-msgid "Status messages:"
+msgid "Status Messages:"
 msgstr ""
 
 msgid "Start time is close"
@@ -200,19 +203,19 @@ msgstr ""
 msgid "Started"
 msgstr ""
 
-msgid "Planned start"
+msgid "Planned Start"
 msgstr ""
 
 msgid "Hold"
 msgstr ""
 
-msgid "Planned end"
+msgid "Planned End"
 msgstr ""
 
 msgid "Diff"
 msgstr ""
 
-msgid "Expected end"
+msgid "Expected End"
 msgstr ""
 
 msgid "Take"
@@ -334,6 +337,46 @@ msgstr ""
 msgid "This running order has been unpublished from Sofie."
 msgstr ""
 
+msgid "Error: The studio of this RunningOrder was not found."
+msgstr ""
+
+msgid "Error: The ShowStyle of this RunningOrder was not found."
+msgstr ""
+
+msgid "Unknown error"
+msgstr ""
+
+msgid ""
+"The Running Order has been UNSYNCED from ENPS! No data updates will "
+"currently come through."
+msgstr ""
+
+msgid "Re-sync"
+msgstr ""
+
+msgid "Re-sync Running Order"
+msgstr ""
+
+msgid ""
+"Are you sure you want to re-sync the Running Order?\n"
+"(If the currently playing Segment Line has been changed, this can affect "
+"the output.)"
+msgstr ""
+
+msgid "Show issue"
+msgstr ""
+
+msgid "Unable to check the system configuration for changes"
+msgstr ""
+
+msgid ""
+"The system configuration has been changed since importing this running "
+"order. It might not run correctly"
+msgstr ""
+
+msgid "Device {{deviceName}} is disconnected"
+msgstr ""
+
 msgid "Just now"
 msgstr ""
 
@@ -373,6 +416,9 @@ msgstr ""
 msgid "Script is empty"
 msgstr ""
 
+msgid "File Name"
+msgstr ""
+
 msgid "File name"
 msgstr ""
 
@@ -382,7 +428,7 @@ msgstr ""
 msgid "On Air"
 msgstr ""
 
-msgid "Critical errors"
+msgid "Critical Errors"
 msgstr ""
 
 msgid "Warnings"
@@ -433,19 +479,19 @@ msgstr ""
 msgid "Unknown Device"
 msgstr ""
 
-msgid "Delete this show style?"
+msgid "Delete this Show Style?"
 msgstr ""
 
 msgid "Are you sure you want to delete the show style \"{{showStyleId}}\"?"
 msgstr ""
 
-msgid "Delete this blueprint?"
+msgid "Delete this Blueprint?"
 msgstr ""
 
 msgid "Are you sure you want to delete the blueprint \"{{blueprintId}}\"?"
 msgstr ""
 
-msgid "Remove this device?"
+msgid "Remove this Device?"
 msgstr ""
 
 msgid ""
@@ -456,19 +502,19 @@ msgstr ""
 msgid "Studios"
 msgstr ""
 
-msgid "Unnamed studio"
+msgid "Unnamed Studio"
 msgstr ""
 
 msgid "Show Styles"
 msgstr ""
 
-msgid "Unnamed show style"
+msgid "Unnamed Show Style"
 msgstr ""
 
-msgid "Source layers"
+msgid "Source Layers"
 msgstr ""
 
-msgid "Output channels"
+msgid "Output Channels"
 msgstr ""
 
 msgid "Blueprints"
@@ -521,6 +567,186 @@ msgstr ""
 msgid "Upload Blueprints"
 msgstr ""
 
+msgid "URL"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "Params"
+msgstr ""
+
+msgid "Make ready commands"
+msgstr ""
+
+msgid "Remove this command?"
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "Are you sure you want to remove this command?"
+msgstr ""
+
+msgid "Storage ID"
+msgstr ""
+
+msgid "Storage Type"
+msgstr ""
+
+msgid "Allow Read"
+msgstr ""
+
+msgid "Allow Write"
+msgstr ""
+
+msgid "Base Path"
+msgstr ""
+
+msgid "Media Path"
+msgstr ""
+
+msgid "Mapped Networked Drive"
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "Password"
+msgstr ""
+
+msgid "Don't Scan Entire Storage"
+msgstr ""
+
+msgid "Media Flow ID"
+msgstr ""
+
+msgid "Media Flow Type"
+msgstr ""
+
+msgid "Source Storage"
+msgstr ""
+
+msgid "Target Storage"
+msgstr ""
+
+msgid "No. of Available Workers"
+msgstr ""
+
+msgid "File Linger Time"
+msgstr ""
+
+msgid "Workflow Linger Time"
+msgstr ""
+
+msgid "Cron-Job Interval Time"
+msgstr ""
+
+msgid "Media Scanner Host"
+msgstr ""
+
+msgid "Media Scanner Port"
+msgstr ""
+
+msgid "Activate Debug Logging"
+msgstr ""
+
+msgid "Remove this storage?"
+msgstr ""
+
+msgid "Are you sure you want to remove storage \"{{storageId}}\"?"
+msgstr ""
+
+msgid "Remove this flow?"
+msgstr ""
+
+msgid "Are you sure you want to remove flow \"{{flowId}}\"?"
+msgstr ""
+
+msgid "Attached Storages"
+msgstr ""
+
+msgid "Media Flows"
+msgstr ""
+
+msgid "Device ID"
+msgstr ""
+
+msgid "Primary ID (Newsroom System MOS ID)"
+msgstr ""
+
+msgid "Primary Host (IP or Hostname)"
+msgstr ""
+
+msgid "Secondary ID (Newsroom System MOS ID)"
+msgstr ""
+
+msgid "Secondary Host (IP Address or Hostname)"
+msgstr ""
+
+msgid "MOS ID of Gateway (Sofie MOS ID)"
+msgstr ""
+
+msgid "Remove this device?"
+msgstr ""
+
+msgid "Are you sure you want to remove device \"{{deviceId}}\"?"
+msgstr ""
+
+msgid "Attached Subdevices"
+msgstr ""
+
+msgid "Host"
+msgstr ""
+
+msgid "Port"
+msgstr ""
+
+msgid "CasparCG Launcher Host"
+msgstr ""
+
+msgid "CasparCG Launcher Port"
+msgstr ""
+
+msgid "Sources Path"
+msgstr ""
+
+msgid "Ramp Function Path"
+msgstr ""
+
+msgid "URI"
+msgstr ""
+
+msgid "HTTPMethod"
+msgstr ""
+
+msgid "expectedHttpResponse"
+msgstr ""
+
+msgid "Keyword"
+msgstr ""
+
+msgid "Interval"
+msgstr ""
+
+msgid "Enable SSL"
+msgstr ""
+
+msgid "Device Type"
+msgstr ""
+
+msgid "Thread Usage"
+msgstr ""
+
+msgid "Activate Multi-Threading"
+msgstr ""
+
+msgid "Activate Multi-Threaded Timeline Resolving"
+msgstr ""
+
+msgid "(Restart to apply)"
+msgstr ""
+
 msgid "true"
 msgstr ""
 
@@ -548,166 +774,10 @@ msgstr ""
 msgid "Blueprint Configuration"
 msgstr ""
 
-msgid "URL"
-msgstr ""
-
-msgid "Type"
-msgstr ""
-
-msgid "Params"
-msgstr ""
-
-msgid "Make ready commands"
-msgstr ""
-
-msgid "Remove this command?"
-msgstr ""
-
-msgid "Remove"
-msgstr ""
-
-msgid "Are you sure you want to remove this command?"
-msgstr ""
-
-msgid "Device ID"
-msgstr ""
-
-msgid "Device Type"
-msgstr ""
-
-msgid "Thread Usage"
-msgstr ""
-
-msgid "Host"
-msgstr ""
-
-msgid "Port"
-msgstr ""
-
-msgid "CasparCG Launcher Host"
-msgstr ""
-
-msgid "CasparCG Launcher Port"
-msgstr ""
-
-msgid "Sources Path"
-msgstr ""
-
-msgid "Ramp Function Path"
-msgstr ""
-
-msgid "Enable SSL"
-msgstr ""
-
-msgid "Media Scanner Host"
-msgstr ""
-
-msgid "Media Scanner Port"
-msgstr ""
-
-msgid "Activate Debug Logging"
-msgstr ""
-
-msgid "Activate Multi-Threading"
-msgstr ""
-
-msgid "Are you sure you want to remove device \"{{deviceId}}\"?"
-msgstr ""
-
-msgid "Attached sub-devices"
-msgstr ""
-
-msgid "Storage ID"
-msgstr ""
-
-msgid "Storage Type"
-msgstr ""
-
-msgid "Allow read"
-msgstr ""
-
-msgid "Allow write"
-msgstr ""
-
-msgid "Base Path"
-msgstr ""
-
-msgid "Media Path"
-msgstr ""
-
-msgid "Mapped Networked Drive"
-msgstr ""
-
-msgid "Username"
-msgstr ""
-
-msgid "Password"
-msgstr ""
-
-msgid "Don't scan entire storage"
-msgstr ""
-
-msgid "Media Flow ID"
-msgstr ""
-
-msgid "Media Flow Type"
-msgstr ""
-
-msgid "Source Storage"
-msgstr ""
-
-msgid "Target Storage"
-msgstr ""
-
-msgid "No. of available workers"
-msgstr ""
-
-msgid "Default linger time"
-msgstr ""
-
-msgid "Cron Job period"
-msgstr ""
-
-msgid "Remove this storage?"
-msgstr ""
-
-msgid "Are you sure you want to remove storage \"{{storageId}}\"?"
-msgstr ""
-
-msgid "Remove this flow?"
-msgstr ""
-
-msgid "Are you sure you want to remove flow \"{{flowId}}\"?"
-msgstr ""
-
-msgid "Attached Storages"
-msgstr ""
-
-msgid "Media Flows"
-msgstr ""
-
-msgid "Primary ID (News Room System MOS ID)"
-msgstr ""
-
-msgid "Primary Host (IP or Hostname)"
-msgstr ""
-
-msgid "Secondary ID (News Room System MOS ID)"
-msgstr ""
-
-msgid "Secondary Host (IP Address or Hostname)"
-msgstr ""
-
-msgid "MOS ID of Gateway (Sofie MOS ID)"
-msgstr ""
-
-msgid "Attached subdevices"
-msgstr ""
-
 msgid "Are you sure you want to restart this device?"
 msgstr ""
 
-msgid "Restart this device?"
+msgid "Restart this Device?"
 msgstr ""
 
 msgid "Restart"
@@ -722,7 +792,7 @@ msgstr ""
 msgid "Device Name"
 msgstr ""
 
-msgid "Reset database version"
+msgid "Reset Database Version"
 msgstr ""
 
 msgid ""
@@ -730,7 +800,7 @@ msgid ""
 "Only do this if you plan on running the migration right after."
 msgstr ""
 
-msgid "Set database version"
+msgid "Set Database Version"
 msgstr ""
 
 msgid "Are you sure you want to set the database version to"
@@ -742,10 +812,13 @@ msgstr ""
 msgid "Refresh"
 msgstr ""
 
-msgid "Reset version to"
+msgid "Reset Version to"
 msgstr ""
 
-msgid "Reset all versions"
+msgid "Reset All Versions"
+msgstr ""
+
+msgid "All steps"
 msgstr ""
 
 msgid ""
@@ -773,7 +846,7 @@ msgstr ""
 msgid "Run Migration Procedure"
 msgstr ""
 
-msgid "Warnings during migration"
+msgid "Warnings During Migration"
 msgstr ""
 
 msgid ""
@@ -781,7 +854,7 @@ msgid ""
 "can"
 msgstr ""
 
-msgid "Force migration"
+msgid "Force Migration"
 msgstr ""
 
 msgid ""
@@ -790,10 +863,10 @@ msgid ""
 "correct!"
 msgstr ""
 
-msgid "Force migration (unsafe)"
+msgid "Force Migration (unsafe)"
 msgstr ""
 
-msgid "The migration has completed successfully!"
+msgid "The migration was completed successfully!"
 msgstr ""
 
 msgid "All is well, go get a"
@@ -805,7 +878,7 @@ msgstr ""
 msgid "Blueprint"
 msgstr ""
 
-msgid "Compatible studios:"
+msgid "Compatible Studios:"
 msgstr ""
 
 msgid "No studios are compatible with this Show Style"
@@ -933,9 +1006,6 @@ msgstr ""
 msgid "Exclusivity group"
 msgstr ""
 
-msgid "Source Layers"
-msgstr ""
-
 msgid "Delete this output?"
 msgstr ""
 
@@ -951,13 +1021,16 @@ msgstr ""
 msgid "Is PGM Output"
 msgstr ""
 
+msgid "Output channels"
+msgstr ""
+
 msgid "Key"
 msgstr ""
 
 msgid "Custom Hotkey Labels"
 msgstr ""
 
-msgid "Remove this variant?"
+msgid "Remove this Variant?"
 msgstr ""
 
 msgid "Are you sure you want to remove the variant \"{{showStyleVariantId}}\"?"
@@ -970,6 +1043,20 @@ msgid "Variant Name"
 msgstr ""
 
 msgid "Variants"
+msgstr ""
+
+msgid "Restore from this Snapshot file?"
+msgstr ""
+
+msgid ""
+"Are you sure you want to restore the system from the Snapshot file "
+"\"{{fileName}}\"?"
+msgstr ""
+
+msgid "Successfully restored snapshot"
+msgstr ""
+
+msgid "Snapshot restore failed: {{errorMessage}}"
 msgstr ""
 
 msgid "Full System Snapshot"
@@ -995,18 +1082,10 @@ msgstr ""
 msgid "Restore from Snapshot File"
 msgstr ""
 
-msgid "Restore from this Snapshot file?"
+msgid "Restore from Stored Snapshots"
 msgstr ""
 
 msgid "Restore"
-msgstr ""
-
-msgid ""
-"Are you sure you want to restore the system from the Snapshot file "
-"\"{{fileName}}\"?"
-msgstr ""
-
-msgid "Restore from Stored Snapshots"
 msgstr ""
 
 msgid "Show \"Remove snapshots\"-buttons"
@@ -1045,16 +1124,16 @@ msgstr ""
 msgid "Preset"
 msgstr ""
 
-msgid "Preset transition speed"
+msgid "Preset Transition Speed"
 msgstr ""
 
 msgid "Zoom"
 msgstr ""
 
-msgid "Zoom speed"
+msgid "Zoom Speed"
 msgstr ""
 
-msgid "Unknown mapping"
+msgid "Unknown Mapping"
 msgstr ""
 
 msgid "Layer ID"
@@ -1066,7 +1145,7 @@ msgstr ""
 msgid "Layer Mappings"
 msgstr ""
 
-msgid "Test Tools - Recordings"
+msgid "Test Tools – Recordings"
 msgstr ""
 
 msgid "CasparCG Channel"
@@ -1102,7 +1181,7 @@ msgstr ""
 msgid "Sofie Host URL"
 msgstr ""
 
-msgid "System Message"
+msgid "System-wide Notification Message"
 msgstr ""
 
 msgid "Message"
@@ -1111,7 +1190,10 @@ msgstr ""
 msgid "Enabled"
 msgstr ""
 
-msgid "Support Message"
+msgid "Edit Support Panel"
+msgstr ""
+
+msgid "HTML that will be shown in the Support Panel"
 msgstr ""
 
 msgid "System"
@@ -1132,7 +1214,7 @@ msgstr ""
 msgid "Timestamp"
 msgstr ""
 
-msgid "User name"
+msgid "User Name"
 msgstr ""
 
 msgid "Answers"
@@ -1207,10 +1289,13 @@ msgstr ""
 msgid "Details"
 msgstr ""
 
+msgid "Abort"
+msgstr ""
+
 msgid "Media Transfer Status"
 msgstr ""
 
-msgid "Not connected"
+msgid "Not Connected"
 msgstr ""
 
 msgid "Restart CasparCG Server"
@@ -1223,6 +1308,9 @@ msgid "Last seen"
 msgstr ""
 
 msgid "Are you sure you want to delete this device?"
+msgstr ""
+
+msgid "Restart this device?"
 msgstr ""
 
 msgid "System Status"

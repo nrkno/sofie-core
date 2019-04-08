@@ -5,9 +5,97 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
 import { Link } from 'react-router-dom'
 import { TimelineObjGeneric, Timeline } from '../../../lib/collections/Timeline'
-import { clone } from 'underscore'
-import { Resolver } from 'superfly-timeline'
-import { transformTimeline } from '../../../lib/timeline'
+import { TriggerType } from 'superfly-timeline'
+import { getCurrentTime } from '../../../lib/lib'
+import { loadScript } from '../../lib/lib'
+
+/**
+ * Note: this is a temporary function, which converts a timelineObject of the OLD type to the new (v2)
+ * @param obj
+ */
+function convertTimelineObject (obj: any): any {
+	const newObj: any = {
+		id: obj.id,
+		enable: {
+		},
+		layer: obj.LLayer,
+		// children?: Array<TimelineObject>
+		// keyframes?: Array<TimelineKeyframe>
+		classes: obj.classes,
+		disabled: obj.disabled,
+		isGroup: obj.isGroup,
+		priority: obj.priority,
+		content: obj.content
+	}
+
+	if (obj.trigger.type === TriggerType.TIME_ABSOLUTE) {
+		newObj.enable.start = obj.trigger.value
+	} else if (obj.trigger.type === TriggerType.TIME_RELATIVE) {
+		newObj.enable.start = obj.trigger.value
+	} else if (obj.trigger.type === TriggerType.LOGICAL) {
+		newObj.enable.while = obj.trigger.value
+		// if (newObj.enable.while === '1') {
+		// 	newObj.enable.while = 'true'
+		// } else if (newObj.enable.while === '0') {
+		// 	newObj.enable.while = 'false'
+		// }
+	}
+	if (obj.duration) {
+		newObj.enable.duration = obj.duration
+	}
+	// @ts-ignore
+	if (obj.legacyRepeatingTime) {
+		// @ts-ignore
+		newObj.enable.repeating = obj.legacyRepeatingTime
+	}
+	// @ts-ignore
+	if (obj.legacyEndTime) {
+		// @ts-ignore
+		newObj.enable.end = obj.legacyEndTime
+	}
+	if (obj.content.keyframes) {
+		newObj.keyframes = []
+		_.each(obj.content.keyframes, (kf: any) => {
+			newObj.keyframes.push(convertTimelineKeyframe(kf))
+		})
+		delete obj.content.keyframes
+	}
+	if (obj.isGroup && obj.content.objects) {
+		newObj.isGroup = true
+		newObj.children = []
+		_.each(obj.content.objects, (obj: any) => {
+			newObj.children.push(convertTimelineObject(obj))
+		})
+		delete obj.content.objects
+	}
+	if (newObj.isGroup && !newObj.children) {
+		newObj.children = []
+	}
+	return newObj
+}
+function convertTimelineKeyframe (obj: any): any {
+	const newKf: any = {
+		id: obj.id,
+		enable: {
+		},
+		// children?: Array<TimelineObject>
+		// keyframes?: Array<TimelineKeyframe>
+		classes: obj.classes,
+		// disabled: boolean
+		content: obj.content
+	}
+	if (obj.trigger.type === TriggerType.TIME_ABSOLUTE) {
+		newKf.enable.start = obj.trigger.value
+	} else if (obj.trigger.type === TriggerType.TIME_RELATIVE) {
+		newKf.enable.start = obj.trigger.value
+	} else if (obj.trigger.type === TriggerType.LOGICAL) {
+		newKf.enable.while = obj.trigger.value
+	}
+	if (obj.duration) {
+		newKf.enable.duration = obj.duration
+	}
+	return newKf
+}
 
 interface ITimelineViewProps {
 	match?: {
@@ -17,127 +105,15 @@ interface ITimelineViewProps {
 	}
 }
 interface ITimelineViewState {
-	currentState?: string
-	stateData: {[key: string]: TimelineObjGeneric[]}
 }
-interface ITimelineViewTrackedProps {
-	studio?: StudioInstallation,
-	timeline: TimelineObjGeneric[]
-}
-
-const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState, ITimelineViewTrackedProps>((props: ITimelineViewProps) => {
+const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState, {}>((props: ITimelineViewProps) => {
 	return {
-		studio: StudioInstallations.findOne(),
-		timeline: Timeline.find().fetch()
+		studios: StudioInstallations.find({}).fetch()
 	}
-})(class TimelineView extends MeteorReactComponent<Translated<ITimelineViewProps & ITimelineViewTrackedProps>, ITimelineViewState> {
+})(class TimelineView extends MeteorReactComponent<Translated<ITimelineViewProps>, ITimelineViewState> {
 
-	constructor (props: Translated<ITimelineViewProps & ITimelineViewTrackedProps>) {
+	constructor (props: Translated<ITimelineViewProps>) {
 		super(props)
-
-		// this.componentWillReceiveProps(props)
-
-		this.state = {
-			currentState: undefined,
-			stateData: {}
-		}
-	}
-
-	onUpdateValue = (edit: any, newValue: any) => {
-		console.log('edit', edit, newValue)
-		let attr = edit.props.attribute
-
-		if (attr) {
-			let m = {}
-			m[attr] = newValue
-			this.setState(m)
-		}
-	}
-
-	componentWillReceiveProps (nextProps: Readonly<Translated<ITimelineViewProps & ITimelineViewTrackedProps>>) {
-		const statObj = nextProps.timeline.find(t => !!t.statObject)
-		if (!statObj) return
-
-		const newVals = {}
-		const key = (statObj.content as any).modified + ''
-		newVals[key] = clone(nextProps.timeline)
-		this.setState({
-			stateData: Object.assign({}, this.state.stateData, newVals),
-			currentState: key
-		})
-	}
-
-	componentWillMount () {
-		if (this.props.match && this.props.match.params) {
-			// Subscribe to data:
-			this.subscribe('timeline', {
-				siId: this.props.match.params.studioId
-			})
-			this.subscribe('studioInstallations', {
-				_id: this.props.match.params.studioId
-			})
-		}
-	}
-
-	renderTimelineView () {
-		const state = this.state.currentState ? this.state.stateData[this.state.currentState] : undefined // TODO - default
-		if (!state) return <p>Bad state</p>
-
-		const statObj = state.find(t => !!t.statObject)
-		if (!statObj) return <p>No</p>
-		const modified = (statObj.content as any).modified
-
-		const resolved = Resolver.getTimelineInWindow(transformTimeline(state))
-		const r2 = Resolver.developTimelineAroundTime(resolved, modified)
-
-		const offset = Math.min(...(_.compact(_.map(r2.resolved, v => v.resolved.startTime))))
-		const maxEnd = Math.max(...(_.compact(_.map(r2.resolved, v => v.resolved.endTime !== Infinity ? v.resolved.endTime : undefined)))) + 60000
-
-		const grouped = _.groupBy(_.sortBy(r2.resolved, o => o.LLayer), o => o.LLayer)
-
-		const rowHeight = 90
-		const objOffset = 10
-		const scaleFactor = 1 / 40
-
-		// let i = -1
-		let yOffset = 0
-		const elms = _.map(grouped, (objs, k) => {
-			// i++
-
-			const sortedObjs = _.chain(objs).sortBy('priority').sortBy('resolved.startTime').value()
-
-			const r = <div className={'.testtools-timeline-llayer-row'}>
-				{ _.map(sortedObjs, (v, o) => {
-					const isInfinite = v.resolved.endTime === null || v.resolved.endTime === undefined || v.resolved.endTime === Infinity
-					const end = isInfinite ? maxEnd : v.resolved.endTime
-					const width = ((end || 0) - (v.resolved.startTime || 0)) * scaleFactor
-					const divStyle = {
-						top: yOffset + (25 + o * objOffset) + 'px',
-						left: (v.resolved.startTime ? ((v.resolved.startTime - offset) * scaleFactor) : 0) + 'px',
-						width: width + 'px',
-					}
-					const str = (v.resolved.startTime ? (v.resolved.startTime - offset) : '-') + ' - ' + (!isInfinite ? (end || 0) - offset : '?')
-					return <div className={'testtools-timeline-llayer-object'} style={divStyle} title={ str }>{ str }</div>
-				})}
-			</div>
-
-			yOffset += objs.length * objOffset + 25 + 30
-
-			return r
-		})
-
-		const labelElms = _.map(grouped, (objs, k) => {
-			const h = objs.length * objOffset + 25 + 30
-			return <div className={'testtools-timeline-llayer-label'} style={{height: h + 'px'}}>{ k }</div>
-		})
-
-		return <div className={'testtools-timeline'}>
-			{ labelElms }
-			<div className={'testtools-timeline-scroller'}>
-				<div className={'testtools-timeline-marker'} style={{left: (modified - offset) * scaleFactor + 'px'}}></div>
-				{ elms }
-			</div>
-		</div>
 	}
 
 	render () {
@@ -150,7 +126,151 @@ const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState
 					<h1>{t('Timeline')}</h1>
 				</header>
 				<div className='mod mvl'>
-					{this.renderTimelineView()}
+					{this.props.match && this.props.match.params && <TimelineVisualizerInStudio studioId={this.props.match.params.studioId}/>}
+				</div>
+			</div>
+		)
+	}
+})
+
+interface ITimelineVisualizerInStudioProps {
+	studioId: string
+}
+interface ITimelineVisualizerInStudioState {
+	scriptLoaded?: boolean
+	scriptError?: boolean
+	showDetails: any
+}
+interface ITimelineVisualizerInStudioTrackedProps {
+	timeline: Array<TimelineObjGeneric>
+}
+export const TimelineVisualizerInStudio = translateWithTracker<ITimelineVisualizerInStudioProps, ITimelineVisualizerInStudioState, ITimelineVisualizerInStudioTrackedProps>((props: ITimelineVisualizerInStudioProps) => {
+	return {
+		timeline: Timeline.find({
+			siId: props.studioId
+		}).fetch()
+	}
+})(
+class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimelineVisualizerInStudioProps & ITimelineVisualizerInStudioTrackedProps>, ITimelineVisualizerInStudioState> {
+	private startVisualizer: boolean = false
+	private newTimeline: TimelineObjGeneric[] | null = null
+	private visualizer: any = null
+
+	constructor (props) {
+		super(props)
+		this.state = {
+			scriptLoaded: false,
+			scriptError: false,
+			showDetails: null
+		}
+	}
+	componentWillMount () {
+		this.subscribe('timeline', {
+			siId: this.props.studioId
+		})
+
+		this.triggerLoadScript()
+
+	}
+	componentDidUpdate () {
+		if (this.startVisualizer) {
+			// @ts-ignore temporary implementation
+			const TimelineVisualizer: any = window.TimelineVisualizer
+			if (!this.visualizer) {
+				// initialize
+				this.visualizer = new TimelineVisualizer.TimelineVisualizer('timeline-visualizer', {
+					drawPlayhead: true,
+				})
+				this.visualizer.on('timeline:mouseDown', (event) => {
+					if (event.detail) {
+						this.setState({
+							showDetails: event.detail
+						})
+					}
+				})
+
+				// @ts-ignore
+				window.visualizer = this.visualizer
+				this.visualizer.setViewPort({
+					playSpeed: 1000,
+
+					playViewPort: true,
+					playPlayhead: true,
+					playheadTime: getCurrentTime(),
+					timestamp: getCurrentTime(),
+					zoom: 10 * 1000,
+				})
+			}
+			if (this.newTimeline) {
+				this.visualizer.updateTimeline(this.newTimeline, {
+
+				})
+				this.newTimeline = null
+			}
+		}
+	}
+	triggerLoadScript () {
+		loadScript('/scripts/timeline-visualizer.min.js', (err) => {
+			this.setState({
+				scriptLoaded: !err,
+				scriptError: !!err
+			})
+		})
+	}
+	closeDetails () {
+		this.setState({
+			showDetails: null
+		})
+	}
+	renderTimeline () {
+		this.startVisualizer = true
+
+		let timeline = _.compact(_.map(this.props.timeline, (obj) => {
+
+			let o = _.extend({
+				id: obj._id
+			}, obj)
+			delete o._id
+
+			if (o.trigger.value === 'now') o.trigger.value = getCurrentTime() // tmp
+
+			if (o.id) return convertTimelineObject(o) // Note: this is a temporary conversion. When we've moved to timeline v2 this can be removed.
+		}))
+
+		this.newTimeline = timeline
+
+		return (
+			<div>
+				<canvas width='1280' height='3000' id='timeline-visualizer'></canvas>
+			</div>
+		)
+	}
+	render () {
+
+		return (
+			<div className='timeline-visualizer'>
+				{/* <script src='/script/timeline-visualizer.js'></script> */}
+				<div>Studio: {this.props.studioId}</div>
+				<div>Timeline objects: {this.props.timeline.length}</div>
+				<div className='timeline'>
+					{
+						this.state.scriptLoaded ?
+							this.renderTimeline() :
+						this.state.scriptError ?
+							<div>'Unable to load script'</div> :
+						null
+					}
+				</div>
+				<div className='details'>
+					{
+						this.state.showDetails ?
+						<div className='content'>
+							<button className='btn btn-secondary btn-tight' onClick={() => this.closeDetails()}>Close</button>
+							<pre>
+								{JSON.stringify(this.state.showDetails, null, 2)}
+							</pre>
+						</div> : null
+					}
 				</div>
 			</div>
 		)

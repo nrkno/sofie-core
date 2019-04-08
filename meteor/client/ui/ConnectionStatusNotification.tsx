@@ -55,6 +55,8 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 				systemNotification = new Notification(Random.id(), NoticeLevel.CRITICAL, cs.systemInfo.message, 'SystemMessage', undefined, true, undefined, 1000)
 			}
 
+			document.title = 'Sofie' + (cs && cs.name ? ' - ' + cs.name : '')
+
 			let newNotification: Notification | undefined = undefined
 			newNotification = new Notification(Random.id(), this.getNoticeLevel(status), this.getStatusText(status, reason, retryTime), t('Sofie Automation Server'), Date.now(), !connected, (status === 'failed' || status === 'waiting' || status === 'offline') ? [
 				{

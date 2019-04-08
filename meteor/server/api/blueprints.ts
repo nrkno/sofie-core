@@ -10,9 +10,9 @@ import {
 	getCurrentTime,
 	OmitId,
 	trimIfString,
-	extendMandadory
+	extendMandadory,
+	getHash
 } from '../../lib/lib'
-import { getHash } from '../lib'
 import { logger } from '../logging'
 import { RunningOrder } from '../../lib/collections/RunningOrders'
 import {
@@ -1204,7 +1204,7 @@ postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessag
 	} catch (e) {
 		res.statusCode = 500
 		content = e + ''
-		logger.debug('Blueprint restore failed: ' + e)
+		logger.error('Blueprint restore failed: ' + e)
 	}
 
 	res.end(content)

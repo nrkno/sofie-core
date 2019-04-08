@@ -25,12 +25,13 @@ import {
 	SegmentLineItem,
 	SegmentLineItems
 } from '../../../lib/collections/SegmentLineItems'
-import { DBSegment } from '../../../lib/collections/Segments'
 import {
 	saveIntoDb,
 	getCurrentTime,fetchBefore,
 	getRank,
-	fetchAfter
+	fetchAfter,
+	literal,
+	getHash
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
@@ -40,7 +41,6 @@ import {
 	postProcessSegmentLineItems,
 	SegmentLineContext
 } from '../blueprints'
-import { getHash } from '../../lib'
 import {
 	StudioInstallations,
 	StudioInstallation
@@ -50,13 +50,13 @@ import {
 	SegmentLineAdLibItems
 } from '../../../lib/collections/SegmentLineAdLibItems'
 import {
-	ShowStyleBases
+	ShowStyleBases, ShowStyleBase
 } from '../../../lib/collections/ShowStyleBases'
 import {
 	ServerPlayoutAPI,
 	updateTimelineFromMosData
 } from '../playout'
-import { CachePrefix } from '../../../lib/collections/RunningOrderDataCache'
+import { CachePrefix, RunningOrderDataCacheObj } from '../../../lib/collections/RunningOrderDataCache'
 import {
 	setMeteorMethods,
 	wrapMethods,
@@ -74,6 +74,8 @@ import { syncFunction } from '../../codeControl'
 import { IBlueprintSegmentLine, SegmentLineHoldMode } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { updateExpectedMediaItems } from '../expectedMediaItems'
+import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
+const PackageInfo = require('../../../package.json')
 
 export function roId (roId: MOS.MosString128, original?: boolean): string {
 	// logger.debug('roId', roId)
@@ -279,6 +281,7 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 			autoNext: 				resultSl.autoNext || false,
 			autoNextOverlap: 		resultSl.autoNextOverlap || 0,
 			prerollDuration: 		resultSl.prerollDuration || 0,
+			transitionDuration:				resultSl.transitionDuration,
 			transitionPrerollDuration: 		resultSl.transitionPrerollDuration,
 			transitionKeepaliveDuration: 	resultSl.transitionKeepaliveDuration,
 			disableOutTransition: 	resultSl.disableOutTransition || false,
@@ -288,6 +291,8 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 			holdMode: 				resultSl.holdMode || SegmentLineHoldMode.NONE,
 			classes: 				resultSl.classes || [],
 			classesForNext: 		resultSl.classesForNext || [],
+			displayDurationGroup: 	resultSl.displayDurationGroup || '', // TODO - or unset?
+			displayDuration: 		resultSl.displayDuration || 0, // TODO - or unset
 		}})
 	} else {
 		SegmentLines.update(segmentLine._id, {$set: {
@@ -434,6 +439,21 @@ export const reloadRunningOrder: (runningOrder: RunningOrder) => void = Meteor.w
 		}, 'triggerGetRunningOrder', runningOrder.mosId)
 	}
 )
+export function replaceStoryItem (runningOrder: RunningOrder, segmentLineItem: SegmentLineItem, slCache: RunningOrderDataCacheObj, inPoint: number, outPoint: number) {
+	return new Promise((resolve, reject) => {
+		const story = slCache.data.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === segmentLineItem.mosId)[0].Content
+		story.EditorialStart = inPoint
+		story.EditorialDuration = outPoint
+
+		let peripheralDevice = PeripheralDevices.findOne(runningOrder.mosDeviceId) as PeripheralDevice
+		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + runningOrder.mosDeviceId + '" not found' )
+
+		PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err?: any) => {
+			if (err) reject(err)
+			else resolve()
+		}, 'replaceStoryItem', slCache.data.RunningOrderId, slCache.data.ID, story)
+	})
+}
 function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: PeripheralDevice, dataSource: string) {
 	// Create or update a runningorder (ie from roCreate or roList)
 
@@ -459,8 +479,11 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 	// the defaultShowStyleVariant is a temporary solution, to be replaced by a blueprint plugin
 	let defaultShowStyleVariant = ShowStyleVariants.findOne(studioInstallation.defaultShowStyleVariant) as ShowStyleVariant || {}
 
+	let showStyleBase = ShowStyleBases.findOne(defaultShowStyleVariant.showStyleBaseId) as ShowStyleBase || {}
+	let blueprint = Blueprints.findOne(showStyleBase.blueprintId) as Blueprint || {}
+
 	let dbROData: DBRunningOrder = _.extend(existingDbRo || {},
-		{
+		_.omit(literal<DBRunningOrder>({
 			_id: roId(ro.ID),
 			mosId: ro.ID.toString(),
 			studioInstallationId: studioInstallation._id,
@@ -471,8 +494,23 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 			expectedStart: formatTime(ro.EditorialStart),
 			expectedDuration: formatDuration(ro.EditorialDuration),
 			dataSource: dataSource,
-			unsynced: false
-		} as DBRunningOrder
+			unsynced: false,
+
+			importVersions: {
+				studioInstallation: studioInstallation._runningOrderVersionHash,
+				showStyleBase: showStyleBase._runningOrderVersionHash,
+				showStyleVariant: defaultShowStyleVariant._runningOrderVersionHash,
+				blueprint: blueprint.blueprintVersion,
+				core: PackageInfo.version,
+			},
+
+			// omit the below fields
+			previousSegmentLineId: null,
+			currentSegmentLineId: null,
+			nextSegmentLineId: null,
+			created: 0,
+			modified: 0,
+		}), ['previousSegmentLineId', 'currentSegmentLineId', 'nextSegmentLineId', 'created', 'modified'])
 	)
 	// Save RO into database:
 	saveIntoDb(RunningOrders, {
@@ -499,15 +537,15 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 	let existingSegmentLines = dbRo.getSegmentLines()
 
 	// Note: a number of X stories will result in (<=X) Segments and X SegmentLines
-	let segments: DBSegment[] = []
+	// let segments: DBSegment[] = []
 	let segmentLines: DBSegmentLine[] = []
-	let rankSegment = 0
+	// let rankSegment = 0
 	let rankSegmentLine = 0
-	let prevSlugParts: string[] = []
-	let segment: DBSegment
+	// let prevSlugParts: string[] = []
+	// let segment: DBSegment
 	_.each(ro.Stories, (story: MOS.IMOSStory) => {
 		// divide into
-		let slugParts = (story.Slug || '').toString().split(';')
+		// let slugParts = (story.Slug || '').toString().split(';')
 
 		// if (slugParts[0] !== prevSlugParts[0]) {
 			// segment = convertToSegment(story, roId(ro.ID), rankSegment++)
@@ -524,7 +562,7 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 			segmentLines.push(segmentLine)
 		} else throw new Meteor.Error(500, 'Running order not found (it should have been)')
 
-		prevSlugParts = slugParts
+		// prevSlugParts = slugParts
 	})
 	// logger.debug('segmentLines', segmentLines)
 	// logger.debug('---------------')
@@ -717,8 +755,8 @@ export namespace MosIntegration {
 		// insert a story (aka SegmentLine) before another story:
 		let segmentLineAfter = (Action.StoryID ? getSegmentLine(Action.RunningOrderID, Action.StoryID) : null)
 
-		let newRankMax
-		let newRankMin
+		// let newRankMax
+		// let newRankMin
 		let segmentLineBeforeOrLast: DBSegmentLine | undefined = (
 			segmentLineAfter ?
 				fetchBefore(SegmentLines,

@@ -8,19 +8,35 @@ import { logger } from '../../lib/logging'
 import * as _ from 'underscore'
 import { translate } from 'react-i18next'
 import { Translated } from './ReactMeteorData/ReactMeteorData'
+import {
+	EditAttribute,
+	EditAttributeType,
+	EditAttributeBase
+} from './EditAttribute'
 
 interface IModalDialogAttributes {
 	show?: boolean
 	title: string
 	secondaryText?: string
 	acceptText: string
-	onAccept?: (e: SomeEvent) => void
-	onSecondary?: (e: SomeEvent) => void
-	onDiscard?: (e: SomeEvent) => void
+	onAccept?: (e: SomeEvent, inputResult: ModalInputResult) => void
+	onSecondary?: (e: SomeEvent, inputResult: ModalInputResult) => void
+	onDiscard?: (e: SomeEvent, inputResult: ModalInputResult) => void
+	inputs?: {[attribute: string]: ModalInput}
 }
-type SomeEvent = Event | React.MouseEvent<HTMLElement>
+interface ModalInput {
+	type: EditAttributeType
+	label?: string
+	options?: any
+	text?: string
+	defaultValue?: any
+}
+export type ModalInputResult = {[attribute: string]: any}
+export type SomeEvent = Event | React.MouseEvent<HTMLElement>
 export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	boundKeys: Array<string> = []
+
+	private inputResult: ModalInputResult = {}
 
 	constructor (args: IModalDialogAttributes) {
 		super(args)
@@ -79,24 +95,26 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 
 	handleAccept = (e: SomeEvent) => {
 		if (this.props.onAccept && typeof this.props.onAccept === 'function') {
-			this.props.onAccept(e)
+			this.props.onAccept(e, this.inputResult)
 		}
 	}
 
 	handleSecondary = (e: SomeEvent) => {
 		if (this.props.onSecondary && typeof this.props.onSecondary === 'function') {
-			this.props.onSecondary(e)
+			this.props.onSecondary(e, this.inputResult)
 		}
 	}
 
 	handleDiscard = (e: SomeEvent) => {
 		if (this.props.onDiscard && typeof this.props.onDiscard === 'function') {
-			this.props.onDiscard(e)
+			this.props.onDiscard(e, this.inputResult)
 		} else {
 			this.handleSecondary(e)
 		}
 	}
-
+	updatedInput = (edit: EditAttributeBase, newValue: any ) => {
+		this.inputResult[edit.props.attribute || ''] = newValue
+	}
 	render () {
 		return this.props.show ?
 					<Escape to='viewport'>
@@ -125,6 +143,29 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 											<div className='title-box-content'>
 												{this.props.children}
 											</div>
+											{
+												this.props.inputs ?
+												<div className='title-box-inputs'>
+													{
+														_.map(this.props.inputs, (input: ModalInput, attribute: string) => {
+
+															if (this.inputResult[attribute] === undefined) this.inputResult[attribute] = input.defaultValue
+
+															return (<div className='title-box-input' key={attribute}>
+																{input.text}
+																<EditAttribute
+																	type={input.type}
+																	label={input.label}
+																	options={input.options}
+																	overrideDisplayValue={input.defaultValue}
+																	attribute={attribute}
+																	updateFunction={this.updatedInput}
+																/>
+															</div>)
+														})
+													}
+												</div> : null
+											}
 											<div className={ClassNames('mod', {
 												'alright': !this.props.secondaryText
 											})}>
@@ -157,9 +198,10 @@ interface ModalDialogQueueItem {
 	yes?: string
 	no?: string
 	acceptOnly?: boolean
-	onAccept: (e: any) => void
-	onDiscard?: (e: any) => void
-	onSecondary?: (e: any) => void
+	onAccept: (e: SomeEvent, inputResult: ModalInputResult) => void
+	onDiscard?: (e: SomeEvent, inputResult: ModalInputResult) => void
+	onSecondary?: (e: SomeEvent, inputResult: ModalInputResult) => void
+	inputs?: {[attribute: string]: ModalInput}
 }
 interface IModalDialogGlobalContainerProps {
 }
@@ -188,32 +230,32 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 	public queueHasItems (): boolean {
 		return this.state.queue.length > 0
 	}
-	onAccept = (e: any) => {
+	onAccept = (e: SomeEvent, inputResult: ModalInputResult) => {
 		let queue = this.state.queue
 		let onQueue = queue.pop()
 		if (onQueue) {
 			this.setState({queue})
-			onQueue.onAccept(e)
+			onQueue.onAccept(e, inputResult)
 		}
 	}
-	onDiscard = (e: any) => {
+	onDiscard = (e: SomeEvent, inputResult: ModalInputResult) => {
 		let queue = this.state.queue
 		let onQueue = queue.pop()
 		if (onQueue) {
 			this.setState({queue})
 			if (onQueue.onDiscard) {
-				onQueue.onDiscard(e)
+				onQueue.onDiscard(e, inputResult)
 			}
 		}
 	}
-	onSecondary = (e: any) => {
+	onSecondary = (e: SomeEvent, inputResult: ModalInputResult) => {
 
 		let queue = this.state.queue
 		let onQueue = queue.pop()
 		if (onQueue) {
 			this.setState({queue})
 			if (onQueue.onSecondary) {
-				onQueue.onSecondary(e)
+				onQueue.onSecondary(e, inputResult)
 			}
 		}
 	}
@@ -240,6 +282,7 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 				onAccept		= {this.onAccept}
 				onDiscard		= {this.onDiscard}
 				onSecondary		= {this.onSecondary}
+				inputs			= {onQueue.inputs}
 				show			= {true}
 			>
 				{
