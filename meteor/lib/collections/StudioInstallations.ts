@@ -7,7 +7,6 @@ import {
 	IConfigItem,
 	BlueprintMappings,
 	BlueprintMapping,
-	IBlueprintStudioInstallation,
 	ConfigItemValue
 } from 'tv-automation-sofie-blueprints-integration'
 import { Meteor } from 'meteor/meteor'
