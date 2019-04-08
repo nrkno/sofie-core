@@ -12,7 +12,7 @@ import { parse as queryStringParse } from 'query-string'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { objectPathGet } from '../../../lib/lib'
+import { objectPathGet, firstIfArray } from '../../../lib/lib'
 import { SegmentLines } from '../../../lib/collections/SegmentLines'
 import { PrompterData, PrompterAPI } from '../../../lib/api/prompter'
 import * as classNames from 'classnames'
@@ -83,14 +83,14 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		const queryParams = queryStringParse(location.search)
 
 		this.configOptions = {
-			mirror: queryParams['mirror'] === '1',
-			mirrorv: queryParams['mirrorv'] === '1',
-			restrictMode: queryParams['mode'] || undefined,
+			mirror: firstIfArray(queryParams['mirror']) === '1',
+			mirrorv: firstIfArray(queryParams['mirrorv']) === '1',
+			restrictMode: firstIfArray(queryParams['mode']) || undefined,
 			followTake: ( queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1'),
-			fontSize: parseInt(queryParams['fontsize'], 10) || undefined,
-			margin: parseInt(queryParams['margin'], 10) || undefined,
+			fontSize: parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
+			margin: parseInt(firstIfArray(queryParams['margin']) as string, 10) || undefined,
 
-			marker: queryParams['marker']
+			marker: firstIfArray(queryParams['marker']) as any || undefined
 		}
 
 		this._controller = new PrompterControlManager(this)
