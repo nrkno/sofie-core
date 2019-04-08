@@ -55,7 +55,8 @@ import {
 	SystemBlueprintManifest,
 	IStudioContext,
 	IBlueprintShowStyleBase,
-	BlueprintMappings
+	BlueprintMappings,
+	BlueprintManifestSet
 } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
 
@@ -1218,12 +1219,64 @@ export function postProcessSegmentLineBaselineItems (innerContext: RunningOrderC
 	})
 }
 
-const postRoute = Picker.filter((req, res) => req.method === 'POST')
-postRoute.middleware(bodyParser.text({
+function uploadBlueprint (blueprintId: string, body: string, blueprintName: string) {
+	logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
+
+	const blueprint = Blueprints.findOne(blueprintId)
+
+	const newBlueprint: Blueprint = {
+		_id: blueprintId,
+		name: blueprint ? blueprint.name : (blueprintName || blueprintId),
+		created: blueprint ? blueprint.created : getCurrentTime(),
+		code: body as string,
+		modified: getCurrentTime(),
+		studioConfigManifest: [],
+		showStyleConfigManifest: [],
+		databaseVersion: {
+			studio: {},
+			showStyle: {}
+		},
+		blueprintVersion: '',
+		integrationVersion: '',
+		TSRVersion: '',
+		minimumCoreVersion: '',
+		blueprintType: BlueprintManifestType.SHOWSTYLE
+	}
+
+	const blueprintManifest: SomeBlueprintManifest = evalBlueprints(newBlueprint, false)
+	newBlueprint.blueprintType				= blueprintManifest.blueprintType
+	newBlueprint.blueprintVersion			= blueprintManifest.blueprintVersion
+	newBlueprint.integrationVersion			= blueprintManifest.integrationVersion
+	newBlueprint.TSRVersion					= blueprintManifest.TSRVersion
+	newBlueprint.minimumCoreVersion			= blueprintManifest.minimumCoreVersion
+
+	if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE) {
+		newBlueprint.showStyleConfigManifest = blueprintManifest.showStyleConfigManifest
+	}
+	if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE || blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
+		newBlueprint.studioConfigManifest = blueprintManifest.studioConfigManifest
+	}
+
+	// Parse the versions, just to verify that the format is correct:
+	parseVersion(blueprintManifest.blueprintVersion)
+	parseVersion(blueprintManifest.integrationVersion)
+	parseVersion(blueprintManifest.TSRVersion)
+	parseVersion(blueprintManifest.minimumCoreVersion)
+
+	const existing = Blueprints.findOne(newBlueprint._id)
+	if (existing && existing.blueprintType !== newBlueprint.blueprintType) {
+		throw new Meteor.Error(500, 'Restore blueprint: Cannot replace blueprint with a different type')
+	}
+
+	Blueprints.upsert(newBlueprint._id, newBlueprint)
+}
+
+const postJsRoute = Picker.filter((req, res) => req.method === 'POST')
+postJsRoute.middleware(bodyParser.text({
 	type: 'text/javascript',
 	limit: '1mb'
 }))
-postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessage, res: ServerResponse, next) => {
+postJsRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	let blueprintId = params.blueprintId
@@ -1246,58 +1299,57 @@ postRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessag
 
 		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 
-		logger.info('Got new blueprint. ' + body.length + ' bytes')
-
-		const blueprint = Blueprints.findOne(blueprintId)
-		// if (!blueprint) throw new Meteor.Error(404, `Blueprint "${blueprintId}" not found`)
-
-		const newBlueprint: Blueprint = {
-			_id: blueprintId,
-			name: blueprint ? blueprint.name : (blueprintName || blueprintId),
-			created: blueprint ? blueprint.created : getCurrentTime(),
-			code: body as string,
-			modified: getCurrentTime(),
-			studioConfigManifest: [],
-			showStyleConfigManifest: [],
-			databaseVersion: {
-				studio: {},
-				showStyle: {}
-			},
-			blueprintVersion: '',
-			integrationVersion: '',
-			TSRVersion: '',
-			minimumCoreVersion: '',
-			blueprintType: BlueprintManifestType.SHOWSTYLE
-		}
-
-		const blueprintManifest: SomeBlueprintManifest = evalBlueprints(newBlueprint, false)
-		newBlueprint.blueprintType				= blueprintManifest.blueprintType
-		newBlueprint.blueprintVersion			= blueprintManifest.blueprintVersion
-		newBlueprint.integrationVersion			= blueprintManifest.integrationVersion
-		newBlueprint.TSRVersion					= blueprintManifest.TSRVersion
-		newBlueprint.minimumCoreVersion			= blueprintManifest.minimumCoreVersion
-
-		if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE) {
-			newBlueprint.showStyleConfigManifest = blueprintManifest.showStyleConfigManifest
-		}
-		if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE || blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
-			newBlueprint.studioConfigManifest = blueprintManifest.studioConfigManifest
-		}
-
-		// Parse the versions, just to verify that the format is correct:
-		parseVersion(blueprintManifest.blueprintVersion)
-		parseVersion(blueprintManifest.integrationVersion)
-		parseVersion(blueprintManifest.TSRVersion)
-		parseVersion(blueprintManifest.minimumCoreVersion)
-
-		const existing = Blueprints.findOne(newBlueprint._id)
-		if (existing && existing.blueprintType !== newBlueprint.blueprintType) {
-			throw new Meteor.Error(500, 'Restore blueprint: Cannot replace blueprint with a different type')
-		}
-
-		Blueprints.upsert(newBlueprint._id, newBlueprint)
+		uploadBlueprint(blueprintId, body, blueprintName)
 
 		res.statusCode = 200
+	} catch (e) {
+		res.statusCode = 500
+		content = e + ''
+		logger.error('Blueprint restore failed: ' + e)
+	}
+
+	res.end(content)
+})
+const postJsonRoute = Picker.filter((req, res) => req.method === 'POST')
+postJsonRoute.middleware(bodyParser.text({
+	type: 'application/json',
+	limit: '10mb'
+}))
+postJsonRoute.route('/blueprints/restore', (params, req: IncomingMessage, res: ServerResponse, next) => {
+	res.setHeader('Content-Type', 'text/plain')
+
+	let content = ''
+	try {
+		const body = (req as any).body
+		if (!body) throw new Meteor.Error(400, 'Restore Blueprint: Missing request body')
+
+		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
+
+		logger.info(`Got blueprint collection. ${body.length} bytes`)
+
+		const collection = JSON.parse(body) as BlueprintManifestSet
+
+		let errors: any[] = []
+		for (const id of _.keys(collection)) {
+			try {
+				uploadBlueprint(id, collection[id], id)
+			} catch (e) {
+				logger.error('Blueprint restore failed: ' + e)
+				errors.push(e)
+			}
+		}
+
+		// Report errors
+		if (errors.length > 0) {
+			res.statusCode = 500
+			content += 'Errors were encountered: \n'
+			for (const e of errors) {
+				content += e + '\n'
+			}
+		} else {
+			res.statusCode = 200
+		}
+
 	} catch (e) {
 		res.statusCode = 500
 		content = e + ''
