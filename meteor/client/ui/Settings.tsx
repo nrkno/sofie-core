@@ -227,7 +227,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 										<FontAwesomeIcon icon={faTrash} />
 									</button>
 									<h3>{blueprint.name || t('Unnamed blueprint')}</h3>
-									<p>{t('Type')} {(blueprint.blueprintType + '').toUpperCase()}</p>
+									<p>{t('Type')} {(blueprint.blueprintType || '').toUpperCase()}</p>
 									<p>{t('Version')} {blueprint.blueprintVersion}</p>
 								</div>
 								<hr className='vsubtle man' />

@@ -1715,8 +1715,14 @@ export namespace ServerPlayoutAPI {
 	export function updateStudioBaseline (studioId: string) {
 		check(studioId, String)
 
-		// TODO - does this need a guard to not run while a ro is active?
-		updateTimeline(studioId)
+		const activateRunningOrderCount = RunningOrders.find({
+			studioInstallationId: studioId,
+			active: true
+		}).count()
+		if (activateRunningOrderCount === 0) {
+			// This is only run when there is no ro active in the studio
+			updateTimeline(studioId)
+		}
 
 		return shouldUpdateStudioBaseline(studioId)
 	}
@@ -3099,7 +3105,6 @@ function getTimelineRunningOrder (studioInstallation: StudioInstallation): Promi
 					const baselineObjs = blueprint.getBaseline(new StudioContext(studioInstallation))
 					studioBaseline = postProcessStudioBaselineObjects(studioInstallation, baselineObjs)
 
-					// TODO - should this be a different type?
 					const id = `${studioInstallation._id}_baseline_version`
 					studioBaseline.push(literal<TimelineObjRunningOrder>({
 						_id: id,

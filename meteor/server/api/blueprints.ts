@@ -973,10 +973,10 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 	}
 }
 
-export function insertBlueprint (type: BlueprintManifestType, name?: string): string {
+export function insertBlueprint (type?: BlueprintManifestType, name?: string): string {
 	return Blueprints.insert({
 		_id: Random.id(),
-		name: name || 'Default Blueprint',
+		name: name || 'New Blueprint',
 		code: '',
 		modified: getCurrentTime(),
 		created: getCurrentTime(),
@@ -1240,11 +1240,11 @@ function uploadBlueprint (blueprintId: string, body: string, blueprintName: stri
 		integrationVersion: '',
 		TSRVersion: '',
 		minimumCoreVersion: '',
-		blueprintType: BlueprintManifestType.SHOWSTYLE
+		blueprintType: undefined,
 	}
 
 	const blueprintManifest: SomeBlueprintManifest = evalBlueprints(newBlueprint, false)
-	newBlueprint.blueprintType				= blueprintManifest.blueprintType
+	newBlueprint.blueprintType				= blueprintManifest.blueprintType || BlueprintManifestType.SHOWSTYLE
 	newBlueprint.blueprintVersion			= blueprintManifest.blueprintVersion
 	newBlueprint.integrationVersion			= blueprintManifest.integrationVersion
 	newBlueprint.TSRVersion					= blueprintManifest.TSRVersion
@@ -1264,7 +1264,7 @@ function uploadBlueprint (blueprintId: string, body: string, blueprintName: stri
 	parseVersion(blueprintManifest.minimumCoreVersion)
 
 	const existing = Blueprints.findOne(newBlueprint._id)
-	if (existing && existing.blueprintType !== newBlueprint.blueprintType) {
+	if (existing && existing.blueprintType && existing.blueprintType !== newBlueprint.blueprintType) {
 		throw new Meteor.Error(500, 'Restore blueprint: Cannot replace blueprint with a different type')
 	}
 
@@ -1384,7 +1384,7 @@ function assignSystemBlueprint (id?: string) {
 
 let methods: Methods = {}
 methods[BlueprintAPI.methods.insertBlueprint] = () => {
-	return insertBlueprint(BlueprintManifestType.SHOWSTYLE) // TODO - dynamic
+	return insertBlueprint()
 }
 methods[BlueprintAPI.methods.removeBlueprint] = (id: string) => {
 	return removeBlueprint(id)

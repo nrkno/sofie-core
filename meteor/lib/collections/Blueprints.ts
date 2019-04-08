@@ -12,7 +12,7 @@ export interface Blueprint {
 	modified: number
 	created: number
 
-	blueprintType: BlueprintManifestType,
+	blueprintType?: BlueprintManifestType
 
 	studioConfigManifest: ConfigManifestEntry[]
 	showStyleConfigManifest: ConfigManifestEntry[]

@@ -166,7 +166,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						</div>
 					</label>
 					<div className='mod mvs mhn'>
-						{t('Blueprint Type')} <i>{(blueprint.blueprintType + '').toUpperCase()}</i>
+						{t('Blueprint Type')} <i>{(blueprint.blueprintType || '').toUpperCase()}</i>
 					</div>
 					{ this.renderAssignment(blueprint) }
 					<div className='mod mvs mhn'>
