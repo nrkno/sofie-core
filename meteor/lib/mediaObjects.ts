@@ -190,7 +190,6 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 								addFrameWarning(mediaObject.mediainfo.freezes, 'freeze', t)
 							}
 						} else {
-							newStatus = RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN
 							messages.push(t('Clip is being ingested: {{fileName}}', { fileName: content.fileName }))
 						}
 

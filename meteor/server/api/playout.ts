@@ -71,12 +71,15 @@ import {
 	VTContent
 } from 'tv-automation-sofie-blueprints-integration'
 import {
-	loadBlueprints,
+	loadShowStyleBlueprints,
 	postProcessSegmentLineAdLibItems,
 	postProcessSegmentLineBaselineItems,
 	RunningOrderContext,
 	getBlueprintOfRunningOrder,
-	SegmentLineContext
+	SegmentLineContext,
+	loadStudioBlueprints,
+	StudioContext,
+	postProcessStudioBaselineObjects
 } from './blueprints'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../lib/collections/RunningOrderBaselineAdLibItems'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
@@ -101,6 +104,8 @@ import {
 	reportSegmentLineHasStopped,
 	reportSegmentLineItemHasStopped
 } from './asRunLog'
+import { Blueprints } from '../../lib/collections/Blueprints'
+const PackageInfo = require('../../package.json')
 
 export namespace ServerPlayoutAPI {
 	/**
@@ -375,7 +380,7 @@ export namespace ServerPlayoutAPI {
 			logger.info('Building baseline items...')
 
 			const showStyleBase = runningOrder.getShowStyleBase()
-			let blueprint = loadBlueprints(showStyleBase)
+			let blueprint = loadShowStyleBlueprints(showStyleBase)
 
 			const context = new RunningOrderContext(runningOrder)
 
@@ -1707,6 +1712,51 @@ export namespace ServerPlayoutAPI {
 			})
 		}
 	}
+	export function updateStudioBaseline (studioId: string) {
+		check(studioId, String)
+
+		const activateRunningOrderCount = RunningOrders.find({
+			studioInstallationId: studioId,
+			active: true
+		}).count()
+		if (activateRunningOrderCount === 0) {
+			// This is only run when there is no ro active in the studio
+			updateTimeline(studioId)
+		}
+
+		return shouldUpdateStudioBaseline(studioId)
+	}
+	export function shouldUpdateStudioBaseline (studioId: string) {
+		check(studioId, String)
+
+		const studioInstallation = StudioInstallations.findOne(studioId)
+		if (!studioInstallation) throw new Meteor.Error(404, `StudioInstallation "${studioId}" not found!`)
+
+		const activateRunningOrderCount = RunningOrders.find({
+			studioInstallationId: studioInstallation._id,
+			active: true
+		}).count()
+		if (activateRunningOrderCount === 0) {
+			const markerId = `${studioInstallation._id}_baseline_version`
+			const markerObject = Timeline.findOne(markerId)
+			if (!markerObject) return 'noBaseline'
+
+			const versionsContent = markerObject.content.versions || {}
+
+			if (versionsContent.core !== PackageInfo.version) return 'coreVersion'
+
+			if (versionsContent.studioInstallation !== (studioInstallation._runningOrderVersionHash || 0)) return 'studioInstallation'
+
+			if (versionsContent.blueprintId !== studioInstallation.blueprintId) return 'blueprintId'
+			if (studioInstallation.blueprintId) {
+				const blueprint = Blueprints.findOne(studioInstallation.blueprintId)
+				if (!blueprint) return 'blueprintUnknown'
+				if (versionsContent.blueprintVersion !== (blueprint.blueprintVersion || 0)) return 'blueprintVersion'
+			}
+		}
+
+		return false
+	}
 }
 
 let methods: Methods = {}
@@ -1772,6 +1822,12 @@ methods[PlayoutAPI.methods.timelineTriggerTimeUpdateCallback] = (timelineObjId: 
 }
 methods[PlayoutAPI.methods.sourceLayerStickyItemStart] = (roId: string, sourceLayerId: string) => {
 	return ServerPlayoutAPI.sourceLayerStickyItemStart(roId, sourceLayerId)
+}
+methods[PlayoutAPI.methods.updateStudioBaseline] = (studioId: string) => {
+	return ServerPlayoutAPI.updateStudioBaseline(studioId)
+}
+methods[PlayoutAPI.methods.shouldUpdateStudioBaseline] = (studioId: string) => {
+	return ServerPlayoutAPI.shouldUpdateStudioBaseline(studioId)
 }
 
 _.each(methods, (fcn: Function, key) => {
@@ -3042,13 +3098,36 @@ function getTimelineRunningOrder (studioInstallation: StudioInstallation): Promi
 					})
 				)
 			} else {
-				resolve([])
-				// remove everything:
-				// Timeline.remove({
-				// 	siId: studioInstallationId,
-				// 	objectType: TimelineObjType.RUNNINGORDER,
-				// 	statObject: {$ne: true},
-				// })
+				let studioBaseline: TimelineObjRunningOrder[] = []
+
+				const blueprint = loadStudioBlueprints(studioInstallation)
+				if (blueprint) {
+					const baselineObjs = blueprint.getBaseline(new StudioContext(studioInstallation))
+					studioBaseline = postProcessStudioBaselineObjects(studioInstallation, baselineObjs)
+
+					const id = `${studioInstallation._id}_baseline_version`
+					studioBaseline.push(literal<TimelineObjRunningOrder>({
+						_id: id,
+						id: id,
+						siId: '',
+						roId: '',
+						objectType: TimelineObjType.RUNNINGORDER,
+						trigger: { type: 0, value: 0 },
+						duration: 0,
+						LLayer: id,
+						isAbstract: true,
+						content: {
+							versions: {
+								core: PackageInfo.version,
+								blueprintId: studioInstallation.blueprintId,
+								blueprintVersion: blueprint.blueprintVersion,
+								studioInstallation: studioInstallation._runningOrderVersionHash,
+							}
+						}
+					}))
+				}
+
+				resolve(studioBaseline)
 			}
 		} catch (e) {
 			reject(e)

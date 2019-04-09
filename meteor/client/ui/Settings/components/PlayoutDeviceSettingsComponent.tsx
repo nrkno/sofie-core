@@ -384,6 +384,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 
 			<ModalDialog title={t('Remove this device?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
 				<p>{t('Are you sure you want to remove device "{{deviceId}}"?', { deviceId: (this.state.deleteConfirmDeviceId && this.state.deleteConfirmDeviceId) })}</p>
+				<p>{t('Please note: This action is irreversible!')}</p>
 			</ModalDialog>
 
 			{settings && settings.devices &&

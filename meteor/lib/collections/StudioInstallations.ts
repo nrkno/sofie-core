@@ -7,7 +7,6 @@ import {
 	IConfigItem,
 	BlueprintMappings,
 	BlueprintMapping,
-	IBlueprintStudioInstallation,
 	ConfigItemValue
 } from 'tv-automation-sofie-blueprints-integration'
 import { Meteor } from 'meteor/meteor'
@@ -28,15 +27,15 @@ export interface IStudioInstallationSettings {
 	sofieUrl: string // (former sofie_url in config)
 }
 /** A set of available layer groups in a given installation */
-export interface DBStudioInstallation extends IBlueprintStudioInstallation {
+export interface DBStudioInstallation {
 	_id: string
 	/** User-presentable name for the studio installation */
 	name: string
+	/** Id of the blueprint used by this studio-installation */
+	blueprintId?: string
+
 	/** Mappings between the physical devices / outputs and logical ones */
 	mappings: MappingsExt
-
-	/** RunningOrders will have this, if nothing else is specified */
-	defaultShowStyleVariant: string
 
 	/** List of which ShowStyleBases this studio wants to support */
 	supportedShowStyleBase: Array<string>
@@ -64,8 +63,8 @@ export interface ITestToolsConfig {
 export class StudioInstallation implements DBStudioInstallation {
 	public _id: string
 	public name: string
+	public blueprintId?: string
 	public mappings: MappingsExt
-	public defaultShowStyleVariant: string
 	public supportedShowStyleBase: Array<string>
 	public config: Array<IConfigItem>
 	public settings: IStudioInstallationSettings

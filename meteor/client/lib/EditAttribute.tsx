@@ -171,9 +171,15 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 			this.props.updateFunction(this, newValue)
 		} else {
 			if (this.props.collection && this.props.attribute) {
-				let m = {}
-				m[this.props.attribute] = newValue
-				this.props.collection.update(this.props.obj._id, { $set: m })
+				if (newValue === undefined) {
+					let m = {}
+					m[this.props.attribute] = 1
+					this.props.collection.update(this.props.obj._id, { $unset: m })
+				} else {
+					let m = {}
+					m[this.props.attribute] = newValue
+					this.props.collection.update(this.props.obj._id, { $set: m })
+				}
 			}
 		}
 

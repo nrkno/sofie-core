@@ -1300,6 +1300,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				this.setState({
 					followLiveSegments: true
 				})
+				window.dispatchEvent(new Event(RunningOrderViewEvents.rewindsegments))
 			}, 400)
 		} else {
 			this.setState({

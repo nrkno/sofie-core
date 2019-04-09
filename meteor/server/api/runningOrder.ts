@@ -8,7 +8,7 @@ import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/Segment
 import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
 import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime, getHash, asyncCollectionUpdate, waitForPromiseAll } from '../../lib/lib'
 import { logger } from '../logging'
-import { loadBlueprints, postProcessSegmentLineItems, SegmentContext } from './blueprints'
+import { loadShowStyleBlueprints, postProcessSegmentLineItems, SegmentContext } from './blueprints'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 import { updateStory, reloadRunningOrder } from './integration/mos'
@@ -292,7 +292,7 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 	let resultSlUpdates: IBlueprintPostProcessSegmentLine[] | undefined = undefined
 	let notes: SegmentLineNote[] = []
 	try {
-		const blueprints = loadBlueprints(showStyleBase)
+		const blueprints = loadShowStyleBlueprints(showStyleBase)
 		let result = blueprints.getSegmentPost(context)
 		resultSli = postProcessSegmentLineItems(context, result.segmentLineItems, 'post-process', firstSegmentLine._id)
 		resultSlUpdates = result.segmentLineUpdates // TODO - validate/filter/tidy?
