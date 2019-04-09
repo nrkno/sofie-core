@@ -71,8 +71,11 @@ import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/Sh
 import { updateExpectedMediaItems } from '../expectedMediaItems'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
 import { loadShowStyleBlueprints, loadStudioBlueprints } from '../blueprints/cache'
-import { postProcessSegmentLineAdLibItems, postProcessSegmentLineItems } from '../blueprints/postProcess'
-import { StudioContext, StudioConfigContext } from '../blueprints/context'
+import { postProcessSegmentLineAdLibItems, postProcessSegmentLineItems, postProcessSegmentLineBaselineItems } from '../blueprints/postProcess'
+import { StudioConfigContext, ShowStyleContext, RunningOrderContext } from '../blueprints/context'
+import { RunningOrderBaselineItem, RunningOrderBaselineItems } from '../../../lib/collections/RunningOrderBaselineItems'
+import { Random } from 'meteor/random'
+import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../../lib/collections/RunningOrderBaselineAdLibItems'
 const PackageInfo = require('../../../package.json')
 
 export function roId (roId: MOS.MosString128, original?: boolean): string {
@@ -454,15 +457,7 @@ export function replaceStoryItem (runningOrder: RunningOrder, segmentLineItem: S
 	})
 }
 
-function selectShowStyleVariant (studio: StudioInstallation, ro: MOS.IMOSRunningOrder): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
-	const ingestRo = literal<IngestRunningOrder>({
-		externalId: ro.ID.toString(),
-		name: ro.Slug.toString(),
-		type: 'mos',
-		segments: [],
-		payload: ro
-	})
-
+function selectShowStyleVariant (studio: StudioInstallation, ingestRo: IngestRunningOrder): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	const showStyleBases = ShowStyleBases.find({ _id: { $in: studio.supportedShowStyleBase }}).fetch()
 	let showStyleBase = _.first(showStyleBases)
 	if (!showStyleBase) {
@@ -524,11 +519,23 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 	let studioInstallation = StudioInstallations.findOne(studioInstallationId) as StudioInstallation
 	if (!studioInstallation) throw new Meteor.Error(404, 'StudioInstallation "' + studioInstallationId + '" not found')
 
-	let showStyle = selectShowStyleVariant(studioInstallation, ro)
+	const ingestRo = literal<IngestRunningOrder>({
+		externalId: ro.ID.toString(),
+		name: ro.Slug.toString(),
+		type: 'mos',
+		segments: [],
+		payload: ro
+	})
+
+	const showStyle = selectShowStyleVariant(studioInstallation, ingestRo)
 	if (!showStyle) {
 		logger.warn('Studio blueprint rejected RO')
 		return
 	}
+
+	const showStyleBlueprint = loadShowStyleBlueprints(showStyle.base)
+	const blueprintContext = new ShowStyleContext(studioInstallation, showStyle.base._id, showStyle.variant._id)
+	const roRes = showStyleBlueprint.getRunningOrder(blueprintContext, ingestRo)
 
 	let blueprint = Blueprints.findOne(showStyle.base.blueprintId) as Blueprint || {}
 
@@ -581,6 +588,28 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 	if (!dbRo) throw new Meteor.Error(500, 'Running order not found (it should have been)')
 	// cache the Data
 	dbRo.saveCache(CachePrefix.ROCREATE + dbRo._id, ro)
+
+	// Save the baseline
+	const blueprintRoContext = new RunningOrderContext(dbRo, studioInstallation)
+	logger.info(`Building baseline items for ${dbRo._id}...`)
+	logger.info(`... got ${roRes.baseline.length} items from baseline.`)
+
+	const baselineItem: RunningOrderBaselineItem = {
+		_id: Random.id(7),
+		runningOrderId: dbRo._id,
+		objects: postProcessSegmentLineBaselineItems(blueprintRoContext, roRes.baseline)
+	}
+
+	saveIntoDb<RunningOrderBaselineItem, RunningOrderBaselineItem>(RunningOrderBaselineItems, {
+		runningOrderId: dbRo._id,
+	}, [baselineItem])
+
+	// Save the global adlibs
+	logger.info(`... got ${roRes.globalAdLibPieces.length} adLib items from baseline.`)
+	const adlibItems = postProcessSegmentLineAdLibItems(blueprintRoContext, roRes.globalAdLibPieces, 'baseline')
+	saveIntoDb<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>(RunningOrderBaselineAdLibItems, {
+		runningOrderId: dbRo._id
+	}, adlibItems)
 
 	// Save Stories into database:
 

@@ -366,44 +366,6 @@ export namespace ServerPlayoutAPI {
 			}
 		}
 
-		if (wasInactive) {
-
-			logger.info('Building baseline items...')
-
-			// TODO - these should already be generated
-
-			// const showStyleBase = runningOrder.getShowStyleBase()
-			// let blueprint = loadShowStyleBlueprints(showStyleBase)
-
-			// const context = new RunningOrderContext(runningOrder)
-
-			// const res = blueprint.getBaseline(context)
-			// const baselineItems = postProcessSegmentLineBaselineItems(context, res.baselineItems)
-			// const adlibItems = postProcessSegmentLineAdLibItems(context, res.adLibItems, 'baseline')
-
-			// // TODO - should any notes be logged as a warning, or is that done already?
-
-			// if (baselineItems) {
-			// 	logger.info(`... got ${baselineItems.length} items from baseline.`)
-
-			// 	const baselineItem: RunningOrderBaselineItem = {
-			// 		_id: Random.id(7),
-			// 		runningOrderId: runningOrder._id,
-			// 		objects: baselineItems
-			// 	}
-
-			// 	saveIntoDb<RunningOrderBaselineItem, RunningOrderBaselineItem>(RunningOrderBaselineItems, {
-			// 		runningOrderId: runningOrder._id
-			// 	}, [baselineItem])
-			// }
-
-			// if (adlibItems) {
-			// 	logger.info(`... got ${adlibItems.length} adLib items from baseline.`)
-			// 	saveIntoDb<RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItem>(RunningOrderBaselineAdLibItems, {
-			// 		runningOrderId: runningOrder._id
-			// 	}, adlibItems)
-			// }
-		}
 		updateTimeline(studio._id)
 
 		Meteor.defer(() => {
