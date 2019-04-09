@@ -1,17 +1,19 @@
 .video-edit-monitor {
 	background: #2A2A2A;
-	font-size: 1em;
-	width: 16em;
 	box-shadow: 0 0 15px rgba(0,0,0,0.8);
 
 	> .video-edit-monitor__monitor {
-		width: 16em;
-		height: 9em;
+		position: relative;
+		padding-bottom: 56.25%;
+		height: 0;
 		background: black;
 
 		> video {
-			width: 16em;
-			height: 9em;
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
 		}
 	}
 

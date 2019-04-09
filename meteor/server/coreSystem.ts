@@ -300,7 +300,7 @@ export function getRelevantSystemVersions (): {[name: string]: string} {
 			'react-router-dom',
 			'react-timer-hoc',
 			'safer-eval',
-			'smpte-timecode',
+			'timecode',
 			'soap',
 			'underscore',
 			'velocity-animate',

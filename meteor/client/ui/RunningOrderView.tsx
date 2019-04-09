@@ -1629,7 +1629,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 														<div className='flex-row info vertical-align-stretch tight-s'>
 															<div className='flex-col c12'>
 																<h2>
-																	Edit Clip
+																	Edit "{this.state.selectedSegmentLineItem.name}"
 																</h2>
 															</div>
 															<div className='flex-col horizontal-align-right vertical-align-middle'>
@@ -1646,6 +1646,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 																runningOrderId={this.props.runningOrderId}
 																segmentLineItemId={this.state.selectedSegmentLineItem._id}
 																segmentLineId={this.state.selectedSegmentLineItem.segmentLineId}
+																inPoint={0}
+																outPoint={0}
 																/>
 														</div>
 													</dialog>

@@ -1,4 +1,6 @@
 .clip-trim-panel {
+	width: 700px;
+
 	.clip-trim-panel__monitors {
 		display: flex;
 		align-items: center;
@@ -7,6 +9,19 @@
 		.clip-trim-panel__monitors__monitor {
 			flex: 1 1;
 			margin: 15px;
+		}
+	}
+
+	.clip-trim-panel__timecode-encoders {
+		display: flex;
+		align-content: space-between;
+		justify-content: space-between;
+		margin: 0 15px;
+
+		.clip-trim-panel__timecode-encoders__input {
+			> .timecode-encoder {
+				font-size: 1.3em;
+			}
 		}
 	}
 }

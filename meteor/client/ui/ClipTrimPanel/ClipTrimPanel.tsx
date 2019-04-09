@@ -7,12 +7,17 @@ import { VTContent } from 'tv-automation-sofie-blueprints-integration'
 import { VideoEditMonitor } from './VideoEditMonitor'
 import { MediaObjects, MediaObject } from '../../../lib/collections/MediaObjects'
 import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { TimecodeEncoder } from './TimecodeEncoder'
+import { Settings } from '../../../lib/Settings'
 
 export interface IProps {
 	segmentLineItemId: string
 	runningOrderId: string
 	segmentLineId: string
 	studioInstallationId: string
+
+	inPoint: number
+	outPoint: number
 }
 
 interface ITrackedProps {
@@ -21,7 +26,13 @@ interface ITrackedProps {
 	studioInstallation: StudioInstallation | undefined
 }
 
-export const ClipTrimPanel = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
+interface IState {
+	inPoint: number
+	duration: number
+	outPoint: number
+}
+
+export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	const sli = SegmentLineItems.findOne(props.segmentLineItemId)
 	const si = StudioInstallations.findOne(props.studioInstallationId)
 	return {
@@ -31,7 +42,19 @@ export const ClipTrimPanel = translateWithTracker<IProps, {}, ITrackedProps>((pr
 		}) : undefined,
 		studioInstallation: si
 	}
-})(class ClipTrimPanel extends MeteorReactComponent<Translated<IProps> & ITrackedProps, {}> {
+})(class ClipTrimPanel extends MeteorReactComponent<Translated<IProps> & ITrackedProps, IState> {
+	private fps = Settings['frameRate']
+
+	constructor (props: Translated<IProps> & ITrackedProps) {
+		super(props)
+
+		this.state = {
+			inPoint: this.props.inPoint,
+			duration: this.props.outPoint - this.props.inPoint,
+			outPoint: this.props.outPoint
+		}
+	}
+
 	componentDidMount () {
 		this.subscribe(PubSub.segmentLineItems, { _id: this.props.segmentLineItemId })
 		this.autorun(() => {
@@ -48,6 +71,45 @@ export const ClipTrimPanel = translateWithTracker<IProps, {}, ITrackedProps>((pr
 				}
 			}
 		})
+	}
+
+	onInChange = (val: number) => {
+		if (val < this.state.outPoint) {
+			this.setState({
+				inPoint: val,
+				duration: Math.max(0, this.state.outPoint - val)
+			})
+		} else {
+			const inp = this.state.outPoint - (1 / this.fps)
+			this.setState({
+				inPoint: inp,
+				duration: this.state.outPoint - inp
+			})
+		}
+	}
+
+	onDurationChange = (val: number) => {
+		if (val > 0) {
+			this.setState({
+				duration: val,
+				outPoint: this.state.inPoint + val
+			})
+		}
+	}
+
+	onOutChange = (val: number) => {
+		if (val > this.state.inPoint) {
+			this.setState({
+				outPoint: val,
+				duration: Math.max(0, val - this.state.inPoint)
+			})
+		} else {
+			const out = this.state.inPoint + (1 / this.fps)
+			this.setState({
+				outPoint: out,
+				duration: out - this.state.inPoint
+			})
+		}
 	}
 
 	render () {
@@ -68,6 +130,15 @@ export const ClipTrimPanel = translateWithTracker<IProps, {}, ITrackedProps>((pr
 					</div>
 				</div>
 				<div className='clip-trim-panel__timecode-encoders'>
+					<div className='clip-trim-panel__timecode-encoders__input'>
+						<TimecodeEncoder fps={this.fps} value={this.state.inPoint} onChange={this.onInChange} />
+					</div>
+					<div className='clip-trim-panel__timecode-encoders__input'>
+						<TimecodeEncoder fps={this.fps} value={this.state.duration} onChange={this.onDurationChange} />
+					</div>
+					<div className='clip-trim-panel__timecode-encoders__input'>
+						<TimecodeEncoder fps={this.fps} value={this.state.outPoint} onChange={this.onOutChange} />
+					</div>
 				</div>
 			</div>
 		)
