@@ -2,25 +2,14 @@ import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { applyClassToDocument, registerCollection } from '../lib'
 import { SegmentLines, SegmentLineNote } from './SegmentLines'
-import { MOS } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrders } from './RunningOrders'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
+import { IBlueprintSegmentDB } from 'tv-automation-sofie-blueprints-integration'
 
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
-export interface DBSegment {
-	_id: string
-	/** Position inside running order */
-	_rank: number
-	/** ID of the source object in MOS */
-	mosId: string
-	/** The running order this segment belongs to */
-	runningOrderId: string
-	/** User-presentable name (Slug) for the Title */
-	name: string
-
-	metaData?: Array<MOS.IMOSExternalMetaData>
-	status?: MOS.IMOSObjectStatus
+export interface DBSegment extends IBlueprintSegmentDB {
+	status?: string
 	expanded?: boolean
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
@@ -29,11 +18,11 @@ export interface DBSegment {
 export class Segment implements DBSegment {
 	public _id: string
 	public _rank: number
-	public mosId: string
+	public externalId: string
 	public runningOrderId: string
 	public name: string
-	public metaData?: Array<MOS.IMOSExternalMetaData>
-	public status?: MOS.IMOSObjectStatus
+	public metaData?: { [key: string]: any }
+	public status?: string
 	public expanded?: boolean
 	public notes?: Array<SegmentLineNote>
 

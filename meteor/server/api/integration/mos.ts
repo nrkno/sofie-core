@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
 
-import { MOS } from 'tv-automation-sofie-blueprints-integration'
+import * as MOS from 'mos-connection'
 
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import {
@@ -89,7 +89,6 @@ export function segmentLineId (runningOrderId: string, storyId: MOS.MosString128
 	let id = runningOrderId + '_' + storyId.toString()
 	return getHash(id)
 }
-
 /**
  * Returns a Running order, throws error if not found
  * @param roId Id of the Running order

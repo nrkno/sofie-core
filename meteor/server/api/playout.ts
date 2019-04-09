@@ -66,7 +66,6 @@ import {
 	SegmentLineItemLifespan,
 	SegmentLineHoldMode,
 	TimelineObjHoldMode,
-	MOS,
 	TimelineObjectCoreExt,
 	VTContent
 } from 'tv-automation-sofie-blueprints-integration'
@@ -553,7 +552,7 @@ export namespace ServerPlayoutAPI {
 	}
 	function refreshSegmentLine (runningOrder: DBRunningOrder, segmentLine: DBSegmentLine) {
 		const ro = new RunningOrder(runningOrder)
-		const story = ro.fetchCache(CachePrefix.FULLSTORY + segmentLine._id) as MOS.IMOSROFullStory
+		const story = ro.fetchCache(CachePrefix.FULLSTORY + segmentLine._id)
 		const sl = new SegmentLine(segmentLine)
 		updateStory(ro, sl, story)
 

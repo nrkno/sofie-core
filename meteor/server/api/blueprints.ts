@@ -56,7 +56,8 @@ import {
 	IStudioContext,
 	IBlueprintShowStyleBase,
 	BlueprintMappings,
-	BlueprintManifestSet
+	BlueprintManifestSet,
+	IStudioConfigContext
 } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
 
@@ -256,6 +257,59 @@ export class NotesContext extends CommonContext implements INotesContext {
 	}
 }
 
+export class StudioConfigContext implements IStudioConfigContext {
+	protected readonly studioInstallation: StudioInstallation
+	constructor (studioInstallation: StudioInstallation) {
+		this.studioInstallation = studioInstallation
+	}
+
+	getStudioInstallation (): StudioInstallation {
+		const studio = StudioInstallations.findOne(this.studioInstallation._id)
+		if (!studio) throw new Meteor.Error(404, 'StudioInstallation "' + this.studioInstallation._id + '" not found')
+
+		return studio
+	}
+	getStudioConfig (): {[key: string]: ConfigItemValue} {
+		return compileStudioConfig(this.getStudioInstallation())
+	}
+	getStudioConfigRef (configKey: string): string {
+		return ConfigRef.getStudioConfigRef(this.studioInstallation._id, configKey)
+	}
+}
+
+// export interface IStudioContext extends IStudioConfigContext {
+export class StudioContext extends StudioConfigContext implements IStudioContext {
+	getStudioMappings (): BlueprintMappings {
+		return this.studioInstallation.mappings
+	}
+}
+
+export interface IShowStyleBaseConfigContext {
+	/** Get variants for this showStyleBase */
+	getShowStyleVariants: (showStyleBaseId: string) => Array<IBlueprintShowStyleVariant>;
+	/** Translate the variant id to be the full id */
+	getShowStyleVariantId: (showStyleBase: IBlueprintShowStyleBase, variantId: string) => string;
+}
+
+class ShowStyleBaseConfigContext implements IShowStyleBaseConfigContext {
+	private showStyleBase: ShowStyleBase
+	constructor (showStyleBase: ShowStyleBase) {
+		this.showStyleBase = showStyleBase
+	}
+	getShowStyleVariants (showStyleBaseId: string): Array<IBlueprintShowStyleVariant> {
+		return ShowStyleVariants.find({
+			showStyleBaseId: this.showStyleBase._id
+		}).fetch()
+	}
+	getShowStyleVariantId (variantId: string): string {
+		return this.showStyleBase._id + '_' + variantId
+	}
+}
+
+
+
+
+
 function compileStudioConfig (studio: StudioInstallation) {
 	const res: {[key: string]: ConfigItemValue} = {}
 	_.each(studio.config, (c) => {
@@ -279,23 +333,12 @@ export class RunningOrderContext extends NotesContext implements IRunningOrderCo
 		this.runningOrder = runningOrder
 	}
 
-	getStudioInstallation (): StudioInstallation {
-		const studio = StudioInstallations.findOne(this.runningOrder.studioInstallationId)
-		if (!studio) throw new Meteor.Error(404, 'StudioInstallation "' + this.runningOrder.studioInstallationId + '" not found')
-
-		return studio
-	}
+	
 	getShowStyleBase (): ShowStyleBase {
 		const showStyleBase = ShowStyleBases.findOne(this.runningOrder.showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, 'ShowStyleBase "' + this.runningOrder.showStyleBaseId + '" not found')
 
 		return showStyleBase
-	}
-	getStudioConfig (): {[key: string]: ConfigItemValue} {
-		return compileStudioConfig(this.getStudioInstallation())
-	}
-	getStudioConfigRef (configKey: string): string {
-		return ConfigRef.getStudioConfigRef(this.runningOrder.studioInstallationId, configKey)
 	}
 	getShowStyleConfig (): {[key: string]: ConfigItemValue} {
 		const showStyleCompound = getShowStyleCompound(this.runningOrder.showStyleVariantId)
@@ -364,34 +407,7 @@ export class SegmentLineContext extends RunningOrderContext implements ISegmentL
 	}
 }
 
-export class StudioContext implements IStudioContext {
-	readonly studioInstallation: StudioInstallation
-	constructor (studioInstallation: StudioInstallation) {
-		this.studioInstallation = studioInstallation
-	}
 
-	getStudioMappings (): BlueprintMappings {
-		return this.studioInstallation.mappings
-	}
-
-	getStudioConfig (): {[key: string]: ConfigItemValue} {
-		return compileStudioConfig(this.studioInstallation)
-	}
-	getStudioConfigRef (configKey: string): string {
-		return ConfigRef.getStudioConfigRef(this.studioInstallation._id, configKey)
-	}
-
-	getShowStyleBases (): Array<IBlueprintShowStyleBase> {
-		return ShowStyleBases.find({ _id: { $in: this.studioInstallation.supportedShowStyleBase } }).fetch()
-	}
-	getShowStyleVariants (showStyleBaseId: string): Array<IBlueprintShowStyleVariant> {
-		// TODO - does this need to be checked to ensure the showStyle belongs to the studio?
-		return ShowStyleVariants.find({ showStyleBaseId: showStyleBaseId }).fetch()
-	}
-	getShowStyleVariantId (showStyleBase: IBlueprintShowStyleBase, variantId: string): string {
-		return getHash(showStyleBase._id + '_' + variantId)
-	}
-}
 
 export class EventContext extends CommonContext implements IEventContext {
 	// TDB: Certain actions that can be triggered in Core by the Blueprint

@@ -3,7 +3,6 @@ import * as _ from 'underscore'
 import { Time, applyClassToDocument, getCurrentTime, registerCollection, normalizeArray, waitForPromiseAll, makePromise } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { SegmentLines, SegmentLine } from './SegmentLines'
-import { MOS } from 'tv-automation-sofie-blueprints-integration'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { StudioInstallations, StudioInstallation } from './StudioInstallations'
 import { SegmentLineItems, SegmentLineItem } from './SegmentLineItems'
@@ -12,7 +11,7 @@ import { Meteor } from 'meteor/meteor'
 import { SegmentLineAdLibItems } from './SegmentLineAdLibItems'
 import { RunningOrderBaselineItems } from './RunningOrderBaselineItems'
 import { RunningOrderBaselineAdLibItems } from './RunningOrderBaselineAdLibItems'
-import { IBlueprintRunningOrder } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintRunningOrderDB } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 
@@ -33,33 +32,22 @@ export interface RunningOrderImportVersions {
 }
 
 /** This is a very uncomplete mock-up of the Rundown object */
-export interface DBRunningOrder extends IBlueprintRunningOrder {
-	_id: string
-	/** ID of the object in MOS */
-	mosId: string
+export interface DBRunningOrder extends IBlueprintRunningOrderDB {
+	/** The id of the StudioInstallation this runningOrder is in */
 	studioInstallationId: string
-	/** The ShowStyleVariant this RunningOrder uses */
-	showStyleVariantId: string
+
 	/** The ShowStyleBase this RunningOrder uses (its the parent of the showStyleVariant) */
 	showStyleBaseId: string
 	/** the mos device the rundown originates from */
 	mosDeviceId: string
-	/** Rundown slug - user-presentable name */
-	name: string
 	created: Time
 	modified: Time
 
 	/** Revisions/Versions of various docs that when changed require the user to reimport the RO */
 	importVersions: RunningOrderImportVersions
 
-	/** Expected start should be set to the expected time this running order should run on air. Should be set to EditorialStart from IMOSRunningOrder */
-	expectedStart?: Time
-	/** Expected duration of the running order - should be set to EditorialDuration from IMOSRunningOrder */
-	expectedDuration?: number
-
-	metaData?: Array<MOS.IMOSExternalMetaData>
-	status?: MOS.IMOSObjectStatus
-	airStatus?: MOS.IMOSObjectAirStatus
+	status?: string
+	airStatus?: string
 	// There should be something like a Owner user here somewhere?
 	active?: boolean
 	/** the id of the Live Segment Line - if empty, no segment line in this rundown is live */
@@ -88,7 +76,7 @@ export interface DBRunningOrder extends IBlueprintRunningOrder {
 }
 export class RunningOrder implements DBRunningOrder {
 	public _id: string
-	public mosId: string
+	public externalId: string
 	public studioInstallationId: string
 	public showStyleVariantId: string
 	public showStyleBaseId: string
@@ -99,9 +87,9 @@ export class RunningOrder implements DBRunningOrder {
 	public importVersions: RunningOrderImportVersions
 	public expectedStart?: Time
 	public expectedDuration?: number
-	public metaData?: Array<MOS.IMOSExternalMetaData>
-	public status?: MOS.IMOSObjectStatus
-	public airStatus?: MOS.IMOSObjectAirStatus
+	public metaData?: { [key: string]: any }
+	public status?: string
+	public airStatus?: string
 	public active?: boolean
 	public rehearsal?: boolean
 	public unsynced?: boolean

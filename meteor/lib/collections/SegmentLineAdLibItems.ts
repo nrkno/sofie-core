@@ -6,8 +6,6 @@ import { Meteor } from 'meteor/meteor'
 import { IBlueprintSegmentLineAdLibItem, BaseContent } from 'tv-automation-sofie-blueprints-integration'
 
 export interface SegmentLineAdLibItem extends SegmentLineItemGeneric, IBlueprintSegmentLineAdLibItem {
-	_rank: number
-
 	expectedDuration: number | string
 
 	/** The object describing the item in detail */
@@ -15,9 +13,6 @@ export interface SegmentLineAdLibItem extends SegmentLineItemGeneric, IBlueprint
 
 	trigger: undefined
 	disabled: false
-
-	/** When something bad has happened, we can mark the AdLib as invalid, which will prevent the user from TAKE:ing it */
-	invalid?: boolean
 }
 
 export const SegmentLineAdLibItems: TransformedCollection<SegmentLineAdLibItem, SegmentLineAdLibItem>

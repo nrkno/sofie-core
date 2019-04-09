@@ -77,7 +77,6 @@ export namespace RunningOrderInput {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
 		console.log('dataSegmentLineItemUpdate', runningOrderId, segmentId, segmentLineId, newStory)
 	}
-
 }
 
 let methods: Methods = {}
