@@ -351,11 +351,11 @@ export class AsRunEventContext extends RunningOrderContext implements IAsRunEven
 	getStoryForSegmentLine (segmentLine: SegmentLine): IngestPart {
 		let segmentLineId = segmentLine._id
 		check(segmentLineId, String)
-		return this.runningOrder.fetchCache(CachePrefix.FULLSTORY + segmentLineId)
+		return this.runningOrder.fetchCache(CachePrefix.INGEST_PART + segmentLineId)
 	}
 	/** Get the mos story related to the runningOrder */
 	getStoryForRunningOrder (): IngestRunningOrder {
-		return this.runningOrder.fetchCache(CachePrefix.ROCREATE + this.runningOrder._id)
+		return this.runningOrder.fetchCache(CachePrefix.INGEST_RUNNINGORDER + this.runningOrder._id)
 	}
 	/**
 	 * Returns a segmentLineItem.

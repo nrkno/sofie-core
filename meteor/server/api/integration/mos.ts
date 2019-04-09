@@ -45,7 +45,7 @@ import {
 	SegmentLineAdLibItems
 } from '../../../lib/collections/SegmentLineAdLibItems'
 import {
-	ShowStyleBases, ShowStyleBase
+	ShowStyleBases
 } from '../../../lib/collections/ShowStyleBases'
 import {
 	ServerPlayoutAPI,
@@ -63,16 +63,16 @@ import {
 	updateAffectedSegmentLines,
 	removeSegmentLine,
 	runPostProcessBlueprint,
-	ServerRunningOrderAPI
+	ServerRunningOrderAPI,
+	selectShowStyleVariant
 } from '../runningOrder'
 import { syncFunction } from '../../codeControl'
 import { IBlueprintSegmentLine, SegmentLineHoldMode, IngestRunningOrder } from 'tv-automation-sofie-blueprints-integration'
-import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { updateExpectedMediaItems } from '../expectedMediaItems'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
-import { loadShowStyleBlueprints, loadStudioBlueprints } from '../blueprints/cache'
+import { loadShowStyleBlueprints } from '../blueprints/cache'
 import { postProcessSegmentLineAdLibItems, postProcessSegmentLineItems, postProcessSegmentLineBaselineItems } from '../blueprints/postProcess'
-import { StudioConfigContext, ShowStyleContext, RunningOrderContext } from '../blueprints/context'
+import { ShowStyleContext, RunningOrderContext } from '../blueprints/context'
 import { RunningOrderBaselineItem, RunningOrderBaselineItems } from '../../../lib/collections/RunningOrderBaselineItems'
 import { Random } from 'meteor/random'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../../lib/collections/RunningOrderBaselineAdLibItems'
@@ -457,46 +457,6 @@ export function replaceStoryItem (runningOrder: RunningOrder, segmentLineItem: S
 	})
 }
 
-function selectShowStyleVariant (studio: StudioInstallation, ingestRo: IngestRunningOrder): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
-	const showStyleBases = ShowStyleBases.find({ _id: { $in: studio.supportedShowStyleBase }}).fetch()
-	let showStyleBase = _.first(showStyleBases)
-	if (!showStyleBase) {
-		return null
-	}
-
-	const context = new StudioConfigContext(studio)
-
-	const studioBlueprint = loadStudioBlueprints(studio)
-	if (studioBlueprint) {
-		const showStyleId = studioBlueprint.getShowStyleId(context, showStyleBases, ingestRo)
-		showStyleBase = _.find(showStyleBases, s => s._id === showStyleId)
-		if (showStyleId === null || !showStyleBase) {
-			return null
-		}
-	}
-
-	const showStyleVariants = ShowStyleVariants.find({ showStyleBaseId: showStyleBase._id }).fetch()
-	let showStyleVariant = _.first(showStyleVariants)
-	if (!showStyleVariant) {
-		throw new Meteor.Error(404, `ShowStyleBase "${showStyleBase._id}" has no variants`)
-	}
-
-	const showStyleBlueprint = loadShowStyleBlueprints(showStyleBase)
-	if (!showStyleBlueprint) {
-		throw new Meteor.Error(404, `ShowStyleBase "${showStyleBase._id}" does not have a valid blueprint`)
-	}
-
-	const variantId = showStyleBlueprint.getShowStyleVariantId(context, showStyleVariants, ingestRo)
-	showStyleVariant = _.find(showStyleVariants, s => s._id === variantId)
-	if (variantId === null || !showStyleVariant) {
-		return null
-	}
-
-	return {
-		variant: showStyleVariant,
-		base: showStyleBase
-	}
-}
 function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: PeripheralDevice, dataSource: string) {
 	// Create or update a runningorder (ie from roCreate or roList)
 
@@ -587,7 +547,7 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 	let dbRo = RunningOrders.findOne(dbROData._id)
 	if (!dbRo) throw new Meteor.Error(500, 'Running order not found (it should have been)')
 	// cache the Data
-	dbRo.saveCache(CachePrefix.ROCREATE + dbRo._id, ro)
+	dbRo.saveCache(CachePrefix.INGEST_RUNNINGORDER + dbRo._id, ro)
 
 	// Save the baseline
 	const blueprintRoContext = new RunningOrderContext(dbRo, studioInstallation)
@@ -746,7 +706,7 @@ export namespace MosIntegration {
 		if (!_.isEmpty(m)) {
 			RunningOrders.update(ro._id, {$set: m})
 			// update data cache:
-			const cache = ro.fetchCache(CachePrefix.ROCREATE + roId(roData.ID),)
+			const cache = ro.fetchCache(CachePrefix.INGEST_RUNNINGORDER + roId(roData.ID),)
 			if (cache) {
 				if (!cache.MosExternalMetaData) {
 					cache.MosExternalMetaData = []
@@ -764,7 +724,7 @@ export namespace MosIntegration {
 				})
 			}
 
-			ro.saveCache(CachePrefix.ROCREATE + roId(roData.ID), cache)
+			ro.saveCache(CachePrefix.INGEST_RUNNINGORDER + roId(roData.ID), cache)
 		}
 	}
 	export function mosRoStatus (id: string, token: string, status: MOS.IMOSRunningOrderStatus) {
@@ -1151,7 +1111,7 @@ export namespace MosIntegration {
 		let segmentLine = getSegmentLine(story.RunningOrderId, story.ID)
 
 		// cache the Data
-		ro.saveCache(CachePrefix.FULLSTORY + segmentLine._id, story)
+		ro.saveCache(CachePrefix.INGEST_PART + segmentLine._id, story)
 		const changed = updateStory(ro, segmentLine, story)
 
 		const segment = segmentLine.getSegment()

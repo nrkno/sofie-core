@@ -508,7 +508,7 @@ export namespace ServerPlayoutAPI {
 	}
 	function refreshSegmentLine (runningOrder: DBRunningOrder, segmentLine: DBSegmentLine) {
 		const ro = new RunningOrder(runningOrder)
-		const story = ro.fetchCache(CachePrefix.FULLSTORY + segmentLine._id)
+		const story = ro.fetchCache(CachePrefix.INGEST_PART + segmentLine._id)
 		const sl = new SegmentLine(segmentLine)
 		updateStory(ro, sl, story)
 

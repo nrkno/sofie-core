@@ -14,11 +14,55 @@ import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods, wrapMethods } from '../methods'
 import { RunningOrderAPI } from '../../lib/api/runningOrder'
 import { updateExpectedMediaItems } from './expectedMediaItems'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
-import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
+import { IngestRunningOrder } from 'tv-automation-sofie-blueprints-integration'
+import { StudioConfigContext } from './blueprints/context'
+import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
 const PackageInfo = require('../../package.json')
+
+export function selectShowStyleVariant (studio: StudioInstallation, ingestRo: IngestRunningOrder): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
+	const showStyleBases = ShowStyleBases.find({ _id: { $in: studio.supportedShowStyleBase }}).fetch()
+	let showStyleBase = _.first(showStyleBases)
+	if (!showStyleBase) {
+		return null
+	}
+
+	const context = new StudioConfigContext(studio)
+
+	const studioBlueprint = loadStudioBlueprints(studio)
+	if (studioBlueprint) {
+		const showStyleId = studioBlueprint.getShowStyleId(context, showStyleBases, ingestRo)
+		showStyleBase = _.find(showStyleBases, s => s._id === showStyleId)
+		if (showStyleId === null || !showStyleBase) {
+			return null
+		}
+	}
+
+	const showStyleVariants = ShowStyleVariants.find({ showStyleBaseId: showStyleBase._id }).fetch()
+	let showStyleVariant = _.first(showStyleVariants)
+	if (!showStyleVariant) {
+		throw new Meteor.Error(404, `ShowStyleBase "${showStyleBase._id}" has no variants`)
+	}
+
+	const showStyleBlueprint = loadShowStyleBlueprints(showStyleBase)
+	if (!showStyleBlueprint) {
+		throw new Meteor.Error(404, `ShowStyleBase "${showStyleBase._id}" does not have a valid blueprint`)
+	}
+
+	const variantId = showStyleBlueprint.getShowStyleVariantId(context, showStyleVariants, ingestRo)
+	showStyleVariant = _.find(showStyleVariants, s => s._id === variantId)
+	if (variantId === null || !showStyleVariant) {
+		return null
+	}
+
+	return {
+		variant: showStyleVariant,
+		base: showStyleBase
+	}
+}
 
 /**
  * After a Segment has beed removed, handle its contents
@@ -265,7 +309,7 @@ function updateWithinSegment (ro: RunningOrder, segmentId: string): boolean {
 }
 function updateSegmentLine (ro: RunningOrder, segmentLine: SegmentLine): boolean {
 	// TODO: determine that the data source is MOS, and THEN call updateStory:
-	let story = ro.fetchCache(CachePrefix.FULLSTORY + segmentLine._id)
+	let story = ro.fetchCache(CachePrefix.INGEST_PART + segmentLine._id)
 	if (story) {
 		return updateStory(ro, segmentLine, story)
 	} else {

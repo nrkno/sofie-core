@@ -12,8 +12,9 @@ export interface RunningOrderDataCacheObj {
 }
 
 export enum CachePrefix {
-	FULLSTORY = 'fullStory',
-	ROCREATE = 'roCreate'
+	INGEST_PART = 'fullStory',
+	INGEST_RUNNINGORDER = 'roCreate',
+	INGEST_SEGMENT = 'segment'
 }
 
 export const RunningOrderDataCache: TransformedCollection<RunningOrderDataCacheObj, RunningOrderDataCacheObj>
