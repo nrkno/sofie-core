@@ -49,9 +49,9 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 		super(props)
 
 		this.state = {
-			inPoint: this.props.inPoint,
-			duration: this.props.outPoint - this.props.inPoint,
-			outPoint: this.props.outPoint
+			inPoint: this.props.inPoint * this.fps,
+			duration: (this.props.outPoint * this.fps) - (this.props.inPoint * this.fps),
+			outPoint: this.props.outPoint * this.fps
 		}
 	}
 
@@ -80,7 +80,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 				duration: Math.max(0, this.state.outPoint - val)
 			})
 		} else {
-			const inp = this.state.outPoint - (1 / this.fps)
+			const inp = Math.max(0, this.state.outPoint - 1)
 			this.setState({
 				inPoint: inp,
 				duration: this.state.outPoint - inp
@@ -104,7 +104,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 				duration: Math.max(0, val - this.state.inPoint)
 			})
 		} else {
-			const out = this.state.inPoint + (1 / this.fps)
+			const out = this.state.inPoint + 1
 			this.setState({
 				outPoint: out,
 				duration: out - this.state.inPoint
@@ -123,10 +123,10 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 			<div className='clip-trim-panel'>
 				<div className='clip-trim-panel__monitors'>
 					<div className='clip-trim-panel__monitors__monitor'>
-						<VideoEditMonitor src={previewUrl} />
+						<VideoEditMonitor src={previewUrl} fps={this.fps} currentTime={this.state.inPoint / this.fps} onCurrentTimeChange={(time) => this.onInChange(time * this.fps)} />
 					</div>
 					<div className='clip-trim-panel__monitors__monitor'>
-						<VideoEditMonitor src={previewUrl} />
+						<VideoEditMonitor src={previewUrl} fps={this.fps} currentTime={this.state.outPoint / this.fps} onCurrentTimeChange={(time) => this.onOutChange(time * this.fps)} />
 					</div>
 				</div>
 				<div className='clip-trim-panel__timecode-encoders'>

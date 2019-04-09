@@ -32,12 +32,14 @@ export class TimecodeEncoder extends React.Component<IProps, IState> {
 	}
 
 	static getDerivedStateFromProps(props: IProps, state: IState): Partial<IState> {
+		const newValid = TimecodeEncoder.secondsToTimecode(props.value || 0, props.fps)
 		return _.extend({
-			validValue: TimecodeEncoder.secondsToTimecode(props.value || 0, props.fps),
-			hasError: false
+			validValue: newValid,
 		}, state.isEdited ? {} : {
 			currentValue: TimecodeEncoder.secondsToTimecode(props.value || 0, props.fps)
-		})
+		}, state.validValue !== newValid ? {
+			hasError: false
+		} : {})
 	}
 
 	private static secondsToTimecode (time: number, fps: number): string {
@@ -87,8 +89,6 @@ export class TimecodeEncoder extends React.Component<IProps, IState> {
 				currentValue: this.state.validValue,
 				isEdited: false
 			})
-			const valid = Timecode.init({ framerate: this.props.fps.toString(), timecode: this.state.validValue, drop_frame: !Number.isInteger(this.props.fps) })
-			this.triggerChange(valid.frame_count)
 		}
 	}
 
@@ -98,7 +98,8 @@ export class TimecodeEncoder extends React.Component<IProps, IState> {
 		const ts = t.toString()
 		this.setState({
 			currentValue: ts,
-			validValue: ts
+			validValue: ts,
+			hasError: false
 		})
 		this.triggerChange(t.frame_count)
 	}
@@ -112,7 +113,8 @@ export class TimecodeEncoder extends React.Component<IProps, IState> {
 		const ts = t.toString()
 		this.setState({
 			currentValue: ts,
-			validValue: ts
+			validValue: ts,
+			hasError: false
 		})
 		this.triggerChange(t.frame_count)
 	}
