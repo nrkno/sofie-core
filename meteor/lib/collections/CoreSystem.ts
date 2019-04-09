@@ -96,7 +96,11 @@ export interface Version {
 	label?: string
 }
 export function stripVersion (v: string): string {
-	return v.replace(/[^\d.]/g,'')
+	if (v.match(/git/i) || v.match(/http/i)) {
+		return '0.0.0'
+	} else {
+		return v.replace(/[^\d.]/g,'') || '0.0.0'
+	}
 }
 export function parseVersion (v: string | Version): Version {
 

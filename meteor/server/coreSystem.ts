@@ -311,8 +311,17 @@ export function getRelevantSystemVersions (): {[name: string]: string} {
 		names = _.filter(names, (name) => {
 			return omitNames.indexOf(name) === -1
 		})
+
+		let sanitizeVersion = v => {
+			if (v.match(/git/i)) {
+				return '0.0.0'
+			} else {
+				return v
+			}
+		}
+
 		_.each(names, (name) => {
-			versions[name] = dependencies[name]
+			versions[name] = sanitizeVersion(dependencies[name])
 		})
 		versions['core'] = PackageInfo.version // package version
 

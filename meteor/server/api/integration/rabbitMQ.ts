@@ -5,7 +5,7 @@ import { logger } from '../../logging'
 import { ExternalMessageQueueObjRabbitMQ } from 'tv-automation-sofie-blueprints-integration'
 import { promisify } from 'util'
 import { ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
-import { ConfigRef } from '../blueprints'
+import { ConfigRef } from '../blueprints/config'
 
 interface Message {
 	_id: string

@@ -35,14 +35,7 @@ import {
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
-import {
-	loadShowStyleBlueprints,
-	postProcessSegmentLineAdLibItems,
-	postProcessSegmentLineItems,
-	SegmentLineContext,
-	loadStudioBlueprints,
-	StudioContext
-} from '../blueprints'
+
 import {
 	StudioInstallations,
 	StudioInstallation
@@ -73,10 +66,13 @@ import {
 	ServerRunningOrderAPI
 } from '../runningOrder'
 import { syncFunction } from '../../codeControl'
-import { IBlueprintSegmentLine, SegmentLineHoldMode } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintSegmentLine, SegmentLineHoldMode, IngestRunningOrder } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { updateExpectedMediaItems } from '../expectedMediaItems'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
+import { loadShowStyleBlueprints, loadStudioBlueprints } from '../blueprints/cache'
+import { postProcessSegmentLineAdLibItems, postProcessSegmentLineItems } from '../blueprints/postProcess'
+import { StudioContext, StudioConfigContext } from '../blueprints/context'
 const PackageInfo = require('../../../package.json')
 
 export function roId (roId: MOS.MosString128, original?: boolean): string {
@@ -145,8 +141,8 @@ export function convertToSegmentLine (story: MOS.IMOSStory, runningOrderId: stri
 		runningOrderId: runningOrderId,
 		segmentId: '', // to be coupled later
 		_rank: rank,
-		mosId: story.ID.toString(),
-		slug: (story.Slug || '').toString(),
+		externalId: story.ID.toString(),
+		title: (story.Slug || '').toString(),
 		typeVariant: ''
 		// expectedDuration: item.EditorialDuration,
 		// autoNext: item.Trigger === ??
@@ -384,13 +380,13 @@ export function sendStoryStatus (ro: RunningOrder, takeSegmentLine: SegmentLine 
 		.catch(e => logger.error(e))
 	}
 	if (takeSegmentLine) {
-		setStoryStatus(ro.mosDeviceId, ro, takeSegmentLine.mosId, MOS.IMOSObjectStatus.PLAY)
+		setStoryStatus(ro.mosDeviceId, ro, takeSegmentLine.externalId, MOS.IMOSObjectStatus.PLAY)
 		.catch(e => logger.error(e))
 
 		RunningOrders.update(this._id, {$set: {
-			currentPlayingStoryStatus: takeSegmentLine.mosId
+			currentPlayingStoryStatus: takeSegmentLine.externalId
 		}})
-		ro.currentPlayingStoryStatus = takeSegmentLine.mosId
+		ro.currentPlayingStoryStatus = takeSegmentLine.externalId
 	} else {
 		RunningOrders.update(this._id, {$unset: {
 			currentPlayingStoryStatus: 1
@@ -401,7 +397,7 @@ export function sendStoryStatus (ro: RunningOrder, takeSegmentLine: SegmentLine 
 function setStoryStatus (deviceId: string, ro: RunningOrder, storyId: string, status: MOS.IMOSObjectStatus): Promise<any> {
 	return new Promise((resolve, reject) => {
 		if (!ro.rehearsal) {
-			logger.debug('setStoryStatus', deviceId, ro.mosId, storyId, status)
+			logger.debug('setStoryStatus', deviceId, ro.externalId, storyId, status)
 			PeripheralDeviceAPI.executeFunction(deviceId, (err, result) => {
 				logger.debug('reply', err, result)
 				if (err) {
@@ -409,7 +405,7 @@ function setStoryStatus (deviceId: string, ro: RunningOrder, storyId: string, st
 				} else {
 					resolve(result)
 				}
-			}, 'setStoryStatus', ro.mosId, storyId, status)
+			}, 'setStoryStatus', ro.externalId, storyId, status)
 		}
 	})
 }
@@ -439,12 +435,12 @@ export const reloadRunningOrder: (runningOrder: RunningOrder) => void = Meteor.w
 					cb(e)
 				}
 			}
-		}, 'triggerGetRunningOrder', runningOrder.mosId)
+		}, 'triggerGetRunningOrder', runningOrder.externalId)
 	}
 )
 export function replaceStoryItem (runningOrder: RunningOrder, segmentLineItem: SegmentLineItem, slCache: RunningOrderDataCacheObj, inPoint: number, outPoint: number) {
 	return new Promise((resolve, reject) => {
-		const story = slCache.data.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === segmentLineItem.mosId)[0].Content
+		const story = slCache.data.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === segmentLineItem.externalId)[0].Content
 		story.EditorialStart = inPoint
 		story.EditorialDuration = outPoint
 
@@ -457,52 +453,53 @@ export function replaceStoryItem (runningOrder: RunningOrder, segmentLineItem: S
 		}, 'replaceStoryItem', slCache.data.RunningOrderId, slCache.data.ID, story)
 	})
 }
+
 function selectShowStyleVariant (studio: StudioInstallation, ro: MOS.IMOSRunningOrder): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
+	const ingestRo = literal<IngestRunningOrder>({
+		externalId: ro.ID.toString(),
+		name: ro.Slug.toString(),
+		type: 'mos',
+		segments: [],
+		payload: ro
+	})
+
+	const showStyleBases = ShowStyleBases.find({ _id: { $in: studio.supportedShowStyleBase }}).fetch()
+	let showStyleBase = _.first(showStyleBases)
+	if (!showStyleBase) {
+		return null
+	}
+
+	const context = new StudioConfigContext(studio)
+
 	const studioBlueprint = loadStudioBlueprints(studio)
 	if (studioBlueprint) {
-		const context = new StudioContext(studio)
-		const showStyleVariantId = studioBlueprint.getShowStyleVariantId(context, ro)
-		if (showStyleVariantId) {
-			const showStyleVariant = ShowStyleVariants.findOne(showStyleVariantId)
-			if (!showStyleVariant) {
-				throw new Meteor.Error(404, `ShowStyleVariant "${showStyleVariantId}" not found`)
-			}
-
-			const showStyleBase = ShowStyleBases.findOne(showStyleVariant.showStyleBaseId)
-			if (!showStyleBase) {
-				throw new Meteor.Error(404, `ShowStyleBase "${showStyleVariant.showStyleBaseId}" not found`)
-			}
-
-			if (studio.supportedShowStyleBase.indexOf(showStyleBase._id) === -1) {
-				throw new Meteor.Error(404, `Studio "${studio._id}" does not support ShowStyleBase "${showStyleVariant.showStyleBaseId}"`)
-			}
-
-			return {
-				variant: showStyleVariant,
-				base: showStyleBase,
-			}
-		} else {
+		const showStyleId = studioBlueprint.getShowStyleId(context, showStyleBases, ingestRo)
+		showStyleBase = _.find(showStyleBases, s => s._id === showStyleId)
+		if (showStyleId === null || !showStyleBase) {
 			return null
 		}
-	} else {
-		const showStyleBaseId = _.first(studio.supportedShowStyleBase)
-		if (showStyleBaseId) {
-			const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
-			if (!showStyleBase) {
-				throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found`)
-			}
-			const showStyleVariant = ShowStyleVariants.findOne({ showStyleBaseId: showStyleBaseId })
-			if (!showStyleVariant) {
-				throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" has no variants`)
-			}
+	}
 
-			return {
-				variant: showStyleVariant,
-				base: showStyleBase,
-			}
-		} else {
-			return null
-		}
+	const showStyleVariants = ShowStyleVariants.find({ showStyleBaseId: showStyleBase._id }).fetch()
+	let showStyleVariant = _.first(showStyleVariants)
+	if (!showStyleVariant) {
+		throw new Meteor.Error(404, `ShowStyleBase "${showStyleBase._id}" has no variants`)
+	}
+
+	const showStyleBlueprint = loadShowStyleBlueprints(showStyleBase)
+	if (!showStyleBlueprint) {
+		throw new Meteor.Error(404, `ShowStyleBase "${showStyleBase._id}" does not have a valid blueprint`)
+	}
+
+	const variantId = showStyleBlueprint.getShowStyleVariantId(context, showStyleVariants, ingestRo)
+	showStyleVariant = _.find(showStyleVariants, s => s._id === variantId)
+	if (variantId === null || !showStyleVariant) {
+		return null
+	}
+
+	return {
+		variant: showStyleVariant,
+		base: showStyleBase
 	}
 }
 function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: PeripheralDevice, dataSource: string) {
@@ -538,7 +535,7 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 	let dbROData: DBRunningOrder = _.extend(existingDbRo || {},
 		_.omit(literal<DBRunningOrder>({
 			_id: roId(ro.ID),
-			mosId: ro.ID.toString(),
+			externalId: ro.ID.toString(),
 			studioInstallationId: studioInstallation._id,
 			mosDeviceId: peripheralDevice._id,
 			showStyleVariantId: showStyle.variant._id,

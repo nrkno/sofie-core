@@ -41,8 +41,9 @@ import { storeSystemSnapshot } from '../api/snapshot'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { evalBlueprints, MigrationContextStudio, MigrationContextShowStyle } from '../api/blueprints'
+import { MigrationContextStudio, MigrationContextShowStyle } from '../api/blueprints/migrationContext'
 import { getHash } from '../../lib/lib'
+import { evalBlueprints } from '../api/blueprints/cache'
 
 /** The current database version, x.y.z
  * 0.16.0: Release 3   (2018-10-26)

@@ -13,8 +13,8 @@ import { RunningOrderDataCache, RunningOrderDataCacheObj } from '../../lib/colle
 import { updateStory, getSegmentLine } from '../api/integration/mos'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { MosString128 } from 'tv-automation-sofie-blueprints-integration/dist/copy/mos-connection'
 import { updateSourceLayerInfinitesAfterLine } from '../api/playout'
+import { MosString128 } from 'mos-connection';
 
 // These are temporary method to fill the rundown database with some sample data
 // for development
@@ -73,14 +73,14 @@ setMeteorMethods({
 
 		const segmentLines = SegmentLines.find({ runningOrderId: ro._id }).fetch()
 		segmentLines.forEach((sl: SegmentLine) => {
-			if (!sl.mosId || sl.mosId === '' || sl.mosId === '-') {
-				logger.warn('debug_roRunBlueprints: skipping sl ' + sl._id + ' due to missing mosId')
+			if (!sl.externalId || sl.externalId === '' || sl.externalId === '-') {
+				logger.warn('debug_roRunBlueprints: skipping sl ' + sl._id + ' due to missing externalId')
 				return
 			}
 
 			let story = RunningOrderDataCache.findOne({
 				roId: ro._id,
-				'data.ID' : sl.mosId
+				'data.ID' : sl.externalId
 			})
 			if (!story) {
 				logger.warn('debug_roRunBlueprints: skipping sl ' + sl._id + ' due to missing data cache')
@@ -142,7 +142,7 @@ setMeteorMethods({
 		const stories = mosData.filter(d => d._id.indexOf('fullStory') !== -1)
 		stories.forEach((s: RunningOrderDataCacheObj) => {
 			try {
-				const sl = getSegmentLine(new MosString128(ro.mosId), new MosString128(s.data.ID))
+				const sl = getSegmentLine(new MosString128(ro.externalId), new MosString128(s.data.ID))
 				updateStory(ro, sl, s.data)
 
 			} catch (e) {

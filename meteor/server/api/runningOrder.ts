@@ -1,14 +1,12 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from 'meteor/check'
-import { IBlueprintPostProcessSegmentLine } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
 import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineNoteType, SegmentLineNote } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
 import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime, getHash, asyncCollectionUpdate, waitForPromiseAll } from '../../lib/lib'
 import { logger } from '../logging'
-import { loadShowStyleBlueprints, postProcessSegmentLineItems, SegmentContext } from './blueprints'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
 import { CachePrefix } from '../../lib/collections/RunningOrderDataCache'
 import { updateStory, reloadRunningOrder } from './integration/mos'
@@ -163,13 +161,13 @@ export function updateSegmentLines (runningOrderId: string) {
  */
 export function convertToSegment (segmentLine: SegmentLine, rank: number): DBSegment {
 	// let slugParts = (story.Slug || '').toString().split(';')
-	let slugParts = segmentLine.slug.split(';')
+	let slugParts = segmentLine.title.split(';')
 
 	return {
-		_id: segmentId(segmentLine.runningOrderId, segmentLine.slug, rank),
+		_id: segmentId(segmentLine.runningOrderId, segmentLine.title, rank),
 		runningOrderId: segmentLine.runningOrderId,
 		_rank: rank,
-		mosId: 'N/A', // to be removed?
+		externalId: 'N/A', // to be removed?
 		name: slugParts[0],
 		// number: (story.Number ? story.Number.toString() : '')
 	}
@@ -191,7 +189,7 @@ export function updateSegments (runningOrderId: string) {
 	let rankSegment = 0
 	let segmentLineUpdates: {[id: string]: Partial<DBSegmentLine>} = {}
 	_.each(segmentLines, (segmentLine: SegmentLine) => {
-		let slugParts = segmentLine.slug.split(';')
+		let slugParts = segmentLine.title.split(';')
 
 		if (slugParts[0] !== prevSlugParts[0]) {
 			segment = convertToSegment(segmentLine, rankSegment++)
@@ -276,106 +274,107 @@ function updateSegmentLine (ro: RunningOrder, segmentLine: SegmentLine): boolean
 	}
 }
 export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
-	let showStyleBase = ro.getShowStyleBase()
+	// let showStyleBase = ro.getShowStyleBase()
 
-	const segmentLines = segment.getSegmentLines()
-	if (segmentLines.length === 0) {
-		return undefined
-	}
+	// const segmentLines = segment.getSegmentLines()
+	// if (segmentLines.length === 0) {
+	// 	return undefined
+	// }
 
-	const firstSegmentLine = segmentLines.sort((a, b) => b._rank = a._rank)[0]
+	// const firstSegmentLine = segmentLines.sort((a, b) => b._rank = a._rank)[0]
 
-	const context = new SegmentContext(ro, segment)
-	context.handleNotesExternally = true
+	// const context = new SegmentContext(ro, segment)
+	// context.handleNotesExternally = true
 
-	let resultSli: SegmentLineItem[] | undefined = undefined
-	let resultSlUpdates: IBlueprintPostProcessSegmentLine[] | undefined = undefined
-	let notes: SegmentLineNote[] = []
-	try {
-		const blueprints = loadShowStyleBlueprints(showStyleBase)
-		let result = blueprints.getSegmentPost(context)
-		resultSli = postProcessSegmentLineItems(context, result.segmentLineItems, 'post-process', firstSegmentLine._id)
-		resultSlUpdates = result.segmentLineUpdates // TODO - validate/filter/tidy?
-		notes = context.getNotes()
-	} catch (e) {
-		logger.error(e.stack ? e.stack : e.toString())
-		// throw e
-		notes = [{
-			type: SegmentLineNoteType.ERROR,
-			origin: {
-				name: '',
-				roId: context.runningOrder._id,
-				segmentId: segment._id,
-				segmentLineId: '',
-			},
-			message: 'Internal Server Error'
-		}]
-		resultSli = undefined
-	}
+	// let resultSli: SegmentLineItem[] | undefined = undefined
+	// let resultSlUpdates: IBlueprintPostProcessSegmentLine[] | undefined = undefined
+	// let notes: SegmentLineNote[] = []
+	// try {
+	// 	const blueprints = loadShowStyleBlueprints(showStyleBase)
+	// 	let result = blueprints.getSegmentPost(context)
+	// 	resultSli = postProcessSegmentLineItems(context, result.segmentLineItems, 'post-process', firstSegmentLine._id)
+	// 	resultSlUpdates = result.segmentLineUpdates // TODO - validate/filter/tidy?
+	// 	notes = context.getNotes()
+	// } catch (e) {
+	// 	logger.error(e.stack ? e.stack : e.toString())
+	// 	// throw e
+	// 	notes = [{
+	// 		type: SegmentLineNoteType.ERROR,
+	// 		origin: {
+	// 			name: '',
+	// 			roId: context.runningOrder._id,
+	// 			segmentId: segment._id,
+	// 			segmentLineId: '',
+	// 		},
+	// 		message: 'Internal Server Error'
+	// 	}]
+	// 	resultSli = undefined
+	// }
 
-	const slIds = segmentLines.map(sl => sl._id)
+	// const slIds = segmentLines.map(sl => sl._id)
 
-	let changedSli: {
-		added: number,
-		updated: number,
-		removed: number
-	} = {
-		added: 0,
-		updated: 0,
-		removed: 0
-	}
-	if (notes) {
-		Segments.update(segment._id, {$set: {
-			notes: notes,
-		}})
-	}
-	if (resultSli) {
+	// let changedSli: {
+	// 	added: number,
+	// 	updated: number,
+	// 	removed: number
+	// } = {
+	// 	added: 0,
+	// 	updated: 0,
+	// 	removed: 0
+	// }
+	// if (notes) {
+	// 	Segments.update(segment._id, {$set: {
+	// 		notes: notes,
+	// 	}})
+	// }
+	// if (resultSli) {
 
-		if (resultSli) {
-			resultSli.forEach(sli => {
-				sli.fromPostProcess = true
-			})
-		}
+	// 	if (resultSli) {
+	// 		resultSli.forEach(sli => {
+	// 			sli.fromPostProcess = true
+	// 		})
+	// 	}
 
-		changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
-			runningOrderId: ro._id,
-			segmentLineId: { $in: slIds },
-			fromPostProcess: true,
-		}, resultSli || [], {
-			afterInsert (segmentLineItem) {
-				logger.debug('PostProcess: inserted segmentLineItem ' + segmentLineItem._id)
-				logger.debug(segmentLineItem)
-			},
-			afterUpdate (segmentLineItem) {
-				logger.debug('PostProcess: updated segmentLineItem ' + segmentLineItem._id)
-			},
-			afterRemove (segmentLineItem) {
-				logger.debug('PostProcess: deleted segmentLineItem ' + segmentLineItem._id)
-			}
-		})
-	}
-	if (resultSlUpdates) {
-		// At the moment this only affects the UI, so doesnt need to report 'anythingChanged'
+	// 	changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
+	// 		runningOrderId: ro._id,
+	// 		segmentLineId: { $in: slIds },
+	// 		fromPostProcess: true,
+	// 	}, resultSli || [], {
+	// 		afterInsert (segmentLineItem) {
+	// 			logger.debug('PostProcess: inserted segmentLineItem ' + segmentLineItem._id)
+	// 			logger.debug(segmentLineItem)
+	// 		},
+	// 		afterUpdate (segmentLineItem) {
+	// 			logger.debug('PostProcess: updated segmentLineItem ' + segmentLineItem._id)
+	// 		},
+	// 		afterRemove (segmentLineItem) {
+	// 			logger.debug('PostProcess: deleted segmentLineItem ' + segmentLineItem._id)
+	// 		}
+	// 	})
+	// }
+	// if (resultSlUpdates) {
+	// 	// At the moment this only affects the UI, so doesnt need to report 'anythingChanged'
 
-		let ps = resultSlUpdates.map(sl => asyncCollectionUpdate(SegmentLines, {
-			_id: sl._id,
-			runningOrderId: ro._id
-		}, {
-			$set: {
-				displayDurationGroup: sl.displayDurationGroup || ''
-			}
-		}))
-		waitForPromiseAll(ps)
-	}
+	// 	let ps = resultSlUpdates.map(sl => asyncCollectionUpdate(SegmentLines, {
+	// 		_id: sl._id,
+	// 		runningOrderId: ro._id
+	// 	}, {
+	// 		$set: {
+	// 			displayDurationGroup: sl.displayDurationGroup || ''
+	// 		}
+	// 	}))
+	// 	waitForPromiseAll(ps)
+	// }
 
-	// if anything was changed
-	const anythingChanged = (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
-	if (anythingChanged) {
-		_.each(slIds, (slId) => {
-			updateExpectedMediaItems(ro._id, slId)
-		})
-	}
-	return anythingChanged
+	// // if anything was changed
+	// const anythingChanged = (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
+	// if (anythingChanged) {
+	// 	_.each(slIds, (slId) => {
+	// 		updateExpectedMediaItems(ro._id, slId)
+	// 	})
+	// }
+	// return anythingChanged
+	return false
 }
 export function reloadRunningOrderData (runningOrder: RunningOrder) {
 	// TODO: determine that the runningOrder is Mos-driven, then call the function

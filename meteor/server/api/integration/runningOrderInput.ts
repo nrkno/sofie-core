@@ -4,8 +4,6 @@ import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import {
 	PeripheralDevices,
 	PeripheralDevice

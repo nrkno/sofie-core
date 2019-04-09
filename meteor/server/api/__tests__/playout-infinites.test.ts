@@ -430,7 +430,7 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 			runningOrderId : ro._id,
 			segmentLineId : currentSlId,
 			status : -1,
-			mosId : '',
+			externalId : '',
 			name : 'split klokke',
 			trigger : {
 				type : 0,

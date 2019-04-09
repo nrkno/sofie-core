@@ -18,7 +18,7 @@ export interface SegmentLineItemGeneric extends IBlueprintSegmentLineItemGeneric
 	// ------------------------------------------------------------------
 	_id: string
 	/** ID of the source object in MOS */
-	mosId: string
+	externalId: string
 	/** The running order this item belongs to */
 	runningOrderId: string
 

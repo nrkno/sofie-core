@@ -20,14 +20,10 @@ import {
 export interface DBSegmentLine extends IBlueprintSegmentLineDB {
 	/** Position inside the segment */
 	_rank: number
-	/** The segment ("Title") this line belongs to */
 
 	/** The running order this line belongs to */
 	runningOrderId: string
-	/** When something bad has happened, we can mark the SL as invalid, which will prevent the user from TAKE:ing it */
 
-	/** The story Slug (like a title, but slimier) */
-	slug: string
 	status?: string
 
 	/** Whether the sl has started playback (the most recent time it was played).
@@ -91,7 +87,6 @@ export class SegmentLine implements DBSegmentLine {
 	public segmentId: string
 	public runningOrderId: string
 	public invalid: boolean
-	public slug: string
 	public autoNext?: boolean
 	public autoNextOverlap?: number
 	public prerollDuration?: number
