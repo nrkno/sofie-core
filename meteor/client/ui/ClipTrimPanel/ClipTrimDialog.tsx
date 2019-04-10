@@ -52,7 +52,7 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 	render () {
 		const { t } = this.props
 		return (
-			<ModalDialog title={t('Edit "{{name}}"', { name: this.props.selectedSegmentLineItem.name })} show={true} acceptText={t('OK')} secondaryText={t('Cancel')}
+			<ModalDialog title={t('Trim "{{name}}"', { name: this.props.selectedSegmentLineItem.name })} show={true} acceptText={t('OK')} secondaryText={t('Cancel')}
 			onAccept={this.handleAccept} onDiscard={(e) => this.props.onClose && this.props.onClose()} onSecondary={(e) => this.props.onClose && this.props.onClose()}>
 				<ClipTrimPanel
 					studioInstallationId={this.props.studioInstallation._id}
