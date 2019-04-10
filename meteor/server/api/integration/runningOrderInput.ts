@@ -47,6 +47,7 @@ import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '.
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
 import { IngestDataCacheObj, IngestCacheType, IngestDataCache } from '../../../lib/collections/IngestDataCache'
+import { updateSourceLayerInfinitesAfterLine } from '../playout'
 const PackageInfo = require('../../../package.json')
 
 /** These are temorary mutation functions as spreadsheet gateway does not use the ingest types yet */
@@ -482,6 +483,31 @@ function updateOrCreateSegmentFromPayload (studioInstallation: StudioInstallatio
 
 }
 
+function loadCachedRunningOrderData (runningOrderId: string): IngestRunningOrder {
+	const cacheEntries = IngestDataCache.find({ runningOrderId: runningOrderId }).fetch()
+
+	const baseEntry = cacheEntries.find(e => e.type === IngestCacheType.RUNNINGORDER)
+	if (!baseEntry) throw new Meteor.Error(500, 'Failed to find cached runningOrder')
+
+	const ingestRunningOrder = baseEntry.data as IngestRunningOrder
+
+	const segmentMap = _.groupBy(cacheEntries, e => e.segmentId)
+	_.each(segmentMap, objs => {
+		const segmentEntry = objs.find(e => e.type === IngestCacheType.SEGMENT)
+		if (segmentEntry) {
+			const ingestSegment = segmentEntry.data as IngestSegment
+			_.each(objs, e => {
+				if (e.type === IngestCacheType.PART) {
+					ingestSegment.parts.push(e.data)
+				}
+			})
+			ingestRunningOrder.segments.push(ingestSegment)
+		}
+	})
+
+	return ingestRunningOrder
+}
+
 function loadCachedSegmentData (runningOrderId: string, segmentId: string): IngestSegment {
 	const cacheEntries = IngestDataCache.find({
 		runningOrderId: runningOrderId,
@@ -688,7 +714,28 @@ export namespace RunningOrderInput {
 	}
 }
 
-let methods: Methods = {}
+let methods: Methods = {
+	'debug_roRunBlueprints' (roId: string, deleteFirst?: boolean) {
+		check(roId, String)
+
+		const ro = RunningOrders.findOne(roId)
+		if (!ro) throw new Meteor.Error(404, 'Running order not found')
+
+		const ingestRunningOrder = loadCachedRunningOrderData(roId)
+
+		if (deleteFirst) ro.remove()
+
+		const peripheralDevice = PeripheralDevices.findOne(ro.mosDeviceId)
+		if (!peripheralDevice) throw new Meteor.Error(404, 'MOS Device not found to be used for mock running order!')
+
+		handleRunningOrderData(peripheralDevice, ingestRunningOrder, ro.dataSource)
+
+		logger.info('debug_roRunBlueprints: infinites')
+		updateSourceLayerInfinitesAfterLine(ro)
+
+		logger.info('debug_roRunBlueprints: done')
+	}
+}
 
 methods[PeripheralDeviceAPI.methods.dataRunningOrderDelete] = (deviceId: string, deviceToken: string, runningOrderId: string) => {
 	return RunningOrderInput.dataRunningOrderDelete(this, deviceId, deviceToken, runningOrderId)
