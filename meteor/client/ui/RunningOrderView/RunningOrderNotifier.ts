@@ -10,7 +10,7 @@ import { checkSLIContentStatus } from '../../../lib/mediaObjects'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { SegmentLines, SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
+import { SegmentLines } from '../../../lib/collections/SegmentLines'
 import { getCurrentTime } from '../../../lib/lib'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { ReactiveVar } from 'meteor/reactive-var'
@@ -22,6 +22,7 @@ import { UserActionAPI } from '../../../lib/api/userActions'
 import { doUserAction } from '../../lib/userAction'
 // import { translate, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator } from '../i18n'
+import { SegmentLineNote, NoteType } from '../../../lib/api/notes'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRunningOrderClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -225,7 +226,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 				rank: i._rank
 			}))))).forEach((item: SegmentLineNote & {rank: number}) => {
 				const id = item.message + '-' + (item.origin.segmentLineItemId || item.origin.segmentLineId || item.origin.segmentId || item.origin.roId) + '-' + item.origin.name + '-' + item.type
-				let newNotification = new Notification(id, item.type === SegmentLineNoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, item.origin.segmentId || 'unknown', getCurrentTime(), true, [
+				let newNotification = new Notification(id, item.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, item.origin.segmentId || 'unknown', getCurrentTime(), true, [
 					{
 						label: t('Show issue'),
 						type: 'default'

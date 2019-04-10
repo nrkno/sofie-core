@@ -17,9 +17,7 @@ import {
 import {
 	SegmentLine,
 	SegmentLines,
-	DBSegmentLine,
-	SegmentLineNoteType,
-	SegmentLineNote
+	DBSegmentLine
 } from '../../../lib/collections/SegmentLines'
 import {
 	SegmentLineItem,
@@ -77,6 +75,7 @@ import { IBlueprintSegmentLine, SegmentLineHoldMode } from 'tv-automation-sofie-
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { updateExpectedMediaItems } from '../expectedMediaItems'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
+import { SegmentLineNote, NoteType } from '../../../lib/api/notes'
 const PackageInfo = require('../../../package.json')
 
 export function roId (roId: MOS.MosString128, original?: boolean): string {
@@ -255,7 +254,7 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 		logger.error(e.stack ? e.stack : e.toString())
 		// throw e
 		notes = [{
-			type: SegmentLineNoteType.ERROR,
+			type: NoteType.ERROR,
 			origin: {
 				name: '',				roId: context.runningOrder._id,
 				segmentId: (context.segmentLine as DBSegmentLine).segmentId,

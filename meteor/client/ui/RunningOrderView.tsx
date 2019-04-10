@@ -16,7 +16,7 @@ import { PlayoutAPI } from '../../lib/api/playout'
 import { RunningOrder, RunningOrders, RunningOrderHoldState } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { SegmentLine, SegmentLines, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
+import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
@@ -51,6 +51,7 @@ import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
+import { NoteType } from '../../lib/api/notes';
 
 type WrappedInspectorDrawer = InspectorDrawerBase & { getWrappedInstance (): InspectorDrawerBase }
 
@@ -1356,15 +1357,14 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			}
 		}
 	}
-
-	onHeaderNoteClick = (segmentId: string, level: SegmentLineNoteType) => {
+	onHeaderNoteClick = (segmentId: string, level: NoteType) => {
 		NotificationCenter.snoozeAll()
 		const isOpen = this.state.isNotificationsCenterOpen
 		this.setState({
 			isNotificationsCenterOpen: true
 		})
 		setTimeout(function () {
-			NotificationCenter.highlightSource(segmentId, level === SegmentLineNoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING)
+			NotificationCenter.highlightSource(segmentId, level === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING)
 		}, isOpen ? 1 : 1000)
 	}
 

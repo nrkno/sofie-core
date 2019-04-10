@@ -10,8 +10,9 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Time, getCurrentTime } from '../../../lib/lib'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { SegmentLineNote, SegmentLineNoteType, SegmentLines } from '../../../lib/collections/SegmentLines'
+import { SegmentLines } from '../../../lib/collections/SegmentLines'
 import { scrollToSegment } from '../../lib/viewPort'
+import { SegmentLineNote, NoteType } from '../../../lib/api/notes'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
@@ -284,8 +285,8 @@ export const RunningOrderSystemStatus = translateWithTracker((props: IProps) => 
 													<th className='notes-tooltip__header'>
 														<img className='icon' src='/icons/warning_icon.svg' />
 														{(
-															note.type === SegmentLineNoteType.WARNING ? 'Warning: ' :
-															note.type === SegmentLineNoteType.ERROR ? 'Error: ' :
+															note.type === NoteType.WARNING ? 'Warning: ' :
+															note.type === NoteType.ERROR ? 'Error: ' :
 															''
 														)}
 													</th>
