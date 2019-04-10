@@ -33,8 +33,8 @@
     .prompter-segmentLine {
 
         text-align: center;
-
-        font-size: 33%;
+        letter-spacing: 0.1em;
+        font-size: 50%;
         
     }
     .prompter-break {
@@ -71,14 +71,21 @@
         font-weight: bold;
 
         &.current {
-            border-bottom: 0.2em solid #f55;
+            //border-bottom: 0.2em solid #f55;
+            background: $general-live-color;
+            color: #fff;
         }
         &.next {
-            border-bottom: 0.2em solid #5f5;
+            //border-bottom: 0.2em solid #5f5;
+            background: $general-next-color;
         }
     }
 
     .prompter-line {
+        font-family: Source Serif Pro;
+        font-size: 0.96em;
+        letter-spacing: 0.0em;
+        line-height: 1.2em;
         margin-bottom: 0.5em;
 
         &.empty {
