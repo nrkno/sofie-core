@@ -30,13 +30,14 @@ import {
 	getRank,
 	fetchAfter,
 	literal,
-	getHash
+	getHash,
+	asyncCollectionRemove
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import {
 	Methods, setMeteorMethods, wrapMethods
 } from '../../methods'
-import { IngestRunningOrder, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRunningOrder, IngestSegment, IngestPart, BlueprintResultSegment, BlueprintResultPart } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { selectShowStyleVariant, afterRemoveSegment, afterRemoveSegmentLine } from '../runningOrder'
@@ -46,15 +47,18 @@ import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
 import { CachePrefix } from '../../../lib/collections/RunningOrderDataCache'
 import { RunningOrderBaselineItem, RunningOrderBaselineItems } from '../../../lib/collections/RunningOrderBaselineItems'
 import { Random } from 'meteor/random'
-import { postProcessSegmentLineBaselineItems, postProcessSegmentLineAdLibItems } from '../blueprints/postProcess'
+import { postProcessSegmentLineBaselineItems, postProcessSegmentLineAdLibItems, postProcessSegmentLineItems } from '../blueprints/postProcess'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../../lib/collections/RunningOrderBaselineAdLibItems'
 import { DBSegment, Segments, Segment } from '../../../lib/collections/Segments'
+import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
 const PackageInfo = require('../../../package.json')
 
+/** These are temorary mutation functions as spreadsheet gateway does not use the ingest types yet */
 function mutatePart (part: any): IngestPart {
 	return {
 		externalId: part.id,
 		name: part.name,
+		rank: part.rank,
 		payload: part
 	}
 }
@@ -63,6 +67,7 @@ function mutateSegment (segment: any): IngestSegment {
 	return {
 		externalId: segment.id,
 		name: segment.name,
+		rank: segment.rank,
 		payload: segment,
 		parts: _.values(segment.stories || {}).map(mutatePart)
 	}
@@ -202,13 +207,44 @@ function handleRunningOrderData (peripheralDevice: PeripheralDevice, ingestRunni
 		runningOrderId: dbRo._id
 	}, adlibItems)
 
+	const existingRoParts = SegmentLines.find({
+		runningOrderId: runningOrderId,
+		dynamicallyInserted: false
+	}).fetch()
+
 	const existingSegments = Segments.find({ runningOrder: dbRo._id }).fetch()
 	const segments: DBSegment[] = []
-	let rankSegment = 0
+	const segmentLines: DBSegmentLine[] = []
+	const segmentPieces: SegmentLineItem[] = []
+	const adlibPieces: SegmentLineAdLibItem[] = []
+
+	const blueprint = getBlueprintOfRunningOrder(dbRo)
+
 	_.each(ingestRunningOrder.segments, (ingestSegment: IngestSegment) => {
-		const existingSegment = _.find(existingSegments, s => s._id === segment._id)
-		const segment = convertToSegment(dbRo._id, ingestSegment, rankSegment++, existingSegment)
-		segments.push(segment)
+		const segmentId = getSegmentId(runningOrderId, ingestSegment.externalId)
+		const existingSegment = _.find(existingSegments, s => s._id === segmentId)
+
+		const existingRuntimeArguments = {} // TODO
+		const context = new SegmentContext(dbRo, studioInstallation, existingRuntimeArguments)
+		const res = blueprint.getSegment(context, ingestSegment)
+		if (res === null) throw new Meteor.Error(404, 'Not expected') // TODO - to be removed from blueprints
+
+		const newSegment = literal<DBSegment>({
+			// TODO - priorities of these are wrong?
+			..._.omit((existingSegment || {}), ['name']),
+			...res.segment,
+			_id: segmentId,
+			runningOrderId: dbRo._id,
+			externalId: ingestSegment.externalId,
+			_rank: ingestSegment.rank,
+		})
+		segments.push(newSegment)
+
+		const existingParts = existingRoParts.filter(p => p.segmentId === segmentId)
+		const res2 = processSegmentLines(context, ingestSegment, newSegment, existingParts, res.parts)
+		segmentLines.push(...res2.segmentLines)
+		segmentPieces.push(...res2.segmentPieces)
+		adlibPieces.push(...res2.adlibPieces)
 	})
 
 	// Update Segments:
@@ -226,7 +262,112 @@ function handleRunningOrderData (peripheralDevice: PeripheralDevice, ingestRunni
 			afterRemoveSegment(segment._id, segment.runningOrderId)
 		}
 	})
+	saveIntoDb<SegmentLine, DBSegmentLine>(SegmentLines, {
+		runningOrderId: runningOrderId,
+	}, segmentLines, {
+		afterRemove (segmentLine) {
+			afterRemoveSegmentLine(segmentLine)
+		}
+	})
 
+	saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
+		runningOrderId: runningOrderId,
+		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
+	}, segmentPieces, {
+		afterInsert (segmentLineItem) {
+			logger.debug('inserted segmentLineItem ' + segmentLineItem._id)
+			logger.debug(segmentLineItem)
+		},
+		afterUpdate (segmentLineItem) {
+			logger.debug('updated segmentLineItem ' + segmentLineItem._id)
+		},
+		afterRemove (segmentLineItem) {
+			logger.debug('deleted segmentLineItem ' + segmentLineItem._id)
+		}
+	})
+
+	saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
+		runningOrderId: runningOrderId,
+	}, adlibPieces, {
+		afterInsert (segmentLineAdLibItem) {
+			logger.debug('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
+			logger.debug(segmentLineAdLibItem)
+		},
+		afterUpdate (segmentLineAdLibItem) {
+			logger.debug('updated segmentLineItem ' + segmentLineAdLibItem._id)
+		},
+		afterRemove (segmentLineAdLibItem) {
+			logger.debug('deleted segmentLineItem ' + segmentLineAdLibItem._id)
+		}
+	})
+}
+
+function processSegmentLines (context: RunningOrderContext, ingestSegment: IngestSegment, segment: DBSegment, existingParts: DBSegmentLine[], resParts: BlueprintResultPart[]) {
+	const runningOrderId = context.runningOrderId
+
+	// Ensure all parts have a valid externalId set on them
+	const expectedPartIds = ingestSegment.parts.map(p => p.externalId)
+	const unknownParts = resParts.filter(p => expectedPartIds.indexOf(p.part.externalId) === -1)
+	const knownParts = resParts.filter(p => expectedPartIds.indexOf(p.part.externalId) !== -1)
+
+	if (unknownParts.length > 0) {
+		const unknownIds = unknownParts.map(p => p.part.externalId).join(', ')
+		logger.warn(`Dropping some parts with unknown externalId: ${unknownIds}`)
+		// TODO - log for ui?
+	}
+
+	// const ranks = res.parts.map(p => {
+	// 	const sourcePart = ingestSegment.parts.find(p2 => p2.externalId === p.part.externalId)
+	// 	if (sourcePart) {
+	// 		return sourcePart.rank as number
+	// 	} else {
+	// 		return undefined
+	// 	}
+	// })
+	// const calculateRank = (index: number) => {
+	// 	// TODO - this should handle things better?
+	// 	const rank = ranks[index]
+	// 	return rank || 0
+	// 	// return 0
+	// }
+
+	const segmentLines: DBSegmentLine[] = []
+	const segmentPieces: SegmentLineItem[] = []
+	const adlibPieces: SegmentLineAdLibItem[] = []
+
+	// SegmentLines
+	for (let i = 0; i < knownParts.length; i++) {
+		const blueprintPart = knownParts[i]
+
+		const partId = getPartId(runningOrderId, blueprintPart.part.externalId)
+		const sourcePart = ingestSegment.parts.find(p => p.externalId === blueprintPart.part.externalId) as IngestPart
+		// TODO - this loop needs to handle virtual parts properly
+
+		const existingPart = _.find(existingParts, p => p._id === partId)
+		const part = literal<DBSegmentLine>({
+			// TODO - priorities of these are wrong?
+			...(existingPart || {}),
+			...blueprintPart.part,
+			_id: partId,
+			runningOrderId: runningOrderId,
+			segmentId: segment._id,
+			_rank: sourcePart.rank
+		})
+		segmentLines.push(part)
+
+		// Update pieces
+		const pieces = postProcessSegmentLineItems(context, blueprintPart.pieces, '', part._id) // TODO - blueprint id?
+		segmentPieces.push(...pieces)
+
+		const adlibs = postProcessSegmentLineAdLibItems(context, blueprintPart.adLibPieces, '', part._id) // TODO - blueprint id?
+		adlibPieces.push(...adlibs)
+	}
+
+	return {
+		segmentLines,
+		segmentPieces,
+		adlibPieces
+	}
 }
 
 function getSegmentId (runningOrderId: string, segmentExternalId: string) {
@@ -234,22 +375,6 @@ function getSegmentId (runningOrderId: string, segmentExternalId: string) {
 }
 function getPartId (runningOrderId: string, partExternalId: string) {
 	return getHash(`${runningOrderId}_part_${partExternalId}`)
-}
-
-function convertToSegment (runningOrderId: string, ingestSegment: IngestSegment, rankSegment: number, existingSegment?: Segment): DBSegment {
-	const newSegment = literal<DBSegment>({
-		_id: getSegmentId(runningOrderId, ingestSegment.externalId),
-		runningOrderId: runningOrderId,
-		_rank: rankSegment,
-		externalId: ingestSegment.externalId,
-		name: ingestSegment.name,
-	})
-
-	if (existingSegment) {
-		return _.extend({}, existingSegment, _.omit(newSegment, ['name']))
-	} else {
-		return newSegment
-	}
 }
 
 function handleSegment (peripheralDevice: PeripheralDevice, externalRunningOrderId: string, ingestSegment: IngestSegment) {
@@ -264,9 +389,6 @@ function handleSegment (peripheralDevice: PeripheralDevice, externalRunningOrder
 		runningOrderId: runningOrder._id,
 	})
 
-	// TODO - this should be removed once this is reviewed for doing create
-	if (!existingSegment) throw new Meteor.Error(404, 'Segment not found')
-
 	const existingRuntimeArguments = {} // TODO
 	const blueprint = getBlueprintOfRunningOrder(runningOrder)
 	const context = new SegmentContext(runningOrder, studioInstallation, existingRuntimeArguments)
@@ -276,61 +398,87 @@ function handleSegment (peripheralDevice: PeripheralDevice, externalRunningOrder
 
 	const newSegment = literal<DBSegment>({
 		// TODO - priorities of these are wrong
-		..._.omit((existingSegment || {}), ['name']),
+		...(existingSegment || {}),
 		...res.segment,
 		_id: segmentId,
 		runningOrderId: runningOrder._id,
 		externalId: ingestSegment.externalId,
+		_rank: ingestSegment.rank,
 	})
-	Segments.update({
-		_id: segmentId,
-		runningOrderId: runningOrder._id
-	}, newSegment)
 
 	const existingParts = SegmentLines.find({
 		runningOrderId: runningOrder._id,
 		segmentId: newSegment._id
 	}).fetch()
+	const { segmentLines, segmentPieces, adlibPieces } = processSegmentLines(context, ingestSegment, newSegment, existingParts, res.parts)
 
-	// SegmentLines
-	const segmentLines: DBSegmentLine[] = []
-	for (const blueprintPart of res.parts) {
-		const partId = getPartId(runningOrder._id, blueprintPart.part.externalId) // TODO - what about virtual parts?
-		const existingPart = _.find(existingParts, p => p._id === partId)
-		const part = literal<DBSegmentLine>({
-			// TODO - priorities of these are wrong
-			...(existingPart || {}),
-			...blueprintPart.part,
-			_id: partId,
-			runningOrderId: runningOrder._id,
-			segmentId: segmentId,
-			_rank: 0 // TODO
-		})
-		segmentLines.push(part)
-
-		// TODO - adlibs & sli/pieces
-	}
+	Segments.update({
+		_id: segmentId,
+		runningOrderId: runningOrder._id
+	}, newSegment)
 
 	saveIntoDb<SegmentLine, DBSegmentLine>(SegmentLines, {
-		runningOrderId: runningOrder._id
+		runningOrderId: runningOrder._id,
+		segmentId: segmentId,
 	}, segmentLines, {
-		beforeDiff (obj, oldObj) {
-			let o = _.extend({}, obj, {
-				segmentId: oldObj.segmentId
-			})
-			return o
-		},
 		afterRemove (segmentLine) {
 			afterRemoveSegmentLine(segmentLine)
+		}
+	})
+
+	const changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
+		runningOrderId: runningOrder._id,
+		segmentLineId: { $in: segmentLines.map(p => p._id) },
+		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
+	}, segmentPieces, {
+		afterInsert (segmentLineItem) {
+			logger.debug('inserted segmentLineItem ' + segmentLineItem._id)
+			logger.debug(segmentLineItem)
+		},
+		afterUpdate (segmentLineItem) {
+			logger.debug('updated segmentLineItem ' + segmentLineItem._id)
+		},
+		afterRemove (segmentLineItem) {
+			logger.debug('deleted segmentLineItem ' + segmentLineItem._id)
+		}
+	})
+
+	saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
+		runningOrderId: runningOrder._id,
+		segmentLineId: { $in: segmentLines.map(p => p._id) },
+	}, adlibPieces, {
+		afterInsert (segmentLineAdLibItem) {
+			logger.debug('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
+			logger.debug(segmentLineAdLibItem)
+		},
+		afterUpdate (segmentLineAdLibItem) {
+			logger.debug('updated segmentLineItem ' + segmentLineAdLibItem._id)
+		},
+		afterRemove (segmentLineAdLibItem) {
+			logger.debug('deleted segmentLineItem ' + segmentLineAdLibItem._id)
 		}
 	})
 }
 
 export namespace RunningOrderInput {
+	// TODO - this all needs guards to protect the active SL
 
 	export function dataRunningOrderDelete (self: any, deviceId: string, deviceToken: string, runningOrderId: string) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
 		console.log('dataRunningOrderDelete', runningOrderId)
+
+		try {
+			const studioInstallation = getStudioInstallation(peripheralDevice)
+
+			const runningOrderInternalId = roId(studioInstallation._id, runningOrderId)
+			const existingDbRo = RunningOrders.findOne(runningOrderInternalId)
+			if (canBeUpdated(existingDbRo) && existingDbRo) {
+				existingDbRo.remove()
+			}
+
+		} catch (e) {
+			logger.error('dataRunningOrderDelete failed for ' + runningOrderId + ': ' + e)
+		}
 	}
 	export function dataRunningOrderCreate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, runningOrderData: any) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
@@ -369,13 +517,34 @@ export namespace RunningOrderInput {
 			logger.debug(runningOrderData)
 		}
 	}
+
 	export function dataSegmentDelete (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
 		console.log('dataSegmentDelete', runningOrderId, segmentId)
+
+		try {
+			const studioInstallation = getStudioInstallation(peripheralDevice)
+
+			const runningOrder = RunningOrders.findOne(roId(studioInstallation._id, runningOrderId))
+			if (!runningOrder) throw new Meteor.Error(404, 'Running order not found')
+
+			const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
+
+			Promise.all([
+				asyncCollectionRemove(SegmentLines, { segmentId: segmentInternalId }),
+				// TODO - cleanup other SL contents
+				asyncCollectionRemove(Segments, segmentInternalId)
+			])
+
+		} catch (e) {
+			logger.error('dataSegmentDelete failed for ' + runningOrderId + ': ' + e)
+		}
 	}
 	export function dataSegmentCreate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, newSection: any) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
 		console.log('dataSegmentCreate', runningOrderId, segmentId, newSection)
+
+		// TODO - where should this be inserted? It needs more context.
 	}
 	export function dataSegmentUpdate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, newSection: any) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
@@ -396,18 +565,17 @@ export namespace RunningOrderInput {
 		}
 	}
 
-	// TODO - the below should be 'segmentLine'/'part'
-	export function dataSegmentLineItemDelete (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string) {
+	export function dataSegmentLineDelete (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		console.log('dataSegmentLineItemDelete', runningOrderId, segmentId, segmentLineId)
+		console.log('dataSegmentLineDelete', runningOrderId, segmentId, segmentLineId)
 	}
-	export function dataSegmentLineItemCreate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string, newStory: any) {
+	export function dataSegmentLineCreate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string, newStory: any) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		console.log('dataSegmentLineItemCreate', runningOrderId, segmentId, segmentLineId, newStory)
+		console.log('dataSegmentLineCreate', runningOrderId, segmentId, segmentLineId, newStory)
 	}
-	export function dataSegmentLineItemUpdate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string, newStory: any) {
+	export function dataSegmentLineUpdate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string, newStory: any) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		console.log('dataSegmentLineItemUpdate', runningOrderId, segmentId, segmentLineId, newStory)
+		console.log('dataSegmentLineUpdate', runningOrderId, segmentId, segmentLineId, newStory)
 	}
 }
 
@@ -431,14 +599,15 @@ methods[PeripheralDeviceAPI.methods.dataSegmentCreate] = (deviceId: string, devi
 methods[PeripheralDeviceAPI.methods.dataSegmentUpdate] = (deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, newSection: any) => {
 	return RunningOrderInput.dataSegmentUpdate(this, deviceId, deviceToken, runningOrderId, segmentId, newSection)
 }
+// TODO - these need renaming
 methods[PeripheralDeviceAPI.methods.dataSegmentLineItemDelete] = (deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string) => {
-	return RunningOrderInput.dataSegmentLineItemDelete(this, deviceId, deviceToken, runningOrderId, segmentId, segmentLineId)
+	return RunningOrderInput.dataSegmentLineDelete(this, deviceId, deviceToken, runningOrderId, segmentId, segmentLineId)
 }
 methods[PeripheralDeviceAPI.methods.dataSegmentLineItemCreate] = (deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string, newStory: any) => {
-	return RunningOrderInput.dataSegmentLineItemCreate(this, deviceId, deviceToken, runningOrderId, segmentId, segmentLineId, newStory)
+	return RunningOrderInput.dataSegmentLineCreate(this, deviceId, deviceToken, runningOrderId, segmentId, segmentLineId, newStory)
 }
 methods[PeripheralDeviceAPI.methods.dataSegmentLineItemUpdate] = (deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string, newStory: any) => {
-	return RunningOrderInput.dataSegmentLineItemUpdate(this, deviceId, deviceToken, runningOrderId, segmentId, segmentLineId, newStory)
+	return RunningOrderInput.dataSegmentLineUpdate(this, deviceId, deviceToken, runningOrderId, segmentId, segmentLineId, newStory)
 }
 
 setMeteorMethods(wrapMethods(methods))

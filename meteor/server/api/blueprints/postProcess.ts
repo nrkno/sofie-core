@@ -19,19 +19,19 @@ import {
 import { RunningOrderAPI } from '../../../lib/api/runningOrder'
 import { Timeline } from 'timeline-state-resolver-types'
 
-export function postProcessSegmentLineItems (innerContext: IRunningOrderContext, segmentLineItems: IBlueprintSegmentLineItem[], blueprintId: string, firstSegmentLineId: string): SegmentLineItem[] {
+export function postProcessSegmentLineItems (innerContext: IRunningOrderContext, segmentLineItems: IBlueprintSegmentLineItem[], blueprintId: string, segmentLineId: string): SegmentLineItem[] {
 	let i = 0
 	let segmentLinesUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(segmentLineItems), (itemOrig: IBlueprintSegmentLineItem) => {
 		let item: SegmentLineItem = {
 			runningOrderId: innerContext.runningOrder._id,
-			segmentLineId: itemOrig.segmentLineId || firstSegmentLineId,
+			segmentLineId: segmentLineId,
 			status: RunningOrderAPI.LineItemStatusCode.UNKNOWN,
 			...itemOrig
 		}
 
-		if (!item._id) item._id = innerContext.getHashId(blueprintId + '_sli_' + (i++))
-		if (!item.externalId && !item.isTransition) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": externalId not set for segmentLineItem in ' + firstSegmentLineId + '! ("' + innerContext.unhashId(item._id) + '")')
+		if (!item._id) item._id = innerContext.getHashId(`${blueprintId}_${segmentLineId}_sli_${i++}`)
+		if (!item.externalId && !item.isTransition) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": externalId not set for segmentLineItem in ' + segmentLineId + '! ("' + innerContext.unhashId(item._id) + '")')
 
 		if (segmentLinesUniqueIds[item._id]) throw new Meteor.Error(400, 'Error in blueprint "' + blueprintId + '": ids of segmentLineItems must be unique! ("' + innerContext.unhashId(item._id) + '")')
 		segmentLinesUniqueIds[item._id] = true
@@ -59,7 +59,7 @@ export function postProcessSegmentLineAdLibItems (innerContext: IRunningOrderCon
 	let segmentLinesUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(segmentLineAdLibItems), (itemOrig: IBlueprintSegmentLineAdLibItem) => {
 		let item: SegmentLineAdLibItem = {
-			_id: innerContext.getHashId(blueprintId + '_adlib_sli_' + (i++)),
+			_id: innerContext.getHashId(`${blueprintId}_${segmentLineId}_adlib_sli_${i++}`),
 			runningOrderId: innerContext.runningOrder._id,
 			segmentLineId: segmentLineId,
 			status: RunningOrderAPI.LineItemStatusCode.UNKNOWN,

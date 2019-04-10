@@ -111,6 +111,7 @@ export function removeSegmentLine (roId: string, segmentLineOrId: DBSegmentLine 
 	}
 }
 export function afterRemoveSegmentLine (removedSegmentLine: DBSegmentLine, replacedBySegmentLine?: DBSegmentLine) {
+	// TODO - what about adlibs?
 	SegmentLineItems.remove({
 		segmentLineId: removedSegmentLine._id
 	})

@@ -759,8 +759,7 @@ export const testRO1: MockRO = {
 			'virtual': true,
 			'content': {
 				'timelineObjects': []
-			},
-			'fromPostProcess': true
+			}
 		},
 		{
 			'_id': 'nDQtVZ1Bo0J3qEYnBqjr7KuyhDQ__bed_fade',
@@ -778,8 +777,7 @@ export const testRO1: MockRO = {
 			'expectedDuration': 160,
 			'content': {
 				'timelineObjects': []
-			},
-			'fromPostProcess': true
+			}
 		},
 		{
 			'_id': '6a0SIN5JtjSSL_XofAJoRCoaMPA_',

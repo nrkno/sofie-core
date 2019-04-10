@@ -19,7 +19,6 @@ import {
 	IStudioContext,
 	BlueprintMappings,
 	BlueprintRuntimeArguments,
-	IBlueprintSegment,
 	IBlueprintSegmentLineItem,
 	IBlueprintSegmentDB,
 	IngestRunningOrder,
@@ -30,7 +29,7 @@ import { StudioInstallation, StudioInstallations } from '../../../lib/collection
 import { ConfigRef, compileStudioConfig } from './config'
 import { RunningOrder } from '../../../lib/collections/RunningOrders'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { getShowStyleCompound, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { getShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { AsRunLogEvent, AsRunLog } from '../../../lib/collections/AsRunLog'
 import { CachePrefix } from '../../../lib/collections/RunningOrderDataCache'
 import { SegmentLineItems } from '../../../lib/collections/SegmentLineItems'

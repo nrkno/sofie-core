@@ -336,7 +336,7 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 		saveIntoDb<SegmentLineAdLibItem, SegmentLineAdLibItem>(SegmentLineAdLibItems, {
 			runningOrderId: ro._id,
 			segmentLineId: segmentLine._id,
-			fromPostProcess: { $ne: true }, // do not affect postProcess items
+			// fromPostProcess: { $ne: true }, // do not affect postProcess items
 		}, resultAdlibSli || [], {
 			afterInsert (segmentLineAdLibItem) {
 				logger.debug('inserted segmentLineAdLibItem ' + segmentLineAdLibItem._id)
