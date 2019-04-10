@@ -150,16 +150,15 @@ export class CommonContext implements ICommonContext {
 	constructor (idPrefix: string) {
 		this._idPrefix = idPrefix
 	}
-	getHashId (str?: any) {
+	getHashId (origin: string, isNotUnique?: boolean) {
 
-		if (!str) str = 'hash' + (this.hashI++)
+		if (isNotUnique) origin = origin + '_' + (this.hashI++)
 
-		let id
-		id = getHash(
+		const id: string = getHash(
 			this._idPrefix + '_' +
-			str.toString()
+			origin.toString()
 		)
-		this.hashed[id] = str
+		this.hashed[id] = origin
 		return id
 		// return Random.id()
 	}
