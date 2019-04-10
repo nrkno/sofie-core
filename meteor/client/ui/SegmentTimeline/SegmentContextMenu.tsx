@@ -37,9 +37,9 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 							{startsAt && <MenuItem onClick={(e) => this.props.onSetNext(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
 								<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span> ({RundownUtils.formatTimeToShortTime(Math.floor(startsAt / 1000) * 1000)})
 							</MenuItem>}
-							{segLine ? <React.Fragment>
+							{(startsAt && segLine) ? <React.Fragment>
 								<MenuItem onClick={(e) => this.onSetAsNextFromHere(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
-									<span dangerouslySetInnerHTML={{ __html: t('Set <strong>Next</strong> Here') }}></span> ({RundownUtils.formatTimeToShortTime(Math.floor(timecode / 1000) * 1000)})
+									<span dangerouslySetInnerHTML={{ __html: t('Set <strong>Next</strong> Here') }}></span> ({RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
 								</MenuItem>
 								<MenuItem onClick={(e) => this.onPlayFromHere(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
 									<span dangerouslySetInnerHTML={{ __html: t('Play from Here') }}></span> ({RundownUtils.formatTimeToShortTime(Math.floor(timecode / 1000) * 1000)})
