@@ -38,8 +38,8 @@ export interface DBRunningOrder extends IBlueprintRunningOrderDB {
 
 	/** The ShowStyleBase this RunningOrder uses (its the parent of the showStyleVariant) */
 	showStyleBaseId: string
-	/** the mos device the rundown originates from */
-	mosDeviceId: string
+	/** The peripheral device the rundown originates from */
+	peripheralDeviceId: string
 	created: Time
 	modified: Time
 
@@ -80,7 +80,7 @@ export class RunningOrder implements DBRunningOrder {
 	public studioInstallationId: string
 	public showStyleVariantId: string
 	public showStyleBaseId: string
-	public mosDeviceId: string
+	public peripheralDeviceId: string
 	public name: string
 	public created: Time
 	public modified: Time

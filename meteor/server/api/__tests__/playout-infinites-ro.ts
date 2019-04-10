@@ -18,7 +18,7 @@ export const testRO1: MockRO = {
 		studioInstallationId: '',
 		showStyleBaseId: '',
 		showStyleVariantId: '',
-		mosDeviceId: '',
+		peripheralDeviceId: '',
 		name: 'Infinite Mock 1',
 		created: 0,
 		modified: 0,

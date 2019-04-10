@@ -21,7 +21,7 @@ function createEmptyRoData () {
 		studioInstallationId: '',
 		showStyleBaseId: '',
 		showStyleVariantId: '',
-		mosDeviceId: '',
+		peripheralDeviceId: '',
 		name: 'Mock',
 		created: 0,
 		modified: 0,

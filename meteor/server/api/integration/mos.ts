@@ -379,11 +379,11 @@ export const updateStory: (ro: RunningOrder, segmentLine: SegmentLine, story: MO
 export function sendStoryStatus (ro: RunningOrder, takeSegmentLine: SegmentLine | null) {
 
 	if (ro.currentPlayingStoryStatus) {
-		setStoryStatus(ro.mosDeviceId, ro, ro.currentPlayingStoryStatus, MOS.IMOSObjectStatus.STOP)
+		setStoryStatus(ro.peripheralDeviceId, ro, ro.currentPlayingStoryStatus, MOS.IMOSObjectStatus.STOP)
 		.catch(e => logger.error(e))
 	}
 	if (takeSegmentLine) {
-		setStoryStatus(ro.mosDeviceId, ro, takeSegmentLine.externalId, MOS.IMOSObjectStatus.PLAY)
+		setStoryStatus(ro.peripheralDeviceId, ro, takeSegmentLine.externalId, MOS.IMOSObjectStatus.PLAY)
 		.catch(e => logger.error(e))
 
 		RunningOrders.update(this._id, {$set: {
@@ -416,11 +416,11 @@ export const reloadRunningOrder: (runningOrder: RunningOrder) => void = Meteor.w
 	function reloadRunningOrder (runningOrder: RunningOrder, cb: (err: Error | null) => void) {
 		logger.info('reloadRunningOrder ' + runningOrder._id)
 
-		if (!runningOrder.mosDeviceId) throw new Meteor.Error(400,'runningOrder.mosDeviceId missing!')
-		check(runningOrder.mosDeviceId, String)
+		if (!runningOrder.peripheralDeviceId) throw new Meteor.Error(400,'runningOrder.peripheralDeviceId missing!')
+		check(runningOrder.peripheralDeviceId, String)
 
-		let peripheralDevice = PeripheralDevices.findOne(runningOrder.mosDeviceId) as PeripheralDevice
-		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + runningOrder.mosDeviceId + '" not found' )
+		const peripheralDevice = PeripheralDevices.findOne(runningOrder.peripheralDeviceId)
+		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + runningOrder.peripheralDeviceId + '" not found' )
 
 		PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err: any, ro: MOS.IMOSRunningOrder) => {
 			// console.log('Response!')
@@ -447,8 +447,8 @@ export function replaceStoryItem (runningOrder: RunningOrder, segmentLineItem: S
 		story.EditorialStart = inPoint
 		story.EditorialDuration = outPoint
 
-		let peripheralDevice = PeripheralDevices.findOne(runningOrder.mosDeviceId) as PeripheralDevice
-		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + runningOrder.mosDeviceId + '" not found' )
+		const peripheralDevice = PeripheralDevices.findOne(runningOrder.peripheralDeviceId)
+		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + runningOrder.peripheralDeviceId + '" not found' )
 
 		PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err?: any) => {
 			if (err) reject(err)
@@ -504,7 +504,7 @@ function handleRunningOrderData (ro: MOS.IMOSRunningOrder, peripheralDevice: Per
 			_id: roId(ro.ID),
 			externalId: ro.ID.toString(),
 			studioInstallationId: studioInstallation._id,
-			mosDeviceId: peripheralDevice._id,
+			peripheralDeviceId: peripheralDevice._id,
 			showStyleVariantId: showStyle.variant._id,
 			showStyleBaseId: showStyle.base._id,
 			name: ro.Slug.toString(),

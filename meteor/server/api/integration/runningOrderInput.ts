@@ -147,7 +147,7 @@ function handleRunningOrderData (peripheralDevice: PeripheralDevice, ingestRunni
 			_id: runningOrderId,
 			externalId: ingestRunningOrder.externalId,
 			studioInstallationId: studioInstallation._id,
-			mosDeviceId: peripheralDevice._id,
+			peripheralDeviceId: peripheralDevice._id,
 			showStyleVariantId: showStyle.variant._id,
 			showStyleBaseId: showStyle.base._id,
 			dataSource: dataSource,
@@ -725,7 +725,7 @@ let methods: Methods = {
 
 		if (deleteFirst) ro.remove()
 
-		const peripheralDevice = PeripheralDevices.findOne(ro.mosDeviceId)
+		const peripheralDevice = PeripheralDevices.findOne(ro.peripheralDeviceId)
 		if (!peripheralDevice) throw new Meteor.Error(404, 'MOS Device not found to be used for mock running order!')
 
 		handleRunningOrderData(peripheralDevice, ingestRunningOrder, ro.dataSource)
