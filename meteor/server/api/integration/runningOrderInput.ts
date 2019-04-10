@@ -126,7 +126,6 @@ function handleRunningOrderData (peripheralDevice: PeripheralDevice, ingestRunni
 	const existingDbRo = RunningOrders.findOne(runningOrderId)
 	if (!canBeUpdated(existingDbRo)) return
 
-	// updateMosLastDataReceived(peripheralDevice._id)
 	logger.info((existingDbRo ? 'Updating' : 'Adding') + ' RO ' + runningOrderId)
 
 	const showStyle = selectShowStyleVariant(studioInstallation, ingestRunningOrder)
@@ -517,6 +516,14 @@ function getStudioInstallationAndRO (peripheralDevice: PeripheralDevice, externa
 	}
 }
 
+function updateDeviceLastDataReceived (deviceId: string) {
+	PeripheralDevices.update(deviceId, {
+		$set: {
+			lastDataReceived: getCurrentTime()
+		}
+	})
+}
+
 export namespace RunningOrderInput {
 	// TODO - this all needs guards to avoid race conditions with stuff running in playout.ts (which should be removed from there)
 
@@ -525,6 +532,8 @@ export namespace RunningOrderInput {
 		logger.info('dataRunningOrderDelete', runningOrderId)
 
 		check(runningOrderId, String)
+
+		updateDeviceLastDataReceived(deviceId)
 
 		const { runningOrder } = getStudioInstallationAndRO(peripheralDevice, runningOrderId)
 		if (canBeUpdated(runningOrder) && runningOrder) {
@@ -538,6 +547,8 @@ export namespace RunningOrderInput {
 		check(runningOrderId, String)
 		check(runningOrderData, Object)
 
+		updateDeviceLastDataReceived(deviceId)
+
 		handleRunningOrderData(peripheralDevice, mutateRunningOrder(runningOrderData), 'dataRunningOrderCreate')
 	}
 	export function dataRunningOrderUpdate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, runningOrderData: any) {
@@ -546,6 +557,8 @@ export namespace RunningOrderInput {
 
 		check(runningOrderId, String)
 		check(runningOrderData, Object)
+
+		updateDeviceLastDataReceived(deviceId)
 
 		handleRunningOrderData(peripheralDevice, mutateRunningOrder(runningOrderData), 'dataRunningOrderUpdate')
 	}
@@ -556,6 +569,8 @@ export namespace RunningOrderInput {
 
 		check(runningOrderId, String)
 		check(segmentId, String)
+
+		updateDeviceLastDataReceived(deviceId)
 
 		const { runningOrder } = getStudioInstallationAndRO(peripheralDevice, runningOrderId)
 		const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
@@ -576,6 +591,8 @@ export namespace RunningOrderInput {
 		check(segmentId, String)
 		check(newSection, Object)
 
+		updateDeviceLastDataReceived(deviceId)
+
 		const { studioInstallation, runningOrder } = getStudioInstallationAndRO(peripheralDevice, runningOrderId)
 		const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
 
@@ -590,6 +607,8 @@ export namespace RunningOrderInput {
 		check(runningOrderId, String)
 		check(segmentId, String)
 		check(newSection, Object)
+
+		updateDeviceLastDataReceived(deviceId)
 
 		const { studioInstallation, runningOrder } = getStudioInstallationAndRO(peripheralDevice, runningOrderId)
 		const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
@@ -606,6 +625,8 @@ export namespace RunningOrderInput {
 		check(runningOrderId, String)
 		check(segmentId, String)
 		check(segmentLineId, String)
+
+		updateDeviceLastDataReceived(deviceId)
 
 		const { studioInstallation, runningOrder } = getStudioInstallationAndRO(peripheralDevice, runningOrderId)
 		const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
@@ -651,6 +672,8 @@ export namespace RunningOrderInput {
 		check(segmentLineId, String)
 		check(newStory, Object)
 
+		updateDeviceLastDataReceived(deviceId)
+
 		dataSegmentLineCreateOrUpdate(peripheralDevice, runningOrderId, segmentId, segmentLineId, newStory)
 	}
 	export function dataSegmentLineUpdate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string, newStory: any) {
@@ -661,6 +684,8 @@ export namespace RunningOrderInput {
 		check(segmentId, String)
 		check(segmentLineId, String)
 		check(newStory, Object)
+
+		updateDeviceLastDataReceived(deviceId)
 
 		dataSegmentLineCreateOrUpdate(peripheralDevice, runningOrderId, segmentId, segmentLineId, newStory)
 	}
