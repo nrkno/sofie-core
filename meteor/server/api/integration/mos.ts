@@ -441,11 +441,11 @@ export const reloadRunningOrder: (runningOrder: RunningOrder) => void = Meteor.w
 		}, 'triggerGetRunningOrder', runningOrder.mosId)
 	}
 )
-export function replaceStoryItem (runningOrder: RunningOrder, segmentLineItem: SegmentLineItem, slCache: RunningOrderDataCacheObj, inPoint: number, outPoint: number) {
+export function replaceStoryItem (runningOrder: RunningOrder, segmentLineItem: SegmentLineItem, slCache: RunningOrderDataCacheObj, inPoint: number, duration: number) {
 	return new Promise((resolve, reject) => {
 		const story = slCache.data.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === segmentLineItem.mosId)[0].Content
 		story.EditorialStart = inPoint
-		story.EditorialDuration = outPoint
+		story.EditorialDuration = duration
 
 		let peripheralDevice = PeripheralDevices.findOne(runningOrder.mosDeviceId) as PeripheralDevice
 		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + runningOrder.mosDeviceId + '" not found' )

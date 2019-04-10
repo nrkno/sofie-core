@@ -229,12 +229,12 @@ export function segmentLineItemTakeNow (roId: string, slId: string, sliId: strin
 		ServerPlayoutAPI.segmentLineItemTakeNow(roId, slId, sliId)
 	)
 }
-export function segmentLineItemSetInOutPoints (roId: string, slId: string, sliId: string, inPoint: number, outPoint: number) {
+export function segmentLineItemSetInOutPoints (roId: string, slId: string, sliId: string, inPoint: number, duration: number) {
 	check(roId, String)
 	check(slId, String)
 	check(sliId, String)
 	check(inPoint, Number)
-	check(outPoint, Number)
+	check(duration, Number)
 
 	const runningOrder = RunningOrders.findOne(roId)
 	if (!runningOrder) throw new Meteor.Error(404, `RunningOrder "${roId}" not found!`)
@@ -249,7 +249,7 @@ export function segmentLineItemSetInOutPoints (roId: string, slId: string, sliId
 	if (!sli) throw new Meteor.Error(404, `SegmentLineItem "${sliId}" not found!`)
 
 	return ClientAPI.responseSuccess(
-		replaceStoryItem(runningOrder, sli, slCache, inPoint, outPoint)
+		replaceStoryItem(runningOrder, sli, slCache, inPoint / 1000, duration / 1000) // MOS data is in seconds
 	)
 
 }
@@ -464,8 +464,8 @@ methods[UserActionAPI.methods.toggleSegmentLineArgument] = function (roId: strin
 methods[UserActionAPI.methods.segmentLineItemTakeNow] = function (roId: string, slId: string, sliId: string): ClientAPI.ClientResponse {
 	return segmentLineItemTakeNow.call(this, roId, slId, sliId)
 }
-methods[UserActionAPI.methods.setInOutPoints] = function (roId: string, slId: string, sliId: string, inPoint: number, outPoint: number): ClientAPI.ClientResponse {
-	return segmentLineItemSetInOutPoints(roId, slId, sliId, inPoint, outPoint)
+methods[UserActionAPI.methods.setInOutPoints] = function (roId: string, slId: string, sliId: string, inPoint: number, duration: number): ClientAPI.ClientResponse {
+	return segmentLineItemSetInOutPoints(roId, slId, sliId, inPoint, duration)
 }
 methods[UserActionAPI.methods.segmentAdLibLineItemStart] = function (roId: string, slId: string, salliId: string, queue: boolean) {
 	return segmentAdLibLineItemStart.call(this, roId, slId, salliId, queue)

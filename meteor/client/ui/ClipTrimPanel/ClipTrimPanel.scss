@@ -1,5 +1,5 @@
 .clip-trim-panel {
-	width: 700px;
+	width: 500px;
 
 	.clip-trim-panel__monitors {
 		display: flex;
@@ -16,9 +16,16 @@
 		display: flex;
 		align-content: space-between;
 		justify-content: space-between;
-		margin: 0 15px;
+		margin: 15px 15px;
 
 		.clip-trim-panel__timecode-encoders__input {
+			> label {
+				text-transform: uppercase;
+				font-weight: 600;
+				color: #777;
+				text-align: center;
+				display: block;
+			}
 			> .timecode-encoder {
 				font-size: 1.3em;
 			}

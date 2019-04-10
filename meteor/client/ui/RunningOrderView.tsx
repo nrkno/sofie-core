@@ -52,6 +52,8 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
 import { ClipTrimPanel } from './ClipTrimPanel/ClipTrimPanel';
+import { VTContent, VTEditableParameters } from 'tv-automation-sofie-blueprints-integration';
+import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog';
 
 type WrappedInspectorDrawer = InspectorDrawerBase & { getWrappedInstance (): InspectorDrawerBase }
 
@@ -1207,10 +1209,14 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	}
 
 	onSelectSegmentLineItem = (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => {
-		this.setState({
-			isClipTrimmerOpen: true,
-			selectedSegmentLineItem: sli
-		})
+		if (sli && sli.content && (sli.content as VTContent).editable &&
+			((((sli.content as VTContent).editable as VTEditableParameters).editorialDuration !== undefined) ||
+			((sli.content as VTContent).editable as VTEditableParameters).editorialStart !== undefined)) {
+			this.setState({
+				isClipTrimmerOpen: true,
+				selectedSegmentLineItem: sli
+			})
+		}
 	}
 
 	componentWillUnmount () {
@@ -1615,46 +1621,13 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									studioMode={this.state.studioMode} />
 							</ErrorBoundary>
 							<ErrorBoundary>
-								{this.state.isClipTrimmerOpen && this.state.selectedSegmentLineItem &&
-									<Escape to='document'>
-										<div className='glass-pane' style={{pointerEvents: 'auto'}}>
-											<div className='glass-pane-content'>
-												<VelocityReact.VelocityTransitionGroup enter={{
-													animation: {
-														translateY: [0, 100],
-														opacity: [1, 0]
-													}, easing: 'spring', duration: 1000
-												}} runOnMount={true}>
-													<dialog open={true} className='border-box'>
-														<div className='flex-row info vertical-align-stretch tight-s'>
-															<div className='flex-col c12'>
-																<h2>
-																	Edit "{this.state.selectedSegmentLineItem.name}"
-																</h2>
-															</div>
-															<div className='flex-col horizontal-align-right vertical-align-middle'>
-																<p>
-																	<button className='action-btn' onClick={(e) => { this.setState({ isClipTrimmerOpen: false }) }}>
-																		<CoreIcon id='nrk-close' />
-																	</button>
-																</p>
-															</div>
-														</div>
-														<div className='title-box-content'>
-															<ClipTrimPanel
-																studioInstallationId={this.props.studioInstallation._id}
-																runningOrderId={this.props.runningOrderId}
-																segmentLineItemId={this.state.selectedSegmentLineItem._id}
-																segmentLineId={this.state.selectedSegmentLineItem.segmentLineId}
-																inPoint={0}
-																outPoint={0}
-																/>
-														</div>
-													</dialog>
-												</VelocityReact.VelocityTransitionGroup>
-											</div>
-										</div>
-									</Escape>
+								{this.state.isClipTrimmerOpen && this.state.selectedSegmentLineItem && this.props.studioInstallation &&
+									<ClipTrimDialog
+										studioInstallation={this.props.studioInstallation}
+										runningOrderId={this.props.runningOrderId}
+										selectedSegmentLineItem={this.state.selectedSegmentLineItem}
+										onClose={() => this.setState({ isClipTrimmerOpen: false })}
+										/>
 								}
 							</ErrorBoundary>
 							{this.renderSegmentsList()}
