@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { getHash, formatDateAsTimecode, formatDurationAsTimecode } from '../../../lib/lib'
-import { SegmentLineNote, SegmentLineNoteType, SegmentLine } from '../../../lib/collections/SegmentLines'
+import { SegmentLineNote, SegmentLineNoteType, SegmentLine, DBSegmentLine } from '../../../lib/collections/SegmentLines'
 import { check, Match } from 'meteor/check'
 import { logger } from '../../../lib/logging'
 import {
@@ -255,10 +255,21 @@ export type BlueprintRuntimeArgumentsSet = { [key: string]: BlueprintRuntimeArgu
 export class SegmentContext extends RunningOrderContext implements ISegmentContext {
 	private runtimeArguments: BlueprintRuntimeArgumentsSet
 
-	constructor (runningOrder: RunningOrder, studioInstallation: StudioInstallation | undefined, runtimeArguments: BlueprintRuntimeArgumentsSet) {
+	constructor (runningOrder: RunningOrder, studioInstallation: StudioInstallation | undefined, runtimeArguments: BlueprintRuntimeArgumentsSet | DBSegmentLine[]) {
 		super(runningOrder, studioInstallation)
 
-		this.runtimeArguments = runtimeArguments
+		if (_.isArray(runtimeArguments)) {
+			const existingRuntimeArguments: BlueprintRuntimeArgumentsSet = {}
+			_.each(runtimeArguments, p => {
+				if (p.runtimeArguments) {
+					// TODO - what about collisions from virtuals?
+					existingRuntimeArguments[p.externalId] = p.runtimeArguments
+				}
+			})
+			this.runtimeArguments = existingRuntimeArguments
+		} else {
+			this.runtimeArguments = runtimeArguments
+		}
 	}
 
 	getRuntimeArguments (externalId: string): BlueprintRuntimeArguments | undefined {

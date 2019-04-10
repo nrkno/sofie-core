@@ -17,6 +17,7 @@ export enum CachePrefix {
 	INGEST_SEGMENT = 'segment'
 }
 
+// TODO Deprecate?
 export const RunningOrderDataCache: TransformedCollection<RunningOrderDataCacheObj, RunningOrderDataCacheObj>
 	= new Mongo.Collection<RunningOrderDataCacheObj>('runningorderdatacache')
 registerCollection('RunningOrderDataCache', RunningOrderDataCache)
