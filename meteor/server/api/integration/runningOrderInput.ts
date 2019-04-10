@@ -16,9 +16,7 @@ import {
 import {
 	SegmentLine,
 	SegmentLines,
-	DBSegmentLine,
-	SegmentLineNoteType,
-	SegmentLineNote
+	DBSegmentLine
 } from '../../../lib/collections/SegmentLines'
 import {
 	SegmentLineItem,
@@ -26,9 +24,7 @@ import {
 } from '../../../lib/collections/SegmentLineItems'
 import {
 	saveIntoDb,
-	getCurrentTime,fetchBefore,
-	getRank,
-	fetchAfter,
+	getCurrentTime,
 	literal,
 	getHash,
 	asyncCollectionRemove
@@ -37,19 +33,18 @@ import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import {
 	Methods, setMeteorMethods, wrapMethods
 } from '../../methods'
-import { IngestRunningOrder, IngestSegment, IngestPart, BlueprintResultSegment, BlueprintResultPart } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRunningOrder, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { selectShowStyleVariant, afterRemoveSegment, afterRemoveSegmentLine } from '../runningOrder'
 import { loadShowStyleBlueprints, getBlueprintOfRunningOrder } from '../blueprints/cache'
-import { ShowStyleContext, RunningOrderContext, SegmentContext, BlueprintRuntimeArgumentsSet } from '../blueprints/context'
+import { ShowStyleContext, RunningOrderContext, SegmentContext } from '../blueprints/context'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
-import { CachePrefix, RunningOrderDataCacheObj, RunningOrderDataCache } from '../../../lib/collections/RunningOrderDataCache'
 import { RunningOrderBaselineItem, RunningOrderBaselineItems } from '../../../lib/collections/RunningOrderBaselineItems'
 import { Random } from 'meteor/random'
 import { postProcessSegmentLineBaselineItems, postProcessSegmentLineAdLibItems, postProcessSegmentLineItems } from '../blueprints/postProcess'
 import { RunningOrderBaselineAdLibItem, RunningOrderBaselineAdLibItems } from '../../../lib/collections/RunningOrderBaselineAdLibItems'
-import { DBSegment, Segments, Segment } from '../../../lib/collections/Segments'
+import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLineAdLibItem, SegmentLineAdLibItems } from '../../../lib/collections/SegmentLineAdLibItems'
 import { IngestDataCacheObj, IngestCacheType, IngestDataCache } from '../../../lib/collections/IngestDataCache'
 const PackageInfo = require('../../../package.json')
@@ -87,8 +82,17 @@ function mutateRunningOrder (runningOrder: any): IngestRunningOrder {
 function roId (studioInstallationId: string, externalId: string) {
 	return getHash(`${studioInstallationId}_${externalId}`)
 }
+function getSegmentId (runningOrderId: string, segmentExternalId: string) {
+	return getHash(`${runningOrderId}_segment_${segmentExternalId}`)
+}
+function getPartId (runningOrderId: string, partExternalId: string) {
+	return getHash(`${runningOrderId}_part_${partExternalId}`)
+}
 
-function canBeUpdated (runningOrder: RunningOrder | undefined) {
+function canBeUpdated (runningOrder: RunningOrder | undefined, segmentId?: string, partId?: string) {
+	if (!runningOrder) return true
+	if (runningOrder.unsynced) return false
+
 	// TODO
 	return true
 }
@@ -372,9 +376,7 @@ function generateSegmentContents (
 	const adlibPieces: SegmentLineAdLibItem[] = []
 
 	// SegmentLines
-	for (let i = 0; i < knownParts.length; i++) {
-		const blueprintPart = knownParts[i]
-
+	for (let blueprintPart of knownParts) {
 		const partId = getPartId(runningOrderId, blueprintPart.part.externalId)
 		const sourcePart = ingestSegment.parts.find(p => p.externalId === blueprintPart.part.externalId) as IngestPart
 		// TODO - this loop needs to handle virtual parts properly
@@ -386,7 +388,7 @@ function generateSegmentContents (
 			...blueprintPart.part,
 			_id: partId,
 			runningOrderId: runningOrderId,
-			segmentId: segment._id,
+			segmentId: newSegment._id,
 			_rank: sourcePart.rank
 		})
 		segmentLines.push(part)
@@ -407,19 +409,7 @@ function generateSegmentContents (
 	}
 }
 
-function getSegmentId (runningOrderId: string, segmentExternalId: string) {
-	return getHash(`${runningOrderId}_segment_${segmentExternalId}`)
-}
-function getPartId (runningOrderId: string, partExternalId: string) {
-	return getHash(`${runningOrderId}_part_${partExternalId}`)
-}
-
-function handleSegment (peripheralDevice: PeripheralDevice, externalRunningOrderId: string, ingestSegment: IngestSegment) {
-	const studioInstallation = getStudioInstallation(peripheralDevice)
-
-	const runningOrder = RunningOrders.findOne(roId(studioInstallation._id, externalRunningOrderId))
-	if (!runningOrder) throw new Meteor.Error(404, 'Running order not found')
-
+function updateOrCreateSegmentFromPayload (studioInstallation: StudioInstallation, runningOrder: RunningOrder, ingestSegment: IngestSegment) {
 	const segmentId = getSegmentId(runningOrder._id, ingestSegment.externalId)
 
 	// cache the Data
@@ -428,7 +418,6 @@ function handleSegment (peripheralDevice: PeripheralDevice, externalRunningOrder
 		runningOrderId: runningOrder._id,
 		segmentId: segmentId,
 	}, cacheEntries)
-
 
 	const blueprint = getBlueprintOfRunningOrder(runningOrder)
 
@@ -446,7 +435,7 @@ function handleSegment (peripheralDevice: PeripheralDevice, externalRunningOrder
 
 	if (res === null) throw new Meteor.Error(404, 'Not expected') // TODO - to be removed from blueprints
 
-	const { segmentLines, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(context, ingestSegment, existingSegment, existingParts, res.parts)
+	const { segmentLines, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(context, ingestSegment, existingSegment, existingParts, res)
 
 	Segments.upsert({
 		_id: segmentId,
@@ -497,137 +486,132 @@ function handleSegment (peripheralDevice: PeripheralDevice, externalRunningOrder
 
 }
 
+function loadCachedSegmentData (runningOrderId: string, segmentId: string): IngestSegment {
+	const cacheEntries = IngestDataCache.find({
+		runningOrderId: runningOrderId,
+		segmentId: segmentId,
+	}).fetch()
+
+	const segmentEntry = cacheEntries.find(e => e.type === IngestCacheType.SEGMENT)
+	if (!segmentEntry) throw new Meteor.Error(500, 'Failed to find cached segment')
+
+	const ingestSegment = segmentEntry.data as IngestSegment
+
+	_.each(cacheEntries, e => {
+		if (e.type === IngestCacheType.PART) {
+			ingestSegment.parts.push(e.data)
+		}
+	})
+
+	return ingestSegment
+}
+
+function getStudioInstallationAndRO (peripheralDevice: PeripheralDevice, externalId: string) {
+	const studioInstallation = getStudioInstallation(peripheralDevice)
+	const runningOrder = RunningOrders.findOne(roId(studioInstallation._id, externalId))
+	if (!runningOrder) throw new Meteor.Error(404, 'Running order not found')
+
+	return {
+		runningOrder,
+		studioInstallation
+	}
+}
+
 export namespace RunningOrderInput {
-	// TODO - this all needs guards to protect the active SL and avoid race conditions
+	// TODO - this all needs guards to avoid race conditions with stuff running in playout.ts (which should be removed from there)
 
 	export function dataRunningOrderDelete (self: any, deviceId: string, deviceToken: string, runningOrderId: string) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		console.log('dataRunningOrderDelete', runningOrderId)
+		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		logger.info('dataRunningOrderDelete', runningOrderId)
 
-		try {
-			const studioInstallation = getStudioInstallation(peripheralDevice)
+		check(runningOrderId, String)
 
-			const runningOrderInternalId = roId(studioInstallation._id, runningOrderId)
-			const existingDbRo = RunningOrders.findOne(runningOrderInternalId)
-			if (canBeUpdated(existingDbRo) && existingDbRo) {
-				existingDbRo.remove()
-			}
-
-		} catch (e) {
-			logger.error('dataRunningOrderDelete failed for ' + runningOrderId + ': ' + e)
+		const { runningOrder } = getStudioInstallationAndRO(peripheralDevice, runningOrderId)
+		if (canBeUpdated(runningOrder) && runningOrder) {
+			runningOrder.remove()
 		}
 	}
 	export function dataRunningOrderCreate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, runningOrderData: any) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
 		console.log('dataRunningOrderCreate', runningOrderId, runningOrderData)
 
-		try {
-			const ingestRo = mutateRunningOrder(runningOrderData)
-			handleRunningOrderData(peripheralDevice, ingestRo, 'dataRunningOrderCreate')
+		check(runningOrderId, String)
+		check(runningOrderData, Object)
 
-		} catch (e) {
-			logger.error('dataRunningOrderCreate failed for ' + runningOrderId + ': ' + e)
-			logger.debug(runningOrderData)
-		}
-
+		handleRunningOrderData(peripheralDevice, mutateRunningOrder(runningOrderData), 'dataRunningOrderCreate')
 	}
 	export function dataRunningOrderUpdate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, runningOrderData: any) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		console.log('dataRunningOrderUpdate', runningOrderId, runningOrderData)
+		logger.info('dataRunningOrderUpdate', runningOrderId, runningOrderData)
 
-		try {
-			const ingestRo = mutateRunningOrder(runningOrderData)
-			handleRunningOrderData(peripheralDevice, ingestRo, 'dataRunningOrderUpdate')
+		check(runningOrderId, String)
+		check(runningOrderData, Object)
 
-		} catch (e) {
-			logger.error('dataRunningOrderUpdate failed for ' + runningOrderId + ': ' + e)
-			logger.debug(runningOrderData)
-		}
+		handleRunningOrderData(peripheralDevice, mutateRunningOrder(runningOrderData), 'dataRunningOrderUpdate')
 	}
 
 	export function dataSegmentDelete (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		console.log('dataSegmentDelete', runningOrderId, segmentId)
+		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		logger.info('dataSegmentDelete', runningOrderId, segmentId)
 
-		try {
-			const studioInstallation = getStudioInstallation(peripheralDevice)
+		check(runningOrderId, String)
+		check(segmentId, String)
 
-			const runningOrder = RunningOrders.findOne(roId(studioInstallation._id, runningOrderId))
-			if (!runningOrder) throw new Meteor.Error(404, 'Running order not found')
+		const { runningOrder } = getStudioInstallationAndRO(peripheralDevice, runningOrderId)
+		const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
 
-			const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
-
+		if (canBeUpdated(runningOrder, segmentInternalId)) {
 			Promise.all([
 				asyncCollectionRemove(SegmentLines, { segmentId: segmentInternalId }),
 				// TODO - cleanup other SL contents
 				asyncCollectionRemove(Segments, segmentInternalId)
 			])
-
-		} catch (e) {
-			logger.error('dataSegmentDelete failed for ' + runningOrderId + ': ' + e)
 		}
 	}
 	export function dataSegmentCreate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, newSection: any) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		console.log('dataSegmentCreate', runningOrderId, segmentId, newSection)
+		logger.info('dataSegmentCreate', runningOrderId, segmentId, newSection)
 
-		try {
-			const ingestSegment = mutateSegment(newSection)
-			handleSegment(peripheralDevice, runningOrderId, ingestSegment)
+		check(runningOrderId, String)
+		check(segmentId, String)
+		check(newSection, Object)
 
-		} catch (e) {
-			logger.error('dataSegmentCreate failed for ' + runningOrderId + ': ' + e)
-			logger.debug(newSection)
+		const { studioInstallation, runningOrder } = getStudioInstallationAndRO(peripheralDevice, runningOrderId)
+		const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
+
+		if (canBeUpdated(runningOrder, segmentInternalId)) {
+			updateOrCreateSegmentFromPayload(studioInstallation, runningOrder, mutateSegment(newSection))
 		}
-
 	}
 	export function dataSegmentUpdate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, newSection: any) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		console.log('dataSegmentUpdate', runningOrderId, segmentId, newSection)
+		logger.info('dataSegmentUpdate', runningOrderId, segmentId, newSection)
 
-		try {
-			const ingestSegment = mutateSegment(newSection)
-			handleSegment(peripheralDevice, runningOrderId, ingestSegment)
+		check(runningOrderId, String)
+		check(segmentId, String)
+		check(newSection, Object)
 
-		} catch (e) {
-			logger.error('dataSegmentUpdate failed for ' + runningOrderId + ': ' + e)
-			logger.debug(newSection)
+		const { studioInstallation, runningOrder } = getStudioInstallationAndRO(peripheralDevice, runningOrderId)
+		const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
+
+		if (canBeUpdated(runningOrder, segmentInternalId)) {
+			updateOrCreateSegmentFromPayload(studioInstallation, runningOrder, mutateSegment(newSection))
 		}
-	}
-
-	function loadCachedSegmentData (runningOrderId: string, segmentId: string): IngestSegment {
-		const cacheEntries = IngestDataCache.find({
-			runningOrderId: runningOrderId,
-			segmentId: segmentId,
-		}).fetch()
-
-		const segmentEntry = cacheEntries.find(e => e.type === IngestCacheType.SEGMENT)
-		if (!segmentEntry) throw new Meteor.Error(500, 'Failed to find cached segment')
-
-		const ingestSegment = segmentEntry.data as IngestSegment
-
-		_.each(cacheEntries, e => {
-			if (e.type === IngestCacheType.PART) {
-				ingestSegment.parts.push(e.data)
-			}
-		})
-
-		return ingestSegment
 	}
 
 	export function dataSegmentLineDelete (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		console.log('dataSegmentLineDelete', runningOrderId, segmentId, segmentLineId)
+		logger.info('dataSegmentLineDelete', runningOrderId, segmentId, segmentLineId)
 
-		try {
-			const studioInstallation = getStudioInstallation(peripheralDevice)
+		check(runningOrderId, String)
+		check(segmentId, String)
+		check(segmentLineId, String)
 
-			const runningOrder = RunningOrders.findOne(roId(studioInstallation._id, runningOrderId))
-			if (!runningOrder) throw new Meteor.Error(404, 'Running order not found')
+		const { studioInstallation, runningOrder } = getStudioInstallationAndRO(peripheralDevice, runningOrderId)
+		const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
+		const partInternalId = getPartId(runningOrder._id, segmentLineId)
 
-			const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
-			const partInternalId = getPartId(runningOrder._id, segmentLineId)
-
+		if (canBeUpdated(runningOrder, segmentInternalId, partInternalId)) {
 			const segmentLine = SegmentLines.findOne({
 				_id: partInternalId,
 				segmentId: segmentInternalId,
@@ -639,79 +623,46 @@ export namespace RunningOrderInput {
 			const ingestSegment = loadCachedSegmentData(runningOrder._id, segmentInternalId)
 			ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== segmentLineId)
 
-			// TODO - optimise by not reloading studio etc
-			// logger.info(ingestSegment)
-			handleSegment(peripheralDevice, runningOrderId, ingestSegment)
-
-		} catch (e) {
-			logger.error('dataSegmentLineDelete failed for ' + runningOrderId + ': ' + e)
+			updateOrCreateSegmentFromPayload(studioInstallation, runningOrder, ingestSegment)
 		}
 	}
-	export function dataSegmentLineCreate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string, newStory: any) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		console.log('dataSegmentLineCreate', runningOrderId, segmentId, segmentLineId, newStory)
 
-		try {
-			const studioInstallation = getStudioInstallation(peripheralDevice)
+	function dataSegmentLineCreateOrUpdate (peripheralDevice: PeripheralDevice, runningOrderId: string, segmentId: string, segmentLineId: string, newStory: any) {
+		const { studioInstallation, runningOrder } = getStudioInstallationAndRO(peripheralDevice, runningOrderId)
 
-			const runningOrder = RunningOrders.findOne(roId(studioInstallation._id, runningOrderId))
-			if (!runningOrder) throw new Meteor.Error(404, 'Running order not found')
+		const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
+		const partInternalId = getPartId(runningOrder._id, segmentLineId)
 
-			const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
-			// const partInternalId = getPartId(runningOrder._id, segmentLineId)
-
-			// const segmentLine = SegmentLines.findOne({
-			// 	_id: partInternalId,
-			// 	segmentId: segmentInternalId,
-			// 	runningOrderId: runningOrder._id
-			// })
-			// if (!segmentLine) throw new Meteor.Error(404, 'Part not found')
-
+		if (canBeUpdated(runningOrder, segmentInternalId, partInternalId)) {
 			// Blueprints will handle the creation of the SL
 			const ingestSegment = loadCachedSegmentData(runningOrder._id, segmentInternalId)
 			ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== segmentLineId)
 			ingestSegment.parts.push(mutatePart(newStory))
 
-			// TODO - optimise by not reloading studio etc
-			// logger.info(ingestSegment)
-			handleSegment(peripheralDevice, runningOrderId, ingestSegment)
-
-		} catch (e) {
-			logger.error('dataSegmentLineCreate failed for ' + runningOrderId + ': ' + e)
+			updateOrCreateSegmentFromPayload(studioInstallation, runningOrder, ingestSegment)
 		}
 	}
+	export function dataSegmentLineCreate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string, newStory: any) {
+		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		logger.info('dataSegmentLineCreate', runningOrderId, segmentId, segmentLineId, newStory)
+
+		check(runningOrderId, String)
+		check(segmentId, String)
+		check(segmentLineId, String)
+		check(newStory, Object)
+
+		dataSegmentLineCreateOrUpdate(peripheralDevice, runningOrderId, segmentId, segmentLineId, newStory)
+	}
 	export function dataSegmentLineUpdate (self: any, deviceId: string, deviceToken: string, runningOrderId: string, segmentId: string, segmentLineId: string, newStory: any) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
-		console.log('dataSegmentLineUpdate', runningOrderId, segmentId, segmentLineId, newStory)
+		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		logger.info('dataSegmentLineUpdate', runningOrderId, segmentId, segmentLineId, newStory)
 
-		try {
-			const studioInstallation = getStudioInstallation(peripheralDevice)
+		check(runningOrderId, String)
+		check(segmentId, String)
+		check(segmentLineId, String)
+		check(newStory, Object)
 
-			const runningOrder = RunningOrders.findOne(roId(studioInstallation._id, runningOrderId))
-			if (!runningOrder) throw new Meteor.Error(404, 'Running order not found')
-
-			const segmentInternalId = getSegmentId(runningOrder._id, segmentId)
-			// const partInternalId = getPartId(runningOrder._id, segmentLineId)
-
-			// const segmentLine = SegmentLines.findOne({
-			// 	_id: partInternalId,
-			// 	segmentId: segmentInternalId,
-			// 	runningOrderId: runningOrder._id
-			// })
-			// if (!segmentLine) throw new Meteor.Error(404, 'Part not found')
-
-			// Blueprints will handle the updating of the SL
-			const ingestSegment = loadCachedSegmentData(runningOrder._id, segmentInternalId)
-			ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== segmentLineId)
-			ingestSegment.parts.push(mutatePart(newStory))
-
-			// TODO - optimise by not reloading studio etc
-			// console.log(ingestSegment)
-			handleSegment(peripheralDevice, runningOrderId, ingestSegment)
-
-		} catch (e) {
-			logger.error('dataSegmentLineUpdate failed for ' + runningOrderId + ': ' + e)
-		}
+		dataSegmentLineCreateOrUpdate(peripheralDevice, runningOrderId, segmentId, segmentLineId, newStory)
 	}
 }
 
