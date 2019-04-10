@@ -76,6 +76,7 @@ import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/Sh
 import { updateExpectedMediaItems } from '../expectedMediaItems'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
 import { SegmentLineNote, NoteType } from '../../../lib/api/notes'
+import { runInRunningOrderContext } from '../../../lib/api/runningOrder';
 const PackageInfo = require('../../../package.json')
 
 export function roId (roId: MOS.MosString128, original?: boolean): string {
@@ -129,7 +130,20 @@ export function getSegmentLine (roID: MOS.MosString128, storyID: MOS.MosString12
 	})
 	if (segmentLine) {
 		return segmentLine
-	} else throw new Meteor.Error(404, 'SegmentLine ' + id + ' not found (ro: ' + roID + ', story: ' + storyID + ')')
+	} else {
+		let ro = getRO(roID)
+		if (ro) {
+			ro.appendNote({
+				type: NoteType.ERROR,
+				message: 'There was an error when receiving MOS-data. This might be fixed by triggering a "Reload ENPS Data".',
+				origin: {
+					name: ro.name,
+					roId: ro._id
+				}
+			})
+		}
+		throw new Meteor.Error(404, 'SegmentLine ' + id + ' not found (ro: ' + roID + ', story: ' + storyID + ')')
+	}
 }
 
 /**
