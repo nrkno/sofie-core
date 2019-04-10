@@ -9,6 +9,13 @@ import { IBlueprintSegmentDB } from 'tv-automation-sofie-blueprints-integration'
 
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
 export interface DBSegment extends IBlueprintSegmentDB {
+	/** Position inside running order */
+	_rank: number
+	/** ID of the source object in the gateway */
+	externalId: string
+	/** The running order this segment belongs to */
+	runningOrderId: string
+
 	status?: string
 	expanded?: boolean
 

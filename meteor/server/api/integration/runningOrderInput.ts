@@ -245,7 +245,6 @@ function handleRunningOrderData (peripheralDevice: PeripheralDevice, ingestRunni
 
 		const context = new SegmentContext(dbRo, studioInstallation, existingParts)
 		const res = blueprint.getSegment(context, ingestSegment)
-		if (res === null) throw new Meteor.Error(404, 'Not expected') // TODO - to be removed from blueprints
 
 		const res2 = generateSegmentContents(context, ingestSegment, existingSegment, existingParts, res)
 		segments.push(res2.newSegment)
@@ -431,8 +430,6 @@ function updateOrCreateSegmentFromPayload (studioInstallation: StudioInstallatio
 
 	const context = new SegmentContext(runningOrder, studioInstallation, existingParts)
 	const res = blueprint.getSegment(context, ingestSegment)
-
-	if (res === null) throw new Meteor.Error(404, 'Not expected') // TODO - to be removed from blueprints
 
 	const { segmentLines, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(context, ingestSegment, existingSegment, existingParts, res)
 
