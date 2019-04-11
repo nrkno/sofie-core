@@ -503,7 +503,10 @@ postRoute.route('/backup/restore', (params, req: IncomingMessage, response: Serv
 
 	let content = ''
 	try {
-		const snapshot = (req as any).body
+		let snapshot = (req as any).body
+		if (typeof snapshot !== 'object') { // sometimes, the browser can send the JSON with wrong mimetype, resulting in it not being parsed
+			snapshot = JSON.parse(snapshot)
+		}
 
 		if (snapshot.type === 'runningOrderCache' && snapshot.data) {
 			// special case (to be deprecated): runningOrder cached data

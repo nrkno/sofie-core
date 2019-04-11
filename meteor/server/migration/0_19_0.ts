@@ -17,7 +17,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
  * These files are combined with / overridden by migration steps defined in the blueprints.
  */
 
-// 0.19.0 is a BIG refactoring
+// 0.19.0 (Release 4) is a BIG refactoring
 addMigrationSteps( '0.19.0', [
 	{ // Create showStyleBase (migrate from studioInstallation)
 		id: 'showStyleBase exists',
@@ -63,7 +63,6 @@ addMigrationSteps( '0.19.0', [
 				if (!studio.supportedShowStyleBase || studio.supportedShowStyleBase.length === 0) {
 					StudioInstallations.update(studio._id, {$set: {
 						supportedShowStyleBase: [id],
-						defaultShowStyleVariant: variantId
 					}})
 				}
 			} else {
@@ -112,39 +111,25 @@ addMigrationSteps( '0.19.0', [
 			si.forEach((siItem) => {
 				if ((siItem as any).runtimeArguments) {
 					if ((siItem as any).runtimeArguments.length > 0) {
-						const defaultShowStyleVariant = siItem.defaultShowStyleVariant
-						if (!defaultShowStyleVariant) {
-							result = `Default show style variant not set in "${siItem._id}"`
-							return
-						}
+						const showStyles = ShowStyleBases.find({ _id: { $in: siItem.supportedShowStyleBase } }).fetch()
+						showStyles.forEach(ssb => {
+							ssb.runtimeArguments = ssb.runtimeArguments || []; // HAHA: typeScript fails on this, thinking its a function call without the semicolon
 
-						const ssv = ShowStyleVariants.findOne(defaultShowStyleVariant)
-						if (!ssv) {
-							result = `Default Show Style Variant "${defaultShowStyleVariant}" for Studio "${siItem._id}" not found`
-							return
-						}
-
-						const ssb = ShowStyleBases.findOne(ssv.showStyleBaseId)
-						if (!ssb) {
-							result = `Default Show Style Variant "${defaultShowStyleVariant}" Base "${ssv.showStyleBaseId}" not found`
-							return
-						}
-						ssb.runtimeArguments = ssb.runtimeArguments || []; // HAHA: typeScript fails on this, thinking its a function call without the semicolon
-
-						(siItem as any).runtimeArguments.forEach((item) => {
-							// const bItem: IBlueprintRuntimeArgumentsItem = item
-							const exisitng = ssb.runtimeArguments.find((ssbItem) => {
-								return ssbItem.hotkeys === item.hotkeys && ssbItem.label === item.label && ssbItem.property === item.property && ssbItem.value === item.value
+							(siItem as any).runtimeArguments.forEach((item) => {
+								// const bItem: IBlueprintRuntimeArgumentsItem = item
+								const exisitng = ssb.runtimeArguments.find((ssbItem) => {
+									return ssbItem.hotkeys === item.hotkeys && ssbItem.label === item.label && ssbItem.property === item.property && ssbItem.value === item.value
+								})
+								if (!exisitng) {
+									ssb.runtimeArguments.push(item)
+								}
 							})
-							if (!exisitng) {
-								ssb.runtimeArguments.push(item)
-							}
-						})
 
-						ShowStyleBases.update(ssb._id, {
-							$set: {
-								runtimeArguments: ssb.runtimeArguments
-							}
+							ShowStyleBases.update(ssb._id, {
+								$set: {
+									runtimeArguments: ssb.runtimeArguments
+								}
+							})
 						})
 					}
 
@@ -159,69 +144,6 @@ addMigrationSteps( '0.19.0', [
 				}
 			})
 			return result
-		}
-	},
-	// { // Create showStyleVariant
-	// 	id: 'showStyleVariant exists',
-	// 	canBeRunAutomatically: true,
-	// 	validate: () => {
-	// 		const showStyles = ShowStyleBases.find().fetch()
-	// 		const missing = showStyles.find(s => {
-	// 			return !ShowStyleVariants.findOne({ showStyleBaseId: s._id })
-	// 		})
-	// 		if (missing) return 'No ShowStyleVariant found for ' + missing._id
-	// 		return false
-	// 	},
-	// 	migrate: () => {
-	// 		const showStyles = ShowStyleBases.find().fetch()
-	// 		_.each(showStyles, s => {
-	// 			const variant = ShowStyleVariants.findOne({ showStyleBaseId: s._id })
-	// 			if (variant) return
-
-	// 			logger.info(`Migration: Add default ShowStyleVariant for ${s._id}`)
-	// 			let id = Random.id()
-	// 			ShowStyleVariants.insert({
-	// 				_id: id,
-	// 				name: 'Default variant',
-	// 				showStyleBaseId: s._id,
-	// 				config: []
-	// 			})
-	// 		})
-	// 	}
-	// },
-	{
-		id: 'studioInstallation has valid defaultShowStyleVariant',
-		canBeRunAutomatically: true,
-		dependOnResultFrom: 'showStyleBase exists',
-		validate: () => {
-			const studios = StudioInstallations.find().fetch()
-			const missing: string | boolean = false
-			_.each(studios, s => {
-				if (!s.defaultShowStyleVariant) return `Studio "${s.name || s._id}" is missing default ShowStyleVariant`
-
-				const variant = ShowStyleVariants.findOne(s.defaultShowStyleVariant)
-				if (!variant) return `Studio "${s.name || s._id}" has invalid default ShowStyleVariant`
-			})
-
-			return missing
-		},
-		migrate () {
-			const studios = StudioInstallations.find().fetch()
-
-			_.each(studios, s => {
-				if (s.supportedShowStyleBase.length === 0) return
-
-				const variant = ShowStyleVariants.findOne({
-					_id: {
-						$in: s.supportedShowStyleBase
-					}
-				})
-				if (variant) {
-					StudioInstallations.update(s._id, {$set: {
-						defaultShowStyleVariant: variant._id
-					}})
-				}
-			})
 		}
 	},
 	ensureCollectionProperty('ShowStyleVariants', {}, 'config', []),
@@ -277,8 +199,6 @@ addMigrationSteps( '0.19.0', [
 	},
 
 	ensureCollectionProperty('StudioInstallations', {}, 'settings', {}),
-	ensureCollectionProperty('StudioInstallations', {}, 'defaultShowStyleVariant', null, undefined, 'Default ShowStyleVariant',
-		'Go to the studio settings and set the Default ShowStyleVariant', undefined, 'studio exists'),
 
 	{ // migrate from config.media_previews_url to settings.mediaPreviewsUrl
 		id: 'studio.settings.mediaPreviewsUrl from config',

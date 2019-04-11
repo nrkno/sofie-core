@@ -43,6 +43,7 @@ interface ISourceLayerProps {
 	isNextLine: boolean
 	outputGroupCollapsed: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	onItemClick?: (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	relative?: boolean
 	totalSegmentDuration?: number
@@ -97,6 +98,7 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 					<SourceLayerItemContainer key={segmentLineItem._id}
 						{...this.props}
 						// The following code is fine, just withTracker HOC messing with available props
+						onClick={this.props.onItemClick}
 						onDoubleClick={this.props.onItemDoubleClick}
 						mediaPreviewUrl={this.props.mediaPreviewUrl}
 						segmentLineItem={segmentLineItem}
@@ -145,6 +147,7 @@ interface IOutputGroupProps {
 	isLiveLine: boolean
 	isNextLine: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	onItemClick?: (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	followLiveLine: boolean
 	liveLineHistorySize: number
@@ -210,6 +213,7 @@ interface IProps {
 	scrollWidth: number
 	onScroll?: (scrollLeft: number, event: any) => void
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	onItemClick?: (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	followLiveLine: boolean
 	autoNextSegmentLine: boolean

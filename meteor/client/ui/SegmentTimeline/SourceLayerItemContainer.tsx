@@ -37,6 +37,7 @@ interface IPropsHeader {
 	isLiveLine: boolean
 	isNextLine: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	onClick?: (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	relative?: boolean
 	outputGroupCollapsed: boolean

@@ -27,6 +27,20 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 		return this.props.coreSystem ? (
 			<div className='studio-edit mod mhl mvn'>
 				<div>
+					<h2 className='mhn mtn'>{t('Installation name')}</h2>
+					<label className='field'>
+						{t('This name will be shown in the title bar of the window')}
+						<div className='mdi'>
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute='name'
+								obj={this.props.coreSystem}
+								type='text'
+								collection={CoreSystem}
+								className='mdinput' />
+							<span className='mdfx'></span>
+						</div>
+					</label>
 					<h2 className='mhn mtn'>{t('System-wide Notification Message')}</h2>
 					<label className='field'>
 						{t('Message')}

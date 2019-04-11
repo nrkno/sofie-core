@@ -1,0 +1,45 @@
+@import '../../styles/colorScheme';
+
+.timecode-encoder {
+	display: flex;
+	flex-direction: column;
+
+	> .timecode-encoder__top-buttons, > .timecode-encoder__bottom-buttons {
+		text-align: center;
+
+		> button {
+			background: none;
+			color: #4F4F4F;
+			border: none;
+			padding: 0 0.33em;
+
+			&:focus {
+				text-shadow: 0 0 5px transparentize($ui-button-primary, 0.5);
+			}
+		}
+	}
+
+	> input {
+		background: none;
+		border: none;
+		width: 6em;
+		text-align: center;
+
+		&:focus {
+			background: #4f4f4f;
+		}
+	}
+
+	&.error {
+		> input {
+			box-shadow: 0 0 10px transparentize($color-status-fatal, 0.5);
+			background: $color-status-fatal;
+		}
+	}
+}
+
+.dark .timecode-encoder {
+	> input {
+		color: #fff;
+	}
+}

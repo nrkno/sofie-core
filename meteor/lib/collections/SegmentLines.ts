@@ -16,6 +16,7 @@ import {
 	BlueprintRuntimeArguments,
 	MOS
 } from 'tv-automation-sofie-blueprints-integration'
+import { SegmentLineNote, NoteType } from '../api/notes'
 
 /** A "Line" in NRK Lingo. */
 export interface DBSegmentLine extends IMessageBlueprintSegmentLine {
@@ -106,23 +107,6 @@ export interface SegmentLineTimings extends IMessageBlueprintSegmentLineTimings 
 	next: Array<Time>,
 	/** The playback offset that was set for the last take */
 	playOffset: Array<Time>
-}
-
-export enum SegmentLineNoteType {
-	WARNING = 1,
-	ERROR = 2
-}
-export interface SegmentLineNote {
-	type: SegmentLineNoteType,
-	origin: {
-		name: string,
-		roId?: string,
-		segmentId?: string,
-		segmentLineId?: string,
-		segmentLineItemId?: string
-	},
-	message: string
-
 }
 
 export class SegmentLine implements DBSegmentLine {
@@ -229,7 +213,7 @@ export class SegmentLine implements DBSegmentLine {
 		)
 
 	}
-	getNotes (runtimeNotes?: boolean) {
+	getNotes (runtimeNotes?: boolean): Array<SegmentLineNote> {
 		let notes: Array<SegmentLineNote> = []
 		notes = notes.concat(this.notes || [])
 
@@ -247,9 +231,11 @@ export class SegmentLine implements DBSegmentLine {
 					const st = checkSLIContentStatus(item, sl, si ? si.config : [])
 					if (st.status === RunningOrderAPI.LineItemStatusCode.SOURCE_MISSING || st.status === RunningOrderAPI.LineItemStatusCode.SOURCE_BROKEN) {
 						notes.push({
-							type: SegmentLineNoteType.WARNING,
+							type: NoteType.WARNING,
 							origin: {
 								name: 'Media Check',
+								roId: this.runningOrderId,
+								segmentId: this.segmentId,
 								segmentLineId: this._id,
 								segmentLineItemId: item._id
 							},

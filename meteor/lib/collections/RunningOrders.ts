@@ -15,6 +15,7 @@ import { RunningOrderBaselineAdLibItems } from './RunningOrderBaselineAdLibItems
 import { IBlueprintRunningOrder } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
+import { RunningOrderNote } from '../api/notes'
 
 export enum RunningOrderHoldState {
 	NONE = 0,
@@ -87,6 +88,9 @@ export interface DBRunningOrder extends IBlueprintRunningOrder {
 	holdState?: RunningOrderHoldState
 	/** What the source of the data was */
 	dataSource: string
+
+	/** Holds notes (warnings / errors) thrown by the blueprints during creation, or appended after */
+	notes?: Array<RunningOrderNote>
 }
 export class RunningOrder implements DBRunningOrder {
 	public _id: string
@@ -117,6 +121,7 @@ export class RunningOrder implements DBRunningOrder {
 	public currentPlayingStoryStatus?: string
 	public holdState?: RunningOrderHoldState
 	public dataSource: string
+	public notes?: Array<RunningOrderNote>
 
 	constructor (document: DBRunningOrder) {
 		_.each(_.keys(document), (key: keyof DBRunningOrder) => {
@@ -282,6 +287,17 @@ export class RunningOrder implements DBRunningOrder {
 			segmentLinesMap,
 			segmentLineItems
 		}
+	}
+	getNotes (): Array<RunningOrderNote> {
+		let notes: Array<RunningOrderNote> = []
+		notes = notes.concat(this.notes || [])
+
+		return notes
+	}
+	appendNote (note: RunningOrderNote): void {
+		RunningOrders.update(this._id, {$push: {
+			notes: note
+		}})
 	}
 }
 export interface RoData {

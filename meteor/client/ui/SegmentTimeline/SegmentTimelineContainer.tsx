@@ -17,10 +17,10 @@ import { getResolvedSegment,
 	SegmentLineExtended
 } from '../../../lib/RunningOrder'
 import { RunningOrderViewEvents } from '../RunningOrderView'
-import { SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { getSpeakingMode } from '../../lib/localStorage'
+import { NoteType, SegmentLineNote } from '../../../lib/api/notes'
 
 export interface SegmentUi extends Segment {
 	/** Output layers available in the installation used by this segment */
@@ -55,10 +55,11 @@ interface IProps {
 	timeScale: number,
 	liveLineHistorySize: number
 	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onItemClick?: (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onTimeScaleChange?: (timeScaleVal: number) => void
 	onContextMenu?: (contextMenuContext: any) => void
 	onSegmentScroll?: () => void
-	onHeaderNoteClick?: (level: SegmentLineNoteType) => void
+	onHeaderNoteClick?: (level: NoteType) => void
 	followLiveSegments: boolean
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	isLastSegment: boolean
@@ -387,6 +388,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				segmentLines={this.props.segmentLines}
 				segmentNotes={this.props.segmentNotes}
 				timeScale={this.props.timeScale}
+				onItemClick={this.props.onItemClick}
 				onItemDoubleClick={this.props.onItemDoubleClick}
 				onCollapseOutputToggle={this.onCollapseOutputToggle}
 				collapsedOutputs={this.state.collapsedOutputs}

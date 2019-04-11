@@ -21,7 +21,7 @@ import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { callMethod } from '../../lib/clientAPI'
 import { ShowStylesAPI } from '../../../lib/api/showStyles'
-import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem } from 'tv-automation-sofie-blueprints-integration'
+import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { Link } from 'react-router-dom'
@@ -87,7 +87,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	}
 
 	getOptionBlueprints () {
-		return _.map(Blueprints.find().fetch(), (blueprint) => {
+		return _.map(Blueprints.find({ blueprintType: BlueprintManifestType.SHOWSTYLE }).fetch(), (blueprint) => {
 			return {
 				name: blueprint.name ? blueprint.name + ` (${blueprint._id})` : blueprint._id,
 				value: blueprint._id
@@ -250,13 +250,14 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 		doModalDialog({
 			title: t('Delete this item?'),
 			no: t('Cancel'),
+			yes: t('Delete'),
 			onAccept: () => {
 				this.onDeleteROArgument(item)
 			},
-			message: [
-				<p>{t('Are you sure you want to delete this runtime argument "{{property}}: {{value}}"?', { property: (item && item.property), value: (item && item.value) })}</p>,
+			message: <React.Fragment>
+				<p>{t('Are you sure you want to delete this runtime argument "{{property}}: {{value}}"?', { property: (item && item.property), value: (item && item.value) })}</p>
 				<p>{t('Please note: This action is irreversible!')}</p>
-			]
+			</React.Fragment>
 		})
 	}
 	renderItems () {
@@ -470,13 +471,14 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 		doModalDialog({
 			title: t('Delete this item?'),
 			no: t('Cancel'),
+			yes: t('Delete'),
 			onAccept: () => {
 				this.onDeleteSource(item)
 			},
-			message: [
-				<p>{t('Are you sure you want to delete source layer "{{sourceLayerId}}"?',{ sourceLayerId: item && item.name })}</p>,
+			message: <React.Fragment>
+				<p>{t('Are you sure you want to delete source layer "{{sourceLayerId}}"?',{ sourceLayerId: item && item.name })}</p>
 				<p>{t('Please note: This action is irreversible!')}</p>
-			]
+			</React.Fragment>
 		})
 	}
 	renderInputSources () {
@@ -827,13 +829,14 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 		doModalDialog({
 			title: t('Delete this output?'),
 			no: t('Cancel'),
+			yes: t('Delete'),
 			onAccept: () => {
 				this.onDeleteOutput(output)
 			},
-			message: [
-				<p>{t('Are you sure you want to delete source layer "{{outputId}}"?',{ outputId: output && output.name })}</p>,
+			message: <React.Fragment>
+				<p>{t('Are you sure you want to delete source layer "{{outputId}}"?',{ outputId: output && output.name })}</p>
 				<p>{t('Please note: This action is irreversible!')}</p>
-			]
+			</React.Fragment>
 		})
 	}
 	onAddOutput = () => {
@@ -1177,6 +1180,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 		doModalDialog({
 			title: t('Remove this Variant?'),
 			no: t('Cancel'),
+			yes: t('Remove'),
 			onAccept: () => {
 				callMethod('ModalDialog', ShowStylesAPI.methods.removeShowStyleVariant, showStyleVariant._id)
 			},

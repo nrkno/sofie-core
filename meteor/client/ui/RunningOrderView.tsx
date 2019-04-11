@@ -16,7 +16,7 @@ import { PlayoutAPI } from '../../lib/api/playout'
 import { RunningOrder, RunningOrders, RunningOrderHoldState } from '../../lib/collections/RunningOrders'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { SegmentLine, SegmentLines, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
+import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
@@ -51,6 +51,10 @@ import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { doUserAction } from '../lib/userAction'
 import { UserActionAPI } from '../../lib/api/userActions'
+import { ClipTrimPanel } from './ClipTrimPanel/ClipTrimPanel'
+import { VTContent, VTEditableParameters } from 'tv-automation-sofie-blueprints-integration'
+import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
+import { NoteType } from '../../lib/api/notes'
 
 type WrappedInspectorDrawer = InspectorDrawerBase & { getWrappedInstance (): InspectorDrawerBase }
 
@@ -944,6 +948,8 @@ interface IState {
 	isNotificationsCenterOpen: boolean
 	isSupportPanelOpen: boolean
 	isInspectorDrawerExpanded: boolean
+	isClipTrimmerOpen: boolean
+	selectedSegmentLineItem: SegmentLineItemUi | undefined
 }
 
 export enum RunningOrderViewEvents {
@@ -1044,7 +1050,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			]),
 			isNotificationsCenterOpen: false,
 			isSupportPanelOpen: false,
-			isInspectorDrawerExpanded: false
+			isInspectorDrawerExpanded: false,
+			isClipTrimmerOpen: false,
+			selectedSegmentLineItem: undefined
 		}
 	}
 
@@ -1197,6 +1205,17 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 					mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
 					mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
 				})
+			})
+		}
+	}
+
+	onSelectSegmentLineItem = (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => {
+		if (sli && sli.content && (sli.content as VTContent).editable &&
+			((((sli.content as VTContent).editable as VTEditableParameters).editorialDuration !== undefined) ||
+			((sli.content as VTContent).editable as VTEditableParameters).editorialStart !== undefined)) {
+			this.setState({
+				isClipTrimmerOpen: true,
+				selectedSegmentLineItem: sli
 			})
 		}
 	}
@@ -1356,15 +1375,14 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			}
 		}
 	}
-
-	onHeaderNoteClick = (segmentId: string, level: SegmentLineNoteType) => {
+	onHeaderNoteClick = (segmentId: string, level: NoteType) => {
 		NotificationCenter.snoozeAll()
 		const isOpen = this.state.isNotificationsCenterOpen
 		this.setState({
 			isNotificationsCenterOpen: true
 		})
 		setTimeout(function () {
-			NotificationCenter.highlightSource(segmentId, level === SegmentLineNoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING)
+			NotificationCenter.highlightSource(segmentId, level === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING)
 		}, isOpen ? 1 : 1000)
 	}
 
@@ -1395,6 +1413,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								onContextMenu={this.onContextMenu}
 								onSegmentScroll={this.onSegmentScroll}
 								isLastSegment={index === array.length - 1}
+								onItemClick={this.onSelectSegmentLineItem}
 								onItemDoubleClick={this.onSLItemDoubleClick}
 								onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
 							/>
@@ -1600,6 +1619,16 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									runningOrder={this.props.runningOrder}
 									onSetNext={this.onSetNext}
 									studioMode={this.state.studioMode} />
+							</ErrorBoundary>
+							<ErrorBoundary>
+								{this.state.isClipTrimmerOpen && this.state.selectedSegmentLineItem && this.props.studioInstallation &&
+									<ClipTrimDialog
+										studioInstallation={this.props.studioInstallation}
+										runningOrderId={this.props.runningOrderId}
+										selectedSegmentLineItem={this.state.selectedSegmentLineItem}
+										onClose={() => this.setState({ isClipTrimmerOpen: false })}
+										/>
+								}
 							</ErrorBoundary>
 							{this.renderSegmentsList()}
 							<ErrorBoundary>

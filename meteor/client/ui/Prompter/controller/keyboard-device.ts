@@ -17,6 +17,8 @@ export class KeyboardController extends ControllerAbstract {
 
 	private _keyDown: {[button: string]: number} = {}
 
+	private _prompterView: PrompterViewInner
+
 	/** Scroll speed, in pixels per frame */
 	private _maxSpeed: number = 100
 	/** Scroll acceleration in pixels/frame^2 */
@@ -32,6 +34,8 @@ export class KeyboardController extends ControllerAbstract {
 	constructor (view: PrompterViewInner) {
 		super (view)
 
+		this._prompterView = view
+
 		// Recall mode:
 		const recalledMode: string | null = localStorage.getItem(LOCALSTORAGE_MODE)
 		this._mode = (
@@ -46,7 +50,7 @@ export class KeyboardController extends ControllerAbstract {
 
 		if (this._mode === Mode.NORMAL) {
 			const scrollBy = Math.round(window.innerHeight * 0.66)
-			const scrollPosition = this.getScrollPosition()
+			const scrollPosition = this._prompterView.getScrollPosition()
 			if (scrollPosition !== undefined) {
 				if (
 					e.keyCode === 37 || // left
@@ -55,7 +59,7 @@ export class KeyboardController extends ControllerAbstract {
 				) {
 					e.preventDefault()
 					let newPosition = scrollPosition - scrollBy
-					this._targetPosition = this.findAnchorPosition(newPosition, scrollPosition - 10, -1) || newPosition
+					this._targetPosition = this._prompterView.findAnchorPosition(newPosition, scrollPosition - 10, -1) || newPosition
 					this._continousScrolling = -1
 					this._updateScrollPosition()
 				} else if (
@@ -67,7 +71,7 @@ export class KeyboardController extends ControllerAbstract {
 					e.preventDefault()
 
 					let newPosition = scrollPosition + scrollBy
-					this._targetPosition = this.findAnchorPosition(scrollPosition + 10, newPosition, 1) || newPosition
+					this._targetPosition = this._prompterView.findAnchorPosition(scrollPosition + 10, newPosition, 1) || newPosition
 					this._continousScrolling = 1
 					this._updateScrollPosition()
 				}
@@ -78,7 +82,7 @@ export class KeyboardController extends ControllerAbstract {
 		const timeSincePress = Date.now() - this._keyDown[e.keyCode + '']
 
 		if (this._mode === Mode.NORMAL) {
-			const scrollPosition = this.getScrollPosition()
+			const scrollPosition = this._prompterView.getScrollPosition()
 			if (scrollPosition !== undefined) {
 				if (
 					e.keyCode === 37 || // left
@@ -146,7 +150,7 @@ export class KeyboardController extends ControllerAbstract {
 		if (this._updateSpeedHandle !== null) return
 		this._updateSpeedHandle = null
 
-		const scrollPosition = this.getScrollPosition()
+		const scrollPosition = this._prompterView.getScrollPosition()
 		if (scrollPosition !== undefined) {
 			this._currentPosition = scrollPosition
 			let dp = (
@@ -193,7 +197,7 @@ export class KeyboardController extends ControllerAbstract {
 					window.scrollBy(0, speed)
 				}
 
-				const scrollPosition = this.getScrollPosition()
+				const scrollPosition = this._prompterView.getScrollPosition()
 
 				if (scrollPosition !== undefined) {
 					// Reached end-of-scroll:

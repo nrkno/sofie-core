@@ -1,3 +1,4 @@
+@import "colorScheme";
 
 .prompter {
     user-select: none;
@@ -33,8 +34,8 @@
     .prompter-segmentLine {
 
         text-align: center;
-
-        font-size: 33%;
+        letter-spacing: 0.1em;
+        font-size: 50%;
         
     }
     .prompter-break {
@@ -71,18 +72,25 @@
         font-weight: bold;
 
         &.current {
-            border-bottom: 0.2em solid #f55;
+            //border-bottom: 0.2em solid #f55;
+            background: $general-live-color;
+            color: #fff;
         }
         &.next {
-            border-bottom: 0.2em solid #5f5;
+            //border-bottom: 0.2em solid #5f5;
+            background: $general-next-color;
         }
     }
 
     .prompter-line {
+        font-family: Source Serif Pro, Roboto, Helvetica, Arial, sans-serif;
+        font-size: 0.96em;
+        letter-spacing: 0.0em;
+        line-height: 1.2em;
         margin-bottom: 0.5em;
 
         &.empty {
-            
+
         }
     }
 
@@ -132,6 +140,55 @@
                 &.right {
                     right: 0
                 }
+            }
+        }
+
+        .take-indicator,
+        .next-indicator {
+            position: absolute;
+            
+            
+            width: 0; 
+            height: 0; 
+            
+            border-left: 1em solid transparent;
+            border-right: 1em solid transparent;
+
+            transform: scaleX(0.66);
+            
+            bottom: 0;
+            margin-bottom: -1em;
+            opacity: 1;
+
+            transition: opacity 0.5s;
+
+            &.top {
+                top: 0;
+                margin-top: -1em;
+            }
+            &.hidden {
+                opacity: 0
+            }
+        }
+        .take-indicator {
+            right: 0em;
+
+            
+            border-top: 1em solid #f00;
+            border-bottom: 1em solid transparent;
+            &.top {
+                border-top: 1em solid transparent;
+                border-bottom: 1em solid #f00;
+            }
+        }
+        .next-indicator {
+            right: 1.33em;
+
+            border-top: 1em solid #0f0;
+            border-bottom: 1em solid transparent;
+            &.top {
+                border-top: 1em solid transparent;
+                border-bottom: 1em solid #0f0;
             }
         }
     }
