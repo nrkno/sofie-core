@@ -128,13 +128,16 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 
 	private reactiveRunningOrderStatus (runningOrderId: string | undefined) {
 		const t = i18nTranslator
+		let oldNoteIds: Array<string> = []
 
 		this.autorun(() => {
+			const newNoteIds: Array<string> = []
 
 			const runningOrder = RunningOrders.findOne(runningOrderId)
 			if (runningOrder) {
 				let unsyncedId = runningOrder._id + '_unsynced'
 				let newNotification: Notification | undefined = undefined
+
 				if (runningOrder.unsynced) {
 					newNotification = new Notification(
 						unsyncedId,
@@ -164,6 +167,7 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 						],
 						-1
 					)
+					newNoteIds.push(unsyncedId)
 				}
 				if (newNotification && !Notification.isEqual(this._runningOrderStatus[unsyncedId], newNotification)) {
 					this._runningOrderStatus[unsyncedId] = newNotification
@@ -172,7 +176,36 @@ class RunningOrderViewNotifier extends WithManagedTracker {
 					delete this._runningOrderStatus[unsyncedId]
 					this._runningOrderStatusDep.changed()
 				}
+
+				let roNotesId = runningOrder._id + '_ronotes_'
+				if (runningOrder.notes) {
+					runningOrder.notes.forEach((note) => {
+						const roNoteId = roNotesId + note.origin.name + '_' + note.origin.roId + '_' + note.message + '_' + note.type
+						const newNotification = new Notification(
+							roNoteId,
+							note.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
+							runningOrder.notes,
+							'RunningOrder',
+							getCurrentTime(),
+							true,
+							[],
+							-1
+						)
+						if (!Notification.isEqual(this._runningOrderStatus[roNoteId], newNotification)) {
+							this._runningOrderStatus[roNoteId] = newNotification
+							this._runningOrderStatusDep.changed()
+						}
+						newNoteIds.push(roNoteId)
+					})
+				}
 			}
+
+			_.difference(oldNoteIds, newNoteIds).forEach((item) => {
+				delete this._runningOrderStatus[item]
+				this._runningOrderStatusDep.changed()
+			})
+
+			oldNoteIds = newNoteIds
 		})
 	}
 
