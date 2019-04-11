@@ -1,0 +1,34 @@
+.clip-trim-panel {
+	width: 500px;
+
+	.clip-trim-panel__monitors {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		.clip-trim-panel__monitors__monitor {
+			flex: 1 1;
+			margin: 15px;
+		}
+	}
+
+	.clip-trim-panel__timecode-encoders {
+		display: flex;
+		align-content: space-between;
+		justify-content: space-between;
+		margin: 15px 15px;
+
+		.clip-trim-panel__timecode-encoders__input {
+			> label {
+				text-transform: uppercase;
+				font-weight: 600;
+				color: #777;
+				text-align: center;
+				display: block;
+			}
+			> .timecode-encoder {
+				font-size: 1.3em;
+			}
+		}
+	}
+}

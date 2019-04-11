@@ -226,6 +226,8 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 
 		const realCursorTimePosition = this.props.cursorTimePosition + seek
 
+		const vtContent = this.props.segmentLineItem.content as VTContent
+
 		return <React.Fragment>
 					{this.renderInfiniteItemContentEnded()}
 					{this.scenes &&
@@ -246,11 +248,12 @@ export const VTSourceRenderer = translate()(class extends CustomLayerItemRendere
 						})}>
 							{this.begin}
 						</span>
-						{(this.begin && this.end === '' && this.props.segmentLineItem.content && this.props.segmentLineItem.content.loop) &&
+						{(this.begin && this.end === '' && vtContent && vtContent.loop) &&
 							(<div className='segment-timeline__layer-item__label label-icon'>
 								<Lottie options={defaultOptions} width={24} height={16} isStopped={!this.props.showMiniInspector} isPaused={false} />
 							</div>)
 						}
+						{this.renderContentTrimmed()}
 					</span>
 					<span className='segment-timeline__layer-item__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
 						{(this.end && this.props.segmentLineItem.content && this.props.segmentLineItem.content.loop) &&
