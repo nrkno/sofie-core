@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import * as moment from 'moment'
 import { SaferEval } from 'safer-eval'
-import { SegmentLine, SegmentLineNote, SegmentLineNoteType } from '../../lib/collections/SegmentLines'
+import { SegmentLine } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { SegmentLineAdLibItem } from '../../lib/collections/SegmentLineAdLibItems'
 import {
@@ -80,6 +80,7 @@ import {
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice, PlayoutDeviceSettings } from '../../lib/collections/PeripheralDevices'
 import { Mongo } from 'meteor/mongo'
+import { SegmentLineNote, NoteType } from '../../lib/api/notes'
 
 export namespace ConfigRef {
 	export function getStudioConfigRef (studioInstallationId: string, configKey: string): string {
@@ -205,7 +206,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 		check(message, String)
 		logger.error('Error from blueprint: ' + message)
 		this._pushNote(
-			SegmentLineNoteType.ERROR,
+			NoteType.ERROR,
 			message
 		)
 		throw new Meteor.Error(500, message)
@@ -214,7 +215,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 	warning (message: string) {
 		check(message, String)
 		this._pushNote(
-			SegmentLineNoteType.WARNING,
+			NoteType.WARNING,
 			message
 		)
 	}
@@ -228,7 +229,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 		if (this._segmentLineId) ids.push('segmentLineId: ' + this._segmentLineId)
 		return ids.join(',')
 	}
-	private _pushNote (type: SegmentLineNoteType, message: string) {
+	private _pushNote (type: NoteType, message: string) {
 		if (this.handleNotesExternally) {
 			this.savedNotes.push({
 				type: type,
@@ -241,7 +242,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 				message: message
 			})
 		} else {
-			if (type === SegmentLineNoteType.WARNING) {
+			if (type === NoteType.WARNING) {
 				logger.warn(`Warning from "${this._getLoggerName()}": "${message}"\n(${this.getLoggerIdentifier()})`)
 			} else {
 				logger.error(`Error from "${this._getLoggerName()}": "${message}"\n(${this.getLoggerIdentifier()})`)

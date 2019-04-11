@@ -1,11 +1,12 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { applyClassToDocument, registerCollection } from '../lib'
-import { SegmentLines, SegmentLineNote } from './SegmentLines'
+import { SegmentLines } from './SegmentLines'
 import { MOS } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrders } from './RunningOrders'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
+import { SegmentLineNote } from '../api/notes'
 
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
 export interface DBSegment {

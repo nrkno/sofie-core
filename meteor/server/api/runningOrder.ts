@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { check } from 'meteor/check'
 import { IBlueprintPostProcessSegmentLine } from 'tv-automation-sofie-blueprints-integration'
 import { RunningOrder, RunningOrders } from '../../lib/collections/RunningOrders'
-import { SegmentLine, SegmentLines, DBSegmentLine, SegmentLineNoteType, SegmentLineNote } from '../../lib/collections/SegmentLines'
+import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/SegmentLines'
 import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
 import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
 import { saveIntoDb, fetchBefore, getRank, fetchAfter, getCurrentTime, getHash, asyncCollectionUpdate, waitForPromiseAll } from '../../lib/lib'
@@ -20,6 +20,7 @@ import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { SegmentLineNote, NoteType } from '../../lib/api/notes'
 const PackageInfo = require('../../package.json')
 
 /**
@@ -301,7 +302,7 @@ export function runPostProcessBlueprint (ro: RunningOrder, segment: Segment) {
 		logger.error(e.stack ? e.stack : e.toString())
 		// throw e
 		notes = [{
-			type: SegmentLineNoteType.ERROR,
+			type: NoteType.ERROR,
 			origin: {
 				name: '',
 				roId: context.runningOrder._id,

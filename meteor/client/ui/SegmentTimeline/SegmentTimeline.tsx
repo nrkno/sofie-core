@@ -23,7 +23,6 @@ import { RundownUtils } from '../../lib/rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { scrollToSegment } from '../../lib/viewPort'
-import { SegmentLineNote, SegmentLineNoteType } from '../../../lib/collections/SegmentLines'
 
 // @ts-ignore Not recognized by Typescript
 import * as Zoom_In_MouseOut from './Zoom_In_MouseOut.json'
@@ -38,6 +37,7 @@ import * as Zoom_Out_MouseOut from './Zoom_Out_MouseOut.json'
 // @ts-ignore Not recognized by Typescript
 import * as Zoom_Out_MouseOver from './Zoom_Out_MouseOver.json'
 import { LottieButton } from '../../lib/LottieButton'
+import { SegmentLineNote, NoteType } from '../../../lib/api/notes'
 
 interface IProps {
 	key: string
@@ -72,7 +72,7 @@ interface IProps {
 	onContextMenu?: (contextMenuContext: any) => void
 	onItemClick?: (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onHeaderNoteClick?: (level: SegmentLineNoteType) => void
+	onHeaderNoteClick?: (level: NoteType) => void
 	segmentRef?: (el: SegmentTimelineClass, sId: string) => void
 	followingSegmentLine: SegmentLineUi | undefined
 	isLastSegment: boolean
@@ -499,11 +499,11 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		const {t} = this.props
 
 		const criticalNotes = _.reduce(notes, (prev, item) => {
-			if (item.type === SegmentLineNoteType.ERROR) return ++prev
+			if (item.type === NoteType.ERROR) return ++prev
 			return prev
 		}, 0)
 		const warningNotes = _.reduce(notes, (prev, item) => {
-			if (item.type === SegmentLineNoteType.WARNING) return ++prev
+			if (item.type === NoteType.WARNING) return ++prev
 			return prev
 		}, 0)
 
@@ -532,7 +532,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					</h2>
 					<div className='segment-timeline__title__notes'>
 						{criticalNotes > 0 && <div className='segment-timeline__title__notes__note'
-							onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(SegmentLineNoteType.ERROR)}>
+							onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(NoteType.ERROR)}>
 							<img className='icon' src='/icons/warning_icon.svg' />
 							<div>
 								{t('Critical Errors')}:&nbsp;
@@ -542,7 +542,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							</div>
 						</div>}
 						{warningNotes > 0 && <div className='segment-timeline__title__notes__note'
-							onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(SegmentLineNoteType.WARNING)}>
+							onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(NoteType.WARNING)}>
 							<img className='icon' src='/icons/warning_icon.svg' />
 							<div>
 								{t('Warnings')}:&nbsp;
