@@ -98,8 +98,8 @@ function checkDatabaseVersions () {
 							blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
 							parseVersion(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0'),
 							'to fix, run migration',
-							'blueprint',
-							'database'
+							'blueprint.blueprintVersion',
+							`databaseVersion.showStyle[${showStyleBase._id}]`
 						)
 					}
 
@@ -114,8 +114,8 @@ function checkDatabaseVersions () {
 									blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
 									parseVersion(blueprint.databaseVersion.studio[studio._id] || '0.0.0'),
 									'to fix, run migration',
-									'blueprint',
-									'database'
+									'blueprint.blueprintVersion',
+									`databaseVersion.studio[${studio._id}]`
 								)
 							}
 						}
@@ -157,7 +157,6 @@ function checkDatabaseVersion (
 ): { statusCode: StatusCode, messages: string[] } {
 
 	if (currentVersion) currentVersion = semver.clean(currentVersion)
-	if (expectVersion) expectVersion = semver.clean(expectVersion)
 
 	if (expectVersion) {
 		if (currentVersion) {
@@ -210,13 +209,13 @@ function checkDatabaseVersion (
 		} else {
 			return {
 				statusCode: StatusCode.FATAL,
-				messages: [`${meName} version missing`]
+				messages: [`Current ${meName} version missing (when comparing with ${theyName})`]
 			}
 		}
 	} else {
 		return {
 			statusCode: StatusCode.FATAL,
-			messages: [`${theyName} version missing`]
+			messages: [`Expected ${theyName} version missing (when comparing with ${meName})`]
 		}
 	}
 }
@@ -230,15 +229,15 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 		parseVersion(blueprint.integrationVersion || '0.0.0'),
 		PackageInfo.dependencies['tv-automation-sofie-blueprints-integration'],
 		'Blueprint has to be updated',
-		'blueprint',
-		'core'
+		'blueprint.integrationVersion',
+		'core.tv-automation-sofie-blueprints-integration'
 	)
 	let tsrStatus = checkDatabaseVersion(
 		parseVersion(blueprint.TSRVersion || '0.0.0'),
 		PackageInfo.dependencies['timeline-state-resolver-types'],
 		'Blueprint has to be updated',
-		'blueprint',
-		'core'
+		'blueprint.TSRVersion',
+		'core.timeline-state-resolver-types'
 	)
 
 	let coreStatus: {
@@ -250,8 +249,8 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 			parseVersion(blueprint.minimumCoreVersion),
 			parseVersion(CURRENT_SYSTEM_VERSION),
 			'Blueprint does not support this version of core',
-			'minimum core',
-			'current core'
+			'blueprint.minimumCoreVersion',
+			'core system'
 		)
 	}
 
