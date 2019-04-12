@@ -14,7 +14,7 @@ import {
 	MappingAtem,
 	MappingAtemType,
 	MappingCasparCG,
-	TimelineObjCCGVideo,
+	TimelineObjCCGMedia,
 	TimelineContentTypeCasparCg
 } from 'timeline-state-resolver-types'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
@@ -115,7 +115,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 
 		let input = this.state.inputValues[mappingLayerId]
 
-		let o: TimelineObjCCGVideo = {
+		let o: TimelineObjCCGMedia = {
 			id: 'caspar_' + mappingLayerId,
 			trigger: {
 				type: TimelineTypes.TriggerType.TIME_ABSOLUTE,
@@ -123,7 +123,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 			},
 			LLayer: mappingLayerId,
 			content: {
-				type: TimelineContentTypeCasparCg.VIDEO,
+				type: TimelineContentTypeCasparCg.MEDIA,
 				attributes: {
 					file: input + '',
 				}
