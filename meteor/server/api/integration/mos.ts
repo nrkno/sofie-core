@@ -76,7 +76,6 @@ import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/Sh
 import { updateExpectedMediaItems } from '../expectedMediaItems'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
 import { SegmentLineNote, NoteType } from '../../../lib/api/notes'
-import { runInRunningOrderContext } from '../../../lib/api/runningOrder';
 const PackageInfo = require('../../../package.json')
 
 export function roId (roId: MOS.MosString128, original?: boolean): string {

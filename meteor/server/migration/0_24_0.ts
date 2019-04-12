@@ -1,7 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import * as _ from 'underscore'
-import { Blueprints } from '../../lib/collections/Blueprints';
-import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration';
+import { Blueprints } from '../../lib/collections/Blueprints'
+import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 
 // 0.24.0
 addMigrationSteps( '0.24.0', [

@@ -1,10 +1,8 @@
-import * as React from 'react'
-import * as $ from 'jquery'
-import * as _ from 'underscore'
 import { PrompterViewInner } from '../PrompterView'
 import { MouseIshController } from './mouse-ish-device'
 import { ControllerAbstract } from './lib'
 import { KeyboardController } from './keyboard-device'
+import * as _ from 'underscore'
 
 export class PrompterControlManager {
 	private _view: PrompterViewInner

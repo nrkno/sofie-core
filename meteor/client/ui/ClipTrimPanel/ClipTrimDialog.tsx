@@ -1,15 +1,12 @@
 import * as React from 'react'
 import { translate, InjectedTranslateProps } from 'react-i18next'
-import * as Escape from 'react-escape'
-import * as VelocityReact from 'velocity-react'
 import { ClipTrimPanel } from './ClipTrimPanel'
-import * as CoreIcon from '@nrk/core-icons/jsx'
 import { VTContent, VTEditableParameters } from 'tv-automation-sofie-blueprints-integration'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { SegmentLineItem } from '../../../lib/collections/SegmentLineItems'
-import { ModalDialog } from '../../lib/ModalDialog';
-import { doUserAction } from '../../lib/userAction';
-import { UserActionAPI } from '../../../lib/api/userActions';
+import { ModalDialog } from '../../lib/ModalDialog'
+import { doUserAction } from '../../lib/userAction'
+import { UserActionAPI } from '../../../lib/api/userActions'
 
 export interface IProps {
 	runningOrderId: string

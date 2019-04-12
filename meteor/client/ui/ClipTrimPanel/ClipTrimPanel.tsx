@@ -174,7 +174,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 		)
 	}
 
-	private ensureHasTrailingSlash(input: string | null): string | null {
+	private ensureHasTrailingSlash (input: string | null): string | null {
 		if (input) {
 			return (input.substr(-1) === '/') ? input : input + '/'
 		} else {

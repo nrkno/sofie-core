@@ -31,7 +31,7 @@ export class TimecodeEncoder extends React.Component<IProps, IState> {
 		}
 	}
 
-	static getDerivedStateFromProps(props: IProps, state: IState): Partial<IState> {
+	static getDerivedStateFromProps (props: IProps, state: IState): Partial<IState> {
 		const newValid = TimecodeEncoder.secondsToTimecode(props.value || 0, props.fps)
 		return _.extend({
 			validValue: newValid,

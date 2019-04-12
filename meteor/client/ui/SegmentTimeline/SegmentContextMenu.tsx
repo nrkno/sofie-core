@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as $ from 'jquery'
 import * as Escape from 'react-escape'
 import { translate } from 'react-i18next'
 import { ContextMenu, MenuItem } from 'react-contextmenu'
@@ -69,7 +68,7 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 	}
 
 	onPlayFromHere = (segLine, e) => {
-
+		// TODO
 	}
 
 	private getSLStartsAt = (): number | null => {

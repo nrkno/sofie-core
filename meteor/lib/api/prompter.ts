@@ -38,7 +38,6 @@ export namespace PrompterAPI {
 
 			_.each(sl.getAllSegmentLineItems(), (sli) => {
 
-				let text: string = ''
 				if (
 					sli.content &&
 					sli.content.fullScript

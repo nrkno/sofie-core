@@ -1,5 +1,3 @@
-import * as React from 'react'
-import * as $ from 'jquery'
 import * as _ from 'underscore'
 import { PrompterViewInner } from '../PrompterView'
 

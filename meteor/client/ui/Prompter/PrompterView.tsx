@@ -173,7 +173,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 		return foundPositions[0] || null
 	}
-	getScrollPosition () {
+	getScrollPosition (): number | undefined {
 		return window.scrollY || window.pageYOffset || (document.documentElement || {scrollTop: undefined}).scrollTop
 	}
 	onWindowScroll = () => {
@@ -196,7 +196,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 		if (runningOrder) {
 
-			const positionTop = this.getScrollPosition()
+			const positionTop = this.getScrollPosition() || 0
 			const positionBottom = positionTop + window.innerHeight
 
 			const anchors = $('.scroll-anchor')
@@ -223,7 +223,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			const currentPositionStart 	= currentSegmentLineElement 		? (currentSegmentLineElement.offset() 		|| {top: undefined}).top : null
 			const currentPositionEnd 	= currentSegmentLineElementAfter 	? (currentSegmentLineElementAfter.offset() 	|| {top: undefined}).top : null
 
-			const nextPositionStart 	= nextSegmentLineElement 			? (nextSegmentLineElement.offset() 		|| {top: undefined}).top : null
+			// const nextPositionStart 	= nextSegmentLineElement 			? (nextSegmentLineElement.offset() 		|| {top: undefined}).top : null
 			const nextPositionEnd 		= nextSegmentLineElementAfter 		? (nextSegmentLineElementAfter.offset() 	|| {top: undefined}).top : null
 
 			if (currentPositionEnd && currentPositionEnd < positionTop) {
@@ -313,7 +313,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
 
 	let studioId = objectPathGet(props, 'match.params.studioId')
-	let studioInstallationSubscription
 	let studioInstallation
 	if (studioId) {
 		studioInstallation = StudioInstallations.findOne(studioId)

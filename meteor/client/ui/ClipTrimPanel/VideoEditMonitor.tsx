@@ -4,7 +4,6 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import * as faStepForward from '@fortawesome/fontawesome-free-solid/faStepForward'
 import * as faStepBackward from '@fortawesome/fontawesome-free-solid/faStepBackward'
 import * as faPlay from '@fortawesome/fontawesome-free-solid/faPlay'
-import * as faPause from '@fortawesome/fontawesome-free-solid/faPause'
 import * as faFastForward from '@fortawesome/fontawesome-free-solid/faFastForward'
 import * as faFastBackward from '@fortawesome/fontawesome-free-solid/faFastBackward'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
@@ -73,7 +72,7 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 	}
 
 	handleFastBackward = (e: React.MouseEvent<HTMLButtonElement>) => {
-
+		// TODO
 	}
 
 	handlePlay = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -91,7 +90,7 @@ export const VideoEditMonitor = translate()(class VideoEditMonitor extends React
 	}
 
 	handleFastForward = (e: React.MouseEvent<HTMLButtonElement>) => {
-
+		// TODO
 	}
 
 	componentDidUpdate () {

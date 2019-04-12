@@ -5,7 +5,6 @@ import {
 	getCoreSystemCursor,
 	parseVersion,
 	Version,
-	stripVersion,
 	parseExpectedVersion
 } from '../lib/collections/CoreSystem'
 import { getCurrentTime } from '../lib/lib'
