@@ -67,7 +67,7 @@ function checkDatabaseVersions () {
 		let dbVersion = databaseSystem.version ? parseVersion(databaseSystem.version) : null
 		let currentVersion = parseVersion(CURRENT_SYSTEM_VERSION)
 
-		setSystemStatus('databaseVersion', checkDatabaseVersion(currentVersion, dbVersion, 'to fix, run migration', 'core', 'database'))
+		setSystemStatus('databaseVersion', checkDatabaseVersion(currentVersion, dbVersion, 'to fix, run migration', 'core', 'system database'))
 
 		// Blueprints:
 		let blueprintIds: {[id: string]: true} = {}
@@ -148,7 +148,13 @@ function checkDatabaseVersions () {
  * @param currentVersion
  * @param dbVersion
  */
-function checkDatabaseVersion (currentVersion: Version | null, expectVersion: Version | null, fixMessage: string, meName: string, theyName: string): { statusCode: StatusCode, messages: string[] } {
+function checkDatabaseVersion (
+	currentVersion: Version | null,
+	expectVersion: Version | null,
+	fixMessage: string,
+	meName: string,
+	theyName: string
+): { statusCode: StatusCode, messages: string[] } {
 
 	if (currentVersion) currentVersion = semver.clean(currentVersion)
 	if (expectVersion) expectVersion = semver.clean(expectVersion)

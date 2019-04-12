@@ -50,9 +50,9 @@ import * as semver from 'semver'
  * 0.18.0: Release 4   (2018-11-26)
  * 0.19.0: Release 5   (2019-01-11)
  * 0.20.0: Release 5.1 (2019-02-05)
- * 0.21.0: Release 6   (TBD, in testing)
- * 0.22.0: Release 7   (TBD)
- * 0.23.0: Release 8   (TBD)
+ * 0.21.0: Release 6   (never released)
+ * 0.22.0: Release 7   (2019-03-15)
+ * 0.23.0: Release 8   (2019-04-08)
  * 0.24.0: Release 9   (TBD)
  */
 export const CURRENT_SYSTEM_VERSION = '0.24.0'
