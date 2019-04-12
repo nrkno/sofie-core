@@ -19,6 +19,7 @@ import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
 import { StudioInstallations } from '../lib/collections/StudioInstallations'
 import { logger } from './logging'
+import * as semver from 'semver'
 const PackageInfo = require('../package.json')
 
 function initializeCoreSystem () {
@@ -29,7 +30,7 @@ function initializeCoreSystem () {
 			_id: SYSTEM_ID,
 			created: getCurrentTime(),
 			modified: getCurrentTime(),
-			version: version.toString(),
+			version: version,
 			previousVersion: null,
 			storePath: '' // to be filled in later
 		})
@@ -147,35 +148,59 @@ function checkDatabaseVersions () {
  * @param currentVersion
  * @param dbVersion
  */
-function checkDatabaseVersion (currentVersion: Version | null, dbVersion: Version | null, fixMessage: string, meName: string, theyName: string) {
-	if (dbVersion) {
+function checkDatabaseVersion (currentVersion: Version | null, expectVersion: Version | null, fixMessage: string, meName: string, theyName: string): { statusCode: StatusCode, messages: string[] } {
+
+	if (currentVersion) currentVersion = semver.clean(currentVersion)
+	if (expectVersion) expectVersion = semver.clean(expectVersion)
+
+	if (expectVersion) {
 		if (currentVersion) {
-			if (dbVersion.major !== currentVersion.major) {
-				return {
-					statusCode: StatusCode.BAD,
-					messages: [`Version mismatch (major version differ): ${meName} version: ${currentVersion.toString()}, ${theyName} version: ${dbVersion.toString()}` + (fixMessage ? ` (${fixMessage})` : '')]
-				}
-			} else if (dbVersion.minor !== currentVersion.minor) {
-				return {
-					statusCode: StatusCode.WARNING_MAJOR,
-					messages: [`Version mismatch (minor version differ): ${meName} version: ${currentVersion.toString()}, ${theyName} version: ${dbVersion.toString()}` + (fixMessage ? ` (${fixMessage})` : '')]
-				}
-			} else if (dbVersion.patch !== currentVersion.patch) {
-				return {
-					statusCode: StatusCode.WARNING_MINOR,
-					messages: [`Version mismatch (patch differ): ${meName} version: ${currentVersion.toString()}, ${theyName} version: ${dbVersion.toString()}` + (fixMessage ? ` (${fixMessage})` : '')]
-				}
-			} else if (dbVersion.label !== currentVersion.label) {
-				return {
-					statusCode: StatusCode.WARNING_MINOR,
-					messages: [`Version mismatch (label differ): ${meName} version: ${currentVersion.toString()}, ${theyName} version: ${dbVersion.toString()}` + (fixMessage ? ` (${fixMessage})` : '')]
-				}
-			} else {
+
+			if (semver.satisfies(currentVersion, expectVersion)) {
 				return {
 					statusCode: StatusCode.GOOD,
-					messages: [`${meName} version: ${currentVersion.toString()}`]
+					messages: [`${meName} version: ${currentVersion}`]
+				}
+			} else {
+
+				const currentV = new semver.SemVer(currentVersion, {includePrerelease: true})
+				const expectV = new semver.SemVer(expectVersion, {includePrerelease: true})
+
+				const message = `Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version of ${theyName}: "${expectVersion}"` + (fixMessage ? ` (${fixMessage})` : '')
+
+				if (!expectV || !currentV) {
+					return {
+						statusCode: StatusCode.BAD,
+						messages: [ message ]
+					}
+				} else if (expectV.major !== currentV.major) {
+					return {
+						statusCode: StatusCode.BAD,
+						messages: [message]
+					}
+				} else if (expectV.minor !== currentV.minor) {
+					return {
+						statusCode: StatusCode.WARNING_MAJOR,
+						messages: [message]
+					}
+				} else if (expectV.patch !== currentV.patch) {
+					return {
+						statusCode: StatusCode.WARNING_MINOR,
+						messages: [message]
+					}
+				} else if (!_.isEqual(expectV.prerelease, currentV.prerelease)) {
+					return {
+						statusCode: StatusCode.WARNING_MINOR,
+						messages: [message]
+					}
+				} else {
+					return {
+						statusCode: StatusCode.BAD,
+						messages: [ message ]
+					}
 				}
 			}
+
 		} else {
 			return {
 				statusCode: StatusCode.FATAL,
@@ -193,21 +218,18 @@ function checkDatabaseVersion (currentVersion: Version | null, dbVersion: Versio
 function checkBlueprintCompability (blueprint: Blueprint) {
 	if (!PackageInfo.dependencies) throw new Meteor.Error(500, `Package.dependencies not set`)
 
-	let integrationVersionStr = stripVersion(PackageInfo.dependencies['tv-automation-sofie-blueprints-integration'])
-	let TSRTypesVersionStr = stripVersion(PackageInfo.dependencies['timeline-state-resolver-types'])
-
 	let systemStatusId = 'blueprintCompability_' + blueprint._id
 
 	let integrationStatus = checkDatabaseVersion(
 		parseVersion(blueprint.integrationVersion || '0.0.0'),
-		parseVersion(integrationVersionStr),
+		PackageInfo.dependencies['tv-automation-sofie-blueprints-integration'],
 		'Blueprint has to be updated',
 		'blueprint',
 		'core'
 	)
 	let tsrStatus = checkDatabaseVersion(
 		parseVersion(blueprint.TSRVersion || '0.0.0'),
-		parseVersion(TSRTypesVersionStr),
+		PackageInfo.dependencies['timeline-state-resolver-types'],
 		'Blueprint has to be updated',
 		'blueprint',
 		'core'

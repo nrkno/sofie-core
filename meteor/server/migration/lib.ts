@@ -5,9 +5,9 @@ import { Collections, objectPathGet } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { compareVersions, parseVersion } from '../../lib/collections/CoreSystem'
 import { logger } from '../logging'
 import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
+import * as semver from 'semver'
 
 /**
  * Convenience function to generate basic test
@@ -199,11 +199,11 @@ export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceTy
 				let device = devices[i]
 				if (!device.expectedVersions) device.expectedVersions = {}
 
-				let expectedVersion = device.expectedVersions[libraryName]
+				let expectedVersion = semver.clean(device.expectedVersions[libraryName])
 
 				if (expectedVersion) {
 					try {
-						if (compareVersions(parseVersion(expectedVersion), parseVersion(versionStr)) < 0) {
+						if ( semver.lt(expectedVersion, semver.clean(versionStr) || '0.0.0') ) {
 							return `Expected version ${libraryName}: ${expectedVersion} should be at least ${versionStr}`
 						}
 					} catch (e) {
@@ -219,12 +219,11 @@ export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceTy
 			_.each(devices, (device) => {
 				if (!device.expectedVersions) device.expectedVersions = {}
 
-				let version = parseVersion(versionStr)
-				let expectedVersion = device.expectedVersions[libraryName]
-				if (!expectedVersion || compareVersions(parseVersion(expectedVersion), version) < 0) {
+				let expectedVersion = semver.clean(device.expectedVersions[libraryName])
+				if (!expectedVersion || semver.lt(expectedVersion, semver.clean(versionStr) || '0.0.0')) {
 					let m = {}
-					m['expectedVersions.' + libraryName] = version.toString()
-					logger.info(`Migration: Updating expectedVersion ${libraryName} of device ${device._id} from "${expectedVersion}" to "${version.toString()}"`)
+					m['expectedVersions.' + libraryName] = versionStr
+					logger.info(`Migration: Updating expectedVersion ${libraryName} of device ${device._id} from "${expectedVersion}" to "${versionStr}"`)
 					PeripheralDevices.update(device._id, {$set: m})
 				}
 			})
