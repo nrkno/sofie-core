@@ -6,7 +6,7 @@ import { PeripheralDevices, PeripheralDevice } from '../lib/collections/Peripher
 import { getCurrentTime, Time } from '../lib/lib'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { setMeteorMethods, Methods } from './methods'
-import { parseVersion } from '../lib/collections/CoreSystem'
+import { parseVersion, parseExpectedVersion } from '../lib/collections/CoreSystem'
 import { StatusResponse, CheckObj, SystemStatusAPI, ExternalStatus, CheckError } from '../lib/api/systemStatus'
 import { getRelevantSystemVersions } from './coreSystem'
 import * as semver from 'semver'
@@ -100,7 +100,7 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 					let versionStr = deviceVersions[libraryName]
 
 					let version = parseVersion(versionStr)
-					let expectedVersion = parseVersion(expectedVersionStr)
+					let expectedVersion = parseExpectedVersion(expectedVersionStr)
 
 					let statusCode = StatusCode.GOOD
 					let messages: Array<string> = []

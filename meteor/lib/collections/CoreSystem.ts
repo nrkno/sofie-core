@@ -100,3 +100,10 @@ export function parseVersion (v: string | Version): Version {
 	if (!valid) throw new Meteor.Error(500, `Invalid version: "${v}"`)
 	return valid
 }
+export function parseExpectedVersion (v: string | Version): Version {
+	let v2 = semver.coerce(v)
+	if (!v2) throw new Meteor.Error(500, `Bad expected version: "${v}"`)
+	const valid = semver.valid(v2)
+	if (!valid) throw new Meteor.Error(500, `Invalid expected version: "${v}"`)
+	return valid
+}
