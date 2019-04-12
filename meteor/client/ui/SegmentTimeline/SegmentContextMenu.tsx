@@ -33,11 +33,11 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 			this.props.studioMode && this.props.runningOrder && this.props.runningOrder.active ?
 				<Escape to='document'>
 					<ContextMenu id='segment-timeline-context-menu'>
-						{segLine && !segLine.invalid && timecode && <React.Fragment>
-							{startsAt && <MenuItem onClick={(e) => this.props.onSetNext(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
+						{segLine && !segLine.invalid && timecode !== null && <React.Fragment>
+							{startsAt !== null && <MenuItem onClick={(e) => this.props.onSetNext(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
 								<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span> ({RundownUtils.formatTimeToShortTime(Math.floor(startsAt / 1000) * 1000)})
 							</MenuItem>}
-							{(startsAt && segLine) ? <React.Fragment>
+							{(startsAt !== null && segLine) ? <React.Fragment>
 								<MenuItem onClick={(e) => this.onSetAsNextFromHere(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
 									<span dangerouslySetInnerHTML={{ __html: t('Set <strong>Next</strong> Here') }}></span> ({RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
 								</MenuItem>
@@ -46,7 +46,7 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 								</MenuItem>
 							</React.Fragment> : null}
 						</React.Fragment>}
-						{segLine && !timecode && <MenuItem onClick={(e) => this.props.onSetNext(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
+						{segLine && timecode === null && <MenuItem onClick={(e) => this.props.onSetNext(segLine, e)} disabled={segLine._id === this.props.runningOrder.currentSegmentLineId}>
 							<span dangerouslySetInnerHTML={{ __html: t('Set segment as <strong>Next</strong>') }}></span>
 						</MenuItem>}
 					</ContextMenu>
@@ -73,7 +73,7 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 	}
 
 	private getSLStartsAt = (): number | null => {
-		if (this.props.contextMenuContext && this.props.contextMenuContext.segmentLineStartsAt) {
+		if (this.props.contextMenuContext && this.props.contextMenuContext.segmentLineStartsAt !== undefined) {
 			return this.props.contextMenuContext.segmentLineStartsAt
 		}
 		return null
