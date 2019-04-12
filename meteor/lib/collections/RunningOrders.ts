@@ -67,6 +67,8 @@ export interface DBRunningOrder extends IBlueprintRunningOrder {
 	currentSegmentLineId: string | null
 	/** the id of the Next Segment Line - if empty, no segment will follow Live Segment Line */
 	nextSegmentLineId: string | null
+	/** The time offset of the next line */
+	nextTimeOffset?: number | null
 	/** if nextSegmentLineId was set manually (ie from a user action) */
 	nextSegmentLineManual?: boolean
 	/** the id of the Previous Segment Line */
@@ -114,6 +116,7 @@ export class RunningOrder implements DBRunningOrder {
 	public nextSegmentLineManual?: boolean
 	public currentSegmentLineId: string | null
 	public nextSegmentLineId: string | null
+	public nextTimeOffset?: number
 	public startedPlayback?: Time
 	public currentPlayingStoryStatus?: string
 	public holdState?: RunningOrderHoldState

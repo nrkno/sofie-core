@@ -69,7 +69,7 @@ export function take (roId: string): ClientAPI.ClientResponse {
 	}
 	return ServerPlayoutAPI.roTake(runningOrder)
 }
-export function setNext (roId: string, nextSlId: string | null, setManually?: boolean): ClientAPI.ClientResponse {
+export function setNext (roId: string, nextSlId: string | null, setManually?: boolean, timeOffset?: number | undefined): ClientAPI.ClientResponse {
 	check(roId, String)
 	if (nextSlId) check(nextSlId, String)
 
@@ -89,7 +89,7 @@ export function setNext (roId: string, nextSlId: string | null, setManually?: bo
 		return ClientAPI.responseError('The Next cannot be changed next during a Hold!')
 	}
 
-	return ServerPlayoutAPI.roSetNext(roId, nextSlId, setManually)
+	return ServerPlayoutAPI.roSetNext(roId, nextSlId, setManually, timeOffset)
 }
 export function moveNext (
 	roId: string,
@@ -431,8 +431,8 @@ let methods: UserMethods = {}
 methods[UserActionAPI.methods.take] = function (roId: string): ClientAPI.ClientResponse {
 	return take.call(this, roId)
 }
-methods[UserActionAPI.methods.setNext] = function (roId: string, slId: string): ClientAPI.ClientResponse {
-	return setNext.call(this, roId, slId, true)
+methods[UserActionAPI.methods.setNext] = function (roId: string, slId: string, timeOffset?: number): ClientAPI.ClientResponse {
+	return setNext.call(this, roId, slId, true, timeOffset)
 }
 methods[UserActionAPI.methods.moveNext] = function (roId: string, horisontalDelta: number, verticalDelta: number): ClientAPI.ClientResponse {
 	return moveNext.call(this, roId, horisontalDelta, verticalDelta, true)

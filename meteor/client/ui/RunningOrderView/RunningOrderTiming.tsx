@@ -214,6 +214,9 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 				let segLineDuration = 0
 				let segLineDisplayDuration = 0
 				let displayDuration = 0
+
+				const playOffset = item.timings && item.timings.playOffset && _.last(item.timings.playOffset) || 0
+
 				let memberOfDisplayDurationGroup = false
 				if (item.displayDurationGroup && (
 					// either this is not the first element of the displayDurationGroup

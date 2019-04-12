@@ -247,6 +247,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		if (this.props.followLiveSegments && !prevProps.followLiveSegments) {
 			this.onFollowLiveLine(true, {})
 		}
+
+		this.updateSpeech()
 	}
 
 	componentWillUnmount () {
@@ -290,8 +292,10 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 									  || 0
 
 			const lastStartedPlayback = this.props.currentLiveSegmentLine.getLastStartedPlayback()
+			const lastPlayOffset = this.props.currentLiveSegmentLine.getLastPlayOffset() || 0
+
 			let newLivePosition = this.props.currentLiveSegmentLine.startedPlayback && lastStartedPlayback ?
-				(getCurrentTime() - lastStartedPlayback + segmentLineOffset) :
+				(getCurrentTime() - lastStartedPlayback + segmentLineOffset + lastPlayOffset) :
 				segmentLineOffset
 
 			let onAirLineDuration = (this.props.currentLiveSegmentLine.duration || this.props.currentLiveSegmentLine.expectedDuration || 0)
@@ -375,9 +379,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	render () {
-
-		this.updateSpeech()
-
 		return this.props.segmentui && (
 			<SegmentTimeline
 				segmentRef={this.segmentRef}

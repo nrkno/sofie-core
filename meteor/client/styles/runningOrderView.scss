@@ -26,6 +26,8 @@ $segment-nextline-shade-fill: linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,
 $liveline-timecode-color:  #ffff00; //$general-live-color;
 $hold-status-color: $liveline-timecode-color;
 
+$previewline-color: rgb(38, 137, 186);
+
 /** The top padding of the timeline has to be equal to the header-height, so that the
 	functional part of the timeline starts at the same level as the segment title
 */
@@ -917,6 +919,16 @@ body.vertical-overflow-only {
 				background-color: #333;
 			}
 
+			.segment-timeline__segment-line__previewline {
+				display: block;
+				position: absolute;
+				top: -13px;
+				left: 0;
+				bottom: -1.3em;
+				border-left: 2px solid $previewline-color;
+				z-index: 10;
+			}
+
 			.segment-timeline__segment-line__nextline {
 				display: block;
 				position: absolute;
@@ -1072,7 +1084,7 @@ body.vertical-overflow-only {
 			}
 
 			&.next {
-				.segment-timeline__segment-line__nextline {
+				.segment-timeline__segment-line__nextline:not(.offset) {
 					.segment-timeline__segment-line__nextline__label {
 						> svg {
 							margin-left: 1px;
@@ -1081,7 +1093,7 @@ body.vertical-overflow-only {
 					}
 				}
 
-				.segment-timeline__segment-line__nextline:not(.segment-timeline__segment-line__nextline--endline) {
+				.segment-timeline__segment-line__nextline:not(.segment-timeline__segment-line__nextline--endline):not(.offset) {
 					border-left-color: $general-next-color;
 					color: $general-next-color;
 
@@ -1899,6 +1911,9 @@ body.vertical-overflow-only {
 	}
 	.mini-inspector__value {
 		font-weight: 500;
+		max-width: 60vw;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 	.mini-inspector__system {
 		font-weight: 300;
