@@ -5,7 +5,8 @@ import {
 	getCoreSystemCursor,
 	parseVersion,
 	Version,
-	parseExpectedVersion
+	parseExpectedVersion,
+	parseRange
 } from '../lib/collections/CoreSystem'
 import { getCurrentTime } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
@@ -246,7 +247,7 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 	} | undefined = undefined
 	if (blueprint.minimumCoreVersion) {
 		coreStatus = checkDatabaseVersion(
-			parseVersion(blueprint.minimumCoreVersion),
+			parseRange(blueprint.minimumCoreVersion),
 			parseVersion(CURRENT_SYSTEM_VERSION),
 			'Blueprint does not support this version of core',
 			'blueprint.minimumCoreVersion',

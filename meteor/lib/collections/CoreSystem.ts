@@ -91,9 +91,15 @@ export function setCoreSystemStorePath (storePath: string): void {
 }
 
 export type Version = string
+export type Range = string
 
 export function stripVersion (v: string): string {
 	return v.replace(/[^\d.]/g,'')
+}
+export function parseRange (r: string | Range): Range {
+	const range = semver.validRange(r)
+	if (!range) throw new Meteor.Error(500, `Invalid range: "${r}"`)
+	return range
 }
 export function parseVersion (v: string | Version): Version {
 	const valid = semver.valid(v)
