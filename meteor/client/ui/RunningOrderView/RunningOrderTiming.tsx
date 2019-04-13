@@ -11,32 +11,43 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 
 export namespace RunningOrderTiming {
 	export enum Events {
-		'timeupdate'		= 'sofie:roTimeUpdate',
-		'timeupdateHR'		= 'sofie:roTimeUpdateHR'
+		'timeupdate'		= 'sofie:roTimeUpdate', // this event is emitted every now-and-then, generally to be used for simple displays
+		'timeupdateHR'		= 'sofie:roTimeUpdateHR' // this event is emmited with a very high resolution, to be used sparingly
 	}
 
-	export interface RunningOrderTimingContext {
+	export interface RunningOrderTimingContext { // this is the context object that will be passed to listening components
+		// this is the total duration of the running order as planned (using expectedDurations)
 		totalRundownDuration?: number
+		// this is the content remaining to be played in the running order (based on the expectedDurations)
 		remainingRundownDuration?: number
+		// this is the tottal duration of the running order: as planned for the unplayed content, and as-run for the played-out
 		asPlayedRundownDuration?: number
+		// SegmentLine ID is the key for these dictionaries
+		// this is the countdown to each of the segment lines relative to the current on air segment line.
 		segmentLineCountdown?: {
 			[key: string]: number
 		}
+		// the calculated durations of each of the Segment Lines: as-planned/as-run depending on state
 		segmentLineDurations?: {
 			[key: string]: number
 		}
+		// the offset of each of the Segment Lines from the beginning of the Running Order
 		segmentLineStartsAt?: {
 			[key: string]: number
 		}
+		// same as segmentLineStartsAt, but will include display duration overrides (such as minimal display width for an Segment Line, etc.)
 		segmentLineDisplayStartsAt?: {
 			[key: string]: number
 		}
+		// same as segmentLineDurations, but will include display duration overrides (such as minimal display width for an Segment Line, etc.)
 		segmentLineDisplayDurations?: {
 			[key: string]: number
 		}
+		// As-played durations of each segment-line. Will be 0, if not yet played. Will be counted from start to now if currently playing.
 		segmentLinePlayed?: {
 			[key: string]: number
 		}
+		// Expected durations of each of the segment-lines or the as-played duration, if the Segment Line does not have an expected duration.
 		segmentLineExpectedDurations?: {
 			[key: string]: number
 		}
@@ -47,14 +58,14 @@ export namespace RunningOrderTiming {
 	}
 }
 
-const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60
-const LOW_RESOLUTION_TIMING_DECIMATOR = 15
+const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
+const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be called every LOW_RESOLUTION_TIMING_DECIMATOR-th time of the high-resolution events
 
 interface IRunningOrderTimingProviderProps {
 	runningOrder?: RunningOrder
 	// segmentLines: Array<SegmentLine>
-	refreshInterval?: number
-	defaultDuration?: number
+	refreshInterval?: number // the interval for high-resolution timing events. If undefined, it will fall back onto TIMING_DEFAULT_REFRESH_INTERVAL
+	defaultDuration?: number // the fallback duration for Segment Lines that have no as-played duration of their own
 }
 interface IRunningOrderTimingProviderChildContext {
 	durations: RunningOrderTiming.RunningOrderTimingContext
@@ -90,14 +101,10 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 	refreshTimerInterval: number
 	refreshDecimator: number
 
-	constructor (props) {
+	constructor (props: IRunningOrderTimingProviderProps & IRunningOrderTimingProviderTrackedProps) {
 		super(props)
 
-		if (props.refreshInterval && _.isNumber(props.refreshInterval)) {
-			this.refreshTimerInterval = props.refreshInverval
-		} else {
-			this.refreshTimerInterval = TIMING_DEFAULT_REFRESH_INTERVAL
-		}
+		this.refreshTimerInterval = props.refreshInterval || TIMING_DEFAULT_REFRESH_INTERVAL
 
 		this.refreshDecimator = 0
 	}
@@ -124,10 +131,10 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 		this.onRefreshTimer()
 	}
 
-	componentWillReceiveProps (nextProps) {
+	componentWillReceiveProps(nextProps: IRunningOrderTimingProviderProps & IRunningOrderTimingProviderTrackedProps) {
 		// change refresh interval if needed
-		if (this.refreshTimerInterval !== nextProps.refreshInterval && _.isNumber(nextProps.refreshInterval) && this.refreshTimer) {
-			this.refreshTimerInterval = nextProps.refreshInterval
+		if (this.refreshTimerInterval !== nextProps.refreshInterval && this.refreshTimer) {
+			this.refreshTimerInterval = nextProps.refreshInterval || TIMING_DEFAULT_REFRESH_INTERVAL
 			Meteor.clearInterval(this.refreshTimer)
 			this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 		}
@@ -161,6 +168,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 
 		const { runningOrder, segmentLines } = this.props
 		const linearSegLines: Array<[string, number | null]> = []
+		// look at the comments on RunningOrderTimingContext to understand what these do
 		const segLineDurations: {
 			[key: string]: number
 		} = {}
@@ -217,7 +225,11 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 
 				const playOffset = item.timings && item.timings.playOffset && _.last(item.timings.playOffset) || 0
 
-				let memberOfDisplayDurationGroup = false
+				// Display Duration groups are groups of two or more Segment Lines, where some of them have an expectedDuration and some have 0.
+				// Then, some of them will have a displayDuration. The expectedDurations are pooled together, the segmentLines with
+				// display durations will take up that much time in the RunningOrder. The left-over time from the display duration group
+				// will be used by Segment Lines without expectedDurations.
+				let memberOfDisplayDurationGroup = false // using a separate displayDurationGroup processing flag simplifies implementation
 				if (item.displayDurationGroup && (
 					// either this is not the first element of the displayDurationGroup
 					(displayDurationGroups[item.displayDurationGroup]) ||
@@ -251,6 +263,7 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 				segLineDisplayDurations[item._id] = segLineDisplayDuration
 				startsAtAccumulator += segLineDurations[item._id]
 				displayStartsAtAccumulator += segLineDisplayDuration || this.props.defaultDuration || 3000
+				// waitAccumulator is used to calculate the countdowns for Segment Lines relative to the current Segment Line
 				// always add the full duration, in case by some manual intervention this segment should play twice
 				// console.log('%c' + item._id + ', ' + waitAccumulator, 'color: red')
 				if (memberOfDisplayDurationGroup) {
@@ -258,32 +271,32 @@ export const RunningOrderTimingProvider = withTracker<IRunningOrderTimingProvide
 				} else {
 					waitAccumulator += (item.duration || item.expectedDuration || 0)
 				}
-				/* if ((item.slug.startsWith('Julian') || item.slug.startsWith('NETTPROMO'))) {
-					console.log(item.slug + ', wa: ' + (waitAccumulator / 1000))
-				} */
 
 				// remaining is the sum of unplayed lines + whatever is left of the current segment
 				if (!item.startedPlayback) {
 					remainingRundownDuration += item.expectedDuration || 0
-					// item is onAir right now, and it's is currentljy shorter than expectedDuration
+					// item is onAir right now, and it's is currently shorter than expectedDuration
 				} else if (item.startedPlayback && lastStartedPlayback && !item.duration && runningOrder.currentSegmentLineId === item._id && lastStartedPlayback + (item.expectedDuration || 0) > now) {
 					// console.log((now - item.startedPlayback))
 					remainingRundownDuration += (item.expectedDuration || 0) - (now - lastStartedPlayback)
 				}
 			})
 
+			// This is where the waitAccumulator-generated data in the linearSegLines is used to calculate the countdowns.
 			let localAccum = 0
 			for (let i = 0; i < linearSegLines.length; i++) {
 				if (i < nextAIndex) { // this is a line before next line
 					localAccum = linearSegLines[i][1] || 0
-					linearSegLines[i][1] = null
+					linearSegLines[i][1] = null // we use null to express 'will not probably be played out, if played in order'
 				} else if (i === nextAIndex) { // this is a calculation for the next line, which is basically how much there is left of the current line
 					localAccum = linearSegLines[i][1] || 0 // if there is no current line, rebase following lines to the next line
 					linearSegLines[i][1] = currentRemaining
-					// debugConsole += linearSegLines[i][0] + ', ' + ((linearSegLines[i][1] || 0) / 1000) + '\n'
 				} else { // these are lines after next line
+					// we take whatever value this line has, subtract the value as set on the Next Segment Line
+					// (note that the Next Segment Line value will be using currentRemaining as the countdown)
+					// and add the currentRemaining countdown, since we are currentRemaining + diff between next and
+					// this away from this line.
 					linearSegLines[i][1] = (linearSegLines[i][1] || 0) - localAccum + currentRemaining
-					// debugConsole += linearSegLines[i][0] + ', ' + ((linearSegLines[i][1] || 0) / 1000) + '\n'
 				}
 			}
 
