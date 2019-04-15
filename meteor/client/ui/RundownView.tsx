@@ -55,6 +55,7 @@ import { ClipTrimPanel } from './ClipTrimPanel/ClipTrimPanel'
 import { VTContent, VTEditableParameters } from 'tv-automation-sofie-blueprints-integration'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
+import { PubSub } from '../../lib/api/pubsub'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
@@ -1060,28 +1061,28 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		// Subscribe to data:
 		let rundownId = this.props.rundownId
 
-		this.subscribe('rundowns', {
+		this.subscribe(PubSub.rundowns, {
 			_id: rundownId
 		})
-		this.subscribe('segments', {
+		this.subscribe(PubSub.segments, {
 			rundownId: rundownId
 		})
-		this.subscribe('parts', {
+		this.subscribe(PubSub.parts, {
 			rundownId: rundownId
 		})
-		this.subscribe('pieces', {
+		this.subscribe(PubSub.pieces, {
 			rundownId: rundownId
 		})
-		this.subscribe('adLibPieces', {
+		this.subscribe(PubSub.adLibPieces, {
 			rundownId: rundownId
 		})
 		this.autorun(() => {
 			let rundown = Rundowns.findOne(rundownId)
 			if (rundown) {
-				this.subscribe('studios', {
+				this.subscribe(PubSub.studios, {
 					_id: rundown.studioId
 				})
-				this.subscribe('showStyleBases', {
+				this.subscribe(PubSub.showStyleBases, {
 					_id: rundown.showStyleBaseId
 				})
 			}

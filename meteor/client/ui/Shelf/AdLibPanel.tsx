@@ -323,16 +323,16 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 	}
 
 	componentWillMount () {
-		this.subscribe('segments', {
+		this.subscribe(PubSub.segments, {
 			rundownId: this.props.rundown._id
 		})
-		this.subscribe('parts', {
+		this.subscribe(PubSub.parts, {
 			rundownId: this.props.rundown._id
 		})
-		this.subscribe('adLibPieces', {
+		this.subscribe(PubSub.adLibPieces, {
 			rundownId: this.props.rundown._id
 		})
-		this.subscribe('rundownBaselineAdLibPieces', {
+		this.subscribe(PubSub.rundownBaselineAdLibPieces, {
 			rundownId: this.props.rundown._id
 		})
 		meteorSubscribe(PubSub.studios, {

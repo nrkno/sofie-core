@@ -29,8 +29,12 @@ interface IListViewItemProps {
 }
 
 export const AdLibListItem = translate()(class extends MeteorReactComponent<Translated<IListViewItemProps>> {
+	private _isMacLike: boolean = false
+
 	constructor (props: Translated<IListViewItemProps>) {
 		super(props)
+
+		this._isMacLike = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false
 	}
 
 	render () {
@@ -53,7 +57,7 @@ export const AdLibListItem = translate()(class extends MeteorReactComponent<Tran
 					{this.props.layer && (this.props.layer.abbreviation || this.props.layer.name)}
 				</td>
 				<td className='adlib-panel__list-view__list__table__cell--shortcut'>
-					{this.props.item.hotkey && mousetrapHelper.shortcutLabel(this.props.item.hotkey)}
+					{this.props.item.hotkey && mousetrapHelper.shortcutLabel(this.props.item.hotkey, this._isMacLike)}
 				</td>
 				<td className='adlib-panel__list-view__list__table__cell--output'>
 					{this.props.outputLayer && this.props.outputLayer.name}

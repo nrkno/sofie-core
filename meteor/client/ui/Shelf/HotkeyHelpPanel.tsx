@@ -31,7 +31,7 @@ export const HotkeyHelpPanel = translate()(class BaseHotkeyHelpPanel extends Rea
 						{this.props.hotkeys.concat(this.props.showStyleBase.hotkeyLegend || []).map((hotkey) =>
 							<div className='adlib-panel__hotkeys__hotkey' key={hotkey.key}>
 								<div className='adlib-panel__hotkeys__hotkey__keys'>
-									{mousetrapHelper.shortcutLabel(hotkey.key)}
+									{mousetrapHelper.shortcutLabel(hotkey.key, this._isMacLike)}
 								</div>
 								<div className='adlib-panel__hotkeys__hotkey__action'>
 									{hotkey.label}

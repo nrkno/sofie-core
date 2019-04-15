@@ -116,8 +116,8 @@ export namespace mousetrapHelper {
 		}
 	}
 
-	export function shortcutLabel (hotkey: string): string {
-		if (this._isMacLike) {
+	export function shortcutLabel (hotkey: string, isMacLike: boolean = false): string {
+		if (isMacLike) {
 			hotkey = hotkey.replace(/mod/i, '\u2318')
 		} else {
 			hotkey = hotkey.replace(/mod/i, 'Ctrl')
