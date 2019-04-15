@@ -110,14 +110,18 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Redirect to='/' />
 						</Switch>
 					</ErrorBoundary>
-					<Switch>
-						{/* Put views that should NOT have the Notification center here: */}
-						<Route path='/countdowns/:studioId/presenter' component={NullComponent} />
-						<Route path='/countdowns/presenter' component={NullComponent} />
+					<ErrorBoundary>
+						<Switch>
+							{/* Put views that should NOT have the Notification center here: */}
+							<Route path='/countdowns/:studioId/presenter' component={NullComponent} />
+							<Route path='/countdowns/presenter' component={NullComponent} />
 
-						<Route path='/' component={ConnectionStatusNotification} />
-					</Switch>
-					<ModalDialogGlobalContainer />
+							<Route path='/' component={ConnectionStatusNotification} />
+						</Switch>
+					</ErrorBoundary>
+					<ErrorBoundary>
+						<ModalDialogGlobalContainer />
+					</ErrorBoundary>
 				</div>
 			</Router>
 		)

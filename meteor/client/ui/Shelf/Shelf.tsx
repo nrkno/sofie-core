@@ -295,6 +295,6 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 	}
 }
 
-export const InspectorDrawer = translate(undefined, {
+export const Shelf = translate(undefined, {
 	withRef: true
 })(ShelfBase)

@@ -23,7 +23,7 @@ import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 import { RundownTimingProvider, withTiming, WithTiming } from './RundownView/RundownTiming'
 import { SegmentTimelineContainer, PieceUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
-import { InspectorDrawer, InspectorDrawerBase, InspectorDrawerProps, InspectorPanelTabs } from './InspectorDrawer/InspectorDrawer'
+import { Shelf, ShelfBase, ShelfTabs } from './Shelf/Shelf'
 import { RundownOverview } from './RundownView/RundownOverview'
 import { RundownSystemStatus } from './RundownView/RundownSystemStatus'
 
@@ -56,7 +56,7 @@ import { VTContent, VTEditableParameters } from 'tv-automation-sofie-blueprints-
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 
-type WrappedInspectorDrawer = InspectorDrawerBase & { getWrappedInstance (): InspectorDrawerBase }
+type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
 
 interface IKeyboardFocusMarkerState {
 	inFocus: boolean
@@ -1005,7 +1005,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		label: string,
 		global?: boolean
 	}> = []
-	private _inspectorDrawer: WrappedInspectorDrawer | null
+	private _inspectorDrawer: WrappedShelf | null
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -1485,7 +1485,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 				isInspectorDrawerExpanded: true
 			})
 			if (this._inspectorDrawer) {
-				this._inspectorDrawer.getWrappedInstance().switchTab(InspectorPanelTabs.SYSTEM_HOTKEYS)
+				this._inspectorDrawer.getWrappedInstance().switchTab(ShelfTabs.SYSTEM_HOTKEYS)
 			}
 		} else {
 			this.setState({
@@ -1531,7 +1531,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		})
 	}
 
-	setInspectorDrawer = (isp: WrappedInspectorDrawer | null) => {
+	setInspectorDrawer = (isp: WrappedShelf | null) => {
 		this._inspectorDrawer = isp
 	}
 
@@ -1638,7 +1638,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								/> }
 							</ErrorBoundary>
 							<ErrorBoundary>
-								<InspectorDrawer
+								<Shelf
 									ref={this.setInspectorDrawer}
 									isExpanded={this.state.isInspectorDrawerExpanded}
 									onChangeExpanded={this.onDrawerChangeExpanded}
