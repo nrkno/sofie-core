@@ -13,7 +13,7 @@ import { makeTableOfObject } from '../../lib/utilComponents'
 import * as classNames from 'classnames'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import * as moment from 'moment'
-import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { Studios, Studio } from '../../../lib/collections/Studios'
 import { faTrash, faPause, faPlay } from '@fortawesome/fontawesome-free-solid'
 import { ExternalMessageQueueAPI } from '../../../lib/api/ExternalMessageQueue'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
@@ -24,12 +24,12 @@ interface IExternalMessagesState {
 	studioId: string
 }
 interface IExternalMessagesTrackedProps {
-	studios: Array<StudioInstallation>
+	studios: Array<Studio>
 }
 
 const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalMessagesState, IExternalMessagesTrackedProps>((props: IExternalMessagesProps) => {
 	return {
-		studios: StudioInstallations.find({}).fetch()
+		studios: Studios.find({}).fetch()
 	}
 })(class ExternalMessages extends MeteorReactComponent<Translated<IExternalMessagesProps & IExternalMessagesTrackedProps>, IExternalMessagesState> {
 	constructor (props) {
@@ -39,7 +39,7 @@ const ExternalMessages = translateWithTracker<IExternalMessagesProps, IExternalM
 		}
 	}
 	componentWillMount () {
-		this.subscribe('studioInstallations', {})
+		this.subscribe('studios', {})
 	}
 	onClickStudio = (studio) => {
 		this.setState({

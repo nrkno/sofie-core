@@ -4,10 +4,10 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import {
-	StudioInstallation,
-	StudioInstallations,
+	Studio,
+	Studios,
 	MappingExt
-} from '../../../lib/collections/StudioInstallations'
+} from '../../../lib/collections/Studios'
 import {
 	MappingCasparCG,
 	MappingAtem,
@@ -124,8 +124,8 @@ export const ConfigSettings = translate()(class ConfigSettings extends React.Com
 		}
 	}
 	getCollection (): Mongo.Collection<any> {
-		if (this.props.item instanceof StudioInstallation) {
-			return StudioInstallations
+		if (this.props.item instanceof Studio) {
+			return Studios
 		} else if (this.props.item instanceof ShowStyleBase) {
 			return ShowStyleBases
 		} else if (this.props.item instanceof ShowStyleVariant) {
@@ -229,7 +229,7 @@ export const ConfigSettings = translate()(class ConfigSettings extends React.Com
 })
 
 interface IStudioDevicesProps {
-	studioInstallation: StudioInstallation
+	studio: Studio
 	studioDevices: Array<PeripheralDevice>
 	availableDevices: Array<PeripheralDevice>
 }
@@ -247,13 +247,13 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 
 	onRemoveDevice = (item: PeripheralDevice) => {
 		PeripheralDevices.update(item._id, {$unset: {
-			studioInstallationId: 1
+			studioId: 1
 		}})
 	}
 
 	onAddDevice = (item: PeripheralDevice) => {
 		PeripheralDevices.update(item._id, {$set: {
-			studioInstallationId: this.props.studioInstallation._id
+			studioId: this.props.studio._id
 		}})
 	}
 	confirmRemove = (device: PeripheralDevice) => {
@@ -334,7 +334,7 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 })
 
 interface IStudioMappingsProps {
-	studioInstallation: StudioInstallation
+	studio: Studio
 }
 interface IStudioMappingsState {
 	editedMappings: Array<string>
@@ -386,7 +386,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 	removeLayer = (mappingId: string) => {
 		let unsetObject = {}
 		unsetObject['mappings.' + mappingId] = ''
-		StudioInstallations.update(this.props.studioInstallation._id, {
+		Studios.update(this.props.studio._id, {
 			$unset: unsetObject
 		})
 	}
@@ -394,7 +394,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 		// find free key name
 		let newLayerKeyName = 'newLayer'
 		let iter = 0
-		while ((this.props.studioInstallation.mappings || {})[newLayerKeyName + iter.toString()]) {
+		while ((this.props.studio.mappings || {})[newLayerKeyName + iter.toString()]) {
 			iter++
 		}
 		let setObject = {}
@@ -403,7 +403,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 			deviceId: 'newDeviceId',
 		}
 
-		StudioInstallations.update(this.props.studioInstallation._id, {
+		Studios.update(this.props.studio._id, {
 			$set: setObject
 		})
 	}
@@ -411,9 +411,9 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 
 		let oldLayerId = edit.props.overrideDisplayValue
 		let newLayerId = newValue + ''
-		let layer = this.props.studioInstallation.mappings[oldLayerId]
+		let layer = this.props.studio.mappings[oldLayerId]
 
-		if (this.props.studioInstallation.mappings[newLayerId]) {
+		if (this.props.studio.mappings[newLayerId]) {
 			throw new Meteor.Error(400, 'Layer "' + newLayerId + '" already exists')
 		}
 
@@ -423,7 +423,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 		mUnset['mappings.' + oldLayerId] = 1
 
 		if (edit.props.collection) {
-			edit.props.collection.update(this.props.studioInstallation._id, {
+			edit.props.collection.update(this.props.studio._id, {
 				$set: mSet,
 				$unset: mUnset
 			})
@@ -443,9 +443,9 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.channel'}
-							obj={this.props.studioInstallation}
+							obj={this.props.studio}
 							type='int'
-							collection={StudioInstallations}
+							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
@@ -455,9 +455,9 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.layer'}
-							obj={this.props.studioInstallation}
+							obj={this.props.studio}
 							type='int'
-							collection={StudioInstallations}
+							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
@@ -475,11 +475,11 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.mappingType'}
-							obj={this.props.studioInstallation}
+							obj={this.props.studio}
 							type='dropdown'
 							options={MappingAtemType}
 							optionsAreNumbers={true}
-							collection={StudioInstallations}
+							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
@@ -489,9 +489,9 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.index'}
-							obj={this.props.studioInstallation}
+							obj={this.props.studio}
 							type='int'
-							collection={StudioInstallations}
+							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
@@ -508,11 +508,11 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.mappingType'}
-							obj={this.props.studioInstallation}
+							obj={this.props.studio}
 							type='dropdown'
 							options={MappingLawoType}
 							optionsAreNumbers={true}
-							collection={StudioInstallations}
+							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
@@ -522,9 +522,9 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.identifier'}
-							obj={this.props.studioInstallation}
+							obj={this.props.studio}
 							type='text'
-							collection={StudioInstallations}
+							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
@@ -541,11 +541,11 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.mappingType'}
-							obj={this.props.studioInstallation}
+							obj={this.props.studio}
 							type='dropdown'
 							options={MappingPanasonicPtzType}
 							optionsAreNumbers={false}
-							collection={StudioInstallations}
+							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
@@ -563,11 +563,11 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute={'mappings.' + layerId + '.mappingType'}
-							obj={this.props.studioInstallation}
+							obj={this.props.studio}
 							type='dropdown'
 							options={MappingHyperdeckType}
 							optionsAreNumbers={false}
-							collection={StudioInstallations}
+							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
@@ -586,7 +586,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 		const { t } = this.props
 
 		return (
-			_.map(this.props.studioInstallation.mappings, (mapping: MappingExt , layerId: string) => {
+			_.map(this.props.studio.mappings, (mapping: MappingExt , layerId: string) => {
 				// If an internal mapping, then hide it
 				if (mapping.internal) return <React.Fragment key={layerId}></React.Fragment>
 
@@ -673,9 +673,9 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 												modifiedClassName='bghl'
 												attribute={'mappings' }
 												overrideDisplayValue={layerId }
-												obj={this.props.studioInstallation}
+												obj={this.props.studio}
 												type='text'
-												collection={StudioInstallations}
+												collection={Studios}
 												updateFunction={this.updateLayerId}
 												className='input text-input input-l'></EditAttribute>
 										</label>
@@ -686,11 +686,11 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'mappings.' + layerId + '.device'}
-												obj={this.props.studioInstallation}
+												obj={this.props.studio}
 												type='dropdown'
 												options={PlayoutDeviceType}
 												optionsAreNumbers={true}
-												collection={StudioInstallations}
+												collection={Studios}
 												className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
@@ -700,9 +700,9 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'mappings.' + layerId + '.deviceId'}
-												obj={this.props.studioInstallation}
+												obj={this.props.studio}
 												type='text'
-												collection={StudioInstallations}
+												collection={Studios}
 												className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
@@ -712,11 +712,11 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'mappings.' + layerId + '.lookahead'}
-												obj={this.props.studioInstallation}
+												obj={this.props.studio}
 												type='dropdown'
 												options={LookaheadMode}
 												optionsAreNumbers={true}
-												collection={StudioInstallations}
+												collection={Studios}
 												className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
@@ -781,7 +781,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 })
 
 interface ITestToolsRecordingsSettingsProps {
-	studioInstallation: StudioInstallation
+	studio: Studio
 }
 interface ITestToolsRecordingsSettingsState {
 }
@@ -798,9 +798,9 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute='testToolsConfig.recordings.deviceId'
-							obj={this.props.studioInstallation}
+							obj={this.props.studio}
 							type='text'
-							collection={StudioInstallations}
+							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
@@ -810,9 +810,9 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute='testToolsConfig.recordings.channelIndex'
-							obj={this.props.studioInstallation}
+							obj={this.props.studio}
 							type='int'
-							collection={StudioInstallations}
+							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
@@ -822,9 +822,9 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute='testToolsConfig.recordings.filePrefix'
-							obj={this.props.studioInstallation}
+							obj={this.props.studio}
 							type='text'
-							collection={StudioInstallations}
+							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
@@ -834,9 +834,9 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute='testToolsConfig.recordings.urlPrefix'
-							obj={this.props.studioInstallation}
+							obj={this.props.studio}
 							type='text'
-							collection={StudioInstallations}
+							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
@@ -846,9 +846,9 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute='testToolsConfig.recordings.decklinkDevice'
-							obj={this.props.studioInstallation}
+							obj={this.props.studio}
 							type='int'
-							collection={StudioInstallations}
+							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
 					</label>
 				</div>
@@ -858,13 +858,13 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 						<EditAttribute
 							modifiedClassName='bghl'
 							attribute='testToolsConfig.recordings.channelFormat'
-							obj={this.props.studioInstallation}
+							obj={this.props.studio}
 							type='dropdown'
 							options={_.keys(ChannelFormat).map((k) => ({
 								name: k,
 								value: ChannelFormat[k]
 							}))}
-							collection={StudioInstallations}
+							collection={Studios}
 							className='input text-input input-l '></EditAttribute>
 					</label>
 				</div>
@@ -884,7 +884,7 @@ interface IStudioSettingsState {
 
 }
 interface IStudioSettingsTrackedProps {
-	studioInstallation?: StudioInstallation
+	studio?: Studio
 	studioDevices: Array<PeripheralDevice>
 	availableShowStyleVariants: Array<{
 		name: string,
@@ -900,7 +900,7 @@ interface IStudioSettingsTrackedProps {
 }
 
 interface IStudioBaselineStatusProps {
-	studioInstallation: StudioInstallation
+	studio: Studio
 }
 interface IStudioBaselineStatusState {
 	needsUpdate: boolean
@@ -933,9 +933,9 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 	}
 
 	updateStatus (props?: Translated<IStudioBaselineStatusProps>) {
-		const studioInstallation = props ? props.studioInstallation : this.props.studioInstallation
+		const studio = props ? props.studio : this.props.studio
 
-		Meteor.call(PlayoutAPI.methods.shouldUpdateStudioBaseline, studioInstallation._id, (err, res) => {
+		Meteor.call(PlayoutAPI.methods.shouldUpdateStudioBaseline, studio._id, (err, res) => {
 			if (err) {
 				console.log('Failed to update studio baseline status: ' + err)
 				res = false
@@ -948,7 +948,7 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 	}
 
 	reloadBaseline () {
-		Meteor.call(PlayoutAPI.methods.updateStudioBaseline, this.props.studioInstallation._id, (err, res) => {
+		Meteor.call(PlayoutAPI.methods.updateStudioBaseline, this.props.studio._id, (err, res) => {
 			if (err) {
 				console.log('Failed to update studio baseline: ' + err)
 				res = false
@@ -972,12 +972,12 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 }
 
 export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, IStudioSettingsTrackedProps>((props: IStudioSettingsProps, state) => {
-	const studio = StudioInstallations.findOne(props.match.params.studioId)
+	const studio = Studios.findOne(props.match.params.studioId)
 
 	return {
-		studioInstallation: studio,
+		studio: studio,
 		studioDevices: PeripheralDevices.find({
-			studioInstallationId: props.match.params.studioId
+			studioId: props.match.params.studioId
 		}).fetch(),
 		availableShowStyleVariants: ShowStyleVariants.find(studio ? {
 			showStyleBaseId: {
@@ -999,7 +999,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 			}
 		}),
 		availableDevices: PeripheralDevices.find({
-			studioInstallationId: {
+			studioId: {
 				$not: {
 					$eq: props.match.params.studioId
 				}
@@ -1036,7 +1036,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		const { t } = this.props
 
 		return (
-			this.props.studioInstallation ?
+			this.props.studio ?
 			<div className='studio-edit mod mhl mvn'>
 				<div>
 					<h2 className='mhn mtn'>{t('Generic Properties')}</h2>
@@ -1046,9 +1046,9 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute='name'
-								obj={this.props.studioInstallation}
+								obj={this.props.studio}
 								type='text'
-								collection={StudioInstallations}
+								collection={Studios}
 								className='mdinput'></EditAttribute>
 							<span className='mdfx'></span>
 						</div>
@@ -1059,12 +1059,12 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute='blueprintId'
-								obj={this.props.studioInstallation}
+								obj={this.props.studio}
 								type='dropdown'
 								options={this.getBlueprintOptions()}
 								mutateDisplayValue={v => v || ''}
 								mutateUpdateValue={v => v === '' ? undefined : v}
-								collection={StudioInstallations}
+								collection={Studios}
 								className='mdinput'></EditAttribute>
 							<span className='mdfx'></span>
 						</div>
@@ -1074,11 +1074,11 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 						<div className='mdi'>
 							<EditAttribute
 								attribute='supportedShowStyleBase'
-								obj={this.props.studioInstallation}
+								obj={this.props.studio}
 								options={this.props.availableShowStyleBases}
 								label={t('Click to show available Show Styles')}
 								type='multiselect'
-								collection={StudioInstallations}></EditAttribute>
+								collection={Studios}></EditAttribute>
 						</div>
 					</div>
 					<label className='field'>
@@ -1087,9 +1087,9 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute='settings.mediaPreviewsUrl'
-								obj={this.props.studioInstallation}
+								obj={this.props.studio}
 								type='text'
-								collection={StudioInstallations}
+								collection={Studios}
 								className='mdinput'></EditAttribute>
 							<span className='mdfx'></span>
 						</div>
@@ -1100,9 +1100,9 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute='settings.sofieUrl'
-								obj={this.props.studioInstallation}
+								obj={this.props.studio}
 								type='text'
-								collection={StudioInstallations}
+								collection={Studios}
 								className='mdinput'></EditAttribute>
 							<span className='mdfx'></span>
 						</div>
@@ -1110,13 +1110,13 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
-						<StudioBaselineStatus studioInstallation={this.props.studioInstallation} t={t} />
+						<StudioBaselineStatus studio={this.props.studio} t={t} />
 					</div>
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
 						<StudioDevices
-							studioInstallation={this.props.studioInstallation}
+							studio={this.props.studio}
 							studioDevices={this.props.studioDevices}
 							availableDevices={this.props.availableDevices}
 						/>
@@ -1124,22 +1124,22 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
-						<ConfigManifestSettings t={this.props.t} manifest={collectConfigs(this.props.studioInstallation)} object={this.props.studioInstallation} />
+						<ConfigManifestSettings t={this.props.t} manifest={collectConfigs(this.props.studio)} object={this.props.studio} />
 					</div>
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
-						<ConfigSettings item={this.props.studioInstallation}/>
+						<ConfigSettings item={this.props.studio}/>
 					</div>
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
-						<StudioMappings studioInstallation={this.props.studioInstallation} />
+						<StudioMappings studio={this.props.studio} />
 					</div>
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
-						<TestToolsRecordingsSettings studioInstallation={this.props.studioInstallation} />
+						<TestToolsRecordingsSettings studio={this.props.studio} />
 					</div>
 				</div>
 			</div> :
@@ -1149,7 +1149,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 
 	render () {
 
-		if (this.props.studioInstallation) {
+		if (this.props.studio) {
 			return this.renderEditForm()
 		} else {
 			return <Spinner />
@@ -1157,15 +1157,15 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 	}
 })
 
-export function setProperty (studioInstallation: StudioInstallation, property: string, value: any) {
+export function setProperty (studio: Studio, property: string, value: any) {
 	// console.log(property, value)
 	let m = {}
 	if (value !== undefined) {
 		m[property] = value
-		StudioInstallations.update(studioInstallation._id, { $set: m })
+		Studios.update(studio._id, { $set: m })
 	} else {
 		m[property] = 0
-		StudioInstallations.update(studioInstallation._id, { $unset: m })
+		Studios.update(studio._id, { $unset: m })
 	}
 }
 

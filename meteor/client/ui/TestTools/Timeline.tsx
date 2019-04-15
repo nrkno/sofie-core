@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { Studio, Studios } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import { TimelineObjGeneric, Timeline } from '../../../lib/collections/Timeline'
 import { TriggerType } from 'superfly-timeline'
@@ -108,7 +108,7 @@ interface ITimelineViewState {
 }
 const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState, {}>((props: ITimelineViewProps) => {
 	return {
-		studios: StudioInstallations.find({}).fetch()
+		studios: Studios.find({}).fetch()
 	}
 })(class TimelineView extends MeteorReactComponent<Translated<ITimelineViewProps>, ITimelineViewState> {
 
@@ -282,11 +282,11 @@ interface IStudioSelectProps {
 interface IStudioSelectState {
 }
 interface IStudioSelectTrackedProps {
-	studios: StudioInstallation[]
+	studios: Studio[]
 }
 const TimelineStudioSelect = translateWithTracker<IStudioSelectProps, IStudioSelectState, IStudioSelectTrackedProps>((props: IStudioSelectProps) => {
 	return {
-		studios: StudioInstallations.find({}, {
+		studios: Studios.find({}, {
 			sort: {
 				_id: 1
 			}

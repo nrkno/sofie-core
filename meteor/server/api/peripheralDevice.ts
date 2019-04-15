@@ -9,7 +9,7 @@ import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { Timeline } from '../../lib/collections/Timeline'
-import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { Studios } from '../../lib/collections/Studios'
 import { ServerPlayoutAPI, afterUpdateTimeline } from './playout'
 import { setMeteorMethods, Methods } from '../methods'
 import { Picker } from 'meteor/meteorhacks:picker'
@@ -55,7 +55,7 @@ export namespace ServerPeripheralDeviceAPI {
 					status: {
 						statusCode: PeripheralDeviceAPI.StatusCode.UNKNOWN
 					},
-					studioInstallationId: '',
+					studioId: '',
 					connected: true,
 					connectionId: options.connectionId,
 					lastSeen: getCurrentTime(),
@@ -160,7 +160,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// After we've updated the timeline, we must call afterUpdateTimeline!
 		_.each(studioIds, (_val, studioId) => {
-			let studio = StudioInstallations.findOne(studioId)
+			let studio = Studios.findOne(studioId)
 			if (studio) {
 				afterUpdateTimeline(studio)
 			}

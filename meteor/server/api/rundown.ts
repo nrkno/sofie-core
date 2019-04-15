@@ -30,14 +30,14 @@ import { updateExpectedMediaItems } from './expectedMediaItems'
 import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
-import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
+import { Studios, Studio } from '../../lib/collections/Studios'
 import { PartNote, NoteType } from '../../lib/api/notes'
 import { IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
 const PackageInfo = require('../../package.json')
 
-export function selectShowStyleVariant (studio: StudioInstallation, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
+export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	const showStyleBases = ShowStyleBases.find({ _id: { $in: studio.supportedShowStyleBase }}).fetch()
 	let showStyleBase = _.first(showStyleBases)
 	if (!showStyleBase) {
@@ -514,9 +514,9 @@ export namespace ClientRundownAPI {
 		if (!blueprint) return 'missing blueprint'
 		if (rundown.importVersions.blueprint !== (blueprint.blueprintVersion || 0)) return 'blueprint'
 
-		const si = StudioInstallations.findOne(rundown.studioInstallationId)
-		if (!si) return 'missing studioInstallation'
-		if (rundown.importVersions.studioInstallation !== (si._rundownVersionHash || 0)) return 'studioInstallation'
+		const studio = Studios.findOne(rundown.studioId)
+		if (!studio) return 'missing studio'
+		if (rundown.importVersions.studio !== (studio._rundownVersionHash || 0)) return 'studio'
 
 		return undefined
 	}

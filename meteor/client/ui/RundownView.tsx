@@ -15,7 +15,7 @@ import { NavLink, Route, Prompt } from 'react-router-dom'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { Rundown, Rundowns, RundownHoldState } from '../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../lib/collections/Segments'
-import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { Studio, Studios } from '../../lib/collections/Studios'
 import { Part, Parts } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
@@ -314,7 +314,7 @@ interface HotkeyDefinition {
 
 interface IRundownHeaderProps {
 	rundown: Rundown,
-	studioInstallation: StudioInstallation,
+	studio: Studio,
 	onActivate?: (isRehearsal: boolean) => void,
 	onRegisterHotkeys?: (hotkeys: Array<HotkeyDefinition>) => void
 	studioMode: boolean
@@ -910,7 +910,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 							</div>
 						</div>
 						<TimingDisplay {...this.props} />
-						{this.props.studioInstallation && <RundownSystemStatus studioInstallation={this.props.studioInstallation} rundown={this.props.rundown} />}
+						{this.props.studio && <RundownSystemStatus studio={this.props.studio} rundown={this.props.rundown} />}
 					</div>
 					<div className='row dark'>
 						<div className='col c12 rundown-overview'>
@@ -962,7 +962,7 @@ interface ITrackedProps {
 	rundownId: string
 	rundown?: Rundown
 	segments: Array<Segment>
-	studioInstallation?: StudioInstallation
+	studio?: Studio
 	showStyleBase?: ShowStyleBase
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state) => {
@@ -975,7 +975,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	}
 
 	let rundown = Rundowns.findOne({ _id: rundownId })
-	let studioInstallation = rundown && StudioInstallations.findOne({ _id: rundown.studioInstallationId })
+	let studio = rundown && Studios.findOne({ _id: rundown.studioId })
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
 		rundownId: rundownId,
@@ -985,7 +985,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				'_rank': 1
 			}
 		}).fetch() : [],
-		studioInstallation: studioInstallation,
+		studio: studio,
 		showStyleBase: rundown && ShowStyleBases.findOne(rundown.showStyleBaseId)
 	}
 })(
@@ -1078,8 +1078,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		this.autorun(() => {
 			let rundown = Rundowns.findOne(rundownId)
 			if (rundown) {
-				this.subscribe('studioInstallations', {
-					_id: rundown.studioInstallationId
+				this.subscribe('studios', {
+					_id: rundown.studioId
 				})
 				this.subscribe('showStyleBases', {
 					_id: rundown.showStyleBaseId
@@ -1397,13 +1397,13 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		if (this.props.segments) {
 			return this.props.segments.map((segment, index, array) => {
 				if (
-					this.props.studioInstallation &&
+					this.props.studio &&
 					this.props.rundown &&
 					this.props.showStyleBase
 				) {
 					return <ErrorBoundary key={segment._id}>
 							<SegmentTimelineContainer
-								studioInstallation={this.props.studioInstallation}
+								studio={this.props.studio}
 								showStyleBase={this.props.showStyleBase}
 								followLiveSegments={this.state.followLiveSegments}
 								segmentId={segment._id}
@@ -1497,9 +1497,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	onRestartPlayout = (e: React.MouseEvent<HTMLButtonElement>) => {
 		const { t } = this.props
 
-		if (this.props.studioInstallation) {
+		if (this.props.studio) {
 			const attachedPlayoutGateways = PeripheralDevices.find({
-				studioInstallationId: this.props.studioInstallation._id,
+				studioId: this.props.studio._id,
 				connected: true,
 				type: PeripheralDeviceAPI.DeviceType.PLAYOUT
 			}).fetch()
@@ -1547,7 +1547,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		if (this.state.subsReady) {
 			if (
 				this.props.rundown &&
-				this.props.studioInstallation &&
+				this.props.studio &&
 				this.props.showStyleBase
 			) {
 				return (
@@ -1608,7 +1608,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 							<ErrorBoundary>
 								<RundownHeader
 									rundown={this.props.rundown}
-									studioInstallation={this.props.studioInstallation}
+									studio={this.props.studio}
 									onActivate={this.onActivate}
 									studioMode={this.state.studioMode}
 									onRegisterHotkeys={this.onRegisterHotkeys}
@@ -1622,9 +1622,9 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									studioMode={this.state.studioMode} />
 							</ErrorBoundary>
 							<ErrorBoundary>
-								{this.state.isClipTrimmerOpen && this.state.selectedPiece && this.props.studioInstallation &&
+								{this.state.isClipTrimmerOpen && this.state.selectedPiece && this.props.studio &&
 									<ClipTrimDialog
-										studioInstallation={this.props.studioInstallation}
+										studio={this.props.studio}
 										rundownId={this.props.rundownId}
 										selectedPiece={this.state.selectedPiece}
 										onClose={() => this.setState({ isClipTrimmerOpen: false })}
@@ -1651,8 +1651,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									onRegisterHotkeys={this.onRegisterHotkeys} />
 							</ErrorBoundary>
 							<ErrorBoundary>
-								{this.props.rundown && this.props.studioInstallation && this.props.showStyleBase &&
-									<RundownNotifier rundownId={this.props.rundown._id} studioInstallation={this.props.studioInstallation} showStyleBase={this.props.showStyleBase} />
+								{this.props.rundown && this.props.studio && this.props.showStyleBase &&
+									<RundownNotifier rundownId={this.props.rundown._id} studio={this.props.studio} showStyleBase={this.props.showStyleBase} />
 								}
 							</ErrorBoundary>
 						</div>
@@ -1677,7 +1677,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								{
 									!this.props.rundown ?
 										t('This rundown has been unpublished from Sofie.') :
-									!this.props.studioInstallation ?
+									!this.props.studio ?
 										t('Error: The studio of this Rundown was not found.') :
 									!this.props.showStyleBase ?
 										t('Error: The ShowStyle of this Rundown was not found.') :

@@ -592,34 +592,34 @@ amqplib@^0.5.3:
     safe-buffer "~5.1.2"
     url-parse "~1.4.3"
 
-ansi-escapes@^3.0.0:
+anstudio-escapes@^3.0.0:
   version "3.2.0"
-  resolved "https://registry.yarnpkg.com/ansi-escapes/-/ansi-escapes-3.2.0.tgz#8780b98ff9dbf5638152d1f1fe5c1d7b4442976b"
+  resolved "https://registry.yarnpkg.com/anstudio-escapes/-/anstudio-escapes-3.2.0.tgz#8780b98ff9dbf5638152d1f1fe5c1d7b4442976b"
   integrity sha512-cBhpre4ma+U0T1oM5fXg7Dy1Jw7zzwv7lt/GoCpr+hDQJoYnKVPLL4dCvSEFMmQurOQvSrwT7SL/DAlhBI97RQ==
 
-ansi-regex@^2.0.0:
+anstudio-regex@^2.0.0:
   version "2.1.1"
-  resolved "https://registry.yarnpkg.com/ansi-regex/-/ansi-regex-2.1.1.tgz#c3b33ab5ee360d86e0e628f0468ae7ef27d654df"
+  resolved "https://registry.yarnpkg.com/anstudio-regex/-/anstudio-regex-2.1.1.tgz#c3b33ab5ee360d86e0e628f0468ae7ef27d654df"
   integrity sha1-w7M6te42DYbg5ijwRorn7yfWVN8=
 
-ansi-regex@^3.0.0:
+anstudio-regex@^3.0.0:
   version "3.0.0"
-  resolved "https://registry.yarnpkg.com/ansi-regex/-/ansi-regex-3.0.0.tgz#ed0317c322064f79466c02966bddb605ab37d998"
+  resolved "https://registry.yarnpkg.com/anstudio-regex/-/anstudio-regex-3.0.0.tgz#ed0317c322064f79466c02966bddb605ab37d998"
   integrity sha1-7QMXwyIGT3lGbAKWa922Bas32Zg=
 
-ansi-regex@^4.0.0:
+anstudio-regex@^4.0.0:
   version "4.0.0"
-  resolved "https://registry.yarnpkg.com/ansi-regex/-/ansi-regex-4.0.0.tgz#70de791edf021404c3fd615aa89118ae0432e5a9"
+  resolved "https://registry.yarnpkg.com/anstudio-regex/-/anstudio-regex-4.0.0.tgz#70de791edf021404c3fd615aa89118ae0432e5a9"
   integrity sha512-iB5Dda8t/UqpPI/IjsejXu5jOGDrzn41wJyljwPH65VCIbk6+1BzFIMJGFwTNrYXT1CrD+B4l19U7awiQ8rk7w==
 
-ansi-styles@^2.2.1:
+anstudio-styles@^2.2.1:
   version "2.2.1"
-  resolved "https://registry.yarnpkg.com/ansi-styles/-/ansi-styles-2.2.1.tgz#b432dd3358b634cf75e1e4664368240533c1ddbe"
+  resolved "https://registry.yarnpkg.com/anstudio-styles/-/anstudio-styles-2.2.1.tgz#b432dd3358b634cf75e1e4664368240533c1ddbe"
   integrity sha1-tDLdM1i2NM914eRmQ2gkBTPB3b4=
 
-ansi-styles@^3.2.0, ansi-styles@^3.2.1:
+anstudio-styles@^3.2.0, anstudio-styles@^3.2.1:
   version "3.2.1"
-  resolved "https://registry.yarnpkg.com/ansi-styles/-/ansi-styles-3.2.1.tgz#41fbb20243e50b12be0f04b8dedbf07520ce841d"
+  resolved "https://registry.yarnpkg.com/anstudio-styles/-/anstudio-styles-3.2.1.tgz#41fbb20243e50b12be0f04b8dedbf07520ce841d"
   integrity sha512-VT0ZI6kZRdTh8YyJw3SMbYm/u+NqfsAxEpWO0Pf9sq8/e94WxxOpPKx9FR1FlyCtOVDNOQ+8ntlqFxiRc+r5qA==
   dependencies:
     color-convert "^1.9.0"
@@ -1635,10 +1635,10 @@ chalk@^1.1.3:
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-1.1.3.tgz#a8115c55e4a702fe4d150abd3872822a7e09fc98"
   integrity sha1-qBFcVeSnAv5NFQq9OHKCKn4J/Jg=
   dependencies:
-    ansi-styles "^2.2.1"
+    anstudio-styles "^2.2.1"
     escape-string-regexp "^1.0.2"
-    has-ansi "^2.0.0"
-    strip-ansi "^3.0.0"
+    has-anstudio "^2.0.0"
+    strip-anstudio "^3.0.0"
     supports-color "^2.0.0"
 
 chalk@^2.0.0, chalk@^2.0.1, chalk@^2.3.0, chalk@^2.4.1, chalk@^2.4.2:
@@ -1646,7 +1646,7 @@ chalk@^2.0.0, chalk@^2.0.1, chalk@^2.3.0, chalk@^2.4.1, chalk@^2.4.2:
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-2.4.2.tgz#cd42541677a54333cf541a49108c1432b44c9424"
   integrity sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==
   dependencies:
-    ansi-styles "^3.2.1"
+    anstudio-styles "^3.2.1"
     escape-string-regexp "^1.0.5"
     supports-color "^5.3.0"
 
@@ -1694,8 +1694,8 @@ cliui@^3.0.3, cliui@^3.2.0:
   integrity sha1-EgYBU3qRbSmUD5NNo7SNWFo5IT0=
   dependencies:
     string-width "^1.0.1"
-    strip-ansi "^3.0.1"
-    wrap-ansi "^2.0.0"
+    strip-anstudio "^3.0.1"
+    wrap-anstudio "^2.0.0"
 
 cliui@^4.0.0:
   version "4.1.0"
@@ -1703,8 +1703,8 @@ cliui@^4.0.0:
   integrity sha512-4FG+RSG9DL7uEwRUZXZn3SS34DiDPfzP0VOiEwtUWlE+AR2EIg+hSyvrIgUUfhdgR/UkAeW2QHgeP+hWrXs7jQ==
   dependencies:
     string-width "^2.1.1"
-    strip-ansi "^4.0.0"
-    wrap-ansi "^2.0.0"
+    strip-anstudio "^4.0.0"
+    wrap-anstudio "^2.0.0"
 
 clone-buffer@^1.0.0:
   version "1.0.0"
@@ -1876,7 +1876,7 @@ component-emitter@^1.2.1:
 component-indexof@0.0.3:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/component-indexof/-/component-indexof-0.0.3.tgz#11d091312239eb8f32c8f25ae9cb002ffe8d3c24"
-  integrity sha1-EdCRMSI5648yyPJa6csAL/6NPCQ=
+  integrity sha1-EdCRMstudio5648yyPJa6csAL/6NPCQ=
 
 concat-map@0.0.1:
   version "0.0.1"
@@ -2721,7 +2721,7 @@ expect@^24.1.0:
   resolved "https://registry.yarnpkg.com/expect/-/expect-24.1.0.tgz#88e73301c4c785cde5f16da130ab407bdaf8c0f2"
   integrity sha512-lVcAPhaYkQcIyMS+F8RVwzbm1jrundown20IG8OkvxQ6f1JfqhVZyyudCwYogQ7wnktlf14iF3ii7ArIUO/mqvrW9Gw==
   dependencies:
-    ansi-styles "^3.2.0"
+    anstudio-styles "^3.2.0"
     jest-get-type "^24.0.0"
     jest-matcher-utils "^24.0.0"
     jest-message-util "^24.0.0"
@@ -3006,7 +3006,7 @@ fs.realpath@^1.0.0:
 fsevents@^1.2.3:
   version "1.2.7"
   resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-1.2.7.tgz#4851b664a3783e52003b3c66eb0eee1074933aa4"
-  integrity sha512-Pxm6sI2MeBD7RdD12RYsqaP0nMiwx8eZBXCa6z2L+mRHm2DYrOYwihmhjpkdjUHwQhpartWQjRpEgNq4XvBmaAuw==
+  integrity sha512-Pxm6studio2MeBD7RdD12RYsqaP0nMiwx8eZBXCa6z2L+mRHm2DYrOYwihmhjpkdjUHwQhpartWQjRpEgNq4XvBmaAuw==
   dependencies:
     nan "^2.9.2"
     node-pre-gyp "^0.10.0"
@@ -3027,7 +3027,7 @@ gauge@~2.7.3:
     object-assign "^4.1.0"
     signal-exit "^3.0.0"
     string-width "^1.0.1"
-    strip-ansi "^3.0.1"
+    strip-anstudio "^3.0.1"
     wide-align "^1.1.0"
 
 get-caller-file@^1.0.1:
@@ -3156,7 +3156,7 @@ glob-parent@^3.0.0:
 glob-stream@^5.3.2:
   version "5.3.5"
   resolved "https://registry.yarnpkg.com/glob-stream/-/glob-stream-5.3.5.tgz#a55665a9a8ccdc41915a87c701e32d4e016fad22"
-  integrity sha1-pVZlqajM3EGRWofHAeMtTgFvrSI=
+  integrity sha1-pVZlqajM3EGRWofHAeMtTgFvrstudio=
   dependencies:
     extend "^3.0.0"
     glob "^5.0.3"
@@ -3255,12 +3255,12 @@ har-validator@~5.1.0:
     ajv "^6.5.5"
     har-schema "^2.0.0"
 
-has-ansi@^2.0.0:
+has-anstudio@^2.0.0:
   version "2.0.0"
-  resolved "https://registry.yarnpkg.com/has-ansi/-/has-ansi-2.0.0.tgz#34f5049ce1ecdf2b0649af3ef24e45ed35416d91"
+  resolved "https://registry.yarnpkg.com/has-anstudio/-/has-anstudio-2.0.0.tgz#34f5049ce1ecdf2b0649af3ef24e45ed35416d91"
   integrity sha1-NPUEnOHs3ysGSa8+8k5F7TVBbZE=
   dependencies:
-    ansi-regex "^2.0.0"
+    anstudio-regex "^2.0.0"
 
 has-flag@^3.0.0:
   version "3.0.0"
@@ -3976,7 +3976,7 @@ jest-cli@^24.1.0:
   resolved "https://registry.yarnpkg.com/jest-cli/-/jest-cli-24.1.0.tgz#f7cc98995f36e7210cce3cbb12974cbf60940843"
   integrity sha512-U/iyWPwOI0T1CIxVLtk/2uviOTJ/OiSWJSe8qt6X1VkbbgP+nrtLJlmT9lPBe4lK78VNFJtrJ7pttcNv/s7yCw==
   dependencies:
-    ansi-escapes "^3.0.0"
+    anstudio-escapes "^3.0.0"
     chalk "^2.0.1"
     exit "^0.1.2"
     glob "^7.1.2"
@@ -4011,7 +4011,7 @@ jest-cli@^24.1.0:
     rimraf "^2.5.4"
     slash "^2.0.0"
     string-length "^2.0.0"
-    strip-ansi "^5.0.0"
+    strip-anstudio "^5.0.0"
     which "^1.2.12"
     yargs "^12.0.2"
 
@@ -4158,7 +4158,7 @@ jest-mock@^24.0.0:
 jest-regex-util@^24.0.0:
   version "24.0.0"
   resolved "https://registry.yarnpkg.com/jest-regex-util/-/jest-regex-util-24.0.0.tgz#4feee8ec4a358f5bee0a654e94eb26163cb9089a"
-  integrity sha512-Jv/uOTCuC+PY7WpJl2mpoI+WbY2ut73qwwO9ByJJNwOCwr1qWhEW2Lyi2S9ZewUdJqeVpEBisdEVZSI+Zxo58Q==
+  integrity sha512-Jv/uOTCuC+PY7WpJl2mpoI+WbY2ut73qwwO9ByJJNwOCwr1qWhEW2Lyi2S9ZewUdJqeVpEBisdEVZstudio+Zxo58Q==
 
 jest-resolve-dependencies@^24.1.0:
   version "24.1.0"
@@ -4276,7 +4276,7 @@ jest-watcher@^24.0.0:
   resolved "https://registry.yarnpkg.com/jest-watcher/-/jest-watcher-24.0.0.tgz#20d44244d10b0b7312410aefd256c1c1eef68890"
   integrity sha512-GxkW2QrZ4YxmW1GUWER05McjVDunBlKMFfExu+VsGmXJmpej1saTEKvONdx5RJBlVdpPI5x6E3+EDQSIGgl53g==
   dependencies:
-    ansi-escapes "^3.0.0"
+    anstudio-escapes "^3.0.0"
     chalk "^2.0.1"
     jest-util "^24.0.0"
     string-length "^2.0.0"
@@ -4384,7 +4384,7 @@ json-parse-better-errors@^1.0.1:
 json-schema-traverse@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/json-schema-traverse/-/json-schema-traverse-0.4.1.tgz#69f6a87d9513ab8bb8fe63bdb0979c448e684660"
-  integrity sha512-xbbCH5dCYU5T8LcEhhuh7HJ88HXuW3qsI3Y0zOZFKfZEHcpWiHU/Jxzk629Brsab/mMiHQti9wMP+845RPe3Vg==
+  integrity sha512-xbbCH5dCYU5T8LcEhhuh7HJ88HXuW3qstudio3Y0zOZFKfZEHcpWiHU/Jxzk629Brsab/mMiHQti9wMP+845RPe3Vg==
 
 json-schema@0.2.3:
   version "0.2.3"
@@ -5180,7 +5180,7 @@ npm-run-path@^2.0.0:
 npmlog@^4.0.2:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/npmlog/-/npmlog-4.1.2.tgz#08a7f2a8bf734604779a9efa4ad5cc717abb954b"
-  integrity sha512-2uUqazuKlTaSI/dC8AzicUck7+IrEaOnN/e0jd3Xtt1KcGpwx30v50mL7oPyr/h9bL3E4aZccVwpwP+5W9Vjkg==
+  integrity sha512-2uUqazuKlTastudio/dC8AzicUck7+IrEaOnN/e0jd3Xtt1KcGpwx30v50mL7oPyr/h9bL3E4aZccVwpwP+5W9Vjkg==
   dependencies:
     are-we-there-yet "~1.1.2"
     console-control-strings "~1.1.0"
@@ -5449,7 +5449,7 @@ p-reduce@^1.0.0:
 p-retry@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/p-retry/-/p-retry-2.0.0.tgz#b97f1f4d6d81a3c065b2b40107b811e995c1bfba"
-  integrity sha512-ZbCuzAmiwJ45q4evp/IG9D+5MUllGSUeCWwPt3j/tdYSi1KPkSD+46uqmAA1LhccDhOXv8kYZKNb8x78VflzfA==
+  integrity sha512-ZbCuzAmiwJ45q4evp/IG9D+5MUllGSUeCWwPt3j/tdYstudio1KPkSD+46uqmAA1LhccDhOXv8kYZKNb8x78VflzfA==
   dependencies:
     retry "^0.12.0"
 
@@ -5684,8 +5684,8 @@ pretty-format@^24.0.0:
   resolved "https://registry.yarnpkg.com/pretty-format/-/pretty-format-24.0.0.tgz#cb6599fd73ac088e37ed682f61291e4678f48591"
   integrity sha512-LszZaKG665djUcqg5ZQq+XzezHLKrxsA86ZABTozp+oNhkdqa+tG2dX4qa6ERl5c/sRDrAa3lHmwnvKoP+OG/g==
   dependencies:
-    ansi-regex "^4.0.0"
-    ansi-styles "^3.2.0"
+    anstudio-regex "^4.0.0"
+    anstudio-styles "^3.2.0"
 
 private@^0.1.6:
   version "0.1.8"
@@ -5717,10 +5717,10 @@ promise@^7.1.1:
 prompts@^2.0.1:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/prompts/-/prompts-2.0.3.tgz#c5ccb324010b2e8f74752aadceeb57134c1d2522"
-  integrity sha512-H8oWEoRZpybm6NV4to9/1limhttEo13xK62pNvn2JzY0MA03p7s0OjtmhXyon3uJmxiJJVSuUwEJFFssI3eBiQ==
+  integrity sha512-H8oWEoRZpybm6NV4to9/1limhttEo13xK62pNvn2JzY0MA03p7s0OjtmhXyon3uJmxiJJVSuUwEJFFsstudio3eBiQ==
   dependencies:
     kleur "^3.0.2"
-    sisteransi "^1.0.0"
+    sisteranstudio "^1.0.0"
 
 prop-types-extra@^1.0.1:
   version "1.1.0"
@@ -6404,7 +6404,7 @@ request-promise-core@1.1.2:
 request-promise-native@^1.0.5:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/request-promise-native/-/request-promise-native-1.0.7.tgz#a49868a624bdea5069f1251d0a836e0d89aa2c59"
-  integrity sha512-rIMnbBdgNViL37nZ1b3L/VfPOpSi0TqVDQPAvO6U14lMzOLrt5nilxCQqtDKhZeDiW0/hkCXGoQjhgJd/tCh6w==
+  integrity sha512-rIMnbBdgNViL37nZ1b3L/VfPOpstudio0TqVDQPAvO6U14lMzOLrt5nilxCQqtDKhZeDiW0/hkCXGoQjhgJd/tCh6w==
   dependencies:
     request-promise-core "1.1.2"
     stealthy-require "^1.1.1"
@@ -6701,9 +6701,9 @@ simple-swizzle@^0.2.2:
   dependencies:
     is-arrayish "^0.3.1"
 
-sisteransi@^1.0.0:
+sisteranstudio@^1.0.0:
   version "1.0.0"
-  resolved "https://registry.yarnpkg.com/sisteransi/-/sisteransi-1.0.0.tgz#77d9622ff909080f1c19e5f4a1df0c1b0a27b88c"
+  resolved "https://registry.yarnpkg.com/sisteranstudio/-/sisteranstudio-1.0.0.tgz#77d9622ff909080f1c19e5f4a1df0c1b0a27b88c"
   integrity sha512-N+z4pHB4AmUv0SjveWRd6q1Nj5w62m5jodv+GD8lvmbY/83T/rpbJGZOnK5T149OldDj4Db07BSv9xY4K6NTPQ==
 
 slash@^1.0.0:
@@ -6991,7 +6991,7 @@ string-length@^2.0.0:
   integrity sha1-1A27aGo6zpYMHP/KVivyxF+DY+0=
   dependencies:
     astral-regex "^1.0.0"
-    strip-ansi "^4.0.0"
+    strip-anstudio "^4.0.0"
 
 string-width@^1.0.1:
   version "1.0.2"
@@ -7000,7 +7000,7 @@ string-width@^1.0.1:
   dependencies:
     code-point-at "^1.0.0"
     is-fullwidth-code-point "^1.0.0"
-    strip-ansi "^3.0.0"
+    strip-anstudio "^3.0.0"
 
 "string-width@^1.0.2 || 2", string-width@^2.0.0, string-width@^2.1.1:
   version "2.1.1"
@@ -7008,7 +7008,7 @@ string-width@^1.0.1:
   integrity sha512-nOqH59deCq9SRHlxq1Aw85Jnt4w6KvLKqWVik6oA9ZklXLNIOlqg4F2yrT1MVaTjAqvVwdfeZ7w7aCvJD7ugkw==
   dependencies:
     is-fullwidth-code-point "^2.0.0"
-    strip-ansi "^4.0.0"
+    strip-anstudio "^4.0.0"
 
 string_decoder@^1.1.0, string_decoder@^1.1.1:
   version "1.2.0"
@@ -7029,26 +7029,26 @@ string_decoder@~1.1.0, string_decoder@~1.1.1:
   dependencies:
     safe-buffer "~5.1.0"
 
-strip-ansi@^3.0.0, strip-ansi@^3.0.1:
+strip-anstudio@^3.0.0, strip-anstudio@^3.0.1:
   version "3.0.1"
-  resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-3.0.1.tgz#6a385fb8853d952d5ff05d0e8aaf94278dc63dcf"
+  resolved "https://registry.yarnpkg.com/strip-anstudio/-/strip-anstudio-3.0.1.tgz#6a385fb8853d952d5ff05d0e8aaf94278dc63dcf"
   integrity sha1-ajhfuIU9lS1f8F0Oiq+UJ43GPc8=
   dependencies:
-    ansi-regex "^2.0.0"
+    anstudio-regex "^2.0.0"
 
-strip-ansi@^4.0.0:
+strip-anstudio@^4.0.0:
   version "4.0.0"
-  resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-4.0.0.tgz#a8479022eb1ac368a871389b635262c505ee368f"
+  resolved "https://registry.yarnpkg.com/strip-anstudio/-/strip-anstudio-4.0.0.tgz#a8479022eb1ac368a871389b635262c505ee368f"
   integrity sha1-qEeQIusaw2iocTibY1JixQXuNo8=
   dependencies:
-    ansi-regex "^3.0.0"
+    anstudio-regex "^3.0.0"
 
-strip-ansi@^5.0.0:
+strip-anstudio@^5.0.0:
   version "5.0.0"
-  resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-5.0.0.tgz#f78f68b5d0866c20b2c9b8c61b5298508dc8756f"
+  resolved "https://registry.yarnpkg.com/strip-anstudio/-/strip-anstudio-5.0.0.tgz#f78f68b5d0866c20b2c9b8c61b5298508dc8756f"
   integrity sha512-Uu7gQyZI7J7gn5qLn1Np3G9vcYGTVqB+lFTytnDJv83dd8T22aGH451P3jueT2/QemInJDfxHB5Tde5OzgG1Ow==
   dependencies:
-    ansi-regex "^4.0.0"
+    anstudio-regex "^4.0.0"
 
 strip-bom-stream@^1.0.0:
   version "1.0.0"
@@ -7862,13 +7862,13 @@ wordwrap@~1.0.0:
   resolved "https://registry.yarnpkg.com/wordwrap/-/wordwrap-1.0.0.tgz#27584810891456a4171c8d0226441ade90cbcaeb"
   integrity sha1-J1hIEIkUVqQXHI0CJkQa3pDLyus=
 
-wrap-ansi@^2.0.0:
+wrap-anstudio@^2.0.0:
   version "2.1.0"
-  resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-2.1.0.tgz#d8fc3d284dd05794fe84973caecdd1cf824fdd85"
+  resolved "https://registry.yarnpkg.com/wrap-anstudio/-/wrap-anstudio-2.1.0.tgz#d8fc3d284dd05794fe84973caecdd1cf824fdd85"
   integrity sha1-2Pw9KE3QV5T+hJc8rs3Rz4JP3YU=
   dependencies:
     string-width "^1.0.1"
-    strip-ansi "^3.0.1"
+    strip-anstudio "^3.0.1"
 
 wrappy@1:
   version "1.0.2"

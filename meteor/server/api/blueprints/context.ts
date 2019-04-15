@@ -25,7 +25,7 @@ import {
 	IBlueprintPartDB,
 	IngestPart
 } from 'tv-automation-sofie-blueprints-integration'
-import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { Studio, Studios } from '../../../lib/collections/Studios'
 import { ConfigRef, compileStudioConfig } from './config'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
@@ -155,28 +155,28 @@ export class NotesContext extends CommonContext implements INotesContext {
 /** Studio */
 
 export class StudioConfigContext implements IStudioConfigContext {
-	protected readonly studioInstallation: StudioInstallation
-	constructor (studioInstallation: StudioInstallation) {
-		this.studioInstallation = studioInstallation
+	protected readonly studio: Studio
+	constructor (studio: Studio) {
+		this.studio = studio
 	}
 
-	getStudioInstallation (): StudioInstallation {
-		const studio = StudioInstallations.findOne(this.studioInstallation._id)
-		if (!studio) throw new Meteor.Error(404, 'StudioInstallation "' + this.studioInstallation._id + '" not found')
+	getStudio (): Studio {
+		const studio = Studios.findOne(this.studio._id)
+		if (!studio) throw new Meteor.Error(404, 'Studio "' + this.studio._id + '" not found')
 
 		return studio
 	}
 	getStudioConfig (): {[key: string]: ConfigItemValue} {
-		return compileStudioConfig(this.getStudioInstallation())
+		return compileStudioConfig(this.getStudio())
 	}
 	getStudioConfigRef (configKey: string): string {
-		return ConfigRef.getStudioConfigRef(this.studioInstallation._id, configKey)
+		return ConfigRef.getStudioConfigRef(this.studio._id, configKey)
 	}
 }
 
 export class StudioContext extends StudioConfigContext implements IStudioContext {
 	getStudioMappings (): BlueprintMappings {
-		return this.studioInstallation.mappings
+		return this.studio.mappings
 	}
 }
 
@@ -188,12 +188,12 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 
 	private notes: NotesContext
 
-	constructor (studioInstallation: StudioInstallation, showStyleBaseId: string, showStyleVariantId: string, contextName?: string, rundownId?: string, segmentId?: string, partId?: string) {
-		super(studioInstallation)
+	constructor (studio: Studio, showStyleBaseId: string, showStyleVariantId: string, contextName?: string, rundownId?: string, segmentId?: string, partId?: string) {
+		super(studio)
 
 		this.showStyleBaseId = showStyleBaseId
 		this.showStyleVariantId = showStyleVariantId
-		this.notes = new NotesContext(contextName || studioInstallation.name, rundownId || '', segmentId, partId)
+		this.notes = new NotesContext(contextName || studio.name, rundownId || '', segmentId, partId)
 	}
 
 	getShowStyleBase (): ShowStyleBase {
@@ -243,8 +243,8 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 	rundownId: string
 	rundown: Rundown
 
-	constructor (rundown: Rundown, studioInstallation?: StudioInstallation, contextName?: string, segmentId?: string, partId?: string) {
-		super(studioInstallation || rundown.getStudioInstallation(), rundown.showStyleBaseId, rundown.showStyleVariantId, contextName || rundown.name, rundown._id, segmentId, partId)
+	constructor (rundown: Rundown, studio?: Studio, contextName?: string, segmentId?: string, partId?: string) {
+		super(studio || rundown.getStudio(), rundown.showStyleBaseId, rundown.showStyleVariantId, contextName || rundown.name, rundown._id, segmentId, partId)
 
 		this.rundownId = rundown._id
 		this.rundown = rundown
@@ -255,8 +255,8 @@ export type BlueprintRuntimeArgumentsSet = { [key: string]: BlueprintRuntimeArgu
 export class SegmentContext extends RundownContext implements ISegmentContext {
 	private runtimeArguments: BlueprintRuntimeArgumentsSet
 
-	constructor (rundown: Rundown, studioInstallation: StudioInstallation | undefined, runtimeArguments: BlueprintRuntimeArgumentsSet | DBPart[]) {
-		super(rundown, studioInstallation)
+	constructor (rundown: Rundown, studio: Studio | undefined, runtimeArguments: BlueprintRuntimeArgumentsSet | DBPart[]) {
+		super(rundown, studio)
 
 		if (_.isArray(runtimeArguments)) {
 			const existingRuntimeArguments: BlueprintRuntimeArgumentsSet = {}
@@ -280,8 +280,8 @@ export class SegmentContext extends RundownContext implements ISegmentContext {
 export class PartContext extends RundownContext implements IPartContext {
 	private runtimeArguments: BlueprintRuntimeArguments
 
-	constructor (rundown: Rundown, studioInstallation: StudioInstallation | undefined, runtimeArguments: BlueprintRuntimeArguments) {
-		super(rundown, studioInstallation)
+	constructor (rundown: Rundown, studio: Studio | undefined, runtimeArguments: BlueprintRuntimeArguments) {
+		super(rundown, studio)
 
 		this.runtimeArguments = runtimeArguments
 	}
@@ -300,8 +300,8 @@ export class EventContext extends CommonContext implements IEventContext {
 export class PartEventContext extends RundownContext implements IPartEventContext {
 	part: IBlueprintPartDB
 
-	constructor (rundown: Rundown, studioInstallation: StudioInstallation | undefined, part: IBlueprintPartDB) {
-		super(rundown, studioInstallation)
+	constructor (rundown: Rundown, studio: Studio | undefined, part: IBlueprintPartDB) {
+		super(rundown, studio)
 
 		this.part = part
 	}
@@ -311,8 +311,8 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 
 	public asRunEvent: AsRunLogEvent
 
-	constructor (rundown: Rundown, studioInstallation: StudioInstallation | undefined, asRunEvent: AsRunLogEvent) {
-		super(rundown, studioInstallation)
+	constructor (rundown: Rundown, studio: Studio | undefined, asRunEvent: AsRunLogEvent) {
+		super(rundown, studio)
 		this.asRunEvent = asRunEvent
 	}
 

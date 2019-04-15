@@ -41,7 +41,7 @@ export function queueExternalMessages (rundown: Rundown, messages: Array<IBluepr
 			type: message.type,
 			receiver: message.receiver,
 			message: message.message,
-			studioId: rundown.studioInstallationId,
+			studioId: rundown.studioId,
 			created: now,
 			tryCount: 0,
 			expires: now + 35 * 24 * 3600 * 1000, // 35 days

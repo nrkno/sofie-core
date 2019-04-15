@@ -5,7 +5,7 @@ import * as _ from 'underscore'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PeripheralDevice, PeripheralDevices, MosDevice } from '../../../lib/collections/PeripheralDevices'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { Studio } from '../../../lib/collections/Studios'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Time, getCurrentTime } from '../../../lib/lib'
 import { translate, InjectedTranslateProps } from 'react-i18next'
@@ -55,7 +55,7 @@ export const MOSLastUpdateStatus = translate()(class extends React.Component<IMO
 })
 
 interface IProps {
-	studioInstallation: StudioInstallation
+	studio: Studio
 	rundown: Rundown
 }
 
@@ -106,7 +106,7 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 	const attachedDevices: PeripheralDevice[] = []
 	const parentDevices = PeripheralDevices.find({
-		studioInstallationId: props.studioInstallation._id
+		studioId: props.studio._id
 	}).fetch()
 	attachedDevices.splice(attachedDevices.length, 0, ...parentDevices)
 	parentDevices.forEach(i => {
@@ -199,7 +199,7 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 
 	componentWillMount () {
 		this.subscribe('peripheralDevicesAndSubDevices', {
-			studioInstallationId: this.props.studioInstallation._id
+			studioId: this.props.studio._id
 		})
 	}
 	componentWillUnmount () {

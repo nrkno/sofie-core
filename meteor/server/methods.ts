@@ -11,7 +11,7 @@ let runningMethods: {[methodId: string]: {
 	startTime: number,
 	i: number
 }} = {}
-let runningMethodsI: number = 0
+let runningMethodstudio: number = 0
 /**
  * Wrapper for Meteor.methods(), keeps track of which methods are currently running
  * @param orgMethods
@@ -25,7 +25,7 @@ export function setMeteorMethods (orgMethods: Methods): void {
 		if (method) {
 
 			methods[methodName] = function (...args: any[]) {
-				let i = runningMethodsI++
+				let i = runningMethodstudio++
 				let methodId = 'm' + i
 
 				runningMethods[methodId] = {

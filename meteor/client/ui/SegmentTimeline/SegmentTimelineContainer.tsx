@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../../lib/collections/Segments'
-import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { Studio } from '../../../lib/collections/Studios'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
 import { getCurrentTime } from '../../../lib/lib'
 import { RundownTiming, computeSegmentDuration } from '../RundownView/RundownTiming'
@@ -49,7 +49,7 @@ export interface PieceUi extends PieceExtended {
 }
 interface IProps {
 	segmentId: string,
-	studioInstallation: StudioInstallation,
+	studio: Studio,
 	showStyleBase: ShowStyleBase,
 	rundown: Rundown,
 	timeScale: number,
@@ -165,8 +165,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	// Check studio installation changes that are important to the segment.
 	// We also could investigate just skipping this and requiring a full reload if the studio installation is changed
 	if (
-		(typeof props.studioInstallation !== typeof nextProps.studioInstallation) ||
-		!_.isEqual(props.studioInstallation.config, nextProps.studioInstallation.config) ||
+		(typeof props.studio !== typeof nextProps.studio) ||
+		!_.isEqual(props.studio.config, nextProps.studio.config) ||
 		!_.isEqual(props.showStyleBase.config, nextProps.showStyleBase.config) ||
 		!_.isEqual(props.showStyleBase.sourceLayers, nextProps.showStyleBase.sourceLayers) ||
 		!_.isEqual(props.showStyleBase.outputLayers, nextProps.showStyleBase.outputLayers)
@@ -384,7 +384,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				segmentRef={this.segmentRef}
 				key={this.props.segmentui._id}
 				segment={this.props.segmentui}
-				studioInstallation={this.props.studioInstallation}
+				studio={this.props.studio}
 				parts={this.props.parts}
 				segmentNotes={this.props.segmentNotes}
 				timeScale={this.props.timeScale}

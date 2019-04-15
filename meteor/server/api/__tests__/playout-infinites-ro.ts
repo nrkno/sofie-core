@@ -15,7 +15,7 @@ export const testRO1: MockRO = {
 	rundown: new Rundown(literal<DBRundown>({
 		_id: 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 		externalId: '',
-		studioInstallationId: '',
+		studioId: '',
 		showStyleBaseId: '',
 		showStyleVariantId: '',
 		peripheralDeviceId: '',
@@ -27,7 +27,7 @@ export const testRO1: MockRO = {
 		nextPartId: null,
 		dataSource: '',
 		importVersions: {
-			studioInstallation: '',
+			studio: '',
 			showStyleBase: '',
 			showStyleVariant: '',
 			blueprint: '',
@@ -208,7 +208,7 @@ export const testRO1: MockRO = {
 			'subTypeVariant': ''
 		},
 		{
-			'_id': 'hDsI_wI5jDH53Z4X2hwu9V_1V1Y_',
+			'_id': 'hDstudio_wI5jDH53Z4X2hwu9V_1V1Y_',
 			'rundownId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
 			'segmentId': '5gnIW3D21_T_OBA8I9VVT_L3DIE_',
 			'_rank': 9,
@@ -1077,7 +1077,7 @@ export const testRO1: MockRO = {
 		{
 			'_id': 'gufLM9FHUOkUUD9JDwbRIpPFZ_s_',
 			'rundownId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
-			'partId': 'hDsI_wI5jDH53Z4X2hwu9V_1V1Y_',
+			'partId': 'hDstudio_wI5jDH53Z4X2hwu9V_1V1Y_',
 			'status': -1,
 			'externalId': '',
 			'name': 'SYKKELVEI-II-310818-SL',
@@ -1098,7 +1098,7 @@ export const testRO1: MockRO = {
 		{
 			'_id': 'RaHmn3jz8KEVzDmag94GkH3nt0k_',
 			'rundownId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
-			'partId': 'hDsI_wI5jDH53Z4X2hwu9V_1V1Y_',
+			'partId': 'hDstudio_wI5jDH53Z4X2hwu9V_1V1Y_',
 			'status': -1,
 			'externalId': '',
 			'name': 'Hans Erik Weiby, reporter',
@@ -1118,7 +1118,7 @@ export const testRO1: MockRO = {
 		{
 			'_id': '_Lq1Bst4wF_8Rx9_JL7KQY1Ians_',
 			'rundownId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
-			'partId': 'hDsI_wI5jDH53Z4X2hwu9V_1V1Y_',
+			'partId': 'hDstudio_wI5jDH53Z4X2hwu9V_1V1Y_',
 			'status': -1,
 			'externalId': '',
 			'name': 'Eva Høiby',
@@ -1138,7 +1138,7 @@ export const testRO1: MockRO = {
 		{
 			'_id': 'PzpVFPPKRJBBRwmMGthI3pB8wbI_',
 			'rundownId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
-			'partId': 'hDsI_wI5jDH53Z4X2hwu9V_1V1Y_',
+			'partId': 'hDstudio_wI5jDH53Z4X2hwu9V_1V1Y_',
 			'status': -1,
 			'externalId': '',
 			'name': 'Kirsten Falch',
@@ -1158,7 +1158,7 @@ export const testRO1: MockRO = {
 		{
 			'_id': 'Xo3ZfArXZ86_KmX1xP5qgwEzIjQ_',
 			'rundownId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
-			'partId': 'hDsI_wI5jDH53Z4X2hwu9V_1V1Y_',
+			'partId': 'hDstudio_wI5jDH53Z4X2hwu9V_1V1Y_',
 			'status': -1,
 			'externalId': '',
 			'name': 'Jørgen Haugland Kristiansen, varaordfører, Kristiansand (Krf)',
@@ -1178,7 +1178,7 @@ export const testRO1: MockRO = {
 		{
 			'_id': 'DqbGqHJtAgNRdDHDUOv4koqKkoU_',
 			'rundownId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
-			'partId': 'hDsI_wI5jDH53Z4X2hwu9V_1V1Y_',
+			'partId': 'hDstudio_wI5jDH53Z4X2hwu9V_1V1Y_',
 			'status': -1,
 			'externalId': '',
 			'name': 'Dagfinn Fløystad, avdelingsdirektør, Statens Vegvesen',
@@ -1198,7 +1198,7 @@ export const testRO1: MockRO = {
 		{
 			'_id': 'wlgEFYqhsP422zxlAvd1Us4XbxU_',
 			'rundownId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
-			'partId': 'hDsI_wI5jDH53Z4X2hwu9V_1V1Y_',
+			'partId': 'hDstudio_wI5jDH53Z4X2hwu9V_1V1Y_',
 			'status': -1,
 			'externalId': '',
 			'name': 'Foto/redigering:, Hans Erik Weiby',

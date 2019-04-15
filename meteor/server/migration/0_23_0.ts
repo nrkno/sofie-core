@@ -22,7 +22,7 @@ addMigrationSteps( '0.23.0', [
 			}, {
 				$set: {
 					importVersions: {
-						studioInstallation: '',
+						studio: '',
 						showStyleBase: '',
 						showStyleVariant: '',
 						blueprint: '',

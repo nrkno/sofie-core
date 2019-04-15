@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { saveIntoDb } from '../../lib/lib'
-import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { Studios } from '../../lib/collections/Studios'
 import * as _ from 'underscore'
 
 // tmp!
@@ -17,30 +17,30 @@ Meteor.startup(() => {
 		}
 	}
 	console.log('test1')
-	saveIntoDb(StudioInstallations, {
+	saveIntoDb(Studios, {
 		_id: 'test'
 	}, [{
 		// @ts-ignore
 		_id: 'test', prop0: 'a', prop1: 'b',
 	}])
-	let s0 = StudioInstallations.findOne('test')
+	let s0 = Studios.findOne('test')
 	test(s0, {_id: 'test', prop0: 'a', prop1: 'b',})
 
 	console.log('test2')
-	saveIntoDb(StudioInstallations, {
+	saveIntoDb(Studios, {
 		_id: 'test'
 	}, [{
 		// @ts-ignore
 		_id: 'test', prop1: 'b2', prop2: 'c'
 	}])
-	let s1 = StudioInstallations.findOne('test')
+	let s1 = Studios.findOne('test')
 	test(s1, {_id: 'test', prop1: 'b2', prop2: 'c'})
 
-	saveIntoDb(StudioInstallations, {
+	saveIntoDb(Studios, {
 		_id: 'test'
 	}, [])
 
-	let s2 = StudioInstallations.findOne('test')
+	let s2 = Studios.findOne('test')
 
 	console.log(s2)
 

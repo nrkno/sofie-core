@@ -107,7 +107,7 @@ export function reportRundownHasStarted (rundownOrId: Rundown | string, timestam
 		rundown.startedPlayback = timestamp
 
 		let event = pushAsRunLog({
-			studioId: rundown.studioInstallationId,
+			studioId: rundown.studioId,
 			rundownId: rundown._id,
 			content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 			content2: 'rundown'
@@ -147,7 +147,7 @@ export function reportPartHasStarted (partOrId: Part | string , timestamp: Time)
 
 		if (rundown) {
 			let event = pushAsRunLog({
-				studioId:			rundown.studioInstallationId,
+				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
 				segmentId:			part.segmentId,
 				partId:		part._id,
@@ -186,7 +186,7 @@ export function reportPartHasStopped (partOrId: Part | string , timestamp: Time)
 
 		if (rundown) {
 			let event = pushAsRunLog({
-				studioId:			rundown.studioInstallationId,
+				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
 				segmentId:			part.segmentId,
 				partId:		part._id,
@@ -232,7 +232,7 @@ export function reportPieceHasStarted (pieceOrId: Piece | string, timestamp: Tim
 
 		if (rundown) {
 			let event = pushAsRunLog({
-				studioId:			rundown.studioInstallationId,
+				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
 				segmentId:			part.segmentId,
 				partId:		piece.partId,
@@ -276,7 +276,7 @@ export function reportPieceHasStopped (pieceOrId: Piece | string, timestamp: Tim
 
 		if (rundown) {
 			let event = pushAsRunLog({
-				studioId:			rundown.studioInstallationId,
+				studioId:			rundown.studioId,
 				rundownId:		rundown._id,
 				segmentId:			part.segmentId,
 				partId:		piece.partId,

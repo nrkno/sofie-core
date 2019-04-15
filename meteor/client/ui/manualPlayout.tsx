@@ -17,7 +17,7 @@ import {
 	TimelineObjCCGMedia,
 	TimelineContentTypeCasparCg
 } from 'timeline-state-resolver-types'
-import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
+import { Studios, Studio } from '../../lib/collections/Studios'
 import {
 	PeripheralDevices,
 } from '../../lib/collections/PeripheralDevices'
@@ -41,18 +41,18 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		}
 	}
 	componentWillMount () {
-		this.subscribe('studioInstallations', {})
+		this.subscribe('studios', {})
 		this.subscribe('peripheralDevices', {})
 	}
 	getStudios () {
-		return StudioInstallations.find().fetch()
+		return Studios.find().fetch()
 	}
-	getAtems (studio: StudioInstallation) {
+	getAtems (studio: Studio) {
 
 		let atems: {[id: string]: PlayoutDeviceSettingsDeviceAtem} = {}
 
 		let parentDevices = PeripheralDevices.find({
-			studioInstallationId: studio._id,
+			studioId: studio._id,
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT
 		}).fetch()
 
@@ -70,7 +70,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		})
 		return atems
 	}
-	getAtemMEs (studio: StudioInstallation) {
+	getAtemMEs (studio: Studio) {
 		let mappings: {[layer: string]: MappingAtem} = {}
 		_.each(studio.mappings, (mapping, layerId) => {
 			if (mapping.device === PlayoutDeviceType.ATEM) {
@@ -84,7 +84,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		})
 		return mappings
 	}
-	atemCamera (e: React.MouseEvent<HTMLElement>, studio: StudioInstallation, mappingLayerId: string, cam: number) {
+	atemCamera (e: React.MouseEvent<HTMLElement>, studio: Studio, mappingLayerId: string, cam: number) {
 
 		let o: TimelineObjAtemME = {
 			id: 'camera_' + mappingLayerId,
@@ -103,7 +103,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		}
 		callMethod(e, ManualPlayoutAPI.methods.insertTimelineObject, studio._id, o)
 	}
-	getCasparLayers (studio: StudioInstallation) {
+	getCasparLayers (studio: Studio) {
 		let mappings: {[layer: string]: MappingCasparCG} = {}
 		_.each(studio.mappings, (mapping, layerId) => {
 			if (mapping.device === PlayoutDeviceType.CASPARCG) {
@@ -113,7 +113,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		})
 		return mappings
 	}
-	casparcgPlay (e: React.MouseEvent<HTMLElement>, studio: StudioInstallation, mappingLayerId: string) {
+	casparcgPlay (e: React.MouseEvent<HTMLElement>, studio: Studio, mappingLayerId: string) {
 
 		let input = this.state.inputValues[mappingLayerId]
 
@@ -133,7 +133,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 		}
 		callMethod(e, ManualPlayoutAPI.methods.insertTimelineObject, studio._id, o)
 	}
-	casparcgClear (e: React.MouseEvent<HTMLElement>, studio: StudioInstallation, mappingLayerId: string) {
+	casparcgClear (e: React.MouseEvent<HTMLElement>, studio: Studio, mappingLayerId: string) {
 		callMethod(e, ManualPlayoutAPI.methods.removeTimelineObject, studio._id, 'caspar_' + mappingLayerId)
 	}
 	onInputChange (id: string, value: any) {

@@ -5,7 +5,7 @@ import { translate } from 'react-i18next'
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { Studio } from '../../../lib/collections/Studios'
 import {
 	SegmentUi,
 	PartUi,
@@ -200,7 +200,7 @@ class OutputGroup extends React.Component<IOutputGroupProps> {
 interface IProps {
 	segment: SegmentUi
 	rundown: Rundown,
-	studioInstallation: StudioInstallation
+	studio: Studio
 	part: PartUi
 	timeScale: number
 	onCollapseOutputToggle?: (layer: IOutputLayerUi, event: any) => void
@@ -368,7 +368,7 @@ export const SegmentTimelineLine = translate()(withTiming<IProps, IState>((props
 					return (
 						<OutputGroup key={layer._id}
 							{...this.props}
-							mediaPreviewUrl={this.ensureHasTrailingSlash(this.props.studioInstallation.settings.mediaPreviewsUrl + '' || '') || ''}
+							mediaPreviewUrl={this.ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''}
 							layer={layer}
 							segment={this.props.segment}
 							part={part}

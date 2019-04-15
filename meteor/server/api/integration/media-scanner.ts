@@ -11,9 +11,9 @@ export namespace MediaScannerIntegration {
 		logger.debug('getMediaObjectRevisions')
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 
-		if (peripheralDevice.studioInstallationId) {
+		if (peripheralDevice.studioId) {
 			return _.map(MediaObjects.find({
-				studioId: peripheralDevice.studioInstallationId,
+				studioId: peripheralDevice.studioId,
 				collectionId: collectionId
 			}).fetch(), (mo: MediaObject) => {
 				return {
@@ -22,7 +22,7 @@ export namespace MediaScannerIntegration {
 				}
 			})
 		} else {
-			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studioInstallation')
+			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
 		}
 	}
 	export function updateMediaObject (id: string, token: string, collectionId: string, objId: string, doc: MediaObject | null) {
@@ -34,7 +34,7 @@ export namespace MediaScannerIntegration {
 			MediaObjects.remove(_id)
 		} else if (doc) {
 			let doc2 = _.extend(doc, {
-				studioId: peripheralDevice.studioInstallationId,
+				studioId: peripheralDevice.studioId,
 				collectionId: collectionId,
 				objId: objId,
 				_id: _id

@@ -39,7 +39,7 @@ import { logger } from '../../lib/logging'
 import { storeSystemSnapshot } from '../api/snapshot'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
-import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { Studios } from '../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle } from '../api/blueprints/migrationContext'
 import { getHash } from '../../lib/lib'
 import * as semver from 'semver'
@@ -200,7 +200,7 @@ export function prepareMigration (returnAllChunks?: boolean) {
 					})
 
 					// Find all studios that supports this showStyle
-					StudioInstallations.find({
+					Studios.find({
 						supportedShowStyleBase: showStyleBase._id
 					}).forEach((studio) => {
 						if (!studioIds[studio._id]) { // only run once per blueprint and studio
@@ -239,7 +239,7 @@ export function prepareMigration (returnAllChunks?: boolean) {
 			} else if (blueprint.blueprintType === BlueprintManifestType.STUDIO) {
 				const bp = rawBlueprint as StudioBlueprintManifest
 				// Find all studios that use this blueprint
-				StudioInstallations.find({
+				Studios.find({
 					blueprintId: blueprint._id
 				}).forEach((studio) => {
 					let chunk: MigrationChunk = {
@@ -682,7 +682,7 @@ function getMigrationStudioContext (chunk: MigrationChunk): IMigrationContextStu
 	if (chunk.sourceType !== MigrationStepType.STUDIO) throw new Meteor.Error(500, `wrong chunk.sourceType "${chunk.sourceType}", expected STUDIO`)
 	if (!chunk.sourceId) throw new Meteor.Error(500, `chunk.sourceId missing` )
 
-	let studio = StudioInstallations.findOne(chunk.sourceId)
+	let studio = Studios.findOne(chunk.sourceId)
 	if (!studio) throw new Meteor.Error(404, `Studio "${chunk.sourceId}" not found`)
 
 	return new MigrationContextStudio(studio)

@@ -18,7 +18,7 @@ function createEmptyRundownData () {
 	const rundown: DBRundown = {
 		_id: 'mock',
 		mosId: '',
-		studioInstallationId: '',
+		studioId: '',
 		showStyleBaseId: '',
 		showStyleVariantId: '',
 		peripheralDeviceId: '',

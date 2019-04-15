@@ -1,7 +1,7 @@
-import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { Studio, Studios } from '../../lib/collections/Studios'
 import { rejectFields } from './lib'
 
-export namespace StudioInstallationsSecurity {
+export namespace StudiosSecurity {
 	export function allowReadAccess (selector: object, token: string, context: any) {
 
 		return true
@@ -14,8 +14,8 @@ export namespace StudioInstallationsSecurity {
 // Setup rules:
 
 // Setup rules:
-StudioInstallations.allow({
-	insert (userId: string, doc: StudioInstallation): boolean {
+Studios.allow({
+	insert (userId: string, doc: Studio): boolean {
 		return false
 	},
 	update (userId, doc, fields, modifier) {

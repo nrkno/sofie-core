@@ -7,7 +7,7 @@ import {
 	TimelineObjRundown,
 	TimelineObjType
 } from '../../../lib/collections/Timeline'
-import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import {
 	TimelineObjectCoreExt,
@@ -91,7 +91,7 @@ export function postProcessAdLibPieces (innerContext: IRundownContext, adLibPiec
 	})
 }
 
-export function postProcessStudioBaselineObjects (studio: StudioInstallation, objs: Timeline.TimelineObject[]): TimelineObjRundown[] {
+export function postProcessStudioBaselineObjects (studio: Studio, objs: Timeline.TimelineObject[]): TimelineObjRundown[] {
 	let timelineUniqueIds: { [id: string]: true } = {}
 	return _.map(objs, (o, i) => {
 		const item = convertTimelineObject('', o)

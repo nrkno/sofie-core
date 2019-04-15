@@ -35,9 +35,9 @@ import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { logger } from '../../logging'
 
 import {
-	StudioInstallations,
-	StudioInstallation
-} from '../../../lib/collections/StudioInstallations'
+	Studios,
+	Studio
+} from '../../../lib/collections/Studios'
 import {
 	AdLibPiece,
 	AdLibPieces
@@ -477,19 +477,19 @@ function handleRundownData (rundown: MOS.IMOSRundown, peripheralDevice: Peripher
 	updateMosLastDataReceived(peripheralDevice._id)
 	logger.info((existingDbRundown ? 'Updating' : 'Adding') + ' rundown ' + rundownId(rundown.ID))
 
-	let studioInstallationId = peripheralDevice.studioInstallationId
-	if (!studioInstallationId && peripheralDevice.parentDeviceId) {
+	let studioId = peripheralDevice.studioId
+	if (!studioId && peripheralDevice.parentDeviceId) {
 		// Also check the parent device:
 		let parentDevice = PeripheralDevices.findOne(peripheralDevice.parentDeviceId)
 		if (parentDevice) {
-			studioInstallationId = parentDevice.studioInstallationId
+			studioId = parentDevice.studioId
 		}
 	}
 
-	if (!studioInstallationId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no StudioInstallation')
+	if (!studioId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no Studio')
 
-	let studioInstallation = StudioInstallations.findOne(studioInstallationId) as StudioInstallation
-	if (!studioInstallation) throw new Meteor.Error(404, 'StudioInstallation "' + studioInstallationId + '" not found')
+	let studio = Studios.findOne(studioId) as Studio
+	if (!studio) throw new Meteor.Error(404, 'Studio "' + studioId + '" not found')
 
 	const ingestRundown = literal<IngestRundown>({
 		externalId: rundown.ID.toString(),
@@ -499,14 +499,14 @@ function handleRundownData (rundown: MOS.IMOSRundown, peripheralDevice: Peripher
 		payload: rundown
 	})
 
-	const showStyle = selectShowStyleVariant(studioInstallation, ingestRundown)
+	const showStyle = selectShowStyleVariant(studio, ingestRundown)
 	if (!showStyle) {
 		logger.warn('Studio blueprint rejected rundown')
 		return
 	}
 
 	const showStyleBlueprint = loadShowStyleBlueprints(showStyle.base)
-	const blueprintContext = new ShowStyleContext(studioInstallation, showStyle.base._id, showStyle.variant._id)
+	const blueprintContext = new ShowStyleContext(studio, showStyle.base._id, showStyle.variant._id)
 	const rundownRes = showStyleBlueprint.getRundown(blueprintContext, ingestRundown)
 
 	let blueprint = Blueprints.findOne(showStyle.base.blueprintId) as Blueprint || {}
@@ -515,7 +515,7 @@ function handleRundownData (rundown: MOS.IMOSRundown, peripheralDevice: Peripher
 		_.omit(literal<DBRundown>({
 			_id: rundownId(rundown.ID),
 			externalId: rundown.ID.toString(),
-			studioInstallationId: studioInstallation._id,
+			studioId: studio._id,
 			peripheralDeviceId: peripheralDevice._id,
 			showStyleVariantId: showStyle.variant._id,
 			showStyleBaseId: showStyle.base._id,
@@ -526,7 +526,7 @@ function handleRundownData (rundown: MOS.IMOSRundown, peripheralDevice: Peripher
 			unsynced: false,
 
 			importVersions: {
-				studioInstallation: studioInstallation._rundownVersionHash,
+				studio: studio._rundownVersionHash,
 				showStyleBase: showStyle.base._rundownVersionHash,
 				showStyleVariant: showStyle.variant._rundownVersionHash,
 				blueprint: blueprint.blueprintVersion,
@@ -562,7 +562,7 @@ function handleRundownData (rundown: MOS.IMOSRundown, peripheralDevice: Peripher
 	dbRundown.saveCache(CachePrefix.INGEST_RUNDOWN + dbRundown._id, rundown)
 
 	// Save the baseline
-	const blueprintRundownContext = new RundownContext(dbRundown, studioInstallation)
+	const blueprintRundownContext = new RundownContext(dbRundown, studio)
 	logger.info(`Building baseline items for ${dbRundown._id}...`)
 	logger.info(`... got ${rundownRes.baseline.length} items from baseline.`)
 

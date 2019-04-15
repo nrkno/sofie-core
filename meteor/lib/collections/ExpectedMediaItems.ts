@@ -18,7 +18,7 @@ export interface ExpectedMediaItem {
 	partId: string
 
 	/** The studio installation this ExpectedMediaItem was generated in */
-	studioInstallationId: string
+	studioId: string
 
 	/** True if the media item has been marked as possibly unavailable */
 	disabled: boolean

@@ -3,7 +3,7 @@ import * as moment from 'moment'
 import { SaferEval } from 'safer-eval'
 import { logger } from '../../logging'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { Studio } from '../../../lib/collections/Studios'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
@@ -34,14 +34,14 @@ export function loadSystemBlueprints (system: ICoreSystem): SystemBlueprintManif
 	return blueprint
 }
 
-export function loadStudioBlueprints (studio: StudioInstallation): StudioBlueprintManifest | undefined {
+export function loadStudioBlueprints (studio: Studio): StudioBlueprintManifest | undefined {
 	if (!studio.blueprintId) return undefined
 
 	const blueprint = loadBlueprintsById(studio.blueprintId)
-	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${studio.blueprintId}" not found! (referenced by StudioInstallation "${studio._id}")`)
+	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${studio.blueprintId}" not found! (referenced by Studio "${studio._id}")`)
 
 	if (blueprint.blueprintType !== BlueprintManifestType.STUDIO) {
-		throw new Meteor.Error(500, `Blueprint "${studio.blueprintId}" is not valid for a StudioInstallation "${studio._id}"!`)
+		throw new Meteor.Error(500, `Blueprint "${studio.blueprintId}" is not valid for a Studio "${studio._id}"!`)
 	}
 	return blueprint
 }

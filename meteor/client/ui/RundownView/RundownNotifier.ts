@@ -15,7 +15,7 @@ import { getCurrentTime } from '../../../lib/lib'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Segments } from '../../../lib/collections/Segments'
-import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { Studio } from '../../../lib/collections/Studios'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { UserActionAPI } from '../../../lib/api/userActions'
@@ -57,7 +57,7 @@ class RundownViewNotifier extends WithManagedTracker {
 	private _rundownImportVersionStatusDep: Tracker.Dependency
 	private _rundownImportVersionInterval: number | undefined = undefined
 
-	constructor (rundownId: string, showStyleBase: ShowStyleBase, studioInstallation: StudioInstallation) {
+	constructor (rundownId: string, showStyleBase: ShowStyleBase, studio: Studio) {
 		super()
 		this._notificationList = new NotificationList([])
 		this._mediaStatusDep = new Tracker.Dependency()
@@ -80,10 +80,10 @@ class RundownViewNotifier extends WithManagedTracker {
 			if (rRundownId) {
 				this.autorun(() => {
 					// console.log('RundownViewNotifier 1-1')
-					if (showStyleBase && studioInstallation) {
-						this.reactiveMediaStatus(rRundownId, showStyleBase, studioInstallation)
+					if (showStyleBase && studio) {
+						this.reactiveMediaStatus(rRundownId, showStyleBase, studio)
 						this.reactiveSLNotes(rRundownId)
-						this.reactivePeripheralDeviceStatus(studioInstallation._id)
+						this.reactivePeripheralDeviceStatus(studio._id)
 					} else {
 						this.cleanUpMediaStatus()
 					}
@@ -209,12 +209,12 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private reactivePeripheralDeviceStatus (studioInstallationId: string | undefined) {
+	private reactivePeripheralDeviceStatus (studioId: string | undefined) {
 		let oldDevItemIds: Array<string> = []
 		let reactivePeripheralDevices: ReactiveVar<PeripheralDevice[]>
-		if (studioInstallationId) {
-			meteorSubscribe(PubSub.peripheralDevicesAndSubDevices, { studioInstallationId: studioInstallationId })
-			reactivePeripheralDevices = reactiveData.getRPeripheralDevices(studioInstallationId)
+		if (studioId) {
+			meteorSubscribe(PubSub.peripheralDevicesAndSubDevices, { studioId: studioId })
+			reactivePeripheralDevices = reactiveData.getRPeripheralDevices(studioId)
 		}
 		this.autorun(() => {
 			// console.log('RundownViewNotifier 3')
@@ -292,7 +292,7 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private reactiveMediaStatus (rRundownId: string, showStyleBase: ShowStyleBase, studioInstallation: StudioInstallation) {
+	private reactiveMediaStatus (rRundownId: string, showStyleBase: ShowStyleBase, studio: Studio) {
 		const t = i18nTranslator
 
 		let oldItemIds: Array<string> = []
@@ -308,7 +308,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				if (sourceLayer && part) {
 					this.autorun(() => {
 						// console.log('RundownViewNotifier 5-1')
-						const { status, message } = checkPieceContentStatus(item, sourceLayer, studioInstallation.config)
+						const { status, message } = checkPieceContentStatus(item, sourceLayer, studio.config)
 						let newNotification: Notification | undefined = undefined
 						if ((status !== RundownAPI.LineItemStatusCode.OK) && (status !== RundownAPI.LineItemStatusCode.UNKNOWN) && (status !== RundownAPI.LineItemStatusCode.SOURCE_NOT_SET)) {
 							newNotification = new Notification(item._id, NoticeLevel.WARNING, message || 'Media is broken', segment ? segment._id : 'line_' + item.partId, getCurrentTime(), true, [
@@ -455,7 +455,7 @@ interface IProps {
 	// 	}
 	// }
 	rundownId: string,
-	studioInstallation: StudioInstallation
+	studio: Studio
 	showStyleBase: ShowStyleBase
 }
 
@@ -464,13 +464,13 @@ export const RundownNotifier = class extends React.Component<IProps> {
 
 	constructor (props: IProps) {
 		super(props)
-		this.notifier = new RundownViewNotifier(props.rundownId, props.showStyleBase, props.studioInstallation)
+		this.notifier = new RundownViewNotifier(props.rundownId, props.showStyleBase, props.studio)
 	}
 
 	shouldComponentUpdate (nextProps: IProps): boolean {
 		if ((this.props.rundownId === nextProps.rundownId) &&
 			(this.props.showStyleBase._id === nextProps.showStyleBase._id) &&
-			(this.props.studioInstallation._id === nextProps.studioInstallation._id)) {
+			(this.props.studio._id === nextProps.studio._id)) {
 			return false
 		}
 		return true
@@ -478,7 +478,7 @@ export const RundownNotifier = class extends React.Component<IProps> {
 
 	componentDidUpdate () {
 		this.notifier.stop()
-		this.notifier = new RundownViewNotifier(this.props.rundownId, this.props.showStyleBase, this.props.studioInstallation)
+		this.notifier = new RundownViewNotifier(this.props.rundownId, this.props.showStyleBase, this.props.studio)
 	}
 
 	componentWillUnmount () {

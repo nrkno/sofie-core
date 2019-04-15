@@ -4,7 +4,7 @@ import { Time, applyClassToDocument, getCurrentTime, registerCollection, normali
 import { Segments, DBSegment, Segment } from './Segments'
 import { Parts, Part } from './Parts'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
-import { StudioInstallations, StudioInstallation } from './StudioInstallations'
+import { Studios, Studio } from './Studios'
 import { Pieces, Piece } from './Pieces'
 import { RundownDataCache } from './RundownDataCache'
 import { Meteor } from 'meteor/meteor'
@@ -24,7 +24,7 @@ export enum RundownHoldState {
 }
 
 export interface RundownImportVersions {
-	studioInstallation: string
+	studio: string
 	showStyleBase: string
 	showStyleVariant: string
 	blueprint: string
@@ -34,8 +34,8 @@ export interface RundownImportVersions {
 
 /** This is a very uncomplete mock-up of the Rundown object */
 export interface DBRundown extends IBlueprintRundownDB {
-	/** The id of the StudioInstallation this rundown is in */
-	studioInstallationId: string
+	/** The id of the Studio this rundown is in */
+	studioId: string
 
 	/** The ShowStyleBase this Rundown uses (its the parent of the showStyleVariant) */
 	showStyleBaseId: string
@@ -83,7 +83,7 @@ export interface DBRundown extends IBlueprintRundownDB {
 export class Rundown implements DBRundown {
 	public _id: string
 	public externalId: string
-	public studioInstallationId: string
+	public studioId: string
 	public showStyleVariantId: string
 	public showStyleBaseId: string
 	public peripheralDeviceId: string
@@ -129,12 +129,13 @@ export class Rundown implements DBRundown {
 		if (!showStyleBase ) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)
 		return showStyleBase
 	}
-	getStudioInstallation (): StudioInstallation {
-		if (!this.studioInstallationId) throw new Meteor.Error(500,'Rundown is not in a studioInstallation!')
-		let si = StudioInstallations.findOne(this.studioInstallationId)
-		if (si) {
-			return si
-		} else throw new Meteor.Error(404, 'StudioInstallation "' + this.studioInstallationId + '" not found!')
+	getStudio (): Studio {
+		if (!this.studioId) throw new Meteor.Error(500,'Rundown is not in a studio!')
+		let studio = Studios.findOne(this.studioId)
+		if (studio) {
+			return studio
+
+		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
 	}
 	getSegments (selector?: MongoSelector<DBSegment>, options?: FindOptions) {
 		selector = selector || {}
@@ -305,7 +306,7 @@ registerCollection('Rundowns', Rundowns)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Rundowns._ensureIndex({
-			studioInstallationId: 1,
+			studioId: 1,
 			active: 1
 		})
 	}

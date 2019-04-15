@@ -8,7 +8,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
 import Moment from 'react-moment'
 import { Link } from 'react-router-dom'
-import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { Studio, Studios } from '../../../lib/collections/Studios'
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ICoreSystem, CoreSystem } from '../../../lib/collections/CoreSystem'
 import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
@@ -27,7 +27,7 @@ interface IState {
 }
 interface ITrackedProps {
 	blueprint?: Blueprint
-	assignedStudios: StudioInstallation[]
+	assignedStudios: Studio[]
 	assignedShowStyles: ShowStyleBase[]
 	assignedSystem: ICoreSystem | undefined
 }
@@ -36,7 +36,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 	return {
 		blueprint: Blueprints.findOne(id),
-		assignedStudios: StudioInstallations.find({ blueprintId: id }).fetch(),
+		assignedStudios: Studios.find({ blueprintId: id }).fetch(),
 		assignedShowStyles: ShowStyleBases.find({ blueprintId: id }).fetch(),
 		assignedSystem: CoreSystem.findOne({ blueprintId: id })
 	}

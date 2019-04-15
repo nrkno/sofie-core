@@ -70,7 +70,7 @@ import {
 	VTContent
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibItems } from '../../lib/collections/RundownBaselineAdLibItems'
-import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
+import { Studios, Studio } from '../../lib/collections/Studios'
 import { CachePrefix } from '../../lib/collections/RundownDataCache'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { syncFunction, syncFunctionIgnore } from '../codeControl'
@@ -107,14 +107,14 @@ export namespace ServerPlayoutAPI {
 		let rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 		if (rundown.active) throw new Meteor.Error(404, `rundownPrepareForBroadcast cannot be run on an active rundown!`)
-		const anyOtherActiveRundowns = areThereActiveROsInStudio(rundown.studioInstallationId, rundown._id)
+		const anyOtherActiveRundowns = areThereActiveROsInStudio(rundown.studioId, rundown._id)
 		if (anyOtherActiveRundowns.length) {
 			// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.pluck(anyOtherActiveRundowns, '_id'))
 			throw new Meteor.Error(409, 'Only one rundown can be active at the same time. Active rundowns: ' + _.pluck(anyOtherActiveRundowns, '_id'))
 		}
 
 		resetRundown(rundown)
-		prepareStudioForBroadcast(rundown.getStudioInstallation())
+		prepareStudioForBroadcast(rundown.getStudio())
 
 		return activateRundown(rundown, true) // Activate rundown (rehearsal)
 	}
@@ -129,7 +129,7 @@ export namespace ServerPlayoutAPI {
 
 		resetRundown(rundown)
 
-		updateTimeline(rundown.studioInstallationId)
+		updateTimeline(rundown.studioId)
 
 		return { success: 200 }
 	}
@@ -278,7 +278,7 @@ export namespace ServerPlayoutAPI {
 			setNextPart(rundown, null)
 		}
 	}
-	function prepareStudioForBroadcast (studio: StudioInstallation) {
+	function prepareStudioForBroadcast (studio: Studio) {
 		logger.info('prepareStudioForBroadcast ' + studio._id)
 
 		const ssrcBgs: Array<IConfigItem> = _.compact([
@@ -289,7 +289,7 @@ export namespace ServerPlayoutAPI {
 		if (ssrcBgs.length > 0) logger.info(ssrcBgs[0].value + ' will be loaded to atems')
 
 		let playoutDevices = PeripheralDevices.find({
-			studioInstallationId: studio._id,
+			studioId: studio._id,
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT
 		}).fetch()
 
@@ -314,9 +314,9 @@ export namespace ServerPlayoutAPI {
 			}
 		})
 	}
-	export function areThereActiveROsInStudio (studioInstallationId: string, excludeRundownId: string): Rundown[] {
+	export function areThereActiveROsInStudio (studioId: string, excludeRundownId: string): Rundown[] {
 		let anyOtherActiveRundowns = Rundowns.find({
-			studioInstallationId: studioInstallationId,
+			studioId: studioId,
 			active: true,
 			_id: {
 				$ne: excludeRundownId
@@ -336,7 +336,7 @@ export namespace ServerPlayoutAPI {
 		if (!newRundown) throw new Meteor.Error(404, `Rundown "${rundown._id}" not found!`)
 		rundown = newRundown
 
-		let studio = rundown.getStudioInstallation()
+		let studio = rundown.getStudio()
 
 		const anyOtherActiveRundowns = areThereActiveROsInStudio(studio._id, rundown._id)
 
@@ -412,7 +412,7 @@ export namespace ServerPlayoutAPI {
 			rundownId: rundown._id
 		})
 
-		updateTimeline(rundown.studioInstallationId)
+		updateTimeline(rundown.studioId)
 
 		sendStoryStatus(rundown, null)
 
@@ -634,7 +634,7 @@ export namespace ServerPlayoutAPI {
 				}, {multi: true})
 			}
 
-			updateTimeline(rundown.studioInstallationId)
+			updateTimeline(rundown.studioId)
 			return ClientAPI.responseSuccess()
 		}
 		let pBlueprint = makePromise(() => getBlueprintOfRundown(rundown))
@@ -783,7 +783,7 @@ export namespace ServerPlayoutAPI {
 		setNextPart(rundown, nextPart, setManually, nextTimeOffset)
 
 		// remove old auto-next from timeline, and add new one
-		updateTimeline(rundown.studioInstallationId)
+		updateTimeline(rundown.studioId)
 
 		return ClientAPI.responseSuccess()
 	}
@@ -902,7 +902,7 @@ export namespace ServerPlayoutAPI {
 
 		Rundowns.update(rundownId, { $set: { holdState: RundownHoldState.PENDING } })
 
-		updateTimeline(rundown.studioInstallationId)
+		updateTimeline(rundown.studioId)
 
 		return ClientAPI.responseSuccess()
 	}
@@ -948,7 +948,7 @@ export namespace ServerPlayoutAPI {
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 		if (!rundown.currentPartId) throw new Meteor.Error(401, `No current part!`)
 
-		let studio = rundown.getStudioInstallation()
+		let studio = rundown.getStudio()
 
 		let showStyleBase = rundown.getShowStyleBase()
 
@@ -1317,7 +1317,7 @@ export namespace ServerPlayoutAPI {
 
 		cropInfinitesOnLayer(rundown, segLine, newPiece)
 		stopInfinitesRunningOnLayer(rundown, segLine, newPiece.sourceLayerId)
-		updateTimeline(rundown.studioInstallationId)
+		updateTimeline(rundown.studioId)
 	}
 	export const segmentAdLibLineItemStart = syncFunction(function segmentAdLibLineItemStart (rundownId: string, partId: string, slaiId: string, queue: boolean) {
 		check(rundownId, String)
@@ -1367,7 +1367,7 @@ export namespace ServerPlayoutAPI {
 		} else {
 			cropInfinitesOnLayer(rundown, segLine, newPiece)
 			stopInfinitesRunningOnLayer(rundown, segLine, newPiece.sourceLayerId)
-			updateTimeline(rundown.studioInstallationId)
+			updateTimeline(rundown.studioId)
 		}
 	})
 	export const rundownBaselineAdLibItemStart = syncFunction(function rundownBaselineAdLibItemStart (rundownId: string, partId: string, robaliId: string, queue: boolean) {
@@ -1419,7 +1419,7 @@ export namespace ServerPlayoutAPI {
 		} else {
 			cropInfinitesOnLayer(rundown, segLine, newPiece)
 			stopInfinitesRunningOnLayer(rundown, segLine, newPiece.sourceLayerId)
-			updateTimeline(rundown.studioInstallationId)
+			updateTimeline(rundown.studioId)
 		}
 	})
 	export function adlibQueueInsertPart (rundown: Rundown, partId: string, sladli: AdLibPiece) {
@@ -1503,7 +1503,7 @@ export namespace ServerPlayoutAPI {
 			}
 		})
 
-		updateTimeline(rundown.studioInstallationId)
+		updateTimeline(rundown.studioId)
 	}
 	export const sourceLayerStickyItemStart = syncFunction(function sourceLayerStickyItemStart (rundownId: string, sourceLayerId: string) {
 		check(rundownId, String)
@@ -1547,7 +1547,7 @@ export namespace ServerPlayoutAPI {
 			cropInfinitesOnLayer(rundown, currentPart, newAdLibPiece)
 			stopInfinitesRunningOnLayer(rundown, currentPart, newAdLibPiece.sourceLayerId)
 
-			updateTimeline(rundown.studioInstallationId)
+			updateTimeline(rundown.studioId)
 		}
 	})
 	export function sourceLayerOnLineStop (rundownId: string, partId: string, sourceLayerId: string) {
@@ -1607,7 +1607,7 @@ export namespace ServerPlayoutAPI {
 
 		updateSourceLayerInfinitesAfterLine(rundown, segLine)
 
-		updateTimeline(rundown.studioInstallationId)
+		updateTimeline(rundown.studioId)
 	}
 	export const rundownTogglePartArgument = syncFunction(function rundownTogglePartArgument (rundownId: string, partId: string, property: string, value: string) {
 		check(rundownId, String)
@@ -1651,11 +1651,11 @@ export namespace ServerPlayoutAPI {
 			if ((rundown.nextPartId === part._id) && rundown.currentPartId) {
 				const currentPart = Parts.findOne(rundown.currentPartId)
 				if (currentPart && currentPart.autoNext) {
-					updateTimeline(rundown.studioInstallationId)
+					updateTimeline(rundown.studioId)
 				}
 			// If this is rundown's current SL, update immediately
 			} else if (rundown.currentPartId === part._id) {
-				updateTimeline(rundown.studioInstallationId)
+				updateTimeline(rundown.studioId)
 			}
 		}
 		return ClientAPI.responseSuccess()
@@ -1685,7 +1685,7 @@ export namespace ServerPlayoutAPI {
 		check(studioId, String)
 
 		const activateRundownCount = Rundowns.find({
-			studioInstallationId: studioId,
+			studioId: studioId,
 			active: true
 		}).count()
 		if (activateRundownCount === 0) {
@@ -1698,15 +1698,15 @@ export namespace ServerPlayoutAPI {
 	export function shouldUpdateStudioBaseline (studioId: string) {
 		check(studioId, String)
 
-		const studioInstallation = StudioInstallations.findOne(studioId)
-		if (!studioInstallation) throw new Meteor.Error(404, `StudioInstallation "${studioId}" not found!`)
+		const studio = Studios.findOne(studioId)
+		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
 
 		const activateRundownCount = Rundowns.find({
-			studioInstallationId: studioInstallation._id,
+			studioId: studio._id,
 			active: true
 		}).count()
 		if (activateRundownCount === 0) {
-			const markerId = `${studioInstallation._id}_baseline_version`
+			const markerId = `${studio._id}_baseline_version`
 			const markerObject = Timeline.findOne(markerId)
 			if (!markerObject) return 'noBaseline'
 
@@ -1714,11 +1714,11 @@ export namespace ServerPlayoutAPI {
 
 			if (versionsContent.core !== PackageInfo.version) return 'coreVersion'
 
-			if (versionsContent.studioInstallation !== (studioInstallation._rundownVersionHash || 0)) return 'studioInstallation'
+			if (versionsContent.studio !== (studio._rundownVersionHash || 0)) return 'studio'
 
-			if (versionsContent.blueprintId !== studioInstallation.blueprintId) return 'blueprintId'
-			if (studioInstallation.blueprintId) {
-				const blueprint = Blueprints.findOne(studioInstallation.blueprintId)
+			if (versionsContent.blueprintId !== studio.blueprintId) return 'blueprintId'
+			if (studio.blueprintId) {
+				const blueprint = Blueprints.findOne(studio.blueprintId)
 				if (!blueprint) return 'blueprintUnknown'
 				if (versionsContent.blueprintVersion !== (blueprint.blueprintVersion || 0)) return 'blueprintVersion'
 			}
@@ -1880,7 +1880,7 @@ function afterTake (
 		forceNowTime = getCurrentTime() - timeOffset
 	}
 	// or after a new part has started playing
-	updateTimeline(rundown.studioInstallationId, forceNowTime)
+	updateTimeline(rundown.studioId, forceNowTime)
 
 	// defer these so that the playout gateway has the chance to learn about the changes
 	Meteor.setTimeout(() => {
@@ -2601,13 +2601,13 @@ function transformPartIntoTimeline (
 	return timelineObjs
 }
 
-export function getLookeaheadObjects (rundownData: RundownData, studioInstallation: StudioInstallation ): Array<TimelineObjGeneric> {
+export function getLookeaheadObjects (rundownData: RundownData, studio: Studio ): Array<TimelineObjGeneric> {
 	const activeRundown = rundownData.rundown
 
 	const currentPart = activeRundown.currentPartId ? rundownData.partsMap[activeRundown.currentPartId] : undefined
 
 	const timelineObjs: Array<TimelineObjGeneric> = []
-	_.each(studioInstallation.mappings || {}, (m, l) => {
+	_.each(studio.mappings || {}, (m, l) => {
 
 		const res = findLookaheadForLLayer(rundownData, l, m.lookahead)
 		if (res.length === 0) {
@@ -2925,7 +2925,7 @@ export function updateTimelineFromMosData (rundownId: string, changedLines?: Arr
 		updateSourceLayerInfinitesAfterLine(rundown, prevLine, true)
 
 		if (rundown.active) {
-			updateTimeline(rundown.studioInstallationId)
+			updateTimeline(rundown.studioId)
 		}
 	}, 1000)
 
@@ -2964,27 +2964,27 @@ function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], prefix:
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
- * @param studioInstallationId id of the studioInstallation to update
+ * @param studioId id of the studio to update
  * @param forceNowToTime if set, instantly forces all "now"-objects to that time (used in autoNext)
  */
-export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Time) => void
-= syncFunctionIgnore(function updateTimeline (studioInstallationId: string, forceNowToTime?: Time) {
+export const updateTimeline: (studioId: string, forceNowToTime?: Time) => void
+= syncFunctionIgnore(function updateTimeline (studioId: string, forceNowToTime?: Time) {
 	logger.debug('updateTimeline running...')
 	let timelineObjs: Array<TimelineObjGeneric> = []
 
-	let studioInstallation = StudioInstallations.findOne(studioInstallationId) as StudioInstallation
-	if (!studioInstallation) throw new Meteor.Error(404, 'studioInstallation "' + studioInstallationId + '" not found!')
+	let studio = Studios.findOne(studioId) as Studio
+	if (!studio) throw new Meteor.Error(404, 'studio "' + studioId + '" not found!')
 
 	const applyTimelineObjs = (_timelineObjs: TimelineObjGeneric[]) => {
 		timelineObjs = timelineObjs.concat(_timelineObjs)
 	}
 
 	waitForPromiseAll([
-		caught(getTimelineRundown(studioInstallation).then(applyTimelineObjs)),
-		caught(getTimelineRecording(studioInstallation).then(applyTimelineObjs))
+		caught(getTimelineRundown(studio).then(applyTimelineObjs)),
+		caught(getTimelineRecording(studio).then(applyTimelineObjs))
 	])
 
-	processTimelineObjects(studioInstallation, timelineObjs)
+	processTimelineObjects(studio, timelineObjs)
 
 	if (forceNowToTime) { // used when autoNexting
 		setNowToTimeInObjects(timelineObjs, forceNowToTime)
@@ -2994,7 +2994,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 
 	ps.push(makePromise(() => {
 		saveIntoDb<TimelineObjGeneric, TimelineObjGeneric>(Timeline, {
-			siId: studioInstallation._id,
+			siId: studio._id,
 			statObject: { $ne: true }
 		}, timelineObjs, {
 			beforeUpdate: (o: TimelineObjGeneric, oldO: TimelineObjGeneric): TimelineObjGeneric => {
@@ -3009,7 +3009,7 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 	}))
 
 	ps.push(makePromise(() => {
-		afterUpdateTimeline(studioInstallation, timelineObjs)
+		afterUpdateTimeline(studio, timelineObjs)
 	}))
 	waitForPromiseAll(ps)
 
@@ -3019,24 +3019,24 @@ export const updateTimeline: (studioInstallationId: string, forceNowToTime?: Tim
 /**
  * Returns timeline objects related to rundowns in a studio
  */
-function getTimelineRundown (studioInstallation: StudioInstallation): Promise<TimelineObjRundown[]> {
+function getTimelineRundown (studio: Studio): Promise<TimelineObjRundown[]> {
 
 	return new Promise((resolve, reject) => {
 		try {
 			let timelineObjs: Array<TimelineObjGeneric> = []
 
 			const promiseActiveRundown = asyncCollectionFindOne(Rundowns, {
-				studioInstallationId: studioInstallation._id,
+				studioId: studio._id,
 				active: true
 			})
-			// let promiseStudioInstallation = asyncCollectionFindOne(StudioInstallations, studioInstallation._id)
+			// let promiseStudio = asyncCollectionFindOne(Studios, studio._id)
 			let activeRundown = waitForPromise(promiseActiveRundown)
 
 			if (activeRundown) {
 
 				// remove anything not related to active rundown:
 				let promiseClearTimeline: Promise<void> = asyncCollectionRemove(Timeline, {
-					siId: studioInstallation._id,
+					siId: studio._id,
 					rundownId: {
 						$not: {
 							$eq: activeRundown._id
@@ -3055,7 +3055,7 @@ function getTimelineRundown (studioInstallation: StudioInstallation): Promise<Ti
 				timelineObjs = timelineObjs.concat(buildTimelineObjsForRundown(rundownData, baselineItems))
 
 				// next (on pvw (or on pgm if first))
-				timelineObjs = timelineObjs.concat(getLookeaheadObjects(rundownData, studioInstallation))
+				timelineObjs = timelineObjs.concat(getLookeaheadObjects(rundownData, studio))
 
 				// console.log(JSON.stringify(timelineObjs))
 
@@ -3079,12 +3079,12 @@ function getTimelineRundown (studioInstallation: StudioInstallation): Promise<Ti
 			} else {
 				let studioBaseline: TimelineObjRundown[] = []
 
-				const blueprint = loadStudioBlueprints(studioInstallation)
+				const blueprint = loadStudioBlueprints(studio)
 				if (blueprint) {
-					const baselineObjs = blueprint.getBaseline(new StudioContext(studioInstallation))
-					studioBaseline = postProcessStudioBaselineObjects(studioInstallation, baselineObjs)
+					const baselineObjs = blueprint.getBaseline(new StudioContext(studio))
+					studioBaseline = postProcessStudioBaselineObjects(studio, baselineObjs)
 
-					const id = `${studioInstallation._id}_baseline_version`
+					const id = `${studio._id}_baseline_version`
 					studioBaseline.push(literal<TimelineObjRundown>({
 						_id: id,
 						id: id,
@@ -3098,9 +3098,9 @@ function getTimelineRundown (studioInstallation: StudioInstallation): Promise<Ti
 						content: {
 							versions: {
 								core: PackageInfo.version,
-								blueprintId: studioInstallation.blueprintId,
+								blueprintId: studio.blueprintId,
 								blueprintVersion: blueprint.blueprintVersion,
-								studioInstallation: studioInstallation._rundownVersionHash,
+								studio: studio._rundownVersionHash,
 							}
 						}
 					}))
@@ -3117,14 +3117,14 @@ function getTimelineRundown (studioInstallation: StudioInstallation): Promise<Ti
 /**
  * Returns timeline objects related to Test Recordings in a studio
  */
-function getTimelineRecording (studioInstallation: StudioInstallation, forceNowToTime?: Time): Promise<TimelineObjRecording[]> {
+function getTimelineRecording (studio: Studio, forceNowToTime?: Time): Promise<TimelineObjRecording[]> {
 
 	return new Promise((resolve, reject) => {
 		try {
 			let recordingTimelineObjs: TimelineObjRecording[] = []
 
 			RecordedFiles.find({ // TODO: ask Julian if this is okay, having multiple recordings at the same time?
-				studioId: studioInstallation._id,
+				studioId: studio._id,
 				stoppedAt: {$exists: false}
 			}, {
 				sort: {
@@ -3132,7 +3132,7 @@ function getTimelineRecording (studioInstallation: StudioInstallation, forceNowT
 				}
 			}).forEach((activeRecording) => {
 				recordingTimelineObjs = recordingTimelineObjs.concat(
-					generateRecordingTimelineObjs(studioInstallation, activeRecording)
+					generateRecordingTimelineObjs(studio, activeRecording)
 				)
 			})
 
@@ -3142,7 +3142,7 @@ function getTimelineRecording (studioInstallation: StudioInstallation, forceNowT
 		}
 	})
 	// Timeline.remove({
-	// 	siId: studioInstallationId,
+	// 	siId: studioId,
 	// 	recordingObject: true
 	// })
 }
@@ -3399,10 +3399,10 @@ function calcSlOverlapDuration (fromSl: Part, toSl: Part): number {
 }
 /**
  * Fix the timeline objects, adds properties like deviceId and siId to the timeline objects
- * @param studioInstallation
+ * @param studio
  * @param timelineObjs Array of timeline objects
  */
-function processTimelineObjects (studioInstallation: StudioInstallation, timelineObjs: Array<TimelineObjGeneric>): void {
+function processTimelineObjects (studio: Studio, timelineObjs: Array<TimelineObjGeneric>): void {
 	// first, split out any grouped objects, to make the timeline shallow:
 	let fixObjectChildren = (o: TimelineObjGeneric) => {
 		// Unravel children objects and put them on the (flat) timelineObjs array
@@ -3428,7 +3428,7 @@ function processTimelineObjects (studioInstallation: StudioInstallation, timelin
 		o._id = o._id || o.id
 		if (!o._id) logger.error('TimelineObj missing _id attribute', o)
 		delete o.id
-		o.siId = studioInstallation._id
+		o.siId = studio._id
 
 		fixObjectChildren(o)
 	})
@@ -3437,14 +3437,14 @@ function processTimelineObjects (studioInstallation: StudioInstallation, timelin
 /**
  * To be called after an update to the timeline has been made, will add/update the "statObj" - an object
  * containing the hash of the timeline, used to determine if the timeline should be updated in the gateways
- * @param studioInstallationId id of the studioInstallation to update
+ * @param studioId id of the studio to update
  */
-export function afterUpdateTimeline (studioInstallation: StudioInstallation, timelineObjs?: Array<TimelineObjGeneric>) {
+export function afterUpdateTimeline (studio: Studio, timelineObjs?: Array<TimelineObjGeneric>) {
 
 	// logger.info('afterUpdateTimeline')
 	if (!timelineObjs) {
 		timelineObjs = Timeline.find({
-			siId: studioInstallation._id,
+			siId: studio._id,
 			statObject: {$ne: true}
 		}).fetch()
 	}
@@ -3460,11 +3460,11 @@ export function afterUpdateTimeline (studioInstallation: StudioInstallation, tim
 	let objHash = getHash(stringifyObjects(timelineObjs))
 
 	// save into "magic object":
-	let magicId = studioInstallation._id + '_statObj'
+	let magicId = studio._id + '_statObj'
 	let statObj: TimelineObjStat = {
 		_id: magicId,
 		id: '',
-		siId: studioInstallation._id,
+		siId: studio._id,
 		objectType: TimelineObjType.STAT,
 		statObject: true,
 		content: {

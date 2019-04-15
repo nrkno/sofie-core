@@ -130,7 +130,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 			}
 		}
 
-		// create local deep copies of the studioInstallation outputLayers and sourceLayers so that we can store
+		// create local deep copies of the studio outputLayers and sourceLayers so that we can store
 		// items present on those layers inside and also figure out which layers are used when inside the rundown
 		const outputLayers = normalizeArray<IOutputLayerExtended>(
 			showStyleBase.outputLayers.map((layer) => {

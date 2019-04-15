@@ -16,7 +16,7 @@ export interface PeripheralDevice {
 	type: PeripheralDeviceAPI.DeviceType
 
 	/** The studio this device is assigned to. Will be undefined for sub-devices */
-	studioInstallationId?: string
+	studioId?: string
 	parentDeviceId?: string
 	/** Versions reported from the device */
 	versions?: {
@@ -71,7 +71,7 @@ registerCollection('PeripheralDevices', PeripheralDevices)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		PeripheralDevices._ensureIndex({
-			studioInstallationId: 1
+			studioId: 1
 		})
 	}
 })

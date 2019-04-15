@@ -8,7 +8,7 @@ import * as $ from 'jquery'
 import { ContextMenuTrigger } from 'react-contextmenu'
 
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
-import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { Studio } from '../../../lib/collections/Studios'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
 import { SegmentTimelineLine } from './SegmentTimelineLine'
@@ -44,7 +44,7 @@ interface IProps {
 	segment: SegmentUi
 	rundown: Rundown,
 	followLiveSegments: boolean,
-	studioInstallation: StudioInstallation
+	studio: Studio
 	parts: Array<PartUi>
 	segmentNotes: Array<PartNote>
 	timeScale: number
@@ -150,7 +150,7 @@ const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHea
 				<SegmentTimelineLine key={part._id}
 					segment={this.props.segment}
 					rundown={this.props.rundown}
-					studioInstallation={this.props.studioInstallation}
+					studio={this.props.studio}
 					collapsedOutputs={this.props.collapsedOutputs}
 					isCollapsed={this.props.isCollapsed}
 					scrollLeft={0}

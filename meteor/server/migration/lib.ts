@@ -6,7 +6,7 @@ import { Meteor } from 'meteor/meteor'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { logger } from '../logging'
-import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
+import { Studios, Studio } from '../../lib/collections/Studios'
 import * as semver from 'semver'
 
 /**
@@ -113,9 +113,9 @@ export function ensureStudioConfig (
 		canBeRunAutomatically: (_.isNull(value) ? false : true),
 		dependOnResultFrom: dependOnResultFrom,
 		validate: () => {
-			let studios = StudioInstallations.find().fetch()
+			let studios = Studios.find().fetch()
 			let configMissing: string | boolean = false
-			_.each(studios, (studio: StudioInstallation) => {
+			_.each(studios, (studio: Studio) => {
 				let config = _.find(studio.config, (c) => {
 					return c._id === configName
 				})
@@ -127,10 +127,10 @@ export function ensureStudioConfig (
 			return configMissing
 		},
 		input: () => {
-			let studios = StudioInstallations.find().fetch()
+			let studios = Studios.find().fetch()
 
 			let inputs: Array<MigrationStepInput> = []
-			_.each(studios, (studio: StudioInstallation) => {
+			_.each(studios, (studio: Studio) => {
 				let config = _.find(studio.config, (c) => {
 					return c._id === configName
 				})
@@ -151,8 +151,8 @@ export function ensureStudioConfig (
 		},
 		migrate: (input: MigrationStepInputFilteredResult) => {
 
-			let studios = StudioInstallations.find().fetch()
-			_.each(studios, (studio: StudioInstallation) => {
+			let studios = Studios.find().fetch()
+			_.each(studios, (studio: Studio) => {
 				let value2: any = undefined
 				if (!_.isNull(value)) {
 					value2 = value
@@ -178,7 +178,7 @@ export function ensureStudioConfig (
 					}
 					if (doUpdate) {
 						logger.info(`Migration: Setting Studio config "${configName}" to ${value2}`)
-						StudioInstallations.update(studio._id,{$set: {
+						Studios.update(studio._id,{$set: {
 							config: studio.config
 						}})
 					}

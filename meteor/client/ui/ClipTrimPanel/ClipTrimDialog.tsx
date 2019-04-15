@@ -2,7 +2,7 @@ import * as React from 'react'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import { ClipTrimPanel } from './ClipTrimPanel'
 import { VTContent, VTEditableParameters } from 'tv-automation-sofie-blueprints-integration'
-import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { Studio } from '../../../lib/collections/Studios'
 import { Piece } from '../../../lib/collections/Pieces'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { doUserAction } from '../../lib/userAction'
@@ -10,7 +10,7 @@ import { UserActionAPI } from '../../../lib/api/userActions'
 
 export interface IProps {
 	rundownId: string
-	studioInstallation: StudioInstallation
+	studio: Studio
 	selectedPiece: Piece
 
 	onClose?: () => void
@@ -52,7 +52,7 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 			<ModalDialog title={t('Trim "{{name}}"', { name: this.props.selectedPiece.name })} show={true} acceptText={t('OK')} secondaryText={t('Cancel')}
 			onAccept={this.handleAccept} onDiscard={(e) => this.props.onClose && this.props.onClose()} onSecondary={(e) => this.props.onClose && this.props.onClose()}>
 				<ClipTrimPanel
-					studioInstallationId={this.props.studioInstallation._id}
+					studioId={this.props.studio._id}
 					rundownId={this.props.rundownId}
 					pieceId={this.props.selectedPiece._id}
 					partId={this.props.selectedPiece.partId}

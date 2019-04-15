@@ -7,7 +7,7 @@ import {
 } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
-import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { Studios, Studio } from '../../../lib/collections/Studios'
 import { parse as queryStringParse } from 'query-string'
 
 import { Spinner } from '../../lib/Spinner'
@@ -41,7 +41,7 @@ interface IProps {
 }
 interface ITrackedProps {
 	rundown?: Rundown
-	studioInstallation?: StudioInstallation
+	studio?: Studio
 	studioId?: string
 	// isReady: boolean
 }
@@ -100,10 +100,10 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this.subscribe('rundowns', _.extend({
 			active: true
 		}, this.props.studioId ? {
-			studioInstallationId: this.props.studioId
+			studioId: this.props.studioId
 		} : {}))
 		if (this.props.studioId) {
-			this.subscribe('studioInstallations', {
+			this.subscribe('studios', {
 				_id: this.props.studioId
 			})
 		}
@@ -300,7 +300,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				(
 					this.props.rundown ?
 						<Prompter rundownId={this.props.rundown._id} config={this.configOptions} /> :
-					this.props.studioInstallation ?
+					this.props.studio ?
 						this.renderMessage(t('There is no rundown active in this studio.')) :
 					this.props.studioId ?
 						this.renderMessage(t('This studio doesn\'t exist.')) :
@@ -313,21 +313,21 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
 
 	let studioId = objectPathGet(props, 'match.params.studioId')
-	let studioInstallation
+	let studio
 	if (studioId) {
-		studioInstallation = StudioInstallations.findOne(studioId)
+		studio = Studios.findOne(studioId)
 	}
 	const rundown = Rundowns.findOne(_.extend({
 		active: true
 	}, {
-		studioInstallationId: studioId
+		studioId: studioId
 	}))
 
 	return {
 		rundown,
-		studioInstallation,
+		studio,
 		studioId,
-		// isReady: rundownSubscription.ready() && (studioInstallationSubscription ? studioInstallationSubscription.ready() : true)
+		// isReady: rundownSubscription.ready() && (studioSubscription ? studioSubscription.ready() : true)
 	}
 })(PrompterViewInner)
 

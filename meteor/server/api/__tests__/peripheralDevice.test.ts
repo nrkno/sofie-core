@@ -535,7 +535,7 @@ describe('peripheralDevice: MOS Basic functions', function () {
 		Rundowns.insert({
 			_id: rundownID,
 			mosId: 'rundown0',
-			studioInstallationId: 'studio0',
+			studioId: 'studio0',
 			showStyleBaseId: 'showStyle0',
 			showStyleVariantId: 'variant0',
 			name: 'test rundown',
@@ -592,7 +592,7 @@ describe('peripheralDevice: MOS Basic functions', function () {
 		Rundowns.insert({
 			_id: rundownID,
 			mosId: 'rundown1',
-			studioInstallationId: 'studio0',
+			studioId: 'studio0',
 			showStyleBaseId: 'showStyle1',
 			showStyleVariantId: 'variant0',
 			name: 'test rundown 1',
@@ -615,7 +615,7 @@ describe('peripheralDevice: MOS Basic functions', function () {
 		Rundowns.insert({
 			_id: rundownId(new MOS.MosString128('rundown2')),
 			mosId: 'rundown2',
-			studioInstallationId: 'studio0',
+			studioId: 'studio0',
 			showStyleBaseId: 'showStyle1',
 			showStyleVariantId: 'variant0',
 			name: 'test rundown 2',

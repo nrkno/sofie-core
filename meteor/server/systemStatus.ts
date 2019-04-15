@@ -80,7 +80,7 @@ export function getSystemStatus (studioId?: string): StatusResponse {
 
 	let devices = (
 		studioId ?
-		PeripheralDevices.find({ studioInstallationId: studioId }).fetch() :
+		PeripheralDevices.find({ studioId: studioId }).fetch() :
 		PeripheralDevices.find({}).fetch()
 	)
 

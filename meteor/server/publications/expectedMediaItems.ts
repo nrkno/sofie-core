@@ -10,7 +10,7 @@ meteorPublish(PubSub.expectedMediaItems, (selector, token) => {
 		return ExpectedMediaItems.find(selector)
 	} else if (typeof allowed === 'object') {
 		return ExpectedMediaItems.find(_.extend(selector, {
-			studioInstallationId: allowed.studioInstallationId
+			studioId: allowed.studioId
 		}))
 	}
 	return null

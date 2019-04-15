@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { OmitId, trimIfString, getHash } from '../../../lib/lib'
-import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { Studios, Studio } from '../../../lib/collections/Studios'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
 import {
@@ -25,9 +25,9 @@ import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDevice
 import { Mongo } from 'meteor/mongo'
 
 export class MigrationContextStudio implements IMigrationContextStudio {
-	private studio: StudioInstallation
+	private studio: Studio
 
-	constructor (studio: StudioInstallation) {
+	constructor (studio: Studio) {
 		this.studio = studio
 	}
 
@@ -40,7 +40,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		check(mappingId, String)
 		let m: any = {}
 		m['mappings.' + mappingId] = mapping
-		StudioInstallations.update(this.studio._id, {$set: m})
+		Studios.update(this.studio._id, {$set: m})
 		this.studio.mappings[mappingId] = m['mappings.' + mappingId] // Update local
 		return mappingId
 	}
@@ -48,14 +48,14 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		check(mappingId, String)
 		let m: any = {}
 		m['mappings.' + mappingId] = _.extend(this.studio.mappings[mappingId], mapping)
-		StudioInstallations.update(this.studio._id, {$set: m})
+		Studios.update(this.studio._id, {$set: m})
 		this.studio.mappings[mappingId] = m['mappings.' + mappingId] // Update local
 	}
 	removeMapping (mappingId: string): void {
 		check(mappingId, String)
 		let m: any = {}
 		m['mappings.' + mappingId] = 1
-		StudioInstallations.update(this.studio._id, {$unset: m})
+		Studios.update(this.studio._id, {$unset: m})
 		delete this.studio.mappings[mappingId] // Update local
 	}
 	getConfig (configId: string): ConfigItemValue | undefined {
@@ -70,7 +70,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 		let configItem = _.find(this.studio.config, c => c._id === configId)
 		if (configItem) {
-			StudioInstallations.update({
+			Studios.update({
 				_id: this.studio._id,
 				'config._id': configId
 			}, {$set: {
@@ -82,7 +82,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 				_id: configId,
 				value: value
 			}
-			StudioInstallations.update({
+			Studios.update({
 				_id: this.studio._id,
 			}, {$push: {
 				config : config
@@ -94,7 +94,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	removeConfig (configId: string): void {
 		check(configId, String)
 
-		StudioInstallations.update({
+		Studios.update({
 			_id: this.studio._id,
 		}, {$pull: {
 			'config': {
@@ -110,7 +110,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 		const selector: Mongo.Selector<PeripheralDevice> = {
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-			studioInstallationId: this.studio._id
+			studioId: this.studio._id
 		}
 		selector[`settings.devices.${deviceId}`] = { $exists: 1 }
 
@@ -128,7 +128,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 		const parentDevice = PeripheralDevices.findOne({
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-			studioInstallationId: this.studio._id
+			studioId: this.studio._id
 		}, {
 			sort: {
 				created: 1
@@ -150,7 +150,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 		const selector: Mongo.Selector<PeripheralDevice> = {
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-			studioInstallationId: this.studio._id
+			studioId: this.studio._id
 		}
 		selector[`settings.devices.${deviceId}`] = { $exists: 1 }
 
@@ -174,7 +174,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		m[`settings.devices.${deviceId}`] = 1
 		PeripheralDevices.update({
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-			studioInstallationId: this.studio._id
+			studioId: this.studio._id
 		}, {
 			$unset: m
 		})

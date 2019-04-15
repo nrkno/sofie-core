@@ -14,7 +14,7 @@ import {
 	Redirect
 } from 'react-router-dom'
 
-import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { Studio, Studios } from '../../lib/collections/Studios'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 
@@ -51,20 +51,20 @@ interface ISettingsMenuProps {
 interface ISettingsMenuState {
 }
 interface ISettingsMenuTrackedProps {
-	studioInstallations: Array<StudioInstallation>
+	studios: Array<Studio>
 	showStyleBases: Array<ShowStyleBase>
 	blueprints: Array<Blueprint>
 	peripheralDevices: Array<PeripheralDevice>
 }
 const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps >(() => {
-	meteorSubscribe(PubSub.studioInstallations, {})
+	meteorSubscribe(PubSub.studios, {})
 	meteorSubscribe(PubSub.showStyleBases, {})
 	meteorSubscribe(PubSub.showStyleVariants, {})
 	meteorSubscribe(PubSub.blueprints, {})
 	meteorSubscribe(PubSub.peripheralDevices, {})
 
 	return {
-		studioInstallations: StudioInstallations.find({}).fetch(),
+		studios: Studios.find({}).fetch(),
 		showStyleBases: ShowStyleBases.find({}).fetch(),
 		peripheralDevices: PeripheralDevices.find({}, {
 			sort: {
@@ -186,7 +186,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<h2 className='mhs'>{t('Studios')}</h2>
 				<hr className='vsubtle man' />
 				{
-					this.props.studioInstallations.map((studio) => {
+					this.props.studios.map((studio) => {
 						return [
 							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={studio._id} to={'/settings/studio/' + studio._id}>
 								<h3>{studio.name || t('Unnamed Studio')}</h3>
@@ -290,7 +290,7 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 	componentWillMount () {
 		// Subscribe to data:
 		this.subscribe('peripheralDevices', {})
-		this.subscribe('studioInstallations', {})
+		this.subscribe('studios', {})
 		this.subscribe('showStyleBases', {})
 		this.subscribe('showStyleVariants', {})
 		this.subscribe('blueprints', {})

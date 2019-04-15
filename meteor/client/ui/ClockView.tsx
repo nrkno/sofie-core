@@ -233,10 +233,10 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 	let rundown = (
 		Rundowns.findOne({
 			active: true,
-			studioInstallationId: studioId
+			studioId: studioId
 		})
 	)
-	meteorSubscribe(PubSub.studioInstallations, {
+	meteorSubscribe(PubSub.studios, {
 		_id: studioId
 	})
 
@@ -264,18 +264,18 @@ class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 		$(document.body).addClass('dark xdark')
 		let studioId = objectPathGet(this.props, 'match.params.studioId')
 		if (studioId) {
-			this.subscribe('studioInstallations', {
+			this.subscribe('studios', {
 				_id: studioId
 			})
 			this.subscribe('rundowns', {
 				active: true,
-				studioInstallationId: studioId
+				studioId: studioId
 			})
 		}
 		let rundown = (
 			Rundowns.findOne({
 				active: true,
-				studioInstallationId: studioId
+				studioId: studioId
 			})
 		)
 		if (rundown) {

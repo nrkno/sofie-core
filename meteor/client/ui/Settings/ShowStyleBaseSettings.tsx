@@ -23,7 +23,7 @@ import { callMethod } from '../../lib/clientAPI'
 import { ShowStylesAPI } from '../../../lib/api/showStyles'
 import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
-import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 
 interface IProps {
@@ -42,11 +42,11 @@ interface IState {
 interface ITrackedProps {
 	showStyleBase?: ShowStyleBase
 	showStyleVariants: Array<ShowStyleVariant>
-	compatibleStudios: Array<StudioInstallation>
+	compatibleStudios: Array<Studio>
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	let showStyleBase = ShowStyleBases.findOne(props.match.params.showStyleBaseId)
-	const compatibleStudios = showStyleBase ? StudioInstallations.find({
+	const compatibleStudios = showStyleBase ? Studios.find({
 		supportedShowStyleBase: {
 			$in: [showStyleBase._id]
 		}

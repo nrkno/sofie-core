@@ -335,8 +335,8 @@ export const AdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((p
 		this.subscribe('rundownBaselineAdLibItems', {
 			rundownId: this.props.rundown._id
 		})
-		meteorSubscribe(PubSub.studioInstallations, {
-			_id: this.props.rundown.studioInstallationId
+		meteorSubscribe(PubSub.studios, {
+			_id: this.props.rundown.studioId
 		})
 		meteorSubscribe(PubSub.showStyleBases, {
 			_id: this.props.rundown.showStyleBaseId

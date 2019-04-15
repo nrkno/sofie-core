@@ -16,7 +16,7 @@ import { UserActionAPI } from '../../lib/api/userActions'
 import {
 	EvaluationBase
 } from '../../lib/collections/Evaluations'
-import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { Studios } from '../../lib/collections/Studios'
 import { Pieces, Piece } from '../../lib/collections/Pieces'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { storeRundownSnapshot } from './snapshot'
@@ -125,7 +125,7 @@ export function prepareForBroadcast (rundownId: string): ClientAPI.ClientRespons
 	let rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 	if (rundown.active) return ClientAPI.responseError('Rundown is active, please deactivate before preparing it for broadcast')
-	const anyOtherActiveRundowns = ServerPlayoutAPI.areThereActiveROsInStudio(rundown.studioInstallationId, rundown._id)
+	const anyOtherActiveRundowns = ServerPlayoutAPI.areThereActiveROsInStudio(rundown.studioId, rundown._id)
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.pluck(anyOtherActiveRundowns, 'name').join(', '))
 	}
@@ -150,7 +150,7 @@ export function resetAndActivate (rundownId: string): ClientAPI.ClientResponse {
 	if (rundown.active && !rundown.rehearsal) {
 		return ClientAPI.responseError('Rundown is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.')
 	}
-	const anyOtherActiveRundowns = ServerPlayoutAPI.areThereActiveROsInStudio(rundown.studioInstallationId, rundown._id)
+	const anyOtherActiveRundowns = ServerPlayoutAPI.areThereActiveROsInStudio(rundown.studioId, rundown._id)
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.pluck(anyOtherActiveRundowns, 'name').join(', '))
 	}
@@ -163,7 +163,7 @@ export function activate (rundownId: string, rehearsal: boolean): ClientAPI.Clie
 	check(rehearsal, Boolean)
 	let rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-	const anyOtherActiveRundowns = ServerPlayoutAPI.areThereActiveROsInStudio(rundown.studioInstallationId, rundown._id)
+	const anyOtherActiveRundowns = ServerPlayoutAPI.areThereActiveROsInStudio(rundown.studioId, rundown._id)
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError('Only one rundown can be active at the same time. Currently active rundowns: ' + _.pluck(anyOtherActiveRundowns, 'name').join(', '))
 	}
@@ -387,7 +387,7 @@ export function recordStop (studioId: string) {
 export function recordStart (studioId: string, fileName: string) {
 	check(studioId, String)
 	check(fileName, String)
-	const studio = StudioInstallations.findOne(studioId)
+	const studio = Studios.findOne(studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" was not found!`)
 
 	const active = RecordedFiles.findOne({

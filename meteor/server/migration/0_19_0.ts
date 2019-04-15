@@ -1,6 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
-import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { Studios } from '../../lib/collections/Studios'
 import { ensureCollectionProperty, ensureStudioConfig, setExpectedVersion } from './lib'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
@@ -19,7 +19,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 // 0.19.0 (Release 4) is a BIG refactoring
 addMigrationSteps( '0.19.0', [
-	{ // Create showStyleBase (migrate from studioInstallation)
+	{ // Create showStyleBase (migrate from studio)
 		id: 'showStyleBase exists',
 		canBeRunAutomatically: true,
 		dependOnResultFrom: 'studio exists',
@@ -28,8 +28,8 @@ addMigrationSteps( '0.19.0', [
 			return false
 		},
 		migrate: () => {
-			// maybe copy from studioInstallation?
-			let studios = StudioInstallations.find().fetch()
+			// maybe copy from studio?
+			let studios = Studios.find().fetch()
 			let showStyles = ShowStyles.find().fetch()
 			if (studios.length === 1) {
 				let studio = studios[0]
@@ -61,7 +61,7 @@ addMigrationSteps( '0.19.0', [
 				})
 
 				if (!studio.supportedShowStyleBase || studio.supportedShowStyleBase.length === 0) {
-					StudioInstallations.update(studio._id, {$set: {
+					Studios.update(studio._id, {$set: {
 						supportedShowStyleBase: [id],
 					}})
 				}
@@ -93,12 +93,12 @@ addMigrationSteps( '0.19.0', [
 	ensureCollectionProperty('ShowStyleBases', {}, 'config', []),
 	ensureCollectionProperty('ShowStyleBases', {}, 'runtimeArguments', []),
 	{
-		id: 'Move rundownArguments from StudioInstallation into ShowStyleBase',
+		id: 'Move rundownArguments from Studio into ShowStyleBase',
 		canBeRunAutomatically: true,
 		validate: () => {
-			const si = StudioInstallations.find().fetch()
+			const studio = Studios.find().fetch()
 			let result: string | boolean = false
-			si.forEach((siItem) => {
+			studio.forEach((siItem) => {
 				if ((siItem as any).runtimeArguments && (siItem as any).runtimeArguments.length > 0) {
 					result = `Rundown Arguments set in a Studio Installation "${siItem._id}"`
 				}
@@ -106,9 +106,9 @@ addMigrationSteps( '0.19.0', [
 			return result
 		},
 		migrate: () => {
-			const si = StudioInstallations.find().fetch()
+			const studio = Studios.find().fetch()
 			let result: string | undefined = undefined
-			si.forEach((siItem) => {
+			studio.forEach((siItem) => {
 				if ((siItem as any).runtimeArguments) {
 					if ((siItem as any).runtimeArguments.length > 0) {
 						const showStyles = ShowStyleBases.find({ _id: { $in: siItem.supportedShowStyleBase } }).fetch()
@@ -133,9 +133,10 @@ addMigrationSteps( '0.19.0', [
 						})
 					}
 
-					// No result set means no errors and the runtimeArguments can be removed from SI
+					// No result set means no errors and the runtimeArguments can be removed from studio
+
 					if (!result) {
-						StudioInstallations.update(siItem._id, {
+						Studios.update(siItem._id, {
 							$unset: {
 								runtimeArguments: 1
 							}
@@ -198,7 +199,7 @@ addMigrationSteps( '0.19.0', [
 		}
 	},
 
-	ensureCollectionProperty('StudioInstallations', {}, 'settings', {}),
+	ensureCollectionProperty('Studios', {}, 'settings', {}),
 
 	{ // migrate from config.media_previews_url to settings.mediaPreviewsUrl
 		id: 'studio.settings.mediaPreviewsUrl from config',
@@ -206,7 +207,7 @@ addMigrationSteps( '0.19.0', [
 		dependOnResultFrom: 'studio exists',
 		validate: () => {
 			let validate: boolean | string = false
-			StudioInstallations.find().forEach((studio) => {
+			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.mediaPreviewsUrl) {
 
 					if (studio.getConfigValue('media_previews_url')) {
@@ -218,12 +219,12 @@ addMigrationSteps( '0.19.0', [
 			return validate
 		},
 		migrate: () => {
-			StudioInstallations.find().forEach((studio) => {
+			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.mediaPreviewsUrl) {
 					let value = studio.getConfigValue('media_previews_url')
 					if (value) {
 						// Update the studio
-						StudioInstallations.update(studio._id, {
+						Studios.update(studio._id, {
 							$set: {
 								'settings.mediaPreviewsUrl': value
 							},
@@ -245,7 +246,7 @@ addMigrationSteps( '0.19.0', [
 		dependOnResultFrom: 'studio exists',
 		validate: () => {
 			let validate: boolean | string = false
-			StudioInstallations.find().forEach((studio) => {
+			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.sofieUrl) {
 
 					if (studio.getConfigValue('sofie_url')) {
@@ -257,12 +258,12 @@ addMigrationSteps( '0.19.0', [
 			return validate
 		},
 		migrate: () => {
-			StudioInstallations.find().forEach((studio) => {
+			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.sofieUrl) {
 					let value = studio.getConfigValue('sofie_url')
 					if (value) {
 						// Update the studio
-						StudioInstallations.update(studio._id, {
+						Studios.update(studio._id, {
 							$set: {
 								'settings.sofieUrl': value
 							},
@@ -278,10 +279,10 @@ addMigrationSteps( '0.19.0', [
 			})
 		}
 	},
-	ensureCollectionProperty('StudioInstallations', {}, 'supportedShowStyleBase', []),
-	ensureCollectionProperty('StudioInstallations', {}, 'settings.mediaPreviewsUrl', null, 'text', 'Media previews URL',
+	ensureCollectionProperty('Studios', {}, 'supportedShowStyleBase', []),
+	ensureCollectionProperty('Studios', {}, 'settings.mediaPreviewsUrl', null, 'text', 'Media previews URL',
 		'Enter the URL to the media previews provider, example: http://10.0.1.100:8000/', undefined, 'studio.settings.mediaPreviewsUrl from config'),
-	ensureCollectionProperty('StudioInstallations', {}, 'settings.sofieUrl', null, 'text', 'Sofie URL',
+	ensureCollectionProperty('Studios', {}, 'settings.sofieUrl', null, 'text', 'Sofie URL',
 		'Enter the URL to the Sofie Core (that\'s what\'s in your browser URL,), example: https://slsofie without trailing /, short form server name is OK.', undefined, 'studio.settings.sofieUrl from config'),
 	ensureStudioConfig('mediaResolutions', '1920x1080i5000tff', undefined, 'Studio config: mediaResolutions',
 		'A set of accepted media formats for playback (example: "1920x1080i5000tff,1280x720p5000"'),
@@ -310,27 +311,27 @@ addMigrationSteps( '0.19.0', [
 		}
 	},
 
-	{ // remove studioInstallationId from child peripheral devices
-		id: 'peripheraldevice.studioInstallationId with parentDeviceId',
+	{ // remove studioId from child peripheral devices
+		id: 'peripheraldevice.studioId with parentDeviceId',
 		canBeRunAutomatically: true,
 		validate: () => {
 			const devCount = PeripheralDevices.find({
-				studioInstallationId: { $exists: true },
+				studioId: { $exists: true },
 				parentDeviceId: { $exists: true }
 			}).count()
 
 			if (devCount > 0) {
-				return 'Some child PeripheralDevices with studioInstallationId set'
+				return 'Some child PeripheralDevices with studioId set'
 			}
 			return false
 		},
 		migrate: () => {
 			PeripheralDevices.update({
-				studioInstallationId: { $exists: true },
+				studioId: { $exists: true },
 				parentDeviceId: { $exists: true }
 			}, {
 				$unset: {
-					studioInstallationId: true
+					studioId: true
 				}
 			}, {
 				multi: true

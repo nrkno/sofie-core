@@ -1,25 +1,25 @@
 import { Meteor } from 'meteor/meteor'
 
-import { StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { StudioInstallationsSecurity } from '../security/studioInstallations'
+import { Studios } from '../../lib/collections/Studios'
+import { StudiosSecurity } from '../security/studios'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 
-meteorPublish(PubSub.studioInstallations, (selector, token) => {
+meteorPublish(PubSub.studios, (selector, token) => {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier = {
 		fields: {
 			token: 0
 		}
 	}
-	if (StudioInstallationsSecurity.allowReadAccess(selector, token, this)) {
-		return StudioInstallations.find(selector, modifier)
+	if (StudiosSecurity.allowReadAccess(selector, token, this)) {
+		return Studios.find(selector, modifier)
 	}
 	return null
 })
-meteorPublish(PubSub.studioInstallationOfDevice, (deviceId: string, token) => {
+meteorPublish(PubSub.studioOfDevice, (deviceId: string, token) => {
 
 	if (PeripheralDeviceSecurity.allowReadAccess({_id: deviceId}, token, this)) {
 
@@ -33,10 +33,10 @@ meteorPublish(PubSub.studioInstallationOfDevice, (deviceId: string, token) => {
 			}
 		}
 		let selector = {
-			_id: peripheralDevice.studioInstallationId
+			_id: peripheralDevice.studioId
 		}
-		if (StudioInstallationsSecurity.allowReadAccess(selector, token, this)) {
-			return StudioInstallations.find(selector, modifier)
+		if (StudiosSecurity.allowReadAccess(selector, token, this)) {
+			return Studios.find(selector, modifier)
 		}
 	}
 	return null

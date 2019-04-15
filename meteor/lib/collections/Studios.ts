@@ -20,14 +20,14 @@ export interface MappingExt extends BlueprintMapping {
 	internal?: boolean
 }
 
-export interface IStudioInstallationSettings {
+export interface IStudioSettings {
 	/** URL to endpoint where media preview are exposed */
 	mediaPreviewsUrl: string // (former media_previews_url in config)
 	/** URL to Sofie Core endpoint */
 	sofieUrl: string // (former sofie_url in config)
 }
 /** A set of available layer groups in a given installation */
-export interface DBStudioInstallation {
+export interface DBStudio {
 	_id: string
 	/** User-presentable name for the studio installation */
 	name: string
@@ -44,7 +44,7 @@ export interface DBStudioInstallation {
 	config: Array<IConfigItem>
 	testToolsConfig?: ITestToolsConfig
 
-	settings: IStudioInstallationSettings
+	settings: IStudioSettings
 
 	_rundownVersionHash: string
 }
@@ -60,19 +60,19 @@ export interface ITestToolsConfig {
 	}
 }
 
-export class StudioInstallation implements DBStudioInstallation {
+export class Studio implements DBStudio {
 	public _id: string
 	public name: string
 	public blueprintId?: string
 	public mappings: MappingsExt
 	public supportedShowStyleBase: Array<string>
 	public config: Array<IConfigItem>
-	public settings: IStudioInstallationSettings
+	public settings: IStudioSettings
 	public testToolsConfig?: ITestToolsConfig
 
 	public _rundownVersionHash: string
 
-	constructor (document: DBStudioInstallation) {
+	constructor (document: DBStudio) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
@@ -90,12 +90,12 @@ export class StudioInstallation implements DBStudioInstallation {
 	}
 }
 
-export const StudioInstallations: TransformedCollection<StudioInstallation, DBStudioInstallation>
-	= new Mongo.Collection<StudioInstallation>('studioInstallation', {transform: (doc) => applyClassToDocument(StudioInstallation, doc) })
-registerCollection('StudioInstallations', StudioInstallations)
+export const Studios: TransformedCollection<Studio, DBStudio>
+	= new Mongo.Collection<Studio>('studio', {transform: (doc) => applyClassToDocument(Studio, doc) })
+registerCollection('Studios', Studios)
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		ObserveChangesForHash(StudioInstallations, '_rundownVersionHash', ['config'])
+		ObserveChangesForHash(Studios, '_rundownVersionHash', ['config'])
 	}
 })

@@ -24,7 +24,7 @@ export const updateExpectedMediaItems: (rundownId: string, partId: string) => vo
 		logger.info(`Removed ${removedItems} expected media items for deleted rundown "${rundownId}"`)
 		return
 	}
-	const studioInstallationId = rundown.studioInstallationId
+	const studioId = rundown.studioId
 
 	const part = Parts.findOne(partId)
 	if (!part) {
@@ -63,7 +63,7 @@ export const updateExpectedMediaItems: (rundownId: string, partId: string) => vo
 
 					rundownId: rundownId,
 					partId: partId,
-					studioInstallationId: studioInstallationId
+					studioId: studioId
 				}))
 			}, [doc.content.fileName, doc.content.path])
 		}
@@ -92,7 +92,7 @@ function insertExpectedObject (fileName: string, url: string, mediaFlowId: strin
 		url,
 		rundownId,
 		partId,
-		studioInstallationId: rundown.studioInstallationId
+		studioId: rundown.studioId
 	})
 }
 

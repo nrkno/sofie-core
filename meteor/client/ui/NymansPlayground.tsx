@@ -32,7 +32,7 @@ export class NymansPlayground extends MeteorReactComponent<INPProps> {
 			this.subscribe('rundowns', {
 				active: true
 			})
-			this.subscribe('studioInstallations', {})
+			this.subscribe('studios', {})
 			this.subscribe('showStyleBases', {})
 			this.subscribe('showStyleVariants', {})
 			let activeRO = Rundowns.findOne({active: true})
@@ -142,7 +142,7 @@ class extends MeteorReactComponent<IRundowns> {
 				<div>Created: {rundown.created}</div>
 
 				<div>externalId: {rundown.externalId}</div>
-				<div>studioInstallationId: {rundown.studioInstallationId}</div>
+				<div>studioId: {rundown.studioId}</div>
 				<div>showStyleBaseId: {rundown.showStyleBaseId}</div>
 				<div>showStyleVariantId: {rundown.showStyleVariantId}</div>
 				<div>name: {rundown.name}</div>

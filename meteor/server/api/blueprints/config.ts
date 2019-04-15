@@ -1,12 +1,12 @@
 import * as _ from 'underscore'
 import { ConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
-import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import { getShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 
 export namespace ConfigRef {
-	export function getStudioConfigRef (studioInstallationId: string, configKey: string): string {
-		return '${studio.' + studioInstallationId + '.' + configKey + '}'
+	export function getStudioConfigRef (studioId: string, configKey: string): string {
+		return '${studio.' + studioId + '.' + configKey + '}'
 	}
 	export function getShowStyleConfigRef (showStyleVariantId: string, configKey: string): string {
 		return '${showStyle.' + showStyleVariantId + '.' + configKey + '}'
@@ -37,7 +37,7 @@ export namespace ConfigRef {
 			) {
 				const studioId = m[2]
 				const configId = m[3]
-				const studio = StudioInstallations.findOne(studioId)
+				const studio = Studios.findOne(studioId)
 				if (studio) {
 					return studio.getConfigValue(configId)
 				} else if (bailOnError) throw new Meteor.Error(404,`Ref "${reference}": Studio "${studioId}" not found`)
@@ -63,7 +63,7 @@ export namespace ConfigRef {
 	}
 }
 
-export function compileStudioConfig (studio: StudioInstallation) {
+export function compileStudioConfig (studio: Studio) {
 	const res: {[key: string]: ConfigItemValue} = {}
 	_.each(studio.config, (c) => {
 		res[c._id] = c.value

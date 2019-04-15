@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 
-import { StudioInstallationsSecurity } from '../security/studioInstallations'
+import { StudiosSecurity } from '../security/studios'
 import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
@@ -12,7 +12,7 @@ meteorPublish(PubSub.externalMessageQueue, function (selector, token) {
 			token: 0
 		}
 	}
-	if (StudioInstallationsSecurity.allowReadAccess(selector, token, this)) {
+	if (StudiosSecurity.allowReadAccess(selector, token, this)) {
 		return ExternalMessageQueue.find(selector, modifier)
 	}
 	return null

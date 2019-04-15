@@ -176,7 +176,7 @@ export class Part implements DBPart {
 		if (runtimeNotes) {
 			const items = this.getPieces()
 			const rundown = this.getRundown()
-			const si = rundown && rundown.getStudioInstallation()
+			const studio = rundown && rundown.getStudio()
 			const showStyleBase = rundown && rundown.getShowStyleBase()
 			const partLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
 			_.each(items, (item) => {
@@ -184,7 +184,7 @@ export class Part implements DBPart {
 
 				if (partLookup && item.sourceLayerId && partLookup[item.sourceLayerId]) {
 					const part = partLookup[item.sourceLayerId]
-					const st = checkPieceContentStatus(item, part, si ? si.config : [])
+					const st = checkPieceContentStatus(item, part, studio ? studio.config : [])
 					if (st.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING || st.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN) {
 						notes.push({
 							type: NoteType.WARNING,

@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { Studio, Studios } from '../../../lib/collections/Studios'
 import { RecordedFile, RecordedFiles } from '../../../lib/collections/RecordedFiles'
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
@@ -29,13 +29,13 @@ interface IRecordingListState {
 	deleteConfirmItem?: RecordedFile
 }
 interface IRecordingListTrackedProps {
-	studio?: StudioInstallation
+	studio?: Studio
 	files: RecordedFile[]
 }
 
 const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListState, IRecordingListTrackedProps>((props: IRecordingListProps) => {
 	return {
-		studio: StudioInstallations.findOne(),
+		studio: Studios.findOne(),
 		files: RecordedFiles.find({}, { sort: { startedAt: -1 } }).fetch()
 	}
 })(class RecordedFilesList extends MeteorReactComponent<Translated<IRecordingListProps & IRecordingListTrackedProps>, IRecordingListState> {
@@ -66,7 +66,7 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 			this.subscribe('recordedFiles', {
 				studioId: this.props.match.params.studioId
 			})
-			this.subscribe('studioInstallations', {
+			this.subscribe('studios', {
 				_id: this.props.match.params.studioId
 			})
 		}
@@ -235,11 +235,11 @@ interface IStudioSelectProps {
 interface IStudioSelectState {
 }
 interface IStudioSelectTrackedProps {
-	studios: StudioInstallation[]
+	studios: Studio[]
 }
 const RecordingsStudioSelect = translateWithTracker<IStudioSelectProps, IStudioSelectState, IStudioSelectTrackedProps>((props: IStudioSelectProps) => {
 	return {
-		studios: StudioInstallations.find({}, {
+		studios: Studios.find({}, {
 			sort: {
 				_id: 1
 			}

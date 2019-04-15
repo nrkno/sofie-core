@@ -7,7 +7,7 @@ import * as _ from 'underscore'
 import { ServerResponse, IncomingMessage } from 'http'
 import * as bodyParser from 'body-parser'
 import { check, Match } from 'meteor/check'
-import { StudioInstallation, StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { Studio, Studios } from '../../lib/collections/Studios'
 import {
 	Snapshots,
 	SnapshotRundown,
@@ -68,7 +68,7 @@ interface SystemSnapshot {
 	version: string
 	studioId: string | null
 	snapshot: SnapshotSystem
-	studios: Array<StudioInstallation>
+	studios: Array<Studio>
 	showStyleBases: Array<ShowStyleBase>
 	showStyleVariants: Array<ShowStyleVariant>
 	blueprints?: Array<Blueprint> // optional, to be backwards compatible
@@ -127,7 +127,7 @@ function createRundownSnapshot (rundownId: string): RundownSnapshot {
 			created: getCurrentTime(),
 			type: SnapshotType.RUNDOWN,
 			rundownId: rundownId,
-			studioId: rundown.studioInstallationId,
+			studioId: rundown.studioId,
 			name: `Rundown_${rundown.name}_${rundown._id}_${formatDateTime(getCurrentTime())}`,
 			version: CURRENT_SYSTEM_VERSION
 		},
@@ -155,7 +155,7 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 
 	const coreSystem 		= getCoreSystem()
 	if (!coreSystem) throw new Meteor.Error(500, `coreSystem not set up`)
-	const studios 			= StudioInstallations.find((studioId ? {_id: studioId} : {})).fetch()
+	const studios 			= Studios.find((studioId ? {_id: studioId} : {})).fetch()
 
 	let queryShowStyleBases: MongoSelector<ShowStyleBase> = {}
 	let queryShowStyleVariants: MongoSelector<ShowStyleVariant> = {}
@@ -174,7 +174,7 @@ function createSystemSnapshot (studioId: string | null): SystemSnapshot {
 		queryShowStyleVariants = {
 			showStyleBaseId: {$in: showStyleBaseIds}
 		}
-		queryDevices = { studioInstallationId: studioId }
+		queryDevices = { studioId: studioId }
 	}
 	const showStyleBases 	= ShowStyleBases	.find(queryShowStyleBases).fetch()
 	const showStyleVariants = ShowStyleVariants	.find(queryShowStyleVariants).fetch()
@@ -224,13 +224,13 @@ function createDebugSnapshot (studioId: string): DebugSnapshot {
 	let snapshotId = Random.id()
 	logger.info(`Generating Debug snapshot "${snapshotId}" for studio "${studioId}"`)
 
-	const studio = StudioInstallations.findOne(studioId)
-	if (!studio) throw new Meteor.Error(404,`StudioInstallation ${studioId} not found`)
+	const studio = Studios.findOne(studioId)
+	if (!studio) throw new Meteor.Error(404,`Studio ${studioId} not found`)
 
 	let systemSnapshot = createSystemSnapshot(studioId)
 
 	let activeROs = Rundowns.find({
-		studioInstallationId: studio._id,
+		studioId: studio._id,
 		active: true,
 	}).fetch()
 
@@ -388,8 +388,8 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 	snapshot.rundown.nextPartId			= ( dbRundown ? dbRundown.nextPartId : null)
 	snapshot.rundown.currentPlayingStoryStatus = ( dbRundown ? dbRundown.currentPlayingStoryStatus : undefined)
 
-	const studios = StudioInstallations.find().fetch()
-	if (studios.length === 1) snapshot.rundown.studioInstallationId = studios[0]._id
+	const studios = Studios.find().fetch()
+	if (studios.length === 1) snapshot.rundown.studioId = studios[0]._id
 
 	const showStyleVariants = ShowStyleVariants.find().fetch()
 	if (showStyleVariants.length === 1) {
@@ -417,11 +417,11 @@ function restoreFromSystemSnapshot (snapshot: SystemSnapshot) {
 		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
 	}
 	let changes = sumChanges(
-		saveIntoDb(StudioInstallations, (studioId ? {_id: studioId} : {}), snapshot.studios),
+		saveIntoDb(Studios, (studioId ? {_id: studioId} : {}), snapshot.studios),
 		saveIntoDb(ShowStyleBases, {}, snapshot.showStyleBases),
 		saveIntoDb(ShowStyleVariants, {}, snapshot.showStyleVariants),
 		(snapshot.blueprints ? saveIntoDb(Blueprints, {}, snapshot.blueprints) : null),
-		saveIntoDb(PeripheralDevices, (studioId ? {studioInstallationId: studioId} : {}), snapshot.devices),
+		saveIntoDb(PeripheralDevices, (studioId ? {studioId: studioId} : {}), snapshot.devices),
 		saveIntoDb(CoreSystem, {}, [snapshot.coreSystem])
 	)
 	// saveIntoDb(PeripheralDeviceCommands, {}, snapshot.deviceCommands) // ignored

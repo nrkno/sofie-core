@@ -6,7 +6,7 @@ import {
 } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
-import { StudioInstallations, StudioInstallation } from '../../lib/collections/StudioInstallations'
+import { Studios, Studio } from '../../lib/collections/Studios'
 
 import { Spinner } from '../lib/Spinner'
 import { RundownView } from './RundownView'
@@ -22,7 +22,7 @@ interface IProps {
 }
 interface ITrackedProps {
 	rundown?: Rundown
-	studioInstallation?: StudioInstallation
+	studio?: Studio
 	studioId?: string
 	// isReady: boolean
 }
@@ -32,19 +32,19 @@ interface IState {
 export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
 
 	let studioId = objectPathGet(props, 'match.params.studioId')
-	let studioInstallation
+	let studio
 	if (studioId) {
-		studioInstallation = StudioInstallations.findOne(studioId)
+		studio = Studios.findOne(studioId)
 	}
 	const rundown = Rundowns.findOne(_.extend({
 		active: true
 	}, {
-		studioInstallationId: studioId
+		studioId: studioId
 	}))
 
 	return {
 		rundown,
-		studioInstallation,
+		studio,
 		studioId
 	}
 })(class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -60,10 +60,10 @@ export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 		this.subscribe('rundowns', _.extend({
 			active: true
 		}, this.props.studioId ? {
-			studioInstallationId: this.props.studioId
+			studioId: this.props.studioId
 		} : {}))
 		if (this.props.studioId) {
-			this.subscribe('studioInstallations', {
+			this.subscribe('studios', {
 				_id: this.props.studioId
 			})
 		}
@@ -122,7 +122,7 @@ export const ActiveROView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 		} else {
 			if (this.props.rundown) {
 				return <RundownView rundownId={this.props.rundown._id} inActiveROView={true} />
-			} else if (this.props.studioInstallation) {
+			} else if (this.props.studio) {
 				return this.renderMessage(t('There is no rundown active in this studio.'))
 			} else if (this.props.studioId) {
 				return this.renderMessage(t('This studio doesn\'t exist.'))

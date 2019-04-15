@@ -6,7 +6,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { VTContent } from 'tv-automation-sofie-blueprints-integration'
 import { VideoEditMonitor } from './VideoEditMonitor'
 import { MediaObjects, MediaObject } from '../../../lib/collections/MediaObjects'
-import { StudioInstallation, StudioInstallations } from '../../../lib/collections/StudioInstallations'
+import { Studio, Studios } from '../../../lib/collections/Studios'
 import { TimecodeEncoder } from './TimecodeEncoder'
 import { Settings } from '../../../lib/Settings'
 import { getDeveloperMode } from '../../lib/localStorage';
@@ -15,7 +15,7 @@ export interface IProps {
 	pieceId: string
 	rundownId: string
 	partId: string
-	studioInstallationId: string
+	studioId: string
 
 	inPoint: number
 	duration: number
@@ -25,7 +25,7 @@ export interface IProps {
 interface ITrackedProps {
 	piece: Piece | undefined
 	mediaObject: MediaObject | undefined
-	studioInstallation: StudioInstallation | undefined
+	studio: Studio | undefined
 	maxDuration: number
 }
 
@@ -38,13 +38,13 @@ interface IState {
 
 export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	const piece = Pieces.findOne(props.pieceId)
-	const si = StudioInstallations.findOne(props.studioInstallationId)
+	const studio = Studios.findOne(props.studioId)
 	return {
 		piece: piece,
 		mediaObject: piece ? MediaObjects.findOne({
 			mediaId: (piece.content as VTContent).fileName.toUpperCase()
 		}) : undefined,
-		studioInstallation: si,
+		studio: studio,
 		maxDuration: piece ? (piece.content as VTContent).sourceDuration : 0
 	}
 })(class ClipTrimPanel extends MeteorReactComponent<Translated<IProps> & ITrackedProps, IState> {
@@ -80,7 +80,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 
 				if (objId) {
 					// if (this.mediaObjectSub) this.mediaObjectSub.stop()
-					this.subscribe(PubSub.mediaObjects, this.props.studioInstallationId, {
+					this.subscribe(PubSub.mediaObjects, this.props.studioId, {
 						mediaId: objId
 					})
 				}
@@ -141,8 +141,8 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 	render () {
 		const { t } = this.props
 		let previewUrl: string | undefined = undefined
-		if (this.props.mediaObject && this.props.studioInstallation) {
-			const mediaPreviewUrl = this.ensureHasTrailingSlash(this.props.studioInstallation.settings.mediaPreviewsUrl + '' || '') || ''
+		if (this.props.mediaObject && this.props.studio) {
+			const mediaPreviewUrl = this.ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
 			previewUrl = mediaPreviewUrl + 'media/preview/' + encodeURIComponent(this.props.mediaObject.mediaId)
 		}
 

@@ -36,7 +36,7 @@ import {
 } from '../../methods'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
-import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { Studios, Studio } from '../../../lib/collections/Studios'
 import { selectShowStyleVariant, afterRemoveSegment, afterRemovePart } from '../rundown'
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/context'
@@ -81,8 +81,8 @@ function mutateRundown (rundown: any): IngestRundown {
 	}
 }
 
-function rundownId (studioInstallationId: string, externalId: string) {
-	return getHash(`${studioInstallationId}_${externalId}`)
+function rundownId (studioId: string, externalId: string) {
+	return getHash(`${studioId}_${externalId}`)
 }
 function getSegmentId (rundownId: string, segmentExternalId: string) {
 	return getHash(`${rundownId}_segment_${segmentExternalId}`)
@@ -99,45 +99,45 @@ function canBeUpdated (rundown: Rundown | undefined, segmentId?: string, partId?
 	return true
 }
 
-function getStudioInstallationId (peripheralDevice: PeripheralDevice): string | undefined {
-	if (peripheralDevice.studioInstallationId) {
-		return peripheralDevice.studioInstallationId
+function getStudioId (peripheralDevice: PeripheralDevice): string | undefined {
+	if (peripheralDevice.studioId) {
+		return peripheralDevice.studioId
 	}
 	if (peripheralDevice.parentDeviceId) {
 		// Also check the parent device:
 		const parentDevice = PeripheralDevices.findOne(peripheralDevice.parentDeviceId)
 		if (parentDevice) {
-			return parentDevice.studioInstallationId
+			return parentDevice.studioId
 		}
 	}
 	return undefined
 }
-function getStudioInstallation (peripheralDevice: PeripheralDevice): StudioInstallation {
-	const studioInstallationId = getStudioInstallationId(peripheralDevice)
-	if (!studioInstallationId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no StudioInstallation')
+function getStudio (peripheralDevice: PeripheralDevice): Studio {
+	const studioId = getStudioId(peripheralDevice)
+	if (!studioId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no Studio')
 
-	const studioInstallation = StudioInstallations.findOne(studioInstallationId)
-	if (!studioInstallation) throw new Meteor.Error(404, 'StudioInstallation "' + studioInstallationId + '" not found')
-	return studioInstallation
+	const studio = Studios.findOne(studioId)
+	if (!studio) throw new Meteor.Error(404, 'Studio "' + studioId + '" not found')
+	return studio
 }
 
 function handleRundownData (peripheralDevice: PeripheralDevice, ingestRundown: IngestRundown, dataSource: string) {
-	const studioInstallation = getStudioInstallation(peripheralDevice)
+	const studio = getStudio(peripheralDevice)
 
-	const rundownId = rundownId(studioInstallation._id, ingestRundown.externalId)
+	const rundownId = rundownId(studio._id, ingestRundown.externalId)
 	const existingDbRundown = Rundowns.findOne(rundownId)
 	if (!canBeUpdated(existingDbRundown)) return
 
 	logger.info((existingDbRundown ? 'Updating' : 'Adding') + ' rundown ' + rundownId)
 
-	const showStyle = selectShowStyleVariant(studioInstallation, ingestRundown)
+	const showStyle = selectShowStyleVariant(studio, ingestRundown)
 	if (!showStyle) {
 		logger.warn('Studio blueprint rejected rundown')
 		return
 	}
 
 	const showStyleBlueprint = loadShowStyleBlueprints(showStyle.base)
-	const blueprintContext = new ShowStyleContext(studioInstallation, showStyle.base._id, showStyle.variant._id)
+	const blueprintContext = new ShowStyleContext(studio, showStyle.base._id, showStyle.variant._id)
 	const rundownRes = showStyleBlueprint.getRundown(blueprintContext, ingestRundown)
 
 	const showStyleBlueprintDb = Blueprints.findOne(showStyle.base.blueprintId) as Blueprint || {}
@@ -147,7 +147,7 @@ function handleRundownData (peripheralDevice: PeripheralDevice, ingestRundown: I
 			...rundownRes.rundown,
 			_id: rundownId,
 			externalId: ingestRundown.externalId,
-			studioInstallationId: studioInstallation._id,
+			studioId: studio._id,
 			peripheralDeviceId: peripheralDevice._id,
 			showStyleVariantId: showStyle.variant._id,
 			showStyleBaseId: showStyle.base._id,
@@ -155,7 +155,7 @@ function handleRundownData (peripheralDevice: PeripheralDevice, ingestRundown: I
 			unsynced: false,
 
 			importVersions: {
-				studioInstallation: studioInstallation._rundownVersionHash,
+				studio: studio._rundownVersionHash,
 				showStyleBase: showStyle.base._rundownVersionHash,
 				showStyleVariant: showStyle.variant._rundownVersionHash,
 				blueprint: showStyleBlueprintDb.blueprintVersion,
@@ -206,7 +206,7 @@ function handleRundownData (peripheralDevice: PeripheralDevice, ingestRundown: I
 	}, cacheEntries)
 
 	// Save the baseline
-	const blueprintRundownContext = new RundownContext(dbRundown, studioInstallation)
+	const blueprintRundownContext = new RundownContext(dbRundown, studio)
 	logger.info(`Building baseline items for ${dbRundown._id}...`)
 	logger.info(`... got ${rundownRes.baseline.length} items from baseline.`)
 
@@ -245,7 +245,7 @@ function handleRundownData (peripheralDevice: PeripheralDevice, ingestRundown: I
 		const existingSegment = _.find(existingSegments, s => s._id === segmentId)
 		const existingParts = existingRundownParts.filter(p => p.segmentId === segmentId)
 
-		const context = new SegmentContext(dbRundown, studioInstallation, existingParts)
+		const context = new SegmentContext(dbRundown, studio, existingParts)
 		const res = blueprint.getSegment(context, ingestSegment)
 
 		const res2 = generateSegmentContents(context, ingestSegment, existingSegment, existingParts, res)
@@ -409,7 +409,7 @@ function generateSegmentContents (
 	}
 }
 
-function updateOrCreateSegmentFromPayload (studioInstallation: StudioInstallation, rundown: Rundown, ingestSegment: IngestSegment) {
+function updateOrCreateSegmentFromPayload (studio: Studio, rundown: Rundown, ingestSegment: IngestSegment) {
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 
 	// cache the Data
@@ -430,7 +430,7 @@ function updateOrCreateSegmentFromPayload (studioInstallation: StudioInstallatio
 		segmentId: segmentId
 	}).fetch()
 
-	const context = new SegmentContext(rundown, studioInstallation, existingParts)
+	const context = new SegmentContext(rundown, studio, existingParts)
 	const res = blueprint.getSegment(context, ingestSegment)
 
 	const { parts, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(context, ingestSegment, existingSegment, existingParts, res)
@@ -529,14 +529,14 @@ function loadCachedSegmentData (rundownId: string, segmentId: string): IngestSeg
 	return ingestSegment
 }
 
-function getStudioInstallationAndRO (peripheralDevice: PeripheralDevice, externalId: string) {
-	const studioInstallation = getStudioInstallation(peripheralDevice)
-	const rundown = Rundowns.findOne(rundownId(studioInstallation._id, externalId))
+function getStudioAndRO (peripheralDevice: PeripheralDevice, externalId: string) {
+	const studio = getStudio(peripheralDevice)
+	const rundown = Rundowns.findOne(rundownId(studio._id, externalId))
 	if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
 
 	return {
 		rundown,
-		studioInstallation
+		studio
 	}
 }
 
@@ -559,7 +559,7 @@ export namespace RundownInput {
 
 		updateDeviceLastDataReceived(deviceId)
 
-		const { rundown } = getStudioInstallationAndRO(peripheralDevice, rundownId)
+		const { rundown } = getStudioAndRO(peripheralDevice, rundownId)
 		if (canBeUpdated(rundown) && rundown) {
 			rundown.remove()
 		}
@@ -596,7 +596,7 @@ export namespace RundownInput {
 
 		updateDeviceLastDataReceived(deviceId)
 
-		const { rundown } = getStudioInstallationAndRO(peripheralDevice, rundownId)
+		const { rundown } = getStudioAndRO(peripheralDevice, rundownId)
 		const segmentInternalId = getSegmentId(rundown._id, segmentId)
 
 		if (canBeUpdated(rundown, segmentInternalId)) {
@@ -617,11 +617,11 @@ export namespace RundownInput {
 
 		updateDeviceLastDataReceived(deviceId)
 
-		const { studioInstallation, rundown } = getStudioInstallationAndRO(peripheralDevice, rundownId)
+		const { studio, rundown } = getStudioAndRO(peripheralDevice, rundownId)
 		const segmentInternalId = getSegmentId(rundown._id, segmentId)
 
 		if (canBeUpdated(rundown, segmentInternalId)) {
-			updateOrCreateSegmentFromPayload(studioInstallation, rundown, mutateSegment(newSection))
+			updateOrCreateSegmentFromPayload(studio, rundown, mutateSegment(newSection))
 		}
 	}
 	export function dataSegmentUpdate (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, newSection: any) {
@@ -634,11 +634,11 @@ export namespace RundownInput {
 
 		updateDeviceLastDataReceived(deviceId)
 
-		const { studioInstallation, rundown } = getStudioInstallationAndRO(peripheralDevice, rundownId)
+		const { studio, rundown } = getStudioAndRO(peripheralDevice, rundownId)
 		const segmentInternalId = getSegmentId(rundown._id, segmentId)
 
 		if (canBeUpdated(rundown, segmentInternalId)) {
-			updateOrCreateSegmentFromPayload(studioInstallation, rundown, mutateSegment(newSection))
+			updateOrCreateSegmentFromPayload(studio, rundown, mutateSegment(newSection))
 		}
 	}
 
@@ -652,7 +652,7 @@ export namespace RundownInput {
 
 		updateDeviceLastDataReceived(deviceId)
 
-		const { studioInstallation, rundown } = getStudioInstallationAndRO(peripheralDevice, rundownId)
+		const { studio, rundown } = getStudioAndRO(peripheralDevice, rundownId)
 		const segmentInternalId = getSegmentId(rundown._id, segmentId)
 		const partInternalId = getPartId(rundown._id, partId)
 
@@ -668,12 +668,12 @@ export namespace RundownInput {
 			const ingestSegment = loadCachedSegmentData(rundown._id, segmentInternalId)
 			ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partId)
 
-			updateOrCreateSegmentFromPayload(studioInstallation, rundown, ingestSegment)
+			updateOrCreateSegmentFromPayload(studio, rundown, ingestSegment)
 		}
 	}
 
 	function dataPartCreateOrUpdate (peripheralDevice: PeripheralDevice, rundownId: string, segmentId: string, partId: string, newStory: any) {
-		const { studioInstallation, rundown } = getStudioInstallationAndRO(peripheralDevice, rundownId)
+		const { studio, rundown } = getStudioAndRO(peripheralDevice, rundownId)
 
 		const segmentInternalId = getSegmentId(rundown._id, segmentId)
 		const partInternalId = getPartId(rundown._id, partId)
@@ -684,7 +684,7 @@ export namespace RundownInput {
 			ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partId)
 			ingestSegment.parts.push(mutatePart(newStory))
 
-			updateOrCreateSegmentFromPayload(studioInstallation, rundown, ingestSegment)
+			updateOrCreateSegmentFromPayload(studio, rundown, ingestSegment)
 		}
 	}
 	export function dataPartCreate (self: any, deviceId: string, deviceToken: string, rundownId: string, segmentId: string, partId: string, newStory: any) {

@@ -3,7 +3,7 @@ import { ReactiveDataHelper } from './reactiveDataHelper'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
+import { Studios, Studio } from '../../../lib/collections/Studios'
 import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -29,7 +29,7 @@ export namespace reactiveData {
 		Tracker.autorun(() => {
 			const rObj = Rundowns.findOne(rundownId)
 			if (rObj) {
-				rVar.set(rObj.studioInstallationId)
+				rVar.set(rObj.studioId)
 			} else {
 				rVar.set(undefined)
 			}
@@ -52,11 +52,11 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getRStudioInstallation (siId: string): ReactiveVar<StudioInstallation | undefined> {
-		const rVar = new ReactiveVar<StudioInstallation | undefined>(undefined, ReactiveDataHelper.simpleObjCompare)
+	export function getRStudio (siId: string): ReactiveVar<Studio | undefined> {
+		const rVar = new ReactiveVar<Studio | undefined>(undefined, ReactiveDataHelper.simpleObjCompare)
 		Tracker.autorun(() => {
-			const si = StudioInstallations.findOne(siId)
-			rVar.set(si)
+			const studio = Studios.findOne(siId)
+			rVar.set(studio)
 		})
 
 		return rVar
@@ -104,7 +104,7 @@ export namespace reactiveData {
 		Tracker.autorun(() => {
 			const allDevices: PeripheralDevice[] = []
 			const peripheralDevices = PeripheralDevices.find({
-				studioInstallationId: studioId
+				studioId: studioId
 			}).fetch()
 			allDevices.splice(allDevices.length, 0, ...peripheralDevices)
 			peripheralDevices.forEach((i) => {

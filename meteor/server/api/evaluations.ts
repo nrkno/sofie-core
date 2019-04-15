@@ -2,7 +2,7 @@ import { Evaluations, EvaluationBase } from '../../lib/collections/Evaluations'
 import { getCurrentTime } from '../../lib/lib'
 import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'
-import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { Studios } from '../../lib/collections/Studios'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { sendSlackMessageToWebhookSync } from './integration/slack'
 import * as _ from 'underscore'
@@ -19,7 +19,7 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 
 	Meteor.defer(() => {
 
-		let studio = StudioInstallations.findOne(evaluation.studioId)
+		let studio = Studios.findOne(evaluation.studioId)
 		if (!studio) throw new Meteor.Error(500, `Studio ${evaluation.studioId} not found!`)
 
 		let webhookUrls = _.compact((studio.getConfigValue('slack_evaluation') + '').split(','))

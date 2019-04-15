@@ -4,7 +4,7 @@ import {
 } from '../methods'
 import { ManualPlayoutAPI } from '../../lib/api/manualPlayout'
 import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
-import { StudioInstallations } from '../../lib/collections/StudioInstallations'
+import { Studios } from '../../lib/collections/Studios'
 import { afterUpdateTimeline } from './playout'
 
 function insertTimelineObject (studioId: string, timelineObject: TimelineObjGeneric) {
@@ -14,7 +14,7 @@ function insertTimelineObject (studioId: string, timelineObject: TimelineObjGene
 
 	timelineObject.siId = studioId
 
-	let studio = StudioInstallations.findOne(studioId)
+	let studio = Studios.findOne(studioId)
 
 	Timeline.upsert(timelineObject._id, timelineObject)
 
@@ -25,7 +25,7 @@ function insertTimelineObject (studioId: string, timelineObject: TimelineObjGene
 
 }
 function removeTimelineObject (studioId: string, id: string) {
-	let studio = StudioInstallations.findOne(studioId)
+	let studio = Studios.findOne(studioId)
 
 	if (studio) {
 		Timeline.remove({

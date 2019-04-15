@@ -33,7 +33,7 @@ export const AfterBroadcastForm = translate()(class AfterBroadcastForm extends R
 
 		const saveEvaluation = (snapshotId?: string) => {
 			let evaluation: EvaluationBase = {
-				studioId: this.props.rundown.studioInstallationId,
+				studioId: this.props.rundown.studioId,
 				rundownId: this.props.rundown._id,
 				answers: answers
 			}

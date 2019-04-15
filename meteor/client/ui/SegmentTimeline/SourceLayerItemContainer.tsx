@@ -73,7 +73,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			if (objId && objId !== this.objId) {
 				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 				this.objId = objId
-				this.subscribe('mediaObjects', this.props.rundown.studioInstallationId, {
+				this.subscribe('mediaObjects', this.props.rundown.studioId, {
 					mediaId: this.objId
 				})
 			}
@@ -134,7 +134,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			// Check item status
 			if (props.piece.sourceLayer) {
 
-				const { metadata, status } = checkPieceContentStatus(props.piece, props.piece.sourceLayer, props.rundown.getStudioInstallation().config)
+				const { metadata, status } = checkPieceContentStatus(props.piece, props.piece.sourceLayer, props.rundown.getStudio().config)
 				if (status !== props.piece.status || metadata) {
 					let segmentCopy = (_.clone(overrides.piece || props.piece) as PieceUi)
 

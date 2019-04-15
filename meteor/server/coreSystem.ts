@@ -18,7 +18,7 @@ import { setSystemStatus, StatusCode, removeSystemStatus } from './systemStatus'
 import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
-import { StudioInstallations } from '../lib/collections/StudioInstallations'
+import { Studios } from '../lib/collections/Studios'
 import { logger } from './logging'
 import * as semver from 'semver'
 const PackageInfo = require('../package.json')
@@ -104,7 +104,7 @@ function checkDatabaseVersions () {
 						)
 					}
 
-					StudioInstallations.find({
+					Studios.find({
 						supportedShowStyleBase: showStyleBase._id
 					}).forEach((studio) => {
 						if (!studioIds[studio._id]) { // only run once per blueprint and studio
