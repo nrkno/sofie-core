@@ -15,7 +15,6 @@ import {
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
-import { CachePrefix } from '../../lib/collections/RundownDataCache'
 import { updateStory, reloadRundown } from './integration/mos'
 import { PlayoutAPI } from '../../lib/api/playout'
 import { Methods, setMeteorMethods } from '../methods'
@@ -46,28 +45,25 @@ export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRun
 		if (showStyleId === null || !showStyleBase) {
 			return null
 		}
-	}
+	} else throw new Meteor.Error(500, `Studio "${studio._id}" does not have a valid blueprint`)
 
 	const showStyleVariants = ShowStyleVariants.find({ showStyleBaseId: showStyleBase._id }).fetch()
-	let showStyleVariant = _.first(showStyleVariants)
-	if (!showStyleVariant) {
-		throw new Meteor.Error(404, `ShowStyleBase "${showStyleBase._id}" has no variants`)
-	}
+	if (!showStyleVariants.length) throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" has no variants`)
 
 	const showStyleBlueprint = loadShowStyleBlueprints(showStyleBase)
-	if (!showStyleBlueprint) {
-		throw new Meteor.Error(404, `ShowStyleBase "${showStyleBase._id}" does not have a valid blueprint`)
-	}
+	if (!showStyleBlueprint) throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" does not have a valid blueprint`)
 
 	const variantId = showStyleBlueprint.getShowStyleVariantId(context, showStyleVariants, ingestRundown)
-	showStyleVariant = _.find(showStyleVariants, s => s._id === variantId)
-	if (variantId === null || !showStyleVariant) {
+	if (variantId === null) {
 		return null
-	}
+	} else {
+		const showStyleVariant = _.find(showStyleVariants, s => s._id === variantId)
+		if (!showStyleVariant) throw new Meteor.Error(404, `Blueprint returned variantId "${variantId}", which was not found!`)
 
-	return {
-		variant: showStyleVariant,
-		base: showStyleBase
+		return {
+			variant: showStyleVariant,
+			base: showStyleBase
+		}
 	}
 }
 

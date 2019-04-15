@@ -31,9 +31,9 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { getShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { AsRunLogEvent, AsRunLog } from '../../../lib/collections/AsRunLog'
-import { CachePrefix } from '../../../lib/collections/RundownDataCache'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { PartNote, NoteType } from '../../../lib/api/notes'
+import { loadCachedPartData, loadCachedRundownData } from '../ingest/ingestCache';
 
 /** Common */
 
@@ -362,11 +362,12 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	getStoryForPart (part: Part): IngestPart {
 		let partId = part._id
 		check(partId, String)
-		return this.rundown.fetchCache(CachePrefix.INGEST_PART + partId)
+
+		return loadCachedPartData(this.rundown._id, part.segmentId, part._id)
 	}
 	/** Get the mos story related to the rundown */
 	getStoryForRundown (): IngestRundown {
-		return this.rundown.fetchCache(CachePrefix.INGEST_RUNDOWN + this.rundown._id)
+		return loadCachedRundownData(this.rundown._id)
 	}
 	/**
 	 * Returns a piece.

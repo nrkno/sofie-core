@@ -1,4 +1,3 @@
-import { RundownDataCache } from '../lib/collections/RundownDataCache'
 import { Rundowns } from '../lib/collections/Rundowns'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../lib/collections/PeripheralDevices'
@@ -6,6 +5,7 @@ import * as _ from 'underscore'
 import { getCurrentTime } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
+import { IngestDataCache } from '../lib/collections/IngestDataCache'
 
 let lowPrioFcn = (fcn: (...args: any[]) => any, ...args: any[]) => {
 	// Do it at a random time in the future:
@@ -43,10 +43,10 @@ Meteor.startup(() => {
 			// Remove caches not related to rundowns:
 			let rundownCacheCount = 0
 			let rundownIds = _.pluck(Rundowns.find().fetch(), '_id')
-			RundownDataCache.find({
+			IngestDataCache.find({
 				rundownId: {$nin: rundownIds}
 			}).forEach((roc) => {
-				lowPrioFcn(RundownDataCache.remove, roc._id)
+				lowPrioFcn(IngestDataCache.remove, roc._id)
 				rundownCacheCount++
 			})
 			if (rundownCacheCount) logger.info('Cronjob: Will remove cached data from ' + rundownCacheCount + ' rundowns')

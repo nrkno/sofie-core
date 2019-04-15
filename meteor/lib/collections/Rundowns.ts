@@ -6,7 +6,6 @@ import { Parts, Part } from './Parts'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { Studios, Studio } from './Studios'
 import { Pieces, Piece } from './Pieces'
-import { RundownDataCache } from './RundownDataCache'
 import { Meteor } from 'meteor/meteor'
 import { AdLibPieces } from './AdLibPieces'
 import { RundownBaselineItems } from './RundownBaselineItems'
@@ -15,6 +14,7 @@ import { IBlueprintRundownDB } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
+import { IngestDataCache } from './IngestDataCache';
 
 export enum RundownHoldState {
 	NONE = 0,
@@ -176,37 +176,42 @@ export class Rundown implements DBRundown {
 			Rundowns.update(this._id, {$set: {modified: getCurrentTime()}})
 		}
 	}
-	saveCache (cacheId: string, data: any) {
-		if (!Meteor.isServer) throw new Meteor.Error('The "saveCache" method is available server-side only (sorry)')
-		let id = this._id + '_' + cacheId
-		RundownDataCache.upsert(id, {$set: {
-			_id: id,
-			rundownId: this._id,
-			modified: getCurrentTime(),
-			data: data
-		}})
-	}
+	// TODO: refactor or remove
+	// saveCache (cacheId: string, data: any) {
+	// 	if (!Meteor.isServer) throw new Meteor.Error('The "saveCache" method is available server-side only (sorry)')
+	// 	let id = this._id + '_' + cacheId
+	// 	IngestDataCache.upsert(id, {$set: {
+	// 		_id: id,
+	// 		rundownId: this._id,
+	// 		modified: getCurrentTime(),
+	// 		data: data
+	// 	}})
+	// }
 	removeCache (cacheId?: string) {
 		if (!Meteor.isServer) throw new Meteor.Error('The "removeCache" method is available server-side only (sorry)')
 		if (cacheId) {
-			let id = this._id + '_' + cacheId
-			RundownDataCache.remove(id)
+			// let id = this._id + '_' + cacheId
+			IngestDataCache.remove({
+				_id: cacheId,
+				rundownId: this._id
+			})
 		} else {
-			RundownDataCache.remove({
+			IngestDataCache.remove({
 				rundownId: this._id
 			})
 
 		}
 	}
-	fetchCache (cacheId: string): any | null {
-		if (!Meteor.isServer) throw new Meteor.Error('The "fetchCache" method is available server-side only (sorry)')
-		let id = this._id + '_' + cacheId
-		let c = RundownDataCache.findOne(id)
-		if (c) {
-			return c.data
-		}
-		return null
-	}
+	// TODO: refactor:
+	// fetchCache (cacheId: string): any | null {
+	// 	if (!Meteor.isServer) throw new Meteor.Error('The "fetchCache" method is available server-side only (sorry)')
+	// 	let id = this._id + '_' + cacheId
+	// 	let c = IngestDataCache.findOne(id)
+	// 	if (c) {
+	// 		return c.data
+	// 	}
+	// 	return null
+	// }
 	getTimings () {
 		let timings: Array<{
 			time: Time,

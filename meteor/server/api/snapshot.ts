@@ -17,7 +17,6 @@ import {
 	SnapshotBase
 } from '../../lib/collections/Snapshots'
 import { Rundowns, Rundown } from '../../lib/collections/Rundowns'
-import { RundownDataCache, RundownDataCacheObj } from '../../lib/collections/RundownDataCache'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { Segments, Segment } from '../../lib/collections/Segments'
 import { Part, Parts } from '../../lib/collections/Parts'
@@ -50,12 +49,13 @@ import { AudioContent } from 'tv-automation-sofie-blueprints-integration'
 import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import { MongoSelector } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
+import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
 interface RundownSnapshot {
 	version: string
 	rundownId: string
 	snapshot: SnapshotRundown
 	rundown: Rundown
-	mosData: Array<RundownDataCacheObj>
+	ingestData: Array<IngestDataCacheObj>
 	userActions: Array<UserActionsLogItem>
 	segments: Array<Segment>
 	parts: Array<Part>
@@ -104,7 +104,7 @@ function createRundownSnapshot (rundownId: string): RundownSnapshot {
 
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404,`Rundown ${rundownId} not found`)
-	const mosData = RundownDataCache.find({ rundownId: rundownId }, { sort: { modified: -1 } }).fetch() // @todo: check sorting order
+	const ingestData = IngestDataCache.find({ rundownId: rundownId }, { sort: { modified: -1 } }).fetch() // @todo: check sorting order
 	const userActions = UserActionsLog.find({ args: { $regex: `.*"${rundownId}".*` } }).fetch()
 
 	const segments = Segments.find({ rundownId }).fetch()
@@ -132,7 +132,7 @@ function createRundownSnapshot (rundownId: string): RundownSnapshot {
 			version: CURRENT_SYSTEM_VERSION
 		},
 		rundown,
-		mosData,
+		ingestData: ingestData,
 		userActions,
 		segments,
 		parts,
@@ -398,7 +398,7 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 	}
 
 	saveIntoDb(Rundowns, {_id: rundownId}, [snapshot.rundown])
-	saveIntoDb(RundownDataCache, {rundownId: rundownId}, snapshot.mosData)
+	saveIntoDb(IngestDataCache, {rundownId: rundownId}, snapshot.ingestData)
 	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
 	saveIntoDb(Segments, {rundownId: rundownId}, snapshot.segments)
 	saveIntoDb(Parts, {rundownId: rundownId}, snapshot.parts)
