@@ -20,9 +20,9 @@ import {
 	DBSegmentLine
 } from '../../../lib/collections/SegmentLines'
 import {
-	SegmentLineItem,
-	SegmentLineItems
-} from '../../../lib/collections/SegmentLineItems'
+	Piece,
+	Pieces
+} from '../../../lib/collections/Pieces'
 import {
 	saveIntoDb,
 	getCurrentTime,fetchBefore,
@@ -69,7 +69,7 @@ import { updateExpectedMediaItems } from '../expectedMediaItems'
 import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
 import { SegmentLineNote, NoteType } from '../../../lib/api/notes'
 import { loadShowStyleBlueprints } from '../blueprints/cache'
-import { postProcessAdLibPieces, postProcessSegmentLineItems, postProcessSegmentLineBaselineItems } from '../blueprints/postProcess'
+import { postProcessAdLibPieces, postProcessPieces, postProcessSegmentLineBaselineItems } from '../blueprints/postProcess'
 import { ShowStyleContext, RundownContext } from '../blueprints/context'
 import { RundownBaselineItem, RundownBaselineItems } from '../../../lib/collections/RundownBaselineItems'
 import { Random } from 'meteor/random'
@@ -246,16 +246,16 @@ export const updateStory: (rundown: Rundown, segmentLine: SegmentLine, story: MO
 	context.handleNotesExternally = true
 
 	let resultSl: IBlueprintSegmentLine | undefined = undefined
-	let resultSli: SegmentLineItem[] | undefined = undefined
-	let resultAdlibSli: AdLibPiece[] | undefined = undefined
+	let resultPiece: Piece[] | undefined = undefined
+	let resultAdlibPiece: AdLibPiece[] | undefined = undefined
 	let notes: SegmentLineNote[] = []
 	try {
 		const blueprints = loadShowStyleBlueprints(showStyleBase)
 		let result = blueprints.getSegmentLine(context, story) // TODO: refactor this
 
  		if (result) {
-			resultAdlibSli = postProcessAdLibPieces(context, result.adLibItems, result.segmentLine.typeVariant, segmentLine._id)
-			resultSli = postProcessSegmentLineItems(context, result.segmentLineItems, result.segmentLine.typeVariant, segmentLine._id)
+			resultAdlibPiece = postProcessAdLibPieces(context, result.adLibItems, result.segmentLine.typeVariant, segmentLine._id)
+			resultPiece = postProcessPieces(context, result.pieces, result.segmentLine.typeVariant, segmentLine._id)
 			resultSl = result.segmentLine
 		}
 
@@ -272,11 +272,11 @@ export const updateStory: (rundown: Rundown, segmentLine: SegmentLine, story: MO
 			},
 			message: 'Internal Server Error'
 		}],
-		resultSli = undefined
-		resultAdlibSli = undefined
+		resultPiece = undefined
+		resultAdlibPiece = undefined
 	}
 
-	let changedSli: {
+	let changedPiece: {
 		added: number,
 		updated: number,
 		removed: number
@@ -313,42 +313,42 @@ export const updateStory: (rundown: Rundown, segmentLine: SegmentLine, story: MO
 		}})
 	}
 
-	if (resultSli) {
-		changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
+	if (resultPiece) {
+		changedPiece = saveIntoDb<Piece, Piece>(Pieces, {
 			rundownId: rundown._id,
 			segmentLineId: segmentLine._id,
 			dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
-		}, resultSli || [], {
-			afterInsert (segmentLineItem) {
-				logger.debug('inserted segmentLineItem ' + segmentLineItem._id)
-				logger.debug(segmentLineItem)
+		}, resultPiece || [], {
+			afterInsert (piece) {
+				logger.debug('inserted piece ' + piece._id)
+				logger.debug(piece)
 				// @todo: have something here?
 				// let story: MOS.IMOSROStory | undefined = _.find(rundown.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 				// if (story) {
 					// afterInsertUpdateSegment (story, rundownId(rundown.ID))
 				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 			},
-			afterUpdate (segmentLineItem) {
-				logger.debug('updated segmentLineItem ' + segmentLineItem._id)
+			afterUpdate (piece) {
+				logger.debug('updated piece ' + piece._id)
 				// @todo: have something here?
 				// let story: MOS.IMOSROStory | undefined = _.find(rundown.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 				// if (story) {
 				// 	afterInsertUpdateSegment (story, rundownId(rundown.ID))
 				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 			},
-			afterRemove (segmentLineItem) {
-				logger.debug('deleted segmentLineItem ' + segmentLineItem._id)
+			afterRemove (piece) {
+				logger.debug('deleted piece ' + piece._id)
 				// @todo: handle this:
-				// afterRemoveSegmentLineItem(segmentLine._id)
+				// afterRemovePiece(segmentLine._id)
 			}
 		})
 	}
-	if (resultAdlibSli) {
+	if (resultAdlibPiece) {
 		saveIntoDb<AdLibPiece, AdLibPiece>(AdLibPieces, {
 			rundownId: rundown._id,
 			segmentLineId: segmentLine._id,
 			// fromPostProcess: { $ne: true }, // do not affect postProcess items
-		}, resultAdlibSli || [], {
+		}, resultAdlibPiece || [], {
 			afterInsert (adLibPiece) {
 				logger.debug('inserted adLibPiece ' + adLibPiece._id)
 				logger.debug(adLibPiece)
@@ -359,7 +359,7 @@ export const updateStory: (rundown: Rundown, segmentLine: SegmentLine, story: MO
 				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 			},
 			afterUpdate (adLibPiece) {
-				logger.debug('updated segmentLineItem ' + adLibPiece._id)
+				logger.debug('updated piece ' + adLibPiece._id)
 				// @todo: have something here?
 				// let story: MOS.IMOSROStory | undefined = _.find(rundown.Stories, (s) => { return s.ID.toString() === segment.mosId } )
 				// if (story) {
@@ -367,14 +367,14 @@ export const updateStory: (rundown: Rundown, segmentLine: SegmentLine, story: MO
 				// } else throw new Meteor.Error(500, 'Story not found (it should have been)')
 			},
 			afterRemove (adLibPiece) {
-				logger.debug('deleted segmentLineItem ' + adLibPiece._id)
+				logger.debug('deleted piece ' + adLibPiece._id)
 				// @todo: handle this:
-				// afterRemoveSegmentLineItem(segmentLine._id)
+				// afterRemovePiece(segmentLine._id)
 			}
 		})
 	}
 
-	if (resultSli || resultAdlibSli) {
+	if (resultPiece || resultAdlibPiece) {
 		try {
 			updateExpectedMediaItems(rundown._id, segmentLine._id)
 		} catch (e) {
@@ -383,7 +383,7 @@ export const updateStory: (rundown: Rundown, segmentLine: SegmentLine, story: MO
 	}
 
 	// if anything was changed
-	return (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
+	return (changedPiece.added > 0 || changedPiece.removed > 0 || changedPiece.updated > 0)
 	// return this.core.mosManipulate(P.methods.mosRundownReadyToAir, story)
 })
 
@@ -452,9 +452,9 @@ export const reloadRundown: (rundown: Rundown) => void = Meteor.wrapAsync(
 		}, 'triggerGetRundown', rundown.externalId)
 	}
 )
-export function replaceStoryItem (rundown: Rundown, segmentLineItem: SegmentLineItem, slCache: RundownDataCacheObj, inPoint: number, duration: number) {
+export function replaceStoryItem (rundown: Rundown, piece: Piece, slCache: RundownDataCacheObj, inPoint: number, duration: number) {
 	return new Promise((resolve, reject) => {
-		const story = slCache.data.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === segmentLineItem.externalId)[0].Content
+		const story = slCache.data.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === piece.externalId)[0].Content
 		story.EditorialStart = inPoint
 		story.EditorialDuration = duration
 

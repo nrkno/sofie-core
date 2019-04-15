@@ -6,15 +6,15 @@ import { SegmentLineTimings } from './SegmentLines'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import {
-	IBlueprintSegmentLineItemGeneric,
-	IBlueprintSegmentLineItem,
-	SegmentLineItemLifespan,
+	IBlueprintPieceGeneric,
+	IBlueprintPiece,
+	PieceLifespan,
 	Timeline,
 	BaseContent,
 } from 'tv-automation-sofie-blueprints-integration'
 
 /** A Single item in a "line": script, VT, cameras */
-export interface SegmentLineItemGeneric extends IBlueprintSegmentLineItemGeneric {
+export interface PieceGeneric extends IBlueprintPieceGeneric {
 	// ------------------------------------------------------------------
 	_id: string
 	/** ID of the source object in MOS */
@@ -26,13 +26,13 @@ export interface SegmentLineItemGeneric extends IBlueprintSegmentLineItemGeneric
 	status: RundownAPI.LineItemStatusCode
 	/** Actual duration of the item, as played-back, in milliseconds. This value will be updated during playback for some types of items. */
 	duration?: number
-	/** A flag to signal a given SegmentLineItem has been deactivated manually */
+	/** A flag to signal a given Piece has been deactivated manually */
 	disabled?: boolean
-	/** A flag to signal that a given SegmentLineItem should be hidden from the UI */
+	/** A flag to signal that a given Piece should be hidden from the UI */
 	hidden?: boolean
-	/** A flag to signal that a given SegmentLineItem has no content, and exists only as a marker on the timeline */
+	/** A flag to signal that a given Piece has no content, and exists only as a marker on the timeline */
 	virtual?: boolean
-	/** The transition used by this segment line item to transition to and from the item */
+	/** The transition used by this piece to transition to and from the item */
 	transitions?: {
 		/** In transition for the item */
 		inTransition?: TimelineTransition
@@ -54,7 +54,7 @@ export interface SegmentLineItemGeneric extends IBlueprintSegmentLineItemGeneric
 	extendOnHold?: boolean
 }
 
-export interface SegmentLineItem extends SegmentLineItemGeneric, IBlueprintSegmentLineItem {
+export interface Piece extends PieceGeneric, IBlueprintPiece {
 	// -----------------------------------------------------------------------
 
 	segmentLineId: string
@@ -64,16 +64,16 @@ export interface SegmentLineItem extends SegmentLineItemGeneric, IBlueprintSegme
 	/** This is set when an item's duration needs to be overriden */
 	durationOverride?: number
 	/** This is set when the item is infinite, to deduplicate the contents on the timeline, while allowing out of order */
-	infiniteMode?: SegmentLineItemLifespan
+	infiniteMode?: PieceLifespan
 	/** This is a backup of the original infiniteMode of the item, so that the normal field can be modified during playback and restored afterwards */
-	originalInfiniteMode?: SegmentLineItemLifespan
+	originalInfiniteMode?: PieceLifespan
 	/** This is the id of the original segment of an infinite item chain. If it matches the id of itself then it is the first in the chain */
 	infiniteId?: string
 
 	/** The object describing the item in detail */
-	content?: BaseContent // TODO: Temporary, should be put into IBlueprintSegmentLineItem
+	content?: BaseContent // TODO: Temporary, should be put into IBlueprintPiece
 
-	/** Whether the sli has stopped playback (the most recent time it was played).
+	/** Whether the piece has stopped playback (the most recent time it was played).
 	 * This is set from a callback from the playout gateway
 	 */
 	stoppedPlayback?: number
@@ -82,12 +82,12 @@ export interface SegmentLineItem extends SegmentLineItemGeneric, IBlueprintSegme
 	overflows?: boolean
 }
 
-export const SegmentLineItems: TransformedCollection<SegmentLineItem, SegmentLineItem>
-	= new Mongo.Collection<SegmentLineItem>('segmentLineItems')
-registerCollection('SegmentLineItems', SegmentLineItems)
+export const Pieces: TransformedCollection<Piece, Piece>
+	= new Mongo.Collection<Piece>('pieces')
+registerCollection('Pieces', Pieces)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		SegmentLineItems._ensureIndex({
+		Pieces._ensureIndex({
 			rundownId: 1,
 			segmentLineId: 1
 		})

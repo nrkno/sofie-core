@@ -2,12 +2,12 @@ import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { TransformedCollection, FindOptions, MongoSelector } from '../typings/meteor'
 import { Rundowns } from './Rundowns'
-import { SegmentLineItem, SegmentLineItems } from './SegmentLineItems'
+import { Piece, Pieces } from './Pieces'
 import { AdLibPieces } from './AdLibPieces'
 import { Segments } from './Segments'
 import { applyClassToDocument, Time, registerCollection, normalizeArray } from '../lib'
 import { RundownAPI } from '../api/rundown'
-import { checkSLIContentStatus } from '../mediaObjects'
+import { checkPieceContentStatus } from '../mediaObjects'
 import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintSegmentLineDB,
@@ -112,10 +112,10 @@ export class SegmentLine implements DBSegmentLine {
 	getSegment () {
 		return Segments.findOne(this.segmentId)
 	}
-	getSegmentLinesItems (selector?: MongoSelector<SegmentLineItem>, options?: FindOptions) {
+	getPieces (selector?: MongoSelector<Piece>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
-		return SegmentLineItems.find(
+		return Pieces.find(
 			_.extend({
 				rundownId: this.rundownId,
 				segmentLineId: this._id
@@ -125,11 +125,11 @@ export class SegmentLine implements DBSegmentLine {
 			}, options)
 		).fetch()
 	}
-	getAllSegmentLineItems () {
-		return this.getSegmentLinesItems()
+	getAllPieces () {
+		return this.getPieces()
 	}
 
-	getSegmentLinesAdLibItems (selector?: MongoSelector<SegmentLineItem>, options?: FindOptions) {
+	getSegmentLinesAdLibItems (selector?: MongoSelector<Piece>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
 		return AdLibPieces.find(
@@ -174,7 +174,7 @@ export class SegmentLine implements DBSegmentLine {
 		notes = notes.concat(this.notes || [])
 
 		if (runtimeNotes) {
-			const items = this.getSegmentLinesItems()
+			const items = this.getPieces()
 			const rundown = this.getRundown()
 			const si = rundown && rundown.getStudioInstallation()
 			const showStyleBase = rundown && rundown.getShowStyleBase()
@@ -184,7 +184,7 @@ export class SegmentLine implements DBSegmentLine {
 
 				if (slLookup && item.sourceLayerId && slLookup[item.sourceLayerId]) {
 					const sl = slLookup[item.sourceLayerId]
-					const st = checkSLIContentStatus(item, sl, si ? si.config : [])
+					const st = checkPieceContentStatus(item, sl, si ? si.config : [])
 					if (st.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING || st.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN) {
 						notes.push({
 							type: NoteType.WARNING,
@@ -193,7 +193,7 @@ export class SegmentLine implements DBSegmentLine {
 								rundownId: this.rundownId,
 								segmentId: this.segmentId,
 								segmentLineId: this._id,
-								segmentLineItemId: item._id
+								pieceId: item._id
 							},
 							message: st.message || ''
 						})

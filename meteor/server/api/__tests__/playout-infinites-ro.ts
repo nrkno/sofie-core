@@ -1,14 +1,14 @@
 import { DBSegment } from '../../../lib/collections/Segments'
 import { Rundown, DBRundown } from '../../../lib/collections/Rundowns'
 import { DBSegmentLine } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem } from '../../../lib/collections/SegmentLineItems'
+import { Piece } from '../../../lib/collections/Pieces'
 import { literal } from '../../../lib/lib'
 
 export interface MockRO {
 	rundown: Rundown,
 	segments: Array<DBSegment>,
 	segmentLines: Array<DBSegmentLine>,
-	segmentLineItems: Array<SegmentLineItem>,
+	pieces: Array<Piece>,
 }
 
 export const testRO1: MockRO = {
@@ -407,7 +407,7 @@ export const testRO1: MockRO = {
 			'subTypeVariant': ''
 		}
 	],
-	segmentLineItems: [
+	pieces: [
 		{
 			'_id': 'NowSlQNWBLo1CnTRDxU9gxupE38_',
 			'rundownId': 'XnMVCR7jrKuaTF_cFN3brXvZZCw_',
@@ -533,7 +533,7 @@ export const testRO1: MockRO = {
 			'name': 'Frykter tap av millioner',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_NOm1Mz2GMYo_jfG3kMHNvkH91BI_.start + 0'
+				'value': '#piece_group_NOm1Mz2GMYo_jfG3kMHNvkH91BI_.start + 0'
 			},
 			'sourceLayerId': 'studio0_graphics_super',
 			'outputLayerId': 'pgm0',
@@ -613,7 +613,7 @@ export const testRO1: MockRO = {
 			'name': 'Ny sykkelvei til 80 millioner',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_nMkRoyy19ZwUn90QY18xhnQ1ouM_.start + 0'
+				'value': '#piece_group_nMkRoyy19ZwUn90QY18xhnQ1ouM_.start + 0'
 			},
 			'sourceLayerId': 'studio0_graphics_super',
 			'outputLayerId': 'pgm0',
@@ -691,7 +691,7 @@ export const testRO1: MockRO = {
 			'name': '50 Logo (00:00, Auto/Manual)',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group___RRnX1FKXGonKEcFl06W_SvthI_.start + 0'
+				'value': '#piece_group___RRnX1FKXGonKEcFl06W_SvthI_.start + 0'
 			},
 			'sourceLayerId': 'studio0_graphics_logo',
 			'outputLayerId': 'pgm0',
@@ -711,7 +711,7 @@ export const testRO1: MockRO = {
 			'name': '51 Klokke (00:00, Auto/Manual)',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group___RRnX1FKXGonKEcFl06W_SvthI_.start + 0'
+				'value': '#piece_group___RRnX1FKXGonKEcFl06W_SvthI_.start + 0'
 			},
 			'sourceLayerId': 'studio0_graphics_klokke',
 			'outputLayerId': 'pgm0',
@@ -731,7 +731,7 @@ export const testRO1: MockRO = {
 			'name': 'Lars Eie',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group___RRnX1FKXGonKEcFl06W_SvthI_.start + 1000'
+				'value': '#piece_group___RRnX1FKXGonKEcFl06W_SvthI_.start + 1000'
 			},
 			'sourceLayerId': 'studio0_graphics_super',
 			'outputLayerId': 'pgm0',
@@ -848,7 +848,7 @@ export const testRO1: MockRO = {
 			'name': 'Anne Wirsching, reporter',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_Z3DAd2PGUvvF_M1Ih25F_F5MVjY_.start + 2000'
+				'value': '#piece_group_Z3DAd2PGUvvF_M1Ih25F_F5MVjY_.start + 2000'
 			},
 			'sourceLayerId': 'studio0_graphics_super',
 			'outputLayerId': 'pgm0',
@@ -868,7 +868,7 @@ export const testRO1: MockRO = {
 			'name': 'Harald Furre, ordfører Kristiansand (H)',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_Z3DAd2PGUvvF_M1Ih25F_F5MVjY_.start + 18000'
+				'value': '#piece_group_Z3DAd2PGUvvF_M1Ih25F_F5MVjY_.start + 18000'
 			},
 			'sourceLayerId': 'studio0_graphics_super',
 			'outputLayerId': 'pgm0',
@@ -888,7 +888,7 @@ export const testRO1: MockRO = {
 			'name': 'Foto/redigering:, Anne Wirsching',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_Z3DAd2PGUvvF_M1Ih25F_F5MVjY_.start + 103000'
+				'value': '#piece_group_Z3DAd2PGUvvF_M1Ih25F_F5MVjY_.start + 103000'
 			},
 			'sourceLayerId': 'studio0_graphics_super',
 			'outputLayerId': 'pgm0',
@@ -908,7 +908,7 @@ export const testRO1: MockRO = {
 			'name': 'Mette Gundersen, gruppeleder, Arbeiderpartiet, Kristiansand',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_Z3DAd2PGUvvF_M1Ih25F_F5MVjY_.start + 34000'
+				'value': '#piece_group_Z3DAd2PGUvvF_M1Ih25F_F5MVjY_.start + 34000'
 			},
 			'sourceLayerId': 'studio0_graphics_super',
 			'outputLayerId': 'pgm0',
@@ -1104,7 +1104,7 @@ export const testRO1: MockRO = {
 			'name': 'Hans Erik Weiby, reporter',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_gufLM9FHUOkUUD9JDwbRIpPFZ_s_.start + 4000'
+				'value': '#piece_group_gufLM9FHUOkUUD9JDwbRIpPFZ_s_.start + 4000'
 			},
 			'sourceLayerId': 'studio0_graphics_super',
 			'outputLayerId': 'pgm0',
@@ -1124,7 +1124,7 @@ export const testRO1: MockRO = {
 			'name': 'Eva Høiby',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_gufLM9FHUOkUUD9JDwbRIpPFZ_s_.start + 21000'
+				'value': '#piece_group_gufLM9FHUOkUUD9JDwbRIpPFZ_s_.start + 21000'
 			},
 			'sourceLayerId': 'studio0_graphics_super',
 			'outputLayerId': 'pgm0',
@@ -1144,7 +1144,7 @@ export const testRO1: MockRO = {
 			'name': 'Kirsten Falch',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_gufLM9FHUOkUUD9JDwbRIpPFZ_s_.start + 13000'
+				'value': '#piece_group_gufLM9FHUOkUUD9JDwbRIpPFZ_s_.start + 13000'
 			},
 			'sourceLayerId': 'studio0_graphics_super',
 			'outputLayerId': 'pgm0',
@@ -1164,7 +1164,7 @@ export const testRO1: MockRO = {
 			'name': 'Jørgen Haugland Kristiansen, varaordfører, Kristiansand (Krf)',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_gufLM9FHUOkUUD9JDwbRIpPFZ_s_.start + 53000'
+				'value': '#piece_group_gufLM9FHUOkUUD9JDwbRIpPFZ_s_.start + 53000'
 			},
 			'sourceLayerId': 'studio0_graphics_super',
 			'outputLayerId': 'pgm0',
@@ -1184,7 +1184,7 @@ export const testRO1: MockRO = {
 			'name': 'Dagfinn Fløystad, avdelingsdirektør, Statens Vegvesen',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_gufLM9FHUOkUUD9JDwbRIpPFZ_s_.start + 77000'
+				'value': '#piece_group_gufLM9FHUOkUUD9JDwbRIpPFZ_s_.start + 77000'
 			},
 			'sourceLayerId': 'studio0_graphics_super',
 			'outputLayerId': 'pgm0',
@@ -1204,7 +1204,7 @@ export const testRO1: MockRO = {
 			'name': 'Foto/redigering:, Hans Erik Weiby',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_gufLM9FHUOkUUD9JDwbRIpPFZ_s_.start + 99000'
+				'value': '#piece_group_gufLM9FHUOkUUD9JDwbRIpPFZ_s_.start + 99000'
 			},
 			'sourceLayerId': 'studio0_graphics_super',
 			'outputLayerId': 'pgm0',
@@ -1263,7 +1263,7 @@ export const testRO1: MockRO = {
 			'name': 'Har seilt hele Norskekysten',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_YQbP4trhGeFJK7ZItlsIGPql68c_.start + 0'
+				'value': '#piece_group_YQbP4trhGeFJK7ZItlsIGPql68c_.start + 0'
 			},
 			'sourceLayerId': 'studio0_graphics_tema',
 			'outputLayerId': 'pgm0',
@@ -1304,7 +1304,7 @@ export const testRO1: MockRO = {
 			'name': '22 Sted/Arkiv (00:00=>00:05, Auto/Auto)',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_YQbP4trhGeFJK7ZItlsIGPql68c_.start + 0'
+				'value': '#piece_group_YQbP4trhGeFJK7ZItlsIGPql68c_.start + 0'
 			},
 			'sourceLayerId': 'studio0_graphics_tag_left',
 			'outputLayerId': 'pgm0',
@@ -1384,7 +1384,7 @@ export const testRO1: MockRO = {
 			'name': 'Elin Ellingsvik Vegestøl',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_I6a_WFSUDf1h4o0OerDCKsssTps_.start + 2000'
+				'value': '#piece_group_I6a_WFSUDf1h4o0OerDCKsssTps_.start + 2000'
 			},
 			'sourceLayerId': 'studio0_graphics_super',
 			'outputLayerId': 'pgm0',
@@ -1482,7 +1482,7 @@ export const testRO1: MockRO = {
 			'name': 'Kristiansand',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_gmR0lrNSX3uFow3_xzA_LrzjoY0_.start + 0'
+				'value': '#piece_group_gmR0lrNSX3uFow3_xzA_LrzjoY0_.start + 0'
 			},
 			'sourceLayerId': 'studio0_graphics_tag_left',
 			'outputLayerId': 'pgm0',
@@ -1502,7 +1502,7 @@ export const testRO1: MockRO = {
 			'name': '10 Tema|Vanlig (00:00, Auto/OnNext)',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_gmR0lrNSX3uFow3_xzA_LrzjoY0_.start + 0'
+				'value': '#piece_group_gmR0lrNSX3uFow3_xzA_LrzjoY0_.start + 0'
 			},
 			'sourceLayerId': 'studio0_graphics_tema',
 			'outputLayerId': 'pgm0',
@@ -1542,7 +1542,7 @@ export const testRO1: MockRO = {
 			'name': '10 Tema|Vanlig (00:00, Auto/OnNext)',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_Gor46LiycWIRuL1Ky7ckEfOd3_0_.start + 0'
+				'value': '#piece_group_Gor46LiycWIRuL1Ky7ckEfOd3_0_.start + 0'
 			},
 			'sourceLayerId': 'studio0_graphics_tema',
 			'outputLayerId': 'pgm0',
@@ -1562,7 +1562,7 @@ export const testRO1: MockRO = {
 			'name': 'Kristiansand',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_Gor46LiycWIRuL1Ky7ckEfOd3_0_.start + 0'
+				'value': '#piece_group_Gor46LiycWIRuL1Ky7ckEfOd3_0_.start + 0'
 			},
 			'sourceLayerId': 'studio0_graphics_tag_right',
 			'outputLayerId': 'pgm0',
@@ -1680,7 +1680,7 @@ export const testRO1: MockRO = {
 			'name': '10 Tema|Vanlig (00:00, Auto/OnNext)',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_Nlk8edC6GmINQDYncr3x8ItEG6k_.start + 0'
+				'value': '#piece_group_Nlk8edC6GmINQDYncr3x8ItEG6k_.start + 0'
 			},
 			'sourceLayerId': 'studio0_graphics_tema',
 			'outputLayerId': 'pgm0',
@@ -1898,7 +1898,7 @@ export const testRO1: MockRO = {
 			'name': 'Værdata er levert av Meteorologisk institutt',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_qxcOyLAuolGfC_ceVpd7d_iBICI_.start + 0'
+				'value': '#piece_group_qxcOyLAuolGfC_ceVpd7d_iBICI_.start + 0'
 			},
 			'sourceLayerId': 'studio0_graphics_ticker',
 			'outputLayerId': 'pgm0',
@@ -1918,7 +1918,7 @@ export const testRO1: MockRO = {
 			'name': 'nrk.no/sorlandet',
 			'trigger': {
 				'type': 1,
-				'value': '#sli_group_iYV2nwyyU_lvhN0bDcHT_ee_pdQ_.start + 0'
+				'value': '#piece_group_iYV2nwyyU_lvhN0bDcHT_ee_pdQ_.start + 0'
 			},
 			'sourceLayerId': 'studio0_graphics_ticker',
 			'outputLayerId': 'pgm0',

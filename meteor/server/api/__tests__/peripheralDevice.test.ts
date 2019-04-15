@@ -7,7 +7,7 @@ import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
+import { Piece, Pieces } from '../../../lib/collections/Pieces'
 
 import {
 	ServerPeripheralDeviceAPI
@@ -528,7 +528,7 @@ describe('peripheralDevice: MOS Basic functions', function () {
 		StubCollections.stub(Rundowns)
 		StubCollections.stub(Segments)
 		StubCollections.stub(SegmentLines)
-		StubCollections.stub(SegmentLineItems)
+		StubCollections.stub(Pieces)
 
 		let rundownID = rundownId(new MOS.MosString128('rundown0'))
 		// Prepare database:
@@ -796,7 +796,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		StubCollections.stub(Rundowns)
 		StubCollections.stub(Segments)
 		StubCollections.stub(SegmentLines)
-		StubCollections.stub(SegmentLineItems)
+		StubCollections.stub(Pieces)
 	})
 	afterEach(function () {
 		StubCollections.restore()
@@ -849,7 +849,7 @@ describe('peripheralDevice: MOS API methods', function () {
 		expect(SegmentLines.find({
 			rundownId: rundownID
 		}).fetch()).to.have.length(0)
-		expect(SegmentLineItems.find({
+		expect(Pieces.find({
 			rundownId: rundownID
 		}).fetch()).to.have.length(0)
 	})

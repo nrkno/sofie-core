@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { SegmentLineItems } from '../../lib/collections/SegmentLineItems'
+import { Pieces } from '../../lib/collections/Pieces'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../logging'
@@ -17,10 +17,10 @@ import { updateSourceLayerInfinitesAfterLine } from '../api/playout'
 setMeteorMethods({
 
 	'debug_scrambleDurations' () {
-		let segmentLineItems = SegmentLineItems.find().fetch()
-		_.each(segmentLineItems, (segmentLineItem) => {
-			SegmentLineItems.update(
-				{ _id: segmentLineItem._id },
+		let pieces = Pieces.find().fetch()
+		_.each(pieces, (piece) => {
+			Pieces.update(
+				{ _id: piece._id },
 				{$inc: {
 					expectedDuration: ((Random.fraction() * 500) - 250)
 				}}

@@ -190,29 +190,29 @@ export namespace ServerPeripheralDeviceAPI {
 
 		ServerPlayoutAPI.slPlaybackStoppedCallback(r.rundownId, r.slId, r.time)
 	}
-	export function segmentLineItemPlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) {
+	export function piecePlaybackStarted (id: string, token: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) {
 		// This is called from the playout-gateway when an auto-next event occurs
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
 		check(r.time, Number)
 		check(r.rundownId, String)
-		check(r.sliId, String)
+		check(r.pieceId, String)
 
-		// Meteor.call('playout_segmentLineItemPlaybackStart', r.rundownId, r.sliId, r.time)
-		ServerPlayoutAPI.sliPlaybackStartedCallback(r.rundownId, r.sliId, r.time)
+		// Meteor.call('playout_piecePlaybackStart', r.rundownId, r.pieceId, r.time)
+		ServerPlayoutAPI.piecePlaybackStartedCallback(r.rundownId, r.pieceId, r.time)
 	}
-	export function segmentLineItemPlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) {
+	export function piecePlaybackStopped (id: string, token: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) {
 		// This is called from the playout-gateway when an auto-next event occurs
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + id + "' not found!")
 
 		check(r.time, Number)
 		check(r.rundownId, String)
-		check(r.sliId, String)
+		check(r.pieceId, String)
 
-		// Meteor.call('playout_segmentLineItemPlaybackStart', r.rundownId, r.sliId, r.time)
-		ServerPlayoutAPI.sliPlaybackStoppedCallback(r.rundownId, r.sliId, r.time)
+		// Meteor.call('playout_piecePlaybackStart', r.rundownId, r.pieceId, r.time)
+		ServerPlayoutAPI.piecePlaybackStoppedCallback(r.rundownId, r.pieceId, r.time)
 	}
 	export function pingWithCommand (id: string, token: string, message: string) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
@@ -410,11 +410,11 @@ methods[PeripheralDeviceAPI.methods.segmentLinePlaybackStarted] = (deviceId: str
 methods[PeripheralDeviceAPI.methods.segmentLinePlaybackStopped] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.SegmentLinePlaybackStartedResult) => {
 	return ServerPeripheralDeviceAPI.segmentLinePlaybackStopped(deviceId, deviceToken, r)
 }
-methods[PeripheralDeviceAPI.methods.segmentLineItemPlaybackStopped] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) => {
-	return ServerPeripheralDeviceAPI.segmentLineItemPlaybackStopped(deviceId, deviceToken, r)
+methods[PeripheralDeviceAPI.methods.piecePlaybackStopped] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) => {
+	return ServerPeripheralDeviceAPI.piecePlaybackStopped(deviceId, deviceToken, r)
 }
-methods[PeripheralDeviceAPI.methods.segmentLineItemPlaybackStarted] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.SegmentLineItemPlaybackStartedResult) => {
-	return ServerPeripheralDeviceAPI.segmentLineItemPlaybackStarted(deviceId, deviceToken, r)
+methods[PeripheralDeviceAPI.methods.piecePlaybackStarted] = (deviceId: string, deviceToken: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) => {
+	return ServerPeripheralDeviceAPI.piecePlaybackStarted(deviceId, deviceToken, r)
 }
 methods[PeripheralDeviceAPI.methods.pingWithCommand] = (deviceId: string, deviceToken: string, message: string) => {
 	return ServerPeripheralDeviceAPI.pingWithCommand(deviceId, deviceToken, message)

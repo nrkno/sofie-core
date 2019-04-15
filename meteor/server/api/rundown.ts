@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { check } from 'meteor/check'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { SegmentLine, SegmentLines, DBSegmentLine } from '../../lib/collections/SegmentLines'
-import { SegmentLineItem, SegmentLineItems } from '../../lib/collections/SegmentLineItems'
+import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { Segments, DBSegment, Segment } from '../../lib/collections/Segments'
 import {
 	saveIntoDb,
@@ -17,7 +17,7 @@ import {
 } from '../../lib/lib'
 import { logger } from '../logging'
 import {
-	postProcessSegmentLineItems,
+	postProcessPieces,
 	SegmentContext
 } from './blueprints'
 import { ServerPlayoutAPI, updateTimelineFromMosData } from './playout'
@@ -126,7 +126,7 @@ export function removeSegmentLine (rundownId: string, segmentLineOrId: DBSegment
 }
 export function afterRemoveSegmentLine (removedSegmentLine: DBSegmentLine, replacedBySegmentLine?: DBSegmentLine) {
 	// TODO - what about adlibs?
-	SegmentLineItems.remove({
+	Pieces.remove({
 		segmentLineId: removedSegmentLine._id
 	})
 	updateExpectedMediaItems(removedSegmentLine.rundownId, removedSegmentLine._id)
@@ -345,13 +345,13 @@ export function runPostProcessBlueprint (rundown: Rundown, segment: Segment) {
 	// const context = new SegmentContext(rundown, segment)
 	// context.handleNotesExternally = true
 
-	// let resultSli: SegmentLineItem[] | undefined = undefined
+	// let resultPiece: Piece[] | undefined = undefined
 	// let resultSlUpdates: IBlueprintPostProcessSegmentLine[] | undefined = undefined
 	// let notes: SegmentLineNote[] = []
 	// try {
 	// 	const blueprints = loadShowStyleBlueprints(showStyleBase)
 	// 	let result = blueprints.getSegmentPost(context)
-	// 	resultSli = postProcessSegmentLineItems(context, result.segmentLineItems, 'post-process', firstSegmentLine._id)
+	// 	resultPiece = postProcessPieces(context, result.pieces, 'post-process', firstSegmentLine._id)
 	// 	resultSlUpdates = result.segmentLineUpdates // TODO - validate/filter/tidy?
 	// 	notes = context.getNotes()
 	// } catch (e) {
@@ -367,12 +367,12 @@ export function runPostProcessBlueprint (rundown: Rundown, segment: Segment) {
 	// 		},
 	// 		message: 'Internal Server Error'
 	// 	}]
-	// 	resultSli = undefined
+	// 	resultPiece = undefined
 	// }
 
 	// const slIds = segmentLines.map(sl => sl._id)
 
-	// let changedSli: {
+	// let changedPiece: {
 	// 	added: number,
 	// 	updated: number,
 	// 	removed: number
@@ -386,28 +386,28 @@ export function runPostProcessBlueprint (rundown: Rundown, segment: Segment) {
 	// 		notes: notes,
 	// 	}})
 	// }
-	// if (resultSli) {
+	// if (resultPiece) {
 
-	// 	if (resultSli) {
-	// 		resultSli.forEach(sli => {
-	// 			sli.fromPostProcess = true
+	// 	if (resultPiece) {
+	// 		resultPiece.forEach(piece => {
+	// 			piece.fromPostProcess = true
 	// 		})
 	// 	}
 
-	// 	changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
+	// 	changedPiece = saveIntoDb<Piece, Piece>(Pieces, {
 	// 		rundownId: rundown._id,
 	// 		segmentLineId: { $in: slIds },
 	// 		fromPostProcess: true,
-	// 	}, resultSli || [], {
-	// 		afterInsert (segmentLineItem) {
-	// 			logger.debug('PostProcess: inserted segmentLineItem ' + segmentLineItem._id)
-	// 			logger.debug(segmentLineItem)
+	// 	}, resultPiece || [], {
+	// 		afterInsert (piece) {
+	// 			logger.debug('PostProcess: inserted piece ' + piece._id)
+	// 			logger.debug(piece)
 	// 		},
-	// 		afterUpdate (segmentLineItem) {
-	// 			logger.debug('PostProcess: updated segmentLineItem ' + segmentLineItem._id)
+	// 		afterUpdate (piece) {
+	// 			logger.debug('PostProcess: updated piece ' + piece._id)
 	// 		},
-	// 		afterRemove (segmentLineItem) {
-	// 			logger.debug('PostProcess: deleted segmentLineItem ' + segmentLineItem._id)
+	// 		afterRemove (piece) {
+	// 			logger.debug('PostProcess: deleted piece ' + piece._id)
 	// 		}
 	// 	})
 	// }
@@ -426,7 +426,7 @@ export function runPostProcessBlueprint (rundown: Rundown, segment: Segment) {
 	// }
 
 	// // if anything was changed
-	// const anythingChanged = (changedSli.added > 0 || changedSli.removed > 0 || changedSli.updated > 0)
+	// const anythingChanged = (changedPiece.added > 0 || changedPiece.removed > 0 || changedPiece.updated > 0)
 	// if (anythingChanged) {
 	// 	_.each(slIds, (slId) => {
 	// 		updateExpectedMediaItems(rundown._id, slId)

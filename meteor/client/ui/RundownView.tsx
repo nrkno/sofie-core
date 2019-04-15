@@ -21,7 +21,7 @@ import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
 import { RundownTimingProvider, withTiming, WithTiming } from './RundownView/RundownTiming'
-import { SegmentTimelineContainer, SegmentLineItemUi } from './SegmentTimeline/SegmentTimelineContainer'
+import { SegmentTimelineContainer, PieceUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { InspectorDrawer, InspectorDrawerBase, InspectorDrawerProps, InspectorPanelTabs } from './InspectorDrawer/InspectorDrawer'
 import { RundownOverview } from './RundownView/RundownOverview'
@@ -416,13 +416,13 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				},
 				{
 					key: RundownViewKbdShortcuts.RUNDOWN_DISABLE_NEXT_ELEMENT,
-					up: this.keyDisableNextSegmentLineItem,
+					up: this.keyDisableNextPiece,
 					label: t('Disable the next element'),
 					global: true
 				},
 				{
 					key: RundownViewKbdShortcuts.RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT,
-					up: this.keyDisableNextSegmentLineItemUndo,
+					up: this.keyDisableNextPieceUndo,
 					label: t('Undo Disable the next element'),
 					global: true
 				},
@@ -533,29 +533,29 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		// "down" = to next Segment
 		this.moveNext(e, 0, -1)
 	}
-	keyDisableNextSegmentLineItem = (e: ExtendedKeyboardEvent) => {
-		this.disableNextSLI(e)
+	keyDisableNextPiece = (e: ExtendedKeyboardEvent) => {
+		this.disableNextPiece(e)
 	}
-	keyDisableNextSegmentLineItemUndo = (e: ExtendedKeyboardEvent) => {
-		this.disableNextSLIUndo(e)
+	keyDisableNextPieceUndo = (e: ExtendedKeyboardEvent) => {
+		this.disableNextPieceUndo(e)
 	}
 	keyLogError = (e: ExtendedKeyboardEvent) => {
 		this.takeRundownSnapshot(e)
 	}
 
-	disableNextSLI = (e: any) => {
+	disableNextPiece = (e: any) => {
 		const { t } = this.props
 
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserActionAPI.methods.disableNextSegmentLineItem, [this.props.rundown._id, false])
+			doUserAction(t, e, UserActionAPI.methods.disableNextPiece, [this.props.rundown._id, false])
 		}
 	}
 
-	disableNextSLIUndo = (e: any) => {
+	disableNextPieceUndo = (e: any) => {
 		const {t} = this.props
 
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserActionAPI.methods.disableNextSegmentLineItem, [this.props.rundown._id, true])
+			doUserAction(t, e, UserActionAPI.methods.disableNextPiece, [this.props.rundown._id, true])
 		}
 	}
 
@@ -949,7 +949,7 @@ interface IState {
 	isSupportPanelOpen: boolean
 	isInspectorDrawerExpanded: boolean
 	isClipTrimmerOpen: boolean
-	selectedSegmentLineItem: SegmentLineItemUi | undefined
+	selectedPiece: PieceUi | undefined
 }
 
 export enum RundownViewEvents {
@@ -1052,7 +1052,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 			isSupportPanelOpen: false,
 			isInspectorDrawerExpanded: false,
 			isClipTrimmerOpen: false,
-			selectedSegmentLineItem: undefined
+			selectedPiece: undefined
 		}
 	}
 
@@ -1069,7 +1069,7 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		this.subscribe('segmentLines', {
 			rundownId: rundownId
 		})
-		this.subscribe('segmentLineItems', {
+		this.subscribe('pieces', {
 			rundownId: rundownId
 		})
 		this.subscribe('adLibPieces', {
@@ -1209,13 +1209,14 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
-	onSelectSegmentLineItem = (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => {
-		if (sli && sli.content && (sli.content as VTContent).editable &&
-			((((sli.content as VTContent).editable as VTEditableParameters).editorialDuration !== undefined) ||
-			((sli.content as VTContent).editable as VTEditableParameters).editorialStart !== undefined)) {
+	onSelectPiece = (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
+		if (piece && piece.content && (piece.content as VTContent).editable &&
+			((((piece.content as VTContent).editable as VTEditableParameters).editorialDuration !== undefined) ||
+			((piece.content as VTContent).editable as VTEditableParameters).editorialStart !== undefined)) {
 			this.setState({
 				isClipTrimmerOpen: true,
-				selectedSegmentLineItem: sli
+				selectedPiece: piece
+
 			})
 		}
 	}
@@ -1351,10 +1352,10 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		}
 	}
 
-	onSLItemDoubleClick = (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => {
+	onPieceDoubleClick = (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
 		const {t} = this.props
 		if (this.state.studioMode && item && item._id && this.props.rundown && this.props.rundown.currentSegmentLineId) {
-			doUserAction(t, e, UserActionAPI.methods.segmentLineItemTakeNow, [this.props.rundown._id, this.props.rundown.currentSegmentLineId, item._id])
+			doUserAction(t, e, UserActionAPI.methods.pieceTakeNow, [this.props.rundown._id, this.props.rundown.currentSegmentLineId, item._id])
 		}
 	}
 
@@ -1413,8 +1414,8 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 								onContextMenu={this.onContextMenu}
 								onSegmentScroll={this.onSegmentScroll}
 								isLastSegment={index === array.length - 1}
-								onItemClick={this.onSelectSegmentLineItem}
-								onItemDoubleClick={this.onSLItemDoubleClick}
+								onItemClick={this.onSelectPiece}
+								onItemDoubleClick={this.onPieceDoubleClick}
 								onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
 							/>
 						</ErrorBoundary>
@@ -1621,11 +1622,11 @@ class extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 									studioMode={this.state.studioMode} />
 							</ErrorBoundary>
 							<ErrorBoundary>
-								{this.state.isClipTrimmerOpen && this.state.selectedSegmentLineItem && this.props.studioInstallation &&
+								{this.state.isClipTrimmerOpen && this.state.selectedPiece && this.props.studioInstallation &&
 									<ClipTrimDialog
 										studioInstallation={this.props.studioInstallation}
 										rundownId={this.props.rundownId}
-										selectedSegmentLineItem={this.state.selectedSegmentLineItem}
+										selectedPiece={this.state.selectedPiece}
 										onClose={() => this.setState({ isClipTrimmerOpen: false })}
 										/>
 								}

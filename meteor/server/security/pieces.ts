@@ -1,8 +1,8 @@
-import { SegmentLineItems, SegmentLineItem } from '../../lib/collections/SegmentLineItems'
+import { Pieces, Piece } from '../../lib/collections/Pieces'
 
 // Setup rules:
-SegmentLineItems.allow({
-	insert (userId: string, doc: SegmentLineItem): boolean {
+Pieces.allow({
+	insert (userId: string, doc: Piece): boolean {
 		return false
 	},
 	update (userId, doc, fields, modifier) {

@@ -1,11 +1,11 @@
 import { Mongo } from 'meteor/mongo'
-import { SegmentLineItemGeneric } from './SegmentLineItems'
+import { PieceGeneric } from './Pieces'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintAdLibPiece, BaseContent } from 'tv-automation-sofie-blueprints-integration'
 
-export interface AdLibPiece extends SegmentLineItemGeneric, IBlueprintAdLibPiece {
+export interface AdLibPiece extends PieceGeneric, IBlueprintAdLibPiece {
 	expectedDuration: number | string
 
 	/** The object describing the item in detail */

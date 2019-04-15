@@ -1,4 +1,4 @@
-import { SegmentLineItemUi, SegmentLineUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
+import { PieceUi, SegmentLineUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
 import { Timecode } from 'timecode'
 import { Settings } from '../../lib/Settings'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
@@ -99,15 +99,15 @@ export namespace RundownUtils {
 		return (isNegative ? (minusPrefix !== undefined ? minusPrefix : (enDashAsMinus ? '\u2013' : '-')) : (showPlus && milliseconds > 0 ? '+' : '')) + ((showHours || (useSmartHours && hours > 0)) ? padZerundown(hours) + ':' : '') + padZerundown(minutes) + ':' + padZerundown(secondsRest)
 	}
 
-	export function isInsideViewport (scrollLeft: number, scrollWidth: number, segmentLine: SegmentLineUi, segmentLineStartsAt: number | undefined, segmentLineDuration: number | undefined, segmentLineItem?: SegmentLineItemUi) {
-		if (scrollLeft + scrollWidth < (segmentLineStartsAt || segmentLine.startsAt || 0) + (segmentLineItem !== undefined ? (segmentLineItem.renderedInPoint || 0) : 0)) {
+	export function isInsideViewport (scrollLeft: number, scrollWidth: number, segmentLine: SegmentLineUi, segmentLineStartsAt: number | undefined, segmentLineDuration: number | undefined, piece?: PieceUi) {
+		if (scrollLeft + scrollWidth < (segmentLineStartsAt || segmentLine.startsAt || 0) + (piece !== undefined ? (piece.renderedInPoint || 0) : 0)) {
 			return false
 		} else if (scrollLeft > (segmentLineStartsAt || segmentLine.startsAt || 0) +
-					(segmentLineItem !== undefined ?
-						(segmentLineItem.renderedInPoint || 0) + (segmentLineItem.renderedDuration || (
+					(piece !== undefined ?
+						(piece.renderedInPoint || 0) + (piece.renderedDuration || (
 							(segmentLine.duration !== undefined ?
 								segmentLine.duration :
-								(segmentLineDuration || segmentLine.renderedDuration || segmentLine.expectedDuration || 0) - (segmentLineItem.renderedInPoint || 0))
+								(segmentLineDuration || segmentLine.renderedDuration || segmentLine.expectedDuration || 0) - (piece.renderedInPoint || 0))
 							)
 						) :
 						(segmentLine.duration !== undefined ?

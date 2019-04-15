@@ -17,7 +17,7 @@ import {
 	EvaluationBase
 } from '../../lib/collections/Evaluations'
 import { StudioInstallations } from '../../lib/collections/StudioInstallations'
-import { SegmentLineItems, SegmentLineItem } from '../../lib/collections/SegmentLineItems'
+import { Pieces, Piece } from '../../lib/collections/Pieces'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { storeRundownSnapshot } from './snapshot'
 import { setMeteorMethods } from '../methods'
@@ -96,7 +96,7 @@ export function moveNext (
 	horisontalDelta: number,
 	verticalDelta: number,
 	setManually: boolean,
-	currentNextSegmentLineItemId?: string
+	currentNextPieceId?: string
 ): ClientAPI.ClientResponse {
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
@@ -106,7 +106,7 @@ export function moveNext (
 		return ClientAPI.responseError('The Next cannot be changed next during a Hold!')
 	}
 
-	if (!currentNextSegmentLineItemId) {
+	if (!currentNextPieceId) {
 		if (!rundown.nextSegmentLineId) {
 			return ClientAPI.responseError('Rundown has no next segmentLine!')
 		}
@@ -117,7 +117,7 @@ export function moveNext (
 			horisontalDelta,
 			verticalDelta,
 			setManually,
-			currentNextSegmentLineItemId
+			currentNextPieceId
 		)
 	)
 }
@@ -184,9 +184,9 @@ export function reloadData (rundownId: string) {
 		ServerPlayoutAPI.reloadData(rundownId)
 	)
 }
-export function disableNextSegmentLineItem (rundownId: string, undo?: boolean) {
+export function disableNextPiece (rundownId: string, undo?: boolean) {
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.rundownDisableNextSegmentLineItem(rundownId, undo)
+		ServerPlayoutAPI.rundownDisableNextPiece(rundownId, undo)
 	)
 }
 export function toggleSegmentLineArgument (rundownId: string, slId: string, property: string, value: string) {
@@ -199,20 +199,20 @@ export function toggleSegmentLineArgument (rundownId: string, slId: string, prop
 		ServerPlayoutAPI.rundownToggleSegmentLineArgument(rundownId, slId, property, value)
 	)
 }
-export function segmentLineItemTakeNow (rundownId: string, slId: string, sliId: string) {
+export function pieceTakeNow (rundownId: string, slId: string, pieceId: string) {
 	check(rundownId, String)
 	check(slId, String)
-	check(sliId, String)
+	check(pieceId, String)
 
 	let rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 	if (!rundown.active) return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
 
-	let slItem = SegmentLineItems.findOne({
-		_id: sliId,
+	let piece = Pieces.findOne({
+		_id: pieceId,
 		rundownId: rundownId
-	}) as SegmentLineItem
-	if (!slItem) throw new Meteor.Error(404, `SegmentLineItem "${sliId}" not found!`)
+	}) as Piece
+	if (!piece) throw new Meteor.Error(404, `Piece "${pieceId}" not found!`)
 
 	let segLine = SegmentLines.findOne({
 		_id: slId,
@@ -222,17 +222,17 @@ export function segmentLineItemTakeNow (rundownId: string, slId: string, sliId: 
 	if (rundown.currentSegmentLineId !== segLine._id) return ClientAPI.responseError(`SegmentLine AdLib Items can be only placed in a current segment line!`)
 
 	let showStyleBase = rundown.getShowStyleBase()
-	const sourceL = showStyleBase.sourceLayers.find(i => i._id === slItem.sourceLayerId)
+	const sourceL = showStyleBase.sourceLayers.find(i => i._id === piece.sourceLayerId)
 	if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS) return ClientAPI.responseError(`SegmentLine "${slId}" is not a GRAPHICS item!`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.segmentLineItemTakeNow(rundownId, slId, sliId)
+		ServerPlayoutAPI.pieceTakeNow(rundownId, slId, pieceId)
 	)
 }
-export function segmentLineItemSetInOutPoints (rundownId: string, slId: string, sliId: string, inPoint: number, duration: number) {
+export function pieceSetInOutPoints (rundownId: string, slId: string, pieceId: string, inPoint: number, duration: number) {
 	check(rundownId, String)
 	check(slId, String)
-	check(sliId, String)
+	check(pieceId, String)
 	check(inPoint, Number)
 	check(duration, Number)
 
@@ -245,11 +245,11 @@ export function segmentLineItemSetInOutPoints (rundownId: string, slId: string, 
 	}
 	const slCache = RundownDataCache.findOne(rundownId + '_fullStory' + slId)
 	if (!slCache) throw new Meteor.Error(404, `SegmentLine Cache for "${slId}" not found!`)
-	const sli = SegmentLineItems.findOne(sliId)
-	if (!sli) throw new Meteor.Error(404, `SegmentLineItem "${sliId}" not found!`)
+	const piece = Pieces.findOne(pieceId)
+	if (!piece) throw new Meteor.Error(404, `Piece "${pieceId}" not found!`)
 
 	return ClientAPI.responseSuccess(
-		replaceStoryItem(rundown, sli, slCache, inPoint / 1000, duration / 1000) // MOS data is in seconds
+		replaceStoryItem(rundown, piece, slCache, inPoint / 1000, duration / 1000) // MOS data is in seconds
 	)
 
 }
@@ -297,17 +297,17 @@ export function rundownBaselineAdLibItemStart (rundownId: string, slId: string, 
 		ServerPlayoutAPI.rundownBaselineAdLibItemStart(rundownId, slId, robaliId, queue)
 	)
 }
-export function segmentAdLibLineItemStop (rundownId: string, slId: string, sliId: string) {
+export function segmentAdLibLineItemStop (rundownId: string, slId: string, pieceId: string) {
 	check(rundownId, String)
 	check(slId, String)
-	check(sliId, String)
+	check(pieceId, String)
 
 	let rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 	if (!rundown.active) return ClientAPI.responseError(`The Rundown isn't active, can't stop an AdLib in a deactivated Rundown!`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.segmentAdLibLineItemStop(rundownId, slId, sliId)
+		ServerPlayoutAPI.segmentAdLibLineItemStop(rundownId, slId, pieceId)
 	)
 }
 export function sourceLayerStickyItemStart (rundownId: string, sourceLayerId: string) {
@@ -455,17 +455,17 @@ methods[UserActionAPI.methods.deactivate] = function (rundownId: string): Client
 methods[UserActionAPI.methods.reloadData] = function (rundownId: string): ClientAPI.ClientResponse {
 	return reloadData.call(this, rundownId)
 }
-methods[UserActionAPI.methods.disableNextSegmentLineItem] = function (rundownId: string, undo?: boolean): ClientAPI.ClientResponse {
-	return disableNextSegmentLineItem.call(this, rundownId, undo)
+methods[UserActionAPI.methods.disableNextPiece] = function (rundownId: string, undo?: boolean): ClientAPI.ClientResponse {
+	return disableNextPiece.call(this, rundownId, undo)
 }
 methods[UserActionAPI.methods.toggleSegmentLineArgument] = function (rundownId: string, slId: string, property: string, value: string): ClientAPI.ClientResponse {
 	return toggleSegmentLineArgument.call(this, rundownId, slId, property, value)
 }
-methods[UserActionAPI.methods.segmentLineItemTakeNow] = function (rundownId: string, slId: string, sliId: string): ClientAPI.ClientResponse {
-	return segmentLineItemTakeNow.call(this, rundownId, slId, sliId)
+methods[UserActionAPI.methods.pieceTakeNow] = function (rundownId: string, slId: string, pieceId: string): ClientAPI.ClientResponse {
+	return pieceTakeNow.call(this, rundownId, slId, pieceId)
 }
-methods[UserActionAPI.methods.setInOutPoints] = function (rundownId: string, slId: string, sliId: string, inPoint: number, duration: number): ClientAPI.ClientResponse {
-	return segmentLineItemSetInOutPoints(rundownId, slId, sliId, inPoint, duration)
+methods[UserActionAPI.methods.setInOutPoints] = function (rundownId: string, slId: string, pieceId: string, inPoint: number, duration: number): ClientAPI.ClientResponse {
+	return pieceSetInOutPoints(rundownId, slId, pieceId, inPoint, duration)
 }
 methods[UserActionAPI.methods.segmentAdLibLineItemStart] = function (rundownId: string, slId: string, salliId: string, queue: boolean) {
 	return segmentAdLibLineItemStart.call(this, rundownId, slId, salliId, queue)
@@ -476,8 +476,8 @@ methods[UserActionAPI.methods.sourceLayerOnLineStop] = function (rundownId: stri
 methods[UserActionAPI.methods.baselineAdLibItemStart] = function (rundownId: string, slId: string, robaliId: string, queue: boolean) {
 	return rundownBaselineAdLibItemStart.call(this, rundownId, slId, robaliId, queue)
 }
-methods[UserActionAPI.methods.segmentAdLibLineItemStop] = function (rundownId: string, slId: string, sliId: string) {
-	return segmentAdLibLineItemStop.call(this, rundownId, slId, sliId)
+methods[UserActionAPI.methods.segmentAdLibLineItemStop] = function (rundownId: string, slId: string, pieceId: string) {
+	return segmentAdLibLineItemStop.call(this, rundownId, slId, pieceId)
 }
 methods[UserActionAPI.methods.sourceLayerStickyItemStart] = function (rundownId: string, sourceLayerId: string) {
 	return sourceLayerStickyItemStart.call(this, rundownId, sourceLayerId)

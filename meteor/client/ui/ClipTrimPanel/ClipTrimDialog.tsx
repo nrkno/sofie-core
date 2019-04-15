@@ -3,7 +3,7 @@ import { translate, InjectedTranslateProps } from 'react-i18next'
 import { ClipTrimPanel } from './ClipTrimPanel'
 import { VTContent, VTEditableParameters } from 'tv-automation-sofie-blueprints-integration'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { SegmentLineItem } from '../../../lib/collections/SegmentLineItems'
+import { Piece } from '../../../lib/collections/Pieces'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
@@ -11,7 +11,7 @@ import { UserActionAPI } from '../../../lib/api/userActions'
 export interface IProps {
 	rundownId: string
 	studioInstallation: StudioInstallation
-	selectedSegmentLineItem: SegmentLineItem
+	selectedPiece: Piece
 
 	onClose?: () => void
 }
@@ -26,8 +26,8 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 		super(props)
 
 		this.state = {
-			inPoint: ((this.props.selectedSegmentLineItem.content as VTContent).editable as VTEditableParameters).editorialStart,
-			duration: ((this.props.selectedSegmentLineItem.content as VTContent).editable as VTEditableParameters).editorialDuration
+			inPoint: ((this.props.selectedPiece.content as VTContent).editable as VTEditableParameters).editorialStart,
+			duration: ((this.props.selectedPiece.content as VTContent).editable as VTEditableParameters).editorialDuration
 		}
 	}
 	handleChange = (inPoint: number, duration: number) => {
@@ -40,8 +40,8 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 		this.props.onClose && this.props.onClose()
 		doUserAction(this.props.t, e, UserActionAPI.methods.setInOutPoints, [
 			this.props.rundownId,
-			this.props.selectedSegmentLineItem.segmentLineId,
-			this.props.selectedSegmentLineItem._id,
+			this.props.selectedPiece.segmentLineId,
+			this.props.selectedPiece._id,
 			this.state.inPoint,
 			this.state.duration
 		])
@@ -49,13 +49,13 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 	render () {
 		const { t } = this.props
 		return (
-			<ModalDialog title={t('Trim "{{name}}"', { name: this.props.selectedSegmentLineItem.name })} show={true} acceptText={t('OK')} secondaryText={t('Cancel')}
+			<ModalDialog title={t('Trim "{{name}}"', { name: this.props.selectedPiece.name })} show={true} acceptText={t('OK')} secondaryText={t('Cancel')}
 			onAccept={this.handleAccept} onDiscard={(e) => this.props.onClose && this.props.onClose()} onSecondary={(e) => this.props.onClose && this.props.onClose()}>
 				<ClipTrimPanel
 					studioInstallationId={this.props.studioInstallation._id}
 					rundownId={this.props.rundownId}
-					segmentLineItemId={this.props.selectedSegmentLineItem._id}
-					segmentLineId={this.props.selectedSegmentLineItem.segmentLineId}
+					pieceId={this.props.selectedPiece._id}
+					segmentLineId={this.props.selectedPiece.segmentLineId}
 					inPoint={this.state.inPoint}
 					duration={this.state.duration}
 					onChange={this.handleChange}

@@ -41,7 +41,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 	refreshLine = () => {
 		if (this.itemElement) {
 			this.itemPosition = $(this.itemElement).position().left || 0
-			const content = this.props.segmentLineItem.content as ScriptContent
+			const content = this.props.piece.content as ScriptContent
 			let scriptReadTime = 0
 			if (content && content.sourceDuration) {
 				scriptReadTime = content.sourceDuration * this.props.timeScale
@@ -71,11 +71,11 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 		}
 
 		if ((nextProps.segmentLineDuration !== this.props.segmentLineDuration) ||
-			(nextProps.segmentLineItem.renderedInPoint !== this.props.segmentLineItem.renderedInPoint) ||
-			(nextProps.segmentLineItem.renderedDuration !== this.props.segmentLineItem.renderedDuration) ||
-			(nextProps.segmentLineItem.duration !== this.props.segmentLineItem.duration) ||
-			(nextProps.segmentLineItem.expectedDuration !== this.props.segmentLineItem.expectedDuration) ||
-			(nextProps.segmentLineItem.trigger !== this.props.segmentLineItem.trigger)) {
+			(nextProps.piece.renderedInPoint !== this.props.piece.renderedInPoint) ||
+			(nextProps.piece.renderedDuration !== this.props.piece.renderedDuration) ||
+			(nextProps.piece.duration !== this.props.piece.duration) ||
+			(nextProps.piece.expectedDuration !== this.props.piece.expectedDuration) ||
+			(nextProps.piece.trigger !== this.props.piece.trigger)) {
 			this._forceSizingRecheck = true
 		}
 	}
@@ -115,7 +115,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 			}
 		}
 
-		const content = this.props.segmentLineItem.content as ScriptContent
+		const content = this.props.piece.content as ScriptContent
 		if (content.sourceDuration && content.sourceDuration !== this.readTime) {
 			this._forceSizingRecheck = true
 		}
@@ -126,7 +126,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 			this.refreshLine()
 		}
 
-		if (this.props.segmentLineItem.name !== prevProps.segmentLineItem.name) {
+		if (this.props.piece.name !== prevProps.piece.name) {
 			this.updateAnchoredElsWidths()
 		}
 	}
@@ -138,7 +138,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 
 	render () {
 		const { t } = this.props
-		let labelItems = (this.props.segmentLineItem.name || '').split('||')
+		let labelItems = (this.props.piece.name || '').split('||')
 		let begin = labelItems[0] || ''
 		let end = labelItems[1] || ''
 
@@ -147,7 +147,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 		// 	return str.substr(0, str.substr(0, maxLen).lastIndexOf(separator))
 		// }
 
-		const content = this.props.segmentLineItem.content as ScriptContent
+		const content = this.props.piece.content as ScriptContent
 		let startOfScript = content.fullScript || ''
 		let cutLength = startOfScript.length
 		if (startOfScript.length > SCRIPT_PART_LENGTH) {

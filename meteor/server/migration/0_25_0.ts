@@ -16,7 +16,7 @@ addMigrationSteps( '0.25.0', [
 			rundownId:		'rundownId',
 			// segmentId:		'segmentId',
 			segmentLineId:		'partId',
-			segmentLineItemId:	'pieceId'
+			pieceId:	'pieceId'
 		}
 	)
 

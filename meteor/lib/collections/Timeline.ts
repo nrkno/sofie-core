@@ -87,8 +87,8 @@ export interface TimelineObjGroupSegmentLine extends TimelineObjGroupRundown {
 export interface TimelineObjSegmentLineAbstract extends TimelineObjRundown { // used for sending callbacks
 	slId?: string
 }
-export interface TimelineObjSegmentLineItemAbstract extends TimelineObjRundown { // used for sending callbacks
-	sliId?: string
+export interface TimelineObjPieceAbstract extends TimelineObjRundown { // used for sending callbacks
+	pieceId?: string
 }
 
 // export const Timeline = new Mongo.Collection<TimelineObj>('timeline')

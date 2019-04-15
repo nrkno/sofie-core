@@ -2,7 +2,7 @@ import { Tracker } from 'meteor/tracker'
 import { ReactiveDataHelper } from './reactiveDataHelper'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Rundowns } from '../../../lib/collections/Rundowns'
-import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
+import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { StudioInstallations, StudioInstallation } from '../../../lib/collections/StudioInstallations'
 import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
@@ -62,11 +62,11 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getRSegmentLineItems (rundownId: string): ReactiveVar<SegmentLineItem[]> {
-		const rVar = new ReactiveVar<SegmentLineItem[]>([])
+	export function getRPieces (rundownId: string): ReactiveVar<Piece[]> {
+		const rVar = new ReactiveVar<Piece[]>([])
 
 		Tracker.autorun(() => {
-			const slis = SegmentLineItems.find({
+			const slis = Pieces.find({
 				rundownId: rundownId
 			}).fetch()
 			rVar.set(slis)

@@ -5,7 +5,7 @@ import { Segments, DBSegment, Segment } from './Segments'
 import { SegmentLines, SegmentLine } from './SegmentLines'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { StudioInstallations, StudioInstallation } from './StudioInstallations'
-import { SegmentLineItems, SegmentLineItem } from './SegmentLineItems'
+import { Pieces, Piece } from './Pieces'
 import { RundownDataCache } from './RundownDataCache'
 import { Meteor } from 'meteor/meteor'
 import { AdLibPieces } from './AdLibPieces'
@@ -164,7 +164,7 @@ export class Rundown implements DBRundown {
 		Rundowns.remove(this._id)
 		Segments.remove({rundownId: this._id})
 		SegmentLines.remove({rundownId: this._id})
-		SegmentLineItems.remove({ rundownId: this._id})
+		Pieces.remove({ rundownId: this._id})
 		AdLibPieces.remove({ rundownId: this._id})
 		RundownBaselineItems.remove({ rundownId: this._id})
 		RundownBaselineAdLibItems.remove({ rundownId: this._id})
@@ -232,7 +232,7 @@ export class Rundown implements DBRundown {
 		let ps: [
 			Promise<{ segments: Segment[], segmentsMap: any }>,
 			Promise<{ segmentLines: SegmentLine[], segmentLinesMap: any } >,
-			Promise<SegmentLineItem[]>
+			Promise<Piece[]>
 		] = [
 			makePromise(() => {
 				let segments = this.getSegments()
@@ -242,10 +242,10 @@ export class Rundown implements DBRundown {
 			makePromise(() => {
 				let segmentLines = _.map(this.getSegmentLines(), (sl) => {
 					// Override member function to use cached data instead:
-					sl.getAllSegmentLineItems = () => {
-						return _.map(_.filter(segmentLineItems, (sli) => {
+					sl.getAllPieces = () => {
+						return _.map(_.filter(pieces, (piece) => {
 							return (
-								sli.segmentLineId === sl._id
+								piece.segmentLineId === sl._id
 							)
 						}), (sl) => {
 							return _.clone(sl)
@@ -257,7 +257,7 @@ export class Rundown implements DBRundown {
 				return { segmentLines, segmentLinesMap }
 			}),
 			makePromise(() => {
-				return SegmentLineItems.find({ rundownId: this._id }).fetch()
+				return Pieces.find({ rundownId: this._id }).fetch()
 			})
 		]
 		let r = waitForPromiseAll(ps as any)
@@ -265,7 +265,7 @@ export class Rundown implements DBRundown {
 		let segmentsMap 				 		= r[0].segmentsMap
 		let segmentLinesMap 					= r[1].segmentLinesMap
 		let segmentLines: SegmentLine[]			= r[1].segmentLines
-		let segmentLineItems: SegmentLineItem[] = r[2]
+		let pieces: Piece[] = r[2]
 
 		return {
 			rundown: this,
@@ -273,7 +273,7 @@ export class Rundown implements DBRundown {
 			segmentsMap,
 			segmentLines,
 			segmentLinesMap,
-			segmentLineItems
+			pieces
 		}
 	}
 	getNotes (): Array<RundownNote> {
@@ -294,7 +294,7 @@ export interface RundownData {
 	segmentsMap: {[id: string]: Segment}
 	segmentLines: Array<SegmentLine>
 	segmentLinesMap: {[id: string]: SegmentLine}
-	segmentLineItems: Array<SegmentLineItem>
+	pieces: Array<Piece>
 }
 
 // export const Rundowns = new Mongo.Collection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })

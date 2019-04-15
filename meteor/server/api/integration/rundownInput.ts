@@ -19,9 +19,9 @@ import {
 	DBSegmentLine
 } from '../../../lib/collections/SegmentLines'
 import {
-	SegmentLineItem,
-	SegmentLineItems
-} from '../../../lib/collections/SegmentLineItems'
+	Piece,
+	Pieces
+} from '../../../lib/collections/Pieces'
 import {
 	saveIntoDb,
 	getCurrentTime,
@@ -43,7 +43,7 @@ import { ShowStyleContext, RundownContext, SegmentContext } from '../blueprints/
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
 import { RundownBaselineItem, RundownBaselineItems } from '../../../lib/collections/RundownBaselineItems'
 import { Random } from 'meteor/random'
-import { postProcessSegmentLineBaselineItems, postProcessAdLibPieces, postProcessSegmentLineItems } from '../blueprints/postProcess'
+import { postProcessSegmentLineBaselineItems, postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibItems } from '../../../lib/collections/RundownBaselineAdLibItems'
 import { DBSegment, Segments } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
@@ -235,7 +235,7 @@ function handleRundownData (peripheralDevice: PeripheralDevice, ingestRundown: I
 	const existingSegments = Segments.find({ rundown: dbRundown._id }).fetch()
 	const segments: DBSegment[] = []
 	const segmentLines: DBSegmentLine[] = []
-	const segmentPieces: SegmentLineItem[] = []
+	const segmentPieces: Piece[] = []
 	const adlibPieces: AdLibPiece[] = []
 
 	const blueprint = getBlueprintOfRundown(dbRundown)
@@ -278,19 +278,19 @@ function handleRundownData (peripheralDevice: PeripheralDevice, ingestRundown: I
 		}
 	})
 
-	saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
+	saveIntoDb<Piece, Piece>(Pieces, {
 		rundownId: rundownId,
 		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
 	}, segmentPieces, {
-		afterInsert (segmentLineItem) {
-			logger.debug('inserted segmentLineItem ' + segmentLineItem._id)
-			logger.debug(segmentLineItem)
+		afterInsert (piece) {
+			logger.debug('inserted piece ' + piece._id)
+			logger.debug(piece)
 		},
-		afterUpdate (segmentLineItem) {
-			logger.debug('updated segmentLineItem ' + segmentLineItem._id)
+		afterUpdate (piece) {
+			logger.debug('updated piece ' + piece._id)
 		},
-		afterRemove (segmentLineItem) {
-			logger.debug('deleted segmentLineItem ' + segmentLineItem._id)
+		afterRemove (piece) {
+			logger.debug('deleted piece ' + piece._id)
 		}
 	})
 
@@ -302,10 +302,10 @@ function handleRundownData (peripheralDevice: PeripheralDevice, ingestRundown: I
 			logger.debug(adLibPiece)
 		},
 		afterUpdate (adLibPiece) {
-			logger.debug('updated segmentLineItem ' + adLibPiece._id)
+			logger.debug('updated piece ' + adLibPiece._id)
 		},
 		afterRemove (adLibPiece) {
-			logger.debug('deleted segmentLineItem ' + adLibPiece._id)
+			logger.debug('deleted piece ' + adLibPiece._id)
 		}
 	})
 }
@@ -372,7 +372,7 @@ function generateSegmentContents (
 	}
 
 	const segmentLines: DBSegmentLine[] = []
-	const segmentPieces: SegmentLineItem[] = []
+	const segmentPieces: Piece[] = []
 	const adlibPieces: AdLibPiece[] = []
 
 	// SegmentLines
@@ -394,7 +394,7 @@ function generateSegmentContents (
 		segmentLines.push(part)
 
 		// Update pieces
-		const pieces = postProcessSegmentLineItems(context, blueprintPart.pieces, '', part._id) // TODO - blueprint id?
+		const pieces = postProcessPieces(context, blueprintPart.pieces, '', part._id) // TODO - blueprint id?
 		segmentPieces.push(...pieces)
 
 		const adlibs = postProcessAdLibPieces(context, blueprintPart.adLibPieces, '', part._id) // TODO - blueprint id?
@@ -449,20 +449,20 @@ function updateOrCreateSegmentFromPayload (studioInstallation: StudioInstallatio
 		}
 	})
 
-	const changedSli = saveIntoDb<SegmentLineItem, SegmentLineItem>(SegmentLineItems, {
+	const changedPiece = saveIntoDb<Piece, Piece>(Pieces, {
 		rundownId: rundown._id,
 		segmentLineId: { $in: segmentLines.map(p => p._id) },
 		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted items (such as adLib items)
 	}, segmentPieces, {
-		afterInsert (segmentLineItem) {
-			logger.debug('inserted segmentLineItem ' + segmentLineItem._id)
-			logger.debug(segmentLineItem)
+		afterInsert (piece) {
+			logger.debug('inserted piece ' + piece._id)
+			logger.debug(piece)
 		},
-		afterUpdate (segmentLineItem) {
-			logger.debug('updated segmentLineItem ' + segmentLineItem._id)
+		afterUpdate (piece) {
+			logger.debug('updated piece ' + piece._id)
 		},
-		afterRemove (segmentLineItem) {
-			logger.debug('deleted segmentLineItem ' + segmentLineItem._id)
+		afterRemove (piece) {
+			logger.debug('deleted piece ' + piece._id)
 		}
 	})
 
@@ -475,10 +475,10 @@ function updateOrCreateSegmentFromPayload (studioInstallation: StudioInstallatio
 			logger.debug(adLibPiece)
 		},
 		afterUpdate (adLibPiece) {
-			logger.debug('updated segmentLineItem ' + adLibPiece._id)
+			logger.debug('updated piece ' + adLibPiece._id)
 		},
 		afterRemove (adLibPiece) {
-			logger.debug('deleted segmentLineItem ' + adLibPiece._id)
+			logger.debug('deleted piece ' + adLibPiece._id)
 		}
 	})
 
@@ -757,13 +757,13 @@ methods[PeripheralDeviceAPI.methods.dataSegmentUpdate] = (deviceId: string, devi
 	return RundownInput.dataSegmentUpdate(this, deviceId, deviceToken, rundownId, segmentId, newSection)
 }
 // TODO - these need renaming
-methods[PeripheralDeviceAPI.methods.dataSegmentLineItemDelete] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, segmentLineId: string) => {
+methods[PeripheralDeviceAPI.methods.dataPieceDelete] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, segmentLineId: string) => {
 	return RundownInput.dataSegmentLineDelete(this, deviceId, deviceToken, rundownId, segmentId, segmentLineId)
 }
-methods[PeripheralDeviceAPI.methods.dataSegmentLineItemCreate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, segmentLineId: string, newStory: any) => {
+methods[PeripheralDeviceAPI.methods.dataPieceCreate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, segmentLineId: string, newStory: any) => {
 	return RundownInput.dataSegmentLineCreate(this, deviceId, deviceToken, rundownId, segmentId, segmentLineId, newStory)
 }
-methods[PeripheralDeviceAPI.methods.dataSegmentLineItemUpdate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, segmentLineId: string, newStory: any) => {
+methods[PeripheralDeviceAPI.methods.dataPieceUpdate] = (deviceId: string, deviceToken: string, rundownId: string, segmentId: string, segmentLineId: string, newStory: any) => {
 	return RundownInput.dataSegmentLineUpdate(this, deviceId, deviceToken, rundownId, segmentId, segmentLineId, newStory)
 }
 

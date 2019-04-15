@@ -1,6 +1,6 @@
 @import "../../styles/_itemTypeColors";
 
-svg.segment_line_item_icon {
+svg.piece_icon {
 	@include item-type-colors-svg();
 
 	rect {

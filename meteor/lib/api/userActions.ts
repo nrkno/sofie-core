@@ -15,10 +15,10 @@ export namespace UserActionAPI {
 		'deactivate' 							= 'userAction.deactivate',
 		'reloadData' 							= 'userAction.reloadData',
 
-		'disableNextSegmentLineItem'			= 'userAction.disableNextSegmentLineItem',
+		'disableNextPiece'			= 'userAction.disableNextPiece',
 		'toggleSegmentLineArgument'				= 'userAction.toggleSegmentLineArgument',
-		'segmentLineItemTakeNow'				= 'userAction.segmentLineItemTakeNow',
-		'setInOutPoints'						= 'userAction.segmentLineItemSetInOutPoints',
+		'pieceTakeNow'				= 'userAction.pieceTakeNow',
+		'setInOutPoints'						= 'userAction.pieceSetInOutPoints',
 
 		'segmentAdLibLineItemStart'				= 'userAction.segmentAdLibLineItemStart',
 		'sourceLayerOnLineStop'					= 'userAction.sourceLayerOnLineStop',
@@ -33,7 +33,7 @@ export namespace UserActionAPI {
 
 		// 'rundownStoriesMoved'						= 'userAction.rundownStoriesMoved',
 		// 'segmentLinePlaybackStartedCallback'	= 'userAction.segmentLinePlaybackStartedCallback',
-		// 'segmentLineItemPlaybackStartedCallback'= 'userAction.segmentLineItemPlaybackStartedCallback',
+		// 'piecePlaybackStartedCallback'= 'userAction.piecePlaybackStartedCallback',
 
 		'storeRundownSnapshot'				= 'userAction.storeRundownSnapshot',
 

@@ -12,7 +12,7 @@ export interface AsRunLogEventBase {
 	rundownId: string,
 	segmentId?: string,
 	segmentLineId?: string,
-	segmentLineItemId?: string,
+	pieceId?: string,
 	timelineObjectId?: string
 
 	/** Name/id of the content */

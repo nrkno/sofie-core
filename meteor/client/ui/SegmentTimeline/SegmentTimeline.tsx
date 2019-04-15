@@ -9,7 +9,7 @@ import { ContextMenuTrigger } from 'react-contextmenu'
 
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { StudioInstallation } from '../../../lib/collections/StudioInstallations'
-import { SegmentUi, SegmentLineUi, IOutputLayerUi, SegmentLineItemUi } from './SegmentTimelineContainer'
+import { SegmentUi, SegmentLineUi, IOutputLayerUi, PieceUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
 import { SegmentTimelineLine } from './SegmentTimelineLine'
 import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
@@ -70,8 +70,8 @@ interface IProps {
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	onShowEntireSegment?: (event: any) => void
 	onContextMenu?: (contextMenuContext: any) => void
-	onItemClick?: (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onHeaderNoteClick?: (level: NoteType) => void
 	segmentRef?: (el: SegmentTimelineClass, sId: string) => void
 	followingSegmentLine: SegmentLineUi | undefined

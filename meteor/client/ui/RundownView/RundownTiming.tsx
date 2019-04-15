@@ -196,7 +196,7 @@ export const RundownTimingProvider = withTracker<IRundownTimingProviderProps, IR
 
 		if (rundown && segmentLines) {
 			segmentLines.forEach((item, itIndex) => {
-				// add segmentLineItem to accumulator
+				// add piece to accumulator
 				const aIndex = linearSegLines.push([item._id, waitAccumulator]) - 1
 
 				// if this is next segementLine, clear previous countdowns and clear accumulator

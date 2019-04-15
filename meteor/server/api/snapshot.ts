@@ -21,7 +21,7 @@ import { RundownDataCache, RundownDataCacheObj } from '../../lib/collections/Run
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { Segments, Segment } from '../../lib/collections/Segments'
 import { SegmentLine, SegmentLines } from '../../lib/collections/SegmentLines'
-import { SegmentLineItems, SegmentLineItem } from '../../lib/collections/SegmentLineItems'
+import { Pieces, Piece } from '../../lib/collections/Pieces'
 import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
 import {
@@ -59,7 +59,7 @@ interface RundownSnapshot {
 	userActions: Array<UserActionsLogItem>
 	segments: Array<Segment>
 	segmentLines: Array<SegmentLine>
-	segmentLineItems: Array<SegmentLineItem>
+	pieces: Array<Piece>
 	adLibPieces: Array<AdLibPiece>
 	mediaObjects: Array<MediaObject>
 	expectedMediaItems: Array<ExpectedMediaItem>
@@ -109,10 +109,10 @@ function createRundownSnapshot (rundownId: string): RundownSnapshot {
 
 	const segments = Segments.find({ rundownId }).fetch()
 	const segmentLines = SegmentLines.find({ rundownId }).fetch()
-	const segmentLineItems = SegmentLineItems.find({ rundownId }).fetch()
+	const pieces = Pieces.find({ rundownId }).fetch()
 	const adLibPieces = AdLibPieces.find({ rundownId }).fetch()
 	const mediaObjectIds: Array<string> = [
-		...segmentLineItems.filter(item => item.content && item.content.fileName).map((item) => ((item.content as AudioContent).fileName)),
+		...pieces.filter(item => item.content && item.content.fileName).map((item) => ((item.content as AudioContent).fileName)),
 		...adLibPieces.filter(item => item.content && item.content.fileName).map((item) => ((item.content as AudioContent).fileName))
 	]
 	const mediaObjects = MediaObjects.find({ mediaId: { $in: mediaObjectIds } }).fetch()
@@ -136,7 +136,7 @@ function createRundownSnapshot (rundownId: string): RundownSnapshot {
 		userActions,
 		segments,
 		segmentLines,
-		segmentLineItems,
+		pieces,
 		adLibPieces,
 		mediaObjects,
 		expectedMediaItems
@@ -402,7 +402,7 @@ function restoreFromRundownSnapshot (snapshot: RundownSnapshot) {
 	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
 	saveIntoDb(Segments, {rundownId: rundownId}, snapshot.segments)
 	saveIntoDb(SegmentLines, {rundownId: rundownId}, snapshot.segmentLines)
-	saveIntoDb(SegmentLineItems, {rundownId: rundownId}, snapshot.segmentLineItems)
+	saveIntoDb(Pieces, {rundownId: rundownId}, snapshot.pieces)
 	saveIntoDb(AdLibPieces, {rundownId: rundownId}, snapshot.adLibPieces)
 	saveIntoDb(MediaObjects, {_id: {$in: _.pluck(snapshot.mediaObjects, '_id')}}, snapshot.mediaObjects)
 	saveIntoDb(ExpectedMediaItems, {segmentLineId: {$in: snapshot.segmentLines.map(i => i._id)}}, snapshot.expectedMediaItems)

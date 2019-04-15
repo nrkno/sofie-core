@@ -1,7 +1,7 @@
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import * as React from 'react'
-import { SegmentLineItem, SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
+import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { SourceLayerType, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { normalizeArray } from '../../../lib/lib'
 import * as _ from 'underscore'
@@ -26,40 +26,40 @@ interface INamePropsHeader extends IPropsHeader {
 }
 
 export const SegmentItemNameContainer = withTracker((props: INamePropsHeader) => {
-	let items = SegmentLineItems.find({ segmentLineId: props.segmentItemId }).fetch()
+	let items = Pieces.find({ segmentLineId: props.segmentItemId }).fetch()
 
 	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
 
 	let sourceLayers = showStyleBase ? normalizeArray<ISourceLayer>(showStyleBase.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
 	let sourceLayer: ISourceLayer | undefined
-	let segmentLineItem: SegmentLineItem | undefined
+	let piece: Piece | undefined
 	const supportedLayers = new Set([SourceLayerType.GRAPHICS, SourceLayerType.LIVE_SPEAK, SourceLayerType.VT ])
 
 	for (const item of items) {
 		let layer = sourceLayers[item.sourceLayerId]
 		if (!layer) continue
-		if (typeof sourceLayer !== 'undefined' && typeof segmentLineItem !== 'undefined') {
+		if (typeof sourceLayer !== 'undefined' && typeof piece !== 'undefined') {
 			if (layer.onPresenterScreen && sourceLayer._rank >= layer._rank && supportedLayers.has(layer.type)) {
 				sourceLayer = layer
-				if (segmentLineItem.trigger && item.trigger && item.trigger.value > segmentLineItem.trigger.value) {
-					segmentLineItem = item
+				if (piece.trigger && item.trigger && item.trigger.value > piece.trigger.value) {
+					piece = item
 				}
 			}
 		} else if (layer.onPresenterScreen && supportedLayers.has(layer.type)) {
 			sourceLayer = layer
-			segmentLineItem = item
+			piece = item
 		}
 	}
 
 	return {
 		sourceLayer,
-		segmentLineItem
+		piece
 	}
-})(class extends MeteorReactComponent<INamePropsHeader & { sourceLayer: ISourceLayer, segmentLineItem: SegmentLineItem }> {
-	_segmentLineItemSubscription: Meteor.SubscriptionHandle
+})(class extends MeteorReactComponent<INamePropsHeader & { sourceLayer: ISourceLayer, piece: Piece }> {
+	_pieceSubscription: Meteor.SubscriptionHandle
 
 	componentWillMount () {
-		this.subscribe('segmentLineItemsSimple', {
+		this.subscribe('piecesSimple', {
 			rundownId: this.props.rundownId
 		})
 		this.subscribe('showStyleBases', {
@@ -73,7 +73,7 @@ export const SegmentItemNameContainer = withTracker((props: INamePropsHeader) =>
 				case SourceLayerType.GRAPHICS:
 				case SourceLayerType.LIVE_SPEAK:
 				case SourceLayerType.VT:
-					return this.props.segmentLineItem.name
+					return this.props.piece.name
 			}
 		}
 		return this.props.segmentLineSlug.split(';')[1] || ''
@@ -82,39 +82,39 @@ export const SegmentItemNameContainer = withTracker((props: INamePropsHeader) =>
 
 export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 	// console.log(props)
-	let items = SegmentLineItems.find({ segmentLineId: props.segmentItemId }).fetch()
+	let items = Pieces.find({ segmentLineId: props.segmentItemId }).fetch()
 	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
 
 	let sourceLayers = showStyleBase ? normalizeArray<ISourceLayer>(showStyleBase.sourceLayers.map((layer) => { return _.clone(layer) }), '_id') : {}
 	let sourceLayer: ISourceLayer | undefined
-	let segmentLineItem: SegmentLineItem | undefined
+	let piece: Piece | undefined
 	const supportedLayers = new Set([ SourceLayerType.GRAPHICS, SourceLayerType.LIVE_SPEAK, SourceLayerType.REMOTE, SourceLayerType.SPLITS, SourceLayerType.VT, SourceLayerType.CAMERA ])
 
 	for (const item of items) {
 		let layer = sourceLayers[item.sourceLayerId]
 		if (!layer) continue
-		if (typeof sourceLayer !== 'undefined' && typeof segmentLineItem !== 'undefined') {
+		if (typeof sourceLayer !== 'undefined' && typeof piece !== 'undefined') {
 			if (layer.onPresenterScreen && sourceLayer._rank >= layer._rank && supportedLayers.has(layer.type)) {
 				sourceLayer = layer
-				if (segmentLineItem.trigger && item.trigger && item.trigger.value > segmentLineItem.trigger.value) {
-					segmentLineItem = item
+				if (piece.trigger && item.trigger && item.trigger.value > piece.trigger.value) {
+					piece = item
 				}
 			}
 		} else if (layer.onPresenterScreen && supportedLayers.has(layer.type)) {
 			sourceLayer = layer
-			segmentLineItem = item
+			piece = item
 		}
 	}
 
 	return {
 		sourceLayer,
-		segmentLineItem
+		piece
 	}
-})(class extends MeteorReactComponent<IPropsHeader & { sourceLayer: ISourceLayer, segmentLineItem: SegmentLineItem }> {
-	_segmentLineItemSubscription: Meteor.SubscriptionHandle
+})(class extends MeteorReactComponent<IPropsHeader & { sourceLayer: ISourceLayer, piece: Piece }> {
+	_pieceSubscription: Meteor.SubscriptionHandle
 
 	componentWillMount () {
-		this.subscribe('segmentLineItemsSimple', {
+		this.subscribe('piecesSimple', {
 			rundownId: this.props.rundownId
 		})
 		this.subscribe('showStyleBases', {
@@ -135,11 +135,11 @@ export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 					)
 				case SourceLayerType.REMOTE :
 					return (
-						<RemoteInputIcon inputIndex={ parseInt(((this.props.segmentLineItem || {}).name.toString()).split(' ').slice(-1)[0], 10) as number } abbreviation={this.props.sourceLayer.abbreviation} />
+						<RemoteInputIcon inputIndex={ parseInt(((this.props.piece || {}).name.toString()).split(' ').slice(-1)[0], 10) as number } abbreviation={this.props.sourceLayer.abbreviation} />
 					)
 				case SourceLayerType.SPLITS :
 					return (
-						<SplitInputIcon abbreviation={this.props.sourceLayer.abbreviation} segmentLineItem={this.props.segmentLineItem} />
+						<SplitInputIcon abbreviation={this.props.sourceLayer.abbreviation} piece={this.props.piece} />
 					)
 				case SourceLayerType.VT :
 					return (
@@ -147,7 +147,7 @@ export const SegmentItemIconContainer = withTracker((props: IPropsHeader) => {
 					)
 				case SourceLayerType.CAMERA :
 					return (
-						<CamInputIcon inputIndex={ parseInt(((this.props.segmentLineItem || {}).name.toString()).split(' ').slice(-1)[0], 10) as number } abbreviation={this.props.sourceLayer.abbreviation} />
+						<CamInputIcon inputIndex={ parseInt(((this.props.piece || {}).name.toString()).split(' ').slice(-1)[0], 10) as number } abbreviation={this.props.sourceLayer.abbreviation} />
 					)
 			}
 		}

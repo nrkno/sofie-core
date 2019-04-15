@@ -43,7 +43,7 @@ export class NymansPlayground extends MeteorReactComponent<INPProps> {
 				this.subscribe('segmentLines', {
 					rundownId: activeRO._id
 				})
-				this.subscribe('segmentLineItems', {
+				this.subscribe('pieces', {
 					rundownId: activeRO._id
 				})
 				this.subscribe('adLibPieces', {

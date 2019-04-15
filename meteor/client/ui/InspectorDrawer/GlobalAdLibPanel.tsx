@@ -234,7 +234,7 @@ export interface AdLibPieceUi extends AdLibPiece {
 }
 
 export interface SegmentUi extends Segment {
-	/** Segment line items belonging to this segment line */
+	/** Pieces belonging to this segment line */
 	segLines: Array<SegmentLine>
 	items?: Array<AdLibPieceUi>
 	isLive: boolean

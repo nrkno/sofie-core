@@ -10,7 +10,7 @@ import {
 	SegmentLineUi,
 	IOutputLayerUi,
 	ISourceLayerUi,
-	SegmentLineItemUi
+	PieceUi
 } from './SegmentTimelineContainer'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -37,19 +37,19 @@ export const SegmentNextPreview = translate()(class extends React.Component<Tran
 				return (
 					<div className='segment-timeline__layer' key={id}>
 						{layer.followingItems && layer.followingItems
-							.filter((segmentLineItem) => {
-								// filter only segment line items belonging to this segment line
-								return this.props.segmentLine && ((segmentLineItem.segmentLineId === this.props.segmentLine._id) ?
-									// filter only segment line items, that have not yet been linked to parent items
-									((segmentLineItem as SegmentLineItemUi).linked !== true) ?
+							.filter((piece) => {
+								// filter only pieces belonging to this segment line
+								return this.props.segmentLine && ((piece.segmentLineId === this.props.segmentLine._id) ?
+									// filter only pieces, that have not yet been linked to parent items
+									((piece as PieceUi).linked !== true) ?
 										true :
-										// (this.props.scrollLeft >= ((this.props.segmentLine.startsAt || 0) + ((segmentLineItem as SegmentLineItemUi).renderedInPoint || 0)))
+										// (this.props.scrollLeft >= ((this.props.segmentLine.startsAt || 0) + ((piece as PieceUi).renderedInPoint || 0)))
 										true
 									: false)
 							})
-							.map((segmentLineItem) => {
+							.map((piece) => {
 								return this.props.segmentLine && (
-									<SourceLayerItemContainer key={segmentLineItem._id}
+									<SourceLayerItemContainer key={piece._id}
 										{...this.props}
 										// The following code is fine, just withTracker HOC messing with available props
 										isLiveLine={false}
@@ -59,7 +59,7 @@ export const SegmentNextPreview = translate()(class extends React.Component<Tran
 										liveLineHistorySize={0}
 										livePosition={0}
 										rundown={this.props.rundown}
-										segmentLineItem={segmentLineItem}
+										piece={piece}
 										layer={layer}
 										outputLayer={outputLayer}
 										segmentLine={this.props.segmentLine}

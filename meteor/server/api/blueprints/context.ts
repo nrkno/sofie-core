@@ -19,7 +19,7 @@ import {
 	IStudioContext,
 	BlueprintMappings,
 	BlueprintRuntimeArguments,
-	IBlueprintSegmentLineItem,
+	IBlueprintPiece,
 	IBlueprintSegmentDB,
 	IngestRundown,
 	IBlueprintSegmentLineDB,
@@ -32,7 +32,7 @@ import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyl
 import { getShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { AsRunLogEvent, AsRunLog } from '../../../lib/collections/AsRunLog'
 import { CachePrefix } from '../../../lib/collections/RundownDataCache'
-import { SegmentLineItems } from '../../../lib/collections/SegmentLineItems'
+import { Pieces } from '../../../lib/collections/Pieces'
 
 /** Common */
 
@@ -368,27 +368,27 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		return this.rundown.fetchCache(CachePrefix.INGEST_RUNDOWN + this.rundown._id)
 	}
 	/**
-	 * Returns a segmentLineItem.
-	 * @param id Id of segmentLineItem to fetch. If omitted, return the segmentLineItem related to this AsRunEvent
+	 * Returns a piece.
+	 * @param id Id of piece to fetch. If omitted, return the piece related to this AsRunEvent
 	 */
-	getSegmentLineItem (segmentLineItemId?: string): IBlueprintSegmentLineItem | undefined {
-		check(segmentLineItemId, Match.Optional(String))
-		segmentLineItemId = segmentLineItemId || this.asRunEvent.segmentLineItemId
-		if (segmentLineItemId) {
-			return SegmentLineItems.findOne({
+	getPiece (pieceId?: string): IBlueprintPiece | undefined {
+		check(pieceId, Match.Optional(String))
+		pieceId = pieceId || this.asRunEvent.pieceId
+		if (pieceId) {
+			return Pieces.findOne({
 				rundownId: this.rundown._id,
-				_id: segmentLineItemId
+				_id: pieceId
 			})
 		}
 	}
 	/**
-	 * Returns segmentLineItems in a segmentLine
+	 * Returns pieces in a segmentLine
 	 * @param id Id of segmentLine to fetch items in
 	 */
-	getSegmentLineItems (segmentLineId: string): Array<IBlueprintSegmentLineItem> {
+	getPieces (segmentLineId: string): Array<IBlueprintPiece> {
 		check(segmentLineId, String)
 		if (segmentLineId) {
-			return SegmentLineItems.find({
+			return Pieces.find({
 				rundownId: this.rundown._id,
 				segmentLineId: segmentLineId
 			}).fetch()
@@ -410,7 +410,7 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		if (this.rundownId) ids.push('rundownId: ' + this.rundownId)
 		if (this.asRunEvent.segmentId) ids.push('segmentId: ' + this.asRunEvent.segmentId)
 		if (this.asRunEvent.segmentLineId) ids.push('segmentLineId: ' + this.asRunEvent.segmentLineId)
-		if (this.asRunEvent.segmentLineItemId) ids.push('segmentLineItemId: ' + this.asRunEvent.segmentLineItemId)
+		if (this.asRunEvent.pieceId) ids.push('pieceId: ' + this.asRunEvent.pieceId)
 		if (this.asRunEvent.timelineObjectId) ids.push('timelineObjectId: ' + this.asRunEvent.timelineObjectId)
 		return ids.join(',')
 	}

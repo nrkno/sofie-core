@@ -5,10 +5,10 @@ import {
 	ISourceLayerUi,
 	IOutputLayerUi,
 	SegmentLineUi,
-	SegmentLineItemUi
+	PieceUi
 } from './SegmentTimelineContainer'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { SourceLayerType, SegmentLineItemLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
 import { Transition } from '../../../lib/constants/casparcg'
 import * as ClassNames from 'classnames'
@@ -36,13 +36,13 @@ export interface ISourceLayerItemProps {
 	segmentLine: SegmentLineUi
 	segmentLineStartsAt: number
 	segmentLineDuration: number
-	segmentLineItem: SegmentLineItemUi
+	piece: PieceUi
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
-	onClick?: (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	relative?: boolean
 	followLiveLine: boolean
 	autoNextSegmentLine: boolean
@@ -101,17 +101,17 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		if (this.props.relative) {
 			return {}
 		} else {
-			const maxLabelWidth = this.props.segmentLineItem.maxLabelWidth
+			const maxLabelWidth = this.props.piece.maxLabelWidth
 
-			if (this.props.segmentLine && this.props.segmentLineStartsAt !== undefined) { //  && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined
-				let segmentLineItem = this.props.segmentLineItem
+			if (this.props.segmentLine && this.props.segmentLineStartsAt !== undefined) { //  && this.props.piece.renderedInPoint !== undefined && this.props.piece.renderedDuration !== undefined
+				let piece = this.props.piece
 
-				let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration || 0 : 0
-				let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration || 0 : 0
+				let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition.duration || 0 : 0
+				let outTransitionDuration = piece.transitions && piece.transitions.outTransition ? piece.transitions.outTransition.duration || 0 : 0
 
-				const inPoint = segmentLineItem.renderedInPoint || 0
-				const duration = (Number.isFinite(segmentLineItem.renderedDuration || 0)) ?
-					segmentLineItem.renderedDuration || this.props.segmentLineDuration || this.props.segmentLine.renderedDuration || 0 :
+				const inPoint = piece.renderedInPoint || 0
+				const duration = (Number.isFinite(piece.renderedDuration || 0)) ?
+					piece.renderedDuration || this.props.segmentLineDuration || this.props.segmentLine.renderedDuration || 0 :
 					this.props.segmentLineDuration || this.props.segmentLine.renderedDuration || 0
 
 				const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
@@ -182,14 +182,14 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		if (this.props.relative) {
 			return {}
 		} else {
-			if (this.props.segmentLine && this.props.segmentLineStartsAt !== undefined) { //  && this.props.segmentLineItem.renderedInPoint !== undefined && this.props.segmentLineItem.renderedDuration !== undefined
-				let segmentLineItem = this.props.segmentLineItem
+			if (this.props.segmentLine && this.props.segmentLineStartsAt !== undefined) { //  && this.props.piece.renderedInPoint !== undefined && this.props.piece.renderedDuration !== undefined
+				let piece = this.props.piece
 
-				// let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration || 0 : 0
-				let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration || 0 : 0
+				// let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition.duration || 0 : 0
+				let outTransitionDuration = piece.transitions && piece.transitions.outTransition ? piece.transitions.outTransition.duration || 0 : 0
 
-				const inPoint = segmentLineItem.renderedInPoint || 0
-				const duration = (segmentLineItem.infiniteMode || segmentLineItem.renderedDuration === 0) ? (this.props.segmentLineDuration - inPoint) : Math.min((segmentLineItem.renderedDuration || 0), this.props.segmentLineDuration - inPoint)
+				const inPoint = piece.renderedInPoint || 0
+				const duration = (piece.infiniteMode || piece.renderedDuration === 0) ? (this.props.segmentLineDuration - inPoint) : Math.min((piece.renderedDuration || 0), this.props.segmentLineDuration - inPoint)
 				const outPoint = inPoint + duration
 
 				// const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
@@ -209,24 +209,24 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 	}
 
 	getItemDuration = (): number => {
-		let segmentLineItem = this.props.segmentLineItem
+		let piece = this.props.piece
 
-		const expectedDurationNumber = (typeof segmentLineItem.expectedDuration === 'number' ? segmentLineItem.expectedDuration || 0 : 0)
-		let itemDuration = Math.min(segmentLineItem.durationOverride || segmentLineItem.duration || segmentLineItem.renderedDuration || expectedDurationNumber || 0, this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0))
+		const expectedDurationNumber = (typeof piece.expectedDuration === 'number' ? piece.expectedDuration || 0 : 0)
+		let itemDuration = Math.min(piece.durationOverride || piece.duration || piece.renderedDuration || expectedDurationNumber || 0, this.props.segmentLineDuration - (piece.renderedInPoint || 0))
 
-		if (segmentLineItem.infiniteMode !== undefined && segmentLineItem.infiniteMode !== SegmentLineItemLifespan.Normal && !segmentLineItem.cropped && !segmentLineItem.duration && !segmentLineItem.durationOverride) {
-			itemDuration = this.props.segmentLineDuration - (segmentLineItem.renderedInPoint || 0)
-			// console.log(segmentLineItem.infiniteMode + ', ' + segmentLineItem.infiniteId)
+		if (piece.infiniteMode !== undefined && piece.infiniteMode !== PieceLifespan.Normal && !piece.cropped && !piece.duration && !piece.durationOverride) {
+			itemDuration = this.props.segmentLineDuration - (piece.renderedInPoint || 0)
+			// console.log(piece.infiniteMode + ', ' + piece.infiniteId)
 		}
 
 		return itemDuration
 	}
 
 	getItemStyle (): { [key: string]: string } {
-		let segmentLineItem = this.props.segmentLineItem
+		let piece = this.props.piece
 
-		let inTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.inTransition ? segmentLineItem.transitions.inTransition.duration || 0 : 0
-		let outTransitionDuration = segmentLineItem.transitions && segmentLineItem.transitions.outTransition ? segmentLineItem.transitions.outTransition.duration || 0 : 0
+		let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition.duration || 0 : 0
+		let outTransitionDuration = piece.transitions && piece.transitions.outTransition ? piece.transitions.outTransition.duration || 0 : 0
 
 		// If this is a live line, take duration verbatim from SegmentLayerItemContainer with a fallback on expectedDuration.
 		// If not, as-run segmentLine "duration" limits renderdDuration which takes priority over MOS-import
@@ -239,12 +239,12 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		if (this.props.relative) {
 			return {
 				// also: don't render transitions in relative mode
-				'left': (((segmentLineItem.renderedInPoint || 0)) / (this.props.segmentLineDuration || 1) * 100).toString() + '%',
+				'left': (((piece.renderedInPoint || 0)) / (this.props.segmentLineDuration || 1) * 100).toString() + '%',
 				'width': ((itemDuration) / (this.props.segmentLineDuration || 1) * 100).toString() + '%'
 			}
 		} else {
 			return {
-				'left': Math.floor(((segmentLineItem.renderedInPoint || 0) + inTransitionDuration) * this.props.timeScale).toString() + 'px',
+				'left': Math.floor(((piece.renderedInPoint || 0) + inTransitionDuration) * this.props.timeScale).toString() + 'px',
 				'width': Math.round((itemDuration - inTransitionDuration - outTransitionDuration) * this.props.timeScale).toString() + 'px'
 			}
 		}
@@ -268,12 +268,12 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 
 	componentWillReceiveProps (nextProps: ISourceLayerItemProps) {
 		if ((nextProps.segmentLineDuration !== this.props.segmentLineDuration) ||
-			(nextProps.segmentLineItem.renderedInPoint !== this.props.segmentLineItem.renderedInPoint) ||
-			(nextProps.segmentLineItem.renderedDuration !== this.props.segmentLineItem.renderedDuration) ||
-			(nextProps.segmentLineItem.duration !== this.props.segmentLineItem.duration) ||
-			(nextProps.segmentLineItem.durationOverride !== this.props.segmentLineItem.durationOverride) ||
-			(nextProps.segmentLineItem.expectedDuration !== this.props.segmentLineItem.expectedDuration) ||
-			(nextProps.segmentLineItem.trigger !== this.props.segmentLineItem.trigger) ||
+			(nextProps.piece.renderedInPoint !== this.props.piece.renderedInPoint) ||
+			(nextProps.piece.renderedDuration !== this.props.piece.renderedDuration) ||
+			(nextProps.piece.duration !== this.props.piece.duration) ||
+			(nextProps.piece.durationOverride !== this.props.piece.durationOverride) ||
+			(nextProps.piece.expectedDuration !== this.props.piece.expectedDuration) ||
+			(nextProps.piece.trigger !== this.props.piece.trigger) ||
 			(this.isInsideViewport() && this._placeHolderElement)) {
 			this._forceSizingRecheck = true
 		}
@@ -295,7 +295,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		// this.props.onFollowLiveLine && this.props.onFollowLiveLine(false, e)
 		e.preventDefault()
 		e.stopPropagation()
-		this.props.onClick && this.props.onClick(this.props.segmentLineItem, e)
+		this.props.onClick && this.props.onClick(this.props.piece, e)
 
 	}
 	tempDisplayInOutpoints = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -311,7 +311,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 				doUserAction(this.props.t, e, UserActionAPI.methods.setInOutPoints, [
 					this.props.segmentLine.rundownId,
 					this.props.segmentLine._id,
-					this.props.segmentLineItem._id,
+					this.props.piece._id,
 					inputResult.inPoint,
 					inputResult.outPoint
 				])
@@ -338,7 +338,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		e.stopPropagation()
 
 		if (typeof this.props.onDoubleClick === 'function') {
-			this.props.onDoubleClick(this.props.segmentLineItem, e)
+			this.props.onDoubleClick(this.props.piece, e)
 		}
 	}
 
@@ -400,7 +400,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		switch (this.props.layer.type) {
 			case SourceLayerType.SCRIPT:
 			// case SourceLayerType.MIC:
-				return <MicSourceRenderer key={this.props.segmentLineItem._id}
+				return <MicSourceRenderer key={this.props.piece._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -408,7 +408,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
 			case SourceLayerType.VT:
-				return <VTSourceRenderer key={this.props.segmentLineItem._id}
+				return <VTSourceRenderer key={this.props.piece._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -417,7 +417,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 						{...this.props} {...this.state} />
 			case SourceLayerType.GRAPHICS:
 			case SourceLayerType.LOWER_THIRD:
-				return <L3rdSourceRenderer key={this.props.segmentLineItem._id}
+				return <L3rdSourceRenderer key={this.props.piece._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -425,7 +425,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
 			case SourceLayerType.SPLITS:
-				return <SplitsSourceRenderer key={this.props.segmentLineItem._id}
+				return <SplitsSourceRenderer key={this.props.piece._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -433,7 +433,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
 			case SourceLayerType.LIVE_SPEAK:
-				return <STKSourceRenderer key={this.props.segmentLineItem._id}
+				return <STKSourceRenderer key={this.props.piece._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -442,7 +442,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 						{...this.props} {...this.state} />
 
 			case SourceLayerType.TRANSITION:
-				return <TransitionSourceRenderer key={this.props.segmentLineItem._id}
+				return <TransitionSourceRenderer key={this.props.piece._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -450,7 +450,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 						setAnchoredElsWidths={this.setAnchoredElsWidths}
 						{...this.props} {...this.state} />
 			default:
-				return <DefaultLayerItemRenderer key={this.props.segmentLineItem._id}
+				return <DefaultLayerItemRenderer key={this.props.piece._id}
 						typeClass={typeClass}
 						getItemDuration={this.getItemDuration}
 						getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -464,7 +464,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		if (this.props.relative) {
 			return true
 		} else {
-			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine, this.props.segmentLineStartsAt, this.props.segmentLineDuration, this.props.segmentLineItem)
+			return RundownUtils.isInsideViewport(this.props.scrollLeft, this.props.scrollWidth, this.props.segmentLine, this.props.segmentLineStartsAt, this.props.segmentLineDuration, this.props.piece)
 		}
 	}
 
@@ -477,20 +477,20 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 
 			return (
 				<div className={ClassNames('segment-timeline__layer-item', typeClass, {
-					'with-in-transition': !this.props.relative && this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.inTransition && (this.props.segmentLineItem.transitions.inTransition.duration || 0) > 0,
-					'with-out-transition': !this.props.relative && this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.outTransition && (this.props.segmentLineItem.transitions.outTransition.duration || 0) > 0,
+					'with-in-transition': !this.props.relative && this.props.piece.transitions && this.props.piece.transitions.inTransition && (this.props.piece.transitions.inTransition.duration || 0) > 0,
+					'with-out-transition': !this.props.relative && this.props.piece.transitions && this.props.piece.transitions.outTransition && (this.props.piece.transitions.outTransition.duration || 0) > 0,
 
 					'hide-overflow-labels': this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth),
 
-					'infinite': (this.props.segmentLineItem.duration === undefined && this.props.segmentLineItem.durationOverride === undefined && this.props.segmentLineItem.infiniteMode) as boolean, // 0 is a special value
-					'next-is-touching': !!(this.props.segmentLineItem.cropped || (this.props.segmentLineItem.expectedDuration && _.isString(this.props.segmentLineItem.expectedDuration))),
+					'infinite': (this.props.piece.duration === undefined && this.props.piece.durationOverride === undefined && this.props.piece.infiniteMode) as boolean, // 0 is a special value
+					'next-is-touching': !!(this.props.piece.cropped || (this.props.piece.expectedDuration && _.isString(this.props.piece.expectedDuration))),
 
-					'source-missing': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING || this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_NOT_SET,
-					'source-broken': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN,
-					'unknown-state': this.props.segmentLineItem.status === RundownAPI.LineItemStatusCode.UNKNOWN,
-					'disabled': this.props.segmentLineItem.disabled
+					'source-missing': this.props.piece.status === RundownAPI.LineItemStatusCode.SOURCE_MISSING || this.props.piece.status === RundownAPI.LineItemStatusCode.SOURCE_NOT_SET,
+					'source-broken': this.props.piece.status === RundownAPI.LineItemStatusCode.SOURCE_BROKEN,
+					'unknown-state': this.props.piece.status === RundownAPI.LineItemStatusCode.UNKNOWN,
+					'disabled': this.props.piece.disabled
 				})}
-					data-mos-id={this.props.segmentLineItem._id}
+					data-mos-id={this.props.piece._id}
 					ref={this.setRef}
 					onClick={this.itemClick}
 					onDoubleClick={this.itemDblClick}
@@ -503,29 +503,29 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					{
 						DEBUG_MODE && (
 							<div className='segment-timeline__debug-info'>
-								{this.props.segmentLineItem.trigger.value} / {RundownUtils.formatTimeToTimecode(this.props.segmentLineDuration).substr(-5)} / {this.props.segmentLineItem.renderedDuration ? RundownUtils.formatTimeToTimecode(this.props.segmentLineItem.renderedDuration).substr(-5) : 'X'} / {typeof this.props.segmentLineItem.expectedDuration === 'number' ? RundownUtils.formatTimeToTimecode(this.props.segmentLineItem.expectedDuration).substr(-5) : ''}
+								{this.props.piece.trigger.value} / {RundownUtils.formatTimeToTimecode(this.props.segmentLineDuration).substr(-5)} / {this.props.piece.renderedDuration ? RundownUtils.formatTimeToTimecode(this.props.piece.renderedDuration).substr(-5) : 'X'} / {typeof this.props.piece.expectedDuration === 'number' ? RundownUtils.formatTimeToTimecode(this.props.piece.expectedDuration).substr(-5) : ''}
 							</div>
 						)
 					}
 					{
-						this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.inTransition && (this.props.segmentLineItem.transitions.inTransition.duration || 0) > 0 ? (
+						this.props.piece.transitions && this.props.piece.transitions.inTransition && (this.props.piece.transitions.inTransition.duration || 0) > 0 ? (
 							<div className={ClassNames('segment-timeline__layer-item__transition', 'in', {
-								'mix': this.props.segmentLineItem.transitions.inTransition.type === Transition.MIX,
-								'wipe': this.props.segmentLineItem.transitions.inTransition.type === Transition.WIPE
+								'mix': this.props.piece.transitions.inTransition.type === Transition.MIX,
+								'wipe': this.props.piece.transitions.inTransition.type === Transition.WIPE
 							})}
 								style={{
-									'width': ((this.props.segmentLineItem.transitions.inTransition.duration || 0) * this.props.timeScale).toString() + 'px'
+									'width': ((this.props.piece.transitions.inTransition.duration || 0) * this.props.timeScale).toString() + 'px'
 								}} />
 						) : null
 					}
 					{
-						this.props.segmentLineItem.transitions && this.props.segmentLineItem.transitions.outTransition && (this.props.segmentLineItem.transitions.outTransition.duration || 0) > 0 ? (
+						this.props.piece.transitions && this.props.piece.transitions.outTransition && (this.props.piece.transitions.outTransition.duration || 0) > 0 ? (
 							<div className={ClassNames('segment-timeline__layer-item__transition', 'out', {
-								'mix': this.props.segmentLineItem.transitions.outTransition.type === Transition.MIX,
-								'wipe': this.props.segmentLineItem.transitions.outTransition.type === Transition.WIPE
+								'mix': this.props.piece.transitions.outTransition.type === Transition.MIX,
+								'wipe': this.props.piece.transitions.outTransition.type === Transition.WIPE
 							})}
 								style={{
-									'width': ((this.props.segmentLineItem.transitions.outTransition.duration || 0) * this.props.timeScale).toString() + 'px'
+									'width': ((this.props.piece.transitions.outTransition.duration || 0) * this.props.timeScale).toString() + 'px'
 								}} />
 						) : null
 					}
@@ -538,7 +538,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 
 			return (
 				<div className='segment-timeline__layer-item'
-					data-mos-id={this.props.segmentLineItem._id}
+					data-mos-id={this.props.piece._id}
 					ref={this.setRef}
 					style={this.getItemStyle()}>
 				</div>

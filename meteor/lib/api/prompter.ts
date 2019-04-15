@@ -36,13 +36,13 @@ export namespace PrompterAPI {
 		_.each(segmentLines, (sl: SegmentLine) => {
 			let hasSentInThisLine = false
 
-			_.each(sl.getAllSegmentLineItems(), (sli) => {
+			_.each(sl.getAllPieces(), (piece) => {
 
 				if (
-					sli.content &&
-					sli.content.fullScript
+					piece.content &&
+					piece.content.fullScript
 				) {
-					const content = sli.content as ScriptContent
+					const content = piece.content as ScriptContent
 					if (content.fullScript) {
 						data.lines.push({
 							text: content.fullScript,

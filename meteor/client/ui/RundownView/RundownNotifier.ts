@@ -6,7 +6,7 @@ import { NotificationCenter, NotificationList, NotifierObject, Notification, Not
 import { RundownAPI } from '../../../lib/api/rundown'
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
-import { checkSLIContentStatus } from '../../../lib/mediaObjects'
+import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -33,7 +33,7 @@ export interface RONotificationEvent {
 		rundownId?: string,
 		segmentId?: string,
 		segmentLineId?: string,
-		segmentLineItemId?: string
+		pieceId?: string
 	}
 }
 
@@ -258,7 +258,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			_.flatten(_.compact(segments.map(i => i.getNotes(true).map(j => _.extend(j, {
 				rank: i._rank
 			}))))).forEach((item: SegmentLineNote & {rank: number}) => {
-				const id = item.message + '-' + (item.origin.segmentLineItemId || item.origin.segmentLineId || item.origin.segmentId || item.origin.rundownId) + '-' + item.origin.name + '-' + item.type
+				const id = item.message + '-' + (item.origin.pieceId || item.origin.segmentLineId || item.origin.segmentId || item.origin.rundownId) + '-' + item.origin.name + '-' + item.type
 				let newNotification = new Notification(id, item.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, item.origin.segmentId || 'unknown', getCurrentTime(), true, [
 					{
 						label: t('Show issue'),
@@ -296,10 +296,10 @@ class RundownViewNotifier extends WithManagedTracker {
 		const t = i18nTranslator
 
 		let oldItemIds: Array<string> = []
-		const rSegmentLineItems = reactiveData.getRSegmentLineItems(rRundownId)
+		const rPieces = reactiveData.getRPieces(rRundownId)
 		this.autorun((comp: Tracker.Computation) => {
 			// console.log('RundownViewNotifier 5')
-			const items = rSegmentLineItems.get()
+			const items = rPieces.get()
 			const newItemIds = items.map(item => item._id)
 			items.forEach((item) => {
 				const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === item.sourceLayerId)
@@ -308,7 +308,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				if (sourceLayer && segmentLine) {
 					this.autorun(() => {
 						// console.log('RundownViewNotifier 5-1')
-						const { status, message } = checkSLIContentStatus(item, sourceLayer, studioInstallation.config)
+						const { status, message } = checkPieceContentStatus(item, sourceLayer, studioInstallation.config)
 						let newNotification: Notification | undefined = undefined
 						if ((status !== RundownAPI.LineItemStatusCode.OK) && (status !== RundownAPI.LineItemStatusCode.UNKNOWN) && (status !== RundownAPI.LineItemStatusCode.SOURCE_NOT_SET)) {
 							newNotification = new Notification(item._id, NoticeLevel.WARNING, message || 'Media is broken', segment ? segment._id : 'line_' + item.segmentLineId, getCurrentTime(), true, [
@@ -326,7 +326,7 @@ class RundownViewNotifier extends WithManagedTracker {
 												sourceLocator: {
 													name: item.name,
 													rundownId: item.rundownId,
-													segmentLineItemId: item._id,
+													pieceId: item._id,
 													segmentLineId: item.segmentLineId
 												}
 											})

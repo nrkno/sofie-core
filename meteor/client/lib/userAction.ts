@@ -77,9 +77,9 @@ function userActionMethodName (
 		case UserActionAPI.methods.deactivate: return 'Deactivating Rundown'
 		case UserActionAPI.methods.reloadData: return 'Reloading rundown data'
 
-		case UserActionAPI.methods.disableNextSegmentLineItem: return 'Disabling next segmentLineItem'
+		case UserActionAPI.methods.disableNextPiece: return 'Disabling next piece'
 		case UserActionAPI.methods.toggleSegmentLineArgument: return 'Toggling SegmentLine-Argument'
-		case UserActionAPI.methods.segmentLineItemTakeNow: return 'Taking SegmentLineItem'
+		case UserActionAPI.methods.pieceTakeNow: return 'Taking Piece'
 
 		case UserActionAPI.methods.segmentAdLibLineItemStart: return 'Starting AdLib Item'
 		case UserActionAPI.methods.baselineAdLibItemStart: return 'Starting AdLib Item'

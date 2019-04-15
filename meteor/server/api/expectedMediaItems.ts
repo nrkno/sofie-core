@@ -2,7 +2,7 @@ import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { ExpectedMediaItems, ExpectedMediaItem } from '../../lib/collections/ExpectedMediaItems'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { SegmentLineItems, SegmentLineItemGeneric } from '../../lib/collections/SegmentLineItems'
+import { Pieces, PieceGeneric } from '../../lib/collections/Pieces'
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { syncFunctionIgnore } from '../codeControl'
 import { saveIntoDb, literal, getCurrentTime, getHash } from '../../lib/lib'
@@ -41,7 +41,7 @@ export const updateExpectedMediaItems: (rundownId: string, slId: string) => void
 	// const robalis = RundownBaselineAdLibItems.find({
 	// 	rundownId: rundown._id
 	// })
-	const slis = SegmentLineItems.find({
+	const slis = Pieces.find({
 		rundownId: rundown._id,
 		segmentLineId: sl._id
 	})
@@ -50,7 +50,7 @@ export const updateExpectedMediaItems: (rundownId: string, slId: string) => void
 		segmentLineId: sl._id
 	})
 
-	function iterateOnSLILike (doc: SegmentLineItemGeneric, prefix: string) {
+	function iterateOnPieceLike (doc: PieceGeneric, prefix: string) {
 		if (doc.content && doc.content.fileName && doc.content.path && doc.content.mediaFlowIds) {
 			(doc.content.mediaFlowIds as string[]).forEach(function (flow) {
 				eMIs.push(literal<ExpectedMediaItem>({
@@ -69,9 +69,9 @@ export const updateExpectedMediaItems: (rundownId: string, slId: string) => void
 		}
 	}
 
-	// robalis.forEach((doc) => iterateOnSLILike(doc, 'robali'))
-	slis.forEach((doc) => iterateOnSLILike(doc, 'sli'))
-	slali.forEach((doc) => iterateOnSLILike(doc, 'slali'))
+	// robalis.forEach((doc) => iterateOnPieceLike(doc, 'robali'))
+	slis.forEach((doc) => iterateOnPieceLike(doc, 'piece'))
+	slali.forEach((doc) => iterateOnPieceLike(doc, 'slali'))
 
 	saveIntoDb<ExpectedMediaItem, ExpectedMediaItem>(ExpectedMediaItems, {
 		rundownId: rundown._id,

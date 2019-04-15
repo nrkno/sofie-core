@@ -13,7 +13,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { getResolvedSegment,
 	IOutputLayerExtended,
 	ISourceLayerExtended,
-	SegmentLineItemExtended,
+	PieceExtended,
 	SegmentLineExtended
 } from '../../../lib/Rundown'
 import { RundownViewEvents } from '../RundownView'
@@ -40,7 +40,7 @@ export interface IOutputLayerUi extends IOutputLayerExtended {
 }
 export interface ISourceLayerUi extends ISourceLayerExtended {
 }
-export interface SegmentLineItemUi extends SegmentLineItemExtended {
+export interface PieceUi extends PieceExtended {
 	/** This item has already been linked to the parent item of the spanning item group */
 	linked?: boolean
 	/** Metadata object */
@@ -54,8 +54,8 @@ interface IProps {
 	rundown: Rundown,
 	timeScale: number,
 	liveLineHistorySize: number
-	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onItemClick?: (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onTimeScaleChange?: (timeScaleVal: number) => void
 	onContextMenu?: (contextMenuContext: any) => void
 	onSegmentScroll?: () => void

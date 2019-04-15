@@ -11,7 +11,7 @@ import {
 	SegmentLineUi,
 	IOutputLayerUi,
 	ISourceLayerUi,
-	SegmentLineItemUi
+	PieceUi
 } from './SegmentTimelineContainer'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { RundownTiming, WithTiming } from '../RundownView/RundownTiming'
@@ -43,8 +43,8 @@ interface ISourceLayerProps {
 	isNextLine: boolean
 	outputGroupCollapsed: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
-	onItemClick?: (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	relative?: boolean
 	totalSegmentDuration?: number
 	followLiveLine: boolean
@@ -82,26 +82,26 @@ class SourceLayer extends React.Component<ISourceLayerProps> {
 
 	renderInside () {
 		if (this.props.layer.items !== undefined) {
-			return _.chain(this.props.layer.items.filter((segmentLineItem) => {
-				// filter only segment line items belonging to this segment line
-				return (segmentLineItem.segmentLineId === this.props.segmentLine._id) ?
-					// filter only segment line items, that have not been hidden from the UI
-					(segmentLineItem.hidden !== true) &&
-					(segmentLineItem.virtual !== true)
+			return _.chain(this.props.layer.items.filter((piece) => {
+				// filter only pieces belonging to this segment line
+				return (piece.segmentLineId === this.props.segmentLine._id) ?
+					// filter only pieces, that have not been hidden from the UI
+					(piece.hidden !== true) &&
+					(piece.virtual !== true)
 					: false
 			}))
 			.sortBy((it) => it.renderedInPoint)
 			.sortBy((it) => it.infiniteMode)
 			.sortBy((it) => it.cropped)
-			.map((segmentLineItem) => {
+			.map((piece) => {
 				return (
-					<SourceLayerItemContainer key={segmentLineItem._id}
+					<SourceLayerItemContainer key={piece._id}
 						{...this.props}
 						// The following code is fine, just withTracker HOC messing with available props
 						onClick={this.props.onItemClick}
 						onDoubleClick={this.props.onItemDoubleClick}
 						mediaPreviewUrl={this.props.mediaPreviewUrl}
-						segmentLineItem={segmentLineItem}
+						piece={piece}
 						layer={this.props.layer}
 						outputLayer={this.props.outputLayer}
 						segmentLine={this.props.segmentLine}
@@ -147,8 +147,8 @@ interface IOutputGroupProps {
 	isLiveLine: boolean
 	isNextLine: boolean
 	onFollowLiveLine?: (state: boolean, event: any) => void
-	onItemClick?: (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	followLiveLine: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
@@ -213,8 +213,8 @@ interface IProps {
 	scrollWidth: number
 	onScroll?: (scrollLeft: number, event: any) => void
 	onFollowLiveLine?: (state: boolean, event: any) => void
-	onItemClick?: (sli: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onItemDoubleClick?: (item: SegmentLineItemUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	followLiveLine: boolean
 	autoNextSegmentLine: boolean
 	liveLineHistorySize: number

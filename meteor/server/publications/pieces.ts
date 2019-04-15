@@ -1,11 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 
 import { RundownSecurity } from '../security/rundowns'
-import { SegmentLineItems } from '../../lib/collections/SegmentLineItems'
+import { Pieces } from '../../lib/collections/Pieces'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 
-meteorPublish(PubSub.segmentLineItems, function (selector, token) {
+meteorPublish(PubSub.pieces, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400,'selector argument missing')
 	const modifier = {
 		fields: {
@@ -13,12 +13,12 @@ meteorPublish(PubSub.segmentLineItems, function (selector, token) {
 		}
 	}
 	if (RundownSecurity.allowReadAccess(selector, token, this)) {
-		return SegmentLineItems.find(selector, modifier)
+		return Pieces.find(selector, modifier)
 	}
 	return null
 })
 
-meteorPublish(PubSub.segmentLineItemsSimple, function (selector, token) {
+meteorPublish(PubSub.piecesSimple, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier = {
 		fields: {
@@ -29,7 +29,7 @@ meteorPublish(PubSub.segmentLineItemsSimple, function (selector, token) {
 		}
 	}
 	if (RundownSecurity.allowReadAccess(selector, token, this)) {
-		return SegmentLineItems.find(selector, modifier)
+		return Pieces.find(selector, modifier)
 	}
 	return null
 })

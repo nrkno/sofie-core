@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { SegmentLineItem } from './collections/SegmentLineItems'
+import { Piece } from './collections/Pieces'
 import {
 	VTContent,
 	SourceLayerType,
@@ -97,7 +97,7 @@ export function getAcceptedFormats (config: Array<IConfigItem>): Array<Array<str
 		}))
 }
 
-export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourceLayer, config: Array<IConfigItem>, t?: i18next.TranslationFunction<any, object, string>) {
+export function checkPieceContentStatus (piece: Piece, sourceLayer: ISourceLayer, config: Array<IConfigItem>, t?: i18next.TranslationFunction<any, object, string>) {
 	t = t || ((s: string, options?: _.Dictionary<any>) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options))
 	let newStatus: RundownAPI.LineItemStatusCode = RundownAPI.LineItemStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
@@ -106,8 +106,8 @@ export function checkSLIContentStatus (sli: SegmentLineItem, sourceLayer: ISourc
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
-			if (sli.content && sli.content.fileName) {
-				const content = sli.content as VTContent
+			if (piece.content && piece.content.fileName) {
+				const content = piece.content as VTContent
 				// If the fileName is not set...
 				if (!content.fileName) {
 					newStatus = RundownAPI.LineItemStatusCode.SOURCE_NOT_SET

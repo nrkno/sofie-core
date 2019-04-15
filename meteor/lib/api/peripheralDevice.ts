@@ -44,12 +44,12 @@ export interface SegmentLinePlaybackStartedResult {
 	time: number
 }
 export type SegmentLinePlaybackStoppedResult = SegmentLinePlaybackStartedResult
-export interface SegmentLineItemPlaybackStartedResult {
+export interface PiecePlaybackStartedResult {
 	rundownId: string,
-	sliId: string,
+	pieceId: string,
 	time: number
 }
-export type SegmentLineItemPlaybackStoppedResult = SegmentLineItemPlaybackStartedResult
+export type PiecePlaybackStoppedResult = PiecePlaybackStartedResult
 
 export enum methods {
 	'functionReply' 	= 'peripheralDevice.functionReply',
@@ -70,8 +70,8 @@ export enum methods {
 	'timelineTriggerTime'			= 'peripheralDevice.timeline.setTimelineTriggerTime',
 	'segmentLinePlaybackStarted' 	= 'peripheralDevice.rundown.segmentLinePlaybackStarted',
 	'segmentLinePlaybackStopped' 	= 'peripheralDevice.rundown.segmentLinePlaybackStopped',
-	'segmentLineItemPlaybackStarted'= 'peripheralDevice.rundown.segmentLineItemPlaybackStarted',
-	'segmentLineItemPlaybackStopped'= 'peripheralDevice.rundown.segmentLineItemPlaybackStopped',
+	'piecePlaybackStarted'= 'peripheralDevice.rundown.piecePlaybackStarted',
+	'piecePlaybackStopped'= 'peripheralDevice.rundown.piecePlaybackStopped',
 
 	'mosRundownCreate' 		= 'peripheralDevice.mos.rundownCreate',
 	'mosRundownReplace' 		= 'peripheralDevice.mos.rundownReplace',
@@ -100,9 +100,9 @@ export enum methods {
 	'dataSegmentDelete'			= 'peripheralDevice.rundown.segmentDelete',
 	'dataSegmentCreate'			= 'peripheralDevice.rundown.segmentCreate',
 	'dataSegmentUpdate'			= 'peripheralDevice.rundown.segmentUpdate',
-	'dataSegmentLineItemDelete'	= 'peripheralDevice.rundown.segmentLineItemDelete',
-	'dataSegmentLineItemCreate'	= 'peripheralDevice.rundown.segmentLineItemCreate',
-	'dataSegmentLineItemUpdate'	= 'peripheralDevice.rundown.segmentLineItemUpdate',
+	'dataPieceDelete'	= 'peripheralDevice.rundown.pieceDelete',
+	'dataPieceCreate'	= 'peripheralDevice.rundown.pieceCreate',
+	'dataPieceUpdate'	= 'peripheralDevice.rundown.pieceUpdate',
 
 	'resyncRundown'			= 'peripheralDevice.mos.rundownResync',
 

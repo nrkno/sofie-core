@@ -1148,7 +1148,7 @@ body.vertical-overflow-only {
 
 				transition: $output-layer-group-collapse-animation-duration border ease-in-out;
 						
-				// The layer container for all segment-line-items
+				// The layer container for all pieces
 				.segment-timeline__layer {
 					min-height: $segment-layer-height;
 					line-height: $segment-layer-height;

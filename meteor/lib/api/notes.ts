@@ -10,7 +10,7 @@ export interface GenericNote {
 		rundownId?: string,
 		segmentId?: string,
 		segmentLineId?: string,
-		segmentLineItemId?: string
+		pieceId?: string
 	},
 	message: string
 }
@@ -29,7 +29,7 @@ export interface SegmentLineNote extends GenericNote {
 		rundownId: string,
 		segmentId?: string,
 		segmentLineId?: string,
-		segmentLineItemId?: string
+		pieceId?: string
 	},
 	message: string
 }
